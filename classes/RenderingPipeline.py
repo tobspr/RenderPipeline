@@ -15,6 +15,8 @@ class RenderingPipeline(DebugObject):
         self.showbase = showbase
         self.lightManager = LightManager()
         self.size = self._getSize()
+        self.camera = base.cam
+        self.cullBounds = None
         self._setup()
 
     def _setup(self):
@@ -67,7 +69,16 @@ class RenderingPipeline(DebugObject):
     def _attachUpdateTask(self):
         self.showbase.addTask(self._update, "UpdateRenderingPipeline")
 
+    def _computeCameraBounds(self):
+        # compute camera bounds in render space
+        cameraBounds = self.camera.node().getLens().makeBounds()
+        cameraBounds.xform(self.camera.getMat(render))
+        return cameraBounds
+
     def _update(self, task):
+        self.cullBounds = self._computeCameraBounds()
+
+        self.lightManager.setCullBounds(self.cullBounds)
         self.lightManager.update()
 
         return task.cont
