@@ -1,7 +1,7 @@
-Render Pipeline
+Deferred Render Pipeline
 ==============
 
-Complete deferred render pipeline for panda3d
+Complete deferred render pipeline for panda3d (wip)
 
 ## Features:
 
