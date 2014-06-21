@@ -2,7 +2,7 @@
 
 layout (rgba8) writeonly uniform image2D destination;
 
-layout (rgba16) readonly uniform image2D target0;
+layout (rgba16f) readonly uniform image2D target0;
 
 
 uniform float osg_FrameTime;
@@ -21,27 +21,22 @@ void main() {
     vec2 radial = gl_LocalInvocationID.xy / vec2(32.0);
     float radialFactor = length(abs(radial - vec2(0.5) ) * 2.0);
 
+
+    float borderFactor = 0.0;
+
     // (1.0-globalCoef*localCoef
-
-    memoryBarrier();
-
-    memoryBarrierShared();
-    memoryBarrierImage();
-    memoryBarrierAtomicCounter();
-    barrier();
-
-    // vec4 oldColor = texture(target0, gl_GlobalInvocationID.xy / vec2(1600, 928));
-    vec4 oldColor = imageLoad(target0, storePos);
-    // imageStore(destination, storePos, vec4(1,0,1, 0));
-    imageStore(destination, storePos, vec4(oldColor.rgb, 1));
 
     // memoryBarrier();
 
     // memoryBarrierShared();
     // memoryBarrierImage();
     // memoryBarrierAtomicCounter();
-    // barrier();
+    // // barrier();
+
+    // vec4 oldColor = texture(target0, gl_GlobalInvocationID.xy / vec2(1600, 928));
+    vec4 oldColor = imageLoad(target0, storePos);
+    // imageStore(destination, storePos, vec4(1,0,1, 0));
+    imageStore(destination, storePos, vec4(oldColor.rgb, 1.0) );
 
 
-    // barrier();
 }
