@@ -1,0 +1,14 @@
+
+
+
+Pipeline:
+
+    Pass 0: Render depth only (EarlyZ)
+    Pass 1: Output Materials (Depth compare = M_equal)
+
+    Stage 1: Compute SSDO (half size)
+    Stage 0: Compute Lighting and mix with diffuse
+     
+
+
+

@@ -1,0 +1,9 @@
+#version 400
+
+uniform sampler2D sampler;
+in vec2 texcoord;
+
+void main() {
+    gl_FragColor = vec4(texture(sampler, texcoord).rgb, 1.0);
+}
+

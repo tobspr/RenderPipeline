@@ -1,0 +1,94 @@
+
+
+
+
+
+normal.xy  (z = sqrt())
+diffuse.xyz
+(position.xyz??)
+specular power
+specular.xyz
+gloss
+
+
+
+
+
+
+
+
+
+
+
+
+Compute Z component from normalized normal xy components:
+1.0 = sqrt(x**2 + y**2 + z**2)  | ^2
+1.0 = x**2 + y**2 + z**2  | - z**2
+1.0 - z**2 = x**2 + y**2 | - 1.0
+- z**2 = -1.0 + x**2 + y**2  | * -1
+z**2 = 1.0 - x**2 + y**2 | sqrt()
+z = sqrt(1.0 - x**2 + y**2)
+
+
+
+
+
+
+params for the brdf: 
+    cpec = base specular color
+
+
+
+
+// http://renderwonk.com/publications/s2010-shading-course/hoffman/s2010_physically_based_shading_hoffman_a.pdf
+
+BRDF:
+
+l = light Dir
+v = view Dir
+h = halfway vector (normalize(l+v))
+
+m = normal?
+n = normal
+
+a = angle, = acos(n * h)
+
+
+m = roughness
+
+
+cspec = specular default color (Page 62)
+
+F = Fresnel
+D = Microfacet Normal Distribution
+G = Geometry Factor
+    -> Chance that a microfacet of the given orientation is 
+        shadowed and/or masked
+
+
+Microfacet BRDF: f(l, v) = F(l, h) * G(l, v, h) * D(h) / 4 * (n * l) * (n * v)
+
+F_Schlick(cspec, l, n) = cspec + (1 - spec)* ( (1 - (l * n)) ^ 5)
+or:
+F_Schlick(cspec, l, h) = cspec + (1 - spec)* ( (1 - (l * h)) ^ 5)
+
+
+
+
+G = min(1, 2 * (h * n) * (n * v) / (v * h), 2 * (h * n) * (l * n) / (v * h)  )
+
+D = exp(-tan²(a)/m²) / (PI * m² * cos^4(a))
+
+
+
+
+
+
+fLambert(l, v) = cdiff / PI
+
+
+
+Light0 (v) = f(lc, v) * clight(n * lc)
+
+
+
