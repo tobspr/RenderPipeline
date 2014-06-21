@@ -1,12 +1,11 @@
 #version 430
 
-layout (rgba8) uniform image2D destination;
+layout (rgba8) writeonly uniform image2D destination;
 
-layout (rgba8) uniform image2D target0;
-layout (rgba8) uniform image2D target1;
-layout (rgba8) uniform image2D target2;
+layout (rgba16) readonly uniform image2D target0;
 
 
+uniform float osg_FrameTime;
 
 
 layout (local_size_x = 32, local_size_y = 32) in;
@@ -24,7 +23,25 @@ void main() {
 
     // (1.0-globalCoef*localCoef
 
-    vec4 oldColor = imageLoad(target1, storePos);
-    imageStore(destination, storePos, oldColor);
+    memoryBarrier();
 
+    memoryBarrierShared();
+    memoryBarrierImage();
+    memoryBarrierAtomicCounter();
+    barrier();
+
+    // vec4 oldColor = texture(target0, gl_GlobalInvocationID.xy / vec2(1600, 928));
+    vec4 oldColor = imageLoad(target0, storePos);
+    // imageStore(destination, storePos, vec4(1,0,1, 0));
+    imageStore(destination, storePos, vec4(oldColor.rgb, 1));
+
+    // memoryBarrier();
+
+    // memoryBarrierShared();
+    // memoryBarrierImage();
+    // memoryBarrierAtomicCounter();
+    // barrier();
+
+
+    // barrier();
 }

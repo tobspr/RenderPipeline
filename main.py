@@ -5,7 +5,7 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3, Vec4, Texture, Shader, TransparencyAttrib
 
 
-from MovementController import MovementController
+from Shared.MovementController import MovementController
 from classes.RenderingPipeline import RenderingPipeline
 from classes.HemiPointLight import HemiPointLight
 
@@ -104,10 +104,11 @@ class Main(ShowBase):
 
     def loadEngineSettings(self):
         loadPrcFileData("", """
-            win-size 1600 900
+            win-size 1600 928
             framebuffer-multisample #f
             multisample #f
             textures-power-2 none
+            gl-debug #t
 
         """.strip())
 

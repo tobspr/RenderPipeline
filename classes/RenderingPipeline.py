@@ -57,31 +57,29 @@ class RenderingPipeline(DebugObject):
     def _createLightingPipeline(self):
         self.debug("Creating lighting compute shader")
 
-        # first, create a texture where the shader can write to
-
-
+        # size has to be a multiple of the compute unit size
         sizeX = int(math.ceil(self.size.x / 32))
         sizeY = int(math.ceil(self.size.y / 32))
 
+        # create a texture where the shader can write to
         self.lightingPassTex = Texture("LightingPassResult")
-        self.lightingPassTex.setup_2d_texture(sizeX*32,sizeY*32, Texture.TFloat, Texture.FRgba8)
+        self.lightingPassTex.setup_2d_texture(sizeX*32,sizeY*32, Texture.TUnsignedShort, Texture.FRgba8)
         self.lightingPassTex.setMinfilter(Texture.FTNearest)
         self.lightingPassTex.setMagfilter(Texture.FTNearest)
-        self.lightingPassTex.clearRamImage()
+        # self.lightingPassTex.clearRamImage() # doesn't work
 
         # create compute node
         self.lightingComputeNode = ComputeNode("LightingComputePass")
-
-
         self.lightingComputeNode.add_dispatch(sizeX, sizeY, 1)
 
+        # attach compute node to scene graph
         self.lightingComputeContainer = render.attachNewNode(self.lightingComputeNode)
         self.lightingComputeContainer.setShader(self.lightManager.getPipelineShader())
         self.lightingComputeContainer.setShaderInput("destination", self.lightingPassTex)
         self.lightingComputeContainer.setShaderInput("target0", self.deferredTarget.getTexture(RenderTargetType.Color))
-        self.lightingComputeContainer.setShaderInput("target1", self.deferredTarget.getTexture(RenderTargetType.Aux0))
-        self.lightingComputeContainer.setShaderInput("target2", self.deferredTarget.getTexture(RenderTargetType.Aux1))
-
+        # self.lightingComputeContainer.setShaderInput("target1", self.deferredTarget.getTexture(RenderTargetType.Aux0))
+        # self.lightingComputeContainer.setShaderInput("target2", self.deferredTarget.getTexture(RenderTargetType.Aux1))
+        self.lightingComputeContainer.setBin("unsorted", 10)
         # self.lightingPassTex.setup_2d_texture(
             # int(self.size.x), int(self.size.y), Texture.TFloat, Texture.FRgba16)
 
