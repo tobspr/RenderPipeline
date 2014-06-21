@@ -98,8 +98,12 @@ class Light:
 
     def performUpdate(self):
         self.dataNeedsUpdate = False
+        if self.castShadows:
+            self._computeLightMat()
+
         if self.debugEnabled:
             self._updateDebugNode()
+
 
     def performShadowUpdate(self):
         slef.shadowNeedsUpdate = False
@@ -110,11 +114,14 @@ class Light:
         self._updateDebugNode()
 
     def lookAt(self, pos):
-        difference = self.data.pos - pos
+        # todo
+        pass
 
+    def _computeLightMat(self):
+        pass
 
-
-
+    def _computeLightBounds(self):
+        pass
 
     def _updateDebugNode(self):
         pass

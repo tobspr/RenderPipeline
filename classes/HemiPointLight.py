@@ -13,6 +13,9 @@ class HemiPointLight (Light, DebugObject):
         Light.__init__(self)
         DebugObject.__init__(self, "HemiPointLight")
 
+    def _computeLightMat(self):
+        pass
+
     def _updateDebugNode(self):
         # self.debug("updating debug node")
 
@@ -59,3 +62,5 @@ class HemiPointLight (Light, DebugObject):
     def setRadius(self, radius):
         self.data.radius = max(0.01, radius)
         self.queueUpdate()
+
+
