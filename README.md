@@ -5,7 +5,7 @@ Complete deferred render pipeline for panda3d (wip)
 
 ## Features:
 
-#### Deferred rendering
+#### Deferred rendering (obviously)
 - But still allows some objects to have forward passes
 
 #### Early Z
