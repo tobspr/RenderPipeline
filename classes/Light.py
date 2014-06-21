@@ -105,7 +105,6 @@ class Light:
 
     def performUpdate(self):
         self.dataNeedsUpdate = False
-        self.data._updateDataMat()
         self._computeLightBounds()
 
         if self.castShadows:
@@ -113,6 +112,8 @@ class Light:
 
         if self.debugEnabled:
             self._updateDebugNode()
+            
+        self.data._updateDataMat()
 
     def performShadowUpdate(self):
         self.shadowNeedsUpdate = False
