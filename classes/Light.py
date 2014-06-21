@@ -1,12 +1,12 @@
 
 
-from panda3d.core import Vec3, Mat4, NodePath, LineSegs, Vec4
+from panda3d.core import Vec3, Mat4, NodePath, LineSegs, Vec4, UnalignedLMatrix4
+from panda3d.core import OmniBoundingVolume
 
 
 # Stores general data of a light and has to be seen
 # as an interface.
 class Light:
-
 
     # Stores data to be passed to the shader
     # Sadly passing arrays of structs isn't supported yet.
@@ -29,46 +29,50 @@ class Light:
             self.power = 1.0
 
             # projection matrix for this light
-            self.projMatrix = Mat4()
+            self.projMatrix = UnalignedLMatrix4()
 
             # for projectors (like for flashlights) specify which overlay to use
-            # -1 means no overlay            
+            # -1 means no overlay
             self.posterIdx = -1
 
             # for shadow casting lights this is >= 0
-            # specifies the position of the shadow map for this light in 
+            # specifies the position of the shadow map for this light in
             # the shadow map texture array
             self.shadowIdx = -1
 
+        def _updateDataMat(self):
+            self._data_mat = UnalignedLMatrix4(
+                self.pos.x,        self.pos.y,        self.pos.z,        self.radius,
+                self.col.x,        self.col.y,        self.col.z,        self.power,
+                self.shadowIdx,    self.posterIdx,    0.0,               0.0,
+                0.0,               0.0,               0.0,               0.0)
 
         def getDataMat(self):
-            return Mat4(
-                    self.pos.x,        self.pos.y,        self.pos.z,        self.radius,
-                    self.col.x,        self.col.y,        self.col.z,        self.power,
-                    self.shadowIdx,    self.posterIdx,    0.0,               0.0,
-                    0.0,               0.0,               0.0,               0.0
-
-
-                )            
+            return self._data_mat
 
         def getProjMat(self):
             return self.projMatrix
-
-            
 
     def __init__(self):
         self.data = self.LightStruct()
         self.debugNode = NodePath("LightDebug")
         self.rotation = Vec3(0)
-        self.visualizationNumSteps = 16
+        self.visualizationNumSteps = 32
         self.dataNeedsUpdate = False
         self.shadowNeedsUpdate = False
         self.castShadows = False
         self.debugEnabled = False
+        self.bounds = OmniBoundingVolume()
+
+    def getData(self):
+        return self.data
 
     def setHpr(self, hpr):
         self.rotation = hpr
         self.queueUpdate()
+
+    def hasShadows(self):
+        return self.castShadows
 
     def setCastsShadows(self, shadows=True):
         self.castShadows = True
@@ -76,6 +80,9 @@ class Light:
     def setPos(self, pos):
         self.data.pos = pos
         self.queueUpdate()
+
+    def getBounds(self):
+        return self.bounds
 
     def setColor(self, col):
         self.data.col = col
@@ -98,15 +105,17 @@ class Light:
 
     def performUpdate(self):
         self.dataNeedsUpdate = False
+        self.data._updateDataMat()
+        self._computeLightBounds()
+
         if self.castShadows:
             self._computeLightMat()
 
         if self.debugEnabled:
             self._updateDebugNode()
 
-
     def performShadowUpdate(self):
-        slef.shadowNeedsUpdate = False
+        self.shadowNeedsUpdate = False
 
     def attachDebugNode(self, parent):
         self.debugNode.reparentTo(parent)
@@ -126,7 +135,7 @@ class Light:
     def _updateDebugNode(self):
         pass
 
-    def _createDebugLine(self, points, connectToEnd = False):
+    def _createDebugLine(self, points, connectToEnd=False):
         segs = LineSegs()
         segs.setThickness(1.0)
         segs.setColor(Vec4(1, 1, 0, 1))
@@ -140,5 +149,3 @@ class Light:
             segs.drawTo(points[0])
 
         return NodePath(segs.create())
-
-

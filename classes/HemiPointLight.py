@@ -2,7 +2,7 @@
 from Light import Light
 from DebugObject import DebugObject
 
-from panda3d.core import NodePath, LineSegs, Vec4, Vec3
+from panda3d.core import NodePath, LineSegs, Vec4, Vec3, BoundingSphere, Point3
 
 import math
 
@@ -15,6 +15,9 @@ class HemiPointLight (Light, DebugObject):
 
     def _computeLightMat(self):
         pass
+
+    def _computeLightBounds(self):
+        self.bounds = BoundingSphere(Point3(self.data.pos), self.data.radius)
 
     def _updateDebugNode(self):
         # self.debug("updating debug node")

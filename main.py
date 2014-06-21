@@ -67,15 +67,16 @@ class Main(ShowBase):
 
         self.renderDebugNode = render.attachNewNode("LightDebug")
 
-        for i in xrange(256):
+        for i in xrange(1):
             angle = float(i) / 256.0 * math.pi * 2.0
             sampleLight = HemiPointLight()
-            sampleLight.setRadius(5.0)
+            sampleLight.setRadius(15.0)
             sampleLight.setColor(Vec3(1.0, 0.5, 0.2))
             sampleLight.setPos(Vec3(math.sin(angle)*80.0, math.cos(angle)*80.0, 5))
+            sampleLight.setPos(Vec3(10, 10, 5))
             sampleLight.setHpr(Vec3(180, 0, 0))
 
-            # sampleLight.attachDebugNode(self.renderDebugNode)
+            sampleLight.attachDebugNode(self.renderDebugNode)
 
             self.renderPipeline.getLightManager().addLight(sampleLight)
             self.lightz.append(sampleLight)
@@ -126,7 +127,18 @@ class Main(ShowBase):
             multisample #f
 
             textures-power-2 none
-            
+
+            text-default-font /e/P3D/default_font.ttf
+            text-flatten #t
+            text-dynamic-merge #f
+            text-anisotropic-degree 0
+            text-magfilter nearest
+            text-minfilter nearest
+            text-native-antialias #f
+            text-page-size 32 32
+            text-pixels-per-unit 10
+            text-quality-level fastest
+
 
         """.strip())
 
