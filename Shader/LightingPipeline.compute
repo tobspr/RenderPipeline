@@ -8,7 +8,7 @@ layout (rgba16f) readonly uniform image2D target0;
 uniform float osg_FrameTime;
 
 
-layout (local_size_x = 32, local_size_y = 32) in;
+layout (local_size_x = 32, local_size_y = 16) in;
 
 void main() {
     float roll = 0.0;
@@ -24,6 +24,9 @@ void main() {
 
     float borderFactor = 0.0;
 
+    if (gl_LocalInvocationID.x == 0 || gl_LocalInvocationID.y == 0) 
+        borderFactor = 1.0;
+
     // (1.0-globalCoef*localCoef
 
     // memoryBarrier();
@@ -35,8 +38,13 @@ void main() {
 
     // vec4 oldColor = texture(target0, gl_GlobalInvocationID.xy / vec2(1600, 928));
     vec4 oldColor = imageLoad(target0, storePos);
+
+    vec4 result = vec4(oldColor);
+
+    result.xyz += vec3(1,1,0) * borderFactor;
+
     // imageStore(destination, storePos, vec4(1,0,1, 0));
-    imageStore(destination, storePos, vec4(oldColor.rgb, 1.0) );
+    imageStore(destination, storePos, vec4(result) );
 
 
 }

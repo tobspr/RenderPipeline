@@ -59,11 +59,11 @@ class RenderingPipeline(DebugObject):
 
         # size has to be a multiple of the compute unit size
         sizeX = int(math.ceil(self.size.x / 32))
-        sizeY = int(math.ceil(self.size.y / 32))
+        sizeY = int(math.ceil(self.size.y / 16))
 
         # create a texture where the shader can write to
         self.lightingPassTex = Texture("LightingPassResult")
-        self.lightingPassTex.setup_2d_texture(sizeX*32,sizeY*32, Texture.TFloat, Texture.FRgba8)
+        self.lightingPassTex.setup_2d_texture(sizeX*32,sizeY*16, Texture.TFloat, Texture.FRgba8)
         self.lightingPassTex.setMinfilter(Texture.FTNearest)
         self.lightingPassTex.setMagfilter(Texture.FTNearest)
         # self.lightingPassTex.clearRamImage() # doesn't work
@@ -87,6 +87,9 @@ class RenderingPipeline(DebugObject):
         return Vec2(
             int(self.showbase.win.getXSize()),
             int(self.showbase.win.getYSize()))
+
+    def debugReloadShader(self):
+        self.lightingComputeContainer.setShader(self.lightManager.getPipelineShader())
 
     def _attachUpdateTask(self):
         self.showbase.addTask(self._update, "UpdateRenderingPipeline")

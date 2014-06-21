@@ -22,12 +22,13 @@ class Main(ShowBase):
 
         # load demo scene
         print "Loading Scene .."
-        self.scene = loader.loadModel("Scene/Scene.egg")
+        # self.scene = loader.loadModel("Scene/Scene.egg")
+        self.scene = loader.loadModel("environment")
 
         # self.scene = loader.loadModel("panda")
         self.scene.reparentTo(render)
 
-        if True:
+        if False:
             print "Placing prefabs"
             # place prefabs
             self.scenePrefab = self.scene.find("Prefab")
@@ -51,13 +52,14 @@ class Main(ShowBase):
         render.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
 
         self.mc = MovementController(self)
-        self.mc.setInitialPosition(Vec3(10, 10, 10), Vec3(0))
+        self.mc.setInitialPosition(Vec3(1000, 1000, 1000), Vec3(0))
+        self.mc.speed = 5.0
         self.mc.setup()
 
         self.accept("r", self.setShaders)
         self.addTask(self.update, "update")
 
-        self.camLens.setNearFar(0.1, 1000)
+        self.camLens.setNearFar(0.1, 10000)
 
         # cubemap = loader.loadCubeMap("Cubemap/#.png")
         # cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
@@ -101,6 +103,7 @@ class Main(ShowBase):
         print "Reloading Shader .."
         render.setShader(
             self.renderPipeline.getDefaultObjectShader())
+        self.renderPipeline.debugReloadShader()
 
     def loadEngineSettings(self):
         loadPrcFileData("", """
