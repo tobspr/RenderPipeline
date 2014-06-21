@@ -5,24 +5,24 @@ Complete deferred render pipeline for panda3d
 
 ## Features:
 
-### Deferred rendering
+#### Deferred rendering
 - But still allows some objects to have forward passes
 
-### Early Z
+#### Early Z
 - Pre-Renders depth to avoid overdraw
 
-### SSDO
--> + one bounce for indirect lighting / color bleeding
+#### SSDO
+- + one bounce for indirect lighting / color bleeding
     
 
-### PSSM, Cloud Shadows, Large Terrain Shadows
--> complete lighting + shadows via compute shader
+#### PSSM, Cloud Shadows, Large Terrain Shadows
+- complete lighting + shadows via compute shader
 
-### Atmospheric Scattering + Volumetric Fog
+#### Atmospheric Scattering + Volumetric Fog
 
-### Multi-Hemisphere-Skybox
+#### Multi-Hemisphere-Skybox
 
-### Lighting:
+#### Lighting:
 - Point Lights
     - Either shadow casting or not
     - When shadow casting, only use 2 perspectives
@@ -47,28 +47,30 @@ Complete deferred render pipeline for panda3d
     - Also supports projection texture
     - Cone-Mapping
 
-### Physically based shading / lighting
+#### Physically based shading / lighting
 
-### Precomputed HDR environment probes
+#### Precomputed HDR environment probes
 - Only in areas where reflective materials are used
     -> and SSLR does not match
 - Image based lighting
 
-### Dynamic reflections (Screen Space local reflections)
+#### Dynamic reflections
+- Screen Space local reflections
 - For specular materials
 
-### Dynamic cubemaps (rare usage, because of performance)
+#### Dynamic cubemaps 
+- rare usage, because of performance
 - Render only 2 perspectives, parabolic mapping
 - Not updated every frame
 
-### Tone mapping (HDR)
+#### Tone mapping (HDR)
 
-### Blur
+#### Blur
 - Focal Blur
 - Movement Blur (edges)
 - Mipmap based + in place 4x4 kernel
     -> Adjustable radius
 
-### Tesselation Shader
+#### Tesselation Shader
 - Based on displacement map, or detail normals
 - Height stored in z component of normalmap
