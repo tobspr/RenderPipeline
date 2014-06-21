@@ -6,6 +6,7 @@ in vec2 texcoord;
 uniform sampler2D color;
 uniform sampler2D aux0;
 uniform sampler2D aux1;
+uniform sampler2D aux2;
 // uniform sampler2D depth;
 // uniform vec4 bufferSize;
 
@@ -55,7 +56,7 @@ void main() {
 
     // result /= weightsRespected;
 
-    vec3 result = texture(aux1, texcoord).rgb;
+    vec3 result = texture(aux2, texcoord).rgb;
     gl_FragColor = vec4(result.rgb, 1.0);
 
 }

@@ -21,9 +21,6 @@ class Light:
             # light color
             self.col = Vec3(0)
 
-            # radius of the light, for point lights for example
-            self.radius = 1.0
-
             # light power. This could also be merged with the color
             # but for clearness it's excluded
             self.power = 1.0
@@ -40,12 +37,25 @@ class Light:
             # the shadow map texture array
             self.shadowIdx = -1
 
+            # light type
+            self.lightType = LightType.NoType
+
+            # additional data
+            self.additional = [0,0,0,0,0]
+
         def _updateDataMat(self):
             self._data_mat = UnalignedLMatrix4(
-                self.pos.x,        self.pos.y,        self.pos.z,        self.radius,
-                self.col.x,        self.col.y,        self.col.z,        self.power,
-                self.shadowIdx,    self.posterIdx,    0.0,               0.0,
-                0.0,               0.0,               0.0,               0.0)
+                # self.pos.x,        self.pos.y,        self.pos.z,        self.radius,
+                # self.col.x,        self.col.y,        self.col.z,        self.power,
+                # self.shadowIdx,    self.posterIdx,    0.0,               0.0,
+                # 0.0,               0.0,               0.0,               0.0
+
+                self.lightType,      self.col.x,        self.col.y,        self.col.z,
+                self.shadowIdx,      self.posterIdx,    self.power,        self.power,
+                self.pos.x,          self.pos.y,        self.pos.z,        self.additional[0],
+                self.additional[1],  self.additional[2],self.additional[3],self.additional[4]
+
+            )
 
         def getDataMat(self):
             return self._data_mat
@@ -63,6 +73,7 @@ class Light:
         self.castShadows = False
         self.debugEnabled = False
         self.bounds = OmniBoundingVolume()
+        self.data.lightType = self._getLightType()
 
     def getData(self):
         return self.data
@@ -108,6 +119,7 @@ class Light:
     def performUpdate(self):
         self.dataNeedsUpdate = False
         self._computeLightBounds()
+        self._computeAdditionalData()
 
         if self.castShadows:
             self._computeLightMat()
@@ -116,6 +128,8 @@ class Light:
             self._updateDebugNode()
             
         self.data._updateDataMat()
+        print "Data:"
+        print Mat4(self.data.getDataMat())
 
     def performShadowUpdate(self):
         self.shadowNeedsUpdate = False
@@ -136,6 +150,9 @@ class Light:
         pass
 
     def _updateDebugNode(self):
+        pass
+
+    def _computeAdditionalData(self):
         pass
 
     def _getLightType(self):

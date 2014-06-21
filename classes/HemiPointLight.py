@@ -13,6 +13,7 @@ class HemiPointLight (Light, DebugObject):
     def __init__(self):
         Light.__init__(self)
         DebugObject.__init__(self, "HemiPointLight")
+        self.radius = 0.0
 
     def _computeLightMat(self):
         pass
@@ -21,7 +22,10 @@ class HemiPointLight (Light, DebugObject):
         return LightType.HemiPoint
 
     def _computeLightBounds(self):
-        self.bounds = BoundingSphere(Point3(self.data.pos), self.data.radius)
+        self.bounds = BoundingSphere(Point3(self.data.pos), self.radius)
+
+    def _computeAdditionalData(self):
+        self.data.additional[0] = self.radius
 
 
     def _updateDebugNode(self):
@@ -30,11 +34,11 @@ class HemiPointLight (Light, DebugObject):
         mainNode = NodePath("DebugNodeInner")
         mainNode.setPos(self.data.pos)
 
-        # inner = loader.loadModel("Assets/Visualisation/Lamp")
-        # inner.setPos(-0.5, -0.5, 0.0)
-        # inner.setScale(0.5)
-        # inner.setColorScale(Vec4(1,1,0,1))
-        # inner.reparentTo(mainNode)
+        inner = loader.loadModel("Assets/Visualisation/Lamp")
+        inner.setPos(-0.5, -0.5, 0.0)
+        inner.setScale(0.5)
+        inner.setColorScale(Vec4(1,1,0,1))
+        inner.reparentTo(mainNode)
 
         lineNode = mainNode.attachNewNode("lines")
 
@@ -59,16 +63,14 @@ class HemiPointLight (Light, DebugObject):
             points.append(Vec3(math.sin(angle), 0, math.cos(angle)))
         self._createDebugLine(points, False).reparentTo(lineNode)
 
-        lineNode.setScale(self.data.radius)
+        lineNode.setScale(self.radius)
         mainNode.setHpr(self.rotation)
-
-        # mainNode.flattenStrong()
 
         self.debugNode.node().removeAllChildren()
         mainNode.reparentTo(self.debugNode)
 
     def setRadius(self, radius):
-        self.data.radius = max(0.01, radius)
+        self.radius = max(0.01, radius)
         self.queueUpdate()
 
 
