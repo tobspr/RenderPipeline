@@ -1,6 +1,6 @@
 
 from DebugObject import DebugObject
-from panda3d.core import PTAMat4, TextNode
+from panda3d.core import PTAMat4, TextNode, Shader
 
 from direct.gui.OnscreenText import OnscreenText
 from FastText import FastText
@@ -31,6 +31,9 @@ class LightManager(DebugObject):
         #     self.error("Too many lights! You cannot attach any more")
         #     return False
         self.lights.append(light)
+
+    def getPipelineShader(self):
+        return Shader.load_compute(Shader.SLGLSL, "Shader/LightingPipeline.compute")
 
     def setCullBounds(self, bounds):
         self.cullBounds = bounds
