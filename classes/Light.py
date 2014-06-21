@@ -2,7 +2,7 @@
 
 from panda3d.core import Vec3, Mat4, NodePath, LineSegs, Vec4, UnalignedLMatrix4
 from panda3d.core import OmniBoundingVolume
-
+from LightType import LightType
 
 # Stores general data of a light and has to be seen
 # as an interface.
@@ -66,6 +66,8 @@ class Light:
 
     def getData(self):
         return self.data
+
+
 
     def setHpr(self, hpr):
         self.rotation = hpr
@@ -135,6 +137,9 @@ class Light:
 
     def _updateDebugNode(self):
         pass
+
+    def _getLightType(self):
+        return LightType.NoType
 
     def _createDebugLine(self, points, connectToEnd=False):
         segs = LineSegs()
