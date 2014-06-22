@@ -27,14 +27,14 @@ class Main(ShowBase):
         # load demo scene
         print "Loading Scene .."
         # self.scene = loader.loadModel("Scene/Scene.egg")
-        # self.scene = loader.loadModel("Scene/SceneBam.bam")
-        self.scene = loader.loadModel("environment")
-        self.scene.setScale(0.1)
+        self.scene = loader.loadModel("Scene/SceneBam.bam")
+        # self.scene = loader.loadModel("environment")
+        # self.scene.setScale(0.1)
 
         # self.scene = loader.loadModel("panda")
         self.scene.reparentTo(render)
 
-        if False:
+        if True:
             print "Placing prefabs"
             # place prefabs
             self.scenePrefab = self.scene.find("Prefab")
@@ -92,28 +92,28 @@ class Main(ShowBase):
 
 
                 sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5))
-                sampleLight.setPos( Vec3((x-3.0) * 15.0, (y-3.5)*15.0, 8))
+                sampleLight.setPos( Vec3((x-3.0) * 6.0, (y-3.5)*6.0, 6))
                 # sampleLight.setPos(Vec3(10, 10, 10))
                 sampleLight.setHpr(Vec3(180, 0, 0))
 
-                sampleLight.attachDebugNode(self.renderDebugNode)
+                # sampleLight.attachDebugNode(self.renderDebugNode)
 
                 self.renderPipeline.getLightManager().addLight(sampleLight)
-            self.lights.append(sampleLight)
+                self.lights.append(sampleLight)
 
         # add huge sun light
-        sunLight= PointLight()
-        sunLight.setRadius(10000.0)
-        sunLight.setColor(Vec3(0.5,0.5,0.0))
-        sunLight.setPos(Vec3(0,0,100))
-        self.renderPipeline.getLightManager().addLight(sunLight)
+        # sunLight= PointLight()
+        # sunLight.setRadius(1000000.0)
+        # sunLight.setColor(Vec3(0.1, 0.1, 0.1))
+        # sunLight.setPos(Vec3(0,0,100))
+        # self.renderPipeline.getLightManager().addLight(sunLight)
 
 
         # self.renderDebugNode.flattenStrong()
 
-        coord = loader.loadModel("zup-axis")
-        coord.setScale(2.0)
-        coord.reparentTo(self.scene)
+        # coord = loader.loadModel("zup-axis")
+        # coord.setScale(2.0)
+        # coord.reparentTo(self.scene)
 
 
         self.setShaders()
@@ -142,6 +142,11 @@ class Main(ShowBase):
 
     def update(self, task):
         # render.setShaderInput("cameraPosition", self.camera.getPos(render))
+
+        # radius = math.sin(globalClock.getFrameTime() * 2.0) * 3.0 + 15.0
+        # for light in self.lights:
+        #     light.setRadius(radius)
+
 
         return task.cont
 
