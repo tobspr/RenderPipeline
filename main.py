@@ -67,11 +67,6 @@ class Main(ShowBase):
 
         self.camLens.setNearFar(0.1, 10000)
 
-        # cubemap = loader.loadCubeMap("Cubemap/#.png")
-        # cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
-        # cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
-        # cubemap.setFormat(Texture.F_srgb_alpha)
-        # self.scene.setShaderInput("cubemap", cubemap)
 
       
         self.renderPipeline = RenderingPipeline(self)
@@ -81,18 +76,24 @@ class Main(ShowBase):
 
         self.renderDebugNode = render.attachNewNode("LightDebug")
 
+        self.initialLightPos = []
+
         i = 0
         for x in xrange(7):
             for y in xrange(8):
                 i += 1
                 angle = float(i) / 64.0 * math.pi * 2.0
                 sampleLight = PointLight()
-                sampleLight.setRadius(15.0)
-
-
+                sampleLight.setRadius(10.0)
 
                 sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5))
-                sampleLight.setPos( Vec3((x-3.0) * 6.0, (y-3.5)*6.0, 6))
+
+                initialPos = Vec3((x-3.0) * 5.0, (y-3.5)*5.0, 4)
+
+                sampleLight.setPos(initialPos )
+
+                self.initialLightPos.append(initialPos)
+
                 # sampleLight.setPos(Vec3(10, 10, 10))
                 sampleLight.setHpr(Vec3(180, 0, 0))
 
@@ -102,18 +103,18 @@ class Main(ShowBase):
                 self.lights.append(sampleLight)
 
         # add huge sun light
-        # sunLight= PointLight()
-        # sunLight.setRadius(1000000.0)
-        # sunLight.setColor(Vec3(0.1, 0.1, 0.1))
-        # sunLight.setPos(Vec3(0,0,100))
-        # self.renderPipeline.getLightManager().addLight(sunLight)
+        sunLight= PointLight()
+        sunLight.setRadius(1000000.0)
+        sunLight.setColor(Vec3(100.0, 100.0, 100.0))
+        sunLight.setPos(Vec3(0,0,100))
+        self.renderPipeline.getLightManager().addLight(sunLight)
 
 
         # self.renderDebugNode.flattenStrong()
 
-        # coord = loader.loadModel("zup-axis")
-        # coord.setScale(2.0)
-        # coord.reparentTo(self.scene)
+        coord = loader.loadModel("zup-axis")
+        coord.setScale(2.0)
+        coord.reparentTo(self.scene)
 
 
         self.setShaders()
@@ -132,6 +133,7 @@ class Main(ShowBase):
             multisample #f
             textures-power-2 none
             gl-force-no-error #t
+            framebuffer-srgb #f
             
 
 
@@ -144,8 +146,16 @@ class Main(ShowBase):
         # render.setShaderInput("cameraPosition", self.camera.getPos(render))
 
         # radius = math.sin(globalClock.getFrameTime() * 2.0) * 3.0 + 15.0
-        # for light in self.lights:
-        #     light.setRadius(radius)
+
+        i = 0
+
+        ft = globalClock.getFrameTime() * 0.4
+        for light in self.lights:
+            initialPos = self.initialLightPos[i]
+
+            light.setPos(initialPos + Vec3(math.sin(ft) * 25.0, math.cos(ft) * 25.0, math.sin(math.cos(ft))))
+
+            i += 1
 
 
         return task.cont

@@ -101,7 +101,16 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setShaderInput("maxPositionImage", self.posComputeBuff.getTexture(RenderTargetType.Aux0))
         self.lightingComputeContainer.setBin("unsorted", 10)
 
+        self._loadFallbackCubemap()
+
         self.posComputeBuff.getQuad().setShaderInput("position", self.deferredTarget.getTexture(RenderTargetType.Aux1))
+
+    def _loadFallbackCubemap(self):
+        cubemap = loader.loadCubeMap("Cubemap/#.png")
+        cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
+        cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
+        cubemap.setFormat(Texture.F_srgb_alpha)
+        self.lightingComputeContainer.setShaderInput("fallbackCubemap", cubemap)
 
     def _makePositionComputationBuffer(self, w, h):
         self.debug("Creating position computation buffer")

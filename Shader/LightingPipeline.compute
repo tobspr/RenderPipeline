@@ -12,9 +12,11 @@ layout (rgba16f) readonly uniform image2D maxPositionImage;
 
 layout (local_size_x = 32, local_size_y = 16) in;
 
+uniform samplerCube fallbackCubemap;
+
 
 #define MAX_VISIBLE_LIGHTS 64
-#define MAX_LIGHTS_PER_PATCH 32
+#define MAX_LIGHTS_PER_PATCH 64
 
 uniform mat4[MAX_VISIBLE_LIGHTS] lightData; 
 uniform mat4[MAX_VISIBLE_LIGHTS] lightMatrices;
@@ -63,6 +65,18 @@ vec3 reconstructNormal(vec2 packedNormal) {
         sqrt(1.0 - packedNormal.x*packedNormal.x - packedNormal.y*packedNormal.y));
 }
 
+float unpackPacked(float v) {
+    return (v-0.5) * 4.0;
+}
+
+vec2 unpackVec2FromFloat(float data) {
+
+    float component2 = unpackPacked(float(int(data)) / 255.0);
+    float component1 = unpackPacked(fract(data));
+    return vec2( 0 , component1 );
+}
+
+
 float squared(float v) { 
     return v * v; 
 }
@@ -101,6 +115,10 @@ bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax
         // Also fetch radius
         light.radius = rawData[2][3];
 
+        if (light.radius > 100000.0) {
+            light.radius = 999999999999.0;
+        }
+
         // Rough Sphere collision
         if (distanceToLight < collideSphereRadius + light.radius) {
 
@@ -125,12 +143,6 @@ float safeDot(vec3 a, vec3 b) {
     return max(0.0, dot(a, b));
 }
 
-float Beckmann(float m, float t)
-{
-    float M = m*m;
-    float T = t*t;
-    return exp((T-1)/(M*T)) / (M*T*T);
-}
 
 vec3 specularBrdfFresnel(vec3 f0, float u)
 {
@@ -152,18 +164,18 @@ float smoothnessToRoughness(float smoothness) {
 }
 
 
-float getK(float a) {
+float specularGGetK(float a) {
     return pow(0.8 + 0.5 * a, 2.0) * 0.5;
 }
 
-float G1(vec3 v, vec3 n, float roughness) {
+float specularBrdfGSub(vec3 v, vec3 n, float roughness) {
     float nDotV = safeDot(n, v);
     return nDotV / ( nDotV * (1.0-roughness) + roughness );
 }
 
 float specularBrdfG(vec3 l, vec3 v, vec3 h, vec3 n, float roughness) {
-    float k = getK(roughness);
-    return G1(l, n, k) * G1(v, n, k);
+    float k = specularGGetK(roughness);
+    return specularBrdfGSub(l, n, k) * specularBrdfGSub(v, n, k);
 }
 
 
@@ -217,14 +229,21 @@ vec3 computeLighting(Light light, Material material) {
         attenuation *= 1.0 - smoothstep(0.0, 1.0, ((distanceToLight / cutoff) - 1.0) * 4.0 );   
         attenuation = max(0.0, attenuation);
 
-        // Compute reflection
-        vec3 reflectedColor = vec3(2.0);
-
         // Compute vectors
         vec3 l = normalize(light.position - material.position);
         vec3 v = normalize(cameraPosition - material.position);
         vec3 n = normalize(material.normal);
         vec3 h = normalize(l + v);
+
+        // Compute reflection
+        vec3 reflectedDir = reflect(v, n);
+        float cubemapResolutionParameter = material.gloss;
+        vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
+        vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
+        vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+
+        // Ambient is not used yet
+        float ambient = 0.0;
 
         // Compute specular BRDF
         float specG = clamp(specularBrdfG(l, v, h, n, material.roughness), 0, 1);
@@ -236,14 +255,20 @@ vec3 computeLighting(Light light, Material material) {
         // Compute diffuse BRDF
         vec3 diffuseBrdf = diffuseBrdfOrenNayar(l, v, n) * safeDot(n, l);
 
-
         // Combine specular
         vec3 specularTerm = (specF * specG * specD) * max(0.0, 4.0 * dot(n, l) * dot(n, v));
+
+        // Compute total contributions
+        vec3 refractiveContribution = (reflectedColor) * material.smoothness * specF * attenuation;
+        vec3 diffuseContribution = material.diffuse * diffuseBrdf * attenuation * light.color + ambient * attenuation;
+        vec3 specularContribution = specularTerm * attenuation * light.color; 
+
+        vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
 
 
         // For debugging
         // return vec3(clamp(attenuation * specularTerm * light.color * 15.0, 0, 1));
-        return vec3(clamp(attenuation * diffuseBrdf, 0, 1));
+        return vec3(clamp(combinedContribution, 0, 1));
 
     }
 
@@ -291,9 +316,9 @@ void main() {
     material.diffuse        = target0Data.xyz;
     material.position       = target2Data.xyz;
     material.specular       = target0Data.a;
-    material.normal         = reconstructNormal(target1Data.xy);
-    material.gloss          = target1Data.z;
-    material.transluency    = target1Data.a;
+    material.normal         = target1Data.xyz;
+    material.gloss          = target1Data.w;
+    material.transluency    = 0.0;
     material.position       = target2Data.xyz;
     material.smoothness     = target2Data.a;
     material.roughness      = smoothnessToRoughness(material.smoothness);
@@ -309,12 +334,12 @@ void main() {
 
     // If they are very far away, we probably sampled too far
     // This is solved by taking the max position nearer to the min position
-    if (patchDistance > 100.0) {
+    // if (patchDistance > 50.0) {
 
-        vec3 extrudeVec = normalize(patchMinPosition - cameraPosition);
-        patchMaxPosition = patchMinPosition + extrudeVec * 100.0;
+    //     vec3 extrudeVec = normalize(patchMinPosition - cameraPosition);
+    //     patchMaxPosition = patchMinPosition + extrudeVec * 50.0;
 
-    }
+    // }
 
 
     // Collect lights
@@ -386,7 +411,7 @@ void main() {
         // result.xyz = vec3(intensityFactor, 1.0 - intensityFactor, 0.0);
     }    
 
-    // result.xyz = vec3(patchDistance*0.01);
+    // result.xyz = vec3(material.normal);
 
     result.xyz = clamp(result.xyz, 0, 1);
     // result.xyz += vec3(1,1,0) * borderFactor * 0.09;
