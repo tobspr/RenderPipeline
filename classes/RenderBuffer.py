@@ -7,6 +7,8 @@ from DebugObject import DebugObject
 # Wrapper arround GraphicsBuffer
 class RenderBuffer(DebugObject):
 
+    numBuffersAllocated = 0
+
     def __init__(self, name="RB"):
         DebugObject.__init__(self, "RenderBuffer")
         self._name = name
@@ -83,6 +85,9 @@ class RenderBuffer(DebugObject):
         is16bit = self._colorBits == 16
         auxIs16Bit = self._auxBits == 16
 
+        self.debug("Creating buffer with",self._colorBits,"color bits and",self._auxBits,"aux bits")
+
+
         # set wrap modes for color + auxtextures
         prepare = [
             RenderTargetType.Color,
@@ -102,9 +107,9 @@ class RenderBuffer(DebugObject):
             handle.setMagfilter(Texture.FTLinear)
 
             # No longer needed?
-            # if is16bit:
-            #     handle.setComponentType(Texture.TFloat)
-            #     handle.setFormat(Texture.FRgba16)
+            if is16bit:
+                handle.setComponentType(Texture.TFloat)
+                handle.setFormat(Texture.FRgba16)
 
 
         # Create buffer descriptors
@@ -131,13 +136,10 @@ class RenderBuffer(DebugObject):
             bufferProps.setDepthBits(self._depthBits)
             bufferProps.setFloatDepth(True)
 
-            # No longer needed
-            # if self.depthBits == 24:
-            #     depthTarget.setComponentType(Texture.TFloat)
-            #     depthTarget.setFormat(Texture.FDepthComponent24)
-            # elif self.depthBits == 32:
-            #     depthTarget.setComponentType(Texture.TFloat)
-            #     depthTarget.setFormat(Texture.FDepthComponent32)
+        # We need no stencil
+        bufferProps.setStencilBits(0)
+
+   
 
         numAuxtex = 0
 
@@ -195,8 +197,26 @@ class RenderBuffer(DebugObject):
                 self.getTarget(RenderTargetType.Aux3), self._bindMode, 
                 GraphicsOutput.RTPAuxHrgba3 if auxIs16Bit else GraphicsOutput.RTPAuxRgba3)
 
-        self._internalBuffer.setSort(-1)
+
+        RenderBuffer.numBuffersAllocated += 1
+
+        self._internalBuffer.setSort(-20 + RenderBuffer.numBuffersAllocated)
         self._internalBuffer.disableClears()
         self._internalBuffer.getDisplayRegion(0).disableClears()
+
+        self._internalBuffer.setClearStencilActive(False)
+
+        if self.hasTarget(RenderTargetType.Depth):
+            depthTarget = self.getTarget(RenderTargetType.Depth)
+
+            self.debug("Preparing depth texture for",self._depthBits,"bits")
+
+            # No longer needed??
+            if self._depthBits == 24:
+                # depthTarget.setComponentType(Texture.TFloat)
+                depthTarget.setFormat(Texture.FDepthComponent24)
+            elif self._depthBits == 32:
+                # depthTarget.setComponentType(Texture.TFloat)
+                depthTarget.setFormat(Texture.FDepthComponent32)
 
         return True

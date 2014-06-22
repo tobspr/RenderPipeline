@@ -21,10 +21,6 @@ class Light:
             # light color
             self.col = Vec3(0)
 
-            # light power. This could also be merged with the color
-            # but for clearness it's excluded
-            self.power = 1.0
-
             # projection matrix for this light
             self.projMatrix = UnalignedLMatrix4()
 
@@ -51,7 +47,7 @@ class Light:
                 # 0.0,               0.0,               0.0,               0.0
 
                 self.lightType,      self.col.x,        self.col.y,        self.col.z,
-                self.shadowIdx,      self.posterIdx,    self.power,        self.power,
+                self.shadowIdx,      self.posterIdx,    0.0,               0.0,
                 self.pos.x,          self.pos.y,        self.pos.z,        self.additional[0],
                 self.additional[1],  self.additional[2],self.additional[3],self.additional[4]
 
@@ -128,8 +124,8 @@ class Light:
             self._updateDebugNode()
             
         self.data._updateDataMat()
-        print "Data:"
-        print Mat4(self.data.getDataMat())
+        # print "Data:"
+        # print Mat4(self.data.getDataMat())
 
     def performShadowUpdate(self):
         self.shadowNeedsUpdate = False

@@ -2,3 +2,5 @@
 .pyd
 Scene/
 Scene2/
+.pyc
+*.pyc

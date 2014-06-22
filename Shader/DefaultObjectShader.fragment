@@ -22,11 +22,6 @@ const float sigma = 90.0;
 const float PI = 3.14159265358979323846;
 const float DIRECTIONAL_LIGHT_SIZE = 9999999999999.0;
 
-const mat3 RGBtoYCBCR = mat3(
-        0.299, -0.168736, 0.5,
-        0.587, -0.331264, -0.418688,
-        0.114, -0.5,      -0.081312
-    );
 
 
 float safeDot(vec3 a, vec3 b) {
@@ -100,19 +95,6 @@ float getG(vec3 l, vec3 v, vec3 h, vec3 n, float roughness) {
 }
 
 
-// uniform float smoothness;
-// uniform float gloss;
-
-
-
-vec2 convertToPackedYCbCr(vec3 rgb) {
-    vec3 ycbcr = RGBtoYCBCR * rgb;
-    return vec2(ycbcr.r, ycbcr.g + ycbcr.b*0.0);
-    // return vec2(rgb.xy);
-
-}
-
-
 void main() {
 
 
@@ -140,7 +122,6 @@ void main() {
 
     vec3 diffuseColor  = vec3(0);
     float ambient = 0.00;
-    float specularPower = 1.0;
     float gloss = 0.8;
     float smoothness = 0.7;
     float transluency = 0.5;
@@ -162,17 +143,18 @@ void main() {
     float roughness = smoothnessToRoughness(realSmoothness);
 
 
-    diffuse = vec3(0.6,0.5, 0.7);
+    // diffuse = vec3(50, 100, 10) / 255.0;
 
 
-    // gl_FragData[0] = vec4(convertToPackedYCbCr(diffuse), specular, smoothness);
-    // gl_FragData[1] = vec4(n.xy, gloss, transluency);
-    // gl_FragData[2] = vec4(positionWorldSpace, specularPower);
+
+    gl_FragData[0] = vec4(diffuse.xyz, specular);
+    gl_FragData[1] = vec4(n.xy, gloss, transluency);
+    gl_FragData[2] = vec4(positionWorldSpace, smoothness);
 
 
-    gl_FragData[0] = vec4(1.0, 1.0, 1.0, 0.0);
-    gl_FragData[1] = vec4(normalWorldSpace, 1.0);
-    gl_FragData[2] = vec4(0.0, 0.0, 0.0, 1.0);
+    // gl_FragData[0] = vec4(normalWorldSpace, specular);
+    // gl_FragData[1] = vec4(normalWorldSpace, 1.0);
+    // gl_FragData[2] = vec4(positionWorldSpace, 1.0);
     // gl_FragData[3] = vec4(specD, specF.x, specG, 1.0);
 
 

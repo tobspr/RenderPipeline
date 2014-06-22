@@ -4,8 +4,7 @@
 class LightType:
 
     NoType          = 0
-    HemiPoint       = 1
-    Point           = 2
-    Directional     = 3
-    Projector       = 4
-    Area            = 5
+    Point           = 1
+    Directional     = 2
+    Projector       = 3
+    Area            = 4

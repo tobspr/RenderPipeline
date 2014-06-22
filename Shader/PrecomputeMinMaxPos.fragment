@@ -1,0 +1,49 @@
+#version 430
+
+in vec2 texcoord;
+
+uniform sampler2D position;
+
+// Give the compiler a chance to unroll
+#define BATCH_SIZE_X 32
+#define BATCH_SIZE_Y 16
+
+
+void main() {
+
+
+    ivec2 screenSize = textureSize(position, 0);
+    ivec2 screenPos = ivec2(ivec2( texcoord * screenSize ) / 
+        ivec2(BATCH_SIZE_X, BATCH_SIZE_Y)) * ivec2(BATCH_SIZE_X, BATCH_SIZE_Y);
+
+
+    vec3 ourPosition = texelFetch(position, screenPos, 0).xyz;
+
+
+    vec3 minPos = ourPosition;
+    vec3 maxPos = ourPosition;
+
+    // float anyInvalidAccess = 0.0;
+
+
+
+    for (int x = 0; x < BATCH_SIZE_X; x++) {
+        for (int y = 0; y < BATCH_SIZE_Y; y++) {
+            ivec2 newCoord = screenPos + ivec2(x,y);
+            vec3 storedPixelPos = texelFetch(position, newCoord, 0).xyz;
+
+            // if (newCoord.x >= screenSize.x || newCoord.y >= screenSize.y || newCoord.x < 0 || newCoord.y < 0) {
+            //     // anyInvalidAccess += 1.0;
+            //     continue;
+            // } 
+
+            minPos = min(storedPixelPos, minPos);
+            maxPos = max(storedPixelPos, maxPos);
+        }
+    }
+
+    // average /= (32*16);
+
+    gl_FragData[0] = vec4(minPos, 1);
+    gl_FragData[1] = vec4(maxPos, 1);
+}

@@ -37,12 +37,14 @@ class RenderingPipeline(DebugObject):
         # for debugging attach texture to shader
         self.deferredTarget.getQuad().setShader(Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
         self.deferredTarget.getQuad().setShaderInput("sampler", self.lightingPassTex)
+        self.deferredTarget.getQuad().setShaderInput("screenSize", self.size)
         # self.deferredTarget.getQuad().setShaderInput("sampler", self.deferredTarget.getTexture(RenderTargetType.Aux1))
 
         # add update task
         self._attachUpdateTask()
 
 
+    # Creates all the render targets
     def _makeDeferredTargets(self):
         self.debug("Creating deferred targets")
         self.deferredTarget = RenderTarget("DeferredTarget")
@@ -52,8 +54,10 @@ class RenderingPipeline(DebugObject):
         self.deferredTarget.addRenderTexture(RenderTargetType.Aux1)
         self.deferredTarget.setAuxBits(16)
         self.deferredTarget.setColorBits(16)
+        self.deferredTarget.setDepthBits(32)
         self.deferredTarget.prepareSceneRender()
 
+    # Inits the lighting pipeline
     def _createLightingPipeline(self):
         self.debug("Creating lighting compute shader")
 
@@ -61,9 +65,14 @@ class RenderingPipeline(DebugObject):
         sizeX = int(math.ceil(self.size.x / 32))
         sizeY = int(math.ceil(self.size.y / 16))
 
-        # create a texture where the shader can write to
+        self.debug("Batch size =",sizeX,"x",sizeY,"Buffer size=", sizeX*32, "x", sizeY*16)
+
+        # Create a buffer which computes the min / max bounds
+        self._makePositionComputationBuffer(sizeX, sizeY)
+
+        # create a texture where the light shader can write to
         self.lightingPassTex = Texture("LightingPassResult")
-        self.lightingPassTex.setup_2d_texture(sizeX*32,sizeY*16, Texture.TFloat, Texture.FRgba8)
+        self.lightingPassTex.setup2dTexture(sizeX*32,sizeY*16, Texture.TFloat, Texture.FRgba8)
         self.lightingPassTex.setMinfilter(Texture.FTNearest)
         self.lightingPassTex.setMagfilter(Texture.FTNearest)
         # self.lightingPassTex.clearRamImage() # doesn't work
@@ -74,14 +83,42 @@ class RenderingPipeline(DebugObject):
 
         # attach compute node to scene graph
         self.lightingComputeContainer = render.attachNewNode(self.lightingComputeNode)
-        self.lightingComputeContainer.setShader(self.lightManager.getPipelineShader())
-        self.lightingComputeContainer.setShaderInput("destination", self.lightingPassTex)
-        self.lightingComputeContainer.setShaderInput("target0", self.deferredTarget.getTexture(RenderTargetType.Aux0))
-        # self.lightingComputeContainer.setShaderInput("target1", self.deferredTarget.getTexture(RenderTargetType.Aux0))
-        # self.lightingComputeContainer.setShaderInput("target2", self.deferredTarget.getTexture(RenderTargetType.Aux1))
+        self.lightManager.setComputeShaderNode(self.lightingComputeContainer)
+
+        # Set scene data as shader input
+        self.lightingComputeContainer.setShaderInput("destinationImage", self.lightingPassTex)
+        self.lightingComputeContainer.setShaderInput("target0Image", self.deferredTarget.getTexture(RenderTargetType.Color))
+        self.lightingComputeContainer.setShaderInput("target1Image", self.deferredTarget.getTexture(RenderTargetType.Aux0))
+        self.lightingComputeContainer.setShaderInput("target2Image", self.deferredTarget.getTexture(RenderTargetType.Aux1))
+
+        # Ensure the images have the correct filter mode
+        for bmode in [RenderTargetType.Color, RenderTargetType.Aux0]:
+            tex = self.posComputeBuff.getTexture(bmode)
+            tex.setMinfilter(Texture.FTNearest)
+            tex.setMagfilter(Texture.FTNearest)
+
+        self.lightingComputeContainer.setShaderInput("minPositionImage", self.posComputeBuff.getTexture(RenderTargetType.Color))
+        self.lightingComputeContainer.setShaderInput("maxPositionImage", self.posComputeBuff.getTexture(RenderTargetType.Aux0))
         self.lightingComputeContainer.setBin("unsorted", 10)
-        # self.lightingPassTex.setup_2d_texture(
-            # int(self.size.x), int(self.size.y), Texture.TFloat, Texture.FRgba16)
+
+        self.posComputeBuff.getQuad().setShaderInput("position", self.deferredTarget.getTexture(RenderTargetType.Aux1))
+
+    def _makePositionComputationBuffer(self, w, h):
+        self.debug("Creating position computation buffer")
+        self.posComputeBuff = RenderTarget("DeferredTarget")
+        self.posComputeBuff.setSize(w, h)
+        self.posComputeBuff.addRenderTexture(RenderTargetType.Color)
+        self.posComputeBuff.addRenderTexture(RenderTargetType.Aux0)
+        self.posComputeBuff.setColorBits(16)
+        self.posComputeBuff.setAuxBits(16)
+        self.posComputeBuff.prepareOffscreenBuffer()
+        self._setPositionComputationShader()
+
+
+    def _setPositionComputationShader(self):
+        pcShader = Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex", "Shader/PrecomputeMinMaxPos.fragment")
+        self.posComputeBuff.getQuad().setShader(pcShader)
+
 
     def _getSize(self):
         return Vec2(
@@ -89,7 +126,8 @@ class RenderingPipeline(DebugObject):
             int(self.showbase.win.getYSize()))
 
     def debugReloadShader(self):
-        self.lightingComputeContainer.setShader(self.lightManager.getPipelineShader())
+        self.lightManager.debugReloadShader()
+        self._setPositionComputationShader()
 
     def _attachUpdateTask(self):
         self.showbase.addTask(self._update, "UpdateRenderingPipeline")
@@ -105,6 +143,8 @@ class RenderingPipeline(DebugObject):
 
         self.lightManager.setCullBounds(self.cullBounds)
         self.lightManager.update()
+
+        self.lightingComputeContainer.setShaderInput("cameraPosition", self.showbase.cam.getPos(render))
 
         return task.cont
 

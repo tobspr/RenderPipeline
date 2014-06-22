@@ -1,7 +1,7 @@
 
 from panda3d.core import GraphicsOutput, CardMaker, OmniBoundingVolume
 from panda3d.core import AuxBitplaneAttrib, NodePath, OrthographicLens
-from panda3d.core import Camera, Vec4, TransparencyAttrib
+from panda3d.core import Camera, Vec4, TransparencyAttrib, StencilAttrib
 from RenderBuffer import RenderBuffer
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
@@ -120,6 +120,8 @@ class RenderTarget(DebugObject):
         if self.hasTarget(RenderTargetType.Aux0):
             cs.setAttrib(AuxBitplaneAttrib.make(self._auxBits), 20)
 
+        cs.setAttrib(StencilAttrib.makeOff(), 20)
+
         if not self._enableTransparency:
             cs.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 20)
         self._sourceCam.node().setInitialState(cs.getState())
@@ -132,7 +134,11 @@ class RenderTarget(DebugObject):
         # Set clears
         bufferRegion = self._buffer.getInternalBuffer().getDisplayRegion(0)
 
+
         self._correctClears()
+
+        bufferRegion.setClearStencilActive(False)
+        # self._sourceWindow.setClearStencilActive(False)
 
         # Set aux clears
         targetCheck = [
@@ -159,7 +165,7 @@ class RenderTarget(DebugObject):
     # Creates the buffer in an offscreen window
     def prepareOffscreenBuffer(self):
 
-        self.debug("Perparing offscreen buffer")
+        self.debug("Preparing offscreen buffer")
 
         # Init buffer object
         self._createBuffer()

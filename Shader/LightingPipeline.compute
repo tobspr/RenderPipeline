@@ -1,50 +1,279 @@
-#version 430
+#version 440
 
-layout (rgba8) writeonly uniform image2D destination;
+// here the result is stored
+layout (rgba8) writeonly uniform image2D destinationImage;
 
-layout (rgba16f) readonly uniform image2D target0;
-
-
-uniform float osg_FrameTime;
-
+// inputs used for the computation
+layout (rgba16f) readonly uniform image2D target0Image;
+layout (rgba16f) readonly uniform image2D target1Image;
+layout (rgba16f) readonly uniform image2D target2Image;
+layout (rgba16f) readonly uniform image2D minPositionImage;
+layout (rgba16f) readonly uniform image2D maxPositionImage;
 
 layout (local_size_x = 32, local_size_y = 16) in;
 
+
+#define MAX_VISIBLE_LIGHTS 64
+#define MAX_LIGHTS_PER_PATCH 16
+
+uniform mat4[MAX_VISIBLE_LIGHTS] lightData; 
+uniform mat4[MAX_VISIBLE_LIGHTS] lightMatrices;
+uniform float lightCount; 
+
+uniform vec3 cameraPosition;
+
+
+
+// Commonly used structs
+struct Material {
+    vec3 diffuse;
+    vec3 position;
+    vec3 normal;
+    float specular;
+    float smoothness;
+    float gloss;
+    float transluency;
+};
+
+struct Light {
+    int type;
+    vec3 position;
+    vec3 color;
+
+    float radius;
+
+};
+
+shared Light visibleLights[MAX_LIGHTS_PER_PATCH];
+shared int lightsSoFar = 0;
+
+
+
+
+vec3 reconstructNormal(vec2 packedNormal) {
+    return vec3(packedNormal.xy, 
+        sqrt(1.0 - packedNormal.x*packedNormal.x - packedNormal.y*packedNormal.y));
+}
+
+float squared(float v) { 
+    return v * v; 
+}
+
+bool cubeIntersectSphere(vec3 aabbMin, vec3 aabbMax, vec3 sphereMid, float sphereRadius)
+{
+    float dist_squared = sphereRadius * sphereRadius;
+    /* assume C1 and C2 are element-wise sorted, if not, do that now */
+    if (sphereMid.x < aabbMin.x) dist_squared -= squared(sphereMid.x - aabbMin.x);
+    else if (sphereMid.x > aabbMax.x) dist_squared -= squared(sphereMid.x - aabbMax.x);
+    if (sphereMid.y < aabbMin.y) dist_squared -= squared(sphereMid.y - aabbMin.y);
+    else if (sphereMid.y > aabbMax.y) dist_squared -= squared(sphereMid.y - aabbMax.y);
+    if (sphereMid.z < aabbMin.z) dist_squared -= squared(sphereMid.z - aabbMin.z);
+    else if (sphereMid.z > aabbMax.z) dist_squared -= squared(sphereMid.z - aabbMax.z);
+    return dist_squared > 0;
+}
+
+
+
+
+bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax) {
+
+    // Compute bounding sphere
+    // This might not be perfect, but fast
+    vec3 collideSphereMid = (aabbMin + aabbMax) / 2.0;
+    float collideSphereRadius = distance(aabbMin, aabbMax) * 0.5;
+
+    // PointLight
+    if (light.type == 1) {
+
+        // Distance to our mid
+        float distanceToLight = distance(collideSphereMid, light.position);
+
+        // Also fetch radius
+        light.radius = rawData[2][3];
+
+        // Rough Sphere collision
+        if (distanceToLight < collideSphereRadius + light.radius) {
+
+            // Exact collision testing
+            if (cubeIntersectSphere(aabbMin, aabbMax, light.position, light.radius)) {
+                return true;
+            }
+
+        }
+
+    }
+
+
+    return false;
+}
+
+vec3 computeLighting(Light light, Material material) {
+
+    // Point light
+    if (light.type == 1) {
+
+        // Compute distance to light
+        float distanceToLight = distance(material.position, light.position);    
+
+        // Compute attenuation
+        float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.0;
+        float normfac = pow(1.0 + (1.0/light.radius) , 2.0);
+        attenuation *= normfac;
+
+        // Cut light transition starting at 80%. Otherwise it's exponential and never gets really 0
+        float cutoff = light.radius * 0.8;
+        float cutoffFactor = 0.25;
+        attenuation *= 1.0 - smoothstep(0.0, 1.0, ((distanceToLight / cutoff) - 1.0) * 4.0 );   
+
+        // For debugging
+        return vec3(attenuation * light.color);
+
+    }
+
+    return light.color;
+
+}
+
+
+
 void main() {
-    float roll = 0.0;
-
-    ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-
-    float localCoef = length(vec2(ivec2(gl_LocalInvocationID.xy)-8)/8.0);
-    float globalCoef = sin(float(gl_WorkGroupID.x+gl_WorkGroupID.y)*0.1 + roll)*0.5;
-
-    vec2 radial = gl_LocalInvocationID.xy / vec2(32.0);
-    float radialFactor = length(abs(radial - vec2(0.5) ) * 2.0);
 
 
+    // Size of the real screen
+    ivec2 realScreenSize = ivec2(1600, 928);
+
+    // Size of a patch
+    ivec2 patchSize = ivec2(32, 16);
+
+    // Size of the compute buffer. This might be bigger, because it always
+    // has to be a multiple of vec2(local_size_x, local_size_y) 
+    // and will get cropped later.
+    vec2 computeScreenSize = vec2(1600, 928);
+
+    // Position in compute space
+    ivec2 computePos = ivec2(gl_GlobalInvocationID.xy);
+
+    // Position in precomputed space
+    ivec2 precomputePos = ivec2(gl_WorkGroupID.xy);
+
+    // Position in screen space coordinates
+    vec2  screenPos  = vec2(gl_GlobalInvocationID.xy) / computeScreenSize;
+
+    // Border visualization
     float borderFactor = 0.0;
-
     if (gl_LocalInvocationID.x == 0 || gl_LocalInvocationID.y == 0) 
         borderFactor = 1.0;
 
-    // (1.0-globalCoef*localCoef
+    // Fetch data from targets
+    vec4 target0Data = imageLoad(target0Image, computePos);
+    vec4 target1Data = imageLoad(target1Image, computePos);
+    vec4 target2Data = imageLoad(target2Image, computePos);
+
+    // Fetch packed material data
+    Material material;
+    material.diffuse        = target0Data.xyz;
+    material.position       = target2Data.xyz;
+    material.specular       = target0Data.a;
+    material.normal         = reconstructNormal(target1Data.xy);
+    material.gloss          = target1Data.z;
+    material.transluency    = target1Data.a;
+    material.position       = target2Data.xyz;
+    material.smoothness     = target2Data.a;
+
+    vec4 result = vec4(material.position, 1);
+    result.a = 1.0;
+
+    // Fetch patch min / max pos from previous pass
+    vec3 patchMinPosition = imageLoad(minPositionImage, precomputePos).xyz;
+    vec3 patchMaxPosition = imageLoad(maxPositionImage, precomputePos).xyz;
+
+    float patchDistance = distance(patchMinPosition, patchMaxPosition);
+
+    // If they are very far away, we probably sampled too far
+    // This is solved by taking the max position nearer to the min position
+    if (patchDistance > 30.0) {
+
+        vec3 extrudeVec = normalize(cameraPosition - patchMinPosition);
+        patchMaxPosition = patchMinPosition + extrudeVec * 30.0;
+
+    }
+
+
+    // Collect lights
+
+    int cellIndex = int(gl_LocalInvocationIndex);
 
     // memoryBarrier();
+    barrier();
 
-    // memoryBarrierShared();
-    // memoryBarrierImage();
-    // memoryBarrierAtomicCounter();
-    // // barrier();
 
-    // vec4 oldColor = texture(target0, gl_GlobalInvocationID.xy / vec2(1600, 928));
-    vec4 oldColor = imageLoad(target0, storePos);
+    if (cellIndex < min(MAX_VISIBLE_LIGHTS, lightCount) ) {
 
-    vec4 result = vec4(oldColor);
 
-    result.xyz += vec3(1,1,0) * borderFactor;
+        mat4 currentLightData = lightData[cellIndex];
+        mat4 currentLightMatrix = lightMatrices[cellIndex];
 
-    // imageStore(destination, storePos, vec4(1,0,1, 0));
-    imageStore(destination, storePos, vec4(result) );
+        // only if a light is contained
+        if (currentLightData[0][0] > 0.0) {
+
+            // convert to light structure
+            Light current;
+            current.type = int(currentLightData[0][0]);
+            current.position = currentLightData[2].xyz;
+            current.color = currentLightData[0].yzw;
+            current.radius = 0.0;
+
+
+
+            // add light only if visible for this patch
+            if (isInLightBounds(current, currentLightData, patchMinPosition, patchMaxPosition)) {
+
+                int arrayIndex = atomicAdd(lightsSoFar, 1);
+                    
+                // only add if there are not already too many lights per patch
+                if (arrayIndex < MAX_LIGHTS_PER_PATCH) {
+                    visibleLights[arrayIndex] = current;
+                }
+
+            }
+
+
+        } 
+    }
+
+    memoryBarrier();
+    barrier();
+
+    vec3 lightingResult = vec3(0);
+
+
+    // Now compute lighting, as we know now which lights are active
+    // for this patch
+    int localLightCount = min(MAX_LIGHTS_PER_PATCH, lightsSoFar);
+
+    for (int i = 0; i < localLightCount; i++) {
+
+        Light current = visibleLights[i];
+        lightingResult += computeLighting(current, material);
+    }
+
+    // memoryBarrier();
+    // barrier();
+
+
+    result.xyz = vec3(lightingResult + material.normal*0.5);
+
+    // result.xyz = vec3(cameraPosition - material.position) * 0.01;
+
+    // result.xyz = vec3(abs(patchMaxPosition - patchMinPosition) * 0.01) ;
+
+
+
+    result.xyz = clamp(result.xyz, 0, 1);
+    // result.xyz += vec3(1,1,0) * borderFactor * 0.09;
+
+
+    imageStore(destinationImage, computePos, vec4(result) );
 
 
 }

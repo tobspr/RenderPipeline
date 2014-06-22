@@ -8,7 +8,7 @@ from LightType import LightType
 import math
 
 
-class HemiPointLight (Light, DebugObject):
+class PointLight (Light, DebugObject):
 
     def __init__(self):
         Light.__init__(self)
@@ -19,7 +19,7 @@ class HemiPointLight (Light, DebugObject):
         pass
 
     def _getLightType(self):
-        return LightType.HemiPoint
+        return LightType.Point
 
     def _computeLightBounds(self):
         self.bounds = BoundingSphere(Point3(self.data.pos), self.radius)
@@ -42,26 +42,20 @@ class HemiPointLight (Light, DebugObject):
 
         lineNode = mainNode.attachNewNode("lines")
 
-        # Outer circle
-        points = []
+        # Outer circles
+        points1 = []
+        points2 = []
+        points3 = []
         for i in xrange(self.visualizationNumSteps + 1):
             angle = float(i) / float(self.visualizationNumSteps) * math.pi * 2.0
-            points.append(Vec3(0, math.sin(angle), math.cos(angle)))
-        self._createDebugLine(points, False).reparentTo(lineNode)
+            points1.append(Vec3(0, math.sin(angle), math.cos(angle)))
+            points2.append(Vec3(math.sin(angle), math.cos(angle), 0))
+            points3.append(Vec3(math.sin(angle), 0, math.cos(angle)))
 
-        # Horizontal circle
-        points = []
-        for i in xrange(self.visualizationNumSteps / 2 + 1):
-            angle = float(i) / float(self.visualizationNumSteps) * math.pi * 2.0
-            points.append(Vec3(math.sin(angle), math.cos(angle), 0))
-        self._createDebugLine(points, False).reparentTo(lineNode)
+        self._createDebugLine(points1, False).reparentTo(lineNode)
+        self._createDebugLine(points2, False).reparentTo(lineNode)
+        self._createDebugLine(points3, False).reparentTo(lineNode)
 
-        # Vertical circle
-        points = []
-        for i in xrange(self.visualizationNumSteps / 2 + 1):
-            angle = float(i) / float(self.visualizationNumSteps) * math.pi * 2.0
-            points.append(Vec3(math.sin(angle), 0, math.cos(angle)))
-        self._createDebugLine(points, False).reparentTo(lineNode)
 
         lineNode.setScale(self.radius)
         mainNode.setHpr(self.rotation)

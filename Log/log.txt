@@ -1,0 +1,13 @@
+Loading Scene ..
+Placing prefabs
+RenderingPipeline: Setting up render pipeline
+RenderingPipeline: Creating deferred targets
+RenderTarget: Adding render texture:  color
+RenderTarget: Adding render texture:  depth
+RenderTarget: Adding render texture:  aux0
+RenderTarget: Adding render texture:  aux1
+RenderTarget: Preparing scene render
+RenderTarget: Creating buffer of size 1600 x 928
+RenderBuffer: Preparing depth texture for 32 bits
+RenderingPipeline: Creating lighting compute shader
+26
