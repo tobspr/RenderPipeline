@@ -1,81 +1,83 @@
 Deferred Render Pipeline
 ==============
 
-Complete deferred render pipeline for panda3d (wip)
+Complete deferred render pipeline for panda3d (Work in progress)
 
-## Features:
+### Features:
 
-#### Deferred rendering (obviously)
-- But still allows some objects to have forward passes
+##### Deferred rendering (obviously)
+- Still allows some objects to have forward passes
 
-#### Early Z
+##### Early-Z
 - Pre-Renders depth to avoid overdraw
 
-#### SSDO
-- + one bounce for indirect lighting / color bleeding
-    
+##### SSDO
+- with one bounce for indirect lighting / color bleeding
 
-#### PSSM, Cloud Shadows, Large Terrain Shadows
-- complete lighting + shadows via compute shader
+##### PSSM, Cloud Shadows, Large Terrain Shadows
+- complete lighting and shadows via compute shader
 
-#### Atmospheric Scattering + Volumetric Fog
+##### Atmospheric Scattering & Volumetric Fog
 
-#### Multi-Hemisphere-Skybox
+##### Multi-Hemisphere-Skybox
 
-#### Lighting:
+##### Lighting:
 - Point Lights
     - Either shadow casting or not
     - When shadow casting, only use 2 perspectives
-        -> Parabolic mapping
+        - Parabolic mapping
 
 - Directional Lights
     - Sun only
+    - PSSM Shadows
 
 - Ambient Lights
     - Darken or Bright
-        -> Artist controlled AO
+        - Artist controlled Global Illumination
 
 - Projector Lights
     - Either shadow casting or not
     - Only 1 perspective
     - Projection texture
-        -> Can be used for flashlights for example
+        - Can be used for flashlights for example
 
 - Area Lights
     - Caster is a rectangle
-        -> Orthographic Lens
+        - Orthographic Lens
     - Also supports projection texture
-    - Cone-Mapping
+    - Maybe Cone-Mapping
 
-#### Physically based shading / lighting
+##### Physically based shading / lighting
 
-#### Precomputed HDR environment probes
+##### Precomputed HDR environment probes
 - Only in areas where reflective materials are used
-    -> and SSLR does not match
+    - and SSLR does not work well for the material
+        - like water patches
 - Image based lighting
 
-#### Dynamic reflections
-- Screen Space local reflections
+##### Dynamic reflections
+- Screen Space Local Reflections
 - For specular materials
+- Cheapest solution for reflections
 
-#### Dynamic cubemaps 
+##### Dynamic cubemaps 
 - rare usage, because of performance
 - Render only 2 perspectives, parabolic mapping
 - Not updated every frame
 
-#### Tone mapping (HDR)
+##### Tone mapping (HDR)
 
-#### Blur
+##### Blur
 - Focal Blur
 - Movement Blur (edges)
 - Mipmap based + in place 4x4 kernel
-    -> Adjustable radius
+    - Varying radius (DOF)
 
-#### Tesselation Shader
+##### Tesselation Shader
 - Based on displacement map, or detail normals
 - Height stored in z component of normalmap
 
-#### Bokeh DOF
+##### Bokeh DOF
 - In combination with blur
 
 ##### Approximated Chromatic Aberration
