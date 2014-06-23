@@ -1,6 +1,7 @@
  
-with open("log.txt", "w") as myfile:
-    pass
+# When writing output to file:
+# with open("log.txt", "w") as myfile:
+#     pass
 
 class DebugObject:
 
