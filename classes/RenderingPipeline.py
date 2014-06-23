@@ -148,6 +148,7 @@ class RenderingPipeline(DebugObject):
         return cameraBounds
 
     def _update(self, task):
+
         self.cullBounds = self._computeCameraBounds()
 
         self.lightManager.setCullBounds(self.cullBounds)

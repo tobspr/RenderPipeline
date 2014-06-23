@@ -59,6 +59,7 @@ class Light:
         def getProjMat(self):
             return self.projMatrix
 
+    # Constructor
     def __init__(self):
         self.data = self.LightStruct()
         self.debugNode = NodePath("LightDebug")
@@ -71,15 +72,13 @@ class Light:
         self.bounds = OmniBoundingVolume()
         self.data.lightType = self._getLightType()
 
-    def getData(self):
-        return self.data
 
-
-
+    # Sets the rotation for this light
     def setHpr(self, hpr):
         self.rotation = hpr
         self.queueUpdate()
 
+    # Returns true if the light casts shadows
     def hasShadows(self):
         return self.castShadows
 
@@ -114,8 +113,8 @@ class Light:
 
     def performUpdate(self):
         self.dataNeedsUpdate = False
-        self._computeLightBounds()
         self._computeAdditionalData()
+        self._computeLightBounds()
 
         if self.castShadows:
             self._computeLightMat()
@@ -130,30 +129,48 @@ class Light:
     def performShadowUpdate(self):
         self.shadowNeedsUpdate = False
 
+    # Attaches a node showing the bounds of this
+    # light 
     def attachDebugNode(self, parent):
         self.debugNode.reparentTo(parent)
         self.debugEnabled = True
         self._updateDebugNode()
 
+
+    # Returns the packed data object
+    # Only for LightManager. Do not use this yourself!
+    def getData(self):
+        return self.data
+
+    # Todo. Matches the light rotation so it looks at 
+    # that object
     def lookAt(self, pos):
-        # todo
-        pass
+        raise NotImplementedError()
 
+
+    # Child classes should implement this
     def _computeLightMat(self):
-        pass
+        raise NotImplementedError()
 
+    # Child classes should implement this
     def _computeLightBounds(self):
-        pass
+        raise NotImplementedError()
 
+    # Child classes should implement this
     def _updateDebugNode(self):
-        pass
+        raise NotImplementedError()
 
+    # Child classes should implement this
     def _computeAdditionalData(self):
-        pass
+        raise NotImplementedError()
 
+    # Child classes should implement this
     def _getLightType(self):
         return LightType.NoType
 
+    # Helper for visualizing the light bounds
+    # Draws a line trough all points, if connectToEnd the last
+    # point will get connected to the first point in the end
     def _createDebugLine(self, points, connectToEnd=False):
         segs = LineSegs()
         segs.setThickness(1.0)

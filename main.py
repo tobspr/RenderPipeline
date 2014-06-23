@@ -79,16 +79,16 @@ class Main(ShowBase):
         self.initialLightPos = []
 
         i = 0
-        for x in xrange(7):
-            for y in xrange(8):
+        for x in xrange(1):
+            for y in xrange(1):
                 i += 1
                 angle = float(i) / 64.0 * math.pi * 2.0
                 sampleLight = PointLight()
-                sampleLight.setRadius(10.0)
+                sampleLight.setRadius(20.0)
 
                 sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5))
 
-                initialPos = Vec3((x-3.0) * 5.0, (y-3.5)*5.0, 4)
+                initialPos = Vec3((x-2.0) * 4.0, (y-3.5)*4.0, 13)
 
                 sampleLight.setPos(initialPos )
 
@@ -97,7 +97,7 @@ class Main(ShowBase):
                 # sampleLight.setPos(Vec3(10, 10, 10))
                 sampleLight.setHpr(Vec3(180, 0, 0))
 
-                # sampleLight.attachDebugNode(self.renderDebugNode)
+                sampleLight.attachDebugNode(self.renderDebugNode)
 
                 self.renderPipeline.getLightManager().addLight(sampleLight)
                 self.lights.append(sampleLight)
@@ -105,7 +105,7 @@ class Main(ShowBase):
         # add huge sun light
         sunLight= PointLight()
         sunLight.setRadius(1000000.0)
-        sunLight.setColor(Vec3(100.0, 100.0, 100.0))
+        sunLight.setColor(Vec3(1.1, 1.1, 1.0))
         sunLight.setPos(Vec3(0,0,100))
         self.renderPipeline.getLightManager().addLight(sunLight)
 
@@ -149,13 +149,14 @@ class Main(ShowBase):
 
         i = 0
 
-        ft = globalClock.getFrameTime() * 0.4
+        ft = globalClock.getFrameTime() * 1.0
         for light in self.lights:
             initialPos = self.initialLightPos[i]
 
-            light.setPos(initialPos + Vec3(math.sin(ft) * 25.0, math.cos(ft) * 25.0, math.sin(math.cos(ft))))
+            light.setPos(initialPos + Vec3(math.sin(ft) * 65.0, math.cos(ft) * 65.0, math.sin(math.cos(ft))))
 
             i += 1
+
 
 
         return task.cont

@@ -1,127 +1,28 @@
 #version 440
 
-
 in vec3 normalWorldSpace;
 in vec3 positionWorldSpace;
 in vec2 texcoord;
 
-uniform vec3 cameraPosition;
+
 
 uniform sampler2D p3d_Texture0;
 uniform sampler2D p3d_Texture1;
 uniform sampler2D p3d_Texture2;
-uniform samplerCube cubemap;
 
-// uniform float osg_FrameTime;
-
-
-// BRDF
-
-const float rho = 1.0;
-const float sigma = 90.0;
-const float PI = 3.14159265358979323846;
-const float DIRECTIONAL_LIGHT_SIZE = 9999999999999.0;
-
-
-
-float safeDot(vec3 a, vec3 b) {
-    return max(0.0, dot(a, b));
-}
-
-
-vec3 OrenNayar( vec3 L, vec3 V, vec3 N )
-{
-    float VdotN = dot(V,N);
-    float LdotN = dot(L,N);
-    float theta_r = acos (VdotN);
-    float sigma2 = pow(sigma*PI/180,2);
-
-    float cos_phi_diff = dot( normalize(V-N*(VdotN)), normalize(L - N*(LdotN)) );
-    float theta_i = acos (LdotN);
-    float alpha = max (theta_i, theta_r);
-    float beta = min (theta_i, theta_r);
-    if (alpha > PI/2) return vec3(0);
-
-    float C1 = 1 - 0.5 * sigma2 / (sigma2 + 0.33);
-    float C2 = 0.45 * sigma2 / (sigma2 + 0.09);
-    if (cos_phi_diff >= 0) C2 *= sin(alpha);
-    else C2 *= (sin(alpha) - pow(2*beta/PI,3));
-    float C3 = 0.125 * sigma2 / (sigma2+0.09) * pow ((4*alpha*beta)/(PI*PI),2);
-    float L1 = rho/PI * (C1 + cos_phi_diff * C2 * tan(beta) + (1 - abs(cos_phi_diff)) * C3 * tan((alpha+beta)/2));
-    float L2 = 0.17 * rho*rho / PI * sigma2/(sigma2+0.13) * (1 - cos_phi_diff*(4*beta*beta)/(PI*PI));
-    return vec3(L1 + L2);
-}
-
-
-float Beckmann(float m, float t)
-{
-    float M = m*m;
-    float T = t*t;
-    return exp((T-1)/(M*T)) / (M*T*T);
-}
-
-vec3 Fresnel(vec3 f0, float u)
-{
-    // from Schlick
-    return f0 + (1-f0) * pow(1-u, 5);
-}
-
-
-float getD(vec3 n, vec3 h, float roughness) {
-    return (roughness * roughness) / (
-        PI * pow(
-            pow(dot(n, h), 2.0) *
-            ( (roughness * roughness) - 1.0 ) + 1 , 2.0)
-        );
-}
-
-float smoothnessToRoughness(float smoothness) {
-    return clamp(pow(1.0 - smoothness * 0.7, 6.0), 0, 1);
-}
-
-
-float getK(float a) {
-    return pow(0.8 + 0.5 * a, 2.0) * 0.5;
-}
-
-float G1(vec3 v, vec3 n, float roughness) {
-    float nDotV = safeDot(n, v);
-    return nDotV / ( nDotV * (1.0-roughness) + roughness );
-}
-
-float getG(vec3 l, vec3 v, vec3 h, vec3 n, float roughness) {
-    float k = getK(roughness);
-    return G1(l, n, k) * G1(v, n, k);
-}
-
-
-
-float packVec2ToFloat(vec2 data) {
-    return fract(data.x*0.25 + 0.5) + float(int( ((data.y*0.25 + 0.5)) *255.0));  
-    // return data.y;
-
-}
-
-// uniform float 
 
 void main() {
 
-
     vec3 diffuse = texture(p3d_Texture0, texcoord).rgb;
-    // vec3 normals = texture(p3d_Texture1, texcoord).rgb;
-    float specular = texture(p3d_Texture2, texcoord).r;
+    vec3 normals = texture(p3d_Texture1, texcoord).rgb;
+    float specular = texture(p3d_Texture2, texcoord).r * 1.0;
 
-    specular = 0.2;
+    // specular = 0.0;
 
-    // vec3 lightPos = vec3(sin(osg_FrameTime) * 10.0 , cos(osg_FrameTime) * 10.0, 22.0);
-    // vec3 lightPos = vec3(9.0, 9.0, 9.0) * 10000.0;
-
-    // vec3 l = normalize(lightPos - positionWorldSpace); // lightVector
-    // vec3 v = normalize(cameraPosition - positionWorldSpace); // viewVector
     vec3 n = normalWorldSpace;  // normal
     // vec3 h = normalize(l + v);
 
-    // n += (normals-0.5) * 0.5; // detail normal sampling
+    n += (normals-0.5) * 0.5; // detail normal sampling
     n = normalize(n);
 
 
@@ -132,7 +33,7 @@ void main() {
 
 
     float gloss = 0.0;
-    float smoothness = 1.0;
+    float smoothness = 0.0;
     // float transluency = 0.0;
 
 
@@ -140,7 +41,7 @@ void main() {
     float realSmoothness = clamp(smoothness, 0.0001, 0.9);
     float realGloss      = clamp(1.0 - gloss, 0.001, 1.0);
 
-    diffuse = vec3(0.0,0,0.0);
+    // diffuse = vec3(0.0,0,0.0);
 
 
     gl_FragData[0] = vec4(diffuse.xyz, specular);

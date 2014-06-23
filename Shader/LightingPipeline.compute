@@ -183,21 +183,25 @@ float specularBrdfG(vec3 l, vec3 v, vec3 h, vec3 n, float roughness) {
 
 vec3 diffuseBrdfOrenNayar( vec3 L, vec3 V, vec3 N )
 {
-    float VdotN = dot(V,N);
-    float LdotN = dot(L,N);
+    float VdotN = safeDot(V,N);
+    float LdotN = safeDot(L,N);
     float theta_r = acos (VdotN);
     float sigma2 = pow(sigma*PI/180,2);
+
 
     float cos_phi_diff = dot( normalize(V-N*(VdotN)), normalize(L - N*(LdotN)) );
     float theta_i = acos (LdotN);
     float alpha = max (theta_i, theta_r);
     float beta = min (theta_i, theta_r);
-    if (alpha > PI/2) return vec3(0);
+    
+    // if (alpha > PI/2) return vec3(0);
+    // return vec3(alpha);
 
     float C1 = 1 - 0.5 * sigma2 / (sigma2 + 0.33);
     float C2 = 0.45 * sigma2 / (sigma2 + 0.09);
     if (cos_phi_diff >= 0) C2 *= sin(alpha);
     else C2 *= (sin(alpha) - pow(2*beta/PI,3));
+
     float C3 = 0.125 * sigma2 / (sigma2+0.09) * pow ((4*alpha*beta)/(PI*PI),2);
     float L1 = rho/PI * (C1 + cos_phi_diff * C2 * tan(beta) + (1 - abs(cos_phi_diff)) * C3 * tan((alpha+beta)/2));
     float L2 = 0.17 * rho*rho / PI * sigma2/(sigma2+0.13) * (1 - cos_phi_diff*(4*beta*beta)/(PI*PI));
@@ -259,7 +263,7 @@ vec3 computeLighting(Light light, Material material) {
         vec3 specularTerm = (specF * specG * specD) * max(0.0, 4.0 * dot(n, l) * dot(n, v));
 
         // Compute total contributions
-        vec3 refractiveContribution = (reflectedColor) * material.smoothness * specF * attenuation;
+        vec3 refractiveContribution = (reflectedColor) * material.smoothness * specF * attenuation * light.color;
         vec3 diffuseContribution = material.diffuse * diffuseBrdf * attenuation * light.color + ambient * attenuation;
         vec3 specularContribution = specularTerm * attenuation * light.color; 
 
@@ -268,6 +272,10 @@ vec3 computeLighting(Light light, Material material) {
 
         // For debugging
         // return vec3(clamp(attenuation * specularTerm * light.color * 15.0, 0, 1));
+        // return vec3( diffuseBrdfOrenNayar(l, v, n) ) * attenuation;
+        // return vec3( dot(n, l) ) * attenuation;
+        // return vec3( diffuseBrdf ) * attenuation;
+
         return vec3(clamp(combinedContribution, 0, 1));
 
     }
@@ -411,7 +419,11 @@ void main() {
         // result.xyz = vec3(intensityFactor, 1.0 - intensityFactor, 0.0);
     }    
 
-    // result.xyz = vec3(material.normal);
+
+    // Debugging modes
+    // result.xyz = vec3(material.specular);
+
+
 
     result.xyz = clamp(result.xyz, 0, 1);
     // result.xyz += vec3(1,1,0) * borderFactor * 0.09;

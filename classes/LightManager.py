@@ -57,9 +57,10 @@ class LightManager(DebugObject):
 
     def update(self):
 
+        self.debug("Starting to compute lights")
         self.numVisibleLights = 0
 
-        for light in self.lights:
+        for index, light in enumerate(self.lights):
 
             if self.numVisibleLights >= self.maxVisibleLights:
                 # too many lights
@@ -70,6 +71,9 @@ class LightManager(DebugObject):
 
             # check if visible
             if not self.cullBounds.contains(light.getBounds()):
+                self.debug("Light",index,"is not in boundz!!")
+                self.debug("Light is at position",light.getData().pos)
+                self.debug("Light has bounds",light.getBounds())
                 continue
 
             if light.needsUpdate():

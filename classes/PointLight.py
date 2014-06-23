@@ -8,7 +8,7 @@ from LightType import LightType
 import math
 
 
-class PointLight (Light, DebugObject):
+class PointLight(Light, DebugObject):
 
     def __init__(self):
         Light.__init__(self)
@@ -23,6 +23,7 @@ class PointLight (Light, DebugObject):
 
     def _computeLightBounds(self):
         self.bounds = BoundingSphere(Point3(self.data.pos), self.radius)
+        self.bounds.showBounds(render)
 
     def _computeAdditionalData(self):
         self.data.additional[0] = self.radius
