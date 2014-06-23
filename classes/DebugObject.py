@@ -1,8 +1,12 @@
  
-# When writing output to file:
+# When writing output to file, ensure it exists:
 # with open("log.txt", "w") as myfile:
 #     pass
 
+
+
+# Provides simple functions for debugging
+# Most objects inherit from this object
 class DebugObject:
 
     def __init__(self, name):
