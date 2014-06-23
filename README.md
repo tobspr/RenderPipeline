@@ -74,3 +74,6 @@ Complete deferred render pipeline for panda3d (wip)
 #### Tesselation Shader
 - Based on displacement map, or detail normals
 - Height stored in z component of normalmap
+
+#### Bokeh DOF
+- In combination with blur
