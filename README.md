@@ -77,3 +77,6 @@ Complete deferred render pipeline for panda3d (wip)
 
 #### Bokeh DOF
 - In combination with blur
+
+##### Approximated Chromatic Aberration
+
