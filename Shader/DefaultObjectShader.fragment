@@ -17,14 +17,16 @@ void main() {
     vec3 normals = texture(p3d_Texture1, texcoord).rgb;
     float specular = texture(p3d_Texture2, texcoord).r * 1.0;
 
+    specular = 0.0;
     // specular = 0.0;
+    // diffuse = vec3(0);
+
 
     vec3 n = normalWorldSpace;  // normal
     // vec3 h = normalize(l + v);
 
-    n += (normals-0.5) * 0.5; // detail normal sampling
+    n += (normals-0.5) * 0.7; // detail normal sampling
     n = normalize(n);
-
 
     // Per Material
     // vec3 specularColor = vec3(0.0);
@@ -32,7 +34,7 @@ void main() {
     // specularColor = vec3(0.05, 0.05 ,0.05);
 
 
-    float gloss = 0.0;
+    float gloss = 0.15;
     float smoothness = 0.0;
     // float transluency = 0.0;
 

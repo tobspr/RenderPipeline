@@ -1,5 +1,7 @@
 #version 440
 
+
+
 // here the result is stored
 layout (rgba8) writeonly uniform image2D destinationImage;
 
@@ -7,16 +9,22 @@ layout (rgba8) writeonly uniform image2D destinationImage;
 layout (rgba16f) readonly uniform image2D target0Image;
 layout (rgba16f) readonly uniform image2D target1Image;
 layout (rgba16f) readonly uniform image2D target2Image;
-layout (rgba16f) readonly uniform image2D minPositionImage;
-layout (rgba16f) readonly uniform image2D maxPositionImage;
+layout (rgba16f) readonly uniform image2D minMaxDepthImage;
 
-layout (local_size_x = 32, local_size_y = 16) in;
+layout (local_size_x = 8, local_size_y = 8) in;
 
 uniform samplerCube fallbackCubemap;
 
 
+#include "Includes/Packing.include"
+
+
+
 #define MAX_VISIBLE_LIGHTS 64
-#define MAX_LIGHTS_PER_PATCH 64
+#define MAX_LIGHTS_PER_PATCH 16
+
+#define PATCH_SIZE_X 16
+#define PATCH_SIZE_Y 16
 
 uniform mat4[MAX_VISIBLE_LIGHTS] lightData; 
 uniform mat4[MAX_VISIBLE_LIGHTS] lightMatrices;
@@ -51,8 +59,8 @@ shared Light visibleLights[MAX_LIGHTS_PER_PATCH];
 shared int lightsSoFar = 0;
 
 // Lighting variables
-const float rho = 1.0;
-const float sigma = 90.0;
+const float rho = 2.0;
+const float sigma = 10.0;
 const float PI = 3.14159265358979323846;
 const float DIRECTIONAL_LIGHT_SIZE = 9999999999999.0;
 
@@ -81,10 +89,9 @@ float squared(float v) {
     return v * v; 
 }
 
-bool cubeIntersectSphere(vec3 aabbMin, vec3 aabbMax, vec3 sphereMid, float sphereRadius)
+bool cubeIntersectsSphere(vec3 aabbMin, vec3 aabbMax, vec3 sphereMid, float sphereRadius)
 {
     float dist_squared = sphereRadius * sphereRadius;
-    /* assume C1 and C2 are element-wise sorted, if not, do that now */
     if (sphereMid.x < aabbMin.x) dist_squared -= squared(sphereMid.x - aabbMin.x);
     else if (sphereMid.x > aabbMax.x) dist_squared -= squared(sphereMid.x - aabbMax.x);
     if (sphereMid.y < aabbMin.y) dist_squared -= squared(sphereMid.y - aabbMin.y);
@@ -94,6 +101,29 @@ bool cubeIntersectSphere(vec3 aabbMin, vec3 aabbMax, vec3 sphereMid, float spher
     return dist_squared > 0;
 }
 
+bool rayIntersectsSphere(vec3 rayStart, vec3 rayEnd, vec3 sphereMid, float sphereRadius) 
+{
+
+    // The line passes through p1 and p2:
+    // vec3 p1 = (...) = rayStart;
+    // vec3 p2 = (...) = rayEnd;
+
+    // Sphere center is p3, radius is r:
+    // vec3 p3 = (...) = sphereMid;
+    // float r = ...;
+
+
+    vec3 d = rayEnd - rayStart;
+
+    float a = dot(d, d);
+    float b = 2.0 * dot(d, rayStart - sphereMid);
+    float c = dot(sphereMid, sphereMid) + dot(rayStart, rayStart) - 2.0 * dot(sphereMid, rayStart) - sphereRadius*sphereRadius;
+
+    float test = b*b - 4.0*a*c;
+
+    return test >= 0.0;
+
+}
 
 
 
@@ -104,7 +134,7 @@ bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax
     // Compute bounding sphere
     // This might not be perfect, but fast
     vec3 collideSphereMid = (aabbMin + aabbMax) / 2.0;
-    float collideSphereRadius = distance(aabbMin, aabbMax) * 0.5;
+    float collideSphereRadius = distance(aabbMin, aabbMax) / 2.0;
 
     // PointLight
     if (light.type == 1) {
@@ -115,17 +145,22 @@ bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax
         // Also fetch radius
         light.radius = rawData[2][3];
 
-        if (light.radius > 100000.0) {
-            light.radius = 999999999999.0;
-        }
+        // if (light.radius > 100000.0) {
+        //     light.radius = 999999999999.0;
+        // }
 
         // Rough Sphere collision
         if (distanceToLight < collideSphereRadius + light.radius) {
 
             // return true;
 
+            // Ray collision testing
+            // if (rayIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
+            //     return true;
+            // }
+
             // Exact collision testing
-            if (cubeIntersectSphere(aabbMin, aabbMax, light.position, light.radius)) {
+            if (cubeIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
                 return true;
             }
 
@@ -133,23 +168,18 @@ bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax
 
     }
 
-
     return false;
 }
-
-
 
 float safeDot(vec3 a, vec3 b) {
     return max(0.0, dot(a, b));
 }
-
 
 vec3 specularBrdfFresnel(vec3 f0, float u)
 {
     // from Schlick
     return f0 + (1-f0) * pow(1-u, 5);
 }
-
 
 float specularBrdfD(vec3 n, vec3 h, float roughness) {
     return (roughness * roughness) / (
@@ -209,6 +239,34 @@ vec3 diffuseBrdfOrenNayar( vec3 L, vec3 V, vec3 N )
 }
 
 
+// Simpler version of oren nayar which computes a lot faster
+float diffuseBrdfSimpleOrenNayar( vec3 l, vec3 v, vec3 n, float roughness) {
+    // calculate intermediary values
+    float NdotL = dot(n, l);
+    float NdotV = dot(n, v); 
+
+    float angleVN = acos(NdotV);
+    float angleLN = acos(NdotL);
+    
+    float alpha = max(angleVN, angleLN);
+    float beta = min(angleVN, angleLN);
+    float gamma = dot(v - n * NdotV, l - n * NdotL);
+    
+    float roughnessSquared = roughness * roughness;
+    
+    // calculate A and B
+    float A = 1.0 - 0.5 * (roughnessSquared / (roughnessSquared + 0.57));
+
+    float B = 0.45 * (roughnessSquared / (roughnessSquared + 0.09));
+ 
+    float C = sin(alpha) * tan(beta);
+    
+    // put it all together
+    float L1 = max(0.0, NdotL) * (A + B * max(0.0, gamma) * C);
+    return L1;
+
+}
+
 
 
 
@@ -217,7 +275,9 @@ vec3 diffuseBrdfOrenNayar( vec3 L, vec3 V, vec3 N )
 vec3 computeLighting(Light light, Material material) {
 
     // Point light
-    if (light.type == 1) {
+    if (light.type == 1) {  
+
+
 
         // Compute distance to light
         float distanceToLight = distance(material.position, light.position);    
@@ -227,11 +287,13 @@ vec3 computeLighting(Light light, Material material) {
         float normfac = pow(1.0 + (1.0/light.radius) , 2.0);
         attenuation *= normfac;
 
+
         // Cut light transition starting at 80%. Otherwise it's exponential and never gets really 0
         float cutoff = light.radius * 0.8;
         float cutoffFactor = 0.25;
         attenuation *= 1.0 - smoothstep(0.0, 1.0, ((distanceToLight / cutoff) - 1.0) * 4.0 );   
         attenuation = max(0.0, attenuation);
+
 
         // Compute vectors
         vec3 l = normalize(light.position - material.position);
@@ -257,7 +319,8 @@ vec3 computeLighting(Light light, Material material) {
         float specD = specularBrdfD(n, h, material.roughness); 
 
         // Compute diffuse BRDF
-        vec3 diffuseBrdf = diffuseBrdfOrenNayar(l, v, n) * safeDot(n, l);
+        // vec3 diffuseBrdf = diffuseBrdfOrenNayar(l, v, n) * safeDot(n, l);
+        vec3 diffuseBrdf = vec3(diffuseBrdfSimpleOrenNayar(l, v, n, 1.5));
 
         // Combine specular
         vec3 specularTerm = (specF * specG * specD) * max(0.0, 4.0 * dot(n, l) * dot(n, v));
@@ -272,9 +335,9 @@ vec3 computeLighting(Light light, Material material) {
 
         // For debugging
         // return vec3(clamp(attenuation * specularTerm * light.color * 15.0, 0, 1));
-        // return vec3( diffuseBrdfOrenNayar(l, v, n) ) * attenuation;
-        // return vec3( dot(n, l) ) * attenuation;
         // return vec3( diffuseBrdf ) * attenuation;
+        // return vec3( dot(n, l) ) * attenuation;
+        // return vec3( 0.1 ) * attenuation;
 
         return vec3(clamp(combinedContribution, 0, 1));
 
@@ -285,15 +348,61 @@ vec3 computeLighting(Light light, Material material) {
 }
 
 
+uniform mat4 trans_clip_of_camera_to_render;
+
+const float ndcNear = 1.0;
+const float ndcFar = 10000.0;
+const float ndcA = ndcNear + ndcFar;
+const float ndcB = ndcNear - ndcFar;
+const float ndcC = 2.0 * ndcNear * ndcFar;
+
+float getZFromNdc(vec3 ndcPos) {
+  float d = ndcPos.z * ndcB;
+  return (ndcC / (ndcA+d));
+}
+
+// #define MAIN_CAMERA_NEAR 1.0
+// #define MAIN_CAMERA_FAR 10000.0
+
+// float getZFromNdc(vec3 ndcPos) {
+//   float a = MAIN_CAMERA_NEAR + MAIN_CAMERA_FAR;
+//   float b = MAIN_CAMERA_NEAR - MAIN_CAMERA_FAR;
+//   float c = 2.0 * MAIN_CAMERA_NEAR * MAIN_CAMERA_FAR;
+//   float d = ndcPos.z * b;
+//   return (c / (a+d));
+// }
+
+vec3 calculateSurfacePos(float z, vec2 tcoord) {
+
+  vec3 ndcPos = vec3(tcoord.xy, z);
+  ndcPos.xyz -= 0.5;
+  ndcPos.xyz *= 2.0;
+    
+  vec4 clipPos = vec4(0);
+  clipPos.w = getZFromNdc(ndcPos);
+
+  // return vec3(clipPos.w);
+
+  clipPos.xyz = ndcPos * clipPos.w;
+ 
+  vec3 surfacePosition = (trans_clip_of_camera_to_render * clipPos).xyz;
+  return surfacePosition;
+}
+
+
+
+
+float unpackDepth(vec2 d) {
+    return (d.x + d.y) / 1024.0;
+}
+
+
 
 void main() {
 
 
     // Size of the real screen
     ivec2 realScreenSize = ivec2(1600, 928);
-
-    // Size of a patch
-    ivec2 patchSize = ivec2(32, 16);
 
     // Size of the compute buffer. This might be bigger, because it always
     // has to be a multiple of vec2(local_size_x, local_size_y) 
@@ -331,30 +440,24 @@ void main() {
     material.smoothness     = target2Data.a;
     material.roughness      = smoothnessToRoughness(material.smoothness);
 
-    vec4 result = vec4(material.position, 1);
-    result.a = 1.0;
-
     // Fetch patch min / max pos from previous pass
-    vec3 patchMinPosition = imageLoad(minPositionImage, precomputePos).xyz;
-    vec3 patchMaxPosition = imageLoad(maxPositionImage, precomputePos).xyz;
 
-    float patchDistance = distance(patchMinPosition, patchMaxPosition);
+    vec4 patchMinMaxDepth = imageLoad(minMaxDepthImage, precomputePos).rgba;
+    float patchMinDepth    = unpackDepth(patchMinMaxDepth.xy);
+    float patchMaxDepth    = unpackDepth(patchMinMaxDepth.zw);
 
-    // If they are very far away, we probably sampled too far
-    // This is solved by taking the max position nearer to the min position
-    // if (patchDistance > 50.0) {
+    // patchMinDepth = 1.0;
+    // patchMaxDepth = 1.0;
 
-    //     vec3 extrudeVec = normalize(patchMinPosition - cameraPosition);
-    //     patchMaxPosition = patchMinPosition + extrudeVec * 50.0;
-
-    // }
+    vec3 patchMinPosition = calculateSurfacePos(patchMinDepth, screenPos);
+    vec3 patchMaxPosition = calculateSurfacePos(patchMaxDepth, screenPos);
 
 
     // Collect lights
 
     int cellIndex = int(gl_LocalInvocationIndex);
 
-    // memoryBarrier();
+
     barrier();
 
 
@@ -374,21 +477,17 @@ void main() {
             current.color = currentLightData[0].yzw;
             current.radius = 0.0;
 
-
-
             // add light only if visible for this patch
             if (isInLightBounds(current, currentLightData, patchMinPosition, patchMaxPosition)) {
 
                 int arrayIndex = atomicAdd(lightsSoFar, 1);
+                // int arrayIndex = 0;
                     
                 // only add if there are not already too many lights per patch
                 if (arrayIndex < MAX_LIGHTS_PER_PATCH) {
                     visibleLights[arrayIndex] = current;
                 }
-
             }
-
-
         } 
     }
 
@@ -406,23 +505,23 @@ void main() {
 
         Light current = visibleLights[i];
         lightingResult += computeLighting(current, material);
+        // lightingResult += current.color * 0.1;
     }
 
 
-    result.xyz = vec3(lightingResult);
+    vec4 result = vec4(lightingResult, 1.0);
 
 
     float intensityFactor = float(localLightCount) / float(MAX_LIGHTS_PER_PATCH);
 
-    if (borderFactor> 0.0) {
+    // if (borderFactor> 0.0) {
         // result.xyz = vec3(localLightCount > 0 ? 1.0 : 0.0);
-        // result.xyz = vec3(intensityFactor, 1.0 - intensityFactor, 0.0);
-    }    
+    result.xyz += vec3(intensityFactor, 1.0 - intensityFactor, 0.0) * 0.3;
+    // }    
 
 
     // Debugging modes
-    // result.xyz = vec3(material.specular);
-
+    // result.xyz = vec3(cubeIntersectsSphere(material.position, material.position, vec3(10, 10, 10), 19.0) ? 1.0 : 0.1);
 
 
     result.xyz = clamp(result.xyz, 0, 1);

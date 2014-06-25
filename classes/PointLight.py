@@ -23,11 +23,10 @@ class PointLight(Light, DebugObject):
 
     def _computeLightBounds(self):
         self.bounds = BoundingSphere(Point3(self.data.pos), self.radius)
-        self.bounds.showBounds(render)
+        # self.bounds.showBounds(render)
 
     def _computeAdditionalData(self):
         self.data.additional[0] = self.radius
-
 
     def _updateDebugNode(self):
         # self.debug("updating debug node")

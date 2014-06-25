@@ -82,8 +82,8 @@ class RenderBuffer(DebugObject):
     # Attempts to create this buffer
     def create(self):
 
-        is16bit = self._colorBits == 16
-        auxIs16Bit = self._auxBits == 16
+        is16bit = self._colorBits >= 16
+        auxIs16Bit = self._auxBits >= 16
 
         self.debug("Creating buffer with",self._colorBits,"color bits and",self._auxBits,"aux bits")
 

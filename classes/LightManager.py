@@ -1,10 +1,9 @@
 
 from DebugObject import DebugObject
-from panda3d.core import PTAMat4, TextNode, Shader
-
-from direct.gui.OnscreenText import OnscreenText
+from panda3d.core import PTAMat4
 from FastText import FastText
 
+from BetterShader import BetterShader
 
 class LightManager(DebugObject):
 
@@ -33,7 +32,7 @@ class LightManager(DebugObject):
         self.lights.append(light)
 
     def setPipelineShader(self):
-        pipelineShader = Shader.load_compute(Shader.SLGLSL, "Shader/LightingPipeline.compute")
+        pipelineShader = BetterShader.loadCompute("Shader/LightingPipeline.compute")
         
         if pipelineShader.getErrorFlag():
             print "Shader contains an error! Cannot set .."
@@ -57,7 +56,6 @@ class LightManager(DebugObject):
 
     def update(self):
 
-        self.debug("Starting to compute lights")
         self.numVisibleLights = 0
 
         for index, light in enumerate(self.lights):
@@ -68,12 +66,12 @@ class LightManager(DebugObject):
                     "Too many lights! Can't display more than", self.maxVisibleLights)
                 break
 
+            # update light if required
+            if light.needsUpdate():
+                light.performUpdate()
 
             # check if visible
             if not self.cullBounds.contains(light.getBounds()):
-                self.debug("Light",index,"is not in boundz!!")
-                self.debug("Light is at position",light.getData().pos)
-                self.debug("Light has bounds",light.getBounds())
                 continue
 
             if light.needsUpdate():
