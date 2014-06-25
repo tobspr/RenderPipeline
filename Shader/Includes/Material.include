@@ -1,0 +1,54 @@
+
+
+#include "Includes/Packing.include"
+
+// Commonly used structs
+struct Material {
+    vec3 diffuse;
+    vec3 position;
+    vec3 normal;
+    float specular;
+    float smoothness;
+    float gloss;
+
+    // Not stored (yet)
+    float transluency;
+
+    // computed from smoothness
+    float roughness;
+};
+
+
+// Converts smoothness to roughness
+// Smoothness is more intuitive to specify.
+// But roughness is used for the calculation
+float smoothnessToRoughness(float smoothness) {
+    return clamp(pow(1.0 - smoothness * 0.7, 6.0), 0, 1);
+}
+
+
+// Packs the material for usage in MRT's
+mat4 packMaterial(Material m) {
+    return mat4(
+            m.diffuse.x,  m.diffuse.y,  m.diffuse.z,  m.specular,
+            m.normal.x,   m.normal.y,   m.normal.z,   m.gloss,
+            m.position.x, m.position.y, m.position.z, m.smoothness,
+            0,0,0,0 // Not used
+        );
+}
+
+// Unpacks the material from the MRT's
+Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2) {
+    Material m;
+    m.diffuse        = data0.xyz;
+    m.position       = data2.xyz;
+    m.specular       = data0.a;
+    m.normal         = data1.xyz;
+    m.gloss          = data1.w;
+    m.transluency    = 0.0;
+    m.position       = data2.xyz;
+    m.smoothness     = data2.a;
+    m.roughness      = smoothnessToRoughness(m.smoothness);
+    return m;
+}
+

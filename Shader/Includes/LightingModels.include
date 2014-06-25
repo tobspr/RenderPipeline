@@ -1,0 +1,107 @@
+
+
+
+// Lighting variables
+const float rho = 2.0;
+const float sigma = 10.0;
+const float PI = 3.14159265358979323846;
+const float DIRECTIONAL_LIGHT_SIZE = 9999999999999.0;
+
+
+
+float safeDot(vec3 a, vec3 b) {
+    return max(0.0, dot(a, b));
+}
+
+
+
+vec3 specularBrdfFresnel(vec3 f0, float u)
+{
+    // from Schlick
+    return f0 + (1-f0) * pow(1-u, 5);
+}
+
+float specularBrdfD(vec3 n, vec3 h, float roughness) {
+    return (roughness * roughness) / (
+        PI * pow(
+            pow(dot(n, h), 2.0) *
+            ( (roughness * roughness) - 1.0 ) + 1 , 2.0)
+        );
+}
+
+
+
+float specularGGetK(float a) {
+    return pow(0.8 + 0.5 * a, 2.0) * 0.5;
+}
+
+float specularBrdfGSub(vec3 v, vec3 n, float roughness) {
+    float nDotV = safeDot(n, v);
+    return nDotV / ( nDotV * (1.0-roughness) + roughness );
+}
+
+float specularBrdfG(vec3 l, vec3 v, vec3 h, vec3 n, float roughness) {
+    float k = specularGGetK(roughness);
+    return specularBrdfGSub(l, n, k) * specularBrdfGSub(v, n, k);
+}
+
+
+
+
+vec3 diffuseBrdfOrenNayar( vec3 L, vec3 V, vec3 N )
+{
+    float VdotN = safeDot(V,N);
+    float LdotN = safeDot(L,N);
+    float theta_r = acos (VdotN);
+    float sigma2 = pow(sigma*PI/180,2);
+
+
+    float cos_phi_diff = dot( normalize(V-N*(VdotN)), normalize(L - N*(LdotN)) );
+    float theta_i = acos (LdotN);
+    float alpha = max (theta_i, theta_r);
+    float beta = min (theta_i, theta_r);
+    
+    // if (alpha > PI/2) return vec3(0);
+    // return vec3(alpha);
+
+    float C1 = 1 - 0.5 * sigma2 / (sigma2 + 0.33);
+    float C2 = 0.45 * sigma2 / (sigma2 + 0.09);
+    if (cos_phi_diff >= 0) C2 *= sin(alpha);
+    else C2 *= (sin(alpha) - pow(2*beta/PI,3));
+
+    float C3 = 0.125 * sigma2 / (sigma2+0.09) * pow ((4*alpha*beta)/(PI*PI),2);
+    float L1 = rho/PI * (C1 + cos_phi_diff * C2 * tan(beta) + (1 - abs(cos_phi_diff)) * C3 * tan((alpha+beta)/2));
+    float L2 = 0.17 * rho*rho / PI * sigma2/(sigma2+0.13) * (1 - cos_phi_diff*(4*beta*beta)/(PI*PI));
+    return vec3(L1 + L2);
+}
+
+
+// Simpler version of oren nayar which computes a lot faster
+float diffuseBrdfSimpleOrenNayar( vec3 l, vec3 v, vec3 n, float roughness) {
+    // calculate intermediary values
+    float NdotL = dot(n, l);
+    float NdotV = dot(n, v); 
+
+    float angleVN = acos(NdotV);
+    float angleLN = acos(NdotL);
+    
+    float alpha = max(angleVN, angleLN);
+    float beta = min(angleVN, angleLN);
+    float gamma = dot(v - n * NdotV, l - n * NdotL);
+    
+    float roughnessSquared = roughness * roughness;
+    
+    // calculate A and B
+    float A = 1.0 - 0.5 * (roughnessSquared / (roughnessSquared + 0.57));
+
+    float B = 0.45 * (roughnessSquared / (roughnessSquared + 0.09));
+ 
+    float C = sin(alpha) * tan(beta);
+    
+    // put it all together
+    float L1 = max(0.0, NdotL) * (A + B * max(0.0, gamma) * C);
+    return L1;
+
+}
+
+

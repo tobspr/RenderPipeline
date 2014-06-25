@@ -1,0 +1,117 @@
+
+
+
+struct Light {
+    int type;
+    vec3 position;
+    vec3 color;
+    float radius;
+};
+
+
+bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax) {
+
+    // Compute bounding sphere
+    // This might not be perfect, but fast
+    vec3 collideSphereMid = (aabbMin + aabbMax) / 2.0;
+    float collideSphereRadius = distance(aabbMin, aabbMax) / 2.0;
+
+    // PointLight
+    if (light.type == 1) {
+
+        // Distance to our mid
+        float distanceToLight = distance(collideSphereMid, light.position);
+
+        // Also fetch radius
+        light.radius = rawData[2][3];
+
+        // if (light.radius > 100000.0) {
+        //     light.radius = 999999999999.0;
+        // }
+
+        // Rough Sphere collision
+        if (distanceToLight < collideSphereRadius + light.radius) {
+
+            // return true;
+
+            // Ray collision testing
+            // if (rayIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
+            //     return true;
+            // }
+
+            // Exact collision testing
+            if (cubeIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
+                return true;
+            }
+
+        }
+
+    }
+
+    return false;
+}
+
+
+vec3 computeLighting(Light light, Material material) {
+
+    // Point light
+    if (light.type == 1) {  
+
+        // Compute distance to light
+        float distanceToLight = distance(material.position, light.position);    
+
+        // Compute attenuation
+        float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.0;
+        float normfac = pow(1.0 + (1.0/light.radius) , 2.0);
+        attenuation *= normfac;
+
+        // Cut light transition starting at 80%. Otherwise it's exponential and never gets really 0
+        float cutoff = light.radius * 0.8;
+        float cutoffFactor = 0.25;
+        attenuation *= 1.0 - smoothstep(0.0, 1.0, ((distanceToLight / cutoff) - 1.0) * 4.0 );   
+        attenuation = max(0.0, attenuation);
+
+        // Compute vectors
+        vec3 l = normalize(light.position - material.position);
+        vec3 v = normalize(cameraPosition - material.position);
+        vec3 n = normalize(material.normal);
+        vec3 h = normalize(l + v);
+
+        // Compute reflection
+        vec3 reflectedDir = reflect(v, n);
+        float cubemapResolutionParameter = material.gloss;
+        vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
+        vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
+        vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+
+        // Ambient is not used yet
+        float ambient = 0.0;
+
+        // Compute specular BRDF
+        float specG = clamp(specularBrdfG(l, v, h, n, material.roughness), 0, 1);
+        vec3  specF = clamp(specularBrdfFresnel(vec3(material.specular), safeDot(v, h)  ) , 0, 1);
+
+        // D is not clamped, highlights can get very bright
+        float specD = specularBrdfD(n, h, material.roughness); 
+
+        // Compute diffuse BRDF
+        // vec3 diffuseBrdf = diffuseBrdfOrenNayar(l, v, n) * safeDot(n, l);
+        vec3 diffuseBrdf = vec3(diffuseBrdfSimpleOrenNayar(l, v, n, 1.5));
+
+        // Combine specular
+        vec3 specularTerm = (specF * specG * specD) * max(0.0, 4.0 * dot(n, l) * dot(n, v));
+
+        // Compute total contributions
+        vec3 refractiveContribution = (reflectedColor) * material.smoothness * specF * attenuation * light.color;
+        vec3 diffuseContribution = material.diffuse * diffuseBrdf * attenuation * light.color + ambient * attenuation;
+        vec3 specularContribution = specularTerm * attenuation * light.color; 
+
+        vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
+
+        return vec3(clamp(combinedContribution, 0, 1));
+
+    }
+
+    return light.color;
+
+}

@@ -23,7 +23,10 @@ class BetterShader:
     # Loads a compute shader
     @classmethod
     def loadCompute(self, source):
-        result = Shader.makeCompute(Shader.SLGLSL, self._handleIncludes(source))
+        print "Loading compute shader",source
+        content = self._handleIncludes(source)
+        result = Shader.makeCompute(Shader.SLGLSL, content)
+        self._writeDebugShader("Compute-"+str(source), content)
         self._clearIncludeStack()
         return result
 
@@ -31,9 +34,12 @@ class BetterShader:
     # Order is vertex, fragment, geometry, tesseval, tesscontrol
     @classmethod
     def load(self, *args):
+        print "Loading shader",args[-1]
         newArgs = []
         for arg in args:
-            newArgs.append(self._handleIncludes(arg))
+            content = self._handleIncludes(arg)
+            newArgs.append(content)
+            self._writeDebugShader("Shader-" + str(arg), content)
         result = Shader.make(Shader.SLGLSL, *newArgs)
         self._clearIncludeStack()
         return result
@@ -42,6 +48,14 @@ class BetterShader:
     @classmethod
     def _clearIncludeStack(self):
         self._GlobalIncludeStack = []
+
+    # Internal method to dump shader for debugging
+    @classmethod
+    def _writeDebugShader(self, name, content):
+        writeName = name.strip().replace("/","").replace(".","-")
+        with open(join(self._GlobalShaderPath, "Cache/" +writeName+".shader"), "w") as handle:
+            handle.write(str(content))
+
 
     # Internal (recursive) method to parse #include's
     @classmethod
@@ -75,7 +89,7 @@ class BetterShader:
                         else:
                             self._GlobalIncludeStack.append(properIncludePart)
                             newContent += self._handleIncludes(properIncludePart)
-                            newContent += "#line " + str(line_idx)
+                            newContent += "#line " + str(line_idx+2)
                     else:
                         print "BetterShader: Failed to load '" + str(properIncludePart) + "'!"
                 else:

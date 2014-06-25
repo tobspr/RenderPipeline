@@ -1,5 +1,8 @@
 #version 440
 
+
+#include "Includes/Material.include"
+
 in vec3 normalWorldSpace;
 in vec3 positionWorldSpace;
 in vec2 texcoord;
@@ -17,38 +20,24 @@ void main() {
     vec3 normals = texture(p3d_Texture1, texcoord).rgb;
     float specular = texture(p3d_Texture2, texcoord).r * 1.0;
 
-    specular = 0.0;
-    // specular = 0.0;
-    // diffuse = vec3(0);
+    // Detail normal mapping
+    vec3 normal = normalWorldSpace;  // normal
+    normal += (normals-0.5) * 0.7; // detail normal sampling
+    normal = normalize(normal);
 
 
-    vec3 n = normalWorldSpace;  // normal
-    // vec3 h = normalize(l + v);
+    Material m;
+    m.diffuse = diffuse;
+    m.position = positionWorldSpace;
+    m.normal = normal;
+    m.specular = 0.0;
+    m.smoothness = 0.5;
+    m.gloss = 0.5;
 
-    n += (normals-0.5) * 0.7; // detail normal sampling
-    n = normalize(n);
+    // Pack material
+    mat4 packedData = packMaterial(m);
 
-    // Per Material
-    // vec3 specularColor = vec3(0.0);
-    vec3 specularColor = vec3(1.0, 0.78, 0.29);
-    // specularColor = vec3(0.05, 0.05 ,0.05);
-
-
-    float gloss = 0.15;
-    float smoothness = 0.0;
-    // float transluency = 0.0;
-
-
-    // Ensure no invalid values are passed
-    float realSmoothness = clamp(smoothness, 0.0001, 0.9);
-    float realGloss      = clamp(1.0 - gloss, 0.001, 1.0);
-
-    // diffuse = vec3(0.0,0,0.0);
-
-
-    gl_FragData[0] = vec4(diffuse.xyz, specular);
-    gl_FragData[1] = vec4(n.x, n.y, n.z, realGloss);
-    gl_FragData[2] = vec4(positionWorldSpace, realSmoothness);
-
-
+    gl_FragData[0] = packedData[0];
+    gl_FragData[1] = packedData[1];
+    gl_FragData[2] = packedData[2];
 }

@@ -2,6 +2,7 @@
 #pragma optionNV (unroll all)
 
 
+#include "Includes/Packing.include"
 
 in vec2 texcoord;
 uniform sampler2D depth;
@@ -10,9 +11,6 @@ uniform sampler2D depth;
 #define BATCH_SIZE_X 8
 #define BATCH_SIZE_Y 8
 
-vec2 packDepth(float d) {
-    return vec2(floor(d*1024), fract(d*1024));
-}
 
 void main() {
 
