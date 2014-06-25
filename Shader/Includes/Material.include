@@ -29,9 +29,10 @@ float smoothnessToRoughness(float smoothness) {
 
 // Packs the material for usage in MRT's
 mat4 packMaterial(Material m) {
+    vec2 normal = encodeNormal(m.normal);
     return mat4(
             m.diffuse.x,  m.diffuse.y,  m.diffuse.z,  m.specular,
-            m.normal.x,   m.normal.y,   m.normal.z,   m.gloss,
+            normal.x,     normal.y,     m.transluency,   m.gloss,
             m.position.x, m.position.y, m.position.z, m.smoothness,
             0,0,0,0 // Not used
         );
@@ -43,9 +44,9 @@ Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2) {
     m.diffuse        = data0.xyz;
     m.position       = data2.xyz;
     m.specular       = data0.a;
-    m.normal         = data1.xyz;
+    m.normal         = decodeNormal(data1.xy);
     m.gloss          = data1.w;
-    m.transluency    = 0.0;
+    m.transluency    = data1.z;
     m.position       = data2.xyz;
     m.smoothness     = data2.a;
     m.roughness      = smoothnessToRoughness(m.smoothness);

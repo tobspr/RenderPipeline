@@ -9,6 +9,7 @@ struct Light {
 };
 
 
+
 bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax) {
 
     // Compute bounding sphere
@@ -25,6 +26,7 @@ bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax
         // Also fetch radius
         light.radius = rawData[2][3];
 
+
         // if (light.radius > 100000.0) {
         //     light.radius = 999999999999.0;
         // }
@@ -32,7 +34,7 @@ bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax
         // Rough Sphere collision
         if (distanceToLight < collideSphereRadius + light.radius) {
 
-            // return true;
+            return true;
 
             // Ray collision testing
             // if (rayIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
@@ -79,7 +81,7 @@ vec3 computeLighting(Light light, Material material) {
 
         // Compute reflection
         vec3 reflectedDir = reflect(v, n);
-        float cubemapResolutionParameter = material.gloss;
+        float cubemapResolutionParameter = 1.0 - material.gloss;
         vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
         vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
         vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;

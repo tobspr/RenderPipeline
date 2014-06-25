@@ -86,11 +86,11 @@ class Main(ShowBase):
                     continue
                 angle = float(i) / 64.0 * math.pi * 2.0
                 sampleLight = PointLight()
-                sampleLight.setRadius(6.0)
+                sampleLight.setRadius(7.5)
 
                 sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 2.0)
 
-                initialPos = Vec3((x-3.5) * 5.0, (y-3.5)*5.0, 6)
+                initialPos = Vec3((x-3.5) * 5.0, (y-3.5)*5.0, 7)
                 # initialPos = Vec3(0,0,10)
 
                 sampleLight.setPos(initialPos )

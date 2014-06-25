@@ -16,23 +16,24 @@ uniform sampler2D p3d_Texture2;
 
 void main() {
 
-    vec3 diffuse = texture(p3d_Texture0, texcoord).rgb;
-    vec3 normals = texture(p3d_Texture1, texcoord).rgb;
+    vec3 diffuse = texture(p3d_Texture0, texcoord * 2.0).rgb;
+    vec3 normals = texture(p3d_Texture1, texcoord * 2.0).rgb;
     float specular = texture(p3d_Texture2, texcoord).r * 1.0;
+
+    diffuse = vec3(0);
 
     // Detail normal mapping
     vec3 normal = normalWorldSpace;  // normal
-    normal += (normals-0.5) * 0.7; // detail normal sampling
+    normal += (normals-0.5) * 0.0; // detail normal sampling
     normal = normalize(normal);
-
 
     Material m;
     m.diffuse = diffuse;
     m.position = positionWorldSpace;
     m.normal = normal;
-    m.specular = 0.0;
-    m.smoothness = 0.5;
-    m.gloss = 0.5;
+    m.specular = 0.6;
+    m.smoothness = 0.7;
+    m.gloss = 0.0;
 
     // Pack material
     mat4 packedData = packMaterial(m);

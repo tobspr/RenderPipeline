@@ -16,7 +16,7 @@ layout (local_size_x = 8, local_size_y = 8) in;
 uniform samplerCube fallbackCubemap;
 
 #define MAX_VISIBLE_LIGHTS 64
-#define MAX_LIGHTS_PER_PATCH 16
+#define MAX_LIGHTS_PER_PATCH 64
 
 
 uniform mat4[MAX_VISIBLE_LIGHTS] lightData; 
@@ -140,13 +140,14 @@ void main() {
 
     // if (borderFactor> 0.0) {
         // result.xyz = vec3(localLightCount > 0 ? 1.0 : 0.0);
-    result.xyz += vec3(intensityFactor, 1.0 - intensityFactor, 0.0) * 0.3;
+    // result.xyz += vec3(intensityFactor, 1.0 - intensityFactor, 0.0) * 0.3;
     // }    
 
 
     // Debugging modes
     // result.xyz = vec3(cubeIntersectsSphere(material.position, material.position, vec3(10, 10, 10), 19.0) ? 1.0 : 0.1);
 
+    // result.xyz = material.normal;
 
     result.xyz = clamp(result.xyz, 0, 1);
     // result.xyz += vec3(1,1,0) * borderFactor * 0.09;
