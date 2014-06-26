@@ -1,7 +1,7 @@
 
 from DebugObject import DebugObject
 from panda3d.core import PTAMat4
-from FastText import FastText
+# from FastText import FastText
 
 from BetterShader import BetterShader
 

@@ -1,7 +1,8 @@
 
 
 from panda3d.core import Shader
-from os.path import isfile, join
+from os.path import isfile, join, isdir
+from os import makedirs
 
 
 # Small wrapper arround panda3d.core.Shader which supports
@@ -52,8 +53,16 @@ class BetterShader:
     # Internal method to dump shader for debugging
     @classmethod
     def _writeDebugShader(self, name, content):
+        cachePath = join(self._GlobalShaderPath, "Cache")
+        if not isdir(cachePath):
+            try:
+                makedirs(cachePath)
+            except Exception, msg:
+                print "Could not create",cachePath,":",msg
+                return
+
         writeName = name.strip().replace("/","").replace(".","-")
-        with open(join(self._GlobalShaderPath, "Cache/" +writeName+".shader"), "w") as handle:
+        with open(join(cachePath, writeName+".shader"), "w") as handle:
             handle.write(str(content))
 
 
@@ -89,7 +98,7 @@ class BetterShader:
                         else:
                             self._GlobalIncludeStack.append(properIncludePart)
                             newContent += self._handleIncludes(properIncludePart)
-                            newContent += "#line " + str(line_idx+2)
+                            # newContent += "#line " + str(line_idx+2)
                     else:
                         print "BetterShader: Failed to load '" + str(properIncludePart) + "'!"
                 else:

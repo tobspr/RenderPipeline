@@ -1,18 +1,18 @@
 
 
-float intersection__squared(float v) { 
+float intersectionHelperSquare(float v) { 
     return v * v; 
 }
 
 bool cubeIntersectsSphere(vec3 aabbMin, vec3 aabbMax, vec3 sphereMid, float sphereRadius)
 {
     float dist_squared = sphereRadius * sphereRadius;
-    if (sphereMid.x < aabbMin.x) dist_squared -= intersection__squared(sphereMid.x - aabbMin.x);
-    else if (sphereMid.x > aabbMax.x) dist_squared -= intersection__squared(sphereMid.x - aabbMax.x);
-    if (sphereMid.y < aabbMin.y) dist_squared -= intersection__squared(sphereMid.y - aabbMin.y);
-    else if (sphereMid.y > aabbMax.y) dist_squared -= intersection__squared(sphereMid.y - aabbMax.y);
-    if (sphereMid.z < aabbMin.z) dist_squared -= intersection__squared(sphereMid.z - aabbMin.z);
-    else if (sphereMid.z > aabbMax.z) dist_squared -= intersection__squared(sphereMid.z - aabbMax.z);
+    if (sphereMid.x < aabbMin.x) dist_squared -= intersectionHelperSquare(sphereMid.x - aabbMin.x);
+    else if (sphereMid.x > aabbMax.x) dist_squared -= intersectionHelperSquare(sphereMid.x - aabbMax.x);
+    if (sphereMid.y < aabbMin.y) dist_squared -= intersectionHelperSquare(sphereMid.y - aabbMin.y);
+    else if (sphereMid.y > aabbMax.y) dist_squared -= intersectionHelperSquare(sphereMid.y - aabbMax.y);
+    if (sphereMid.z < aabbMin.z) dist_squared -= intersectionHelperSquare(sphereMid.z - aabbMin.z);
+    else if (sphereMid.z > aabbMax.z) dist_squared -= intersectionHelperSquare(sphereMid.z - aabbMax.z);
     return dist_squared > 0;
 }
 
