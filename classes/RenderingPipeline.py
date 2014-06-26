@@ -18,7 +18,7 @@ class RenderingPipeline(DebugObject):
         self.size = self._getSize()
         self.camera = base.cam
         self.cullBounds = None
-        self.patchSize = (8, 8)
+        self.patchSize = (32, 32)
         self._setup()
 
     def _setup(self):

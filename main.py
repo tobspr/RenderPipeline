@@ -2,15 +2,13 @@
 import math
 
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFileData, Vec3, Vec4, Texture, Shader, TransparencyAttrib
+from panda3d.core import loadPrcFileData, Vec3, TransparencyAttrib
 
 
 from Shared.MovementController import MovementController
 from classes.RenderingPipeline import RenderingPipeline
 from classes.PointLight import PointLight
-
-from classes.RenderTarget import RenderTarget
-from classes.RenderTargetType import RenderTargetType
+from classes.BetterShader import BetterShader
 
 # import sys
 # sys.stdout = open('Log/log.txt', 'w')
@@ -27,14 +25,14 @@ class Main(ShowBase):
         # load demo scene
         print "Loading Scene .."
         # self.scene = loader.loadModel("Scene/Scene.egg")
-        self.scene = loader.loadModel("Scene/SceneBam.bam")
-        # self.scene = loader.loadModel("environment")
+        # self.scene = loader.loadModel("Scene/SceneBam.bam")
+        self.scene = loader.loadModel("environment")
         # self.scene.setScale(0.1)
 
         # self.scene = loader.loadModel("panda")
         self.scene.reparentTo(render)
 
-        if True:
+        if False:
             print "Placing prefabs"
             # place prefabs
             self.scenePrefab = self.scene.find("Prefab")
@@ -90,7 +88,7 @@ class Main(ShowBase):
 
                 sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 2.0)
 
-                initialPos = Vec3((x-3.5) * 5.0, (y-3.5)*5.0, 7)
+                initialPos = Vec3((x-3.5) * 5.0, (y-3.5)*5.0, 3)
                 # initialPos = Vec3(0,0,10)
 
                 sampleLight.setPos(initialPos )
@@ -107,11 +105,15 @@ class Main(ShowBase):
 
         # add huge sun light
         sunLight= PointLight()
-        sunLight.setRadius(1000000.0)
+        sunLight.setRadius(100000000.0)
         sunLight.setColor(Vec3(0.7, 0.7, 0.7))
         sunLight.setPos(Vec3(100,0,100))
         self.renderPipeline.getLightManager().addLight(sunLight)
 
+
+        # create skybox
+
+        self.loadSkybox()
 
         # self.renderDebugNode.flattenStrong()
 
@@ -119,15 +121,21 @@ class Main(ShowBase):
         # coord.setScale(2.0)
         # coord.reparentTo(self.scene)
 
-
         self.setShaders()
 
+
+    def loadSkybox(self):
+        self.skybox = loader.loadModel("Skybox/Skybox")
+        self.skybox.setScale(1000)
+        self.skybox.reparentTo(render)
 
     def setShaders(self):
         print "Reloading Shader .."
         self.scene.setShader(
             self.renderPipeline.getDefaultObjectShader())
         self.renderPipeline.debugReloadShader()
+
+        self.skybox.setShader(BetterShader.load("Shader/DefaultObjectShader.vertex", "Shader/Skybox.fragment"))
 
     def loadEngineSettings(self):
         loadPrcFileData("", """
@@ -138,8 +146,6 @@ class Main(ShowBase):
             gl-force-no-error #t
             framebuffer-srgb #f
             
-
-
         """.strip())
 
         # gl-debug #t

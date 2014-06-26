@@ -1,0 +1,30 @@
+#version 440
+
+
+#include "Includes/Material.include"
+
+in vec3 normalWorldSpace;
+in vec3 positionWorldSpace;
+in vec2 texcoord;
+
+
+void main() {
+
+
+    // Detail normal mapping
+    vec3 normal = normalize(normalWorldSpace);  // normal
+
+    Material m;
+    m.diffuse = vec3(0,0,0);
+    m.position = positionWorldSpace;
+    m.normal = normal;
+    m.specular = 0.01;
+    m.smoothness = 0.2;
+    m.gloss = 0.01;
+
+    // Pack material
+    mat4 packedData = packMaterial(m);
+    gl_FragData[0] = packedData[0];
+    gl_FragData[1] = packedData[1];
+    gl_FragData[2] = packedData[2];
+}
