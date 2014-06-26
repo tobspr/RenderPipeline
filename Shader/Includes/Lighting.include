@@ -34,17 +34,17 @@ bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax
         // Rough Sphere collision
         if (distanceToLight < collideSphereRadius + light.radius) {
 
-            return true;
+            // return true;
 
             // Ray collision testing
-            // if (rayIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
-            //     return true;
-            // }
-
-            // Exact collision testing
-            if (cubeIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
+            if (rayIntersectsSphere(aabbMin, aabbMax, light.position, light.radius + 1.0)) {
                 return true;
             }
+
+            // Exact collision testing
+            // if (cubeIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
+            //     return true;
+            // }
 
         }
 
@@ -58,6 +58,8 @@ vec3 computeLighting(Light light, Material material) {
 
     // Point light
     if (light.type == 1) {  
+
+
 
         // Compute distance to light
         float distanceToLight = distance(material.position, light.position);    
@@ -73,6 +75,7 @@ vec3 computeLighting(Light light, Material material) {
         attenuation *= 1.0 - smoothstep(0.0, 1.0, ((distanceToLight / cutoff) - 1.0) * 4.0 );   
         attenuation = max(0.0, attenuation);
 
+        #if 0
         // Compute vectors
         vec3 l = normalize(light.position - material.position);
         vec3 v = normalize(cameraPosition - material.position);
@@ -108,7 +111,11 @@ vec3 computeLighting(Light light, Material material) {
         vec3 diffuseContribution = material.diffuse * diffuseBrdf * attenuation * light.color + ambient * attenuation;
         vec3 specularContribution = specularTerm * attenuation * light.color; 
 
+
         vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
+        #endif 
+
+        vec3 combinedContribution = attenuation * light.color * 0.2;
 
         return vec3(clamp(combinedContribution, 0, 1));
 

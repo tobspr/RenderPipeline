@@ -2,35 +2,38 @@
 #pragma optionNV (unroll all)
 
 
+#include "Includes/Configuration.include"
 #include "Includes/Packing.include"
+#include "Includes/PositionReconstruction.include"
 
 in vec2 texcoord;
 uniform sampler2D depth;
-
-// Give the compiler a chance to unroll
-#define BATCH_SIZE_X 8
-#define BATCH_SIZE_Y 8
 
 
 void main() {
 
     ivec2 screenSize = textureSize(depth, 0);
     ivec2 screenPos = ivec2(ivec2( texcoord * screenSize ) / 
-        ivec2(BATCH_SIZE_X, BATCH_SIZE_Y)) * ivec2(BATCH_SIZE_X, BATCH_SIZE_Y);
+        ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_X)) * 
+        ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_X);
 
     // float ourDepth = texelFetch(depth, screenPos, 0).xyz;
 
     float minDepth = 1.0;
     float maxDepth = 0.0;
 
-    for (int x = 0; x < BATCH_SIZE_X; x+=1) {
-        for (int y = 0; y < BATCH_SIZE_Y; y+=1) {
+    for (int x = 0; x < LIGHTING_COMPUTE_PATCH_SIZE_X; x+=2) {
+        for (int y = 0; y < LIGHTING_COMPUTE_PATCH_SIZE_X; y+=2) {
             ivec2 newCoord = screenPos + ivec2(x,y);
             float storedDepth = texelFetch(depth, newCoord, 0).r;
             minDepth = min(minDepth, storedDepth);
             maxDepth = max(maxDepth, storedDepth);
         }
     }
+
+    // better packing when converting it to linear space
+    minDepth = getLinearZFromZ(minDepth) / ndcFar;
+    maxDepth = getLinearZFromZ(maxDepth) / ndcFar;
 
     gl_FragData[0] = vec4(packDepth(minDepth), packDepth(maxDepth));
 }

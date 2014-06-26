@@ -13,6 +13,28 @@ float getZFromNdc(vec3 ndcPos) {
   return (ndcC / (ndcA+d));
 }
 
+
+// z has to be in range 0..MAIN_CAMERA_FAR
+float getZFromLinearZ(float z) {
+
+    //((((1.0 / (z / ndcC)) - ndcA) / ndcB) / 2.0) + 0.5;
+
+  z /= ndcC;
+  z = 1.0 / z;
+  z -= ndcA;
+  z /= ndcB;
+  z /= 2.0;
+  z += 0.5;
+  return z;
+}
+
+float getLinearZFromZ(float z) {
+    float z_n = 2.0 * z - 1.0;
+    float z_e = 2.0 * ndcNear * ndcFar / (ndcFar + ndcNear - z_n * (ndcFar - ndcNear));
+    return z_e;
+}
+
+
 vec3 calculateSurfacePos(float z, vec2 tcoord) {
 
   vec3 ndcPos = vec3(tcoord.xy, z);

@@ -1,5 +1,34 @@
 #version 440
+#pragma optionNV (unroll all)
 
+#define MAX_VISIBLE_LIGHTS 64
+#define MAX_LIGHTS_PER_PATCH 16
+
+
+uniform samplerCube fallbackCubemap;
+
+uniform mat4[MAX_VISIBLE_LIGHTS] lightData; 
+// uniform mat4[MAX_VISIBLE_LIGHTS] lightMatrices;
+uniform float lightCount; 
+
+uniform vec3 cameraPosition;
+
+#include "Includes/Configuration.include"
+#include "Includes/Packing.include"
+#include "Includes/Material.include"
+#include "Includes/LightingModels.include"
+#include "Includes/IntersectionTests.include"
+#include "Includes/Lighting.include"
+#include "Includes/PositionReconstruction.include"
+#include "Includes/LightDataPacking.include"
+
+
+// shared Light visibleLights[MAX_LIGHTS_PER_PATCH];
+shared int visibleLights[MAX_LIGHTS_PER_PATCH];
+shared int lightsSoFar = 0;
+
+uniform mat4 p3d_ProjectionMatrix;
+uniform mat4 p3d_ModelViewMatrix;
 
 
 // here the result is stored
@@ -11,32 +40,7 @@ layout (rgba16f) readonly uniform image2D target1Image;
 layout (rgba16f) readonly uniform image2D target2Image;
 layout (rgba16f) readonly uniform image2D minMaxDepthImage;
 
-layout (local_size_x = 8, local_size_y = 8) in;
-
-uniform samplerCube fallbackCubemap;
-
-#define MAX_VISIBLE_LIGHTS 64
-#define MAX_LIGHTS_PER_PATCH 64
-
-
-uniform mat4[MAX_VISIBLE_LIGHTS] lightData; 
-uniform mat4[MAX_VISIBLE_LIGHTS] lightMatrices;
-uniform float lightCount; 
-
-uniform vec3 cameraPosition;
-
-
-#include "Includes/Packing.include"
-#include "Includes/Material.include"
-#include "Includes/LightingModels.include"
-#include "Includes/IntersectionTests.include"
-#include "Includes/Lighting.include"
-#include "Includes/PositionReconstruction.include"
-
-
-
-shared Light visibleLights[MAX_LIGHTS_PER_PATCH];
-shared int lightsSoFar = 0;
+layout (local_size_x = LIGHTING_COMPUTE_PATCH_SIZE_X, local_size_y = LIGHTING_COMPUTE_PATCH_SIZE_Y) in;
 
 
 void main() {
@@ -49,6 +53,9 @@ void main() {
     // has to be a multiple of vec2(local_size_x, local_size_y) 
     // and will get cropped later.
     vec2 computeScreenSize = vec2(1600, 928);
+
+    // Size of a patch
+    vec2 patchSize = vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y); 
 
     // Position in compute space
     ivec2 computePos = ivec2(gl_GlobalInvocationID.xy);
@@ -74,16 +81,112 @@ void main() {
 
     // Fetch patch min / max pos from previous pass
     vec4 patchMinMaxDepth = imageLoad(minMaxDepthImage, precomputePos).rgba;
-    float patchMinDepth    = unpackDepth(patchMinMaxDepth.xy);
-    float patchMaxDepth    = unpackDepth(patchMinMaxDepth.zw);
+
+    float patchLinearMinDepth = unpackDepth(patchMinMaxDepth.xy) * ndcFar;
+    float patchLinearMaxDepth = unpackDepth(patchMinMaxDepth.zw) * ndcFar;
+
+    float patchMinDepth    = getZFromLinearZ(patchLinearMinDepth);
+    float patchMaxDepth    = getZFromLinearZ(patchLinearMaxDepth);
 
     vec3 patchMinPosition = calculateSurfacePos(patchMinDepth, screenPos);
     vec3 patchMaxPosition = calculateSurfacePos(patchMaxDepth, screenPos);
 
+    // Compute tile bounds
+    vec2 tileScale = computeScreenSize * (1.0f / (2.0*patchSize));
+    vec2 tileBias = tileScale - vec2(gl_WorkGroupID.xy);
+
+    // Don't have to type that every time
+    mat4 projMat = p3d_ProjectionMatrix;
+    mat4 viewMat = p3d_ModelViewMatrix;
+
+    vec4 frustumRL = vec4(-projMat[0][0] * tileScale.x, 0.0f, tileBias.x, 0.0f);
+    vec4 frustumTL = vec4(0.0f, -projMat[1][1] * tileScale.y, tileBias.y, 0.0f);
+    vec4 frustumOffset = vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+
+    // Derive frustum planes
+    vec4 frustumPlanes[4];
+    frustumPlanes[0] = frustumOffset - frustumRL;
+    frustumPlanes[1] = frustumOffset + frustumRL;
+    frustumPlanes[2] = frustumOffset - frustumTL;
+    frustumPlanes[3] = frustumOffset + frustumTL;
+
+    for(int i = 0; i < 4; i++)
+    {
+        frustumPlanes[i] = normalize(frustumPlanes[i]);
+    }
+
+    // Perform light culling
+    vec4 result = vec4(0.1);
+
+    uint threadCount = uint(patchSize.x * patchSize.y);
+    uint passCount = (uint(lightCount) + threadCount - 1) /threadCount;
+
+    float dist;
+    bool inFrustum;
+    vec3 lightPos;
+    float lightRadius;
+    float lightType;
+
+    // for (int passIndex = 0; passIndex < passCount; passIndex ++) {
+        uint passIndex = 0;
+        uint lightIndex =  passIndex * threadCount + gl_LocalInvocationIndex;
+
+        if (lightIndex < lightCount) {
+        
+            mat4 lightData = lightData[lightIndex];
+            lightType = lightData[0];
+
+
+            if (lightType > 0) {
+
+                lightPos = Light_getPos(lightData);
+                lightRadius = Light_getRadius(lightData);
+                dist = distance(material.position, lightPos);
+
+                inFrustum = false;
+
+                if (lightType == 1.0) {
+                    
+                    // Check if distance matches
+                    if (dist - lightRadius < patchLinearMaxDepth) {
+
+                        vec4 posProj = viewMat * vec4(lightPos, 1.0);
+
+                        // Exact frustum culling
+                        // inFrustum = true;
+                        if (sphereInFrustum(frustumPlanes, posProj, lightRadius)) {
+                            inFrustum = true;
+                        }
+                    }
+
+                }
+
+                // Add to light list
+                if (inFrustum) {
+                    int addIndex = atomicAdd(lightsSoFar, 1);
+                }
+            }
+        }
+    // }
+
+    barrier();
+
+
+        // result.xyz = vec3(dot(frustumPlanes[2], posProj));
+
+
+
+
+
+
+/*
     // Collect lights
     int cellIndex = int(gl_LocalInvocationIndex);
 
-    barrier();
+    // barrier();
+
+
 
 
     if (cellIndex < min(MAX_VISIBLE_LIGHTS, lightCount) ) {
@@ -115,7 +218,6 @@ void main() {
         } 
     }
 
-    memoryBarrier();
     barrier();
 
     vec3 lightingResult = vec3(0);
@@ -141,16 +243,15 @@ void main() {
     // if (borderFactor> 0.0) {
         // result.xyz = vec3(localLightCount > 0 ? 1.0 : 0.0);
     // result.xyz += vec3(intensityFactor, 1.0 - intensityFactor, 0.0) * 0.3;
+    // result.xyz = vec3(intensityFactor);
     // }    
+*/
 
 
-    // Debugging modes
-    // result.xyz = vec3(cubeIntersectsSphere(material.position, material.position, vec3(10, 10, 10), 19.0) ? 1.0 : 0.1);
-
-    // result.xyz = material.normal;
+    result.xyz = vec3( lightsSoFar / 128.0 );
 
     result.xyz = clamp(result.xyz, 0, 1);
-    // result.xyz += vec3(1,1,0) * borderFactor * 0.09;
+    result.xyz += vec3(1,1,0) * borderFactor * 0.09;
 
 
     imageStore(destinationImage, computePos, vec4(result) );
