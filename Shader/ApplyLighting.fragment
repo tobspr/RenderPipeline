@@ -88,6 +88,7 @@ void main() {
         borderFactor = 1.0;
     }
 
+    result.xyz = material.diffuse + material.normal*0.1;
 
     // result.xyz = vec3(numActiveLights / MAX_LIGHTS_PER_PATCH);
     // result.xyz = vec3(texelFetch(lightsPerTile, precomputeCoord, 0).r);
