@@ -15,7 +15,7 @@ class BetterShader:
     _GlobalIncludeStack = []
 
     # Root directory where all the shaders are stored
-    # This is usefull so you don't have to change all your 
+    # This is useful so you don't have to change all your 
     # Shaders when you move them to a new location.
     # Also include directives are shorter then. Set to ""
     # to disable this feature
@@ -24,7 +24,7 @@ class BetterShader:
     # Loads a compute shader
     @classmethod
     def loadCompute(self, source):
-        print "Loading compute shader",source
+        # print "Loading compute shader",source
         content = self._handleIncludes(source)
         result = Shader.makeCompute(Shader.SLGLSL, content)
         self._writeDebugShader("Compute-"+str(source), content)
@@ -35,7 +35,7 @@ class BetterShader:
     # Order is vertex, fragment, geometry, tesseval, tesscontrol
     @classmethod
     def load(self, *args):
-        print "Loading shader",args[-1]
+        # print "Loading shader",args[-1]
         newArgs = []
         for arg in args:
             content = self._handleIncludes(arg)
@@ -94,10 +94,14 @@ class BetterShader:
                         
                         # Check for recursive includes
                         if properIncludePart in self._GlobalIncludeStack:
-                            print "BetterShader: Ignoring recursive include:",properIncludePart
+                            # print "BetterShader: Ignoring recursive include:",properIncludePart
+                            pass
+
                         else:
                             self._GlobalIncludeStack.append(properIncludePart)
+                            newContent += "\n\n// FILE: '" + str(properIncludePart) +"' "
                             newContent += self._handleIncludes(properIncludePart)
+                            newContent += "\n\n// End of included file\n\n\n\n"
                             # newContent += "#line " + str(line_idx+2)
                     else:
                         print "BetterShader: Failed to load '" + str(properIncludePart) + "'!"
@@ -106,6 +110,6 @@ class BetterShader:
 
                 continue
 
-            newContent += lineStrip + "\n"
+            newContent += line.rstrip() + "\n"
 
         return newContent

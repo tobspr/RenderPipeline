@@ -25,6 +25,8 @@ class RenderTarget(DebugObject):
         self._region = self._findRegionForCamera()
         self._enableTransparency = False
 
+        self.mute()
+
 
     # Sets the buffer name to identify in pstats
     def setName(self, name):
@@ -48,6 +50,34 @@ class RenderTarget(DebugObject):
     # Sets the required aux bits
     def setAuxBits(self, auxBits):
         self._auxBits = auxBits
+
+    # Pass to the quad
+    def setShaderInput(self, name, val):
+        self.getQuad().setShaderInput(name, val, 200)
+
+    # Pass to the quad
+    def setShader(self, shader):
+        self.getQuad().setShader(shader)
+
+
+    # Shortcut
+    def getColorTexture(self):
+        return self.getTexture(RenderTargetType.Color)
+
+    # Shortcut
+    def getDepthTexture(self):
+        return self.getTexture(RenderTargetType.Depth)
+
+    # Shortcut
+    def getAuxTexture(self, index=0):
+        assert(index < 4)
+        auxTextures = [
+            RenderTargetType.Aux0,
+            RenderTargetType.Aux1,
+            RenderTargetType.Aux2,
+            RenderTargetType.Aux3
+        ]
+        return self.getTexture(auxTextures[index])
 
     # Sets source window and camera
     def setSource(self, sourceCam, sourceWin, region=None):

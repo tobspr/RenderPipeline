@@ -56,7 +56,7 @@ class Main(ShowBase):
         render.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
 
         self.mc = MovementController(self)
-        self.mc.setInitialPosition(Vec3(50, 50, 50), Vec3(0))
+        self.mc.setInitialPosition(Vec3(70, 70, 70), Vec3(0))
         # self.mc.speed = 5.0
         self.mc.setup()
 
@@ -72,10 +72,17 @@ class Main(ShowBase):
         # # add some lights
         self.lights = []
 
+        # add huge sun light
+        sunLight= PointLight()
+        sunLight.setRadius(100000000.0)
+        sunLight.setColor(Vec3(0.7, 0.7, 0.7))
+        sunLight.setPos(Vec3(100,0,100))
+        self.renderPipeline.getLightManager().addLight(sunLight)
+
+
         self.renderDebugNode = render.attachNewNode("LightDebug")
 
         self.initialLightPos = []
-
         i = 0
         for x in xrange(8):
             for y in xrange(8):
@@ -84,11 +91,11 @@ class Main(ShowBase):
                     continue
                 angle = float(i) / 64.0 * math.pi * 2.0
                 sampleLight = PointLight()
-                sampleLight.setRadius(7.5)
+                sampleLight.setRadius(6.0)
 
                 sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 2.0)
 
-                initialPos = Vec3((x-3.5) * 5.0, (y-3.5)*5.0, 3)
+                initialPos = Vec3((x-3.5) * 8.0, (y-3.5)*8.0, 4)
                 # initialPos = Vec3(0,0,10)
 
                 sampleLight.setPos(initialPos )
@@ -103,12 +110,6 @@ class Main(ShowBase):
                 self.renderPipeline.getLightManager().addLight(sampleLight)
                 self.lights.append(sampleLight)
 
-        # add huge sun light
-        sunLight= PointLight()
-        sunLight.setRadius(100000000.0)
-        sunLight.setColor(Vec3(0.7, 0.7, 0.7))
-        sunLight.setPos(Vec3(100,0,100))
-        self.renderPipeline.getLightManager().addLight(sunLight)
 
 
         # create skybox
@@ -117,9 +118,9 @@ class Main(ShowBase):
 
         # self.renderDebugNode.flattenStrong()
 
-        # coord = loader.loadModel("zup-axis")
-        # coord.setScale(2.0)
-        # coord.reparentTo(self.scene)
+        coord = loader.loadModel("zup-axis")
+        coord.setScale(2.0)
+        coord.reparentTo(self.scene)
 
         self.setShaders()
 
@@ -134,40 +135,33 @@ class Main(ShowBase):
         self.scene.setShader(
             self.renderPipeline.getDefaultObjectShader())
         self.renderPipeline.debugReloadShader()
-
+        
         self.skybox.setShader(BetterShader.load("Shader/DefaultObjectShader.vertex", "Shader/Skybox.fragment"))
 
     def loadEngineSettings(self):
         loadPrcFileData("", """
-            win-size 1600 928
+            window-title Render Pipeline
+            win-size 1600 960
+            win-fixed-size #t
             framebuffer-multisample #f
             multisample #f
             textures-power-2 none
             gl-force-no-error #t
             framebuffer-srgb #f
-            
+            gl-dump-compiled-shaders #f
+            frame-rate-meter-text-pattern %0.2f fps
+            frame-rate-meter-ms-text-pattern %0.3f ms
+            frame-rate-meter-side-margins 0.4
+            frame-rate-meter-scale 0.04
+            text-default-font Font/SourceSansPro-Regular.otf
+            frame-rate-meter-milliseconds #t
         """.strip())
-
-        # gl-debug #t
 
 
     def update(self, task):
-        # render.setShaderInput("cameraPosition", self.camera.getPos(render))
-
-        # radius = math.sin(globalClock.getFrameTime() * 2.0) * 3.0 + 15.0
-
-        i = 0
-
-        # ft = globalClock.getFrameTime() * 1.0
-        # for light in self.lights:
+        # for i, light in enumerate(self.lights):
         #     initialPos = self.initialLightPos[i]
-
         #     light.setPos(initialPos + Vec3(math.sin(ft) * 5.0, math.cos(ft) * 5.0, 0))
-
-        #     i += 1
-
-
-
         return task.cont
 
 

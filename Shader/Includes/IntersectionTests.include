@@ -1,5 +1,5 @@
 
-
+/*
 float intersectionHelperSquare(float v) { 
     return v * v; 
 }
@@ -26,14 +26,14 @@ bool rayIntersectsSphere(vec3 rayStart, vec3 rayEnd, vec3 sphereMid, float spher
     float test = b*b - 4.0*a*c;
     return test >= 0.0;
 }
-
+*/
 
 bool sphereInFrustum(vec4 frustumPlanes[4], vec4 pos, float radius) {
-    for (uint i = 3; i >= 0; i--)
-    {
-        float dist = dot(frustumPlanes[i], pos);
-        if ( -radius > dist) return false;
-    }
-    return true;
+    bvec4 result;
+    result.x = -radius <= dot(frustumPlanes[0], pos);
+    result.y = -radius <= dot(frustumPlanes[1], pos);
+    result.z = -radius <= dot(frustumPlanes[2], pos);
+    result.w = -radius <= dot(frustumPlanes[3], pos);
+    return all(result);
 }
 

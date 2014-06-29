@@ -1,0 +1,83 @@
+#version 400
+
+// TODO: Make some benchmarks to see wheter unrolling
+// is faster or slower ..
+
+// EDIT: As of now, not unrolling is faster
+// #pragma optionNV (unroll all)
+
+
+#include "Includes/Configuration.include"
+#include "Includes/LightDataPacking.include"
+#include "Includes/Lighting.include"
+#include "Includes/Material.include"
+
+uniform sampler2D data0;
+uniform sampler2D data1;
+uniform sampler2D data2;
+
+uniform sampler2D lightsPerTile;
+
+
+uniform mat4 lightData[MAX_VISIBLE_LIGHTS]; 
+
+
+in vec2 texcoord;
+
+
+void main() {
+
+    // Compute texcoords
+    ivec2 screenSize = textureSize(data0, 0);
+    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize)); 
+    ivec2 precomputeSize = textureSize(lightsPerTile, 0) / ivec2(8, 8);
+    ivec2 precomputeCoord = ivec2(texcoord * precomputeSize) * ivec2(8, 8);
+
+    // Extract material data
+    vec4 target0data = texelFetch(data0, screenCoord, 0);
+    vec4 target1data = texelFetch(data1, screenCoord, 0);
+    vec4 target2data = texelFetch(data2, screenCoord, 0);
+
+    Material material = unpackMaterial(target0data, target1data, target2data);
+
+    // Fetch number of lights for this tile
+    int tileLightCount = int( texelFetch(lightsPerTile, precomputeCoord, 0).r * float(MAX_LIGHTS_PER_PATCH) );
+    int numActiveLights = min(tileLightCount, MAX_LIGHTS_PER_PATCH);
+
+
+
+    vec3 result = vec3(0.0);
+
+    // Compute each light which affects this tile
+    for (int i = 0; i < numActiveLights; i++) {
+
+        // Light index is offsetted by 1, because at position 0 
+        // the number of lights is stored
+        int index = i+1;
+
+        // Compute offset by index
+        ivec2 offset = ivec2(index % 8, index / 8);
+
+        // Extract light id from texture, and fetch data for that light
+        int lightId = int(texelFetch(lightsPerTile, precomputeCoord + offset, 0).r * float(MAX_VISIBLE_LIGHTS) );
+        mat4 currentData = lightData[lightId];
+
+        // Convert to light struct
+        Light currentLight;
+
+        currentLight.type = Light_getType(currentData);
+        currentLight.color = Light_getColor(currentData);
+        currentLight.position = Light_getPos(currentData);
+
+        result += computeLighting(currentLight, material, currentData);
+    }
+
+
+    float lightsVisibleFloat = float(numActiveLights) / float(MAX_LIGHTS_PER_PATCH);
+    vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
+
+    // result.xyz = vec3(numActiveLights / MAX_LIGHTS_PER_PATCH);
+    // result.xyz += lightCountIndicator * 1.0;
+
+    gl_FragColor = vec4(result.xyz, 1);
+}

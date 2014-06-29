@@ -73,6 +73,7 @@ class Light:
         self.data.lightType = self._getLightType()
 
 
+
     # Sets the rotation for this light
     def setHpr(self, hpr):
         self.rotation = hpr

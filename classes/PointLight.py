@@ -45,20 +45,22 @@ class PointLight(Light, DebugObject):
         # Outer circles
         points1 = []
         points2 = []
-        points3 = []
+        # points3 = []
         for i in xrange(self.visualizationNumSteps + 1):
             angle = float(i) / float(self.visualizationNumSteps) * math.pi * 2.0
             points1.append(Vec3(0, math.sin(angle), math.cos(angle)))
             points2.append(Vec3(math.sin(angle), math.cos(angle), 0))
-            points3.append(Vec3(math.sin(angle), 0, math.cos(angle)))
+            # points3.append(Vec3(math.sin(angle), 0, math.cos(angle)))
 
         self._createDebugLine(points1, False).reparentTo(lineNode)
         self._createDebugLine(points2, False).reparentTo(lineNode)
-        self._createDebugLine(points3, False).reparentTo(lineNode)
+        # self._createDebugLine(points3, False).reparentTo(lineNode)
 
 
         lineNode.setScale(self.radius)
         mainNode.setHpr(self.rotation)
+
+        mainNode.flattenStrong()
 
         self.debugNode.node().removeAllChildren()
         mainNode.reparentTo(self.debugNode)

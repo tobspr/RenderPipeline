@@ -1,5 +1,5 @@
 
-
+#include "Includes/Configuration.include"
 #include "Includes/Packing.include"
 
 // Commonly used structs
@@ -23,9 +23,8 @@ struct Material {
 // Smoothness is more intuitive to specify.
 // But roughness is used for the calculation
 float smoothnessToRoughness(float smoothness) {
-    return clamp(pow(1.0 - smoothness * 0.7, 6.0), 0, 1);
+    return saturate( pow(- smoothness * 0.7 + 1.0, 6.0));
 }
-
 
 // Packs the material for usage in MRT's
 mat4 packMaterial(Material m) {

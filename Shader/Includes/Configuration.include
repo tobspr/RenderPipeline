@@ -1,4 +1,33 @@
 
 
+// Size of a patch for the light culling
 #define LIGHTING_COMPUTE_PATCH_SIZE_X 32
 #define LIGHTING_COMPUTE_PATCH_SIZE_Y 32
+
+// Max values for the light culling
+// If you change anything in LightManager, 
+// change it here, too 
+#define MAX_VISIBLE_LIGHTS 64
+#define MAX_LIGHTS_PER_PATCH 64
+
+// 1 .. Patch Size
+// Lower means more accurate but also more performance lost
+// Try to set as high as possible without getting artifacts
+#define LIGHTING_MIN_MAX_DEPTH_ACCURACY 4
+
+// Wheter to clear the lighting buffer each frame to be
+// able to see changes in lighting - only recommended for debugging
+// #define LIGHTING_CLEAR_BUFFER_EACH_FRAME
+
+// Wheter to check for accurate bounds or only
+// perform a fast check
+#define LIGHTING_ACCURATE_BOUND_CHECK
+
+// GLSL really needs this as a builtin!
+#define saturate(v) clamp(v, 0, 1)
+
+// For efficient swizzle
+const vec2 _constants = vec2(1);
+
+// Needed for light culling
+const float sqrt_of_2 = 1.4142135623;

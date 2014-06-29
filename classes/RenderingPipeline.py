@@ -16,9 +16,11 @@ class RenderingPipeline(DebugObject):
         self.showbase = showbase
         self.lightManager = LightManager()
         self.size = self._getSize()
+        self.precomputeSize = Vec2(0)
         self.camera = base.cam
         self.cullBounds = None
-        self.patchSize = (32, 32)
+        self.patchSize = Vec2(32, 32)
+
         self._setup()
 
     def _setup(self):
@@ -35,12 +37,13 @@ class RenderingPipeline(DebugObject):
         self._createLightingPipeline()
 
         # for debugging attach texture to shader
-        self.deferredTarget.getQuad().setShader(BetterShader.load(
+        self.deferredTarget.setShader(BetterShader.load(
             "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
-        self.deferredTarget.getQuad().setShaderInput(
-            "sampler", self.lightingPassTex)
-        self.deferredTarget.getQuad().setShaderInput("screenSize", self.size)
-        # self.deferredTarget.getQuad().setShaderInput("sampler", self.deferredTarget.getTexture(RenderTargetType.Aux1))
+        # self.deferredTarget.setShaderInput("sampler", self.lightBoundsComputeBuff.getColorTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.lightPerTileStorage)
+        self.deferredTarget.setShaderInput(
+            "sampler", self.lightingComputeContainer.getColorTexture())
+        # self.deferredTarget.setShaderInput("screenSize", self.precomputeSize)
 
         # add update task
         self._attachUpdateTask()
@@ -58,92 +61,114 @@ class RenderingPipeline(DebugObject):
         self.deferredTarget.setDepthBits(32)
         self.deferredTarget.prepareSceneRender()
 
+    # Creates the storage to store the list of visible lights per tile
+    def _makeLightPerTileStorage(self):
+
+        storageSizeX = int(self.precomputeSize.x * 8)
+        storageSizeY = int(self.precomputeSize.y * 8)
+
+        self.debug(
+            "Creating per tile storage of size", storageSizeX, "x", storageSizeY)
+
+        self.lightPerTileStorage = Texture("LightsPerTile")
+        self.lightPerTileStorage.setup2dTexture(
+            storageSizeX, storageSizeY, Texture.TFloat, Texture.F_r16)
+        self.lightPerTileStorage.setMinfilter(Texture.FTNearest)
+        self.lightPerTileStorage.setMagfilter(Texture.FTNearest)
+
     # Inits the lighting pipeline
     def _createLightingPipeline(self):
-        self.debug("Creating lighting compute shader")
+        self.debug("Creating lighting pipeline ..")
 
         # size has to be a multiple of the compute unit size
-        sizeX = int(math.ceil(self.size.x / self.patchSize[0]))
-        sizeY = int(math.ceil(self.size.y / self.patchSize[1]))
+        # but still has to cover the whole screen
+        sizeX = int(math.ceil(self.size.x / self.patchSize.x))
+        sizeY = int(math.ceil(self.size.y / self.patchSize.y))
+
+        self.precomputeSize = Vec2(sizeX, sizeY)
 
         self.debug("Batch size =", sizeX, "x", sizeY,
-                   "Buffer size=", sizeX * self.patchSize[0], "x", sizeY * self.patchSize[1])
+                   "Actual Buffer size=", int(sizeX * self.patchSize.x), "x", int(sizeY * self.patchSize.y))
 
-        # Create a buffer which computes the min / max bounds
-        self._makePositionComputationBuffer(sizeX, sizeY)
+        self._makeLightPerTileStorage()
 
-        # create a texture where the light shader can write to
-        self.lightingPassTex = Texture("LightingPassResult")
-        self.lightingPassTex.setup2dTexture(
-            sizeX * self.patchSize[0], sizeY * self.patchSize[1], Texture.TFloat, Texture.FRgba8)
-        self.lightingPassTex.setMinfilter(Texture.FTNearest)
-        self.lightingPassTex.setMagfilter(Texture.FTNearest)
-        # self.lightingPassTex.clearRamImage() # doesn't work
+ 
 
-        # create compute node
-        self.lightingComputeNode = ComputeNode("LightingComputePass")
-        self.lightingComputeNode.add_dispatch(sizeX, sizeY, 1)
+        # Create a buffer which computes which light affects which tile
+        self._makeLightBoundsComputationBuffer(sizeX, sizeY)
 
-        # attach compute node to scene graph
-        self.lightingComputeContainer = render.attachNewNode(
-            self.lightingComputeNode)
-        self.lightManager.setComputeShaderNode(self.lightingComputeContainer)
+        # Create a buffer which applies the lighting
+        self._makeLightingComputeBuffer()
 
-        # Set scene data as shader input
-        self.lightingComputeContainer.setShaderInput(
-            "destinationImage", self.lightingPassTex)
-        self.lightingComputeContainer.setShaderInput(
-            "target0Image", self.deferredTarget.getTexture(RenderTargetType.Color))
-        self.lightingComputeContainer.setShaderInput(
-            "target1Image", self.deferredTarget.getTexture(RenderTargetType.Aux0))
-        self.lightingComputeContainer.setShaderInput(
-            "target2Image", self.deferredTarget.getTexture(RenderTargetType.Aux1))
+        # Register for light manager
+        self.lightManager.setLightingComputators(
+            [self.lightBoundsComputeBuff, self.lightingComputeContainer])
+
 
         # Ensure the images have the correct filter mode
         for bmode in [RenderTargetType.Color]:
-            tex = self.posComputeBuff.getTexture(bmode)
+            tex = self.lightBoundsComputeBuff.getTexture(bmode)
             tex.setMinfilter(Texture.FTNearest)
             tex.setMagfilter(Texture.FTNearest)
 
+        # self._loadFallbackCubemap()
+
+        # Create storage for the bounds computation
+
+        # Set inputs
+        self.lightBoundsComputeBuff.setShaderInput(
+            "destination", self.lightPerTileStorage)
+        self.lightBoundsComputeBuff.setShaderInput(
+            "depth", self.deferredTarget.getDepthTexture())
+
         self.lightingComputeContainer.setShaderInput(
-            "minMaxDepthImage", self.posComputeBuff.getTexture(RenderTargetType.Color))
-
-        # pass render and camera to allow reprojection of depth
-        self.lightingComputeContainer.setShaderInput("render", render)
+            "data0", self.deferredTarget.getColorTexture())
         self.lightingComputeContainer.setShaderInput(
-            "camera", self.showbase.cam)
-
-        self.lightingComputeContainer.setBin("unsorted", 10)
-
-        self._loadFallbackCubemap()
-
-        self.posComputeBuff.getQuad().setShaderInput(
-            "position", self.deferredTarget.getTexture(RenderTargetType.Aux1))
-
-        self.posComputeBuff.getQuad().setShaderInput(
-            "depth", self.deferredTarget.getTexture(RenderTargetType.Depth))
+            "data1", self.deferredTarget.getAuxTexture(0))
+        self.lightingComputeContainer.setShaderInput(
+            "data2", self.deferredTarget.getAuxTexture(1))
 
     def _loadFallbackCubemap(self):
         cubemap = loader.loadCubeMap("Cubemap/#.png")
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb_alpha)
-        self.lightingComputeContainer.setShaderInput(
-            "fallbackCubemap", cubemap)
+        # self.lightingComputeContainer.setShaderInput(
+        #     "fallbackCubemap", cubemap)
 
-    def _makePositionComputationBuffer(self, w, h):
-        self.debug("Creating position computation buffer")
-        self.posComputeBuff = RenderTarget("PositionPrecompute")
-        self.posComputeBuff.setSize(w, h)
-        self.posComputeBuff.addRenderTexture(RenderTargetType.Color)
-        self.posComputeBuff.setColorBits(16)
-        self.posComputeBuff.prepareOffscreenBuffer()
+    def _makeLightBoundsComputationBuffer(self, w, h):
+        self.debug("Creating light precomputation buffer of size", w, "x", h)
+        self.lightBoundsComputeBuff = RenderTarget("ComputeLightTileBounds")
+        self.lightBoundsComputeBuff.setSize(w, h)
+        self.lightBoundsComputeBuff.addRenderTexture(RenderTargetType.Color)
+        self.lightBoundsComputeBuff.setColorBits(16)
+        self.lightBoundsComputeBuff.prepareOffscreenBuffer()
+
+        self.lightBoundsComputeBuff.setShaderInput("mainCam", base.cam)
+        self.lightBoundsComputeBuff.setShaderInput("mainRender", base.render)
+
         self._setPositionComputationShader()
+
+
+    def _makeLightingComputeBuffer(self):
+        self.lightingComputeContainer = RenderTarget("ComputeLighting")
+        # self.lightingComputeContainer.setSize()
+        self.lightingComputeContainer.addRenderTexture(RenderTargetType.Color)
+        self.lightingComputeContainer.setColorBits(16)
+        self.lightingComputeContainer.prepareOffscreenBuffer()
+
+        self.lightingComputeContainer.setShaderInput(
+            "lightsPerTile", self.lightPerTileStorage)
+
+    def _setLightingShader(self):
+        lightShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex", "Shader/ApplyLighting.fragment")
+        self.lightingComputeContainer.setShader(lightShader)
 
     def _setPositionComputationShader(self):
         pcShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex", "Shader/PrecomputeMinMaxPos.fragment")
-        self.posComputeBuff.getQuad().setShader(pcShader)
+            "Shader/DefaultPostProcess.vertex", "Shader/PrecomputeLights.fragment")
+        self.lightBoundsComputeBuff.setShader(pcShader)
 
     def _getSize(self):
         return Vec2(
@@ -153,6 +178,7 @@ class RenderingPipeline(DebugObject):
     def debugReloadShader(self):
         self.lightManager.debugReloadShader()
         self._setPositionComputationShader()
+        self._setLightingShader()
 
     def _attachUpdateTask(self):
         self.showbase.addTask(self._update, "UpdateRenderingPipeline")
@@ -170,8 +196,7 @@ class RenderingPipeline(DebugObject):
         self.lightManager.setCullBounds(self.cullBounds)
         self.lightManager.update()
 
-        self.lightingComputeContainer.setShaderInput(
-            "cameraPosition", self.showbase.cam.getPos(render))
+        self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
 
         return task.cont
 

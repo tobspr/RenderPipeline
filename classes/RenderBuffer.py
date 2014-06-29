@@ -23,6 +23,8 @@ class RenderBuffer(DebugObject):
         self._targets = {}
         self._win = None
 
+        self.mute()
+
     # Name of this buffer
     def setName(self, name):
         self._name = name

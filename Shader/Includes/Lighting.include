@@ -1,5 +1,7 @@
 
-
+#include "Includes/LightDataPacking.include"
+#include "Includes/LightingModels.include"
+#include "Includes/Material.include"
 
 struct Light {
     int type;
@@ -8,58 +10,16 @@ struct Light {
     float radius;
 };
 
+uniform vec3 cameraPosition;
 
 
-bool isInLightBounds(inout Light light, mat4 rawData, vec3 aabbMin, vec3 aabbMax) {
-
-    // Compute bounding sphere
-    // This might not be perfect, but fast
-    vec3 collideSphereMid = (aabbMin + aabbMax) / 2.0;
-    float collideSphereRadius = distance(aabbMin, aabbMax) / 2.0;
-
-    // PointLight
-    if (light.type == 1) {
-
-        // Distance to our mid
-        float distanceToLight = distance(collideSphereMid, light.position);
-
-        // Also fetch radius
-        light.radius = rawData[2][3];
-
-
-        // if (light.radius > 100000.0) {
-        //     light.radius = 999999999999.0;
-        // }
-
-        // Rough Sphere collision
-        if (distanceToLight < collideSphereRadius + light.radius) {
-
-            // return true;
-
-            // Ray collision testing
-            if (rayIntersectsSphere(aabbMin, aabbMax, light.position, light.radius + 1.0)) {
-                return true;
-            }
-
-            // Exact collision testing
-            // if (cubeIntersectsSphere(aabbMin, aabbMax, light.position, light.radius)) {
-            //     return true;
-            // }
-
-        }
-
-    }
-
-    return false;
-}
-
-
-vec3 computeLighting(Light light, Material material) {
+vec3 computeLighting(Light light, Material material, mat4 additionalData) {
 
     // Point light
     if (light.type == 1) {  
 
 
+        light.radius = Light_getRadius(additionalData);
 
         // Compute distance to light
         float distanceToLight = distance(material.position, light.position);    
@@ -75,7 +35,7 @@ vec3 computeLighting(Light light, Material material) {
         attenuation *= 1.0 - smoothstep(0.0, 1.0, ((distanceToLight / cutoff) - 1.0) * 4.0 );   
         attenuation = max(0.0, attenuation);
 
-        #if 0
+        #if 1
         // Compute vectors
         vec3 l = normalize(light.position - material.position);
         vec3 v = normalize(cameraPosition - material.position);
@@ -85,9 +45,10 @@ vec3 computeLighting(Light light, Material material) {
         // Compute reflection
         vec3 reflectedDir = reflect(v, n);
         float cubemapResolutionParameter = 1.0 - material.gloss;
-        vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
-        vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
-        vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+        // vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
+        // vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
+        // vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+        vec3 reflectedColor = vec3(1.0);
 
         // Ambient is not used yet
         float ambient = 0.0;
@@ -115,7 +76,7 @@ vec3 computeLighting(Light light, Material material) {
         vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
         #endif 
 
-        vec3 combinedContribution = attenuation * light.color * 0.2;
+        // vec3 combinedContribution = attenuation * light.color * 0.2;
 
         return vec3(clamp(combinedContribution, 0, 1));
 

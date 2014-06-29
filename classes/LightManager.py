@@ -1,6 +1,6 @@
 
 from DebugObject import DebugObject
-from panda3d.core import PTAMat4
+from panda3d.core import PTAMat4, Shader
 # from FastText import FastText
 
 from BetterShader import BetterShader
@@ -21,9 +21,12 @@ class LightManager(DebugObject):
         # self.lightsVisibleDebugText = FastText()
         # self.lightsVisibleDebugText.setPos(base.getAspectRatio() - 0.1, 0.9)
         # self.lightsVisibleDebugText.setRightAligned(True)
-        # self.lightsVisibleDebugText.setColor(1,1,1)
+        # self.lightsVisibleDebugText.setColor(1,0,0)
         # self.lightsVisibleDebugText.setSize(0.04)
 
+        self.lightsVisibleDebugText = None
+
+        self.computingNodes = []
 
     def addLight(self, light):
         # if len(self.lights) >= self.maxLights:
@@ -31,24 +34,17 @@ class LightManager(DebugObject):
         #     return False
         self.lights.append(light)
 
-    def setPipelineShader(self):
-        pipelineShader = BetterShader.loadCompute("Shader/LightingPipeline.compute")
-        
-        if pipelineShader.getErrorFlag():
-            print "Shader contains an error! Cannot set .."
-        else:
-            self.computeShaderNode.setShader(pipelineShader)
+    def setLightingComputators(self, shaderNodes):
+        self.computingNodes = shaderNodes
 
+        for shaderNode in self.computingNodes:
+            shaderNode.setShaderInput("lightData", self.dataVector)
+            # shaderNode.setShaderInput("lightMatrices", self.smatVector)
+            shaderNode.setShaderInput("lightCount", 0)
 
-    def setComputeShaderNode(self, computeShader):
-        self.computeShaderNode = computeShader
-        self.computeShaderNode.setShaderInput("lightData", self.dataVector)
-        self.computeShaderNode.setShaderInput("lightMatrices", self.smatVector)
-        self.computeShaderNode.setShaderInput("lightCount", 0)
-        self.setPipelineShader()
 
     def debugReloadShader(self):
-        self.setPipelineShader()
+        pass
 
 
     def setCullBounds(self, bounds):
@@ -56,14 +52,15 @@ class LightManager(DebugObject):
 
     def update(self):
 
+        # return
         self.numVisibleLights = 0
 
         for index, light in enumerate(self.lights):
 
             if self.numVisibleLights >= self.maxVisibleLights:
                 # too many lights
-                self.error(
-                    "Too many lights! Can't display more than", self.maxVisibleLights)
+                # self.error(
+                    # "Too many lights! Can't display more than", self.maxVisibleLights)
                 break
 
             # update light if required
@@ -85,10 +82,14 @@ class LightManager(DebugObject):
             # todo: visibility check
             lightData = light.getData()
             self.dataVector[self.numVisibleLights] = lightData.getDataMat()
-            self.smatVector[self.numVisibleLights] = lightData.getProjMat()
+            # self.smatVector[self.numVisibleLights] = lightData.getProjMat()
 
             self.numVisibleLights += 1
 
-        # self.lightsVisibleDebugText.setText('Visible Lights: ' + str(self.numVisibleLights))
-        self.computeShaderNode.setShaderInput("lightCount", self.numVisibleLights)
+        if self.lightsVisibleDebugText is not None:
+            self.lightsVisibleDebugText.setText('Visible Lights: ' + str(self.numVisibleLights))
+
+
+        for shaderNode in self.computingNodes:
+            shaderNode.setShaderInput("lightCount", self.numVisibleLights)
 

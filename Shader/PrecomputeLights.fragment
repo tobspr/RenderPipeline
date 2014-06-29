@@ -1,0 +1,195 @@
+#version 430
+
+// TODO: Make some benchmarks to see wheter unrolling
+// is faster or slower ..
+
+// EDIT: As of now, not unrolling is faster
+// #pragma optionNV (unroll all)
+
+
+// Includes
+#include "Includes/Configuration.include"
+#include "Includes/Packing.include"
+#include "Includes/PositionReconstruction.include"
+#include "Includes/IntersectionTests.include"
+#include "Includes/LightDataPacking.include"
+
+in vec2 texcoord;
+uniform sampler2D depth;
+
+layout (r16) writeonly uniform image2D destination;
+
+// Per-Light data and count
+uniform mat4 lightData[MAX_VISIBLE_LIGHTS]; 
+uniform float lightCount;
+
+// Matrices used for the culling
+// I defined constants because the names are quite long ..
+// But I think that will be fixed by rdb's new input system soon 
+#define PROJ_MAT trans_apiview_of_mainCam_to_apiclip_of_mainCam
+#define VIEW_MAT trans_mainRender_to_apiview_of_mainCam
+#define MODEL_VIEW_PROJ_MAT trans_mainRender_to_apiclip_of_mainCam
+uniform mat4 PROJ_MAT;
+uniform mat4 VIEW_MAT;
+uniform mat4 MODEL_VIEW_PROJ_MAT;
+
+void main() {
+
+    // Parse uniforms (int is not supported, yet :/ )
+    int lightCountInt = int(lightCount);
+
+    // Common variables
+    ivec2 patchSize = ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y); 
+    // ivec2 screenSize = imageSize(depth);
+    // ivec2 screenSize = textureSize(depth, 0);
+    ivec2 screenSize = ivec2(1600, 960);
+
+    ivec2 computeSize = ivec2(1600, 960);
+    ivec2 screenPos = ivec2(texcoord * (screenSize-patchSize) );
+    ivec2 precomputeSize = computeSize / patchSize;
+    ivec2 precomputeCoord = ivec2( texcoord * precomputeSize );
+    ivec2 storageCoord = ivec2(8) * precomputeCoord;
+
+
+    // Compute Min and Max depth
+    float minDepth = 1.0;
+    float maxDepth = 0.0;
+
+    // Compute min / max depth per tile
+    for (int x = 0; x < LIGHTING_COMPUTE_PATCH_SIZE_X; x+=LIGHTING_MIN_MAX_DEPTH_ACCURACY) {
+        for (int y = 0; y < LIGHTING_COMPUTE_PATCH_SIZE_X; y+=LIGHTING_MIN_MAX_DEPTH_ACCURACY) {
+            ivec2 newCoord = screenPos + ivec2(x,y);
+
+            // Check if out of screen bounds
+            // NOTE: This -should- not be necessary, otherwise
+            // something else is wrong
+            // if (newCoord.x < screenSize.x && newCoord.y < screenSize.y) {
+                float storedDepth = texelFetch(depth, newCoord, 0).r;
+                // float storedDepth = imageLoad(depth, newCoord).r;
+                minDepth = min(minDepth, storedDepth);
+                maxDepth = max(maxDepth, storedDepth);
+            // }
+        }
+    }
+
+    // Also store linear depth to be able to compare
+    // light depth and min/max depth easily
+    float minDepthLinear = getLinearZFromZ(minDepth);
+    float maxDepthLinear = getLinearZFromZ(maxDepth);
+
+    // Compute tile bounds, needed for frustum
+    vec2 tileScale = vec2(computeSize) * 0.5f / vec2(patchSize);
+    vec2 tileBias = tileScale - vec2(precomputeCoord);
+
+    // Store matrices in local variables as their name
+    // can get very long
+    mat4 projMat = PROJ_MAT;
+    mat4 viewMat = VIEW_MAT;
+    mat4 mvpMat = MODEL_VIEW_PROJ_MAT;
+
+    // Build frustum
+    // Based on http://gamedev.stackexchange.com/questions/67431/deferred-tiled-shading-tile-frusta-calculation-in-opengl
+    // Which is again based on DICE's presentation
+    vec4 frustumRL = vec4(-projMat[0][0] * tileScale.x, 0.0f, tileBias.x, 0.0f);
+    vec4 frustumTL = vec4(0.0f, -projMat[1][1] * tileScale.y, tileBias.y, 0.0f);
+
+    // The doc said frustumOffset = vec4(0,0,1,0) but panda uses 
+    // apparently an inverted coordinate system
+    const vec4 frustumOffset = vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+    // Calculate frustum planes
+    vec4 frustumPlanes[4];
+    frustumPlanes[0] = normalize(frustumOffset - frustumRL);
+    frustumPlanes[1] = normalize(frustumOffset + frustumRL);
+    frustumPlanes[2] = normalize(frustumOffset - frustumTL);
+    frustumPlanes[3] = normalize(frustumOffset + frustumTL);
+
+    // The number of lights to compute
+    int computeLights = min(lightCountInt, MAX_VISIBLE_LIGHTS);
+    // computeLights = 0;
+
+    // Store how much lights we processed so far
+    // The first light is a demo light which stores how much lights
+    // are visible per tile, so we start at 1
+    int numLightsProcessed = 1;
+
+
+    // Reset buffer (not neccessary, only for debugging)
+    #ifdef LIGHTING_CLEAR_BUFFER_EACH_FRAME
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                imageStore(destination, storageCoord+ivec2(x, y), vec4(0.0) );
+            }
+        }
+    #endif
+
+    // Check each light frustum
+    // Until all lights are checked or the limit per tile is reached
+    for (int lightIndex = 0; lightIndex < computeLights && numLightsProcessed < (MAX_LIGHTS_PER_PATCH-2); lightIndex ++) {
+
+        // Extract light data
+        mat4 currentData = lightData[lightIndex];
+        vec4 lightPos = vec4(Light_getPos(currentData), 1);
+        float lightRadius = Light_getRadius(currentData);
+
+        // Project to view space
+        vec4 projectedPos = viewMat * lightPos;
+
+        // Top/Left/Bottom/Right frustum check
+        if (sphereInFrustum(frustumPlanes, projectedPos, lightRadius)) {
+
+            #ifdef LIGHTING_ACCURATE_BOUND_CHECK
+
+            // Project to screen to get actual depth value
+            vec4 projectedScreen = mvpMat * lightPos;
+            projectedScreen.xyz = (projectedScreen.xyz / projectedScreen.w);
+
+            // Fetch linear z
+            // We have to use linear space because the radius of the light
+            // is also linear, and otherwise we couldn't compare the values
+            // properly.
+            float linearProjZ = getLinearZFromZ(projectedScreen.z) * 2.0 - 1.0;
+
+            // Check if the light is < max-depth
+            if ( linearProjZ - sqrt_of_2*lightRadius < maxDepthLinear ) {
+
+                // Check if the light is > min-depth
+                // Maybe this check can be ommitted as it won't happen very often
+                if (linearProjZ + sqrt_of_2*lightRadius > minDepthLinear) {
+
+            #endif // LIGHTING_ACCURATE_BOUND_CHECK
+
+
+                    ivec2 offsetCoord = ivec2(numLightsProcessed % 8, numLightsProcessed / 8);
+                    imageStore(destination, storageCoord + offsetCoord, vec4( lightIndex / float(MAX_VISIBLE_LIGHTS) ) );
+                    numLightsProcessed += 1;
+
+
+                       
+
+            #ifdef LIGHTING_ACCURATE_BOUND_CHECK
+                }
+            }
+
+            #endif // LIGHTING_ACCURATE_BOUND_CHECK
+        }
+
+    }
+
+
+
+    imageStore(destination, storageCoord, vec4( (numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) ) );
+    // result = vec3(minDepthLinear / ndcFar * 500.0);
+    // result = imageLoad(depth, ivec2(texcoord * vec2(1600, 960)) ).rgb;
+    // result = texture(depth, texcoord).rgb;
+
+    // gl_FragData[0] = vec4( float(numLightsProcessed) / float(MAX_LIGHTS_PER_PATCH), 0, 0, 1);
+
+    // gl_FragData[0].xyz = vec3(minDepthLinear / ndcFar * 200.0);
+
+
+    float lightsVisibleFloat = float(numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) * 4.0;
+    vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
+
+    gl_FragData[0] = vec4(lightCountIndicator, 1);
+}
