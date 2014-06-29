@@ -18,6 +18,7 @@ class PointLight(Light, DebugObject):
 
     def _computeLightMat(self):
         self.shadowSources[0].setPos(self.data.pos)
+        self.shadowSources[0].setHpr(Vec3(180,0,0))
         self.debug("Compute Light mat")
 
     def _getLightType(self):
@@ -74,7 +75,7 @@ class PointLight(Light, DebugObject):
     def _initShadowSources(self):
         
         demoSource = ShadowSource()
-        demoSource.setupPerspectiveLens(0.1, self.radius, )
+        demoSource.setupPerspectiveLens(0.1, self.radius, (90,90) )
 
         self._addShadowSource(demoSource)
 

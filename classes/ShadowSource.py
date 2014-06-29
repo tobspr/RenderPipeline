@@ -1,6 +1,6 @@
 
-from panda3d.core import Camera, PerspectiveLens, NodePath
-
+from panda3d.core import Camera, PerspectiveLens, NodePath, Mat4
+from panda3d.core import CSYupRight, TransformState, CSZupRight
 
 class ShadowSource:
 
@@ -14,13 +14,32 @@ class ShadowSource:
         self.cameraNode = NodePath(self.camera)
         self.cameraNode.reparentTo(render)
         self.camera.showFrustum()
+        self.resolution = 512
+        self.lod = 0
+
+
+    def getMVP(self):
+        projMat = Mat4.convertMat(
+                CSYupRight, 
+                self.lens.getCoordinateSystem()) * self.lens.getProjectionMat()
+        transformMat = TransformState.makeMat(
+                Mat4.convertMat(base.win.getGsg().getInternalCoordinateSystem(), 
+                CSZupRight))
+        modelViewMat = transformMat.invertCompose(render.getTransform(self.cameraNode)).getMat()
+        return modelViewMat * projMat
+
+
+    def setResolution(self, resolution):
+        self.resolution = resolution
+
+    def getResolution(self):
+        return self.resolution
 
     def setupPerspectiveLens(self, near=0.1, far=100.0, fov=(90,90)):
         self.lens = PerspectiveLens()
         self.lens.setNearFar(near, far)
         self.lens.setFov(fov[0], fov[1])
         self.camera.setLens(self.lens)
-
 
     def setPos(self, pos):
         self.cameraNode.setPos(pos)
@@ -36,4 +55,6 @@ class ShadowSource:
 
     def isValid(self):
         return self.valid
+
+
 

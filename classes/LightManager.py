@@ -18,7 +18,11 @@ class LightManager(DebugObject):
         self.smatVector = PTAMat4.empty_array(self.maxVisibleLights)
 
         self.lightsVisibleDebugText = None
-        
+
+        # todo
+        self.shadowScene = render
+    
+                
         # Debug text to show how many lights are currently visible
         try:
             from FastText import FastText
