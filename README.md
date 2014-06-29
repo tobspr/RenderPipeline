@@ -15,7 +15,8 @@ Complete deferred render pipeline for panda3d (Work in progress)
 - with one bounce for indirect lighting / color bleeding
 
 ##### PSSM, Cloud Shadows, Large Terrain Shadows
-- complete lighting and shadows via compute shader
+- ~~complete lighting and shadows via compute shader~~
+    - Too slow, replaced by regular fragment shaders
 
 ##### Atmospheric Scattering & Volumetric Fog
 
