@@ -11,6 +11,7 @@ struct Light {
 };
 
 uniform vec3 cameraPosition;
+uniform samplerCube fallbackCubemap;
 
 
 vec3 computeLighting(Light light, Material material, mat4 additionalData) {
@@ -45,10 +46,10 @@ vec3 computeLighting(Light light, Material material, mat4 additionalData) {
         // Compute reflection
         vec3 reflectedDir = reflect(v, n);
         float cubemapResolutionParameter = 1.0 - material.gloss;
-        // vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
-        // vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
-        // vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
-        vec3 reflectedColor = vec3(1.0);
+        vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
+        vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
+        vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+        // vec3 reflectedColor = vec3(1.0);
 
         // Ambient is not used yet
         float ambient = 0.0;
@@ -74,9 +75,11 @@ vec3 computeLighting(Light light, Material material, mat4 additionalData) {
 
 
         vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
+        // vec3 combinedContribution =  vec3(diffuseBrdf) * attenuation;
+        // vec3 combinedContribution =  vec3(h) * attenuation;
         #endif 
 
-        // vec3 combinedContribution = attenuation * light.color * 0.2;
+        // vec3 combinedContribution = attenuation * light.color * 0.1;
 
         return vec3(clamp(combinedContribution, 0, 1));
 

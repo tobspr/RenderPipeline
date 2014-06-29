@@ -3,6 +3,7 @@
 from panda3d.core import Vec3, Mat4, NodePath, LineSegs, Vec4, UnalignedLMatrix4
 from panda3d.core import OmniBoundingVolume
 from LightType import LightType
+from ShadowSource import ShadowSource
 
 # Stores general data of a light and has to be seen
 # as an interface.
@@ -41,16 +42,10 @@ class Light:
 
         def _updateDataMat(self):
             self._data_mat = UnalignedLMatrix4(
-                # self.pos.x,        self.pos.y,        self.pos.z,        self.radius,
-                # self.col.x,        self.col.y,        self.col.z,        self.power,
-                # self.shadowIdx,    self.posterIdx,    0.0,               0.0,
-                # 0.0,               0.0,               0.0,               0.0
-
                 self.lightType,      self.col.x,        self.col.y,        self.col.z,
                 self.shadowIdx,      self.posterIdx,    0.0,               0.0,
                 self.pos.x,          self.pos.y,        self.pos.z,        self.additional[0],
                 self.additional[1],  self.additional[2],self.additional[3],self.additional[4]
-
             )
 
         def getDataMat(self):
@@ -72,12 +67,18 @@ class Light:
         self.bounds = OmniBoundingVolume()
         self.data.lightType = self._getLightType()
 
-
+        self.shadowSources = []
 
     # Sets the rotation for this light
     def setHpr(self, hpr):
         self.rotation = hpr
         self.queueUpdate()
+
+    # Returns how many shadow sources this light has
+    def getNumShadowSources(self):
+        if self.castShadows:
+            return len(self.shadowSources)
+        return False
 
     # Returns true if the light casts shadows
     def hasShadows(self):
@@ -85,6 +86,9 @@ class Light:
 
     def setCastsShadows(self, shadows=True):
         self.castShadows = True
+
+        if self.castShadows:
+            self._initShadowSources()
 
     def setPos(self, pos):
         self.data.pos = pos
@@ -129,6 +133,8 @@ class Light:
 
     def performShadowUpdate(self):
         self.shadowNeedsUpdate = False
+        self._updateShadowSources()
+
 
     # Attaches a node showing the bounds of this
     # light 
@@ -168,6 +174,24 @@ class Light:
     # Child classes should implement this
     def _getLightType(self):
         return LightType.NoType
+
+
+    # Child classes should implement this
+    def _initShadowSources(self):
+        raise NotImplementedError()
+
+    # Child classes should implement this
+    def _updateShadowSources(self):
+        raise NotImplementedError()
+
+
+    # Adds a new shadow source
+    def _addShadowSource(self, source):
+        self.shadowSources.append(source)
+
+
+    def __repr__(self):
+        return "AbstractLight[]"
 
     # Helper for visualizing the light bounds
     # Draws a line trough all points, if connectToEnd the last

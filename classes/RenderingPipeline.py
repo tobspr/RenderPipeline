@@ -59,6 +59,8 @@ class RenderingPipeline(DebugObject):
         self.deferredTarget.setAuxBits(16)
         self.deferredTarget.setColorBits(16)
         self.deferredTarget.setDepthBits(32)
+        # self.deferredTarget.setSize(800, 480)
+        # self.deferredTarget.setSize(400, 240)
         self.deferredTarget.prepareSceneRender()
 
     # Creates the storage to store the list of visible lights per tile
@@ -111,7 +113,7 @@ class RenderingPipeline(DebugObject):
             tex.setMinfilter(Texture.FTNearest)
             tex.setMagfilter(Texture.FTNearest)
 
-        # self._loadFallbackCubemap()
+        self._loadFallbackCubemap()
 
         # Create storage for the bounds computation
 
@@ -133,8 +135,8 @@ class RenderingPipeline(DebugObject):
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb_alpha)
-        # self.lightingComputeContainer.setShaderInput(
-        #     "fallbackCubemap", cubemap)
+        self.lightingComputeContainer.setShaderInput(
+            "fallbackCubemap", cubemap)
 
     def _makeLightBoundsComputationBuffer(self, w, h):
         self.debug("Creating light precomputation buffer of size", w, "x", h)
@@ -160,6 +162,9 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setShaderInput(
             "lightsPerTile", self.lightPerTileStorage)
 
+        self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
+
+
     def _setLightingShader(self):
         lightShader = BetterShader.load(
             "Shader/DefaultPostProcess.vertex", "Shader/ApplyLighting.fragment")
@@ -181,7 +186,7 @@ class RenderingPipeline(DebugObject):
         self._setLightingShader()
 
     def _attachUpdateTask(self):
-        self.showbase.addTask(self._update, "UpdateRenderingPipeline")
+        self.showbase.addTask(self._update, "UpdateRenderingPipeline",sort=-10000)
 
     def _computeCameraBounds(self):
         # compute camera bounds in render space

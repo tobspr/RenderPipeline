@@ -1,0 +1,8 @@
+﻿<ProjectSettingsModel DefinitionId="a218e900-1199-4ab1-a767-7976786f04d4" DisplayName="Nexus Project User Settings" xmlns="clr-namespace:Ark.PropertyModel;assembly=Ark">
+    <SettingsPointModel DefinitionId="3eb7ba04-016d-475e-b0ff-daa5f0e59a08" DisplayName="Launch">
+        <Property Name="Arguments" Value="&quot;E:\Projects\Brainz stuff\RenderPipeline\main.py&quot;" />
+        <Property Name="ExternalStartProgram" Value="E:\P3D\1.9.0-1\built_x64\python\ppython.exe" />
+        <Property Name="LaunchAction" Value="StartExternalProgram" />
+        <Property Name="WorkingDirectory" Value="E:\Projects\Brainz stuff\RenderPipeline" />
+    </SettingsPointModel>
+</ProjectSettingsModel>

@@ -41,19 +41,25 @@ void main() {
     // Common variables
     ivec2 patchSize = ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y); 
     // ivec2 screenSize = imageSize(depth);
-    // ivec2 screenSize = textureSize(depth, 0);
-    ivec2 screenSize = ivec2(1600, 960);
+    ivec2 screenSize = textureSize(depth, 0);
 
     ivec2 computeSize = ivec2(1600, 960);
-    ivec2 screenPos = ivec2(texcoord * (screenSize-patchSize) );
+    screenSize = computeSize;
+
+
+
     ivec2 precomputeSize = computeSize / patchSize;
     ivec2 precomputeCoord = ivec2( texcoord * precomputeSize );
+    ivec2 storageSize = imageSize(destination);
     ivec2 storageCoord = ivec2(8) * precomputeCoord;
 
+    vec2 onScreenTexc = vec2(storageCoord) / vec2(storageSize);
+    ivec2 screenPos = ivec2(onScreenTexc * screenSize);
 
     // Compute Min and Max depth
-    float minDepth = 1.0;
-    float maxDepth = 0.0;
+    float minDepth = 10.0;
+    float maxDepth = -10.0;
+
 
     // Compute min / max depth per tile
     for (int x = 0; x < LIGHTING_COMPUTE_PATCH_SIZE_X; x+=LIGHTING_MIN_MAX_DEPTH_ACCURACY) {
@@ -63,14 +69,15 @@ void main() {
             // Check if out of screen bounds
             // NOTE: This -should- not be necessary, otherwise
             // something else is wrong
-            // if (newCoord.x < screenSize.x && newCoord.y < screenSize.y) {
+            if (newCoord.x < screenSize.x && newCoord.y < screenSize.y) {
                 float storedDepth = texelFetch(depth, newCoord, 0).r;
                 // float storedDepth = imageLoad(depth, newCoord).r;
                 minDepth = min(minDepth, storedDepth);
                 maxDepth = max(maxDepth, storedDepth);
-            // }
+            } 
         }
     }
+
 
     // Also store linear depth to be able to compare
     // light depth and min/max depth easily
@@ -179,6 +186,11 @@ void main() {
 
 
     imageStore(destination, storageCoord, vec4( (numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) ) );
+
+    // imageStore(destination, storageCoord, vec4( minDepthLinear / ndcFar * 100.0 ) );
+    // imageStore(destination, storageCoord, vec4( getLinearZFromZ(texture(depth, texcoord).x) / ndcFar * 200.0 ) );
+    // imageStore(destination, storageCoord, vec4( float(onScreenTexc.x) ) );
+    // imageStore(destination, storageCoord, vec4( anyError ? 1.0 : 0.1 ));
     // result = vec3(minDepthLinear / ndcFar * 500.0);
     // result = imageLoad(depth, ivec2(texcoord * vec2(1600, 960)) ).rgb;
     // result = texture(depth, texcoord).rgb;
@@ -188,7 +200,7 @@ void main() {
     // gl_FragData[0].xyz = vec3(minDepthLinear / ndcFar * 200.0);
 
 
-    float lightsVisibleFloat = float(numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) * 4.0;
+    float lightsVisibleFloat = float(numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) * 1.0;
     vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
 
     gl_FragData[0] = vec4(lightCountIndicator, 1);

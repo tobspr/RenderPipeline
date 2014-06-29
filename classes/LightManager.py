@@ -17,14 +17,20 @@ class LightManager(DebugObject):
         self.dataVector = PTAMat4.empty_array(self.maxVisibleLights)
         self.smatVector = PTAMat4.empty_array(self.maxVisibleLights)
 
-        # # Debug text to show how many lights are currently visible
-        # self.lightsVisibleDebugText = FastText()
-        # self.lightsVisibleDebugText.setPos(base.getAspectRatio() - 0.1, 0.9)
-        # self.lightsVisibleDebugText.setRightAligned(True)
-        # self.lightsVisibleDebugText.setColor(1,0,0)
-        # self.lightsVisibleDebugText.setSize(0.04)
-
         self.lightsVisibleDebugText = None
+        
+        # Debug text to show how many lights are currently visible
+        try:
+            from FastText import FastText
+            self.lightsVisibleDebugText = FastText()
+            self.lightsVisibleDebugText.setPos(base.getAspectRatio() - 0.1, 0.9)
+            self.lightsVisibleDebugText.setRightAligned(True)
+            self.lightsVisibleDebugText.setColor(1,0,0)
+            self.lightsVisibleDebugText.setSize(0.04)
+        except Exception, msg:
+            self.debug("Could not load fast text:", msg)
+            self.lightsVisibleDebugText = None
+
 
         self.computingNodes = []
 
@@ -32,6 +38,9 @@ class LightManager(DebugObject):
         # if len(self.lights) >= self.maxLights:
         #     self.error("Too many lights! You cannot attach any more")
         #     return False
+
+        self.debug("Adding light",light,"with",light.getNumShadowSources(), "shadow source(s)")
+
         self.lights.append(light)
 
     def setLightingComputators(self, shaderNodes):

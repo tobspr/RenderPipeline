@@ -30,8 +30,8 @@ void main() {
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
     ivec2 screenCoord = ivec2(texcoord * vec2(screenSize)); 
-    ivec2 precomputeSize = textureSize(lightsPerTile, 0) / ivec2(8, 8);
-    ivec2 precomputeCoord = ivec2(texcoord * precomputeSize) * ivec2(8, 8);
+    ivec2 precomputeSize = textureSize(lightsPerTile, 0) / ivec2(8);
+    ivec2 precomputeCoord = ivec2(texcoord * precomputeSize) * ivec2(8);
 
     // Extract material data
     vec4 target0data = texelFetch(data0, screenCoord, 0);
@@ -70,14 +70,33 @@ void main() {
         currentLight.position = Light_getPos(currentData);
 
         result += computeLighting(currentLight, material, currentData);
+
     }
+
+
+    if ( distance(material.diffuse, vec3(1,1,0) ) < 0.001 ) {
+        result = vec3(1,1,0);
+    }
+
 
 
     float lightsVisibleFloat = float(numActiveLights) / float(MAX_LIGHTS_PER_PATCH);
     vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
 
+    float borderFactor = 0.0;
+    if (screenCoord.x % LIGHTING_COMPUTE_PATCH_SIZE_X == 0 || screenCoord.y % LIGHTING_COMPUTE_PATCH_SIZE_Y == 0) {
+        borderFactor = 1.0;
+    }
+
+
     // result.xyz = vec3(numActiveLights / MAX_LIGHTS_PER_PATCH);
-    // result.xyz += lightCountIndicator * 1.0;
+    // result.xyz = vec3(texelFetch(lightsPerTile, precomputeCoord, 0).r);
+    // result.xyz = vec3( float(precomputeCoord.x) / float(precomputeSize.x) / 8.0 );
+
+    // result.xyz = mix(result.xyz, material.normal, 0.5);
+
+    result.xyz = saturate(result.xyz * 0.9);
+    // result += borderFactor * vec3(1,1,0) * 0.1;
 
     gl_FragColor = vec4(result.xyz, 1);
 }
