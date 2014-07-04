@@ -9,10 +9,10 @@
 
 // Includes
 #include "Includes/Configuration.include"
+#include "Includes/Light.include"
 #include "Includes/Packing.include"
 #include "Includes/PositionReconstruction.include"
 #include "Includes/IntersectionTests.include"
-#include "Includes/LightDataPacking.include"
 
 in vec2 texcoord;
 uniform sampler2D depth;
@@ -20,7 +20,7 @@ uniform sampler2D depth;
 layout (r16) writeonly uniform image2D destination;
 
 // Per-Light data and count
-uniform mat4 lightData[MAX_VISIBLE_LIGHTS]; 
+uniform Light lights[MAX_VISIBLE_LIGHTS];
 uniform float lightCount;
 
 // Matrices used for the culling
@@ -135,54 +135,52 @@ void main() {
     for (int lightIndex = 0; lightIndex < computeLights && numLightsProcessed < (MAX_LIGHTS_PER_PATCH-2); lightIndex ++) {
 
         // Extract light data
-        mat4 currentData = lightData[lightIndex];
-        vec4 lightPos = vec4(Light_getPos(currentData), 1);
-        float lightRadius = Light_getRadius(currentData);
+        Light currentLight = lights[lightIndex];
 
-        // Project to view space
-        vec4 projectedPos = viewMat * lightPos;
+        if (currentLight.lightType == 1) {
 
-        // Top/Left/Bottom/Right frustum check
-        if (sphereInFrustum(frustumPlanes, projectedPos, lightRadius)) {
+            // Project to view space
+            vec4 projectedPos = viewMat * vec4(currentLight.position, 1);
 
-            #ifdef LIGHTING_ACCURATE_BOUND_CHECK
+            // Top/Left/Bottom/Right frustum check
+            if (sphereInFrustum(frustumPlanes, projectedPos, currentLight.radius)) {
 
-            // Project to screen to get actual depth value
-            vec4 projectedScreen = mvpMat * lightPos;
-            projectedScreen.xyz = (projectedScreen.xyz / projectedScreen.w);
+                #ifdef LIGHTING_ACCURATE_BOUND_CHECK
 
-            // Fetch linear z
-            // We have to use linear space because the radius of the light
-            // is also linear, and otherwise we couldn't compare the values
-            // properly.
-            float linearProjZ = getLinearZFromZ(projectedScreen.z) * 2.0 - 1.0;
+                // Project to screen to get actual depth value
+                vec4 projectedScreen = mvpMat * vec4(currentLight.position, 1);
+                projectedScreen.xyz = (projectedScreen.xyz / projectedScreen.w);
 
-            // Check if the light is < max-depth
-            if ( linearProjZ - sqrt_of_2*lightRadius < maxDepthLinear ) {
+                // Fetch linear z
+                // We have to use linear space because the radius of the light
+                // is also linear, and otherwise we couldn't compare the values
+                // properly.
+                float linearProjZ = getLinearZFromZ(projectedScreen.z) * 2.0 - 1.0;
 
-                // Check if the light is > min-depth
-                // Maybe this check can be ommitted as it won't happen very often
-                if (linearProjZ + sqrt_of_2*lightRadius > minDepthLinear) {
+                // Check if the light is < max-depth
+                if ( linearProjZ - sqrt_of_2*currentLight.radius < maxDepthLinear ) {
 
-            #endif // LIGHTING_ACCURATE_BOUND_CHECK
+                    // Check if the light is > min-depth
+                    // Maybe this check can be ommitted as it won't happen very often
+                    if (linearProjZ + sqrt_of_2*currentLight.radius > minDepthLinear) {
 
-
-                    ivec2 offsetCoord = ivec2(numLightsProcessed % 8, numLightsProcessed / 8);
-                    imageStore(destination, storageCoord + offsetCoord, vec4( lightIndex / float(MAX_VISIBLE_LIGHTS) ) );
-                    numLightsProcessed += 1;
+                #endif // LIGHTING_ACCURATE_BOUND_CHECK
 
 
-                       
+                        ivec2 offsetCoord = ivec2(numLightsProcessed % 8, numLightsProcessed / 8);
+                        imageStore(destination, storageCoord + offsetCoord, vec4( lightIndex / float(MAX_VISIBLE_LIGHTS) ) );
+                        numLightsProcessed += 1;
 
-            #ifdef LIGHTING_ACCURATE_BOUND_CHECK
+                #ifdef LIGHTING_ACCURATE_BOUND_CHECK
+                    }
                 }
+
+                #endif // LIGHTING_ACCURATE_BOUND_CHECK
             }
 
-            #endif // LIGHTING_ACCURATE_BOUND_CHECK
         }
 
     }
-
 
 
     imageStore(destination, storageCoord, vec4( (numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) ) );
@@ -191,17 +189,15 @@ void main() {
     // imageStore(destination, storageCoord, vec4( getLinearZFromZ(texture(depth, texcoord).x) / ndcFar * 200.0 ) );
     // imageStore(destination, storageCoord, vec4( float(onScreenTexc.x) ) );
     // imageStore(destination, storageCoord, vec4( anyError ? 1.0 : 0.1 ));
-    // result = vec3(minDepthLinear / ndcFar * 500.0);
+    // vec3 result = vec3(minDepthLinear / ndcFar * 100.0);
     // result = imageLoad(depth, ivec2(texcoord * vec2(1600, 960)) ).rgb;
     // result = texture(depth, texcoord).rgb;
-
     // gl_FragData[0] = vec4( float(numLightsProcessed) / float(MAX_LIGHTS_PER_PATCH), 0, 0, 1);
-
     // gl_FragData[0].xyz = vec3(minDepthLinear / ndcFar * 200.0);
 
-
-    float lightsVisibleFloat = float(numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) * 1.0;
+    float lightsVisibleFloat = float(numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) * 16.0;
     vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
 
     gl_FragData[0] = vec4(lightCountIndicator, 1);
+    // gl_FragData[0] = vec4(result, 1);
 }

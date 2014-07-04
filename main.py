@@ -24,15 +24,15 @@ class Main(ShowBase):
 
         # load demo scene
         print "Loading Scene .."
-        # self.scene = loader.loadModel("Scene/Scene.egg")
-        self.scene = loader.loadModel("Scene/SceneBam.bam")
+        self.scene = loader.loadModel("Scene/Scene4.egg")
+        # self.scene = loader.loadModel("Scene/SceneBam.bam")
         # self.scene = loader.loadModel("environment")
         # self.scene.setScale(0.1)
 
         # self.scene = loader.loadModel("panda")
         self.scene.reparentTo(render)
 
-        if True:
+        if False:
             print "Placing prefabs"
             # place prefabs
             self.scenePrefab = self.scene.find("Prefab")
@@ -45,7 +45,7 @@ class Main(ShowBase):
                     cn = self.scenePrefab.copyTo(self.prefabsParent)
                     # cn.setShaderInput("smoothness", float(i) / 10.0)
                     # cn.setShaderInput("gloss", float(j) / 10.0)
-                    cn.setPos( (i-5) * 2.5, (j-5)*2.5, 2)
+                    cn.setPos( (i-5) * 2.5, (j-5)*2.5, 5)
                     # cn.show()
         else:
             self.prefabsParent = self.scene
@@ -64,27 +64,25 @@ class Main(ShowBase):
         self.addTask(self.update, "update")
 
         self.camLens.setNearFar(1.0, 10000)
-
-
-      
         self.renderPipeline = RenderingPipeline(self)
 
-        # # add some lights
+        # add some lights
         self.lights = []
 
         self.renderDebugNode = render.attachNewNode("LightDebug")
         
         # add huge sun light
         sunLight= PointLight()
-        sunLight.setRadius(20.0)
+        sunLight.setRadius(30.0)
         sunLight.setColor(Vec3(0.7, 0.7, 0.7))
-        sunLight.setPos(Vec3(10,10,10))
+        sunLight.setPos(Vec3(2,2,9))
         sunLight.setCastsShadows(True)
         self.renderPipeline.getLightManager().addLight(sunLight)
-        sunLight.attachDebugNode(self.renderDebugNode)
+        # sunLight.attachDebugNode(self.renderDebugNode)
 
+        self.lights.append(sunLight)
 
-        self.initialLightPos = []
+        self.initialLightPos = [Vec3(2,2,9)]
 
         if False:
             i = 0
@@ -125,9 +123,9 @@ class Main(ShowBase):
 
         # self.renderDebugNode.flattenStrong()
 
-        coord = loader.loadModel("zup-axis")
-        coord.setScale(2.0)
-        coord.reparentTo(self.scene)
+        # coord = loader.loadModel("zup-axis")
+        # coord.setScale(2.0)
+        # coord.reparentTo(self.scene)
 
         self.setShaders()
 

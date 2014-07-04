@@ -1,0 +1,7 @@
+#version 400
+
+uniform float osg_FrameTime;
+
+void main() {
+    gl_FragColor = vec4( sin(osg_FrameTime)*0.5 + 0.5, 0,0,1);
+}

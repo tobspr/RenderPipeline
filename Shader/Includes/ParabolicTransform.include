@@ -1,0 +1,13 @@
+
+
+
+vec4 transformParabol(vec4 transformed, float near, float far) {
+    float l = length(transformed.xyz);
+    transformed = transformed/l;
+    transformed.z = transformed.z + 1;
+    transformed.x = transformed.x / transformed.z;
+    transformed.y = transformed.y / transformed.z;
+    transformed.z = (l - near)/(far-near);
+    transformed.w = 1;
+    return transformed;
+}

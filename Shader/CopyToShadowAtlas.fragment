@@ -1,0 +1,41 @@
+#version 440
+
+in vec2 texcoord;
+
+layout (rgba8) uniform image2D atlas;
+
+uniform float numUpdates;
+uniform sampler2DArray renderResult;
+
+uniform mat4 updateData[4];
+
+uniform float osg_FrameTime;
+
+void main() {
+
+    int iNumUpdates = int(numUpdates);
+    // iNumUpdates = 1;
+
+
+    ivec2 offsetCoord = ivec2( texcoord * 1024.0 );
+    ivec2 sourceCoord = ivec2( (texcoord * 1024.0));
+
+    for (int pass = 0; pass < iNumUpdates; pass++) {
+
+        mat4 passData = updateData[pass];
+        ivec2 passDisplace = ivec2(passData[0].zw);
+        int layerIndex = int(passData[0][0]);
+        // layerIndex = 0;
+
+        // vec4 result = textureLod(renderResult, ivec3(sourceCoord.x, sourceCoord.y, layerIndex) , 0);
+        vec4 result = texture(renderResult, vec3(texcoord, 0));
+        result *= 0.5;
+        imageStore(atlas, offsetCoord + passDisplace, result);
+        // imageStore(atlas, offsetCoord, vec4(sin(osg_FrameTime*5.0) * 0.2 + 0.5, 0,0,1) );
+    // imageStore(atlas, offsetCoord, vec4(fracCoord,0,1) );
+    // }
+    }
+
+    gl_FragColor = vec4(1,0,1, 1);
+
+}

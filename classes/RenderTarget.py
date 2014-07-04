@@ -24,14 +24,19 @@ class RenderTarget(DebugObject):
         self._auxBits = 8
         self._region = self._findRegionForCamera()
         self._enableTransparency = False
+        self._layers = 0
 
         self.mute()
 
+    # Sets the number of layers
+    def setLayers(self, layers):
+        self._layers = layers
+        if layers > 1:
+            self._bindMode = GraphicsOutput.RTMBindLayered
 
     # Sets the buffer name to identify in pstats
     def setName(self, name):
         self._name = name
-
 
     # Sets wheter objects can be transparent
     def setEnableTransparency(self, enabled=True):
@@ -59,7 +64,6 @@ class RenderTarget(DebugObject):
     def setShader(self, shader):
         self.getQuad().setShader(shader)
 
-
     # Shortcut
     def getColorTexture(self):
         return self.getTexture(RenderTargetType.Color)
@@ -67,6 +71,16 @@ class RenderTarget(DebugObject):
     # Shortcut
     def getDepthTexture(self):
         return self.getTexture(RenderTargetType.Depth)
+
+
+    # Returns the internal buffer
+    def getInternalBuffer(self):
+        return self._buffer.getInternalBuffer()
+
+    # Returns the internal display region
+    def getInternalRegion(self):
+        return self.getInternalBuffer().getDisplayRegion(0)
+
 
     # Shortcut
     def getAuxTexture(self, index=0):
@@ -84,10 +98,8 @@ class RenderTarget(DebugObject):
         self._sourceCam = sourceCam
         self._sourceWindow = sourceWin
         
-        if region is not None:
-            self._region = region
-        else:
-            self._region = self._findRegionForCamera()
+
+        self._region = region
 
     # Wheter to render layered
     def setBindModeLayered(self, layered=True):
@@ -125,6 +137,8 @@ class RenderTarget(DebugObject):
         self._buffer.setAuxBits(self._auxBits)
         self._buffer.setDepthBits(self._depthbits)
         self._buffer.setBindMode(self._bindMode)
+        self._buffer.setLayers(self._layers)
+
 
         for flag in self._targetFlags.keys():
             self._buffer.addTarget(flag)
@@ -133,16 +147,25 @@ class RenderTarget(DebugObject):
             print "Failed to create buffer. Damned."
             return False
 
+        if self._region is None:
+            self._region = self._buffer.getInternalBuffer().makeDisplayRegion()
+
+
+    # Returns the current region
+    def getRegion(self):
+        return self._region
+
     # Renders the scene into the aquired buffers
     def prepareSceneRender(self):
 
-        self.debug("Preparing scene render")
+        self.debug("Preparing scene render for",self._name)
 
         # Init buffer object
         self._createBuffer()
 
         # Prepare fullscreen quad
         self._quad = self._makeFullscreenQuad()
+
 
         # Prepare initial state
         cs = NodePath("InitialStateDummy")
@@ -160,6 +183,7 @@ class RenderTarget(DebugObject):
         bufferCam = self._makeFullscreenCam()
         bufferCamNode = self._quad.attachNewNode(bufferCam)
         self._region.setCamera(bufferCamNode)
+        self._region.setSort(5)
 
         # Set clears
         bufferRegion = self._buffer.getInternalBuffer().getDisplayRegion(0)
@@ -192,10 +216,13 @@ class RenderTarget(DebugObject):
         self._setSizeShaderInput()
 
 
+
+
+
     # Creates the buffer in an offscreen window
     def prepareOffscreenBuffer(self):
 
-        self.debug("Preparing offscreen buffer")
+        self.debug("Preparing offscreen buffer for",self._name)
 
         # Init buffer object
         self._createBuffer()
@@ -212,9 +239,13 @@ class RenderTarget(DebugObject):
         bufferRegion.setActive(1)
 
 
+
+
+
     # Wheter this buffer should be rendered or not
     def setActive(self, active):
         self._buffer.getInternalBuffer().getDisplayRegion(0).setActive(active)
+        self._region.setActive(active)
 
     # Returns the quad to apply a shader to
     def getQuad(self):

@@ -8,7 +8,7 @@
 
 
 #include "Includes/Configuration.include"
-#include "Includes/LightDataPacking.include"
+#include "Includes/Light.include"
 #include "Includes/Lighting.include"
 #include "Includes/Material.include"
 
@@ -19,9 +19,7 @@ uniform sampler2D data2;
 uniform sampler2D lightsPerTile;
 
 
-uniform mat4 lightData[MAX_VISIBLE_LIGHTS]; 
-
-
+uniform Light lights[MAX_VISIBLE_LIGHTS]; 
 in vec2 texcoord;
 
 
@@ -60,16 +58,11 @@ void main() {
 
         // Extract light id from texture, and fetch data for that light
         int lightId = int(texelFetch(lightsPerTile, precomputeCoord + offset, 0).r * float(MAX_VISIBLE_LIGHTS) );
-        mat4 currentData = lightData[lightId];
+
 
         // Convert to light struct
-        Light currentLight;
-
-        currentLight.type = Light_getType(currentData);
-        currentLight.color = Light_getColor(currentData);
-        currentLight.position = Light_getPos(currentData);
-
-        result += computeLighting(currentLight, material, currentData);
+        Light currentLight = lights[lightId];
+        result += computeLighting(currentLight, material);
 
     }
 
@@ -88,7 +81,7 @@ void main() {
         borderFactor = 1.0;
     }
 
-    result.xyz = material.diffuse + material.normal*0.1;
+    // result.xyz = material.diffuse + material.normal*0.1;
 
     // result.xyz = vec3(numActiveLights / MAX_LIGHTS_PER_PATCH);
     // result.xyz = vec3(texelFetch(lightsPerTile, precomputeCoord, 0).r);

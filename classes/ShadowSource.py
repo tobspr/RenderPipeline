@@ -1,22 +1,34 @@
 
-from panda3d.core import Camera, PerspectiveLens, NodePath, Mat4
+from panda3d.core import Camera, PerspectiveLens, NodePath
 from panda3d.core import CSYupRight, TransformState, CSZupRight
+from panda3d.core import Mat4
 
-class ShadowSource:
+from DebugObject import DebugObject
 
-    _GlobalShadowIndex = 0
+class ShadowSource(DebugObject):
+
+    _GlobalShadowIndex = 1000
 
     def __init__(self):
-        self.valid = True
-        self.index = self._GlobalShadowIndex
-        self._GlobalShadowIndex += 1
+        DebugObject.__init__(self, "ShadowSource")
+        self.valid = False
+        ShadowSource._GlobalShadowIndex += 1
+        self.index = ShadowSource._GlobalShadowIndex
         self.camera = Camera("ShadowSource-" + str(self.index))
         self.cameraNode = NodePath(self.camera)
         self.cameraNode.reparentTo(render)
-        self.camera.showFrustum()
-        self.resolution = 512
+        # self.camera.showFrustum()
+        self.resolution = 1024
         self.lod = 0
+        self.atlasPos = 0,0
+        self.doesHaveAtlasPos = False
+        self.sourceIndex = 0
 
+    def setSourceIndex(self, sourceIndex):
+        self.sourceIndex = sourceIndex
+
+    def getUid(self):
+        return self.index
 
     def getMVP(self):
         projMat = Mat4.convertMat(
@@ -26,8 +38,22 @@ class ShadowSource:
                 Mat4.convertMat(base.win.getGsg().getInternalCoordinateSystem(), 
                 CSZupRight))
         modelViewMat = transformMat.invertCompose(render.getTransform(self.cameraNode)).getMat()
-        return modelViewMat * projMat
+        return (modelViewMat * projMat)
 
+    def assignAtlasPos(self, x, y):
+        self.debug("Assigning atlas pos",x,"/",y)
+        self.atlasPos = x, y
+        self.doesHaveAtlasPos = True
+
+    def getAtlasPos(self):
+        return self.atlasPos
+
+    def hasAtlasPos(self):
+        return self.doesHaveAtlasPos
+
+    def removeFromAtlas(self):
+        self.doesHaveAtlasPos = False
+        self.atlasPos = 0,0
 
     def setResolution(self, resolution):
         self.resolution = resolution
@@ -52,6 +78,9 @@ class ShadowSource:
 
     def invalidate(self):
         self.valid = False
+
+    def setValid(self):
+        self.valid = True
 
     def isValid(self):
         return self.valid

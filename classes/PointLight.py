@@ -2,7 +2,7 @@
 from Light import Light
 from DebugObject import DebugObject
 
-from panda3d.core import NodePath, LineSegs, Vec4, Vec3, BoundingSphere, Point3
+from panda3d.core import NodePath, Vec4, Vec3, BoundingSphere, Point3
 from LightType import LightType
 from ShadowSource import ShadowSource
 
@@ -17,25 +17,30 @@ class PointLight(Light, DebugObject):
         self.radius = 0.0
 
     def _computeLightMat(self):
-        self.shadowSources[0].setPos(self.data.pos)
-        self.shadowSources[0].setHpr(Vec3(180,0,0))
-        self.debug("Compute Light mat")
+        # self.shadowSources[0].setPos(self.position + Vec3(0,0.5,0))
+        # self.shadowSources[0].setHpr(Vec3(180,0,0))
+
+        # self.shadowSources[1].setPos(self.position - Vec3(0,0.5,0))
+        # self.shadowSources[1].setHpr(Vec3(0,0,0))
+
+        # self.debug("Compute Light mat")
+        pass
 
     def _getLightType(self):
         return LightType.Point
 
     def _computeLightBounds(self):
-        self.bounds = BoundingSphere(Point3(self.data.pos), self.radius)
+        self.bounds = BoundingSphere(Point3(self.position), self.radius)
         # self.bounds.showBounds(render)
 
     def _computeAdditionalData(self):
-        self.data.additional[0] = self.radius
+        pass
 
     def _updateDebugNode(self):
         # self.debug("updating debug node")
 
         mainNode = NodePath("DebugNodeInner")
-        mainNode.setPos(self.data.pos)
+        mainNode.setPos(self.position)
 
         inner = loader.loadModel("Assets/Visualisation/Lamp")
         inner.setPos(-0.5, -0.5, 0.0)
@@ -68,16 +73,17 @@ class PointLight(Light, DebugObject):
         self.debugNode.node().removeAllChildren()
         mainNode.reparentTo(self.debugNode)
 
-    def setRadius(self, radius):
-        self.radius = max(0.01, radius)
-        self.queueUpdate()
 
     def _initShadowSources(self):
         
-        demoSource = ShadowSource()
-        demoSource.setupPerspectiveLens(0.1, self.radius, (90,90) )
+        for i in xrange(2):
+            source = ShadowSource()
+            source.setupPerspectiveLens( 0.02, self.radius, (100,100) )
+            self._setShadowSource(i, source)
 
-        self._addShadowSource(demoSource)
+
+
+        # self.shadowSources[1].resolution = 128
 
 
     def _updateShadowSources(self):
@@ -87,4 +93,4 @@ class PointLight(Light, DebugObject):
 
 
     def __repr__(self):
-        return "PointLight[pos="+str(self.data.pos)+", radius="+str(self.radius)+"]"
+        return "PointLight[pos="+str(self.position)+", radius="+str(self.radius)+"]"

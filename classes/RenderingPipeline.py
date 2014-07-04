@@ -2,6 +2,8 @@
 import math
 from panda3d.core import TransparencyAttrib, Texture, Vec2, ComputeNode
 
+from direct.gui.OnscreenImage import OnscreenImage
+
 from LightManager import LightManager
 from RenderTarget import RenderTarget
 from RenderTargetType import RenderTargetType
@@ -41,12 +43,15 @@ class RenderingPipeline(DebugObject):
             "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
         # self.deferredTarget.setShaderInput("sampler", self.lightBoundsComputeBuff.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.lightPerTileStorage)
-        self.deferredTarget.setShaderInput(
-            "sampler", self.lightingComputeContainer.getColorTexture())
+        self.deferredTarget.setShaderInput("sampler", self.lightingComputeContainer.getColorTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.lightManager.getAtlasTex())
+
         # self.deferredTarget.setShaderInput("screenSize", self.precomputeSize)
 
         # add update task
         self._attachUpdateTask()
+
+        self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (1.0, 0, 0.5), scale=(0.25,0,0.25))
 
     # Creates all the render targets
     def _makeDeferredTargets(self):
@@ -129,6 +134,8 @@ class RenderingPipeline(DebugObject):
             "data1", self.deferredTarget.getAuxTexture(0))
         self.lightingComputeContainer.setShaderInput(
             "data2", self.deferredTarget.getAuxTexture(1))
+
+        self.lightingComputeContainer.setShaderInput("shadowAtlas", self.lightManager.getAtlasTex())
 
     def _loadFallbackCubemap(self):
         cubemap = loader.loadCubeMap("Cubemap/#.png")

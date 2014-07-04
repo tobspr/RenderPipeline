@@ -1,0 +1,35 @@
+#version 400
+
+
+#include "Includes/ParabolicTransform.include"
+
+uniform mat4 p3d_ModelViewProjectionMatrix;
+
+layout(triangles) in;
+layout(triangle_strip, max_vertices=3) out;
+
+
+uniform float numUpdates;
+uniform mat4  updateData[2];
+uniform mat4  updateMatrices[2];
+
+
+
+void main() {
+
+
+    int maxUpdates = int(numUpdates);
+
+    for (int pass = 0; pass < maxUpdates; pass ++) {
+
+        for(int i=0; i<3; i++)
+          {
+            gl_Position = updateMatrices[pass] * gl_in[i].gl_Position;
+            gl_Position = transformParabol(gl_Position, 0.02, 70.0);
+            gl_Layer = int(updateData[pass][0][0]);
+            EmitVertex();
+          }
+          EndPrimitive();    
+
+  }
+}

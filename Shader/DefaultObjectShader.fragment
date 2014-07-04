@@ -23,8 +23,8 @@ void main() {
     // vec3 diffuse = vec3(0.2);
     // vec3 normal = vec3(0,0,1);
 
-    diffuse = vec3(0.5);
-    specular = 1.0;
+    diffuse = vec3(0.5 + normalWorldSpace*0.1);
+    specular = 0.0;
 
 
     // Detail normal mapping
@@ -37,7 +37,7 @@ void main() {
     m.position = positionWorldSpace;
     m.normal = normal;
     m.specular = specular;
-    m.smoothness = 0.6;
+    m.smoothness = 0.0;
     m.gloss = 0.0;
     m.transluency = 0.0;
 

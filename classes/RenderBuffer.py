@@ -22,8 +22,13 @@ class RenderBuffer(DebugObject):
         self._internalBuffer = None
         self._targets = {}
         self._win = None
+        self._layers = 0
 
         self.mute()
+
+    # How much layers to render
+    def setLayers(self, layers):
+        self._layers = layers
 
     # Name of this buffer
     def setName(self, name):
@@ -112,6 +117,15 @@ class RenderBuffer(DebugObject):
             if is16bit:
                 handle.setComponentType(Texture.TFloat)
                 handle.setFormat(Texture.FRgba16)
+
+            if self._layers > 1:
+                self.debug("Setup layer count:",self._layers)
+                handle.setup2dTextureArray(self._layers)
+
+        # set layers for depth texture
+        if self._layers > 1:
+            self.debug("Setup depth-layer count:",self._layers)
+            self.getTarget(RenderTargetType.Depth).setup2dTextureArray(self._layers)
 
 
         # Create buffer descriptors
