@@ -1,7 +1,5 @@
 # Compiled
 .pyd
-Scene/
-Scene2/
 .pyc
 *.pyc
 Shader/Cache/
