@@ -4,3 +4,6 @@
 *.pyc
 Shader/Cache/
 *.ignore
+PerformanceTesting/
+MeshSimplifier/
+Assets/
