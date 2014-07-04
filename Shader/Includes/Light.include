@@ -3,8 +3,8 @@
 struct Light {
     vec3 position;
     vec3 color;
-    float posterIndex;
-    float lightType;
+    int posterIndex;
+    int lightType;
     float radius;
     int sourceIndexes[6];
 };

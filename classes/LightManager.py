@@ -1,6 +1,7 @@
 
 from DebugObject import DebugObject
-from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, PTAMat4
+from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, PTAMat4, LVecBase2i
+from panda3d.core import RenderState, ColorWriteAttrib, DepthWriteAttrib
 
 from BetterShader import BetterShader
 from RenderTarget import RenderTarget
@@ -16,13 +17,13 @@ class LightManager(DebugObject):
         DebugObject.__init__(self, "LightManager")
 
         # maximum values
-        self.maxVisibleLights = 16
+        self.maxVisibleLights = 30
         self.numVisibleLights = 0
-        self.maxShadowRes = 1024
-        self.shadowAtlasSize = 2048
-        self.maxShadowMaps = 16
-        self.maxShadowUpdatesPerFrame = 2
-        self.tileSize = 128
+        self.maxShadowRes = 4096
+        self.shadowAtlasSize = 8192
+        self.maxShadowMaps = 30
+        self.maxShadowUpdatesPerFrame = 4
+        self.tileSize = 32
         self.tileCount = self.shadowAtlasSize / self.tileSize
         self.tiles = []
 
@@ -86,12 +87,19 @@ class LightManager(DebugObject):
         self.shadowComputeCamera.setTagStateKey("ShadowPass")
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(self.shadowCasterShader, 30)
+
+
+        self.shadowComputeCamera.setInitialState(RenderState.make(
+                    ColorWriteAttrib.make(ColorWriteAttrib.C_off), 
+                    DepthWriteAttrib.make(DepthWriteAttrib.M_on),
+                100))
+
         self.shadowComputeCamera.setTagState("True", initialState.getState())
         self.shadowScene.setTag("ShadowPass", "True")
 
         # Debug text to show how many lights are currently visible
         try:
-            from FastText import FastText
+            from FastText2 import FastText
             self.lightsVisibleDebugText = FastText(pos=Vec2(
                 base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
             self.lightsUpdatedDebugText = FastText(pos=Vec2(
@@ -105,7 +113,7 @@ class LightManager(DebugObject):
         self.computingNodes = []
 
         for target in [self.shadowComputeTarget, self.shadowScene]:
-            target.setShaderInput("numUpdates", 0)
+            target.setShaderInput("numUpdates", LVecBase2i(0) )
             self.updateShadowsArray.bindTo(target, "updateSources")
 
 
@@ -193,7 +201,7 @@ class LightManager(DebugObject):
 
         for shaderNode in self.computingNodes:
             self.lightDataArray.bindTo(shaderNode, "lights")
-            shaderNode.setShaderInput("lightCount", 0)
+            shaderNode.setShaderInput("lightCount", LVecBase2i(0) )
             self.allShadowsArray.bindTo(shaderNode, "shadowSources")
 
 
@@ -238,15 +246,17 @@ class LightManager(DebugObject):
         queuedUpdateLen = int(len(self.queuedShadowUpdates))
 
         for shaderNode in self.computingNodes:
-            shaderNode.setShaderInput("lightCount", self.numVisibleLights)
+            shaderNode.setShaderInput("lightCount", LVecBase2i(self.numVisibleLights) )
 
         # Compute shadow updates
         numUpdates = 0
+        last = "[ "
 
         if len(self.queuedShadowUpdates) < 1:
             self.shadowComputeTarget.setActive(False)
             for target in [self.shadowComputeTarget, self.shadowScene]:
-                target.setShaderInput("numUpdates", 0)
+                target.setShaderInput("numUpdates", LVecBase2i(0) )
+                pass
 
         else:
             self.shadowComputeTarget.setActive(True)
@@ -276,11 +286,18 @@ class LightManager(DebugObject):
                 # self.queuedShadowUpdates.remove(update)
                 numUpdates += 1
 
+                last += str(update.getUid()) + " "
+
+
             for i in xrange(numUpdates):
                 self.queuedShadowUpdates.remove(self.queuedShadowUpdates[0])
 
             for target in [self.shadowComputeTarget, self.shadowScene]:
-                target.setShaderInput("numUpdates", numUpdates)
+                target.setShaderInput("numUpdates", LVecBase2i(numUpdates) )
+                pass
+
+
+        last += "]"
 
         if self.lightsVisibleDebugText is not None:
             self.lightsVisibleDebugText.setText(
@@ -288,4 +305,4 @@ class LightManager(DebugObject):
 
         if self.lightsUpdatedDebugText is not None:
             self.lightsUpdatedDebugText.setText(
-                'Queued Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)))
+                'Queued Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)) + ", Last: " + last)

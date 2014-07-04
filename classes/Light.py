@@ -4,6 +4,7 @@ from panda3d.core import Vec3, NodePath, LineSegs, Vec4
 from panda3d.core import OmniBoundingVolume
 from panda3d.core import Mat4, PTAInt
 from LightType import LightType
+from DebugObject import DebugObject
 
 # Stores general data of a light and has to be seen
 # as an interface.
@@ -11,6 +12,7 @@ class Light:
 
     # Constructor
     def __init__(self):
+        DebugObject.__init__(self, "AbstractLight")
         self.debugNode = NodePath("LightDebug")
         self.visualizationNumSteps = 32
         self.dataNeedsUpdate = False

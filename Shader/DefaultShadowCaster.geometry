@@ -11,15 +11,11 @@ layout(triangles) in;
 layout(triangle_strip) out;
 
 
-uniform float numUpdates;
+uniform int numUpdates;
 uniform ShadowSource updateSources[SHADOW_MAX_UPDATES_PER_FRAME];
 
 void main() {
-  int maxUpdates = int(numUpdates);
-
-  for (int pass = 0; pass < maxUpdates; pass ++) {
-
-  // int pass = gl_InvocationID;
+  for (int pass = 0; pass < numUpdates; pass ++) {
     ShadowSource currentSource = updateSources[pass];
 
     for(int i=0; i<gl_in.length(); i++)

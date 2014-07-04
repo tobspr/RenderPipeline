@@ -13,8 +13,7 @@ class ShadowSource(DebugObject):
     @classmethod
     def getExposedAttributes(self):
         return {
-            "resolution": "float",
-            "lod": "float",
+            "resolution": "int",
             "atlasPos": "vec2",
             "mvp": "mat4",
             "nearPlane": "float",
@@ -31,7 +30,6 @@ class ShadowSource(DebugObject):
         self.cameraNode.reparentTo(render)
         # self.camera.showFrustum()
         self.resolution = 1024
-        self.lod = 0
         self.atlasPos = Vec2(0)
         self.doesHaveAtlasPos = False
         self.sourceIndex = 0

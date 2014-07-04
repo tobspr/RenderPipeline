@@ -24,7 +24,17 @@ class Main(ShowBase):
 
         # load demo scene
         print "Loading Scene .."
-        self.scene = loader.loadModel("Scene/Scene4.egg")
+        # self.scene = loader.loadModel("Scene/Scene4.egg")
+        self.scene = loader.loadModel("Scene.ignore/Car.bam")
+        
+        panda = loader.loadModel("panda")
+        # panda.reparentTo(self.scene)
+        panda.setPos(10,0,0.5)
+        panda.setH(180)
+        panda.setScale(0.5)
+        self.scene.setScale(2.0)
+
+        self.scene.setTwoSided(True)
         # self.scene = loader.loadModel("Scene/Scene2Bam.bam")
 # 
         self.scene.flattenStrong()
@@ -75,17 +85,17 @@ class Main(ShowBase):
         
         # add huge sun light
         sunLight= PointLight()
-        sunLight.setRadius(20.0)
-        sunLight.setColor(Vec3(1))
-        sunLight.setPos(Vec3(10,10,9))
+        sunLight.setRadius(35.0)
+        sunLight.setColor(Vec3(1.0) + Vec3(0.5,0.25,0))
+        sunLight.setPos(Vec3(-10,10,15))
         sunLight.setCastsShadows(True)
         self.renderPipeline.getLightManager().addLight(sunLight)
         self.lights.append(sunLight)
 
         sunLight2= PointLight()
-        sunLight2.setRadius(20.0)
-        sunLight2.setColor(Vec3(1))
-        sunLight2.setPos(Vec3(-10,-10,7))
+        sunLight2.setRadius(35.0)
+        sunLight2.setColor(Vec3(1.0) + Vec3(0.2,0.7,0.9))
+        sunLight2.setPos(Vec3(10,-10,12))
         sunLight2.setCastsShadows(True)
         self.renderPipeline.getLightManager().addLight(sunLight2)
         # sunLight.attachDebugNode(self.renderDebugNode)
@@ -96,21 +106,22 @@ class Main(ShowBase):
 
         if False:
             i = 0
-            for x in xrange(8):
-                for y in xrange(7):
+            for x in xrange(3):
+                for y in xrange(3):
                     i += 1
                     if i > 63:
                         continue
                     angle = float(i) / 64.0 * math.pi * 2.0
                     sampleLight = PointLight()
-                    sampleLight.setRadius(15.0)
+                    sampleLight.setRadius(25.0)
+                    sampleLight.setCastsShadows(True)
 
-                    sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 2.0)
-                    # sampleLight.setColor(Vec3(2,2,2) * 2.0)
+                    # sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 2.0)
+                    sampleLight.setColor(Vec3(2,2,2) * 0.05)
 
 
                     # initialPos = Vec3((x-3.5) * 8.0, (y-3.5)*8.0, 4)
-                    initialPos = Vec3((x-3.5) * 13.0, (y-3.5)*13.0, 1)
+                    initialPos = Vec3(( float(x)-1.0) * 10.0, (float(y)-1.0)*10.0, 10.0)
                     # initialPos = Vec3(0,0,10)
 
                     sampleLight.setPos(initialPos )
@@ -156,7 +167,8 @@ class Main(ShowBase):
     def loadEngineSettings(self):
         loadPrcFileData("", """
             window-title Render Pipeline
-            win-size 1600 960
+            win-size 1900 1000
+            # win-size 1600 960
             win-fixed-size #t
             framebuffer-multisample #f
             multisample #f
@@ -172,6 +184,7 @@ class Main(ShowBase):
             text-default-font Font/SourceSansPro-Regular.otf
             frame-rate-meter-milliseconds #t
             sync-video #f
+            show-frame-rate-meter #f
 
             transform-cache #t
             state-cache #f
@@ -184,7 +197,7 @@ class Main(ShowBase):
             gl-force-no-scissor #t
 
             gl-debug #f
-            # notify-level-glgsg warning
+
 
 
             allow-incomplete-render #t
@@ -194,13 +207,11 @@ class Main(ShowBase):
 
     def update(self, task):
 
-        # print "\n\n\n\nFRAME:\n\n"
-
         ft = globalClock.getFrameTime()
         for i, light in enumerate(self.lights):
             ft += float(i)
             initialPos = self.initialLightPos[i]
-            light.setPos(initialPos + Vec3(math.sin(ft) * 5.0, math.cos(ft) * 5.0, math.sin(math.cos(ft * 1.523) * 1.23 )  ))
+            # light.setPos(initialPos + Vec3(math.sin(ft) * 5.0, math.cos(ft) * 5.0, math.sin(math.cos(ft * 1.523) * 1.23 )  ))
         return task.cont
 
 

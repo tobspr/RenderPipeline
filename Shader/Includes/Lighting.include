@@ -4,6 +4,7 @@
 #include "Includes/Material.include"
 #include "Includes/ParabolicTransform.include"
 #include "Includes/ShadowSource.include"
+#include "Includes/PositionReconstruction.include"
 
 uniform vec3 cameraPosition;
 uniform samplerCube fallbackCubemap;
@@ -43,7 +44,7 @@ vec2 poissonDisk16[16] = vec2[](
 vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
 
     float factor = float(source.resolution) / SHADOW_MAP_ATLAS_SIZE;
-    float factorBy1 = 0.0005;
+    float factorBy1 = 0.05;
     return ( clamp(rawCoord, factorBy1, 1.0 - factorBy1) * factor + source.atlasPos);
 }
 
@@ -53,12 +54,21 @@ vec3 computeLighting(Light light, Material material) {
     if (light.lightType == 1) {  
 
         // Compute distance to light
-        float distanceToLight = distance(material.position, light.position);    
+        float distanceToLight = distance(material.position, light.position);   
+        float distanceRelative = distanceToLight / light.radius; 
+
 
         // Compute attenuation
         float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.0;
         float normfac = pow(1.0 + (1.0/light.radius) , 2.0);
         attenuation *= normfac;
+
+        attenuation = 1.0 / (
+            1.0 + 
+            (2.0 / light.radius * distanceToLight) + 
+            (1.0 /  (light.radius * light.radius)) * distanceToLight * distanceToLight
+
+            );
 
         // Cut light transition starting at 80%. Otherwise it's exponential and never gets really 0
         float cutoff = light.radius * 0.8;
@@ -115,10 +125,10 @@ vec3 computeLighting(Light light, Material material) {
 
         float shadowFactor = 0.0;
 
-        #if 0
+        #if 1
         vec3 lightFactor = vec3(0);
 
-        for (int shadowIndex = 0; shadowIndex < 6; shadowIndex ++) {
+        for (int shadowIndex = 0; shadowIndex < 2; shadowIndex ++) {
 
             int shadowSourceIndex = light.sourceIndexes[shadowIndex];
 
@@ -142,9 +152,10 @@ vec3 computeLighting(Light light, Material material) {
 
                     float shadowInfluence = 0.0;
 
+
                     for (int i = 0; i< 16; i++) {
                         // int i = 0;
-                        vec2 offset = poissonDisk16[i] / 500.0;
+                        vec2 offset = poissonDisk16[i] / 1000.0;
                         // vec2 offset = vec2(0);
                         vec2 rawSampled = texture(shadowAtlas, convertAtlasCoord(projCoord.xy + offset, currentSource) ).rg;
                         float sampled = unpackDepth(rawSampled);
@@ -168,7 +179,11 @@ vec3 computeLighting(Light light, Material material) {
         }
         // combinedContribution = vec3(1.0 - shadowFactor) * attenuation;
 
-        combinedContribution *=1.0 - shadowFactor;
+        combinedContribution *= 1.02 - shadowFactor;
+
+        // combinedContribution = material.diffuse;
+
+        // combinedContribution = vec3(shadowFactor) * attenuation;
 
         #endif
         

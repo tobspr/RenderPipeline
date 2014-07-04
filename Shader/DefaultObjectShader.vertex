@@ -1,4 +1,4 @@
-#version 440
+#version 130
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 trans_model_to_world;
@@ -10,6 +10,9 @@ in vec2 p3d_MultiTexCoord0;
 out vec3 normalWorldSpace;
 out vec3 positionWorldSpace;
 out vec2 texcoord;
+
+out vec4 diffuseColor;
+
 
 void main() {
 
@@ -23,4 +26,7 @@ void main() {
     texcoord = p3d_MultiTexCoord0.xy * 0.25;
 
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
+
+    diffuseColor = gl_FrontMaterial.diffuse;
+
 }

@@ -3,6 +3,8 @@ import math
 from panda3d.core import TransparencyAttrib, Texture, Vec2, ComputeNode
 
 from direct.gui.OnscreenImage import OnscreenImage
+from direct.gui.DirectGui import DirectFrame
+
 
 from LightManager import LightManager
 from RenderTarget import RenderTarget
@@ -51,7 +53,11 @@ class RenderingPipeline(DebugObject):
         # add update task
         self._attachUpdateTask()
 
-        self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
+        # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
+
+        # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
+
+
 
     # Creates all the render targets
     def _makeDeferredTargets(self):

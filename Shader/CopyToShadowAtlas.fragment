@@ -8,7 +8,7 @@ layout (rg16) uniform image2D atlas;
 #include "Includes/ShadowSource.include"
 #include "Includes/Packing.include"
 
-uniform float numUpdates;
+uniform int numUpdates;
 uniform sampler2DArray renderResult;
 uniform float osg_FrameTime;
 
@@ -16,24 +16,23 @@ uniform ShadowSource updateSources[SHADOW_MAX_UPDATES_PER_FRAME];
 
 
 void main() {
-
-    int iNumUpdates = int(numUpdates);
-
-
-    for (int pass = 0; pass < iNumUpdates; pass++) {
+    
+    for (int pass = 0; pass < numUpdates; pass++) {
+    // int pass = 0;
         ShadowSource current = updateSources[pass];
         ivec2 offsetCoord = ivec2( texcoord * current.resolution );
         ivec2 passDisplace = ivec2(current.atlasPos * SHADOW_MAP_ATLAS_SIZE);
         vec4 result = texture(renderResult, vec3(texcoord, pass));
 
-        // result = vec4(texcoord, 0, 1);
+        // result = vec4(texcoord, 0,  1);
         // result = vec4(sin(osg_FrameTime)*0.5 + 0.5, float(pass / 3.0), 0, 1);
 
         // if (offsetCoord.x < 20 || offsetCoord.y <= 20 || offsetCoord.x > current.resolution - 20 || offsetCoord.y > current.resolution - 20) {
-            // result = vec4(1,0,0,1);
+        //     result = vec4(1,0,0,1);
         // }
 
         imageStore(atlas, offsetCoord + passDisplace, vec4(packDepth(result), 0, 0) );
+        // imageStore(atlas, offsetCoord + passDisplace, vec4(result.xy, 0, 0) );
     }
 
     gl_FragColor = vec4(1,0,1, 1);

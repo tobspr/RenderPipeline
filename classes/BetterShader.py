@@ -1,5 +1,4 @@
 
-
 from panda3d.core import Shader
 from os.path import isfile, join, isdir
 from os import makedirs
@@ -24,6 +23,8 @@ class BetterShader:
     # Loads a compute shader
     @classmethod
     def loadCompute(self, source):
+
+
         # print "Loading compute shader",source
         content = self._handleIncludes(source)
         result = Shader.makeCompute(Shader.SLGLSL, content)
@@ -35,6 +36,8 @@ class BetterShader:
     # Order is vertex, fragment, geometry, tesseval, tesscontrol
     @classmethod
     def load(self, *args):
+
+
         # print "Loading shader",args[-1]
         newArgs = []
         for arg in args:

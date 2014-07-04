@@ -33,11 +33,11 @@ class PointLight(Light, DebugObject):
         #     self.shadowSources[i].setPos(self.position)
         #     self.shadowSources[i].setHpr(hpr[i])
 
-        self.shadowSources[0].setPos(self.position + Vec3(0,1.2,0))
+        self.shadowSources[0].setPos(self.position + Vec3(0,2.0,0))
         self.shadowSources[0].setHpr(Vec3(180,0,0))
 
 
-        self.shadowSources[1].setPos(self.position - Vec3(0,-1.2,0))
+        self.shadowSources[1].setPos(self.position - Vec3(0,2.0,0))
         self.shadowSources[1].setHpr(Vec3(0,0,0))
     
         # self.shadowSources[2].setPos(self.position - Vec3(0,0.5,0))
@@ -101,8 +101,8 @@ class PointLight(Light, DebugObject):
         
         for i in xrange(2):
             source = ShadowSource()
-            source.setupPerspectiveLens( 0.01, self.radius, (90,90) )
-            source.setResolution(1024)
+            source.setupPerspectiveLens( 0.01, self.radius + 3.0, (90,90) )
+            source.setResolution(4096)
             self._addShadowSource(source)
 
     def _updateShadowSources(self):

@@ -21,7 +21,7 @@ layout (r16) writeonly uniform image2D destination;
 
 // Per-Light data and count
 uniform Light lights[MAX_VISIBLE_LIGHTS];
-uniform float lightCount;
+uniform int lightCount;
 
 // Matrices used for the culling
 // I defined constants because the names are quite long ..
@@ -43,7 +43,7 @@ void main() {
     // ivec2 screenSize = imageSize(depth);
     ivec2 screenSize = textureSize(depth, 0);
 
-    ivec2 computeSize = ivec2(1600, 960);
+    ivec2 computeSize = screenSize;
     screenSize = computeSize;
 
 
