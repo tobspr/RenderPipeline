@@ -5,4 +5,4 @@ Scene2/
 .pyc
 *.pyc
 Shader/Cache/
-.ignore
+*.ignore
