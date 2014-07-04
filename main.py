@@ -25,7 +25,9 @@ class Main(ShowBase):
         # load demo scene
         print "Loading Scene .."
         self.scene = loader.loadModel("Scene/Scene4.egg")
-        # self.scene = loader.loadModel("Scene/SceneBam.bam")
+        # self.scene = loader.loadModel("Scene/Scene2Bam.bam")
+# 
+        self.scene.flattenStrong()
         # self.scene = loader.loadModel("environment")
         # self.scene.setScale(0.1)
 
@@ -73,16 +75,24 @@ class Main(ShowBase):
         
         # add huge sun light
         sunLight= PointLight()
-        sunLight.setRadius(30.0)
-        sunLight.setColor(Vec3(0.7, 0.7, 0.7))
-        sunLight.setPos(Vec3(2,2,9))
+        sunLight.setRadius(20.0)
+        sunLight.setColor(Vec3(1))
+        sunLight.setPos(Vec3(10,10,9))
         sunLight.setCastsShadows(True)
         self.renderPipeline.getLightManager().addLight(sunLight)
-        # sunLight.attachDebugNode(self.renderDebugNode)
-
         self.lights.append(sunLight)
 
-        self.initialLightPos = [Vec3(2,2,9)]
+        sunLight2= PointLight()
+        sunLight2.setRadius(20.0)
+        sunLight2.setColor(Vec3(1))
+        sunLight2.setPos(Vec3(-10,-10,7))
+        sunLight2.setCastsShadows(True)
+        self.renderPipeline.getLightManager().addLight(sunLight2)
+        # sunLight.attachDebugNode(self.renderDebugNode)
+
+        self.lights.append(sunLight2)
+
+        self.initialLightPos = [Vec3(5,5,9), Vec3(-5,-5,7)]
 
         if False:
             i = 0
@@ -164,7 +174,7 @@ class Main(ShowBase):
             sync-video #f
 
             transform-cache #t
-            state-cache #t
+            state-cache #f
 
             # Gimme all that performance!
             # threading-model App/Cull/Draw
@@ -173,10 +183,18 @@ class Main(ShowBase):
             gl-force-no-flush #t
             gl-force-no-scissor #t
 
+            gl-debug #f
+            # notify-level-glgsg warning
+
+
+            allow-incomplete-render #t
+
         """.strip())
 
 
     def update(self, task):
+
+        # print "\n\n\n\nFRAME:\n\n"
 
         ft = globalClock.getFrameTime()
         for i, light in enumerate(self.lights):

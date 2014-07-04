@@ -1,13 +1,25 @@
 
 from panda3d.core import Camera, PerspectiveLens, NodePath
-from panda3d.core import CSYupRight, TransformState, CSZupRight
-from panda3d.core import Mat4
+from panda3d.core import CSYupRight, TransformState, CSZupRight, UnalignedLMatrix4f
+from panda3d.core import Mat4, Vec2
 
 from DebugObject import DebugObject
+
 
 class ShadowSource(DebugObject):
 
     _GlobalShadowIndex = 1000
+
+    @classmethod
+    def getExposedAttributes(self):
+        return {
+            "resolution": "float",
+            "lod": "float",
+            "atlasPos": "vec2",
+            "mvp": "mat4",
+            "nearPlane": "float",
+            "farPlane": "float"
+        }
 
     def __init__(self):
         DebugObject.__init__(self, "ShadowSource")
@@ -20,30 +32,45 @@ class ShadowSource(DebugObject):
         # self.camera.showFrustum()
         self.resolution = 1024
         self.lod = 0
-        self.atlasPos = 0,0
+        self.atlasPos = Vec2(0)
         self.doesHaveAtlasPos = False
         self.sourceIndex = 0
+        self.mvp = Mat4()
+        self.sourceIndex = -1
+        self.nearPlane = 0.0
+        self.farPlane = 1000.0
 
-    def setSourceIndex(self, sourceIndex):
-        self.sourceIndex = sourceIndex
+    def getSourceIndex(self):
+        return self.sourceIndex
 
     def getUid(self):
         return self.index
 
-    def getMVP(self):
+    def __repr__(self):
+        return "ShadowSource[id=" + str(self.index) + "]"
+
+    def setSourceIndex(self, index):
+        self.debug("Assigning index", index)
+        self.sourceIndex = index
+
+    def computeMVP(self):
         projMat = Mat4.convertMat(
-                CSYupRight, 
-                self.lens.getCoordinateSystem()) * self.lens.getProjectionMat()
+            CSYupRight,
+            self.lens.getCoordinateSystem()) * self.lens.getProjectionMat()
         transformMat = TransformState.makeMat(
-                Mat4.convertMat(base.win.getGsg().getInternalCoordinateSystem(), 
-                CSZupRight))
-        modelViewMat = transformMat.invertCompose(render.getTransform(self.cameraNode)).getMat()
-        return (modelViewMat * projMat)
+            Mat4.convertMat(base.win.getGsg().getInternalCoordinateSystem(),
+                            CSZupRight))
+        modelViewMat = transformMat.invertCompose(
+            render.getTransform(self.cameraNode)).getMat()
+        self.mvp = UnalignedLMatrix4f(modelViewMat * projMat)
 
     def assignAtlasPos(self, x, y):
-        self.debug("Assigning atlas pos",x,"/",y)
-        self.atlasPos = x, y
+        self.debug("Assigning atlas pos", x, "/", y)
+        self.atlasPos = Vec2(x, y)
         self.doesHaveAtlasPos = True
+
+    def update(self):
+        self.computeMVP()
 
     def getAtlasPos(self):
         return self.atlasPos
@@ -53,7 +80,7 @@ class ShadowSource(DebugObject):
 
     def removeFromAtlas(self):
         self.doesHaveAtlasPos = False
-        self.atlasPos = 0,0
+        self.atlasPos = Vec2(0)
 
     def setResolution(self, resolution):
         self.resolution = resolution
@@ -61,11 +88,13 @@ class ShadowSource(DebugObject):
     def getResolution(self):
         return self.resolution
 
-    def setupPerspectiveLens(self, near=0.1, far=100.0, fov=(90,90)):
+    def setupPerspectiveLens(self, near=0.1, far=100.0, fov=(90, 90)):
         self.lens = PerspectiveLens()
         self.lens.setNearFar(near, far)
         self.lens.setFov(fov[0], fov[1])
         self.camera.setLens(self.lens)
+        self.nearPlane = near
+        self.farPlane = far
 
     def setPos(self, pos):
         self.cameraNode.setPos(pos)
@@ -84,6 +113,3 @@ class ShadowSource(DebugObject):
 
     def isValid(self):
         return self.valid
-
-
-

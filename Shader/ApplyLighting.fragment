@@ -9,8 +9,8 @@
 
 #include "Includes/Configuration.include"
 #include "Includes/Light.include"
-#include "Includes/Lighting.include"
 #include "Includes/Material.include"
+#include "Includes/ShadowSource.include"
 
 uniform sampler2D data0;
 uniform sampler2D data1;
@@ -20,8 +20,12 @@ uniform sampler2D lightsPerTile;
 
 
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
+uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 in vec2 texcoord;
 
+
+// Has to be after the uniformsr
+#include "Includes/Lighting.include"
 
 void main() {
 

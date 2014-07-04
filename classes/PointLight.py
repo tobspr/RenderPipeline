@@ -17,11 +17,35 @@ class PointLight(Light, DebugObject):
         self.radius = 0.0
 
     def _computeLightMat(self):
-        # self.shadowSources[0].setPos(self.position + Vec3(0,0.5,0))
-        # self.shadowSources[0].setHpr(Vec3(180,0,0))
 
-        # self.shadowSources[1].setPos(self.position - Vec3(0,0.5,0))
-        # self.shadowSources[1].setHpr(Vec3(0,0,0))
+        hpr = [
+
+            Vec3(0, 0, 0),
+            Vec3(90, 0, 0),
+            Vec3(180, 0, 0),
+            Vec3(270, 0, 0),
+            Vec3(0, 90, 0),
+            Vec3(0, -90, 0),
+        ]
+
+        # for i in xrange(6):
+        #     # self.shadowSources[i].setPos(self.position + Vec3(0,0.5,0))
+        #     self.shadowSources[i].setPos(self.position)
+        #     self.shadowSources[i].setHpr(hpr[i])
+
+        self.shadowSources[0].setPos(self.position + Vec3(0,1.2,0))
+        self.shadowSources[0].setHpr(Vec3(180,0,0))
+
+
+        self.shadowSources[1].setPos(self.position - Vec3(0,-1.2,0))
+        self.shadowSources[1].setHpr(Vec3(0,0,0))
+    
+        # self.shadowSources[2].setPos(self.position - Vec3(0,0.5,0))
+        # self.shadowSources[2].setHpr(Vec3(90,0,0))
+
+        # self.shadowSources[3].setPos(self.position - Vec3(0,0.5,0))
+        # self.shadowSources[3].setHpr(Vec3(270,0,0))
+
 
         # self.debug("Compute Light mat")
         pass
@@ -64,7 +88,6 @@ class PointLight(Light, DebugObject):
         self._createDebugLine(points2, False).reparentTo(lineNode)
         self._createDebugLine(points3, False).reparentTo(lineNode)
 
-
         lineNode.setScale(self.radius)
         mainNode.setHpr(self.rotation)
 
@@ -78,19 +101,12 @@ class PointLight(Light, DebugObject):
         
         for i in xrange(2):
             source = ShadowSource()
-            source.setupPerspectiveLens( 0.02, self.radius, (100,100) )
-            self._setShadowSource(i, source)
-
-
-
-        # self.shadowSources[1].resolution = 128
-
+            source.setupPerspectiveLens( 0.01, self.radius, (90,90) )
+            source.setResolution(1024)
+            self._addShadowSource(source)
 
     def _updateShadowSources(self):
         pass
-
-
-
 
     def __repr__(self):
         return "PointLight[pos="+str(self.position)+", radius="+str(self.radius)+"]"

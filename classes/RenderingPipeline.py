@@ -51,7 +51,7 @@ class RenderingPipeline(DebugObject):
         # add update task
         self._attachUpdateTask()
 
-        self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (1.0, 0, 0.5), scale=(0.25,0,0.25))
+        self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
 
     # Creates all the render targets
     def _makeDeferredTargets(self):
@@ -64,8 +64,7 @@ class RenderingPipeline(DebugObject):
         self.deferredTarget.setAuxBits(16)
         self.deferredTarget.setColorBits(16)
         self.deferredTarget.setDepthBits(32)
-        # self.deferredTarget.setSize(800, 480)
-        # self.deferredTarget.setSize(400, 240)
+        # self.deferredTarget.setSize(400, 240) # check for overdraw
         self.deferredTarget.prepareSceneRender()
 
     # Creates the storage to store the list of visible lights per tile

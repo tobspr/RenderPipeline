@@ -20,11 +20,11 @@ void main() {
     vec3 normals = texture(p3d_Texture1, texcoord * 2.0).rgb;
     float specular = texture(p3d_Texture2, texcoord * 2.0).r;
 
-    // vec3 diffuse = vec3(0.2);
+    diffuse = vec3(1.0) * step(positionWorldSpace.z-0.01, 0.0);
     // vec3 normal = vec3(0,0,1);
 
-    diffuse = vec3(0.5 + normalWorldSpace*0.1);
-    specular = 0.0;
+    // diffuse = vec3(0.5 + normalWorldSpace*0.1);
+    specular = 0.85;
 
 
     // Detail normal mapping
@@ -37,8 +37,8 @@ void main() {
     m.position = positionWorldSpace;
     m.normal = normal;
     m.specular = specular;
-    m.smoothness = 0.0;
-    m.gloss = 0.0;
+    m.smoothness = 0.7;
+    m.gloss = 0.7;
     m.transluency = 0.0;
 
     // not needed

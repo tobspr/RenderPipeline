@@ -1,35 +1,34 @@
 #version 400
 
 
+#include "Includes/Configuration.include"
+#include "Includes/ShadowSource.include"
 #include "Includes/ParabolicTransform.include"
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
 
 layout(triangles) in;
-layout(triangle_strip, max_vertices=3) out;
+layout(triangle_strip) out;
 
 
 uniform float numUpdates;
-uniform mat4  updateData[2];
-uniform mat4  updateMatrices[2];
-
-
+uniform ShadowSource updateSources[SHADOW_MAX_UPDATES_PER_FRAME];
 
 void main() {
+  int maxUpdates = int(numUpdates);
 
+  for (int pass = 0; pass < maxUpdates; pass ++) {
 
-    int maxUpdates = int(numUpdates);
+  // int pass = gl_InvocationID;
+    ShadowSource currentSource = updateSources[pass];
 
-    for (int pass = 0; pass < maxUpdates; pass ++) {
-
-        for(int i=0; i<3; i++)
-          {
-            gl_Position = updateMatrices[pass] * gl_in[i].gl_Position;
-            gl_Position = transformParabol(gl_Position, 0.02, 70.0);
-            gl_Layer = int(updateData[pass][0][0]);
-            EmitVertex();
-          }
-          EndPrimitive();    
-
+    for(int i=0; i<gl_in.length(); i++)
+    {
+      gl_Position = currentSource.mvp * gl_in[i].gl_Position;
+      gl_Position = transformParabol(gl_Position, currentSource.nearPlane, currentSource.farPlane);
+      gl_Layer = pass;
+      EmitVertex();
+    }
+    EndPrimitive();    
   }
 }

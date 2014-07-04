@@ -195,7 +195,7 @@ void main() {
     // gl_FragData[0] = vec4( float(numLightsProcessed) / float(MAX_LIGHTS_PER_PATCH), 0, 0, 1);
     // gl_FragData[0].xyz = vec3(minDepthLinear / ndcFar * 200.0);
 
-    float lightsVisibleFloat = float(numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) * 16.0;
+    float lightsVisibleFloat = float(numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH);
     vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
 
     gl_FragData[0] = vec4(lightCountIndicator, 1);

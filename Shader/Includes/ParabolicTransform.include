@@ -2,6 +2,8 @@
 
 
 vec4 transformParabol(vec4 transformed, float near, float far) {
+    // return transformed;
+    
     float l = length(transformed.xyz);
     transformed = transformed/l;
     transformed.z = transformed.z + 1;

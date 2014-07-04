@@ -3,6 +3,7 @@
 #include "Includes/LightingModels.include"
 #include "Includes/Material.include"
 #include "Includes/ParabolicTransform.include"
+#include "Includes/ShadowSource.include"
 
 uniform vec3 cameraPosition;
 uniform samplerCube fallbackCubemap;
@@ -39,8 +40,11 @@ vec2 poissonDisk16[16] = vec2[](
 
 
 
-vec2 convertAtlasCoord(vec2 rawCoord) {
-    return (rawCoord / 2.0);
+vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
+
+    float factor = float(source.resolution) / SHADOW_MAP_ATLAS_SIZE;
+    float factorBy1 = 0.0005;
+    return ( clamp(rawCoord, factorBy1, 1.0 - factorBy1) * factor + source.atlasPos);
 }
 
 vec3 computeLighting(Light light, Material material) {
@@ -101,53 +105,81 @@ vec3 computeLighting(Light light, Material material) {
 
 
         vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
-        // vec3 combinedContribution =  vec3(diffuseBrdf) * attenuation;
-        // vec3 combinedContribution =  vec3(h) * attenuation;
+
+        // combinedContribution = dif;
+
+
         #endif 
 
         // Compute shadows
 
-        
-        
-        vec4 projected =  light.projectionMatrix * vec4(material.position, 1);
+        float shadowFactor = 0.0;
 
+        #if 0
+        vec3 lightFactor = vec3(0);
 
-        projected = transformParabol(projected, 0.02, 70.0);
-        projected = shadowBiasMatrix * projected;
+        for (int shadowIndex = 0; shadowIndex < 6; shadowIndex ++) {
 
-        vec3 projCoord = projected.xyz / projected.w;
+            int shadowSourceIndex = light.sourceIndexes[shadowIndex];
 
-        bool shadowed = projCoord.y > 0.0 && projCoord.x >= 0.0 
-                        && projCoord.x < 1.0 && projCoord.y < 1.0 &&
-                        projected.w > 0.0 && projected.w <= light.radius;
+            if (shadowSourceIndex >= 0) {
 
-        vec3 shadowInfluence = vec3(1.0);
+                // shadowFactor -= 0.2;
+                ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
-        // projCoord.y = 1.0 - projCoord.y;
+                vec4 projected = currentSource.mvp * vec4(material.position, 1);
 
-        if (shadowed) {
+                projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);
+                projected = shadowBiasMatrix * projected;
 
-            // for (int i = 0; i< 16; i++) {
-                int i = 0;
-                vec2 offset = poissonDisk16[i] / 800.0;
-                float sampled = texture(shadowAtlas, convertAtlasCoord(projCoord.xy + offset) ).r;
-                // shadowInfluence -= vec3(sampled > projCoord.z - (1.0 / projected.w)*0.002 ? 0.0 : 1.0 / 16.0); 
-                shadowInfluence -= vec3(sampled > projCoord.z - (1.0 / projected.w)*0.002 ? 0.0 : 1.0 ); 
-                shadowInfluence = vec3(sampled);
-            // }
-            // shadowInfluence = vec3(sampled > projCoord.z - (1.0 / projected.w)*0.001 ? 1.0 : 0.2);
-            // shadowInfluence = vec3( abs(sampled - projCoord.z) );
-            // shadowInfluence = vec3(projCoord.z , 0, 0);
+                vec3 projCoord = projected.xyz / projected.w;
+
+                bool shadowed = projCoord.y > 0.0 && projCoord.x >= 0.0 
+                                && projCoord.x < 1.0 && projCoord.y < 1.0 &&
+                                projected.w > currentSource.nearPlane && projected.w <= currentSource.farPlane;
+
+                if (shadowed) {
+
+                    float shadowInfluence = 0.0;
+
+                    for (int i = 0; i< 16; i++) {
+                        // int i = 0;
+                        vec2 offset = poissonDisk16[i] / 500.0;
+                        // vec2 offset = vec2(0);
+                        vec2 rawSampled = texture(shadowAtlas, convertAtlasCoord(projCoord.xy + offset, currentSource) ).rg;
+                        float sampled = unpackDepth(rawSampled);
+                        shadowInfluence += (sampled > projCoord.z - 0.003)  ? 0.0 : 1.0 / 16.0; 
+
+                    }
+
+                    if (shadowInfluence > shadowFactor) {
+                        shadowFactor = shadowInfluence;
+                        float ff = float(shadowIndex) / 1.0;
+                        lightFactor = vec3(ff, 1.0 - ff, 0);                        
+                    }
+
+                    // shadowFactor = rawSampled.x * 100.0;
+
+                } 
+
+                // shadowFactor = projCoord.y;
+            }
+
         }
+        // combinedContribution = vec3(1.0 - shadowFactor) * attenuation;
 
-        // combinedContribution = vec3(shadowInfluence) * attenuation;
-        combinedContribution = vec3(attenuation);
+        combinedContribution *=1.0 - shadowFactor;
 
-        // combinedContribution = vec3(shadowInfluence) + material.normal*0.1;
+        #endif
+        
+        // combinedContribution = vec3(shadowFactorr) + material.normal*0.0;
 
         // combinedContribution.xyz = material.position;
 
-        // vec3 combinedContribution = attenuation * light.color * 0.1;
+        // combinedContribution = vec3(1.0 - shadowFactor) * attenuation;
+        // combinedContribution = lightFactor * attenuation;
+        
+        // combinedContribution = attenuation * light.color;
 
         // return vec3(clamp(combinedContribution.xy, 0, 1));
         return combinedContribution.xyz;
