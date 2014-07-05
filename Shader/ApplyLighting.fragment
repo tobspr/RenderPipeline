@@ -3,9 +3,8 @@
 // TODO: Make some benchmarks to see wheter unrolling
 // is faster or slower ..
 
-// EDIT: As of now, not unrolling is faster
+// EDIT: As of now, not unrolling is faster?
 // #pragma optionNV (unroll all)
-
 
 #include "Includes/Configuration.include"
 #include "Includes/Light.include"
@@ -52,27 +51,28 @@ void main() {
     int tileLightCount = imageLoad(lightsPerTile, precomputeCoord).r;
     int numActiveLights = min(tileLightCount, MAX_LIGHTS_PER_PATCH);
 
-
+    // numActiveLights = 20;
 
     vec3 result = vec3(0.0);
 
     // Compute each light which affects this tile
     for (int i = 0; i < numActiveLights; i++) {
 
-        // Light index is offsetted by 1, because at position 0 
-        // the number of lights is stored
-        int index = i+1;
 
-        // Compute offset by index
-        ivec2 offset = ivec2(index % 8, index / 8);
+            // Light index is offsetted by 1, because at position 0 
+            // the number of lights is stored
+            int index = i+1;
 
-        // Extract light id from texture, and fetch data for that light
-        int lightId = imageLoad(lightsPerTile, precomputeCoord + offset).r;
+            // Compute offset by index
+            ivec2 offset = ivec2(index % 8, index / 8);
+
+            // Extract light id from texture, and fetch data for that light
+            int lightId = imageLoad(lightsPerTile, precomputeCoord + offset).r;
 
 
-        // Convert to light struct
-        Light currentLight = lights[lightId];
-        result += computeLighting(currentLight, material);
+            // Convert to light struct
+            Light currentLight = lights[lightId];
+            result += computeLighting(currentLight, material);
 
     }
 

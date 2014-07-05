@@ -13,18 +13,18 @@ uniform sampler2D p3d_Texture0;
 uniform sampler2D p3d_Texture1;
 uniform sampler2D p3d_Texture2;
 
-uniform float specular;
-uniform float metallic;
-uniform float roughness;
+// uniform float specular;
+// uniform float metallic;
+// uniform float roughness;
 
 
 void main() {
 
     BaseMaterial bm;
 
-    bm.metallic = metallic;
-    bm.roughness = roughness;
-    bm.specular = specular;
+    bm.metallic = 0.5;
+    bm.roughness = 0.5;
+    bm.specular = 0.5;
     // bm.baseColor = vec3(1.000, 0.766, 0.336);
     bm.baseColor = vec3(1.000, 0.766, 0.336);
     // bm.baseColor = vec3(1,0,0);

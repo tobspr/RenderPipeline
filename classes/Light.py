@@ -25,7 +25,7 @@ class Light:
         self.position = Vec3(0)
         self.color = Vec3(0)
         self.posterIndex = -1
-        self.rotation = Vec3(0)
+        self.direction = Vec3(0)
         self.radius = 0.1
 
         self.sourceIndexes = PTAInt.emptyArray(6)
@@ -39,17 +39,18 @@ class Light:
         return {
             "position": "vec3",
             "color": "vec3",
+            "direction": "vec3",
             "posterIndex": "int",
             "lightType": "int",
             "radius": "float",
             "sourceIndexes": "array<int>(6)",
         }
 
-    # Todo. Matches the light rotation so it looks at
-    # that object
-    def lookAt(self, pos):
-        raise NotImplementedError()
-
+    def setDirection(self, direction):
+        direction.normalize()
+        self.direction = direction
+        self.queueUpdate()
+        self.queueShadowUpdate()
 
     def setRadius(self, radius):
         self.radius = max(0.01, radius)
@@ -58,10 +59,6 @@ class Light:
     def getShadowSources(self):
         return self.shadowSources
 
-    # Sets the rotation for this light
-    def setHpr(self, hpr):
-        self.rotation = hpr
-        self.queueUpdate()
 
     # Returns true if the light casts shadows
     def hasShadows(self):

@@ -44,22 +44,32 @@ vec2 poissonDisk16[16] = vec2[](
 vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
 
     float factor = float(source.resolution) / SHADOW_MAP_ATLAS_SIZE;
-    float factorBy1 = (SHADOW_MAP_ATLAS_SIZE / float(source.resolution) ) / SHADOW_MAP_ATLAS_SIZE;
-    return ( clamp(rawCoord, factorBy1, 1.0 - factorBy1) * factor + source.atlasPos);
+    float factorBy1 = 1.0 / SHADOW_MAP_ATLAS_SIZE;
+    return ( clamp(rawCoord * factor, factorBy1, 1.0 - factorBy1) + source.atlasPos);
+
+
+
 }
 
 vec3 computeLighting(Light light, BaseMaterial material) {
+
+    float attenuation = 0.5;
+    float distanceRelative = 0.0;
+    float distanceToLight = 0.0;
+    vec3 l;
+
+
 
     // Point light
     if (light.lightType == 1) {  
 
         // Compute distance to light
-        float distanceToLight = distance(material.position, light.position);   
-        float distanceRelative = distanceToLight / light.radius; 
+        distanceToLight = distance(material.position, light.position);   
+        distanceRelative = distanceToLight / light.radius; 
 
 
         // Compute attenuation
-        float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.0;
+        attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.0;
         float normfac = pow(1.0 + (1.0/light.radius) , 2.0);
         attenuation *= normfac;
 
@@ -69,31 +79,41 @@ vec3 computeLighting(Light light, BaseMaterial material) {
         attenuation *= 1.0 - smoothstep(0.0, 1.0, ((distanceToLight / cutoff) - 1.0) * 4.0 );   
         attenuation = max(0.0, attenuation);
 
-        #if 1
-        // Compute vectors
-        vec3 l = normalize(light.position - material.position);
-        vec3 v = normalize(cameraPosition - material.position);
-        vec3 n = normalize(material.normal);
-        vec3 h = normalize(l + v);
+        l = normalize(light.position - material.position);
+
+
+    // Directional light
+    } else if (light.lightType == 2) {
+
+        distanceToLight = 9999999; // very far
+        distanceRelative = 1.0;
+        attenuation = 1.0;
+        l = light.direction;
+
+    }
+
+
+    // Compute vectors
+
+    vec3 v = normalize(cameraPosition - material.position);
+    vec3 n = normalize(material.normal);
+    vec3 h = normalize(l + v);
+
+    #ifdef USE_SIMPLE_LIGHTING
+
+        return safeDot(n, l) * attenuation * light.color * material.baseColor;
+
+
+    #else
 
 
         float roughness = clamp(material.roughness, 0.005, 1.0);
         float specular = material.specular;
 
-
-
         float refractiveFactor = material.metallic * 0.5 + 0.5;
-
 
         vec3 diffuseColor = material.baseColor * (1.0 - material.metallic);
         vec3 specularColor = material.baseColor * (material.metallic) + specular * (1.0 - material.metallic);
-
-        // diffuseColor = vec3(0);
-        // specularColor = vec3(1.000, 0.766, 0.336);
-
-
-        // vec3 specularColor = vec3(0.1);
-
 
         // Compute reflection
         vec3 reflectedDir = reflect(v, n);
@@ -101,9 +121,6 @@ vec3 computeLighting(Light light, BaseMaterial material) {
         vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
         vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
         vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
-        // vec3 reflectedColor = vec3(1.0);
-
-
 
         // Compute specular BRDF
         float specG = clamp(specularBrdfG(l, v, h, n, roughness), 0, 1);
@@ -116,6 +133,7 @@ vec3 computeLighting(Light light, BaseMaterial material) {
         // vec3 diffuseBrdf = diffuseBrdfOrenNayar(l, v, n) * safeDot(n, l);
         vec3 diffuseBrdf = vec3(diffuseBrdfSimpleOrenNayar(l, v, n, 1.5));
 
+
         // Combine specular
         vec3 specularTerm = (specF * specG * specD) * max(0.0, 4.0 * dot(n, l) * dot(n, v));
 
@@ -127,32 +145,28 @@ vec3 computeLighting(Light light, BaseMaterial material) {
 
         vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
 
-        // combinedContribution = dif;
 
 
-        #endif 
+        #ifdef USE_SHADOWS
 
         // Compute shadows
-
         float shadowFactor = 0.0;
-
-        #if 1
-
-        if (attenuation > 0.0) {
+        // if (attenuation > 0.0) {
 
 
             vec3 lightFactor = vec3(0);
 
+            // For point lights we can decide by position
             // for (int shadowIndex = 0; shadowIndex < 1; shadowIndex ++) {
 
-            float offs = light.position.y - material.position.y;
-            int shadowIndex = offs < 0.0 ? 1 : 0;
-
+                int shadowIndex = light.position.y - material.position.y < 0.0 ? 1 : 0;
                 int shadowSourceIndex = light.sourceIndexes[shadowIndex];
 
                 if (shadowSourceIndex >= 0) {
                     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
-                    float sampleFactor = (float(currentSource.resolution) / 4096.0) / 1024.0 * (1.0 + distanceRelative*8.0) * 4.0;
+
+                    float resolutionFactor = SHADOW_MAP_ATLAS_SIZE / float(currentSource.resolution);
+                    float sampleFactor = ( 4.0 + resolutionFactor  ) / SHADOW_MAP_ATLAS_SIZE * (0.5 + distanceRelative*0.6) ;
                     vec4 projected = currentSource.mvp * vec4(material.position, 1);
                     projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);
                     projected = shadowBiasMatrix * projected;                 
@@ -172,31 +186,33 @@ vec3 computeLighting(Light light, BaseMaterial material) {
                             // vec2 offset = vec2(0);
                             vec2 rawSampled = texture(shadowAtlas, convertAtlasCoord(projCoord.xy + offset, currentSource) ).rg;
                             float sampled = unpackDepth(rawSampled);
-                            shadowInfluence += (sampled > projCoord.z - 0.005* distanceRelative )  ? 0.0 : 1.0 / 16.0; 
+                            shadowInfluence += (sampled > projCoord.z - 0.005* distanceRelative*(1.0 + resolutionFactor*0.09) )  ? 0.0 : 1.0 / 10.0; 
 
                         }
 
                         if (shadowInfluence > shadowFactor) {
                             shadowFactor = shadowInfluence;
                         }
+                        
                         float ff = float(shadowIndex) / 1.0;
                         lightFactor += vec3(ff, 1.0 - ff, 0)*0.5;
                     } 
                 }
-        }
+            // }
+        // }
 
-        combinedContribution *= 1.0 - shadowFactor;
+        combinedContribution *= max(0.0, 1.0 - shadowFactor) + 0.01;
+        // combinedContribution *= 0.5 + lightFactor;
 
         #endif
 
-        combinedContribution = max(vec3(0.0), combinedContribution);
+        // combinedContribution = diffuseBrdf * light.color;
+        // combinedContribution = max(vec3(0.0), vec3(attenuation) );
         // combinedContribution = saturate(specularContribution) * attenuation;
 
 
         return combinedContribution.xyz;
 
-    }
-
-    return light.color;
+    #endif
 
 }

@@ -25,10 +25,14 @@ class RenderingPipeline(DebugObject):
         self.cullBounds = None
         self.patchSize = Vec2(32, 32)
 
+        self.useComputeShader = False
+
         self._setup()
+
 
     def _setup(self):
         self.debug("Setting up render pipeline")
+        self.debug("Use compute shaders =",self.useComputeShader)
 
         # First, we need no transparency
         render.setAttrib(
@@ -45,17 +49,18 @@ class RenderingPipeline(DebugObject):
             "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
         # self.deferredTarget.setShaderInput("sampler", self.lightBoundsComputeBuff.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.lightPerTileStorage)
-        self.deferredTarget.setShaderInput("sampler", self.lightingComputeContainer.getColorTexture())
-        # self.deferredTarget.setShaderInput("sampler", self.lightManager.getAtlasTex())
 
-        # self.deferredTarget.setShaderInput("screenSize", self.precomputeSize)
+        if self.useComputeShader:
+            self.deferredTarget.setShaderInput("sampler", self.lightingComputeResult)
+        else:
+            self.deferredTarget.setShaderInput("sampler", self.lightingComputeContainer.getColorTexture())
 
         # add update task
         self._attachUpdateTask()
 
-        DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
+        # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
 
-        self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
+        # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightPerTileStorage, pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
 
 
@@ -111,18 +116,28 @@ class RenderingPipeline(DebugObject):
         self._makeLightBoundsComputationBuffer(sizeX, sizeY)
 
         # Create a buffer which applies the lighting
-        self._makeLightingComputeBuffer()
+        if self.useComputeShader:
+            self._makeLightingComputeShader( sizeX, sizeY )
+
+        else:
+            self._makeLightingComputeBuffer()
 
         # Register for light manager
         self.lightManager.setLightingComputators(
             [self.lightBoundsComputeBuff, self.lightingComputeContainer])
 
 
+        self.lightingComputeContainer.setShaderInput(
+            "lightsPerTile", self.lightPerTileStorage)
+
+        self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
+
         # Ensure the images have the correct filter mode
-        for bmode in [RenderTargetType.Color]:
-            tex = self.lightBoundsComputeBuff.getTexture(bmode)
-            tex.setMinfilter(Texture.FTNearest)
-            tex.setMagfilter(Texture.FTNearest)
+        if not self.useComputeShader:
+            for bmode in [RenderTargetType.Color]:
+                tex = self.lightBoundsComputeBuff.getTexture(bmode)
+                tex.setMinfilter(Texture.FTNearest)
+                tex.setMagfilter(Texture.FTNearest)
 
         self._loadFallbackCubemap()
 
@@ -164,7 +179,6 @@ class RenderingPipeline(DebugObject):
 
         self._setPositionComputationShader()
 
-
     def _makeLightingComputeBuffer(self):
         self.lightingComputeContainer = RenderTarget("ComputeLighting")
         # self.lightingComputeContainer.setSize()
@@ -172,15 +186,31 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setColorBits(16)
         self.lightingComputeContainer.prepareOffscreenBuffer()
 
-        self.lightingComputeContainer.setShaderInput(
-            "lightsPerTile", self.lightPerTileStorage)
+    def _makeLightingComputeShader(self, sizeX, sizeY):
+        
+        actualX = int(sizeX * self.patchSize.x)
+        actualY = int(sizeY * self.patchSize.y)
 
-        self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
+        self.lightingComputeResult = Texture("Lighting Compute Result")
+        self.lightingComputeResult.setup2dTexture(actualX, actualY, Texture.TFloat, Texture.FRgba16)
+
+        self.lightingComputeNode = ComputeNode("LightingCompute")
+        self.lightingComputeNode.addDispatch(sizeX, sizeY, 1)
+        self.lightingComputeNP = render.attachNewNode(self.lightingComputeNode)
+        self.lightingComputeNP.setBin("unsorted", 20)
+        self.lightingComputeNP.setShaderInput("destination", self.lightingComputeResult)
+
+        self.lightingComputeContainer = self.lightingComputeNP
 
 
     def _setLightingShader(self):
-        lightShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex", "Shader/ApplyLighting.fragment")
+
+        if self.useComputeShader:
+            lightShader = BetterShader.loadCompute("Shader/ApplyLighting.compute")
+
+        else:
+            lightShader = BetterShader.load(
+                "Shader/DefaultPostProcess.vertex", "Shader/ApplyLighting.fragment")
         self.lightingComputeContainer.setShader(lightShader)
 
     def _setPositionComputationShader(self):

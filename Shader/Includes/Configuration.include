@@ -4,11 +4,10 @@
 #define LIGHTING_COMPUTE_PATCH_SIZE_X 32
 #define LIGHTING_COMPUTE_PATCH_SIZE_Y 32
 
-
 // Max values for the light culling
 // If you change anything in LightManager, 
 // change it here, too 
-#define MAX_VISIBLE_LIGHTS 34
+#define MAX_VISIBLE_LIGHTS 30
 #define MAX_LIGHTS_PER_PATCH 63
 
 
@@ -17,6 +16,8 @@
 // Try to set as high as possible without getting artifacts
 #define LIGHTING_MIN_MAX_DEPTH_ACCURACY 1
 
+// Use very simple lighting instead of the brdfs
+// #define USE_SIMPLE_LIGHTING 
 
 // Wheter to clear the lighting buffer each frame to be
 // able to see changes in lighting - only recommended for debugging
@@ -38,8 +39,10 @@
 const float sqrt_of_2 = 1.4142135623;
 
 // Shadow atlas parameters
+#define USE_SHADOWS 
 #define SHADOW_MAP_ATLAS_SIZE 8192.0
 #define SHADOW_MAP_ATLAS_TILE_SIZE (SHADOW_MAP_ATLAS_SIZE / SHADOW_MAP_TILE_SIZE)
-#define SHADOW_MAX_UPDATES_PER_FRAME 2
-#define SHADOW_MAX_TOTAL_MAPS 16
+#define SHADOW_MAX_UPDATES_PER_FRAME 8
+#define SHADOW_MAX_TOTAL_MAPS 18
+
 

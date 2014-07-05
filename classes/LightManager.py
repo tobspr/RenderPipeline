@@ -17,13 +17,13 @@ class LightManager(DebugObject):
         DebugObject.__init__(self, "LightManager")
 
         # maximum values
-        self.maxVisibleLights = 34
+        self.maxVisibleLights = 30
         self.numVisibleLights = 0
         self.maxShadowRes = 512
         self.shadowAtlasSize = 8192
-        self.maxShadowMaps = 34
-        self.maxShadowUpdatesPerFrame = 2
-        self.tileSize = 512
+        self.maxShadowMaps = 30
+        self.maxShadowUpdatesPerFrame = 8
+        self.tileSize = 256
         self.tileCount = self.shadowAtlasSize / self.tileSize
         self.tiles = []
 
@@ -99,7 +99,7 @@ class LightManager(DebugObject):
 
         # Debug text to show how many lights are currently visible
         try:
-            from FastText import FastText
+            from FastText2d import FastText
             self.lightsVisibleDebugText = FastText(pos=Vec2(
                 base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
             self.lightsUpdatedDebugText = FastText(pos=Vec2(
@@ -245,6 +245,7 @@ class LightManager(DebugObject):
 
             # todo: visibility check
             self.lightDataArray[self.numVisibleLights] = light
+            # print light
             self.numVisibleLights += 1
 
         queuedUpdateLen = int(len(self.queuedShadowUpdates))

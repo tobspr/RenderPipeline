@@ -14,7 +14,6 @@ class PointLight(Light, DebugObject):
     def __init__(self):
         Light.__init__(self)
         DebugObject.__init__(self, "HemiPointLight")
-        self.radius = 0.0
         self._spacing = 0.6
 
 
@@ -68,11 +67,11 @@ class PointLight(Light, DebugObject):
         mainNode = NodePath("DebugNodeInner")
         mainNode.setPos(self.position)
 
-        inner = loader.loadModel("Assets/Visualisation/Lamp")
-        inner.setPos(-0.5, -0.5, 0.0)
-        inner.setScale(0.5)
-        inner.setColorScale(Vec4(1,1,0,1))
-        inner.reparentTo(mainNode)
+        # inner = loader.loadModel("Assets/Visualisation/Lamp")
+        # inner.setPos(-0.5, -0.5, 0.0)
+        # inner.setScale(0.5)
+        # inner.setColorScale(Vec4(1,1,0,1))
+        # inner.reparentTo(mainNode)
 
         lineNode = mainNode.attachNewNode("lines")
 
@@ -91,7 +90,7 @@ class PointLight(Light, DebugObject):
         self._createDebugLine(points3, False).reparentTo(lineNode)
 
         lineNode.setScale(self.radius)
-        mainNode.setHpr(self.rotation)
+        # mainNode.setHpr(self.rotation)
 
         mainNode.flattenStrong()
 

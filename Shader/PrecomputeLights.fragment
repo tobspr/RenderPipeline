@@ -137,6 +137,8 @@ void main() {
         // Extract light data
         Light currentLight = lights[lightIndex];
 
+        bool addToList = false;
+
         if (currentLight.lightType == 1) {
 
             // Project to view space
@@ -170,10 +172,8 @@ void main() {
 
                 #endif // LIGHTING_ACCURATE_BOUND_CHECK
 
+                        addToList = true;
 
-                        ivec2 offsetCoord = ivec2(numLightsProcessed % 8, numLightsProcessed / 8);
-                        imageStore(destination, storageCoord + offsetCoord, ivec4( lightIndex ) );
-                        numLightsProcessed += 1;
 
                 #ifdef LIGHTING_ACCURATE_BOUND_CHECK
                     }
@@ -185,13 +185,25 @@ void main() {
             }
             #endif // LIGHTING_ANY_BOUND_CHECK
 
+        } else if (currentLight.lightType == 2) {
+            addToList = true;
+        }
+
+
+
+        if (addToList) {
+            ivec2 offsetCoord = ivec2(numLightsProcessed % 8, numLightsProcessed / 8);
+            imageStore(destination, storageCoord + offsetCoord, ivec4( lightIndex ) );
+            numLightsProcessed += 1;
         }
 
     }
 
 
     // imageStore(destination, storageCoord, vec4( (numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) ) );
-    imageStore(destination, storageCoord, ivec4( numLightsProcessed-1 ) );
+    imageStore(destination, storageCoord, ivec4( numLightsProcessed -1 ) );
+    // imageStore(destination, storageCoord, ivec4( numLightsProcessed > 21 ? 1.0 : 0.5 ) );
+    // imageStore(destination, storageCoord, ivec4( texcoord.x * 50.0) );
 
     // imageStore(destination, storageCoord, vec4( minDepthLinear / ndcFar * 100.0 ) );
     // imageStore(destination, storageCoord, vec4( getLinearZFromZ(texture(depth, texcoord).x) / ndcFar * 200.0 ) );
@@ -203,7 +215,7 @@ void main() {
     // gl_FragData[0] = vec4( float(numLightsProcessed) / float(MAX_LIGHTS_PER_PATCH), 0, 0, 1);
     // gl_FragData[0].xyz = vec3(minDepthLinear / ndcFar * 200.0);
 
-    float lightsVisibleFloat = float(numLightsProcessed-1) / float(1.0);
+    float lightsVisibleFloat = float(numLightsProcessed-1) / float(3.0);
     vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
 
     gl_FragData[0] = vec4(lightCountIndicator, 1);
