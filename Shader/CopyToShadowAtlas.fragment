@@ -31,7 +31,7 @@ void main() {
         //     result = vec4(1,0,0,1);
         // }
 
-        imageStore(atlas, offsetCoord + passDisplace, vec4(packDepth(result), 0, 0) );
+        imageStore(atlas, offsetCoord + passDisplace, vec4(packDepth(result.x), 0, 0) );
         // imageStore(atlas, offsetCoord + passDisplace, vec4(result.xy, 0, 0) );
     }
 
