@@ -19,7 +19,7 @@ class LightManager(DebugObject):
         # maximum values
         self.maxVisibleLights = 30
         self.numVisibleLights = 0
-        self.maxShadowRes = 512
+        self.maxShadowRes = 1024
         self.shadowAtlasSize = 2048
         self.maxShadowMaps = 30
         self.maxShadowUpdatesPerFrame = 8

@@ -112,22 +112,22 @@ class Main(ShowBase):
         # self.lights.append(inverseSunLight)
 
 
-        # sunLight2= PointLight()
-        # sunLight2.setRadius(35.0)
-        # sunLight2.setColor(Vec3(0.1))
-        # sunLight2.setPos(Vec3(4,-4,0.5))
-        # sunLight2.setCastsShadows(True)
-        # self.renderPipeline.getLightManager().addLight(sunLight2)
+        sunLight2= PointLight()
+        sunLight2.setRadius(35.0)
+        sunLight2.setColor(Vec3(1.0))
+        sunLight2.setPos(Vec3(5,5,15))
+        sunLight2.setCastsShadows(True)
+        self.renderPipeline.getLightManager().addLight(sunLight2)
         # sunLight.attachDebugNode(self.renderDebugNode)
 
-        # self.lights.append(sunLight2)
+        self.lights.append(sunLight2)
 
         # self.initialLightPos = [Vec3(5,5,9), Vec3(-5,-5,7)]
         # self.initialLightPos = [Vec3(5,5,9)]
         # self.initialLightPos = [Vec3(0)]
         self.initialLightPos = []
 
-        if True:
+        if False:
             i = 0
             for x in xrange(4):
                 for y in xrange(3):
@@ -226,8 +226,8 @@ class Main(ShowBase):
         # ft = 0
         for i, light in enumerate(self.lights):
             ft += float(i) + math.pi*0.46
-            initialPos = self.initialLightPos[i]
-            light.setPos(initialPos + Vec3(math.sin(ft) * 3.0, math.cos(ft) * 3.0, math.sin(math.cos(ft * 1.523) * 1.7 )  ))
+            # initialPos = self.initialLightPos[i]
+            # light.setPos(initialPos + Vec3(math.sin(ft) * 3.0, math.cos(ft) * 3.0, math.sin(math.cos(ft * 1.523) * 1.7 )  ))
         return task.cont
 
 
