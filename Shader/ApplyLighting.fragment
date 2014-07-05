@@ -45,7 +45,7 @@ void main() {
     vec4 target1data = texelFetch(data1, screenCoord, 0);
     vec4 target2data = texelFetch(data2, screenCoord, 0);
 
-    Material material = unpackMaterial(target0data, target1data, target2data);
+    BaseMaterial material = unpackBaseMaterial(target0data, target1data, target2data);
 
     // Fetch number of lights for this tile
     // int tileLightCount = int( texelFetch(lightsPerTile, precomputeCoord, 0).r * float(MAX_LIGHTS_PER_PATCH) );
@@ -77,9 +77,9 @@ void main() {
     }
 
 
-    if ( distance(material.diffuse, vec3(1,1,0) ) < 0.001 ) {
-        result = vec3(1,1,0);
-    }
+    // if ( distance(material., vec3(1,1,0) ) < 0.001 ) {
+    //     result = vec3(1,1,0);
+    // }
 
 
 
@@ -91,17 +91,13 @@ void main() {
         borderFactor = 1.0;
     }
 
-    // result.xyz = material.diffuse + material.normal*0.1;
 
-    // result.xyz *= vec3(tileLightCount / 10.0);
-    // result.xyz = vec3( vec2(precomputeCoord) / vec2(precomputeSize*8), 0);
-    // result.xyz = vec3(texelFetch(lightsPerTile, precomputeCoord, 0).r);
-    // result.xyz = vec3( float(precomputeCoord.x) / float(precomputeSize.x) / 8.0 );
+    // HDR Mapping
+    result.xyz = 1.0f - exp(-1.0 * result.xyz);
+    // result.xyz = saturate(result.xyz);
 
-    // result.xyz = mix(result.xyz, material.normal, 0.5);
+    // result.xyz = material.baseColor;
 
-    // result.xyz = saturate(result.xyz * 0.9);
-    // result += borderFactor * vec3(1,1,0) * 0.1;
 
     gl_FragColor = vec4(result.xyz, 1);
 }

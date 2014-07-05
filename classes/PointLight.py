@@ -15,7 +15,7 @@ class PointLight(Light, DebugObject):
         Light.__init__(self)
         DebugObject.__init__(self, "HemiPointLight")
         self.radius = 0.0
-        self._spacing = 0.05
+        self._spacing = 0.6
 
 
     def _computeLightMat(self):
@@ -104,7 +104,7 @@ class PointLight(Light, DebugObject):
         for i in xrange(2):
             source = ShadowSource()
             source.setupPerspectiveLens( self._spacing, self.radius + self._spacing, (90,90) )
-            source.setResolution(1024)
+            source.setResolution(512)
             self._addShadowSource(source)
 
     def _updateShadowSources(self):

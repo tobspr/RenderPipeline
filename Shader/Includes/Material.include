@@ -7,7 +7,7 @@ struct Material {
     vec3 diffuse;
     vec3 position;
     vec3 normal;
-    float specular;
+    vec3 specular;
     float smoothness;
     float gloss;
 
@@ -19,6 +19,18 @@ struct Material {
 };
 
 
+struct BaseMaterial {
+    vec3 baseColor;
+    float roughness;
+    float metallic;
+    float specular;
+    float transluency;
+    // float ambient;
+
+    vec3 position;
+    vec3 normal;
+};
+
 // Converts smoothness to roughness
 // Smoothness is more intuitive to specify.
 // But roughness is used for the calculation
@@ -29,8 +41,10 @@ float smoothnessToRoughness(float smoothness) {
 // Packs the material for usage in MRT's
 mat4 packMaterial(Material m) {
     vec2 normal = encodeNormal(m.normal);
+    vec2 color = packColor(m.diffuse);
+    vec2 specular = packColor(m.specular);
     return mat4(
-            m.diffuse.x,  m.diffuse.y,  m.diffuse.z,  m.specular,
+            color.x,      color.y,      specular.x,    specular.y,
             normal.x,     normal.y,     m.transluency,   m.gloss,
             m.position.x, m.position.y, m.position.z, m.smoothness,
             0,0,0,0 // Not used
@@ -40,9 +54,9 @@ mat4 packMaterial(Material m) {
 // Unpacks the material from the MRT's
 Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2) {
     Material m;
-    m.diffuse        = data0.xyz;
+    m.diffuse        = unpackColor(data0.xy);
     m.position       = data2.xyz;
-    m.specular       = data0.a;
+    m.specular       = unpackColor(data0.zw);
     m.normal         = decodeNormal(data1.xy);
     m.gloss          = data1.w;
     m.transluency    = data1.z;
@@ -52,3 +66,31 @@ Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2) {
     return m;
 }
 
+
+
+mat4 packBaseMaterial(BaseMaterial m) {
+    vec2 normal = encodeNormal(m.normal);
+    // vec2 color = packColor(m.baseColor);
+    vec2 color = m.baseColor.xy;
+    return mat4(
+        m.position.x, m.position.y, m.position.z, m.roughness,
+        normal.x,normal.y,color.x,color.y,
+        m.metallic,m.specular,m.transluency,m.baseColor.z,
+
+        0,0,0,0 // Not available
+    );
+}
+
+BaseMaterial unpackBaseMaterial(vec4 data0, vec4 data1, vec4 data2) {
+    BaseMaterial m;
+
+    m.position = data0.xyz;
+    m.roughness = data0.w;
+    m.normal = decodeNormal(data1.xy);
+    m.baseColor = vec3(data1.zw, data2.w);
+    m.metallic = data2.x;
+    m.specular = data2.y;
+    m.transluency = data2.z;
+
+    return m;
+}

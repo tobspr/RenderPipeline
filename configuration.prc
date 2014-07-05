@@ -1,6 +1,4 @@
 
-
-
 # No stack trace on assertion
 assert-abort #f
 
@@ -53,7 +51,7 @@ pstats-unused-states #t
 
 
 # Threading
-# threading-model App/Cull/Draw
+# threading-model T1/T2/T3
 
 
 # Try for better performance

@@ -13,45 +13,29 @@ uniform sampler2D p3d_Texture0;
 uniform sampler2D p3d_Texture1;
 uniform sampler2D p3d_Texture2;
 
+uniform float specular;
+uniform float metallic;
+uniform float roughness;
+
 
 void main() {
 
-    vec3 diffuse = texture(p3d_Texture0, texcoord * 2.0).rgb;
-    vec3 normals = texture(p3d_Texture1, texcoord * 2.0).rgb;
-    float specular = texture(p3d_Texture2, texcoord * 2.0).r;
+    BaseMaterial bm;
 
+    bm.metallic = metallic;
+    bm.roughness = roughness;
+    bm.specular = specular;
+    // bm.baseColor = vec3(1.000, 0.766, 0.336);
+    bm.baseColor = vec3(1.000, 0.766, 0.336);
+    // bm.baseColor = vec3(1,0,0);
 
-    // diffuse = mix ( diffuseColor.rgb, vec3(1),   step(positionWorldSpace.z-0.01, 0.0) );
-    diffuse = mix (vec3(0.0), vec3(1),   step(positionWorldSpace.z-0.01, 0.0) );
-    // diffuse = vec3(diffuseColor.rgb);
-    // vec3 normal = vec3(0,0,1);
+    bm.position = positionWorldSpace;
+    bm.normal   = normalWorldSpace;
 
-    // diffuse = vec3(0.5 + normalWorldSpace*0.1);
-    specular = 0.9;
-
-
-    // Detail normal mapping
-    vec3 normal = normalWorldSpace;  // normal
-    // normal -= (normals-0.5) * 1.0; // detail normal sampling
-    normal = normalize(normal);
-
-    Material m;
-    m.diffuse = diffuse;
-    m.position = positionWorldSpace;
-    m.normal = normal;
-    m.specular = specular;
-    m.smoothness = 0.4;
-    m.gloss = 1.0;
-    m.transluency = 0.0;
-
-    // not needed
-    m.roughness = 0.0;
 
     // Pack material
-    mat4 packedData = packMaterial(m);
-
+    mat4 packedData = packBaseMaterial(bm);
     gl_FragData[0] = packedData[0];
     gl_FragData[1] = packedData[1];
     gl_FragData[2] = packedData[2];
-
 }

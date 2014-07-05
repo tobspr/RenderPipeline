@@ -11,20 +11,21 @@ in vec2 texcoord;
 void main() {
 
 
-    // Detail normal mapping
-    vec3 normal = normalize(normalWorldSpace);  // normal
+    BaseMaterial bm;
 
-    Material m;
-    m.diffuse = vec3(0,0,0);
-    m.position = positionWorldSpace;
-    m.normal = normal;
-    m.specular = 0.01;
-    m.smoothness = 0.2;
-    m.gloss = 0.01;
+    bm.metallic = 0.0;
+    bm.roughness = 0.0;
+    bm.specular = 0.0;
+    bm.baseColor = vec3(0,0,0);
+
+    bm.position = positionWorldSpace;
+    bm.normal   = normalWorldSpace;
+
 
     // Pack material
-    mat4 packedData = packMaterial(m);
+    mat4 packedData = packBaseMaterial(bm);
     gl_FragData[0] = packedData[0];
     gl_FragData[1] = packedData[1];
     gl_FragData[2] = packedData[2];
+
 }

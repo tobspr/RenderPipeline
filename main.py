@@ -2,8 +2,10 @@
 import math
 
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile, Vec3, TransparencyAttrib
+from panda3d.core import loadPrcFile, Vec3, TransparencyAttrib, TextNode
 
+from direct.gui.DirectGui import DirectSlider
+from direct.gui.OnscreenText import OnscreenText
 
 from Shared.MovementController import MovementController
 from classes.RenderingPipeline import RenderingPipeline
@@ -24,11 +26,17 @@ class Main(ShowBase):
 
         # load demo scene
         print "Loading Scene .."
-        self.scene = loader.loadModel("Scene/Scene4.egg")
+        # self.scene = loader.loadModel("Scene/Scene1.egg")
+        self.scene = loader.loadModel("Scene/Scene2.egg")
+
+        # self.groundPlane = loader.loadModel("Scene/Plane.egg")
+        # self.groundPlane.reparentTo(self.scene)
+        # self.groundPlane.setPos(0,0,-3)
+
         # self.scene = loader.loadModel("Scene.ignore/Car.bam")
         
         # panda = loader.loadModel("panda")
-        # # panda.reparentTo(self.scene)
+        # panda.reparentTo(self.scene)
         # panda.setPos(10,0,0.5)
         # panda.setH(180)
         # panda.setScale(0.5)
@@ -37,7 +45,7 @@ class Main(ShowBase):
         # self.scene.setTwoSided(True)
         # self.scene = loader.loadModel("Scene/Scene2Bam.bam")
 # 
-        self.scene.flattenStrong()
+        # self.scene.flattenStrong()
         # self.scene = loader.loadModel("environment")
         # self.scene.setScale(0.1)
 
@@ -85,8 +93,8 @@ class Main(ShowBase):
         
         # add huge sun light
         sunLight= PointLight()
-        sunLight.setRadius(40.0)
-        sunLight.setColor(Vec3(1.0) + Vec3(0.5,0.25,0))
+        sunLight.setRadius(30.0)
+        sunLight.setColor(Vec3(1.0))
         sunLight.setPos(Vec3(-10,10,15))
         sunLight.setCastsShadows(True)
         self.renderPipeline.getLightManager().addLight(sunLight)
@@ -94,8 +102,8 @@ class Main(ShowBase):
 
         # sunLight2= PointLight()
         # sunLight2.setRadius(35.0)
-        # sunLight2.setColor(Vec3(1.0) + Vec3(0.2,0.7,0.9))
-        # sunLight2.setPos(Vec3(10,-10,12))
+        # sunLight2.setColor(Vec3(0.1))
+        # sunLight2.setPos(Vec3(4,-4,0.5))
         # sunLight2.setCastsShadows(True)
         # self.renderPipeline.getLightManager().addLight(sunLight2)
         # sunLight.attachDebugNode(self.renderDebugNode)
@@ -104,30 +112,30 @@ class Main(ShowBase):
 
         # self.initialLightPos = [Vec3(5,5,9), Vec3(-5,-5,7)]
         # self.initialLightPos = [Vec3(5,5,9)]
-        self.initialLightPos = [Vec3(0,0,7)]
+        self.initialLightPos = [Vec3(0,0,15)]
 
         if True:
             i = 0
-            for x in xrange(4):
-                for y in xrange(4):
+            for x in xrange(2):
+                for y in xrange(2):
                     # y = 0.0
                     i += 1
                     if i > 34:
                         continue
                     angle = float(i) / 9.0 * math.pi * 2.0
                     sampleLight = PointLight()
-                    sampleLight.setRadius(20.0)
+                    sampleLight.setRadius(30.0)
 
                     # if i < 8:
                     sampleLight.setCastsShadows(True)
 
-                    sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 1.0)
+                    sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 0.5)
 
                     # sampleLight.setColor(Vec3(1))
 
 
                     # initialPos = Vec3((x-3.5) * 8.0, (y-3.5)*8.0, 4)
-                    initialPos = Vec3(( float(x)-1.5) * 10.0, (float(y)-1.5)*10.0, 9.0)
+                    initialPos = Vec3(( float(x)-0.5) * 5.0, (float(y)-0.5)*5.0, 6.0)
                     # initialPos = Vec3(0,0,10)
 
                     sampleLight.setPos(initialPos )
@@ -157,6 +165,29 @@ class Main(ShowBase):
         self.setShaders()
 
 
+
+        OnscreenText(text = 'Specular', pos = (-base.getAspectRatio() + 0.1, 0.85), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
+        OnscreenText(text = 'Metallic', pos = (-base.getAspectRatio() + 0.1, 0.75), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
+        OnscreenText(text = 'Roughness', pos = (-base.getAspectRatio() + 0.1, 0.65), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
+
+        self.specSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setSpecular, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.82) )
+        self.metSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setMetallic, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.72) )
+        self.roughSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setRoughness, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.62) )
+        self.setSpecular()
+     
+    def setSpecular(self):
+        self.scene.setShaderInput("specular", float(self.specSlider['value']) / 100.0)
+
+    def setMetallic(self):
+        self.scene.setShaderInput("metallic", float(self.metSlider['value']) / 100.0)
+
+    def setRoughness(self):
+        self.scene.setShaderInput("roughness", float(self.roughSlider['value']) / 100.0)
+
+
+
+
+
     def loadSkybox(self):
         self.skybox = loader.loadModel("Skybox/Skybox")
         self.skybox.setScale(1000)
@@ -176,12 +207,12 @@ class Main(ShowBase):
 
     def update(self, task):
 
-        ft = globalClock.getFrameTime()*0.3
+        ft = globalClock.getFrameTime()*1.0
         # ft = 0
         for i, light in enumerate(self.lights):
             ft += float(i) + math.pi*0.46
             initialPos = self.initialLightPos[i]
-            light.setPos(initialPos + Vec3(math.sin(ft) * 5.0, math.cos(ft) * 5.0, math.sin(math.cos(ft * 1.523) * 1.23 )  ))
+            light.setPos(initialPos + Vec3(math.sin(ft) * 5.0, math.cos(ft) * 5.0, math.sin(math.cos(ft * 1.523) * 2.7 )  ))
         return task.cont
 
 

@@ -1,4 +1,4 @@
-#version 130
+#version 440
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 trans_model_to_world;
@@ -14,6 +14,13 @@ out vec2 texcoord;
 out vec4 diffuseColor;
 
 
+struct Material {
+    vec4 diffuse;
+};
+
+uniform Material p3d_Material;
+
+
 void main() {
 
     // Compute normal in world space
@@ -27,6 +34,6 @@ void main() {
 
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 
-    diffuseColor = gl_FrontMaterial.diffuse;
+    diffuseColor = p3d_Material.diffuse;
 
 }

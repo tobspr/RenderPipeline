@@ -143,7 +143,11 @@ void main() {
             vec4 projectedPos = viewMat * vec4(currentLight.position, 1);
 
             // Top/Left/Bottom/Right frustum check
-            if (true || sphereInFrustum(frustumPlanes, projectedPos, currentLight.radius)) {
+            #ifdef LIGHTING_ANY_BOUND_CHECK
+            
+            if (sphereInFrustum(frustumPlanes, projectedPos, currentLight.radius)) {
+
+            #endif // LIGHTING_ANY_BOUND_CHECK
 
                 #ifdef LIGHTING_ACCURATE_BOUND_CHECK
 
@@ -176,7 +180,10 @@ void main() {
                 }
 
                 #endif // LIGHTING_ACCURATE_BOUND_CHECK
+
+            #ifdef LIGHTING_ANY_BOUND_CHECK
             }
+            #endif // LIGHTING_ANY_BOUND_CHECK
 
         }
 
@@ -196,7 +203,7 @@ void main() {
     // gl_FragData[0] = vec4( float(numLightsProcessed) / float(MAX_LIGHTS_PER_PATCH), 0, 0, 1);
     // gl_FragData[0].xyz = vec3(minDepthLinear / ndcFar * 200.0);
 
-    float lightsVisibleFloat = float(numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH);
+    float lightsVisibleFloat = float(numLightsProcessed-1) / float(1.0);
     vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
 
     gl_FragData[0] = vec4(lightCountIndicator, 1);

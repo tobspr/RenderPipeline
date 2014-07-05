@@ -15,7 +15,7 @@
 // 1 .. Patch Size
 // Lower means more accurate but also more performance lost
 // Try to set as high as possible without getting artifacts
-#define LIGHTING_MIN_MAX_DEPTH_ACCURACY 8
+#define LIGHTING_MIN_MAX_DEPTH_ACCURACY 1
 
 
 // Wheter to clear the lighting buffer each frame to be
@@ -25,7 +25,10 @@
 
 // Wheter to check for accurate bounds or only
 // perform a fast check
-// #define LIGHTING_ACCURATE_BOUND_CHECK
+#define LIGHTING_ACCURATE_BOUND_CHECK
+
+// Wheter to perform spheric bounds checking
+#define LIGHTING_ANY_BOUND_CHECK
 
 
 // GLSL really needs this as a builtin!
