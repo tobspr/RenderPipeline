@@ -41,7 +41,6 @@ class ShaderStructArray(DebugObject):
             elif attrType == "vec3":
                 arrayType = PTALVecBase3f
 
-
             self.ptaWrappers[name] = [arrayType.emptyArray(numElements) for i in xrange(self.size)]
 
 
@@ -73,7 +72,6 @@ class ShaderStructArray(DebugObject):
 
             elif attrType == "mat4":
                 self.ptaWrappers[attrName][index][0] = objValue
-
 
             else:
                 self.ptaWrappers[attrName][index][0] = objValue

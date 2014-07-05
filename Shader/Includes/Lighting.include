@@ -44,7 +44,7 @@ vec2 poissonDisk16[16] = vec2[](
 vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
 
     float factor = float(source.resolution) / SHADOW_MAP_ATLAS_SIZE;
-    float factorBy1 = 0.05;
+    float factorBy1 = (SHADOW_MAP_ATLAS_SIZE / float(source.resolution) ) / SHADOW_MAP_ATLAS_SIZE;
     return ( clamp(rawCoord, factorBy1, 1.0 - factorBy1) * factor + source.atlasPos);
 }
 
@@ -62,13 +62,6 @@ vec3 computeLighting(Light light, Material material) {
         float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.0;
         float normfac = pow(1.0 + (1.0/light.radius) , 2.0);
         attenuation *= normfac;
-
-        attenuation = 1.0 / (
-            1.0 + 
-            (2.0 / light.radius * distanceToLight) + 
-            (1.0 /  (light.radius * light.radius)) * distanceToLight * distanceToLight
-
-            );
 
         // Cut light transition starting at 80%. Otherwise it's exponential and never gets really 0
         float cutoff = light.radius * 0.8;
@@ -128,7 +121,10 @@ vec3 computeLighting(Light light, Material material) {
         #if 1
         vec3 lightFactor = vec3(0);
 
-        for (int shadowIndex = 0; shadowIndex < 2; shadowIndex ++) {
+        // for (int shadowIndex = 0; shadowIndex < 2; shadowIndex ++) {
+
+        float offs = light.position.y - material.position.y;
+        int shadowIndex = offs < 0.0 ? 1 : 0;
 
             int shadowSourceIndex = light.sourceIndexes[shadowIndex];
 
@@ -137,16 +133,24 @@ vec3 computeLighting(Light light, Material material) {
                 // shadowFactor -= 0.2;
                 ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
+
+                float sampleFactor = (float(currentSource.resolution) / 4096.0) / 1024.0 * (1.0 + distanceRelative*2.0);
+
                 vec4 projected = currentSource.mvp * vec4(material.position, 1);
 
                 projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);
                 projected = shadowBiasMatrix * projected;
 
+
+             
                 vec3 projCoord = projected.xyz / projected.w;
 
+
                 bool shadowed = projCoord.y > 0.0 && projCoord.x >= 0.0 
-                                && projCoord.x < 1.0 && projCoord.y < 1.0 &&
-                                projected.w > currentSource.nearPlane && projected.w <= currentSource.farPlane;
+                                && projCoord.x < 1.0 && projCoord.y < 1.0
+                                 && projCoord.z < 1.0 && projCoord.z > 0.0;
+
+
 
                 if (shadowed) {
 
@@ -155,19 +159,22 @@ vec3 computeLighting(Light light, Material material) {
 
                     for (int i = 0; i< 16; i++) {
                         // int i = 0;
-                        vec2 offset = poissonDisk16[i] / 1000.0;
+                        vec2 offset = poissonDisk16[i] * sampleFactor;
                         // vec2 offset = vec2(0);
                         vec2 rawSampled = texture(shadowAtlas, convertAtlasCoord(projCoord.xy + offset, currentSource) ).rg;
                         float sampled = unpackDepth(rawSampled);
-                        shadowInfluence += (sampled > projCoord.z - 0.003)  ? 0.0 : 1.0 / 16.0; 
+                        shadowInfluence += (sampled > projCoord.z - 0.02*distanceRelative)  ? 0.0 : 1.0 / 16.0; 
 
                     }
 
                     if (shadowInfluence > shadowFactor) {
                         shadowFactor = shadowInfluence;
-                        float ff = float(shadowIndex) / 1.0;
-                        lightFactor = vec3(ff, 1.0 - ff, 0);                        
                     }
+                    // float ff = float(shadowIndex) / 1.0;
+                    // lightFactor += vec3(ff, 1.0 - ff, 0)*0.5;      
+
+                    // lightFactor = vec3(sampleFactor * 128.0);
+
 
                     // shadowFactor = rawSampled.x * 100.0;
 
@@ -176,16 +183,23 @@ vec3 computeLighting(Light light, Material material) {
                 // shadowFactor = projCoord.y;
             }
 
-        }
+        // }
         // combinedContribution = vec3(1.0 - shadowFactor) * attenuation;
 
-        combinedContribution *= 1.02 - shadowFactor;
+        // combinedContribution = vec3(0.5);
+        // combinedContribution = vec3(attenuation);
+        combinedContribution *= 1.000 - shadowFactor;
+        // combinedContribution *= 0.5 + lightFactor*1.0;
+        // combinedContribution = vec3(lightFactor);
 
-        // combinedContribution = material.diffuse;
-
-        // combinedContribution = vec3(shadowFactor) * attenuation;
+        // combinedContribution = vec3((offs) );
 
         #endif
+
+        combinedContribution = saturate(combinedContribution);
+
+        // combinedContribution = vec3(light.color) * attenuation;
+        // combinedContribution = vec3( abs(light.position) / 20.0);
         
         // combinedContribution = vec3(shadowFactorr) + material.normal*0.0;
 

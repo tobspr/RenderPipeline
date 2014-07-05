@@ -17,12 +17,12 @@ class LightManager(DebugObject):
         DebugObject.__init__(self, "LightManager")
 
         # maximum values
-        self.maxVisibleLights = 30
+        self.maxVisibleLights = 34
         self.numVisibleLights = 0
-        self.maxShadowRes = 4096
+        self.maxShadowRes = 1024
         self.shadowAtlasSize = 8192
-        self.maxShadowMaps = 30
-        self.maxShadowUpdatesPerFrame = 4
+        self.maxShadowMaps = 34
+        self.maxShadowUpdatesPerFrame = 2
         self.tileSize = 32
         self.tileCount = self.shadowAtlasSize / self.tileSize
         self.tiles = []
@@ -30,7 +30,7 @@ class LightManager(DebugObject):
         # create arrays to store lights & shadow sources
         self.lights = []
         self.shadowSources = []
-        self.lightDataArray = ShaderStructArray(Light, 16)
+        self.lightDataArray = ShaderStructArray(Light, self.maxVisibleLights)
         self.updateShadowsArray = ShaderStructArray(
             ShadowSource, self.maxShadowUpdatesPerFrame)
         self.allShadowsArray = ShaderStructArray(
@@ -99,7 +99,7 @@ class LightManager(DebugObject):
 
         # Debug text to show how many lights are currently visible
         try:
-            from FastText2 import FastText
+            from FastText import FastText
             self.lightsVisibleDebugText = FastText(pos=Vec2(
                 base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
             self.lightsUpdatedDebugText = FastText(pos=Vec2(
@@ -196,6 +196,10 @@ class LightManager(DebugObject):
 
             light.setSourceIndex(index, source.getSourceIndex())
 
+        light.queueUpdate()
+        light.queueShadowUpdate()
+
+
     def setLightingComputators(self, shaderNodes):
         self.computingNodes = shaderNodes
 
@@ -221,8 +225,8 @@ class LightManager(DebugObject):
 
             if self.numVisibleLights >= self.maxVisibleLights:
                 # too many lights
-                self.error(
-                    "Too many lights! Can't display more than", self.maxVisibleLights)
+                # self.error(
+                    # "Too many lights! Can't display more than", self.maxVisibleLights)
                 break
 
             # update light if required
@@ -301,7 +305,7 @@ class LightManager(DebugObject):
 
         if self.lightsVisibleDebugText is not None:
             self.lightsVisibleDebugText.setText(
-                'Visible Lights: ' + str(self.numVisibleLights) + "/" + str(len(self.lights)))
+                'Visible Lights: ' + str(self.numVisibleLights) + "/" + str(self.maxVisibleLights) + "/" + str(len(self.lights)))
 
         if self.lightsUpdatedDebugText is not None:
             self.lightsUpdatedDebugText.setText(

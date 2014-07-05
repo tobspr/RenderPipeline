@@ -8,14 +8,14 @@
 // Max values for the light culling
 // If you change anything in LightManager, 
 // change it here, too 
-#define MAX_VISIBLE_LIGHTS 16
-#define MAX_LIGHTS_PER_PATCH 16
+#define MAX_VISIBLE_LIGHTS 34
+#define MAX_LIGHTS_PER_PATCH 63
 
 
 // 1 .. Patch Size
 // Lower means more accurate but also more performance lost
 // Try to set as high as possible without getting artifacts
-#define LIGHTING_MIN_MAX_DEPTH_ACCURACY 4
+#define LIGHTING_MIN_MAX_DEPTH_ACCURACY 8
 
 
 // Wheter to clear the lighting buffer each frame to be
@@ -25,15 +25,11 @@
 
 // Wheter to check for accurate bounds or only
 // perform a fast check
-#define LIGHTING_ACCURATE_BOUND_CHECK
+// #define LIGHTING_ACCURATE_BOUND_CHECK
 
 
 // GLSL really needs this as a builtin!
 #define saturate(v) clamp(v, 0, 1)
-
-// For efficient swizzle
-const vec2 _constants = vec2(1);
-
 
 // Needed for light culling
 const float sqrt_of_2 = 1.4142135623;
@@ -41,6 +37,6 @@ const float sqrt_of_2 = 1.4142135623;
 // Shadow atlas parameters
 #define SHADOW_MAP_ATLAS_SIZE 8192.0
 #define SHADOW_MAP_ATLAS_TILE_SIZE (SHADOW_MAP_ATLAS_SIZE / SHADOW_MAP_TILE_SIZE)
-#define SHADOW_MAX_UPDATES_PER_FRAME 4
+#define SHADOW_MAX_UPDATES_PER_FRAME 2
 #define SHADOW_MAX_TOTAL_MAPS 16
 

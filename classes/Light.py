@@ -32,6 +32,8 @@ class Light:
         for i in xrange(6):
             self.sourceIndexes[i] = -1
 
+        
+
     @classmethod
     def getExposedAttributes(self):
         return {

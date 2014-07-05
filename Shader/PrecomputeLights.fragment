@@ -17,7 +17,7 @@
 in vec2 texcoord;
 uniform sampler2D depth;
 
-layout (r16) writeonly uniform image2D destination;
+layout (r32i) writeonly uniform iimage2D destination;
 
 // Per-Light data and count
 uniform Light lights[MAX_VISIBLE_LIGHTS];
@@ -125,7 +125,7 @@ void main() {
     #ifdef LIGHTING_CLEAR_BUFFER_EACH_FRAME
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                imageStore(destination, storageCoord+ivec2(x, y), vec4(0.0) );
+                imageStore(destination, storageCoord+ivec2(x, y), ivec4(0) );
             }
         }
     #endif
@@ -143,7 +143,7 @@ void main() {
             vec4 projectedPos = viewMat * vec4(currentLight.position, 1);
 
             // Top/Left/Bottom/Right frustum check
-            if (sphereInFrustum(frustumPlanes, projectedPos, currentLight.radius)) {
+            if (true || sphereInFrustum(frustumPlanes, projectedPos, currentLight.radius)) {
 
                 #ifdef LIGHTING_ACCURATE_BOUND_CHECK
 
@@ -168,7 +168,7 @@ void main() {
 
 
                         ivec2 offsetCoord = ivec2(numLightsProcessed % 8, numLightsProcessed / 8);
-                        imageStore(destination, storageCoord + offsetCoord, vec4( lightIndex / float(MAX_VISIBLE_LIGHTS) ) );
+                        imageStore(destination, storageCoord + offsetCoord, ivec4( lightIndex ) );
                         numLightsProcessed += 1;
 
                 #ifdef LIGHTING_ACCURATE_BOUND_CHECK
@@ -183,7 +183,8 @@ void main() {
     }
 
 
-    imageStore(destination, storageCoord, vec4( (numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) ) );
+    // imageStore(destination, storageCoord, vec4( (numLightsProcessed-1) / float(MAX_LIGHTS_PER_PATCH) ) );
+    imageStore(destination, storageCoord, ivec4( numLightsProcessed-1 ) );
 
     // imageStore(destination, storageCoord, vec4( minDepthLinear / ndcFar * 100.0 ) );
     // imageStore(destination, storageCoord, vec4( getLinearZFromZ(texture(depth, texcoord).x) / ndcFar * 200.0 ) );

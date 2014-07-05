@@ -3,13 +3,26 @@
 
 vec4 transformParabol(vec4 transformed, float near, float far) {
     // return transformed;
+
+    // transformed /= abs(transformed.w);
     
     float l = length(transformed.xyz);
-    transformed = transformed/l;
-    transformed.z = transformed.z + 1;
-    transformed.x = transformed.x / transformed.z;
-    transformed.y = transformed.y / transformed.z;
-    transformed.z = (l - near)/(far-near);
+    transformed /= l;
+
+
+    transformed.z += 1;
+    transformed.xy /= transformed.z;
+    
+    transformed.z = (l - near) / (far - near);
     transformed.w = 1;
+
+
+    // float l = length(transformed.xyz);
+    // transformed = transformed/l;
+    // // transformed = normalize(transformed);
+
+    // transformed.z = transformed.z + 1;
+    // transformed.z = (l - near)/(far-near);
+    // transformed.w = 1;
     return transformed;
 }

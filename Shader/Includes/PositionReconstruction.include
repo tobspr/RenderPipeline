@@ -34,6 +34,14 @@ float getLinearZFromZ(float z) {
     return z_e;
 }
 
+float getCustomLinearZFromZ(float z, float near, float far) {
+    float z_n = 2.0 * z - 1.0;
+    float z_e = 2.0 * near * far / (far + near - z_n * (far - near));
+    return z_e;
+}
+
+
+
 
 vec3 calculateSurfacePos(float z, vec2 tcoord) {
 
