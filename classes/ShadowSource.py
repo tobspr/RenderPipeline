@@ -48,7 +48,7 @@ class ShadowSource(DebugObject):
         return "ShadowSource[id=" + str(self.index) + "]"
 
     def setSourceIndex(self, index):
-        self.debug("Assigning index", index)
+        # self.debug("Assigning index", index)
         self.sourceIndex = index
 
     def computeMVP(self):
@@ -63,7 +63,7 @@ class ShadowSource(DebugObject):
         self.mvp = UnalignedLMatrix4f(modelViewMat * projMat)
 
     def assignAtlasPos(self, x, y):
-        self.debug("Assigning atlas pos", x, "/", y)
+        # self.debug("Assigning atlas pos", x, "/", y)
         self.atlasPos = Vec2(x, y)
         self.doesHaveAtlasPos = True
 

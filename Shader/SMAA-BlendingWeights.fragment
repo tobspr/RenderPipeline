@@ -1,0 +1,31 @@
+#version 400
+
+
+in vec2 texcoord;
+in vec4 offset[3];
+in vec2 pixcoord;
+
+
+uniform sampler2D edgesTex;
+uniform sampler2D areaTex;
+uniform sampler2D searchTex;
+
+#include "Includes/SMAA-Wrapper.include"
+
+
+// float4 SMAABlendingWeightCalculationPS(float2 texcoord,
+//                                        float2 pixcoord,
+//                                        float4 offset[3],
+//                                        SMAATexture2D edgesTex, 
+//                                        SMAATexture2D areaTex, 
+//                                        SMAATexture2D searchTex,
+//                                        int4 subsampleIndices) { 
+
+void main() {    
+    // No temporal aliasing
+    ivec4 subsampleIndices = ivec4(0);
+    gl_FragColor = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, edgesTex, areaTex, searchTex, subsampleIndices);
+
+    // gl_FragColor = texture(edgesTex, texcoord);
+    // gl_FragColor = offset[0];
+}

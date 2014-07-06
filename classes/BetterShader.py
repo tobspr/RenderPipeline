@@ -44,8 +44,8 @@ class BetterShader:
             content = self._handleIncludes(arg)
             newArgs.append(content)
             self._writeDebugShader("Shader-" + str(arg), content)
+            self._clearIncludeStack()
         result = Shader.make(Shader.SLGLSL, *newArgs)
-        self._clearIncludeStack()
         return result
 
     # Internal method to clear the include stack
@@ -102,7 +102,7 @@ class BetterShader:
 
                         else:
                             self._GlobalIncludeStack.append(properIncludePart)
-                            newContent += "\n\n// FILE: '" + str(properIncludePart) +"' "
+                            newContent += "\n\n// FILE: '" + str(properIncludePart) +"' \n"
                             newContent += self._handleIncludes(properIncludePart)
                             newContent += "\n\n// End of included file\n\n\n\n"
                             # newContent += "#line " + str(line_idx+2)

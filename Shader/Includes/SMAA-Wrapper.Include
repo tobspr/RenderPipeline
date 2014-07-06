@@ -1,0 +1,14 @@
+
+
+#define SMAA_RT_METRICS float4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
+
+#define SMAA_GLSL_4
+#define SMAA_PRESET_HIGH
+#include "Includes/SMAA.include"
+
+
+
+vec2 flipTexcoord(vec2 coord) {
+    return coord;
+    return vec2(coord.x, 1.0 - coord.y);
+}

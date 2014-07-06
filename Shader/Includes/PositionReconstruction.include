@@ -2,11 +2,13 @@
 
 uniform mat4 trans_clip_of_camera_to_render;
 
+
 const float ndcNear = 1.0;
 const float ndcFar = 10000.0;
 const float ndcA = ndcNear + ndcFar;
 const float ndcB = ndcNear - ndcFar;
 const float ndcC = 2.0 * ndcNear * ndcFar;
+const float ndcD = ndcFar - ndcNear;
 
 float getZFromNdc(vec3 ndcPos) {
   float d = ndcPos.z * ndcB;
@@ -29,15 +31,19 @@ float getZFromLinearZ(float z) {
 }
 
 float getLinearZFromZ(float z) {
-    float z_n = 2.0 * z - 1.0;
-    float z_e = 2.0 * ndcNear * ndcFar / (ndcFar + ndcNear - z_n * (ndcFar - ndcNear));
+    float z_n = z * 2.0 - 1.0;
+    float z_e = ndcC / (ndcA - z_n * ndcD);
     return z_e;
 }
 
 float getCustomLinearZFromZ(float z, float near, float far) {
-    float z_n = 2.0 * z - 1.0;
+    float z_n = z * 2.0 - 1.0;
     float z_e = 2.0 * near * far / (far + near - z_n * (far - near));
     return z_e;
+}
+
+float normalizeZ(float z, float near, float far) {
+  return getCustomLinearZFromZ(z, near, far) / far;
 }
 
 

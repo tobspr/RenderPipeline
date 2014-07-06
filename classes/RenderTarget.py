@@ -246,6 +246,7 @@ class RenderTarget(DebugObject):
     def setActive(self, active):
         self._buffer.getInternalBuffer().getDisplayRegion(0).setActive(active)
         self._region.setActive(active)
+        
 
     # Returns the quad to apply a shader to
     def getQuad(self):
@@ -311,6 +312,12 @@ class RenderTarget(DebugObject):
 
 
         return clears
+
+    # Adds a color clear
+    def setClearColor(self):
+        self.getInternalBuffer().setClearColorActive(True)
+        self.getInternalBuffer().setClearColor(Vec4(0,0,0,0) )
+
 
     # Makes the buffer size available in the shader
     def _setSizeShaderInput(self):
