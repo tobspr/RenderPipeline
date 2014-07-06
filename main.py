@@ -32,8 +32,13 @@ class Main(ShowBase, DebugObject):
         self.debug("Creating showbase ..")
         ShowBase.__init__(self)
 
+<<<<<<< HEAD
         # self.sceneSource = "Scene.ignore/Car.bam"
         self.sceneSource = "Scene/Scene5.egg"
+=======
+        self.sceneSource = "Scene.ignore/Car.bam"
+        # self.sceneSource = "Scene/Scene5.egg"
+>>>>>>> origin/master
         self.usePlane = True
 
         self.debug("Loading Scene '" + self.sceneSource + "' ..")

@@ -19,6 +19,12 @@ uniform sampler2D data2;
 // uniform sampler2D lightsPerTile;
 layout (r32i) readonly uniform iimage2D lightsPerTile;
 
+<<<<<<< HEAD
+=======
+
+uniform sampler2D sampleTex;
+
+>>>>>>> origin/master
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 in vec2 texcoord;
