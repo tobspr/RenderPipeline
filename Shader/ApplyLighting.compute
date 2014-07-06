@@ -11,6 +11,7 @@
 #include "Includes/Light.include"
 #include "Includes/Material.include"
 #include "Includes/ShadowSource.include"
+#include "Includes/ColorCorrection.include"
 
 layout(rgba16f) readonly uniform image2D data0;
 layout(rgba16f) readonly uniform image2D data1;
@@ -99,6 +100,8 @@ void main() {
     // HDR Mapping
     result.xyz = 1.0f - exp(-1.0 * result.xyz);
     result.xyz = saturate(result.xyz);
+
+    result.xyz = convertColorSpace(result.xyz);
 
     // result.xyz = vec3( float(tileLightCount) / 30.0);
 

@@ -10,6 +10,7 @@
 #include "Includes/Light.include"
 #include "Includes/Material.include"
 #include "Includes/ShadowSource.include"
+#include "Includes/ColorCorrection.include"
 
 uniform sampler2D data0;
 uniform sampler2D data1;
@@ -17,9 +18,6 @@ uniform sampler2D data2;
 
 // uniform sampler2D lightsPerTile;
 layout (r32i) readonly uniform iimage2D lightsPerTile;
-
-
-
 
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
@@ -31,6 +29,7 @@ in vec2 texcoord;
 
 void main() {
 
+    #if 1
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
     ivec2 screenCoord = ivec2(texcoord * vec2(screenSize)); 
@@ -94,10 +93,27 @@ void main() {
 
     // HDR Mapping
     result.xyz = 1.0f - exp(-1.0 * result.xyz);
-    // result.xyz = saturate(result.xyz);
+    result.xyz = saturate(result.xyz);
 
-    // result.xyz = material.baseColor;
+    // Tone Mapping
+    result.xyz = sqrt(result.xyz);
+    vec3 colorCorrected = convertColorSpace(result.xyz);
+    result.xyz = mix( colorCorrected , result.xyz, 0.0);
 
+
+
+    // result.xyz = texture(sampleTex, vec2(texcoord.x, 1.0 - texcoord.y)).rgb;
+    // result.xyz = texture(sampleTex, texcoord).rgb;
+
+    // result.xyz = colorCorrected;
+
+    // result.xyz = step(-material.position.z, 0.01) * vec3(1);
+    // result.xyz = step(0.0001, material.position.z) * vec3(1.0);
+    
+    #else
+
+        vec3 result = vec3(1);
+    #endif
 
     gl_FragColor = vec4(result.xyz, 1);
 }

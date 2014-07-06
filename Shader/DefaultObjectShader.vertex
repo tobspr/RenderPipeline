@@ -1,5 +1,7 @@
 #version 440
 
+// #extension GL_AMD_vertex_shader_layer : enable
+
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 trans_model_to_world;
 

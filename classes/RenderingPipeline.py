@@ -11,6 +11,7 @@ from RenderTarget import RenderTarget
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 from BetterShader import BetterShader
+from Antialiasing import Antialiasing
 
 
 class RenderingPipeline(DebugObject):
@@ -23,7 +24,7 @@ class RenderingPipeline(DebugObject):
         self.precomputeSize = Vec2(0)
         self.camera = base.cam
         self.cullBounds = None
-        self.patchSize = Vec2(32, 32)
+        self.patchSize = Vec2(16, 16)
 
         self.useComputeShader = False
 
@@ -38,6 +39,8 @@ class RenderingPipeline(DebugObject):
         render.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
 
+        
+
         # Now create deferred render buffers
         self._makeDeferredTargets()
 
@@ -49,20 +52,32 @@ class RenderingPipeline(DebugObject):
             "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
         # self.deferredTarget.setShaderInput("sampler", self.lightBoundsComputeBuff.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.lightPerTileStorage)
+        self._setupAntialiasing()
 
         if self.useComputeShader:
             self.deferredTarget.setShaderInput("sampler", self.lightingComputeResult)
         else:
             self.deferredTarget.setShaderInput("sampler", self.lightingComputeContainer.getColorTexture())
+        self.deferredTarget.setShaderInput("sampler", self.antialias._neighborBuffer.getColorTexture())
+
 
         # add update task
         self._attachUpdateTask()
 
-        # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
 
-        self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
+
+        # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
+        # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightPerTileStorage, pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
 
+
+    def _setupAntialiasing(self):
+        self.debug("Creating antialiasing handler ..")
+        self.antialias = Antialiasing()
+
+        self.antialias.setColorTexture(self.lightingComputeContainer.getColorTexture())
+        self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
+        self.antialias.setup()
 
 
     # Creates all the render targets
@@ -157,6 +172,7 @@ class RenderingPipeline(DebugObject):
             "data2", self.deferredTarget.getAuxTexture(1))
 
         self.lightingComputeContainer.setShaderInput("shadowAtlas", self.lightManager.getAtlasTex())
+        # self.lightingComputeContainer.setShaderInput("sampleTex", loader.loadTexture("Data/Antialiasing/Unigine01.png"))
 
     def _loadFallbackCubemap(self):
         cubemap = loader.loadCubeMap("Cubemap/#.png")
@@ -227,6 +243,7 @@ class RenderingPipeline(DebugObject):
         self.lightManager.debugReloadShader()
         self._setPositionComputationShader()
         self._setLightingShader()
+        self.antialias.reloadShader()
 
     def _attachUpdateTask(self):
         self.showbase.addTask(self._update, "UpdateRenderingPipeline",sort=-10000)

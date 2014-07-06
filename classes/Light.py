@@ -71,9 +71,10 @@ class Light:
             self._initShadowSources()
 
     def setPos(self, pos):
-        self.position = pos
-        self.queueUpdate()
-        self.queueShadowUpdate()
+        if (pos - self.position).length() > 0.001:
+            self.position = pos
+            self.queueUpdate()
+            self.queueShadowUpdate()
 
     def getBounds(self):
         return self.bounds
@@ -133,7 +134,7 @@ class Light:
         self._updateDebugNode()
 
     def setSourceIndex(self, sourceId, index):
-        self.debug("light.sourceIndexes["+str(sourceId)+"] = "+ str(index))
+        # self.debug("light.sourceIndexes["+str(sourceId)+"] = "+ str(index))
         self.sourceIndexes[sourceId] = index
 
     # Adds a new shadow source

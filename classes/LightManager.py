@@ -19,10 +19,10 @@ class LightManager(DebugObject):
         # maximum values
         self.maxVisibleLights = 30
         self.numVisibleLights = 0
-        self.maxShadowRes = 1024
-        self.shadowAtlasSize = 2048
-        self.maxShadowMaps = 30
-        self.maxShadowUpdatesPerFrame = 8
+        self.maxShadowRes = 2048
+        self.shadowAtlasSize = 8192
+        self.maxShadowMaps = 32
+        self.maxShadowUpdatesPerFrame = 2
         self.tileSize = 256
         self.tileCount = self.shadowAtlasSize / self.tileSize
         self.tiles = []
@@ -43,6 +43,8 @@ class LightManager(DebugObject):
         self.shadowAtlasTex = Texture("ShadowAtlas")
         self.shadowAtlasTex.setup2dTexture(
             self.shadowAtlasSize, self.shadowAtlasSize, Texture.TFloat, Texture.FRg16)
+        self.shadowAtlasTex.setMinfilter(Texture.FTLinear)
+        self.shadowAtlasTex.setMagfilter(Texture.FTLinear)
 
         for i in xrange(self.tileCount):
             self.tiles.append([None for j in xrange(self.tileCount)])
@@ -99,7 +101,7 @@ class LightManager(DebugObject):
 
         # Debug text to show how many lights are currently visible
         try:
-            from FastText2d import FastText
+            from FastText2 import FastText
             self.lightsVisibleDebugText = FastText(pos=Vec2(
                 base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
             self.lightsUpdatedDebugText = FastText(pos=Vec2(
@@ -133,8 +135,7 @@ class LightManager(DebugObject):
     def _findAndReserveShadowAtlasPosition(self, w, h, idx):
 
         tileW, tileH = w / self.tileSize, h / self.tileSize
-        self.debug(
-            "Finding position for map of size (", w, "x", h, "), (", tileW, "x", tileH, ")")
+        # self.debug("Finding position for map of size (", w, "x", h, "), (", tileW, "x", tileH, ")")
 
         maxIterW = self.tileCount - tileW + 1
         maxIterH = self.tileCount - tileH + 1
@@ -166,9 +167,9 @@ class LightManager(DebugObject):
                     break
 
         if tileFound:
-            self.debug(
-                "Tile found at", tilePos[0], "/", tilePos[1], "reserving for", idx)
-
+            # self.debug(
+                # "Tile for shadowSource #"+ str(idx) + " found at", tilePos[0]*self.tileSize, "/", tilePos[1]*self.tileSize)
+    
             # *reserve* tile
 
             for x in xrange(0, tileW):
@@ -183,7 +184,7 @@ class LightManager(DebugObject):
         return Vec2(float(tilePos[0]) / float(self.tileCount), float(tilePos[1]) / float(self.tileCount))
 
     def addLight(self, light):
-        self.debug("Adding light", light)
+        # self.debug("Adding light", light)
         self.lights.append(light)
 
         sources = light.getShadowSources()
@@ -261,9 +262,11 @@ class LightManager(DebugObject):
             self.shadowComputeTarget.setActive(False)
             for target in [self.shadowComputeTarget, self.shadowScene]:
                 target.setShaderInput("numUpdates", LVecBase2i(0) )
-                pass
+
+            # print "Set active(false)"
 
         else:
+            # print "Set active(true)"
             self.shadowComputeTarget.setActive(True)
 
             for index, update in enumerate(self.queuedShadowUpdates):
@@ -291,7 +294,7 @@ class LightManager(DebugObject):
                 # self.queuedShadowUpdates.remove(update)
                 numUpdates += 1
 
-                last += str(update.getUid()) + " "
+                # last += str(update.getUid()) + " "
 
 
             for i in xrange(numUpdates):

@@ -14,7 +14,6 @@ vfs-case-sensitive #t
 # Trying this for performance
 # uniquify-matrix #f
 
-
 # Garbarge collection
 garbage-collect-states #f
 garbage-collect-states-rate 1.0
@@ -67,7 +66,8 @@ framebuffer-stencil #f
 
 # Not resizable
 win-fixed-size #t
-win-size 1600 960
+# win-size 1600 960
+win-size 1280 720
 
 # Icon
 # icon-filename lalala
@@ -80,7 +80,7 @@ window-title Render Pipeline by tobspr
 
 
 # Framebuffers use SRGB
-framebuffer-srgb #t
+framebuffer-srgb #f
 
 # Framebuffers need no multisamples
 framebuffer-multisample #f
@@ -114,7 +114,7 @@ gl-finish #f
 gl-force-no-error #t
 gl-force-no-flush #t
 gl-force-no-scissor #t
-gl-debug #f
+gl-debug #t
 
 
 

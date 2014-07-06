@@ -12,80 +12,72 @@ from classes.RenderingPipeline import RenderingPipeline
 from classes.PointLight import PointLight
 from classes.DirectionalLight import DirectionalLight
 from classes.BetterShader import BetterShader
+from classes.DebugObject import DebugObject
 
+# Redirect output?
 # import sys
 # sys.stdout = open('Log/log.txt', 'w')
 # sys.stderr = open('Log/error.txt', 'w')
 
 
-class Main(ShowBase):
+class Main(ShowBase, DebugObject):
 
     def __init__(self):
-        self.loadEngineSettings()
+        DebugObject.__init__(self, "Main")
 
+
+        self.debug("Loading panda3d configuration from configuration.prc ..")
+        loadPrcFile("configuration.prc")
+
+        self.debug("Creating showbase ..")
         ShowBase.__init__(self)
 
-        # load demo scene
-        print "Loading Scene .."
-        self.scene = loader.loadModel("Scene/Scene1.egg")
-        # self.scene = loader.loadModel("Scene/Scene2.egg")
+        # self.sceneSource = "Scene.ignore/Car.bam"
+        self.sceneSource = "Scene/Scene5.egg"
+        self.usePlane = True
 
-        # self.groundPlane = loader.loadModel("Scene/Plane.egg")
-        # self.groundPlane.reparentTo(self.scene)
-        # self.groundPlane.setPos(0,0,-3)
+        self.debug("Loading Scene '" + self.sceneSource + "' ..")
+        self.scene = loader.loadModel(self.sceneSource)
 
-        # self.scene = loader.loadModel("Scene.ignore/Car.bam")
-        
-        # panda = loader.loadModel("panda")
-        # panda.reparentTo(self.scene)
-        # panda.setPos(10,0,0.5)
-        # panda.setH(180)
-        # panda.setScale(0.5)
-        # self.scene.setScale(2.0)
+        if self.usePlane:
+            self.groundPlane = loader.loadModel("Scene/Plane.egg")
+            self.groundPlane.setPos(0,0,0)
+            self.groundPlane.reparentTo(self.scene)
 
         # self.scene.setTwoSided(True)
-        # self.scene = loader.loadModel("Scene/Scene2Bam.bam")
-# 
-        # self.scene.flattenStrong()
-        # self.scene = loader.loadModel("environment")
-        # self.scene.setScale(0.1)
 
-        # self.scene = loader.loadModel("panda")
+        self.debug("Flattening scene and parenting to render")
+        self.scene.flattenStrong()
         self.scene.reparentTo(render)
 
+
         if False:
-            print "Placing prefabs"
-            # place prefabs
+            self.debug("Spawning objects from prefab ..")
             self.scenePrefab = self.scene.find("Prefab")
-            # self.scenePrefab.flattenStrong()
-            # self.scenePrefab.hide()
             self.prefabsParent = self.scene.attachNewNode("Prefabs")
             for i in xrange(10):
                 for j in xrange(10):
-                    # pass
                     cn = self.scenePrefab.copyTo(self.prefabsParent)
                     # cn.setShaderInput("smoothness", float(i) / 10.0)
                     # cn.setShaderInput("gloss", float(j) / 10.0)
                     cn.setPos( (i-5) * 2.5, (j-5)*2.5, 5)
-                    # cn.show()
-        else:
-            self.prefabsParent = self.scene
 
 
-        # self.scene.flattenStrong()
 
-        render.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
-
+        self.debug("Init movement controller ..")
         self.mc = MovementController(self)
-        self.mc.setInitialPosition(Vec3(-70, 70, 70), Vec3(0,0,0))
-        # self.mc.speed = 5.0
+        self.mc.setInitialPosition(Vec3(50, 50, 50), Vec3(0,0,0))
         self.mc.setup()
 
+        # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
         self.addTask(self.update, "update")
 
         self.camLens.setNearFar(1.0, 10000)
+
+        self.debug("Creating rendering pipeline ..")
         self.renderPipeline = RenderingPipeline(self)
+        # self.renderPipeline = None
 
         # add some lights
         self.lights = []
@@ -112,24 +104,44 @@ class Main(ShowBase):
         # self.lights.append(inverseSunLight)
 
 
-        sunLight2= PointLight()
-        sunLight2.setRadius(35.0)
-        sunLight2.setColor(Vec3(1.0))
-        sunLight2.setPos(Vec3(5,5,15))
-        sunLight2.setCastsShadows(True)
-        self.renderPipeline.getLightManager().addLight(sunLight2)
-        # sunLight.attachDebugNode(self.renderDebugNode)
-
-        self.lights.append(sunLight2)
-
-        # self.initialLightPos = [Vec3(5,5,9), Vec3(-5,-5,7)]
-        # self.initialLightPos = [Vec3(5,5,9)]
-        # self.initialLightPos = [Vec3(0)]
         self.initialLightPos = []
+
+        colors= [
+            Vec3(1,0,0),
+            Vec3(0,1,0),
+            Vec3(0,0,1),
+            Vec3(1,1,0),
+
+            Vec3(1,0,1),
+            Vec3(0,1,1),
+            Vec3(1,0.5,0),
+            Vec3(0,0.5,1.0),
+
+        ]
+
+
+        for i in xrange(4):
+
+            pos = Vec3(0,0,9)
+
+            sunLight= PointLight() 
+            sunLight.setRadius(35.0)
+            # sunLight.setColor(colors[i])
+            sunLight.setColor(Vec3(1))
+            sunLight.setPos(pos)
+            sunLight.setCastsShadows(True)
+
+            if self.renderPipeline:
+                self.renderPipeline.getLightManager().addLight(sunLight)
+            self.lights.append(sunLight)
+            self.initialLightPos.append(pos)
+
+
+
 
         if False:
             i = 0
-            for x in xrange(4):
+            for x in xrange(3):
                 for y in xrange(3):
                     # y = 0.0
                     i += 1
@@ -148,7 +160,7 @@ class Main(ShowBase):
 
 
                     # initialPos = Vec3((x-3.5) * 8.0, (y-3.5)*8.0, 4)
-                    initialPos = Vec3(( float(x)-1.5) * 5.0, (float(y)-1.5)* 5.0, 12.0)
+                    initialPos = Vec3(( float(x)-1.5) * 10.0, (float(y)-1.5)* 11.0, 12.0)
                     # initialPos = Vec3(0,0,10)
 
                     sampleLight.setPos(initialPos )
@@ -160,7 +172,8 @@ class Main(ShowBase):
 
                     # sampleLight.attachDebugNode(self.renderDebugNode)
 
-                    self.renderPipeline.getLightManager().addLight(sampleLight)
+                    if self.renderPipeline:
+                        self.renderPipeline.getLightManager().addLight(sampleLight)
                     self.lights.append(sampleLight)
 
 
@@ -179,27 +192,30 @@ class Main(ShowBase):
 
 
 
-        # OnscreenText(text = 'Specular', pos = (-base.getAspectRatio() + 0.1, 0.85), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
-        # OnscreenText(text = 'Metallic', pos = (-base.getAspectRatio() + 0.1, 0.75), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
-        # OnscreenText(text = 'Roughness', pos = (-base.getAspectRatio() + 0.1, 0.65), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
 
-        # self.specSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setSpecular, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.82) )
-        # self.metSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setMetallic, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.72) )
-        #     # self.roughSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setRoughness, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.62) )
-        #     self.setSpecular()
-        #     self.setMetallic()
-        #     self.setRoughness()
-         
-        # def setSpecular(self):
-        #     self.scene.setShaderInput("specular", float(self.specSlider['value']) / 100.0)
+    def createMaterialSliders(self):
+        OnscreenText(text = 'Specular', pos = (-base.getAspectRatio() + 0.1, 0.85), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
+        OnscreenText(text = 'Metallic', pos = (-base.getAspectRatio() + 0.1, 0.75), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
+        OnscreenText(text = 'Roughness', pos = (-base.getAspectRatio() + 0.1, 0.65), scale = 0.04, align=TextNode.ALeft, fg=(1,1,1,1))
 
-        # def setMetallic(self):
-        #     self.scene.setShaderInput("metallic", float(self.metSlider['value']) / 100.0)
-
-        # def setRoughness(self):
-        #     self.scene.setShaderInput("roughness", float(self.roughSlider['value']) / 100.0)
+        self.specSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setSpecular, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.82) )
+        self.metSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setMetallic, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.72) )
+        self.roughSlider = DirectSlider(range=(0,100), value=50, pageSize=3, command=self.setRoughness, scale=(0.6,0.5,0.2), pos=(-base.getAspectRatio() + 0.7,0,0.62) )
+        
+        # Set initial values
+        self.setSpecular()
+        self.setMetallic()
+        self.setRoughness()
 
 
+    def setSpecular(self):
+        self.scene.setShaderInput("specular", float(self.specSlider['value']) / 100.0)
+
+    def setMetallic(self):
+        self.scene.setShaderInput("metallic", float(self.metSlider['value']) / 100.0)
+
+    def setRoughness(self):
+        self.scene.setShaderInput("roughness", float(self.roughSlider['value']) / 100.0)
 
 
 
@@ -209,25 +225,29 @@ class Main(ShowBase):
         self.skybox.reparentTo(render)
 
     def setShaders(self):
-        print "Reloading Shader .."
-        self.scene.setShader(
-            self.renderPipeline.getDefaultObjectShader())
-        self.renderPipeline.debugReloadShader()
-        
+        self.debug("Reloading Shaders ..")
+
+        if self.renderPipeline:
+            self.scene.setShader(
+                self.renderPipeline.getDefaultObjectShader())
+            self.renderPipeline.debugReloadShader()
+            
         self.skybox.setShader(BetterShader.load("Shader/DefaultObjectShader.vertex", "Shader/Skybox.fragment"))
 
-    def loadEngineSettings(self):
-        loadPrcFile("configuration.prc")
-        # pass
 
     def update(self, task):
 
-        ft = globalClock.getFrameTime()*1.0
+        ft = globalClock.getFrameTime()*0.3
         # ft = 0
         for i, light in enumerate(self.lights):
-            ft += float(i) + math.pi*0.46
-            # initialPos = self.initialLightPos[i]
-            # light.setPos(initialPos + Vec3(math.sin(ft) * 3.0, math.cos(ft) * 3.0, math.sin(math.cos(ft * 1.523) * 1.7 )  ))
+            # pass
+            # if i % 3 == 0:
+            ft2 = float(i)*math.pi*0.5 + ft * 1.0
+
+
+            initialPos = self.initialLightPos[i]
+            initialPos = Vec3(0,0,9)
+            light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
         return task.cont
 
 
