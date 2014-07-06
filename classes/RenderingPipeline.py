@@ -172,11 +172,8 @@ class RenderingPipeline(DebugObject):
             "data2", self.deferredTarget.getAuxTexture(1))
 
         self.lightingComputeContainer.setShaderInput("shadowAtlas", self.lightManager.getAtlasTex())
-<<<<<<< HEAD
         # self.lightingComputeContainer.setShaderInput("sampleTex", loader.loadTexture("Data/Antialiasing/Unigine01.png"))
-=======
-        self.lightingComputeContainer.setShaderInput("sampleTex", loader.loadTexture("Data/Antialiasing/Unigine01.png"))
->>>>>>> origin/master
+
 
     def _loadFallbackCubemap(self):
         cubemap = loader.loadCubeMap("Cubemap/#.png")
