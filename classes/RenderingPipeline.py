@@ -24,9 +24,11 @@ class RenderingPipeline(DebugObject):
         self.precomputeSize = Vec2(0)
         self.camera = base.cam
         self.cullBounds = None
-        self.patchSize = Vec2(16, 16)
+        self.patchSize = Vec2(32, 32)
 
         self.useComputeShader = False
+        self.temporalProjXOffs = 0
+        self.temporalProjFactor = 2
 
         self._setup()
 
@@ -57,8 +59,12 @@ class RenderingPipeline(DebugObject):
         if self.useComputeShader:
             self.deferredTarget.setShaderInput("sampler", self.lightingComputeResult)
         else:
-            self.deferredTarget.setShaderInput("sampler", self.lightingComputeContainer.getColorTexture())
-        self.deferredTarget.setShaderInput("sampler", self.antialias._neighborBuffer.getColorTexture())
+            pass
+            # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
+        self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.antialias._neighborBuffer.getColorTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.antialias._blendBuffer.getColorTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
 
 
         # add update task
@@ -75,7 +81,8 @@ class RenderingPipeline(DebugObject):
         self.debug("Creating antialiasing handler ..")
         self.antialias = Antialiasing()
 
-        self.antialias.setColorTexture(self.lightingComputeContainer.getColorTexture())
+        # self.antialias.setColorTexture(self.lightingComputeContainer.getColorTexture())
+        self.antialias.setColorTexture(self.lightingComputeCombinedTex)
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setup()
 
@@ -172,7 +179,8 @@ class RenderingPipeline(DebugObject):
             "data2", self.deferredTarget.getAuxTexture(1))
 
         self.lightingComputeContainer.setShaderInput("shadowAtlas", self.lightManager.getAtlasTex())
-        # self.lightingComputeContainer.setShaderInput("sampleTex", loader.loadTexture("Data/Antialiasing/Unigine01.png"))
+        self.lightingComputeContainer.setShaderInput("destination", self.lightingComputeCombinedTex)
+        self.lightingComputeContainer.setShaderInput("sampleTex", loader.loadTexture("Data/Antialiasing/Unigine01.png"))
 
 
     def _loadFallbackCubemap(self):
@@ -198,10 +206,17 @@ class RenderingPipeline(DebugObject):
 
     def _makeLightingComputeBuffer(self):
         self.lightingComputeContainer = RenderTarget("ComputeLighting")
-        # self.lightingComputeContainer.setSize()
+        self.lightingComputeContainer.setSize(base.win.getXSize() / self.temporalProjFactor,  base.win.getYSize())
         self.lightingComputeContainer.addRenderTexture(RenderTargetType.Color)
         self.lightingComputeContainer.setColorBits(16)
         self.lightingComputeContainer.prepareOffscreenBuffer()
+
+        self.lightingComputeCombinedTex = Texture("Lighting-Compute-Combined")
+        self.lightingComputeCombinedTex.setup2dTexture(base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
+        self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
+        self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
+        self.lightingComputeCombinedTex.setWrapU(Texture.WMClamp)
+        self.lightingComputeCombinedTex.setWrapV(Texture.WMClamp)
 
     def _makeLightingComputeShader(self, sizeX, sizeY):
         
@@ -257,12 +272,16 @@ class RenderingPipeline(DebugObject):
 
     def _update(self, task):
 
+        self.temporalProjXOffs += 1
+        self.temporalProjXOffs = self.temporalProjXOffs % self.temporalProjFactor
+
         self.cullBounds = self._computeCameraBounds()
 
         self.lightManager.setCullBounds(self.cullBounds)
         self.lightManager.update()
 
         self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
+        self.lightingComputeContainer.setShaderInput("temporalProjXOffs", float(self.temporalProjXOffs) )
 
         return task.cont
 

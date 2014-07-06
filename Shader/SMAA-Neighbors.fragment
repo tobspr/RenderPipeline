@@ -11,7 +11,9 @@ uniform sampler2D edgesTex;
 #include "Includes/SMAA-Wrapper.include"
 
 void main() {    
-    gl_FragColor = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);;
+    gl_FragColor = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);
+
+    // gl_FragColor = texture(blendTex, texcoord);
 
 
 }

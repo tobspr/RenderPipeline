@@ -49,7 +49,7 @@ class Antialiasing(DebugObject):
                 sampler.setWrapV(Texture.WMClamp)
 
         self._edgesBuffer.setShaderInput("colorTex", self._colorTexture)
-        self._edgesBuffer.setShaderInput("depthTex", self._depthTexture)
+        # self._edgesBuffer.setShaderInput("depthTex", self._depthTexture)
 
         self._blendBuffer.setShaderInput("edgesTex", self._edgesBuffer.getColorTexture())
         self._blendBuffer.setShaderInput("areaTex", self.areaTex)
@@ -68,6 +68,9 @@ class Antialiasing(DebugObject):
         neighborShader = BetterShader.load("Shader/SMAA-Neighbors.vertex", "Shader/SMAA-Neighbors.fragment")
         self._neighborBuffer.setShader(neighborShader)
 
+
+    def getResultTexture(self):
+        return self._neighborBuffer.getColorTexture()
 
     def _setupEdgesBuffer(self):
         self._edgesBuffer = RenderTarget("SMAA-Edges")

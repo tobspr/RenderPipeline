@@ -18,12 +18,17 @@ uniform sampler2D data2;
 
 // uniform sampler2D lightsPerTile;
 layout (r32i) readonly uniform iimage2D lightsPerTile;
+layout (rgba16f) writeonly uniform image2D destination;
 
 
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 in vec2 texcoord;
 
+uniform float temporalProjXOffs;
+
+
+uniform sampler2D sampleTex;
 
 // Has to be after the uniformsr
 #include "Includes/Lighting.include"
@@ -33,7 +38,12 @@ void main() {
     #if 1
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
-    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize)); 
+    
+    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x)) + ivec2(0,0); 
+    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x+1, screenSize.y)) - ivec2(temporalProjXOffs,0); 
+    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x, screenSize.y)); 
+
+    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x)); 
     // ivec2 precomputeSize = textureSize(lightsPerTile, 0) / ivec2(8);
     ivec2 precomputeSize = imageSize(lightsPerTile) / ivec2(8);
     // ivec2 precomputeCoord = ivec2(texcoord * precomputeSize) * ivec2(8);
@@ -101,6 +111,18 @@ void main() {
     vec3 colorCorrected = convertColorSpace(result.xyz);
     result.xyz = mix( colorCorrected , result.xyz, 0.0);
 
+
+    // result.xyz = vec3(texcoord, 0);
+    // if (screenCoord.x % 2 == 0) {
+    //     result.xyz = vec3(0.0);
+
+    // result.xyz = texture(sampleTex, texcoord).rgb;
+    result.xyz = saturate(result);
+    // }
+
+    imageStore(destination, screenCoord, vec4(result.xyz, 1) );
+    // imageStore(destination, screenCoord, vec4(temporalProjXOffs + 0.5) );
+    // imageStore(destination, screenCoord, vec4(0) );
 
 
     // result.xyz = texture(sampleTex, vec2(texcoord.x, 1.0 - texcoord.y)).rgb;

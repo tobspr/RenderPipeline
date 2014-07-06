@@ -1,13 +1,13 @@
 
 
 // Size of a patch for the light culling
-#define LIGHTING_COMPUTE_PATCH_SIZE_X 16
-#define LIGHTING_COMPUTE_PATCH_SIZE_Y 16
+#define LIGHTING_COMPUTE_PATCH_SIZE_X 32
+#define LIGHTING_COMPUTE_PATCH_SIZE_Y 32
 
 // Max values for the light culling
 // If you change anything in LightManager, 
 // change it here, too 
-#define MAX_VISIBLE_LIGHTS 30
+#define MAX_VISIBLE_LIGHTS 25
 #define MAX_LIGHTS_PER_PATCH 63
 
 
@@ -44,7 +44,7 @@ const float sqrt_of_2 = 1.4142135623;
 // #define USE_SHADOWS 
 
 // Size of the shadow atlas. Has to be the same as in LightManager.py
-#define SHADOW_MAP_ATLAS_SIZE 8192.0
+#define SHADOW_MAP_ATLAS_SIZE 1024.0
 
 // Max shadow updates per frame. Has to be the same as in LightManager.py
 #define SHADOW_MAX_UPDATES_PER_FRAME 2
@@ -54,10 +54,14 @@ const float sqrt_of_2 = 1.4142135623;
 #define SHAODOW_GEOMETRY_MAX_VERTICES 6
 
 // Max shadow maps. Has to be the same as in LightManager.py
-#define SHADOW_MAX_TOTAL_MAPS 18
+#define SHADOW_MAX_TOTAL_MAPS 24
 
 
 // Number of shadow samples to take. Low values improve performance. Between 1 and 16
 #define SHADOWS_NUM_SAMPLES 8
 
+
+// Window properties
+#define WINDOW_WIDTH 1600
+#define WINDOW_HEIGHT 960
 

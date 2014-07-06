@@ -66,8 +66,8 @@ framebuffer-stencil #f
 
 # Not resizable
 win-fixed-size #t
-# win-size 1600 960
-win-size 1280 720
+win-size 1600 960
+# win-size 1280 720
 
 # Icon
 # icon-filename lalala
@@ -87,7 +87,7 @@ framebuffer-multisample #f
 multisample #f
 
 # No V-Sync
-sync-video #f
+sync-video #t
 
 
 # Compress texture?
