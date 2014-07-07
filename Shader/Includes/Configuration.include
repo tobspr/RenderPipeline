@@ -47,11 +47,11 @@ const float sqrt_of_2 = 1.4142135623;
 #define SHADOW_MAP_ATLAS_SIZE 2048.0
 
 // Max shadow updates per frame. Has to be the same as in LightManager.py
-#define SHADOW_MAX_UPDATES_PER_FRAME 4
+#define SHADOW_MAX_UPDATES_PER_FRAME 2
 
 // SHADOW_MAX_UPDATES_PER_FRAME * 3. But openGL doesn't allow expressions in layout
 // So you have to change it yourself
-#define SHAODOW_GEOMETRY_MAX_VERTICES 12
+#define SHAODOW_GEOMETRY_MAX_VERTICES 6
 
 // Max shadow maps. Has to be the same as in LightManager.py
 #define SHADOW_MAX_TOTAL_MAPS 24

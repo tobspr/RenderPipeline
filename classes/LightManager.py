@@ -34,7 +34,7 @@ class LightManager(DebugObject):
 
         # When you change it , change also SHAODOW_GEOMETRY_MAX_VERTICES and
         # SHADOW_MAX_UPDATES_PER_FRAME in configuration.include!
-        self.maxShadowUpdatesPerFrame = 4
+        self.maxShadowUpdatesPerFrame = 2
         self.tileSize = 256
         self.tileCount = self.shadowAtlasSize / self.tileSize
         self.tiles = []
