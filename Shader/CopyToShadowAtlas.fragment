@@ -1,6 +1,6 @@
 #version 440
 
-#extension ARB_shader_image_load_store : enable
+#extension GL_ARB_shader_image_load_store : enable
 
 
 in vec2 texcoord;

@@ -1,6 +1,6 @@
 #version 430
 
-#extension ARB_shader_image_load_store : enable
+#extension GL_ARB_shader_image_load_store : enable
 
 // TODO: Make some benchmarks to see wheter unrolling
 // is faster or slower ..
