@@ -1,7 +1,7 @@
 #version 400
 
 
-
+#define SMAA_INCLUDE_PS 0
 #include "Includes/SMAA-Wrapper.include"
 
 

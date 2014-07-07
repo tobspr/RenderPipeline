@@ -37,7 +37,10 @@
 
 
 // GLSL really needs this as a builtin!
-#define saturate(v) clamp(v, 0, 1)
+#ifndef SATURATE_DEFINED
+    #define SATURATE_DEFINED 1
+    #define saturate(v) clamp(v, 0, 1)
+#endif
 
 // Needed for light culling
 const float sqrt_of_2 = 1.4142135623;

@@ -7,6 +7,7 @@ in vec4 offset[3];
 uniform sampler2D colorTex;
 uniform sampler2D depthTex;
 
+#define SMAA_INCLUDE_VS 0
 #include "Includes/SMAA-Wrapper.include"
 
 void main() {    
