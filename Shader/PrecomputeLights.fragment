@@ -20,7 +20,7 @@
 in vec2 texcoord;
 uniform sampler2D depth;
 
-layout (r32i) writeonly uniform iimage2D destination;
+layout (r32i) uniform iimage2D destination;
 
 // Per-Light data and count
 uniform Light lights[MAX_VISIBLE_LIGHTS];
