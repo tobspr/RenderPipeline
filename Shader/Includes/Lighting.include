@@ -149,22 +149,23 @@ vec3 applyPointLightWithShadow(Light light, BaseMaterial material) {
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
    
     for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
-        vec2 offset = poissonDisk16[i] * sampleFactor;
-        vec2 rawSampled = textureLod(shadowAtlas, centerCoord + offset , 0).rg;
-        float sampled = unpackDepth(rawSampled);
+        // vec2 offset = poissonDisk16[i] * sampleFactor;
+        vec2 offset = vec2(0);
+        float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).rg;
 
         shadowFactor += step(sampled, projCoord.z - bias) / SHADOWS_NUM_SAMPLES;        
     }
 
     // Apply shadows
     rawLighting *= max(0.0, 1.0 - shadowFactor);
+    // return vec3(1.0 - shadowFactor) * 0.1;
     return rawLighting;
 }
 
 
 
 
-
+#if 0
 
 
 vec3 computeLighting(Light light, BaseMaterial material) {
@@ -349,3 +350,7 @@ vec3 computeLighting(Light light, BaseMaterial material) {
     #endif
 
 }
+
+
+
+#endif

@@ -83,6 +83,7 @@ class RenderingPipeline(DebugObject):
 
         # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
+        # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (0,0,0), scale=(0.8,1,0.8))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightPerTileStorage, pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
 
 
@@ -290,10 +291,10 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setShaderInput("temporalProjXOffs", float(self.temporalProjXOffs) )
 
 
-        
 
 
-        self.lightingComputeContainer.setShaderInput("lastMVP", self.lastLastMVP)
+        self.lightingComputeContainer.setShaderInput("lastLastMVP", self.lastLastMVP)
+        self.lightingComputeContainer.setShaderInput("lastMVP", self.lastMVP)
         self.lastLastMVP = self.lastMVP
 
         self._computeMVP()

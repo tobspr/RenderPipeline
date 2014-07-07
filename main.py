@@ -91,9 +91,9 @@ class Main(ShowBase, DebugObject):
 
 
         if True:
-            for i in xrange(2):
+            for i in xrange(8):
 
-                angle = float(i) / 2.0 * math.pi * 2.0
+                angle = float(i) / 8.0 * math.pi * 2.0
 
                 pos = Vec3(math.sin(angle)*20.0,math.cos(angle)*20.0,9)
 
@@ -122,7 +122,7 @@ class Main(ShowBase, DebugObject):
                     sampleLight.setRadius(10.0)
 
                     # if i < 8:
-                    # sampleLight.setCastsShadows(True)
+                    sampleLight.setCastsShadows(True)
 
                     sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 1.0)
 

@@ -108,10 +108,12 @@ textures-power-2 none
 
 # Dump shaders
 # gl-dump-compiled-shaders #f
+# notify-level-glgsg debug
 
 # Better GL performance
 gl-finish #f
 gl-force-no-error #t
+gl-check-errors #f
 gl-force-no-flush #t
 gl-force-no-scissor #t
 gl-debug #f

@@ -171,6 +171,10 @@ class RenderBuffer(DebugObject):
         else:
             bufferProps.setAuxRgba(numAuxtex)
 
+        # Need no multisamples
+        bufferProps.setMultisamples(0)
+        
+
         # Create internal graphics output
         self._internalBuffer = base.graphicsEngine.makeOutput(
             self._win.getPipe(), self._name, 1,

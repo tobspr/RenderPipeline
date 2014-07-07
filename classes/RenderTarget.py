@@ -319,6 +319,14 @@ class RenderTarget(DebugObject):
         self.getInternalBuffer().setClearColor(Vec4(0,0,0,0) )
 
 
+    # Adds a depth clear
+    def setClearDepth(self, clear=True):
+        self.getInternalRegion().setClearDepthActive(clear)
+        if clear:
+            self.getInternalBuffer().setClearDepth( 0.0 )
+
+
+
     # Makes the buffer size available in the shader
     def _setSizeShaderInput(self):
         bufferSize = self._buffer.getSize()
