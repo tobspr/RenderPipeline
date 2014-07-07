@@ -141,7 +141,7 @@ class LightManager(DebugObject):
     # / rendered
     def _createDebugTexts(self):
         try:
-            from FastText import FastText
+            from FastText2 import FastText
             self.lightsVisibleDebugText = FastText(pos=Vec2(
                 base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
             self.lightsUpdatedDebugText = FastText(pos=Vec2(
