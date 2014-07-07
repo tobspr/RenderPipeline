@@ -331,4 +331,8 @@ class RenderTarget(DebugObject):
         wantedX = self._sourceWindow.getXSize() if self._width < 1 else self._width
         wantedY = self._sourceWindow.getYSize() if self._height < 1 else self._height
         self._buffer.setSize(wantedX, wantedY)
-        self._setSizeShaderInput()
+        self._setSizeShaderInput()  
+
+
+    def __repr__(self):
+        return "RenderTarget('" + self._name + "')"

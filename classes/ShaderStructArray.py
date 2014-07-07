@@ -71,9 +71,11 @@ class ShaderStructArray(DebugObject):
                     self.ptaWrappers[attrName][index][i] = objValue[i] 
 
             elif attrType == "mat4":
+                # print attrName, index,"=",objValue
                 self.ptaWrappers[attrName][index][0] = objValue
 
             else:
+                # print attrName, index,"=",objValue
                 self.ptaWrappers[attrName][index][0] = objValue
 
             # print attrName, "->", objValue

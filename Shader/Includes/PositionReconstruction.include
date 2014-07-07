@@ -3,7 +3,7 @@
 uniform mat4 trans_clip_of_camera_to_render;
 
 
-const float ndcNear = 1.0;
+const float ndcNear = 0.1;
 const float ndcFar = 10000.0;
 const float ndcA = ndcNear + ndcFar;
 const float ndcB = ndcNear - ndcFar;

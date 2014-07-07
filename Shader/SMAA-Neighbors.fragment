@@ -13,7 +13,7 @@ uniform sampler2D edgesTex;
 void main() {    
     gl_FragColor = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);
 
-    // gl_FragColor = texture(blendTex, texcoord);
+    // gl_FragColor = texture(colorTex, texcoord);
 
 
 }

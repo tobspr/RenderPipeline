@@ -1,6 +1,7 @@
 
 import math
-from panda3d.core import TransparencyAttrib, Texture, Vec2, ComputeNode
+from panda3d.core import TransparencyAttrib, Texture, Vec2, ComputeNode, NodePath
+from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.DirectGui import DirectFrame
@@ -30,7 +31,12 @@ class RenderingPipeline(DebugObject):
         self.temporalProjXOffs = 0
         self.temporalProjFactor = 2
 
+        self.forwardScene = NodePath("Forward Rendering")
+        self.lastMVP = None
+        self.lastLastMVP = None
+
         self._setup()
+
 
 
     def _setup(self):
@@ -62,6 +68,7 @@ class RenderingPipeline(DebugObject):
             pass
             # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
         self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
         # self.deferredTarget.setShaderInput("sampler", self.antialias._neighborBuffer.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.antialias._blendBuffer.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
@@ -70,10 +77,12 @@ class RenderingPipeline(DebugObject):
         # add update task
         self._attachUpdateTask()
 
-
+        # compute first mvp
+        self._computeMVP()
+        self.lastLastMVP = self.lastMVP
 
         # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
-        # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
+        self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightPerTileStorage, pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
 
 
@@ -132,9 +141,7 @@ class RenderingPipeline(DebugObject):
 
         self._makeLightPerTileStorage()
 
- 
-
-        # Create a buffer which computes which light affects which tile
+         # Create a buffer which computes which light affects which tile
         self._makeLightBoundsComputationBuffer(sizeX, sizeY)
 
         # Create a buffer which applies the lighting
@@ -145,9 +152,8 @@ class RenderingPipeline(DebugObject):
             self._makeLightingComputeBuffer()
 
         # Register for light manager
-        self.lightManager.setLightingComputators(
-            [self.lightBoundsComputeBuff, self.lightingComputeContainer])
-
+        self.lightManager.setLightingComputator(self.lightingComputeContainer)
+        self.lightManager.setLightingCuller(self.lightBoundsComputeBuff)
 
         self.lightingComputeContainer.setShaderInput(
             "lightsPerTile", self.lightPerTileStorage)
@@ -215,8 +221,8 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeCombinedTex.setup2dTexture(base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
         self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
         self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
-        self.lightingComputeCombinedTex.setWrapU(Texture.WMClamp)
-        self.lightingComputeCombinedTex.setWrapV(Texture.WMClamp)
+        self.lightingComputeCombinedTex.setWrapU(Texture.WMMirror)
+        self.lightingComputeCombinedTex.setWrapV(Texture.WMMirror)
 
     def _makeLightingComputeShader(self, sizeX, sizeY):
         
@@ -283,7 +289,30 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
         self.lightingComputeContainer.setShaderInput("temporalProjXOffs", float(self.temporalProjXOffs) )
 
+
+        
+
+
+        self.lightingComputeContainer.setShaderInput("lastMVP", self.lastLastMVP)
+        self.lastLastMVP = self.lastMVP
+
+        self._computeMVP()
+        self.lightingComputeContainer.setShaderInput("currentMVP", self.lastMVP)
+
+
         return task.cont
+
+    def _computeMVP(self):
+        projMat = Mat4.convertMat(
+            CSYupRight,
+            base.camLens.getCoordinateSystem()) * base.camLens.getProjectionMat()
+        transformMat = TransformState.makeMat(
+            Mat4.convertMat(base.win.getGsg().getInternalCoordinateSystem(),
+                            CSZupRight))
+        modelViewMat = transformMat.invertCompose(
+            render.getTransform(base.cam)).getMat()
+        self.lastMVP = modelViewMat * projMat
+        # print "Self.lastMVP is now from frame",globalClock.getFrameTime()
 
     def getLightManager(self):
         return self.lightManager

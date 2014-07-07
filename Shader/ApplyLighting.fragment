@@ -1,5 +1,7 @@
 #version 440
 
+#extension ARB_shader_image_load_store : enable
+
 // TODO: Make some benchmarks to see wheter unrolling
 // is faster or slower ..
 
@@ -16,9 +18,12 @@ uniform sampler2D data0;
 uniform sampler2D data1;
 uniform sampler2D data2;
 
+
+
+
 // uniform sampler2D lightsPerTile;
 layout (r32i) readonly uniform iimage2D lightsPerTile;
-layout (rgba16f) writeonly uniform image2D destination;
+layout (rgba16f) uniform image2D destination;
 
 
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
@@ -27,15 +32,23 @@ in vec2 texcoord;
 
 uniform float temporalProjXOffs;
 
-
 uniform sampler2D sampleTex;
 
-// Has to be after the uniformsr
+uniform mat4 lastMVP;
+
+
+
+// Has to be after the uniforms
 #include "Includes/Lighting.include"
 
 void main() {
 
+
+
     #if 1
+    
+
+
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
     
@@ -56,50 +69,46 @@ void main() {
 
     BaseMaterial material = unpackBaseMaterial(target0data, target1data, target2data);
 
+    // vec4 projectedBack = lastMVP * vec4(material.position, 1);
+    // projectedBack.xyz /= projectedBack.w;
+    // projectedBack.xy = projectedBack.xy * 0.5 + 0.5;
+
+    // ivec2 lastScreenCoord = ivec2(projectedBack.xy * vec2(screenSize.x, screenSize.y)); 
+
+    // vec4 oldPixelValue = imageLoad(destination, lastScreenCoord).rgba;
+
     // Fetch number of lights for this tile
     // int tileLightCount = int( texelFetch(lightsPerTile, precomputeCoord, 0).r * float(MAX_LIGHTS_PER_PATCH) );
-    int tileLightCount = imageLoad(lightsPerTile, precomputeCoord).r;
-    int numActiveLights = min(tileLightCount, MAX_LIGHTS_PER_PATCH);
 
-    // numActiveLights = 20;
+    int countPointLight = imageLoad(lightsPerTile, precomputeCoord + ivec2(0,0)).r;
+    int countPointLightShadow = imageLoad(lightsPerTile, precomputeCoord + ivec2(1,0)).r;
 
-    vec3 result = vec3(0.0);
+    vec3 result = vec3(0);
 
-    // Compute each light which affects this tile
-    for (int i = 0; i < numActiveLights; i++) {
+    // Compute point lights
+    ivec2 baseOffset = precomputeCoord + ivec2(0,1);
+    ivec2 currentOffset = ivec2(0);
+    int currentLightId = 0;
+    Light currentLight;
 
+    for (int i = 0; i < countPointLight; i++) {
+        currentOffset = ivec2(i%8, i/8);
+        currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
+        currentLight = lights[currentLightId];
 
-            // Light index is offsetted by 1, because at position 0 
-            // the number of lights is stored
-            int index = i+1;
-
-            // Compute offset by index
-            ivec2 offset = ivec2(index % 8, index / 8);
-
-            // Extract light id from texture, and fetch data for that light
-            int lightId = imageLoad(lightsPerTile, precomputeCoord + offset).r;
-
-
-            // Convert to light struct
-            Light currentLight = lights[lightId];
-            result += computeLighting(currentLight, material);
-
+        result += applyPointLight(currentLight, material);
     }
 
+    // Compute shadow point lights
+    baseOffset = precomputeCoord + ivec2(0,3);
+    for (int i = 0; i < countPointLightShadow; i++) {
+        currentOffset = ivec2(i%8, i/8);
+        currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
+        currentLight = lights[currentLightId];
 
-    // if ( distance(material., vec3(1,1,0) ) < 0.001 ) {
-    //     result = vec3(1,1,0);
-    // }
-
-
-
-    float lightsVisibleFloat = float(numActiveLights) / float(MAX_LIGHTS_PER_PATCH);
-    vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
-
-    float borderFactor = 0.0;
-    if (screenCoord.x % LIGHTING_COMPUTE_PATCH_SIZE_X == 0 || screenCoord.y % LIGHTING_COMPUTE_PATCH_SIZE_Y == 0) {
-        borderFactor = 1.0;
+        result += applyPointLightWithShadow(currentLight, material);
     }
+
 
 
     // HDR Mapping
@@ -109,30 +118,20 @@ void main() {
     // Tone Mapping
     result.xyz = sqrt(result.xyz);
     vec3 colorCorrected = convertColorSpace(result.xyz);
-    result.xyz = mix( colorCorrected , result.xyz, 0.0);
+    result.xyz = mix( colorCorrected , result.xyz, 0.3);
 
-
-    // result.xyz = vec3(texcoord, 0);
-    // if (screenCoord.x % 2 == 0) {
-    //     result.xyz = vec3(0.0);
-
-    // result.xyz = texture(sampleTex, texcoord).rgb;
     result.xyz = saturate(result);
     // }
 
+    // if (projectedBack.x >= 0.0 && projectedBack.x < 1.0 && projectedBack.y > 0.0 && projectedBack.y < 1.0) {
+    //     result.xyz = mix(result.xyz, oldPixelValue.xyz, 0.3);
+    // }
+
+
+    // result.xyz = vec3(projectedBack.xy,0 );
+
     imageStore(destination, screenCoord, vec4(result.xyz, 1) );
-    // imageStore(destination, screenCoord, vec4(temporalProjXOffs + 0.5) );
-    // imageStore(destination, screenCoord, vec4(0) );
 
-
-    // result.xyz = texture(sampleTex, vec2(texcoord.x, 1.0 - texcoord.y)).rgb;
-    // result.xyz = texture(sampleTex, texcoord).rgb;
-
-    // result.xyz = colorCorrected;
-
-    // result.xyz = step(-material.position.z, 0.01) * vec3(1);
-    // result.xyz = step(0.0001, material.position.z) * vec3(1.0);
-    
     #else
 
         vec3 result = vec3(1);

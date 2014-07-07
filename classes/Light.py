@@ -27,7 +27,7 @@ class Light:
         self.posterIndex = -1
         self.direction = Vec3(0)
         self.radius = 0.1
-
+        self.typeName = ""
         self.sourceIndexes = PTAInt.emptyArray(6)
         for i in xrange(6):
             self.sourceIndexes[i] = -1
@@ -45,6 +45,9 @@ class Light:
             "radius": "float",
             "sourceIndexes": "array<int>(6)",
         }
+
+    def getTypeName(self):
+        return self.typeName
 
     def setDirection(self, direction):
         direction.normalize()
@@ -69,6 +72,7 @@ class Light:
 
         if self.castShadows:
             self._initShadowSources()
+
 
     def setPos(self, pos):
         if (pos - self.position).length() > 0.001:

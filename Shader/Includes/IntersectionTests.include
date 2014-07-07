@@ -1,4 +1,6 @@
 
+#include "Includes/Frustum.include"
+
 /*
 float intersectionHelperSquare(float v) { 
     return v * v; 
@@ -28,12 +30,12 @@ bool rayIntersectsSphere(vec3 rayStart, vec3 rayEnd, vec3 sphereMid, float spher
 }
 */
 
-bool sphereInFrustum(vec4 frustumPlanes[4], vec4 pos, float radius) {
+bool sphereInFrustum(Frustum frustum, vec4 pos, float radius) {
     bvec4 result;
-    result.x = -radius <= dot(frustumPlanes[0], pos);
-    result.y = -radius <= dot(frustumPlanes[1], pos);
-    result.z = -radius <= dot(frustumPlanes[2], pos);
-    result.w = -radius <= dot(frustumPlanes[3], pos);
+    result.x = -radius <= dot(frustum.left, pos);
+    result.y = -radius <= dot(frustum.right, pos);
+    result.z = -radius <= dot(frustum.top, pos);
+    result.w = -radius <= dot(frustum.bottom, pos);
     return all(result);
 }
 

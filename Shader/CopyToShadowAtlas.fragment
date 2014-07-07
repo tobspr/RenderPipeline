@@ -1,6 +1,10 @@
 #version 440
 
+#extension ARB_shader_image_load_store : enable
+
+
 in vec2 texcoord;
+
 
 layout(rg16f) uniform writeonly image2D atlas;
 
@@ -27,7 +31,7 @@ void main() {
 
 
         float result = texture(renderResult, vec3(texcoord, pass)).x;
-        // result = vec4(texcoord, 0,  1);
+        // float result = vec4(texcoord, 0,  1);
         // result = vec4(sin(osg_FrameTime)*0.5 + 0.5, float(pass / 3.0), 0, 1);
 
         // if (offsetCoord.x < 20 || offsetCoord.y <= 20 || offsetCoord.x > current.resolution - 20 || offsetCoord.y > current.resolution - 20) {
@@ -36,6 +40,7 @@ void main() {
 
 
         imageStore(atlas, offsetCoord + passDisplace, vec4(packDepth(result.x),0, 0) );
+        // imageStore(atlas, offsetCoord + passDisplace, vec4(result,0,0, 0) );
         // imageStore(atlas, offsetCoord + passDisplace, vec4(d*30.0) );
         // imageStore(atlas, offsetCoord + passDisplace, vec4(result) );
         // imageStore(atlas, offsetCoord + passDisplace, vec4(texcoord, 0, 0) );

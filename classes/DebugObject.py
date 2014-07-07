@@ -1,4 +1,5 @@
- 
+    
+
 # When writing output to file, ensure it exists:
 # with open("log.txt", "w") as myfile:
 #     pass
@@ -42,4 +43,7 @@ class DebugObject:
     def _writeDebugFile(self, content):
         return
         # with open("log.txt", "a") as myfile:
-            # myfile.write(content + "\n")
+            # myfile.write(content + "\n")  
+
+    def __repr__(self):
+        return self._debug_name + "[]"

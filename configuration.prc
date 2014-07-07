@@ -43,7 +43,7 @@ frame-rate-meter-side-margins 0.4
 
 # Pstats
 pstats-target-frame-rate 60.0
-pstats-unused-states #t
+pstats-unused-states #f
 
 # For smoother animations
 # even-animation #t
@@ -87,7 +87,7 @@ framebuffer-multisample #f
 multisample #f
 
 # No V-Sync
-sync-video #t
+sync-video #f
 
 
 # Compress texture?
@@ -114,7 +114,7 @@ gl-finish #f
 gl-force-no-error #t
 gl-force-no-flush #t
 gl-force-no-scissor #t
-gl-debug #t
+gl-debug #f
 
 
 

@@ -22,11 +22,12 @@ void main() {
 
     BaseMaterial bm;
 
-    bm.metallic = 0.0;
-    bm.roughness = 0.0;
+    bm.metallic = 1.0;
+    bm.roughness = 0.4;
     bm.specular = 0.5;
     // bm.baseColor = vec3(1.000, 0.766, 0.336);
-    bm.baseColor = vec3(1,1,1);
+    bm.baseColor = vec3(diffuseColor.xyz);
+    // bm.baseColor = vec3(1,1,1);
 
     bm.position = positionWorldSpace;
     bm.normal   = normalWorldSpace;

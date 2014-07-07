@@ -25,85 +25,55 @@ class Main(ShowBase, DebugObject):
     def __init__(self):
         DebugObject.__init__(self, "Main")
 
-
+        # Load engine configuration
         self.debug("Loading panda3d configuration from configuration.prc ..")
         loadPrcFile("configuration.prc")
+
 
         self.debug("Creating showbase ..")
         ShowBase.__init__(self)
 
-        # self.sceneSource = "Scene.ignore/Car.bam"
-        self.sceneSource = "Scene/Scene5.egg"
-        self.usePlane = True
+        self.sceneSource = "Scene/Scene4.egg"
+        self.usePlane = False
+
 
         self.debug("Loading Scene '" + self.sceneSource + "' ..")
         self.scene = loader.loadModel(self.sceneSource)
 
+        # Load ground plane if configured
         if self.usePlane:
             self.groundPlane = loader.loadModel("Scene/Plane.egg")
             self.groundPlane.setPos(0,0,0)
             self.groundPlane.reparentTo(self.scene)
 
+        # Some artists really don't know about backface culling -.-
         # self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
-        self.scene.flattenStrong()
+        # self.scene.flattenStrong()
         self.scene.reparentTo(render)
 
-
-        if False:
-            self.debug("Spawning objects from prefab ..")
-            self.scenePrefab = self.scene.find("Prefab")
-            self.prefabsParent = self.scene.attachNewNode("Prefabs")
-            for i in xrange(10):
-                for j in xrange(10):
-                    cn = self.scenePrefab.copyTo(self.prefabsParent)
-                    # cn.setShaderInput("smoothness", float(i) / 10.0)
-                    # cn.setShaderInput("gloss", float(j) / 10.0)
-                    cn.setPos( (i-5) * 2.5, (j-5)*2.5, 5)
-
-
-
+        # Create movement controller
         self.debug("Init movement controller ..")
         self.mc = MovementController(self)
-        self.mc.setInitialPosition(Vec3(50, 50, 50), Vec3(0,0,0))
+        self.mc.setInitialPosition(Vec3(-40, 40, 40), Vec3(0,0,0))
         self.mc.setup()
 
         # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
         self.addTask(self.update, "update")
 
-        self.camLens.setNearFar(1.0, 10000)
+        self.camLens.setNearFar(0.1, 10000)
 
         self.debug("Creating rendering pipeline ..")
-        self.renderPipeline = RenderingPipeline(self)
-        # self.renderPipeline = None
 
-        # add some lights
+        # Thats really everything you need! Just one line ..
+        self.renderPipeline = RenderingPipeline(self)
+
+        # Now let's add some lights
         self.lights = []
 
-        self.renderDebugNode = render.attachNewNode("LightDebug")
-        
-        # add huge sun light
-
-        # for i in xrange(1):
-        #     sunLight = DirectionalLight()
-        #     sunLight.setColor(Vec3(0.1))
-        #     angle = float(i) / 20.0 * math.pi * 2.0
-        #     sunLight.setDirection(Vec3(math.sin(angle),math.cos(angle),1))
-        #     # sunLight.setCastsShadows(True)
-        #     self.renderPipeline.getLightManager().addLight(sunLight)
-        #     self.lights.append(sunLight)
-
-        # inverseSunLight = DirectionalLight()
-        # inverseSunLight.setColor(Vec3(0.5))
-        # inverseSunLight.setPos(Vec3(-10,10,15))
-        # inverseSunLight.setDirection(Vec3(-1000,500,1000))
-        # # sunLight.setCastsShadows(True)
-        # self.renderPipeline.getLightManager().addLight(inverseSunLight)
-        # self.lights.append(inverseSunLight)
-
-
+        # Store initial light positions for per-frame animations
         self.initialLightPos = []
 
         colors= [
@@ -120,39 +90,39 @@ class Main(ShowBase, DebugObject):
         ]
 
 
-        for i in xrange(4):
+        if True:
+            for i in xrange(8):
 
-            pos = Vec3(0,0,9)
+                angle = float(i) / 8.0 * math.pi * 2.0
 
-            sunLight= PointLight() 
-            sunLight.setRadius(35.0)
-            # sunLight.setColor(colors[i])
-            sunLight.setColor(Vec3(1))
-            sunLight.setPos(pos)
-            sunLight.setCastsShadows(True)
+                pos = Vec3(math.sin(angle)*20.0,math.cos(angle)*20.0,9)
 
-            if self.renderPipeline:
-                self.renderPipeline.getLightManager().addLight(sunLight)
-            self.lights.append(sunLight)
-            self.initialLightPos.append(pos)
+                sunLight= PointLight() 
+                sunLight.setRadius(35.0)
+                sunLight.setColor(colors[i])
+                # sunLight.setColor(Vec3(1))
+                sunLight.setPos(pos)
+                sunLight.setCastsShadows(True)
 
+                if self.renderPipeline:
+                    self.renderPipeline.getLightManager().addLight(sunLight)
+                self.lights.append(sunLight)
+                self.initialLightPos.append(pos)
 
-
-
-        if False:
+        if True:
             i = 0
             for x in xrange(3):
                 for y in xrange(3):
                     # y = 0.0
                     i += 1
-                    if i > 34:
+                    if i > 8:
                         continue
                     angle = float(i) / 9.0 * math.pi * 2.0
                     sampleLight = PointLight()
-                    sampleLight.setRadius(30.0)
+                    sampleLight.setRadius(10.0)
 
                     # if i < 8:
-                    sampleLight.setCastsShadows(True)
+                    # sampleLight.setCastsShadows(True)
 
                     sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 1.0)
 
@@ -160,7 +130,9 @@ class Main(ShowBase, DebugObject):
 
 
                     # initialPos = Vec3((x-3.5) * 8.0, (y-3.5)*8.0, 4)
-                    initialPos = Vec3(( float(x)-1.5) * 10.0, (float(y)-1.5)* 11.0, 12.0)
+                    initialPos = Vec3(( float(x)-1.5) * 20.0, (float(y)-1.5)* 20.0, 5.0)
+
+                    # initialPos = Vec3(0,0,1)
                     # initialPos = Vec3(0,0,10)
 
                     sampleLight.setPos(initialPos )
@@ -247,7 +219,11 @@ class Main(ShowBase, DebugObject):
 
             initialPos = self.initialLightPos[i]
             initialPos = Vec3(0,0,9)
-            light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
+            # light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
+
+
+        # import time
+        # time.sleep(15.0 / 1000.0)
         return task.cont
 
 
