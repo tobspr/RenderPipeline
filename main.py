@@ -91,9 +91,9 @@ class Main(ShowBase, DebugObject):
 
 
         if True:
-            for i in xrange(8):
+            for i in xrange(2):
 
-                angle = float(i) / 8.0 * math.pi * 2.0
+                angle = float(i) / 2.0 * math.pi * 2.0
 
                 pos = Vec3(math.sin(angle)*20.0,math.cos(angle)*20.0,9)
 
@@ -109,7 +109,7 @@ class Main(ShowBase, DebugObject):
                 self.lights.append(sunLight)
                 self.initialLightPos.append(pos)
 
-        if True:
+        if False:
             i = 0
             for x in xrange(3):
                 for y in xrange(3):
