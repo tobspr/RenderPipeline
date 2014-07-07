@@ -215,11 +215,9 @@ class Main(ShowBase, DebugObject):
             # pass
             # if i % 3 == 0:
             ft2 = float(i)*math.pi*0.5 + ft * 1.0
-
-
             initialPos = self.initialLightPos[i]
             initialPos = Vec3(0,0,9)
-            # light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
+            light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
 
 
         # import time

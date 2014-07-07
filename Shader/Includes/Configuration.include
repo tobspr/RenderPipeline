@@ -44,18 +44,17 @@ const float sqrt_of_2 = 1.4142135623;
 #define USE_SHADOWS 
 
 // Size of the shadow atlas. Has to be the same as in LightManager.py
-#define SHADOW_MAP_ATLAS_SIZE 8192.0
+#define SHADOW_MAP_ATLAS_SIZE 2048.0
 
 // Max shadow updates per frame. Has to be the same as in LightManager.py
-#define SHADOW_MAX_UPDATES_PER_FRAME 16
+#define SHADOW_MAX_UPDATES_PER_FRAME 4
 
 // SHADOW_MAX_UPDATES_PER_FRAME * 3. But openGL doesn't allow expressions in layout
 // So you have to change it yourself
-#define SHAODOW_GEOMETRY_MAX_VERTICES 48
+#define SHAODOW_GEOMETRY_MAX_VERTICES 12
 
 // Max shadow maps. Has to be the same as in LightManager.py
 #define SHADOW_MAX_TOTAL_MAPS 24
-
 
 // Number of shadow samples to take. Low values improve performance. Between 1 and 16
 #define SHADOWS_NUM_SAMPLES 8

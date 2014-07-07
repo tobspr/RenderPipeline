@@ -28,13 +28,13 @@ class LightManager(DebugObject):
 
         ## SHADOW ATLAS ##
         # todo: move to separate class
-        self.maxShadowRes = 1024
-        self.shadowAtlasSize = 8192
+        self.maxShadowRes = 512
+        self.shadowAtlasSize = 2048
         self.maxShadowMaps = 24
 
         # When you change it , change also SHAODOW_GEOMETRY_MAX_VERTICES and
         # SHADOW_MAX_UPDATES_PER_FRAME in configuration.include!
-        self.maxShadowUpdatesPerFrame = 16
+        self.maxShadowUpdatesPerFrame = 4
         self.tileSize = 256
         self.tileCount = self.shadowAtlasSize / self.tileSize
         self.tiles = []
