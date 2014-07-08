@@ -69,6 +69,9 @@ class Antialiasing(DebugObject):
         self._neighborBuffer.setShader(neighborShader)
 
 
+    def getFirstBuffer(self):
+        return self._edgesBuffer
+
     def getResultTexture(self):
         return self._neighborBuffer.getColorTexture()
 

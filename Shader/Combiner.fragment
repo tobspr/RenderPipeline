@@ -45,18 +45,19 @@ void main() {
     // projectedOldCi = screenCoord;
 
     // First, get the color value for the pixel last frame (so we always <HAVE> a value, even if it might be outdated)
-    vec4 result = imageLoad(lastFrame, projectedOldCi);
+    // vec4 result = imageLoad(lastFrame, projectedOldCi);
+    vec4 result = imageLoad(lastFrame, screenCoord);
 
 
     // If we have a newer value, use this
     if (screenCoord.x % 2 == 1-temporalProjXOffs) {
         result = vec4(lastComputedValue);
+        imageStore(lastFrame, screenCoord, result);
     } 
 
     // result = vec4( screenCoord.x % 2 == 0 ? 1.0 : 0.1);
 
     // Store the new computed value back to the history buffer
-    imageStore(lastFrame, screenCoord, result);
     gl_FragColor = vec4(result);
     // gl_FragColor = vec4( abs(texcoord - projectedOldCoord) * 500.0, 0, 1);
 

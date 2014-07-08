@@ -64,6 +64,8 @@ class RenderingPipeline(DebugObject):
             "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
         self._setupAntialiasing()
 
+        self.antialias.getFirstBuffer().setShaderInput("lastFrame", self.lightingComputeCombinedTex)
+
         if self.useComputeShader:
             self.deferredTarget.setShaderInput("sampler", self.lightingComputeResult)
         else:
