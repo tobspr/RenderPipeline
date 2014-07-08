@@ -30,7 +30,7 @@ uniform Light lights[MAX_VISIBLE_LIGHTS];
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 in vec2 texcoord;
 
-uniform float temporalProjXOffs;
+uniform int temporalProjXOffs;
 
 uniform sampler2D sampleTex;
 
@@ -46,14 +46,19 @@ void main() {
 
 
     #if 1
-    
 
 
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
-    
+
+
+
     // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x)) + ivec2(0,0); 
-    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x+1, screenSize.y)) - ivec2(temporalProjXOffs,0); 
+    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x+1, screenSize.y)) - ivec2(temporalProjXOffs,0); 
+    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x + 1 , screenSize.y)) - ivec2(temporalProjXOffs,0); 
+    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x , screenSize.y)) - ivec2(temporalProjXOffs,0); 
+
+
     // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x, screenSize.y)); 
 
     // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x)); 
@@ -69,16 +74,11 @@ void main() {
 
     BaseMaterial material = unpackBaseMaterial(target0data, target1data, target2data);
 
-    // vec4 projectedBack = lastMVP * vec4(material.position, 1);
-    // projectedBack.xyz /= projectedBack.w;
-    // projectedBack.xy = projectedBack.xy * 0.5 + 0.5;
 
     // ivec2 lastScreenCoord = ivec2(projectedBack.xy * vec2(screenSize.x, screenSize.y)); 
 
     // vec4 oldPixelValue = imageLoad(destination, lastScreenCoord).rgba;
 
-    // Fetch number of lights for this tile
-    // int tileLightCount = int( texelFetch(lightsPerTile, precomputeCoord, 0).r * float(MAX_LIGHTS_PER_PATCH) );
 
     int countPointLight = imageLoad(lightsPerTile, precomputeCoord + ivec2(0,0)).r;
     int countPointLightShadow = imageLoad(lightsPerTile, precomputeCoord + ivec2(1,0)).r;
@@ -126,15 +126,16 @@ void main() {
     result.xyz *= 1.0 - vignett;
     // result.xyz = vec3(vignett);
 
+    // result.xyz = vec3(temporalProjXOffs);
 
-    // result.xyz = vec3(projectedBack.xy,0 );
-
-    imageStore(destination, screenCoord, vec4(result.xyz, 1) );
+    // imageStore(destination, screenCoord, vec4(result.xyz, 1) );
 
     #else
 
         vec3 result = vec3(1);
     #endif
 
-    gl_FragColor = vec4(result.xyz, 1);
+    // gl_FragColor = vec4(material.position / 10.0, 1);
+    // gl_FragColor = vec4(screenCoord.y % 2 == 1-temporalProjXOffs ? 1.0 : 0.1);
+    gl_FragColor = vec4(result, 1);
 }

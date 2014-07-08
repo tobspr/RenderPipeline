@@ -1,0 +1,61 @@
+#version 420
+
+in vec2 texcoord;
+
+uniform sampler2D currentComputation;
+layout(rgba16f) uniform image2D lastFrame;
+uniform sampler2D positionBuffer;
+
+uniform int temporalProjXOffs;
+
+uniform mat4 lastMVP;
+uniform mat4 currentMVP;
+
+void main() {
+
+    // Fetch screen size, so we don't have to pass it as a shader input
+    ivec2 screenSize = textureSize(positionBuffer, 0);
+
+    // Screen coordinate (as int vec)
+    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize));
+
+    // Screen coordinate (half resolution only)
+    ivec2 computationCoord = ivec2( screenCoord.x/2, screenCoord.y);
+
+    // The last frame content (full resolution, but one frame behind)
+    vec4 lastFrameValue = imageLoad(lastFrame, screenCoord);    
+
+    // The last computed value (half resolution only, but up-to-date)
+    vec4 lastComputedValue = texelFetch(currentComputation, computationCoord, 0);
+
+    // Fetch the up-to-date position from the buffer
+    vec4 position = vec4(texelFetch(positionBuffer, screenCoord, 0).rgb, 1);
+    
+    // Find out where the current pixel was last frame
+    vec4 projectedOld = lastMVP * position;           
+    vec2 projectedOldCoord = projectedOld.xy / projectedOld.w;
+    projectedOldCoord = projectedOldCoord * 0.5 + 0.5; // <-- this now stores where the pixel was last frame
+
+    // Convert to int coordinates
+    ivec2 projectedOldCi = ivec2(projectedOldCoord * vec2(screenSize));
+
+    // Clamp so we don't get out of bounds (othwerwise we get a black result)
+    projectedOldCi = clamp(projectedOldCi, ivec2(0), screenSize-1 );
+
+    // First, get the color value for the pixel last frame (so we always <HAVE> a value, even if it might be outdated)
+    vec4 result = imageLoad(lastFrame, projectedOldCi);
+
+
+    // If we have a newer value, use this
+    if (screenCoord.x % 2 == 1-temporalProjXOffs) {
+        result = vec4(lastComputedValue);
+    } 
+
+    // result = vec4( screenCoord.x % 2 == 0 ? 1.0 : 0.1);
+
+    // Store the new computed value back to the history buffer
+    imageStore(lastFrame, screenCoord, result);
+    gl_FragColor = vec4(result);
+    // gl_FragColor = vec4( abs(texcoord - projectedOldCoord) * 500.0, 0, 1);
+
+}

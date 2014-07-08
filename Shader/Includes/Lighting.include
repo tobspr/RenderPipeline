@@ -157,7 +157,7 @@ vec3 applyPointLightWithShadow(Light light, BaseMaterial material) {
     }
 
     // Apply shadows
-    rawLighting *= max(0.0, 1.0 - shadowFactor);
+    // rawLighting *= max(0.0, 1.0 - shadowFactor);
     // return vec3(1.0 - shadowFactor) * 0.1;
     return rawLighting;
 }

@@ -1,7 +1,7 @@
 
 import math
 from panda3d.core import TransparencyAttrib, Texture, Vec2, ComputeNode, NodePath
-from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
+from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight, LVecBase2i
 
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.DirectGui import DirectFrame
@@ -33,7 +33,6 @@ class RenderingPipeline(DebugObject):
 
         self.forwardScene = NodePath("Forward Rendering")
         self.lastMVP = None
-        self.lastLastMVP = None
 
         self._setup()
 
@@ -55,11 +54,14 @@ class RenderingPipeline(DebugObject):
         # Setup compute shader for lighting
         self._createLightingPipeline()
 
-        # for debugging attach texture to shader
+
+        # Setup combiner
+        self._createCombiner()
+
+
+
         self.deferredTarget.setShader(BetterShader.load(
             "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
-        # self.deferredTarget.setShaderInput("sampler", self.lightBoundsComputeBuff.getColorTexture())
-        # self.deferredTarget.setShaderInput("sampler", self.lightPerTileStorage)
         self._setupAntialiasing()
 
         if self.useComputeShader:
@@ -67,7 +69,8 @@ class RenderingPipeline(DebugObject):
         else:
             pass
             # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
-        self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
+        self.deferredTarget.setShaderInput("sampler", self.combiner.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
         # self.deferredTarget.setShaderInput("sampler", self.antialias._neighborBuffer.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.antialias._blendBuffer.getColorTexture())
@@ -86,6 +89,16 @@ class RenderingPipeline(DebugObject):
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (0,0,0), scale=(0.8,1,0.8))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightPerTileStorage, pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
 
+
+    def _createCombiner(self):
+        self.combiner = RenderTarget("Combine-Temporal")
+        self.combiner.setColorBits(8)
+        self.combiner.addRenderTexture(RenderTargetType.Color)
+        self.combiner.prepareOffscreenBuffer()
+        self.combiner.setShaderInput("currentComputation", self.lightingComputeContainer.getColorTexture())
+        self.combiner.setShaderInput("lastFrame", self.lightingComputeCombinedTex)
+        self.combiner.setShaderInput("positionBuffer", self.deferredTarget.getColorTexture())
+        self._setCombinerShader()
 
     def _setupAntialiasing(self):
         self.debug("Creating antialiasing handler ..")
@@ -252,6 +265,11 @@ class RenderingPipeline(DebugObject):
                 "Shader/DefaultPostProcess.vertex", "Shader/ApplyLighting.fragment")
         self.lightingComputeContainer.setShader(lightShader)
 
+    def _setCombinerShader(self):
+        cShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex", "Shader/Combiner.fragment")
+        self.combiner.setShader(cShader)
+
     def _setPositionComputationShader(self):
         pcShader = BetterShader.load(
             "Shader/DefaultPostProcess.vertex", "Shader/PrecomputeLights.fragment")
@@ -265,6 +283,7 @@ class RenderingPipeline(DebugObject):
     def debugReloadShader(self):
         self.lightManager.debugReloadShader()
         self._setPositionComputationShader()
+        self._setCombinerShader()
         self._setLightingShader()
         self.antialias.reloadShader()
 
@@ -288,18 +307,11 @@ class RenderingPipeline(DebugObject):
         self.lightManager.update()
 
         self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
-        self.lightingComputeContainer.setShaderInput("temporalProjXOffs", float(self.temporalProjXOffs) )
-
-
-
-
-        self.lightingComputeContainer.setShaderInput("lastLastMVP", self.lastLastMVP)
-        self.lightingComputeContainer.setShaderInput("lastMVP", self.lastMVP)
-        self.lastLastMVP = self.lastMVP
-
+        self.lightingComputeContainer.setShaderInput("temporalProjXOffs", LVecBase2i(self.temporalProjXOffs))
+        self.combiner.setShaderInput("lastMVP", self.lastMVP)
+        self.combiner.setShaderInput("temporalProjXOffs", LVecBase2i(self.temporalProjXOffs))
         self._computeMVP()
-        self.lightingComputeContainer.setShaderInput("currentMVP", self.lastMVP)
-
+        self.combiner.setShaderInput("currentMVP", self.lastMVP)
 
         return task.cont
 
