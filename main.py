@@ -220,8 +220,8 @@ class Main(ShowBase, DebugObject):
             # light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
 
 
-        import time
-        time.sleep(30.0 / 1000.0)
+        # import time
+        # time.sleep(30.0 / 1000.0)
         return task.cont
 
 
