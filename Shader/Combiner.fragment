@@ -32,7 +32,8 @@ void main() {
     vec4 position = vec4(texelFetch(positionBuffer, screenCoord, 0).rgb, 1);
     
     // Find out where the current pixel was last frame
-    vec4 projectedOld = lastMVP * position;           
+    vec4 projectedOld = lastMVP * position;       
+    // vec4 projectedOld = currentMVP * position;           
     vec2 projectedOldCoord = projectedOld.xy / projectedOld.w;
     projectedOldCoord = projectedOldCoord * 0.5 + 0.5; // <-- this now stores where the pixel was last frame
 
@@ -43,15 +44,15 @@ void main() {
     ivec2 projectedOldCi = ivec2( round(projectedOldCoord * vec2(screenSize)) );
 
     // Clamp so we don't get out of bounds (othwerwise we get a black result)
-    projectedOldCi = clamp(projectedOldCi, ivec2(10), screenSize-11 );
+    ivec2 projectedOldCiClamp = clamp(projectedOldCi, ivec2(0), screenSize-1 );
 
-    bool reliable = distance(projectedOldCi, screenCoord) > 20.0;
-
+    bool reliable = projectedOldCiClamp == projectedOldCi &&  distance(projectedOldCiClamp, screenCoord) > 4.0;
+    // reliable = true;
 
     ivec2 reliableCoord = screenCoord;
 
     if (reliable) {
-        reliableCoord = projectedOldCi;
+        reliableCoord = projectedOldCiClamp;
     }
 
     // First, get the color value for the pixel last frame (so we always <HAVE> a value, even if it might be outdated)
@@ -69,7 +70,7 @@ void main() {
 
     // Store the new computed value back to the history buffer
     gl_FragColor = vec4(result);
-    // gl_FragColor = vec4( distance(projectedOldCi, screenCoord) > 5.0 ? 1.0 : 0.0, 0, 0, 1);
+    // gl_FragColor = vec4( distance(projectedOldCi, screenCoord) > 0.0 ? 1.0 : 0.0, 0, 0, 1);
     // gl_FragColor = vec4( difVec, 0, 1);
     // gl_FragColor = vec4( abs(texcoord - projectedOldCoord) * 500.0, 0, 1);
 
