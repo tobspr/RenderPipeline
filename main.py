@@ -221,7 +221,7 @@ class Main(ShowBase, DebugObject):
 
 
         import time
-        time.sleep(20.0 / 1000.0)
+        time.sleep(30.0 / 1000.0)
         return task.cont
 
 
