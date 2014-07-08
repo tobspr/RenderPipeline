@@ -6,6 +6,7 @@ in vec4 offset[3];
 
 uniform sampler2D colorTex;
 uniform sampler2D depthTex;
+// uniform sampler2D newColorTex;
 
 layout(rgba16f) uniform image2D lastFrame;
 
@@ -18,15 +19,18 @@ void main() {
     ivec2 screenSize = textureSize(colorTex, 0);
 
     // Screen coordinate (as int vec)
-    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize));
+    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x  ,screenSize.y));
 
     // Store last frame 
-    imageStore(lastFrame, screenCoord, texelFetch(colorTex, screenCoord, 0));
-    // imageStore(lastFrame, screenCoord, ivec4(0r));
+    vec4 newFrameVal = texelFetch(colorTex, screenCoord, 0);
+    imageStore(lastFrame, screenCoord, newFrameVal);
 
+    // imageStore(lastFrame, screenCoord, ivec4(0));
 
     // LUMA
-    gl_FragColor = vec4(SMAALumaEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);
+    // gl_FragColor = vec4(SrMAALumaEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);
+
+    gl_FragColor = newFrameVal;
 
     // COLOR
     // gl_FragColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);

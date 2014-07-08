@@ -24,6 +24,7 @@ void main() {
 
     bm.metallic = 1.0;
     bm.roughness = 0.4;
+    bm.roughness = 1.0;
     bm.specular = 0.5;
     // bm.baseColor = vec3(1.000, 0.766, 0.336);
     bm.baseColor = vec3(diffuseColor.xyz);

@@ -118,6 +118,8 @@ class RenderBuffer(DebugObject):
                 handle.setComponentType(Texture.TFloat)
                 handle.setFormat(Texture.FRgba16)
 
+
+
             if self._layers > 1:
                 self.debug("Setup layer count:",self._layers)
                 handle.setup2dTextureArray(self._layers)
@@ -127,6 +129,9 @@ class RenderBuffer(DebugObject):
             self.debug("Setup depth-layer count:",self._layers)
             self.getTarget(RenderTargetType.Depth).setup2dTextureArray(self._layers)
 
+
+        if self._colorBits == 32:
+            self.getTarget(RenderTargetType.Color).setFormat(Texture.FRgba32)
 
         # Create buffer descriptors
         windowProps = WindowProperties.size(self._width, self._height)

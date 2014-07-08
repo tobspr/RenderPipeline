@@ -107,7 +107,7 @@ class RenderingPipeline(DebugObject):
         self.antialias = Antialiasing()
 
         # self.antialias.setColorTexture(self.lightingComputeContainer.getColorTexture())
-        self.antialias.setColorTexture(self.lightingComputeCombinedTex)
+        self.antialias.setColorTexture(self.combiner.getColorTexture())
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setup()
 
@@ -121,7 +121,7 @@ class RenderingPipeline(DebugObject):
         self.deferredTarget.addRenderTexture(RenderTargetType.Aux0)
         self.deferredTarget.addRenderTexture(RenderTargetType.Aux1)
         self.deferredTarget.setAuxBits(16)
-        self.deferredTarget.setColorBits(16)
+        self.deferredTarget.setColorBits(32)
         self.deferredTarget.setDepthBits(32)
         # self.deferredTarget.setSize(400, 240) # check for overdraw
         self.deferredTarget.prepareSceneRender()

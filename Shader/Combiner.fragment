@@ -17,7 +17,7 @@ void main() {
     ivec2 screenSize = textureSize(positionBuffer, 0);
 
     // Screen coordinate (as int vec)
-    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize));
+    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x, screenSize.y));
 
     // Screen coordinate (half resolution only)
     ivec2 computationCoord = ivec2( screenCoord.x/2, screenCoord.y);
@@ -36,8 +36,16 @@ void main() {
     vec2 projectedOldCoord = projectedOld.xy / projectedOld.w;
     projectedOldCoord = projectedOldCoord * 0.5 + 0.5; // <-- this now stores where the pixel was last frame
 
+
+    vec2 difVec = projectedOldCoord - texcoord;
+
+    // projectedOldCoord = texcoord + difVec * 5.0;
+
+
+
+
     // Convert to int coordinates
-    ivec2 projectedOldCi = ivec2(projectedOldCoord * vec2(screenSize));
+    ivec2 projectedOldCi = ivec2( round(projectedOldCoord * vec2(screenSize)) );
 
     // Clamp so we don't get out of bounds (othwerwise we get a black result)
     projectedOldCi = clamp(projectedOldCi, ivec2(0), screenSize-1 );
@@ -45,20 +53,22 @@ void main() {
     // projectedOldCi = screenCoord;
 
     // First, get the color value for the pixel last frame (so we always <HAVE> a value, even if it might be outdated)
-    // vec4 result = imageLoad(lastFrame, projectedOldCi);
-    vec4 result = imageLoad(lastFrame, screenCoord);
+    vec4 result = imageLoad(lastFrame, projectedOldCi);
+    // vec4 result = imageLoad(lastFrame, screenCoord);
 
 
     // If we have a newer value, use this
     if (screenCoord.x % 2 == 1-temporalProjXOffs) {
         result = vec4(lastComputedValue);
-        imageStore(lastFrame, screenCoord, result);
+        // imageStore(lastFrame, screenCoord, result);
     } 
 
     // result = vec4( screenCoord.x % 2 == 0 ? 1.0 : 0.1);
 
     // Store the new computed value back to the history buffer
     gl_FragColor = vec4(result);
+    // gl_FragColor = vec4( distance(projectedOldCi, screenCoord) / 4.0, 0, 0, 1);
+    // gl_FragColor = vec4( difVec, 0, 1);
     // gl_FragColor = vec4( abs(texcoord - projectedOldCoord) * 500.0, 0, 1);
 
 }
