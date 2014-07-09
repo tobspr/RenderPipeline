@@ -1,6 +1,9 @@
 #version 440
 
 
+
+// uniform sampler2D lastFrame;
+
 #include "Includes/Material.include"
 
 in vec3 normalWorldSpace;

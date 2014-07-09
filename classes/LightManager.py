@@ -34,7 +34,7 @@ class LightManager(DebugObject):
 
         # When you change it , change also SHAODOW_GEOMETRY_MAX_VERTICES and
         # SHADOW_MAX_UPDATES_PER_FRAME in configuration.include!
-        self.maxShadowUpdatesPerFrame = 8
+        self.maxShadowUpdatesPerFrame = 2
         self.tileSize = 256
         self.tileCount = self.shadowAtlasSize / self.tileSize
         self.tiles = []
@@ -141,7 +141,7 @@ class LightManager(DebugObject):
     # / rendered
     def _createDebugTexts(self):
         try:
-            from FastText2 import FastText
+            from FastText import FastText
             self.lightsVisibleDebugText = FastText(pos=Vec2(
                 base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
             self.lightsUpdatedDebugText = FastText(pos=Vec2(

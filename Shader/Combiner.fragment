@@ -1,15 +1,22 @@
 #version 420
 
+
+#include "Includes/Configuration.include"
+
 in vec2 texcoord;
 
 uniform sampler2D currentComputation;
-layout(rgba16f) uniform image2D lastFrame;
+uniform sampler2D lastFrame;
+uniform sampler2D lastPosition;
+
 uniform sampler2D positionBuffer;
+uniform sampler2D velocityBuffer;
 
 uniform int temporalProjXOffs;
 
 uniform mat4 lastMVP;
 uniform mat4 currentMVP;
+uniform vec3 cameraPosition;
 
 void main() {
 
@@ -22,56 +29,46 @@ void main() {
     // Screen coordinate (half resolution only)
     ivec2 computationCoord = ivec2( screenCoord.x/2, screenCoord.y);
 
-    // The last frame content (full resolution, but one frame behind)
-    vec4 lastFrameValue = imageLoad(lastFrame, screenCoord);    
+
+    vec3 position = texture(positionBuffer, texcoord).rgb;
 
     // The last computed value (half resolution only, but up-to-date)
-    vec4 lastComputedValue = texelFetch(currentComputation, computationCoord, 0);
+    vec3 lastComputedValue = texelFetch(currentComputation, computationCoord, 0).rgb;
+
+    vec2 velocity = texture(velocityBuffer, texcoord).rg / 255.0;
+
+    vec2 lastFrameTexcoord = texcoord - velocity;
+
+    vec3 oldProjectedColor = texture(lastFrame, lastFrameTexcoord).rgb;
+    vec3 oldProjectedPos = texture(lastPosition, lastFrameTexcoord).rgb;
+
+    float distanceToCamera = distance(cameraPosition, position);
+
+    float reliability = 1.0 - (distance(oldProjectedPos, position) / distanceToCamera * 200.0);
+
+    // reliability = 1.0;
 
     // Fetch the up-to-date position from the buffer
-    vec4 position = vec4(texelFetch(positionBuffer, screenCoord, 0).rgb, 1);
-    
-    // Find out where the current pixel was last frame
-    vec4 projectedOld = lastMVP * position;       
-    // vec4 projectedOld = currentMVP * position;           
-    vec2 projectedOldCoord = projectedOld.xy / projectedOld.w;
-    projectedOldCoord = projectedOldCoord * 0.5 + 0.5; // <-- this now stores where the pixel was last frame
+    // vec4 position = vec4(texelFetch(positionBuffer, screenCoord, 0).rgb, 1);
 
+    vec3 result;
 
+    // if (distance(finalValue, vec3(1,0,0)) < 0.0001) {
+    //     finalValue = lastComputedValue.rgb;
+    //     // finalValue = lastFrameValue.rgb;
+    // }
 
+    // // result.xyz = vec3(finalValue);
 
-    // Convert to int coordinates
-    ivec2 projectedOldCi = ivec2( round(projectedOldCoord * vec2(screenSize)) );
-
-    // Clamp so we don't get out of bounds (othwerwise we get a black result)
-    ivec2 projectedOldCiClamp = clamp(projectedOldCi, ivec2(0), screenSize-1 );
-
-    bool reliable = projectedOldCiClamp == projectedOldCi &&  distance(projectedOldCiClamp, screenCoord) > 4.0;
-    // reliable = true;
-
-    ivec2 reliableCoord = screenCoord;
-
-    if (reliable) {
-        reliableCoord = projectedOldCiClamp;
-    }
-
-    // First, get the color value for the pixel last frame (so we always <HAVE> a value, even if it might be outdated)
-    vec4 result = imageLoad(lastFrame, reliableCoord);
-    // vec4 result = imageLoad(lastFrame, screenCoord);
+    result = mix(lastComputedValue, oldProjectedColor, saturate(reliability));
 
 
     // If we have a newer value, use this
     if (screenCoord.x % 2 == 1-temporalProjXOffs) {
-        result = vec4(lastComputedValue);
-        // imageStore(lastFrame, screenCoord, result);
+
+        result = lastComputedValue;
+        // result = vec4(0,1,0,1);
     } 
-
-    // result = vec4( screenCoord.x % 2 == 0 ? 1.0 : 0.1);
-
-    // Store the new computed value back to the history buffer
-    gl_FragColor = vec4(result);
-    // gl_FragColor = vec4( distance(projectedOldCi, screenCoord) > 0.0 ? 1.0 : 0.0, 0, 0, 1);
-    // gl_FragColor = vec4( difVec, 0, 1);
-    // gl_FragColor = vec4( abs(texcoord - projectedOldCoord) * 500.0, 0, 1);
+    gl_FragColor = vec4( result, 1 );
 
 }

@@ -119,5 +119,8 @@ gl-force-no-scissor #t
 gl-debug #f
 
 
+text-minfilter linear
+text-page-size 128 128
 
 
+show-buffers #t

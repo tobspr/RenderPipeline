@@ -56,7 +56,8 @@ class Main(ShowBase, DebugObject):
         # Create movement controller
         self.debug("Init movement controller ..")
         self.mc = MovementController(self)
-        self.mc.setInitialPosition(Vec3(-40, 40, 40), Vec3(0,0,0))
+        # self.mc.setInitialPosition(Vec3(-45*2, 40*2, 20*2), Vec3(0,0,0))
+        self.mc.setInitialPosition(Vec3(-60,60,50), Vec3(0,0,0))
         self.mc.setup()
 
         # Hotkey to reload all shaders
@@ -152,15 +153,37 @@ class Main(ShowBase, DebugObject):
 
         # create skybox
 
+        # q base.bufferViewer.toggleEnable()
+
         self.loadSkybox()
-
-        # self.renderDebugNode.flattenStrong()
-
-        # coord = loader.loadModel("zup-axis")
-        # coord.setScale(2.0)
-        # coord.reparentTo(self.scene)
-
         self.setShaders()
+
+
+
+        # taskMgr.step()
+        # base.win.saveScreenshot("Frames/1.png")
+
+        # taskMgr.step()
+        # base.win.saveScreenshot("Frames/2.png")
+
+        # k = base.camera.getPos() / 70.0
+        # # base.camera.setH(base.camera.getH() + 20)
+        # for i in xrange(60):
+
+        #     base.camera.setPos(base.camera.getPos() - k)
+        #     taskMgr.step()
+        #     base.win.saveScreenshot("Frames/" + str(i+3) + ".png")
+
+        # taskMgr.step()
+        # base.win.saveScreenshot("Frames/24.png")
+
+        # taskMgr.step()
+        # base.win.saveScreenshot("Frames/25.png")
+
+
+
+        # import sys
+        # sys.exit(0)
 
 
 
@@ -193,7 +216,7 @@ class Main(ShowBase, DebugObject):
 
     def loadSkybox(self):
         self.skybox = loader.loadModel("Skybox/Skybox")
-        self.skybox.setScale(1000)
+        self.skybox.setScale(80)
         self.skybox.reparentTo(render)
 
     def setShaders(self):
@@ -207,7 +230,7 @@ class Main(ShowBase, DebugObject):
         self.skybox.setShader(BetterShader.load("Shader/DefaultObjectShader.vertex", "Shader/Skybox.fragment"))
 
 
-    def update(self, task):
+    def update(self, task=None):
 
         ft = globalClock.getFrameTime()*0.3
         # ft = 0
@@ -217,12 +240,14 @@ class Main(ShowBase, DebugObject):
             ft2 = float(i)*math.pi*0.5 + ft * 1.0
             initialPos = self.initialLightPos[i]
             initialPos = Vec3(0,0,9)
-            # light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
+            light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
 
 
-        import time
-        time.sleep(100.0 / 1000.0)
-        return task.cont
+        # import time
+        # time.sleep(33.0 / 1000.0)
+
+        if task is not None:
+            return task.cont
 
 
 app = Main()

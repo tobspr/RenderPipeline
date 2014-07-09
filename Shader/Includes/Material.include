@@ -67,19 +67,30 @@ Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2) {
 }
 
 
+uniform mat4 lastMVP;
+
+
+
 
 mat4 packBaseMaterial(BaseMaterial m) {
     vec2 normal = encodeNormal(m.normal);
-    // vec2 color = packColor(m.baseColor);
-    vec2 color = m.baseColor.xy;
+    vec2 color = packColor(m.baseColor);
+
+    vec4 lastProj = lastMVP * vec4(m.position, 1);
+    vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
+    vec2 fragCoord = gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    lastTexcoord = (lastTexcoord - fragCoord) * 255.0;
+
     return mat4(
         m.position.x, m.position.y, m.position.z, m.roughness,
         normal.x,normal.y,color.x,color.y,
-        m.metallic,m.specular,m.transluency,m.baseColor.z,
+        // m.metallic,m.specular,m.transluency,m.baseColor.z,
+        lastTexcoord.x, lastTexcoord.y, m.specular, m.metallic,
 
         0,0,0,0 // Not available
     );
 }
+
 
 BaseMaterial unpackBaseMaterial(vec4 data0, vec4 data1, vec4 data2) {
     BaseMaterial m;
@@ -87,10 +98,15 @@ BaseMaterial unpackBaseMaterial(vec4 data0, vec4 data1, vec4 data2) {
     m.position = data0.xyz;
     m.roughness = data0.w;
     m.normal = decodeNormal(data1.xy);
-    m.baseColor = vec3(data1.zw, data2.w);
-    m.metallic = data2.x;
-    m.specular = data2.y;
-    m.transluency = data2.z;
+    // m.baseColor = vec3(data1.zw, data2.w);
+    m.baseColor = unpackColor(data1.zw);
+    m.metallic = data2.w;
+    m.specular = data2.z;
+    // m.transluency = data2.z;
+
+
+    m.transluency = 0.0;
+
 
     return m;
 }

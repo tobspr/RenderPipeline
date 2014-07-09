@@ -34,7 +34,8 @@ uniform int temporalProjXOffs;
 
 uniform sampler2D sampleTex;
 
-uniform mat4 lastMVP;
+// uniform mat4 lastMVP;
+
 
 
 
@@ -109,6 +110,7 @@ void main() {
         result += applyPointLightWithShadow(currentLight, material);
     }
 
+    // result = material.normal * step(material.position.z, 0.01);
 
 
     // TODO: Move this to other passes

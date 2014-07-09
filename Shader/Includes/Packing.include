@@ -48,8 +48,8 @@ float unpackDepth(vec2 d) {
 
 vec2 packColor(vec3 color) {
     return vec2(color.x, 
-            saturate(color.y)*0.999 +
-            floor(color.z * 256.0)
+            saturate(color.y)*0.9 +
+            ceil(color.z * 255.0)
         );
 }
 

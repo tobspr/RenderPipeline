@@ -65,14 +65,17 @@ class RenderingPipeline(DebugObject):
         self._setupAntialiasing()
 
         self.antialias.getFirstBuffer().setShaderInput("lastFrame", self.lightingComputeCombinedTex)
+        self.antialias.getFirstBuffer().setShaderInput("lastPosition", self.lastPositionBuffer)
+        self.antialias.getFirstBuffer().setShaderInput("currentPosition", self.deferredTarget.getColorTexture())
 
         if self.useComputeShader:
             self.deferredTarget.setShaderInput("sampler", self.lightingComputeResult)
         else:
             pass
             # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
-        # self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
-        self.deferredTarget.setShaderInput("sampler", self.combiner.getColorTexture())
+        self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.combiner.getColorTexture())
+
         # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
         # self.deferredTarget.setShaderInput("sampler", self.antialias._neighborBuffer.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.antialias._blendBuffer.getColorTexture())
@@ -88,6 +91,7 @@ class RenderingPipeline(DebugObject):
 
         # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
         self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
+        self.lastPosImage =  OnscreenImage(image = self.lightingComputeCombinedTex, pos = (base.getAspectRatio() - 0.35, 0, -0.05), scale=(0.25,0,0.25))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (0,0,0), scale=(0.8,1,0.8))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightPerTileStorage, pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
 
@@ -100,6 +104,10 @@ class RenderingPipeline(DebugObject):
         self.combiner.setShaderInput("currentComputation", self.lightingComputeContainer.getColorTexture())
         self.combiner.setShaderInput("lastFrame", self.lightingComputeCombinedTex)
         self.combiner.setShaderInput("positionBuffer", self.deferredTarget.getColorTexture())
+        self.combiner.setShaderInput("velocityBuffer", self.deferredTarget.getAuxTexture(1))
+        self.combiner.setShaderInput("lastPosition", self.lastPositionBuffer)
+
+
         self._setCombinerShader()
 
     def _setupAntialiasing(self):
@@ -202,7 +210,7 @@ class RenderingPipeline(DebugObject):
 
         self.lightingComputeContainer.setShaderInput("shadowAtlas", self.lightManager.getAtlasTex())
         self.lightingComputeContainer.setShaderInput("destination", self.lightingComputeCombinedTex)
-        self.lightingComputeContainer.setShaderInput("sampleTex", loader.loadTexture("Data/Antialiasing/Unigine01.png"))
+        # self.lightingComputeContainer.setShaderInput("sampleTex", loader.loadTexture("Data/Antialiasing/Unigine01.png"))
 
 
     def _loadFallbackCubemap(self):
@@ -237,8 +245,12 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeCombinedTex.setup2dTexture(base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
         self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
         self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
-        self.lightingComputeCombinedTex.setWrapU(Texture.WMMirror)
-        self.lightingComputeCombinedTex.setWrapV(Texture.WMMirror)
+
+        self.lastPositionBuffer = Texture("Last-Position-Buffer")
+        self.lastPositionBuffer.setup2dTexture(base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
+        self.lastPositionBuffer.setMinfilter(Texture.FTNearest)
+        self.lastPositionBuffer.setMagfilter(Texture.FTNearest)
+
 
     def _makeLightingComputeShader(self, sizeX, sizeY):
         
@@ -298,7 +310,7 @@ class RenderingPipeline(DebugObject):
         cameraBounds.xform(self.camera.getMat(render))
         return cameraBounds
 
-    def _update(self, task):
+    def _update(self, task=None):
 
         self.temporalProjXOffs += 1
         self.temporalProjXOffs = self.temporalProjXOffs % self.temporalProjFactor
@@ -311,11 +323,15 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
         self.lightingComputeContainer.setShaderInput("temporalProjXOffs", LVecBase2i(self.temporalProjXOffs))
         self.combiner.setShaderInput("lastMVP", self.lastMVP)
+        render.setShaderInput("lastMVP", self.lastMVP)
         self.combiner.setShaderInput("temporalProjXOffs", LVecBase2i(self.temporalProjXOffs))
         self._computeMVP()
         self.combiner.setShaderInput("currentMVP", self.lastMVP)
 
-        return task.cont
+        self.combiner.setShaderInput("cameraPosition", base.cam.getPos(render))
+
+        if task is not None:
+            return task.cont
 
     def _computeMVP(self):
         projMat = Mat4.convertMat(

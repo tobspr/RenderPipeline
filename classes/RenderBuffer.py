@@ -114,10 +114,21 @@ class RenderBuffer(DebugObject):
             handle.setMagfilter(Texture.FTLinear)
 
             # No longer needed?
-            if is16bit:
-                handle.setComponentType(Texture.TFloat)
-                handle.setFormat(Texture.FRgba16)
-
+            if target == RenderTargetType.Color:
+                if is16bit:    
+                    handle.setComponentType(Texture.TFloat)
+                
+                if self._colorBits == 16:
+                    handle.setFormat(Texture.FRgba16)
+                elif self._colorBits == 32:
+                    handle.setFormat(Texture.FRgba32)
+            else:
+                if is16bit:
+                    handle.setComponentType(Texture.TFloat)
+                if self._auxBits == 16:
+                    handle.setFormat(Texture.FRgba16)
+                elif self._auxBits == 32:
+                    handle.setFormat(Texture.FRgba32)
 
 
             if self._layers > 1:
@@ -129,9 +140,6 @@ class RenderBuffer(DebugObject):
             self.debug("Setup depth-layer count:",self._layers)
             self.getTarget(RenderTargetType.Depth).setup2dTextureArray(self._layers)
 
-
-        if self._colorBits == 32:
-            self.getTarget(RenderTargetType.Color).setFormat(Texture.FRgba32)
 
         # Create buffer descriptors
         windowProps = WindowProperties.size(self._width, self._height)
