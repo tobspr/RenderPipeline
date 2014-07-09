@@ -1,6 +1,6 @@
 
 import math
-from panda3d.core import TransparencyAttrib, Texture, Vec2, ComputeNode, NodePath
+from panda3d.core import TransparencyAttrib, Texture, Vec2, NodePath
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight, LVecBase2i
 
 from direct.gui.OnscreenImage import OnscreenImage
@@ -27,7 +27,6 @@ class RenderingPipeline(DebugObject):
         self.cullBounds = None
         self.patchSize = Vec2(32, 32)
 
-        self.useComputeShader = False
         self.temporalProjXOffs = 0
         self.temporalProjFactor = 2
 
@@ -36,17 +35,11 @@ class RenderingPipeline(DebugObject):
 
         self._setup()
 
-
-
     def _setup(self):
         self.debug("Setting up render pipeline")
-        self.debug("Use compute shaders =",self.useComputeShader)
-
         # First, we need no transparency
         render.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
-
-        
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
@@ -54,33 +47,32 @@ class RenderingPipeline(DebugObject):
         # Setup compute shader for lighting
         self._createLightingPipeline()
 
-
         # Setup combiner
         self._createCombiner()
-
-
 
         self.deferredTarget.setShader(BetterShader.load(
             "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
         self._setupAntialiasing()
 
-        self.antialias.getFirstBuffer().setShaderInput("lastFrame", self.lightingComputeCombinedTex)
-        self.antialias.getFirstBuffer().setShaderInput("lastPosition", self.lastPositionBuffer)
-        self.antialias.getFirstBuffer().setShaderInput("currentPosition", self.deferredTarget.getColorTexture())
+        self._createFinalPass()
 
-        if self.useComputeShader:
-            self.deferredTarget.setShaderInput("sampler", self.lightingComputeResult)
-        else:
-            pass
+        self.antialias.getFirstBuffer().setShaderInput(
+            "lastFrame", self.lightingComputeCombinedTex)
+        self.antialias.getFirstBuffer().setShaderInput(
+            "lastPosition", self.lastPositionBuffer)
+        self.antialias.getFirstBuffer().setShaderInput(
+            "currentPosition", self.deferredTarget.getColorTexture())
+
             # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
-        self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
+        # self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
+        self.deferredTarget.setShaderInput(
+            "sampler", self.finalPass.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.combiner.getColorTexture())
 
         # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
         # self.deferredTarget.setShaderInput("sampler", self.antialias._neighborBuffer.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.antialias._blendBuffer.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
-
 
         # add update task
         self._attachUpdateTask()
@@ -90,23 +82,27 @@ class RenderingPipeline(DebugObject):
         self.lastLastMVP = self.lastMVP
 
         # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
-        self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
-        self.lastPosImage =  OnscreenImage(image = self.lightingComputeCombinedTex, pos = (base.getAspectRatio() - 0.35, 0, -0.05), scale=(0.25,0,0.25))
+        self.atlasDisplayImage = OnscreenImage(image=self.lightManager.getAtlasTex(), pos=(
+            base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25, 0, 0.25))
+        self.lastPosImage = OnscreenImage(image=self.lightingComputeCombinedTex, pos=(
+            base.getAspectRatio() - 0.35, 0, -0.05), scale=(0.25, 0, 0.25))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (0,0,0), scale=(0.8,1,0.8))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightPerTileStorage, pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
-
 
     def _createCombiner(self):
         self.combiner = RenderTarget("Combine-Temporal")
         self.combiner.setColorBits(8)
         self.combiner.addRenderTexture(RenderTargetType.Color)
         self.combiner.prepareOffscreenBuffer()
-        self.combiner.setShaderInput("currentComputation", self.lightingComputeContainer.getColorTexture())
-        self.combiner.setShaderInput("lastFrame", self.lightingComputeCombinedTex)
-        self.combiner.setShaderInput("positionBuffer", self.deferredTarget.getColorTexture())
-        self.combiner.setShaderInput("velocityBuffer", self.deferredTarget.getAuxTexture(1))
+        self.combiner.setShaderInput(
+            "currentComputation", self.lightingComputeContainer.getColorTexture())
+        self.combiner.setShaderInput(
+            "lastFrame", self.lightingComputeCombinedTex)
+        self.combiner.setShaderInput(
+            "positionBuffer", self.deferredTarget.getColorTexture())
+        self.combiner.setShaderInput(
+            "velocityBuffer", self.deferredTarget.getAuxTexture(1))
         self.combiner.setShaderInput("lastPosition", self.lastPositionBuffer)
-
 
         self._setCombinerShader()
 
@@ -118,7 +114,6 @@ class RenderingPipeline(DebugObject):
         self.antialias.setColorTexture(self.combiner.getColorTexture())
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setup()
-
 
     # Creates all the render targets
     def _makeDeferredTargets(self):
@@ -133,6 +128,22 @@ class RenderingPipeline(DebugObject):
         self.deferredTarget.setDepthBits(32)
         # self.deferredTarget.setSize(400, 240) # check for overdraw
         self.deferredTarget.prepareSceneRender()
+
+    def _createFinalPass(self):
+        self.debug("Creating final pass")
+        self.finalPass = RenderTarget("FinalPass")
+        self.finalPass.addRenderTexture(RenderTargetType.Color)
+        self.finalPass.prepareOffscreenBuffer()
+
+
+        colorTex = self.antialias.getResultTexture()
+        # Set wrap for motion blur
+        colorTex.setWrapU(Texture.WMMirror)
+        colorTex.setWrapV(Texture.WMMirror)
+        self.finalPass.setShaderInput("colorTex", colorTex)
+        self.finalPass.setShaderInput("velocityTex", self.deferredTarget.getAuxTexture(1))
+        self.finalPass.setShaderInput("depthTex", self.deferredTarget.getDepthTexture())
+        self._setFinalPassShader()
 
     # Creates the storage to store the list of visible lights per tile
     def _makeLightPerTileStorage(self):
@@ -169,11 +180,7 @@ class RenderingPipeline(DebugObject):
         self._makeLightBoundsComputationBuffer(sizeX, sizeY)
 
         # Create a buffer which applies the lighting
-        if self.useComputeShader:
-            self._makeLightingComputeShader( sizeX, sizeY )
-
-        else:
-            self._makeLightingComputeBuffer()
+        self._makeLightingComputeBuffer()
 
         # Register for light manager
         self.lightManager.setLightingComputator(self.lightingComputeContainer)
@@ -182,14 +189,14 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setShaderInput(
             "lightsPerTile", self.lightPerTileStorage)
 
-        self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
+        self.lightingComputeContainer.setShaderInput(
+            "cameraPosition", base.cam.getPos(render))
 
         # Ensure the images have the correct filter mode
-        if not self.useComputeShader:
-            for bmode in [RenderTargetType.Color]:
-                tex = self.lightBoundsComputeBuff.getTexture(bmode)
-                tex.setMinfilter(Texture.FTNearest)
-                tex.setMagfilter(Texture.FTNearest)
+        for bmode in [RenderTargetType.Color]:
+            tex = self.lightBoundsComputeBuff.getTexture(bmode)
+            tex.setMinfilter(Texture.FTNearest)
+            tex.setMagfilter(Texture.FTNearest)
 
         self._loadFallbackCubemap()
 
@@ -208,10 +215,11 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setShaderInput(
             "data2", self.deferredTarget.getAuxTexture(1))
 
-        self.lightingComputeContainer.setShaderInput("shadowAtlas", self.lightManager.getAtlasTex())
-        self.lightingComputeContainer.setShaderInput("destination", self.lightingComputeCombinedTex)
+        self.lightingComputeContainer.setShaderInput(
+            "shadowAtlas", self.lightManager.getAtlasTex())
+        self.lightingComputeContainer.setShaderInput(
+            "destination", self.lightingComputeCombinedTex)
         # self.lightingComputeContainer.setShaderInput("sampleTex", loader.loadTexture("Data/Antialiasing/Unigine01.png"))
-
 
     def _loadFallbackCubemap(self):
         cubemap = loader.loadCubeMap("Cubemap/#.png")
@@ -236,47 +244,28 @@ class RenderingPipeline(DebugObject):
 
     def _makeLightingComputeBuffer(self):
         self.lightingComputeContainer = RenderTarget("ComputeLighting")
-        self.lightingComputeContainer.setSize(base.win.getXSize() / self.temporalProjFactor,  base.win.getYSize())
+        self.lightingComputeContainer.setSize(
+            base.win.getXSize() / self.temporalProjFactor,  base.win.getYSize())
         self.lightingComputeContainer.addRenderTexture(RenderTargetType.Color)
         self.lightingComputeContainer.setColorBits(16)
         self.lightingComputeContainer.prepareOffscreenBuffer()
 
         self.lightingComputeCombinedTex = Texture("Lighting-Compute-Combined")
-        self.lightingComputeCombinedTex.setup2dTexture(base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
+        self.lightingComputeCombinedTex.setup2dTexture(
+            base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
         self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
         self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
 
         self.lastPositionBuffer = Texture("Last-Position-Buffer")
-        self.lastPositionBuffer.setup2dTexture(base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
+        self.lastPositionBuffer.setup2dTexture(
+            base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
         self.lastPositionBuffer.setMinfilter(Texture.FTNearest)
         self.lastPositionBuffer.setMagfilter(Texture.FTNearest)
 
-
-    def _makeLightingComputeShader(self, sizeX, sizeY):
-        
-        actualX = int(sizeX * self.patchSize.x)
-        actualY = int(sizeY * self.patchSize.y)
-
-        self.lightingComputeResult = Texture("Lighting Compute Result")
-        self.lightingComputeResult.setup2dTexture(actualX, actualY, Texture.TFloat, Texture.FRgba16)
-
-        self.lightingComputeNode = ComputeNode("LightingCompute")
-        self.lightingComputeNode.addDispatch(sizeX, sizeY, 1)
-        self.lightingComputeNP = render.attachNewNode(self.lightingComputeNode)
-        self.lightingComputeNP.setBin("unsorted", 20)
-        self.lightingComputeNP.setShaderInput("destination", self.lightingComputeResult)
-
-        self.lightingComputeContainer = self.lightingComputeNP
-
-
     def _setLightingShader(self):
 
-        if self.useComputeShader:
-            lightShader = BetterShader.loadCompute("Shader/ApplyLighting.compute")
-
-        else:
-            lightShader = BetterShader.load(
-                "Shader/DefaultPostProcess.vertex", "Shader/ApplyLighting.fragment")
+        lightShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex", "Shader/ApplyLighting.fragment")
         self.lightingComputeContainer.setShader(lightShader)
 
     def _setCombinerShader(self):
@@ -289,6 +278,11 @@ class RenderingPipeline(DebugObject):
             "Shader/DefaultPostProcess.vertex", "Shader/PrecomputeLights.fragment")
         self.lightBoundsComputeBuff.setShader(pcShader)
 
+    def _setFinalPassShader(self):
+        fShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex", "Shader/Final.fragment")
+        self.finalPass.setShader(fShader)  
+
     def _getSize(self):
         return Vec2(
             int(self.showbase.win.getXSize()),
@@ -299,10 +293,12 @@ class RenderingPipeline(DebugObject):
         self._setPositionComputationShader()
         self._setCombinerShader()
         self._setLightingShader()
+        self._setFinalPassShader()
         self.antialias.reloadShader()
 
     def _attachUpdateTask(self):
-        self.showbase.addTask(self._update, "UpdateRenderingPipeline",sort=-10000)
+        self.showbase.addTask(
+            self._update, "UpdateRenderingPipeline", sort=-10000)
 
     def _computeCameraBounds(self):
         # compute camera bounds in render space
@@ -320,11 +316,14 @@ class RenderingPipeline(DebugObject):
         self.lightManager.setCullBounds(self.cullBounds)
         self.lightManager.update()
 
-        self.lightingComputeContainer.setShaderInput("cameraPosition", base.cam.getPos(render))
-        self.lightingComputeContainer.setShaderInput("temporalProjXOffs", LVecBase2i(self.temporalProjXOffs))
+        self.lightingComputeContainer.setShaderInput(
+            "cameraPosition", base.cam.getPos(render))
+        self.lightingComputeContainer.setShaderInput(
+            "temporalProjXOffs", LVecBase2i(self.temporalProjXOffs))
         self.combiner.setShaderInput("lastMVP", self.lastMVP)
         render.setShaderInput("lastMVP", self.lastMVP)
-        self.combiner.setShaderInput("temporalProjXOffs", LVecBase2i(self.temporalProjXOffs))
+        self.combiner.setShaderInput(
+            "temporalProjXOffs", LVecBase2i(self.temporalProjXOffs))
         self._computeMVP()
         self.combiner.setShaderInput("currentMVP", self.lastMVP)
 

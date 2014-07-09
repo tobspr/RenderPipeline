@@ -76,3 +76,6 @@ const float sqrt_of_2 = 1.4142135623;
 #define MAX_POINT_LIGHTS 8
 #define MAX_SHADOW_POINT_LIGHTS 16
 
+
+
+#define MOTION_BLUR_SAMPLES 16
