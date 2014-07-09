@@ -1,3 +1,4 @@
+#version 130
 
 
 #include "Includes/Configuration.include"
@@ -12,14 +13,17 @@ uniform sampler2D depthTex;
 void main() {
 
 
-    vec2 pixelVelocity = texture(velocityTex, texcoord).xy / 255.0;
+
+
+    const float motionBlurFactor = 2.0;
+    vec2 pixelVelocity = texture(velocityTex, texcoord).xy / 255.0 * motionBlurFactor;
 
     float pixelZ = texture(depthTex, texcoord);
     float pixelLinearZ = getLinearZFromZ(pixelZ);
+    vec2 screenSize = vec2(textureSize(colorTex, 0)); 
     // pixelVelocity = vec2(0.01,0.005)*0.25;
 
     float dofFactor = 0.0;
-
     dofFactor = (pixelLinearZ-50.0) / ndcFar * 100.0;
 
        
@@ -27,18 +31,18 @@ void main() {
 
     // Motion blur
     vec3 motionResult = vec3(0);
-    
+    float speed = length(pixelVelocity * screenSize);
     const int nSamples = MOTION_BLUR_SAMPLES;
-    const float motionBlurFactor = 4.0;
-
-    for (int i = 1; i < MOTION_BLUR_SAMPLES; i++) {
+    for (int i = 1; i < nSamples; i++) {
         vec2 offset = pixelVelocity * motionBlurFactor * (float(i) / float(nSamples - 1) - 0.5);
         motionResult += texture(colorTex, texcoord + offset).rgb;
     }
-    motionResult /= MOTION_BLUR_SAMPLES-1;
-
+    motionResult /= nSamples-1;
 
     result = vec3(motionResult);
+
+
+    // result = vec3(texture(colorTex, texcoord).rgb);
     // result = vec3(dofFactor);
 
 

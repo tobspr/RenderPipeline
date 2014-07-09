@@ -34,6 +34,7 @@ class Main(ShowBase, DebugObject):
         ShowBase.__init__(self)
 
         self.sceneSource = "Scene/Scene4.egg"
+        # self.sceneSource = "Scene.ignore/Car.bam"
         self.usePlane = False
 
 

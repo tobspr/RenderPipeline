@@ -50,7 +50,7 @@ pstats-unused-states #f
 
 
 # Threading
-# threading-model T1/T2/T3
+# threading-model App/Cull/Draw
 
 
 # Try for better performance
@@ -122,3 +122,5 @@ gl-debug #f
 text-minfilter linear
 text-page-size 128 128
 
+
+show-frame-rate-meter #t

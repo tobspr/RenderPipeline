@@ -44,7 +44,7 @@ void main() {
 
     float distanceToCamera = distance(cameraPosition, position);
 
-    float reliability = 1.0 - (distance(oldProjectedPos, position) / distanceToCamera * 600.0);
+    float reliability = 1.0 - (distance(oldProjectedPos, position) / distanceToCamera * 200.0);
 
     // reliability = 1.0;
 
