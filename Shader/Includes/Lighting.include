@@ -124,8 +124,6 @@ vec3 applyPointLight(Light light, BaseMaterial material) {
 
 vec3 applyPointLightWithShadow(Light light, BaseMaterial material) {
 
-    // return applyPointLight(light, material);
-
     vec3 rawLighting = applyPointLight(light, material);
 
     // apply point light shadows

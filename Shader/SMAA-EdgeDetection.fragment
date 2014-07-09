@@ -7,6 +7,7 @@ in vec4 offset[3];
 uniform sampler2D colorTex;
 uniform sampler2D depthTex;
 uniform sampler2D currentPosition;
+
 // uniform sampler2D newColorTex;
 
 layout(rgba16f) uniform image2D lastFrame;
@@ -16,6 +17,7 @@ layout(rgba16f) uniform image2D lastPosition;
 #include "Includes/SMAA-Wrapper.include"
 
 void main() {    
+
 
     // Fetch screen size, so we don't have to pass it as a shader input
     ivec2 screenSize = textureSize(colorTex, 0);
@@ -35,14 +37,10 @@ void main() {
     // LUMA
     gl_FragColor = vec4(SMAALumaEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);
 
-    // gl_FragColor = newFrameVal;
-
     // COLOR
     // gl_FragColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);
 
     // DEPTH
     // gl_FragColor = vec4(SMAADepthEdgeDetectionPS(texcoord, offset, depthTex), 0, 1);
-
-    // gl_FragColor = texture(colorTex, texcoord);
 
 }
