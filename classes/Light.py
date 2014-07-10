@@ -31,6 +31,7 @@ class Light(ShaderStructElement):
         self.radius = 0.1
         self.typeName = ""
         self.sourceIndexes = PTAInt.emptyArray(6)
+        self.attached = False
 
         for i in xrange(6):
             self.sourceIndexes[i] = -1
@@ -118,7 +119,7 @@ class Light(ShaderStructElement):
         self._computeLightBounds()
 
         if self.castShadows:
-            self._computeLightMat()
+            self._updateShadowSources()
 
         if self.debugEnabled:
             self._updateDebugNode()
@@ -154,9 +155,6 @@ class Light(ShaderStructElement):
         self.shadowSources.append(source)
         self.queueShadowUpdate()
 
-    # Child classes should implement this
-    def _computeLightMat(self):
-        raise NotImplementedError()
 
     # Child classes should implement this
     def _computeLightBounds(self):

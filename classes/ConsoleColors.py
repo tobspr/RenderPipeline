@@ -87,12 +87,14 @@ if sys.platform == "win32" or sys.platform == "win64":
         SetConsoleTextAttribute(stdout_handle, color)
 
     def printRedConsoleText(text):
+        """ Prints out red text on the console """
         revert = get_text_attr()
         set_text_attr(FOREGROUND_RED | BACKGROUND_BLACK | FOREGROUND_INTENSITY)
         sys.stdout.write(text)
         set_text_attr(revert)
 
     def printYellowConsoleText(text):
+        """ Prints out yellow text on the console """
         revert = get_text_attr()
         set_text_attr(
             FOREGROUND_YELLOW | BACKGROUND_BLACK | FOREGROUND_INTENSITY)
@@ -103,7 +105,9 @@ else:
 
     # Other operating systems (not supported yet)
     def printRedConsoleText(text):
+        """ Prints out red text on the console """
         print text,
 
     def printYellowConsoleText(text):
+        """ Prints out yellow text on the console """
         print text,

@@ -12,7 +12,7 @@ from RenderTarget import RenderTarget
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 from BetterShader import BetterShader
-from Antialiasing import Antialiasing
+from Antialiasing import AntialiasingTechniqueSMAA
 from PipelineSettingsManager import PipelineSettingsManager
 
 # Render Pipeline
@@ -39,6 +39,7 @@ class RenderingPipeline(DebugObject):
         self.cullBounds = None
         self.temporalProjXOffs = 0
         self.temporalProjFactor = 2
+        self.antialiasingTechnique = "SMAA"
         self.lightManager = LightManager()
         self.patchSize = Vec2(
             self.settings['computePatchSizeX'], self.settings['computePatchSizeY'])
@@ -116,7 +117,12 @@ class RenderingPipeline(DebugObject):
 
     def _setupAntialiasing(self):
         self.debug("Creating antialiasing handler ..")
-        self.antialias = Antialiasing()
+
+        if self.antialiasingTechnique == "SMAA":
+            self.antialias = AntialiasingTechniqueSMAA()
+        else:
+            self.error("Unkown antialiasing technique, using SMAA:", self.antialiasingTechniquel)
+            self.antialias = AntialiasingTechniqueSMAA()
 
         # self.antialias.setColorTexture(self.lightingComputeContainer.getColorTexture())
         self.antialias.setColorTexture(self.combiner.getColorTexture())

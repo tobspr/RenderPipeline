@@ -11,12 +11,16 @@ class DirectionalLight(Light, DebugObject):
     """ This light type simulates sunlight, or any other very
     big light source. When shadows are enabled, PSSM is used.
     A directional light has no position or radius, only a direction. 
-    Therefore, setRadius and setPos have no effect. """
+    Therefore, setRadius and setPos have no effect. 
+
+    DirectionalLight do not support debug nodes (yet). Also PSSM
+    is not implemented (yet).
+
+    """
 
     def __init__(self):
         """ Constructs a new directional light. You have to set a
         direction for this light to work properly"""
-
         Light.__init__(self)
         DebugObject.__init__(self, "DirectionalLight")
 
@@ -28,7 +32,6 @@ class DirectionalLight(Light, DebugObject):
 
     def _getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
-
         return LightType.Directional
 
     def _computeLightBounds(self):
@@ -36,16 +39,12 @@ class DirectionalLight(Light, DebugObject):
         don't have to recompute our lighting bounds every time the application 
         changes something """
 
-    # directional light has no radius
     def setRadius(self, x):
         """ This makes no sense, as a directional light has no radius """
-
         raise NoSenseException("DirectionalLight has no radius")
 
-    # directional light has no position
     def setPos(self, x):
         """ This makes no sense, as a directional light has no position """
-
         raise NoSenseException("DirectionalLight has no position")
 
     def _computeAdditionalData(self):

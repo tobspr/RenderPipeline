@@ -60,7 +60,7 @@ void main() {
     //     // finalValue = lastFrameValue.rgb;
     // }
 
-    // result.xyz = vec3(finalValue);
+    // result.xyz = vec3(d);
 
     result = mix(lastComputedValue, oldProjectedColor, saturate(reliability));
 

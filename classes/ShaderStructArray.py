@@ -40,10 +40,8 @@ class ShaderStructElement:
         """ This method should be called by the class instance itself
         whenever it modifyed an exposed value """
 
-        # print "onPropertyChanged"
         for structArray in self.referencedLists:
             structArray.objectChanged(self)
-            # print "\t", structArray
 
     def addListReference(self, structArray):
         """ A struct array calls this when this object is contained
@@ -51,7 +49,6 @@ class ShaderStructElement:
 
         if structArray not in self.referencedLists:
             self.referencedLists.append(structArray)
-            # print "add: ", structArray
 
     def removeListReference(self, structArray):
         """ A struct array calls this when this object got deleted from
@@ -59,8 +56,6 @@ class ShaderStructElement:
 
         if structArray in self.referencedLists:
             self.referencedLists.remove(structArray)
-            # print "remove: ", structArray
-
 
 class ShaderStructArray(DebugObject):
 

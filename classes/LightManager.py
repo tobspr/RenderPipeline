@@ -284,6 +284,7 @@ class LightManager(DebugObject):
     # Adds a light to the list of rendered lights
     def addLight(self, light):
         self.lights.append(light)
+        light.attached = True
 
         sources = light.getShadowSources()
         for index, source in enumerate(sources):

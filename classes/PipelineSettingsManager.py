@@ -10,13 +10,11 @@ class PipelineSettingsManager(SettingsManager):
     def __init__(self):
         """ Constructs a new PipelineSettingsManager. Remember to call
         loadFromFile to load actual settings instead of the defaults. """
-        
         SettingsManager.__init__(self, "PipelineSettings")
 
     def _addDefaultSettings(self):
         """ Internal method which populates the settings array with defaults
         and the internal type of settings (like int, bool, ...) """
-
         # [Lighting]
         self._addSetting("computePatchSizeX", int, 32)
         self._addSetting("computePatchSizeY", int, 32)
