@@ -1,94 +1,69 @@
 
 from Light import Light
 from DebugObject import DebugObject
-
-from panda3d.core import NodePath, Vec4, Vec3, OmniBoundingVolume, Point3
+from panda3d.core import OmniBoundingVolume
 from LightType import LightType
-from ShadowSource import ShadowSource
-
-import math
+from NoSenseException import NoSenseException
 
 
 class DirectionalLight(Light, DebugObject):
 
+    """ This light type simulates sunlight, or any other very
+    big light source. When shadows are enabled, PSSM is used.
+    A directional light has no position or radius, only a direction. 
+    Therefore, setRadius and setPos have no effect. """
+
     def __init__(self):
+        """ Constructs a new directional light. You have to set a
+        direction for this light to work properly"""
+
         Light.__init__(self)
         DebugObject.__init__(self, "DirectionalLight")
 
-        self._spacing = 0.6
-        self.radius = 99999999999.0
-        self.position = Vec3(0)
+        # A directional light is always visible
         self.bounds = OmniBoundingVolume()
 
-
     def _computeLightMat(self):
-        pass
-
+        """ Todo """
 
     def _getLightType(self):
+        """ Internal method to fetch the type of this light, used by Light """
+
         return LightType.Directional
 
     def _computeLightBounds(self):
-        pass
+        """ This does nothing, we only have a OmniBoundingVolume() and therefore
+        don't have to recompute our lighting bounds every time the application 
+        changes something """
 
     # directional light has no radius
     def setRadius(self, x):
-        pass
+        """ This makes no sense, as a directional light has no radius """
+
+        raise NoSenseException("DirectionalLight has no radius")
 
     # directional light has no position
     def setPos(self, x):
-        pass
+        """ This makes no sense, as a directional light has no position """
+
+        raise NoSenseException("DirectionalLight has no position")
 
     def _computeAdditionalData(self):
-        pass
+        """ The directional light has no additional data (yet) to pass to the
+        shaders """
 
     def _updateDebugNode(self):
-        # self.debug("updating debug node")
-        pass
-        # mainNode = NodePath("DebugNodeInner")
-        # mainNode.setPos(self.position)
-
-        # inner = loader.loadModel("Assets/Visualisation/Lamp")
-        # inner.setPos(-0.5, -0.5, 0.0)
-        # inner.setScale(0.5)
-        # inner.setColorScale(Vec4(1,1,0,1))
-        # inner.reparentTo(mainNode)
-
-        # lineNode = mainNode.attachNewNode("lines")
-
-        # # Outer circles
-        # points1 = []
-        # points2 = []
-        # points3 = []
-        # for i in xrange(self.visualizationNumSteps + 1):
-        #     angle = float(i) / float(self.visualizationNumSteps) * math.pi * 2.0
-        #     points1.append(Vec3(0, math.sin(angle), math.cos(angle)))
-        #     points2.append(Vec3(math.sin(angle), math.cos(angle), 0))
-        #     points3.append(Vec3(math.sin(angle), 0, math.cos(angle)))
-
-        # self._createDebugLine(points1, False).reparentTo(lineNode)
-        # self._createDebugLine(points2, False).reparentTo(lineNode)
-        # self._createDebugLine(points3, False).reparentTo(lineNode)
-
-        # lineNode.setScale(self.radius)
-        # mainNode.setHpr(self.rotation)
-
-        # mainNode.flattenStrong()
-
-        # self.debugNode.node().removeAllChildren()
-        # mainNode.reparentTo(self.debugNode)
-
+        """ Debug nodes are not supported by directional lights (yet), so this
+        does nothing """
 
     def _initShadowSources(self):
-        pass
-        # for i in xrange(2):
-        #     source = ShadowSource()
-        #     source.setupPerspectiveLens( self._spacing, self.radius + self._spacing, (90,90) )
-        #     source.setResolution(1024)
-        #     self._addShadowSource(source)
+        """ Shadows aren't supported for directional lights (yet), so this does
+        nothing """
 
     def _updateShadowSources(self):
-        pass
+        """ Shadows aren't supported for directional lights (yet), so this does
+        nothing """
 
     def __repr__(self):
-        return "DirectionalLight[pos="+str(self.position)+", radius="+str(self.radius)+",dir="+str(self.direction) + "]"
+        """ Generates a representative string for this object """
+        return "DirectionalLight[pos=" + str(self.position) + ", radius=" + str(self.radius) + ",dir=" + str(self.direction) + "]"

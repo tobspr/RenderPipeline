@@ -1,49 +1,55 @@
-    
 
-# When writing output to file, ensure it exists:
-# with open("log.txt", "w") as myfile:
-#     pass
-
-
-
-# Provides simple functions for debugging
-# Most classes inherit from this class
 class DebugObject:
 
-    # Inits the object with a given name
+    """ Provides the functions debug, warn, error for classes
+    which inherit from this object, including the name of the
+    class when printing out the message. Most classes inherit
+    from this class. """
+
     def __init__(self, name):
+        """ Initiates the DebugObject with a given name. The
+        name should equal to the classname, or at least
+        representative """
+
         self._debug_name = str(name)
         self.muted = False
 
     def mute(self):
+        """ Mutes this object. This prevents any further output """
+
         self.muted = True
 
-    # Debug output, can be disabled later
+    def unmute(self):
+        """ Unmutes this object. Undoes a mute(), and lets this
+        Object instance continue to write debug output """
+
+        self.muted = False
+
     def debug(self, *args):
-        if self.muted: return
-        st = self._debug_name + ": "+  ' '.join([str(i) for i in args])
-        self._writeDebugFile(st)
-        print st
+        """ Outputs a debug message, something that is not necessarry
+        but provides useful information for the developer """
 
-    # Output some warning, which can be ignored
+        if self.muted:
+            return
+        print self._debug_name + ": " + ' '.join([str(i) for i in args])
+
     def warn(self, *args):
-        if self.muted: return
-        st = "Warning:" + self._debug_name + ": " + ' '.join([str(i) for i in args])
-        self._writeDebugFile(st)
-        print st
+        """ Outputs a warning message, something that failed or does
+        not work, but does not prevent the program from running """
 
-    # Output some serious error
+        if self.muted:
+            return
+        print "Warning:" + self._debug_name + \
+            ": " + ' '.join([str(i) for i in args])
+
     def error(self, *args):
-        st = "Error:" + self._debug_name + ": " +  ' '.join([str(i) for i in args])
-        self._writeDebugFile(st)
-        print st
+        """ Outputs an error message, something really serious.
+        Hopefully this never get's called! Errors also can't be muted """
 
-    # Internal method to store log to debug file
-    # Currently disabled
-    def _writeDebugFile(self, content):
-        return
-        # with open("log.txt", "a") as myfile:
-            # myfile.write(content + "\n")  
+        print "Error:" + self._debug_name + ": " + \
+            ' '.join([str(i) for i in args])
 
     def __repr__(self):
+        """ Represents this object. Subclasses should properly implement
+        this """
         return self._debug_name + "[]"

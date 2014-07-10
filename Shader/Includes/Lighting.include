@@ -137,7 +137,7 @@ vec3 applyPointLightWithShadow(Light light, BaseMaterial material) {
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
     float resolutionFactor = SHADOW_MAP_ATLAS_SIZE / float(currentSource.resolution);
-    float sampleFactor = 1.5 / SHADOW_MAP_ATLAS_SIZE;
+    float sampleFactor = 1.2 / SHADOW_MAP_ATLAS_SIZE;
 
     vec4 projected = currentSource.mvp * vec4(material.position, 1);
     projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);

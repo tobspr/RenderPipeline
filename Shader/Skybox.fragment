@@ -16,7 +16,7 @@ void main() {
     bm.metallic = 0.0;
     bm.roughness = 0.0;
     bm.specular = 0.0;
-    bm.baseColor = vec3(0,0,0);
+    bm.baseColor = mix(vec3(0.6,0.8,1.0), vec3(0.2, 0.55,1.0), (positionWorldSpace.z / 100.0) + 0.5);
 
     bm.position = positionWorldSpace;
     bm.normal   = normalWorldSpace;

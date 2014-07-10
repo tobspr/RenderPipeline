@@ -35,7 +35,7 @@ void main() {
     // The last computed value (half resolution only, but up-to-date)
     vec3 lastComputedValue = texelFetch(currentComputation, computationCoord, 0).rgb;
 
-    vec2 velocity = texture(velocityBuffer, texcoord).rg / 255.0;
+    vec2 velocity = -texture(velocityBuffer, texcoord).rg / 255.0;
 
     vec2 lastFrameTexcoord = texcoord - velocity;
 
@@ -46,6 +46,8 @@ void main() {
 
     float reliability = 1.0 - (distance(oldProjectedPos, position) / distanceToCamera * 200.0);
 
+
+    // reliability *= 1.0 - saturate(distance(lastFrameTexcoord, texcoord) * 32.0);
     // reliability = 1.0;
 
     // Fetch the up-to-date position from the buffer

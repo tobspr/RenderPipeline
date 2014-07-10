@@ -15,7 +15,7 @@ void main() {
 
 
 
-    const float motionBlurFactor = 2.0;
+    const float motionBlurFactor = 2.5;
     vec2 pixelVelocity = texture(velocityTex, texcoord).xy / 255.0 * motionBlurFactor;
 
     float pixelZ = texture(depthTex, texcoord);
@@ -42,7 +42,7 @@ void main() {
     result = vec3(motionResult);
 
 
-    // result = vec3(texture(colorTex, texcoord).rgb);
+    result = vec3(texture(colorTex, texcoord).rgb);
     // result = vec3(dofFactor);
 
 

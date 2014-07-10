@@ -97,7 +97,6 @@ sync-video #f
 # Better performance for vertices??
 # display-lists #t
 
-
 # Faster animations??
 # matrix-palette #t
 # display-list-animation #t

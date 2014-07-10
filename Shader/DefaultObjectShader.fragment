@@ -8,32 +8,19 @@ in vec3 positionWorldSpace;
 in vec2 texcoord;
 in vec4 diffuseColor;
 
-
-uniform sampler2D p3d_Texture0;
-uniform sampler2D p3d_Texture1;
-uniform sampler2D p3d_Texture2;
-
-// uniform float specular;
-// uniform float metallic;
-// uniform float roughness;
-
-
 void main() {
 
-    BaseMaterial bm;
+    BaseMaterial m;
 
-    bm.metallic = 1.0;
-    bm.roughness = 0.3;
-    bm.specular = 0.5;
-    // bm.baseColor = vec3(1.000, 0.766, 0.336);
-    bm.baseColor = vec3(diffuseColor.xyz);
-    // bm.baseColor = vec3(1,1,1);
-
-    bm.position = positionWorldSpace;
-    bm.normal   = normalWorldSpace;
+    m.metallic = 1.0;
+    m.roughness = 0.3;
+    m.specular = 0.5;
+    m.baseColor = vec3(diffuseColor.xyz);
+    m.position = positionWorldSpace;
+    m.normal   = normalWorldSpace;
 
     // Pack material
-    mat4 packedData = packBaseMaterial(bm);
+    mat4 packedData = packBaseMaterial(m);
     gl_FragData[0] = packedData[0];
     gl_FragData[1] = packedData[1];
     gl_FragData[2] = packedData[2];

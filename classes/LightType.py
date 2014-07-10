@@ -1,10 +1,12 @@
 
 
-# No enums :/
 class LightType:
 
-    NoType          = 0
-    Point           = 1
-    Directional     = 2
-    Projector       = 3
-    Area            = 4
+    """ This stores the possible types of light. Python does
+    not support enums (yet), so this is a class. """
+
+    NoType = 0
+    Point = 1
+    Directional = 2
+    Projector = 3
+    Area = 4

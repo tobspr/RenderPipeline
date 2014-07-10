@@ -13,30 +13,40 @@ from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 from BetterShader import BetterShader
 from Antialiasing import Antialiasing
+from PipelineSettingsManager import PipelineSettingsManager
 
-
+# Render Pipeline
 class RenderingPipeline(DebugObject):
 
     def __init__(self, showbase):
         DebugObject.__init__(self, "RenderingPipeline")
         self.showbase = showbase
-        self.lightManager = LightManager()
-        self.size = self._getSize()
-        self.precomputeSize = Vec2(0)
-        self.camera = base.cam
-        self.cullBounds = None
-        self.patchSize = Vec2(32, 32)
+        self.settings = None
 
+    def loadSettings(self, filename):
+        self.settings = PipelineSettingsManager()
+        self.settings.loadFromFile(filename)
+
+    def create(self):
+        self.debug("Setting up render pipeline")
+
+        if self.settings is None:
+            self.error("You have to call loadSettings first!")
+            return
+
+        self.camera = base.cam
+        self.size = self._getSize()
+        self.cullBounds = None
         self.temporalProjXOffs = 0
         self.temporalProjFactor = 2
-
-        self.forwardScene = NodePath("Forward Rendering")
+        self.lightManager = LightManager()
+        self.patchSize = Vec2(
+            self.settings['computePatchSizeX'], self.settings['computePatchSizeY'])
         self.lastMVP = None
 
-        self._setup()
+        self.forwardScene = NodePath("Forward-Rendering")
+        self.transparencyScene = NodePath("Transparency-Rendering")
 
-    def _setup(self):
-        self.debug("Setting up render pipeline")
         # First, we need no transparency
         render.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
@@ -63,8 +73,6 @@ class RenderingPipeline(DebugObject):
         self.antialias.getFirstBuffer().setShaderInput(
             "currentPosition", self.deferredTarget.getColorTexture())
 
-            # self.deferredTarget.setShaderInput("sampler", self.lightingComputeCombinedTex)
-        # self.deferredTarget.setShaderInput("sampler", self.antialias.getResultTexture())
         self.deferredTarget.setShaderInput(
             "sampler", self.finalPass.getColorTexture())
         # self.deferredTarget.setShaderInput("sampler", self.combiner.getColorTexture())
@@ -82,10 +90,10 @@ class RenderingPipeline(DebugObject):
         self.lastLastMVP = self.lastMVP
 
         # DirectFrame(frameColor=(1, 1, 1, 0.2), frameSize=(-0.28, 0.28, -0.27, 0.4), pos=(base.getAspectRatio() - 0.35, 0.0, 0.49))
-        self.atlasDisplayImage = OnscreenImage(image=self.lightManager.getAtlasTex(), pos=(
-            base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25, 0, 0.25))
-        self.lastPosImage = OnscreenImage(image=self.lightingComputeCombinedTex, pos=(
-            base.getAspectRatio() - 0.35, 0, -0.05), scale=(0.25, 0, 0.25))
+        # self.atlasDisplayImage = OnscreenImage(image=self.lightManager.getAtlasTex(), pos=(
+        #     base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25, 0, 0.25))
+        # self.lastPosImage = OnscreenImage(image=self.lightingComputeCombinedTex, pos=(
+        #     base.getAspectRatio() - 0.35, 0, -0.05), scale=(0.25, 0, 0.25))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightManager.getAtlasTex(), pos = (0,0,0), scale=(0.8,1,0.8))
         # self.atlasDisplayImage =  OnscreenImage(image = self.lightPerTileStorage, pos = (base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25,0,0.25))
 
@@ -135,14 +143,15 @@ class RenderingPipeline(DebugObject):
         self.finalPass.addRenderTexture(RenderTargetType.Color)
         self.finalPass.prepareOffscreenBuffer()
 
-
         colorTex = self.antialias.getResultTexture()
         # Set wrap for motion blur
         colorTex.setWrapU(Texture.WMMirror)
         colorTex.setWrapV(Texture.WMMirror)
         self.finalPass.setShaderInput("colorTex", colorTex)
-        self.finalPass.setShaderInput("velocityTex", self.deferredTarget.getAuxTexture(1))
-        self.finalPass.setShaderInput("depthTex", self.deferredTarget.getDepthTexture())
+        self.finalPass.setShaderInput(
+            "velocityTex", self.deferredTarget.getAuxTexture(1))
+        self.finalPass.setShaderInput(
+            "depthTex", self.deferredTarget.getDepthTexture())
         self._setFinalPassShader()
 
     # Creates the storage to store the list of visible lights per tile
@@ -281,7 +290,7 @@ class RenderingPipeline(DebugObject):
     def _setFinalPassShader(self):
         fShader = BetterShader.load(
             "Shader/DefaultPostProcess.vertex", "Shader/Final.fragment")
-        self.finalPass.setShader(fShader)  
+        self.finalPass.setShader(fShader)
 
     def _getSize(self):
         return Vec2(

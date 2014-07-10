@@ -31,7 +31,7 @@ class LightManager(DebugObject):
 
         # When you change this, change also SHADOW_MAP_ATLAS_SIZE in configuration.include,
         # and reduce the default shadow map resolution of point lights
-        self.shadowAtlasSize = 512
+        self.shadowAtlasSize = 8192
         self.maxShadowMaps = 24
 
         # When you change it , change also SHAODOW_GEOMETRY_MAX_VERTICES and
@@ -45,7 +45,7 @@ class LightManager(DebugObject):
             ShadowSource, self.maxShadowUpdatesPerFrame)
         self.allShadowsArray = ShaderStructArray(
             ShadowSource, self.maxShadowMaps)
-         
+
 
         # self.shadowAtlasTex = Texture("ShadowAtlas")
         # self.shadowAtlasTex.setup2dTexture(

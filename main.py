@@ -1,6 +1,9 @@
 
-import math
+import sys
+sys.dont_write_bytecode = True
 
+
+import math
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, TransparencyAttrib, TextNode
 
@@ -29,6 +32,8 @@ class Main(ShowBase, DebugObject):
         self.debug("Loading panda3d configuration from configuration.prc ..")
         loadPrcFile("configuration.prc")
 
+        self.renderPipeline = RenderingPipeline(self)
+        self.renderPipeline.loadSettings("pipeline.ini")
 
         self.debug("Creating showbase ..")
         ShowBase.__init__(self)
@@ -68,9 +73,8 @@ class Main(ShowBase, DebugObject):
         self.camLens.setNearFar(0.1, 10000)
 
         self.debug("Creating rendering pipeline ..")
-
-        # Thats really everything you need! Just one line ..
-        self.renderPipeline = RenderingPipeline(self)
+        self.renderPipeline.create()
+        
 
         # Now let's add some lights
         self.lights = []
@@ -101,8 +105,8 @@ class Main(ShowBase, DebugObject):
 
                 sunLight= PointLight() 
                 sunLight.setRadius(35.0)
-                sunLight.setColor(colors[i])
-                # sunLight.setColor(Vec3(1))
+                # sunLight.setColor(colors[i])
+                sunLight.setColor(Vec3(0.3))
                 sunLight.setPos(pos)
                 sunLight.setCastsShadows(True)
 
