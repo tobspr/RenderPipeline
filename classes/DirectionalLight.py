@@ -23,6 +23,7 @@ class DirectionalLight(Light, DebugObject):
         direction for this light to work properly"""
         Light.__init__(self)
         DebugObject.__init__(self, "DirectionalLight")
+        self.typeName = "DirectionalLight"
 
         # A directional light is always visible
         self.bounds = OmniBoundingVolume()
