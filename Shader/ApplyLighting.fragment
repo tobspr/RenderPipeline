@@ -128,7 +128,7 @@ void main() {
     // result.xyz *= 1.0 - vignett;
     // result.xyz = vec3(vignett);
 
-    // result.xyz = vec3(temporalProjXOffs*0.1);
+    // result.xyz = vec3( abs(material.position.z) *0.02 );
 
     // imageStore(destination, screenCoord, vec4(result.xyz, 1) );
 

@@ -1,4 +1,6 @@
 
+from ConsoleColors import printRedConsoleText, printYellowConsoleText
+
 class DebugObject:
 
     """ Provides the functions debug, warn, error for classes
@@ -39,15 +41,15 @@ class DebugObject:
 
         if self.muted:
             return
-        print "Warning:" + self._debug_name + \
-            ": " + ' '.join([str(i) for i in args])
+        printYellowConsoleText("Warning: " + self._debug_name +
+            ": " + ' '.join([str(i) for i in args]) + "\n")
 
     def error(self, *args):
         """ Outputs an error message, something really serious.
         Hopefully this never get's called! Errors also can't be muted """
 
-        print "Error:" + self._debug_name + ": " + \
-            ' '.join([str(i) for i in args])
+        printRedConsoleText("Error: " + self._debug_name + ": " + \
+            ' '.join([str(i) for i in args])+ "\n")
 
     def __repr__(self):
         """ Represents this object. Subclasses should properly implement

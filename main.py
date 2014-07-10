@@ -17,6 +17,9 @@ from classes.DirectionalLight import DirectionalLight
 from classes.BetterShader import BetterShader
 from classes.DebugObject import DebugObject
 
+from classes.FirstPersonController import FirstPersonCamera
+
+
 # Redirect output?
 # import sys
 # sys.stdout = open('Log/log.txt', 'w')
@@ -62,9 +65,14 @@ class Main(ShowBase, DebugObject):
         # Create movement controller
         self.debug("Init movement controller ..")
         self.mc = MovementController(self)
-        # self.mc.setInitialPosition(Vec3(-45*2, 40*2, 20*2), Vec3(0,0,0))
+        self.mc.setInitialPosition(Vec3(-45*2, 40*2, 20*2), Vec3(0,0,0))
         self.mc.setInitialPosition(Vec3(-60,60,50), Vec3(0,0,0))
         self.mc.setup()
+
+        # First person controler
+        # self.mouseLook = FirstPersonCamera(self, self.camera, self.render)         
+        # self.mouseLook.start()
+
 
         # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
@@ -221,7 +229,7 @@ class Main(ShowBase, DebugObject):
 
     def loadSkybox(self):
         self.skybox = loader.loadModel("Skybox/Skybox")
-        self.skybox.setScale(80)
+        self.skybox.setScale(600)
         self.skybox.reparentTo(render)
 
     def setShaders(self):

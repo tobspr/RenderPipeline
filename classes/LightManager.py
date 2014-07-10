@@ -207,8 +207,6 @@ class LightManager(DebugObject):
             shaderNode.setShaderInput(
                 "count" + lightType, self.numRenderedLights[lightType])
 
-        self._rebindArrays()
-
     # Sets the render target which recieves the shaderInputs necessary to
     # cull the lights and pass the result to the computator
     def setLightingCuller(self, shaderNode):
@@ -223,13 +221,6 @@ class LightManager(DebugObject):
             shaderNode.setShaderInput("array" + lightType, arrayData)
             shaderNode.setShaderInput(
                 "count" + lightType, self.numRenderedLights[lightType])
-
-        self._rebindArrays()
-
-    def _rebindArrays(self):
-        # todo: actually we only have to rebind the new items
-        for index, light in enumerate(self.lights):
-            self.allLightsArray[index] = light
 
     # Returns the shadow map atlas. You can use this for debugging
     def getAtlasTex(self):
@@ -251,7 +242,7 @@ class LightManager(DebugObject):
     # seperate class
     def _findAndReserveShadowAtlasPosition(self, w, h, idx):
         tileW, tileH = w / self.tileSize, h / self.tileSize
-        self.debug("Finding position for map of size (", w, "x", h, "), (", tileW, "x", tileH, ")")
+        # self.debug("Finding position for map of size (", w, "x", h, "), (", tileW, "x", tileH, ")")
         maxIterW = self.tileCount - tileW + 1
         maxIterH = self.tileCount - tileH + 1
 
@@ -296,14 +287,31 @@ class LightManager(DebugObject):
 
         sources = light.getShadowSources()
         for index, source in enumerate(sources):
+
+            # Check for resolution
+            if source.resolution < self.tileSize or source.resolution % self.tileSize != 0:
+                self.warn("The ShadowSource resolution has to be a multiple of the tile size ("+str(self.tileSize) + ")!")
+                self.warn("Adjusting resolution to", self.tileSize)
+                source.resolution = self.tileSize
+
+            if source.resolution  > self.shadowAtlasSize:
+                self.warn("The ShadowSource resolution cannot be bigger than the atlas size (" + str(self.shadowAtlasSize) + ")")
+                self.warn("Adjusting resolution to", self.tileSize)
+                source.resolution = self.tileSize
+
+
             if source not in self.shadowSources:
                 self.shadowSources.append(source)
 
             source.setSourceIndex(self.shadowSources.index(source))
             light.setSourceIndex(index, source.getSourceIndex())
+
+
+        index = self.lights.index(light)
+        self.allLightsArray[index] = light
+
         light.queueUpdate()
         light.queueShadowUpdate()
-        self._rebindArrays()
 
     # Removes a light
     def removeLight(self):
@@ -333,7 +341,7 @@ class LightManager(DebugObject):
             # Update light if required
             if light.needsUpdate():
                 light.performUpdate()
-                self.allLightsArray[index] = light
+                # self.allLightsArray[index] = light
 
             # Check if visible
             if not self.cullBounds.contains(light.getBounds()):

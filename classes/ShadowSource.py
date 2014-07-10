@@ -4,9 +4,9 @@ from panda3d.core import CSYupRight, TransformState, CSZupRight, UnalignedLMatri
 from panda3d.core import Mat4, Vec2
 
 from DebugObject import DebugObject
+from ShaderStructArray import ShaderStructElement
 
-
-class ShadowSource(DebugObject):
+class ShadowSource(DebugObject, ShaderStructElement):
 
     _GlobalShadowIndex = 1000
 
@@ -22,6 +22,7 @@ class ShadowSource(DebugObject):
 
     def __init__(self):
         DebugObject.__init__(self, "ShadowSource")
+        ShaderStructElement.__init__(self)
         self.valid = False
         ShadowSource._GlobalShadowIndex += 1
         self.index = ShadowSource._GlobalShadowIndex

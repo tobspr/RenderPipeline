@@ -5,14 +5,16 @@ from panda3d.core import OmniBoundingVolume
 from panda3d.core import Mat4, PTAInt
 from LightType import LightType
 from DebugObject import DebugObject
+from ShaderStructArray import ShaderStructElement
 
 # Stores general data of a light and has to be seen
 # as an interface.
-class Light:
+class Light(ShaderStructElement):
 
     # Constructor
     def __init__(self):
         DebugObject.__init__(self, "AbstractLight")
+        ShaderStructElement.__init__(self)
         self.debugNode = NodePath("LightDebug")
         self.visualizationNumSteps = 32
         self.dataNeedsUpdate = False
@@ -29,10 +31,10 @@ class Light:
         self.radius = 0.1
         self.typeName = ""
         self.sourceIndexes = PTAInt.emptyArray(6)
+
         for i in xrange(6):
             self.sourceIndexes[i] = -1
 
-        
 
     @classmethod
     def getExposedAttributes(self):
@@ -120,6 +122,8 @@ class Light:
 
         if self.debugEnabled:
             self._updateDebugNode()
+
+        self.onPropertyChanged()
 
     def performShadowUpdate(self):
         self._updateShadowSources()
