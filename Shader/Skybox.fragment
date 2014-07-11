@@ -1,31 +1,24 @@
 #version 440
 
 
-#include "Includes/Material.include"
+#include "Includes/MaterialPacking.include"
 
 in vec3 normalWorldSpace;
 in vec3 positionWorldSpace;
 in vec2 texcoord;
 
-
 void main() {
 
+    // Create a material to store the properties on
+    BaseMaterial m;
 
-    BaseMaterial bm;
+    m.metallic = 0.0;
+    m.roughness = 0.0;
+    m.specular = 0.0;
+    m.baseColor = vec3(0,0,1);
+    m.position = positionWorldSpace;
+    m.normal   = normalWorldSpace;
 
-    bm.metallic = 0.0;
-    bm.roughness = 0.0;
-    bm.specular = 0.0;
-    bm.baseColor = mix(vec3(0.6,0.8,1.0), vec3(0.2, 0.55,1.0), (positionWorldSpace.z / 100.0) + 0.5);
-
-    bm.position = positionWorldSpace;
-    bm.normal   = normalWorldSpace;
-
-
-    // Pack material
-    mat4 packedData = packBaseMaterial(bm);
-    gl_FragData[0] = packedData[0];
-    gl_FragData[1] = packedData[1];
-    gl_FragData[2] = packedData[2];
-
+    // Pack material and output to the render targets
+    renderMaterial(m);
 }

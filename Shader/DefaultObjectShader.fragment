@@ -1,27 +1,29 @@
 #version 440
 
+// This is required for the materials
+#include "Includes/MaterialPacking.include"
 
-#include "Includes/Material.include"
-
+// Values from vertex shader
 in vec3 normalWorldSpace;
 in vec3 positionWorldSpace;
 in vec2 texcoord;
+
+// Diffuse color is simply the material diffuse, passed
+// from the vertex shader.
 in vec4 diffuseColor;
 
 void main() {
 
-    BaseMaterial m;
+    // Create a material to store the properties on
+    Material m;
 
     m.metallic = 1.0;
     m.roughness = 0.3;
     m.specular = 0.5;
-    m.baseColor = vec3(diffuseColor.xyz);
+    m.baseColor = diffuseColor.xyz;
     m.position = positionWorldSpace;
     m.normal   = normalWorldSpace;
 
-    // Pack material
-    mat4 packedData = packBaseMaterial(m);
-    gl_FragData[0] = packedData[0];
-    gl_FragData[1] = packedData[1];
-    gl_FragData[2] = packedData[2];
+    // Pack material and output to the render targets
+    renderMaterial(m);
 }

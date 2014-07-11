@@ -1,0 +1,28 @@
+
+
+#include "Includes/Material.include"
+
+uniform mat4 lastMVP;
+
+layout(location = 0) out vec4 color0;
+layout(location = 1) out vec4 color1;
+layout(location = 2) out vec4 color2;
+
+void renderMaterial(Material m) {
+
+    // Pack values
+    vec2 normal = encodeNormal(m.normal);
+    vec2 color = packColor(m.baseColor);
+
+    // Compute velocity
+    vec4 lastProj = lastMVP * vec4(m.position, 1);
+    vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
+    vec2 fragCoord = gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    lastTexcoord = (lastTexcoord - fragCoord) * 255.0;
+
+    // Output
+    color0 = vec4(m.position.x, m.position.y, m.position.z, m.roughness);
+    color1 = vec4(normal.x,normal.y,color.x,color.y);
+    color2 = vec4(lastTexcoord.x, lastTexcoord.y, m.specular, m.metallic);
+
+}

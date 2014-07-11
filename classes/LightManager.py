@@ -1,7 +1,8 @@
 
 from DebugObject import DebugObject
 from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, PTAMat4, LVecBase2i
-from panda3d.core import RenderState, ColorWriteAttrib, DepthWriteAttrib, PTAInt, PTALVecBase4f, PTAInt
+from panda3d.core import RenderState, ColorWriteAttrib, DepthWriteAttrib, PTAInt
+from panda3d.core import CullFaceAttrib, PTALVecBase4f, PTAInt
 
 from BetterShader import BetterShader
 from RenderTarget import RenderTarget
@@ -13,10 +14,12 @@ from Light import Light
 
 class LightManager(DebugObject):
 
-    def __init__(self):
+    def __init__(self, pipeline):
         DebugObject.__init__(self, "LightManager")
 
         self._initArrays()
+
+        self.pipeline = pipeline
 
         # create arrays to store lights & shadow sources
         self.lights = []
@@ -71,7 +74,7 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.setSize(
             self.shadowAtlasSize, self.shadowAtlasSize)
         # self.shadowComputeTarget.setLayers(self.maxShadowUpdatesPerFrame)
-        self.shadowComputeTarget.addRenderTexture(RenderTargetType.Depth)
+        self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.setDepthBits(32)
         self.shadowComputeTarget.setSource(
             self.shadowComputeCameraNode, base.win)
@@ -98,6 +101,11 @@ class LightManager(DebugObject):
             dr.setDimensions(0, 0, 0, 0)
             self.depthClearer.append(dr)
 
+
+        dTex = self.shadowComputeTarget.getDepthTexture()
+        dTex.setMinfilter(Texture.FTShadow)
+        dTex.setMagfilter(Texture.FTShadow)
+
         self.queuedShadowUpdates = []
 
         # Assign copy shader
@@ -118,6 +126,7 @@ class LightManager(DebugObject):
         self.shadowComputeCamera.setInitialState(RenderState.make(
             ColorWriteAttrib.make(ColorWriteAttrib.C_off),
             DepthWriteAttrib.make(DepthWriteAttrib.M_on),
+            CullFaceAttrib.make(CullFaceAttrib.M_cull_clockwise),
             100))
 
         self.shadowComputeCamera.setTagState("True", initialState.getState())
@@ -142,7 +151,7 @@ class LightManager(DebugObject):
     # / rendered
     def _createDebugTexts(self):
         try:
-            from FastText2 import FastText
+            from FastText import FastText
             self.lightsVisibleDebugText = FastText(pos=Vec2(
                 base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
             self.lightsUpdatedDebugText = FastText(pos=Vec2(
@@ -410,6 +419,8 @@ class LightManager(DebugObject):
                     update.assignAtlasPos(*storePos)
 
                 update.update()
+
+                # self.warn("Queuing",update)
 
                 indexInArray = self.shadowSources.index(update)
                 self.allShadowsArray[indexInArray] = update

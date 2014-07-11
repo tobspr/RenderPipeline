@@ -2,111 +2,30 @@
 #include "Includes/Configuration.include"
 #include "Includes/Packing.include"
 
-// Commonly used structs
+
 struct Material {
-    vec3 diffuse;
-    vec3 position;
-    vec3 normal;
-    vec3 specular;
-    float smoothness;
-    float gloss;
-
-    // Not stored (yet)
-    float transluency;
-
-    // computed from smoothness
-    float roughness;
-};
-
-
-struct BaseMaterial {
     vec3 baseColor;
     float roughness;
     float metallic;
     float specular;
     float transluency;
-    // float ambient;
-
     vec3 position;
     vec3 normal;
 };
 
-// Converts smoothness to roughness
-// Smoothness is more intuitive to specify.
-// But roughness is used for the calculation
-float smoothnessToRoughness(float smoothness) {
-    return saturate( pow(- smoothness * 0.7 + 1.0, 6.0));
-}
 
-// Packs the material for usage in MRT's
-mat4 packMaterial(Material m) {
-    vec2 normal = encodeNormal(m.normal);
-    vec2 color = packColor(m.diffuse);
-    vec2 specular = packColor(m.specular);
-    return mat4(
-            color.x,      color.y,      specular.x,    specular.y,
-            normal.x,     normal.y,     m.transluency,   m.gloss,
-            m.position.x, m.position.y, m.position.z, m.smoothness,
-            0,0,0,0 // Not used
-        );
-}
-
-// Unpacks the material from the MRT's
 Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2) {
     Material m;
-    m.diffuse        = unpackColor(data0.xy);
-    m.position       = data2.xyz;
-    m.specular       = unpackColor(data0.zw);
-    m.normal         = decodeNormal(data1.xy);
-    m.gloss          = data1.w;
-    m.transluency    = data1.z;
-    m.position       = data2.xyz;
-    m.smoothness     = data2.a;
-    m.roughness      = smoothnessToRoughness(m.smoothness);
-    return m;
-}
-
-
-uniform mat4 lastMVP;
-
-
-
-
-mat4 packBaseMaterial(BaseMaterial m) {
-    vec2 normal = encodeNormal(m.normal);
-    vec2 color = packColor(m.baseColor);
-
-    vec4 lastProj = lastMVP * vec4(m.position, 1);
-    vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
-    vec2 fragCoord = gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-    lastTexcoord = (lastTexcoord - fragCoord) * 255.0;
-
-    return mat4(
-        m.position.x, m.position.y, m.position.z, m.roughness,
-        normal.x,normal.y,color.x,color.y,
-        // m.metallic,m.specular,m.transluency,m.baseColor.z,
-        lastTexcoord.x, lastTexcoord.y, m.specular, m.metallic,
-
-        0,0,0,0 // Not available
-    );
-}
-
-
-BaseMaterial unpackBaseMaterial(vec4 data0, vec4 data1, vec4 data2) {
-    BaseMaterial m;
 
     m.position = data0.xyz;
     m.roughness = data0.w;
     m.normal = decodeNormal(data1.xy);
-    // m.baseColor = vec3(data1.zw, data2.w);
     m.baseColor = unpackColor(data1.zw);
     m.metallic = data2.w;
     m.specular = data2.z;
     // m.transluency = data2.z;
 
-
     m.transluency = 0.0;
-
 
     return m;
 }

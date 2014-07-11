@@ -32,10 +32,6 @@ in vec2 texcoord;
 
 uniform int temporalProjXOffs;
 
-uniform sampler2D sampleTex;
-
-// uniform mat4 lastMVP;
-
 
 
 
@@ -51,21 +47,8 @@ void main() {
 
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
-
-
-
-    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x)) + ivec2(0,0); 
-    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x+1, screenSize.y)) - ivec2(temporalProjXOffs,0); 
     ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x + 1 , screenSize.y)) - ivec2(temporalProjXOffs,0); 
-    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x , screenSize.y)) - ivec2(temporalProjXOffs,0); 
-
-
-    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x, screenSize.y)); 
-
-    // ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x)); 
-    // ivec2 precomputeSize = textureSize(lightsPerTile, 0) / ivec2(8);
     ivec2 precomputeSize = imageSize(lightsPerTile) / ivec2(8);
-    // ivec2 precomputeCoord = ivec2(texcoord * precomputeSize) * ivec2(8);
     ivec2 precomputeCoord = ivec2(texcoord * precomputeSize) * ivec2(8);
 
     // Extract material data
@@ -73,13 +56,7 @@ void main() {
     vec4 target1data = texelFetch(data1, screenCoord, 0);
     vec4 target2data = texelFetch(data2, screenCoord, 0);
 
-    BaseMaterial material = unpackBaseMaterial(target0data, target1data, target2data);
-
-
-    // ivec2 lastScreenCoord = ivec2(projectedBack.xy * vec2(screenSize.x, screenSize.y)); 
-
-    // vec4 oldPixelValue = imageLoad(destination, lastScreenCoord).rgba;
-
+    Material material = unpackMaterial(target0data, target1data, target2data);
 
     int countPointLight = imageLoad(lightsPerTile, precomputeCoord + ivec2(0,0)).r;
     int countPointLightShadow = imageLoad(lightsPerTile, precomputeCoord + ivec2(1,0)).r;

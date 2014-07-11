@@ -1,8 +1,9 @@
 
 import math
 from panda3d.core import TransparencyAttrib, Texture, Vec2, NodePath, PTAInt
-from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight, PTAVecBase3f
-from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f
+from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
+from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
+from panda3d.core import PTAVecBase3f
 
 from direct.gui.OnscreenImage import OnscreenImage
 
@@ -17,7 +18,7 @@ from PipelineSettingsManager import PipelineSettingsManager
 
 class RenderingPipeline(DebugObject):
 
-    """ This is the core class, driving all other classes. To use this 
+    """ This is the core class, driving all other classes. To use this
     pipeline, your code has to call *after* the initialization of ShowBase:
 
         renderPipeline = RenderingPipeline()
@@ -83,58 +84,50 @@ class RenderingPipeline(DebugObject):
         """ Creates this pipeline """
 
         self.debug("Setting up render pipeline")
+
         if self.settings is None:
             self.error("You have to call loadSettings first!")
             return
 
-        # Fill default values
         # We use PTA's for shader inputs, because that's faster than
         # using setShaderInput
-        self.camera = base.cam
-        self.size = self._getSize()
-        self.cullBounds = None
         self.temporalProjXOffs = PTAInt.emptyArray(1)
         self.cameraPosition = PTAVecBase3f.emptyArray(1)
         self.motionBlurFactor = PTAFloat.emptyArray(1)
-        self.antialiasingTechnique = "SMAA"
-        self.lightManager = LightManager()
-        self.patchSize = Vec2(
-            self.settings['computePatchSizeX'],
-            self.settings['computePatchSizeY'])
         self.lastMVP = PTALMatrix4f.emptyArray(1)
         self.currentMVP = PTALMatrix4f.emptyArray(1)
 
+        self.camera = base.cam
+        self.size = self._getSize()
+        self.cullBounds = None
+
+        # Create light manager, which handles lighting + shadows
+        self.lightManager = LightManager(self)
+
+        self.patchSize = LVecBase2i(
+            self.settings.computePatchSizeX,
+            self.settings.computePatchSizeY)
+
+        # Create separate scene graphs. The deferred graph is render
         self.forwardScene = NodePath("Forward-Rendering")
         self.transparencyScene = NodePath("Transparency-Rendering")
 
-        # First, we need no transparency
+        # We need no transparency (we store other information in the alpha
+        # channel)
         render.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
 
-        # Setup compute shader for lighting
+        # Setup the buffers for lighting
         self._createLightingPipeline()
 
-        # Setup combiner
+        # Setup combiner for temporal reprojetion
         self._createCombiner()
-
-        self.deferredTarget.setShader(BetterShader.load(
-            "Shader/DefaultPostProcess.vertex", "Shader/TextureDisplay.fragment"))
         self._setupAntialiasing()
+        self._setupFinalPass()
 
-        self._createFinalPass()
-
-        self.antialias.getFirstBuffer().setShaderInput(
-            "lastFrame", self.lightingComputeCombinedTex)
-        self.antialias.getFirstBuffer().setShaderInput(
-            "lastPosition", self.lastPositionBuffer)
-        self.antialias.getFirstBuffer().setShaderInput(
-            "currentPosition", self.deferredTarget.getColorTexture())
-
-        self.deferredTarget.setShaderInput(
-            "sampler", self.finalPass.getColorTexture())
 
         # add update task
         self._attachUpdateTask()
@@ -144,14 +137,26 @@ class RenderingPipeline(DebugObject):
             self.atlasDisplayImage = OnscreenImage(image=self.lightManager.getAtlasTex(), pos=(
                 base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25, 0, 0.25))
 
+    def getForwardScene(self):
+        """ Reparent objects to this scene to use forward rendering.
+        Objects in this scene will directly get rendered, with no
+        lighting etc. applied. """
+        return self.forwardScene
+
+    def getTransparentScene(self):
+        """ Reparent objects to this scene to allow this objects to
+        have transparency. Objects in this scene will get directly
+        rendered and no lighting will get applied. """
+        return self.transparencyScene
+
     def _createCombiner(self):
         """ Creates the target which combines the result from the
         lighting computation and last frame together
         (Temporal Reprojection) """
         self.combiner = RenderTarget("Combine-Temporal")
-        self.combiner.setColorBits(8)
-        self.combiner.addRenderTexture(RenderTargetType.Color)
+        self.combiner.addColorTexture()
         self.combiner.prepareOffscreenBuffer()
+
         self.combiner.setShaderInput(
             "currentComputation", self.lightingComputeContainer.getColorTexture())
         self.combiner.setShaderInput(
@@ -165,6 +170,7 @@ class RenderingPipeline(DebugObject):
             "temporalProjXOffs", self.temporalProjXOffs)
         self.combiner.setShaderInput("cameraPosition", self.cameraPosition)
 
+        # Set last / current mvp handles
         self.combiner.setShaderInput("lastMVP", self.lastMVP)
         render.setShaderInput("lastMVP", self.lastMVP)
         self.combiner.setShaderInput("currentMVP", self.lastMVP)
@@ -174,7 +180,7 @@ class RenderingPipeline(DebugObject):
         """ Creates the antialiasing technique """
 
         technique = self.settings["antialiasingTechnique"]
-        self.debug("Creating antialiasing handler for",technique,"..")
+        self.debug("Creating antialiasing handler for", technique, "..")
 
         if technique == "SMAA":
             self.antialias = AntialiasingTechniqueSMAA()
@@ -183,13 +189,19 @@ class RenderingPipeline(DebugObject):
                 "Unkown antialiasing technique, using SMAA:", self.antialiasingTechniquel)
             self.antialias = AntialiasingTechniqueSMAA()
 
-        # self.antialias.setColorTexture(self.lightingComputeContainer.getColorTexture())
         self.antialias.setColorTexture(self.combiner.getColorTexture())
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setup()
 
-    # Creates all the render targets
+        self.antialias.getFirstBuffer().setShaderInput(
+            "lastFrame", self.lightingComputeCombinedTex)
+        self.antialias.getFirstBuffer().setShaderInput(
+            "lastPosition", self.lastPositionBuffer)
+        self.antialias.getFirstBuffer().setShaderInput(
+            "currentPosition", self.deferredTarget.getColorTexture())
+
     def _makeDeferredTargets(self):
+        """ Creates the multi-render-target """
         self.debug("Creating deferred targets")
         self.deferredTarget = RenderTarget("DeferredTarget")
         self.deferredTarget.addColorAndDepth()
@@ -197,34 +209,29 @@ class RenderingPipeline(DebugObject):
         self.deferredTarget.setAuxBits(16)
         self.deferredTarget.setColorBits(16)
         self.deferredTarget.setDepthBits(32)
-        # self.deferredTarget.setSize(400, 240) # check for overdraw
         self.deferredTarget.prepareSceneRender()
 
-    def _createFinalPass(self):
-        self.debug("Creating final pass")
-        self.finalPass = RenderTarget("FinalPass")
-        self.finalPass.addColorTexture()
-        self.finalPass.prepareOffscreenBuffer()
-
+    def _setupFinalPass(self):
+        """ Setups the final pass which applies motion blur and so on """
         colorTex = self.antialias.getResultTexture()
         # Set wrap for motion blur
-        colorTex.setWrapU(Texture.WMMirror)
-        colorTex.setWrapV(Texture.WMMirror)
-        self.finalPass.setShaderInput("colorTex", colorTex)
-        self.finalPass.setShaderInput(
+        colorTex.setWrapU(Texture.WMClamp)
+        colorTex.setWrapV(Texture.WMClamp)
+        self.deferredTarget.setShaderInput("colorTex", colorTex)
+        self.deferredTarget.setShaderInput(
             "velocityTex", self.deferredTarget.getAuxTexture(1))
-        self.finalPass.setShaderInput(
+        self.deferredTarget.setShaderInput(
             "depthTex", self.deferredTarget.getDepthTexture())
-        self.finalPass.setShaderInput(
+        self.deferredTarget.setShaderInput(
             "motionBlurFactor", self.motionBlurFactor)
 
         self._setFinalPassShader()
 
-    # Creates the storage to store the list of visible lights per tile
     def _makeLightPerTileStorage(self):
-
-        storageSizeX = int(self.precomputeSize.x * 8)
-        storageSizeY = int(self.precomputeSize.y * 8)
+        """ Creates a texture to store the lights per tile into. Should
+        get replaced with ssbos later """
+        storageSizeX = self.precomputeSize.x * 8
+        storageSizeY = self.precomputeSize.y * 8
 
         self.debug(
             "Creating per tile storage of size", storageSizeX, "x", storageSizeY)
@@ -235,8 +242,9 @@ class RenderingPipeline(DebugObject):
         self.lightPerTileStorage.setMinfilter(Texture.FTNearest)
         self.lightPerTileStorage.setMagfilter(Texture.FTNearest)
 
-    # Inits the lighting pipeline
     def _createLightingPipeline(self):
+        """ Creates the lighting pipeline, including shadow handling """
+
         self.debug("Creating lighting pipeline ..")
 
         # size has to be a multiple of the compute unit size
@@ -244,14 +252,14 @@ class RenderingPipeline(DebugObject):
         sizeX = int(math.ceil(self.size.x / self.patchSize.x))
         sizeY = int(math.ceil(self.size.y / self.patchSize.y))
 
-        self.precomputeSize = Vec2(sizeX, sizeY)
+        self.precomputeSize = LVecBase2i(sizeX, sizeY)
 
         self.debug("Batch size =", sizeX, "x", sizeY,
                    "Actual Buffer size=", int(sizeX * self.patchSize.x), "x", int(sizeY * self.patchSize.y))
 
         self._makeLightPerTileStorage()
 
-            # Create a buffer which computes which light affects which tile
+        # Create a buffer which computes which light affects which tile
         self._makeLightBoundsComputationBuffer(sizeX, sizeY)
 
         # Create a buffer which applies the lighting
@@ -266,12 +274,6 @@ class RenderingPipeline(DebugObject):
 
         self.lightingComputeContainer.setShaderInput(
             "cameraPosition", base.cam.getPos(render))
-
-        # Ensure the images have the correct filter mode
-        # for bmode in [RenderTargetType.Color]:
-        #     tex = self.lightBoundsComputeBuff.getTexture(bmode)
-        #     tex.setMinfilter(Texture.FTNearest)
-        #     tex.setMagfilter(Texture.FTNearest)
 
         self._loadFallbackCubemap()
 
@@ -300,6 +302,7 @@ class RenderingPipeline(DebugObject):
             "cameraPosition", self.cameraPosition)
 
     def _loadFallbackCubemap(self):
+        """ Loads the cubemap for image based lighting """
         cubemap = loader.loadCubeMap("Cubemap/#.png")
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
@@ -308,6 +311,7 @@ class RenderingPipeline(DebugObject):
             "fallbackCubemap", cubemap)
 
     def _makeLightBoundsComputationBuffer(self, w, h):
+        """ Creates the buffer which precomputes the lights per tile """
         self.debug("Creating light precomputation buffer of size", w, "x", h)
         self.lightBoundsComputeBuff = RenderTarget("ComputeLightTileBounds")
         self.lightBoundsComputeBuff.setSize(w, h)
@@ -320,10 +324,11 @@ class RenderingPipeline(DebugObject):
         self._setPositionComputationShader()
 
     def _makeLightingComputeBuffer(self):
+        """ Creates the buffer which applies the lighting """
         self.lightingComputeContainer = RenderTarget("ComputeLighting")
         self.lightingComputeContainer.setSize(
             base.win.getXSize() / 2,  base.win.getYSize())
-        self.lightingComputeContainer.addRenderTexture(RenderTargetType.Color)
+        self.lightingComputeContainer.addColorTexture()
         self.lightingComputeContainer.setColorBits(16)
         self.lightingComputeContainer.prepareOffscreenBuffer()
 
@@ -340,32 +345,43 @@ class RenderingPipeline(DebugObject):
         self.lastPositionBuffer.setMagfilter(Texture.FTNearest)
 
     def _setLightingShader(self):
-
+        """ Sets the shader which applies the light """
         lightShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex", "Shader/ApplyLighting.fragment")
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/ApplyLighting.fragment")
         self.lightingComputeContainer.setShader(lightShader)
 
     def _setCombinerShader(self):
+        """ Sets the shader which combines the lighting with the previous frame
+        (temporal reprojection) """
         cShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex", "Shader/Combiner.fragment")
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/Combiner.fragment")
         self.combiner.setShader(cShader)
 
     def _setPositionComputationShader(self):
+        """ Sets the shader which computes the lights per tile """
         pcShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex", "Shader/PrecomputeLights.fragment")
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/PrecomputeLights.fragment")
         self.lightBoundsComputeBuff.setShader(pcShader)
 
     def _setFinalPassShader(self):
+        """ Sets the shader which computes the final frame,
+        with motion blur and so on """
         fShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex", "Shader/Final.fragment")
-        self.finalPass.setShader(fShader)
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/Final.fragment")
+        self.deferredTarget.setShader(fShader)
 
     def _getSize(self):
+        """ Returns the window size """
         return Vec2(
             int(self.showbase.win.getXSize()),
             int(self.showbase.win.getYSize()))
 
     def debugReloadShader(self):
+        """ Reloads all shaders """
         self.lightManager.debugReloadShader()
         self._setPositionComputationShader()
         self._setCombinerShader()
@@ -374,6 +390,7 @@ class RenderingPipeline(DebugObject):
         self.antialias.reloadShader()
 
     def _attachUpdateTask(self):
+        """ Attaches the update tasks to the showbase """
         self.showbase.addTask(
             self._update, "UpdateRenderingPipeline", sort=-10000)
         self.showbase.addTask(
@@ -382,29 +399,34 @@ class RenderingPipeline(DebugObject):
             self._updateShadows, "updateShadows", sort=-8000)
 
     def _computeCameraBounds(self):
-        # compute camera bounds in render space
+        """ Computes the current camera bounds, i.e. for light culling """
         cameraBounds = self.camera.node().getLens().makeBounds()
         cameraBounds.xform(self.camera.getMat(render))
         return cameraBounds
 
     def _updateLights(self, task=None):
+        """ Task which updates/culls the lights """
         self.lightManager.updateLights()
         if task is not None:
             return task.cont
 
     def _updateShadows(self, task=None):
+        """ Task which updates the shadow maps """
         self.lightManager.updateShadows()
         if task is not None:
             return task.cont
 
     def _update(self, task=None):
-
+        """ Main update task """
         currentFPS = 1.0 / globalClock.getDt()
 
         self.temporalProjXOffs[0] = 1 - self.temporalProjXOffs[0]
         self.cameraPosition[0] = base.cam.getPos(render)
-        self.motionBlurFactor[0] = currentFPS / \
-            60.0 * self.settings["motionBlurFactor"]
+        self.motionBlurFactor[0] = min(1.5, currentFPS / \
+            60.0) * self.settings.motionBlurFactor
+
+
+
         self.cullBounds = self._computeCameraBounds()
         self.lightManager.setCullBounds(self.cullBounds)
 
@@ -415,6 +437,8 @@ class RenderingPipeline(DebugObject):
             return task.cont
 
     def _computeMVP(self):
+        """ Computes the current mvp. Actually, this is the worldViewProjectionMatrix,
+        but for convience it's called mvp. """
         projMat = Mat4.convertMat(
             CSYupRight,
             base.camLens.getCoordinateSystem()) * base.camLens.getProjectionMat()
@@ -426,9 +450,15 @@ class RenderingPipeline(DebugObject):
         return UnalignedLMatrix4f(modelViewMat * projMat)
 
     def getLightManager(self):
+        """ Returns a handle to the light manager """
         return self.lightManager
 
     def getDefaultObjectShader(self):
+        """ Returns the default shader for objects """
         shader = BetterShader.load(
             "Shader/DefaultObjectShader.vertex", "Shader/DefaultObjectShader.fragment")
         return shader
+
+    def addLight(self, light):
+        """ Adds a light to the list of rendered lights """
+        self.lightManager.addLight(light)

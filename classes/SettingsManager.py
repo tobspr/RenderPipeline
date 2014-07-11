@@ -113,6 +113,7 @@ class SettingsManager(DebugObject):
                 continue
 
             self.settings[settingName].setValue(settingValue)
+            setattr(self, settingName, self.settings[settingName].getValue())
 
     def __getitem__(self, name):
         """ This function makes accessing the settings via [] possible.

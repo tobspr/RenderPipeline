@@ -111,11 +111,12 @@ class Main(ShowBase, DebugObject):
                 angle = float(i) / 8.0 * math.pi * 2.0
 
                 pos = Vec3(math.sin(angle)*20.0,math.cos(angle)*20.0,9)
+                pos = Vec3(5,5,10)
 
                 sunLight= PointLight() 
-                sunLight.setRadius(35.0)
-                # sunLight.setColor(colors[i])
-                sunLight.setColor(Vec3(0.3))
+                sunLight.setRadius(40.0)
+                sunLight.setColor(colors[i])
+                # sunLight.setColor(Vec3(12.0))
                 sunLight.setPos(pos)
                 sunLight.setShadowMapResolution(2048)
                 sunLight.setCastsShadows(True)
@@ -254,12 +255,12 @@ class Main(ShowBase, DebugObject):
             # if i % 3 == 0:
             ft2 = float(i)*math.pi*0.5 + ft * 1.0
             initialPos = self.initialLightPos[i]
-            initialPos = Vec3(0,0,9)
+            initialPos = Vec3(0,0,20)
             light.setPos(initialPos + Vec3(math.sin(ft2) * 10.0, math.cos(ft2) * 10.0, math.sin(math.cos(ft2 * 1.523) * 1.7 )  ))
 
 
         # import time
-        # time.sleep(33.0 / 1000.0)
+        # time.sleep(22.0 / 1000.0)
 
         if task is not None:
             return task.cont

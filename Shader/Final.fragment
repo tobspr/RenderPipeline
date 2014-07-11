@@ -14,7 +14,7 @@ uniform float motionBlurFactor;
 
 void main() {
 
-    vec2 pixelVelocity = texture(velocityTex, texcoord).xy / 255.0 * motionBlurFactor * 0.8 * 2.0;
+    vec2 pixelVelocity = texture(velocityTex, texcoord).xy / 255.0 * motionBlurFactor * 0.8;
 
     float pixelZ = texture(depthTex, texcoord);
     float pixelLinearZ = getLinearZFromZ(pixelZ);
@@ -29,16 +29,19 @@ void main() {
 
     // Motion blur
     vec3 motionResult = vec3(0);
-    float speed = length(pixelVelocity * screenSize);
-    const int nSamples = MOTION_BLUR_SAMPLES;
-    for (int i = 1; i < nSamples; i++) {
-        vec2 offset = pixelVelocity * motionBlurFactor * (float(i) / float(nSamples - 1) - 0.5);
+    
+    for (int i = 1; i < MOTION_BLUR_SAMPLES; i++) {
+        vec2 offset = pixelVelocity * motionBlurFactor * (float(i) / float(MOTION_BLUR_SAMPLES - 1) - 0.5);
         motionResult += texture(colorTex, texcoord + offset).rgb;
     }
-    motionResult /= nSamples-1;
+    motionResult /= MOTION_BLUR_SAMPLES-1;
 
     result = vec3(motionResult);
 
+    // result = texture(colorTex, texcoord).rgb;
+
+    float vignett = smoothstep(0, 1, (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.3;
+    result *= 1.0 - vignett;
 
 
     gl_FragColor = vec4(result, 1.0);
