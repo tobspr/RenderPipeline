@@ -2,6 +2,7 @@
 from panda3d.core import GraphicsOutput, CardMaker, OmniBoundingVolume
 from panda3d.core import AuxBitplaneAttrib, NodePath, OrthographicLens
 from panda3d.core import Camera, Vec4, TransparencyAttrib, StencilAttrib
+from panda3d.core import ColorWriteAttrib, DepthWriteAttrib
 from RenderBuffer import RenderBuffer
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
@@ -63,6 +64,7 @@ class RenderTarget(DebugObject):
         self._region = self._findRegionForCamera()
         self._enableTransparency = False
         self._layers = 0
+        self._writeColor = True
 
         self.mute()
 
@@ -86,6 +88,10 @@ class RenderTarget(DebugObject):
         as the current window """
         self._width = width
         self._height = height
+
+    def setColorWrite(self, write):
+        """ Sets wheter to write color """
+        self._writeColor = write
 
     def setColorBits(self, colorBits):
         """ Sets the required color bits """
@@ -245,7 +251,11 @@ class RenderTarget(DebugObject):
         cs.setAttrib(StencilAttrib.makeOff(), 20)
 
         if not self._enableTransparency:
-            cs.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 20)
+            cs.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
+
+        if not self._writeColor:
+            cs.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff), 100)
+            
         self._sourceCam.node().setInitialState(cs.getState())
 
         # Set new camera
@@ -297,6 +307,15 @@ class RenderTarget(DebugObject):
 
         # Prepare fullscreen camera
         bufferCam = self._makeFullscreenCam()
+        initialState = NodePath("is")
+
+        if not self._writeColor:
+            initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff), 1000)
+
+        initialState.setAttrib(DepthWriteAttrib.make(DepthWriteAttrib.MNone), 1000)
+
+        bufferCam.setInitialState(initialState.getState())
+
         bufferCamNode = self._quad.attachNewNode(bufferCam)
 
         bufferRegion = self._buffer.getInternalBuffer().getDisplayRegion(0)
@@ -331,7 +350,7 @@ class RenderTarget(DebugObject):
         quad = NodePath(cm.generate())
         quad.setDepthTest(0)
         quad.setDepthWrite(0)
-        quad.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone))
+        quad.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
         quad.setColor(Vec4(1, 0.5, 0.5, 1))
 
         # No culling check

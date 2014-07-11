@@ -35,11 +35,13 @@ class Main(ShowBase, DebugObject):
         self.debug("Loading panda3d configuration from configuration.prc ..")
         loadPrcFile("configuration.prc")
 
-        self.renderPipeline = RenderingPipeline(self)
-        self.renderPipeline.loadSettings("pipeline.ini")
-
         self.debug("Creating showbase ..")
         ShowBase.__init__(self)
+
+        self.debug("Creating pipeline")
+        self.renderPipeline = RenderingPipeline()
+        self.renderPipeline.loadSettings("pipeline.ini")
+        self.renderPipeline.create()
 
         self.sceneSource = "Scene/Scene4.egg"
         # self.sceneSource = "Scene.ignore/Car.bam"
@@ -80,8 +82,7 @@ class Main(ShowBase, DebugObject):
 
         self.camLens.setNearFar(0.1, 10000)
 
-        self.debug("Creating rendering pipeline ..")
-        self.renderPipeline.create()
+
         
 
         # Now let's add some lights
@@ -116,6 +117,7 @@ class Main(ShowBase, DebugObject):
                 # sunLight.setColor(colors[i])
                 sunLight.setColor(Vec3(0.3))
                 sunLight.setPos(pos)
+                sunLight.setShadowMapResolution(2048)
                 sunLight.setCastsShadows(True)
 
                 if self.renderPipeline:

@@ -15,6 +15,9 @@ class PipelineSettingsManager(SettingsManager):
     def _addDefaultSettings(self):
         """ Internal method which populates the settings array with defaults
         and the internal type of settings (like int, bool, ...) """
+        # [Antialiasing]
+        self._addSetting("antialiasingTechnique", str, "SMAA")
+
         # [Lighting]
         self._addSetting("computePatchSizeX", int, 32)
         self._addSetting("computePatchSizeY", int, 32)
@@ -30,3 +33,7 @@ class PipelineSettingsManager(SettingsManager):
 
         # [Motion blur]
         self._addSetting("motionBlurSamples", int, 8)
+        self._addSetting("motionBlurFactor", float, 1.0)
+
+        # [Debugging]
+        self._addSetting("displayShadowAtlas", bool, True)
