@@ -17,9 +17,9 @@ void main() {
     // Create a material to store the properties on
     Material m;
 
-    m.metallic = 1.0;
-    m.roughness = 0.3;
-    m.specular = 0.5;
+    m.metallic = 0.0;
+    m.roughness = 0.0;
+    m.specular = 0.0;
     m.baseColor = diffuseColor.xyz;
     m.position = positionWorldSpace;
     m.normal   = normalWorldSpace;

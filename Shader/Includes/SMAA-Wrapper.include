@@ -1,6 +1,5 @@
 
 #define SMAA_GLSL_4
-#define SMAA_PRESET_HIGH
 
 #include "Includes/Configuration.include"
 

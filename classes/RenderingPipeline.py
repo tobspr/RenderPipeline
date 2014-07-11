@@ -476,6 +476,23 @@ class RenderingPipeline(DebugObject):
         # Generate list of defines
         defines = []
 
+
+        if self.settings.antialiasingTechnique == "SMAA":
+            quality = self.settings.smaaQuality
+            self.debug("SMAA Quality:",quality)
+
+            if quality == "Low":
+                defines.append(("SMAA_PRESET_LOW", ""))
+            elif quality == "Medium":
+                defines.append(("SMAA_PRESET_MEDIUM", ""))
+            elif quality == "High":
+                defines.append(("SMAA_PRESET_HIGH", ""))
+            elif quality == "Ultra":
+                defines.append(("SMAA_PRESET_ULTRA", ""))
+            else:
+                self.error("Unrecognized SMAA quality:",quality)
+                return
+
         defines.append(
             ("LIGHTING_COMPUTE_PATCH_SIZE_X", self.settings.computePatchSizeX))
         defines.append(
