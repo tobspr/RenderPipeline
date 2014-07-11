@@ -12,7 +12,7 @@ class ShaderStructElement:
     @classmethod
     def getExposedAttributes(self):
         """ Subclasses should implement this method, and return a
-        dictionary of values to expose to the shader. A sample 
+        dictionary of values to expose to the shader. A sample
         return value might be:
 
         return {
@@ -23,7 +23,7 @@ class ShaderStructElement:
             "someArray": "array<int>(6)",
         }
 
-        All keys have to be a property of the current instance. Arrays
+        All keys have to be a property of the subclass. Arrays
         have to be a PTAxxx, e.g. PTAInt for an int array.
 
         NOTICE: Currently only int arrays of size 6 are supported, until
@@ -57,21 +57,26 @@ class ShaderStructElement:
         if structArray in self.referencedLists:
             self.referencedLists.remove(structArray)
 
+
 class ShaderStructArray(DebugObject):
 
     """ This class provides the ability to pass python lists
-    as shader inputs, as panda3d lacks this feature (yet). The 
-    items are set with the [] operator. 
+    as shader inputs, as panda3d lacks this feature (yet). The
+    items are set with the [] operator.
 
-    NOTICE the the shader inputs for an object are only refreshed
+    NOTICE: the the shader inputs for an object are only refreshed
     when using the [] operator. So whenever you change a property
     of an object, you have to call myShaderStructArray[index] = Object,
-    regardless wheter the object is already in the list or not. 
+    regardless wheter the object is already in the list or not.
+    EDIT: The object itself can also call onPropertyChanged() to force
+    an update. Notice, that everytime this function is called, the
+    shader-inputs are refeshed for that object. You should probably only
+    call this once per frame.
 
     For further information about accessing the data in your shaders, see
-    bindTo()
+    bindTo().
 
-    Todo: Make the arrays more general. See getExposedAttributes in
+    Todo: Make the exposed types more generic. See getExposedAttributes in
     ShaderStructElement.
     """
 
@@ -82,7 +87,7 @@ class ShaderStructArray(DebugObject):
 
         DebugObject.__init__(self, "ShaderStructArray")
 
-        self.debug("Init array, size =", numElements, ", from", classType)
+        self.debug("Init array, size =", numElements)
         self.classType = classType
         self.attributes = classType.getExposedAttributes()
 
@@ -121,7 +126,7 @@ class ShaderStructArray(DebugObject):
     def bindTo(self, parent, uniformName):
         """ In order for an element to recieve this array as an
         shader input, you have to call bindTo(object, uniformName). The data
-        will then be available as uniform with the name uniformName in the 
+        will then be available as uniform with the name uniformName in the
         shader. You still have to define a structure in your shader which has
         the same properties than your objects. As example, if you have the
         following class:
@@ -168,7 +173,7 @@ class ShaderStructArray(DebugObject):
             self[self.assignedObjects.index(obj)] = obj
 
     def __setitem__(self, index, value):
-        """ Sets the object at index to value. This directly updates the 
+        """ Sets the object at index to value. This directly updates the
         shader inputs. """
 
         if index < 0 or index >= self.size:
@@ -177,7 +182,8 @@ class ShaderStructArray(DebugObject):
         oldObject = self.assignedObjects[index]
 
         # Remove old reference
-        if value != None and oldObject != None and oldObject != value:
+        if value is not None and oldObject is not None \
+                and oldObject is not value:
             self.assignedObjects[index].removeListReference(self)
 
         # Set new reference

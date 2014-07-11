@@ -5,11 +5,20 @@ from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 
 # Wrapper arround GraphicsBuffer
+
+
 class RenderBuffer(DebugObject):
 
+    """ Low level buffer wrapper to create buffers and render-to-texture.
+    This class is wrapped by RenderTarget, and not indented for public use. """
+
+    # Store the number of buffers already allocated, to assign
+    # correct sort values
     numBuffersAllocated = 0
 
     def __init__(self, name="RB"):
+        """ Creates a new render buffer with the given name. The name should
+        be descriptive as it will shown in pstats. """
         DebugObject.__init__(self, "RenderBuffer")
         self._name = name
         self._width = 0
@@ -17,85 +26,100 @@ class RenderBuffer(DebugObject):
         self._colorBits = 8
         self._auxBits = 8
         self._bindMode = GraphicsOutput.RTMBindOrCopy
-        self._depthBits = 24
-
+        self._depthBits = 0
         self._internalBuffer = None
         self._targets = {}
         self._win = None
         self._layers = 0
+        self._sort = 0
 
-        self.mute()
+        # self.mute()
 
-    # How much layers to render
     def setLayers(self, layers):
+        """ Set the number of layers to render, or 1 to not use layered 
+        rendering. """
         self._layers = layers
 
-    # Name of this buffer
     def setName(self, name):
+        """ Sets the name of the buffer """
         self._name = name
 
-    # Sets the target window for this buffer
     def setWindow(self, window):
+        """ Sets the target window of the buffer """
         self._win = window
 
-    # Set buffer size
     def setSize(self, width, height):
+        """ Sets the size of the buffer in pixels """
         self._width = width
         self._height = height
 
         if self._internalBuffer is not None:
             self._internalBuffer.setSize(width, height)
 
-    # Returns the buffer size
     def getSize(self):
+        """ Returns the size of the buffer in pixels """
         return Vec2(self._width, self._height)
 
-    # Sets the required color bits
     def setColorBits(self, colorBits):
+        """ Set the minimum required color bits """
         self._colorBits = colorBits
 
-    # Sets the required aux bits
     def setAuxBits(self, auxBits):
+        """ Set the minimum required aux bits """
         self._auxBits = auxBits
 
-    # Adds a render target 
     def addTarget(self, target):
+        """ Adds a new target to render to. Target should be a RenderTargetType
+        like RenderTargetType.Color """
         if target in self._targets:
-            print "You cannot add another target of type",target
+            self.error("You cannot add another target of type", target)
             return
 
-        self._targets[target] = Texture("RenderTargetTex-"+target)
+        self._targets[target] = Texture(self._name + "-Tex" + target)
 
-    # Either BindOrCopy or BindLayered
     def setBindMode(self, bindMode):
+        """ Sets the bind mode. When rendering layered, you have to set
+        the bind mode to GraphicsOutput.RTMBindLayered, otherwise you can
+        leave it default (GraphicsOutput.RTMBindOrCopy). In some special
+        case you may force copying the buffers back to the ram with
+        GraphicsOutput.RTMCopyTexture or RTMCopyRam """
         self._bindMode = bindMode
 
-    # Depth Bits: 8, 16, 24 or 32
     def setDepthBits(self, depthBits):
+        """ Sets the minimum required depth bits """
         self._depthBits = depthBits
 
-    # Returns a handle to the internal buffer object
     def getInternalBuffer(self):
+        """ Returns a handle to the internal buffer object """
         return self._internalBuffer
 
-    # Check if the target is assigned
     def hasTarget(self, target):
+        """ Returns if this buffer already has a target of the given type """
         return target in self._targets
 
-    # Returns a handle to the target (Texture)
     def getTarget(self, target):
+        """ Returns the texture object for the given target """
         return self._targets[target]
 
-    # Attempts to create this buffer
+    def getSort(self):
+        """ Returns the assigned sort value for this buffer. Only call
+        this *after* the create() call, otherwise it will return 0. """
+        return self._sort
+
     def create(self):
+        """ Attempts to create this buffer """
 
-        is16bit = self._colorBits >= 16
-        auxIs16Bit = self._auxBits >= 16
+        colorIsFloat = self._colorBits >= 16
+        auxIsFloat = self._auxBits >= 16
 
-        self.debug("Creating buffer with",self._colorBits,"color bits and",self._auxBits,"aux bits")
+        self.debug("Creating buffer with", self._colorBits,
+                   "color bits,", self._auxBits, "aux bits and",
+                   self._depthBits, "depth bits")
 
-
-        # set wrap modes for color + auxtextures
+        # set wrap modes for color + auxtextures,
+        # also set correct formats:
+        # panda doesnt use sized formats automatically, this
+        # gives problems when using imageLoad / imageStore
         prepare = [
             RenderTargetType.Color,
             RenderTargetType.Aux0,
@@ -113,50 +137,45 @@ class RenderBuffer(DebugObject):
             handle.setMinfilter(Texture.FTLinear)
             handle.setMagfilter(Texture.FTLinear)
 
-            # No longer needed?
             if target == RenderTargetType.Color:
-                if is16bit:    
+                if colorIsFloat:
                     handle.setComponentType(Texture.TFloat)
-                
+
                 if self._colorBits == 16:
                     handle.setFormat(Texture.FRgba16)
                 elif self._colorBits == 32:
                     handle.setFormat(Texture.FRgba32)
             else:
-                if is16bit:
+                if colorIsFloat:
                     handle.setComponentType(Texture.TFloat)
                 if self._auxBits == 16:
                     handle.setFormat(Texture.FRgba16)
                 elif self._auxBits == 32:
                     handle.setFormat(Texture.FRgba32)
 
-
             if self._layers > 1:
-                self.debug("Setup layer count:",self._layers)
                 handle.setup2dTextureArray(self._layers)
 
         # set layers for depth texture
         if self._layers > 1:
-            self.debug("Setup depth-layer count:",self._layers)
-            self.getTarget(RenderTargetType.Depth).setup2dTextureArray(self._layers)
-
+            self.getTarget(RenderTargetType.Depth).setup2dTextureArray(
+                self._layers)
 
         # Create buffer descriptors
         windowProps = WindowProperties.size(self._width, self._height)
         bufferProps = FrameBufferProperties()
 
-        # Set color and alpha bits 
+        # Set color and alpha bits
         if self.hasTarget(RenderTargetType.Color):
             bufferProps.setColorBits(self._colorBits * 3)
             bufferProps.setAlphaBits(self._colorBits)
 
-            if is16bit:
+            if colorIsFloat:
                 bufferProps.setFloatColor(True)
 
         # Set aux bits
-        if self.hasTarget(RenderTargetType.Aux0) and auxIs16Bit:
+        if self.hasTarget(RenderTargetType.Aux0) and auxIsFloat:
             bufferProps.setAuxFloat(True)
-
 
         # Set depth bits and depth texture format
         if self.hasTarget(RenderTargetType.Depth):
@@ -165,75 +184,75 @@ class RenderBuffer(DebugObject):
             bufferProps.setDepthBits(self._depthBits)
             bufferProps.setFloatDepth(True)
 
-        # We need no stencil
+        # We need no stencil (not supported yet)
         bufferProps.setStencilBits(0)
-
-   
 
         numAuxtex = 0
 
         # Python really needs switch()
-        if self.hasTarget(RenderTargetType.Aux3):    numAuxtex = 4
-        elif self.hasTarget(RenderTargetType.Aux2):  numAuxtex = 3
-        elif self.hasTarget(RenderTargetType.Aux1):  numAuxtex = 2
-        elif self.hasTarget(RenderTargetType.Aux0):  numAuxtex = 1
+        if self.hasTarget(RenderTargetType.Aux3):
+            numAuxtex = 4
+        elif self.hasTarget(RenderTargetType.Aux2):
+            numAuxtex = 3
+        elif self.hasTarget(RenderTargetType.Aux1):
+            numAuxtex = 2
+        elif self.hasTarget(RenderTargetType.Aux0):
+            numAuxtex = 1
 
         # Add aux textures (either 8 or 16 bit)
-        if auxIs16Bit:
+        if auxIsFloat:
             bufferProps.setAuxHrgba(numAuxtex)
         else:
             bufferProps.setAuxRgba(numAuxtex)
 
         # Need no multisamples
         bufferProps.setMultisamples(0)
-        
 
         # Create internal graphics output
         self._internalBuffer = base.graphicsEngine.makeOutput(
             self._win.getPipe(), self._name, 1,
-            bufferProps, windowProps, 
+            bufferProps, windowProps,
             GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,
             self._win.getGsg(), self._win)
 
         if self._internalBuffer is None:
-            print "Failed to create buffer :("
+            self.error("Failed to create buffer :(")
             return False
 
         # Add render targets
         if self.hasTarget(RenderTargetType.Depth):
             self._internalBuffer.addRenderTexture(
-                self.getTarget(RenderTargetType.Depth), self._bindMode, GraphicsOutput.RTPDepth)
+                self.getTarget(RenderTargetType.Depth), self._bindMode,
+                GraphicsOutput.RTPDepth)
 
         if self.hasTarget(RenderTargetType.Color):
             self._internalBuffer.addRenderTexture(
-                self.getTarget(RenderTargetType.Color), self._bindMode, GraphicsOutput.RTPColor)
+                self.getTarget(RenderTargetType.Color), self._bindMode,
+                GraphicsOutput.RTPColor)
 
-        # We can't use a for because panda uses enums .. 
+        modes = [
+            (RenderTargetType.Aux0, GraphicsOutput.RTPAuxHrgba0,
+             GraphicsOutput.RTPAuxRgba0),
+            (RenderTargetType.Aux1, GraphicsOutput.RTPAuxHrgba1,
+             GraphicsOutput.RTPAuxRgba1),
+            (RenderTargetType.Aux2, GraphicsOutput.RTPAuxHrgba2,
+             GraphicsOutput.RTPAuxRgba2),
+            (RenderTargetType.Aux3, GraphicsOutput.RTPAuxHrgba3,
+             GraphicsOutput.RTPAuxRgba3),
+        ]
 
-        if self.hasTarget(RenderTargetType.Aux0):
-            self._internalBuffer.addRenderTexture(
-                self.getTarget(RenderTargetType.Aux0), self._bindMode, 
-                GraphicsOutput.RTPAuxHrgba0 if auxIs16Bit else GraphicsOutput.RTPAuxRgba0)
+        for target, floatMode, normalMode in modes:
+            if self.hasTarget(target):
+                self._internalBuffer.addRenderTexture(
+                    self.getTarget(target), self._bindMode,
+                    floatMode if auxIsFloat else normalMode)
 
-        if self.hasTarget(RenderTargetType.Aux1):
-            self._internalBuffer.addRenderTexture(
-                self.getTarget(RenderTargetType.Aux1), self._bindMode, 
-                GraphicsOutput.RTPAuxHrgba1 if auxIs16Bit else GraphicsOutput.RTPAuxRgba1)
-
-        if self.hasTarget(RenderTargetType.Aux2):
-            self._internalBuffer.addRenderTexture(
-                self.getTarget(RenderTargetType.Aux2), self._bindMode, 
-                GraphicsOutput.RTPAuxHrgba2 if auxIs16Bit else GraphicsOutput.RTPAuxRgba2)
-
-        if self.hasTarget(RenderTargetType.Aux3):
-            self._internalBuffer.addRenderTexture(
-                self.getTarget(RenderTargetType.Aux3), self._bindMode, 
-                GraphicsOutput.RTPAuxHrgba3 if auxIs16Bit else GraphicsOutput.RTPAuxRgba3)
-
-
+        # Increment global sort counter
         RenderBuffer.numBuffersAllocated += 1
+        self._sort = -20 + RenderBuffer.numBuffersAllocated*10
 
-        self._internalBuffer.setSort(-20 + RenderBuffer.numBuffersAllocated)
+        self._internalBuffer.setSort(self._sort)
+
         self._internalBuffer.disableClears()
         self._internalBuffer.getDisplayRegion(0).disableClears()
 
@@ -242,9 +261,6 @@ class RenderBuffer(DebugObject):
         if self.hasTarget(RenderTargetType.Depth):
             depthTarget = self.getTarget(RenderTargetType.Depth)
 
-            self.debug("Preparing depth texture for",self._depthBits,"bits")
-
-            # No longer needed??
             if self._depthBits == 24:
                 # depthTarget.setComponentType(Texture.TFloat)
                 depthTarget.setFormat(Texture.FDepthComponent24)

@@ -46,13 +46,11 @@ class LightManager(DebugObject):
         self.allShadowsArray = ShaderStructArray(
             ShadowSource, self.maxShadowMaps)
 
-
         # self.shadowAtlasTex = Texture("ShadowAtlas")
         # self.shadowAtlasTex.setup2dTexture(
         #     self.shadowAtlasSize, self.shadowAtlasSize, Texture.TFloat, Texture.FRg16)
         # self.shadowAtlasTex.setMinfilter(Texture.FTLinear)
         # self.shadowAtlasTex.setMagfilter(Texture.FTLinear)
-
         self.debug("Init shadow atlas with tileSize =",
                    self.tileSize, ", tileCount =", self.tileCount)
 
@@ -70,7 +68,8 @@ class LightManager(DebugObject):
         self.shadowComputeCameraNode.lookAt(0, 0, 0)
 
         self.shadowComputeTarget = RenderTarget("ShadowCompute")
-        self.shadowComputeTarget.setSize(self.shadowAtlasSize, self.shadowAtlasSize)
+        self.shadowComputeTarget.setSize(
+            self.shadowAtlasSize, self.shadowAtlasSize)
         # self.shadowComputeTarget.setLayers(self.maxShadowUpdatesPerFrame)
         self.shadowComputeTarget.addRenderTexture(RenderTargetType.Depth)
         self.shadowComputeTarget.setDepthBits(32)
@@ -81,10 +80,11 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.getInternalRegion().setSort(3)
         self.shadowComputeTarget.getRegion().setSort(3)
 
-        self.shadowComputeTarget.getInternalRegion().setNumRegions(self.maxShadowUpdatesPerFrame + 1)
-        self.shadowComputeTarget.getInternalRegion().setDimensions(0, (0,1,0,1))
+        self.shadowComputeTarget.getInternalRegion().setNumRegions(
+            self.maxShadowUpdatesPerFrame + 1)
+        self.shadowComputeTarget.getInternalRegion().setDimensions(
+            0, (0, 1, 0, 1))
         self.shadowComputeTarget.setClearDepth(False)
-
 
         self.depthClearer = []
 
@@ -95,11 +95,8 @@ class LightManager(DebugObject):
             dr.setClearDepthActive(True)
             dr.setClearDepth(1.0)
             dr.setClearColorActive(False)
-            dr.setDimensions(0,0,0,0)
+            dr.setDimensions(0, 0, 0, 0)
             self.depthClearer.append(dr)
-
-
-
 
         self.queuedShadowUpdates = []
 
@@ -129,7 +126,8 @@ class LightManager(DebugObject):
         self._createDebugTexts()
 
         self.updateShadowsArray.bindTo(self.shadowScene, "updateSources")
-        self.updateShadowsArray.bindTo(self.shadowComputeTarget, "updateSources")
+        self.updateShadowsArray.bindTo(
+            self.shadowComputeTarget, "updateSources")
 
         self.numShadowUpdatesPTA = PTAInt.emptyArray(1)
 
@@ -144,7 +142,7 @@ class LightManager(DebugObject):
     # / rendered
     def _createDebugTexts(self):
         try:
-            from FastText import FastText
+            from FastText2 import FastText
             self.lightsVisibleDebugText = FastText(pos=Vec2(
                 base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
             self.lightsUpdatedDebugText = FastText(pos=Vec2(
@@ -271,7 +269,7 @@ class LightManager(DebugObject):
 
         if tileFound:
             self.debug(
-                "Tile for shadowSource #"+ str(idx) + " found at", tilePos[0]*self.tileSize, "/", tilePos[1]*self.tileSize)
+                "Tile for shadowSource #" + str(idx) + " found at", tilePos[0] * self.tileSize, "/", tilePos[1] * self.tileSize)
             for x in xrange(0, tileW):
                 for y in xrange(0, tileH):
                     self.tiles[y + tilePos[1]][x + tilePos[0]] = idx
@@ -291,22 +289,22 @@ class LightManager(DebugObject):
 
             # Check for resolution
             if source.resolution < self.tileSize or source.resolution % self.tileSize != 0:
-                self.warn("The ShadowSource resolution has to be a multiple of the tile size ("+str(self.tileSize) + ")!")
+                self.warn(
+                    "The ShadowSource resolution has to be a multiple of the tile size (" + str(self.tileSize) + ")!")
                 self.warn("Adjusting resolution to", self.tileSize)
                 source.resolution = self.tileSize
 
-            if source.resolution  > self.shadowAtlasSize:
-                self.warn("The ShadowSource resolution cannot be bigger than the atlas size (" + str(self.shadowAtlasSize) + ")")
+            if source.resolution > self.shadowAtlasSize:
+                self.warn(
+                    "The ShadowSource resolution cannot be bigger than the atlas size (" + str(self.shadowAtlasSize) + ")")
                 self.warn("Adjusting resolution to", self.tileSize)
                 source.resolution = self.tileSize
-
 
             if source not in self.shadowSources:
                 self.shadowSources.append(source)
 
             source.setSourceIndex(self.shadowSources.index(source))
             light.setSourceIndex(index, source.getSourceIndex())
-
 
         index = self.lights.index(light)
         self.allLightsArray[index] = light
@@ -326,9 +324,7 @@ class LightManager(DebugObject):
     def setCullBounds(self, bounds):
         self.cullBounds = bounds
 
-    # Main update
-    def update(self):
-
+    def updateLights(self):
         # Reset light counts
         # We don't have to reset the data-vectors, as we overwrite them
         for key in self.numRenderedLights:
@@ -337,16 +333,13 @@ class LightManager(DebugObject):
         # Process each light
         for index, light in enumerate(self.lights):
 
-            # todo: check if > max lights
-
             # Update light if required
             if light.needsUpdate():
                 light.performUpdate()
-                # self.allLightsArray[index] = light
 
             # Check if visible
-            if not self.cullBounds.contains(light.getBounds()):
-                continue
+            # if not self.cullBounds.contains(light.getBounds()):
+            #     continue
 
             # Queue shadow updates if necessary
             if light.hasShadows() and light.needsShadowUpdate():
@@ -364,12 +357,9 @@ class LightManager(DebugObject):
             oldCount = self.numRenderedLights[lightTypeName][0]
 
             if oldCount >= self.maxLights[lightTypeName]:
-                self.debug("Too many lights of type", lightTypeName,
+                self.warn("Too many lights of type", lightTypeName,
                            "-> max is", self.maxLights[lightTypeName])
                 continue
-
-            # print "Rendering light #",index, "to",lightTypeName
-            # print " -> Radius:",light.radius
 
             arrayIndex = self.numRenderedLights[lightTypeName][0]
             self.numRenderedLights[lightTypeName][0] = oldCount + 1
@@ -382,6 +372,8 @@ class LightManager(DebugObject):
         if self.lightsVisibleDebugText is not None:
             self.lightsVisibleDebugText.setText(
                 'Lights: ' + renderedPL + "/" + renderedPL_S)
+
+    def updateShadows(self):
 
         # Process shadows
         queuedUpdateLen = len(self.queuedShadowUpdates)
@@ -397,14 +389,12 @@ class LightManager(DebugObject):
 
         # No updates
         if len(self.queuedShadowUpdates) < 1:
-            # self.shadowComputeTarget.setActive(False)
+            self.shadowComputeTarget.setActive(False)
             self.numShadowUpdatesPTA[0] = 0
 
         else:
 
-            # self.shadowComputeTarget.setActive(True)
-
-            # self.shadowComputeTarget.getInternalRegion().setNumRegions(self.maxShadowUpdatesPerFrame)
+            self.shadowComputeTarget.setActive(True)
 
             for index, update in enumerate(self.queuedShadowUpdates):
                 if numUpdates >= self.maxShadowUpdatesPerFrame:
@@ -425,29 +415,19 @@ class LightManager(DebugObject):
                 self.allShadowsArray[indexInArray] = update
                 self.updateShadowsArray[index] = update
 
-                texScale = float(update.getResolution()) / float(self.shadowAtlasSize)
-
-                # print "texScale:",texScale
+                texScale = float(update.getResolution()) / \
+                    float(self.shadowAtlasSize)
 
                 atlasPos = update.getAtlasPos()
 
-                # print
-                # print
-                # print
-                # print
-                # print numUpdates, "->",(atlasPos.x,atlasPos.x + texScale,atlasPos.y, atlasPos.y + texScale)
                 left, right = atlasPos.x, (atlasPos.x + texScale)
                 bottom, top = atlasPos.y, (atlasPos.y + texScale)
-
-                # print "\t",left,right,bottom,top
-
-
-                self.depthClearer[numUpdates].setDimensions(left, right, bottom, top)
-                # self.depthClearer[numUpdates].setDimensions(0,1,0,1)
+                self.depthClearer[numUpdates].setDimensions(
+                    left, right, bottom, top)
                 self.depthClearer[numUpdates].setActive(True)
 
-                # self.shadowComputeTarget.getInternalRegion().setDimensions(numUpdates, (atlasPos.x,atlasPos.x + texScale,atlasPos.y, atlasPos.y + texScale))
-                self.shadowComputeTarget.getInternalRegion().setDimensions(numUpdates + 1, (atlasPos.x,atlasPos.x + texScale,atlasPos.y, atlasPos.y + texScale))
+                self.shadowComputeTarget.getInternalRegion().setDimensions(
+                    numUpdates + 1, (atlasPos.x, atlasPos.x + texScale, atlasPos.y, atlasPos.y + texScale))
                 numUpdates += 1
 
             for i in xrange(numUpdates):
@@ -457,8 +437,11 @@ class LightManager(DebugObject):
 
         last += "]"
 
-
-
         if self.lightsUpdatedDebugText is not None:
             self.lightsUpdatedDebugText.setText(
                 'Queued Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)) + ", Last: " + last)
+
+    # Main update
+    def update(self):
+        self.updateLights()
+        self.updateShadows()

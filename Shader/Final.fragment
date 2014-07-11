@@ -10,13 +10,11 @@ uniform sampler2D velocityTex;
 uniform sampler2D colorTex;
 uniform sampler2D depthTex;
 
+uniform float motionBlurFactor;
+
 void main() {
 
-
-
-
-    const float motionBlurFactor = 1.7;
-    vec2 pixelVelocity = texture(velocityTex, texcoord).xy / 255.0 * motionBlurFactor;
+    vec2 pixelVelocity = texture(velocityTex, texcoord).xy / 255.0 * motionBlurFactor * 0.8 * 2.0;
 
     float pixelZ = texture(depthTex, texcoord);
     float pixelLinearZ = getLinearZFromZ(pixelZ);
@@ -40,10 +38,6 @@ void main() {
     motionResult /= nSamples-1;
 
     result = vec3(motionResult);
-
-
-    // result = vec3(texture(colorTex, texcoord).rgb);
-    // result = vec3(dofFactor);
 
 
 

@@ -136,7 +136,7 @@ class Main(ShowBase, DebugObject):
                     sampleLight.setRadius(10.0)
 
                     # if i < 8:
-                    sampleLight.setCastsShadows(True)
+                    # sampleLight.setCastsShadows(True)
 
                     sampleLight.setColor(Vec3(math.sin(angle)*0.5 + 0.5, math.cos(angle)*0.5+0.5, 0.5) * 1.0)
 
