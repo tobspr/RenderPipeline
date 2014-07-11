@@ -66,7 +66,6 @@ class RenderTarget(DebugObject):
         self._layers = 0
         self._writeColor = True
 
-        self.mute()
 
     def setLayers(self, layers):
         """ Sets the number of layers. When greater than 1, this enables
@@ -83,10 +82,14 @@ class RenderTarget(DebugObject):
         """ Sets wheter objects can be transparent in this buffer """
         self._enableTransparency = enabled
 
-    def setSize(self, width, height):
+    def setSize(self, width, height=None):
         """ Sets the buffer size in pixels. -1 means as big
         as the current window """
         self._width = width
+
+        if height is None:
+            height = width
+
         self._height = height
 
     def setColorWrite(self, write):
@@ -322,6 +325,8 @@ class RenderTarget(DebugObject):
         bufferRegion.setCamera(bufferCamNode)
         bufferRegion.setActive(1)
 
+        self._setSizeShaderInput()
+
     def setActive(self, active):
         """ You can enable / disable the buffer with this. When disabled,
         shaders on this buffer aren't executed """
@@ -411,8 +416,7 @@ class RenderTarget(DebugObject):
         bufferSize = self._buffer.getSize()
         asInput = Vec4(
             1.0 / bufferSize.x, 1.0 / bufferSize.y, bufferSize.x, bufferSize.y)
-        self.debug("Setting shader input 'bufferSize' as", asInput)
-        self._quad.setShaderInput("bufferSize", asInput)
+        self.setShaderInput("bufferSize", asInput)
 
     def updateSize(self):
         """ Updates the size of this render target. TODO """

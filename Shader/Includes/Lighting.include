@@ -16,8 +16,13 @@ const mat4 shadowBiasMatrix = mat4(
     0.5, 0.5, 0.5, 1.0
 );
 
-// uniform sampler2D shadowAtlas;
-uniform sampler2DShadow shadowAtlas;
+
+#if USE_HARDWARE_PCF
+    uniform sampler2DShadow shadowAtlas;
+#else
+    uniform sampler2D shadowAtlas;
+#endif
+
 
 
 vec2 poissonDisk16[16] = vec2[](
@@ -52,44 +57,51 @@ vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
 
 
 vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, vec3 h, float attenuation) {
-    float roughness = clamp(material.roughness, 0.005, 1.0);
-    float specular = material.specular;
-    float refractiveFactor = material.metallic * 0.5 + 0.5;
 
-    vec3 diffuseColor = material.baseColor * (1.0 - material.metallic);
-    vec3 specularColor = material.baseColor * (material.metallic) + specular * (1.0 - material.metallic);
+    #if USE_SIMPLE_LIGHTING
 
-    // Compute reflection
-    vec3 reflectedDir = reflect( v, n);
+        return max(vec3(0.0), light.color * attenuation * dot(n, l));
 
-    float cubemapResolutionParameter = material.roughness;
-    vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
-    vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
-    vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+    #else
+        float roughness = clamp(material.roughness, 0.005, 1.0);
+        float specular = material.specular;
+        float refractiveFactor = material.metallic * 0.5 + 0.5;
 
-    // Compute specular BRDF
-    float specG = clamp(specularBrdfG(l, v, h, n, roughness), 0, 1);
-    vec3  specF = clamp(specularBrdfFresnel(specularColor, safeDot(v, n)  ) , 0, 1);
+        vec3 diffuseColor = material.baseColor * (1.0 - material.metallic);
+        vec3 specularColor = material.baseColor * (material.metallic) + specular * (1.0 - material.metallic);
 
-    // D is not clamped, highlights can get very bright
-    float specD = specularBrdfD(n, h, roughness); 
+        // Compute reflection
+        vec3 reflectedDir = reflect( v, n);
 
-    // Compute diffuse BRDF
-    // vec3 diffuseBrdf = diffuseBrdfOrenNayar(l, v, n) * safeDot(n, l);
-    vec3 diffuseBrdf = vec3(diffuseBrdfSimpleOrenNayar(l, v, n, 1.5));
+        float cubemapResolutionParameter = material.roughness;
+        vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
+        vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
+        vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+
+        // Compute specular BRDF
+        float specG = clamp(specularBrdfG(l, v, h, n, roughness), 0, 1);
+        vec3  specF = clamp(specularBrdfFresnel(specularColor, safeDot(v, n)  ) , 0, 1);
+
+        // D is not clamped, highlights can get very bright
+        float specD = specularBrdfD(n, h, roughness); 
+
+        // Compute diffuse BRDF
+        // vec3 diffuseBrdf = diffuseBrdfOrenNayar(l, v, n) * safeDot(n, l);
+        vec3 diffuseBrdf = vec3(diffuseBrdfSimpleOrenNayar(l, v, n, 1.5));
+
+        // Combine specular
+        vec3 specularTerm = (specF * specG * specD) * max(0.0, 4.0 * dot(n, l) * dot(n, v));
+
+        // Compute total contributions
+        vec3 diffuseContribution = diffuseColor * diffuseBrdf * attenuation * light.color;
+        vec3 specularContribution = specularTerm * attenuation * light.color * specular; 
+        vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor * specF * attenuation * light.color * safeDot(n, l);
 
 
-    // Combine specular
-    vec3 specularTerm = (specF * specG * specD) * max(0.0, 4.0 * dot(n, l) * dot(n, v));
+        vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
+        return max(vec3(0.0), combinedContribution);
 
-    // Compute total contributions
-    vec3 diffuseContribution = diffuseColor * diffuseBrdf * attenuation * light.color;
-    vec3 specularContribution = specularTerm * attenuation * light.color * specular; 
-    vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor * specF * attenuation * light.color * safeDot(n, l);
-
-
-    vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
-    return combinedContribution;
+    #endif
 
 
 }
@@ -131,7 +143,6 @@ vec3 applyPointLight(Light light, Material material) {
 
 vec3 applyPointLightWithShadow(Light light, Material material) {
 
-
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 
     float attenuation = computePointLightAttenuation(light, distanceToLight);
@@ -161,42 +172,33 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
     projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);
     projected = shadowBiasMatrix * projected;                 
     vec3 projCoord = projected.xyz / projected.w;
-    // float bias = 0.002 * (0.2 + distanceRelative*0.8) * (1.0 + resolutionFactor*0.2) ;
-    // float bias = 0.002 * (0.2 + 1.0 * 0.8) * (1.0 + resolutionFactor*0.2) ;
 
-    // bias = 0.000;
 
     float cosTheta = clamp( dot(n, l), 0.0, 1.0 );
-    float bias = 0.001*(0.1+distanceRelative*1.5)*tan(acos(cosTheta)); // cosTheta is dot( n,l ), clamped between 0 and 1
-    bias = clamp(bias, 0.0, 0.01);
+    float bias = 0.003*(0.0+distanceRelative*1.0)*tan(acos(cosTheta)); 
+    bias = clamp(bias, 0.00, 0.04);
 
+    // bias = -0.001;
+    
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
 
-    // float rnd = getRandom(texcoord);
-
     for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
-        // int index = int(i*SHADOWS_NUM_SAMPLES + rnd*4.0)%16;
-
 
         vec2 offset = poissonDisk16[i] * sampleFactor;
-        // vec2 offset = vec2(0);
-        // float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
-        float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - bias) ).r;
 
-        sampled = sampled*sampled;
+        #if USE_HARDWARE_PCF
+            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - bias) ).r;
+            sampled = sampled*sampled;
+            shadowFactor += (1.0 -sampled) / SHADOWS_NUM_SAMPLES;
+        #else
+            float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
+            shadowFactor += step(sampled, projCoord.z - bias) / SHADOWS_NUM_SAMPLES;        
 
-
-        // shadowFactor += step(sampled, projCoord.z - bias) / SHADOWS_NUM_SAMPLES;        
-        shadowFactor += (1.0 -sampled) / SHADOWS_NUM_SAMPLES;
+        #endif
     }
 
     // Apply shadows
     rawLighting *= max(0.0, 1.0 - shadowFactor);
-
-    // rawLighting = vec3(1.0 - shadowFactor) * attenuation;
-    // rawLighting = vec3(bias * 10.0);
-
-    // return vec3(1.0 - shadowFactor) * 0.1;
     return rawLighting;
 }
 

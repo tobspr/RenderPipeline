@@ -10,7 +10,7 @@ in vec2 texcoord;
 void main() {
 
     // Create a material to store the properties on
-    BaseMaterial m;
+    Material m;
 
     m.metallic = 0.0;
     m.roughness = 0.0;

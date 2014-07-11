@@ -1,9 +1,13 @@
 Deferred Render Pipeline
 ==============
 
-Complete deferred render pipeline for panda3d (Work in progress)
+Complete deferred render pipeline for panda3d (Work in progress).
+Wiki & Instructions how to setup: https://github.com/tobspr/RenderPipeline/wiki
 
-### Features:
+
+
+
+#### Planned Features:
 
 ##### Deferred rendering (obviously)
 - Still allows some objects to have forward passes
@@ -83,3 +87,5 @@ Complete deferred render pipeline for panda3d (Work in progress)
 
 ##### Approximated Chromatic Aberration
 
+
+Thanks especially to rdb and all the others for support & help!

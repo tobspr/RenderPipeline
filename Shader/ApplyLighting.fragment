@@ -84,7 +84,11 @@ void main() {
         currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
         currentLight = lights[currentLightId];
 
-        result += applyPointLightWithShadow(currentLight, material);
+        #if USE_SHADOWS
+            result += applyPointLightWithShadow(currentLight, material);
+        #else:
+            result += applyPointLight(currentLight, material);
+        #endif
     }
 
     // result = material.normal * step(material.position.z, 0.01);

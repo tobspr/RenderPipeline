@@ -6,7 +6,7 @@
 // is faster or slower ..
 
 // EDIT: As of now, not unrolling is faster
-// #pragma optionNV (unroll all)
+#pragma optionNV (unroll all)
 
 
 // Includes

@@ -1,94 +1,156 @@
 
-from DebugObject import DebugObject
-from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, PTAMat4, LVecBase2i
-from panda3d.core import RenderState, ColorWriteAttrib, DepthWriteAttrib, PTAInt
-from panda3d.core import CullFaceAttrib, PTALVecBase4f, PTAInt
+from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, RenderState
+from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
+from panda3d.core import OmniBoundingVolume, PTAInt
 
+from Light import Light
+from DebugObject import DebugObject
 from BetterShader import BetterShader
 from RenderTarget import RenderTarget
-from RenderTargetType import RenderTargetType
-from ShaderStructArray import ShaderStructArray
 from ShadowSource import ShadowSource
-from Light import Light
+from ShadowAtlas import ShadowAtlas
+from ShaderStructArray import ShaderStructArray
 
 
 class LightManager(DebugObject):
 
+    """ This class is internally used by the RenderingPipeline to handle
+    Lights and their Shadows. It stores a list of lights, and updates the
+    required ShadowSources per frame. There are two main update methods:
+
+    updateLights processes each light and does a basic frustum check.
+    If the light is in the frustum, its ID is passed to the light precompute
+    container (set with setLightingCuller). Also, each shadowSource of
+    the light is checked, and if it reports to be invalid, it's queued to
+    the list of queued shadow updates.
+
+    updateShadows processes the queued shadow updates and setups everything
+    to render the shadow depth textures to the shadow atlas.
+
+    Lights can be added with addLight. Notice you cannot change the shadow
+    resolution or even wether the light casts shadows after you called addLight.
+    This is because it might already have a position in the atlas, and so
+    the atlas would have to delete it's map, which is not supported (yet).
+    This shouldn't be an issue, as you usually always know before if a
+    light will cast shadows or not.
+
+    """
+
     def __init__(self, pipeline):
+        """ Creates a new LgightManager. It expects a RenderPipeline as parameter. """
         DebugObject.__init__(self, "LightManager")
 
         self._initArrays()
 
         self.pipeline = pipeline
+        self.settings = pipeline.getSettings()
 
-        # create arrays to store lights & shadow sources
+        # Create arrays to store lights & shadow sources
         self.lights = []
         self.shadowSources = []
+        self.queuedShadowUpdates = []
         self.allLightsArray = ShaderStructArray(Light, 30)
 
         self.cullBounds = None
         self.shadowScene = render
 
-        ## SHADOW ATLAS ##
-        # todo: move to separate class
+        # Create atlas
+        self.shadowAtlas = ShadowAtlas()
+        self.shadowAtlas.setSize(self.settings.shadowAtlasSize)
+        self.shadowAtlas.create()
 
-        # When you change this, change also SHADOW_MAP_ATLAS_SIZE in configuration.include,
-        # and reduce the default shadow map resolution of point lights
-        self.shadowAtlasSize = 8192
         self.maxShadowMaps = 24
-
-        # When you change it , change also SHAODOW_GEOMETRY_MAX_VERTICES and
-        # SHADOW_MAX_UPDATES_PER_FRAME in configuration.include!
-        self.maxShadowUpdatesPerFrame = 2
-        self.tileSize = 128
-        self.tileCount = self.shadowAtlasSize / self.tileSize
-        self.tiles = []
+        self.maxShadowUpdatesPerFrame = self.settings.maxShadowUpdatesPerFrame
+        self.numShadowUpdatesPTA = PTAInt.emptyArray(1)
 
         self.updateShadowsArray = ShaderStructArray(
             ShadowSource, self.maxShadowUpdatesPerFrame)
         self.allShadowsArray = ShaderStructArray(
             ShadowSource, self.maxShadowMaps)
 
-        # self.shadowAtlasTex = Texture("ShadowAtlas")
-        # self.shadowAtlasTex.setup2dTexture(
-        #     self.shadowAtlasSize, self.shadowAtlasSize, Texture.TFloat, Texture.FRg16)
-        # self.shadowAtlasTex.setMinfilter(Texture.FTLinear)
-        # self.shadowAtlasTex.setMagfilter(Texture.FTLinear)
-        self.debug("Init shadow atlas with tileSize =",
-                   self.tileSize, ", tileCount =", self.tileCount)
+        # Create shadow compute buffer
+        self._createShadowComputationBuffer()
 
-        for i in xrange(self.tileCount):
-            self.tiles.append([None for j in xrange(self.tileCount)])
+        # Create shadow caster shader
+        self.shadowCasterShader = BetterShader.load(
+            "Shader/DefaultShadowCaster.vertex",
+            "Shader/DefaultShadowCaster.fragment",
+            "Shader/DefaultShadowCaster.geometry")
 
-        # create shadow compute buffer
+        # Create the initial shadow state
+        self.shadowComputeCamera.setTagStateKey("ShadowPassShader")
+        initialState = NodePath("ShadowCasterState")
+        initialState.setShader(self.shadowCasterShader, 30)
+        self.shadowComputeCamera.setInitialState(RenderState.make(
+            ColorWriteAttrib.make(ColorWriteAttrib.C_off),
+            DepthWriteAttrib.make(DepthWriteAttrib.M_on),
+            # CullFaceAttrib.make(CullFaceAttrib.M_cull_counter_clockwise),
+            100))
+
+        self.shadowComputeCamera.setTagState(
+            "Default", initialState.getState())
+        self.shadowScene.setTag("ShadowPassShader", "Default")
+
+        # Create debug overlay
+        self._createDebugTexts()
+
+        # Bind arrays
+        self.updateShadowsArray.bindTo(self.shadowScene, "updateSources")
+        self.updateShadowsArray.bindTo(
+            self.shadowComputeTarget, "updateSources")
+
+        # Set initial inputs
+        for target in [self.shadowComputeTarget, self.shadowScene]:
+            target.setShaderInput("numUpdates", self.numShadowUpdatesPTA)
+
+        self.lightingComputator = None
+        self.lightCuller = None
+
+    def _createShadowComputationBuffer(self):
+        """ This creates the internal shadow buffer which also is the
+        shadow atlas. Shadow maps are rendered to this using Viewports
+        (thank you rdb for adding this!). It also setups the base camera
+        which renders the shadow objects, although a custom mvp is passed
+        to the shaders, so the camera is mainly a dummy """
+
+        # Create camera showing the whole scene
         self.shadowComputeCamera = Camera("ShadowComputeCamera")
         self.shadowComputeCameraNode = self.shadowScene.attachNewNode(
             self.shadowComputeCamera)
         self.shadowComputeCamera.getLens().setFov(90, 90)
         self.shadowComputeCamera.getLens().setNearFar(10.0, 100000.0)
 
+        # Disable culling
+        self.shadowComputeCamera.setBounds(OmniBoundingVolume())
+
         self.shadowComputeCameraNode.setPos(0, 0, 150)
         self.shadowComputeCameraNode.lookAt(0, 0, 0)
 
         self.shadowComputeTarget = RenderTarget("ShadowCompute")
-        self.shadowComputeTarget.setSize(
-            self.shadowAtlasSize, self.shadowAtlasSize)
-        # self.shadowComputeTarget.setLayers(self.maxShadowUpdatesPerFrame)
+        self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.setDepthBits(32)
         self.shadowComputeTarget.setSource(
             self.shadowComputeCameraNode, base.win)
         self.shadowComputeTarget.prepareSceneRender()
 
+        # We have to adjust the sort
         self.shadowComputeTarget.getInternalRegion().setSort(3)
         self.shadowComputeTarget.getRegion().setSort(3)
 
         self.shadowComputeTarget.getInternalRegion().setNumRegions(
             self.maxShadowUpdatesPerFrame + 1)
+
+        # The first viewport always has to be fullscreen
         self.shadowComputeTarget.getInternalRegion().setDimensions(
             0, (0, 1, 0, 1))
         self.shadowComputeTarget.setClearDepth(False)
 
+        # We can't clear the depth per viewport.
+        # But we need to clear it in any way, as we still want
+        # z-testing in the buffers. So well, we create a
+        # display region *below* (smaller sort value) each viewport
+        # which has a depth-clear assigned. This is hacky, I know.
         self.depthClearer = []
 
         for i in xrange(self.maxShadowUpdatesPerFrame):
@@ -101,78 +163,39 @@ class LightManager(DebugObject):
             dr.setDimensions(0, 0, 0, 0)
             self.depthClearer.append(dr)
 
+        # When using hardware pcf, set the correct filter types
+        if self.settings.useHardwarePCF:
+            dTex = self.shadowComputeTarget.getDepthTexture()
+            dTex.setMinfilter(Texture.FTShadow)
+            dTex.setMagfilter(Texture.FTShadow)
 
-        dTex = self.shadowComputeTarget.getDepthTexture()
-        dTex.setMinfilter(Texture.FTShadow)
-        dTex.setMagfilter(Texture.FTShadow)
-
-        self.queuedShadowUpdates = []
-
-        # Assign copy shader
-        self._setCopyShader()
-        # self.shadowComputeTarget.setShaderInput("atlas", self.shadowComputeTarget.getColorTexture())
-        # self.shadowComputeTarget.setShaderInput(
-        #     "renderResult", self.shadowComputeTarget.getDepthTexture())
-
-        # self.shadowComputeTarget.setActive(False)
-
-        # Create shadow caster shader
-        self.shadowCasterShader = BetterShader.load(
-            "Shader/DefaultShadowCaster.vertex", "Shader/DefaultShadowCaster.fragment", "Shader/DefaultShadowCaster.geometry")
-
-        self.shadowComputeCamera.setTagStateKey("ShadowPass")
-        initialState = NodePath("ShadowCasterState")
-        initialState.setShader(self.shadowCasterShader, 30)
-        self.shadowComputeCamera.setInitialState(RenderState.make(
-            ColorWriteAttrib.make(ColorWriteAttrib.C_off),
-            DepthWriteAttrib.make(DepthWriteAttrib.M_on),
-            CullFaceAttrib.make(CullFaceAttrib.M_cull_clockwise),
-            100))
-
-        self.shadowComputeCamera.setTagState("True", initialState.getState())
-        self.shadowScene.setTag("ShadowPass", "True")
-
-        self._createDebugTexts()
-
-        self.updateShadowsArray.bindTo(self.shadowScene, "updateSources")
-        self.updateShadowsArray.bindTo(
-            self.shadowComputeTarget, "updateSources")
-
-        self.numShadowUpdatesPTA = PTAInt.emptyArray(1)
-
-        # Set initial inputs
-        for target in [self.shadowComputeTarget, self.shadowScene]:
-            target.setShaderInput("numUpdates", self.numShadowUpdatesPTA)
-
-        self.lightingComputator = None
-        self.lightCuller = None
-
-    # Tries to create debug text to show how many lights are currently visible
-    # / rendered
     def _createDebugTexts(self):
-        try:
-            from FastText import FastText
-            self.lightsVisibleDebugText = FastText(pos=Vec2(
-                base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
-            self.lightsUpdatedDebugText = FastText(pos=Vec2(
-                base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
+        """ Creates a debug overlay if specified in the pipeline settings """
+        self.lightsVisibleDebugText = None
+        self.lightsUpdatedDebugText = None
 
-        except Exception, msg:
-            self.debug("Could not load fast text:", msg)
-            self.debug("Overlay is disabled because FastText wasn't loaded")
-            self.lightsVisibleDebugText = None
-            self.lightsUpdatedDebugText = None
+        if self.settings.displayDebugStats:
 
-    # Inits the light arrays passed to the shader
+            # FastText only is in my personal shared directory. It's not
+            # in the git-repository. So to prevent errors, this try is here.
+            try:
+                from FastText import FastText
+                self.lightsVisibleDebugText = FastText(pos=Vec2(
+                    base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
+                self.lightsUpdatedDebugText = FastText(pos=Vec2(
+                    base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
+
+            except Exception, msg:
+                self.debug(
+                    "Overlay is disabled because FastText wasn't loaded")
+
     def _initArrays(self):
-
-        # Max Visible Lights (limited because shaders can have max 1024 uniform
-        # floats)
+        """ Inits the light arrays which are passed to the shaders """
 
         # If you change this, don't forget to change it also in
         # Shader/Includes/Configuration.include!
         self.maxLights = {
-            "PointLight": 8,
+            "PointLight": 16,
             # "DirectionalLight": 2
         }
 
@@ -189,7 +212,8 @@ class LightManager(DebugObject):
         self.numRenderedLights = {}
 
         # Also create a PTAInt for every light type, which stores only the
-        # light id
+        # light id, the lighting shader will then lookup the light in the
+        # global lights array.
         self.renderedLightsArrays = {}
         for lightType, maxCount in self.maxLights.items():
             self.renderedLightsArrays[lightType] = PTAInt.emptyArray(maxCount)
@@ -200,9 +224,9 @@ class LightManager(DebugObject):
                 lightType + "Shadow"] = PTAInt.emptyArray(maxCount)
             self.numRenderedLights[lightType + "Shadow"] = PTAInt.emptyArray(1)
 
-    # Sets the render target which recieves the shaderinputs necessary to
-    # Compute the final lighting result
     def setLightingComputator(self, shaderNode):
+        """ Sets the render target which recieves the shaderinputs necessary to 
+        compute the final lighting result """
         self.debug("Light computator is", shaderNode)
         self.lightingComputator = shaderNode
 
@@ -214,9 +238,9 @@ class LightManager(DebugObject):
             shaderNode.setShaderInput(
                 "count" + lightType, self.numRenderedLights[lightType])
 
-    # Sets the render target which recieves the shaderInputs necessary to
-    # cull the lights and pass the result to the computator
     def setLightingCuller(self, shaderNode):
+        """ Sets the render target which recieves the shaderinputs necessary to 
+        cull the lights and pass the result to the lighting computator"""
         self.debug("Light culler is", shaderNode)
         self.lightCuller = shaderNode
 
@@ -229,85 +253,43 @@ class LightManager(DebugObject):
             shaderNode.setShaderInput(
                 "count" + lightType, self.numRenderedLights[lightType])
 
-    # Returns the shadow map atlas. You can use this for debugging
     def getAtlasTex(self):
+        """ Returns the shadow map atlas texture"""
         return self.shadowComputeTarget.getDepthTexture()
 
-    # Assigns the copy shader which copies the rendered shadowmap to the atlas
-    def _setCopyShader(self):
-        # copyShader = BetterShader.load(
-            # "Shader/DefaultPostProcess.vertex", "Shader/CopyToShadowAtlas.fragment")
-        # self.shadowComputeTarget.setShader(copyShader)
-        pass
-
-    # Internal method to add a shadowSource to the list of queued updates
     def _queueShadowUpdate(self, source):
+        """ Internal method to add a shadowSource to the list of queued updates """
         if source not in self.queuedShadowUpdates:
             self.queuedShadowUpdates.append(source)
 
-    # Finds a position in the shadow atlas for a tile. Todo: Move to a
-    # seperate class
-    def _findAndReserveShadowAtlasPosition(self, w, h, idx):
-        tileW, tileH = w / self.tileSize, h / self.tileSize
-        # self.debug("Finding position for map of size (", w, "x", h, "), (", tileW, "x", tileH, ")")
-        maxIterW = self.tileCount - tileW + 1
-        maxIterH = self.tileCount - tileH + 1
-
-        tileFound = False
-        tilePos = -1, -1
-
-        for j in xrange(0, maxIterW):
-            if tileFound:
-                break
-            for i in xrange(0, maxIterH):
-                if tileFound:
-                    break
-                tileFree = True
-                # check tile starting at (i, j)
-                for x in xrange(tileW):
-                    for y in xrange(tileH):
-                        if not tileFree:
-                            break
-                        if self.tiles[j + y][i + x] is not None:
-                            tileFree = False
-                            break
-                if tileFree:
-                    tileFound = True
-                    tilePos = i, j
-                    break
-
-        if tileFound:
-            self.debug(
-                "Tile for shadowSource #" + str(idx) + " found at", tilePos[0] * self.tileSize, "/", tilePos[1] * self.tileSize)
-            for x in xrange(0, tileW):
-                for y in xrange(0, tileH):
-                    self.tiles[y + tilePos[1]][x + tilePos[0]] = idx
-        else:
-            self.error("No free tile found! Have to update whole atlas maybe?")
-            return Vec2(-1000, -1000)
-
-        return Vec2(float(tilePos[0]) / float(self.tileCount), float(tilePos[1]) / float(self.tileCount))
-
-    # Adds a light to the list of rendered lights
     def addLight(self, light):
+        """ Adds a light to the list of rendered lights.
+
+        NOTICE: You have to set relevant properties like wheter the light
+        casts shadows or the shadowmap resolution before calling this! 
+        Otherwise it won't work (and maybe crash? I didn't test, 
+        just DON'T DO IT!) """
         self.lights.append(light)
         light.attached = True
 
         sources = light.getShadowSources()
+
+        # Check each shadow source
         for index, source in enumerate(sources):
 
-            # Check for resolution
-            if source.resolution < self.tileSize or source.resolution % self.tileSize != 0:
+            # Check for correct resolution
+            tileSize = self.shadowAtlas.getTileSize()
+            if source.resolution < tileSize or source.resolution % tileSize != 0:
                 self.warn(
-                    "The ShadowSource resolution has to be a multiple of the tile size (" + str(self.tileSize) + ")!")
-                self.warn("Adjusting resolution to", self.tileSize)
-                source.resolution = self.tileSize
+                    "The ShadowSource resolution has to be a multiple of the tile size (" + str(tileSize) + ")!")
+                self.warn("Adjusting resolution to", tileSize)
+                source.resolution = tileSize
 
-            if source.resolution > self.shadowAtlasSize:
+            if source.resolution > self.shadowAtlas.getSize():
                 self.warn(
-                    "The ShadowSource resolution cannot be bigger than the atlas size (" + str(self.shadowAtlasSize) + ")")
-                self.warn("Adjusting resolution to", self.tileSize)
-                source.resolution = self.tileSize
+                    "The ShadowSource resolution cannot be bigger than the atlas size (" + str(self.shadowAtlas.getSize()) + ")")
+                self.warn("Adjusting resolution to", tileSize)
+                source.resolution = tileSize
 
             if source not in self.shadowSources:
                 self.shadowSources.append(source)
@@ -321,19 +303,22 @@ class LightManager(DebugObject):
         light.queueUpdate()
         light.queueShadowUpdate()
 
-    # Removes a light
     def removeLight(self):
+        """ Removes a light. TODO """
         raise NotImplementedError()
 
-    # Reloads the shaders
     def debugReloadShader(self):
-        self._setCopyShader()
+        """ Reloads all shaders. We currently don't use any for the
+        internal lighting, so this does nothing """
 
-    # Sets the bounds used for culling
     def setCullBounds(self, bounds):
+        """ Sets the current camera bounds used for light culling """
         self.cullBounds = bounds
 
     def updateLights(self):
+        """ This is one of the two per-frame-tasks. See class description
+        to see what it does """
+
         # Reset light counts
         # We don't have to reset the data-vectors, as we overwrite them
         for key in self.numRenderedLights:
@@ -346,9 +331,9 @@ class LightManager(DebugObject):
             if light.needsUpdate():
                 light.performUpdate()
 
-            # Check if visible
-            # if not self.cullBounds.contains(light.getBounds()):
-            #     continue
+            # Perform culling
+            if not self.cullBounds.contains(light.getBounds()):
+                continue
 
             # Queue shadow updates if necessary
             if light.hasShadows() and light.needsShadowUpdate():
@@ -356,9 +341,8 @@ class LightManager(DebugObject):
                 for update in neededUpdates:
                     self._queueShadowUpdate(update)
 
+            # Add light to the correct list now
             lightTypeName = light.getTypeName()
-
-            # Add to the correct list now
             if light.hasShadows():
                 lightTypeName += "Shadow"
 
@@ -367,22 +351,26 @@ class LightManager(DebugObject):
 
             if oldCount >= self.maxLights[lightTypeName]:
                 self.warn("Too many lights of type", lightTypeName,
-                           "-> max is", self.maxLights[lightTypeName])
+                          "-> max is", self.maxLights[lightTypeName])
                 continue
 
             arrayIndex = self.numRenderedLights[lightTypeName][0]
             self.numRenderedLights[lightTypeName][0] = oldCount + 1
             self.renderedLightsArrays[lightTypeName][arrayIndex] = index
 
-        renderedPL = "P:" + str(self.numRenderedLights["PointLight"][0])
-        renderedPL_S = "SP:" + \
-            str(self.numRenderedLights["PointLightShadow"][0])
-
+        # Generate debug text
         if self.lightsVisibleDebugText is not None:
+            renderedPL = "Point:" + \
+                str(self.numRenderedLights["PointLight"][0])
+            renderedPL_S = "ShadowedPoint:" + \
+                str(self.numRenderedLights["PointLightShadow"][0])
+
             self.lightsVisibleDebugText.setText(
                 'Lights: ' + renderedPL + "/" + renderedPL_S)
 
     def updateShadows(self):
+        """ This is one of the two per-frame-tasks. See class description
+        to see what it does """
 
         # Process shadows
         queuedUpdateLen = len(self.queuedShadowUpdates)
@@ -391,46 +379,73 @@ class LightManager(DebugObject):
         numUpdates = 0
         last = "[ "
 
-        # print
-
+        # First, disable all clearers
         for clearer in self.depthClearer:
             clearer.setActive(False)
 
-        # No updates
+        # When there are no updates, disable the buffer
         if len(self.queuedShadowUpdates) < 1:
             self.shadowComputeTarget.setActive(False)
             self.numShadowUpdatesPTA[0] = 0
 
         else:
 
+            # Otherwise enable the buffer
             self.shadowComputeTarget.setActive(True)
 
+            # Check each update in the queue
             for index, update in enumerate(self.queuedShadowUpdates):
+
+                # We only process a limited number of shadow maps
                 if numUpdates >= self.maxShadowUpdatesPerFrame:
                     break
 
-                update.setValid()
                 updateSize = update.getResolution()
 
                 # assign position in atlas if not done yet
                 if not update.hasAtlasPos():
-                    storePos = self._findAndReserveShadowAtlasPosition(
+
+                    storePos = self.shadowAtlas.reserveTiles(
                         updateSize, updateSize, update.getUid())
+
+                    if not storePos:
+
+                        # No space found, try to reduce resolution
+                        self.warn(
+                            "Could not find space for the shadow map of size", updateSize)
+                        self.warn(
+                            "The size will be reduced to", self.shadowAtlas.getTileSize())
+
+                        updateSize = self.shadowAtlas.getTileSize()
+                        update.setResolution(updateSize)
+                        storePos = self.shadowAtlas.reserveTiles(
+                            updateSize, updateSize, update.getUid())
+
+                        if not storePos:
+                            self.error(
+                                "Still could not find a shadow atlas position, "
+                                "the shadow atlas is completely full. "
+                                "Either we reduce the resolution of existing shadow maps, "
+                                "increase the shadow atlas resolution, "
+                                "or crash the app. Guess what I decided to do :-P")
+
+                            import sys
+                            sys.exit(0)
+
                     update.assignAtlasPos(*storePos)
 
                 update.update()
 
-                # self.warn("Queuing",update)
-
+                # Store update in array
                 indexInArray = self.shadowSources.index(update)
                 self.allShadowsArray[indexInArray] = update
                 self.updateShadowsArray[index] = update
 
+                # Compute viewport & set depth clearer
                 texScale = float(update.getResolution()) / \
-                    float(self.shadowAtlasSize)
+                    float(self.shadowAtlas.getSize())
 
                 atlasPos = update.getAtlasPos()
-
                 left, right = atlasPos.x, (atlasPos.x + texScale)
                 bottom, top = atlasPos.y, (atlasPos.y + texScale)
                 self.depthClearer[numUpdates].setDimensions(
@@ -438,9 +453,20 @@ class LightManager(DebugObject):
                 self.depthClearer[numUpdates].setActive(True)
 
                 self.shadowComputeTarget.getInternalRegion().setDimensions(
-                    numUpdates + 1, (atlasPos.x, atlasPos.x + texScale, atlasPos.y, atlasPos.y + texScale))
+                    numUpdates + 1, (atlasPos.x, atlasPos.x + texScale,
+                                     atlasPos.y, atlasPos.y + texScale))
                 numUpdates += 1
 
+                # Finally, we can tell the update it's valid now.
+                # Actually this is only true in one frame, but who cares?
+                update.setValid()
+
+                # Only add the uid to the output if the max updates
+                # aren't too much. Otherwise we spam the screen :P
+                if self.maxShadowUpdatesPerFrame <= 8:
+                    last += str(update.getUid()) + " "
+
+            # Remove all updates which got processed from the list
             for i in xrange(numUpdates):
                 self.queuedShadowUpdates.remove(self.queuedShadowUpdates[0])
 
@@ -448,6 +474,7 @@ class LightManager(DebugObject):
 
         last += "]"
 
+        # Generate debug text
         if self.lightsUpdatedDebugText is not None:
             self.lightsUpdatedDebugText.setText(
                 'Queued Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)) + ", Last: " + last)
