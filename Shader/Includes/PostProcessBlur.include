@@ -1,0 +1,79 @@
+
+
+#include "Includes/Configuration.include"
+#include "Includes/Packing.include"
+
+
+
+const vec2 blurResolution = vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+const float normalsDiscardThreshold = 0.7;
+
+
+vec4 blurSource(ivec2 screenCoord, ivec2 direction, sampler2D colorTex, sampler2D normalTex) {
+
+    #ifdef USE_BLUR
+
+        float blurWeights[9] = float[9]
+        (
+            0.013519569015984728,
+            0.047662179108871855,
+            0.11723004402070096,
+            0.20116755999375591,
+            0.240841295721373,
+            0.20116755999375591,
+            0.11723004402070096,
+            0.047662179108871855,
+            0.013519569015984728
+        );
+
+
+        ivec2 clampMin = ivec2(9);
+        ivec2 clampMax = textureSize(colorTex, 0) - ivec2(10);
+
+        clampMin = ivec2(0);
+        clampMax = ivec2(99999);
+
+        vec3 normals[9];
+        vec4 colors[9];
+
+        // First, fetch all required values
+        for (int i = 0; i < 9; i++) {
+            ivec2 coord = clamp(screenCoord + direction*(i-4), clampMin, clampMax);
+            normals[i] = decodeNormal(texelFetch(normalTex, coord, 0).xy);
+            colors[i] = texelFetch(colorTex, coord, 0);
+        }
+
+        vec3 normal = normals[4];
+        // normal = vec3(0);
+
+        float alphaResult = 0.0;
+        float alphaWeights = 0.0;
+
+        vec3 colorResult = vec3(0);
+
+
+        // Check for edges, we are performing a blur + an edge preserving blur
+        for (int i = 0; i < 9; i++) {
+            float weight = blurWeights[i];
+            vec4 sampled = colors[i];
+
+            float normalInfluenceFactor = step(normalsDiscardThreshold, dot(normals[i], normal));
+            alphaResult += sampled.a*weight*normalInfluenceFactor;
+            alphaWeights += weight*normalInfluenceFactor;   
+            colorResult += colors[i].rgb * weight;
+        }
+
+        alphaResult /= alphaWeights;
+        colorResult = colors[4].rgb;
+
+        return vec4(colorResult, alphaResult);
+
+
+
+    #else
+
+        return texelFetch(colorTex, screenCoord, 0);
+
+    #endif
+}

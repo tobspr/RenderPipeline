@@ -27,6 +27,9 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("anyLightBoundCheck", bool, True)
         self._addSetting("accurateLightBoundCheck", bool, True)
 
+        # [SSDO]
+        self._addSetting("ssdoSampleCount", int, 16)
+
         # [Shadows]
         self._addSetting("renderShadows", bool, True)
         self._addSetting("shadowAtlasSize", int, 8192)

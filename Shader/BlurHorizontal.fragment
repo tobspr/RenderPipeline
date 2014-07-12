@@ -1,0 +1,16 @@
+#version 130
+
+#include "Includes/Configuration.include"
+#include "Includes/PostProcessBlur.include"
+
+uniform sampler2D colorTex;
+uniform sampler2D normalTex;
+
+in vec2 texcoord;
+
+void main() {
+    ivec2 screenCoord = ivec2(texcoord * textureSize(colorTex, 0) );
+    vec4 blurResult = blurSource(screenCoord, ivec2(1, 0), colorTex, normalTex);
+    gl_FragColor = vec4(blurResult.rgb * blurResult.a, 1); 
+    // gl_FragColor = vec4(blurResult.rgb, 1); 
+}

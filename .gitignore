@@ -7,3 +7,4 @@ Shader/Cache/
 PerformanceTesting
 MeshSimplifier
 Assets/
+*.sublime-workspace

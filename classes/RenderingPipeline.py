@@ -9,7 +9,6 @@ from direct.gui.OnscreenImage import OnscreenImage
 
 from LightManager import LightManager
 from RenderTarget import RenderTarget
-from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 from BetterShader import BetterShader
 from Antialiasing import AntialiasingTechniqueSMAA
@@ -134,16 +133,24 @@ class RenderingPipeline(DebugObject):
 
         # Setup combiner for temporal reprojetion
         self._createCombiner()
+
+        self._createDofStorage()
+        self._createBlurBuffer()
+
         self._setupAntialiasing()
         self._setupFinalPass()
+
+        self._setShaderInputs()
 
         # add update task
         self._attachUpdateTask()
 
         # display shadow atlas is defined
         if self.settings.displayShadowAtlas:
-            self.atlasDisplayImage = OnscreenImage(image=self.lightManager.getAtlasTex(), pos=(
-                base.getAspectRatio() - 0.35, 0, 0.5), scale=(0.25, 0, 0.25))
+            self.atlasDisplayImage = OnscreenImage(
+                image=self.lightManager.getAtlasTex(), pos=(
+                    base.getAspectRatio() - 0.35, 0, 0.5),
+                scale=(0.25, 0, 0.25))
 
     def getForwardScene(self):
         """ Reparent objects to this scene to use forward rendering.
@@ -164,24 +171,6 @@ class RenderingPipeline(DebugObject):
         self.combiner = RenderTarget("Combine-Temporal")
         self.combiner.addColorTexture()
         self.combiner.prepareOffscreenBuffer()
-
-        self.combiner.setShaderInput(
-            "currentComputation", self.lightingComputeContainer.getColorTexture())
-        self.combiner.setShaderInput(
-            "lastFrame", self.lightingComputeCombinedTex)
-        self.combiner.setShaderInput(
-            "positionBuffer", self.deferredTarget.getColorTexture())
-        self.combiner.setShaderInput(
-            "velocityBuffer", self.deferredTarget.getAuxTexture(1))
-        self.combiner.setShaderInput("lastPosition", self.lastPositionBuffer)
-        self.combiner.setShaderInput(
-            "temporalProjXOffs", self.temporalProjXOffs)
-        self.combiner.setShaderInput("cameraPosition", self.cameraPosition)
-
-        # Set last / current mvp handles
-        self.combiner.setShaderInput("lastMVP", self.lastMVP)
-        render.setShaderInput("lastMVP", self.lastMVP)
-        self.combiner.setShaderInput("currentMVP", self.lastMVP)
         self._setCombinerShader()
 
     def _setupAntialiasing(self):
@@ -194,19 +183,13 @@ class RenderingPipeline(DebugObject):
             self.antialias = AntialiasingTechniqueSMAA()
         else:
             self.error(
-                "Unkown antialiasing technique, using SMAA:", self.antialiasingTechniquel)
+                "Unkown antialiasing technique, using SMAA:",
+                self.antialiasingTechniquel)
             self.antialias = AntialiasingTechniqueSMAA()
 
-        self.antialias.setColorTexture(self.combiner.getColorTexture())
+        self.antialias.setColorTexture(self.blurBufferH.getColorTexture())
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setup()
-
-        self.antialias.getFirstBuffer().setShaderInput(
-            "lastFrame", self.lightingComputeCombinedTex)
-        self.antialias.getFirstBuffer().setShaderInput(
-            "lastPosition", self.lastPositionBuffer)
-        self.antialias.getFirstBuffer().setShaderInput(
-            "currentPosition", self.deferredTarget.getColorTexture())
 
     def _makeDeferredTargets(self):
         """ Creates the multi-render-target """
@@ -221,18 +204,10 @@ class RenderingPipeline(DebugObject):
 
     def _setupFinalPass(self):
         """ Setups the final pass which applies motion blur and so on """
-        colorTex = self.antialias.getResultTexture()
         # Set wrap for motion blur
+        colorTex = self.antialias.getResultTexture()
         colorTex.setWrapU(Texture.WMClamp)
         colorTex.setWrapV(Texture.WMClamp)
-        self.deferredTarget.setShaderInput("colorTex", colorTex)
-        self.deferredTarget.setShaderInput(
-            "velocityTex", self.deferredTarget.getAuxTexture(1))
-        self.deferredTarget.setShaderInput(
-            "depthTex", self.deferredTarget.getDepthTexture())
-        self.deferredTarget.setShaderInput(
-            "motionBlurFactor", self.motionBlurFactor)
-
         self._setFinalPassShader()
 
     def _makeLightPerTileStorage(self):
@@ -242,7 +217,8 @@ class RenderingPipeline(DebugObject):
         storageSizeY = self.precomputeSize.y * 8
 
         self.debug(
-            "Creating per tile storage of size", storageSizeX, "x", storageSizeY)
+            "Creating per tile storage of size",
+            storageSizeX, "x", storageSizeY)
 
         self.lightPerTileStorage = Texture("LightsPerTile")
         self.lightPerTileStorage.setup2dTexture(
@@ -263,7 +239,8 @@ class RenderingPipeline(DebugObject):
         self.precomputeSize = LVecBase2i(sizeX, sizeY)
 
         self.debug("Batch size =", sizeX, "x", sizeY,
-                   "Actual Buffer size=", int(sizeX * self.patchSize.x), "x", int(sizeY * self.patchSize.y))
+                   "Actual Buffer size=", int(sizeX * self.patchSize.x),
+                   "x", int(sizeY * self.patchSize.y))
 
         self._makeLightPerTileStorage()
 
@@ -277,29 +254,38 @@ class RenderingPipeline(DebugObject):
         self.lightManager.setLightingComputator(self.lightingComputeContainer)
         self.lightManager.setLightingCuller(self.lightBoundsComputeBuff)
 
-        self.lightingComputeContainer.setShaderInput(
-            "lightsPerTile", self.lightPerTileStorage)
-
-        self.lightingComputeContainer.setShaderInput(
-            "cameraPosition", base.cam.getPos(render))
-
         self._loadFallbackCubemap()
 
-        # Create storage for the bounds computation
+    def _setShaderInputs(self):
+        """ Sets most of the required shader inputs to the targets """
 
-        # Set inputs
+        # Shader inputs for the antialiasing buffer
+        self.antialias.getFirstBuffer().setShaderInput(
+            "lastFrame", self.lightingComputeCombinedTex)
+        self.antialias.getFirstBuffer().setShaderInput(
+            "newFrame", self.combiner.getColorTexture())
+        self.antialias.getFirstBuffer().setShaderInput(
+            "lastPosition", self.lastPositionBuffer)
+        self.antialias.getFirstBuffer().setShaderInput(
+            "currentPosition", self.deferredTarget.getColorTexture())
+
+        # Shader inputs for the light-culling pass
         self.lightBoundsComputeBuff.setShaderInput(
             "destination", self.lightPerTileStorage)
         self.lightBoundsComputeBuff.setShaderInput(
             "depth", self.deferredTarget.getDepthTexture())
+        self.lightBoundsComputeBuff.setShaderInput(
+            "mainCam", base.cam)
+        self.lightBoundsComputeBuff.setShaderInput(
+            "mainRender", base.render)
 
+        # Shader inputs for the light-applying pass
         self.lightingComputeContainer.setShaderInput(
             "data0", self.deferredTarget.getColorTexture())
         self.lightingComputeContainer.setShaderInput(
             "data1", self.deferredTarget.getAuxTexture(0))
         self.lightingComputeContainer.setShaderInput(
             "data2", self.deferredTarget.getAuxTexture(1))
-
         self.lightingComputeContainer.setShaderInput(
             "shadowAtlas", self.lightManager.getAtlasTex())
         self.lightingComputeContainer.setShaderInput(
@@ -308,6 +294,60 @@ class RenderingPipeline(DebugObject):
             "temporalProjXOffs", self.temporalProjXOffs)
         self.lightingComputeContainer.setShaderInput(
             "cameraPosition", self.cameraPosition)
+        self.lightingComputeContainer.setShaderInput(
+            "dssdoNoiseTex", loader.loadTexture("Data/SSDO/noise.png"))
+        self.lightingComputeContainer.setShaderInput(
+            "lightsPerTile", self.lightPerTileStorage)
+
+        # Shader inputs for the blur passes
+        self.blurBufferH.setShaderInput(
+            "colorTex", self.blurBufferV.getColorTexture())
+        self.blurBufferV.setShaderInput(
+            "colorTex", self.combiner.getColorTexture())
+        self.blurBufferH.setShaderInput(
+            "normalTex", self.deferredTarget.getAuxTexture(0))
+        self.blurBufferV.setShaderInput(
+            "normalTex", self.deferredTarget.getAuxTexture(0))
+        self.blurBufferH.setShaderInput(
+            "dofStorage", self.dofStorage)
+        self.blurBufferV.setShaderInput(
+            "dofStorage", self.dofStorage)
+
+        # Shader inputs for the temporal reprojection
+        self.combiner.setShaderInput(
+            "currentComputation",
+            self.lightingComputeContainer.getColorTexture())
+        self.combiner.setShaderInput(
+            "lastFrame", self.lightingComputeCombinedTex)
+        self.combiner.setShaderInput(
+            "positionBuffer", self.deferredTarget.getColorTexture())
+        self.combiner.setShaderInput(
+            "velocityBuffer", self.deferredTarget.getAuxTexture(1))
+        self.combiner.setShaderInput(
+            "dofStorage", self.dofStorage)
+        self.combiner.setShaderInput(
+            "depthTexture", self.deferredTarget.getDepthTexture())
+        self.combiner.setShaderInput("lastPosition", self.lastPositionBuffer)
+        self.combiner.setShaderInput(
+            "temporalProjXOffs", self.temporalProjXOffs)
+        self.combiner.setShaderInput("lastMVP", self.lastMVP)
+        self.combiner.setShaderInput("cameraPosition", self.cameraPosition)
+        self.combiner.setShaderInput("currentMVP", self.lastMVP)
+
+        # Shader inputs for the final pass
+        self.deferredTarget.setShaderInput(
+            "colorTex", self.antialias.getResultTexture())
+            # "colorTex", self.combiner.getColorTexture())
+            # "colorTex", self.blurBufferH.getColorTexture())
+        self.deferredTarget.setShaderInput(
+            "velocityTex", self.deferredTarget.getAuxTexture(1))
+        self.deferredTarget.setShaderInput(
+            "depthTex", self.deferredTarget.getDepthTexture())
+        self.deferredTarget.setShaderInput(
+            "motionBlurFactor", self.motionBlurFactor)
+
+        # Set last / current mvp handles
+        render.setShaderInput("lastMVP", self.lastMVP)
 
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
@@ -325,10 +365,6 @@ class RenderingPipeline(DebugObject):
         self.lightBoundsComputeBuff.setSize(w, h)
         self.lightBoundsComputeBuff.setColorWrite(False)
         self.lightBoundsComputeBuff.prepareOffscreenBuffer()
-
-        self.lightBoundsComputeBuff.setShaderInput("mainCam", base.cam)
-        self.lightBoundsComputeBuff.setShaderInput("mainRender", base.render)
-
         self._setPositionComputationShader()
 
     def _makeLightingComputeBuffer(self):
@@ -342,15 +378,41 @@ class RenderingPipeline(DebugObject):
 
         self.lightingComputeCombinedTex = Texture("Lighting-Compute-Combined")
         self.lightingComputeCombinedTex.setup2dTexture(
-            base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
+            base.win.getXSize(), base.win.getYSize(),
+            Texture.TFloat, Texture.FRgba16)
         self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
         self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
 
         self.lastPositionBuffer = Texture("Last-Position-Buffer")
         self.lastPositionBuffer.setup2dTexture(
-            base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRgba16)
+            base.win.getXSize(), base.win.getYSize(),
+            Texture.TFloat, Texture.FRgba16)
         self.lastPositionBuffer.setMinfilter(Texture.FTNearest)
         self.lastPositionBuffer.setMagfilter(Texture.FTNearest)
+
+    def _createBlurBuffer(self):
+        self.blurBufferV = RenderTarget("BlurBufferVertical")
+        self.blurBufferV.addColorTexture()
+        self.blurBufferV.prepareOffscreenBuffer()
+
+        self.blurBufferH = RenderTarget("BlurBufferHorizontal")
+        self.blurBufferH.addColorTexture()
+        self.blurBufferH.prepareOffscreenBuffer()
+        self._setBlurShader()
+
+    def _createDofStorage(self):
+        self.dofStorage = Texture("DOFStorage")
+        self.dofStorage.setup2dTexture(base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.F_r16)
+
+    def _setBlurShader(self):
+        blurVShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/BlurVertical.fragment")
+        blurHShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/BlurHorizontal.fragment")
+        self.blurBufferV.setShader(blurVShader)
+        self.blurBufferH.setShader(blurHShader)
 
     def _setLightingShader(self):
         """ Sets the shader which applies the light """
@@ -395,6 +457,7 @@ class RenderingPipeline(DebugObject):
         self._setCombinerShader()
         self._setLightingShader()
         self._setFinalPassShader()
+        self._setBlurShader()
         self.antialias.reloadShader()
 
     def _attachUpdateTask(self):
@@ -443,11 +506,12 @@ class RenderingPipeline(DebugObject):
             return task.cont
 
     def _computeMVP(self):
-        """ Computes the current mvp. Actually, this is the worldViewProjectionMatrix,
-        but for convience it's called mvp. """
+        """ Computes the current mvp. Actually, this is the
+        worldViewProjectionMatrix, but for convience it's called mvp. """
+        camLens = base.camLens
         projMat = Mat4.convertMat(
             CSYupRight,
-            base.camLens.getCoordinateSystem()) * base.camLens.getProjectionMat()
+            camLens.getCoordinateSystem()) * camLens.getProjectionMat()
         transformMat = TransformState.makeMat(
             Mat4.convertMat(base.win.getGsg().getInternalCoordinateSystem(),
                             CSZupRight))
@@ -462,7 +526,8 @@ class RenderingPipeline(DebugObject):
     def getDefaultObjectShader(self):
         """ Returns the default shader for objects """
         shader = BetterShader.load(
-            "Shader/DefaultObjectShader.vertex", "Shader/DefaultObjectShader.fragment")
+            "Shader/DefaultObjectShader.vertex",
+            "Shader/DefaultObjectShader.fragment")
         return shader
 
     def addLight(self, light):
@@ -476,10 +541,9 @@ class RenderingPipeline(DebugObject):
         # Generate list of defines
         defines = []
 
-
         if self.settings.antialiasingTechnique == "SMAA":
             quality = self.settings.smaaQuality
-            self.debug("SMAA Quality:",quality)
+            self.debug("SMAA Quality:", quality)
 
             if quality == "Low":
                 defines.append(("SMAA_PRESET_LOW", ""))
@@ -490,7 +554,7 @@ class RenderingPipeline(DebugObject):
             elif quality == "Ultra":
                 defines.append(("SMAA_PRESET_ULTRA", ""))
             else:
-                self.error("Unrecognized SMAA quality:",quality)
+                self.error("Unrecognized SMAA quality:", quality)
                 return
 
         defines.append(
@@ -530,10 +594,14 @@ class RenderingPipeline(DebugObject):
         if self.settings.motionBlurEnabled:
             defines.append(("USE_MOTION_BLUR", 1))
 
-        defines.append(("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples))
+        defines.append(
+            ("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples))
 
+        defines.append(("DSSDO_NUM_SAMPLES", self.settings.ssdoSampleCount))
 
-        output = "// Autogenerated by RenderPipeline.py\n// Do not edit! Your changes will be lost.\n\n"
+        output = "// Autogenerated by RenderPipeline.py\n"
+        output += "// Do not edit! Your changes will be lost.\n\n"
+
         for key, value in defines:
             output += "#define " + key + " " + str(value) + "\n"
 

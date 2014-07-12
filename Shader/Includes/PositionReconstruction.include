@@ -1,6 +1,6 @@
 
 
-uniform mat4 trans_clip_of_camera_to_render;
+uniform mat4 trans_clip_of_mainCam_to_mainRender;
 
 
 const float ndcNear = 0.1;
@@ -51,16 +51,16 @@ float normalizeZ(float z, float near, float far) {
 
 vec3 calculateSurfacePos(float z, vec2 tcoord) {
 
-  vec3 ndcPos = vec3(tcoord.xy, z);
-  ndcPos.xyz -= 0.5;
-  ndcPos.xyz *= 2.0;
+  vec3 ndcPos = vec3(tcoord.xy, z)*2.0 - 1.0;
+  // ndcPos.xyz -= 0.5;
+  // ndcPos.xyz *= 2.0;
     
   vec4 clipPos = vec4(0);
   clipPos.w = getZFromNdc(ndcPos);
 
   clipPos.xyz = ndcPos * clipPos.w;
  
-  vec3 surfacePosition = (trans_clip_of_camera_to_render * clipPos).xyz;
+  vec3 surfacePosition = (trans_clip_of_mainCam_to_mainRender * clipPos).xyz;
   return surfacePosition;
 }
 

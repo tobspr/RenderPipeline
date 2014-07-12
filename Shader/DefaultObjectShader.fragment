@@ -18,9 +18,10 @@ void main() {
     Material m;
 
     m.metallic = 0.0;
-    m.roughness = 0.0;
-    m.specular = 0.0;
-    m.baseColor = diffuseColor.xyz;
+    m.roughness = 1.0;
+    m.specular = 0.5;
+    m.baseColor = vec3(0.5);
+
     m.position = positionWorldSpace;
     m.normal   = normalWorldSpace;
 

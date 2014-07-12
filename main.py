@@ -17,10 +17,7 @@ sys.dont_write_bytecode = True
 
 import math
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile, Vec3, TextNode
-
-from direct.gui.DirectGui import DirectSlider
-from direct.gui.OnscreenText import OnscreenText
+from panda3d.core import loadPrcFile, Vec3
 
 from classes.MovementController import MovementController
 from classes.RenderingPipeline import RenderingPipeline
@@ -52,10 +49,12 @@ class Main(ShowBase, DebugObject):
 
         # Load some demo source
         self.sceneSource = "Scene/Scene4.egg"
-        self.usePlane = True
+        self.usePlane = False
 
         self.debug("Loading Scene '" + self.sceneSource + "' ..")
         self.scene = loader.loadModel(self.sceneSource)
+        # self.scene.setScale(0.1)
+        # self.scene.flattenStrong()
 
         # Load ground plane if configured
         if self.usePlane:
@@ -64,7 +63,7 @@ class Main(ShowBase, DebugObject):
             self.groundPlane.reparentTo(self.scene)
 
         # Some artists really don't know about backface culling -.-
-        # self.scene.setTwoSided(True)
+        self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
         self.scene.flattenStrong()
@@ -102,15 +101,16 @@ class Main(ShowBase, DebugObject):
         ]
 
         # Add some shadow casting lights
-        for i in xrange(8):
-            angle = float(i) / 8.0 * math.pi * 2.0
+        for i in xrange(4):
+            angle = float(i) / 4.0 * math.pi * 2.0
 
-            pos = Vec3(math.sin(angle) * 20.0, math.cos(angle) * 20.0, 9)
+            pos = Vec3(math.sin(angle) * 10.0, math.cos(angle) * 10.0, 9)
             light = PointLight()
             light.setRadius(40.0)
-            light.setColor(colors[i])
+            light.setColor(Vec3(2))
+            # light.setColor(colors[i+4]*2)
             light.setPos(pos)
-            light.setShadowMapResolution(2048)
+            light.setShadowMapResolution(512)
             light.setCastsShadows(True)
 
             # add light
@@ -121,11 +121,13 @@ class Main(ShowBase, DebugObject):
         # Add even more normal lights
         for x in xrange(4):
             for y in xrange(4):
-                angle = float(x+y*4) / 16.0 * math.pi * 2.0
+                break
+                angle = float(x + y * 4) / 16.0 * math.pi * 2.0
                 light = PointLight()
                 light.setRadius(20.0)
                 light.setColor(
-                    Vec3(math.sin(angle) * 0.5 + 0.5, math.cos(angle) * 0.5 + 0.5, 0.5) * 1.0)
+                    Vec3(math.sin(angle) * 0.5 + 0.5, 
+                        math.cos(angle) * 0.5 + 0.5, 0.5) * 1.0)
                 initialPos = Vec3(
                     (float(x) - 2.0) * 10.0, (float(y) - 2.0) * 10.0, 10.0)
                 light.setPos(initialPos)
@@ -160,15 +162,22 @@ class Main(ShowBase, DebugObject):
     def update(self, task=None):
         """ Main update task """
 
-        animationTime = globalClock.getFrameTime() * 0.6
+        # import time
+        # time.sleep(0.3)
 
-        # displace every light every frame - performance test!
-        for i, light in enumerate(self.lights):
-            lightAngle = float(math.sin(i*1253325.0) ) * math.pi * 2.0 + animationTime * 1.0
-            initialPos = self.initialLightPos[i]
-            light.setPos(initialPos + Vec3(math.sin(lightAngle) * 10.0,
-                                           math.cos(lightAngle) * 10.0,
-                                           math.sin(math.cos(lightAngle * 1.523) * 1.7)))
+        # return task.cont
+
+        if False:
+            animationTime = globalClock.getFrameTime() * 0.6
+
+            # displace every light every frame - performance test!
+            for i, light in enumerate(self.lights):
+                lightAngle = float(math.sin(i * 1253325.0)) * \
+                    math.pi * 2.0 + animationTime * 1.0
+                initialPos = self.initialLightPos[i]
+                light.setPos(initialPos + Vec3(math.sin(lightAngle) * 10.0,
+                                               math.cos(lightAngle) * 10.0,
+                                               math.sin(math.cos(lightAngle * 1.523) * 1.7)))
 
         if task is not None:
             return task.cont
