@@ -101,17 +101,17 @@ class Main(ShowBase, DebugObject):
         ]
 
         # Add some shadow casting lights
-        for i in xrange(4):
-            angle = float(i) / 4.0 * math.pi * 2.0
+        for i in xrange(8):
+            angle = float(i) / 8.0 * math.pi * 2.0
 
-            pos = Vec3(math.sin(angle) * 20.0, math.cos(angle) * 20.0, 7)
+            pos = Vec3(math.sin(angle) * 12.0, math.cos(angle) * 12.0, 12)
             light = PointLight()
             light.setRadius(30.0)
             light.setColor(Vec3(2))
             # light.setColor(colors[i+4]*2)
             light.setPos(pos)
-            # light.setShadowMapResolution(512)
-            # light.setCastsShadows(True)
+            light.setShadowMapResolution(512)
+            light.setCastsShadows(True)
 
             # add light
             self.renderPipeline.addLight(light)

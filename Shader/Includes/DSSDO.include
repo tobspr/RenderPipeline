@@ -43,7 +43,7 @@ float computeDSSDO(vec2 texcoord, ivec2 screenCoord, Material material, float di
         float attenuation = 1.0 - (max(0.0, min(1.0, differenceLength / dssdoMaxDistance)));
         float dotProduct = dot(material.normal, differenceNormalized);
         attenuation = attenuation * step(dssdoMaxAngle, dotProduct);
-        occlusionResult += attenuation * sh2Weight * 0.5;
+        occlusionResult += attenuation / float(dssdoSampleCount) * 3.0;
     }
 
     occlusionResult = 1.0 - occlusionResult;

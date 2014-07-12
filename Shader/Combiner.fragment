@@ -13,7 +13,7 @@ uniform sampler2D positionBuffer;
 uniform sampler2D velocityBuffer;
 uniform sampler2D depthTexture;
 
-layout(r16f) uniform image2D dofStorage;
+layout(r16f) writeonly uniform image2D dofStorage;
 
 uniform int temporalProjXOffs;
 
@@ -34,6 +34,7 @@ void main() {
 
 
     // Store dof factors
+    // imageStore(dofStorage,)
 
 
     vec3 position = texture(positionBuffer, texcoord).rgb;

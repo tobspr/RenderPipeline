@@ -105,7 +105,7 @@ void main() {
     // Tone Mapping
     result.xyz = sqrt(result.xyz);
     vec3 colorCorrected = convertColorSpace(result.xyz);
-    // result.xyz = mix( colorCorrected , result.xyz, 0.7);
+    result.xyz = mix( colorCorrected , result.xyz, 0.2);
 
     result.xyz = saturate(result);
     gl_FragColor = vec4(result, occlusionFactor);

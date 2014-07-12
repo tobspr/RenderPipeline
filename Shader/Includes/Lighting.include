@@ -147,7 +147,7 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
     float resolutionFactor = SHADOW_MAP_ATLAS_SIZE / float(currentSource.resolution);
-    float sampleFactor = 2.0 / SHADOW_MAP_ATLAS_SIZE;
+    float sampleFactor = 1.0 / SHADOW_MAP_ATLAS_SIZE;
 
     vec4 projected = currentSource.mvp * vec4(material.position, 1);
     projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);
@@ -156,7 +156,7 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
 
 
     float cosTheta = clamp( dot(n, l), 0.0, 1.0 );
-    float bias = 0.001*(0.0+distanceRelative*1.0)*tan(acos(cosTheta))*resolutionFactor; 
+    float bias = 0.0015*(0.0+distanceRelative*1.0)*tan(acos(cosTheta))*resolutionFactor; 
     bias = clamp(bias, 0.00, 0.04);
 
     // bias = -0.001;
