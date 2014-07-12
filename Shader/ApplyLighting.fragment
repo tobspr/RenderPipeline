@@ -89,12 +89,13 @@ void main() {
 
 
     // Occlusion
-    float occlusionFactor = computeDSSDO(texcoord,screenCoord, material, data1, data0);
+    float distanceToCamera = distance(cameraPosition, material.position);
+    float occlusionFactor = computeDSSDO(texcoord,screenCoord, material, distanceToCamera, data1, data0);
 
     // Metallic materials don't have much occlusion
     occlusionFactor = mix(occlusionFactor, 1.0, saturate(material.metallic-0.3) );
 
-    // result.xyz *= occlusionFactor;
+    // result.xyz = vec3(1.0);
 
     // TODO: Move this to other passes??
     // HDR Mapping

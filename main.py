@@ -49,7 +49,7 @@ class Main(ShowBase, DebugObject):
 
         # Load some demo source
         self.sceneSource = "Scene/Scene4.egg"
-        self.usePlane = False
+        self.usePlane = True
 
         self.debug("Loading Scene '" + self.sceneSource + "' ..")
         self.scene = loader.loadModel(self.sceneSource)
@@ -63,10 +63,10 @@ class Main(ShowBase, DebugObject):
             self.groundPlane.reparentTo(self.scene)
 
         # Some artists really don't know about backface culling -.-
-        self.scene.setTwoSided(True)
+        # self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
-        self.scene.flattenStrong()
+        # self.scene.flattenStrong()
         self.scene.reparentTo(render)
 
         # Create movement controller (Freecam)
@@ -104,14 +104,14 @@ class Main(ShowBase, DebugObject):
         for i in xrange(4):
             angle = float(i) / 4.0 * math.pi * 2.0
 
-            pos = Vec3(math.sin(angle) * 10.0, math.cos(angle) * 10.0, 9)
+            pos = Vec3(math.sin(angle) * 20.0, math.cos(angle) * 20.0, 7)
             light = PointLight()
-            light.setRadius(40.0)
+            light.setRadius(30.0)
             light.setColor(Vec3(2))
             # light.setColor(colors[i+4]*2)
             light.setPos(pos)
-            light.setShadowMapResolution(512)
-            light.setCastsShadows(True)
+            # light.setShadowMapResolution(512)
+            # light.setCastsShadows(True)
 
             # add light
             self.renderPipeline.addLight(light)
