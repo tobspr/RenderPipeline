@@ -19,10 +19,10 @@ void main() {
     // Create a material to store the properties on
     Material m;
 
-    // m.metallic = step(positionWorldSpace.z, 0.001);
-    m.metallic = 0.0;
-    m.roughness = 1.0;
-    m.specular = 0.0;
+    m.metallic = 1.0 - step(positionWorldSpace.z, 0.001);
+    // m.metallic = 0.0;
+    m.roughness = 0.2;
+    m.specular = 0.5;
     m.baseColor = diffuseColor.rgb;
     // m.baseColor = texture(p3d_Texture0, texcoord).rgb;
     // m.baseColor = vec3(0.6);

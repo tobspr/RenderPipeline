@@ -51,17 +51,10 @@ void main() {
         result = textureLod(colorTex, texcoord, 0).rgb;
     #endif
 
-
-    // result = vec3( midVector*1000.0, 0);
-
-    result = textureLod(colorTex, texcoord, 0).rgb;
-
     
-    // float vignett = smoothstep(0, 1, 
-    //     (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
-    // result *= 1.0 - vignett;
+    float vignett = smoothstep(0, 1, 
+        (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
+    result *= 1.0 - vignett;
  
-
-
     gl_FragColor = vec4((result), 1.0);
 }

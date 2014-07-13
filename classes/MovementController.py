@@ -7,6 +7,7 @@ class MovementController:
     def __init__(self, showbase):
         self.showbase = showbase
         self.movement = [0, 0, 0]
+        self.velocity = Vec3(0.0)
         self.hprMovement = [0,0]
         self.speed = 0.5
         self.initialPosition = Vec3(0)
@@ -14,7 +15,7 @@ class MovementController:
         self.mouseEnabled = False
         self.lastMousePos = [0,0]
         self.mouseSensivity = 0.7
-        self.keyboardHprSpeed = 1.0
+        self.keyboardHprSpeed = 0.8
 
 
     def setInitialPosition(self, pos, target):
@@ -97,7 +98,6 @@ class MovementController:
         self.showbase.accept("arrow_right-up",  self._setHprMovement, [0, 0])
 
 
-
         # increase / decrease speed
         self.showbase.accept("+", self._increaseSpeed)
         self.showbase.accept("-", self._decreaseSpeed)
@@ -151,14 +151,21 @@ class MovementController:
         # Transform by camera direction
         cameraQuaternion = self.showbase.camera.getQuat(render)
         translatedDirection = cameraQuaternion.xform(movementDirection)
+      
 
         # zforce is independent of camera direction
         translatedDirection.addZ(
             self.movement[2] * globalClock.getDt() * 40.0 * self.speed)
 
+
+
+        self.velocity += translatedDirection*0.15
+        self.velocity *= 0.9
+  
+
         # apply new position
         self.showbase.camera.setPos(
-            self.showbase.camera.getPos() + translatedDirection)
+            self.showbase.camera.getPos() + self.velocity)
 
         # transform rotation (keyboard keys)
         rotationSpeed = self.keyboardHprSpeed * 100.0 * globalClock.getDt()

@@ -99,7 +99,10 @@ void main() {
 
     // occlusionFactor = 0.5;
     // result.xyz = vec3(material.baseColor)+  0.1;
-    // result.xyz = vec3(1);
+
+    #ifdef DSSDO_ONLY
+        result.xyz = vec3(1);
+    #endif
 
     // TODO: Move this to other passes??
     // HDR Mapping

@@ -48,8 +48,8 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.create()
 
         # Load some demo source
-        self.sceneSource = "Scene/SSDOTest.egg.bam"
-        self.usePlane = True
+        self.sceneSource = "Scene/Scene4.egg"
+        self.usePlane = False
 
         self.debug("Loading Scene '" + self.sceneSource + "' ..")
         self.scene = loader.loadModel(self.sceneSource)
@@ -66,7 +66,7 @@ class Main(ShowBase, DebugObject):
             self.groundPlane.reparentTo(self.scene)
 
         # Some artists really don't know about backface culling -.-
-        # self.scene.setTwoSided(True)
+        self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
         self.scene.flattenStrong()
@@ -74,7 +74,7 @@ class Main(ShowBase, DebugObject):
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
-        self.controller.setInitialPosition(Vec3(-60, 60, 50), Vec3(0, 0, 0))
+        self.controller.setInitialPosition(Vec3(-30, 30, 25), Vec3(0, 0, 0))
         self.controller.setup()
 
         # Create movement controller (First-Person)
@@ -107,7 +107,7 @@ class Main(ShowBase, DebugObject):
         for i in xrange(8):
             angle = float(i) / 8.0 * math.pi * 2.0
 
-            pos = Vec3(math.sin(angle) * 10.0, math.cos(angle) * 10.0, 15)
+            pos = Vec3(math.sin(angle) * 10.0, math.cos(angle) * 10.0, 7)
             # pos = Vec3( (i-3.5)*15.0, 9, 5.0)
             light = PointLight()
             light.setRadius(30.0)

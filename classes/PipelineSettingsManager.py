@@ -28,7 +28,13 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("accurateLightBoundCheck", bool, True)
 
         # [SSDO]
+        self._addSetting("ssdoEnabled", bool, 16)
         self._addSetting("ssdoSampleCount", int, 16)
+        self._addSetting("ssdoRadius", float, 1.0)
+        self._addSetting("ssdoMaxDistance", float, 5.0)
+        self._addSetting("ssdoMaxAngle", float, 0.7)
+        self._addSetting("ssdoStrength", float, 1.0)
+        self._addSetting("ssdoOnly", bool, False)
 
         # [Shadows]
         self._addSetting("renderShadows", bool, True)
