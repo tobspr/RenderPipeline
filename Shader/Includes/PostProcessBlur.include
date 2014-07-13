@@ -4,15 +4,18 @@
 #include "Includes/Packing.include"
 
 
-
-const vec2 blurResolution = vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-const float normalsDiscardThreshold = 0.7;
+const float normalsDiscardThreshold = 0.995;
 
 
-vec4 blurSource(ivec2 screenCoord, ivec2 direction, sampler2D colorTex, sampler2D normalTex) {
+vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2D blurFactors) {
 
-    #ifdef USE_BLUR
+    // return texture(colorTex, texcoord);
+
+    float blurFactor = texture(blurFactors, texcoord).r;
+
+    if (blurFactor < 0.02) {
+        return texture(colorTex, texcoord);
+    } else {
 
         float blurWeights[9] = float[9]
         (
@@ -27,53 +30,87 @@ vec4 blurSource(ivec2 screenCoord, ivec2 direction, sampler2D colorTex, sampler2
             0.013519569015984728
         );
 
+        float offsets[9] = float[9] (-4,-3,-2,-1,0,+1,+2,+3,+4);
 
-        ivec2 clampMin = ivec2(9);
-        ivec2 clampMax = textureSize(colorTex, 0) - ivec2(10);
+        float mipmap = blurFactor * 2.2;
+        mipmap = 0.0;
+        vec2 texelSize = 7.2 / vec2(textureSize(colorTex, 0));
+        texelSize *= direction * blurFactor;
+        vec4 result = vec4(0);
+        float weights;
+        for (int i = 0; i < 9; i++) {
+            vec2 offsetCoord = texcoord + offsets[i]*texelSize;
+            float dofFactorOffset = textureLod(blurFactors, offsetCoord, 0).r;
+            float weight = max(0.0, dofFactorOffset - blurFactor) *  blurWeights[i];
+            weight = 1.0;
 
-        clampMin = ivec2(0);
-        clampMax = ivec2(99999);
+            result += textureLod(colorTex, offsetCoord , mipmap) *weight;
+            weights += weight;
+        }
+        return result / weights;
+    }
+}
+
+
+float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction, sampler2D colorTex, sampler2D normalTex) {
+
+    #ifdef USE_OCCLUSION_BLUR
+
+        float blurWeights[9] = float[9]
+        (
+            0.013519569015984728,
+            0.047662179108871855,
+            0.11723004402070096,
+            0.20116755999375591,
+            0.240841295721373,
+            0.20116755999375591,
+            0.11723004402070096,
+            0.047662179108871855,
+            0.013519569015984728
+        );
+
+        vec2 screenSize = vec2(textureSize(colorTex, 0));
+
+        ivec2 clampMin = ivec2(3);
+        ivec2 clampMax = textureSize(colorTex, 0) - ivec2(4);
+
+        // clampMin = ivec2(5);
+        // clampMax = ivec2(99999);
 
         vec3 normals[9];
-        vec4 colors[9];
+        float occlusion[9];
+        float mipmap = 0.0;
+        float blurSizeFactor = 4.0 / screenSize;
+        vec2 directionF = vec2(direction) * vec2(float(WINDOW_HEIGHT) / float(WINDOW_WIDTH), 1.0);
 
         // First, fetch all required values
         for (int i = 0; i < 9; i++) {
-            ivec2 coord = clamp(screenCoord + direction*(i-4), clampMin, clampMax);
-            normals[i] = decodeNormal(texelFetch(normalTex, coord, 0).xy);
-            colors[i] = texelFetch(colorTex, coord, 0);
+            // ivec2 coord = clamp(screenCoord + direction*(i-4), clampMin, clampMax);
+            vec2 coord = texcoord + directionF*float(i-4)*blurSizeFactor;
+            // normals[i] = decodeNormal(texelFetch(normalTex, coord, 0).xy);
+            normals[i] = decodeNormal(textureLod(normalTex, coord, 0).xy);
+            // occlusion[i] = texelFetch(colorTex, coord/4, mipmap).a;
+            occlusion[i] = textureLod(colorTex, coord, mipmap).a;
         }
 
         vec3 normal = normals[4];
-        // normal = vec3(0);
 
         float alphaResult = 0.0;
         float alphaWeights = 0.0;
 
-        vec3 colorResult = vec3(0);
-
-
-        // Check for edges, we are performing a blur + an edge preserving blur
+        // Check for edges, as we are performing an edge preserving blur
         for (int i = 0; i < 9; i++) {
             float weight = blurWeights[i];
-            vec4 sampled = colors[i];
-
             float normalInfluenceFactor = step(normalsDiscardThreshold, dot(normals[i], normal));
-            alphaResult += sampled.a*weight*normalInfluenceFactor;
+            alphaResult += occlusion[i]*weight*normalInfluenceFactor;
             alphaWeights += weight*normalInfluenceFactor;   
-            colorResult += colors[i].rgb * weight;
         }
 
         alphaResult /= alphaWeights;
-        colorResult = colors[4].rgb;
-
-        return vec4(colorResult, alphaResult);
-
+        return alphaResult;
 
 
     #else
-
-        return texelFetch(colorTex, screenCoord, 0);
-
+        return texelFetch(colorTex, screenCoord, 0).a;
     #endif
 }

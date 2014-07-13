@@ -1,14 +1,16 @@
 #version 130
 
+#pragma optionNV (unroll all)
+
 #include "Includes/Configuration.include"
 #include "Includes/PostProcessBlur.include"
 
 uniform sampler2D colorTex;
-uniform sampler2D normalTex;
+uniform sampler2D dofStorage;
 
 in vec2 texcoord;
 
 void main() {
-    ivec2 screenCoord = ivec2(texcoord * textureSize(colorTex, 0) );
-    gl_FragColor = blurSource(screenCoord, ivec2(0, 1), colorTex, normalTex);
+    // gl_FragColor = mipmapBasedBlur(texcoord, vec2(0,1), colorTex, dofStorage);
+    gl_FragColor = texture(colorTex, texcoord);
 }

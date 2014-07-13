@@ -87,27 +87,39 @@ void main() {
         #endif
     }
 
+    // result += 0.1 * material.normal;
+
 
     // Occlusion
     float distanceToCamera = distance(cameraPosition, material.position);
     float occlusionFactor = computeDSSDO(texcoord,screenCoord, material, distanceToCamera, data1, data0);
 
     // Metallic materials don't have much occlusion
-    occlusionFactor = mix(occlusionFactor, 1.0, saturate(material.metallic-0.3) );
+    // occlusionFactor = mix(occlusionFactor, 1.0, saturate(material.metallic-1.0) );
 
-    // result.xyz = vec3(1.0);
+    // occlusionFactor = 0.5;
+    // result.xyz = vec3(material.baseColor)+  0.1;
+    // result.xyz = vec3(1);
 
     // TODO: Move this to other passes??
     // HDR Mapping
     result.xyz = 1.0f - exp(-1.0 * result.xyz);
-    result.xyz = saturate(result.xyz);
+    // result.xyz = saturate(result.xyz);
 
-    // Tone Mapping
+
+    // Convert to gamma spae
     result.xyz = sqrt(result.xyz);
-    vec3 colorCorrected = convertColorSpace(result.xyz);
-    result.xyz = mix( colorCorrected , result.xyz, 0.2);
+     result.xyz += 0.01;
+    result.xyz *= 1.2;
 
-    result.xyz = saturate(result);
+
+    vec3 colorCorrected = convertColorSpace(result.xyz);
+    result.xyz = mix( colorCorrected , result.xyz, 0.5);
+
+
+
+
+    // result.xyz = saturate(result);
     gl_FragColor = vec4(result, occlusionFactor);
 
     // gl_FragColor = vec4(((screenCoord.x+screenCoord.y)%2));

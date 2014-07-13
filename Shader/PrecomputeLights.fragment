@@ -5,7 +5,6 @@
 // TODO: Make some benchmarks to see wheter unrolling
 // is faster or slower ..
 
-// EDIT: As of now, not unrolling is faster
 #pragma optionNV (unroll all)
 
 

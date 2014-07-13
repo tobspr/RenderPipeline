@@ -10,7 +10,7 @@ in vec3 p3d_Normal;
 in vec2 p3d_MultiTexCoord0;
 
 // Outputs
-out vec3 normalWorldSpace;
+flat out vec3 normalWorldSpace;
 out vec3 positionWorldSpace;
 out vec2 texcoord;
 out vec4 diffuseColor;

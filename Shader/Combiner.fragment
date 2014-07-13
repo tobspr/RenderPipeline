@@ -2,6 +2,7 @@
 
 
 #include "Includes/Configuration.include"
+#include "Includes/PositionReconstruction.include"
 
 in vec2 texcoord;
 
@@ -11,7 +12,7 @@ uniform sampler2D lastPosition;
 
 uniform sampler2D positionBuffer;
 uniform sampler2D velocityBuffer;
-uniform sampler2D depthTexture;
+uniform sampler2D depthTex;
 
 layout(r16f) writeonly uniform image2D dofStorage;
 
@@ -33,9 +34,14 @@ void main() {
     ivec2 computationCoord = ivec2( screenCoord.x/2, screenCoord.y);
 
 
-    // Store dof factors
-    // imageStore(dofStorage,)
+    // Compute dof factors
+    float bufferZ = texture(depthTex, texcoord).x;
+    float linearZ = getLinearZFromZ(bufferZ);
+    float dofFactor = (linearZ-4.0)/1.0;
+    // dofFactor = 0.0;
 
+    // Store dof in the storage
+    imageStore(dofStorage, screenCoord, vec4(saturate(dofFactor)) );
 
     vec3 position = texture(positionBuffer, texcoord).rgb;
 
@@ -73,8 +79,6 @@ void main() {
     result = mix(lastComputedValue, oldProjectedColor, saturate(reliability));
 
     // result = oldProjectedColor;
-
-
     // result = vec4(0,0,0,1);
 
     // If we have a newer value, use this
@@ -86,6 +90,8 @@ void main() {
     } 
 
 
+    // result.xyz *= 4.0;
+    // result = saturate(result);
     // result = texture(currentComputation, texcoord);
 
 

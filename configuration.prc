@@ -6,7 +6,7 @@ assert-abort #f
 vfs-case-sensitive #t
 
 # Animations on the gpu
-#hardware-animated-vertices #t
+# hardware-animated-vertices #t
 
 # Show error on dll loading
 # show-dll-error-dialog #t
@@ -67,6 +67,8 @@ framebuffer-stencil #f
 # Not resizable
 win-fixed-size #t
 win-size 1600 960
+# win-size 1920 1080
+# fullscreen #t
 # win-size 1280 720
 
 # Icon
@@ -104,7 +106,6 @@ sync-video #f
 # Don't rescale textures which are no power-of-2
 textures-power-2 none
 
-
 # Dump shaders
 # gl-dump-compiled-shaders #f
 # notify-level-glgsg debug
@@ -120,6 +121,5 @@ gl-debug #f
 
 text-minfilter linear
 text-page-size 128 128
-
 
 show-frame-rate-meter #t

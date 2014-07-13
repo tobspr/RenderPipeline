@@ -14,7 +14,7 @@ class MovementController:
         self.mouseEnabled = False
         self.lastMousePos = [0,0]
         self.mouseSensivity = 0.7
-        self.keyboardHprSpeed = 0.3
+        self.keyboardHprSpeed = 1.0
 
 
     def setInitialPosition(self, pos, target):

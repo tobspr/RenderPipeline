@@ -48,25 +48,28 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.create()
 
         # Load some demo source
-        self.sceneSource = "Scene/Scene4.egg"
+        self.sceneSource = "Scene/SSDOTest.egg.bam"
         self.usePlane = True
 
         self.debug("Loading Scene '" + self.sceneSource + "' ..")
         self.scene = loader.loadModel(self.sceneSource)
-        # self.scene.setScale(0.1)
+        # self.scene.setScale(4.0)
         # self.scene.flattenStrong()
 
         # Load ground plane if configured
         if self.usePlane:
             self.groundPlane = loader.loadModel("Scene/Plane.egg")
             self.groundPlane.setPos(0, 0, 0)
+            self.groundPlane.setTwoSided(True)
+            # self.groundPlane.setScale(2.0)
+            # self.groundPlane.flattenStrong()
             self.groundPlane.reparentTo(self.scene)
 
         # Some artists really don't know about backface culling -.-
         # self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
-        # self.scene.flattenStrong()
+        self.scene.flattenStrong()
         self.scene.reparentTo(render)
 
         # Create movement controller (Freecam)
@@ -104,13 +107,14 @@ class Main(ShowBase, DebugObject):
         for i in xrange(8):
             angle = float(i) / 8.0 * math.pi * 2.0
 
-            pos = Vec3(math.sin(angle) * 12.0, math.cos(angle) * 12.0, 12)
+            pos = Vec3(math.sin(angle) * 10.0, math.cos(angle) * 10.0, 15)
+            # pos = Vec3( (i-3.5)*15.0, 9, 5.0)
             light = PointLight()
             light.setRadius(30.0)
-            light.setColor(Vec3(2))
-            # light.setColor(colors[i+4]*2)
+            # light.setColor(Vec3(2))
+            light.setColor(colors[i]*2.0)
             light.setPos(pos)
-            light.setShadowMapResolution(512)
+            light.setShadowMapResolution(2048)
             light.setCastsShadows(True)
 
             # add light
@@ -144,7 +148,7 @@ class Main(ShowBase, DebugObject):
     def loadSkybox(self):
         """ Loads the sample skybox. Will get replaced later """
         self.skybox = loader.loadModel("Skybox/Skybox")
-        self.skybox.setScale(600)
+        self.skybox.setScale(100)
         self.skybox.reparentTo(render)
 
     def setShaders(self):
@@ -167,7 +171,7 @@ class Main(ShowBase, DebugObject):
 
         # return task.cont
 
-        if False:
+        if True:
             animationTime = globalClock.getFrameTime() * 0.6
 
             # displace every light every frame - performance test!

@@ -106,6 +106,8 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
         self._neighborBuffer.setShaderInput(
             "blendTex", self._blendBuffer.getColorTexture())
 
+
+
         # Set initial shader
         self.reloadShader()
 

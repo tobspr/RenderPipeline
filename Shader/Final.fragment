@@ -3,6 +3,7 @@
 
 #include "Includes/Configuration.include"
 #include "Includes/PositionReconstruction.include"
+#include "Includes/ColorCorrection.include"
 
 
 in vec2 texcoord;
@@ -16,32 +17,51 @@ uniform float motionBlurFactor;
 void main() {
 
     vec3 result;
+    vec2 screenSize = vec2(textureSize(colorTex, 0)); 
+    vec2 pixelVelocity = textureLod(velocityTex, texcoord, 0).xy / 255.0 * motionBlurFactor * 1.2;
     
+
+    vec2 redAbVector = vec2(1.0,0) / screenSize;
+    vec2 greenAbVector = vec2(0);
+    vec2 blueAbVector = vec2(-1.0,0) / screenSize;
+
+    result.r = textureLod(colorTex, texcoord + redAbVector, 0).r;
+    result.g = textureLod(colorTex, texcoord + greenAbVector, 0).g;
+    result.b = textureLod(colorTex, texcoord + blueAbVector, 0).b;
+
+
     #ifdef USE_MOTION_BLUR
-        vec2 pixelVelocity = texture(velocityTex, texcoord).xy / 255.0 * motionBlurFactor * 0.8;
+    
 
-        // float pixelZ = texture(depthTex, texcoord);
-        // float pixelLinearZ = getLinearZFromZ(pixelZ);
-        vec2 screenSize = vec2(textureSize(colorTex, 0)); 
-        // pixelVelocity = vec2(0.01,0.005)*0.25;
-
-        // float dofFactor = 0.0;
-        // dofFactor = (pixelLinearZ-50.0) / ndcFar * 100.0;           
+        float velStrength = length(pixelVelocity);
 
         // Motion blur
         vec3 motionResult = vec3(0);
         
         for (int i = 1; i < MOTION_BLUR_SAMPLES; i++) {
-            vec2 offset = pixelVelocity * motionBlurFactor * (float(i) / float(MOTION_BLUR_SAMPLES - 1) - 0.5);
-            motionResult += texture(colorTex, texcoord + offset).rgb;
+            vec2 offset = pixelVelocity * (float(i) / float(MOTION_BLUR_SAMPLES - 1) - 0.5);
+            motionResult += textureLod(colorTex, texcoord + offset, 0).rgb;
         }
         motionResult /= MOTION_BLUR_SAMPLES-1;
 
-        result = vec3(motionResult);
+        // result = mix(result, motionResult, saturate(velStrength*2.0) );
+        result = mix(result, motionResult, 1.0 );
+
     #else
-        result = texture(colorTex, texcoord).rgb;
+        result = textureLod(colorTex, texcoord, 0).rgb;
     #endif
 
 
-    gl_FragColor = vec4(result, 1.0);
+    // result = vec3( midVector*1000.0, 0);
+
+    result = textureLod(colorTex, texcoord, 0).rgb;
+
+    
+    // float vignett = smoothstep(0, 1, 
+    //     (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
+    // result *= 1.0 - vignett;
+ 
+
+
+    gl_FragColor = vec4((result), 1.0);
 }

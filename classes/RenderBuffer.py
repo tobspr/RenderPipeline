@@ -249,7 +249,7 @@ class RenderBuffer(DebugObject):
 
         # Increment global sort counter
         RenderBuffer.numBuffersAllocated += 1
-        self._sort = -20 + RenderBuffer.numBuffersAllocated*10
+        self._sort = -20 + RenderBuffer.numBuffersAllocated*5
 
         self._internalBuffer.setSort(self._sort)
 

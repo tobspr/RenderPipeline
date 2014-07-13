@@ -1,16 +1,19 @@
 #version 130
 
+#pragma optionNV (unroll all)
+
 #include "Includes/Configuration.include"
-#include "Includes/PostProcessBlur.include"
+#include "Includes/BokehDOF2.include"
+
+
 
 uniform sampler2D colorTex;
-uniform sampler2D normalTex;
-
+uniform sampler2D depthTex;
+uniform sampler2D dofStorage;
 in vec2 texcoord;
 
+
 void main() {
-    ivec2 screenCoord = ivec2(texcoord * textureSize(colorTex, 0) );
-    vec4 blurResult = blurSource(screenCoord, ivec2(1, 0), colorTex, normalTex);
-    gl_FragColor = vec4(blurResult.rgb * blurResult.a, 1); 
-    // gl_FragColor = vec4(blurResult.rgb, 1); 
+    // gl_FragColor = mipmapBasedBlur(texcoord, vec2(1,0), colorTex, dofStorage);
+    gl_FragColor = bokehDOF2(texcoord, colorTex);
 }

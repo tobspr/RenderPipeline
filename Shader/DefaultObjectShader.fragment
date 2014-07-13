@@ -12,15 +12,21 @@ in vec2 texcoord;
 // from the vertex shader.
 in vec4 diffuseColor;
 
+uniform sampler2D p3d_Texture0;
+
 void main() {
 
     // Create a material to store the properties on
     Material m;
 
+    // m.metallic = step(positionWorldSpace.z, 0.001);
     m.metallic = 0.0;
-    m.roughness = 0.0;
-    m.specular = 0.5;
+    m.roughness = 1.0;
+    m.specular = 0.0;
     m.baseColor = diffuseColor.rgb;
+    // m.baseColor = texture(p3d_Texture0, texcoord).rgb;
+    // m.baseColor = vec3(0.6);
+    // m.baseColor = vec3(texcoord, 0);
 
     m.position = positionWorldSpace;
     m.normal   = normalWorldSpace;

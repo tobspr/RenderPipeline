@@ -106,6 +106,7 @@ class RenderingPipeline(DebugObject):
         self.camera = base.cam
         self.size = self._getSize()
         self.cullBounds = None
+        self.blurEnabled = False  # Not as good as I want it, so disabled
 
         self.showbase.camLens.setNearFar(0.1, 10000)
 
@@ -135,9 +136,14 @@ class RenderingPipeline(DebugObject):
         self._createCombiner()
 
         self._createDofStorage()
-        self._createBlurBuffer()
+        self._createOcclusionBlurBuffer()
 
         self._setupAntialiasing()
+
+        # Blur is disabled for performance
+        if self.blurEnabled:
+            self._createBlurBuffer()
+
         self._setupFinalPass()
 
         self._setShaderInputs()
@@ -170,6 +176,7 @@ class RenderingPipeline(DebugObject):
         (Temporal Reprojection) """
         self.combiner = RenderTarget("Combine-Temporal")
         self.combiner.addColorTexture()
+        self.combiner.setColorBits(16)
         self.combiner.prepareOffscreenBuffer()
         self._setCombinerShader()
 
@@ -187,7 +194,7 @@ class RenderingPipeline(DebugObject):
                 self.antialiasingTechniquel)
             self.antialias = AntialiasingTechniqueSMAA()
 
-        self.antialias.setColorTexture(self.blurBufferH.getColorTexture())
+        self.antialias.setColorTexture(self.blurOcclusionH.getColorTexture())
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setup()
 
@@ -294,24 +301,34 @@ class RenderingPipeline(DebugObject):
             "temporalProjXOffs", self.temporalProjXOffs)
         self.lightingComputeContainer.setShaderInput(
             "cameraPosition", self.cameraPosition)
+
         self.lightingComputeContainer.setShaderInput(
             "dssdoNoiseTex", loader.loadTexture("Data/SSDO/noise.png"))
         self.lightingComputeContainer.setShaderInput(
             "lightsPerTile", self.lightPerTileStorage)
 
-        # Shader inputs for the blur passes
-        self.blurBufferH.setShaderInput(
-            "colorTex", self.blurBufferV.getColorTexture())
-        self.blurBufferV.setShaderInput(
+        # Shader inputs for the occlusion blur passes
+        self.blurOcclusionH.setShaderInput(
+            "colorTex", self.blurOcclusionV.getColorTexture())
+        self.blurOcclusionV.setShaderInput(
             "colorTex", self.combiner.getColorTexture())
-        self.blurBufferH.setShaderInput(
+        self.blurOcclusionH.setShaderInput(
             "normalTex", self.deferredTarget.getAuxTexture(0))
-        self.blurBufferV.setShaderInput(
+        self.blurOcclusionV.setShaderInput(
             "normalTex", self.deferredTarget.getAuxTexture(0))
-        self.blurBufferH.setShaderInput(
-            "dofStorage", self.dofStorage)
-        self.blurBufferV.setShaderInput(
-            "dofStorage", self.dofStorage)
+
+        # Shader inputs for the blur passes
+        if self.blurEnabled:
+            self.blurColorH.setShaderInput(
+                "dofStorage", self.dofStorage)
+            self.blurColorV.setShaderInput(
+                "dofStorage", self.dofStorage)
+            self.blurColorH.setShaderInput("colorTex",
+                                           self.antialias.getResultTexture())
+            self.blurColorH.setShaderInput("depthTex",
+                                           self.deferredTarget.getDepthTexture())
+            self.blurColorV.setShaderInput("colorTex",
+                                           self.blurColorH.getColorTexture())
 
         # Shader inputs for the temporal reprojection
         self.combiner.setShaderInput(
@@ -326,7 +343,7 @@ class RenderingPipeline(DebugObject):
         self.combiner.setShaderInput(
             "dofStorage", self.dofStorage)
         self.combiner.setShaderInput(
-            "depthTexture", self.deferredTarget.getDepthTexture())
+            "depthTex", self.deferredTarget.getDepthTexture())
         self.combiner.setShaderInput("lastPosition", self.lastPositionBuffer)
         self.combiner.setShaderInput(
             "temporalProjXOffs", self.temporalProjXOffs)
@@ -335,10 +352,14 @@ class RenderingPipeline(DebugObject):
         self.combiner.setShaderInput("currentMVP", self.lastMVP)
 
         # Shader inputs for the final pass
-        self.deferredTarget.setShaderInput(
-            "colorTex", self.antialias.getResultTexture())
-            # "colorTex", self.combiner.getColorTexture())
-            # "colorTex", self.blurBufferH.getColorTexture())
+        if self.blurEnabled:
+            self.deferredTarget.setShaderInput(
+                "colorTex", self.blurColorV.getColorTexture())
+        else:
+            self.deferredTarget.setShaderInput(
+                "colorTex", self.antialias.getResultTexture())
+                # "colorTex", self.blurOcclusionV.getColorTexture())
+
         self.deferredTarget.setShaderInput(
             "velocityTex", self.deferredTarget.getAuxTexture(1))
         self.deferredTarget.setShaderInput(
@@ -390,29 +411,69 @@ class RenderingPipeline(DebugObject):
         self.lastPositionBuffer.setMinfilter(Texture.FTNearest)
         self.lastPositionBuffer.setMagfilter(Texture.FTNearest)
 
-    def _createBlurBuffer(self):
-        self.blurBufferV = RenderTarget("BlurBufferVertical")
-        self.blurBufferV.addColorTexture()
-        self.blurBufferV.prepareOffscreenBuffer()
+    def _createOcclusionBlurBuffer(self):
+        """ Creates the buffers needed to blur the occlusion """
+        self.blurOcclusionV = RenderTarget("blurOcclusionVertical")
+        self.blurOcclusionV.addColorTexture()
+        self.blurOcclusionV.prepareOffscreenBuffer()
 
-        self.blurBufferH = RenderTarget("BlurBufferHorizontal")
-        self.blurBufferH.addColorTexture()
-        self.blurBufferH.prepareOffscreenBuffer()
+        self.blurOcclusionH = RenderTarget("blurOcclusionHorizontal")
+        self.blurOcclusionH.addColorTexture()
+        self.blurOcclusionH.prepareOffscreenBuffer()
+        self._setOcclusionBlurShader()
+
+        # Mipmaps for blur?
+        # self.blurOcclusionV.getColorTexture().setMinfilter(
+        #     Texture.FTLinearMipmapLinear)
+        # self.combiner.getColorTexture().setMinfilter(
+        #     Texture.FTLinearMipmapLinear)
+
+    def _createBlurBuffer(self):
+        """ Creates the buffers for the dof """
+        self.blurColorV = RenderTarget("blurColorVertical")
+        self.blurColorV.addColorTexture()
+        self.blurColorV.prepareOffscreenBuffer()
+
+        self.blurColorH = RenderTarget("blurColorHorizontal")
+        # self.blurColorH.setSize(400, 200)
+        self.blurColorH.addColorTexture()
+        self.blurColorH.prepareOffscreenBuffer()
+
+        self.blurColorH.getColorTexture().setMinfilter(
+            Texture.FTLinearMipmapLinear)
+        self.antialias.getResultTexture().setMinfilter(
+            Texture.FTLinearMipmapLinear)
         self._setBlurShader()
 
+
     def _createDofStorage(self):
+        """ Creates the texture where the dof factor is stored in, so we
+        don't recompute it each pass """
         self.dofStorage = Texture("DOFStorage")
-        self.dofStorage.setup2dTexture(base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.F_r16)
+        self.dofStorage.setup2dTexture(
+            base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRg16)
+
+    def _setOcclusionBlurShader(self):
+        """ Sets the shaders which blur the occlusion """
+        blurVShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/BlurOcclusionVertical.fragment")
+        blurHShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/BlurOcclusionHorizontal.fragment")
+        self.blurOcclusionV.setShader(blurVShader)
+        self.blurOcclusionH.setShader(blurHShader)
 
     def _setBlurShader(self):
+        """ Sets the shaders which blur the color """
         blurVShader = BetterShader.load(
             "Shader/DefaultPostProcess.vertex",
             "Shader/BlurVertical.fragment")
         blurHShader = BetterShader.load(
             "Shader/DefaultPostProcess.vertex",
             "Shader/BlurHorizontal.fragment")
-        self.blurBufferV.setShader(blurVShader)
-        self.blurBufferH.setShader(blurHShader)
+        self.blurColorV.setShader(blurVShader)
+        self.blurColorH.setShader(blurHShader)
 
     def _setLightingShader(self):
         """ Sets the shader which applies the light """
@@ -457,7 +518,11 @@ class RenderingPipeline(DebugObject):
         self._setCombinerShader()
         self._setLightingShader()
         self._setFinalPassShader()
-        self._setBlurShader()
+        self._setOcclusionBlurShader()
+
+        if self.blurEnabled:
+            self._setBlurShader()
+
         self.antialias.reloadShader()
 
     def _attachUpdateTask(self):
