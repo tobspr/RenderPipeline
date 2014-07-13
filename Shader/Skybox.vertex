@@ -1,8 +1,7 @@
 #version 440
 
-#include "Includes/VertexOutput.include"
-
 // Matrices
+uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 trans_model_to_world;
 
 // Material properties
@@ -11,7 +10,10 @@ in vec3 p3d_Normal;
 in vec2 p3d_MultiTexCoord0;
 
 // Outputs
-out VertexOutput vOutput;
+out vec3 normalWorldSpace;
+out vec3 positionWorldSpace;
+out vec2 texcoord;
+out vec4 diffuseColor;
 
 // We get the material info from panda as a struct
 struct PandaMaterial {
@@ -19,23 +21,21 @@ struct PandaMaterial {
 };
 uniform PandaMaterial p3d_Material;
 
-uniform mat4 p3d_ModelViewProjectionMatrix;
 
 void main() {
 
     // Transform normal to world space
-    vOutput.normalWorld = normalize(trans_model_to_world * vec4(p3d_Normal, 0)).xyz;
+    normalWorldSpace = normalize(trans_model_to_world * vec4(p3d_Normal, 0)).xyz;
 
     // Transform position to world space
-    vOutput.positionWorld = (trans_model_to_world * p3d_Vertex).xyz;
+    positionWorldSpace = (trans_model_to_world * p3d_Vertex).xyz;
 
     // Pass texcoord to fragment shader
-    vOutput.texcoord = p3d_MultiTexCoord0.xy;
+    texcoord = p3d_MultiTexCoord0.xy;
 
     // Also pass diffuse to fragment shader
-    vOutput.materialDiffuse = p3d_Material.diffuse;
+    diffuseColor = p3d_Material.diffuse;
 
     // Transform vertex to window space
-    // Only required when not using tesselation shaders
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 }

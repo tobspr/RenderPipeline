@@ -97,7 +97,7 @@ void main() {
     // Metallic materials don't have much occlusion
     // occlusionFactor = mix(occlusionFactor, 1.0, saturate(material.metallic-1.0) );
 
-    // occlusionFactor = 0.5;
+    // occlusionFactor = 1.0;
     // result.xyz = vec3(material.baseColor)+  0.1;
 
     #ifdef DSSDO_ONLY
@@ -107,20 +107,10 @@ void main() {
     // TODO: Move this to other passes??
     // HDR Mapping
     result.xyz = 1.0f - exp(-1.0 * result.xyz);
-    // result.xyz = saturate(result.xyz);
 
 
-    // Convert to gamma spae
+    // SRGB
     result.xyz = sqrt(result.xyz);
-     result.xyz += 0.01;
-    result.xyz *= 1.2;
-
-
-    vec3 colorCorrected = convertColorSpace(result.xyz);
-    result.xyz = mix( colorCorrected , result.xyz, 0.5);
-
-
-
 
     // result.xyz = saturate(result);
     gl_FragColor = vec4(result, occlusionFactor);

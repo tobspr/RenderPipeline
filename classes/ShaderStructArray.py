@@ -2,7 +2,14 @@
 from DebugObject import DebugObject
 from panda3d.core import PTAInt, PTAFloat, PTAMat4
 from panda3d.core import PTALVecBase2f, PTALVecBase3f
+from panda3d.core import PStatCollector
 
+pstats_SetShaderInputs = PStatCollector("App:ShaderStructArray:SetShaderInputs")
+
+
+
+ShaderStructElementInstances = []
+ShaderStructArrays = []
 
 class ShaderStructElement:
 
@@ -33,29 +40,31 @@ class ShaderStructElement:
 
     def __init__(self):
         """ Constructor, creates the list of referenced lists """
-
-        self.referencedLists = []
+        global ShaderStructElementInstances
+        self.structElementID = len(ShaderStructElementInstances)
+        ShaderStructElementInstances.append(self)
+        self.referencedListsIndices = {}
 
     def onPropertyChanged(self):
         """ This method should be called by the class instance itself
         whenever it modifyed an exposed value """
+        global ShaderStructArrays
 
-        for structArray in self.referencedLists:
-            structArray.objectChanged(self)
+        for structArrayIndex, elementIndex in self.referencedListsIndices.items():
+            ShaderStructArrays[structArrayIndex].objectChanged(self, elementIndex)
 
-    def addListReference(self, structArray):
+    def assignListIndex(self, structArrayIndex, index):
         """ A struct array calls this when this object is contained
         in the array. """
 
-        if structArray not in self.referencedLists:
-            self.referencedLists.append(structArray)
+        self.referencedListsIndices[structArrayIndex] = index
 
-    def removeListReference(self, structArray):
+    def removeListReference(self, structArrayIndex):
         """ A struct array calls this when this object got deleted from
         the list, e.g. by assigning another object at that index """
 
-        if structArray in self.referencedLists:
-            self.referencedLists.remove(structArray)
+        del self.referencedListsIndices[structArrayIndex]
+
 
 
 class ShaderStructArray(DebugObject):
@@ -84,8 +93,12 @@ class ShaderStructArray(DebugObject):
         """ Constructs a new array, containing elements of classType and
         with the size of numElements. classType and numElements can't be
         changed after initialization """
+        global ShaderStructArrays
 
         DebugObject.__init__(self, "ShaderStructArray")
+
+        self.arrayIndex = len(ShaderStructArrays)
+        ShaderStructArrays.append(self)
 
         self.debug("Init array, size =", numElements)
         self.classType = classType
@@ -122,6 +135,11 @@ class ShaderStructArray(DebugObject):
 
             self.ptaWrappers[name] = [
                 arrayType.emptyArray(numElements) for i in xrange(self.size)]
+
+
+    def getUID(self):
+        """ Returns the unique index of this array """
+        return self.arrayIndex
 
     def bindTo(self, parent, uniformName):
         """ In order for an element to recieve this array as an
@@ -166,32 +184,16 @@ class ShaderStructArray(DebugObject):
 
                 parent.setShaderInput(inputName, inputValue)
 
-    def objectChanged(self, obj):
+    def objectChanged(self, obj, index):
         """ A list object calls this when it changed. Do not call this
         directly """
-        if obj in self.assignedObjects:
-            self[self.assignedObjects.index(obj)] = obj
 
-    def __setitem__(self, index, value):
-        """ Sets the object at index to value. This directly updates the
-        shader inputs. """
+        self._rebindInputs(index, obj)
 
-        if index < 0 or index >= self.size:
-            raise Exception("Out of bounds!")
+    def _rebindInputs(self, index, value):
+        """ Rebinds the shader inputs for an index """
 
-        oldObject = self.assignedObjects[index]
-
-        # Remove old reference
-        if value is not None and oldObject is not None \
-                and oldObject is not value:
-            self.assignedObjects[index].removeListReference(self)
-
-        # Set new reference
-        value.addListReference(self)
-        self.assignedObjects[index] = value
-
-        # Set each attribute
-        index = int(index)
+        pstats_SetShaderInputs.start()
         for attrName, attrType in self.attributes.items():
 
             objValue = getattr(value, attrName)
@@ -208,3 +210,24 @@ class ShaderStructArray(DebugObject):
                 self.ptaWrappers[attrName][index][0] = objValue
             else:
                 self.ptaWrappers[attrName][index][0] = objValue
+        pstats_SetShaderInputs.stop()
+
+
+    def __setitem__(self, index, value):
+        """ Sets the object at index to value. This directly updates the
+        shader inputs. """
+
+        if index < 0 or index >= self.size:
+            raise Exception("Out of bounds!")
+
+        oldObject = self.assignedObjects[index]
+
+        # Remove old reference
+        if value is not None and oldObject is not None \
+                and oldObject is not value:
+            self.assignedObjects[index].removeListReference(self.arrayIndex)
+
+        # Set new reference
+        value.assignListIndex(self.arrayIndex, index)
+        self.assignedObjects[index] = value
+        self._rebindInputs(index, value)

@@ -12,13 +12,18 @@ void renderMaterial(Material m) {
 
     // Pack values
     vec2 normal = encodeNormal(m.normal);
-    vec2 color = packColor(m.baseColor);
+    vec2 color = packColor(max(vec3(0), m.baseColor) );
 
     // Compute velocity
     vec4 lastProj = lastMVP * vec4(m.position, 1);
     vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
     vec2 fragCoord = gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     lastTexcoord = (lastTexcoord - fragCoord) * 255.0;
+
+    // Saturate
+    m.roughness = saturate(m.roughness);
+    m.metallic = saturate(m.metallic);
+    m.specular = saturate(m.specular);
 
     // Output
     color0 = vec4(m.position.x, m.position.y, m.position.z, m.roughness);

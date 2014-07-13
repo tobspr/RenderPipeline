@@ -37,11 +37,19 @@ class BetterShader:
         geometry, tesseval, tesscontrol """
 
         newArgs = []
+        # print "Making shader!"
         for arg in args:
+            if len(arg) < 1:
+                print "append '' for geometry shader!"
+                newArgs.append("")
+                continue
             content = self._handleIncludes(arg)
             newArgs.append(content)
+            # print "append content for shader"
             self._writeDebugShader("Shader-" + str(arg), content)
             self._clearIncludeStack()
+
+
         result = Shader.make(Shader.SLGLSL, *newArgs)
         return result
 

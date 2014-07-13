@@ -11,6 +11,13 @@ from ShadowSource import ShadowSource
 from ShadowAtlas import ShadowAtlas
 from ShaderStructArray import ShaderStructArray
 
+from panda3d.core import PStatCollector
+
+pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
+pstats_CullLights = PStatCollector("App:LightManager:CullLights")
+pstats_PerLightUpdates = PStatCollector("App:LightManager:PerLightUpdates")
+pstats_FetchShadowUpdates = PStatCollector("App:LightManager:FetchShadowUpdates")
+
 
 class LightManager(DebugObject):
 
@@ -319,6 +326,8 @@ class LightManager(DebugObject):
         """ This is one of the two per-frame-tasks. See class description
         to see what it does """
 
+        pstats_ProcessLights.start()
+
         # Reset light counts
         # We don't have to reset the data-vectors, as we overwrite them
         for key in self.numRenderedLights:
@@ -328,13 +337,18 @@ class LightManager(DebugObject):
         for index, light in enumerate(self.lights):
 
             # Update light if required
+            pstats_PerLightUpdates.start()
             if light.needsUpdate():
                 light.performUpdate()
+            pstats_PerLightUpdates.stop()
 
             # Perform culling
+
+            pstats_CullLights.start()
             if not self.cullBounds.contains(light.getBounds()):
                 continue
-
+            pstats_CullLights.stop()
+            
             # Queue shadow updates if necessary
             if light.hasShadows() and light.needsShadowUpdate():
                 neededUpdates = light.performShadowUpdate()
@@ -357,6 +371,8 @@ class LightManager(DebugObject):
             arrayIndex = self.numRenderedLights[lightTypeName][0]
             self.numRenderedLights[lightTypeName][0] = oldCount + 1
             self.renderedLightsArrays[lightTypeName][arrayIndex] = index
+
+        pstats_ProcessLights.stop()
 
         # Generate debug text
         if self.lightsVisibleDebugText is not None:
@@ -459,7 +475,7 @@ class LightManager(DebugObject):
 
                 # Finally, we can tell the update it's valid now.
                 # Actually this is only true in one frame, but who cares?
-                update.setValid()
+                # update.setValid()
 
                 # Only add the uid to the output if the max updates
                 # aren't too much. Otherwise we spam the screen :P

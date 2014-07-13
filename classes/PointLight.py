@@ -1,6 +1,7 @@
 
 import math
 from panda3d.core import NodePath, Vec4, Vec3, BoundingSphere, Point3
+from panda3d.core import OmniBoundingVolume
 
 from Light import Light
 from DebugObject import DebugObject
@@ -36,6 +37,7 @@ class PointLight(Light, DebugObject):
         self.bufferRadius = 1.0
         self.shadowResolution = 512
         self.typeName = "PointLight"
+        # self.bounds = OmniBoundingVolume()
 
     def _getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
@@ -64,6 +66,11 @@ class PointLight(Light, DebugObject):
         mainNode = NodePath("DebugNodeInner")
         mainNode.setPos(self.position)
         lineNode = mainNode.attachNewNode("lines")
+
+        inner = loader.loadModel("box")
+        inner.setPos(-0.5,-0.5,0.0)
+        inner.flattenStrong()
+        inner.reparentTo(mainNode)
 
         # Generate outer circles
         points1 = []
@@ -108,4 +115,5 @@ class PointLight(Light, DebugObject):
 
     def __repr__(self):
         """ Generates a string representation of this instance """
-        return "PointLight[pos=" + str(self.position) + ", radius=" + str(self.radius) + "]"
+        # return "PointLight[pos=" + str(self.position) + ", radius=" + str(self.radius) + "]"
+        return "PointLight[id="+str(self.structElementID)+"]"

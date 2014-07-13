@@ -16,10 +16,10 @@ vfs-case-sensitive #t
 
 # Garbarge collection
 garbage-collect-states #f
-garbage-collect-states-rate 1.0
+# garbage-collect-states-rate 0.2
 
 
-transform-cache #t
+transform-cache #f
 state-cache #f
 
 
@@ -43,7 +43,7 @@ frame-rate-meter-side-margins 0.4
 
 # Pstats
 pstats-target-frame-rate 60.0
-pstats-unused-states #f
+# pstats-unused-states #f
 
 # For smoother animations
 # even-animation #t
@@ -100,7 +100,7 @@ sync-video #f
 # display-lists #t
 
 # Faster animations??
-# matrix-palette #t
+# matrix-palette #tc
 # display-list-animation #t
 
 # Don't rescale textures which are no power-of-2
@@ -123,3 +123,11 @@ text-minfilter linear
 text-page-size 128 128
 
 show-frame-rate-meter #t
+
+
+texture-anisotropic-degree 2
+texture-magfilter linear
+texture-minfilter linear
+
+cache-models #t
+texture-cache #t

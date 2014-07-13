@@ -4,7 +4,7 @@
 #include "Includes/Packing.include"
 
 
-const float normalsDiscardThreshold = 0.995;
+const float normalsDiscardThreshold = 0.999;
 
 
 vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2D blurFactors) {
@@ -54,7 +54,7 @@ vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2
 
 float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction, sampler2D colorTex, sampler2D normalTex) {
 
-    #ifdef USE_OCCLUSION_BLUR
+    #ifdef DSSDO_ENABLED
 
         float blurWeights[9] = float[9]
         (
@@ -80,7 +80,7 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction,
         vec3 normals[9];
         float occlusion[9];
         float mipmap = 0.0;
-        float blurSizeFactor = 4.0 / screenSize;
+        float blurSizeFactor = 1.0 / screenSize;
         vec2 directionF = vec2(direction) * vec2(float(WINDOW_HEIGHT) / float(WINDOW_WIDTH), 1.0);
 
         // First, fetch all required values

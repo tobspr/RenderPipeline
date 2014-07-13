@@ -1,0 +1,9 @@
+
+
+struct VertexOutput {
+    vec3 positionWorld;
+    vec3 normalWorld;
+    vec2 texcoord;
+
+    vec4 materialDiffuse;
+};

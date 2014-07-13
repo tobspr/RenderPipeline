@@ -358,7 +358,7 @@ class RenderingPipeline(DebugObject):
         else:
             self.deferredTarget.setShaderInput(
                 "colorTex", self.antialias.getResultTexture())
-                # "colorTex", self.blurOcclusionV.getColorTexture())
+                # "colorTex", self.deferredTarget.getColorTexture())
 
         self.deferredTarget.setShaderInput(
             "velocityTex", self.deferredTarget.getAuxTexture(1))
@@ -588,12 +588,24 @@ class RenderingPipeline(DebugObject):
         """ Returns a handle to the light manager """
         return self.lightManager
 
-    def getDefaultObjectShader(self):
+    def getDefaultObjectShader(self, tesselated=False):
         """ Returns the default shader for objects """
-        shader = BetterShader.load(
-            "Shader/DefaultObjectShader.vertex",
-            "Shader/DefaultObjectShader.fragment")
+
+        if not tesselated:
+            shader = BetterShader.load(
+                "Shader/DefaultObjectShader.vertex",
+                "Shader/DefaultObjectShader.fragment")
+        else:
+            shader = BetterShader.load(
+                "Shader/DefaultObjectShader.vertex",
+                "Shader/DefaultObjectShader.fragment",
+                "",
+                "Shader/DefaultObjectShader.tesscontrol",
+                "Shader/DefaultObjectShader.tesseval")  
+
         return shader
+
+
 
     def addLight(self, light):
         """ Adds a light to the list of rendered lights """

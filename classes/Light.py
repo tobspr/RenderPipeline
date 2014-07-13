@@ -118,7 +118,7 @@ class Light(ShaderStructElement):
         for source in self.shadowSources:
             if not source.isValid():
                 return True
-
+                
         return False
 
     def queueUpdate(self):

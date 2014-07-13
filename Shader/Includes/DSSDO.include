@@ -24,16 +24,21 @@
     const vec4  sh2Weight          = vec4(sh2WeightL1, sh2WeightL0) / dssdoSampleCount;
 
 
-    // uniform sampler2D dssdoNoiseTex;
+    uniform sampler2D dssdoNoiseTex;
 
     float computeDSSDO(vec2 texcoord, ivec2 screenCoord, Material material, float dist, sampler2D normalTex, sampler2D positionTex) {
-        float radius = clamp( (1.0 / dist) * 1000.0 * dssdoRadius, 0.0, 1000.0);
+        
+        float radius = clamp( (1.0 / dist) * 1000.0 * dssdoRadius, 0.0, 100.0);
         ivec2 screenSize = textureSize(normalTex, 0);
+        vec3 noise = texelFetch(dssdoNoiseTex, screenCoord % 4, 0).rgb*2.0 - 1.0;
+        noise *= 0.4;
+
         float occlusionResult = 0.0;
 
         for (int i = 0; i < dssdoSampleCount; i++) {
             vec3 offset = poisson3D_32[i*dssdoPoissonFactor];
-            ivec2 offsetCoord = clamp(screenCoord + ivec2(offset.xy*radius), ivec2(0), screenSize-1);
+            // ivec2 offsetCoord = clamp(screenCoord + ivec2(offset.xy*radius), ivec2(0), screenSize-1);
+            ivec2 offsetCoord = clamp(screenCoord + ivec2(reflect(offset.xy, noise.xy)*radius), ivec2(0), screenSize-1);
             vec3 position = texelFetch(positionTex, offsetCoord, 0).rgb;
             vec3 difference = (position - material.position);
             float differenceLength = length(difference);

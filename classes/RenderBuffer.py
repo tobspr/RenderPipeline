@@ -136,6 +136,7 @@ class RenderBuffer(DebugObject):
             handle.setWrapV(Texture.WMClamp)
             handle.setMinfilter(Texture.FTLinear)
             handle.setMagfilter(Texture.FTLinear)
+            handle.setAnisotropicDegree(0)
 
             if target == RenderTargetType.Color:
                 if colorIsFloat:
