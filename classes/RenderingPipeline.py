@@ -695,3 +695,15 @@ class RenderingPipeline(DebugObject):
     def destroy(self):
         """ Call this when you want to shut down the pipeline """
         raise NotImplementedError()
+
+    def reload(self):
+        """ This reloads the whole pipeline, same as destroy(); create() """
+        self.debug("Reloading pipeline")
+        self.destroy()
+        self.create()
+
+    def setActive(self, active):
+        """ You can enable/disable the pipeline, for example
+        when the user is in the menu, the 3d scene does not have
+        to be rendered """
+        raise NotImplementedError()
