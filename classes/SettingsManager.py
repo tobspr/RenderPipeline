@@ -115,11 +115,12 @@ class SettingsManager(DebugObject):
             self.settings[settingName].setValue(settingValue)
             setattr(self, settingName, self.settings[settingName].getValue())
 
-    def __getitem__(self, name):
-        """ This function makes accessing the settings via [] possible.
-        Throws an exception when the setting does not exist. """
+    # def __getitem__(self, name):
+        # """ This function makes accessing the settings via [] possible.
+        # Throws an exception when the setting does not exist. """
         
-        if name in self.settings:
-            return self.settings[name].getValue()
-        else:
-            raise Exception("The setting '" + str(name) + "' does not exist")
+        # if name in self.settings:
+        #     return self.settings[name].getValue()
+        # else:
+        #     raise Exception("The setting '" + str(name) + "' does not exist")
+
