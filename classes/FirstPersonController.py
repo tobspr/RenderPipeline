@@ -8,7 +8,7 @@ from direct.showbase import DirectObject
 #from pandac.PandaModules import WindowProperties
 # from panda3d.core import CollisionHandlerPusher, CollisionNode, \
 #                         CollisionSphere
-from panda3d.core import BitMask32, WindowProperties, LMatrix4f
+from panda3d.core import BitMask32, WindowProperties, LMatrix4f, CollisionNode, CollisionSphere
 from direct.task import Task
 
 # First person camera controller, "free view"/"FPS" style.

@@ -10,6 +10,7 @@ from RenderTarget import RenderTarget
 from ShadowSource import ShadowSource
 from ShadowAtlas import ShadowAtlas
 from ShaderStructArray import ShaderStructArray
+from Globals import Globals
 
 from panda3d.core import PStatCollector
 
@@ -52,14 +53,15 @@ class LightManager(DebugObject):
         self.pipeline = pipeline
         self.settings = pipeline.getSettings()
 
+
         # Create arrays to store lights & shadow sources
         self.lights = []
         self.shadowSources = []
         self.queuedShadowUpdates = []
-        self.allLightsArray = ShaderStructArray(Light, 30)
+        self.allLightsArray = ShaderStructArray(Light, self.maxTotalLights)
 
         self.cullBounds = None
-        self.shadowScene = render
+        self.shadowScene = Globals.render
 
         # Create atlas
         self.shadowAtlas = ShadowAtlas()
@@ -138,7 +140,7 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.setDepthBits(32)
         self.shadowComputeTarget.setSource(
-            self.shadowComputeCameraNode, base.win)
+            self.shadowComputeCameraNode, Globals.base.win)
         self.shadowComputeTarget.prepareSceneRender()
 
         # We have to adjust the sort
@@ -160,7 +162,7 @@ class LightManager(DebugObject):
         # which has a depth-clear assigned. This is hacky, I know.
         self.depthClearer = []
 
-        for i in xrange(self.maxShadowUpdatesPerFrame):
+        for i in range(self.maxShadowUpdatesPerFrame):
             buff = self.shadowComputeTarget.getInternalBuffer()
             dr = buff.makeDisplayRegion()
             dr.setSort(2)
@@ -188,9 +190,9 @@ class LightManager(DebugObject):
             try:
                 from FastText import FastText
                 self.lightsVisibleDebugText = FastText(pos=Vec2(
-                    base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
+                    Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
                 self.lightsUpdatedDebugText = FastText(pos=Vec2(
-                    base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
+                    Globals.base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
 
             except Exception, msg:
                 self.debug(
@@ -202,15 +204,17 @@ class LightManager(DebugObject):
         # If you change this, don't forget to change it also in
         # Shader/Includes/Configuration.include!
         self.maxLights = {
-            "PointLight": 16,
+            "PointLight": 16000,
             # "DirectionalLight": 2
         }
 
         # Max shadow casting lights
         self.maxShadowLights = {
-            "PointLight": 16,
+            "PointLight": 16000,
             # "DirectionalLight": 1
         }
+
+        self.maxTotalLights = 100000
 
         for lightType, maxCount in self.maxShadowLights.items():
             self.maxLights[lightType + "Shadow"] = maxCount
@@ -483,7 +487,7 @@ class LightManager(DebugObject):
                     last += str(update.getUid()) + " "
 
             # Remove all updates which got processed from the list
-            for i in xrange(numUpdates):
+            for i in range(numUpdates):
                 self.queuedShadowUpdates.remove(self.queuedShadowUpdates[0])
 
             self.numShadowUpdatesPTA[0] = numUpdates

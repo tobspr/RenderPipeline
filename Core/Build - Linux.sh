@@ -1,0 +1,3 @@
+cd Linux
+cmake ../
+make

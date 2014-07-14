@@ -7,6 +7,7 @@ from Light import Light
 from DebugObject import DebugObject
 from LightType import LightType
 from ShadowSource import ShadowSource
+from Globals import Globals
 
 
 class PointLight(Light, DebugObject):
@@ -67,7 +68,7 @@ class PointLight(Light, DebugObject):
         mainNode.setPos(self.position)
         lineNode = mainNode.attachNewNode("lines")
 
-        inner = loader.loadModel("box")
+        inner = Globals.loader.loadModel("box")
         inner.setPos(-0.5,-0.5,0.0)
         inner.flattenStrong()
         inner.reparentTo(mainNode)
@@ -76,7 +77,7 @@ class PointLight(Light, DebugObject):
         points1 = []
         points2 = []
         points3 = []
-        for i in xrange(self.visualizationNumSteps + 1):
+        for i in range(self.visualizationNumSteps + 1):
             angle = float(
                 i) / float(self.visualizationNumSteps) * math.pi * 2.0
             points1.append(Vec3(0, math.sin(angle), math.cos(angle)))
@@ -94,7 +95,7 @@ class PointLight(Light, DebugObject):
 
     def _initShadowSources(self):
         """ Internal method to init the shadow sources """
-        for i in xrange(2):
+        for i in range(2):
             source = ShadowSource()
             source.setupPerspectiveLens(
                 self.spacing, self.radius + self.spacing + self.bufferRadius, (90, 90))

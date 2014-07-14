@@ -5,6 +5,7 @@ from DebugObject import DebugObject
 from RenderTarget import RenderTarget
 from RenderTargetType import RenderTargetType
 from BetterShader import BetterShader
+from Globals import Globals
 
 
 class AntialiasingTechnique(DebugObject):
@@ -83,8 +84,8 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
         #     'areaTex' and 'searchTex'. You'll find them in the 'Textures' folder as
         #     C++ headers, and also as regular DDS files. They'll be needed for the
         #     'SMAABlendingWeightCalculation' pass.
-        self.areaTex = loader.loadTexture("Data/Antialiasing/SMAA_AreaTexGL.png")
-        self.searchTex = loader.loadTexture(
+        self.areaTex = Globals.loader.loadTexture("Data/Antialiasing/SMAA_AreaTexGL.png")
+        self.searchTex = Globals.loader.loadTexture(
             "Data/Antialiasing/SMAA_SearchTexGL.png")
 
         #  4. All samplers must be set to linear filtering and clamp.

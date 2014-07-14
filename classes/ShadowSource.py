@@ -6,6 +6,7 @@ from panda3d.core import Mat4, Vec2
 
 from DebugObject import DebugObject
 from ShaderStructArray import ShaderStructElement
+from Globals import Globals
 
 
 class ShadowSource(DebugObject, ShaderStructElement):
@@ -50,7 +51,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         self.valid = False
         self.camera = Camera("ShadowSource-" + str(self.index))
         self.cameraNode = NodePath(self.camera)
-        self.cameraNode.reparentTo(render)
+        self.cameraNode.reparentTo(Globals.render)
         self.resolution = 1024
         self.atlasPos = Vec2(0)
         self.doesHaveAtlasPos = False
@@ -84,10 +85,10 @@ class ShadowSource(DebugObject, ShaderStructElement):
             CSYupRight,
             self.lens.getCoordinateSystem()) * self.lens.getProjectionMat()
         transformMat = TransformState.makeMat(
-            Mat4.convertMat(base.win.getGsg().getInternalCoordinateSystem(),
+            Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(),
                             CSZupRight))
         modelViewMat = transformMat.invertCompose(
-            render.getTransform(self.cameraNode)).getMat()
+            Globals.render.getTransform(self.cameraNode)).getMat()
         self.mvp = UnalignedLMatrix4f(modelViewMat * projMat)
 
     def assignAtlasPos(self, x, y):

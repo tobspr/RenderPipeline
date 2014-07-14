@@ -37,7 +37,7 @@ class ShadowAtlas(DebugObject):
 
         # Create binary tile representation
         self.tiles = [
-            [None for x in xrange(self.tileCount)] for y in xrange(self.tileCount)]
+            [None for x in range(self.tileCount)] for y in range(self.tileCount)]
 
     def setSize(self, size):
         """ Sets the shadow atlas size in pixels """
@@ -68,9 +68,9 @@ class ShadowAtlas(DebugObject):
         tilePos = LVecBase2i(-1)
 
         # Iterate all tiles
-        for j in xrange(0, maxIterations[0]):
+        for j in range(0, maxIterations[0]):
             if not tileFound:
-                for i in xrange(0, maxIterations[1]):
+                for i in range(0, maxIterations[1]):
                     if not tileFound:
 
                         # First, assume the space is free
@@ -78,8 +78,8 @@ class ShadowAtlas(DebugObject):
 
                         # Now, check if anything is blocking the space, and if so,
                         # mark the tile as reserved
-                        for x in xrange(tileW):
-                            for y in xrange(tileH):
+                        for x in range(tileW):
+                            for y in range(tileH):
                                 if not tileFree:
                                     break
                                 if self.tiles[j + y][i + x] is not None:
@@ -108,6 +108,6 @@ class ShadowAtlas(DebugObject):
     def _reserveTile(self,  offsetX, offsetY, width, height, value):
         """ Reserves the space of the size width*height at the position
         offsetX, offsetY in the atlas, setting their assigned index to value """
-        for x in xrange(0, width):
-            for y in xrange(0, height):
+        for x in range(0, width):
+            for y in range(0, height):
                 self.tiles[y + offsetY][x + offsetX] = value

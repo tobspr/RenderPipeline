@@ -36,7 +36,7 @@ class Light(ShaderStructElement):
         self.sourceIndexes = PTAInt.emptyArray(6)
         self.attached = False
 
-        for i in xrange(6):
+        for i in range(6):
             self.sourceIndexes[i] = -1
 
     @classmethod

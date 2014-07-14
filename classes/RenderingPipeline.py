@@ -68,10 +68,10 @@ class RenderingPipeline(DebugObject):
 
     """
 
-    def __init__(self):
+    def __init__(self, showbase):
         """ Creates a new pipeline """
         DebugObject.__init__(self, "RenderingPipeline")
-        self.showbase = base
+        self.showbase = showbase
         self.settings = None
 
     def loadSettings(self, filename):
@@ -103,7 +103,7 @@ class RenderingPipeline(DebugObject):
         self.lastMVP = PTALMatrix4f.emptyArray(1)
         self.currentMVP = PTALMatrix4f.emptyArray(1)
 
-        self.camera = base.cam
+        self.camera = self.showbase.cam
         self.size = self._getSize()
         self.cullBounds = None
         self.blurEnabled = False  # Not as good as I want it, so disabled
@@ -123,7 +123,7 @@ class RenderingPipeline(DebugObject):
 
         # We need no transparency (we store other information in the alpha
         # channel)
-        render.setAttrib(
+        self.showbase.render.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
 
         # Now create deferred render buffers
@@ -155,7 +155,7 @@ class RenderingPipeline(DebugObject):
         if self.settings.displayShadowAtlas:
             self.atlasDisplayImage = OnscreenImage(
                 image=self.lightManager.getAtlasTex(), pos=(
-                    base.getAspectRatio() - 0.35, 0, 0.5),
+                    self.showbase.getAspectRatio() - 0.35, 0, 0.5),
                 scale=(0.25, 0, 0.25))
 
     def getForwardScene(self):
@@ -282,9 +282,9 @@ class RenderingPipeline(DebugObject):
         self.lightBoundsComputeBuff.setShaderInput(
             "depth", self.deferredTarget.getDepthTexture())
         self.lightBoundsComputeBuff.setShaderInput(
-            "mainCam", base.cam)
+            "mainCam", self.showbase.cam)
         self.lightBoundsComputeBuff.setShaderInput(
-            "mainRender", base.render)
+            "mainRender", self.showbase.render)
 
         # Shader inputs for the light-applying pass
         self.lightingComputeContainer.setShaderInput(
@@ -303,7 +303,7 @@ class RenderingPipeline(DebugObject):
             "cameraPosition", self.cameraPosition)
 
         self.lightingComputeContainer.setShaderInput(
-            "dssdoNoiseTex", loader.loadTexture("Data/SSDO/noise.png"))
+            "dssdoNoiseTex", self.showbase.loader.loadTexture("Data/SSDO/noise.png"))
         self.lightingComputeContainer.setShaderInput(
             "lightsPerTile", self.lightPerTileStorage)
 
@@ -368,11 +368,11 @@ class RenderingPipeline(DebugObject):
             "motionBlurFactor", self.motionBlurFactor)
 
         # Set last / current mvp handles
-        render.setShaderInput("lastMVP", self.lastMVP)
+        self.showbase.render.setShaderInput("lastMVP", self.lastMVP)
 
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
-        cubemap = loader.loadCubeMap("Cubemap/#.png")
+        cubemap = self.showbase.loader.loadCubeMap("Cubemap/#.png")
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb_alpha)
@@ -392,21 +392,21 @@ class RenderingPipeline(DebugObject):
         """ Creates the buffer which applies the lighting """
         self.lightingComputeContainer = RenderTarget("ComputeLighting")
         self.lightingComputeContainer.setSize(
-            base.win.getXSize() / 2,  base.win.getYSize())
+            self.showbase.win.getXSize() / 2,  self.showbase.win.getYSize())
         self.lightingComputeContainer.addColorTexture()
         self.lightingComputeContainer.setColorBits(16)
         self.lightingComputeContainer.prepareOffscreenBuffer()
 
         self.lightingComputeCombinedTex = Texture("Lighting-Compute-Combined")
         self.lightingComputeCombinedTex.setup2dTexture(
-            base.win.getXSize(), base.win.getYSize(),
+            self.showbase.win.getXSize(), self.showbase.win.getYSize(),
             Texture.TFloat, Texture.FRgba16)
         self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
         self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
 
         self.lastPositionBuffer = Texture("Last-Position-Buffer")
         self.lastPositionBuffer.setup2dTexture(
-            base.win.getXSize(), base.win.getYSize(),
+            self.showbase.win.getXSize(), self.showbase.win.getYSize(),
             Texture.TFloat, Texture.FRgba16)
         self.lastPositionBuffer.setMinfilter(Texture.FTNearest)
         self.lastPositionBuffer.setMagfilter(Texture.FTNearest)
@@ -451,7 +451,7 @@ class RenderingPipeline(DebugObject):
         don't recompute it each pass """
         self.dofStorage = Texture("DOFStorage")
         self.dofStorage.setup2dTexture(
-            base.win.getXSize(), base.win.getYSize(), Texture.TFloat, Texture.FRg16)
+            self.showbase.win.getXSize(), self.showbase.win.getYSize(), Texture.TFloat, Texture.FRg16)
 
     def _setOcclusionBlurShader(self):
         """ Sets the shaders which blur the occlusion """
@@ -537,7 +537,7 @@ class RenderingPipeline(DebugObject):
     def _computeCameraBounds(self):
         """ Computes the current camera bounds, i.e. for light culling """
         cameraBounds = self.camera.node().getLens().makeBounds()
-        cameraBounds.xform(self.camera.getMat(render))
+        cameraBounds.xform(self.camera.getMat(self.showbase.render))
         return cameraBounds
 
     def _updateLights(self, task=None):
@@ -554,10 +554,10 @@ class RenderingPipeline(DebugObject):
 
     def _update(self, task=None):
         """ Main update task """
-        currentFPS = 1.0 / globalClock.getDt()
+        currentFPS = 1.0 / self.showbase.taskMgr.globalClock.getDt()
 
         self.temporalProjXOffs[0] = 1 - self.temporalProjXOffs[0]
-        self.cameraPosition[0] = base.cam.getPos(render)
+        self.cameraPosition[0] = self.showbase.cam.getPos(self.showbase.render)
         self.motionBlurFactor[0] = min(1.5, currentFPS /
                                        60.0) * self.settings.motionBlurFactor
 
@@ -573,15 +573,15 @@ class RenderingPipeline(DebugObject):
     def _computeMVP(self):
         """ Computes the current mvp. Actually, this is the
         worldViewProjectionMatrix, but for convience it's called mvp. """
-        camLens = base.camLens
+        camLens = self.showbase.camLens
         projMat = Mat4.convertMat(
             CSYupRight,
             camLens.getCoordinateSystem()) * camLens.getProjectionMat()
         transformMat = TransformState.makeMat(
-            Mat4.convertMat(base.win.getGsg().getInternalCoordinateSystem(),
+            Mat4.convertMat(self.showbase.win.getGsg().getInternalCoordinateSystem(),
                             CSZupRight))
         modelViewMat = transformMat.invertCompose(
-            render.getTransform(base.cam)).getMat()
+            self.showbase.render.getTransform(self.showbase.cam)).getMat()
         return UnalignedLMatrix4f(modelViewMat * projMat)
 
     def getLightManager(self):
@@ -665,8 +665,8 @@ class RenderingPipeline(DebugObject):
         if self.settings.useHardwarePCF:
             defines.append(("USE_HARDWARE_PCF", 1))
 
-        defines.append(("WINDOW_WIDTH", base.win.getXSize()))
-        defines.append(("WINDOW_HEIGHT", base.win.getYSize()))
+        defines.append(("WINDOW_WIDTH", self.showbase.win.getXSize()))
+        defines.append(("WINDOW_HEIGHT", self.showbase.win.getYSize()))
 
         if self.settings.motionBlurEnabled:
             defines.append(("USE_MOTION_BLUR", 1))

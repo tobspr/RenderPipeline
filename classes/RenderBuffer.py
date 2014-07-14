@@ -3,6 +3,7 @@ from panda3d.core import GraphicsOutput, Texture, WindowProperties
 from panda3d.core import FrameBufferProperties, GraphicsPipe, Vec2
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
+from Globals import Globals
 
 # Wrapper arround GraphicsBuffer
 
@@ -210,7 +211,7 @@ class RenderBuffer(DebugObject):
         bufferProps.setMultisamples(0)
 
         # Create internal graphics output
-        self._internalBuffer = base.graphicsEngine.makeOutput(
+        self._internalBuffer = Globals.base.graphicsEngine.makeOutput(
             self._win.getPipe(), self._name, 1,
             bufferProps, windowProps,
             GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,

@@ -107,7 +107,7 @@ class ShaderStructArray(DebugObject):
         self.size = numElements
         self.parents = {}
         self.ptaWrappers = {}
-        self.assignedObjects = [None for i in xrange(numElements)]
+        self.assignedObjects = [None for i in range(numElements)]
 
         for name, attrType in self.attributes.items():
             arrayType = PTAFloat
@@ -134,7 +134,7 @@ class ShaderStructArray(DebugObject):
                 arrayType = PTALVecBase3f
 
             self.ptaWrappers[name] = [
-                arrayType.emptyArray(numElements) for i in xrange(self.size)]
+                arrayType.emptyArray(numElements) for i in range(self.size)]
 
 
     def getUID(self):
@@ -174,9 +174,10 @@ class ShaderStructArray(DebugObject):
         You can then access the data as with any other uniform input.
         """
 
+        
         self.parents[parent] = uniformName
 
-        for index in xrange(self.size):
+        for index in range(min(32, self.size) ):
             for attrName, attrType in self.attributes.items():
                 inputName = uniformName + \
                     "[" + str(index) + "" "]" + "." + attrName
@@ -192,7 +193,7 @@ class ShaderStructArray(DebugObject):
 
     def _rebindInputs(self, index, value):
         """ Rebinds the shader inputs for an index """
-
+        
         pstats_SetShaderInputs.start()
         for attrName, attrType in self.attributes.items():
 
@@ -204,7 +205,7 @@ class ShaderStructArray(DebugObject):
             elif attrType == "int":
                 objValue = int(objValue)
             if attrType == "array<int>(6)":
-                for i in xrange(6):
+                for i in range(6):
                     self.ptaWrappers[attrName][index][i] = objValue[i]
             elif attrType == "mat4":
                 self.ptaWrappers[attrName][index][0] = objValue

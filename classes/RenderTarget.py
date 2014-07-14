@@ -6,6 +6,7 @@ from panda3d.core import ColorWriteAttrib, DepthWriteAttrib
 from RenderBuffer import RenderBuffer
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
+from Globals import Globals
 
 
 class RenderTarget(DebugObject):
@@ -54,8 +55,8 @@ class RenderTarget(DebugObject):
         self._depthbits = 8
         self._buffer = None
         self._quad = None
-        self._sourceCam = base.cam
-        self._sourceWindow = base.win
+        self._sourceCam = Globals.base.cam
+        self._sourceWindow = Globals.base.win
         self._width = -1
         self._height = -1
         self._name = name
@@ -192,7 +193,7 @@ class RenderTarget(DebugObject):
             RenderTargetType.Aux3,
         ]
 
-        for i in xrange(num):
+        for i in range(num):
             self.addRenderTexture(targets[i])
 
     def hasTarget(self, target):
@@ -421,12 +422,15 @@ class RenderTarget(DebugObject):
     def updateSize(self):
         """ Updates the size of this render target. TODO """
         raise NotImplementedError("Not working yet")
+
+        """
         wantedX = self._sourceWindow.getXSize(
         ) if self._width < 1 else self._width
         wantedY = self._sourceWindow.getYSize(
         ) if self._height < 1 else self._height
         self._buffer.setSize(wantedX, wantedY)
         self._setSizeShaderInput()
+        """
 
     def __repr__(self):
         """ Returns a representative string of this instance """

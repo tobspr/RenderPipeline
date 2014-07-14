@@ -146,16 +146,16 @@ class MovementController:
         # Compute movement in render space
         movementDirection = (Vec3(self.movement[1], self.movement[0], 0)
                              * self.speed
-                             * globalClock.getDt() * 100.0)
+                             * self.showbase.taskMgr.globalClock.getDt() * 100.0)
 
         # Transform by camera direction
-        cameraQuaternion = self.showbase.camera.getQuat(render)
+        cameraQuaternion = self.showbase.camera.getQuat(self.showbase.render)
         translatedDirection = cameraQuaternion.xform(movementDirection)
       
 
         # zforce is independent of camera direction
         translatedDirection.addZ(
-            self.movement[2] * globalClock.getDt() * 40.0 * self.speed)
+            self.movement[2] * self.showbase.taskMgr.globalClock.getDt() * 40.0 * self.speed)
 
 
 
@@ -168,7 +168,7 @@ class MovementController:
             self.showbase.camera.getPos() + self.velocity)
 
         # transform rotation (keyboard keys)
-        rotationSpeed = self.keyboardHprSpeed * 100.0 * globalClock.getDt()
+        rotationSpeed = self.keyboardHprSpeed * 100.0 * self.showbase.taskMgr.globalClock.getDt()
         self.showbase.camera.setHpr(self.showbase.camera.getHpr() + Vec3(self.hprMovement[0],self.hprMovement[1],0) * rotationSpeed )
 
         return task.cont
@@ -219,23 +219,23 @@ class MovementController:
         # display camera pos
         elif selectedOption == 4:
             print "Debug information:"
-            print "\tCamera is at", self.showbase.camera.getPos(render)
-            print "\tCamera hpr is", self.showbase.camera.getHpr(render)
+            print "\tCamera is at", self.showbase.camera.getPos(self.showbase.render)
+            print "\tCamera hpr is", self.showbase.camera.getHpr(self.showbase.render)
 
         # show scene graph
         elif selectedOption == 5:
             print "SCENE GRAPH:"
             print "-" * 50
-            render.ls()
+            self.showbase.render.ls()
             print "-" * 50
             print
             print "ANALYZED:"
             print "-" * 50
-            render.analyze()
+            self.showbase.render.analyze()
             print "-" * 50
 
         # placement window
         elif selectedOption == 6:
             print "Opening placement window. You need tkinter installed to be able to use it"
-            # render.place()
+            # self.showbase.render.place()
             print "It seems .place() is currently not working. Sorry!!"
