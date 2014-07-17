@@ -1,6 +1,10 @@
 #version 130
 
 #include "Includes/Configuration.include"
+
+
+const ivec2 blurDirection = ivec2(1,0);
+
 #include "Includes/PostProcessBlur.include"
 
 uniform sampler2D colorTex;
@@ -10,10 +14,12 @@ in vec2 texcoord;
 
 out vec4 result;
 
+
+
 void main() {
     vec2 screenSize = vec2(textureSize(colorTex, 0)); 
     ivec2 screenCoord = ivec2(texcoord * screenSize );
-    float blurResult = edgePreservingAlphaBlur(texcoord, screenCoord, ivec2(1, 0), colorTex, normalTex);
+    float blurResult = edgePreservingAlphaBlur(texcoord, screenCoord, colorTex, normalTex);
     vec3 colorResult = texture(colorTex, texcoord).rgb;
     result = vec4(colorResult * blurResult, 1); 
     // result = vec4(blurResult); 

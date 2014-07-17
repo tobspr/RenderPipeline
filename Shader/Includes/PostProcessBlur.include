@@ -55,10 +55,7 @@ vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2
 }
 
 
-#pragma unroll
-
-
-float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction, sampler2D colorTex, sampler2D normalTex) {
+float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, sampler2D colorTex, sampler2D normalTex) {
 
     #ifndef USE_OCCLUSION_BLUR
         return texture(colorTex, texcoord).a;
@@ -85,8 +82,8 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction,
         // AMD Can't handle texelFetchOffset with loops
 
         #define EPAB_INIT_VALUES(i) \
-        normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*direction).xy); \
-        occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*direction).a;
+        normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*blurDirection).xy); \
+        occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*blurDirection).a;
 
         EPAB_INIT_VALUES(0)
         EPAB_INIT_VALUES(1)
