@@ -66,7 +66,14 @@ class RenderTarget(DebugObject):
         self._enableTransparency = False
         self._layers = 0
         self._writeColor = True
+        self._multisamples = 0
+        self._rename(name)
 
+        self.mute()
+
+    def setMultisamples(self, samples):
+        """ Sets the amount of multisamples to use """
+        self._multisamples = samples
 
     def setLayers(self, layers):
         """ Sets the number of layers. When greater than 1, this enables
@@ -210,7 +217,7 @@ class RenderTarget(DebugObject):
         self.debug("Creating buffer of size", wantedX, "x", wantedY)
 
         self._buffer = RenderBuffer()
-        self._buffer.setName("RTarget-" + self._name)
+        self._buffer.setName("Buff-" + self._name)
         self._buffer.setSize(wantedX, wantedY)
         self._buffer.setWindow(self._sourceWindow)
         self._buffer.setColorBits(self._colorBits)
@@ -218,6 +225,7 @@ class RenderTarget(DebugObject):
         self._buffer.setDepthBits(self._depthbits)
         self._buffer.setBindMode(self._bindMode)
         self._buffer.setLayers(self._layers)
+        self._buffer.setMultisamples(self._multisamples)
 
         for flag in self._targetFlags.keys():
             self._buffer.addTarget(flag)
@@ -238,7 +246,7 @@ class RenderTarget(DebugObject):
         """ Renders the scene of the source camera to the buffer. See the
         documentation of this class for further information """
 
-        self.debug("Preparing scene render for", self._name)
+        self.debug("Preparing scene render")
 
         # Init buffer object
         self._createBuffer()
@@ -301,7 +309,7 @@ class RenderTarget(DebugObject):
     def prepareOffscreenBuffer(self):
         """ Creates an offscreen buffer for this target """
 
-        self.debug("Preparing offscreen buffer for", self._name)
+        self.debug("Preparing offscreen buffer")
 
         # Init buffer object
         self._createBuffer()

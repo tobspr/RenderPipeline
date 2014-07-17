@@ -33,17 +33,23 @@ class RenderBuffer(DebugObject):
         self._win = None
         self._layers = 0
         self._sort = 0
+        self._multisamples = 0
 
-        # self.mute()
+        self.mute()
 
     def setLayers(self, layers):
         """ Set the number of layers to render, or 1 to not use layered 
         rendering. """
         self._layers = layers
 
+    def setMultisamples(self, samples):
+        """ Sets the amount of multisamples to use """
+        self._multisamples = samples
+
     def setName(self, name):
         """ Sets the name of the buffer """
         self._name = name
+        self._rename(name)
 
     def setWindow(self, window):
         """ Sets the target window of the buffer """
@@ -113,9 +119,8 @@ class RenderBuffer(DebugObject):
         colorIsFloat = self._colorBits >= 16
         auxIsFloat = self._auxBits >= 16
 
-        self.debug("Creating buffer with", self._colorBits,
-                   "color bits,", self._auxBits, "aux bits and",
-                   self._depthBits, "depth bits")
+        self.debug("Bitcount: color=" +str(self._colorBits) + "; aux="+str(self._auxBits) + "; depth=" + str(self._depthBits))
+
 
         # set wrap modes for color + auxtextures,
         # also set correct formats:
@@ -208,7 +213,7 @@ class RenderBuffer(DebugObject):
             bufferProps.setAuxRgba(numAuxtex)
 
         # Need no multisamples
-        bufferProps.setMultisamples(0)
+        bufferProps.setMultisamples(self._multisamples)
 
         # Create internal graphics output
         self._internalBuffer = Globals.base.graphicsEngine.makeOutput(
@@ -251,7 +256,9 @@ class RenderBuffer(DebugObject):
 
         # Increment global sort counter
         RenderBuffer.numBuffersAllocated += 1
-        self._sort = -20 + RenderBuffer.numBuffersAllocated*5
+        self._sort = -200 + RenderBuffer.numBuffersAllocated*10
+
+        self.debug("our sort value is", self._sort)
 
         self._internalBuffer.setSort(self._sort)
 

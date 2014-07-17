@@ -14,8 +14,10 @@ uniform sampler2D searchTex;
 #define SMAA_INCLUDE_VS 0
 #include "Includes/SMAA-Wrapper.include"
 
+out vec4 result;
+
 void main() {    
     // No temporal aliasing
     ivec4 subsampleIndices = ivec4(0);
-    gl_FragColor = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, edgesTex, areaTex, searchTex, subsampleIndices);
+    result = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, edgesTex, areaTex, searchTex, subsampleIndices);
 }

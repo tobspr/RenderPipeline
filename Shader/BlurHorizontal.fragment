@@ -12,8 +12,9 @@ uniform sampler2D depthTex;
 uniform sampler2D dofStorage;
 in vec2 texcoord;
 
+out vec2 result;
 
 void main() {
-    // gl_FragColor = mipmapBasedBlur(texcoord, vec2(1,0), colorTex, dofStorage);
-    gl_FragColor = bokehDOF2(texcoord, colorTex);
+
+    result = bokehDOF2(texcoord, colorTex);
 }

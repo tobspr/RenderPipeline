@@ -11,3 +11,4 @@ Assets/
 Core/Windows/
 Core/Linux/
 Cython/
+*.psd

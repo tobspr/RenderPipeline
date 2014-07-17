@@ -1,0 +1,14 @@
+
+
+
+uniform sampler2D newFrame;
+uniform sampler2D currentPosition;
+layout(rgba16f) uniform image2D lastFrame;
+layout(rgba16f) uniform image2D lastPosition;
+
+void storeTemporalReprojection(ivec2 coord) {
+    vec4 newFrameVal = texelFetch(newFrame, coord, 0);
+    vec4 newPosVal = texelFetch(currentPosition, coord, 0);
+    imageStore(lastFrame, coord, newFrameVal);
+    imageStore(lastPosition, coord, newPosVal);
+}

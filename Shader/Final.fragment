@@ -1,34 +1,54 @@
-#version 130
+#version 400
 
+
+#extension GL_EXT_shader_image_load_store : enable
 
 #include "Includes/Configuration.include"
 #include "Includes/PositionReconstruction.include"
 #include "Includes/ColorCorrection.include"
+#include "Includes/TemporalReprojection.include"
 
 
 in vec2 texcoord;
 
 uniform sampler2D velocityTex;
 uniform sampler2D colorTex;
-uniform sampler2D depthTex;
+// uniform sampler2D depthTex;
 
 uniform float motionBlurFactor;
 
+out vec3 result;
+
 void main() {
 
-    vec3 result;
-    vec2 screenSize = vec2(textureSize(colorTex, 0)); 
-    vec2 pixelVelocity = textureLod(velocityTex, texcoord, 0).xy / 255.0 * motionBlurFactor * 1.2;
-    
 
-    vec2 redAbVector = vec2(1.0,0) / screenSize;
-    vec2 greenAbVector = vec2(0);
-    vec2 blueAbVector = vec2(-1.0,0) / screenSize;
+    // Fetch screen size, so we don't have to pass it as a shader input
+    ivec2 screenSize = textureSize(colorTex, 0);
 
-    result.r = textureLod(colorTex, texcoord + redAbVector, 0).r;
-    result.g = textureLod(colorTex, texcoord + greenAbVector, 0).g;
-    result.b = textureLod(colorTex, texcoord + blueAbVector, 0).b;
+    // Screen coordinate (as int vec)
+    ivec2 screenCoord = ivec2(texcoord * screenSize);
 
+
+    // Store last frame 
+    storeTemporalReprojection(screenCoord);
+
+
+    #if 1
+
+    vec2 pixelVelocity = textureLod(velocityTex, texcoord, 0).xy
+            / 255.0 * motionBlurFactor * 1.2;
+    // vec2 pixelVelocity = vec2(0.0);
+
+
+    // vec2 redAbVector = vec2(1.0,0) / screenSize;
+    // vec2 greenAbVector = vec2(0);
+    // vec2 blueAbVector = vec2(-1.0,0) / screenSize;
+
+    // result.r = textureLod(colorTex, texcoord + redAbVector, 0).r;
+    // result.g = textureLod(colorTex, texcoord + greenAbVector, 0).g;
+    // result.b = textureLod(colorTex, texcoord + blueAbVector, 0).b;
+
+       
 
     #ifdef USE_MOTION_BLUR
     
@@ -45,20 +65,33 @@ void main() {
         motionResult /= MOTION_BLUR_SAMPLES-1;
 
         // result = mix(result, motionResult, saturate(velStrength*2.0) );
-        result = mix(result, motionResult, 1.0 );
+        // result = mix(result, motionResult, 1.0 );
+         result = textureLod(colorTex, texcoord, 0).rgb;
 
     #else
         result = textureLod(colorTex, texcoord, 0).rgb;
     #endif
 
     // result = textureLod(colorTex, texcoord, 0).rgb;
-    // vec3 colorCorrected = convertColorSpace(result.xyz);
-    // result.xyz = mix( colorCorrected , result.xyz, 0.9);
+    vec3 colorCorrected = convertColorSpace(result);
+    result = mix( colorCorrected , result, 0.5);
 
     
     float vignett = smoothstep(0, 1, 
         (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
     result *= 1.0 - vignett;
+
+    // result.rgb = newFrameVal.rgb;
  
-    gl_FragColor = vec4((result), 1.0);
+
+    #else
+        result = texture(colorTex, texcoord).rgb;
+        // result = vec3(1,0.5, 0.2);
+
+    #endif
+
+    // result = textureLod(colorTex, texcoord, 0).rgb;
+    // vec3 colorCorrected = convertColorSpace(result.xyz);
+    // result.xyz = mix( colorCorrected , result.xyz, 0.6);
+
 }

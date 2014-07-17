@@ -16,16 +16,19 @@ sys.dont_write_bytecode = True
 
 
 import math
+import struct
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile, Vec3, OmniBoundingVolume
+from panda3d.core import loadPrcFile, Vec3, OmniBoundingVolume, PStatClient, AntialiasAttrib
+from panda3d.core import ShadeModelAttrib
 
-from Cython.MovementController import MovementController
-from Cython.RenderingPipeline import RenderingPipeline
-from Cython.PointLight import PointLight
-from Cython.BetterShader import BetterShader
-from Cython.DebugObject import DebugObject
-from Cython.FirstPersonController import FirstPersonCamera
-from Cython.Globals import Globals
+from classes.MovementController import MovementController
+from classes.RenderingPipeline import RenderingPipeline
+from classes.PointLight import PointLight
+from classes.BetterShader import BetterShader
+from classes.DebugObject import DebugObject
+from classes.FirstPersonController import FirstPersonCamera
+from classes.Globals import Globals
+
 
 class Main(ShowBase, DebugObject):
 
@@ -34,6 +37,8 @@ class Main(ShowBase, DebugObject):
     def __init__(self):
         DebugObject.__init__(self, "Main")
 
+        self.debug("Bitness =", 8 * struct.calcsize("P"))
+
         # Load engine configuration
         self.debug("Loading panda3d configuration from configuration.prc ..")
         loadPrcFile("configuration.prc")
@@ -41,7 +46,7 @@ class Main(ShowBase, DebugObject):
         # Init the showbase
         ShowBase.__init__(self)
 
-        # Store globals, as cython can't handle them 
+        # Store globals, as cython can't handle them
         Globals.load(self)
 
         # Create the render pipeline, that's really everything!
@@ -51,12 +56,13 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.create()
 
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/export/SceneV1.egg"
-        self.sceneSource = "Scene/Scene4.egg"
-        self.usePlane = False
+        # self.sceneSource = "Demoscene.ignore/sponza2.egg"
+        self.sceneSource = "Scene/Scene1.egg"
+        self.usePlane = True
 
         self.debug("Loading Scene '" + self.sceneSource + "' ..")
         self.scene = self.loader.loadModel(self.sceneSource)
+        # self.scene.setScale(0.05)
         # self.scene.flattenStrong()
 
         # Load ground plane if configured
@@ -72,17 +78,26 @@ class Main(ShowBase, DebugObject):
         # self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
-        # self.scene.flattenStrong()
+        self.scene.flattenStrong()
         self.scene.reparentTo(self.render)
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
-        self.controller.setInitialPosition(Vec3(-30, 30, 25), Vec3(0, 0, 0))
+        # self.controller.setInitialPosition(Vec3(-30, 30, 25), Vec3(0, 0, 0))
+        self.controller.setInitialPosition(Vec3(5, -5, 2.5), Vec3(0, 0, 2))
         self.controller.setup()
+        # base.disableMouse()
+        # base.camera.setPos(-30, 30, 25)
+        # base.camera.lookAt(0,0,0)
+        # base.accept("c", PStatClient.connect)
+        # base.accept("v", self.bufferViewer.toggleEnable)
 
         # Create movement controller (First-Person)
         # self.mouseLook = FirstPersonCamera(self, self.camera, self.render)
         # self.mouseLook.start()
+
+        # self.scene.node().setAttrib(ShadeModelAttrib.make(ShadeModelAttrib.MSmooth),
+        # 100000)
 
         # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
@@ -107,16 +122,18 @@ class Main(ShowBase, DebugObject):
         ]
 
         # Add some shadow casting lights
-        for i in range(8):
-            # break
+        for i in range(1):
+            break
             angle = float(i) / 8.0 * math.pi * 2.0
 
-            pos = Vec3(math.sin(angle) * 10.0, math.cos(angle) * 10.0, 12)
+            pos = Vec3(math.sin(angle) * 10.0 + 10, math.cos(angle) * 10.0, 20)
             # pos = Vec3( (i-3.5)*15.0, 9, 5.0)
+            pos = Vec3(8)
+            # print "POS:",pos
             light = PointLight()
-            light.setRadius(30.0)
-            # light.setColor(Vec3(2))
-            light.setColor(colors[i]*2.0)
+            light.setRadius(20.0)
+            light.setColor(Vec3(1))
+            # light.setColor(colors[i]*1.0)
             light.setPos(pos)
             light.setShadowMapResolution(2048)
             light.setCastsShadows(True)
@@ -127,34 +144,43 @@ class Main(ShowBase, DebugObject):
             self.initialLightPos.append(pos)
 
         # Add even more normal lights
-        for x in range(64):
-            for y in range(64):
+        for x in range(4):
+            for y in range(4):
                 break
                 angle = float(x + y * 4) / 16.0 * math.pi * 2.0
                 light = PointLight()
-                light.setRadius(30.0)
+                light.setRadius(10.0)
                 light.setColor(
-                    Vec3(math.sin(angle) * 0.5 + 0.5, 
-                        math.cos(angle) * 0.5 + 0.5, 0.5) * 0.5)
+                    Vec3(math.sin(angle) * 0.5 + 0.5,
+                         math.cos(angle) * 0.5 + 0.5, 0.5) * 0.5)
                 # light.setColor(Vec3(0.5))
                 initialPos = Vec3(
-                    (float(x) - 2.0) * 10.0, (float(y) - 2.0) * 10.0, 5.0)
-                initialPos = Vec3(0,0,1)
+                    (float(x) - 2.0) * 15.0, (float(y) - 2.0) * 15.0, 5.0)
+                # initialPos = Vec3(0,0,1)
                 light.setPos(initialPos)
                 self.initialLightPos.append(initialPos)
                 self.renderPipeline.addLight(light)
                 self.lights.append(light)
 
-        # ambient = PointLight()
-        # ambient.setRadius(30.0)
-        # ambient.setPos(Vec3(10, 10, 10))
-        # ambient.setColor(Vec3(1.0))
-        # self.renderPipeline.addLight(ambient)
+        ambient = PointLight()
+        ambient.setRadius(300.0)
+        ambient.setPos(Vec3(10, 10, 10))
+        ambient.setColor(Vec3(1.0))
+        self.renderPipeline.addLight(ambient)
 
-        # self.loadLights("Scene.ignore/Street-LightData.egg")
+
+        ambient = PointLight()
+        ambient.setRadius(30000.0)
+        ambient.setPos(Vec3(10, 10, 10000))
+        ambient.setColor(Vec3(1.0))
+        self.renderPipeline.addLight(ambient)
+
+
+
+        # self.loadLights("Demoscene.ignore/sponza-lights.egg")
 
         # create skybox
-
+#
         self.loadSkybox()
 
         # set default object shaders
@@ -164,48 +190,52 @@ class Main(ShowBase, DebugObject):
         model = self.loader.loadModel(scene)
         lights = model.findAllMatches("**/PointLight*")
 
+        return
         for prefab in lights:
             light = PointLight()
-            light.setRadius(prefab.getScale().x*1.2)
-            light.setColor(Vec3(2.0,1.8,0.7))
-            light.setPos(prefab.getPos() + Vec3(0,0,6))
-            light.setShadowMapResolution(1024 + 512)
+            # light.setRadius(prefab.getScale().x)
+            light.setRadius(40.0)
+            light.setColor(Vec3(2))
+            light.setPos(prefab.getPos())
+            light.setShadowMapResolution(2048)
             light.setCastsShadows(True)
             # light.attachDebugNode(self.render)
             self.renderPipeline.addLight(light)
+            print "Adding:", prefab.getPos(), prefab.getScale()
+            self.lights.append(light)
+            self.initialLightPos.append(prefab.getPos())
+            self.test = light
 
-            print "Adding:",prefab.getPos(), prefab.getScale()
-
+            # break
 
     def loadSkybox(self):
         """ Loads the sample skybox. Will get replaced later """
         self.skybox = self.loader.loadModel("Skybox/Skybox")
-        self.skybox.setScale(1000)
+        self.skybox.setScale(15000)
         self.skybox.reparentTo(self.render)
 
     def setShaders(self):
         """ Sets all shaders """
         self.debug("Reloading Shaders ..")
 
+        # return
         if self.renderPipeline:
             self.scene.setShader(
                 self.renderPipeline.getDefaultObjectShader(False))
-            self.renderPipeline.debugReloadShader()
+            self.renderPipeline.reloadShaders()
 
         self.skybox.setShader(BetterShader.load(
-            "Shader/Skybox.vertex", "Shader/Skybox.fragment"))
+            "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
 
     def update(self, task=None):
         """ Main update task """
 
-        # self.debug("\n"*20)
-
+        # Simulate 30 FPS
         # import time
-        # time.sleep(0.3)
-
+        # time.sleep( max(0.0, 0.033))
+        # time.sleep(-0.2)
         # return task.cont
-
-        if True:
+        if False:
             animationTime = self.taskMgr.globalClock.getFrameTime() * 0.6
 
             # displace every light every frame - performance test!
@@ -213,9 +243,9 @@ class Main(ShowBase, DebugObject):
                 lightAngle = float(math.sin(i * 1253325.0)) * \
                     math.pi * 2.0 + animationTime * 1.0
                 initialPos = self.initialLightPos[i]
-                light.setPos(initialPos + Vec3(math.sin(lightAngle) * 5.0,
-                                               math.cos(lightAngle) * 5.0,
-                                               math.sin(math.cos(lightAngle * 1.523) * 1.7)))
+                light.setPos(initialPos + Vec3(math.sin(lightAngle) * 0.0,
+                                               math.cos(lightAngle) * 0.0,
+                                               math.sin(animationTime) * 10.0 ) )
         if task is not None:
             return task.cont
 

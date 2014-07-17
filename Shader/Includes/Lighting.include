@@ -41,7 +41,8 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
 
     #if USE_SIMPLE_LIGHTING
 
-        return max(vec3(0.0), light.color * attenuation * dot(n, l));
+        // return max(vec3(0.0), light.color * attenuation * dot(n, l));
+        return light.color * attenuation;
 
     #else
         float roughness = clamp(material.roughness, 0.005, 1.0);
@@ -95,15 +96,13 @@ float getRandom(vec2 seed) {
 
 
 float computePointLightAttenuation(Light light, float distanceToLight) {
-    float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.0;
-    float normfac = pow(1.0 + (1.0/light.radius) , 2.0);
-    attenuation *= normfac;
+    float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.2;
 
     // Cut light transition starting at 80%. Otherwise it's exponential and never gets really 0
     float cutoff = light.radius * 0.8;
-    float cutoffFactor = 0.25;
-    attenuation *= 1.0 - smoothstep(0.0, 1.0, ((distanceToLight / cutoff) - 1.0) * 4.0 );   
+    attenuation *= 1.0 - smoothstep(0.0, 1.0, ( (distanceToLight / cutoff) - 1.0) * 4.0 );   
     attenuation = max(0.0, attenuation);
+
     return attenuation;
 }
 
@@ -140,7 +139,6 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
     float shadowFactor = 0.0;
 
     // For point lights we can decide by position which shadow map to use
-    // int shadowIndex = light.position.y < material.position.y ? 1 : 0;
     int shadowIndex = int(step(light.position.y, material.position.y));
     int shadowSourceIndex = light.sourceIndexes[shadowIndex];
 
@@ -149,37 +147,76 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
     float resolutionFactor = SHADOW_MAP_ATLAS_SIZE / float(currentSource.resolution);
     float sampleFactor = 1.0 / SHADOW_MAP_ATLAS_SIZE;
 
+
+
+
     vec4 projected = currentSource.mvp * vec4(material.position, 1);
-    projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);
-    projected = shadowBiasMatrix * projected;                 
+    projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
+    projected = projected * 0.5 + 0.5;    
     vec3 projCoord = projected.xyz / projected.w;
+    vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
+
+    float pixOffset = 1.0 / SHADOW_MAP_ATLAS_SIZE;
+
 
 
     float cosTheta = clamp( dot(n, l), 0.0, 1.0 );
-    float bias = 0.0015*(0.0+distanceRelative*1.0)*tan(acos(cosTheta))*resolutionFactor; 
-    bias = clamp(bias, 0.00, 0.04);
+    float bias = 0.0013*(0.0+distanceRelative*1.0)*tan(acos(cosTheta)) / resolutionFactor; 
+    bias = 0.002;
+    bias = clamp(bias, -0.0, 0.04);
 
-    // bias = -0.001;
-    
-    vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
+    // http://homepage.cs.uiowa.edu/~dou/Paper/Adaptive_Depth_Bias_for_Shadow_Maps.pdf
+    float l_f = currentSource.farPlane;
+    float l_n = currentSource.nearPlane;
+
+    float sceneScale = 1.0;
+    float K = 0.0001;
+
+    // (lf − depth × (lf − ln))²
+    float epsilon = pow(l_f - distanceRelative * (l_f - l_n), 2.0);
+
+    // lf × ln × (lf − ln)
+    epsilon /= l_f * l_n * (l_f - l_n);
+
+    // × sceneScale × K
+    epsilon = distanceRelative * sceneScale * K;
+
+    // bias = 0;
+
+    // bias = 0.0 * tan(acos(dot(n,l)));
+
 
     for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
 
-        vec2 offset = poissonDisk16[i] * sampleFactor;
+        vec2 offset = poissonDisk16[i] * pixOffset;
+        // offset *= 0.0;r
 
         #if USE_HARDWARE_PCF
             float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - bias) ).r;
-            sampled = sampled*sampled;
-            shadowFactor += (1.0 -sampled) / SHADOWS_NUM_SAMPLES;
+            // sampled = sampled*sampled;
+            shadowFactor += (1.0 - sampled) / SHADOWS_NUM_SAMPLES;
         #else
             float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
-            shadowFactor += step(sampled, projCoord.z - bias) / SHADOWS_NUM_SAMPLES;        
+            shadowFactor += step(sampled, projCoord.z - bias) / SHADOWS_NUM_SAMPLES;
+            // shadowFactor = sampled - projCoord.z;
 
         #endif
     }
 
+    // shadowFactor *= 16.0;
+
+    // return vec3( abs(nearestBlocker-centerCoord) * 24.0, 0);
+    // shadowFactor = nearestPointDepth * 100000.0;
+
     // Apply shadows
-    rawLighting *= max(0.0, 1.0 - shadowFactor);
+    rawLighting *= max(0.001, 1.0 - shadowFactor);
+
+    // return vec3(1.0 - shadowFactor) * attenuation;
+
+    // return vec3( 1.0 - shadowFactor );
+
+    // return 1.0 - vec3(pow(shadowFactor, 20.0) * 1000.0) * attenuation;
+
     return max(vec3(0.0), rawLighting);
 }
 

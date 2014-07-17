@@ -20,11 +20,18 @@ void main() {
     mat4 mvp = currentSource.mvp;
 
     gl_ViewportIndex = pass + 1;
+    
+
     for(int i=0; i<3; i++)
     {
       gl_Position = mvp * gl_in[i].gl_Position;
+
       gl_Position = transformParabol(gl_Position, currentSource.nearPlane, currentSource.farPlane);
-      EmitVertex();
+      if (gl_Position.w >= 0.0) { 
+        EmitVertex();
+      }
+      // gl_Position = transformParabol(gl_Position, currentSource.nearPlane, currentSource.farPlane);
+
     }
     EndPrimitive();    
   }

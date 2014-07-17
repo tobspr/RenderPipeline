@@ -1,15 +1,10 @@
-#version 400
+#version 150
 
 uniform sampler2D sampler;
-// uniform sampler2DArray sampler;
 in vec2 texcoord;
-// uniform vec2 screenSize;
+out vec4 result;
 
 void main() {
-    // ivec2 relTexcoord = ivec2(texcoord * screenSize);
-    // gl_FragColor = vec4(texelFetch(sampler, relTexcoord, 0).rgb, 1.0);
-    gl_FragColor = vec4(texture(sampler, texcoord).rgb, 1.0);
-    // gl_FragColor = vec4(texture(sampler, vec2(texcoord.x, 1.0 - texcoord.y)).rgb, 1.0);
-    // gl_FragColor = vec4(texture(sampler, vec3(texcoord,0) ).rgb, 1.0);
+    result = texture(sampler, texcoord);
 }
 

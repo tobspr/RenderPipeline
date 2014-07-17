@@ -7,6 +7,9 @@
 const float normalsDiscardThreshold = 0.999;
 
 
+#pragma optionNV (unroll all)
+
+
 vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2D blurFactors) {
 
     // return texture(colorTex, texcoord);
@@ -54,6 +57,10 @@ vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2
 
 float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction, sampler2D colorTex, sampler2D normalTex) {
 
+    #ifndef USE_OCCLUSION_BLUR
+        return texture(colorTex, texcoord).a;
+    #endif
+
     #ifdef DSSDO_ENABLED
 
         float blurWeights[9] = float[9]
@@ -69,30 +76,16 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction,
             0.013519569015984728
         );
 
-        vec2 screenSize = vec2(textureSize(colorTex, 0));
-
-        ivec2 clampMin = ivec2(3);
-        ivec2 clampMax = textureSize(colorTex, 0) - ivec2(4);
-
-        // clampMin = ivec2(5);
-        // clampMax = ivec2(99999);
-
         vec3 normals[9];
         float occlusion[9];
-        float mipmap = 0.0;
-        float blurSizeFactor = 1.0 / screenSize;
-        vec2 directionF = vec2(direction) * vec2(float(WINDOW_HEIGHT) / float(WINDOW_WIDTH), 1.0);
 
         // First, fetch all required values
         for (int i = 0; i < 9; i++) {
-            // ivec2 coord = clamp(screenCoord + direction*(i-4), clampMin, clampMax);
-            vec2 coord = texcoord + directionF*float(i-4)*blurSizeFactor;
-            // normals[i] = decodeNormal(texelFetch(normalTex, coord, 0).xy);
-            normals[i] = decodeNormal(textureLod(normalTex, coord, 0).xy);
-            // occlusion[i] = texelFetch(colorTex, coord/4, mipmap).a;
-            occlusion[i] = textureLod(colorTex, coord, mipmap).a;
+            normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*direction).xy);
+            occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*direction).a;
         }
 
+        // pixel normal is the mid normal
         vec3 normal = normals[4];
 
         float alphaResult = 0.0;
@@ -106,8 +99,7 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction,
             alphaWeights += weight*normalInfluenceFactor;   
         }
 
-        alphaResult /= alphaWeights;
-        return alphaResult;
+        return alphaResult / alphaWeights;
 
 
     #else

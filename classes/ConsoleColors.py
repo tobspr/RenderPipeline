@@ -101,6 +101,14 @@ if sys.platform == "win32" or sys.platform == "win64":
         sys.stdout.write(text)
         set_text_attr(revert)
 
+    def printGrayConsoleText(text):
+        """ Prints out gray text on the console """
+        revert = get_text_attr()
+        set_text_attr(
+            FOREGROUND_GREEN | BACKGROUND_BLACK)
+        sys.stdout.write(text)
+        set_text_attr(revert)
+
 else:
 
     # Other operating systems (not supported yet)
@@ -110,4 +118,8 @@ else:
 
     def printYellowConsoleText(text):
         """ Prints out yellow text on the console """
+        print text,
+
+    def printGrayConsoleText(text):
+        """ Prints out gray text on the console """
         print text,

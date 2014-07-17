@@ -7,20 +7,25 @@
 in vec2 texcoord;
 
 uniform sampler2D currentComputation;
-uniform sampler2D lastFrame;
-uniform sampler2D lastPosition;
+// uniform sampler2D lastFrame;
+// uniform sampler2D lastPosition;
+
+layout(rgba16f) uniform image2D lastFrame;
+layout(rgba16f) uniform image2D lastPosition;
 
 uniform sampler2D positionBuffer;
 uniform sampler2D velocityBuffer;
 uniform sampler2D depthTex;
 
-layout(r16f) writeonly uniform image2D dofStorage;
+// layout(r16f) writeonly uniform image2D dofStorage;
 
 uniform int temporalProjXOffs;
 
 uniform mat4 lastMVP;
 uniform mat4 currentMVP;
 uniform vec3 cameraPosition;
+
+out vec4 result;
 
 void main() {
 
@@ -35,39 +40,53 @@ void main() {
 
 
     // Compute dof factors
-    float bufferZ = texture(depthTex, texcoord).x;
-    float linearZ = getLinearZFromZ(bufferZ);
-    float dofFactor = (linearZ-4.0)/1.0;
+    // float bufferZ = texture(depthTex, texcoord).x;
+    // float linearZ = getLinearZFromZ(bufferZ);
+    // float dofFactor = (linearZ-4.0)/1.0;
     // dofFactor = 0.0;
 
     // Store dof in the storage
-    imageStore(dofStorage, screenCoord, vec4(saturate(dofFactor)) );
+    // imageStore(dofStorage, screenCoord, vec4(saturate(dofFactor)) );
 
-    vec3 position = texture(positionBuffer, texcoord).rgb;
+    vec3 position = texelFetch(positionBuffer, screenCoord, 0).rgb;
 
     // The last computed value (half resolution only, but up-to-date)
     vec4 lastComputedValue = texelFetch(currentComputation, computationCoord, 0);
 
     vec2 velocity = -texture(velocityBuffer, texcoord).rg / 255.0;
 
-    vec2 lastFrameTexcoord = texcoord - velocity;
 
-    vec4 oldProjectedColor = texture(lastFrame, lastFrameTexcoord);
-    vec3 oldProjectedPos = texture(lastPosition, lastFrameTexcoord).rgb;
+    vec4 lastProj = lastMVP * vec4(position, 1);
+    vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
+    vec2 newVelocity = (texcoord - lastTexcoord);
+    // velocity = newVelocity;
+
+
+    vec2 lastFrameTexcoord = texcoord - velocity;
+    ivec2 lastFrameTexcoordInt = ivec2(lastFrameTexcoord * (screenSize)) ;
+    ivec2 lastFrameTexcoordInt2 = ivec2((lastTexcoord * (screenSize))) ;
+
+
+    // vec4 oldProjectedColor = texture(lastFrame, lastFrameTexcoord);
+    vec4 oldProjectedColor = imageLoad(lastFrame, lastFrameTexcoordInt);
+
+    // vec3 oldProjectedPos = texture(lastPosition, lastFrameTexcoord).rgb;
+    vec3 oldProjectedPos = imageLoad(lastPosition, lastFrameTexcoordInt).rgb;
+    
 
     float distanceToCamera = distance(cameraPosition, position);
 
-    float reliability = 1.0 - saturate(distance(oldProjectedPos, position) / distanceToCamera * 200.0);
+    float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * 300.0);
 
-    // reliability *= 0.5;
+    // reliability = 0.0;
 
-    // reliability *= 1.0 - saturate(distance(lastFrameTexcoord, texcoord) * 32.0);
-    // reliability = 1.0;
+    // reliability = 1.0 - saturate(distance(lastFrameTexcoord, texcoord) * 30.0);
+    // reliability = 0.0;
 
     // Fetch the up-to-date position from the buffer
     // vec4 position = vec4(texelFetch(positionBuffer, screenCoord, 0).rgb, 1);
 
-    vec4 result;
+
 
     // if (distance(finalValue, vec3(1,0,0)) < 0.0001) {
     //     finalValue = lastComputedValue.rgb;
@@ -78,6 +97,8 @@ void main() {
 
     result = mix(lastComputedValue, oldProjectedColor, saturate(reliability));
 
+    // result = vec4(reliability);
+
     // result = oldProjectedColor;
     // result = vec4(0,0,0,1);
 
@@ -85,16 +106,26 @@ void main() {
     // if ( (screenCoord.x) % 2 == 1-temporalProjXOffs) {
     if ( (screenCoord.x+screenCoord.y) % 2 == 1-temporalProjXOffs) {
         result = lastComputedValue;
+
+        // result = vec4(1);
+
+        // And also store this
+
         // result = result.x == ((screenCoord.x+screenCoord.y)%2) ? vec4(0,1,0,1) : vec4(1,0,0,1);
         // result = vec4(0,1,0,1);
+    // imageStore(lastFrame, screenCoord, result);
+    // imageStore(lastPosition, screenCoord, vec4(position, 0) );
     } 
+    // imageStore(lastFrame, screenCoord, result);
 
+
+    // result = vec4( abs(oldProjectedPos.rgb - position.rgb) * 100.0, 1.0);
+    // result = vec4( reliability > 0.9999 ? 1.0 : 0.0, 0,0 , 1);
 
     // result.xyz *= 4.0;
-    // result = saturate(result);
+    // result = vec4(abs(lastFrameTexcoordInt - lastFrameTexcoordInt2), 0 ,1);
     // result = texture(currentComputation, texcoord);
+    // result = vec4(dFdx(texcoord)*1000.0,0,1);
 
-
-    gl_FragColor = vec4( result );
 
 }

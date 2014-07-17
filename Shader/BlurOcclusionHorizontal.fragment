@@ -8,10 +8,14 @@ uniform sampler2D normalTex;
 
 in vec2 texcoord;
 
+out vec4 result;
+
 void main() {
     vec2 screenSize = vec2(textureSize(colorTex, 0)); 
     ivec2 screenCoord = ivec2(texcoord * screenSize );
     float blurResult = edgePreservingAlphaBlur(texcoord, screenCoord, ivec2(1, 0), colorTex, normalTex);
     vec3 colorResult = texture(colorTex, texcoord).rgb;
-    gl_FragColor = vec4(colorResult * blurResult, 1); 
+    result = vec4(colorResult * blurResult, 1); 
+    // result = vec4(blurResult); 
+    // result = vec4(0,0,1,1);
 }

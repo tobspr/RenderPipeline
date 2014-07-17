@@ -1,5 +1,5 @@
 
-from ConsoleColors import printRedConsoleText, printYellowConsoleText
+from ConsoleColors import printRedConsoleText, printYellowConsoleText, printGrayConsoleText
 
 class DebugObject:
 
@@ -12,7 +12,7 @@ class DebugObject:
         """ Initiates the DebugObject with a given name. The
         name should equal to the classname, or at least
         representative """
-        self._debug_name = str(name)
+        self._rename(name)
         self.muted = False
 
     def mute(self):
@@ -29,7 +29,8 @@ class DebugObject:
         but provides useful information for the developer """
         if self.muted:
             return
-        print self._debug_name + ": " + ' '.join([str(i) for i in args])
+        printGrayConsoleText(self._debug_name.ljust(20))
+        print "",' '.join([str(i) for i in args])
 
     def warn(self, *args):
         """ Outputs a warning message, something that failed or does
@@ -42,8 +43,12 @@ class DebugObject:
     def error(self, *args):
         """ Outputs an error message, something really serious.
         Hopefully this never get's called! Errors also can't be muted """
-        printRedConsoleText("Error: " + self._debug_name + ": " + \
+        printRedConsoleText("\n\n\nError: " + self._debug_name + ": " + \
             ' '.join([str(i) for i in args])+ "\n")
+
+    def _rename(self, name):
+        """ Renames this object """
+        self._debug_name = name
 
     def __repr__(self):
         """ Represents this object. Subclasses should properly implement

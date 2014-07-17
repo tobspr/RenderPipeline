@@ -49,6 +49,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("motionBlurFactor", float, 1.0)
 
         # [Debugging]
+        self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayShadowAtlas", bool, True)
         self._addSetting("displayDebugStats", bool, True)
 

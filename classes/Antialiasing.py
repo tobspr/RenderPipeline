@@ -56,6 +56,29 @@ class AntialiasingTechnique(DebugObject):
         raise NotImplementedError()
 
 
+class AntialiasingTechniqueNone(AntialiasingTechnique):
+
+    """ Technique which does no anti-aliasing. """
+
+    def __init__(self):
+        AntialiasingTechnique.__init__(self, "NoAntiAliasing")
+
+    def setup(self):
+        """ Does nothing """
+
+    def reloadShader(self):
+        """ Does nothing """
+
+    def getFirstBuffer(self):
+        """ Returns the first buffer, see AntialiasingTechnique """
+        return None
+
+    def getResultTexture(self):
+        """ Returns the result texture, see AntialiasingTechnique """
+        return self._colorTexture
+
+
+
 class AntialiasingTechniqueSMAA(AntialiasingTechnique):
 
     """ SMAA Method from http://www.iryoku.com/smaa/. We only use
@@ -107,23 +130,21 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
         self._neighborBuffer.setShaderInput(
             "blendTex", self._blendBuffer.getColorTexture())
 
-
-
         # Set initial shader
         self.reloadShader()
 
     def reloadShader(self):
         """ Reloads all used shaders """
         edgeShader = BetterShader.load(
-            "Shader/SMAA-EdgeDetection.vertex", "Shader/SMAA-EdgeDetection.fragment")
+            "Shader/SMAA/EdgeDetection.vertex", "Shader/SMAA/EdgeDetection.fragment")
         self._edgesBuffer.setShader(edgeShader)
 
         weightsShader = BetterShader.load(
-            "Shader/SMAA-BlendingWeights.vertex", "Shader/SMAA-BlendingWeights.fragment")
+            "Shader/SMAA/BlendingWeights.vertex", "Shader/SMAA/BlendingWeights.fragment")
         self._blendBuffer.setShader(weightsShader)
 
         neighborShader = BetterShader.load(
-            "Shader/SMAA-Neighbors.vertex", "Shader/SMAA-Neighbors.fragment")
+            "Shader/SMAA/Neighbors.vertex", "Shader/SMAA/Neighbors.fragment")
         self._neighborBuffer.setShader(neighborShader)
 
     def getFirstBuffer(self):

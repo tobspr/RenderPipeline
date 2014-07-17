@@ -4,6 +4,10 @@
 
 // TODO: Make some benchmarks to see wheter unrolling
 // is faster or slower ..
+
+// NOTICE: This pass does DSSDO.
+// For dssdo, this option is !!REQUIRED!!
+// Otherwise it runs poor as f*ck
 #pragma optionNV (unroll all)
 
 #include "Includes/Configuration.include"
@@ -17,7 +21,6 @@ uniform sampler2D data0;
 uniform sampler2D data1;
 uniform sampler2D data2;
 
-// uniform sampler2D lightsPerTile;
 layout (r32i) readonly uniform iimage2D lightsPerTile;
 layout (rgba16f) uniform image2D destination;
 
@@ -28,11 +31,10 @@ in vec2 texcoord;
 
 uniform int temporalProjXOffs;
 
-
-
-
 // Has to be after the uniforms
 #include "Includes/Lighting.include"
+
+out vec4 lightingResult;
 
 void main() {
 
@@ -41,21 +43,35 @@ void main() {
     ivec2 screenSize = textureSize(data0, 0);
     ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x + 1 , screenSize.y)); 
 
-    // screenCoord.x += (screenCoord.x + screenCoord.y) %2 ;
+    // Shift x by 1 for temporal reprojection
+    // Usually we would do just screenCoord.x += temporalProjXOffs
+    // But using a checkerboard pattern removes a lot of artifacts, 
+    // as you otherwise can see the line-pattern very obviously. Using
+    // a checkerboard more gives a dithering effect, which is barely visible
     screenCoord.x += (screenCoord.x + screenCoord.y) % 2 == temporalProjXOffs ? -1 : 0;
 
-    ivec2 precomputeSize = imageSize(lightsPerTile) / ivec2(8);
-    ivec2 precomputeCoord = ivec2(texcoord * precomputeSize) * ivec2(8);
+    ivec2 precomputeCoord = ivec2( vec2(screenCoord) / 
+        vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y) ) * 8;
+
 
     // Extract material data
     vec4 target0data = texelFetch(data0, screenCoord, 0);
     vec4 target1data = texelFetch(data1, screenCoord, 0);
     vec4 target2data = texelFetch(data2, screenCoord, 0);
-
     Material material = unpackMaterial(target0data, target1data, target2data);
 
-    int countPointLight = imageLoad(lightsPerTile, precomputeCoord + ivec2(0,0)).r;
-    int countPointLightShadow = imageLoad(lightsPerTile, precomputeCoord + ivec2(1,0)).r;
+    // Fetch the light counts
+    // We perform a min as it *might* be that we read a wrong value
+    // from the texture. Imagine reading 123123123 from the texture,
+    // then the light processing loop would be 123123123 iterations long,
+    // which simply crashes the driver. With this method it would be only
+    // a few hundreds, which is long but does not crash the driver.
+    int countPointLight = min(MAX_POINT_LIGHTS, 
+        imageLoad(lightsPerTile, precomputeCoord + ivec2(0,0)).r);
+
+    int countPointLightShadow = min(MAX_SHADOW_POINT_LIGHTS, 
+        imageLoad(lightsPerTile, precomputeCoord + ivec2(1,0)).r);
+
 
     vec3 result = vec3(0);
 
@@ -66,7 +82,7 @@ void main() {
     Light currentLight;
 
     for (int i = 0; i < countPointLight; i++) {
-        currentOffset = ivec2(i%8, i/8);
+        currentOffset = ivec2(i % 8, i / 8);
         currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
         currentLight = lights[currentLightId];
 
@@ -76,7 +92,7 @@ void main() {
     // Compute shadow point lights
     baseOffset = precomputeCoord + ivec2(0,3);
     for (int i = 0; i < countPointLightShadow; i++) {
-        currentOffset = ivec2(i%8, i/8);
+        currentOffset = ivec2(i % 8, i / 8);
         currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
         currentLight = lights[currentLightId];
 
@@ -87,34 +103,59 @@ void main() {
         #endif
     }
 
-    // result += 0.1 * material.normal;
-
-
-    // Occlusion
+    // Now, compute rOcclusion
     float distanceToCamera = distance(cameraPosition, material.position);
     float occlusionFactor = computeDSSDO(texcoord,screenCoord, material, distanceToCamera, data1, data0);
 
     // Metallic materials don't have much occlusion
     // occlusionFactor = mix(occlusionFactor, 1.0, saturate(material.metallic-1.0) );
-
     // occlusionFactor = 1.0;
-    // result.xyz = vec3(material.baseColor)+  0.1;
+
+    // Visualize lights per tile
+    // float processed = float(countPointLight + countPointLightShadow) / 5.0;
+    // vec3 processedColor = vec3(processed, 1.0 - processed ,0);
+    // result = mix(result, processedColor, 0.5);
+
+    // result = vec3(material.baseColor);
 
     #ifdef DSSDO_ONLY
         result.xyz = vec3(1);
     #endif
 
-    // TODO: Move this to other passes??
+    // Special debug rendermodes
+
+    #ifdef DEBUG_RM_BASECOLOR
+        result = material.baseColor;
+    #endif
+
+    #ifdef DEBUG_RM_SPECULAR
+        result = vec3(material.specular);
+    #endif
+
+    #ifdef DEBUG_RM_SSDO
+        result = vec3(1);
+    #endif
+
+    #ifdef DEBUG_RM_METALLIC
+        result = vec3(material.metallic);
+    #endif
+
+    #ifdef DEBUG_RM_ROUGHNESS
+        result = vec3(material.roughness);
+    #endif
+
+    #ifdef DEBUG_RM_NORMAL
+        result = vec3(material.normal);
+    #endif
+
+
     // HDR Mapping
     result.xyz = 1.0f - exp(-1.0 * result.xyz);
-
 
     // SRGB
     result.xyz = sqrt(result.xyz);
 
-    // result.xyz = saturate(result);
-    gl_FragColor = vec4(result, occlusionFactor);
+    // result = vec3(material.normal);
 
-    // gl_FragColor = vec4(((screenCoord.x+screenCoord.y)%2));
-
+    lightingResult = vec4(result, occlusionFactor);
 }

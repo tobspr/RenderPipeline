@@ -14,17 +14,17 @@ class PointLight(Light, DebugObject):
 
     """ This light type simulates a PointLight. It has a position
     and a radius. The attenuation is computed based on a quadratic
-    function. 
+    function.
 
     Shadows are simulated using 2 Parabolic maps. So this light has
     2 Shadow maps, and when calling setShadowMapResolution() you are
-    actually setting the resolution for both maps. This is still 
+    actually setting the resolution for both maps. This is still
     cheaper than a cubemap, though, while mainting almost the same
-    quality. 
+    quality.
 
     Both shadow cameras are a bit displaced (by self.spacing),
     as a parabolic map does not cover a full 180 degree view. Also,
-    the farPlane of both sources is shifted by self.bufferRadius, 
+    the farPlane of both sources is shifted by self.bufferRadius,
     because the precision is really bad near the outer radius.
 
     TODO: Add impostor support. """
@@ -34,11 +34,10 @@ class PointLight(Light, DebugObject):
         and a radius """
         Light.__init__(self)
         DebugObject.__init__(self, "PointLight")
-        self.spacing = 0.6
+        self.spacing = 1.0
         self.bufferRadius = 1.0
         self.shadowResolution = 512
         self.typeName = "PointLight"
-        # self.bounds = OmniBoundingVolume()
 
     def _getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
@@ -69,7 +68,7 @@ class PointLight(Light, DebugObject):
         lineNode = mainNode.attachNewNode("lines")
 
         inner = Globals.loader.loadModel("box")
-        inner.setPos(-0.5,-0.5,0.0)
+        inner.setPos(-0.5, -0.5, 0.6)
         inner.flattenStrong()
         inner.reparentTo(mainNode)
 
@@ -116,5 +115,6 @@ class PointLight(Light, DebugObject):
 
     def __repr__(self):
         """ Generates a string representation of this instance """
-        # return "PointLight[pos=" + str(self.position) + ", radius=" + str(self.radius) + "]"
-        return "PointLight[id="+str(self.structElementID)+"]"
+        # return "PointLight[pos=" + str(self.position) + ", radius=" +
+        # str(self.radius) + "]"
+        return "PointLight[id=" + str(self.structElementID) + "]"

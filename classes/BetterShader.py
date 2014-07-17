@@ -36,8 +36,10 @@ class BetterShader:
         """ Loads a shader in the order: vertex, fragment,
         geometry, tesseval, tesscontrol """
 
+        # print "Loading shader from",args
+
         newArgs = []
-        # print "Making shader!"
+
         for arg in args:
             if len(arg) < 1:
                 print "append '' for geometry shader!"
@@ -69,8 +71,8 @@ class BetterShader:
                 print "Could not create", cachePath, ":", msg
                 return
 
-        writeName = name.strip().replace("/", "").replace(".", "-")
-        with open(join(cachePath, writeName + ".shader"), "w") as handle:
+        writeName = name.strip().replace("/", "-").replace(".", "_") + ".bin"
+        with open(join(cachePath, writeName), "w") as handle:
             handle.write(str(content))
 
     @classmethod
@@ -108,12 +110,10 @@ class BetterShader:
 
                         else:
                             self._GlobalIncludeStack.append(properIncludePart)
-                            newContent += "\n\n// FILE: '" + \
+                            newContent += "\n// FILE: '" + \
                                 str(properIncludePart) + "' \n"
                             newContent += self._handleIncludes(
-                                properIncludePart)
-                            newContent += "\n\n// End of included file\n\n\n\n"
-                            # newContent += "#line " + str(line_idx+2)
+                                properIncludePart).strip() + "\n"
                     else:
                         print "BetterShader: Failed to load '" + str(properIncludePart) + "'!"
                 else:

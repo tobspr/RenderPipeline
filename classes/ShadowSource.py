@@ -60,6 +60,8 @@ class ShadowSource(DebugObject, ShaderStructElement):
         self.sourceIndex = -1
         self.nearPlane = 0.0
         self.farPlane = 1000.0
+        self.converterYUR = None
+        
 
     def getSourceIndex(self):
         """ Returns the assigned source index. The source index is the index
@@ -81,9 +83,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         """ Computes the modelViewProjection matrix for the lens. Actually,
         this is the worldViewProjection matrix, but for convenience it is
         called mvp. """
-        projMat = Mat4.convertMat(
-            CSYupRight,
-            self.lens.getCoordinateSystem()) * self.lens.getProjectionMat()
+        projMat = self.converterYUR
         transformMat = TransformState.makeMat(
             Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(),
                             CSZupRight))
@@ -131,12 +131,18 @@ class ShadowSource(DebugObject, ShaderStructElement):
         """ Setups a PerspectiveLens with a given nearPlane, farPlane
         and FoV. The FoV is a tuple in the format
         (Horizontal FoV, Vertical FoV) """
+        self.debug("setupPerspectiveLens(",near,",",far,",",fov,")")
         self.lens = PerspectiveLens()
         self.lens.setNearFar(near, far)
         self.lens.setFov(fov[0], fov[1])
         self.camera.setLens(self.lens)
         self.nearPlane = near
         self.farPlane = far
+        self.rebuildMatrixCache()
+
+    def rebuildMatrixCache(self):
+        """ Computes values frequently used to compute the mvp """
+        self.converterYUR = Mat4.convertMat(CSYupRight, self.lens.getCoordinateSystem()) * self.lens.getProjectionMat()
 
     def setPos(self, pos):
         """ Sets the position in world space """

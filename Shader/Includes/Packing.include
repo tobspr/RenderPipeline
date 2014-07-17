@@ -6,8 +6,8 @@
 // Packs a normal to a vec2
 vec2 encodeNormal(vec3 n)
 {   
-    // Prevents artifacts at surfaces which point to the bottom
-    n.x -= 0.001; 
+    // Prevents artifacts at surfaces which point to the bottom??
+    n *= 0.999;
 
     float p = inversesqrt(n.z*8+8);
     return vec2(n.xy*p + 0.5);
@@ -16,39 +16,33 @@ vec2 encodeNormal(vec3 n)
 // Unpacks a normal from a vec2
 vec3 decodeNormal(vec2 encoded)
 {
-    vec2 fenc = encoded*4-2;
+    vec2 fenc = encoded * 4.0 - 2.0;
     float f = dot(fenc,fenc);
-    float g = sqrt(1-f/4);
+    float g = sqrt(1.0 - f/4.0);
     vec3 n;
-    n.xy = fenc*g;
-    n.z = 1-f/2;
+    n.xy = fenc * g;
+    n.z = 1.0 - f/2.0;
     return n;
 }
 
+// // Packs float to 2 floats for more precision
 
+// vec2 packDepth(float d) {
+//     // return vec2(d, d);
+//     return vec2(floor(d*1024), fract(d*1024));
+// }
 
-// Packs float to 2 floats for more precision
-vec2 packDepth(float d) {
+// // Unpacks 2 floats to one high precision float
+// float unpackDepth(vec2 d) {
+//     // return d.x;
+//     return (d.x + d.y) / 1024.0;
+// }
 
-    // ---- HERE ----
-    // return vec2(d, d);
-    return vec2(floor(d*1024), fract(d*1024));
-}
-
-// Unpacks 2 floats to one high precision float
-float unpackDepth(vec2 d) {
-
-    // ---- AND HERE ----
-    // return d.x;
-    return (d.x + d.y) / 1024.0;
-}
-
-
-
+const float colorPackingFactor = 1.0 - (1.0 / 255.0);
 
 vec2 packColor(vec3 color) {
     return vec2(color.x, 
-            saturate(color.y)*0.9 +
+            saturate(color.y) * colorPackingFactor +
             ceil(color.z * 255.0)
         );
 }

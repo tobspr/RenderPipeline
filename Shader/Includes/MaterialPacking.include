@@ -1,24 +1,31 @@
 
-
+#include "Includes/Configuration.include"
 #include "Includes/Material.include"
+#include "Includes/Packing.include"
 
 uniform mat4 lastMVP;
 
-layout(location = 0) out vec4 color0;
-layout(location = 1) out vec4 color1;
-layout(location = 2) out vec4 color2;
+out vec4 color0;
+out vec4 color1;
+out vec4 color2;
+
 
 void renderMaterial(Material m) {
 
     // Pack values
     vec2 normal = encodeNormal(m.normal);
-    vec2 color = packColor(max(vec3(0), m.baseColor) );
+    vec2 color = packColor( clamp(m.baseColor, 0.0, 100.0) );
 
     // Compute velocity
-    vec4 lastProj = lastMVP * vec4(m.position, 1);
-    vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
+    vec4 lastProj = vOutput.lastProjectedPos;
+
+    // Usually it would be lastProj.xy / lastProj.w * 0.5 + 0.5
+    // But the vertex shader already does the * 0.5
+    vec2 lastTexcoord = lastProj.xy / lastProj.w + 0.5;
     vec2 fragCoord = gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-    lastTexcoord = (lastTexcoord - fragCoord) * 255.0;
+
+    // * 255 prevents precision errors
+    vec2 velocity = (lastTexcoord - fragCoord) * 255.0;
 
     // Saturate
     m.roughness = saturate(m.roughness);
@@ -28,6 +35,5 @@ void renderMaterial(Material m) {
     // Output
     color0 = vec4(m.position.x, m.position.y, m.position.z, m.roughness);
     color1 = vec4(normal.x,normal.y,color.x,color.y);
-    color2 = vec4(lastTexcoord.x, lastTexcoord.y, m.specular, m.metallic);
-
+    color2 = vec4(velocity.x, velocity.y, m.specular, m.metallic);
 }

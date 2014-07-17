@@ -1,0 +1,17 @@
+
+
+vec4 FAST_mul(mat4 m, vec3 v) {
+    return m * vec4(v, 1);
+    // return v.x * m[0] + (v.y * m[1] + (v.z * m[2] + m[3] ));
+}
+
+vec4 FAST_mul_no_w(mat4 m, vec3 v) {
+    return m * vec4(v, 0);
+     // return v.x * m[0] + (v.y * m[1] + (v.z * m[2] ));
+}
+
+
+vec4 FAST_normalize_prefactor(vec4 v) {
+    // todo
+    return normalize(v);
+}

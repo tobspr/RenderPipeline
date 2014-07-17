@@ -115,6 +115,10 @@ class MovementController:
         self.showbase.addTask(
             self._update, "updateMovementController", priority=90)
 
+
+        self.showbase.accept("1", PStatClient.connect)
+        self.showbase.accept("3", self._resetToInitial)
+
     # Internal method to trigger buffer viewer
     def _toggleBufferViewer(self):
         print "Toggling buffer viewer"

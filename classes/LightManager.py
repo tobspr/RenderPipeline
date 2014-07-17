@@ -80,28 +80,23 @@ class LightManager(DebugObject):
         # Create shadow compute buffer
         self._createShadowComputationBuffer()
 
-        # Create shadow caster shader
-        self.shadowCasterShader = BetterShader.load(
-            "Shader/DefaultShadowCaster.vertex",
-            "Shader/DefaultShadowCaster.fragment",
-            "Shader/DefaultShadowCaster.geometry")
-
         # Create the initial shadow state
         self.shadowComputeCamera.setTagStateKey("ShadowPassShader")
-        initialState = NodePath("ShadowCasterState")
-        initialState.setShader(self.shadowCasterShader, 30)
         self.shadowComputeCamera.setInitialState(RenderState.make(
             ColorWriteAttrib.make(ColorWriteAttrib.C_off),
             DepthWriteAttrib.make(DepthWriteAttrib.M_on),
-            # CullFaceAttrib.make(CullFaceAttrib.M_cull_counter_clockwise),
+            # CullFaceAttrib.make(CullFaceAttrib.MCullNone),
             100))
 
-        self.shadowComputeCamera.setTagState(
-            "Default", initialState.getState())
+        self._createTagStates()
+
         self.shadowScene.setTag("ShadowPassShader", "Default")
 
         # Create debug overlay
         self._createDebugTexts()
+
+        # Disable buffer on start
+        self.shadowComputeTarget.setActive(False)
 
         # Bind arrays
         self.updateShadowsArray.bindTo(self.shadowScene, "updateSources")
@@ -114,6 +109,18 @@ class LightManager(DebugObject):
 
         self.lightingComputator = None
         self.lightCuller = None
+
+    def _createTagStates(self):
+        # Create shadow caster shader
+        self.shadowCasterShader = BetterShader.load(
+            "Shader/DefaultShadowCaster/vertex.glsl",
+            "Shader/DefaultShadowCaster/fragment.glsl",
+            "Shader/DefaultShadowCaster/geometry.glsl")
+
+        initialState = NodePath("ShadowCasterState")
+        initialState.setShader(self.shadowCasterShader, 30)
+        self.shadowComputeCamera.setTagState(
+            "Default", initialState.getState())
 
     def _createShadowComputationBuffer(self):
         """ This creates the internal shadow buffer which also is the
@@ -173,10 +180,15 @@ class LightManager(DebugObject):
             self.depthClearer.append(dr)
 
         # When using hardware pcf, set the correct filter types
+        dTex = self.shadowComputeTarget.getDepthTexture()
+        
         if self.settings.useHardwarePCF:
-            dTex = self.shadowComputeTarget.getDepthTexture()
             dTex.setMinfilter(Texture.FTShadow)
             dTex.setMagfilter(Texture.FTShadow)
+
+        dTex.setWrapU(Texture.WMClamp)
+        dTex.setWrapV(Texture.WMClamp)
+
 
     def _createDebugTexts(self):
         """ Creates a debug overlay if specified in the pipeline settings """
@@ -204,17 +216,17 @@ class LightManager(DebugObject):
         # If you change this, don't forget to change it also in
         # Shader/Includes/Configuration.include!
         self.maxLights = {
-            "PointLight": 16000,
+            "PointLight": 16,
             # "DirectionalLight": 2
         }
 
         # Max shadow casting lights
         self.maxShadowLights = {
-            "PointLight": 16000,
+            "PointLight": 16,
             # "DirectionalLight": 1
         }
 
-        self.maxTotalLights = 100000
+        self.maxTotalLights = 32
 
         for lightType, maxCount in self.maxShadowLights.items():
             self.maxLights[lightType + "Shadow"] = maxCount
@@ -319,8 +331,8 @@ class LightManager(DebugObject):
         raise NotImplementedError()
 
     def debugReloadShader(self):
-        """ Reloads all shaders. We currently don't use any for the
-        internal lighting, so this does nothing """
+        """ Reloads all shaders. This also updates the camera state """
+        self._createTagStates()
 
     def setCullBounds(self, bounds):
         """ Sets the current camera bounds used for light culling """

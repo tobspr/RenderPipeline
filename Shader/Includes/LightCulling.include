@@ -8,10 +8,19 @@
 
 bool isPointLightInFrustum(Light light, Frustum frustum) {
 
+    #ifndef LIGHTING_ANY_BOUND_CHECK
+        return true;
+    #else
+
     vec4 projectedPos = frustum.viewMat * vec4(light.position, 1);
 
     // Top/Left/Bottom/Right frustum check
     if (sphereInFrustum(frustum, projectedPos, light.radius)) {
+
+        #ifndef LIGHTING_ACCURATE_BOUND_CHECK
+            return true;
+        #else
+
         // Project to screen to get actual depth value
         vec4 projectedScreen = frustum.mvpMat * vec4(light.position, 1);
         projectedScreen.xyz = (projectedScreen.xyz / projectedScreen.w);
@@ -32,7 +41,11 @@ bool isPointLightInFrustum(Light light, Frustum frustum) {
             }
         }
 
+        #endif
+
     }
     return false;
+
+    #endif
 
 }

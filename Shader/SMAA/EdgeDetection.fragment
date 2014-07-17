@@ -1,0 +1,44 @@
+#version 420
+
+
+in vec2 texcoord;
+in vec4 offset[3];
+
+uniform sampler2D colorTex;
+uniform sampler2D depthTex;
+
+// #include "Includes/TemporalReprojection.include"
+
+#define SMAA_INCLUDE_VS 0
+#include "Includes/SMAA-Wrapper.include"
+
+out vec4 result;
+
+void main() {    
+
+
+    // Fetch screen size, so we don't have to pass it as a shader input
+    ivec2 screenSize = textureSize(colorTex, 0);
+
+    // Screen coordinate (as int vec)
+    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize));
+
+    // storeTemporalReprojection(screenCoord);    
+
+    // Store last frame 
+    // vec4 newFrameVal = texelFetch(newFrame, screenCoord, 0);
+    // vec4 newPosVal = texelFetch(currentPosition, screenCoord, 0);
+
+    // imageStore(lastFrame, screenCoord, newFrameVal);
+    // imageStore(lastPosition, screenCoord, newPosVal);
+
+    // LUMA
+    result = vec4(SMAALumaEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);
+
+    // COLOR
+    // result = vec4(SMAAColorEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);
+
+    // DEPTH
+    // result = vec4(SMAADepthEdgeDetectionPS(texcoord, offset, depthTex), 0, 1);
+
+}

@@ -66,7 +66,9 @@ framebuffer-stencil #f
 
 # Not resizable
 win-fixed-size #t
-win-size 1600 960
+# win-size 1616 976
+win-size 1600 900
+# win-size 1600 960
 # win-size 1920 1080
 # fullscreen #t
 # win-size 1280 720
@@ -86,7 +88,7 @@ framebuffer-srgb #f
 
 # Framebuffers need no multisamples
 framebuffer-multisample #f
-multisample #f
+multisamples 0
 
 # No V-Sync
 sync-video #f
@@ -112,12 +114,13 @@ textures-power-2 none
 
 # Better GL performance
 gl-finish #f
-gl-force-no-error #t
+gl-force-no-error #f
 gl-check-errors #f
 gl-force-no-flush #t
 gl-force-no-scissor #t
 gl-debug #f
 
+# gl-enable-memory-barriers #f
 
 text-minfilter linear
 text-page-size 128 128
@@ -131,3 +134,18 @@ texture-minfilter linear
 
 cache-models #t
 texture-cache #t
+
+lock-to-one-cpu #f
+support-threads #t
+
+
+# driver-generate-mipmaps #f
+# gl-ignore-mipmaps #t
+
+gl-immutable-texture-storage #f
+
+# notify-level-glgsg debug
+
+gl-dump-compiled-shaders #f
+
+gl-cube-map-seamless #t
