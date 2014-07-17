@@ -95,12 +95,6 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, sampler2D colorT
         EPAB_INIT_VALUES(7)
         EPAB_INIT_VALUES(8)
 
-        // First, fetch all required values
-        // for (int i = 0; i < 9; i++) {
-        //     normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*direction).xy);
-        //     occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*direction).a;
-        // }
-
         // pixel normal is the mid normal
         vec3 normal = normals[4];
 

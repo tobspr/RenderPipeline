@@ -43,5 +43,6 @@ void main() {
     m.position = vOutput.positionWorld;
     m.normal = mixedNormal;
 
+
     renderMaterial(m);
 }

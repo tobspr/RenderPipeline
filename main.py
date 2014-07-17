@@ -56,9 +56,9 @@ class Main(ShowBase, DebugObject):
 
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza2.egg"
-        self.sceneSource = "Models/Ball/Model.egg"
-        # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
-        self.usePlane = True
+        # self.sceneSource = "Models/Ball/Model.egg"
+        self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
+        self.usePlane = False
 
 
         self.debug("Loading Scene '" + self.sceneSource + "'")
@@ -130,7 +130,7 @@ class Main(ShowBase, DebugObject):
 
         # Add some shadow casting lights
         for i in range(1):
-            # break
+            break
             angle = float(i) / 8.0 * math.pi * 2.0
 
             pos = Vec3(math.sin(angle) * 10.0 + 10, math.cos(angle) * 10.0, 20)
@@ -173,12 +173,15 @@ class Main(ShowBase, DebugObject):
 
         for x,y in [(-1,-1), (-1,1), (1,-1), (1,1)]:
             ambient = PointLight()
-            ambient.setRadius(300.0)
-            ambient.setPos(Vec3(100*x +25, 100*y - 30, 150))
+            ambient.setRadius(30.0)
+            ambient.setPos(Vec3(5*x + 2, 5*y - 3, 10))
             ambient.setColor(Vec3(contrib))
+            ambient.setShadowMapResolution(2048)
+            ambient.setCastsShadows(True)
             self.renderPipeline.addLight(ambient)
 
             contrib *= 0.5
+            # break
 
         self.loadSkybox()
 

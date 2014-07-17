@@ -45,6 +45,11 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
         return light.color * attenuation;
 
     #else
+
+        /*
+            TODO: Optimize
+        */
+
         float roughness = clamp(material.roughness, 0.005, 1.0);
         float specular = material.specular;
         float refractiveFactor = material.metallic * 0.5 + 0.5;
@@ -55,9 +60,9 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
         // Compute reflection
         vec3 reflectedDir = reflect( v, n);
 
-        float cubemapResolutionParameter = saturate(pow(material.roughness, 0.7));
-        vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
-        vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
+        float cubemapResolutionParameter = material.roughness;
+        vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 60.0).rgb;
+        vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 60.0 - 1.0).rgb;
         vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
 
         // Compute specular BRDF
@@ -78,7 +83,7 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
         vec3 diffuseContribution = diffuseColor * diffuseBrdf * attenuation * light.color;
         vec3 specularContribution = specularTerm * attenuation * light.color * specular * mix(vec3(1.0), material.baseColor, material.metallic); 
         vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor *
-                                        specF * attenuation * light.color * max(0.2, safeDot(n, l));
+                                        specF * attenuation * light.color * material.baseColor * max(0.01, safeDot(n, l));
 
 
         vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
@@ -162,8 +167,8 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
 
 
     float cosTheta = clamp( dot(n, l), 0.0, 1.0 );
-    float bias = 0.0013*(0.0+distanceRelative*1.0)*tan(acos(cosTheta)) / resolutionFactor; 
-    bias = 0.002;
+    float bias = 0.003*(0.5+distanceRelative*1.0)*tan(acos(cosTheta)) / resolutionFactor; 
+    // bias = 0.002;
     bias = clamp(bias, -0.0, 0.04);
 
     // http://homepage.cs.uiowa.edu/~dou/Paper/Adaptive_Depth_Bias_for_Shadow_Maps.pdf
