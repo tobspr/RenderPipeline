@@ -14,7 +14,7 @@ from BetterShader import BetterShader
 from Antialiasing import AntialiasingTechniqueSMAA, AntialiasingTechniqueNone
 from PipelineSettingsManager import PipelineSettingsManager
 from PipelineGuiManager import PipelineGuiManager
-
+from Globals import Globals
 
 class RenderingPipeline(DebugObject):
 
@@ -92,6 +92,10 @@ class RenderingPipeline(DebugObject):
         if self.settings is None:
             self.error("You have to call loadSettings first!")
             return
+
+        # Store globals, as cython can't handle them
+        self.debug("Setting up globals")
+        Globals.load(self.showbase)
 
         # We use PTA's for shader inputs, because that's faster than
         # using setShaderInput

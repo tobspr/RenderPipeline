@@ -27,7 +27,7 @@ from classes.PointLight import PointLight
 from classes.BetterShader import BetterShader
 from classes.DebugObject import DebugObject
 from classes.FirstPersonController import FirstPersonCamera
-from classes.Globals import Globals
+
 
 
 class Main(ShowBase, DebugObject):
@@ -46,8 +46,7 @@ class Main(ShowBase, DebugObject):
         # Init the showbase
         ShowBase.__init__(self)
 
-        # Store globals, as cython can't handle them
-        Globals.load(self)
+        
 
         # Create the render pipeline, that's really everything!
         self.debug("Creating pipeline")
