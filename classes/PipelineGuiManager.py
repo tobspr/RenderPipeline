@@ -144,16 +144,16 @@ class PipelineGuiManager(DebugObject):
 
         self.debug("Creating GUI ..")
         self.rootNode = self.body.attachNewNode("GUIManager")
-        self.rootNode.setPos(20, 1, -20)
+        self.rootNode.setPos(0, 1, 0)
 
         self.watermark = BetterOnscreenImage(
-            image="Data/GUI/Watermark.png", parent=self.rootNode, x=0, y=0, w=230, h=55)
+            image="Data/GUI/Watermark.png", parent=self.rootNode, x=20, y=20, w=230, h=55)
         self.showDebugger = BetterOnscreenImage(
-            image="Data/GUI/ShowDebugger.png", parent=self.rootNode, x=0, y=60, w=230, h=36)
+            image="Data/GUI/ShowDebugger.png", parent=self.rootNode, x=20, y=80, w=230, h=36)
         self.debuggerParent = self.rootNode.attachNewNode("DebuggerParent")
         self.debuggerParent.setPos(-350, 0, 0)
         self.debuggerBackground = BetterOnscreenImage(
-            image="Data/GUI/DebuggerBackground.png", parent=self.debuggerParent, x=0, y=0, w=291, h=487)
+            image="Data/GUI/DebuggerBackground.png", parent=self.debuggerParent, x=0, y=0, w=280, h=2600)
 
         self._initSettings()
 
@@ -164,34 +164,36 @@ class PipelineGuiManager(DebugObject):
         # self._toggleGUI()
 
     def _initSettings(self):
-        currY = 77
+        currY = 83
 
         # Render Modes
         self.renderModes = CheckboxCollection()
 
+        checkboxX = 20
+
         self.chbRM_Default = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["rm_Default", False], radio=True)
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["rm_Default", False], radio=True)
         self.chbRM_Metallic = BetterCheckbox(
-            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["rm_Metallic", False], radio=True)
+            parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["rm_Metallic", False], radio=True)
 
         currY += 25
 
         self.chbRM_BaseColor = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["rm_BaseColor", False], radio=True)
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["rm_BaseColor", False], radio=True)
         self.chbRM_Roughness = BetterCheckbox(
-            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["rm_Roughness", False], radio=True)
+            parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["rm_Roughness", False], radio=True)
 
         currY += 25
 
         self.chbRM_Specular = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["rm_Specular", False], radio=True)
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["rm_Specular", False], radio=True)
         self.chbRM_Normal = BetterCheckbox(
-            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["rm_Normal", False], radio=True)
+            parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["rm_Normal", False], radio=True)
 
         currY += 25
 
         self.chbRM_SSDO = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["rm_SSDO", False], radio=True)
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["rm_SSDO", False], radio=True)
         # self.chbRM_Wireframe = BetterCheckbox(
         #     parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["rm_Wireframe", False], radio=True)
 
@@ -209,26 +211,26 @@ class PipelineGuiManager(DebugObject):
 
         # Features
 
-        currY = 216
+        currY = 222
 
         self.chbFT_SSDO = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["ft_SSDO", True], checked=True)
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["ft_SSDO", True], checked=True)
 
         self.chbFT_MotionBlur = BetterCheckbox(
-            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["ft_MOTIONBLUR", True], checked=True)
+            parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["ft_MOTIONBLUR", True], checked=True)
 
         currY += 25
 
         self.chbFT_AA = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["ft_ANTIALIASING", True], checked=True)
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["ft_ANTIALIASING", True], checked=True)
 
         self.chbFT_Shadows = BetterCheckbox(
-            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["ft_SHADOWS", True], checked=True)
+            parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["ft_SHADOWS", True], checked=True)
 
         currY += 25
 
         self.chbFT_ColorCorrect = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["ft_COLOR_CORRECTION", True], checked=True)
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["ft_COLOR_CORRECTION", True], checked=True)
         
 
 
@@ -258,11 +260,11 @@ class PipelineGuiManager(DebugObject):
         result = []
 
         for key, val in self.defines.items():
-            print key, val
+            # print key, val
             if val:
                 result.append(("DEBUG_" + key, val))
 
-        print result
+        # print result
         return result
 
     def _toggleGUI(self):

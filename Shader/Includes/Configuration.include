@@ -53,3 +53,18 @@ const float sqrt_of_2 = 1.4142135623;
 #else
     #define BINDLESS
 #endif
+
+
+#ifdef DEBUG_DISABLE_SHADOWS
+    #undef USE_SHADOWS
+#endif
+
+
+// panda does not support custom names for bound textures.
+// so make it support it, now! :D
+#define DIFFUSE_TEX p3d_Texture0
+#define NORMAL_TEX p3d_Texture1
+#define SPECULAR_TEX p3d_Texture2
+#define ROUGHNESS_TEX p3d_Texture3
+
+

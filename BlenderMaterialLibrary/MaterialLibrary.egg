@@ -1,0 +1,285 @@
+<CoordinateSystem> { Z-up } 
+<Material> EmptyMaterialPrefab {
+  <Scalar> diffr { 0.784615 }
+  <Scalar> diffg { 0.553846 }
+  <Scalar> diffb { 0.000000 }
+  <Scalar> diffa { 0.000000 }
+  <Scalar> specr { 1.000000 }
+  <Scalar> specg { 1.000000 }
+  <Scalar> specb { 0.000000 }
+  <Scalar> speca { 0.075099 }
+  <Scalar> shininess { 12.5 }
+  <Scalar> emitr { 0.000000 }
+  <Scalar> emitg { 0.000000 }
+  <Scalar> emitb { 0.000000 }
+}
+
+<Texture> EmptyNormalTexture {
+  "./tex/EmptyNormalTexture.png"
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+
+<Texture> EmptySpecularTexture {
+  "./tex/EmptySpecularTexture.png"
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+
+<Texture> EmptyDiffuseTexture {
+  "./tex/EmptyDiffuseTexture.png"
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+
+<Texture> EmptyRoughnessTexture {
+  "./tex/EmptyRoughnessTexture.png"
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+
+  <Group> Cube {
+    <Transform> {
+      <Matrix4> {
+        1.000000 0.000000 0.000000 0.000000 
+        0.000000 1.000000 0.000000 0.000000 
+        0.000000 0.000000 1.000000 0.000000 
+        0.000000 0.000000 0.000000 1.000000 
+      }
+    }
+    
+    <VertexPool> Cube {
+    
+      <Vertex> 0 {
+        1.0 0.9999999403953552 -1.0
+        
+        <UV>  {
+          0.665647 0.333333
+        }
+      }
+      <Vertex> 1 {
+        1.0 -1.0 -1.0
+        
+        <UV>  {
+          0.666667 0.665647
+        }
+      }
+      <Vertex> 2 {
+        -1.0000001192092896 -0.9999998211860657 -1.0
+        
+        <UV>  {
+          0.334353 0.666667
+        }
+      }
+      <Vertex> 3 {
+        -0.9999996423721313 1.0000003576278687 -1.0
+        
+        <UV>  {
+          0.333333 0.334353
+        }
+      }
+      <Vertex> 4 {
+        1.0000004768371582 0.999999463558197 1.0
+        
+        <UV>  {
+          1.000000 0.334353
+        }
+      }
+      <Vertex> 5 {
+        -0.9999999403953552 1.0 1.0
+        
+        <UV>  {
+          0.998980 0.666667
+        }
+      }
+      <Vertex> 6 {
+        -1.0000003576278687 -0.9999996423721313 1.0
+        
+        <UV>  {
+          0.666667 0.665647
+        }
+      }
+      <Vertex> 7 {
+        0.9999993443489075 -1.0000005960464478 1.0
+        
+        <UV>  {
+          0.667686 0.333333
+        }
+      }
+      <Vertex> 8 {
+        1.0 0.9999999403953552 -1.0
+        
+        <UV>  {
+          0.998981 0.000000
+        }
+      }
+      <Vertex> 9 {
+        1.0000004768371582 0.999999463558197 1.0
+        
+        <UV>  {
+          1.000000 0.332314
+        }
+      }
+      <Vertex> 10 {
+        0.9999993443489075 -1.0000005960464478 1.0
+        
+        <UV>  {
+          0.667686 0.333333
+        }
+      }
+      <Vertex> 11 {
+        1.0 -1.0 -1.0
+        
+        <UV>  {
+          0.666667 0.001019
+        }
+      }
+      <Vertex> 12 {
+        1.0 -1.0 -1.0
+        
+        <UV>  {
+          0.334353 0.333333
+        }
+      }
+      <Vertex> 13 {
+        0.9999993443489075 -1.0000005960464478 1.0
+        
+        <UV>  {
+          0.333333 0.001020
+        }
+      }
+      <Vertex> 14 {
+        -1.0000003576278687 -0.9999996423721313 1.0
+        
+        <UV>  {
+          0.665647 0.000000
+        }
+      }
+      <Vertex> 15 {
+        -1.0000001192092896 -0.9999998211860657 -1.0
+        
+        <UV>  {
+          0.666667 0.332314
+        }
+      }
+      <Vertex> 16 {
+        -1.0000001192092896 -0.9999998211860657 -1.0
+        
+        <UV>  {
+          0.332314 0.333333
+        }
+      }
+      <Vertex> 17 {
+        -1.0000003576278687 -0.9999996423721313 1.0
+        
+        <UV>  {
+          0.333333 0.665647
+        }
+      }
+      <Vertex> 18 {
+        -0.9999999403953552 1.0 1.0
+        
+        <UV>  {
+          0.001020 0.666667
+        }
+      }
+      <Vertex> 19 {
+        -0.9999996423721313 1.0000003576278687 -1.0
+        
+        <UV>  {
+          0.000000 0.334353
+        }
+      }
+      <Vertex> 20 {
+        1.0000004768371582 0.999999463558197 1.0
+        
+        <UV>  {
+          0.332314 0.000000
+        }
+      }
+      <Vertex> 21 {
+        1.0 0.9999999403953552 -1.0
+        
+        <UV>  {
+          0.333333 0.332314
+        }
+      }
+      <Vertex> 22 {
+        -0.9999996423721313 1.0000003576278687 -1.0
+        
+        <UV>  {
+          0.001020 0.333333
+        }
+      }
+      <Vertex> 23 {
+        -0.9999999403953552 1.0 1.0
+        
+        <UV>  {
+          0.000000 0.001020
+        }
+      }}
+    
+    
+    <Polygon> {
+      <TRef> { EmptyDiffuseTexture }
+      <TRef> { EmptyNormalTexture }
+      <TRef> { EmptySpecularTexture }
+      <TRef> { EmptyRoughnessTexture }
+      <MRef> { EmptyMaterialPrefab }
+      <Normal> {0.000000 0.000000 -1.000000}
+      <VertexRef> { 0 1 2 3 <Ref> { Cube }}
+    }
+    <Polygon> {
+      <TRef> { EmptyDiffuseTexture }
+      <TRef> { EmptyNormalTexture }
+      <TRef> { EmptySpecularTexture }
+      <TRef> { EmptyRoughnessTexture }
+      <MRef> { EmptyMaterialPrefab }
+      <Normal> {0.000000 0.000000 1.000000}
+      <VertexRef> { 4 5 6 7 <Ref> { Cube }}
+    }
+    <Polygon> {
+      <TRef> { EmptyDiffuseTexture }
+      <TRef> { EmptyNormalTexture }
+      <TRef> { EmptySpecularTexture }
+      <TRef> { EmptyRoughnessTexture }
+      <MRef> { EmptyMaterialPrefab }
+      <Normal> {1.000000 -0.000000 0.000000}
+      <VertexRef> { 8 9 10 11 <Ref> { Cube }}
+    }
+    <Polygon> {
+      <TRef> { EmptyDiffuseTexture }
+      <TRef> { EmptyNormalTexture }
+      <TRef> { EmptySpecularTexture }
+      <TRef> { EmptyRoughnessTexture }
+      <MRef> { EmptyMaterialPrefab }
+      <Normal> {-0.000000 -1.000000 -0.000000}
+      <VertexRef> { 12 13 14 15 <Ref> { Cube }}
+    }
+    <Polygon> {
+      <TRef> { EmptyDiffuseTexture }
+      <TRef> { EmptyNormalTexture }
+      <TRef> { EmptySpecularTexture }
+      <TRef> { EmptyRoughnessTexture }
+      <MRef> { EmptyMaterialPrefab }
+      <Normal> {-1.000000 0.000000 -0.000000}
+      <VertexRef> { 16 17 18 19 <Ref> { Cube }}
+    }
+    <Polygon> {
+      <TRef> { EmptyDiffuseTexture }
+      <TRef> { EmptyNormalTexture }
+      <TRef> { EmptySpecularTexture }
+      <TRef> { EmptyRoughnessTexture }
+      <MRef> { EmptyMaterialPrefab }
+      <Normal> {0.000000 1.000000 0.000000}
+      <VertexRef> { 20 21 22 23 <Ref> { Cube }}
+    }
+  }

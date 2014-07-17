@@ -1,0 +1,40 @@
+
+Store 4 textures:
+    Slot0: Diffuse
+    Slot1: Normal
+    Slot2: Specular
+    Slot3: Roughness
+
+Use empty textures when you don't need 
+the components, but don't skip them! There are empty textures in
+Data/Textures/EmptyXXXTexture.png, and also included in the Material Library
+
+
+baseColor:
+    store in diffuse color (diffuse intensity will be multiplied with that! Usually
+    you want to set Difuse>Intensity to 1.0)
+
+NOTICE: Don't forget to set specular intensity to 1.0 ! All specular components
+get multiplied with that.
+
+specular-factor (specular texture gets multiplied with that):
+    specular.x
+
+metallic:
+    specular.y
+
+roughness (roughness texture gets multiplied with that):
+    specular.z
+
+bump-factor:
+    diffuse.a
+    -> Enable transparency in the material tab, select "Mask",
+       and then adjust "Alpha"
+
+You can set the specular intensity to 0 in blender so your
+models keep the same color when using the specular components
+for other data.
+
+Your objects might look strange in blender, but when you followed
+this instructions, they should look correct in the pipeline. You can also
+look into the material library for seeing demo materials.

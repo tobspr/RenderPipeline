@@ -149,3 +149,7 @@ gl-immutable-texture-storage #f
 gl-dump-compiled-shaders #f
 
 gl-cube-map-seamless #t
+
+# buggy as hell
+# want-directtools #t
+# want-tk #t

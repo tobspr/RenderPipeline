@@ -6,5 +6,8 @@ struct VertexOutput {
     vec2 texcoord;
 
     vec4 materialDiffuse;
+    vec3 materialSpecular;
+    float materialAmbient;
+
     vec4 lastProjectedPos;
 };

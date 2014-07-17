@@ -17,6 +17,8 @@ out VertexOutput vOutput;
 // We get the material info from panda as a struct
 struct PandaMaterial {
     vec4 diffuse;
+    vec3 specular;
+    vec4 ambient;
 };
 uniform PandaMaterial p3d_Material;
 
@@ -40,6 +42,8 @@ void main() {
 
     // Also pass diffuse to fragment shader
     vOutput.materialDiffuse = p3d_Material.diffuse;
+    vOutput.materialSpecular = p3d_Material.specular;
+    vOutput.materialAmbient = p3d_Material.ambient.z;
 
     // Compute velocity in vertex shader, but it's important
     // to move the w-divide to the fragment shader

@@ -5,16 +5,14 @@
 // Input from the vertex shader
 in VertexOutput vOutput;
 
-// Textures Samplers
+// Texture Samplers
 uniform sampler2D p3d_Texture0;
 uniform sampler2D p3d_Texture1;
 uniform sampler2D p3d_Texture2;
 uniform sampler2D p3d_Texture3;
-// uniform sampler2D p3d_Texture4;
 
 // This is required for the materials
 #include "Includes/MaterialPacking.include"
-
 
 void main() {
 
@@ -23,35 +21,27 @@ void main() {
     // Create a material to store the properties on
     Material m;
 
-    vec3 normal = normalize(vOutput.normalWorld);
-    // vec3 diffuse = vec3(1.0);
+    vec4 sampledDiffuse = texture(DIFFUSE_TEX, vOutput.texcoord);
+    vec4 sampledNormal  = texture(NORMAL_TEX, vOutput.texcoord);
+    vec4 sampledSpecular = texture(SPECULAR_TEX, vOutput.texcoord);
+    vec4 sampledRoughness = texture(ROUGHNESS_TEX, vOutput.texcoord);
 
-    vec3 bump = texture(p3d_Texture1, vOutput.texcoord).rgb*2.0 - 1.0;
+    float bumpFactor = vOutput.materialDiffuse.w;
+    float specularFactor = vOutput.materialSpecular.x;
+    float metallic = vOutput.materialSpecular.y;
+    float roughnessFactor = vOutput.materialSpecular.z;
 
-    normal = normalize(normal + bump * 0.05);
-    // normal = normalize(normal);
+    vec3 decodedNormal = sampledNormal.rgb * 2.0 - 1.0;
+    vec3 mixedNormal = normalize(vOutput.normalWorld + decodedNormal * bumpFactor);
 
-    vec4 diffuse = texture(p3d_Texture0, vOutput.texcoord);
-    vec4 rawSpecular = texture(p3d_Texture2, vOutput.texcoord);
+    m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
 
-    diffuse.rgb = vec3(1.0);
+    m.roughness = sampledRoughness.r * roughnessFactor;
+    m.specular = sampledSpecular.r * specularFactor;
+    m.metallic = metallic;
 
-    float specular = 0.0;
-
-    // if (diffuse.a < 0.5) discard;
-
-    // specular = 0;
-
-    // vec3 diffuse = vec3(1);
-
-    m.metallic = 0.0;
-    m.roughness = 0.0;
-    // m.specular = rawSpecular.x;
-    m.specular = 0.0;
-    m.baseColor = diffuse.rgb;
     m.position = vOutput.positionWorld;
-    m.normal = normal;
+    m.normal = mixedNormal;
 
-    // Pack material and output to the render targets
     renderMaterial(m);
 }

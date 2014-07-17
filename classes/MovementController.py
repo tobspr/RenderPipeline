@@ -241,5 +241,5 @@ class MovementController:
         # placement window
         elif selectedOption == 6:
             print "Opening placement window. You need tkinter installed to be able to use it"
-            # self.showbase.render.place()
-            print "It seems .place() is currently not working. Sorry!!"
+            self.showbase.render.place()
+            # print "It seems .place() is currently not working. Sorry!!"
