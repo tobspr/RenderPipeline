@@ -40,7 +40,7 @@ class BetterOnscreenImage(DebugObject):
 
 class BetterCheckbox(DebugObject):
 
-    def __init__(self, parent=None, x=0, y=0, callback=None, extraArgs=None, radio=False, expandW=100):
+    def __init__(self, parent=None, x=0, y=0, callback=None, extraArgs=None, radio=False, expandW=100, checked=False):
         DebugObject.__init__(self, "BCheckbox")
 
         prefix = "Checkbox" if not radio else "Radiobox"
@@ -70,6 +70,9 @@ class BetterCheckbox(DebugObject):
         self.callback = callback
         self.extraArgs = extraArgs
         self.collection = None
+
+        if checked:
+            self._setChecked(True)
 
     def _setCollection(self, coll):
         self.collection = coll
@@ -209,18 +212,24 @@ class PipelineGuiManager(DebugObject):
         currY = 216
 
         self.chbFT_SSDO = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["ft_SSDO", True])
+            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["ft_SSDO", True], checked=True)
 
         self.chbFT_MotionBlur = BetterCheckbox(
-            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["ft_MOTIONBLUR", True])
+            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["ft_MOTIONBLUR", True], checked=True)
 
         currY += 25
 
         self.chbFT_AA = BetterCheckbox(
-            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["ft_ANTIALIASING", True])
+            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["ft_ANTIALIASING", True], checked=True)
 
         self.chbFT_Shadows = BetterCheckbox(
-            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["ft_SHADOWS", True])
+            parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["ft_SHADOWS", True], checked=True)
+
+        currY += 25
+
+        self.chbFT_ColorCorrect = BetterCheckbox(
+            parent=self.debuggerParent, x=12, y=currY, callback=self._updateSetting, extraArgs=["ft_COLOR_CORRECTION", True], checked=True)
+        
 
 
 
@@ -231,6 +240,11 @@ class PipelineGuiManager(DebugObject):
         if name.startswith("rm_"):
             modeId = "RM_" + name[3:].upper()
             self.defines[modeId] = 1 if status else 0
+
+        elif name.startswith("ft_"):
+            # instead of enabling per feature, we disable per feature
+            modeId = "DISABLE_" + name[3:].upper()
+            self.defines[modeId] = 0 if status else 1
 
 
         if status is True or updateWhenFalse:
@@ -244,9 +258,11 @@ class PipelineGuiManager(DebugObject):
         result = []
 
         for key, val in self.defines.items():
+            print key, val
             if val:
                 result.append(("DEBUG_" + key, val))
 
+        print result
         return result
 
     def _toggleGUI(self):
