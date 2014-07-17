@@ -35,6 +35,10 @@
 
     float computeDSSDO(vec2 texcoord, ivec2 screenCoord, Material material, float dist, sampler2D normalTex, sampler2D positionTex) {
         
+        #ifdef DEBUG_DISABLE_SSDO
+            return 1.0;
+        #endif
+
         float radius = clamp( (1.0 / dist) * 1000.0 * dssdoRadius, 0.0, 80.0);
         // radius *= 0.4;
         // radius = 20.0;

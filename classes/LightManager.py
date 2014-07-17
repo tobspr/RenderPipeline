@@ -491,7 +491,7 @@ class LightManager(DebugObject):
 
                 # Finally, we can tell the update it's valid now.
                 # Actually this is only true in one frame, but who cares?
-                # update.setValid()
+                update.setValid()
 
                 # Only add the uid to the output if the max updates
                 # aren't too much. Otherwise we spam the screen :P

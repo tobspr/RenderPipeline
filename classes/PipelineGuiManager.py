@@ -161,7 +161,7 @@ class PipelineGuiManager(DebugObject):
 
         self.currentGUIEffect = None
 
-        self._toggleGUI()
+        # self._toggleGUI()
 
     def _initSettings(self):
         currY = 77

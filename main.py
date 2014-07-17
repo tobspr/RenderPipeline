@@ -123,7 +123,7 @@ class Main(ShowBase, DebugObject):
 
         # Add some shadow casting lights
         for i in range(1):
-            break
+            # break
             angle = float(i) / 8.0 * math.pi * 2.0
 
             pos = Vec3(math.sin(angle) * 10.0 + 10, math.cos(angle) * 10.0, 20)

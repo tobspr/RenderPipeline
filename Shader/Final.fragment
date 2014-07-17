@@ -28,10 +28,8 @@ void main() {
     // Screen coordinate (as int vec)
     ivec2 screenCoord = ivec2(texcoord * screenSize);
 
-
     // Store last frame 
     storeTemporalReprojection(screenCoord);
-
 
     #if 1
 
@@ -65,16 +63,23 @@ void main() {
         motionResult /= MOTION_BLUR_SAMPLES-1;
 
         // result = mix(result, motionResult, saturate(velStrength*2.0) );
-        // result = mix(result, motionResult, 1.0 );
-         result = textureLod(colorTex, texcoord, 0).rgb;
+        result = mix(result, motionResult, 1.0 );
+    
+
+        #ifdef DEBUG_DISABLE_MOTIONBLUR
+            result = textureLod(colorTex, texcoord, 0).rgb;
+        #endif
 
     #else
         result = textureLod(colorTex, texcoord, 0).rgb;
     #endif
 
     // result = textureLod(colorTex, texcoord, 0).rgb;
-    vec3 colorCorrected = convertColorSpace(result);
-    result = mix( colorCorrected , result, 0.5);
+
+    #ifndef DEBUG_DISABLE_COLOR_CORRECTION
+        vec3 colorCorrected = convertColorSpace(result);
+        result = mix( colorCorrected , result, 0.5);
+    #endif
 
     
     float vignett = smoothstep(0, 1, 
