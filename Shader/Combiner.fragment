@@ -27,6 +27,9 @@ uniform vec3 cameraPosition;
 
 out vec4 result;
 
+const float rejectionFactor = 100.0;
+const float texcoordRejectionFactor = 500.0;
+
 void main() {
 
     // Fetch screen size, so we don't have to pass it as a shader input
@@ -37,7 +40,6 @@ void main() {
 
     // Screen coordinate (half resolution only)
     ivec2 computationCoord = ivec2( screenCoord.x/2, screenCoord.y);
-
 
     // Compute dof factors
     // float bufferZ = texture(depthTex, texcoord).x;
@@ -76,11 +78,13 @@ void main() {
 
     float distanceToCamera = distance(cameraPosition, position);
 
-    float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * 300.0);
+    float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
+
+
 
     // reliability = 0.0;
 
-    // reliability = 1.0 - saturate(distance(lastFrameTexcoord, texcoord) * 30.0);
+    reliability *= 1.0 - saturate(distance(lastFrameTexcoord, texcoord) * texcoordRejectionFactor);
     // reliability = 0.0;
 
     // Fetch the up-to-date position from the buffer

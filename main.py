@@ -56,19 +56,20 @@ class Main(ShowBase, DebugObject):
 
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza2.egg"
-        # self.sceneSource = "Scene/Scene2.egg"
-        self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
-        self.usePlane = False
+        self.sceneSource = "Models/Ball/Model.egg"
+        # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
+        self.usePlane = True
 
-        self.debug("Loading Scene '" + self.sceneSource + "' ..")
+
+        self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
         # self.scene.setScale(0.05)
         # self.scene.flattenStrong()
 
         # Load ground plane if configured
         if self.usePlane:
-            self.groundPlane = self.loader.loadModel("Scene/Plane.egg")
-            self.groundPlane.setPos(0, 0, -0.1)
+            self.groundPlane = self.loader.loadModel("Models/Plane/Model.egg")
+            self.groundPlane.setPos(0, 0, -0.01)
             self.groundPlane.setScale(2.0)
             self.groundPlane.setTwoSided(True)
             self.groundPlane.flattenStrong()
@@ -78,7 +79,9 @@ class Main(ShowBase, DebugObject):
         # self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
-        self.scene.flattenStrong()
+        # self.convertToPatches(self.scene)
+        # self.scene.flattenStrong()
+
         self.scene.reparentTo(self.render)
 
         # Create movement controller (Freecam)
@@ -98,6 +101,10 @@ class Main(ShowBase, DebugObject):
 
         # self.scene.node().setAttrib(ShadeModelAttrib.make(ShadeModelAttrib.MSmooth),
         # 100000)
+
+        self.sceneWireframe = False
+
+        self.accept("f3", self.toggleSceneWireframe)
 
         # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
@@ -135,8 +142,8 @@ class Main(ShowBase, DebugObject):
             light.setColor(Vec3(1))
             # light.setColor(colors[i]*1.0)
             light.setPos(pos)
-            light.setShadowMapResolution(2048)
-            light.setCastsShadows(True)
+            # light.setShadowMapResolution(2048)
+            # light.setCastsShadows(True)
 
             # add light
             self.renderPipeline.addLight(light)
@@ -162,29 +169,29 @@ class Main(ShowBase, DebugObject):
                 self.renderPipeline.addLight(light)
                 self.lights.append(light)
 
-        ambient = PointLight()
-        ambient.setRadius(300.0)
-        ambient.setPos(Vec3(10, 10, 10))
-        ambient.setColor(Vec3(1.0))
-        self.renderPipeline.addLight(ambient)
+        contrib = 1.0
 
+        for x,y in [(-1,-1), (-1,1), (1,-1), (1,1)]:
+            ambient = PointLight()
+            ambient.setRadius(300.0)
+            ambient.setPos(Vec3(100*x +25, 100*y - 30, 150))
+            ambient.setColor(Vec3(contrib))
+            self.renderPipeline.addLight(ambient)
 
-        ambient = PointLight()
-        ambient.setRadius(30000.0)
-        ambient.setPos(Vec3(10, 10, 10000))
-        ambient.setColor(Vec3(1.0))
-        self.renderPipeline.addLight(ambient)
+            contrib *= 0.5
 
-
-
-        # self.loadLights("Demoscene.ignore/sponza-lights.egg")
-
-        # create skybox
-#
         self.loadSkybox()
 
         # set default object shaders
         self.setShaders()
+
+    def toggleSceneWireframe(self):
+        self.sceneWireframe = not self.sceneWireframe
+
+        if self.sceneWireframe:
+            self.scene.setRenderModeWireframe()
+        else:
+            self.scene.clearRenderMode()
 
     def loadLights(self, scene):
         model = self.loader.loadModel(scene)
@@ -226,6 +233,16 @@ class Main(ShowBase, DebugObject):
         self.skybox.setShader(BetterShader.load(
             "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
 
+    def convertToPatches(self, model):
+        self.debug("Converting to patches ..")
+        for node in model.find_all_matches("**/+GeomNode"):
+            geom_node = node.node()
+            num_geoms = geom_node.get_num_geoms()
+            for i in range(num_geoms):
+                geom_node.modify_geom(i).make_patches_in_place()
+
+        self.debug("Converted!")
+
     def update(self, task=None):
         """ Main update task """
 
@@ -234,6 +251,7 @@ class Main(ShowBase, DebugObject):
         # time.sleep( max(0.0, 0.033))
         # time.sleep(-0.2)
         # return task.cont
+
         if False:
             animationTime = self.taskMgr.globalClock.getFrameTime() * 0.6
 

@@ -55,7 +55,7 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
         // Compute reflection
         vec3 reflectedDir = reflect( v, n);
 
-        float cubemapResolutionParameter = material.roughness;
+        float cubemapResolutionParameter = saturate(pow(material.roughness, 0.7));
         vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0).rgb;
         vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 10.0 - 1.0).rgb;
         vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
@@ -76,8 +76,9 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
 
         // Compute total contributions
         vec3 diffuseContribution = diffuseColor * diffuseBrdf * attenuation * light.color;
-        vec3 specularContribution = specularTerm * attenuation * light.color * specular; 
-        vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor * specF * attenuation * light.color * safeDot(n, l);
+        vec3 specularContribution = specularTerm * attenuation * light.color * specular * mix(vec3(1.0), material.baseColor, material.metallic); 
+        vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor *
+                                        specF * attenuation * light.color * max(0.2, safeDot(n, l));
 
 
         vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;

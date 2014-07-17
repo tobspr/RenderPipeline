@@ -153,7 +153,7 @@ class PipelineGuiManager(DebugObject):
         self.debuggerParent = self.rootNode.attachNewNode("DebuggerParent")
         self.debuggerParent.setPos(-350, 0, 0)
         self.debuggerBackground = BetterOnscreenImage(
-            image="Data/GUI/DebuggerBackground.png", parent=self.debuggerParent, x=0, y=0, w=280, h=2600)
+            image="Data/GUI/DebuggerBackground.png", parent=self.debuggerParent, x=0, y=0, w=279, h=1200)
 
         self._initSettings()
 

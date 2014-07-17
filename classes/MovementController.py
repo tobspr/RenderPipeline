@@ -9,7 +9,7 @@ class MovementController:
         self.movement = [0, 0, 0]
         self.velocity = Vec3(0.0)
         self.hprMovement = [0,0]
-        self.speed = 0.5
+        self.speed = 0.2
         self.initialPosition = Vec3(0)
         self.initialDestination = Vec3(0)
         self.mouseEnabled = False

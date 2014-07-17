@@ -1,9 +1,11 @@
 
 import math
+from os.path import join
+
 from panda3d.core import TransparencyAttrib, Texture, Vec2, NodePath, PTAInt
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
-from panda3d.core import PTAVecBase3f, WindowProperties
+from panda3d.core import PTAVecBase3f, WindowProperties, OmniBoundingVolume
 
 from direct.gui.OnscreenImage import OnscreenImage
 
@@ -456,7 +458,7 @@ class RenderingPipeline(DebugObject):
 
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
-        cubemap = self.showbase.loader.loadCubeMap("Cubemap/#.png")
+        cubemap = self.showbase.loader.loadCubeMap(join(self.rootDirectory, "Data/Cubemaps/Default/#.png"))
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb_alpha)
@@ -706,7 +708,7 @@ class RenderingPipeline(DebugObject):
                 "Shader/DefaultObjectShader/vertex.glsl",
                 "Shader/DefaultObjectShader/fragment.glsl")
         else:
-            raise Exception("Tesselation is only experimental!")
+            self.warn("Tesselation is only experimental! Remember to convert the geometry to patches first!")
 
             shader = BetterShader.load(
                 "Shader/DefaultObjectShader/vertex.glsl",

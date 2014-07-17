@@ -13,3 +13,4 @@ Core/Windows/
 Core/Linux/
 Cython/
 *.psd
+BlenderMaterialLibrary/tex

@@ -17,8 +17,8 @@
     // const float dssdoMaxAngle    = DSSDO_MAX_ANGLE;
     // const float dssdoFactor      = DSSDO_STRENGTH;
     const int   dssdoSampleCount = 32;
-    const float dssdoRadius      = 0.5;
-    const float dssdoMaxDistance = 20.0;
+    const float dssdoRadius      = 0.2;
+    const float dssdoMaxDistance = 10.0;
     const float dssdoMaxAngle    = 0.1;
     const float dssdoFactor      = 1.0;
 
@@ -45,7 +45,7 @@
 
         ivec2 screenSize = textureSize(normalTex, 0) - 1;
         vec3 noise = texelFetch(dssdoNoiseTex, screenCoord % 4, 0).rgb*2.0 - 1.0;
-        noise *= 0.0;
+        noise *= 0.5;
 
         float occlusionResult = 0.0;
 

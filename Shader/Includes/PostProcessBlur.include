@@ -4,7 +4,7 @@
 #include "Includes/Packing.include"
 
 
-const float normalsDiscardThreshold = 0.999;
+const float normalsDiscardThreshold = 0.99999;
 
 
 #pragma optionNV (unroll all)
@@ -16,7 +16,7 @@ vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2
 
     float blurFactor = texture(blurFactors, texcoord).r;
 
-    if (blurFactor < 0.02) {
+    if (blurFactor < 0.01) {
         return texture(colorTex, texcoord);
     } else {
 
@@ -55,6 +55,9 @@ vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2
 }
 
 
+#pragma unroll
+
+
 float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction, sampler2D colorTex, sampler2D normalTex) {
 
     #ifndef USE_OCCLUSION_BLUR
@@ -79,11 +82,27 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, ivec2 direction,
         vec3 normals[9];
         float occlusion[9];
 
+        // AMD Can't handle texelFetchOffset with loops
+
+        #define EPAB_INIT_VALUES(i) \
+        normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*direction).xy); \
+        occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*direction).a;
+
+        EPAB_INIT_VALUES(0)
+        EPAB_INIT_VALUES(1)
+        EPAB_INIT_VALUES(2)
+        EPAB_INIT_VALUES(3)
+        EPAB_INIT_VALUES(4)
+        EPAB_INIT_VALUES(5)
+        EPAB_INIT_VALUES(6)
+        EPAB_INIT_VALUES(7)
+        EPAB_INIT_VALUES(8)
+
         // First, fetch all required values
-        for (int i = 0; i < 9; i++) {
-            normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*direction).xy);
-            occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*direction).a;
-        }
+        // for (int i = 0; i < 9; i++) {
+        //     normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*direction).xy);
+        //     occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*direction).a;
+        // }
 
         // pixel normal is the mid normal
         vec3 normal = normals[4];
