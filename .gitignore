@@ -8,6 +8,7 @@ PerformanceTesting
 MeshSimplifier
 Assets/
 *.sublime-workspace
+*.sublime-project
 Core/Windows/
 Core/Linux/
 Cython/
