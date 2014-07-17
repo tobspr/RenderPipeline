@@ -10,11 +10,13 @@ class Globals:
     loader = None
     render = None
     clock = None
+    rootDirectory = None
 
     @classmethod
-    def load(self, showbase):
+    def load(self, showbase, rootDirectory):
         """ Fetches the globals from a given showbase """
         self.base = showbase
         self.loader = showbase.loader
         self.render = showbase.render
         self.clock = showbase.taskMgr.globalClock
+        self.rootDirectory = rootDirectory

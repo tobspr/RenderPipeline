@@ -1,5 +1,6 @@
 
 import math
+from os.path import join
 
 from panda3d.core import TransparencyAttrib, Texture, Vec3
 from direct.gui.OnscreenImage import OnscreenImage
@@ -19,7 +20,7 @@ class BetterOnscreenImage(DebugObject):
         self.initialPos = Vec3(x + w / 2.0, 1, -y - h / 2.0)
 
         self._node = OnscreenImage(
-            image=image, parent=parent, pos=self.initialPos, scale=(w / 2.0,  1, h / 2.0))
+            image=join(Globals.rootDirectory, image), parent=parent, pos=self.initialPos, scale=(w / 2.0,  1, h / 2.0))
 
         if transparent:
             self._node.setTransparency(TransparencyAttrib.MAlpha)
@@ -45,10 +46,10 @@ class BetterCheckbox(DebugObject):
 
         prefix = "Checkbox" if not radio else "Radiobox"
 
-        checkedImg = Globals.loader.loadTexture(
-            "Data/GUI/" + prefix + "Active.png")
-        uncheckedImg = Globals.loader.loadTexture(
-            "Data/GUI/" + prefix + "Empty.png")
+        checkedImg = Globals.loader.loadTexture(join(Globals.rootDirectory,
+                                                     "Data/GUI/" + prefix + "Active.png"))
+        uncheckedImg = Globals.loader.loadTexture(join(Globals.rootDirectory,
+                                                       "Data/GUI/" + prefix + "Empty.png"))
 
         for tex in [checkedImg, uncheckedImg]:
             tex.setMinfilter(Texture.FTNearest)
@@ -62,8 +63,8 @@ class BetterCheckbox(DebugObject):
             image=uncheckedImg, extraArgs = extraArgs, state=DGG.NORMAL,
             relief=DGG.FLAT, command=self._updateStatus)
 
-        self._node["frameColor"] = (0,0,0,0.0)
-        self._node["frameSize"] = (-2,2 + expandW/7.5,-1.6,1.6)
+        self._node["frameColor"] = (0, 0, 0, 0.0)
+        self._node["frameSize"] = (-2, 2 + expandW / 7.5, -1.6, 1.6)
 
         self._node.setTransparency(TransparencyAttrib.MAlpha)
 
@@ -85,8 +86,7 @@ class BetterCheckbox(DebugObject):
                 self._node["state"] = DGG.DISABLED
 
         if self.callback is not None:
-            self.callback( *([status] + self.extraArgs))
-
+            self.callback(*([status] + self.extraArgs))
 
     def _setChecked(self, val):
         self._node["isChecked"] = val
@@ -97,7 +97,7 @@ class BetterCheckbox(DebugObject):
             self._node['image'] = self._node['uncheckedImage']
 
         if self.callback is not None:
-            self.callback( *([val] + self.extraArgs))
+            self.callback(*([val] + self.extraArgs))
 
 
 class CheckboxCollection(DebugObject):
@@ -195,9 +195,9 @@ class PipelineGuiManager(DebugObject):
         self.chbRM_SSDO = BetterCheckbox(
             parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["rm_SSDO", False], radio=True)
         # self.chbRM_Wireframe = BetterCheckbox(
-        #     parent=self.debuggerParent, x=150, y=currY, callback=self._updateSetting, extraArgs=["rm_Wireframe", False], radio=True)
-
-
+        # parent=self.debuggerParent, x=150, y=currY,
+        # callback=self._updateSetting, extraArgs=["rm_Wireframe", False],
+        # radio=True)
 
         self.chbRM_Default._setChecked(True)
 
@@ -231,9 +231,6 @@ class PipelineGuiManager(DebugObject):
 
         self.chbFT_ColorCorrect = BetterCheckbox(
             parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["ft_COLOR_CORRECTION", True], checked=True)
-        
-
-
 
     def _updateSetting(self, status, name, updateWhenFalse=False):
         # self.debug("Update setting:", name, "=", status, "whenFalse=",updateWhenFalse)
@@ -248,13 +245,9 @@ class PipelineGuiManager(DebugObject):
             modeId = "DISABLE_" + name[3:].upper()
             self.defines[modeId] = 0 if status else 1
 
-
         if status is True or updateWhenFalse:
             self.pipeline._generateShaderConfiguration()
             self.pipeline.reloadShaders()
-
-
-
 
     def getDefines(self):
         result = []

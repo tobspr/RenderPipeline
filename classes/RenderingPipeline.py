@@ -74,11 +74,17 @@ class RenderingPipeline(DebugObject):
         DebugObject.__init__(self, "RenderingPipeline")
         self.showbase = showbase
         self.settings = None
+        self.rootDirectory = "."
 
     def loadSettings(self, filename):
         """ Loads the pipeline settings from an ini file """
         self.settings = PipelineSettingsManager()
         self.settings.loadFromFile(filename)
+
+    def setRootDirectory(self, directory):
+        """ Sets the root directory of this pipeline, all assets
+        will be loaded relative to this directory """
+        self.rootDirectory = directory.replace("\\", "/").rstrip("/")
 
     def getSettings(self):
         """ Returns the current pipeline settings """
@@ -88,6 +94,7 @@ class RenderingPipeline(DebugObject):
         """ Creates this pipeline """
 
         self.debug("Setting up render pipeline")
+        self.debug("Root directory is '" + self.rootDirectory + "'")
 
         if self.settings is None:
             self.error("You have to call loadSettings first!")
@@ -95,7 +102,7 @@ class RenderingPipeline(DebugObject):
 
         # Store globals, as cython can't handle them
         self.debug("Setting up globals")
-        Globals.load(self.showbase)
+        Globals.load(self.showbase, self.rootDirectory)
 
         # We use PTA's for shader inputs, because that's faster than
         # using setShaderInput
