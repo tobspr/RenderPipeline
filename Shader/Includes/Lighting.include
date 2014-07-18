@@ -81,7 +81,8 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
 
         // Compute total contributions
         vec3 diffuseContribution = diffuseColor * diffuseBrdf * attenuation * light.color;
-        vec3 specularContribution = specularTerm * attenuation * light.color * specular * mix(vec3(1.0), material.baseColor, material.metallic); 
+        // vec3 specularContribution = specularTerm * attenuation * light.color * specular * material.baseColor; //mix(vec3(1.0), material.baseColor, material.metallic*0.5 + 0.5); 
+        vec3 specularContribution = specularTerm * attenuation * light.color * specular * mix(vec3(1.0), material.baseColor, material.metallic*0.5 + 0.5); 
         vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor *
                                         specF * attenuation * light.color * material.baseColor * max(0.01, safeDot(n, l));
 

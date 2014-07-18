@@ -1,0 +1,303 @@
+<CoordinateSystem> { Z-Up }
+
+<Comment> {
+  "egg-trans -tbnall -o 'E:\Projects\Brainz stuff\RenderPipeline\Demoscene.ignore\sponza.egg' 'E:\Projects\Brainz stuff\RenderPipeline\Demoscene.ignore\sponza.egg'"
+}
+<Texture> StoneBricksSpecular {
+  "tex/spnza_bricks_a_spec.tga"
+  <Scalar> wrap { repeat }
+  <Scalar> minfilter { linear_mipmap_linear }
+  <Scalar> magfilter { linear_mipmap_linear }
+  <Scalar> envtype { modulate }
+}
+<Texture> StoneBricksNormal {
+  "tex/spnza_bricks_a_ddn.tga"
+  <Scalar> wrap { repeat }
+  <Scalar> minfilter { linear_mipmap_linear }
+  <Scalar> magfilter { linear_mipmap_linear }
+  <Scalar> envtype { modulate }
+}
+<Texture> StoneBricksDiffuse {
+  "tex/spnza_bricks_a_diff.png"
+  <Scalar> wrap { repeat }
+  <Scalar> minfilter { linear_mipmap_linear }
+  <Scalar> magfilter { linear_mipmap_linear }
+  <Scalar> envtype { modulate }
+}
+<Texture> EmptyRoughnessTexture {
+  "tex/EmptyRoughnessTexture.png"
+  <Scalar> wrap { repeat }
+  <Scalar> minfilter { linear_mipmap_linear }
+  <Scalar> magfilter { linear_mipmap_linear }
+  <Scalar> envtype { modulate }
+}
+<Material> StoneBricks {
+  <Scalar> diffr { 1 }
+  <Scalar> diffg { 1 }
+  <Scalar> diffb { 1 }
+  <Scalar> emitr { 0 }
+  <Scalar> emitg { 0 }
+  <Scalar> emitb { 0 }
+  <Scalar> specr { 0.538462 }
+  <Scalar> specg { 0 }
+  <Scalar> specb { 0.938462 }
+  <Scalar> shininess { 1.25 }
+}
+<Group> Cube {
+  <Transform> {
+    <Matrix4> {
+      1 0 0 0
+      0 1 0 0
+      0 0 1 0
+      0 0 1.39149 1
+    }
+  }
+  <VertexPool> Cube {
+    <Vertex> 0 {
+      -1 -1 0.391488
+      <UV> {
+        0.332314 0.333333
+        <Tangent> { 0 -0.999995 0.00306937 }
+        <Binormal> { 0 0.00306937 0.999995 }
+      }
+    }
+    <Vertex> 1 {
+      -1 -1 0.391488
+      <UV> {
+        0.998981 0.333333
+        <Tangent> { 0.00306937 0 -0.999995 }
+        <Binormal> { 0.999995 0 0.00306937 }
+      }
+    }
+    <Vertex> 2 {
+      -1 -1 0.391488
+      <UV> {
+        0.00102 0.333333
+        <Tangent> { 0.999995 -0.00306637 0 }
+        <Binormal> { -0.00306637 -0.999995 0 }
+      }
+    }
+    <Vertex> 3 {
+      -1 -1 2.39149
+      <UV> {
+        0.333333 0.665647
+        <Tangent> { 0 -0.999995 0.00306937 }
+        <Binormal> { 0 0.00306937 0.999995 }
+      }
+    }
+    <Vertex> 4 {
+      -1 -1 2.39149
+      <UV> {
+        0.666667 0.334353
+        <Tangent> { 0.00306937 0 -0.999995 }
+        <Binormal> { 0.999995 0 0.00306937 }
+      }
+    }
+    <Vertex> 5 {
+      -1 -1 2.39149
+      <UV> {
+        0.667686 0.333333
+        <Tangent> { -0.00306637 0.999995 0 }
+        <Binormal> { -0.999995 -0.00306637 0 }
+      }
+    }
+    <Vertex> 6 {
+      -1 1 0.391488
+      <UV> {
+        0 0.334353
+        <Tangent> { 0 -0.999995 0.00306937 }
+        <Binormal> { 0 0.00306937 0.999995 }
+      }
+    }
+    <Vertex> 7 {
+      -1 1 0.391488
+      <UV> {
+        0 0.00102
+        <Tangent> { 0.999995 -0.00306938 0 }
+        <Binormal> { -0.00306938 -0.999995 0 }
+      }
+    }
+    <Vertex> 8 {
+      -1 1 0.391488
+      <UV> {
+        0.666667 0.00102
+        <Tangent> { -0.999995 0 -0.00306938 }
+        <Binormal> { -0.00306938 0 0.999995 }
+      }
+    }
+    <Vertex> 9 {
+      -1 1 2.39149
+      <UV> {
+        0.001019 0.666667
+        <Tangent> { 0 -0.999995 0.00306937 }
+        <Binormal> { 0 0.00306937 0.999995 }
+      }
+    }
+    <Vertex> 10 {
+      -1 1 2.39149
+      <UV> {
+        1 0.332314
+        <Tangent> { -0.00306636 0.999995 0 }
+        <Binormal> { -0.999995 -0.00306636 0 }
+      }
+    }
+    <Vertex> 11 {
+      -1 1 2.39149
+      <UV> {
+        0.665647 0.333333
+        <Tangent> { -0.999995 0 -0.00306637 }
+        <Binormal> { -0.00306637 0 0.999995 }
+      }
+    }
+    <Vertex> 12 {
+      1 -1 0.391488
+      <UV> {
+        1 0.665647
+        <Tangent> { 0.00306937 0 -0.999995 }
+        <Binormal> { 0.999995 0 0.00306937 }
+      }
+    }
+    <Vertex> 13 {
+      1 -1 0.391488
+      <UV> {
+        0.333333 0.332314
+        <Tangent> { 0.999995 -0.00306636 0 }
+        <Binormal> { -0.00306636 -0.999995 0 }
+      }
+    }
+    <Vertex> 14 {
+      1 -1 0.391488
+      <UV> {
+        0.333333 0.334353
+        <Tangent> { 0 0.999995 0.00306937 }
+        <Binormal> { 0 -0.00306937 0.999995 }
+      }
+    }
+    <Vertex> 15 {
+      1 -1 2.39149
+      <UV> {
+        0.667686 0.666667
+        <Tangent> { 0.00306937 0 -0.999995 }
+        <Binormal> { 0.999995 0 0.00306937 }
+      }
+    }
+    <Vertex> 16 {
+      1 -1 2.39149
+      <UV> {
+        0.666667 0.00102
+        <Tangent> { -0.00306938 0.999995 0 }
+        <Binormal> { -0.999995 -0.00306938 0 }
+      }
+    }
+    <Vertex> 17 {
+      1 -1 2.39149
+      <UV> {
+        0.334353 0.666667
+        <Tangent> { 0 0.999995 0.00306937 }
+        <Binormal> { 0 -0.00306937 0.999995 }
+      }
+    }
+    <Vertex> 18 {
+      1 1 0.391488
+      <UV> {
+        0.332314 0
+        <Tangent> { 0.999995 -0.00306937 0 }
+        <Binormal> { -0.00306937 -0.999995 0 }
+      }
+    }
+    <Vertex> 19 {
+      1 1 0.391488
+      <UV> {
+        0.334353 0
+        <Tangent> { -0.999995 0 -0.00306937 }
+        <Binormal> { -0.00306937 0 0.999995 }
+      }
+    }
+    <Vertex> 20 {
+      1 1 0.391488
+      <UV> {
+        0.665647 0.333333
+        <Tangent> { 0 0.999995 0.00306937 }
+        <Binormal> { 0 -0.00306937 0.999995 }
+      }
+    }
+    <Vertex> 21 {
+      1 1 2.39149
+      <UV> {
+        0.99898 0
+        <Tangent> { -0.00306937 0.999995 0 }
+        <Binormal> { -0.999995 -0.00306937 0 }
+      }
+    }
+    <Vertex> 22 {
+      1 1 2.39149
+      <UV> {
+        0.333333 0.332314
+        <Tangent> { -0.999995 0 -0.00306636 }
+        <Binormal> { -0.00306636 0 0.999995 }
+      }
+    }
+    <Vertex> 23 {
+      1 1 2.39149
+      <UV> {
+        0.666667 0.665647
+        <Tangent> { 0 0.999995 0.00306937 }
+        <Binormal> { 0 -0.00306937 0.999995 }
+      }
+    }
+  }
+  <Polygon> {
+    <Normal> { -1 0 0 }
+    <TRef> { StoneBricksDiffuse }
+    <TRef> { StoneBricksNormal }
+    <TRef> { StoneBricksSpecular }
+    <TRef> { EmptyRoughnessTexture }
+    <MRef> { StoneBricks }
+    <VertexRef> { 3 9 6 0 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <Normal> { 0 1 0 }
+    <TRef> { StoneBricksDiffuse }
+    <TRef> { StoneBricksNormal }
+    <TRef> { StoneBricksSpecular }
+    <TRef> { EmptyRoughnessTexture }
+    <MRef> { StoneBricks }
+    <VertexRef> { 11 22 19 8 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <Normal> { 1 0 0 }
+    <TRef> { StoneBricksDiffuse }
+    <TRef> { StoneBricksNormal }
+    <TRef> { StoneBricksSpecular }
+    <TRef> { EmptyRoughnessTexture }
+    <MRef> { StoneBricks }
+    <VertexRef> { 23 17 14 20 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <Normal> { 0 -1 0 }
+    <TRef> { StoneBricksDiffuse }
+    <TRef> { StoneBricksNormal }
+    <TRef> { StoneBricksSpecular }
+    <TRef> { EmptyRoughnessTexture }
+    <MRef> { StoneBricks }
+    <VertexRef> { 15 4 1 12 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <Normal> { 0 0 -1 }
+    <TRef> { StoneBricksDiffuse }
+    <TRef> { StoneBricksNormal }
+    <TRef> { StoneBricksSpecular }
+    <TRef> { EmptyRoughnessTexture }
+    <MRef> { StoneBricks }
+    <VertexRef> { 2 7 18 13 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <Normal> { 0 0 1 }
+    <TRef> { StoneBricksDiffuse }
+    <TRef> { StoneBricksNormal }
+    <TRef> { StoneBricksSpecular }
+    <TRef> { EmptyRoughnessTexture }
+    <MRef> { StoneBricks }
+    <VertexRef> { 16 21 10 5 <Ref> { Cube } }
+  }
+}

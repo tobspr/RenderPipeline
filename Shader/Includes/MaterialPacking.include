@@ -10,11 +10,12 @@ out vec4 color1;
 out vec4 color2;
 
 
+
 void renderMaterial(Material m) {
 
     // Pack values
     vec2 normal = encodeNormal(m.normal);
-    vec2 color = packColor( clamp(m.baseColor, 0.0, 100.0) );
+    vec2 color = packColor( m.baseColor );
 
     // Compute velocity
     vec4 lastProj = vOutput.lastProjectedPos;

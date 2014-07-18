@@ -9,6 +9,9 @@ uniform mat4 trans_model_to_world;
 // Material properties
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
+in vec4 p3d_Tangent0;
+in vec4 p3d_Binormal0;
+
 in vec2 p3d_MultiTexCoord0;
 
 // Outputs
@@ -30,7 +33,12 @@ uniform mat4 lastMVP;
 void main() {
 
     // Transform normal to world space
-    vOutput.normalWorld = normalize(trans_model_to_world * vec4(p3d_Normal.rgb, 0) ).xyz;
+    vOutput.normalWorld   = normalize(trans_model_to_world * vec4(p3d_Normal, 0) ).xyz;
+    // vOutput.tangentWorld  = normalize(trans_model_to_world * vec4(p3d_Tangent, 0) ).xyz;
+    // vOutput.binormalWorld = normalize(trans_model_to_world * vec4(p3d_Binormal, 0) ).xyz;
+    vOutput.tangentWorld = p3d_Tangent0.rgb;
+    vOutput.binormalWorld = p3d_Tangent0.rgb;
+
     // vOutput.normalWorld = FAST_mul_no_w(trans_model_to_world, p3d_Normal).rgb;
 
     // Transform position to world space

@@ -223,8 +223,8 @@ class MovementController:
         # display camera pos
         elif selectedOption == 4:
             print "Debug information:"
-            print "\tCamera is at", self.showbase.camera.getPos(self.showbase.render)
-            print "\tCamera hpr is", self.showbase.camera.getHpr(self.showbase.render)
+            print "\tCamera is at", self.showbase.cam.getPos(self.showbase.render)
+            print "\tCamera hpr is", self.showbase.cam.getHpr(self.showbase.render)
 
         # show scene graph
         elif selectedOption == 5:

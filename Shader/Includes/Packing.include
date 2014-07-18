@@ -4,24 +4,25 @@
 
 // http://aras-p.info/texts/CompactNormalStorage.html
 // Packs a normal to a vec2
+const float npScale = 1.7777;
+
 vec2 encodeNormal(vec3 n)
 {   
-    // Prevents artifacts at surfaces which point to the bottom??
-    n *= 0.999;
-
-    float p = inversesqrt(n.z*8+8);
-    return vec2(n.xy*p + 0.5);
+    vec2 enc = n.xy / (n.z+1.0);
+    enc /= npScale;
+    return enc*0.5 + 0.5;
 }
 
 // Unpacks a normal from a vec2
 vec3 decodeNormal(vec2 encoded)
 {
-    vec2 fenc = encoded * 4.0 - 2.0;
-    float f = dot(fenc,fenc);
-    float g = sqrt(1.0 - f/4.0);
+    vec3 nn =
+        vec3(encoded.xy, 0)*vec3(2*npScale,2*npScale,0) +
+        vec3(-npScale,-npScale,1);
+    float g = 2.0 / dot(nn.xyz,nn.xyz);
     vec3 n;
-    n.xy = fenc * g;
-    n.z = 1.0 - f/2.0;
+    n.xy = g*nn.xy;
+    n.z = g-1.0;
     return n;
 }
 
@@ -38,15 +39,36 @@ vec3 decodeNormal(vec2 encoded)
 //     return (d.x + d.y) / 1024.0;
 // }
 
-const float colorPackingFactor = 1.0 - (1.0 / 255.0);
+
+const mat3 rgbToYCbCr = mat3(
+    0.299, -0.168736, 0.5,
+    0.587, -0.331264, -0.418688, 
+    0.144, 0.5, -0.081312
+);
+
+const float expScale = 32.0;
+const float yiqBias = 0.125;
 
 vec2 packColor(vec3 color) {
-    return vec2(color.x, 
-            saturate(color.y) * colorPackingFactor +
-            ceil(color.z * 255.0)
-        );
+    color = saturate(color);
+    vec3 yiq = (rgbToYCbCr * color);
+    yiq.y = yiq.y*0.5 + yiqBias;
+    yiq = saturate(yiq);
+    int exponent = int(yiq.y * expScale);
+    float significand =  yiq.z*0.5 + 0.5;
+    float pack = ldexp(significand, exponent);
+    return vec2(yiq.x, pack);
 }
 
 vec3 unpackColor(vec2 pack) {
-    return vec3(pack.x, fract(pack.y), floor(pack.y) / 256.0 );
+    int exponent = 0;
+    float significand = frexp(pack.y, exponent);
+
+    // todo: MAD
+    float i = (float(exponent)) / expScale;
+    i = (i - yiqBias) * 2.0;
+    float q = significand * 2.0 - 1.0;
+    vec3 yiq = vec3(pack.x,i,q);
+    vec3 rgb = inverse(rgbToYCbCr) * yiq;
+    return rgb;
 }

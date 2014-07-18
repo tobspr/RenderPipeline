@@ -21,7 +21,6 @@ out vec3 result;
 
 void main() {
 
-
     // Fetch screen size, so we don't have to pass it as a shader input
     ivec2 screenSize = textureSize(colorTex, 0);
 
@@ -77,14 +76,14 @@ void main() {
     // result = textureLod(colorTex, texcoord, 0).rgb;
 
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
-        vec3 colorCorrected = convertColorSpace(result);
-        result = mix( colorCorrected , result, 0.5);
+        // vec3 colorCorrected = convertColorSpace(result);
+        // result = mix( colorCorrected , result, 0.5);
     #endif
 
     
-    float vignett = smoothstep(0, 1, 
-        (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
-    result *= 1.0 - vignett;
+    // float vignett = smoothstep(0, 1, 
+    //     (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
+    // result *= 1.0 - vignett;
 
     // result.rgb = newFrameVal.rgb;
  

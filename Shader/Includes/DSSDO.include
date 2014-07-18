@@ -17,9 +17,9 @@
     // const float dssdoMaxAngle    = DSSDO_MAX_ANGLE;
     // const float dssdoFactor      = DSSDO_STRENGTH;
     const int   dssdoSampleCount = 32;
-    const float dssdoRadius      = 0.2;
-    const float dssdoMaxDistance = 10.0;
-    const float dssdoMaxAngle    = 0.1;
+    const float dssdoRadius      = 1.0;
+    const float dssdoMaxDistance = 5.0;
+    const float dssdoMaxAngle    = 0.3;
     const float dssdoFactor      = 1.0;
 
 

@@ -369,7 +369,7 @@ class RenderingPipeline(DebugObject):
                 "lightsPerTile", self.lightPerTileStorage)
 
         # Shader inputs for the occlusion blur passes
-        if self.settings.ssdoEnabled:
+        if self.settings.ssdoEnabled and self.haveCombiner:
             self.blurOcclusionH.setShaderInput(
                 "colorTex", self.blurOcclusionV.getColorTexture())
             self.blurOcclusionV.setShaderInput(

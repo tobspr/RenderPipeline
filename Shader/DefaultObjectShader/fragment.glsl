@@ -1,4 +1,4 @@
-#version 150
+#version 400
 
 #include "Includes/VertexOutput.include"
 
@@ -32,7 +32,8 @@ void main() {
     float roughnessFactor = vOutput.materialSpecular.z;
 
     vec3 decodedNormal = sampledNormal.rgb * 2.0 - 1.0;
-    vec3 mixedNormal = normalize(vOutput.normalWorld + decodedNormal * bumpFactor);
+    // vec3 mixedNormal = normalize(vOutput.normalWorld + decodedNormal * bumpFactor * vOutput.normalWorld);
+    vec3 mixedNormal = normalize(vOutput.normalWorld + bumpFactor * vOutput.normalWorld);
 
     m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
 
@@ -41,7 +42,8 @@ void main() {
     m.metallic = metallic;
 
     m.position = vOutput.positionWorld;
-    m.normal = mixedNormal;
+    m.normal = vOutput.binormalWorld;
+
 
 
     renderMaterial(m);

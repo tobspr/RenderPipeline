@@ -55,9 +55,9 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.create()
 
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza2.egg"
-        # self.sceneSource = "Models/Ball/Model.egg"
-        self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg"
+        self.sceneSource = "Models/Cube/Model.egg"
+        # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
 
 
@@ -87,11 +87,12 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         # self.controller.setInitialPosition(Vec3(-30, 30, 25), Vec3(0, 0, 0))
-        self.controller.setInitialPosition(Vec3(5, -5, 2.5), Vec3(0, 0, 2))
+        self.controller.setInitialPosition(Vec3(3, 3, 3), Vec3(0, 0, 1))
         self.controller.setup()
         # base.disableMouse()
-        # base.camera.setPos(-30, 30, 25)
-        # base.camera.lookAt(0,0,0)
+        # base.camera.setPos(0.988176, 2.53928, 2.75053)
+        # base.camera.setHpr(-57.69, -5.67802, 0)
+
         # base.accept("c", PStatClient.connect)
         # base.accept("v", self.bufferViewer.toggleEnable)
 
@@ -173,16 +174,17 @@ class Main(ShowBase, DebugObject):
 
         for x,y in [(-1,-1), (-1,1), (1,-1), (1,1)]:
             ambient = PointLight()
-            ambient.setRadius(30.0)
-            ambient.setPos(Vec3(5*x + 2, 5*y - 3, 10))
+            ambient.setRadius(400.0)
+            ambient.setPos(Vec3(120*x + 2, 120*y - 3, 100))
             ambient.setColor(Vec3(contrib))
-            ambient.setShadowMapResolution(2048)
-            ambient.setCastsShadows(True)
+            # ambient.setShadowMapResolution(2048)
+            # ambient.setCastsShadows(True)
             self.renderPipeline.addLight(ambient)
 
-            contrib *= 0.5
+            contrib *= 0.4
             # break
 
+        self.skybox = None
         self.loadSkybox()
 
         # set default object shaders
@@ -233,8 +235,9 @@ class Main(ShowBase, DebugObject):
             self.scene.setShader(self.renderPipeline.getDefaultObjectShader(False))
             self.renderPipeline.reloadShaders()
 
-        self.skybox.setShader(BetterShader.load(
-            "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+        if self.skybox:
+            self.skybox.setShader(BetterShader.load(
+                "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
 
     def convertToPatches(self, model):
         self.debug("Converting to patches ..")
@@ -254,6 +257,7 @@ class Main(ShowBase, DebugObject):
         # time.sleep( max(0.0, 0.033))
         # time.sleep(-0.2)
         # return task.cont
+
 
         if False:
             animationTime = self.taskMgr.globalClock.getFrameTime() * 0.6

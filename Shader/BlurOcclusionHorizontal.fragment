@@ -1,7 +1,6 @@
-#version 130
+#version 400
 
 #include "Includes/Configuration.include"
-
 
 const ivec2 blurDirection = ivec2(1,0);
 
