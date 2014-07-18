@@ -98,7 +98,7 @@ void main() {
 
         #if USE_SHADOWS
             result += applyPointLightWithShadow(currentLight, material);
-        #else:
+        #else
             result += applyPointLight(currentLight, material);
         #endif
     }
