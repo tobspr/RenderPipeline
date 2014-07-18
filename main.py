@@ -84,6 +84,8 @@ class Main(ShowBase, DebugObject):
 
         self.scene.reparentTo(self.render)
 
+        # self.render2d.setShader(BetterShader.load("Shader/GUI/vertex.glsl", "Shader/GUI/fragment.glsl"))
+
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         # self.controller.setInitialPosition(Vec3(-30, 30, 25), Vec3(0, 0, 0))

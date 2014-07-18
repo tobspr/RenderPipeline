@@ -36,7 +36,7 @@ class BetterShader:
         """ Loads a shader in the order: vertex, fragment,
         geometry, tesseval, tesscontrol """
 
-        print "Loading shader from",args[-1]
+        print "Loading shader from",args[-1].replace("Shader/", "")
 
         newArgs = []
 
