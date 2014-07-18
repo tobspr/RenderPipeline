@@ -44,7 +44,7 @@ void main() {
     // vec3 bitangent = cross(vOutput.normalWorld, vOutput.tangentWorld);
 
     m.position = vOutput.positionWorld;
-    // m.normal = ((vOutput.tangentWorld));
+    m.normal = ((vOutput.tangentWorld));
 
 
 

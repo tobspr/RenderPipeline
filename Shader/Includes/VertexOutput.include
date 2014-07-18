@@ -9,7 +9,7 @@ struct VertexOutput {
     vec3 materialSpecular;
     float materialAmbient;
 
-    // vec3 tangentWorld;
+    vec3 tangentWorld;
     // vec3 binormalWorld;
 
     vec4 lastProjectedPos;
