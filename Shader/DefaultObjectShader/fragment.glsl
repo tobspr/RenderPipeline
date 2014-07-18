@@ -41,10 +41,12 @@ void main() {
     m.specular = sampledSpecular.r * specularFactor;
     m.metallic = metallic;
 
-    // vec3 bitangent = cross(vOutput.normalWorld, vOutput.tangentWorld);
+    vec3 bitangent = cross(vOutput.normalWorld, vOutput.tangentWorld);
+    m.normal = bitangent;
+
+
 
     m.position = vOutput.positionWorld;
-    m.normal = ((vOutput.tangentWorld));
 
 
 
