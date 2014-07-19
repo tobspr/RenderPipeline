@@ -10,7 +10,7 @@ struct VertexOutput {
     float materialAmbient;
 
     vec3 tangentWorld;
-    // vec3 binormalWorld;
+    vec3 binormalWorld;
 
     vec4 lastProjectedPos;
 };

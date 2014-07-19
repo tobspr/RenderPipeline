@@ -66,5 +66,6 @@ const float sqrt_of_2 = 1.4142135623;
 #define NORMAL_TEX p3d_Texture1
 #define SPECULAR_TEX p3d_Texture2
 #define ROUGHNESS_TEX p3d_Texture3
+#define DISPLACEMENT_TEX p3d_Texture4
 
 
