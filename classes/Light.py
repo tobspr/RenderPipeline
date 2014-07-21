@@ -58,7 +58,10 @@ class Light(ShaderStructElement):
         return self.typeName
 
     def setDirection(self, direction):
-        """ Sets the direction of the light. Only affects DirectionalLights """
+        """ Sets the direction of the light. This stores from which vector the light
+        comes from. If your sun comes from totally above for example, this vector would
+        be (0.0,0.0,1.0). The vector will get normalized, so you can for example pass your
+        sun position. Only affects DirectionalLights """
         direction.normalize()
         self.direction = direction
         self.queueUpdate()

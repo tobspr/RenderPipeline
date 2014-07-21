@@ -800,9 +800,6 @@ class RenderingPipeline(DebugObject):
             defines.append(("DSSDO_MAX_ANGLE", self.settings.ssdoMaxAngle))
             defines.append(("DSSDO_STRENGTH", self.settings.ssdoStrength))
 
-            if self.settings.ssdoOnly:
-                defines.append(("DSSDO_ONLY", 1))
-
         if self.settings.displayOnscreenDebugger:
             defines.append(("DEBUGGER_ACTIVE", 1))
 

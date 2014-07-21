@@ -113,7 +113,7 @@ float computePointLightAttenuation(Light light, float distanceToLight) {
     return attenuation;
 }
 
-vec3 applyPointLight(Light light, Material material) {
+vec3 applyPointLight(Light light, Material material, vec4 ssdoDirection, inout float occlusionResult) {
 
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 
@@ -124,11 +124,15 @@ vec3 applyPointLight(Light light, Material material) {
     vec3  n = normalize(material.normal);
     vec3  h = normalize(l + v);
 
+    float occlusionInfluence = saturate(dot(vec4(l,0.1), ssdoDirection)) * attenuation;
+    occlusionResult += occlusionInfluence * safeDot(n, l);
+
+
     return computeLightModel(light, material, l,v, n, h, attenuation);
 }
 
 
-vec3 applyPointLightWithShadow(Light light, Material material) {
+vec3 applyPointLightWithShadow(Light light, Material material, vec4 ssdoDirection, inout float occlusionResult) {
 
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 

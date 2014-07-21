@@ -151,4 +151,3 @@ gl-cube-map-seamless #t
 # buggy as hell
 # want-directtools #t
 # want-tk #t
-

@@ -75,6 +75,16 @@ void main() {
 
     vec3 result = vec3(0);
 
+
+    // Compute Occlusion
+    float distanceToCamera = distance(cameraPosition, material.position);
+    vec4 occlusionFactor = computeDSSDO(texcoord,screenCoord, material, distanceToCamera, data1, data0);
+
+    // Metallic materials don't have much occlusion
+    occlusionFactor = mix(occlusionFactor, vec4(0.0), saturate(material.metallic-0.3) );
+
+    float occlusionTotal = 0.0;
+
     // Compute point lights
     ivec2 baseOffset = precomputeCoord + ivec2(0,1);
     ivec2 currentOffset = ivec2(0);
@@ -86,7 +96,7 @@ void main() {
         currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
         currentLight = lights[currentLightId];
 
-        result += applyPointLight(currentLight, material);
+        result += applyPointLight(currentLight, material, occlusionFactor, occlusionTotal);
     }
 
     // Compute shadow point lights
@@ -97,18 +107,12 @@ void main() {
         currentLight = lights[currentLightId];
 
         #if USE_SHADOWS
-            result += applyPointLightWithShadow(currentLight, material);
-        #else:
-            result += applyPointLight(currentLight, material);
+            result += applyPointLightWithShadow(currentLight, material, occlusionFactor, occlusionTotal);
+        #else
+            result += applyPointLight(currentLight, material, occlusionFactor, occlusionTotal);
         #endif
     }
 
-    // Now, compute rOcclusion
-    float distanceToCamera = distance(cameraPosition, material.position);
-    float occlusionFactor = computeDSSDO(texcoord,screenCoord, material, distanceToCamera, data1, data0);
-
-    // Metallic materials don't have much occlusion
-    occlusionFactor = mix(occlusionFactor, 1.0, saturate(material.metallic-0.3) );
     // occlusionFactor = 1.0;
 
     // Visualize lights per tile
@@ -117,12 +121,6 @@ void main() {
     // result = mix(result, processedColor, 0.5);
 
     // result = vec3(material.baseColor);
-
-    #ifdef DSSDO_ONLY
-        result.xyz = vec3(1);
-    #endif
-
-
 
     #ifdef DEBUG_RM_BASECOLOR
         result = material.baseColor;
@@ -160,5 +158,5 @@ void main() {
     // result = vec3(floatBitsToInt(1.0) == 0 ? vec3(1,0,0) : vec3(0,1,0));
     // result = vec3(material.normal);
 
-    lightingResult = vec4(result, occlusionFactor);
+    lightingResult = vec4(result, saturate(1.0 - occlusionTotal) );
 }

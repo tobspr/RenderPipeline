@@ -7,7 +7,6 @@
 #include "Includes/Material.include"
 
 
-
 #ifdef DSSDO_ENABLED
 
     // Store configuration variables in const variables
@@ -17,10 +16,10 @@
     // const float dssdoMaxAngle    = DSSDO_MAX_ANGLE;
     // const float dssdoFactor      = DSSDO_STRENGTH;
     const int   dssdoSampleCount = 32;
-    const float dssdoRadius      = 1.0;
-    const float dssdoMaxDistance = 5.0;
-    const float dssdoMaxAngle    = 0.3;
-    const float dssdoFactor      = 1.0;
+    const float dssdoRadius      = 0.4;
+    const float dssdoMaxDistance = 10.0;
+    const float dssdoMaxAngle    = 0.1;
+    const float dssdoFactor      = 0.7;
 
 
     const int   dssdoPoissonFactor = 32 / dssdoSampleCount;
@@ -33,10 +32,10 @@
 
     uniform sampler2D dssdoNoiseTex;
 
-    float computeDSSDO(vec2 texcoord, ivec2 screenCoord, Material material, float dist, sampler2D normalTex, sampler2D positionTex) {
+    vec4 computeDSSDO(vec2 texcoord, ivec2 screenCoord, Material material, float dist, sampler2D normalTex, sampler2D positionTex) {
         
         #ifdef DEBUG_DISABLE_SSDO
-            return 1.0;
+            return vec4(0,0,0,1);
         #endif
 
         float radius = clamp( (1.0 / dist) * 1000.0 * dssdoRadius, 0.0, 80.0);
@@ -47,7 +46,7 @@
         vec3 noise = texelFetch(dssdoNoiseTex, screenCoord % 4, 0).rgb*2.0 - 1.0;
         noise *= 0.5;
 
-        float occlusionResult = 0.0;
+        vec4 occlusionResult = vec4(0.0);
 
         for (int i = 1; i < 32; i++) {
 
@@ -76,15 +75,17 @@
 
             // attenuation = pow(differenceNormalized.x * 2.0, 10.0);
 
-            occlusionResult += attenuation / float(dssdoSampleCount);
+            occlusionResult += attenuation * sh2Weight * vec4(differenceNormalized, 1);
             // occlusionResult += attenuation / 1.0;
 
             // occlusionResult += abs(material.normal.y);
 
         }
 
-        occlusionResult = 1.0 - max(0.0, occlusionResult * dssdoFactor);
-        return saturate(occlusionResult);
+        occlusionResult *= dssdoFactor;
+
+        // occlusionResult = 1.0 - max(0.0, occlusionResult * dssdoFactor);
+        return occlusionResult;
     }
 
 #else

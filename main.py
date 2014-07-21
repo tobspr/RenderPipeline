@@ -56,7 +56,7 @@ class Main(ShowBase, DebugObject):
 
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza.egg"
-        self.sceneSource = "Models/Cube/Model.egg"
+        self.sceneSource = "Models/BumpSphere/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
 
@@ -83,6 +83,8 @@ class Main(ShowBase, DebugObject):
         # self.scene.flattenStrong()
 
         self.scene.reparentTo(self.render)
+
+        # self.render2d.setShader(BetterShader.load("Shader/GUI/vertex.glsl", "Shader/GUI/fragment.glsl"))
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
@@ -173,15 +175,21 @@ class Main(ShowBase, DebugObject):
         contrib = 1.0
 
         for x,y in [(-1,-1), (-1,1), (1,-1), (1,1)]:
+        # for x,y in [(0,0)]:
             ambient = PointLight()
-            ambient.setRadius(400.0)
-            ambient.setPos(Vec3(120*x + 2, 120*y - 3, 100))
-            ambient.setColor(Vec3(contrib))
+            ambient.setRadius(90.0)
+            
+            initialPos = Vec3(22*x + 2, 22*y - 3, 10)
+            ambient.setPos(initialPos)
+            ambient.setColor(Vec3(0.25))
             # ambient.setShadowMapResolution(2048)
             # ambient.setCastsShadows(True)
+            self.lights.append(ambient)
+            self.initialLightPos.append(initialPos)
+
             self.renderPipeline.addLight(ambient)
 
-            contrib *= 0.4
+            # contrib *= 0.4
             # break
 
         self.skybox = None
@@ -259,17 +267,17 @@ class Main(ShowBase, DebugObject):
         # return task.cont
 
 
-        if False:
-            animationTime = self.taskMgr.globalClock.getFrameTime() * 0.6
+        if True:
+            animationTime = self.taskMgr.globalClock.getFrameTime() * 1.0
 
             # displace every light every frame - performance test!
             for i, light in enumerate(self.lights):
                 lightAngle = float(math.sin(i * 1253325.0)) * \
                     math.pi * 2.0 + animationTime * 1.0
                 initialPos = self.initialLightPos[i]
-                light.setPos(initialPos + Vec3(math.sin(lightAngle) * 0.0,
-                                               math.cos(lightAngle) * 0.0,
-                                               math.sin(animationTime) * 10.0 ) )
+                light.setPos(initialPos + Vec3(math.sin(lightAngle) * 5.0,
+                                               math.cos(lightAngle) * 5.0,
+                                               math.sin(animationTime) * 4.0 ) )
         if task is not None:
             return task.cont
 

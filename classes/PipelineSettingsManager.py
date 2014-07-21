@@ -34,8 +34,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("ssdoMaxDistance", float, 5.0)
         self._addSetting("ssdoMaxAngle", float, 0.7)
         self._addSetting("ssdoStrength", float, 1.0)
-        self._addSetting("ssdoOnly", bool, False)
-
+        
         # [Shadows]
         self._addSetting("renderShadows", bool, True)
         self._addSetting("shadowAtlasSize", int, 8192)

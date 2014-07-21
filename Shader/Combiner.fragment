@@ -27,8 +27,8 @@ uniform vec3 cameraPosition;
 
 out vec4 result;
 
-const float rejectionFactor = 100.0;
-const float texcoordRejectionFactor = 500.0;
+const float rejectionFactor = 600.0;
+const float texcoordRejectionFactor = 0.1;
 
 void main() {
 
