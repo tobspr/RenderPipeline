@@ -5,10 +5,12 @@
 
 
 // const float normalsDiscardThreshold = 0.99999;
-const float normalsDiscardThreshold = 0.4;
+const float normalsDiscardThreshold = 0.9;
 
 
 #pragma optionNV (unroll all)
+
+uniform sampler2D normalsView;
 
 
 vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2D blurFactors) {
@@ -82,25 +84,38 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, sampler2D colorT
 
         // AMD Can't handle texelFetchOffset with loops
 
-        #define EPAB_INIT_VALUES(i) \
-        normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*blurDirection).xy); \
-        occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*blurDirection).a;
+        // #define EPAB_INIT_VALUES(i) \
+        // normals[i] = decodeNormal(texelFetchOffset(normalTex, screenCoord, 0, ivec2(i-4)*blurDirection).xy); \
+        // occlusion[i] = texelFetchOffset(colorTex, screenCoord, 0, ivec2(i-4)*blurDirection).a;
 
-        EPAB_INIT_VALUES(0)
-        EPAB_INIT_VALUES(1)
-        EPAB_INIT_VALUES(2)
-        EPAB_INIT_VALUES(3)
-        EPAB_INIT_VALUES(4)
-        EPAB_INIT_VALUES(5)
-        EPAB_INIT_VALUES(6)
-        EPAB_INIT_VALUES(7)
-        EPAB_INIT_VALUES(8)
+        // EPAB_INIT_VALUES(0)
+        // EPAB_INIT_VALUES(1)
+        // EPAB_INIT_VALUES(2)
+        // EPAB_INIT_VALUES(3)
+        // EPAB_INIT_VALUES(4)
+        // EPAB_INIT_VALUES(5)
+        // EPAB_INIT_VALUES(6)
+        // EPAB_INIT_VALUES(7)
+        // EPAB_INIT_VALUES(8)
 
-        // pixel normal is the mid normal
+        vec2 offset = texcoord;
+        vec2 texelSize = 2.0 / vec2(textureSize(colorTex, 0));
+        vec2 perStep = texelSize * vec2(blurDirection);
+        offset -= perStep * 4.0;
+
+        for (int i = 0; i < 9; i++) {
+            offset += perStep;
+            normals[i] = decodeNormal(texture(normalTex, offset).xy);
+            occlusion[i] = texture(colorTex, offset).a;
+        }
+
+        // pixel normal is the mid normalr
         vec3 normal = normals[4];
 
         float alphaResult = 0.0;
         float alphaWeights = 0.0;
+
+
 
         // Check for edges, as we are performing an edge preserving blur
         for (int i = 0; i < 9; i++) {

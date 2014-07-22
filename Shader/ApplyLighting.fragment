@@ -15,11 +15,15 @@
 #include "Includes/Material.include"
 #include "Includes/ShadowSource.include"
 #include "Includes/ColorCorrection.include"
-#include "Includes/DSSDO.include"
+
 
 uniform sampler2D data0;
 uniform sampler2D data1;
 uniform sampler2D data2;
+
+uniform sampler2D depth;
+uniform sampler2D normalsView;
+uniform sampler2D positionView;
 
 layout (r32i) readonly uniform iimage2D lightsPerTile;
 layout (rgba16f) uniform image2D destination;
@@ -30,11 +34,17 @@ uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS];
 in vec2 texcoord;
 
 uniform int temporalProjXOffs;
+uniform sampler2D dssdoNoiseTex;
 
 // Has to be after the uniforms
 #include "Includes/Lighting.include"
+#include "Includes/DSSDO.include"
+#include "Includes/HBAO.include"
 
 out vec4 lightingResult;
+
+
+
 
 void main() {
 
@@ -49,6 +59,8 @@ void main() {
     // as you otherwise can see the line-pattern very obviously. Using
     // a checkerboard more gives a dithering effect, which is barely visible
     screenCoord.x += (screenCoord.x + screenCoord.y) % 2 == temporalProjXOffs ? -1 : 0;
+
+    vec2 correctTexcoord = (vec2(screenCoord)+0.5) / vec2(screenSize);
 
     ivec2 precomputeCoord = ivec2( vec2(screenCoord) / 
         vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y) ) * 8;
@@ -72,16 +84,27 @@ void main() {
     int countPointLightShadow = min(MAX_SHADOW_POINT_LIGHTS, 
         imageLoad(lightsPerTile, precomputeCoord + ivec2(1,0)).r);
 
+    int countDirectionalLight = min(MAX_SHADOW_POINT_LIGHTS, 
+        imageLoad(lightsPerTile, precomputeCoord + ivec2(2,0)).r);
+
+    int countDirectionalLightShadow = min(MAX_SHADOW_POINT_LIGHTS, 
+        imageLoad(lightsPerTile, precomputeCoord + ivec2(3,0)).r);
+
 
     vec3 result = vec3(0);
 
 
     // Compute Occlusion
     float distanceToCamera = distance(cameraPosition, material.position);
-    vec4 occlusionFactor = computeDSSDO(texcoord,screenCoord, material, distanceToCamera, data1, data0);
+    // vec4 occlusionResult = computeDSSDO(texcoord,screenCoord, material, distanceToCamera);
+    float occlusionResult = computeHBAO(correctTexcoord, distanceToCamera);
+
+    #ifdef DEBUG_DISABLE_SSDO
+        occlusionResult = 1.0;
+    #endif
 
     // Metallic materials don't have much occlusion
-    occlusionFactor = mix(occlusionFactor, vec4(0.0), saturate(material.metallic-0.3) );
+    // occlusionFactor = mix(occlusionFactor, vec4(0.0), saturate(material.metallic-0.3) );
 
     float occlusionTotal = 0.0;
 
@@ -96,23 +119,37 @@ void main() {
         currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
         currentLight = lights[currentLightId];
 
-        result += applyPointLight(currentLight, material, occlusionFactor, occlusionTotal);
+        result += applyPointLight(currentLight, material, occlusionTotal);
     }
 
     // Compute shadow point lights
-    baseOffset = precomputeCoord + ivec2(0,3);
     for (int i = 0; i < countPointLightShadow; i++) {
         currentOffset = ivec2(i % 8, i / 8);
         currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
         currentLight = lights[currentLightId];
 
         #if USE_SHADOWS
-            result += applyPointLightWithShadow(currentLight, material, occlusionFactor, occlusionTotal);
+            result += applyPointLightWithShadow(currentLight, material, occlusionTotal);
         #else
-            result += applyPointLight(currentLight, material, occlusionFactor, occlusionTotal);
+            result += applyPointLight(currentLight, material, occlusionTotal);
         #endif
     }
 
+    // Compute directinal lights
+    for (int i = 0; i < countDirectionalLight; i++) {
+        currentOffset = ivec2(i % 8, i / 8);
+        currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
+        currentLight = lights[currentLightId];
+        result += applyDirectionalLight(currentLight, material, occlusionTotal);
+        
+    }
+
+
+
+    // result += 0.01 * material.baseColor * 
+    //     mix(vec3(0.0,0.7,1), vec3(1,1,0.0), saturate(material.position.z*0.005) );
+
+    result += 0.01 * material.baseColor;
     // occlusionFactor = 1.0;
 
     // Visualize lights per tile
@@ -122,41 +159,58 @@ void main() {
 
     // result = vec3(material.baseColor);
 
-    #ifdef DEBUG_RM_BASECOLOR
-        result = material.baseColor;
-    #endif
 
-    #ifdef DEBUG_RM_SPECULAR
-        result = vec3(material.specular);
-    #endif
+    // float fogFactor = smoothstep(0, 1,  (distanceToCamera - 30.0) / 200.0 );
 
-    #ifdef DEBUG_RM_SSDO
-        result = vec3(1);
-    #endif
-
-    #ifdef DEBUG_RM_METALLIC
-        result = vec3(material.metallic);
-    #endif
-
-    #ifdef DEBUG_RM_ROUGHNESS
-        result = vec3(material.roughness);
-    #endif
-
-    #ifdef DEBUG_RM_NORMAL
-        result = vec3(material.normal);
-    #endif
+    // result = mix(result, vec3(1,1,1.2), fogFactor);
 
 
     // HDR Mapping
-    // result.xyz = 1.0f - exp(-1.0 * result.xyz);
+    result.xyz = 1.0f - exp(-1.0 * result.xyz);
 
     // SRGB
     result.xyz = sqrt(result.xyz);
 
 
 
+
+    #ifdef DEBUG_RM_BASECOLOR
+        result = sqrt(material.baseColor);
+        occlusionTotal = 0.0;
+    #endif
+
+    #ifdef DEBUG_RM_SPECULAR
+        result = vec3(material.specular);
+        occlusionTotal = 0.0;
+    #endif
+
+    #ifdef DEBUG_RM_SSDO
+        result = vec3(1);
+        // occlusionTotal = 0.0;
+        // result = vec3(occlusionResult);
+    #endif
+
+    #ifdef DEBUG_RM_METALLIC
+        result = vec3(material.metallic);
+        occlusionTotal = 0.0;
+    #endif
+
+    #ifdef DEBUG_RM_ROUGHNESS
+        result = vec3(material.roughness);
+        occlusionTotal = 0.0;
+    #endif
+
+    #ifdef DEBUG_RM_NORMAL
+        result = vec3(material.normal);
+        occlusionTotal = 0.0;
+    #endif
+
+
+
+
+
     // result = vec3(floatBitsToInt(1.0) == 0 ? vec3(1,0,0) : vec3(0,1,0));
     // result = vec3(material.normal);
 
-    lightingResult = vec4(result, saturate(1.0 - occlusionTotal) );
+    lightingResult = vec4(result, occlusionResult );
 }

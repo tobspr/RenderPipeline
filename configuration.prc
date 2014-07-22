@@ -125,14 +125,14 @@ gl-debug #f
 text-minfilter linear
 text-page-size 128 128
 
-show-frame-rate-meter #f
+show-frame-rate-meter #t
 
 texture-anisotropic-degree 2
 texture-magfilter linear
 texture-minfilter linear
 
-cache-models #t
-texture-cache #t
+cache-models #f
+texture-cache #f
 
 lock-to-one-cpu #f
 support-threads #t
@@ -151,3 +151,9 @@ gl-cube-map-seamless #t
 # buggy as hell
 # want-directtools #t
 # want-tk #t
+
+
+model-cache-dir $USER_APPDATA/Panda3D-1.9/cache
+model-cache-textures #f
+
+notify-level-pnmimage error

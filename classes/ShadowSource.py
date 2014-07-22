@@ -1,5 +1,5 @@
 
-from panda3d.core import Camera, PerspectiveLens, NodePath
+from panda3d.core import Camera, PerspectiveLens, NodePath, OrthographicLens
 from panda3d.core import CSYupRight, TransformState, CSZupRight
 from panda3d.core import UnalignedLMatrix4f
 from panda3d.core import Mat4, Vec2
@@ -131,10 +131,23 @@ class ShadowSource(DebugObject, ShaderStructElement):
         """ Setups a PerspectiveLens with a given nearPlane, farPlane
         and FoV. The FoV is a tuple in the format
         (Horizontal FoV, Vertical FoV) """
-        self.debug("setupPerspectiveLens(",near,",",far,",",fov,")")
+        # self.debug("setupPerspectiveLens(",near,",",far,",",fov,")")
         self.lens = PerspectiveLens()
         self.lens.setNearFar(near, far)
         self.lens.setFov(fov[0], fov[1])
+        self.camera.setLens(self.lens)
+        self.nearPlane = near
+        self.farPlane = far
+        self.rebuildMatrixCache()
+
+    def setupOrtographicLens(self, near=0.1, far=100.0, filmSize=(512, 512)):
+        """ Setups a OrtographicLens with a given nearPlane, farPlane
+        and filmSize. The filmSize is a tuple in the format
+        (filmWidth, filmHeight) in world space. """
+        # self.debug("setupOrtographicLens(",near,",",far,",",filmSize,")")
+        self.lens = OrtographicLens()
+        self.lens.setNearFar(near, far)
+        self.lens.setFilmSize(*filmSize)
         self.camera.setLens(self.lens)
         self.nearPlane = near
         self.farPlane = far

@@ -8,6 +8,7 @@
 #include "Includes/PoissonDisk.include"
 
 uniform vec3 cameraPosition;
+uniform samplerCube directionToFace;
 uniform samplerCube fallbackCubemap;
 
 const mat4 shadowBiasMatrix = mat4(
@@ -64,6 +65,7 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
         vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 60.0).rgb;
         vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 60.0 - 1.0).rgb;
         vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+        // vec3 reflectedColor = vec3(1);
 
         // Compute specular BRDF
         float specG = clamp(specularBrdfG(l, v, h, n, roughness), 0, 1);
@@ -86,7 +88,6 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
         vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor *
                                         specF * attenuation * light.color * material.baseColor * max(0.01, safeDot(n, l));
 
-
         vec3 combinedContribution = refractiveContribution + diffuseContribution + specularContribution;
         return max(vec3(0.0), combinedContribution);
 
@@ -103,6 +104,9 @@ float getRandom(vec2 seed) {
 
 
 float computePointLightAttenuation(Light light, float distanceToLight) {
+
+    // return distanceToLight < light.radius ? 1.0 : 0.0;
+
     float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.2;
 
     // Cut light transition starting at 80%. Otherwise it's exponential and never gets really 0
@@ -113,7 +117,7 @@ float computePointLightAttenuation(Light light, float distanceToLight) {
     return attenuation;
 }
 
-vec3 applyPointLight(Light light, Material material, vec4 ssdoDirection, inout float occlusionResult) {
+vec3 applyPointLight(Light light, Material material, inout float occlusionResult) {
 
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 
@@ -124,15 +128,16 @@ vec3 applyPointLight(Light light, Material material, vec4 ssdoDirection, inout f
     vec3  n = normalize(material.normal);
     vec3  h = normalize(l + v);
 
-    float occlusionInfluence = saturate(dot(vec4(l,0.1), ssdoDirection)) * attenuation;
-    occlusionResult += occlusionInfluence * safeDot(n, l);
+    // float occlusionInfluence = 0.1;
+    // occlusionResult += occlusionInfluence * safeDot(n, l);
 
 
     return computeLightModel(light, material, l,v, n, h, attenuation);
 }
 
 
-vec3 applyPointLightWithShadow(Light light, Material material, vec4 ssdoDirection, inout float occlusionResult) {
+vec3 applyPointLightWithShadow(Light light, Material material, inout float occlusionResult) {
+
 
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 
@@ -143,6 +148,10 @@ vec3 applyPointLightWithShadow(Light light, Material material, vec4 ssdoDirectio
     vec3  n = normalize(material.normal);
     vec3  h = normalize(l + v);
 
+
+    // float occlusionInfluence = saturate(dot(vec4(l,0.1), ssdoDirection)) * attenuation;
+    // occlusionResult += occlusionInfluence * safeDot(n, l);
+    
 
     vec3 rawLighting = computeLightModel(light, material, l,v, n, h, attenuation);
 
@@ -150,52 +159,29 @@ vec3 applyPointLightWithShadow(Light light, Material material, vec4 ssdoDirectio
     float shadowFactor = 0.0;
 
     // For point lights we can decide by position which shadow map to use
-    int shadowIndex = int(step(light.position.y, material.position.y));
+
+    // float fFaceIndex =  texture(myFancyCubemap, l).r * 5.0;
+    int faceIndex = int( textureLod(directionToFace, l, 0).r * 5.0);
+
+    // int shadowIndex = int(step(light.position.y, material.position.y));
+    int shadowIndex = faceIndex;
+
     int shadowSourceIndex = light.sourceIndexes[shadowIndex];
 
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
-    float resolutionFactor = SHADOW_MAP_ATLAS_SIZE / float(currentSource.resolution);
-    float sampleFactor = 1.0 / SHADOW_MAP_ATLAS_SIZE;
-
-
-
-
     vec4 projected = currentSource.mvp * vec4(material.position, 1);
-    projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
-    projected = projected * 0.5 + 0.5;    
+
+    // Parabolic transform
+    // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
+    // projected = projected * 0.5 + 0.5;    
+
     vec3 projCoord = projected.xyz / projected.w;
+    projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
 
-    float pixOffset = 1.0 / SHADOW_MAP_ATLAS_SIZE;
-
-
-
-    float cosTheta = clamp( dot(n, l), 0.0, 1.0 );
-    float bias = 0.003*(0.5+distanceRelative*1.0)*tan(acos(cosTheta)) / resolutionFactor; 
-    // bias = 0.002;
-    bias = clamp(bias, -0.0, 0.04);
-
-    // http://homepage.cs.uiowa.edu/~dou/Paper/Adaptive_Depth_Bias_for_Shadow_Maps.pdf
-    float l_f = currentSource.farPlane;
-    float l_n = currentSource.nearPlane;
-
-    float sceneScale = 1.0;
-    float K = 0.0001;
-
-    // (lf − depth × (lf − ln))²
-    float epsilon = pow(l_f - distanceRelative * (l_f - l_n), 2.0);
-
-    // lf × ln × (lf − ln)
-    epsilon /= l_f * l_n * (l_f - l_n);
-
-    // × sceneScale × K
-    epsilon = distanceRelative * sceneScale * K;
-
-    // bias = 0;
-
-    // bias = 0.0 * tan(acos(dot(n,l)));
-
+    float pixOffset = 4.0 / SHADOW_MAP_ATLAS_SIZE;
+    float bias = 0.00055;
 
     for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
 
@@ -214,27 +200,28 @@ vec3 applyPointLightWithShadow(Light light, Material material, vec4 ssdoDirectio
         #endif
     }
 
-    // shadowFactor *= 16.0;
-
-    // return vec3( abs(nearestBlocker-centerCoord) * 24.0, 0);
-    // shadowFactor = nearestPointDepth * 100000.0;
-
     // Apply shadows
-    rawLighting *= max(0.001, 1.0 - shadowFactor);
-
-    // return vec3(1.0 - shadowFactor) * attenuation;
-
-    // return vec3( 1.0 - shadowFactor );
-
-    // return 1.0 - vec3(pow(shadowFactor, 20.0) * 1000.0) * attenuation;
-
+    rawLighting *= max(0.0, 1.0 - shadowFactor);
     return max(vec3(0.0), rawLighting);
 }
 
 
+vec3 applyDirectionalLight(Light light, Material material, inout float occlusionResult) {
+
+    float distanceToLight = distance(material.position, light.position);   
+    float distanceRelative = distanceToLight / light.radius; 
+    float attenuation = 1.0;
+
+    vec3  l = light.direction;
+    vec3  v = normalize(cameraPosition - material.position);
+    vec3  n = normalize(material.normal);
+    vec3  h = normalize(l + v);
 
 
-#if 0
+    // float occlusionInfluence = 0.1;
+    // occlusionResult += occlusionInfluence * safeDot(n, l);
 
 
-#endif
+    return computeLightModel(light, material, l,v, n, h, attenuation);
+}
+
