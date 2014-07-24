@@ -34,9 +34,8 @@ class PointLight(Light, DebugObject):
         and a radius """
         Light.__init__(self)
         DebugObject.__init__(self, "PointLight")
-        self.spacing = 1.0
-        self.bufferRadius = 1.0
-        self.shadowResolution = 512
+        self.spacing = 0.5
+        self.bufferRadius = 0.0
         self.typeName = "PointLight"
 
     def _getLightType(self):
@@ -50,16 +49,6 @@ class PointLight(Light, DebugObject):
 
     def _computeAdditionalData(self):
         """ PointLight does not need to store additional data """
-
-    def setShadowMapResolution(self, resolution):
-        """ Attempts to set the resolution of the shadow soures. You
-        cannot call this after the light got attached to the LightManager,
-        as the shadow sources might already have a position in the
-        shadow atlas """
-        if self.attached:
-            raise Exception(
-                "You cannot change the resolution after the light got attached")
-        self.shadowResolution = resolution
 
     def _updateDebugNode(self):
         """ Internal method to generate new debug geometry. """
@@ -94,10 +83,17 @@ class PointLight(Light, DebugObject):
 
     def _initShadowSources(self):
         """ Internal method to init the shadow sources """
-        for i in range(2):
+        # for i in range(2):
+        #     source = ShadowSource()
+        #     source.setupPerspectiveLens(
+        #         self.spacing, self.radius + self.spacing + self.bufferRadius, (160, 160))
+        #     source.setResolution(self.shadowResolution)
+        #     self._addShadowSource(source)
+
+        for i in range(6):
             source = ShadowSource()
             source.setupPerspectiveLens(
-                self.spacing, self.radius + self.spacing + self.bufferRadius, (90, 90))
+                1.0, self.radius, (91, 91))
             source.setResolution(self.shadowResolution)
             self._addShadowSource(source)
 
@@ -105,13 +101,27 @@ class PointLight(Light, DebugObject):
         """ Recomputes the position of the shadow sources. One
         Source is facing to +x, and the other one to -x. This
         gives a 360 degree view. """
-        self.shadowSources[0].setPos(
-            self.position + Vec3(0, self.spacing * 2.0, 0))
-        self.shadowSources[0].setHpr(Vec3(180, 0, 0))
 
-        self.shadowSources[1].setPos(
-            self.position - Vec3(0, self.spacing * 2.0, 0))
-        self.shadowSources[1].setHpr(Vec3(0, 0, 0))
+        cubemapDirections = [
+            Vec3(-1, 0, 0),
+            Vec3(1, 0, 0),
+            Vec3(0, -1, 0),
+            Vec3(0, 1, 0),
+            Vec3(0, 0, -1),
+            Vec3(0, 0, 1),
+        ]
+
+        for index, direction in enumerate(cubemapDirections):
+            self.shadowSources[index].setPos(self.position)
+            self.shadowSources[index].lookAt(self.position + direction)
+
+        # self.shadowSources[0].setPos(
+        #     self.position + Vec3(0, self.spacing * 2.0, 0))
+        # self.shadowSources[0].setHpr(Vec3(180, 0, 0))
+
+        # self.shadowSources[1].setPos(
+        #     self.position - Vec3(0, self.spacing * 2.0, 0))
+        # self.shadowSources[1].setHpr(Vec3(0, 0, 0))
 
     def __repr__(self):
         """ Generates a string representation of this instance """

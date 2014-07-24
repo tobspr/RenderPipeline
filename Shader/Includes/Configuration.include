@@ -13,6 +13,9 @@
 #define MAX_POINT_LIGHTS 16
 #define MAX_SHADOW_POINT_LIGHTS 16
 
+#define MAX_DIRECTIONAL_LIGHTS 1
+#define MAX_DIRECTIONAL_SHADOW_LIGHTS 1
+
 // Max shadow maps. Has to be the same as in LightManager.py
 #define SHADOW_MAX_TOTAL_MAPS 24
 
@@ -35,7 +38,7 @@ const float sqrt_of_2 = 1.4142135623;
 #include "Includes/Performance.include"
 
 // Wheter to use post-processing blur, this affects DSSDO
-#define USE_OCCLUSION_BLUR
+// #define USE_OCCLUSION_BLUR
 
 
 
@@ -67,5 +70,3 @@ const float sqrt_of_2 = 1.4142135623;
 #define SPECULAR_TEX p3d_Texture2
 #define ROUGHNESS_TEX p3d_Texture3
 #define DISPLACEMENT_TEX p3d_Texture4
-
-

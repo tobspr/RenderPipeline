@@ -2,7 +2,7 @@
 
 
 vec4 transformParabol(vec4 transformed, float near, float far) {
-    // return transformed;
+    return transformed;
 
     if (transformed.w < 0.0) return vec4(0,0,0,-1000);
 

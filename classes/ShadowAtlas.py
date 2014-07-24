@@ -15,12 +15,14 @@ class ShadowAtlas(DebugObject):
         """ Constructs a new shadow atlas """
         DebugObject.__init__(self, "ShadowAtlas")
         self.size = 512
+        self.freeTiles = 0
 
     def create(self):
         """ Creates this atlas, also setting up the atlas texture """
         # Find a good tile size, it should not be too big but
         # also not too small
-        self.tileSize = 32
+        self.tileSize  = 32
+        self.freeTiles = self.tileSize ** 2
 
         if self.size % self.tileSize is not 0:
             self.error(
@@ -111,3 +113,13 @@ class ShadowAtlas(DebugObject):
         for x in range(0, width):
             for y in range(0, height):
                 self.tiles[y + offsetY][x + offsetX] = value
+
+        self.freeTiles -= width * height
+
+    def getFreeTileCount(self):
+        """ Returns how much tiles are currently free in the atlas """
+        return self.freeTiles
+
+    def getTotalTileCount(self):
+        """ Returns how much tiles this atlas can store """
+        return self.tileCount ** 2

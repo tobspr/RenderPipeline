@@ -18,6 +18,7 @@ from PipelineSettingsManager import PipelineSettingsManager
 from PipelineGuiManager import PipelineGuiManager
 from Globals import Globals
 
+
 class RenderingPipeline(DebugObject):
 
     """ This is the core class, driving all other classes. To use this
@@ -116,15 +117,17 @@ class RenderingPipeline(DebugObject):
 
         # Create onscreen gui
 
-
         # For the temporal reprojection it is important that the window width is
         # a multiple of 2
         if self.showbase.win.getXSize() % 2 == 1:
-            self.error("The window has to have a width which is a multiple of 2 (Current: ",self.showbase.win.getXSize(),")") 
-            self.error("I'll correct that for you, but next time pass the correct window size!") 
+            self.error(
+                "The window has to have a width which is a multiple of 2 (Current: ", self.showbase.win.getXSize(), ")")
+            self.error(
+                "I'll correct that for you, but next time pass the correct window size!")
 
             wp = WindowProperties()
-            wp.setSize(self.showbase.win.getXSize() + 1, self.showbase.win.getYSize())
+            wp.setSize(
+                self.showbase.win.getXSize() + 1, self.showbase.win.getYSize())
             self.showbase.win.requestProperties(wp)
             self.showbase.graphicsEngine.openWindows()
 
@@ -141,7 +144,7 @@ class RenderingPipeline(DebugObject):
 
         self.blurEnabled = False  # Not as good as I want it, so disabled
 
-        self.debug("Window size is",self.size.x, "x",self.size.y)
+        self.debug("Window size is", self.size.x, "x", self.size.y)
 
         self.showbase.camLens.setNearFar(0.1, 30000)
         self.showbase.camLens.setFov(90)
@@ -165,6 +168,9 @@ class RenderingPipeline(DebugObject):
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
+
+        # Create the target which constructs the normals from position
+        self._createNormalPrecomputeBuffer()
 
         # Setup the buffers for lighting
         self._createLightingPipeline()
@@ -200,10 +206,10 @@ class RenderingPipeline(DebugObject):
 
         # display shadow atlas is defined
         # if self.settings.displayShadowAtlas and self.haveLightingPass:
-        #     self.atlasDisplayImage = OnscreenImage(
-        #         image=self.lightManager.getAtlasTex(), pos=(
-        #             self.showbase.getAspectRatio() - 0.55, 0, 0.2),
-        #         scale=(0.5, 0, 0.5))
+        # self.atlasDisplayImage = OnscreenImage(
+        #     image=self.lightManager.getAtlasTex(), pos=(
+        #         self.showbase.getAspectRatio() - 0.55, 0, 0.2),
+        #     scale=(0.5, 0, 0.5))
 
     def getForwardScene(self):
         """ Reparent objects to this scene to use forward rendering.
@@ -233,7 +239,6 @@ class RenderingPipeline(DebugObject):
         technique = self.settings.antialiasingTechnique
         self.debug("Creating antialiasing handler for", technique, "..")
 
-
         if technique == "None":
             self.antialias = AntialiasingTechniqueNone()
         elif technique == "SMAA":
@@ -245,13 +250,15 @@ class RenderingPipeline(DebugObject):
             self.antialias = AntialiasingTechniqueSMAA()
 
         if self.settings.ssdoEnabled:
-            self.antialias.setColorTexture(self.blurOcclusionH.getColorTexture())
+            self.antialias.setColorTexture(
+                self.blurOcclusionH.getColorTexture())
         else:
 
             if self.haveCombiner:
                 self.antialias.setColorTexture(self.combiner.getColorTexture())
             else:
-                self.antialias.setColorTexture(self.deferredTarget.getColorTexture())
+                self.antialias.setColorTexture(
+                    self.deferredTarget.getColorTexture())
 
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setup()
@@ -272,7 +279,6 @@ class RenderingPipeline(DebugObject):
         # self.deferredTarget.setMultisamples(1)
 
         self.deferredTarget.prepareSceneRender()
-
 
     def _setupFinalPass(self):
         """ Setups the final pass which applies motion blur and so on """
@@ -309,15 +315,14 @@ class RenderingPipeline(DebugObject):
 
         # size has to be a multiple of the compute unit size
         # but still has to cover the whole screen
-        sizeX = int( math.ceil(float(self.size.x) / self.patchSize.x))
-        sizeY = int( math.ceil(float(self.size.y) / self.patchSize.y))
+        sizeX = int(math.ceil(float(self.size.x) / self.patchSize.x))
+        sizeY = int(math.ceil(float(self.size.y) / self.patchSize.y))
 
         self.precomputeSize = LVecBase2i(sizeX, sizeY)
 
         self.debug("Batch size =", sizeX, "x", sizeY,
                    "Actual Buffer size=", int(sizeX * self.patchSize.x),
                    "x", int(sizeY * self.patchSize.y))
-
 
         self._makeLightPerTileStorage()
 
@@ -332,6 +337,7 @@ class RenderingPipeline(DebugObject):
         self.lightManager.setLightingCuller(self.lightBoundsComputeBuff)
 
         self._loadFallbackCubemap()
+        self._loadLookupCubemap()
 
     def _setShaderInputs(self):
         """ Sets most of the required shader inputs to the targets """
@@ -354,6 +360,13 @@ class RenderingPipeline(DebugObject):
                 "data1", self.deferredTarget.getAuxTexture(0))
             self.lightingComputeContainer.setShaderInput(
                 "data2", self.deferredTarget.getAuxTexture(1))
+            self.lightingComputeContainer.setShaderInput(
+                "depth", self.deferredTarget.getDepthTexture())
+            self.lightingComputeContainer.setShaderInput(
+                "normalsView", self.normalPrecompute.getColorTexture())
+            self.lightingComputeContainer.setShaderInput(
+                "positionView", self.normalPrecompute.getAuxTexture(0))
+            
             self.lightingComputeContainer.setShaderInput(
                 "shadowAtlas", self.lightManager.getAtlasTex())
             self.lightingComputeContainer.setShaderInput(
@@ -378,6 +391,11 @@ class RenderingPipeline(DebugObject):
                 "normalTex", self.deferredTarget.getAuxTexture(0))
             self.blurOcclusionV.setShaderInput(
                 "normalTex", self.deferredTarget.getAuxTexture(0))
+            self.blurOcclusionH.setShaderInput(
+                "normalsView", self.normalPrecompute.getAuxTexture(0))
+            self.blurOcclusionV.setShaderInput(
+                "normalsView", self.normalPrecompute.getAuxTexture(0))
+
 
         # Shader inputs for the blur passes
         if self.blurEnabled:
@@ -391,7 +409,6 @@ class RenderingPipeline(DebugObject):
                                            self.deferredTarget.getDepthTexture())
             self.blurColorV.setShaderInput("colorTex",
                                            self.blurColorH.getColorTexture())
-
 
         # Shader inputs for the temporal reprojection
         if self.haveCombiner:
@@ -408,7 +425,8 @@ class RenderingPipeline(DebugObject):
                 "dofStorage", self.dofStorage)
             self.combiner.setShaderInput(
                 "depthTex", self.deferredTarget.getDepthTexture())
-            self.combiner.setShaderInput("lastPosition", self.lastPositionBuffer)
+            self.combiner.setShaderInput(
+                "lastPosition", self.lastPositionBuffer)
             self.combiner.setShaderInput(
                 "temporalProjXOffs", self.temporalProjXOffs)
             self.combiner.setShaderInput("lastMVP", self.lastMVP)
@@ -421,16 +439,23 @@ class RenderingPipeline(DebugObject):
                 "colorTex", self.blurColorV.getColorTexture())
         else:
 
-                self.deferredTarget.setShaderInput(
-                    "colorTex", self.antialias.getResultTexture())
-                # "colorTex", self.lightBoundsComputeBuff.getColorTexture())
+            self.deferredTarget.setShaderInput(
+                "colorTex", self.antialias.getResultTexture())
+            # "colorTex", self.lightBoundsComputeBuff.getColorTexture())
 
-
-    
+        self.normalPrecompute.setShaderInput(
+            "positionTex", self.deferredTarget.getColorTexture())
+        self.normalPrecompute.setShaderInput(
+            "mainCam", self.showbase.cam)
+        self.normalPrecompute.setShaderInput(
+            "mainRender", self.showbase.render)
+        self.normalPrecompute.setShaderInput(
+            "depthTex", self.deferredTarget.getDepthTexture())
+        
         if self.haveMRT:
             self.deferredTarget.setShaderInput(
                 "velocityTex", self.deferredTarget.getAuxTexture(1))
-        
+
         self.deferredTarget.setShaderInput(
             "depthTex", self.deferredTarget.getDepthTexture())
         self.deferredTarget.setShaderInput(
@@ -446,9 +471,11 @@ class RenderingPipeline(DebugObject):
             self.deferredTarget.setShaderInput(
                 "lastPosition", self.lastPositionBuffer)
 
-
         self.deferredTarget.setShaderInput(
             "currentPosition", self.deferredTarget.getColorTexture())
+
+        self.deferredTarget.setShaderInput(
+            "adjustedNormals", self.normalPrecompute.getColorTexture())
 
         # Set last / current mvp handles
         self.showbase.render.setShaderInput("lastMVP", self.lastMVP)
@@ -458,12 +485,23 @@ class RenderingPipeline(DebugObject):
 
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
-        cubemap = self.showbase.loader.loadCubeMap(join(self.rootDirectory, "Data/Cubemaps/Default/#.png"))
+        cubemap = self.showbase.loader.loadCubeMap(
+            join(self.rootDirectory, "Data/Cubemaps/Default/#.png"))
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb_alpha)
         self.lightingComputeContainer.setShaderInput(
             "fallbackCubemap", cubemap)
+
+    def _loadLookupCubemap(self):
+        self.debug("Loading lookup cubemap")
+        cubemap = self.showbase.loader.loadCubeMap(
+            join(self.rootDirectory, "Data/Cubemaps/DirectionLookup/#.png"))
+        cubemap.setMinfilter(Texture.FTNearest)
+        cubemap.setMagfilter(Texture.FTNearest)
+        cubemap.setFormat(Texture.F_rgb8)
+        self.lightingComputeContainer.setShaderInput(
+            "directionToFace", cubemap)
 
     def _makeLightBoundsComputationBuffer(self, w, h):
         """ Creates the buffer which precomputes the lights per tile """
@@ -532,6 +570,14 @@ class RenderingPipeline(DebugObject):
             Texture.FTLinearMipmapLinear)
         self._setBlurShader()
 
+    def _createNormalPrecomputeBuffer(self):
+        """ Creates a buffer which reconstructs the normals from position """
+        self.normalPrecompute = RenderTarget("PrecomputeNormals")
+        self.normalPrecompute.addColorTexture()
+        self.normalPrecompute.addAuxTextures(1)
+        self.normalPrecompute.setColorBits(16)
+        self.normalPrecompute.setAuxBits(16)
+        self.normalPrecompute.prepareOffscreenBuffer()
 
     def _createDofStorage(self):
         """ Creates the texture where the dof factor is stored in, so we
@@ -605,7 +651,7 @@ class RenderingPipeline(DebugObject):
             self.lightManager.debugReloadShader()
             self._setPositionComputationShader()
             self._setLightingShader()
-        
+
         if self.haveCombiner:
             self._setCombinerShader()
 
@@ -617,7 +663,16 @@ class RenderingPipeline(DebugObject):
         if self.blurEnabled:
             self._setBlurShader()
 
+        self._setNormalExtractShader()
+
         self.antialias.reloadShader()
+
+    def _setNormalExtractShader(self):
+        """ Sets the shader which constructs the normals from position """
+        npShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/ExtractNormals.fragment")
+        self.normalPrecompute.setShader(npShader)
 
     def _attachUpdateTask(self):
         """ Attaches the update tasks to the showbase """
@@ -630,11 +685,10 @@ class RenderingPipeline(DebugObject):
                 self._updateLights, "UpdateLights", sort=-9000)
             self.showbase.addTask(
                 self._updateShadows, "updateShadows", sort=-8000)
-            
+
         if self.settings.displayOnscreenDebugger:
             self.showbase.addTask(
-                    self._updateGUI, "UpdateGUI", sort=7000)
-
+                self._updateGUI, "UpdateGUI", sort=7000)
 
     def _computeCameraBounds(self):
         """ Computes the current camera bounds, i.e. for light culling """
@@ -708,18 +762,17 @@ class RenderingPipeline(DebugObject):
                 "Shader/DefaultObjectShader/vertex.glsl",
                 "Shader/DefaultObjectShader/fragment.glsl")
         else:
-            self.warn("Tesselation is only experimental! Remember to convert the geometry to patches first!")
+            self.warn(
+                "Tesselation is only experimental! Remember to convert the geometry to patches first!")
 
             shader = BetterShader.load(
                 "Shader/DefaultObjectShader/vertex.glsl",
                 "Shader/DefaultObjectShader/fragment.glsl",
                 "",
                 "Shader/DefaultObjectShader/tesscontrol.glsl",
-                "Shader/DefaultObjectShader/tesseval.glsl")  
+                "Shader/DefaultObjectShader/tesseval.glsl")
 
         return shader
-
-
 
     def addLight(self, light):
         """ Adds a light to the list of rendered lights """
@@ -794,9 +847,11 @@ class RenderingPipeline(DebugObject):
         if self.settings.ssdoEnabled:
             defines.append(("DSSDO_ENABLED", 1))
 
-            defines.append(("DSSDO_NUM_SAMPLES", self.settings.ssdoSampleCount))
+            defines.append(
+                ("DSSDO_NUM_SAMPLES", self.settings.ssdoSampleCount))
             defines.append(("DSSDO_RADIUS", self.settings.ssdoRadius))
-            defines.append(("DSSDO_MAX_DISTANCE", self.settings.ssdoMaxDistance))
+            defines.append(
+                ("DSSDO_MAX_DISTANCE", self.settings.ssdoMaxDistance))
             defines.append(("DSSDO_MAX_ANGLE", self.settings.ssdoMaxAngle))
             defines.append(("DSSDO_STRENGTH", self.settings.ssdoStrength))
 
@@ -806,10 +861,7 @@ class RenderingPipeline(DebugObject):
             extraSettings = self.guiManager.getDefines()
             defines += extraSettings
 
-
         # Additional gui settings
-
-
         output = "// Autogenerated by RenderPipeline.py\n"
         output += "// Do not edit! Your changes will be lost.\n\n"
 
@@ -821,7 +873,6 @@ class RenderingPipeline(DebugObject):
         handle = open("Shader/Includes/AutoGeneratedConfig.include", "w")
         handle.write(output)
         handle.close()
-
 
     def onWindowResized(self):
         """ Call this whenever the window resized """

@@ -44,6 +44,59 @@
   <Scalar> specb { 0.034615 }
   <Scalar> shininess { 12.5 }
 }
+<Group> Plane {
+  <Transform> {
+    <Matrix4> {
+      1 0 0 0
+      0 1 0 0
+      0 0 1 0
+      0 0 0 1
+    }
+  }
+  <VertexPool> Plane {
+    <Vertex> 0 {
+      -5 -5 0
+      <UV> {
+        -0.493883 1.5
+        <Tangent> { -0.00306787 0.999995 0 }
+        <Binormal> { -0.999995 -0.00306787 0 }
+      }
+    }
+    <Vertex> 1 {
+      -5 5 0
+      <UV> {
+        1.5 1.49388
+        <Tangent> { -0.00306787 0.999995 0 }
+        <Binormal> { -0.999995 -0.00306787 0 }
+      }
+    }
+    <Vertex> 2 {
+      5 -5 0
+      <UV> {
+        -0.5 -0.493883
+        <Tangent> { -0.00306787 0.999995 0 }
+        <Binormal> { -0.999995 -0.00306787 0 }
+      }
+    }
+    <Vertex> 3 {
+      5 5 0
+      <UV> {
+        1.49388 -0.5
+        <Tangent> { -0.00306787 0.999995 0 }
+        <Binormal> { -0.999995 -0.00306787 0 }
+      }
+    }
+  }
+  <Polygon> {
+    <Normal> { 0 0 1 }
+    <TRef> { SphereDiffuse }
+    <TRef> { SphereNormal }
+    <TRef> { SphereSpecular }
+    <TRef> { SphereRoughness }
+    <MRef> { Sphere }
+    <VertexRef> { 0 2 3 1 <Ref> { Plane } }
+  }
+}
 <Group> Sphere {
   <Transform> {
     <Matrix4> {
