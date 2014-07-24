@@ -123,6 +123,7 @@ void main() {
     }
 
     // Compute shadow point lights
+    baseOffset = precomputeCoord + ivec2(0,3);
     for (int i = 0; i < countPointLightShadow; i++) {
         currentOffset = ivec2(i % 8, i / 8);
         currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
@@ -136,6 +137,7 @@ void main() {
     }
 
     // Compute directinal lights
+    baseOffset = precomputeCoord + ivec2(0,5);
     for (int i = 0; i < countDirectionalLight; i++) {
         currentOffset = ivec2(i % 8, i / 8);
         currentLightId = imageLoad(lightsPerTile, baseOffset + currentOffset).r;
@@ -204,6 +206,8 @@ void main() {
         result = vec3(material.normal);
         occlusionTotal = 0.0;
     #endif
+
+    // result.xyz = vec3(countPointLightShadow / 4.0);
 
 
 

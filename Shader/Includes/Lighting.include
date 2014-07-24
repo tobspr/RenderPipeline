@@ -181,7 +181,7 @@ vec3 applyPointLightWithShadow(Light light, Material material, inout float occlu
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
 
     float pixOffset = 4.0 / SHADOW_MAP_ATLAS_SIZE;
-    float bias = 0.00055;
+    float bias = 0.002;
 
     for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
 
