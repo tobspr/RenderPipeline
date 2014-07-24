@@ -35,19 +35,14 @@ class BetterShader:
     def load(self, *args):
         """ Loads a shader in the order: vertex, fragment,
         geometry, tesseval, tesscontrol """
-
-        print "Loading shader from",args[-1]
-
         newArgs = []
 
         for arg in args:
             if len(arg) < 1:
-                print "append '' for geometry shader!"
                 newArgs.append("")
                 continue
             content = self._handleIncludes(arg)
             newArgs.append(content)
-            # print "append content for shader"
             self._writeDebugShader("Shader-" + str(arg), content)
             self._clearIncludeStack()
 

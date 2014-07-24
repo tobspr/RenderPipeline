@@ -131,7 +131,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         """ Setups a PerspectiveLens with a given nearPlane, farPlane
         and FoV. The FoV is a tuple in the format
         (Horizontal FoV, Vertical FoV) """
-        self.debug("setupPerspectiveLens(",near,",",far,",",fov,")")
+        # self.debug("setupPerspectiveLens(",near,",",far,",",fov,")")
         self.lens = PerspectiveLens()
         self.lens.setNearFar(near, far)
         self.lens.setFov(fov[0], fov[1])
