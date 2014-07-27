@@ -1,0 +1,90 @@
+
+
+
+#include "Includes/Configuration.include"
+#include "Includes/PoissonDisk.include"
+#include "Includes/Random.include"
+#include "Includes/Material.include"
+
+// Store configuration variables in const variables
+// const int   dssdoSampleCount = DSSDO_NUM_SAMPLES;
+// const float dssdoRadius      = DSSDO_RADIUS;
+// const float dssdoMaxDistance = DSSDO_MAX_DISTANCE;
+// const float dssdoMaxAngle    = DSSDO_MAX_ANGLE;
+// const float dssdoFactor      = DSSDO_STRENGTH;
+const int   dssdoSampleCount = 32;
+const float dssdoRadius      = 0.5;
+const float dssdoMaxDistance = 9.0;
+const float dssdoMaxAngle    = 0.2;
+const float dssdoFactor      = 2.0;
+
+
+const int   dssdoPoissonFactor = 32 / dssdoSampleCount;
+const float fudgeFactorL0      = 2.0;
+const float fudgeFactorL1      = 10.0;
+const float sh2WeightL0        = fudgeFactorL0 * 0.28209; //0.5*sqrt(1.0/pi);
+const vec3  sh2WeightL1        = vec3(fudgeFactorL1 * 0.48860); //0.5*sqrt(3.0/pi);
+const vec4  sh2Weight          = vec4(sh2WeightL1, sh2WeightL0) / dssdoSampleCount;
+
+
+
+vec4 computeDSSDO(vec2 texcoord, ivec2 screenCoord, Material material, float dist) {
+    
+    #ifdef DEBUG_DISABLE_SSDO
+        return vec4(0,0,0,1);
+    #endif
+
+
+
+    // return vec4(1.0);
+
+    float radius = clamp( (1.0 / dist) * 1000.0 * dssdoRadius, 0.0, 80.0);
+    // radius *= 0.4;
+    // radius = 20.0;
+
+    ivec2 screenSize = textureSize(normalsView, 0) - 1;
+    vec3 noise = texelFetch(dssdoNoiseTex, screenCoord % 4, 0).rgb*2.0 - 1.0;
+    noise *= 0.0;
+
+    // vec3 normal = material.normal;
+
+    vec3 normal = abs(texelFetch(normalsView, screenCoord, 0).rgb) * 0.01;
+
+    return vec4(normal, 1);
+
+//     vec4 occlusionResult = vec4(0.0);
+
+//     for (int i = 1; i < 32; i++) {
+
+//         vec3 offset = poisson3D_32[i * dssdoPoissonFactor];
+
+//         ivec2 offsetCoord = screenCoord + 
+//             ivec2(reflect(poisson3D_32[i].xy, noise.xy) * radius);
+
+//         offsetCoord = clamp(offsetCoord, ivec2(0), screenSize);
+
+//         vec3 position = texelFetch(positionTex, offsetCoord, 0).rgb;
+        
+//         vec3 difference = (position - material.position);
+        
+//         float differenceLength = length(difference);
+        
+//         vec3 differenceNormalized = difference / max(1.0, differenceLength);
+        
+//         float attenuation = 1.0 - saturate( 
+//             differenceLength / dssdoMaxDistance );
+
+//         float dotProduct = max(0.0, dot(normal, differenceNormalized) );
+
+//         attenuation = attenuation * attenuation * step(dssdoMaxAngle, dotProduct);
+
+//         occlusionResult += attenuation * sh2Weight * vec4(differenceNormalized, 1);
+
+
+//     }
+
+//     occlusionResult *= dssdoFactor;
+
+//     // occlusionResult = 1.0 - max(0.0, occlusionResult * dssdoFactor);
+//     return occlusionResult;
+}

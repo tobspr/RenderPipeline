@@ -35,6 +35,7 @@ class Light(ShaderStructElement):
         self.typeName = ""
         self.sourceIndexes = PTAInt.emptyArray(6)
         self.attached = False
+        self.shadowResolution = 512
 
         for i in range(6):
             self.sourceIndexes[i] = -1
@@ -57,8 +58,21 @@ class Light(ShaderStructElement):
         """ Returns the internal id of the light-type, e.g. "PointLight" """
         return self.typeName
 
+    def setShadowMapResolution(self, resolution):
+        """ Attempts to set the resolution of the shadow soures. You
+        cannot call this after the light got attached to the LightManager,
+        as the shadow sources might already have a position in the
+        shadow atlas """
+        if self.attached:
+            raise Exception(
+                "You cannot change the resolution after the light got attached")
+        self.shadowResolution = resolution
+
     def setDirection(self, direction):
-        """ Sets the direction of the light. Only affects DirectionalLights """
+        """ Sets the direction of the light. This stores from which vector the light
+        comes from. If your sun comes from totally above for example, this vector would
+        be (0.0,0.0,1.0). The vector will get normalized, so you can for example pass your
+        sun position. Only affects DirectionalLights """
         direction.normalize()
         self.direction = direction
         self.queueUpdate()
@@ -118,7 +132,7 @@ class Light(ShaderStructElement):
         for source in self.shadowSources:
             if not source.isValid():
                 return True
-                
+
         return False
 
     def queueUpdate(self):

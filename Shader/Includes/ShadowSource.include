@@ -1,9 +1,9 @@
 
 
 struct ShadowSource {
-    int resolution;
-    vec2 atlasPos;
     mat4 mvp;  
-    float nearPlane;
+    vec2 atlasPos;
     float farPlane;
+    float nearPlane;
+    int resolution;
 };

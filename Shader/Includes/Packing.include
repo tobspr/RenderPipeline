@@ -8,6 +8,10 @@ const float npScale = 1.7777;
 
 vec2 encodeNormal(vec3 n)
 {   
+    // return n.xy;
+    // n = normalize(n);
+    // n.x += 0.01;
+
     vec2 enc = n.xy / (n.z+1.0);
     enc /= npScale;
     return enc*0.5 + 0.5;
@@ -16,6 +20,7 @@ vec2 encodeNormal(vec3 n)
 // Unpacks a normal from a vec2
 vec3 decodeNormal(vec2 encoded)
 {
+    // return vec3(encoded.xy,0);
     vec3 nn =
         vec3(encoded.xy, 0)*vec3(2*npScale,2*npScale,0) +
         vec3(-npScale,-npScale,1);
@@ -26,49 +31,66 @@ vec3 decodeNormal(vec2 encoded)
     return n;
 }
 
-// // Packs float to 2 floats for more precision
-
-// vec2 packDepth(float d) {
-//     // return vec2(d, d);
-//     return vec2(floor(d*1024), fract(d*1024));
-// }
-
-// // Unpacks 2 floats to one high precision float
-// float unpackDepth(vec2 d) {
-//     // return d.x;
-//     return (d.x + d.y) / 1024.0;
-// }
-
-
 const mat3 rgbToYCbCr = mat3(
     0.299, -0.168736, 0.5,
     0.587, -0.331264, -0.418688, 
     0.144, 0.5, -0.081312
 );
 
-const float expScale = 32.0;
-const float yiqBias = 0.125;
+
+
+
+// IEEE 754 half-precision binary floating-point format
+// http://en.wikipedia.org/wiki/Half-precision_floating-point_format
+const float pYmin = -14.0;
+const float pYmax = 15.0;
+const float pYspan = 29;
+const float pYbias = 0.5;
+const float pYscale = 4.0;
+
+const float pQscale = 0.45;
+const float pQbias = 0.75;
 
 vec2 packColor(vec3 color) {
     color = saturate(color);
-    vec3 yiq = (rgbToYCbCr * color);
-    yiq.y = yiq.y*0.5 + yiqBias;
-    yiq = saturate(yiq);
-    int exponent = int(yiq.y * expScale);
-    float significand =  yiq.z*0.5 + 0.5;
+
+    vec3 yiq = rgbToYCbCr * color;
+    
+    // Pack I
+    int exponent = int(mix(pYmin, pYmax, saturate(yiq.y * pYscale + pYbias ) ));
+
+    // Pack Q
+    float significand =  yiq.z*pQscale + pQbias;
+
+    
     float pack = ldexp(significand, exponent);
-    return vec2(yiq.x, pack);
+    return vec2( yiq.x, pack);
 }
 
 vec3 unpackColor(vec2 pack) {
+
+
+
     int exponent = 0;
     float significand = frexp(pack.y, exponent);
 
     // todo: MAD
-    float i = (float(exponent)) / expScale;
-    i = (i - yiqBias) * 2.0;
-    float q = significand * 2.0 - 1.0;
+    float i = float(exponent - pYmin) / pYspan;
+    float q = ( significand - pQbias) / pQscale;
+
+    i = (i - pYbias) / pYscale;
     vec3 yiq = vec3(pack.x,i,q);
     vec3 rgb = inverse(rgbToYCbCr) * yiq;
+    
+    float test = pack.x * pQscale + pQbias;
+
+// 
+
+    // return test > 0.51 ? ( test < 0.99 ? vec3(0,1,0) : vec3(1,0,0)) : vec3(0,0,1);
+
+    // return vec3( abs(pack.x - i));
+
+    // return vec3(abs(i));
+
     return rgb;
 }

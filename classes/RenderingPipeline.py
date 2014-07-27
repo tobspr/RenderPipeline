@@ -13,10 +13,12 @@ from LightManager import LightManager
 from RenderTarget import RenderTarget
 from DebugObject import DebugObject
 from BetterShader import BetterShader
-from Antialiasing import AntialiasingTechniqueSMAA, AntialiasingTechniqueNone
+from Antialiasing import *
+from AmbientOcclusion import *
 from PipelineSettingsManager import PipelineSettingsManager
 from PipelineGuiManager import PipelineGuiManager
 from Globals import Globals
+
 
 class RenderingPipeline(DebugObject):
 
@@ -116,15 +118,17 @@ class RenderingPipeline(DebugObject):
 
         # Create onscreen gui
 
-
         # For the temporal reprojection it is important that the window width is
         # a multiple of 2
         if self.showbase.win.getXSize() % 2 == 1:
-            self.error("The window has to have a width which is a multiple of 2 (Current: ",self.showbase.win.getXSize(),")") 
-            self.error("I'll correct that for you, but next time pass the correct window size!") 
+            self.error(
+                "The window has to have a width which is a multiple of 2 (Current: ", self.showbase.win.getXSize(), ")")
+            self.error(
+                "I'll correct that for you, but next time pass the correct window size!")
 
             wp = WindowProperties()
-            wp.setSize(self.showbase.win.getXSize() + 1, self.showbase.win.getYSize())
+            wp.setSize(
+                self.showbase.win.getXSize() + 1, self.showbase.win.getYSize())
             self.showbase.win.requestProperties(wp)
             self.showbase.graphicsEngine.openWindows()
 
@@ -139,12 +143,15 @@ class RenderingPipeline(DebugObject):
         self.haveCombiner = True
         self.haveMRT = True
 
-        self.blurEnabled = False  # Not as good as I want it, so disabled
+        # Not as good as I want it, so disabled. I'll work on it.
+        self.blurEnabled = False
 
-        self.debug("Window size is",self.size.x, "x",self.size.y)
+        self.debug("Window size is", self.size.x, "x", self.size.y)
 
         self.showbase.camLens.setNearFar(0.1, 30000)
         self.showbase.camLens.setFov(90)
+
+        self._setupOcclusion()
 
         # Create light manager, which handles lighting + shadows
         if self.haveLightingPass:
@@ -166,6 +173,11 @@ class RenderingPipeline(DebugObject):
         # Now create deferred render buffers
         self._makeDeferredTargets()
 
+        # Create the target which constructs the view-space normals and
+        # position from world-space position
+        if self.occlusion.requiresViewSpacePosNrm():
+            self._createNormalPrecomputeBuffer()
+
         # Setup the buffers for lighting
         self._createLightingPipeline()
 
@@ -173,19 +185,16 @@ class RenderingPipeline(DebugObject):
         if self.haveCombiner:
             self._createCombiner()
 
-        self._createDofStorage()
-
-        if self.settings.ssdoEnabled:
+        if self.occlusion.requiresBlurring():
             self._createOcclusionBlurBuffer()
 
         self._setupAntialiasing()
 
-        # Blur is disabled for performance
         if self.blurEnabled:
+            self._createDofStorage()
             self._createBlurBuffer()
 
         self._setupFinalPass()
-
         self._setShaderInputs()
 
         # add update task
@@ -195,15 +204,16 @@ class RenderingPipeline(DebugObject):
             self.guiManager = PipelineGuiManager(self)
             self.guiManager.setup()
 
-        # Generate auto-configuration for shaders now
+        # Generate auto-configuration for shaders
         self._generateShaderConfiguration()
 
         # display shadow atlas is defined
+        # todo: move this to the gui manager
         # if self.settings.displayShadowAtlas and self.haveLightingPass:
-        #     self.atlasDisplayImage = OnscreenImage(
-        #         image=self.lightManager.getAtlasTex(), pos=(
-        #             self.showbase.getAspectRatio() - 0.55, 0, 0.2),
-        #         scale=(0.5, 0, 0.5))
+        # self.atlasDisplayImage = OnscreenImage(
+        #     image=self.lightManager.getAtlasTex(), pos=(
+        #         self.showbase.getAspectRatio() - 0.55, 0, 0.2),
+        #     scale=(0.5, 0, 0.5))
 
     def getForwardScene(self):
         """ Reparent objects to this scene to use forward rendering.
@@ -229,10 +239,8 @@ class RenderingPipeline(DebugObject):
 
     def _setupAntialiasing(self):
         """ Creates the antialiasing technique """
-
         technique = self.settings.antialiasingTechnique
-        self.debug("Creating antialiasing handler for", technique, "..")
-
+        self.debug("Creating antialiasing handler for", technique)
 
         if technique == "None":
             self.antialias = AntialiasingTechniqueNone()
@@ -240,21 +248,34 @@ class RenderingPipeline(DebugObject):
             self.antialias = AntialiasingTechniqueSMAA()
         else:
             self.error(
-                "Unkown antialiasing technique, using SMAA:",
-                self.antialiasingTechniquel)
-            self.antialias = AntialiasingTechniqueSMAA()
+                "Unkown antialiasing technique", technique, "-> using None:")
+            self.antialias = AntialiasingTechniqueNone()
 
-        if self.settings.ssdoEnabled:
-            self.antialias.setColorTexture(self.blurOcclusionH.getColorTexture())
+        if self.occlusion.requiresBlurring():
+            self.antialias.setColorTexture(
+                self.blurOcclusionH.getColorTexture())
         else:
-
             if self.haveCombiner:
                 self.antialias.setColorTexture(self.combiner.getColorTexture())
             else:
-                self.antialias.setColorTexture(self.deferredTarget.getColorTexture())
+                self.antialias.setColorTexture(
+                    self.deferredTarget.getColorTexture())
 
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setup()
+
+    def _setupOcclusion(self):
+        """ Creates the occlusion technique """
+        technique = self.settings.occlusionTechnique
+        self.debug("Creating occlusion handle for", technique)
+
+        if technique == "None":
+            self.occlusion = AmbientOcclusionTechniqueNone()
+        elif technique == "SAO":
+            self.occlusion = AmbientOcclusionTechniqueSAO()
+        else:
+            self.error("Unkown occlusion technique:", technique)
+            self.occlusion = AmbientOcclusionTechniqueNone()
 
     def _makeDeferredTargets(self):
         """ Creates the multi-render-target """
@@ -268,11 +289,10 @@ class RenderingPipeline(DebugObject):
             self.deferredTarget.setColorBits(16)
             self.deferredTarget.setDepthBits(32)
 
-        # GL_INVALID_OPERATION ?!
+        # GL_INVALID_OPERATION ?
         # self.deferredTarget.setMultisamples(1)
 
         self.deferredTarget.prepareSceneRender()
-
 
     def _setupFinalPass(self):
         """ Setups the final pass which applies motion blur and so on """
@@ -309,15 +329,14 @@ class RenderingPipeline(DebugObject):
 
         # size has to be a multiple of the compute unit size
         # but still has to cover the whole screen
-        sizeX = int( math.ceil(float(self.size.x) / self.patchSize.x))
-        sizeY = int( math.ceil(float(self.size.y) / self.patchSize.y))
+        sizeX = int(math.ceil(float(self.size.x) / self.patchSize.x))
+        sizeY = int(math.ceil(float(self.size.y) / self.patchSize.y))
 
         self.precomputeSize = LVecBase2i(sizeX, sizeY)
 
         self.debug("Batch size =", sizeX, "x", sizeY,
                    "Actual Buffer size=", int(sizeX * self.patchSize.x),
                    "x", int(sizeY * self.patchSize.y))
-
 
         self._makeLightPerTileStorage()
 
@@ -332,6 +351,7 @@ class RenderingPipeline(DebugObject):
         self.lightManager.setLightingCuller(self.lightBoundsComputeBuff)
 
         self._loadFallbackCubemap()
+        self._loadLookupCubemap()
 
     def _setShaderInputs(self):
         """ Sets most of the required shader inputs to the targets """
@@ -355,6 +375,15 @@ class RenderingPipeline(DebugObject):
             self.lightingComputeContainer.setShaderInput(
                 "data2", self.deferredTarget.getAuxTexture(1))
             self.lightingComputeContainer.setShaderInput(
+                "depth", self.deferredTarget.getDepthTexture())
+
+            if self.occlusion.requiresViewSpacePosNrm():
+                self.lightingComputeContainer.setShaderInput(
+                    "viewSpaceNormals", self.normalPrecompute.getColorTexture())
+                self.lightingComputeContainer.setShaderInput(
+                    "viewSpacePosition", self.normalPrecompute.getAuxTexture(0))
+
+            self.lightingComputeContainer.setShaderInput(
                 "shadowAtlas", self.lightManager.getAtlasTex())
             self.lightingComputeContainer.setShaderInput(
                 "destination", self.lightingComputeCombinedTex)
@@ -364,12 +393,12 @@ class RenderingPipeline(DebugObject):
                 "cameraPosition", self.cameraPosition)
 
             self.lightingComputeContainer.setShaderInput(
-                "dssdoNoiseTex", self.showbase.loader.loadTexture("Data/SSDO/noise.png"))
+                "noiseTexture", self.showbase.loader.loadTexture("Data/Occlusion/noise4x4.png"))
             self.lightingComputeContainer.setShaderInput(
                 "lightsPerTile", self.lightPerTileStorage)
 
         # Shader inputs for the occlusion blur passes
-        if self.settings.ssdoEnabled and self.haveCombiner:
+        if self.occlusion.requiresBlurring() and self.haveCombiner:
             self.blurOcclusionH.setShaderInput(
                 "colorTex", self.blurOcclusionV.getColorTexture())
             self.blurOcclusionV.setShaderInput(
@@ -378,6 +407,10 @@ class RenderingPipeline(DebugObject):
                 "normalTex", self.deferredTarget.getAuxTexture(0))
             self.blurOcclusionV.setShaderInput(
                 "normalTex", self.deferredTarget.getAuxTexture(0))
+            self.blurOcclusionH.setShaderInput(
+                "normalsView", self.normalPrecompute.getAuxTexture(0))
+            self.blurOcclusionV.setShaderInput(
+                "normalsView", self.normalPrecompute.getAuxTexture(0))
 
         # Shader inputs for the blur passes
         if self.blurEnabled:
@@ -392,7 +425,6 @@ class RenderingPipeline(DebugObject):
             self.blurColorV.setShaderInput("colorTex",
                                            self.blurColorH.getColorTexture())
 
-
         # Shader inputs for the temporal reprojection
         if self.haveCombiner:
             self.combiner.setShaderInput(
@@ -404,11 +436,15 @@ class RenderingPipeline(DebugObject):
                 "positionBuffer", self.deferredTarget.getColorTexture())
             self.combiner.setShaderInput(
                 "velocityBuffer", self.deferredTarget.getAuxTexture(1))
-            self.combiner.setShaderInput(
-                "dofStorage", self.dofStorage)
+
+            if self.blurEnabled:
+                self.combiner.setShaderInput(
+                    "dofStorage", self.dofStorage)
+
             self.combiner.setShaderInput(
                 "depthTex", self.deferredTarget.getDepthTexture())
-            self.combiner.setShaderInput("lastPosition", self.lastPositionBuffer)
+            self.combiner.setShaderInput(
+                "lastPosition", self.lastPositionBuffer)
             self.combiner.setShaderInput(
                 "temporalProjXOffs", self.temporalProjXOffs)
             self.combiner.setShaderInput("lastMVP", self.lastMVP)
@@ -420,17 +456,23 @@ class RenderingPipeline(DebugObject):
             self.deferredTarget.setShaderInput(
                 "colorTex", self.blurColorV.getColorTexture())
         else:
+            self.deferredTarget.setShaderInput(
+                "colorTex", self.antialias.getResultTexture())
 
-                self.deferredTarget.setShaderInput(
-                    "colorTex", self.antialias.getResultTexture())
-                # "colorTex", self.lightBoundsComputeBuff.getColorTexture())
+        if self.occlusion.requiresBlurring():
+            self.normalPrecompute.setShaderInput(
+                "positionTex", self.deferredTarget.getColorTexture())
+            self.normalPrecompute.setShaderInput(
+                "mainCam", self.showbase.cam)
+            self.normalPrecompute.setShaderInput(
+                "mainRender", self.showbase.render)
+            self.normalPrecompute.setShaderInput(
+                "depthTex", self.deferredTarget.getDepthTexture())
 
-
-    
         if self.haveMRT:
             self.deferredTarget.setShaderInput(
                 "velocityTex", self.deferredTarget.getAuxTexture(1))
-        
+
         self.deferredTarget.setShaderInput(
             "depthTex", self.deferredTarget.getDepthTexture())
         self.deferredTarget.setShaderInput(
@@ -446,7 +488,6 @@ class RenderingPipeline(DebugObject):
             self.deferredTarget.setShaderInput(
                 "lastPosition", self.lastPositionBuffer)
 
-
         self.deferredTarget.setShaderInput(
             "currentPosition", self.deferredTarget.getColorTexture())
 
@@ -458,22 +499,31 @@ class RenderingPipeline(DebugObject):
 
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
-        cubemap = self.showbase.loader.loadCubeMap(join(self.rootDirectory, "Data/Cubemaps/Default/#.png"))
+        cubemap = self.showbase.loader.loadCubeMap(
+            join(self.rootDirectory, "Data/Cubemaps/Default/#.png"))
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb_alpha)
         self.lightingComputeContainer.setShaderInput(
             "fallbackCubemap", cubemap)
 
+    def _loadLookupCubemap(self):
+        self.debug("Loading lookup cubemap")
+        cubemap = self.showbase.loader.loadCubeMap(
+            join(self.rootDirectory, "Data/Cubemaps/DirectionLookup/#.png"))
+        cubemap.setMinfilter(Texture.FTNearest)
+        cubemap.setMagfilter(Texture.FTNearest)
+        cubemap.setFormat(Texture.F_rgb8)
+        self.lightingComputeContainer.setShaderInput(
+            "directionToFace", cubemap)
+
     def _makeLightBoundsComputationBuffer(self, w, h):
         """ Creates the buffer which precomputes the lights per tile """
         self.debug("Creating light precomputation buffer of size", w, "x", h)
         self.lightBoundsComputeBuff = RenderTarget("ComputeLightTileBounds")
         self.lightBoundsComputeBuff.setSize(w, h)
-        # self.lightBoundsComputeBuff.addColorTexture()
         self.lightBoundsComputeBuff.setColorWrite(False)
         self.lightBoundsComputeBuff.prepareOffscreenBuffer()
-        self._setPositionComputationShader()
 
     def _makeLightingComputeBuffer(self):
         """ Creates the buffer which applies the lighting """
@@ -507,7 +557,6 @@ class RenderingPipeline(DebugObject):
         self.blurOcclusionH = RenderTarget("blurOcclusionHorizontal")
         self.blurOcclusionH.addColorTexture()
         self.blurOcclusionH.prepareOffscreenBuffer()
-        self._setOcclusionBlurShader()
 
         # Mipmaps for blur?
         # self.blurOcclusionV.getColorTexture().setMinfilter(
@@ -522,23 +571,31 @@ class RenderingPipeline(DebugObject):
         self.blurColorV.prepareOffscreenBuffer()
 
         self.blurColorH = RenderTarget("blurColorHorizontal")
-        # self.blurColorH.setSize(400, 200)
         self.blurColorH.addColorTexture()
         self.blurColorH.prepareOffscreenBuffer()
 
-        self.blurColorH.getColorTexture().setMinfilter(
-            Texture.FTLinearMipmapLinear)
-        self.antialias.getResultTexture().setMinfilter(
-            Texture.FTLinearMipmapLinear)
-        self._setBlurShader()
+        # self.blurColorH.getColorTexture().setMinfilter(
+        #     Texture.FTLinearMipmapLinear)
+        # self.antialias.getResultTexture().setMinfilter(
+        #     Texture.FTLinearMipmapLinear)
 
+    def _createNormalPrecomputeBuffer(self):
+        """ Creates a buffer which reconstructs the normals and position
+        from view-space """
+        self.normalPrecompute = RenderTarget("PrecomputeNormals")
+        self.normalPrecompute.addColorTexture()
+        self.normalPrecompute.addAuxTextures(1)
+        self.normalPrecompute.setColorBits(16)
+        self.normalPrecompute.setAuxBits(16)
+        self.normalPrecompute.prepareOffscreenBuffer()
 
     def _createDofStorage(self):
         """ Creates the texture where the dof factor is stored in, so we
         don't recompute it each pass """
         self.dofStorage = Texture("DOFStorage")
         self.dofStorage.setup2dTexture(
-            self.showbase.win.getXSize(), self.showbase.win.getYSize(), Texture.TFloat, Texture.FRg16)
+            self.showbase.win.getXSize(), self.showbase.win.getYSize(),
+            Texture.TFloat, Texture.FRg16)
 
     def _setOcclusionBlurShader(self):
         """ Sets the shaders which blur the occlusion """
@@ -605,19 +662,29 @@ class RenderingPipeline(DebugObject):
             self.lightManager.debugReloadShader()
             self._setPositionComputationShader()
             self._setLightingShader()
-        
+
         if self.haveCombiner:
             self._setCombinerShader()
 
         self._setFinalPassShader()
 
-        if self.settings.ssdoEnabled:
+        if self.occlusion.requiresBlurring():
             self._setOcclusionBlurShader()
 
         if self.blurEnabled:
             self._setBlurShader()
 
+        if self.occlusion.requiresViewSpacePosNrm():
+            self._setNormalExtractShader()
+
         self.antialias.reloadShader()
+
+    def _setNormalExtractShader(self):
+        """ Sets the shader which constructs the normals from position """
+        npShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/ExtractNormals.fragment")
+        self.normalPrecompute.setShader(npShader)
 
     def _attachUpdateTask(self):
         """ Attaches the update tasks to the showbase """
@@ -630,11 +697,10 @@ class RenderingPipeline(DebugObject):
                 self._updateLights, "UpdateLights", sort=-9000)
             self.showbase.addTask(
                 self._updateShadows, "updateShadows", sort=-8000)
-            
+
         if self.settings.displayOnscreenDebugger:
             self.showbase.addTask(
-                    self._updateGUI, "UpdateGUI", sort=7000)
-
+                self._updateGUI, "UpdateGUI", sort=7000)
 
     def _computeCameraBounds(self):
         """ Computes the current camera bounds, i.e. for light culling """
@@ -656,7 +722,6 @@ class RenderingPipeline(DebugObject):
 
     def _updateGUI(self, task=None):
         """ Task which updates the onscreen gui debugger """
-
         self.guiManager.update()
 
         if task is not None:
@@ -708,18 +773,17 @@ class RenderingPipeline(DebugObject):
                 "Shader/DefaultObjectShader/vertex.glsl",
                 "Shader/DefaultObjectShader/fragment.glsl")
         else:
-            self.warn("Tesselation is only experimental! Remember to convert the geometry to patches first!")
+            self.warn(
+                "Tesselation is only experimental! Remember to convert the geometry to patches first!")
 
             shader = BetterShader.load(
                 "Shader/DefaultObjectShader/vertex.glsl",
                 "Shader/DefaultObjectShader/fragment.glsl",
                 "",
                 "Shader/DefaultObjectShader/tesscontrol.glsl",
-                "Shader/DefaultObjectShader/tesseval.glsl")  
+                "Shader/DefaultObjectShader/tesseval.glsl")
 
         return shader
-
-
 
     def addLight(self, light):
         """ Adds a light to the list of rendered lights """
@@ -738,15 +802,9 @@ class RenderingPipeline(DebugObject):
         defines = []
 
         if self.settings.antialiasingTechnique == "SMAA":
-            quality = self.settings.smaaQuality
-            if quality == "Low":
-                defines.append(("SMAA_PRESET_LOW", ""))
-            elif quality == "Medium":
-                defines.append(("SMAA_PRESET_MEDIUM", ""))
-            elif quality == "High":
-                defines.append(("SMAA_PRESET_HIGH", ""))
-            elif quality == "Ultra":
-                defines.append(("SMAA_PRESET_ULTRA", ""))
+            quality = self.settings.smaaQuality.upper()
+            if quality in ["LOW", "MEDIUM", "HIGH", "ULTRA"]:
+                defines.append(("SMAA_PRESET_" + quality, ""))
             else:
                 self.error("Unrecognized SMAA quality:", quality)
                 return
@@ -757,6 +815,9 @@ class RenderingPipeline(DebugObject):
             ("LIGHTING_COMPUTE_PATCH_SIZE_Y", self.settings.computePatchSizeY))
         defines.append(
             ("LIGHTING_MIN_MAX_DEPTH_ACCURACY", self.settings.minMaxDepthAccuracy))
+
+        if self.blurEnabled:
+            defines.append(("USE_DOF", 1))
 
         if self.settings.useSimpleLighting:
             defines.append(("USE_SIMPLE_LIGHTING", 1))
@@ -791,17 +852,15 @@ class RenderingPipeline(DebugObject):
         defines.append(
             ("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples))
 
-        if self.settings.ssdoEnabled:
-            defines.append(("DSSDO_ENABLED", 1))
-
-            defines.append(("DSSDO_NUM_SAMPLES", self.settings.ssdoSampleCount))
-            defines.append(("DSSDO_RADIUS", self.settings.ssdoRadius))
-            defines.append(("DSSDO_MAX_DISTANCE", self.settings.ssdoMaxDistance))
-            defines.append(("DSSDO_MAX_ANGLE", self.settings.ssdoMaxAngle))
-            defines.append(("DSSDO_STRENGTH", self.settings.ssdoStrength))
-
-            if self.settings.ssdoOnly:
-                defines.append(("DSSDO_ONLY", 1))
+        # Occlusion
+        defines.append(
+            ("OCCLUSION_TECHNIQUE_" + self.occlusion.getIncludeName(), 1))
+        defines.append(
+            ("OCCLUSION_RADIUS", self.settings.occlusionRadius))
+        defines.append(
+            ("OCCLUSION_STRENGTH", self.settings.occlusionStrength))
+        defines.append(
+            ("OCCLUSION_SAMPLES", self.settings.occlusionSampleCount))
 
         if self.settings.displayOnscreenDebugger:
             defines.append(("DEBUGGER_ACTIVE", 1))
@@ -809,10 +868,7 @@ class RenderingPipeline(DebugObject):
             extraSettings = self.guiManager.getDefines()
             defines += extraSettings
 
-
         # Additional gui settings
-
-
         output = "// Autogenerated by RenderPipeline.py\n"
         output += "// Do not edit! Your changes will be lost.\n\n"
 
@@ -824,7 +880,6 @@ class RenderingPipeline(DebugObject):
         handle = open("Shader/Includes/AutoGeneratedConfig.include", "w")
         handle.write(output)
         handle.close()
-
 
     def onWindowResized(self):
         """ Call this whenever the window resized """

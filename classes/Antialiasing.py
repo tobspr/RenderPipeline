@@ -7,6 +7,8 @@ from RenderTargetType import RenderTargetType
 from BetterShader import BetterShader
 from Globals import Globals
 
+__all__ = ["AntialiasingTechniqueNone", "AntialiasingTechniqueSMAA"]
+
 
 class AntialiasingTechnique(DebugObject):
 
@@ -78,7 +80,6 @@ class AntialiasingTechniqueNone(AntialiasingTechnique):
         return self._colorTexture
 
 
-
 class AntialiasingTechniqueSMAA(AntialiasingTechnique):
 
     """ SMAA Method from http://www.iryoku.com/smaa/. We only use
@@ -107,7 +108,8 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
         #     'areaTex' and 'searchTex'. You'll find them in the 'Textures' folder as
         #     C++ headers, and also as regular DDS files. They'll be needed for the
         #     'SMAABlendingWeightCalculation' pass.
-        self.areaTex = Globals.loader.loadTexture("Data/Antialiasing/SMAA_AreaTexGL.png")
+        self.areaTex = Globals.loader.loadTexture(
+            "Data/Antialiasing/SMAA_AreaTexGL.png")
         self.searchTex = Globals.loader.loadTexture(
             "Data/Antialiasing/SMAA_SearchTexGL.png")
 
@@ -172,4 +174,3 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
         self._neighborBuffer = RenderTarget("SMAA-Neighbors")
         self._neighborBuffer.addRenderTexture(RenderTargetType.Color)
         self._neighborBuffer.prepareOffscreenBuffer()
-

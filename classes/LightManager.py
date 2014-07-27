@@ -17,7 +17,8 @@ from panda3d.core import PStatCollector
 pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
 pstats_CullLights = PStatCollector("App:LightManager:CullLights")
 pstats_PerLightUpdates = PStatCollector("App:LightManager:PerLightUpdates")
-pstats_FetchShadowUpdates = PStatCollector("App:LightManager:FetchShadowUpdates")
+pstats_FetchShadowUpdates = PStatCollector(
+    "App:LightManager:FetchShadowUpdates")
 
 
 class LightManager(DebugObject):
@@ -45,14 +46,13 @@ class LightManager(DebugObject):
     """
 
     def __init__(self, pipeline):
-        """ Creates a new LgightManager. It expects a RenderPipeline as parameter. """
+        """ Creates a new LightManager. It expects a RenderPipeline as parameter. """
         DebugObject.__init__(self, "LightManager")
 
         self._initArrays()
 
         self.pipeline = pipeline
         self.settings = pipeline.getSettings()
-
 
         # Create arrays to store lights & shadow sources
         self.lights = []
@@ -181,14 +181,13 @@ class LightManager(DebugObject):
 
         # When using hardware pcf, set the correct filter types
         dTex = self.shadowComputeTarget.getDepthTexture()
-        
+
         if self.settings.useHardwarePCF:
             dTex.setMinfilter(Texture.FTShadow)
             dTex.setMagfilter(Texture.FTShadow)
 
         dTex.setWrapU(Texture.WMClamp)
         dTex.setWrapV(Texture.WMClamp)
-
 
     def _createDebugTexts(self):
         """ Creates a debug overlay if specified in the pipeline settings """
@@ -202,9 +201,9 @@ class LightManager(DebugObject):
             try:
                 from FastText import FastText
                 self.lightsVisibleDebugText = FastText(pos=Vec2(
-                    Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
+                    Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 1, 0), size=0.036)
                 self.lightsUpdatedDebugText = FastText(pos=Vec2(
-                    Globals.base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 0, 0), size=0.036)
+                    Globals.base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 1, 0), size=0.036)
 
             except Exception, msg:
                 self.debug(
@@ -217,13 +216,13 @@ class LightManager(DebugObject):
         # Shader/Includes/Configuration.include!
         self.maxLights = {
             "PointLight": 16,
-            # "DirectionalLight": 2
+            "DirectionalLight": 1
         }
 
         # Max shadow casting lights
         self.maxShadowLights = {
             "PointLight": 16,
-            # "DirectionalLight": 1
+            "DirectionalLight": 1
         }
 
         self.maxTotalLights = 32
@@ -364,7 +363,7 @@ class LightManager(DebugObject):
             if not self.cullBounds.contains(light.getBounds()):
                 continue
             pstats_CullLights.stop()
-            
+
             # Queue shadow updates if necessary
             if light.hasShadows() and light.needsShadowUpdate():
                 neededUpdates = light.performShadowUpdate()
@@ -394,11 +393,17 @@ class LightManager(DebugObject):
         if self.lightsVisibleDebugText is not None:
             renderedPL = "Point:" + \
                 str(self.numRenderedLights["PointLight"][0])
-            renderedPL_S = "ShadowedPoint:" + \
+            renderedPL_S = "Point:" + \
                 str(self.numRenderedLights["PointLightShadow"][0])
 
+            renderedDL = "Directional:" + \
+                str(self.numRenderedLights["DirectionalLight"][0])
+            renderedDL_S = "Directional:" + \
+                str(self.numRenderedLights["DirectionalLightShadow"][0])
+
+
             self.lightsVisibleDebugText.setText(
-                'Lights: ' + renderedPL + "/" + renderedPL_S)
+                'Lights: ' + renderedPL + " / " + renderedDL + " Shadowed: " + renderedPL_S + " / " + renderedDL_S)
 
     def updateShadows(self):
         """ This is one of the two per-frame-tasks. See class description
@@ -509,7 +514,7 @@ class LightManager(DebugObject):
         # Generate debug text
         if self.lightsUpdatedDebugText is not None:
             self.lightsUpdatedDebugText.setText(
-                'Queued Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)) + ", Last: " + last)
+                'Queued Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)) + ", Last: " + last + ", Free Tiles: " + str(self.shadowAtlas.getFreeTileCount()) + "/" + str(self.shadowAtlas.getTotalTileCount()))
 
     # Main update
     def update(self):

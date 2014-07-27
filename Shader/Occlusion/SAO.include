@@ -1,0 +1,136 @@
+ 
+
+// Scalable Ambient Obscurance
+// https://gist.github.com/fisch0920/6770311
+
+uniform sampler2D viewSpaceNormals;
+uniform sampler2D viewSpacePosition;
+
+
+// No Occlusion
+
+#define OCCLUSION_RESULT_TYPE float
+#define OCCLUSION_PER_LIGHT_SEND_PARAMETERS , occlusionTotal, occlusionResult 
+#define OCCLUSION_PER_LIGHT_RECV_PARAMETERS , inout float occlusionTotal, float occlusionResult
+
+
+#define APPLY_OCCLUSION() occlusionTotal += occlusionResult * attenuation * OCCLUSION_STRENGTH;
+
+
+// total number of samples at each fragment
+#define SAO_NUM_SPIRAL_TURNS      16
+#define SAO_VARIATION             1
+
+const float saoIntensity = 10.0;
+const float saoSampleRadiusWS = OCCLUSION_RADIUS;
+const float saoBias = 0.1;
+
+
+// reconstructs view-space unit normal from view-space position
+vec3 sao_reconstructNormalVS(vec3 positionVS) {
+  return normalize(cross(dFdx(positionVS), dFdy(positionVS)));
+}
+ 
+vec3 sao_getPositionVS(vec2 uv) {
+  return texture(viewSpacePosition, uv).xyz;
+}
+ 
+// returns a unit vector and a screen-space radius for the tap on a unit disk 
+// (the caller should scale by the actual disk radius)
+vec2 sao_tapLocation(int sampleNumber, float spinAngle, out float radiusSS) {
+  // radius relative to radiusSS
+  float alpha = (float(sampleNumber) + 0.5) * (1.0 / float(OCCLUSION_SAMPLES));
+  float angle = alpha * (float(SAO_NUM_SPIRAL_TURNS) * 6.28) + spinAngle;
+  radiusSS = alpha;
+  return vec2(cos(angle), sin(angle));
+}
+ 
+vec3 sao_getOffsetPositionVS(vec2 uv, vec2 unitOffset, float radiusSS) {
+  uv = uv + radiusSS * unitOffset / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+  return sao_getPositionVS(uv);
+}
+ 
+float sao_sampleAO(vec2 uv, vec3 positionVS, vec3 normalVS, float sampleRadiusSS, 
+               int tapIndex, float rotationAngle)
+{
+  const float sao_epsilon = 0.01;
+  float radius2 = saoSampleRadiusWS * saoSampleRadiusWS;
+  
+  // offset on the unit disk, spun for this pixel
+  float radiusSS;
+  vec2 unitOffset = sao_tapLocation(tapIndex, rotationAngle, radiusSS);
+  radiusSS *= sampleRadiusSS;
+  
+  vec3 Q = sao_getOffsetPositionVS(uv, unitOffset, radiusSS);
+  vec3 v = Q - positionVS;
+  
+  float vv = dot(v, v);
+  float vn = dot(v, normalVS) - saoBias;
+  
+#if SAO_VARIATION == 0
+
+  // (from the HPG12 paper)
+  // Note large epsilon to avoid overdarkening within cracks
+  return float(vv < radius2) * max(vn / (sao_epsilon + vv), 0.0);
+  
+#elif SAO_VARIATION == 1 // default / recommended
+  
+  // Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
+  float f = max(radius2 - vv, 0.0) / radius2;
+  return f * f * f * max(vn / (sao_epsilon + vv), 0.0);
+  
+#elif SAO_VARIATION == 2
+  
+  // Medium contrast (which looks better at high radii), no division.  Note that the 
+  // contribution still falls off with radius^2, but we've adjusted the rate in a way that is
+  // more computationally efficient and happens to be aesthetically pleasing.
+  float invRadius2 = 1.0 / radius2;
+  return 4.0 * max(1.0 - vv * invRadius2, 0.0) * max(vn, 0.0);
+  
+#else
+  
+  // Low contrast, no division operation
+  return 2.0 * float(vv < radius2) * max(vn, 0.0);
+  
+#endif
+
+}
+
+float sao_rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
+ vec3 originVS = sao_getPositionVS(coord);
+  
+  vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
+   
+  float randomPatternRotationAngle = 2.0 * M_PI * sao_rand(coord);
+    
+  float radiusSS  = 0.0; // radius of influence in screen space
+  float radiusWS  = 0.0; // radius of influence in world space
+  float occlusion = 0.0;
+  
+  // TODO (travis): don't hardcode projScale
+  float projScale = 600.0;//1.0 / (2.0 * tan(uFOV * 0.5));
+  radiusWS = saoSampleRadiusWS;
+  radiusSS = projScale * radiusWS / abs(originVS.z);
+    
+ // radiusSS = -radiusSS;
+  radiusSS = min(radiusSS, 20.0);
+  // radiusSS = 0.0;
+  
+  // radiusSS = saturate(1.0 / dist) * 250.0;
+
+
+  for (int i = 0; i < OCCLUSION_SAMPLES; ++i) {
+    occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, 
+                          randomPatternRotationAngle);
+  }
+  
+  occlusion = 1.0 - occlusion / (4.0 * float(OCCLUSION_SAMPLES));
+  occlusion = clamp(pow(occlusion, 1.0 + saoIntensity), 0.0, 1.0);
+
+  return occlusion;
+  // return 1.0;
+}

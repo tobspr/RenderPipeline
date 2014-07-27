@@ -35,6 +35,7 @@ class BetterShader:
     def load(self, *args):
         """ Loads a shader in the order: vertex, fragment,
         geometry, tesseval, tesscontrol """
+        
         newArgs = []
 
         for arg in args:

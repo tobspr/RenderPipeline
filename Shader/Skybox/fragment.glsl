@@ -1,9 +1,9 @@
-#version 400
+#version 410
 
 #include "Includes/VertexOutput.include"
 
 // Input from the vertex shader
-in VertexOutput vOutput;
+layout(location=0) in VertexOutput vOutput;
 
 // This is required for the materials
 #include "Includes/MaterialPacking.include"

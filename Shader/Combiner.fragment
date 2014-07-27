@@ -1,14 +1,11 @@
 #version 420
 
-
 #include "Includes/Configuration.include"
 #include "Includes/PositionReconstruction.include"
 
 in vec2 texcoord;
 
 uniform sampler2D currentComputation;
-// uniform sampler2D lastFrame;
-// uniform sampler2D lastPosition;
 
 layout(rgba16f) uniform image2D lastFrame;
 layout(rgba16f) uniform image2D lastPosition;
@@ -17,7 +14,10 @@ uniform sampler2D positionBuffer;
 uniform sampler2D velocityBuffer;
 uniform sampler2D depthTex;
 
-// layout(r16f) writeonly uniform image2D dofStorage;
+
+#ifdef USE_DOF
+    layout(r16f) writeonly uniform image2D dofStorage;
+#endif
 
 uniform int temporalProjXOffs;
 
@@ -27,8 +27,8 @@ uniform vec3 cameraPosition;
 
 out vec4 result;
 
-const float rejectionFactor = 100.0;
-const float texcoordRejectionFactor = 500.0;
+const float rejectionFactor = 700.0;
+const float texcoordRejectionFactor = 1.0;
 
 void main() {
 
@@ -41,95 +41,41 @@ void main() {
     // Screen coordinate (half resolution only)
     ivec2 computationCoord = ivec2( screenCoord.x/2, screenCoord.y);
 
-    // Compute dof factors
-    // float bufferZ = texture(depthTex, texcoord).x;
-    // float linearZ = getLinearZFromZ(bufferZ);
-    // float dofFactor = (linearZ-4.0)/1.0;
-    // dofFactor = 0.0;
+    #ifdef USE_DOF
+        // Compute dof factors
+        float bufferZ = texture(depthTex, texcoord).x;
+        float linearZ = getLinearZFromZ(bufferZ);
+        float dofFactor = (linearZ-4.0)/1.0;
+        dofFactor = 0.0;
 
-    // Store dof in the storage
-    // imageStore(dofStorage, screenCoord, vec4(saturate(dofFactor)) );
+        // Store dof in the storage
+        imageStore(dofStorage, screenCoord, vec4(saturate(dofFactor)) );
+    #endif
 
     vec3 position = texelFetch(positionBuffer, screenCoord, 0).rgb;
 
     // The last computed value (half resolution only, but up-to-date)
     vec4 lastComputedValue = texelFetch(currentComputation, computationCoord, 0);
-
     vec2 velocity = -texture(velocityBuffer, texcoord).rg / 255.0;
-
 
     vec4 lastProj = lastMVP * vec4(position, 1);
     vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
     vec2 newVelocity = (texcoord - lastTexcoord);
-    // velocity = newVelocity;
-
 
     vec2 lastFrameTexcoord = texcoord - velocity;
     ivec2 lastFrameTexcoordInt = ivec2(lastFrameTexcoord * (screenSize)) ;
     ivec2 lastFrameTexcoordInt2 = ivec2((lastTexcoord * (screenSize))) ;
-
-
-    // vec4 oldProjectedColor = texture(lastFrame, lastFrameTexcoord);
     vec4 oldProjectedColor = imageLoad(lastFrame, lastFrameTexcoordInt);
-
-    // vec3 oldProjectedPos = texture(lastPosition, lastFrameTexcoord).rgb;
     vec3 oldProjectedPos = imageLoad(lastPosition, lastFrameTexcoordInt).rgb;
     
-
     float distanceToCamera = distance(cameraPosition, position);
-
     float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
 
-
-
-    // reliability = 0.0;
-
     reliability *= 1.0 - saturate(distance(lastFrameTexcoord, texcoord) * texcoordRejectionFactor);
-    // reliability = 0.0;
-
-    // Fetch the up-to-date position from the buffer
-    // vec4 position = vec4(texelFetch(positionBuffer, screenCoord, 0).rgb, 1);
-
-
-
-    // if (distance(finalValue, vec3(1,0,0)) < 0.0001) {
-    //     finalValue = lastComputedValue.rgb;
-    //     // finalValue = lastFrameValue.rgb;
-    // }
-
-    // result.xyz = vec3(d);
 
     result = mix(lastComputedValue, oldProjectedColor, saturate(reliability));
 
-    // result = vec4(reliability);
-
-    // result = oldProjectedColor;
-    // result = vec4(0,0,0,1);
-
-    // If we have a newer value, use this
-    // if ( (screenCoord.x) % 2 == 1-temporalProjXOffs) {
     if ( (screenCoord.x+screenCoord.y) % 2 == 1-temporalProjXOffs) {
         result = lastComputedValue;
-
-        // result = vec4(1);
-
-        // And also store this
-
-        // result = result.x == ((screenCoord.x+screenCoord.y)%2) ? vec4(0,1,0,1) : vec4(1,0,0,1);
-        // result = vec4(0,1,0,1);
-    // imageStore(lastFrame, screenCoord, result);
-    // imageStore(lastPosition, screenCoord, vec4(position, 0) );
     } 
-    // imageStore(lastFrame, screenCoord, result);
-
-
-    // result = vec4( abs(oldProjectedPos.rgb - position.rgb) * 100.0, 1.0);
-    // result = vec4( reliability > 0.9999 ? 1.0 : 0.0, 0,0 , 1);
-
-    // result.xyz *= 4.0;
-    // result = vec4(abs(lastFrameTexcoordInt - lastFrameTexcoordInt2), 0 ,1);
-    // result = texture(currentComputation, texcoord);
-    // result = vec4(dFdx(texcoord)*1000.0,0,1);
-
-
 }

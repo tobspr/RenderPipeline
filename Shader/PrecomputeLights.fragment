@@ -32,6 +32,12 @@ uniform int arrayPointLight[MAX_POINT_LIGHTS];
 uniform int arrayPointLightShadow[MAX_POINT_LIGHTS];
 uniform int countPointLightShadow;
 
+uniform int countDirectionalLight;
+uniform int arrayDirectionalLight[MAX_DIRECTIONAL_LIGHTS];
+
+uniform int countDirectionalLightShadow;
+uniform int arrayDirectionalLightShadow[MAX_DIRECTIONAL_LIGHTS];
+
 uniform vec4 bufferSize;
 
 
@@ -109,12 +115,14 @@ void main() {
 
     // Init counters
     int processedPointLights = 0;
-    int processesShadowPointLights = 0;
+    int processedShadowPointLights = 0;
+    int processedDirectionalLights = 0;
+    int processedDirectionalShadowLights = 0;
 
     if (false && minDepthLinear > 9000.0) {
         // Only skybox. We can stop here.
         processedPointLights = 0;
-        processesShadowPointLights = 0;
+        processedShadowPointLights = 0;
 
     } else {
 
@@ -130,7 +138,7 @@ void main() {
 
         // Build frustum
         // Based on http://gamedev.stackexchange.com/questions/67431/deferred-tiled-shading-tile-frusta-calculation-in-opengl
-        // Which is again based on DICE's presentation
+        // Which is based on DICE's presentation
         vec4 frustumRL = vec4(-projMat[0][0] * tileScale.x, 0.0f, tileBias.x, 0.0f);
         vec4 frustumTL = vec4(0.0f, -projMat[1][1] * tileScale.y, tileBias.y, 0.0f);
 
@@ -163,8 +171,9 @@ void main() {
         // First 8 pixels store count
         // Second/Third line stores point lights
         // Fourth/Fifth line stores shadow point lights
-        // Sixt, seventh, eight are free (yet)
-
+        // Sixt stores directional lights
+        // Seventh stores directional shadowed lights
+        // Eight is free (yet)
 
         // Process Point Lights
         ivec2 baseOffset = storageCoord + ivec2(0,1);
@@ -188,18 +197,48 @@ void main() {
             int index = arrayPointLightShadow[i];
             Light light = lights[index];
             if (isPointLightInFrustum(light, frustum)) {
-                currentOffset = ivec2(processesShadowPointLights % 8, processesShadowPointLights / 8);
+                currentOffset = ivec2(processedShadowPointLights % 8, processedShadowPointLights / 8);
                 imageStore(destination, baseOffset + currentOffset, ivec4(index));
-                processesShadowPointLights += 1;
+                processedShadowPointLights += 1;
             }
         }
+
+        // Process directional lights
+        baseOffset = storageCoord + ivec2(0,5);
+        currentOffset = ivec2(0);
+
+        for (int i = 0; i < countDirectionalLight; i++) {
+            // No frustum check. Directional lights are always visible
+            int index = arrayDirectionalLight[i];
+            Light light = lights[index];
+            currentOffset = ivec2(processedDirectionalLights % 8, processedDirectionalLights / 8);
+            imageStore(destination, baseOffset + currentOffset, ivec4(index));
+            processedDirectionalLights += 1;
+        }
+
+
+        // Process shadowed directional lights
+        baseOffset = storageCoord + ivec2(0,6);
+        currentOffset = ivec2(0);
+
+        for (int i = 0; i < countDirectionalLightShadow; i++) {
+            // No frustum check. Directional lights are always visible
+            int index = arrayDirectionalLightShadow[i];
+            Light light = lights[index];
+            currentOffset = ivec2(processedDirectionalShadowLights % 8, processedDirectionalShadowLights / 8);
+            imageStore(destination, baseOffset + currentOffset, ivec4(index));
+            processedDirectionalShadowLights += 1;
+        }
+
 
     }
 
     imageStore(destination, storageCoord + ivec2(0, 0), ivec4(processedPointLights));
-    imageStore(destination, storageCoord + ivec2(1, 0), ivec4(processesShadowPointLights));
+    imageStore(destination, storageCoord + ivec2(1, 0), ivec4(processedShadowPointLights));
+    imageStore(destination, storageCoord + ivec2(2, 0), ivec4(processedDirectionalLights));
+    imageStore(destination, storageCoord + ivec2(3, 0), ivec4(processedDirectionalShadowLights));
 
-    // float lightsVisibleFloat = float(processedPointLights + processesShadowPointLights) / float(2.0);
+    // float lightsVisibleFloat = float(processedPointLights + processedShadowPointLights) / float(2.0);
     // vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
 
 }

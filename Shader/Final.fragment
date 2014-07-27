@@ -37,13 +37,20 @@ void main() {
     // vec2 pixelVelocity = vec2(0.0);
 
 
-    // vec2 redAbVector = vec2(1.0,0) / screenSize;
-    // vec2 greenAbVector = vec2(0);
-    // vec2 blueAbVector = vec2(-1.0,0) / screenSize;
+    vec2 redAbVector = vec2(0.5,0) / screenSize;
+    vec2 greenAbVector = vec2(0);
+    vec2 blueAbVector = vec2(-0.5,0) / screenSize;
 
-    // result.r = textureLod(colorTex, texcoord + redAbVector, 0).r;
-    // result.g = textureLod(colorTex, texcoord + greenAbVector, 0).g;
-    // result.b = textureLod(colorTex, texcoord + blueAbVector, 0).b;
+
+    #ifdef DEBUG_DISABLE_COLOR_CORRECTION
+        redAbVector *= 0.0;
+        blueAbVector *= 0.0;
+    #endif
+
+
+    result.r = textureLod(colorTex, texcoord + redAbVector, 0).r;
+    result.g = textureLod(colorTex, texcoord + greenAbVector, 0).g;
+    result.b = textureLod(colorTex, texcoord + blueAbVector, 0).b;
 
        
 
@@ -61,8 +68,8 @@ void main() {
         }
         motionResult /= MOTION_BLUR_SAMPLES-1;
 
-        // result = mix(result, motionResult, saturate(velStrength*2.0) );
-        result = mix(result, motionResult, 1.0 );
+        result = mix(result, motionResult, saturate(velStrength*200.0) );
+        // result = mix(result, motionResult, 1.0 );
     
 
         #ifdef DEBUG_DISABLE_MOTIONBLUR
@@ -76,14 +83,14 @@ void main() {
     // result = textureLod(colorTex, texcoord, 0).rgb;
 
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
-        // vec3 colorCorrected = convertColorSpace(result);
-        // result = mix( colorCorrected , result, 0.5);
+        vec3 colorCorrected = convertColorSpace(result);
+        result = mix( colorCorrected , result, 0.8);
     #endif
 
     
-    // float vignett = smoothstep(0, 1, 
-    //     (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
-    // result *= 1.0 - vignett;
+    float vignett = smoothstep(0, 1, 
+        (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
+    result *= 1.0 - vignett;
 
     // result.rgb = newFrameVal.rgb;
  
@@ -94,6 +101,8 @@ void main() {
 
     #endif
 
+
+    // result = texture(adjustedNormals, texcoord).rgb;
     // result = textureLod(colorTex, texcoord, 0).rgb;
     // vec3 colorCorrected = convertColorSpace(result.xyz);
     // result.xyz = mix( colorCorrected , result.xyz, 0.6);

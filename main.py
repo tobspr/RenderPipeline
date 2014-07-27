@@ -18,16 +18,16 @@ sys.dont_write_bytecode = True
 import math
 import struct
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile, Vec3, OmniBoundingVolume, PStatClient, AntialiasAttrib
-from panda3d.core import ShadeModelAttrib
+from panda3d.core import loadPrcFile, Vec3
+from panda3d.core import Texture
 
 from classes.MovementController import MovementController
 from classes.RenderingPipeline import RenderingPipeline
 from classes.PointLight import PointLight
+from classes.DirectionalLight import DirectionalLight
 from classes.BetterShader import BetterShader
 from classes.DebugObject import DebugObject
 from classes.FirstPersonController import FirstPersonCamera
-
 
 
 class Main(ShowBase, DebugObject):
@@ -46,8 +46,6 @@ class Main(ShowBase, DebugObject):
         # Init the showbase
         ShowBase.__init__(self)
 
-        
-
         # Create the render pipeline, that's really everything!
         self.debug("Creating pipeline")
         self.renderPipeline = RenderingPipeline(self)
@@ -55,14 +53,16 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.create()
 
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg"
-        self.sceneSource = "Models/Cube/Model.egg"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        self.sceneSource = "Models/PSSMTest/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
 
-
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
+
+
+
         # self.scene.setScale(0.05)
         # self.scene.flattenStrong()
 
@@ -80,9 +80,14 @@ class Main(ShowBase, DebugObject):
 
         self.debug("Flattening scene and parenting to render")
         # self.convertToPatches(self.scene)
-        # self.scene.flattenStrong()
+        self.scene.flattenStrong()
 
         self.scene.reparentTo(self.render)
+
+
+        self.prepareSRGB(self.scene)
+        
+        # self.render2d.setShader(BetterShader.load("Shader/GUI/vertex.glsl", "Shader/GUI/fragment.glsl"))
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
@@ -130,26 +135,28 @@ class Main(ShowBase, DebugObject):
         ]
 
         # Add some shadow casting lights
-        for i in range(1):
-            break
-            angle = float(i) / 8.0 * math.pi * 2.0
+        for i in range(4):
+            # break
+            angle = float(i) / 4.0 * math.pi * 2.0
 
-            pos = Vec3(math.sin(angle) * 10.0 + 10, math.cos(angle) * 10.0, 20)
-            # pos = Vec3( (i-3.5)*15.0, 9, 5.0)
-            pos = Vec3(8)
+            # pos = Vec3(math.sin(angle) * 40.0 + 5, math.cos(angle) * 30.0, 30)
+            pos = Vec3( (i-3.5)*15.0, 9, 5.0)
+            # pos = Vec3(8)
             # print "POS:",pos
             light = PointLight()
-            light.setRadius(20.0)
-            light.setColor(Vec3(1))
+            light.setRadius(40.0)
+            light.setColor(Vec3(4))
             # light.setColor(colors[i]*1.0)
             light.setPos(pos)
-            # light.setShadowMapResolution(2048)
-            # light.setCastsShadows(True)
+            light.setShadowMapResolution(128)
+            light.setCastsShadows(True)
 
             # add light
             self.renderPipeline.addLight(light)
             self.lights.append(light)
             self.initialLightPos.append(pos)
+
+            # break
 
         # Add even more normal lights
         for x in range(4):
@@ -172,17 +179,31 @@ class Main(ShowBase, DebugObject):
 
         contrib = 1.0
 
-        for x,y in [(-1,-1), (-1,1), (1,-1), (1,1)]:
+        # for x, y in [(-1.1, -0.9), (-1.2, 0.8), (1.3, -0.7), (1.4, 0.6)]:
+        for x in xrange(4):
+            break
+        # for x,y in [(0,0)]:
             ambient = PointLight()
-            ambient.setRadius(400.0)
-            ambient.setPos(Vec3(120*x + 2, 120*y - 3, 100))
-            ambient.setColor(Vec3(contrib))
-            # ambient.setShadowMapResolution(2048)
-            # ambient.setCastsShadows(True)
+            ambient.setRadius(120.0)
+
+            initialPos = Vec3(float(x-2) * 21.0, 0, 60)
+            ambient.setPos(initialPos)
+            ambient.setColor(Vec3(1.0))
+            ambient.setShadowMapResolution(1024)
+            ambient.setCastsShadows(True)
+            self.lights.append(ambient)
+            self.initialLightPos.append(initialPos)
+            # ambient.attachDebugNode(render)
+
             self.renderPipeline.addLight(ambient)
 
-            contrib *= 0.4
+            # contrib *= 0.4
             # break
+
+        # dirLight = DirectionalLight()
+        # dirLight.setDirection(Vec3(50,100,150))
+        # dirLight.setColor(Vec3(10,10,10))
+        # self.renderPipeline.addLight(dirLight)
 
         self.skybox = None
         self.loadSkybox()
@@ -198,6 +219,26 @@ class Main(ShowBase, DebugObject):
         else:
             self.scene.clearRenderMode()
 
+    def prepareSRGB(self, np):
+        for tex in np.findAllTextures():
+
+            baseFormat = tex.getFormat()
+
+            if baseFormat == Texture.FRgb:
+                tex.setFormat(Texture.FSrgb)
+            elif baseFormat == Texture.FRgba:
+                tex.setFormat(Texture.FSrgbAlpha)
+            else:
+                print "Unkown texture format:",baseFormat
+                print "\tTexture:", tex
+
+            tex.setMinfilter(Texture.FTLinearMipmapLinear)
+            tex.setMagfilter(Texture.FTLinearMipmapLinear)
+            tex.setAnisotropicDegree(8)
+
+        # for stage in np.findAllTextureStages():
+        #     print stage, stage.getMode()
+
     def loadLights(self, scene):
         model = self.loader.loadModel(scene)
         lights = model.findAllMatches("**/PointLight*")
@@ -210,7 +251,7 @@ class Main(ShowBase, DebugObject):
             light.setColor(Vec3(2))
             light.setPos(prefab.getPos())
             light.setShadowMapResolution(2048)
-            light.setCastsShadows(True)
+            light.setCastsShadows(False)
             # light.attachDebugNode(self.render)
             self.renderPipeline.addLight(light)
             print "Adding:", prefab.getPos(), prefab.getScale()
@@ -222,7 +263,7 @@ class Main(ShowBase, DebugObject):
 
     def loadSkybox(self):
         """ Loads the sample skybox. Will get replaced later """
-        self.skybox = self.loader.loadModel("Skybox/Skybox")
+        self.skybox = self.loader.loadModel("Models/Skybox/Model")
         self.skybox.setScale(15000)
         self.skybox.reparentTo(self.render)
 
@@ -232,7 +273,8 @@ class Main(ShowBase, DebugObject):
 
         # return
         if self.renderPipeline:
-            self.scene.setShader(self.renderPipeline.getDefaultObjectShader(False))
+            self.scene.setShader(
+                self.renderPipeline.getDefaultObjectShader(False))
             self.renderPipeline.reloadShaders()
 
         if self.skybox:
@@ -258,18 +300,17 @@ class Main(ShowBase, DebugObject):
         # time.sleep(-0.2)
         # return task.cont
 
-
         if False:
-            animationTime = self.taskMgr.globalClock.getFrameTime() * 0.6
+            animationTime = self.taskMgr.globalClock.getFrameTime() * 1.0
 
             # displace every light every frame - performance test!
             for i, light in enumerate(self.lights):
                 lightAngle = float(math.sin(i * 1253325.0)) * \
                     math.pi * 2.0 + animationTime * 1.0
                 initialPos = self.initialLightPos[i]
-                light.setPos(initialPos + Vec3(math.sin(lightAngle) * 0.0,
-                                               math.cos(lightAngle) * 0.0,
-                                               math.sin(animationTime) * 10.0 ) )
+                light.setPos(initialPos + Vec3(math.sin(lightAngle) * 1.0,
+                                               math.cos(lightAngle) * 1.0,
+                                               math.sin(animationTime) * 1.0))
         if task is not None:
             return task.cont
 
