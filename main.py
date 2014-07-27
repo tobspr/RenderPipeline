@@ -134,21 +134,23 @@ class Main(ShowBase, DebugObject):
             Vec3(0, 0.5, 1.0),
         ]
 
+        res = [128, 256, 512, 1024]
+
         # Add some shadow casting lights
         for i in range(4):
             # break
             angle = float(i) / 4.0 * math.pi * 2.0
 
             # pos = Vec3(math.sin(angle) * 40.0 + 5, math.cos(angle) * 30.0, 30)
-            pos = Vec3( (i-3.5)*15.0, 9, 5.0)
+            pos = Vec3( (i-1.5)*40.0, 9, 5.0)
             # pos = Vec3(8)
             # print "POS:",pos
             light = PointLight()
-            light.setRadius(40.0)
+            light.setRadius(20.0)
             light.setColor(Vec3(4))
             # light.setColor(colors[i]*1.0)
             light.setPos(pos)
-            light.setShadowMapResolution(128)
+            light.setShadowMapResolution(res[i])
             light.setCastsShadows(True)
 
             # add light

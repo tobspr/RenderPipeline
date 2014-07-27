@@ -93,7 +93,7 @@ class PointLight(Light, DebugObject):
         for i in range(6):
             source = ShadowSource()
             source.setupPerspectiveLens(
-                1.0, self.radius, (91, 91))
+                1.0, self.radius, (95, 95))
             source.setResolution(self.shadowResolution)
             self._addShadowSource(source)
 

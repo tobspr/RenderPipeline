@@ -7,7 +7,7 @@ in vec2 texcoord;
 
 uniform sampler2D currentComputation;
 
-layout(rgba16f) uniform image2D lastFrame;
+uniform sampler2D lastFrame;
 layout(rgba16f) uniform image2D lastPosition;
 
 uniform sampler2D positionBuffer;
@@ -27,7 +27,7 @@ uniform vec3 cameraPosition;
 
 out vec4 result;
 
-const float rejectionFactor = 700.0;
+const float rejectionFactor = 50.0;
 const float texcoordRejectionFactor = 1.0;
 
 void main() {
@@ -56,6 +56,9 @@ void main() {
 
     // The last computed value (half resolution only, but up-to-date)
     vec4 lastComputedValue = texelFetch(currentComputation, computationCoord, 0);
+
+
+
     vec2 velocity = -texture(velocityBuffer, texcoord).rg / 255.0;
 
     vec4 lastProj = lastMVP * vec4(position, 1);
@@ -65,17 +68,27 @@ void main() {
     vec2 lastFrameTexcoord = texcoord - velocity;
     ivec2 lastFrameTexcoordInt = ivec2(lastFrameTexcoord * (screenSize)) ;
     ivec2 lastFrameTexcoordInt2 = ivec2((lastTexcoord * (screenSize))) ;
-    vec4 oldProjectedColor = imageLoad(lastFrame, lastFrameTexcoordInt);
+    vec4 oldProjectedColor = texture(lastFrame, lastFrameTexcoord);
+
     vec3 oldProjectedPos = imageLoad(lastPosition, lastFrameTexcoordInt).rgb;
     
+
+
+
     float distanceToCamera = distance(cameraPosition, position);
     float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
 
     reliability *= 1.0 - saturate(distance(lastFrameTexcoord, texcoord) * texcoordRejectionFactor);
 
+    reliability = 0.0;
+
     result = mix(lastComputedValue, oldProjectedColor, saturate(reliability));
+
+    result = oldProjectedColor;
 
     if ( (screenCoord.x+screenCoord.y) % 2 == 1-temporalProjXOffs) {
         result = lastComputedValue;
     } 
+
+    // result = vec4(reliability, reliability, reliability, 1);
 }
