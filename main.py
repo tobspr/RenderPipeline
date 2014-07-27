@@ -146,8 +146,8 @@ class Main(ShowBase, DebugObject):
             # pos = Vec3(8)
             # print "POS:",pos
             light = PointLight()
-            light.setRadius(20.0)
-            light.setColor(Vec3(4))
+            light.setRadius(200.0)
+            light.setColor(Vec3(1))
             # light.setColor(colors[i]*1.0)
             light.setPos(pos)
             light.setShadowMapResolution(res[i])

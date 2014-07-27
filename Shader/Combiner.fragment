@@ -27,7 +27,7 @@ uniform vec3 cameraPosition;
 
 out vec4 result;
 
-const float rejectionFactor = 0.0;
+const float rejectionFactor = 100.0;
 const float texcoordRejectionFactor = 0.0;
 
 void main() {
@@ -120,7 +120,7 @@ void main() {
     
     float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
 
-    reliability = 1.0;
+    // reliability = 1.0;
 
     ivec2 clampMax = ivec2(screenSize) - 1;
     ivec2 clampMin = ivec2(1);

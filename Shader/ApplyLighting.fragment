@@ -191,5 +191,7 @@ void main() {
         occlusionTotal = 0.0;
     #endif
 
+
+
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );
 }

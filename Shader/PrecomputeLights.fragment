@@ -17,7 +17,6 @@
 #include "Includes/LightCulling.include"
 
 in vec2 texcoord;
-in vec2 pixcoord;
 
 BINDLESS uniform sampler2D depth;
 
@@ -68,7 +67,7 @@ void main() {
     // Position on screen
     ivec2 virtualScreenSize = (precomputeSize) * patchSize;
 
-    ivec2 screenCoord = ivec2( (pixcoord-0.5) * patchSize);
+    ivec2 screenCoord = ivec2( (gl_FragCoord.xy - 0.5) * patchSize);
 
     // Where to store the data
     ivec2 storageCoord = precomputeCoord * 8;
