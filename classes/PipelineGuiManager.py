@@ -232,6 +232,12 @@ class PipelineGuiManager(DebugObject):
         self.chbFT_ColorCorrect = BetterCheckbox(
             parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["ft_COLOR_CORRECTION", True], checked=True)
 
+
+        self.chbFT_AOBlur = BetterCheckbox(
+            parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["ft_BLUR_OCCLUSION", True], checked=True)
+
+
+
     def _updateSetting(self, status, name, updateWhenFalse=False):
         # self.debug("Update setting:", name, "=", status, "whenFalse=",updateWhenFalse)
 

@@ -55,6 +55,7 @@ class Main(ShowBase, DebugObject):
         # Load some demo source
         self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Models/PSSMTest/Model.egg"
+        # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
 
@@ -141,12 +142,12 @@ class Main(ShowBase, DebugObject):
             # break
             angle = float(i) / 4.0 * math.pi * 2.0
 
-            # pos = Vec3(math.sin(angle) * 40.0 + 5, math.cos(angle) * 30.0, 30)
-            pos = Vec3( (i-1.5)*40.0, 9, 5.0)
+            pos = Vec3(math.sin(angle) * 10.0 + 5, math.cos(angle) * 20.0, 30)
+            # pos = Vec3( (i-1.5)*40.0, 9, 5.0)
             # pos = Vec3(8)
             # print "POS:",pos
             light = PointLight()
-            light.setRadius(200.0)
+            light.setRadius(100.0)
             light.setColor(Vec3(1))
             # light.setColor(colors[i]*1.0)
             light.setPos(pos)

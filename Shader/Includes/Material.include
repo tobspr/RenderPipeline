@@ -14,13 +14,15 @@ struct Material {
 };
 
 
-Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2) {
+Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, vec4 data3) {
     Material m;
 
     m.position = data0.xyz;
     m.roughness = data0.w;
-    m.normal = decodeNormal(data1.xy);
-    m.baseColor = unpackColor(data1.zw);
+    m.normal = data1.xyz;
+    // m.normal = decodeNormal(data1.xy);
+    m.baseColor = data3.xyz;
+    // m.baseColor = unpackColor(data1.zw);
     m.metallic = data2.w;
     m.specular = data2.z;
     // m.transluency = data2.z;

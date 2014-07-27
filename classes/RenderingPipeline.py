@@ -284,7 +284,7 @@ class RenderingPipeline(DebugObject):
         self.deferredTarget.addColorAndDepth()
 
         if self.haveMRT:
-            self.deferredTarget.addAuxTextures(2)
+            self.deferredTarget.addAuxTextures(3)
             self.deferredTarget.setAuxBits(16)
             self.deferredTarget.setColorBits(16)
             self.deferredTarget.setDepthBits(32)
@@ -374,6 +374,8 @@ class RenderingPipeline(DebugObject):
                 "data1", self.deferredTarget.getAuxTexture(0))
             self.lightingComputeContainer.setShaderInput(
                 "data2", self.deferredTarget.getAuxTexture(1))
+            self.lightingComputeContainer.setShaderInput(
+                "data3", self.deferredTarget.getAuxTexture(2))
             self.lightingComputeContainer.setShaderInput(
                 "depth", self.deferredTarget.getDepthTexture())
 

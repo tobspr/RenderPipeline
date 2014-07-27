@@ -23,7 +23,7 @@ void main() {
 
     vec4 sampledDiffuse = texture(DIFFUSE_TEX, vOutput.texcoord);
 
-    if (sampledDiffuse.a < 0.5) discard;
+    // if (sampledDiffuse.a < 0.5) discard;
 
     vec4 sampledNormal  = texture(NORMAL_TEX, vOutput.texcoord);
     vec4 sampledSpecular = texture(SPECULAR_TEX, vOutput.texcoord);
@@ -52,9 +52,6 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
-
-    // For YCbCr packing testing
-    // m.baseColor = vec3(vOutput.texcoord, sin(osg_FrameTime*4.0) * 0.5 + 0.5 );
-
+    
     renderMaterial(m);
 }

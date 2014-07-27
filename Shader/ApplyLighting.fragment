@@ -20,6 +20,7 @@
 uniform sampler2D data0;
 uniform sampler2D data1;
 uniform sampler2D data2;
+uniform sampler2D data3;
 
 uniform sampler2D depth;
 
@@ -73,7 +74,8 @@ void main() {
     vec4 target0data = texelFetch(data0, screenCoord, 0);
     vec4 target1data = texelFetch(data1, screenCoord, 0);
     vec4 target2data = texelFetch(data2, screenCoord, 0);
-    Material material = unpackMaterial(target0data, target1data, target2data);
+    vec4 target3data = texelFetch(data3, screenCoord, 0);
+    Material material = unpackMaterial(target0data, target1data, target2data, target3data);
 
     // Fetch the light counts
     // We perform a min as it *might* be that we read a wrong value

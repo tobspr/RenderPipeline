@@ -38,9 +38,15 @@ const float sqrt_of_2 = 1.4142135623;
 #include "Includes/Performance.include"
 
 // Wheter to use post-processing blur, this affects occlusion
-#define USE_OCCLUSION_BLUR
 
 #define M_PI 3.14159265
+
+
+#ifndef DEBUG_DISABLE_BLUR_OCCLUSION
+    #define USE_OCCLUSION_BLUR
+#endif
+
+
 
 
 

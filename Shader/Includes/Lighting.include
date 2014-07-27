@@ -35,6 +35,8 @@ vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
 
 vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, vec3 h, float attenuation) {
 
+    // return vec3(attenuation);
+
     #if USE_SIMPLE_LIGHTING
 
         // return max(vec3(0.0), light.color * attenuation * dot(n, l));
@@ -174,7 +176,7 @@ vec3 applyPointLightWithShadow(Light light, Material material
 
 
     // float baseBias = 0.025 * (1.0 + resFactor*4.0);
-    float baseBias = 0.2;
+    float baseBias = 0.3;
 
     biasedPos += baseBias * l * offsets.x;
     biasedPos += baseBias * n * offsets.y;
@@ -195,13 +197,13 @@ vec3 applyPointLightWithShadow(Light light, Material material
     float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
     // float bias = 0.004 * getShadowOffsets(n, l).x * resFactor;
 
-    float bias = 0.0;
+    float bias = 0.0002;
 
 
     // apply point light shadows
     float shadowFactor = 0.0;
 
-    #define SHADOWS_NUM_SAMPLES 1
+    // #define SHADOWS_NUM_SAMPLES 1
 
     for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
 
