@@ -25,7 +25,7 @@ void main() {
     ivec2 screenSize = textureSize(colorTex, 0);
 
     // Screen coordinate (as int vec)
-    ivec2 screenCoord = ivec2(texcoord * screenSize);
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
 
     // Store last frame 
     storeTemporalReprojection(screenCoord);

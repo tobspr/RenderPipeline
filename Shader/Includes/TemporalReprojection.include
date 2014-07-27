@@ -3,7 +3,7 @@
 
 uniform sampler2D newFrame;
 uniform sampler2D currentPosition;
-layout(rgba16f) uniform image2D lastFrame;
+layout(rgba8) uniform image2D lastFrame;
 layout(rgba16f) uniform image2D lastPosition;
 
 void storeTemporalReprojection(ivec2 coord) {

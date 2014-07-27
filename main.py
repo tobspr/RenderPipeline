@@ -53,8 +53,8 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.create()
 
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
-        self.sceneSource = "Models/PSSMTest/Model.egg"
+        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Models/PSSMTest/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
 

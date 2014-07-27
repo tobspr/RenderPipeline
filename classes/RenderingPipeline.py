@@ -537,7 +537,7 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeCombinedTex = Texture("Lighting-Compute-Combined")
         self.lightingComputeCombinedTex.setup2dTexture(
             self.showbase.win.getXSize(), self.showbase.win.getYSize(),
-            Texture.TFloat, Texture.FRgba16)
+            Texture.TFloat, Texture.FRgba8)
         self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
         self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
 

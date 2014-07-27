@@ -100,7 +100,7 @@ float getRandom(vec2 seed) {
 
 float computePointLightAttenuation(Light light, float distanceToLight) {
 
-    return distanceToLight < light.radius ? 1.0 : 0.0;
+    // return distanceToLight < light.radius ? 1.0 : 0.0;
 
     float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.2;
 

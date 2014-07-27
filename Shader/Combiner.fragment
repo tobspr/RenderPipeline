@@ -8,7 +8,7 @@ in vec2 texcoord;
 uniform sampler2D currentComputation;
 
 uniform sampler2D lastFrame;
-layout(rgba16f) uniform image2D lastPosition;
+uniform sampler2D lastPosition;
 
 uniform sampler2D positionBuffer;
 uniform sampler2D velocityBuffer;
@@ -27,8 +27,8 @@ uniform vec3 cameraPosition;
 
 out vec4 result;
 
-const float rejectionFactor = 50.0;
-const float texcoordRejectionFactor = 1.0;
+const float rejectionFactor = 0.0;
+const float texcoordRejectionFactor = 0.0;
 
 void main() {
 
@@ -36,7 +36,7 @@ void main() {
     ivec2 screenSize = textureSize(positionBuffer, 0);
 
     // Screen coordinate (as int vec)
-    ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x, screenSize.y));
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
 
     // Screen coordinate (half resolution only)
     ivec2 computationCoord = ivec2( screenCoord.x/2, screenCoord.y);
@@ -56,39 +56,85 @@ void main() {
 
     // The last computed value (half resolution only, but up-to-date)
     vec4 lastComputedValue = texelFetch(currentComputation, computationCoord, 0);
-
-
-
     vec2 velocity = -texture(velocityBuffer, texcoord).rg / 255.0;
 
     vec4 lastProj = lastMVP * vec4(position, 1);
     vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
     vec2 newVelocity = (texcoord - lastTexcoord);
+    vec2 texelSize = 1.0 / screenSize;
 
     vec2 lastFrameTexcoord = texcoord - velocity;
-    ivec2 lastFrameTexcoordInt = ivec2(lastFrameTexcoord * (screenSize)) ;
-    ivec2 lastFrameTexcoordInt2 = ivec2((lastTexcoord * (screenSize))) ;
+    ivec2 lastFrameTexcoordInt = ivec2(lastFrameTexcoord * screenSize);
     vec4 oldProjectedColor = texture(lastFrame, lastFrameTexcoord);
-
-    vec3 oldProjectedPos = imageLoad(lastPosition, lastFrameTexcoordInt).rgb;
+    vec3 oldProjectedPos = texture(lastPosition, lastFrameTexcoord).rgb;
     
+
+    vec2 texcUP    = lastFrameTexcoord + vec2(0,1)  * texelSize;
+    vec2 texcLEFT  = lastFrameTexcoord + vec2(-1,0) * texelSize;
+    vec2 texcRIGHT = lastFrameTexcoord + vec2(1,0)  * texelSize;
+    vec2 texcDOWN  = lastFrameTexcoord + vec2(0,-1) * texelSize;
+    vec2 texcMID   = lastFrameTexcoord + vec2(0,0)  * texelSize;
+
+    vec3 posUP    = texture(lastPosition, texcUP).rgb;
+    vec3 posLEFT  = texture(lastPosition, texcLEFT).rgb;
+    vec3 posRIGHT = texture(lastPosition, texcRIGHT).rgb;
+    vec3 posDOWN  = texture(lastPosition, texcDOWN).rgb;
+    vec3 posMID   = texture(lastPosition, texcMID).rgb;
+
+    vec2 bestOffs   = ivec2(0);
+    float errorUP    = distance(posUP, position);
+    float errorLEFT  = distance(posUP, position);
+    float errorRIGHT = distance(posUP, position);
+    float errorDOWN  = distance(posUP, position);
+    float errorMID   = distance(posMID, position);
+
+    float bestErr = 100000000.0;
+
+    if (errorUP < bestErr) {
+        bestOffs = texcUP;
+        bestErr = errorUP;
+    }
+    if (errorDOWN < bestErr) {
+        bestOffs = texcDOWN;
+        bestErr = errorDOWN;
+    }
+    if (errorLEFT < bestErr) {
+        bestOffs = texcLEFT;
+        bestErr = errorLEFT;
+    }
+    if (errorRIGHT < bestErr) {
+        bestOffs = texcRIGHT;
+        bestErr = errorRIGHT;
+    }
+    if (errorMID < bestErr) {
+        bestOffs = texcMID;
+        bestErr = errorMID;
+    }
+
+
+    vec4 bestLastProjected = texture(lastFrame, bestOffs);
 
 
 
     float distanceToCamera = distance(cameraPosition, position);
+    
     float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
 
-    reliability *= 1.0 - saturate(distance(lastFrameTexcoord, texcoord) * texcoordRejectionFactor);
+    reliability = 1.0;
 
-    reliability = 0.0;
+    ivec2 clampMax = ivec2(screenSize) - 1;
+    ivec2 clampMin = ivec2(1);
 
-    result = mix(lastComputedValue, oldProjectedColor, saturate(reliability));
 
-    result = oldProjectedColor;
+
+    if ( clamp(lastFrameTexcoordInt, clampMin, clampMax) != lastFrameTexcoordInt ) {
+        reliability = 0.0;
+    }
+
+    result = mix(lastComputedValue, bestLastProjected, saturate(reliability));
 
     if ( (screenCoord.x+screenCoord.y) % 2 == 1-temporalProjXOffs) {
-        result = lastComputedValue;
+        result = vec4(lastComputedValue);
     } 
 
-    // result = vec4(reliability, reliability, reliability, 1);
 }
