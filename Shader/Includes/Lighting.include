@@ -249,6 +249,7 @@ vec3 applyDirectionalLight(Light light, Material material
 
     APPLY_OCCLUSION();
 
+
     vec3 ambientContribution = 0.1 * material.baseColor * vec3(0.2,0.5,0.8) * attenuation;
     return computeLightModel(light, material, l,v, n, h, attenuation) + ambientContribution;
 }

@@ -53,8 +53,8 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.create()
 
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
-        # self.sceneSource = "Models/PSSMTest/Model.egg"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        self.sceneSource = "Models/PSSMTest/Model.egg"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -139,15 +139,15 @@ class Main(ShowBase, DebugObject):
 
         # Add some shadow casting lights
         for i in range(4):
-            # break
+            break
             angle = float(i) / 4.0 * math.pi * 2.0
 
-            pos = Vec3(math.sin(angle) * 10.0 + 5, math.cos(angle) * 20.0, 30)
-            # pos = Vec3( (i-1.5)*40.0, 9, 5.0)
+            # pos = Vec3(math.sin(angle) * 10.0 + 5, math.cos(angle) * 20.0, 30)
+            pos = Vec3( (i-1.5)*15.0, 9, 5.0)
             # pos = Vec3(8)
             # print "POS:",pos
             light = PointLight()
-            light.setRadius(100.0)
+            light.setRadius(150.0)
             light.setColor(Vec3(1))
             # light.setColor(colors[i]*1.0)
             light.setPos(pos)
@@ -203,10 +203,11 @@ class Main(ShowBase, DebugObject):
             # contrib *= 0.4
             # break
 
-        # dirLight = DirectionalLight()
-        # dirLight.setDirection(Vec3(50,100,150))
-        # dirLight.setColor(Vec3(10,10,10))
-        # self.renderPipeline.addLight(dirLight)
+        dirLight = DirectionalLight()
+        dirLight.setDirection(Vec3(50,100,150))
+        dirLight.setPos(Vec3(50, 100, 150))
+        dirLight.setColor(Vec3(5))
+        self.renderPipeline.addLight(dirLight)
 
         self.skybox = None
         self.loadSkybox()
@@ -235,9 +236,9 @@ class Main(ShowBase, DebugObject):
                 print "Unkown texture format:",baseFormat
                 print "\tTexture:", tex
 
-            tex.setMinfilter(Texture.FTLinearMipmapLinear)
-            tex.setMagfilter(Texture.FTLinearMipmapLinear)
-            tex.setAnisotropicDegree(8)
+            tex.setMinfilter(Texture.FTLinearMipmapNearest)
+            tex.setMagfilter(Texture.FTLinear)
+            tex.setAnisotropicDegree(16)
 
         # for stage in np.findAllTextureStages():
         #     print stage, stage.getMode()

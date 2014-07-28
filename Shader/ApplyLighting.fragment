@@ -77,6 +77,10 @@ void main() {
     vec4 target3data = texelFetch(data3, screenCoord, 0);
     Material material = unpackMaterial(target0data, target1data, target2data, target3data);
 
+    #ifdef DEBUG_RM_LIGHTING
+        material.baseColor = vec3(1);
+    #endif
+
     // Fetch the light counts
     // We perform a min as it *might* be that we read a wrong value
     // from the texture. Imagine reading 123123123 from the texture,
@@ -189,7 +193,8 @@ void main() {
     #endif
 
     #ifdef DEBUG_RM_NORMAL
-        result = vec3(material.normal);
+        result = vec3(abs(material.normal));
+        // result = vec3((material.normal.x));
         occlusionTotal = 0.0;
     #endif
 

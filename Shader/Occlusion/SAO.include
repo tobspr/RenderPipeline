@@ -21,7 +21,7 @@ uniform sampler2D viewSpacePosition;
 #define SAO_NUM_SPIRAL_TURNS      16
 #define SAO_VARIATION             1
 
-const float saoIntensity = 10.0;
+const float saoIntensity = 4.0;
 const float saoSampleRadiusWS = OCCLUSION_RADIUS;
 const float saoBias = 0.1;
 
@@ -111,18 +111,17 @@ OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanc
   float radiusWS  = 0.0; // radius of influence in world space
   float occlusion = 0.0;
   
-  // TODO (travis): don't hardcode projScale
-  float projScale = 600.0;//1.0 / (2.0 * tan(uFOV * 0.5));
+  float projScale = 500.0;//1.0 / (2.0 * tan(uFOV * 0.5));
   radiusWS = saoSampleRadiusWS;
   radiusSS = projScale * radiusWS / abs(originVS.z);
     
  // radiusSS = -radiusSS;
-  radiusSS = min(radiusSS, 20.0);
+  radiusSS = min(radiusSS,20.0);
   // radiusSS = 0.0;
   
-  // radiusSS = saturate(1.0 / dist) * 250.0;
+  // radiusSS = saturate(1.0 / distanceToCamera) * 250.0;
 
-  float intensity = distanceToCamera * saoIntensity * 0.001;
+  float intensity = pow(distanceToCamera, 1.3) * saoIntensity * 0.01;
 
   for (int i = 0; i < OCCLUSION_SAMPLES; ++i) {
     occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, 

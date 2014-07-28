@@ -25,9 +25,8 @@ Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, vec4 data3) {
     // m.baseColor = unpackColor(data1.zw);
     m.metallic = data2.w;
     m.specular = data2.z;
-    // m.transluency = data2.z;
+    m.transluency = data1.w;
 
-    m.transluency = 0.0;
-
+    
     return m;
 }

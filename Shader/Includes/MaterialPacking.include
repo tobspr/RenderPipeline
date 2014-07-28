@@ -38,7 +38,7 @@ void renderMaterial(Material m) {
 
     // Output
     color0 = vec4(m.position.x, m.position.y, m.position.z, m.roughness);
-    color1 = vec4(normal.x,normal.y,normal.z, 0);
+    color1 = vec4(normal.x,normal.y,normal.z, m.transluency);
     color2 = vec4(velocity.x, velocity.y, m.specular, m.metallic);
     color3 = vec4(color.x, color.y, color.z, 0);
 }

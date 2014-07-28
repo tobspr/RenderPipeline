@@ -9,7 +9,6 @@ uniform mat4 trans_model_to_world;
 // Material properties
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
-in vec3 p3d_Tangent;
 
 in vec2 p3d_MultiTexCoord0;
 
@@ -35,15 +34,13 @@ uniform mat3 p3d_NormalMatrix;
 void main() {
 
     // Transform normal to world space
-    // vOutput.normalWorld   = normalize(p3d_NormalMatrix * p3d_Normal ).xyz;
     vOutput.normalWorld   = normalize(trans_model_to_world * vec4(p3d_Normal, 0) ).xyz;
-    vOutput.tangentWorld  = normalize(trans_model_to_world * vec4(p3d_Tangent, 0) ).xyz;
-    vOutput.binormalWorld = cross(vOutput.tangentWorld, vOutput.normalWorld);
 
     // Transform position to world space
     vOutput.positionWorld = (trans_model_to_world * p3d_Vertex).xyz;
 
     // Pass texcoord to fragment shader
+    // vOutput.texcoord = p3d_MultiTexCoord0.xy;
     vOutput.texcoord = p3d_MultiTexCoord0.xy;
 
     // Also pass diffuse to fragment shader

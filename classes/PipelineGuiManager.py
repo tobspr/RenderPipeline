@@ -54,7 +54,7 @@ class BetterCheckbox(DebugObject):
         for tex in [checkedImg, uncheckedImg]:
             tex.setMinfilter(Texture.FTNearest)
             tex.setMagfilter(Texture.FTNearest)
-            tex.setAnisotropicDegree(8)
+            tex.setAnisotropicDegree(0)
             tex.setWrapU(Texture.WMClamp)
             tex.setWrapV(Texture.WMClamp)
 
@@ -194,6 +194,11 @@ class PipelineGuiManager(DebugObject):
 
         self.chbRM_SSDO = BetterCheckbox(
             parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["rm_SSDO", False], radio=True)
+
+        self.chbRM_Lighting = BetterCheckbox(
+            parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["rm_Lighting", False], radio=True)
+
+
         # self.chbRM_Wireframe = BetterCheckbox(
         # parent=self.debuggerParent, x=150, y=currY,
         # callback=self._updateSetting, extraArgs=["rm_Wireframe", False],
@@ -208,6 +213,7 @@ class PipelineGuiManager(DebugObject):
         self.renderModes.add(self.chbRM_Specular)
         self.renderModes.add(self.chbRM_Normal)
         self.renderModes.add(self.chbRM_SSDO)
+        self.renderModes.add(self.chbRM_Lighting)
 
         # Features
 
