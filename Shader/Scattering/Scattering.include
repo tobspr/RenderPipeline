@@ -1,0 +1,167 @@
+
+
+#include "Scattering/ScatteringOptions.include"
+
+
+#ifndef NO_SCATTERING_SAMPLERS
+
+    uniform sampler2D transmittanceColor;
+
+#endif
+
+void getTransmittanceRMu(ScatteringOptions options, ivec2 texcoord, out float r, out float muS) {
+    r = texcoord.y / float(SCATTERING_TRANSMITTANCE_H);
+    muS = texcoord.x / float(SCATTERING_TRANSMITTANCE_W);
+
+    if (options.transmittanceNonLinear) {
+        r = options.radiusGround + (r * r) * (options.radiusAtmosphere - options.radiusGround);
+        muS = -0.15 + tan(1.5 * muS) / tan(1.5) * (1.0 + 0.15);
+    } else {
+        r = options.radiusGround + r * (options.radiusAtmosphere - options.radiusGround);
+        muS = -0.15 + muS * (1.0 + 0.15);
+    }
+}
+
+// nearest intersection of ray r,mu with ground or top atmosphere boundary
+// mu=cos(ray zenith angle at ray origin)
+float limit(ScatteringOptions options, float r, float mu) {
+    float dout = -r * mu + sqrt(r * r * (mu * mu - 1.0) + options.radiusAtmosphere1 * options.radiusAtmosphere1);
+    float delta2 = r * r * (mu * mu - 1.0) + options.radiusGround * options.radiusGround;
+    if (delta2 >= 0.0) {
+        float din = -r * mu - sqrt(delta2);
+        if (din >= 0.0) {
+            dout = min(dout, din);
+        }
+    }
+    return dout;
+}
+
+
+// optical depth for ray (r,mu) of length d, using analytic formula
+// (mu=cos(view zenith angle)), intersections with ground ignored
+// H=height scale of exponential density function
+// float opticalDepth(ScatteringOptions options, float H, float r, float mu, float d) {
+//     float a = sqrt((0.5/H)*r);
+//     vec2 a01 = a*vec2(mu, mu + d / r);
+//     vec2 a01s = sign(a01);
+//     vec2 a01sq = a01*a01;
+//     float x = a01s.y > a01s.x ? exp(a01sq.x) : 0.0;
+//     vec2 y = a01s / (2.3193*abs(a01) + sqrt(1.52*a01sq + 4.0)) * vec2(1.0, exp(-d/H*(d/(2.0*r)+mu)));
+//     return sqrt((6.2831*H)*r) * exp((options.radiusGround-r)/H) * (x + dot(y, vec2(1.0, -1.0)));
+// }
+
+// optical depth for ray (r,mu) of length d, using analytic formula
+// (mu=cos(view zenith angle)), intersections with ground ignored
+// H=height scale of exponential density function
+float transmittanceOpticalDepth(ScatteringOptions options, float H, float r, float mu) {
+    float result = 0.0;
+    float dx = limit(options, r, mu) / float(TRANSMITTANCE_INTEGRAL_SAMPLES);
+    float xi = 0.0;
+    float yi = exp(-(r - options.radiusGround) / H);
+    for (int i = 1; i <= TRANSMITTANCE_INTEGRAL_SAMPLES; ++i) {
+        float xj = float(i) * dx;
+        float yj = exp(-(sqrt(r * r + xj * xj + 2.0 * xj * r * mu) - options.radiusGround) / H);
+        result += (yi + yj) / 2.0 * dx;
+        xi = xj;
+        yi = yj;
+    }
+    return mu < -sqrt(1.0 - (options.radiusGround / r) * (options.radiusGround / r)) ? 1e9 : result;
+}
+
+
+void getDhdhR(ScatteringOptions options, float layer, out vec4 dhdH, out float r) {
+    r = float(layer) / float(SCATTERING_RES_R - 1.0);
+    r = r * r;
+    r = sqrt(options.radiusGround * options.radiusGround + 
+        r * (options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround)) + 
+    (layer == 0.0 ? 0.01 : (layer == SCATTERING_RES_R - 1 ? -0.001 : 0.0));
+    float dmin = options.radiusAtmosphere - r;
+    float dmax = sqrt(r * r - options.radiusGround * options.radiusGround) + 
+                 sqrt(options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround);
+    float dminp = r - options.radiusGround;
+    float dmaxp = sqrt(r * r - options.radiusGround * options.radiusGround);
+    dhdH = vec4(dmin, dmax, dminp, dmaxp);
+}
+
+
+void getIrradianceRMuS(ScatteringOptions options, vec2 coord, out float r, out float muS) {
+    r = options.radiusGround + (coord.y - 0.5) / (float(SCATTERING_SKY_H) - 1.0) * (options.radiusAtmosphere - options.radiusGround);
+    muS = -0.2 + (coord.x - 0.5) / (float(SCATTERING_SKY_W) - 1.0) * (1.0 + 0.2);
+}
+
+
+
+vec2 getTransmittanceUV(ScatteringOptions options, float r, float mu) {
+    float uR, uMu;
+    if (options.transmittanceNonLinear) {
+        uR = sqrt((r - options.radiusGround) / (options.radiusAtmosphere - options.radiusGround));
+        uMu = atan((mu + 0.15) / (1.0 + 0.15) * tan(1.5)) / 1.5;
+    } else {
+        uR = (r - options.radiusGround) / (options.radiusAtmosphere - options.radiusGround);
+        uMu = (mu + 0.15) / (1.0 + 0.15);
+    }
+    return vec2(uMu, uR);
+}
+
+
+#ifndef NO_SCATTERING_SAMPLERS
+
+    // transmittance(=transparency) of atmosphere for infinite ray (r,mu)
+    // (mu=cos(view zenith angle)), intersections with ground ignored
+    vec3 transmittance(ScatteringOptions options, float r, float mu) {
+        vec2 uv = getTransmittanceUV(options, r, mu);
+        return texture2D(transmittanceColor, uv).rgb;
+    }
+
+#endif
+
+
+
+void getMuMuSNu(ScatteringOptions options, vec2 coord, float r, vec4 dhdH, out float mu, out float muS, out float nu) {
+    float x = coord.x - 0.5;
+    float y = coord.y - 0.5;
+
+    if (options.inscatterNonLinear) {
+
+        if (y < float(SCATTERING_RES_MU) / 2.0) {
+            float d = 1.0 - y / (float(SCATTERING_RES_MU) / 2.0 - 1.0);
+            d = min(max(dhdH.z, d * dhdH.w), dhdH.w * 0.999);
+            mu = (options.radiusGround * options.radiusGround - r * r - d * d) / (2.0 * r * d);
+            mu = min(mu, -sqrt(1.0 - (options.radiusGround / r) * (options.radiusGround / r)) - 0.001);
+        } else {
+            float d = (y - float(SCATTERING_RES_MU) / 2.0) / (float(SCATTERING_RES_MU) / 2.0 - 1.0);
+            d = min(max(dhdH.x, d * dhdH.y), dhdH.y * 0.999);
+            mu = (options.radiusAtmosphere * options.radiusAtmosphere - r * r - d * d) / (2.0 * r * d);
+        }
+        muS = mod(x, float(SCATTERING_RES_MU_S)) / (float(SCATTERING_RES_MU_S) - 1.0);
+        // paper formula
+        //muS = -(0.6 + log(1.0 - muS * (1.0 -  exp(-3.6)))) / 3.0;
+        // better formula
+        muS = tan((2.0 * muS - 1.0 + 0.26) * 1.1) / tan(1.26 * 1.1);
+        nu = -1.0 + floor(x / float(SCATTERING_RES_MU_S)) / (float(SCATTERING_RES_NU) - 1.0) * 2.0;
+
+    } else {
+        mu = -1.0 + 2.0 * y / (float(SCATTERING_RES_MU) - 1.0);
+        muS = mod(x, float(SCATTERING_RES_MU_S)) / (float(SCATTERING_RES_MU_S) - 1.0);
+        muS = -0.2 + muS * 1.2;
+        nu = -1.0 + floor(x / float(SCATTERING_RES_MU_S)) / (float(SCATTERING_RES_NU) - 1.0) * 2.0;
+    }
+
+}
+
+
+
+// transmittance(=transparency) of atmosphere between x and x0
+// assume segment x,x0 not intersecting ground
+// d = distance between x and x0, mu=cos(zenith angle of [x,x0) ray at x)
+vec3 transmittance(ScatteringOptions options, float r, float mu, float d) {
+    vec3 result;
+    float r1 = sqrt(r * r + d * d + 2.0 * r * mu * d);
+    float mu1 = (r * mu + d) / r1;
+    if (mu > 0.0) {
+        result = min(transmittance(options, r, mu) / transmittance(options, r1, mu1), 1.0);
+    } else {
+        result = min(transmittance(options, r1, -mu1) / transmittance(options, r, -mu), 1.0);
+    }
+    return result;
+}

@@ -11,8 +11,7 @@ uniform sampler2D p3d_Texture0;
 uniform sampler2D p3d_Texture1;
 uniform sampler2D p3d_Texture2;
 uniform sampler2D p3d_Texture3;
-uniform sampler2D p3d_Texture4;
-uniform sampler2D p3d_Texture5;
+
 
 // This is required for the materials
 #include "Includes/MaterialPacking.include"

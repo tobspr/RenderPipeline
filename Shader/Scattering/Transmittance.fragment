@@ -1,0 +1,25 @@
+#version 150
+
+#include "Scattering/ScatteringOptions.include"
+#include "Scattering/Scattering.include"
+
+uniform ScatteringOptions options;
+
+in vec2 texcoord;
+out vec4 color;
+
+
+void main() {
+
+    // Transmittance
+    float r, muS;
+    getTransmittanceRMu(options, ivec2(gl_FragCoord.xy), r, muS);
+
+    float opticalDepthRayleigh  = transmittanceOpticalDepth(options, options.rayleighFactor, r, muS);
+    float opticalDepthMie  = transmittanceOpticalDepth(options, options.mieFactor, r, muS);
+
+    vec3 combinedDepth = options.betaRayleigh * opticalDepthRayleigh + options.betaMieScatteringAdjusted * opticalDepthMie;
+    combinedDepth = exp(-combinedDepth);
+
+    color = vec4( combinedDepth , 0);
+}

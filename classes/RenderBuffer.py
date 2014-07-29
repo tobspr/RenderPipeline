@@ -164,7 +164,7 @@ class RenderBuffer(DebugObject):
                 handle.setup2dTextureArray(self._layers)
 
         # set layers for depth texture
-        if self._layers > 1:
+        if self._layers > 1 and self.hasTarget(RenderTargetType.Depth):
             self.getTarget(RenderTargetType.Depth).setup2dTextureArray(
                 self._layers)
 

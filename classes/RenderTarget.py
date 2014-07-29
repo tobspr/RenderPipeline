@@ -440,6 +440,10 @@ class RenderTarget(DebugObject):
         self._setSizeShaderInput()
         """
 
+    def deleteBuffer(self):
+        """ Deletes this buffer, restoring the previous state """
+        self.warn("Todo:: Implement delete Buffer")
+
     def __repr__(self):
         """ Returns a representative string of this instance """
         return "RenderTarget('" + self._name + "')"

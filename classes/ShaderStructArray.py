@@ -63,7 +63,8 @@ class ShaderStructElement:
         """ A struct array calls this when this object got deleted from
         the list, e.g. by assigning another object at that index """
 
-        del self.referencedListsIndices[structArrayIndex]
+        if structArrayIndex in self.referencedListsIndices:
+            del self.referencedListsIndices[structArrayIndex]
 
 
 

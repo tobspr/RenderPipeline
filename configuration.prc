@@ -113,7 +113,7 @@ textures-power-2 none
 # notify-level-glgsg debug
 
 # Better GL performance
-gl-finish #f
+gl-finish #t
 gl-force-no-error #f
 gl-check-errors #f
 gl-force-no-flush #t

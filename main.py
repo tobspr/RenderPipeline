@@ -205,7 +205,7 @@ class Main(ShowBase, DebugObject):
 
         dirLight = DirectionalLight()
         dirLight.setDirection(Vec3(50,100,150))
-        dirLight.setPos(Vec3(50, 100, 150))
+        # dirLight.setPos(Vec3(50, 100, 150))
         dirLight.setColor(Vec3(5))
         self.renderPipeline.addLight(dirLight)
 
