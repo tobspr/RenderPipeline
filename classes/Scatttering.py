@@ -60,6 +60,12 @@ class Scattering(DebugObject):
         self.targets['irradianceE'].setShaderInput('factor1', 0.0)
         self.targets['irradianceE'].setShaderInput('factor2', 0.0)
 
+        # Copy delta scattering into inscatter texture S
+        self.targets['combinedDeltaScattering'] = self._createRT(
+            "CombinedDeltaScattering", 256, 128, aux=False, shaderName="CombineDeltaScattering", layers=32)
+        self._renderOneShot('combinedDeltaScattering')
+
+
         self._renderOneShot('irradianceE')
 
     def _renderOneShot(self, targetName):

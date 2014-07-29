@@ -1,0 +1,20 @@
+#version 150
+
+#include "Scattering/ScatteringOptions.include"
+#include "Scattering/Scattering.include"
+
+uniform ScatteringOptions options;
+
+in vec2 texcoord;
+out vec4 result;
+in float layer;
+
+
+
+
+void main() {
+
+    vec3 texcoord3D = vec3(texcoord, layer);
+
+    result = vec4(texcoord3D, 1);
+}
