@@ -78,7 +78,7 @@ class RenderingPipeline(DebugObject):
         DebugObject.__init__(self, "RenderingPipeline")
         self.showbase = showbase
         self.settings = None
-        self.rootDirectory = "."
+        self.rootDirectory = "../RenderPipeline/"
 
     def loadSettings(self, filename):
         """ Loads the pipeline settings from an ini file """

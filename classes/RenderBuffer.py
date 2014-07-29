@@ -140,6 +140,7 @@ class RenderBuffer(DebugObject):
             handle = self.getTarget(target)
             handle.setWrapU(Texture.WMClamp)
             handle.setWrapV(Texture.WMClamp)
+            handle.setWrapW(Texture.WMClamp)
             handle.setMinfilter(Texture.FTLinear)
             handle.setMagfilter(Texture.FTLinear)
             handle.setAnisotropicDegree(0)

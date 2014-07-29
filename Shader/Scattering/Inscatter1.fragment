@@ -56,7 +56,7 @@ void main() {
 
     vec4 dhdH; 
     float r; 
-    getDhdhR(options, layer, dhdH, r);
+    getDhdhR(options, int(layer), dhdH, r);
 
 
     vec3 ray;

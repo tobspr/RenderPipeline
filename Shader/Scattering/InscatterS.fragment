@@ -1,0 +1,147 @@
+#version 150
+
+#include "Scattering/ScatteringOptions.include"
+#include "Scattering/Scattering.include"
+
+uniform ScatteringOptions options;
+
+in vec2 texcoord;
+out vec4 result;
+in float layer;
+
+// DeltaE Sampler:
+uniform sampler2D irradiance1Color;
+
+// Delta Scattering Sampler:
+// Delta SR (Rayleigh)
+uniform sampler2DArray deltaScatteringColor;
+
+// Delta SM (Mie)
+uniform sampler2DArray deltaScatteringAux;
+
+
+uniform bool first;
+
+const float dphi = M_PI / float(INSCATTER_SPHERICAL_INTEGRAL_SAMPLES);
+const float dtheta = M_PI / float(INSCATTER_SPHERICAL_INTEGRAL_SAMPLES);
+
+
+
+
+
+void inscatter(ScatteringOptions options, float r, float mu, float muS, float nu, out vec3 raymie) {
+    
+
+    r = clamp(r, options.radiusGround, options.radiusAtmosphere);
+    mu = clamp(mu, -1.0, 1.0);
+    muS = clamp(muS, -1.0, 1.0);
+    float var = sqrt(1.0 - mu * mu) * sqrt(1.0 - muS * muS);
+    nu = clamp(nu, muS * mu - var, muS * mu + var);
+
+    float cthetamin = -sqrt(1.0 - (options.radiusGround / r) * (options.radiusGround / r));
+
+    vec3 v = vec3(sqrt(1.0 - mu * mu), 0.0, mu);
+    float sx = v.x == 0.0 ? 0.0 : (nu - muS * mu) / v.x;
+    vec3 s = vec3(sx, sqrt(max(0.0, 1.0 - sx * sx - muS * muS)), muS);
+    raymie = vec3(0.0);
+    float e = 2.71828182846;
+
+    float expRgHr = pow(e,-(r - options.radiusGround) / options.rayleighFactor);
+    float expRgHm = pow(e,-(r - options.radiusGround) / options.mieFactor);
+
+    // integral over 4.PI around x with two nested loops over w directions (theta,phi) -- Eq (7)
+    for (int itheta = 0; itheta < INSCATTER_SPHERICAL_INTEGRAL_SAMPLES; ++itheta) {
+        float theta = (float(itheta) + 0.5) * dtheta;
+        float ctheta = cos(theta);
+
+        float greflectance = 0.0;
+        float dground = 0.0;
+        vec3 gtransp = vec3(0.0);
+
+        if (ctheta < cthetamin) { // if ground visible in direction w
+
+            // compute transparency gtransp between x and ground
+            greflectance = options.averageGroundReflectance / M_PI;
+            dground = -r * ctheta - sqrt(r * r * (ctheta * ctheta - 1.0) + options.radiusGround * options.radiusGround);
+            gtransp = transmittance(options, options.radiusGround, -(r * ctheta + dground) / options.radiusGround, dground);
+        }
+
+        for (int iphi = 0; iphi < 2 * INSCATTER_SPHERICAL_INTEGRAL_SAMPLES; ++iphi) {
+            float phi = (float(iphi) + 0.5) * dphi;
+            float dw = dtheta * dphi * sin(theta);
+            vec3 w = vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), ctheta);
+
+            float nu1 = dot(s, w);
+            float nu2 = dot(v, w);
+            float pr2 = phaseFunctionR(options, nu2);
+            float pm2 = phaseFunctionM(options, nu2);
+
+            // compute irradiance received at ground in direction w (if ground visible) =deltaE
+            vec3 gnormal = (vec3(0.0, 0.0, r) + dground * w) / options.radiusGround;
+            vec3 girradiance = irradiance(options, irradiance1Color, options.radiusGround, dot(gnormal, s));
+
+            vec3 raymie1; // light arriving at x from direction w
+
+            // first term = light reflected from the ground and attenuated before reaching x, =T.alpha/PI.deltaE
+            raymie1 = greflectance * girradiance * gtransp;
+
+            // second term = inscattered light, =deltaS
+            if (first) {
+                // first iteration is special because Rayleigh and Mie were stored separately,
+                // without the phase functions factors; they must be reintroduced here
+                float pr1 = phaseFunctionR(options, nu1);
+                float pm1 = phaseFunctionM(options, nu1);
+                vec3 ray1 = texture4D(options, deltaScatteringColor, r, w.z, muS, nu1).rgb;
+                vec3 mie1 = texture4D(options, deltaScatteringAux, r, w.z, muS, nu1).rgb;
+                raymie1 += ray1 * pr1 +  mie1 * pm1;
+
+            } else {
+                raymie1 += texture4D(options, deltaScatteringColor, r, w.z, muS, nu1).rgb;
+            }
+
+            // light coming from direction w and scattered in direction v
+            // = light arriving at x from direction w (raymie1) * SUM(scattering coefficient * phaseFunction)
+            // see Eq (7)
+            vec3 deltaMsca = (options.betaMieScattering * pm2 * expRgHm);
+            vec3 deltaR    = (options.betaRayleigh * pr2 * expRgHr);
+
+            raymie += raymie1 * (deltaR + deltaMsca) * dw; //* (betaR * exp(-(r - options.radiusGround) / HR) * pr2 + betaMSca * exp(-(r - options.radiusGround) / HM) * pm2) * dw;
+        }
+    }
+
+    // output raymie = J[T.alpha/PI.deltaE + deltaS] (line 7 in algorithm 4.1)
+}
+
+
+
+
+
+
+void main() {
+    // vec3 raymie;
+
+    vec4 dhdH; 
+    float r; 
+    getDhdhR(options, int(layer), dhdH, r);
+
+
+    vec3 ray;
+    vec3 mie;
+    float mu, muS, nu;
+    getMuMuSNu(options, gl_FragCoord.xy, r, dhdH, mu, muS, nu);
+
+    vec3 raymie;
+
+    inscatter(options, r, mu, muS, nu, raymie);
+    // gl_FragColor.rgb = raymie;
+
+    result = vec4(raymie, 1);
+    // vec3 ray;
+    // vec3 mie;
+    // float mu, muS, nu;
+    // getMuMuSNu(options, gl_FragCoord.xy, r, dhdH, mu, muS, nu);
+    // inscatter(options, r, mu, muS, nu, ray, mie);
+
+    // rayOutput = vec4( ray, 0.0);
+    // mieOutput = vec4( mie, 0.0);
+}

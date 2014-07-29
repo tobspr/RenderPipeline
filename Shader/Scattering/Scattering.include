@@ -3,11 +3,18 @@
 #include "Scattering/ScatteringOptions.include"
 
 
+
 #ifndef NO_SCATTERING_SAMPLERS
 
     uniform sampler2D transmittanceColor;
 
 #endif
+
+
+#ifndef M_PI
+    #define M_PI 3.14159265359
+#endif
+
 
 void getTransmittanceRMu(ScatteringOptions options, ivec2 texcoord, out float r, out float muS) {
     r = texcoord.y / float(SCATTERING_TRANSMITTANCE_H);
@@ -69,12 +76,12 @@ float transmittanceOpticalDepth(ScatteringOptions options, float H, float r, flo
 }
 
 
-void getDhdhR(ScatteringOptions options, float layer, out vec4 dhdH, out float r) {
+void getDhdhR(ScatteringOptions options, int layer, out vec4 dhdH, out float r) {
     r = float(layer) / float(SCATTERING_RES_R - 1.0);
     r = r * r;
     r = sqrt(options.radiusGround * options.radiusGround + 
         r * (options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround)) + 
-    (layer == 0.0 ? 0.01 : (layer == SCATTERING_RES_R - 1 ? -0.001 : 0.0));
+    (layer == 0 ? 0.01 : (layer == SCATTERING_RES_R - 1 ? -0.001 : 0.0));
     float dmin = options.radiusAtmosphere - r;
     float dmax = sqrt(r * r - options.radiusGround * options.radiusGround) + 
                  sqrt(options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround);
@@ -102,19 +109,6 @@ vec2 getTransmittanceUV(ScatteringOptions options, float r, float mu) {
     }
     return vec2(uMu, uR);
 }
-
-
-#ifndef NO_SCATTERING_SAMPLERS
-
-    // transmittance(=transparency) of atmosphere for infinite ray (r,mu)
-    // (mu=cos(view zenith angle)), intersections with ground ignored
-    vec3 transmittance(ScatteringOptions options, float r, float mu) {
-        vec2 uv = getTransmittanceUV(options, r, mu);
-        return texture2D(transmittanceColor, uv).rgb;
-    }
-
-#endif
-
 
 
 void getMuMuSNu(ScatteringOptions options, vec2 coord, float r, vec4 dhdH, out float mu, out float muS, out float nu) {
@@ -150,6 +144,14 @@ void getMuMuSNu(ScatteringOptions options, vec2 coord, float r, vec4 dhdH, out f
 }
 
 
+// transmittance(=transparency) of atmosphere for infinite ray (r,mu)
+// (mu=cos(view zenith angle)), intersections with ground ignored
+vec3 transmittance(ScatteringOptions options, float r, float mu) {
+    vec2 uv = getTransmittanceUV(options, r, mu);
+    return texture(transmittanceColor, uv).rgb;
+}
+
+
 
 // transmittance(=transparency) of atmosphere between x and x0
 // assume segment x,x0 not intersecting ground
@@ -164,4 +166,67 @@ vec3 transmittance(ScatteringOptions options, float r, float mu, float d) {
         result = min(transmittance(options, r1, -mu1) / transmittance(options, r, -mu), 1.0);
     }
     return result;
+}
+
+
+// Rayleigh phase function
+float phaseFunctionR(ScatteringOptions options, float mu) {
+    return (3.0 / (16.0 * M_PI)) * (1.0 + mu * mu);
+}
+
+// Mie phase function
+float phaseFunctionM(ScatteringOptions options, float mu) {
+    return 1.5 * 1.0 / (4.0 * M_PI) * 
+        (1.0 - options.mieG*options.mieG) * 
+        pow(1.0 + (options.mieG*options.mieG) - 2.0*options.mieG*mu, -3.0/2.0) * 
+        (1.0 + mu * mu) / (2.0 + options.mieG*options.mieG);
+}
+
+
+vec2 getIrradianceUV(ScatteringOptions options, float r, float muS) {
+    float uR = (r - options.radiusGround) / (options.radiusAtmosphere - options.radiusGround);
+    float uMuS = (muS + 0.2) / (1.0 + 0.2);
+    return vec2(uMuS, uR);
+}
+
+vec3 irradiance(ScatteringOptions options, sampler2D sampler, float r, float muS) {
+    vec2 uv = getIrradianceUV(options, r, muS);
+    return texture(sampler, uv).rgb;
+}
+
+
+vec4 texture4D(ScatteringOptions options, sampler2DArray table, float r, float mu, float muS, float nu)
+{
+    float H = sqrt(options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround);
+    float rho = sqrt(r * r - options.radiusGround * options.radiusGround);
+
+    float uMuS, uR, uMu;
+
+    if (options.inscatterNonLinear) {
+
+        float rmu = r * mu;
+        float delta = rmu * rmu - r * r + options.radiusGround * options.radiusGround;
+        vec4 cst = rmu < 0.0 && delta > 0.0 ? 
+            vec4(1.0, 0.0, 0.0, 0.5 - 0.5 / float(SCATTERING_RES_MU)) : 
+            vec4(-1.0, H * H, H, 0.5 + 0.5 / float(SCATTERING_RES_MU));
+        uR = 0.5 / float(SCATTERING_RES_R) + rho / H * (1.0 - 1.0 / float(SCATTERING_RES_R));
+        uMu = cst.w + (rmu * cst.x + sqrt(delta + cst.y)) / (rho + cst.z) * (0.5 - 1.0 / float(SCATTERING_RES_MU));
+        // paper formula
+        //float uMuS = 0.5 / float(SCATTERING_RES_MU_S) + 
+            // max((1.0 - exp(-3.0 * muS - 0.6)) / (1.0 - exp(-3.6)), 0.0) * (1.0 - 1.0 / float(SCATTERING_RES_MU_S));
+        // better formula
+        uMuS = 0.5 / float(SCATTERING_RES_MU_S) + (atan(max(muS, -0.1975) * tan(1.26 * 1.1)) / 1.1 + 
+            (1.0 - 0.26)) * 0.5 * (1.0 - 1.0 / float(SCATTERING_RES_MU_S));
+    
+    } else {
+        uR = 0.5 / float(SCATTERING_RES_R) + rho / H * (1.0 - 1.0 / float(SCATTERING_RES_R));
+        uMu = 0.5 / float(SCATTERING_RES_MU) + (mu + 1.0) / 2.0 * (1.0 - 1.0 / float(SCATTERING_RES_MU));
+        uMuS = 0.5 / float(SCATTERING_RES_MU_S) + max(muS + 0.2, 0.0) / 1.2 * (1.0 - 1.0 / float(SCATTERING_RES_MU_S));
+    }
+
+    float lerp = (nu + 1.0) / 2.0 * (float(SCATTERING_RES_NU) - 1.0);
+    float uNu = floor(lerp);
+    lerp = lerp - uNu;
+    return texture(table, vec3((uNu + uMuS) / float(SCATTERING_RES_NU), uMu, uR)) * (1.0 - lerp) +
+           texture(table, vec3((uNu + uMuS + 1.0) / float(SCATTERING_RES_NU), uMu, uR)) * lerp;
 }

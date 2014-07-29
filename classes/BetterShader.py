@@ -2,7 +2,7 @@
 from panda3d.core import Shader
 from os.path import isfile, join, isdir
 from os import makedirs
-
+from Globals import Globals
 
 class BetterShader:
 
@@ -59,7 +59,7 @@ class BetterShader:
     @classmethod
     def _writeDebugShader(self, name, content):
         """ Internal method to dump shader for debugging """
-        cachePath = join(self._GlobalShaderPath, "Cache")
+        cachePath = join(Globals.rootDirectory, self._GlobalShaderPath, "Cache")
         if not isdir(cachePath):
             try:
                 makedirs(cachePath)
@@ -74,6 +74,8 @@ class BetterShader:
     @classmethod
     def _handleIncludes(self, source):
         """ Internal (recursive) method to parse #include's """
+
+        source = join(Globals.rootDirectory, source)
 
         with open(source, "r") as handle:
             content = handle.readlines()

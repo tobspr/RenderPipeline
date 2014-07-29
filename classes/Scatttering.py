@@ -66,6 +66,35 @@ class Scattering(DebugObject):
         self._renderOneShot('combinedDeltaScattering')
 
 
+        first = True
+        passIndex = "Pass0"
+
+        # Compute Delta J texture
+        inscatterSName = 'inscatterS' + passIndex
+        self.targets[inscatterSName] = self._createRT(
+            inscatterSName, 256, 128, aux=False, shaderName="InscatterS", layers=32)
+        self.targets[inscatterSName].setShaderInput("first", True)
+        self._renderOneShot(inscatterSName)
+
+        
+
+        # computes deltaJ
+        # tx_deltaJ = Texture()
+        # setupLayers(tx_deltaJ, layer_count)
+        # self.prepareTexture(tx_deltaJ)
+        # quad,buf = self.allocateBuffer(256,128, tx_deltaJ, GraphicsOutput.RTMBindLayered)
+        # quad.setShaderInput("first", first)
+        # quad.setShaderInput("tx_transmittance", tx_T)
+        # quad.setShaderInput("deltaESampler", tx_deltaE)
+        # quad.setShaderInput("deltaSRSampler", tx_deltaSR)
+        # quad.setShaderInput("deltaSMSampler", tx_deltaSM)
+        # quad.setShader(prog_inscatterS)
+        # handleBuffer(buf, tx_deltaJ)
+        # writeTex(tx_deltaJ, "deltaJ_"+str(order))
+
+
+
+
         self._renderOneShot('irradianceE')
 
     def _renderOneShot(self, targetName):
@@ -77,6 +106,8 @@ class Scattering(DebugObject):
         target.deleteBuffer()
 
     def _createRT(self, name, w, h, aux=False, shaderName="", layers=1):
+
+        print "Create RT",name
         """ Internal shortcut to create a new render target """
         rt = RenderTarget("Scattering" + name)
         rt.setSize(w, h)
@@ -103,15 +134,17 @@ class Scattering(DebugObject):
 
         self._setInputs(rt, "options.")
 
+
+        for key, tex in self.textures.items():
+            texName = key[0].lower() + key[1:]
+            print "\tSetShaderInput:", texName, tex.getXSize(),"x",tex.getYSize(),"x",tex.getZSize()
+            rt.setShaderInput(texName, tex)
+
         self.textures[name + "Color"] = rt.getColorTexture()
 
         if aux:
             self.textures[name + "Aux"] = rt.getAuxTexture(0)
 
-        for key, tex in self.textures.items():
-            name = key[0].lower() + key[1:]
-            print "SetShaderInput:", name
-            rt.setShaderInput(name, tex)
 
         return rt
 

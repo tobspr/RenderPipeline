@@ -20,3 +20,5 @@ class Globals:
         self.render = showbase.render
         self.clock = showbase.taskMgr.globalClock
         self.rootDirectory = rootDirectory
+
+        print "Globals: Root directory is",self.rootDirectory
