@@ -157,32 +157,21 @@ vec3 applyPointLightWithShadow(Light light, Material material
 
     vec3 rawLighting = computeLightModel(light, material, l,v, n, h, attenuation);
 
-
-    // For point lights we can decide by position which shadow map to use
-
-    // float fFaceIndex =  texture(myFancyCubemap, l).r * 5.0;
+    // We decide which shadow map to sample using a simple lookup cubemap
     int faceIndex = int( textureLod(directionToFace, l, 0).r * 5.0);
-
-    // int shadowIndex = int(step(light.position.y, material.position.y));
-    int shadowIndex = faceIndex;
-
-    int shadowSourceIndex = light.sourceIndexes[shadowIndex];
+    int shadowSourceIndex = light.sourceIndexes[faceIndex];
 
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
     vec2 offsets = getShadowOffsets(n, l);
     vec3 biasedPos = material.position;
     float resFactor = 1024.0 / float(currentSource.resolution);
-
-
-    // float baseBias = 0.025 * (1.0 + resFactor*4.0);
     float baseBias = 0.3;
 
     biasedPos += baseBias * l * offsets.x;
     biasedPos += baseBias * n * offsets.y;
 
     vec4 projected = currentSource.mvp * vec4(biasedPos, 1);
-
 
     resFactor = min(resFactor, 1.0);
 
@@ -195,30 +184,20 @@ vec3 applyPointLightWithShadow(Light light, Material material
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
 
     float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
-    // float bias = 0.004 * getShadowOffsets(n, l).x * resFactor;
-
-    float bias = 0.0002;
-
+    float baseBias = 0.0002;
 
     // apply point light shadows
     float shadowFactor = 0.0;
-
-    // #define SHADOWS_NUM_SAMPLES 1
-
     for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
 
         vec2 offset = poissonDisk16[i] * pixOffset;
-        // offset *= 0.0;r
 
         #if USE_HARDWARE_PCF
-            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - bias) ).r;
-            // sampled = sampled*sampled;
+            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) ).r;
             shadowFactor += (1.0 - sampled);
         #else
             float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
-            shadowFactor += step(sampled, projCoord.z - bias);
-            // shadowFactor = sampled - projCoord.z;
-
+            shadowFactor += step(sampled, projCoord.z - baseBias);
         #endif
     }
     shadowFactor /= SHADOWS_NUM_SAMPLES;
@@ -227,9 +206,6 @@ vec3 applyPointLightWithShadow(Light light, Material material
     rawLighting *= max(0.0, 1.0 - shadowFactor);
 
     vec3 ambientContribution = 0.1 * material.baseColor * vec3(0.2,0.5,0.8) * attenuation;
-
-
-
 
     return max(vec3(0.0), rawLighting) + ambientContribution;
 }
