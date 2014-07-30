@@ -1,6 +1,6 @@
 
 import math
-from os.path import join
+from direct.stdpy.file import join
 
 from panda3d.core import TransparencyAttrib, Texture, Vec3
 from direct.gui.OnscreenImage import OnscreenImage

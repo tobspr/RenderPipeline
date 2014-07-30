@@ -1,6 +1,5 @@
-
+from direct.stdpy.file import open, isdir, isfile, join
 from panda3d.core import Shader
-from os.path import isfile, join, isdir
 from os import makedirs
 from Globals import Globals
 
@@ -59,7 +58,7 @@ class BetterShader:
     @classmethod
     def _writeDebugShader(self, name, content):
         """ Internal method to dump shader for debugging """
-        cachePath = join(Globals.rootDirectory, self._GlobalShaderPath, "Cache")
+        cachePath = join(self._GlobalShaderPath, "Cache")
         if not isdir(cachePath):
             try:
                 makedirs(cachePath)
