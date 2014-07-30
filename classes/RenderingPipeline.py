@@ -1,8 +1,6 @@
 
 import math
 import os
-import shutil
-import tempfile
 
 from panda3d.core import TransparencyAttrib, Texture, Vec2, NodePath, PTAInt
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
@@ -83,7 +81,7 @@ class RenderingPipeline(DebugObject):
         self.showbase = showbase
         self.settings = None
         self.rootDirectory = "."
-        self.writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
+        self.writeDirectory = None
 
     def loadSettings(self, filename):
         """ Loads the pipeline settings from an ini file """
@@ -98,8 +96,12 @@ class RenderingPipeline(DebugObject):
     def setWriteDirectory(self, directory):
         """ Set a writable directory for generated files. This can be a string
         path name or a multifile with openReadWrite(). If no pathname is set
-        then a temporary directory is created with the tempfile module upon
-        self.create(). """
+        then the root directory is used. 
+
+        Applications are usually installed system wide and wont have write
+        access to the rootDirectory. It will be wise to at least use tempfile
+        like tempfile.mkdtemp(prefix='Shader-tmp'), or an application directory
+        in the user's home/app dir."""
         if isinstance(directory, str):
             self.writeDirectory = directory.replace("\\", "/").rstrip("/")
         else:
@@ -134,7 +136,8 @@ class RenderingPipeline(DebugObject):
         else:
             pass # Don't need to mkdir in multifiles?
 
-        vfs.mount(self.writeDirectory, 'Shader', VirtualFileSystem.MFReadOnly)
+        if self.writeDirectory:
+            vfs.mount(self.writeDirectory, 'Shader', VirtualFileSystem.MFReadOnly)
 
         # Store globals, as cython can't handle them
         self.debug("Setting up globals")
@@ -920,23 +923,7 @@ class RenderingPipeline(DebugObject):
 
     def destroy(self):
         """ Call this when you want to shut down the pipeline """
-        self.showbase.taskMgr.remove("UpdateRenderingPipeline")
-
-        if self.haveLightingPass:
-            self.showbase.taskMgr.remove("UpdateLights")
-            self.showbase.taskMgr.remove("updateShadows")
-
-        if self.settings.displayOnscreenDebugger:
-            self.showbase.taskMgr.remove("UpdateGUI")
-
-        # ONLY destroy if it is a tempdir.
-        if isinstance(self.writeDirectory, str) and self.writeDirectory.startswith('Shader-tmp'):
-            try:
-                shutil.rmtree(tmp_dir)  # delete directory
-            except OSError as exc:
-                if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
-                    raise  # re-raise exception
-
+        raise NotImplementedError()
 
     def reload(self):
         """ This reloads the whole pipeline, same as destroy(); create() """
