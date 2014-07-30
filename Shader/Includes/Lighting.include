@@ -166,10 +166,10 @@ vec3 applyPointLightWithShadow(Light light, Material material
     vec2 offsets = getShadowOffsets(n, l);
     vec3 biasedPos = material.position;
     float resFactor = 1024.0 / float(currentSource.resolution);
-    float baseBias = 0.3;
+    float baseShift = 0.3;
 
-    biasedPos += baseBias * l * offsets.x;
-    biasedPos += baseBias * n * offsets.y;
+    biasedPos += baseShift * l * offsets.x;
+    biasedPos += baseShift * n * offsets.y;
 
     vec4 projected = currentSource.mvp * vec4(biasedPos, 1);
 

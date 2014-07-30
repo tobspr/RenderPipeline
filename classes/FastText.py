@@ -2,7 +2,8 @@ from panda3d.core import NodePath, Shader, Vec2, PTAFloat
 from panda3d.core import TransparencyAttrib, UnalignedLVecBase4f
 from panda3d.core import Texture, Vec3, CardMaker,Filename
 
-from os.path import join, dirname, realpath
+from direct.stdpy.file import join
+from os.path import dirname, realpath
 
 class FastText:
 

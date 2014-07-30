@@ -1,6 +1,6 @@
 import sys
 from os import system, getcwd, listdir
-from os.path import join, isfile
+from direct.stdpy.file import join, isfile
 
 if len(sys.argv) != 4:
     print "Invalid arguments!"

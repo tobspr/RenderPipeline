@@ -16,7 +16,9 @@ sys.dont_write_bytecode = True
 
 
 import math
+import shutil
 import struct
+import tempfile
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3
 from panda3d.core import Texture
@@ -50,6 +52,7 @@ class Main(ShowBase, DebugObject):
         self.debug("Creating pipeline")
         self.renderPipeline = RenderingPipeline(self)
         self.renderPipeline.loadSettings("pipeline.ini")
+        self.renderPipeline.setWriteDirectory(writeDirectory)
         self.renderPipeline.create()
 
         # Load some demo source
@@ -319,5 +322,14 @@ class Main(ShowBase, DebugObject):
             return task.cont
 
 
+writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
 app = Main()
 app.run()
+print("Successful destroy")
+# ONLY destroy if it is a tempdir.
+if isinstance(writeDirectory, str) and writeDirectory.startswith('Shader-tmp'):
+    try:
+        shutil.rmtree(writeDirectory)  # delete directory
+    except OSError as exc:
+        if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
+            raise  # re-raise exception
