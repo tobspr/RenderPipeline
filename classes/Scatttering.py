@@ -20,12 +20,11 @@ class Scattering(DebugObject):
         self.settings = {
             "radiusGround": 6360.0,
             "radiusAtmosphere": 6420.0,
-            "radiusAtmosphere1": 6421.0,
             "averageGroundReflectance": 0.1,   # AVERAGE_GROUND_REFLECTANCE
             "rayleighFactor": 8.0,  # HR
             "betaRayleigh": Vec3(5.8e-3, 1.35e-2, 3.31e-2),  # betaR
-            "mieFactor": 3.0,  # HM
-            "betaMieScattering": Vec3(2e-3),  # betaMSca
+            "mieFactor": 1.2,  # HM
+            "betaMieScattering": Vec3(4e-3),  # betaMSca
             # betaMSca
             "betaMieScatteringAdjusted": (Vec3(2e-3) * 1.1111111111),
             "mieG": 0.8,  # mieG
@@ -66,7 +65,7 @@ class Scattering(DebugObject):
             "CombinedDeltaScattering", 256, 128, aux=False, shaderName="CombineDeltaScattering", layers=32)
         self._renderOneShot('combinedDeltaScattering')
 
-        for i in xrange(1):
+        for i in xrange(0):
             first = i == 0
             passIndex = "Pass" + str(i)
 
@@ -85,47 +84,63 @@ class Scattering(DebugObject):
             self._renderOneShot(irradianceNName)
 
             # Replace old delta E texture
-            self.textures['irradiance1Color'] = self.textures[irradianceNName + "Color"]
+            self.textures['irradiance1Color'] = self.textures[
+                irradianceNName + "Color"]
 
             # Compute new deltaSR
             inscatterNName = 'inscatterN' + passIndex
             self.targets[inscatterNName] = self._createRT(
                 inscatterNName, 256, 128, aux=False, shaderName="InscatterN", layers=32)
             self.targets[inscatterNName].setShaderInput("first", first)
-            self.targets[inscatterNName].setShaderInput("deltaJSampler", self.textures[inscatterSName + "Color"])
+            self.targets[inscatterNName].setShaderInput(
+                "deltaJSampler", self.textures[inscatterSName + "Color"])
             self._renderOneShot(inscatterNName)
 
             # Replace old deltaSR texture
-            self.textures['deltaScatteringColor'] = self.textures[inscatterNName + "Color"]
+            self.textures['deltaScatteringColor'] = self.textures[
+                inscatterNName + "Color"]
 
             # Add deltaE into irradiance texture E
             irradianceAddName = 'irradianceAdd' + passIndex
             self.targets[irradianceAddName] = self._createRT(
                 irradianceAddName, 64, 16, aux=False, shaderName="Combine2DTextures", layers=1)
             self.targets[irradianceAddName].setShaderInput('first', first)
-            self.targets[irradianceAddName].setShaderInput('source1', self.textures['irradianceEColor'])
-            self.targets[irradianceAddName].setShaderInput('source2', self.textures['irradiance1Color'])
+            self.targets[irradianceAddName].setShaderInput(
+                'source1', self.textures['irradianceEColor'])
+            self.targets[irradianceAddName].setShaderInput(
+                'source2', self.textures['irradiance1Color'])
             self.targets[irradianceAddName].setShaderInput('factor1', 1.0)
             self.targets[irradianceAddName].setShaderInput('factor2', 1.0)
             self._renderOneShot(irradianceAddName)
 
-            self.textures['irradianceEColor'] = self.textures[irradianceAddName + "Color"]
+            self.textures['irradianceEColor'] = self.textures[
+                irradianceAddName + "Color"]
 
-            # Add deltaS into inscatter texture S 
+            # Add deltaS into inscatter texture S
             inscatterAddName = 'inscatterAdd' + passIndex
             self.targets[inscatterAddName] = self._createRT(
                 inscatterAddName, 256, 128, aux=False, shaderName="InscatterAdd", layers=32)
             self.targets[inscatterAddName].setShaderInput("first", first)
-            self.targets[inscatterAddName].setShaderInput("deltaSSampler", self.textures["deltaScatteringColor"])
-            self.targets[inscatterAddName].setShaderInput("addSampler", self.textures["combinedDeltaScatteringColor"])
+            self.targets[inscatterAddName].setShaderInput(
+                "deltaSSampler", self.textures["deltaScatteringColor"])
+            self.targets[inscatterAddName].setShaderInput(
+                "addSampler", self.textures["combinedDeltaScatteringColor"])
             self._renderOneShot(inscatterAddName)
 
-            self.textures['combinedDeltaScatteringColor'] = self.textures[inscatterAddName + "Color"]
-     
+            self.textures['combinedDeltaScatteringColor'] = self.textures[
+                inscatterAddName + "Color"]
+
+        inscatterResult = self.textures['combinedDeltaScatteringColor']
+        irradianceResult = self.textures['irradianceEColor']
+
+        base.graphicsEngine.extract_texture_data(
+            irradianceResult, Globals.base.win.getGsg())
+
+        irradianceResult.write("Data/Scattering/Result_Irradiance.png")
 
     def _renderOneShot(self, targetName):
         """ Renders a target and then deletes the target """
-        self.debug("Rendering",targetName)
+        self.debug("Rendering", targetName)
         target = self.targets[targetName]
         target.setActive(True)
         Globals.base.graphicsEngine.renderFrame()
@@ -147,9 +162,7 @@ class Scattering(DebugObject):
             else:
                 tex.write(dest)
 
-
     def _createRT(self, name, w, h, aux=False, shaderName="", layers=1):
-
         """ Internal shortcut to create a new render target """
         rt = RenderTarget("Scattering" + name)
         rt.setSize(w, h)
@@ -186,7 +199,6 @@ class Scattering(DebugObject):
         if aux:
             self.textures[lc(name) + "Aux"] = rt.getAuxTexture(0)
 
-
         return rt
 
     def _setInputs(self, node, prefix):
@@ -203,8 +215,6 @@ class Scattering(DebugObject):
         self._executePrecompute()
 
         # write out transmittance tex
-
-
 
     def setSettings(self, settings):
         """ Sets the settings used for the precomputation """

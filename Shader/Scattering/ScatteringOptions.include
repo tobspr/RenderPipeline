@@ -34,6 +34,8 @@ const int SCATTERING_RES_H = SCATTERING_RES_MU;
 
 const int TRANSMITTANCE_INTEGRAL_SAMPLES = 500;
 const int INSCATTER_INTEGRAL_SAMPLES = 50;
-const int IRRADIANCE_INTEGRAL_SAMPLES = 2;
+const int IRRADIANCE_INTEGRAL_SAMPLES = 32;
 const int INSCATTER_SPHERICAL_INTEGRAL_SAMPLES = 16;
 
+const float scatteringLayerShift = 0.5;
+const vec2 scatteringTexcoordShift = vec2(0.5);

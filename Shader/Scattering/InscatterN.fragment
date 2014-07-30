@@ -41,9 +41,9 @@ void main() {
     getDhdhR(options, int(layer), dhdH, r);
 
     float mu, muS, nu;
-    getMuMuSNu(options, gl_FragCoord.xy, r, dhdH, mu, muS, nu);
+    getMuMuSNu(options, r, dhdH, mu, muS, nu);
 
     vec3 scattered = inscatter(options, r, mu, muS, nu);
-    result = vec4(scattered, 0);
+    result = vec4(scattered, 1);
 
 }

@@ -12,13 +12,13 @@
 
 
 #ifndef M_PI
-    #define M_PI 3.14159265359
+    #define M_PI 3.141592657
 #endif
 
 
-void getTransmittanceRMu(ScatteringOptions options, ivec2 texcoord, out float r, out float muS) {
-    r = texcoord.y / float(SCATTERING_TRANSMITTANCE_H);
-    muS = texcoord.x / float(SCATTERING_TRANSMITTANCE_W);
+void getTransmittanceRMu(ScatteringOptions options, out float r, out float muS) {
+    r = gl_FragCoord.y / float(SCATTERING_TRANSMITTANCE_H);
+    muS = gl_FragCoord.x / float(SCATTERING_TRANSMITTANCE_W);
 
     if (options.transmittanceNonLinear) {
         r = options.radiusGround + (r * r) * (options.radiusAtmosphere - options.radiusGround);
@@ -32,7 +32,7 @@ void getTransmittanceRMu(ScatteringOptions options, ivec2 texcoord, out float r,
 // nearest intersection of ray r,mu with ground or top atmosphere boundary
 // mu=cos(ray zenith angle at ray origin)
 float limit(ScatteringOptions options, float r, float mu) {
-    float dout = -r * mu + sqrt(r * r * (mu * mu - 1.0) + options.radiusAtmosphere1 * options.radiusAtmosphere1);
+    float dout = -r * mu + sqrt(r * r * (mu * mu - 1.0) + (options.radiusAtmosphere + 1) * (options.radiusAtmosphere + 1) );
     float delta2 = r * r * (mu * mu - 1.0) + options.radiusGround * options.radiusGround;
     if (delta2 >= 0.0) {
         float din = -r * mu - sqrt(delta2);
@@ -77,23 +77,24 @@ float transmittanceOpticalDepth(ScatteringOptions options, float H, float r, flo
 
 
 void getDhdhR(ScatteringOptions options, int layer, out vec4 dhdH, out float r) {
-    r = float(layer) / float(SCATTERING_RES_R - 1.0);
+
+    r = layer / (SCATTERING_RES_R - 1.0);
     r = r * r;
     r = sqrt(options.radiusGround * options.radiusGround + 
-        r * (options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround)) + 
-    (layer == 0 ? 0.01 : (layer == SCATTERING_RES_R - 1 ? -0.001 : 0.0));
+        r * (options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround)) +
+        (layer == 0 ? 0.01 : (layer == SCATTERING_RES_R - 1 ? -0.001 : 0.0));
     float dmin = options.radiusAtmosphere - r;
-    float dmax = sqrt(r * r - options.radiusGround * options.radiusGround) + 
-                 sqrt(options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround);
+    float dmax = sqrt(r * r - options.radiusGround * options.radiusGround) 
+                 + sqrt(options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround);
     float dminp = r - options.radiusGround;
     float dmaxp = sqrt(r * r - options.radiusGround * options.radiusGround);
     dhdH = vec4(dmin, dmax, dminp, dmaxp);
 }
 
 
-void getIrradianceRMuS(ScatteringOptions options, vec2 coord, out float r, out float muS) {
-    r = options.radiusGround + (coord.y - 0.5) / (float(SCATTERING_SKY_H) - 1.0) * (options.radiusAtmosphere - options.radiusGround);
-    muS = -0.2 + (coord.x - 0.5) / (float(SCATTERING_SKY_W) - 1.0) * (1.0 + 0.2);
+void getIrradianceRMuS(ScatteringOptions options, out float r, out float muS) {
+    r = options.radiusGround + (gl_FragCoord.y - scatteringTexcoordShift.y) / (float(SCATTERING_SKY_H) - 1.0) * (options.radiusAtmosphere - options.radiusGround);
+    muS = -0.2 + (gl_FragCoord.x - scatteringTexcoordShift.x) / (float(SCATTERING_SKY_W) - 1.0) * (1.0 + 0.2);
 }
 
 
@@ -110,9 +111,9 @@ vec2 getTransmittanceUV(ScatteringOptions options, float r, float mu) {
 }
 
 
-void getMuMuSNu(ScatteringOptions options, vec2 coord, float r, vec4 dhdH, out float mu, out float muS, out float nu) {
-    float x = coord.x - 0.5;
-    float y = coord.y - 0.5;
+void getMuMuSNu(ScatteringOptions options, float r, vec4 dhdH, out float mu, out float muS, out float nu) {
+    float x = gl_FragCoord.x - scatteringTexcoordShift.x;
+    float y = gl_FragCoord.y - scatteringTexcoordShift.y;
 
     if (options.inscatterNonLinear) {
 
@@ -220,8 +221,6 @@ vec4 texture4D(ScatteringOptions options, sampler2DArray table, float r, float m
     float uNu = floor(lerp);
     lerp = lerp - uNu;
   
-    return vec4(lerp);
-
-    return texture(table, vec3((uNu + uMuS) / float(SCATTERING_RES_NU), uMu, uR)) * (1.0 - lerp) +
-           texture(table, vec3((uNu + uMuS + 1.0) / float(SCATTERING_RES_NU), uMu, uR)) * lerp;
+    return texture(table, vec3((uNu + uMuS) / float(SCATTERING_RES_NU), uMu, uR * SCATTERING_RES_R )) * (1.0 - lerp) +
+           texture(table, vec3((uNu + uMuS + 1.0) / float(SCATTERING_RES_NU), uMu, uR * SCATTERING_RES_R)) * lerp;
 }

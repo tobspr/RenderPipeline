@@ -13,6 +13,7 @@ in float layer;
 
 
 
+
 void integrand(ScatteringOptions options, float r, float mu, float muS, float nu, float t, out vec3 ray, out vec3 mie) {
     ray = vec3(0.0);
     mie = vec3(0.0);
@@ -51,20 +52,18 @@ void inscatter(ScatteringOptions options, float r, float mu, float muS, float nu
 }
 
 
-
 void main() {
 
     vec4 dhdH; 
     float r; 
     getDhdhR(options, int(layer), dhdH, r);
 
-
     vec3 ray;
     vec3 mie;
     float mu, muS, nu;
-    getMuMuSNu(options, gl_FragCoord.xy, r, dhdH, mu, muS, nu);
+    getMuMuSNu(options, r, dhdH, mu, muS, nu);
     inscatter(options, r, mu, muS, nu, ray, mie);
 
-    rayOutput = vec4( ray, 0.0);
-    mieOutput = vec4( mie, 0.0);
+    rayOutput = vec4( ray, 1.0);
+    mieOutput = vec4( mie, 1.0);
 }

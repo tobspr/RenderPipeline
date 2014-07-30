@@ -126,7 +126,7 @@ void main() {
     vec3 ray;
     vec3 mie;
     float mu, muS, nu;
-    getMuMuSNu(options, gl_FragCoord.xy, r, dhdH, mu, muS, nu);
+    getMuMuSNu(options, r, dhdH, mu, muS, nu);
 
     vec3 raymie;
 

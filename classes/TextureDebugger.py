@@ -21,14 +21,14 @@ class TextureDebugger(DebugObject):
 
         effectiveHeight = (tex.getYSize()+1) * (tex.getZSize())
         effectiveHeight -= 1
-        effectiveHeight = 1
+
         
         self.debug("Texture Size =",tex.getXSize(),"x",tex.getYSize(),"x",tex.getZSize())
         self.debug("EffectiveHeight = ", effectiveHeight, "Layers=",tex.getZSize())
         
         store = Texture("store")
         store.setup2dTexture(
-            (tex.getXSize()+1)*1, effectiveHeight, Texture.TFloat, Texture.FRgba8)
+            (tex.getXSize()+1)*3, effectiveHeight, Texture.TFloat, Texture.FRgba8)
 
         TextureCleaner.clearTexture(store, Vec4(1,0,1,1))
 
