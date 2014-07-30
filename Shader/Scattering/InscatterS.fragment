@@ -118,12 +118,10 @@ void inscatter(ScatteringOptions options, float r, float mu, float muS, float nu
 
 
 void main() {
-    // vec3 raymie;
 
     vec4 dhdH; 
     float r; 
     getDhdhR(options, int(layer), dhdH, r);
-
 
     vec3 ray;
     vec3 mie;
@@ -133,15 +131,5 @@ void main() {
     vec3 raymie;
 
     inscatter(options, r, mu, muS, nu, raymie);
-    // gl_FragColor.rgb = raymie;
-
     result = vec4(raymie, 1);
-    // vec3 ray;
-    // vec3 mie;
-    // float mu, muS, nu;
-    // getMuMuSNu(options, gl_FragCoord.xy, r, dhdH, mu, muS, nu);
-    // inscatter(options, r, mu, muS, nu, ray, mie);
-
-    // rayOutput = vec4( ray, 0.0);
-    // mieOutput = vec4( mie, 0.0);
 }

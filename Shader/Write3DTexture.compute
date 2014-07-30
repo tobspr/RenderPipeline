@@ -21,10 +21,14 @@ void main() {
       ivec2 effectiveCoord = texelCoords + ivec2(0, height*layer);
       ivec2 effectiveCoord1 = effectiveCoord + ivec2(width,0);
       ivec2 effectiveCoord2 = effectiveCoord1 + ivec2(width, 0);
+      ivec2 effectiveCoord3 = effectiveCoord2 + ivec2(width, 0);
+      ivec2 effectiveCoord4 = effectiveCoord3 + ivec2(width, 0);
 
       vec4 sampled = texelFetch(source, ivec3(texelCoords, layer), 0);
       imageStore(destination, effectiveCoord, vec4( sampled.rgb,  1) );
       imageStore(destination, effectiveCoord1, vec4(-sampled.rgb, 1) );
-      imageStore(destination, effectiveCoord2, vec4(sampled.a, sampled.a, sampled.a, 1) );
+      imageStore(destination, effectiveCoord2, vec4( sampled.rgb * 100.0, 1) );
+      imageStore(destination, effectiveCoord3, vec4( sampled.rgb * -100.0, 1) );
+      imageStore(destination, effectiveCoord4, vec4(sampled.a, sampled.a, sampled.a, 1) );
     // }
 }

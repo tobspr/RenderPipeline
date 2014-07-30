@@ -207,6 +207,10 @@ class RenderTarget(DebugObject):
         """ Check if a target is assigned to this target """
         return target in self._targetFlags
 
+    def hasAuxTextures(self):
+        """ Wheter this target has at least 1 aux texture attached """
+        return self.hasTarget(RenderTargetType.Aux0)
+
     def _createBuffer(self):
         """ Internal method to create the buffer object """
         wantedX = self._sourceWindow.getXSize(
