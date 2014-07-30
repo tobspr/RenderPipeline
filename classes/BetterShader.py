@@ -1,6 +1,5 @@
-
+from direct.stdpy.file import open, isdir, isfile, join
 from panda3d.core import Shader
-from os.path import isfile, join, isdir
 from os import makedirs
 from Globals import Globals
 

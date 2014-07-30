@@ -321,3 +321,5 @@ class Main(ShowBase, DebugObject):
 
 app = Main()
 app.run()
+print("Successful destroy")
+app.renderPipeline.destroy()
