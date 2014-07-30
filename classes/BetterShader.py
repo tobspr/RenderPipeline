@@ -58,7 +58,7 @@ class BetterShader:
     @classmethod
     def _writeDebugShader(self, name, content):
         """ Internal method to dump shader for debugging """
-        cachePath = join(Globals.rootDirectory, self._GlobalShaderPath, "Cache")
+        cachePath = join(self._GlobalShaderPath, "Cache")
         if not isdir(cachePath):
             try:
                 makedirs(cachePath)

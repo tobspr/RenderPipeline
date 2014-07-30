@@ -82,7 +82,7 @@ class RenderingPipeline(DebugObject):
         DebugObject.__init__(self, "RenderingPipeline")
         self.showbase = showbase
         self.settings = None
-        self.rootDirectory = "../RenderPipeline/"
+        self.rootDirectory = "."
         self.writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
 
     def loadSettings(self, filename):
@@ -121,7 +121,8 @@ class RenderingPipeline(DebugObject):
 
         self.debug("Setting up virtual filesystem.")
         vfs = VirtualFileSystem.getGlobalPtr()
-        vfs.mount('Shader', 'Shader', VirtualFileSystem.MFReadOnly)
+        self.debug("Root shader directory:", join(self.rootDirectory, 'Shader'))
+        vfs.mount(join(self.rootDirectory, 'Shader'), 'Shader', VirtualFileSystem.MFReadOnly)
 
         self.debug("Write directory:", self.writeDirectory)
         if isinstance(self.writeDirectory, str):
