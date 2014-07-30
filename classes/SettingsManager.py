@@ -1,5 +1,4 @@
-
-from os.path import isfile
+from direct.stdpy.file import isfile
 from DebugObject import DebugObject
 
 
