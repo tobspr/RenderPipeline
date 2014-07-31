@@ -20,6 +20,10 @@ class BetterShader:
     # to disable this feature
     _GlobalShaderPath = "Shader/"
 
+    # Wheter to dump the generated shaders to disk. This is very
+    # handy and should only be disabled in production
+    _DumpShaders = False
+
     @classmethod
     def loadCompute(self, source):
         """ Loads a compute shader """
@@ -58,6 +62,9 @@ class BetterShader:
     @classmethod
     def _writeDebugShader(self, name, content):
         """ Internal method to dump shader for debugging """
+        if not self._DumpShaders:
+            return
+
         cachePath = join(self._GlobalShaderPath, "Cache")
         if not isdir(cachePath):
             try:
@@ -73,8 +80,6 @@ class BetterShader:
     @classmethod
     def _handleIncludes(self, source):
         """ Internal (recursive) method to parse #include's """
-
-        source = source
 
         with open(source, "r") as handle:
             content = handle.readlines()

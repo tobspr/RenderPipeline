@@ -110,9 +110,10 @@ class FastText:
             in vec2 texcoord;
             uniform sampler2D font;
             uniform vec3 color;
+            out vec4 result;
             void main() {
                 float textFactor = texture(font, texcoord).x;
-                gl_FragColor = vec4(color, textFactor);
+                result = vec4(color, textFactor);
 
             } 
         """)

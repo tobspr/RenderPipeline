@@ -299,9 +299,6 @@ vec4 bokehDOF() {
     
 
     vec3 orig = texture(colorTex, texcoord).rgb;
-    // gl_FragColor.rgb = col;
-    // gl_FragColor.a = 1.0;
-
 
     return vec4( abs(orig) , 1.0);
 }

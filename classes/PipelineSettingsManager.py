@@ -48,4 +48,5 @@ class PipelineSettingsManager(SettingsManager):
         # [Debugging]
         self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayDebugStats", bool, True)
+        self._addSetting("dumpGeneratedShaders", bool, False)
 

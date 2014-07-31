@@ -5,7 +5,7 @@
 
 
 // const float normalsDiscardThreshold = 0.99999;
-const float normalsDiscardThreshold = 0.9;
+const float normalsDiscardThreshold = 0.998;
 
 
 #pragma optionNV (unroll all)
@@ -100,7 +100,7 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, sampler2D colorT
         float occlusion[NUM_BLUR_STEPS];
 
         vec2 offset = texcoord;
-        vec2 texelSize = 1.64 / vec2(textureSize(colorTex, 0));
+        vec2 texelSize = 1.0 / vec2(textureSize(colorTex, 0));
         vec2 perStep = texelSize * vec2(blurDirection);
         offset -= perStep * PIXEL_TO_MID_FACTOR;
 

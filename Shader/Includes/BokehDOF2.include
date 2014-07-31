@@ -116,6 +116,6 @@ vec4 bokehDOF2(vec2 texcoord, sampler2D target)
     // col += texture2D(bgl_RenderedTexture, gl_TexCoord[0].xy + (vec2( -0.29,-0.29spectcorrect) * dofblur*0.4);   
     // col += texture2D(bgl_RenderedTexture, gl_TexCoord[0].xy + (vec2( 0.0,0.4spectcorrect) * dofblur*0.4);   
             
-    // gl_FragColor = col/41.0;
-    // gl_FragColor.a = 1.0;
+    // result = col/41.0;
+    // result.a = 1.0;
 }

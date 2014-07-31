@@ -13,6 +13,6 @@ in vec2 texcoord;
 out vec4 result;
 
 void main() {
-    // gl_FragColor = mipmapBasedBlur(texcoord, vec2(0,1), colorTex, dofStorage);
+    // result = mipmapBasedBlur(texcoord, vec2(0,1), colorTex, dofStorage);
     result = texture(colorTex, texcoord);
 }
