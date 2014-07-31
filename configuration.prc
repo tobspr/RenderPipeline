@@ -118,7 +118,7 @@ gl-force-no-error #f
 gl-check-errors #f
 gl-force-no-flush #t
 gl-force-no-scissor #t
-gl-debug #f
+gl-debug #t
 
 # gl-enable-memory-barriers #f
 

@@ -9,10 +9,10 @@ in vec2 texcoord;
 out vec4 color;
 
 // deltaSRSampler
-uniform sampler2DArray deltaScatteringColor;
+uniform sampler3D deltaScatteringColor;
 
 // deltaSMSampler
-uniform sampler2DArray deltaScatteringAux;
+uniform sampler3D deltaScatteringAux;
 
 uniform bool first;
 

@@ -57,23 +57,6 @@ float limit(ScatteringOptions options, float r, float mu) {
 //     return sqrt((6.2831*H)*r) * exp((options.radiusGround-r)/H) * (x + dot(y, vec2(1.0, -1.0)));
 // }
 
-// optical depth for ray (r,mu) of length d, using analytic formula
-// (mu=cos(view zenith angle)), intersections with ground ignored
-// H=height scale of exponential density function
-float transmittanceOpticalDepth(ScatteringOptions options, float H, float r, float mu) {
-    float result = 0.0;
-    float dx = limit(options, r, mu) / float(TRANSMITTANCE_INTEGRAL_SAMPLES);
-    float xi = 0.0;
-    float yi = exp(-(r - options.radiusGround) / H);
-    for (int i = 1; i <= TRANSMITTANCE_INTEGRAL_SAMPLES; ++i) {
-        float xj = float(i) * dx;
-        float yj = exp(-(sqrt(r * r + xj * xj + 2.0 * xj * r * mu) - options.radiusGround) / H);
-        result += (yi + yj) / 2.0 * dx;
-        xi = xj;
-        yi = yj;
-    }
-    return mu < -sqrt(1.0 - (options.radiusGround / r) * (options.radiusGround / r)) ? 1e9 : result;
-}
 
 
 void getDhdhR(ScatteringOptions options, int layer, out vec4 dhdH, out float r) {
@@ -191,7 +174,7 @@ vec3 irradiance(ScatteringOptions options, sampler2D sampler, float r, float muS
 }
 
 
-vec4 texture4D(ScatteringOptions options, sampler2DArray table, float r, float mu, float muS, float nu)
+vec4 texture4D(ScatteringOptions options, sampler3D table, float r, float mu, float muS, float nu)
 {
     float H = sqrt(options.radiusAtmosphere * options.radiusAtmosphere - options.radiusGround * options.radiusGround);
     float rho = sqrt(r * r - options.radiusGround * options.radiusGround);
@@ -221,6 +204,6 @@ vec4 texture4D(ScatteringOptions options, sampler2DArray table, float r, float m
     float uNu = floor(lerp);
     lerp = lerp - uNu;
   
-    return texture(table, vec3((uNu + uMuS) / float(SCATTERING_RES_NU), uMu, uR * SCATTERING_RES_R )) * (1.0 - lerp) +
-           texture(table, vec3((uNu + uMuS + 1.0) / float(SCATTERING_RES_NU), uMu, uR * SCATTERING_RES_R)) * lerp;
+    return texture(table, vec3((uNu + uMuS) / float(SCATTERING_RES_NU), uMu, (uR) )) * (1.0 - lerp) +
+           texture(table, vec3((uNu + uMuS + 1.0) / float(SCATTERING_RES_NU), uMu, (uR) )) * lerp;
 }
