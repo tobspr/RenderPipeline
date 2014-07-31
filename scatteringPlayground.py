@@ -35,6 +35,7 @@ class Main(ShowBase, DebugObject):
         ShowBase.__init__(self)
 
         # taskMgr.step()
+        base.accept("v", base.bufferViewer.toggleEnable)
 
         Globals.load(self, ".")
 
@@ -49,4 +50,4 @@ class Main(ShowBase, DebugObject):
 
 
 app = Main()
-# app.run()
+app.run()

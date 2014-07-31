@@ -9,7 +9,7 @@ in vec2 texcoord;
 out vec4 result;
 in float layer;
 
-uniform sampler2DArray deltaJSampler;
+uniform sampler3D deltaJSampler;
 
 vec3 integrand(ScatteringOptions options, float r, float mu, float muS, float nu, float t) {
     float ri = sqrt(r * r + t * t + 2.0 * r * mu * t);

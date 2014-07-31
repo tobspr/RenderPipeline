@@ -26,7 +26,7 @@ class Scattering(DebugObject):
             "mieFactor": 1.2,  # HM
             "betaMieScattering": Vec3(4e-3),  # betaMSca
             # betaMSca
-            "betaMieScatteringAdjusted": (Vec3(2e-3) * 1.1111111111),
+            "betaMieScatteringAdjusted": (Vec3(2e-3) * (1.0 / 0.9)),
             "mieG": 0.8,  # mieG
             "transmittanceNonLinear": True,
             "inscatterNonLinear": True,
@@ -34,6 +34,7 @@ class Scattering(DebugObject):
 
         self.targets = {}
         self.textures = {}
+        self.writeOutput = True
 
     def _executePrecompute(self):
         """ Executes the precomputation for the scattering """
@@ -48,6 +49,8 @@ class Scattering(DebugObject):
             "Irradiance1", 64, 16, aux=False, shaderName="Irradiance1", layers=1)
         self._renderOneShot('irradiance1')
 
+
+
         # Delta Scattering (Rayleigh + Mie)
         self.targets['deltaScattering'] = self._createRT(
             "DeltaScattering", 256, 128, aux=True, shaderName="Inscatter1", layers=32)
@@ -60,12 +63,17 @@ class Scattering(DebugObject):
         self.targets['irradianceE'].setShaderInput('factor2', 0.0)
         self._renderOneShot('irradianceE')
 
+
+
         # Copy delta scattering into inscatter texture S
         self.targets['combinedDeltaScattering'] = self._createRT(
             "CombinedDeltaScattering", 256, 128, aux=False, shaderName="CombineDeltaScattering", layers=32)
         self._renderOneShot('combinedDeltaScattering')
 
-        for i in xrange(0):
+
+
+
+        for i in xrange(3):
             first = i == 0
             passIndex = "Pass" + str(i)
 
@@ -130,13 +138,16 @@ class Scattering(DebugObject):
             self.textures['combinedDeltaScatteringColor'] = self.textures[
                 inscatterAddName + "Color"]
 
-        inscatterResult = self.textures['combinedDeltaScatteringColor']
-        irradianceResult = self.textures['irradianceEColor']
+        self.inscatterResult = self.textures['combinedDeltaScatteringColor']
+        self.irradianceResult = self.textures['irradianceEColor']
 
-        base.graphicsEngine.extract_texture_data(
-            irradianceResult, Globals.base.win.getGsg())
-
-        irradianceResult.write("Data/Scattering/Result_Irradiance.png")
+        if self.writeOutput:
+            base.graphicsEngine.extract_texture_data(
+                self.irradianceResult, Globals.base.win.getGsg())
+            self.irradianceResult.write("Data/Scattering/Result_Irradiance.png")
+            base.graphicsEngine.extract_texture_data(
+                self.inscatterResult, Globals.base.win.getGsg())
+            self.inscatterResult.write("Data/Scattering/Result_Inscatter.png")
 
     def _renderOneShot(self, targetName):
         """ Renders a target and then deletes the target """
@@ -152,15 +163,16 @@ class Scattering(DebugObject):
         if target.hasAuxTextures():
             write.append((targetName + "Aux", target.getAuxTexture(0)))
 
-        for texname, tex in write:
-            base.graphicsEngine.extract_texture_data(
-                tex, Globals.base.win.getGsg())
+        if self.writeOutput:
+            for texname, tex in write:
+                base.graphicsEngine.extract_texture_data(
+                    tex, Globals.base.win.getGsg())
 
-            dest = "Data/Scattering/" + texname + ".png"
-            if tex.getZSize() > 1:
-                self.debg.debug3DTexture(tex, dest)
-            else:
-                tex.write(dest)
+                dest = "Data/Scattering/" + texname + ".png"
+                if tex.getZSize() > 1:
+                    self.debg.debug3DTexture(tex, dest)
+                else:
+                    tex.write(dest)
 
     def _createRT(self, name, w, h, aux=False, shaderName="", layers=1):
         """ Internal shortcut to create a new render target """
@@ -211,7 +223,8 @@ class Scattering(DebugObject):
         """ Precomputes the scattering. This is required before you can use it """
         self.debug("Precomputing ..")
 
-        self.debg = TextureDebugger()
+        if self.writeOutput:
+            self.debg = TextureDebugger()
         self._executePrecompute()
 
         # write out transmittance tex

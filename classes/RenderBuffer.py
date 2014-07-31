@@ -154,7 +154,7 @@ class RenderBuffer(DebugObject):
                 elif self._colorBits == 32:
                     handle.setFormat(Texture.FRgba32)
             else:
-                if colorIsFloat:
+                if auxIsFloat:
                     handle.setComponentType(Texture.TFloat)
                 if self._auxBits == 16:
                     handle.setFormat(Texture.FRgba16)
@@ -162,16 +162,20 @@ class RenderBuffer(DebugObject):
                     handle.setFormat(Texture.FRgba32)
 
             if self._layers > 1:
-                handle.setup2dTextureArray(self._layers)
+                # handle.setup2dTextureArray(self._layers)
+                handle.setup3dTexture(self._layers)
 
         # set layers for depth texture
         if self._layers > 1 and self.hasTarget(RenderTargetType.Depth):
-            self.getTarget(RenderTargetType.Depth).setup2dTextureArray(
+            # self.getTarget(RenderTargetType.Depth).setup2dTextureArray(
+                # self._layers)
+            self.getTarget(RenderTargetType.Depth).setup3dTexture(
                 self._layers)
 
         # Create buffer descriptors
         windowProps = WindowProperties.size(self._width, self._height)
         bufferProps = FrameBufferProperties()
+
 
         # Set color and alpha bits
         if self.hasTarget(RenderTargetType.Color):
@@ -183,7 +187,11 @@ class RenderBuffer(DebugObject):
 
         # Set aux bits
         if self.hasTarget(RenderTargetType.Aux0) and auxIsFloat:
-            bufferProps.setAuxFloat(True)
+
+            # FRAMEBUFFER INCOMPLETE when using this to render to a 3d texture
+            # bufferProps.setAuxFloat(True)
+
+            pass
 
         # Set depth bits and depth texture format
         if self.hasTarget(RenderTargetType.Depth):
@@ -213,7 +221,6 @@ class RenderBuffer(DebugObject):
         else:
             bufferProps.setAuxRgba(numAuxtex)
 
-        # Need no multisamples
         bufferProps.setMultisamples(self._multisamples)
 
         # Create internal graphics output

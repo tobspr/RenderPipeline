@@ -1,25 +1,42 @@
 #version 150
+#pragma optimize (off)
 
 #include "Scattering/ScatteringOptions.include"
 #include "Scattering/Scattering.include"
 
 uniform ScatteringOptions options;
 
+
 in vec2 texcoord;
 out vec4 color;
 
+float opticalDepth(ScatteringOptions options, float H, float r, float mu) {
+    float result = 0.0;
+    float dx = limit(options, r, mu) / float(TRANSMITTANCE_INTEGRAL_SAMPLES);
+
+    float xi = 0.0;
+    float yi = exp(-(r - options.radiusGround) / H);
+
+    for (int i = 1; i <= TRANSMITTANCE_INTEGRAL_SAMPLES; ++i) {
+        float xj = float(i) * dx;
+        float yj = exp(-(sqrt(r * r + xj * xj + 2.0 * xj * r * mu) - options.radiusGround) / H);
+
+        result += (yi + yj) / 2.0 * dx;
+        xi = xj;
+        yi = yj;
+    }
+
+    float RgByR = options.radiusGround / r;
+    return mu < -sqrt(1.0 - RgByR * RgByR) ? 1e9 : result;
+}
 
 void main() {
-
     // Transmittance
     float r, muS;
     getTransmittanceRMu(options, r, muS);
-
-    float opticalDepthRayleigh  = transmittanceOpticalDepth(options, options.rayleighFactor, r, muS);
-    float opticalDepthMie  = transmittanceOpticalDepth(options, options.mieFactor, r, muS);
-
+    float opticalDepthRayleigh  = opticalDepth(options, options.rayleighFactor, r, muS);
+    float opticalDepthMie  = opticalDepth(options, options.mieFactor, r, muS);
     vec3 combinedDepth = options.betaRayleigh * opticalDepthRayleigh + options.betaMieScatteringAdjusted * opticalDepthMie;
     combinedDepth = exp(-combinedDepth);
-
-    color = vec4( combinedDepth , 1);
+    color = vec4( clamp(combinedDepth, 0, 1), 1);
 }
