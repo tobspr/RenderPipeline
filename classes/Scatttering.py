@@ -156,7 +156,7 @@ class Scattering(DebugObject):
         target.setActive(True)
         Globals.base.graphicsEngine.renderFrame()
         target.setActive(False)
-        target.deleteBuffer()
+
 
         write = [(targetName + "Color", target.getColorTexture())]
 
@@ -173,6 +173,8 @@ class Scattering(DebugObject):
                     self.debg.debug3DTexture(tex, dest)
                 else:
                     tex.write(dest)
+
+        target.deleteBuffer()
 
     def _createRT(self, name, w, h, aux=False, shaderName="", layers=1):
         """ Internal shortcut to create a new render target """
