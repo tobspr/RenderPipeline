@@ -124,9 +124,9 @@ class RenderingPipeline(DebugObject):
         self.debug("Setting up virtual filesystem.")
         vfs = VirtualFileSystem.getGlobalPtr()
         vfs.mount(join(self.rootDirectory, 'Shader'),
-                  'Shader', VirtualFileSystem.MFReadOnly)
+                  'Shader', 0)
         vfs.mount(join(self.rootDirectory, 'Data'),
-                  'Data', VirtualFileSystem.MFReadOnly)
+                  'Data', 0)
 
         self.debug("Write directory:", self.writeDirectory)
         if isinstance(self.writeDirectory, str) or \
@@ -142,6 +142,10 @@ class RenderingPipeline(DebugObject):
         if self.writeDirectory:
             vfs.mount(
                 self.writeDirectory, 'Shader', VirtualFileSystem.MFReadOnly)
+
+        # Now as everything is mounted, we can point root Directory to something
+        # which does not exist
+        self.rootDirectory = "PipelineTemp"
 
         # Store globals, as cython can't handle them
         self.debug("Setting up globals")
@@ -548,7 +552,7 @@ class RenderingPipeline(DebugObject):
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
         cubemap = self.showbase.loader.loadCubeMap(
-            join(self.rootDirectory, "Data/Cubemaps/Default/#.png"))
+            "Data/Cubemaps/Default/#.png")
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb_alpha)
@@ -558,7 +562,7 @@ class RenderingPipeline(DebugObject):
     def _loadLookupCubemap(self):
         self.debug("Loading lookup cubemap")
         cubemap = self.showbase.loader.loadCubeMap(
-            join(self.rootDirectory, "Data/Cubemaps/DirectionLookup/#.png"))
+            "Data/Cubemaps/DirectionLookup/#.png")
         cubemap.setMinfilter(Texture.FTNearest)
         cubemap.setMagfilter(Texture.FTNearest)
         cubemap.setFormat(Texture.F_rgb8)
