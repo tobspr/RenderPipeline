@@ -74,8 +74,6 @@ class BetterShader:
     def _handleIncludes(self, source):
         """ Internal (recursive) method to parse #include's """
 
-        source = source
-
         with open(source, "r") as handle:
             content = handle.readlines()
 
