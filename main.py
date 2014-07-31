@@ -6,6 +6,8 @@ RenderPipeline example
 
 This is a sample how you could integrate the Pipeline to your
 current project. It shows the basic functions of the Pipeline.
+Not that this file is not very clean coded, as it is the
+main testing file. 
 
 """
 
@@ -30,7 +32,7 @@ from classes.DirectionalLight import DirectionalLight
 from classes.BetterShader import BetterShader
 from classes.DebugObject import DebugObject
 from classes.FirstPersonController import FirstPersonCamera
-
+from classes.Scattering import Scattering
 
 class Main(ShowBase, DebugObject):
 
@@ -54,6 +56,7 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.loadSettings("pipeline.ini")
         self.renderPipeline.setWriteDirectory(writeDirectory)
         self.renderPipeline.create()
+
 
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
@@ -211,6 +214,12 @@ class Main(ShowBase, DebugObject):
         # dirLight.setPos(Vec3(50, 100, 150))
         dirLight.setColor(Vec3(5))
         self.renderPipeline.addLight(dirLight)
+
+
+
+        d = Scattering()
+        d.precompute()
+
 
         self.skybox = None
         self.loadSkybox()

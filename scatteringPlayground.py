@@ -14,7 +14,7 @@ from classes.DirectionalLight import DirectionalLight
 from classes.BetterShader import BetterShader
 from classes.DebugObject import DebugObject
 from classes.FirstPersonController import FirstPersonCamera
-from classes.Scatttering import Scattering
+from classes.Scattering import Scattering
 from classes.Globals import Globals
 
 class Main(ShowBase, DebugObject):
