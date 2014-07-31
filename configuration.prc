@@ -3,6 +3,8 @@
 assert-abort #f
 
 # File system should be case sensitive
+# NOTICE: Set this to #f if you are using tempfile. Because it returns
+# wrong cased directory paths :(
 vfs-case-sensitive #f
 
 # Animations on the gpu
