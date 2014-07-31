@@ -539,8 +539,7 @@ class RenderingPipeline(DebugObject):
 
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
-        cubemap = self.showbase.loader.loadCubeMap(
-            join(self.rootDirectory, "Data/Cubemaps/Default/#.png"))
+        cubemap = self.showbase.loader.loadCubeMap("Data/Cubemaps/Default/#.png")
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb_alpha)
@@ -549,8 +548,7 @@ class RenderingPipeline(DebugObject):
 
     def _loadLookupCubemap(self):
         self.debug("Loading lookup cubemap")
-        cubemap = self.showbase.loader.loadCubeMap(
-            join(self.rootDirectory, "Data/Cubemaps/DirectionLookup/#.png"))
+        cubemap = self.showbase.loader.loadCubeMap("Data/Cubemaps/DirectionLookup/#.png")
         cubemap.setMinfilter(Texture.FTNearest)
         cubemap.setMagfilter(Texture.FTNearest)
         cubemap.setFormat(Texture.F_rgb8)
