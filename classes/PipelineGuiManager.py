@@ -20,7 +20,7 @@ class BetterOnscreenImage(DebugObject):
         self.initialPos = Vec3(x + w / 2.0, 1, -y - h / 2.0)
 
         self._node = OnscreenImage(
-            image=join(Globals.rootDirectory, image), parent=parent, pos=self.initialPos, scale=(w / 2.0,  1, h / 2.0))
+            image=image, parent=parent, pos=self.initialPos, scale=(w / 2.0,  1, h / 2.0))
 
         if transparent:
             self._node.setTransparency(TransparencyAttrib.MAlpha)
@@ -46,10 +46,8 @@ class BetterCheckbox(DebugObject):
 
         prefix = "Checkbox" if not radio else "Radiobox"
 
-        checkedImg = Globals.loader.loadTexture(join(Globals.rootDirectory,
-                                                     "Data/GUI/" + prefix + "Active.png"))
-        uncheckedImg = Globals.loader.loadTexture(join(Globals.rootDirectory,
-                                                       "Data/GUI/" + prefix + "Empty.png"))
+        checkedImg = Globals.loader.loadTexture("Data/GUI/" + prefix + "Active.png")
+        uncheckedImg = Globals.loader.loadTexture("Data/GUI/" + prefix + "Empty.png")
 
         for tex in [checkedImg, uncheckedImg]:
             tex.setMinfilter(Texture.FTNearest)

@@ -123,10 +123,10 @@ class RenderingPipeline(DebugObject):
 
         self.debug("Setting up virtual filesystem.")
         vfs = VirtualFileSystem.getGlobalPtr()
-        self.debug(
-            "Root shader directory:", join(self.rootDirectory, 'Shader'))
         vfs.mount(join(self.rootDirectory, 'Shader'),
                   'Shader', VirtualFileSystem.MFReadOnly)
+        vfs.mount(join(self.rootDirectory, 'Data'),
+                  'Data', VirtualFileSystem.MFReadOnly)
 
         self.debug("Write directory:", self.writeDirectory)
         if isinstance(self.writeDirectory, str) or isinstance(self.writeDirectory, unicode):
