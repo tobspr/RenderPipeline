@@ -147,6 +147,9 @@ class RenderingPipeline(DebugObject):
         self.debug("Setting up globals")
         Globals.load(self.showbase, self.rootDirectory)
 
+        # Setting up shader loading
+        BetterShader._DumpShaders = self.settings.dumpGeneratedShaders
+
         # We use PTA's for shader inputs, because that's faster than
         # using setShaderInput
         self.temporalProjXOffs = PTAInt.emptyArray(1)

@@ -117,6 +117,6 @@ float computeHBAO(vec2 coord, float dist) {
   
   occlusion = 1.0 - occlusion / float(HBAO_NUM_SAMPLE_DIRECTIONS);
   occlusion = clamp(pow(occlusion, 1.0 + hbaoIntensity), 0.0, 1.0);
-  // gl_FragColor = vec4(occlusion, occlusion, occlusion, 1.0);
+  // result = vec4(occlusion, occlusion, occlusion, 1.0);
   return occlusion;
 }

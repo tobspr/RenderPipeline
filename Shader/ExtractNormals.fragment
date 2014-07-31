@@ -58,7 +58,6 @@ void main() {
     vec4 vsNormal = trans_mainRender_to_apiview_of_mainCam * vec4(normal, 0);
     vsNormal = normalize(vsNormal);
 
-    // gl_FragColor = vec4(positionVS.rgb, 1);
     outNormalVS = vsNormal.rgb;
     outPositionVS = positionVS.rgb;
 }

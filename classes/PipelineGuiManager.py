@@ -141,6 +141,8 @@ class PipelineGuiManager(DebugObject):
         """ Setups this manager """
 
         self.debug("Creating GUI ..")
+
+        self.intialized = False
         self.rootNode = self.body.attachNewNode("GUIManager")
         self.rootNode.setPos(0, 1, 0)
 
@@ -158,6 +160,8 @@ class PipelineGuiManager(DebugObject):
         self.showbase.accept("g", self._toggleGUI)
 
         self.currentGUIEffect = None
+
+
 
         # self._toggleGUI()
 
@@ -240,7 +244,7 @@ class PipelineGuiManager(DebugObject):
         self.chbFT_AOBlur = BetterCheckbox(
             parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["ft_BLUR_OCCLUSION", True], checked=True)
 
-
+        self.initialized = True
 
     def _updateSetting(self, status, name, updateWhenFalse=False):
         # self.debug("Update setting:", name, "=", status, "whenFalse=",updateWhenFalse)
@@ -255,7 +259,8 @@ class PipelineGuiManager(DebugObject):
             modeId = "DISABLE_" + name[3:].upper()
             self.defines[modeId] = 0 if status else 1
 
-        if status is True or updateWhenFalse:
+
+        if self.intialized and (status is True or updateWhenFalse):
             self.pipeline._generateShaderConfiguration()
             self.pipeline.reloadShaders()
 
