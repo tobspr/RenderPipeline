@@ -2,14 +2,14 @@
 import math
 import os
 
-from panda3d.core import TransparencyAttrib, Texture, Vec2, NodePath, PTAInt
+from panda3d.core import TransparencyAttrib, Texture, NodePath, PTAInt
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
-from panda3d.core import PTAVecBase3f, WindowProperties, OmniBoundingVolume
-from panda3d.core import VirtualFileSystem
+from panda3d.core import PTAVecBase3f, WindowProperties
+from panda3d.core import VirtualFileSystem, Filename
 
 from direct.gui.OnscreenImage import OnscreenImage
-from direct.stdpy.file import open, join
+from direct.stdpy.file import open, join, listdir
 
 from LightManager import LightManager
 from RenderTarget import RenderTarget
@@ -20,6 +20,7 @@ from AmbientOcclusion import *
 from PipelineSettingsManager import PipelineSettingsManager
 from PipelineGuiManager import PipelineGuiManager
 from Globals import Globals
+from MountManager import MountManager
 
 
 class RenderingPipeline(DebugObject):
@@ -80,32 +81,17 @@ class RenderingPipeline(DebugObject):
         DebugObject.__init__(self, "RenderingPipeline")
         self.showbase = showbase
         self.settings = None
-        self.rootDirectory = "."
-        self.writeDirectory = None
+        self.mountManager = MountManager()
+
+    def getMountManager(self):
+        """ Returns the mount manager. You can use this to set the
+        write directory and base path """
+        return self.mountManager
 
     def loadSettings(self, filename):
         """ Loads the pipeline settings from an ini file """
         self.settings = PipelineSettingsManager()
         self.settings.loadFromFile(filename)
-
-    def setRootDirectory(self, directory):
-        """ Sets the root directory of this pipeline, all assets
-        will be loaded relative to this directory """
-        self.rootDirectory = directory.replace("\\", "/").rstrip("/")
-
-    def setWriteDirectory(self, directory):
-        """ Set a writable directory for generated files. This can be a string
-        path name or a multifile with openReadWrite(). If no pathname is set
-        then the root directory is used.
-
-        Applications are usually installed system wide and wont have write
-        access to the rootDirectory. It will be wise to at least use tempfile
-        like tempfile.mkdtemp(prefix='Shader-tmp'), or an application directory
-        in the user's home/app dir."""
-        if isinstance(directory, str):
-            self.writeDirectory = directory.replace("\\", "/").rstrip("/")
-        else:
-            self.writeDirectory = directory
 
     def getSettings(self):
         """ Returns the current pipeline settings """
@@ -115,41 +101,17 @@ class RenderingPipeline(DebugObject):
         """ Creates this pipeline """
 
         self.debug("Setting up render pipeline")
-        self.debug("Root directory is '" + self.rootDirectory + "'")
 
         if self.settings is None:
             self.error("You have to call loadSettings first!")
             return
 
-        self.debug("Setting up virtual filesystem.")
-        vfs = VirtualFileSystem.getGlobalPtr()
-        vfs.mount(join(self.rootDirectory, 'Shader'),
-                  'Shader', 0)
-        vfs.mount(join(self.rootDirectory, 'Data'),
-                  'Data', 0)
-
-        self.debug("Write directory:", self.writeDirectory)
-        if isinstance(self.writeDirectory, str) or \
-           isinstance(self.writeDirectory, unicode):
-            try:
-                os.makedirs(join(self.writeDirectory, 'Cache'))
-                os.makedirs(join(self.writeDirectory, 'Includes'))
-            except OSError as e:
-                pass
-        else:
-            pass  # Don't need to mkdir in multifiles?
-
-        if self.writeDirectory:
-            vfs.mount(
-                self.writeDirectory, 'Shader', VirtualFileSystem.MFReadOnly)
-
-        # Now as everything is mounted, we can point root Directory to something
-        # which does not exist
-        self.rootDirectory = "PipelineTemp"
+        # Mount everything first
+        self.mountManager.mount()
 
         # Store globals, as cython can't handle them
         self.debug("Setting up globals")
-        Globals.load(self.showbase, self.rootDirectory)
+        Globals.load(self.showbase)
 
         # Setting up shader loading
         BetterShader._DumpShaders = self.settings.dumpGeneratedShaders
@@ -180,6 +142,8 @@ class RenderingPipeline(DebugObject):
             self.showbase.win.requestProperties(wp)
             self.showbase.graphicsEngine.openWindows()
 
+
+
         self.camera = self.showbase.cam
         self.size = self._getSize()
         self.cullBounds = None
@@ -199,7 +163,18 @@ class RenderingPipeline(DebugObject):
         self.showbase.camLens.setNearFar(0.1, 30000)
         self.showbase.camLens.setFov(90)
 
+
+        # Create occlusion handler
         self._setupOcclusion()
+
+        if self.settings.displayOnscreenDebugger:
+            self.guiManager = PipelineGuiManager(self)
+            self.guiManager.setup()
+
+
+        # Generate auto-configuration for shaders
+        self._generateShaderConfiguration()
+
 
         # Create light manager, which handles lighting + shadows
         if self.haveLightingPass:
@@ -248,12 +223,6 @@ class RenderingPipeline(DebugObject):
         # add update task
         self._attachUpdateTask()
 
-        if self.settings.displayOnscreenDebugger:
-            self.guiManager = PipelineGuiManager(self)
-            self.guiManager.setup()
-
-        # Generate auto-configuration for shaders
-        self._generateShaderConfiguration()
 
         # display shadow atlas is defined
         # todo: move this to the gui manager
@@ -930,7 +899,7 @@ class RenderingPipeline(DebugObject):
 
         # Try to write the file
         # Todo: add error handling
-        with open("Shader/Includes/AutoGeneratedConfig.include", "w") as handle:
+        with open("PipelineTemp/ShaderAutoConfig.include", "w") as handle:
             handle.write(output)
 
     def onWindowResized(self):

@@ -7,6 +7,10 @@ from Globals import Globals
 from RenderTarget import RenderTarget
 from TextureDebugger import TextureDebugger
 
+from direct.stdpy.file import open, isdir
+
+# need legacy makedirs here
+from os import makedirs
 
 class Scattering(DebugObject):
 
@@ -36,6 +40,13 @@ class Scattering(DebugObject):
         self.textures = {}
         self.writeOutput = True
 
+        if self.writeOutput and not isdir("ScatteringDump"):
+            try:
+                makedirs("ScatteringDump")
+            except Exception, msg:
+                self.debug("Failed to create dump dir!")
+                self.writeOutput = False
+
     def _executePrecompute(self):
         """ Executes the precomputation for the scattering """
 
@@ -63,15 +74,10 @@ class Scattering(DebugObject):
         self.targets['irradianceE'].setShaderInput('factor2', 0.0)
         self._renderOneShot('irradianceE')
 
-
-
         # Copy delta scattering into inscatter texture S
         self.targets['combinedDeltaScattering'] = self._createRT(
             "CombinedDeltaScattering", 256, 128, aux=False, shaderName="CombineDeltaScattering", layers=32)
         self._renderOneShot('combinedDeltaScattering')
-
-
-
 
         for i in xrange(3):
             first = i == 0
@@ -141,13 +147,13 @@ class Scattering(DebugObject):
         self.inscatterResult = self.textures['combinedDeltaScatteringColor']
         self.irradianceResult = self.textures['irradianceEColor']
 
-        if self.writeOutput:
-            base.graphicsEngine.extract_texture_data(
-                self.irradianceResult, Globals.base.win.getGsg())
-            self.irradianceResult.write("Data/Scattering/Result_Irradiance.png")
-            base.graphicsEngine.extract_texture_data(
-                self.inscatterResult, Globals.base.win.getGsg())
-            self.inscatterResult.write("Data/Scattering/Result_Inscatter.png")
+        # if self.writeOutput:
+        #     base.graphicsEngine.extract_texture_data(
+        #         self.irradianceResult, Globals.base.win.getGsg())
+        #     self.irradianceResult.write("Data/Scattering/Result_Irradiance.png")
+        #     base.graphicsEngine.extract_texture_data(
+        #         self.inscatterResult, Globals.base.win.getGsg())
+        #     self.inscatterResult.write("Data/Scattering/Result_Inscatter.png")
 
     def _renderOneShot(self, targetName):
         """ Renders a target and then deletes the target """
@@ -168,7 +174,7 @@ class Scattering(DebugObject):
                 base.graphicsEngine.extract_texture_data(
                     tex, Globals.base.win.getGsg())
 
-                dest = "Data/Scattering/" + texname + ".png"
+                dest = "ScatteringDump/" + texname + ".png"
                 if tex.getZSize() > 1:
                     self.debg.debug3DTexture(tex, dest)
                 else:

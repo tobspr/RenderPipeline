@@ -3,7 +3,7 @@
 assert-abort #f
 
 # File system should be case sensitive
-vfs-case-sensitive #t
+vfs-case-sensitive #f
 
 # Animations on the gpu
 # hardware-animated-vertices #t

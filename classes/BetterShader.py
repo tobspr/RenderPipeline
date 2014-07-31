@@ -1,7 +1,7 @@
-from direct.stdpy.file import open, isdir, isfile, join
-from panda3d.core import Shader
-from os import makedirs
+from direct.stdpy.file import open, isdir, isfile, join, listdir
+from panda3d.core import Shader, Filename
 from Globals import Globals
+
 
 class BetterShader:
 
@@ -18,7 +18,7 @@ class BetterShader:
     # Shaders when you move them to a new location.
     # Also include directives are shorter then. Set to ""
     # to disable this feature
-    _GlobalShaderPath = "Shader/"
+    _GlobalShaderPath = "Shader"
 
     # Wheter to dump the generated shaders to disk. This is very
     # handy and should only be disabled in production
@@ -38,7 +38,7 @@ class BetterShader:
     def load(self, *args):
         """ Loads a shader in the order: vertex, fragment,
         geometry, tesseval, tesscontrol """
-        
+
         newArgs = []
 
         for arg in args:
@@ -49,7 +49,6 @@ class BetterShader:
             newArgs.append(content)
             self._writeDebugShader("Shader-" + str(arg), content)
             self._clearIncludeStack()
-
 
         result = Shader.make(Shader.SLGLSL, *newArgs)
         return result
@@ -62,18 +61,19 @@ class BetterShader:
     @classmethod
     def _writeDebugShader(self, name, content):
         """ Internal method to dump shader for debugging """
+
         if not self._DumpShaders:
             return
 
-        cachePath = join(self._GlobalShaderPath, "Cache")
+        cachePath = "PipelineTemp"
         if not isdir(cachePath):
-            try:
-                makedirs(cachePath)
-            except Exception, msg:
-                print "Could not create", cachePath, ":", msg
-                return
+            print "Cache path does not exist!:", cachePath
+            print "Disabling shader dump"
+            self._DumpShaders = False
+            return
 
         writeName = name.strip().replace("/", "-").replace(".", "_") + ".bin"
+
         with open(join(cachePath, writeName), "w") as handle:
             handle.write(str(content))
 
@@ -97,9 +97,13 @@ class BetterShader:
                 # Todo: maybe also support ->'<- additionally to ->"<-
                 if includePart.startswith('"') and includePart.endswith('"'):
 
-                    # Extract include part
-                    properIncludePart = join(
-                        self._GlobalShaderPath, includePart[1:-1])
+                    # Special case
+                    if includePart == '"%ShaderAutoConfig%"':
+                        properIncludePart = "PipelineTemp/ShaderAutoConfig.include"
+                    else:
+                        # Extract include part
+                        properIncludePart = Filename.fromOsSpecific(join(
+                            self._GlobalShaderPath, includePart[1:-1])).toOsGeneric()
 
                     # And check if file exists
                     if isfile(properIncludePart):
