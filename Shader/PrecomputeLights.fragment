@@ -1,4 +1,5 @@
 #version 400
+#pragma file "PrecomputeLights.fragment"
 
 #extension GL_ARB_shader_image_load_store : enable
 

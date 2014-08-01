@@ -1,4 +1,5 @@
 #version 420
+#pragma file "Combiner.fragment"
 
 #include "Includes/Configuration.include"
 #include "Includes/PositionReconstruction.include"

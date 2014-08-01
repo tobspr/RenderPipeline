@@ -64,13 +64,13 @@ class Main(ShowBase, DebugObject):
 
         # Uncomment to use temp directory
         # writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
-        writeDirectory = "Temp/"
+        # writeDirectory = "Temp/"
 
         # Clear write directory when app exits
-        atexit.register(os.remove, writeDirectory)
+        # atexit.register(os.remove, writeDirectory)
 
         # Set a write directory, where the shader cache and so on is stored
-        self.renderPipeline.getMountManager().setWritePath(writeDirectory)
+        # self.renderPipeline.getMountManager().setWritePath(writeDirectory)
         self.renderPipeline.getMountManager().setBasePath(".")
         self.renderPipeline.create()
 

@@ -1,4 +1,5 @@
 #version 410
+#pragma file "DefaultObjectShader/fragment.glsl"
 
 #include "Includes/VertexOutput.include"
 

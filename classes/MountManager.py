@@ -13,7 +13,7 @@ class MountManager(DebugObject):
     def __init__(self):
         """ Creates a new mount manager """
         DebugObject.__init__(self, "MountManager")
-        self.writePath = "."
+        self.writePath = "Temp/"
         self.basePath = "."
 
     def setWritePath(self, pth):
@@ -59,3 +59,6 @@ class MountManager(DebugObject):
         vfs.mountLoop(self.writePath, 'PipelineTemp/', 0)
 
 
+    def unmount(self):
+        """ Unmounts the VFS """
+        self.warn("TODO: Unmount")

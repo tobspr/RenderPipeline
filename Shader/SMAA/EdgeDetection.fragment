@@ -1,5 +1,5 @@
 #version 420
-
+#pragma file "SMAAEdgeDetection.fragment"
 
 in vec2 texcoord;
 in vec4 offset[3];

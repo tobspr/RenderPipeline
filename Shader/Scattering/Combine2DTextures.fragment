@@ -1,4 +1,5 @@
 #version 150
+#pragma file "Combine2DTextures.fragment"
 
 in vec2 texcoord;
 

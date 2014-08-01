@@ -711,17 +711,17 @@ class RenderingPipeline(DebugObject):
         """ Attaches the update tasks to the showbase """
 
         self.showbase.addTask(
-            self._update, "UpdateRenderingPipeline", sort=-10000)
+            self._update, "UpdateRenderingPipeline", sort=-10)
 
         if self.haveLightingPass:
             self.showbase.addTask(
-                self._updateLights, "UpdateLights", sort=-9000)
+                self._updateLights, "UpdateLights", sort=-9)
             self.showbase.addTask(
-                self._updateShadows, "updateShadows", sort=-8000)
+                self._updateShadows, "updateShadows", sort=-8)
 
         if self.settings.displayOnscreenDebugger:
             self.showbase.addTask(
-                self._updateGUI, "UpdateGUI", sort=7000)
+                self._updateGUI, "UpdateGUI", sort=7)
 
     def _computeCameraBounds(self):
         """ Computes the current camera bounds, i.e. for light culling """
@@ -908,7 +908,8 @@ class RenderingPipeline(DebugObject):
 
     def destroy(self):
         """ Call this when you want to shut down the pipeline """
-        raise NotImplementedError()
+        self.mountManager.unmount()
+        self.error("Destroy is not implemented yet")
 
     def reload(self):
         """ This reloads the whole pipeline, same as destroy(); create() """

@@ -1,4 +1,5 @@
 #version 150
+#pragma file "ExtractNormals.fragment"
 
 #include "Includes/Configuration.include"
 #include "Includes/PositionReconstruction.include"
@@ -48,6 +49,7 @@ void main() {
 
     vec3 worldChangeX = world - worldX1;
     vec3 worldChangeY = world - worldY1;
+
 
 
     vec4 positionVS = trans_mainRender_to_apiview_of_mainCam * vec4(world, 1);

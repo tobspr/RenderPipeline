@@ -1,4 +1,5 @@
 #version 440
+#pragma file "BlurOcclusionVertical.fragment"
 
 #include "Includes/Configuration.include"
 

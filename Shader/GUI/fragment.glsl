@@ -1,4 +1,5 @@
 #version 150 
+#pragma file "GUI/fragment.glsl"
 
 in vec2 texcoord;
 uniform sampler2D p3d_Texture0;

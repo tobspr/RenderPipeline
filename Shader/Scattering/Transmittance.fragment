@@ -1,5 +1,5 @@
 #version 150
-#pragma optimize (off)
+#pragma file "Transmittance.fragment"
 
 #include "Scattering/ScatteringOptions.include"
 #include "Scattering/Scattering.include"
