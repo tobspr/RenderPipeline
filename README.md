@@ -1,91 +1,77 @@
-Deferred Render Pipeline
-==============
+## Deferred Render Pipeline
 
-Complete deferred render pipeline for panda3d (Work in progress).
-Wiki & Instructions how to setup: https://github.com/tobspr/RenderPipeline/wiki
+This is my deferred render pipeline, implemented in Panda3D. This 
+pipeline aims to do everything related to graphics for you, so that
+the user can focus on making the game, and not the graphics.
 
+This pipeline is still in developement, feel free to join :)
 
+### Setup
+You can find the wiki & instructions how to setup the pipeline at
+https://github.com/tobspr/RenderPipeline/wiki
 
+### Features
 
-#### Planned Features:
+#### Deferred rendering
+- Allows forward shading, too
 
-##### Deferred rendering (obviously)
-- Still allows some objects to have forward passes
-
-##### Early-Z
+#### Early-Z
 - Pre-Renders depth to avoid overdraw
+- Not sure if it's needed at all
 
-##### SSDO
-- with one bounce for indirect lighting / color bleeding
+#### Occlusion
+- SSDO, SAO and HBAO
 
-##### PSSM, Cloud Shadows, Large Terrain Shadows
-- ~~complete lighting and shadows via compute shader~~
-    - Too slow, replaced by regular fragment shaders
+#### PSSM, Cloud Shadows, Large Terrain Shadows
 
-##### Atmospheric Scattering & Volumetric Fog
+#### Multi-Hemisphere-Skybox
 
-##### Multi-Hemisphere-Skybox
-
-##### Lighting:
+#### Lighting:
 - Point Lights
-    - Either shadow casting or not
-    - When shadow casting, only use 2 perspectives
-        - Parabolic mapping
-
 - Directional Lights
-    - Sun only
     - PSSM Shadows
-
+- Sun Lights
+    - Atmospheric Scattering
 - Ambient Lights
     - Darken or Bright
         - Artist controlled Global Illumination
-
 - Projector Lights
     - Either shadow casting or not
-    - Only 1 perspective
     - Projection texture
         - Can be used for flashlights for example
-
 - Area Lights
     - Caster is a rectangle
-        - Orthographic Lens
     - Also supports projection texture
-    - Maybe Cone-Mapping
+    - Maybe Cone-Mapping for penumbras?
 
-##### Physically based shading / lighting
+#### Physically based shading / lighting
 
-##### Precomputed HDR environment probes
+#### Precomputed HDR environment probes
 - Only in areas where reflective materials are used
     - and SSLR does not work well for the material
         - like water patches
 - Image based lighting
 
-##### Dynamic reflections
-- Screen Space Local Reflections
-- For specular materials
+#### Dynamic reflections
+- Screen Space Local Reflections for reflective materials
 - Cheapest solution for reflections
 
-##### Dynamic cubemaps 
-- rare usage, because of performance
-- Render only 2 perspectives, parabolic mapping
+#### Dynamic cubemaps 
+- Rare usage, because of performance
 - Not updated every frame
 
-##### Tone mapping (HDR)
+#### Tone mapping (HDR)
 
-##### Blur
+#### Blur
 - Focal Blur
 - Movement Blur (edges)
 - Mipmap based + in place 4x4 kernel
     - Varying radius (DOF)
+- Maybe Bokeh
 
-##### Tesselation Shader
-- Based on displacement map, or detail normals
-- Height stored in z component of normalmap
+#### Tesselation Shader displacement
 
-##### Bokeh DOF
-- In combination with blur
-
-##### Approximated Chromatic Aberration
+#### Approximated Chromatic Aberration
 
 
 Thanks especially to rdb and all the others for support & help!
