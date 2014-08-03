@@ -78,7 +78,7 @@ class Main(ShowBase, DebugObject):
 
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
-        self.sceneSource = "Models/Terrain/Model.egg.bam"
+        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False

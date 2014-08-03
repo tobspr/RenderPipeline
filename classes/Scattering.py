@@ -44,7 +44,7 @@ class Scattering(DebugObject):
 
         self.targets = {}
         self.textures = {}
-        self.writeOutput = True
+        self.writeOutput = False
 
         if self.writeOutput and not isdir("ScatteringDump"):
             try:
@@ -206,7 +206,7 @@ class Scattering(DebugObject):
         rt.setSize(w, h)
         rt.addColorTexture()
         rt.setColorBits(16)
-        # rt.setEngine(self.engine)
+        # rt.setEngine(self.engine)s
 
         if aux:
             rt.addAuxTextures(1)
@@ -215,6 +215,8 @@ class Scattering(DebugObject):
         if layers > 1:
             rt.setLayers(layers)
         rt.prepareOffscreenBuffer()
+
+        # self._engine.openWindows()
 
         sArgs = [
             "Shader/Scattering/DefaultVertex.vertex",

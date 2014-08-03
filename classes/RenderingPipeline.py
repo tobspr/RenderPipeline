@@ -5,11 +5,10 @@ import os
 from panda3d.core import TransparencyAttrib, Texture, NodePath, PTAInt
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
-from panda3d.core import PTAVecBase3f, WindowProperties
-from panda3d.core import VirtualFileSystem, Filename
+from panda3d.core import PTAVecBase3f, WindowProperties, Vec4
 
 from direct.gui.OnscreenImage import OnscreenImage
-from direct.stdpy.file import open, join, listdir
+from direct.stdpy.file import open
 
 from LightManager import LightManager
 from RenderTarget import RenderTarget
@@ -163,6 +162,8 @@ class RenderingPipeline(DebugObject):
         self.showbase.camLens.setNearFar(0.1, 50000)
         self.showbase.camLens.setFov(90)
 
+
+        self.showbase.win.setClearColor(Vec4(1.0,0.0,1.0,1.0))
 
         # Create occlusion handler
         self._setupOcclusion()

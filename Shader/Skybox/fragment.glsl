@@ -14,7 +14,6 @@ layout(location=0) in VertexOutput vOutput;
 #include "Includes/TangentFromDDX.include"
 
 void main() {
-
     // Create a material to store the properties on
     Material m;
     m.baseColor = vec3(0);

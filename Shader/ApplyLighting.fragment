@@ -114,6 +114,7 @@ void main() {
 
 
     vec3 result = vec3(0);
+    bool isSkybox = distance(material.position, cameraPosition) > SKYBOX_BEGIN;
 
 
     // Compute Occlusion
@@ -170,12 +171,12 @@ void main() {
         
     }
 
-    // HDR Mapping
-    result.xyz = 1.0f - exp(-1.0 * result.xyz);
 
-    // SRGB
-    result.xyz = sqrt(result.xyz);
 
+    // Occlusion on skybox leads to artifacts
+    if (isSkybox) {
+        occlusionTotal = 0.0;
+    }
 
 
 
@@ -214,8 +215,6 @@ void main() {
 
     // Scattering
     vec3 viewDir = normalize(material.position - cameraPosition);
-    occlusionTotal = 0.0;
-
 
     vec3 attenuation;
     float irradianceFactor;
@@ -230,8 +229,14 @@ void main() {
         attenuation, 
         irradianceFactor);
 
-    result = scatteringResult;
+    result += scatteringResult;
     result = HDR(result, 1.0);
+
+
+    // SRGB
+    result.xyz = sqrt(result.xyz);
+
+
 
 
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );

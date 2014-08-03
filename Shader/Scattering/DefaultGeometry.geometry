@@ -1,9 +1,8 @@
-#version 400
+#version 410
 
 layout(triangles, invocations=32) in;
 layout(triangle_strip, max_vertices = 3) out;
 
-#extension GL_EXT_geometry_shader : enable
 
 in vec2 texcoordVertex[3];
 out vec2 texcoord;
