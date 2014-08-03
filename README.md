@@ -5,6 +5,7 @@ pipeline aims to do everything related to graphics for you, so that
 the user can focus on making the game, and not the graphics.
 
 This pipeline is still in developement, feel free to join :)
+
 Thanks especially to rdb and all the others for support & help!
 
 
