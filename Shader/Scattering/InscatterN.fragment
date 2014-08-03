@@ -45,6 +45,6 @@ void main() {
     getMuMuSNu(options, r, dhdH, mu, muS, nu);
 
     vec3 scattered = inscatter(options, r, mu, muS, nu);
-    result = vec4(scattered, 1);
+    result = vec4(scattered, 0);
 
 }

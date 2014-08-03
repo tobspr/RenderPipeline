@@ -1,0 +1,200 @@
+
+
+#include "Scattering/Scattering.include"
+#include "Scattering/ScatteringOptions.include"
+#include "Includes/PositionReconstruction.include"
+
+
+// Prevents subpixel artifacts at the border of the atmosphere
+const float scatteringEpsilon = 0.5;
+
+
+const float scatteringEpsilonInscatter = 0.01;
+
+
+vec3 scatteringTransformPosition(ScatteringOptions options, vec3 pos) {
+  return pos*0.001 + vec3(0,0,options.radiusGround + 1.0);
+}
+
+
+
+// Compute offset and max path length
+// Explanation: http://s7.directupload.net/images/140803/9xgmx9mt.png
+// (From Sebastian Sperlhofer
+bool scatteringIntersectAtmosphere(
+    ScatteringOptions options, 
+    vec3 cameraPos, 
+    vec3 d, 
+    out float offset, 
+    out float maxPathLength)
+{
+  offset = 0.0;
+  maxPathLength = 0.0;
+
+  // vector from ray origin to center of the sphere
+  vec3 l = -cameraPos; 
+  float l2 = dot(l,l);
+  float s = dot(l,d);
+
+  // adjust top atmosphere boundary by small epsilon to prevent artifacts
+  float r = options.radiusAtmosphere - scatteringEpsilon;
+  float r2 = r*r;
+
+  if(l2 <= r2)
+  {
+    // ray origin inside sphere, hit is ensured
+    float m2 = l2 - (s * s);
+    float q = sqrt(r2 - m2);
+    maxPathLength = s + q;
+    return true;
+  }
+  else if(s >= 0)
+  {
+    // ray starts outside in front of sphere, hit is possible
+    float m2 = l2 - (s * s);
+
+    if(m2 <= r2)
+    {
+      // ray hits atmosphere definitely
+      float q = sqrt(r2 - m2);
+      offset = s - q;
+      maxPathLength = (s + q) - offset;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+vec3 scatteringComputeInscatteredLight(
+    ScatteringOptions options,
+    vec3 surfacePos, 
+    vec3 cameraPos,
+    vec3 viewDir, 
+    sampler3D inscatterSampler,
+    // sampler2D transmittanceSampler,
+
+    inout vec3 attenuation, 
+    inout float irradianceFactor)
+{
+  vec3 inscatteredLight = vec3(0.0f, 0.0f, 0.0f);
+  float offset;
+  float maxPathLength;
+  float sunIntensity = 30.0;
+  vec3 sunVector = normalize(vec3(0,0,1));
+
+  vec3 transformedPos = scatteringTransformPosition(options, surfacePos);
+  vec3 transformedCamPos = scatteringTransformPosition(options, cameraPos);
+  // vec3 transformedViewDir = normalize(transformedPos - transformedCamPos);
+  vec3 transformedViewDir = normalize(viewDir);
+
+  float atmosphericFactor = 1.0;
+
+  if(scatteringIntersectAtmosphere(options, transformedCamPos, transformedViewDir, offset, maxPathLength))
+  {
+    float pathLength = distance(transformedCamPos, transformedPos);
+
+    // check if object occludes atmosphere
+    if(pathLength > offset)
+    {
+      // offsetting camera
+      vec3 startPos = transformedCamPos + offset * transformedViewDir;
+      float startPosHeight = length(startPos);
+      pathLength -= offset;
+
+      // starting position of path is now ensured to be inside atmosphere, was either originally there or has been moved to top boundary
+      float muStartPos = dot(startPos, transformedViewDir) / startPosHeight;
+      float nuStartPos = dot(transformedViewDir, sunVector);
+      float musStartPos = dot(startPos, sunVector) / startPosHeight;
+
+        // in-scattering for infinite ray (light in-scattered when no surface hit or object behind atmosphere)
+      vec4 inscatter = max(texture4D(options, inscatterSampler, startPosHeight, muStartPos, musStartPos, nuStartPos ), 0.0f);
+
+      float surfacePosHeight = length(transformedPos);
+      float musEndPos = dot(transformedPos, sunVector) / surfacePosHeight;
+
+      // check if object hit is inside atmosphere
+      if(pathLength < maxPathLength)
+      {
+        // reduce total in-scattered light when surface hit within atmosphere
+        // fíx described in chapter 5.1.1
+        attenuation = analyticTransmittance(options, startPosHeight, muStartPos, pathLength);
+
+        float muEndPos = dot(transformedPos, transformedViewDir) / surfacePosHeight;
+        vec4 inscatterSurface = texture4D(options, inscatterSampler, surfacePosHeight, muEndPos, musEndPos, nuStartPos);
+
+        inscatter = max(inscatter - attenuation.rgbr * inscatterSurface, 0.0f);
+        irradianceFactor = 1.0f;
+      }
+      else
+      {
+        // retrieve extinction factor for inifinte ray
+        // fíx described in chapter 5.1.1
+        attenuation = analyticTransmittance(options, startPosHeight, muStartPos, pathLength);
+      }
+
+
+      // avoids imprecision problems near horizon by interpolating between two points above and below horizon
+      // fíx described in chapter 5.1.2
+      float epsilonScale = 1.0;
+
+      // if (inPlanet) {
+      //   epsilonScale = 1.5;
+      // }
+
+      float realEpsilonInscatter = scatteringEpsilonInscatter * epsilonScale;
+
+      float muHorizon = - sqrt(1.0 -  ((options.radiusGround / startPosHeight) * (options.radiusGround / startPosHeight)) );
+      
+      if (abs(muStartPos - muHorizon) < realEpsilonInscatter) 
+      {
+        float realPathLength = pathLength / atmosphericFactor;
+
+        float mu = muHorizon - realEpsilonInscatter;
+        float samplePosHeight = sqrt(startPosHeight*startPosHeight
+          +realPathLength*realPathLength+1.0f*startPosHeight*
+          realPathLength*mu);
+        // samplePosHeight = startPosHeight;
+
+        float muSamplePos = (startPosHeight * mu + realPathLength)/
+        samplePosHeight;
+        vec4 inScatter0 = texture4D(options, inscatterSampler, startPosHeight, mu,
+          musStartPos, nuStartPos);
+        vec4 inScatter1 = texture4D(options, inscatterSampler, samplePosHeight,
+          muSamplePos, musEndPos, nuStartPos);
+        vec4 inScatterA = max(inScatter0-attenuation.rgbr*inScatter1,0.0);
+        mu = muHorizon + realEpsilonInscatter;
+        samplePosHeight = sqrt(startPosHeight*startPosHeight
+          +realPathLength*realPathLength+2.0f*
+          startPosHeight*realPathLength*mu);
+        muSamplePos = (startPosHeight * mu + realPathLength) / samplePosHeight;
+        inScatter0 = texture4D(options, inscatterSampler, startPosHeight, mu,
+          musStartPos, nuStartPos);
+        inScatter1 = texture4D(options, inscatterSampler, samplePosHeight, muSamplePos,
+          musEndPos, nuStartPos);
+        vec4 inScatterB = max(inScatter0 - attenuation.rgbr * inScatter1,
+          0.0f);
+        float t = ((muStartPos - muHorizon) + realEpsilonInscatter) / 
+        (2.0 * realEpsilonInscatter);
+        // inscatter = mix(inScatterA, inScatterB, t);
+      }
+
+
+      // avoids imprecision problems in Mie scattering when sun is below horizon
+      // fíx described in chapter 5.1.3
+      // inscatter.w *= smoothstep(0.00, 0.02, musStartPos);
+      float phaseR = phaseFunctionR(options, nuStartPos);
+      float phaseM = phaseFunctionM(options, nuStartPos);
+
+      inscatteredLight = max(inscatter.rgb * phaseR + getMie(options, inscatter) *
+        phaseM, 0.0f);
+      inscatteredLight *= sunIntensity;
+
+      // return inscatter.rgb * 10.0;
+
+    }
+  }
+  return inscatteredLight ;
+}
+

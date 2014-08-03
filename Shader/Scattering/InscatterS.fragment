@@ -125,5 +125,5 @@ void main() {
 
     vec3 raymie;
     inscatter(options, r, mu, muS, nu, raymie);
-    result = vec4(raymie, 1);
+    result = vec4(raymie, 0);
 }

@@ -1,7 +1,8 @@
-#version 440
-#pragma fisle "ApplyLighting.fragment"
+#version 400
+#pragma file "ApplyLighting.fragment"
 
 #extension GL_ARB_shader_image_load_store : enable
+
 
 // TODO: Make some benchmarks to see wheter unrolling
 // is faster or slower ..
@@ -16,7 +17,7 @@
 #include "Includes/Material.include"
 #include "Includes/ShadowSource.include"
 #include "Includes/ColorCorrection.include"
-
+#include "Scattering/ScatteringOptions.include"
 
 uniform sampler2D data0;
 uniform sampler2D data1;
@@ -40,16 +41,27 @@ uniform sampler2D dssdoNoiseTex;
 
 // Has to be after the uniforms
 #include "Occlusion/Init.include"
-
 #include "Includes/Lighting.include"
+#include "Scattering/Final.include"
 // #include "Includes/DSSDO.include"
 // #include "Includes/HBAO.include"
 // #include "Includes/SAO.include"
 
 out vec4 lightingResult;
 
+uniform sampler3D inscatterSampler;
+// uniform sampler2D transmittanceSampler;
+uniform ScatteringOptions scatteringOptions;
 
 
+
+vec3 HDR(vec3 L, float exposure) {
+    L = L * exposure;
+    L.r = L.r < 1.413 ? pow(L.r * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.r);
+    L.g = L.g < 1.413 ? pow(L.g * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.g);
+    L.b = L.b < 1.413 ? pow(L.b * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.b);
+    return L;
+}
 
 void main() {
 
@@ -199,6 +211,27 @@ void main() {
         occlusionTotal = 0.0;
     #endif
 
+
+    // Scattering
+    vec3 viewDir = normalize(material.position - cameraPosition);
+    occlusionTotal = 0.0;
+
+
+    vec3 attenuation;
+    float irradianceFactor;
+
+    vec3 scatteringResult = scatteringComputeInscatteredLight(
+        scatteringOptions,
+        material.position, 
+        cameraPosition,
+        viewDir, 
+        inscatterSampler,
+        // transmittanceSampler,
+        attenuation, 
+        irradianceFactor);
+
+    result = scatteringResult;
+    result = HDR(result, 1.0);
 
 
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );

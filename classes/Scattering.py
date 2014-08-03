@@ -1,11 +1,11 @@
 
-
 from panda3d.core import Vec3, ShaderAttrib, NodePath, Texture
 from BetterShader import BetterShader
 from DebugObject import DebugObject
 from Globals import Globals
 from RenderTarget import RenderTarget
 from TextureDebugger import TextureDebugger
+from panda3d.core import GraphicsEngine
 
 from direct.stdpy.file import open, isdir
 
@@ -29,11 +29,17 @@ class Scattering(DebugObject):
             "betaRayleigh": Vec3(5.8e-3, 1.35e-2, 3.31e-2),  # betaR
             "mieFactor": 1.2,  # HM
             "betaMieScattering": Vec3(4e-3),  # betaMSca
-            # betaMSca
             "betaMieScatteringAdjusted": (Vec3(2e-3) * (1.0 / 0.9)),
             "mieG": 0.8,  # mieG
             "transmittanceNonLinear": True,
             "inscatterNonLinear": True,
+
+            # Parameters to adjust rendering of the atmosphere.
+            # The position is computed by:
+            # (inputPosition*atmosphereScale) + atmosphereOffset
+            "atmosphereOffset": Vec3(0),
+            "atmosphereScale": Vec3(1)
+
         }
 
         self.targets = {}
@@ -47,6 +53,10 @@ class Scattering(DebugObject):
                 self.debug("Failed to create dump dir!")
                 self.writeOutput = False
 
+        # Create separate engine for precomputing
+        # self.engine = GraphicsEngine()
+
+
     def _executePrecompute(self):
         """ Executes the precomputation for the scattering """
 
@@ -59,8 +69,6 @@ class Scattering(DebugObject):
         self.targets['irradiance1'] = self._createRT(
             "Irradiance1", 64, 16, aux=False, shaderName="Irradiance1", layers=1)
         self._renderOneShot('irradiance1')
-
-
 
         # Delta Scattering (Rayleigh + Mie)
         self.targets['deltaScattering'] = self._createRT(
@@ -146,6 +154,7 @@ class Scattering(DebugObject):
 
         self.inscatterResult = self.textures['combinedDeltaScatteringColor']
         self.irradianceResult = self.textures['irradianceEColor']
+        self.transmittanceResult = self.textures['transmittanceColor']
 
         # if self.writeOutput:
         #     base.graphicsEngine.extract_texture_data(
@@ -154,6 +163,15 @@ class Scattering(DebugObject):
         #     base.graphicsEngine.extract_texture_data(
         #         self.inscatterResult, Globals.base.win.getGsg())
         #     self.inscatterResult.write("Data/Scattering/Result_Inscatter.png")
+
+    def getInscatterTexture(self):
+        return self.inscatterResult
+
+    def getIrradianceTexture(self):
+        return self.irradianceResult
+
+    def getTransmittanceResult(self):
+        return self.transmittanceResult
 
     def _renderOneShot(self, targetName):
         """ Renders a target and then deletes the target """
@@ -188,6 +206,7 @@ class Scattering(DebugObject):
         rt.setSize(w, h)
         rt.addColorTexture()
         rt.setColorBits(16)
+        # rt.setEngine(self.engine)
 
         if aux:
             rt.addAuxTextures(1)
@@ -207,7 +226,7 @@ class Scattering(DebugObject):
         shader = BetterShader.load(*sArgs)
         rt.setShader(shader)
 
-        self._setInputs(rt, "options.")
+        self._setInputs(rt, "options")
 
         lc = lambda x: x[0].lower() + x[1:]
 
@@ -223,9 +242,11 @@ class Scattering(DebugObject):
 
     def _setInputs(self, node, prefix):
         """ Sets all necessary inputs on a render target """
+        # self.debug("SetShaderInput as", prefix,"onto",node)
         for key, val in self.settings.items():
+            # self.debug("\t", prefix + "." + key, "=", val)
+            node.setShaderInput(prefix + "." + key, val)
 
-            node.setShaderInput(prefix + key, val)
 
     def precompute(self):
         """ Precomputes the scattering. This is required before you can use it """

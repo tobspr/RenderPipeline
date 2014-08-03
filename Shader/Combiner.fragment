@@ -1,4 +1,4 @@
-#version 420
+#version 400
 #pragma file "Combiner.fragment"
 
 #include "Includes/Configuration.include"
@@ -121,7 +121,7 @@ void main() {
     
     float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
 
-    // reliability = 1.0;
+    //reliability = 0.0;
 
     ivec2 clampMax = ivec2(screenSize) - 1;
     ivec2 clampMin = ivec2(1);

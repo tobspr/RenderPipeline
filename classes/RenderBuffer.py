@@ -34,6 +34,7 @@ class RenderBuffer(DebugObject):
         self._layers = 0
         self._sort = 0
         self._multisamples = 0
+        self._engine = None
 
         self.mute()
 
@@ -41,6 +42,10 @@ class RenderBuffer(DebugObject):
         """ Set the number of layers to render, or 1 to not use layered 
         rendering. """
         self._layers = layers
+
+    def setEngine(self, engine):
+        """ Sets which graphics engine to use """
+        self._engine = engine
 
     def setMultisamples(self, samples):
         """ Sets the amount of multisamples to use """
@@ -224,7 +229,7 @@ class RenderBuffer(DebugObject):
         bufferProps.setMultisamples(self._multisamples)
 
         # Create internal graphics output
-        self._internalBuffer = Globals.base.graphicsEngine.makeOutput(
+        self._internalBuffer = self._engine.makeOutput(
             self._win.getPipe(), self._name, 1,
             bufferProps, windowProps,
             GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,

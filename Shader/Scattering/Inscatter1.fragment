@@ -65,6 +65,6 @@ void main() {
     getMuMuSNu(options, r, dhdH, mu, muS, nu);
     inscatter(options, r, mu, muS, nu, ray, mie);
 
-    rayOutput = vec4( ray, 1.0);
-    mieOutput = vec4( mie, 1.0);
+    rayOutput = vec4( ray, 0.0);
+    mieOutput = vec4( mie, 0.0);
 }

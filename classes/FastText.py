@@ -86,7 +86,7 @@ class FastText:
 
     def _makeFontShader(self):
         self.fontShader = Shader.make(Shader.SLGLSL, """
-            #version 400
+            #version 150
             uniform mat4 p3d_ModelViewProjectionMatrix;
             in vec4 p3d_Vertex;
             in vec2 p3d_MultiTexCoord0;
@@ -106,7 +106,8 @@ class FastText:
                 gl_Position = p3d_ModelViewProjectionMatrix * finalPos;
             }
             """, """
-            #version 400
+            #version 150
+            #pragma file FastText.fragment
             in vec2 texcoord;
             uniform sampler2D font;
             uniform vec3 color;

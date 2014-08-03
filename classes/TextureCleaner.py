@@ -13,7 +13,9 @@ class TextureCleaner:
         clear the texture """
 
         shader = """
-        #version 430
+        #version 150
+        #extension GL_ARB_compute_shader : enable
+        #extension GL_ARB_shader_image_load_store : enable
 
         layout (local_size_x = 16, local_size_y = 16) in;
 

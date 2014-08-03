@@ -225,7 +225,7 @@ class LightManager(DebugObject):
             "DirectionalLight": 1
         }
 
-        self.maxTotalLights = 32
+        self.maxTotalLights = 8
 
         for lightType, maxCount in self.maxShadowLights.items():
             self.maxLights[lightType + "Shadow"] = maxCount

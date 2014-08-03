@@ -67,6 +67,7 @@ class RenderTarget(DebugObject):
         self._layers = 0
         self._writeColor = True
         self._multisamples = 0
+        self._engine = Globals.base.graphicsEngine
         self._rename(name)
 
         self.mute()
@@ -74,6 +75,10 @@ class RenderTarget(DebugObject):
     def setMultisamples(self, samples):
         """ Sets the amount of multisamples to use """
         self._multisamples = samples
+
+    def setEngine(self, engine):
+        """ Sets the graphic engine to use """
+        self._engine = engine
 
     def setLayers(self, layers):
         """ Sets the number of layers. When greater than 1, this enables
@@ -230,6 +235,7 @@ class RenderTarget(DebugObject):
         self._buffer.setBindMode(self._bindMode)
         self._buffer.setLayers(self._layers)
         self._buffer.setMultisamples(self._multisamples)
+        self._buffer.setEngine(self._engine)
 
         for flag in self._targetFlags.keys():
             self._buffer.addTarget(flag)
@@ -448,7 +454,7 @@ class RenderTarget(DebugObject):
         """ Deletes this buffer, restoring the previous state """
         self.warn("Todo:: Implement delete Buffer")
 
-        Globals.base.graphicsEngine.removeWindow(self._buffer.getInternalBuffer())
+        self._engine.removeWindow(self._buffer.getInternalBuffer())
         del self._buffer
 
     def __repr__(self):

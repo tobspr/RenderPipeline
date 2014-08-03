@@ -1,12 +1,10 @@
 
-
-
 // This is the main configuration file, included by almost all shaders
 
 // Max values for the light culling
 // If you change anything regarding this in LightManager, 
 // change it here, too 
-#define MAX_VISIBLE_LIGHTS 25
+#define MAX_VISIBLE_LIGHTS 8
 #define MAX_LIGHTS_PER_PATCH 63
 
 // Same as in LightManager.py

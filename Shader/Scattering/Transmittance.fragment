@@ -38,5 +38,5 @@ void main() {
     float opticalDepthMie  = opticalDepth(options, options.mieFactor, r, muS);
     vec3 combinedDepth = options.betaRayleigh * opticalDepthRayleigh + options.betaMieScatteringAdjusted * opticalDepthMie;
     combinedDepth = exp(-combinedDepth);
-    color = vec4( clamp(combinedDepth, 0, 1), 1);
+    color = vec4( clamp(combinedDepth, 0, 1), 0.0);
 }

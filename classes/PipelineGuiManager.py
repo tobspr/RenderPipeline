@@ -142,7 +142,7 @@ class PipelineGuiManager(DebugObject):
 
         self.debug("Creating GUI ..")
 
-        self.intialized = False
+        self.initialized = False
         self.rootNode = self.body.attachNewNode("GUIManager")
         self.rootNode.setPos(0, 1, 0)
 
@@ -260,7 +260,7 @@ class PipelineGuiManager(DebugObject):
             self.defines[modeId] = 0 if status else 1
 
 
-        if self.intialized and (status is True or updateWhenFalse):
+        if self.initialized and (status is True or updateWhenFalse):
             self.pipeline._generateShaderConfiguration()
             self.pipeline.reloadShaders()
 

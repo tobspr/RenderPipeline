@@ -193,7 +193,8 @@ vec3 applyPointLightWithShadow(Light light, Material material
         vec2 offset = poissonDisk16[i] * pixOffset;
 
         #if USE_HARDWARE_PCF
-            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) ).r;
+            // Notice: when using opengl 4.1+, it has to be texture(xxx).r 
+            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) );
             shadowFactor += (1.0 - sampled);
         #else
             float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
