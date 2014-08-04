@@ -201,6 +201,12 @@ class PipelineGuiManager(DebugObject):
             parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["rm_Lighting", False], radio=True)
 
 
+        currY += 25
+
+        self.chbRM_Scattering = BetterCheckbox(
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["rm_SCATTERING", False], radio=True)
+
+
         # self.chbRM_Wireframe = BetterCheckbox(
         # parent=self.debuggerParent, x=150, y=currY,
         # callback=self._updateSetting, extraArgs=["rm_Wireframe", False],
@@ -216,10 +222,11 @@ class PipelineGuiManager(DebugObject):
         self.renderModes.add(self.chbRM_Normal)
         self.renderModes.add(self.chbRM_SSDO)
         self.renderModes.add(self.chbRM_Lighting)
+        self.renderModes.add(self.chbRM_Scattering)
 
         # Features
 
-        currY = 222
+        currY = 250
 
         self.chbFT_SSDO = BetterCheckbox(
             parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["ft_SSDO", True], checked=True)
@@ -244,7 +251,17 @@ class PipelineGuiManager(DebugObject):
         self.chbFT_AOBlur = BetterCheckbox(
             parent=self.debuggerParent, x=checkboxX + 138, y=currY, callback=self._updateSetting, extraArgs=["ft_BLUR_OCCLUSION", True], checked=True)
 
+
+        currY += 25
+
+        self.chbFT_Scattering = BetterCheckbox(
+            parent=self.debuggerParent, x=checkboxX, y=currY, callback=self._updateSetting, extraArgs=["ft_SCATTERING", True], checked=True)
+
+
+
         self.initialized = True
+
+
 
     def _updateSetting(self, status, name, updateWhenFalse=False):
         # self.debug("Update setting:", name, "=", status, "whenFalse=",updateWhenFalse)

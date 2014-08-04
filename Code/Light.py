@@ -36,6 +36,8 @@ class Light(ShaderStructElement):
         self.sourceIndexes = PTAInt.emptyArray(6)
         self.attached = False
         self.shadowResolution = 512
+        self.ambient = Vec3(0.2,0.5,0.8)
+
 
         for i in range(6):
             self.sourceIndexes[i] = -1
@@ -52,6 +54,7 @@ class Light(ShaderStructElement):
             "lightType": "int",
             "radius": "float",
             "sourceIndexes": "array<int>(6)",
+            "ambient": "vec3"
         }
 
     def getTypeName(self):
@@ -67,6 +70,12 @@ class Light(ShaderStructElement):
             raise Exception(
                 "You cannot change the resolution after the light got attached")
         self.shadowResolution = resolution
+
+    def setAmbientColor(self, ambientColor):
+        """ Sets the ambient color for lighting. The default is a bluish-gray.
+        The ambient color will be added to the final light contribution """
+        self.ambient = ambientColor
+        self.queueUpdate()
 
     def setDirection(self, direction):
         """ Sets the direction of the light. This stores from which vector the light

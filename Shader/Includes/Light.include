@@ -8,4 +8,5 @@ struct Light {
     int lightType;
     float radius;
     int sourceIndexes[6];
+    vec3 ambient;
 };

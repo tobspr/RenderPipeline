@@ -202,7 +202,10 @@ void main() {
         attenuation, 
         irradianceFactor);
 
-    result += scatteringResult * inscatterFactor;
+    #ifndef DEBUG_DISABLE_SCATTERING
+        result += scatteringResult * inscatterFactor;
+    #endif
+
     // result = HDR(result, 1.0);
 
     result = 1.0f - exp(-1.5 * result);
@@ -236,6 +239,12 @@ void main() {
     #ifdef DEBUG_RM_NORMAL
         result = vec3((material.normal));
         // result = vec3((material.normal.x));
+        occlusionTotal = 0.0;
+    #endif
+
+    #ifdef DEBUG_RM_SCATTERING
+        result = scatteringResult * inscatterFactor;
+    result = 1.0f - exp(-1.5 * result);
         occlusionTotal = 0.0;
     #endif
 

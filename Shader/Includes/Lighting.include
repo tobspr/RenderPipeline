@@ -125,7 +125,7 @@ vec3 applyPointLight(Light light, Material material
     vec3  v = normalize(cameraPosition - material.position);
     vec3  n = normalize(material.normal);
     vec3  h = normalize(l + v);
-    vec3 ambientContribution = 0.1 * material.baseColor * vec3(0.2,0.5,0.8) * attenuation;
+    vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
 
     APPLY_OCCLUSION();
 
@@ -206,7 +206,7 @@ vec3 applyPointLightWithShadow(Light light, Material material
     // Apply shadows
     rawLighting *= max(0.0, 1.0 - shadowFactor);
 
-    vec3 ambientContribution = 0.1 * material.baseColor * vec3(0.2,0.5,0.8) * attenuation;
+    vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
 
     return max(vec3(0.0), rawLighting) + ambientContribution;
 }
@@ -227,7 +227,7 @@ vec3 applyDirectionalLight(Light light, Material material
     APPLY_OCCLUSION();
 
 
-    vec3 ambientContribution = 0.1 * material.baseColor * vec3(0.2,0.5,0.8) * attenuation;
+    vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
     return computeLightModel(light, material, l,v, n, h, attenuation) + ambientContribution;
 }
 
