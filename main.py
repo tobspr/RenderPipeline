@@ -230,8 +230,11 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.addLight(dirLight)
 
 
-
         d = Scattering()
+        d.setSettings({
+                "atmosphereOffset": Vec3(0,0, 6360.0 + 9.5),
+                "atmosphereScale": Vec3(0.01)
+            })
         d._setInputs(self.renderPipeline.lightingComputeContainer, "scatteringOptions")
         d.precompute()
         
@@ -241,16 +244,12 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.lightingComputeContainer.setShaderInput(
             "inscatterSampler", d.getInscatterTexture())
 
-
         self.skybox = None
         self.loadSkybox()
 
         # set default object shaders
         self.setShaders()
-
-        self.debug("Setting inputs")
-
-        
+       
 
     def toggleSceneWireframe(self):
         self.sceneWireframe = not self.sceneWireframe

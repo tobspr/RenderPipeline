@@ -43,7 +43,6 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
         self.savePath = pth
 
     def save(self):
-
         if self.savePath is None:
             self.error("Save path not set! Use setSavePath")
             return
@@ -64,8 +63,6 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
         self.propertyList.clear()
         first = None
         currentCat = None
-
-
         boldFont = self.font()
         boldFont.setBold(True)
 

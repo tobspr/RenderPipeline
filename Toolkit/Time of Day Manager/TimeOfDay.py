@@ -19,19 +19,19 @@ class TimeOfDay(DebugObject):
         """ Internal method to populate the property list """
         p = {}
         self.categories = {
-            'cat1': 'Category 1',
+            'sun': 'Sun',
             'cat2': 'Category 2',
             'cat3': 'Category 3'
         }
 
-        p['cat1.test'] = DayProperty("Test Property", "float", 0.0, 1.0, 0.2, """
-            This is a test value """)
+        p['sun.angle'] = DayProperty("Sun Angle", "float", 0.0, 360.0, 0.0, """
+             """)
 
-        p['cat2.test2'] = DayProperty("Test Property 2", "float", 0.0, 1.0, 0.4, """
-            This is another test value """)
+        p['sun.height'] = DayProperty("Sun Height", "float", 0.0, 1.0, 0.5, """
+             """)
 
         p['cat3.test3'] = DayProperty("Test Property 3", "float", 0.0, 1.0, 0.6, """
-            This is even another test value """)
+             """)
 
         self.properties = p
 

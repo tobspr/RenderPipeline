@@ -15,6 +15,9 @@ struct ScatteringOptions {
     float mieG;
     bool transmittanceNonLinear;
     bool inscatterNonLinear;
+
+    vec3 atmosphereScale;
+    vec3 atmosphereOffset;
 };
 
 

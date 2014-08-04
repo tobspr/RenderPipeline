@@ -262,4 +262,11 @@ class Scattering(DebugObject):
 
     def setSettings(self, settings):
         """ Sets the settings used for the precomputation """
-        self.warn("Todo: Implement setSettings")
+        for key, val in settings.items():
+            if key in self.settings:
+                if type(val) == type(self.settings[key]):
+                    self.settings[key] = val
+                else:
+                    self.warn("Wrong type for",key,"- should be",type(self.settings[key]))
+            else:
+                self.warn("Unrecognized setting:", key)
