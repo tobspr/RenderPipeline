@@ -396,6 +396,10 @@ class RenderingPipeline(DebugObject):
                 "data3", self.deferredTarget.getAuxTexture(2))
             self.lightingComputeContainer.setShaderInput(
                 "depth", self.deferredTarget.getDepthTexture())
+            self.lightingComputeContainer.setShaderInput(
+                "mainCam", self.showbase.cam)
+            self.lightingComputeContainer.setShaderInput(
+                "mainRender", self.showbase.render)
 
             if self.occlusion.requiresViewSpacePosNrm():
                 self.lightingComputeContainer.setShaderInput(

@@ -1,6 +1,6 @@
 
 from panda3d.core import Filename, VirtualFileSystem
-from classes.DebugObject import DebugObject
+from DebugObject import DebugObject
 
 from direct.stdpy.file import join, isdir
 from os import makedirs

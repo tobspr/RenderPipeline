@@ -74,4 +74,4 @@ const float sqrt_of_2 = 1.4142135623;
 #define DISPLACEMENT_TEX p3d_Texture4
 
 
-#define SKYBOX_BEGIN 8000.0
+#define SKYBOX_BEGIN 15000.0

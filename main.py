@@ -28,14 +28,14 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3
 from panda3d.core import Texture
 
-from classes.MovementController import MovementController
-from classes.RenderingPipeline import RenderingPipeline
-from classes.PointLight import PointLight
-from classes.DirectionalLight import DirectionalLight
-from classes.BetterShader import BetterShader
-from classes.DebugObject import DebugObject
-from classes.FirstPersonController import FirstPersonCamera
-from classes.Scattering import Scattering
+from Code.MovementController import MovementController
+from Code.RenderingPipeline import RenderingPipeline
+from Code.PointLight import PointLight
+from Code.DirectionalLight import DirectionalLight
+from Code.BetterShader import BetterShader
+from Code.DebugObject import DebugObject
+from Code.FirstPersonController import FirstPersonCamera
+from Code.Scattering import Scattering
 
 
 class Main(ShowBase, DebugObject):
@@ -49,7 +49,7 @@ class Main(ShowBase, DebugObject):
 
         # Load engine configuration
         self.debug("Loading panda3d configuration from configuration.prc ..")
-        loadPrcFile("configuration.prc")
+        loadPrcFile("Config/configuration.prc")
 
         # Init the showbase
         ShowBase.__init__(self)
@@ -58,7 +58,7 @@ class Main(ShowBase, DebugObject):
         # Create the render pipeline, that's really everything!
         self.debug("Creating pipeline")
         self.renderPipeline = RenderingPipeline(self)
-        self.renderPipeline.loadSettings("pipeline.ini")
+        self.renderPipeline.loadSettings("Config/pipeline.ini")
 
         # Uncomment to use temp directory
         # writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
@@ -224,7 +224,7 @@ class Main(ShowBase, DebugObject):
             # break
 
         dirLight = DirectionalLight()
-        dirLight.setDirection(Vec3(50, 100, 150))
+        dirLight.setDirection(Vec3(50, 100, 50))
         # dirLight.setPos(Vec3(50, 100, 150))
         dirLight.setColor(Vec3(5))
         self.renderPipeline.addLight(dirLight)

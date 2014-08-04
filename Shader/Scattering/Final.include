@@ -13,7 +13,7 @@ const float scatteringEpsilonInscatter = 0.01;
 
 
 vec3 scatteringTransformPosition(ScatteringOptions options, vec3 pos) {
-  return pos*0.01 + vec3(0,0,options.radiusGround + 10.0);
+  return pos/100.0 + vec3(0,0,options.radiusGround + 9.5);
 }
 
 

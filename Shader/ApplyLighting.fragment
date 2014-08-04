@@ -176,6 +176,7 @@ void main() {
     // Occlusion on skybox leads to artifacts
     if (isSkybox) {
         occlusionTotal = 0.0;
+        material.position *= 100000.0;
     }
 
 
@@ -214,10 +215,15 @@ void main() {
 
 
     // Scattering
-    vec3 viewDir = normalize(material.position - cameraPosition);
+    // vec3 viewDir = normalize(material.position - cameraPosition);
 
     vec3 attenuation;
     float irradianceFactor;
+
+    // Reconstruct position - otherwise we have precision errors
+    vec3 viewDir = calculateSurfacePos(1.0, texcoord);
+    
+
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
         scatteringOptions,

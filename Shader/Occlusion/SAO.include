@@ -22,8 +22,8 @@ uniform sampler2D viewSpacePosition;
 #define SAO_VARIATION             1
 
 const float saoIntensity = 0.2;
-const float saoSampleRadiusWS = OCCLUSION_RADIUS * 25.5;
-const float saoBias = 0.1;
+const float saoSampleRadiusWS = OCCLUSION_RADIUS * 1.0;
+const float saoBias = 1.0;
 
 
 // reconstructs view-space unit normal from view-space position
