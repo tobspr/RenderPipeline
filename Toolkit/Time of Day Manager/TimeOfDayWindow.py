@@ -54,15 +54,39 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
     def selectedProperty(self):
         selected = self.propertyList.selectedItems()[0]
         propertyId = str(selected.toolTip())
+        if len(propertyId) < 1:
+            # nothing selected, or a header
+            return
         prop = self.timeOfDay.getProperty(propertyId)
         self.loadProperty(prop)
 
     def fillList(self):
         self.propertyList.clear()
         first = None
+        currentCat = None
+
+
+        boldFont = self.font()
+        boldFont.setBold(True)
+
         for propid, prop in self.timeOfDay.getProperties().items():
+
+            if "." in propid:
+                # I like cats
+                cat = propid.split(".")[0]
+                if cat is not currentCat:
+                    # Get a new cat!
+                    currentCat = cat
+                    header = QtGui.QListWidgetItem()
+                    header.setText(self.timeOfDay.categories[cat])
+                    header.setToolTip("")
+                    header.setFont(boldFont)
+                    self.propertyList.addItem(header)
+
+            padding = "" if currentCat is None else "    "
+
             item = QtGui.QListWidgetItem()
-            item.setText(prop.name)
+            item.setText(padding + prop.name)
             item.setToolTip(propid)
             self.propertyList.addItem(item)
             if first is None:

@@ -52,8 +52,6 @@ class DayProperty:
         self.values = [self.defaultValue for i in xrange(8)]
         self.curve = NurbsCurve()
         self.curve.setOrder(3)
-        self.padAmount = 5
-        self.padScale = 9.0
 
     def setValue(self, index, val):
         self.values[index] = round(val, 5)
@@ -63,23 +61,18 @@ class DayProperty:
         self.curve.removeAllCvs()
 
         # Pad, to make 00:00 match with 24:00
-        paddedValues = self.values + [self.values[0]]
-        for i in xrange(self.padAmount):
-            paddedValues = [paddedValues[0]] + \
-                paddedValues + [paddedValues[-1]]
+        # Thanks to rdb for finding a bug here
+        padIndices = [5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2]
 
-        print paddedValues
+        paddedValues = [self.values[i] for i in padIndices]
+
         for index, val in enumerate(paddedValues):
-            self.curve.appendCv(Vec3(index*1000.0, val, 0.0))
+            self.curve.appendCv(Vec3(index, val, 0.0))
 
         self.curve.recompute()
 
-        print "Curve(0.0) =",self.getInterpolatedValue(0.0)
-        print "Curve(1.0) =",self.getInterpolatedValue(1.0)
-
-
     def getInterpolatedValue(self, pos):
         tmp = Vec3(0)
-        self.curve.getPoint(pos * self.padScale + float(self.padAmount) - 1.0, tmp)
+        self.curve.getPoint(pos * 8.0 + 2.5, tmp)
         return tmp.y
 
