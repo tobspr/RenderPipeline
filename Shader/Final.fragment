@@ -48,12 +48,11 @@ void main() {
         blueAbVector *= 0.0;
     #endif
 
-
     result.r = textureLod(colorTex, texcoord + redAbVector, 0).r;
     result.g = textureLod(colorTex, texcoord + greenAbVector, 0).g;
     result.b = textureLod(colorTex, texcoord + blueAbVector, 0).b;
 
-       
+          
 
     #ifdef USE_MOTION_BLUR
     
@@ -76,6 +75,10 @@ void main() {
         #ifdef DEBUG_DISABLE_MOTIONBLUR
             result = textureLod(colorTex, texcoord, 0).rgb;
         #endif
+
+        if (velStrength < 0.00001) {
+                result = textureLod(colorTex, texcoord, 0).rgb;
+        }
 
     #else
         result = textureLod(colorTex, texcoord, 0).rgb;
@@ -101,7 +104,6 @@ void main() {
         // result = vec3(1,0.5, 0.2);
 
     #endif
-
 
     // result = texture(adjustedNormals, texcoord).rgb;
     // result = textureLod(colorTex, texcoord, 0).rgb;

@@ -172,14 +172,40 @@ void main() {
     }
 
 
+    float inscatterFactor = 5.0;
 
     // Occlusion on skybox leads to artifacts
     if (isSkybox) {
         occlusionTotal = 0.0;
-        material.position *= 100000.0;
+        material.position *= 10000.0;
+        inscatterFactor = 1.0;
     }
 
 
+    
+    // SRGB
+    result.xyz = sqrt(result.xyz);
+
+    vec3 attenuation;
+    float irradianceFactor;
+
+    // Reconstruct position - otherwise we have precision errors
+    vec3 viewDir = calculateSurfacePos(1.0, texcoord);
+    
+    vec3 scatteringResult = scatteringComputeInscatteredLight(
+        scatteringOptions,
+        material.position, 
+        cameraPosition,
+        viewDir, 
+        inscatterSampler,
+        // transmittanceSampler,
+        attenuation, 
+        irradianceFactor);
+
+    result += scatteringResult * inscatterFactor;
+    // result = HDR(result, 1.0);
+
+    result = 1.0f - exp(-1.5 * result);
 
     #ifdef DEBUG_RM_BASECOLOR
         result = sqrt(material.baseColor);
@@ -208,42 +234,10 @@ void main() {
     #endif
 
     #ifdef DEBUG_RM_NORMAL
-        result = vec3(abs(material.normal));
+        result = vec3((material.normal));
         // result = vec3((material.normal.x));
         occlusionTotal = 0.0;
     #endif
-
-
-    // Scattering
-    // vec3 viewDir = normalize(material.position - cameraPosition);
-
-    vec3 attenuation;
-    float irradianceFactor;
-
-    // Reconstruct position - otherwise we have precision errors
-    vec3 viewDir = calculateSurfacePos(1.0, texcoord);
-    
-
-
-    vec3 scatteringResult = scatteringComputeInscatteredLight(
-        scatteringOptions,
-        material.position, 
-        cameraPosition,
-        viewDir, 
-        inscatterSampler,
-        // transmittanceSampler,
-        attenuation, 
-        irradianceFactor);
-
-    result += scatteringResult;
-    result = HDR(result, 1.0);
-
-
-    // SRGB
-    result.xyz = sqrt(result.xyz);
-
-
-
 
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );
 }

@@ -29,7 +29,7 @@ uniform vec3 cameraPosition;
 out vec4 result;
 
 const float rejectionFactor = 100.0;
-const float texcoordRejectionFactor = 0.0;
+const float texcoordRejectionFactor = 0.5;
 
 void main() {
 
@@ -69,63 +69,15 @@ void main() {
     vec4 oldProjectedColor = texture(lastFrame, lastFrameTexcoord);
     vec3 oldProjectedPos = texture(lastPosition, lastFrameTexcoord).rgb;
     
-
-    vec2 texcUP    = lastFrameTexcoord + vec2(0,1)  * texelSize;
-    vec2 texcLEFT  = lastFrameTexcoord + vec2(-1,0) * texelSize;
-    vec2 texcRIGHT = lastFrameTexcoord + vec2(1,0)  * texelSize;
-    vec2 texcDOWN  = lastFrameTexcoord + vec2(0,-1) * texelSize;
-    vec2 texcMID   = lastFrameTexcoord + vec2(0,0)  * texelSize;
-
-    vec3 posUP    = texture(lastPosition, texcUP).rgb;
-    vec3 posLEFT  = texture(lastPosition, texcLEFT).rgb;
-    vec3 posRIGHT = texture(lastPosition, texcRIGHT).rgb;
-    vec3 posDOWN  = texture(lastPosition, texcDOWN).rgb;
-    vec3 posMID   = texture(lastPosition, texcMID).rgb;
-
-    vec2 bestOffs   = ivec2(0);
-    float errorUP    = distance(posUP, position);
-    float errorLEFT  = distance(posUP, position);
-    float errorRIGHT = distance(posUP, position);
-    float errorDOWN  = distance(posUP, position);
-    float errorMID   = distance(posMID, position);
-
-    float bestErr = 100000000.0;
-
-    if (errorUP < bestErr) {
-        bestOffs = texcUP;
-        bestErr = errorUP;
-    }
-    if (errorDOWN < bestErr) {
-        bestOffs = texcDOWN;
-        bestErr = errorDOWN;
-    }
-    if (errorLEFT < bestErr) {
-        bestOffs = texcLEFT;
-        bestErr = errorLEFT;
-    }
-    if (errorRIGHT < bestErr) {
-        bestOffs = texcRIGHT;
-        bestErr = errorRIGHT;
-    }
-    if (errorMID < bestErr) {
-        bestOffs = texcMID;
-        bestErr = errorMID;
-    }
-
-
-    vec4 bestLastProjected = texture(lastFrame, bestOffs);
-
-
-
+    vec4 bestLastProjected = texture(lastFrame, lastFrameTexcoord);
     float distanceToCamera = distance(cameraPosition, position);
     
     float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
 
-    //reliability = 0.0;
+    // reliability = 1.0;
 
     ivec2 clampMax = ivec2(screenSize) - 1;
     ivec2 clampMin = ivec2(1);
-
 
 
     if ( clamp(lastFrameTexcoordInt, clampMin, clampMax) != lastFrameTexcoordInt ) {

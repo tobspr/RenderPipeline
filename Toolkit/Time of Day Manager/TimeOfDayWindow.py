@@ -6,6 +6,8 @@ from CurveWidget import CurveWidget
 from DayProperty import *
 from DebugObject import DebugObject
 
+from os.path import isdir, isfile, join
+
 
 class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
 
@@ -31,6 +33,7 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
         self.btnReset.clicked.connect(self.resetProperty)
         self.btnSmooth.clicked.connect(self.smoothProperty)
         self.btnSave.clicked.connect(self.save)
+        self.btnGenerateClasses.clicked.connect(self.generateClasses)
         self.currentProperty = None
         self.widget = CurveWidget(self.curveBG)
         self.propertyList.selectionModel().selectionChanged.connect(
@@ -38,9 +41,69 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
         self.timeOfDay = timeOfDay
         self.fillList()
         self.savePath = None
+        self.autoClassPath = None
+        self.shaderIncludePath = None
+
+        self.haveUnsavedChanges = False
+        self.applicationMovedSlider = False
 
     def setSavePath(self, pth):
         self.savePath = pth
+
+    def setAutoClassPath(self, pth):
+        self.autoClassPath = pth
+
+    def setShaderIncludePath(self, pth):
+        self.shaderIncludePath = pth
+
+    def generateClasses(self):
+        if self.autoClassPath is None:
+            self.error("No auto class path specified! Use setAutoClassPath")
+            return
+
+        if self.shaderIncludePath is None:
+            self.error("No shader include path specified! Use shaderIncludePath")
+            return
+
+        copyFiles = ["DayProperty.py", "TimeOfDay.py"]
+
+        replaces = [
+            ("from DebugObject import DebugObject",
+             "from ..DebugObject import DebugObject")
+        ]
+
+        for f in copyFiles:
+            with open(f, "r") as handle:
+                content = handle.read()
+
+            for find, replace in replaces:
+                content = content.replace(find, replace)
+
+            dest = join(self.autoClassPath, f)
+
+            with open(dest, "w") as writeHandle:
+                writeHandle.write(content)
+
+        self.debug("Generated class files! Now generating shader files ..")
+
+        self.timeOfDay.saveGlslInclude(join(self.shaderIncludePath, "TimeOfDay.include"))
+
+        self.debug("Done!")
+
+    def closeEvent(self, event):
+
+        if not self.haveUnsavedChanges:
+            event.accept()
+            return
+
+        quit_msg = "You still have unsaved changes. Are you sure you want to exit?"
+        reply = QtGui.QMessageBox.question(self, 'Confirm',
+                                           quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+        if reply == QtGui.QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
     def save(self):
         if self.savePath is None:
@@ -49,6 +112,7 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
 
         self.debug("Saving to", self.savePath)
         self.timeOfDay.save(self.savePath)
+        self.haveUnsavedChanges = False
 
     def selectedProperty(self):
         selected = self.propertyList.selectedItems()[0]
@@ -66,12 +130,13 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
         boldFont = self.font()
         boldFont.setBold(True)
 
-        for propid, prop in self.timeOfDay.getProperties().items():
+        for propid in self.timeOfDay.getPropertyKeys():
 
+            prop = self.timeOfDay.getProperty(propid)
             if "." in propid:
                 # I like cats
                 cat = propid.split(".")[0]
-                if cat is not currentCat:
+                if cat != currentCat:
                     # Get a new cat!
                     currentCat = cat
                     header = QtGui.QListWidgetItem()
@@ -112,18 +177,29 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
             asUniform = self.currentProperty.propType.asUniform(newVal) * 999.0
             self.sliders[i].setValue(asUniform)
 
+        self.haveUnsavedChanges = True
+
     def resetProperty(self):
         if self.currentProperty is not None:
-            defVal = self.currentProperty.propType.asUniform(
-                self.currentProperty.defaultValue) * 999.0
+            reply = QtGui.QMessageBox.question(self, 'Confirm',
+                                               "Are you sure you want to reset the curve? You can't revert this!", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
-            for slider in self.sliders:
-                slider.setValue(defVal)
+            if reply == QtGui.QMessageBox.Yes:
+                defVal = self.currentProperty.propType.asUniform(
+                    self.currentProperty.defaultValue) * 999.0
+
+                for slider in self.sliders:
+                    slider.setValue(defVal)
+
+            self.haveUnsavedChanges = True
 
     def sliderChanged(self):
         """ Gets called when the user moved a slider """
         if self.currentProperty is None:
             return
+
+        if not self.applicationMovedSlider:
+            self.haveUnsavedChanges = True
 
         for index, slider in enumerate(self.sliders):
             rawVal = slider.value() / 999.0
@@ -135,6 +211,8 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
 
     def loadProperty(self, prop):
         """ Gets called when another property got selected """
+
+        self.applicationMovedSlider = True
         self.labelDescription.setText(
             "<strong>" + prop.name + "</strong><br>Description: " + prop.description)
 
@@ -155,6 +233,4 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
         self.widget.setProperty(self.currentProperty)
         self.sliderChanged()
 
-    def resetCurve(self):
-        for slider in self.sliders:
-            slider.setValue(100)
+        self.applicationMovedSlider = False

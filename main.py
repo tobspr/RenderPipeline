@@ -226,14 +226,14 @@ class Main(ShowBase, DebugObject):
         dirLight = DirectionalLight()
         dirLight.setDirection(Vec3(50, 100, 50))
         # dirLight.setPos(Vec3(50, 100, 150))
-        dirLight.setColor(Vec3(5))
+        dirLight.setColor(Vec3(18,17.5,15))
         self.renderPipeline.addLight(dirLight)
 
 
         d = Scattering()
         d.setSettings({
                 "atmosphereOffset": Vec3(0,0, 6360.0 + 9.5),
-                "atmosphereScale": Vec3(0.01)
+                "atmosphereScale": Vec3(0.001)
             })
         d._setInputs(self.renderPipeline.lightingComputeContainer, "scatteringOptions")
         d.precompute()
@@ -272,7 +272,7 @@ class Main(ShowBase, DebugObject):
                 print "Unkown texture format:", baseFormat
                 print "\tTexture:", tex
 
-            tex.setMinfilter(Texture.FTLinearMipmapNearest)
+            tex.setMinfilter(Texture.FTLinearMipmapLinear)
             tex.setMagfilter(Texture.FTLinear)
             tex.setAnisotropicDegree(16)
 

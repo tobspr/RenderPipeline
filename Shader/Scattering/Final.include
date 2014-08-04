@@ -6,10 +6,10 @@
 
 
 // Prevents subpixel artifacts at the border of the atmosphere
-const float scatteringEpsilon = 0.5;
+const float scatteringEpsilon = 0.1;
 
 
-const float scatteringEpsilonInscatter = 0.01;
+const float scatteringEpsilonInscatter = 0.001;
 
 
 vec3 scatteringTransformPosition(ScatteringOptions options, vec3 pos) {
@@ -177,7 +177,7 @@ vec3 scatteringComputeInscatteredLight(
           0.0f);
         float t = ((muStartPos - muHorizon) + realEpsilonInscatter) / 
         (2.0 * realEpsilonInscatter);
-        // inscatter = mix(inScatterA, inScatterB, t);
+        inscatter = mix(inScatterA, inScatterB, t);
       }
 
 
@@ -191,7 +191,9 @@ vec3 scatteringComputeInscatteredLight(
         phaseM, 0.0f);
       inscatteredLight *= sunIntensity;
 
-      // return inscatter.rgb * 10.0;
+
+
+      // return inscatter.rgb * 1.0;
 
     }
   }
