@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created: Mon Aug 04 13:44:22 2014
+# Created: Mon Aug 04 14:12:37 2014
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(600, 698)
+        MainWindow.resize(600, 719)
         MainWindow.setMinimumSize(QtCore.QSize(600, 0))
         MainWindow.setMaximumSize(QtCore.QSize(600, 16777215))
         palette = QtGui.QPalette()
@@ -228,6 +228,17 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setContentsMargins(-1, 0, -1, -1)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.propertyList = QtGui.QListWidget(self.centralwidget)
+        self.propertyList.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.propertyList.setProperty("showDropIndicator", False)
+        self.propertyList.setAlternatingRowColors(True)
+        self.propertyList.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.propertyList.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.propertyList.setViewMode(QtGui.QListView.ListMode)
+        self.propertyList.setUniformItemSizes(False)
+        self.propertyList.setSelectionRectVisible(False)
+        self.propertyList.setObjectName(_fromUtf8("propertyList"))
+        self.verticalLayout_2.addWidget(self.propertyList)
         self.labelDescription = QtGui.QLabel(self.centralwidget)
         self.labelDescription.setMinimumSize(QtCore.QSize(0, 60))
         self.labelDescription.setMaximumSize(QtCore.QSize(16777215, 60))
@@ -607,20 +618,6 @@ class Ui_MainWindow(object):
         self.btnSmooth.setGeometry(QtCore.QRect(532, 150, 51, 23))
         self.btnSmooth.setObjectName(_fromUtf8("btnSmooth"))
         self.verticalLayout_2.addWidget(self.frame_2)
-        self.propertyList = QtGui.QListWidget(self.centralwidget)
-        self.propertyList.setFrameShape(QtGui.QFrame.NoFrame)
-        self.propertyList.setFrameShadow(QtGui.QFrame.Plain)
-        self.propertyList.setLineWidth(0)
-        self.propertyList.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.propertyList.setProperty("showDropIndicator", False)
-        self.propertyList.setAlternatingRowColors(True)
-        self.propertyList.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.propertyList.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.propertyList.setViewMode(QtGui.QListView.ListMode)
-        self.propertyList.setUniformItemSizes(False)
-        self.propertyList.setSelectionRectVisible(False)
-        self.propertyList.setObjectName(_fromUtf8("propertyList"))
-        self.verticalLayout_2.addWidget(self.propertyList)
         self.verticalLayout.addLayout(self.verticalLayout_2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
@@ -637,6 +634,7 @@ class Ui_MainWindow(object):
         self.btnSave.setText(_translate("MainWindow", "Save", None))
         self.btnSave.setShortcut(_translate("MainWindow", "Ctrl+S", None))
         self.pushButton.setText(_translate("MainWindow", "Do not press", None))
+        self.propertyList.setSortingEnabled(False)
         self.labelDescription.setText(_translate("MainWindow", "Select a property first", None))
         self.label_2.setText(_translate("MainWindow", "00:00", None))
         self.label_4.setText(_translate("MainWindow", "03:00", None))
@@ -648,10 +646,9 @@ class Ui_MainWindow(object):
         self.label_10.setText(_translate("MainWindow", "21:00", None))
         self.label_11.setText(_translate("MainWindow", "24:00", None))
         self.btnReset.setText(_translate("MainWindow", "Reset", None))
-        self.lblMinVal.setText(_translate("MainWindow", "MIN VAL", None))
-        self.lblMaxVal.setText(_translate("MainWindow", "MAX VAL", None))
-        self.lblMidVal.setText(_translate("MainWindow", "MID VAL", None))
+        self.lblMinVal.setText(_translate("MainWindow", " ", None))
+        self.lblMaxVal.setText(_translate("MainWindow", " ", None))
+        self.lblMidVal.setText(_translate("MainWindow", " ", None))
         self.btnSmooth.setText(_translate("MainWindow", "Smooth", None))
-        self.propertyList.setSortingEnabled(False)
 
 import resources_rc

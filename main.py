@@ -304,7 +304,7 @@ class Main(ShowBase, DebugObject):
 
     def loadSkybox(self):
         """ Loads the sample skybox. Will get replaced later """
-        self.skybox = self.loader.loadModel("Models/Skybox/Model")
+        self.skybox = self.loader.loadModel("Models/Skybox/Model.egg.bam")
         self.skybox.setScale(40000)
         self.skybox.reparentTo(self.render)
 

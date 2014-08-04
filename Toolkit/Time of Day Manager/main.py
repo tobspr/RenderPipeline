@@ -1,11 +1,18 @@
 import sys
 from os.path import isdir, isfile, join
 
-
-
 rootDir = "../../"
 configDir = rootDir + "Config/"
 configFile = join(configDir, "time_of_day.ini")
+
+
+if not isdir(rootDir):
+    print "Root directory does not exist!"
+    sys.exit(0)
+
+if not isdir(configDir):
+    print "Config directory does not exist!"
+    sys.exit(0)
 
 # required to be able to use pipeline classes
 sys.path.insert(0, rootDir)
@@ -13,7 +20,7 @@ sys.path.insert(0, join(rootDir, "Code/"))
 
 from PyQt4 import QtGui
 
-from TimeOfDayManager import TimeOfDayManager
+from TimeOfDayWindow import TimeOfDayWindow
 from TimeOfDay import TimeOfDay
 
 if __name__ == "__main__":
@@ -25,9 +32,13 @@ if __name__ == "__main__":
 
     if not isfile(configFile):
         print "Creating default config file"
-        timeOfDay.writeDefaultFile(configFile)    
+        timeOfDay.save(configFile)    
 
     timeOfDay.load(configFile)
 
-    manager = TimeOfDayManager(timeOfDay)
+    manager = TimeOfDayWindow(timeOfDay)
+    manager.setSavePath(join(configDir, "time_of_day.ini"))
+    manager.show()
+
+    
     sys.exit(app.exec_())

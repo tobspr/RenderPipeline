@@ -12,50 +12,25 @@ class CurveWidget(QtGui.QWidget):
         self.pen = QtGui.QPen(QtGui.QColor(51, 152, 255))
         self.resize(441, 151)
         self.pen.setWidth(3)
-        self.values = [0 for i in xrange(8)]
-        self.path = QtGui.QPainterPath()
-        self.marginBottom = 14
-        self.marginTop = 10
+        self.marginBottom = 12
+        self.marginTop = 12
         self.adjustedHeight = 151 - (self.marginBottom + self.marginTop)
-        self.curve = NurbsCurve()
-        self.curve.setOrder(3)
-        self.padAmount = 5
-        self.recomputeCurve()
-        self.property = None
+        self.prop = None
 
     def setProperty(self, prop):
         """ Sets the current property to display the curve """
-        self.property = prop
-
-        for i in xrange(8):
-            self.values[i] = self.property.propType.asUniform(
-                self.property.values[i])
-
-        self.recomputeCurve()
-
-    def recomputeCurve(self):
-        """ Recomputes the curve display """
-        self.curve.removeAllCvs()
-
-        paddedValues = self.values + [self.values[0]]
-        for i in xrange(self.padAmount):
-            paddedValues = [paddedValues[0]] + \
-                paddedValues + [paddedValues[-1]]
-
-        for index, val in enumerate(paddedValues):
-            self.curve.appendCv(Vec3(index / 8.0, val, 0.0))
-        self.curve.recompute()
+        self.prop = prop
 
     def paintEvent(self, event):
         """ Draws this curve, gets called by qt """
         painter = QtGui.QPainter(self)
         painter.setPen(self.pen)
 
-        maxT = self.curve.getMaxT() - 2.0 * (self.padAmount - 1)
-        offset = self.padAmount - 1
-        pt = Vec3(0)
+        if self.prop is None:
+            return
 
         for i in xrange(441):
-            self.curve.getPoint((i / 441.0) * maxT + offset,  pt)
+            sampled = self.prop.getInterpolatedValue(i / 441.0)
+            linear = self.prop.propType.asUniform(sampled)
             painter.drawPoint(
-                i, 151 - (pt.y * self.adjustedHeight) - self.marginBottom)
+                i, 151 - (linear * self.adjustedHeight) - self.marginBottom)

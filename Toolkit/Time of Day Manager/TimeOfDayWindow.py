@@ -4,12 +4,14 @@ from qt.main import Ui_MainWindow as TimeOfDayWindowUI
 
 from CurveWidget import CurveWidget
 from DayProperty import *
-from TimeOfDay import TimeOfDay
+from DebugObject import DebugObject
 
-class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI):
+
+class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI, DebugObject):
 
     def __init__(self, timeOfDay):
         QtGui.QMainWindow.__init__(self)
+        DebugObject.__init__(self, "TimeOfDayEditor")
         self.setupUi(self)
 
         self.sliders = [
@@ -28,11 +30,26 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI):
 
         self.btnReset.clicked.connect(self.resetProperty)
         self.btnSmooth.clicked.connect(self.smoothProperty)
+        self.btnSave.clicked.connect(self.save)
         self.currentProperty = None
         self.widget = CurveWidget(self.curveBG)
-        self.propertyList.selectionModel().selectionChanged.connect(self.selectedProperty)
+        self.propertyList.selectionModel().selectionChanged.connect(
+            self.selectedProperty)
         self.timeOfDay = timeOfDay
         self.fillList()
+        self.savePath = None
+
+    def setSavePath(self, pth):
+        self.savePath = pth
+
+    def save(self):
+
+        if self.savePath is None:
+            self.error("Save path not set! Use setSavePath")
+            return
+
+        self.debug("Saving to", self.savePath)
+        self.timeOfDay.save(self.savePath)
 
     def selectedProperty(self):
         selected = self.propertyList.selectedItems()[0]
@@ -40,9 +57,7 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI):
         prop = self.timeOfDay.getProperty(propertyId)
         self.loadProperty(prop)
 
-
     def fillList(self):
-
         self.propertyList.clear()
         first = None
         for propid, prop in self.timeOfDay.getProperties().items():
@@ -55,30 +70,28 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI):
 
         self.propertyList.setCurrentItem(first)
 
-
-
     def smoothProperty(self):
 
         if self.currentProperty is None:
             return
 
+        # save old values
         oldValues = self.currentProperty.values
         oldValues = [oldValues[0]] + oldValues + [oldValues[1]]
 
         smoothFactor = 0.05
 
         for i in xrange(8):
-            val = oldValues[i+1]
+            val = oldValues[i + 1]
             valBefore = oldValues[i]
-            valAfter = oldValues[i+2]
+            valAfter = oldValues[i + 2]
             avgBeforeAfter = (valBefore + valAfter) / 2.0
-            newVal = avgBeforeAfter * smoothFactor + val * (1.0-smoothFactor)
+            newVal = avgBeforeAfter * smoothFactor + val * (1.0 - smoothFactor)
             self.currentProperty.setValue(i, newVal)
             asUniform = self.currentProperty.propType.asUniform(newVal) * 999.0
             self.sliders[i].setValue(asUniform)
 
     def resetProperty(self):
-
         if self.currentProperty is not None:
             defVal = self.currentProperty.propType.asUniform(
                 self.currentProperty.defaultValue) * 999.0
@@ -96,7 +109,7 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI):
             adjVal = self.currentProperty.propType.fromUniform(rawVal)
             self.currentProperty.setValue(index, adjVal)
 
-        self.widget.setProperty(self.currentProperty)
+        self.currentProperty.recompute()
         self.curveBG.update()
 
     def loadProperty(self, prop):
@@ -118,6 +131,7 @@ class TimeOfDayWindow(QtGui.QMainWindow, TimeOfDayWindowUI):
             slider.setValue(valScaled * 999.0)
 
         self.currentProperty = prop
+        self.widget.setProperty(self.currentProperty)
         self.sliderChanged()
 
     def resetCurve(self):
