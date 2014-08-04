@@ -1,12 +1,11 @@
 
-
 from PyQt4 import QtGui
 from panda3d.core import NurbsCurve, Vec3
 
 
 class CurveWidget(QtGui.QWidget):
 
-    """ Simple widget to draw a curve """
+    """ Simple widget to draw a curve in qt """
 
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -25,6 +24,7 @@ class CurveWidget(QtGui.QWidget):
         self.property = None
 
     def setProperty(self, prop):
+        """ Sets the current property to display the curve """
         self.property = prop
 
         for i in xrange(8):
@@ -34,6 +34,7 @@ class CurveWidget(QtGui.QWidget):
         self.recomputeCurve()
 
     def recomputeCurve(self):
+        """ Recomputes the curve display """
         self.curve.removeAllCvs()
 
         paddedValues = self.values + [self.values[0]]
@@ -46,11 +47,11 @@ class CurveWidget(QtGui.QWidget):
         self.curve.recompute()
 
     def paintEvent(self, event):
+        """ Draws this curve, gets called by qt """
         painter = QtGui.QPainter(self)
         painter.setPen(self.pen)
 
         maxT = self.curve.getMaxT() - 2.0 * (self.padAmount - 1)
-        # maxT = self.curve.getMaxT()
         offset = self.padAmount - 1
         pt = Vec3(0)
 
