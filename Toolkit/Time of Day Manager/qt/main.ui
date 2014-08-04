@@ -525,9 +525,9 @@ image: url(:/src/res/knobHover.png);
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="btnGenerateClasses">
         <property name="text">
-         <string>Do not press</string>
+         <string>Generate class files &amp;&amp; Shader includes</string>
         </property>
        </widget>
       </item>
@@ -1620,7 +1620,7 @@ border-radius: 4px;
           </rect>
          </property>
          <property name="text">
-          <string> </string>
+          <string/>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1636,7 +1636,7 @@ border-radius: 4px;
           </rect>
          </property>
          <property name="text">
-          <string> </string>
+          <string/>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1652,7 +1652,7 @@ border-radius: 4px;
           </rect>
          </property>
          <property name="text">
-          <string> </string>
+          <string/>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

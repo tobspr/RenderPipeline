@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created: Mon Aug 04 14:12:37 2014
+# Created: Mon Aug 04 18:21:32 2014
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -220,9 +220,9 @@ class Ui_MainWindow(object):
         self.btnSave = QtGui.QPushButton(self.centralwidget)
         self.btnSave.setObjectName(_fromUtf8("btnSave"))
         self.horizontalLayout_3.addWidget(self.btnSave)
-        self.pushButton = QtGui.QPushButton(self.centralwidget)
-        self.pushButton.setObjectName(_fromUtf8("pushButton"))
-        self.horizontalLayout_3.addWidget(self.pushButton)
+        self.btnGenerateClasses = QtGui.QPushButton(self.centralwidget)
+        self.btnGenerateClasses.setObjectName(_fromUtf8("btnGenerateClasses"))
+        self.horizontalLayout_3.addWidget(self.btnGenerateClasses)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.verticalLayout_2 = QtGui.QVBoxLayout()
         self.verticalLayout_2.setSpacing(0)
@@ -604,14 +604,17 @@ class Ui_MainWindow(object):
         self.btnReset.setObjectName(_fromUtf8("btnReset"))
         self.lblMinVal = QtGui.QLabel(self.frame_2)
         self.lblMinVal.setGeometry(QtCore.QRect(8, 152, 59, 16))
+        self.lblMinVal.setText(_fromUtf8(""))
         self.lblMinVal.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lblMinVal.setObjectName(_fromUtf8("lblMinVal"))
         self.lblMaxVal = QtGui.QLabel(self.frame_2)
         self.lblMaxVal.setGeometry(QtCore.QRect(8, 26, 59, 16))
+        self.lblMaxVal.setText(_fromUtf8(""))
         self.lblMaxVal.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lblMaxVal.setObjectName(_fromUtf8("lblMaxVal"))
         self.lblMidVal = QtGui.QLabel(self.frame_2)
         self.lblMidVal.setGeometry(QtCore.QRect(8, 89, 59, 16))
+        self.lblMidVal.setText(_fromUtf8(""))
         self.lblMidVal.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lblMidVal.setObjectName(_fromUtf8("lblMidVal"))
         self.btnSmooth = QtGui.QPushButton(self.frame_2)
@@ -633,7 +636,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Time of Day Manager", None))
         self.btnSave.setText(_translate("MainWindow", "Save", None))
         self.btnSave.setShortcut(_translate("MainWindow", "Ctrl+S", None))
-        self.pushButton.setText(_translate("MainWindow", "Do not press", None))
+        self.btnGenerateClasses.setText(_translate("MainWindow", "Generate class files && Shader includes", None))
         self.propertyList.setSortingEnabled(False)
         self.labelDescription.setText(_translate("MainWindow", "Select a property first", None))
         self.label_2.setText(_translate("MainWindow", "00:00", None))
@@ -646,9 +649,6 @@ class Ui_MainWindow(object):
         self.label_10.setText(_translate("MainWindow", "21:00", None))
         self.label_11.setText(_translate("MainWindow", "24:00", None))
         self.btnReset.setText(_translate("MainWindow", "Reset", None))
-        self.lblMinVal.setText(_translate("MainWindow", " ", None))
-        self.lblMaxVal.setText(_translate("MainWindow", " ", None))
-        self.lblMidVal.setText(_translate("MainWindow", " ", None))
         self.btnSmooth.setText(_translate("MainWindow", "Smooth", None))
 
 import resources_rc
