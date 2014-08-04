@@ -233,7 +233,7 @@ class Main(ShowBase, DebugObject):
         d = Scattering()
         d.setSettings({
                 "atmosphereOffset": Vec3(0,0, 6360.0 + 9.5),
-                "atmosphereScale": Vec3(0.001)
+                "atmosphereScale": Vec3(1000.0)
             })
         d._setInputs(self.renderPipeline.lightingComputeContainer, "scatteringOptions")
         d.precompute()
