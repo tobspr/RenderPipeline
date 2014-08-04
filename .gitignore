@@ -17,4 +17,6 @@ Data/Scattering/
 Temp/
 ScatteringDump/
 Models/*.blend*
+*.blend1
+*.blend2
 
