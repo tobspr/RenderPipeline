@@ -1,6 +1,7 @@
 
 from DayProperty import DayProperty
-from direct.stdpy.file import open
+from DebugObject import DebugObject
+from direct.stdpy.file import open, isfile
 
 class TimeOfDay:
 
@@ -37,7 +38,9 @@ class TimeOfDay:
 
     def load(self, filename):
         """ Loads the property values from <filename> """
-        raise NotImplementedError("todo")
+
+        if not isfile(filename):
+            pass
 
     def writeDefaultFile(self, dest):
         """ Writes the default property file to a given location """
