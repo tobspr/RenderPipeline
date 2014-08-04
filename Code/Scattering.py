@@ -261,7 +261,8 @@ class Scattering(DebugObject):
         # write out transmittance tex
 
     def setSettings(self, settings):
-        """ Sets the settings used for the precomputation """
+        """ Sets the settings used for the precomputation. If a setting is not
+        specified, the default is used """
         for key, val in settings.items():
             if key in self.settings:
                 if type(val) == type(self.settings[key]):
