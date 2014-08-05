@@ -25,7 +25,7 @@ from MountManager import MountManager
 class RenderingPipeline(DebugObject):
 
     """ This is the core class, driving all other classes. To use this
-    pipeline, your code has to call *after* the initialization of ShowBase:
+    pipeline, your code has to call this *after* the initialization of ShowBase:
 
         renderPipeline = RenderingPipeline()
         renderPipeline.loadSettings("pipeline.ini")

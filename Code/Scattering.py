@@ -60,6 +60,15 @@ class Scattering(DebugObject):
     def _executePrecompute(self):
         """ Executes the precomputation for the scattering """
 
+        # Disable all display regions - otherwise the shader inputs are required
+        # too early 
+        disabledWindows = []
+        for window in Globals.base.graphicsEngine.getWindows():
+            window.setActive(False)
+            disabledWindows.append(window)
+
+        self.debug("Disabled",len(disabledWindows), "for rendering")
+
         # Transmittance
         self.targets['transmittance'] = self._createRT(
             "Transmittance", 256, 64, aux=False, shaderName="Transmittance", layers=1)
@@ -156,6 +165,12 @@ class Scattering(DebugObject):
         self.irradianceResult = self.textures['irradianceEColor']
         self.transmittanceResult = self.textures['transmittanceColor']
 
+        # reenable windows
+        for window in disabledWindows:
+            window.setActive(True)
+
+        self.debug("Finished precomputing, also reenabled windows.")
+
         # if self.writeOutput:
         #     base.graphicsEngine.extract_texture_data(
         #         self.irradianceResult, Globals.base.win.getGsg())
@@ -175,12 +190,12 @@ class Scattering(DebugObject):
 
     def _renderOneShot(self, targetName):
         """ Renders a target and then deletes the target """
-        self.debug("Rendering", targetName)
         target = self.targets[targetName]
         target.setActive(True)
+
+
         Globals.base.graphicsEngine.renderFrame()
         target.setActive(False)
-
 
         write = [(targetName + "Color", target.getColorTexture())]
 
@@ -189,7 +204,7 @@ class Scattering(DebugObject):
 
         if self.writeOutput:
             for texname, tex in write:
-                base.graphicsEngine.extract_texture_data(
+                Globals.base.graphicsEngine.extract_texture_data(
                     tex, Globals.base.win.getGsg())
 
                 dest = "ScatteringDump/" + texname + ".png"

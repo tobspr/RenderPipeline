@@ -21,8 +21,8 @@ uniform sampler2D viewSpacePosition;
 #define SAO_NUM_SPIRAL_TURNS      16
 #define SAO_VARIATION             1
 
-const float saoIntensity = 1.0;
-const float saoSampleRadiusWS = OCCLUSION_RADIUS * 830.0;
+const float saoIntensity = 5.0;
+const float saoSampleRadiusWS = OCCLUSION_RADIUS * 1.0;
 const float saoBias = 0.1;
  
 vec3 sao_getPositionVS(vec2 uv) {
@@ -108,11 +108,12 @@ OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanc
   const float saoFOV = 90.0;
   // float projScale = 40.0;//1.0 / (2.0 * tan(uFOV * 0.5));
   float projScale = 1.0 / (2.0 * tan(saoFOV * 0.5));
+  projScale = 500.0;
   radiusWS = saoSampleRadiusWS;
   radiusSS = projScale * radiusWS / abs(originVS.z);
     
  // radiusSS = -radiusSS;
-  // radiusSS = min(radiusSS, 12.0);
+  radiusSS = min(radiusSS, 20.0);
   // radiusSS = 0.0;
   
   // radiusSS = saturate(1.0 / distanceToCamera) * 250.0;

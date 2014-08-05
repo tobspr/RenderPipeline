@@ -78,6 +78,7 @@ class Main(ShowBase, DebugObject):
 
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
@@ -102,10 +103,11 @@ class Main(ShowBase, DebugObject):
 
         self.debug("Flattening scene and parenting to render")
         # self.convertToPatches(self.scene)
-        self.scene.flattenStrong()
+        # self.scene.flattenStrong()
 
         self.scene.reparentTo(self.render)
 
+        self.debug("Preparing SRGB ..")
         self.prepareSRGB(self.scene)
 
         # self.render2d.setShader(BetterShader.load("Shader/GUI/vertex.glsl", "Shader/GUI/fragment.glsl"))
@@ -113,7 +115,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         # self.controller.setInitialPosition(Vec3(-30, 30, 25), Vec3(0, 0, 0))
-        self.controller.setInitialPosition(Vec3(3, 3, 3), Vec3(0, 0, 1))
+        self.controller.setInitialPosition(Vec3(-38.8, -108.7, 38.9), Vec3(0, 0, 30))
         self.controller.setup()
         # base.disableMouse()
         # base.camera.setPos(0.988176, 2.53928, 2.75053)
@@ -204,16 +206,16 @@ class Main(ShowBase, DebugObject):
 
         # for x, y in [(-1.1, -0.9), (-1.2, 0.8), (1.3, -0.7), (1.4, 0.6)]:
         for x in xrange(4):
-            break
+            # break
         # for x,y in [(0,0)]:
             ambient = PointLight()
             ambient.setRadius(120.0)
 
             initialPos = Vec3(float(x - 2) * 21.0, 0, 60)
             ambient.setPos(initialPos)
-            ambient.setColor(Vec3(1.0))
-            ambient.setShadowMapResolution(1024)
-            ambient.setCastsShadows(True)
+            ambient.setColor(Vec3(6.0))
+            # ambient.setShadowMapResolution(1024)
+            # ambient.setCastsShadows(True)
             self.lights.append(ambient)
             self.initialLightPos.append(initialPos)
             # ambient.attachDebugNode(render)
@@ -227,7 +229,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setDirection(Vec3(50, 100, 50))
         # dirLight.setPos(Vec3(50, 100, 150))
         dirLight.setColor(Vec3(18,17.5,15))
-        self.renderPipeline.addLight(dirLight)
+        # self.renderPipeline.addLight(dirLight)
 
 
         d = Scattering()
@@ -235,7 +237,7 @@ class Main(ShowBase, DebugObject):
                 "atmosphereOffset": Vec3(0,0, 6360.0 + 9.5),
                 "atmosphereScale": Vec3(1000.0)
             })
-        d._setInputs(self.renderPipeline.lightingComputeContainer, "scatteringOptions")
+       
         d.precompute()
         
         # hack in for testing
@@ -249,7 +251,9 @@ class Main(ShowBase, DebugObject):
 
         # set default object shaders
         self.setShaders()
-       
+
+        d._setInputs(self.renderPipeline.lightingComputeContainer, "scatteringOptions")
+
 
     def toggleSceneWireframe(self):
         self.sceneWireframe = not self.sceneWireframe
@@ -353,6 +357,7 @@ class Main(ShowBase, DebugObject):
                                                math.sin(animationTime) * 1.0))
         if task is not None:
             return task.cont
+
 
 
 app = Main()

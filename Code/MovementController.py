@@ -82,7 +82,7 @@ class MovementController:
         # wireframe + debug + buffer viewer
         self.showbase.accept("f3", self.showbase.toggleWireframe)
         self.showbase.accept("p",  self._showDebugOutput)
-        self.showbase.accept("v",  self._toggleBufferViewer)
+        # self.showbase.accept("v",  self._toggleBufferViewer)
 
         # mouse
         self.showbase.accept("mouse1",    self._setMouseEnabled, [True])
