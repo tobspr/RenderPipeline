@@ -25,7 +25,6 @@ class PipelineGuiManager(DebugObject):
         self.guiActive = False
         self.window = UIWindow(
             "Pipeline Debugger", 280, Globals.base.win.getYSize())
-
         self.defines = {}
         self.bufferViewerParent = Globals.base.pixel2d.attachNewNode(
             "Buffer Viewer GUI")
@@ -36,13 +35,10 @@ class PipelineGuiManager(DebugObject):
 
     def setup(self):
         """ Setups this manager """
-
         self.debug("Creating GUI ..")
-
         self.initialized = False
         self.rootNode = self.body.attachNewNode("GUIManager")
         self.rootNode.setPos(0, 1, 0)
-
         self.watermark = BetterOnscreenImage(
             image="Data/GUI/Watermark.png", parent=self.rootNode,
             x=20, y=20, w=230, h=55)
@@ -51,16 +47,9 @@ class PipelineGuiManager(DebugObject):
             x=20, y=80, w=230, h=36)
         self.debuggerParent = self.window.getNode()
         self.debuggerParent.setPos(-350, 0, 0)
-
         self.debuggerContent = self.window.getContentNode()
-        # self.debuggerBackground = BetterOnscreenImage(
-        #     image="Data/GUI/DebuggerBackground.png",
-        #     parent=self.debuggerParent, x=0, y=0, w=279, h=1200)
-
         self._initSettings()
-
         self.showbase.accept("g", self._toggleGUI)
-
         self.currentGUIEffect = None
 
         # self._toggleGUI()
@@ -82,18 +71,29 @@ class PipelineGuiManager(DebugObject):
             ("Scattering", "rm_Scattering"),
         ]
 
+        features = [
+            ("Occlusion", "ft_OCCLUSION"),
+            ("Motion Blur", "ft_MOTIONBLUR"),
+            ("Anti-Aliasing", "ft_ANTIALIASING"),
+            ("Shadows", "ft_SHADOWS"),
+            ("Color Correction", "ft_COLOR_CORRECTION"),
+            ("Blur Occlusion", "ft_BLUR_OCCLUSION"),
+            ("Scattering", "ft_SCATTERING")
+        ]
+
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",
-                                                   x=20, y=currentY, parent=self.debuggerContent, color=Vec3(1), size=15)
+                                                   x=20, y=currentY,
+                                                   parent=self.debuggerContent,
+                                                   color=Vec3(1), size=15)
 
         currentY += 80
-
         isLeft = True
         for modeName, modeID in modes:
 
-            box =CheckboxWithLabel(
+            box = CheckboxWithLabel(
                 parent=self.debuggerParent, x=20 if isLeft else 158, y=currentY,
                 chbCallback=self._updateSetting, chbArgs=[modeID, False],
-                radio=True, textSize=14, text=modeName, textColor=Vec3(0.6), 
+                radio=True, textSize=14, text=modeName, textColor=Vec3(0.6),
                 chbChecked=modeID == "rm_Default")
             self.renderModes.add(box.getCheckbox())
 
@@ -102,30 +102,17 @@ class PipelineGuiManager(DebugObject):
             if isLeft:
                 currentY += 25
 
-
-        features = [
-            ("Occlusion", "ft_OCCLUSION"),
-            ("Motion Blur", "ft_MOTIONBLUR"),
-            ("Anti-Aliasing", "ft_ANTIALIASING"),            
-            ("Shadows", "ft_SHADOWS"),
-            ("Color Correction", "ft_COLOR_CORRECTION"),
-            ("Blur Occlusion", "ft_BLUR_OCCLUSION"),
-            ("Scattering", "ft_SCATTERING")
-        ]
-
         self.featuresTitle = BetterOnscreenText(text="Toggle Features",
-                                                   x=20, y=currentY, parent=self.debuggerContent, color=Vec3(1), size=15)
-
+                                                x=20, y=currentY, parent=self.debuggerContent, color=Vec3(1), size=15)
 
         currentY += 80
-
         isLeft = True
         for featureName, featureID in features:
 
             box = CheckboxWithLabel(
                 parent=self.debuggerParent, x=20 if isLeft else 158, y=currentY,
                 chbCallback=self._updateSetting, chbArgs=[featureID, True],
-                textSize=14, text=featureName, textColor=Vec3(0.6), 
+                textSize=14, text=featureName, textColor=Vec3(0.6),
                 chbChecked=True)
 
             isLeft = not isLeft
@@ -133,45 +120,9 @@ class PipelineGuiManager(DebugObject):
             if isLeft:
                 currentY += 25
 
-        # currY = 250
-        # self.chbFT_SSDO = BetterCheckbox(
-        #     parent=self.debuggerParent, x=checkboxX, y=currY,
-        #     callback=self._updateSetting, extraArgs=["ft_SSDO", True],
-        #     checked=True)
-        # self.chbFT_MotionBlur = BetterCheckbox(
-        #     parent=self.debuggerParent, x=checkboxX + 138, y=currY,
-        #     callback=self._updateSetting, extraArgs=["ft_MOTIONBLUR", True],
-        #     checked=True)
-        # currY += 25
-        # self.chbFT_AA = BetterCheckbox(
-        #     parent=self.debuggerParent, x=checkboxX, y=currY,
-        #     callback=self._updateSetting, extraArgs=["ft_ANTIALIASING", True],
-        #     checked=True)
-        # self.chbFT_Shadows = BetterCheckbox(
-        #     parent=self.debuggerParent, x=checkboxX + 138, y=currY,
-        #     callback=self._updateSetting, extraArgs=["ft_SHADOWS", True],
-        #     checked=True)
-        # currY += 25
-        # self.chbFT_ColorCorrect = BetterCheckbox(
-        #     parent=self.debuggerParent, x=checkboxX, y=currY,
-        #     callback=self._updateSetting, extraArgs=[
-        #         "ft_COLOR_CORRECTION", True],
-        #     checked=True)
-        # self.chbFT_AOBlur = BetterCheckbox(
-        #     parent=self.debuggerParent, x=checkboxX + 138, y=currY,
-        #     callback=self._updateSetting, extraArgs=[
-        #         "ft_BLUR_OCCLUSION", True],
-        #     checked=True)
-        # currY += 25
-        # self.chbFT_Scattering = BetterCheckbox(
-        #     parent=self.debuggerParent, x=checkboxX, y=currY,
-        #     callback=self._updateSetting, extraArgs=["ft_SCATTERING", True],
-        #     checked=True)
         self.initialized = True
 
     def _updateSetting(self, status, name, updateWhenFalse=False):
-        # self.debug("Update setting:", name, "=", status, "whenFalse=",updateWhenFalse)
-
         # Render Modes
         if name.startswith("rm_"):
             modeId = "RM_" + name[3:].upper()
