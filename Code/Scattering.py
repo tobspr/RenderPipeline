@@ -48,6 +48,7 @@ class Scattering(DebugObject):
         self.targets = {}
         self.textures = {}
         self.writeOutput = False
+        self.precomputed = False
 
         if self.writeOutput and not isdir("ScatteringDump"):
             try:
@@ -60,7 +61,6 @@ class Scattering(DebugObject):
         # self.engine = GraphicsEngine()
 
     def _generatePTAs(self):
-
         self.debug("Generating PTAs ..")
         for settingName, settingValue in self.settings.items():
             if type(settingValue) == float:
@@ -77,6 +77,11 @@ class Scattering(DebugObject):
 
     def adjustSetting(self, name, value):
         """ This can be used to adjust a setting after precomputing """
+
+        if not self.precomputed:
+            self.warn("Cannot use adjustSetting when not precomputed yet")
+            return
+
         if name in self.settingsPTA:
             if type(value) not in [float, Vec3]:
                 self.warn("You cannot change this value in realtime. "
@@ -210,6 +215,7 @@ class Scattering(DebugObject):
             window.setActive(True)
 
         self.debug("Finished precomputing, also reenabled windows.")
+        self.precomputed = True
 
         # if self.writeOutput:
         #     base.graphicsEngine.extract_texture_data(
@@ -221,12 +227,24 @@ class Scattering(DebugObject):
         # self.inscatterResult.write("Data/Scattering/Result_Inscatter.png")
 
     def getInscatterTexture(self):
+        if not self.precomputed:
+            self.error("Inscatter texture is not available yet! Precompute "
+                       "the scattering first, with precompute()!")
+            return
         return self.inscatterResult
 
     def getIrradianceTexture(self):
+        if not self.precomputed:
+            self.error("Irradiance texture is not available yet! Precompute "
+                       "the scattering first, with precompute()!")
+            return
         return self.irradianceResult
 
     def getTransmittanceResult(self):
+        if not self.precomputed:
+            self.error("Transmittance texture is not available yet! Precompute "
+                       "the scattering first, with precompute()!")
+            return
         return self.transmittanceResult
 
     def _renderOneShot(self, targetName):
@@ -297,16 +315,27 @@ class Scattering(DebugObject):
 
         return rt
 
-    def _setInputs(self, node, prefix):
+    def bindTo(self, node, prefix):
         """ Sets all necessary inputs on a render target """
-        # self.debug("SetShaderInput as", prefix,"onto",node)
+        if not self.precomputed:
+            self.warn("You can only call bindTo after the scattering got "
+                      "precomputed!")
+            return
+
+        self._setInputs(node, prefix)
+
+    def _setInputs(self, node, prefix):
+        """ Internal method to set necessary inputs on a render target """
         for key, val in self.settingsPTA.items():
-            # self.debug("\t", prefix + "." + key, "=", val)
             node.setShaderInput(prefix + "." + key, val)
 
     def precompute(self):
         """ Precomputes the scattering. This is required before you
         can use it """
+        if self.precomputed:
+            self.error("Scattering is already computed! You can only do this "
+                       "once")
+            return
         self.debug("Precomputing ..")
 
         if self.writeOutput:
@@ -318,6 +347,12 @@ class Scattering(DebugObject):
     def setSettings(self, settings):
         """ Sets the settings used for the precomputation. If a setting is not
         specified, the default is used """
+
+        if self.precomputed:
+            self.warn("You cannot use setSettings after precomputing! Use "
+                "adjustSetting instead!")
+            return
+
         for key, val in settings.items():
             if key in self.settings:
                 if type(val) == type(self.settings[key]):

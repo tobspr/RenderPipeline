@@ -249,7 +249,7 @@ class Main(ShowBase, DebugObject):
         # set default object shaders
         self.setShaders()
 
-        d._setInputs(
+        d.bindTo(
             self.renderPipeline.lightingComputeContainer, "scatteringOptions")
 
     def toggleSceneWireframe(self):
