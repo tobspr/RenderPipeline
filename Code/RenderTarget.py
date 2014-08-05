@@ -7,7 +7,7 @@ from RenderBuffer import RenderBuffer
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 from Globals import Globals
-from BufferViewerGUI import BufferViewerGUI
+from GUI.BufferViewerGUI import BufferViewerGUI
 
 
 class RenderTarget(DebugObject):

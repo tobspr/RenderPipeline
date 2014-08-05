@@ -1,8 +1,8 @@
 
 from panda3d.core import TransparencyAttrib, Vec3, Texture
-from DebugObject import DebugObject
 from direct.gui.OnscreenImage import OnscreenImage
 
+from ..DebugObject import DebugObject
 
 class BetterOnscreenImage(DebugObject):
 

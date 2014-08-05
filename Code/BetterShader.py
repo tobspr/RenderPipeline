@@ -24,6 +24,8 @@ class BetterShader:
     # handy and should only be disabled in production
     _DumpShaders = False
 
+    _ShaderCache = {}
+
     @classmethod
     def loadCompute(self, source):
         """ Loads a compute shader """
@@ -41,14 +43,19 @@ class BetterShader:
 
         newArgs = []
 
+        toHash = ""
+
         for arg in args:
             if len(arg) < 1:
                 newArgs.append("")
                 continue
             content = self._handleIncludes(arg)
             newArgs.append(content)
+            toHash += content
             self._writeDebugShader("Shader-" + str(arg), content)
             self._clearIncludeStack()
+
+        
 
         result = Shader.make(Shader.SLGLSL, *newArgs)
         return result

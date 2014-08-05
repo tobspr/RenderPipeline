@@ -7,7 +7,6 @@ from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
 from panda3d.core import PTAVecBase3f, WindowProperties, Vec4
 
-from direct.gui.OnscreenImage import OnscreenImage
 from direct.stdpy.file import open
 
 from LightManager import LightManager
@@ -17,7 +16,7 @@ from BetterShader import BetterShader
 from Antialiasing import *
 from AmbientOcclusion import *
 from PipelineSettingsManager import PipelineSettingsManager
-from PipelineGuiManager import PipelineGuiManager
+from GUI.PipelineGuiManager import PipelineGuiManager
 from Globals import Globals
 from MountManager import MountManager
 
@@ -111,6 +110,9 @@ class RenderingPipeline(DebugObject):
         # Store globals, as cython can't handle them
         self.debug("Setting up globals")
         Globals.load(self.showbase)
+        Globals.font = loader.loadFont("Data/Font/SourceSansPro-Semibold.otf")
+        Globals.font.setPixelsPerUnit(25)
+
 
         # Setting up shader loading
         BetterShader._DumpShaders = self.settings.dumpGeneratedShaders

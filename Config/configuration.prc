@@ -125,14 +125,15 @@ gl-debug #f
 # gl-enable-memory-barriers #f
 
 text-minfilter linear
+text-magfilter linear
 text-page-size 128 128
 
 show-frame-rate-meter #t
 
 texture-anisotropic-degree 0
-# texture-magfilter linear
-# texture-minfilter linear
-
+texture-magfilter linear
+texture-minfilter linear
+# 
 # cache-models #f
 # texture-cache #f
 

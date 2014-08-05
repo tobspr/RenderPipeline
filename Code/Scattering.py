@@ -1,16 +1,17 @@
 
-from panda3d.core import Vec3, ShaderAttrib, NodePath, Texture
+from panda3d.core import Vec3
 from BetterShader import BetterShader
 from DebugObject import DebugObject
 from Globals import Globals
 from RenderTarget import RenderTarget
 from TextureDebugger import TextureDebugger
-from panda3d.core import GraphicsEngine
+from panda3d.core import PTAFloat, PTALVecBase3f
 
-from direct.stdpy.file import open, isdir
+from direct.stdpy.file import isdir
 
 # need legacy makedirs here
 from os import makedirs
+
 
 class Scattering(DebugObject):
 
@@ -42,6 +43,8 @@ class Scattering(DebugObject):
 
         }
 
+        self.settingsPTA = {}
+
         self.targets = {}
         self.textures = {}
         self.writeOutput = False
@@ -49,51 +52,83 @@ class Scattering(DebugObject):
         if self.writeOutput and not isdir("ScatteringDump"):
             try:
                 makedirs("ScatteringDump")
-            except Exception, msg:
+            except:
                 self.debug("Failed to create dump dir!")
                 self.writeOutput = False
 
         # Create separate engine for precomputing
         # self.engine = GraphicsEngine()
 
+    def _generatePTAs(self):
+
+        self.debug("Generating PTAs ..")
+        for settingName, settingValue in self.settings.items():
+            if type(settingValue) == float:
+                self.settingsPTA[settingName] = PTAFloat.emptyArray(1)
+                self.settingsPTA[settingName][0] = settingValue
+            elif type(settingValue) == Vec3:
+                self.settingsPTA[settingName] = PTALVecBase3f.emptyArray(1)
+                self.settingsPTA[settingName][0] = settingValue
+            elif type(settingValue) == bool:
+                # no pta bool yet
+                self.settingsPTA[settingName] = settingValue
+            else:
+                self.warn("Unkown type:", settingName, type(settingValue))
+
+    def adjustSetting(self, name, value):
+        """ This can be used to adjust a setting after precomputing """
+        if name in self.settingsPTA:
+            if type(value) not in [float, Vec3]:
+                self.warn("You cannot change this value in realtime. "
+                          "Only floats and vec3 are supported.")
+                return
+            self.settingsPTA[name][0] = value
 
     def _executePrecompute(self):
         """ Executes the precomputation for the scattering """
 
-        # Disable all display regions - otherwise the shader inputs are required
-        # too early 
+        # Disable all display regions - otherwise the shader inputs are
+        # required too early
         disabledWindows = []
         for window in Globals.base.graphicsEngine.getWindows():
             window.setActive(False)
             disabledWindows.append(window)
 
-        self.debug("Disabled",len(disabledWindows), "for rendering")
+        # create ptas
+        self._generatePTAs()
+
+        self.debug("Disabled", len(disabledWindows), "for rendering")
 
         # Transmittance
         self.targets['transmittance'] = self._createRT(
-            "Transmittance", 256, 64, aux=False, shaderName="Transmittance", layers=1)
+            "Transmittance", 256, 64, aux=False, shaderName="Transmittance",
+            layers=1)
         self._renderOneShot('transmittance')
 
         # Irradiance1 (Produces DeltaE Texture)
         self.targets['irradiance1'] = self._createRT(
-            "Irradiance1", 64, 16, aux=False, shaderName="Irradiance1", layers=1)
+            "Irradiance1", 64, 16, aux=False, shaderName="Irradiance1",
+            layers=1)
         self._renderOneShot('irradiance1')
 
         # Delta Scattering (Rayleigh + Mie)
         self.targets['deltaScattering'] = self._createRT(
-            "DeltaScattering", 256, 128, aux=True, shaderName="Inscatter1", layers=32)
+            "DeltaScattering", 256, 128, aux=True, shaderName="Inscatter1",
+            layers=32)
         self._renderOneShot('deltaScattering')
 
         # IrradianceE (Produces E Texture)
         self.targets['irradianceE'] = self._createRT(
-            "IrradianceE", 64, 16, aux=False, shaderName="Combine2DTextures", layers=1)
+            "IrradianceE", 64, 16, aux=False, shaderName="Combine2DTextures",
+            layers=1)
         self.targets['irradianceE'].setShaderInput('factor1', 0.0)
         self.targets['irradianceE'].setShaderInput('factor2', 0.0)
         self._renderOneShot('irradianceE')
 
         # Copy delta scattering into inscatter texture S
         self.targets['combinedDeltaScattering'] = self._createRT(
-            "CombinedDeltaScattering", 256, 128, aux=False, shaderName="CombineDeltaScattering", layers=32)
+            "CombinedDeltaScattering", 256, 128, aux=False,
+            shaderName="CombineDeltaScattering", layers=32)
         self._renderOneShot('combinedDeltaScattering')
 
         for i in xrange(3):
@@ -103,14 +138,16 @@ class Scattering(DebugObject):
             # Compute Delta J texture
             inscatterSName = 'inscatterS' + passIndex
             self.targets[inscatterSName] = self._createRT(
-                inscatterSName, 256, 128, aux=False, shaderName="InscatterS", layers=32)
+                inscatterSName, 256, 128, aux=False, shaderName="InscatterS",
+                layers=32)
             self.targets[inscatterSName].setShaderInput("first", first)
             self._renderOneShot(inscatterSName)
 
             # Compute the new Delta E Texture
             irradianceNName = 'irradianceN' + passIndex
             self.targets[irradianceNName] = self._createRT(
-                irradianceNName, 64, 16, aux=False, shaderName="IrradianceN", layers=1)
+                irradianceNName, 64, 16, aux=False, shaderName="IrradianceN",
+                layers=1)
             self.targets[irradianceNName].setShaderInput('first', first)
             self._renderOneShot(irradianceNName)
 
@@ -121,7 +158,8 @@ class Scattering(DebugObject):
             # Compute new deltaSR
             inscatterNName = 'inscatterN' + passIndex
             self.targets[inscatterNName] = self._createRT(
-                inscatterNName, 256, 128, aux=False, shaderName="InscatterN", layers=32)
+                inscatterNName, 256, 128, aux=False, shaderName="InscatterN",
+                layers=32)
             self.targets[inscatterNName].setShaderInput("first", first)
             self.targets[inscatterNName].setShaderInput(
                 "deltaJSampler", self.textures[inscatterSName + "Color"])
@@ -134,7 +172,8 @@ class Scattering(DebugObject):
             # Add deltaE into irradiance texture E
             irradianceAddName = 'irradianceAdd' + passIndex
             self.targets[irradianceAddName] = self._createRT(
-                irradianceAddName, 64, 16, aux=False, shaderName="Combine2DTextures", layers=1)
+                irradianceAddName, 64, 16, aux=False,
+                shaderName="Combine2DTextures", layers=1)
             self.targets[irradianceAddName].setShaderInput('first', first)
             self.targets[irradianceAddName].setShaderInput(
                 'source1', self.textures['irradianceEColor'])
@@ -150,7 +189,8 @@ class Scattering(DebugObject):
             # Add deltaS into inscatter texture S
             inscatterAddName = 'inscatterAdd' + passIndex
             self.targets[inscatterAddName] = self._createRT(
-                inscatterAddName, 256, 128, aux=False, shaderName="InscatterAdd", layers=32)
+                inscatterAddName, 256, 128, aux=False,
+                shaderName="InscatterAdd", layers=32)
             self.targets[inscatterAddName].setShaderInput("first", first)
             self.targets[inscatterAddName].setShaderInput(
                 "deltaSSampler", self.textures["deltaScatteringColor"])
@@ -174,10 +214,11 @@ class Scattering(DebugObject):
         # if self.writeOutput:
         #     base.graphicsEngine.extract_texture_data(
         #         self.irradianceResult, Globals.base.win.getGsg())
-        #     self.irradianceResult.write("Data/Scattering/Result_Irradiance.png")
+        #     self.irradianceResult.write(
+        # "Data/Scattering/Result_Irradiance.png")
         #     base.graphicsEngine.extract_texture_data(
         #         self.inscatterResult, Globals.base.win.getGsg())
-        #     self.inscatterResult.write("Data/Scattering/Result_Inscatter.png")
+        # self.inscatterResult.write("Data/Scattering/Result_Inscatter.png")
 
     def getInscatterTexture(self):
         return self.inscatterResult
@@ -192,7 +233,6 @@ class Scattering(DebugObject):
         """ Renders a target and then deletes the target """
         target = self.targets[targetName]
         target.setActive(True)
-
 
         Globals.base.graphicsEngine.renderFrame()
         target.setActive(False)
@@ -260,13 +300,13 @@ class Scattering(DebugObject):
     def _setInputs(self, node, prefix):
         """ Sets all necessary inputs on a render target """
         # self.debug("SetShaderInput as", prefix,"onto",node)
-        for key, val in self.settings.items():
+        for key, val in self.settingsPTA.items():
             # self.debug("\t", prefix + "." + key, "=", val)
             node.setShaderInput(prefix + "." + key, val)
 
-
     def precompute(self):
-        """ Precomputes the scattering. This is required before you can use it """
+        """ Precomputes the scattering. This is required before you
+        can use it """
         self.debug("Precomputing ..")
 
         if self.writeOutput:
@@ -283,6 +323,7 @@ class Scattering(DebugObject):
                 if type(val) == type(self.settings[key]):
                     self.settings[key] = val
                 else:
-                    self.warn("Wrong type for",key,"- should be",type(self.settings[key]))
+                    self.warn(
+                        "Wrong type for", key, "- should be", type(self.settings[key]))
             else:
                 self.warn("Unrecognized setting:", key)

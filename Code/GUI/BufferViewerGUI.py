@@ -1,9 +1,9 @@
 
-from Globals import Globals
-from DebugObject import DebugObject
+from ..Globals import Globals
+from ..DebugObject import DebugObject
+from ..RenderTargetType import RenderTargetType
 from BetterOnscreenImage import BetterOnscreenImage
 from BetterOnscreenText import BetterOnscreenText
-from RenderTargetType import RenderTargetType
 from CheckboxWithLabel import CheckboxWithLabel
 
 from panda3d.core import Vec3, Vec4

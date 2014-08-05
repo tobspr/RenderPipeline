@@ -68,9 +68,6 @@ class Main(ShowBase, DebugObject):
         # Set a write directory, where the shader cache and so on is stored
         # self.renderPipeline.getMountManager().setWritePath(writeDirectory)
 
-
-
-
         self.renderPipeline.getMountManager().setBasePath(".")
         self.renderPipeline.create()
 
@@ -115,7 +112,8 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         # self.controller.setInitialPosition(Vec3(-30, 30, 25), Vec3(0, 0, 0))
-        self.controller.setInitialPosition(Vec3(-38.8, -108.7, 38.9), Vec3(0, 0, 30))
+        self.controller.setInitialPosition(
+            Vec3(-38.8, -108.7, 38.9), Vec3(0, 0, 30))
         self.controller.setup()
         # base.disableMouse()
         # base.camera.setPos(0.988176, 2.53928, 2.75053)
@@ -228,18 +226,17 @@ class Main(ShowBase, DebugObject):
         dirLight = DirectionalLight()
         dirLight.setDirection(Vec3(50, 100, 50))
         # dirLight.setPos(Vec3(50, 100, 150))
-        dirLight.setColor(Vec3(18,17.5,15))
+        dirLight.setColor(Vec3(18, 17.5, 15))
         # self.renderPipeline.addLight(dirLight)
-
 
         d = Scattering()
         d.setSettings({
-                "atmosphereOffset": Vec3(0,0, 6360.0 + 9.5),
-                "atmosphereScale": Vec3(1000.0)
-            })
-       
+            "atmosphereOffset": Vec3(0, 0, 6360.0 + 9.5),
+            "atmosphereScale": Vec3(1000.0)
+        })
+
         d.precompute()
-        
+
         # hack in for testing
         self.renderPipeline.lightingComputeContainer.setShaderInput(
             "transmittanceSampler", d.getTransmittanceResult())
@@ -252,8 +249,8 @@ class Main(ShowBase, DebugObject):
         # set default object shaders
         self.setShaders()
 
-        d._setInputs(self.renderPipeline.lightingComputeContainer, "scatteringOptions")
-
+        d._setInputs(
+            self.renderPipeline.lightingComputeContainer, "scatteringOptions")
 
     def toggleSceneWireframe(self):
         self.sceneWireframe = not self.sceneWireframe
@@ -357,7 +354,6 @@ class Main(ShowBase, DebugObject):
                                                math.sin(animationTime) * 1.0))
         if task is not None:
             return task.cont
-
 
 
 app = Main()

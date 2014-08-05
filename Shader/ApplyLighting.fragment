@@ -43,14 +43,10 @@ uniform sampler2D dssdoNoiseTex;
 #include "Occlusion/Init.include"
 #include "Includes/Lighting.include"
 #include "Scattering/Final.include"
-// #include "Includes/DSSDO.include"
-// #include "Includes/HBAO.include"
-// #include "Includes/SAO.include"
 
 out vec4 lightingResult;
 
 uniform sampler3D inscatterSampler;
-// uniform sampler2D transmittanceSampler;
 uniform ScatteringOptions scatteringOptions;
 
 
@@ -124,7 +120,7 @@ void main() {
 
     occlusionResult = 1.0 - occlusionResult;
 
-    #ifdef DEBUG_DISABLE_SSDO
+    #ifdef DEBUG_DISABLE_OCCLUSION
         occlusionResult = 0.0;
     #endif
 
@@ -220,7 +216,7 @@ void main() {
         occlusionTotal = 0.0;
     #endif
 
-    #ifdef DEBUG_RM_SSDO
+    #ifdef DEBUG_RM_OCCLUSION
         result = vec3(1);
         // occlusionTotal = 0.0;
         // result = vec3(occlusionResult);

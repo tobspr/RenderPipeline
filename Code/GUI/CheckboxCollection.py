@@ -1,5 +1,5 @@
 
-from DebugObject import DebugObject
+from ..DebugObject import DebugObject
 
 import direct.gui.DirectGuiGlobals as DGG
 

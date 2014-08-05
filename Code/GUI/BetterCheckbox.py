@@ -3,8 +3,8 @@ from panda3d.core import Texture, TransparencyAttrib
 from direct.gui.DirectCheckBox import DirectCheckBox
 import direct.gui.DirectGuiGlobals as DGG
 
-from DebugObject import DebugObject
-from Globals import Globals
+from ..DebugObject import DebugObject
+from ..Globals import Globals
 
 
 class BetterCheckbox(DebugObject):
