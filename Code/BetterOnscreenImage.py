@@ -6,7 +6,7 @@ from direct.gui.OnscreenImage import OnscreenImage
 
 class BetterOnscreenImage(DebugObject):
 
-    def __init__(self, image=None, parent=None, x=0, y=0, w=10, h=10, transparent=True, nearFilter=True):
+    def __init__(self, image=None, parent=None, x=0, y=0, w=10, h=10, transparent=True, nearFilter=True, anyFilter=True):
         DebugObject.__init__(self, "BOnscreenImage")
 
         self.initialPos = Vec3(x + w / 2.0, 1, -y - h / 2.0)
@@ -18,11 +18,15 @@ class BetterOnscreenImage(DebugObject):
             self._node.setTransparency(TransparencyAttrib.MAlpha)
 
         tex = self._node.getTexture()
-        tex.setMinfilter(Texture.FTNearest)
-        tex.setMagfilter(Texture.FTNearest)
-        tex.setAnisotropicDegree(8)
-        tex.setWrapU(Texture.WMClamp)
-        tex.setWrapV(Texture.WMClamp)
+
+        if nearFilter:
+            tex.setMinfilter(Texture.FTNearest)
+            tex.setMagfilter(Texture.FTNearest)
+
+        if anyFilter:
+            tex.setAnisotropicDegree(8)
+            tex.setWrapU(Texture.WMClamp)
+            tex.setWrapV(Texture.WMClamp)
 
     def getInitialPos(self):
         return self.initialPos

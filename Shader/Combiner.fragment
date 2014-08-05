@@ -28,8 +28,8 @@ uniform vec3 cameraPosition;
 
 out vec4 result;
 
-const float rejectionFactor = 100.0;
-const float texcoordRejectionFactor = 0.5;
+const float rejectionFactor = 2.0;
+const float texcoordRejectionFactor = 0.0;
 
 void main() {
 
@@ -67,8 +67,9 @@ void main() {
     vec2 lastFrameTexcoord = texcoord - velocity;
     ivec2 lastFrameTexcoordInt = ivec2(lastFrameTexcoord * screenSize);
     vec4 oldProjectedColor = texture(lastFrame, lastFrameTexcoord);
+
     vec3 oldProjectedPos = texture(lastPosition, lastFrameTexcoord).rgb;
-    
+
     vec4 bestLastProjected = texture(lastFrame, lastFrameTexcoord);
     float distanceToCamera = distance(cameraPosition, position);
     
@@ -80,14 +81,16 @@ void main() {
     ivec2 clampMin = ivec2(1);
 
 
-    if ( clamp(lastFrameTexcoordInt, clampMin, clampMax) != lastFrameTexcoordInt ) {
-        reliability = 0.0;
-    }
+    // if ( clamp(lastFrameTexcoordInt, clampMin, clampMax) != lastFrameTexcoordInt ) {
+    //     reliability = 0.0;
+    // }
 
     result = mix(lastComputedValue, bestLastProjected, saturate(reliability));
 
     if ( (screenCoord.x+screenCoord.y) % 2 == 1-temporalProjXOffs) {
         result = vec4(lastComputedValue);
     } 
+
+    // result = vec4(reliability, 0, 0, 1);
 
 }

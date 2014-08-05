@@ -7,6 +7,7 @@ from RenderBuffer import RenderBuffer
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 from Globals import Globals
+from BufferViewerGUI import BufferViewerGUI
 
 
 class RenderTarget(DebugObject):
@@ -68,6 +69,7 @@ class RenderTarget(DebugObject):
         self._writeColor = True
         self._multisamples = 0
         self._engine = Globals.base.graphicsEngine
+        self._active = False
         self._rename(name)
 
         self.mute()
@@ -216,6 +218,14 @@ class RenderTarget(DebugObject):
         """ Wheter this target has at least 1 aux texture attached """
         return self.hasTarget(RenderTargetType.Aux0)
 
+    def hasColorTexture(self):
+        """ Wheter this target has a color texture attached """
+        return self.hasTarget(RenderTargetType.Color)
+
+    def hasDepthTexture(self):
+        """ Wheter this target has a depth texture attached """
+        return self.hasTarget(RenderTargetType.Depth)
+
     def _createBuffer(self):
         """ Internal method to create the buffer object """
         wantedX = self._sourceWindow.getXSize(
@@ -273,11 +283,12 @@ class RenderTarget(DebugObject):
         cs.setAttrib(StencilAttrib.makeOff(), 20)
 
         if not self._enableTransparency:
-            cs.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
+            cs.setAttrib(
+                TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
 
         if not self._writeColor:
             cs.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff), 100)
-            
+
         self._sourceCam.node().setInitialState(cs.getState())
 
         # Set new camera
@@ -316,6 +327,9 @@ class RenderTarget(DebugObject):
 
         self._setSizeShaderInput()
 
+        self._active = True
+        self._registerBuffer()
+
     def prepareOffscreenBuffer(self):
         """ Creates an offscreen buffer for this target """
 
@@ -332,9 +346,11 @@ class RenderTarget(DebugObject):
         initialState = NodePath("is")
 
         if not self._writeColor:
-            initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff), 1000)
+            initialState.setAttrib(
+                ColorWriteAttrib.make(ColorWriteAttrib.COff), 1000)
 
-        initialState.setAttrib(DepthWriteAttrib.make(DepthWriteAttrib.MNone), 1000)
+        initialState.setAttrib(
+            DepthWriteAttrib.make(DepthWriteAttrib.MNone), 1000)
 
         bufferCam.setInitialState(initialState.getState())
 
@@ -346,11 +362,16 @@ class RenderTarget(DebugObject):
 
         self._setSizeShaderInput()
 
+        self._active = True
+        self._registerBuffer()
+
     def setActive(self, active):
         """ You can enable / disable the buffer with this. When disabled,
         shaders on this buffer aren't executed """
-        self._buffer.getInternalBuffer().getDisplayRegion(0).setActive(active)
-        self._region.setActive(active)
+        if self._active is not active:
+            self._buffer.getInternalBuffer().getDisplayRegion(0).setActive(active)
+            self._region.setActive(active)
+            self._active = active
 
     def getQuad(self):
         """ Returns the quad-node path. You can use this to set shader inputs
@@ -437,6 +458,18 @@ class RenderTarget(DebugObject):
             1.0 / bufferSize.x, 1.0 / bufferSize.y, bufferSize.x, bufferSize.y)
         self.setShaderInput("bufferSize", asInput)
 
+    def _registerBuffer(self):
+        """ Internal method to register the buffer at the buffer viewer """
+        BufferViewerGUI.registerBuffer(self._name, self)
+
+    def _unregisterBuffer(self):
+        """ Internal method to unregister the buffer from the buffer viewer """
+        BufferViewerGUI.unregisterBuffer(self._name)
+
+    def isActive(self):
+        """ Returns wheter this buffer is currently active """
+        return self._active
+
     def updateSize(self):
         """ Updates the size of this render target. TODO """
         raise NotImplementedError("Not working yet")
@@ -456,6 +489,11 @@ class RenderTarget(DebugObject):
 
         self._engine.removeWindow(self._buffer.getInternalBuffer())
         del self._buffer
+
+        self._active = False
+        self._unregisterBuffer()
+
+
 
     def __repr__(self):
         """ Returns a representative string of this instance """

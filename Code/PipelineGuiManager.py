@@ -1,7 +1,7 @@
 
 from panda3d.core import Vec3
 
-from direct.interval.IntervalGlobal import Parallel
+from direct.interval.IntervalGlobal import Parallel, Sequence, Wait
 
 from Globals import Globals
 from DebugObject import DebugObject
@@ -24,7 +24,8 @@ class PipelineGuiManager(DebugObject):
         self.guiActive = False
 
         self.defines = {}
-        self.bufferViewer = BufferViewerGUI()
+        self.bufferViewerParent = self.body.attachNewNode("Buffer Viewer GUI")
+        self.bufferViewer = BufferViewerGUI(self.bufferViewerParent)
 
     def update(self):
         pass
@@ -215,6 +216,7 @@ class PipelineGuiManager(DebugObject):
             self.currentGUIEffect.finish()
 
         if not self.guiActive:
+            # show debugger
             self.currentGUIEffect = Parallel(
                 self.watermark.posInterval(
                     0.4, self.watermark.getInitialPos() + Vec3(0, 0, 200),
@@ -224,10 +226,15 @@ class PipelineGuiManager(DebugObject):
                     blendType="easeIn"),
                 self.debuggerParent.posInterval(
                     0.3, Vec3(0, 0, 0), blendType="easeOut"),
+                Sequence(
+                    Wait(0.2),
+                    self.bufferViewerParent.posInterval(0.11, Vec3(30,0,0), blendType="easeOut")
+                )
             )
             self.currentGUIEffect.start()
 
         else:
+            #hide debugger
             self.currentGUIEffect = Parallel(
                 self.watermark.posInterval(
                     0.4, self.watermark.getInitialPos(), blendType="easeOut"),
@@ -236,6 +243,7 @@ class PipelineGuiManager(DebugObject):
                     blendType="easeOut"),
                 self.debuggerParent.posInterval(
                     0.3, Vec3(-350, 0, 0), blendType="easeInOut"),
+                self.bufferViewerParent.posInterval(0.15, Vec3(0,0,0), blendType="easeOut")
             )
             self.currentGUIEffect.start()
 

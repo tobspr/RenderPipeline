@@ -129,9 +129,9 @@ text-page-size 128 128
 
 show-frame-rate-meter #t
 
-texture-anisotropic-degree 2
-texture-magfilter linear
-texture-minfilter linear
+texture-anisotropic-degree 0
+# texture-magfilter linear
+# texture-minfilter linear
 
 # cache-models #f
 # texture-cache #f

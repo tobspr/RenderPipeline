@@ -12,3 +12,7 @@ class RenderTargetType:
     Aux1 = "aux1"
     Aux2 = "aux2"
     Aux3 = "aux3"
+
+    All = ["depth","color", "aux0", "aux1", "aux2", "aux3"]
+
+    
