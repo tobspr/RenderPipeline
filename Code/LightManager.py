@@ -199,7 +199,7 @@ class LightManager(DebugObject):
             # FastText only is in my personal shared directory. It's not
             # in the git-repository. So to prevent errors, this try is here.
             try:
-                from classes.FastText import FastText
+                from Code.FastText import FastText
                 self.lightsVisibleDebugText = FastText(pos=Vec2(
                     Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 1, 0), size=0.036)
                 self.lightsUpdatedDebugText = FastText(pos=Vec2(
