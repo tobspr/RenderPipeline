@@ -4,8 +4,7 @@
 
 struct ScatteringOptions {
     float radiusGround;
-    float radiusAtmosphere;
-    float radiusAtmosphere1;    
+    float radiusAtmosphere; 
     float averageGroundReflectance;
     float rayleighFactor;
     vec3 betaRayleigh;
