@@ -17,6 +17,7 @@
 #include "Includes/Material.include"
 #include "Includes/ShadowSource.include"
 #include "Includes/ColorCorrection.include"
+#include "Includes/PositionReconstruction.include"
 #include "Scattering/ScatteringOptions.include"
 
 uniform sampler2D data0;
@@ -36,8 +37,9 @@ uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS];
 in vec2 texcoord;
 
 uniform int temporalProjXOffs;
-uniform sampler2D dssdoNoiseTex;
+uniform sampler2D noiseTexture;
 
+uniform vec3 cameraPosition;
 
 // Has to be after the uniforms
 #include "Occlusion/Init.include"
@@ -178,9 +180,6 @@ void main() {
     }
 
 
-    
-    // SRGB
-    result.xyz = sqrt(result.xyz);
 
     vec3 attenuation;
     float irradianceFactor;
@@ -202,6 +201,11 @@ void main() {
         result += scatteringResult * inscatterFactor;
     #endif
 
+    
+    // SRGB
+    result.xyz = sqrt(result.xyz);
+
+
     // result = HDR(result, 1.0);
 
     result = 1.0f - exp(-1.5 * result);
@@ -218,6 +222,7 @@ void main() {
 
     #ifdef DEBUG_RM_OCCLUSION
         result = vec3(1);
+        occlusionTotal = occlusionResult;
         // occlusionTotal = 0.0;
         // result = vec3(occlusionResult);
     #endif

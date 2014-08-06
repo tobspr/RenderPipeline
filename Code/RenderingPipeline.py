@@ -5,7 +5,7 @@ import os
 from panda3d.core import TransparencyAttrib, Texture, NodePath, PTAInt
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
-from panda3d.core import PTAVecBase3f, WindowProperties, Vec4
+from panda3d.core import PTAVecBase3f, WindowProperties, Vec4, Vec2
 
 from direct.stdpy.file import open
 
@@ -227,6 +227,13 @@ class RenderingPipeline(DebugObject):
         self._attachUpdateTask()
 
 
+        print Globals.base.camLens.getFilmSize()
+        aspect = float(self.size.y) / self.size.x
+        self.halfPixelShift = Vec2(0.5 / self.size.x, 
+                                   0.5 / self.size.y * aspect)
+
+        print "Half pixel shift:", self.halfPixelShift
+        print "ASPECT:",aspect
         # display shadow atlas is defined
         # todo: move this to the gui manager
         # if self.settings.displayShadowAtlas and self.haveLightingPass:

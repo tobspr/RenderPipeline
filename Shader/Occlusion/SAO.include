@@ -3,11 +3,19 @@
 // Scalable Ambient Obscurance
 // https://gist.github.com/fisch0920/6770311
 
+#include "Includes/PositionReconstruction.include"
+
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;
 
 
 // No Occlusion
+
+// ViewProjInv
+uniform mat4 trans_mainRender_to_apiview_of_mainCam;
+
+// View
+uniform mat4 trans_apiclip_to_apiview_of_mainCam;
 
 #define OCCLUSION_RESULT_TYPE float
 #define OCCLUSION_PER_LIGHT_SEND_PARAMETERS , occlusionTotal, occlusionResult 
@@ -18,15 +26,28 @@ uniform sampler2D viewSpacePosition;
 
 
 // total number of samples at each fragment
-#define SAO_NUM_SPIRAL_TURNS      16
-#define SAO_VARIATION             1
+#define SAO_NUM_SPIRAL_TURNS      7
+#define SAO_VARIATION             0
 
-const float saoIntensity = 5.0;
-const float saoSampleRadiusWS = OCCLUSION_RADIUS * 1.0;
-const float saoBias = 0.1;
+const float saoIntensity = 50.0;
+const float saoSampleRadiusWS = 4.0;
+const float saoBias = 0.01;
+ 
+
+// reconstructs view-space unit normal from view-space position
+vec3 sao_reconstructNormalVS(vec3 positionVS) {
+  return normalize(cross(dFdx(positionVS), dFdy(positionVS)));
+}
+ 
+vec3 sao_getPositionVS2(vec2 uv) {
+  return texture(viewSpacePosition, uv).xyz;
+}
  
 vec3 sao_getPositionVS(vec2 uv) {
-  return texture(viewSpacePosition, uv).xyz;
+  float z = texture(depth, uv).r;  
+  vec3 pos = calculateSurfacePos(z, uv);
+  vec4 vsPos = trans_mainRender_to_apiview_of_mainCam * vec4(pos, 1);
+  return vsPos.xyz;
 }
  
 // returns a unit vector and a screen-space radius for the tap on a unit disk 
@@ -95,40 +116,41 @@ float sao_rand(vec2 co){
 }
 
 OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
- vec3 originVS = sao_getPositionVS(coord);
   
-  vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
-   
-  float randomPatternRotationAngle = 2.0 * M_PI * sao_rand(coord);
-    
+
+  vec3 originVS = sao_getPositionVS(coord);
+
+  // vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
+  vec3 normalVS = sao_reconstructNormalVS(originVS);
+
+
+
+  float randomPatternRotationAngle = 2.0 * M_PI * texelFetch(noiseTexture, coordInt % 4, 0).x;
+
+
   float radiusSS  = 0.0; // radius of influence in screen space
   float radiusWS  = 0.0; // radius of influence in world space
   float occlusion = 0.0;
   
-  const float saoFOV = 90.0;
-  // float projScale = 40.0;//1.0 / (2.0 * tan(uFOV * 0.5));
-  float projScale = 1.0 / (2.0 * tan(saoFOV * 0.5));
-  projScale = 500.0;
+  float projScale = 500.0;//1.0 / (2.0 * tan(uFOV * 0.5));
   radiusWS = saoSampleRadiusWS;
   radiusSS = projScale * radiusWS / abs(originVS.z);
     
- // radiusSS = -radiusSS;
-  radiusSS = min(radiusSS, 20.0);
-  // radiusSS = 0.0;
+  // return radiusSS * 0.01;
+  // radiusSS = min(max(radiusSS, 20.0), 20.0);
   
   // radiusSS = saturate(1.0 / distanceToCamera) * 250.0;
 
   // float intensity = pow(distanceToCamera, 1.3) * saoIntensity * 0.01;
   float intensity = pow(distanceToCamera, 1.05) * saoIntensity * 0.01;
+  intensity = saoIntensity;
 
   for (int i = 0; i < OCCLUSION_SAMPLES; ++i) {
-    occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, 
-                          randomPatternRotationAngle);
+    occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, randomPatternRotationAngle);
   }
   
   occlusion = 1.0 - occlusion / (4.0 * float(OCCLUSION_SAMPLES));
   occlusion = clamp(pow(occlusion, 1.0 + intensity), 0.0, 1.0);
 
   return occlusion;
-  // return 1.0;
 }

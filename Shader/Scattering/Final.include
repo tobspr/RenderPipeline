@@ -15,7 +15,7 @@ const float scatteringEpsilonInscatter = 0.001;
 vec3 scatteringTransformPosition(ScatteringOptions options, vec3 pos) {
   // return pos/options.atmosphereScale + options.atmosphereOffset;
 
-  // With this offset is in world-space
+  // With this, offset is in world-space
   return (pos-options.atmosphereOffset) / options.atmosphereScale;
 }
 

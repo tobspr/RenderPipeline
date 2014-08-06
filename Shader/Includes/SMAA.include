@@ -710,6 +710,8 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord,
 
     // Calculate lumas:
     float3 weights = float3(0.2126, 0.7152, 0.0722);
+
+
     float L = dot(SMAASamplePoint(colorTex, texcoord).rgb, weights);
 
     float Lleft = dot(SMAASamplePoint(colorTex, offset[0].xy).rgb, weights);

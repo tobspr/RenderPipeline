@@ -5,6 +5,7 @@ from ..RenderTargetType import RenderTargetType
 from BetterOnscreenImage import BetterOnscreenImage
 from BetterOnscreenText import BetterOnscreenText
 from CheckboxWithLabel import CheckboxWithLabel
+from UIWindow import UIWindow
 
 from panda3d.core import Vec3, Vec4
 from direct.gui.DirectFrame import DirectFrame
@@ -29,6 +30,11 @@ class BufferViewerGUI(DebugObject):
         self.parent.hide()
         Globals.base.accept("v", self.toggle)
 
+        self.window = UIWindow(
+            "Bufer Viewer", 1200, 700, parent) 
+
+        self.window.getNode().setPos(255, 1, -20)
+
         self.texWidth = 173
         self.texHeight = 96
         self.texPadding = 25
@@ -40,18 +46,8 @@ class BufferViewerGUI(DebugObject):
 
 
     def createComponents(self):
-
-        self.bg = DirectFrame(parent=self.parent, frameColor=(0, 0, 0, 0),
-                              frameSize=(0, 1200, -800, 0), pos=(255, 1, -20))
-        self.bgImg = BetterOnscreenImage(image="Data/GUI/BufferViewer.png",
-                                         parent=self.bg, x=0, y=0, w=1200,
-                                         h=800, transparent=True,
-                                         nearFilter=True)
-        self.buffersParent = self.bg.attachNewNode("Buffers")
-        self.buffersParent.setPos(0, 0, -50)
-
-        
-        toggleAlpha = CheckboxWithLabel(parent=self.bg, x=10, y=50, 
+        self.buffersParent = self.window.getContentNode().attachNewNode("buffers")
+        toggleAlpha = CheckboxWithLabel(parent=self.window.getContentNode(), x=10, y=10, 
             textSize=15, text="Alpha only", chbChecked=False, 
             chbCallback=self.setAlphaRendering)
 

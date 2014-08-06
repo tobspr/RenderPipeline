@@ -11,10 +11,15 @@ from direct.gui.DirectFrame import DirectFrame
 
 class UIWindow(DebugObject):
 
-    def __init__(self, title, w=100, h=100):
+    def __init__(self, title, w=100, h=100, parent=None):
         DebugObject.__init__(self, "UIWindow")
 
-        self.node = Globals.base.pixel2d.attachNewNode("Window-" + title)
+        if parent is None:
+            parent = Globals.base.pixel2d
+
+        self.node = parent.attachNewNode("Window-" + title)
+        self.parent = parent
+
         self.bgFrame = DirectFrame(parent=self.node, frameColor=(0.2,0.2,0.2,0.98), 
             frameSize=(0, w, -h, 0))
         self.titleFrame = DirectFrame(parent=self.node, frameColor=(0.35,0.56,0.19,1.0), 

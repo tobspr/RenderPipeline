@@ -7,7 +7,6 @@
 #include "Includes/PositionReconstruction.include"
 #include "Includes/PoissonDisk.include"
 
-uniform vec3 cameraPosition;
 uniform samplerCube directionToFace;
 uniform samplerCube fallbackCubemap;
 

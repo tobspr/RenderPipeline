@@ -75,8 +75,9 @@ class Main(ShowBase, DebugObject):
 
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
-        # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
+        self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
+        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -230,9 +231,12 @@ class Main(ShowBase, DebugObject):
         # self.renderPipeline.addLight(dirLight)
 
         d = Scattering()
+
+        scale = 100000
         d.setSettings({
-            "atmosphereOffset": Vec3(0, 0, 6360.0 + 9.5),
-            "atmosphereScale": Vec3(1000.0)
+            "atmosphereOffset": Vec3(0, 0, - (6360.0 + 9.5) * scale ),
+            # "atmosphereOffset": Vec3(0),
+            "atmosphereScale": Vec3(scale)
         })
 
         d.precompute()
