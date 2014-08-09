@@ -74,10 +74,10 @@ class Main(ShowBase, DebugObject):
          ####### END OF RENDER PIPELINE SETUP #######
 
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -205,7 +205,7 @@ class Main(ShowBase, DebugObject):
         contrib = 1.0
 
         # for x, y in [(-1.1, -0.9), (-1.2, 0.8), (1.3, -0.7), (1.4, 0.6)]:
-        for x in xrange(4):
+        for x in xrange(1):
             # break
         # for x,y in [(0,0)]:
             ambient = PointLight()
@@ -213,9 +213,9 @@ class Main(ShowBase, DebugObject):
 
             initialPos = Vec3(float(x - 2) * 21.0, 0, 60)
             ambient.setPos(initialPos)
-            ambient.setColor(Vec3(6.0))
-            # ambient.setShadowMapResolution(1024)
-            # ambient.setCastsShadows(True)
+            ambient.setColor(Vec3(2.0))
+            ambient.setShadowMapResolution(256)
+            ambient.setCastsShadows(True)
             self.lights.append(ambient)
             self.initialLightPos.append(initialPos)
             # ambient.attachDebugNode(render)
@@ -225,10 +225,10 @@ class Main(ShowBase, DebugObject):
             # contrib *= 0.4
             # break
 
-        dirLight = DirectionalLight()
-        dirLight.setDirection(Vec3(50, 100, 50))
-        # dirLight.setPos(Vec3(50, 100, 150))
-        dirLight.setColor(Vec3(18, 17.5, 15))
+        # dirLight = DirectionalLight()
+        # dirLight.setDirection(Vec3(50, 100, 50))
+        # # dirLight.setPos(Vec3(50, 100, 150))
+        # dirLight.setColor(Vec3(18, 17.5, 15) * 0.5)
         # self.renderPipeline.addLight(dirLight)
 
         d = Scattering()

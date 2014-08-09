@@ -291,8 +291,18 @@ class LightManager(DebugObject):
         casts shadows or the shadowmap resolution before calling this! 
         Otherwise it won't work (and maybe crash? I didn't test, 
         just DON'T DO IT!) """
-        self.lights.append(light)
+        
+        if light.attached:
+            self.warn("Light is already attached!")
+            return
+
         light.attached = True
+        self.lights.append(light)
+
+        if light.hasShadows() and not self.settings.renderShadows:
+            self.warn("Attached shadow light but shadowing is disabled in pipeline.ini")
+            light.setCastsShadows(False)
+
 
         sources = light.getShadowSources()
 

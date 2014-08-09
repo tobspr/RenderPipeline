@@ -41,18 +41,10 @@ void main() {
     vec4 sampledRoughness = texture(ROUGHNESS_TEX, vOutput.texcoord);
 
     float bumpFactor = vOutput.materialDiffuse.w;
-    bumpFactor = 0.0;
-
-
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
-
-    sampledNormal = vec4(0,0,1,1);
-    sampledSpecular = vec4(1);
-    sampledRoughness = vec4(1);
-    
-
+   
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
     detailNormal = mix(vec3(0,0,1), detailNormal, bumpFactor);
     detailNormal = normalize(detailNormal);

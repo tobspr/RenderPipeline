@@ -102,11 +102,17 @@ class Light(ShaderStructElement):
 
     def setCastsShadows(self, shadows=True):
         """ Sets wheter the light casts shadows or not """
-        self.castShadows = True
+        self.castShadows = shadows
 
         if self.castShadows:
             self._initShadowSources()
             self.shadowNeedsUpdate = True
+        else:
+            for source in self.shadowSources:
+                del source
+            self.shadowSources = []
+            self.shadowNeedsUpdate = False
+
 
     def setPos(self, pos):
         """ Sets the position of the light. Does not affect
