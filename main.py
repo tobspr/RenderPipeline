@@ -76,8 +76,8 @@ class Main(ShowBase, DebugObject):
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
-        self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
+        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -114,7 +114,8 @@ class Main(ShowBase, DebugObject):
         self.controller = MovementController(self)
         # self.controller.setInitialPosition(Vec3(-30, 30, 25), Vec3(0, 0, 0))
         self.controller.setInitialPosition(
-            Vec3(-38.8, -108.7, 38.9), Vec3(0, 0, 30))
+            # Vec3(-38.8, -108.7, 38.9), Vec3(0, 0, 30))
+            Vec3(23.6278, -52.0626, 9.021), Vec3(-30, 0, 0))
         self.controller.setup()
         # base.disableMouse()
         # base.camera.setPos(0.988176, 2.53928, 2.75053)

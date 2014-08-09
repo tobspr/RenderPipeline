@@ -50,3 +50,4 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("displayDebugStats", bool, True)
         self._addSetting("dumpGeneratedShaders", bool, False)
 
+        self._addSetting("enableTemporalReprojection", bool, True)

@@ -77,7 +77,7 @@ void main() {
     
     float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
 
-    // reliability = 1.0;
+    reliability = 0.0;
 
     ivec2 clampMax = ivec2(screenSize) - 1;
     ivec2 clampMin = ivec2(1);
@@ -96,8 +96,10 @@ void main() {
     } 
 
     vec4 lastFrameResult = texelFetch(lastFrame, screenCoord, 0);
+    result = vec4(lastComputedValue);
 
-    result = mix(result, bestLastProjected, 0.999 * (1.0-outOfScreen) * (1.0 - reliability) );
+
+    // result = mix(result, bestLastProjected, 0.999 * (1.0-outOfScreen) * (1.0 - reliability) );
 
     // result = bestLastProjected;
 

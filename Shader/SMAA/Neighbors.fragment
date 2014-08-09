@@ -7,6 +7,7 @@ in vec4 offset;
 uniform sampler2D colorTex;
 uniform sampler2D blendTex;
 uniform sampler2D edgesTex;
+uniform sampler2D velocityTex;
 
 #define SMAA_INCLUDE_VS 0
 #include "Includes/SMAA-Wrapper.include"
@@ -15,7 +16,7 @@ out vec4 result;
 
 void main() {    
     // result = vec4(1,0,0,1);
-    result = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);
+    result = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex, velocityTex);
     #ifdef DEBUG_DISABLE_ANTIALIASING
         result = texture(colorTex, texcoord);
     #endif

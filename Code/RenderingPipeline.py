@@ -113,7 +113,6 @@ class RenderingPipeline(DebugObject):
         Globals.font = loader.loadFont("Data/Font/SourceSansPro-Semibold.otf")
         Globals.font.setPixelsPerUnit(25)
 
-
         # Setting up shader loading
         BetterShader._DumpShaders = self.settings.dumpGeneratedShaders
 
@@ -124,12 +123,16 @@ class RenderingPipeline(DebugObject):
         self.motionBlurFactor = PTAFloat.emptyArray(1)
         self.lastMVP = PTALMatrix4f.emptyArray(1)
         self.currentMVP = PTALMatrix4f.emptyArray(1)
+        self.currentShiftIndex = PTAInt.emptyArray(1)
 
-        # Create onscreen gui
+        # Initialize variables
+        self.camera = self.showbase.cam
+        self.size = self._getSize()
+        self.cullBounds = None
 
         # For the temporal reprojection it is important that the window width
         # is a multiple of 2
-        if self.showbase.win.getXSize() % 2 == 1:
+        if self.settings.enableTemporalReprojection and self.size.x % 2 == 1:
             self.error(
                 "The window has to have a width which is a multiple of 2 "
                 "(Current: ", self.showbase.win.getXSize(), ")")
@@ -143,11 +146,8 @@ class RenderingPipeline(DebugObject):
             self.showbase.win.requestProperties(wp)
             self.showbase.graphicsEngine.openWindows()
 
-
-
-        self.camera = self.showbase.cam
-        self.size = self._getSize()
-        self.cullBounds = None
+            # Get new size
+            self.size = self._getSize()
 
         # Debug variables to disable specific features
         self.haveLightingPass = True
@@ -164,8 +164,7 @@ class RenderingPipeline(DebugObject):
         self.showbase.camLens.setNearFar(0.1, 50000)
         self.showbase.camLens.setFov(90)
 
-
-        self.showbase.win.setClearColor(Vec4(1.0,0.0,1.0,1.0))
+        self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
 
         # Create occlusion handler
         self._setupOcclusion()
@@ -174,10 +173,8 @@ class RenderingPipeline(DebugObject):
             self.guiManager = PipelineGuiManager(self)
             self.guiManager.setup()
 
-
         # Generate auto-configuration for shaders
         self._generateShaderConfiguration()
-
 
         # Create light manager, which handles lighting + shadows
         if self.haveLightingPass:
@@ -208,7 +205,7 @@ class RenderingPipeline(DebugObject):
         self._createLightingPipeline()
 
         # Setup combiner for temporal reprojetion
-        if self.haveCombiner:
+        if self.haveCombiner and self.settings.enableTemporalReprojection:
             self._createCombiner()
 
         if self.occlusion.requiresBlurring():
@@ -226,14 +223,27 @@ class RenderingPipeline(DebugObject):
         # add update task
         self._attachUpdateTask()
 
+        print "FilmSize:",Globals.base.camLens.getFilmSize()
 
-        print Globals.base.camLens.getFilmSize()
+        # Not sure why it has to be 0.25. But that leads to the best result
         aspect = float(self.size.y) / self.size.x
-        self.halfPixelShift = Vec2(0.5 / self.size.x, 
-                                   0.5 / self.size.y * aspect)
+        self.onePixelShift = Vec2(
+            0.125 / self.size.x, 0.125 / self.size.y / aspect)
 
-        print "Half pixel shift:", self.halfPixelShift
-        print "ASPECT:",aspect
+
+        print "OnePixelShift:",self.onePixelShift
+
+        # Annoying that Vec2 has no multliply-operator for non-floats
+        multiplyVec2 = lambda a, b: Vec2(a.x*b.x, a.y*b.y)
+
+        if self.antialias.requiresJittering():
+            self.pixelShifts = [
+                multiplyVec2(self.onePixelShift, Vec2(-0.25,  0.25)),
+                multiplyVec2(self.onePixelShift, Vec2(0.25, -0.25))
+            ]
+        else:
+            self.pixelShifts = [Vec2(0), Vec2(0)]
+
         # display shadow atlas is defined
         # todo: move this to the gui manager
         # if self.settings.displayShadowAtlas and self.haveLightingPass:
@@ -273,6 +283,8 @@ class RenderingPipeline(DebugObject):
             self.antialias = AntialiasingTechniqueNone()
         elif technique == "SMAA":
             self.antialias = AntialiasingTechniqueSMAA()
+        elif technique == "FXAA":
+            self.antialias = AntialiasingTechniqueFXAA()
         else:
             self.error(
                 "Unkown antialiasing technique", technique, "-> using None:")
@@ -282,13 +294,14 @@ class RenderingPipeline(DebugObject):
             self.antialias.setColorTexture(
                 self.blurOcclusionH.getColorTexture())
         else:
-            if self.haveCombiner:
+            if self.haveCombiner and self.settings.enableTemporalReprojection:
                 self.antialias.setColorTexture(self.combiner.getColorTexture())
             else:
                 self.antialias.setColorTexture(
-                    self.deferredTarget.getColorTexture())
+                    self.lightingComputeContainer.getColorTexture())
 
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
+        self.antialias.setVelocityTexture(self.deferredTarget.getAuxTexture(1))
         self.antialias.setup()
 
     def _setupOcclusion(self):
@@ -436,8 +449,15 @@ class RenderingPipeline(DebugObject):
         if self.occlusion.requiresBlurring() and self.haveCombiner:
             self.blurOcclusionH.setShaderInput(
                 "colorTex", self.blurOcclusionV.getColorTexture())
-            self.blurOcclusionV.setShaderInput(
-                "colorTex", self.combiner.getColorTexture())
+
+            if self.settings.enableTemporalReprojection:
+                self.blurOcclusionV.setShaderInput(
+                    "colorTex", self.combiner.getColorTexture())
+            else:
+                self.blurOcclusionV.setShaderInput(
+                    "colorTex",
+                    self.lightingComputeContainer.getColorTexture())
+
             self.blurOcclusionH.setShaderInput(
                 "normalTex", self.deferredTarget.getAuxTexture(0))
             self.blurOcclusionV.setShaderInput(
@@ -461,7 +481,7 @@ class RenderingPipeline(DebugObject):
                                            self.blurColorH.getColorTexture())
 
         # Shader inputs for the temporal reprojection
-        if self.haveCombiner:
+        if self.haveCombiner and self.settings.enableTemporalReprojection:
             self.combiner.setShaderInput(
                 "currentComputation",
                 self.lightingComputeContainer.getColorTexture())
@@ -517,11 +537,17 @@ class RenderingPipeline(DebugObject):
             self.deferredTarget.setShaderInput(
                 "lastFrame", self.lightingComputeCombinedTex)
 
-        if self.haveCombiner:
+        if self.haveCombiner and self.settings.enableTemporalReprojection:
             self.deferredTarget.setShaderInput(
                 "newFrame", self.combiner.getColorTexture())
             self.deferredTarget.setShaderInput(
                 "lastPosition", self.lastPositionBuffer)
+
+            self.deferredTarget.setShaderInput("debugTex",
+                                               self.combiner.getColorTexture())
+        else:
+            self.deferredTarget.setShaderInput("debugTex",
+                                               self.antialias.getResultTexture())
 
         self.deferredTarget.setShaderInput(
             "currentPosition", self.deferredTarget.getColorTexture())
@@ -563,23 +589,25 @@ class RenderingPipeline(DebugObject):
     def _makeLightingComputeBuffer(self):
         """ Creates the buffer which applies the lighting """
         self.lightingComputeContainer = RenderTarget("ComputeLighting")
-        self.lightingComputeContainer.setSize(
-            self.showbase.win.getXSize() / 2,  self.showbase.win.getYSize())
+
+        if self.settings.enableTemporalReprojection:
+            self.lightingComputeContainer.setSize(self.size.x / 2, self.size.y)
+        else:
+            self.lightingComputeContainer.setSize(self.size.x, self.size.y)
+
         self.lightingComputeContainer.addColorTexture()
         self.lightingComputeContainer.setColorBits(16)
         self.lightingComputeContainer.prepareOffscreenBuffer()
 
         self.lightingComputeCombinedTex = Texture("Lighting-Compute-Combined")
         self.lightingComputeCombinedTex.setup2dTexture(
-            self.showbase.win.getXSize(), self.showbase.win.getYSize(),
-            Texture.TFloat, Texture.FRgba8)
+            self.size.x, self.size.y, Texture.TFloat, Texture.FRgba8)
         self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
         self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
 
         self.lastPositionBuffer = Texture("Last-Position-Buffer")
         self.lastPositionBuffer.setup2dTexture(
-            self.showbase.win.getXSize(), self.showbase.win.getYSize(),
-            Texture.TFloat, Texture.FRgba16)
+            self.size.x, self.size.y, Texture.TFloat, Texture.FRgba16)
         self.lastPositionBuffer.setMinfilter(Texture.FTNearest)
         self.lastPositionBuffer.setMagfilter(Texture.FTNearest)
 
@@ -629,7 +657,7 @@ class RenderingPipeline(DebugObject):
         don't recompute it each pass """
         self.dofStorage = Texture("DOFStorage")
         self.dofStorage.setup2dTexture(
-            self.showbase.win.getXSize(), self.showbase.win.getYSize(),
+            self.size.x, self.size.y,
             Texture.TFloat, Texture.FRg16)
 
     def _setOcclusionBlurShader(self):
@@ -698,7 +726,7 @@ class RenderingPipeline(DebugObject):
             self._setPositionComputationShader()
             self._setLightingShader()
 
-        if self.haveCombiner:
+        if self.haveCombiner and self.settings.enableTemporalReprojection:
             self._setCombinerShader()
 
         self._setFinalPassShader()
@@ -725,7 +753,11 @@ class RenderingPipeline(DebugObject):
         """ Attaches the update tasks to the showbase """
 
         self.showbase.addTask(
+            self._preRenderCallback, "PreRender", sort=-5000)
+
+        self.showbase.addTask(
             self._update, "UpdateRenderingPipeline", sort=-10)
+
 
         if self.haveLightingPass:
             self.showbase.addTask(
@@ -736,6 +768,27 @@ class RenderingPipeline(DebugObject):
         if self.settings.displayOnscreenDebugger:
             self.showbase.addTask(
                 self._updateGUI, "UpdateGUI", sort=7)
+
+        self.showbase.addTask(
+            self._postRenderCallback, "PosRender", sort=5000)
+
+
+    def _preRenderCallback(self, task=None):
+        """ Called before rendering """
+
+        self.antialias.preRenderUpdate()
+
+        if task is not None:
+            return task.cont
+
+    def _postRenderCallback(self, task=None):
+        """ Called after rendering """
+
+        self.antialias.postRenderUpdate()
+
+        if task is not None:
+            return task.cont
+
 
     def _computeCameraBounds(self):
         """ Computes the current camera bounds, i.e. for light culling """
@@ -764,6 +817,12 @@ class RenderingPipeline(DebugObject):
 
     def _update(self, task=None):
         """ Main update task """
+
+        self.currentShiftIndex[0] = 1 - self.currentShiftIndex[0]
+
+        # Reset first
+        # Globals.base.camLens.setFilmOffset(0, 0)
+
         currentFPS = 1.0 / self.showbase.taskMgr.globalClock.getDt()
 
         self.temporalProjXOffs[0] = 1 - self.temporalProjXOffs[0]
@@ -778,6 +837,9 @@ class RenderingPipeline(DebugObject):
 
         self.lastMVP[0] = self.currentMVP[0]
         self.currentMVP[0] = self._computeMVP()
+
+        shift = self.pixelShifts[self.currentShiftIndex[0]]
+        Globals.base.camLens.setFilmOffset(shift.x, shift.y)
 
         if task is not None:
             return task.cont
@@ -879,8 +941,8 @@ class RenderingPipeline(DebugObject):
         if self.settings.useHardwarePCF:
             defines.append(("USE_HARDWARE_PCF", 1))
 
-        defines.append(("WINDOW_WIDTH", self.showbase.win.getXSize()))
-        defines.append(("WINDOW_HEIGHT", self.showbase.win.getYSize()))
+        defines.append(("WINDOW_WIDTH", self.size.x))
+        defines.append(("WINDOW_HEIGHT", self.size.y))
 
         if self.settings.motionBlurEnabled:
             defines.append(("USE_MOTION_BLUR", 1))
@@ -904,6 +966,8 @@ class RenderingPipeline(DebugObject):
             extraSettings = self.guiManager.getDefines()
             defines += extraSettings
 
+        if self.settings.enableTemporalReprojection:
+            defines.append(("USE_TEMPORAL_REPROJECTION", 1))
 
         # Pass near far
         defines.append(("CAMERA_NEAR", Globals.base.camLens.getNear()))

@@ -1,5 +1,7 @@
 
 #define SMAA_GLSL_4
+#define SMAA_REPROJECTION 1
+
 
 #include "Includes/Configuration.include"
 

@@ -1,6 +1,11 @@
 
 
 
+#include "Includes/Configuration.include"
+
+#ifdef USE_TEMPORAL_REPROJECTION
+
+
 uniform sampler2D newFrame;
 uniform sampler2D currentPosition;
 layout(rgba8) uniform image2D lastFrame;
@@ -12,3 +17,12 @@ void storeTemporalReprojection(ivec2 coord) {
     imageStore(lastFrame, coord, newFrameVal);
     imageStore(lastPosition, coord, newPosVal);
 }
+
+
+#else
+
+void storeTemporalReprojection(ivec2 coord) {
+    // EMPTY
+}
+
+#endif

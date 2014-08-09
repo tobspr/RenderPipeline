@@ -18,9 +18,16 @@ uniform sampler2D colorTex;
 
 uniform float motionBlurFactor;
 
+uniform sampler2D debugTex;
+
 out vec3 result;
 
 void main() {
+
+    #if 1
+        result = texture(debugTex, texcoord).rgb;
+        return;
+    #endif
 
     // Fetch screen size, so we don't have to pass it as a shader input
     ivec2 screenSize = textureSize(colorTex, 0);

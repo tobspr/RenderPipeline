@@ -16,7 +16,8 @@ class MovementController:
         self.lastMousePos = [0,0]
         self.mouseSensivity = 0.7
         self.keyboardHprSpeed = 0.8
-        self.smoothness = 0.7
+        # self.smoothness = 0.7
+        self.smoothness = 0.0
 
 
     def setInitialPosition(self, pos, target):
@@ -165,8 +166,8 @@ class MovementController:
 
 
         self.velocity += translatedDirection*0.15
-        self.velocity *= self.smoothness*0.19 + 0.8
-  
+        # self.velocity *= self.smoothness*0.19 + 0.8
+        self.velocity *= self.smoothness  + 0.5
 
         # apply new position
         self.showbase.camera.setPos(

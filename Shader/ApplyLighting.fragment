@@ -36,7 +36,12 @@ uniform Light lights[MAX_VISIBLE_LIGHTS];
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 in vec2 texcoord;
 
-uniform int temporalProjXOffs;
+
+#ifdef USE_TEMPORAL_REPROJECTION
+    uniform int temporalProjXOffs;
+#endif
+
+
 uniform sampler2D noiseTexture;
 
 uniform vec3 cameraPosition;
@@ -66,6 +71,8 @@ void main() {
 
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
+
+    #ifdef USE_TEMPORAL_REPROJECTION
     ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x + 1 , screenSize.y)); 
 
     // Shift x by 1 for temporal reprojection
@@ -74,8 +81,14 @@ void main() {
     // as you otherwise can see the line-pattern very obviously. Using
     // a checkerboard more gives a dithering effect, which is barely visible
     screenCoord.x += (screenCoord.x + screenCoord.y) % 2 == temporalProjXOffs ? -1 : 0;
-
     vec2 correctTexcoord = (vec2(screenCoord)+0.5) / vec2(screenSize);
+
+    #else
+
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+    vec2 correctTexcoord = texcoord;
+
+    #endif
 
     ivec2 precomputeCoord = ivec2( vec2(screenCoord) / 
         vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y) ) * 8;
