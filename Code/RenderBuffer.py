@@ -274,8 +274,15 @@ class RenderBuffer(DebugObject):
 
         self.debug("our sort value is", self._sort)
         self._internalBuffer.setSort(self._sort)
+
+
         self._internalBuffer.disableClears()
         self._internalBuffer.getDisplayRegion(0).disableClears()
+        
+        for i in xrange(16):
+            self._internalBuffer.setClearActive(i, False)
+            self._internalBuffer.getDisplayRegion(0).setClearActive(i, False)
+
         self._internalBuffer.setClearStencilActive(False)
 
         if self.hasTarget(RenderTargetType.Depth):

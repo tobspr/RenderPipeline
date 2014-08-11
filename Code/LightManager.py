@@ -171,10 +171,12 @@ class LightManager(DebugObject):
         # self.shadowComputeTarget.setClearDepth(False)
         # self.shadowComputeTarget.setClearColor(False)
 
-        self.shadowComputeTarget.getInternalRegion().disableClears()
-        self.shadowComputeTarget.getInternalBuffer().disableClears()
-        self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).disableClears()
-        self.shadowComputeTarget.getRegion().disableClears()
+        for i in xrange(16):
+            self.shadowComputeTarget.getInternalRegion().setClearActive(i, False)
+            self.shadowComputeTarget.getInternalBuffer().setClearActive(i, False)
+            self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(0).setClearActive(i, False)
+            self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).setClearActive(i, False)
+            self.shadowComputeTarget.getRegion().setClearActive(i, False)
 
         # for i in xrange(16):
         #     self.shadowComputeTarget.getRegion().setClearActive(i, False)
