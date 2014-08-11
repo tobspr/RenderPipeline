@@ -111,6 +111,8 @@ class LightManager(DebugObject):
 
         self.lightingComputator = None
         self.lightCuller = None
+        self.skip = 0
+        self.skipRate = 0
 
     def _createTagStates(self):
         # Create shadow caster shader
@@ -147,7 +149,7 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.addColorTexture()
-        # self.shadowComputeTarget.addAuxTextures(3)
+        self.shadowComputeTarget.addAuxTextures(1)
         self.shadowComputeTarget.setAuxBits(16)
         self.shadowComputeTarget.setColorBits(16)
         self.shadowComputeTarget.setDepthBits(32)
@@ -156,36 +158,18 @@ class LightManager(DebugObject):
 
         self.shadowComputeTarget.prepareSceneRender()
 
-        # We have to adjust the sort
-        # self.shadowComputeTarget.getInternalRegion().setSort(200)
-        # self.shadowComputeTarget.getInternalBuffer().setSort(200)
-        self.shadowComputeTarget.getRegion().setSort(-199)
-        # self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(0).setSort(210)
-        # self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).setSort(-200)
+        # This took me a long time to figure out. If not removing the quad
+        # children, the color and aux buffers will be overridden each frame.
+        # Quite annoying!
+        self.shadowComputeTarget.getQuad().node().removeAllChildren()
+        self.shadowComputeTarget.getInternalRegion().setSort(200)
 
         self.shadowComputeTarget.getInternalRegion().setNumRegions(
             self.maxShadowUpdatesPerFrame + 1)
+        self.shadowComputeTarget.getInternalRegion().setDimensions(0,
+             (0, 0, 0, 0))
 
-        # The first viewport always has to be fullscreen
-        self.shadowComputeTarget.getInternalRegion().setDimensions(
-            0, (0, 1, 0, 1))
-        # self.shadowComputeTarget.setClearColor(False)
-
-        for i in xrange(16):
-            self.shadowComputeTarget.getInternalRegion().setClearActive(i, False)
-            self.shadowComputeTarget.getInternalBuffer().setClearActive(i, False)
-            self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(0).setClearActive(i, False)
-            self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).setClearActive(i, False)
-            self.shadowComputeTarget.getRegion().setClearActive(i, False)
-            self.shadowComputeCamera.getDisplayRegion(0).setClearActive(i, False)
-
-            # Globals.base.win.setClearActive(i, False)
-            # Globals.base.camNode.getDisplayRegion(0).setClearActive(i, False)
-
-
-        # for i in xrange(16):
-        #     self.shadowComputeTarget.getRegion().setClearActive(i, False)
-        #     self.shadowComputeTarget.getRegion().setClearValue(i, Vec4(1))
+        self.shadowComputeTarget.getInternalBuffer().setSort(100)
 
         # We can't clear the depth per viewport.
         # But we need to clear it in any way, as we still want
@@ -197,16 +181,14 @@ class LightManager(DebugObject):
         for i in range(self.maxShadowUpdatesPerFrame):
             buff = self.shadowComputeTarget.getInternalBuffer()
             dr = buff.makeDisplayRegion()
-            dr.setSort(-170)
-            dr.setClearColorActive(True)
-            # dr.setClearColor(Vec4(0,0,1,1))
-            for i in xrange(16):
-                dr.setClearActive(i, False)
-                dr.setClearValue(i, Vec4(1,0,1,1))
+            dr.setSort(150)
+            for k in xrange(16):
+                dr.setClearActive(k, True)
+                dr.setClearValue(k, Vec4(0,0,0,1))
 
             dr.setClearDepthActive(True)
             dr.setClearDepth(1.0)
-            dr.setDimensions(0, 0, 0, 0)
+            dr.setDimensions(0,0,0,0)
             dr.setActive(False)
             self.depthClearer.append(dr)
 
@@ -444,7 +426,6 @@ class LightManager(DebugObject):
             renderedDL_S = "Directional:" + \
                 str(self.numRenderedLights["DirectionalLightShadow"][0])
 
-
             self.lightsVisibleDebugText.setText(
                 'Lights: ' + renderedPL + " / " + renderedDL + " Shadowed: " + renderedPL_S + " / " + renderedDL_S)
 
@@ -452,17 +433,25 @@ class LightManager(DebugObject):
         """ This is one of the two per-frame-tasks. See class description
         to see what it does """
 
+        # First, disable all clearers
+        for clearer in self.depthClearer:
+            clearer.setActive(False)
+
+        if self.skip > 0:
+            self.shadowComputeTarget.setActive(False)
+            self.numShadowUpdatesPTA[0] = 0
+            self.skip -= 1
+            return
+
+        self.skip = self.skipRate
+
         # Process shadows
         queuedUpdateLen = len(self.queuedShadowUpdates)
 
         # Compute shadow updates
         numUpdates = 0
         last = "[ "
-
-        # First, disable all clearers
-        for clearer in self.depthClearer:
-            clearer.setActive(False)
-
+   
         # Callbacks from last frame
         for callback in self.updateCallbacks:
             callback.onUpdated()
@@ -538,7 +527,7 @@ class LightManager(DebugObject):
                 self.depthClearer[numUpdates].setActive(True)
 
                 self.shadowComputeTarget.getInternalRegion().setDimensions(
-                    numUpdates + 1, (atlasPos.x, atlasPos.x + texScale,
+                    numUpdates+1, (atlasPos.x, atlasPos.x + texScale,
                                      atlasPos.y, atlasPos.y + texScale))
                 numUpdates += 1
 
@@ -549,7 +538,7 @@ class LightManager(DebugObject):
                 self.updateCallbacks.append(update)
 
                 # Only add the uid to the output if the max updates
-                # aren't too much. Otherwise we spam the screen :P
+                # aren't too much. Otherwise we spam the screen
                 if self.maxShadowUpdatesPerFrame <= 8:
                     last += str(update.getUid()) + " "
 

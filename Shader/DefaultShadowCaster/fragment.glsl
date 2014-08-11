@@ -14,6 +14,7 @@ out vec4 diffuse;
 out vec4 pixelNormal;
 
 void main() {
+    // discard;
     diffuse.rgb = texture(p3d_Texture0, texcoord).rgb;
     pixelNormal.rgb = normal.rgb*0.25 + 0.5;
 

@@ -162,4 +162,4 @@ model-cache-textures #f
 notify-level-pnmimage error
 
 
-show-buffers #t
+show-buffers #f

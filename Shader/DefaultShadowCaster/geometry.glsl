@@ -24,6 +24,7 @@ void main() {
     ShadowSource currentSource = updateSources[pass];
     mat4 mvp = currentSource.mvp;
     gl_ViewportIndex = pass + 1;
+    // gl_ViewportIndex = 0;
     for(int i=0; i<3; i++)
     {
       gl_Position = mvp * gl_in[i].gl_Position;

@@ -75,7 +75,7 @@ void main() {
       // Read RSM
       vec3 diffuse = texture(atlasColor, atlasCoord).rgb;
 
-      // Normal is packed
+      // Normal is stored packed
       vec3 normal = texture(atlasNormal, atlasCoord).rgb*4.0 - 2.0;
 
       resultNormal += normal;

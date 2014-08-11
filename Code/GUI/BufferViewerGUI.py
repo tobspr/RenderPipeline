@@ -150,7 +150,7 @@ class BufferViewerGUI(DebugObject):
                 txtName = BetterOnscreenText(
                     text=name, x=0, y=0, size=15, parent=node)
                 txtSizeFormat = BetterOnscreenText(
-                    text=sizeStr + " " + sortStr, x=0, y=20, size=15, parent=node, color=Vec3(0.2))
+                    text=sizeStr, x=0, y=20, size=15, parent=node, color=Vec3(0.2))
                 txtTarget = BetterOnscreenText(
                     text=str(targetType), align="right", x=self.texWidth, y=20, size=15, parent=node, color=Vec3(0.2))
 
