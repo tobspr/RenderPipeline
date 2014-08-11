@@ -120,7 +120,7 @@ gl-force-no-error #t
 gl-check-errors #f
 gl-force-no-flush #t
 gl-force-no-scissor #t
-gl-debug #t
+gl-debug #f
 
 # gl-enable-memory-barriers #f
 
@@ -160,6 +160,4 @@ model-cache-dir $USER_APPDATA/Panda3D-1.9/cache
 model-cache-textures #f
 
 notify-level-pnmimage error
-
-
 show-buffers #f
