@@ -168,7 +168,8 @@ class RenderingPipeline(DebugObject):
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
 
         # Create GI handleer
-        self._setupGlobalIllumination()
+        if self.settings.enableGlobalIllumination:
+            self._setupGlobalIllumination()
 
         # Create occlusion handler
         self._setupOcclusion()
@@ -562,6 +563,10 @@ class RenderingPipeline(DebugObject):
         # Set last / current mvp handles
         self.showbase.render.setShaderInput("lastMVP", self.lastMVP)
 
+        # Set GI inputs
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum.bindTo(self.lightingComputeContainer)
+
         # Finally, set shaders
         self.reloadShaders()
 
@@ -748,7 +753,9 @@ class RenderingPipeline(DebugObject):
             self._setNormalExtractShader()
 
         self.antialias.reloadShader()
-        self.globalIllum.reloadShader()
+        
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum.reloadShader()
 
     def _setNormalExtractShader(self):
         """ Sets the shader which constructs the normals from position """
@@ -784,7 +791,9 @@ class RenderingPipeline(DebugObject):
     def _preRenderCallback(self, task=None):
         """ Called before rendering """
 
-        self.globalIllum.process()
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum.process()
+        
         self.antialias.preRenderUpdate()
 
         if task is not None:
@@ -977,6 +986,9 @@ class RenderingPipeline(DebugObject):
 
         if self.settings.enableTemporalReprojection:
             defines.append(("USE_TEMPORAL_REPROJECTION", 1))
+
+        if self.settings.enableGlobalIllumination:
+            defines.append(("USE_GLOBAL_ILLUMINATION", 1))
 
         # Pass near far
         defines.append(("CAMERA_NEAR", Globals.base.camLens.getNear()))

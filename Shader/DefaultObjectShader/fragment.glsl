@@ -49,7 +49,7 @@ void main() {
     detailNormal = mix(vec3(0,0,1), detailNormal, bumpFactor);
     detailNormal = normalize(detailNormal);
 
-    vec3 normal = vOutput.normalWorld;
+    vec3 normal = normalize(vOutput.normalWorld);
     vec3 tangent; vec3 binormal;
     reconstructTanBin(tangent, binormal);
 

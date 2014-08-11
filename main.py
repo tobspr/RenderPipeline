@@ -74,10 +74,10 @@ class Main(ShowBase, DebugObject):
          ####### END OF RENDER PIPELINE SETUP #######
 
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -231,15 +231,15 @@ class Main(ShowBase, DebugObject):
             Vec3(63.6877, 29.0491, 33.3335)
         ]
 
-        vplHelpLights = [
-            Vec3(5,5,5),
-            Vec3(-5,-5,5)
-        ]
+        # vplHelpLights = [
+        #     Vec3(5,5,15),
+        #     Vec3(-5,-5,15)
+        # ]
 
-        dPos = Vec3(0, 30 ,200)
+        dPos = Vec3(0, 0 ,200)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(512)
+        dirLight.setShadowMapResolution(4096 + 1024)
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(18, 17.5, 15) * 0.5)
@@ -249,7 +249,7 @@ class Main(ShowBase, DebugObject):
 
         for pos in vplHelpLights:
             helpLight = PointLight()
-            helpLight.setRadius(10)
+            helpLight.setRadius(100)
             helpLight.setPos(pos)
             helpLight.setColor(Vec3(0))
             helpLight.setShadowMapResolution(512)
@@ -271,17 +271,11 @@ class Main(ShowBase, DebugObject):
 
         d.precompute()
 
-        # hack in for testing
+        # hack in scattering for testing
         self.renderPipeline.lightingComputeContainer.setShaderInput(
             "transmittanceSampler", d.getTransmittanceResult())
         self.renderPipeline.lightingComputeContainer.setShaderInput(
             "inscatterSampler", d.getInscatterTexture())
-
-        # hack in GI
-        self.renderPipeline.globalIllum.setLightSource(dirLight)
-        # self.renderPipeline.lightingComputeContainer.setShaderInput(
-        #     "giGrid", self.renderPipeline.globalIllum.vplStorage)
-        self.renderPipeline.globalIllum.bindTo(self.renderPipeline.lightingComputeContainer)
 
         self.skybox = None
         self.loadSkybox()
@@ -386,7 +380,7 @@ class Main(ShowBase, DebugObject):
         # time.sleep(-0.2)
         # return task.cont
 
-        if True:
+        if False:
             animationTime = self.taskMgr.globalClock.getFrameTime() * 1.0
 
             # displace every light every frame - performance test!

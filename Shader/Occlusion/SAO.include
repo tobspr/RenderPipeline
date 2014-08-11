@@ -29,9 +29,10 @@ uniform mat4 trans_apiclip_to_apiview_of_mainCam;
 #define SAO_NUM_SPIRAL_TURNS      7
 #define SAO_VARIATION             0
 
-const float saoIntensity = 0.05;
-const float saoSampleRadiusWS = 1.0;
-const float saoBias = 0.1;
+const float saoIntensity = 0.5;
+const float saoConstIntensity = 0.5;
+const float saoSampleRadiusWS = 2.0;
+const float saoBias = 0.2;
  
 
 // reconstructs view-space unit normal from view-space position
@@ -132,12 +133,12 @@ OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanc
   float radiusWS  = 0.0; // radius of influence in world space
   float occlusion = 0.0;
   
-  float projScale = 500.0;//1.0 / (2.0 * tan(uFOV * 0.5));
+  float projScale = 200.0;//1.0 / (2.0 * tan(uFOV * 0.5));
   radiusWS = saoSampleRadiusWS;
   radiusSS = projScale * radiusWS / abs(originVS.z);
     
   // return radiusSS * 0.01;
-  // radiusSS = min(max(radiusSS, 20.0), 20.0);
+  radiusSS = min(radiusSS, 20.0);
   
   // radiusSS = saturate(1.0 / distanceToCamera) * 250.0;
 
@@ -149,7 +150,7 @@ OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanc
     occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, randomPatternRotationAngle);
   }
   
-  occlusion = 1.0 - occlusion / (4.0 * float(OCCLUSION_SAMPLES));
+  occlusion = 1.0 - occlusion / (4.0 * float(OCCLUSION_SAMPLES)) * saoConstIntensity;
   occlusion = clamp(pow(occlusion, 1.0 + intensity), 0.0, 1.0);
 
   return occlusion;

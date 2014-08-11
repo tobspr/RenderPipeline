@@ -184,7 +184,7 @@ class LightManager(DebugObject):
             dr.setSort(150)
             for k in xrange(16):
                 dr.setClearActive(k, True)
-                dr.setClearValue(k, Vec4(0,0,0,1))
+                dr.setClearValue(k, Vec4(0.5,0.5,0.5,1))
 
             dr.setClearDepthActive(True)
             dr.setClearDepth(1.0)

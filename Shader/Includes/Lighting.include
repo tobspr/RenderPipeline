@@ -163,11 +163,9 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
 
-    // float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
-    float pixOffset = 2.0 / SHADOW_MAP_ATLAS_SIZE;
+
+    float pixOffset = 2.5 / SHADOW_MAP_ATLAS_SIZE;
     // float baseBias = 0.0002;
-
-
 
     // pixOffset = 0.0;
     #define SHADOWS_NUM_SAMPLES 16

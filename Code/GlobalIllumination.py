@@ -22,7 +22,7 @@ class GlobalIllumnination(DebugObject):
         """ Setups everything for the GI to work """
         self.debug("Setup ..")
 
-        self.cascadeSize = 128
+        self.cascadeSize = 32
 
         self.sourcesData = PTAVecBase4f.emptyArray(32)
         self.mvpData = PTAMat4.emptyArray(32)
@@ -81,33 +81,16 @@ class GlobalIllumnination(DebugObject):
         self._createPopulateShader()
         self._createSpreadLightingShader()
 
-    def setLightSource(self, light):
-
-        if light._getLightType() is not LightType.Directional:
-            self.error("GI is only supported for directional lights")
-            return
-
-        if not light.hasShadows():
-            self.error("The directional light needs to have shadows")
-            return
-
-        self.debug("Light source is", light)
-        self.source = light
-
     def process(self):
 
-        # if self.delay > 0:
-        #     self.delay -= 1
-        #     return
-
-        # self.delay = 1
+        # TODO: Split work over frames
+        # TODO: Not all shader inputs need to be set everytime. Use PTAs instead
 
         # Get handle to the atlas textures
         atlas = self.pipeline.getLightManager().shadowComputeTarget
         atlasDepth = atlas.getDepthTexture()
         atlasColor = atlas.getColorTexture()
-        # atlasNormal = atlas.getAuxTexture(0)
-        atlasNormal = atlas.getColorTexture()
+        atlasNormal = atlas.getAuxTexture(0)
         atlasSize = atlasDepth.getXSize()
 
         allLights = self.pipeline.getLightManager().getAllLights()
@@ -132,11 +115,6 @@ class GlobalIllumnination(DebugObject):
             self.mvpData[index] = UnalignedLMatrix4f(caster.mvp)
 
 
-
-        projMat = self.source.shadowSources[0].mvp
-
-
-
         # Clear VPL temp storage first
         self.clearTextureNode.setShaderInput("target", self.vplStorageTemp)
         self.clearTextureNode.setShaderInput("clearValue", Vec4(0, 0, 0, 1))
@@ -146,7 +124,6 @@ class GlobalIllumnination(DebugObject):
         self.populateVPLNode.setShaderInput("atlasDepth", atlasDepth)
         self.populateVPLNode.setShaderInput("atlasColor", atlasColor)
         self.populateVPLNode.setShaderInput("atlasNormal", atlasNormal)
-        self.populateVPLNode.setShaderInput("lightDirection", self.source.position)
         self.populateVPLNode.setShaderInput("gridStart", self.gridStart)
         self.populateVPLNode.setShaderInput("gridEnd", self.gridEnd)
         self.populateVPLNode.setShaderInput("gridSize", LVecBase3i(self.cascadeSize))
@@ -154,9 +131,6 @@ class GlobalIllumnination(DebugObject):
         self.populateVPLNode.setShaderInput("lightCount", len(casters))
         self.populateVPLNode.setShaderInput("lightMVPData", self.mvpData)
         self.populateVPLNode.setShaderInput("lightData", self.sourcesData)
-
-
-        self.populateVPLNode.setShaderInput("sourceMVP", Mat4(projMat))
         self.populateVPLNode.setShaderInput("target", self.vplStorage)
         self.populateVPLNode.setShaderInput("targetColor", self.colorStorage)
 
@@ -166,7 +140,7 @@ class GlobalIllumnination(DebugObject):
         
         # Spread lighting
         
-        for i in xrange(1):
+        for i in xrange(32):
             self.spreadLightingNode.setShaderInput("source", self.vplStorage)
             self.spreadLightingNode.setShaderInput("sourceColor", self.colorStorage)
             self.spreadLightingNode.setShaderInput("target", self.vplStorageTemp)

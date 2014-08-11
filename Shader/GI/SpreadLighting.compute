@@ -20,7 +20,7 @@ ivec2 convertCoords(ivec3 src) {
 }
 
 
-const float bounceFactor = 0.0;
+const float bounceFactor = 0.3;
 const float intensityMultiplier = 1.0;
 
 void main() {
@@ -34,12 +34,8 @@ void main() {
   vec4 colorResult = sampleCenterColor * (1.0-bounceFactor);
   vec4 normalResult = sampleCenter * (1.0-bounceFactor);
 
-  bool needsAverageNormal = false;
-
-  // when no normal stored yet
-  if (length(normalResult.xyz) <= 0.1) {
-    // normalResult.xyz = vec3(0,0,0);
-    // needsAverageNormal = true;
+  if (length(normalResult.xyx) < 0.1) {
+    normalResult.xyz = vec3(0,0,1);
   }
 
   ivec3 directions[6] = ivec3[6](
@@ -50,71 +46,47 @@ void main() {
       ivec3(1,0,0),
       ivec3(-1,0,0)
     );
+
   const int numDirections = 6; 
 
-  vec4 averageNormal = vec4(0);
-
-
-  if (needsAverageNormal) {
-
-    for (int i = 0; i < numDirections; i++) {
-      ivec3 dir = directions[i];
-      ivec2 coords = convertCoords(texelCoords + dir);
-      vec4 sampleNormal = texelFetch(source, coords, 0);
-      vec4 sampleColor = texelFetch(sourceColor, coords, 0);
-
-      if (length(sampleNormal.xyz) > 0.0) {
-        // normalResult.xyz += sampleNormal.xyz;
-        // colorResult.xyz+=sampleColor.xyz;
-        // normalResult.xyz = normalize(normalResult.xyz);
-
-        // not accurate, but works pretty well
-        // colorResult.xyz = normalize(colorResult.xyz);
-        
-      }
-
-    }
-
-    // normalResult.xyz = vec3(1,0,0);
-  }  else {
-
-  #if 0
+  #if 1
   for (int i = 0; i < numDirections; i++) {
     ivec3 dir = directions[i];
     ivec2 coords = convertCoords(texelCoords + dir);
     vec4 sampleNormal = texelFetch(source, coords, 0);
     vec4 sampleColor = texelFetch(sourceColor, coords, 0);
 
-
-    vec3 localNormal = normalize(sampleNormal.xyz);
-    float localFactor = max(0.1, dot(sampleNormal.xyz, localNormal));
+    float localFactor = max(0.0, min(0.3, dot(sampleNormal.xyz, normalResult.xyz)));
 
     float impact = 1.0;
 
-    // localFactor = 1.0 / 5.98;
+    // localFactor = 0.8;
+    localFactor = 1.0 / 5.99;
     // localFactor *= 0.44;
     // localFactor *= 0.15; 
-    localFactor *= 0.6;
-    // localFactor *= 0.71;
+    // localFactor *= 0.6;
 
-    // localFactor = 1.0 / 5.9;
+    // localFactor *= 0.19;
+    // localFactor *= 0.19;
+    // localFactor *= 0.175;
+
+    // localFactor = 0.165;
 
     localFactor *= (1.0 + intensityMultiplier*0.03);
 
     colorResult += sampleColor / impact * bounceFactor * localFactor;
     // normalResult += sampleNormal / impact * bounceFactor * localFactor;
-      averageNormal += sampleNormal;
 
   }
 
   #endif
-  }
+  // }
 
+  normalResult = normalize(normalResult);
 
+  // colorResult.xyz = normalResult.xyz;
 
-  // colorResult.xyz = normalRresult.xyz;
-
-  colorResult.xyz = normalResult.xyz;
+  // colorResult.xyz = normalResult.xyz;
 
   imageStore(target, storeCoord, normalResult);
   imageStore(targetColor, storeCoord, colorResult);

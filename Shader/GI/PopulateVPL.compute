@@ -15,10 +15,7 @@ uniform sampler2D atlasColor;
 uniform sampler2D atlasNormal;
 uniform vec3 gridStart;
 uniform vec3 gridEnd;
-uniform vec3 lightDirection;
 uniform ivec3 gridSize;
-uniform mat4 sourceMVP;
- 
 uniform writeonly image2D target;
 uniform writeonly image2D targetColor;
 
@@ -70,21 +67,26 @@ void main() {
 
       // Shadowed?
       float sampledZ = texture(atlasDepth, atlasCoord.xy).x;
-      float shadowFactor = step(projCoord.z - 0.002, sampledZ);
+      float sampleDifference = sampledZ - projCoord.z;
+      float shadowFactor = 1.0 - step(sampleDifference, -0.005);
 
       // Read RSM
       vec3 diffuse = texture(atlasColor, atlasCoord).rgb;
 
       // Normal is stored packed
       vec3 normal = texture(atlasNormal, atlasCoord).rgb*4.0 - 2.0;
-
-      resultNormal += normal;
-      resultNormal = normalize(resultNormal);
-      resultColor += diffuse * shadowFactor;
-      resultShadowFactor += shadowFactor;
+      
+      // if ( impactFactor < 0.5) {
+        resultNormal += normal;
+        resultNormal = normalize(resultNormal);
+        resultColor += diffuse * shadowFactor * impactFactor;
+        resultShadowFactor += shadowFactor;
+      // }
     }
   }
 
-  imageStore(target, storeCoord, vec4(resultNormal, 1.0) );
+  // resultColor *= 0.2;
+
+  imageStore(target, storeCoord, vec4(abs(resultNormal), 1.0) );
   imageStore(targetColor, storeCoord, vec4(resultColor, 1.0) );
 }

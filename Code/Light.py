@@ -143,8 +143,6 @@ class Light(ShaderStructElement):
         if not self.castShadows:
             return False
 
-        self.queueShadowUpdate()
-
         for source in self.shadowSources:
             if not source.isValid():
                 return True
