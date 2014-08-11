@@ -249,7 +249,7 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
 
     def requiresJittering(self):
         """ For SMAA T2 """
-        return True
+        return False
 
     def preRenderUpdate(self):
         """ Selects the correct buffers """

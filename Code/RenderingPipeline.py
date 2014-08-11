@@ -838,9 +838,6 @@ class RenderingPipeline(DebugObject):
 
         self.currentShiftIndex[0] = 1 - self.currentShiftIndex[0]
 
-        # Reset first
-        # Globals.base.camLens.setFilmOffset(0, 0)
-
         currentFPS = 1.0 / self.showbase.taskMgr.globalClock.getDt()
 
         self.temporalProjXOffs[0] = 1 - self.temporalProjXOffs[0]

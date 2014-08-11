@@ -20,7 +20,7 @@ ivec2 convertCoords(ivec3 src) {
 }
 
 
-const float bounceFactor = 0.3;
+const float bounceFactor = 0.5;
 const float intensityMultiplier = 1.0;
 
 void main() {

@@ -12,8 +12,9 @@ in vec3 p3d_Normal;
 
 in vec2 p3d_MultiTexCoord0;
 
+
 // Outputs
-layout(location=0) out VertexOutput vOutput;
+out VertexOutput vOutput;
 
 // We get the material info from panda as a struct
 struct PandaMaterial {
@@ -22,14 +23,10 @@ struct PandaMaterial {
     vec4 ambient;
 };
 uniform PandaMaterial p3d_Material;
-
 uniform mat4 p3d_ModelViewProjectionMatrix;
 
 // We need this for the velocity
 uniform mat4 lastMVP;
-
-uniform mat3 p3d_NormalMatrix;
-
 
 void main() {
 

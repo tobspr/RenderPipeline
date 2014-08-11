@@ -74,10 +74,10 @@ class Main(ShowBase, DebugObject):
          ####### END OF RENDER PIPELINE SETUP #######
 
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -100,7 +100,9 @@ class Main(ShowBase, DebugObject):
         # self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
-        # self.convertToPatches(self.scene)
+
+        # Required for tesselation
+        self.convertToPatches(self.scene)
         # self.scene.flattenStrong()
 
         self.scene.reparentTo(self.render)
@@ -236,11 +238,11 @@ class Main(ShowBase, DebugObject):
         #     Vec3(-5,-5,15)
         # ]
 
-        dPos = Vec3(0, 0 ,200)
+        dPos = Vec3(0, 80 ,200)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
         dirLight.setShadowMapResolution(4096 + 1024)
-        dirLight.setCastsShadows(True)
+        # dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(18, 17.5, 15) * 0.5)
         self.renderPipeline.addLight(dirLight)
@@ -253,12 +255,10 @@ class Main(ShowBase, DebugObject):
             helpLight.setPos(pos)
             helpLight.setColor(Vec3(0))
             helpLight.setShadowMapResolution(512)
-            helpLight.setCastsShadows(True)
+            # helpLight.setCastsShadows(True)
             self.renderPipeline.addLight(helpLight)
             self.initialLightPos.append(pos)
             self.lights.append(helpLight)
-
-
 
         d = Scattering()
 
@@ -354,7 +354,7 @@ class Main(ShowBase, DebugObject):
         # return
         if self.renderPipeline:
             self.scene.setShader(
-                self.renderPipeline.getDefaultObjectShader(False))
+                self.renderPipeline.getDefaultObjectShader(True))
             self.renderPipeline.reloadShaders()
 
         if self.skybox:

@@ -430,7 +430,6 @@ class RenderTarget(DebugObject):
 
         clears = []
 
-        print "Correct clears"
         for i in range(GraphicsOutput.RTPCOUNT):
             active, value = self._sourceWindow.getClearActive(
                 i), self._sourceWindow.getClearValue(i)
@@ -439,7 +438,6 @@ class RenderTarget(DebugObject):
                 active, value = self._region.getClearActive(
                     i), self._region.getClearValue(i)
 
-            print i," => ", active, "value=",value
             region.setClearActive(i, active)
             region.setClearValue(i, value)
 
