@@ -147,20 +147,21 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.addColorTexture()
-        self.shadowComputeTarget.addAuxTextures(1)
+        # self.shadowComputeTarget.addAuxTextures(3)
         self.shadowComputeTarget.setAuxBits(16)
         self.shadowComputeTarget.setColorBits(16)
         self.shadowComputeTarget.setDepthBits(32)
         self.shadowComputeTarget.setSource(
             self.shadowComputeCameraNode, Globals.base.win)
+
         self.shadowComputeTarget.prepareSceneRender()
 
         # We have to adjust the sort
-        self.shadowComputeTarget.getInternalRegion().setSort(200)
+        # self.shadowComputeTarget.getInternalRegion().setSort(200)
         # self.shadowComputeTarget.getInternalBuffer().setSort(200)
-        self.shadowComputeTarget.getRegion().setSort(199)
-        self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(0).setSort(210)
-        self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).setSort(100)
+        self.shadowComputeTarget.getRegion().setSort(-199)
+        # self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(0).setSort(210)
+        # self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).setSort(-200)
 
         self.shadowComputeTarget.getInternalRegion().setNumRegions(
             self.maxShadowUpdatesPerFrame + 1)
@@ -168,7 +169,6 @@ class LightManager(DebugObject):
         # The first viewport always has to be fullscreen
         self.shadowComputeTarget.getInternalRegion().setDimensions(
             0, (0, 1, 0, 1))
-        # self.shadowComputeTarget.setClearDepth(False)
         # self.shadowComputeTarget.setClearColor(False)
 
         for i in xrange(16):
@@ -177,6 +177,12 @@ class LightManager(DebugObject):
             self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(0).setClearActive(i, False)
             self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).setClearActive(i, False)
             self.shadowComputeTarget.getRegion().setClearActive(i, False)
+            self.shadowComputeCamera.getDisplayRegion(0).setClearActive(i, False)
+
+            # Globals.base.win.setClearActive(i, False)
+            # Globals.base.camNode.getDisplayRegion(0).setClearActive(i, False)
+        for window in base.win.graphicsEngine.getWindows():
+            print window
 
         # for i in xrange(16):
         #     self.shadowComputeTarget.getRegion().setClearActive(i, False)
@@ -192,11 +198,11 @@ class LightManager(DebugObject):
         for i in range(self.maxShadowUpdatesPerFrame):
             buff = self.shadowComputeTarget.getInternalBuffer()
             dr = buff.makeDisplayRegion()
-            dr.setSort(170)
+            dr.setSort(-170)
             dr.setClearColorActive(True)
             # dr.setClearColor(Vec4(0,0,1,1))
             for i in xrange(16):
-                dr.setClearActive(i, True)
+                dr.setClearActive(i, False)
                 dr.setClearValue(i, Vec4(1,0,1,1))
 
             dr.setClearDepthActive(True)
@@ -526,15 +532,15 @@ class LightManager(DebugObject):
                     float(self.shadowAtlas.getSize())
 
                 atlasPos = update.getAtlasPos()
-                left, right = atlasPos.x, (atlasPos.x + texScale*0.5)
-                bottom, top = atlasPos.y, (atlasPos.y + texScale*0.5)
+                left, right = atlasPos.x, (atlasPos.x + texScale)
+                bottom, top = atlasPos.y, (atlasPos.y + texScale)
                 self.depthClearer[numUpdates].setDimensions(
                     left, right, bottom, top)
                 self.depthClearer[numUpdates].setActive(True)
 
                 self.shadowComputeTarget.getInternalRegion().setDimensions(
-                    numUpdates + 1, (atlasPos.x, atlasPos.x + texScale*0.5,
-                                     atlasPos.y, atlasPos.y + texScale*0.5))
+                    numUpdates + 1, (atlasPos.x, atlasPos.x + texScale,
+                                     atlasPos.y, atlasPos.y + texScale))
                 numUpdates += 1
 
                 # Finally, we can tell the update it's valid now.

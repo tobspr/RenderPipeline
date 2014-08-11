@@ -106,7 +106,8 @@ class GlobalIllumnination(DebugObject):
         atlas = self.pipeline.getLightManager().shadowComputeTarget
         atlasDepth = atlas.getDepthTexture()
         atlasColor = atlas.getColorTexture()
-        atlasNormal = atlas.getAuxTexture(0)
+        # atlasNormal = atlas.getAuxTexture(0)
+        atlasNormal = atlas.getColorTexture()
         atlasSize = atlasDepth.getXSize()
 
         allLights = self.pipeline.getLightManager().getAllLights()

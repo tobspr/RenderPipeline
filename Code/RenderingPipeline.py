@@ -334,10 +334,12 @@ class RenderingPipeline(DebugObject):
             self.deferredTarget.setColorBits(16)
             self.deferredTarget.setDepthBits(32)
 
+
         # GL_INVALID_OPERATION ?
         # self.deferredTarget.setMultisamples(1)
 
         self.deferredTarget.prepareSceneRender()
+        # self.deferredTarget.setClearColor(False)
 
     def _setupFinalPass(self):
         """ Setups the final pass which applies motion blur and so on """
