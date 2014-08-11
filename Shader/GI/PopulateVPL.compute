@@ -1,0 +1,90 @@
+#version 430
+
+// * Unkown algorithm name*
+// developed by tobspr
+
+#include "Includes/Configuration.include"
+
+#include "Includes/Packing.include"
+
+layout (local_size_x = 4, local_size_y = 4, local_size_z=4) in;
+
+
+uniform sampler2D atlasDepth;
+uniform sampler2D atlasColor;
+uniform sampler2D atlasNormal;
+uniform vec3 gridStart;
+uniform vec3 gridEnd;
+uniform vec3 lightDirection;
+uniform ivec3 gridSize;
+uniform mat4 sourceMVP;
+ 
+uniform writeonly image2D target;
+uniform writeonly image2D targetColor;
+
+
+#define MAX_SOURCE_COUNT 32
+
+uniform int lightCount;
+uniform mat4 lightMVPData[MAX_SOURCE_COUNT];
+uniform vec4 lightData[MAX_SOURCE_COUNT];
+
+void main() {
+
+  // TODO: Optimize
+
+  // Get coords
+  ivec3 texelCoords = ivec3(gl_GlobalInvocationID.xyz);
+  ivec2 storeCoord = texelCoords.xy + ivec2(texelCoords.z*gridSize.x, 0);
+
+  vec3 localCoords = (vec3(texelCoords)) / vec3(gridSize);
+  vec3 worldCoords = (localCoords * (gridEnd-gridStart)) + gridStart;
+
+  // In this variables the resulting normals and diffuse is stored
+  vec3 resultNormal = vec3(0);
+  vec3 resultColor = vec3(0);
+  float resultShadowFactor = 0.0;
+
+  // Process each shadow source, to get as many accurate normals as possible
+  for (int i = 0; i < min(lightCount, MAX_SOURCE_COUNT); i++) {
+
+    vec4 data = lightData[i];
+    mat4 mvp = lightMVPData[i];
+
+    // Unpack data
+    float impactFactor = data.w;
+    vec2 sourceAtlasPos = data.xy;
+    float sourceAtlasScale = data.z; 
+
+    // Shadow projection
+    vec4 projected = mvp * vec4(worldCoords, 1);
+    vec3 projCoord = projected.xyz / projected.w;
+    projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
+
+    // Clamp to borders
+    if (all(greaterThan(projCoord.xy, vec2(0.0))) &&
+        all(lessThan(projCoord.xy, vec2(1.0))) ) {
+
+      // Convert 0..1 coord to atlas space coord
+      vec2 atlasCoord = projCoord.xy*sourceAtlasScale + sourceAtlasPos;
+
+      // Shadowed?
+      float sampledZ = texture(atlasDepth, atlasCoord.xy).x;
+      float shadowFactor = step(projCoord.z - 0.002, sampledZ);
+
+      // Read RSM
+      vec3 diffuse = texture(atlasColor, atlasCoord).rgb;
+
+      // Normal is packed
+      vec3 normal = texture(atlasNormal, atlasCoord).rgb*4.0 - 2.0;
+
+      resultNormal += normal;
+      resultNormal = normalize(resultNormal);
+      resultColor += diffuse * shadowFactor;
+      resultShadowFactor += shadowFactor;
+    }
+  }
+
+  imageStore(target, storeCoord, vec4(resultNormal, 1.0) );
+  imageStore(targetColor, storeCoord, vec4(resultColor, 1.0) );
+}

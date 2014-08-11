@@ -74,10 +74,10 @@ class Main(ShowBase, DebugObject):
          ####### END OF RENDER PIPELINE SETUP #######
 
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -206,12 +206,12 @@ class Main(ShowBase, DebugObject):
 
         # for x, y in [(-1.1, -0.9), (-1.2, 0.8), (1.3, -0.7), (1.4, 0.6)]:
         for x in xrange(1):
-            # break
+            break
         # for x,y in [(0,0)]:
             ambient = PointLight()
             ambient.setRadius(120.0)
 
-            initialPos = Vec3(float(x - 2) * 21.0, 0, 60)
+            initialPos = Vec3(float(x - 2) * 21.0, 0, 90)
             ambient.setPos(initialPos)
             ambient.setColor(Vec3(2.0))
             ambient.setShadowMapResolution(256)
@@ -225,11 +225,40 @@ class Main(ShowBase, DebugObject):
             # contrib *= 0.4
             # break
 
-        # dirLight = DirectionalLight()
-        # dirLight.setDirection(Vec3(50, 100, 50))
-        # # dirLight.setPos(Vec3(50, 100, 150))
-        # dirLight.setColor(Vec3(18, 17.5, 15) * 0.5)
-        # self.renderPipeline.addLight(dirLight)
+
+        vplHelpLights = [
+            Vec3(-66.1345, -22.2243, 33.5399),
+            Vec3(63.6877, 29.0491, 33.3335)
+        ]
+
+        vplHelpLights = [
+            Vec3(5,5,5),
+            Vec3(-5,-5,5)
+        ]
+
+        dPos = Vec3(0, 30 ,200)
+        dirLight = DirectionalLight()
+        dirLight.setDirection(dPos)
+        dirLight.setShadowMapResolution(512)
+        dirLight.setCastsShadows(True)
+        dirLight.setPos(dPos)
+        dirLight.setColor(Vec3(18, 17.5, 15) * 0.5)
+        self.renderPipeline.addLight(dirLight)
+        self.initialLightPos.append(dPos)
+        self.lights.append(dirLight)
+
+        for pos in vplHelpLights:
+            helpLight = PointLight()
+            helpLight.setRadius(10)
+            helpLight.setPos(pos)
+            helpLight.setColor(Vec3(0))
+            helpLight.setShadowMapResolution(512)
+            helpLight.setCastsShadows(True)
+            self.renderPipeline.addLight(helpLight)
+            self.initialLightPos.append(pos)
+            self.lights.append(helpLight)
+
+
 
         d = Scattering()
 
@@ -248,6 +277,12 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.lightingComputeContainer.setShaderInput(
             "inscatterSampler", d.getInscatterTexture())
 
+        # hack in GI
+        self.renderPipeline.globalIllum.setLightSource(dirLight)
+        # self.renderPipeline.lightingComputeContainer.setShaderInput(
+        #     "giGrid", self.renderPipeline.globalIllum.vplStorage)
+        self.renderPipeline.globalIllum.bindTo(self.renderPipeline.lightingComputeContainer)
+
         self.skybox = None
         self.loadSkybox()
 
@@ -256,6 +291,11 @@ class Main(ShowBase, DebugObject):
 
         d.bindTo(
             self.renderPipeline.lightingComputeContainer, "scatteringOptions")
+
+        # yaxis = loader.loadModel("zup-axis.egg")
+        # yaxis.reparentTo(render)
+        
+
 
     def toggleSceneWireframe(self):
         self.sceneWireframe = not self.sceneWireframe
@@ -342,11 +382,11 @@ class Main(ShowBase, DebugObject):
 
         # Simulate 30 FPS
         # import time
-        # time.sleep( max(0.0, 0.033))
+        # time.sleep( 0.2)
         # time.sleep(-0.2)
         # return task.cont
 
-        if False:
+        if True:
             animationTime = self.taskMgr.globalClock.getFrameTime() * 1.0
 
             # displace every light every frame - performance test!

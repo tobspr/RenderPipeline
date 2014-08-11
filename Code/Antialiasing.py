@@ -237,7 +237,7 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
 
         self._neighborBuffers = []
         for i in xrange(2):
-            self._neighborBuffers.append(RenderTarget("SMAA-Neighbors"))
+            self._neighborBuffers.append(RenderTarget("SMAA-Neighbors-" + str(i)))
             self._neighborBuffers[i].addRenderTexture(RenderTargetType.Color)
             self._neighborBuffers[i].prepareOffscreenBuffer()
 

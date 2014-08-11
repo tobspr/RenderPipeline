@@ -145,7 +145,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         and filmSize. The filmSize is a tuple in the format
         (filmWidth, filmHeight) in world space. """
         # self.debug("setupOrtographicLens(",near,",",far,",",filmSize,")")
-        self.lens = OrtographicLens()
+        self.lens = OrthographicLens()
         self.lens.setNearFar(near, far)
         self.lens.setFilmSize(*filmSize)
         self.camera.setLens(self.lens)
@@ -188,3 +188,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
     def __repr__(self):
         """ Returns a representative string of this instance """
         return "ShadowSource[id=" + str(self.index) + "]"
+
+    def onUpdated(self):
+        """ Gets called when shadow sources was updated """
+        pass

@@ -1,0 +1,121 @@
+#version 430
+
+// * Unkown algorithm name*
+// developed by tobspr
+
+
+#include "Includes/Packing.include"
+
+layout (local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+uniform sampler2D source;
+uniform sampler2D sourceColor;
+uniform writeonly image2D target;
+uniform writeonly image2D targetColor;
+uniform ivec3 gridSize; 
+
+
+ivec2 convertCoords(ivec3 src) {
+  return clamp(src.xy, ivec2(0), gridSize.xy-1) + ivec2(clamp(src.z, 0, gridSize.z-1)*gridSize.x, 0);
+}
+
+
+const float bounceFactor = 0.0;
+const float intensityMultiplier = 1.0;
+
+void main() {
+
+  ivec3 texelCoords = ivec3(gl_GlobalInvocationID.xyz);
+  ivec2 storeCoord = convertCoords(texelCoords);
+
+  vec4 sampleCenter      = texelFetch(source, storeCoord, 0);
+  vec4 sampleCenterColor = texelFetch(sourceColor, storeCoord, 0);
+
+  vec4 colorResult = sampleCenterColor * (1.0-bounceFactor);
+  vec4 normalResult = sampleCenter * (1.0-bounceFactor);
+
+  bool needsAverageNormal = false;
+
+  // when no normal stored yet
+  if (length(normalResult.xyz) <= 0.1) {
+    // normalResult.xyz = vec3(0,0,0);
+    // needsAverageNormal = true;
+  }
+
+  ivec3 directions[6] = ivec3[6](
+      ivec3(0,0,1),
+      ivec3(0,0,-1),
+      ivec3(0,1,0),
+      ivec3(0,-1,0),
+      ivec3(1,0,0),
+      ivec3(-1,0,0)
+    );
+  const int numDirections = 6; 
+
+  vec4 averageNormal = vec4(0);
+
+
+  if (needsAverageNormal) {
+
+    for (int i = 0; i < numDirections; i++) {
+      ivec3 dir = directions[i];
+      ivec2 coords = convertCoords(texelCoords + dir);
+      vec4 sampleNormal = texelFetch(source, coords, 0);
+      vec4 sampleColor = texelFetch(sourceColor, coords, 0);
+
+      if (length(sampleNormal.xyz) > 0.0) {
+        // normalResult.xyz += sampleNormal.xyz;
+        // colorResult.xyz+=sampleColor.xyz;
+        // normalResult.xyz = normalize(normalResult.xyz);
+
+        // not accurate, but works pretty well
+        // colorResult.xyz = normalize(colorResult.xyz);
+        
+      }
+
+    }
+
+    // normalResult.xyz = vec3(1,0,0);
+  }  else {
+
+  #if 0
+  for (int i = 0; i < numDirections; i++) {
+    ivec3 dir = directions[i];
+    ivec2 coords = convertCoords(texelCoords + dir);
+    vec4 sampleNormal = texelFetch(source, coords, 0);
+    vec4 sampleColor = texelFetch(sourceColor, coords, 0);
+
+
+    vec3 localNormal = normalize(sampleNormal.xyz);
+    float localFactor = max(0.1, dot(sampleNormal.xyz, localNormal));
+
+    float impact = 1.0;
+
+    // localFactor = 1.0 / 5.98;
+    // localFactor *= 0.44;
+    // localFactor *= 0.15; 
+    localFactor *= 0.6;
+    // localFactor *= 0.71;
+
+    // localFactor = 1.0 / 5.9;
+
+    localFactor *= (1.0 + intensityMultiplier*0.03);
+
+    colorResult += sampleColor / impact * bounceFactor * localFactor;
+    // normalResult += sampleNormal / impact * bounceFactor * localFactor;
+      averageNormal += sampleNormal;
+
+  }
+
+  #endif
+  }
+
+
+
+  // colorResult.xyz = normalRresult.xyz;
+
+  colorResult.xyz = normalResult.xyz;
+
+  imageStore(target, storeCoord, normalResult);
+  imageStore(targetColor, storeCoord, colorResult);
+}

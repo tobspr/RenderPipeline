@@ -36,8 +36,7 @@ class Light(ShaderStructElement):
         self.sourceIndexes = PTAInt.emptyArray(6)
         self.attached = False
         self.shadowResolution = 512
-        self.ambient = Vec3(0.2,0.5,0.8)
-
+        self.ambient = Vec3(0.2, 0.5, 0.8)
 
         for i in range(6):
             self.sourceIndexes[i] = -1
@@ -82,8 +81,9 @@ class Light(ShaderStructElement):
         comes from. If your sun comes from totally above for example, this vector would
         be (0.0,0.0,1.0). The vector will get normalized, so you can for example pass your
         sun position. Only affects DirectionalLights """
-        direction.normalize()
-        self.direction = direction
+        copied = Vec3(direction)
+        copied.normalize()
+        self.direction = copied
         self.queueUpdate()
         self.queueShadowUpdate()
 
@@ -112,7 +112,6 @@ class Light(ShaderStructElement):
                 del source
             self.shadowSources = []
             self.shadowNeedsUpdate = False
-
 
     def setPos(self, pos):
         """ Sets the position of the light. Does not affect
@@ -143,6 +142,8 @@ class Light(ShaderStructElement):
         # no update needed if we have no shadows
         if not self.castShadows:
             return False
+
+        self.queueShadowUpdate()
 
         for source in self.shadowSources:
             if not source.isValid():

@@ -24,7 +24,7 @@ out vec3 result;
 
 void main() {
 
-    #if 1
+    #if 0
         result = texture(debugTex, texcoord).rgb;
         return;
     #endif
@@ -44,10 +44,10 @@ void main() {
             / 255.0 * motionBlurFactor * 1.2;
     // vec2 pixelVelocity = vec2(0.0);
 
-
-    vec2 redAbVector = vec2(0.5,0) / screenSize;
+    float chromaticFactor = (distance(vec2(0.5), texcoord*vec2(1.2,1))-0.2) * 2.0;
+    vec2 redAbVector = vec2(chromaticFactor,0) / screenSize;
     vec2 greenAbVector = vec2(0);
-    vec2 blueAbVector = vec2(-0.5,0) / screenSize;
+    vec2 blueAbVector = vec2(-chromaticFactor,0) / screenSize;
 
 
     #ifdef DEBUG_DISABLE_COLOR_CORRECTION
@@ -84,7 +84,7 @@ void main() {
         #endif
 
         if (velStrength < 0.00001) {
-                result = textureLod(colorTex, texcoord, 0).rgb;
+                // result = textureLod(colorTex, texcoord, 0).rgb;
         }
 
     #else
@@ -98,7 +98,7 @@ void main() {
 
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
         vec3 colorCorrected = convertColorSpace(result);
-        result = mix( colorCorrected , result, 0.5);
+        result = mix( colorCorrected , result, 0.7);
     #endif
 
     

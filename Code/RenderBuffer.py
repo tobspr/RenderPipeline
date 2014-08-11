@@ -192,10 +192,8 @@ class RenderBuffer(DebugObject):
 
         # Set aux bits
         if self.hasTarget(RenderTargetType.Aux0) and auxIsFloat:
-
             # FRAMEBUFFER INCOMPLETE when using this to render to a 3d texture
             # bufferProps.setAuxFloat(True)
-
             pass
 
         # Set depth bits and depth texture format
@@ -211,14 +209,17 @@ class RenderBuffer(DebugObject):
         numAuxtex = 0
 
         # Python really needs switch()
+        # FIXME: Why is it 2 when only 1 AUX texture is attached?!
         if self.hasTarget(RenderTargetType.Aux3):
-            numAuxtex = 4
+            numAuxtex = 3
         elif self.hasTarget(RenderTargetType.Aux2):
             numAuxtex = 3
         elif self.hasTarget(RenderTargetType.Aux1):
             numAuxtex = 2
         elif self.hasTarget(RenderTargetType.Aux0):
             numAuxtex = 1
+
+        self.debug("Num Auxtex=", numAuxtex)
 
         # Add aux textures (either 8 or 16 bit)
         if auxIsFloat:
@@ -272,12 +273,9 @@ class RenderBuffer(DebugObject):
         self._sort = -200 + RenderBuffer.numBuffersAllocated*10
 
         self.debug("our sort value is", self._sort)
-
         self._internalBuffer.setSort(self._sort)
-
         self._internalBuffer.disableClears()
         self._internalBuffer.getDisplayRegion(0).disableClears()
-
         self._internalBuffer.setClearStencilActive(False)
 
         if self.hasTarget(RenderTargetType.Depth):

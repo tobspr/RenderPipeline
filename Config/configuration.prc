@@ -160,3 +160,6 @@ model-cache-dir $USER_APPDATA/Panda3D-1.9/cache
 model-cache-textures #f
 
 notify-level-pnmimage error
+
+
+show-buffers #f

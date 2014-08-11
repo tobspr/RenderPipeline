@@ -140,6 +140,59 @@ vec2 getShadowOffsets(vec3 N, vec3 L) {
 }
 
 
+
+float computeShadowsForSource(ShadowSource source, Material material, vec3 n, vec3 l, 
+    float slopeScaledBias, float normalScaledBias, float baseBias) {
+
+    vec2 offsets = getShadowOffsets(n, l);
+    vec3 biasedPos = material.position;
+    float resFactor = 1024.0 / float(source.resolution);
+    float baseShift = 0.3;
+
+    biasedPos += baseShift * l * offsets.x * slopeScaledBias;
+    biasedPos += baseShift * n * offsets.y * normalScaledBias;
+
+    vec4 projected = source.mvp * vec4(biasedPos, 1);
+    resFactor = min(resFactor, 1.0);
+
+    // Parabolic transform
+    // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
+    // projected = projected * 0.5 + 0.5;    
+
+    vec3 projCoord = projected.xyz / projected.w;
+    projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
+    vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
+
+    // float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
+    float pixOffset = 2.0 / SHADOW_MAP_ATLAS_SIZE;
+    // float baseBias = 0.0002;
+
+
+
+    // pixOffset = 0.0;
+    #define SHADOWS_NUM_SAMPLES 16
+
+    // apply point light shadows
+    float shadowFactor = 0.0;
+    for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
+
+        vec2 offset = poissonDisk16[i] * pixOffset;
+
+        #if USE_HARDWARE_PCF
+            // Notice: when using opengl 4.1+, it has to be texture(xxx).r 
+            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) );
+            shadowFactor += (1.0 - sampled);
+        #else
+            float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
+            shadowFactor += step(sampled, projCoord.z - baseBias);
+        #endif
+    }
+    shadowFactor /= SHADOWS_NUM_SAMPLES;
+
+    return shadowFactor;
+}
+
+
 vec3 applyPointLightWithShadow(Light light, Material material
     OCCLUSION_PER_LIGHT_RECV_PARAMETERS ) {
 
@@ -162,45 +215,47 @@ vec3 applyPointLightWithShadow(Light light, Material material
 
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
-    vec2 offsets = getShadowOffsets(n, l);
-    vec3 biasedPos = material.position;
-    float resFactor = 1024.0 / float(currentSource.resolution);
-    float baseShift = 0.3;
+    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 1.0, 1.0, 0.0002);
 
-    biasedPos += baseShift * l * offsets.x;
-    biasedPos += baseShift * n * offsets.y;
+    // vec2 offsets = getShadowOffsets(n, l);
+    // vec3 biasedPos = material.position;
+    // float resFactor = 1024.0 / float(currentSource.resolution);
+    // float baseShift = 0.3;
 
-    vec4 projected = currentSource.mvp * vec4(biasedPos, 1);
+    // biasedPos += baseShift * l * offsets.x;
+    // biasedPos += baseShift * n * offsets.y;
 
-    resFactor = min(resFactor, 1.0);
+    // vec4 projected = currentSource.mvp * vec4(biasedPos, 1);
 
-    // Parabolic transform
-    // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
-    // projected = projected * 0.5 + 0.5;    
+    // resFactor = min(resFactor, 1.0);
 
-    vec3 projCoord = projected.xyz / projected.w;
-    projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
-    vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
+    // // Parabolic transform
+    // // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
+    // // projected = projected * 0.5 + 0.5;    
 
-    float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
-    float baseBias = 0.0002;
+    // vec3 projCoord = projected.xyz / projected.w;
+    // projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
+    // vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
 
-    // apply point light shadows
-    float shadowFactor = 0.0;
-    for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
+    // float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
+    // float baseBias = 0.0002;
 
-        vec2 offset = poissonDisk16[i] * pixOffset;
+    // // apply point light shadows
+    // float shadowFactor = 0.0;
+    // for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
 
-        #if USE_HARDWARE_PCF
-            // Notice: when using opengl 4.1+, it has to be texture(xxx).r 
-            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) );
-            shadowFactor += (1.0 - sampled);
-        #else
-            float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
-            shadowFactor += step(sampled, projCoord.z - baseBias);
-        #endif
-    }
-    shadowFactor /= SHADOWS_NUM_SAMPLES;
+    //     vec2 offset = poissonDisk16[i] * pixOffset;
+
+    //     #if USE_HARDWARE_PCF
+    //         // Notice: when using opengl 4.1+, it has to be texture(xxx).r 
+    //         float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) );
+    //         shadowFactor += (1.0 - sampled);
+    //     #else
+    //         float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
+    //         shadowFactor += step(sampled, projCoord.z - baseBias);
+    //     #endif
+    // }
+    // shadowFactor /= SHADOWS_NUM_SAMPLES;
 
     // Apply shadows
     rawLighting *= max(0.0, 1.0 - shadowFactor);
@@ -228,5 +283,36 @@ vec3 applyDirectionalLight(Light light, Material material
 
     vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
     return computeLightModel(light, material, l,v, n, h, attenuation) + ambientContribution;
+}
+
+vec3 applyDirectionalLightWithShadow(Light light, Material material, vec3 shAmbient
+    OCCLUSION_PER_LIGHT_RECV_PARAMETERS ) {
+
+    float distanceToLight = distance(material.position, light.position);   
+    float distanceRelative = distanceToLight / light.radius; 
+    float attenuation = 1.0;
+
+    vec3  l = light.direction;
+    vec3  v = normalize(cameraPosition - material.position);
+    vec3  n = normalize(material.normal);
+    vec3  h = normalize(l + v);
+
+APPLY_OCCLUSION();
+
+    int shadowSourceIndex = light.sourceIndexes[0];
+    ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
+
+    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.0, 0.0, 0.0001);
+
+    vec3 rawLighting = computeLightModel(light, material, l,v, n, h, attenuation);
+    // Apply shadows
+    rawLighting *= max(0.0, 1.0 - shadowFactor);
+
+
+
+
+    // vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
+    vec3 ambientContribution = 0.1 * material.baseColor * mix(shAmbient, light.ambient, 0.5) * attenuation;
+    return rawLighting + ambientContribution;
 }
 

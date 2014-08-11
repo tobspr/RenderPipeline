@@ -1,0 +1,13 @@
+#version 430
+
+// This shader simply clears a texture to a given value
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+uniform writeonly image2D target;
+uniform vec4 clearValue;
+ 
+void main() {
+  ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
+  imageStore(target, texelCoords, clearValue);
+}

@@ -38,6 +38,9 @@ const mat3 rgbToYCbCr = mat3(
 );
 
 
+#ifndef NO_EXTENDED_PACKING
+
+
 
 
 // IEEE 754 half-precision binary floating-point format
@@ -94,3 +97,5 @@ vec3 unpackColor(vec2 pack) {
 
     return rgb;
 }
+
+#endif

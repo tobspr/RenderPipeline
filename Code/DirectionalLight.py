@@ -1,10 +1,11 @@
 
+from panda3d.core import OmniBoundingVolume, Vec3
+
 from Light import Light
 from DebugObject import DebugObject
-from panda3d.core import OmniBoundingVolume
 from LightType import LightType
 from NoSenseException import NoSenseException
-
+from ShadowSource import ShadowSource
 
 class DirectionalLight(Light, DebugObject):
 
@@ -44,10 +45,6 @@ class DirectionalLight(Light, DebugObject):
         """ This makes no sense, as a directional light has no radius """
         raise NoSenseException("DirectionalLight has no radius")
 
-    def setPos(self, x):
-        """ This makes no sense, as a directional light has no position """
-        raise NoSenseException("DirectionalLight has no position")
-
     def _computeAdditionalData(self):
         """ The directional light has no additional data (yet) to pass to the
         shaders """
@@ -57,12 +54,20 @@ class DirectionalLight(Light, DebugObject):
         does nothing """
 
     def _initShadowSources(self):
-        """ Shadows aren't supported for directional lights (yet), so this does
-        nothing """
+        """ pass """
+
+        source = ShadowSource()
+        source.setupOrtographicLens(
+            1.0, 1000.0, (120, 120))
+        source.setResolution(self.shadowResolution)
+        self._addShadowSource(source)
 
     def _updateShadowSources(self):
         """ Shadows aren't supported for directional lights (yet), so this does
         nothing """
+
+        self.shadowSources[0].setPos(self.position)
+        self.shadowSources[0].lookAt(Vec3(0,0,0))
 
     def __repr__(self):
         """ Generates a representative string for this object """

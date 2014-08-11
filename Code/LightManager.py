@@ -1,7 +1,7 @@
 
 from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, RenderState
 from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
-from panda3d.core import OmniBoundingVolume, PTAInt
+from panda3d.core import OmniBoundingVolume, PTAInt, Vec4
 
 from Light import Light
 from DebugObject import DebugObject
@@ -59,6 +59,7 @@ class LightManager(DebugObject):
         self.shadowSources = []
         self.queuedShadowUpdates = []
         self.allLightsArray = ShaderStructArray(Light, self.maxTotalLights)
+        self.updateCallbacks = []
 
         self.cullBounds = None
         self.shadowScene = Globals.render
@@ -82,11 +83,12 @@ class LightManager(DebugObject):
 
         # Create the initial shadow state
         self.shadowComputeCamera.setTagStateKey("ShadowPassShader")
-        self.shadowComputeCamera.setInitialState(RenderState.make(
-            ColorWriteAttrib.make(ColorWriteAttrib.C_off),
-            DepthWriteAttrib.make(DepthWriteAttrib.M_on),
+        # self.shadowComputeCamera.setInitialState(RenderState.make(
+            # ColorWriteAttrib.make(ColorWriteAttrib.C_off),
+            # ColorWriteAttrib.make(ColorWriteAttrib.C_rgb),
+            # DepthWriteAttrib.make(DepthWriteAttrib.M_on),
             # CullFaceAttrib.make(CullFaceAttrib.MCullNone),
-            100))
+            # 100))
 
         self._createTagStates()
 
@@ -138,21 +140,27 @@ class LightManager(DebugObject):
 
         # Disable culling
         self.shadowComputeCamera.setBounds(OmniBoundingVolume())
-
         self.shadowComputeCameraNode.setPos(0, 0, 150)
         self.shadowComputeCameraNode.lookAt(0, 0, 0)
 
-        self.shadowComputeTarget = RenderTarget("ShadowCompute")
+        self.shadowComputeTarget = RenderTarget("ShadowAtlas")
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
+        self.shadowComputeTarget.addColorTexture()
+        self.shadowComputeTarget.addAuxTextures(1)
+        self.shadowComputeTarget.setAuxBits(16)
+        self.shadowComputeTarget.setColorBits(16)
         self.shadowComputeTarget.setDepthBits(32)
         self.shadowComputeTarget.setSource(
             self.shadowComputeCameraNode, Globals.base.win)
         self.shadowComputeTarget.prepareSceneRender()
 
         # We have to adjust the sort
-        self.shadowComputeTarget.getInternalRegion().setSort(3)
-        self.shadowComputeTarget.getRegion().setSort(3)
+        self.shadowComputeTarget.getInternalRegion().setSort(200)
+        # self.shadowComputeTarget.getInternalBuffer().setSort(200)
+        self.shadowComputeTarget.getRegion().setSort(199)
+        self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(0).setSort(210)
+        self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).setSort(100)
 
         self.shadowComputeTarget.getInternalRegion().setNumRegions(
             self.maxShadowUpdatesPerFrame + 1)
@@ -160,7 +168,17 @@ class LightManager(DebugObject):
         # The first viewport always has to be fullscreen
         self.shadowComputeTarget.getInternalRegion().setDimensions(
             0, (0, 1, 0, 1))
-        self.shadowComputeTarget.setClearDepth(False)
+        # self.shadowComputeTarget.setClearDepth(False)
+        # self.shadowComputeTarget.setClearColor(False)
+
+        self.shadowComputeTarget.getInternalRegion().disableClears()
+        self.shadowComputeTarget.getInternalBuffer().disableClears()
+        self.shadowComputeTarget.getInternalBuffer().getDisplayRegion(1).disableClears()
+        self.shadowComputeTarget.getRegion().disableClears()
+
+        # for i in xrange(16):
+        #     self.shadowComputeTarget.getRegion().setClearActive(i, False)
+        #     self.shadowComputeTarget.getRegion().setClearValue(i, Vec4(1))
 
         # We can't clear the depth per viewport.
         # But we need to clear it in any way, as we still want
@@ -172,11 +190,17 @@ class LightManager(DebugObject):
         for i in range(self.maxShadowUpdatesPerFrame):
             buff = self.shadowComputeTarget.getInternalBuffer()
             dr = buff.makeDisplayRegion()
-            dr.setSort(2)
+            dr.setSort(170)
+            dr.setClearColorActive(True)
+            # dr.setClearColor(Vec4(0,0,1,1))
+            for i in xrange(16):
+                dr.setClearActive(i, True)
+                dr.setClearValue(i, Vec4(1,0,1,1))
+
             dr.setClearDepthActive(True)
             dr.setClearDepth(1.0)
-            dr.setClearColorActive(False)
             dr.setDimensions(0, 0, 0, 0)
+            dr.setActive(False)
             self.depthClearer.append(dr)
 
         # When using hardware pcf, set the correct filter types
@@ -189,6 +213,10 @@ class LightManager(DebugObject):
         dTex.setWrapU(Texture.WMClamp)
         dTex.setWrapV(Texture.WMClamp)
 
+    def getAllLights(self):
+        """ Returns all attached lights """
+        return self.lights
+
     def _createDebugTexts(self):
         """ Creates a debug overlay if specified in the pipeline settings """
         self.lightsVisibleDebugText = None
@@ -196,8 +224,6 @@ class LightManager(DebugObject):
 
         if self.settings.displayDebugStats:
 
-            # FastText only is in my personal shared directory. It's not
-            # in the git-repository. So to prevent errors, this try is here.
             try:
                 from Code.GUI.FastText import FastText
                 self.lightsVisibleDebugText = FastText(pos=Vec2(
@@ -430,6 +456,11 @@ class LightManager(DebugObject):
         for clearer in self.depthClearer:
             clearer.setActive(False)
 
+        # Callbacks from last frame
+        for callback in self.updateCallbacks:
+            callback.onUpdated()
+        self.updateCallbacks = []
+
         # When there are no updates, disable the buffer
         if len(self.queuedShadowUpdates) < 1:
             self.shadowComputeTarget.setActive(False)
@@ -493,20 +524,22 @@ class LightManager(DebugObject):
                     float(self.shadowAtlas.getSize())
 
                 atlasPos = update.getAtlasPos()
-                left, right = atlasPos.x, (atlasPos.x + texScale)
-                bottom, top = atlasPos.y, (atlasPos.y + texScale)
+                left, right = atlasPos.x, (atlasPos.x + texScale*0.5)
+                bottom, top = atlasPos.y, (atlasPos.y + texScale*0.5)
                 self.depthClearer[numUpdates].setDimensions(
                     left, right, bottom, top)
                 self.depthClearer[numUpdates].setActive(True)
 
                 self.shadowComputeTarget.getInternalRegion().setDimensions(
-                    numUpdates + 1, (atlasPos.x, atlasPos.x + texScale,
-                                     atlasPos.y, atlasPos.y + texScale))
+                    numUpdates + 1, (atlasPos.x, atlasPos.x + texScale*0.5,
+                                     atlasPos.y, atlasPos.y + texScale*0.5))
                 numUpdates += 1
 
                 # Finally, we can tell the update it's valid now.
-                # Actually this is only true in one frame, but who cares?
                 update.setValid()
+
+                # In the next frame the update is processed, so call it later
+                self.updateCallbacks.append(update)
 
                 # Only add the uid to the output if the max updates
                 # aren't too much. Otherwise we spam the screen :P

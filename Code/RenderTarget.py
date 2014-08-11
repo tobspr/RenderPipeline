@@ -299,7 +299,6 @@ class RenderTarget(DebugObject):
 
         # Set clears
         bufferRegion = self._buffer.getInternalBuffer().getDisplayRegion(0)
-
         self._correctClears()
 
         bufferRegion.setClearStencilActive(False)
@@ -369,7 +368,8 @@ class RenderTarget(DebugObject):
         """ You can enable / disable the buffer with this. When disabled,
         shaders on this buffer aren't executed """
         if self._active is not active:
-            self._buffer.getInternalBuffer().getDisplayRegion(0).setActive(active)
+            self._buffer.getInternalBuffer().getDisplayRegion(
+                0).setActive(active)
             self._region.setActive(active)
             self._active = active
 
@@ -440,16 +440,21 @@ class RenderTarget(DebugObject):
 
         return clears
 
-    def setClearColor(self):
-        """ Adds a color clear """
-        self.getInternalBuffer().setClearColorActive(True)
-        self.getInternalBuffer().setClearColor(Vec4(0, 0, 0, 0))
-
     def setClearDepth(self, clear=True):
         """ Adds a depth clear """
         self.getInternalRegion().setClearDepthActive(clear)
         if clear:
             self.getInternalBuffer().setClearDepth(0.0)
+
+    def setClearColor(self, clear=True):
+        """ Adds a color clear """
+        self.getInternalRegion().setClearColorActive(clear)
+        if clear:
+            self.getInternalBuffer().setClearColor(Vec4(0.0))
+
+    def setClearAux(self, auxNumber, clear=True):
+        """ Adds a color clear """
+        self.getInternalRegion().setClearActive(auxNumber, clear)
 
     def _setSizeShaderInput(self):
         """ Makes the buffer size available as shader input in the shader """
@@ -492,8 +497,6 @@ class RenderTarget(DebugObject):
 
         self._active = False
         self._unregisterBuffer()
-
-
 
     def __repr__(self):
         """ Returns a representative string of this instance """
