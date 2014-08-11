@@ -181,8 +181,7 @@ class LightManager(DebugObject):
 
             # Globals.base.win.setClearActive(i, False)
             # Globals.base.camNode.getDisplayRegion(0).setClearActive(i, False)
-        for window in base.win.graphicsEngine.getWindows():
-            print window
+
 
         # for i in xrange(16):
         #     self.shadowComputeTarget.getRegion().setClearActive(i, False)
