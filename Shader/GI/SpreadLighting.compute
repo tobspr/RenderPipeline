@@ -20,8 +20,11 @@ ivec2 convertCoords(ivec3 src) {
 }
 
 
-const float bounceFactor = 0.5;
-const float intensityMultiplier = 1.0;
+const float bounceFactor = 1.0;
+const float rangeMultiplier = 2520.0;
+const float transport = 0.08;
+const float colorTransport = 0.0008;
+const float normalBias = 1.0;
 
 void main() {
 
@@ -31,60 +34,65 @@ void main() {
   vec4 sampleCenter      = texelFetch(source, storeCoord, 0);
   vec4 sampleCenterColor = texelFetch(sourceColor, storeCoord, 0);
 
-  vec4 colorResult = sampleCenterColor * (1.0-bounceFactor);
-  vec4 normalResult = sampleCenter * (1.0-bounceFactor);
+  vec4 colorResult = sampleCenterColor;
+  vec4 normalResult = sampleCenter;
 
-  if (length(normalResult.xyx) < 0.1) {
-    normalResult.xyz = vec3(0,0,1);
-  }
+  // if (length(normalResult.xyx) < 0.1) {
+  //   normalResult.xyz = vec3(0,0,1);
+  // }
 
-  ivec3 directions[6] = ivec3[6](
+  const int numDirections = 6; 
+
+  ivec3 directions[numDirections] = ivec3[numDirections](
+      
+      // Along the axis
       ivec3(0,0,1),
       ivec3(0,0,-1),
       ivec3(0,1,0),
       ivec3(0,-1,0),
       ivec3(1,0,0),
       ivec3(-1,0,0)
+
+      // Diagonal
+      // ivec3(1,1,1),
+      // ivec3(-1,1,1),
+      // ivec3(1,-1,1),
+      // ivec3(-1,-1,1),
+
+      // ivec3(1,1,-1),
+      // ivec3(-1,1,-1),
+      // ivec3(1,-1,-1),
+      // ivec3(-1,-1,-1)
     );
 
-  const int numDirections = 6; 
 
-  #if 1
   for (int i = 0; i < numDirections; i++) {
     ivec3 dir = directions[i];
     ivec2 coords = convertCoords(texelCoords + dir);
     vec4 sampleNormal = texelFetch(source, coords, 0);
     vec4 sampleColor = texelFetch(sourceColor, coords, 0);
 
-    float localFactor = max(0.0, min(0.3, dot(sampleNormal.xyz, normalResult.xyz)));
+    // no solid voxel
+    if (sampleColor.w < 0.0001) {
+      continue;
+    }
 
-    float impact = 1.0;
-
-    // localFactor = 0.8;
-    localFactor = 1.0 / 5.99;
-    // localFactor *= 0.44;
-    // localFactor *= 0.15; 
-    // localFactor *= 0.6;
-
-    // localFactor *= 0.19;
-    // localFactor *= 0.19;
-    // localFactor *= 0.175;
-
-    // localFactor = 0.165;
-
-    localFactor *= (1.0 + intensityMultiplier*0.03);
-
-    colorResult += sampleColor / impact * bounceFactor * localFactor;
-    // normalResult += sampleNormal / impact * bounceFactor * localFactor;
+    float localFactor = max(normalBias, dot(sampleNormal.xyz, -dir )) * rangeMultiplier;
+    // localFactor = 0.5;
+    colorResult += sampleColor * bounceFactor * transport * localFactor * vec4(colorTransport,colorTransport,colorTransport,1.0);
+    normalResult.xyz += sampleNormal.xyz * bounceFactor * localFactor * transport;
+    // colorResult.w += localFactor * 0.05;
 
   }
 
-  #endif
-  // }
+  // Normalize, but only if length(normal) > 1.0
+  float normalLength = max(1.0, length(normalResult.xyz));
+  normalResult.xyz /= normalLength;
 
-  normalResult = normalize(normalResult);
 
-  // colorResult.xyz = normalResult.xyz;
+  colorResult.w = clamp(colorResult.w, 0.001, 1.0);
+
+  colorResult.xyz = 1.0 - exp(-0.5 * colorResult.xyz);
 
   // colorResult.xyz = normalResult.xyz;
 

@@ -20,6 +20,7 @@ void renderMaterial(Material m) {
     // vec2 color = packColor( m.baseColor );
     vec3 color = m.baseColor.rgb;
 
+    #ifndef DO_NOT_COMPUTE_VELOCITY
     // Compute velocity
     vec4 lastProj = vOutput.lastProjectedPos;
 
@@ -30,6 +31,10 @@ void renderMaterial(Material m) {
 
     // * 255 prevents precision errors
     vec2 velocity = (lastTexcoord - fragCoord) * 255.0;
+
+    #else
+    vec2 velocity = vec2(0);
+    #endif
 
     // Saturate
     m.roughness = saturate(m.roughness);

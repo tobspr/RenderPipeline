@@ -79,7 +79,6 @@ vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, v
 
         // Compute total contributions
         vec3 diffuseContribution = diffuseColor * diffuseBrdf * attenuation * light.color;
-        // vec3 specularContribution = specularTerm * attenuation * light.color * specular * material.baseColor; //mix(vec3(1.0), material.baseColor, material.metallic*0.5 + 0.5); 
         vec3 specularContribution = specularTerm * attenuation * light.color * specular * mix(vec3(1.0), material.baseColor, material.metallic*0.5 + 0.5); 
         vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor *
                                         specF * attenuation * light.color * material.baseColor * max(0.01, safeDot(n, l));
@@ -164,7 +163,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
 
 
-    float pixOffset = 2.5 / SHADOW_MAP_ATLAS_SIZE;
+    float pixOffset = 1.8 / SHADOW_MAP_ATLAS_SIZE;
     // float baseBias = 0.0002;
 
     // pixOffset = 0.0;
@@ -215,46 +214,6 @@ vec3 applyPointLightWithShadow(Light light, Material material
 
     float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 1.0, 1.0, 0.0002);
 
-    // vec2 offsets = getShadowOffsets(n, l);
-    // vec3 biasedPos = material.position;
-    // float resFactor = 1024.0 / float(currentSource.resolution);
-    // float baseShift = 0.3;
-
-    // biasedPos += baseShift * l * offsets.x;
-    // biasedPos += baseShift * n * offsets.y;
-
-    // vec4 projected = currentSource.mvp * vec4(biasedPos, 1);
-
-    // resFactor = min(resFactor, 1.0);
-
-    // // Parabolic transform
-    // // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
-    // // projected = projected * 0.5 + 0.5;    
-
-    // vec3 projCoord = projected.xyz / projected.w;
-    // projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
-    // vec2 centerCoord = convertAtlasCoord(projCoord.xy, currentSource);
-
-    // float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
-    // float baseBias = 0.0002;
-
-    // // apply point light shadows
-    // float shadowFactor = 0.0;
-    // for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
-
-    //     vec2 offset = poissonDisk16[i] * pixOffset;
-
-    //     #if USE_HARDWARE_PCF
-    //         // Notice: when using opengl 4.1+, it has to be texture(xxx).r 
-    //         float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) );
-    //         shadowFactor += (1.0 - sampled);
-    //     #else
-    //         float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
-    //         shadowFactor += step(sampled, projCoord.z - baseBias);
-    //     #endif
-    // }
-    // shadowFactor /= SHADOWS_NUM_SAMPLES;
-
     // Apply shadows
     rawLighting *= max(0.0, 1.0 - shadowFactor);
 
@@ -295,7 +254,7 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material, vec3 shAmbi
     vec3  n = normalize(material.normal);
     vec3  h = normalize(l + v);
 
-APPLY_OCCLUSION();
+    APPLY_OCCLUSION();
 
     int shadowSourceIndex = light.sourceIndexes[0];
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
@@ -306,11 +265,8 @@ APPLY_OCCLUSION();
     // Apply shadows
     rawLighting *= max(0.0, 1.0 - shadowFactor);
 
-
-
-
     // vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
-    vec3 ambientContribution = 0.1 * material.baseColor * mix(shAmbient, light.ambient, 0.5) * attenuation;
+    vec3 ambientContribution = 0.1 * material.baseColor * mix(shAmbient, light.ambient, 0.7) * attenuation;
     return rawLighting + ambientContribution;
 }
 

@@ -64,7 +64,6 @@ void main() {
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
 
-
     // Visualize GI Grid
     // float gridSize = 2.0;
     // float lineSize = 0.2;

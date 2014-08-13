@@ -4,7 +4,7 @@
 // developed by tobspr
 
 #include "Includes/Configuration.include"
-
+#include "Includes/PositionReconstruction.include"
 #include "Includes/Packing.include"
 
 layout (local_size_x = 4, local_size_y = 4, local_size_z=4) in;
@@ -18,13 +18,16 @@ uniform vec3 gridEnd;
 uniform ivec3 gridSize;
 uniform writeonly image2D target;
 uniform writeonly image2D targetColor;
+uniform vec3 voxelSize;
 
 
-#define MAX_SOURCE_COUNT 32
+#define MAX_SOURCE_COUNT 24
 
 uniform int lightCount;
 uniform mat4 lightMVPData[MAX_SOURCE_COUNT];
-uniform vec4 lightData[MAX_SOURCE_COUNT];
+uniform mat4 lightData[MAX_SOURCE_COUNT];
+
+const vec3 texelShift = vec3(0.5, 0.5, 0.5);
 
 void main() {
 
@@ -34,7 +37,7 @@ void main() {
   ivec3 texelCoords = ivec3(gl_GlobalInvocationID.xyz);
   ivec2 storeCoord = texelCoords.xy + ivec2(texelCoords.z*gridSize.x, 0);
 
-  vec3 localCoords = (vec3(texelCoords)) / vec3(gridSize);
+  vec3 localCoords = (vec3(texelCoords)+texelShift) / vec3(gridSize);
   vec3 worldCoords = (localCoords * (gridEnd-gridStart)) + gridStart;
 
   // In this variables the resulting normals and diffuse is stored
@@ -42,21 +45,29 @@ void main() {
   vec3 resultColor = vec3(0);
   float resultShadowFactor = 0.0;
 
+  float solid = 0.01;
+
   // Process each shadow source, to get as many accurate normals as possible
   for (int i = 0; i < min(lightCount, MAX_SOURCE_COUNT); i++) {
 
-    vec4 data = lightData[i];
+    mat4 data = lightData[i];
     mat4 mvp = lightMVPData[i];
 
     // Unpack data
-    float impactFactor = data.w;
-    vec2 sourceAtlasPos = data.xy;
-    float sourceAtlasScale = data.z; 
+    float impactFactor = data[0].w;
+    vec2 sourceAtlasPos = data[0].xy;
+    float sourceAtlasScale = data[0].z; 
+
+    float nearPlane = data[1].x;
+    float farPlane = data[1].y;
+
+    vec3 lightDir = normalize(data[2].xyz);
 
     // Shadow projection
     vec4 projected = mvp * vec4(worldCoords, 1);
     vec3 projCoord = projected.xyz / projected.w;
     projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
+
 
     // Clamp to borders
     if (all(greaterThan(projCoord.xy, vec2(0.0))) &&
@@ -67,26 +78,36 @@ void main() {
 
       // Shadowed?
       float sampledZ = texture(atlasDepth, atlasCoord.xy).x;
-      float sampleDifference = sampledZ - projCoord.z;
-      float shadowFactor = 1.0 - step(sampleDifference, -0.005);
+
+      float sampledLinear = getCustomLinearZFromZ(sampledZ, nearPlane, farPlane);
+      float voxelLinear = getCustomLinearZFromZ(projCoord.z, nearPlane, farPlane);
+
+      float sampleDifferenceLinear = sampledLinear - voxelLinear;
+      float shadowFactor = 1.0 - step(sampleDifferenceLinear, -length(voxelSize)*mix(0.5, 0.001, impactFactor));
 
       // Read RSM
       vec3 diffuse = texture(atlasColor, atlasCoord).rgb;
 
       // Normal is stored packed
-      vec3 normal = texture(atlasNormal, atlasCoord).rgb*4.0 - 2.0;
+      vec3 normal = normalize(texture(atlasNormal, atlasCoord).rgb*4.0 - 2.0);
       
-      // if ( impactFactor < 0.5) {
+      if ( (sampleDifferenceLinear) < length(voxelSize)*mix(0.8, 0.001, impactFactor) &&  impactFactor > 0.5 && length(diffuse) > 0.1 ) {
+
+        // resultNormal += reflect(-lightDir, normal);
         resultNormal += normal;
         resultNormal = normalize(resultNormal);
-        resultColor += diffuse * shadowFactor * impactFactor;
+        resultColor += diffuse * shadowFactor;
         resultShadowFactor += shadowFactor;
-      // }
+        solid = 1.0;
+        // resultNormal = vec3(shadowFactor*0.5);
+      }
+   
     }
   }
 
+
   // resultColor *= 0.2;
 
-  imageStore(target, storeCoord, vec4(abs(resultNormal), 1.0) );
-  imageStore(targetColor, storeCoord, vec4(resultColor, 1.0) );
+  imageStore(target, storeCoord, vec4(resultNormal*solid, solid) );
+  imageStore(targetColor, storeCoord, vec4(resultColor*solid, solid) );
 }

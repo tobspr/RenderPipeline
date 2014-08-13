@@ -376,6 +376,10 @@ class LightManager(DebugObject):
         # Process each light
         for index, light in enumerate(self.lights):
 
+            # When shadow maps should be always updated
+            if self.settings.alwaysUpdateAllShadows:
+                light.queueShadowUpdate()
+
             # Update light if required
             pstats_PerLightUpdates.start()
             if light.needsUpdate():

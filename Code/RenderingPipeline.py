@@ -5,7 +5,7 @@ import os
 from panda3d.core import TransparencyAttrib, Texture, NodePath, PTAInt
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
-from panda3d.core import PTAVecBase3f, WindowProperties, Vec4, Vec2
+from panda3d.core import PTAVecBase3f, WindowProperties, Vec4, Vec2, PTAVecBase2f
 
 from direct.stdpy.file import open
 
@@ -19,6 +19,7 @@ from AmbientOcclusion import *
 from PipelineSettingsManager import PipelineSettingsManager
 from GUI.PipelineGuiManager import PipelineGuiManager
 from Globals import Globals
+from SystemAnalyzer import SystemAnalyzer
 from MountManager import MountManager
 
 
@@ -104,6 +105,14 @@ class RenderingPipeline(DebugObject):
         if self.settings is None:
             self.error("You have to call loadSettings first!")
             return
+
+        self.debug("Analyzing system ..")
+        SystemAnalyzer.analyze()
+
+
+        self.debug("Checking required Panda3D version ..")
+        SystemAnalyzer.checkPandaVersionOutOfDate(7,8,2014)
+
 
         # Mount everything first
         self.mountManager.mount()
@@ -222,16 +231,10 @@ class RenderingPipeline(DebugObject):
             self._createDofStorage()
             self._createBlurBuffer()
 
-        self._setupFinalPass()
-        self._setShaderInputs()
-
-        # add update task
-        self._attachUpdateTask()
-
         # Not sure why it has to be 0.25. But that leads to the best result
         aspect = float(self.size.y) / self.size.x
         self.onePixelShift = Vec2(
-            0.5 / self.size.x, 0.5 / self.size.y / aspect)
+            0.25 / self.size.x, 0.25 / self.size.y / aspect)
 
         # Annoying that Vec2 has no multliply-operator for non-floats
         multiplyVec2 = lambda a, b: Vec2(a.x*b.x, a.y*b.y)
@@ -243,14 +246,15 @@ class RenderingPipeline(DebugObject):
             ]
         else:
             self.pixelShifts = [Vec2(0), Vec2(0)]
+        self.currentPixelShift = PTAVecBase2f.emptyArray(1)
+        self.lastPixelShift = PTAVecBase2f.emptyArray(1)
 
-        # display shadow atlas is defined
-        # todo: move this to the gui manager
-        # if self.settings.displayShadowAtlas and self.haveLightingPass:
-        # self.atlasDisplayImage = OnscreenImage(
-        #     image=self.lightManager.getAtlasTex(), pos=(
-        #         self.showbase.getAspectRatio() - 0.55, 0, 0.2),
-        #     scale=(0.5, 0, 0.5))
+
+        self._setupFinalPass()
+        self._setShaderInputs()
+
+        # add update task
+        self._attachUpdateTask()
 
     def getForwardScene(self):
         """ Reparent objects to this scene to use forward rendering.
@@ -499,6 +503,11 @@ class RenderingPipeline(DebugObject):
                 "positionBuffer", self.deferredTarget.getColorTexture())
             self.combiner.setShaderInput(
                 "velocityBuffer", self.deferredTarget.getAuxTexture(1))
+            self.combiner.setShaderInput("currentPixelShift",
+                self.currentPixelShift)
+            self.combiner.setShaderInput("lastPixelShift",
+                self.lastPixelShift)
+
 
             if self.blurEnabled:
                 self.combiner.setShaderInput(
@@ -854,6 +863,8 @@ class RenderingPipeline(DebugObject):
         self.currentMVP[0] = self._computeMVP()
 
         shift = self.pixelShifts[self.currentShiftIndex[0]]
+        self.lastPixelShift[0] = self.currentPixelShift[0]
+        self.currentPixelShift[0] = shift
         Globals.base.camLens.setFilmOffset(shift.x, shift.y)
 
         if task is not None:

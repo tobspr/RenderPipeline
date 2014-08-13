@@ -37,11 +37,7 @@ const mat3 rgbToYCbCr = mat3(
     0.144, 0.5, -0.081312
 );
 
-
 #ifndef NO_EXTENDED_PACKING
-
-
-
 
 // IEEE 754 half-precision binary floating-point format
 // http://en.wikipedia.org/wiki/Half-precision_floating-point_format

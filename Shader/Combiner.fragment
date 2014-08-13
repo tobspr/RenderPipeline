@@ -21,6 +21,9 @@ uniform sampler2D depthTex;
 #endif
 
 uniform int temporalProjXOffs;
+uniform vec2 currentPixelShift;
+uniform vec2 lastPixelShift;
+
 
 uniform mat4 lastMVP;
 uniform mat4 currentMVP;
@@ -60,12 +63,17 @@ void main() {
 
     vec2 velocity = -texture(velocityBuffer, texcoord).rg / 255.0;
 
+    velocity += lastPixelShift * 4.0;
+
     vec4 lastProj = lastMVP * vec4(position, 1);
     vec2 lastTexcoord = (lastProj.xy / lastProj.w) * 0.5 + 0.5;
     vec2 newVelocity = (texcoord - lastTexcoord);
     vec2 texelSize = 1.0 / screenSize;
 
     vec2 lastFrameTexcoord = texcoord - velocity;
+
+    // lastFrameTexcoord -= lastPixelShift * 1.0;
+
     // lastFrameTexcoord = lastTexcoord;
     ivec2 lastFrameTexcoordInt = ivec2(lastFrameTexcoord * screenSize);
     vec3 oldProjectedPos = texture(lastPosition, lastFrameTexcoord).rgb;
@@ -77,7 +85,7 @@ void main() {
     
     float reliability = 1.0 - saturate( (distance(oldProjectedPos, position) / distanceToCamera) * rejectionFactor);
 
-    reliability = 0.0;
+    reliability = 1.0;
 
     ivec2 clampMax = ivec2(screenSize) - 1;
     ivec2 clampMin = ivec2(1);
@@ -90,13 +98,14 @@ void main() {
     }
 
     result = mix(lastComputedValue, bestLastProjected, saturate(reliability));
+    result = bestLastProjected;
 
     if ( (screenCoord.x+screenCoord.y) % 2 == 1-temporalProjXOffs) {
         result = vec4(lastComputedValue);
     } 
 
-    vec4 lastFrameResult = texelFetch(lastFrame, screenCoord, 0);
-    result = vec4(lastComputedValue);
+    // vec4 lastFrameResult = texelFetch(lastFrame, screenCoord, 0);
+    // result = vec4(lastComputedValue);
 
 
     // result = mix(result, bestLastProjected, 0.999 * (1.0-outOfScreen) * (1.0 - reliability) );

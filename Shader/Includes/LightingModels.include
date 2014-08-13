@@ -93,15 +93,12 @@ float diffuseBrdfSimpleOrenNayar( vec3 l, vec3 v, vec3 n, float roughness) {
     
     // calculate A and B
     float A = 1.0 - 0.5 * (roughnessSquared / (roughnessSquared + 0.57));
-
     float B = 0.45 * (roughnessSquared / (roughnessSquared + 0.09));
- 
     float C = sin(alpha) * tan(beta);
     
     // put it all together
     float L1 = max(0.0, NdotL) * (A + B * max(0.0, gamma) * C);
     return L1;
-
 }
 
 
