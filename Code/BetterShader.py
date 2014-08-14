@@ -3,7 +3,6 @@ from panda3d.core import Shader, Filename
 from Globals import Globals
 
 
-
 class BetterShader:
 
     """ Small wrapper arround panda3d.core.Shader which supports
@@ -56,9 +55,14 @@ class BetterShader:
             self._writeDebugShader("Shader-" + str(arg), content)
             self._clearIncludeStack()
 
-        
+        # Check if we already have the result cached
+        hashed = str(hash(toHash))
+        if hashed in self._ShaderCache:
+            # Cache entry found
+            return self._ShaderCache[hashed]
 
         result = Shader.make(Shader.SLGLSL, *newArgs)
+        self._ShaderCache[hashed] = result
         return result
 
     @classmethod
