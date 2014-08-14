@@ -188,7 +188,7 @@ class Main(ShowBase, DebugObject):
         self.loadSkybox()
 
         # set default object shaders
-        self.setShaders()
+        self.setShaders(refreshPipeline = False)
 
         earthScattering.bindTo(
             self.renderPipeline.lightingComputeContainer, "scatteringOptions")
@@ -260,7 +260,7 @@ class Main(ShowBase, DebugObject):
         self.skybox.setScale(40000)
         self.skybox.reparentTo(self.render)
 
-    def setShaders(self):
+    def setShaders(self, refreshPipeline=True):
         """ Sets all shaders """
         self.debug("Reloading Shaders ..")
 
@@ -268,7 +268,9 @@ class Main(ShowBase, DebugObject):
         if self.renderPipeline:
             self.scene.setShader(
                 self.renderPipeline.getDefaultObjectShader(False))
-            self.renderPipeline.reloadShaders()
+            
+            if refreshPipeline:
+                self.renderPipeline.reloadShaders()
 
         if self.skybox:
             self.skybox.setShader(BetterShader.load(

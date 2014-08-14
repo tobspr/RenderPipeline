@@ -1,6 +1,6 @@
 
-from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3, Mat4
-from panda3d.core import LVecBase3i, PTAVecBase4f, PTAMat4, UnalignedLVecBase4f
+from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
+from panda3d.core import LVecBase3i, PTAMat4
 from panda3d.core import UnalignedLMatrix4f, OmniBoundingVolume
 
 from Globals import Globals
@@ -15,7 +15,7 @@ class GlobalIllumnination(DebugObject):
     """ This class handles the global illumination processing """
 
     class GIStage:
-        
+
         def __init__(self, size):
             self.geometryTexture = self._allocTexture(size)
             self.shRedTexture = self._allocTexture(size)
@@ -41,7 +41,6 @@ class GlobalIllumnination(DebugObject):
         self.sourcesData = PTAMat4.emptyArray(24)
         self.mvpData = PTAMat4.emptyArray(24)
 
-
         self.stages = [
             self.GIStage(self.cascadeSize),
             self.GIStage(self.cascadeSize),
@@ -49,8 +48,10 @@ class GlobalIllumnination(DebugObject):
 
         self.resultStage = self.GIStage(self.cascadeSize)
 
-        BufferViewerGUI.registerTexture("GI-GeometryTexture", self.resultStage.geometryTexture)
-        BufferViewerGUI.registerTexture("GI-ColorTexture", self.resultStage.shRedTexture)
+        BufferViewerGUI.registerTexture(
+            "GI-GeometryTexture", self.resultStage.geometryTexture)
+        BufferViewerGUI.registerTexture(
+            "GI-ColorTexture", self.resultStage.shRedTexture)
         # BufferViewerGUI.registerTexture("GI-Result", self.resultStorage)
         # BufferViewerGUI.registerTexture("GI-VPLStorageTemp", self.vplStorageTemp)
         # BufferViewerGUI.registerTexture("GI-ColorStorageTemp", self.colorStorageTemp)
@@ -80,12 +81,12 @@ class GlobalIllumnination(DebugObject):
         self._clearTexture(self.resultStorage)
 
     def createVoxelDebugBox(self):
-        box = loader.loadModel("box")
+        box = Globals.loader.loadModel("box")
 
         gridVisualizationSize = 64
         box.setScale(self.voxelSize)
         box.setPos(self.gridStart)
-        box.reparentTo(render)
+        box.reparentTo(Globals.base.render)
         box.setInstanceCount(
             gridVisualizationSize * gridVisualizationSize * gridVisualizationSize)
         box.node().setFinal(True)
@@ -227,8 +228,8 @@ class GlobalIllumnination(DebugObject):
                 self.cascadeSize / 4, self.cascadeSize / 4)
 
         elif self.frameIndex < self.iterations + 2:
-            # In the other frames, we spread the lighting. This can be basically
-            # seen as a normal aware 3d blur
+            # In the other frames, we spread the lighting. This can be
+            # basically seen as a normal aware 3d blur
             self.spreadLightingNode.setShaderInput(
                 "gridSize", LVecBase3i(self.cascadeSize))
 

@@ -37,14 +37,12 @@ class Scattering(DebugObject):
 
             # Parameters to adjust rendering of the atmosphere.
             # The position is computed by:
-            # (inputPosition*atmosphereScale) + atmosphereOffset
+            # (inputPosition-atmosphereOffset) * atmosphereScale
             "atmosphereOffset": Vec3(0),
             "atmosphereScale": Vec3(1)
 
         }
-
         self.settingsPTA = {}
-
         self.targets = {}
         self.textures = {}
         self.writeOutput = False
@@ -56,9 +54,6 @@ class Scattering(DebugObject):
             except:
                 self.debug("Failed to create dump dir!")
                 self.writeOutput = False
-
-        # Create separate engine for precomputing
-        # self.engine = GraphicsEngine()
 
     def _generatePTAs(self):
         self.debug("Generating PTAs ..")
@@ -102,7 +97,8 @@ class Scattering(DebugObject):
         # create ptas
         self._generatePTAs()
 
-        self.debug("Disabled", len(disabledWindows), "for rendering")
+        self.debug(
+            "Disabled", len(disabledWindows), " windows while rendering")
 
         # Transmittance
         self.targets['transmittance'] = self._createRT(
@@ -350,7 +346,7 @@ class Scattering(DebugObject):
 
         if self.precomputed:
             self.warn("You cannot use setSettings after precomputing! Use "
-                "adjustSetting instead!")
+                      "adjustSetting instead!")
             return
 
         for key, val in settings.items():

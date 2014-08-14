@@ -6,7 +6,8 @@ from Globals import Globals
 class BetterShader:
 
     """ Small wrapper arround panda3d.core.Shader which supports
-    includes in glsl shaders via #include "filename" """
+    includes in glsl shaders via #include "filename", and also caches
+    shaders """
 
     # Include stack, which mentions the already included
     # files. This prevents recursive inclusion. Stack
@@ -41,8 +42,8 @@ class BetterShader:
         """ Loads a shader in the order: vertex, fragment,
         geometry, tesseval, tesscontrol """
 
-        newArgs = []
 
+        newArgs = []
         toHash = ""
 
         for arg in args:
@@ -56,10 +57,14 @@ class BetterShader:
             self._clearIncludeStack()
 
         # Check if we already have the result cached
-        hashed = str(hash(toHash))
+        hashed = hash(toHash)
         if hashed in self._ShaderCache:
             # Cache entry found
             return self._ShaderCache[hashed]
+
+        shaderName = args[1].replace("Shader", "").split(".")[0].lstrip("/")
+        print "BetterShader: created", shaderName
+
 
         result = Shader.make(Shader.SLGLSL, *newArgs)
         self._ShaderCache[hashed] = result
