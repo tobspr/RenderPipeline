@@ -9,6 +9,7 @@ in vec3 p3d_Normal;
 
 uniform float scaleFactor;
 uniform int effectiveGrid;
+uniform int realGridSize;
 
 out vec3 pos;
 out vec3 nrm;
@@ -17,6 +18,8 @@ out vec4 voxelResult;
 
 uniform sampler2D giGrid;
 uniform sampler2D giColorGrid;
+
+const float voxelScale = 0.95;
 
 void main() {
 
@@ -28,28 +31,32 @@ void main() {
     
     voxelSpacePos = ivec3(vec3(xOffset, yOffset, zOffset) * scaleFactor);
 
-    ivec2 giCoord = ivec2(clamp(voxelSpacePos.xy, 0, 128.0));
-    giCoord.x += int(voxelSpacePos.z) * 128;
+    ivec2 giCoord = ivec2(clamp(voxelSpacePos.xy, 0, realGridSize));
+    giCoord.x += int(voxelSpacePos.z) * realGridSize;
     voxelResult = texelFetch(giGrid, giCoord, 0);
     vec4 colorResult = texelFetch(giColorGrid, giCoord, 0);
 
-    vec4 wpos = (p3d_Vertex)* 0.5;
-    if ( colorResult.w < 0.1) {
+    vec4 wpos = (p3d_Vertex)* scaleFactor * 1.0001 * voxelScale;
+    wpos += 0.1;
+    if ( voxelResult.w < 0.02 ) {
+    // if ( length(colorResult.xyz) < 0.00000000001 ) {
         wpos.z -= 9999.0;
     // wpos *= 0.3;
         // wpos *= saturate(voxelResult.w) + 0.1;
     }
 
     wpos.xyz += vec3(xOffset, yOffset, zOffset) * scaleFactor;
-    // wpos.xyz -= 0.5;
+    // wpos.xyz += 0.5 * scaleFactor;
     wpos.w = 1.0;
 
-    a
+ar
 
-    // voxelResult = colorResult;
 
     pos = (trans_model_to_world * wpos).xyz;
     nrm = p3d_Normal;
+    nrm = voxelResult.xyz;
 
+    voxelResult = colorResult;
+    // voxelResult = vec4(1);
     gl_Position = p3d_ModelViewProjectionMatrix * wpos;
 }

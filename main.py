@@ -38,6 +38,7 @@ from Code.FirstPersonController import FirstPersonCamera
 from Code.Scattering import Scattering
 from Code.GUI.BetterSlider import BetterSlider
 
+
 class Main(ShowBase, DebugObject):
 
     """ This is the render pipeline testing showbase """
@@ -83,7 +84,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
-        self.usePlane = False
+        self.usePlane = True
 
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
@@ -92,7 +93,8 @@ class Main(ShowBase, DebugObject):
         self.scene.flattenStrong()
         # Load ground plane if configured
         if self.usePlane:
-            self.groundPlane = self.loader.loadModel("Models/Plane/Model.egg.bam")
+            self.groundPlane = self.loader.loadModel(
+                "Models/Plane/Model.egg.bam")
             self.groundPlane.setPos(0, 0, -0.01)
             self.groundPlane.setScale(2.0)
             self.groundPlane.setTwoSided(True)
@@ -137,11 +139,11 @@ class Main(ShowBase, DebugObject):
         ]
 
         vplHelpLights = [
-            # Vec3(15, 15, 15)
+            Vec3(0, 0, 5)
         ]
 
         # dPos = Vec3(-100, -100, 100)
-        dPos = Vec3(0, 20, 100)
+        dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
         dirLight.setShadowMapResolution(1024)
@@ -154,6 +156,7 @@ class Main(ShowBase, DebugObject):
         self.dirLight = dirLight
 
         for pos in vplHelpLights:
+            break
             helpLight = PointLight()
             helpLight.setRadius(100)
             helpLight.setPos(pos)
@@ -163,7 +166,6 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.addLight(helpLight)
             self.initialLightPos.append(pos)
             self.lights.append(helpLight)
-
 
         earthScattering = Scattering()
 
@@ -190,6 +192,16 @@ class Main(ShowBase, DebugObject):
 
         earthScattering.bindTo(
             self.renderPipeline.lightingComputeContainer, "scatteringOptions")
+
+        self.sunSlider = BetterSlider(
+            x=300, y=100, size=200, parent=self.pixel2d, callback=self.setSunPos)
+
+    def setSunPos(self):
+        print "set sun pos"
+        value = self.sunSlider.getValue()
+        dPos = Vec3(0, value, 100)
+        self.dirLight.setPos(dPos)
+        self.dirLight.setDirection(dPos)
 
     def toggleSceneWireframe(self):
         """ Toggles the scene rendermode """

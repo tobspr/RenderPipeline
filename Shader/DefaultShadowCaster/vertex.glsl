@@ -19,8 +19,8 @@ void main() {
     vtxDiffuseMultiplier = vec3(1);
 
     // For testing
-    if (worldPos.z < 0.0) {
-        // vtxDiffuseMultiplier = vec3(0,0,0);
+    if (worldPos.z < 0.1) {
+        vtxDiffuseMultiplier = vec3(0,0,0);
     }
 
     vtxTexcoord = p3d_MultiTexCoord0;

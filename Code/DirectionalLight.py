@@ -58,7 +58,7 @@ class DirectionalLight(Light, DebugObject):
 
         source = ShadowSource()
         source.setupOrtographicLens(
-            1.0, 1000.0, (150, 150))
+            1.0, 600.0, (160, 160))
         source.setResolution(self.shadowResolution)
         self._addShadowSource(source)
 

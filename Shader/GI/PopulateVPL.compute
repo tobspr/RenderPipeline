@@ -27,7 +27,8 @@ uniform int lightCount;
 uniform mat4 lightMVPData[MAX_SOURCE_COUNT];
 uniform mat4 lightData[MAX_SOURCE_COUNT];
 
-const vec3 texelShift = vec3(0.5, 0.5, 0.5);
+
+const vec3 texelShift = 1.0 * vec3(0.5, 0.5, 0.5);
 
 void main() {
 
@@ -62,16 +63,24 @@ void main() {
     float farPlane = data[1].y;
 
     vec3 lightDir = normalize(data[2].xyz);
+    vec3 color = data[3].xyz;
 
     // Shadow projection
     vec4 projected = mvp * vec4(worldCoords, 1);
     vec3 projCoord = projected.xyz / projected.w;
     projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
 
+    float texSize = (1.0 / SHADOW_MAP_ATLAS_SIZE) / sourceAtlasScale;
+    float resolution  = SHADOW_MAP_ATLAS_SIZE * sourceAtlasScale;
+
+    // fov of 90 with aspect ratio of 1:1 => total subtended solid angle of 4Pi / 6 = 2.09439510f
+    //float subtendedSolidAnglePerTexel = 2.09439510f / g_RSMResolution / g_RSMResolution;
+    float fluxQuota = 1.0 / 6.0 / resolution / resolution;
+    fluxQuota = 1.0;
 
     // Clamp to borders
-    if (all(greaterThan(projCoord.xy, vec2(0.0))) &&
-        all(lessThan(projCoord.xy, vec2(1.0))) ) {
+    if (all(greaterThan(projCoord.xy, vec2(texSize))) &&
+        all(lessThan(projCoord.xy, vec2(1.0-texSize))) ) {
 
       // Convert 0..1 coord to atlas space coord
       vec2 atlasCoord = projCoord.xy*sourceAtlasScale + sourceAtlasPos;
@@ -83,7 +92,7 @@ void main() {
       float voxelLinear = getCustomLinearZFromZ(projCoord.z, nearPlane, farPlane);
 
       float sampleDifferenceLinear = sampledLinear - voxelLinear;
-      float shadowFactor = 1.0 - step(sampleDifferenceLinear, -length(voxelSize)*mix(0.5, 0.001, impactFactor));
+      float shadowFactor = 1.0 - step(sampleDifferenceLinear, -length(voxelSize)*mix(1.0, 0.05, impactFactor));
 
       // Read RSM
       vec3 diffuse = texture(atlasColor, atlasCoord).rgb;
@@ -91,23 +100,39 @@ void main() {
       // Normal is stored packed
       vec3 normal = normalize(texture(atlasNormal, atlasCoord).rgb*4.0 - 2.0);
       
-      if ( (sampleDifferenceLinear) < length(voxelSize)*mix(0.8, 0.001, impactFactor) &&  impactFactor > 0.5 && length(diffuse) > 0.1 ) {
+      if ( abs(sampleDifferenceLinear) < length(voxelSize)*mix(0.3, 0.002, impactFactor) &&  impactFactor > -0.5 && shadowFactor >= 0.5 ) {
 
         // resultNormal += reflect(-lightDir, normal);
-        resultNormal += normal;
-        resultNormal = normalize(resultNormal);
-        resultColor += diffuse * shadowFactor;
-        resultShadowFactor += shadowFactor;
-        solid = 1.0;
+
+        // if (impactFactor < 0.5) {
+            // This is a light which only helps creating the voxels. It does not
+            // emit VPLS
+            resultNormal += normal * (1.0 - impactFactor);
+            solid += 1.0 - impactFactor;
+        // } else {
+
+            // This is a light which emits VPLS. It does not create voxels, yet
+            // Material diffuse is premultiplied
+            vec3 flux = fluxQuota * saturate(dot(normal, lightDir)) * vec3(diffuse);
+            // flux = vec3(1);
+   
+
+            resultColor += flux;
+            
+        // }
+        // resultNormal = normalize(resultNormal);
+
+        // resultShadowFactor += shadowFactor;
         // resultNormal = vec3(shadowFactor*0.5);
       }
    
     }
   }
 
+  solid = saturate(solid);
 
   // resultColor *= 0.2;
 
-  imageStore(target, storeCoord, vec4(resultNormal*solid, solid) );
-  imageStore(targetColor, storeCoord, vec4(resultColor*solid, solid) );
+  imageStore(target, storeCoord, vec4(resultNormal, solid) );
+  imageStore(targetColor, storeCoord, vec4(resultColor, solid) );
 }

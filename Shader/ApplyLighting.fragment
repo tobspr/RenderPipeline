@@ -249,8 +249,11 @@ void main() {
         bool isInGrid = all(greaterThan(material.position, GI_gridStart)) && 
                         all(lessThan(material.position, GI_gridEnd));
         if (isInGrid) {
-            vec3 biasedPosition = material.position + material.normal * 0.0;
+            vec3 voxelSize = (GI_gridEnd - GI_gridStart) / float(giCascadeSize);
+            vec3 biasedPosition = material.position + material.normal*0.0 - voxelSize*0.0;
             vec3 localCoord = (biasedPosition-GI_gridStart) / (GI_gridEnd-GI_gridStart);
+
+
             vec2 giCoord = localCoord.xy * vec2(1.0 / giCascadeSize, 1.0);
             giCoord.x += int(localCoord.z * giCascadeSize ) / float(giCascadeSize);
             giCoord.xy = clamp(giCoord.xy, vec2(1.0 / (giCascadeSize*giCascadeSize) ), vec2(1 - 1.0/giCascadeSize));

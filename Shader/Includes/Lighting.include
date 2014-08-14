@@ -163,7 +163,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
 
 
-    float pixOffset = 1.8 / SHADOW_MAP_ATLAS_SIZE;
+    float pixOffset = 2.0 / SHADOW_MAP_ATLAS_SIZE;
     // float baseBias = 0.0002;
 
     // pixOffset = 0.0;
@@ -259,7 +259,7 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material, vec3 shAmbi
     int shadowSourceIndex = light.sourceIndexes[0];
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
-    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.0, 0.0, 0.0001);
+    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.0, 0.0, 0.0004);
 
     vec3 rawLighting = computeLightModel(light, material, l,v, n, h, attenuation);
     // Apply shadows

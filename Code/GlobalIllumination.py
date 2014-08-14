@@ -14,6 +14,20 @@ class GlobalIllumnination(DebugObject):
 
     """ This class handles the global illumination processing """
 
+    class GIStage:
+        
+        def __init__(self, size):
+            self.geometryTexture = self._allocTexture(size)
+            self.shRedTexture = self._allocTexture(size)
+            self.shGreenTexture = self._allocTexture(size)
+            self.shBlueTexture = self._allocTexture(size)
+
+        def _allocTexture(self, size):
+            tex = Texture("tex")
+            tex.setup2dTexture(
+                size * size, size, Texture.TFloat, Texture.FRgba16)
+            return tex
+
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
         self.pipeline = pipeline
@@ -27,53 +41,41 @@ class GlobalIllumnination(DebugObject):
         self.sourcesData = PTAMat4.emptyArray(24)
         self.mvpData = PTAMat4.emptyArray(24)
 
-        self.vplStorage = Texture("VPLStorage")
-        self.vplStorage.setup2dTexture(
-            self.cascadeSize * self.cascadeSize, self.cascadeSize,
-            Texture.TFloat, Texture.FRgba16)
 
-        self.vplStorageTemp = Texture("VPLStorageTemp")
-        self.vplStorageTemp.setup2dTexture(
-            self.cascadeSize * self.cascadeSize, self.cascadeSize,
-            Texture.TFloat, Texture.FRgba16)
+        self.stages = [
+            self.GIStage(self.cascadeSize),
+            self.GIStage(self.cascadeSize),
+        ]
 
-        self.colorStorage = Texture("ColorStorage")
-        self.colorStorage.setup2dTexture(
-            self.cascadeSize * self.cascadeSize, self.cascadeSize,
-            Texture.TFloat, Texture.FRgba16)
+        self.resultStage = self.GIStage(self.cascadeSize)
 
-        self.colorStorageTemp = Texture("ColorStorageTemp")
-        self.colorStorageTemp.setup2dTexture(
-            self.cascadeSize * self.cascadeSize, self.cascadeSize,
-            Texture.TFloat, Texture.FRgba16)
-
-        self.resultStorage = Texture("ResultStorage")
-        self.resultStorage.setup2dTexture(
-            self.cascadeSize * self.cascadeSize, self.cascadeSize,
-            Texture.TFloat, Texture.FRgba16)
-
-        BufferViewerGUI.registerTexture("GI-VPLStorage", self.vplStorage)
-        BufferViewerGUI.registerTexture("GI-ColorStorage", self.colorStorage)
-        BufferViewerGUI.registerTexture("GI-Result", self.resultStorage)
+        BufferViewerGUI.registerTexture("GI-GeometryTexture", self.resultStage.geometryTexture)
+        BufferViewerGUI.registerTexture("GI-ColorTexture", self.resultStage.shRedTexture)
+        # BufferViewerGUI.registerTexture("GI-Result", self.resultStorage)
         # BufferViewerGUI.registerTexture("GI-VPLStorageTemp", self.vplStorageTemp)
         # BufferViewerGUI.registerTexture("GI-ColorStorageTemp", self.colorStorageTemp)
 
-        self.gridStart = Vec3(-20, -20, -1)
-        self.gridEnd = Vec3(20, 20, 39)
+        # self.gridStart = Vec3(-20, -20, -1)
+        # self.gridEnd = Vec3(20, 20, 39)
 
-        self.gridStart = Vec3(-100, -40, -1)
-        self.gridEnd = Vec3(100, 40, 199)
+        self.gridStart = Vec3(-80, -38, -1)
+        self.gridEnd = Vec3(80, 38, 80)
 
         self.voxelSize = (self.gridEnd - self.gridStart) / self.cascadeSize
         self.delay = 0
         self.frameIndex = 0
 
+        self.iterations = 64
+
         # Debugging of voxels
-        self.debugVoxels = False
+        self.debugVoxels = True
 
         if self.debugVoxels:
             self.createVoxelDebugBox()
 
+        # Iterations always has to be a multiple of two, because we render
+        # ping-pong
+        self.iterations *= 2
         self.reloadShader()
         self._clearTexture(self.resultStorage)
 
@@ -89,6 +91,7 @@ class GlobalIllumnination(DebugObject):
         box.node().setFinal(True)
         box.node().setBounds(OmniBoundingVolume())
         box.setShaderInput("giGrid", self.vplStorage)
+        box.setShaderInput("realGridSize", self.cascadeSize)
         box.setShaderInput("giColorGrid", self.resultStorage)
         box.setShaderInput(
             "scaleFactor", self.cascadeSize / float(gridVisualizationSize))
@@ -129,7 +132,9 @@ class GlobalIllumnination(DebugObject):
         if self.debugVoxels:
             self._setBoxShader()
 
-    def _clearTexture(self, tex, clearVal = None):
+        self.frameIndex = 0
+
+    def _clearTexture(self, tex, clearVal=None):
         if clearVal is None:
             clearVal = Vec4(0)
 
@@ -146,7 +151,7 @@ class GlobalIllumnination(DebugObject):
         self.frameIndex += 1
 
         # Process GI splitted over frames
-        if self.frameIndex > 32:
+        if self.frameIndex > self.iterations + 2:
             self.frameIndex = 1
 
         # TODO: Not all shader inputs need to be set everytime. Use PTAs
@@ -184,11 +189,12 @@ class GlobalIllumnination(DebugObject):
                 relativeSize = float(caster.getResolution()) / atlasSize
                 relativePos = caster.getAtlasPos()
                 direction = light.direction
+                color = light.color
                 self.sourcesData[index] = UnalignedLMatrix4f(
                     relativePos.x, relativePos.y, relativeSize, factor,
                     caster.nearPlane, caster.farPlane, 0, 0,
                     direction.x, direction.y, direction.z, 0,
-                    0, 0, 0, 0)
+                    color.x, color.y, color.z, 0)
                 self.mvpData[index] = UnalignedLMatrix4f(caster.mvp)
 
             # Clear VPL storages first
@@ -220,7 +226,7 @@ class GlobalIllumnination(DebugObject):
                 self.populateVPLNode, self.cascadeSize / 4,
                 self.cascadeSize / 4, self.cascadeSize / 4)
 
-        elif self.frameIndex < 32:
+        elif self.frameIndex < self.iterations + 2:
             # In the other frames, we spread the lighting. This can be basically
             # seen as a normal aware 3d blur
             self.spreadLightingNode.setShaderInput(

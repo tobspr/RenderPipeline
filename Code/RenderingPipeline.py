@@ -234,7 +234,7 @@ class RenderingPipeline(DebugObject):
         # Not sure why it has to be 0.25. But that leads to the best result
         aspect = float(self.size.y) / self.size.x
         self.onePixelShift = Vec2(
-            0.25 / self.size.x, 0.25 / self.size.y / aspect)
+            0.125 / self.size.x, 0.125 / self.size.y / aspect)
 
         # Annoying that Vec2 has no multliply-operator for non-floats
         multiplyVec2 = lambda a, b: Vec2(a.x*b.x, a.y*b.y)

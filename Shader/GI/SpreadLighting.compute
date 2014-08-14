@@ -21,10 +21,11 @@ ivec2 convertCoords(ivec3 src) {
 
 
 const float bounceFactor = 1.0;
-const float rangeMultiplier = 2520.0;
-const float transport = 0.08;
-const float colorTransport = 0.0008;
-const float normalBias = 1.0;
+const float rangeMultiplier = 4.0;
+const float transport = 1.0;
+const float colorTransport = 1.0;
+const float normalBias = 0.1;
+const float exposure = 1.03;
 
 void main() {
 
@@ -36,10 +37,6 @@ void main() {
 
   vec4 colorResult = sampleCenterColor;
   vec4 normalResult = sampleCenter;
-
-  // if (length(normalResult.xyx) < 0.1) {
-  //   normalResult.xyz = vec3(0,0,1);
-  // }
 
   const int numDirections = 6; 
 
@@ -63,8 +60,20 @@ void main() {
       // ivec3(-1,1,-1),
       // ivec3(1,-1,-1),
       // ivec3(-1,-1,-1)
+
+      // Diagonal 2
+      // ivec3(1,0,1),
+      // ivec3(-1,0,1),
+      // ivec3(0,-1,1),
+      // ivec3(0,1,1),
+
+      // ivec3(1,0,-1),
+      // ivec3(-1,0,-1),
+      // ivec3(0,-1,-1),
+      // ivec3(0,1,-1)
     );
 
+  float samplesSuccess = 1.0;
 
   for (int i = 0; i < numDirections; i++) {
     ivec3 dir = directions[i];
@@ -73,26 +82,35 @@ void main() {
     vec4 sampleColor = texelFetch(sourceColor, coords, 0);
 
     // no solid voxel
-    if (sampleColor.w < 0.0001) {
-      continue;
+    if (sampleColor.w < 0.1) {
+      // continue;
     }
 
     float localFactor = max(normalBias, dot(sampleNormal.xyz, -dir )) * rangeMultiplier;
-    // localFactor = 0.5;
-    colorResult += sampleColor * bounceFactor * transport * localFactor * vec4(colorTransport,colorTransport,colorTransport,1.0);
+    // localFactor = 1.0;
+    colorResult += sampleColor * bounceFactor * localFactor * vec4(vec3(colorTransport),1.0);
     normalResult.xyz += sampleNormal.xyz * bounceFactor * localFactor * transport;
-    // colorResult.w += localFactor * 0.05;
+    samplesSuccess += localFactor * bounceFactor;
 
   }
+
+  // colorResult.xyz /= 6.0;
 
   // Normalize, but only if length(normal) > 1.0
   float normalLength = max(1.0, length(normalResult.xyz));
   normalResult.xyz /= normalLength;
 
 
-  colorResult.w = clamp(colorResult.w, 0.001, 1.0);
+  if (bounceFactor > 0.0) {
+    colorResult.xyz /= samplesSuccess;
+    colorResult.w = clamp(colorResult.w, 0.001, 1.0);
+    colorResult.xyz = 1.0 - exp(-exposure * colorResult.xyz);
+  }
 
-  colorResult.xyz = 1.0 - exp(-0.5 * colorResult.xyz);
+
+  // float colorLength = max(3.0, length(colorResult.xyz));
+  // colorResult.xyz /= colorLength;
+
 
   // colorResult.xyz = normalResult.xyz;
 
