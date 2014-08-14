@@ -76,10 +76,10 @@ class Main(ShowBase, DebugObject):
          ####### END OF RENDER PIPELINE SETUP #######
 
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Scene.ignore/Car.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Models/Raventon/Model.egg"
@@ -193,11 +193,12 @@ class Main(ShowBase, DebugObject):
         earthScattering.bindTo(
             self.renderPipeline.lightingComputeContainer, "scatteringOptions")
 
-        self.sunSlider = BetterSlider(
-            x=300, y=100, size=200, parent=self.pixel2d, callback=self.setSunPos)
+        # self.sunSlider = BetterSlider(
+            # x=300, y=100, size=200, parent=self.pixel2d, callback=self.setSunPos)
 
     def setSunPos(self):
-        print "set sun pos"
+        # print "set sun pos"
+        return
         value = self.sunSlider.getValue()
         dPos = Vec3(0, value, 100)
         self.dirLight.setPos(dPos)

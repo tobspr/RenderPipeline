@@ -3,6 +3,7 @@ from panda3d.core import Shader, Filename
 from Globals import Globals
 
 
+
 class BetterShader:
 
     """ Small wrapper arround panda3d.core.Shader which supports

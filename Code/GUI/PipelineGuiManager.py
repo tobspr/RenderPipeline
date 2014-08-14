@@ -6,6 +6,7 @@ from ..Globals import Globals
 from ..DebugObject import DebugObject
 from BufferViewerGUI import BufferViewerGUI
 from BetterOnscreenImage import BetterOnscreenImage
+from BetterSlider import BetterSlider
 from BetterOnscreenText import BetterOnscreenText
 from CheckboxWithLabel import CheckboxWithLabel
 from CheckboxCollection import CheckboxCollection
@@ -121,6 +122,8 @@ class PipelineGuiManager(DebugObject):
 
             if isLeft:
                 currentY += 25
+
+        self.demoSlider = BetterSlider(x=20, y=currentY, size=230, parent=self.debuggerContent)
 
         self.initialized = True
 

@@ -143,6 +143,10 @@ vec2 getShadowOffsets(vec3 N, vec3 L) {
 float computeShadowsForSource(ShadowSource source, Material material, vec3 n, vec3 l, 
     float slopeScaledBias, float normalScaledBias, float baseBias) {
 
+    #ifdef DEBUG_DISABLE_SHADOWS
+        return 0.0;
+    #endif
+
     vec2 offsets = getShadowOffsets(n, l);
     vec3 biasedPos = material.position;
     float resFactor = 1024.0 / float(source.resolution);
@@ -167,7 +171,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     // float baseBias = 0.0002;
 
     // pixOffset = 0.0;
-    #define SHADOWS_NUM_SAMPLES 16
+    // #define SHADOWS_NUM_SAMPLES 16r
 
     // apply point light shadows
     float shadowFactor = 0.0;
