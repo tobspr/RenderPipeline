@@ -162,12 +162,21 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
     // projected = projected * 0.5 + 0.5;    
 
+    float pixOffset = 2.0 / SHADOW_MAP_ATLAS_SIZE;
+
     vec3 projCoord = projected.xyz / projected.w;
     projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
+
+    float pixScaled = 4.0 / float(source.resolution);
+
+    if (any(lessThan(projCoord.xy, vec2(pixScaled))) || any(greaterThan(projCoord.xy, vec2(1-pixScaled)))) {
+        return 0.0;
+    }
+
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
 
 
-    float pixOffset = 2.0 / SHADOW_MAP_ATLAS_SIZE;
+    
     // float baseBias = 0.0002;
 
     // pixOffset = 0.0;

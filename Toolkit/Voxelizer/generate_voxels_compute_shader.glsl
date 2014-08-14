@@ -31,12 +31,15 @@ void main() {
             stencil = 1.0;
         }
 
+
+
+        // imageStore(destination, texelCoords + ivec2(i*gridSize, 0), vec4(solidness,stencil,1));
+        imageStore(destination, texelCoords + ivec2(i*gridSize, 0), vec4(stencil, stencil, stencil,1));
+
         if (solidness.x > 0.5) {
             stencil = 0.0;
         }
 
-        // imageStore(destination, texelCoords + ivec2(i*gridSize, 0), vec4(solidness,stencil,1));
-        imageStore(destination, texelCoords + ivec2(i*gridSize, 0), vec4(stencil, stencil, stencil,1));
     }
 
     // now do the same from the other direction .. we don't know if the mesh has correct
@@ -50,13 +53,15 @@ void main() {
             stencil = 1.0;
         }
 
-        if (solidness.y > 0.5) {
-            stencil = 0.0;
-        }
+
 
         if (stencil > 0.5) {
             imageStore(destination, texelCoords + ivec2(i*gridSize, 0), vec4(stencil, stencil, stencil,1));
         }
+        if (solidness.y > 0.5) {
+            stencil = 0.0;
+        }
+        
     }
 
 

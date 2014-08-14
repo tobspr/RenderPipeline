@@ -167,11 +167,12 @@ class MovementController:
 
         self.velocity += translatedDirection*0.15
         # self.velocity *= self.smoothness*0.19 + 0.8
-        self.velocity *= self.smoothness  + 0.5
 
         # apply new position
         self.showbase.camera.setPos(
             self.showbase.camera.getPos() + self.velocity)
+        
+        self.velocity *= self.smoothness  + 0.0
 
         # transform rotation (keyboard keys)
         rotationSpeed = self.keyboardHprSpeed * 100.0 * self.showbase.taskMgr.globalClock.getDt()

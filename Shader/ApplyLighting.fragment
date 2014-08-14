@@ -337,8 +337,5 @@ void main() {
         occlusionTotal = 0.0;
     #endif
 
-
-    vec3 fogColor = vec3(1);
-    float fogFactor = (distance(material.position,cameraPosition)-20.0) / 1900.0;
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );
 }

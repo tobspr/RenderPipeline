@@ -6,6 +6,7 @@ from os import listdir, makedirs
 from os.path import join, isfile, isdir
 from direct.showbase.ShowBase import ShowBase
 
+import random
 
 def mulVec3(a, b):
     return Vec3(a.x * b.x, a.y * b.y, a.z * b.z)
@@ -14,12 +15,14 @@ def mulVec3(a, b):
 defaultVertexShader = """
 #version 150
 uniform mat4 p3d_ModelViewProjectionMatrix;
+uniform mat4 trans_model_to_world;
 in vec4 p3d_Vertex;
+in vec4 p3d_Normal;
 out vec4 color;
 void main() {
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
-    color = vec4(abs(p3d_Vertex.xyz)*0.05, 1.0);
     color.w = 1.0;
+    // color.xyz = (trans_model_to_world * vec4(p3d_Normal.xyz, 0)).xyz;
     color.xyz = vec3(1);
 }
 """
@@ -49,7 +52,7 @@ class VoxelizerShowbase(ShowBase):
         model-cache 
         model-cache-dir 
         model-cache-textures #f
-        notify-level-gobj error
+        notify-level-gobj fatal
         """)
         ShowBase.__init__(self)
         self.disableMouse()
@@ -60,23 +63,20 @@ class VoxelizerShowbase(ShowBase):
         self.generateNode.setShader(Shader.loadCompute(Shader.SLGLSL, "generate_voxels_compute_shader.glsl"))
         self.combineNode = NodePath("CombineVoxels")
         self.combineNode.setShader(Shader.loadCompute(Shader.SLGLSL, "combine_directions_compute_shader.glsl"))
-
+        self.processNode = NodePath("ProcessVoxels")
+        self.processNode.setShader(Shader.loadCompute(Shader.SLGLSL, "remove_lonely_voxels_compute_shader.glsl"))
 
     def voxelize(self, filename, sourceDirectory, destination):
 
 
+        tempPath = "temp/" + str(random.randint(10000,99999)) + "/"
 
-        gridResolution = 128
+        gridResolution = 64
 
         print "Voxelizer::Voxelizing", filename
         print "Voxelizer::Will store result at", dest
 
-        # Remove temp path
-        if isdir("temp"):
-            shutil.rmtree("temp")
-            time.sleep(0.1)
-
-        makedirs("temp")
+        makedirs(tempPath)
 
         # Reset model path first
         getModelPath().clearLocalValue()
@@ -179,14 +179,14 @@ class VoxelizerShowbase(ShowBase):
                     self.graphicsEngine.extract_texture_data(
                         self.layerTexture, self.win.getGsg())
                     self.layerTexture.write(
-                        "temp/" + dirName + "_" + mode + "_" + str(i).zfill(5) + ".png")
+                        tempPath + dirName + "_" + mode + "_" + str(i).zfill(5) + ".png")
 
             # Now reconstruct voxels
             print "Loading generated texture arrays"
             frontfaceTex = TexturePool.load2dTextureArray(
-                "temp/" + dirName + "_frontface_#####.png")
+                tempPath + dirName + "_frontface_#####.png")
             backfaceTex = TexturePool.load2dTextureArray(
-                "temp/" + dirName + "_backface_#####.png")
+                tempPath + dirName + "_backface_#####.png")
 
             # We have to use a 2d texture for storage, as we can't use image Load/Store
             # for a 2d Texture
@@ -194,7 +194,6 @@ class VoxelizerShowbase(ShowBase):
             storage.setup2dTexture(
                 gridResolution * gridResolution, gridResolution,
                 Texture.TFloat, Texture.FRgba16)
-
 
             # Generate voxel grid
             self.generateNode.setShaderInput("frontfaceTex", frontfaceTex)
@@ -209,7 +208,7 @@ class VoxelizerShowbase(ShowBase):
             self.graphicsEngine.extract_texture_data(
                     storage, self.win.getGsg())
             self.directionTextures[dirName] = storage
-            storage.write(join(destination, "result_" + dirName + ".png"))
+            storage.write(tempPath + "result_" + dirName + ".png")
 
         # finally, combine all textures
         resultTexture = Texture("result")
@@ -225,10 +224,26 @@ class VoxelizerShowbase(ShowBase):
         sattr = self.combineNode.get_attrib(ShaderAttrib)
         self.graphicsEngine.dispatch_compute(
                 ( gridResolution/8, gridResolution/8, gridResolution/8), sattr, self.win.get_gsg())
-        self.graphicsEngine.extract_texture_data(
-                resultTexture, self.win.getGsg())
 
-        resultTexture.write(join(destination, "result_combined.png"))
+        # now, do some further processing
+        processedTexture = Texture("result")
+        processedTexture.setup2dTexture(
+                gridResolution * gridResolution, gridResolution,
+                Texture.TFloat, Texture.FRgba16)
+
+        self.processNode.setShaderInput("destination", processedTexture)
+        self.processNode.setShaderInput("source", resultTexture)
+        self.processNode.setShaderInput("gridSize", gridResolution)
+        sattr = self.processNode.get_attrib(ShaderAttrib)
+        self.graphicsEngine.dispatch_compute(
+                ( gridResolution/8, gridResolution/8, gridResolution/8), sattr, self.win.get_gsg())
+
+        self.graphicsEngine.extract_texture_data(
+                processedTexture, self.win.getGsg())
+
+        # resultTexture.write(join(destination, "result_combined.png"))
+        processedTexture.write(join(destination, "result_combined.png"))
+        processedTexture.write(tempPath + "result_combined.png")
 
 
         self.graphicsEngine.removeWindow(self.layerBuffer)
@@ -237,9 +252,10 @@ class VoxelizerShowbase(ShowBase):
 
 
         # Remove temp path
-        if isdir("temp"):
-            shutil.rmtree("temp")
-            time.sleep(0.1)
+        if isdir(tempPath):
+            # shutil.rmtree(tempPath)
+            # time.sleep(0.1)
+            pass
 
 
         print "Done!"

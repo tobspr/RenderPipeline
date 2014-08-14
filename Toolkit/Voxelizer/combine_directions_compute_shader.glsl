@@ -18,8 +18,10 @@ void main() {
     ivec3 texelCoords = ivec3(gl_GlobalInvocationID.xyz);
 
 
-    vec3 factorX = texelFetch(directionX, convertCoord(texelCoords.yzx), 0).xyz;
-    vec3 factorY = texelFetch(directionY, convertCoord(texelCoords.xzy), 0).xyz;
-    vec3 factorZ = texelFetch(directionZ, convertCoord(texelCoords.xyz), 0).xyz;
-    imageStore(destination, convertCoord(texelCoords.xyz), vec4(factorX.x, factorY.x, factorZ.x, 1));
+    float factorX = texelFetch(directionX, convertCoord(texelCoords.yzx), 0).x;
+    float factorY = texelFetch(directionY, convertCoord(texelCoords.xzy), 0).x;
+    float factorZ = texelFetch(directionZ, convertCoord(texelCoords.xyz), 0).x;
+
+    float result = (factorX + factorY + factorZ) > 0.5 ? 1.0 : 0.0;
+    imageStore(destination, convertCoord(texelCoords.xyz), vec4(result,result,result, 1));
 }

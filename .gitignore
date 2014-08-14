@@ -20,3 +20,4 @@ Models/*.blend*
 *.blend1
 *.blend2
 Toolkit/Voxelizer/convert
+Toolkit/Voxelizer/temp

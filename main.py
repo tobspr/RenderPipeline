@@ -149,7 +149,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setShadowMapResolution(1024)
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(2))
+        dirLight.setColor(Vec3(4))
         self.renderPipeline.addLight(dirLight)
         self.initialLightPos.append(dPos)
         self.lights.append(dirLight)
