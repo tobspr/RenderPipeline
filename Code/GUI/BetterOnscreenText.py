@@ -8,8 +8,12 @@ from ..DebugObject import DebugObject
 
 class BetterOnscreenText(DebugObject):
 
-    def __init__(self, text="", parent=None, x=0, y=0, size=10, align="left", color=None):
-        DebugObject.__init__(self, "BOnscreenText")
+    """ Simple wrapper arround OnscreenText, providing a simpler interface
+    and better visuals """
+
+    def __init__(self, text="", parent=None, x=0, y=0, size=10, align="left",
+                 color=None):
+        DebugObject.__init__(self, "BetterOnscreenText")
 
         if color is None:
             color = Vec3(1)
@@ -29,7 +33,11 @@ class BetterOnscreenText(DebugObject):
             font=Globals.font)
 
     def getInitialPos(self):
+        """ Returns the initial position of the text. This can be used for
+        animations """
         return self.initialPos
 
     def posInterval(self, *args, **kwargs):
+        """ Returns a pos interval, this is a wrapper arround
+        NodePath.posInterval """
         return self._node.posInterval(*args, **kwargs)

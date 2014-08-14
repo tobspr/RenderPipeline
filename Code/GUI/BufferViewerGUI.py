@@ -18,7 +18,9 @@ from direct.interval.IntervalGlobal import Parallel, Func, Sequence
 
 class FakeBuffer:
 
-    """ Small wrapper to allow textures to be viewed in the texture viewer """
+    """ Small wrapper to allow textures to be viewed in the texture viewer,
+    which expects a RenderTarget. This class emulates the functions required
+    by the BufferViewerGUI. """
 
     def __init__(self, tex):
         self.tex = tex
@@ -30,13 +32,34 @@ class FakeBuffer:
         return self.tex
 
 
-
 class BufferViewerGUI(DebugObject):
 
     """ Simple gui to view texture buffers for debugging """
 
     buffers = {}
     bufferOrder = []
+
+    @classmethod
+    def registerBuffer(self, name, buff):
+        self.buffers[name] = buff
+        self.bufferOrder.append(name)
+
+    @classmethod
+    def unregisterBuffer(self, name):
+        if name in self.buffers:
+            del self.buffers[name]
+            self.bufferOrder.remove(name)
+        else:
+            print "BufferViewer: Warning: buffer not in dictionary"
+
+    @classmethod
+    def registerTexture(self, name, tex):
+        fb = FakeBuffer(tex)
+        self.registerBuffer(name, fb)
+
+    @classmethod
+    def unregisterTexture(self, name):
+        self.unregisterBuffer(name)
 
     def __init__(self, parent):
         DebugObject.__init__(self, "BufferViewer")
@@ -65,34 +88,13 @@ class BufferViewerGUI(DebugObject):
     def createComponents(self):
         self.buffersParent = self.window.getContentNode().attachNewNode(
             "buffers")
-        toggleAlpha = CheckboxWithLabel(parent=self.window.getContentNode(), x=10, y=10,
-                                        textSize=15, text="Alpha only", chbChecked=False,
-                                        chbCallback=self.setAlphaRendering)
+        self.toggleAlphaBtn = CheckboxWithLabel(
+            parent=self.window.getContentNode(), x=10, y=10,
+            textSize=15, text="Alpha only", chbChecked=False,
+            chbCallback=self.setAlphaRendering)
 
     def setAlphaRendering(self, toggle):
         self.debug("show alpha:", toggle)
-
-    @classmethod
-    def registerBuffer(self, name, buff):
-        self.buffers[name] = buff
-        self.bufferOrder.append(name)
-
-    @classmethod
-    def unregisterBuffer(self, name):
-        if name in self.buffers:
-            del self.buffers[name]
-            self.bufferOrder.remove(name)
-        else:
-            print "BufferViewer: Warning: buffer not in dictionary"
-
-    @classmethod
-    def registerTexture(self, name, tex):
-        fb = FakeBuffer(tex)
-        self.registerBuffer(name, fb)
-
-    @classmethod
-    def unregisterTexture(self, name):
-        self.unregisterBuffer(name)
 
     def renderBuffers(self):
         self.buffersParent.node().removeAllChildren()
@@ -101,25 +103,11 @@ class BufferViewerGUI(DebugObject):
         posY = 0
 
         for name in self.bufferOrder:
-
             target = self.buffers[name]
-
-            if not isinstance(target, FakeBuffer):
-                sort1 = target.getInternalRegion().getSort()
-                sort2 = target.getRegion().getSort()
-                sort3 = target.getInternalBuffer().getSort()
-                sort4 = target.getInternalBuffer().getDisplayRegion(0).getSort()
-                sortStr = "(" + str(sort3) + ";" + str(sort4) + ")"
-            else:
-                sortStr = ""
-
             for targetType in RenderTargetType.All:
-
                 if not target.hasTarget(targetType):
                     continue
-
                 tex = target.getTexture(targetType)
-
                 sizeStr = str(tex.getXSize()) + " x " + str(tex.getYSize())
 
                 if tex.getZSize() != 1:
@@ -130,7 +118,6 @@ class BufferViewerGUI(DebugObject):
                     state=DGG.NORMAL)
                 node.setPos(
                     20 + posX * (self.texWidth + self.texPadding), 0, -self.paddingTop - 22 - posY * (self.texHeight + self.texPadding + 44))
-
                 node.bind(DGG.ENTER, partial(self.onMouseOver, node))
                 node.bind(DGG.EXIT, partial(self.onMouseOut, node))
                 node.bind(DGG.B1RELEASE, partial(self.showDetail, tex))
@@ -146,25 +133,24 @@ class BufferViewerGUI(DebugObject):
                         self.texHeight
 
                 img = BetterOnscreenImage(
-                    image=tex, parent=node, x=0, y=30, w=computedWidth, h=computedHeight, transparent=False, nearFilter=False, anyFilter=False)
+                    image=tex, parent=node, x=0, y=30, w=computedWidth,
+                    h=computedHeight, transparent=False, nearFilter=False,
+                    anyFilter=False)
                 txtName = BetterOnscreenText(
                     text=name, x=0, y=0, size=15, parent=node)
                 txtSizeFormat = BetterOnscreenText(
-                    text=sizeStr, x=0, y=20, size=15, parent=node, color=Vec3(0.2))
+                    text=sizeStr, x=0, y=20, size=15, parent=node,
+                    color=Vec3(0.2))
                 txtTarget = BetterOnscreenText(
-                    text=str(targetType), align="right", x=self.texWidth, y=20, size=15, parent=node, color=Vec3(0.2))
+                    text=str(targetType), align="right", x=self.texWidth,
+                    y=20, size=15, parent=node, color=Vec3(0.2))
 
                 posX += 1
                 if posX > self.pageSize:
                     posY += 1
                     posX = 0
 
-    # def selectTexture(self, coord, elem, ):
-    #     print "Select texture!:",a
-
     def showDetail(self, tex, coord):
-        print "Showing detail:", tex
-
         availableW = 1180
         availableH = 690
 
@@ -184,7 +170,8 @@ class BufferViewerGUI(DebugObject):
             image=tex, parent=self.buffersParent, x=10, y=40, w=displayW, h=displayH,
             transparent=False, nearFilter=False, anyFilter=False)
 
-        backBtn = BetterButton(self.buffersParent, 150, 2, "Back", callback=self.renderBuffers)
+        backBtn = BetterButton(
+            self.buffersParent, 150, 2, "Back", callback=self.renderBuffers)
 
     def onMouseOver(self, node, a):
         node['frameColor'] = (1, 1, 1, 0.4)

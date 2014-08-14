@@ -9,9 +9,12 @@ from ..Globals import Globals
 
 class BetterCheckbox(DebugObject):
 
+    """ This is a wrapper arround DirectCheckBox, providing a simpler interface
+    and better visuals """
+
     def __init__(self, parent=None, x=0, y=0, callback=None, extraArgs=None,
                  radio=False, expandW=100, checked=False):
-        DebugObject.__init__(self, "BCheckbox")
+        DebugObject.__init__(self, "BetterCheckbox")
 
         prefix = "Checkbox" if not radio else "Radiobox"
 
@@ -20,6 +23,7 @@ class BetterCheckbox(DebugObject):
         uncheckedImg = Globals.loader.loadTexture(
             "Data/GUI/" + prefix + "Empty.png")
 
+        # Set near filter, otherwise textures look like crap
         for tex in [checkedImg, uncheckedImg]:
             tex.setMinfilter(Texture.FTNearest)
             tex.setMagfilter(Texture.FTNearest)
@@ -46,9 +50,14 @@ class BetterCheckbox(DebugObject):
             self._setChecked(True)
 
     def _setCollection(self, coll):
+        """ Internal method to add a checkbox to a checkbox collection, this
+        is used for radio-buttons """
+
         self.collection = coll
 
     def _updateStatus(self, status, *args):
+        """ Internal method when another checkbox in the same radio group
+        changed it's value """
         if self.collection:
             if status:
                 self.collection._changed(self)
@@ -59,6 +68,7 @@ class BetterCheckbox(DebugObject):
             self.callback(*([status] + self.extraArgs))
 
     def _setChecked(self, val):
+        """ Internal method to check/uncheck the checkbox """
         self._node["isChecked"] = val
 
         if val:

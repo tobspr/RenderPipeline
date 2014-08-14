@@ -123,7 +123,8 @@ class PipelineGuiManager(DebugObject):
             if isLeft:
                 currentY += 25
 
-        self.demoSlider = BetterSlider(x=20, y=currentY, size=230, parent=self.debuggerContent)
+        self.demoSlider = BetterSlider(
+            x=20, y=currentY, size=230, parent=self.debuggerContent)
 
         self.initialized = True
 
