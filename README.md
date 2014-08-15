@@ -4,6 +4,8 @@ This is my deferred render pipeline, implemented in Panda3D. This
 pipeline aims to do everything related to graphics for you, so that
 the user can focus on making the game, and not the graphics.
 
+Screenshot Thread: http://www.panda3d.org/forums/viewtopic.php?f=6&t=17050
+
 This pipeline is still in developement, feel free to join :)
 
 Thanks especially to rdb and all the others for support & help!

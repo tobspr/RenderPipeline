@@ -19,7 +19,7 @@
 #include "Includes/ColorCorrection.include"
 #include "Includes/PositionReconstruction.include"
 #include "Includes/SphericalHarmonics.include"
-#include "Scattering/ScatteringOptions.include"
+
 
 uniform sampler2D data0;
 uniform sampler2D data1;
@@ -60,13 +60,19 @@ uniform vec3 cameraPosition;
 // Has to be after the uniforms
 #include "Occlusion/Init.include"
 #include "Includes/Lighting.include"
-#include "Scattering/Final.include"
+
 
 out vec4 lightingResult;
 
+
+#ifdef USE_SCATTERING
+
+#include "Scattering/ScatteringOptions.include"
+#include "Scattering/Final.include"
+
 uniform sampler3D inscatterSampler;
 uniform ScatteringOptions scatteringOptions;
-
+#endif
 
 void main() {
 
@@ -215,11 +221,9 @@ void main() {
 
 
 
+    #ifdef USE_SCATTERING
     vec3 attenuation;
     float irradianceFactor;
-
-
-
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
         scatteringOptions,
@@ -234,6 +238,7 @@ void main() {
         result += scatteringResult * inscatterFactor;
     #endif
 
+    #endif
 
 
 
@@ -331,10 +336,13 @@ void main() {
         occlusionTotal = 0.0;
     #endif
 
+
     #ifdef DEBUG_RM_SCATTERING
-        result = scatteringResult * inscatterFactor;
-        result = 1.0f - exp(-1.5 * result);
-        occlusionTotal = 0.0;
+        #ifdef USE_SCATTERING
+            result = scatteringResult * inscatterFactor;
+            result = 1.0f - exp(-1.5 * result);
+            occlusionTotal = 0.0;
+        #endif
     #endif
 
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );

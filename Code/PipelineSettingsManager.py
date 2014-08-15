@@ -54,4 +54,5 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("displayDebugStats", bool, True)
         self._addSetting("dumpGeneratedShaders", bool, False)
 
-        self._addSetting("enableTemporalReprojection", bool, True)
+        self._addSetting("enableTemporalReprojection", bool, False)
+        self._addSetting("enableScattering", bool, False)

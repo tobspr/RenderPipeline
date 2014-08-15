@@ -1,13 +1,20 @@
-
 """
 
 
-RenderPipeline example
 
-This is a sample how you could integrate the Pipeline to your
-current project. It shows the basic functions of the Pipeline.
-Not that this file is not very clean coded, as it is the
-main testing file. 
+
+
+
+
+
+
+RenderPipeline testing file
+
+If you are looking for Code Examples, look at Samples/. This file is for
+testing purposes only, and also not very clean coded!
+
+
+
 
 """
 

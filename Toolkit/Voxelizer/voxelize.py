@@ -1,12 +1,29 @@
+
+
+from panda3d.core import *
+
+##### CONFIGURATION #####
+# Resolution of the voxel grid
+gridResolution = 128
+
+# Reject a voxel if it has < rejectionFactor neighbours
+rejectionFactor = 2.5
+
+# Wheter to fill the voxel grid, or only store the walls
+fillVolumes = False
+
+# The bounding volume is padded by this amount
+border = LPoint3f(1)
+
+
 import sys
 import shutil
 import time
-from panda3d.core import *
 from os import listdir, makedirs
 from os.path import join, isfile, isdir
 from direct.showbase.ShowBase import ShowBase
-
 import random
+
 
 def mulVec3(a, b):
     return Vec3(a.x * b.x, a.y * b.y, a.z * b.z)
@@ -49,34 +66,45 @@ class VoxelizerShowbase(ShowBase):
         show-buffers #t
         win-size 100 100
         texture-cache #f
-        model-cache 
-        model-cache-dir 
+        model-cache
+        model-cache-dir
         model-cache-textures #f
         notify-level-gobj fatal
         """)
+
         ShowBase.__init__(self)
         self.disableMouse()
         self.layerCamera = None
         self.addTask(self.update, "update")
         self.renderLens = OrthographicLens()
+
+        # Generate the compute shader nodes, required to execute the compute
+        # shaders
         self.generateNode = NodePath("GenerateVoxelsNode")
-        self.generateNode.setShader(Shader.loadCompute(Shader.SLGLSL, "generate_voxels_compute_shader.glsl"))
+        self.generateNode.setShader(
+            Shader.loadCompute(Shader.SLGLSL, "generate_voxels_compute_shader.glsl"))
         self.combineNode = NodePath("CombineVoxels")
-        self.combineNode.setShader(Shader.loadCompute(Shader.SLGLSL, "combine_directions_compute_shader.glsl"))
+        self.combineNode.setShader(
+            Shader.loadCompute(Shader.SLGLSL, "combine_directions_compute_shader.glsl"))
         self.processNode = NodePath("ProcessVoxels")
-        self.processNode.setShader(Shader.loadCompute(Shader.SLGLSL, "remove_lonely_voxels_compute_shader.glsl"))
+        self.processNode.setShader(
+            Shader.loadCompute(Shader.SLGLSL, "remove_lonely_voxels_compute_shader.glsl"))
 
     def voxelize(self, filename, sourceDirectory, destination):
+        """ Voxelizes the geometry from <filename> """
 
+        # Store the temporary files in a random path, otherwise panda caches it
+        tempPath = "temp/" + str(random.randint(10000000, 99999999)) + "/"
 
-        tempPath = "temp/" + str(random.randint(10000,99999)) + "/"
-
-        gridResolution = 64
+        # Create ramdisk, that's faster
+        vfs = VirtualFileSystem.getGlobalPtr()
+        # vfs.mount(VirtualFileMountSystem("temp/"), tempPath, 0) 
+        vfs.mount(VirtualFileMountRamdisk(), tempPath, 0) 
 
         print "Voxelizer::Voxelizing", filename
         print "Voxelizer::Will store result at", dest
 
-        makedirs(tempPath)
+        # makedirs(tempPath)
 
         # Reset model path first
         getModelPath().clearLocalValue()
@@ -88,34 +116,33 @@ class VoxelizerShowbase(ShowBase):
         try:
             model = loader.loadModel(filename, noCache=True)
         except Exception, msg:
-            print "Failed to load model!"
-            print "Message:", msg
+            print "Voxelizer::Failed to load model!"
+            print "Voxelizer::Message:", msg
             return False
 
         model.setShader(defaultShader)
 
-        # Get min/max bounds for
+        # Get min/max bounds for the model
         minBounds, maxBounds = model.getTightBounds()
 
         # Add some border to the voxel grid
-        border = LPoint3f(1)
         minBounds -= border
         maxBounds += border
-       
-
-
         gridSize = maxBounds - minBounds
         gridCenter = minBounds + gridSize * 0.5
         voxelSize = gridSize / float(gridResolution)
-        print "Voxelizer::loaded model, now converting .."
         print "Voxelizer::Bounds are", minBounds, "to", maxBounds
         print "Voxelizer::Voxel size is", voxelSize
-        print "Voxelizer::Grid center is", gridCenter
-        print "Voxelizer::Grid size is", gridSize
 
-        datafile = "GridResolution=" + str(gridResolution)+ "\n"
-        datafile+= "GridStart=" + str(minBounds.x) + ";" + str(minBounds.y) + ";" + str(minBounds.z) + "\n"
-        datafile+= "GridEnd=" + str(maxBounds.x) + ";" + str(maxBounds.y) + ";" + str(maxBounds.z) + "\n"
+        start = time.time()
+
+        datafile = "GridResolution=" + str(gridResolution) + "\n"
+        datafile += "GridStart=" + \
+            str(minBounds.x) + ";" + str(minBounds.y) + \
+            ";" + str(minBounds.z) + "\n"
+        datafile += "GridEnd=" + \
+            str(maxBounds.x) + ";" + str(maxBounds.y) + \
+            ";" + str(maxBounds.z) + "\n"
 
         with open(join(destination, "voxels.ini"), "w") as handle:
             handle.write(datafile)
@@ -153,7 +180,7 @@ class VoxelizerShowbase(ShowBase):
         self.directionTextures = {}
 
         for dirName, direction, filmSize in directions:
-            print "Rendering direction", dirName
+            print "Voxelizer::Rendering direction", dirName
             basePosition = mulVec3(gridCenter, (Vec3(1) - direction))
             basePosition += mulVec3(minBounds, direction)
             lookAt = gridCenter - direction * 100000.0
@@ -182,7 +209,7 @@ class VoxelizerShowbase(ShowBase):
                         tempPath + dirName + "_" + mode + "_" + str(i).zfill(5) + ".png")
 
             # Now reconstruct voxels
-            print "Loading generated texture arrays"
+            print "Voxelizer::Evaluating direction",dirName
             frontfaceTex = TexturePool.load2dTextureArray(
                 tempPath + dirName + "_frontface_#####.png")
             backfaceTex = TexturePool.load2dTextureArray(
@@ -202,63 +229,69 @@ class VoxelizerShowbase(ShowBase):
             self.generateNode.setShaderInput("destination", storage)
             sattr = self.generateNode.get_attrib(ShaderAttrib)
             self.graphicsEngine.dispatch_compute(
-                (gridResolution/16, gridResolution/16, 1), sattr, self.win.get_gsg())
+                (gridResolution / 16, gridResolution / 16, 1), sattr, self.win.get_gsg())
 
             # Save result texture
             self.graphicsEngine.extract_texture_data(
-                    storage, self.win.getGsg())
+                storage, self.win.getGsg())
             self.directionTextures[dirName] = storage
-            storage.write(tempPath + "result_" + dirName + ".png")
+            # storage.write(tempPath + "result_" + dirName + ".png")
 
+        print "Voxelizer::Combining directions .."
         # finally, combine all textures
         resultTexture = Texture("result")
         resultTexture.setup2dTexture(
-                gridResolution * gridResolution, gridResolution,
-                Texture.TFloat, Texture.FRgba16)
+            gridResolution * gridResolution, gridResolution,
+            Texture.TFloat, Texture.FRgba16)
 
-        self.combineNode.setShaderInput("directionX", self.directionTextures["x"])
-        self.combineNode.setShaderInput("directionY", self.directionTextures["y"])
-        self.combineNode.setShaderInput("directionZ", self.directionTextures["z"])
+        self.combineNode.setShaderInput(
+            "directionX", self.directionTextures["x"])
+        self.combineNode.setShaderInput(
+            "directionY", self.directionTextures["y"])
+        self.combineNode.setShaderInput(
+            "directionZ", self.directionTextures["z"])
         self.combineNode.setShaderInput("destination", resultTexture)
         self.combineNode.setShaderInput("gridSize", gridResolution)
         sattr = self.combineNode.get_attrib(ShaderAttrib)
         self.graphicsEngine.dispatch_compute(
-                ( gridResolution/8, gridResolution/8, gridResolution/8), sattr, self.win.get_gsg())
+            (gridResolution / 8, gridResolution / 8, gridResolution / 8), sattr, self.win.get_gsg())
 
         # now, do some further processing
         processedTexture = Texture("result")
         processedTexture.setup2dTexture(
-                gridResolution * gridResolution, gridResolution,
-                Texture.TFloat, Texture.FRgba16)
+            gridResolution * gridResolution, gridResolution,
+            Texture.TFloat, Texture.FRgba16)
 
         self.processNode.setShaderInput("destination", processedTexture)
         self.processNode.setShaderInput("source", resultTexture)
         self.processNode.setShaderInput("gridSize", gridResolution)
+        self.processNode.setShaderInput("rejectionFactor", rejectionFactor)
+        self.processNode.setShaderInput("fillVolumes", fillVolumes)
         sattr = self.processNode.get_attrib(ShaderAttrib)
         self.graphicsEngine.dispatch_compute(
-                ( gridResolution/8, gridResolution/8, gridResolution/8), sattr, self.win.get_gsg())
+            (gridResolution / 8, gridResolution / 8, gridResolution / 8), sattr, self.win.get_gsg())
 
         self.graphicsEngine.extract_texture_data(
-                processedTexture, self.win.getGsg())
+            processedTexture, self.win.getGsg())
 
+        print "Voxelizer::Saving .."
         # resultTexture.write(join(destination, "result_combined.png"))
         processedTexture.write(join(destination, "result_combined.png"))
-        processedTexture.write(tempPath + "result_combined.png")
-
+        # processedTexture.write(tempPath + "result_combined.png")
 
         self.graphicsEngine.removeWindow(self.layerBuffer)
         self.layerScene.removeNode()
         self.layerCamera.removeNode()
 
-
         # Remove temp path
-        if isdir(tempPath):
+        # if isdir(tempPath):
             # shutil.rmtree(tempPath)
             # time.sleep(0.1)
-            pass
 
+        end = time.time()
+        durationMs = round((end-start) * 1000.0, 5)
 
-        print "Done!"
+        print "Voxelizer::Done in",durationMs,"ms!"
 
     def update(self, task):
         # if self.layerCamera is not None:

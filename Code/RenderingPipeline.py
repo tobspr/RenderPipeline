@@ -998,6 +998,9 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableGlobalIllumination:
             defines.append(("USE_GLOBAL_ILLUMINATION", 1))
 
+        if self.settings.enableScattering:
+            defines.append(("USE_SCATTERING", 1))
+
         # Pass near far
         defines.append(("CAMERA_NEAR", Globals.base.camLens.getNear()))
         defines.append(("CAMERA_FAR", Globals.base.camLens.getFar()))

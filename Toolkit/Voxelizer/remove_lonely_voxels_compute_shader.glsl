@@ -5,6 +5,8 @@ layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 uniform writeonly image2D destination;
 uniform sampler2D source;
 uniform int gridSize;
+uniform float rejectionFactor;
+uniform bool fillVolumes;
 
 
 ivec2 convertCoord(ivec3 coord) {
@@ -27,7 +29,7 @@ void main() {
     float resultVoxel = texelFetch(source, sourceCoords, 0);
     float neighbourCount = resultTop + resultBottom + resultLeft + resultRight + resultFront + resultBack;
 
-    if (neighbourCount < 2.5) {
+    if (neighbourCount < rejectionFactor || (neighbourCount > 5.5 && !fillVolumes)) {
         resultVoxel *= 0.0;
     }
 

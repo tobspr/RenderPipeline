@@ -1,4 +1,4 @@
-from direct.stdpy.file import isfile
+from direct.stdpy.file import isfile, open
 from DebugObject import DebugObject
 
 
