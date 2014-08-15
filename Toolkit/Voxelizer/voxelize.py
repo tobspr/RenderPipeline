@@ -2,25 +2,10 @@
 
 from panda3d.core import *
 
-##### CONFIGURATION #####
-# Resolution of the voxel grid
-gridResolution = 128
-
-# Reject a voxel if it has < rejectionFactor neighbours
-rejectionFactor = 2.5
-
-# Wheter to fill the voxel grid, or only store the walls
-fillVolumes = False
-
-# The bounding volume is padded by this amount
-border = LPoint3f(1)
-
-
 import sys
-import shutil
 import time
 from os import listdir, makedirs
-from os.path import join, isfile, isdir
+from direct.stdpy.file import join, isfile, isdir, open
 from direct.showbase.ShowBase import ShowBase
 import random
 
@@ -70,6 +55,8 @@ class VoxelizerShowbase(ShowBase):
         model-cache-dir
         model-cache-textures #f
         notify-level-gobj fatal
+        window-type offscreen
+        gl-finish #t
         """)
 
         ShowBase.__init__(self)
@@ -90,22 +77,27 @@ class VoxelizerShowbase(ShowBase):
         self.processNode.setShader(
             Shader.loadCompute(Shader.SLGLSL, "remove_lonely_voxels_compute_shader.glsl"))
 
-    def voxelize(self, filename, sourceDirectory, destination):
+    def _logCallback(self, percent, message, isError=False):
+        print percent, message
+
+    def voxelize(self, filename, sourceDirectory, destination, options, logCallback=None):
         """ Voxelizes the geometry from <filename> """
+
+        if logCallback is None:
+            logCallback = self._logCallback
+
+        vectorToStr = lambda v: "[" + str(round(v.x, 2)) + ", " + str(
+            round(v.y, 2)) + ", " + str(round(v.z, 2)) + "]"
 
         # Store the temporary files in a random path, otherwise panda caches it
         tempPath = "temp/" + str(random.randint(10000000, 99999999)) + "/"
 
         # Create ramdisk, that's faster
         vfs = VirtualFileSystem.getGlobalPtr()
-        # vfs.mount(VirtualFileMountSystem("temp/"), tempPath, 0) 
-        vfs.mount(VirtualFileMountRamdisk(), tempPath, 0) 
+        # vfs.mount(VirtualFileMountSystem("temp/"), tempPath, 0)
+        vfs.mount(VirtualFileMountRamdisk(), tempPath, 0)
 
-        print "Voxelizer::Voxelizing", filename
-        print "Voxelizer::Will store result at", dest
-
-        # makedirs(tempPath)
-
+        logCallback(10, "Voxelizing ..")
         # Reset model path first
         getModelPath().clearLocalValue()
 
@@ -116,8 +108,8 @@ class VoxelizerShowbase(ShowBase):
         try:
             model = loader.loadModel(filename, noCache=True)
         except Exception, msg:
-            print "Voxelizer::Failed to load model!"
-            print "Voxelizer::Message:", msg
+            logCallback(0, "Failed to load model!", True)
+            logCallback(0, "Message: " + str(msg), True)
             return False
 
         model.setShader(defaultShader)
@@ -125,14 +117,17 @@ class VoxelizerShowbase(ShowBase):
         # Get min/max bounds for the model
         minBounds, maxBounds = model.getTightBounds()
 
+        gridResolution = options["gridResolution"]
+
         # Add some border to the voxel grid
-        minBounds -= border
-        maxBounds += border
+        minBounds -= Vec3(options["border"])
+        maxBounds += Vec3(options["border"])
         gridSize = maxBounds - minBounds
         gridCenter = minBounds + gridSize * 0.5
         voxelSize = gridSize / float(gridResolution)
-        print "Voxelizer::Bounds are", minBounds, "to", maxBounds
-        print "Voxelizer::Voxel size is", voxelSize
+        logCallback(
+            20, "Bounds are " + vectorToStr(minBounds) + " to " + vectorToStr(maxBounds))
+        logCallback(20, "Voxel size is " + vectorToStr(voxelSize))
 
         start = time.time()
 
@@ -179,8 +174,11 @@ class VoxelizerShowbase(ShowBase):
 
         self.directionTextures = {}
 
+        progress = 0
+
         for dirName, direction, filmSize in directions:
-            print "Voxelizer::Rendering direction", dirName
+            logCallback(30 + progress, "Rendering direction " + dirName)
+            progress += 5
             basePosition = mulVec3(gridCenter, (Vec3(1) - direction))
             basePosition += mulVec3(minBounds, direction)
             lookAt = gridCenter - direction * 100000.0
@@ -188,15 +186,10 @@ class VoxelizerShowbase(ShowBase):
             self.renderLens.setNearFar(0, filmSize.z)
 
             for i in xrange(gridResolution):
-
                 cameraPosition = basePosition + \
                     mulVec3(voxelSize, direction * float(i + 1))
-
                 self.layerCamera.setPos(cameraPosition)
                 self.layerCamera.lookAt(lookAt)
-                # self.taskMgr.step()
-                # print "Rendering layer",i, "pos=",cameraPosition
-
                 for mode, attrib in cullModes:
                     model.setAttrib(
                         CullFaceAttrib.make(attrib), attributeCounter)
@@ -209,7 +202,9 @@ class VoxelizerShowbase(ShowBase):
                         tempPath + dirName + "_" + mode + "_" + str(i).zfill(5) + ".png")
 
             # Now reconstruct voxels
-            print "Voxelizer::Evaluating direction",dirName
+            logCallback(30 + progress, "Evaluating direction " + dirName)
+            progress += 5
+
             frontfaceTex = TexturePool.load2dTextureArray(
                 tempPath + dirName + "_frontface_#####.png")
             backfaceTex = TexturePool.load2dTextureArray(
@@ -235,9 +230,10 @@ class VoxelizerShowbase(ShowBase):
             self.graphicsEngine.extract_texture_data(
                 storage, self.win.getGsg())
             self.directionTextures[dirName] = storage
-            # storage.write(tempPath + "result_" + dirName + ".png")
 
-        print "Voxelizer::Combining directions .."
+            # storage.write(tempPath + "result_" + dirName + ".png")
+        logCallback(60, "Combining directions ..")
+
         # finally, combine all textures
         resultTexture = Texture("result")
         resultTexture.setup2dTexture(
@@ -256,6 +252,8 @@ class VoxelizerShowbase(ShowBase):
         self.graphicsEngine.dispatch_compute(
             (gridResolution / 8, gridResolution / 8, gridResolution / 8), sattr, self.win.get_gsg())
 
+        logCallback(80, "Post-Processing generated voxels ..")
+
         # now, do some further processing
         processedTexture = Texture("result")
         processedTexture.setup2dTexture(
@@ -265,8 +263,10 @@ class VoxelizerShowbase(ShowBase):
         self.processNode.setShaderInput("destination", processedTexture)
         self.processNode.setShaderInput("source", resultTexture)
         self.processNode.setShaderInput("gridSize", gridResolution)
-        self.processNode.setShaderInput("rejectionFactor", rejectionFactor)
-        self.processNode.setShaderInput("fillVolumes", fillVolumes)
+        self.processNode.setShaderInput(
+            "rejectionFactor", float(options["rejectionFactor"]) + 0.5)
+        self.processNode.setShaderInput(
+            "fillVolumes", bool(options["fillVolumes"]))
         sattr = self.processNode.get_attrib(ShaderAttrib)
         self.graphicsEngine.dispatch_compute(
             (gridResolution / 8, gridResolution / 8, gridResolution / 8), sattr, self.win.get_gsg())
@@ -274,24 +274,19 @@ class VoxelizerShowbase(ShowBase):
         self.graphicsEngine.extract_texture_data(
             processedTexture, self.win.getGsg())
 
-        print "Voxelizer::Saving .."
-        # resultTexture.write(join(destination, "result_combined.png"))
-        processedTexture.write(join(destination, "result_combined.png"))
-        # processedTexture.write(tempPath + "result_combined.png")
+        store = join(destination, "voxels.png")
+        logCallback(90, "Saving voxel grid to '" + store + "'..")
+        processedTexture.write(store)
 
+        logCallback(99, "Cleanup ..")
         self.graphicsEngine.removeWindow(self.layerBuffer)
         self.layerScene.removeNode()
         self.layerCamera.removeNode()
-
-        # Remove temp path
-        # if isdir(tempPath):
-            # shutil.rmtree(tempPath)
-            # time.sleep(0.1)
-
         end = time.time()
-        durationMs = round((end-start) * 1000.0, 5)
+        durationMs = round((end - start) * 1000.0, 3)
 
-        print "Voxelizer::Done in",durationMs,"ms!"
+        logCallback(100, "Converted in " + str(durationMs) + " ms!")
+        return True
 
     def update(self, task):
         # if self.layerCamera is not None:
@@ -316,6 +311,11 @@ if __name__ == "__main__":
 
     print "Voxelizer v0.001 // by tobspr"
 
+    gridResolution = 128
+    rejectionFactor = 2.5
+    fillVolumes = False
+    border = LPoint3f(1)
+
     sourceDir = "convert/"
     filesToConvert = recursiveFindFiles(sourceDir)
 
@@ -332,4 +332,9 @@ if __name__ == "__main__":
         dest = join(d, "voxelized")
         if not isdir(dest):
             makedirs(dest)
-        voxelizer.voxelize(f, d, dest)
+        voxelizer.voxelize(f, d, dest, {
+            "gridResolution": gridResolution,
+            "rejectionFactor": rejectionFactor,
+            "fillVolumes": fillVolumes,
+            "border": border
+        })

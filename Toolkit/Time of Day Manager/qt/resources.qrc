@@ -5,7 +5,5 @@
     <file>res/curveBG.png</file>
     <file>res/icon.png</file>
     <file>res/TimeManagerLogo.png</file>
-    <file>res/RPLogo.png</file>
-    <file>res/RPLogoSmall.png</file>
   </qresource>
 </RCC>
