@@ -41,8 +41,8 @@ void main() {
         imageStore(destination, texelCoords + ivec2(i*gridSize, 0), vec4(currentColor.xyz,stencil));
 
         if (solidness.x > solidMinAmount) {
-            stencil = 0.0;
         }
+        stencil = 0.0;
 
         currentColor = vec4(0.5,0.5,0.5,1.0);
 
@@ -74,8 +74,8 @@ void main() {
                 (currentColor.xyz), stencil));
         }
         if (solidness.y > solidMinAmount) {
-            stencil = 0.0;
         }
+        stencil = 0.0;
         
         currentColor = vec4(0.5,0.5,0.5,1.0);
 

@@ -108,7 +108,7 @@ class VoxelizerShowbase(ShowBase):
         else:
             vfs.mount(VirtualFileMountRamdisk(), tempPath, 0)
 
-        logCallback(10, "Voxelizing ..")
+        logCallback(10, "Loading model from disk ..")
         # Reset model path first
         getModelPath().clearLocalValue()
 
