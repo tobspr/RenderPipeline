@@ -25,11 +25,7 @@ sys.dont_write_bytecode = True
 
 
 import math
-import shutil
 import struct
-import tempfile
-import atexit
-import os
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3
@@ -43,7 +39,6 @@ from Code.BetterShader import BetterShader
 from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
 from Code.Scattering import Scattering
-from Code.GUI.BetterSlider import BetterSlider
 
 
 class Main(ShowBase, DebugObject):
@@ -78,20 +73,24 @@ class Main(ShowBase, DebugObject):
         # self.renderPipeline.getMountManager().setWritePath(writeDirectory)
 
         self.renderPipeline.getMountManager().setBasePath(".")
+
+        # add scattering support
+        self.renderPipeline.settings.enableScattering = True
+
         self.renderPipeline.create()
 
          ####### END OF RENDER PIPELINE SETUP #######
 
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Scene.ignore/Car.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
-        self.usePlane = True
+        self.usePlane = False
 
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
@@ -153,7 +152,8 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(1024)
+        dirLight.setShadowMapResolution(2048)
+        dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(4))
@@ -195,19 +195,24 @@ class Main(ShowBase, DebugObject):
         self.loadSkybox()
 
         # set default object shaders
-        self.setShaders(refreshPipeline = False)
+        self.setShaders(refreshPipeline=False)
 
         earthScattering.bindTo(
             self.renderPipeline.lightingComputeContainer, "scatteringOptions")
 
+        self.renderPipeline.guiManager.demoSlider.node[
+            "command"] = self.setSunPos
+
         # self.sunSlider = BetterSlider(
-            # x=300, y=100, size=200, parent=self.pixel2d, callback=self.setSunPos)
+            # x=300, y=100, size=200, parent=self.pixel2d,
+            # callback=self.setSunPos)
 
     def setSunPos(self):
-        # print "set sun pos"
-        return
-        value = self.sunSlider.getValue()
-        dPos = Vec3(0, value, 100)
+        rawValue = self.renderPipeline.guiManager.demoSlider.node["value"]
+        # rawValue = rawValue / 100.0 * 2.0 * math.pi
+
+        # v = Vec3(math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
+        dPos = Vec3(0, rawValue, 100)
         self.dirLight.setPos(dPos)
         self.dirLight.setDirection(dPos)
 
@@ -275,7 +280,7 @@ class Main(ShowBase, DebugObject):
         if self.renderPipeline:
             self.scene.setShader(
                 self.renderPipeline.getDefaultObjectShader(False))
-            
+
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()
 

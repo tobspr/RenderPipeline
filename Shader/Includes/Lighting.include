@@ -162,7 +162,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
     // projected = projected * 0.5 + 0.5;    
 
-    float pixOffset = 2.0 / SHADOW_MAP_ATLAS_SIZE;
+    float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
 
     vec3 projCoord = projected.xyz / projected.w;
     projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
@@ -180,7 +180,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     // float baseBias = 0.0002;
 
     // pixOffset = 0.0;
-    // #define SHADOWS_NUM_SAMPLES 16r
+    #define SHADOWS_NUM_SAMPLES 16
 
     // apply point light shadows
     float shadowFactor = 0.0;

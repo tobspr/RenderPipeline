@@ -17,20 +17,19 @@ class GlobalIllumnination(DebugObject):
     class GIStage:
 
         def __init__(self, size):
-            self.geometryTexture = self._allocTexture(size)
-            self.shRedTexture = self._allocTexture(size)
-            self.shGreenTexture = self._allocTexture(size)
-            self.shBlueTexture = self._allocTexture(size)
 
-        def _allocTexture(self, size):
-            tex = Texture("tex")
-            tex.setup2dTexture(
-                size * size, size, Texture.TFloat, Texture.FRgba16)
-            return tex
+            self.shRedTexture = self._allocTexture(size)
 
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
         self.pipeline = pipeline
+
+    def _allocTexture(self):
+        tex = Texture("tex")
+        tex.setup2dTexture(
+            self.cascadeSize * self.cascadeSize, self.cascadeSize,
+            Texture.TFloat, Texture.FRgba16)
+        return tex
 
     def setup(self):
         """ Setups everything for the GI to work """
@@ -41,26 +40,30 @@ class GlobalIllumnination(DebugObject):
         self.sourcesData = PTAMat4.emptyArray(24)
         self.mvpData = PTAMat4.emptyArray(24)
 
-        self.stages = [
-            self.GIStage(self.cascadeSize),
-            self.GIStage(self.cascadeSize),
-        ]
+        self.geometryTexture = Globals.loader.loadTexture(
+            "Data/Testing/voxels.png")
+        self.geometryTexture.setFormat(Texture.FRgba16)
+        self.geometryTexture.setComponentType(Texture.TUnsignedShort)
 
-        self.resultStage = self.GIStage(self.cascadeSize)
+        self.vplTexturePing = self._allocTexture()
+        self.vplTexturePong = self._allocTexture()
+        self.vplTextureResult = self._allocTexture()
 
         BufferViewerGUI.registerTexture(
-            "GI-GeometryTexture", self.resultStage.geometryTexture)
+            "GI-GeometryTexture", self.geometryTexture)
         BufferViewerGUI.registerTexture(
-            "GI-ColorTexture", self.resultStage.shRedTexture)
-        # BufferViewerGUI.registerTexture("GI-Result", self.resultStorage)
-        # BufferViewerGUI.registerTexture("GI-VPLStorageTemp", self.vplStorageTemp)
-        # BufferViewerGUI.registerTexture("GI-ColorStorageTemp", self.colorStorageTemp)
+            "GI-VPLPing", self.vplTexturePing)
+        BufferViewerGUI.registerTexture(
+            "GI-VPLPong", self.vplTexturePong)
+        BufferViewerGUI.registerTexture("GI-VPLResult",
+                                        self.vplTextureResult)
 
-        # self.gridStart = Vec3(-20, -20, -1)
-        # self.gridEnd = Vec3(20, 20, 39)
+        self.gridStart = Vec3(-6.0, -6.0, -0.996201992035)
+        self.gridEnd = Vec3(6.0, 6.0, 7.78633880615)
 
-        self.gridStart = Vec3(-80, -38, -1)
-        self.gridEnd = Vec3(80, 38, 80)
+
+        self.gridStart = Vec3(-97.0472946167,-56.2713127136,-2.40248203278)
+        self.gridEnd = Vec3(90.9954071045, 60.1403465271, 72.4716720581)
 
         self.voxelSize = (self.gridEnd - self.gridStart) / self.cascadeSize
         self.delay = 0
@@ -69,7 +72,7 @@ class GlobalIllumnination(DebugObject):
         self.iterations = 64
 
         # Debugging of voxels
-        self.debugVoxels = True
+        self.debugVoxels = False
 
         if self.debugVoxels:
             self.createVoxelDebugBox()
@@ -78,7 +81,7 @@ class GlobalIllumnination(DebugObject):
         # ping-pong
         self.iterations *= 2
         self.reloadShader()
-        self._clearTexture(self.resultStorage)
+        self._clearTexture(self.vplTextureResult)
 
     def createVoxelDebugBox(self):
         box = Globals.loader.loadModel("box")
@@ -91,9 +94,9 @@ class GlobalIllumnination(DebugObject):
             gridVisualizationSize * gridVisualizationSize * gridVisualizationSize)
         box.node().setFinal(True)
         box.node().setBounds(OmniBoundingVolume())
-        box.setShaderInput("giGrid", self.vplStorage)
+        box.setShaderInput("giGrid", self.geometryTexture)
         box.setShaderInput("realGridSize", self.cascadeSize)
-        box.setShaderInput("giColorGrid", self.resultStorage)
+        box.setShaderInput("giColorGrid", self.vplTextureResult)
         box.setShaderInput(
             "scaleFactor", self.cascadeSize / float(gridVisualizationSize))
         box.setShaderInput("effectiveGrid", int(gridVisualizationSize))
@@ -167,32 +170,26 @@ class GlobalIllumnination(DebugObject):
             atlas = self.pipeline.getLightManager().shadowComputeTarget
             atlasDepth = atlas.getDepthTexture()
             atlasColor = atlas.getColorTexture()
-            atlasNormal = atlas.getAuxTexture(0)
             atlasSize = atlasDepth.getXSize()
 
             allLights = self.pipeline.getLightManager().getAllLights()
             casters = []
 
-            # Collect the shadow caster sources from all lights
+            # Collect the shadow caster sources from all directional lights
             for light in allLights:
-                if light.hasShadows():
+                if light.hasShadows() and light._getLightType() == LightType.Directional:
                     for source in light.getShadowSources():
                         casters.append((source, light))
 
             # Each shadow caster source contributes to the GI
             for index, packed in enumerate(casters):
                 caster, light = packed
-                factor = 0.0
-
-                if light._getLightType() == LightType.Directional:
-                    factor = 1.0
-
                 relativeSize = float(caster.getResolution()) / atlasSize
                 relativePos = caster.getAtlasPos()
                 direction = light.direction
                 color = light.color
                 self.sourcesData[index] = UnalignedLMatrix4f(
-                    relativePos.x, relativePos.y, relativeSize, factor,
+                    relativePos.x, relativePos.y, relativeSize, 0.0,
                     caster.nearPlane, caster.farPlane, 0, 0,
                     direction.x, direction.y, direction.z, 0,
                     color.x, color.y, color.z, 0)
@@ -200,10 +197,8 @@ class GlobalIllumnination(DebugObject):
 
             # Clear VPL storages first
             texturesToClear = [
-                (self.vplStorage, Vec4(0, 0, 0, 0)),
-                (self.vplStorageTemp, Vec4(0, 0, 0, 0)),
-                (self.colorStorage, Vec4(0, 0, 0, 0)),
-                (self.colorStorageTemp, Vec4(0, 0, 0, 0))
+                (self.vplTexturePing, Vec4(0, 0, 0, 0)),
+                (self.vplTexturePong, Vec4(0, 0, 0, 0))
             ]
             for tex, clearVal in texturesToClear:
                 self._clearTexture(tex, clearVal)
@@ -211,7 +206,6 @@ class GlobalIllumnination(DebugObject):
             # Now populate with VPLs
             self.populateVPLNode.setShaderInput("atlasDepth", atlasDepth)
             self.populateVPLNode.setShaderInput("atlasColor", atlasColor)
-            self.populateVPLNode.setShaderInput("atlasNormal", atlasNormal)
             self.populateVPLNode.setShaderInput("gridStart", self.gridStart)
             self.populateVPLNode.setShaderInput("gridEnd", self.gridEnd)
             self.populateVPLNode.setShaderInput(
@@ -220,50 +214,43 @@ class GlobalIllumnination(DebugObject):
             self.populateVPLNode.setShaderInput("lightCount", len(casters))
             self.populateVPLNode.setShaderInput("lightMVPData", self.mvpData)
             self.populateVPLNode.setShaderInput("lightData", self.sourcesData)
-            self.populateVPLNode.setShaderInput("target", self.vplStorage)
+            self.populateVPLNode.setShaderInput("target", self.vplTexturePing)
             self.populateVPLNode.setShaderInput(
-                "targetColor", self.colorStorage)
+                "geometryTex", self.geometryTexture)
             self._executeShader(
                 self.populateVPLNode, self.cascadeSize / 4,
                 self.cascadeSize / 4, self.cascadeSize / 4)
 
         elif self.frameIndex < self.iterations + 2:
+
             # In the other frames, we spread the lighting. This can be
             # basically seen as a normal aware 3d blur
             self.spreadLightingNode.setShaderInput(
                 "gridSize", LVecBase3i(self.cascadeSize))
+            self.spreadLightingNode.setShaderInput(
+                "geometryTex", self.geometryTexture)
 
             if self.frameIndex % 2 == 0:
                 self.spreadLightingNode.setShaderInput(
-                    "source", self.vplStorage)
+                    "source", self.vplTexturePing)
                 self.spreadLightingNode.setShaderInput(
-                    "sourceColor", self.colorStorage)
-                self.spreadLightingNode.setShaderInput(
-                    "target", self.vplStorageTemp)
-                self.spreadLightingNode.setShaderInput(
-                    "targetColor", self.colorStorageTemp)
-
+                    "target", self.vplTexturePong)
                 self._executeShader(
                     self.spreadLightingNode, self.cascadeSize / 4,
                     self.cascadeSize / 4, self.cascadeSize / 4)
 
             else:
                 self.spreadLightingNode.setShaderInput(
-                    "source", self.vplStorageTemp)
+                    "source", self.vplTexturePong)
                 self.spreadLightingNode.setShaderInput(
-                    "sourceColor", self.colorStorageTemp)
-                self.spreadLightingNode.setShaderInput(
-                    "target", self.vplStorage)
-                self.spreadLightingNode.setShaderInput(
-                    "targetColor", self.colorStorage)
+                    "target", self.vplTexturePing)
                 self._executeShader(
                     self.spreadLightingNode, self.cascadeSize / 4,
                     self.cascadeSize / 4, self.cascadeSize / 4)
         else:
             # Copy result in the last frame
-            # print "Copied result"
-            self.copyResultNode.setShaderInput("src", self.colorStorage)
-            self.copyResultNode.setShaderInput("dest", self.resultStorage)
+            self.copyResultNode.setShaderInput("src", self.vplTexturePing)
+            self.copyResultNode.setShaderInput("dest", self.vplTextureResult)
             self._executeShader(
                 self.copyResultNode,
                 self.cascadeSize * self.cascadeSize / 16,
@@ -272,8 +259,7 @@ class GlobalIllumnination(DebugObject):
     def bindTo(self, node):
         node.setShaderInput("GI_gridStart", self.gridStart)
         node.setShaderInput("GI_gridEnd", self.gridEnd)
-        node.setShaderInput("GI_grid", self.vplStorage)
-        node.setShaderInput("GI_gridColor", self.resultStorage)
+        node.setShaderInput("GI_gridColor", self.vplTextureResult)
         node.setShaderInput("GI_cascadeSize", self.cascadeSize)
 
     def _executeShader(self, node, threadsX, threadsY, threadsZ=1):

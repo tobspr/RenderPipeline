@@ -7,16 +7,13 @@
 #include "Includes/Packing.include"
 
 in vec2 texcoord;
-in vec3 normal;
+in vec3 worldPos;
 in vec3 diffuseMultiplier;
 uniform sampler2D p3d_Texture0;
 out vec4 diffuse;
-out vec4 pixelNormal;
-
 void main() {
-    
     diffuse.rgb = texture(p3d_Texture0, texcoord).rgb * diffuseMultiplier;
-    pixelNormal.rgb = normal.rgb*0.25 + 0.5;
+    // diffuse.rgb -= 0.3;
+    // diffuse.rgb = max(vec3(0), diffuse.rgb);
     diffuse.a = 1.0;
-    pixelNormal.a = 1.0;
 }

@@ -48,7 +48,6 @@ in vec2 texcoord;
     uniform vec3 GI_gridStart;
     uniform vec3 GI_gridEnd;
     uniform int GI_cascadeSize;
-    uniform sampler2D GI_grid;
     uniform sampler2D GI_gridColor;
 #endif
 
@@ -254,27 +253,51 @@ void main() {
         bool isInGrid = all(greaterThan(material.position, GI_gridStart)) && 
                         all(lessThan(material.position, GI_gridEnd));
         if (isInGrid) {
-            vec3 voxelSize = (GI_gridEnd - GI_gridStart) / float(giCascadeSize);
-            vec3 biasedPosition = material.position + material.normal*0.0 - voxelSize*0.0;
-            vec3 localCoord = (biasedPosition-GI_gridStart) / (GI_gridEnd-GI_gridStart);
 
+            vec3 voxelSize = (GI_gridEnd - GI_gridStart) / float(GI_cascadeSize);
+
+            // We have to substract a very little value, because of compiler
+            // optimizations. Otherwise the voxels are displaced and everythink breaks.
+            // FUCK THE COMPILER! sorry.
+            vec3 biasedPosition = material.position - 0.0000002 + material.normal * voxelSize * 1.0;
+
+
+            vec3 localCoord = (biasedPosition-GI_gridStart) / (GI_gridEnd-GI_gridStart);
+            ivec3 localCoordInt = ivec3(localCoord * GI_cascadeSize);
+
+            ivec2 texcoordInt = ivec2(localCoordInt.xy) + ivec2(localCoordInt.z*GI_cascadeSize, 0);
 
             vec2 giCoord = localCoord.xy * vec2(1.0 / giCascadeSize, 1.0);
             giCoord.x += int(localCoord.z * giCascadeSize ) / float(giCascadeSize);
-            giCoord.xy = clamp(giCoord.xy, vec2(1.0 / (giCascadeSize*giCascadeSize) ), vec2(1 - 1.0/giCascadeSize));
+
+            // giCoord.xy = clamp(giCoord.xy, vec2(1.0 / (giCascadeSize*giCascadeSize) ), vec2(1 - 1.0/giCascadeSize));
+
             vec4 interp1 = texture(GI_gridColor, giCoord.xy, 0);
-            vec4 interp2 = texture(GI_gridColor, giCoord.xy + vec2(1.0 / giCascadeSize, 0), 0);
-            vec4 giColor = mix(interp1, interp2, 
-                mod(localCoord.z, 1.0/giCascadeSize) * float(giCascadeSize) );
+            vec4 interp2 = texture(GI_gridColor, giCoord.xy + vec2(1.0 / giCascadeSize, 0), 0);            
+
+            float lerpFactor = mod(localCoord.z, 1.0/giCascadeSize) * float(giCascadeSize);
+            vec4 interpTexelFetch = texelFetch(GI_gridColor, texcoordInt, 0 );
+                
+            // Linear filtered
+            vec4 giColor = mix(interp1, interp2, lerpFactor );
+
+            // Point filtered (for debugging)
+            // vec4 giColor = interpTexelFetch + 0.1;
+
             // vec4 giColor = mix(interp1, interp2, 0.0);
             // giColor = interp2;
             // vec3 giResult = max(vec3(0.0), vec3( 1.0 - exp(-0.01 * giColor.xyz) )) + 0.2;
-            vec3 giResult = max(vec3(0.0), giColor.xyz * 32.0 ) + 0.2;
+            // vec3 giResult = max(vec3(0.0), giColor.xyz * 32.0 ) + 0.2;
+            vec3 giResult = vec3( max(vec3(0.0), pow( giColor.xyz+100.0, vec3(1.0/8.0)) * 1.5 )) + 0.01;
+            // vec3 giResult = vec3(ivec3(biasedPosition.xyz * 512.0) % 2);
+            giResult = max(vec3(0.0), giResult - 3.0) + 0.2;
 
-
+            // vec3 giResult = vec3(1);
+            // giResult = 1.05f - exp(-0.5 * giResult);
+            // giResult /= 100000.0;
+             
 
             #ifdef DEBUG_RM_GI
-                // result = 1.0f - exp(-1.5 * giResult);
                 result = giResult;
                 occlusionTotal = 0.0;
             #else
@@ -301,7 +324,7 @@ void main() {
 
     // result = HDR(result, 1.0);
 
-    result = 1.0f - exp(-1.5 * result);
+    // result = 1.0f - exp(-1.5 * result);
 
     #ifdef DEBUG_RM_BASECOLOR
         result = sqrt(material.baseColor);

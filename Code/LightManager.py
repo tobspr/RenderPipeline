@@ -149,8 +149,6 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.addColorTexture()
-        self.shadowComputeTarget.addAuxTextures(1)
-        self.shadowComputeTarget.setAuxBits(16)
         self.shadowComputeTarget.setColorBits(16)
         self.shadowComputeTarget.setDepthBits(32)
         self.shadowComputeTarget.setSource(
