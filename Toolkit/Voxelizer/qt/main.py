@@ -2,13 +2,12 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created: Fri Aug 15 12:05:50 2014
+# Created: Fri Aug 15 14:11:05 2014
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
-
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -244,12 +243,16 @@ class Ui_Voxel(object):
         self.box_borderSize.setSingleStep(0.1)
         self.box_borderSize.setProperty("value", 1.0)
         self.box_borderSize.setObjectName(_fromUtf8("box_borderSize"))
+        self.chb_removeInvalidVoxels = QtGui.QCheckBox(self.groupBox_2)
+        self.chb_removeInvalidVoxels.setGeometry(QtCore.QRect(260, 70, 191, 17))
+        self.chb_removeInvalidVoxels.setChecked(True)
+        self.chb_removeInvalidVoxels.setObjectName(_fromUtf8("chb_removeInvalidVoxels"))
         self.btn_convert = QtGui.QPushButton(self.centralwidget)
-        self.btn_convert.setGeometry(QtCore.QRect(400, 280, 91, 31))
+        self.btn_convert.setGeometry(QtCore.QRect(320, 280, 81, 31))
         self.btn_convert.setObjectName(_fromUtf8("btn_convert"))
         self.processStatus = QtGui.QProgressBar(self.centralwidget)
         self.processStatus.setEnabled(False)
-        self.processStatus.setGeometry(QtCore.QRect(10, 284, 381, 23))
+        self.processStatus.setGeometry(QtCore.QRect(10, 284, 311, 23))
         self.processStatus.setProperty("value", 0)
         self.processStatus.setObjectName(_fromUtf8("processStatus"))
         self.logOutput = QtGui.QPlainTextEdit(self.centralwidget)
@@ -258,6 +261,10 @@ class Ui_Voxel(object):
         self.logOutput.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.logOutput.setReadOnly(True)
         self.logOutput.setObjectName(_fromUtf8("logOutput"))
+        self.btn_showResult = QtGui.QPushButton(self.centralwidget)
+        self.btn_showResult.setEnabled(False)
+        self.btn_showResult.setGeometry(QtCore.QRect(410, 280, 81, 31))
+        self.btn_showResult.setObjectName(_fromUtf8("btn_showResult"))
         Voxel.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(Voxel)
@@ -281,7 +288,10 @@ class Ui_Voxel(object):
         self.label_4.setText(_translate("Voxel", "Remove voxel if it has less than", None))
         self.label_5.setText(_translate("Voxel", "neighbors", None))
         self.label_6.setText(_translate("Voxel", "Border Size (Panda3D units)", None))
+        self.chb_removeInvalidVoxels.setToolTip(_translate("Voxel", "When this option is checked, voxels which have a invalid normal are dropped in the final stage", None))
+        self.chb_removeInvalidVoxels.setText(_translate("Voxel", "Remove voxels with invalid normal", None))
         self.btn_convert.setText(_translate("Voxel", "Convert", None))
         self.logOutput.setPlainText(_translate("Voxel", "Voxelizer GUI - Initialized ..", None))
+        self.btn_showResult.setText(_translate("Voxel", "Show Result", None))
 
 import resources_rc

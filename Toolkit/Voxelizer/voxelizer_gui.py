@@ -4,6 +4,8 @@ from PyQt4 import QtGui
 from panda3d.core import Filename
 from qt.main import Ui_Voxel
 from voxelize import VoxelizerShowbase
+from os import system
+from thread import start_new_thread
 
 class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
 
@@ -13,13 +15,22 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
         self._log = ""
         self.showbase = VoxelizerShowbase()
         self.clearLog()
+        self.lastResultData = None
 
         self.btn_selectSource.clicked.connect(self.selectSource)
         self.btn_convert.clicked.connect(self.startConvert)
+        self.btn_showResult.clicked.connect(self.showResult)
+
+    def showResult(self):
+        start_new_thread(self.startViewer, ())
+
+    def startViewer(self):
+        system('ppython show_voxels.py "' + str(self.lastResultData[0]) + '" "' + str(self.lastResultData[1]) + '"')
 
     def startConvert(self):
 
         filename = str(self.ipt_source.text())
+        self.btn_showResult.setEnabled(False)
 
 
         if len(filename) < 1 or not isfile(filename):
@@ -42,30 +53,43 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
             voxelGridSize = 128
 
         fillEmptySpace = self.chb_fillEmptySpace.isChecked()
+        discardInvalidVoxels = self.chb_removeInvalidVoxels.isChecked()
         neighborBias = int(self.box_voxelNeighborBias.value())
 
         borderSize = float(self.box_borderSize.value())
+
+
+        if discardInvalidVoxels and fillEmptySpace:
+            QtGui.QMessageBox.warning(self, "Voxelizer", "The option 'Fill empty space with voxels' is invalid in combination with 'Remove voxels with invalid normal', as the voxels between Walls always have a invalid normal!")
+            return
 
         self.clearLog()
         self.addLog("Starting to convert ..")
         self.processStatus.setValue(0)
 
-        try:
+        result = False
+
+        if True:
+        # try:
             result = self.showbase.voxelize(filename, parentDir, destination, {
                     "gridResolution": voxelGridSize,
                     "rejectionFactor": neighborBias,
                     "fillVolumes": fillEmptySpace,
-                    "border": borderSize
+                    "border": borderSize,
+                    "discardInvalidVoxels": discardInvalidVoxels
                 }, logCallback=self._progressCallback)
-        except Exception, msg:
+        # except Exception, msg:
+        if False:
             self.addLog("Fatal error during conversion process!")
             self.addLog("Message: " + str(msg))
 
         self.processStatus.setValue(0)
 
         if not result:
-            self.addLog("Error: Voxelizer returned non-result statuscode!")
-
+            self.addLog("Error: Voxelizer returned non-success statuscode!")
+        else:
+            self.btn_showResult.setEnabled(True)
+            self.lastResultData = (filename, destination)
 
 
     def _progressCallback(self, percent, message, isError=False):
@@ -74,6 +98,7 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
 
     def selectSource(self):
         print "Select source!"
+        self.btn_showResult.setEnabled(False)
         filename = QtGui.QFileDialog.getOpenFileName(self, 
             'Select source file ', 'convert/', "P3D Scene File (*.egg *.bam)")
         filename = str(filename)

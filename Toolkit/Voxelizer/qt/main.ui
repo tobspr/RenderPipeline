@@ -725,13 +725,32 @@
       <double>1.000000000000000</double>
      </property>
     </widget>
+    <widget class="QCheckBox" name="chb_removeInvalidVoxels">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>70</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>When this option is checked, voxels which have a invalid normal are dropped in the final stage</string>
+     </property>
+     <property name="text">
+      <string>Remove voxels with invalid normal</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
    <widget class="QPushButton" name="btn_convert">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>320</x>
       <y>280</y>
-      <width>91</width>
+      <width>81</width>
       <height>31</height>
      </rect>
     </property>
@@ -747,7 +766,7 @@
      <rect>
       <x>10</x>
       <y>284</y>
-      <width>381</width>
+      <width>311</width>
       <height>23</height>
      </rect>
     </property>
@@ -775,6 +794,22 @@
     </property>
     <property name="plainText">
      <string>Voxelizer GUI - Initialized ..</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_showResult">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>280</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Result</string>
     </property>
    </widget>
   </widget>

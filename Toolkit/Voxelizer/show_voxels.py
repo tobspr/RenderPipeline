@@ -1,7 +1,14 @@
 
-from panda3d.core import *
+import sys
 
-from direct.filter.CommonFilters import CommonFilters
+
+if len(sys.argv) != 3:
+    print "Usage: show_voxels.py Path/To/Model.egg Path/To/Voxelized"
+    sys.exit(0)
+
+
+from panda3d.core import *
+from direct.stdpy.file import open, join
 
 import sys
 sys.path.insert(0, "../../Code/")
@@ -13,7 +20,7 @@ win-title Voxelizer - Show Voxels
 sync-video #f
 notify-level-pnmimage error
 show-buffers #f
-win-size 1600 900
+win-size 800 600
 texture-cache #f
 model-cache 
 model-cache-dir 
@@ -24,22 +31,18 @@ multisamples 16
 
 import direct.directbase.DirectStart
 
-from os.path import join
+scenePath = sys.argv[2]
+eggPath = sys.argv[1]
 
-sceneFile = "Sponza"
-eggName = "sponza.egg.bam"
-
-resultFile = join("convert", sceneFile, "voxelized/result_combined.png")
-resultEgg = join("convert", sceneFile, eggName)
-configFile = join("convert", sceneFile, "voxelized/voxels.ini")
-
-
+resultFile = join(scenePath, "voxels.png")
+configFile = join(scenePath, "voxels.ini")
+resultEgg = eggPath
 
 
 print "Loading model from", resultEgg
-model = loader.loadModel(resultEgg)
-model.flattenStrong()
-model.reparentTo(render)
+# model = loader.loadModel(resultEgg)
+# model.flattenStrong()
+# model.reparentTo(render)
 
 print "Loading Voxel Grid from", resultFile
 tex = loader.loadTexture(resultFile)
@@ -48,19 +51,21 @@ gridSize = tex.getYSize()
 print "Grid size is", gridSize
 
 
-# Load config, I know it's hacky, but this is only a debugging tool, so that's ok
+# Load config, I know it's hacky, but this is only a debugging tool, so
+# that's ok
 with open(configFile, "r") as handle:
     configContent = handle.readlines()
 
-extractVec3 = lambda s: Vec3(*([float(i) for i in s.strip().split("=")[-1].split(";")]) )
+extractVec3 = lambda s: Vec3(
+    *([float(i) for i in s.strip().split("=")[-1].split(";")]))
 gridStart = extractVec3(configContent[1])
 gridEnd = extractVec3(configContent[2])
+gridMid = (gridEnd - gridStart) / 2 + gridStart
 voxelScale = (gridEnd - gridStart) / float(gridSize)
 
 
 print gridStart, gridEnd
-print "voxel scale:",voxelScale
-
+print "voxel scale:", voxelScale
 
 
 print "Creating Debugger Box"
@@ -88,7 +93,7 @@ void main() {
 
     vec4 data = texelFetch(voxelGrid, coord, 0);
     dropFragment = 0.0;
-    if ( data.w < 0.5) {
+    if ( data.w < 0.9) {
     //if ( data.y < 0.5) {
         dropFragment = 1.0;
     }
@@ -97,8 +102,8 @@ void main() {
 
     gl_Position = p3d_ModelViewProjectionMatrix * vec4(vtxPos, 1);
     float lightFactor = abs(dot(p3d_Normal.xyz, vec3(0.5,0.9,1.0)));
-    color = vec4(data.xyz, 1.0);
-    color = vec4(vec2(coord) / vec2(gridSize*gridSize, gridSize), 0, 0.5);
+    color = vec4( ( abs(data.xyz*4.0 - 2.0) ), 1.0);
+    // color = vec4(vec2(coord) / vec2(gridSize*gridSize, gridSize), 0, 1.0);
     //color = vec4(data.xyz, 0.25 );
 
 
@@ -118,11 +123,15 @@ void main() {
 
 """
 
+
+yaxis = loader.loadModel("zup-axis")
+yaxis.reparentTo(render)
+
 base.camLens.setFov(90)
 base.camLens.setNearFar(0.1, 10000)
 
 controller = MovementController(base)
-controller.setInitialPosition(Vec3(100, 100, 100), Vec3(0, 0, 0))
+controller.setInitialPosition(gridEnd*1.3, gridMid )
 controller.setup()
 
 box.setShader(Shader.make(Shader.SLGLSL, boxShaderVertex, boxShaderFragment))

@@ -14,6 +14,8 @@ def mulVec3(a, b):
     return Vec3(a.x * b.x, a.y * b.y, a.z * b.z)
 
 
+DEBUG_MODE = False
+
 defaultVertexShader = """
 #version 150
 uniform mat4 p3d_ModelViewProjectionMatrix;
@@ -24,14 +26,20 @@ out vec4 color;
 void main() {
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
     color.w = 1.0;
-    // color.xyz = (trans_model_to_world * vec4(p3d_Normal.xyz, 0)).xyz;
-    color.xyz = vec3(1);
+    vec4 normalWorld = trans_model_to_world * vec4(p3d_Normal.xyz, 0);
+    color.xyz = normalize(normalWorld.xyz) * 0.25 + 0.5;
+
+    if (length(p3d_Normal.xyz) < 0.9) {
+        color.w = 0.0;
+    }
+    //color.xyz = vec3(0,0,1);
 }
 """
 defaultFragmentShader = """
 #version 150
 in vec4 color;
 void main() {
+    if (color.w < 0.5) discard;
     gl_FragColor = color;
 }
 """
@@ -94,8 +102,11 @@ class VoxelizerShowbase(ShowBase):
 
         # Create ramdisk, that's faster
         vfs = VirtualFileSystem.getGlobalPtr()
-        # vfs.mount(VirtualFileMountSystem("temp/"), tempPath, 0)
-        vfs.mount(VirtualFileMountRamdisk(), tempPath, 0)
+
+        if DEBUG_MODE:
+            vfs.mount(VirtualFileMountSystem("temp/"), tempPath, 0)
+        else:
+            vfs.mount(VirtualFileMountRamdisk(), tempPath, 0)
 
         logCallback(10, "Voxelizing ..")
         # Reset model path first
@@ -139,6 +150,9 @@ class VoxelizerShowbase(ShowBase):
             str(maxBounds.x) + ";" + str(maxBounds.y) + \
             ";" + str(maxBounds.z) + "\n"
 
+        if not isdir(destination):
+            makedirs(Filename.fromOsSpecific(destination).toOsGeneric() )
+
         with open(join(destination, "voxels.ini"), "w") as handle:
             handle.write(datafile)
 
@@ -153,7 +167,7 @@ class VoxelizerShowbase(ShowBase):
         self.layerCamera.node().setLens(self.renderLens)
         self.layerCamera.lookAt(0, 0, 0)
 
-        self.layerBuffer.setClearColor(Vec4(1, 0, 0, 1))
+        self.layerBuffer.setClearColor(Vec4(0.5, 0.5, 0.5, 0.5))
 
         model.reparentTo(self.layerScene)
 
@@ -178,7 +192,7 @@ class VoxelizerShowbase(ShowBase):
 
         for dirName, direction, filmSize in directions:
             logCallback(30 + progress, "Rendering direction " + dirName)
-            progress += 5
+            progress += 8
             basePosition = mulVec3(gridCenter, (Vec3(1) - direction))
             basePosition += mulVec3(minBounds, direction)
             lookAt = gridCenter - direction * 100000.0
@@ -196,6 +210,8 @@ class VoxelizerShowbase(ShowBase):
                     attributeCounter += 1
                     self.graphicsEngine.renderFrame()
 
+                    # This is the main bottleneck. I have to figure out how to load
+                    # a 2d texture from ram
                     self.graphicsEngine.extract_texture_data(
                         self.layerTexture, self.win.getGsg())
                     self.layerTexture.write(
@@ -203,7 +219,7 @@ class VoxelizerShowbase(ShowBase):
 
             # Now reconstruct voxels
             logCallback(30 + progress, "Evaluating direction " + dirName)
-            progress += 5
+            progress += 11
 
             frontfaceTex = TexturePool.load2dTextureArray(
                 tempPath + dirName + "_frontface_#####.png")
@@ -225,14 +241,19 @@ class VoxelizerShowbase(ShowBase):
             sattr = self.generateNode.get_attrib(ShaderAttrib)
             self.graphicsEngine.dispatch_compute(
                 (gridResolution / 16, gridResolution / 16, 1), sattr, self.win.get_gsg())
-
-            # Save result texture
-            self.graphicsEngine.extract_texture_data(
-                storage, self.win.getGsg())
             self.directionTextures[dirName] = storage
 
-            # storage.write(tempPath + "result_" + dirName + ".png")
-        logCallback(60, "Combining directions ..")
+            # Save result texture
+            if DEBUG_MODE:
+                self.graphicsEngine.extract_texture_data(
+                    storage, self.win.getGsg())
+
+                # PNMImage does not support writing to a VFS :( so we have to
+                # store it in the working directory
+                storage.write("result_" + dirName + ".png")
+
+
+        logCallback(80, "Combining directions ..")
 
         # finally, combine all textures
         resultTexture = Texture("result")
@@ -252,7 +273,7 @@ class VoxelizerShowbase(ShowBase):
         self.graphicsEngine.dispatch_compute(
             (gridResolution / 8, gridResolution / 8, gridResolution / 8), sattr, self.win.get_gsg())
 
-        logCallback(80, "Post-Processing generated voxels ..")
+        logCallback(85, "Post-Processing generated voxels ..")
 
         # now, do some further processing
         processedTexture = Texture("result")
@@ -267,16 +288,26 @@ class VoxelizerShowbase(ShowBase):
             "rejectionFactor", float(options["rejectionFactor"]) + 0.5)
         self.processNode.setShaderInput(
             "fillVolumes", bool(options["fillVolumes"]))
+        self.processNode.setShaderInput(
+            "discardInvalidVoxels", bool(options["discardInvalidVoxels"]))
         sattr = self.processNode.get_attrib(ShaderAttrib)
         self.graphicsEngine.dispatch_compute(
             (gridResolution / 8, gridResolution / 8, gridResolution / 8), sattr, self.win.get_gsg())
 
+
         self.graphicsEngine.extract_texture_data(
             processedTexture, self.win.getGsg())
+        
+        if DEBUG_MODE:
+            self.graphicsEngine.extract_texture_data(
+                resultTexture, self.win.getGsg())
 
         store = join(destination, "voxels.png")
         logCallback(90, "Saving voxel grid to '" + store + "'..")
         processedTexture.write(store)
+
+        if DEBUG_MODE:
+            resultTexture.write(join(destination, "unprocessedVoxels.png"))
 
         logCallback(99, "Cleanup ..")
         self.graphicsEngine.removeWindow(self.layerBuffer)
@@ -336,5 +367,6 @@ if __name__ == "__main__":
             "gridResolution": gridResolution,
             "rejectionFactor": rejectionFactor,
             "fillVolumes": fillVolumes,
-            "border": border
+            "border": border,
+            "discardInvalidVoxels": False
         })
