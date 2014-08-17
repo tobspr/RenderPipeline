@@ -88,7 +88,7 @@ void main() {
         }
 
     #else
-        result = textureLod(colorTex, texcoord, 0).rgb;
+        // result = textureLod(colorTex, texcoord, 0).rgb;
     #endif
 
     // result = textureLod(colorTex, texcoord, 0).rgb;
@@ -98,7 +98,7 @@ void main() {
 
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
         vec3 colorCorrected = convertColorSpace(result);
-        result = mix( colorCorrected , result, 0.7);
+        result = mix( colorCorrected , result, 0.1);
     #endif
 
     

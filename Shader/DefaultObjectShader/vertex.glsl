@@ -35,6 +35,7 @@ void main() {
 
     // Transform position to world space
     vOutput.positionWorld = (trans_model_to_world * p3d_Vertex).xyz;
+    // vOutput.positionWorld = (p3d_Vertex).xyz;
 
     // Pass texcoord to fragment shader
     // vOutput.texcoord = p3d_MultiTexCoord0.xy;

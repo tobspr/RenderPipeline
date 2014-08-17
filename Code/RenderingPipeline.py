@@ -336,7 +336,7 @@ class RenderingPipeline(DebugObject):
         if self.haveMRT:
             self.deferredTarget.addAuxTextures(3)
             self.deferredTarget.setAuxBits(16)
-            self.deferredTarget.setColorBits(16)
+            self.deferredTarget.setColorBits(32)
             self.deferredTarget.setDepthBits(32)
 
 

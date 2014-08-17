@@ -1,11 +1,13 @@
+
 import sys
-from direct.stdpy.file import isdir, isfile, join
+from direct.stdpy.file import isfile, join
 from PyQt4 import QtGui
 from panda3d.core import Filename
 from qt.main import Ui_Voxel
 from voxelize import VoxelizerShowbase
 from os import system
 from thread import start_new_thread
+
 
 class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
 
@@ -25,23 +27,23 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
         start_new_thread(self.startViewer, ())
 
     def startViewer(self):
-        system('ppython show_voxels.py "' + str(self.lastResultData[0]) + '" "' + str(self.lastResultData[1]) + '"')
+        system('ppython show_voxels.py "' +
+               str(self.lastResultData[0]) + '" "' + str(self.lastResultData[1]) + '"')
 
     def startConvert(self):
 
         filename = str(self.ipt_source.text())
         self.btn_showResult.setEnabled(False)
 
-
         if len(filename) < 1 or not isfile(filename):
-            QtGui.QMessageBox.warning(self, "Voxelizer", "You have to select a valid source file first!")
+            QtGui.QMessageBox.warning(
+                self, "Voxelizer", "You have to select a valid source file first!")
             return
 
         parentDir = "/".join(filename.split("/")[:-1])
         destination = join(parentDir, "voxelized")
-        print "ParentDir:",parentDir
+        print "ParentDir:", parentDir
 
-        
         voxelGridSize = 32
         if self.chb_gridSize16.isChecked():
             voxelGridSize = 16
@@ -58,9 +60,9 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
 
         borderSize = float(self.box_borderSize.value())
 
-
         if discardInvalidVoxels and fillEmptySpace:
-            QtGui.QMessageBox.warning(self, "Voxelizer", "The option 'Fill empty space with voxels' is invalid in combination with 'Remove voxels with invalid normal', as the voxels between Walls always have a invalid normal!")
+            QtGui.QMessageBox.warning(
+                self, "Voxelizer", "The option 'Fill empty space with voxels' is invalid in combination with 'Remove voxels with invalid normal', as the voxels between Walls always have a invalid normal!")
             return
 
         self.clearLog()
@@ -72,12 +74,12 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
         if True:
         # try:
             result = self.showbase.voxelize(filename, parentDir, destination, {
-                    "gridResolution": voxelGridSize,
-                    "rejectionFactor": neighborBias,
-                    "fillVolumes": fillEmptySpace,
-                    "border": borderSize,
-                    "discardInvalidVoxels": discardInvalidVoxels
-                }, logCallback=self._progressCallback)
+                "gridResolution": voxelGridSize,
+                "rejectionFactor": neighborBias,
+                "fillVolumes": fillEmptySpace,
+                "border": borderSize,
+                "discardInvalidVoxels": discardInvalidVoxels
+            }, logCallback=self._progressCallback)
         # except Exception, msg:
         if False:
             self.addLog("Fatal error during conversion process!")
@@ -91,7 +93,6 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
             self.btn_showResult.setEnabled(True)
             self.lastResultData = (filename, destination)
 
-
     def _progressCallback(self, percent, message, isError=False):
         self.addLog("[" + str(int(percent)).rjust(3, ' ') + "%] " + message)
         self.processStatus.setValue(int(percent))
@@ -99,14 +100,15 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
     def selectSource(self):
         print "Select source!"
         self.btn_showResult.setEnabled(False)
-        filename = QtGui.QFileDialog.getOpenFileName(self, 
-            'Select source file ', 'convert/', "P3D Scene File (*.egg *.bam)")
+        filename = QtGui.QFileDialog.getOpenFileName(self,
+                                                     'Select source file ', 'convert/', "P3D Scene File (*.egg *.bam *.pz)")
         filename = str(filename)
         if len(filename) < 1:
             # nothing selected
             pass
         else:
-            self.ipt_source.setText(Filename.fromOsSpecific(filename).getFullpath())
+            self.ipt_source.setText(
+                Filename.fromOsSpecific(filename).getFullpath())
 
     def clearLog(self):
         self._log = ""
@@ -121,12 +123,11 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
         self.logOutput.moveCursor(QtGui.QTextCursor.End)
 
 
-
 if __name__ == "__main__":
     print "Starting Voxelizer GUI"
 
     app = QtGui.QApplication(sys.argv)
-    
+
     win = VoxelizerGUI()
     win.show()
 

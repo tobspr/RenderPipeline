@@ -148,9 +148,12 @@ class LightManager(DebugObject):
         self.shadowComputeTarget = RenderTarget("ShadowAtlas")
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
-        self.shadowComputeTarget.addColorTexture()
-        self.shadowComputeTarget.setColorBits(16)
         self.shadowComputeTarget.setDepthBits(32)
+        
+        if self.settings.enableGlobalIllumination:
+            self.shadowComputeTarget.addColorTexture()
+            self.shadowComputeTarget.setColorBits(16)
+        
         self.shadowComputeTarget.setSource(
             self.shadowComputeCameraNode, Globals.base.win)
 

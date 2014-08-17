@@ -82,12 +82,13 @@ class Main(ShowBase, DebugObject):
          ####### END OF RENDER PIPELINE SETUP #######
 
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Scene.ignore/Car.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
+        self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -152,11 +153,11 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
-        dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
+        dirLight.setShadowMapResolution(8192)
+        # dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(4))
+        dirLight.setColor(Vec3(1))
         self.renderPipeline.addLight(dirLight)
         self.initialLightPos.append(dPos)
         self.lights.append(dirLight)
@@ -209,10 +210,10 @@ class Main(ShowBase, DebugObject):
 
     def setSunPos(self):
         rawValue = self.renderPipeline.guiManager.demoSlider.node["value"]
-        # rawValue = rawValue / 100.0 * 2.0 * math.pi
+        rawValue = rawValue / 100.0 * 2.0 * math.pi
 
-        # v = Vec3(math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
-        dPos = Vec3(0, rawValue, 100)
+        dPos = Vec3(math.sin(rawValue) * 500.0, math.cos(rawValue) * 500.0, 200)
+        # dPos = Vec3(70, rawValue-50, 100)
         self.dirLight.setPos(dPos)
         self.dirLight.setDirection(dPos)
 

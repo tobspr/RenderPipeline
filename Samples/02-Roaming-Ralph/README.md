@@ -1,0 +1,1 @@
+This sample shows how to integrate the pipeline into a existing project

@@ -93,32 +93,37 @@ void main() {
         // = Empty Air
         // continue;
       // }
+        float normalFactor = step(dot(dir, sampleNormal), 0.0);
 
       // Solid -> Air
       if (geometrySolid > 0.5 && solidCenter < 0.5) {
-        float normalFactor = step(dot(dir, sampleNormal), 0.0);
         // normalFactor = 1.0;
-        colorResult += sampleColor.xyz * normalFactor;
+        colorResult += sampleColor.xyz * normalFactor * 0.5;
         // centerProcessed += normalFactor;
 
 
-      // Solid -> Solid
+      // Air -> Solid
+      } else if(geometrySolid < 0.5 && solidCenter > 0.5) {
+
+        colorResult += sampleColor.xyz * normalFactor * 0.4;
+        
+        
+        // Solid -> Solid
       } else if(geometrySolid > 0.5 && solidCenter > 0.5) {
-        // float normalFactor = step(dot(dir, sampleNormal), 0.0);
         // normalFactor = 1.0;
-        // colorResult += sampleColor.xyz * normalFactor * 0.1;
+        // colorResult *= 0.0;
       
       // Air -> Air
       } else if (geometrySolid < 0.5 && solidCenter < 0.5) {
         // solidCenter += 1.0;
-        colorResult = mix(sampleColor.xyz, colorResult, 0.8) * 1.03;
+        colorResult = mix(sampleColor.xyz, colorResult, 0.85) * 1.17;
        
       }
     // }
 
   }
 
-  // colorResult *= 0.8;
+  colorResult *= 0.6;
 
   centerProcessed = clamp(centerProcessed, 0, 1);
   // colorResult.xyz = 1.0f - exp(-0.9 * colorResult.xyz);

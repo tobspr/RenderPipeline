@@ -62,14 +62,19 @@ class GlobalIllumnination(DebugObject):
         self.gridEnd = Vec3(6.0, 6.0, 7.78633880615)
 
 
-        self.gridStart = Vec3(-97.0472946167,-56.2713127136,-2.40248203278)
-        self.gridEnd = Vec3(90.9954071045, 60.1403465271, 72.4716720581)
+        # self.gridStart = Vec3(-97.0472946167,-56.2713127136,-2.40248203278)
+        # self.gridEnd = Vec3(90.9954071045, 60.1403465271, 72.4716720581)
 
         self.voxelSize = (self.gridEnd - self.gridStart) / self.cascadeSize
         self.delay = 0
         self.frameIndex = 0
 
-        self.iterations = 64
+        self.iterations = 16
+
+        # box = loader.loadModel("Demoscene.ignore/CubeOpen/Model.egg")
+        # box.setPos(self.gridStart)
+        # box.setScale(self.gridEnd - self.gridStart)
+        # box.reparentTo(render)
 
         # Debugging of voxels
         self.debugVoxels = False
