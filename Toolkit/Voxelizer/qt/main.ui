@@ -477,7 +477,7 @@
       <rect>
        <x>10</x>
        <y>50</y>
-       <width>411</width>
+       <width>421</width>
        <height>21</height>
       </rect>
      </property>
@@ -510,9 +510,9 @@
     <widget class="QPushButton" name="btn_selectSource">
      <property name="geometry">
       <rect>
-       <x>422</x>
+       <x>432</x>
        <y>49</y>
-       <width>41</width>
+       <width>31</width>
        <height>23</height>
       </rect>
      </property>
@@ -629,69 +629,11 @@
       <string>128</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="chb_fillEmptySpace">
+    <widget class="QLabel" name="label_6">
      <property name="geometry">
       <rect>
        <x>10</x>
        <y>70</y>
-       <width>161</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="toolTip">
-      <string>If this option is checked, the walls will be filled with voxels. Otherwise only the wall voxels are generated, and the space will be empty</string>
-     </property>
-     <property name="text">
-      <string>Fill empty space with voxels</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_4">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>100</y>
-       <width>161</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Remove voxel if it has less than</string>
-     </property>
-    </widget>
-    <widget class="QSpinBox" name="box_voxelNeighborBias">
-     <property name="geometry">
-      <rect>
-       <x>170</x>
-       <y>97</y>
-       <width>42</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="maximum">
-      <number>6</number>
-     </property>
-     <property name="value">
-      <number>1</number>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_5">
-     <property name="geometry">
-      <rect>
-       <x>220</x>
-       <y>100</y>
-       <width>51</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>neighbors</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_6">
-     <property name="geometry">
-      <rect>
-       <x>260</x>
-       <y>20</y>
        <width>181</width>
        <height>16</height>
       </rect>
@@ -703,8 +645,8 @@
     <widget class="QDoubleSpinBox" name="box_borderSize">
      <property name="geometry">
       <rect>
-       <x>260</x>
-       <y>40</y>
+       <x>10</x>
+       <y>90</y>
        <width>201</width>
        <height>22</height>
       </rect>
@@ -725,23 +667,30 @@
       <double>1.000000000000000</double>
      </property>
     </widget>
-    <widget class="QCheckBox" name="chb_removeInvalidVoxels">
+    <widget class="QRadioButton" name="chb_gridSize256">
      <property name="geometry">
       <rect>
-       <x>260</x>
-       <y>70</y>
-       <width>191</width>
+       <x>210</x>
+       <y>40</y>
+       <width>41</width>
        <height>17</height>
       </rect>
      </property>
-     <property name="toolTip">
-      <string>When this option is checked, voxels which have a invalid normal are dropped in the final stage</string>
+     <property name="text">
+      <string>256</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="chb_gridSize512">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>40</y>
+       <width>41</width>
+       <height>17</height>
+      </rect>
      </property>
      <property name="text">
-      <string>Remove voxels with invalid normal</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
+      <string>512</string>
      </property>
     </widget>
    </widget>

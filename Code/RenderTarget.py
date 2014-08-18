@@ -70,9 +70,15 @@ class RenderTarget(DebugObject):
         self._multisamples = 0
         self._engine = Globals.base.graphicsEngine
         self._active = False
+        self._useTextureArrays = False
         self._rename(name)
 
         self.mute()
+
+    def setUseTextureArrays(self, state=True):
+        """ Makes the render buffer use a 2D texture array when rendering 
+        layers. Otherwise a 3D Texture is choosen """
+        self._useTextureArrays = state
 
     def setMultisamples(self, samples):
         """ Sets the amount of multisamples to use """
@@ -449,15 +455,22 @@ class RenderTarget(DebugObject):
         if clear:
             self.getInternalBuffer().setClearDepth(0.0)
 
-    def setClearColor(self, clear=True):
+    def setClearColor(self, clear=True, color=None):
         """ Adds a color clear """
         self.getInternalRegion().setClearColorActive(clear)
         if clear:
-            self.getInternalBuffer().setClearColor(Vec4(0.0))
+            if color is None:
+                color = Vec4(0)
+            self.getInternalBuffer().setClearColor(color)
 
     def setClearAux(self, auxNumber, clear=True):
         """ Adds a color clear """
         self.getInternalRegion().setClearActive(auxNumber, clear)
+
+    def removeQuad(self):
+        """ Removes the fullscren quad after creation, this might be required
+        when rendering to a scene which is not the main scene """
+        self.getQuad().node().removeAllChildren()
 
     def _setSizeShaderInput(self):
         """ Makes the buffer size available as shader input in the shader """

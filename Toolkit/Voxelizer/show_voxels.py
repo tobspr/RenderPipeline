@@ -24,8 +24,7 @@ win-size 800 600
 texture-cache #f
 model-cache 
 model-cache-dir 
-model-cache-textures #f
-notify-level-gobj fatal 
+model-cache-textures #f 
 multisamples 16
 """)
 
@@ -33,6 +32,9 @@ import direct.directbase.DirectStart
 
 scenePath = sys.argv[2]
 eggPath = sys.argv[1]
+
+# scenePath = "convert/GITest/voxelized"
+# eggPath = "convert/GITest/Model.egg"
 
 resultFile = join(scenePath, "voxels.png")
 configFile = join(scenePath, "voxels.ini")
@@ -46,65 +48,74 @@ print "Loading model from", resultEgg
 
 print "Loading Voxel Grid from", resultFile
 tex = loader.loadTexture(resultFile)
-gridSize = tex.getYSize()
 
-print "Grid size is", gridSize
-
-
-# Load config, I know it's hacky, but this is only a debugging tool, so
-# that's ok
+# Load config file
 with open(configFile, "r") as handle:
     configContent = handle.readlines()
 
-extractVec3 = lambda s: Vec3(
-    *([float(i) for i in s.strip().split("=")[-1].split(";")]))
-gridStart = extractVec3(configContent[1])
-gridEnd = extractVec3(configContent[2])
-gridMid = (gridEnd - gridStart) / 2 + gridStart
-voxelScale = (gridEnd - gridStart) / float(gridSize)
+options = {
+    "GridResolution": "int",
+    "GridStart": "vec3",
+    "GridEnd": "vec3",
+    "StackSizeX": "int",
+    "StackSizeY": "int"
+}
 
+optionValues = {}
+
+for line in configContent:
+    if len(line) > 2 and "=" in line:
+        line = line.strip().split("=")
+        optionName = line[0]
+        optionValue = line[1]
+
+        if optionName in options:
+            optionType = options[optionName]
+            parsedValue = None
+
+            if optionType == "int":
+                parsedValue = int(optionValue)
+            elif optionType == "vec3":
+                parsedValue = Vec3(*([float(i) for i in optionValue.split(";")]))
+            optionValues[optionName] = parsedValue
+            print optionName,"=",parsedValue
+
+gridStart = optionValues["GridStart"]
+gridEnd = optionValues["GridEnd"]
+stackSizeX = optionValues["StackSizeX"]
+stackSizeY = optionValues["StackSizeY"]
+gridSize = optionValues["GridResolution"]
+gridDimensions = gridEnd - gridStart
+gridMid = gridDimensions / 2 + gridStart
+voxelScale = gridDimensions / float(gridSize)
 
 print gridStart, gridEnd
-print "voxel scale:", voxelScale
-
 
 print "Creating Debugger Box"
 box = loader.loadModel("box")
+box.flattenStrong()
 
 boxShaderVertex = """
 #version 150
-uniform mat4 p3d_ModelViewProjectionMatrix;
+uniform mat4 p3d_ViewProjectionMatrix;
+uniform mat4 trans_model_to_world;
 in vec4 p3d_Vertex;
-in vec4 p3d_Normal;
-uniform sampler2D voxelGrid;
 uniform int gridSize;
-out vec4 color;
+uniform vec3 gridStart;
+uniform vec3 gridEnd;
+uniform vec3 voxelSize;
+uniform vec3 direction;
+out vec3 texcoord;
 out float dropFragment;
 
-
 void main() {
-    int idx = gl_InstanceID;
-    int xOffset = (idx / (gridSize*gridSize)) % gridSize;
-    int yOffset = (idx / gridSize) % gridSize;
-    int zOffset = idx % (gridSize);
-    
-    ivec3 voxelSpacePos = ivec3(xOffset, yOffset, zOffset);
-    ivec2 coord = voxelSpacePos.xy + ivec2(voxelSpacePos.z * gridSize, 0);
-
-    vec4 data = texelFetch(voxelGrid, coord, 0);
-    dropFragment = 0.0;
-    if ( data.w < 0.9) {
-    //if ( data.y < 0.5) {
-        dropFragment = 1.0;
-    }
-
-    vec3 vtxPos = p3d_Vertex.xyz + vec3(voxelSpacePos); 
-
-    gl_Position = p3d_ModelViewProjectionMatrix * vec4(vtxPos, 1);
-    float lightFactor = abs(dot(p3d_Normal.xyz, vec3(0.5,0.9,1.0)));
-    color = vec4( ( abs(data.xyz*4.0 - 2.0) ), 1.0);
-    // color = vec4(vec2(coord) / vec2(gridSize*gridSize, gridSize), 0, 1.0);
-    //color = vec4(data.xyz, 0.25 );
+    int idx = int(gl_InstanceID);
+    vec4 worldPos = trans_model_to_world * p3d_Vertex;
+    worldPos.xyz += idx * direction * voxelSize;
+    worldPos+=0.0001;
+    gl_Position = p3d_ViewProjectionMatrix * worldPos;
+    texcoord = (worldPos.xyz - gridStart) / (gridEnd - gridStart);
+    texcoord.z += 0.001;
 
 
 }
@@ -113,38 +124,76 @@ void main() {
 
 boxShaderFragment = """
 #version 150
-in vec4 color;
-in float dropFragment;
+in vec3 texcoord;
+uniform sampler2D voxelGrid;
+uniform int gridSize;
+uniform int stackSizeX;
+
 void main() {
-    if (dropFragment > 0.5) discard;
-    gl_FragColor = vec4(color);
+    
+
+    ivec3 voxelSpaceCoord = ivec3(texcoord.xyz * float(gridSize));
+    ivec2 lookupCoord = voxelSpaceCoord.xy;
+    lookupCoord += ivec2(voxelSpaceCoord.z % stackSizeX, voxelSpaceCoord.z / stackSizeX) * gridSize;
+    vec4 lookupResult = texelFetch(voxelGrid, lookupCoord, 0);
+
+    if (lookupResult.w < 0.5) discard;
+
+    gl_FragColor = vec4( lookupResult.xyz, 1);
 }
 
 
 """
 
 
+
+
 yaxis = loader.loadModel("zup-axis")
 yaxis.reparentTo(render)
 
+
 base.camLens.setFov(90)
-base.camLens.setNearFar(0.1, 10000)
+base.camLens.setNearFar(0.1, 5000)
 
 controller = MovementController(base)
-controller.setInitialPosition(gridEnd*1.3, gridMid )
+controller.setInitialPosition(gridEnd * 1.3, gridMid)
 controller.setup()
 
-box.setShader(Shader.make(Shader.SLGLSL, boxShaderVertex, boxShaderFragment))
-box.setShaderInput("voxelGrid", tex)
-box.setShaderInput("gridSize", gridSize)
-box.setInstanceCount(gridSize * gridSize * gridSize)
-box.setScale(voxelScale)
-box.setPos(gridStart)
-box.reparentTo(render)
-box.node().setFinal(True)
-box.node().setBounds(OmniBoundingVolume())
-render.setTransparency(TransparencyAttrib.MDual)
 
-base.accept("f3", base.toggleWireframe)
+dirs = [
+    (Vec3(0,0,1), Vec3(0,-90,0), Vec3(0,0,0)),
+    (Vec3(0,1,0), Vec3(0,0,0), Vec3(0,0,0)),
+]
 
-run()
+for direction, hpr, posOffs in dirs:
+
+    c = CardMaker("cm")
+    c.setFrame(0, 1, 0, 1)
+    cm = render.attachNewNode(c.generate())
+    cm.setScale(gridDimensions)
+    cm.setHpr(hpr)
+    cm.setPos(gridStart+posOffs)
+    cm.setShader(Shader.make(Shader.SLGLSL, boxShaderVertex, boxShaderFragment))
+    cm.setShaderInput("voxelGrid", tex)
+    cm.setTwoSided(True)
+    cm.setShaderInput("voxelHeight", voxelScale.z)
+    cm.setShaderInput("gridSize", int(gridSize))
+    cm.setShaderInput("gridStart", gridStart)
+    cm.setShaderInput("gridEnd", gridEnd)
+    cm.setShaderInput("voxelSize", voxelScale)
+    cm.setShaderInput("direction", direction)
+    cm.setShaderInput("stackSizeX", stackSizeX)
+    # box.setInstanceCount(gridSize * gridSize * gridSize)
+    cm.setInstanceCount(gridSize + 1)
+
+
+# box.setScale(voxelScale)
+# box.setPos(gridStart)
+# box.reparentTo(render)
+cm.node().setFinal(True)
+cm.node().setBounds(OmniBoundingVolume())
+
+
+# base.accept("f3", base.toggleWireframe)
+# 
+base.run()

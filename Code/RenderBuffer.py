@@ -35,8 +35,13 @@ class RenderBuffer(DebugObject):
         self._sort = 0
         self._multisamples = 0
         self._engine = None
+        self._useTextureArrays = False
 
         self.mute()
+
+    def setUseTextureArrays(self, state=True):
+        """ Sets wheter to use a 2d texture array, or a 3d texture """
+        self._useTextureArrays = state
 
     def setLayers(self, layers):
         """ Set the number of layers to render, or 1 to not use layered 
@@ -124,8 +129,8 @@ class RenderBuffer(DebugObject):
         colorIsFloat = self._colorBits >= 16
         auxIsFloat = self._auxBits >= 16
 
-        self.debug("Bitcount: color=" +str(self._colorBits) + "; aux="+str(self._auxBits) + "; depth=" + str(self._depthBits))
-
+        self.debug("Bitcount: color=" + str(self._colorBits) +
+                   "; aux=" + str(self._auxBits) + "; depth=" + str(self._depthBits))
 
         # set wrap modes for color + auxtextures,
         # also set correct formats:
@@ -167,20 +172,23 @@ class RenderBuffer(DebugObject):
                     handle.setFormat(Texture.FRgba32)
 
             if self._layers > 1:
-                # handle.setup2dTextureArray(self._layers)
-                handle.setup3dTexture(self._layers)
+                if self._useTextureArrays:
+                    handle.setup2dTextureArray(self._layers)
+                else:
+                    handle.setup3dTexture(self._layers)
 
         # set layers for depth texture
         if self._layers > 1 and self.hasTarget(RenderTargetType.Depth):
-            # self.getTarget(RenderTargetType.Depth).setup2dTextureArray(
-                # self._layers)
-            self.getTarget(RenderTargetType.Depth).setup3dTexture(
-                self._layers)
+            if self._useTextureArrays:
+                self.getTarget(RenderTargetType.Depth).setup2dTextureArray(
+                    self._layers)
+            else:
+                self.getTarget(RenderTargetType.Depth).setup3dTexture(
+                    self._layers)
 
         # Create buffer descriptors
         windowProps = WindowProperties.size(self._width, self._height)
         bufferProps = FrameBufferProperties()
-
 
         # Set color and alpha bits
         if self.hasTarget(RenderTargetType.Color):
@@ -270,15 +278,14 @@ class RenderBuffer(DebugObject):
 
         # Increment global sort counter
         RenderBuffer.numBuffersAllocated += 1
-        self._sort = -200 + RenderBuffer.numBuffersAllocated*10
+        self._sort = -200 + RenderBuffer.numBuffersAllocated * 10
 
         self.debug("our sort value is", self._sort)
         self._internalBuffer.setSort(self._sort)
 
-
         self._internalBuffer.disableClears()
         self._internalBuffer.getDisplayRegion(0).disableClears()
-        
+
         for i in xrange(16):
             self._internalBuffer.setClearActive(i, False)
             self._internalBuffer.getDisplayRegion(0).setClearActive(i, False)

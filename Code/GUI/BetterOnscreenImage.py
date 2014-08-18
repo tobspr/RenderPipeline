@@ -23,7 +23,8 @@ class BetterOnscreenImage(DebugObject):
 
         DebugObject.__init__(self, "BetterOnscreenImage")
 
-        self.initialPos = Vec3(x + w / 2.0, 1, -y - h / 2.0)
+        self.w, self.h = w, h
+        self.initialPos = self.translatePos(x, y)
 
         self._node = OnscreenImage(
             image=image, parent=parent, pos=self.initialPos,
@@ -52,3 +53,23 @@ class BetterOnscreenImage(DebugObject):
         """ Returns a pos interval, this is a wrapper arround
         NodePath.posInterval """
         return self._node.posInterval(*args, **kwargs)
+
+    def setImage(self, img):
+        """ Sets the current image """
+        self._node.setImage(img)
+
+    def setPos(self, x, y):
+        """ Sets the position """
+        self.initialPos = self.translatePos(x, y)
+        self._node.setPos(self.initialPos)
+
+    def translatePos(self, x, y):
+        """ Converts 2d coordinates to pandas coordinate system """
+        return Vec3(x + self.w / 2.0, 1, -y - self.h / 2.0)
+
+
+    def hide(self):
+        self._node.hide()
+
+    def show(self):
+        self._node.show()

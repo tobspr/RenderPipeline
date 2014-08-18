@@ -2,10 +2,13 @@
 from panda3d.core import Texture, ShaderAttrib, NodePath, Shader
 from Globals import Globals
 
+
 class TextureCleaner:
 
     """ This class is a simple interface to completely clear a
     texture to a given color. It internally uses compute shaders """
+
+    ClearShader = None
 
     @classmethod
     def _createClearShader(self):
@@ -37,12 +40,15 @@ class TextureCleaner:
             print "TextureCleaner: 3D Textures not supported (yet!)"
             return
         else:
+
+            if self.ClearShader is None:
+                self.ClearShader = self._createClearShader()
+
             w, h, d = tex.getXSize(), tex.getYSize(), tex.getZSize()
             dispatchW = (w + 15) / 16
             dispatchH = (h + 15) / 16
-            shader = self._createClearShader()
             dummy = NodePath("dummy")
-            dummy.setShader(shader)
+            dummy.setShader(self.ClearShader)
             dummy.setShaderInput("layers", d)
             dummy.setShaderInput("destination", tex)
             dummy.setShaderInput("clearColor", clearColor)

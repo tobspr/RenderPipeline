@@ -53,18 +53,12 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
             voxelGridSize = 64
         elif self.chb_gridSize128.isChecked():
             voxelGridSize = 128
-
-        fillEmptySpace = self.chb_fillEmptySpace.isChecked()
-        discardInvalidVoxels = self.chb_removeInvalidVoxels.isChecked()
-        neighborBias = int(self.box_voxelNeighborBias.value())
+        elif self.chb_gridSize256.isChecked():
+            voxelGridSize = 256
+        elif self.chb_gridSize512.isChecked():
+            voxelGridSize = 512
 
         borderSize = float(self.box_borderSize.value())
-
-        if discardInvalidVoxels and fillEmptySpace:
-            QtGui.QMessageBox.warning(
-                self, "Voxelizer", "The option 'Fill empty space with voxels' is invalid in combination with 'Remove voxels with invalid normal', as the voxels between Walls always have a invalid normal!")
-            return
-
         self.clearLog()
         self.addLog("Starting to convert ..")
         self.processStatus.setValue(0)
@@ -75,10 +69,7 @@ class VoxelizerGUI(QtGui.QMainWindow, Ui_Voxel):
         # try:
             result = self.showbase.voxelize(filename, parentDir, destination, {
                 "gridResolution": voxelGridSize,
-                "rejectionFactor": neighborBias,
-                "fillVolumes": fillEmptySpace,
                 "border": borderSize,
-                "discardInvalidVoxels": discardInvalidVoxels
             }, logCallback=self._progressCallback)
         # except Exception, msg:
         if False:
