@@ -13,8 +13,8 @@ void main() {
     ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
 
     vec4 resultX = texelFetch(directionX, texelCoords, 0);
-    vec4 resultY = texelFetch(directionX, texelCoords, 0);
-    vec4 resultZ = texelFetch(directionX, texelCoords, 0);
+    vec4 resultY = texelFetch(directionY, texelCoords, 0);
+    vec4 resultZ = texelFetch(directionZ, texelCoords, 0);
     vec4 resultCombined = resultX + resultY + resultZ;
     resultCombined /= max(1.0, resultCombined.w);
 

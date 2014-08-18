@@ -172,7 +172,7 @@ class VoxelizerShowbase(ShowBase):
         # self.renderLens.setFov(90)
         self.cam.node().setLens(self.renderLens)
         self.accept("f3", self.toggleWireframe)
-        self.layerScene = render.attachNewNode("model")
+        
 
         # Generate the compute shader nodes, required to execute the compute
         # shaders
@@ -300,6 +300,7 @@ class VoxelizerShowbase(ShowBase):
             node.node().setBounds(OmniBoundingVolume())
             node.node().setFinal(True)
 
+        self.layerScene = render.attachNewNode("model")
         model.reparentTo(self.layerScene)
 
         progress = 0
@@ -361,7 +362,7 @@ class VoxelizerShowbase(ShowBase):
         resultTexture = Texture("result")
         resultTexture.setup2dTexture(
             gridResolution * stackX, gridResolution * stackRows,
-            Texture.TFloat, Texture.FRgba16)
+            Texture.TFloat, Texture.FRgba8)
 
         self.combineNode.setShaderInput(
             "directionX", directionTextures["x"])
@@ -374,11 +375,12 @@ class VoxelizerShowbase(ShowBase):
         self.graphicsEngine.dispatch_compute(
             (gridResolution*stackX / 16, gridResolution*stackRows / 16, 1), sattr, self.win.get_gsg())
 
+
+        store = join(destination, "voxels.png")
+        logCallback(90, "Saving voxel grid to '" + store + "', this might take a while ..")
         self.graphicsEngine.extract_texture_data(
             resultTexture, self.win.getGsg())
 
-        store = join(destination, "voxels.png")
-        logCallback(90, "Saving voxel grid to '" + store + "'..")
         resultTexture.write(store)
 
         logCallback(99, "Cleanup ..")
