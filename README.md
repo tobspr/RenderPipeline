@@ -53,7 +53,7 @@ https://github.com/tobspr/RenderPipeline/wiki
 - Shadow updates delayed over multiple frames
 - Shadow atlas, also dynamic resolution adaption
 
-#### Lighting:
+##### Lighting:
 - Point Lights
     - Shadows via cubemap
 - Directional Lights
@@ -70,18 +70,18 @@ https://github.com/tobspr/RenderPipeline/wiki
     - Also supports projection texture
     - Shadows are computed by cone tracing (see GI)
 
-#### Physically based shading / lighting
+##### Physically based shading / lighting
 
-#### Tone mapping (HDR)
+##### Tone mapping (HDR)
 - Also artist controlled color correction
 
-#### Blur
+##### Blur
 - Focal Blur
 - Movement Blur (edges)
 - Mipmap based + in place 4x4 kernel
     - Varying radius (DOF)
 - Maybe Bokeh
 
-#### Tesselation Shader displacement
+##### Tesselation Shader displacement
 
-#### Approximated Chromatic Aberration
+##### Approximated Chromatic Aberration
