@@ -96,15 +96,17 @@ void main() {
     // SRGB
     // result.xyz = sqrt(result.xyz);
 
+    result = saturate(result);
+
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
         vec3 colorCorrected = convertColorSpace(result);
-        result = mix( colorCorrected , result, 0.1);
+        result = mix( colorCorrected , result, 0.8);
     #endif
 
     
 
     float vignett = smoothstep(0, 1, 
-        (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.6;
+        (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 0.8;
     result *= 1.0 - vignett;
 
     // result.rgb = newFrameVal.rgb;

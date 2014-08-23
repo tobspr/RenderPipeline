@@ -4,11 +4,10 @@
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
-layout(rgba16f) uniform readonly image2D src;
+uniform sampler2D src;
 uniform writeonly image2D dest;
-
 
 void main() {
   ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
-  imageStore(dest, texelCoords, imageLoad(src, texelCoords));
+  imageStore(dest, texelCoords, texelFetch(src, texelCoords, 0));
 }

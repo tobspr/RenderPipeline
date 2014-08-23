@@ -16,7 +16,7 @@ https://github.com/tobspr/RenderPipeline/wiki
 
 ### Features
 
-#### Deferred rendering
+##### Deferred rendering
 - Separate transparency and forward pass, too 
 
 ##### Occlusion

@@ -2,7 +2,7 @@
 from panda3d.core import Camera, PerspectiveLens, NodePath, OrthographicLens
 from panda3d.core import CSYupRight, TransformState, CSZupRight
 from panda3d.core import UnalignedLMatrix4f
-from panda3d.core import Mat4, Vec2
+from panda3d.core import Vec2, Mat4
 
 from DebugObject import DebugObject
 from ShaderStructArray import ShaderStructElement
@@ -56,7 +56,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         self.atlasPos = Vec2(0)
         self.doesHaveAtlasPos = False
         self.sourceIndex = 0
-        self.mvp = Mat4()
+        self.mvp = UnalignedLMatrix4f()
         self.sourceIndex = -1
         self.nearPlane = 0.0
         self.farPlane = 1000.0
@@ -89,7 +89,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
                             CSZupRight))
         modelViewMat = transformMat.invertCompose(
             Globals.render.getTransform(self.cameraNode)).getMat()
-        self.mvp = UnalignedLMatrix4f(modelViewMat * projMat)
+        return UnalignedLMatrix4f(modelViewMat * projMat)
 
     def assignAtlasPos(self, x, y):
         """ Assigns this source a position in the shadow atlas. This is called
@@ -99,7 +99,8 @@ class ShadowSource(DebugObject, ShaderStructElement):
 
     def update(self):
         """ Updates the shadow source. Currently only recomputes the mvp. """
-        self.computeMVP()
+        self.mvp = self.computeMVP()
+        self.onPropertyChanged()
 
     def getAtlasPos(self):
         """ Returns the assigned atlas pos, if present. Coordinates are float
@@ -191,4 +192,3 @@ class ShadowSource(DebugObject, ShaderStructElement):
 
     def onUpdated(self):
         """ Gets called when shadow sources was updated """
-        pass

@@ -82,13 +82,13 @@ class Main(ShowBase, DebugObject):
          ####### END OF RENDER PIPELINE SETUP #######
 
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Scene.ignore/Car.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
-        self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
         self.usePlane = False
@@ -153,8 +153,8 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(8192)
-        # dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
+        dirLight.setShadowMapResolution(2048)
+        dirLight.setAmbientColor(Vec3(0.5,0.5,0.5))
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(1))
@@ -162,22 +162,9 @@ class Main(ShowBase, DebugObject):
         self.initialLightPos.append(dPos)
         self.lights.append(dirLight)
         self.dirLight = dirLight
-
-        for pos in vplHelpLights:
-            break
-            helpLight = PointLight()
-            helpLight.setRadius(100)
-            helpLight.setPos(pos)
-            helpLight.setColor(Vec3(2))
-            helpLight.setShadowMapResolution(128)
-            helpLight.setCastsShadows(True)
-            self.renderPipeline.addLight(helpLight)
-            self.initialLightPos.append(pos)
-            self.lights.append(helpLight)
-
         earthScattering = Scattering()
 
-        scale = 100000
+        scale = 1000000000
         earthScattering.setSettings({
             "atmosphereOffset": Vec3(0, 0, - (6360.0 + 9.5) * scale),
             # "atmosphereOffset": Vec3(0),
@@ -208,14 +195,31 @@ class Main(ShowBase, DebugObject):
             # x=300, y=100, size=200, parent=self.pixel2d,
             # callback=self.setSunPos)
 
+        for task in self.taskMgr.getTasks():
+            print "Task:", task.getNamePrefix(), "Priority:",task.getPriority(),"Sort:", task.getSort()
+
+        self.lastSliderValue = 0.0
+
     def setSunPos(self):
         rawValue = self.renderPipeline.guiManager.demoSlider.node["value"]
-        rawValue = rawValue / 100.0 * 2.0 * math.pi
 
-        dPos = Vec3(math.sin(rawValue) * 500.0, math.cos(rawValue) * 500.0, 200)
-        # dPos = Vec3(70, rawValue-50, 100)
-        self.dirLight.setPos(dPos)
-        self.dirLight.setDirection(dPos)
+        diff = self.lastSliderValue - rawValue
+
+        self.lastSliderValue = rawValue
+        # rawValue = rawValue / 100.0 * 2.0 * math.pi
+
+        # dPos = Vec3(math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
+        dPos = Vec3(30, (rawValue-50), 100)
+        # It is important that the position is normalized -> otherwise the results differ
+        dPos.normalize()
+        dPos *= 200.0
+
+
+        if abs(diff) > 0.0001:
+            # print "-"*79
+            # print "Difference:", diff,"Pos:",dPos
+            self.dirLight.setPos(dPos)
+            self.dirLight.setDirection(dPos)
 
     def toggleSceneWireframe(self):
         """ Toggles the scene rendermode """

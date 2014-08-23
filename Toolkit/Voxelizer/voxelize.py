@@ -341,11 +341,11 @@ class VoxelizerShowbase(ShowBase):
                     int(direction.y),
                     int(direction.z)))
             render.setShaderInput("voxelStorageGrid", dirTexture)
-            render.setShaderInput("gridResolution", int(gridResolution))
+            render.setShaderInput("gridResolution", LVecBase3i(gridResolution))
             render.setShaderInput("gridStart", minBounds)
             render.setShaderInput("gridEnd", maxBounds)
             render.setShaderInput("voxelSize", voxelSize)
-            render.setShaderInput("stackSizeX", stackX)
+            render.setShaderInput("stackSizeX", LVecBase3i(stackX))
             self.graphicsEngine.renderFrame()
 
             # In case of debug mode, write the texture to disk

@@ -1,0 +1,172 @@
+
+
+#include "Includes/Configuration.include"
+#include "Includes/Material.include"
+#include "Includes/GIData.include"
+
+
+vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction, 
+    int iterations, float stepRatio, float coneRatio, float startDistance = 0.5, float initialConeRadius = 1.0) {
+
+    vec3 directionStep = normalize(direction) * data.normalizationFactor;
+    vec4 result = vec4(0);
+
+    float currentDistance = startDistance;
+    float currentConeRadius = initialConeRadius;
+
+    // TODO: Optimize
+    for (int i = 0; i < iterations; i++) {
+        currentConeRadius *= stepRatio; 
+        currentDistance += currentConeRadius * coneRatio;
+        vec3 currentPos = start + directionStep * currentDistance;
+        float currentMip = log2( currentConeRadius ) * 2.0;
+        vec4 currentVal = textureLod(targetTex, currentPos, clamp(currentMip,0.0,5.0) );
+        result += currentVal * (1.0-result.w) * currentVal.w;
+    }
+    return result;
+}
+
+vec4 traceConeWithCollisions(GIData data, vec3 start, vec3 direction, 
+    int iterations, float stepRatio, float coneRatio, float startDistance = 0.5, float initialConeRadius = 1.0) {
+
+    vec3 directionStep = normalize(direction) * data.normalizationFactor;
+    vec4 result = vec4(0);
+
+    float currentDistance = startDistance;
+    float currentConeRadius = initialConeRadius;
+
+    // TODO: Optimize
+    for (int i = 0; i < iterations; i++) {
+        currentConeRadius *= stepRatio; 
+        currentDistance += currentConeRadius * coneRatio;
+        vec3 currentPos = start + directionStep * currentDistance;
+        float currentMip = clamp(log2( currentConeRadius ) * 2.0, 0.0, 8.0);
+        currentMip *= 1.5;
+        vec4 currentVal = textureLod(data.voxels, currentPos, currentMip );
+        // vec4 currentGeomVal = textureLod(data.geometry, currentPos, currentMip );
+
+
+        // result += max(0.001, dot(currentVal.xyz, -direction)) * (1.0-result.w) * currentVal.w;
+        result += (1.0-result.w) * currentVal;
+        // result += currentVal;
+    }
+    return result;
+}
+
+vec3 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec3 specularColor, vec3 lightDir) {
+
+
+    // vec3 correctNormal = normalize(cross(dFdx(m.position), dFdy(m.position)));
+    vec3 correctNormal = m.normal;
+    // return vec3(correctNormal);
+
+    // First, check if the pixel is in the grid
+    bool isInGrid = all(greaterThan(m.position, data.gridStart)) && 
+                    all(lessThan(m.position, data.gridEnd));
+
+    // If not in grid, ignore this pixel
+    if (!isInGrid) return vec3(1.0);
+
+    // We have to substract a very small value, because of compiler
+    // optimizations. Otherwise the voxels are displaced and everythink breaks.
+    // FUCK THE COMPILER! sorry.
+    vec3 biasedPosition = m.position - 0.0000002;
+    // biasedPosition -= m.normal * data.voxelSize * 0.5;
+
+    vec3 localCoord = (biasedPosition-data.gridStart) / data.gridScale;
+    vec4 lookupResult = textureLod(data.voxels, localCoord, 5);
+
+    vec3 reflectVector = reflect(viewVector, m.normal);
+
+    // specularColor = traceCone(data, data.geometry, localCoord, reflectVector, 100, 1.01 + m.roughness*0.1, 1.5, 0.5).xyz;
+    specularColor = vec3(1);
+    // return vec3(1);
+
+    // return vec3(1);
+    // Reconstruct tangent & binormal
+    vec3 t; 
+    vec3 b; 
+    vec3 c1 = cross(correctNormal, vec3(0.0, 0.0, 1.0)); 
+    vec3 c2 = cross(correctNormal, vec3(0.0, 1.0, 0.0)); 
+    if (length(c1) > length(c2))
+      t = c1;   
+    else
+      t = c2;   
+    t = normalize(t);
+    b = normalize(cross(t, correctNormal));
+
+
+
+    // Trace AO
+    const int numSamplesAO = 8;
+    vec3 aoTraceDirections[numSamplesAO] = vec3[numSamplesAO](
+            vec3(0.0,1.0,  1.0),
+            vec3(0.5,0.5,  1.0),
+            vec3(1.0, 0.0,  1.0),
+            vec3(0.5, -0.5,  1.0),
+            vec3(0.0, -1.0,   1.0),
+            vec3(-0.5,-0.5,  1.0),
+            vec3(-1.0,0.0,  1.0),
+            vec3(-0.5,0.5, 1.0)
+    );
+
+    vec4 aoResult = vec4(0);
+    vec3 startCoord = localCoord + correctNormal * data.voxelSize * 0.1;
+    for (int i = 0; i < numSamplesAO; i++) {
+        vec3 traceDirection = aoTraceDirections[i];
+        vec3 mixedNormal = normalize(
+            t * traceDirection.x + b * traceDirection.y + correctNormal * traceDirection.z
+        );
+        aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 5, 1.3, 1.0,0.5, 1.0);
+    }
+    aoResult = aoResult / float(numSamplesAO) * 1.2;
+
+
+    // Trace GI
+    const int numSamplesGI = 1;
+    float giConeHeight = 4.0;
+    vec3 giTraceDirections[numSamplesGI] = vec3[numSamplesGI](
+            // vec3(0.0, 1.0,   giConeHeight),
+            // vec3(0.0, -1.0,   giConeHeight),
+            // vec3(1.0, 0.0,  giConeHeight),
+            // vec3(-1.0,0.0, giConeHeight),
+            vec3(0,0,1)
+
+    );
+    vec4 giResult = vec4(0);
+    startCoord = localCoord + correctNormal * data.voxelSize * 0.01;
+    for (int i = 0; i < numSamplesGI; i++) {
+        vec3 traceDirection = giTraceDirections[i];
+        vec3 mixedNormal = normalize(
+            t * traceDirection.x + b * traceDirection.y + correctNormal * traceDirection.z
+        );
+        vec4 normalResult = traceConeWithCollisions(data, 
+            startCoord, mixedNormal , 15, 1.1, 2.0, 1.0, 1.4);
+        giResult += normalResult;
+    }
+
+    giResult = giResult / float(numSamplesGI) * 5.0;
+
+    // giResult = textureLod(data.voxels, localCoord - correctNormal*data.voxelSize*0.01, 6) * 20.0;
+    // giResult = vec4(textureLod(data.voxels, localCoord, 2.0));
+    // giResult += textureLod(data.voxels, localCoord, 5.5);
+    // giResult *= 5.0;
+
+    float aoMultiplier = exp(-1.3 * aoResult.w);
+
+    // giResult.w += textureLod(data.voxels, localCoord - correctNormal*data.voxelSize*0.01, 7) * 15.0;
+    // aoMultiplier = 1.0;
+
+
+    // return vec3(giResult.xyz * aoMultiplier + 0.005);
+    return vec3(giResult.w*aoMultiplier + 0.005);
+    // return vec3( pow(giResult.w );
+    // return vec3( 1.0 - exp(-0.2 * giResult.w) );
+    // return vec3(1.0 - exp( -0.5 * max(0.0, giResult.w * aoMultiplier) ));
+    // return vec3(giResult.w);
+    // return vec3(giResult.xyz );
+    // return vec3(aoMultiplier);
+
+
+    // return vec3(giResult);
+}

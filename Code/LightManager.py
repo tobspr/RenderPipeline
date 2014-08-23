@@ -163,14 +163,14 @@ class LightManager(DebugObject):
         # children, the color and aux buffers will be overridden each frame.
         # Quite annoying!
         self.shadowComputeTarget.getQuad().node().removeAllChildren()
-        self.shadowComputeTarget.getInternalRegion().setSort(200)
+        self.shadowComputeTarget.getInternalRegion().setSort(-200)
 
         self.shadowComputeTarget.getInternalRegion().setNumRegions(
             self.maxShadowUpdatesPerFrame + 1)
         self.shadowComputeTarget.getInternalRegion().setDimensions(0,
              (0, 0, 0, 0))
 
-        self.shadowComputeTarget.getInternalBuffer().setSort(100)
+        self.shadowComputeTarget.getInternalBuffer().setSort(-300)
 
         # We can't clear the depth per viewport.
         # But we need to clear it in any way, as we still want
@@ -182,7 +182,7 @@ class LightManager(DebugObject):
         for i in range(self.maxShadowUpdatesPerFrame):
             buff = self.shadowComputeTarget.getInternalBuffer()
             dr = buff.makeDisplayRegion()
-            dr.setSort(150)
+            dr.setSort(-250)
             for k in xrange(16):
                 dr.setClearActive(k, True)
                 dr.setClearValue(k, Vec4(0.5,0.5,0.5,1))

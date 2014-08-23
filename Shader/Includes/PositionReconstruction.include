@@ -15,6 +15,10 @@ float getZFromNdc(vec3 ndcPos) {
   return (ndcC / (ndcA+d));
 }
 
+float getZFromNdc(vec3 ndcPos, float near, float far) {
+  float d = ndcPos.z * (near-far);
+  return ( (2.0 * near * far) / ((near + far) + d));
+}
 
 // z has to be in range 0..MAIN_CAMERA_FAR
 float getZFromLinearZ(float z) {
@@ -49,19 +53,25 @@ float normalizeZ(float z, float near, float far) {
 
 
 
-vec3 calculateSurfacePos(float z, vec2 tcoord) {
-
-  vec3 ndcPos = vec3(tcoord.xy, z)*2.0 - 1.0;
-  // ndcPos.xyz -= 0.5;
-  // ndcPos.xyz *= 2.0;
-    
+vec3 calculateSurfacePos(float z, vec2 tcoord, mat4 clipToRender) {
+  vec3 ndcPos = vec3(tcoord.xy, z)*2.0 - 1.0;    
   vec4 clipPos = vec4(0);
   clipPos.w = getZFromNdc(ndcPos);
-
   clipPos.xyz = ndcPos * clipPos.w;
- 
-  vec3 surfacePosition = (trans_clip_of_mainCam_to_mainRender * clipPos).xyz;
+  vec3 surfacePosition = (clipToRender * clipPos).xyz;
   return surfacePosition;
 }
 
 
+vec3 calculateSurfacePos(float z, vec2 tcoord) {
+  return calculateSurfacePos(z, tcoord, trans_clip_of_mainCam_to_mainRender);
+}
+
+vec3 calculateSurfacePos(float z, vec2 tcoord, float near, float far, mat4 clipToRender) {
+  vec3 ndcPos = vec3(tcoord.xy, z)*2.0 - 1.0;    
+  vec4 clipPos = vec4(0);
+  clipPos.w = getZFromNdc(ndcPos, near, far);
+  clipPos.xyz = ndcPos * clipPos.w;
+  vec3 surfacePosition = (clipToRender * clipPos).xyz;
+  return surfacePosition;
+}

@@ -44,7 +44,7 @@ frame-rate-meter-side-margins 0.4
 
 
 # Pstats
-pstats-target-frame-rate 60.0
+pstats-target-frame-rate 30.0
 # pstats-unused-states #f
 
 # For smoother animations

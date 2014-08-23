@@ -172,7 +172,7 @@ class RenderingPipeline(DebugObject):
         self.debug("Window size is", self.size.x, "x", self.size.y)
 
         self.showbase.camLens.setNearFar(0.1, 50000)
-        self.showbase.camLens.setFov(90)
+        self.showbase.camLens.setFov(115)
 
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
 
@@ -574,7 +574,7 @@ class RenderingPipeline(DebugObject):
 
         # Set GI inputs
         if self.settings.enableGlobalIllumination:
-            self.globalIllum.bindTo(self.lightingComputeContainer)
+            self.globalIllum.bindTo(self.lightingComputeContainer, "giData")
 
         # Finally, set shaders
         self.reloadShaders()
@@ -777,24 +777,24 @@ class RenderingPipeline(DebugObject):
         """ Attaches the update tasks to the showbase """
 
         self.showbase.addTask(
-            self._preRenderCallback, "PreRender", sort=-5000)
+            self._preRenderCallback, "RP_BeforeRender", sort=-5000)
 
         self.showbase.addTask(
-            self._update, "UpdateRenderingPipeline", sort=-10)
+            self._update, "RP_Update", sort=-10)
 
 
         if self.haveLightingPass:
             self.showbase.addTask(
-                self._updateLights, "UpdateLights", sort=-9)
+                self._updateLights, "RP_UpdateLights", sort=-9)
             self.showbase.addTask(
-                self._updateShadows, "updateShadows", sort=-8)
+                self._updateShadows, "RP_UpdateShadows", sort=-8)
 
         if self.settings.displayOnscreenDebugger:
             self.showbase.addTask(
-                self._updateGUI, "UpdateGUI", sort=7)
+                self._updateGUI, "RP_UpdateGUI", sort=7)
 
         self.showbase.addTask(
-            self._postRenderCallback, "PosRender", sort=5000)
+            self._postRenderCallback, "RP_AfterRender", sort=5000)
 
 
     def _preRenderCallback(self, task=None):

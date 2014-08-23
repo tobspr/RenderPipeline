@@ -1,0 +1,18 @@
+#version 430
+
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+uniform sampler2D packedVoxels;
+uniform writeonly image3D destination;
+uniform int stackSizeX;
+uniform int gridSize;
+
+
+void main() {
+  ivec3 texelCoords = ivec3(gl_GlobalInvocationID.xyz);
+
+  ivec2 texcoord = texelCoords.xy;
+  texcoord += ivec2(texelCoords.z % stackSizeX, texelCoords.z / stackSizeX) * gridSize;
+
+  imageStore(destination, texelCoords, texelFetch(packedVoxels, texcoord, 0));
+}
