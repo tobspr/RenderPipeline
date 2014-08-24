@@ -1,0 +1,54 @@
+#version 430
+layout (local_size_x = 16, local_size_y = 16) in;
+ 
+uniform writeonly image2D dest;
+uniform int N;
+uniform float oceanLength;
+uniform float gravity;
+uniform float A;
+uniform vec2 wind;
+uniform sampler2D randomTex;
+
+const float M_PI = 3.14159265359;
+
+float phillips(int x, int y) {
+    vec2 k = vec2(
+            M_PI * float(2.0 * x - float(N)) / oceanLength,
+            M_PI * float(2.0 * y - float(N)) / oceanLength
+    );
+    float k_length  = length(k);
+    if (k_length < 0.000001) return 0.0;
+
+    float k_length2 = k_length  * k_length;
+    float k_length4 = k_length2 * k_length2;
+
+    float k_dot_w   = dot(normalize(k), normalize(wind));
+    float k_dot_w2  = k_dot_w * k_dot_w;
+
+    float w_length  = length(wind);
+    float L         = w_length * w_length / gravity;
+    float L2        = L * L;
+    
+    float damping   = 0.001;
+    float l2        = L2 * damping * damping;
+
+    return A * exp(-1.0 / (k_length2 * L2)) / k_length4 * k_dot_w2 * exp(-k_length2 * l2);
+}
+
+void main() {
+  ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
+  vec4 result = vec4(0,0,0,1);
+
+  vec4 gaussianRandom = texelFetch(randomTex, texelCoords % 128, 0) * 10.0 - 5.0;
+
+
+  // HTilde0
+  float phillipsResult = phillips(texelCoords.x, texelCoords.y);
+  result.xy = gaussianRandom.xy * sqrt(phillipsResult / 2.0);
+
+  // HTilde0MkConj
+  float phillipsResultConj = phillips(-texelCoords.x, -texelCoords.y);
+  result.zw = gaussianRandom.zw * sqrt(phillipsResultConj / 2.0);
+
+  imageStore(dest, texelCoords, result);
+}

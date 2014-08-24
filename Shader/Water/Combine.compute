@@ -1,0 +1,52 @@
+#version 430
+layout (local_size_x = 16, local_size_y = 16) in;
+ 
+uniform sampler2D displacementX;
+uniform sampler2D displacementY;
+uniform sampler2D displacementZ;
+
+uniform int N;
+
+uniform float A;
+uniform float oceanLength;
+uniform float gravity;
+uniform vec2 wind;
+
+uniform writeonly image2D normalDest;
+uniform writeonly image2D displacementDest;
+
+vec3 getDisplacement(ivec2 coord) {
+  coord = coord % N;
+  return vec3(
+    texelFetch(displacementX, coord, 0).x,
+    texelFetch(displacementY, coord, 0).x,
+    texelFetch(displacementZ, coord, 0).x
+  );
+}
+
+float getHeight(ivec2 coord) {
+    coord = coord % N;
+    return texelFetch(displacementZ, coord, 0).x+0.5;
+}
+
+
+void main() {
+    ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
+    vec3 combinedDispl = getDisplacement(texelCoords);
+
+    const ivec3 offset = ivec3(-1,0,1);
+    const vec2 size = vec2(2.0 / float(N),0.0);
+
+    vec3 h11 = combinedDispl;
+    vec3 h01 = getDisplacement(texelCoords + offset.xy);
+    vec3 h21 = getDisplacement(texelCoords + offset.zy);
+    vec3 h10 = getDisplacement(texelCoords + offset.yx);
+    vec3 h12 = getDisplacement(texelCoords + offset.yz);
+
+    vec3 va = normalize(vec3(size.x, 0,h21.z-h01.z));
+    vec3 vb = normalize(vec3(0, size.x,h12.z-h10.z));
+    vec3 normal = normalize(cross(va,vb));
+
+    imageStore(normalDest, texelCoords, vec4(normal, 1));
+    imageStore(displacementDest, texelCoords, vec4(combinedDispl, 1));
+}
