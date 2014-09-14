@@ -2,7 +2,7 @@
 import math
 import os
 
-from panda3d.core import TransparencyAttrib, Texture, NodePath, PTAInt
+from panda3d.core import TransparencyAttrib, Texture, NodePath, PTAInt, Vec3
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
 from panda3d.core import PTAVecBase3f, WindowProperties, Vec4, Vec2, PTAVecBase2f
@@ -21,7 +21,7 @@ from GUI.PipelineGuiManager import PipelineGuiManager
 from Globals import Globals
 from SystemAnalyzer import SystemAnalyzer
 from MountManager import MountManager
-
+from Scattering import Scattering
 
 class RenderingPipeline(DebugObject):
 
@@ -201,6 +201,7 @@ class RenderingPipeline(DebugObject):
         # Create separate scene graphs. The deferred graph is render
         self.forwardScene = NodePath("Forward-Rendering")
         self.transparencyScene = NodePath("Transparency-Rendering")
+        self.transparencyScene.setBin("transparent", 30)
 
         # We need no transparency (we store other information in the alpha
         # channel)
@@ -249,7 +250,6 @@ class RenderingPipeline(DebugObject):
         self.currentPixelShift = PTAVecBase2f.emptyArray(1)
         self.lastPixelShift = PTAVecBase2f.emptyArray(1)
 
-
         self._setupFinalPass()
         self._setShaderInputs()
 
@@ -282,7 +282,6 @@ class RenderingPipeline(DebugObject):
         """ Creates the GI handler """
         self.globalIllum = GlobalIllumnination(self)
         self.globalIllum.setup()
-
 
     def _setupAntialiasing(self):
         """ Creates the antialiasing technique """
@@ -339,12 +338,8 @@ class RenderingPipeline(DebugObject):
             self.deferredTarget.setColorBits(32)
             self.deferredTarget.setDepthBits(32)
 
-
-        # GL_INVALID_OPERATION ?
-        # self.deferredTarget.setMultisamples(1)
-
         self.deferredTarget.prepareSceneRender()
-        # self.deferredTarget.setClearColor(False)
+
 
     def _setupFinalPass(self):
         """ Setups the final pass which applies motion blur and so on """
@@ -453,7 +448,8 @@ class RenderingPipeline(DebugObject):
                 "cameraPosition", self.cameraPosition)
 
             self.lightingComputeContainer.setShaderInput(
-                "noiseTexture", self.showbase.loader.loadTexture("Data/Occlusion/noise4x4.png"))
+                "noiseTexture",
+                self.showbase.loader.loadTexture("Data/Occlusion/noise4x4.png"))
             self.lightingComputeContainer.setShaderInput(
                 "lightsPerTile", self.lightPerTileStorage)
 
@@ -507,7 +503,6 @@ class RenderingPipeline(DebugObject):
                 self.currentPixelShift)
             self.combiner.setShaderInput("lastPixelShift",
                 self.lastPixelShift)
-
 
             if self.blurEnabled:
                 self.combiner.setShaderInput(
@@ -762,7 +757,6 @@ class RenderingPipeline(DebugObject):
             self._setNormalExtractShader()
 
         self.antialias.reloadShader()
-        
         if self.settings.enableGlobalIllumination:
             self.globalIllum.reloadShader()
 
@@ -782,7 +776,6 @@ class RenderingPipeline(DebugObject):
         self.showbase.addTask(
             self._update, "RP_Update", sort=-10)
 
-
         if self.haveLightingPass:
             self.showbase.addTask(
                 self._updateLights, "RP_UpdateLights", sort=-9)
@@ -796,13 +789,11 @@ class RenderingPipeline(DebugObject):
         self.showbase.addTask(
             self._postRenderCallback, "RP_AfterRender", sort=5000)
 
-
     def _preRenderCallback(self, task=None):
         """ Called before rendering """
 
         if self.settings.enableGlobalIllumination:
             self.globalIllum.process()
-        
         self.antialias.preRenderUpdate()
 
         if task is not None:
@@ -815,7 +806,6 @@ class RenderingPipeline(DebugObject):
 
         if task is not None:
             return task.cont
-
 
     def _computeCameraBounds(self):
         """ Computes the current camera bounds, i.e. for light culling """
@@ -915,6 +905,36 @@ class RenderingPipeline(DebugObject):
             self.lightManager.addLight(light)
         else:
             self.warn("Lighting is disabled, so addLight has no effect")
+
+    def setScattering(self, scatteringModel):
+        """ Sets a scattering model to use. Only has an effect if enableScattering
+        is enabled """
+        self.debug("Loading scattering model ..")
+        if not self.settings.enableScattering:
+            self.error("You cannot set a scattering model as scattering is not"
+                        " enabled in your pipeline.ini!")
+            return
+
+        self.lightingComputeContainer.setShaderInput(
+            "transmittanceSampler", scatteringModel.getTransmittanceResult())
+        self.lightingComputeContainer.setShaderInput(
+            "inscatterSampler", scatteringModel.getInscatterTexture())
+        scatteringModel.bindTo(
+            self.lightingComputeContainer, "scatteringOptions")
+
+    def enableDefaultEarthScattering(self):
+        """ Adds a standard scattering model, representing the atmosphere of
+        the earth. This is a shortcut for creating a Scattering instance and
+        precomputing it """
+        earthScattering = Scattering()
+
+        scale = 1000000000
+        earthScattering.setSettings({
+            "atmosphereOffset": Vec3(0, 0, - (6360.0 + 9.5) * scale),
+            "atmosphereScale": Vec3(scale)
+        })
+        earthScattering.precompute()
+        self.setScattering(earthScattering)
 
     def _generateShaderConfiguration(self):
         """ Genrates the global shader include which defines

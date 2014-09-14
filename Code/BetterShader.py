@@ -26,6 +26,8 @@ class BetterShader:
     _DumpShaders = False
 
     _ShaderCache = {}
+    _ShaderIDs = {}
+    _NextID = 1000
 
     @classmethod
     def loadCompute(self, source):
@@ -41,7 +43,6 @@ class BetterShader:
     def load(self, *args):
         """ Loads a shader in the order: vertex, fragment,
         geometry, tesseval, tesscontrol """
-
 
         newArgs = []
         toHash = ""
@@ -64,7 +65,6 @@ class BetterShader:
 
         shaderName = args[1].replace("Shader", "").split(".")[0].lstrip("/")
         print "BetterShader: created", shaderName
-
 
         result = Shader.make(Shader.SLGLSL, *newArgs)
         self._ShaderCache[hashed] = result
@@ -104,6 +104,15 @@ class BetterShader:
         newContent = ""
         includeIdentifier = "#include "
 
+        ID = self._ShaderIDs.get(source, None)
+        if ID is None:
+            ID = self._NextID
+            self._ShaderIDs[source] = ID
+            print ID, source
+            self._NextID += 1
+
+        newContent += "#line 1 %d\n" % (ID)
+
         # Iterate through lines
         for line_idx, line in enumerate(content):
             lineStrip = line.strip()
@@ -135,8 +144,12 @@ class BetterShader:
                             self._GlobalIncludeStack.append(properIncludePart)
                             newContent += "\n// FILE: '" + \
                                 str(properIncludePart) + "' \n"
+
                             newContent += self._handleIncludes(
                                 properIncludePart).strip() + "\n"
+
+                            newContent += "#line %d %d\n" % (line_idx + 2, ID)
+
                     else:
                         print "BetterShader: Failed to load '" + str(properIncludePart) + "'!"
                 else:

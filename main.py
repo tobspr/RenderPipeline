@@ -19,13 +19,15 @@ testing purposes only, and also not very clean coded!
 """
 
 
-# Don't generate that annoying .pyc files
+# Don't generate .pyc files
 import sys
+import os
 sys.dont_write_bytecode = True
 
 
 import math
 import struct
+
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3
@@ -78,6 +80,7 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.settings.enableScattering = True
 
         self.renderPipeline.create()
+        self.renderPipeline.enableDefaultEarthScattering()
 
          ####### END OF RENDER PIPELINE SETUP #######
 
@@ -90,7 +93,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
-        # self.sceneSource = "BlenderMaterialLibrary/MaterialLibrary.egg"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
+        # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg.bam"
         self.usePlane = False
 
         self.debug("Loading Scene '" + self.sceneSource + "'")
@@ -108,7 +112,7 @@ class Main(ShowBase, DebugObject):
             self.groundPlane.flattenStrong()
             self.groundPlane.reparentTo(self.scene)
 
-        # Some artists really don't know about backface culling -.-
+        # Some artists really don't know about backface culling
         # self.scene.setTwoSided(True)
 
         self.debug("Flattening scene and parenting to render")
@@ -123,7 +127,8 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(23.6278, -52.0626, 9.021), Vec3(-30, 0, 0))
+            Vec3(0.422895, -6.49557, 4.72692), Vec3(0, 0, 3))
+
         self.controller.setup()
 
         self.sceneWireframe = False
@@ -153,31 +158,15 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
-        dirLight.setAmbientColor(Vec3(0.5,0.5,0.5))
+        dirLight.setShadowMapResolution(4096)
+        dirLight.setAmbientColor(Vec3(0.5, 0.5, 0.5))
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1))
+        dirLight.setColor(Vec3(4))
         self.renderPipeline.addLight(dirLight)
         self.initialLightPos.append(dPos)
         self.lights.append(dirLight)
         self.dirLight = dirLight
-        earthScattering = Scattering()
-
-        scale = 1000000000
-        earthScattering.setSettings({
-            "atmosphereOffset": Vec3(0, 0, - (6360.0 + 9.5) * scale),
-            # "atmosphereOffset": Vec3(0),
-            "atmosphereScale": Vec3(scale)
-        })
-
-        earthScattering.precompute()
-
-        # hack in scattering for testing
-        self.renderPipeline.lightingComputeContainer.setShaderInput(
-            "transmittanceSampler", earthScattering.getTransmittanceResult())
-        self.renderPipeline.lightingComputeContainer.setShaderInput(
-            "inscatterSampler", earthScattering.getInscatterTexture())
 
         self.skybox = None
         self.loadSkybox()
@@ -185,18 +174,14 @@ class Main(ShowBase, DebugObject):
         # set default object shaders
         self.setShaders(refreshPipeline=False)
 
-        earthScattering.bindTo(
-            self.renderPipeline.lightingComputeContainer, "scatteringOptions")
-
+        sunPos = Vec3(56.7587, -31.3601, 189.196)
+        self.dirLight.setPos(sunPos)
+        self.dirLight.setDirection(sunPos)
         self.renderPipeline.guiManager.demoSlider.node[
             "command"] = self.setSunPos
 
-        # self.sunSlider = BetterSlider(
-            # x=300, y=100, size=200, parent=self.pixel2d,
-            # callback=self.setSunPos)
-
         for task in self.taskMgr.getTasks():
-            print "Task:", task.getNamePrefix(), "Priority:",task.getPriority(),"Sort:", task.getSort()
+            print "Task:", task.getNamePrefix(), "Priority:", task.getPriority(), "Sort:", task.getSort()
 
         self.lastSliderValue = 0.0
 
@@ -209,11 +194,13 @@ class Main(ShowBase, DebugObject):
         # rawValue = rawValue / 100.0 * 2.0 * math.pi
 
         # dPos = Vec3(math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
-        dPos = Vec3(30, (rawValue-50), 100)
-        # It is important that the position is normalized -> otherwise the results differ
+        dPos = Vec3(30, (rawValue - 50), 100)
+        # It is important that the position is normalized -> otherwise the
+        # results differ
         dPos.normalize()
         dPos *= 200.0
 
+        print dPos
 
         if abs(diff) > 0.0001:
             # print "-"*79
@@ -236,16 +223,18 @@ class Main(ShowBase, DebugObject):
 
             baseFormat = tex.getFormat()
 
-            if baseFormat == Texture.FRgb:
-                tex.setFormat(Texture.FSrgb)
-            elif baseFormat == Texture.FRgba:
-                tex.setFormat(Texture.FSrgbAlpha)
-            else:
-                print "Unkown texture format:", baseFormat
-                print "\tTexture:", tex
+            if "diffuse" in tex.getName().lower():
+                print "Preparing texture", tex.getName()
+                if baseFormat == Texture.FRgb:
+                    tex.setFormat(Texture.FSrgb)
+                elif baseFormat == Texture.FRgba:
+                    tex.setFormat(Texture.FSrgbAlpha)
+                else:
+                    print "Unkown texture format:", baseFormat
+                    print "\tTexture:", tex
 
-            # tex.setMinfilter(Texture.FTLinearMipmapLinear)
-            # tex.setMagfilter(Texture.FTLinear)
+            tex.setMinfilter(Texture.FTLinearMipmapLinear)
+            tex.setMagfilter(Texture.FTLinear)
             tex.setAnisotropicDegree(16)
 
     def loadLights(self, scene):

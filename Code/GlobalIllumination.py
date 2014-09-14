@@ -12,8 +12,10 @@ from GUI.BufferViewerGUI import BufferViewerGUI
 
 from panda3d.core import PStatCollector
 
-pstats_PopulateVoxelGrid = PStatCollector("App:GlobalIllumnination:PopulateVoxelGrid")
-pstats_GenerateVoxelOctree = PStatCollector("App:GlobalIllumnination:GenerateVoxelOctree")
+pstats_PopulateVoxelGrid = PStatCollector(
+    "App:GlobalIllumnination:PopulateVoxelGrid")
+pstats_GenerateVoxelOctree = PStatCollector(
+    "App:GlobalIllumnination:GenerateVoxelOctree")
 pstats_ClearGI = PStatCollector("App:GlobalIllumnination:Clear")
 
 
@@ -36,6 +38,13 @@ class GlobalIllumnination(DebugObject):
         """ Setups everything for the GI to work """
         self.debug("Setup ..")
 
+        if self.pipeline.settings.useHardwarePCF:
+            self.error(
+                "Global Illumination does not work in combination with PCF!")
+            import sys
+            sys.exit(0)
+            return
+
         # Constants, will later be loaded from disk
         self.gridSize = 256
         self.stackSizeX = 32
@@ -46,6 +55,11 @@ class GlobalIllumnination(DebugObject):
         # self.gridStart = Vec3(-6.0, -6.0, -0.996201992035)
         # self.gridEnd = Vec3(6.0, 6.0, 7.78633880615)
 
+        # self.gridStart = Vec3(-21, -21, -1.00059628487)
+        # self.gridEnd = Vec3(21, 21, 5.9170999527)
+
+        # self.gridStart = Vec3(-5.99318408966, -5.99318408966, -1.05072069168)
+        # self.gridEnd = Vec3(10.6275939941, 6.30981588364, 8.85810756683)
 
         self.gridScale = self.gridEnd - self.gridStart
         self.voxelSize = self.gridScale / float(self.gridSize)
@@ -53,7 +67,8 @@ class GlobalIllumnination(DebugObject):
             1.0 / float(self.stackSizeX), 1.0 / float(self.stackSizeY))
         self.frameIndex = 0
 
-        invVoxelSize = Vec3(1.0 / self.voxelSize.x, 1.0 / self.voxelSize.y, 1.0 / self.voxelSize.z)
+        invVoxelSize = Vec3(
+            1.0 / self.voxelSize.x, 1.0 / self.voxelSize.y, 1.0 / self.voxelSize.z)
         invVoxelSize.normalize()
         self.normalizationFactor = invVoxelSize / float(self.gridSize)
 
@@ -65,6 +80,8 @@ class GlobalIllumnination(DebugObject):
 
         # Load packed voxels
         packedVoxels = Globals.loader.loadTexture(
+            # "Toolkit/Blender Material Library/voxelized/voxels.png")
+            # "Demoscene.ignore/Room/voxelized/voxels.png")
             "Demoscene.ignore/voxelized/voxels.png")
         packedVoxels.setFormat(Texture.FRgba8)
         packedVoxels.setComponentType(Texture.TUnsignedByte)
@@ -81,13 +98,12 @@ class GlobalIllumnination(DebugObject):
         self.unpackVoxels.setShader(
             BetterShader.loadCompute("Shader/GI/UnpackVoxels.compute"))
         self.unpackVoxels.setShaderInput("packedVoxels", packedVoxels)
-        self.unpackVoxels.setShaderInput("stackSizeX", LVecBase3i(self.stackSizeX))
+        self.unpackVoxels.setShaderInput(
+            "stackSizeX", LVecBase3i(self.stackSizeX))
         self.unpackVoxels.setShaderInput("gridSize", LVecBase3i(self.gridSize))
         self.unpackVoxels.setShaderInput("destination", self.unpackedVoxels)
         self._executeShader(
             self.unpackVoxels, self.gridSize / 8, self.gridSize / 8, self.gridSize / 8)
-
-
 
         # Create 3D Texture to store direct radiance
         self.directRadiance = Texture("Direct radiance")
@@ -102,17 +118,16 @@ class GlobalIllumnination(DebugObject):
             prepare.setWrapW(Texture.WMBorderColor)
             prepare.setBorderColor(Vec4(0))
 
-
         self.populateVPLNode = NodePath("PopulateVPLs")
         self.clearTextureNode = NodePath("ClearTexture")
         self.copyTextureNode = NodePath("CopyTexture")
         self.generateMipmapsNode = NodePath("GenerateMipmaps")
 
-        surroundingBox = loader.loadModel(
-            "Demoscene.ignore/CubeOpen/Model.egg")
-        surroundingBox.setPos(self.gridStart)
-        surroundingBox.setScale(self.gridScale)
-        surroundingBox.reparentTo(render)
+        # surroundingBox = Globals.loader.loadModel(
+        #     "Demoscene.ignore/CubeOpen/Model.egg")
+        # surroundingBox.setPos(self.gridStart)
+        # surroundingBox.setScale(self.gridScale)
+        # surroundingBox.reparentTo(Globals.render)
 
         self.bindTo(self.populateVPLNode, "giData")
         self.reloadShader()
@@ -124,18 +139,21 @@ class GlobalIllumnination(DebugObject):
         currentMipmap = 0
         computeSize = self.gridSize
         self.generateMipmapsNode.setShaderInput("source", tex)
-        self.generateMipmapsNode.setShaderInput("pixelSize", 1.0 / self.gridSize)
+        self.generateMipmapsNode.setShaderInput(
+            "pixelSize", 1.0 / self.gridSize)
 
         while computeSize >= 2:
             computeSize /= 2
-            self.generateMipmapsNode.setShaderInput("sourceMipmap", LVecBase3i(currentMipmap))
-            self.generateMipmapsNode.setShaderInput("currentMipmapSize", LVecBase3i(computeSize))
+            self.generateMipmapsNode.setShaderInput(
+                "sourceMipmap", LVecBase3i(currentMipmap))
+            self.generateMipmapsNode.setShaderInput(
+                "currentMipmapSize", LVecBase3i(computeSize))
             self.generateMipmapsNode.setShaderInput(
                 "dest", tex, False, True, -1, currentMipmap + 1)
             self._executeShader(self.generateMipmapsNode,
-                                (computeSize+7) / 8, 
-                                (computeSize+7) / 8, 
-                                (computeSize+7) / 8)
+                                (computeSize + 7) / 8,
+                                (computeSize + 7) / 8,
+                                (computeSize + 7) / 8)
             currentMipmap += 1
 
     def createVoxelDebugBox(self):
@@ -230,7 +248,6 @@ class GlobalIllumnination(DebugObject):
             self._clear3DTexture(self.directRadiance, Vec4(0))
             pstats_ClearGI.stop()
 
-
             pstats_PopulateVoxelGrid.start()
             atlas = self.pipeline.getLightManager().shadowComputeTarget
             atlasDepth = atlas.getDepthTexture()
@@ -320,6 +337,7 @@ class GlobalIllumnination(DebugObject):
         #         self.copyResultNode,
         #         self.cascadeSize * self.cascadeSize / 16,
         #         self.cascadeSize / 16)
+
     def bindTo(self, node, prefix):
         node.setShaderInput(prefix + ".gridStart", self.gridStart)
         node.setShaderInput(prefix + ".gridEnd", self.gridEnd)
@@ -331,7 +349,8 @@ class GlobalIllumnination(DebugObject):
         node.setShaderInput(prefix + ".voxelSize", self.voxelSize)
         node.setShaderInput(prefix + ".gridScale", self.gridScale)
         node.setShaderInput(prefix + ".entrySize", self.entrySize)
-        node.setShaderInput(prefix + ".normalizationFactor", self.normalizationFactor)
+        node.setShaderInput(
+            prefix + ".normalizationFactor", self.normalizationFactor)
         node.setShaderInput(prefix + ".voxels", self.directRadiance)
         node.setShaderInput(prefix + ".geometry", self.unpackedVoxels)
 

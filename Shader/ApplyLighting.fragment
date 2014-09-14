@@ -48,6 +48,7 @@ in vec2 texcoord;
 
 
 uniform sampler2D noiseTexture;
+uniform vec4 bufferSize;
 
 uniform vec3 cameraPosition;
 
@@ -67,6 +68,12 @@ out vec4 lightingResult;
 uniform sampler3D inscatterSampler;
 uniform ScatteringOptions scatteringOptions;
 #endif
+
+vec3 getPositionWorld(vec2 coord) {
+    float z = texture(depth, coord).x;
+    return calculateSurfacePos(z, coord);
+}
+
 
 void main() {
 
@@ -125,106 +132,41 @@ void main() {
     int countDirectionalLightShadow = min(MAX_SHADOW_POINT_LIGHTS, 
         texelFetch(lightsPerTile, precomputeCoord + ivec2(3,0), 0).r);
 
-
+    // Lighting result gets stored in this variables
     vec3 result = vec3(0);
-
-    // There should be a more elegant way, but for now it works
-    bool isSkybox = distance(material.position, cameraPosition) > SKYBOX_BEGIN;
-
-
-    vec3 shAmbient = computeSphericalHarmonics(material.normal, harmonicsGroove);
-// harmonicsGroove
-// harmonicsBeach
-// harmonicsTomb
-
-    // Compute Occlusion
-    float distanceToCamera = distance(cameraPosition, material.position);
-    OCCLUSION_RESULT_TYPE occlusionResult = computeOcclusion(correctTexcoord, screenCoord, distanceToCamera);
-
-
-    occlusionResult = 1.0 - occlusionResult;
-
-    #ifdef DEBUG_DISABLE_OCCLUSION
-        occlusionResult = 0.0;
-    #endif
-
-    vec3 giResult = vec3(1);
+    vec4 giResult = vec4(1);
     vec3 specularColor = vec3(1);
+    vec3 ambient = vec3(0);
 
-    vec3 lightDir = vec3(-0.534, -0.46, 0.707);
+    // Compute depth normal
+    vec3 pixelW = vec3(bufferSize.xy, 0);
+    vec3 world = getPositionWorld(texcoord);
+    vec3 worldX1 = getPositionWorld(texcoord + pixelW.xz);
+    vec3 worldY1 = getPositionWorld(texcoord + pixelW.zy);
+    vec3 wsNormal = (cross(world - worldX1, world - worldY1));
+    wsNormal = normalize(wsNormal);
 
-    if (countDirectionalLightShadow > 0) {
-        int currentLightId = texelFetch(lightsPerTile, precomputeCoord + ivec2(0,6), 0).r;
-        Light currentLight = lights[currentLightId];
-        lightDir = currentLight.direction;
-    }
-
-    #ifdef USE_GLOBAL_ILLUMINATION
-        #ifndef DEBUG_DISABLE_GI
-            vec3 viewVector = normalize(material.position - cameraPosition);
-            giResult = computeGlobalIllumination(material, viewVector, giData, specularColor, lightDir);
-
-        #endif
-
-    #endif
-
-
-    // Metallic materials don't have much occlusion
-    // occlusionResult = mix(occlusionResult, vec4(0.0), saturate(material.metallic-0.3) );
-
+    // There should be a more elegant way, but for now it works. I don't want to
+    // waste a gbuffer flag for marking the skybox.
+    bool isSkybox = distance(material.position, cameraPosition) > SKYBOX_BEGIN;
+    
     float occlusionTotal = 0.0;
 
-    // Compute point lights
-    ivec2 baseOffset = precomputeCoord + ivec2(0,1);
-    ivec2 currentOffset = ivec2(0);
-    int currentLightId = 0;
-    Light currentLight;
+    vec3 scatteringReflectedColor = vec3(0,0,0);
+    vec3 viewVector = normalize(cameraPosition - material.position);
 
-    for (int i = 0; i < countPointLight; i++) {
-        currentOffset = ivec2(i % 8, i / 8);
-        currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
-        currentLight = lights[currentLightId];
+    // Scattering
+    #ifdef USE_SCATTERING
 
-        result += applyPointLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
-    }
-
-    // Compute shadow point lights
-    baseOffset = precomputeCoord + ivec2(0,3);
-    for (int i = 0; i < countPointLightShadow; i++) {
-        currentOffset = ivec2(i % 8, i / 8);
-        currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
-        currentLight = lights[currentLightId];
-
-        #if USE_SHADOWS
-            result += applyPointLightWithShadow(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
-        #else
-            result += applyPointLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
-        #endif
-    }
-
-    // Compute directional lights
-    baseOffset = precomputeCoord + ivec2(0,5);
-    for (int i = 0; i < countDirectionalLight; i++) {
-        currentOffset = ivec2(i % 8, i / 8);
-        currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
-        currentLight = lights[currentLightId];
-        result += applyDirectionalLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
-    }
-
-
-    // Compute shadowed directinal lights
-    baseOffset = precomputeCoord + ivec2(0,6);
-    for (int i = 0; i < countDirectionalLightShadow; i++) {
-        currentOffset = ivec2(i % 8, i / 8);
-        currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
-        currentLight = lights[currentLightId];
-        result += applyDirectionalLightWithShadow(currentLight, material, shAmbient, specularColor, giResult  OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
-    }
+    vec3 attenuation;
+    float irradianceFactor;
 
     // Reconstruct position - otherwise we have precision errors
     vec3 viewDir = calculateSurfacePos(1.0, texcoord);
+
     vec3 posFromDepth = calculateSurfacePos(texelFetch(depth, screenCoord, 0).x, texcoord);
 
+    #ifndef DEBUG_DISABLE_SCATTERING
     float inscatterFactor = 5.0;
 
     // Occlusion on skybox leads to artifacts
@@ -233,14 +175,8 @@ void main() {
 
         // Push very far away
         posFromDepth *= 1e20;
-        inscatterFactor = 3.0;
+        inscatterFactor = 2.0;
     }
-
-
-
-    #ifdef USE_SCATTERING
-    vec3 attenuation;
-    float irradianceFactor;
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
         scatteringOptions,
@@ -251,16 +187,133 @@ void main() {
         attenuation, 
         irradianceFactor);
 
-    #ifndef DEBUG_DISABLE_SCATTERING
+    vec3 reflectVector = reflect(viewVector, material.normal);
+    vec3 startPos = vec3(0);
+    vec3 endPos = reflectVector * 1e17;
+    endPos = vec3(0,0,1e16);
+    vec3 startToEnd = normalize(startPos - endPos);
+    scatteringReflectedColor = scatteringComputeInscatteredLight(
+        scatteringOptions,
+        endPos, 
+        startPos,
+        startToEnd, 
+        inscatterSampler,
+        attenuation, 
+        irradianceFactor) * 1.0;
+
+    // scatteringReflectedColor = mix(scatteringReflectedColor, vec3(1.0), material.roughness);
+
+    // scatteringReflectedColor = 1.0 - exp(-4.0 * scatteringReflectedColor);
+    // scatteringReflectedColor = scatteringReflectedColor;
+
+    
         result += scatteringResult * inscatterFactor ;
     #endif
 
     #endif
 
 
+    // We can skip lighting for the skybox
+    if (isSkybox) {
+
+
+    } else {
+
+        // Compute Occlusion
+        float distanceToCamera = distance(cameraPosition, material.position);
+        OCCLUSION_RESULT_TYPE occlusionResult = computeOcclusion(correctTexcoord, screenCoord, distanceToCamera);
+
+
+        occlusionResult = 1.0 - occlusionResult;
+
+        #ifdef DEBUG_DISABLE_OCCLUSION
+            occlusionResult = 0.0;
+        #endif
+
+
+
+        #ifdef USE_GLOBAL_ILLUMINATION
+            #ifndef DEBUG_DISABLE_GI
+                vec3 lightDir = vec3(-0.534, -0.46, 0.707);
+
+                if (countDirectionalLightShadow > 0) {
+                    int currentLightId = texelFetch(lightsPerTile, precomputeCoord + ivec2(0,6), 0).r;
+                    Light currentLight = lights[currentLightId];
+                    lightDir = currentLight.direction;
+                }
+
+                giResult = computeGlobalIllumination(material, -viewVector, giData, specularColor, lightDir, wsNormal, scatteringReflectedColor);
+
+            #endif
+
+        #endif
+
+
+        // Metallic materials don't have much occlusion
+        // occlusionResult = mix(occlusionResult, vec4(0.0), saturate(material.metallic-0.3) );
+
+
+
+        // Compute point lights
+        ivec2 baseOffset = precomputeCoord + ivec2(0,1);
+        ivec2 currentOffset = ivec2(0);
+        int currentLightId = 0;
+        Light currentLight;
+
+        for (int i = 0; i < countPointLight; i++) {
+            currentOffset = ivec2(i % 8, i / 8);
+            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLight = lights[currentLightId];
+
+            result += applyPointLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+        }
+
+        // Compute shadow point lights
+        baseOffset = precomputeCoord + ivec2(0,3);
+        for (int i = 0; i < countPointLightShadow; i++) {
+            currentOffset = ivec2(i % 8, i / 8);
+            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLight = lights[currentLightId];
+
+            #if USE_SHADOWS
+                result += applyPointLightWithShadow(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+            #else
+                result += applyPointLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+            #endif
+        }
+
+        // Compute directional lights
+        baseOffset = precomputeCoord + ivec2(0,5);
+        for (int i = 0; i < countDirectionalLight; i++) {
+            currentOffset = ivec2(i % 8, i / 8);
+            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLight = lights[currentLightId];
+            result += applyDirectionalLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+        }
+
+
+        // Compute shadowed directinal lights
+        baseOffset = precomputeCoord + ivec2(0,6);
+        for (int i = 0; i < countDirectionalLightShadow; i++) {
+            currentOffset = ivec2(i % 8, i / 8);
+            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLight = lights[currentLightId];
+            result += applyDirectionalLightWithShadow(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+        }
+
+
+        // Ambient / Reflections
+
+        ambient = computeAmbient(material, giResult, specularColor, viewVector, wsNormal);    
+        result += ambient;
+    }
+
+
+
     // SRGB
 
     result = 1.0f - exp(-1.0 * result);
+    // result *= 1.0;
     result.xyz = pow(result.xyz, vec3(1.0 / 2.2) );
 
     #ifdef ENABLE_FOG
@@ -273,7 +326,7 @@ void main() {
 
     #ifdef DEBUG_RM_GI
         result = vec3(giResult);
-        // result = 1.0f - exp(-0.1 * result);
+        result = 1.0f - exp(-1.0 * result);
         occlusionTotal = 0.0;
     #endif
 
@@ -310,6 +363,11 @@ void main() {
         occlusionTotal = 0.0;
     #endif
 
+    #ifdef DEBUG_RM_AMBIENT
+        result = vec3(ambient);
+        occlusionTotal = 0.0;
+    #endif
+
 
     #ifdef DEBUG_RM_SCATTERING
         #ifdef USE_SCATTERING
@@ -318,6 +376,7 @@ void main() {
             occlusionTotal = 0.0;
         #endif
     #endif
+
 
 
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );

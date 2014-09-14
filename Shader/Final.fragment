@@ -94,13 +94,15 @@ void main() {
     // result = textureLod(colorTex, texcoord, 0).rgb;
     
     // SRGB
+    // result = saturate(result);
     // result.xyz = sqrt(result.xyz);
 
-    result = saturate(result);
+    // result *= 4.0;
+
 
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
         vec3 colorCorrected = convertColorSpace(result);
-        result = mix( colorCorrected , result, 0.8);
+        result = mix( colorCorrected , result, 0.5);
     #endif
 
     

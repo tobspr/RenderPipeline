@@ -31,6 +31,14 @@ uniform mat4 trans_model_to_world;
 in vec4 p3d_Vertex;
 in vec4 p3d_Normal;
 in vec2 p3d_MultiTexCoord0;
+
+// We get the material info from panda as a struct
+uniform struct PandaMaterial {
+    vec4 diffuse;
+    vec3 specular;
+    vec4 ambient;
+} p3d_Material;
+
 out vec4 color;
 out vec3 normal;
 out vec4 positionWorld;
@@ -42,7 +50,7 @@ void main() {
     color.w = 1.0;
     vec4 normalWorld = trans_model_to_world * vec4(p3d_Normal.xyz, 0);
     normal = normalWorld.xyz;
-    color.xyz = normalize(normalWorld.xyz) * 0.25 + 0.5;
+    color.xyz = p3d_Material.diffuse.rgb;
     texc = p3d_MultiTexCoord0;
 }
 """
@@ -130,7 +138,7 @@ void main() {
     ivec2 stackOffset = ivec2(voxelCoords.z % stackSizeX, voxelCoords.z / stackSizeX);
     texcoords += stackOffset * gridResolution;
 
-    vec3 diffuse = texture(p3d_Texture0, texcoord).rgb;
+    vec3 diffuse = texture(p3d_Texture0, texcoord).rgb * fragmentColor.xyz;
 
     imageStore(voxelStorageGrid, texcoords, vec4(diffuse, 1));
     result = vec4(1);

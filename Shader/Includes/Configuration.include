@@ -75,3 +75,4 @@ const float sqrt_of_2 = 1.4142135623;
 
 
 #define SKYBOX_BEGIN 15000.0
+

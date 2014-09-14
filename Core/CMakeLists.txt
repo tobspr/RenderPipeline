@@ -4,12 +4,14 @@ cmake_minimum_required (VERSION 2.6)
 project (RPCore)
 set(CMAKE_BUILD_TYPE "Release")
 
+
+
 # Configure this variables to match your system
-# NO TRAILING SLASH!!
+# No trailing slash
 if (WIN32)
   
   # Default settings for windows. Usually you only have to adjust WIN_PANDA_PATH
-  set (WIN_PANDA_PATH "E:/P3D/1.9.0-1")
+  set (WIN_PANDA_PATH "F:/P3D/1.9.0-1")
 
   # These vars are based on the WIN_PANDA_PATH and usually are correct
   set(PANDA_SRC "${WIN_PANDA_PATH}/")
@@ -23,15 +25,8 @@ if (WIN32)
 
 else()
 
-  # Todo: Linux
-  set(PANDA_SRC "E:/P3D/1.9.0-1/")
-  set(PANDA_BIN "E:/P3D/1.9.0-1/built_x64/bin")
-  set(PANDA_LIBS "E:/P3D/1.9.0-1/built_x64/lib")
-  set(PANDA_INCLUDE "E:/P3D/1.9.0-1/built_x64/include")
-  set(PYTHON_LIBS "E:/P3D/1.9.0-1/built_x64/python/libs")
-  set(PYTHON_INCLUDE "E:/P3D/1.9.0-1/built_x64/python/include")
-  set(PYTHON_BIN "E:/P3D/1.9.0-1/built_x64/python")
-  set(PANDA_THIRDPARTY "${PANDA_SRC}/thirdparty/win-libs-vc10-x64/")
+  message( FATAL_ERROR "Linux not supported yet" )
+
 endif()
 
 
@@ -43,7 +38,6 @@ foreach(DIRECTORY ${CHECK_DIRS})
       message(FATAL_ERROR "The supplied directory '${DIRECTORY}' does not exist! Correct the path in CMakeLists.txt!")
   endif()
 endforeach()
-
 
 # Link panda includes / libraries
 include_directories("${PANDA_INCLUDE}")

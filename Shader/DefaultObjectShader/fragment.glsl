@@ -43,12 +43,13 @@ void main() {
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
-   
-    // bumpFactor = 0.0;
 
+    // bumpFactor = 1.5;
+   
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
     detailNormal = mix(vec3(0,0,1), detailNormal, bumpFactor);
     detailNormal = normalize(detailNormal);
+
 
 
     vec3 normal = normalize(vOutput.normalWorld);
@@ -59,13 +60,23 @@ void main() {
         tangent * detailNormal.x + binormal * detailNormal.y + normal * detailNormal.z
     );
 
-
     m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
     m.roughness = sampledRoughness.r * roughnessFactor;
     m.specular = sampledSpecular.r * specularFactor;
     m.metallic = metallic;
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
+
+
+    // m.baseColor = vec3(2);
+    // m.roughness = 0.6;
+    // m.metallic = 0.0;
+
+    // m.baseColor *= vec3(8);
+    // m.specular = 0.1;
+    // m.roughness = 0.1;
+    // m.specular = 1.0;
+    // m.metallic = 1.0;
 
     renderMaterial(m);
 }

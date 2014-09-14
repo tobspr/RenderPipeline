@@ -71,6 +71,7 @@ class PipelineGuiManager(DebugObject):
             ("Lighting", "rm_Lighting"),
             ("Scattering", "rm_Scattering"),
             ("G-Illum", "rm_GI"),
+            ("Ambient", "rm_Ambient"),
         ]
 
         features = [
@@ -82,6 +83,7 @@ class PipelineGuiManager(DebugObject):
             ("Blur Occlusion", "ft_BLUR_OCCLUSION"),
             ("Scattering", "ft_SCATTERING"),
             ("G-Illum", "ft_GI"),
+            ("Ambient", "ft_AMBIENT"),
         ]
 
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",

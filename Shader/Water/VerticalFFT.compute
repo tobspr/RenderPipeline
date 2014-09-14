@@ -27,7 +27,7 @@ void main() {
         if ( (texelCoords.x + texelCoords.y) % 2 == 1) {
             result.x *= -1;
         }
-        float normalizedResult = result.x / normalizationFactor;
+        float normalizedResult = result.x / normalizationFactor + 0.5;
         imageStore(dest, texelCoords, vec4(normalizedResult, normalizedResult, normalizedResult, 1));
     }
 }

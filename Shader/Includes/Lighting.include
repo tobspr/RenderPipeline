@@ -1,4 +1,5 @@
 
+#include "Includes/Configuration.include"
 #include "Includes/Light.include"
 #include "Includes/Random.include"
 #include "Includes/LightingModels.include"
@@ -7,6 +8,8 @@
 #include "Includes/ShadowSource.include"
 #include "Includes/PositionReconstruction.include"
 #include "Includes/PoissonDisk.include"
+#include "Includes/SphericalHarmonics.include"
+
 
 uniform samplerCube directionToFace;
 uniform samplerCube fallbackCubemap;
@@ -25,7 +28,6 @@ const mat4 shadowBiasMatrix = mat4(
     uniform sampler2D shadowAtlas;
 #endif
 
-
 vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
     // Todo: Raw coord can be simply clamped to 0 .. 1 instead of clamping the result
     float factor = float(source.resolution) / SHADOW_MAP_ATLAS_SIZE;
@@ -33,74 +35,94 @@ vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
     return ( clamp(rawCoord * factor, factorBy1, 1.0 - factorBy1) + source.atlasPos);
 }
 
-vec3 computeLightModel(Light light, Material material, vec3 l, vec3 v, vec3 n, vec3 h, float attenuation, vec3 specularColorReflected) {
 
-    // return vec3(attenuation);
+vec3 computeSpecular(vec3 specularColor, float roughness, float NxL, float LxH, float NxV, float NxH) {
+
+    float specularD = DistributionBRDF(roughness, NxH) / M_PI;
+    float specularG = GeometricBRDF(roughness, NxV, NxL);
+    vec3  specularF = FresnelBRDF(specularColor, LxH);
+    
+    return genericMicrofacetBRDF(specularF, specularG, specularD, NxL, NxV);
+}
+
+vec3 computeLightModel(Light light, Material material, 
+        vec3 l, vec3 v, vec3 n, vec3 h, 
+        float attenuation, float shadowFactor) {
 
     #if USE_SIMPLE_LIGHTING
-
-        // return max(vec3(0.0), light.color * attenuation * dot(n, l));
         return light.color * attenuation;
-
     #else
 
-        /*
-            TODO: Optimize
-        */
+        // Performance optimization
+        if (shadowFactor < 0.001) return vec3(0.0);
+
+        vec3 lightingResult = vec3(0);
+
+        vec3 specularColor = mix(vec3(1), material.baseColor, material.metallic) * material.specular;
+        vec3 diffuseColor = mix(material.baseColor, vec3(0), material.metallic);
 
         float roughness = clamp(material.roughness, 0.005, 1.0);
-        float specular = material.specular;
-        float refractiveFactor = material.metallic * 0.5 + 0.5;
 
-        vec3 diffuseColor = material.baseColor * (1.0 - material.metallic);
-        vec3 specularColor = material.baseColor * (material.metallic) + specular * (1.0 - material.metallic);
+        // pre-computed cross products
+        float NxL = saturate(dot(n, l));
+        float LxH = saturate(dot(l, h));
+        float NxV = saturate(dot(n, v));
+        float NxH = saturate(dot(n, h));
 
-        // Compute reflection
-        vec3 reflectedDir = reflect( v, n);
+        // Evaluate specular
+        vec3 specularContribution = computeSpecular(specularColor, roughness, NxL, LxH, NxV, NxH) * light.color * NxL * specularColor;
 
-        float cubemapResolutionParameter = material.roughness;
-        vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 60.0).rgb;
-        vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, cubemapResolutionParameter * 60.0 - 1.0).rgb;
-        // vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
-        vec3 reflectedColor = specularColorReflected * 1.0;
-        // vec3 reflectedColor = vec3(1);
+        // Energy conservation
+        specularContribution *= pow(1.0 + roughness * 0.5, 2.0);
+        lightingResult += vec3(specularContribution);
 
-        // Compute specular BRDF
-        float specG = clamp(specularBrdfG(l, v, h, n, roughness), 0, 1);
-        vec3  specF = clamp(specularBrdfFresnel(specularColor, safeDot(v, n)  ) , 0, 1);
+        // Evaluate diffuse
+        vec3 diffuseContribution = diffuseColor / M_PI * NxL * light.color;
+        lightingResult += vec3(diffuseContribution);
 
-        // D is not clamped, highlights can get very bright
-        float specD = specularBrdfD(n, h, roughness); 
+        // Apply shadows
+        lightingResult *= shadowFactor;
 
-        // Compute diffuse BRDF
-        // vec3 diffuseBrdf = diffuseBrdfOrenNayar(l, v, n) * safeDot(n, l);
-        vec3 diffuseBrdf = vec3(diffuseBrdfSimpleOrenNayar(l, v, n, 1.5));
-
-        // Combine specular
-        vec3 specularTerm = (specF * specG * specD) * max(0.0, 4.0 * dot(n, l) * dot(n, v));
-
-        // Compute total contributions
-        vec3 diffuseContribution = diffuseColor * diffuseBrdf * attenuation * light.color;
-        vec3 specularContribution = (specularTerm+0.1) * attenuation * light.color * specular * 
-                mix(vec3(1.0), material.baseColor, material.metallic*0.5 + 0.5) * specularColorReflected * 2.0; 
-        vec3 refractiveContribution = reflectedColor * refractiveFactor * specularColor *
-                                        specF * attenuation * light.color * material.baseColor * max(0.01, safeDot(n, l));
-
-       
-        vec3 combinedContribution = mix(specularContribution, diffuseContribution, material.roughness);
-        // return max(vec3(0.0), combinedContribution ) ;
-        return max(vec3(0.0), combinedContribution ) ;
+        return lightingResult;
 
     #endif
-
-
 }
 
-float getRandom(vec2 seed) {
-    float dot_product = dot(seed, vec2(12.9898,78.233));
-    return fract(sin(dot_product) * 43758.5453);
+vec3 computeEnvironmentBRDF(vec3 specularColor, float roughness, float NxV)
+{
+    const vec4 c0 = vec4(-1, -0.0275, -0.572, 0.022);
+    const vec4 c1 = vec4(1, 0.0425, 1.04, -0.04);
+    vec4 r = roughness * c0 + c1;
+    float a004 = min( r.x * r.x, exp2( -9.28 * NxV ) ) * r.x + r.y;
+    vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
+    AB.y *= saturate( 50.0 * specularColor.g );
+    return specularColor * AB.x + AB.y;
 }
 
+vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, vec3 n) {
+
+    #ifdef DEBUG_DISABLE_AMBIENT
+        return vec3(0.0);
+    #endif
+
+    vec3 reflectedDir = reflect( v, material.normal );
+    float mipmap = log2(material.roughness * 800.0);
+    vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, mipmap).rgb;
+    vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, mipmap - 1.0).rgb;
+    vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
+    reflectedColor *= reflectedColor;
+
+    float NxV = max(0.0, dot(material.normal, v));
+    vec3 result = vec3(0);
+
+    result += giAmbient.xyz * 0.2 * material.baseColor * (1.0 - material.metallic);
+
+    vec3 specularColor = material.baseColor * reflectedColor * giSpecular * material.specular;
+    vec3 environment = computeEnvironmentBRDF(specularColor, material.roughness, NxV);
+    
+    result += environment * material.baseColor; 
+    return result;
+}
 
 float computePointLightAttenuation(Light light, float distanceToLight) {
 
@@ -116,25 +138,7 @@ float computePointLightAttenuation(Light light, float distanceToLight) {
     return attenuation;
 }
 
-vec3 applyPointLight(Light light, Material material 
-    OCCLUSION_PER_LIGHT_RECV_PARAMETERS ) {
 
-    float distanceToLight = distance(material.position, light.position);   
-    float distanceRelative = distanceToLight / light.radius; 
-    float attenuation = computePointLightAttenuation(light, distanceToLight);
-
-    vec3  l = normalize(light.position - material.position);
-    vec3  v = normalize(cameraPosition - material.position);
-    vec3  n = normalize(material.normal);
-    vec3  h = normalize(l + v);
-    vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
-
-    APPLY_OCCLUSION();
-
-
-    vec3 specularColor = vec3(1);
-    return computeLightModel(light, material, l,v, n, h, attenuation, specularColor) + ambientContribution;
-}
 
 // http://the-witness.net/news/2013/09/shadow-mapping-summary-part-1/
 vec2 getShadowOffsets(vec3 N, vec3 L) {
@@ -143,8 +147,6 @@ vec2 getShadowOffsets(vec3 N, vec3 L) {
     float offset_scale_L = offset_scale_N / cos_alpha;    // tan(acos(L·N))
     return vec2(offset_scale_N, min(2, offset_scale_L));
 }
-
-
 
 float computeShadowsForSource(ShadowSource source, Material material, vec3 n, vec3 l, 
     float slopeScaledBias, float normalScaledBias, float baseBias) {
@@ -168,25 +170,18 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
     // projected = projected * 0.5 + 0.5;    
 
-    float pixOffset = 1.0 / SHADOW_MAP_ATLAS_SIZE;
+    float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
 
     vec3 projCoord = projected.xyz / projected.w;
     projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
 
-    float pixScaled = 4.0 / float(source.resolution);
+    float pixScaled = 2.0 / float(source.resolution);
 
     if (any(lessThan(projCoord.xy, vec2(pixScaled))) || any(greaterThan(projCoord.xy, vec2(1-pixScaled)))) {
         return 0.0;
     }
 
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
-
-
-    
-    // float baseBias = 0.0002;
-
-    // pixOffset = 0.0;
-    #define SHADOWS_NUM_SAMPLES 16
 
     // apply point light shadows
     float shadowFactor = 0.0;
@@ -199,8 +194,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
         #endif
 
         #if USE_HARDWARE_PCF
-            // Notice: when using opengl 4.1+, it has to be texture(xxx).r 
-            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) );
+            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) ); // .r?
             shadowFactor += (1.0 - sampled);
         #else
             float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
@@ -209,107 +203,8 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     }
     shadowFactor /= SHADOWS_NUM_SAMPLES;
 
-    return shadowFactor;
+    return 1.0 - shadowFactor;
 }
 
 
-vec3 applyPointLightWithShadow(Light light, Material material
-    OCCLUSION_PER_LIGHT_RECV_PARAMETERS ) {
-
-    float distanceToLight = distance(material.position, light.position);   
-    float distanceRelative = distanceToLight / light.radius; 
-    float attenuation = computePointLightAttenuation(light, distanceToLight);
-
-    vec3  l = normalize(light.position - material.position);
-    vec3  v = normalize(cameraPosition - material.position);
-    vec3  n = normalize(material.normal);
-    vec3  h = normalize(l + v);
-
-    APPLY_OCCLUSION();
-
-    vec3 specularColor = vec3(1);
-    vec3 rawLighting = computeLightModel(light, material, l,v, n, h, attenuation, specularColor);
-
-    // We decide which shadow map to sample using a simple lookup cubemap
-    int faceIndex = int( textureLod(directionToFace, l, 0).r * 5.0);
-    int shadowSourceIndex = light.sourceIndexes[faceIndex];
-
-    ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
-
-    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 1.0, 1.0, 0.0002);
-
-    // Apply shadows
-    rawLighting *= max(0.0, 1.0 - shadowFactor);
-
-    vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
-
-    return max(vec3(0.0), rawLighting) + ambientContribution;
-}
-
-
-vec3 applyDirectionalLight(Light light, Material material
-    OCCLUSION_PER_LIGHT_RECV_PARAMETERS ) {
-
-    float distanceToLight = distance(material.position, light.position);   
-    float distanceRelative = distanceToLight / light.radius; 
-    float attenuation = 1.0;
-
-    vec3  l = light.direction;
-    vec3  v = normalize(cameraPosition - material.position);
-    vec3  n = normalize(material.normal);
-    vec3  h = normalize(l + v);
-
-    APPLY_OCCLUSION();
-
-
-    vec3 specularColor = vec3(1);
-
-    vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
-    return computeLightModel(light, material, l,v, n, h, attenuation, specularColor) + ambientContribution;
-}
-
-vec3 applyDirectionalLightWithShadow(Light light, Material material, vec3 shAmbient, vec3 specularColor, vec3 giColor 
-    OCCLUSION_PER_LIGHT_RECV_PARAMETERS ) {
-
-    float distanceToLight = distance(material.position, light.position);   
-    float distanceRelative = distanceToLight / light.radius; 
-    float attenuation = 1.0;
-
-    vec3  l = light.direction;
-    vec3  v = normalize(cameraPosition - material.position);
-    vec3  n = normalize(material.normal);
-    vec3  h = normalize(l + v);
-
-    APPLY_OCCLUSION();
-
-    // light.color = vec3(1.9,1.9,1) * 2.0;
-    // light.ambient = vec3(0.5, 0.5, 0.5 );
-
-    // light.ambient = mix(
-    //         vec3(0.51,0.5, 0.5), 
-    //         vec3(0.5,0.5,0.55), 
-    //         saturate(material.normal.z)
-    //         ) * 8.0;
-
-    // light.ambient *= shAmbient* 6.0;
-// 
-    int shadowSourceIndex = light.sourceIndexes[0];
-    ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
-
-    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.0, 0.1, 0.0001);
-
-    vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
-    vec3 rawLighting = computeLightModel(light, material, l,v, n, h, attenuation, specularColor);
-    // Apply shadows
-
-    float shadowBrightness = 12.0;
-    rawLighting *= max(0.0, shadowBrightness - shadowFactor*shadowBrightness);
-    rawLighting = max(vec3(0.0), rawLighting);
-    rawLighting += ambientContribution;
-    rawLighting *= giColor + 0.0;
-    
-
-    // vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
-    return rawLighting;
-}
-
+#include "Includes/Lights.include" 

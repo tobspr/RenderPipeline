@@ -32,7 +32,7 @@ allSourcesStr = ' '.join(['"' + i + '"' for i in allSources])
 print "\nRunning interrogate .."
 
 command = PANDA_BIN + \
-    "/interrogate -v -D__inline -DCPPPARSER -DP3_INTERROGATE=1 -D__cplusplus "
+    "/interrogate -D__inline -DCPPPARSER -DP3_INTERROGATE=1 -D__cplusplus "
 command += "-fnames -string -refcount -assert "
 command += "-Dvolatile= "
 command += "-S" + PANDA_INCLUDE + "/parser-inc "

@@ -8,6 +8,12 @@ out vec4 worldPos;
 out vec2 vtxTexcoord;
 out vec3 vtxDiffuseMultiplier;
 
+uniform struct PandaMaterial {
+    vec4 diffuse;
+    vec3 specular;
+    vec4 ambient;
+} p3d_Material;
+
 void main() {
     worldPos = trans_model_to_world * p3d_Vertex;
     
@@ -16,7 +22,9 @@ void main() {
     // worldPos -= worldNormal;
 
     // Todo: Diffuse Multiplier = Material diffuse * Material GI Factor
-    vtxDiffuseMultiplier = vec3(1);
+    // vtxDiffuseMultiplier = vec3(1);
+    vtxDiffuseMultiplier = p3d_Material.diffuse.rgb;
+
     vtxTexcoord = p3d_MultiTexCoord0;
     gl_Position = worldPos;   
 }

@@ -36,9 +36,9 @@ class GPUFFT(DebugObject):
             self.size, self.size, Texture.TFloat, Texture.FRgba32)
         self.sourceTex = sourceTex
 
-        for tex in [self.pingTexture, self.pongTexture]:
-            # tex.setMinfilter(Texture.FTNearest)
-            # tex.setMagfilter(Texture.FTNearest)
+        for tex in [self.pingTexture, self.pongTexture, sourceTex]:
+            tex.setMinfilter(Texture.FTNearest)
+            tex.setMagfilter(Texture.FTNearest)
             tex.setWrapU(Texture.WMClamp)
             tex.setWrapV(Texture.WMClamp)
 
@@ -67,6 +67,8 @@ class GPUFFT(DebugObject):
         self.resultTexture = Texture("Result")
         self.resultTexture.setup2dTexture(
             self.size, self.size, Texture.TFloat, Texture.FRgba16)
+        self.resultTexture.setMinfilter(Texture.FTLinear)
+        self.resultTexture.setMagfilter(Texture.FTLinear)
 
         # Prepare the shader attributes, so we don't have to regenerate them
         # every frame -> That is VERY slow (3ms per fft instance)

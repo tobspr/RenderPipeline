@@ -14,7 +14,7 @@ in vec2 p3d_MultiTexCoord0;
 
 
 // Outputs
-out VertexOutput vOutput;
+layout(location=0) out VertexOutput vOutput;
 
 // We get the material info from panda as a struct
 struct PandaMaterial {
