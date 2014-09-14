@@ -71,6 +71,7 @@ class PipelineGuiManager(DebugObject):
             ("Lighting", "rm_Lighting"),
             ("Scattering", "rm_Scattering"),
             ("G-Illum", "rm_GI"),
+            ("GI-Reflections", "rm_Reflections"),
             ("Ambient", "rm_Ambient"),
         ]
 

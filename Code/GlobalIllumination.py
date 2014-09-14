@@ -2,6 +2,8 @@
 from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
 from panda3d.core import Vec2, LMatrix4f, LVecBase3i
 from panda3d.core import Mat4, OmniBoundingVolume
+from panda3d.core import PStatCollector
+from direct.stdpy.file import isfile, open, join
 
 from Globals import Globals
 from DebugObject import DebugObject
@@ -9,8 +11,7 @@ from BetterShader import BetterShader
 from LightType import LightType
 from GUI.BufferViewerGUI import BufferViewerGUI
 
-
-from panda3d.core import PStatCollector
+from SettingsManager import SettingsManager
 
 pstats_PopulateVoxelGrid = PStatCollector(
     "App:GlobalIllumnination:PopulateVoxelGrid")
@@ -19,20 +20,42 @@ pstats_GenerateVoxelOctree = PStatCollector(
 pstats_ClearGI = PStatCollector("App:GlobalIllumnination:Clear")
 
 
-class GlobalIllumnination(DebugObject):
+class VoxelSettingsManager(SettingsManager):
 
-    """ This class handles the global illumination processing """
+    def __init__(self):
+        SettingsManager.__init__(self, "VoxelSettings")
+
+    def _addDefaultSettings(self):
+
+        self._addSetting("GridResolution", int, 256)
+        self._addSetting("GridStart", Vec3, Vec3(0))
+        self._addSetting("GridEnd", Vec3, Vec3(0))
+        self._addSetting("StackSizeX", int, 32)
+        self._addSetting("StackSizeY", int, 8)
+
+
+class GlobalIllumination(DebugObject):
+
+    """ This class handles the global illumination processing. It is still
+    experimental, and thus not commented. """
+
+    sceneRoot = "Demoscene.ignore/voxelized"
 
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
         self.pipeline = pipeline
 
+
     def _allocTexture(self):
         tex = Texture("tex")
         tex.setup2dTexture(
-            self.gridSize * self.stackSizeX, self.gridSize * self.stackSizeY,
+            self.settings.GridResolution * self.stackSizeX, self.settings.GridResolution * self.stackSizeY,
             Texture.TFloat, Texture.FRgba8)
         return tex
+
+    @classmethod
+    def setSceneRoot(self, sceneSrc):
+        self.sceneRoot = sceneSrc
 
     def setup(self):
         """ Setups everything for the GI to work """
@@ -45,32 +68,24 @@ class GlobalIllumnination(DebugObject):
             sys.exit(0)
             return
 
-        # Constants, will later be loaded from disk
-        self.gridSize = 256
-        self.stackSizeX = 32
-        self.stackSizeY = 8
-        self.gridStart = Vec3(-97.0472946167, -56.2713127136, -2.40248203278)
-        self.gridEnd = Vec3(90.9954071045, 60.1403465271, 72.4716720581)
+        
 
-        # self.gridStart = Vec3(-6.0, -6.0, -0.996201992035)
-        # self.gridEnd = Vec3(6.0, 6.0, 7.78633880615)
+        self.settings = VoxelSettingsManager()
+        self.settings.loadFromFile(join(self.sceneRoot, "voxels.ini"))
 
-        # self.gridStart = Vec3(-21, -21, -1.00059628487)
-        # self.gridEnd = Vec3(21, 21, 5.9170999527)
+        self.debug(
+            "Loaded voxels, grid resolution is", self.settings.GridResolution)
 
-        # self.gridStart = Vec3(-5.99318408966, -5.99318408966, -1.05072069168)
-        # self.gridEnd = Vec3(10.6275939941, 6.30981588364, 8.85810756683)
-
-        self.gridScale = self.gridEnd - self.gridStart
-        self.voxelSize = self.gridScale / float(self.gridSize)
+        self.gridScale = self.settings.GridEnd - self.settings.GridStart
+        self.voxelSize = self.gridScale / float(self.settings.GridResolution)
         self.entrySize = Vec2(
-            1.0 / float(self.stackSizeX), 1.0 / float(self.stackSizeY))
+            1.0 / float(self.settings.StackSizeX), 1.0 / float(self.settings.StackSizeY))
         self.frameIndex = 0
 
         invVoxelSize = Vec3(
             1.0 / self.voxelSize.x, 1.0 / self.voxelSize.y, 1.0 / self.voxelSize.z)
         invVoxelSize.normalize()
-        self.normalizationFactor = invVoxelSize / float(self.gridSize)
+        self.normalizationFactor = invVoxelSize / float(self.settings.GridResolution)
 
         # Debugging of voxels, VERY slow
         self.debugVoxels = False
@@ -80,16 +95,14 @@ class GlobalIllumnination(DebugObject):
 
         # Load packed voxels
         packedVoxels = Globals.loader.loadTexture(
-            # "Toolkit/Blender Material Library/voxelized/voxels.png")
-            # "Demoscene.ignore/Room/voxelized/voxels.png")
-            "Demoscene.ignore/voxelized/voxels.png")
+            join(self.sceneRoot, "voxels.png"))
         packedVoxels.setFormat(Texture.FRgba8)
         packedVoxels.setComponentType(Texture.TUnsignedByte)
         # packedVoxels.setKeepRamImage(False)
 
         # Create 3D Texture to store unpacked voxels
         self.unpackedVoxels = Texture("Unpacked voxels")
-        self.unpackedVoxels.setup3dTexture(self.gridSize, self.gridSize, self.gridSize,
+        self.unpackedVoxels.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
                                            Texture.TFloat, Texture.FRgba8)
         self.unpackedVoxels.setMinfilter(Texture.FTLinearMipmapLinear)
         self.unpackedVoxels.setMagfilter(Texture.FTLinear)
@@ -99,15 +112,15 @@ class GlobalIllumnination(DebugObject):
             BetterShader.loadCompute("Shader/GI/UnpackVoxels.compute"))
         self.unpackVoxels.setShaderInput("packedVoxels", packedVoxels)
         self.unpackVoxels.setShaderInput(
-            "stackSizeX", LVecBase3i(self.stackSizeX))
-        self.unpackVoxels.setShaderInput("gridSize", LVecBase3i(self.gridSize))
+            "stackSizeX", LVecBase3i(self.settings.StackSizeX))
+        self.unpackVoxels.setShaderInput("gridSize", LVecBase3i(self.settings.GridResolution))
         self.unpackVoxels.setShaderInput("destination", self.unpackedVoxels)
         self._executeShader(
-            self.unpackVoxels, self.gridSize / 8, self.gridSize / 8, self.gridSize / 8)
+            self.unpackVoxels, self.settings.GridResolution / 8, self.settings.GridResolution / 8, self.settings.GridResolution / 8)
 
         # Create 3D Texture to store direct radiance
         self.directRadiance = Texture("Direct radiance")
-        self.directRadiance.setup3dTexture(self.gridSize, self.gridSize, self.gridSize,
+        self.directRadiance.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
                                            Texture.TFloat, Texture.FRgba8)
 
         for prepare in [self.directRadiance, self.unpackedVoxels]:
@@ -137,10 +150,10 @@ class GlobalIllumnination(DebugObject):
     def _generateMipmaps(self, tex):
         # Generate geometry mipmaps
         currentMipmap = 0
-        computeSize = self.gridSize
+        computeSize = self.settings.GridResolution
         self.generateMipmapsNode.setShaderInput("source", tex)
         self.generateMipmapsNode.setShaderInput(
-            "pixelSize", 1.0 / self.gridSize)
+            "pixelSize", 1.0 / self.settings.GridResolution)
 
         while computeSize >= 2:
             computeSize /= 2
@@ -161,7 +174,7 @@ class GlobalIllumnination(DebugObject):
 
         gridVisualizationSize = 64
         box.setScale(self.voxelSize)
-        box.setPos(self.gridStart)
+        box.setPos(self.settings.GridStart)
         box.reparentTo(Globals.base.render)
         box.setInstanceCount(
             gridVisualizationSize * gridVisualizationSize * gridVisualizationSize)
@@ -301,12 +314,9 @@ class GlobalIllumnination(DebugObject):
 
             pstats_GenerateVoxelOctree.start()
             # In this frame we generate the mipmaps for the voxel grid
-            currentMipmap = 0
-            computeSize = self.gridSize
-
             self._generateMipmaps(self.directRadiance)
+            pstats_GenerateVoxelOctree.stop()
 
-            pstats_GenerateVoxelOctree.start()
         # In the other frames, we spread the lighting. This can be
         # basically seen as a normal aware 3d blur
         #     self.spreadLightingNode.setShaderInput(
@@ -339,13 +349,13 @@ class GlobalIllumnination(DebugObject):
         #         self.cascadeSize / 16)
 
     def bindTo(self, node, prefix):
-        node.setShaderInput(prefix + ".gridStart", self.gridStart)
-        node.setShaderInput(prefix + ".gridEnd", self.gridEnd)
+        node.setShaderInput(prefix + ".gridStart", self.settings.GridStart)
+        node.setShaderInput(prefix + ".gridEnd", self.settings.GridEnd)
         node.setShaderInput(
-            prefix + ".stackSizeX", LVecBase3i(self.stackSizeX))
+            prefix + ".stackSizeX", LVecBase3i(self.settings.StackSizeX))
         node.setShaderInput(
-            prefix + ".stackSizeY", LVecBase3i(self.stackSizeY))
-        node.setShaderInput(prefix + ".gridSize",  LVecBase3i(self.gridSize))
+            prefix + ".stackSizeY", LVecBase3i(self.settings.StackSizeY))
+        node.setShaderInput(prefix + ".gridSize",  LVecBase3i(self.settings.GridResolution))
         node.setShaderInput(prefix + ".voxelSize", self.voxelSize)
         node.setShaderInput(prefix + ".gridScale", self.gridScale)
         node.setShaderInput(prefix + ".entrySize", self.entrySize)

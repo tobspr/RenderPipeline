@@ -64,7 +64,6 @@ class BetterShader:
             return self._ShaderCache[hashed]
 
         shaderName = args[1].replace("Shader", "").split(".")[0].lstrip("/")
-        print "BetterShader: created", shaderName
 
         result = Shader.make(Shader.SLGLSL, *newArgs)
         self._ShaderCache[hashed] = result

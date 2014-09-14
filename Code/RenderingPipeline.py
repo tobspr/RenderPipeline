@@ -13,7 +13,7 @@ from LightManager import LightManager
 from RenderTarget import RenderTarget
 from DebugObject import DebugObject
 from BetterShader import BetterShader
-from GlobalIllumination import GlobalIllumnination
+from GlobalIllumination import GlobalIllumination
 from Antialiasing import *
 from AmbientOcclusion import *
 from PipelineSettingsManager import PipelineSettingsManager
@@ -235,7 +235,7 @@ class RenderingPipeline(DebugObject):
         # Not sure why it has to be 0.25. But that leads to the best result
         aspect = float(self.size.y) / self.size.x
         self.onePixelShift = Vec2(
-            0.125 / self.size.x, 0.125 / self.size.y / aspect)
+            0.125 / self.size.x, 0.125 / self.size.y / aspect) * self.settings.jitterAmount
 
         # Annoying that Vec2 has no multliply-operator for non-floats
         multiplyVec2 = lambda a, b: Vec2(a.x*b.x, a.y*b.y)
@@ -280,7 +280,7 @@ class RenderingPipeline(DebugObject):
 
     def _setupGlobalIllumination(self):
         """ Creates the GI handler """
-        self.globalIllum = GlobalIllumnination(self)
+        self.globalIllum = GlobalIllumination(self)
         self.globalIllum.setup()
 
     def _setupAntialiasing(self):

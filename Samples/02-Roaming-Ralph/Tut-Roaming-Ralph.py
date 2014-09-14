@@ -17,33 +17,42 @@ from Code.RenderingPipeline import RenderingPipeline
 from Code.DirectionalLight import DirectionalLight
 from Code.Scattering import Scattering
 from Code.BetterShader import BetterShader
+from Code.GlobalIllumination import GlobalIllumination
 
-from panda3d.core import CollisionTraverser,CollisionNode
-from panda3d.core import CollisionHandlerQueue,CollisionRay
+from panda3d.core import CollisionTraverser, CollisionNode
+from panda3d.core import CollisionHandlerQueue, CollisionRay
 from panda3d.core import Filename, loadPrcFileData
-from panda3d.core import PandaNode,NodePath,Camera,TextNode
-from panda3d.core import Vec3,Vec4,BitMask32, loadPrcFile, Texture
+from panda3d.core import PandaNode, NodePath, Camera, TextNode
+from panda3d.core import Vec3, Vec4, BitMask32, loadPrcFile, Texture
 from direct.gui.OnscreenText import OnscreenText
 from direct.actor.Actor import Actor
 from direct.showbase.ShowBase import ShowBase
-import random, sys, os, math
+import random
+import sys
+import os
+import math
 
 SPEED = 0.5
 
 # Function to put instructions on the screen.
+
+
 def addInstructions(pos, msg):
-    return OnscreenText(text=msg, style=1, fg=(1,1,1,1),
+    return OnscreenText(text=msg, style=1, fg=(1, 1, 1, 1),
                         pos=(-1.3, pos), align=TextNode.ALeft, scale = .05)
 
 # Function to put title on the screen.
+
+
 def addTitle(text):
-    return OnscreenText(text=text, style=1, fg=(1,1,1,1),
-                        pos=(1.3,-0.95), align=TextNode.ARight, scale = .07)
+    return OnscreenText(text=text, style=1, fg=(1, 1, 1, 1),
+                        pos=(1.3, -0.95), align=TextNode.ARight, scale = .07)
+
 
 class World(ShowBase):
 
     def __init__(self):
-        
+
         # Load the default configuration.prc. This is recommended, as it
         # contains some important panda options
         loadPrcFile("../../Config/configuration.prc")
@@ -70,27 +79,28 @@ class World(ShowBase):
         dPos = Vec3(40, 40, 40)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(8192)
+        dirLight.setShadowMapResolution(4096)
         # dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(6))
         self.renderPipeline.addLight(dirLight)
 
-
-        self.keyMap = {"left":0, "right":0, "forward":0, "cam-left":0, "cam-right":0}
-        base.win.setClearColor(Vec4(0,0,0,1))
+        self.keyMap = {
+            "left": 0, "right": 0, "forward": 0, "cam-left": 0, "cam-right": 0}
+        base.win.setClearColor(Vec4(0, 0, 0, 1))
 
         # Post the instructions
 
-        self.title = addTitle("Panda3D Tutorial: Roaming Ralph (Walking on Uneven Terrain)")
+        self.title = addTitle(
+            "Panda3D Tutorial: Roaming Ralph (Walking on Uneven Terrain)")
         self.inst1 = addInstructions(0.95, "[ESC]: Quit")
         self.inst2 = addInstructions(0.90, "[Left Arrow]: Rotate Ralph Left")
         self.inst3 = addInstructions(0.85, "[Right Arrow]: Rotate Ralph Right")
         self.inst4 = addInstructions(0.80, "[Up Arrow]: Run Ralph Forward")
         self.inst6 = addInstructions(0.70, "[A]: Rotate Camera Left")
         self.inst7 = addInstructions(0.65, "[S]: Rotate Camera Right")
-        
+
         # Set up the environment
         # This environment model contains collision meshes.  If you look
         # in the egg file, you will see the following:
@@ -100,48 +110,47 @@ class World(ShowBase):
         # This tag causes the following mesh to be converted to a collision
         # mesh -- a mesh which is optimized for collision, not rendering.
         # It also keeps the original mesh, so there are now two copies ---
-        # one optimized for rendering, one for collisions.  
+        # one optimized for rendering, one for collisions.
 
-        self.environ = loader.loadModel("models/world")      
+        self.environ = loader.loadModel("models/world")
         self.environ.reparentTo(render)
-        self.environ.setPos(0,0,0)
+        self.environ.setPos(0, 0, 0)
 
         self.environ.ls()
         self.environ.find("**/wall").removeNode()
-        
-        
-        # Create the main character, Ralph
 
+        # Create the main character, Ralph
         ralphStartPos = self.environ.find("**/start_point").getPos()
         self.ralph = Actor("models/ralph",
-                                 {"run":"models/ralph-run",
-                                  "walk":"models/ralph-walk"})
+                           {"run": "models/ralph-run",
+                            "walk": "models/ralph-walk"})
         self.ralph.reparentTo(render)
         self.ralph.setScale(.2)
         self.ralph.setPos(ralphStartPos)
 
         # Create a floater object.  We use the "floater" as a temporary
         # variable in a variety of calculations.
-        
+
         self.floater = NodePath(PandaNode("floater"))
         self.floater.reparentTo(render)
 
         # Accept the control keys for movement and rotation
 
         self.accept("escape", sys.exit)
-        self.accept("arrow_left", self.setKey, ["left",1])
-        self.accept("arrow_right", self.setKey, ["right",1])
-        self.accept("arrow_up", self.setKey, ["forward",1])
-        self.accept("a", self.setKey, ["cam-left",1])
-        self.accept("s", self.setKey, ["cam-right",1])
-        self.accept("arrow_left-up", self.setKey, ["left",0])
-        self.accept("arrow_right-up", self.setKey, ["right",0])
-        self.accept("arrow_up-up", self.setKey, ["forward",0])
-        self.accept("a-up", self.setKey, ["cam-left",0])
-        self.accept("s-up", self.setKey, ["cam-right",0])
+        self.accept("arrow_left", self.setKey, ["left", 1])
+        self.accept("arrow_right", self.setKey, ["right", 1])
+        self.accept("arrow_up", self.setKey, ["forward", 1])
+        self.accept("a", self.setKey, ["cam-left", 1])
+        self.accept("s", self.setKey, ["cam-right", 1])
+        self.accept("arrow_left-up", self.setKey, ["left", 0])
+        self.accept("arrow_right-up", self.setKey, ["right", 0])
+        self.accept("arrow_up-up", self.setKey, ["forward", 0])
+        self.accept("a-up", self.setKey, ["cam-left", 0])
+        self.accept("s-up", self.setKey, ["cam-right", 0])
 
-        # NOTICE: It is important that your update tasks have a lower priority than -10000
-        taskMgr.add(self.move,"moveTask", priority=-20000)
+        # NOTICE: It is important that your update tasks have a lower priority
+        # than -10000
+        taskMgr.add(self.move, "moveTask", priority=-20000)
 
         self.accept("r", self.reloadShader)
 
@@ -149,10 +158,10 @@ class World(ShowBase):
         self.isMoving = False
 
         # Set up the camera
-        
+
         base.disableMouse()
-        base.camera.setPos(self.ralph.getX(),self.ralph.getY()+10,2)
-        
+        base.camera.setPos(self.ralph.getX(), self.ralph.getY() + 10, 2)
+
         # We will detect the height of the terrain by creating a collision
         # ray and casting it downward toward the terrain.  One ray will
         # start above ralph's head, and the other will start above the camera.
@@ -163,8 +172,8 @@ class World(ShowBase):
         self.cTrav = CollisionTraverser()
 
         self.ralphGroundRay = CollisionRay()
-        self.ralphGroundRay.setOrigin(0,0,1000)
-        self.ralphGroundRay.setDirection(0,0,-1)
+        self.ralphGroundRay.setOrigin(0, 0, 1000)
+        self.ralphGroundRay.setDirection(0, 0, -1)
         self.ralphGroundCol = CollisionNode('ralphRay')
         self.ralphGroundCol.addSolid(self.ralphGroundRay)
         self.ralphGroundCol.setFromCollideMask(BitMask32.bit(0))
@@ -174,8 +183,8 @@ class World(ShowBase):
         self.cTrav.addCollider(self.ralphGroundColNp, self.ralphGroundHandler)
 
         self.camGroundRay = CollisionRay()
-        self.camGroundRay.setOrigin(0,0,1000)
-        self.camGroundRay.setDirection(0,0,-1)
+        self.camGroundRay.setOrigin(0, 0, 1000)
+        self.camGroundRay.setDirection(0, 0, -1)
         self.camGroundCol = CollisionNode('camRay')
         self.camGroundCol.addSolid(self.camGroundRay)
         self.camGroundCol.setFromCollideMask(BitMask32.bit(0))
@@ -185,60 +194,37 @@ class World(ShowBase):
         self.cTrav.addCollider(self.camGroundColNp, self.camGroundHandler)
 
         # Uncomment this line to see the collision rays
-        #self.ralphGroundColNp.show()
-        #self.camGroundColNp.show()
-       
-        # Uncomment this line to show a visual representation of the 
+        # self.ralphGroundColNp.show()
+        # self.camGroundColNp.show()
+
+        # Uncomment this line to show a visual representation of the
         # collisions occuring
-        #self.cTrav.showCollisions(render)
+        # self.cTrav.showCollisions(render)
 
         # Add earth scattering
-
-        earthScattering = Scattering()
-
-        scale = 100000
-        earthScattering.setSettings({
-            "atmosphereOffset": Vec3(0, 0, - (6360.0 + 9.5) * scale),
-            # "atmosphereOffset": Vec3(0),
-            "atmosphereScale": Vec3(scale)
-        })
-
-        earthScattering.precompute()
-
-        self.renderPipeline.lightingComputeContainer.setShaderInput(
-            "transmittanceSampler", earthScattering.getTransmittanceResult())
-        self.renderPipeline.lightingComputeContainer.setShaderInput(
-            "inscatterSampler", earthScattering.getInscatterTexture())
-
-        earthScattering.bindTo(
-            self.renderPipeline.lightingComputeContainer, "scatteringOptions")
-
-
+        self.renderPipeline.enableDefaultEarthScattering()
 
         self.prepareSRGB(render)
         self.loadSkybox()
 
         self.reloadShader()
 
-
     def loadSkybox(self):
         """ Loads the sample skybox. Will get replaced later """
-        self.skybox = self.loader.loadModel("../../Models/Skybox/Model.egg.bam")
+        self.skybox = self.loader.loadModel(
+            "../../Models/Skybox/Model.egg.bam")
         self.skybox.setScale(40000)
         self.skybox.reparentTo(self.render)
-
 
     def reloadShader(self):
         self.renderPipeline.reloadShaders()
         render.setShader(self.renderPipeline.getDefaultObjectShader())
         self.skybox.setShader(BetterShader.load(
-                "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+            "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
 
-    
-    #Records the state of the arrow keys
+    # Records the state of the arrow keys
     def setKey(self, key, value):
         self.keyMap[key] = value
-    
 
     def prepareSRGB(self, np):
         """ Sets the correct texture format for all textures found in <np> """
@@ -266,9 +252,9 @@ class World(ShowBase):
         # If the camera-right key is pressed, move camera right.
 
         base.camera.lookAt(self.ralph)
-        if (self.keyMap["cam-left"]!=0):
+        if (self.keyMap["cam-left"] != 0):
             base.camera.setX(base.camera, -20 * globalClock.getDt())
-        if (self.keyMap["cam-right"]!=0):
+        if (self.keyMap["cam-right"] != 0):
             base.camera.setX(base.camera, +20 * globalClock.getDt())
 
         # save ralph's initial position so that we can restore it,
@@ -278,24 +264,24 @@ class World(ShowBase):
 
         # If a move-key is pressed, move ralph in the specified direction.
 
-        if (self.keyMap["left"]!=0):
+        if (self.keyMap["left"] != 0):
             self.ralph.setH(self.ralph.getH() + 300 * globalClock.getDt())
-        if (self.keyMap["right"]!=0):
+        if (self.keyMap["right"] != 0):
             self.ralph.setH(self.ralph.getH() - 300 * globalClock.getDt())
-        if (self.keyMap["forward"]!=0):
+        if (self.keyMap["forward"] != 0):
             self.ralph.setY(self.ralph, -25 * globalClock.getDt())
 
         # If ralph is moving, loop the run animation.
         # If he is standing still, stop the animation.
 
-        if (self.keyMap["forward"]!=0) or (self.keyMap["left"]!=0) or (self.keyMap["right"]!=0):
+        if (self.keyMap["forward"] != 0) or (self.keyMap["left"] != 0) or (self.keyMap["right"] != 0):
             if self.isMoving is False:
                 self.ralph.loop("run")
                 self.isMoving = True
         else:
             if self.isMoving:
                 self.ralph.stop()
-                self.ralph.pose("walk",5)
+                self.ralph.pose("walk", 5)
                 self.isMoving = False
 
         # If the camera is too far from ralph, move it closer.
@@ -306,10 +292,10 @@ class World(ShowBase):
         camdist = camvec.length()
         camvec.normalize()
         if (camdist > 10.0):
-            base.camera.setPos(base.camera.getPos() + camvec*(camdist-10))
+            base.camera.setPos(base.camera.getPos() + camvec * (camdist - 10))
             camdist = 10.0
         if (camdist < 5.0):
-            base.camera.setPos(base.camera.getPos() - camvec*(5-camdist))
+            base.camera.setPos(base.camera.getPos() - camvec * (5 - camdist))
             camdist = 5.0
 
         # Now check for collisions.
@@ -324,31 +310,31 @@ class World(ShowBase):
         for i in range(self.ralphGroundHandler.getNumEntries()):
             entry = self.ralphGroundHandler.getEntry(i)
             entries.append(entry)
-        entries.sort(lambda x,y: cmp(y.getSurfacePoint(render).getZ(),
-                                     x.getSurfacePoint(render).getZ()))
-        if (len(entries)>0) and (entries[0].getIntoNode().getName() == "terrain"):
+        entries.sort(lambda x, y: cmp(y.getSurfacePoint(render).getZ(),
+                                      x.getSurfacePoint(render).getZ()))
+        if (len(entries) > 0) and (entries[0].getIntoNode().getName() == "terrain"):
             self.ralph.setZ(entries[0].getSurfacePoint(render).getZ())
         else:
             self.ralph.setPos(startpos)
 
         # Keep the camera at one foot above the terrain,
         # or two feet above ralph, whichever is greater.
-        
+
         entries = []
         for i in range(self.camGroundHandler.getNumEntries()):
             entry = self.camGroundHandler.getEntry(i)
             entries.append(entry)
-        entries.sort(lambda x,y: cmp(y.getSurfacePoint(render).getZ(),
-                                     x.getSurfacePoint(render).getZ()))
-        if (len(entries)>0) and (entries[0].getIntoNode().getName() == "terrain"):
-            base.camera.setZ(entries[0].getSurfacePoint(render).getZ()+1.0)
+        entries.sort(lambda x, y: cmp(y.getSurfacePoint(render).getZ(),
+                                      x.getSurfacePoint(render).getZ()))
+        if (len(entries) > 0) and (entries[0].getIntoNode().getName() == "terrain"):
+            base.camera.setZ(entries[0].getSurfacePoint(render).getZ() + 1.0)
         if (base.camera.getZ() < self.ralph.getZ() + 2.0):
             base.camera.setZ(self.ralph.getZ() + 2.0)
-            
+
         # The camera should look in ralph's direction,
         # but it should also try to stay horizontal, so look at
         # a floater which hovers above ralph's head.
-        
+
         self.floater.setPos(self.ralph.getPos())
         self.floater.setZ(self.ralph.getZ() + 2.0)
         base.camera.lookAt(self.floater)
@@ -358,4 +344,3 @@ class World(ShowBase):
 
 w = World()
 w.run()
-

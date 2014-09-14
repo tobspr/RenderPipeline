@@ -4,15 +4,10 @@
 
 
 
-
-
-
-
 RenderPipeline testing file
 
 If you are looking for Code Examples, look at Samples/. This file is for
 testing purposes only, and also not very clean coded!
-
 
 
 
@@ -40,7 +35,7 @@ from Code.DirectionalLight import DirectionalLight
 from Code.BetterShader import BetterShader
 from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
-from Code.Scattering import Scattering
+from Code.GlobalIllumination import GlobalIllumination
 
 
 class Main(ShowBase, DebugObject):
@@ -76,16 +71,9 @@ class Main(ShowBase, DebugObject):
 
         self.renderPipeline.getMountManager().setBasePath(".")
 
-        # add scattering support
-        self.renderPipeline.settings.enableScattering = True
-
-        self.renderPipeline.create()
-        self.renderPipeline.enableDefaultEarthScattering()
-
          ####### END OF RENDER PIPELINE SETUP #######
-
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
@@ -93,15 +81,28 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg.bam"
-        self.usePlane = False
+        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
 
+        # If global illumination is enabled, load the voxel grid
+        GlobalIllumination.setSceneRoot(
+            "Toolkit/Blender Material Library/voxelized/")
+
+        # Create the pipeline, and enable scattering
+        self.renderPipeline.create()
+        self.renderPipeline.enableDefaultEarthScattering()
+
+        # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
 
-        # self.scene.setScale(0.05)
+        # Wheter to use a ground floor
+        self.usePlane = False
+        self.sceneWireframe = False
+
+        # Flatten scene?
         self.scene.flattenStrong()
+
         # Load ground plane if configured
         if self.usePlane:
             self.groundPlane = self.loader.loadModel(
@@ -115,46 +116,27 @@ class Main(ShowBase, DebugObject):
         # Some artists really don't know about backface culling
         # self.scene.setTwoSided(True)
 
-        self.debug("Flattening scene and parenting to render")
-
         # Required for tesselation
         # self.convertToPatches(self.scene)
 
         self.scene.reparentTo(self.render)
 
-        self.debug("Preparing SRGB ..")
+        # Prepare textures with SRGB format
         self.prepareSRGB(self.scene)
+
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
             Vec3(0.422895, -6.49557, 4.72692), Vec3(0, 0, 3))
-
         self.controller.setup()
 
-        self.sceneWireframe = False
-
+        # Hotkey for wireframe
         self.accept("f3", self.toggleSceneWireframe)
 
         # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
 
-        # Attach update task
-        self.addTask(self.update, "update")
-
-        # Store initial light positions for per-frame animations
-        self.lights = []
-        self.initialLightPos = []
-
-        vplHelpLights = [
-            Vec3(-66.1345, -22.2243, 33.5399),
-            Vec3(63.6877, 29.0491, 33.3335)
-        ]
-
-        vplHelpLights = [
-            Vec3(0, 0, 5)
-        ]
-
-        # dPos = Vec3(-100, -100, 100)
+        # Create a sun light
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
@@ -164,47 +146,41 @@ class Main(ShowBase, DebugObject):
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(4))
         self.renderPipeline.addLight(dirLight)
-        self.initialLightPos.append(dPos)
-        self.lights.append(dirLight)
         self.dirLight = dirLight
-
-        self.skybox = None
-        self.loadSkybox()
-
-        # set default object shaders
-        self.setShaders(refreshPipeline=False)
-
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
         self.dirLight.setDirection(sunPos)
-        self.renderPipeline.guiManager.demoSlider.node[
-            "command"] = self.setSunPos
 
-        for task in self.taskMgr.getTasks():
-            print "Task:", task.getNamePrefix(), "Priority:", task.getPriority(), "Sort:", task.getSort()
+        # Slider to move the sun
+        if self.renderPipeline.settings.displayOnscreenDebugger:
+            self.renderPipeline.guiManager.demoSlider.node[
+                "command"] = self.setSunPos
+            self.lastSliderValue = 0.0
 
-        self.lastSliderValue = 0.0
+        # Load skybox
+        self.skybox = None
+        self.loadSkybox()
+
+        # Set default object shaders
+        self.setShaders(refreshPipeline=False)
 
     def setSunPos(self):
+        """ Sets the sun position based on the debug slider """
+
+        radial = True
         rawValue = self.renderPipeline.guiManager.demoSlider.node["value"]
-
         diff = self.lastSliderValue - rawValue
-
         self.lastSliderValue = rawValue
-        # rawValue = rawValue / 100.0 * 2.0 * math.pi
 
-        # dPos = Vec3(math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
-        dPos = Vec3(30, (rawValue - 50), 100)
-        # It is important that the position is normalized -> otherwise the
-        # results differ
-        dPos.normalize()
-        dPos *= 200.0
-
-        print dPos
+        if radial:
+            rawValue = rawValue / 100.0 * 2.0 * math.pi
+            dPos = Vec3(
+                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
+            # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
+        else:
+            dPos = Vec3(30, (rawValue - 50), 100)
 
         if abs(diff) > 0.0001:
-            # print "-"*79
-            # print "Difference:", diff,"Pos:",dPos
             self.dirLight.setPos(dPos)
             self.dirLight.setDirection(dPos)
 
@@ -223,6 +199,7 @@ class Main(ShowBase, DebugObject):
 
             baseFormat = tex.getFormat()
 
+            # Only diffuse textures should be SRGB
             if "diffuse" in tex.getName().lower():
                 print "Preparing texture", tex.getName()
                 if baseFormat == Texture.FRgb:
@@ -233,6 +210,7 @@ class Main(ShowBase, DebugObject):
                     print "Unkown texture format:", baseFormat
                     print "\tTexture:", tex
 
+            # All textures should have the correct filter modes
             tex.setMinfilter(Texture.FTLinearMipmapLinear)
             tex.setMagfilter(Texture.FTLinear)
             tex.setAnisotropicDegree(16)
@@ -242,26 +220,21 @@ class Main(ShowBase, DebugObject):
         model = self.loader.loadModel(scene)
         lights = model.findAllMatches("**/PointLight*")
 
-        return
         for prefab in lights:
             light = PointLight()
-            # light.setRadius(prefab.getScale().x)
-            light.setRadius(40.0)
+            light.setRadius(prefab.getScale().x)
             light.setColor(Vec3(2))
             light.setPos(prefab.getPos())
             light.setShadowMapResolution(2048)
             light.setCastsShadows(False)
-            # light.attachDebugNode(self.render)
             self.renderPipeline.addLight(light)
-            print "Adding:", prefab.getPos(), prefab.getScale()
+            print "Adding Light:", prefab.getPos(), prefab.getScale()
             self.lights.append(light)
             self.initialLightPos.append(prefab.getPos())
             self.test = light
 
-            # break
-
     def loadSkybox(self):
-        """ Loads the sample skybox. Will get replaced later """
+        """ Loads the skybox """
         self.skybox = self.loader.loadModel("Models/Skybox/Model.egg.bam")
         self.skybox.setScale(40000)
         self.skybox.reparentTo(self.render)
@@ -270,7 +243,6 @@ class Main(ShowBase, DebugObject):
         """ Sets all shaders """
         self.debug("Reloading Shaders ..")
 
-        # return
         if self.renderPipeline:
             self.scene.setShader(
                 self.renderPipeline.getDefaultObjectShader(False))
@@ -284,33 +256,13 @@ class Main(ShowBase, DebugObject):
 
     def convertToPatches(self, model):
         """ Converts a model to patches. This is REQUIRED before beeing able
-        to use it """
-        self.debug("Converting to patches ..")
+        to use it with tesselation shaders """
+        self.debug("Converting model to patches ..")
         for node in model.find_all_matches("**/+GeomNode"):
             geom_node = node.node()
             num_geoms = geom_node.get_num_geoms()
             for i in range(num_geoms):
                 geom_node.modify_geom(i).make_patches_in_place()
-
-        self.debug("Converted!")
-
-    def update(self, task=None):
-        """ Main update task """
-
-        if False:
-            animationTime = self.taskMgr.globalClock.getFrameTime() * 1.0
-
-            # displace every light every frame - performance test!
-            for i, light in enumerate(self.lights):
-                lightAngle = float(math.sin(i * 1253325.0)) * \
-                    math.pi * 2.0 + animationTime * 1.0
-                initialPos = self.initialLightPos[i]
-                light.setPos(initialPos + Vec3(math.sin(lightAngle) * 1.0,
-                                               math.cos(lightAngle) * 1.0,
-                                               math.sin(animationTime) * 1.0))
-        if task is not None:
-            return task.cont
-
 
 app = Main()
 app.run()

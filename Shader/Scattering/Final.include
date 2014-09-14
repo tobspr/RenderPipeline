@@ -74,6 +74,7 @@ vec3 scatteringComputeInscatteredLight(
     vec3 surfacePos, 
     vec3 cameraPos,
     vec3 viewDir, 
+    vec3 sunVector,
     sampler3D inscatterSampler,
     // sampler2D transmittanceSampler,
 
@@ -85,7 +86,7 @@ vec3 scatteringComputeInscatteredLight(
   float offset;
   float maxPathLength;
   float sunIntensity = 100.0;
-  vec3 sunVector = normalize(vec3(0,0,1));
+  // vec3 sunVector = normalize(vec3(0,0,1));
 
   vec3 transformedPos = scatteringTransformPosition(options, surfacePos);
   vec3 transformedCamPos = scatteringTransformPosition(options, cameraPos);

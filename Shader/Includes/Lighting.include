@@ -112,6 +112,10 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
     reflectedColor *= reflectedColor;
 
+    // No additional reflections for complex scenes
+    // reflectedColor = vec3(0.03);
+
+
     float NxV = max(0.0, dot(material.normal, v));
     vec3 result = vec3(0);
 
@@ -120,7 +124,10 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     vec3 specularColor = material.baseColor * reflectedColor * giSpecular * material.specular;
     vec3 environment = computeEnvironmentBRDF(specularColor, material.roughness, NxV);
     
-    result += environment * material.baseColor; 
+    result += environment * material.baseColor;
+
+    // result = giAmbient;
+
     return result;
 }
 

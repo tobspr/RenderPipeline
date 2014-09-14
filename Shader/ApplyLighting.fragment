@@ -166,6 +166,11 @@ void main() {
 
     vec3 posFromDepth = calculateSurfacePos(texelFetch(depth, screenCoord, 0).x, texcoord);
 
+
+    vec3 sunVector = vec3(0,0,1);
+
+    sunVector = normalize(lights[0].direction);
+
     #ifndef DEBUG_DISABLE_SCATTERING
     float inscatterFactor = 5.0;
 
@@ -183,6 +188,7 @@ void main() {
         posFromDepth, 
         cameraPosition,
         viewDir, 
+        sunVector,
         inscatterSampler,
         attenuation, 
         irradianceFactor);
@@ -197,6 +203,7 @@ void main() {
         endPos, 
         startPos,
         startToEnd, 
+        sunVector,
         inscatterSampler,
         attenuation, 
         irradianceFactor) * 1.0;
@@ -308,10 +315,7 @@ void main() {
         result += ambient;
     }
 
-
-
     // SRGB
-
     result = 1.0f - exp(-1.0 * result);
     // result *= 1.0;
     result.xyz = pow(result.xyz, vec3(1.0 / 2.2) );
@@ -328,6 +332,11 @@ void main() {
         result = vec3(giResult);
         result = 1.0f - exp(-1.0 * result);
         occlusionTotal = 0.0;
+    #endif
+
+    #ifdef DEBUG_RM_REFLECTIONS
+        result = vec3(specularColor);
+        occlusionTotal = 0.0;        
     #endif
 
     #ifdef DEBUG_RM_BASECOLOR

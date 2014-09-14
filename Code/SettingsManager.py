@@ -1,6 +1,7 @@
 from direct.stdpy.file import isfile, open
 from DebugObject import DebugObject
 
+from panda3d.core import Vec3
 
 class SettingsManager(DebugObject):
 
@@ -39,6 +40,16 @@ class SettingsManager(DebugObject):
                     if val not in ["true", "false"]:
                         return False
                     self.value = val == "true"
+
+                # Special check for vectors
+                elif self.type == Vec3:
+
+                    values = [float(i) for i in val.strip().split(";")]
+                    if len(values) != 3:
+                        return False
+
+                    self.value = Vec3(*values)
+
                 else:
                     self.value = self.type(val)
 

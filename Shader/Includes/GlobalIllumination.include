@@ -70,7 +70,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     vec3 reflectVector = reflect(viewVector, m.normal);
 
-    vec4 traced = traceCone(data, data.geometry, localCoord, reflectVector, 50, 1.01 + m.roughness*0.2, 1.8, 0.5, 1.0);
+    vec4 traced = traceCone(data, data.geometry, localCoord, reflectVector, 70, 1.02 + m.roughness*0.2, 1.8, 0.5, 1.0);
     // specularColor = vec3(traced.w);
     // specularColor = traced.xyz;
     specularColor = traced.xyz + saturate(1.0 - traced.w) * scatteringReflected * 0.5;
@@ -86,7 +86,6 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
       t = c2;   
     t = normalize(t);
     b = normalize(cross(t, correctNormal));
-
 
 
     // Trace AO
@@ -133,7 +132,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
             t * traceDirection.x + b * traceDirection.y + correctNormal * traceDirection.z
         );
         vec4 normalResult = traceConeWithCollisions(data, 
-            startCoord, mixedNormal , 32, 1.15, 0.5, 0.5, 2.0);
+            startCoord, mixedNormal , 32, 1.15, 0.5, 0.5, 1.3);
         giResult += normalResult;
     }
 
@@ -144,7 +143,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // giResult += textureLod(data.voxels, localCoord, 5.5);
     // giResult *= 5.0;
 
-    float aoMultiplier = exp(-1.0 * aoResult.w);
+    float aoMultiplier = exp(-1.8 * aoResult.w);
 
     // giResult.w += textureLod(data.voxels, localCoord - correctNormal*data.voxelSize*0.01, 7) * 15.0;
     // aoMultiplier = 1.0;

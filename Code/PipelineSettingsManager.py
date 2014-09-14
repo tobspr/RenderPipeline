@@ -18,6 +18,7 @@ class PipelineSettingsManager(SettingsManager):
         # [Antialiasing]
         self._addSetting("antialiasingTechnique", str, "SMAA")
         self._addSetting("smaaQuality", str, "Low")
+        self._addSetting("jitterAmount", float, 1.0)
 
         # [Lighting]
         self._addSetting("computePatchSizeX", int, 32)
