@@ -18,7 +18,7 @@ void main() {
     // localTexCoords += texelSize.xxx*0.25;
 
     ivec3 texelCoordsUpper = texelCoords * 2;
-    vec4 combined;
+    vec4 combined = vec4(0);
 
     // TODO: We can make this much faster with bilinear interpolation
 
