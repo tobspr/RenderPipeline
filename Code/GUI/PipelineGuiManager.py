@@ -60,32 +60,52 @@ class PipelineGuiManager(DebugObject):
         # Render Modes
         self.renderModes = CheckboxCollection()
 
-        modes = [
-            ("Default", "rm_Default"),
-            ("Metallic", "rm_Metallic"),
-            ("BaseColor", "rm_BaseColor"),
-            ("Roughness", "rm_Roughness"),
-            ("Specular", "rm_Specular"),
-            ("Normal", "rm_Normal"),
-            ("Occlusion", "rm_Occlusion"),
-            ("Lighting", "rm_Lighting"),
-            ("Scattering", "rm_Scattering"),
-            ("G-Illum", "rm_GI"),
-            ("GI-Reflections", "rm_Reflections"),
-            ("Ambient", "rm_Ambient"),
-        ]
+        # Handle to the settings
+        s = self.pipeline.settings
 
-        features = [
-            ("Occlusion", "ft_OCCLUSION"),
-            ("Motion Blur", "ft_MOTIONBLUR"),
-            ("Anti-Aliasing", "ft_ANTIALIASING"),
-            ("Shadows", "ft_SHADOWS"),
-            ("Color Correction", "ft_COLOR_CORRECTION"),
-            ("Blur Occlusion", "ft_BLUR_OCCLUSION"),
-            ("Scattering", "ft_SCATTERING"),
-            ("G-Illum", "ft_GI"),
-            ("Ambient", "ft_AMBIENT"),
-        ]
+        modes = []
+        features = []
+
+        register_mode = lambda name, mid: modes.append((name, mid))
+        register_feature = lambda name, fid: features.append((name, fid))
+
+        register_mode("Default", "rm_Default")
+        register_mode("Metallic", "rm_Metallic")
+        register_mode("BaseColor", "rm_BaseColor")
+        register_mode("Roughness", "rm_Roughness")
+        register_mode("Specular", "rm_Specular")
+        register_mode("Normal", "rm_Normal")
+
+        if s.occlusionTechnique != "None":
+            register_mode("Occlusion", "rm_Occlusion")
+            register_feature("Occlusion", "ft_OCCLUSION")
+            register_feature("Blur Occlusion", "ft_BLUR_OCCLUSION")
+
+        register_mode("Lighting", "rm_Lighting")
+
+        if s.enableScattering:
+            register_mode("Scattering", "rm_Scattering")
+            register_feature("Scattering", "ft_SCATTERING")
+
+        if s.enableGlobalIllumination:
+            register_mode("G-Illum", "rm_GI")
+            register_mode("GI-Reflections", "rm_Reflections")
+            register_feature("G-Illum", "ft_GI")
+
+            register_feature("Update GI", "update_gi")
+
+
+        register_mode("Ambient", "rm_Ambient")
+        register_feature("Ambient", "ft_AMBIENT")
+
+        if s.motionBlurEnabled:
+            register_feature("Motion Blur", "ft_MOTIONBLUR")
+
+        if s.antialiasingTechnique != "None":
+            register_feature("Anti-Aliasing", "ft_ANTIALIASING")
+
+        register_feature("Shadows", "ft_SHADOWS")
+        register_feature("Color Correction", "ft_COLOR_CORRECTION")
 
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",
                                                    x=20, y=currentY,
@@ -141,6 +161,10 @@ class PipelineGuiManager(DebugObject):
             # instead of enabling per feature, we disable per feature
             modeId = "DISABLE_" + name[3:].upper()
             self.defines[modeId] = 0 if status else 1
+
+        elif name == "update_gi":
+            self.pipeline.globalIllum.setUpdateEnabled(status)
+
 
         if self.initialized and (status is True or updateWhenFalse):
             self.pipeline._generateShaderConfiguration()

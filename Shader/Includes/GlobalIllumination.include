@@ -20,7 +20,7 @@ vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
         currentDistance += currentConeRadius * coneRatio;
         vec3 currentPos = start + directionStep * currentDistance;
         float currentMip = log2( currentConeRadius ) * 2.0;
-        vec4 currentVal = textureLod(targetTex, currentPos, clamp(currentMip,0.0,5.0) );
+        vec4 currentVal = textureLod(targetTex, currentPos, currentMip );
         result += currentVal * (1.0-result.w) * currentVal.w;
     }
     return result;
@@ -40,9 +40,12 @@ int iterations, float stepRatio, float coneRatio, float startDistance, float ini
         currentConeRadius *= stepRatio; 
         currentDistance += currentConeRadius * coneRatio;
         vec3 currentPos = start + directionStep * currentDistance;
-        float currentMip = clamp(log2( currentConeRadius ) * 2.0, 0.0, 8.0);
-        vec4 currentVal = textureLod(data.voxels, currentPos, currentMip * 1.5 );
+        float currentMip = clamp(log2( currentConeRadius ) * 1.0, 0.0, 12.0);
+        // currentMip = currentConeRadius;
+        vec4 currentVal = textureLod(data.voxels, currentPos, currentMip );
+        vec4 currentGeometry = textureLod(data.geometry, currentPos, currentMip);
         result += (1.0-result.w) * currentVal;
+        result.w += (1.0-result.w) * currentGeometry.w;
     }
     return result;
 }
@@ -64,16 +67,31 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // We have to substract a very small value, because of compiler
     // optimizations. Otherwise the voxels are displaced and everythink breaks.
     vec3 biasedPosition = m.position - 0.0000002;
-    biasedPosition += m.normal * data.voxelSize * 1.5;
+    biasedPosition += correctNormal * data.voxelSize * 1.5;
 
     vec3 localCoord = (biasedPosition-data.gridStart) / data.gridScale;
 
     vec3 reflectVector = reflect(viewVector, m.normal);
+    vec3 refractVector = refract(viewVector, m.normal, 1.0);
+    // refractVector = m.normal;
 
-    vec4 traced = traceCone(data, data.geometry, localCoord, reflectVector, 70, 1.02 + m.roughness*0.2, 1.8, 0.5, 1.0);
-    // specularColor = vec3(traced.w);
-    // specularColor = traced.xyz;
-    specularColor = traced.xyz + saturate(1.0 - traced.w) * scatteringReflected * 0.5;
+
+
+    specularColor = scatteringReflected;
+
+    // Hopefully some gpus can branch this effectively out. If so, they save
+    // a lot of work!
+    #ifndef DEBUG_RM_REFLECTIONS
+    if (m.specular > 0.001) { 
+    #endif
+        vec4 traced = traceCone(data, data.geometry, localCoord, reflectVector, 128, 1.01 + m.roughness*0.2, 1.8, 0.5, 1.0);
+        // vec4 traced = traceCone(data, data.geometry, localCoord, refractVector, 512, 1.0 + m.roughness*0.0, 1.1, 0.5, 1.0);
+        // specularColor = vec3(traced.w);
+        // specularColor = traced.xyz;
+        specularColor = traced.xyz + saturate(1.0 - traced.w) * scatteringReflected * 0.5;
+    #ifndef DEBUG_RM_REFLECTIONS
+    }
+    #endif
 
     // Reconstruct tangent & binormal
     vec3 t; 
@@ -89,41 +107,38 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
 
     // Trace AO
-    const int numSamplesAO = 8;
+    const int numSamplesAO = 4;
+    float aoConeHeight = 0.8;
     vec3 aoTraceDirections[numSamplesAO] = vec3[numSamplesAO](
-            vec3(0.0,1.0,  1.0),
-            vec3(0.5,0.5,  1.0),
-            vec3(1.0, 0.0,  1.0),
-            vec3(0.5, -0.5,  1.0),
-            vec3(0.0, -1.0,   1.0),
-            vec3(-0.5,-0.5,  1.0),
-            vec3(-1.0,0.0,  1.0),
-            vec3(-0.5,0.5, 1.0)
+            vec3(1.0  ,1.0,  aoConeHeight),
+            vec3(-1.0, 1.0,  aoConeHeight),
+            vec3(1.0,  -1.0,  aoConeHeight),
+            vec3(-1.0, -1.0,  aoConeHeight)
+            // vec3(0.0, 0.0,   aoConeHeight)
     );
 
     vec4 aoResult = vec4(0);
-    vec3 startCoord = localCoord - correctNormal * data.voxelSize * 0.0;
+    vec3 startCoord = localCoord + correctNormal * data.voxelSize * 0.05;
     for (int i = 0; i < numSamplesAO; i++) {
         vec3 traceDirection = aoTraceDirections[i];
         vec3 mixedNormal = normalize(
             t * traceDirection.x + b * traceDirection.y + correctNormal * traceDirection.z
         );
-        aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 9, 1.7, 1.2,0.7, 1.1);
+        aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 5, 1.1, 1.2 , -1.0, 1.5);
+
     }
     aoResult = aoResult / float(numSamplesAO) * 1.2;
 
-
-    // Trace GI
-    const int numSamplesGI = 1;
-    float giConeHeight = 4.0;
+    const int numSamplesGI = 5;
+    float giConeHeight = 1.5;
     vec3 giTraceDirections[numSamplesGI] = vec3[numSamplesGI](
-            // vec3(0.0, 1.0,   giConeHeight),
-            // vec3(0.0, -1.0,   giConeHeight),
-            // vec3(1.0, 0.0,  giConeHeight),
-            // vec3(-1.0,0.0, giConeHeight),
-            vec3(0,0,1)
-
+            vec3(1.0  ,1.0,  giConeHeight),
+            vec3(-1.0, 1.0,  giConeHeight),
+            vec3(1.0,  -1.0,  giConeHeight),
+            vec3(-1.0, -1.0,  giConeHeight),
+            vec3(0.0, 0.0,   1.0)
     );
+
     vec4 giResult = vec4(0);
     startCoord = localCoord + correctNormal * data.voxelSize * 0.2;
     for (int i = 0; i < numSamplesGI; i++) {
@@ -131,33 +146,22 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
         vec3 mixedNormal = normalize(
             t * traceDirection.x + b * traceDirection.y + correctNormal * traceDirection.z
         );
-        vec4 normalResult = traceConeWithCollisions(data, 
-            startCoord, mixedNormal , 32, 1.15, 0.5, 0.5, 1.3);
-        giResult += normalResult;
-    }
+        giResult += traceConeWithCollisions(data, startCoord, mixedNormal , 16, 2.0, 1.4, 1.1, 0.8) * 4.0;
 
+    }
     giResult = giResult / float(numSamplesGI) * 4.0;
 
-    // giResult = textureLod(data.voxels, localCoord - correctNormal*data.voxelSize*0.01, 6) * 20.0;
+
+    // Single Cone GI (faster but lower quality)
+    // startCoord = localCoord + correctNormal * data.voxelSize * 0.0;
+    // vec4 giResult = traceConeWithCollisions(data, startCoord, correctNormal , 12, 1.8, 1.3, 4.0, 4.6) * 4.0;
+
+
     // giResult = vec4(textureLod(data.voxels, localCoord, 2.0));
-    // giResult += textureLod(data.voxels, localCoord, 5.5);
-    // giResult *= 5.0;
-
-    float aoMultiplier = exp(-1.8 * aoResult.w);
-
-    // giResult.w += textureLod(data.voxels, localCoord - correctNormal*data.voxelSize*0.01, 7) * 15.0;
-    // aoMultiplier = 1.0;
 
 
-    return vec4(giResult) * aoMultiplier;
-    // return vec3(aoMultiplier);
-    // return vec3( pow(giResult.w );
-    // return vec3( 1.0 - exp(-0.2 * giResult.w) );
-    // return vec3(1.0 - exp( -0.5 * max(0.0, giResult.w * aoMultiplier) ));
-    // return vec3(giResult.w);
-    // return vec3(giResult.xyz );
-    // return vec3(aoMultiplier);
+    float aoMultiplier = exp(-0.4 * aoResult.w);
+    return max(vec4(0.0), giResult) * aoMultiplier + 0.25;
 
 
-    // return vec3(giResult);
 }

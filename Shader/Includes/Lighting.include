@@ -113,7 +113,8 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     reflectedColor *= reflectedColor;
 
     // No additional reflections for complex scenes
-    // reflectedColor = vec3(0.03);
+    // reflectedColor = vec3(0.4);
+    reflectedColor *= 8.0;
 
 
     float NxV = max(0.0, dot(material.normal, v));
@@ -177,7 +178,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
     // projected = projected * 0.5 + 0.5;    
 
-    float pixOffset = 1.5 / SHADOW_MAP_ATLAS_SIZE;
+    float pixOffset = 2.0 / SHADOW_MAP_ATLAS_SIZE;
 
     vec3 projCoord = projected.xyz / projected.w;
     projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
@@ -185,7 +186,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     float pixScaled = 2.0 / float(source.resolution);
 
     if (any(lessThan(projCoord.xy, vec2(pixScaled))) || any(greaterThan(projCoord.xy, vec2(1-pixScaled)))) {
-        return 0.0;
+        return 0.65;
     }
 
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);

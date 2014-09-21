@@ -180,7 +180,7 @@ void main() {
 
         // Push very far away
         posFromDepth *= 1e20;
-        inscatterFactor = 2.0;
+        inscatterFactor = 0.4;
     }
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
@@ -316,7 +316,7 @@ void main() {
     }
 
     // SRGB
-    result = 1.0f - exp(-1.0 * result);
+    result = 1.0f - exp(-2.0 * result);
     // result *= 1.0;
     result.xyz = pow(result.xyz, vec3(1.0 / 2.2) );
 
@@ -330,7 +330,7 @@ void main() {
 
     #ifdef DEBUG_RM_GI
         result = vec3(giResult);
-        result = 1.0f - exp(-1.0 * result);
+        result = 1.0f - exp(-1.5* result);
         occlusionTotal = 0.0;
     #endif
 

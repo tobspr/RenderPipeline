@@ -1,7 +1,6 @@
 #version 430
 
-// * Unkown algorithm name*
-// developed by tobspr
+// This shader populates the voxel grid with initial radiance
 
 #include "Includes/Configuration.include"
 #include "Includes/PositionReconstruction.include"
@@ -16,9 +15,7 @@ uniform sampler2D atlasColor;
 uniform GIData giData;
 uniform mat4 lightMVP;
 uniform mat4 lightData;
-uniform writeonly image3D target;
-
-// const vec3 texelShift = 0.0 * vec3(0.5, 0.5, 0.5);
+layout(r32i) uniform iimage3D target;
 
 uniform mat4 trans_clip_of_lightLens_to_mainRender;
 
@@ -29,7 +26,7 @@ void main() {
   // Get coords
   ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
 
-  // // Unpack data
+  // Unpack data
   ivec2 sourceAtlasPos = ivec2(lightData[0].xy);
   int sourceAtlasResolution = int(lightData[0].z); 
   float nearPlane = lightData[1].x;
@@ -39,15 +36,43 @@ void main() {
 
   ivec2 sourceCoords = sourceAtlasPos + texelCoords;
 
+  // Fetch Depth & Color from RSM
   float texelDepth = texelFetch(atlasDepth, sourceCoords, 0).x;
   vec3  texelColor = texelFetch(atlasColor, sourceCoords, 0).rgb;
 
-  // // Reconstruct world position
+  // Reconstruct world position
   vec2 texcoordLinear = texelCoords / float(sourceAtlasResolution);
-
   vec3 surfacePos = calculateSurfacePos(texelDepth, texcoordLinear, nearPlane, farPlane, inverse(lightMVP));
+
+  // Transform world position to voxel space coordinate
   vec3 localPos = (surfacePos - giData.gridStart) / giData.gridScale;
   ivec3 localPosInt = ivec3(localPos * giData.gridSize);
-  imageStore(target, localPosInt, vec4( texelColor, 1.0));
-  // imageStore(target, ivec3(texelCoords, 0), vec4(surfacePos, 1.0));
+
+  vec3 resultColor = clamp(texelColor, 0.0, 1.0);
+
+  // We do *32 only, with that, up to 8 pixels can write to the same voxel (worst case)
+  // (256 / 32 = 8)
+  ivec3 resultColorI = clamp(ivec3(resultColor * color * 64.0), ivec3(0), ivec3(4095, 1023, 511));  
+
+  // Bits:
+  // 12 Bit R
+  // 10 Bit G 
+  // 9 Bit B
+
+  // 0000 0000 0000 0000  0000 0000 0000 0000
+  // ?BBB BBBB BBGG GGGG  GGGG RRRR RRRR RRRR 
+  // F731 F731 F731 F731  F731 F731 F731 F731
+
+  int packedColor = resultColorI.r | 
+                    resultColorI.g << 12 |
+                    resultColorI.b << 22;
+
+
+
+  // Store color in the voxel grid
+  
+  // imageStore(target, localPosInt, vec4( resultColor, 1.0));
+  // imageStore(target, localPosInt, ivec4(packedColor));
+  imageAtomicMax(target, localPosInt, packedColor);
+
 }

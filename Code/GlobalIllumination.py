@@ -18,7 +18,7 @@ pstats_PopulateVoxelGrid = PStatCollector(
 pstats_GenerateVoxelOctree = PStatCollector(
     "App:GlobalIllumnination:GenerateVoxelOctree")
 pstats_ClearGI = PStatCollector("App:GlobalIllumnination:Clear")
-
+pstats_GenerateMipmaps = PStatCollector("App:GlobalIllumnination::GenerateMipmaps")
 
 class VoxelSettingsManager(SettingsManager):
 
@@ -40,22 +40,19 @@ class GlobalIllumination(DebugObject):
     experimental, and thus not commented. """
 
     sceneRoot = "Demoscene.ignore/voxelized"
+    updateEnabled = True
 
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
         self.pipeline = pipeline
 
-
-    def _allocTexture(self):
-        tex = Texture("tex")
-        tex.setup2dTexture(
-            self.settings.GridResolution * self.stackSizeX, self.settings.GridResolution * self.stackSizeY,
-            Texture.TFloat, Texture.FRgba8)
-        return tex
-
     @classmethod
     def setSceneRoot(self, sceneSrc):
         self.sceneRoot = sceneSrc
+
+    @classmethod
+    def setUpdateEnabled(self, enabled):
+        self.updateEnabled = enabled
 
     def setup(self):
         """ Setups everything for the GI to work """
@@ -67,8 +64,6 @@ class GlobalIllumination(DebugObject):
             import sys
             sys.exit(0)
             return
-
-        
 
         self.settings = VoxelSettingsManager()
         self.settings.loadFromFile(join(self.sceneRoot, "voxels.ini"))
@@ -85,7 +80,8 @@ class GlobalIllumination(DebugObject):
         invVoxelSize = Vec3(
             1.0 / self.voxelSize.x, 1.0 / self.voxelSize.y, 1.0 / self.voxelSize.z)
         invVoxelSize.normalize()
-        self.normalizationFactor = invVoxelSize / float(self.settings.GridResolution)
+        self.normalizationFactor = invVoxelSize / \
+            float(self.settings.GridResolution)
 
         # Debugging of voxels, VERY slow
         self.debugVoxels = False
@@ -110,37 +106,59 @@ class GlobalIllumination(DebugObject):
         self.unpackVoxels = NodePath("unpackVoxels")
         self.unpackVoxels.setShader(
             BetterShader.loadCompute("Shader/GI/UnpackVoxels.compute"))
+
+        print "setting inputs .."
         self.unpackVoxels.setShaderInput("packedVoxels", packedVoxels)
+        print "setting inputs .."
         self.unpackVoxels.setShaderInput(
             "stackSizeX", LVecBase3i(self.settings.StackSizeX))
-        self.unpackVoxels.setShaderInput("gridSize", LVecBase3i(self.settings.GridResolution))
+        print "setting inputs .."
+        self.unpackVoxels.setShaderInput(
+            "gridSize", LVecBase3i(self.settings.GridResolution))
+        print "setting inputs .."
         self.unpackVoxels.setShaderInput("destination", self.unpackedVoxels)
+        print "executing shader .."
         self._executeShader(
             self.unpackVoxels, self.settings.GridResolution / 8, self.settings.GridResolution / 8, self.settings.GridResolution / 8)
 
+        print "creating direct radiance texture .."
         # Create 3D Texture to store direct radiance
+        self.directRadianceCache = Texture("Direct radiance cache")
+        self.directRadianceCache.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
+                                           Texture.TInt, Texture.FR32i)
+
         self.directRadiance = Texture("Direct radiance")
         self.directRadiance.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
-                                           Texture.TFloat, Texture.FRgba8)
+                                           Texture.TFloat, Texture.FRgba16)
 
+        print "setting texture states .."
         for prepare in [self.directRadiance, self.unpackedVoxels]:
             prepare.setMagfilter(Texture.FTLinear)
             prepare.setMinfilter(Texture.FTLinearMipmapLinear)
             prepare.setWrapU(Texture.WMBorderColor)
             prepare.setWrapV(Texture.WMBorderColor)
             prepare.setWrapW(Texture.WMBorderColor)
-            prepare.setBorderColor(Vec4(0))
+            prepare.setBorderColor(Vec4(0,0,0,1))
+
+        self.unpackedVoxels.setBorderColor(Vec4(0))
+        # self.directRadiance.setBorderColor(Vec4(0))
 
         self.populateVPLNode = NodePath("PopulateVPLs")
         self.clearTextureNode = NodePath("ClearTexture")
         self.copyTextureNode = NodePath("CopyTexture")
         self.generateMipmapsNode = NodePath("GenerateMipmaps")
+        self.convertGridNode = NodePath("ConvertGrid")
 
-        # surroundingBox = Globals.loader.loadModel(
-        #     "Demoscene.ignore/CubeOpen/Model.egg")
-        # surroundingBox.setPos(self.gridStart)
-        # surroundingBox.setScale(self.gridScale)
-        # surroundingBox.reparentTo(Globals.render)
+
+        if False:
+            surroundingBox = Globals.loader.loadModel(
+                "Models/CubeFix/Model.egg")
+            surroundingBox.setPos(self.settings.GridStart)
+            surroundingBox.setScale(self.gridScale)
+
+            # surroundingBox.setTwoSided(True)
+            surroundingBox.flattenStrong()
+            surroundingBox.reparentTo(Globals.render)
 
         self.bindTo(self.populateVPLNode, "giData")
         self.reloadShader()
@@ -148,7 +166,9 @@ class GlobalIllumination(DebugObject):
         self._generateMipmaps(self.unpackedVoxels)
 
     def _generateMipmaps(self, tex):
-        # Generate geometry mipmaps
+        """ Generates all mipmaps for a 3D texture, using a gaussian function """
+
+        pstats_GenerateMipmaps.start()
         currentMipmap = 0
         computeSize = self.settings.GridResolution
         self.generateMipmapsNode.setShaderInput("source", tex)
@@ -168,6 +188,8 @@ class GlobalIllumination(DebugObject):
                                 (computeSize + 7) / 8,
                                 (computeSize + 7) / 8)
             currentMipmap += 1
+
+        pstats_GenerateMipmaps.stop()
 
     def createVoxelDebugBox(self):
         box = Globals.loader.loadModel("box")
@@ -201,6 +223,10 @@ class GlobalIllumination(DebugObject):
         shader = BetterShader.loadCompute("Shader/GI/CopyResult.compute")
         self.copyTextureNode.setShader(shader)
 
+    def _createConvertShader(self):
+        shader = BetterShader.loadCompute("Shader/GI/ConvertGrid.compute")
+        self.convertGridNode.setShader(shader)
+
     def _createPopulateShader(self):
         shader = BetterShader.loadCompute("Shader/GI/PopulateVPL.compute")
         self.populateVPLNode.setShader(shader)
@@ -213,12 +239,14 @@ class GlobalIllumination(DebugObject):
         self._createCleanShader()
         self._createPopulateShader()
         self._createGenerateMipmapsShader()
+        self._createConvertShader()
 
         if self.debugVoxels:
             self._setBoxShader()
         self.frameIndex = 0
 
     def _clear3DTexture(self, tex, clearVal=None):
+        """ Clears a 3D Texture to <clearVal> """
         if clearVal is None:
             clearVal = Vec4(0)
 
@@ -233,6 +261,7 @@ class GlobalIllumination(DebugObject):
             (tex.getZSize() + 7) / 8)
 
     def _copyTexture(self, src, dest):
+        """ Copies texture <src> into texture <dest>. The same size is assumed """
         self.copyTextureNode.setShaderInput("src", src)
         self.copyTextureNode.setShaderInput("dest", dest)
         self._executeShader(
@@ -245,37 +274,42 @@ class GlobalIllumination(DebugObject):
         self.frameIndex += 1
 
         # Process GI splitted over frames
-        if self.frameIndex > 1:
+        if self.frameIndex > 2:
             self.frameIndex = 1
 
-        # TODO: Not all shader inputs need to be set everytime. Use PTAs
-        # instead
+        if not self.updateEnabled:
+            return
+
+        # TODO: Not all shader inputs need to be set everytime. Use PTAs instead, over even better,
+        # cache the shader inputs in a ShaderAttrib
 
         if self.frameIndex == 1:
 
             # First pass: Read the reflective shadow maps, and populate the
             # 3D Grid with intial values
 
-            # Clear radiance
+            # Clear radiance texture
             pstats_ClearGI.start()
-            self._clear3DTexture(self.directRadiance, Vec4(0))
+            self._clear3DTexture(self.directRadianceCache, Vec4(0))
             pstats_ClearGI.stop()
 
             pstats_PopulateVoxelGrid.start()
+            
+            # Get texture handles
             atlas = self.pipeline.getLightManager().shadowComputeTarget
             atlasDepth = atlas.getDepthTexture()
             atlasColor = atlas.getColorTexture()
             atlasSize = atlasDepth.getXSize()
 
-            # Todo: Do this for all lights
-            allLights = self.pipeline.getLightManager().getAllLights()
+            # Fetch the sun light and it's shadow sources from the light manager
 
-            # Find the light where to cast gi from
+            allLights = self.pipeline.getLightManager().getAllLights()
             casterLight = None
             casterSource = None
 
-            # Collect the shadow caster sources from the first directional
-            # light
+            # Collect the shadow caster sources from the sun light
+            # (A directional light may have multiple sources, e.g. for PSSM)
+            # TODO: Currently we only use the first shadow source. Make it use all sources
             for light in allLights:
                 if light.hasShadows() and \
                    light._getLightType() == LightType.Directional:
@@ -293,7 +327,7 @@ class GlobalIllumination(DebugObject):
                 color.x, color.y, color.z, 0)
             mvpData = LMatrix4f(casterSource.mvp)
 
-            # Now populate with VPLs
+            # Now populate the Voxel Grid, based on the RSM (Reflective Shadow Map)
             self.populateVPLNode.setShaderInput("atlasDepth", atlasDepth)
             self.populateVPLNode.setShaderInput("atlasColor", atlasColor)
             self.populateVPLNode.setShaderInput("lightMVP", mvpData)
@@ -303,59 +337,41 @@ class GlobalIllumination(DebugObject):
             self.populateVPLNode.setShaderInput(
                 "mainRender", Globals.base.render)
             self.populateVPLNode.setShaderInput(
-                "target", self.directRadiance, True, True, -1, 0)
+                "target", self.directRadianceCache, True, True, -1, 0)
 
+            # Execute the shader
             self._executeShader(
                 self.populateVPLNode, resolution / 16, resolution / 16)
 
             pstats_PopulateVoxelGrid.stop()
+            
+        elif self.frameIndex == 2:
 
-        # elif self.frameIndex == 2:
-
-            pstats_GenerateVoxelOctree.start()
             # In this frame we generate the mipmaps for the voxel grid
+
+            # Copy the cache to the actual texture
+            self.convertGridNode.setShaderInput("src", self.directRadianceCache)
+            self.convertGridNode.setShaderInput("dest", self.directRadiance)
+            self._executeShader(
+                self.convertGridNode, self.settings.GridResolution / 8, self.settings.GridResolution / 8, self.settings.GridResolution / 8)
+
+            # Generate the mipmaps for the voxel grid
+            pstats_GenerateVoxelOctree.start()
             self._generateMipmaps(self.directRadiance)
             pstats_GenerateVoxelOctree.stop()
 
-        # In the other frames, we spread the lighting. This can be
-        # basically seen as a normal aware 3d blur
-        #     self.spreadLightingNode.setShaderInput(
-        #         "gridSize", LVecBase3i(self.cascadeSize))
-        #     self.spreadLightingNode.setShaderInput(
-        #         "geometryTex", self.geometryTexture)
-        #     if self.frameIndex % 2 == 0:
-        #         self.spreadLightingNode.setShaderInput(
-        #             "source", self.vplTexturePing)
-        #         self.spreadLightingNode.setShaderInput(
-        #             "target", self.vplTexturePong)
-        #         self._executeShader(
-        #             self.spreadLightingNode, self.cascadeSize / 4,
-        #             self.cascadeSize / 4, self.cascadeSize / 4)
-        #     else:
-        #         self.spreadLightingNode.setShaderInput(
-        #             "source", self.vplTexturePong)
-        #         self.spreadLightingNode.setShaderInput(
-        #             "target", self.vplTexturePing)
-        #         self._executeShader(
-        #             self.spreadLightingNode, self.cascadeSize / 4,
-        #             self.cascadeSize / 4, self.cascadeSize / 4)
-        # else:
-        # Copy result in the last frame
-        #     self.copyResultNode.setShaderInput("src", self.vplTexturePing)
-        #     self.copyResultNode.setShaderInput("dest", self.vplTextureResult)
-        #     self._executeShader(
-        #         self.copyResultNode,
-        #         self.cascadeSize * self.cascadeSize / 16,
-        #         self.cascadeSize / 16)
 
     def bindTo(self, node, prefix):
+        """ Binds all required shader inputs to a target to compute / display
+        the global illumination """
         node.setShaderInput(prefix + ".gridStart", self.settings.GridStart)
         node.setShaderInput(prefix + ".gridEnd", self.settings.GridEnd)
         node.setShaderInput(
             prefix + ".stackSizeX", LVecBase3i(self.settings.StackSizeX))
         node.setShaderInput(
             prefix + ".stackSizeY", LVecBase3i(self.settings.StackSizeY))
-        node.setShaderInput(prefix + ".gridSize",  LVecBase3i(self.settings.GridResolution))
+        node.setShaderInput(
+            prefix + ".gridSize",  LVecBase3i(self.settings.GridResolution))
         node.setShaderInput(prefix + ".voxelSize", self.voxelSize)
         node.setShaderInput(prefix + ".gridScale", self.gridScale)
         node.setShaderInput(prefix + ".entrySize", self.entrySize)
@@ -365,9 +381,7 @@ class GlobalIllumination(DebugObject):
         node.setShaderInput(prefix + ".geometry", self.unpackedVoxels)
 
     def _executeShader(self, node, threadsX, threadsY, threadsZ=1):
-        # Retrieve the underlying ShaderAttrib
+        """ Executes a compute shader, fetching the shader attribute from a NodePath """
         sattr = node.get_attrib(ShaderAttrib)
-
-        # Dispatch the compute shader, right now!
         Globals.base.graphicsEngine.dispatch_compute(
             (threadsX, threadsY, threadsZ), sattr, Globals.base.win.get_gsg())

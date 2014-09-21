@@ -42,7 +42,6 @@ frame-rate-meter-layer-sort 1000
 frame-rate-meter-scale 0.04
 frame-rate-meter-side-margins 0.4
 
-
 # Pstats
 pstats-target-frame-rate 30.0
 # pstats-unused-states #f
@@ -122,6 +121,8 @@ gl-force-no-flush #t
 gl-force-no-scissor #t
 gl-debug #t
 
+# auto-flip #f
+
 # gl-enable-memory-barriers #f
 
 text-minfilter linear
@@ -151,10 +152,9 @@ gl-dump-compiled-shaders #f
 
 gl-cube-map-seamless #t
 
-# buggy as hell
+# buggy.
 # want-directtools #t
 # want-tk #t
-
 
 model-cache-dir $USER_APPDATA/Panda3D-1.9/cache
 model-cache-textures #f

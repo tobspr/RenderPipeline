@@ -23,3 +23,5 @@ Toolkit/Voxelizer/convert
 Toolkit/Voxelizer/temp
 Toolkit/Blender Material Library/tex
 Toolkit/Blender Material Library/MaterialLibrary.egg
+.idea/
+/.project

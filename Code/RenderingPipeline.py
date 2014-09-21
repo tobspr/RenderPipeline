@@ -1033,9 +1033,13 @@ class RenderingPipeline(DebugObject):
             output += "#define " + key + " " + str(value) + "\n"
 
         # Try to write the file
-        # Todo: add error handling
-        with open("PipelineTemp/ShaderAutoConfig.include", "w") as handle:
-            handle.write(output)
+
+        try:
+            with open("PipelineTemp/ShaderAutoConfig.include", "w") as handle:
+                handle.write(output)
+        except Exception, msg:
+            self.error("Error writing shader autoconfig. Maybe no write-access?")
+            return
 
     def onWindowResized(self):
         """ Call this whenever the window resized """

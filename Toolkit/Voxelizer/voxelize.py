@@ -423,9 +423,11 @@ if __name__ == "__main__":
     sourceDir = "convert/"
     filesToConvert = recursiveFindFiles(sourceDir)
 
-    # filesToConvert = [
-    #     ("../../Demoscene.ignore/sponza.egg.bam", "../../Demoscene.ignore/")
-    # ]
+
+    singleConvert = "../../Models/HouseSet"
+    filesToConvert = [
+        (singleConvert + "/Model.egg", singleConvert)
+    ]
 
     if len(filesToConvert) < 1:
         print "Early exit: No files to convert found!"

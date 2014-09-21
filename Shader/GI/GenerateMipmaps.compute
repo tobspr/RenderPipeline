@@ -1,57 +1,105 @@
 #version 430
-// This shader simply clears a texture to a given value
+// This shader computes the mipmap for a texture, using a gaussian function
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // layout(rgba16f) uniform readonly image3D source;
 uniform sampler3D source;
 uniform int sourceMipmap;
-uniform float pixelSize;
+// uniform float pixelSize;
 uniform int currentMipmapSize;
 uniform writeonly image3D dest;
  
+
+vec4 fetch(ivec3 coords, int x, int y, int z, float weight) {
+    return texelFetch(source, coords + ivec3(x, y, z), sourceMipmap) * weight;
+}
+
+
 void main() {
     ivec3 texelCoords = ivec3(gl_GlobalInvocationID.xyz);
+
+    float pixelSize = 1.0 / float(currentMipmapSize);
     vec3 localTexCoords = vec3(texelCoords) / float(currentMipmapSize);
     vec3 texelSize = vec3(pixelSize, -pixelSize, 0);
-
-    // localTexCoords += texelSize.xxx*0.25;
 
     ivec3 texelCoordsUpper = texelCoords * 2;
     vec4 combined = vec4(0);
 
-    // TODO: We can make this much faster with bilinear interpolation
-
     // Center
-    combined += texelFetch(source, texelCoordsUpper + ivec3(0,0,0), sourceMipmap) * 0.25;
+    combined += fetch(texelCoordsUpper, 0,0,0, 0.125);
+    combined += fetch(texelCoordsUpper, 1,0,0, 0.125);
+    combined += fetch(texelCoordsUpper, 0,1,0, 0.125);
+    combined += fetch(texelCoordsUpper, 1,1,0, 0.125);
+
+    combined += fetch(texelCoordsUpper, 0,0,1, 0.125);
+    combined += fetch(texelCoordsUpper, 1,0,1, 0.125);
+    combined += fetch(texelCoordsUpper, 0,1,1, 0.125);
+    combined += fetch(texelCoordsUpper, 1,1,1, 0.125);
+
+    // Faces
+
+    combined += fetch(texelCoordsUpper, 2,0,0, 0.0625);
+    combined += fetch(texelCoordsUpper, 2,1,1, 0.0625);
+
+
+    combined += fetch(texelCoordsUpper, -1,0,0, 0.0625);
+    combined += fetch(texelCoordsUpper, -1,1,1, 0.0625);
+
+
+    combined += fetch(texelCoordsUpper, 0,2,0, 0.0625);
+    combined += fetch(texelCoordsUpper, 1,2,1, 0.0625);
+
+
+    combined += fetch(texelCoordsUpper, 0,-1,0, 0.0625);
+    combined += fetch(texelCoordsUpper, 1,-1,1, 0.0625);
+
+    combined += fetch(texelCoordsUpper, 0,0,2, 0.0625);
+    combined += fetch(texelCoordsUpper, 1,1,2, 0.0625);
+
+
+    combined += fetch(texelCoordsUpper, 0,0,-1, 0.0625);
+    combined += fetch(texelCoordsUpper, 1,1,-1, 0.0625);
+
+    #if 1
+
+    // More accuracy but less performance
+    combined += fetch(texelCoordsUpper, 2,0,1, 0.0625);
+    combined += fetch(texelCoordsUpper, 2,1,0, 0.0625);
+    combined += fetch(texelCoordsUpper, -1,0,1, 0.0625);
+    combined += fetch(texelCoordsUpper, -1,1,0, 0.0625);
+    combined += fetch(texelCoordsUpper, 0,2,1, 0.0625);
+    combined += fetch(texelCoordsUpper, 1,2,0, 0.0625);
+    combined += fetch(texelCoordsUpper, 0,-1,1, 0.0625);
+    combined += fetch(texelCoordsUpper, 1,-1,0, 0.0625);
+    combined += fetch(texelCoordsUpper, 0,1,2, 0.0625);
+    combined += fetch(texelCoordsUpper, 1,0,2, 0.0625);
+    combined += fetch(texelCoordsUpper, 0,1,-1, 0.0625);
+    combined += fetch(texelCoordsUpper, 1,0,-1, 0.0625);
+
+    combined *= 0.8;
+    #endif
+
+
 
     // Center neighbors
-    combined += texelFetch(source, texelCoordsUpper + ivec3(1,0,0), sourceMipmap) * 0.125;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(-1,0,0), sourceMipmap) * 0.125;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(0,1,0), sourceMipmap) * 0.125;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(0,-1,0), sourceMipmap) * 0.125;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(0,0,1), sourceMipmap) * 0.125;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(0,0,-1), sourceMipmap) * 0.125;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(1,0,0), sourceMipmap) * 0.125;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(-1,0,0), sourceMipmap) * 0.125;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(0,1,0), sourceMipmap) * 0.125;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(0,-1,0), sourceMipmap) * 0.125;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(0,0,1), sourceMipmap) * 0.125;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(0,0,-1), sourceMipmap) * 0.125;
 
-    // Corners
-    combined += texelFetch(source, texelCoordsUpper + ivec3(1 ,1 ,1), sourceMipmap) * 0.0625;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(-1,1 ,1), sourceMipmap) * 0.0625;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(1 ,-1,1), sourceMipmap) * 0.0625;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(-1,-1,1), sourceMipmap) * 0.0625;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(1 ,1 ,-1), sourceMipmap) * 0.0625;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(-1,1 ,-1), sourceMipmap) * 0.0625;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(1 ,-1,-1), sourceMipmap) * 0.0625;
-    combined += texelFetch(source, texelCoordsUpper + ivec3(-1,-1,-1), sourceMipmap) * 0.0625;
+    // // Corners
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(1 ,1 ,1), sourceMipmap) * 0.0625;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(-1,1 ,1), sourceMipmap) * 0.0625;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(1 ,-1,1), sourceMipmap) * 0.0625;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(-1,-1,1), sourceMipmap) * 0.0625;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(1 ,1 ,-1), sourceMipmap) * 0.0625;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(-1,1 ,-1), sourceMipmap) * 0.0625;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(1 ,-1,-1), sourceMipmap) * 0.0625;
+    // combined += texelFetch(source, texelCoordsUpper + ivec3(-1,-1,-1), sourceMipmap) * 0.0625;
 
-    // float kernelRadius = 2.5;
-
-    // combined = texture(source, localTexCoords);
-    // combined += texture(source, localTexCoords + texelSize.xzz*kernelRadius);
-    // combined += texture(source, localTexCoords + texelSize.zxz*kernelRadius);
-    // combined += texture(source, localTexCoords + texelSize.zzx*kernelRadius);
-    // combined += texture(source, localTexCoords + texelSize.yzz*kernelRadius);
-    // combined += texture(source, localTexCoords + texelSize.zyz*kernelRadius);
-    // combined += texture(source, localTexCoords + texelSize.zzy*kernelRadius);
 
     imageStore(dest, texelCoords, combined );
 }

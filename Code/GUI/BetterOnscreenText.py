@@ -12,7 +12,7 @@ class BetterOnscreenText(DebugObject):
     and better visuals """
 
     def __init__(self, text="", parent=None, x=0, y=0, size=10, align="left",
-                 color=None):
+                 color=None, mayChange=False):
         DebugObject.__init__(self, "BetterOnscreenText")
 
         if color is None:
@@ -30,7 +30,7 @@ class BetterOnscreenText(DebugObject):
         self._node = OnscreenText(
             text=text, parent=parent, pos=self.initialPos, scale=size,
             align=alignMode, fg=Vec4(color.x, color.y, color.z, 1.0),
-            font=Globals.font)
+            font=Globals.font, mayChange=mayChange)
 
     def getInitialPos(self):
         """ Returns the initial position of the text. This can be used for

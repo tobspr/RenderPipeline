@@ -82,11 +82,16 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/Raventon/Model.egg"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg.bam"
-        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
+        self.sceneSource = "Models/CornelBox/Model.egg"
+        # self.sceneSource = "Models/HouseSet/Model.egg"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
 
         # If global illumination is enabled, load the voxel grid
         GlobalIllumination.setSceneRoot(
-            "Toolkit/Blender Material Library/voxelized/")
+            # "Toolkit/Blender Material Library/voxelized/")
+            "Models/CornelBox/voxelized/")
+            # "Models/HouseSet/voxelized/")
+            # "Demoscene.ignore/Room/voxelized/")
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
@@ -127,7 +132,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(0.422895, -6.49557, 4.72692), Vec3(0, 0, 3))
+            Vec3(12.2, -12.7, 11.0), Vec3(0, 0, 5))
         self.controller.setup()
 
         # Hotkey for wireframe
@@ -155,6 +160,9 @@ class Main(ShowBase, DebugObject):
         if self.renderPipeline.settings.displayOnscreenDebugger:
             self.renderPipeline.guiManager.demoSlider.node[
                 "command"] = self.setSunPos
+            self.renderPipeline.guiManager.demoSlider.node[
+                "value"] = 20
+
             self.lastSliderValue = 0.0
 
         # Load skybox
@@ -178,7 +186,7 @@ class Main(ShowBase, DebugObject):
                 math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
-            dPos = Vec3(30, (rawValue - 50), 100)
+            dPos = Vec3(30, (rawValue - 50) * 1.5, 100)
 
         if abs(diff) > 0.0001:
             self.dirLight.setPos(dPos)

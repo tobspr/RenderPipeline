@@ -80,7 +80,7 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material
 
     int shadowSourceIndex = light.sourceIndexes[0];
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
-    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.0, 0.5, 0.00000);
+    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.0, 0.005, 0.000000);
     vec3 rawLighting = computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
     return rawLighting;
 }

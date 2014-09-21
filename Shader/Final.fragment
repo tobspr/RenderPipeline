@@ -103,9 +103,11 @@ void main() {
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
         vec3 colorCorrected = convertColorSpace(result);
         result = mix( colorCorrected , result, 0.5);
+        // result = (result - 0.1) * 1.1;
     #endif
 
-    
+        
+    result = saturate(result);
 
     float vignett = smoothstep(0, 1, 
         (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 0.8;

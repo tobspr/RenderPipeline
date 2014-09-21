@@ -24,7 +24,7 @@ void main() {
     // Todo: Diffuse Multiplier = Material diffuse * Material GI Factor
     // vtxDiffuseMultiplier = vec3(1);
     vtxDiffuseMultiplier = p3d_Material.diffuse.rgb;
-
+// 
     vtxTexcoord = p3d_MultiTexCoord0;
     gl_Position = worldPos;   
 }

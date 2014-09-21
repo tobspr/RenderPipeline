@@ -119,7 +119,6 @@ class BetterShader:
                 includePart = lineStrip[len(includeIdentifier):].strip()
 
                 # Filename is surrounded by braces
-                # Todo: maybe also support ->'<- additionally to ->"<-
                 if includePart.startswith('"') and includePart.endswith('"'):
 
                     # Special case
