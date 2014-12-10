@@ -48,7 +48,7 @@ const float sqrt_of_2 = 1.4142135623;
 
 
 
-// #pragma optionNV (unroll all)
+// #pragma optionNV (unproll all)
 
 
 #define USE_BINDLESS_TEXTURES 0
@@ -76,3 +76,16 @@ const float sqrt_of_2 = 1.4142135623;
 
 #define SKYBOX_BEGIN 15000.0
 
+
+// #define PCSS_SEARCH_RADIUS 30.0
+// #define PCSS_FILTER_RADIUS 20.0
+
+#define PSSM_RADIUS_WS 0.01
+#define PCSS_SEARCH_RADIUS 32.0
+#define PCSS_FILTER_RADIUS 8.0
+
+// Betweeen 4 and 64
+#define PCSS_SEARCH_SAMPLES 64
+
+// Betweeen 4 and 64
+#define PCSS_FILTER_SAMPLES 64

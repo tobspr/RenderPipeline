@@ -4,7 +4,7 @@ rootDir = "../../"
 
 
 sourceDirectories = ["Code/", "Shader/", "Toolkit/"]
-ignorePattern = []
+ignorePattern = [".pyc"]
 extensions = "py compute fragment vertex ini include geometry glsl cxx h I".split()
 
 print "Code Analyzer v0.2"

@@ -61,7 +61,15 @@ class ShadowSource(DebugObject, ShaderStructElement):
         self.nearPlane = 0.0
         self.farPlane = 1000.0
         self.converterYUR = None
+        self.transforMat = TransformState.makeMat(
+            Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(),
+                            CSZupRight))
         
+
+    def setFilmSize(self, size_x, size_y):
+        """ Sets the film size of the source """
+        self.lens.setFilmSize(size_x, size_y)
+        self.rebuildMatrixCache()
 
     def getSourceIndex(self):
         """ Returns the assigned source index. The source index is the index
@@ -84,10 +92,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         this is the worldViewProjection matrix, but for convenience it is
         called mvp. """
         projMat = self.converterYUR
-        transformMat = TransformState.makeMat(
-            Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(),
-                            CSZupRight))
-        modelViewMat = transformMat.invertCompose(
+        modelViewMat = self.transforMat.invertCompose(
             Globals.render.getTransform(self.cameraNode)).getMat()
         return UnalignedLMatrix4f(modelViewMat * projMat)
 

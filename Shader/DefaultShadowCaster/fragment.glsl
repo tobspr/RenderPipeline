@@ -1,21 +1,34 @@
-#version 150
+#version 400
 #pragma file "DefaultShadowCaster/fragment.glsl"
 
 
 
 #define NO_EXTENDED_PACKING
 #include "Includes/Packing.include"
+#include "Includes/Configuration.include"
 
 in vec2 texcoord;
 in vec3 worldPos;
 in vec3 diffuseMultiplier;
 uniform sampler2D p3d_Texture0;
-out vec4 diffuse;
+
+#if USE_GLOBAL_ILLUMINATION
+layout(location = 0) out vec4 gi_color;
+#endif 
+
 void main() {
-    diffuse.rgb = texture(p3d_Texture0, texcoord).rgb * diffuseMultiplier;
-    // diffuse.rgb = vec3(texcoord, 0);
-    // diffuse.rgb = vec3(1);
-    // diffuse.rgb -= 0.3;
-    // diffuse.rgb = max(vec3(0), diffuse.rgb);
-    diffuse.a = 1.0;
+    vec4 tex_sample = texture(p3d_Texture0, texcoord);
+    // Alpha test
+    // if (tex_sample.a < 0.5) discard;
+        
+    #if USE_GLOBAL_ILLUMINATION
+
+
+        gi_color.rgb = tex_sample.rgb * diffuseMultiplier;
+
+
+        // gi_color.rgb = diffuseMultiplier;
+        gi_color.rgb = diffuseMultiplier;
+        gi_color.a = 1.0;
+    #endif
 }

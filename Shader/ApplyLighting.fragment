@@ -113,6 +113,9 @@ void main() {
     #ifdef DEBUG_RM_LIGHTING
         material.baseColor = vec3(1);
     #endif
+    #ifdef DEBUG_RM_PSSM_SPLITS
+        material.baseColor = vec3(1);
+    #endif
 
     // Fetch the light counts
     // We perform a min as it *might* be that we read a wrong value
@@ -220,6 +223,8 @@ void main() {
     #endif
 
 
+     OCCLUSION_RESULT_TYPE occlusionResult = OCCLUSION_RESULT_TYPE (0.0);
+
     // We can skip lighting for the skybox
     if (isSkybox) {
 
@@ -228,7 +233,7 @@ void main() {
 
         // Compute Occlusion
         float distanceToCamera = distance(cameraPosition, material.position);
-        OCCLUSION_RESULT_TYPE occlusionResult = computeOcclusion(correctTexcoord, screenCoord, distanceToCamera);
+        occlusionResult = computeOcclusion(correctTexcoord, screenCoord, distanceToCamera);
 
 
         occlusionResult = 1.0 - occlusionResult;
@@ -353,7 +358,7 @@ void main() {
         result = vec3(1);
         occlusionTotal = occlusionResult;
         // occlusionTotal = 0.0;
-        // result = vec3(occlusionResult);
+        result = vec3(occlusionResult*5.0);
     #endif
 
     #ifdef DEBUG_RM_METALLIC
@@ -377,6 +382,10 @@ void main() {
         occlusionTotal = 0.0;
     #endif
 
+    #ifdef DEBUG_RM_PSSM_SPLITS
+        occlusionTotal = 0.0;
+    #endif
+
 
     #ifdef DEBUG_RM_SCATTERING
         #ifdef USE_SCATTERING
@@ -386,7 +395,7 @@ void main() {
         #endif
     #endif
 
-
+    // result = vec3(texelFetch(shadowAtlas, screenCoord, 0).w);
 
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );
 }

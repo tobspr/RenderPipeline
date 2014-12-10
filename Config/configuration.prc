@@ -161,3 +161,7 @@ model-cache-textures #f
 
 notify-level-pnmimage error
 show-buffers #f
+
+# GPU Timer queries
+pstats-gpu-timing #t
+auto-flip #t

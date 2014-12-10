@@ -22,18 +22,18 @@ uniform mat4 trans_apiclip_to_apiview_of_mainCam;
 #define OCCLUSION_PER_LIGHT_RECV_PARAMETERS , inout float occlusionTotal, float occlusionResult
 
 
-#define APPLY_OCCLUSION() occlusionTotal += occlusionResult * attenuation * OCCLUSION_STRENGTH;
+#define APPLY_OCCLUSION() occlusionTotal += occlusionResult * attenuation * OCCLUSION_STRENGTH * saturate(1.1-shadowFactor);
 
 
 // total number of samples at each fragment
 #define SAO_NUM_SPIRAL_TURNS      7
-#define SAO_VARIATION             0
+#define SAO_VARIATION             1
 
-const float saoIntensity = 0.5;
+const float saoIntensity = 0.1;
 const float saoConstIntensity = 1.0;
-const float saoSampleRadiusWS = 2.0;
-const float saoBias = 0.2;
- 
+const float saoSampleRadiusWS = 0.5;
+const float saoBias = 0.05;
+const float saoEpsilon = 0.05;
 
 // reconstructs view-space unit normal from view-space position
 vec3 sao_reconstructNormalVS(vec3 positionVS) {
@@ -69,7 +69,7 @@ vec3 sao_getOffsetPositionVS(vec2 uv, vec2 unitOffset, float radiusSS) {
 float sao_sampleAO(vec2 uv, vec3 positionVS, vec3 normalVS, float sampleRadiusSS, 
                int tapIndex, float rotationAngle)
 {
-  const float sao_epsilon = 0.01;
+
   float radius2 = saoSampleRadiusWS * saoSampleRadiusWS;
   
   // offset on the unit disk, spun for this pixel
@@ -87,13 +87,13 @@ float sao_sampleAO(vec2 uv, vec3 positionVS, vec3 normalVS, float sampleRadiusSS
 
   // (from the HPG12 paper)
   // Note large epsilon to avoid overdarkening within cracks
-  return float(vv < radius2) * max(vn / (sao_epsilon + vv), 0.0);
+  return float(vv < radius2) * max(vn / (saoEpsilon + vv), 0.0);
   
 #elif SAO_VARIATION == 1 // default / recommended
   
   // Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
   float f = max(radius2 - vv, 0.0) / radius2;
-  return f * f * f * max(vn / (sao_epsilon + vv), 0.0);
+  return f * f * f * max(vn / (saoEpsilon + vv), 0.0);
   
 #elif SAO_VARIATION == 2
   
@@ -138,13 +138,16 @@ OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanc
   radiusSS = projScale * radiusWS / abs(originVS.z);
     
   // return radiusSS * 0.01;
-  radiusSS = min(radiusSS, 20.0);
+  // radiusSS = min(radiusSS, 20.0);
+  // radiusSS = min(radiusSS, 20.0);
   
   // radiusSS = saturate(1.0 / distanceToCamera) * 250.0;
 
   // float intensity = pow(distanceToCamera, 1.3) * saoIntensity * 0.01;
-  float intensity = pow(distanceToCamera, 1.05) * saoIntensity * 0.01;
-  intensity = saoIntensity;
+  // float intensity = distanceToCamera * saoIntensity;
+  // intensity = saoIntensity;
+
+  float intensity = 1.0;
 
   for (int i = 0; i < OCCLUSION_SAMPLES; ++i) {
     occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, randomPatternRotationAngle);

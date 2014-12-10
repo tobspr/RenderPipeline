@@ -5,7 +5,7 @@
 
 
 // const float normalsDiscardThreshold = 0.99999;
-const float normalsDiscardThreshold = 0.99;
+const float normalsDiscardThreshold = 0.5;
 
 
 #pragma optionNV (unroll all)
@@ -110,6 +110,7 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, sampler2D colorT
             occlusion[i] = texture(colorTex, offset).a;
         }
 
+
         // pixel normal is the mid normalr
         vec3 normal = normals[NUM_BLUR_MID];
 
@@ -120,6 +121,7 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, sampler2D colorT
         for (int i = 0; i < NUM_BLUR_STEPS; i++) {
             float weight = blurWeights[i];
             float normalInfluenceFactor = step(normalsDiscardThreshold, dot(normals[i], normal));
+            // normalInfluenceFactor = 1.0;
             alphaResult += occlusion[i]*weight*normalInfluenceFactor;
             alphaWeights += weight*normalInfluenceFactor;   
         }

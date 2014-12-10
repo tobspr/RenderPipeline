@@ -71,9 +71,14 @@ class RenderTarget(DebugObject):
         self._engine = Globals.base.graphicsEngine
         self._active = False
         self._useTextureArrays = False
+        self._haveColorAlpha = True
         self._rename(name)
 
         self.mute()
+
+    def setHaveColorAlpha(self, color_alpha):
+        """ Sets wheter the color buffer has an alpha channel or not """
+        self._haveColorAlpha = color_alpha
 
     def setUseTextureArrays(self, state=True):
         """ Makes the render buffer use a 2D texture array when rendering 
@@ -252,6 +257,7 @@ class RenderTarget(DebugObject):
         self._buffer.setLayers(self._layers)
         self._buffer.setMultisamples(self._multisamples)
         self._buffer.setEngine(self._engine)
+        self._buffer.setHaveColorAlpha(self._haveColorAlpha)
 
         for flag in self._targetFlags.keys():
             self._buffer.addTarget(flag)

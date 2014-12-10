@@ -106,6 +106,10 @@ class PipelineGuiManager(DebugObject):
 
         register_feature("Shadows", "ft_SHADOWS")
         register_feature("Color Correction", "ft_COLOR_CORRECTION")
+        
+        if s.renderShadows:
+            register_mode("PSSM Splits", "rm_PSSM_SPLITS")
+            register_feature("PCSS", "ft_PCSS")
 
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",
                                                    x=20, y=currentY,
@@ -205,6 +209,9 @@ class PipelineGuiManager(DebugObject):
                 )
             )
             self.currentGUIEffect.start()
+
+            self.watermark.hide()
+            self.showDebugger.hide()
 
         else:
             # hide debugger

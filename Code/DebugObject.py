@@ -1,5 +1,6 @@
 
 from ConsoleColors import printRedConsoleText, printYellowConsoleText, printGrayConsoleText
+import sys
 
 class DebugObject:
 
@@ -45,6 +46,11 @@ class DebugObject:
         Hopefully this never get's called! Errors also can't be muted """
         printRedConsoleText("\n\n\nError: " + self._debug_name + ": " + \
             ' '.join([str(i) for i in args])+ "\n")
+
+    def fatal(self, *args):
+        self.error(*args)
+        self.error("Program terminated!")
+        sys.exit(0)
 
     def _rename(self, name):
         """ Renames this object """

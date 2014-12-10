@@ -1,11 +1,14 @@
 
-from panda3d.core import OmniBoundingVolume, Vec3
+from panda3d.core import OmniBoundingVolume, Vec3, Vec2, Point3, Point2
+
+import math
 
 from Light import Light
 from DebugObject import DebugObject
 from LightType import LightType
 from NoSenseException import NoSenseException
 from ShadowSource import ShadowSource
+from Globals import Globals
 
 class DirectionalLight(Light, DebugObject):
 
@@ -25,9 +28,21 @@ class DirectionalLight(Light, DebugObject):
         Light.__init__(self)
         DebugObject.__init__(self, "DirectionalLight")
         self.typeName = "DirectionalLight"
+        self.splitCount = 6
+        self.splitResolution = [2048] * 6
+        self.pssmTargetCam = None
+        self.pssmTargetLens = None
+        self.pssmFarPlane = 50.0
+        self.pssmSplitPow = 2.0
 
         # A directional light is always visible
         self.bounds = OmniBoundingVolume()
+
+    def setPssmTarget(self, pssm_cam, pssm_lens):
+        """ Sets the camera and its lens which are used for the pssm. This is
+        usually the main camera """
+        self.pssmTargetCam = pssm_cam
+        self.pssmTargetLens = pssm_lens
 
     def _computeLightMat(self):
         """ Todo """
@@ -45,6 +60,11 @@ class DirectionalLight(Light, DebugObject):
         """ This makes no sense, as a directional light has no radius """
         raise NoSenseException("DirectionalLight has no radius")
 
+    def needsUpdate(self):
+        """ Directional lights have to get updated every frame to reposition
+        the PSSM frustum """
+        return True
+
     def _computeAdditionalData(self):
         """ The directional light has no additional data (yet) to pass to the
         shaders """
@@ -54,20 +74,55 @@ class DirectionalLight(Light, DebugObject):
         does nothing """
 
     def _initShadowSources(self):
-        """ pass """
+        """ Creates the shadow sources used for shadowing """
 
-        source = ShadowSource()
-        source.setupOrtographicLens(
-            1.0, 6000.0, (80,80))
-        source.setResolution(self.shadowResolution)
-        self._addShadowSource(source)
+        if self.pssmTargetCam is None:
+            self.fatal("Error during initialization, you have to set a Target with setPssmTarget before calling setCastsShadows.")
+            return
+
+        for i in xrange(self.splitCount):
+            source = ShadowSource()
+            source.setupOrtographicLens(
+                5.0, 1000.0, (10, 10))
+            source.setResolution(self.splitResolution[i])
+            self._addShadowSource(source)
 
     def _updateShadowSources(self):
         """ Shadows aren't supported for directional lights (yet), so this does
         nothing """
 
-        self.shadowSources[0].setPos(self.position)
-        self.shadowSources[0].lookAt(Vec3(0,0,0))
+        mixVector = lambda p1, p2, a: ((p2*a) + (p1*(1.0-a)))
+        camPos = self.pssmTargetCam.getPos()
+
+        nearPoint = Point3()
+        farPoint = Point3()
+        self.pssmTargetLens.extrude(Point2(0.0), nearPoint, farPoint)
+        nearPoint = Globals.base.render.getRelativePoint(self.pssmTargetCam, nearPoint)
+        farPoint = Globals.base.render.getRelativePoint(self.pssmTargetCam, farPoint)
+
+        trNearPoint = Point3()
+        trFarPoint = Point3()
+        self.pssmTargetLens.extrude(Point2(1.0), trNearPoint, trFarPoint)
+        trNearPoint = Globals.base.render.getRelativePoint(self.pssmTargetCam, trNearPoint)
+        trFarPoint = Globals.base.render.getRelativePoint(self.pssmTargetCam, trFarPoint)
+
+        splitFunc = lambda x: math.pow(float(x+0.5)/(self.splitCount+0.5), self.pssmSplitPow)
+        relativeSplitSize = self.pssmFarPlane / self.pssmTargetLens.getFar()
+
+        for i in xrange(self.splitCount):
+            splitParamStart = splitFunc(i) * relativeSplitSize
+            splitParamEnd = splitFunc(i+1) * relativeSplitSize
+
+            midPos = mixVector(nearPoint, farPoint, (splitParamStart + splitParamEnd) / 2.0 )
+            topPlanePos = mixVector(trNearPoint, trFarPoint, splitParamEnd )
+
+            filmSize = (topPlanePos - midPos).length()
+            midPos += camPos
+
+            self.shadowSources[i].setPos(midPos + self.direction * 300.0)
+            self.shadowSources[i].lookAt(midPos)
+            self.shadowSources[i].setFilmSize(filmSize, filmSize)
+            self.shadowSources[i].invalidate()
 
     def __repr__(self):
         """ Generates a representative string for this object """

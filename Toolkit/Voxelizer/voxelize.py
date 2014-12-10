@@ -51,6 +51,7 @@ void main() {
     vec4 normalWorld = trans_model_to_world * vec4(p3d_Normal.xyz, 0);
     normal = normalWorld.xyz;
     color.xyz = p3d_Material.diffuse.rgb;
+    //color.xyz = vec3(1);
     texc = p3d_MultiTexCoord0;
 }
 """
@@ -424,9 +425,9 @@ if __name__ == "__main__":
     filesToConvert = recursiveFindFiles(sourceDir)
 
 
-    singleConvert = "../../Models/HouseSet"
+    singleConvert = "../../Demoscene.ignore/Room"
     filesToConvert = [
-        (singleConvert + "/Model.egg", singleConvert)
+        (singleConvert + "/LivingRoom.egg", singleConvert)
     ]
 
     if len(filesToConvert) < 1:

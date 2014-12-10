@@ -111,8 +111,7 @@ class RenderingPipeline(DebugObject):
 
 
         self.debug("Checking required Panda3D version ..")
-        SystemAnalyzer.checkPandaVersionOutOfDate(7,8,2014)
-
+        SystemAnalyzer.checkPandaVersionOutOfDate(01,12,2014)
 
         # Mount everything first
         self.mountManager.mount()
@@ -210,6 +209,7 @@ class RenderingPipeline(DebugObject):
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
+
 
         # Create the target which constructs the view-space normals and
         # position from world-space position
@@ -782,6 +782,10 @@ class RenderingPipeline(DebugObject):
             self.showbase.addTask(
                 self._updateShadows, "RP_UpdateShadows", sort=-8)
 
+            self.showbase.addTask(
+                self._processShadowCallbacks, "RP_ShadowCallbacks", sort=-5)
+
+
         if self.settings.displayOnscreenDebugger:
             self.showbase.addTask(
                 self._updateGUI, "RP_UpdateGUI", sort=7)
@@ -803,7 +807,6 @@ class RenderingPipeline(DebugObject):
         """ Called after rendering """
 
         self.antialias.postRenderUpdate()
-
         if task is not None:
             return task.cont
 
@@ -816,6 +819,11 @@ class RenderingPipeline(DebugObject):
     def _updateLights(self, task=None):
         """ Task which updates/culls the lights """
         self.lightManager.updateLights()
+        if task is not None:
+            return task.cont
+
+    def _processShadowCallbacks(self, task=None):
+        self.lightManager.processCallbacks()
         if task is not None:
             return task.cont
 
@@ -898,6 +906,10 @@ class RenderingPipeline(DebugObject):
                 "Shader/DefaultObjectShader/tesseval.glsl")
 
         return shader
+
+    def _getDeferredBuffer(self):
+        """ Returns a handle to the internal deferred target """
+        return self.deferredTarget.getInternalBuffer()
 
     def addLight(self, light):
         """ Adds a light to the list of rendered lights """

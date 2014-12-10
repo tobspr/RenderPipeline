@@ -59,10 +59,8 @@ class GlobalIllumination(DebugObject):
         self.debug("Setup ..")
 
         if self.pipeline.settings.useHardwarePCF:
-            self.error(
+            self.fatal(
                 "Global Illumination does not work in combination with PCF!")
-            import sys
-            sys.exit(0)
             return
 
         self.settings = VoxelSettingsManager()
@@ -107,21 +105,15 @@ class GlobalIllumination(DebugObject):
         self.unpackVoxels.setShader(
             BetterShader.loadCompute("Shader/GI/UnpackVoxels.compute"))
 
-        print "setting inputs .."
         self.unpackVoxels.setShaderInput("packedVoxels", packedVoxels)
-        print "setting inputs .."
         self.unpackVoxels.setShaderInput(
             "stackSizeX", LVecBase3i(self.settings.StackSizeX))
-        print "setting inputs .."
         self.unpackVoxels.setShaderInput(
             "gridSize", LVecBase3i(self.settings.GridResolution))
-        print "setting inputs .."
         self.unpackVoxels.setShaderInput("destination", self.unpackedVoxels)
-        print "executing shader .."
         self._executeShader(
             self.unpackVoxels, self.settings.GridResolution / 8, self.settings.GridResolution / 8, self.settings.GridResolution / 8)
 
-        print "creating direct radiance texture .."
         # Create 3D Texture to store direct radiance
         self.directRadianceCache = Texture("Direct radiance cache")
         self.directRadianceCache.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
@@ -131,7 +123,7 @@ class GlobalIllumination(DebugObject):
         self.directRadiance.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
                                            Texture.TFloat, Texture.FRgba16)
 
-        print "setting texture states .."
+
         for prepare in [self.directRadiance, self.unpackedVoxels]:
             prepare.setMagfilter(Texture.FTLinear)
             prepare.setMinfilter(Texture.FTLinearMipmapLinear)
@@ -150,12 +142,11 @@ class GlobalIllumination(DebugObject):
         self.convertGridNode = NodePath("ConvertGrid")
 
 
-        if False:
+        if True:
             surroundingBox = Globals.loader.loadModel(
                 "Models/CubeFix/Model.egg")
             surroundingBox.setPos(self.settings.GridStart)
             surroundingBox.setScale(self.gridScale)
-
             # surroundingBox.setTwoSided(True)
             surroundingBox.flattenStrong()
             surroundingBox.reparentTo(Globals.render)
@@ -382,6 +373,6 @@ class GlobalIllumination(DebugObject):
 
     def _executeShader(self, node, threadsX, threadsY, threadsZ=1):
         """ Executes a compute shader, fetching the shader attribute from a NodePath """
-        sattr = node.get_attrib(ShaderAttrib)
-        Globals.base.graphicsEngine.dispatch_compute(
+        sattr = node.getAttrib(ShaderAttrib)
+        Globals.base.graphicsEngine.dispatchCompute(
             (threadsX, threadsY, threadsZ), sattr, Globals.base.win.get_gsg())

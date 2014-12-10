@@ -84,7 +84,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     #ifndef DEBUG_RM_REFLECTIONS
     if (m.specular > 0.001) { 
     #endif
-        vec4 traced = traceCone(data, data.geometry, localCoord, reflectVector, 128, 1.01 + m.roughness*0.2, 1.8, 0.5, 1.0);
+        vec4 traced = traceCone(data, data.geometry, localCoord, reflectVector, 32, 1.01 + m.roughness*0.2, 1.8, 0.5, 1.0);
         // vec4 traced = traceCone(data, data.geometry, localCoord, refractVector, 512, 1.0 + m.roughness*0.0, 1.1, 0.5, 1.0);
         // specularColor = vec3(traced.w);
         // specularColor = traced.xyz;
@@ -140,7 +140,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     );
 
     vec4 giResult = vec4(0);
-    startCoord = localCoord + correctNormal * data.voxelSize * 0.2;
+    startCoord = localCoord + correctNormal * data.voxelSize * 0.05;
     for (int i = 0; i < numSamplesGI; i++) {
         vec3 traceDirection = giTraceDirections[i];
         vec3 mixedNormal = normalize(
@@ -157,11 +157,12 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // vec4 giResult = traceConeWithCollisions(data, startCoord, correctNormal , 12, 1.8, 1.3, 4.0, 4.6) * 4.0;
 
 
-    // giResult = vec4(textureLod(data.voxels, localCoord, 2.0));
+    // giResult = vec4(textureLod(data.voxels, localCoord, 2.0)) * 50.0;
 
 
     float aoMultiplier = exp(-0.4 * aoResult.w);
-    return max(vec4(0.0), giResult) * aoMultiplier + 0.25;
+    aoMultiplier = 1.0;
+    return max(vec4(0.0), giResult) * aoMultiplier + 0.2;
 
 
 }

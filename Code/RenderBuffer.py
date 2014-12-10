@@ -36,8 +36,13 @@ class RenderBuffer(DebugObject):
         self._multisamples = 0
         self._engine = None
         self._useTextureArrays = False
+        self._haveColorAlpha = True
 
         self.mute()
+
+    def setHaveColorAlpha(self, color_alpha):
+        """ Sets wheter the color buffer has an alpha channel or not """
+        self._haveColorAlpha = color_alpha
 
     def setUseTextureArrays(self, state=True):
         """ Sets wheter to use a 2d texture array, or a 3d texture """
@@ -160,9 +165,16 @@ class RenderBuffer(DebugObject):
                     handle.setComponentType(Texture.TFloat)
 
                 if self._colorBits == 16:
-                    handle.setFormat(Texture.FRgba16)
+                    if self._haveColorAlpha:
+                        handle.setFormat(Texture.FRgba16)
+                    else:
+                        handle.setFormat(Texture.FRgb16)
+
                 elif self._colorBits == 32:
-                    handle.setFormat(Texture.FRgba32)
+                    if self._haveColorAlpha:
+                        handle.setFormat(Texture.FRgba32)
+                    else:
+                        handle.setFormat(Texture.FRgb32)
             else:
                 if auxIsFloat:
                     handle.setComponentType(Texture.TFloat)
@@ -192,11 +204,12 @@ class RenderBuffer(DebugObject):
 
         # Set color and alpha bits
         if self.hasTarget(RenderTargetType.Color):
-            bufferProps.setColorBits(self._colorBits * 3)
-            bufferProps.setAlphaBits(self._colorBits)
+            bufferProps.setRgbaBits(self._colorBits, self._colorBits, self._colorBits, self._colorBits if self._haveColorAlpha else 0)
+            # bufferProps.setRgbaBits(8,8,8,0)
 
             if colorIsFloat:
                 bufferProps.setFloatColor(True)
+
 
         # Set aux bits
         if self.hasTarget(RenderTargetType.Aux0) and auxIsFloat:

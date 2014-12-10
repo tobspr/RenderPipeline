@@ -33,7 +33,7 @@ void main() {
     vec4 sampledDiffuse = texture(DIFFUSE_TEX, vOutput.texcoord);
 
     // Alpha test
-    if (sampledDiffuse.a < 0.5) discard;
+    // if (sampledDiffuse.a < 0.5) discard;
 
     vec4 sampledNormal  = texture(NORMAL_TEX, vOutput.texcoord);
     vec4 sampledSpecular = texture(SPECULAR_TEX, vOutput.texcoord);
@@ -44,7 +44,7 @@ void main() {
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
 
-    bumpFactor = 0.0;
+    // bumpFactor = 0.0;
    
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
     detailNormal = mix(vec3(0,0,1), detailNormal, bumpFactor);
@@ -68,15 +68,16 @@ void main() {
     m.position = vOutput.positionWorld;
 
 
-    // m.baseColor = vec3(1.0);
-    // m.roughness = 0.9;
+    // m.baseColor = vec3(0.5);
+    // m.roughness = vOutput.materialDiffuse.b*0.6 + 0.3;
     // m.metallic = 0.0;
-    // m.specular = 0.5;
+    // m.specular = 0.4;
 
     // m.baseColor *= vec3(8);
-    // m.roughness = 0.4;
-    // m.specular = 1.0;
-    // m.metallic = 1.0;
+    // m.roughness = 1.0;
+    // m.specular = 0.0;
+    // m.specular *= 0.15;
+    // m.metallic *= 0.7;
 
     renderMaterial(m);
 }

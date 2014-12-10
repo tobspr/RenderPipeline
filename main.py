@@ -57,7 +57,6 @@ class Main(ShowBase, DebugObject):
         # Create the render pipeline
         self.debug("Creating pipeline")
         self.renderPipeline = RenderingPipeline(self)
-        self.renderPipeline.loadSettings("Config/pipeline.ini")
 
         # Uncomment to use temp directory
         # writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
@@ -68,7 +67,6 @@ class Main(ShowBase, DebugObject):
 
         # Set a write directory, where the shader cache and so on is stored
         # self.renderPipeline.getMountManager().setWritePath(writeDirectory)
-
         self.renderPipeline.getMountManager().setBasePath(".")
 
          ####### END OF RENDER PIPELINE SETUP #######
@@ -77,21 +75,22 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        # self.sceneSource = "Scene.ignore/Car.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
-        # self.sceneSource = "Models/Raventon/Model.egg"
-        # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg.bam"
-        self.sceneSource = "Models/CornelBox/Model.egg"
+        # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
+        # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
+        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
+        
+        self.renderPipeline.loadSettings("Config/pipeline.ini")
 
         # If global illumination is enabled, load the voxel grid
         GlobalIllumination.setSceneRoot(
-            # "Toolkit/Blender Material Library/voxelized/")
-            "Models/CornelBox/voxelized/")
+            "Toolkit/Blender Material Library/voxelized/")
+            # "Models/CornelBox/voxelized/")
             # "Models/HouseSet/voxelized/")
             # "Demoscene.ignore/Room/voxelized/")
+            # "Demoscene.ignore/voxelized/")
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
@@ -145,11 +144,13 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(4096)
-        dirLight.setAmbientColor(Vec3(0.5, 0.5, 0.5))
-        dirLight.setCastsShadows(True)
+        dirLight.setShadowMapResolution(1024)
+        dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(4))
+        dirLight.setPssmTarget(base.cam, base.camLens)
+        dirLight.setCastsShadows(True)
+
         self.renderPipeline.addLight(dirLight)
         self.dirLight = dirLight
         sunPos = Vec3(56.7587, -31.3601, 189.196)
@@ -165,12 +166,22 @@ class Main(ShowBase, DebugObject):
 
             self.lastSliderValue = 0.0
 
-        # Load skybox
+        # Load skyboxn
         self.skybox = None
         self.loadSkybox()
 
         # Set default object shaders
         self.setShaders(refreshPipeline=False)
+
+
+        taskMgr.doMethodLater(2.0, self.test, 'test')
+
+        # Show windows
+        for window in base.graphicsEngine.getWindows():
+            print window.getName(), window.getSort()
+
+    def test(self, task):
+        print self.renderPipeline.lightManager.getAtlasTex().getFormat()
 
     def setSunPos(self):
         """ Sets the sun position based on the debug slider """

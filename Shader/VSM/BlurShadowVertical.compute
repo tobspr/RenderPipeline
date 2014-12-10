@@ -1,0 +1,11 @@
+#version 430
+
+
+#include "Includes/Configuration.include"
+
+#define DIRECTION vec2(0, 1)
+#define SOURCE_STORE vec4(sourceSample.xy, sum.x, 0.0)
+
+#include "Includes/BlurShadow.include"
+
+

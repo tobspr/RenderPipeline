@@ -57,7 +57,6 @@ vec3 computeLightModel(Light light, Material material,
         if (shadowFactor < 0.001) return vec3(0.0);
 
         vec3 lightingResult = vec3(0);
-
         vec3 specularColor = mix(vec3(1), material.baseColor, material.metallic) * material.specular;
         vec3 diffuseColor = mix(material.baseColor, vec3(0), material.metallic);
 
@@ -114,46 +113,136 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
 
     // No additional reflections for complex scenes
     // reflectedColor = vec3(0.4);
-    reflectedColor *= 8.0;
-
+    // reflectedColor = mix(reflectedColor, vec3(0.1), 0.8);
+    // reflectedColor *= 8.0;
 
     float NxV = max(0.0, dot(material.normal, v));
     vec3 result = vec3(0);
 
-    result += giAmbient.xyz * 0.2 * material.baseColor * (1.0 - material.metallic);
+    result += giAmbient.xyz * 0.1 * material.baseColor * (1.0 - material.metallic);
 
     vec3 specularColor = material.baseColor * reflectedColor * giSpecular * material.specular;
     vec3 environment = computeEnvironmentBRDF(specularColor, material.roughness, NxV);
     
     result += environment * material.baseColor;
-
-    // result = giAmbient;
+    
+    // Cheap SH
+    result *= 1.0 + abs(material.normal.x)*0.2;
 
     return result;
 }
 
 float computePointLightAttenuation(Light light, float distanceToLight) {
 
+    // Hard transition
     // return distanceToLight < light.radius ? 1.0 : 0.0;
 
+    // Soft transition
     float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.2;
 
-    // Cut light transition starting at 80%. Otherwise it's exponential and never gets really 0
+    // Cut light transition starting at 80% because the curve is exponential and never gets really 0
     float cutoff = light.radius * 0.8;
     attenuation *= 1.0 - smoothstep(0.0, 1.0, ( (distanceToLight / cutoff) - 1.0) * 4.0 );   
     attenuation = max(0.0, attenuation);
-
     return attenuation;
 }
 
 
-
 // http://the-witness.net/news/2013/09/shadow-mapping-summary-part-1/
+// Apply a bias to the shadowmaps
 vec2 getShadowOffsets(vec3 N, vec3 L) {
     float cos_alpha = saturate(dot(N, L));
     float offset_scale_N = sqrt(1 - cos_alpha*cos_alpha); // sin(acos(L·N))
     float offset_scale_L = offset_scale_N / cos_alpha;    // tan(acos(L·N))
     return vec2(offset_scale_N, min(2, offset_scale_L));
+}
+
+vec3 reprojectShadow(ShadowSource source, vec3 pos) {
+    vec4 projected = source.mvp * vec4(pos, 1);
+    return (projected.xyz / projected.w * 0.5) + 0.5;
+}
+
+vec3 computeBiasedPosition(Material material, float slopeBias, float normalBias, vec3 l, vec3 n) {
+    vec3 biasedPos = material.position;
+    float baseShift = 10.0;
+    vec2 offsets = getShadowOffsets(n, l);
+    biasedPos += baseShift * l * offsets.x * slopeBias;
+    biasedPos += baseShift * n * offsets.y * normalBias; 
+    return biasedPos;
+}
+
+
+bool coord_inside(vec2 coord, vec2 min_coord, vec2 max_coord) {
+    return all(greaterThan(coord, min_coord)) && all(lessThan(coord, max_coord));
+}
+
+
+float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias) {
+
+
+    #ifndef DEBUG_DISABLE_PCSS
+
+    // Project 2 points on the xy plane to find out the filter radius in shadowmap space.
+    // This ensures the correct filtering for split shadow sources
+    vec3 point1 = vec3(0,0,0);
+    vec3 point2 = vec3(1,1,0) * PSSM_RADIUS_WS;
+
+    vec3 proj1 = reprojectShadow(source, point1);
+    vec3 proj2 = reprojectShadow(source, point2);
+
+    // The filter size is the difference of both lightspace pixels
+    vec2 projSize = abs(proj1.xy - proj2.xy);
+
+
+    vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
+   
+    vec2 searchRegionRadiusUV = PCSS_SEARCH_RADIUS * projSize;
+
+    float blockerSum = 0.0;
+    float numBlockers = 0.0;
+    float biasedDepth = projCoord.z - baseBias;
+
+    // Find blocker
+    for ( int i = 0; i < PCSS_SEARCH_SAMPLES; ++i )
+    {
+        vec2 offset = poissonDisk64[i] * searchRegionRadiusUV;
+        float shadowMapDepth = textureLod(shadowAtlas, centerCoord + offset , 0).x;
+        float factor = step(shadowMapDepth, biasedDepth);
+        numBlockers += factor;
+        blockerSum += shadowMapDepth * factor;
+    }
+
+    float avgBlockerDepth = blockerSum / numBlockers;
+    float penumbraSize = abs(biasedDepth - avgBlockerDepth) / biasedDepth * 20.0;
+
+    if (numBlockers < 0.5) return 1.0;
+
+    penumbraSize = min(penumbraSize, 15.0);
+
+    vec2 filterRadiusUV = penumbraSize * PCSS_FILTER_RADIUS * projSize;
+
+    // PCF Filter
+    float sum = 0.0;
+
+    for ( int i = 0; i < PCSS_FILTER_SAMPLES; ++i )
+    {
+        vec2 offset = poissonDisk64[i] * filterRadiusUV;
+        float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).x;
+        sum += step(sampled, biasedDepth);        
+    }
+    sum /= PCSS_FILTER_SAMPLES;
+    // return 1.0 - saturate(pow(sum, 2.0));
+    return 1.0 - saturate(sum);
+
+    #else
+
+        vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
+        float biasedDepth = projCoord.z - baseBias;
+        float sampled = textureLod(shadowAtlas, centerCoord, 0).x;
+        return 1.0 - step(sampled, biasedDepth);
+
+
+    #endif
 }
 
 float computeShadowsForSource(ShadowSource source, Material material, vec3 n, vec3 l, 
@@ -163,55 +252,54 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
         return 0.0;
     #endif
 
-    vec2 offsets = getShadowOffsets(n, l);
-    vec3 biasedPos = material.position;
-    float resFactor = 1024.0 / float(source.resolution);
-    float baseShift = 0.3;
-
-    biasedPos += baseShift * l * offsets.x * slopeScaledBias;
-    biasedPos += baseShift * n * offsets.y * normalScaledBias;
-
-    vec4 projected = source.mvp * vec4(biasedPos, 1);
-    resFactor = min(resFactor, 1.0);
-
-    // Parabolic transform
-    // projected = transformParabol(projected, currentSource.nearPlane, currentSource.farPlane);            
-    // projected = projected * 0.5 + 0.5;    
-
-    float pixOffset = 2.0 / SHADOW_MAP_ATLAS_SIZE;
-
-    vec3 projCoord = projected.xyz / projected.w;
-    projCoord.xyz = projCoord.xyz * 0.5 + 0.5;
+    vec3 biasedPos = computeBiasedPosition(material, slopeScaledBias, normalScaledBias, n, l);
+    vec3 projCoord = reprojectShadow(source, biasedPos);
 
     float pixScaled = 2.0 / float(source.resolution);
 
     if (any(lessThan(projCoord.xy, vec2(pixScaled))) || any(greaterThan(projCoord.xy, vec2(1-pixScaled)))) {
-        return 0.65;
+        return 1.0;
     }
 
+    
+    return pcssKernel(source, projCoord, baseBias);
+}
+
+float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l, 
+    float slopeScaledBias, float normalScaledBias, float baseBias, out int map_used) {
+
+    map_used = 0;
+    #ifdef DEBUG_DISABLE_SHADOWS
+        return 0.0;
+    #endif
+
+    vec3 biasedPos = computeBiasedPosition(material, slopeScaledBias, normalScaledBias, n, l);
+    int shadow_map_index = 6;
+    vec3 projCoord = vec3(0);
+
+    for (int i = 0; i < 6; i++) {
+        int sourceIndex = light.sourceIndexes[i];
+        ShadowSource source = shadowSources[sourceIndex];
+        projCoord = reprojectShadow(source, biasedPos);
+
+        // Border
+        float pixScaled = 250.0 / float(source.resolution);
+
+        if (all(greaterThan(projCoord.xy, vec2(pixScaled))) && all(lessThan(projCoord.xy, vec2(1-pixScaled)))) {
+            // Source can be used
+            shadow_map_index = i;
+            break;
+        }
+    }
+
+    if (shadow_map_index > 6) return 0.0;
+
+    ShadowSource source = shadowSources[shadow_map_index];
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
+    map_used = shadow_map_index;
+    return pcssKernel(source, projCoord, baseBias);
 
-    // apply point light shadows
-    float shadowFactor = 0.0;
-    for (int i = 0; i < SHADOWS_NUM_SAMPLES; i++) {
 
-        vec2 offset = poissonDisk16[i] * pixOffset;
-
-        #if SHADOWS_NUM_SAMPLES == 1
-            offset = vec2(0);
-        #endif
-
-        #if USE_HARDWARE_PCF
-            float sampled = texture(shadowAtlas, vec3(centerCoord + offset, projCoord.z - baseBias) ); // .r?
-            shadowFactor += (1.0 - sampled);
-        #else
-            float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).r;
-            shadowFactor += step(sampled, projCoord.z - baseBias);
-        #endif
-    }
-    shadowFactor /= SHADOWS_NUM_SAMPLES;
-
-    return 1.0 - shadowFactor;
 }
 
 

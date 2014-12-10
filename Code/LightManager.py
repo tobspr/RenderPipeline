@@ -1,7 +1,10 @@
 
 from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, RenderState
 from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
-from panda3d.core import OmniBoundingVolume, PTAInt, Vec4
+from panda3d.core import OmniBoundingVolume, PTAInt, Vec4, PTAVecBase4f
+from panda3d.core import LVecBase2i, ShaderAttrib, UnalignedLVecBase4f
+from panda3d.core import ComputeNode, LVecBase4i, GraphicsOutput
+from panda3d.core import CullFaceAttrib
 
 from Light import Light
 from DebugObject import DebugObject
@@ -78,20 +81,13 @@ class LightManager(DebugObject):
         self.allShadowsArray = ShaderStructArray(
             ShadowSource, self.maxShadowMaps)
 
+
         # Create shadow compute buffer
         self._createShadowComputationBuffer()
 
         # Create the initial shadow state
         self.shadowComputeCamera.setTagStateKey("ShadowPassShader")
-        # self.shadowComputeCamera.setInitialState(RenderState.make(
-            # ColorWriteAttrib.make(ColorWriteAttrib.C_off),
-            # ColorWriteAttrib.make(ColorWriteAttrib.C_rgb),
-            # DepthWriteAttrib.make(DepthWriteAttrib.M_on),
-            # CullFaceAttrib.make(CullFaceAttrib.MCullNone),
-            # 100))
-
         self._createTagStates()
-
         self.shadowScene.setTag("ShadowPassShader", "Default")
 
         # Create debug overlay
@@ -114,6 +110,7 @@ class LightManager(DebugObject):
         self.skip = 0
         self.skipRate = 0
 
+
     def _createTagStates(self):
         # Create shadow caster shader
         self.shadowCasterShader = BetterShader.load(
@@ -123,6 +120,7 @@ class LightManager(DebugObject):
 
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(self.shadowCasterShader, 30)
+        initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullCounterClockwise))
         self.shadowComputeCamera.setTagState(
             "Default", initialState.getState())
 
@@ -149,7 +147,8 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.setDepthBits(32)
-        
+
+        # Global illumination needs a secondary buffer
         if self.settings.enableGlobalIllumination:
             self.shadowComputeTarget.addColorTexture()
             self.shadowComputeTarget.setColorBits(16)
@@ -169,6 +168,12 @@ class LightManager(DebugObject):
             self.maxShadowUpdatesPerFrame + 1)
         self.shadowComputeTarget.getInternalRegion().setDimensions(0,
              (0, 0, 0, 0))
+
+
+        self.shadowComputeTarget.getInternalRegion().disableClears()
+        self.shadowComputeTarget.getInternalBuffer().disableClears()
+
+
 
         self.shadowComputeTarget.getInternalBuffer().setSort(-300)
 
@@ -194,11 +199,13 @@ class LightManager(DebugObject):
             self.depthClearer.append(dr)
 
         # When using hardware pcf, set the correct filter types
-        dTex = self.shadowComputeTarget.getDepthTexture()
-
+        dTex = self.getAtlasTex()
         if self.settings.useHardwarePCF:
             dTex.setMinfilter(Texture.FTShadow)
             dTex.setMagfilter(Texture.FTShadow)
+        else:
+            dTex.setMinfilter(Texture.FTNearest)
+            dTex.setMagfilter(Texture.FTNearest)
 
         dTex.setWrapU(Texture.WMClamp)
         dTex.setWrapV(Texture.WMClamp)
@@ -206,6 +213,12 @@ class LightManager(DebugObject):
     def getAllLights(self):
         """ Returns all attached lights """
         return self.lights
+
+
+    def processCallbacks(self):
+        """ Processes all updates from the previous frame """
+        for update in self.updateCallbacks:
+            update.onUpdated()
 
     def _createDebugTexts(self):
         """ Creates a debug overlay if specified in the pipeline settings """
@@ -434,6 +447,7 @@ class LightManager(DebugObject):
             self.lightsVisibleDebugText.setText(
                 'Lights: ' + renderedPL + " / " + renderedDL + " Shadowed: " + renderedPL_S + " / " + renderedDL_S)
 
+
     def updateShadows(self):
         """ This is one of the two per-frame-tasks. See class description
         to see what it does """
@@ -456,11 +470,7 @@ class LightManager(DebugObject):
         # Compute shadow updates
         numUpdates = 0
         last = "[ "
-   
-        # Callbacks from last frame
-        for callback in self.updateCallbacks:
-            callback.onUpdated()
-        self.updateCallbacks = []
+
 
         # When there are no updates, disable the buffer
         if len(self.queuedShadowUpdates) < 1:
@@ -501,15 +511,12 @@ class LightManager(DebugObject):
                             updateSize, updateSize, update.getUid())
 
                         if not storePos:
-                            self.error(
+                            self.fatal(
                                 "Still could not find a shadow atlas position, "
                                 "the shadow atlas is completely full. "
                                 "Either we reduce the resolution of existing shadow maps, "
                                 "increase the shadow atlas resolution, "
                                 "or crash the app. Guess what I decided to do :-P")
-
-                            import sys
-                            sys.exit(0)
 
                     update.assignAtlasPos(*storePos)
 
