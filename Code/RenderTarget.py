@@ -247,7 +247,7 @@ class RenderTarget(DebugObject):
         self.debug("Creating buffer of size", wantedX, "x", wantedY)
 
         self._buffer = RenderBuffer()
-        self._buffer.setName("Buff-" + self._name)
+        self._buffer.setName("[FBO] " + self._name)
         self._buffer.setSize(wantedX, wantedY)
         self._buffer.setWindow(self._sourceWindow)
         self._buffer.setColorBits(self._colorBits)

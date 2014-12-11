@@ -9,7 +9,7 @@
 uniform mat4 p3d_ModelViewProjectionMatrix;
 
 layout(triangles) in;
-layout(triangle_strip, max_vertices=SHAODOW_GEOMETRY_MAX_VERTICES) out;
+layout(triangle_strip, max_vertices=SHADOW_GEOMETRY_MAX_VERTICES) out;
 
 uniform int numUpdates;
 uniform ShadowSource updateSources[SHADOW_MAX_UPDATES_PER_FRAME];

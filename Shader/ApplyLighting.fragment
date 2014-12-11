@@ -395,6 +395,10 @@ void main() {
         #endif
     #endif
 
+    #ifdef DEBUG_RM_SHADOWS
+        occlusionTotal = 0.0;
+    #endif
+
     // result = vec3(texelFetch(shadowAtlas, screenCoord, 0).w);
 
     lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );

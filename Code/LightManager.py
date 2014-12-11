@@ -4,7 +4,7 @@ from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
 from panda3d.core import OmniBoundingVolume, PTAInt, Vec4, PTAVecBase4f
 from panda3d.core import LVecBase2i, ShaderAttrib, UnalignedLVecBase4f
 from panda3d.core import ComputeNode, LVecBase4i, GraphicsOutput
-from panda3d.core import CullFaceAttrib
+
 
 from Light import Light
 from DebugObject import DebugObject
@@ -120,7 +120,7 @@ class LightManager(DebugObject):
 
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(self.shadowCasterShader, 30)
-        initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullCounterClockwise))
+        initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
         self.shadowComputeCamera.setTagState(
             "Default", initialState.getState())
 
@@ -219,6 +219,7 @@ class LightManager(DebugObject):
         """ Processes all updates from the previous frame """
         for update in self.updateCallbacks:
             update.onUpdated()
+        self.updateCallbacks = []
 
     def _createDebugTexts(self):
         """ Creates a debug overlay if specified in the pipeline settings """

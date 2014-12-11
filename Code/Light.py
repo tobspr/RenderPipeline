@@ -28,10 +28,10 @@ class Light(ShaderStructElement):
         self.shadowSources = []
         self.lightType = self._getLightType()
         self.position = Vec3(0)
-        self.color = Vec3(0)
+        self.color = Vec3(1)
         self.posterIndex = -1
         self.direction = Vec3(0)
-        self.radius = 0.1
+        self.radius = 10.0
         self.typeName = ""
         self.sourceIndexes = PTAInt.emptyArray(6)
         self.attached = False

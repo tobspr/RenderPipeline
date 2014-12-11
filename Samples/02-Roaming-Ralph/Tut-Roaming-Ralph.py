@@ -80,6 +80,7 @@ class World(ShowBase):
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
         dirLight.setShadowMapResolution(4096)
+        dirLight.setPssmTarget(self.cam, self.camLens)
         # dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
@@ -291,9 +292,9 @@ class World(ShowBase):
         camvec.setZ(0)
         camdist = camvec.length()
         camvec.normalize()
-        if (camdist > 10.0):
-            base.camera.setPos(base.camera.getPos() + camvec * (camdist - 10))
-            camdist = 10.0
+        if (camdist > 7.0):
+            base.camera.setPos(base.camera.getPos() + camvec * (camdist - 7))
+            camdist = 7.0
         if (camdist < 5.0):
             base.camera.setPos(base.camera.getPos() - camvec * (5 - camdist))
             camdist = 5.0
@@ -328,8 +329,8 @@ class World(ShowBase):
                                       x.getSurfacePoint(render).getZ()))
         if (len(entries) > 0) and (entries[0].getIntoNode().getName() == "terrain"):
             base.camera.setZ(entries[0].getSurfacePoint(render).getZ() + 1.0)
-        if (base.camera.getZ() < self.ralph.getZ() + 2.0):
-            base.camera.setZ(self.ralph.getZ() + 2.0)
+        if (base.camera.getZ() < self.ralph.getZ() + 5.0):
+            base.camera.setZ(self.ralph.getZ() + 5.0)
 
         # The camera should look in ralph's direction,
         # but it should also try to stay horizontal, so look at

@@ -71,7 +71,7 @@ class Main(ShowBase, DebugObject):
 
          ####### END OF RENDER PIPELINE SETUP #######
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
@@ -80,7 +80,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
-        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
@@ -144,10 +144,10 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(1024)
+        dirLight.setShadowMapResolution(2048)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(4))
+        dirLight.setColor(Vec3(1))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
@@ -156,6 +156,17 @@ class Main(ShowBase, DebugObject):
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
         self.dirLight.setDirection(sunPos)
+
+        for i in xrange(3):
+            pointLight = PointLight()
+            pointLight.setPos(Vec3( (i-1)*3, 0, 7))
+            pointLight.setColor(Vec3(2))
+            pointLight.setShadowMapResolution(1024)
+            pointLight.setRadius(50)
+            pointLight.setCastsShadows(True)
+            # pointLight.attachDebugNode(render)
+            self.renderPipeline.addLight(pointLight)
+
 
         # Slider to move the sun
         if self.renderPipeline.settings.displayOnscreenDebugger:

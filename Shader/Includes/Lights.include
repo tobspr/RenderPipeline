@@ -36,11 +36,12 @@ vec3 applyPointLightWithShadow(Light light, Material material
 
     // We decide which shadow map to sample using a simple lookup cubemap
     int faceIndex = int( textureLod(directionToFace, l, 0).r * 5.0);
+    
     int shadowSourceIndex = light.sourceIndexes[faceIndex];
 
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
-    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 1.0, 1.0, 0.0002);
+    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.01, 0.01, 0.000);
     
     APPLY_OCCLUSION();
 
@@ -85,7 +86,7 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
     int map_used = 0;
-    float shadowFactor = computePSSMShadowsForLight(light, material, n, l, 0.001, 0.000, 0.0, map_used);
+    float shadowFactor = computePSSMShadowsForLight(light, material, n, l, 0.01, 0.01, 0.0001, map_used);
 
     float map_use_factor = map_used / 6.0;
 

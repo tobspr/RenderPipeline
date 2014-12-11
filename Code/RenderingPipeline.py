@@ -992,9 +992,12 @@ class RenderingPipeline(DebugObject):
         defines.append(
             ("SHADOW_MAX_UPDATES_PER_FRAME", self.settings.maxShadowUpdatesPerFrame))
         defines.append(
-            ("SHAODOW_GEOMETRY_MAX_VERTICES", self.settings.maxShadowUpdatesPerFrame * 3))
+            ("SHADOW_GEOMETRY_MAX_VERTICES", self.settings.maxShadowUpdatesPerFrame * 3))
 
-        defines.append(("SHADOWS_NUM_SAMPLES", self.settings.numShadowSamples))
+
+        defines.append(("SHADOW_NUM_PCF_SAMPLES", self.settings.numPCFSamples))
+        defines.append(("SHADOW_NUM_PCSS_SEARCH_SAMPLES", self.settings.numPCSSSearchSamples))
+        defines.append(("SHADOW_NUM_PCSS_FILTER_SAMPLES", self.settings.numPCSSFilterSamples))
 
         if self.settings.useHardwarePCF:
             defines.append(("USE_HARDWARE_PCF", 1))

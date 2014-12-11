@@ -32,8 +32,9 @@ class DirectionalLight(Light, DebugObject):
         self.splitResolution = [2048] * 6
         self.pssmTargetCam = None
         self.pssmTargetLens = None
-        self.pssmFarPlane = 50.0
+        self.pssmFarPlane = 150.0
         self.pssmSplitPow = 2.0
+        self.updateIndex = 0
 
         # A directional light is always visible
         self.bounds = OmniBoundingVolume()
@@ -88,10 +89,11 @@ class DirectionalLight(Light, DebugObject):
             self._addShadowSource(source)
 
     def _updateShadowSources(self):
-        """ Shadows aren't supported for directional lights (yet), so this does
-        nothing """
+        """ Updates the PSSM Frustum and all PSSM Splits """
 
         mixVector = lambda p1, p2, a: ((p2*a) + (p1*(1.0-a)))
+
+        # Fetch camera data
         camPos = self.pssmTargetCam.getPos()
 
         nearPoint = Point3()
@@ -106,17 +108,22 @@ class DirectionalLight(Light, DebugObject):
         trNearPoint = Globals.base.render.getRelativePoint(self.pssmTargetCam, trNearPoint)
         trFarPoint = Globals.base.render.getRelativePoint(self.pssmTargetCam, trFarPoint)
 
+        # This is the PSSM split function, currently cubic
         splitFunc = lambda x: math.pow(float(x+0.5)/(self.splitCount+0.5), self.pssmSplitPow)
         relativeSplitSize = self.pssmFarPlane / self.pssmTargetLens.getFar()
 
+        self.updateIndex += 1
+        self.updateIndex = self.updateIndex % 2
+
         for i in xrange(self.splitCount):
+
             splitParamStart = splitFunc(i) * relativeSplitSize
             splitParamEnd = splitFunc(i+1) * relativeSplitSize
 
             midPos = mixVector(nearPoint, farPoint, (splitParamStart + splitParamEnd) / 2.0 )
             topPlanePos = mixVector(trNearPoint, trFarPoint, splitParamEnd )
 
-            filmSize = (topPlanePos - midPos).length()
+            filmSize = (topPlanePos - midPos).length() * 1.2
             midPos += camPos
 
             self.shadowSources[i].setPos(midPos + self.direction * 300.0)

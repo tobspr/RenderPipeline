@@ -109,7 +109,9 @@ class PipelineGuiManager(DebugObject):
         
         if s.renderShadows:
             register_mode("PSSM Splits", "rm_PSSM_SPLITS")
+            register_mode("Shadowing", "rm_SHADOWS")
             register_feature("PCSS", "ft_PCSS")
+            register_feature("PCF", "ft_PCF")
 
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",
                                                    x=20, y=currentY,

@@ -38,7 +38,9 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("renderShadows", bool, True)
         self._addSetting("shadowAtlasSize", int, 8192)
         self._addSetting("maxShadowUpdatesPerFrame", int, 2)
-        self._addSetting("numShadowSamples", int, 8)
+        self._addSetting("numPCFSamples", int, 64)
+        self._addSetting("numPCSSSearchSamples", int, 32)
+        self._addSetting("numPCSSFilterSamples", int, 64)
         self._addSetting("useHardwarePCF", bool, False)
         self._addSetting("alwaysUpdateAllShadows", bool, False)
 

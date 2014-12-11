@@ -38,6 +38,9 @@ class App(ShowBase):
         # Now create the pipeline
         self.renderPipeline.create()
 
+        # Enable atmospheric scattering
+        self.renderPipeline.enableDefaultEarthScattering()
+
         # At this point we are done with the initialization. Now you want to
         # load your scene, and create the game logic. 
 
