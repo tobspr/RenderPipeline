@@ -9,9 +9,7 @@ uniform writeonly image3D dest;
 
 void main() {
   ivec3 texelCoords = ivec3(gl_GlobalInvocationID.xyz);
-
   int data = imageLoad(src, texelCoords).x;
-
 
   // Bits:
   // 12 Bit R
@@ -27,14 +25,10 @@ void main() {
   //                   resultColorI.b << 22;
 
 
-  int r = data & 0xFFF;
-  int g = (data >> 12) & 0x3FF;
-  int b = (data >> 22) & 0x1FF;
+  int r = (data >> 1) & 0x3FF;
+  int g = (data >> 11) & 0x3FF;
+  int b = (data >> 21) & 0x3FF;
 
   vec3 rgb = vec3(r / 255.0, g / 255.0, b / 255.0);
-
-  imageStore(dest, texelCoords, vec4(rgb, data == 0 ? 0.0 : 1.0) );
-
-
-
+  imageStore(dest, texelCoords, vec4(rgb, float(data & 0x1) ));
 }

@@ -37,7 +37,6 @@ from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
 from Code.GlobalIllumination import GlobalIllumination
 
-
 class Main(ShowBase, DebugObject):
 
     """ This is the render pipeline testing showbase """
@@ -71,9 +70,9 @@ class Main(ShowBase, DebugObject):
 
          ####### END OF RENDER PIPELINE SETUP #######
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
-        # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
+        self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
@@ -83,14 +82,6 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
-
-        # If global illumination is enabled, load the voxel grid
-        GlobalIllumination.setSceneRoot(
-            "Toolkit/Blender Material Library/voxelized/")
-            # "Models/CornelBox/voxelized/")
-            # "Models/HouseSet/voxelized/")
-            # "Demoscene.ignore/Room/voxelized/")
-            # "Demoscene.ignore/voxelized/")
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
@@ -121,6 +112,7 @@ class Main(ShowBase, DebugObject):
         # self.scene.setTwoSided(True)
 
         # Required for tesselation
+
         # self.convertToPatches(self.scene)
 
         self.scene.reparentTo(self.render)
@@ -128,10 +120,10 @@ class Main(ShowBase, DebugObject):
         # Prepare textures with SRGB format
         self.prepareSRGB(self.scene)
 
-        # Create movement controller (Freecam)
+        # Create movement controller (Freecam)wwww
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(12.2, -12.7, 11.0), Vec3(0, 0, 5))
+            Vec3(0, -5, 5.0), Vec3(0, 0, 5))
         self.controller.setup()
 
         # Hotkey for wireframe
@@ -140,14 +132,25 @@ class Main(ShowBase, DebugObject):
         # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
 
+
+        # for i in xrange(1):
+        #     pointLight = PointLight()
+        #     pointLight.setPos(Vec3( (i-1)*3, 0, 7))
+        #     pointLight.setColor(Vec3(0.1))
+        #     pointLight.setShadowMapResolution(1024)
+        #     pointLight.setRadius(50)
+        #     pointLight.setCastsShadows(True)
+        #     # pointLight.attachDebugNode(render)
+        #     self.renderPipeline.addLight(pointLight)
+
         # Create a sun light
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
+        dirLight.setShadowMapResolution(512)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1))
+        dirLight.setColor(Vec3(4))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
@@ -157,15 +160,12 @@ class Main(ShowBase, DebugObject):
         self.dirLight.setPos(sunPos)
         self.dirLight.setDirection(sunPos)
 
-        for i in xrange(3):
-            pointLight = PointLight()
-            pointLight.setPos(Vec3( (i-1)*3, 0, 7))
-            pointLight.setColor(Vec3(2))
-            pointLight.setShadowMapResolution(1024)
-            pointLight.setRadius(50)
-            pointLight.setCastsShadows(True)
-            # pointLight.attachDebugNode(render)
-            self.renderPipeline.addLight(pointLight)
+
+        if self.renderPipeline.settings.enableGlobalIllumination:
+            self.renderPipeline.globalIllum.setTargetLight(dirLight)
+        
+
+
 
 
         # Slider to move the sun
@@ -185,14 +185,9 @@ class Main(ShowBase, DebugObject):
         self.setShaders(refreshPipeline=False)
 
 
-        taskMgr.doMethodLater(2.0, self.test, 'test')
-
         # Show windows
-        for window in base.graphicsEngine.getWindows():
-            print window.getName(), window.getSort()
-
-    def test(self, task):
-        print self.renderPipeline.lightManager.getAtlasTex().getFormat()
+        # for window in base.graphicsEngine.getWindows():
+            # print window.getName(), window.getSort()
 
     def setSunPos(self):
         """ Sets the sun position based on the debug slider """
@@ -236,6 +231,9 @@ class Main(ShowBase, DebugObject):
                     tex.setFormat(Texture.FSrgb)
                 elif baseFormat == Texture.FRgba:
                     tex.setFormat(Texture.FSrgbAlpha)
+                elif baseFormat == Texture.FSrgb or baseFormat == Texture.FSrgbAlpha:
+                    # Format is okay already
+                    pass
                 else:
                     print "Unkown texture format:", baseFormat
                     print "\tTexture:", tex

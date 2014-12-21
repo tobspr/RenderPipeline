@@ -15,8 +15,6 @@
 #include "Includes/ColorCorrection.include"
 #include "Includes/PositionReconstruction.include"
 #include "Includes/SphericalHarmonics.include"
-#include "Includes/GlobalIllumination.include"
-
 
 uniform sampler2D data0;
 uniform sampler2D data1;
@@ -25,8 +23,10 @@ uniform sampler2D data3;
 
 uniform sampler2D depth;
 
-
-uniform sampler2D shadowAtlas1;
+#ifdef USE_GLOBAL_ILLUMINATION
+uniform sampler2D giDiffuseTex;
+uniform sampler2D giReflectionTex;
+#endif
 
 // layout (r32i) readonly uniform iimage2D lightsPerTile;
 uniform isampler2D lightsPerTile;
@@ -40,11 +40,6 @@ in vec2 texcoord;
     uniform int temporalProjXOffs;
 #endif
 
-
-
-#ifdef USE_GLOBAL_ILLUMINATION
-    uniform GIData giData;
-#endif
 
 
 uniform sampler2D noiseTexture;
@@ -117,6 +112,14 @@ void main() {
         material.baseColor = vec3(1);
     #endif
 
+
+    #ifdef DEBUG_RM_DIFFUSE_LIGHTING
+        material.baseColor = vec3(1);
+        material.metallic = 0.0;
+        material.specular = 0.0;
+    #endif
+        
+
     // Fetch the light counts
     // We perform a min as it *might* be that we read a wrong value
     // from the texture. Imagine reading 123123123 from the texture,
@@ -137,8 +140,8 @@ void main() {
 
     // Lighting result gets stored in this variables
     vec3 result = vec3(0);
-    vec4 giResult = vec4(1);
-    vec3 specularColor = vec3(1);
+    vec4 giDiffuseColor = vec4(0.2);
+    vec3 giSpecularColor = vec3(1);
     vec3 ambient = vec3(0);
 
     // Compute depth normal
@@ -148,6 +151,67 @@ void main() {
     vec3 worldY1 = getPositionWorld(texcoord + pixelW.zy);
     vec3 wsNormal = (cross(world - worldX1, world - worldY1));
     wsNormal = normalize(wsNormal);
+
+
+
+
+    #ifdef USE_GLOBAL_ILLUMINATION
+
+    #ifndef DEBUG_DISABLE_GI
+    // Bilateral upsample global illumination
+
+    ivec2 giSampleCoord = screenCoord / 2;
+    
+    ivec2 giSampleOffsets[5] = ivec2[](
+        ivec2(0,0),
+        ivec2(-1,0),
+        ivec2(1,0),
+        ivec2(0,-1),
+        ivec2(0,1)
+        // ivec2(-1, -1),
+        // ivec2(-1, 1),
+        // ivec2(1, -1),
+        // ivec2(1, 1)
+    );
+
+    vec4 giDiffuseResult = vec4(0);
+    vec4 giSpecularResult = vec4(0);
+    float giValidSamples = 0.01;
+
+    float pixelDepth = texelFetch(depth, screenCoord,0 ).x;
+
+    for (int i = 0; i < 5; i++) {
+        ivec2 coord = giSampleCoord + giSampleOffsets[i];
+        ivec2 coordScreen = coord * 2;
+        vec3 normalScreen = normalize(texelFetch(data1, coordScreen, 0).xyz);
+        float depthScreen = texelFetch(depth, coordScreen, 0).x;
+
+        float reliability = 1.0 - saturate(distance(normalScreen, material.normal));
+        reliability *= 1.0 - saturate( abs(pow(depthScreen,10.0) - pow(pixelDepth, 10.0)) * 2000.0);
+
+        giDiffuseResult += texelFetch(giDiffuseTex, coord, 0) * reliability;
+        giSpecularResult += texelFetch(giReflectionTex, coord, 0) * reliability;
+        giValidSamples += reliability;
+
+    }
+
+    // giDiffuseColor = vec4(diffuseColorSamples);
+    giDiffuseColor = giDiffuseResult / giValidSamples;
+    giSpecularColor = giSpecularResult.xyz / giValidSamples;
+
+    if (giValidSamples < 0.5) {
+        giDiffuseColor = texelFetch(giDiffuseTex, giSampleCoord, 0);
+        giSpecularColor = texelFetch(giReflectionTex, giSampleCoord, 0).xyz;
+    }
+
+    // float giSampleDepth = texelFetch(depth, giSampleCoord, 0).x;
+    
+
+    // giDiffuseColor = texelFetch(giDiffuseTex, giSampleCoord, 0);
+
+    #endif
+    #endif
+
 
     // There should be a more elegant way, but for now it works. I don't want to
     // waste a gbuffer flag for marking the skybox.
@@ -199,7 +263,7 @@ void main() {
     vec3 reflectVector = reflect(viewVector, material.normal);
     vec3 startPos = vec3(0);
     vec3 endPos = reflectVector * 1e17;
-    endPos = vec3(0,0,1e16);
+    endPos = vec3(0,0,1e12);
     vec3 startToEnd = normalize(startPos - endPos);
     scatteringReflectedColor = scatteringComputeInscatteredLight(
         scatteringOptions,
@@ -225,6 +289,8 @@ void main() {
 
      OCCLUSION_RESULT_TYPE occlusionResult = OCCLUSION_RESULT_TYPE (0.0);
 
+
+
     // We can skip lighting for the skybox
     if (isSkybox) {
 
@@ -234,36 +300,14 @@ void main() {
         // Compute Occlusion
         float distanceToCamera = distance(cameraPosition, material.position);
         occlusionResult = computeOcclusion(correctTexcoord, screenCoord, distanceToCamera);
-
-
         occlusionResult = 1.0 - occlusionResult;
 
         #ifdef DEBUG_DISABLE_OCCLUSION
             occlusionResult = 0.0;
         #endif
 
-
-
-        #ifdef USE_GLOBAL_ILLUMINATION
-            #ifndef DEBUG_DISABLE_GI
-                vec3 lightDir = vec3(-0.534, -0.46, 0.707);
-
-                if (countDirectionalLightShadow > 0) {
-                    int currentLightId = texelFetch(lightsPerTile, precomputeCoord + ivec2(0,6), 0).r;
-                    Light currentLight = lights[currentLightId];
-                    lightDir = currentLight.direction;
-                }
-
-                giResult = computeGlobalIllumination(material, -viewVector, giData, specularColor, lightDir, wsNormal, scatteringReflectedColor);
-
-            #endif
-
-        #endif
-
-
         // Metallic materials don't have much occlusion
         // occlusionResult = mix(occlusionResult, vec4(0.0), saturate(material.metallic-0.3) );
-
 
 
         // Compute point lights
@@ -316,31 +360,33 @@ void main() {
 
         // Ambient / Reflections
 
-        ambient = computeAmbient(material, giResult, specularColor, viewVector, wsNormal);    
-        result += ambient;
+        ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, viewVector, wsNormal);    
+        #ifndef DEBUG_RM_PSSM_SPLITS
+            result += ambient;
+        #endif
     }
 
     // SRGB
     result = 1.0f - exp(-2.0 * result);
-    // result *= 1.0;
     result.xyz = pow(result.xyz, vec3(1.0 / 2.2) );
 
+    // #define ENABLE_FOG
+
     #ifdef ENABLE_FOG
-        float fogFactor = saturate( (distance(cameraPosition, material.position)-10.0) / 500.0);
+        float fogFactor = saturate( (distance(cameraPosition, material.position)-50.0) / 100.0);
         if (isSkybox) fogFactor = 0.0;
         result = mix(result, vec3(1.0,1.0,1.2), fogFactor);
         occlusionTotal = mix(occlusionTotal, 0.0, fogFactor * 2.0);
     #endif
 
-
     #ifdef DEBUG_RM_GI
-        result = vec3(giResult);
-        result = 1.0f - exp(-1.5* result);
+        result = pow(giDiffuseColor.xyz, vec3(1.0 / 2.2));
+        result = 1.0f - exp(-2.0* result);
         occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_REFLECTIONS
-        result = vec3(specularColor);
+        result = vec3(giSpecularColor);
         occlusionTotal = 0.0;        
     #endif
 
@@ -397,6 +443,7 @@ void main() {
 
     #ifdef DEBUG_RM_SHADOWS
         occlusionTotal = 0.0;
+        // result *= 0.5;
     #endif
 
     // result = vec3(texelFetch(shadowAtlas, screenCoord, 0).w);

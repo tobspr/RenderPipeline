@@ -32,6 +32,10 @@ class BetterOnscreenText(DebugObject):
             align=alignMode, fg=Vec4(color.x, color.y, color.z, 1.0),
             font=Globals.font, mayChange=mayChange)
 
+    def setText(self, text):
+        """ Changes the text """
+        self._node["text"] = text
+
     def getInitialPos(self):
         """ Returns the initial position of the text. This can be used for
         animations """

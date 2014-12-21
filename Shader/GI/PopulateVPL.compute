@@ -55,7 +55,7 @@ void main() {
 
   // We do *32 only, with that, up to 8 pixels can write to the same voxel (worst case)
   // (256 / 32 = 8)
-  ivec3 resultColorI = clamp(ivec3(resultColor * color * 64.0), ivec3(0), ivec3(4095, 1023, 511));  
+  ivec3 resultColorI = clamp(ivec3(resultColor * color * 256.0), ivec3(0), ivec3(4095, 1023, 511));  
 
   // Bits:
   // 12 Bit R

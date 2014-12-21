@@ -134,9 +134,9 @@ class RenderTarget(DebugObject):
         """ Sets the required depth bits """
         self._depthbits = bits
 
-    def setShaderInput(self, name, val):
+    def setShaderInput(self, *args):
         """ This is a shortcut for setting shader inputs of the buffer """
-        self.getQuad().setShaderInput(name, val, 200)
+        self.getQuad().setShaderInput(*args)
 
     def setShader(self, shader):
         """ This is a shortcut for setting shaders to the buffer """

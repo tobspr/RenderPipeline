@@ -21,12 +21,12 @@ const mat4 shadowBiasMatrix = mat4(
     0.5, 0.5, 0.5, 1.0
 );
 
-
 #if USE_HARDWARE_PCF
-    uniform sampler2DShadow shadowAtlas;
-#else
-    uniform sampler2D shadowAtlas;
+uniform sampler2DShadow shadowAtlasPCF;
 #endif
+
+uniform sampler2D shadowAtlas;
+
 
 vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
     // Todo: Raw coord can be simply clamped to 0 .. 1 instead of clamping the result
@@ -51,7 +51,7 @@ vec3 computeLightModel(Light light, Material material,
 
 
     #if DEBUG_RM_SHADOWS
-        return shadowFactor * attenuation * light.color;
+        return shadowFactor * attenuation * light.color * 0.05;
     #endif
 
     #if USE_SIMPLE_LIGHTING
@@ -95,15 +95,19 @@ vec3 computeLightModel(Light light, Material material,
     #endif
 }
 
+float computMipmapFromRoughness(float roughness) {
+    return 8.0 * pow(roughness+0.5, 2.0);
+}
+
 vec3 computeEnvironmentBRDF(vec3 specularColor, float roughness, float NxV)
 {
-    const vec4 c0 = vec4(-1, -0.0275, -0.572, 0.022);
-    const vec4 c1 = vec4(1, 0.0425, 1.04, -0.04);
-    vec4 r = roughness * c0 + c1;
-    float a004 = min( r.x * r.x, exp2( -9.28 * NxV ) ) * r.x + r.y;
-    vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
-    AB.y *= saturate( 50.0 * specularColor.g );
-    return specularColor * AB.x + AB.y;
+    const vec4 a = vec4(-1, -0.0275, -0.572, 0.022);
+    const vec4 b = vec4(1, 0.0425, 1.04, -0.04);
+    vec4 r = roughness * a + b;
+    float c = min( r.x * r.x, exp2( -9.28 * NxV ) ) * r.x + r.y;
+    vec2 multiplier = vec2( -1.04, 1.04 ) * c + r.zw;
+    multiplier.y *= saturate( 50.0 * specularColor.g );
+    return specularColor * multiplier.x + multiplier.y;
 }
 
 vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, vec3 n) {
@@ -117,29 +121,46 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     #endif
 
     vec3 reflectedDir = reflect( v, material.normal );
-    float mipmap = log2(material.roughness * 800.0);
-    vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, mipmap).rgb;
-    vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, mipmap - 1.0).rgb;
-    vec3 reflectedColor = reflection1*0.5 + reflection2*0.5;
-    reflectedColor *= reflectedColor;
+    float mipmap = computMipmapFromRoughness(material.roughness);
+    vec3 reflection1 = textureLod(fallbackCubemap, reflectedDir.xzy, mipmap + 0.5).rgb;
+    vec3 reflection2 = textureLod(fallbackCubemap, reflectedDir.xzy, mipmap - 0.5).rgb;
+    vec3 reflectedColor = (reflection1+reflection2) * 0.5;
+    // reflectedColor *= reflectedColor;
 
     // No additional reflections for complex scenes
     // reflectedColor = vec3(0.4);
     // reflectedColor = mix(reflectedColor, vec3(0.1), 0.8);
     // reflectedColor *= 8.0;
 
+    // float NxV = 1.0 - saturate(dot(material.normal, v));
     float NxV = max(0.0, dot(material.normal, v));
+    // float NxV = dot(material.normal, v);
+    // float NxV = 1.0 - abs(dot(material.normal, v)) + 1e-5;
+    // NxV = 0.7;
+    // NxV = abs( dot(material.normal, v) ) + 1e-5;
+
     vec3 result = vec3(0);
 
-    result += giAmbient.xyz * 0.1 * material.baseColor * (1.0 - material.metallic);
+    result += giAmbient.xyz * material.baseColor * (1.0 - material.metallic);
 
-    vec3 specularColor = material.baseColor * reflectedColor * giSpecular * material.specular;
-    vec3 environment = computeEnvironmentBRDF(specularColor, material.roughness, NxV);
+
+    // vec3 specularColor = material.baseColor * reflectedColor * giSpecular * material.specular;
+    vec3 specularColor = material.baseColor * giSpecular * material.specular * reflectedColor;
+    specularColor = mix(vec3(0.04), specularColor, material.metallic);
+    // specularColor = vec3(1,0,0);
+
+
+    // vec3 environment = computeEnvironmentBRDF(specularColor, material.roughness, NxV);
+    vec3 environment = computeEnvironmentBRDF(specularColor, material.roughness, NxV) * material.metallic;
     
     result += environment * material.baseColor;
-    
+    // result = environment;
+     
+
     // Cheap SH
-    result *= 1.0 + abs(material.normal.x)*0.2;
+    // result *= 1.0 + abs(material.normal.x)*0.2;
+
+    result += textureLod(fallbackCubemap, normalize(-material.normal), 8).xyz * 0.005;
 
     return result;
 }
@@ -219,7 +240,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     if (numBlockers < 0.5) return 1.0;
 
-    penumbraSize = min(penumbraSize, 15.0);
+    // penumbraSize = min(max(penumbraSize, 0.09), 15.0);
 
     vec2 filterRadiusUV = penumbraSize * PCSS_FILTER_RADIUS * projSize;
 
@@ -229,8 +250,16 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
     for ( int i = 0; i < SHADOW_NUM_PCSS_FILTER_SAMPLES; ++i )
     {
         vec2 offset = poissonDisk64[i] * filterRadiusUV;
-        float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).x;
-        sum += step(sampled, biasedDepth);        
+        
+        #if USE_HARDWARE_PCF
+            // Notice: Maybe use .x? My gtx 670 does not like that though
+            sum += 1.0 - textureLod(shadowAtlasPCF, vec3(centerCoord + offset, biasedDepth) , 0);
+        
+        #else
+            float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).x;
+            sum += step(sampled, biasedDepth);        
+        #endif
+
     }
     sum /= SHADOW_NUM_PCSS_FILTER_SAMPLES;
     // return 1.0 - saturate(pow(sum, 2.0));
@@ -262,8 +291,17 @@ float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSi
     for ( int i = 0; i < SHADOW_NUM_PCF_SAMPLES; ++i )
     {
         vec2 offset = poissonDisk64[i] * filterRadiusUV;
-        float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).x;
-        sum += step(sampled, biasedDepth);        
+        
+        #if USE_HARDWARE_PCF
+            // Notice: Maybe use .x? My gtx 670 does not like that though
+            sum += 1.0 - textureLod(shadowAtlasPCF, vec3(centerCoord + offset, biasedDepth) , 0);
+        
+        #else
+            float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).x;
+            sum += step(sampled, biasedDepth);        
+        #endif
+
+
     }
     sum /= SHADOW_NUM_PCF_SAMPLES;
     return 1.0 - saturate(sum);
@@ -328,16 +366,16 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
     #endif
 
     vec3 biasedPos = computeBiasedPosition(material, slopeScaledBias, normalScaledBias, n, l);
-    int shadow_map_index = 6;
+    int shadow_map_index = 4;
     vec3 projCoord = vec3(0);
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 4; i++) {
         int sourceIndex = light.sourceIndexes[i];
         ShadowSource source = shadowSources[sourceIndex];
         projCoord = reprojectShadow(source, biasedPos);
 
         // Border
-        float pixScaled = 250.0 / float(source.resolution);
+        float pixScaled = 50.0 / float(source.resolution);
 
         if (all(greaterThan(projCoord.xy, vec2(pixScaled))) && all(lessThan(projCoord.xy, vec2(1-pixScaled)))) {
             // Source can be used
@@ -346,8 +384,9 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
         }
     }
 
-    if (shadow_map_index > 6) return 0.0;
-    ShadowSource source = shadowSources[shadow_map_index];
+    if (shadow_map_index > 3) return 0.2;
+
+    ShadowSource source = shadowSources[light.sourceIndexes[shadow_map_index]];
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
     map_used = shadow_map_index;
     return pcssKernelDynamicSize(source, projCoord, baseBias);

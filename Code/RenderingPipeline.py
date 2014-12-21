@@ -6,6 +6,7 @@ from panda3d.core import TransparencyAttrib, Texture, NodePath, PTAInt, Vec3
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
 from panda3d.core import PTAVecBase3f, WindowProperties, Vec4, Vec2, PTAVecBase2f
+from panda3d.core import SamplerState
 
 from direct.stdpy.file import open
 
@@ -171,11 +172,11 @@ class RenderingPipeline(DebugObject):
         self.debug("Window size is", self.size.x, "x", self.size.y)
 
         self.showbase.camLens.setNearFar(0.1, 50000)
-        self.showbase.camLens.setFov(115)
+        self.showbase.camLens.setFov(90)
 
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
 
-        # Create GI handleer
+        # Create GI handler
         if self.settings.enableGlobalIllumination:
             self._setupGlobalIllumination()
 
@@ -216,6 +217,9 @@ class RenderingPipeline(DebugObject):
         if self.occlusion.requiresViewSpacePosNrm():
             self._createNormalPrecomputeBuffer()
 
+        if self.settings.enableGlobalIllumination:
+            self._creatGIPrecomputeBuffer()
+
         # Setup the buffers for lighting
         self._createLightingPipeline()
 
@@ -252,6 +256,10 @@ class RenderingPipeline(DebugObject):
 
         self._setupFinalPass()
         self._setShaderInputs()
+
+        # Give the gui a hint when the pipeline is done loading
+        if self.settings.displayOnscreenDebugger:
+            self.guiManager.onPipelineLoaded()
 
         # add update task
         self._attachUpdateTask()
@@ -365,6 +373,18 @@ class RenderingPipeline(DebugObject):
         self.lightPerTileStorage.setMinfilter(Texture.FTNearest)
         self.lightPerTileStorage.setMagfilter(Texture.FTNearest)
 
+    def _creatGIPrecomputeBuffer(self):
+        """ Creates the half-resolution buffer which computes gi and gi
+        reflections. We use half-res for performance """
+
+        self.giPrecomputeBuffer = RenderTarget("GICompute")
+        self.giPrecomputeBuffer.setSize(self.size.x / 2, self.size.y / 2)
+        self.giPrecomputeBuffer.addColorTexture()
+        self.giPrecomputeBuffer.addAuxTextures(1)
+        self.giPrecomputeBuffer.setColorBits(16)
+        self.giPrecomputeBuffer.prepareOffscreenBuffer()
+
+
     def _createLightingPipeline(self):
         """ Creates the lighting pipeline, including shadow handling """
 
@@ -423,6 +443,8 @@ class RenderingPipeline(DebugObject):
                 "data2", self.deferredTarget.getAuxTexture(1))
             self.lightingComputeContainer.setShaderInput(
                 "data3", self.deferredTarget.getAuxTexture(2))
+
+
             self.lightingComputeContainer.setShaderInput(
                 "depth", self.deferredTarget.getDepthTexture())
             self.lightingComputeContainer.setShaderInput(
@@ -440,6 +462,11 @@ class RenderingPipeline(DebugObject):
 
             self.lightingComputeContainer.setShaderInput(
                 "shadowAtlas", self.lightManager.getAtlasTex())
+
+            if self.settings.useHardwarePCF:
+                self.lightingComputeContainer.setShaderInput(
+                    "shadowAtlasPCF", self.lightManager.getAtlasTex(), self.lightManager.getPCFSampleState())
+
             self.lightingComputeContainer.setShaderInput(
                 "destination", self.lightingComputeCombinedTex)
             self.lightingComputeContainer.setShaderInput(
@@ -452,6 +479,12 @@ class RenderingPipeline(DebugObject):
                 self.showbase.loader.loadTexture("Data/Occlusion/noise4x4.png"))
             self.lightingComputeContainer.setShaderInput(
                 "lightsPerTile", self.lightPerTileStorage)
+
+
+            if self.settings.enableGlobalIllumination:
+                self.lightingComputeContainer.setShaderInput("giDiffuseTex", self.giPrecomputeBuffer.getColorTexture())
+                self.lightingComputeContainer.setShaderInput("giReflectionTex", self.giPrecomputeBuffer.getAuxTexture(0))
+
 
         # Shader inputs for the occlusion blur passes
         if self.occlusion.requiresBlurring() and self.haveCombiner:
@@ -569,7 +602,18 @@ class RenderingPipeline(DebugObject):
 
         # Set GI inputs
         if self.settings.enableGlobalIllumination:
-            self.globalIllum.bindTo(self.lightingComputeContainer, "giData")
+            self.globalIllum.bindTo(self.giPrecomputeBuffer, "giData")
+
+            self.giPrecomputeBuffer.setShaderInput(
+                "data0", self.deferredTarget.getColorTexture())
+            self.giPrecomputeBuffer.setShaderInput(
+                "data1", self.deferredTarget.getAuxTexture(0))
+            self.giPrecomputeBuffer.setShaderInput(
+                "data2", self.deferredTarget.getAuxTexture(1))
+            self.giPrecomputeBuffer.setShaderInput(
+                "data3", self.deferredTarget.getAuxTexture(2))
+            self.giPrecomputeBuffer.setShaderInput(
+                "cameraPosition", self.cameraPosition)
 
         # Finally, set shaders
         self.reloadShaders()
@@ -577,10 +621,10 @@ class RenderingPipeline(DebugObject):
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
         cubemap = self.showbase.loader.loadCubeMap(
-            "Data/Cubemaps/Default/#.png")
+            "Data/Cubemaps/Default-4/#.jpg")
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
-        cubemap.setFormat(Texture.F_srgb_alpha)
+        cubemap.setFormat(Texture.F_srgb)
         self.lightingComputeContainer.setShaderInput(
             "fallbackCubemap", cubemap)
 
@@ -687,6 +731,13 @@ class RenderingPipeline(DebugObject):
         self.blurOcclusionV.setShader(blurVShader)
         self.blurOcclusionH.setShader(blurHShader)
 
+    def _setGIComputeShader(self):
+        """ Sets the shader which computes the GI """
+        giShader = BetterShader.load(
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/ComputeGI.fragment")
+        self.giPrecomputeBuffer.setShader(giShader)
+
     def _setBlurShader(self):
         """ Sets the shaders which blur the color """
         blurVShader = BetterShader.load(
@@ -747,6 +798,9 @@ class RenderingPipeline(DebugObject):
 
         self._setFinalPassShader()
 
+        if self.settings.enableGlobalIllumination:
+            self._setGIComputeShader()
+
         if self.occlusion.requiresBlurring():
             self._setOcclusionBlurShader()
 
@@ -798,6 +852,7 @@ class RenderingPipeline(DebugObject):
 
         if self.settings.enableGlobalIllumination:
             self.globalIllum.process()
+        
         self.antialias.preRenderUpdate()
 
         if task is not None:
@@ -819,6 +874,7 @@ class RenderingPipeline(DebugObject):
     def _updateLights(self, task=None):
         """ Task which updates/culls the lights """
         self.lightManager.updateLights()
+
         if task is not None:
             return task.cont
 
@@ -1053,7 +1109,7 @@ class RenderingPipeline(DebugObject):
             with open("PipelineTemp/ShaderAutoConfig.include", "w") as handle:
                 handle.write(output)
         except Exception, msg:
-            self.error("Error writing shader autoconfig. Maybe no write-access?")
+            self.fatal("Error writing shader autoconfig. Maybe no write-access?")
             return
 
     def onWindowResized(self):
@@ -1063,7 +1119,7 @@ class RenderingPipeline(DebugObject):
     def destroy(self):
         """ Call this when you want to shut down the pipeline """
         self.mountManager.unmount()
-        self.error("Destroy is not implemented yet")
+        raise NotImplementedError()
 
     def reload(self):
         """ This reloads the whole pipeline, same as destroy(); create() """

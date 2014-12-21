@@ -1,0 +1,30 @@
+#version 150
+
+uniform mat4 p3d_ViewProjectionMatrix;
+uniform mat4 trans_model_to_world;
+in vec4 p3d_Vertex;
+in vec4 p3d_Normal;
+in vec2 p3d_MultiTexCoord0;
+
+// We get the material info from panda as a struct
+uniform struct PandaMaterial {
+    vec4 diffuse;
+    vec3 specular;
+    vec4 ambient;
+} p3d_Material;
+
+out vec4 color;
+out vec3 normal;
+out vec4 positionWorld;
+out vec2 texc;
+
+void main() {
+    positionWorld = trans_model_to_world * p3d_Vertex; 
+    gl_Position = p3d_ViewProjectionMatrix * positionWorld;
+    vec4 normalWorld = trans_model_to_world * vec4(p3d_Normal.xyz, 0);
+    normal = normalWorld.xyz;
+    // color.xyz = p3d_Material.diffuse.rgb * clamp(1.0 - p3d_Material.diffuse.b * 1.4, 0, 1);
+    color.xyz = p3d_Material.diffuse.rgb;
+    color.w = 1.0;
+    texc = p3d_MultiTexCoord0;
+}

@@ -67,13 +67,22 @@ void main() {
         float velStrength = length(pixelVelocity);
 
         // Motion blur
-        vec3 motionResult = vec3(0);
-        
+        vec3 motionResult = textureLod(colorTex, texcoord, 0).xyz;
+        float motionDivide = 0.5;
+
         for (int i = 1; i < MOTION_BLUR_SAMPLES; i++) {
             vec2 offset = pixelVelocity * (float(i) / float(MOTION_BLUR_SAMPLES - 1) - 0.5);
-            motionResult += textureLod(colorTex, texcoord + offset, 0).rgb;
+            // motionResult += textureLod(colorTex, texcoord + offset, 0).rgb;
+            vec3 motionSample = textureLod(colorTex, texcoord + offset, 0).rgb;
+            vec2 motionVelocity = textureLod(velocityTex, texcoord + offset, 0).xy
+                / 255.0 * motionBlurFactor * 1.2;
+            float motionFactor =  saturate(1.0 - max(0.0, distance(motionVelocity, pixelVelocity) ) * 2000.0);
+            motionResult += motionSample * motionFactor;
+            motionDivide += motionFactor;
+
+
         }
-        motionResult /= MOTION_BLUR_SAMPLES-1;
+        motionResult /= motionDivide;
 
         result = mix(result, motionResult, saturate(velStrength*200.0) );
         // result = mix(result, motionResult, 1.0 );
@@ -103,7 +112,7 @@ void main() {
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
         vec3 colorCorrected = convertColorSpace(result);
         result = mix( colorCorrected , result, 0.5);
-        // result = (result - 0.1) * 1.1;
+        result = (result - 0.05) * 1.2;
     #endif
 
         

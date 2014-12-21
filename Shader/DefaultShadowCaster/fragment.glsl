@@ -19,16 +19,5 @@ layout(location = 0) out vec4 gi_color;
 void main() {
     vec4 tex_sample = texture(p3d_Texture0, texcoord);
     // Alpha test
-    // if (tex_sample.a < 0.5) discard;
-        
-    #if USE_GLOBAL_ILLUMINATION
-
-
-        gi_color.rgb = tex_sample.rgb * diffuseMultiplier;
-
-
-        // gi_color.rgb = diffuseMultiplier;
-        gi_color.rgb = diffuseMultiplier;
-        gi_color.a = 1.0;
-    #endif
+    if (tex_sample.a < 0.5) discard;
 }

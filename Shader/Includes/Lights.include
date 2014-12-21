@@ -86,7 +86,7 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
     int map_used = 0;
-    float shadowFactor = computePSSMShadowsForLight(light, material, n, l, 0.01, 0.01, 0.0001, map_used);
+    float shadowFactor = computePSSMShadowsForLight(light, material, n, l, 0.005, 0.005, 0.000001, map_used);
 
     float map_use_factor = map_used / 6.0;
 

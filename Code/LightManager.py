@@ -3,7 +3,7 @@ from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, RenderState
 from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
 from panda3d.core import OmniBoundingVolume, PTAInt, Vec4, PTAVecBase4f
 from panda3d.core import LVecBase2i, ShaderAttrib, UnalignedLVecBase4f
-from panda3d.core import ComputeNode, LVecBase4i, GraphicsOutput
+from panda3d.core import ComputeNode, LVecBase4i, GraphicsOutput, SamplerState
 
 
 from Light import Light
@@ -40,7 +40,7 @@ class LightManager(DebugObject):
     to render the shadow depth textures to the shadow atlas.
 
     Lights can be added with addLight. Notice you cannot change the shadow
-    resolution or even wether the light casts shadows after you called addLight.
+    resolution or wether the light casts shadows after you called addLight.
     This is because it might already have a position in the atlas, and so
     the atlas would have to delete it's map, which is not supported (yet).
     This shouldn't be an issue, as you usually always know before if a
@@ -135,23 +135,20 @@ class LightManager(DebugObject):
         self.shadowComputeCamera = Camera("ShadowComputeCamera")
         self.shadowComputeCameraNode = self.shadowScene.attachNewNode(
             self.shadowComputeCamera)
-        self.shadowComputeCamera.getLens().setFov(90, 90)
-        self.shadowComputeCamera.getLens().setNearFar(10.0, 100000.0)
+        self.shadowComputeCamera.getLens().setFov(30, 30)
+        self.shadowComputeCamera.getLens().setNearFar(1.0, 2.0)
 
         # Disable culling
         self.shadowComputeCamera.setBounds(OmniBoundingVolume())
-        self.shadowComputeCameraNode.setPos(0, 0, 150)
+        self.shadowComputeCamera.setCullBounds(OmniBoundingVolume())
+        self.shadowComputeCamera.setFinal(True)
+        self.shadowComputeCameraNode.setPos(0, 0, 1500)
         self.shadowComputeCameraNode.lookAt(0, 0, 0)
 
         self.shadowComputeTarget = RenderTarget("ShadowAtlas")
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.setDepthBits(32)
-
-        # Global illumination needs a secondary buffer
-        if self.settings.enableGlobalIllumination:
-            self.shadowComputeTarget.addColorTexture()
-            self.shadowComputeTarget.setColorBits(16)
         
         self.shadowComputeTarget.setSource(
             self.shadowComputeCameraNode, Globals.base.win)
@@ -169,12 +166,8 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.getInternalRegion().setDimensions(0,
              (0, 0, 0, 0))
 
-
         self.shadowComputeTarget.getInternalRegion().disableClears()
         self.shadowComputeTarget.getInternalBuffer().disableClears()
-
-
-
         self.shadowComputeTarget.getInternalBuffer().setSort(-300)
 
         # We can't clear the depth per viewport.
@@ -199,21 +192,28 @@ class LightManager(DebugObject):
             self.depthClearer.append(dr)
 
         # When using hardware pcf, set the correct filter types
-        dTex = self.getAtlasTex()
+        
         if self.settings.useHardwarePCF:
-            dTex.setMinfilter(Texture.FTShadow)
-            dTex.setMagfilter(Texture.FTShadow)
-        else:
-            dTex.setMinfilter(Texture.FTNearest)
-            dTex.setMagfilter(Texture.FTNearest)
+            self.pcfSampleState = SamplerState()
+            self.pcfSampleState.setMinfilter(SamplerState.FTShadow)
+            self.pcfSampleState.setMagfilter(SamplerState.FTShadow)
+            self.pcfSampleState.setWrapU(SamplerState.WMClamp)
+            self.pcfSampleState.setWrapV(SamplerState.WMClamp)
 
+
+        dTex = self.getAtlasTex()
         dTex.setWrapU(Texture.WMClamp)
         dTex.setWrapV(Texture.WMClamp)
+
+
 
     def getAllLights(self):
         """ Returns all attached lights """
         return self.lights
 
+    def getPCFSampleState(self):
+        """ Returns the pcf sample state used to sample the shadow map """
+        return self.pcfSampleState
 
     def processCallbacks(self):
         """ Processes all updates from the previous frame """
@@ -252,7 +252,8 @@ class LightManager(DebugObject):
         # Max shadow casting lights
         self.maxShadowLights = {
             "PointLight": 16,
-            "DirectionalLight": 1
+            "DirectionalLight": 1,
+            "GIHelperLight": 10
         }
 
         self.maxTotalLights = 8

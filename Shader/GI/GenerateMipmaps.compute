@@ -37,8 +37,19 @@ void main() {
     combined += fetch(texelCoordsUpper, 0,1,1, 0.125);
     combined += fetch(texelCoordsUpper, 1,1,1, 0.125);
 
+    // combined += fetch(texelCoordsUpper, -1,0,0, 0.125);
+    // combined += fetch(texelCoordsUpper, 0,-1,0, 0.125);
+    // combined += fetch(texelCoordsUpper, -1,-1,0, 0.125);
+
+    // combined += fetch(texelCoordsUpper, 0,0,-1, 0.125);
+    // combined += fetch(texelCoordsUpper, -1,0,-1, 0.125);
+    // combined += fetch(texelCoordsUpper, 0,-1,-1, 0.125);
+    // combined += fetch(texelCoordsUpper, -1,-1,-1, 0.125);
+
+
     // Faces
 
+    #if 0
     combined += fetch(texelCoordsUpper, 2,0,0, 0.0625);
     combined += fetch(texelCoordsUpper, 2,1,1, 0.0625);
 
@@ -60,8 +71,9 @@ void main() {
 
     combined += fetch(texelCoordsUpper, 0,0,-1, 0.0625);
     combined += fetch(texelCoordsUpper, 1,1,-1, 0.0625);
+    #endif
 
-    #if 1
+    #if 0
 
     // More accuracy but less performance
     combined += fetch(texelCoordsUpper, 2,0,1, 0.0625);
@@ -80,7 +92,8 @@ void main() {
     combined *= 0.8;
     #endif
 
-
+    combined *= 2.5;
+    combined.w *= 2.0;
 
     // Center neighbors
     // combined += texelFetch(source, texelCoordsUpper + ivec3(1,0,0), sourceMipmap) * 0.125;

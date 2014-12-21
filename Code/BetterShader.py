@@ -107,7 +107,7 @@ class BetterShader:
         if ID is None:
             ID = self._NextID
             self._ShaderIDs[source] = ID
-            print ID, source
+            # print ID, source
             self._NextID += 1
 
         newContent += "#line 1 %d\n" % (ID)

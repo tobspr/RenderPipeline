@@ -26,7 +26,7 @@ uniform mat4 trans_apiclip_to_apiview_of_mainCam;
 
 
 // total number of samples at each fragment
-#define SAO_NUM_SPIRAL_TURNS      7
+#define SAO_NUM_SPIRAL_TURNS      5
 #define SAO_VARIATION             1
 
 const float saoIntensity = 0.5;

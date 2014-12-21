@@ -1,8 +1,9 @@
 
 from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
-from panda3d.core import Vec2, LMatrix4f, LVecBase3i
-from panda3d.core import Mat4, OmniBoundingVolume
-from panda3d.core import PStatCollector
+from panda3d.core import Vec2, LMatrix4f, LVecBase3i, Camera, Mat4
+from panda3d.core import Mat4, OmniBoundingVolume, OrthographicLens
+from panda3d.core import PStatCollector, BoundingBox, Point3, CullFaceAttrib
+from panda3d.core import DepthTestAttrib, PTALVecBase3f
 from direct.stdpy.file import isfile, open, join
 
 from Globals import Globals
@@ -10,8 +11,13 @@ from DebugObject import DebugObject
 from BetterShader import BetterShader
 from LightType import LightType
 from GUI.BufferViewerGUI import BufferViewerGUI
-
+from RenderTarget import RenderTarget
+from GIHelperLight import GIHelperLight
+from LightType import LightType
 from SettingsManager import SettingsManager
+
+import time
+import math
 
 pstats_PopulateVoxelGrid = PStatCollector(
     "App:GlobalIllumnination:PopulateVoxelGrid")
@@ -20,153 +26,185 @@ pstats_GenerateVoxelOctree = PStatCollector(
 pstats_ClearGI = PStatCollector("App:GlobalIllumnination:Clear")
 pstats_GenerateMipmaps = PStatCollector("App:GlobalIllumnination::GenerateMipmaps")
 
-class VoxelSettingsManager(SettingsManager):
-
-    def __init__(self):
-        SettingsManager.__init__(self, "VoxelSettings")
-
-    def _addDefaultSettings(self):
-
-        self._addSetting("GridResolution", int, 256)
-        self._addSetting("GridStart", Vec3, Vec3(0))
-        self._addSetting("GridEnd", Vec3, Vec3(0))
-        self._addSetting("StackSizeX", int, 32)
-        self._addSetting("StackSizeY", int, 8)
-
-
 class GlobalIllumination(DebugObject):
 
     """ This class handles the global illumination processing. It is still
     experimental, and thus not commented. """
 
-    sceneRoot = "Demoscene.ignore/voxelized"
-    updateEnabled = True
+    updateEnabled = False
 
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
         self.pipeline = pipeline
 
-    @classmethod
-    def setSceneRoot(self, sceneSrc):
-        self.sceneRoot = sceneSrc
+        self.targetCamera = Globals.base.cam
+        self.targetSpace = Globals.base.render
+
+        self.voxelBaseResolution = 512
+        self.voxelGridSizeWS = Vec3(100, 100, 90)
+        self.voxelGridResolution = LVecBase3i(512, 512, 128)
+        self.targetLight = None
+        self.helperLight = None
+        self.ptaGridPos = PTALVecBase3f.emptyArray(1)
+        self.gridPos = Vec3(0)
 
     @classmethod
     def setUpdateEnabled(self, enabled):
         self.updateEnabled = enabled
 
-    def setup(self):
-        """ Setups everything for the GI to work """
-        self.debug("Setup ..")
+    def setTargetLight(self, light):
+        """ Sets the sun light which is the main source of GI """
 
-        if self.pipeline.settings.useHardwarePCF:
-            self.fatal(
-                "Global Illumination does not work in combination with PCF!")
+        if light._getLightType() != LightType.Directional:
+            self.error("setTargetLight expects a directional light!")
             return
 
-        self.settings = VoxelSettingsManager()
-        self.settings.loadFromFile(join(self.sceneRoot, "voxels.ini"))
+        self.targetLight = light
+        self._createHelperLight()
 
-        self.debug(
-            "Loaded voxels, grid resolution is", self.settings.GridResolution)
+    def _prepareVoxelScene(self):
+        """ Creates the internal buffer to voxelize the scene on the fly """
+        self.voxelizeScene = Globals.render
+        self.voxelizeCamera = Camera("VoxelizeScene")
+        self.voxelizeCameraNode = self.voxelizeScene.attachNewNode(self.voxelizeCamera)
+        self.voxelizeLens = OrthographicLens()
+        self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.y*2)
+        self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.x*2)
+        self.voxelizeCamera.setLens(self.voxelizeLens)
+        self.voxelizeCamera.setTagStateKey("VoxelizePassShader")
 
-        self.gridScale = self.settings.GridEnd - self.settings.GridStart
-        self.voxelSize = self.gridScale / float(self.settings.GridResolution)
-        self.entrySize = Vec2(
-            1.0 / float(self.settings.StackSizeX), 1.0 / float(self.settings.StackSizeY))
-        self.frameIndex = 0
+        self.targetSpace.setTag("VoxelizePassShader", "Default")
 
-        invVoxelSize = Vec3(
-            1.0 / self.voxelSize.x, 1.0 / self.voxelSize.y, 1.0 / self.voxelSize.z)
-        invVoxelSize.normalize()
-        self.normalizationFactor = invVoxelSize / \
-            float(self.settings.GridResolution)
+        self.voxelizeCameraNode.setPos(0,0,0)
+        self.voxelizeCameraNode.lookAt(0,0,0)
 
-        # Debugging of voxels, VERY slow
-        self.debugVoxels = False
+        self.voxelizeTarget = RenderTarget("DynamicVoxelization")
+        self.voxelizeTarget.setSize(self.voxelBaseResolution) 
+        # self.voxelizeTarget.addDepthTexture()
+        # self.voxelizeTarget.addColorTexture()
+        # self.voxelizeTarget.setColorBits(16)
+        self.voxelizeTarget.setSource(self.voxelizeCameraNode, Globals.base.win)
+        self.voxelizeTarget.prepareSceneRender()
 
-        if self.debugVoxels:
-            self.createVoxelDebugBox()
+        self.voxelizeTarget.getQuad().node().removeAllChildren()
+        self.voxelizeTarget.getInternalRegion().setSort(-400)
+        self.voxelizeTarget.getInternalBuffer().setSort(-399)
 
-        # Load packed voxels
-        packedVoxels = Globals.loader.loadTexture(
-            join(self.sceneRoot, "voxels.png"))
-        packedVoxels.setFormat(Texture.FRgba8)
-        packedVoxels.setComponentType(Texture.TUnsignedByte)
-        # packedVoxels.setKeepRamImage(False)
+        # for tex in [self.voxelizeTarget.getColorTexture()]:
+        #     tex.setWrapU(Texture.WMClamp)
+        #     tex.setWrapV(Texture.WMClamp)
+        #     tex.setMinfilter(Texture.FTNearest)
+        #     tex.setMagfilter(Texture.FTNearest)
 
-        # Create 3D Texture to store unpacked voxels
-        self.unpackedVoxels = Texture("Unpacked voxels")
-        self.unpackedVoxels.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
-                                           Texture.TFloat, Texture.FRgba8)
-        self.unpackedVoxels.setMinfilter(Texture.FTLinearMipmapLinear)
-        self.unpackedVoxels.setMagfilter(Texture.FTLinear)
+        voxelSize = Vec3(
+                self.voxelGridSizeWS.x * 2.0 / self.voxelGridResolution.x,
+                self.voxelGridSizeWS.y * 2.0 / self.voxelGridResolution.y,
+                self.voxelGridSizeWS.z * 2.0 / self.voxelGridResolution.z
+            )
 
-        self.unpackVoxels = NodePath("unpackVoxels")
-        self.unpackVoxels.setShader(
-            BetterShader.loadCompute("Shader/GI/UnpackVoxels.compute"))
+        self.targetSpace.setShaderInput("dv_gridSize", self.voxelGridSizeWS * 2)
+        self.targetSpace.setShaderInput("dv_voxelSize", voxelSize)
+        self.targetSpace.setShaderInput("dv_gridResolution", self.voxelGridResolution)
 
-        self.unpackVoxels.setShaderInput("packedVoxels", packedVoxels)
-        self.unpackVoxels.setShaderInput(
-            "stackSizeX", LVecBase3i(self.settings.StackSizeX))
-        self.unpackVoxels.setShaderInput(
-            "gridSize", LVecBase3i(self.settings.GridResolution))
-        self.unpackVoxels.setShaderInput("destination", self.unpackedVoxels)
-        self._executeShader(
-            self.unpackVoxels, self.settings.GridResolution / 8, self.settings.GridResolution / 8, self.settings.GridResolution / 8)
 
-        # Create 3D Texture to store direct radiance
-        self.directRadianceCache = Texture("Direct radiance cache")
-        self.directRadianceCache.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
+    def _createVoxelizeState(self):
+        """ Creates the tag state and loades the voxelizer shader """
+        self.voxelizeShader = BetterShader.load(
+            "Shader/GI/Voxelize.vertex",
+            "Shader/GI/Voxelize.fragment"
+            # "Shader/GI/Voxelize.geometry"
+            )
+
+        initialState = NodePath("VoxelizerState")
+        initialState.setShader(self.voxelizeShader, 50)
+        initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
+        initialState.setDepthWrite(False)
+        initialState.setDepthTest(False)
+        initialState.setAttrib(DepthTestAttrib.make(DepthTestAttrib.MNone))
+
+        initialState.setShaderInput("dv_dest_tex", self.voxelGenTex)
+
+        self.voxelizeCamera.setTagState(
+            "Default", initialState.getState())
+
+    def _createHelperLight(self):
+        """ Creates the helper light. We can't use the main directional light
+        because it uses PSSM, so we need an extra shadow map """
+        self.helperLight = GIHelperLight()
+        self.helperLight.setPos(Vec3(50,50,100))
+        self.helperLight.setShadowMapResolution(512)
+        self.helperLight.setFilmSize(math.sqrt( (self.voxelGridSizeWS.x**2) * 2) * 2 )
+        self.helperLight.setCastsShadows(True)
+        self.pipeline.addLight(self.helperLight)
+
+        self.targetSpace.setShaderInput("dv_uv_size", 
+            float(self.helperLight.shadowResolution) / self.pipeline.settings.shadowAtlasSize)
+        self.targetSpace.setShaderInput("dv_atlas", 
+            self.pipeline.getLightManager().getAtlasTex())
+
+        self._updateGridPos()
+
+    def setup(self):
+        """ Setups everything for the GI to work """
+
+        # if self.pipeline.settings.useHardwarePCF:
+        #     self.fatal(
+        #         "Global Illumination does not work in combination with PCF!")
+        #     return
+
+        self._prepareVoxelScene()
+
+        # Create 3D Texture to store the voxel generation grid
+        self.voxelGenTex = Texture("VoxelsTemp")
+        self.voxelGenTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, self.voxelGridResolution.z,
                                            Texture.TInt, Texture.FR32i)
+        self.voxelGenTex.setMinfilter(Texture.FTLinearMipmapLinear)
+        self.voxelGenTex.setMagfilter(Texture.FTLinear)
 
-        self.directRadiance = Texture("Direct radiance")
-        self.directRadiance.setup3dTexture(self.settings.GridResolution, self.settings.GridResolution, self.settings.GridResolution,
-                                           Texture.TFloat, Texture.FRgba16)
+        # Create 3D Texture which is a copy of the voxel generation grid but
+        # stable, as the generation grid is updated part by part
+        self.voxelStableTex = Texture("VoxelsStable")
+        self.voxelStableTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, self.voxelGridResolution.z,
+                                           Texture.TFloat, Texture.FRgba8)
+        self.voxelStableTex.setMinfilter(Texture.FTLinearMipmapLinear)
+        self.voxelStableTex.setMagfilter(Texture.FTLinear)        
 
-
-        for prepare in [self.directRadiance, self.unpackedVoxels]:
+        for prepare in [self.voxelGenTex, self.voxelStableTex]:
             prepare.setMagfilter(Texture.FTLinear)
             prepare.setMinfilter(Texture.FTLinearMipmapLinear)
             prepare.setWrapU(Texture.WMBorderColor)
             prepare.setWrapV(Texture.WMBorderColor)
             prepare.setWrapW(Texture.WMBorderColor)
-            prepare.setBorderColor(Vec4(0,0,0,1))
+            prepare.setBorderColor(Vec4(0,0,0,0))
 
-        self.unpackedVoxels.setBorderColor(Vec4(0))
-        # self.directRadiance.setBorderColor(Vec4(0))
+        self.voxelGenTex.setMinfilter(Texture.FTNearest)
+        self.voxelGenTex.setMagfilter(Texture.FTNearest)
+        self.voxelGenTex.setWrapU(Texture.WMClamp)
+        self.voxelGenTex.setWrapV(Texture.WMClamp)
+        self.voxelGenTex.setWrapW(Texture.WMClamp)
 
-        self.populateVPLNode = NodePath("PopulateVPLs")
+        # self.voxelStableTex.generateRamMipmapImages()   
+
+        self._createVoxelizeState()
+
         self.clearTextureNode = NodePath("ClearTexture")
         self.copyTextureNode = NodePath("CopyTexture")
         self.generateMipmapsNode = NodePath("GenerateMipmaps")
         self.convertGridNode = NodePath("ConvertGrid")
 
-
-        if True:
-            surroundingBox = Globals.loader.loadModel(
-                "Models/CubeFix/Model.egg")
-            surroundingBox.setPos(self.settings.GridStart)
-            surroundingBox.setScale(self.gridScale)
-            # surroundingBox.setTwoSided(True)
-            surroundingBox.flattenStrong()
-            surroundingBox.reparentTo(Globals.render)
-
-        self.bindTo(self.populateVPLNode, "giData")
         self.reloadShader()
-
-        self._generateMipmaps(self.unpackedVoxels)
 
     def _generateMipmaps(self, tex):
         """ Generates all mipmaps for a 3D texture, using a gaussian function """
 
         pstats_GenerateMipmaps.start()
         currentMipmap = 0
-        computeSize = self.settings.GridResolution
+        computeSize = LVecBase3i(self.voxelGridResolution)
         self.generateMipmapsNode.setShaderInput("source", tex)
         self.generateMipmapsNode.setShaderInput(
-            "pixelSize", 1.0 / self.settings.GridResolution)
+            "pixelSize", 1.0 / computeSize.x)
 
-        while computeSize >= 2:
+        while computeSize.z > 1:
             computeSize /= 2
             self.generateMipmapsNode.setShaderInput(
                 "sourceMipmap", LVecBase3i(currentMipmap))
@@ -175,52 +213,20 @@ class GlobalIllumination(DebugObject):
             self.generateMipmapsNode.setShaderInput(
                 "dest", tex, False, True, -1, currentMipmap + 1)
             self._executeShader(self.generateMipmapsNode,
-                                (computeSize + 7) / 8,
-                                (computeSize + 7) / 8,
-                                (computeSize + 7) / 8)
+                                (computeSize.x + 7) / 8,
+                                (computeSize.y + 7) / 8,
+                                (computeSize.z + 7) / 8)
             currentMipmap += 1
 
         pstats_GenerateMipmaps.stop()
-
-    def createVoxelDebugBox(self):
-        box = Globals.loader.loadModel("box")
-
-        gridVisualizationSize = 64
-        box.setScale(self.voxelSize)
-        box.setPos(self.settings.GridStart)
-        box.reparentTo(Globals.base.render)
-        box.setInstanceCount(
-            gridVisualizationSize * gridVisualizationSize * gridVisualizationSize)
-        box.node().setFinal(True)
-        box.node().setBounds(OmniBoundingVolume())
-        box.setShaderInput("giGrid", self.geometryTexture)
-        box.setShaderInput("realGridSize", self.cascadeSize)
-        box.setShaderInput("giColorGrid", self.vplTextureResult)
-        box.setShaderInput(
-            "scaleFactor", self.cascadeSize / float(gridVisualizationSize))
-        box.setShaderInput("effectiveGrid", int(gridVisualizationSize))
-        self.box = box
-        self._setBoxShader()
-
-    def _setBoxShader(self):
-        self.box.setShader(BetterShader.load(
-            "Shader/GI/DebugVoxels.vertex", "Shader/GI/DebugVoxels.fragment"))
 
     def _createCleanShader(self):
         shader = BetterShader.loadCompute("Shader/GI/ClearTexture.compute")
         self.clearTextureNode.setShader(shader)
 
-    def _createCopyShader(self):
-        shader = BetterShader.loadCompute("Shader/GI/CopyResult.compute")
-        self.copyTextureNode.setShader(shader)
-
     def _createConvertShader(self):
         shader = BetterShader.loadCompute("Shader/GI/ConvertGrid.compute")
         self.convertGridNode.setShader(shader)
-
-    def _createPopulateShader(self):
-        shader = BetterShader.loadCompute("Shader/GI/PopulateVPL.compute")
-        self.populateVPLNode.setShader(shader)
 
     def _createGenerateMipmapsShader(self):
         shader = BetterShader.loadCompute("Shader/GI/GenerateMipmaps.compute")
@@ -228,12 +234,9 @@ class GlobalIllumination(DebugObject):
 
     def reloadShader(self):
         self._createCleanShader()
-        self._createPopulateShader()
         self._createGenerateMipmapsShader()
         self._createConvertShader()
-
-        if self.debugVoxels:
-            self._setBoxShader()
+        self._createVoxelizeState()
         self.frameIndex = 0
 
     def _clear3DTexture(self, tex, clearVal=None):
@@ -251,125 +254,121 @@ class GlobalIllumination(DebugObject):
             (tex.getYSize() + 7) / 8,
             (tex.getZSize() + 7) / 8)
 
-    def _copyTexture(self, src, dest):
-        """ Copies texture <src> into texture <dest>. The same size is assumed """
-        self.copyTextureNode.setShaderInput("src", src)
-        self.copyTextureNode.setShaderInput("dest", dest)
-        self._executeShader(
-            self.copyTextureNode,
-            (src.getXSize() + 15) / 16,
-            (src.getYSize() + 15) / 16)
+    def _updateGridPos(self):
+
+        snap = 32.0
+        stepSizeX = float(self.voxelGridSizeWS.x * 2.0) / float(self.voxelGridResolution.x) * snap
+        stepSizeY = float(self.voxelGridSizeWS.y * 2.0) / float(self.voxelGridResolution.y) * snap
+        stepSizeZ = float(self.voxelGridSizeWS.z * 2.0) / float(self.voxelGridResolution.z) * snap
+
+        self.gridPos = self.targetCamera.getPos(self.targetSpace)
+        self.gridPos.x -= self.gridPos.x % stepSizeX
+        self.gridPos.y -= self.gridPos.y % stepSizeY
+        self.gridPos.z -= self.gridPos.z % stepSizeZ
 
     def process(self):
-
-        self.frameIndex += 1
-
-        # Process GI splitted over frames
-        if self.frameIndex > 2:
-            self.frameIndex = 1
+        if self.targetLight is None:
+            self.fatal("The GI cannot work without a target light! Set one "
+                "with setTargetLight() first!")
 
         if not self.updateEnabled:
+            self.voxelizeTarget.setActive(False)
             return
 
-        # TODO: Not all shader inputs need to be set everytime. Use PTAs instead, over even better,
-        # cache the shader inputs in a ShaderAttrib
+        direction = self.targetLight.getDirection()
 
-        if self.frameIndex == 1:
+        # time.sleep(0.4)
 
-            # First pass: Read the reflective shadow maps, and populate the
-            # 3D Grid with intial values
-
-            # Clear radiance texture
-            pstats_ClearGI.start()
-            self._clear3DTexture(self.directRadianceCache, Vec4(0))
-            pstats_ClearGI.stop()
-
-            pstats_PopulateVoxelGrid.start()
+        if self.frameIndex == 0:
+            # Find out cam pos
             
-            # Get texture handles
-            atlas = self.pipeline.getLightManager().shadowComputeTarget
-            atlasDepth = atlas.getDepthTexture()
-            atlasColor = atlas.getColorTexture()
-            atlasSize = atlasDepth.getXSize()
+            self.targetSpace.setShaderInput("dv_uv_start", 
+                self.helperLight.shadowSources[0].getAtlasPos())
 
-            # Fetch the sun light and it's shadow sources from the light manager
+            self.voxelizeTarget.setActive(True)
+            # self.voxelizeTarget.setActive(False)
 
-            allLights = self.pipeline.getLightManager().getAllLights()
-            casterLight = None
-            casterSource = None
+            self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.y*2, self.voxelGridSizeWS.z*2)
+            self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.x*2)
 
-            # Collect the shadow caster sources from the sun light
-            # (A directional light may have multiple sources, e.g. for PSSM)
-            # TODO: Currently we only use the first shadow source. Make it use all sources
-            for light in allLights:
-                if light.hasShadows() and \
-                   light._getLightType() == LightType.Directional:
-                    casterLight = light
-                    casterSource = casterLight.getShadowSources()[0]
+            self.targetSpace.setShaderInput("dv_mvp", Mat4(self.helperLight.shadowSources[0].mvp))
+            self.targetSpace.setShaderInput("dv_gridStart", self.gridPos - self.voxelGridSizeWS)
+            self.targetSpace.setShaderInput("dv_gridEnd", self.gridPos + self.voxelGridSizeWS)
+            self.targetSpace.setShaderInput("dv_lightdir", direction)
 
-            resolution = casterSource.getResolution()
-            relativePos = casterSource.getAtlasPos() * atlasSize
-            direction = light.direction
-            color = light.color
-            sourceData = LMatrix4f(
-                relativePos.x, relativePos.y, resolution, 0.0,
-                casterSource.nearPlane, casterSource.farPlane, 0, 0,
-                direction.x, direction.y, direction.z, 0,
-                color.x, color.y, color.z, 0)
-            mvpData = LMatrix4f(casterSource.mvp)
+            # Clear textures
+            self._clear3DTexture(self.voxelGenTex, Vec4(0,0,0,0))
 
-            # Now populate the Voxel Grid, based on the RSM (Reflective Shadow Map)
-            self.populateVPLNode.setShaderInput("atlasDepth", atlasDepth)
-            self.populateVPLNode.setShaderInput("atlasColor", atlasColor)
-            self.populateVPLNode.setShaderInput("lightMVP", mvpData)
-            self.populateVPLNode.setShaderInput("lightData", sourceData)
-            self.populateVPLNode.setShaderInput(
-                "lightLens", casterSource.cameraNode)
-            self.populateVPLNode.setShaderInput(
-                "mainRender", Globals.base.render)
-            self.populateVPLNode.setShaderInput(
-                "target", self.directRadianceCache, True, True, -1, 0)
+            # Voxelize from x axis
+            self.voxelizeCameraNode.setPos(self.gridPos - Vec3(self.voxelGridSizeWS.x, 0, 0))
+            self.voxelizeCameraNode.lookAt(self.gridPos)
+            self.targetSpace.setShaderInput("dv_direction", LVecBase3i(0))
 
-            # Execute the shader
-            self._executeShader(
-                self.populateVPLNode, resolution / 16, resolution / 16)
 
-            pstats_PopulateVoxelGrid.stop()
-            
+        elif self.frameIndex == 1:
+            # Voxelize from y axis
+
+            # self.voxelizeTarget.setActive(False)
+
+            self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.z*2)
+            self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.y*2)
+
+            self.voxelizeCameraNode.setPos(self.gridPos - Vec3(0, self.voxelGridSizeWS.y, 0))
+            self.voxelizeCameraNode.lookAt(self.gridPos)
+            self.targetSpace.setShaderInput("dv_direction", LVecBase3i(1))
+
         elif self.frameIndex == 2:
 
-            # In this frame we generate the mipmaps for the voxel grid
+            # self.voxelizeTarget.setActive(False)
+            # Voxelize from z axis
+            self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.y*2)
+            self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.z*2)
+
+            self.voxelizeCameraNode.setPos(self.gridPos + Vec3(0, 0, self.voxelGridSizeWS.z))
+            self.voxelizeCameraNode.lookAt(self.gridPos)
+            self.targetSpace.setShaderInput("dv_direction", LVecBase3i(2))
+
+        elif self.frameIndex == 3:
+
+
+            self.voxelizeTarget.setActive(False)
 
             # Copy the cache to the actual texture
-            self.convertGridNode.setShaderInput("src", self.directRadianceCache)
-            self.convertGridNode.setShaderInput("dest", self.directRadiance)
+            self.convertGridNode.setShaderInput("src", self.voxelGenTex)
+            self.convertGridNode.setShaderInput("dest", self.voxelStableTex)
             self._executeShader(
-                self.convertGridNode, self.settings.GridResolution / 8, self.settings.GridResolution / 8, self.settings.GridResolution / 8)
+                self.convertGridNode, (self.voxelGridResolution.x+7) / 8, (self.voxelGridResolution.y+7) / 8, (self.voxelGridResolution.z+7) / 8)
 
-            # Generate the mipmaps for the voxel grid
-            pstats_GenerateVoxelOctree.start()
-            self._generateMipmaps(self.directRadiance)
-            pstats_GenerateVoxelOctree.stop()
+            # Generate the mipmaps
+            self._generateMipmaps(self.voxelStableTex)
+
+            self.helperLight.setPos(self.gridPos)
+            self.helperLight.setDirection(direction)
+
+            # We are done now, update the inputs
+            self.ptaGridPos[0] = Vec3(self.gridPos)
+            self._updateGridPos()
+            
+
+        self.frameIndex += 1
+        self.frameIndex = self.frameIndex % 5
 
 
     def bindTo(self, node, prefix):
         """ Binds all required shader inputs to a target to compute / display
         the global illumination """
-        node.setShaderInput(prefix + ".gridStart", self.settings.GridStart)
-        node.setShaderInput(prefix + ".gridEnd", self.settings.GridEnd)
-        node.setShaderInput(
-            prefix + ".stackSizeX", LVecBase3i(self.settings.StackSizeX))
-        node.setShaderInput(
-            prefix + ".stackSizeY", LVecBase3i(self.settings.StackSizeY))
-        node.setShaderInput(
-            prefix + ".gridSize",  LVecBase3i(self.settings.GridResolution))
-        node.setShaderInput(prefix + ".voxelSize", self.voxelSize)
-        node.setShaderInput(prefix + ".gridScale", self.gridScale)
-        node.setShaderInput(prefix + ".entrySize", self.entrySize)
-        node.setShaderInput(
-            prefix + ".normalizationFactor", self.normalizationFactor)
-        node.setShaderInput(prefix + ".voxels", self.directRadiance)
-        node.setShaderInput(prefix + ".geometry", self.unpackedVoxels)
+
+        normFactor = Vec3(
+                1.0,
+                float(self.voxelGridResolution.y) / float(self.voxelGridResolution.x) * self.voxelGridSizeWS.y / self.voxelGridSizeWS.x,
+                float(self.voxelGridResolution.z) / float(self.voxelGridResolution.x) * self.voxelGridSizeWS.z / self.voxelGridSizeWS.x
+            )
+        node.setShaderInput(prefix + ".gridPos", self.ptaGridPos)
+        node.setShaderInput(prefix + ".gridHalfSize", self.voxelGridSizeWS)
+        node.setShaderInput(prefix + ".gridResolution", self.voxelGridResolution)
+        node.setShaderInput(prefix + ".voxels", self.voxelStableTex)
+        node.setShaderInput(prefix + ".voxelNormFactor", normFactor)
+        node.setShaderInput(prefix + ".geometry", self.voxelStableTex)
 
     def _executeShader(self, node, threadsX, threadsY, threadsZ=1):
         """ Executes a compute shader, fetching the shader attribute from a NodePath """

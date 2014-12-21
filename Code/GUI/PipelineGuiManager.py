@@ -82,6 +82,7 @@ class PipelineGuiManager(DebugObject):
             register_feature("Blur Occlusion", "ft_BLUR_OCCLUSION")
 
         register_mode("Lighting", "rm_Lighting")
+        register_mode("Raw-Lighting", "rm_Diffuse_Lighting")
 
         if s.enableScattering:
             register_mode("Scattering", "rm_Scattering")
@@ -153,9 +154,81 @@ class PipelineGuiManager(DebugObject):
                 currentY += 25
 
         self.demoSlider = BetterSlider(
-            x=20, y=currentY, size=230, parent=self.debuggerContent)
+            x=20, y=currentY+20, size=230, parent=self.debuggerContent)
+
+        self.demoText = BetterOnscreenText(x=20, y=currentY,
+                                       text="Sun Position", align="left", parent=self.debuggerContent,
+                                       size=15, color=Vec3(1.0))
+
+        currentY += 70
+
+
+        if s.enableGlobalIllumination:
+
+            self.slider_opts = {
+                "ao_cone_height": {
+                    "name": "AO Cone Height",
+                    "min": 0.0001,
+                    "max": 4.0,
+                    "default": 0.5,
+                },
+                "ao_step_ratio": {
+                    "name": "AO Step Ratio",
+                    "min": 1.0,
+                    "max": 2.5,
+                    "default": 1.1,
+                },
+                "ao_cone_ratio": {
+                    "name": "AO Cone Ratio",
+                    "min": 0.00001,
+                    "max": 2.5,
+                    "default": 1.1,
+                },
+                "ao_start_distance": {
+                    "name": "AO Start Offset",
+                    "min": -2.0,
+                    "max": 2.0,
+                    "default": 0.5,
+                },
+                "ao_initial_radius": {
+                    "name": "AO Initial Cone Radius",
+                    "min": 0.0001,
+                    "max": 5.0,
+                    "default": 1.2,
+                },
+
+            }
+
+           
+
+            for name, opts in self.slider_opts.items():
+                opts["slider"] = BetterSlider(
+                    x=20, y=currentY+20, size=230, minValue=opts["min"],maxValue=opts["max"], value=opts["default"], parent=self.debuggerContent, callback=self._optsChanged)
+
+                opts["label"] = BetterOnscreenText(x=20, y=currentY,
+                                               text=opts["name"], align="left", parent=self.debuggerContent,
+                                               size=15, color=Vec3(1.0))
+
+                opts["value_label"] = BetterOnscreenText(x=250, y=currentY,
+                                               text=str(opts["default"]), align="right", parent=self.debuggerContent,
+                                               size=15, color=Vec3(0.6),mayChange=True)
+                currentY += 50
 
         self.initialized = True
+            
+    def onPipelineLoaded(self):
+
+        if self.pipeline.settings.enableGlobalIllumination:
+            self._optsChanged()
+
+    def _optsChanged(self):
+
+        container = self.pipeline.giPrecomputeBuffer
+
+        for name, opt in self.slider_opts.items():
+            container.setShaderInput("opt_" + name, opt["slider"].getValue())
+            opt["value_label"].setText("{:0.4f}".format(opt["slider"].getValue()))
+        
 
     def _updateSetting(self, status, name, updateWhenFalse=False):
         # Render Modes
@@ -212,8 +285,8 @@ class PipelineGuiManager(DebugObject):
             )
             self.currentGUIEffect.start()
 
-            self.watermark.hide()
-            self.showDebugger.hide()
+            # self.watermark.hide()
+            # self.showDebugger.hide()
 
         else:
             # hide debugger

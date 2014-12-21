@@ -87,6 +87,10 @@ class Light(ShaderStructElement):
         self.queueUpdate()
         self.queueShadowUpdate()
 
+    def getDirection(self):
+        """ Returns the direction of the light """
+        return self.direction
+
     def setRadius(self, radius):
         """ Sets the radius of the light. Only affects PointLights """
         self.radius = max(0.01, radius)

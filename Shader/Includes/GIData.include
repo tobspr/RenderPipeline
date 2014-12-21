@@ -2,15 +2,10 @@
 
 
 struct GIData {
-    vec3 gridStart;
-    vec3 gridEnd;
-    int stackSizeX;
-    int stackSizeY;
-    int gridSize;
-    vec3 voxelSize;
-    vec3 gridScale;
-    vec2 entrySize;
-    vec3 normalizationFactor;
+    vec3 gridPos;
+    vec3 gridHalfSize;
+    vec3 voxelNormFactor;
+    ivec3 gridResolution;
     sampler3D voxels;
     sampler3D geometry;
 };

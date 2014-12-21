@@ -1,0 +1,52 @@
+#version 400
+
+layout(triangles) in;
+layout(triangle_strip, max_vertices=3) out;
+
+in vec4 color[3];
+in vec3 normal[3];
+in vec4 positionWorld[3];
+in vec2 texc[3];
+uniform int dv_direction;
+out vec4 fragmentColor;
+out vec4 geomPositionWorld;
+out vec3 geomNormal;
+out vec2 texcoord;
+
+void main() {
+
+    
+    vec3 combinedNormal = normalize(normal[0] + normal[1] + normal[2]);
+    vec3 absNormal = abs(combinedNormal);
+    bool renderVertices = false;
+
+    if (dv_direction == 0) {
+        if (absNormal.x >= max(absNormal.y, absNormal.z)) {
+            // X is longest component
+            renderVertices = true;
+        }
+    } else if (dv_direction == 1) {
+        if (absNormal.y >= max(absNormal.x, absNormal.z)) {
+            // Y is longest component
+            renderVertices = true;
+        }
+    } else if (dv_direction == 2) {
+        if (absNormal.z >= max(absNormal.x, absNormal.y)) {
+            // Z is longest component
+            renderVertices = true;
+        }
+    }
+
+    if (renderVertices) {
+        for(int i=0; i<gl_in.length(); i++)
+        {
+            gl_Position = gl_in[i].gl_Position;
+            fragmentColor = color[i];
+            geomPositionWorld = positionWorld[i];
+            geomNormal = normal[i];
+            texcoord = texc[i];
+            EmitVertex();
+        }
+        EndPrimitive();    
+    }
+}

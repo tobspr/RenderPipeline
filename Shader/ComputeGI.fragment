@@ -1,0 +1,82 @@
+#version 400
+#pragma file "ComputeGI.fragment"
+
+#include "Includes/Configuration.include"
+#include "Includes/Material.include"
+#include "Includes/PositionReconstruction.include"
+#include "Includes/ColorCorrection.include"
+#include "Includes/TemporalReprojection.include"
+#include "Includes/GlobalIllumination.include"
+
+// Required, otherwise quite slow
+#pragma optionNV (unroll all)
+
+uniform GIData giData;
+
+
+uniform sampler2D data0;
+uniform sampler2D data1;
+uniform sampler2D data2;
+uniform sampler2D data3;
+uniform vec3 cameraPosition;
+
+in vec2 texcoord;
+layout(location=0) out vec4 giColorResult;
+layout(location=1) out vec4 giSpecularResult;
+
+
+void main() {
+    // Fetch screen size, so we don't have to pass it as a shader input
+    // ivec2 screenSize = textureSize(colorTex, 0);
+
+    // Screen coordinate (as int vec)
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy) * 2;
+
+    vec3 specularResult = vec3(0);
+
+    #ifdef DEBUG_DISABLE_GI
+        giColorResult = vec4(1);
+        giSpecularResult = vec4(1);
+
+    #else
+
+
+    // Extract material data
+    vec4 target0data = texelFetch(data0, screenCoord, 0);
+    vec4 target1data = texelFetch(data1, screenCoord, 0);
+    vec4 target2data = texelFetch(data2, screenCoord, 0);
+    vec4 target3data = texelFetch(data3, screenCoord, 0);
+    Material material = unpackMaterial(target0data, target1data, target2data, target3data);
+
+    vec3 viewVector = normalize(material.position - cameraPosition);
+    vec3 scatteringReflectedColor = vec3(1);
+
+    // // Compute depth normal
+    // vec3 pixelW = vec3(bufferSize.xy, 0);
+    // vec3 world = getPositionWorld(texcoord);
+    // vec3 worldX1 = getPositionWorld(texcoord + pixelW.xz);
+    // vec3 worldY1 = getPositionWorld(texcoord + pixelW.zy);
+    // vec3 wsNormal = (cross(world - worldX1, world - worldY1));
+    // wsNormal = normalize(wsNormal);
+
+
+
+    //     #ifndef DEBUG_DISABLE_GI
+    //         vec3 lightDir = vec3(-0.534, -0.46, 0.707);
+
+    //         if (countDirectionalLightShadow > 0) {
+    //             int currentLightId = texelFetch(lightsPerTile, precomputeCoord + ivec2(0,6), 0).r;
+    //             Light currentLight = lights[currentLightId];
+    //             lightDir = currentLight.direction;
+    //         }
+
+    //         giResult = computeGlobalIllumination(material, -viewVector, giData, specularColor, lightDir, wsNormal, scatteringReflectedColor, cameraPosition);
+
+    //     #endif
+    vec4 giResult = computeGlobalIllumination(material, viewVector, giData, specularResult, material.normal, scatteringReflectedColor, cameraPosition);
+
+    giColorResult = vec4(giResult.xyz, 1.0);
+    giSpecularResult = vec4(specularResult.xyz, 1.0);
+    #endif
+
+}

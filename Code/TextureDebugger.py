@@ -22,7 +22,7 @@ class TextureDebugger(DebugObject):
         effectiveHeight -= 1
         effectiveWidth = (tex.getXSize() + 1) * 3
 
-        effectiveHeight = tex.getYSize()
+        # effectiveHeight = tex.getYSize()
         effectiveWidth = tex.getXSize()
 
         self.debug("Texture Size =", tex.getXSize(), "x",

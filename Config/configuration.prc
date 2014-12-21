@@ -54,6 +54,7 @@ pstats-target-frame-rate 30.0
 # threading-model App/Cull/Draw
 
 
+
 # Try for better performance
 # prefer-single-buffer #t
 
@@ -165,3 +166,5 @@ show-buffers #f
 # GPU Timer queries
 pstats-gpu-timing #t
 auto-flip #t
+
+gl-debug-object-labels #f

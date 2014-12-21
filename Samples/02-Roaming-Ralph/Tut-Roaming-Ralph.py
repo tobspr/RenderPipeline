@@ -79,13 +79,15 @@ class World(ShowBase):
         dPos = Vec3(40, 40, 40)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(4096)
+        dirLight.setShadowMapResolution(2048)
         dirLight.setPssmTarget(self.cam, self.camLens)
         # dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
         dirLight.setCastsShadows(True)
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(6))
         self.renderPipeline.addLight(dirLight)
+
+        self.renderPipeline.globalIllum.setTargetLight(dirLight)
 
         self.keyMap = {
             "left": 0, "right": 0, "forward": 0, "cam-left": 0, "cam-right": 0}
@@ -117,7 +119,6 @@ class World(ShowBase):
         self.environ.reparentTo(render)
         self.environ.setPos(0, 0, 0)
 
-        self.environ.ls()
         self.environ.find("**/wall").removeNode()
 
         # Create the main character, Ralph
