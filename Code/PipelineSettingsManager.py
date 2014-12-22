@@ -27,6 +27,9 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("useSimpleLighting", bool, False)
         self._addSetting("anyLightBoundCheck", bool, True)
         self._addSetting("accurateLightBoundCheck", bool, True)
+        self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
+        self._addSetting("ambientCubemapSamples", int, 16)
+
 
         # [Occlusion]
         self._addSetting("occlusionTechnique", str, "None")
@@ -37,6 +40,7 @@ class PipelineSettingsManager(SettingsManager):
         # [Shadows]
         self._addSetting("renderShadows", bool, True)
         self._addSetting("shadowAtlasSize", int, 8192)
+        self._addSetting("shadowCascadeBorderPercentage", float, 0.1)       
         self._addSetting("maxShadowUpdatesPerFrame", int, 2)
         self._addSetting("numPCFSamples", int, 64)
         self._addSetting("numPCSSSearchSamples", int, 32)

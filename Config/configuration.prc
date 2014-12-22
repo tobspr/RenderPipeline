@@ -122,6 +122,7 @@ gl-force-no-flush #t
 gl-force-no-scissor #t
 gl-debug #t
 
+# notify-level-glgsg debug
 # auto-flip #f
 
 # gl-enable-memory-barriers #f
@@ -145,7 +146,7 @@ support-threads #t
 # driver-generate-mipmaps #f
 # gl-ignore-mipmaps #t
 
-gl-immutable-texture-storage #f
+gl-immutable-texture-storage #t
 
 # notify-level-gobj debug
 

@@ -50,6 +50,10 @@ class SettingsManager(DebugObject):
 
                     self.value = Vec3(*values)
 
+                # Strings may use '"'
+                elif self.type == str:
+                    self.value = self.type(val).strip('"')
+
                 else:
                     self.value = self.type(val)
 

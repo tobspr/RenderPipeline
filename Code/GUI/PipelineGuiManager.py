@@ -114,6 +114,8 @@ class PipelineGuiManager(DebugObject):
             register_feature("PCSS", "ft_PCSS")
             register_feature("PCF", "ft_PCF")
 
+        register_feature("Env. Filtering", "ft_FILTER_ENVIRONMENT")
+
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",
                                                    x=20, y=currentY,
                                                    parent=self.debuggerContent,

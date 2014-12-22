@@ -620,13 +620,17 @@ class RenderingPipeline(DebugObject):
 
     def _loadFallbackCubemap(self):
         """ Loads the cubemap for image based lighting """
+        print self.settings.defaultReflectionCubemap
         cubemap = self.showbase.loader.loadCubeMap(
-            "Data/Cubemaps/Default-4/#.jpg")
+            self.settings.defaultReflectionCubemap)
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb)
+        print  math.log(cubemap.getXSize(), 2)
         self.lightingComputeContainer.setShaderInput(
             "fallbackCubemap", cubemap)
+        self.lightingComputeContainer.setShaderInput(
+            "fallbackCubemapMipmaps", math.log(cubemap.getXSize(), 2))
 
     def _loadLookupCubemap(self):
         self.debug("Loading lookup cubemap")
@@ -1004,6 +1008,15 @@ class RenderingPipeline(DebugObject):
         earthScattering.precompute()
         self.setScattering(earthScattering)
 
+
+    def setGILightSource(self, light):
+        """ Sets the light source for the global illumination. The GI uses this
+        light to shade the voxels, so this light is the only light which "casts"
+        global illumination. When GI is disabled, this has no effect """
+
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum.setTargetLight(light)
+
     def _generateShaderConfiguration(self):
         """ Genrates the global shader include which defines
         most values used in the shaders. """
@@ -1043,6 +1056,8 @@ class RenderingPipeline(DebugObject):
         if self.settings.renderShadows:
             defines.append(("USE_SHADOWS", 1))
 
+        defines.append(("AMBIENT_CUBEMAP_SAMPLES", self.settings.ambientCubemapSamples))
+
         defines.append(
             ("SHADOW_MAP_ATLAS_SIZE", self.settings.shadowAtlasSize))
         defines.append(
@@ -1054,6 +1069,8 @@ class RenderingPipeline(DebugObject):
         defines.append(("SHADOW_NUM_PCF_SAMPLES", self.settings.numPCFSamples))
         defines.append(("SHADOW_NUM_PCSS_SEARCH_SAMPLES", self.settings.numPCSSSearchSamples))
         defines.append(("SHADOW_NUM_PCSS_FILTER_SAMPLES", self.settings.numPCSSFilterSamples))
+
+        defines.append(("SHADOW_PSSM_BORDER_PERCENTAGE", self.settings.shadowCascadeBorderPercentage))
 
         if self.settings.useHardwarePCF:
             defines.append(("USE_HARDWARE_PCF", 1))

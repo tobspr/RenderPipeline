@@ -145,7 +145,7 @@ class DirectionalLight(Light, DebugObject):
             midPos = mixVector(nearPoint, farPoint, (splitParamStart + splitParamEnd) / 2.0 )
             topPlanePos = mixVector(trNearPoint, trFarPoint, splitParamEnd )
 
-            filmSize = (topPlanePos - midPos).length() 
+            filmSize = (topPlanePos - midPos).length() * 1.41
             midPos += camPos
 
             destPos = midPos + self.direction * 300.0

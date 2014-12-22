@@ -15,28 +15,17 @@ uniform int numUpdates;
 uniform ShadowSource updateSources[SHADOW_MAX_UPDATES_PER_FRAME];
 
 in vec2 vtxTexcoord[3];
-in vec3 vtxDiffuseMultiplier[3];
 out vec2 texcoord;
-out vec3 diffuseMultiplier;
-out vec3 worldPos;
 
 void main() {
   for (int pass = 0; pass < numUpdates; pass ++) {
     ShadowSource currentSource = updateSources[pass];
-    mat4 mvp = currentSource.mvp;
     gl_ViewportIndex = pass + 1;
-    // gl_ViewportIndex = 0;
-    for(int i=0; i<3; i++)
+    for(int i=0; i<gl_in.length; i++)
     {
-      gl_Position = mvp * gl_in[i].gl_Position;
+      gl_Position = currentSource.mvp * gl_in[i].gl_Position;
       texcoord = vtxTexcoord[i];
-      diffuseMultiplier = vtxDiffuseMultiplier[i];
-      worldPos = gl_in[i].gl_Position.xyz;
-
-      // gl_Position = transformParabol(gl_Position, currentSource.nearPlane, currentSource.farPlane);
-      // if (gl_Position.w >= 0.0) { 
-        EmitVertex();
-      // }
+      EmitVertex();
     }
     EndPrimitive();    
   }

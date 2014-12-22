@@ -61,6 +61,8 @@ int iterations, float stepRatio, float coneRatio, float startDistance, float ini
 vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec3 specularColor, vec3 flatNormal, vec3 scatteringReflected, vec3 cameraPosition) {
 
 
+    float boundsColor = 0.2;
+
     // vec3 correctNormal = normalize(cross(dFdx(m.position), dFdy(m.position)));
     vec3 correctNormal = m.normal;
     // return vec3(correctNormal);
@@ -82,7 +84,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // return vec4(1);
 
     // If not in grid, ignore this pixel
-    if (!isInGrid) return vec4(1);
+    if (!isInGrid) return vec4(boundsColor);
 
 
 
@@ -232,7 +234,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // return vec4(giResult);
     // return vec4(mix(aoMultiplier, 1.0, mixFactor));  
     // return vec4(giResult);  
-    return mix(max(vec4(0.0), giResult) * aoMultiplier + 0.0, vec4(1), mixFactor);
+    return mix(max(vec4(0.0), giResult) * aoMultiplier + 0.0, vec4(boundsColor), mixFactor);
 
 
 }

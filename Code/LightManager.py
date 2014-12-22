@@ -120,7 +120,8 @@ class LightManager(DebugObject):
 
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(self.shadowCasterShader, 30)
-        initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
+        # initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
+        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
         self.shadowComputeCamera.setTagState(
             "Default", initialState.getState())
 

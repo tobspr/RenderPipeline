@@ -140,7 +140,7 @@ void main() {
 
     // Lighting result gets stored in this variables
     vec3 result = vec3(0);
-    vec4 giDiffuseColor = vec4(0.2);
+    vec4 giDiffuseColor = vec4(0.1);
     vec3 giSpecularColor = vec3(1);
     vec3 ambient = vec3(0);
 
@@ -247,7 +247,7 @@ void main() {
 
         // Push very far away
         posFromDepth *= 1e20;
-        inscatterFactor = 0.4;
+        inscatterFactor = 1.5;
     }
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
@@ -367,8 +367,9 @@ void main() {
     }
 
     // SRGB
-    result = 1.0f - exp(-2.0 * result);
-    result.xyz = pow(result.xyz, vec3(1.0 / 2.2) );
+    result.xyz = pow(result.xyz, vec3(1.0 / 2.2) ); 
+    result = 1.0f - exp(-1.0 * result);
+
 
     // #define ENABLE_FOG
 
@@ -424,7 +425,7 @@ void main() {
     #endif
 
     #ifdef DEBUG_RM_AMBIENT
-        result = vec3(ambient);
+        result = vec3(ambient * 10.0);
         occlusionTotal = 0.0;
     #endif
 

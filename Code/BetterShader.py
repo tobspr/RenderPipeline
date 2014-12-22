@@ -146,7 +146,7 @@ class BetterShader:
                             newContent += self._handleIncludes(
                                 properIncludePart).strip() + "\n"
 
-                            newContent += "#line %d %d\n" % (line_idx + 2, ID)
+                            newContent += "#line %d %d\n" % (line_idx + 3, ID)
 
                     else:
                         print "BetterShader: Failed to load '" + str(properIncludePart) + "'!"
