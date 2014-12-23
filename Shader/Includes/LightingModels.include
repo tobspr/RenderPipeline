@@ -26,17 +26,17 @@ float GeometricBRDF(float roughness, float NxV, float NxL)
     // Fixed-value:
     // return 0.25;
 
-    // float a = roughness * roughness;
-    // float a2 = a * a;
-
-    // float v = NxV + sqrt( NxV * (NxV - NxV * a2) + a2 );
-    // float l = NxL + sqrt( NxL * (NxL - NxL * a2) + a2 );
-    // return saturate(1.0 / ( v * l ));
-
     float a = roughness * roughness;
-    float Vis_SmithV = NxL * ( NxV * ( 1 - a ) + a );
-    float Vis_SmithL = NxV * ( NxL * ( 1 - a ) + a );
-    return 0.5 / ( Vis_SmithV + Vis_SmithL );
+    float a2 = a * a;
+
+    float v = NxV + sqrt( NxV * (NxV - NxV * a2) + a2 );
+    float l = NxL + sqrt( NxL * (NxL - NxL * a2) + a2 );
+    return saturate(1.0 / ( v * l ));
+
+    // float a = roughness * roughness;
+    // float Vis_SmithV = NxL * ( NxV * ( 1 - a ) + a );
+    // float Vis_SmithL = NxV * ( NxL * ( 1 - a ) + a );
+    // return 0.5 / ( Vis_SmithV + Vis_SmithL );
 }
 
 // Schlick

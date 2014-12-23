@@ -43,7 +43,7 @@ class DirectionalLight(Light, DebugObject):
         # A directional light is always visible
         self.bounds = OmniBoundingVolume()
 
-    def setPssmFarPlane(self, far_plane):
+    def setPssmDistance(self, far_plane):
         """ Sets the distance of the last split. After this distance, no shadow
         is visible. """
         self.pssmFarPlane = far_plane

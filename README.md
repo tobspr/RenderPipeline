@@ -9,8 +9,9 @@ Screenshot Thread: http://www.panda3d.org/forums/viewtopic.php?f=6&t=17050
 
 You can find more <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa?dl=0">here</a>:
 
+![BRDF Test](http://fs2.directupload.net/images/141223/zvispdl2.png)
+![BRDF Test #2](http://fs1.directupload.net/images/141222/9sgebqmw.png)
 ![Sponza](http://s7.directupload.net/images/140919/a6b3vyb5.png)
-![Material Testing](http://s14.directupload.net/images/140919/ovfuulrt.png)
 ![Snow Material Test](http://s14.directupload.net/images/140919/aqzxkj3m.png)
 
 This pipeline is still in developement, feel free to join :)

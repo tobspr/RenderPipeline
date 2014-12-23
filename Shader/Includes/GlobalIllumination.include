@@ -127,7 +127,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     #ifndef DEBUG_RM_REFLECTIONS
     if (m.specular > 0.001) { 
     #endif
-        vec4 traced = traceCone(data, data.geometry, localCoord, reflectVector, 16, 1.01 + m.roughness*0.0, 1.0, 0.1, 0.5);
+        vec4 traced = traceCone(data, data.geometry, localCoord, reflectVector, 128, 1.01 + m.roughness*0.1, 1.0, 0.2, 0.01);
         // vec4 traced = traceCone(data, data.geometry, localCoord, refractVector, 512, 1.0 + m.roughness*0.0, 1.1, 0.5, 1.0);
         // specularColor = vec3(traced.w);
         // specularColor = traced.xyz;
@@ -190,8 +190,8 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
             b * traceDirection.y + 
             correctNormal * traceDirection.z
         );
-        aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 6, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
-        // aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 2, 1.2705, 1.1 , 0.5, 1.2227);
+        // aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 3, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
+        aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 2, 1.2705, 1.1 , 0.2, 1.2227);
     }
     aoResult = aoResult / float(numSamplesAO) * 1.8;
 
@@ -201,8 +201,8 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     startCoord = localCoord + correctNormal * voxelSize * 0.0;
     for (int i = 0; i < numSamplesGI; i++) {
         vec3 traceDirection = poisson3D_32[i];
-        // traceDirection.z = abs(traceDirection.z) * opt_ao_cone_height * 5.0;
-        traceDirection.z = abs(traceDirection.z) * 1.2;
+        traceDirection.z = abs(traceDirection.z) * opt_ao_cone_height * 5.0;
+        // traceDirection.z = abs(traceDirection.z) * 1.2;
 
 
         vec3 mixedNormal = normalize(
@@ -210,11 +210,11 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
         );
         // mixedNormal = mix(mixedNormal, traceDirection, 0.7);
         // mixedNormal = traceDirection;
-        giResult += traceConeWithCollisions(data, startCoord, mixedNormal , 12, 1.2523,0.7477, -0.0909, 1.0228);
-        // giResult += traceConeWithCollisions(data, startCoord, mixedNormal , 12, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
+        // giResult += traceConeWithCollisions(data, startCoord, mixedNormal , 12, 1.2523,0.7477, -0.0909, 1.0228);
+        giResult += traceConeWithCollisions(data, startCoord, mixedNormal , 24, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
 
     }
-    giResult = giResult / float(numSamplesGI) * 5.0;
+    giResult = giResult / float(numSamplesGI) * 1.0;
     giResult = (pow(giResult, vec4(1.2)) * 1.0);
     // giResult *= 1.0;
 
@@ -232,9 +232,9 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // aoMultiplier = 1.0;
 
     // return vec4(giResult);
-    // return vec4(mix(aoMultiplier, 1.0, mixFactor));  
+    return vec4(mix(aoMultiplier, 1.0, mixFactor));  
     // return vec4(giResult);  
-    return mix(max(vec4(0.0), giResult) * aoMultiplier + 0.0, vec4(boundsColor), mixFactor);
+    return mix(max(vec4(0.0), giResult) * aoMultiplier + 0.01, vec4(boundsColor), mixFactor);
 
 
 }

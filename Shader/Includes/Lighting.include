@@ -46,7 +46,7 @@ vec3 computeSpecular(vec3 specularColor, float roughness, float NxL, float LxH, 
 
 float computeMipmapFromRoughness(float roughness) {
     // return max(0.0, fallbackCubemapMipmaps + (log((roughness+0.21)/log(20))+0.52)*3.7);
-    return max(0.0, fallbackCubemapMipmaps - 10 +  pow(roughness, 0.3) * 10.0);
+    return max(0.0, fallbackCubemapMipmaps - 11 +  pow(roughness, 0.25) * 11.0);
     // return fallbackCubemapMipmaps - roughness * 11.0;
 }
 
@@ -87,7 +87,7 @@ vec3 computeLightModel(Light light, Material material,
 
         // Evaluate diffuse
         vec3 diffuseContribution = diffuseColor / M_PI * NxL * light.color;
-        lightingResult += vec3(diffuseContribution);
+        lightingResult += diffuseContribution;
 
         // Apply shadows
         lightingResult *= shadowFactor;
@@ -156,19 +156,19 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     #endif
 
     ambientRefColor = pow(ambientRefColor, vec3(1.6) );
-    // ambientRefColor *= 0.5;
-
 
     vec3 result = vec3(0);
 
     // Diffuse ambient
     result += giAmbient.xyz * material.baseColor * (1.0 - material.metallic);
 
+    giSpecular = vec3(1);
+
     // Specular ambient
-    result += material.baseColor * ambientRefColor * giSpecular * 
+    result += material.baseColor * ambientRefColor * (giSpecular+0.1) * 
               material.specular * (1.0 - material.roughness*0.7) * 
               max(1.0, material.metallic) *
-              (pow(1.0 - saturate(dot(material.normal, v)), 5.0)+0.00) * 10.0;
+              mix(pow(1.0 - saturate(dot(material.normal, v)), 5.0), 0.1, material.metallic) * 10.0;
 
     return result;
 }

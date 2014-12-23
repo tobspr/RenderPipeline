@@ -24,7 +24,7 @@ void main() {
     vec4 normalWorld = trans_model_to_world * vec4(p3d_Normal.xyz, 0);
     normal = normalWorld.xyz;
     // color.xyz = p3d_Material.diffuse.rgb * clamp(1.0 - p3d_Material.diffuse.b * 1.4, 0, 1);
-    color.xyz = p3d_Material.diffuse.rgb;
+    color.xyz = p3d_Material.diffuse.rgb * (1.0 - p3d_Normal.z);
     color.w = 1.0;
     texc = p3d_MultiTexCoord0;
 }

@@ -28,7 +28,8 @@ class MountManager(DebugObject):
         self.writePath = Filename.fromOsSpecific(pth).getFullpath()
 
     def setBasePath(self, pth):
-        """ Sets the path where the base shaders an so on are contained """
+        """ Sets the path where the base shaders and models on are contained """
+        self.debug("Set base path to '" + pth + "'")
         self.basePath = Filename.fromOsSpecific(pth).getFullpath()
 
     def mount(self):
@@ -41,10 +42,14 @@ class MountManager(DebugObject):
         vfs.mountLoop(
             join(self.basePath, 'Shader'), 'Shader', 0)
 
-        # Mount data
+        # Mount data and models
         vfs.mountLoop(join(self.basePath, 'Data'), 'Data', 0)
+        vfs.mountLoop(join(self.basePath, 'Models'), 'Models', 0)
+        vfs.mountLoop(join(self.basePath, 'Config'), 'Config', 0)
+        vfs.mountLoop(join(self.basePath, 'Demoscene.ignore'), 'Demoscene.ignore', 0)
 
-        # TODO: Mount core
+        # Just mount everything
+        # vfs.mountLoop(self.basePath, '.', 0)
 
         if not isdir(self.writePath):
             self.debug("Creating temp path, as it does not exist yet")

@@ -187,7 +187,7 @@ void main() {
         float depthScreen = texelFetch(depth, coordScreen, 0).x;
 
         float reliability = 1.0 - saturate(distance(normalScreen, material.normal));
-        reliability *= 1.0 - saturate( abs(pow(depthScreen,10.0) - pow(pixelDepth, 10.0)) * 2000.0);
+        reliability *= 1.0 - saturate( abs(pow(depthScreen,10.0) - pow(pixelDepth, 10.0)) * 200.0);
 
         giDiffuseResult += texelFetch(giDiffuseTex, coord, 0) * reliability;
         giSpecularResult += texelFetch(giReflectionTex, coord, 0) * reliability;

@@ -54,7 +54,7 @@ void main() {
 
     shadowSum /= voxelShadowSamples;   
 
-    diffuse = vec3(0.3);
+    // diffuse = vec3(0.3);
 
 
     float ambientFactor = 0.05;
@@ -91,8 +91,8 @@ void main() {
                     (resultColorI.g & 0x3FF) << 11 |
                     (resultColorI.b & 0x3FF) << 21;
 
-    // imageAtomicMax(dv_dest_tex, voxelCoords, packedColor);
-    imageAtomicOr(dv_dest_tex, voxelCoords, packedColor);
+    imageAtomicMax(dv_dest_tex, voxelCoords, packedColor);
+    // imageAtomicOr(dv_dest_tex, voxelCoords, packedColor);
     // imageStore(dv_dest_tex, voxelCoords, ivec4(packedColor));
     result = vec4(diffuseContribution, 1);
 }
