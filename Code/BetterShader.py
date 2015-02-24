@@ -33,7 +33,7 @@ class BetterShader:
     def loadCompute(self, source):
         """ Loads a compute shader """
 
-        content = self._handleIncludes(source)
+        content = "\n".join(self._handleIncludes(source)[0])
         result = Shader.makeCompute(Shader.SLGLSL, content)
         self._writeDebugShader("Compute-" + str(source), content)
         self._clearIncludeStack()
@@ -44,28 +44,27 @@ class BetterShader:
         """ Loads a shader in the order: vertex, fragment,
         geometry, tesseval, tesscontrol """
 
-        newArgs = []
-        toHash = ""
-
+        combinedShaders = []
+        
         for arg in args:
             if len(arg) < 1:
-                newArgs.append("")
                 continue
-            content = self._handleIncludes(arg)
-            newArgs.append(content)
-            toHash += content
+            contentList, version = self._handleIncludes(arg)
+            content = "\n".join(contentList)
+            combinedShaders.append(content)
+
             self._writeDebugShader("Shader-" + str(arg), content)
             self._clearIncludeStack()
 
         # Check if we already have the result cached
-        hashed = hash(toHash)
+        hashed = hash("\n".join(combinedShaders))
+        
         if hashed in self._ShaderCache:
             # Cache entry found
             return self._ShaderCache[hashed]
 
         shaderName = args[1].replace("Shader", "").split(".")[0].lstrip("/")
-
-        result = Shader.make(Shader.SLGLSL, *newArgs)
+        result = Shader.make(Shader.SLGLSL, *combinedShaders)
         self._ShaderCache[hashed] = result
         return result
 
@@ -80,7 +79,7 @@ class BetterShader:
 
         if not self._DumpShaders:
             return
-
+            
         cachePath = "PipelineTemp"
         if not isdir(cachePath):
             print "Cache path does not exist!:", cachePath
@@ -94,13 +93,13 @@ class BetterShader:
             handle.write(str(content))
 
     @classmethod
-    def _handleIncludes(self, source):
+    def _handleIncludes(self, source, removeVersion = False):
         """ Internal (recursive) method to parse #include's """
 
         with open(source, "r") as handle:
             content = handle.readlines()
 
-        newContent = ""
+        newContent = []
         includeIdentifier = "#include "
 
         ID = self._ShaderIDs.get(source, None)
@@ -110,11 +109,26 @@ class BetterShader:
             # print ID, source
             self._NextID += 1
 
-        newContent += "#line 1 %d\n" % (ID)
-
+        
+        version = None
+        
         # Iterate through lines
         for line_idx, line in enumerate(content):
+            # somewhat hacky: we want to include a #line directive, but if a #version directive exists,
+            # it must be the very first line. Since most shader scripts will define the version,
+            # instead of checking for a version line, we simply always insert the line directive at
+            # the second line 
+            if line_idx == 1:
+                 newContent.append("#line 2 %d" % ID)   
             lineStrip = line.strip()
+            if lineStrip.startswith("#version"):
+                if line_idx != 0:
+                    raise RuntimeError(("%s(%d): GLSL specification requires that #version directive must " +
+                         "be on the first line!") % (source, line_idx))
+                version = lineStrip.split()[1]
+                # #version must only appear once, so we remove version lines in included files
+                if removeVersion:
+                    continue
             if lineStrip.startswith(includeIdentifier):
                 includePart = lineStrip[len(includeIdentifier):].strip()
 
@@ -140,14 +154,19 @@ class BetterShader:
 
                         else:
                             self._GlobalIncludeStack.append(properIncludePart)
-                            newContent += "\n// FILE: '" + \
-                                str(properIncludePart) + "' \n"
-
-                            newContent += self._handleIncludes(
-                                properIncludePart).strip() + "\n"
-
-                            newContent += "#line %d %d\n" % (line_idx + 3, ID)
-
+                            lines, includeVersion = self._handleIncludes(properIncludePart, removeVersion = True)
+                            if includeVersion is not None and includeVersion != version:
+                                raise RuntimeError(("%s(%d): #version of included file '%s' is %s, " +
+                                    "not %s (included files must be the same version as the file " +
+                                    "including them)") % (source, line_idx, properIncludePart, 
+                                        includeVersion, version))
+                                
+                            newContent.extend([
+                                "",
+                                "// FILE: '" + str(properIncludePart) + "' "
+                            ])
+                            newContent.extend(lines)
+                            newContent.append("#line %d %d\n" % (line_idx + 3, ID))
                     else:
                         print "BetterShader: Failed to load '" + str(properIncludePart) + "'!"
                 else:
@@ -155,6 +174,6 @@ class BetterShader:
 
                 continue
 
-            newContent += line.rstrip() + "\n"
+            newContent.append(line.rstrip())
 
-        return newContent
+        return (newContent, version)
