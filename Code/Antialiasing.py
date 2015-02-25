@@ -1,5 +1,6 @@
 
 from panda3d.core import Texture, PTAInt
+from panda3d.core import Shader
 
 from DebugObject import DebugObject
 from RenderTarget import RenderTarget
@@ -119,7 +120,7 @@ class AntialiasingTechniqueFXAA(AntialiasingTechnique):
     def reloadShader(self):
         """ Reloads all assigned shaders """
 
-        fxaaShader = BetterShader.load("Shader/DefaultPostProcess.vertex",
+        fxaaShader = Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex",
                                        "Shader/FXAA/FXAA3.fragment")
         self._buffer.setShader(fxaaShader)
 
@@ -198,21 +199,21 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
 
     def reloadShader(self):
         """ Reloads all used shaders """
-        edgeShader = BetterShader.load(
+        edgeShader = Shader.load(Shader.SLGLSL, 
             "Shader/SMAA/EdgeDetection.vertex", "Shader/SMAA/EdgeDetection.fragment")
         self._edgesBuffer.setShader(edgeShader)
 
-        weightsShader = BetterShader.load(
+        weightsShader = Shader.load(Shader.SLGLSL, 
             "Shader/SMAA/BlendingWeights.vertex", "Shader/SMAA/BlendingWeights.fragment")
         self._blendBuffer.setShader(weightsShader)
 
-        neighborShader = BetterShader.load(
+        neighborShader = Shader.load(Shader.SLGLSL, 
             "Shader/SMAA/Neighbors.vertex", "Shader/SMAA/Neighbors.fragment")
 
         for buff in self._neighborBuffers:
             buff.setShader(neighborShader)
 
-        resolveShader = BetterShader.load(
+        resolveShader = Shader.load(Shader.SLGLSL, 
             "Shader/SMAA/Resolve.vertex", "Shader/SMAA/Resolve.fragment")
         self._resolveBuffer.setShader(resolveShader)
 

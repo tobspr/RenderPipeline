@@ -1,3 +1,4 @@
+#pragma once
 
 
 vec3 poisson3D_32[32] = vec3[](

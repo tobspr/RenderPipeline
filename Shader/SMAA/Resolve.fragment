@@ -9,7 +9,7 @@ uniform sampler2D lastTex;
 uniform sampler2D velocityTex;
 
 #define SMAA_INCLUDE_VS 0
-#include "Includes/SMAA-Wrapper.include"
+#pragma include "Includes/SMAA-Wrapper.include"
 
 out vec4 result;
 

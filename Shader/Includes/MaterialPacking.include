@@ -1,7 +1,8 @@
+#pragma once
 
-#include "Includes/Configuration.include"
-#include "Includes/Material.include"
-#include "Includes/Packing.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Material.include"
+#pragma include "Includes/Packing.include"
 
 uniform mat4 lastMVP;
 

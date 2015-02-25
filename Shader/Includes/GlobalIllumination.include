@@ -1,9 +1,10 @@
+#pragma once
 
 
-#include "Includes/Configuration.include"
-#include "Includes/Material.include"
-#include "Includes/GIData.include"
-#include "Includes/PoissonDisk.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Material.include"
+#pragma include "Includes/GIData.include"
+#pragma include "Includes/PoissonDisk.include"
 
 
 

@@ -3,8 +3,8 @@
 // This shader takes the inputs from tesscontrol and generates the actual
 // vertices from that
 
-#include "Includes/Configuration.include"
-#include "Includes/VertexOutput.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/VertexOutput.include"
 
 layout(triangles, equal_spacing, ccw) in;
 

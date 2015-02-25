@@ -1,4 +1,5 @@
 #version 400
+
 #pragma file "PrecomputeLights.fragment"
 
 #extension GL_ARB_shader_image_load_store : enable
@@ -10,12 +11,12 @@
 
 
 // Includes
-#include "Includes/Configuration.include"
-#include "Includes/Light.include"
-#include "Includes/Packing.include"
-#include "Includes/PositionReconstruction.include"
-#include "Includes/Frustum.include"
-#include "Includes/LightCulling.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Light.include"
+#pragma include "Includes/Packing.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Frustum.include"
+#pragma include "Includes/LightCulling.include"
 
 in vec2 texcoord;
 

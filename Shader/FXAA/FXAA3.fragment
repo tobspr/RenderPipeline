@@ -1,7 +1,7 @@
 #version 400
 #extension GL_NV_gpu_shader5 : enable
 
-#include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.include"
 
 
 

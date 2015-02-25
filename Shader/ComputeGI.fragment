@@ -1,12 +1,12 @@
 #version 400
 #pragma file "ComputeGI.fragment"
 
-#include "Includes/Configuration.include"
-#include "Includes/Material.include"
-#include "Includes/PositionReconstruction.include"
-#include "Includes/ColorCorrection.include"
-#include "Includes/TemporalReprojection.include"
-#include "Includes/GlobalIllumination.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Material.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/ColorCorrection.include"
+#pragma include "Includes/TemporalReprojection.include"
+#pragma include "Includes/GlobalIllumination.include"
 
 // Required, otherwise quite slow
 #pragma optionNV (unroll all)

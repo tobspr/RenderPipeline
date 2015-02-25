@@ -83,7 +83,7 @@ class MovementController:
         # wireframe + debug + buffer viewer
         self.showbase.accept("f3", self.showbase.toggleWireframe)
         self.showbase.accept("p",  self._showDebugOutput)
-        # self.showbase.accept("v",  self._toggleBufferViewer)
+        self.showbase.accept("v",  self._toggleBufferViewer)
 
         # mouse
         self.showbase.accept("mouse1",    self._setMouseEnabled, [True])
@@ -115,7 +115,7 @@ class MovementController:
 
         # add ourself as an update task
         self.showbase.addTask(
-            self._update, "updateMovementController", priority=90)
+            self._update, "updateMovementController", priority=-19000)
 
 
         self.showbase.accept("1", PStatClient.connect)

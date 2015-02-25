@@ -1,4 +1,4 @@
-
+#pragma once
 // This is the main configuration file, included by almost all shaders
 
 // Max values for the light culling
@@ -30,10 +30,11 @@
 const float sqrt_of_2 = 1.4142135623;
 
 // Load Auto-Config
-#include "%ShaderAutoConfig%"
+//#pragma include "%ShaderAutoConfig%"
+#pragma include "ShaderAutoConfig.include"
 
 // Performance functions
-#include "Includes/Performance.include"
+#pragma include "Includes/Performance.include"
 
 
 #define M_PI 3.14159265

@@ -1,3 +1,4 @@
+#pragma once
 
 
 float rand(float a, float b, float c){

@@ -1,3 +1,4 @@
+#pragma once
 
 // GGX
 float DistributionBRDF(float roughness, float NxH)

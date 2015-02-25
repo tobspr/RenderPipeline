@@ -57,7 +57,7 @@ class World(ShowBase):
     self.renderPipeline.getMountManager().setBasePath("../../")
 
     # Also set the write path
-    self.renderPipeline.getMountManager().setWritePath("../../Temp/")
+    #self.renderPipeline.getMountManager().setWritePath("../../Temp/")
 
     # Load the default settings
     self.renderPipeline.loadSettings("../../Config/pipeline.ini")
@@ -153,7 +153,7 @@ class World(ShowBase):
   def reloadShader(self):
       self.renderPipeline.reloadShaders()
       render.setShader(self.renderPipeline.getDefaultObjectShader())
-      self.skybox.setShader(BetterShader.load(
+      self.skybox.setShader(Shader.load(Shader.SLGLSL, 
           "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
 
   #Panda Lighting
@@ -169,9 +169,9 @@ class World(ShowBase):
     dirLight.setPos(dPos)
     dirLight.setColor(Vec3(6))
     self.renderPipeline.addLight(dirLight)
-
-    self.renderPipeline.globalIllum.setTargetLight(dirLight)
-
+    if self.renderPipeline.settings.enableGlobalIllumination:
+        self.renderPipeline.globalIllum.setTargetLight(dirLight)
+    
   def startCarousel(self):
     #Here's where we actually create the intervals to move the carousel
     #The first type of interval we use is one created directly from a NodePath

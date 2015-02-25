@@ -1,5 +1,6 @@
 
 from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
+from panda3d.core import Shader
 from panda3d.core import Vec2, LMatrix4f, LVecBase3i, Camera, Mat4
 from panda3d.core import Mat4, OmniBoundingVolume, OrthographicLens
 from panda3d.core import PStatCollector, BoundingBox, Point3, CullFaceAttrib
@@ -109,7 +110,7 @@ class GlobalIllumination(DebugObject):
 
     def _createVoxelizeState(self):
         """ Creates the tag state and loades the voxelizer shader """
-        self.voxelizeShader = BetterShader.load(
+        self.voxelizeShader = Shader.load(Shader.SLGLSL, 
             "Shader/GI/Voxelize.vertex",
             "Shader/GI/Voxelize.fragment"
             # "Shader/GI/Voxelize.geometry"

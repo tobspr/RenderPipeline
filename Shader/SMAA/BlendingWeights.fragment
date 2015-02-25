@@ -11,7 +11,7 @@ uniform sampler2D searchTex;
 uniform int currentIndex;
 
 #define SMAA_INCLUDE_VS 0
-#include "Includes/SMAA-Wrapper.include"
+#pragma include "Includes/SMAA-Wrapper.include"
 
 out vec4 result;
 

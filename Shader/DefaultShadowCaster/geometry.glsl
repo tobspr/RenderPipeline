@@ -2,9 +2,9 @@
 #pragma optionNV (unroll all)
 
 
-#include "Includes/Configuration.include"
-#include "Includes/ShadowSource.include"
-#include "Includes/ParabolicTransform.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/ShadowSource.include"
+#pragma include "Includes/ParabolicTransform.include"
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
 

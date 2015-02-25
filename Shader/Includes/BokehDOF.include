@@ -1,8 +1,9 @@
+#pragma once
 
 
 
-#include "Includes/Configuration.include"
-#include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
 
 
 //------------------------------------------

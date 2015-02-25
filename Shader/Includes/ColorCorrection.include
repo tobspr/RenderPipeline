@@ -1,5 +1,6 @@
+#pragma once
 
-#include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.include"
 
 // Instagram effect, yay! :D
 vec3 convertColorSpace(vec3 x1) {

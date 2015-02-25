@@ -1,9 +1,6 @@
 """
 
 
-
-
-
 RenderPipeline testing file
 
 If you are looking for Code Examples, look at Samples/. This file is for
@@ -27,6 +24,7 @@ import struct
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3
 from panda3d.core import Texture
+from panda3d.core import Shader
 
 from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
@@ -59,38 +57,38 @@ class Main(ShowBase, DebugObject):
 
         # Uncomment to use temp directory
         # writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
-        # writeDirectory = "Temp/"
+        writeDirectory = "Temp/"
 
         # Clear write directory when app exits
         # atexit.register(os.remove, writeDirectory)
 
         # Set a write directory, where the shader cache and so on is stored
-        # self.renderPipeline.getMountManager().setWritePath(writeDirectory)
+        #self.renderPipeline.getMountManager().setWritePath(writeDirectory)
         self.renderPipeline.getMountManager().setBasePath(".")
-
+        
          ####### END OF RENDER PIPELINE SETUP #######
         # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        # self.sceneSource = "Models/HouseSet/Model.egg"
-        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
+        #self.sceneSource = "Models/HouseSet/Model.egg"
+        #self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
         self.renderPipeline.enableDefaultEarthScattering()
-
+        """
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
-
+        
         # Wheter to use a ground floor
         self.usePlane = False
         self.sceneWireframe = False
@@ -184,6 +182,7 @@ class Main(ShowBase, DebugObject):
         # Show windows
         # for window in base.graphicsEngine.getWindows():
             # print window.getName(), window.getSort()
+        """
 
     def setSunPos(self):
         """ Sets the sun position based on the debug slider """
@@ -275,7 +274,7 @@ class Main(ShowBase, DebugObject):
                 self.renderPipeline.reloadShaders()
 
         if self.skybox:
-            self.skybox.setShader(BetterShader.load(
+            self.skybox.setShader(Shader.load(Shader.SLGLSL, 
                 "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
 
     def convertToPatches(self, model):

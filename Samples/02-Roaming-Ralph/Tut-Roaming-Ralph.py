@@ -24,6 +24,7 @@ from panda3d.core import CollisionHandlerQueue, CollisionRay
 from panda3d.core import Filename, loadPrcFileData
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
 from panda3d.core import Vec3, Vec4, BitMask32, loadPrcFile, Texture
+from panda3d.core import Shader
 from direct.gui.OnscreenText import OnscreenText
 from direct.actor.Actor import Actor
 from direct.showbase.ShowBase import ShowBase
@@ -86,8 +87,8 @@ class World(ShowBase):
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(6))
         self.renderPipeline.addLight(dirLight)
-
-        self.renderPipeline.globalIllum.setTargetLight(dirLight)
+        if self.renderPipeline.settings.enableGlobalIllumination:
+            self.renderPipeline.globalIllum.setTargetLight(dirLight)
 
         self.keyMap = {
             "left": 0, "right": 0, "forward": 0, "cam-left": 0, "cam-right": 0}
@@ -221,7 +222,7 @@ class World(ShowBase):
     def reloadShader(self):
         self.renderPipeline.reloadShaders()
         render.setShader(self.renderPipeline.getDefaultObjectShader())
-        self.skybox.setShader(BetterShader.load(
+        self.skybox.setShader(Shader.load(Shader.SLGLSL, 
             "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
 
     # Records the state of the arrow keys

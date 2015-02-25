@@ -1,8 +1,8 @@
 
-from panda3d.core import Filename, VirtualFileSystem
+from panda3d.core import Filename, VirtualFileSystem, getModelPath
 from DebugObject import DebugObject
 
-from direct.stdpy.file import join, isdir
+from direct.stdpy.file import join, isdir, isfile
 from os import makedirs
 
 class MountManager(DebugObject):
@@ -25,12 +25,19 @@ class MountManager(DebugObject):
         access to the basePath. It will be wise to at least use tempfile
         like tempfile.mkdtemp(prefix='Shader-tmp'), or an application directory
         in the user's home/app dir."""
+
         self.writePath = Filename.fromOsSpecific(pth).getFullpath()
+        #self.writePath = Filename.fromOsSpecific(pth)
+        #self.writePath.makeAbsolute()
+        #self.writePath = self.writePath.getFullpath()
 
     def setBasePath(self, pth):
         """ Sets the path where the base shaders and models on are contained """
         self.debug("Set base path to '" + pth + "'")
         self.basePath = Filename.fromOsSpecific(pth).getFullpath()
+        #self.basePath = Filename.fromOsSpecific(pth)
+        #self.basePath.makeAbsolute()
+        #self.basePath = self.basePath.getFullpath()
 
     def mount(self):
         """ Inits the VFS Mounts """
@@ -46,7 +53,7 @@ class MountManager(DebugObject):
         vfs.mountLoop(join(self.basePath, 'Data'), 'Data', 0)
         vfs.mountLoop(join(self.basePath, 'Models'), 'Models', 0)
         vfs.mountLoop(join(self.basePath, 'Config'), 'Config', 0)
-        vfs.mountLoop(join(self.basePath, 'Demoscene.ignore'), 'Demoscene.ignore', 0)
+        #vfs.mountLoop(join(self.basePath, 'Demoscene.ignore'), 'Demoscene.ignore', 0)
 
         # Just mount everything
         # vfs.mountLoop(self.basePath, '.', 0)
@@ -63,6 +70,18 @@ class MountManager(DebugObject):
         self.debug("Mounting",self.writePath,"as PipelineTemp/")
         vfs.mountLoop(self.writePath, 'PipelineTemp/', 0)
 
+        # #pragma include "something" searches in current directory first, 
+        #and then on the model-path.
+        base_path = Filename(self.basePath)
+        #bp.makeAbsolute()
+        getModelPath().appendDirectory(join(base_path.getFullpath(), 'Shader'))
+        #this is necessary so make pragma include find ShaderAutoConfig.include
+        write_path = Filename(self.writePath)
+        #wp.makeAbsolute()
+        getModelPath().appendDirectory(write_path.getFullpath())
+        #print("Current model-path: {}").format(getModelPath())
+        #print("Shader/DefaultObjectShader/vertex.glsl is a file: {}".format(
+        #                    isfile("Shader/DefaultObjectShader/vertex.glsl")))
 
     def unmount(self):
         """ Unmounts the VFS """
