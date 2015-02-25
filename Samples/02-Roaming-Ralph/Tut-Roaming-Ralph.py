@@ -223,7 +223,7 @@ class World(ShowBase):
         self.renderPipeline.reloadShaders()
         render.setShader(self.renderPipeline.getDefaultObjectShader())
         self.skybox.setShader(Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+            "DefaultObjectShader/vertex.glsl", "Skybox/fragment.glsl"))
 
     # Records the state of the arrow keys
     def setKey(self, key, value):

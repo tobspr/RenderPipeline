@@ -120,8 +120,8 @@ class AntialiasingTechniqueFXAA(AntialiasingTechnique):
     def reloadShader(self):
         """ Reloads all assigned shaders """
 
-        fxaaShader = Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex",
-                                       "Shader/FXAA/FXAA3.fragment")
+        fxaaShader = Shader.load(Shader.SLGLSL, "DefaultPostProcess.vertex",
+                                       "FXAA/FXAA3.fragment")
         self._buffer.setShader(fxaaShader)
 
     def getResultTexture(self):
@@ -200,21 +200,21 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
     def reloadShader(self):
         """ Reloads all used shaders """
         edgeShader = Shader.load(Shader.SLGLSL, 
-            "Shader/SMAA/EdgeDetection.vertex", "Shader/SMAA/EdgeDetection.fragment")
+            "SMAA/EdgeDetection.vertex", "SMAA/EdgeDetection.fragment")
         self._edgesBuffer.setShader(edgeShader)
 
         weightsShader = Shader.load(Shader.SLGLSL, 
-            "Shader/SMAA/BlendingWeights.vertex", "Shader/SMAA/BlendingWeights.fragment")
+            "SMAA/BlendingWeights.vertex", "SMAA/BlendingWeights.fragment")
         self._blendBuffer.setShader(weightsShader)
 
         neighborShader = Shader.load(Shader.SLGLSL, 
-            "Shader/SMAA/Neighbors.vertex", "Shader/SMAA/Neighbors.fragment")
+            "SMAA/Neighbors.vertex", "SMAA/Neighbors.fragment")
 
         for buff in self._neighborBuffers:
             buff.setShader(neighborShader)
 
         resolveShader = Shader.load(Shader.SLGLSL, 
-            "Shader/SMAA/Resolve.vertex", "Shader/SMAA/Resolve.fragment")
+            "SMAA/Resolve.vertex", "SMAA/Resolve.fragment")
         self._resolveBuffer.setShader(resolveShader)
 
     def getResultTexture(self):

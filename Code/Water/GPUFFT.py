@@ -48,7 +48,7 @@ class GPUFFT(DebugObject):
         # Pre generate the shaders, we have 2 passes: Horizontal and Vertical
         # which both execute log2(N) times with varying radii
         self.horizontalFFTShader = BetterShader.loadCompute(
-            "Shader/Water/HorizontalFFT.compute")
+            "Water/HorizontalFFT.compute")
         self.horizontalFFT = NodePath("HorizontalFFT")
         self.horizontalFFT.setShader(self.horizontalFFTShader)
         self.horizontalFFT.setShaderInput(
@@ -56,7 +56,7 @@ class GPUFFT(DebugObject):
         self.horizontalFFT.setShaderInput("N", LVecBase2i(self.size))
 
         self.verticalFFTShader = BetterShader.loadCompute(
-            "Shader/Water/VerticalFFT.compute")
+            "Water/VerticalFFT.compute")
         self.verticalFFT = NodePath("VerticalFFT")
         self.verticalFFT.setShader(self.verticalFFTShader)
         self.verticalFFT.setShaderInput(

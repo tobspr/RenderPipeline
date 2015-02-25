@@ -289,12 +289,12 @@ class Scattering(DebugObject):
         # self._engine.openWindows()
 
         sArgs = [
-            "Shader/Scattering/DefaultVertex.vertex",
-            "Shader/Scattering/" + shaderName + ".fragment"
+            "Scattering/DefaultVertex.vertex",
+            "Scattering/" + shaderName + ".fragment"
         ]
 
         if layers > 1:
-            sArgs.append("Shader/Scattering/DefaultGeometry.geometry")
+            sArgs.append("Scattering/DefaultGeometry.geometry")
         shader = Shader.load(Shader.SLGLSL, *sArgs)
         rt.setShader(shader)
 

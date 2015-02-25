@@ -177,12 +177,12 @@ class RenderingPipeline(DebugObject):
 
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
 
-        # Create GI handler
-        if self.settings.enableGlobalIllumination:
-            self._setupGlobalIllumination()
-
         # Create occlusion handler
         self._setupOcclusion()
+
+        # Create GI handler
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum = GlobalIllumination(self)
 
         if self.settings.displayOnscreenDebugger:
             self.guiManager = PipelineGuiManager(self)
@@ -190,6 +190,10 @@ class RenderingPipeline(DebugObject):
 
         # Generate auto-configuration for shaders
         self._generateShaderConfiguration()
+
+        # Setup GI
+        if self.settings.enableGlobalIllumination:
+            self._setupGlobalIllumination()
 
         # Create light manager, which handles lighting + shadows
         if self.haveLightingPass:
@@ -289,7 +293,7 @@ class RenderingPipeline(DebugObject):
 
     def _setupGlobalIllumination(self):
         """ Creates the GI handler """
-        self.globalIllum = GlobalIllumination(self)
+        #self.globalIllum = GlobalIllumination(self)
         self.globalIllum.setup()
 
     def _setupAntialiasing(self):
@@ -728,60 +732,60 @@ class RenderingPipeline(DebugObject):
     def _setOcclusionBlurShader(self):
         """ Sets the shaders which blur the occlusion """
         blurVShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/BlurOcclusionVertical.fragment")
+            "DefaultPostProcess.vertex",
+            "BlurOcclusionVertical.fragment")
         blurHShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/BlurOcclusionHorizontal.fragment")
+            "DefaultPostProcess.vertex",
+            "BlurOcclusionHorizontal.fragment")
         self.blurOcclusionV.setShader(blurVShader)
         self.blurOcclusionH.setShader(blurHShader)
 
     def _setGIComputeShader(self):
         """ Sets the shader which computes the GI """
         giShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/ComputeGI.fragment")
+            "DefaultPostProcess.vertex",
+            "ComputeGI.fragment")
         self.giPrecomputeBuffer.setShader(giShader)
 
     def _setBlurShader(self):
         """ Sets the shaders which blur the color """
         blurVShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/BlurVertical.fragment")
+            "DefaultPostProcess.vertex",
+            "BlurVertical.fragment")
         blurHShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/BlurHorizontal.fragment")
+            "DefaultPostProcess.vertex",
+            "BlurHorizontal.fragment")
         self.blurColorV.setShader(blurVShader)
         self.blurColorH.setShader(blurHShader)
 
     def _setLightingShader(self):
         """ Sets the shader which applies the light """
         lightShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/ApplyLighting.fragment")
+            "DefaultPostProcess.vertex",
+            "ApplyLighting.fragment")
         self.lightingComputeContainer.setShader(lightShader)
 
     def _setCombinerShader(self):
         """ Sets the shader which combines the lighting with the previous frame
         (temporal reprojection) """
         cShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/Combiner.fragment")
+            "DefaultPostProcess.vertex",
+            "Combiner.fragment")
         self.combiner.setShader(cShader)
 
     def _setPositionComputationShader(self):
         """ Sets the shader which computes the lights per tile """
         pcShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/PrecomputeLights.fragment")
+            "DefaultPostProcess.vertex",
+            "PrecomputeLights.fragment")
         self.lightBoundsComputeBuff.setShader(pcShader)
 
     def _setFinalPassShader(self):
         """ Sets the shader which computes the final frame,
         with motion blur and so on """
         fShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/Final.fragment")
+            "DefaultPostProcess.vertex",
+            "Final.fragment")
         self.deferredTarget.setShader(fShader)
 
     def _getSize(self):
@@ -822,8 +826,8 @@ class RenderingPipeline(DebugObject):
     def _setNormalExtractShader(self):
         """ Sets the shader which constructs the normals from position """
         npShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/ExtractNormals.fragment")
+            "DefaultPostProcess.vertex",
+            "ExtractNormals.fragment")
         self.normalPrecompute.setShader(npShader)
 
     def _attachUpdateTask(self):
@@ -952,19 +956,19 @@ class RenderingPipeline(DebugObject):
 
         if not tesselated:
             shader = Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultObjectShader/vertex.glsl",
-                "Shader/DefaultObjectShader/fragment.glsl")
+                "DefaultObjectShader/vertex.glsl",
+                "DefaultObjectShader/fragment.glsl")
         else:
             self.warn(
                 "Tesselation is only experimental! Remember "
                 "to convert the geometry to patches first!")
 
             shader = Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultObjectShader/vertex.glsl",
-                "Shader/DefaultObjectShader/fragment.glsl",
+                "DefaultObjectShader/vertex.glsl",
+                "DefaultObjectShader/fragment.glsl",
                 "",
-                "Shader/DefaultObjectShader/tesscontrol.glsl",
-                "Shader/DefaultObjectShader/tesseval.glsl")
+                "DefaultObjectShader/tesscontrol.glsl",
+                "DefaultObjectShader/tesseval.glsl")
 
         return shader
 

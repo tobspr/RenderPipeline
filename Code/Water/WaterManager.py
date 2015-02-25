@@ -53,7 +53,7 @@ class WaterManager(DebugObject):
             Texture.TFloat, Texture.FRgba16)
 
         self.combineShader = BetterShader.loadCompute(
-            "Shader/Water/Combine.compute")
+            "Water/Combine.compute")
 
         self.ptaTime = PTAFloat.emptyArray(1)
 
@@ -86,7 +86,7 @@ class WaterManager(DebugObject):
 
         # Create the shader which populates the initial height texture
         self.shaderInitialHeight = BetterShader.loadCompute(
-            "Shader/Water/InitialHeight.compute")
+            "Water/InitialHeight.compute")
         self.nodeInitialHeight = NodePath("initialHeight")
         self.nodeInitialHeight.setShader(self.shaderInitialHeight)
         self.nodeInitialHeight.setShaderInput("dest", self.texInitialHeight)
@@ -120,7 +120,7 @@ class WaterManager(DebugObject):
 
         # Also create the shader which updates the spectrum
         self.shaderUpdate = BetterShader.loadCompute(
-            "Shader/Water/Update.compute")
+            "Water/Update.compute")
         self.nodeUpdate = NodePath("update")
         self.nodeUpdate.setShader(self.shaderUpdate)
         self.nodeUpdate.setShaderInput("outH0x", self.heightTextures[0])

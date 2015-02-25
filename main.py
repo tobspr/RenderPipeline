@@ -275,7 +275,7 @@ class Main(ShowBase, DebugObject):
 
         if self.skybox:
             self.skybox.setShader(Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+                "DefaultObjectShader/vertex.glsl", "Skybox/fragment.glsl"))
 
     def convertToPatches(self, model):
         """ Converts a model to patches. This is REQUIRED before beeing able

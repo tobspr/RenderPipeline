@@ -46,8 +46,7 @@ class MountManager(DebugObject):
         vfs = VirtualFileSystem.getGlobalPtr()
 
         # Mount shaders
-        vfs.mountLoop(
-            join(self.basePath, 'Shader'), 'Shader', 0)
+        #vfs.mountLoop(join(self.basePath, 'Shader'), 'Shader', 0)
 
         # Mount data and models
         vfs.mountLoop(join(self.basePath, 'Data'), 'Data', 0)
@@ -75,13 +74,11 @@ class MountManager(DebugObject):
         base_path = Filename(self.basePath)
         #bp.makeAbsolute()
         getModelPath().appendDirectory(join(base_path.getFullpath(), 'Shader'))
-        #this is necessary so make pragma include find ShaderAutoConfig.include
+        #this is necessary to make pragma include find ShaderAutoConfig.include
         write_path = Filename(self.writePath)
         #wp.makeAbsolute()
         getModelPath().appendDirectory(write_path.getFullpath())
         #print("Current model-path: {}").format(getModelPath())
-        #print("Shader/DefaultObjectShader/vertex.glsl is a file: {}".format(
-        #                    isfile("Shader/DefaultObjectShader/vertex.glsl")))
 
     def unmount(self):
         """ Unmounts the VFS """
