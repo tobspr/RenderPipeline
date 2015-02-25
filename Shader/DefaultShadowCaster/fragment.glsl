@@ -1,11 +1,8 @@
 #version 400
-#pragma file "DefaultShadowCaster/fragment.glsl"
-
-
 
 #define NO_EXTENDED_PACKING
-#include "Includes/Packing.include"
-#include "Includes/Configuration.include"
+#pragma include "Includes/Packing.include"
+#pragma include "Includes/Configuration.include"
 
 in vec2 texcoord;
 in vec3 worldPos;

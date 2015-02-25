@@ -1,6 +1,7 @@
+#pragma once
 
 
-#include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.include"
 
 // http://aras-p.info/texts/CompactNormalStorage.html
 // Packs a normal to a vec2

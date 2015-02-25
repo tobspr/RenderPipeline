@@ -1,7 +1,7 @@
 #version 410
 
-#include "Includes/Configuration.include"
-#include "Includes/VertexOutput.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/VertexOutput.include"
 
 // Matrices
 uniform mat4 trans_model_to_world;

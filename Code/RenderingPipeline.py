@@ -7,6 +7,7 @@ from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
 from panda3d.core import PTAFloat, PTALMatrix4f, UnalignedLMatrix4f, LVecBase2i
 from panda3d.core import PTAVecBase3f, WindowProperties, Vec4, Vec2, PTAVecBase2f
 from panda3d.core import SamplerState
+from panda3d.core import Shader
 
 from direct.stdpy.file import open
 
@@ -112,7 +113,7 @@ class RenderingPipeline(DebugObject):
 
 
         self.debug("Checking required Panda3D version ..")
-        SystemAnalyzer.checkPandaVersionOutOfDate(01,12,2014)
+        #SystemAnalyzer.checkPandaVersionOutOfDate(01,12,2014)
 
         # Mount everything first
         self.mountManager.mount()
@@ -176,12 +177,12 @@ class RenderingPipeline(DebugObject):
 
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
 
-        # Create GI handler
-        if self.settings.enableGlobalIllumination:
-            self._setupGlobalIllumination()
-
         # Create occlusion handler
         self._setupOcclusion()
+
+        # Create GI handler
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum = GlobalIllumination(self)
 
         if self.settings.displayOnscreenDebugger:
             self.guiManager = PipelineGuiManager(self)
@@ -189,6 +190,10 @@ class RenderingPipeline(DebugObject):
 
         # Generate auto-configuration for shaders
         self._generateShaderConfiguration()
+
+        # Setup GI
+        if self.settings.enableGlobalIllumination:
+            self._setupGlobalIllumination()
 
         # Create light manager, which handles lighting + shadows
         if self.haveLightingPass:
@@ -288,7 +293,7 @@ class RenderingPipeline(DebugObject):
 
     def _setupGlobalIllumination(self):
         """ Creates the GI handler """
-        self.globalIllum = GlobalIllumination(self)
+        #self.globalIllum = GlobalIllumination(self)
         self.globalIllum.setup()
 
     def _setupAntialiasing(self):
@@ -726,61 +731,61 @@ class RenderingPipeline(DebugObject):
 
     def _setOcclusionBlurShader(self):
         """ Sets the shaders which blur the occlusion """
-        blurVShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/BlurOcclusionVertical.fragment")
-        blurHShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/BlurOcclusionHorizontal.fragment")
+        blurVShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "BlurOcclusionVertical.fragment")
+        blurHShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "BlurOcclusionHorizontal.fragment")
         self.blurOcclusionV.setShader(blurVShader)
         self.blurOcclusionH.setShader(blurHShader)
 
     def _setGIComputeShader(self):
         """ Sets the shader which computes the GI """
-        giShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/ComputeGI.fragment")
+        giShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "ComputeGI.fragment")
         self.giPrecomputeBuffer.setShader(giShader)
 
     def _setBlurShader(self):
         """ Sets the shaders which blur the color """
-        blurVShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/BlurVertical.fragment")
-        blurHShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/BlurHorizontal.fragment")
+        blurVShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "BlurVertical.fragment")
+        blurHShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "BlurHorizontal.fragment")
         self.blurColorV.setShader(blurVShader)
         self.blurColorH.setShader(blurHShader)
 
     def _setLightingShader(self):
         """ Sets the shader which applies the light """
-        lightShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/ApplyLighting.fragment")
+        lightShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "ApplyLighting.fragment")
         self.lightingComputeContainer.setShader(lightShader)
 
     def _setCombinerShader(self):
         """ Sets the shader which combines the lighting with the previous frame
         (temporal reprojection) """
-        cShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/Combiner.fragment")
+        cShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "Combiner.fragment")
         self.combiner.setShader(cShader)
 
     def _setPositionComputationShader(self):
         """ Sets the shader which computes the lights per tile """
-        pcShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/PrecomputeLights.fragment")
+        pcShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "PrecomputeLights.fragment")
         self.lightBoundsComputeBuff.setShader(pcShader)
 
     def _setFinalPassShader(self):
         """ Sets the shader which computes the final frame,
         with motion blur and so on """
-        fShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/Final.fragment")
+        fShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "Final.fragment")
         self.deferredTarget.setShader(fShader)
 
     def _getSize(self):
@@ -820,9 +825,9 @@ class RenderingPipeline(DebugObject):
 
     def _setNormalExtractShader(self):
         """ Sets the shader which constructs the normals from position """
-        npShader = BetterShader.load(
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/ExtractNormals.fragment")
+        npShader = Shader.load(Shader.SLGLSL, 
+            "DefaultPostProcess.vertex",
+            "ExtractNormals.fragment")
         self.normalPrecompute.setShader(npShader)
 
     def _attachUpdateTask(self):
@@ -950,20 +955,20 @@ class RenderingPipeline(DebugObject):
         """ Returns the default shader for objects """
 
         if not tesselated:
-            shader = BetterShader.load(
-                "Shader/DefaultObjectShader/vertex.glsl",
-                "Shader/DefaultObjectShader/fragment.glsl")
+            shader = Shader.load(Shader.SLGLSL, 
+                "DefaultObjectShader/vertex.glsl",
+                "DefaultObjectShader/fragment.glsl")
         else:
             self.warn(
                 "Tesselation is only experimental! Remember "
                 "to convert the geometry to patches first!")
 
-            shader = BetterShader.load(
-                "Shader/DefaultObjectShader/vertex.glsl",
-                "Shader/DefaultObjectShader/fragment.glsl",
+            shader = Shader.load(Shader.SLGLSL, 
+                "DefaultObjectShader/vertex.glsl",
+                "DefaultObjectShader/fragment.glsl",
                 "",
-                "Shader/DefaultObjectShader/tesscontrol.glsl",
-                "Shader/DefaultObjectShader/tesseval.glsl")
+                "DefaultObjectShader/tesscontrol.glsl",
+                "DefaultObjectShader/tesseval.glsl")
 
         return shader
 
@@ -1114,7 +1119,8 @@ class RenderingPipeline(DebugObject):
         defines.append(("CAMERA_FAR", Globals.base.camLens.getFar()))
 
         # Generate
-        output = "// Autogenerated by RenderingPipeline.py\n"
+	output = "#pragma once\n"
+        output += "// Autogenerated by RenderingPipeline.py\n"
         output += "// Do not edit! Your changes will be lost.\n\n"
 
         for key, value in defines:

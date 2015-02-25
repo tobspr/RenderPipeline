@@ -1,6 +1,6 @@
 #version 140
 
-#include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.include"
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 trans_model_to_world;

@@ -12,6 +12,7 @@ import struct
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3
 from panda3d.core import Texture
+from panda3d.core import Shader
 
 from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
@@ -290,16 +291,16 @@ class Main(ShowBase, DebugObject):
             self.scene.setShader(
                 self.renderPipeline.getDefaultObjectShader(False))
 
-            self.model.setShader(BetterShader.load(
-                "Shader/DefaultObjectShader/vertex.glsl",
+            self.model.setShader(Shader.load(Shader.SLGLSL, 
+                "DefaultObjectShader/vertex.glsl",
                 "dynamicMaterialFragment.glsl"))
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()
 
         if self.skybox:
-            self.skybox.setShader(BetterShader.load(
-                "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+            self.skybox.setShader(Shader.load(Shader.SLGLSL, 
+                "DefaultObjectShader/vertex.glsl", "Skybox/fragment.glsl"))
 
     def convertToPatches(self, model):
         """ Converts a model to patches. This is REQUIRED before beeing able

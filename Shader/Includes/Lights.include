@@ -1,5 +1,6 @@
+#pragma once
 
-#include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.include"
 
 
 vec3 applyPointLight(Light light, Material material 

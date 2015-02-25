@@ -37,7 +37,7 @@ class TextureDebugger(DebugObject):
         TextureCleaner.clearTexture(store, Vec4(1, 0, 1, 1))
 
         # Create a dummy node and apply the shader to it
-        shader = BetterShader.loadCompute("Shader/Write3DTexture.compute")
+        shader = BetterShader.loadCompute("Write3DTexture.compute")
         dummy = NodePath("dummy")
         dummy.setShader(shader)
         dummy.setShaderInput("source", tex)

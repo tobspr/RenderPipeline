@@ -1,5 +1,6 @@
 
 from panda3d.core import Vec3
+from panda3d.core import Shader
 from BetterShader import BetterShader
 from DebugObject import DebugObject
 from Globals import Globals
@@ -288,13 +289,13 @@ class Scattering(DebugObject):
         # self._engine.openWindows()
 
         sArgs = [
-            "Shader/Scattering/DefaultVertex.vertex",
-            "Shader/Scattering/" + shaderName + ".fragment"
+            "Scattering/DefaultVertex.vertex",
+            "Scattering/" + shaderName + ".fragment"
         ]
 
         if layers > 1:
-            sArgs.append("Shader/Scattering/DefaultGeometry.geometry")
-        shader = BetterShader.load(*sArgs)
+            sArgs.append("Scattering/DefaultGeometry.geometry")
+        shader = Shader.load(Shader.SLGLSL, *sArgs)
         rt.setShader(shader)
 
         self._setInputs(rt, "options")

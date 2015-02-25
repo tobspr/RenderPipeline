@@ -1,7 +1,8 @@
+#pragma once
 
 
 
-#include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.include"
 
 #ifdef USE_TEMPORAL_REPROJECTION
 

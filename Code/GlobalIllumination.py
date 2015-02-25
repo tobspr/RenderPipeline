@@ -1,5 +1,6 @@
 
 from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
+from panda3d.core import Shader
 from panda3d.core import Vec2, LMatrix4f, LVecBase3i, Camera, Mat4
 from panda3d.core import Mat4, OmniBoundingVolume, OrthographicLens
 from panda3d.core import PStatCollector, BoundingBox, Point3, CullFaceAttrib
@@ -109,10 +110,10 @@ class GlobalIllumination(DebugObject):
 
     def _createVoxelizeState(self):
         """ Creates the tag state and loades the voxelizer shader """
-        self.voxelizeShader = BetterShader.load(
-            "Shader/GI/Voxelize.vertex",
-            "Shader/GI/Voxelize.fragment"
-            # "Shader/GI/Voxelize.geometry"
+        self.voxelizeShader = Shader.load(Shader.SLGLSL, 
+            "GI/Voxelize.vertex",
+            "GI/Voxelize.fragment"
+            # "GI/Voxelize.geometry"
             )
 
         initialState = NodePath("VoxelizerState")
@@ -221,15 +222,18 @@ class GlobalIllumination(DebugObject):
         pstats_GenerateMipmaps.stop()
 
     def _createCleanShader(self):
-        shader = BetterShader.loadCompute("Shader/GI/ClearTexture.compute")
+        #shader = BetterShader.loadCompute("GI/ClearTexture.compute")
+        shader = Shader.loadCompute(Shader.SLGLSL, "GI/ClearTexture.compute")
         self.clearTextureNode.setShader(shader)
 
     def _createConvertShader(self):
-        shader = BetterShader.loadCompute("Shader/GI/ConvertGrid.compute")
+        #shader = BetterShader.loadCompute("GI/ConvertGrid.compute")
+        shader = Shader.loadCompute(Shader.SLGLSL, "GI/ConvertGrid.compute")
         self.convertGridNode.setShader(shader)
 
     def _createGenerateMipmapsShader(self):
-        shader = BetterShader.loadCompute("Shader/GI/GenerateMipmaps.compute")
+        #shader = BetterShader.loadCompute("GI/GenerateMipmaps.compute")
+        shader = Shader.loadCompute(Shader.SLGLSL, "GI/GenerateMipmaps.compute")
         self.generateMipmapsNode.setShader(shader)
 
     def reloadShader(self):

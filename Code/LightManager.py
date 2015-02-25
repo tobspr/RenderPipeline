@@ -1,10 +1,11 @@
 
 from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, RenderState
+from panda3d.core import Shader
 from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
 from panda3d.core import OmniBoundingVolume, PTAInt, Vec4, PTAVecBase4f
 from panda3d.core import LVecBase2i, ShaderAttrib, UnalignedLVecBase4f
 from panda3d.core import ComputeNode, LVecBase4i, GraphicsOutput, SamplerState
-
+from panda3d.core import Shader, Filename
 
 from Light import Light
 from DebugObject import DebugObject
@@ -113,11 +114,16 @@ class LightManager(DebugObject):
 
     def _createTagStates(self):
         # Create shadow caster shader
-        self.shadowCasterShader = BetterShader.load(
-            "Shader/DefaultShadowCaster/vertex.glsl",
-            "Shader/DefaultShadowCaster/fragment.glsl",
-            "Shader/DefaultShadowCaster/geometry.glsl")
-
+	"""
+        self.shadowCasterShader = Shader.load(Shader.SLGLSL, 
+            "DefaultShadowCaster/vertex.glsl",
+            "DefaultShadowCaster/fragment.glsl",
+            "DefaultShadowCaster/geometry.glsl")
+	"""        
+	self.shadowCasterShader = Shader.load(Shader.SLGLSL,
+            "DefaultShadowCaster/vertex.glsl",
+            "DefaultShadowCaster/fragment.glsl",
+            "DefaultShadowCaster/geometry.glsl")
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(self.shadowCasterShader, 30)
         # initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))

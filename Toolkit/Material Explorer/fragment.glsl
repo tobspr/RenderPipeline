@@ -1,7 +1,7 @@
 #version 400
 #pragma file "DefaultObjectShader/fragment.glsl"
 
-#include "Includes/VertexOutput.include"
+#pragma include "Includes/VertexOutput.include"
 
 
 #extension GL_ARB_separate_shader_objects : enable

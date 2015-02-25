@@ -1,3 +1,4 @@
+#pragma once
 
 
 uniform mat4 trans_clip_of_mainCam_to_mainRender;

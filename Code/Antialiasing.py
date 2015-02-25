@@ -1,5 +1,6 @@
 
 from panda3d.core import Texture, PTAInt
+from panda3d.core import Shader
 
 from DebugObject import DebugObject
 from RenderTarget import RenderTarget
@@ -119,8 +120,8 @@ class AntialiasingTechniqueFXAA(AntialiasingTechnique):
     def reloadShader(self):
         """ Reloads all assigned shaders """
 
-        fxaaShader = BetterShader.load("Shader/DefaultPostProcess.vertex",
-                                       "Shader/FXAA/FXAA3.fragment")
+        fxaaShader = Shader.load(Shader.SLGLSL, "DefaultPostProcess.vertex",
+                                       "FXAA/FXAA3.fragment")
         self._buffer.setShader(fxaaShader)
 
     def getResultTexture(self):
@@ -198,22 +199,22 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
 
     def reloadShader(self):
         """ Reloads all used shaders """
-        edgeShader = BetterShader.load(
-            "Shader/SMAA/EdgeDetection.vertex", "Shader/SMAA/EdgeDetection.fragment")
+        edgeShader = Shader.load(Shader.SLGLSL, 
+            "SMAA/EdgeDetection.vertex", "SMAA/EdgeDetection.fragment")
         self._edgesBuffer.setShader(edgeShader)
 
-        weightsShader = BetterShader.load(
-            "Shader/SMAA/BlendingWeights.vertex", "Shader/SMAA/BlendingWeights.fragment")
+        weightsShader = Shader.load(Shader.SLGLSL, 
+            "SMAA/BlendingWeights.vertex", "SMAA/BlendingWeights.fragment")
         self._blendBuffer.setShader(weightsShader)
 
-        neighborShader = BetterShader.load(
-            "Shader/SMAA/Neighbors.vertex", "Shader/SMAA/Neighbors.fragment")
+        neighborShader = Shader.load(Shader.SLGLSL, 
+            "SMAA/Neighbors.vertex", "SMAA/Neighbors.fragment")
 
         for buff in self._neighborBuffers:
             buff.setShader(neighborShader)
 
-        resolveShader = BetterShader.load(
-            "Shader/SMAA/Resolve.vertex", "Shader/SMAA/Resolve.fragment")
+        resolveShader = Shader.load(Shader.SLGLSL, 
+            "SMAA/Resolve.vertex", "SMAA/Resolve.fragment")
         self._resolveBuffer.setShader(resolveShader)
 
     def getResultTexture(self):

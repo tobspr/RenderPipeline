@@ -3,8 +3,8 @@
 
 #pragma optionNV (unroll all)
 
-#include "Includes/Configuration.include"
-#include "Includes/PostProcessBlur.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PostProcessBlur.include"
 
 uniform sampler2D colorTex;
 uniform sampler2D dofStorage;

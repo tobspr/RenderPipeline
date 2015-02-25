@@ -1,8 +1,8 @@
 #version 150
 #pragma file "ExtractNormals.fragment"
 
-#include "Includes/Configuration.include"
-#include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
 
 in vec2 texcoord;
 

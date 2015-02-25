@@ -1,9 +1,10 @@
+#pragma once
 
 
-#include "Includes/Configuration.include"
-#include "Includes/Light.include"
-#include "Includes/IntersectionTests.include"
-#include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Light.include"
+#pragma include "Includes/IntersectionTests.include"
+#pragma include "Includes/PositionReconstruction.include"
 
 
 bool isPointLightInFrustum(Light light, Frustum frustum) {

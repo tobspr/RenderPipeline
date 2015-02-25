@@ -1,11 +1,12 @@
+#pragma once
 
 
 
 #ifdef OCCLUSION_TECHNIQUE_NONE
-    #include "Occlusion/None.include"
+    #pragma include "Occlusion/None.include"
 #endif
 
 #ifdef OCCLUSION_TECHNIQUE_SAO
-    #include "Occlusion/SAO.include"
+    #pragma include "Occlusion/SAO.include"
 #endif
 

@@ -1,8 +1,8 @@
+#pragma once
 
-
-#include "Scattering/Scattering.include"
-#include "Scattering/ScatteringOptions.include"
-#include "Includes/PositionReconstruction.include"
+#pragma include "Scattering/Scattering.include"
+#pragma include "Scattering/ScatteringOptions.include"
+#pragma include "Includes/PositionReconstruction.include"
 
 
 // Prevents subpixel artifacts at the border of the atmosphere

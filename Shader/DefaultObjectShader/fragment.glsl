@@ -1,7 +1,7 @@
 #version 400
 #pragma file "DefaultObjectShader/fragment.glsl"
 
-#include "Includes/VertexOutput.include"
+#pragma include "Includes/VertexOutput.include"
 
 
 #extension GL_ARB_separate_shader_objects : enable
@@ -18,11 +18,11 @@ uniform sampler2D p3d_Texture3;
 
 // 
 // This is required for the materials
-#include "Includes/MaterialPacking.include"
+#pragma include "Includes/MaterialPacking.include"
 
 // Also this enables us to compute the tangent in
 // the fragment shader
-#include "Includes/TangentFromDDX.include"
+#pragma include "Includes/TangentFromDDX.include"
 
 uniform float osg_FrameTime;
 

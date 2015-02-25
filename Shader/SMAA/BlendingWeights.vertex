@@ -1,7 +1,7 @@
 #version 400
 
 #define SMAA_INCLUDE_PS 0
-#include "Includes/SMAA-Wrapper.include"
+#pragma include "Includes/SMAA-Wrapper.include"
 
 
 uniform mat4 p3d_ModelViewProjectionMatrix;

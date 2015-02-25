@@ -3,8 +3,8 @@
 
 #pragma optionNV (unroll all)
 
-#include "Includes/Configuration.include"
-#include "Includes/BokehDOF2.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/BokehDOF2.include"
 
 
 

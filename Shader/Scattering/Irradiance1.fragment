@@ -1,8 +1,8 @@
 #version 150
 #pragma file "Irradiance1.fragment"
 
-#include "Scattering/ScatteringOptions.include"
-#include "Scattering/Scattering.include"
+#pragma include "Scattering/ScatteringOptions.include"
+#pragma include "Scattering/Scattering.include"
 
 uniform ScatteringOptions options;
 

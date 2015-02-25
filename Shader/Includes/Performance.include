@@ -1,3 +1,4 @@
+#pragma once
 
 
 vec4 FAST_mul(mat4 m, vec3 v) {
