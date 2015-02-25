@@ -84,7 +84,7 @@ class Main(ShowBase, DebugObject):
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
         self.renderPipeline.enableDefaultEarthScattering()
-        """
+        
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
@@ -182,7 +182,7 @@ class Main(ShowBase, DebugObject):
         # Show windows
         # for window in base.graphicsEngine.getWindows():
             # print window.getName(), window.getSort()
-        """
+        
 
     def setSunPos(self):
         """ Sets the sun position based on the debug slider """
