@@ -1,0 +1,26 @@
+#version 400
+
+uniform int frameIndex;
+uniform sampler2D depth;
+uniform sampler2D noiseTexture;
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Occlusion/Init.include"
+
+in vec2 texcoord;
+
+uniform vec4 bufferSize;
+
+out vec3 occlusionResult;
+
+void main() {
+
+
+    float depth = texture(depth, texcoord).x;
+    float linearDepth = getLinearZFromZ(depth);
+    float result = computeOcclusion(texcoord, ivec2(gl_FragCoord.xy), 1.0);
+
+    occlusionResult = vec3(result);
+
+}

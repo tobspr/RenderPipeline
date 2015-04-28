@@ -5,8 +5,8 @@
 #pragma include "Includes/Packing.include"
 
 
-// const float normalsDiscardThreshold = 0.99999;
-const float normalsDiscardThreshold = 0.5;
+const float normalsDiscardThreshold = 0.9;
+// const float normalsDiscardThreshold = 0.2;
 
 
 #pragma optionNV (unroll all)

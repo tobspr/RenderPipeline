@@ -83,7 +83,7 @@ class MovementController:
         # wireframe + debug + buffer viewer
         self.showbase.accept("f3", self.showbase.toggleWireframe)
         self.showbase.accept("p",  self._showDebugOutput)
-        self.showbase.accept("v",  self._toggleBufferViewer)
+        # self.showbase.accept("v",  self._toggleBufferViewer)
 
         # mouse
         self.showbase.accept("mouse1",    self._setMouseEnabled, [True])
@@ -123,8 +123,9 @@ class MovementController:
 
     # Internal method to trigger buffer viewer
     def _toggleBufferViewer(self):
-        print "Toggling buffer viewer"
-        self.showbase.bufferViewer.toggleEnable()
+        pass
+        # print "Toggling buffer viewer"
+        # self.showbase.bufferViewer.toggleEnable()
 
     # Invernal update method
     def _update(self, task):

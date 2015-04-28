@@ -288,6 +288,12 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     }
     sum /= SHADOW_NUM_PCSS_FILTER_SAMPLES;
+
+
+    // Avoid banding
+    sum = pow(sum, 1.4);
+
+    
     // return 1.0 - saturate(pow(sum, 2.0));
     return 1.0 - saturate(sum);
 

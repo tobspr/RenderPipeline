@@ -8,6 +8,8 @@
 // is faster or slower ..
 #pragma optionNV (unroll all)
 
+
+
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Light.include"
 #pragma include "Includes/Material.include"
@@ -28,6 +30,10 @@ uniform sampler2D giDiffuseTex;
 uniform sampler2D giReflectionTex;
 #endif
 
+#ifdef USE_OCCLUSION
+uniform sampler2D occlusionTex;
+#endif
+
 // layout (r32i) readonly uniform iimage2D lightsPerTile;
 uniform isampler2D lightsPerTile;
 
@@ -35,10 +41,6 @@ uniform Light lights[MAX_VISIBLE_LIGHTS];
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 in vec2 texcoord;
 
-
-#ifdef USE_TEMPORAL_REPROJECTION
-    uniform int temporalProjXOffs;
-#endif
 
 
 uniform int frameIndex;
@@ -50,11 +52,20 @@ uniform vec4 bufferSize;
 uniform vec3 cameraPosition;
 
 // Has to be after the uniforms
-#pragma include "Occlusion/Init.include"
 #pragma include "Includes/Lighting.include"
 
 
 out vec4 lightingResult;
+
+
+uniform sampler2D lastFramePosition;
+
+#ifdef USE_OCCLUSION
+uniform sampler2D lastFrameOcclusion;
+#endif
+
+
+
 
 
 #ifdef USE_SCATTERING
@@ -77,24 +88,9 @@ void main() {
 
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
-
-    #ifdef USE_TEMPORAL_REPROJECTION
-     ivec2 screenCoord = ivec2(texcoord * vec2(screenSize.x + 1 , screenSize.y)); 
-
-        // Shift x by 1 for temporal reprojection
-        // Usually we would do just screenCoord.x += temporalProjXOffs
-        // But using a checkerboard pattern removes a lot of artifacts, 
-        // as you otherwise can see the line-pattern very obviously. Using
-        // a checkerboard more gives a dithering effect, which is barely visible
-        screenCoord.x += (screenCoord.x + screenCoord.y) % 2 == temporalProjXOffs ? -1 : 0;
-        vec2 correctTexcoord = (vec2(screenCoord)+0.5) / vec2(screenSize);
-
-    #else
-
-        ivec2 screenCoord = ivec2(gl_FragCoord.xy);
-        vec2 correctTexcoord = texcoord;
-
-    #endif
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+    vec2 correctTexcoord = texcoord;
+   
 
     ivec2 precomputeCoord = ivec2( vec2(screenCoord) / 
         vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y) ) * 8;
@@ -289,10 +285,6 @@ void main() {
     #endif
 
 
-     OCCLUSION_RESULT_TYPE occlusionResult = OCCLUSION_RESULT_TYPE (0.0);
-
-
-
     // We can skip lighting for the skybox
     if (isSkybox) {
 
@@ -301,13 +293,34 @@ void main() {
 
     } else {
 
-        // Compute Occlusion
-        float distanceToCamera = distance(cameraPosition, material.position);
-        occlusionResult = computeOcclusion(correctTexcoord, screenCoord, distanceToCamera);
-        occlusionResult = 1.0 - occlusionResult;
+
+        // upscale occlusion here
+
+        #if USE_OCCLUSION
+
+
+            vec2 velocity = target2data.xy / 255.0;
+            vec2 lastFrameTexcoord = texcoord  + velocity;
+            ivec2 lastFrameCoordInt = ivec2(lastFrameTexcoord * textureSize(lastFramePosition, 0).xy);
+
+            vec3 lastPos = texelFetch(lastFramePosition, lastFrameCoordInt, 0).xyz;
+
+            float reliability = 1.0 - saturate(distance(lastPos, material.position) * 10.0);
+            // reliability = 1.0;
+
+            occlusionTotal = texture(occlusionTex, texcoord).x;
+
+            float lastOcclusion = texelFetch(lastFrameOcclusion, lastFrameCoordInt, 0).x;
+            occlusionTotal = mix(occlusionTotal, lastOcclusion, 0.5 * saturate(reliability) );
+            // occlusionTotal = mix(occlusionTotal, lastOcclusion, 0.5);
+
+            // occlusionTotal = reliability;
+
+
+        #endif
 
         #ifdef DEBUG_DISABLE_OCCLUSION
-            occlusionResult = 0.0;
+            occlusionTotal = 0.0;
         #endif
 
         // Metallic materials don't have much occlusion
@@ -325,7 +338,7 @@ void main() {
             currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
             currentLight = lights[currentLightId];
 
-            result += applyPointLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+            result += applyPointLight(currentLight, material);
         }
 
         // Compute shadow point lights
@@ -336,9 +349,9 @@ void main() {
             currentLight = lights[currentLightId];
 
             #if USE_SHADOWS
-                result += applyPointLightWithShadow(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+                result += applyPointLightWithShadow(currentLight, material );
             #else
-                result += applyPointLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+                result += applyPointLight(currentLight, material);
             #endif
         }
 
@@ -348,7 +361,7 @@ void main() {
             currentOffset = ivec2(i % 8, i / 8);
             currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
             currentLight = lights[currentLightId];
-            result += applyDirectionalLight(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+            result += applyDirectionalLight(currentLight, material);
         }
 
 
@@ -358,7 +371,7 @@ void main() {
             currentOffset = ivec2(i % 8, i / 8);
             currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
             currentLight = lights[currentLightId];
-            result += applyDirectionalLightWithShadow(currentLight, material OCCLUSION_PER_LIGHT_SEND_PARAMETERS );
+            result += applyDirectionalLightWithShadow(currentLight, material);
         }
 
 
@@ -406,10 +419,8 @@ void main() {
     #endif
 
     #ifdef DEBUG_RM_OCCLUSION
-        result = vec3(1);
-        occlusionTotal = occlusionResult;
-        // occlusionTotal = 0.0;
-        result = vec3(1.0 - occlusionResult*15.0);
+        result = vec3(occlusionTotal);
+        occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_METALLIC
@@ -452,7 +463,5 @@ void main() {
     #endif
 
 
-    // result = vec3(texelFetch(shadowAtlas, screenCoord, 0).w);
-
-    lightingResult = vec4(result, 1.0 - saturate(occlusionTotal) );
+    lightingResult = vec4(result, saturate(occlusionTotal) );
 }

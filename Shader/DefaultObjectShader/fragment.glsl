@@ -72,7 +72,7 @@ void main() {
 
     // m.baseColor *= vec3(8);
     // m.roughness = 0.1;
-    // m.specular = 1.0;
+    m.specular = 0.0;
     // m.specular *= 0.15;
     // m.metallic = 1.0;
 

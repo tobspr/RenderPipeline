@@ -10,3 +10,6 @@
     #pragma include "Occlusion/SAO.include"
 #endif
 
+#ifdef OCCLUSION_TECHNIQUE_HBAO
+    #pragma include "Occlusion/HBAO.include"
+#endif

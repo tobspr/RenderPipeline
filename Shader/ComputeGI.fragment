@@ -5,7 +5,6 @@
 #pragma include "Includes/Material.include"
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/ColorCorrection.include"
-#pragma include "Includes/TemporalReprojection.include"
 #pragma include "Includes/GlobalIllumination.include"
 
 // Required, otherwise quite slow

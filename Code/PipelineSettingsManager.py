@@ -29,6 +29,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("accurateLightBoundCheck", bool, True)
         self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
         self._addSetting("ambientCubemapSamples", int, 16)
+        self._addSetting("colorLookupTable", str, "Default.png")
 
 
         # [Occlusion]
@@ -61,5 +62,4 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("displayDebugStats", bool, True)
         self._addSetting("dumpGeneratedShaders", bool, False)
 
-        self._addSetting("enableTemporalReprojection", bool, False)
         self._addSetting("enableScattering", bool, False)

@@ -10,6 +10,12 @@ uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;
 
 
+
+#undef OCCLUSION_SAMPLES
+#define OCCLUSION_SAMPLES 64
+
+
+
 // No Occlusion
 
 // ViewProjInv
@@ -18,49 +24,44 @@ uniform mat4 trans_mainRender_to_apiview_of_mainCam;
 // View
 uniform mat4 trans_apiclip_to_apiview_of_mainCam;
 
-#define OCCLUSION_RESULT_TYPE float
-#define OCCLUSION_PER_LIGHT_SEND_PARAMETERS , occlusionTotal, occlusionResult 
-#define OCCLUSION_PER_LIGHT_RECV_PARAMETERS , inout float occlusionTotal, float occlusionResult
-
-
-#define APPLY_OCCLUSION() occlusionTotal += occlusionResult * attenuation * OCCLUSION_STRENGTH * saturate(1.1-shadowFactor);
-
-
 // total number of samples at each fragment
-#define SAO_NUM_SPIRAL_TURNS      5
+#define SAO_NUM_SPIRAL_TURNS      4
 #define SAO_VARIATION             1
 
-
-const float saoIntensity = 0.5;
-const float saoConstIntensity = 0.3;
-const float saoSampleRadiusWS = 0.9;
-const float saoBias = 0.03;
-const float saoEpsilon = 0.05;
+const float saoIntensity = 1.0;
+const float saoConstIntensity = 1.5;
+const float saoSampleRadiusWS = 3.0;
+const float saoBias = 0.1;
+const float saoEpsilon = 0.1;
 
 // reconstructs view-space unit normal from view-space position
 vec3 sao_reconstructNormalVS(vec3 positionVS) {
   return normalize(cross(dFdx(positionVS), dFdy(positionVS)));
 }
  
-vec3 sao_getPositionVS2(vec2 uv) {
+vec3 sao_getPositionVS(vec2 uv) {
   return texture(viewSpacePosition, uv).xyz;
 }
  
-vec3 sao_getPositionVS(vec2 uv) {
-  float z = texture(depth, uv).r;  
-  vec3 pos = calculateSurfacePos(z, uv);
-  vec4 vsPos = trans_mainRender_to_apiview_of_mainCam * vec4(pos, 1);
-  return vsPos.xyz;
-}
+// vec3 sao_getPositionVS(vec2 uv) {
+//   float z = texture(depth, uv).r;  
+//   vec3 pos = calculateSurfacePos(z, uv);
+//   vec4 vsPos = trans_mainRender_to_apiview_of_mainCam * vec4(pos, 1);
+//   return vsPos.xyz;
+// }
  
 // returns a unit vector and a screen-space radius for the tap on a unit disk 
 // (the caller should scale by the actual disk radius)
 vec2 sao_tapLocation(int sampleNumber, float spinAngle, out float radiusSS) {
   // radius relative to radiusSS
   float alpha = (float(sampleNumber) + 0.5) * (1.0 / float(OCCLUSION_SAMPLES));
-  float angle = alpha * (float(SAO_NUM_SPIRAL_TURNS) * 6.28) + spinAngle;
+  float angle = (alpha + spinAngle) * (float(SAO_NUM_SPIRAL_TURNS) * 6.28);
+  // float angle = M_PI * 32.0 * alpha;
   radiusSS = alpha;
   return vec2(cos(angle), sin(angle));
+
+
+
 }
  
 vec3 sao_getOffsetPositionVS(vec2 uv, vec2 unitOffset, float radiusSS) {
@@ -118,17 +119,20 @@ float sao_rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
-OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
+float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   
 
   vec3 originVS = sao_getPositionVS(coord);
 
-  // vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
-  vec3 normalVS = sao_reconstructNormalVS(originVS);
+  vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
+  // vec3 normalVS = sao_reconstructNormalVS(originVS);
 
 
 
-  float randomPatternRotationAngle = 2.0 * M_PI * texelFetch(noiseTexture, coordInt % 4 + ivec2(frameIndex%2), 0).x;
+  // float randomPatternRotationAngle = 2.0 * M_PI * texelFetch(noiseTexture, coordInt % 4 + ivec2(frameIndex%2), 0).x;
+  // float randomPatternRotationAngle = 2.0 * M_PI * texelFetch(noiseTexture, coordInt % 4, 0).x;
+
+  float randomPatternRotationAngle = (frameIndex % 2);
 
 
   float radiusSS  = 0.0; // radius of influence in screen space
@@ -149,14 +153,16 @@ OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanc
   // float intensity = distanceToCamera * saoIntensity;
   // intensity = saoIntensity;
 
+
   float intensity = saoIntensity;
 
   for (int i = 0; i < OCCLUSION_SAMPLES; ++i) {
     occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, randomPatternRotationAngle);
   }
   
-  occlusion = 1.0 - occlusion / (4.0 * float(OCCLUSION_SAMPLES)) * saoConstIntensity;
-  occlusion = clamp(pow(occlusion, 1.0 + intensity), 0.0, 1.0);
+  occlusion = occlusion / float(OCCLUSION_SAMPLES) * saoConstIntensity;
+  // occlusion = clamp(pow(occlusion, 1.0 + intensity), 0.0, 1.0);
+
 
   return occlusion;
 }

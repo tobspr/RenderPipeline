@@ -22,7 +22,7 @@ import struct
 
 
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile, Vec3
+from panda3d.core import loadPrcFile, Vec3, SamplerState
 from panda3d.core import Texture
 from panda3d.core import Shader
 
@@ -68,7 +68,7 @@ class Main(ShowBase, DebugObject):
         
          ####### END OF RENDER PIPELINE SETUP #######
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
@@ -77,7 +77,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         #self.sceneSource = "Models/HouseSet/Model.egg"
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
+        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
@@ -171,18 +171,23 @@ class Main(ShowBase, DebugObject):
 
             self.lastSliderValue = 0.0
 
-        # Load skyboxn
-        self.skybox = None
-        self.loadSkybox()
+        # Load skybox
+        self.skybox = self.renderPipeline.getDefaultSkybox()
+        self.skybox.reparentTo(render)
 
         # Set default object shaders
         self.setShaders(refreshPipeline=False)
 
-
         # Show windows
         # for window in base.graphicsEngine.getWindows():
             # print window.getName(), window.getSort()
-        
+    
+        # self.addTask(self.sleep, "sleep")        
+
+    def sleep(self, task):
+        import time
+        time.sleep(0.1)
+        return task.cont
 
     def setSunPos(self):
         """ Sets the sun position based on the debug slider """
@@ -256,12 +261,6 @@ class Main(ShowBase, DebugObject):
             self.initialLightPos.append(prefab.getPos())
             self.test = light
 
-    def loadSkybox(self):
-        """ Loads the skybox """
-        self.skybox = self.loader.loadModel("Models/Skybox/Model.egg.bam")
-        self.skybox.setScale(40000)
-        self.skybox.reparentTo(self.render)
-
     def setShaders(self, refreshPipeline=True):
         """ Sets all shaders """
         self.debug("Reloading Shaders ..")
@@ -272,10 +271,6 @@ class Main(ShowBase, DebugObject):
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()
-
-        if self.skybox:
-            self.skybox.setShader(Shader.load(Shader.SLGLSL, 
-                "DefaultObjectShader/vertex.glsl", "Skybox/fragment.glsl"))
 
     def convertToPatches(self, model):
         """ Converts a model to patches. This is REQUIRED before beeing able

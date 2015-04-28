@@ -7,13 +7,15 @@
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/ColorCorrection.include"
-#pragma include "Includes/TemporalReprojection.include"
 
 
 in vec2 texcoord;
 
 uniform sampler2D velocityTex;
 uniform sampler2D colorTex;
+
+
+uniform sampler2D colorLUT;
 // uniform sampler2D depthTex;
 
 uniform float motionBlurFactor;
@@ -21,6 +23,14 @@ uniform float motionBlurFactor;
 uniform sampler2D debugTex;
 
 out vec3 result;
+
+
+layout (rgba32f) uniform image2D lastFramePosition;
+layout (r16f) uniform image2D lastFrameOcclusion;
+
+
+uniform sampler2D currentFramePosition;
+uniform sampler2D computedOcclusion;
 
 void main() {
 
@@ -34,9 +44,6 @@ void main() {
 
     // Screen coordinate (as int vec)
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
-
-    // Store last frame 
-    storeTemporalReprojection(screenCoord);
 
     #if 1
 
@@ -110,20 +117,17 @@ void main() {
 
 
     #ifndef DEBUG_DISABLE_COLOR_CORRECTION
-        vec3 colorCorrected = convertColorSpace(result);
-        result = mix( colorCorrected , result, 0.5);
-        result = (result - 0.05) * 1.2;
+        // Color LUT
+        result = applyColorLUT(colorLUT, result);
     #endif
 
-        
-    result = saturate(result);
+
+
 
     float vignett = smoothstep(0, 1, 
         (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.32) ) * 1.5;
-    result *= 1.0 - vignett;
+    // result *= 1.0 - vignett;
 
-    // result.rgb = newFrameVal.rgb;
- 
 
     #else
         result = texture(colorTex, texcoord).rgb;
@@ -132,6 +136,22 @@ void main() {
     #endif
 
 
+
+
+    ivec2 intCoords = ivec2(gl_FragCoord.xy / 2.0);
+
+
+    vec3 lastPosition = texelFetch(currentFramePosition, intCoords * 2, 0).xyz;
+
+    imageStore(lastFramePosition, intCoords, vec4(lastPosition, 1.0));
+
+    #ifdef USE_OCCLUSION
+
+    float lastOcclusion = texelFetch(computedOcclusion, intCoords, 0).x;
+    imageStore(lastFrameOcclusion, intCoords, vec4(lastOcclusion));
+    
+
+    #endif
 
     // result = texture(adjustedNormals, texcoord).rgb;
     // result = textureLod(colorTex, texcoord, 0).rgb;

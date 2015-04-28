@@ -6,29 +6,91 @@
 
 // number of directions to sample in UV space
 #define HBAO_NUM_SAMPLE_DIRECTIONS 8
+#define HBAO_TANGENT_BIAS 0.2
+#define HBAO_NUM_SAMPLING_STEPS 4
+#define HBAO_SAMPLING_STEP 0.004
 
-// number of sample steps when raymarching along a direction
-#define HBAO_NUM_SAMPLE_STEPS      8
-#define HBAO_APPLY_ATTENUATION     1
- 
-// const float hbaoSampleRadius = 5.0;
-const float hbaoAngleBias = 0.1;
-const float hbaoIntensity = 25.0;
-const vec2  hbaoNoiseScale = vec2(0.0);
+#define HBAO_SCALE 0.15
+#define HBAO_SAMPLING_RADIUS 2.0
 
-vec3 getPositionViewSpace(vec2 uv) {
-  return texture(positionView, uv).xyz;
+
+#define OCCLUSION_RESULT_TYPE float
+#define OCCLUSION_PER_LIGHT_SEND_PARAMETERS , occlusionTotal, occlusionResult 
+#define OCCLUSION_PER_LIGHT_RECV_PARAMETERS , inout float occlusionTotal, float occlusionResult
+
+#define APPLY_OCCLUSION() occlusionTotal += occlusionResult * attenuation * OCCLUSION_STRENGTH * saturate(1.1-shadowFactor);
+
+
+uniform sampler2D viewSpaceNormals;
+uniform sampler2D viewSpacePosition;
+
+
+
+vec3 hbao_getPositionViewSpace(vec2 uv) {
+  return texture(viewSpacePosition, uv).xyz;
 }
 
 const float TWO_PI = 2.0 * M_PI;
 const float hbaoTheta = TWO_PI / HBAO_NUM_SAMPLE_DIRECTIONS;
 
-float computeHBAO(vec2 coord, float dist) {
+OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
 
+  vec3 viewPos = texture(viewSpacePosition, coord).xyz;
+  vec3 viewNorm = texture(viewSpaceNormals, coord).xyz;
+
+  float total = 0.0f;
+  float sample_direction_increment = TWO_PI / HBAO_NUM_SAMPLE_DIRECTIONS;
+ 
+
+  float hbaoScale = saturate(1.0 / distanceToCamera) * 10.0;
+
+  for(uint i = 0; i < HBAO_NUM_SAMPLE_DIRECTIONS; i++)
+  {
+    // no jittering or randomization of sampling direction just yet
+    float sampling_angle = i * sample_direction_increment; // azimuth angle theta in the paper
+    vec2 sampleDir = vec2(cos(sampling_angle), sin(sampling_angle));
+    // we will now march along sampleDir and calculate the horizon
+    // horizon starts with the tangent plane to the surface, whose angle we can get from the normal
+    float tangentAngle = acos(dot(vec3(sampleDir, 0), viewNorm)) - (0.5 * M_PI) + HBAO_TANGENT_BIAS;
+    float horizonAngle = tangentAngle;
+    vec3 lastDiff = vec3(0);
+ 
+    for (uint j = 0; j < HBAO_NUM_SAMPLING_STEPS; j++)
+    {
+      // march along the sampling direction and see what the horizon is
+      vec2 sampleOffset = float(j+1) * HBAO_SAMPLING_STEP * sampleDir * hbaoScale;
+      vec2 offTex = coord + sampleOffset;
+ 
+      vec3 off_viewPos = texture(viewSpacePosition, offTex).xyz;
+      // we now have the view space position of the offset point
+      vec3 diff = off_viewPos - viewPos;
+      if (length(diff) < HBAO_SAMPLING_RADIUS)
+      {
+        // skip samples which are outside of our local sampling radius
+        lastDiff = diff;
+        float elevationAngle = atan(diff.z / length(diff.xy));
+        horizonAngle = max(horizonAngle, elevationAngle);
+      }
+    } // sampling steps
+ 
+    // the paper uses this attenuation but I like the other way better
+    //float normDiff = length(lastDiff) / SAMPLING_RADIUS;
+    //float attenuation = 1 - normDiff*normDiff;
+    float attenuation = 1.0 / (1 + length(lastDiff));
+    // now compare horizon angle to tangent angle to get ambient occlusion
+    float occlusion = clamp(attenuation * (sin(horizonAngle) - sin(tangentAngle)), 0.0, 1.0);
+    total += 1.0 - HBAO_SCALE*occlusion;
+  } // sampling directions
+ 
+  total /= HBAO_NUM_SAMPLE_DIRECTIONS;
+  total = clamp(total, 0.0, 1.0);
+  return total;
+
+#if 0
   // return 1.0;
   
-  vec3 originVS = getPositionViewSpace(coord);
-  vec3 normalVS = texture(normalsView, coord).xyz;
+  vec3 originVS = hbao_getPositionViewSpace(coord);
+  vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
 
   float radiusSS = 0.0; // radius of influence in screen space
   float radiusWS = 0.0; // radius of influence in world space
@@ -47,7 +109,7 @@ float computeHBAO(vec2 coord, float dist) {
   // radiusWS = min(tan(radiusSS * uFOV / 2.0) * originVS.y / 2.0, length(out1 - out0));
   
   radiusWS = 0.5;
-  radiusSS = saturate(1.0 / dist) * 1.0;
+  radiusSS = saturate(1.0 / distanceToCamera) * 1.0;
 
   // early exit if the radius of influence is smaller than one fragment
   // since all samples would hit the current fragment.
@@ -68,7 +130,7 @@ float computeHBAO(vec2 coord, float dist) {
   // we don't want to sample to the perimeter of R since those samples would be 
   // omitted by the distance attenuation (W(R) = 0 by definition)
   // Therefore we add a extra step and don't use the last sample.
-  vec3 sampleNoise    = texture(dssdoNoiseTex, texcoord).xyz;
+  vec3 sampleNoise    = texture(noiseTexture, texcoord).xyz;
   sampleNoise.xy      = sampleNoise.xy * 2.0 - 1.0;
 
   sampleNoise = vec3(0);
@@ -77,7 +139,7 @@ float computeHBAO(vec2 coord, float dist) {
                              sampleNoise.y,  sampleNoise.x);
   
 
-  float minBias = hbaoAngleBias + dist * 0.005;
+  float minBias = hbaoAngleBias + distanceToCamera * 0.005;
   // apply a random rotation to the base step vector
   // deltaUV = rotationMatrix * deltaUV;
   
@@ -95,7 +157,7 @@ float computeHBAO(vec2 coord, float dist) {
     
     for (int j = 0; j < HBAO_NUM_SAMPLE_STEPS; ++j) {
       vec2 sampleUV     = texcoord + (jitter + float(j)) * sampleDirUV;
-      vec3 sampleVS     = texture(positionView, sampleUV).xyz;
+      vec3 sampleVS     = texture(viewSpacePosition, sampleUV).xyz;
       vec3 sampleDirVS  = (sampleVS - originVS);
       
       // angle between fragment tangent and the sample
@@ -120,4 +182,6 @@ float computeHBAO(vec2 coord, float dist) {
   occlusion = clamp(pow(occlusion, 1.0 + hbaoIntensity), 0.0, 1.0);
   // result = vec4(occlusion, occlusion, occlusion, 1.0);
   return occlusion;
+#endif
+
 }

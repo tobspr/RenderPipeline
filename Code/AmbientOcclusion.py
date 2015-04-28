@@ -9,7 +9,7 @@ from BetterShader import BetterShader
 from Globals import Globals
 from AbstractMethodException import AbstractMethodException
 
-__all__ = ["AmbientOcclusionTechniqueNone", "AmbientOcclusionTechniqueSAO"]
+__all__ = ["AmbientOcclusionTechniqueNone", "AmbientOcclusionTechniqueSAO", "AmbientOcclusionTechniqueHBAO"]
 
 class AmbientOcclusionTechnique(DebugObject):
 
@@ -40,6 +40,9 @@ class AmbientOcclusionTechnique(DebugObject):
         Shader/Occlusion/Init.include """
         raise AbstractMethodException()
 
+    def hasSeparatePass(self):
+        """ Returns wheter the occlusion has a separate pass """
+        raise AbstractMethodException()
 
 class AmbientOcclusionTechniqueNone(AmbientOcclusionTechnique):
 
@@ -61,6 +64,9 @@ class AmbientOcclusionTechniqueNone(AmbientOcclusionTechnique):
         """ See parent-class """
         return "NONE"
 
+    def hasSeparatePass(self):
+        """ See parent-class """
+        return False
 
 class AmbientOcclusionTechniqueSAO(AmbientOcclusionTechnique):
 
@@ -81,3 +87,31 @@ class AmbientOcclusionTechniqueSAO(AmbientOcclusionTechnique):
     def getIncludeName(self):
         """ See parent-class """
         return "SAO"
+
+    def hasSeparatePass(self):
+        """ See parent-class """
+        return True
+
+class AmbientOcclusionTechniqueHBAO(AmbientOcclusionTechnique):
+
+    """ HBAO (Horizon Based Ambient Occlusion) """
+
+    def __init__(self):
+        """ See parent-class """
+        AmbientOcclusionTechnique.__init__(self, "HBAO")
+
+    def requiresViewSpacePosNrm(self):
+        """ See parent-class """
+        return True
+
+    def requiresBlurring(self):
+        """ See parent-class """
+        return True
+
+    def getIncludeName(self):
+        """ See parent-class """
+        return "HBAO"
+
+    def hasSeparatePass(self):
+        """ See parent-class """
+        return True

@@ -130,8 +130,8 @@ class Main(ShowBase, DebugObject):
             self.lastSliderValue = 0.0
 
         # Load skyboxn
-        self.skybox = None
-        self.loadSkybox()
+        self.skybox = self.renderPipeline.getDefaultSkybox()
+        self.skybox.reparentTo(render)
 
         # Set default object shaders
         self.setShaders(refreshPipeline=False)
@@ -275,12 +275,6 @@ class Main(ShowBase, DebugObject):
             tex.setMinfilter(Texture.FTLinearMipmapLinear)
             tex.setMagfilter(Texture.FTLinear)
             tex.setAnisotropicDegree(16)
-
-    def loadSkybox(self):
-        """ Loads the skybox """
-        self.skybox = self.loader.loadModel("Models/Skybox/Model.egg.bam")
-        self.skybox.setScale(40000)
-        self.skybox.reparentTo(self.render)
 
     def setShaders(self, refreshPipeline=True):
         """ Sets all shaders """
