@@ -72,7 +72,7 @@ const float sqrt_of_2 = 1.4142135623;
 
 #define PCSS_RADIUS_WS 0.01
 #define PCSS_SEARCH_RADIUS 25.0
-#define PCSS_FILTER_RADIUS 5.0
+#define PCSS_FILTER_RADIUS 15.0
 
 
 #define USE_PIXEL_BASED_PCSS 1

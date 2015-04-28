@@ -233,8 +233,8 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // aoMultiplier = 1.0;
 
     // return vec4(giResult * 5.0);
-    return vec4(1.02 - exp(-10.5 *giResult));
-    // return vec4(mix(aoMultiplier, 1.0, mixFactor));  
+    // return vec4(1.02 - exp(-10.5 *giResult));
+    return vec4(mix(aoMultiplier, 1.0, mixFactor));  
     // return vec4(giResult);  
     return mix(max(vec4(0.0), giResult) * aoMultiplier + 0.01, vec4(boundsColor), mixFactor);
 

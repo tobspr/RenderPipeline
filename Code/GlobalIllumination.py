@@ -42,7 +42,7 @@ class GlobalIllumination(DebugObject):
         self.targetSpace = Globals.base.render
 
         self.voxelBaseResolution = 512 * 4
-        self.voxelGridSizeWS = Vec3(180, 180, 180)
+        self.voxelGridSizeWS = Vec3(80, 80, 80)
         self.voxelGridResolution = LVecBase3i(256, 256, 256)
         self.targetLight = None
         self.helperLight = None

@@ -189,8 +189,7 @@ class RenderingPipeline(DebugObject):
 
 
         # We need last frame position for occlusion and gi
-        if self.haveOcclusion or self.settings.enableGlobalIllumination:
-            self._setupLastFrameTextures()
+        self._setupLastFrameTextures()
 
 
         if self.settings.displayOnscreenDebugger:
@@ -540,7 +539,6 @@ class RenderingPipeline(DebugObject):
             if self.settings.enableGlobalIllumination:
                 self.lightingComputeContainer.setShaderInput("giDiffuseTex", self.giPrecomputeBuffer.getColorTexture())
                 self.lightingComputeContainer.setShaderInput("giReflectionTex", self.giPrecomputeBuffer.getAuxTexture(0))
-
 
             self.lightingComputeContainer.setShaderInput("lastFramePosition", self.lastFramePosition)
 

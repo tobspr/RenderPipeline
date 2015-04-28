@@ -76,8 +76,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        #self.sceneSource = "Models/HouseSet/Model.egg"
-        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
+        self.sceneSource = "Models/HouseSet/Model.egg"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
@@ -95,7 +95,6 @@ class Main(ShowBase, DebugObject):
 
         # Flatten scene?
         self.scene.flattenStrong()
-        self.scene.analyze()
 
         # Load ground plane if configured
         if self.usePlane:

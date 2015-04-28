@@ -61,10 +61,10 @@ void main() {
     m.position = vOutput.positionWorld;
 
     #if 1
-    m.baseColor = vec3(vOutput.materialDiffuse);
+    // m.baseColor = vec3(vOutput.materialDiffuse);
     m.metallic = 0.0;
-    m.specular = 0.1;
-    m.roughness = 0.8;
+    m.specular = 0.3;
+    m.roughness = 0.5;
     #endif
 
     // m.roughness = 0.0;
@@ -72,7 +72,7 @@ void main() {
 
     // m.baseColor *= vec3(8);
     // m.roughness = 0.1;
-    m.specular = 0.0;
+    // m.specular = 0.0;
     // m.specular *= 0.15;
     // m.metallic = 1.0;
 
