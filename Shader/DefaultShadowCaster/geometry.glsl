@@ -21,7 +21,7 @@ void main() {
   for (int pass = 0; pass < numUpdates; pass ++) {
     ShadowSource currentSource = updateSources[pass];
     gl_ViewportIndex = pass + 1;
-    for(int i=0; i<gl_in.length; i++)
+    for(int i=0; i< gl_in.length(); i++)
     {
       gl_Position = currentSource.mvp * gl_in[i].gl_Position;
       texcoord = vtxTexcoord[i];

@@ -29,10 +29,11 @@ uniform mat4 trans_apiclip_to_apiview_of_mainCam;
 #define SAO_NUM_SPIRAL_TURNS      5
 #define SAO_VARIATION             1
 
+
 const float saoIntensity = 0.5;
-const float saoConstIntensity = 1.5;
-const float saoSampleRadiusWS = 0.5;
-const float saoBias = 0.05;
+const float saoConstIntensity = 0.3;
+const float saoSampleRadiusWS = 0.9;
+const float saoBias = 0.03;
 const float saoEpsilon = 0.05;
 
 // reconstructs view-space unit normal from view-space position
@@ -126,7 +127,7 @@ OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanc
 
 
 
-  float randomPatternRotationAngle = 2.0 * M_PI * texelFetch(noiseTexture, coordInt % 4, 0).x;
+  float randomPatternRotationAngle = 2.0 * M_PI * texelFetch(noiseTexture, coordInt % 4 + ivec2(frameIndex%2), 0).x;
 
 
   float radiusSS  = 0.0; // radius of influence in screen space
@@ -147,7 +148,7 @@ OCCLUSION_RESULT_TYPE computeOcclusion(vec2 coord, ivec2 coordInt, float distanc
   // float intensity = distanceToCamera * saoIntensity;
   // intensity = saoIntensity;
 
-  float intensity = 1.0;
+  float intensity = saoIntensity;
 
   for (int i = 0; i < OCCLUSION_SAMPLES; ++i) {
     occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, randomPatternRotationAngle);

@@ -134,6 +134,7 @@ class RenderingPipeline(DebugObject):
         self.lastMVP = PTALMatrix4f.emptyArray(1)
         self.currentMVP = PTALMatrix4f.emptyArray(1)
         self.currentShiftIndex = PTAInt.emptyArray(1)
+        self.frameIndex = PTAInt.emptyArray(1)
 
         # Initialize variables
         self.camera = self.showbase.cam
@@ -142,7 +143,10 @@ class RenderingPipeline(DebugObject):
 
         # For the temporal reprojection it is important that the window width
         # is a multiple of 2
-        if self.settings.enableTemporalReprojection and self.size.x % 2 == 1:
+        # if self.settings.enableTemporalReprojection and self.size.x % 2 == 1:
+
+        # EDIT: Actually its important for many techniques
+        if self.size.x % 2 == 1:
             self.error(
                 "The window has to have a width which is a multiple of 2 "
                 "(Current: ", self.showbase.win.getXSize(), ")")
@@ -198,19 +202,19 @@ class RenderingPipeline(DebugObject):
             self.settings.computePatchSizeX,
             self.settings.computePatchSizeY)
 
-        # Create separate scene graphs. The deferred graph is render
+        # Create separate scene graphs. The standard deferred graph is stored 
+        # in base.render
         self.forwardScene = NodePath("Forward-Rendering")
         self.transparencyScene = NodePath("Transparency-Rendering")
         self.transparencyScene.setBin("transparent", 30)
 
-        # We need no transparency (we store other information in the alpha
+        # We need no transparency (we store different information in the alpha
         # channel)
         self.showbase.render.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
-
 
         # Create the target which constructs the view-space normals and
         # position from world-space position
@@ -236,10 +240,10 @@ class RenderingPipeline(DebugObject):
             self._createDofStorage()
             self._createBlurBuffer()
 
-        # Not sure why it has to be 0.25. But that leads to the best result
+        # Not sure why it has to be that value. But that leads to the best result
         aspect = float(self.size.y) / self.size.x
         self.onePixelShift = Vec2(
-            0.125 / self.size.x, 0.125 / self.size.y / aspect) * self.settings.jitterAmount
+            0.125 / self.size.x, 0.125 / self.size.y) * self.settings.jitterAmount
 
         # Annoying that Vec2 has no multliply-operator for non-floats
         multiplyVec2 = lambda a, b: Vec2(a.x*b.x, a.y*b.y)
@@ -473,6 +477,8 @@ class RenderingPipeline(DebugObject):
                 "temporalProjXOffs", self.temporalProjXOffs)
             self.lightingComputeContainer.setShaderInput(
                 "cameraPosition", self.cameraPosition)
+            self.lightingComputeContainer.setShaderInput(
+                "frameIndex", self.frameIndex)
 
             self.lightingComputeContainer.setShaderInput(
                 "noiseTexture",
@@ -866,6 +872,8 @@ class RenderingPipeline(DebugObject):
         """ Called after rendering """
 
         self.antialias.postRenderUpdate()
+        self.frameIndex[0] += 1
+
         if task is not None:
             return task.cont
 

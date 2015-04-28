@@ -3,7 +3,7 @@ rootDir = "../../"
 
 
 
-sourceDirectories = ["Code/", "Shader/", "Toolkit/"]
+sourceDirectories = ["Code/", "Shader/", "Toolkit/", "Editor/", "Samples/", "Temp/"]
 ignorePattern = [".pyc"]
 extensions = "py compute fragment vertex ini include geometry glsl cxx h I".split()
 

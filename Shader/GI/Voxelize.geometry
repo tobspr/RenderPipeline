@@ -38,7 +38,7 @@ void main() {
     }
 
     if (renderVertices) {
-        for(int i=0; i<gl_in.length(); i++)
+        for(int i=0; i < gl_in.length(); i++)
         {
             gl_Position = gl_in[i].gl_Position;
             fragmentColor = color[i];

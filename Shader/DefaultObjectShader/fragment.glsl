@@ -3,9 +3,7 @@
 
 #include "Includes/VertexOutput.include"
 
-
 #extension GL_ARB_separate_shader_objects : enable
-
 
 // Input from the vertex shader
 layout(location=0) in VertexOutput vOutput;
@@ -16,11 +14,10 @@ uniform sampler2D p3d_Texture1;
 uniform sampler2D p3d_Texture2;
 uniform sampler2D p3d_Texture3;
 
-// 
 // This is required for the materials
 #include "Includes/MaterialPacking.include"
 
-// Also this enables us to compute the tangent in
+// This include enables us to compute the tangent in
 // the fragment shader
 #include "Includes/TangentFromDDX.include"
 
@@ -45,19 +42,16 @@ void main() {
     float roughnessFactor = vOutput.materialSpecular.z;
 
     bumpFactor = 0.0;
-    // bumpFactor *= 0.1;
    
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
-    detailNormal = mix(vec3(0,0,1), detailNormal, bumpFactor);
-    detailNormal = normalize(detailNormal);
 
-    vec3 normal = normalize(vOutput.normalWorld);
     vec3 tangent; vec3 binormal;
     reconstructTanBin(tangent, binormal);
 
-    vec3 mixedNormal = normalize(
-        tangent * detailNormal.x + binormal * detailNormal.y + normal * detailNormal.z
-    );
+    vec3 mixedNormal = mergeNormal(detailNormal, bumpFactor, vOutput.normalWorld, tangent, binormal);
+
+    // mixedNormal *= vec3(1,1,-1);
+    // mixedNormal *= -1;
 
     m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
     m.roughness = sampledRoughness.r * roughnessFactor;
@@ -66,10 +60,14 @@ void main() {
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
 
+    #if 0
+    m.baseColor = vec3(vOutput.materialDiffuse);
+    m.metallic = 0.0;
+    m.specular = 0.1;
+    m.roughness = 0.8;
+    #endif
 
-    // m.baseColor = vec3(1);
-    // m.roughness = vOutput.materialDiffuse.b*0.6 + 0.3;
-    // m.metallic = 1.0;
+    // m.roughness = 0.0;
     // m.specular = 1.0;
 
     // m.baseColor *= vec3(8);

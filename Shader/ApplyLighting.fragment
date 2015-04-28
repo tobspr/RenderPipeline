@@ -41,6 +41,8 @@ in vec2 texcoord;
 #endif
 
 
+uniform int frameIndex;
+
 
 uniform sampler2D noiseTexture;
 uniform vec4 bufferSize;
@@ -294,6 +296,8 @@ void main() {
     // We can skip lighting for the skybox
     if (isSkybox) {
 
+        result += 3.0 * material.baseColor;
+
 
     } else {
 
@@ -405,7 +409,7 @@ void main() {
         result = vec3(1);
         occlusionTotal = occlusionResult;
         // occlusionTotal = 0.0;
-        result = vec3(occlusionResult*5.0);
+        result = vec3(1.0 - occlusionResult*15.0);
     #endif
 
     #ifdef DEBUG_RM_METALLIC
@@ -425,7 +429,7 @@ void main() {
     #endif
 
     #ifdef DEBUG_RM_AMBIENT
-        result = vec3(ambient * 10.0);
+        result = vec3(ambient);
         occlusionTotal = 0.0;
     #endif
 
@@ -446,6 +450,7 @@ void main() {
         occlusionTotal = 0.0;
         // result *= 0.5;
     #endif
+
 
     // result = vec3(texelFetch(shadowAtlas, screenCoord, 0).w);
 

@@ -22,10 +22,6 @@
 // able to see changes in lighting - only recommended for debugging
 // #define LIGHTING_CLEAR_BUFFER_EACH_FRAME
 
-
-// GLSL really needs this as a builtin!
-#define saturate(v) clamp(v, 0, 1)
-
 // Needed for light culling
 const float sqrt_of_2 = 1.4142135623;
 
@@ -34,7 +30,6 @@ const float sqrt_of_2 = 1.4142135623;
 
 // Performance functions
 #include "Includes/Performance.include"
-
 
 #define M_PI 3.14159265
 
@@ -74,6 +69,9 @@ const float sqrt_of_2 = 1.4142135623;
 // #define PCSS_SEARCH_RADIUS 30.0
 // #define PCSS_FILTER_RADIUS 20.0
 
-#define PCSS_RADIUS_WS 0.005
-#define PCSS_SEARCH_RADIUS 50.0
-#define PCSS_FILTER_RADIUS 32.0
+#define PCSS_RADIUS_WS 0.01
+#define PCSS_SEARCH_RADIUS 14.0
+#define PCSS_FILTER_RADIUS 7.0
+
+
+#include "Includes/CommonFunctions.include"

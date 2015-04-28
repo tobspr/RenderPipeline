@@ -95,7 +95,7 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material
     vec3 rawLighting = computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
 
     #ifdef DEBUG_RM_PSSM_SPLITS
-        rawLighting *= vec3(map_use_factor, 1.0 -map_use_factor, 0);
+        rawLighting = (rawLighting +0.1) * vec3(map_use_factor, 1.0 -map_use_factor, 0);
     #endif
 
     return rawLighting;
