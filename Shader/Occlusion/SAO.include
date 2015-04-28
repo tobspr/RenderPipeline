@@ -1,9 +1,10 @@
+#pragma once
  
 
 // Scalable Ambient Obscurance
 // https://gist.github.com/fisch0920/6770311
 
-#include "Includes/PositionReconstruction.include"
+#pragma include "Includes/PositionReconstruction.include"
 
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;

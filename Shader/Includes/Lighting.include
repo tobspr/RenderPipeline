@@ -1,14 +1,15 @@
+#pragma once
 
-#include "Includes/Configuration.include"
-#include "Includes/Light.include"
-#include "Includes/Random.include"
-#include "Includes/LightingModels.include"
-#include "Includes/Material.include"
-#include "Includes/ParabolicTransform.include"
-#include "Includes/ShadowSource.include"
-#include "Includes/PositionReconstruction.include"
-#include "Includes/PoissonDisk.include"
-#include "Includes/SphericalHarmonics.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Light.include"
+#pragma include "Includes/Random.include"
+#pragma include "Includes/LightingModels.include"
+#pragma include "Includes/Material.include"
+#pragma include "Includes/ParabolicTransform.include"
+#pragma include "Includes/ShadowSource.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/PoissonDisk.include"
+#pragma include "Includes/SphericalHarmonics.include"
 
 
 uniform samplerCube directionToFace;
@@ -408,4 +409,4 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
     return pcssKernelDynamicSize(source, projCoord, baseBias);
 }
 
-#include "Includes/Lights.include" 
+#pragma include "Includes/Lights.include" 

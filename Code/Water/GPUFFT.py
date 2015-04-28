@@ -1,5 +1,5 @@
 
-from panda3d.core import PNMImage, Texture, LVecBase3d, NodePath
+from panda3d.core import PNMImage, Texture, LVecBase3d, NodePath, Shader
 from panda3d.core import ShaderAttrib, LVecBase2i, Vec2
 
 from Code.DebugObject import DebugObject
@@ -47,7 +47,7 @@ class GPUFFT(DebugObject):
 
         # Pre generate the shaders, we have 2 passes: Horizontal and Vertical
         # which both execute log2(N) times with varying radii
-        self.horizontalFFTShader = BetterShader.loadCompute(
+        self.horizontalFFTShader = Shader.loadCompute(Shader.SLGLSL,
             "Shader/Water/HorizontalFFT.compute")
         self.horizontalFFT = NodePath("HorizontalFFT")
         self.horizontalFFT.setShader(self.horizontalFFTShader)
@@ -55,7 +55,7 @@ class GPUFFT(DebugObject):
             "precomputedWeights", self.weightsLookupTex)
         self.horizontalFFT.setShaderInput("N", LVecBase2i(self.size))
 
-        self.verticalFFTShader = BetterShader.loadCompute(
+        self.verticalFFTShader = Shader.loadCompute(Shader.SLGLSL,
             "Shader/Water/VerticalFFT.compute")
         self.verticalFFT = NodePath("VerticalFFT")
         self.verticalFFT.setShader(self.verticalFFTShader)

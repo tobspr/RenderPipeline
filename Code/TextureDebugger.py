@@ -1,10 +1,11 @@
 
-from panda3d.core import Texture, ShaderAttrib, NodePath, Vec4
+from panda3d.core import Texture, ShaderAttrib, NodePath, Vec4, Shader
 
 from DebugObject import DebugObject
 from BetterShader import BetterShader
 from Globals import Globals
 from TextureCleaner import TextureCleaner
+
 
 
 class TextureDebugger(DebugObject):
@@ -37,7 +38,7 @@ class TextureDebugger(DebugObject):
         TextureCleaner.clearTexture(store, Vec4(1, 0, 1, 1))
 
         # Create a dummy node and apply the shader to it
-        shader = BetterShader.loadCompute("Shader/Write3DTexture.compute")
+        shader = Shader.loadCompute(Shader.SLGLSL, "Shader/Write3DTexture.compute")
         dummy = NodePath("dummy")
         dummy.setShader(shader)
         dummy.setShaderInput("source", tex)

@@ -1,4 +1,5 @@
 #version 400
+
 #pragma file "ApplyLighting.fragment"
 
 #extension GL_ARB_shader_image_load_store : enable
@@ -8,13 +9,13 @@
 // is faster or slower ..
 #pragma optionNV (unroll all)
 
-#include "Includes/Configuration.include"
-#include "Includes/Light.include"
-#include "Includes/Material.include"
-#include "Includes/ShadowSource.include"
-#include "Includes/ColorCorrection.include"
-#include "Includes/PositionReconstruction.include"
-#include "Includes/SphericalHarmonics.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Light.include"
+#pragma include "Includes/Material.include"
+#pragma include "Includes/ShadowSource.include"
+#pragma include "Includes/ColorCorrection.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/SphericalHarmonics.include"
 
 uniform sampler2D data0;
 uniform sampler2D data1;
@@ -50,8 +51,8 @@ uniform vec4 bufferSize;
 uniform vec3 cameraPosition;
 
 // Has to be after the uniforms
-#include "Occlusion/Init.include"
-#include "Includes/Lighting.include"
+#pragma include "Occlusion/Init.include"
+#pragma include "Includes/Lighting.include"
 
 
 out vec4 lightingResult;
@@ -59,8 +60,8 @@ out vec4 lightingResult;
 
 #ifdef USE_SCATTERING
 
-#include "Scattering/ScatteringOptions.include"
-#include "Scattering/Final.include"
+#pragma include "Scattering/ScatteringOptions.include"
+#pragma include "Scattering/Final.include"
 
 uniform sampler3D inscatterSampler;
 uniform ScatteringOptions scatteringOptions;

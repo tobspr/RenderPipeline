@@ -1,7 +1,7 @@
 #version 400
 
-#include "Includes/Configuration.include"
-#include "Includes/PoissonDisk.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PoissonDisk.include"
 
 #extension GL_ARB_shader_image_load_store : enable
 in vec4 color;

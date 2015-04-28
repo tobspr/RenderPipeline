@@ -8,7 +8,7 @@ uniform sampler2D colorTex;
 uniform sampler2D depthTex;
 
 #define SMAA_INCLUDE_VS 0
-#include "Includes/SMAA-Wrapper.include"
+#pragma include "Includes/SMAA-Wrapper.include"
 
 out vec4 result;
 

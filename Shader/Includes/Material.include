@@ -1,6 +1,7 @@
+#pragma once
 
-#include "Includes/Configuration.include"
-#include "Includes/Packing.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Packing.include"
 
 
 struct Material {

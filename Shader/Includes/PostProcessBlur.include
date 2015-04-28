@@ -1,7 +1,8 @@
+#pragma once
 
 
-#include "Includes/Configuration.include"
-#include "Includes/Packing.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Packing.include"
 
 
 // const float normalsDiscardThreshold = 0.99999;

@@ -1,7 +1,7 @@
 #version 400
 
 #define DO_NOT_COMPUTE_VELOCITY
-#include "Includes/MaterialPacking.include"
+#pragma include "Includes/MaterialPacking.include"
 
 in vec3 pos;
 in vec3 nrm;

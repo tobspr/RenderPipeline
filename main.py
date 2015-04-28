@@ -1,9 +1,6 @@
 """
 
 
-
-
-
 RenderPipeline testing file
 
 If you are looking for Code Examples, look at Samples/. This file is for
@@ -25,10 +22,9 @@ import struct
 
 
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import *
-from panda3d.bullet import *
 from panda3d.core import loadPrcFile, Vec3
 from panda3d.core import Texture
+from panda3d.core import Shader
 
 from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
@@ -38,8 +34,6 @@ from Code.BetterShader import BetterShader
 from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
 from Code.GlobalIllumination import GlobalIllumination
-
-
 
 class Main(ShowBase, DebugObject):
 
@@ -63,47 +57,45 @@ class Main(ShowBase, DebugObject):
 
         # Uncomment to use temp directory
         # writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
-        # writeDirectory = "Temp/"
+        writeDirectory = "Temp/"
 
         # Clear write directory when app exits
         # atexit.register(os.remove, writeDirectory)
 
         # Set a write directory, where the shader cache and so on is stored
-        # self.renderPipeline.getMountManager().setWritePath(writeDirectory)
+        #self.renderPipeline.getMountManager().setWritePath(writeDirectory)
         self.renderPipeline.getMountManager().setBasePath(".")
-
+        
          ####### END OF RENDER PIPELINE SETUP #######
-        # Load some demo sourcew
+        # Load some demo source
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
-        # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
-        self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
+        self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
+        # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        # self.sceneSource = "Models/HouseSet/Model.egg"
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
-        # self.sceneSource = "Demoscene.ignore/Forest/forest2.egg.pz"
-        # self.sceneSource = "Demoscene.ignore/Weapon1/Model.egg"
+        #self.sceneSource = "Models/HouseSet/Model.egg"
+        #self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
         self.renderPipeline.enableDefaultEarthScattering()
-
+        
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
-
+        
         # Wheter to use a ground floor
         self.usePlane = False
         self.sceneWireframe = False
 
         # Flatten scene?
         self.scene.flattenStrong()
-        # self.scene.analyze()
+        self.scene.analyze()
 
         # Load ground plane if configured
         if self.usePlane:
@@ -157,8 +149,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setShadowMapResolution(2048)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(5))
-        dirLight.setPssmDistance(150)
+        dirLight.setColor(Vec3(3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
@@ -191,106 +182,7 @@ class Main(ShowBase, DebugObject):
         # Show windows
         # for window in base.graphicsEngine.getWindows():
             # print window.getName(), window.getSort()
-
-        self.addTask(self._update, "update")
-
-        self.loadCrane()
-
-    def _update(self, task):
-        self.animCrane(globalClock.getFrameTime() * 4.0)
-        return task.cont
-
-    def animCrane(self,tasktime):
-        #self.craneNodes["base"].setH((tasktime%360)*20)
-        #lower hydraulics
-        self.craneNodes["element2"].setP(-30+math.cos(tasktime/2.)*44) # -30 +- 44
-        self.craneNodes["piston1.1"].lookAt(self.craneNodes["piston1.0"],(0,0,0),(0,1,0))
-        self.craneNodes["piston1.0"].lookAt(self.craneNodes["piston1.1"],(0,0,0),(0,1,0))
-
-        #middle hydraulics
-        angle = 80 +math.cos(tasktime/1.4)*30 #80+-30
-        self.craneNodes["arm2"].setP(angle) 
-
-        self.craneNodes["bar0"].setHpr(0,0,0)
-        self.craneNodes["bar0"].setP(angle) 
-
-        self.craneNodes["piston0.1"].lookAt(self.craneNodes["piston0.0"])
-        self.craneNodes["piston0.0"].lookAt(self.craneNodes["piston0.1"])
-
-        for x in range(4):
-          self.craneNodes["element1"].lookAt(self.craneNodes["dummy0"],(0,0,0),(0,1,0))
-          self.craneNodes["bar0"].lookAt(self.craneNodes["dummy1"],(0,0,0),(0,-1,-1))
-          
-        self.craneNodes["arm1"].setH(0)
-        self.craneNodes["arm1"].setR(0)
-        self.craneNodes["arm1"].setP(-90)
-        for x in range(12):
-
-          self.craneNodes["element0"].lookAt(self.craneNodes["arm1"],(0,-0.14,0.16),(0,1,1))
-          self.craneNodes["arm1"].lookAt(self.craneNodes["dummy2"],(0,0,0),(0,1,0))
-          self.craneNodes["arm1"].setP(self.craneNodes["arm1"].getP()-90-30)
-          self.craneNodes["arm1"].setH(0)
-          self.craneNodes["arm1"].setR(0)
-          
-        self.craneNodes["arm0"].setY( 0.1+(1+math.cos(tasktime/3.))*0.5*2  )
-        self.cranetip.setTransformDirty()
-        self.cardian1bullet.setTransformDirty()
-        self.craneNodes["fork"].setH(math.cos(tasktime*1.2)*180)
-
-    def loadCrane(self):
-        """ Test script from ThomasEgi """
-
-        self.world = BulletWorld()
-        self.world.setGravity(Vec3(0, 0, -9.81))
-
-        self.crane = loader.loadModel("Demoscene.ignore/Forest/crane")
-        self.crane.reparentTo(self.scene)
-
-
-        self.crane.setZ(2.0)
-        self.crane.setX(5.0)
-        self.crane.setY(1.0)
-        self.crane.setH(180)
-
-        self.craneNodes = {}
-        for x in ["base","element2","element1","element0","piston1.0","piston1.1","piston0.0","piston0.1","bar0","dummy2","dummy1","dummy0","arm2","arm1","arm0","cardian1","cardian0","fork"]:
-            self.craneNodes[x] = self.crane.find("**/"+x)
-
-        #set up physics nao!
-        #the tip we'r moving by hand
-        self.cranetip = BulletRigidBodyNode('crane-tip')
-        self.cranetipNP = self.craneNodes["arm0"].attachNewNode(self.cranetip)
-        #self.cranetipNP.node().addShape(shape)
-        self.cranetipNP.setCollideMask(BitMask32.allOn())
-        self.cranetipNP.setPos( self.craneNodes["cardian1"].getPos())
-        self.world.attachRigidBody(self.cranetip)
-
-        #the stuff dangling around...
-        shape = BulletBoxShape(Vec3(0.3, 0.35, 0.5))
-        cardian1Bulletbody = BulletRigidBodyNode('cardian1bulletBodyNode')
-        cardian1Bulletbody.setAngularDamping(0.7)
-        cardian1BulletNP = self.craneNodes["arm0"].attachNewNode(cardian1Bulletbody)
-        cardian1BulletNP.node().addShape(shape)
-        cardian1BulletNP.node().setMass(1.0)
-        cardian1BulletNP.setCollideMask(BitMask32.allOn())
-        cardian1BulletNP.setPos( self.craneNodes["cardian1"].getPos()-(0,0,1.4) )
-        self.craneNodes["cardian1"].wrtReparentTo(cardian1BulletNP)
-        self.cardian1bullet = cardian1Bulletbody
-        self.world.attachRigidBody(cardian1Bulletbody)
-        #self.craneNodes["cardian1"].node().addshape(shape)
-
-
-        pivotA = Point3(0,0,0) #self.craneNodes["cardian1"].getPos(self.craneNodes["arm0"])
-        pivotB = Point3(0, 0,1.4)
-        axisA = Vec3(1, 0, 0)
-        axisB = Vec3(1, 0, 0)
-
-        hinge = BulletHingeConstraint(self.cranetip, cardian1Bulletbody, pivotA, pivotB, axisA, axisB, True)
-        hinge.setDebugDrawSize(2.0)
-        hinge.setLimit(-70, 179, softness=0.9, bias=0.3, relaxation=1.0)
-        self.world.attachConstraint(hinge)
-           
-
+        
 
     def setSunPos(self):
         """ Sets the sun position based on the debug slider """
@@ -369,11 +261,6 @@ class Main(ShowBase, DebugObject):
         self.skybox = self.loader.loadModel("Models/Skybox/Model.egg.bam")
         self.skybox.setScale(40000)
         self.skybox.reparentTo(self.render)
-        skytex = loader.loadTexture("Data/Skybox/sky.jpg")
-        # skytex.setFormat(Texture.FSrgb)
-        # skytex.setMinfilter(Texture.FTLinear)
-        # skytex.setMagfilter(Texture.FTLinear)
-        self.skybox.setShaderInput("skytex", skytex)
 
     def setShaders(self, refreshPipeline=True):
         """ Sets all shaders """
@@ -387,8 +274,8 @@ class Main(ShowBase, DebugObject):
                 self.renderPipeline.reloadShaders()
 
         if self.skybox:
-            self.skybox.setShader(BetterShader.load(
-                "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+            self.skybox.setShader(Shader.load(Shader.SLGLSL, 
+                "DefaultObjectShader/vertex.glsl", "Skybox/fragment.glsl"))
 
     def convertToPatches(self, model):
         """ Converts a model to patches. This is REQUIRED before beeing able

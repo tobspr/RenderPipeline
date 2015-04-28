@@ -1,11 +1,11 @@
 #version 400
 #pragma file "BlurOcclusionVertical.fragment"
 
-#include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.include"
 
 const ivec2 blurDirection = ivec2(0,1);
 
-#include "Includes/PostProcessBlur.include"
+#pragma include "Includes/PostProcessBlur.include"
 
 uniform sampler2D colorTex;
 uniform sampler2D normalTex;

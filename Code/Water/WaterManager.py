@@ -1,7 +1,7 @@
 
 
 from panda3d.core import Texture, NodePath, ShaderAttrib, LVecBase2i, PTAFloat
-from panda3d.core import Vec2, PNMImage, LVecBase3d
+from panda3d.core import Vec2, PNMImage, LVecBase3d, Shader
 
 from Code.DebugObject import DebugObject
 from Code.BetterShader import BetterShader
@@ -52,7 +52,7 @@ class WaterManager(DebugObject):
             self.options.size, self.options.size,
             Texture.TFloat, Texture.FRgba16)
 
-        self.combineShader = BetterShader.loadCompute(
+        self.combineShader = Shader.loadCompute(Shader.SLGLSL,
             "Shader/Water/Combine.compute")
 
         self.ptaTime = PTAFloat.emptyArray(1)
@@ -85,7 +85,7 @@ class WaterManager(DebugObject):
         self.texInitialHeight.setMagfilter(Texture.FTNearest)
 
         # Create the shader which populates the initial height texture
-        self.shaderInitialHeight = BetterShader.loadCompute(
+        self.shaderInitialHeight = Shader.loadCompute(Shader.SLGLSL,
             "Shader/Water/InitialHeight.compute")
         self.nodeInitialHeight = NodePath("initialHeight")
         self.nodeInitialHeight.setShader(self.shaderInitialHeight)
@@ -119,7 +119,7 @@ class WaterManager(DebugObject):
             self.heightTextures.append(tex)
 
         # Also create the shader which updates the spectrum
-        self.shaderUpdate = BetterShader.loadCompute(
+        self.shaderUpdate = Shader.loadCompute(Shader.SLGLSL,
             "Shader/Water/Update.compute")
         self.nodeUpdate = NodePath("update")
         self.nodeUpdate.setShader(self.shaderUpdate)

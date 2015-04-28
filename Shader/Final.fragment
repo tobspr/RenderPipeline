@@ -4,10 +4,10 @@
 
 #extension GL_EXT_shader_image_load_store : enable
 
-#include "Includes/Configuration.include"
-#include "Includes/PositionReconstruction.include"
-#include "Includes/ColorCorrection.include"
-#include "Includes/TemporalReprojection.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/ColorCorrection.include"
+#pragma include "Includes/TemporalReprojection.include"
 
 
 in vec2 texcoord;

@@ -1,5 +1,6 @@
+#pragma once
 
-#include "Includes/Frustum.include"
+#pragma include "Includes/Frustum.include"
 
 /*
 float intersectionHelperSquare(float v) { 

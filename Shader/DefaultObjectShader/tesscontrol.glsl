@@ -1,6 +1,6 @@
 #version 430
 
-#include "Includes/VertexOutput.include"
+#pragma include "Includes/VertexOutput.include"
 
 layout(vertices = 3) out;
 

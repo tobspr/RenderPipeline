@@ -1,10 +1,11 @@
+#pragma once
 
 
 
-#include "Includes/Configuration.include"
-#include "Includes/PoissonDisk.include"
-#include "Includes/Random.include"
-#include "Includes/Material.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PoissonDisk.include"
+#pragma include "Includes/Random.include"
+#pragma include "Includes/Material.include"
 
 // Store configuration variables in const variables
 // const int   dssdoSampleCount = DSSDO_NUM_SAMPLES;

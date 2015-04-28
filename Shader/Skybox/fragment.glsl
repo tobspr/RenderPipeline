@@ -1,17 +1,17 @@
 #version 410
 #pragma file "Skybox.fragment"
 
-#include "Includes/VertexOutput.include"
+#pragma include "Includes/VertexOutput.include"
 
 // Input from the vertex shader
 layout(location=0) in VertexOutput vOutput;
 
 // This is required for the materials
-#include "Includes/MaterialPacking.include"
+#pragma include "Includes/MaterialPacking.include"
 
 // Also this enables us to compute the tangent in
 // the fragment shader
-#include "Includes/TangentFromDDX.include"
+#pragma include "Includes/TangentFromDDX.include"
 
 uniform sampler2D skytex;
 
@@ -27,6 +27,7 @@ void main() {
     m.metallic = 0.0;
     m.normal = vOutput.normalWorld;
     m.position = vOutput.positionWorld;
+    m.translucency = 0.0;
     
 
 

@@ -1,3 +1,4 @@
+#pragma once
 
 struct SHC{
     vec3 L00, L1m1, L10, L11, L2m2, L2m1, L20, L21, L22;
