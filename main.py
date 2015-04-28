@@ -24,7 +24,7 @@ import struct
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, SamplerState
 from panda3d.core import Texture
-from panda3d.core import Shader
+from panda3d.core import Shader, CullFaceAttrib
 
 from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
@@ -34,6 +34,8 @@ from Code.BetterShader import BetterShader
 from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
 from Code.GlobalIllumination import GlobalIllumination
+
+
 
 class Main(ShowBase, DebugObject):
 
@@ -76,8 +78,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        self.sceneSource = "Models/HouseSet/Model.egg"
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
+        # self.sceneSource = "Models/HouseSet/Model.egg"
+        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
@@ -89,6 +91,15 @@ class Main(ShowBase, DebugObject):
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
         
+        # Load transparent object
+        self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
+        # self.transparentObj = loader.loadModel("panda")
+        self.transparentObj.reparentTo(render)
+        self.transparentObj.setPos(0,0,0)
+        self.transparentObj.setScale(0.4)
+        self.transparentObj.flattenStrong()
+        # self.transparentObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+
         # Wheter to use a ground floor
         self.usePlane = False
         self.sceneWireframe = False
@@ -267,6 +278,10 @@ class Main(ShowBase, DebugObject):
         if self.renderPipeline:
             self.scene.setShader(
                 self.renderPipeline.getDefaultObjectShader(False))
+            self.transparentObj.setShader(
+                self.renderPipeline.getDefaultTransparencyShader())
+
+
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()

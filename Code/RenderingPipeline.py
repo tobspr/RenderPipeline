@@ -28,7 +28,6 @@ from Scattering import Scattering
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
-
 class RenderingPipeline(DebugObject):
 
     """ This is the core class, driving all other classes. To use this
@@ -214,8 +213,6 @@ class RenderingPipeline(DebugObject):
         # Create separate scene graphs. The standard deferred graph is stored 
         # in base.render
         self.forwardScene = NodePath("Forward-Rendering")
-        self.transparencyScene = NodePath("Transparency-Rendering")
-        self.transparencyScene.setBin("transparent", 30)
 
         # We need no transparency (we store different information in the alpha
         # channel)
@@ -224,6 +221,7 @@ class RenderingPipeline(DebugObject):
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
+
 
         # Create the target which constructs the view-space normals and
         # position from world-space position
@@ -239,6 +237,7 @@ class RenderingPipeline(DebugObject):
             self._setupOcclusionBuffer()
 
 
+
         # Setup the buffers for lighting
         self._createLightingPipeline()
 
@@ -250,6 +249,11 @@ class RenderingPipeline(DebugObject):
         if self.blurEnabled:
             self._createDofStorage()
             self._createBlurBuffer()
+
+        # Create transparency layers
+        self._createTransparencyLayers()
+
+
 
         # Not sure why it has to be that value. But that leads to the best result
         aspect = float(self.size.y) / self.size.x
@@ -284,12 +288,6 @@ class RenderingPipeline(DebugObject):
         Objects in this scene will directly get rendered, with no
         lighting etc. applied. """
         return self.forwardScene
-
-    def getTransparentScene(self):
-        """ Reparent objects to this scene to allow this objects to
-        have transparency. Objects in this scene will get directly
-        rendered and no lighting will get applied. """
-        return self.transparencyScene
 
     def _setupGlobalIllumination(self):
         """ Creates the GI handler """
@@ -364,7 +362,6 @@ class RenderingPipeline(DebugObject):
             self.deferredTarget.setDepthBits(32)
 
         self.deferredTarget.prepareSceneRender()
-
 
     def _setupLastFrameTextures(self):
 
@@ -469,6 +466,16 @@ class RenderingPipeline(DebugObject):
         self._loadFallbackCubemap()
         self._loadLookupCubemap()
 
+
+    def _createTransparencyLayers(self):
+        """ Creates the layers for order independent transparency """
+
+        self.transparencyLayers = Texture("TransparencyLayers")
+        self.transparencyLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FRgba8)
+
+        self.transparencyDepthLayers = Texture("TransparencyDepthLayers")
+        self.transparencyDepthLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FR32)
+
     def _setShaderInputs(self):
         """ Sets most of the required shader inputs to the targets """
 
@@ -521,6 +528,12 @@ class RenderingPipeline(DebugObject):
                     "shadowAtlasPCF", self.lightManager.getAtlasTex(), self.lightManager.getPCFSampleState())
 
 
+
+            self.lightingComputeContainer.setShaderInput("transparencyLayers", 
+                self.transparencyLayers)
+
+            self.lightingComputeContainer.setShaderInput("transparencyDepthLayers", 
+                self.transparencyDepthLayers)
 
             self.lightingComputeContainer.setShaderInput(
                 "destination", self.lightingComputeCombinedTex)
@@ -639,10 +652,6 @@ class RenderingPipeline(DebugObject):
 
         self.deferredTarget.setShaderInput("lastFramePosition", self.lastFramePosition)
         self.deferredTarget.setShaderInput("currentFramePosition", self.deferredTarget.getColorTexture())
-
-
-
-
         
         if self.haveOcclusion:
             self.deferredTarget.setShaderInput("computedOcclusion", self.occlusionBuffer.getColorTexture())
@@ -650,6 +659,9 @@ class RenderingPipeline(DebugObject):
 
         # Set last / current mvp handles
         self.showbase.render.setShaderInput("lastMVP", self.lastMVP)
+        self.showbase.render.setShaderInput("transparencyLayers", self.transparencyLayers)
+        self.showbase.render.setShaderInput("transparencyDepthLayers", self.transparencyDepthLayers)
+
 
         # Set GI inputs
         if self.settings.enableGlobalIllumination:
@@ -665,6 +677,8 @@ class RenderingPipeline(DebugObject):
                 "data3", self.deferredTarget.getAuxTexture(2))
             self.giPrecomputeBuffer.setShaderInput(
                 "cameraPosition", self.cameraPosition)
+
+
 
         # Finally, set shaders
         self.reloadShaders()
@@ -1004,6 +1018,13 @@ class RenderingPipeline(DebugObject):
                 "Shader/DefaultObjectShader/tesscontrol.glsl",
                 "Shader/DefaultObjectShader/tesseval.glsl")
 
+        return shader
+
+
+    def getDefaultTransparencyShader(self):
+        shader = Shader.load(Shader.SLGLSL, 
+                "Shader/DefaultTransparencyShader/vertex.glsl",
+                "Shader/DefaultTransparencyShader/fragment.glsl")
         return shader
 
 
