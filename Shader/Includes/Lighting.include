@@ -224,7 +224,14 @@ bool coord_inside(vec2 coord, vec2 min_coord, vec2 max_coord) {
 
 float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSize) {
 
+
+
+
     #ifndef DEBUG_DISABLE_PCSS
+
+
+    #undef SHADOW_NUM_PCSS_SEARCH_SAMPLES
+    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 64
 
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
    
@@ -253,12 +260,18 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     if (numBlockers < 0.5) return 1.0;
 
-    // penumbraSize = min(max(penumbraSize, 0.09), 15.0);
+    // penumbraSize = min(max(penumbraSize, 0.2), 15.0);
 
     vec2 filterRadiusUV = penumbraSize * PCSS_FILTER_RADIUS * projSize;
 
     // PCF Filter
     float sum = 0.0;
+
+    #if USE_PIXEL_BASED_PCSS
+        int pixelOffset = (int(gl_FragCoord.x) * int(gl_FragCoord.y)) % 2;
+    #else
+        int pixelOffset = 0;
+    #endif
 
     for ( int i = 0; i < SHADOW_NUM_PCSS_FILTER_SAMPLES; ++i )
     {
@@ -266,7 +279,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
         
         #if USE_HARDWARE_PCF
             // Notice: Maybe use .x? My gtx 670 does not like that though
-            sum += 1.0 - textureLod(shadowAtlasPCF, vec3(centerCoord + offset, biasedDepth) , 0);
+            sum += 1.0 - textureLod(shadowAtlasPCF, vec3(centerCoord + offset + pixelOffset * offset * 0.3, biasedDepth) , 0);
         
         #else
             float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).x;
@@ -297,6 +310,7 @@ float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSi
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
     float biasedDepth = projCoord.z - baseBias;
     vec2 filterRadiusUV = 5.0 * projSize;
+
 
     // PCF Filter
     float sum = 0.0;
@@ -352,7 +366,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     float slopeScaledBias, float normalScaledBias, float baseBias) {
 
     #ifdef DEBUG_DISABLE_SHADOWS
-        return 0.0;
+        return 1.0;
     #endif
 
     vec3 biasedPos = computeBiasedPosition(material, slopeScaledBias, normalScaledBias, n, l);
@@ -373,7 +387,7 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
 
     map_used = 0;
     #ifdef DEBUG_DISABLE_SHADOWS
-        return 0.0;
+        return 1.0;
     #endif
 
 

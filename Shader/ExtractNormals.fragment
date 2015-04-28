@@ -1,5 +1,5 @@
 #version 150
-#pragma file "ExtractNormals.fragment"
+
 
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/PositionReconstruction.include"

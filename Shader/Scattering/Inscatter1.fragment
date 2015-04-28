@@ -1,5 +1,5 @@
 #version 150
-#pragma file "Inscatter1.fragment"
+
 
 #pragma include "Scattering/ScatteringOptions.include"
 #pragma include "Scattering/Scattering.include"

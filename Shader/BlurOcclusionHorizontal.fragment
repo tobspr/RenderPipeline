@@ -1,5 +1,4 @@
 #version 400
-#pragma file "BlurOcclusionHorizontal.fragment"
 
 #pragma include "Includes/Configuration.include"
 

@@ -46,7 +46,7 @@ class MountManager(DebugObject):
         vfs = VirtualFileSystem.getGlobalPtr()
 
         # Mount shaders
-        #vfs.mountLoop(join(self.basePath, 'Shader'), 'Shader', 0)
+        # vfs.mountLoop(join(self.basePath, 'Shader'), 'Shader', 0)
 
         # Mount data and models
         vfs.mountLoop(join(self.basePath, 'Data'), 'Data', 0)
@@ -74,6 +74,7 @@ class MountManager(DebugObject):
         base_path = Filename(self.basePath)
         #bp.makeAbsolute()
         getModelPath().appendDirectory(join(base_path.getFullpath(), 'Shader'))
+        getModelPath().appendDirectory(base_path.getFullpath())
         #this is necessary to make pragma include find ShaderAutoConfig.include
         write_path = Filename(self.writePath)
         #wp.makeAbsolute()

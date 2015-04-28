@@ -1,3 +1,4 @@
+#pragma once
 
 // This is the main configuration file, included by almost all shaders
 
@@ -26,10 +27,10 @@
 const float sqrt_of_2 = 1.4142135623;
 
 // Load Auto-Config
-#include "%ShaderAutoConfig%"
+#pragma include "PipelineTemp/ShaderAutoConfig.include"
 
 // Performance functions
-#include "Includes/Performance.include"
+#pragma include "Includes/Performance.include"
 
 #define M_PI 3.14159265
 
@@ -70,8 +71,10 @@ const float sqrt_of_2 = 1.4142135623;
 // #define PCSS_FILTER_RADIUS 20.0
 
 #define PCSS_RADIUS_WS 0.01
-#define PCSS_SEARCH_RADIUS 14.0
-#define PCSS_FILTER_RADIUS 7.0
+#define PCSS_SEARCH_RADIUS 15.0
+#define PCSS_FILTER_RADIUS 6.0
 
 
-#include "Includes/CommonFunctions.include"
+#define USE_PIXEL_BASED_PCSS 1
+
+#pragma include "Includes/CommonFunctions.include"

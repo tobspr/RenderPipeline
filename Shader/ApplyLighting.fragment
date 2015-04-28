@@ -1,6 +1,5 @@
 #version 400
 
-#pragma file "ApplyLighting.fragment"
 
 #extension GL_ARB_shader_image_load_store : enable
 

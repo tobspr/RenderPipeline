@@ -1,11 +1,11 @@
 #version 430
 
 
-#include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.include"
 
 #define DIRECTION vec2(1, 0)
 #define IS_LAST_BLUR_STEP 1
 #define SOURCE_STORE vec4(sourceSample.xy, 0.0, sum.x)
 
-#include "Includes/BlurShadow.include"
+#pragma include "Includes/BlurShadow.include"
 

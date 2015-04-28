@@ -68,8 +68,8 @@ class Main(ShowBase, DebugObject):
         
          ####### END OF RENDER PIPELINE SETUP #######
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
-        self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
+        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
@@ -77,7 +77,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         #self.sceneSource = "Models/HouseSet/Model.egg"
-        #self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 

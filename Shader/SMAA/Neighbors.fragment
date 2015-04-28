@@ -1,5 +1,5 @@
 #version 400
-#pragma file "SMAANeighbors.fragment"
+
 
 in vec2 texcoord;
 in vec4 offset;

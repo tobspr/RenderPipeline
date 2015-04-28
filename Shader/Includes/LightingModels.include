@@ -62,7 +62,7 @@ float safeDot(vec3 a, vec3 b) {
 }
 
 vec3 genericMicrofacetBRDF(vec3 f, float g, float d, float NxL, float NxV) {
-    return (f * g * d) * max(0.0, 4.0 * NxL * NxV);
+    return (f * g * d) * max(0.001, 4.0 * NxL * NxV);
 }
 
 

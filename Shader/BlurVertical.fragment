@@ -1,5 +1,5 @@
 #version 130
-#pragma file "BlurVertical.fragment"
+
 
 #pragma optionNV (unroll all)
 

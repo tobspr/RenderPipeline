@@ -1,5 +1,5 @@
 #version 410
-#pragma file "Skybox.fragment"
+
 
 #pragma include "Includes/VertexOutput.include"
 

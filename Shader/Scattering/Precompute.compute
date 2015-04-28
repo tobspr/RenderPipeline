@@ -1,7 +1,7 @@
 #version 430
  
-#include "Scattering/ScatteringOptions.include"
-#include "Scattering/Scattering.include"
+#pragma include "Scattering/ScatteringOptions.include"
+#pragma include "Scattering/Scattering.include"
 
 // Set the number of invocations in the work group.
 // In this case, we operate on the image in 16x16 pixel tiles.

@@ -18,7 +18,6 @@ from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
 from Code.PointLight import PointLight
 from Code.DirectionalLight import DirectionalLight
-from Code.BetterShader import BetterShader
 from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
 from Code.GlobalIllumination import GlobalIllumination

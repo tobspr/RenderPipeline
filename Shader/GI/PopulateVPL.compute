@@ -2,10 +2,10 @@
 
 // This shader populates the voxel grid with initial radiance
 
-#include "Includes/Configuration.include"
-#include "Includes/PositionReconstruction.include"
-#include "Includes/Packing.include"
-#include "Includes/GIData.include"
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Packing.include"
+#pragma include "Includes/GIData.include"
 
 layout (local_size_x = 16, local_size_y = 16) in;
 

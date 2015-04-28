@@ -1,5 +1,5 @@
 #version 400
-#pragma file "Combiner.fragment"
+
 
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/PositionReconstruction.include"

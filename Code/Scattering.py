@@ -1,7 +1,6 @@
 
 from panda3d.core import Vec3
 from panda3d.core import Shader
-from BetterShader import BetterShader
 from DebugObject import DebugObject
 from Globals import Globals
 from RenderTarget import RenderTarget
@@ -246,6 +245,8 @@ class Scattering(DebugObject):
 
     def _renderOneShot(self, targetName):
         """ Renders a target and then deletes the target """
+
+        # self.debug("Rendering target", targetName)
         target = self.targets[targetName]
         target.setActive(True)
 

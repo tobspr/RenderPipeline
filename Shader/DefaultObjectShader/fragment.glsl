@@ -1,5 +1,5 @@
 #version 400
-#pragma file "DefaultObjectShader/fragment.glsl"
+
 
 #pragma include "Includes/VertexOutput.include"
 
@@ -60,7 +60,7 @@ void main() {
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
 
-    #if 0
+    #if 1
     m.baseColor = vec3(vOutput.materialDiffuse);
     m.metallic = 0.0;
     m.specular = 0.1;
