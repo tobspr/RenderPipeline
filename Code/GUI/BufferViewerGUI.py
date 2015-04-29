@@ -96,6 +96,13 @@ class BufferViewerGUI(DebugObject):
     def setAlphaRendering(self, toggle):
         self.debug("show alpha:", toggle)
 
+    def calculateTexSize(self, tex):
+        # perPixelSize = 0
+        # pixelCount = tex.getXSize() * tex.getYSize() * tex.getZSize()
+
+        dataSize = tex.getExpectedRamImageSize() / (1024.0 * 1024.0)
+        return round(dataSize, 1)
+
     def renderBuffers(self):
         self.buffersParent.node().removeAllChildren()
 
@@ -112,6 +119,8 @@ class BufferViewerGUI(DebugObject):
 
                 if tex.getZSize() != 1:
                     sizeStr += " x " + str(tex.getZSize())
+
+                sizeStr += " - " + str(self.calculateTexSize(tex)) + " MB"
 
                 node = DirectFrame(parent=self.buffersParent, frameColor=(
                     1, 1, 1, 0.2), frameSize=(-self.innerPadding, self.texWidth + self.innerPadding, -self.texHeight - 30 - self.innerPadding, self.innerPadding + 15),

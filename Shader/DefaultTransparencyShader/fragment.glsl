@@ -25,7 +25,7 @@ layout(location=3) out vec4 color3;
 
 void main() {
 
-    float lightFactor = 0.2 + saturate(dot(vOutput.normalWorld, vec3(1,1,1))) * 0.5;
+    float lightFactor = 0.2 + saturate(dot(normalize(vOutput.normalWorld), normalize(vec3(0.6,1.2,1.6))) ) * 0.5;
     // lightFactor = 1.0;
     vec3 color = vec3(0.2,0.6,1.0) * lightFactor;
     float alpha = 0.5;

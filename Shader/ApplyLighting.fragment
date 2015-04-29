@@ -400,6 +400,7 @@ void main() {
 
     // Transparency
 
+    #ifndef DEBUG_DISABLE_TRANSPARENCY
     int renderLayer0 = 4;
     int renderLayer1 = 4;
     int renderLayer2 = 4;
@@ -477,6 +478,8 @@ void main() {
         imageStore(transparencyDepthLayers, ivec3(screenCoord, i), vec4(1));
     }
 
+
+    #endif
 
     // result = vec3(depthLayer0);
 

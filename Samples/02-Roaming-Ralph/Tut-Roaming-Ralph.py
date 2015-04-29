@@ -163,7 +163,7 @@ class World(ShowBase):
         # Set up the camera
 
         base.disableMouse()
-        base.camera.setPos(self.ralph.getX(), self.ralph.getY() + 10, 2)
+        base.camera.setPos(self.ralph.getX(), self.ralph.getY() + 10, 1.2)
 
         # We will detect the height of the terrain by creating a collision
         # ray and casting it downward toward the terrain.  One ray will
@@ -207,23 +207,18 @@ class World(ShowBase):
         # Add earth scattering
         self.renderPipeline.enableDefaultEarthScattering()
 
+        self.skybox = self.renderPipeline.getDefaultSkybox()
+        self.skybox.reparentTo(render)
+
         self.prepareSRGB(render)
-        self.loadSkybox()
+
 
         self.reloadShader()
 
-    def loadSkybox(self):
-        """ Loads the sample skybox. Will get replaced later """
-        self.skybox = self.loader.loadModel(
-            "../../Models/Skybox/Model.egg.bam")
-        self.skybox.setScale(40000)
-        self.skybox.reparentTo(self.render)
 
     def reloadShader(self):
         self.renderPipeline.reloadShaders()
         render.setShader(self.renderPipeline.getDefaultObjectShader())
-        self.skybox.setShader(Shader.load(Shader.SLGLSL, 
-            "DefaultObjectShader/vertex.glsl", "Skybox/fragment.glsl"))
 
     # Records the state of the arrow keys
     def setKey(self, key, value):
@@ -331,8 +326,8 @@ class World(ShowBase):
                                       x.getSurfacePoint(render).getZ()))
         if (len(entries) > 0) and (entries[0].getIntoNode().getName() == "terrain"):
             base.camera.setZ(entries[0].getSurfacePoint(render).getZ() + 1.0)
-        if (base.camera.getZ() < self.ralph.getZ() + 5.0):
-            base.camera.setZ(self.ralph.getZ() + 5.0)
+        if (base.camera.getZ() < self.ralph.getZ() + 2.5):
+            base.camera.setZ(self.ralph.getZ() + 2.5)
 
         # The camera should look in ralph's direction,
         # but it should also try to stay horizontal, so look at

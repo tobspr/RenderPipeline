@@ -7,6 +7,7 @@
 layout(location=0) in VertexOutput vOutput;
 
 // This is required for the materials
+#pragma include "Includes/Material.include"
 #pragma include "Includes/MaterialPacking.include"
 
 // Also this enables us to compute the tangent in
@@ -17,7 +18,7 @@ uniform sampler2D skytex;
 
 void main() {
     // Create a material to store the properties on
-    Material m;
+    Material m = getDefaultMaterial();
 
     vec2 skycoord = vOutput.texcoord * vec2(1,2) + vec2(0, 0);
 
@@ -28,9 +29,6 @@ void main() {
     m.normal = vOutput.normalWorld;
     m.position = vOutput.positionWorld;
     m.translucency = 0.0;
-
     
-
-
     renderMaterial(m);
 }

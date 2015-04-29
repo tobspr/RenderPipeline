@@ -26,7 +26,7 @@ uniform float osg_FrameTime;
 void main() {
 
     // Create a material to store the properties on
-    Material m;
+    Material m = getDefaultMaterial();
     vec4 sampledDiffuse = texture(DIFFUSE_TEX, vOutput.texcoord);
 
     // Alpha test
@@ -63,8 +63,8 @@ void main() {
     #if 1
     // m.baseColor = vec3(vOutput.materialDiffuse);
     m.metallic = 0.0;
-    m.specular = 0.3;
-    m.roughness = 0.5;
+    m.specular = 0.15;
+    m.roughness = 1.0;
     #endif
 
     // m.roughness = 0.0;

@@ -7,6 +7,7 @@ const ivec2 blurDirection = ivec2(1,0);
 #pragma include "Includes/PostProcessBlur.include"
 
 uniform sampler2D colorTex;
+uniform sampler2D sourceTex;
 uniform sampler2D normalTex;
 
 in vec2 texcoord;
@@ -19,9 +20,9 @@ void main() {
     vec2 screenSize = vec2(textureSize(colorTex, 0)); 
     ivec2 screenCoord = ivec2(texcoord * screenSize );
     float blurResult = edgePreservingAlphaBlur(texcoord, screenCoord, colorTex, normalTex);
-    vec3 colorResult = texture(colorTex, texcoord).rgb;
-    // result = vec4(colorResult * (1.0 - blurResult), 1); 
+    vec3 colorResult = texture(sourceTex, texcoord).rgb;
+
+    // apply occlusion, for now its a multiply
     result = vec4(colorResult * (1.0 - blurResult), 1); 
-    // result = vec4(blurResult); 
-    // result = vec4(0,0,1,1);
+
 }

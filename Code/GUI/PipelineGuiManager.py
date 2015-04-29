@@ -116,6 +116,10 @@ class PipelineGuiManager(DebugObject):
 
         register_feature("Env. Filtering", "ft_FILTER_ENVIRONMENT")
 
+
+        register_feature("Transparency", "ft_TRANSPARENCY")
+
+
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",
                                                    x=20, y=currentY,
                                                    parent=self.debuggerContent,

@@ -37,10 +37,8 @@ vec3 applyColorLUT(sampler2D lut, vec3 color) {
 
 
     float lutSize = float(textureSize(lut, 0).y);
-
-    color = saturate(color);
-
-    vec2 texcXY = vec2(color.r * 1.0 / lutSize, 1.0 - color.g);
+    color = clamp(color, vec3(0.5 / lutSize), vec3(1.0 - 0.5 / lutSize));
+    vec2 texcXY = vec2(color.r / lutSize, 1.0 - color.g);
 
     int frameZ = int(color.b * lutSize);
     float offsZ = fract(color.b * lutSize); 

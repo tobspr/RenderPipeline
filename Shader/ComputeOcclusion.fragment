@@ -17,10 +17,14 @@ out vec3 occlusionResult;
 void main() {
 
 
+    #ifndef DEBUG_DISABLE_OCCLUSION
     float depth = texture(depth, texcoord).x;
     float linearDepth = getLinearZFromZ(depth);
     float result = computeOcclusion(texcoord, ivec2(gl_FragCoord.xy), 1.0);
 
     occlusionResult = vec3(result);
+    #else
+    occlusionResult = vec3(0);
+    #endif
 
 }

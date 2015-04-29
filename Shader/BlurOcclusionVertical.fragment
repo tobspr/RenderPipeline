@@ -17,7 +17,7 @@ out vec4 result;
 void main() {
     ivec2 screenCoord = ivec2(texcoord * textureSize(colorTex, 0) );
     float alpha = edgePreservingAlphaBlur(texcoord, screenCoord, colorTex, normalTex);
-    result = vec4(texture(colorTex, texcoord).rgb, alpha);
+    result = vec4(alpha);
 
     // result = vec4(texture(colorTex, texcoord).a);
     // result = vec4(0,1,0,1);

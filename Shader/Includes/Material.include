@@ -27,7 +27,19 @@ Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, vec4 data3) {
     m.metallic = data2.w;
     m.specular = data2.z;
     m.translucency = data1.w;
-
     
+    return m;
+}
+
+
+Material getDefaultMaterial() {
+    Material m;
+    m.baseColor = vec3(1);
+    m.roughness = 0.5;
+    m.metallic = 0.5;
+    m.specular = 0.5;
+    m.translucency = 0.0;
+    m.position = vec3(0);
+    m.normal = vec3(1);
     return m;
 }

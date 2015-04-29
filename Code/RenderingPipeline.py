@@ -370,12 +370,12 @@ class RenderingPipeline(DebugObject):
         # self.lastFramePosition.setMinfilter(SamplerState.FTNearest)
         # self.lastFramePosition.setMagfilter(SamplerState.FTNearest)
 
-        BufferViewerGUI.registerTexture("LastFramePosition", self.lastFramePosition)
+        BufferViewerGUI.registerTexture("Last Frame Position", self.lastFramePosition)
 
         if self.haveOcclusion:
-            self.lastFrameOcclusion = Texture("lastFrameOcclusion")
+            self.lastFrameOcclusion = Texture("LastFrameOcclusion")
             self.lastFrameOcclusion.setup2dTexture(self.size.x / 2, self.size.y / 2, Texture.TFloat, Texture.FR16)
-            BufferViewerGUI.registerTexture("lastFrameOcclusion", self.lastFrameOcclusion)
+            BufferViewerGUI.registerTexture("Last Frame Occlusion", self.lastFrameOcclusion)
             # self.lastFrameOcclusion.setMinfilter(SamplerState.FTNearest)
             # self.lastFrameOcclusion.setMagfilter(SamplerState.FTNearest)
 
@@ -563,9 +563,12 @@ class RenderingPipeline(DebugObject):
         if self.occlusion.requiresBlurring():
             self.blurOcclusionH.setShaderInput(
                 "colorTex", self.blurOcclusionV.getColorTexture())
+            self.blurOcclusionH.setShaderInput(
+                "sourceTex", self.lightingComputeContainer.getColorTexture())
             self.blurOcclusionV.setShaderInput(
                 "colorTex",
                 self.lightingComputeContainer.getColorTexture())
+
 
             self.blurOcclusionH.setShaderInput(
                 "normalTex", self.deferredTarget.getAuxTexture(0))
@@ -588,6 +591,7 @@ class RenderingPipeline(DebugObject):
                                            self.deferredTarget.getDepthTexture())
             self.blurColorV.setShaderInput("colorTex",
                                            self.blurColorH.getColorTexture())
+
 
 
         # Shader inputs for the final pass
@@ -738,6 +742,7 @@ class RenderingPipeline(DebugObject):
         """ Creates the buffers needed to blur the occlusion """
         self.blurOcclusionV = RenderTarget("OcclusionBlurVertical")
         self.blurOcclusionV.addColorTexture()
+
         self.blurOcclusionV.prepareOffscreenBuffer()
 
         self.blurOcclusionH = RenderTarget("OcclusionBlurHorizontal")

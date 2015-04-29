@@ -38,7 +38,7 @@ from Code.BetterShader import BetterShader
 from Code.GlobalIllumination import GlobalIllumination
 
 #Importing math constants and functions
-from math import pi, sin
+from math import pi, sin, cos
 
 class World(ShowBase):
   def __init__(self):
@@ -66,6 +66,9 @@ class World(ShowBase):
     self.renderPipeline.create()
 
 
+    self.addTask(self.moveTask, "move")
+
+
     #This creates the on screen title that is in every tutorial
     self.title = OnscreenText(text="Panda3D: Tutorial 2 - Carousel",
                               style=1, fg=(1,1,1,1),
@@ -80,6 +83,20 @@ class World(ShowBase):
     self.setupLights()                 #Add some basic lighting
     self.startCarousel()               #Create the needed intervals and put the
                                        #carousel into motion
+
+    self.accept("r", self.reloadShader)
+
+
+  def reloadShader(self):
+      self.renderPipeline.reloadShaders()
+      render.setShader(self.renderPipeline.getDefaultObjectShader())
+
+  def moveTask(self, task):
+
+    counter = globalClock.getFrameTime() * 0.5
+    self.sun.setDirection(Vec3(sin(counter) * 70, cos(counter) * 60, sin(counter*1.6323) * 20.0 + 60.0))
+
+    return task.cont
 
   def loadModels(self):
     #Load the carousel base
@@ -169,6 +186,9 @@ class World(ShowBase):
     dirLight.setPos(dPos)
     dirLight.setColor(Vec3(6))
     self.renderPipeline.addLight(dirLight)
+
+    self.sun = dirLight
+
     if self.renderPipeline.settings.enableGlobalIllumination:
         self.renderPipeline.globalIllum.setTargetLight(dirLight)
     

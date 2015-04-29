@@ -70,7 +70,7 @@ class Main(ShowBase, DebugObject):
         
          ####### END OF RENDER PIPELINE SETUP #######
         # Load some demo source
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
@@ -79,7 +79,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
-        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
@@ -156,7 +156,7 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
+        dirLight.setShadowMapResolution(4096)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(3))

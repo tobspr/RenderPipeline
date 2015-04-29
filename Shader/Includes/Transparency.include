@@ -1,24 +1,28 @@
 #pragma once
 
+#pragma include "Includes/Configuration.include"
 
 
 
 
 void renderTransparentObject(vec3 color, float alpha, float depth, vec2 coord) {
-    ivec2 coordInt = ivec2(coord);
 
-    int writeLayer = 0;
+    #ifndef DEBUG_DISABLE_TRANSPARENCY
+        ivec2 coordInt = ivec2(coord);
 
-    while (writeLayer < 3) {
+        int writeLayer = 0;
 
-        float depthAtLayer = imageLoad(transparencyDepthLayers, ivec3(coordInt, writeLayer) ).x;
-        if (depthAtLayer > 0.9999999) {
-            imageStore(transparencyLayers, ivec3(coordInt, writeLayer), vec4(color, alpha));
-            imageStore(transparencyDepthLayers, ivec3(coordInt, writeLayer), vec4(depth));
-            break;
-        } 
-        writeLayer ++;
-    }
+        while (writeLayer < 3) {
+
+            float depthAtLayer = imageLoad(transparencyDepthLayers, ivec3(coordInt, writeLayer) ).x;
+            if (depthAtLayer > 0.9999999) {
+                imageStore(transparencyLayers, ivec3(coordInt, writeLayer), vec4(color, alpha));
+                imageStore(transparencyDepthLayers, ivec3(coordInt, writeLayer), vec4(depth));
+                break;
+            } 
+            writeLayer ++;
+        }
+    #endif
 
     discard;
 }
