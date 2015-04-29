@@ -4,7 +4,6 @@ from panda3d.core import Texture, NodePath, ShaderAttrib, LVecBase2i, PTAFloat
 from panda3d.core import Vec2, PNMImage, LVecBase3d, Shader
 
 from Code.DebugObject import DebugObject
-from Code.BetterShader import BetterShader
 from Code.Globals import Globals
 from GPUFFT import GPUFFT
 

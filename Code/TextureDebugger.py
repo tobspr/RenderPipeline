@@ -2,7 +2,6 @@
 from panda3d.core import Texture, ShaderAttrib, NodePath, Vec4, Shader
 
 from DebugObject import DebugObject
-from BetterShader import BetterShader
 from Globals import Globals
 from TextureCleaner import TextureCleaner
 

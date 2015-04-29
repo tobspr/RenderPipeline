@@ -9,7 +9,6 @@ from direct.stdpy.file import isfile, open, join
 
 from Globals import Globals
 from DebugObject import DebugObject
-from BetterShader import BetterShader
 from LightType import LightType
 from GUI.BufferViewerGUI import BufferViewerGUI
 from RenderTarget import RenderTarget

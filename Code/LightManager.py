@@ -9,7 +9,6 @@ from panda3d.core import Shader, Filename
 
 from Light import Light
 from DebugObject import DebugObject
-from BetterShader import BetterShader
 from RenderTarget import RenderTarget
 from ShadowSource import ShadowSource
 from ShadowAtlas import ShadowAtlas

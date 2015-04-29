@@ -5,7 +5,6 @@ from panda3d.core import Texture
 from DebugObject import DebugObject
 from RenderTarget import RenderTarget
 from RenderTargetType import RenderTargetType
-from BetterShader import BetterShader
 from Globals import Globals
 from AbstractMethodException import AbstractMethodException
 

@@ -15,7 +15,6 @@ from direct.stdpy.file import open
 from LightManager import LightManager
 from RenderTarget import RenderTarget
 from DebugObject import DebugObject
-from BetterShader import BetterShader
 from GlobalIllumination import GlobalIllumination
 from Antialiasing import *
 from AmbientOcclusion import *
@@ -126,9 +125,6 @@ class RenderingPipeline(DebugObject):
         Globals.load(self.showbase)
         Globals.font = loader.loadFont("Data/Font/SourceSansPro-Semibold.otf")
         Globals.font.setPixelsPerUnit(25)
-
-        # Setting up shader loading
-        BetterShader._DumpShaders = self.settings.dumpGeneratedShaders
 
         # We use PTA's for shader inputs, because that's faster than
         # using setShaderInput
