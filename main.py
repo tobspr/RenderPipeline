@@ -30,7 +30,6 @@ from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
 from Code.PointLight import PointLight
 from Code.DirectionalLight import DirectionalLight
-from Code.BetterShader import BetterShader
 from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
 from Code.GlobalIllumination import GlobalIllumination
@@ -70,7 +69,7 @@ class Main(ShowBase, DebugObject):
         
          ####### END OF RENDER PIPELINE SETUP #######
         # Load some demo source
-        self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
@@ -79,7 +78,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
+        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
@@ -95,10 +94,10 @@ class Main(ShowBase, DebugObject):
         self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
         # self.transparentObj = loader.loadModel("panda")
         self.transparentObj.reparentTo(render)
-        self.transparentObj.setPos(0,0,0)
-        self.transparentObj.setScale(0.4)
+        self.transparentObj.setPos(0,0,5.01)
+        self.transparentObj.setScale(5.0)
         self.transparentObj.flattenStrong()
-        # self.transparentObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+        self.transparentObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
 
         # Wheter to use a ground floor
         self.usePlane = False
@@ -156,7 +155,7 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(4096)
+        dirLight.setShadowMapResolution(2048)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(3))

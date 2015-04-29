@@ -12,8 +12,9 @@
 // Input from the vertex shader
 layout(location=0) in VertexOutput vOutput;
 
-layout (rgba8) coherent uniform image2DArray transparencyLayers;
-layout (r32f) coherent uniform image2DArray transparencyDepthLayers;
+layout (rgba8) uniform image2DArray transparencyLayers;
+layout (r32f) uniform image2DArray transparencyDepthLayers;
+layout (r32i) uniform iimage2D transparencyIndices;
 
 #pragma include "Includes/Transparency.include"
 
@@ -25,7 +26,7 @@ layout(location=3) out vec4 color3;
 
 void main() {
 
-    float lightFactor = 0.2 + saturate(dot(normalize(vOutput.normalWorld), normalize(vec3(0.6,1.2,1.6))) ) * 0.5;
+    float lightFactor = 0.2 + saturate(dot(normalize(vOutput.normalWorld), normalize(vec3(0.2,1.2,1.6))) ) * 0.5;
     // lightFactor = 1.0;
     vec3 color = vec3(0.2,0.6,1.0) * lightFactor;
     float alpha = 0.5;

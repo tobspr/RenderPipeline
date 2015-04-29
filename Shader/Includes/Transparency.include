@@ -10,18 +10,13 @@ void renderTransparentObject(vec3 color, float alpha, float depth, vec2 coord) {
     #ifndef DEBUG_DISABLE_TRANSPARENCY
         ivec2 coordInt = ivec2(coord);
 
-        int writeLayer = 0;
+        int layer = imageAtomicAdd(transparencyIndices, coordInt, 1);
 
-        while (writeLayer < 3) {
-
-            float depthAtLayer = imageLoad(transparencyDepthLayers, ivec3(coordInt, writeLayer) ).x;
-            if (depthAtLayer > 0.9999999) {
-                imageStore(transparencyLayers, ivec3(coordInt, writeLayer), vec4(color, alpha));
-                imageStore(transparencyDepthLayers, ivec3(coordInt, writeLayer), vec4(depth));
-                break;
-            } 
-            writeLayer ++;
+        if (layer >= 0 && layer < 3) {
+            imageStore(transparencyLayers, ivec3(coordInt, layer), vec4(color, alpha));
+            imageStore(transparencyDepthLayers, ivec3(coordInt, layer), vec4(depth));
         }
+
     #endif
 
     discard;

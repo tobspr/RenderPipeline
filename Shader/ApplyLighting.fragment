@@ -64,12 +64,6 @@ uniform sampler2D lastFramePosition;
 uniform sampler2D lastFrameOcclusion;
 #endif
 
-
-layout (rgba8) uniform image2DArray transparencyLayers;
-layout (r32f) uniform image2DArray transparencyDepthLayers;
-
-
-
 #ifdef USE_SCATTERING
 
 #pragma include "Scattering/ScatteringOptions.include"
@@ -398,88 +392,6 @@ void main() {
 
 
 
-    // Transparency
-
-    #ifndef DEBUG_DISABLE_TRANSPARENCY
-    int renderLayer0 = 4;
-    int renderLayer1 = 4;
-    int renderLayer2 = 4;
-
-    float depthLayer0 = imageLoad(transparencyDepthLayers, ivec3(screenCoord,0) ).x;
-    float depthLayer1 = imageLoad(transparencyDepthLayers, ivec3(screenCoord,1) ).x;
-    float depthLayer2 = imageLoad(transparencyDepthLayers, ivec3(screenCoord,2) ).x;
-
-    if (depthLayer0 <= min(depthLayer1, depthLayer2) ) {
-        renderLayer0 = 0;
-
-        if (depthLayer1 <= depthLayer2) {
-            renderLayer1 = 1;
-            renderLayer2 = 2;
-        } else {
-            renderLayer1 = 2;
-            renderLayer2 = 1;
-        }
-    } else if (depthLayer1 <= min(depthLayer2, depthLayer0)) {
-        renderLayer0 = 1;
-
-        if (depthLayer2 <= depthLayer0) {
-            renderLayer1 = 2;
-            renderLayer2 = 0;
-        } else {
-            renderLayer1 = 0;
-            renderLayer2 = 2;
-        }
-
-    } else if (depthLayer2 <= min(depthLayer0, depthLayer1)) {
-        renderLayer0 = 2;
-
-        if (depthLayer0 <= depthLayer1) {
-            renderLayer1 = 0;
-            renderLayer2 = 1;
-        } else {
-            renderLayer1 = 1;
-            renderLayer2 = 0;
-        }
-
-    }
-
-    // Render layer 0
-    float transparentObjectDepth = imageLoad(transparencyDepthLayers, ivec3(screenCoord, renderLayer0) ).x;
-    if (renderLayer0 < 3 && transparentObjectDepth < pixelDepth) {
-        vec4 transparentObject = imageLoad(transparencyLayers, ivec3(screenCoord, renderLayer0) );
-        float objAlpha = transparentObject.w;
-        result = result * (1.0-objAlpha) + transparentObject.xyz * objAlpha;
-        occlusionTotal *= 1.0 - objAlpha;
-    }
-
-    // Render layer 1
-    transparentObjectDepth = imageLoad(transparencyDepthLayers, ivec3(screenCoord, renderLayer1) ).x;
-    if (renderLayer1 < 3 && transparentObjectDepth < pixelDepth) {
-        vec4 transparentObject = imageLoad(transparencyLayers, ivec3(screenCoord, renderLayer1) );
-        float objAlpha = transparentObject.w;
-        result = result * (1.0-objAlpha) + transparentObject.xyz * objAlpha;
-        occlusionTotal *= 1.0 - objAlpha;
-    }
-
-    // Render layer 2
-    transparentObjectDepth = imageLoad(transparencyDepthLayers, ivec3(screenCoord, renderLayer2) ).x;
-    if (renderLayer2 < 3 && transparentObjectDepth < pixelDepth) {
-        vec4 transparentObject = imageLoad(transparencyLayers, ivec3(screenCoord, renderLayer2) );
-        float objAlpha = transparentObject.w;
-        result = result * (1.0-objAlpha) + transparentObject.xyz * objAlpha;
-        occlusionTotal *= 1.0 - objAlpha;
-    }
-
-
-
-    // Finally clear transparency layers
-    for (int i = 0; i < 3; i++) {
-        imageStore(transparencyLayers, ivec3(screenCoord, i), vec4(0));
-        imageStore(transparencyDepthLayers, ivec3(screenCoord, i), vec4(1));
-    }
-
-
-    #endif
 
     // result = vec3(depthLayer0);
 

@@ -47,7 +47,7 @@ class RenderingPipeline(DebugObject):
     buffer, using multiple render targets. These buffers store normals,
     position and material properties. Your shaders have to output these
     values, but there is a handy api, just look at
-    Shaders/DefaultObjectShader.fragment.
+    Shaders/DefaultShaders/Object/fragment.glsl.
 
     After that, the pipeline splits the screen into tiles, typically of the
     size 32x32. For each tile, it computes which lights affect which tile,
@@ -206,10 +206,6 @@ class RenderingPipeline(DebugObject):
             self.settings.computePatchSizeX,
             self.settings.computePatchSizeY)
 
-        # Create separate scene graphs. The standard deferred graph is stored 
-        # in base.render
-        self.forwardScene = NodePath("Forward-Rendering")
-
         # We need no transparency (we store different information in the alpha
         # channel)
         self.showbase.render.setAttrib(
@@ -237,8 +233,13 @@ class RenderingPipeline(DebugObject):
         # Setup the buffers for lighting
         self._createLightingPipeline()
 
+        # Create the transparency pass, right after the lighting pass
+        self._createTransparencyPass()
+
         if self.occlusion.requiresBlurring():
             self._createOcclusionBlurBuffer()
+
+
 
         self._setupAntialiasing()
 
@@ -279,11 +280,6 @@ class RenderingPipeline(DebugObject):
         # add update task
         self._attachUpdateTask()
 
-    def getForwardScene(self):
-        """ Reparent objects to this scene to use forward rendering.
-        Objects in this scene will directly get rendered, with no
-        lighting etc. applied. """
-        return self.forwardScene
 
     def _setupGlobalIllumination(self):
         """ Creates the GI handler """
@@ -311,7 +307,7 @@ class RenderingPipeline(DebugObject):
                 self.blurOcclusionH.getColorTexture())
         else:
             self.antialias.setColorTexture(
-                self.lightingComputeContainer.getColorTexture())
+                self.transparencyPass.getColorTexture())
 
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setVelocityTexture(self.deferredTarget.getAuxTexture(1))
@@ -472,6 +468,18 @@ class RenderingPipeline(DebugObject):
         self.transparencyDepthLayers = Texture("TransparencyDepthLayers")
         self.transparencyDepthLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FR32)
 
+        self.transparencyIndices = Texture("TransparencyIndices")
+        self.transparencyIndices.setup2dTexture(self.size.x, self.size.y, Texture.TInt, Texture.FR32i)
+
+    def _createTransparencyPass(self):
+        """ Creates the pass which renders the transparent objects into the scene """
+
+        self.transparencyPass = RenderTarget("TransparencyPass")
+        self.transparencyPass.addColorTexture()
+        self.transparencyPass.setColorBits(16)
+        self.transparencyPass.prepareOffscreenBuffer()
+
+
     def _setShaderInputs(self):
         """ Sets most of the required shader inputs to the targets """
 
@@ -523,14 +531,6 @@ class RenderingPipeline(DebugObject):
                 self.lightingComputeContainer.setShaderInput(
                     "shadowAtlasPCF", self.lightManager.getAtlasTex(), self.lightManager.getPCFSampleState())
 
-
-
-            self.lightingComputeContainer.setShaderInput("transparencyLayers", 
-                self.transparencyLayers)
-
-            self.lightingComputeContainer.setShaderInput("transparencyDepthLayers", 
-                self.transparencyDepthLayers)
-
             self.lightingComputeContainer.setShaderInput(
                 "destination", self.lightingComputeCombinedTex)
             self.lightingComputeContainer.setShaderInput(
@@ -560,10 +560,10 @@ class RenderingPipeline(DebugObject):
             self.blurOcclusionH.setShaderInput(
                 "colorTex", self.blurOcclusionV.getColorTexture())
             self.blurOcclusionH.setShaderInput(
-                "sourceTex", self.lightingComputeContainer.getColorTexture())
+                "sourceTex", self.transparencyPass.getColorTexture())
             self.blurOcclusionV.setShaderInput(
                 "colorTex",
-                self.lightingComputeContainer.getColorTexture())
+                self.transparencyPass.getColorTexture())
 
 
             self.blurOcclusionH.setShaderInput(
@@ -587,8 +587,6 @@ class RenderingPipeline(DebugObject):
                                            self.deferredTarget.getDepthTexture())
             self.blurColorV.setShaderInput("colorTex",
                                            self.blurColorH.getColorTexture())
-
-
 
         # Shader inputs for the final pass
         if self.blurEnabled:
@@ -661,6 +659,7 @@ class RenderingPipeline(DebugObject):
         self.showbase.render.setShaderInput("lastMVP", self.lastMVP)
         self.showbase.render.setShaderInput("transparencyLayers", self.transparencyLayers)
         self.showbase.render.setShaderInput("transparencyDepthLayers", self.transparencyDepthLayers)
+        self.showbase.render.setShaderInput("transparencyIndices", self.transparencyIndices)
 
 
         # Set GI inputs
@@ -679,6 +678,15 @@ class RenderingPipeline(DebugObject):
                 "cameraPosition", self.cameraPosition)
 
 
+        # Transparency pass inputs
+        self.transparencyPass.setShaderInput("sceneTex", self.lightingComputeContainer.getColorTexture())
+        self.transparencyPass.setShaderInput("transparencyLayers", self.transparencyLayers)
+        self.transparencyPass.setShaderInput("transparencyDepthLayers", self.transparencyDepthLayers)
+        self.transparencyPass.setShaderInput("transparencyIndices", self.transparencyIndices)
+        self.transparencyPass.setShaderInput("depthTex", self.deferredTarget.getDepthTexture())
+
+        self.transparencyPass.setShaderInput(
+            "depthTex", self.deferredTarget.getDepthTexture())
 
         # Finally, set shaders
         self.reloadShaders()
@@ -836,6 +844,11 @@ class RenderingPipeline(DebugObject):
             "Shader/ComputeOcclusion.fragment")
         self.occlusionBuffer.setShader(oShader)
 
+    def _setTransparencyPassShader(self):
+        tShader = Shader.load(Shader.SLGLSL, 
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/TransparencyPass.fragment")
+        self.transparencyPass.setShader(tShader)
 
     def _getSize(self):
         """ Returns the window size. """
@@ -867,6 +880,8 @@ class RenderingPipeline(DebugObject):
 
         if self.occlusion.requiresViewSpacePosNrm():
             self._setNormalExtractShader()
+
+        self._setTransparencyPassShader()
 
         self.antialias.reloadShader()
         if self.settings.enableGlobalIllumination:
@@ -1005,27 +1020,27 @@ class RenderingPipeline(DebugObject):
 
         if not tesselated:
             shader = Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultObjectShader/vertex.glsl",
-                "Shader/DefaultObjectShader/fragment.glsl")
+                "Shader/DefaultShaders/Opaque/vertex.glsl",
+                "Shader/DefaultShaders/Opaque/fragment.glsl")
         else:
             self.warn(
                 "Tesselation is only experimental! Remember "
                 "to convert the geometry to patches first!")
 
             shader = Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultObjectShader/vertex.glsl",
-                "Shader/DefaultObjectShader/fragment.glsl",
+                "Shader/DefaultShaders/Opaque/vertex.glsl",
+                "Shader/DefaultShaders/Opaque.glsl",
                 "",
-                "Shader/DefaultObjectShader/tesscontrol.glsl",
-                "Shader/DefaultObjectShader/tesseval.glsl")
+                "Shader/DefaultShaders/Opaque/tesscontrol.glsl",
+                "Shader/DefaultShaders/Opaque/tesseval.glsl")
 
         return shader
 
 
     def getDefaultTransparencyShader(self):
         shader = Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultTransparencyShader/vertex.glsl",
-                "Shader/DefaultTransparencyShader/fragment.glsl")
+                "Shader/DefaultShaders/Transparent/vertex.glsl",
+                "Shader/DefaultShaders/Transparent/fragment.glsl")
         return shader
 
 
@@ -1042,7 +1057,7 @@ class RenderingPipeline(DebugObject):
         skybox.setShaderInput("skytex", skytex)
 
         skybox.setShader(Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultObjectShader/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+                "Shader/DefaultShaders/Opaque/vertex.glsl", "Shader/Skybox/fragment.glsl"))
         return skybox
 
     def _getDeferredBuffer(self):

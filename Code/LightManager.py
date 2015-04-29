@@ -113,10 +113,10 @@ class LightManager(DebugObject):
 
     def _createTagStates(self):
         # Create shadow caster shader
-	self.shadowCasterShader = Shader.load(Shader.SLGLSL,
-            "Shader/DefaultShadowCaster/vertex.glsl",
-            "Shader/DefaultShadowCaster/fragment.glsl",
-            "Shader/DefaultShadowCaster/geometry.glsl")
+        self.shadowCasterShader = Shader.load(Shader.SLGLSL,
+            "Shader/DefaultShaders/ShadowCasting/vertex.glsl",
+            "Shader/DefaultShaders/ShadowCasting/fragment.glsl",
+            "Shader/DefaultShaders/ShadowCasting/geometry.glsl")
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(self.shadowCasterShader, 30)
         # initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
