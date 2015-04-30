@@ -112,7 +112,7 @@ float edgePreservingAlphaBlur(vec2 texcoord, ivec2 screenCoord, sampler2D colorT
         }
 
 
-        // pixel normal is the mid normalr
+        // pixel normal is the mid normal
         vec3 normal = normals[NUM_BLUR_MID];
 
         float alphaResult = 0.0;

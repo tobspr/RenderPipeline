@@ -24,6 +24,8 @@ from Globals import Globals
 from SystemAnalyzer import SystemAnalyzer
 from MountManager import MountManager
 from Scattering import Scattering
+from MemoryMonitor import MemoryMonitor
+from TransparencyManager import TransparencyManager
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
@@ -175,6 +177,12 @@ class RenderingPipeline(DebugObject):
 
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
 
+        # We need no transparency (we store different information in the alpha
+        # channel)
+        self.showbase.render.setAttrib(
+            TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
+
+
         # Create occlusion handler
         self._setupOcclusion()
 
@@ -202,18 +210,16 @@ class RenderingPipeline(DebugObject):
         if self.haveLightingPass:
             self.lightManager = LightManager(self)
 
+        # Create transparency manager
+        self.transparencyManager = TransparencyManager(self)
+
         self.patchSize = LVecBase2i(
             self.settings.computePatchSizeX,
             self.settings.computePatchSizeY)
 
-        # We need no transparency (we store different information in the alpha
-        # channel)
-        self.showbase.render.setAttrib(
-            TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
-
 
         # Create the target which constructs the view-space normals and
         # position from world-space position
@@ -223,18 +229,16 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableGlobalIllumination:
             self._creatGIPrecomputeBuffer()
 
-
         # Create occlusion buffer
         if self.occlusion.hasSeparatePass():
             self._setupOcclusionBuffer()
-
 
 
         # Setup the buffers for lighting
         self._createLightingPipeline()
 
         # Create the transparency pass, right after the lighting pass
-        self._createTransparencyPass()
+        self.transparencyManager.initTransparencyPass()
 
         if self.occlusion.requiresBlurring():
             self._createOcclusionBlurBuffer()
@@ -246,10 +250,6 @@ class RenderingPipeline(DebugObject):
         if self.blurEnabled:
             self._createDofStorage()
             self._createBlurBuffer()
-
-        # Create transparency layers
-        self._createTransparencyLayers()
-
 
 
         # Not sure why it has to be that value. But that leads to the best result
@@ -307,7 +307,7 @@ class RenderingPipeline(DebugObject):
                 self.blurOcclusionH.getColorTexture())
         else:
             self.antialias.setColorTexture(
-                self.transparencyPass.getColorTexture())
+                self.transparencyManager.getResultTexture())
 
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setVelocityTexture(self.deferredTarget.getAuxTexture(1))
@@ -359,15 +359,20 @@ class RenderingPipeline(DebugObject):
 
         self.lastFramePosition = Texture("LastFramePosition")
         self.lastFramePosition.setup2dTexture(self.size.x / 2, self.size.y / 2, Texture.TFloat, Texture.FRgba32)
+
+        MemoryMonitor.addTexture("Last Frame Position", self.lastFramePosition)
+
         # self.lastFramePosition.setMinfilter(SamplerState.FTNearest)
         # self.lastFramePosition.setMagfilter(SamplerState.FTNearest)
 
-        BufferViewerGUI.registerTexture("Last Frame Position", self.lastFramePosition)
+        # BufferViewerGUI.registerTexture("Last Frame Position", self.lastFramePosition)
 
         if self.haveOcclusion:
             self.lastFrameOcclusion = Texture("LastFrameOcclusion")
             self.lastFrameOcclusion.setup2dTexture(self.size.x / 2, self.size.y / 2, Texture.TFloat, Texture.FR16)
-            BufferViewerGUI.registerTexture("Last Frame Occlusion", self.lastFrameOcclusion)
+
+            MemoryMonitor.addTexture("Last Frame Occlusion", self.lastFrameOcclusion)
+            # BufferViewerGUI.registerTexture("Last Frame Occlusion", self.lastFrameOcclusion)
             # self.lastFrameOcclusion.setMinfilter(SamplerState.FTNearest)
             # self.lastFrameOcclusion.setMagfilter(SamplerState.FTNearest)
 
@@ -410,6 +415,8 @@ class RenderingPipeline(DebugObject):
             storageSizeX, storageSizeY, Texture.TUnsignedShort, Texture.FR32i)
         self.lightPerTileStorage.setMinfilter(Texture.FTNearest)
         self.lightPerTileStorage.setMagfilter(Texture.FTNearest)
+
+        MemoryMonitor.addTexture("Light Per Tile Storage", self.lightPerTileStorage)
 
     def _creatGIPrecomputeBuffer(self):
         """ Creates the half-resolution buffer which computes gi and gi
@@ -459,25 +466,19 @@ class RenderingPipeline(DebugObject):
         self._loadLookupCubemap()
 
 
-    def _createTransparencyLayers(self):
-        """ Creates the layers for order independent transparency """
+    # def _createTransparencyLayers(self):
+    #     """ Creates the layers for order independent transparency """
 
-        self.transparencyLayers = Texture("TransparencyLayers")
-        self.transparencyLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FRgba8)
+    #     self.transparencyLayers = Texture("TransparencyLayers")
+    #     self.transparencyLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FRgba8)
 
-        self.transparencyDepthLayers = Texture("TransparencyDepthLayers")
-        self.transparencyDepthLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FR32)
+    #     self.transparencyDepthLayers = Texture("TransparencyDepthLayers")
+    #     self.transparencyDepthLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FR32)
 
-        self.transparencyIndices = Texture("TransparencyIndices")
-        self.transparencyIndices.setup2dTexture(self.size.x, self.size.y, Texture.TInt, Texture.FR32i)
+    #     self.transparencyIndices = Texture("TransparencyIndices")
+    #     self.transparencyIndices.setup2dTexture(self.size.x, self.size.y, Texture.TInt, Texture.FR32i)
 
-    def _createTransparencyPass(self):
-        """ Creates the pass which renders the transparent objects into the scene """
 
-        self.transparencyPass = RenderTarget("TransparencyPass")
-        self.transparencyPass.addColorTexture()
-        self.transparencyPass.setColorBits(16)
-        self.transparencyPass.prepareOffscreenBuffer()
 
 
     def _setShaderInputs(self):
@@ -560,10 +561,10 @@ class RenderingPipeline(DebugObject):
             self.blurOcclusionH.setShaderInput(
                 "colorTex", self.blurOcclusionV.getColorTexture())
             self.blurOcclusionH.setShaderInput(
-                "sourceTex", self.transparencyPass.getColorTexture())
+                "sourceTex", self.transparencyManager.getResultTexture())
             self.blurOcclusionV.setShaderInput(
                 "colorTex",
-                self.transparencyPass.getColorTexture())
+                self.transparencyManager.getResultTexture())
 
 
             self.blurOcclusionH.setShaderInput(
@@ -657,10 +658,6 @@ class RenderingPipeline(DebugObject):
 
         # Set last / current mvp handles
         self.showbase.render.setShaderInput("lastMVP", self.lastMVP)
-        self.showbase.render.setShaderInput("transparencyLayers", self.transparencyLayers)
-        self.showbase.render.setShaderInput("transparencyDepthLayers", self.transparencyDepthLayers)
-        self.showbase.render.setShaderInput("transparencyIndices", self.transparencyIndices)
-
 
         # Set GI inputs
         if self.settings.enableGlobalIllumination:
@@ -679,14 +676,8 @@ class RenderingPipeline(DebugObject):
 
 
         # Transparency pass inputs
-        self.transparencyPass.setShaderInput("sceneTex", self.lightingComputeContainer.getColorTexture())
-        self.transparencyPass.setShaderInput("transparencyLayers", self.transparencyLayers)
-        self.transparencyPass.setShaderInput("transparencyDepthLayers", self.transparencyDepthLayers)
-        self.transparencyPass.setShaderInput("transparencyIndices", self.transparencyIndices)
-        self.transparencyPass.setShaderInput("depthTex", self.deferredTarget.getDepthTexture())
-
-        self.transparencyPass.setShaderInput(
-            "depthTex", self.deferredTarget.getDepthTexture())
+        self.transparencyManager.setColorTexture(self.lightingComputeContainer.getColorTexture())
+        self.transparencyManager.setDepthTexture(self.deferredTarget.getDepthTexture())
 
         # Finally, set shaders
         self.reloadShaders()
@@ -736,17 +727,12 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeCombinedTex.setMinfilter(Texture.FTLinear)
         self.lightingComputeCombinedTex.setMagfilter(Texture.FTLinear)
 
-        self.lastPositionBuffer = Texture("Last-Position-Buffer")
-        self.lastPositionBuffer.setup2dTexture(
-            self.size.x, self.size.y, Texture.TFloat, Texture.FRgba16)
-        self.lastPositionBuffer.setMinfilter(Texture.FTNearest)
-        self.lastPositionBuffer.setMagfilter(Texture.FTNearest)
+        MemoryMonitor.addTexture("Lighting Combined Tex", self.lightingComputeCombinedTex)
 
     def _createOcclusionBlurBuffer(self):
         """ Creates the buffers needed to blur the occlusion """
         self.blurOcclusionV = RenderTarget("OcclusionBlurVertical")
         self.blurOcclusionV.addColorTexture()
-
         self.blurOcclusionV.prepareOffscreenBuffer()
 
         self.blurOcclusionH = RenderTarget("OcclusionBlurHorizontal")
@@ -785,6 +771,8 @@ class RenderingPipeline(DebugObject):
         self.dofStorage.setup2dTexture(
             self.size.x, self.size.y,
             Texture.TFloat, Texture.FRg16)
+
+        MemoryMonitor.addTexture("DOF Storage", self.dofStorage)
 
     def _setOcclusionBlurShader(self):
         """ Sets the shaders which blur the occlusion """
@@ -844,12 +832,6 @@ class RenderingPipeline(DebugObject):
             "Shader/ComputeOcclusion.fragment")
         self.occlusionBuffer.setShader(oShader)
 
-    def _setTransparencyPassShader(self):
-        tShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/TransparencyPass.fragment")
-        self.transparencyPass.setShader(tShader)
-
     def _getSize(self):
         """ Returns the window size. """
         return LVecBase2i(
@@ -881,7 +863,7 @@ class RenderingPipeline(DebugObject):
         if self.occlusion.requiresViewSpacePosNrm():
             self._setNormalExtractShader()
 
-        self._setTransparencyPassShader()
+        self.transparencyManager.reloadShader()
 
         self.antialias.reloadShader()
         if self.settings.enableGlobalIllumination:
@@ -935,6 +917,7 @@ class RenderingPipeline(DebugObject):
         """ Called after rendering """
 
         self.antialias.postRenderUpdate()
+        self.transparencyManager.postRenderCallback()
         self.frameIndex[0] += 1
 
         if task is not None:
@@ -1038,10 +1021,7 @@ class RenderingPipeline(DebugObject):
 
 
     def getDefaultTransparencyShader(self):
-        shader = Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultShaders/Transparent/vertex.glsl",
-                "Shader/DefaultShaders/Transparent/fragment.glsl")
-        return shader
+        return self.transparencyManager.getDefaultShader()
 
 
     def getDefaultSkybox(self, scale=40000):

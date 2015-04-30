@@ -698,6 +698,7 @@ out vec4 result;
 void main()
 {
         
+        #ifndef DEBUG_DISABLE_ANTIALIASING
         vec2 rcpFrame; 
         
         rcpFrame.x = 1.0 / WINDOW_WIDTH;
@@ -741,4 +742,11 @@ void main()
             QualitySubpix, QualityEdgeThreshold, QualityEdgeThresholdMin, 
             ConsoleEdgeSharpness, ConsoleEdgeThreshold, ConsoleEdgeThresholdMin, 
             Console360ConstDir);
+
+        #else
+
+
+        result = texelFetch(colorTex, ivec2(gl_FragCoord.xy), 0);
+
+        #endif
 }

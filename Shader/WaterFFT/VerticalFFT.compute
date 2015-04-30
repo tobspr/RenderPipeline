@@ -12,8 +12,8 @@ uniform bool isLastPass;
 void main() {
     ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
     vec4 weights = texelFetch(precomputedWeights, ivec2(texelCoords.y, butterflyIndex), 0);
-    int sampleIndexA = int(weights.x * N);
-    int sampleIndexB = int(weights.y * N);
+    int sampleIndexA = int(weights.x * N + 0.5);
+    int sampleIndexB = int(weights.y * N + 0.5);
     vec2 sampledValA = texelFetch(source, ivec2(texelCoords.x, sampleIndexA), 0).xy;
     vec2 sampledValB = texelFetch(source, ivec2(texelCoords.x, sampleIndexB), 0).xy;
     

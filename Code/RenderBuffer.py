@@ -4,6 +4,7 @@ from panda3d.core import FrameBufferProperties, GraphicsPipe, Vec2
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 from Globals import Globals
+from MemoryMonitor import MemoryMonitor
 
 # Wrapper arround GraphicsBuffer
 
@@ -128,6 +129,10 @@ class RenderBuffer(DebugObject):
         this *after* the create() call, otherwise it will return 0. """
         return self._sort
 
+    def deleteBuffer(self):
+        """ Deletes this buffer """
+        MemoryMonitor.unregisterRenderTarget(self._name, self)
+
     def create(self):
         """ Attempts to create this buffer """
 
@@ -160,11 +165,20 @@ class RenderBuffer(DebugObject):
             handle.setMagfilter(Texture.FTLinear)
             handle.setAnisotropicDegree(0)
 
+            handle.setXSize(self._width)
+            handle.setYSize(self._height)
+
             if target == RenderTargetType.Color:
                 if colorIsFloat:
                     handle.setComponentType(Texture.TFloat)
 
-                if self._colorBits == 16:
+                if self._colorBits == 8:
+                    if self._haveColorAlpha:
+                        handle.setFormat(Texture.FRgba8)
+                    else:
+                        handle.setFormat(Texture.FRgb8)
+
+                elif self._colorBits == 16:
                     if self._haveColorAlpha:
                         handle.setFormat(Texture.FRgba16)
                     else:
@@ -178,7 +192,10 @@ class RenderBuffer(DebugObject):
             else:
                 if auxIsFloat:
                     handle.setComponentType(Texture.TFloat)
-                if self._auxBits == 16:
+
+                if self._auxBits == 8:
+                    handle.setFormat(Texture.FRgba8)
+                elif self._auxBits == 16:
                     handle.setFormat(Texture.FRgba16)
                 elif self._auxBits == 32:
                     handle.setFormat(Texture.FRgba32)
@@ -197,6 +214,7 @@ class RenderBuffer(DebugObject):
             else:
                 self.getTarget(RenderTargetType.Depth).setup3dTexture(
                     self._layers)
+
 
         # Create buffer descriptors
         windowProps = WindowProperties.size(self._width, self._height)
@@ -224,6 +242,19 @@ class RenderBuffer(DebugObject):
             bufferProps.setDepthBits(self._depthBits)
             bufferProps.setFloatDepth(True)
 
+
+            if self._depthBits == 24:
+                # depthTarget.setComponentType(Texture.TFloat)
+                depthTarget.setFormat(Texture.FDepthComponent24)
+            elif self._depthBits == 32:
+                # depthTarget.setComponentType(Texture.TFloat)
+                depthTarget.setFormat(Texture.FDepthComponent32)
+
+
+            print "Setting depth size"
+            depthTarget.setXSize(self._width)
+            depthTarget.setYSize(self._height)
+
         # We need no stencil (not supported yet)
         bufferProps.setStencilBits(0)
 
@@ -250,6 +281,11 @@ class RenderBuffer(DebugObject):
 
         bufferProps.setMultisamples(self._multisamples)
 
+
+        # Register the target for the memory monitoring
+        MemoryMonitor.addRenderTarget(self._name, self)
+
+
         # Create internal graphics output
         self._internalBuffer = self._engine.makeOutput(
             self._win.getPipe(), self._name, 1,
@@ -260,6 +296,8 @@ class RenderBuffer(DebugObject):
         if self._internalBuffer is None:
             self.error("Failed to create buffer :(")
             return False
+
+
 
         # Add render targets
         if self.hasTarget(RenderTargetType.Depth):
@@ -282,6 +320,7 @@ class RenderBuffer(DebugObject):
             (RenderTargetType.Aux3, GraphicsOutput.RTPAuxHrgba3,
              GraphicsOutput.RTPAuxRgba3),
         ]
+
 
         for target, floatMode, normalMode in modes:
             if self.hasTarget(target):
@@ -314,5 +353,7 @@ class RenderBuffer(DebugObject):
             elif self._depthBits == 32:
                 # depthTarget.setComponentType(Texture.TFloat)
                 depthTarget.setFormat(Texture.FDepthComponent32)
+
+
 
         return True

@@ -7,6 +7,7 @@ from RenderBuffer import RenderBuffer
 from RenderTargetType import RenderTargetType
 from DebugObject import DebugObject
 from Globals import Globals
+from MemoryMonitor import MemoryMonitor
 from GUI.BufferViewerGUI import BufferViewerGUI
 
 
@@ -514,6 +515,8 @@ class RenderTarget(DebugObject):
         """ Deletes this buffer, restoring the previous state """
         self.warn("Todo:: Implement delete Buffer")
 
+
+        self._buffer.deleteBuffer()
         self._engine.removeWindow(self._buffer.getInternalBuffer())
         del self._buffer
 

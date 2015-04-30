@@ -277,7 +277,7 @@ class Scattering(DebugObject):
         rt.setSize(w, h)
         rt.addColorTexture()
         rt.setColorBits(16)
-        # rt.setEngine(self.engine)s
+        # rt.setEngine(self.engine)
 
         if aux:
             rt.addAuxTextures(1)

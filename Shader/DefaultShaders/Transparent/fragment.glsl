@@ -12,9 +12,13 @@
 // Input from the vertex shader
 layout(location=0) in VertexOutput vOutput;
 
-layout (rgba8) uniform image2DArray transparencyLayers;
-layout (r32f) uniform image2DArray transparencyDepthLayers;
-layout (r32i) uniform iimage2D transparencyIndices;
+// layout (rgba8) uniform image2DArray transparencyLayers;
+// layout (r32f) uniform image2DArray transparencyDepthLayers;
+layout (r32ui) coherent uniform uimage2D pixelCountBuffer;
+layout (r32ui) coherent uniform uimage2D listHeadBuffer;
+layout (r32i) coherent uniform iimage2D spinLockBuffer;
+layout (rgba32ui) coherent uniform uimageBuffer materialDataBuffer;
+
 
 #pragma include "Includes/Transparency.include"
 
@@ -26,13 +30,14 @@ layout(location=3) out vec4 color3;
 
 void main() {
 
-    float lightFactor = 0.2 + saturate(dot(normalize(vOutput.normalWorld), normalize(vec3(0.2,1.2,1.6))) ) * 0.5;
-    // lightFactor = 1.0;
-    vec3 color = vec3(0.2,0.6,1.0) * lightFactor;
-    float alpha = 0.5;
-    float depth = gl_FragCoord.z;
-    vec2 coord = gl_FragCoord.xy;
+    TransparentMaterial tm = getDefaultTransparentMaterial();
+    tm.color = vec3(1.0, 0.6, 0.2);
+    tm.alpha = 0.5;
+    tm.normal = normalize(vOutput.normalWorld);
+    tm.depth = gl_FragCoord.z;
+    tm.materialType = 0;
 
-    renderTransparentObject(color, alpha, depth, coord);
-   
+
+
+    renderTransparentMaterial(tm);
 }

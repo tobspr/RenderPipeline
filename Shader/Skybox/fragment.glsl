@@ -20,7 +20,7 @@ void main() {
     // Create a material to store the properties on
     Material m = getDefaultMaterial();
 
-    vec2 skycoord = vOutput.texcoord * vec2(1,2) + vec2(0, 0);
+    vec2 skycoord = clamp(vOutput.texcoord * vec2(1,2) + vec2(0, 0.03), vec2(0, 0.99), vec2(1, 1.9));
 
     m.baseColor = texture(skytex, skycoord).xyz;
     m.roughness = 1.0;

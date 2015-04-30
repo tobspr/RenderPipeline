@@ -65,7 +65,7 @@ vec3 computeLightModel(Light light, Material material,
     #else
 
         // Performance optimization
-        if (shadowFactor < 0.001) return vec3(0.0);
+        // if (shadowFactor < 0.001) return vec3(0.0);
 
         vec3 lightingResult = vec3(0);
         vec3 specularColor = mix(vec3(1), material.baseColor, material.metallic) * material.specular;

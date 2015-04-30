@@ -1,6 +1,8 @@
 
 from panda3d.core import ModifierButtons, Vec3, PStatClient
 
+from MemoryMonitor import MemoryMonitor
+
 
 class MovementController:
 
@@ -194,6 +196,7 @@ class MovementController:
         print "\t(4) Display camera position"
         print "\t(5) Show scene graph"
         print "\t(6) Open placement window"
+        print "\t(7) Analyze VRAM"
         print
 
         selectedOption = raw_input("Which do you want to choose?: ")
@@ -204,7 +207,7 @@ class MovementController:
             print "Option has to be a valid number!"
             return False
 
-        if selectedOption < 1 or selectedOption > 6:
+        if selectedOption < 1 or selectedOption > 7:
             print "Invalid option!"
             return False
 
@@ -247,3 +250,8 @@ class MovementController:
             print "Opening placement window. You need tkinter installed to be able to use it"
             self.showbase.render.place()
             # print "It seems .place() is currently not working. Sorry!!"
+    
+        # vram analyszs
+        elif selectedOption == 7:
+            print "Analyzing VRAM ..."
+            MemoryMonitor.analyzeMemory()

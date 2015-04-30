@@ -12,7 +12,7 @@ uniform sampler2D viewSpacePosition;
 
 
 #undef OCCLUSION_SAMPLES
-#define OCCLUSION_SAMPLES 64
+#define OCCLUSION_SAMPLES 32
 
 
 

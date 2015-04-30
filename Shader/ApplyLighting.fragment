@@ -390,11 +390,6 @@ void main() {
     result = 1.0f - exp(-1.0 * result);
 
 
-
-
-
-    // result = vec3(depthLayer0);
-
     // #define ENABLE_FOG
 
     #ifdef ENABLE_FOG
@@ -426,8 +421,8 @@ void main() {
     #endif
 
     #ifdef DEBUG_RM_OCCLUSION
-        result = vec3(occlusionTotal);
-        occlusionTotal = 0.0;
+        result = vec3(1.0);
+        // occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_METALLIC

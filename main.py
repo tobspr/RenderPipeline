@@ -91,15 +91,22 @@ class Main(ShowBase, DebugObject):
         self.scene = self.loader.loadModel(self.sceneSource)
         
         # Load transparent object
-        self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
+        # self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
+        self.transparentObj = loader.loadModel("Demoscene.ignore/transparencyTest/scene.egg")
         # self.transparentObj = loader.loadModel("panda")
         self.transparentObj.reparentTo(render)
-        self.transparentObj.setPos(0,0,5.01)
-        self.transparentObj.setScale(5.0)
+
+        # self.transparentObj2.reparentTo(self.transparentObj)
+        # self.transparentObj2.setPos(5,0, 0)
+        # self.transparentObj.setPos(0,0,2.01)
+        # self.transparentObj.setScale(0.2)
         self.transparentObj.flattenStrong()
         self.transparentObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+        self.transparentObj.setDepthWrite(False)
+        self.transparentObj.setDepthTest(False)
 
         # Wheter to use a ground floor
+
         self.usePlane = False
         self.sceneWireframe = False
 

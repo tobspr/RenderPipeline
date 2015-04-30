@@ -11,6 +11,8 @@ from CheckboxWithLabel import CheckboxWithLabel
 from UIWindow import UIWindow
 from functools import partial
 
+from ..MemoryMonitor import MemoryMonitor
+
 from panda3d.core import Vec3, Vec4
 from direct.gui.DirectFrame import DirectFrame
 from direct.interval.IntervalGlobal import Parallel, Func, Sequence
@@ -97,11 +99,9 @@ class BufferViewerGUI(DebugObject):
         self.debug("show alpha:", toggle)
 
     def calculateTexSize(self, tex):
-        # perPixelSize = 0
-        # pixelCount = tex.getXSize() * tex.getYSize() * tex.getZSize()
-
-        dataSize = tex.getExpectedRamImageSize() / (1024.0 * 1024.0)
-        return round(dataSize, 1)
+        dataSize = MemoryMonitor._calculateTexSize(tex)
+        dataSizeMB = dataSize / (1024.0 * 1024.0)
+        return round(dataSizeMB, 1)
 
     def renderBuffers(self):
         self.buffersParent.node().removeAllChildren()

@@ -10,14 +10,84 @@ in vec2 texcoord;
 out vec4 colorResult;
 
 
-layout (rgba8) uniform image2DArray transparencyLayers;
-layout (r32f) uniform image2DArray transparencyDepthLayers;
-layout (r32i) uniform iimage2D transparencyIndices;
+// layout (rgba8) uniform image2DArray transparencyLayers;
+// layout (r32f) uniform image2DArray transparencyDepthLayers;
+layout (r32i) uniform iimage2D pixelCountBuffer;
+layout (r32ui) uniform uimage2D listHeadBuffer;
+layout (rgba32ui) uniform uimageBuffer materialDataBuffer;
+layout (r32i) coherent uniform iimage2D spinLockBuffer;
+
+
+#pragma include "Includes/Transparency.include"
+
 
 uniform sampler2D sceneTex;
 uniform sampler2D depthTex;
 
 void main() {
+
+
+
+
+
+
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    // ivec2 texSize = ivec2(textureSize(sceneTex, 0).xy);
+
+    uint listHead = imageLoad(listHeadBuffer, ivec2(gl_FragCoord.xy)).x;
+
+
+
+    // int index = coord.x + coord.y * texSize.x;
+
+    // int fragmentsRendered = imageLoad(pixelCountBuffer, ivec2(0,0)).x;
+
+    // if (index > fragmentsRendered) {
+    //     colorResult = vec4(1,0,0,0);
+    // } else {
+
+    //     uvec4 data = imageLoad(materialDataBuffer, index);
+    //     TransparentMaterial tm = unpackTransparentMaterial(data);
+
+    //     // colorResult = vec4( vec3(uintBitsToFloat(data.z)), 0.0);
+    //     colorResult = vec4( tm.normal, 1);
+    // // colorResult = texture(sceneTex, texcoord);
+
+    // }
+    // colorResult = vec4( float(listHead) / 2000000.0);
+
+
+    vec4 currentData = texture(sceneTex, texcoord);
+    vec3 currentColor = currentData.xyz;
+    float currentOcclusion = currentData.w; 
+
+    uint currentPointer = listHead;
+    uint max_iter = 999;
+
+    int layers = 0;
+
+    while (currentPointer != 0 && max_iter --> 0) {
+        layers ++;
+
+
+        uvec4 data = imageLoad(materialDataBuffer, int(currentPointer));
+        TransparentMaterial tm = unpackTransparentMaterial(data);
+
+
+        currentColor = currentColor * (1.0-tm.alpha) + tm.color * tm.alpha;
+        currentOcclusion *= 1.0 - tm.alpha;
+
+        // currentColor = vec3(pow(tm.depth, 14.0));
+
+        currentPointer = tm.nextEntry;
+        // currentPointer = 0;
+    }
+
+
+    colorResult = vec4(currentColor, currentOcclusion);
+
+    #if 0
 
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -78,10 +148,12 @@ void main() {
 
     }
 
-    // Render layer 0
-    float transparentObjectDepth = imageLoad(transparencyDepthLayers, ivec3(coord, renderLayer0) ).x;
-    if (renderLayer0 < 3 && transparentObjectDepth < pixelDepth) {
-        vec4 transparentObject = imageLoad(transparencyLayers, ivec3(coord, renderLayer0) );
+    float transparentObjectDepth = 0;
+
+    // Render layer 2
+    transparentObjectDepth = imageLoad(transparencyDepthLayers, ivec3(coord, renderLayer2) ).x;
+    if (renderLayer2 < 3 && transparentObjectDepth < pixelDepth) {
+        vec4 transparentObject = imageLoad(transparencyLayers, ivec3(coord, renderLayer2) );
         float objAlpha = transparentObject.w;
         currentColor = currentColor * (1.0-objAlpha) + transparentObject.xyz * objAlpha;
         occlusionTotal *= 1.0 - objAlpha;
@@ -96,15 +168,15 @@ void main() {
         occlusionTotal *= 1.0 - objAlpha;
     }
 
-    // Render layer 2
-    transparentObjectDepth = imageLoad(transparencyDepthLayers, ivec3(coord, renderLayer2) ).x;
-    if (renderLayer2 < 3 && transparentObjectDepth < pixelDepth) {
-        vec4 transparentObject = imageLoad(transparencyLayers, ivec3(coord, renderLayer2) );
+
+    // Render layer 0
+    transparentObjectDepth = imageLoad(transparencyDepthLayers, ivec3(coord, renderLayer0) ).x;
+    if (renderLayer0 < 3 && transparentObjectDepth < pixelDepth) {
+        vec4 transparentObject = imageLoad(transparencyLayers, ivec3(coord, renderLayer0) );
         float objAlpha = transparentObject.w;
         currentColor = currentColor * (1.0-objAlpha) + transparentObject.xyz * objAlpha;
         occlusionTotal *= 1.0 - objAlpha;
     }
-
 
 
     // Finally clear transparency layers
@@ -119,7 +191,12 @@ void main() {
 
     // currentColor = vec3(layerCount / 3.0);
 
+
     colorResult = vec4(currentColor, occlusionTotal);
+    // colorResult = vec4(depthLayer2);
+
+    #endif
+
 
 
 }

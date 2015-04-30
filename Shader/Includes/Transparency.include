@@ -5,19 +5,155 @@
 
 
 
-void renderTransparentObject(vec3 color, float alpha, float depth, vec2 coord) {
 
-    #ifndef DEBUG_DISABLE_TRANSPARENCY
-        ivec2 coordInt = ivec2(coord);
+struct TransparentMaterial {
+    vec3 color;
+    uint materialType;
+    vec3  normal;
+    float alpha;
+    float depth;
+    uint nextEntry;
+};
 
-        int layer = imageAtomicAdd(transparencyIndices, coordInt, 1);
+TransparentMaterial getDefaultTransparentMaterial() {
+    TransparentMaterial tm;
+    tm.color = vec3(1);
+    tm.materialType = 0;
+    tm.normal = vec3(0,0,1);
+    tm.depth = 1.0;
+    tm.alpha = 1.0;
+    tm.nextEntry = 0u;
+    return tm;
+}
 
-        if (layer >= 0 && layer < 3) {
-            imageStore(transparencyLayers, ivec3(coordInt, layer), vec4(color, alpha));
-            imageStore(transparencyDepthLayers, ivec3(coordInt, layer), vec4(depth));
+float extractMaterialDepth(uint position) {
+    uvec4 data = imageLoad(materialDataBuffer, int(position) );
+    return uintBitsToFloat(data.z);    
+}
+
+void saveMaterialNextPointer(uint pointer, uint position) {
+    uvec4 data = imageLoad(materialDataBuffer, int(position) );
+    data.w = pointer;
+    imageStore(materialDataBuffer, int(position), data);
+}
+
+uint extractMaterialNextPointer(uint position) {
+    return imageLoad(materialDataBuffer, int(position) ).w;
+}
+
+void renderTransparentMaterial(TransparentMaterial tm) {
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
+    tm.color = saturate(tm.color);
+    tm.alpha = saturate(tm.alpha);
+    tm.nextEntry = 0u;
+    tm.materialType = clamp(tm.materialType, 0, 255);
+    tm.normal = saturate(tm.normal * 0.5 + 0.5);
+    tm.depth = saturate( uint(tm.depth * 0xFFFFFFFF) / 0xFFFFFFFE );
+
+    // Allocate buffer position
+    uint position = imageAtomicAdd(pixelCountBuffer, ivec2(0, 0), 1);
+
+
+
+    // Spinlock while editing the linked list
+    bool done = false;
+    uint locked = 0;
+    int max_iter = 100;
+
+    while(!done && max_iter --> 0)
+    {
+        locked = imageAtomicExchange(spinLockBuffer, coord, 1);
+        if (locked == 0)
+        {
+
+            int max_list_iter = 100000;
+
+            // Insert the material to the per pixel list
+            uint listHead = imageLoad(listHeadBuffer, coord).x;
+
+            // We are the first fragment
+            if (listHead == 0u) {
+                imageStore(listHeadBuffer, coord, uvec4(position) );
+            } else {
+                bool inserted = false;
+
+                uint lastPointer = 0u;
+                uint currentPointer = listHead;
+
+                while(currentPointer != 0u && max_list_iter --> 0) {
+
+                    float currentDepth = extractMaterialDepth(currentPointer);
+
+                    if (currentDepth > tm.depth - 0.000001) {
+                        // Insert node infront
+
+                        // Our node now points to the first object
+                        tm.nextEntry = currentPointer;
+
+                        // Edit the pointer of the previous object
+                        if (currentPointer == listHead) {
+                            // Save new list head
+                            imageStore(listHeadBuffer, coord, uvec4(position));
+                        } else {
+                            saveMaterialNextPointer(position, lastPointer);
+                        }
+                        inserted = true;
+                        break;
+                    }
+
+                    lastPointer = currentPointer;
+                    currentPointer = extractMaterialNextPointer(currentPointer);
+                }
+
+                if (!inserted && lastPointer != 0) {
+                    saveMaterialNextPointer(position, lastPointer);
+                    tm.nextEntry = 0u;
+                }
+            }
+
+            memoryBarrier();
+            imageAtomicExchange(spinLockBuffer, coord, 0);
+            done = true;
         }
+    }
 
-    #endif
 
-    discard;
+    // Pack material
+    uint integer1 = int(tm.color.x * 255.0) | int(tm.color.y * 255.0) << 8 | int(tm.color.z * 255.0) << 16 | tm.materialType << 24;
+    uint integer2 = int(tm.normal.x * 255.0) | int(tm.normal.y * 255.0) << 8 | int(tm.normal.z * 255.0) << 16 | int(tm.alpha * 255.0) << 24;
+    uint integer3 = floatBitsToUint(tm.depth);
+    uint integer4 = tm.nextEntry;
+
+
+    // Store material
+    imageStore(materialDataBuffer, int(position), uvec4(integer1, integer2, integer3, integer4));
+
+    if (done) discard;
+}
+
+
+TransparentMaterial unpackTransparentMaterial(uvec4 data) {
+
+    TransparentMaterial tm;
+
+    tm.nextEntry = data.w;
+    tm.depth = uintBitsToFloat(data.z);
+
+    tm.color = vec3(
+        float(data.x & 0xFF) / 255.0,
+        float((data.x >> 8) & 0xFF) / 255.0,
+        float((data.x >> 16) & 0xFF) / 255.0
+    );
+
+    tm.normal = vec3(
+        float(data.y & 0xFF) / 255.0,
+        float((data.y >> 8) & 0xFF) / 255.0,
+        float((data.y >> 16) & 0xFF) / 255.0
+    ) * 2.0 - 1.0;
+
+    tm.alpha = float((data.y >> 24) & 0xFF) / 255.0;
+    tm.materialType = (data.x >> 24) & 0xFF;
+    return tm;
 }
