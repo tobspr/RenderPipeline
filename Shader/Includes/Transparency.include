@@ -6,6 +6,9 @@
 
 
 
+
+#define USE_UINT_PACKING 1
+
 struct TransparentMaterial {
     vec3 color;
     uint materialType;
@@ -28,7 +31,11 @@ TransparentMaterial getDefaultTransparentMaterial() {
 
 float extractMaterialDepth(uint position) {
     uvec4 data = imageLoad(materialDataBuffer, int(position) );
-    return uintBitsToFloat(data.z);    
+    #if USE_UINT_PACKING
+        return float(data.z) / 0xFFFFFFFF;
+    #else
+        return uintBitsToFloat(data.z);
+    #endif    
 }
 
 void saveMaterialNextPointer(uint pointer, uint position) {
@@ -38,7 +45,7 @@ void saveMaterialNextPointer(uint pointer, uint position) {
 }
 
 uint extractMaterialNextPointer(uint position) {
-    return imageLoad(materialDataBuffer, int(position) ).w;
+    return imageLoad(materialDataBuffer, int(position)).w;
 }
 
 void renderTransparentMaterial(TransparentMaterial tm) {
@@ -50,25 +57,30 @@ void renderTransparentMaterial(TransparentMaterial tm) {
     tm.nextEntry = 0u;
     tm.materialType = clamp(tm.materialType, 0, 255);
     tm.normal = saturate(tm.normal * 0.5 + 0.5);
-    tm.depth = saturate( uint(tm.depth * 0xFFFFFFFF) / 0xFFFFFFFE );
-
-    // Allocate buffer position
-    uint position = imageAtomicAdd(pixelCountBuffer, ivec2(0, 0), 1);
+    tm.depth = saturate(tm.depth);
 
 
+    // if (position >= 100000000) return;
 
     // Spinlock while editing the linked list
     bool done = false;
+
     uint locked = 0;
     int max_iter = 100;
 
+    // Allocate buffer position
+    uint position = imageAtomicAdd(pixelCountBuffer, ivec2(0, 0), 1) + 1;
+
+
+    // Store material
     while(!done && max_iter --> 0)
     {
         locked = imageAtomicExchange(spinLockBuffer, coord, 1);
         if (locked == 0)
         {
 
-            int max_list_iter = 100000;
+
+
 
             // Insert the material to the per pixel list
             uint listHead = imageLoad(listHeadBuffer, coord).x;
@@ -76,42 +88,70 @@ void renderTransparentMaterial(TransparentMaterial tm) {
             // We are the first fragment
             if (listHead == 0u) {
                 imageStore(listHeadBuffer, coord, uvec4(position) );
+                tm.nextEntry = 0u;
+                tm.color = vec3(1,0,0);
             } else {
-                bool inserted = false;
 
+
+                // Insert sorted?
+                // Warning; currently buggy
+                #if 0
+
+                int max_list_iter = 0;
+                // break;
+                bool inserted = false;
+                bool atHead = true;
                 uint lastPointer = 0u;
                 uint currentPointer = listHead;
+
 
                 while(currentPointer != 0u && max_list_iter --> 0) {
 
                     float currentDepth = extractMaterialDepth(currentPointer);
 
-                    if (currentDepth > tm.depth - 0.000001) {
-                        // Insert node infront
+                    // Insert node infront
+                    if (currentDepth < tm.depth - 0.000001) {
+                    // if (true) {
 
                         // Our node now points to the first object
                         tm.nextEntry = currentPointer;
+                        inserted = true;
 
                         // Edit the pointer of the previous object
-                        if (currentPointer == listHead) {
+                        if (atHead) {
                             // Save new list head
                             imageStore(listHeadBuffer, coord, uvec4(position));
+                            tm.color = vec3(0,1,0);
                         } else {
                             saveMaterialNextPointer(position, lastPointer);
+                            tm.color = vec3(0,1,1);
                         }
-                        inserted = true;
-                        break;
-                    }
+    
+                        currentPointer = 0u;
 
-                    lastPointer = currentPointer;
-                    currentPointer = extractMaterialNextPointer(currentPointer);
+                    } else {
+                        atHead = false;
+                        lastPointer = currentPointer;
+                        currentPointer = extractMaterialNextPointer(currentPointer);
+                    }
                 }
 
+                // We are at the end of the list, so we are the last element
                 if (!inserted && lastPointer != 0) {
                     saveMaterialNextPointer(position, lastPointer);
+                    tm.color = vec3(0,0,1);
                     tm.nextEntry = 0u;
                 }
+
+                #else
+
+                tm.nextEntry = listHead;
+                imageStore(listHeadBuffer, coord, uvec4(position));
+
+                #endif
+
             }
+
 
             memoryBarrier();
             imageAtomicExchange(spinLockBuffer, coord, 0);
@@ -123,14 +163,24 @@ void renderTransparentMaterial(TransparentMaterial tm) {
     // Pack material
     uint integer1 = int(tm.color.x * 255.0) | int(tm.color.y * 255.0) << 8 | int(tm.color.z * 255.0) << 16 | tm.materialType << 24;
     uint integer2 = int(tm.normal.x * 255.0) | int(tm.normal.y * 255.0) << 8 | int(tm.normal.z * 255.0) << 16 | int(tm.alpha * 255.0) << 24;
-    uint integer3 = floatBitsToUint(tm.depth);
+
+    #if USE_UINT_PACKING
+        uint integer3 = uint(tm.depth * 0xFFFFFFFF);
+    #else
+        uint integer3 = floatBitsToUint(tm.depth);
+    #endif
+
     uint integer4 = tm.nextEntry;
+
 
 
     // Store material
     imageStore(materialDataBuffer, int(position), uvec4(integer1, integer2, integer3, integer4));
 
+
+
     if (done) discard;
+    // color0 = vec4(0.2,0.6,1.0,1);
 }
 
 
@@ -139,7 +189,12 @@ TransparentMaterial unpackTransparentMaterial(uvec4 data) {
     TransparentMaterial tm;
 
     tm.nextEntry = data.w;
-    tm.depth = uintBitsToFloat(data.z);
+
+    #if USE_UINT_PACKING
+        tm.depth = float(data.z) / 0xFFFFFFFF;
+    #else
+        tm.depth = uintBitsToFloat(data.z);
+    #endif
 
     tm.color = vec3(
         float(data.x & 0xFF) / 255.0,

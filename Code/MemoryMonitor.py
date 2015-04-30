@@ -29,7 +29,7 @@ class MemoryMonitor:
         if form in textureTypes:
             componentSize = textureTypes[form]
         else:
-            print "MemoryMonitor: Unkown component type:", form, tex.getName()
+            print "MemoryMonitor: Unkown type:", form, tex.getName()
 
         pixelCount = tex.getXSize() * tex.getYSize() * tex.getZSize()
 

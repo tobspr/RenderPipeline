@@ -5,6 +5,8 @@ from panda3d.core import Shader, Texture, SamplerState, GeomEnums, Vec4
 from DebugObject import DebugObject
 from RenderTarget import RenderTarget
 
+from MemoryMonitor import MemoryMonitor
+
 class TransparencyManager(DebugObject):
 
 
@@ -13,7 +15,7 @@ class TransparencyManager(DebugObject):
         self.debug("Initializing ..")
 
         self.pipeline = pipeline
-        self.maxPixelCount = 100000000
+        self.maxPixelCount = 10000000
 
 
     def initTransparencyPass(self):
@@ -22,18 +24,19 @@ class TransparencyManager(DebugObject):
         self.transparencyPass.addColorTexture()
         self.transparencyPass.setColorBits(16)
         self.transparencyPass.prepareOffscreenBuffer()
+        self.transparencyPass.setClearColor(color=Vec4(0.2,0.5,1.0, 0.0))
 
-        self.pixelCountBuffer = Texture("Material Count Buffer")
+        self.pixelCountBuffer = Texture("MaterialCountBuffer")
         self.pixelCountBuffer.setup2dTexture(1, 1, Texture.TInt, Texture.FR32i)
 
 
-        self.materialDataBuffer = Texture("Material Data Buffer")
+        self.materialDataBuffer = Texture("MaterialDataBuffer")
         self.materialDataBuffer.setupBufferTexture(self.maxPixelCount, Texture.TFloat, Texture.FRgba32, GeomEnums.UH_static)
 
-        self.listHeadBuffer = Texture("List Head Buffer")
+        self.listHeadBuffer = Texture("ListHeadBuffer")
         self.listHeadBuffer.setup2dTexture(self.pipeline.size.x, self.pipeline.size.y, Texture.TInt, Texture.FR32i)
 
-        self.spinLockBuffer = Texture("Spin Lock Buffer")
+        self.spinLockBuffer = Texture("SpinLockBuffer")
         self.spinLockBuffer.setup2dTexture(self.pipeline.size.x, self.pipeline.size.y, Texture.TInt, Texture.FR32i)
 
 
@@ -51,6 +54,14 @@ class TransparencyManager(DebugObject):
         self.pixelCountBuffer.setClearColor(Vec4(0, 0, 0, 0))
         self.spinLockBuffer.setClearColor(Vec4(0, 0, 0, 0))
         self.listHeadBuffer.setClearColor(Vec4(0, 0, 0, 0))
+
+
+
+
+        MemoryMonitor.addTexture("MaterialCountBuffer", self.pixelCountBuffer)
+        MemoryMonitor.addTexture("MaterialDataBuffer", self.materialDataBuffer)
+        MemoryMonitor.addTexture("ListHeadBuffer", self.listHeadBuffer)
+        MemoryMonitor.addTexture("SpinLockBuffer", self.spinLockBuffer)
 
     def postRenderCallback(self):
         self.pixelCountBuffer.clearImage()

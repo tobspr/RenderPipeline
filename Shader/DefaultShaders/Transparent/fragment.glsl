@@ -20,23 +20,21 @@ layout (r32i) coherent uniform iimage2D spinLockBuffer;
 layout (rgba32ui) coherent uniform uimageBuffer materialDataBuffer;
 
 
+
 #pragma include "Includes/Transparency.include"
 
-
-layout(location=0) out vec4 color0;
-layout(location=1) out vec4 color1;
-layout(location=2) out vec4 color2;
-layout(location=3) out vec4 color3;
 
 void main() {
 
     TransparentMaterial tm = getDefaultTransparentMaterial();
-    tm.color = vec3(1.0, 0.6, 0.2);
+    tm.color = vec3(0.6, 0.6, 0.6);
     tm.alpha = 0.5;
     tm.normal = normalize(vOutput.normalWorld);
     tm.depth = gl_FragCoord.z;
     tm.materialType = 0;
 
+
+    // tm.normal = vec3( abs(vOutput.positionWorld.x) / 8.0, 0, 1);
 
 
     renderTransparentMaterial(tm);
