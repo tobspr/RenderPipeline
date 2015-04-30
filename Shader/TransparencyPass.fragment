@@ -44,7 +44,7 @@ struct MaterialPointer {
 MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS], int size) {
   for (int i = (size - 2); i >= 0; --i) {
     for (int j = 0; j <= i; ++j) {
-      if (fragments[j].depth < fragments[j+1].depth) {
+      if (fragments[j].depth > fragments[j+1].depth) {
         MaterialPointer temp;
         temp.pointer = fragments[j+1].pointer;
         temp.depth = fragments[j+1].depth;

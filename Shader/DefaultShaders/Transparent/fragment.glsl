@@ -31,7 +31,7 @@ void main() {
 
     TransparentMaterial tm = getDefaultTransparentMaterial();
     tm.color = vec3(0.2, 0.6, 1.0);
-    tm.alpha = 0.9;
+    tm.alpha = 0.5;
     tm.normal = normalize(vOutput.normalWorld);
     tm.depth = distance(cameraPosition, vOutput.positionWorld) / CAMERA_FAR;
     tm.materialType = 0;
