@@ -19,6 +19,7 @@ layout (r32i) coherent uniform iimage2D spinLockBuffer;
 
 
 #pragma include "Includes/Transparency.include"
+#pragma include "Includes/PositionReconstruction.include"
 
 
 uniform sampler2D sceneTex;
@@ -33,14 +34,14 @@ struct MaterialPointer {
 };
 
 
-#define MAX_TRANSPARENCY_LAYERS 10
+#define MAX_TRANSPARENCY_LAYERS 15
 
 
 //Bubble sort used to sort fragments
 MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS], int size) {
   for (int i = (size - 2); i >= 0; --i) {
     for (int j = 0; j <= i; ++j) {
-      if (fragments[j].depth < fragments[j+1].depth) {
+      if (fragments[j].depth > fragments[j+1].depth - 0.00000001) {
         MaterialPointer temp;
         temp.pointer = fragments[j+1].pointer;
         temp.depth = fragments[j+1].depth;
@@ -63,6 +64,8 @@ void main() {
 
     // Fetch list head
     uint listHead = imageLoad(listHeadBuffer, ivec2(gl_FragCoord.xy)).x;
+
+    uint totalEntryCount = imageLoad(pixelCountBuffer, ivec2(0)).x;
 
     // Early out .. have to test if that faster
     // if (listHead == 0) discard; 
@@ -91,7 +94,7 @@ void main() {
 
 
     // Sort data
-    fragments = bubbleSortFragments(fragments, entryCounter);
+    // fragments = bubbleSortFragments(fragments, entryCounter);
     
 
     // Render Data
@@ -104,16 +107,11 @@ void main() {
         uvec4 data = imageLoad(materialDataBuffer, int(fragments[i].pointer));
         TransparentMaterial tm = unpackTransparentMaterial(data);
 
-        float cf = dot(tm.normal, vec3(0, 0, 1));
-
+        float cf = saturate(dot(tm.normal, vec3(0, 1, 1)));
         currentColor = currentColor * (1.0-tm.alpha) + tm.color * cf * tm.alpha;
-        // currentColor -= tm.depth * 0.1;
         currentOcclusion *= tm.alpha;    
-
     }
 
     colorResult = vec4(currentColor, currentOcclusion);
-
-    // colorResult = vec4( pow(fragments[0].depth, 200.0) );
 
 }

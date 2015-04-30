@@ -72,13 +72,13 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
-        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
@@ -140,7 +140,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)wwww
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(0, -5, 5.0), Vec3(0, 0, 5))
+            Vec3(0, -20, 20.0), Vec3(0, 0, 5))
         self.controller.setup()
 
         # Hotkey for wireframe

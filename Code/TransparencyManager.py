@@ -3,6 +3,7 @@
 from panda3d.core import Shader, Texture, SamplerState, GeomEnums, Vec4
 
 from DebugObject import DebugObject
+from Globals import Globals
 from RenderTarget import RenderTarget
 
 from MemoryMonitor import MemoryMonitor
@@ -64,9 +65,14 @@ class TransparencyManager(DebugObject):
         MemoryMonitor.addTexture("SpinLockBuffer", self.spinLockBuffer)
 
     def postRenderCallback(self):
+
+        # Globals.base.graphicsEngine.extractTextureData(self.pixelCountBuffer, Globals.base.win.getGsg())
+
         self.pixelCountBuffer.clearImage()
         self.spinLockBuffer.clearImage()
         self.listHeadBuffer.clearImage()
+
+
 
     def setColorTexture(self, tex):
         self.transparencyPass.setShaderInput("sceneTex", tex)

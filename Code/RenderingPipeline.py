@@ -1029,7 +1029,7 @@ class RenderingPipeline(DebugObject):
         skybox = loader.loadModel("Models/Skybox/Model.egg.bam")
         skybox.setScale(scale)
 
-        skytex = loader.loadTexture("Data/Skybox/Sky.jpg")
+        skytex = loader.loadTexture("Data/Skybox/sky.jpg")
         skytex.setWrapU(SamplerState.WMRepeat)
         skytex.setWrapV(SamplerState.WMRepeat)
         skytex.setMinfilter(SamplerState.FTLinear)

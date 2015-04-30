@@ -89,7 +89,7 @@ void renderTransparentMaterial(TransparentMaterial tm) {
             if (listHead == 0u) {
                 imageStore(listHeadBuffer, coord, uvec4(position) );
                 tm.nextEntry = 0u;
-                tm.color = vec3(1,0,0);
+                // tm.color = vec3(1,0,0);
             } else {
 
 
@@ -97,7 +97,7 @@ void renderTransparentMaterial(TransparentMaterial tm) {
                 // Warning; currently buggy
                 #if 0
 
-                int max_list_iter = 0;
+                int max_list_iter = 1000;
                 // break;
                 bool inserted = false;
                 bool atHead = true;
@@ -121,10 +121,10 @@ void renderTransparentMaterial(TransparentMaterial tm) {
                         if (atHead) {
                             // Save new list head
                             imageStore(listHeadBuffer, coord, uvec4(position));
-                            tm.color = vec3(0,1,0);
+                            // tm.color = vec3(0,1,0);
                         } else {
                             saveMaterialNextPointer(position, lastPointer);
-                            tm.color = vec3(0,1,1);
+                            // tm.color = vec3(0,1,1);
                         }
     
                         currentPointer = 0u;
@@ -139,7 +139,7 @@ void renderTransparentMaterial(TransparentMaterial tm) {
                 // We are at the end of the list, so we are the last element
                 if (!inserted && lastPointer != 0) {
                     saveMaterialNextPointer(position, lastPointer);
-                    tm.color = vec3(0,0,1);
+                    // tm.color = vec3(0,0,1);
                     tm.nextEntry = 0u;
                 }
 
@@ -161,7 +161,7 @@ void renderTransparentMaterial(TransparentMaterial tm) {
 
 
     // Pack material
-    uint integer1 = int(tm.color.x * 255.0) | int(tm.color.y * 255.0) << 8 | int(tm.color.z * 255.0) << 16 | tm.materialType << 24;
+    uint integer1 = int(tm.color.x * 250.0 + 0.5) | int(tm.color.y * 250.0 + 0.5) << 8 | int(tm.color.z * 250.0 + 0.5) << 16 | tm.materialType << 24;
     uint integer2 = int(tm.normal.x * 255.0) | int(tm.normal.y * 255.0) << 8 | int(tm.normal.z * 255.0) << 16 | int(tm.alpha * 255.0) << 24;
 
     #if USE_UINT_PACKING
