@@ -41,7 +41,7 @@ struct MaterialPointer {
 MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS], int size) {
   for (int i = (size - 2); i >= 0; --i) {
     for (int j = 0; j <= i; ++j) {
-      if (fragments[j].depth > fragments[j+1].depth - 0.00000001) {
+      if (fragments[j].depth < fragments[j+1].depth) {
         MaterialPointer temp;
         temp.pointer = fragments[j+1].pointer;
         temp.depth = fragments[j+1].depth;
@@ -94,7 +94,7 @@ void main() {
 
 
     // Sort data
-    // fragments = bubbleSortFragments(fragments, entryCounter);
+    fragments = bubbleSortFragments(fragments, entryCounter);
     
 
     // Render Data
@@ -107,7 +107,7 @@ void main() {
         uvec4 data = imageLoad(materialDataBuffer, int(fragments[i].pointer));
         TransparentMaterial tm = unpackTransparentMaterial(data);
 
-        float cf = saturate(dot(tm.normal, vec3(0, 1, 1)));
+        float cf = saturate(dot(tm.normal, vec3(0, 1, 1))) +0.2;
         currentColor = currentColor * (1.0-tm.alpha) + tm.color * cf * tm.alpha;
         currentOcclusion *= tm.alpha;    
     }

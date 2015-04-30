@@ -66,7 +66,7 @@ void renderTransparentMaterial(TransparentMaterial tm) {
     bool done = false;
 
     uint locked = 0;
-    int max_iter = 100;
+    int max_iter = 12;
 
     // Allocate buffer position
     uint position = imageAtomicAdd(pixelCountBuffer, ivec2(0, 0), 1) + 1;
@@ -78,9 +78,6 @@ void renderTransparentMaterial(TransparentMaterial tm) {
         locked = imageAtomicExchange(spinLockBuffer, coord, 1);
         if (locked == 0)
         {
-
-
-
 
             // Insert the material to the per pixel list
             uint listHead = imageLoad(listHeadBuffer, coord).x;

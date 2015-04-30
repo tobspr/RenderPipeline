@@ -22,17 +22,19 @@ layout (rgba32ui) coherent uniform uimageBuffer materialDataBuffer;
 // out vec4 color0;
 
 #pragma include "Includes/Transparency.include"
+#pragma include "Includes/PositionReconstruction.include"
 
 
 void main() {
 
     TransparentMaterial tm = getDefaultTransparentMaterial();
-    tm.color = vec3(0.2, 0.2, 0.2);
-    tm.alpha = 0.5;
+    tm.color = vec3(0.2, 0.6, 1.0);
+    tm.alpha = 0.9;
     tm.normal = normalize(vOutput.normalWorld);
-    tm.depth = gl_FragCoord.z;
+    tm.depth = getLinearZFromZ(gl_FragCoord.z) / CAMERA_FAR;
     tm.materialType = 0;
 
+    // tm.depth = 0;
 
     // tm.normal = vec3( abs(vOutput.positionWorld.x) / 8.0, 0, 1);
 
