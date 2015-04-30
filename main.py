@@ -98,7 +98,7 @@ class Main(ShowBase, DebugObject):
 
         # self.transparentObj2.reparentTo(self.transparentObj)
         # self.transparentObj2.setPos(5,0, 0)
-        self.transparentObj.setPos(0,0,2.01)
+        self.transparentObj.setPos(0,0,0)
         # self.transparentObj.setScale(0.2)
         self.transparentObj.flattenStrong()
 

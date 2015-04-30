@@ -97,6 +97,11 @@ void main() {
     fragments = bubbleSortFragments(fragments, entryCounter);
     
 
+    // Check scene depth
+
+    float sceneDepth = texelFetch(depthTex, coord,0).x;
+    float sceneDepthLinear = getLinearZFromZ(sceneDepth) / CAMERA_FAR;
+
     // Render Data
     vec4 currentData = texture(sceneTex, texcoord);
     vec3 currentColor = currentData.xyz;
@@ -106,6 +111,8 @@ void main() {
     for (int i = 0; i < entryCounter; i++) {
         uvec4 data = imageLoad(materialDataBuffer, int(fragments[i].pointer));
         TransparentMaterial tm = unpackTransparentMaterial(data);
+
+        if (tm.depth > sceneDepthLinear) continue;
 
         float cf = saturate(dot(tm.normal, vec3(0, 1, 1))) +0.2;
         currentColor = currentColor * (1.0-tm.alpha) + tm.color * cf * tm.alpha;
