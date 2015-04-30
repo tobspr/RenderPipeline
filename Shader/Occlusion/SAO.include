@@ -28,9 +28,8 @@ uniform mat4 trans_apiclip_to_apiview_of_mainCam;
 #define SAO_NUM_SPIRAL_TURNS      4
 #define SAO_VARIATION             1
 
-const float saoIntensity = 1.0;
 const float saoConstIntensity = 1.5;
-const float saoSampleRadiusWS = 7.0;
+const float saoSampleRadiusWS = 6.0;
 const float saoBias = 0.1;
 const float saoEpsilon = 0.1;
 
@@ -154,7 +153,7 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   // intensity = saoIntensity;
 
 
-  float intensity = saoIntensity;
+
 
   for (int i = 0; i < OCCLUSION_SAMPLES; ++i) {
     occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, randomPatternRotationAngle);

@@ -59,12 +59,12 @@ void main() {
 
         
         // Dont color correct when showing occlusion
-        #ifndef DEBUG_RM_OCCLUSION
         
         // Chromatic abberation
         result = applyChromaticAbberation(colorTex, texcoord, 1.0);
         
         // Color LUT
+        #ifndef DEBUG_RM_OCCLUSION
         result = applyColorLUT(colorLUT, result);
 
         #endif

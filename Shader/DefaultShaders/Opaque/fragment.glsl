@@ -41,7 +41,7 @@ void main() {
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
 
-    // bumpFactor = 0.0;
+    bumpFactor = 0.0;
    
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
 
@@ -49,9 +49,6 @@ void main() {
     reconstructTanBin(tangent, binormal);
 
     vec3 mixedNormal = mergeNormal(detailNormal, bumpFactor, vOutput.normalWorld, tangent, binormal);
-
-    // mixedNormal *= vec3(1,1,-1);
-    // mixedNormal *= -1;
 
     m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
     m.roughness = sampledRoughness.r * roughnessFactor;
@@ -61,11 +58,11 @@ void main() {
     m.position = vOutput.positionWorld;
 
     #if 1
-    // m.baseColor = vec3(vOutput.materialDiffuse);
-    // m.metallic = 1.0;
-    // m.specular = 0.5;
+    m.baseColor = vec3(vOutput.materialDiffuse);
+    m.metallic = 1.0;
+    m.specular = 0.9;
     // m.roughness = 0.001 + m.baseColor.r*0.8;
-    // m.roughness = 0.5;
+    m.roughness = 0.02;
     #endif
 
     // m.roughness = 0.0;

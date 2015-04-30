@@ -50,6 +50,8 @@ uint extractMaterialNextPointer(uint position) {
 
 void renderTransparentMaterial(TransparentMaterial tm) {
 
+    #ifndef DEBUG_DISABLE_TRANSPARENCY
+
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     tm.color = saturate(tm.color);
@@ -175,9 +177,10 @@ void renderTransparentMaterial(TransparentMaterial tm) {
     imageStore(materialDataBuffer, int(position), uvec4(integer1, integer2, integer3, integer4));
 
 
+    #endif
 
-    if (done) discard;
-    // color0 = vec4(0.2,0.6,1.0,1);
+    discard;
+
 }
 
 

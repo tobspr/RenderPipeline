@@ -10,8 +10,14 @@ from MemoryMonitor import MemoryMonitor
 
 class TransparencyManager(DebugObject):
 
+    """ This class manages rendering of transparency. It creates the buffers to
+    store transparency data in, and also provides the default transparency shader.
+
+    Internal something similar to OIT is used. More details about the technique
+    will follow. """
 
     def __init__(self, pipeline):
+        """ Creates the manager, but does not init the buffers """
         DebugObject.__init__(self, "TransparencyManager")
         self.debug("Initializing ..")
 
@@ -65,42 +71,48 @@ class TransparencyManager(DebugObject):
         MemoryMonitor.addTexture("SpinLockBuffer", self.spinLockBuffer)
 
     def setCameraPositionHandle(self, camPosHandle):
+        """ Passes the camera position to the computation shader, this should be
+        a PTAVec3 """
         self.transparencyPass.setShaderInput("cameraPosition", camPosHandle)
 
     def postRenderCallback(self):
-
+        """ Callback after the frame render, to cleanup the buffers """
         # Globals.base.graphicsEngine.extractTextureData(self.pixelCountBuffer, Globals.base.win.getGsg())
 
         self.pixelCountBuffer.clearImage()
         self.spinLockBuffer.clearImage()
         self.listHeadBuffer.clearImage()
 
-
-
-
     def setPositionTexture(self, tex):
+        """ Sets the position texture, required for the computation """
         self.transparencyPass.setShaderInput("positionTex", tex)
 
     def setColorTexture(self, tex):
+        """ Sets the color texture, required for the computation """
         self.transparencyPass.setShaderInput("sceneTex", tex)
 
     def setDepthTexture(self, tex):
+        """ Sets the depth texture, required for the computation """
         self.transparencyPass.setShaderInput("depthTex", tex)
 
     def reloadShader(self):
+        """ Reloads the shader of the computation node """
         self._setTransparencyPassShader()
 
     def _setTransparencyPassShader(self):
+        """ Internal method to create the computation shader """
         tShader = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
             "Shader/TransparencyPass.fragment")
         self.transparencyPass.setShader(tShader)
 
     def getDefaultShader(self):
+        """ Returns the default shader for transparent objects """
         shader = Shader.load(Shader.SLGLSL, 
                 "Shader/DefaultShaders/Transparent/vertex.glsl",
                 "Shader/DefaultShaders/Transparent/fragment.glsl")
         return shader
 
     def getResultTexture(self):
+        """ Returns the result texture which can be used further in the pipeline """
         return self.transparencyPass.getColorTexture()

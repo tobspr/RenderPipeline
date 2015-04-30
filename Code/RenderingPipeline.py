@@ -465,22 +465,6 @@ class RenderingPipeline(DebugObject):
         self._loadFallbackCubemap()
         self._loadLookupCubemap()
 
-
-    # def _createTransparencyLayers(self):
-    #     """ Creates the layers for order independent transparency """
-
-    #     self.transparencyLayers = Texture("TransparencyLayers")
-    #     self.transparencyLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FRgba8)
-
-    #     self.transparencyDepthLayers = Texture("TransparencyDepthLayers")
-    #     self.transparencyDepthLayers.setup2dTextureArray(self.size.x, self.size.y, 3, Texture.TFloat, Texture.FR32)
-
-    #     self.transparencyIndices = Texture("TransparencyIndices")
-    #     self.transparencyIndices.setup2dTexture(self.size.x, self.size.y, Texture.TInt, Texture.FR32i)
-
-
-
-
     def _setShaderInputs(self):
         """ Sets most of the required shader inputs to the targets """
 

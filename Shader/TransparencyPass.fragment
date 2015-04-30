@@ -37,14 +37,14 @@ struct MaterialPointer {
 };
 
 
-#define MAX_TRANSPARENCY_LAYERS 15
+#define MAX_TRANSPARENCY_LAYERS 10
 
 
 //Bubble sort used to sort fragments
 MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS], int size) {
   for (int i = (size - 2); i >= 0; --i) {
     for (int j = 0; j <= i; ++j) {
-      if (fragments[j].depth > fragments[j+1].depth) {
+      if (fragments[j].depth < fragments[j+1].depth) {
         MaterialPointer temp;
         temp.pointer = fragments[j+1].pointer;
         temp.depth = fragments[j+1].depth;
@@ -64,6 +64,15 @@ MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fra
 void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
+
+
+
+    // Render Data
+    vec4 currentData = texture(sceneTex, texcoord);
+    vec3 currentColor = currentData.xyz;
+    float currentOcclusion = currentData.w; 
+
+    #ifndef DEBUG_DISABLE_TRANSPARENCY
 
     // Fetch list head
     uint listHead = imageLoad(listHeadBuffer, ivec2(gl_FragCoord.xy)).x;
@@ -104,11 +113,8 @@ void main() {
     vec3 pixelPos = texelFetch(positionTex, coord,0).xyz;
     float pixelDist = distance(cameraPosition, pixelPos) / CAMERA_FAR;
 
-    // Render Data
-    vec4 currentData = texture(sceneTex, texcoord);
-    vec3 currentColor = currentData.xyz;
 
-    float currentOcclusion = currentData.w; 
+
 
     for (int i = 0; i < entryCounter; i++) {
         uvec4 data = imageLoad(materialDataBuffer, int(fragments[i].pointer));
@@ -120,6 +126,8 @@ void main() {
         currentColor = currentColor * (1.0-tm.alpha) + tm.color * cf * tm.alpha;
         currentOcclusion *= tm.alpha;    
     }
+
+    #endif
 
     colorResult = vec4(currentColor, currentOcclusion);
 
