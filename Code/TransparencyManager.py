@@ -64,6 +64,9 @@ class TransparencyManager(DebugObject):
         MemoryMonitor.addTexture("ListHeadBuffer", self.listHeadBuffer)
         MemoryMonitor.addTexture("SpinLockBuffer", self.spinLockBuffer)
 
+    def setCameraPositionHandle(self, camPosHandle):
+        self.transparencyPass.setShaderInput("cameraPosition", camPosHandle)
+
     def postRenderCallback(self):
 
         # Globals.base.graphicsEngine.extractTextureData(self.pixelCountBuffer, Globals.base.win.getGsg())
@@ -73,6 +76,10 @@ class TransparencyManager(DebugObject):
         self.listHeadBuffer.clearImage()
 
 
+
+
+    def setPositionTexture(self, tex):
+        self.transparencyPass.setShaderInput("positionTex", tex)
 
     def setColorTexture(self, tex):
         self.transparencyPass.setShaderInput("sceneTex", tex)

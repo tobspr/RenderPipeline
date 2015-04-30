@@ -24,7 +24,10 @@ layout (r32i) coherent uniform iimage2D spinLockBuffer;
 
 uniform sampler2D sceneTex;
 uniform sampler2D depthTex;
+uniform sampler2D positionTex;
 
+
+uniform vec3 cameraPosition;
 
 
 // Temporary structure used for sorting
@@ -98,9 +101,8 @@ void main() {
     
 
     // Check scene depth
-
-    float sceneDepth = texelFetch(depthTex, coord,0).x;
-    float sceneDepthLinear = getLinearZFromZ(sceneDepth) / CAMERA_FAR;
+    vec3 pixelPos = texelFetch(positionTex, coord,0).xyz;
+    float pixelDist = distance(cameraPosition, pixelPos) / CAMERA_FAR;
 
     // Render Data
     vec4 currentData = texture(sceneTex, texcoord);
@@ -112,7 +114,7 @@ void main() {
         uvec4 data = imageLoad(materialDataBuffer, int(fragments[i].pointer));
         TransparentMaterial tm = unpackTransparentMaterial(data);
 
-        if (tm.depth > sceneDepthLinear) continue;
+        if (tm.depth > pixelDist) continue;
 
         float cf = saturate(dot(tm.normal, vec3(0, 1, 1))) +0.2;
         currentColor = currentColor * (1.0-tm.alpha) + tm.color * cf * tm.alpha;

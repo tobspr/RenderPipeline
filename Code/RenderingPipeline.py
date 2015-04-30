@@ -659,6 +659,9 @@ class RenderingPipeline(DebugObject):
         # Set last / current mvp handles
         self.showbase.render.setShaderInput("lastMVP", self.lastMVP)
 
+        self.showbase.render.setShaderInput("cameraPosition", self.cameraPosition)
+        self.transparencyManager.setCameraPositionHandle(self.cameraPosition)
+
         # Set GI inputs
         if self.settings.enableGlobalIllumination:
             self.globalIllum.bindTo(self.giPrecomputeBuffer, "giData")
@@ -676,6 +679,7 @@ class RenderingPipeline(DebugObject):
 
 
         # Transparency pass inputs
+        self.transparencyManager.setPositionTexture(self.deferredTarget.getColorTexture())
         self.transparencyManager.setColorTexture(self.lightingComputeContainer.getColorTexture())
         self.transparencyManager.setDepthTexture(self.deferredTarget.getDepthTexture())
 
