@@ -23,7 +23,7 @@ class SpotLight(Light, DebugObject):
         self.typeName = "SpotLight"
 
         self.nearPlane = 0.5
-        self.farPlane = 20.0
+        self.radius = 30.0
         self.spotSize = Vec2(30, 30)
 
     def _getLightType(self):
@@ -33,7 +33,7 @@ class SpotLight(Light, DebugObject):
     def _computeLightBounds(self):
         """ Recomputes the bounds of this light. For a SpotLight, we for now
         use a simple BoundingSphere """
-        self.bounds = BoundingSphere(Point3(self.position), self.farPlane * 2.0)
+        self.bounds = BoundingSphere(Point3(self.position), self.radius * 2.0)
 
     def _computeAdditionalData(self):
         """ SpotLight does not need to store additional data """
@@ -41,7 +41,7 @@ class SpotLight(Light, DebugObject):
     def setNearFar(self, near, far):
         """ Sets the near and far plane of the spotlight """
         self.nearPlane = near
-        self.farPlane = far
+        self.radius = far
 
     def _updateDebugNode(self):
         """ Internal method to generate new debug geometry. """
@@ -86,7 +86,7 @@ class SpotLight(Light, DebugObject):
 
         source = ShadowSource()
         source.setupPerspectiveLens(
-            self.nearPlane, self.farPlane, (self.spotSize.x, self.spotSize.y))
+            self.nearPlane, self.radius, (self.spotSize.x, self.spotSize.y))
         source.setResolution(self.shadowResolution)
         self._addShadowSource(source)
 

@@ -16,7 +16,7 @@ sys.path.insert(0, '../../')
 from Code.RenderingPipeline import RenderingPipeline
 from Code.DirectionalLight import DirectionalLight
 from Code.Scattering import Scattering
-from Code.BetterShader import BetterShader
+
 from Code.GlobalIllumination import GlobalIllumination
 
 from panda3d.core import CollisionTraverser, CollisionNode

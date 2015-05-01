@@ -185,7 +185,7 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.guiManager.demoSlider.node[
                 "command"] = self.setSunPos
             self.renderPipeline.guiManager.demoSlider.node[
-                "value"] = 20
+                "value"] = 80
 
             self.lastSliderValue = 0.0
 
@@ -214,6 +214,7 @@ class Main(ShowBase, DebugObject):
         # Create more lights
         for i in xrange(3):
             spotLight = PointLight()
+            # spotLight = SpotLight()
 
             spotLight.setPos(Vec3(-5.0 + i * 5.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
