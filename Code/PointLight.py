@@ -16,16 +16,9 @@ class PointLight(Light, DebugObject):
     and a radius. The attenuation is computed based on a quadratic
     function.
 
-    Shadows are simulated using 2 Parabolic maps. So this light has
-    2 Shadow maps, and when calling setShadowMapResolution() you are
-    actually setting the resolution for both maps. This is still
-    cheaper than a cubemap, though, while mainting almost the same
-    quality.
-
-    Both shadow cameras are a bit displaced (by self.spacing),
-    as a parabolic map does not cover a full 180 degree view. Also,
-    the farPlane of both sources is shifted by self.bufferRadius,
-    because the precision is really bad near the outer radius.
+    Shadows are simulated using a cubemap, which means that this light has
+    6 Shadow maps, and when calling setShadowMapResolution() you are
+    actually setting the resolution for all maps. 
 
     TODO: Add impostor support. """
 

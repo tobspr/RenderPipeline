@@ -35,7 +35,7 @@ void main() {
     // if (colorSample.a < 0.5) discard;
 
     vec3 diffuse = colorSample.xyz * color.xyz;
-    // diffuse = color.xyz;
+    diffuse = colorSample.xyz * 5.0;
 
     vec4 projected = dv_mvp * vec4(positionWorld.xyz, 1);
     vec3 projCoord = (projected.xyz / projected.w * 0.5) + 0.5;

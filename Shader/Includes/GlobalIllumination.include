@@ -233,7 +233,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // giResult = vec4(textureLod(data.voxels, localCoord, 0.0).xyz)) * 1.5;
 
 
-    float aoMultiplier = exp(-3.0 * aoResult.w) * 4.5;
+    float aoMultiplier = exp(-3.0 * aoResult.w) * 1.5;
     // float aoMultiplier = exp(-2.5 * length(aoResult.xyz)) * 1.0;
     // aoMultiplier = 1.0;
 

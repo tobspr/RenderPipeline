@@ -39,6 +39,14 @@ uniform int arrayDirectionalLight[MAX_DIRECTIONAL_LIGHTS];
 uniform int countDirectionalLightShadow;
 uniform int arrayDirectionalLightShadow[MAX_DIRECTIONAL_LIGHTS];
 
+
+uniform int countSpotLight;
+uniform int arraySpotLight[MAX_POINT_LIGHTS];
+
+uniform int arraySpotLightShadow[MAX_POINT_LIGHTS];
+uniform int countSpotLightShadow;
+
+
 uniform vec4 bufferSize;
 
 
@@ -119,9 +127,14 @@ void main() {
     int processedShadowPointLights = 0;
     int processedDirectionalLights = 0;
     int processedDirectionalShadowLights = 0;
+    int processedSpotLights = 0;
+    int processedShadowSpotLights = 0;
 
     if (false && minDepthLinear > 9000.0) {
         // Only skybox. We can stop here.
+        processedPointLights = 0;
+        processedShadowPointLights = 0;
+
         processedPointLights = 0;
         processedShadowPointLights = 0;
 
@@ -232,12 +245,44 @@ void main() {
         }
 
 
+
+        // Process Spot Lights
+        baseOffset = storageCoord + ivec2(0,7);
+        currentOffset = ivec2(0);
+
+        for (int i = 0; i < countSpotLight; i++) {
+            int index = arraySpotLight[i];
+            Light light = lights[index];
+            if (isSpotLightInFrustum(light, frustum)) {
+                currentOffset = ivec2(processedSpotLights % 8, processedSpotLights / 8);
+                imageStore(destination, baseOffset + currentOffset, ivec4(index));
+                processedSpotLights += 1;
+            }
+        }
+
+        // // Process shadowed Spot lights
+        // baseOffset = storageCoord + ivec2(0,3);
+        // currentOffset = ivec2(0);
+
+        // for (int i = 0; i < countPointLightShadow; i++) {
+        //     int index = arrayPointLightShadow[i];
+        //     Light light = lights[index];
+        //     if (isPointLightInFrustum(light, frustum)) {
+        //         currentOffset = ivec2(processedShadowPointLights % 8, processedShadowPointLights / 8);
+        //         imageStore(destination, baseOffset + currentOffset, ivec4(index));
+        //         processedShadowPointLights += 1;
+        //     }
+        // }
+
+
     }
 
     imageStore(destination, storageCoord + ivec2(0, 0), ivec4(processedPointLights));
     imageStore(destination, storageCoord + ivec2(1, 0), ivec4(processedShadowPointLights));
     imageStore(destination, storageCoord + ivec2(2, 0), ivec4(processedDirectionalLights));
     imageStore(destination, storageCoord + ivec2(3, 0), ivec4(processedDirectionalShadowLights));
+    imageStore(destination, storageCoord + ivec2(4, 0), ivec4(processedSpotLights));
+    imageStore(destination, storageCoord + ivec2(5, 0), ivec4(processedShadowSpotLights));
 
     // float lightsVisibleFloat = float(processedPointLights + processedShadowPointLights) / float(2.0);
     // vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);

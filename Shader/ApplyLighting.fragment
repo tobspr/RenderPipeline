@@ -133,6 +133,13 @@ void main() {
     int countDirectionalLightShadow = min(MAX_SHADOW_POINT_LIGHTS, 
         texelFetch(lightsPerTile, precomputeCoord + ivec2(3,0), 0).r);
 
+    int countSpotLight = min(MAX_SPOT_LIGHTS, 
+        texelFetch(lightsPerTile, precomputeCoord + ivec2(4,0), 0).r);
+
+    int countSpotLightShadow = min(MAX_SHADOW_SPOT_LIGHTS, 
+        texelFetch(lightsPerTile, precomputeCoord + ivec2(5,0), 0).r);
+
+
     // Lighting result gets stored in this variables
     vec3 result = vec3(0);
     vec4 giDiffuseColor = vec4(0.1);
@@ -373,6 +380,30 @@ void main() {
             result += applyDirectionalLightWithShadow(currentLight, material);
         }
 
+
+
+        // Compute spot lights
+        baseOffset = precomputeCoord + ivec2(0,7);
+        for (int i = 0; i < countSpotLight; i++) {
+            currentOffset = ivec2(i % 8, i / 8);
+            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLight = lights[currentLightId];
+            result += applySpotLight(currentLight, material);
+        }
+
+        // Compute shadow spot lights
+        // baseOffset = precomputeCoord + ivec2(0,8);
+        // for (int i = 0; i < countPointLightShadow; i++) {
+        //     currentOffset = ivec2(i % 8, i / 8);
+        //     currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+        //     currentLight = lights[currentLightId];
+
+        //     #if USE_SHADOWS
+        //         result += applyPointLightWithShadow(currentLight, material );
+        //     #else
+        //         result += applyPointLight(currentLight, material);
+        //     #endif
+        // }
 
         // Ambient / Reflections
 

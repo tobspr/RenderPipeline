@@ -92,3 +92,23 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material ) {
     return rawLighting;
 }
 
+
+
+
+vec3 applySpotLight(Light light, Material material) {
+
+    return vec3(0.2,0.6,1.0);
+    // float distanceToLight = distance(material.position, light.position);   
+    // float distanceRelative = distanceToLight / light.radius; 
+    // float attenuation = computePointLightAttenuation(light, distanceToLight);
+
+    // vec3  l = normalize(light.position - material.position);
+    // vec3  v = normalize(cameraPosition - material.position);
+    // vec3  n = normalize(material.normal);
+    // vec3  h = normalize(l + v);
+    // vec3 ambientContribution = 0.1 * material.baseColor * light.ambient * attenuation;
+
+    // float shadowFactor = 1.0;
+
+    // return computeLightModel(light, material, l,v, n, h, attenuation, 1.0);
+}

@@ -15,9 +15,11 @@
 #define MAX_DIRECTIONAL_LIGHTS 1
 #define MAX_DIRECTIONAL_SHADOW_LIGHTS 1
 
+#define MAX_SPOT_LIGHTS 3
+#define MAX_SHADOW_SPOT_LIGHTS 0
+
 // Max shadow maps. Has to be the same as in LightManager.py
 #define SHADOW_MAX_TOTAL_MAPS 24
-
 
 // Wheter to clear the lighting buffer each frame to be
 // able to see changes in lighting - only recommended for debugging

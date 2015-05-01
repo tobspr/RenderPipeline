@@ -33,6 +33,7 @@ from Code.DirectionalLight import DirectionalLight
 from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
 from Code.GlobalIllumination import GlobalIllumination
+from Code.SpotLight import SpotLight
 
 
 
@@ -67,8 +68,19 @@ class Main(ShowBase, DebugObject):
         #self.renderPipeline.getMountManager().setWritePath(writeDirectory)
         self.renderPipeline.getMountManager().setBasePath(".")
         
+        # Load pipeline settings
+        self.renderPipeline.loadSettings("Config/pipeline.ini")
+
+
+        # Create the pipeline, and enable scattering
+        self.renderPipeline.create()
+        self.renderPipeline.enableDefaultEarthScattering()
+
          ####### END OF RENDER PIPELINE SETUP #######
-        # Load some demo source
+
+
+        # Select demo scene here:
+
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
@@ -76,45 +88,49 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
-        self.sceneSource = "Demoscene.ignore/Couch/Couch.egg.bam"
+        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
-        self.renderPipeline.loadSettings("Config/pipeline.ini")
 
-        # Create the pipeline, and enable scattering
-        self.renderPipeline.create()
-        self.renderPipeline.enableDefaultEarthScattering()
-        
+        # Select surrounding scene here
+        # self.sceneSourceSurround = None
+        self.sceneSourceSurround = "Demoscene.ignore/Couch/scene.egg"
+
+
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
-        
-        # Load transparent object
-        self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
-        # self.transparentObj = loader.loadModel("Demoscene.ignore/transparencyTest/scene.egg")
-        # self.transparentObj = self.scene.find("**/Glass")
-        self.transparentObj.reparentTo(render)
 
-        # self.transparentObj2.reparentTo(self.transparentObj)
-        # self.transparentObj2.setPos(5,0, 0)
-        self.transparentObj.setZ(self.transparentObj, 990.01)
-        # self.transparentObj.setScale(0.2)
-        self.transparentObj.flattenStrong()
+        if self.sceneSourceSurround is not None:
+            self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
+            self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
+            self.sceneSurround.reparentTo(self.scene)
 
-        self.transparentObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
-        # self.transparentObj.setDepthWrite(False)
-        # self.transparentObj.setDepthTest(False)
-        # self.transparentObj.setBin("transparent", 200)
+
+        # Transparency demo
+        if False:
+            self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
+            # self.transparentObj = loader.loadModel("Demoscene.ignore/transparencyTest/scene.egg")
+            # self.transparentObj = self.scene.find("**/Glass")
+            self.transparentObj.reparentTo(render)
+            self.transparentObj.setZ(self.transparentObj, 1.0)
+            self.transparentObj.flattenStrong()
+            self.transparentObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+        else:
+            self.transparentObj = None
 
         # Wheter to use a ground floor
-
-        self.usePlane = True
+        self.usePlane = False
         self.sceneWireframe = False
 
         # Flatten scene?
         self.scene.flattenStrong()
+        self.scene.reparentTo(self.render)
+
+        # Prepare textures with SRGB format
+        self.prepareSRGB(self.scene)
 
         # Load ground plane if configured
         if self.usePlane:
@@ -130,15 +146,9 @@ class Main(ShowBase, DebugObject):
         # self.scene.setTwoSided(True)
 
         # Required for tesselation
-
         # self.convertToPatches(self.scene)
 
-        self.scene.reparentTo(self.render)
-
-        # Prepare textures with SRGB format
-        self.prepareSRGB(self.scene)
-
-        # Create movement controller (Freecam)wwww
+        # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
             Vec3(0, -20, 20.0), Vec3(0, 0, 5))
@@ -149,8 +159,6 @@ class Main(ShowBase, DebugObject):
 
         # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
-
-
 
         # Create a sun light
         dPos = Vec3(60, 30, 100)
@@ -169,12 +177,8 @@ class Main(ShowBase, DebugObject):
         self.dirLight.setPos(sunPos)
         self.dirLight.setDirection(sunPos)
 
-
         # Tell the GI which light casts the GI
         self.renderPipeline.setGILightSource(dirLight)
-
-
-
 
         # Slider to move the sun
         if self.renderPipeline.settings.displayOnscreenDebugger:
@@ -189,8 +193,7 @@ class Main(ShowBase, DebugObject):
         self.skybox = self.renderPipeline.getDefaultSkybox()
         self.skybox.reparentTo(render)
 
-
-
+        # Create some lights
         for i in xrange(3):
             pointLight = PointLight()
 
@@ -208,6 +211,17 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
 
+        # Create more lights
+        for i in xrange(3):
+            spotLight = PointLight()
+
+            spotLight.setPos(Vec3(-5.0 + i * 5.0, 2.0, 4.0))
+            # spotLight.setColor(Vec3(i,2-i,0))
+            spotLight.setColor(Vec3(1) * 0.2)
+            # spotLight.setNearFar(1.0, 20.0)
+            spotLight.setRadius(30)
+            # spotLight.setCastsShadows(True)
+            self.renderPipeline.addLight(spotLight)
 
         # Set default object shaders
         self.setShaders(refreshPipeline=False)
@@ -216,7 +230,8 @@ class Main(ShowBase, DebugObject):
         # for window in base.graphicsEngine.getWindows():
             # print window.getName(), window.getSort()
     
-        # self.addTask(self.sleep, "sleep")        
+        # Slow mode?
+        # self.addTask(self.sleep, "sleep")
 
     def sleep(self, task):
         import time
@@ -302,10 +317,10 @@ class Main(ShowBase, DebugObject):
         if self.renderPipeline:
             self.scene.setShader(
                 self.renderPipeline.getDefaultObjectShader(False))
-            self.transparentObj.setShader(
-                self.renderPipeline.getDefaultTransparencyShader())
 
-
+            if self.transparentObj:
+                self.transparentObj.setShader(
+                    self.renderPipeline.getDefaultTransparencyShader())
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()

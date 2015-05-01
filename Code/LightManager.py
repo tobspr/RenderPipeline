@@ -246,7 +246,8 @@ class LightManager(DebugObject):
         # Shader/Includes/Configuration.include!
         self.maxLights = {
             "PointLight": 16,
-            "DirectionalLight": 1
+            "DirectionalLight": 1,
+            "SpotLight": 3
         }
 
         # Max shadow casting lights
@@ -446,8 +447,13 @@ class LightManager(DebugObject):
             renderedDL_S = "Directional:" + \
                 str(self.numRenderedLights["DirectionalLightShadow"][0])
 
+            renderedSL = "Spot:" + \
+                str(self.numRenderedLights["SpotLight"][0])
+            renderedSL_S = "Spot:" + \
+                str(self.numRenderedLights["SpotLight"][0])
+
             self.lightsVisibleDebugText.setText(
-                'Lights: ' + renderedPL + " / " + renderedDL + " Shadowed: " + renderedPL_S + " / " + renderedDL_S)
+                'Lights: ' + renderedPL + " / " + renderedDL + " Shadowed: " + renderedPL_S + " / " + renderedDL_S + " Spot: " + renderedSL + " / " + renderedSL_S)
 
 
     def updateShadows(self):

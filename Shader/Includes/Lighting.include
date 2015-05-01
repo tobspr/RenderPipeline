@@ -137,9 +137,13 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     vec3 ambientEnvColor = vec3(0);
     vec3 ambientRefColor = vec3(0);
 
+
+    float edgeFactor = 1.0 - saturate(dot(v, n) * 1.0);
+    mipmap += edgeFactor * 3.0;
+
     // Filter Environment map
     #ifndef DEBUG_DISABLE_FILTER_ENVIRONMENT
-// 
+
         for ( int i = 0; i < AMBIENT_CUBEMAP_SAMPLES; ++i )
         {
             vec3 offset = poisson3D_32[i] * blurRadius;
@@ -176,6 +180,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
               material.specular * (1.0 - material.roughness*0.7) * 
               max(0.0, material.metallic) *
               mix(pow(1.0 - saturate(dot(material.normal, v)), 5.0), 0.4, material.metallic) * 10.0;
+
 
     return result;
 }
