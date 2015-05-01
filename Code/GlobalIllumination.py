@@ -15,6 +15,7 @@ from RenderTarget import RenderTarget
 from GIHelperLight import GIHelperLight
 from LightType import LightType
 from SettingsManager import SettingsManager
+from MemoryMonitor import MemoryMonitor
 
 import time
 import math
@@ -41,7 +42,7 @@ class GlobalIllumination(DebugObject):
         self.targetSpace = Globals.base.render
 
         self.voxelBaseResolution = 512 * 4
-        self.voxelGridSizeWS = Vec3(80, 80, 80)
+        self.voxelGridSizeWS = Vec3(30, 30, 30)
         self.voxelGridResolution = LVecBase3i(256, 256, 256)
         self.targetLight = None
         self.helperLight = None
@@ -89,6 +90,9 @@ class GlobalIllumination(DebugObject):
         self.voxelizeTarget.getQuad().node().removeAllChildren()
         self.voxelizeTarget.getInternalRegion().setSort(-400)
         self.voxelizeTarget.getInternalBuffer().setSort(-399)
+
+
+        MemoryMonitor.addRenderTarget("Voxelize Scene", self.voxelizeTarget)
 
         # for tex in [self.voxelizeTarget.getColorTexture()]:
         #     tex.setWrapU(Texture.WMClamp)
@@ -161,6 +165,9 @@ class GlobalIllumination(DebugObject):
         self.voxelGenTex.setMinfilter(Texture.FTLinearMipmapLinear)
         self.voxelGenTex.setMagfilter(Texture.FTLinear)
 
+        MemoryMonitor.addTexture("Voxel Temp Texture", self.voxelGenTex)
+
+
         # Create 3D Texture which is a copy of the voxel generation grid but
         # stable, as the generation grid is updated part by part
         self.voxelStableTex = Texture("VoxelsStable")
@@ -168,6 +175,8 @@ class GlobalIllumination(DebugObject):
                                            Texture.TFloat, Texture.FRgba8)
         self.voxelStableTex.setMinfilter(Texture.FTLinearMipmapLinear)
         self.voxelStableTex.setMagfilter(Texture.FTLinear)        
+
+        MemoryMonitor.addTexture("Voxel Grid Texture", self.voxelStableTex)
 
         for prepare in [self.voxelGenTex, self.voxelStableTex]:
             prepare.setMagfilter(Texture.FTLinear)

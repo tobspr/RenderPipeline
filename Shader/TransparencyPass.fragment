@@ -79,8 +79,11 @@ void main() {
 
     uint totalEntryCount = imageLoad(pixelCountBuffer, ivec2(0)).x;
 
-    // Early out .. have to test if that faster
-    // if (listHead == 0) discard; 
+    // Early out .. have to test if that is faster
+    if (listHead == 0) {
+        colorResult = vec4(currentColor, currentOcclusion);
+        return;
+    } 
 
 
     // Store parts of the data in registers

@@ -29,6 +29,9 @@ void main() {
     Material m = getDefaultMaterial();
     vec4 sampledDiffuse = texture(DIFFUSE_TEX, vOutput.texcoord);
 
+
+    // sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.5)) * 0.1;
+    
     // Alpha test
     // if (sampledDiffuse.a < 0.5) discard;
 
@@ -36,13 +39,20 @@ void main() {
     vec4 sampledSpecular = texture(SPECULAR_TEX, vOutput.texcoord);
     vec4 sampledRoughness = texture(ROUGHNESS_TEX, vOutput.texcoord);
 
+
+    sampledNormal = vec4(1);
+    sampledSpecular = vec4(1);
+    sampledRoughness = vec4(1);
+
     float bumpFactor = vOutput.materialDiffuse.w;
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
 
-    bumpFactor = 0.0;
+    // bumpFactor = 0.0;
    
+    sampledNormal.rgb = sampledDiffuse.rgb;
+
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
 
     vec3 tangent; vec3 binormal;
@@ -57,13 +67,22 @@ void main() {
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
 
-    #if 1
-    m.baseColor = vec3(vOutput.materialDiffuse);
+
+    m.baseColor = mix(m.baseColor, vec3(1), m.metallic);
+
+    #if 0
     m.metallic = 1.0;
     m.specular = 0.9;
     // m.roughness = 0.001 + m.baseColor.r*0.8;
     m.roughness = 0.02;
     #endif
+
+    // m.baseColor = vec3(vOutput.materialDiffuse);
+    // m.baseColor *= vec3(0.2,0.6,1.0) * 5.0;
+
+    // m.metallic = 1.0;
+    // m.roughness = 0.1;
+    // m.specular = 1.0;
 
     // m.roughness = 0.0;
     // m.specular = 1.0;

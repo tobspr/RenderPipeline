@@ -180,7 +180,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     for (int i = 0; i < numSamplesAO; i++) {
         // vec3 traceDirection = aoTraceDirections[i];
         vec3 traceDirection = poisson3D_32[i];
-        traceDirection.z = abs(traceDirection.z) * aoConeHeight * 10.0;
+        traceDirection.z = abs(traceDirection.z) * aoConeHeight * 5.0;
         // traceDirection.z = abs(traceDirection.z) * 3.1;
         // traceDirection.z = abs(traceDirection.z) * 1.5;
 
@@ -191,10 +191,14 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
             b * traceDirection.y + 
             correctNormal * traceDirection.z
         );
-        // aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 3, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
+        // aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 32, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius * 0.1);
         aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 2, 1.2705, 1.1 , 0.2, 1.2227);
     }
-    aoResult = aoResult / float(numSamplesAO) * 1.8;
+    aoResult = aoResult / float(numSamplesAO) * 1.3;
+
+
+
+
 
     const int numSamplesGI = 32;
     float giConeHeight = 1.1;
@@ -213,6 +217,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
         // mixedNormal = traceDirection;
         // giResult += traceConeWithCollisions(data, startCoord, mixedNormal , 12, 1.2523,0.7477, -0.0909, 1.0228);
         giResult += traceConeWithCollisions(data, startCoord, mixedNormal , 24, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
+        giResult += traceConeWithCollisions(data, startCoord, mixedNormal , 24, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
 
     }
     giResult = giResult / float(numSamplesGI) * 1.0;
@@ -228,11 +233,11 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // giResult = vec4(textureLod(data.voxels, localCoord, 0.0).xyz)) * 1.5;
 
 
-    float aoMultiplier = exp(-1.5 * aoResult.w);
+    float aoMultiplier = exp(-3.0 * aoResult.w) * 4.5;
     // float aoMultiplier = exp(-2.5 * length(aoResult.xyz)) * 1.0;
     // aoMultiplier = 1.0;
 
-    // return vec4(giResult * 5.0);
+    // return vec4(giResult * 1.0);
     // return vec4(1.02 - exp(-10.5 *giResult));
     return vec4(mix(aoMultiplier, 1.0, mixFactor));  
     // return vec4(giResult);  

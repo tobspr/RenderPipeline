@@ -18,8 +18,8 @@ void main() {
 
 
     #ifndef DEBUG_DISABLE_OCCLUSION
-    float depth = texture(depth, texcoord).x;
-    float linearDepth = getLinearZFromZ(depth);
+    // float depth = texelFetch(depth, ivec2(gl_FragCoord.xy), 0).x;
+    // float linearDepth = getLinearZFromZ(depth);
     float result = computeOcclusion(texcoord, ivec2(gl_FragCoord.xy), 1.0);
 
     occlusionResult = vec3(result);

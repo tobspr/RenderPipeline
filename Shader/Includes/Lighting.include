@@ -87,7 +87,7 @@ vec3 computeLightModel(Light light, Material material,
         lightingResult += specularContribution * material.baseColor * light.color;
 
         // Evaluate diffuse
-        vec3 diffuseContribution = diffuseColor / M_PI * NxL * light.color;
+        vec3 diffuseContribution = diffuseColor * NxL * light.color;
         lightingResult += diffuseContribution;
 
         // Apply shadows
@@ -152,23 +152,29 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
         ambientRefColor /= float(AMBIENT_CUBEMAP_SAMPLES);
 
     #else
-        ambientEnvColor = textureLod(fallbackCubemap, convertCubemapCoordBecauseIFailed(reflectedDir), mipmap).rgb;
+        ambientEnvColor = textureLod(fallbackCubemap, convertCubemapCoordBecauseIFailed(-material.normal), mipmap).rgb;
+
         ambientRefColor = textureLod(fallbackCubemap, convertCubemapCoordBecauseIFailed(reflectedDir), mipmap).rgb;
     #endif
 
     ambientRefColor = pow(ambientRefColor, vec3(1.6) );
+    ambientEnvColor = ambientRefColor * 5.0 + 0.5;
 
     vec3 result = vec3(0);
 
+    // ambientEnvColor = vec3(1.0 / 5.0);
+
     // Diffuse ambient
-    result += giAmbient.xyz * material.baseColor * (1.0 - material.metallic);
+    result += giAmbient.xyz * material.baseColor * saturate(1.0 - material.metallic) * ambientEnvColor;
+
+
 
     giSpecular = vec3(1);
 
     // Specular ambient
     result += material.baseColor * ambientRefColor * (giSpecular+0.1) * 
               material.specular * (1.0 - material.roughness*0.7) * 
-              max(1.0, material.metallic) *
+              max(0.0, material.metallic) *
               mix(pow(1.0 - saturate(dot(material.normal, v)), 5.0), 0.4, material.metallic) * 10.0;
 
     return result;
@@ -321,6 +327,9 @@ float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSi
     float biasedDepth = projCoord.z - baseBias;
     vec2 filterRadiusUV = 5.0 * projSize;
 
+
+    // #undef SHADOW_NUM_PCF_SAMPLES
+    // #define SHADOW_NUM_PCF_SAMPLES 64
 
     // PCF Filter
     float sum = 0.0;

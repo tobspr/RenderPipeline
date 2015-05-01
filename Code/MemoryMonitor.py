@@ -15,6 +15,8 @@ class MemoryMonitor:
 
         # Assigns a texture format a size
         textureTypes = {
+
+            7:  4 * 1, # RGBA (Unkown type, we will just assume 8 bit)
             16: 4 * 1, # RGBA8
             21: 4 * 2, # RGBA16
             22: 4 * 4, # RGBA32

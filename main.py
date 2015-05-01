@@ -75,7 +75,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
-        self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
+        # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
+        self.sceneSource = "Demoscene.ignore/Couch/Couch.egg.bam"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
@@ -91,14 +92,14 @@ class Main(ShowBase, DebugObject):
         self.scene = self.loader.loadModel(self.sceneSource)
         
         # Load transparent object
-        # self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
+        self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
         # self.transparentObj = loader.loadModel("Demoscene.ignore/transparencyTest/scene.egg")
-        self.transparentObj = loader.loadModel("panda")
+        # self.transparentObj = self.scene.find("**/Glass")
         self.transparentObj.reparentTo(render)
 
         # self.transparentObj2.reparentTo(self.transparentObj)
         # self.transparentObj2.setPos(5,0, 0)
-        self.transparentObj.setPos(0,0,0)
+        self.transparentObj.setZ(self.transparentObj, 990.01)
         # self.transparentObj.setScale(0.2)
         self.transparentObj.flattenStrong()
 
@@ -109,7 +110,7 @@ class Main(ShowBase, DebugObject):
 
         # Wheter to use a ground floor
 
-        self.usePlane = False
+        self.usePlane = True
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -119,8 +120,8 @@ class Main(ShowBase, DebugObject):
         if self.usePlane:
             self.groundPlane = self.loader.loadModel(
                 "Models/Plane/Model.egg.bam")
-            self.groundPlane.setPos(0, 0, -0.01)
-            self.groundPlane.setScale(2.0)
+            self.groundPlane.setPos(0, 0, -0.0001)
+            self.groundPlane.setScale(12.0)
             self.groundPlane.setTwoSided(True)
             self.groundPlane.flattenStrong()
             self.groundPlane.reparentTo(self.scene)
@@ -150,15 +151,6 @@ class Main(ShowBase, DebugObject):
         self.accept("r", self.setShaders)
 
 
-        # for i in xrange(1):
-        #     pointLight = PointLight()
-        #     pointLight.setPos(Vec3( (i-1)*3, 0, 7))
-        #     pointLight.setColor(Vec3(0.1))
-        #     pointLight.setShadowMapResolution(1024)
-        #     pointLight.setRadius(50)
-        #     pointLight.setCastsShadows(True)
-        #     # pointLight.attachDebugNode(render)
-        #     self.renderPipeline.addLight(pointLight)
 
         # Create a sun light
         dPos = Vec3(60, 30, 100)
@@ -167,7 +159,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setShadowMapResolution(2048)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(3))
+        dirLight.setColor(Vec3(1.0))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
@@ -177,8 +169,12 @@ class Main(ShowBase, DebugObject):
         self.dirLight.setPos(sunPos)
         self.dirLight.setDirection(sunPos)
 
+
         # Tell the GI which light casts the GI
         self.renderPipeline.setGILightSource(dirLight)
+
+
+
 
         # Slider to move the sun
         if self.renderPipeline.settings.displayOnscreenDebugger:
@@ -192,6 +188,26 @@ class Main(ShowBase, DebugObject):
         # Load skybox
         self.skybox = self.renderPipeline.getDefaultSkybox()
         self.skybox.reparentTo(render)
+
+
+
+        for i in xrange(3):
+            pointLight = PointLight()
+
+            radius = float(i) / 3.0 * 6.28 + 1.52
+            xoffs = math.sin(radius) * 15.0
+            yoffs = math.cos(radius) * 15.0
+
+
+            pointLight.setPos(Vec3( xoffs, yoffs, 12))
+            # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
+            pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            pointLight.setShadowMapResolution(512)
+            pointLight.setRadius(30)
+            pointLight.setCastsShadows(True)
+            # pointLight.attachDebugNode(render)
+            self.renderPipeline.addLight(pointLight)
+
 
         # Set default object shaders
         self.setShaders(refreshPipeline=False)
@@ -244,7 +260,7 @@ class Main(ShowBase, DebugObject):
 
             # Only diffuse textures should be SRGB
             if "diffuse" in tex.getName().lower():
-                print "Preparing texture", tex.getName()
+                # print "Preparing texture", tex.getName()
                 if baseFormat == Texture.FRgb:
                     tex.setFormat(Texture.FSrgb)
                 elif baseFormat == Texture.FRgba:

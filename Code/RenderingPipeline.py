@@ -746,6 +746,7 @@ class RenderingPipeline(DebugObject):
         """ Creates a buffer which reconstructs the normals and position
         from view-space """
         self.normalPrecompute = RenderTarget("PrecomputeNormals")
+        self.normalPrecompute.setSize(self.size.x / 2, self.size.y / 2)
         self.normalPrecompute.addColorTexture()
         self.normalPrecompute.addAuxTextures(1)
         self.normalPrecompute.setColorBits(16)

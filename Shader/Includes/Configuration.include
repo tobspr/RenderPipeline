@@ -71,9 +71,12 @@ const float sqrt_of_2 = 1.4142135623;
 // #define PCSS_FILTER_RADIUS 20.0
 
 #define PCSS_RADIUS_WS 0.02
-#define PCSS_SEARCH_RADIUS 55.0
-#define PCSS_FILTER_RADIUS 10.0
+#define PCSS_SEARCH_RADIUS 15.0
+#define PCSS_FILTER_RADIUS 6.0
 
 #define USE_PIXEL_BASED_PCSS 1
+
+
+#define ENHANCE_TEMPORAL_OCCLUSION 1
 
 #pragma include "Includes/CommonFunctions.include"
