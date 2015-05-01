@@ -5,12 +5,12 @@
 // https://gist.github.com/fisch0920/6770346
 
 // number of directions to sample in UV space
-#define HBAO_NUM_SAMPLE_DIRECTIONS 32
+#define HBAO_NUM_SAMPLE_DIRECTIONS 16
 #define HBAO_TANGENT_BIAS 0.2
 #define HBAO_NUM_SAMPLING_STEPS 12
 #define HBAO_SAMPLING_STEP 0.008
 
-#define HBAO_SCALE 2.3
+#define HBAO_SCALE 2.7
 #define HBAO_SAMPLING_RADIUS 2.9
 
 
@@ -82,6 +82,7 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   } // sampling directions
  
   total /= HBAO_NUM_SAMPLE_DIRECTIONS;
+  total = pow(total, 1.5);
   total = clamp(total, 0.0, 1.0);
   return total;
 

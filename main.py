@@ -89,6 +89,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
         self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
@@ -218,8 +219,9 @@ class Main(ShowBase, DebugObject):
 
             spotLight.setPos(Vec3(-5.0 + i * 5.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
-            spotLight.setColor(Vec3(1) * 0.2)
+            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
             # spotLight.setNearFar(1.0, 20.0)
+            # spotLight.setDirection(Vec3(0, 90, 0))
             spotLight.setRadius(30)
             # spotLight.setCastsShadows(True)
             self.renderPipeline.addLight(spotLight)

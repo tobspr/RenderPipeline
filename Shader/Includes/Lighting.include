@@ -164,12 +164,13 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     ambientRefColor = pow(ambientRefColor, vec3(1.6) );
     ambientEnvColor = ambientRefColor * 5.0 + 0.5;
 
+    ambientEnvColor = vec3(1);
     vec3 result = vec3(0);
 
-    // ambientEnvColor = vec3(1.0 / 5.0);
+    ambientEnvColor = vec3(1.0 / 5.0);
 
     // Diffuse ambient
-    result += giAmbient.xyz * material.baseColor * saturate(1.0 - material.metallic) * ambientEnvColor;
+    result += giAmbient.xyz * material.baseColor * saturate(1.0 - material.metallic) * ambientEnvColor * 5.0;
 
 
 
@@ -192,6 +193,10 @@ float computePointLightAttenuation(Light light, float distanceToLight) {
 
     // Soft transition
     float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.2;
+
+    // Inverse falloff
+    // float attenuation = pow(saturate(1.0 - pow(distanceToLight / light.radius, 4.0)), 2.0) / (pow(distanceToLight, 2.0) + 1);
+
 
     // Cut light transition starting at 80% because the curve is exponential and never gets really 0
     float cutoff = light.radius * 0.8;

@@ -36,7 +36,7 @@ class DirectionalLight(Light, DebugObject):
         self.splitCount = 4
         self.pssmTargetCam = None
         self.pssmTargetLens = None
-        self.pssmFarPlane = 50.0
+        self.pssmFarPlane = 150.0
         self.pssmSplitPow = 2.0
         self.updateIndex = 0
 

@@ -55,7 +55,13 @@ uniform vec3 cameraPosition;
 #pragma include "Includes/Lighting.include"
 
 
-out vec4 lightingResult;
+
+layout(location = 0) out vec4 lightingResult;
+
+#ifdef USE_SSLR
+layout(location = 1) out vec4 sslrDataResult;
+
+#endif
 
 
 uniform sampler2D lastFramePosition;
@@ -157,6 +163,7 @@ void main() {
 
 
     float pixelDepth = texelFetch(depth, screenCoord,0 ).x;
+    float reflectionFactor = saturate( (0.5 - material.roughness) * 5.0 ) ;
 
 
     #ifdef USE_GLOBAL_ILLUMINATION
@@ -252,6 +259,8 @@ void main() {
         // Push very far away
         posFromDepth *= 1e20;
         inscatterFactor = 1.5;
+
+        reflectionFactor = 0.0;
     }
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
@@ -415,6 +424,15 @@ void main() {
 
 
 
+    // SSLR Precomputation data
+
+    vec3 reflectionVector = normalize(reflect(viewVector, material.normal));
+
+
+
+    sslrDataResult = vec4(reflectionVector, reflectionFactor);
+
+
     // result.xyz *= giDiffuseColor.xyz;
 
 
@@ -497,7 +515,6 @@ void main() {
         occlusionTotal = 0.0;
         // result *= 0.5;
     #endif  
-
 
 
     lightingResult = vec4(result, saturate(occlusionTotal) );

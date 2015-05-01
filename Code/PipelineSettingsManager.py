@@ -30,6 +30,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
         self._addSetting("ambientCubemapSamples", int, 16)
         self._addSetting("colorLookupTable", str, "Default.png")
+        self._addSetting("enableSSLR", bool, True)
 
 
         # [Occlusion]

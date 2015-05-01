@@ -237,6 +237,10 @@ class RenderingPipeline(DebugObject):
         # Setup the buffers for lighting
         self._createLightingPipeline()
 
+        # Create the SSLR pass
+        if self.settings.enableSSLR:
+            self._createSSLRPass()
+
         # Create the transparency pass, right after the lighting pass
         self.transparencyManager.initTransparencyPass()
 
@@ -429,6 +433,14 @@ class RenderingPipeline(DebugObject):
         self.giPrecomputeBuffer.setColorBits(16)
         self.giPrecomputeBuffer.prepareOffscreenBuffer()
 
+
+    def _createSSLRPass(self):
+        """ Creates the buffer which computes the SSLR if enabled. """
+
+        self.sslrBuffer = RenderTarget("SSLR Post Process")
+        self.sslrBuffer.addColorTexture()
+        self.sslrBuffer.setColorBits(16)
+        self.sslrBuffer.prepareOffscreenBuffer()
 
     def _createLightingPipeline(self):
         """ Creates the lighting pipeline, including shadow handling """
@@ -661,11 +673,29 @@ class RenderingPipeline(DebugObject):
             self.giPrecomputeBuffer.setShaderInput(
                 "cameraPosition", self.cameraPosition)
 
+        # Set sslr inputs
+        if self.settings.enableSSLR:
 
+            self.sslrBuffer.setShaderInput("colorTex", self.lightingComputeContainer.getColorTexture())
+            self.sslrBuffer.setShaderInput("depthTex", self.deferredTarget.getDepthTexture())
+            self.sslrBuffer.setShaderInput("normalTex", self.deferredTarget.getAuxTexture(0))
+            self.sslrBuffer.setShaderInput("positionTex", self.deferredTarget.getColorTexture())
+
+            self.sslrBuffer.setShaderInput("currentMVP", self.currentMVP)
+            self.sslrBuffer.setShaderInput("sslrDataTex", self.lightingComputeContainer.getAuxTexture(0))
+
+            self.sslrBuffer.setShaderInput("frameIndex", self.frameIndex)
+            self.sslrBuffer.setShaderInput("cameraPosition", self.cameraPosition)
+            
         # Transparency pass inputs
         self.transparencyManager.setPositionTexture(self.deferredTarget.getColorTexture())
-        self.transparencyManager.setColorTexture(self.lightingComputeContainer.getColorTexture())
         self.transparencyManager.setDepthTexture(self.deferredTarget.getDepthTexture())
+
+        if self.settings.enableSSLR:
+            self.transparencyManager.setColorTexture(self.sslrBuffer.getColorTexture())
+        else:
+            self.transparencyManager.setColorTexture(self.lightingComputeContainer.getColorTexture())
+
 
         # Finally, set shaders
         self.reloadShaders()
@@ -707,6 +737,11 @@ class RenderingPipeline(DebugObject):
 
         self.lightingComputeContainer.addColorTexture()
         self.lightingComputeContainer.setColorBits(16)
+
+        if self.settings.enableSSLR:
+            self.lightingComputeContainer.addAuxTexture()
+            self.lightingComputeContainer.setAuxBits(16)
+
         self.lightingComputeContainer.prepareOffscreenBuffer()
 
         self.lightingComputeCombinedTex = Texture("Lighting-Compute-Combined")
@@ -821,6 +856,13 @@ class RenderingPipeline(DebugObject):
             "Shader/ComputeOcclusion.fragment")
         self.occlusionBuffer.setShader(oShader)
 
+    def _setSSLRShader(self):
+        """ Sets the shader to compute the SSLR """
+        sShader = Shader.load(Shader.SLGLSL, 
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/SSLRPass.fragment")
+        self.sslrBuffer.setShader(sShader)
+
     def _getSize(self):
         """ Returns the window size. """
         return LVecBase2i(
@@ -851,6 +893,9 @@ class RenderingPipeline(DebugObject):
 
         if self.occlusion.requiresViewSpacePosNrm():
             self._setNormalExtractShader()
+
+        if self.settings.enableSSLR:
+            self._setSSLRShader()
 
         self.transparencyManager.reloadShader()
 
@@ -1171,6 +1216,9 @@ class RenderingPipeline(DebugObject):
         if self.haveOcclusion:
             defines.append(("USE_OCCLUSION", 1))
 
+
+        if self.settings.enableSSLR:
+            defines.append(("USE_SSLR", 1))
 
         # Pass near far
         defines.append(("CAMERA_NEAR", Globals.base.camLens.getNear()))

@@ -51,9 +51,6 @@ float normalizeZ(float z, float near, float far) {
   return getCustomLinearZFromZ(z, near, far) / far;
 }
 
-
-
-
 vec3 calculateSurfacePos(float z, vec2 tcoord, mat4 clipToRender) {
   vec3 ndcPos = vec3(tcoord.xy, z)*2.0 - 1.0;    
   vec4 clipPos = vec4(0);

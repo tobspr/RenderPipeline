@@ -1,0 +1,225 @@
+#version 400
+
+
+
+#extension GL_EXT_shader_image_load_store : enable
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/PoissonDisk.include"
+
+in vec2 texcoord;
+
+uniform sampler2D colorTex;
+uniform sampler2D depthTex;
+uniform sampler2D positionTex;
+uniform sampler2D normalTex;
+uniform sampler2D sslrDataTex;
+
+
+uniform mat4 currentMVP;
+
+uniform int frameIndex;
+
+out vec4 result;
+
+
+#define SSLR_RADIUS_WORLD_SPACE 10.0
+#define SSLR_CONE_AMOUNT 1
+#define SSLR_PER_CONE_STEPS 60
+
+
+#define SSLR_BINARY_SEARCH_STEPS 3
+
+
+
+
+
+vec4 traceRayTo(vec3 endPosWorld, int steps, float depth) {
+
+    vec4 transformedTarget = currentMVP * vec4(endPosWorld, 1);
+    transformedTarget.xyz = (transformedTarget.xyz / transformedTarget.w) * 0.5 + 0.5; 
+
+    vec3 currentCoord = vec3(texcoord, depth);
+    vec3 coordStep = (currentCoord - transformedTarget.xyz) / float(steps);
+
+    vec3 lastCoordPos = vec3(0);
+
+
+    vec3 pixelNormal = texture(normalTex, texcoord).xyz;
+
+
+    float foundDiff = 1.0;
+    float maxDepthDiff = 0.01 / log2(getLinearZFromZ(depth));
+
+    // Trace Ray
+    for (int i = 0; i < steps; i++) {
+        currentCoord += coordStep;
+        // coordStep *= 1.2;
+
+        float sampleDepth = texture(depthTex, currentCoord.xy).x;
+        float depthDiff = currentCoord.z - sampleDepth;
+
+        if ( depthDiff > 0.0 && depthDiff < maxDepthDiff ) {
+
+            vec3 sampleNormal = texture(normalTex, currentCoord.xy).xyz;
+
+            float visibiltyFactor = dot(sampleNormal, pixelNormal);
+
+            // if ( (visibiltyFactor) > 0.0) {
+
+                // Found match
+                lastCoordPos = currentCoord;
+                foundDiff = depthDiff;
+                break;
+
+            // }
+        }
+
+    }
+
+    // Binary search
+    vec3 coordBeforePos = lastCoordPos - coordStep;
+    vec3 currentStep = coordStep;
+    vec3 currentPos =  lastCoordPos;
+
+    for (int i = 0; i < SSLR_BINARY_SEARCH_STEPS; i++) {
+
+        vec3 coordTop = currentPos + currentStep * 0.5;
+        vec3 coordBot = currentPos - currentStep * 0.5;
+
+        float dTop = texture(depthTex, coordTop.xy).x;
+        float dBot = texture(depthTex, coordBot.xy).x;
+
+        float diffTop = abs(coordTop.z - dTop);
+        float diffBot = abs(coordBot.z - dBot);
+        
+        if (diffTop <= 0.0) diffTop = 101.0;
+        if (diffBot <= 0.0) diffTop = 100.0;
+
+        currentStep *= 0.5;
+
+        if (diffTop < diffBot) {
+            currentPos += currentStep;
+        } else {
+            currentPos -= currentStep;
+        }
+
+    }   
+
+
+    // vec3 currentPos = lastCoordPos;
+
+    // // Pixel search
+    // float minDiff = 10.0;
+    // vec3 minPos = currentPos;
+    // int minFound = 1;
+
+    // for (int i = -15; i < 1; i++) {
+
+    //     vec3 searchPos = currentPos + coordStep / 15.0 * float(i);
+
+    //     float searchDepth = texture(depthTex, searchPos.xy).x;
+    //     float searchDiff = searchPos.z - searchDepth;
+
+    //     if (searchDiff > 0.0 && searchDiff < minDiff) {
+    //         minDiff = searchDiff;
+    //         minPos = searchPos;
+    //         minFound = int(i);
+    //     }
+
+
+    // }
+
+
+    // currentPos = minPos;
+
+
+    float fade = 1.0;
+
+    float fadeArea = 0.2;
+
+    fade *= saturate(currentPos.x / fadeArea);
+    fade *= saturate( (1.0 - currentPos.x) / fadeArea);
+
+    fade *= saturate(currentPos.y / fadeArea);
+    fade *= saturate( (1.0 - currentPos.y) / fadeArea);
+
+    float actualDepthDiff = abs(texture(depthTex, currentPos.xy).x - currentPos.z);
+    // fade *= 1.0 - saturate(actualDepthDiff * 20000.0);
+
+
+    float stepsDone = (currentPos.x - texcoord.x) / coordStep.x / SSLR_PER_CONE_STEPS;
+
+    // fade *= 1.0 - saturate( saturate(stepsDone-0.3) * 10.0);
+
+
+
+    result = texture(colorTex, currentPos.xy) * fade;
+    result.w = fade;
+
+    // result.w = 1.0;
+
+
+
+    // result.xyz = vec3( (-minFound / 15.0 ));
+
+    // result.xyz = vec3(stepsDone);
+    // result.xyz = vec3(foundDiff * 60.0);
+
+    return result;
+}
+
+void main() {
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
+    #ifndef DEBUG_DISABLE_SSLR
+    vec4 sslrPerPixelData = texelFetch(sslrDataTex, coord, 0);
+
+    vec3 reflectionVector = sslrPerPixelData.xyz;
+    float sslrFactor = sslrPerPixelData.w;
+
+    // Fetch pixel data
+    float pixelDepth = texelFetch(depthTex, coord, 0).x;
+    vec3 pixelPos = texelFetch(positionTex, coord, 0).xyz;
+
+    float fragmentDistance = getLinearZFromZ(pixelDepth);
+
+    // Convert reflection vector to world space
+    vec3 reflectionTargetWorld = pixelPos + normalize(reflectionVector) * SSLR_RADIUS_WORLD_SPACE;
+
+
+    vec4 composedResult = vec4(0);
+
+
+    for (int step = 0; step < SSLR_CONE_AMOUNT; step ++) {
+
+        vec3 targetPosition = reflectionTargetWorld + poisson3D_32[step] * 1.0;
+
+        // Ray march from our position to the reflection point
+        composedResult += traceRayTo(targetPosition, SSLR_PER_CONE_STEPS, pixelDepth) ;
+    }
+    // composedResult /= 1.0 + length(match);
+
+    composedResult /= max(1.0, composedResult.w);
+    composedResult *= 0.3;
+    // composedResult = saturate(composedResult);
+
+    composedResult *= sslrFactor;
+
+    composedResult.w = 0.0;
+    composedResult += texture(colorTex, texcoord);
+// 
+    // composedResult = vec3(fade, 0, 0);
+
+    // composedResult.xyz = vec3(sslrFactor);
+    result = vec4( composedResult.xyz, composedResult.w);
+
+    #else
+
+    result = texture(colorTex, texcoord);
+
+    #endif
+
+}

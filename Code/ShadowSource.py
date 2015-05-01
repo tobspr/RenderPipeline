@@ -61,10 +61,20 @@ class ShadowSource(DebugObject, ShaderStructElement):
         self.nearPlane = 0.0
         self.farPlane = 1000.0
         self.converterYUR = None
+        self.isFake = False
         self.transforMat = TransformState.makeMat(
             Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(),
                             CSZupRight))
-        
+            
+    def isFake(self):
+        """ Returns wheter this source actually produces shadows, or is just
+        used for computation """
+        return self.isFake
+
+    def setFake(self, fake):
+        """ Sets wheter this source should produce shadows, or is just
+        used for computation """
+        self.isFake = fake
 
     def setFilmSize(self, size_x, size_y):
         """ Sets the film size of the source """

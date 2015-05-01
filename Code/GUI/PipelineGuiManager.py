@@ -116,6 +116,11 @@ class PipelineGuiManager(DebugObject):
 
         register_feature("Env. Filtering", "ft_FILTER_ENVIRONMENT")
 
+        # register_mode("h Debug", "rm_SSaLR")
+
+        if s.enableSSLR:
+            register_feature("SSLR", "ft_SSLR")
+
 
         register_feature("Transparency", "ft_TRANSPARENCY")
 

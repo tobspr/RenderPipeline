@@ -222,6 +222,10 @@ class RenderTarget(DebugObject):
         for i in range(num):
             self.addRenderTexture(targets[i])
 
+    def addAuxTexture(self):
+        """ Adds a single aux texture """
+        self.addAuxTextures(1)
+
     def hasTarget(self, target):
         """ Check if a target is assigned to this target """
         return target in self._targetFlags

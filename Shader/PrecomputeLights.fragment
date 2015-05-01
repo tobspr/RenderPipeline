@@ -130,7 +130,7 @@ void main() {
     int processedSpotLights = 0;
     int processedShadowSpotLights = 0;
 
-    if (false && minDepthLinear > 9000.0) {
+    if (false && minDepthLinear > 6000.0) {
         // Only skybox. We can stop here.
         processedPointLights = 0;
         processedShadowPointLights = 0;
