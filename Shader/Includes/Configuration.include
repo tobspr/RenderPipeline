@@ -2,29 +2,6 @@
 
 // This is the main configuration file, included by almost all shaders
 
-// Max values for the light culling
-// If you change anything regarding this in LightManager, 
-// change it here, too 
-#define MAX_VISIBLE_LIGHTS 8
-#define MAX_LIGHTS_PER_PATCH 63
-
-// Same as in LightManager.py
-#define MAX_POINT_LIGHTS 16
-#define MAX_SHADOW_POINT_LIGHTS 16
-
-#define MAX_DIRECTIONAL_LIGHTS 1
-#define MAX_DIRECTIONAL_SHADOW_LIGHTS 1
-
-#define MAX_SPOT_LIGHTS 3
-#define MAX_SHADOW_SPOT_LIGHTS 0
-
-// Max shadow maps. Has to be the same as in LightManager.py
-#define SHADOW_MAX_TOTAL_MAPS 24
-
-// Wheter to clear the lighting buffer each frame to be
-// able to see changes in lighting - only recommended for debugging
-// #define LIGHTING_CLEAR_BUFFER_EACH_FRAME
-
 // Needed for light culling
 const float sqrt_of_2 = 1.4142135623;
 
@@ -35,7 +12,6 @@ const float sqrt_of_2 = 1.4142135623;
 #pragma include "Includes/Performance.include"
 
 #define M_PI 3.14159265
-
 
 #ifndef DEBUG_DISABLE_BLUR_OCCLUSION
     #define USE_OCCLUSION_BLUR
@@ -58,7 +34,7 @@ const float sqrt_of_2 = 1.4142135623;
 #endif
 
 
-// panda does not support custom names for bound textures.
+// Panda3D does not support custom names for bound textures.
 #define DIFFUSE_TEX p3d_Texture0
 #define NORMAL_TEX p3d_Texture1
 #define SPECULAR_TEX p3d_Texture2
@@ -68,14 +44,10 @@ const float sqrt_of_2 = 1.4142135623;
 
 #define SKYBOX_BEGIN 15000.0
 
-
-// #define PCSS_SEARCH_RADIUS 30.0
-// #define PCSS_FILTER_RADIUS 20.0
-
+// Todo: move this to pipeline config
 #define PCSS_RADIUS_WS 0.02
 #define PCSS_SEARCH_RADIUS 15.0
 #define PCSS_FILTER_RADIUS 6.0
-
 #define USE_PIXEL_BASED_PCSS 1
 
 

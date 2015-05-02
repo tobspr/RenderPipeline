@@ -199,9 +199,6 @@ class RenderingPipeline(DebugObject):
             self.guiManager = PipelineGuiManager(self)
             self.guiManager.setup()
 
-        # Generate auto-configuration for shaders
-        self._generateShaderConfiguration()
-
         # Setup GI
         if self.settings.enableGlobalIllumination:
             self._setupGlobalIllumination()
@@ -212,11 +209,6 @@ class RenderingPipeline(DebugObject):
 
         # Create transparency manager
         self.transparencyManager = TransparencyManager(self)
-
-        self.patchSize = LVecBase2i(
-            self.settings.computePatchSizeX,
-            self.settings.computePatchSizeY)
-
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
@@ -280,6 +272,11 @@ class RenderingPipeline(DebugObject):
         # Give the gui a hint when the pipeline is done loading
         if self.settings.displayOnscreenDebugger:
             self.guiManager.onPipelineLoaded()
+
+
+        # Generate auto-configuration for shaders
+        self._generateShaderConfiguration()
+
 
         # add update task
         self._attachUpdateTask()
@@ -409,27 +406,6 @@ class RenderingPipeline(DebugObject):
         # Set the shader
         self._setFinalPassShader()
 
-
-
-
-    def _makeLightPerTileStorage(self):
-        """ Creates a texture to store the lights per tile into. Should
-        get replaced with ssbos later """
-        storageSizeX = self.precomputeSize.x * 8
-        storageSizeY = self.precomputeSize.y * 8
-
-        self.debug(
-            "Creating per tile storage of size",
-            storageSizeX, "x", storageSizeY)
-
-        self.lightPerTileStorage = Texture("LightsPerTile")
-        self.lightPerTileStorage.setup2dTexture(
-            storageSizeX, storageSizeY, Texture.TUnsignedShort, Texture.FR32i)
-        self.lightPerTileStorage.setMinfilter(Texture.FTNearest)
-        self.lightPerTileStorage.setMagfilter(Texture.FTNearest)
-
-        MemoryMonitor.addTexture("Light Per Tile Storage", self.lightPerTileStorage)
-
     def _creatGIPrecomputeBuffer(self):
         """ Creates the half-resolution buffer which computes gi and gi
         reflections. We use half-res for performance """
@@ -458,29 +434,13 @@ class RenderingPipeline(DebugObject):
             return
 
         self.debug("Creating lighting pipeline ..")
-
-        # size has to be a multiple of the compute unit size
-        # but still has to cover the whole screen
-        sizeX = int(math.ceil(float(self.size.x) / self.patchSize.x))
-        sizeY = int(math.ceil(float(self.size.y) / self.patchSize.y))
-
-        self.precomputeSize = LVecBase2i(sizeX, sizeY)
-
-        self.debug("Batch size =", sizeX, "x", sizeY,
-                   "Actual Buffer size=", int(sizeX * self.patchSize.x),
-                   "x", int(sizeY * self.patchSize.y))
-
-        self._makeLightPerTileStorage()
-
-        # Create a buffer which computes which light affects which tile
-        self._makeLightBoundsComputationBuffer(sizeX, sizeY)
+        self.lightManager.initLightCulling()
 
         # Create a buffer which applies the lighting
         self._makeLightingComputeBuffer()
 
         # Register for light manager
         self.lightManager.setLightingComputator(self.lightingComputeContainer)
-        self.lightManager.setLightingCuller(self.lightBoundsComputeBuff)
 
         self._loadFallbackCubemap()
         self._loadLookupCubemap()
@@ -494,13 +454,12 @@ class RenderingPipeline(DebugObject):
 
         # Shader inputs for the light-culling pass
         if self.haveLightingPass:
-            self.lightBoundsComputeBuff.setShaderInput(
-                "destination", self.lightPerTileStorage)
-            self.lightBoundsComputeBuff.setShaderInput(
+            lightComputeBuffer = self.lightManager.getLightCullingBuffer()
+            lightComputeBuffer.setShaderInput(
                 "depth", self.deferredTarget.getDepthTexture())
-            self.lightBoundsComputeBuff.setShaderInput(
+            lightComputeBuffer.setShaderInput(
                 "mainCam", self.showbase.cam)
-            self.lightBoundsComputeBuff.setShaderInput(
+            lightComputeBuffer.setShaderInput(
                 "mainRender", self.showbase.render)
 
             # Shader inputs for the light-applying pass
@@ -547,8 +506,13 @@ class RenderingPipeline(DebugObject):
                 "noiseTexture",
                 noiseTexture)
             self.lightingComputeContainer.setShaderInput(
-                "lightsPerTile", self.lightPerTileStorage)
+                "lightsPerTile", self.lightManager.getLightPerTileStorage())
 
+            self.lightingComputeContainer.setShaderInput(
+                "lightsPerTileBuffer", self.lightManager.getLightPerTileBuffer())
+
+            self.lightingComputeContainer.setShaderInput(
+                "precomputeSize", self.lightManager.precomputeSize)
 
             if self.settings.enableGlobalIllumination:
                 self.lightingComputeContainer.setShaderInput("giDiffuseTex", self.giPrecomputeBuffer.getColorTexture())
@@ -730,14 +694,6 @@ class RenderingPipeline(DebugObject):
         self.lightingComputeContainer.setShaderInput(
             "directionToFace", cubemap)
 
-    def _makeLightBoundsComputationBuffer(self, w, h):
-        """ Creates the buffer which precomputes the lights per tile """
-        self.debug("Creating light precomputation buffer of size", w, "x", h)
-        self.lightBoundsComputeBuff = RenderTarget("ComputeLightTileBounds")
-        self.lightBoundsComputeBuff.setSize(w, h)
-        self.lightBoundsComputeBuff.setColorWrite(False)
-        self.lightBoundsComputeBuff.prepareOffscreenBuffer()
-
     def _makeLightingComputeBuffer(self):
         """ Creates the buffer which applies the lighting """
         self.lightingComputeContainer = RenderTarget("ComputeLighting")
@@ -842,12 +798,7 @@ class RenderingPipeline(DebugObject):
             "Shader/ApplyLighting.fragment")
         self.lightingComputeContainer.setShader(lightShader)
 
-    def _setPositionComputationShader(self):
-        """ Sets the shader which computes the lights per tile """
-        pcShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/PrecomputeLights.fragment")
-        self.lightBoundsComputeBuff.setShader(pcShader)
+
 
     def _setFinalPassShader(self):
         """ Sets the shader which computes the final frame,
@@ -881,8 +832,7 @@ class RenderingPipeline(DebugObject):
         """ Reloads all shaders """
 
         if self.haveLightingPass:
-            self.lightManager.debugReloadShader()
-            self._setPositionComputationShader()
+            self.lightManager.reloadShader()
             self._setLightingShader()
 
         self._setFinalPassShader()
@@ -1140,105 +1090,97 @@ class RenderingPipeline(DebugObject):
 
         # Generate list of defines
         defines = []
+        define = lambda name, val: defines.append((name, val))
 
         if self.settings.antialiasingTechnique == "SMAA":
             quality = self.settings.smaaQuality.upper()
             if quality in ["LOW", "MEDIUM", "HIGH", "ULTRA"]:
-                defines.append(("SMAA_PRESET_" + quality, ""))
+                define("SMAA_PRESET_" + quality, "")
             else:
                 self.error("Unrecognized SMAA quality:", quality)
                 return
 
-        define = lambda name, val: defines.append((name, val))
-
-
         define("LIGHTING_COMPUTE_PATCH_SIZE_X", self.settings.computePatchSizeX)
-        defines.append(
-            ("LIGHTING_COMPUTE_PATCH_SIZE_Y", self.settings.computePatchSizeY))
-        defines.append(
-            ("LIGHTING_MIN_MAX_DEPTH_ACCURACY", self.settings.minMaxDepthAccuracy))
+        define("LIGHTING_COMPUTE_PATCH_SIZE_Y", self.settings.computePatchSizeY)
+        define("LIGHTING_MIN_MAX_DEPTH_ACCURACY", self.settings.minMaxDepthAccuracy)
 
         if self.blurEnabled:
-            defines.append(("USE_DOF", 1))
+            define("USE_DOF", 1)
 
         if self.settings.useSimpleLighting:
-            defines.append(("USE_SIMPLE_LIGHTING", 1))
+            define("USE_SIMPLE_LIGHTING", 1)
 
         if self.settings.anyLightBoundCheck:
-            defines.append(("LIGHTING_ANY_BOUND_CHECK", 1))
+            define("LIGHTING_ANY_BOUND_CHECK", 1)
 
         if self.settings.accurateLightBoundCheck:
-            defines.append(("LIGHTING_ACCURATE_BOUND_CHECK", 1))
+            define("LIGHTING_ACCURATE_BOUND_CHECK", 1)
 
         if self.settings.renderShadows:
-            defines.append(("USE_SHADOWS", 1))
+            define("USE_SHADOWS", 1)
 
-        defines.append(("AMBIENT_CUBEMAP_SAMPLES", self.settings.ambientCubemapSamples))
+        if self.settings.enableLightPerTileDebugging:
+            define("ENABLE_LIGHT_PER_TILE_DEBUG", 1)
 
-        defines.append(
-            ("SHADOW_MAP_ATLAS_SIZE", self.settings.shadowAtlasSize))
-        defines.append(
-            ("SHADOW_MAX_UPDATES_PER_FRAME", self.settings.maxShadowUpdatesPerFrame))
-        defines.append(
-            ("SHADOW_GEOMETRY_MAX_VERTICES", self.settings.maxShadowUpdatesPerFrame * 3))
+        define("AMBIENT_CUBEMAP_SAMPLES", self.settings.ambientCubemapSamples)
+        define("SHADOW_MAP_ATLAS_SIZE", self.settings.shadowAtlasSize)
+        define("SHADOW_MAX_UPDATES_PER_FRAME", self.settings.maxShadowUpdatesPerFrame)
+        define("SHADOW_GEOMETRY_MAX_VERTICES", self.settings.maxShadowUpdatesPerFrame * 3)
 
+        define("SHADOW_NUM_PCF_SAMPLES", self.settings.numPCFSamples)
+        define("SHADOW_NUM_PCSS_SEARCH_SAMPLES", self.settings.numPCSSSearchSamples)
+        define("SHADOW_NUM_PCSS_FILTER_SAMPLES", self.settings.numPCSSFilterSamples)
 
-        defines.append(("SHADOW_NUM_PCF_SAMPLES", self.settings.numPCFSamples))
-        defines.append(("SHADOW_NUM_PCSS_SEARCH_SAMPLES", self.settings.numPCSSSearchSamples))
-        defines.append(("SHADOW_NUM_PCSS_FILTER_SAMPLES", self.settings.numPCSSFilterSamples))
-
-        defines.append(("SHADOW_PSSM_BORDER_PERCENTAGE", self.settings.shadowCascadeBorderPercentage))
+        define("SHADOW_PSSM_BORDER_PERCENTAGE", self.settings.shadowCascadeBorderPercentage)
 
         if self.settings.useHardwarePCF:
-            defines.append(("USE_HARDWARE_PCF", 1))
+            define("USE_HARDWARE_PCF", 1)
 
-        defines.append(("WINDOW_WIDTH", self.size.x))
-        defines.append(("WINDOW_HEIGHT", self.size.y))
+        define("WINDOW_WIDTH", self.size.x)
+        define("WINDOW_HEIGHT", self.size.y)
 
         if self.settings.motionBlurEnabled:
-            defines.append(("USE_MOTION_BLUR", 1))
+            define("USE_MOTION_BLUR", 1)
 
-        defines.append(
-            ("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples))
+        define("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples)
 
         # Occlusion
-        defines.append(
-            ("OCCLUSION_TECHNIQUE_" + self.occlusion.getIncludeName(), 1))
-        defines.append(
-            ("OCCLUSION_RADIUS", self.settings.occlusionRadius))
-        defines.append(
-            ("OCCLUSION_STRENGTH", self.settings.occlusionStrength))
-        defines.append(
-            ("OCCLUSION_SAMPLES", self.settings.occlusionSampleCount))
+        define("OCCLUSION_TECHNIQUE_" + self.occlusion.getIncludeName(), 1)
+        define("OCCLUSION_RADIUS", self.settings.occlusionRadius)
+        define("OCCLUSION_STRENGTH", self.settings.occlusionStrength)
+        define("OCCLUSION_SAMPLES", self.settings.occlusionSampleCount)
 
         if self.settings.displayOnscreenDebugger:
-            defines.append(("DEBUGGER_ACTIVE", 1))
+            define("DEBUGGER_ACTIVE", 1)
 
             extraSettings = self.guiManager.getDefines()
             defines += extraSettings
 
         if self.settings.enableGlobalIllumination:
-            defines.append(("USE_GLOBAL_ILLUMINATION", 1))
+            define("USE_GLOBAL_ILLUMINATION", 1)
 
         if self.settings.enableScattering:
-            defines.append(("USE_SCATTERING", 1))
+            define("USE_SCATTERING", 1)
 
         if self.haveOcclusion:
-            defines.append(("USE_OCCLUSION", 1))
+            define("USE_OCCLUSION", 1)
 
             if self.settings.useTemporalOcclusion:
-                defines.append(("ENHANCE_TEMPORAL_OCCLUSION", 1))
+                define("ENHANCE_TEMPORAL_OCCLUSION", 1)
 
         if self.settings.enableSSLR:
-            defines.append(("USE_SSLR", 1))
+            define("USE_SSLR", 1)
 
-        # Pass near far
-        defines.append(("CAMERA_NEAR", Globals.base.camLens.getNear()))
-        defines.append(("CAMERA_FAR", Globals.base.camLens.getFar()))
-
+        # Pass camera near and far plane
+        define("CAMERA_NEAR", Globals.base.camLens.getNear())
+        define("CAMERA_FAR", Globals.base.camLens.getFar())
 
         # Make sure the configuration file stamp is changed
-        defines.append(("RANDOM_TIMESTAMP", random.random()))
+        define("RANDOM_TIMESTAMP", random.random())
+
+
+        # Add max light count and light settings
+        self.lightManager.addShaderDefines(defines)
 
         # Generate
         output = "#pragma once\n"
@@ -1249,7 +1191,6 @@ class RenderingPipeline(DebugObject):
             output += "#define " + key + " " + str(value) + "\n"
 
         # Try to write the file
-
         try:
             with open("PipelineTemp/ShaderAutoConfig.include", "w") as handle:
                 handle.write(output)

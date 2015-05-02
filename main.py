@@ -19,6 +19,7 @@ sys.dont_write_bytecode = True
 
 import math
 import struct
+from random import random
 
 
 from direct.showbase.ShowBase import ShowBase
@@ -86,18 +87,18 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
-        # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
-        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
-        # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
+        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
 
         # Select surrounding scene here
-        # self.sceneSourceSurround = None
-        self.sceneSourceSurround = "Demoscene.ignore/Couch/scene.egg"
+        self.sceneSourceSurround = None
+        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
 
 
         # Load scene from disk
@@ -109,6 +110,8 @@ class Main(ShowBase, DebugObject):
             self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
             self.sceneSurround.reparentTo(self.scene)
 
+
+        self.debug("Continuing loading ..")
 
         # Transparency demo
         if False:
@@ -123,7 +126,7 @@ class Main(ShowBase, DebugObject):
             self.transparentObj = None
 
         # Wheter to use a ground floor
-        self.usePlane = False
+        self.usePlane = True
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -168,7 +171,8 @@ class Main(ShowBase, DebugObject):
         dirLight.setShadowMapResolution(2048)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1.0))
+        # dirLight.setColor(Vec3(1.0))
+        dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
@@ -205,9 +209,11 @@ class Main(ShowBase, DebugObject):
 
             pointLight.setPos(Vec3( xoffs, yoffs, 12))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
-            pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            # pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            pointLight.setColor(Vec3( random(), random(), random()))
+
             pointLight.setShadowMapResolution(512)
-            pointLight.setRadius(30)
+            pointLight.setRadius(15)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
@@ -219,10 +225,12 @@ class Main(ShowBase, DebugObject):
 
             spotLight.setPos(Vec3(-5.0 + i * 5.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
-            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
+            # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
+            spotLight.setColor(Vec3( random(), random(), random()))
+
             # spotLight.setNearFar(1.0, 20.0)
             # spotLight.setDirection(Vec3(0, 90, 0))
-            spotLight.setRadius(30)
+            spotLight.setRadius(6)
             # spotLight.setCastsShadows(True)
             self.renderPipeline.addLight(spotLight)
 

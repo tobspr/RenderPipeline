@@ -1,6 +1,8 @@
 
+import math
+
 from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, RenderState
-from panda3d.core import Shader
+from panda3d.core import Shader, GeomEnums
 from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
 from panda3d.core import OmniBoundingVolume, PTAInt, Vec4, PTAVecBase4f
 from panda3d.core import LVecBase2i, ShaderAttrib, UnalignedLVecBase4f
@@ -14,7 +16,7 @@ from ShadowSource import ShadowSource
 from ShadowAtlas import ShadowAtlas
 from ShaderStructArray import ShaderStructArray
 from Globals import Globals
-
+from MemoryMonitor import MemoryMonitor
 from panda3d.core import PStatCollector
 
 pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
@@ -52,8 +54,24 @@ class LightManager(DebugObject):
         """ Creates a new LightManager. It expects a RenderPipeline as parameter. """
         DebugObject.__init__(self, "LightManager")
 
-        self._initArrays()
+        
+        # If you change this, don't forget to change it also in
+        # Shader/Includes/Configuration.include!
+        self.maxLights = {
+            "PointLight": 16,
+            "DirectionalLight": 1,
+            "SpotLight": 3
+        }
 
+        # Max shadow casting lights
+        self.maxShadowLights = {
+            "PointLight": 16,
+            "DirectionalLight": 1,
+            "SpotLight": 1,
+            "GIHelperLight": 10
+        }
+
+        self._initArrays()
         self.pipeline = pipeline
         self.settings = pipeline.getSettings()
 
@@ -80,7 +98,6 @@ class LightManager(DebugObject):
             ShadowSource, self.maxShadowUpdatesPerFrame)
         self.allShadowsArray = ShaderStructArray(
             ShadowSource, self.maxShadowMaps)
-
 
         # Create shadow compute buffer
         self._createShadowComputationBuffer()
@@ -123,6 +140,149 @@ class LightManager(DebugObject):
         initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
         self.shadowComputeCamera.setTagState(
             "Default", initialState.getState())
+
+    def _setLightCullingShader(self):
+        """ Sets the shader which computes the lights per tile """
+        pcShader = Shader.load(Shader.SLGLSL, 
+            "Shader/DefaultPostProcess.vertex",
+            "Shader/PrecomputeLights.fragment")
+        self.lightBoundsComputeBuff.setShader(pcShader)
+
+    def getLightPerTileStorage(self):
+        return self.lightPerTileStorage
+
+    def getLightPerTileBuffer(self):
+        return self.lightPerTileBuffer
+
+    def initLightCulling(self):
+        """ Creates the buffer which gets a list of lights and computes which
+        light affects which tile """
+
+        # Fetch patch size
+        self.patchSize = LVecBase2i(
+            self.settings.computePatchSizeX,
+            self.settings.computePatchSizeY)
+
+        # size has to be a multiple of the compute unit size
+        # but still has to cover the whole screen
+        sizeX = int(math.ceil(float(self.pipeline.size.x) / self.patchSize.x))
+        sizeY = int(math.ceil(float(self.pipeline.size.y) / self.patchSize.y))
+
+        self.precomputeSize = LVecBase2i(sizeX, sizeY)
+
+        self.debug("Batch size =", sizeX, "x", sizeY,
+                   "Actual Buffer size=", int(sizeX * self.patchSize.x),
+                   "x", int(sizeY * self.patchSize.y))
+
+        # Create per tile storage
+        self._makeLightPerTileStorage()
+
+        # Create a buffer which computes which light affects which tile
+        self._makeLightBoundsComputationBuffer(sizeX, sizeY)
+
+
+        # Set inputs
+        self._setLightingCuller(self.lightBoundsComputeBuff)
+
+        # Set shaders
+        self._setLightCullingShader()
+
+
+    def getLightCullingBuffer(self):
+        """ Returns the buffer which culls the lights """
+        return self.lightBoundsComputeBuff
+
+    def _makeLightBoundsComputationBuffer(self, w, h):
+        """ Creates the buffer which precomputes the lights per tile """
+        self.debug("Creating light precomputation buffer of size", w, "x", h)
+        self.lightBoundsComputeBuff = RenderTarget("ComputeLightTileBounds")
+        self.lightBoundsComputeBuff.setSize(w, h)
+
+        if self.settings.enableLightPerTileDebugging:
+            self.lightBoundsComputeBuff.addColorTexture()
+        else:
+            self.lightBoundsComputeBuff.setColorWrite(False)
+
+        self.lightBoundsComputeBuff.prepareOffscreenBuffer()
+
+        if self.settings.enableLightPerTileDebugging:
+            colorTex = self.lightBoundsComputeBuff.getColorTexture()
+            colorTex.setMinfilter(SamplerState.FTNearest)
+            colorTex.setMagfilter(SamplerState.FTNearest)
+
+        self.lightBoundsComputeBuff.setShaderInput(
+                "destination", self.getLightPerTileStorage())
+
+        self.lightBoundsComputeBuff.setShaderInput(
+                "destinationBuffer", self.lightPerTileBuffer)
+
+
+
+    def _makeLightPerTileStorage(self):
+        """ Creates a texture to store the lights per tile into. Should
+        get replaced with ssbos later """
+
+        storageSizeX = self.precomputeSize.x * 8
+        storageSizeY = self.precomputeSize.y * 8
+
+        self.debug(
+            "Creating per tile storage of size",
+            storageSizeX, "x", storageSizeY)
+
+        self.lightPerTileStorage = Texture("LightsPerTile")
+        self.lightPerTileStorage.setup2dTexture(
+            storageSizeX, storageSizeY, Texture.TUnsignedShort, Texture.FR32i)
+        self.lightPerTileStorage.setMinfilter(Texture.FTNearest)
+        self.lightPerTileStorage.setMagfilter(Texture.FTNearest)
+
+
+        perPixelDataCount = 0
+        perPixelDataCount += 16 # Counters for the light types
+        
+        perPixelDataCount += self.maxLights["PointLight"]
+        perPixelDataCount += self.maxShadowLights["PointLight"]
+
+        perPixelDataCount += self.maxLights["DirectionalLight"]
+        perPixelDataCount += self.maxShadowLights["DirectionalLight"]
+        
+        perPixelDataCount += self.maxLights["SpotLight"]
+        perPixelDataCount += self.maxShadowLights["SpotLight"]
+
+        self.tileStride = perPixelDataCount
+
+        self.debug("Per pixel data:", perPixelDataCount)
+
+        tileBufferSize = self.precomputeSize.x * self.precomputeSize.y * self.tileStride * 4
+
+        print self.precomputeSize.x, self.precomputeSize.y
+        self.lightPerTileBuffer = Texture("LightsPerTileBuffer")
+        self.lightPerTileBuffer.setupBufferTexture(
+            tileBufferSize, Texture.TInt, Texture.FR32i, GeomEnums.UHDynamic)
+
+        MemoryMonitor.addTexture("Light Per Tile Storage", self.lightPerTileStorage)
+        MemoryMonitor.addTexture("Light Per Tile Buffer", self.lightPerTileBuffer)
+
+    def addShaderDefines(self, defineList):
+        """ Adds settings like the maximum light count to the list of defines
+        which are available in the shader later """
+        define = lambda name, val: defineList.append((name, val))
+
+        define("MAX_VISIBLE_LIGHTS", 8)
+        define("MAX_LIGHTS_PER_PATCH", 63)
+
+        define("MAX_POINT_LIGHTS", self.maxLights["PointLight"])
+        define("MAX_SHADOWED_POINT_LIGHTS", self.maxShadowLights["PointLight"])
+
+        define("MAX_DIRECTIONAL_LIGHTS", self.maxLights["DirectionalLight"])
+        define("MAX_SHADOWED_DIRECTIONAL_LIGHTS", self.maxShadowLights["DirectionalLight"])
+
+        define("MAX_SPOT_LIGHTS", self.maxLights["SpotLight"])
+        define("MAX_SHADOWED_SPOT_LIGHTS", self.maxShadowLights["SpotLight"])
+
+        define("SHADOW_MAX_TOTAL_MAPS", self.maxShadowMaps)
+
+        define("LIGHTING_PER_TILE_STRIDE", self.tileStride)
+
 
     def _createShadowComputationBuffer(self):
         """ This creates the internal shadow buffer which also is the
@@ -242,20 +402,7 @@ class LightManager(DebugObject):
     def _initArrays(self):
         """ Inits the light arrays which are passed to the shaders """
 
-        # If you change this, don't forget to change it also in
-        # Shader/Includes/Configuration.include!
-        self.maxLights = {
-            "PointLight": 16,
-            "DirectionalLight": 1,
-            "SpotLight": 3
-        }
 
-        # Max shadow casting lights
-        self.maxShadowLights = {
-            "PointLight": 16,
-            "DirectionalLight": 1,
-            "GIHelperLight": 10
-        }
 
         self.maxTotalLights = 8
 
@@ -292,7 +439,7 @@ class LightManager(DebugObject):
             shaderNode.setShaderInput(
                 "count" + lightType, self.numRenderedLights[lightType])
 
-    def setLightingCuller(self, shaderNode):
+    def _setLightingCuller(self, shaderNode):
         """ Sets the render target which recieves the shaderinputs necessary to 
         cull the lights and pass the result to the lighting computator"""
         self.debug("Light culler is", shaderNode)
@@ -371,9 +518,10 @@ class LightManager(DebugObject):
         """ Removes a light. TODO """
         raise NotImplementedError()
 
-    def debugReloadShader(self):
+    def reloadShader(self):
         """ Reloads all shaders. This also updates the camera state """
         self._createTagStates()
+        self._setLightCullingShader()
 
     def setCullBounds(self, bounds):
         """ Sets the current camera bounds used for light culling """

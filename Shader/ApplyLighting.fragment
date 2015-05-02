@@ -34,17 +34,15 @@ uniform sampler2D giReflectionTex;
 uniform sampler2D occlusionTex;
 #endif
 
-// layout (r32i) readonly uniform iimage2D lightsPerTile;
-uniform isampler2D lightsPerTile;
+uniform isamplerBuffer lightsPerTileBuffer;
+
+uniform ivec2 precomputeSize;
 
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 in vec2 texcoord;
 
-
-
 uniform int frameIndex;
-
 
 uniform sampler2D noiseTexture;
 uniform vec4 bufferSize;
@@ -60,7 +58,6 @@ layout(location = 0) out vec4 lightingResult;
 
 #ifdef USE_SSLR
 layout(location = 1) out vec4 sslrDataResult;
-
 #endif
 
 
@@ -94,8 +91,12 @@ void main() {
     vec2 correctTexcoord = texcoord;
    
 
-    ivec2 precomputeCoord = ivec2( vec2(screenCoord) / 
-        vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y) ) * 8;
+    ivec2 tileIndex = ivec2(vec2(screenCoord) / 
+        vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y));
+
+    ivec2 precomputeCoord = tileIndex * 8;
+
+    int tileBufferOffset = (tileIndex.x + tileIndex.y * precomputeSize.x) * LIGHTING_PER_TILE_STRIDE;
 
 
     // Extract material data
@@ -128,22 +129,22 @@ void main() {
     // which simply crashes the driver. With this method it would be only
     // a few hundreds, which is long but does not crash the driver.
     int countPointLight = min(MAX_POINT_LIGHTS, 
-        texelFetch(lightsPerTile, precomputeCoord + ivec2(0,0), 0).r);
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 0).r);
 
-    int countPointLightShadow = min(MAX_SHADOW_POINT_LIGHTS, 
-        texelFetch(lightsPerTile, precomputeCoord + ivec2(1,0), 0).r);
+    int countPointLightShadow = min(MAX_SHADOWED_POINT_LIGHTS, 
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 1).r);
 
-    int countDirectionalLight = min(MAX_SHADOW_POINT_LIGHTS, 
-        texelFetch(lightsPerTile, precomputeCoord + ivec2(2,0), 0).r);
+    int countDirectionalLight = min(MAX_DIRECTIONAL_LIGHTS, 
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 2).r);
 
-    int countDirectionalLightShadow = min(MAX_SHADOW_POINT_LIGHTS, 
-        texelFetch(lightsPerTile, precomputeCoord + ivec2(3,0), 0).r);
+    int countDirectionalLightShadow = min(MAX_SHADOWED_DIRECTIONAL_LIGHTS, 
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 3).r);
 
     int countSpotLight = min(MAX_SPOT_LIGHTS, 
-        texelFetch(lightsPerTile, precomputeCoord + ivec2(4,0), 0).r);
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 4).r);
 
-    int countSpotLightShadow = min(MAX_SHADOW_SPOT_LIGHTS, 
-        texelFetch(lightsPerTile, precomputeCoord + ivec2(5,0), 0).r);
+    int countSpotLightShadow = min(MAX_SHADOWED_SPOT_LIGHTS, 
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 5).r);
 
 
     // Lighting result gets stored in this variables
@@ -342,6 +343,8 @@ void main() {
         // occlusionResult = mix(occlusionResult, vec4(0.0), saturate(material.metallic-0.3) );
 
 
+        int currentTileOffset = tileBufferOffset + 16;
+
         // Compute point lights
         ivec2 baseOffset = precomputeCoord + ivec2(0,1);
         ivec2 currentOffset = ivec2(0);
@@ -350,17 +353,22 @@ void main() {
 
         for (int i = 0; i < countPointLight; i++) {
             currentOffset = ivec2(i % 8, i / 8);
-            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            // currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
             currentLight = lights[currentLightId];
 
             result += applyPointLight(currentLight, material);
         }
 
+        currentTileOffset += MAX_POINT_LIGHTS;
+
         // Compute shadow point lights
         baseOffset = precomputeCoord + ivec2(0,3);
         for (int i = 0; i < countPointLightShadow; i++) {
             currentOffset = ivec2(i % 8, i / 8);
-            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            // currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
+
             currentLight = lights[currentLightId];
 
             #if USE_SHADOWS
@@ -370,41 +378,51 @@ void main() {
             #endif
         }
 
+        currentTileOffset += MAX_SHADOWED_POINT_LIGHTS;
+
         // Compute directional lights
         baseOffset = precomputeCoord + ivec2(0,5);
         for (int i = 0; i < countDirectionalLight; i++) {
             currentOffset = ivec2(i % 8, i / 8);
-            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            // currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
             currentLight = lights[currentLightId];
             result += applyDirectionalLight(currentLight, material);
         }
 
+        currentTileOffset += MAX_DIRECTIONAL_LIGHTS;
 
         // Compute shadowed directinal lights
         baseOffset = precomputeCoord + ivec2(0,6);
         for (int i = 0; i < countDirectionalLightShadow; i++) {
             currentOffset = ivec2(i % 8, i / 8);
-            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            // currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
             currentLight = lights[currentLightId];
             result += applyDirectionalLightWithShadow(currentLight, material);
         }
 
 
+        currentTileOffset += MAX_SHADOWED_DIRECTIONAL_LIGHTS;
 
         // Compute spot lights
         baseOffset = precomputeCoord + ivec2(0,7);
         for (int i = 0; i < countSpotLight; i++) {
             currentOffset = ivec2(i % 8, i / 8);
-            currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            // currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+            currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
             currentLight = lights[currentLightId];
             result += applySpotLight(currentLight, material);
         }
+
+        currentTileOffset += MAX_SPOT_LIGHTS;
 
         // Compute shadow spot lights
         // baseOffset = precomputeCoord + ivec2(0,8);
         // for (int i = 0; i < countPointLightShadow; i++) {
         //     currentOffset = ivec2(i % 8, i / 8);
         //     currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
+        //     currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
         //     currentLight = lights[currentLightId];
 
         //     #if USE_SHADOWS
@@ -413,6 +431,9 @@ void main() {
         //         result += applyPointLight(currentLight, material);
         //     #endif
         // }
+        currentTileOffset += MAX_SHADOWED_SPOT_LIGHTS;
+
+
 
         // Ambient / Reflections
 
@@ -518,6 +539,11 @@ void main() {
         // result *= 0.5;
     #endif  
 
+
+    // result = vec3(texelFetch(lightsPerTileBuffer, tileBufferOffset).x / 12.0);
+        // result = vec3(countSpotLight + 0.1);
+
+    // result = vec3(tileIndex.y / 10.0);
 
     lightingResult = vec4(result, saturate(occlusionTotal) );
 }
