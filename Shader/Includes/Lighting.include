@@ -192,7 +192,7 @@ float computePointLightAttenuation(Light light, float distanceToLight) {
     // return distanceToLight < light.radius ? 1.0 : 0.0;
 
     // Soft transition
-    float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0) * 1.2;
+    float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0);
 
     // Inverse falloff
     // float attenuation = pow(saturate(1.0 - pow(distanceToLight / light.radius, 4.0)), 2.0) / (pow(distanceToLight, 2.0) + 1);

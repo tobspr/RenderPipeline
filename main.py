@@ -89,16 +89,16 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
-        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
-        self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
+        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
 
         # Select surrounding scene here
-        self.sceneSourceSurround = None
-        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        # self.sceneSourceSurround = None
+        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
 
 
         # Load scene from disk
@@ -126,7 +126,7 @@ class Main(ShowBase, DebugObject):
             self.transparentObj = None
 
         # Wheter to use a ground floor
-        self.usePlane = True
+        self.usePlane = False
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -183,7 +183,7 @@ class Main(ShowBase, DebugObject):
         self.dirLight.setDirection(sunPos)
 
         # Tell the GI which light casts the GI
-        self.renderPipeline.setGILightSource(dirLight)
+        # self.renderPipeline.setGILightSource(dirLight)
 
         # Slider to move the sun
         if self.renderPipeline.settings.displayOnscreenDebugger:
@@ -218,19 +218,28 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
 
+
         # Create more lights
-        for i in xrange(3):
+        for i in xrange(15):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
-            spotLight.setPos(Vec3(-5.0 + i * 5.0, 2.0, 4.0))
+            radius = float(i) / 15.0 * 6.28 + 1.52
+            xoffs = math.sin(radius) * 20.0
+            yoffs = math.cos(radius) * 20.0
+
+
+            spotLight.setPos(Vec3( xoffs, yoffs, 8))
+
+            # spotLight.setPos(Vec3(-10.0 + i * 2.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
             # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
-            spotLight.setColor(Vec3( random(), random(), random()))
+            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
+            # spotLight.setColor(Vec3( random(), random(), random()) * 0.12)
 
             # spotLight.setNearFar(1.0, 20.0)
             # spotLight.setDirection(Vec3(0, 90, 0))
-            spotLight.setRadius(6)
+            spotLight.setRadius(50)
             # spotLight.setCastsShadows(True)
             self.renderPipeline.addLight(spotLight)
 

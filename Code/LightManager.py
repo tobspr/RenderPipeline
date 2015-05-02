@@ -1,5 +1,6 @@
 
 import math
+import struct
 
 from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, RenderState
 from panda3d.core import Shader, GeomEnums
@@ -58,20 +59,27 @@ class LightManager(DebugObject):
         # If you change this, don't forget to change it also in
         # Shader/Includes/Configuration.include!
         self.maxLights = {
-            "PointLight": 16,
+            "PointLight": 15,
+            "PointLightShadow": 3,
             "DirectionalLight": 1,
-            "SpotLight": 3
+            "DirectionalLightShadow": 1,
+            "SpotLight": 3,
+            "SpotLightShadow": 1,
+            "GIHelperLightShadow": 10
         }
 
-        # Max shadow casting lights
-        self.maxShadowLights = {
-            "PointLight": 16,
+        self.maxPerTileLights = {
+            "PointLight": 15,
+            "PointLightShadow": 3,
             "DirectionalLight": 1,
-            "SpotLight": 1,
-            "GIHelperLight": 10
+            "DirectionalLightShadow": 1,
+            "SpotLight": 3,
+            "SpotLightShadow": 1,
         }
 
-        self._initArrays()
+
+        self.maxTotalLights = 20
+        self.renderedLights = {}
         self.pipeline = pipeline
         self.settings = pipeline.getSettings()
 
@@ -148,9 +156,6 @@ class LightManager(DebugObject):
             "Shader/PrecomputeLights.fragment")
         self.lightBoundsComputeBuff.setShader(pcShader)
 
-    def getLightPerTileStorage(self):
-        return self.lightPerTileStorage
-
     def getLightPerTileBuffer(self):
         return self.lightPerTileBuffer
 
@@ -174,12 +179,14 @@ class LightManager(DebugObject):
                    "Actual Buffer size=", int(sizeX * self.patchSize.x),
                    "x", int(sizeY * self.patchSize.y))
 
+        # Create the buffer which stores the rendered lights
+        self._makeRenderedLightsBuffer()
+
         # Create per tile storage
         self._makeLightPerTileStorage()
 
         # Create a buffer which computes which light affects which tile
         self._makeLightBoundsComputationBuffer(sizeX, sizeY)
-
 
         # Set inputs
         self._setLightingCuller(self.lightBoundsComputeBuff)
@@ -211,10 +218,9 @@ class LightManager(DebugObject):
             colorTex.setMagfilter(SamplerState.FTNearest)
 
         self.lightBoundsComputeBuff.setShaderInput(
-                "destination", self.getLightPerTileStorage())
-
-        self.lightBoundsComputeBuff.setShaderInput(
                 "destinationBuffer", self.lightPerTileBuffer)
+        self.lightBoundsComputeBuff.setShaderInput(
+                "renderedLightsBuffer", self.renderedLightsBuffer)
 
 
 
@@ -222,31 +228,17 @@ class LightManager(DebugObject):
         """ Creates a texture to store the lights per tile into. Should
         get replaced with ssbos later """
 
-        storageSizeX = self.precomputeSize.x * 8
-        storageSizeY = self.precomputeSize.y * 8
-
-        self.debug(
-            "Creating per tile storage of size",
-            storageSizeX, "x", storageSizeY)
-
-        self.lightPerTileStorage = Texture("LightsPerTile")
-        self.lightPerTileStorage.setup2dTexture(
-            storageSizeX, storageSizeY, Texture.TUnsignedShort, Texture.FR32i)
-        self.lightPerTileStorage.setMinfilter(Texture.FTNearest)
-        self.lightPerTileStorage.setMagfilter(Texture.FTNearest)
-
-
         perPixelDataCount = 0
         perPixelDataCount += 16 # Counters for the light types
         
-        perPixelDataCount += self.maxLights["PointLight"]
-        perPixelDataCount += self.maxShadowLights["PointLight"]
+        perPixelDataCount += self.maxPerTileLights["PointLight"]
+        perPixelDataCount += self.maxPerTileLights["PointLightShadow"]
 
-        perPixelDataCount += self.maxLights["DirectionalLight"]
-        perPixelDataCount += self.maxShadowLights["DirectionalLight"]
+        perPixelDataCount += self.maxPerTileLights["DirectionalLight"]
+        perPixelDataCount += self.maxPerTileLights["DirectionalLightShadow"]
         
-        perPixelDataCount += self.maxLights["SpotLight"]
-        perPixelDataCount += self.maxShadowLights["SpotLight"]
+        perPixelDataCount += self.maxPerTileLights["SpotLight"]
+        perPixelDataCount += self.maxPerTileLights["SpotLightShadow"]
 
         self.tileStride = perPixelDataCount
 
@@ -254,33 +246,58 @@ class LightManager(DebugObject):
 
         tileBufferSize = self.precomputeSize.x * self.precomputeSize.y * self.tileStride * 4
 
-        print self.precomputeSize.x, self.precomputeSize.y
         self.lightPerTileBuffer = Texture("LightsPerTileBuffer")
         self.lightPerTileBuffer.setupBufferTexture(
             tileBufferSize, Texture.TInt, Texture.FR32i, GeomEnums.UHDynamic)
 
-        MemoryMonitor.addTexture("Light Per Tile Storage", self.lightPerTileStorage)
         MemoryMonitor.addTexture("Light Per Tile Buffer", self.lightPerTileBuffer)
+
+
+    def _makeRenderedLightsBuffer(self):
+        """ Creates the buffer which stores the indices of all rendered lights """
+
+        bufferSize = 16
+        bufferSize += self.maxLights["PointLight"]
+        bufferSize += self.maxLights["PointLightShadow"]
+        bufferSize += self.maxLights["DirectionalLight"]
+        bufferSize += self.maxLights["DirectionalLightShadow"]
+        bufferSize += self.maxLights["SpotLight"]
+        bufferSize += self.maxLights["SpotLightShadow"]
+
+        # We store indices as 32 bit int, thats 4 bytes
+        bufferSize *= 4
+
+        self.renderedLightsBuffer = Texture("RenderedLightsBuffer")
+        self.renderedLightsBuffer.setupBufferTexture(bufferSize, Texture.TInt, Texture.FR32i, GeomEnums.UHDynamic)
+
+        MemoryMonitor.addTexture("Rendered Lights Buffer", self.renderedLightsBuffer)
 
     def addShaderDefines(self, defineList):
         """ Adds settings like the maximum light count to the list of defines
         which are available in the shader later """
         define = lambda name, val: defineList.append((name, val))
 
-        define("MAX_VISIBLE_LIGHTS", 8)
-        define("MAX_LIGHTS_PER_PATCH", 63)
+        define("MAX_VISIBLE_LIGHTS", self.maxTotalLights)
 
         define("MAX_POINT_LIGHTS", self.maxLights["PointLight"])
-        define("MAX_SHADOWED_POINT_LIGHTS", self.maxShadowLights["PointLight"])
+        define("MAX_SHADOWED_POINT_LIGHTS", self.maxLights["PointLightShadow"])
 
         define("MAX_DIRECTIONAL_LIGHTS", self.maxLights["DirectionalLight"])
-        define("MAX_SHADOWED_DIRECTIONAL_LIGHTS", self.maxShadowLights["DirectionalLight"])
+        define("MAX_SHADOWED_DIRECTIONAL_LIGHTS", self.maxLights["DirectionalLightShadow"])
 
         define("MAX_SPOT_LIGHTS", self.maxLights["SpotLight"])
-        define("MAX_SHADOWED_SPOT_LIGHTS", self.maxShadowLights["SpotLight"])
+        define("MAX_SHADOWED_SPOT_LIGHTS", self.maxLights["SpotLightShadow"])
+
+        define("MAX_TILE_POINT_LIGHTS", self.maxPerTileLights["PointLight"])
+        define("MAX_TILE_SHADOWED_POINT_LIGHTS", self.maxPerTileLights["PointLightShadow"])
+
+        define("MAX_TILE_DIRECTIONAL_LIGHTS", self.maxPerTileLights["DirectionalLight"])
+        define("MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS", self.maxPerTileLights["DirectionalLightShadow"])
+
+        define("MAX_TILE_SPOT_LIGHTS", self.maxPerTileLights["SpotLight"])
+        define("MAX_TILE_SHADOWED_SPOT_LIGHTS", self.maxPerTileLights["SpotLightShadow"])
 
         define("SHADOW_MAX_TOTAL_MAPS", self.maxShadowMaps)
-
         define("LIGHTING_PER_TILE_STRIDE", self.tileStride)
 
 
@@ -365,8 +382,6 @@ class LightManager(DebugObject):
         dTex.setWrapU(Texture.WMClamp)
         dTex.setWrapV(Texture.WMClamp)
 
-
-
     def getAllLights(self):
         """ Returns all attached lights """
         return self.lights
@@ -399,60 +414,20 @@ class LightManager(DebugObject):
                 self.debug(
                     "Overlay is disabled because FastText wasn't loaded")
 
-    def _initArrays(self):
-        """ Inits the light arrays which are passed to the shaders """
-
-
-
-        self.maxTotalLights = 8
-
-        for lightType, maxCount in self.maxShadowLights.items():
-            self.maxLights[lightType + "Shadow"] = maxCount
-
-        # Create array to store number of rendered lights this frame
-        self.numRenderedLights = {}
-
-        # Also create a PTAInt for every light type, which stores only the
-        # light id, the lighting shader will then lookup the light in the
-        # global lights array.
-        self.renderedLightsArrays = {}
-        for lightType, maxCount in self.maxLights.items():
-            self.renderedLightsArrays[lightType] = PTAInt.emptyArray(maxCount)
-            self.numRenderedLights[lightType] = PTAInt.emptyArray(1)
-
-        for lightType, maxCount in self.maxShadowLights.items():
-            self.renderedLightsArrays[
-                lightType + "Shadow"] = PTAInt.emptyArray(maxCount)
-            self.numRenderedLights[lightType + "Shadow"] = PTAInt.emptyArray(1)
-
     def setLightingComputator(self, shaderNode):
         """ Sets the render target which recieves the shaderinputs necessary to 
         compute the final lighting result """
         self.debug("Light computator is", shaderNode)
         self.lightingComputator = shaderNode
-
         self.allLightsArray.bindTo(shaderNode, "lights")
         self.allShadowsArray.bindTo(shaderNode, "shadowSources")
-
-        for lightType, arrayData in self.renderedLightsArrays.items():
-            shaderNode.setShaderInput("array" + lightType, arrayData)
-            shaderNode.setShaderInput(
-                "count" + lightType, self.numRenderedLights[lightType])
 
     def _setLightingCuller(self, shaderNode):
         """ Sets the render target which recieves the shaderinputs necessary to 
         cull the lights and pass the result to the lighting computator"""
         self.debug("Light culler is", shaderNode)
         self.lightCuller = shaderNode
-
         self.allLightsArray.bindTo(shaderNode, "lights")
-
-        # The culler needs the visible lights ids / counts as he has
-        # to determine wheter a light is visible or not
-        for lightType, arrayData in self.renderedLightsArrays.items():
-            shaderNode.setShaderInput("array" + lightType, arrayData)
-            shaderNode.setShaderInput(
-                "count" + lightType, self.numRenderedLights[lightType])
 
     def getAtlasTex(self):
         """ Returns the shadow map atlas texture"""
@@ -527,16 +502,53 @@ class LightManager(DebugObject):
         """ Sets the current camera bounds used for light culling """
         self.cullBounds = bounds
 
+    def writeRenderedLightsToBuffer(self):
+        """ Stores the list of rendered lights in the buffer to access it in
+        the shader later """
+
+        image = memoryview(self.renderedLightsBuffer.modifyRamImage())
+
+        bufferEntrySize = 4
+
+        # Write counters
+        offset = 0
+        image[offset:offset + bufferEntrySize * 6] = struct.pack('i' * 6, 
+            len(self.renderedLights["PointLight"]),
+            len(self.renderedLights["PointLightShadow"]),
+            len(self.renderedLights["DirectionalLight"]),
+            len(self.renderedLights["DirectionalLightShadow"]),
+            len(self.renderedLights["SpotLight"]),
+            len(self.renderedLights["SpotLightShadow"]))
+
+        offset = 16 * bufferEntrySize
+
+
+        # Write light lists
+        for lightType in ["PointLight", "PointLightShadow", "DirectionalLight", 
+            "DirectionalLightShadow", "SpotLight", "SpotLightShadow"]:
+        
+            entryCount = len(self.renderedLights[lightType])
+
+            if entryCount > self.maxLights[lightType]:
+                self.error("Out of lights bounds for", lightType)
+                return
+
+            if entryCount > 0:
+                # We can write all lights at once, thats pretty cool!
+                image[offset:offset + entryCount * bufferEntrySize] = struct.pack('i' * entryCount, *self.renderedLights[lightType])
+            offset += self.maxLights[lightType] * bufferEntrySize
+
     def updateLights(self):
         """ This is one of the two per-frame-tasks. See class description
         to see what it does """
 
         pstats_ProcessLights.start()
 
-        # Reset light counts
-        # We don't have to reset the data-vectors, as we overwrite them
-        for key in self.numRenderedLights:
-            self.numRenderedLights[key][0] = 0
+        # Clear dictionary to store the lights rendered this frame
+        self.renderedLights = {}
+
+        for lightType in self.maxLights:
+            self.renderedLights[lightType] = []
 
         # Process each light
         for index, light in enumerate(self.lights):
@@ -568,40 +580,25 @@ class LightManager(DebugObject):
             lightTypeName = light.getTypeName()
             if light.hasShadows():
                 lightTypeName += "Shadow"
+            self.renderedLights[lightTypeName].append(index)
 
-            # Add to array and increment counter
-            oldCount = self.numRenderedLights[lightTypeName][0]
-
-            if oldCount >= self.maxLights[lightTypeName]:
-                self.warn("Too many lights of type", lightTypeName,
-                          "-> max is", self.maxLights[lightTypeName])
-                continue
-
-            arrayIndex = self.numRenderedLights[lightTypeName][0]
-            self.numRenderedLights[lightTypeName][0] = oldCount + 1
-            self.renderedLightsArrays[lightTypeName][arrayIndex] = index
+        self.writeRenderedLightsToBuffer()
 
         pstats_ProcessLights.stop()
 
         # Generate debug text
         if self.lightsVisibleDebugText is not None:
-            renderedPL = "Point:" + \
-                str(self.numRenderedLights["PointLight"][0])
-            renderedPL_S = "Point:" + \
-                str(self.numRenderedLights["PointLightShadow"][0])
+            renderedPL = str(len(self.renderedLights["PointLight"]))
+            renderedPL_S = str(len(self.renderedLights["PointLightShadow"]))
 
-            renderedDL = "Directional:" + \
-                str(self.numRenderedLights["DirectionalLight"][0])
-            renderedDL_S = "Directional:" + \
-                str(self.numRenderedLights["DirectionalLightShadow"][0])
+            renderedDL = str(len(self.renderedLights["DirectionalLight"]))
+            renderedDL_S = str(len(self.renderedLights["DirectionalLightShadow"]))
 
-            renderedSL = "Spot:" + \
-                str(self.numRenderedLights["SpotLight"][0])
-            renderedSL_S = "Spot:" + \
-                str(self.numRenderedLights["SpotLight"][0])
+            renderedSL = str(len(self.renderedLights["SpotLight"]))
+            renderedSL_S = str(len(self.renderedLights["SpotLight"]))
 
             self.lightsVisibleDebugText.setText(
-                'Lights: ' + renderedPL + " / " + renderedDL + " Shadowed: " + renderedPL_S + " / " + renderedDL_S + " Spot: " + renderedSL + " / " + renderedSL_S)
+                "Point: " + renderedPL + "/" + renderedPL_S + ", Directional: " + renderedDL + "/"+  renderedDL_S + ", Spot: " + renderedSL+ "/" + renderedSL_S)
 
 
     def updateShadows(self):
@@ -721,7 +718,7 @@ class LightManager(DebugObject):
         # Generate debug text
         if self.lightsUpdatedDebugText is not None:
             self.lightsUpdatedDebugText.setText(
-                'Queued Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)) + ", Last: " + last + ", Free Tiles: " + str(self.shadowAtlas.getFreeTileCount()) + "/" + str(self.shadowAtlas.getTotalTileCount()))
+                'Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)) + ", Last: " + last + ", Free Tiles: " + str(self.shadowAtlas.getFreeTileCount()) + "/" + str(self.shadowAtlas.getTotalTileCount()))
 
     # Main update
     def update(self):

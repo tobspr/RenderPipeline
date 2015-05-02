@@ -267,16 +267,17 @@ class RenderingPipeline(DebugObject):
         self.lastPixelShift = PTAVecBase2f.emptyArray(1)
 
         self._setupFinalPass()
-        self._setShaderInputs()
-
-        # Give the gui a hint when the pipeline is done loading
-        if self.settings.displayOnscreenDebugger:
-            self.guiManager.onPipelineLoaded()
 
 
         # Generate auto-configuration for shaders
         self._generateShaderConfiguration()
 
+        # Load shader inputs
+        self._setShaderInputs()
+
+        # Give the gui a hint when the pipeline is done loading
+        if self.settings.displayOnscreenDebugger:
+            self.guiManager.onPipelineLoaded()
 
         # add update task
         self._attachUpdateTask()
@@ -505,9 +506,6 @@ class RenderingPipeline(DebugObject):
             self.lightingComputeContainer.setShaderInput(
                 "noiseTexture",
                 noiseTexture)
-            self.lightingComputeContainer.setShaderInput(
-                "lightsPerTile", self.lightManager.getLightPerTileStorage())
-
             self.lightingComputeContainer.setShaderInput(
                 "lightsPerTileBuffer", self.lightManager.getLightPerTileBuffer())
 
