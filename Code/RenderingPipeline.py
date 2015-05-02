@@ -317,6 +317,13 @@ class RenderingPipeline(DebugObject):
         self.antialias.setVelocityTexture(self.deferredTarget.getAuxTexture(1))
         self.antialias.setup()
 
+        # Check if the user enabled temporal occlusion while not using a temporal
+        # aliasing technique:
+        if self.settings.useTemporalOcclusion:
+            if not self.antialias.isTemporal():
+                self.error("Cannot use temporal occlusion without temporal antialiasing")
+                self.error("This will lead to obvious flickering!")
+
     def _setupOcclusion(self):
         """ Creates the occlusion technique """
         technique = self.settings.occlusionTechnique
@@ -333,6 +340,7 @@ class RenderingPipeline(DebugObject):
         else:
             self.error("Unkown occlusion technique:", technique)
             self.occlusion = AmbientOcclusionTechniqueNone()
+
 
     def _setupOcclusionBuffer(self):
         """ Creates a buffer at half resolution for the occlusion """
@@ -1141,8 +1149,10 @@ class RenderingPipeline(DebugObject):
                 self.error("Unrecognized SMAA quality:", quality)
                 return
 
-        defines.append(
-            ("LIGHTING_COMPUTE_PATCH_SIZE_X", self.settings.computePatchSizeX))
+        define = lambda name, val: defines.append((name, val))
+
+
+        define("LIGHTING_COMPUTE_PATCH_SIZE_X", self.settings.computePatchSizeX)
         defines.append(
             ("LIGHTING_COMPUTE_PATCH_SIZE_Y", self.settings.computePatchSizeY))
         defines.append(
@@ -1216,6 +1226,8 @@ class RenderingPipeline(DebugObject):
         if self.haveOcclusion:
             defines.append(("USE_OCCLUSION", 1))
 
+            if self.settings.useTemporalOcclusion:
+                defines.append(("ENHANCE_TEMPORAL_OCCLUSION", 1))
 
         if self.settings.enableSSLR:
             defines.append(("USE_SSLR", 1))

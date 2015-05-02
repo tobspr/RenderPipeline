@@ -11,11 +11,11 @@ uniform sampler2D viewSpacePosition;
 
 
 #undef OCCLUSION_SAMPLES
-#define OCCLUSION_SAMPLES 512
+#define OCCLUSION_SAMPLES 128
 
 
 // total number of samples at each fragment
-#define SAO_NUM_SPIRAL_TURNS      128
+#define SAO_NUM_SPIRAL_TURNS      32
 #define SAO_VARIATION             1
 
 const float saoConstIntensity = 1.6;
@@ -95,8 +95,12 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
 
   vec3 originVS = sao_getPositionVS(coord);
   vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
-  float randomPatternRotationAngle = (frameIndex % 2);
-  // randomPatternRotationAngle = 0.0;
+
+  #if ENHANCE_TEMPORAL_OCCLUSION
+    float randomPatternRotationAngle = (frameIndex % 2);
+  #else
+    float randomPatternRotationAngle = 0.0;
+  #endif
 
 
   float radiusSS  = 0.0; // radius of influence in screen space

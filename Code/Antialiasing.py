@@ -76,6 +76,11 @@ class AntialiasingTechnique(DebugObject):
         pass
 
 
+    def isTemporal(self):
+        """ Returns wheter this antialiasing technique is a temporal antialiasing
+        technique """
+        raise AbstractMethodException()
+
 class AntialiasingTechniqueNone(AntialiasingTechnique):
 
     """ Technique which does no anti-aliasing. """
@@ -100,6 +105,11 @@ class AntialiasingTechniqueNone(AntialiasingTechnique):
     def requiresJittering(self):
         """ Not required """
         return False
+
+    def isTemporal(self):
+        """ When doing no aliasing, we do no temporal aliasing at all """
+        return False
+
 
 
 class AntialiasingTechniqueFXAA(AntialiasingTechnique):
@@ -129,6 +139,10 @@ class AntialiasingTechniqueFXAA(AntialiasingTechnique):
 
     def requiresJittering(self):
         """ Not required """
+        return False
+
+    def isTemporal(self):
+        """ Fxaa is not temporal """
         return False
 
 
@@ -253,6 +267,11 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
 
     def requiresJittering(self):
         """ For SMAA T2 """
+        return True
+
+
+    def isTemporal(self):
+        """ SMAA is temporal """
         return True
 
     def preRenderUpdate(self):

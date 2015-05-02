@@ -79,6 +79,6 @@ const float sqrt_of_2 = 1.4142135623;
 #define USE_PIXEL_BASED_PCSS 1
 
 
-#define ENHANCE_TEMPORAL_OCCLUSION 1
+
 
 #pragma include "Includes/CommonFunctions.include"

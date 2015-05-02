@@ -430,7 +430,9 @@ void main() {
 
 
 
-    sslrDataResult = vec4(reflectionVector, reflectionFactor);
+    #ifdef USE_SSLR
+        sslrDataResult = vec4(reflectionVector, reflectionFactor);
+    #endif
 
 
     // result.xyz *= giDiffuseColor.xyz;
