@@ -168,11 +168,11 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
+        dirLight.setShadowMapResolution(1024)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        # dirLight.setColor(Vec3(1.0))
-        dirLight.setColor(Vec3(0.3))
+        dirLight.setColor(Vec3(1.0))
+        # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
@@ -207,10 +207,11 @@ class Main(ShowBase, DebugObject):
             yoffs = math.cos(radius) * 15.0
 
 
-            pointLight.setPos(Vec3( xoffs, yoffs, 12))
+            pointLight.setPos(Vec3(i*7.0 - 10.0, 0.0, 8.0))
+            # pointLight.setPos(Vec3( xoffs, yoffs, 12))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
-            # pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
-            pointLight.setColor(Vec3( random(), random(), random()))
+            pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            # pointLight.setColor(Vec3( random(), random(), random()))
 
             pointLight.setShadowMapResolution(512)
             pointLight.setRadius(15)

@@ -25,6 +25,7 @@ pstats_CullLights = PStatCollector("App:LightManager:CullLights")
 pstats_PerLightUpdates = PStatCollector("App:LightManager:PerLightUpdates")
 pstats_FetchShadowUpdates = PStatCollector(
     "App:LightManager:FetchShadowUpdates")
+pstats_WriteBuffers = PStatCollector("App:LightManager:WriteBuffers")
 
 
 class LightManager(DebugObject):
@@ -506,6 +507,8 @@ class LightManager(DebugObject):
         """ Stores the list of rendered lights in the buffer to access it in
         the shader later """
 
+        pstats_WriteBuffers.start()
+
         image = memoryview(self.renderedLightsBuffer.modifyRamImage())
 
         bufferEntrySize = 4
@@ -531,12 +534,13 @@ class LightManager(DebugObject):
 
             if entryCount > self.maxLights[lightType]:
                 self.error("Out of lights bounds for", lightType)
-                return
 
             if entryCount > 0:
                 # We can write all lights at once, thats pretty cool!
                 image[offset:offset + entryCount * bufferEntrySize] = struct.pack('i' * entryCount, *self.renderedLights[lightType])
             offset += self.maxLights[lightType] * bufferEntrySize
+
+        pstats_WriteBuffers.stop()
 
     def updateLights(self):
         """ This is one of the two per-frame-tasks. See class description
@@ -582,9 +586,10 @@ class LightManager(DebugObject):
                 lightTypeName += "Shadow"
             self.renderedLights[lightTypeName].append(index)
 
+        pstats_ProcessLights.stop()
+
         self.writeRenderedLightsToBuffer()
 
-        pstats_ProcessLights.stop()
 
         # Generate debug text
         if self.lightsVisibleDebugText is not None:

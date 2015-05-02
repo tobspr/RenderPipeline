@@ -30,8 +30,8 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
         self._addSetting("ambientCubemapSamples", int, 16)
         self._addSetting("colorLookupTable", str, "Default.png")
+        self._addSetting("enableScattering", bool, False)
         self._addSetting("enableSSLR", bool, True)
-
 
         # [Occlusion]
         self._addSetting("occlusionTechnique", str, "None")
@@ -64,4 +64,3 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("displayDebugStats", bool, True)
         self._addSetting("enableLightPerTileDebugging", bool, False)
 
-        self._addSetting("enableScattering", bool, False)

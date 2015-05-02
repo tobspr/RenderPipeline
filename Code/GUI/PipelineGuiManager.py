@@ -115,6 +115,7 @@ class PipelineGuiManager(DebugObject):
             register_feature("PCF", "ft_PCF")
 
         register_feature("Env. Filtering", "ft_FILTER_ENVIRONMENT")
+        register_feature("Complex Lighting", "ft_COMPLEX_LIGHTING")
 
         # register_mode("h Debug", "rm_SSaLR")
 

@@ -40,9 +40,9 @@ void main() {
     vec4 sampledRoughness = texture(ROUGHNESS_TEX, vOutput.texcoord);
 
 
-    sampledNormal = vec4(1);
-    sampledSpecular = vec4(1);
-    sampledRoughness = vec4(1);
+    // sampledNormal = vec4(1);
+    // sampledSpecular = vec4(1);
+    // sampledRoughness = vec4(1);
 
     float bumpFactor = vOutput.materialDiffuse.w;
     float specularFactor = vOutput.materialSpecular.x;
