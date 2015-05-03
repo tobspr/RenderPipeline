@@ -103,13 +103,13 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        self.sceneSource = "Demoscene.ignore/VertexPerformanceTest/Scene.egg.bam"
 
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
@@ -135,7 +135,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
-        # self.renderPipeline.addLight(dirLight)
+        self.renderPipeline.addLight(dirLight)
         self.dirLight = dirLight
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
@@ -250,6 +250,7 @@ class Main(ShowBase, DebugObject):
             for x in xrange(10):
                 for y in xrange(10):
                     copiedObj = copy.deepcopy(highPolyObj)
+                    copiedObj.setColorScale(random(), random(), random(), 1)
                     copiedObj.reparentTo(self.scene)
                     copiedObj.setPos(x, y, 2)
 
@@ -258,8 +259,6 @@ class Main(ShowBase, DebugObject):
         # Find transparent objects
         matches = self.scene.findAllMatches("**/T__*")
         for match in matches:
-            print match
-
             self.transparentObjects.append(match)
             # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
 
@@ -268,6 +267,7 @@ class Main(ShowBase, DebugObject):
         self.sceneWireframe = False
 
         # Flatten scene?
+        self.loadingScreen.setStatus("Optimizing Scene")
         # self.scene.flattenStrong()
         self.scene.reparentTo(self.render)
 
