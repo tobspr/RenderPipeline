@@ -9,6 +9,8 @@
 
 bool isPointLightInFrustum(Light light, Frustum frustum) {
 
+    // return true;
+
     #ifndef LIGHTING_ANY_BOUND_CHECK
         return true;
     #else

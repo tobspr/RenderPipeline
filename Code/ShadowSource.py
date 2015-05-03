@@ -81,6 +81,10 @@ class ShadowSource(DebugObject, ShaderStructElement):
         self.lens.setFilmSize(size_x, size_y)
         self.rebuildMatrixCache()
 
+    def getLens(self):
+        """ Returns the source lens, if set """
+        return self.lens
+
     def getSourceIndex(self):
         """ Returns the assigned source index. The source index is the index
         of the ShadowSource in the ShadowSources array of the assigned

@@ -25,6 +25,9 @@ uniform float osg_FrameTime;
 
 void main() {
 
+
+    // return;
+
     // Create a material to store the properties on
     Material m = getDefaultMaterial();
     vec4 sampledDiffuse = texture(DIFFUSE_TEX, vOutput.texcoord);

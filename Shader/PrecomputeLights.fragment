@@ -263,22 +263,22 @@ void main() {
         currentBufferPos += MAX_SPOT_LIGHTS;
 
 
-        // // Process shadowed Spot lights
-        for (int i = 0; i < countPointLightShadow; i++) {
+        // Process shadowed Spot lights
+        for (int i = 0; i < countSpotLightShadow; i++) {
             int index = texelFetch(renderedLightsBuffer, currentBufferPos + i).x;
             Light light = lights[index];
-            if (isPointLightInFrustum(light, frustum)) {
-                imageStore(destinationBuffer, currentBufferOrigin + processedShadowedPointLights, ivec4(index));
-                processedShadowedPointLights += 1;
+            if (isSpotLightInFrustum(light, frustum)) {
+                imageStore(destinationBuffer, currentBufferOrigin + processedShadowedSpotLights, ivec4(index));
+                processedShadowedSpotLights += 1;
 
                 // Make sure we dont write more lights than we actually have
-                if (processedSpotLights >= MAX_TILE_SHADOWED_SPOT_LIGHTS) break;
+                if (processedShadowedSpotLights >= MAX_TILE_SHADOWED_SPOT_LIGHTS) break;
 
             }
         }
 
         currentBufferOrigin += MAX_TILE_SHADOWED_SPOT_LIGHTS;
-        currentBufferOrigin += MAX_SHADOWED_SPOT_LIGHTS;
+        currentBufferPos += MAX_SHADOWED_SPOT_LIGHTS;
         
 
     }
@@ -294,7 +294,7 @@ void main() {
     #if ENABLE_LIGHT_PER_TILE_DEBUG
         float lightsVisibleFloat = float(
             processedPointLights + processedShadowedPointLights + 
-            processedSpotLights + processedShadowedSpotLights) / float(15.0);
+            processedSpotLights + processedShadowedSpotLights) / float(10.0);
         vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
         debugOutput = vec4(lightCountIndicator, 1);
 

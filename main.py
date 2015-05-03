@@ -20,7 +20,7 @@ sys.dont_write_bytecode = True
 import math
 import struct
 from random import random
-
+import copy
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, SamplerState
@@ -97,12 +97,13 @@ class Main(ShowBase, DebugObject):
 
 
         # This sources are not included in the repo, for size reasons
-        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
+        self.sceneSource = "Demoscene.ignore/VertexPerformanceTest/Scene.egg.bam"
 
 
         # This sources are included in the repo
@@ -134,7 +135,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
-        self.renderPipeline.addLight(dirLight)
+        # self.renderPipeline.addLight(dirLight)
         self.dirLight = dirLight
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
@@ -155,7 +156,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Create some lights
-        for i in xrange(3):
+        for i in xrange(0):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
@@ -177,8 +178,17 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.addLight(pointLight)
 
 
+        for x in xrange(2):
+                light = PointLight()
+                light.setColor(Vec3(1))
+                light.setShadowMapResolution(2048)
+                light.setRadius(30)
+                light.setPos( Vec3( 5 + x*3 - 3, 5, 8))
+                light.setCastsShadows(True)
+                self.renderPipeline.addLight(light)
+
         # Create more lights
-        for i in xrange(12):
+        for i in xrange(0):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
@@ -230,6 +240,21 @@ class Main(ShowBase, DebugObject):
 
         self.scene = scene
 
+        # Performance testing
+
+        if True:
+            highPolyObj = self.scene.find("**/HighPolyObj")
+            highPolyObj.detachNode()
+            self.loadingScreen.setStatus("Preparing Performance Test")
+
+            for x in xrange(10):
+                for y in xrange(10):
+                    copiedObj = copy.deepcopy(highPolyObj)
+                    copiedObj.reparentTo(self.scene)
+                    copiedObj.setPos(x, y, 2)
+
+
+
         # Find transparent objects
         matches = self.scene.findAllMatches("**/T__*")
         for match in matches:
@@ -279,7 +304,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(-4, 10, 10.0), Vec3(-4, 0, 5))
+            Vec3(-5, 5, 12), Vec3(5, 5, 2))
         self.controller.setup()
 
         # Load skybox

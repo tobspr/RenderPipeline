@@ -3,7 +3,7 @@ import math
 import struct
 
 from panda3d.core import Texture, Camera, Vec3, Vec2, NodePath, RenderState
-from panda3d.core import Shader, GeomEnums
+from panda3d.core import Shader, GeomEnums, MatrixLens
 from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
 from panda3d.core import OmniBoundingVolume, PTAInt, Vec4, PTAVecBase4f
 from panda3d.core import LVecBase2i, ShaderAttrib, UnalignedLVecBase4f
@@ -60,8 +60,8 @@ class LightManager(DebugObject):
         # If you change this, don't forget to change it also in
         # Shader/Includes/Configuration.include!
         self.maxLights = {
-            "PointLight": 15,
-            "PointLightShadow": 3,
+            "PointLight": 5,
+            "PointLightShadow": 2,
             "DirectionalLight": 1,
             "DirectionalLightShadow": 1,
             "SpotLight": 3,
@@ -70,8 +70,8 @@ class LightManager(DebugObject):
         }
 
         self.maxPerTileLights = {
-            "PointLight": 15,
-            "PointLightShadow": 3,
+            "PointLight": 5,
+            "PointLightShadow": 2,
             "DirectionalLight": 1,
             "DirectionalLightShadow": 1,
             "SpotLight": 3,
@@ -112,7 +112,7 @@ class LightManager(DebugObject):
         self._createShadowComputationBuffer()
 
         # Create the initial shadow state
-        self.shadowComputeCamera.setTagStateKey("ShadowPassShader")
+
         self._createTagStates()
         self.shadowScene.setTag("ShadowPassShader", "Default")
 
@@ -141,13 +141,14 @@ class LightManager(DebugObject):
         # Create shadow caster shader
         self.shadowCasterShader = Shader.load(Shader.SLGLSL,
             "Shader/DefaultShaders/ShadowCasting/vertex.glsl",
-            "Shader/DefaultShaders/ShadowCasting/fragment.glsl",
-            "Shader/DefaultShaders/ShadowCasting/geometry.glsl")
+            "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(self.shadowCasterShader, 30)
         # initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
         initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
-        self.shadowComputeCamera.setTagState(
+
+        for camera in self.shadowCameras:
+            camera.node().setTagState(
             "Default", initialState.getState())
 
     def _setLightCullingShader(self):
@@ -222,8 +223,6 @@ class LightManager(DebugObject):
                 "destinationBuffer", self.lightPerTileBuffer)
         self.lightBoundsComputeBuff.setShaderInput(
                 "renderedLightsBuffer", self.renderedLightsBuffer)
-
-
 
     def _makeLightPerTileStorage(self):
         """ Creates a texture to store the lights per tile into. Should
@@ -306,28 +305,23 @@ class LightManager(DebugObject):
         which renders the shadow objects, although a custom mvp is passed
         to the shaders, so the camera is mainly a dummy """
 
-        # Create camera showing the whole scene
-        self.shadowComputeCamera = Camera("ShadowComputeCamera")
-        self.shadowComputeCameraNode = self.shadowScene.attachNewNode(
-            self.shadowComputeCamera)
-        self.shadowComputeCamera.getLens().setFov(30, 30)
-        self.shadowComputeCamera.getLens().setNearFar(1.0, 2.0)
-
-        # Disable culling
-        self.shadowComputeCamera.setBounds(OmniBoundingVolume())
-        self.shadowComputeCamera.setCullBounds(OmniBoundingVolume())
-        self.shadowComputeCamera.setFinal(True)
-        self.shadowComputeCameraNode.setPos(0, 0, 1500)
-        self.shadowComputeCameraNode.lookAt(0, 0, 0)
+        # Create a camera for each update
+        self.shadowCameras = []
+        for i in xrange(self.maxShadowUpdatesPerFrame):
+            shadowCam = Camera("ShadowComputeCamera")
+            shadowCam.setTagStateKey("ShadowPassShader")
+            shadowCamNode = self.shadowScene.attachNewNode(shadowCam)
+            # shadowCamNode.reparentTo(Globals.base.render)
+            self.shadowCameras.append(shadowCamNode)
 
         self.shadowComputeTarget = RenderTarget("ShadowAtlas")
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.setDepthBits(32)
-        # self.shadowComputeTarget.setColorWrite(False)
+        self.shadowComputeTarget.setColorWrite(False)
 
         self.shadowComputeTarget.setSource(
-            self.shadowComputeCameraNode, Globals.base.win)
+            NodePath(Camera("tmp")), Globals.base.win)
 
         self.shadowComputeTarget.prepareSceneRender()
 
@@ -337,38 +331,23 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.getQuad().node().removeAllChildren()
         self.shadowComputeTarget.getInternalRegion().setSort(-200)
 
-        self.shadowComputeTarget.getInternalRegion().setNumRegions(
-            self.maxShadowUpdatesPerFrame + 1)
-        self.shadowComputeTarget.getInternalRegion().setDimensions(0,
-             (0, 0, 0, 0))
-
         self.shadowComputeTarget.getInternalRegion().disableClears()
         self.shadowComputeTarget.getInternalBuffer().disableClears()
         self.shadowComputeTarget.getInternalBuffer().setSort(-300)
 
-        # We can't clear the depth per viewport.
-        # But we need to clear it in any way, as we still want
-        # z-testing in the buffers. So well, we create a
-        # display region *below* (smaller sort value) each viewport
-        # which has a depth-clear assigned. This is hacky, I know.
-        self.depthClearer = []
-
-        for i in range(self.maxShadowUpdatesPerFrame):
-            buff = self.shadowComputeTarget.getInternalBuffer()
+        self.renderRegions = []
+        buff = self.shadowComputeTarget.getInternalBuffer()
+        
+        for i in xrange(self.maxShadowUpdatesPerFrame):
             dr = buff.makeDisplayRegion()
-            dr.setSort(-250)
-            for k in xrange(16):
-                dr.setClearActive(k, True)
-                dr.setClearValue(k, Vec4(0.5,0.5,0.5,1))
-
+            dr.setSort(1000)
             dr.setClearDepthActive(True)
             dr.setClearDepth(1.0)
-            dr.setDimensions(0,0,0,0)
+            dr.setCamera(self.shadowCameras[i])
             dr.setActive(False)
-            self.depthClearer.append(dr)
+            self.renderRegions.append(dr)
 
         # When using hardware pcf, set the correct filter types
-        
         if self.settings.useHardwarePCF:
             self.pcfSampleState = SamplerState()
             self.pcfSampleState.setMinfilter(SamplerState.FTShadow)
@@ -608,9 +587,9 @@ class LightManager(DebugObject):
         """ This is one of the two per-frame-tasks. See class description
         to see what it does """
 
-        # First, disable all clearers
-        for clearer in self.depthClearer:
-            clearer.setActive(False)
+        # First, disable all regions
+        for region in self.renderRegions:
+            region.setActive(False)
 
         if self.skip > 0:
             self.shadowComputeTarget.setActive(False)
@@ -690,13 +669,14 @@ class LightManager(DebugObject):
                 atlasPos = update.getAtlasPos()
                 left, right = atlasPos.x, (atlasPos.x + texScale)
                 bottom, top = atlasPos.y, (atlasPos.y + texScale)
-                self.depthClearer[numUpdates].setDimensions(
-                    left, right, bottom, top)
-                self.depthClearer[numUpdates].setActive(True)
 
-                self.shadowComputeTarget.getInternalRegion().setDimensions(
-                    numUpdates+1, (atlasPos.x, atlasPos.x + texScale,
-                                     atlasPos.y, atlasPos.y + texScale))
+                self.renderRegions[numUpdates].setDimensions(left, right, bottom, top)
+                self.renderRegions[numUpdates].setActive(True)
+
+                self.shadowCameras[numUpdates].setPos(update.cameraNode.getPos())
+                self.shadowCameras[numUpdates].setHpr(update.cameraNode.getHpr())
+                self.shadowCameras[numUpdates].node().setLens(update.getLens())
+
                 numUpdates += 1
 
                 # Finally, we can tell the update it's valid now.

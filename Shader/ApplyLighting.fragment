@@ -245,6 +245,8 @@ void main() {
 
     vec3 sunVector = vec3(0,0,1);
 
+    // FIXME: Should be set by user
+    
     sunVector = normalize(lights[0].direction);
 
     #ifndef DEBUG_DISABLE_SCATTERING
