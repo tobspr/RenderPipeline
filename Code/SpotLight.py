@@ -95,9 +95,8 @@ class SpotLight(Light, DebugObject):
         Source is facing to +x, and the other one to -x. This
         gives a 360 degree view. """
 
-
         self.shadowSources[0].setPos(self.position)
-        self.shadowSources[0].lookAt(self.position + direction)
+        self.shadowSources[0].lookAt(self.position + self.direction)
 
         # self.shadowSources[0].setPos(
         #     self.position + Vec3(0, self.spacing * 2.0, 0))

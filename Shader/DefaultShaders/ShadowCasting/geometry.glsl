@@ -1,5 +1,4 @@
 #version 410
-#pragma optionNV (unroll all)
 
 
 #pragma include "Includes/Configuration.include"

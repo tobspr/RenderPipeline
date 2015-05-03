@@ -324,7 +324,8 @@ class LightManager(DebugObject):
         self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
         self.shadowComputeTarget.addDepthTexture()
         self.shadowComputeTarget.setDepthBits(32)
-        
+        # self.shadowComputeTarget.setColorWrite(False)
+
         self.shadowComputeTarget.setSource(
             self.shadowComputeCameraNode, Globals.base.win)
 

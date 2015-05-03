@@ -94,20 +94,25 @@ class Main(ShowBase, DebugObject):
 
         # Select demo scene here:
 
-        # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
-        # self.sceneSource = "Demoscene.ignore/occlusionTest/Model.egg"
-        # self.sceneSource = "Demoscene.ignore/lost-empire/Model.egg"
-        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+
+
+        # This sources are not included in the repo, for size reasons
+        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
-        # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg"
-        # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
-        self.sceneSource = "Demoscene.ignore/Couch/couch.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
+        # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
+        # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
+
+
+        # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
+        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
+
 
         # Select surrounding scene here
         self.sceneSourceSurround = None

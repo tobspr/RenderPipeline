@@ -46,6 +46,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("shadowCascadeBorderPercentage", float, 0.1)       
         self._addSetting("maxShadowUpdatesPerFrame", int, 2)
         self._addSetting("numPCFSamples", int, 64)
+        self._addSetting("usePCSS", bool, True)
         self._addSetting("numPCSSSearchSamples", int, 32)
         self._addSetting("numPCSSFilterSamples", int, 64)
         self._addSetting("useHardwarePCF", bool, False)

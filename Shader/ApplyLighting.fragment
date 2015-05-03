@@ -1,13 +1,10 @@
 #version 400
 
 
-#extension GL_ARB_shader_image_load_store : enable
-
-
-// TODO: Make some benchmarks to see wheter unrolling
-// is faster or slower ..
+// Required, or it runs incredible slow
 #pragma optionNV (unroll all)
 
+#extension GL_ARB_shader_image_load_store : enable
 
 
 #pragma include "Includes/Configuration.include"

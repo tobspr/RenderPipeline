@@ -9,8 +9,6 @@ const float normalsDiscardThreshold = 0.9;
 // const float normalsDiscardThreshold = 0.2;
 
 
-#pragma optionNV (unroll all)
-
 uniform sampler2D normalsView;
 
 

@@ -1135,6 +1135,10 @@ class RenderingPipeline(DebugObject):
         define("SHADOW_GEOMETRY_MAX_VERTICES", self.settings.maxShadowUpdatesPerFrame * 3)
 
         define("SHADOW_NUM_PCF_SAMPLES", self.settings.numPCFSamples)
+
+        if self.settings.usePCSS:
+            define("USE_PCSS", 1)
+
         define("SHADOW_NUM_PCSS_SEARCH_SAMPLES", self.settings.numPCSSSearchSamples)
         define("SHADOW_NUM_PCSS_FILTER_SAMPLES", self.settings.numPCSSFilterSamples)
 

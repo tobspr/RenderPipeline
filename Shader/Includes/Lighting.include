@@ -243,17 +243,7 @@ bool coord_inside(vec2 coord, vec2 min_coord, vec2 max_coord) {
 
 
 float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSize) {
-
-
-
-
     #ifndef DEBUG_DISABLE_PCSS
-
-
-    #undef SHADOW_NUM_PCSS_SEARCH_SAMPLES
-    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 64
-    #undef SHADOW_NUM_PCSS_FILTER_SAMPLES
-    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 64
 
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
    
@@ -455,7 +445,12 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
     projCoord = reprojectShadow(source, biasedPos);
     map_used = shadow_map_index;
     baseBias *= resolutionFactor;
-    return pcssKernelDynamicSize(light, source, projCoord, baseBias);
+
+    #if USE_PCSS
+        return pcssKernelDynamicSize(light, source, projCoord, baseBias);
+    #else
+        return pcfKernel(source, projCoord, baseBias * 2.0, vec2(0.5 / SHADOW_MAP_ATLAS_SIZE));
+    #endif
 }
 
 #pragma include "Includes/Lights.include" 

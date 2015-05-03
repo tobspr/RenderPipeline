@@ -1,7 +1,5 @@
 #version 130
 
-#pragma optionNV (unroll all)
-
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/BokehDOF2.include"
 
