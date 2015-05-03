@@ -25,7 +25,7 @@ from SystemAnalyzer import SystemAnalyzer
 from MountManager import MountManager
 from Scattering import Scattering
 from MemoryMonitor import MemoryMonitor
-from TransparencyManager import TransparencyManager
+from TransparencyManager import TransparencyManager, TransparencyManagerStub
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
@@ -206,7 +206,10 @@ class RenderingPipeline(DebugObject):
             self.lightManager = LightManager(self)
 
         # Create transparency manager
-        self.transparencyManager = TransparencyManager(self)
+        if self.settings.useTransparency:
+            self.transparencyManager = TransparencyManager(self)
+        else:
+            self.transparencyManager = TransparencyManagerStub(self)
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
@@ -527,6 +530,13 @@ class RenderingPipeline(DebugObject):
                 self.lightingComputeContainer.setShaderInput("lastFrameOcclusion", self.lastFrameOcclusion)
 
 
+        if self.settings.enableSSLR:
+            self.transparencyManager.setColorTexture(self.sslrBuffer.getColorTexture())
+        else:
+            self.transparencyManager.setColorTexture(self.lightingComputeContainer.getColorTexture())
+
+
+
         # Shader inputs for the occlusion blur passes
         if self.occlusion.requiresBlurring():
             self.blurOcclusionH.setShaderInput(
@@ -670,11 +680,6 @@ class RenderingPipeline(DebugObject):
 
         self.transparencyManager.setReflectionCubemap(self.reflectionCubemap)
 
-
-        if self.settings.enableSSLR:
-            self.transparencyManager.setColorTexture(self.sslrBuffer.getColorTexture())
-        else:
-            self.transparencyManager.setColorTexture(self.lightingComputeContainer.getColorTexture())
 
 
         # Finally, set shaders
@@ -1169,6 +1174,10 @@ class RenderingPipeline(DebugObject):
 
         if self.settings.enableGlobalIllumination:
             define("USE_GLOBAL_ILLUMINATION", 1)
+
+        if self.settings.useTransparency:
+            define("USE_TRANSPARENCY", 1)
+            define("MAX_TRANSPARENCY_LAYERS", self.settings.maxTransparencyLayers)
 
         if self.settings.enableScattering:
             define("USE_SCATTERING", 1)

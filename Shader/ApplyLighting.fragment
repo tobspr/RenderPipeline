@@ -158,8 +158,6 @@ void main() {
     vec3 wsNormal = (cross(world - worldX1, world - worldY1));
     wsNormal = normalize(wsNormal);
 
-
-
     float pixelDepth = texelFetch(depth, screenCoord,0 ).x;
     float reflectionFactor = saturate( (0.5 - material.roughness) * 5.0 ) ;
 
@@ -310,27 +308,21 @@ void main() {
 
 
         // upscale occlusion here
-
         #if USE_OCCLUSION
 
-
+            // Temporal occlusion
             vec2 velocity = target2data.xy / 255.0;
             vec2 lastFrameTexcoord = texcoord  + velocity;
             ivec2 lastFrameCoordInt = ivec2(lastFrameTexcoord * textureSize(lastFramePosition, 0).xy);
 
             vec3 lastPos = texelFetch(lastFramePosition, lastFrameCoordInt, 0).xyz;
-
             float reliability = 1.0 - saturate(distance(lastPos, material.position) * 10.0);
-            // reliability = 1.0;
-
             occlusionTotal = texture(occlusionTex, texcoord).x;
 
             float lastOcclusion = texelFetch(lastFrameOcclusion, lastFrameCoordInt, 0).x;
             occlusionTotal = mix(occlusionTotal, lastOcclusion, 0.5 * saturate(reliability) );
-            // occlusionTotal = mix(occlusionTotal, lastOcclusion, 0.5);
 
-            // occlusionTotal = reliability;
-
+            occlusionTotal = 0.0;
 
         #endif
 
@@ -341,6 +333,8 @@ void main() {
         // Metallic materials don't have much occlusion
         // occlusionResult = mix(occlusionResult, vec4(0.0), saturate(material.metallic-0.3) );
 
+
+        #ifndef DEBUG_DISABLE_LIGHTS
 
         int currentTileOffset = tileBufferOffset + 16;
 
@@ -399,26 +393,27 @@ void main() {
         currentTileOffset += MAX_TILE_SPOT_LIGHTS;
 
         // Compute shadow spot lights
-        // baseOffset = precomputeCoord + ivec2(0,8);
-        // for (int i = 0; i < countPointLightShadow; i++) {
-        //     currentOffset = ivec2(i % 8, i / 8);
-        //     currentLightId = texelFetch(lightsPerTile, baseOffset + currentOffset, 0).r;
-        //     currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
-        //     currentLight = lights[currentLightId];
+        for (int i = 0; i < countSpotLightShadow; i++) {
+            currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
+            currentLight = lights[currentLightId];
 
-        //     #if USE_SHADOWS
-        //         result += applyPointLightWithShadow(currentLight, material );
-        //     #else
-        //         result += applyPointLight(currentLight, material);
-        //     #endif
-        // }
+            #if USE_SHADOWS
+                result += applySpotLightWithShadow(currentLight, material);
+            #else
+                result += applySpotLight(currentLight, material);
+            #endif
+        }
         currentTileOffset += MAX_TILE_SHADOWED_SPOT_LIGHTS;
 
 
 
+        #endif
+
         // Ambient / Reflections
 
         ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, viewVector, wsNormal);    
+        // ambient = vec3(0.2);
+
         #ifndef DEBUG_RM_PSSM_SPLITS
             result += ambient;
         #endif
@@ -426,19 +421,11 @@ void main() {
 
 
 
-    // SSLR Precomputation data
-
-    vec3 reflectionVector = normalize(reflect(viewVector, material.normal));
-
-
-
     #ifdef USE_SSLR
+        // SSLR Precomputation data
+        vec3 reflectionVector = normalize(reflect(viewVector, material.normal));
         sslrDataResult = vec4(reflectionVector, reflectionFactor);
     #endif
-
-
-    // result.xyz *= giDiffuseColor.xyz;
-
 
     // SRGB
     result.xyz = pow(result.xyz, vec3(1.0 / 2.2) ); 
@@ -511,21 +498,14 @@ void main() {
         #ifdef USE_SCATTERING
             result = scatteringResult * inscatterFactor;
             result = 1.0f - exp(-1.5 * result);
-            // result = texture(inscatterSampler, vec3(texcoord, 0 ) ).xyz;
             occlusionTotal = 0.0;
         #endif
     #endif
 
     #ifdef DEBUG_RM_SHADOWS
         occlusionTotal = 0.0;
-        // result *= 0.5;
     #endif  
 
-
-    // result = vec3(texelFetch(lightsPerTileBuffer, tileBufferOffset).x / 12.0);
-        // result = vec3(countDirectionalLightShadow / 2.0 + 0.1);
-
-    // result = vec3(tileIndex.y / 10.0);
 
     lightingResult = vec4(result, saturate(occlusionTotal) );
 }

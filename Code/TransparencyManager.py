@@ -22,7 +22,7 @@ class TransparencyManager(DebugObject):
         self.debug("Initializing ..")
 
         self.pipeline = pipeline
-        self.maxPixelCount = 1920 * 1080
+        self.maxPixelCount = 1920 * 1080 * 2
 
 
     def initTransparencyPass(self):
@@ -129,3 +129,49 @@ class TransparencyManager(DebugObject):
     def getResultTexture(self):
         """ Returns the result texture which can be used further in the pipeline """
         return self.transparencyPass.getColorTexture()
+
+
+
+class TransparencyManagerStub:
+
+    """ Transparency manager which is used when transparency is disabled """
+
+    def __init__(self, pipeline):
+        self.pipeline = pipeline
+
+    def initTransparencyPass(self):
+        pass
+
+    def setCameraPositionHandle(self, camPosHandle):
+        pass
+
+    def postRenderCallback(self):
+        pass
+
+    def setMVPHandle(self, mvpHandle):
+        pass
+
+    def setPositionTexture(self, tex):
+        pass
+
+    def setCameraAndScene(self, cam, scene):
+        pass
+
+    def setReflectionCubemap(self, tex):
+        pass
+
+    def setColorTexture(self, tex):
+        self.colorTex = tex
+
+    def setDepthTexture(self, tex):
+        pass
+
+    def reloadShader(self):
+        pass
+
+    def getDefaultShader(self):
+        raise Exception("Transparency is disabled. You cant fetch the transparency shader")
+
+    def getResultTexture(self):
+        """ Returns the result texture which can be used further in the pipeline """
+        return self.colorTex

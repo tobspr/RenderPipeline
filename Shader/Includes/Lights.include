@@ -111,3 +111,8 @@ vec3 applySpotLight(Light light, Material material) {
     return computeLightModel(light,material, l,v, n, h, attenuation, 1.0) + 0.1;
     return vec3(0.2,0.6,1.0) * 0.5;
 }
+
+
+vec3 applySpotLightWithShadow(Light light, Material material) {
+    return applySpotLight(light, material);
+}

@@ -52,6 +52,11 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("useHardwarePCF", bool, False)
         self._addSetting("alwaysUpdateAllShadows", bool, False)
 
+        # [Transparency]
+        self._addSetting("useTransparency", bool, True)
+        self._addSetting("maxTransparencyLayers", int, 10)
+
+
         # [Motion blur]
         self._addSetting("motionBlurEnabled", bool, True)
         self._addSetting("motionBlurSamples", int, 8)

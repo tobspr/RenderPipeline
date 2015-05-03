@@ -97,7 +97,7 @@ class Main(ShowBase, DebugObject):
 
 
         # This sources are not included in the repo, for size reasons
-        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
@@ -109,15 +109,15 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
+        # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
 
 
         # Select surrounding scene here
-        self.sceneSourceSurround = None
-        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        # self.sceneSourceSurround = None
+        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
         self.transparentObjects = []
@@ -156,7 +156,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Create some lights
-        for i in xrange(0):
+        for i in xrange(3):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
@@ -177,22 +177,12 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
 
-
-        for x in xrange(2):
-                light = PointLight()
-                light.setColor(Vec3(1))
-                light.setShadowMapResolution(2048)
-                light.setRadius(30)
-                light.setPos( Vec3( 5 + x*3 - 3, 5, 8))
-                light.setCastsShadows(True)
-                self.renderPipeline.addLight(light)
-
         # Create more lights
-        for i in xrange(0):
+        for i in xrange(15):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
-            radius = float(i) / 12.0 * 6.28 + 1.52
+            radius = float(i) / 28.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 10.0
             yoffs = math.cos(radius) * 10.0
 
@@ -226,10 +216,6 @@ class Main(ShowBase, DebugObject):
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
 
-        # if self.sceneSourceSurround is not None:
-        #     self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
-        #     self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
-        #     self.sceneSurround.reparentTo(self.scene)
 
 
     def onSceneLoaded(self, scene):
@@ -240,21 +226,28 @@ class Main(ShowBase, DebugObject):
 
         self.scene = scene
 
+        # Load surround scene
+        if self.sceneSourceSurround is not None:
+            self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
+            self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
+            self.sceneSurround.reparentTo(self.scene)
+
+
         # Performance testing
 
         if True:
             highPolyObj = self.scene.find("**/HighPolyObj")
-            highPolyObj.detachNode()
-            self.loadingScreen.setStatus("Preparing Performance Test")
 
-            for x in xrange(10):
-                for y in xrange(10):
-                    copiedObj = copy.deepcopy(highPolyObj)
-                    copiedObj.setColorScale(random(), random(), random(), 1)
-                    copiedObj.reparentTo(self.scene)
-                    copiedObj.setPos(x, y, 2)
+            if highPolyObj is not None and not highPolyObj.isEmpty():
+                highPolyObj.detachNode()
+                self.loadingScreen.setStatus("Preparing Performance Test")
 
-
+                for x in xrange(10):
+                    for y in xrange(10):
+                        copiedObj = copy.deepcopy(highPolyObj)
+                        copiedObj.setColorScale(random(), random(), random(), 1)
+                        copiedObj.reparentTo(self.scene)
+                        copiedObj.setPos(x-5, y-5, 2)
 
         # Find transparent objects
         matches = self.scene.findAllMatches("**/T__*")

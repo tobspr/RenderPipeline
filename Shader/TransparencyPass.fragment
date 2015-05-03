@@ -42,9 +42,6 @@ struct MaterialPointer {
 };
 
 
-#define MAX_TRANSPARENCY_LAYERS 10
-
-
 //Bubble sort used to sort fragments
 MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS], int size) {
   for (int i = (size - 2); i >= 0; --i) {
@@ -208,7 +205,7 @@ void main() {
         vec2 texelOffset = normalize(refPosReconstruct.xy - texcoord);
 
 
-        currentColor = texture(sceneTex, texcoord + texelOffset * 0.005).xyz;
+        // currentColor = texture(sceneTex, texcoord + texelOffset * 0.005).xyz;
 
         // composedColor = pow(composedColor, vec3(1.0 / 2.2));
 

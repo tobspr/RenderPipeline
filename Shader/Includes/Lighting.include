@@ -175,7 +175,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
 
 
     float diffuseReflectFactor = pow( saturate(1.0 - dot(material.normal,v)), 2.0);
-    // result += diffuseReflectFactor * ambientRefColor * saturate(1.0 - material.metallic) * material.specular * saturate(1.0 - material.roughness) * 0.1;
+    // result += diffuseReflectFactor * ambientRefColor * saturate(1.0 - material.metallic) * material.specular * saturate(1.0 - material.roughness) * 0.5;
 
 
     giSpecular = vec3(1);

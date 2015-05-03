@@ -60,8 +60,8 @@ class LightManager(DebugObject):
         # If you change this, don't forget to change it also in
         # Shader/Includes/Configuration.include!
         self.maxLights = {
-            "PointLight": 5,
-            "PointLightShadow": 2,
+            "PointLight": 15,
+            "PointLightShadow": 4,
             "DirectionalLight": 1,
             "DirectionalLightShadow": 1,
             "SpotLight": 3,
@@ -70,8 +70,8 @@ class LightManager(DebugObject):
         }
 
         self.maxPerTileLights = {
-            "PointLight": 5,
-            "PointLightShadow": 2,
+            "PointLight": 15,
+            "PointLightShadow": 4,
             "DirectionalLight": 1,
             "DirectionalLightShadow": 1,
             "SpotLight": 3,
