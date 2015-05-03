@@ -245,7 +245,7 @@ class LightManager(DebugObject):
 
         self.debug("Per pixel data:", perPixelDataCount)
 
-        tileBufferSize = self.precomputeSize.x * self.precomputeSize.y * self.tileStride * 4
+        tileBufferSize = self.precomputeSize.x * self.precomputeSize.y * self.tileStride
 
         self.lightPerTileBuffer = Texture("LightsPerTileBuffer")
         self.lightPerTileBuffer.setupBufferTexture(
@@ -264,9 +264,6 @@ class LightManager(DebugObject):
         bufferSize += self.maxLights["DirectionalLightShadow"]
         bufferSize += self.maxLights["SpotLight"]
         bufferSize += self.maxLights["SpotLightShadow"]
-
-        # We store indices as 32 bit int, thats 4 bytes
-        bufferSize *= 4
 
         self.renderedLightsBuffer = Texture("RenderedLightsBuffer")
         self.renderedLightsBuffer.setupBufferTexture(bufferSize, Texture.TInt, Texture.FR32i, GeomEnums.UHDynamic)

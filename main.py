@@ -35,7 +35,7 @@ from Code.DebugObject import DebugObject
 from Code.FirstPersonController import FirstPersonCamera
 from Code.GlobalIllumination import GlobalIllumination
 from Code.SpotLight import SpotLight
-
+from Code.GUI.PipelineLoadingScreen import PipelineLoadingScreen
 
 
 class Main(ShowBase, DebugObject):
@@ -53,6 +53,12 @@ class Main(ShowBase, DebugObject):
 
         # Init the showbase
         ShowBase.__init__(self)
+
+
+        # Show loading screen
+        self.loadingScreen = PipelineLoadingScreen(self)
+        self.loadingScreen.render()
+
 
         # Create the render pipeline
         self.debug("Creating pipeline")
@@ -101,80 +107,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
-
-        # Load scene from disk
-        self.debug("Loading Scene '" + self.sceneSource + "'")
-        self.scene = self.loader.loadModel(self.sceneSource)
-
-
-        if self.sceneSourceSurround is not None:
-            self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
-            self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
-            self.sceneSurround.reparentTo(self.scene)
-
-
-        self.debug("Continuing loading ..")
-
         self.transparentObjects = []
 
-        # Transparency demo
-        if False:
-            tObj = loader.loadModel("Models/SmoothCube/Cube.bam")
-            # tObj = loader.loadModel("Demoscene.ignore/transparencyTest/scene.egg")
-            # tObj = self.scene.find("**/Glass")
-            tObj.reparentTo(render)
-            tObj.setZ(self.transparentObj, 1.0)
-            # tObj.flattenStrong()
-            # tObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
-
-
-        # Find transparent objects
-        matches = self.scene.findAllMatches("**/T__*")
-        for match in matches:
-            print match
-
-            self.transparentObjects.append(match)
-            # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
-            
-
-        # Wheter to use a ground floor
-        self.usePlane = False
-        self.sceneWireframe = False
-
-        # Flatten scene?
-        # self.scene.flattenStrong()
-        self.scene.reparentTo(self.render)
-
-        # Prepare textures with SRGB format
-        self.prepareSRGB(self.scene)
-
-        # Load ground plane if configured
-        if self.usePlane:
-            self.groundPlane = self.loader.loadModel(
-                "Models/Plane/Model.egg.bam")
-            self.groundPlane.setPos(0, 0, -0.0001)
-            self.groundPlane.setScale(12.0)
-            self.groundPlane.setTwoSided(True)
-            self.groundPlane.flattenStrong()
-            self.groundPlane.reparentTo(self.scene)
-
-        # Some artists really don't know about backface culling
-        # self.scene.setTwoSided(True)
-
-        # Required for tesselation
-        # self.convertToPatches(self.scene)
-
-        # Create movement controller (Freecam)
-        self.controller = MovementController(self)
-        self.controller.setInitialPosition(
-            Vec3(-4, 10, 10.0), Vec3(-4, 0, 5))
-        self.controller.setup()
-
-        # Hotkey for wireframe
-        self.accept("f3", self.toggleSceneWireframe)
-
-        # Hotkey to reload all shaders
-        self.accept("r", self.setShaders)
 
         # Create a sun light
         dPos = Vec3(60, 30, 100)
@@ -206,9 +140,7 @@ class Main(ShowBase, DebugObject):
 
             self.lastSliderValue = 0.0
 
-        # Load skybox
-        self.skybox = self.renderPipeline.getDefaultSkybox()
-        self.skybox.reparentTo(render)
+
 
         # Create some lights
         for i in xrange(3):
@@ -258,15 +190,100 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.addLight(spotLight)
             # spotLight.attachDebugNode(render)
 
-        # Set default object shaders
-        self.setShaders(refreshPipeline=False)
-
         # Show windows
         # for window in base.graphicsEngine.getWindows():
             # print window.getName(), window.getSort()
     
         # Slow mode?
         # self.addTask(self.sleep, "sleep")
+
+
+        self.loadScene()
+
+
+
+
+    def loadScene(self):
+        """ Starts loading the scene """
+
+        # Load scene from disk
+        self.debug("Loading Scene '" + self.sceneSource + "'")
+        self.loader.loadModel(self.sceneSource, callback=self.onSceneLoaded)
+
+        # if self.sceneSourceSurround is not None:
+        #     self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
+        #     self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
+        #     self.sceneSurround.reparentTo(self.scene)
+
+
+    def onSceneLoaded(self, scene):
+
+        self.debug("Successfully loaded scene")
+
+        self.scene = scene
+
+        # Find transparent objects
+        matches = self.scene.findAllMatches("**/T__*")
+        for match in matches:
+            print match
+
+            self.transparentObjects.append(match)
+            # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+
+        # Wheter to use a ground floor
+        self.usePlane = False
+        self.sceneWireframe = False
+
+        # Flatten scene?
+        # self.scene.flattenStrong()
+        self.scene.reparentTo(self.render)
+
+        # Prepare textures with SRGB format
+        self.prepareSRGB(self.scene)
+
+
+        # Load ground plane if configured
+        if self.usePlane:
+            self.groundPlane = self.loader.loadModel(
+                "Models/Plane/Model.egg.bam")
+            self.groundPlane.setPos(0, 0, -0.0001)
+            self.groundPlane.setScale(12.0)
+            self.groundPlane.setTwoSided(True)
+            self.groundPlane.flattenStrong()
+            self.groundPlane.reparentTo(self.scene)
+
+
+        # Some artists really don't know about backface culling
+        # self.scene.setTwoSided(True)
+
+        # Required for tesselation
+        # self.convertToPatches(self.scene)
+
+
+
+        # Hotkey for wireframe
+        self.accept("f3", self.toggleSceneWireframe)
+
+        # Hotkey to reload all shaders
+        self.accept("r", self.setShaders)
+
+
+        # Create movement controller (Freecam)
+        self.controller = MovementController(self)
+        self.controller.setInitialPosition(
+            Vec3(-4, 10, 10.0), Vec3(-4, 0, 5))
+        self.controller.setup()
+
+        # Load skybox
+        self.skybox = self.renderPipeline.getDefaultSkybox()
+        self.skybox.reparentTo(render)
+
+        # Set default object shaders
+        self.setShaders(refreshPipeline=False)
+
+        # Hide loading screen
+        self.loadingScreen.hide()
+
 
     def sleep(self, task):
         import time

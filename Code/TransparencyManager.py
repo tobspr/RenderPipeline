@@ -22,7 +22,7 @@ class TransparencyManager(DebugObject):
         self.debug("Initializing ..")
 
         self.pipeline = pipeline
-        self.maxPixelCount = 10000000
+        self.maxPixelCount = 1920 * 1080
 
 
     def initTransparencyPass(self):

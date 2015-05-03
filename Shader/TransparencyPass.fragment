@@ -192,6 +192,11 @@ void main() {
         composedColor += ambientRefColor * 0.35;
 
 
+        float glassBorderFactor = 1.0 - saturate(dot(v, n));
+        glassBorderFactor = pow(glassBorderFactor, 3.0);
+
+        // composedColor = vec3(glassBorderFactor);
+        composedColor -= glassBorderFactor * 0.2;
 
 
         vec3 refractionVector = refract(v, n, 1.0);
@@ -200,7 +205,10 @@ void main() {
         vec4 refPosReconstruct = currentMVP * vec4(refractedPos, 1);
         refPosReconstruct.xyz = (refPosReconstruct.xyz / refPosReconstruct.w) * 0.5 + 0.5;
 
-        currentColor = texture(sceneTex, refPosReconstruct.xy).xyz;
+        vec2 texelOffset = normalize(refPosReconstruct.xy - texcoord);
+
+
+        currentColor = texture(sceneTex, texcoord + texelOffset * 0.005).xyz;
 
         // composedColor = pow(composedColor, vec3(1.0 / 2.2));
 
@@ -209,7 +217,9 @@ void main() {
 
         // currentColor = currentColor * (1.0-tm.alpha) + tm.color * tm.alpha * specularComp;
         currentColor = currentColor * (1.0-tm.alpha) + composedColor * tm.alpha;
-        currentOcclusion *= tm.alpha;    
+
+        // Reduces occlusion but still avoids halos
+        currentOcclusion *= saturate(tm.alpha + 0.5);    
     }
 
     #endif

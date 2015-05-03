@@ -115,9 +115,8 @@ class RenderingPipeline(DebugObject):
         self.debug("Analyzing system ..")
         SystemAnalyzer.analyze()
 
-
         self.debug("Checking required Panda3D version ..")
-        #SystemAnalyzer.checkPandaVersionOutOfDate(01,12,2014)
+        SystemAnalyzer.checkPandaVersionOutOfDate(29,04,2015)
 
         # Mount everything first
         self.mountManager.mount()
@@ -141,7 +140,6 @@ class RenderingPipeline(DebugObject):
         self.camera = self.showbase.cam
         self.size = self._getSize()
         self.cullBounds = None
-
 
         # It is important that the window width is a multiple of 2
         if self.size.x % 2 == 1:

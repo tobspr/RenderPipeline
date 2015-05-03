@@ -34,7 +34,6 @@ class MemoryMonitor:
             print "MemoryMonitor: Unkown type:", form, tex.getName()
 
         pixelCount = tex.getXSize() * tex.getYSize() * tex.getZSize()
-
         dataSize = componentSize * pixelCount
         return dataSize
 
