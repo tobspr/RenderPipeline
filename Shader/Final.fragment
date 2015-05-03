@@ -65,8 +65,10 @@ void main() {
         
         // Color LUT
         #ifndef DEBUG_RM_OCCLUSION
+        #ifndef DEBUG_RM_BASECOLOR
         result = applyColorLUT(colorLUT, result);
 
+        #endif
         #endif
 
     #else

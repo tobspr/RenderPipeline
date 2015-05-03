@@ -467,7 +467,8 @@ void main() {
     #endif
 
     #ifdef DEBUG_RM_BASECOLOR
-        result = sqrt(material.baseColor);
+        result = (material.baseColor);
+    // result.xyz = pow(result.xyz, vec3(1.0 / 2.2) ); 
         occlusionTotal = 0.0;
     #endif
 

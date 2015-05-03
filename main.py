@@ -79,7 +79,6 @@ class Main(ShowBase, DebugObject):
 
          ####### END OF RENDER PIPELINE SETUP #######
 
-
         # Select demo scene here:
 
         # self.sceneSource = "Demoscene.ignore/sponza.egg.bam"
@@ -89,7 +88,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
-        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
@@ -97,13 +97,15 @@ class Main(ShowBase, DebugObject):
         
 
         # Select surrounding scene here
-        # self.sceneSourceSurround = None
-        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        self.sceneSourceSurround = None
+        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
 
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.scene = self.loader.loadModel(self.sceneSource)
+
 
         if self.sceneSourceSurround is not None:
             self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
@@ -113,24 +115,34 @@ class Main(ShowBase, DebugObject):
 
         self.debug("Continuing loading ..")
 
+        self.transparentObjects = []
+
         # Transparency demo
         if False:
-            self.transparentObj = loader.loadModel("Models/SmoothCube/Cube.bam")
-            # self.transparentObj = loader.loadModel("Demoscene.ignore/transparencyTest/scene.egg")
-            # self.transparentObj = self.scene.find("**/Glass")
-            self.transparentObj.reparentTo(render)
-            self.transparentObj.setZ(self.transparentObj, 1.0)
-            self.transparentObj.flattenStrong()
-            self.transparentObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
-        else:
-            self.transparentObj = None
+            tObj = loader.loadModel("Models/SmoothCube/Cube.bam")
+            # tObj = loader.loadModel("Demoscene.ignore/transparencyTest/scene.egg")
+            # tObj = self.scene.find("**/Glass")
+            tObj.reparentTo(render)
+            tObj.setZ(self.transparentObj, 1.0)
+            # tObj.flattenStrong()
+            # tObj.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+
+
+        # Find transparent objects
+        matches = self.scene.findAllMatches("**/T__*")
+        for match in matches:
+            print match
+
+            self.transparentObjects.append(match)
+            # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+            
 
         # Wheter to use a ground floor
         self.usePlane = False
         self.sceneWireframe = False
 
         # Flatten scene?
-        self.scene.flattenStrong()
+        # self.scene.flattenStrong()
         self.scene.reparentTo(self.render)
 
         # Prepare textures with SRGB format
@@ -155,7 +167,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(0, -20, 20.0), Vec3(0, 0, 5))
+            Vec3(-4, 10, 10.0), Vec3(-4, 0, 5))
         self.controller.setup()
 
         # Hotkey for wireframe
@@ -168,7 +180,7 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(1024)
+        dirLight.setShadowMapResolution(2048)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(1.0))
@@ -183,7 +195,7 @@ class Main(ShowBase, DebugObject):
         self.dirLight.setDirection(sunPos)
 
         # Tell the GI which light casts the GI
-        # self.renderPipeline.setGILightSource(dirLight)
+        self.renderPipeline.setGILightSource(dirLight)
 
         # Slider to move the sun
         if self.renderPipeline.settings.displayOnscreenDebugger:
@@ -207,13 +219,14 @@ class Main(ShowBase, DebugObject):
             yoffs = math.cos(radius) * 15.0
 
 
-            pointLight.setPos(Vec3(i*7.0 - 10.0, 0.0, 8.0))
+            pointLight.setPos(Vec3(i*4.0 - 7.5, 0.2, 3.0))
             # pointLight.setPos(Vec3( xoffs, yoffs, 12))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
-            pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            pointLight.setColor(Vec3( 0.3, 0.75, 1.0) * 0.5)
+            # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( random(), random(), random()))
 
-            pointLight.setShadowMapResolution(512)
+            pointLight.setShadowMapResolution(1024)
             pointLight.setRadius(15)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
@@ -221,13 +234,13 @@ class Main(ShowBase, DebugObject):
 
 
         # Create more lights
-        for i in xrange(15):
+        for i in xrange(12):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
-            radius = float(i) / 15.0 * 6.28 + 1.52
-            xoffs = math.sin(radius) * 20.0
-            yoffs = math.cos(radius) * 20.0
+            radius = float(i) / 12.0 * 6.28 + 1.52
+            xoffs = math.sin(radius) * 10.0
+            yoffs = math.cos(radius) * 10.0
 
 
             spotLight.setPos(Vec3( xoffs, yoffs, 8))
@@ -236,13 +249,14 @@ class Main(ShowBase, DebugObject):
             # spotLight.setColor(Vec3(i,2-i,0))
             # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
             spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
-            # spotLight.setColor(Vec3( random(), random(), random()) * 0.12)
+            # spotLight.setColor(Vec3( random(), random(), random()) * 0.1)
 
             # spotLight.setNearFar(1.0, 20.0)
             # spotLight.setDirection(Vec3(0, 90, 0))
-            spotLight.setRadius(50)
+            spotLight.setRadius(40)
             # spotLight.setCastsShadows(True)
             self.renderPipeline.addLight(spotLight)
+            # spotLight.attachDebugNode(render)
 
         # Set default object shaders
         self.setShaders(refreshPipeline=False)
@@ -339,8 +353,8 @@ class Main(ShowBase, DebugObject):
             self.scene.setShader(
                 self.renderPipeline.getDefaultObjectShader(False))
 
-            if self.transparentObj:
-                self.transparentObj.setShader(
+            for obj in self.transparentObjects:
+                obj.setShader(
                     self.renderPipeline.getDefaultTransparencyShader())
 
             if refreshPipeline:

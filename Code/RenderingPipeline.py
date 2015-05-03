@@ -492,6 +492,12 @@ class RenderingPipeline(DebugObject):
             self.lightingComputeContainer.setShaderInput(
                 "shadowAtlas", self.lightManager.getAtlasTex())
 
+            self.lightingComputeContainer.setShaderInput(
+                "fallbackCubemap", self.reflectionCubemap)
+            self.lightingComputeContainer.setShaderInput(
+                "fallbackCubemapMipmaps", math.log(self.reflectionCubemap.getXSize(), 2))
+
+
             if self.settings.useHardwarePCF:
                 self.lightingComputeContainer.setShaderInput(
                     "shadowAtlasPCF", self.lightManager.getAtlasTex(), self.lightManager.getPCFSampleState())
@@ -660,6 +666,11 @@ class RenderingPipeline(DebugObject):
         # Transparency pass inputs
         self.transparencyManager.setPositionTexture(self.deferredTarget.getColorTexture())
         self.transparencyManager.setDepthTexture(self.deferredTarget.getDepthTexture())
+        self.transparencyManager.setMVPHandle(self.currentMVP)
+        self.transparencyManager.setCameraAndScene(self.showbase.cam, self.showbase.render)
+
+        self.transparencyManager.setReflectionCubemap(self.reflectionCubemap)
+
 
         if self.settings.enableSSLR:
             self.transparencyManager.setColorTexture(self.sslrBuffer.getColorTexture())
@@ -677,10 +688,9 @@ class RenderingPipeline(DebugObject):
         cubemap.setMinfilter(Texture.FTLinearMipmapLinear)
         cubemap.setMagfilter(Texture.FTLinearMipmapLinear)
         cubemap.setFormat(Texture.F_srgb)
-        self.lightingComputeContainer.setShaderInput(
-            "fallbackCubemap", cubemap)
-        self.lightingComputeContainer.setShaderInput(
-            "fallbackCubemapMipmaps", math.log(cubemap.getXSize(), 2))
+
+        self.reflectionCubemap = cubemap
+
 
     def _loadLookupCubemap(self):
         self.debug("Loading lookup cubemap")

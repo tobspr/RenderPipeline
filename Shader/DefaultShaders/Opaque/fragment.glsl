@@ -49,7 +49,7 @@ void main() {
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
 
-    bumpFactor = 0.0;
+    // bumpFactor = 0.6;
    
     // sampledNormal.rgb = sampledDiffuse.rgb;
 
@@ -80,9 +80,10 @@ void main() {
     // m.baseColor = vec3(vOutput.materialDiffuse);
     // m.baseColor *= vec3(0.2,0.6,1.0) * 5.0;
 
-    // m.metallic = 1.0;
-    // m.roughness = 0.05;
-    // m.specular = 1.0;
+    // m.metallic = 0.0;
+    // m.baseColor = vec3(1);
+    // m.roughness = 0.4;
+    // m.specular = 0.6;
 
     // m.roughness = max(0.3, m.roughness);
     // m.specular = 1.0;

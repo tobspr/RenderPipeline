@@ -138,7 +138,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     vec3 ambientRefColor = vec3(0);
 
 
-    float edgeFactor = 1.0 - saturate(dot(v, n) * 1.0);
+    float edgeFactor = 1.0 - saturate(dot(v, material.normal) * 1.0);
     mipmap += edgeFactor * 3.0;
 
     // Filter Environment map
@@ -162,16 +162,20 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
     #endif
 
     ambientRefColor = pow(ambientRefColor, vec3(1.6) );
-    ambientEnvColor = ambientRefColor * 5.0 + 0.5;
+    // ambientEnvColor = ambientEnvColor * 5.0 + 0.5;
+    // ambientEnvColor = ambientEnvColor;
 
-    ambientEnvColor = vec3(1);
+    // ambientEnvColor = vec3(1);
     vec3 result = vec3(0);
 
     // ambientEnvColor = vec3(1.0 / 5.0);
 
     // Diffuse ambient
-    result += giAmbient.xyz * material.baseColor * saturate(1.0 - material.metallic) * ambientEnvColor * 5.0;
+    result += giAmbient.xyz * material.baseColor * saturate(1.0 - material.metallic) * 5.0;
 
+
+    float diffuseReflectFactor = pow( saturate(1.0 - dot(material.normal,v)), 2.0);
+    // result += diffuseReflectFactor * ambientRefColor * saturate(1.0 - material.metallic) * material.specular * saturate(1.0 - material.roughness) * 0.1;
 
 
     giSpecular = vec3(1);

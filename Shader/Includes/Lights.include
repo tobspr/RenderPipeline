@@ -2,7 +2,6 @@
 
 #pragma include "Includes/Configuration.include"
 
-
 vec3 applyPointLight(Light light, Material material) {
 
     float distanceToLight = distance(material.position, light.position);   
@@ -39,7 +38,7 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
 
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
-    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.05, 0.1, 0.004);
+    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.001, 0.0001, 0.005);
     
     return computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
 }

@@ -42,7 +42,7 @@ class GlobalIllumination(DebugObject):
         self.targetSpace = Globals.base.render
 
         self.voxelBaseResolution = 512 * 4
-        self.voxelGridSizeWS = Vec3(30, 30, 30)
+        self.voxelGridSizeWS = Vec3(60, 60, 60)
         self.voxelGridResolution = LVecBase3i(256, 256, 256)
         self.targetLight = None
         self.helperLight = None
@@ -277,8 +277,8 @@ class GlobalIllumination(DebugObject):
 
     def process(self):
         if self.targetLight is None:
-            self.fatal("The GI cannot work without a target light! Set one "
-                "with setTargetLight() first!")
+            self.fatal("The GI cannot work without a directional target light! Set one "
+                "with renderPipeline.setGILightSource(directionalLight) first!")
 
         if not self.updateEnabled:
             self.voxelizeTarget.setActive(False)

@@ -5,6 +5,7 @@
 #extension GL_EXT_shader_image_load_store : enable
 
 #pragma include "Includes/Configuration.include"
+#pragma include "Includes/LightingModels.include"
 
 in vec2 texcoord;
 out vec4 colorResult;
@@ -27,7 +28,11 @@ uniform sampler2D depthTex;
 uniform sampler2D positionTex;
 
 
+uniform samplerCube fallbackCubemap;
+
 uniform vec3 cameraPosition;
+
+uniform mat4 currentMVP;
 
 
 // Temporary structure used for sorting
@@ -60,6 +65,10 @@ MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fra
   return fragments;
 }
 
+
+vec3 convertCubemapCoordBecauseIFailed(vec3 coord) {
+    return normalize(coord.xzy * vec3(1,-1,1));
+}
 
 void main() {
 
@@ -117,6 +126,14 @@ void main() {
     float pixelDist = distance(cameraPosition, pixelPos) / CAMERA_FAR;
 
 
+    // Get some vectors
+    vec3 v = normalize(cameraPosition - pixelPos);
+    vec3 l = normalize(vec3(0.4,0.7,0.3));
+
+    float roughness = 0.15;
+    // Material fakeTransMat;
+    // Light fakeLight;
+    // fakeLight.color = vec3(1);
 
 
     for (int i = 0; i < entryCounter; i++) {
@@ -125,8 +142,73 @@ void main() {
 
         if (tm.depth > pixelDist) continue;
 
-        float cf = saturate(dot(tm.normal, vec3(0, 1, 1))) +0.2;
-        currentColor = currentColor * (1.0-tm.alpha) + tm.color * cf * tm.alpha;
+
+        // tm.color = vec3(0.2,0.6,1.0);
+        tm.color = vec3(1);
+
+
+        vec3 tmPos = calculateSurfacePos(tm.depth, texcoord);
+
+        vec3 n = tm.normal;
+        vec3 h = normalize(l + v);
+
+        // Evaluate specular
+        // vec3 specularContribution = computeSpecular(specularColor, roughness, NxL, LxH, NxV, NxH) * NxL;
+
+        vec3 composedColor = vec3(0);
+        // vec3 specularColor = tm.color;
+        vec3 specularColor = vec3(1);
+
+        // pre-computed cross products
+        float NxL = saturate(dot(n, l));
+        float LxH = saturate(dot(l, h));
+        float NxV = abs(dot(n, v)) + 1e-5;
+        float NxH = saturate(dot(n, h));
+
+
+        float specularD = DistributionBRDF(roughness, NxH);
+        float specularG = GeometricBRDF(roughness, NxV, NxL);
+        vec3  specularF = FresnelBRDF(specularColor, LxH);
+
+        vec3 specularComp = genericMicrofacetBRDF(specularF, specularG, specularD, NxL, NxV) * NxL;
+
+        // specular
+        composedColor += specularComp;
+
+        // diffuse
+        // composedColor += tm.color;
+        // composedColor += saturate(NxL+0.0);
+
+        composedColor += vec3(0.3) * tm.color;
+
+
+
+        vec3 reflectedDir = reflect( -v, n );
+
+        // ambient reflections
+        vec3 ambientRefColor = textureLod(fallbackCubemap, convertCubemapCoordBecauseIFailed(reflectedDir), 0).rgb;
+        // ambientRefColor = pow(ambientRefColor,  vec3(1.5));
+
+        composedColor += ambientRefColor * 0.35;
+
+
+
+
+        vec3 refractionVector = refract(v, n, 1.0);
+        vec3 refractedPos = tmPos + refractionVector * 0.001;
+
+        vec4 refPosReconstruct = currentMVP * vec4(refractedPos, 1);
+        refPosReconstruct.xyz = (refPosReconstruct.xyz / refPosReconstruct.w) * 0.5 + 0.5;
+
+        currentColor = texture(sceneTex, refPosReconstruct.xy).xyz;
+
+        // composedColor = pow(composedColor, vec3(1.0 / 2.2));
+
+        // cf += 
+        // cf = dot(v, tm.normal);
+
+        // currentColor = currentColor * (1.0-tm.alpha) + tm.color * tm.alpha * specularComp;
+        currentColor = currentColor * (1.0-tm.alpha) + composedColor * tm.alpha;
         currentOcclusion *= tm.alpha;    
     }
 

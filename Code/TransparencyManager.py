@@ -83,9 +83,22 @@ class TransparencyManager(DebugObject):
         self.spinLockBuffer.clearImage()
         self.listHeadBuffer.clearImage()
 
+    def setMVPHandle(self, mvpHandle):
+        """ Sets the handle to the mvp, should be a PTAMat4 """
+        self.transparencyPass.setShaderInput("currentMVP", mvpHandle)
+
     def setPositionTexture(self, tex):
         """ Sets the position texture, required for the computation """
         self.transparencyPass.setShaderInput("positionTex", tex)
+
+    def setCameraAndScene(self, cam, scene):
+        """ Sets camera and scene """
+        self.transparencyPass.setShaderInput("mainCam", cam)
+        self.transparencyPass.setShaderInput("mainRender", scene)
+
+    def setReflectionCubemap(self, tex):
+        """ Sets the cubemap used for reflections """
+        self.transparencyPass.setShaderInput("fallbackCubemap", tex)
 
     def setColorTexture(self, tex):
         """ Sets the color texture, required for the computation """

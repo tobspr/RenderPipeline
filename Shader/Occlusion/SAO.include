@@ -11,17 +11,17 @@ uniform sampler2D viewSpacePosition;
 
 
 #undef OCCLUSION_SAMPLES
-#define OCCLUSION_SAMPLES 128
+#define OCCLUSION_SAMPLES 512
 
 
 // total number of samples at each fragment
-#define SAO_NUM_SPIRAL_TURNS      32
+#define SAO_NUM_SPIRAL_TURNS      64
 #define SAO_VARIATION             1
 
-const float saoConstIntensity = 1.6;
-const float saoSampleRadiusWS = 7.0;
-const float saoBias = 0.1;
-const float saoEpsilon = 0.01;
+const float saoConstIntensity = 2.7;
+const float saoSampleRadiusWS = 12.0;
+const float saoBias = 0.05;
+const float saoEpsilon = 0.02;
 
  
 vec3 sao_getPositionVS(vec2 uv) {
