@@ -250,8 +250,6 @@ class RenderBuffer(DebugObject):
                 # depthTarget.setComponentType(Texture.TFloat)
                 depthTarget.setFormat(Texture.FDepthComponent32)
 
-
-            print "Setting depth size"
             depthTarget.setXSize(self._width)
             depthTarget.setYSize(self._height)
 

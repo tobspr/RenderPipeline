@@ -54,6 +54,11 @@ class BetterOnscreenImage(DebugObject):
         NodePath.posInterval """
         return self._node.posInterval(*args, **kwargs)
 
+    def hprInterval(self, *args, **kwargs):
+        """ Returns a hpr interval, this is a wrapper arround
+        NodePath.hprInterval """
+        return self._node.hprInterval(*args, **kwargs)
+
     def setImage(self, img):
         """ Sets the current image """
         self._node.setImage(img)

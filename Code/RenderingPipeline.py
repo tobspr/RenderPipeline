@@ -281,6 +281,7 @@ class RenderingPipeline(DebugObject):
         self._attachUpdateTask()
 
 
+
     def _setupGlobalIllumination(self):
         """ Creates the GI handler """
         #self.globalIllum = GlobalIllumination(self)

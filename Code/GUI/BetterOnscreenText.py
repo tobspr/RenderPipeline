@@ -12,7 +12,7 @@ class BetterOnscreenText(DebugObject):
     and better visuals """
 
     def __init__(self, text="", parent=None, x=0, y=0, size=10, align="left",
-                 color=None, mayChange=False):
+                 color=None, mayChange=False, font=None):
         DebugObject.__init__(self, "BetterOnscreenText")
 
         if color is None:
@@ -25,12 +25,16 @@ class BetterOnscreenText(DebugObject):
         elif align == "right":
             alignMode = TextNode.ARight
 
+
+        if font is None:
+            font = Globals.font
+
         self.initialPos = Vec2(x, -y)
 
         self._node = OnscreenText(
             text=text, parent=parent, pos=self.initialPos, scale=size,
             align=alignMode, fg=Vec4(color.x, color.y, color.z, 1.0),
-            font=Globals.font, mayChange=mayChange)
+            font=font, mayChange=mayChange)
 
     def setText(self, text):
         """ Changes the text """

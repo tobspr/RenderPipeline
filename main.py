@@ -38,6 +38,7 @@ from Code.SpotLight import SpotLight
 from Code.GUI.PipelineLoadingScreen import PipelineLoadingScreen
 
 
+
 class Main(ShowBase, DebugObject):
 
     """ This is the render pipeline testing showbase """
@@ -58,6 +59,8 @@ class Main(ShowBase, DebugObject):
         # Show loading screen
         self.loadingScreen = PipelineLoadingScreen(self)
         self.loadingScreen.render()
+        self.loadingScreen.setStatus("Creating pipeline")
+
 
 
         # Create the render pipeline
@@ -79,9 +82,13 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
 
+        self.loadingScreen.setStatus("Compiling shaders")
+
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
         self.renderPipeline.enableDefaultEarthScattering()
+
+
 
          ####### END OF RENDER PIPELINE SETUP #######
 
@@ -94,8 +101,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/PSSMTest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/Room/LivingRoom.egg"
-        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
-        self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
+        self.sceneSource = "Demoscene.ignore/Couch/couch.egg"
+        # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
@@ -190,25 +197,19 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.addLight(spotLight)
             # spotLight.attachDebugNode(render)
 
-        # Show windows
-        # for window in base.graphicsEngine.getWindows():
-            # print window.getName(), window.getSort()
-    
         # Slow mode?
         # self.addTask(self.sleep, "sleep")
 
-
         self.loadScene()
-
-
-
 
     def loadScene(self):
         """ Starts loading the scene """
 
+        self.loadingScreen.setStatus("Loading scene")
+
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
-        self.loader.loadModel(self.sceneSource, callback=self.onSceneLoaded)
+        self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
 
         # if self.sceneSourceSurround is not None:
         #     self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
@@ -219,6 +220,8 @@ class Main(ShowBase, DebugObject):
     def onSceneLoaded(self, scene):
 
         self.debug("Successfully loaded scene")
+
+        self.loadingScreen.setStatus("Loading skybox")
 
         self.scene = scene
 
