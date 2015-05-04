@@ -122,6 +122,10 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, ve
     float mipSize = pow(2.0, fallbackCubemapMipmaps - mipmap);
     float blurRadius = 1.0 / mipSize;
 
+
+    float antialiasingFactor = saturate(length(dFdx(direction))+ length(dFdy(direction)));
+    mipmap += antialiasingFactor * 7.0;
+
     vec3 samples = vec3(0);
 
     #ifndef DEBUG_DISABLE_FILTER_ENVIRONMENT
@@ -162,6 +166,10 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, 
 
     ambientRefColor *= 2.0;
 
+
+    // Add global illumination
+    ambientRefColor = giSpecular.xyz +  ambientRefColor * (1.0 - giSpecular.w);
+
     #if 0
 
         // Accurate lighting model
@@ -199,9 +207,6 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, 
 
     // result += diffuseReflectFactor * giSpecular.xyz * saturate(1.0 - material.metallic) * material.specular * saturate(1.0 - material.roughness) * 0.5;
 
-
-    giSpecular = vec4(1);
-
     // Specular ambient
     // result += material.baseColor * ambientRefColor * (giSpecular.xyz) * 
     //           material.specular * (1.0 - material.roughness*0.7) * 
@@ -215,6 +220,8 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, 
     metallicSpecularAmbient *= saturate(1.0 - pow( saturate(1.0 - NxV), 2.0));
 
     result += metallicSpecularAmbient * material.metallic;
+
+
 
     return result;
 }

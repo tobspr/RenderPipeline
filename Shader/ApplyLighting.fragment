@@ -295,8 +295,8 @@ void main() {
     // Complete gi specular
 
     // giSpecularColor.xyz += scatteringReflectedColor.xyz * (1.0 - giSpecularColor.w) * 0.1;
-    giSpecularColor.xyz += 1.0 - giSpecularColor.w;
-    giSpecularColor.xyz *= 0.4;
+    // giSpecularColor.xyz += 1.0 - giSpecularColor.w;
+    // giSpecularColor.xyz *= 0.4;
 
     #endif
 

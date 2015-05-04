@@ -137,7 +137,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
-        # self.renderPipeline.addLight(dirLight)
+        self.renderPipeline.addLight(dirLight)
         self.dirLight = dirLight
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
@@ -158,10 +158,10 @@ class Main(ShowBase, DebugObject):
 
 
         # Create some lights
-        for i in xrange(4):
+        for i in xrange(3):
             pointLight = PointLight()
 
-            radius = float(i) / 4.0 * 6.28 + 1.52
+            radius = float(i) / 3.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 15.0
             yoffs = math.cos(radius) * 15.0
 

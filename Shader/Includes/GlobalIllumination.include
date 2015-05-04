@@ -63,7 +63,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     // The color which is returned when a pixel is not in the gi range.
     // Also used to fade out gi at the grid borders.
-    float boundsColor = 0.2;
+    float boundsColor = 1.0;
 
     // Fetch the normal used to compute the cone directions
     // vec3 correctNormal = normalize(cross(dFdx(m.position), dFdy(m.position)));
