@@ -129,7 +129,7 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(128)
+        dirLight.setShadowMapResolution(512)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(1.0))
@@ -158,7 +158,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Create some lights
-        for i in xrange(3):
+        for i in xrange(0):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
@@ -174,14 +174,14 @@ class Main(ShowBase, DebugObject):
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( random(), random(), random()))
 
-            pointLight.setShadowMapResolution(128)
+            pointLight.setShadowMapResolution(256)
             pointLight.setRadius(30)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
 
         # Create more lights
-        for i in xrange(15):
+        for i in xrange(0):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
@@ -230,6 +230,7 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.setStatus("Loading skybox")
 
         self.scene = scene
+        self.scene.prepareScene(self.win.getGsg())
 
         # Load surround scene
         if self.sceneSourceSurround is not None:
@@ -266,7 +267,12 @@ class Main(ShowBase, DebugObject):
 
         # Flatten scene?
         self.loadingScreen.setStatus("Optimizing Scene")
-        self.scene.flattenStrong()
+
+        loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
+
+    def onScenePrepared(self, cb=None):
+
+        # self.scene = cb
         self.scene.reparentTo(self.render)
 
         # Prepare textures with SRGB format

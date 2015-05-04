@@ -32,6 +32,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("colorLookupTable", str, "Default.png")
         self._addSetting("enableScattering", bool, False)
         self._addSetting("enableSSLR", bool, True)
+        self._addSetting("cubemapAntialiasingFactor", float, 5.0)
 
         # [Occlusion]
         self._addSetting("occlusionTechnique", str, "None")

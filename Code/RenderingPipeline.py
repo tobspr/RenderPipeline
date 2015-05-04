@@ -1170,6 +1170,7 @@ class RenderingPipeline(DebugObject):
         define("SHADOW_MAP_ATLAS_SIZE", self.settings.shadowAtlasSize)
         define("SHADOW_MAX_UPDATES_PER_FRAME", self.settings.maxShadowUpdatesPerFrame)
         define("SHADOW_GEOMETRY_MAX_VERTICES", self.settings.maxShadowUpdatesPerFrame * 3)
+        define("CUBEMAP_ANTIALIASING_FACTOR", self.settings.cubemapAntialiasingFactor)
 
         define("SHADOW_NUM_PCF_SAMPLES", self.settings.numPCFSamples)
 

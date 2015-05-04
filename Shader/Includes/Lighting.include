@@ -124,7 +124,7 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, ve
 
 
     float antialiasingFactor = saturate(length(dFdx(direction))+ length(dFdy(direction)));
-    mipmap += antialiasingFactor * 7.0;
+    mipmap += antialiasingFactor * CUBEMAP_ANTIALIASING_FACTOR;
 
     vec3 samples = vec3(0);
 
