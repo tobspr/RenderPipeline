@@ -208,13 +208,16 @@ class Main(ShowBase, DebugObject):
         # Slow mode?
         # self.addTask(self.sleep, "sleep")
 
-        self.loadScene()
-
-    def loadScene(self):
-        """ Starts loading the scene """
-
         self.loadingScreen.setStatus("Loading scene")
+        
+        if True:
+            # Show loading screen a bit
+            self.doMethodLater(10.0, self.loadScene, "Load Scene")
+        else:
+            self.loadScene()
 
+    def loadScene(self, task=None):
+        """ Starts loading the scene """
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
