@@ -207,9 +207,6 @@ class AntialiasingTechniqueSMAA(AntialiasingTechnique):
         self._resolveBuffer.setShaderInput(
             "velocityTex", self._velocityTexture)
 
-        # Set initial shader
-        self.reloadShader()
-
     def reloadShader(self):
         """ Reloads all used shaders """
         edgeShader = Shader.load(Shader.SLGLSL, 

@@ -10,9 +10,8 @@ Core/Linux/
 Cython/
 *.psd
 Temp/
-Models/*.blend*
+Models/**.blend
 Models/PBSTest/Scene.egg
-Models/PBSTest/Scene.blend*
 *.blend1
 *.blend2
 Toolkit/Voxelizer/convert

@@ -60,7 +60,7 @@ class MountManager(DebugObject):
         if not isdir(self.writePath):
             self.debug("Creating temp path, as it does not exist yet")
             try:
-                makedirs(self.writePath)
+                makedirs(self.writePath, 0777)
             except Exception, msg:
                 self.error("Failed to create temp path:",msg)
                 import sys

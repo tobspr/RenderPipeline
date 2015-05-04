@@ -205,6 +205,7 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.addLight(spotLight)
             # spotLight.attachDebugNode(render)
 
+
         # Slow mode?
         # self.addTask(self.sleep, "sleep")
 
@@ -212,7 +213,7 @@ class Main(ShowBase, DebugObject):
         
         if True:
             # Show loading screen a bit
-            self.doMethodLater(10.0, self.loadScene, "Load Scene")
+            self.doMethodLater(2.0, self.loadScene, "Load Scene")
         else:
             self.loadScene()
 
@@ -221,8 +222,6 @@ class Main(ShowBase, DebugObject):
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
-
-
 
     def onSceneLoaded(self, scene):
 
@@ -299,6 +298,8 @@ class Main(ShowBase, DebugObject):
         # Hotkey to reload all shaders
         self.accept("r", self.setShaders)
 
+        # For rdb
+        self.accept("f12", self.screenshot)
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)

@@ -412,9 +412,6 @@ class RenderingPipeline(DebugObject):
         colorLUT.setMagfilter(SamplerState.FTLinear)
         self.deferredTarget.setShaderInput("colorLUT", colorLUT)
 
-        # Set the shader
-        self._setFinalPassShader()
-
     def _creatGIPrecomputeBuffer(self):
         """ Creates the half-resolution buffer which computes gi and gi
         reflections. We use half-res for performance """
@@ -1239,6 +1236,8 @@ class RenderingPipeline(DebugObject):
 
         for key, value in defines:
             output += "#define " + key + " " + str(value) + "\n"
+
+        self.debug("Writing pipeline auto config")
 
         # Try to write the file
         try:

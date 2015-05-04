@@ -112,8 +112,6 @@ class LightManager(DebugObject):
         self._createShadowComputationBuffer()
 
         # Create the initial shadow state
-
-        self._createTagStates()
         self.shadowScene.setTag("ShadowPassShader", "Default")
 
         # Create debug overlay
@@ -192,10 +190,6 @@ class LightManager(DebugObject):
 
         # Set inputs
         self._setLightingCuller(self.lightBoundsComputeBuff)
-
-        # Set shaders
-        self._setLightCullingShader()
-
 
     def getLightCullingBuffer(self):
         """ Returns the buffer which culls the lights """
