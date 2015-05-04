@@ -122,6 +122,11 @@ class RenderingPipeline(DebugObject):
         # Mount everything first
         self.mountManager.mount()
 
+        # Check if there is already another instance running
+        if not self.mountManager.getLock():
+            self.fatal("Another instance of the rendering pipeline is already running")
+            return
+
         # Store globals, as cython can't handle them
         self.debug("Setting up globals")
         Globals.load(self.showbase)

@@ -129,7 +129,7 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
+        dirLight.setShadowMapResolution(128)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(1.0))
@@ -174,7 +174,7 @@ class Main(ShowBase, DebugObject):
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( random(), random(), random()))
 
-            pointLight.setShadowMapResolution(1024)
+            pointLight.setShadowMapResolution(128)
             pointLight.setRadius(30)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
