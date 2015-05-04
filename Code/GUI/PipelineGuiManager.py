@@ -254,6 +254,12 @@ class PipelineGuiManager(DebugObject):
             modeId = "RM_" + name[3:].upper()
             self.defines[modeId] = 1 if status else 0
 
+            if name == "rm_Default":
+                self.defines["VISUALIZATION_ACTIVE"] = 0
+            else:
+                self.defines["VISUALIZATION_ACTIVE"] = 1
+
+
         elif name.startswith("ft_"):
             # instead of enabling per feature, we disable per feature
             modeId = "DISABLE_" + name[3:].upper()

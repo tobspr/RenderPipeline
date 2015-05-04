@@ -55,8 +55,7 @@ void main() {
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
 
     // Color LUT
-    #ifndef DEBUG_DISABLE_COLOR_CORRECTION
-
+    #if !DEBUG_DISABLE_COLOR_CORRECTION && !DEBUG_VISUALIZATION_ACTIVE
         
         // Dont color correct when showing occlusion
         
