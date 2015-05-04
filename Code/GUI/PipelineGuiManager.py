@@ -129,8 +129,8 @@ class PipelineGuiManager(DebugObject):
         if s.useTransparency:
             register_feature("Transparency", "ft_TRANSPARENCY")
 
-        register_mode("Shadow Load", "rm_SHADOW_COMPUTATIONS")
-        register_mode("Lights Load", "rm_LIGHT_COMPUTATIONS")
+        # register_mode("Shadow Load", "rm_SHADOW_COMPUTATIONS")
+        # register_mode("Lights Load", "rm_LIGHT_COMPUTATIONS")
 
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",
                                                    x=20, y=currentY,

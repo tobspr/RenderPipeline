@@ -61,11 +61,6 @@ float safeDot(vec3 a, vec3 b) {
     return max(0.0, dot(a, b));
 }
 
-vec3 genericMicrofacetBRDF(vec3 f, float g, float d, float NxL, float NxV) {
-    return (f * g * d) * max(0.001, 4.0 * NxL * NxV);
-}
-
-
 // Smith term for GGX
 // [Smith 1967, "Geometrical shadowing of a random rough surface"]
 float Vis_Smith( float Roughness, float NoV, float NoL )

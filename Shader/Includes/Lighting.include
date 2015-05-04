@@ -36,12 +36,10 @@ vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
 
 
 vec3 computeSpecular(vec3 specularColor, float roughness, float NxL, float LxH, float NxV, float NxH) {
-
     float specularD = DistributionBRDF(roughness, NxH);
     float specularG = GeometricBRDF(roughness, NxV, NxL);
     vec3  specularF = FresnelBRDF(specularColor, LxH);
-
-    return genericMicrofacetBRDF(specularF, specularG, specularD, NxL, NxV);
+    return (specularD * specularG) * specularF;
 }
 
 float computeMipmapFromRoughness(float roughness) {
@@ -68,6 +66,9 @@ vec3 computeLightModel(Light light, Material material,
 
         vec3 lightingResult = vec3(0);
         vec3 specularColor = mix(vec3(1), material.baseColor, material.metallic) * material.specular;
+
+        specularColor = light.color;
+
         vec3 diffuseColor = mix(material.baseColor, vec3(0), material.metallic);
 
         float roughness = clamp(material.roughness, 0.005, 1.0);
@@ -82,8 +83,7 @@ vec3 computeLightModel(Light light, Material material,
         vec3 specularContribution = computeSpecular(specularColor, roughness, NxL, LxH, NxV, NxH) * NxL;
 
         // Energy conservation
-        // specularContribution *= pow(1.0 + roughness*0.5, 2.0);
-        lightingResult += specularContribution * material.baseColor * light.color;
+        lightingResult += specularContribution * material.baseColor;
 
         // Evaluate diffuse
         vec3 diffuseContribution = diffuseColor * NxL * light.color;
@@ -112,11 +112,40 @@ vec3 computeEnvironmentBRDF(vec3 specularColor, float roughness, float NxV)
     return specularColor * multiplier.x + multiplier.y;
 }
 
-vec3 convertCubemapCoordBecauseIFailed(vec3 coord) {
+vec3 transformCubemapCoordinates(vec3 coord) {
     return normalize(coord.xzy * vec3(1,-1,1));
 }
 
-vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, vec3 n) {
+vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, vec3 v) {
+
+    float mipmap = computeMipmapFromRoughness(material.roughness);
+    float mipSize = pow(2.0, fallbackCubemapMipmaps - mipmap);
+    float blurRadius = 1.0 / mipSize;
+
+    vec3 samples = vec3(0);
+
+    #ifndef DEBUG_DISABLE_FILTER_ENVIRONMENT
+
+        for ( int i = 0; i < 32; ++i )
+        {
+            vec3 sampledDir = direction + poisson3D_32[i] * blurRadius;
+            samples += textureLod(tex, sampledDir, mipmap).xyz;
+        }
+
+        samples /= 32.0;
+
+    #else
+        samples = textureLod(tex, direction, mipmap).rgb;
+    #endif
+
+
+    // return textureLod(tex, direction, mipmap).xyz;
+    return samples;
+
+
+}
+
+vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, vec3 n) {
 
     #ifdef DEBUG_DISABLE_AMBIENT
         return vec3(0.0);
@@ -126,65 +155,66 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec3 giSpecular, vec3 v, 
         return vec3(0.1);
     #endif
 
+    float NxV = max(0.0, dot(material.normal, v)) + 1e-5;
 
-    vec3 reflectedDir = reflect( -v, material.normal );
-    float mipmap = computeMipmapFromRoughness(material.roughness);
-    float mipSize = pow(2.0, fallbackCubemapMipmaps - mipmap);
+    vec3 reflectedDir = transformCubemapCoordinates(reflect( -v, material.normal ));
+    vec3 ambientRefColor = filterEnvironmentMap(fallbackCubemap, material, reflectedDir, v);
 
-    float blurRadius = 1.0 / mipSize;
+    ambientRefColor *= 2.0;
 
-    vec3 ambientEnvColor = vec3(0);
-    vec3 ambientRefColor = vec3(0);
+    #if 0
 
+        // Accurate lighting model
 
-    float edgeFactor = 1.0 - saturate(dot(v, material.normal) * 1.0);
-    mipmap += edgeFactor * 3.0;
+        // Create a fake light
+        vec3 l = material.normal;
+        vec3 h = normalize(l + v);
 
-    // Filter Environment map
-    #ifndef DEBUG_DISABLE_FILTER_ENVIRONMENT
+        // pre-computed cross products
+        float NxL = saturate(dot(material.normal, l));
+        float LxH = saturate(dot(l, h));
 
-        for ( int i = 0; i < AMBIENT_CUBEMAP_SAMPLES; ++i )
-        {
-            vec3 offset = poisson3D_32[i] * blurRadius;
-            vec3 coordRef = convertCubemapCoordBecauseIFailed(reflectedDir + offset);
-            vec3 coordEnv = convertCubemapCoordBecauseIFailed(material.normal + offset);
-            ambientEnvColor += textureLod(fallbackCubemap, coordEnv, mipmap).rgb;
-            ambientRefColor += textureLod(fallbackCubemap, coordRef, mipmap).rgb;
-        }
-        ambientEnvColor /= float(AMBIENT_CUBEMAP_SAMPLES);
-        ambientRefColor /= float(AMBIENT_CUBEMAP_SAMPLES);
-
+        float specularG = GeometricBRDF(material.roughness, NxV, NxL);
+        vec3  specularF = FresnelBRDF(ambientRefColor, LxH);
+        vec3 ambientReflected = specularG * specularF;
+    
     #else
-        ambientEnvColor = textureLod(fallbackCubemap, convertCubemapCoordBecauseIFailed(-material.normal), mipmap).rgb;
-
-        ambientRefColor = textureLod(fallbackCubemap, convertCubemapCoordBecauseIFailed(reflectedDir), mipmap).rgb;
+        // Fast lighting model
+        vec3 ambientReflected = ambientRefColor;
     #endif
 
-    ambientRefColor = pow(ambientRefColor, vec3(1.6) );
-    // ambientEnvColor = ambientEnvColor * 5.0 + 0.5;
-    // ambientEnvColor = ambientEnvColor;
 
-    // ambientEnvColor = vec3(1);
+
+
     vec3 result = vec3(0);
 
-    // ambientEnvColor = vec3(1.0 / 5.0);
 
     // Diffuse ambient
-    result += giAmbient.xyz * material.baseColor * saturate(1.0 - material.metallic) * 5.0;
+    result += giAmbient.xyz * material.baseColor * saturate(1.0 - material.metallic) * 1.0;
 
 
     float diffuseReflectFactor = pow( saturate(1.0 - dot(material.normal,v)), 2.0);
-    // result += diffuseReflectFactor * ambientRefColor * saturate(1.0 - material.metallic) * material.specular * saturate(1.0 - material.roughness) * 0.5;
+
+    // diffuseReflectFactor = 1.0;
+
+    // result += diffuseReflectFactor * giSpecular.xyz * saturate(1.0 - material.metallic) * material.specular * saturate(1.0 - material.roughness) * 0.5;
 
 
-    giSpecular = vec3(1);
+    giSpecular = vec4(1);
 
     // Specular ambient
-    result += material.baseColor * ambientRefColor * (giSpecular+0.1) * 
-              material.specular * (1.0 - material.roughness*0.7) * 
-              max(0.0, material.metallic) *
-              mix(pow(1.0 - saturate(dot(material.normal, v)), 5.0), 0.4, material.metallic) * 10.0;
+    // result += material.baseColor * ambientRefColor * (giSpecular.xyz) * 
+    //           material.specular * (1.0 - material.roughness*0.7) * 
+    //           max(0.0, material.metallic) *
+    //           mix(pow(1.0 - saturate(dot(material.normal, v)), 5.0), 0.1, material.metallic) * 10.0;
 
+
+    vec3 metallicSpecularAmbient = ambientReflected * material.baseColor * material.specular;
+
+    // Make metallic materials darker at the border
+    metallicSpecularAmbient *= saturate(1.0 - pow( saturate(1.0 - NxV), 2.0));
+
+    result += metallicSpecularAmbient * material.metallic;
 
     return result;
 }

@@ -31,11 +31,11 @@ void main() {
     // Screen coordinate (as int vec)
     ivec2 screenCoord = ivec2(gl_FragCoord.xy) * 2;
 
-    vec3 specularResult = vec3(0);
+    vec4 specularResult = vec4(0);
 
     #ifdef DEBUG_DISABLE_GI
-        giColorResult = vec4(1);
-        giSpecularResult = vec4(1);
+        giColorResult = vec4(1.0);
+        giSpecularResult = vec4(0);
 
     #else
 
@@ -48,7 +48,6 @@ void main() {
     Material material = unpackMaterial(target0data, target1data, target2data, target3data);
 
     vec3 viewVector = normalize(material.position - cameraPosition);
-    vec3 scatteringReflectedColor = vec3(1);
 
     // // Compute depth normal
     // vec3 pixelW = vec3(bufferSize.xy, 0);
@@ -72,10 +71,10 @@ void main() {
     //         giResult = computeGlobalIllumination(material, -viewVector, giData, specularColor, lightDir, wsNormal, scatteringReflectedColor, cameraPosition);
 
     //     #endif
-    vec4 giResult = computeGlobalIllumination(material, viewVector, giData, specularResult, material.normal, scatteringReflectedColor, cameraPosition);
+    vec4 giResult = computeGlobalIllumination(material, viewVector, giData, specularResult, material.normal, cameraPosition);
 
     giColorResult = vec4(giResult.xyz, 1.0);
-    giSpecularResult = vec4(specularResult.xyz, 1.0);
+    giSpecularResult = vec4(specularResult);
     #endif
 
 }

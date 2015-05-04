@@ -105,6 +105,9 @@ void main() {
     vec4 target3data = texelFetch(data3, screenCoord, 0);
     Material material = unpackMaterial(target0data, target1data, target2data, target3data);
 
+    // Low roughness values look shitty
+    material.roughness = max(0.02, material.roughness);
+
     #ifdef DEBUG_RM_LIGHTING
         material.baseColor = vec3(1);
     #endif
@@ -117,9 +120,7 @@ void main() {
         material.baseColor = vec3(1);
         material.metallic = 0.0;
         material.specular = 0.0;
-    #endif
-
-      
+    #endif      
 
     // Fetch the light counts
     // We perform a min as it *might* be that we read a wrong value
@@ -148,8 +149,8 @@ void main() {
 
     // Lighting result gets stored in this variables
     vec3 result = vec3(0);
-    vec4 giDiffuseColor = vec4(0.1);
-    vec3 giSpecularColor = vec3(1);
+    vec4 giDiffuseColor = vec4(0.5);
+    vec4 giSpecularColor = vec4(0);
     vec3 ambient = vec3(0);
 
     // Compute depth normal
@@ -206,12 +207,14 @@ void main() {
 
     // giDiffuseColor = vec4(diffuseColorSamples);
     giDiffuseColor = giDiffuseResult / giValidSamples;
-    giSpecularColor = giSpecularResult.xyz / giValidSamples;
+    giSpecularColor = giSpecularResult / giValidSamples;
 
     if (giValidSamples < 0.5) {
         giDiffuseColor = texelFetch(giDiffuseTex, giSampleCoord, 0);
-        giSpecularColor = texelFetch(giReflectionTex, giSampleCoord, 0).xyz;
+        giSpecularColor = texelFetch(giReflectionTex, giSampleCoord, 0);
     }
+
+
 
     // float giSampleDepth = texelFetch(depth, giSampleCoord, 0).x;
     
@@ -286,7 +289,16 @@ void main() {
         sunVector,
         inscatterSampler,
         attenuation, 
-        irradianceFactor) * 1.0;
+        irradianceFactor) * 1.5;
+
+    #ifdef USE_GLOBAL_ILLUMINATION
+    // Complete gi specular
+
+    // giSpecularColor.xyz += scatteringReflectedColor.xyz * (1.0 - giSpecularColor.w) * 0.1;
+    giSpecularColor.xyz += 1.0 - giSpecularColor.w;
+    giSpecularColor.xyz *= 0.4;
+
+    #endif
 
     // scatteringReflectedColor = mix(scatteringReflectedColor, vec3(1.0), material.roughness);
 
@@ -520,7 +532,6 @@ void main() {
         float loadFactor = float(lightsComputed) / 40.0;
         result = vec3(loadFactor, 1.0 - loadFactor, 0.0);
     #endif
-
 
     lightingResult = vec4(result, saturate(occlusionTotal) );
 }

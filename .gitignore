@@ -11,6 +11,7 @@ Cython/
 *.psd
 Temp/
 Models/*.blend*
+Models/PBSTest/Scene.egg
 *.blend1
 *.blend2
 Toolkit/Voxelizer/convert

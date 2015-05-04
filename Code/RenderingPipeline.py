@@ -26,7 +26,7 @@ from SystemAnalyzer import SystemAnalyzer
 from MountManager import MountManager
 from Scattering import Scattering
 from MemoryMonitor import MemoryMonitor
-from TransparencyManager import TransparencyManager, TransparencyManagerStub
+from TransparencyManager import TransparencyManager
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
@@ -209,8 +209,6 @@ class RenderingPipeline(DebugObject):
         # Create transparency manager
         if self.settings.useTransparency:
             self.transparencyManager = TransparencyManager(self)
-        else:
-            self.transparencyManager = TransparencyManagerStub(self)
 
         # Now create deferred render buffers
         self._makeDeferredTargets()
@@ -236,7 +234,8 @@ class RenderingPipeline(DebugObject):
             self._createSSLRPass()
 
         # Create the transparency pass, right after the lighting pass
-        self.transparencyManager.initTransparencyPass()
+        if self.settings.useTransparency:
+            self.transparencyManager.initTransparencyPass()
 
         if self.occlusion.requiresBlurring():
             self._createOcclusionBlurBuffer()
@@ -311,8 +310,14 @@ class RenderingPipeline(DebugObject):
             self.antialias.setColorTexture(
                 self.blurOcclusionH.getColorTexture())
         else:
-            self.antialias.setColorTexture(
-                self.transparencyManager.getResultTexture())
+            if self.settings.useTransparency:
+                self.antialias.setColorTexture(
+                    self.transparencyManager.getResultTexture())
+            else:
+                if self.settings.enableSSLR:
+                    self.antialias.setColorTexture(self.sslrBuffer.getColorTexture())
+                else:
+                    self.antialias.setColorTexture(self.lightingComputeContainer.getColorTexture())
 
         self.antialias.setDepthTexture(self.deferredTarget.getDepthTexture())
         self.antialias.setVelocityTexture(self.deferredTarget.getAuxTexture(1))
@@ -531,23 +536,32 @@ class RenderingPipeline(DebugObject):
                 self.lightingComputeContainer.setShaderInput("lastFrameOcclusion", self.lastFrameOcclusion)
 
 
-        if self.settings.enableSSLR:
-            self.transparencyManager.setColorTexture(self.sslrBuffer.getColorTexture())
-        else:
-            self.transparencyManager.setColorTexture(self.lightingComputeContainer.getColorTexture())
 
+        if self.settings.useTransparency:
+            if self.settings.enableSSLR:
+                self.transparencyManager.setColorTexture(self.sslrBuffer.getColorTexture())
+            else:
+                self.transparencyManager.setColorTexture(self.lightingComputeContainer.getColorTexture())
 
 
         # Shader inputs for the occlusion blur passes
         if self.occlusion.requiresBlurring():
             self.blurOcclusionH.setShaderInput(
                 "colorTex", self.blurOcclusionV.getColorTexture())
+
+            sceneInput = self.lightingComputeContainer.getColorTexture()
+
+            if self.settings.useTransparency:
+                sceneInput = self.transparencyManager.getResultTexture()
+            else:
+                if self.settings.useSSLR:
+                    sceneInput = self.sslrBuffer.getColorTexture()
+
             self.blurOcclusionH.setShaderInput(
-                "sourceTex", self.transparencyManager.getResultTexture())
+                "sourceTex", sceneInput)
             self.blurOcclusionV.setShaderInput(
                 "colorTex",
-                self.transparencyManager.getResultTexture())
-
+                sceneInput)
 
             self.blurOcclusionH.setShaderInput(
                 "normalTex", self.deferredTarget.getAuxTexture(0))
@@ -642,7 +656,6 @@ class RenderingPipeline(DebugObject):
         self.showbase.render.setShaderInput("lastMVP", self.lastMVP)
 
         self.showbase.render.setShaderInput("cameraPosition", self.cameraPosition)
-        self.transparencyManager.setCameraPositionHandle(self.cameraPosition)
 
         # Set GI inputs
         if self.settings.enableGlobalIllumination:
@@ -674,12 +687,14 @@ class RenderingPipeline(DebugObject):
             self.sslrBuffer.setShaderInput("cameraPosition", self.cameraPosition)
             
         # Transparency pass inputs
-        self.transparencyManager.setPositionTexture(self.deferredTarget.getColorTexture())
-        self.transparencyManager.setDepthTexture(self.deferredTarget.getDepthTexture())
-        self.transparencyManager.setMVPHandle(self.currentMVP)
-        self.transparencyManager.setCameraAndScene(self.showbase.cam, self.showbase.render)
 
-        self.transparencyManager.setReflectionCubemap(self.reflectionCubemap)
+        if self.settings.useTransparency:
+            self.transparencyManager.setCameraPositionHandle(self.cameraPosition)
+            self.transparencyManager.setPositionTexture(self.deferredTarget.getColorTexture())
+            self.transparencyManager.setDepthTexture(self.deferredTarget.getDepthTexture())
+            self.transparencyManager.setMVPHandle(self.currentMVP)
+            self.transparencyManager.setCameraAndScene(self.showbase.cam, self.showbase.render)
+            self.transparencyManager.setReflectionCubemap(self.reflectionCubemap)
 
 
 
@@ -868,7 +883,8 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableSSLR:
             self._setSSLRShader()
 
-        self.transparencyManager.reloadShader()
+        if self.settings.useTransparency:
+            self.transparencyManager.reloadShader()
 
         self.antialias.reloadShader()
         if self.settings.enableGlobalIllumination:
@@ -922,7 +938,10 @@ class RenderingPipeline(DebugObject):
         """ Called after rendering """
 
         self.antialias.postRenderUpdate()
-        self.transparencyManager.postRenderCallback()
+
+        if self.settings.useTransparency:
+            self.transparencyManager.postRenderCallback()
+        
         self.frameIndex[0] += 1
 
         if task is not None:
@@ -1034,8 +1053,10 @@ class RenderingPipeline(DebugObject):
 
 
     def getDefaultTransparencyShader(self):
+        """ Returns the default shader for transparent objects """
+        if not self.settings.useTransparency:
+            raise Exception("Transparency is disabled. You cannot fetch the transparency shader.")
         return self.transparencyManager.getDefaultShader()
-
 
     def getDefaultSkybox(self, scale=40000):
         """ Loads the skybox """

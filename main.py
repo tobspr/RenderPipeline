@@ -97,7 +97,7 @@ class Main(ShowBase, DebugObject):
 
 
         # This sources are not included in the repo, for size reasons
-        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
@@ -109,6 +109,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
@@ -116,8 +118,8 @@ class Main(ShowBase, DebugObject):
 
 
         # Select surrounding scene here
-        # self.sceneSourceSurround = None
-        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        self.sceneSourceSurround = None
+        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
         self.transparentObjects = []
@@ -135,7 +137,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
-        self.renderPipeline.addLight(dirLight)
+        # self.renderPipeline.addLight(dirLight)
         self.dirLight = dirLight
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
@@ -156,23 +158,24 @@ class Main(ShowBase, DebugObject):
 
 
         # Create some lights
-        for i in xrange(3):
+        for i in xrange(4):
             pointLight = PointLight()
 
-            radius = float(i) / 3.0 * 6.28 + 1.52
+            radius = float(i) / 4.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 15.0
             yoffs = math.cos(radius) * 15.0
 
 
             # pointLight.setPos(Vec3(i*4.0 - 7.5, 0.2, 3.0))
-            pointLight.setPos(Vec3( xoffs, yoffs, 12))
+            pointLight.setPos(Vec3( xoffs, yoffs, 15))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
-            pointLight.setColor(Vec3( 0.3, 0.75, 1.0) * 0.5)
+            # pointLight.setColor(Vec3( 0.3, 0.75, 1.0) * 2.0)
+            pointLight.setColor(Vec3( 2))
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( random(), random(), random()))
 
             pointLight.setShadowMapResolution(1024)
-            pointLight.setRadius(15)
+            pointLight.setRadius(30)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
@@ -182,22 +185,22 @@ class Main(ShowBase, DebugObject):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
-            radius = float(i) / 28.0 * 6.28 + 1.52
-            xoffs = math.sin(radius) * 10.0
-            yoffs = math.cos(radius) * 10.0
+            radius = float(i) / 15.0 * 6.28 + 1.52
+            xoffs = math.sin(radius) * 20.0
+            yoffs = math.cos(radius) * 20.0
 
 
-            spotLight.setPos(Vec3( xoffs, yoffs, 8))
+            spotLight.setPos(Vec3( xoffs, yoffs, 12))
 
             # spotLight.setPos(Vec3(-10.0 + i * 2.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
             # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
-            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
-            # spotLight.setColor(Vec3( random(), random(), random()) * 0.1)
+            # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
+            spotLight.setColor(Vec3( random(), random(), random()) * 0.1)
 
             # spotLight.setNearFar(1.0, 20.0)
             # spotLight.setDirection(Vec3(0, 90, 0))
-            spotLight.setRadius(40)
+            spotLight.setRadius(30)
             # spotLight.setCastsShadows(True)
             self.renderPipeline.addLight(spotLight)
             # spotLight.attachDebugNode(render)
@@ -261,7 +264,7 @@ class Main(ShowBase, DebugObject):
 
         # Flatten scene?
         self.loadingScreen.setStatus("Optimizing Scene")
-        # self.scene.flattenStrong()
+        self.scene.flattenStrong()
         self.scene.reparentTo(self.render)
 
         # Prepare textures with SRGB format

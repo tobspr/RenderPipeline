@@ -41,9 +41,9 @@ class GlobalIllumination(DebugObject):
         self.targetCamera = Globals.base.cam
         self.targetSpace = Globals.base.render
 
-        self.voxelBaseResolution = 512 * 4
-        self.voxelGridSizeWS = Vec3(60, 60, 60)
-        self.voxelGridResolution = LVecBase3i(256, 256, 256)
+        self.voxelGridSizeWS = Vec3(20, 20, 20)
+        self.voxelGridResolution = LVecBase3i(256 + 128)
+        self.voxelBaseResolution = self.voxelGridResolution.x * 4
         self.targetLight = None
         self.helperLight = None
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
@@ -116,7 +116,6 @@ class GlobalIllumination(DebugObject):
         self.voxelizeShader = Shader.load(Shader.SLGLSL, 
             "Shader/GI/Voxelize.vertex",
             "Shader/GI/Voxelize.fragment"
-            # "GI/Voxelize.geometry"
             )
 
         initialState = NodePath("VoxelizerState")
@@ -288,6 +287,8 @@ class GlobalIllumination(DebugObject):
 
         # time.sleep(0.4)
 
+        self.voxelGenTex.setClearColor(Vec4(0))
+
         if self.frameIndex == 0:
             # Find out cam pos
             
@@ -306,45 +307,42 @@ class GlobalIllumination(DebugObject):
             self.targetSpace.setShaderInput("dv_lightdir", direction)
 
             # Clear textures
-            self._clear3DTexture(self.voxelGenTex, Vec4(0,0,0,0))
+            # self._clear3DTexture(self.voxelGenTex, Vec4(0,0,0,0))
+            self.voxelGenTex.clearImage()
 
             # Voxelize from x axis
             self.voxelizeCameraNode.setPos(self.gridPos - Vec3(self.voxelGridSizeWS.x, 0, 0))
             self.voxelizeCameraNode.lookAt(self.gridPos)
-            self.targetSpace.setShaderInput("dv_direction", LVecBase3i(0))
-
+            self.targetSpace.setShaderInput("dv_direction", 0)
 
         elif self.frameIndex == 1:
             # Voxelize from y axis
-
-            # self.voxelizeTarget.setActive(False)
 
             self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.z*2)
             self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.y*2)
 
             self.voxelizeCameraNode.setPos(self.gridPos - Vec3(0, self.voxelGridSizeWS.y, 0))
             self.voxelizeCameraNode.lookAt(self.gridPos)
-            self.targetSpace.setShaderInput("dv_direction", LVecBase3i(1))
+            self.targetSpace.setShaderInput("dv_direction", 1)
 
         elif self.frameIndex == 2:
 
-            # self.voxelizeTarget.setActive(False)
             # Voxelize from z axis
             self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.y*2)
             self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.z*2)
 
             self.voxelizeCameraNode.setPos(self.gridPos + Vec3(0, 0, self.voxelGridSizeWS.z))
             self.voxelizeCameraNode.lookAt(self.gridPos)
-            self.targetSpace.setShaderInput("dv_direction", LVecBase3i(2))
+            self.targetSpace.setShaderInput("dv_direction", 2)
 
         elif self.frameIndex == 3:
-
 
             self.voxelizeTarget.setActive(False)
 
             # Copy the cache to the actual texture
             self.convertGridNode.setShaderInput("src", self.voxelGenTex)
             self.convertGridNode.setShaderInput("dest", self.voxelStableTex)
+            
             self._executeShader(
                 self.convertGridNode, (self.voxelGridResolution.x+7) / 8, (self.voxelGridResolution.y+7) / 8, (self.voxelGridResolution.z+7) / 8)
 
