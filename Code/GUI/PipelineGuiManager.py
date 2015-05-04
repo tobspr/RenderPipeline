@@ -118,7 +118,7 @@ class PipelineGuiManager(DebugObject):
             register_feature("PCF", "ft_PCF")
 
         register_feature("Env. Filtering", "ft_FILTER_ENVIRONMENT")
-        register_feature("Complex Lighting", "ft_COMPLEX_LIGHTING")
+        register_feature("PBS", "ft_COMPLEX_LIGHTING")
 
         # register_mode("h Debug", "rm_SSaLR")
 
@@ -126,8 +126,11 @@ class PipelineGuiManager(DebugObject):
             register_feature("SSLR", "ft_SSLR")
 
 
-        register_feature("Transparency", "ft_TRANSPARENCY")
+        if s.useTransparency:
+            register_feature("Transparency", "ft_TRANSPARENCY")
 
+        register_mode("Shadow Load", "rm_SHADOW_COMPUTATIONS")
+        register_mode("Lights Load", "rm_LIGHT_COMPUTATIONS")
 
         self.renderModesTitle = BetterOnscreenText(text="Render Mode",
                                                    x=20, y=currentY,

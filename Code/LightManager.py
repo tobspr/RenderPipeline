@@ -241,9 +241,6 @@ class LightManager(DebugObject):
         perPixelDataCount += self.maxPerTileLights["SpotLightShadow"]
 
         self.tileStride = perPixelDataCount
-
-        self.debug("Per pixel data:", perPixelDataCount)
-
         tileBufferSize = self.precomputeSize.x * self.precomputeSize.y * self.tileStride
 
         self.lightPerTileBuffer = Texture("LightsPerTileBuffer")
@@ -251,7 +248,6 @@ class LightManager(DebugObject):
             tileBufferSize, Texture.TInt, Texture.FR32i, GeomEnums.UHDynamic)
 
         MemoryMonitor.addTexture("Light Per Tile Buffer", self.lightPerTileBuffer)
-
 
     def _makeRenderedLightsBuffer(self):
         """ Creates the buffer which stores the indices of all rendered lights """

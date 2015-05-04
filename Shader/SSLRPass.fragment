@@ -203,14 +203,18 @@ void main() {
     // composedResult /= 1.0 + length(match);
 
     composedResult /= max(1.0, composedResult.w);
-    composedResult *= 0.3;
+    // composedResult *= 0.3;
     // composedResult = saturate(composedResult);
 
     composedResult *= sslrFactor;
 
     composedResult.w = 0.0;
-    composedResult += texture(colorTex, texcoord);
+
+
+    vec4 sceneColor = texture(colorTex, texcoord);
 // 
+    composedResult = sceneColor + composedResult * sceneColor;
+
     // composedResult = vec3(fade, 0, 0);
 
     // composedResult.xyz = vec3(sslrFactor);

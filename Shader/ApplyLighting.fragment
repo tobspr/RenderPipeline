@@ -88,6 +88,8 @@ void main() {
     vec2 correctTexcoord = texcoord;
    
 
+    int shadowsComputed = 0;
+
     ivec2 tileIndex = ivec2(vec2(screenCoord) / 
         vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y));
 
@@ -322,8 +324,6 @@ void main() {
             float lastOcclusion = texelFetch(lastFrameOcclusion, lastFrameCoordInt, 0).x;
             occlusionTotal = mix(occlusionTotal, lastOcclusion, 0.5 * saturate(reliability) );
 
-            occlusionTotal = 0.0;
-
         #endif
 
         #ifdef DEBUG_DISABLE_OCCLUSION
@@ -357,6 +357,7 @@ void main() {
 
             #if USE_SHADOWS
                 result += applyPointLightWithShadow(currentLight, material );
+                shadowsComputed ++;
             #else
                 result += applyPointLight(currentLight, material);
             #endif
@@ -378,6 +379,7 @@ void main() {
             currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
             currentLight = lights[currentLightId];
             result += applyDirectionalLightWithShadow(currentLight, material);
+            shadowsComputed ++;
         }
 
 
@@ -399,6 +401,7 @@ void main() {
 
             #if USE_SHADOWS
                 result += applySpotLightWithShadow(currentLight, material);
+                shadowsComputed ++;
             #else
                 result += applySpotLight(currentLight, material);
             #endif
@@ -505,6 +508,18 @@ void main() {
     #ifdef DEBUG_RM_SHADOWS
         occlusionTotal = 0.0;
     #endif  
+
+
+    #ifdef DEBUG_RM_SHADOW_COMPUTATIONS
+        float loadFactor = float(shadowsComputed) / 10.0;
+        result = vec3(loadFactor, 1.0 - loadFactor, 0.0);
+    #endif
+
+    #ifdef DEBUG_RM_LIGHT_COMPUTATIONS
+        int lightsComputed = countPointLight + countPointLightShadow + countDirectionalLight + countDirectionalLightShadow + countSpotLight + countSpotLightShadow;
+        float loadFactor = float(lightsComputed) / 40.0;
+        result = vec3(loadFactor, 1.0 - loadFactor, 0.0);
+    #endif
 
 
     lightingResult = vec4(result, saturate(occlusionTotal) );

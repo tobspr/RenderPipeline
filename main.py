@@ -164,8 +164,8 @@ class Main(ShowBase, DebugObject):
             yoffs = math.cos(radius) * 15.0
 
 
-            pointLight.setPos(Vec3(i*4.0 - 7.5, 0.2, 3.0))
-            # pointLight.setPos(Vec3( xoffs, yoffs, 12))
+            # pointLight.setPos(Vec3(i*4.0 - 7.5, 0.2, 3.0))
+            pointLight.setPos(Vec3( xoffs, yoffs, 12))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
             pointLight.setColor(Vec3( 0.3, 0.75, 1.0) * 0.5)
             # pointLight.setColor(Vec3( 1))

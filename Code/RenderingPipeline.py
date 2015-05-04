@@ -2,6 +2,7 @@
 import math
 import os
 import random
+import sys
 
 from panda3d.core import TransparencyAttrib, Texture, NodePath, PTAInt, Vec3
 from panda3d.core import Mat4, CSYupRight, TransformState, CSZupRight
@@ -99,6 +100,9 @@ class RenderingPipeline(DebugObject):
         self.settings = PipelineSettingsManager()
         self.settings.loadFromFile(filename)
 
+        # This has to be here, before anything is printed
+        DebugObject.setOutputLevel(self.settings.pipelineOutputLevel)
+
     def getSettings(self):
         """ Returns the current pipeline settings """
         return self.settings
@@ -111,9 +115,6 @@ class RenderingPipeline(DebugObject):
         if self.settings is None:
             self.error("You have to call loadSettings first!")
             return
-
-        self.debug("Analyzing system ..")
-        SystemAnalyzer.analyze()
 
         self.debug("Checking required Panda3D version ..")
         SystemAnalyzer.checkPandaVersionOutOfDate(29,04,2015)
@@ -960,6 +961,14 @@ class RenderingPipeline(DebugObject):
 
     def _update(self, task=None):
         """ Main update task """
+
+
+        # This checks if the panda graphics pipeline still exists.
+        # There is a weird bug when closing the window otherwise
+        if self.showbase.win.getGsg() is None:
+            self.debug("GSG got destroyed, cleaning up pipeline, cya later!")
+            sys.exit(0)
+            return
 
         self.currentShiftIndex[0] = 1 - self.currentShiftIndex[0]
 
