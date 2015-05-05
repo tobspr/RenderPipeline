@@ -15,7 +15,7 @@ void main() {
         ivec3 localCoord = ivec3(coord, z);
         uint data = texelFetch(src, localCoord, 0).x;
         vec4 unpacked = unpackUnorm4x8(data);
-        vec3 rgb = unpacked.gbw;
+        vec3 rgb = unpacked.gba;
         imageStore(dest, localCoord, vec4(rgb, length(rgb) > 0.0001 ? 1.0 : 0.0 )); 
     }
 }

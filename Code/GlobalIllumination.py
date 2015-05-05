@@ -199,17 +199,6 @@ class GlobalIllumination(DebugObject):
         # doing
         self.frameIndex = 0
 
-        # Create the node which unpacks the voxel data
-        self.convertGridNode = NodePath(ComputeNode("ConvertGrid"))
-        self.convertGridNode.reparentTo(self.computeNodes)
-        self.convertGridNode.node().addDispatch(
-            (self.voxelGridResolution.x+7) / 8, 
-            (self.voxelGridResolution.y+7) / 8, 
-            (self.voxelGridResolution.z+7) / 8)
-        self.convertGridNode.setBin("fixed", 10)
-        self.convertGridNode.setShaderInput("src", self.voxelGenTex)
-        self.convertGridNode.setShaderInput("dest", self.voxelStableTex)
-
         # Create the nodes which generate the voxel mipmaps
         self.mipmapNodes = self.computeNodes.attachNewNode("GenerateMipmaps")
         self.mipmapNodes.setBin("fixed", 15)
@@ -231,8 +220,6 @@ class GlobalIllumination(DebugObject):
 
     def _createConvertShader(self):
         """ Loads the shader for converting the voxel grid """
-        shader = Shader.loadCompute(Shader.SLGLSL, "Shader/GI/ConvertGrid.compute")
-        self.convertGridNode.setShader(shader, 10000)
         shader = Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex", "Shader/GI/ConvertGrid.fragment")
         self.convertBuffer.setShader(shader)
 
@@ -271,7 +258,6 @@ class GlobalIllumination(DebugObject):
         """ Processes the gi, this method is called every frame """
 
         # Hide all compute shaders first
-        self.convertGridNode.hide()
         self.mipmapNodes.hide()
 
         # With no light, there is no gi
