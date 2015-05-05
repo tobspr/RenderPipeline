@@ -36,11 +36,13 @@ class GlobalIllumination(DebugObject):
         self.targetSpace = Globals.base.render
 
         # Store grid size in world space units
-        self.voxelGridSizeWS = Vec3(20)
+        self.voxelGridSizeWS = Vec3(40)
 
         # Store grid resolution, should be equal for each dimension
+
+        # When you change this resolution, you have to change it in Shader/GI/ConvertGrid.fragment aswell
         self.voxelGridResolution = LVecBase3i(256)
-        self.voxelBaseResolution = self.voxelGridResolution.x
+        self.voxelBaseResolution = self.voxelGridResolution.x * 4
         self.targetLight = None
         self.helperLight = None
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
@@ -185,6 +187,13 @@ class GlobalIllumination(DebugObject):
 
         MemoryMonitor.addTexture("Voxel Grid Texture", self.voxelStableTex)
 
+        # Setups the render target to convert the voxel grid
+        self.convertBuffer = RenderTarget("VoxelConvertBuffer")
+        self.convertBuffer.setSize(self.voxelGridResolution.x, self.voxelGridResolution.y)
+        self.convertBuffer.setColorWrite(False)
+        self.convertBuffer.prepareOffscreenBuffer()
+        self.convertBuffer.setShaderInput("src", self.voxelGenTex)
+        self.convertBuffer.setShaderInput("dest", self.voxelStableTex)
 
         # Store the frame index, we need that to decide which step we are currently
         # doing
@@ -224,12 +233,17 @@ class GlobalIllumination(DebugObject):
         """ Loads the shader for converting the voxel grid """
         shader = Shader.loadCompute(Shader.SLGLSL, "Shader/GI/ConvertGrid.compute")
         self.convertGridNode.setShader(shader, 10000)
+        shader = Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex", "Shader/GI/ConvertGrid.fragment")
+        self.convertBuffer.setShader(shader)
 
     def _createGenerateMipmapsShader(self):
         """ Loads the shader for generating the voxel grid mipmaps """
         shader = Shader.loadCompute(Shader.SLGLSL, "Shader/GI/GenerateMipmaps.compute")
         for child in self.mipmapNodes.getChildren():
             child.setShader(shader, 10000)
+
+
+
 
     def reloadShader(self):
         """ Reloads all shaders and updates the voxelization camera state aswell """
@@ -276,13 +290,13 @@ class GlobalIllumination(DebugObject):
         direction = self.targetLight.getDirection()
 
         if self.frameIndex == 0:
-
             # Step 1: Voxelize scene from the x-Axis
             self.targetSpace.setShaderInput("dv_uv_start", 
                 self.helperLight.shadowSources[0].getAtlasPos())
 
             # Clear the old data in generation texture 
             self.voxelGenTex.clearImage()
+            self.convertBuffer.setActive(False)
 
             self.voxelizeTarget.setActive(True)
             self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.y*2, self.voxelGridSizeWS.z*2)
@@ -319,28 +333,36 @@ class GlobalIllumination(DebugObject):
             # We already activate the compute nodes in this frame, however, as 
             # they are parented to render2d (see above), they will be executed 
             # next frame
-            self.convertGridNode.show()
-            self.mipmapNodes.show()
-            
-            # Update helper light, so that it is at the right position when Step 1
-            # starts again 
-            self.helperLight.setPos(self.gridPos)
-            self.helperLight.setDirection(direction)
+            # self.convertGridNode.show()
+
 
 
         elif self.frameIndex == 3:
 
             # Step 4: Extract voxel grid and generate mipmaps
             self.voxelizeTarget.setActive(False)
+            self.convertBuffer.setActive(True)
+            self.mipmapNodes.show()
+
+            # Update helper light, so that it is at the right position when Step 1
+            # starts again 
+            self.helperLight.setPos(self.gridPos)
+            self.helperLight.setDirection(direction)
+
+
 
             # We are done now, update the inputs
             self.ptaGridPos[0] = Vec3(self.gridPos)
             self._updateGridPos()
             
+        elif self.frameIndex == 4:
+            pass
+
+
 
         # Increase frame index
         self.frameIndex += 1
-        self.frameIndex = self.frameIndex % 4
+        self.frameIndex = self.frameIndex % 5
 
     def bindTo(self, node, prefix):
         """ Binds all required shader inputs to a target to compute / display

@@ -672,7 +672,6 @@ class RenderingPipeline(DebugObject):
 
         # Set GI inputs
         if self.settings.enableGlobalIllumination:
-            self.globalIllum.bindTo(self.giPrecomputeBuffer, "giData")
 
             self.giPrecomputeBuffer.setShaderInput(
                 "data0", self.deferredTarget.getColorTexture())
@@ -684,6 +683,9 @@ class RenderingPipeline(DebugObject):
                 "data3", self.deferredTarget.getAuxTexture(2))
             self.giPrecomputeBuffer.setShaderInput(
                 "cameraPosition", self.cameraPosition)
+
+            self.globalIllum.bindTo(self.giPrecomputeBuffer, "giData")
+
 
         # Set sslr inputs
         if self.settings.enableSSLR:
@@ -711,12 +713,13 @@ class RenderingPipeline(DebugObject):
 
         # Adaptive Brightness
 
-        if self.settings.useTransparency:
-            self.adaptiveBrightness.setColorTex(self.transparencyManager.getResultTexture())            
-        elif self.haveOcclusion and self.occlusion.requiresBlurring():
-            self.adaptiveBrightness.setColorTex(self.blurOcclusionH.getColorTexture())
-        else:
-            self.adaptiveBrightness.setColorTex(self.lightingComputeContainer.getColorTexture())
+        if self.settings.useAdaptiveBrightness:
+            if self.settings.useTransparency:
+                self.adaptiveBrightness.setColorTex(self.transparencyManager.getResultTexture())            
+            elif self.haveOcclusion and self.occlusion.requiresBlurring():
+                self.adaptiveBrightness.setColorTex(self.blurOcclusionH.getColorTexture())
+            else:
+                self.adaptiveBrightness.setColorTex(self.lightingComputeContainer.getColorTexture())
 
         # Finally, set shaders
         self.reloadShaders()

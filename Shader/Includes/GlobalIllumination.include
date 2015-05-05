@@ -1,14 +1,16 @@
 #pragma once
 
-
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Material.include"
 #pragma include "Includes/GIData.include"
 #pragma include "Includes/PoissonDisk.include"
 
 
+uniform GIData giData;
 
-uniform float opt_ao_cone_height;
+
+
+uniform float THIS_UNIFORM_DOES_NOT_EXIST_AND_IS_NEVER_BOUND_NOR_USED;
 // uniform float opt_ao_step_ratio;
 // uniform float opt_ao_cone_ratio;
 // uniform float opt_ao_start_distance;
@@ -18,7 +20,11 @@ uniform float opt_ao_cone_height;
 vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
     int iterations, float stepRatio, float coneRatio, float startDistance, float initialConeRadius) {
 
+
+    // return textureLod(targetTex, );
+
     vec3 directionStep = normalize(direction) / (2.0 * data.gridHalfSize);
+
     vec4 result = vec4(0);
 
     float currentDistance = startDistance;
@@ -29,9 +35,10 @@ vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
         currentConeRadius *= stepRatio; 
         currentDistance += currentConeRadius * coneRatio;
         vec3 currentPos = start + directionStep * currentDistance;
-        float currentMip = log2( currentConeRadius + 1.0 ) * 1.5;
-        // currentMip = 2.0;
+        float currentMip = log2( currentConeRadius + 1.0 ) * 1.0;
+        currentMip = 0.0;
         vec4 currentVal = textureLod(targetTex, currentPos, currentMip );
+        // vec4 currentVal = vec4(currentPos, 0);
         result += currentVal * (1.0-result.w);
     }
     return result;
@@ -146,17 +153,28 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     b = normalize(cross(t, correctNormal));
 
 
+
+
+
+
     // Trace Occlusion
+    
+    //
+    //
+    //  This drives me crazy ._.
+    //
+
+    //
+    //
+    //
+    //
+
+
     const int numSamplesAO = 32;
-
-
-    // float randomVariableWhichIsNeverReferenced = opt_ao_cone_height * 0.00000001 + 0.875;
-
     vec4 aoResult = vec4(0);
-    vec3 startCoord = localCoord + correctNormal * voxelSize * 0.0;
     for (int i = 0; i < numSamplesAO; i++) {
         vec3 traceDirection = poisson3D_32[i];
-        traceDirection.z = abs(traceDirection.z) * 4.0;
+        traceDirection.z = abs(traceDirection.z) * 5.0;
 
         vec3 mixedNormal = normalize(
             t * traceDirection.x + 
@@ -164,15 +182,19 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
             correctNormal * traceDirection.z
         );
         // aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 16, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius * 0.1);
-        aoResult += traceCone(data, data.geometry, startCoord, mixedNormal , 8, 1.1227, 0.5682 , 0.727, 3.0228 * 0.1);
+        aoResult += traceCone(data, data.geometry, localCoord, mixedNormal , 1, 1.1227, 0.5682 , 0.727, 0.30228);
     }
     aoResult = aoResult / float(numSamplesAO);
 
 
-    // raytrace to debug  voxels
+    return vec4(aoResult * 10.0);
+    // return vec4(1.0 - aoResult.w);
+
+    float randomVariableWhichIsNeverReferenced = THIS_UNIFORM_DOES_NOT_EXIST_AND_IS_NEVER_BOUND_NOR_USED * 1e-20;
+
 
     #if 0
-    int numRaySteps = 500;
+    int numRaySteps = 300;
 
     int mipmap = 0;
     int mipmapScale = 1;
@@ -213,6 +235,9 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     return vec4(traceResult.xyz, 1);
 
     #endif
+
+
+
 
     // return textureLod(data.geometry, localCoord, 4);
 

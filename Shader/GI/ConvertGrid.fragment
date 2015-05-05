@@ -1,0 +1,21 @@
+#version 430
+
+// This shader converts the irradiance cache to a floating point texture
+
+#pragma include "Includes/Configuration.include"
+
+uniform usampler3D src;
+uniform writeonly image3D dest;
+
+out vec4 result;
+
+void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    for (int z = 0; z < 256; z++) {
+        ivec3 localCoord = ivec3(coord, z);
+        uint data = texelFetch(src, localCoord, 0).x;
+        vec4 unpacked = unpackUnorm4x8(data);
+        vec3 rgb = unpacked.gbw;
+        imageStore(dest, localCoord, vec4(rgb, length(rgb) > 0.0001 ? 1.0 : 0.0 )); 
+    }
+}

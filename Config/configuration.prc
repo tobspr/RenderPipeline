@@ -171,3 +171,4 @@ auto-flip #t
 gl-debug-object-labels #f
 
 
+#notify-level-glgsg debug

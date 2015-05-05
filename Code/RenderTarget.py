@@ -387,7 +387,7 @@ class RenderTarget(DebugObject):
         if self._active is not active:
             self._buffer.getInternalBuffer().getDisplayRegion(
                 0).setActive(active)
-            self._region.setActive(active)
+            # self._region.setActive(active)
             self._active = active
 
     def getQuad(self):
