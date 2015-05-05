@@ -27,6 +27,7 @@ from MountManager import MountManager
 from Scattering import Scattering
 from MemoryMonitor import MemoryMonitor
 from TransparencyManager import TransparencyManager
+from AdaptiveBrightness import AdaptiveBrightness
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
@@ -245,6 +246,11 @@ class RenderingPipeline(DebugObject):
         if self.occlusion.requiresBlurring():
             self._createOcclusionBlurBuffer()
 
+        if self.settings.useAdaptiveBrightness:
+            self.adaptiveBrightness = AdaptiveBrightness(self)
+            self.adaptiveBrightness.setTargetExposure(self.settings.targetExposure)
+            self.adaptiveBrightness.setAdaptionSpeed(self.settings.brightnessAdaptionSpeed)
+            self.adaptiveBrightness.setupDownscalePass(self.size)
 
 
         self._setupAntialiasing()
@@ -528,6 +534,11 @@ class RenderingPipeline(DebugObject):
             self.lightingComputeContainer.setShaderInput(
                 "precomputeSize", self.lightManager.precomputeSize)
 
+
+            if self.settings.useAdaptiveBrightness:
+                self.lightingComputeContainer.setShaderInput("downscaledSceneTex", 
+                    self.adaptiveBrightness.getDownscaledTexture())
+
             if self.settings.enableGlobalIllumination:
                 self.lightingComputeContainer.setShaderInput("giDiffuseTex", self.giPrecomputeBuffer.getColorTexture())
                 self.lightingComputeContainer.setShaderInput("giReflectionTex", self.giPrecomputeBuffer.getAuxTexture(0))
@@ -556,7 +567,7 @@ class RenderingPipeline(DebugObject):
             if self.settings.useTransparency:
                 sceneInput = self.transparencyManager.getResultTexture()
             else:
-                if self.settings.useSSLR:
+                if self.settings.enableSSLR:
                     sceneInput = self.sslrBuffer.getColorTexture()
 
             self.blurOcclusionH.setShaderInput(
@@ -698,7 +709,14 @@ class RenderingPipeline(DebugObject):
             self.transparencyManager.setCameraAndScene(self.showbase.cam, self.showbase.render)
             self.transparencyManager.setReflectionCubemap(self.reflectionCubemap)
 
+        # Adaptive Brightness
 
+        if self.settings.useTransparency:
+            self.adaptiveBrightness.setColorTex(self.transparencyManager.getResultTexture())            
+        elif self.haveOcclusion and self.occlusion.requiresBlurring():
+            self.adaptiveBrightness.setColorTex(self.blurOcclusionH.getColorTexture())
+        else:
+            self.adaptiveBrightness.setColorTex(self.lightingComputeContainer.getColorTexture())
 
         # Finally, set shaders
         self.reloadShaders()
@@ -888,6 +906,9 @@ class RenderingPipeline(DebugObject):
         if self.settings.useTransparency:
             self.transparencyManager.reloadShader()
 
+        if self.settings.useAdaptiveBrightness:
+            self.adaptiveBrightness.reloadShader()
+
         self.antialias.reloadShader()
         if self.settings.enableGlobalIllumination:
             self.globalIllum.reloadShader()
@@ -930,6 +951,9 @@ class RenderingPipeline(DebugObject):
 
         if self.settings.enableGlobalIllumination:
             self.globalIllum.process()
+
+        if self.settings.useAdaptiveBrightness:
+            self.adaptiveBrightness.update()
         
         self.antialias.preRenderUpdate()
 
@@ -1054,6 +1078,19 @@ class RenderingPipeline(DebugObject):
         return shader
 
 
+    def prepareMaterials(self, np):
+        """ Prepares the materials of the given np to work with pbs. Namely this
+        adds an EmptyDiffuse, EmptyNormal, EmptySpecular and EmptyRoughness texture
+        if the texture slots are not used """
+
+
+        emptpyDiffuse = loader.loadTexture("Data/Textures/EmptyDiffuseTexture.png")
+        emptpyNormal = loader.loadTexture("Data/Textures/EmptyNormalTexture.png")
+        emptpySpecular = loader.loadTexture("Data/Textures/EmptySpecularTexture.png")
+        emptyRoughness = loader.loadTexture("Data/Textures/EmptyRoughnessTexture.png")
+
+        # TODO
+
     def getDefaultTransparencyShader(self):
         """ Returns the default shader for transparent objects """
         if not self.settings.useTransparency:
@@ -1165,6 +1202,9 @@ class RenderingPipeline(DebugObject):
 
         if self.settings.enableLightPerTileDebugging:
             define("ENABLE_LIGHT_PER_TILE_DEBUG", 1)
+
+        if self.settings.useAdaptiveBrightness:
+            define("USE_ADAPTIVE_BRIGHTNESS", 1)
 
         define("AMBIENT_CUBEMAP_SAMPLES", self.settings.ambientCubemapSamples)
         define("SHADOW_MAP_ATLAS_SIZE", self.settings.shadowAtlasSize)

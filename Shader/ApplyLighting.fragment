@@ -73,6 +73,13 @@ uniform sampler3D inscatterSampler;
 uniform ScatteringOptions scatteringOptions;
 #endif
 
+
+#ifdef USE_ADAPTIVE_BRIGHTNESS
+uniform sampler2D downscaledSceneTex;
+
+#endif
+
+
 vec3 getPositionWorld(vec2 coord) {
     float z = texture(depth, coord).x;
     return calculateSurfacePos(z, coord);
@@ -264,6 +271,7 @@ void main() {
         inscatterFactor = 1.5;
 
         reflectionFactor = 0.0;
+
     }
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
@@ -444,8 +452,17 @@ void main() {
 
     // SRGB
     result.xyz = pow(result.xyz, vec3(1.0 / 2.2) ); 
-    result = 1.0f - exp(-1.0 * result);
 
+
+
+    float exposure = 1.0;
+
+    #ifdef USE_ADAPTIVE_BRIGHTNESS
+        // Adaptive Brightness
+        exposure = texelFetch(downscaledSceneTex, ivec2(0), 0).x * 10.0;
+    #endif
+
+    result = 1.0f - exp(-exposure * result);
 
     // #define ENABLE_FOG
 
@@ -532,6 +549,7 @@ void main() {
         float loadFactor = float(lightsComputed) / 40.0;
         result = vec3(loadFactor, 1.0 - loadFactor, 0.0);
     #endif
+
 
     lightingResult = vec4(result, saturate(occlusionTotal) );
 }

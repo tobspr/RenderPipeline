@@ -30,6 +30,9 @@ uniform sampler2DShadow shadowAtlasPCF;
 uniform sampler2D shadowAtlas;
 
 
+
+
+
 vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
     return clamp(rawCoord, 0, 1) * (float(source.resolution) / SHADOW_MAP_ATLAS_SIZE) + source.atlasPos;
 }

@@ -47,8 +47,6 @@ class PipelineLoadingScreen:
         self.circlePart3 = BetterOnscreenImage(image="Data/GUI/LoadingCirclePart.png", parent=self.node, w=cr, h=cr, x=(w-cr) / 2, y = (h-cr) / 2 - 50)
         self.circlePart4 = BetterOnscreenImage(image="Data/GUI/LoadingCirclePart.png", parent=self.node, w=cr, h=cr, x=(w-cr) / 2, y = (h-cr) / 2 - 50)
 
-
-
         self.circleBg = BetterOnscreenImage(image="Data/GUI/LoadingCircleBg.png", parent=self.node, w=180, h=180, x=(w-180) / 2, y = (h-180) / 2 - 50)
 
         self.logoImage = BetterOnscreenImage(image="Data/GUI/RPIcon.png", parent=self.node, w=316, h=316, x=(w - 316) /2, y = (h-316) / 2 - 50)

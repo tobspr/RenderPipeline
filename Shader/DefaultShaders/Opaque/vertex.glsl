@@ -9,6 +9,7 @@ uniform mat4 trans_model_to_world;
 // Material properties
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
+in vec4 p3d_Color;
 
 in vec2 p3d_MultiTexCoord0;
 
@@ -43,7 +44,7 @@ void main() {
     vOutput.texcoord = p3d_MultiTexCoord0.xy;
 
     // Also pass diffuse to fragment shader
-    vOutput.materialDiffuse = p3d_Material.diffuse * p3d_ColorScale;
+    vOutput.materialDiffuse = p3d_Material.diffuse * p3d_ColorScale * p3d_Color;
     vOutput.materialSpecular = p3d_Material.specular;
     vOutput.materialAmbient = p3d_Material.ambient.z;
 
