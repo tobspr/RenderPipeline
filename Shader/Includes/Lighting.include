@@ -126,7 +126,7 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, ve
     float blurRadius = 1.0 / mipSize;
 
 
-    float antialiasingFactor = saturate(length(dFdx(direction))+ length(dFdy(direction)));
+    float antialiasingFactor = saturate(length(dFdx(direction)) + length(dFdy(direction)));
     mipmap += antialiasingFactor * CUBEMAP_ANTIALIASING_FACTOR;
 
     vec3 samples = vec3(0);
