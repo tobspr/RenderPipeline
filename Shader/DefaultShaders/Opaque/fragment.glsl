@@ -35,12 +35,12 @@ void main() {
     vec4 sampledNormal  = texture(NORMAL_TEX, vOutput.texcoord);
     vec4 sampledSpecular = texture(SPECULAR_TEX, vOutput.texcoord);
     vec4 sampledRoughness = texture(ROUGHNESS_TEX, vOutput.texcoord);
-
+    
     float bumpFactor = vOutput.materialDiffuse.w;
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
-   
+    
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
 
     vec3 tangent; vec3 binormal;

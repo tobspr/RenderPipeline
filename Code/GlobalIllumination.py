@@ -84,17 +84,13 @@ class GlobalIllumination(DebugObject):
         # Create voxelize target
         self.voxelizeTarget = RenderTarget("DynamicVoxelization")
         self.voxelizeTarget.setSize(self.voxelBaseResolution) 
-        # self.voxelizeTarget.setColorWrite(False)
-        self.voxelizeTarget.addColorTexture()
+        self.voxelizeTarget.setColorWrite(False)
         self.voxelizeTarget.setSource(self.voxelizeCameraNode, Globals.base.win)
         self.voxelizeTarget.prepareSceneRender()
 
         self.voxelizeTarget.getQuad().node().removeAllChildren()
         self.voxelizeTarget.getInternalRegion().setSort(-400)
         self.voxelizeTarget.getInternalBuffer().setSort(-399)
-
-
-        self.voxelizeTarget.getColorTexture().setClearColor(Vec4(0.2,0.6,1.0,1.0))
 
         # Set required inputs to create the voxel grid
         voxelSize = Vec3(
@@ -281,8 +277,6 @@ class GlobalIllumination(DebugObject):
 
         if self.frameIndex == 0:
 
-
-
             # Step 1: Voxelize scene from the x-Axis
             self.targetSpace.setShaderInput("dv_uv_start", 
                 self.helperLight.shadowSources[0].getAtlasPos())
@@ -348,16 +342,13 @@ class GlobalIllumination(DebugObject):
         self.frameIndex += 1
         self.frameIndex = self.frameIndex % 4
 
-
     def bindTo(self, node, prefix):
         """ Binds all required shader inputs to a target to compute / display
         the global illumination """
 
-        normFactor = Vec3(
-                1.0,
+        normFactor = Vec3(1.0,
                 float(self.voxelGridResolution.y) / float(self.voxelGridResolution.x) * self.voxelGridSizeWS.y / self.voxelGridSizeWS.x,
-                float(self.voxelGridResolution.z) / float(self.voxelGridResolution.x) * self.voxelGridSizeWS.z / self.voxelGridSizeWS.x
-            )
+                float(self.voxelGridResolution.z) / float(self.voxelGridResolution.x) * self.voxelGridSizeWS.z / self.voxelGridSizeWS.x)
         node.setShaderInput(prefix + ".gridPos", self.ptaGridPos)
         node.setShaderInput(prefix + ".gridHalfSize", self.voxelGridSizeWS)
         node.setShaderInput(prefix + ".gridResolution", self.voxelGridResolution)
