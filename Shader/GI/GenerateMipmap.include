@@ -1,0 +1,32 @@
+
+uniform sampler3D source;
+uniform writeonly image3D dest;
+uniform int sourceMipmap;
+ 
+vec4 fetch(ivec3 coords, int x, int y, int z, float weight) {
+    return texelFetch(source, coords + ivec3(x, y, z), sourceMipmap) * weight;
+}
+
+void main() {
+
+    for (int z = 0; z < MIPMAP_SIZE; z++) {
+        ivec3 texelCoords = ivec3(gl_FragCoord.xy, z);
+
+        ivec3 texelCoordsUpper = texelCoords * 2;
+        vec4 combined = vec4(0);
+
+        // Center
+        combined += fetch(texelCoordsUpper, 0,0,0, 0.125);
+        combined += fetch(texelCoordsUpper, 1,0,0, 0.125);
+        combined += fetch(texelCoordsUpper, 0,1,0, 0.125);
+        combined += fetch(texelCoordsUpper, 1,1,0, 0.125);
+
+        combined += fetch(texelCoordsUpper, 0,0,1, 0.125);
+        combined += fetch(texelCoordsUpper, 1,0,1, 0.125);
+        combined += fetch(texelCoordsUpper, 0,1,1, 0.125);
+        combined += fetch(texelCoordsUpper, 1,1,1, 0.125);
+        combined /= max(0.01, combined.w);
+        imageStore(dest, texelCoords, combined );
+    }
+
+}

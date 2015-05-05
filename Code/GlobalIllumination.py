@@ -48,8 +48,6 @@ class GlobalIllumination(DebugObject):
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
         self.gridPos = Vec3(0)
 
-        self.computeNodes = NodePath("GIComputeNodes")
-
     @classmethod
     def setUpdateEnabled(self, enabled):
         self.updateEnabled = enabled
@@ -145,11 +143,6 @@ class GlobalIllumination(DebugObject):
     def setup(self):
         """ Setups everything for the GI to work """
 
-        # The compute nodes may not be parented to render or anything else, that
-        # makes them incredible slow (maybe a bug?). However, parenting them to
-        # render2d is just fine, they will be rendered *after* the main pass
-        self.computeNodes.reparentTo(Globals.base.render2d)
-
         self._prepareVoxelScene()
 
         # Create 3D Texture to store the voxel generation grid
@@ -194,27 +187,30 @@ class GlobalIllumination(DebugObject):
         self.convertBuffer.prepareOffscreenBuffer()
         self.convertBuffer.setShaderInput("src", self.voxelGenTex)
         self.convertBuffer.setShaderInput("dest", self.voxelStableTex)
+        self.convertBuffer.setActive(False)
 
         # Store the frame index, we need that to decide which step we are currently
         # doing
         self.frameIndex = 0
 
         # Create the nodes which generate the voxel mipmaps
-        self.mipmapNodes = self.computeNodes.attachNewNode("GenerateMipmaps")
-        self.mipmapNodes.setBin("fixed", 15)
+        # self.mipmapNodes = self.computeNodes.attachNewNode("GenerateMipmaps")
+        # self.mipmapNodes.setBin("fixed", 15)
+        # self.mipmapNodes.hide()
 
+        self.mipmapTargets = []
         computeSize = LVecBase3i(self.voxelGridResolution)
         currentMipmap = 0
         while computeSize.z > 1:
             computeSize /= 2
-            mipmapNode = self.mipmapNodes.attachNewNode(ComputeNode("ConvertGrid"))
-            mipmapNode.setShaderInput("sourceMipmap", currentMipmap)
-            mipmapNode.setShaderInput("source", self.voxelStableTex)
-            mipmapNode.setShaderInput("dest", self.voxelStableTex, False, True, -1, currentMipmap + 1)
-            mipmapNode.node().addDispatch((computeSize.x + 7) / 8,
-                                (computeSize.y + 7) / 8,
-                                (computeSize.z + 7) / 8)
-            mipmapNode.setBin("fixed", 20 + currentMipmap)
+            target = RenderTarget("Compute Miplevel")
+            target.setSize(computeSize.x / 2, computeSize.y / 2)
+            target.setColorWrite(False)
+            target.prepareOffscreenBuffer()
+            target.setActive(False)
+            target.setShaderInput("sourceMipmap", currentMipmap)
+            target.setShaderInput("source", self.voxelStableTex)
+            target.setShaderInput("dest", self.voxelStableTex, False, True, -1, currentMipmap + 1)
             currentMipmap += 1
 
 
@@ -225,12 +221,12 @@ class GlobalIllumination(DebugObject):
 
     def _createGenerateMipmapsShader(self):
         """ Loads the shader for generating the voxel grid mipmaps """
-        shader = Shader.loadCompute(Shader.SLGLSL, "Shader/GI/GenerateMipmaps.compute")
-        for child in self.mipmapNodes.getChildren():
-            child.setShader(shader, 10000)
 
-
-
+        computeSizeZ = self.voxelGridResolution.z
+        for child in self.mipmapTargets:
+            computeSizeZ /= 2
+            shader = Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex", "Shader/GI/GenerateMipmaps/" + str(computeSizeZ) + ".fragment")
+            child.setShader(shader)
 
     def reloadShader(self):
         """ Reloads all shaders and updates the voxelization camera state aswell """
@@ -257,9 +253,6 @@ class GlobalIllumination(DebugObject):
     def process(self):
         """ Processes the gi, this method is called every frame """
 
-        # Hide all compute shaders first
-        self.mipmapNodes.hide()
-
         # With no light, there is no gi
         if self.targetLight is None:
             self.fatal("The GI cannot work without a directional target light! Set one "
@@ -282,8 +275,6 @@ class GlobalIllumination(DebugObject):
 
             # Clear the old data in generation texture 
             self.voxelGenTex.clearImage()
-            self.convertBuffer.setActive(False)
-
             self.voxelizeTarget.setActive(True)
             self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.y*2, self.voxelGridSizeWS.z*2)
             self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.x*2)
@@ -315,36 +306,29 @@ class GlobalIllumination(DebugObject):
             self.voxelizeCameraNode.lookAt(self.gridPos)
             self.targetSpace.setShaderInput("dv_direction", 2)
 
-
-            # We already activate the compute nodes in this frame, however, as 
-            # they are parented to render2d (see above), they will be executed 
-            # next frame
-            # self.convertGridNode.show()
-
-
-
         elif self.frameIndex == 3:
 
             # Step 4: Extract voxel grid and generate mipmaps
             self.voxelizeTarget.setActive(False)
             self.convertBuffer.setActive(True)
-            self.mipmapNodes.show()
+
+            for child in self.mipmapTargets:
+                child.setActive(True)
 
             # Update helper light, so that it is at the right position when Step 1
             # starts again 
             self.helperLight.setPos(self.gridPos)
             self.helperLight.setDirection(direction)
 
-
-
             # We are done now, update the inputs
             self.ptaGridPos[0] = Vec3(self.gridPos)
             self._updateGridPos()
             
         elif self.frameIndex == 4:
-            pass
+            for child in self.mipmapTargets:
+                child.setActive(False)
 
-
+            self.convertBuffer.setActive(False)
 
         # Increase frame index
         self.frameIndex += 1

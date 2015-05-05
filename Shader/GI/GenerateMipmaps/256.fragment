@@ -1,0 +1,7 @@
+#version 400
+
+
+#define MIPMAP_SIZE 256
+
+#pragma include "GI/GenerateMipmap.include"
+
