@@ -99,7 +99,6 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
-        # self.sceneSource = "Demoscene.ignore/GITest/Model.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
@@ -111,9 +110,9 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
-        self.sceneSource = "Models/HDRTest/Scene.egg"
+        # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
-        # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
+        self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
@@ -217,6 +216,13 @@ class Main(ShowBase, DebugObject):
         else:
             self.loadScene()
 
+
+
+    def sleep(self, task):
+        import time
+        time.sleep(0.1)
+        return task.cont
+
     def loadScene(self, task=None):
         """ Starts loading the scene """
         # Load scene from disk
@@ -257,8 +263,8 @@ class Main(ShowBase, DebugObject):
 
         # Find transparent objects
         matches = self.scene.findAllMatches("**/T__*")
-        for match in matches:
-            self.transparentObjects.append(match)
+        # for match in matches:
+            # self.transparentObjects.append(match)
             # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
 
         # Wheter to use a ground floor
@@ -268,7 +274,8 @@ class Main(ShowBase, DebugObject):
         # Flatten scene?
         self.loadingScreen.setStatus("Optimizing Scene")
 
-        loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
+        # loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
+        self.onScenePrepared()
 
     def onScenePrepared(self, cb=None):
 
@@ -326,11 +333,6 @@ class Main(ShowBase, DebugObject):
         # Hide loading screen
         self.loadingScreen.hide()
 
-
-    def sleep(self, task):
-        import time
-        time.sleep(0.1)
-        return task.cont
 
     def setSunPos(self):
         """ Sets the sun position based on the debug slider """

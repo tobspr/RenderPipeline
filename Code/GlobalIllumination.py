@@ -1,10 +1,10 @@
 
 from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
-from panda3d.core import Shader
+from panda3d.core import Shader, SamplerState
 from panda3d.core import Vec2, LMatrix4f, LVecBase3i, Camera, Mat4
 from panda3d.core import Mat4, OmniBoundingVolume, OrthographicLens
-from panda3d.core import PStatCollector, BoundingBox, Point3, CullFaceAttrib
-from panda3d.core import DepthTestAttrib, PTALVecBase3f
+from panda3d.core import BoundingBox, Point3, CullFaceAttrib
+from panda3d.core import DepthTestAttrib, PTALVecBase3f, ComputeNode
 from direct.stdpy.file import isfile, open, join
 
 from Globals import Globals
@@ -20,13 +20,6 @@ from MemoryMonitor import MemoryMonitor
 import time
 import math
 
-pstats_PopulateVoxelGrid = PStatCollector(
-    "App:GlobalIllumnination:PopulateVoxelGrid")
-pstats_GenerateVoxelOctree = PStatCollector(
-    "App:GlobalIllumnination:GenerateVoxelOctree")
-pstats_ClearGI = PStatCollector("App:GlobalIllumnination:Clear")
-pstats_GenerateMipmaps = PStatCollector("App:GlobalIllumnination::GenerateMipmaps")
-
 class GlobalIllumination(DebugObject):
 
     """ This class handles the global illumination processing. It is still
@@ -38,23 +31,30 @@ class GlobalIllumination(DebugObject):
         DebugObject.__init__(self, "GlobalIllumnination")
         self.pipeline = pipeline
 
+        # Fetch the scene data
         self.targetCamera = Globals.base.cam
         self.targetSpace = Globals.base.render
 
-        self.voxelGridSizeWS = Vec3(60)
-        self.voxelGridResolution = LVecBase3i(256 + 128)
-        self.voxelBaseResolution = self.voxelGridResolution.x * 4
+        # Store grid size in world space units
+        self.voxelGridSizeWS = Vec3(20)
+
+        # Store grid resolution, should be equal for each dimension
+        self.voxelGridResolution = LVecBase3i(256)
+        self.voxelBaseResolution = self.voxelGridResolution.x
         self.targetLight = None
         self.helperLight = None
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
         self.gridPos = Vec3(0)
+
+        self.computeNodes = NodePath("GIComputeNodes")
 
     @classmethod
     def setUpdateEnabled(self, enabled):
         self.updateEnabled = enabled
 
     def setTargetLight(self, light):
-        """ Sets the sun light which is the main source of GI """
+        """ Sets the sun light which is the main source of GI. Only that light
+        casts gi. """
 
         if light._getLightType() != LightType.Directional:
             self.error("setTargetLight expects a directional light!")
@@ -65,7 +65,10 @@ class GlobalIllumination(DebugObject):
 
     def _prepareVoxelScene(self):
         """ Creates the internal buffer to voxelize the scene on the fly """
+
         self.voxelizeScene = Globals.render
+
+        # Create voxelize camera
         self.voxelizeCamera = Camera("VoxelizeScene")
         self.voxelizeCameraNode = self.voxelizeScene.attachNewNode(self.voxelizeCamera)
         self.voxelizeLens = OrthographicLens()
@@ -73,17 +76,16 @@ class GlobalIllumination(DebugObject):
         self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.x*2)
         self.voxelizeCamera.setLens(self.voxelizeLens)
         self.voxelizeCamera.setTagStateKey("VoxelizePassShader")
-
         self.targetSpace.setTag("VoxelizePassShader", "Default")
 
         self.voxelizeCameraNode.setPos(0,0,0)
         self.voxelizeCameraNode.lookAt(0,0,0)
 
+        # Create voxelize target
         self.voxelizeTarget = RenderTarget("DynamicVoxelization")
         self.voxelizeTarget.setSize(self.voxelBaseResolution) 
-        # self.voxelizeTarget.addDepthTexture()
-        # self.voxelizeTarget.addColorTexture()
-        # self.voxelizeTarget.setColorBits(16)
+        # self.voxelizeTarget.setColorWrite(False)
+        self.voxelizeTarget.addColorTexture()
         self.voxelizeTarget.setSource(self.voxelizeCameraNode, Globals.base.win)
         self.voxelizeTarget.prepareSceneRender()
 
@@ -92,14 +94,9 @@ class GlobalIllumination(DebugObject):
         self.voxelizeTarget.getInternalBuffer().setSort(-399)
 
 
-        MemoryMonitor.addRenderTarget("Voxelize Scene", self.voxelizeTarget)
+        self.voxelizeTarget.getColorTexture().setClearColor(Vec4(0.2,0.6,1.0,1.0))
 
-        # for tex in [self.voxelizeTarget.getColorTexture()]:
-        #     tex.setWrapU(Texture.WMClamp)
-        #     tex.setWrapV(Texture.WMClamp)
-        #     tex.setMinfilter(Texture.FTNearest)
-        #     tex.setMagfilter(Texture.FTNearest)
-
+        # Set required inputs to create the voxel grid
         voxelSize = Vec3(
                 self.voxelGridSizeWS.x * 2.0 / self.voxelGridResolution.x,
                 self.voxelGridSizeWS.y * 2.0 / self.voxelGridResolution.y,
@@ -115,18 +112,18 @@ class GlobalIllumination(DebugObject):
         """ Creates the tag state and loades the voxelizer shader """
         self.voxelizeShader = Shader.load(Shader.SLGLSL, 
             "Shader/GI/Voxelize.vertex",
-            "Shader/GI/Voxelize.fragment"
-            )
+            "Shader/GI/Voxelize.fragment")
 
+        # Create tag state
         initialState = NodePath("VoxelizerState")
-        initialState.setShader(self.voxelizeShader, 50)
+        initialState.setShader(self.voxelizeShader, 500)
         initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
         initialState.setDepthWrite(False)
         initialState.setDepthTest(False)
         initialState.setAttrib(DepthTestAttrib.make(DepthTestAttrib.MNone))
-
         initialState.setShaderInput("dv_dest_tex", self.voxelGenTex)
 
+        # Apply tag state
         self.voxelizeCamera.setTagState(
             "Default", initialState.getState())
 
@@ -150,120 +147,106 @@ class GlobalIllumination(DebugObject):
     def setup(self):
         """ Setups everything for the GI to work """
 
-        # if self.pipeline.settings.useHardwarePCF:
-        #     self.fatal(
-        #         "Global Illumination does not work in combination with PCF!")
-        #     return
+        # The compute nodes may not be parented to render or anything else, that
+        # makes them incredible slow (maybe a bug?). However, parenting them to
+        # render2d is just fine, they will be rendered *after* the main pass
+        self.computeNodes.reparentTo(Globals.base.render2d)
 
         self._prepareVoxelScene()
 
         # Create 3D Texture to store the voxel generation grid
         self.voxelGenTex = Texture("VoxelsTemp")
-        self.voxelGenTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, self.voxelGridResolution.z,
-                                           Texture.TInt, Texture.FR32i)
-        self.voxelGenTex.setMinfilter(Texture.FTLinearMipmapLinear)
-        self.voxelGenTex.setMagfilter(Texture.FTLinear)
+        self.voxelGenTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
+                                        self.voxelGridResolution.z, Texture.TInt, Texture.FR32i)
 
-        MemoryMonitor.addTexture("Voxel Temp Texture", self.voxelGenTex)
-
-
-        # Create 3D Texture which is a copy of the voxel generation grid but
-        # stable, as the generation grid is updated part by part
-        self.voxelStableTex = Texture("VoxelsStable")
-        self.voxelStableTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, self.voxelGridResolution.z,
-                                           Texture.TFloat, Texture.FRgba8)
-        self.voxelStableTex.setMinfilter(Texture.FTLinearMipmapLinear)
-        self.voxelStableTex.setMagfilter(Texture.FTLinear)        
-
-        MemoryMonitor.addTexture("Voxel Grid Texture", self.voxelStableTex)
-
-        for prepare in [self.voxelGenTex, self.voxelStableTex]:
-            prepare.setMagfilter(Texture.FTLinear)
-            prepare.setMinfilter(Texture.FTLinearMipmapLinear)
-            prepare.setWrapU(Texture.WMBorderColor)
-            prepare.setWrapV(Texture.WMBorderColor)
-            prepare.setWrapW(Texture.WMBorderColor)
-            prepare.setBorderColor(Vec4(0,0,0,0))
-
-        self.voxelGenTex.setMinfilter(Texture.FTNearest)
+        # Set appropriate filter types
+        self.voxelGenTex.setMinfilter(SamplerState.FTNearest)
         self.voxelGenTex.setMagfilter(Texture.FTNearest)
         self.voxelGenTex.setWrapU(Texture.WMClamp)
         self.voxelGenTex.setWrapV(Texture.WMClamp)
         self.voxelGenTex.setWrapW(Texture.WMClamp)
+        self.voxelGenTex.setClearColor(Vec4(0))
 
-        # self.voxelStableTex.generateRamMipmapImages()   
 
-        self._createVoxelizeState()
+        MemoryMonitor.addTexture("Voxel Temp Texture", self.voxelGenTex)
 
-        self.clearTextureNode = NodePath("ClearTexture")
-        self.copyTextureNode = NodePath("CopyTexture")
-        self.generateMipmapsNode = NodePath("GenerateMipmaps")
-        self.convertGridNode = NodePath("ConvertGrid")
+        # Create 3D Texture which is a copy of the voxel generation grid but
+        # stable, as the generation grid is updated part by part and that would 
+        # lead to flickering
+        self.voxelStableTex = Texture("VoxelsStable")
+        self.voxelStableTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
+                                            self.voxelGridResolution.z, Texture.TFloat, Texture.FRgba8)
 
-        self.reloadShader()
+        # Set appropriate filter types:
+        # The stable texture has mipmaps, which are generated during the process.
+        # This is required for cone tracing.
+        self.voxelStableTex.setMagfilter(SamplerState.FTLinear)
+        self.voxelStableTex.setMinfilter(SamplerState.FTLinearMipmapLinear)
+        self.voxelStableTex.setWrapU(SamplerState.WMBorderColor)
+        self.voxelStableTex.setWrapV(SamplerState.WMBorderColor)
+        self.voxelStableTex.setWrapW(SamplerState.WMBorderColor)
+        self.voxelStableTex.setBorderColor(Vec4(0,0,0,0))
 
-    def _generateMipmaps(self, tex):
-        """ Generates all mipmaps for a 3D texture, using a gaussian function """
+        MemoryMonitor.addTexture("Voxel Grid Texture", self.voxelStableTex)
 
-        pstats_GenerateMipmaps.start()
-        currentMipmap = 0
+
+        # Store the frame index, we need that to decide which step we are currently
+        # doing
+        self.frameIndex = 0
+
+        # Create the node which unpacks the voxel data
+        self.convertGridNode = NodePath(ComputeNode("ConvertGrid"))
+        self.convertGridNode.reparentTo(self.computeNodes)
+        self.convertGridNode.node().addDispatch(
+            (self.voxelGridResolution.x+7) / 8, 
+            (self.voxelGridResolution.y+7) / 8, 
+            (self.voxelGridResolution.z+7) / 8)
+        self.convertGridNode.setBin("fixed", 10)
+        self.convertGridNode.setShaderInput("src", self.voxelGenTex)
+        self.convertGridNode.setShaderInput("dest", self.voxelStableTex)
+
+        # Create the nodes which generate the voxel mipmaps
+        self.mipmapNodes = self.computeNodes.attachNewNode("GenerateMipmaps")
+        self.mipmapNodes.setBin("fixed", 15)
+
         computeSize = LVecBase3i(self.voxelGridResolution)
-        self.generateMipmapsNode.setShaderInput("source", tex)
-        self.generateMipmapsNode.setShaderInput(
-            "pixelSize", 1.0 / computeSize.x)
-
+        currentMipmap = 0
         while computeSize.z > 1:
             computeSize /= 2
-            self.generateMipmapsNode.setShaderInput(
-                "sourceMipmap", LVecBase3i(currentMipmap))
-            self.generateMipmapsNode.setShaderInput(
-                "currentMipmapSize", LVecBase3i(computeSize))
-            self.generateMipmapsNode.setShaderInput(
-                "dest", tex, False, True, -1, currentMipmap + 1)
-            self._executeShader(self.generateMipmapsNode,
-                                (computeSize.x + 7) / 8,
+            mipmapNode = self.mipmapNodes.attachNewNode(ComputeNode("ConvertGrid"))
+            mipmapNode.setShaderInput("sourceMipmap", currentMipmap)
+            mipmapNode.setShaderInput("source", self.voxelStableTex)
+            mipmapNode.setShaderInput("dest", self.voxelStableTex, False, True, -1, currentMipmap + 1)
+            mipmapNode.node().addDispatch((computeSize.x + 7) / 8,
                                 (computeSize.y + 7) / 8,
                                 (computeSize.z + 7) / 8)
+            mipmapNode.setBin("fixed", 20 + currentMipmap)
             currentMipmap += 1
 
-        pstats_GenerateMipmaps.stop()
-
-    def _createCleanShader(self):
-        shader = Shader.loadCompute(Shader.SLGLSL, "Shader/GI/ClearTexture.compute")
-        self.clearTextureNode.setShader(shader)
 
     def _createConvertShader(self):
+        """ Loads the shader for converting the voxel grid """
         shader = Shader.loadCompute(Shader.SLGLSL, "Shader/GI/ConvertGrid.compute")
-        self.convertGridNode.setShader(shader)
+        self.convertGridNode.setShader(shader, 10000)
 
     def _createGenerateMipmapsShader(self):
+        """ Loads the shader for generating the voxel grid mipmaps """
         shader = Shader.loadCompute(Shader.SLGLSL, "Shader/GI/GenerateMipmaps.compute")
-        self.generateMipmapsNode.setShader(shader)
+        for child in self.mipmapNodes.getChildren():
+            child.setShader(shader, 10000)
 
     def reloadShader(self):
-        self._createCleanShader()
+        """ Reloads all shaders and updates the voxelization camera state aswell """
         self._createGenerateMipmapsShader()
         self._createConvertShader()
         self._createVoxelizeState()
-        self.frameIndex = 0
-
-    def _clear3DTexture(self, tex, clearVal=None):
-        """ Clears a 3D Texture to <clearVal> """
-        if clearVal is None:
-            clearVal = Vec4(0)
-
-        self.clearTextureNode.setShaderInput("target", tex, False, True, -1, 0)
-        self.clearTextureNode.setShaderInput(
-            "clearValue", clearVal)
-
-        self._executeShader(
-            self.clearTextureNode,
-            (tex.getXSize() + 7) / 8,
-            (tex.getYSize() + 7) / 8,
-            (tex.getZSize() + 7) / 8)
 
     def _updateGridPos(self):
+        """ Computes the new center of the grid """
 
+        # It is important that the grid is snapped, otherwise it will flicker 
+        # while the camera moves. When using a snap of 32, everything until
+        # the log2(32) = 5th mipmap is stable. 
         snap = 32.0
         stepSizeX = float(self.voxelGridSizeWS.x * 2.0) / float(self.voxelGridResolution.x) * snap
         stepSizeY = float(self.voxelGridSizeWS.y * 2.0) / float(self.voxelGridResolution.y) * snap
@@ -275,29 +258,39 @@ class GlobalIllumination(DebugObject):
         self.gridPos.z -= self.gridPos.z % stepSizeZ
 
     def process(self):
+        """ Processes the gi, this method is called every frame """
+
+        # Hide all compute shaders first
+        self.convertGridNode.hide()
+        self.mipmapNodes.hide()
+
+        # With no light, there is no gi
         if self.targetLight is None:
             self.fatal("The GI cannot work without a directional target light! Set one "
                 "with renderPipeline.setGILightSource(directionalLight) first!")
 
+
+        # When the gi is disabled by the gui manager, don't do anything at all
         if not self.updateEnabled:
             self.voxelizeTarget.setActive(False)
             return
 
+
+        # Fetch current light direction
         direction = self.targetLight.getDirection()
 
-        # time.sleep(0.4)
-
-        self.voxelGenTex.setClearColor(Vec4(0))
-
         if self.frameIndex == 0:
-            # Find out cam pos
-            
+
+
+
+            # Step 1: Voxelize scene from the x-Axis
             self.targetSpace.setShaderInput("dv_uv_start", 
                 self.helperLight.shadowSources[0].getAtlasPos())
 
-            self.voxelizeTarget.setActive(True)
-            # self.voxelizeTarget.setActive(False)
+            # Clear the old data in generation texture 
+            self.voxelGenTex.clearImage()
 
+            self.voxelizeTarget.setActive(True)
             self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.y*2, self.voxelGridSizeWS.z*2)
             self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.x*2)
 
@@ -306,59 +299,54 @@ class GlobalIllumination(DebugObject):
             self.targetSpace.setShaderInput("dv_gridEnd", self.gridPos + self.voxelGridSizeWS)
             self.targetSpace.setShaderInput("dv_lightdir", direction)
 
-            # Clear textures
-            # self._clear3DTexture(self.voxelGenTex, Vec4(0,0,0,0))
-            self.voxelGenTex.clearImage()
-
-            # Voxelize from x axis
             self.voxelizeCameraNode.setPos(self.gridPos - Vec3(self.voxelGridSizeWS.x, 0, 0))
             self.voxelizeCameraNode.lookAt(self.gridPos)
             self.targetSpace.setShaderInput("dv_direction", 0)
 
         elif self.frameIndex == 1:
-            # Voxelize from y axis
 
+            # Step 2: Voxelize scene from the y-Axis
             self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.z*2)
             self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.y*2)
-
             self.voxelizeCameraNode.setPos(self.gridPos - Vec3(0, self.voxelGridSizeWS.y, 0))
             self.voxelizeCameraNode.lookAt(self.gridPos)
             self.targetSpace.setShaderInput("dv_direction", 1)
 
         elif self.frameIndex == 2:
 
-            # Voxelize from z axis
+            # Step 3: Voxelize the scene from the z-Axis 
             self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.y*2)
             self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.z*2)
-
             self.voxelizeCameraNode.setPos(self.gridPos + Vec3(0, 0, self.voxelGridSizeWS.z))
             self.voxelizeCameraNode.lookAt(self.gridPos)
             self.targetSpace.setShaderInput("dv_direction", 2)
 
-        elif self.frameIndex == 3:
 
-            self.voxelizeTarget.setActive(False)
-
-            # Copy the cache to the actual texture
-            self.convertGridNode.setShaderInput("src", self.voxelGenTex)
-            self.convertGridNode.setShaderInput("dest", self.voxelStableTex)
+            # We already activate the compute nodes in this frame, however, as 
+            # they are parented to render2d (see above), they will be executed 
+            # next frame
+            self.convertGridNode.show()
+            self.mipmapNodes.show()
             
-            self._executeShader(
-                self.convertGridNode, (self.voxelGridResolution.x+7) / 8, (self.voxelGridResolution.y+7) / 8, (self.voxelGridResolution.z+7) / 8)
-
-            # Generate the mipmaps
-            self._generateMipmaps(self.voxelStableTex)
-
+            # Update helper light, so that it is at the right position when Step 1
+            # starts again 
             self.helperLight.setPos(self.gridPos)
             self.helperLight.setDirection(direction)
+
+
+        elif self.frameIndex == 3:
+
+            # Step 4: Extract voxel grid and generate mipmaps
+            self.voxelizeTarget.setActive(False)
 
             # We are done now, update the inputs
             self.ptaGridPos[0] = Vec3(self.gridPos)
             self._updateGridPos()
             
 
+        # Increase frame index
         self.frameIndex += 1
-        self.frameIndex = self.frameIndex % 5
+        self.frameIndex = self.frameIndex % 4
 
 
     def bindTo(self, node, prefix):
@@ -377,8 +365,3 @@ class GlobalIllumination(DebugObject):
         node.setShaderInput(prefix + ".voxelNormFactor", normFactor)
         node.setShaderInput(prefix + ".geometry", self.voxelStableTex)
 
-    def _executeShader(self, node, threadsX, threadsY, threadsZ=1):
-        """ Executes a compute shader, fetching the shader attribute from a NodePath """
-        sattr = node.getAttrib(ShaderAttrib)
-        Globals.base.graphicsEngine.dispatchCompute(
-            (threadsX, threadsY, threadsZ), sattr, Globals.base.win.get_gsg())

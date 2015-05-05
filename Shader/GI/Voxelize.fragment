@@ -45,7 +45,7 @@ void main() {
     float kernelRadius = 1.0;
 
     float shadowSum = 0.0;
-    const int voxelShadowSamples = 64;
+    const int voxelShadowSamples = 1;
 
     if (voxelShadowSamples < 2) {
         kernelRadius = 0;
@@ -70,19 +70,11 @@ void main() {
     vec3 diffuseContribution = clamp(
             diffuse * shadowFactor * 
             max(ambientFactor, saturate(dot(dv_lightdir, normal))) * 0.5, 0, 1);
-// 
-
-    // diffuseContribution *= clamp(1.0 - normal.z*0.5, 0.0, 1.0);
-    // diffuseContribution = vec3(0.5);
-
-    // diffuseContribution = vec3(colorSample.w);
-    // diffuseContribution = vec3(0.5);
 
 
     // Convert diffuse contribution to int
     ivec3 resultColorI = clamp(ivec3(diffuseContribution * 255.0), ivec3(0), ivec3(255, 255, 255));  
 
-    // resultColorI = ivec3(255,255,255);
     // Bits:
     // 1 Bit solid
     // 10 Bit R

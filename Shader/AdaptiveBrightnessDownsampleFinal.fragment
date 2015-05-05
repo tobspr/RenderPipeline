@@ -32,7 +32,7 @@ void main() {
     float brightnessDiff = targetExposure - (sampleSum);
 
     float lastExposure = imageLoad(lastExposureTex, ivec2(0)).x;
-    float newExposure = lastExposure + brightnessDiff * dt * 5.0 * adaptionSpeed;
+    float newExposure = lastExposure + brightnessDiff * dt * 10.0 * adaptionSpeed;
 
     newExposure = clamp(newExposure, 0.5, 2.0);
 

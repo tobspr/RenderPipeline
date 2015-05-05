@@ -167,7 +167,7 @@ void main() {
         float specularG = GeometricBRDF(roughness, NxV, NxL);
         vec3  specularF = FresnelBRDF(specularColor, LxH);
 
-        vec3 specularComp = genericMicrofacetBRDF(specularF, specularG, specularD, NxL, NxV) * NxL;
+        vec3 specularComp = (specularF * specularG) * specularD;
 
         // specular
         composedColor += specularComp;

@@ -887,6 +887,7 @@ class RenderingPipeline(DebugObject):
 
         if self.settings.enableGlobalIllumination:
             self._setGIComputeShader()
+            self.globalIllum.reloadShader()
 
         if self.occlusion.requiresBlurring():
             self._setOcclusionBlurShader()

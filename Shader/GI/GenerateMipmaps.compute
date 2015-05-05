@@ -5,12 +5,11 @@ layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // layout(rgba16f) uniform readonly image3D source;
 uniform sampler3D source;
+uniform writeonly image3D dest;
 uniform int sourceMipmap;
 // uniform float pixelSize;
-uniform int currentMipmapSize;
-uniform writeonly image3D dest;
+// uniform int currentMipmapSize;
  
-
 vec4 fetch(ivec3 coords, int x, int y, int z, float weight) {
     return texelFetch(source, coords + ivec3(x, y, z), sourceMipmap) * weight;
 }
@@ -18,10 +17,6 @@ vec4 fetch(ivec3 coords, int x, int y, int z, float weight) {
 
 void main() {
     ivec3 texelCoords = ivec3(gl_GlobalInvocationID.xyz);
-
-    float pixelSize = 1.0 / float(currentMipmapSize);
-    vec3 localTexCoords = vec3(texelCoords) / float(currentMipmapSize);
-    vec3 texelSize = vec3(pixelSize, -pixelSize, 0);
 
     ivec3 texelCoordsUpper = texelCoords * 2;
     vec4 combined = vec4(0);
