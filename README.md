@@ -30,32 +30,32 @@ https://github.com/tobspr/RenderPipeline/wiki
 
 [Improve] means it is implemented, but has to get improved to look good.
 
-###### Physically based shading / lighting
-###### Deferred rendering
-###### Order Independent Transparency
-###### Temporal Ambient Occlusion
+##### Physically based shading / lighting
+##### Deferred rendering
+##### Order Independent Transparency
+##### Temporal Ambient Occlusion
 - SAO and HBAO
 
-###### Realtime Global Illumination
+##### Realtime Global Illumination
 - Voxel cone traced global illumination
 - Cone traced specular reflections
 - Cone traced low frequency ambient occlusion
 
-###### Dynamic Scene Voxelization
+##### Dynamic Scene Voxelization
 
-###### [Improve] Screen Space Local Reflections
+##### [Improve] Screen Space Local Reflections
 
-###### High quality Shadows
+##### High quality Shadows
 - PCF for PointLights, SpotLights
 - PCSS for DirectionalLights
 - PSSM Shadows for DirectionalLights
 
-###### [Todo] Screen space subsurface scattering
-###### Multi-Hemisphere-Skybox
+##### [Todo] Screen space subsurface scattering
+##### Multi-Hemisphere-Skybox
 
-###### Atmospheric Scattering
+##### Atmospheric Scattering
 
-###### Supported Lights:
+##### Supported Lights:
 - Point Lights
 - Directional Lights
 - [Todo] Ambient Lights
