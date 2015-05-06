@@ -283,9 +283,6 @@ class GlobalIllumination(DebugObject):
                 child.setActive(False)
             self.convertBuffer.setActive(False)
 
-
-
-
             # Clear the old data in generation texture 
             self.voxelGenTex.clearImage()
             self.voxelizeTarget.setActive(True)
@@ -300,7 +297,6 @@ class GlobalIllumination(DebugObject):
             self.voxelizeCameraNode.setPos(self.gridPos - Vec3(self.voxelGridSizeWS.x, 0, 0))
             self.voxelizeCameraNode.lookAt(self.gridPos)
             self.targetSpace.setShaderInput("dv_direction", 0)
-
 
         elif self.frameIndex == 1:
 
@@ -333,8 +329,6 @@ class GlobalIllumination(DebugObject):
 
             for child in self.mipmapTargets:
                 child.setActive(True)
-
-
 
             # We are done now, update the inputs
             self.ptaGridPos[0] = Vec3(self.gridPos)

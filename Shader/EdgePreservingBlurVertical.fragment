@@ -7,15 +7,13 @@ const ivec2 blurDirection = ivec2(0,1);
 
 #pragma include "Includes/PostProcessBlur.include"
 
-uniform sampler2D colorTex;
+uniform sampler2D sourceTex;
 uniform sampler2D normalTex;
 
 in vec2 texcoord;
-
 out vec4 result;
 
 void main() {
-    ivec2 screenCoord = ivec2(texcoord * textureSize(colorTex, 0) );
-    float alpha = edgePreservingAlphaBlur(texcoord, screenCoord, colorTex, normalTex);
-    result = vec4(alpha);
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+    result = edgePreservingBlur(texcoord, screenCoord, sourceTex, normalTex);
 }

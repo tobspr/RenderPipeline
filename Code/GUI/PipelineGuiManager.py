@@ -240,7 +240,7 @@ class PipelineGuiManager(DebugObject):
             self._optsChanged()
 
     def _optsChanged(self):
-
+        return
         container = self.pipeline.giPrecomputeBuffer
 
         for name, opt in self.slider_opts.items():
@@ -266,8 +266,8 @@ class PipelineGuiManager(DebugObject):
             self.defines[modeId] = 0 if status else 1
 
         elif name == "update_gi":
-            self.pipeline.globalIllum.setUpdateEnabled(status)
-
+            # self.pipeline.globalIllum.setUpdateEnabled(status)
+            pass
 
         if self.initialized and (status is True or updateWhenFalse):
             self.pipeline._generateShaderConfiguration()

@@ -1,7 +1,6 @@
 #version 400
 
 uniform int frameIndex;
-uniform sampler2D depth;
 uniform sampler2D noiseTexture;
 
 #pragma include "Includes/Configuration.include"
@@ -9,22 +8,13 @@ uniform sampler2D noiseTexture;
 #pragma include "Occlusion/Init.include"
 
 in vec2 texcoord;
-
-uniform vec4 bufferSize;
-
 out vec3 occlusionResult;
 
 void main() {
-
-
     #ifndef DEBUG_DISABLE_OCCLUSION
-    // float depth = texelFetch(depth, ivec2(gl_FragCoord.xy), 0).x;
-    // float linearDepth = getLinearZFromZ(depth);
-    float result = computeOcclusion(texcoord, ivec2(gl_FragCoord.xy), 1.0);
-
+    float result = 1.0 - computeOcclusion(texcoord, ivec2(gl_FragCoord.xy), 1.0);
     occlusionResult = vec3(result);
     #else
     occlusionResult = vec3(0);
     #endif
-
 }

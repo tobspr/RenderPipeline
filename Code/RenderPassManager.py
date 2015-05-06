@@ -60,18 +60,9 @@ class RenderPassManager(DebugObject):
         # Iterate over all inputs of the pass
         inputs = renderPass.getRequiredInputs()
         for inputID, inputSource in inputs.items():
-
-            # Check for variables
-            if type(inputSource) == str and inputSource.startswith("Variables."):
-                if not self._checkVariableAvailable(inputSource):
-                    self.error("Variable",inputSource, "is not set!")
-                    return False
-                continue
-
-            # Check for uniforms
-            firstInput = self._getFirstAvailableInput(inputSource)
-            if firstInput not in self._availableUniformNames:
-                self.debug("HINT: Cannot attach because",firstInput, "is not available yet")
+            firstInput = self._getFirstAvailableInput(inputSource, checkVariables = False)
+            if not firstInput:
+                self.debug("HINT: Cannot attach because",inputSource, "is not available yet")
                 return False
 
         return True
@@ -90,22 +81,39 @@ class RenderPassManager(DebugObject):
             return True
         return False
 
-    def _getFirstAvailableInput(self, inputList):
+    def _getFirstAvailableInput(self, inputList, checkVariables=True):
         """ Internal method to choose the first available uniform from a list of
         uniforms """
         if type(inputList) == list:
+
+            waitForPass = False
+
             for entry in inputList:
                 passName = entry.split(".")[0]
+
+                if self._havePass(passName):
+                    waitForPass = True
 
                 if entry in self._availableUniformNames:
                     return entry
                 
                 if passName == "Variables" and self._checkVariableAvailable(entry):
+                    print inputList, "->", entry, "-> ", waitForPass
+                    if waitForPass and not checkVariables:
+                        return False 
+
                     return entry                    
 
             self.error("No input of",inputList,"is available")
             return False
-        return inputList
+
+        if inputList in self._availableUniformNames:
+            return inputList
+
+        if inputList.startswith("Variables.") and  self._checkVariableAvailable(inputList):
+            return inputList
+
+        return False
 
     def anyPassRequires(self, uniformName):
         """ Checks if any of the currently attached passes requires an uniform
@@ -117,6 +125,17 @@ class RenderPassManager(DebugObject):
                 self.debug(renderPass,"requires value",uniformName)
                 return True
 
+        return False
+
+    def anyPassProduces(self, uniformName):
+        """ Checks if any of the currently attached passes produces an uniform
+        with that name """
+
+        for renderPass in self.renderPasses.values():
+            outputs = renderPass.getOutputs()
+            if uniformName in outputs.keys():
+                self.debug(renderPass,"produces value",uniformName)
+                return True
         return False
 
     def setShaders(self):

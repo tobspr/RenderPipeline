@@ -109,7 +109,7 @@ class ShadowScenePass(RenderPass):
 
     def getOutputs(self):
         return {
-            "ShadowAtlas": lambda: self.target
+            "ShadowScenePass.atlas": lambda: self.target
         }
 
     def setShaderInput(self, name, value):

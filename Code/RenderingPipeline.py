@@ -11,12 +11,14 @@ from Globals import Globals
 from RenderPassManager import RenderPassManager
 from LightManager import LightManager
 from AmbientOcclusionManager import AmbientOcclusionManager
+from GlobalIllumination import GlobalIllumination
 
 from GUI.PipelineGuiManager import PipelineGuiManager
 
 from RenderPasses.InitialRenderPass import InitialRenderPass
 from RenderPasses.DeferredScenePass import DeferredScenePass
 from RenderPasses.ViewSpacePass import ViewSpacePass
+from RenderPasses.EdgePreservingBlurPass import EdgePreservingBlurPass
 
 
 class RenderingPipeline(DebugObject):
@@ -92,14 +94,11 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerStaticVariable("mainRender", self.showbase.render)
 
     def _preRenderUpdate(self, task):
-
         self._updateInputHandles()
         self.lightManager.updateLights()
         self.lightManager.updateShadows()
         self.lightManager.processCallbacks()
-
         self.guiManager.update()
-
         return task.cont
 
     def _updateInputHandles(self):
@@ -118,23 +117,31 @@ class RenderingPipeline(DebugObject):
     def _postRenderUpdate(self, task):
         return task.cont
 
-
-    def _setupViewSpacePass(self):
-        if self.renderPassManager.anyPassRequires("ViewSpaceNormals") or \
-            self.renderPassManager.anyPassRequires("ViewSpacePosition") or True:
-            
+    def _createViewSpacePass(self):
+        if self.renderPassManager.anyPassRequires("ViewSpacePass.normals") or \
+            self.renderPassManager.anyPassRequires("ViewSpacePass.position"):
             self.viewSpacePass = ViewSpacePass()
             self.renderPassManager.registerPass(self.viewSpacePass)
 
+    def _createEdgePreservingBlurPass(self):
+        if self.renderPassManager.anyPassProduces("AmbientOcclusionPass.computeResult") or \
+            self.renderPassManager.anyPassProduces("GlobalIlluminationPass.diffuseResult"):
+            self.edgePreservingBlurPass = EdgePreservingBlurPass()
+            self.renderPassManager.registerPass(self.edgePreservingBlurPass)
 
-    def _createEmptyTextures(self):
+    def _createDefaultTextureInputs(self):
         for color in ["White", "Black"]:
             emptyTex = loader.loadTexture("Data/Textures/" + color + ".png")
             emptyTex.setMinfilter(SamplerState.FTLinear)
             emptyTex.setMagfilter(SamplerState.FTLinear)
             emptyTex.setWrapU(SamplerState.WMClamp)
             emptyTex.setWrapV(SamplerState.WMClamp)
-            self.renderPassManager.registerStaticVariable("EmptyTexture" + color, emptyTex)
+            self.renderPassManager.registerStaticVariable("emptyTexture" + color, emptyTex)
+
+        texNoise = loader.loadTexture("Data/Textures/noise4x4.png")
+        texNoise.setMinfilter(SamplerState.FTNearest)
+        texNoise.setMagfilter(SamplerState.FTNearest)
+        self.renderPassManager.registerStaticVariable("noise4x4", texNoise)
 
     def create(self):
         """ Creates the pipeline """
@@ -193,10 +200,13 @@ class RenderingPipeline(DebugObject):
         # Create managers
         self.occlusionManager = AmbientOcclusionManager(self)
         self.lightManager = LightManager(self)
+        self.globalIllum = GlobalIllumination(self)
 
         # Make variables available
         self._createInputHandles()
-        self._setupViewSpacePass()
+        self._createDefaultTextureInputs()
+        self._createViewSpacePass()
+        self._createEdgePreservingBlurPass()
 
         # Finally matchup all the render passes and set the shaders
         self.renderPassManager.createPasses()
