@@ -38,7 +38,7 @@ void main() {
 
     imageStore(lastExposureTex, ivec2(0), vec4(newExposure));
 
-    result.xyz = vec3(newExposure * 0.1);
+    result.xyz = vec3(newExposure * 0.2);
     result.w = 1.0;
 
 }

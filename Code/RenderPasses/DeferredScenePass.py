@@ -44,3 +44,4 @@ class DeferredScenePass(RenderPass):
     def setShaderInput(self, name, value):
         print "deferred: set input",name,"=",value
 
+        

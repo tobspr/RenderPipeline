@@ -86,7 +86,6 @@ class Main(ShowBase, DebugObject):
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
-        self.renderPipeline.enableDefaultEarthScattering()
 
 
 

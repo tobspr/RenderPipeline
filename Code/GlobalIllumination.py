@@ -114,8 +114,8 @@ class GlobalIllumination(DebugObject):
         # Setups the render target to convert the voxel grid
         self.convertBuffer = RenderTarget("VoxelConvertBuffer")
         self.convertBuffer.setSize(self.voxelGridResolution.x, self.voxelGridResolution.y)
-        # self.convertBuffer.setColorWrite(False)
-        self.convertBuffer.addColorTexture()
+        self.convertBuffer.setColorWrite(False)
+        # self.convertBuffer.addColorTexture()
         self.convertBuffer.prepareOffscreenBuffer()
         self.convertBuffer.setShaderInput("src", self.voxelizePass.getVoxelTex())
         self.convertBuffer.setShaderInput("dest", self.voxelStableTex)
@@ -132,8 +132,8 @@ class GlobalIllumination(DebugObject):
             computeSize /= 2
             target = RenderTarget("GIMiplevel" + str(currentMipmap))
             target.setSize(computeSize.x, computeSize.y)
-            # target.setColorWrite(False)
-            target.addColorTexture()
+            target.setColorWrite(False)
+            # target.addColorTexture()
             target.prepareOffscreenBuffer()
             target.setActive(False)
             target.setShaderInput("sourceMipmap", currentMipmap)
@@ -145,7 +145,6 @@ class GlobalIllumination(DebugObject):
 
 
         self.finalPass = GlobalIlluminationPass()
-        self.finalPass.setSize(self.pipeline.getSize() / 2)
         self.pipeline.getRenderPassManager().registerPass(self.finalPass)
 
         self.pipeline.getRenderPassManager().registerDynamicVariable("giVoxelGridData", self.bindTo)
@@ -219,36 +218,20 @@ class GlobalIllumination(DebugObject):
 
             # Clear the old data in generation texture 
             self.voxelizePass.clearGrid()
-            # self.voxelizeTarget.setActive(True)
             self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "x")
-            # self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.y*2, self.voxelGridSizeWS.z*2)
-            # self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.x*2)
-
             self.targetSpace.setShaderInput("giLightMVP", Mat4(self.helperLight.shadowSources[0].mvp))
             self.targetSpace.setShaderInput("giVoxelGridStart", self.gridPos - self.voxelGridSizeWS)
             self.targetSpace.setShaderInput("giVoxelGridEnd", self.gridPos + self.voxelGridSizeWS)
             self.targetSpace.setShaderInput("giLightDirection", direction)
-
-            # self.voxelizeCameraNode.setPos(self.gridPos - Vec3(self.voxelGridSizeWS.x, 0, 0))
-            # self.voxelizeCameraNode.lookAt(self.gridPos)
-
         elif self.frameIndex == 1:
 
             # Step 2: Voxelize scene from the y-Axis
             self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "y")
-            # self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.z*2)
-            # self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.y*2)
-            # self.voxelizeCameraNode.setPos(self.gridPos - Vec3(0, self.voxelGridSizeWS.y, 0))
-            # self.voxelizeCameraNode.lookAt(self.gridPos)
 
         elif self.frameIndex == 2:
 
             # Step 3: Voxelize the scene from the z-Axis 
             self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "z")
-            # self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.y*2)
-            # self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.z*2)
-            # self.voxelizeCameraNode.setPos(self.gridPos + Vec3(0, 0, self.voxelGridSizeWS.z))
-            # self.voxelizeCameraNode.lookAt(self.gridPos)
             
             # Update helper light, so that it is at the right position when Step 1
             # starts again 

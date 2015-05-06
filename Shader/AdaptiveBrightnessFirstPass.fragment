@@ -27,7 +27,7 @@ void main() {
 
     sampleResult /= 4.0;
 
-    result.xyz = vec3(getLuminance(sampleResult.xyz));
+    result.xyz = vec3( getLuminance(sampleResult.xyz) );
     result.w = 1.0;
 
     // Store only luminance, this avoids using 16 bit textures

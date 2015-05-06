@@ -11,9 +11,7 @@
 #pragma include "Includes/Light.include"
 #pragma include "Includes/Material.include"
 #pragma include "Includes/ShadowSource.include"
-#pragma include "Includes/ColorCorrection.include"
 #pragma include "Includes/PositionReconstruction.include"
-#pragma include "Includes/SphericalHarmonics.include"
 
 uniform sampler2D data0;
 uniform sampler2D data1;
@@ -32,12 +30,10 @@ uniform sampler2D occlusionTex;
 #endif
 
 uniform isamplerBuffer lightsPerTileBuffer;
-
-uniform ivec2 precomputeSize;
+uniform ivec2 lightingTileCount;
 
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
-in vec2 texcoord;
 
 uniform int frameIndex;
 
@@ -45,6 +41,9 @@ uniform sampler2D noiseTexture;
 uniform vec4 bufferSize;
 
 uniform vec3 cameraPosition;
+
+in vec2 texcoord;
+
 
 // Has to be after the uniforms
 #pragma include "Includes/Lighting.include"
@@ -75,8 +74,7 @@ uniform ScatteringOptions scatteringOptions;
 
 
 #ifdef USE_ADAPTIVE_BRIGHTNESS
-uniform sampler2D downscaledSceneTex;
-
+uniform sampler2D dynamicExposureTex;
 #endif
 
 
@@ -102,7 +100,7 @@ void main() {
 
     ivec2 precomputeCoord = tileIndex * 8;
 
-    int tileBufferOffset = (tileIndex.x + tileIndex.y * precomputeSize.x) * LIGHTING_PER_TILE_STRIDE;
+    int tileBufferOffset = (tileIndex.x + tileIndex.y * lightingTileCount.x) * LIGHTING_PER_TILE_STRIDE;
 
 
     // Extract material data
@@ -449,13 +447,11 @@ void main() {
     // SRGB
     result.xyz = pow(result.xyz, vec3(1.0 / 2.2) ); 
 
-
-
     float exposure = 1.0;
 
     #ifdef USE_ADAPTIVE_BRIGHTNESS
         // Adaptive Brightness
-        exposure = texelFetch(downscaledSceneTex, ivec2(0), 0).x * 10.0;
+        exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
     #endif
 
     result = 1.0f - exp(-exposure * result);
@@ -547,5 +543,5 @@ void main() {
     #endif
 
 
-    lightingResult = vec4(result, saturate(occlusionTotal) );
+    lightingResult = vec4(result, 0.0 );
 }

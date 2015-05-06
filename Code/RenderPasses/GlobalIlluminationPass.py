@@ -15,9 +15,6 @@ class GlobalIlluminationPass(RenderPass):
     def getID(self):
         return "GlobalIlluminationPass"
 
-    def setSize(self, size):
-        self.size = size
-
     def getRequiredInputs(self):
         return {
 
@@ -34,7 +31,7 @@ class GlobalIlluminationPass(RenderPass):
 
     def create(self):
         self.target = RenderTarget("GlobalIlluminationPass")
-        self.target.setSize(self.size.x, self.size.y)
+        self.target.setHalfResolution()
         self.target.addColorTexture()
         self.target.addAuxTexture()
         self.target.setColorBits(16)
@@ -53,7 +50,4 @@ class GlobalIlluminationPass(RenderPass):
             "GlobalIlluminationPass.specularResult": lambda: self.target.getAuxTexture(0)
         }
 
-    def setShaderInput(self, name, value):
-        print name, value
-        self.target.setShaderInput(name, value)
 

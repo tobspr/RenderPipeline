@@ -18,9 +18,11 @@ class Scattering(DebugObject):
     """ This class provides functions to precompute and apply
     atmospheric scattering """
 
-    def __init__(self):
+    def __init__(self, pipeline):
         """ Creates a new Scattering object with default settings """
         DebugObject.__init__(self, "AtmosphericScattering")
+
+        self.pipeline = pipeline
 
         self.settings = {
             "radiusGround": 6360.0,
@@ -312,6 +314,16 @@ class Scattering(DebugObject):
             self.textures[lc(name) + "Aux"] = rt.getAuxTexture(0)
 
         return rt
+
+
+    def provideInputs(self):
+        print "PROVIDE INPUTS"
+        self.pipeline.renderPassManager.registerStaticVariable(
+            "transmittanceSampler", self.getTransmittanceResult())
+        self.pipeline.renderPassManager.registerStaticVariable(
+            "inscatterSampler", self.getInscatterTexture())
+        self.pipeline.renderPassManager.registerDynamicVariable(
+            "scatteringOptions", self.bindTo)
 
     def bindTo(self, node, prefix):
         """ Sets all necessary inputs on a render target """

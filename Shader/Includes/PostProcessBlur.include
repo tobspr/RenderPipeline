@@ -5,7 +5,7 @@
 #pragma include "Includes/Packing.include"
 
 
-const float normalsDiscardThreshold = 0.9;
+const float normalsDiscardThreshold = 0.996;
 // const float normalsDiscardThreshold = 0.2;
 
 

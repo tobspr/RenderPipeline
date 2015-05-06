@@ -89,7 +89,6 @@ class LightManager(DebugObject):
 
         # Create shadow compute buffer
         self._createShadowPass()
-        self._createSamplerState()
         self._initLightCulling()
 
         # Create the initial shadow state
@@ -100,6 +99,9 @@ class LightManager(DebugObject):
             self._bindUpdateSources)
         self.pipeline.getRenderPassManager().registerDynamicVariable("allLights", 
             self._bindAllLights)
+        self.pipeline.getRenderPassManager().registerDynamicVariable("allShadowSources", 
+            self._bindAllSources)
+
         self.pipeline.getRenderPassManager().registerStaticVariable("numShadowUpdates", 
             self.numShadowUpdatesPTA)
 
@@ -112,6 +114,9 @@ class LightManager(DebugObject):
 
     def _bindAllLights(self, renderPass, name):
         self.allLightsArray.bindTo(renderPass, name)
+
+    def _bindAllSources(self, renderPass, name):
+        self.allShadowsArray.bindTo(renderPass, name)
 
     def _createShadowPass(self):
         self.shadowPass = ShadowScenePass()
@@ -133,11 +138,15 @@ class LightManager(DebugObject):
         sizeX = int(math.ceil(float(self.pipeline.getSize().x) / self.patchSize.x))
         sizeY = int(math.ceil(float(self.pipeline.getSize().y) / self.patchSize.y))
 
+
+
         self.lightCullingPass = LightCullingPass()
         self.lightCullingPass.setSize(sizeX, sizeY)
         self.lightCullingPass.setPatchSize(self.patchSize.x, self.patchSize.y)
 
         self.pipeline.getRenderPassManager().registerPass(self.lightCullingPass)
+        self.pipeline.getRenderPassManager().registerStaticVariable("lightingTileCount", LVecBase2i(sizeX, sizeY))
+
 
         self.debug("Batch size =", sizeX, "x", sizeY,
                    "Actual Buffer size=", int(sizeX * self.patchSize.x),
@@ -230,20 +239,6 @@ class LightManager(DebugObject):
 
         if settings.useHardwarePCF:
             define("USE_HARDWARE_PCF", 1)
-
-
-    def _createSamplerState(self):
-        # When using hardware pcf, set the correct filter types
-        if self.pipeline.settings.useHardwarePCF:
-            self.pcfSampleState = SamplerState()
-            self.pcfSampleState.setMinfilter(SamplerState.FTShadow)
-            self.pcfSampleState.setMagfilter(SamplerState.FTShadow)
-            self.pcfSampleState.setWrapU(SamplerState.WMClamp)
-            self.pcfSampleState.setWrapV(SamplerState.WMClamp)
-
-    def getPCFSampleState(self):
-        """ Returns the pcf sample state used to sample the shadow map """
-        return self.pcfSampleState
 
     def processCallbacks(self):
         """ Processes all updates from the previous frame """

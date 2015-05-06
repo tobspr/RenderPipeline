@@ -67,8 +67,8 @@ class VoxelizePass(RenderPass):
         # Create voxelize tareet
         self.target = RenderTarget("VoxelizePass")
         self.target.setSize( self.voxelGridResolution.x * 4 )
-        # self.target.setColorWrite(False)
-        self.target.addColorTexture()
+        self.target.setColorWrite(False)
+        # self.target.addColorTexture()
         self.target.setSource(self.voxelizeCameraNode, Globals.base.win)
         self.target.prepareSceneRender()
 
@@ -118,9 +118,4 @@ class VoxelizePass(RenderPass):
 
     def getOutputs(self):
         return {
-            "VoxelizePass.voxelizedScene": lambda: self.targetH.getColorTexture(),
         }
-
-    def setShaderInput(self, name, value):
-        self.targetH.setShaderInput(name, value)
-        self.targetV.setShaderInput(name, value)

@@ -29,8 +29,8 @@ class RenderPass:
     def getOutputs(self):
         return {}
 
-    def setShaderInput(self, name, value):
-        print "set input",name,"=",value
+    def setShaderInput(self, name, value, *args):
+        self.target.setShaderInput(name, value, *args)
 
     def __repr__(self):
         return "#" + self.getID()

@@ -1,0 +1,18 @@
+#version 400
+
+uniform sampler2D giResultTex;
+uniform sampler2D aoResultTex;
+in vec2 texcoord;
+
+out vec4 result;
+
+void main() {
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec4 giResult = texelFetch(giResultTex, coord, 0);
+    float aoResult = texelFetch(aoResultTex, coord, 0).x;
+
+    // Here the gi low res ao is mixed with the screen space ao
+    float combinedAO = aoResult * 1.0 + giResult.w * 0.0;
+    result = vec4(giResult.xyz, combinedAO);
+}

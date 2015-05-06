@@ -107,11 +107,15 @@ class ShadowScenePass(RenderPass):
             dr.setActive(False)
             self.renderRegions.append(dr)
 
+        self.pcfSampleState = SamplerState()
+        self.pcfSampleState.setMinfilter(SamplerState.FTShadow)
+        self.pcfSampleState.setMagfilter(SamplerState.FTShadow)
+        self.pcfSampleState.setWrapU(SamplerState.WMClamp)
+        self.pcfSampleState.setWrapV(SamplerState.WMClamp)
+
     def getOutputs(self):
         return {
-            "ShadowScenePass.atlas": lambda: self.target.getDepthTexture()
+            "ShadowScenePass.atlas": lambda: self.target.getDepthTexture(),
+            "ShadowScenePass.atlasPCF": lambda: (self.target.getDepthTexture(), self.pcfSampleState)
         }
-
-    def setShaderInput(self, name, value):
-        self.target.setShaderInput(name, value)
 

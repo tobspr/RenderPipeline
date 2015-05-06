@@ -224,7 +224,11 @@ class RenderPassManager(DebugObject):
                     if callable(uniformValue):
                         uniformValue = uniformValue()
 
-                    renderPass.setShaderInput(inputID, uniformValue)
+                    if type(uniformValue) == tuple or type(uniformValue) == list:
+                        renderPass.setShaderInput(inputID, *uniformValue)
+                    else:
+                        renderPass.setShaderInput(inputID, uniformValue)
+
                     continue
 
                 # Check for variables if no uniform exists with that name

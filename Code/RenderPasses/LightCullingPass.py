@@ -73,7 +73,3 @@ class LightCullingPass(RenderPass):
         return {
             "LightCullingPass.lightsPerTile": lambda: self.lightPerTileBuffer
         }
-
-    def setShaderInput(self, name, value):
-        self.target.setShaderInput(name, value)
-

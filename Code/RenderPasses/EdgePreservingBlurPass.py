@@ -16,7 +16,7 @@ class EdgePreservingBlurPass(RenderPass):
     def getRequiredInputs(self):
         return {
             "sourceTex":  [
-                "CombinedGIandAO.result",  # If both GI and AO are active, this pass exists
+                "CombineGIandAOPass.combinedTex",  # If both GI and AO are active, this pass exists
                 "AmbientOcclusionPass.computeResult", 
                 "GlobalIlluminationPass.diffuseResult"],
             "normalTex": "DeferredScenePass.wsNormal"

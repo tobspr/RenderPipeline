@@ -43,7 +43,7 @@ void main() {
     
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
 
-    // bumpFactor = 0.0;
+    bumpFactor = 0.0;
 
     vec3 tangent; vec3 binormal;
     reconstructTanBin(tangent, binormal);

@@ -23,12 +23,9 @@ class AmbientOcclusionPass(RenderPass):
             "viewSpacePosition": "ViewSpacePass.position"
         }
 
-    def setSize(self, size):
-        self.size = size
-
     def create(self):
-        self.target = RenderTarget("AmbientOcclusion")
-        self.target.setSize(self.size.x, self.size.y)
+        self.target = RenderTarget("AmbientOccluon")
+        self.target.setHalfResolution()
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
  
@@ -42,6 +39,3 @@ class AmbientOcclusionPass(RenderPass):
         return {
             "AmbientOcclusionPass.computeResult": lambda: self.target.getColorTexture(),
         }
-
-    def setShaderInput(self, name, value):
-        self.target.setShaderInput(name, value)

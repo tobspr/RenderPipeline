@@ -2,7 +2,8 @@
 
 from panda3d.core import NodePath, Shader, Vec4, TransparencyAttrib, LVecBase2i
 from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerState
-from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight, UnalignedLMatrix4f
+from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight
+from panda3d.core import Texture, UnalignedLMatrix4f, Vec3, PTAFloat
 
 
 from DebugObject import DebugObject
@@ -14,6 +15,7 @@ from RenderPassManager import RenderPassManager
 from LightManager import LightManager
 from AmbientOcclusionManager import AmbientOcclusionManager
 from GlobalIllumination import GlobalIllumination
+from Scattering import Scattering
 
 from GUI.PipelineGuiManager import PipelineGuiManager
 
@@ -21,6 +23,9 @@ from RenderPasses.InitialRenderPass import InitialRenderPass
 from RenderPasses.DeferredScenePass import DeferredScenePass
 from RenderPasses.ViewSpacePass import ViewSpacePass
 from RenderPasses.EdgePreservingBlurPass import EdgePreservingBlurPass
+from RenderPasses.CombineGIandAOPass import CombineGIandAOPass
+from RenderPasses.LightingPass import LightingPass
+from RenderPasses.DynamicExposurePass import DynamicExposurePass
 
 
 class RenderingPipeline(DebugObject):
@@ -49,9 +54,6 @@ class RenderingPipeline(DebugObject):
         """ Returns the current pipeline settings """
         return self.settings
 
-    def enableDefaultEarthScattering(self):
-        pass
-
     def addLight(self, light):
         self.lightManager.addLight(light)
 
@@ -66,6 +68,23 @@ class RenderingPipeline(DebugObject):
 
     def getDefaultObjectShader(self, tesselated=False):
         pass
+
+    def getDefaultSkybox(self, scale=40000):
+        """ Loads the skybox """
+        skybox = loader.loadModel("Models/Skybox/Model.egg.bam")
+        skybox.setScale(scale)
+
+        skytex = loader.loadTexture("Data/Skybox/sky.jpg")
+        skytex.setWrapU(SamplerState.WMRepeat)
+        skytex.setWrapV(SamplerState.WMRepeat)
+        skytex.setMinfilter(SamplerState.FTLinear)
+        skytex.setMagfilter(SamplerState.FTLinear)
+        skybox.setShaderInput("skytex", skytex)
+
+        skybox.setShader(Shader.load(Shader.SLGLSL, 
+                "Shader/DefaultShaders/Opaque/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+        return skybox
+
 
     def reloadShaders(self):
         self.renderPassManager.setShaders()
@@ -87,6 +106,7 @@ class RenderingPipeline(DebugObject):
         self.lastMVP = PTALMatrix4f.emptyArray(1)
         self.currentMVP = PTALMatrix4f.emptyArray(1)
         self.frameIndex = PTAInt.emptyArray(1)
+        self.frameDelta = PTAFloat.emptyArray(1)
 
         self.renderPassManager.registerStaticVariable("lastMVP", self.lastMVP)
         self.renderPassManager.registerStaticVariable("currentMVP", self.currentMVP)
@@ -94,6 +114,7 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerStaticVariable("cameraPosition", self.cameraPosition)
         self.renderPassManager.registerStaticVariable("mainCam", self.showbase.cam)
         self.renderPassManager.registerStaticVariable("mainRender", self.showbase.render)
+        self.renderPassManager.registerStaticVariable("frameDelta", self.frameDelta)
 
     def _preRenderUpdate(self, task):
         self._updateInputHandles()
@@ -115,6 +136,7 @@ class RenderingPipeline(DebugObject):
 
         self.lastMVP[0] = self.currentMVP[0]
         self.currentMVP[0] = self._computeMVP()
+        self.frameDelta[0] = Globals.clock.getDt()
         self.cameraPosition[0] = self.showbase.cam.getPos(self.showbase.render)
 
     def _computeMVP(self):
@@ -149,10 +171,17 @@ class RenderingPipeline(DebugObject):
             self.renderPassManager.registerPass(self.viewSpacePass)
 
     def _createEdgePreservingBlurPass(self):
-        if self.renderPassManager.anyPassProduces("AmbientOcclusionPass.computeResult") or \
-            self.renderPassManager.anyPassProduces("GlobalIlluminationPass.diffuseResult"):
+        haveAo = self.renderPassManager.anyPassProduces("AmbientOcclusionPass.computeResult")
+        haveGi = self.renderPassManager.anyPassProduces("GlobalIlluminationPass.diffuseResult")
+
+        if haveAo or haveGi:
             self.edgePreservingBlurPass = EdgePreservingBlurPass()
             self.renderPassManager.registerPass(self.edgePreservingBlurPass)
+
+            if haveAo and haveGi:
+                self.combineGIandAOPass = CombineGIandAOPass()
+                self.renderPassManager.registerPass(self.combineGIandAOPass)
+
 
     def _createDefaultTextureInputs(self):
         for color in ["White", "Black"]:
@@ -168,6 +197,26 @@ class RenderingPipeline(DebugObject):
         texNoise.setMagfilter(SamplerState.FTNearest)
         self.renderPassManager.registerStaticVariable("noise4x4", texNoise)
 
+        # Load the cubemap which is used for point light shadow rendering
+        cubemapLookup = self.showbase.loader.loadCubeMap(
+            "Data/Cubemaps/DirectionLookup/#.png")
+        cubemapLookup.setMinfilter(SamplerState.FTNearest)
+        cubemapLookup.setMagfilter(SamplerState.FTNearest)
+        cubemapLookup.setFormat(Texture.FRgb8)
+        self.renderPassManager.registerStaticVariable("directionToFaceLookup", 
+            cubemapLookup)
+
+        # Load the default environment cubemap
+        cubemapEnv = self.showbase.loader.loadCubeMap(
+            self.settings.defaultReflectionCubemap)
+        cubemapEnv.setMinfilter(SamplerState.FTLinearMipmapLinear)
+        cubemapEnv.setMagfilter(SamplerState.FTLinearMipmapLinear)
+        cubemapEnv.setFormat(Texture.FSrgb)
+        self.renderPassManager.registerStaticVariable("defaultEnvironmentCubemap", 
+            cubemapEnv)
+        self.renderPassManager.registerStaticVariable("defaultEnvironmentCubemapMipmaps", 
+            cubemapEnv.getExpectedNumMipmapLevels())
+
     def _createGenericDefines(self):
         define = lambda name, val: self.renderPassManager.registerDefine(name, val)
         define("WINDOW_WIDTH", self._size.x)
@@ -179,6 +228,17 @@ class RenderingPipeline(DebugObject):
             self.globalIllum.setup()
         else:
             self.globalIllum = None
+
+    def _precomputeScattering(self):
+        if self.settings.enableScattering:
+            earthScattering = Scattering(self)
+            scale = 1000000000
+            earthScattering.setSettings({
+                "atmosphereOffset": Vec3(0, 0, - (6360.0 + 9.5) * scale),
+                "atmosphereScale": Vec3(scale)
+            })
+            earthScattering.precompute()
+            earthScattering.provideInputs()
 
     def create(self):
         """ Creates the pipeline """
@@ -226,6 +286,9 @@ class RenderingPipeline(DebugObject):
         # Create render pass matcher
         self.renderPassManager = RenderPassManager()
 
+
+        self._precomputeScattering()
+
         # Add initial pass
         self.initialRenderPass = InitialRenderPass()
         self.renderPassManager.registerPass(self.initialRenderPass)
@@ -233,6 +296,14 @@ class RenderingPipeline(DebugObject):
         # Add deferred pass
         self.deferredScenePass = DeferredScenePass()
         self.renderPassManager.registerPass(self.deferredScenePass)
+
+        # Add lighting pass
+        self.lightingPass = LightingPass()
+        self.renderPassManager.registerPass(self.lightingPass)
+
+        # Add dynamic exposure pass
+        self.dynamicExposurePass = DynamicExposurePass(self)
+        self.renderPassManager.registerPass(self.dynamicExposurePass)
 
         # Create managers
         self.occlusionManager = AmbientOcclusionManager(self)
