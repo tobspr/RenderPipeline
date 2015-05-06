@@ -104,7 +104,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
 
 
         # This sources are included in the repo
@@ -135,7 +136,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setShadowMapResolution(2048)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(3.0))
+        dirLight.setColor(Vec3(1.0))
         # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
@@ -150,18 +151,18 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.setGILightSource(dirLight)
 
         # Slider to move the sun
-        # if self.renderPipeline.settings.displayOnscreenDebugger:
-        #     self.renderPipeline.guiManager.demoSlider.node[
-        #         "command"] = self.setSunPos
-        #     self.renderPipeline.guiManager.demoSlider.node[
-        #         "value"] = 80
+        if self.renderPipeline.settings.displayOnscreenDebugger:
+            self.renderPipeline.guiManager.demoSlider.node[
+                "command"] = self.setSunPos
+            self.renderPipeline.guiManager.demoSlider.node[
+                "value"] = 80
 
-        #     self.lastSliderValue = 0.0
+            self.lastSliderValue = 0.0
 
 
 
         # Create some lights
-        for i in xrange(0):
+        for i in xrange(3):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
@@ -169,15 +170,15 @@ class Main(ShowBase, DebugObject):
             yoffs = math.cos(radius) * 15.0
 
 
-            pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
-            # pointLight.setPos(Vec3( xoffs, yoffs, 15))
+            # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
+            pointLight.setPos(Vec3( xoffs, yoffs, 15))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
             pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( random(), random(), random()))
 
-            pointLight.setShadowMapResolution(512)
+            pointLight.setShadowMapResolution(1024)
             pointLight.setRadius(30)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
@@ -268,12 +269,11 @@ class Main(ShowBase, DebugObject):
         # self.transpObjRoot = render.attachNewNode("transparentObjects")
         matches = self.scene.findAllMatches("**/T__*")
         for match in matches:
-            print match
             # match.reparentTo(self.transpObjRoot)
-            # self.transparentObjects.append(match)
-            # self.renderPipeline.prepareTransparentObject(match)
+            self.transparentObjects.append(match)
+            self.renderPipeline.prepareTransparentObject(match)
             # match.listTags()
-            # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+            match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
 
         # Wheter to use a ground floor
         self.usePlane = False
@@ -352,10 +352,10 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
+                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 60)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
-            dPos = Vec3(30, (rawValue - 50) * 1.5, 100)
+            dPos = Vec3(30, (rawValue - 50) * 1.5, 30)
 
         if abs(diff) > 0.0001:
             self.dirLight.setPos(dPos)
@@ -418,12 +418,10 @@ class Main(ShowBase, DebugObject):
         self.debug("Reloading Shaders ..")
 
         if self.renderPipeline:
-            # self.scene.setShader(
-                # self.renderPipeline.getDefaultObjectShader(False))
 
             for obj in self.transparentObjects:
                 obj.setShader(
-                    self.renderPipeline.getDefaultTransparencyShader(), 100)
+                    self.renderPipeline.getDefaultTransparencyShader(), 30)
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()

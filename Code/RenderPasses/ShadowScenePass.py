@@ -54,7 +54,7 @@ class ShadowScenePass(RenderPass):
             "Shader/DefaultShaders/ShadowCasting/vertex.glsl",
             "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
         initialState = NodePath("ShadowCasterState")
-        # initialState.setShader(casterShader, 200)
+        initialState.setShader(casterShader, 100)
         for camera in self.shadowCameras:
             camera.node().setTagState("Default", initialState.getState())
 
@@ -62,7 +62,7 @@ class ShadowScenePass(RenderPass):
             "Shader/DefaultShaders/TransparentShadowCasting/vertex.glsl",
             "Shader/DefaultShaders/TransparentShadowCasting/fragment.glsl")
         initialState = NodePath("ShadowCasterStateTransparent")
-        # initialState.setShader(casterShader, 200)
+        initialState.setShader(casterShaderTransparent, 100)
         for camera in self.shadowCameras:
             camera.node().setTagState("Transparent", initialState.getState()) 
 
@@ -95,7 +95,7 @@ class ShadowScenePass(RenderPass):
 
         # Create default initial state
         initialState = NodePath("InitialState")
-        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
+        # initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
 
         # Create a camera for each update
         self.shadowCameras = []
@@ -125,7 +125,7 @@ class ShadowScenePass(RenderPass):
         self.pcfSampleState.setWrapU(SamplerState.WMClamp)
         self.pcfSampleState.setWrapV(SamplerState.WMClamp)
 
-        # Globals.render.setTag("ShadowPassShader", "Default")
+        Globals.render.setTag("ShadowPassShader", "Default")
 
     def getOutputs(self):
         return {

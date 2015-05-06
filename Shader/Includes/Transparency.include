@@ -111,7 +111,7 @@ void renderTransparentMaterial(TransparentMaterial tm) {
                 #else
 
                 tm.nextEntry = listHead;
-                // imageStore(listHeadBuffer, coord, uvec4(position));
+                imageStore(listHeadBuffer, coord, uvec4(position));
 
                 #endif
 
@@ -140,11 +140,11 @@ void renderTransparentMaterial(TransparentMaterial tm) {
 
 
     // Store material
-    // imageStore(materialDataBuffer, int(position), uvec4(integer1, integer2, integer3, integer4));
+    imageStore(materialDataBuffer, int(position), uvec4(integer1, integer2, integer3, integer4));
 // 
 
     #endif
 
-    // discard;
+    discard;
 
 }

@@ -85,10 +85,10 @@ void main() {
     uint totalEntryCount = texelFetch(pixelCountBuffer, ivec2(0), 0).x;
 
     // Early out .. have to test if that is faster
-    // if (listHead == 0) {
-    //     colorResult = vec4(currentColor, currentOcclusion);
-    //     return;
-    // } 
+    if (listHead == 0) {
+        colorResult = vec4(currentColor, currentOcclusion);
+        return;
+    } 
 
 
     // Store parts of the data in registers
@@ -221,7 +221,7 @@ void main() {
 
     #endif
 
-    currentColor = vec3( float(texelFetch(listHeadBuffer, coord, 0).x) / 1000000.0);
+    // currentColor = vec3( float(texelFetch(listHeadBuffer, coord, 0).x) / 1000000.0);
     colorResult = vec4(currentColor, currentOcclusion);
 
 }
