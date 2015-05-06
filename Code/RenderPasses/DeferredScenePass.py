@@ -1,5 +1,5 @@
 
-
+from Code.Globals import Globals
 from Code.RenderPass import RenderPass
 from Code.RenderTarget import RenderTarget
 
@@ -26,8 +26,11 @@ class DeferredScenePass(RenderPass):
         self.target.setAuxBits(16)
         self.target.setColorBits(32)
         self.target.setDepthBits(32)
+        self.target.setCreateOverlayQuad(False)
         self.target.prepareSceneRender()
         self.target.setClearColor(True)
+
+        # self.target.getQuad().node().removeAllChildren()
 
     def getOutputs(self):
         return {

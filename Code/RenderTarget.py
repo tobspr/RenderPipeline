@@ -67,6 +67,7 @@ class RenderTarget(DebugObject):
         self._region = self._findRegionForCamera()
         self._enableTransparency = False
         self._layers = 0
+        self._createOverlayQuad = True
         self._writeColor = True
         self._multisamples = 0
         self._engine = Globals.base.graphicsEngine
@@ -76,6 +77,11 @@ class RenderTarget(DebugObject):
         self._rename(name)
 
         self.mute()
+
+    def setCreateOverlayQuad(self, createQuad):
+        """ When create quad is set to true, a fullscreen quad will be used to be
+        able to directly apply a shader to it """
+        self._createOverlayQuad = createQuad
 
     def setHaveColorAlpha(self, color_alpha):
         """ Sets wheter the color buffer has an alpha channel or not """
@@ -316,8 +322,10 @@ class RenderTarget(DebugObject):
         # Set new camera
         bufferCam = self._makeFullscreenCam()
         bufferCamNode = self._quad.attachNewNode(bufferCam)
-        self._region.setCamera(bufferCamNode)
-        self._region.setSort(5)
+
+        if self._createOverlayQuad:
+            self._region.setCamera(bufferCamNode)
+            self._region.setSort(5)
 
         # Set clears
         bufferRegion = self._buffer.getInternalBuffer().getDisplayRegion(0)

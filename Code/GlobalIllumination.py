@@ -40,7 +40,7 @@ class GlobalIllumination(DebugObject):
 
         # Store grid size in world space units
         # This is the half voxel grid size
-        self.voxelGridSizeWS = Vec3(55)
+        self.voxelGridSizeWS = Vec3(25)
 
         # Store grid resolution, should be equal for each dimension
 

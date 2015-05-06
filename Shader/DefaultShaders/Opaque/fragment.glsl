@@ -58,10 +58,10 @@ void main() {
     m.position = vOutput.positionWorld;
 
 
-    // m.metallic = 0.0;
-    // m.specular = 0.7;
-    // m.roughness = 0.05;
-    // m.baseColor = vec3(vOutput.materialDiffuse);
+    m.metallic = 0.0;
+    m.specular = 0.5;
+    m.roughness = 0.1;
+    m.baseColor = vec3(vOutput.materialDiffuse);
 
     renderMaterial(m);
 }

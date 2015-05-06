@@ -24,7 +24,7 @@ class AmbientOcclusionPass(RenderPass):
         }
 
     def create(self):
-        self.target = RenderTarget("AmbientOccluon")
+        self.target = RenderTarget("AmbientOcclusion")
         self.target.setHalfResolution()
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()

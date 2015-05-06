@@ -26,6 +26,7 @@ from RenderPasses.EdgePreservingBlurPass import EdgePreservingBlurPass
 from RenderPasses.CombineGIandAOPass import CombineGIandAOPass
 from RenderPasses.LightingPass import LightingPass
 from RenderPasses.DynamicExposurePass import DynamicExposurePass
+from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 
 
 class RenderingPipeline(DebugObject):
@@ -304,6 +305,10 @@ class RenderingPipeline(DebugObject):
         # Add dynamic exposure pass
         self.dynamicExposurePass = DynamicExposurePass(self)
         self.renderPassManager.registerPass(self.dynamicExposurePass)
+
+        # Add final pass
+        self.finalPostprocessPass = FinalPostprocessPass()
+        self.renderPassManager.registerPass(self.finalPostprocessPass)
 
         # Create managers
         self.occlusionManager = AmbientOcclusionManager(self)

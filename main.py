@@ -102,11 +102,12 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
+        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
 
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        self.sceneSource = "Models/HouseSet/Model.egg"
+        # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
@@ -118,8 +119,8 @@ class Main(ShowBase, DebugObject):
 
 
         # Select surrounding scene here
-        # self.sceneSourceSurround = None
-        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        self.sceneSourceSurround = None
+        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
         self.transparentObjects = []
@@ -300,7 +301,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Some artists really don't know about backface culling
-        # self.scene.setTwoSided(True)
+        self.scene.setTwoSided(True)
 
         # Required for tesselation
         # self.convertToPatches(self.scene)
