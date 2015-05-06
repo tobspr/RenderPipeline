@@ -160,8 +160,8 @@ class BufferViewerGUI(DebugObject):
                     posX = 0
 
     def showDetail(self, tex, coord):
-        availableW = 1180
-        availableH = 690
+        availableW = 1280
+        availableH = 750
 
         texW, texH = tex.getXSize(), tex.getYSize()
         aspect = float(texH) / texW

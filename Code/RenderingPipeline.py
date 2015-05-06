@@ -15,6 +15,7 @@ from RenderPassManager import RenderPassManager
 from LightManager import LightManager
 from AmbientOcclusionManager import AmbientOcclusionManager
 from GlobalIllumination import GlobalIllumination
+from AntialiasingManager import AntialiasingManager
 from Scattering import Scattering
 
 from GUI.PipelineGuiManager import PipelineGuiManager
@@ -123,6 +124,8 @@ class RenderingPipeline(DebugObject):
         self.lightManager.updateShadows()
         self.lightManager.processCallbacks()
         self.guiManager.update()
+        self.antialiasingManager.update()
+        self.renderPassManager.preRenderUpdate()
 
         if self.globalIllum:
             self.globalIllum.update()
@@ -217,6 +220,17 @@ class RenderingPipeline(DebugObject):
             cubemapEnv)
         self.renderPassManager.registerStaticVariable("defaultEnvironmentCubemapMipmaps", 
             cubemapEnv.getExpectedNumMipmapLevels())
+
+
+        # Load the color LUT
+        colorLUT = loader.loadTexture("Data/ColorLUT/" + self.settings.colorLookupTable)
+        colorLUT.setWrapU(SamplerState.WMClamp)
+        colorLUT.setWrapV(SamplerState.WMClamp)
+        colorLUT.setFormat(Texture.F_rgb16)
+        colorLUT.setMinfilter(SamplerState.FTLinear)
+        colorLUT.setMagfilter(SamplerState.FTLinear)
+        self.renderPassManager.registerStaticVariable("colorLUT", colorLUT)
+
 
     def _createGenericDefines(self):
         define = lambda name, val: self.renderPassManager.registerDefine(name, val)
@@ -313,9 +327,9 @@ class RenderingPipeline(DebugObject):
         # Create managers
         self.occlusionManager = AmbientOcclusionManager(self)
         self.lightManager = LightManager(self)
+        self.antialiasingManager = AntialiasingManager(self)
 
         self._createGlobalIllum()
-
 
         # Make variables available
         self._createGenericDefines()

@@ -29,6 +29,9 @@ class RenderPass:
     def getOutputs(self):
         return {}
 
+    def preRenderUpdate(self):
+        pass
+
     def setShaderInput(self, name, value, *args):
         self.target.setShaderInput(name, value, *args)
 

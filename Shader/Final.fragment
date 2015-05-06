@@ -16,7 +16,7 @@ in vec2 texcoord;
 uniform sampler2D colorTex;
 
 
-// uniform sampler2D colorLUT;
+uniform sampler2D colorLUT;
 // uniform sampler2D depthTex;
 
 // uniform float motionBlurFactor;
@@ -62,7 +62,7 @@ void main() {
         // Color LUT
         #ifndef DEBUG_RM_OCCLUSION
         #ifndef DEBUG_RM_BASECOLOR
-        // result = applyColorLUT(colorLUT, result);
+        result = applyColorLUT(colorLUT, result);
 
         #endif
         #endif

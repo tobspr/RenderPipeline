@@ -5,28 +5,33 @@ from Code.Globals import Globals
 from Code.RenderPass import RenderPass
 from Code.RenderTarget import RenderTarget
 
-class FinalPostprocessPass(RenderPass):
+class AntialiasingFXAAPass(RenderPass):
 
     def __init__(self):
         RenderPass.__init__(self)
 
     def getID(self):
-        return "FinalPostprocessPass"
+        return "AntialiasingPass"
 
     def getRequiredInputs(self):
         return {
-            "colorTex": ["AntialiasingPass.resultTex", "LightingPass.resultTex"],
-            "colorLUT": "Variables.colorLUT"
+            "colorTex": "LightingPass.resultTex"
         }
 
     def create(self):
-        self.target = RenderTarget("Final Pass")
+        self.target = RenderTarget("Antialiasing FXAA")
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
-        Globals.base.win.getDisplayRegion(1).setCamera(self.target._quad.getChild(0))
+
 
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/Final.fragment")
+            "Shader/Antialiasing/FXAA/FXAA3.fragment")
         self.target.setShader(shader)
+
+    def getOutputs(self):
+        return {
+            "AntialiasingPass.resultTex": lambda: self.target.getColorTexture(),
+        }
+

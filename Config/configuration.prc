@@ -51,7 +51,7 @@ pstats-target-frame-rate 30.0
 
 
 # Threading
-# threading-model App/Cull/Draw
+#threading-model App/Cull/Draw
 
 
 

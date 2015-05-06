@@ -104,7 +104,7 @@ class RenderPassManager(DebugObject):
 
                     return entry                    
 
-            self.error("No input of",inputList,"is available")
+            # self.error("No input of",inputList,"is available")
             return False
 
         if inputList in self._availableUniformNames:
@@ -144,6 +144,13 @@ class RenderPassManager(DebugObject):
 
         for renderPass in self._sortedNodes:
             renderPass.setShaders()
+
+
+    def preRenderUpdate(self):
+        """ Calls the preRenderUpdate on each assigned pass """
+
+        for renderPass in self._sortedNodes:
+            renderPass.preRenderUpdate()
 
     def writeAutoconfig(self):
         """ Writes the shader auto config, based on the defines specified by the

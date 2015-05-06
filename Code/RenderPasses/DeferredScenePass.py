@@ -36,6 +36,7 @@ class DeferredScenePass(RenderPass):
         return {
             "DeferredScenePass.wsPosition": lambda: self.target.getColorTexture(),
             "DeferredScenePass.wsNormal": lambda: self.target.getAuxTexture(0),
+            "DeferredScenePass.velocity": lambda: self.target.getAuxTexture(1),
 
             "DeferredScenePass.depth": lambda: self.target.getDepthTexture(),
             "DeferredScenePass.data0": lambda: self.target.getColorTexture(),

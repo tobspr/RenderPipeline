@@ -6,7 +6,7 @@
 
 
 // PARAMETERS
-#define FXAA_QUALITY__PRESET 13
+#define FXAA_QUALITY__PRESET 39
 
 // IMPORTANT: You can find other parameters to tweak in the main() function of this shader
 
@@ -17,8 +17,6 @@
 
 #define COLOR colorTex
 uniform sampler2D COLOR;
-uniform vec2 buffersize;
-
 
 /*==========================================================================*/
 #ifndef FXAA_GREEN_AS_LUMA

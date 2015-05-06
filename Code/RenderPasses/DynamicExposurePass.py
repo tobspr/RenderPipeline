@@ -72,9 +72,6 @@ class DynamicExposurePass(RenderPass):
 
         self.finalDownsamplePass.setShaderInput("lastExposureTex", self.lastExposureStorage)
 
-        # self.finalDownsamplePass.setShaderInput("dt", 0.1)
-
- 
     def setShaders(self):
         """ Reloads the shaders for the various passes """
         fpShader = Shader.load(Shader.SLGLSL, 
