@@ -22,7 +22,8 @@ class InitialRenderPass(RenderPass):
         return {
             "lastMVP": "Variables.lastMVP",
             "numUpdates": "Variables.numShadowUpdates",
-            "updateSources": "Variables.shadowUpdateSources"
+            "updateSources": "Variables.shadowUpdateSources",
+            "shadowAtlas": "ShadowScenePass.atlas"
         }
 
     def setShaders(self):

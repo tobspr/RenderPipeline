@@ -29,4 +29,3 @@ class AmbientOcclusionManager(DebugObject):
         self.aoPass.setSize(self.pipeline.getSize() / 2)
         self.pipeline.getRenderPassManager().registerPass(self.aoPass)
         self.pipeline.getRenderPassManager().registerDefine("OCCLUSION_TECHNIQUE_" + technique, 1)
-

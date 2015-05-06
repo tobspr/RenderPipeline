@@ -4,6 +4,9 @@
 #pragma include "Includes/PoissonDisk.include"
 
 #extension GL_ARB_shader_image_load_store : enable
+#extension GL_ARB_shader_image_size : enable
+
+
 in vec4 color;
 in vec3 normal;
 in vec4 positionWorld;
@@ -11,66 +14,64 @@ in vec2 texc;
 
 uniform sampler2D p3d_Texture0;
 
-uniform vec3 dv_gridStart;
-uniform vec3 dv_gridEnd;
-uniform vec3 dv_lightdir;
-uniform ivec3 dv_gridResolution;
+uniform vec3 giVoxelGridStart;
+uniform vec3 giVoxelGridEnd;
+uniform vec3 giLightDirection;
+uniform vec2 giLightUVStart;
+uniform float giLightUVSize;
 
-uniform mat4 dv_mvp;
-uniform sampler2D dv_atlas;
+uniform mat4 giLightMVP;
+uniform sampler2D shadowAtlas;
 
-uniform vec2 dv_uv_start;
-uniform float dv_uv_size;
-
-uniform layout(r32ui) uimage3D dv_dest_tex;
+uniform layout(r32ui) uimage3D giVoxelGenerationTex;
 out vec4 result;
 
 void main() {
 
-    vec3 voxelSpacePos = (positionWorld.xyz-dv_gridStart) / (dv_gridEnd - dv_gridStart);
-    ivec3 voxelCoords = ivec3( (voxelSpacePos * vec3(dv_gridResolution)) + 0.0 );
+    // Convert world position to voxel grid position
+    vec3 voxelSpacePos = (positionWorld.xyz-giVoxelGridStart) / (giVoxelGridEnd - giVoxelGridStart);
 
-    vec4 colorSample = textureLod(p3d_Texture0, texc, 0);
-    // colorSample = vec4(1);
+    // Convert voxel position to integer coordinates
+    ivec3 voxelCoords = ivec3(voxelSpacePos * imageSize(giVoxelGenerationTex));
 
-    // if (colorSample.a < 0.5) discard;
+    // Project world position to shadow map space
+    vec4 projCoord = giLightMVP * vec4(positionWorld.xyz, 1);
+    projCoord.xyz = (projCoord.xyz / projCoord.w * 0.5) + 0.5;
 
-    vec3 diffuse = pow(colorSample.xyz, vec3(1.0 / 2.2)) * color.xyz;
-    // diffuse = colorSample.xyz * 5.0;
+    // Convert shadow map space to shadow atlas space
+    vec2 convertedCoord = projCoord.xy * giLightUVSize + giLightUVStart;
 
-    vec4 projected = dv_mvp * vec4(positionWorld.xyz, 1);
-    vec3 projCoord = (projected.xyz / projected.w * 0.5) + 0.5;
-
-    vec2 convertedCoord = projCoord.xy * dv_uv_size + dv_uv_start;
+    // Filter shadow map
     float pixelSize = 1.0 / SHADOW_MAP_ATLAS_SIZE;
     float kernelRadius = 1.0;
-
     float shadowSum = 0.0;
     const int voxelShadowSamples = 16;
-
-    if (voxelShadowSamples < 2) {
-        kernelRadius = 0;
-    }
-
     for (int i = 0; i < voxelShadowSamples; i++) {
-        float sampledDepth = texture(dv_atlas, convertedCoord.xy + poissonDisk64[i] * pixelSize * kernelRadius).x;
+        float sampledDepth = texture(shadowAtlas, convertedCoord.xy + poissonDisk64[i] * pixelSize * kernelRadius).x;
         shadowSum += step(sampledDepth, projCoord.z - 0.0001);
     }
-
     shadowSum /= voxelShadowSamples;   
-    float ambientFactor = 0.2;
+    // shadowSum = 1.0;
 
-    float shadowFactor = max(ambientFactor, 1.0 - shadowSum);
+    // Sample and process the color texture
+    vec4 colorSample = textureLod(p3d_Texture0, texc, 0);
+    vec3 diffuse = pow(colorSample.xyz, vec3(1.0 / 2.2)) * color.xyz;
+    // if (colorSample.a < 0.5) discard;
 
-    vec3 diffuseContribution = diffuse * shadowFactor * saturate(dot(dv_lightdir, normal));
 
+    // Compute lighting based on diffuse color and shadow factor
+    float shadowAmbientFactor = 0.2;
+    float shadowFactor = max(shadowAmbientFactor, 1.0 - shadowSum);
+    vec3 diffuseContribution = diffuse * shadowFactor * saturate(dot(giLightDirection, normal));
     diffuseContribution += vec3(0.2, 0.6, 1.0) * 0.1;
 
+    // Pack everything into a single uint
     uint packedColor = packUnorm4x8(vec4(0.0, saturate(diffuseContribution)));
 
-    imageAtomicMax(dv_dest_tex, voxelCoords, packedColor);
+    // Store the data, we use atomic max because that provides the best resulst
+    imageAtomicMax(giVoxelGenerationTex, voxelCoords, packedColor);
+    // imageAtomicOr(giVoxelGenerationTex, voxelCoords, packedColor);
+    // imageStore(giVoxelGenerationTex, voxelCoords, ivec4(packedColor));
 
-    // imageAtomicOr(dv_dest_tex, voxelCoords, packedColor);
-    // imageStore(dv_dest_tex, voxelCoords, ivec4(packedColor));
     result = vec4(diffuseContribution, 1);
 }

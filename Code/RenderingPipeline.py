@@ -2,6 +2,8 @@
 
 from panda3d.core import NodePath, Shader, Vec4, TransparencyAttrib, LVecBase2i
 from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerState
+from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight, UnalignedLMatrix4f
+
 
 from DebugObject import DebugObject
 from MountManager import MountManager
@@ -54,7 +56,7 @@ class RenderingPipeline(DebugObject):
         self.lightManager.addLight(light)
 
     def setGILightSource(self, lightSource):
-        pass
+        self.globalIllum.setTargetLight(lightSource)
 
     def prepareMaterials(self, nodePath):
         pass
@@ -99,6 +101,10 @@ class RenderingPipeline(DebugObject):
         self.lightManager.updateShadows()
         self.lightManager.processCallbacks()
         self.guiManager.update()
+
+        if self.globalIllum:
+            self.globalIllum.update()
+
         return task.cont
 
     def _updateInputHandles(self):
@@ -106,6 +112,25 @@ class RenderingPipeline(DebugObject):
         cameraBounds = self.showbase.camNode.getLens().makeBounds()
         cameraBounds.xform(self.showbase.camera.getMat(self.showbase.render))
         self.lightManager.setCullBounds(cameraBounds)
+
+        self.lastMVP[0] = self.currentMVP[0]
+        self.currentMVP[0] = self._computeMVP()
+        self.cameraPosition[0] = self.showbase.cam.getPos(self.showbase.render)
+
+    def _computeMVP(self):
+        """ Computes the current mvp. Actually, this is the
+        worldViewProjectionMatrix, but for convience it's called mvp. """
+        camLens = self.showbase.camLens
+        projMat = Mat4.convertMat(
+            CSYupRight,
+            camLens.getCoordinateSystem()) * camLens.getProjectionMat()
+        transformMat = TransformState.makeMat(
+            Mat4.convertMat(self.showbase.win.getGsg().getInternalCoordinateSystem(),
+                            CSZupRight))
+        modelViewMat = transformMat.invertCompose(
+            self.showbase.render.getTransform(self.showbase.cam)).getMat()
+        return UnalignedLMatrix4f(modelViewMat * projMat)
+
 
     def _createGUIManager(self):
         if self.settings.displayOnscreenDebugger:
@@ -142,6 +167,18 @@ class RenderingPipeline(DebugObject):
         texNoise.setMinfilter(SamplerState.FTNearest)
         texNoise.setMagfilter(SamplerState.FTNearest)
         self.renderPassManager.registerStaticVariable("noise4x4", texNoise)
+
+    def _createGenericDefines(self):
+        define = lambda name, val: self.renderPassManager.registerDefine(name, val)
+        define("WINDOW_WIDTH", self._size.x)
+        define("WINDOW_HEIGHT", self._size.y)
+
+    def _createGlobalIllum(self):
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum = GlobalIllumination(self)
+            self.globalIllum.setup()
+        else:
+            self.globalIllum = None
 
     def create(self):
         """ Creates the pipeline """
@@ -200,9 +237,12 @@ class RenderingPipeline(DebugObject):
         # Create managers
         self.occlusionManager = AmbientOcclusionManager(self)
         self.lightManager = LightManager(self)
-        self.globalIllum = GlobalIllumination(self)
+
+        self._createGlobalIllum()
+
 
         # Make variables available
+        self._createGenericDefines()
         self._createInputHandles()
         self._createDefaultTextureInputs()
         self._createViewSpacePass()
@@ -215,6 +255,10 @@ class RenderingPipeline(DebugObject):
 
         # Create the update tasks
         self._createTasks()
+
+
+        # TODO: Make GI use render passes
+        self.globalIllum.reloadShader()
 
         # Give the gui a hint when the pipeline is done loading
         if self.settings.displayOnscreenDebugger:

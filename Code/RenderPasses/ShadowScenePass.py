@@ -109,7 +109,7 @@ class ShadowScenePass(RenderPass):
 
     def getOutputs(self):
         return {
-            "ShadowScenePass.atlas": lambda: self.target
+            "ShadowScenePass.atlas": lambda: self.target.getDepthTexture()
         }
 
     def setShaderInput(self, name, value):

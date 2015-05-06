@@ -13,11 +13,11 @@ uniform GIData giData;
 uniform float THIS_UNIFORM_DOES_NOT_EXIST_AND_IS_NEVER_BOUND_NOR_USED;
 
 
-uniform float opt_ao_cone_height;
-uniform float opt_ao_step_ratio;
-uniform float opt_ao_cone_ratio;
-uniform float opt_ao_start_distance;
-uniform float opt_ao_initial_radius;
+// uniform float opt_ao_cone_height;
+// uniform float opt_ao_step_ratio;
+// uniform float opt_ao_cone_ratio;
+// uniform float opt_ao_start_distance;
+// uniform float opt_ao_initial_radius;
 
 
 vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
@@ -35,31 +35,10 @@ vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
         currentConeRadius *= stepRatio; 
         currentDistance += currentConeRadius * coneRatio;
         vec3 currentPos = start + directionStep * currentDistance;
-        float currentMip = log2( currentConeRadius + 1.0 ) * 1.0;
+        float currentMip = log2( currentConeRadius + 1.0 ) * 1.5;
+        currentMip = min(currentMip, 4.0);
         vec4 currentVal = textureLod(targetTex, currentPos, currentMip );
         result += currentVal * (1.0-result.w);
-    }
-    return result;
-}
-
-vec4 traceConeWithCollisions(GIData data, vec3 start, vec3 direction, 
-int iterations, float stepRatio, float coneRatio, float startDistance, float initialConeRadius) {
-
-    vec3 directionStep = normalize(direction) / (2.0 * data.gridHalfSize);
-    vec4 result = vec4(0);
-
-    float currentDistance = startDistance;
-    float currentConeRadius = initialConeRadius;
-
-    // TODO: Optimize
-    for (int i = 0; i < iterations; i++) {
-        currentConeRadius *= stepRatio; 
-        currentDistance += currentConeRadius * coneRatio;
-        vec3 currentPos = start + directionStep * currentDistance;
-        // float currentMip = clamp(log2( currentConeRadius ) * 1.5, 0.0, 5.0);
-        float currentMip = log2(currentConeRadius);
-        vec4 currentVal = textureLod(data.voxels, currentPos, currentMip );
-        result += (1.0-result.w) * currentVal;
     }
     return result;
 }
@@ -190,11 +169,14 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
             correctNormal * traceDirection.z
         );
         // giResult += traceConeWithCollisions(data, localCoord, mixedNormal , 12, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
-        giResult += traceConeWithCollisions(data, localCoord, mixedNormal , 12, 1.5, 0.3523 , 0.2091, 1.509);
+        giResult += traceCone(data, data.geometry, localCoord, mixedNormal , 12, 1.5, 0.3523 , 0.2091, 1.509);
     }
     giResult = giResult / float(numSamplesGI);
     #endif
 
+
+
+    // return vec4(localCoord, 0);
 
     // Raytrace to visualize voxels
     #if 0
@@ -236,9 +218,10 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     #endif
 
 
-    giResult *= 3.0;
-    giResult *= mix(aoMultiplier, 1.0, 0.5);
+    // giResult *= 3.0;
+    // giResult *= mix(aoMultiplier, 1.0, 0.5);
 
+    giResult = vec4(aoMultiplier);
 
     // return vec4(giResult * 1.0);
     // return vec4(1.02 - exp(-10.5 *giResult));

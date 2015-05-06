@@ -64,10 +64,10 @@ class LightCullingPass(RenderPass):
         }
  
     def setShaders(self):
-        pcShader = Shader.load(Shader.SLGLSL, 
+        shader = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
             "Shader/PrecomputeLights.fragment")
-        self.target.setShader(pcShader)
+        self.target.setShader(shader)
 
     def getOutputs(self):
         return {
