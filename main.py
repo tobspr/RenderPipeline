@@ -107,20 +107,20 @@ class Main(ShowBase, DebugObject):
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        # self.sceneSource = "Models/HouseSet/Model.egg"
+        self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
-        self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
+        # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
 
 
         # Select surrounding scene here
-        self.sceneSourceSurround = None
-        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        # self.sceneSourceSurround = None
+        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
         self.transparentObjects = []
@@ -130,10 +130,10 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(512)
+        dirLight.setShadowMapResolution(2048)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1.0))
+        dirLight.setColor(Vec3(3.0))
         # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
@@ -148,18 +148,18 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.setGILightSource(dirLight)
 
         # Slider to move the sun
-        if self.renderPipeline.settings.displayOnscreenDebugger:
-            self.renderPipeline.guiManager.demoSlider.node[
-                "command"] = self.setSunPos
-            self.renderPipeline.guiManager.demoSlider.node[
-                "value"] = 80
+        # if self.renderPipeline.settings.displayOnscreenDebugger:
+        #     self.renderPipeline.guiManager.demoSlider.node[
+        #         "command"] = self.setSunPos
+        #     self.renderPipeline.guiManager.demoSlider.node[
+        #         "value"] = 80
 
-            self.lastSliderValue = 0.0
+        #     self.lastSliderValue = 0.0
 
 
 
         # Create some lights
-        for i in xrange(3):
+        for i in xrange(0):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
@@ -167,7 +167,7 @@ class Main(ShowBase, DebugObject):
             yoffs = math.cos(radius) * 15.0
 
 
-            pointLight.setPos(Vec3(i*4.0 - 7.5, 0.2, 7.0))
+            pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
             # pointLight.setPos(Vec3( xoffs, yoffs, 15))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
             pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
@@ -182,20 +182,20 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.addLight(pointLight)
 
         # Create more lights
-        for i in xrange(15):
+        for i in xrange(5):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
             radius = float(i) / 15.0 * 6.28 + 1.52
-            xoffs = math.sin(radius) * 20.0
-            yoffs = math.cos(radius) * 20.0
+            xoffs = math.sin(radius) * 15.0
+            yoffs = math.cos(radius) * 15.0
 
             spotLight.setPos(Vec3( xoffs, yoffs, 12))
 
             # spotLight.setPos(Vec3(-10.0 + i * 2.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
             # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
-            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
+            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
             # spotLight.setColor(Vec3( random(), random(), random()) * 0.1)
 
             # spotLight.setNearFar(1.0, 20.0)
@@ -212,7 +212,7 @@ class Main(ShowBase, DebugObject):
         
         if True:
             # Show loading screen a bit
-            self.doMethodLater(0.5, self.loadScene, "Load Scene")
+            self.doMethodLater(0.0, self.loadScene, "Load Scene")
         else:
             self.loadScene()
 
@@ -247,7 +247,7 @@ class Main(ShowBase, DebugObject):
 
         # Performance testing
 
-        if True:
+        if False:
             highPolyObj = self.scene.find("**/HighPolyObj")
 
             if highPolyObj is not None and not highPolyObj.isEmpty():
@@ -262,7 +262,7 @@ class Main(ShowBase, DebugObject):
                         copiedObj.setPos(x-5, y-5, 2)
 
         # Find transparent objects
-        matches = self.scene.findAllMatches("**/T__*")
+        # matches = self.scene.findAllMatches("**/T__*")
         # for match in matches:
             # self.transparentObjects.append(match)
             # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
@@ -307,7 +307,6 @@ class Main(ShowBase, DebugObject):
         # self.convertToPatches(self.scene)
 
 
-
         # Hotkey for wireframe
         self.accept("f3", self.toggleSceneWireframe)
 
@@ -320,7 +319,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(-5, 5, 12), Vec3(5, 5, 2))
+            Vec3(-12, 0, 12), Vec3(5, 0, 0))
         self.controller.setup()
 
         # Load skybox
@@ -411,12 +410,12 @@ class Main(ShowBase, DebugObject):
         self.debug("Reloading Shaders ..")
 
         if self.renderPipeline:
-            self.scene.setShader(
-                self.renderPipeline.getDefaultObjectShader(False))
+            # self.scene.setShader(
+                # self.renderPipeline.getDefaultObjectShader(False))
 
-            for obj in self.transparentObjects:
-                obj.setShader(
-                    self.renderPipeline.getDefaultTransparencyShader())
+            # for obj in self.transparentObjects:
+            #     obj.setShader(
+            #         self.renderPipeline.getDefaultTransparencyShader())
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()

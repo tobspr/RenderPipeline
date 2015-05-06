@@ -1,0 +1,63 @@
+#version 150
+
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+
+in vec2 texcoord;
+
+uniform sampler2D positionTex;
+uniform sampler2D depthTex;
+uniform mat4 trans_mainRender_to_apiview_of_mainCam;
+
+out vec3 outNormalVS;
+out vec3 outPositionVS;
+
+
+vec3 getPositionWorld(vec2 coord) {
+    float z = texture(depthTex, coord).x;
+    return calculateSurfacePos(z, coord);
+}
+
+uniform vec4 bufferSize;
+
+void main() {
+    // This computes the view space normals from the position buffer
+    // for occlusion
+
+    #if 0
+
+
+        ivec2 root = ivec2(gl_FragCoord.xy) * 2;
+        vec3 world = texelFetch(positionTex, root, 0).rgb;
+        vec3 worldX1 = texelFetch(positionTex, root + ivec2(1,0), 0).rgb;
+        vec3 worldY1 = texelFetch(positionTex, root + ivec2(0,1), 0).rgb;
+        vec3 worldXM1 = texelFetch(positionTex, root + ivec2(-1, 0), 0).rgb;
+        vec3 worldYM1 = texelFetch(positionTex, root + ivec2(0,-1), 0).rgb;
+
+    #else
+
+        vec3 pixelW = vec3(bufferSize.xy, 0);
+        vec3 world = getPositionWorld(texcoord);
+        vec3 worldX1 = getPositionWorld(texcoord + pixelW.xz);
+        vec3 worldY1 = getPositionWorld(texcoord + pixelW.zy);
+        // vec3 worldXM1 = getPositionWorld(texcoord - pixelW.xz);
+        // vec3 worldYM1 = getPositionWorld(texcoord - pixelW.zy);
+
+
+    #endif
+
+    vec3 worldChangeX = world - worldX1;
+    vec3 worldChangeY = world - worldY1;
+
+    vec4 positionVS = trans_mainRender_to_apiview_of_mainCam * vec4(world, 1);
+
+    vec3 normal = (cross(worldChangeX, worldChangeY));
+    normal = normalize(normal);
+
+    vec4 vsNormal = trans_mainRender_to_apiview_of_mainCam * vec4(normal, 0);
+    vsNormal = normalize(vsNormal);
+
+    outNormalVS = vsNormal.rgb;
+    outPositionVS = positionVS.rgb;
+}

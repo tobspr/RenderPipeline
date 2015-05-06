@@ -45,9 +45,9 @@ uniform mat4 MODEL_VIEW_PROJ_MAT;
 const ivec2 patchSize = ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y);
 
 
-#if ENABLE_LIGHT_PER_TILE_DEBUG
+// #if ENABLE_LIGHT_PER_TILE_DEBUG
 out vec4 debugOutput;
-#endif
+// #endif
 
 void main() {
 
@@ -291,13 +291,13 @@ void main() {
     imageStore(destinationBuffer, bufferBaseStride + 4, ivec4(processedSpotLights));
     imageStore(destinationBuffer, bufferBaseStride + 5, ivec4(processedShadowedSpotLights));
 
-    #if ENABLE_LIGHT_PER_TILE_DEBUG
+    // #if ENABLE_LIGHT_PER_TILE_DEBUG
         float lightsVisibleFloat = float(
             processedPointLights + processedShadowedPointLights + 
             processedSpotLights + processedShadowedSpotLights) / float(10.0);
         vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
         debugOutput = vec4(lightCountIndicator, 1);
 
-    #endif
+    // #endif
 
 }

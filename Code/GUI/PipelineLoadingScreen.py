@@ -73,9 +73,6 @@ class PipelineLoadingScreen:
         interval4.loop()
         self.showbase.graphicsEngine.renderFrame()
 
-
-
-
     def setStatus(self, status):
         """ Sets the current loading status """
         self.loadingText.setText(status)
@@ -93,4 +90,4 @@ class PipelineLoadingScreen:
 
     def hide(self):
         """ Tells the loading screen to hide as soon as possible """
-        self.showbase.taskMgr.doMethodLater(0.1, self._cleanup, "cleanupLoadingScreen")
+        self.showbase.taskMgr.doMethodLater(0.0, self._cleanup, "cleanupLoadingScreen")

@@ -8,6 +8,7 @@ from panda3d.core import CullFaceAttrib, ColorWriteAttrib, DepthWriteAttrib
 from panda3d.core import OmniBoundingVolume, PTAInt, Vec4, PTAVecBase4f
 from panda3d.core import LVecBase2i, ShaderAttrib, UnalignedLVecBase4f
 from panda3d.core import ComputeNode, LVecBase4i, GraphicsOutput, SamplerState
+from panda3d.core import PStatCollector
 from panda3d.core import Shader, Filename
 
 from Light import Light
@@ -18,7 +19,11 @@ from ShadowAtlas import ShadowAtlas
 from ShaderStructArray import ShaderStructArray
 from Globals import Globals
 from MemoryMonitor import MemoryMonitor
-from panda3d.core import PStatCollector
+from LightLimits import LightLimits
+
+
+from Code.RenderPasses.ShadowScenePass import ShadowScenePass
+from Code.RenderPasses.LightCullingPass import LightCullingPass
 
 pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
 pstats_CullLights = PStatCollector("App:LightManager:CullLights")
@@ -56,39 +61,14 @@ class LightManager(DebugObject):
         """ Creates a new LightManager. It expects a RenderPipeline as parameter. """
         DebugObject.__init__(self, "LightManager")
 
-        
-        # If you change this, don't forget to change it also in
-        # Shader/Includes/Configuration.include!
-        self.maxLights = {
-            "PointLight": 15,
-            "PointLightShadow": 4,
-            "DirectionalLight": 1,
-            "DirectionalLightShadow": 1,
-            "SpotLight": 3,
-            "SpotLightShadow": 1,
-            "GIHelperLightShadow": 10
-        }
-
-        self.maxPerTileLights = {
-            "PointLight": 15,
-            "PointLightShadow": 4,
-            "DirectionalLight": 1,
-            "DirectionalLightShadow": 1,
-            "SpotLight": 3,
-            "SpotLightShadow": 1,
-        }
-
-
-        self.maxTotalLights = 20
         self.renderedLights = {}
         self.pipeline = pipeline
-        self.settings = pipeline.getSettings()
 
         # Create arrays to store lights & shadow sources
         self.lights = []
         self.shadowSources = []
         self.queuedShadowUpdates = []
-        self.allLightsArray = ShaderStructArray(Light, self.maxTotalLights)
+        self.allLightsArray = ShaderStructArray(Light, LightLimits.maxTotalLights)
         self.updateCallbacks = []
 
         self.cullBounds = None
@@ -96,84 +76,68 @@ class LightManager(DebugObject):
 
         # Create atlas
         self.shadowAtlas = ShadowAtlas()
-        self.shadowAtlas.setSize(self.settings.shadowAtlasSize)
+        self.shadowAtlas.setSize(self.pipeline.settings.shadowAtlasSize)
         self.shadowAtlas.create()
 
-        self.maxShadowMaps = 24
-        self.maxShadowUpdatesPerFrame = self.settings.maxShadowUpdatesPerFrame
+        self.maxShadowUpdatesPerFrame = self.pipeline.settings.maxShadowUpdatesPerFrame
         self.numShadowUpdatesPTA = PTAInt.emptyArray(1)
 
         self.updateShadowsArray = ShaderStructArray(
             ShadowSource, self.maxShadowUpdatesPerFrame)
         self.allShadowsArray = ShaderStructArray(
-            ShadowSource, self.maxShadowMaps)
+            ShadowSource, LightLimits.maxShadowMaps)
 
         # Create shadow compute buffer
-        self._createShadowComputationBuffer()
+        self._createShadowPass()
+        self._createSamplerState()
+        self._initLightCulling()
 
         # Create the initial shadow state
         self.shadowScene.setTag("ShadowPassShader", "Default")
 
-        # Create debug overlay
+        # Register variables & arrays
+        self.pipeline.getRenderPassManager().registerDynamicVariable("shadowUpdateSources", 
+            self._bindUpdateSources)
+        self.pipeline.getRenderPassManager().registerDynamicVariable("allLights", 
+            self._bindAllLights)
+        self.pipeline.getRenderPassManager().registerStaticVariable("numShadowUpdates", 
+            self.numShadowUpdatesPTA)
+
+        self.addShaderDefines()
+        self.lightingComputator = None
         self._createDebugTexts()
 
-        # Disable buffer on start
-        self.shadowComputeTarget.setActive(False)
+    def _bindUpdateSources(self, renderPass, name):
+        self.updateShadowsArray.bindTo(renderPass, name)
 
-        # Bind arrays
-        self.updateShadowsArray.bindTo(self.shadowScene, "updateSources")
-        self.updateShadowsArray.bindTo(
-            self.shadowComputeTarget, "updateSources")
+    def _bindAllLights(self, renderPass, name):
+        self.allLightsArray.bindTo(renderPass, name)
 
-        # Set initial inputs
-        for target in [self.shadowComputeTarget, self.shadowScene]:
-            target.setShaderInput("numUpdates", self.numShadowUpdatesPTA)
+    def _createShadowPass(self):
+        self.shadowPass = ShadowScenePass()
+        self.shadowPass.setMaxRegions(self.maxShadowUpdatesPerFrame)
+        self.shadowPass.setSize(self.shadowAtlas.getSize())
+        self.pipeline.getRenderPassManager().registerPass(self.shadowPass)
 
-        self.lightingComputator = None
-        self.lightCuller = None
-        self.skip = 0
-        self.skipRate = 0
-
-
-    def _createTagStates(self):
-        # Create shadow caster shader
-        self.shadowCasterShader = Shader.load(Shader.SLGLSL,
-            "Shader/DefaultShaders/ShadowCasting/vertex.glsl",
-            "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
-        initialState = NodePath("ShadowCasterState")
-        initialState.setShader(self.shadowCasterShader, 30)
-        # initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
-        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
-
-        for camera in self.shadowCameras:
-            camera.node().setTagState(
-            "Default", initialState.getState())
-
-    def _setLightCullingShader(self):
-        """ Sets the shader which computes the lights per tile """
-        pcShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/PrecomputeLights.fragment")
-        self.lightBoundsComputeBuff.setShader(pcShader)
-
-    def getLightPerTileBuffer(self):
-        return self.lightPerTileBuffer
-
-    def initLightCulling(self):
-        """ Creates the buffer which gets a list of lights and computes which
+    def _initLightCulling(self):
+        """ Creates the pass which gets a list of lights and computes which
         light affects which tile """
 
         # Fetch patch size
         self.patchSize = LVecBase2i(
-            self.settings.computePatchSizeX,
-            self.settings.computePatchSizeY)
+            self.pipeline.settings.computePatchSizeX,
+            self.pipeline.settings.computePatchSizeY)
 
         # size has to be a multiple of the compute unit size
         # but still has to cover the whole screen
-        sizeX = int(math.ceil(float(self.pipeline.size.x) / self.patchSize.x))
-        sizeY = int(math.ceil(float(self.pipeline.size.y) / self.patchSize.y))
+        sizeX = int(math.ceil(float(self.pipeline.getSize().x) / self.patchSize.x))
+        sizeY = int(math.ceil(float(self.pipeline.getSize().y) / self.patchSize.y))
 
-        self.precomputeSize = LVecBase2i(sizeX, sizeY)
+        self.lightCullingPass = LightCullingPass()
+        self.lightCullingPass.setSize(sizeX, sizeY)
+        self.lightCullingPass.setPatchSize(self.patchSize.x, self.patchSize.y)
+
+        self.pipeline.getRenderPassManager().registerPass(self.lightCullingPass)
 
         self.debug("Batch size =", sizeX, "x", sizeY,
                    "Actual Buffer size=", int(sizeX * self.patchSize.x),
@@ -182,177 +146,100 @@ class LightManager(DebugObject):
         # Create the buffer which stores the rendered lights
         self._makeRenderedLightsBuffer()
 
-        # Create per tile storage
-        self._makeLightPerTileStorage()
-
-        # Create a buffer which computes which light affects which tile
-        self._makeLightBoundsComputationBuffer(sizeX, sizeY)
-
-        # Set inputs
-        self._setLightingCuller(self.lightBoundsComputeBuff)
-
-    def getLightCullingBuffer(self):
-        """ Returns the buffer which culls the lights """
-        return self.lightBoundsComputeBuff
-
-    def _makeLightBoundsComputationBuffer(self, w, h):
-        """ Creates the buffer which precomputes the lights per tile """
-        self.debug("Creating light precomputation buffer of size", w, "x", h)
-        self.lightBoundsComputeBuff = RenderTarget("ComputeLightTileBounds")
-        self.lightBoundsComputeBuff.setSize(w, h)
-
-        if self.settings.enableLightPerTileDebugging:
-            self.lightBoundsComputeBuff.addColorTexture()
-        else:
-            self.lightBoundsComputeBuff.setColorWrite(False)
-
-        self.lightBoundsComputeBuff.prepareOffscreenBuffer()
-
-        if self.settings.enableLightPerTileDebugging:
-            colorTex = self.lightBoundsComputeBuff.getColorTexture()
-            colorTex.setMinfilter(SamplerState.FTNearest)
-            colorTex.setMagfilter(SamplerState.FTNearest)
-
-        self.lightBoundsComputeBuff.setShaderInput(
-                "destinationBuffer", self.lightPerTileBuffer)
-        self.lightBoundsComputeBuff.setShaderInput(
-                "renderedLightsBuffer", self.renderedLightsBuffer)
-
-    def _makeLightPerTileStorage(self):
-        """ Creates a texture to store the lights per tile into. Should
-        get replaced with ssbos later """
-
-        perPixelDataCount = 0
-        perPixelDataCount += 16 # Counters for the light types
-        
-        perPixelDataCount += self.maxPerTileLights["PointLight"]
-        perPixelDataCount += self.maxPerTileLights["PointLightShadow"]
-
-        perPixelDataCount += self.maxPerTileLights["DirectionalLight"]
-        perPixelDataCount += self.maxPerTileLights["DirectionalLightShadow"]
-        
-        perPixelDataCount += self.maxPerTileLights["SpotLight"]
-        perPixelDataCount += self.maxPerTileLights["SpotLightShadow"]
-
-        self.tileStride = perPixelDataCount
-        tileBufferSize = self.precomputeSize.x * self.precomputeSize.y * self.tileStride
-
-        self.lightPerTileBuffer = Texture("LightsPerTileBuffer")
-        self.lightPerTileBuffer.setupBufferTexture(
-            tileBufferSize, Texture.TInt, Texture.FR32i, GeomEnums.UHDynamic)
-
-        MemoryMonitor.addTexture("Light Per Tile Buffer", self.lightPerTileBuffer)
-
     def _makeRenderedLightsBuffer(self):
         """ Creates the buffer which stores the indices of all rendered lights """
 
         bufferSize = 16
-        bufferSize += self.maxLights["PointLight"]
-        bufferSize += self.maxLights["PointLightShadow"]
-        bufferSize += self.maxLights["DirectionalLight"]
-        bufferSize += self.maxLights["DirectionalLightShadow"]
-        bufferSize += self.maxLights["SpotLight"]
-        bufferSize += self.maxLights["SpotLightShadow"]
+        bufferSize += LightLimits.maxLights["PointLight"]
+        bufferSize += LightLimits.maxLights["PointLightShadow"]
+        bufferSize += LightLimits.maxLights["DirectionalLight"]
+        bufferSize += LightLimits.maxLights["DirectionalLightShadow"]
+        bufferSize += LightLimits.maxLights["SpotLight"]
+        bufferSize += LightLimits.maxLights["SpotLightShadow"]
 
         self.renderedLightsBuffer = Texture("RenderedLightsBuffer")
         self.renderedLightsBuffer.setupBufferTexture(bufferSize, Texture.TInt, Texture.FR32i, GeomEnums.UHDynamic)
 
+        self.pipeline.getRenderPassManager().registerStaticVariable(
+            "renderedLightsBuffer", self.renderedLightsBuffer)
+
         MemoryMonitor.addTexture("Rendered Lights Buffer", self.renderedLightsBuffer)
 
-    def addShaderDefines(self, defineList):
+    def addShaderDefines(self):
         """ Adds settings like the maximum light count to the list of defines
         which are available in the shader later """
-        define = lambda name, val: defineList.append((name, val))
-
-        define("MAX_VISIBLE_LIGHTS", self.maxTotalLights)
-
-        define("MAX_POINT_LIGHTS", self.maxLights["PointLight"])
-        define("MAX_SHADOWED_POINT_LIGHTS", self.maxLights["PointLightShadow"])
-
-        define("MAX_DIRECTIONAL_LIGHTS", self.maxLights["DirectionalLight"])
-        define("MAX_SHADOWED_DIRECTIONAL_LIGHTS", self.maxLights["DirectionalLightShadow"])
-
-        define("MAX_SPOT_LIGHTS", self.maxLights["SpotLight"])
-        define("MAX_SHADOWED_SPOT_LIGHTS", self.maxLights["SpotLightShadow"])
-
-        define("MAX_TILE_POINT_LIGHTS", self.maxPerTileLights["PointLight"])
-        define("MAX_TILE_SHADOWED_POINT_LIGHTS", self.maxPerTileLights["PointLightShadow"])
-
-        define("MAX_TILE_DIRECTIONAL_LIGHTS", self.maxPerTileLights["DirectionalLight"])
-        define("MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS", self.maxPerTileLights["DirectionalLightShadow"])
-
-        define("MAX_TILE_SPOT_LIGHTS", self.maxPerTileLights["SpotLight"])
-        define("MAX_TILE_SHADOWED_SPOT_LIGHTS", self.maxPerTileLights["SpotLightShadow"])
-
-        define("SHADOW_MAX_TOTAL_MAPS", self.maxShadowMaps)
-        define("LIGHTING_PER_TILE_STRIDE", self.tileStride)
+        define = lambda name, val: self.pipeline.getRenderPassManager().registerDefine(name, val)
+        settings = self.pipeline.settings
 
 
-    def _createShadowComputationBuffer(self):
-        """ This creates the internal shadow buffer which also is the
-        shadow atlas. Shadow maps are rendered to this using Viewports
-        (thank you rdb for adding this!). It also setups the base camera
-        which renders the shadow objects, although a custom mvp is passed
-        to the shaders, so the camera is mainly a dummy """
+        define("MAX_VISIBLE_LIGHTS", LightLimits.maxTotalLights)
 
-        # Create a camera for each update
-        self.shadowCameras = []
-        for i in xrange(self.maxShadowUpdatesPerFrame):
-            shadowCam = Camera("ShadowComputeCamera")
-            shadowCam.setTagStateKey("ShadowPassShader")
-            shadowCamNode = self.shadowScene.attachNewNode(shadowCam)
-            # shadowCamNode.reparentTo(Globals.base.render)
-            self.shadowCameras.append(shadowCamNode)
+        define("MAX_POINT_LIGHTS", LightLimits.maxLights["PointLight"])
+        define("MAX_SHADOWED_POINT_LIGHTS", LightLimits.maxLights["PointLightShadow"])
 
-        self.shadowComputeTarget = RenderTarget("ShadowAtlas")
-        self.shadowComputeTarget.setSize(self.shadowAtlas.getSize())
-        self.shadowComputeTarget.addDepthTexture()
-        self.shadowComputeTarget.setDepthBits(32)
-        self.shadowComputeTarget.setColorWrite(False)
+        define("MAX_DIRECTIONAL_LIGHTS", LightLimits.maxLights["DirectionalLight"])
+        define("MAX_SHADOWED_DIRECTIONAL_LIGHTS", LightLimits.maxLights["DirectionalLightShadow"])
 
-        self.shadowComputeTarget.setSource(
-            NodePath(Camera("tmp")), Globals.base.win)
+        define("MAX_SPOT_LIGHTS", LightLimits.maxLights["SpotLight"])
+        define("MAX_SHADOWED_SPOT_LIGHTS", LightLimits.maxLights["SpotLightShadow"])
 
-        self.shadowComputeTarget.prepareSceneRender()
+        define("MAX_TILE_POINT_LIGHTS", LightLimits.maxPerTileLights["PointLight"])
+        define("MAX_TILE_SHADOWED_POINT_LIGHTS", LightLimits.maxPerTileLights["PointLightShadow"])
 
-        # This took me a long time to figure out. If not removing the quad
-        # children, the color and aux buffers will be overridden each frame.
-        # Quite annoying!
-        self.shadowComputeTarget.getQuad().node().removeAllChildren()
-        self.shadowComputeTarget.getInternalRegion().setSort(-200)
+        define("MAX_TILE_DIRECTIONAL_LIGHTS", LightLimits.maxPerTileLights["DirectionalLight"])
+        define("MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS", LightLimits.maxPerTileLights["DirectionalLightShadow"])
 
-        self.shadowComputeTarget.getInternalRegion().disableClears()
-        self.shadowComputeTarget.getInternalBuffer().disableClears()
-        self.shadowComputeTarget.getInternalBuffer().setSort(-300)
+        define("MAX_TILE_SPOT_LIGHTS", LightLimits.maxPerTileLights["SpotLight"])
+        define("MAX_TILE_SHADOWED_SPOT_LIGHTS", LightLimits.maxPerTileLights["SpotLightShadow"])
 
-        self.renderRegions = []
-        buff = self.shadowComputeTarget.getInternalBuffer()
-        
-        for i in xrange(self.maxShadowUpdatesPerFrame):
-            dr = buff.makeDisplayRegion()
-            dr.setSort(1000)
-            dr.setClearDepthActive(True)
-            dr.setClearDepth(1.0)
-            dr.setCamera(self.shadowCameras[i])
-            dr.setActive(False)
-            self.renderRegions.append(dr)
+        define("SHADOW_MAX_TOTAL_MAPS", LightLimits.maxShadowMaps)
 
+
+        define("LIGHTING_COMPUTE_PATCH_SIZE_X", settings.computePatchSizeX)
+        define("LIGHTING_COMPUTE_PATCH_SIZE_Y", settings.computePatchSizeY)
+        define("LIGHTING_MIN_MAX_DEPTH_ACCURACY", settings.minMaxDepthAccuracy)
+
+        if settings.useSimpleLighting:
+            define("USE_SIMPLE_LIGHTING", 1)
+
+        if settings.anyLightBoundCheck:
+            define("LIGHTING_ANY_BOUND_CHECK", 1)
+
+        if settings.accurateLightBoundCheck:
+            define("LIGHTING_ACCURATE_BOUND_CHECK", 1)
+
+        if settings.renderShadows:
+            define("USE_SHADOWS", 1)
+
+        if settings.enableLightPerTileDebugging:
+            define("ENABLE_LIGHT_PER_TILE_DEBUG", 1)
+
+        define("AMBIENT_CUBEMAP_SAMPLES", settings.ambientCubemapSamples)
+        define("SHADOW_MAP_ATLAS_SIZE", settings.shadowAtlasSize)
+        define("SHADOW_MAX_UPDATES_PER_FRAME", settings.maxShadowUpdatesPerFrame)
+        define("SHADOW_GEOMETRY_MAX_VERTICES", settings.maxShadowUpdatesPerFrame * 3)
+        define("CUBEMAP_ANTIALIASING_FACTOR", settings.cubemapAntialiasingFactor)
+        define("SHADOW_NUM_PCF_SAMPLES", settings.numPCFSamples)
+
+        if settings.usePCSS:
+            define("USE_PCSS", 1)
+
+        define("SHADOW_NUM_PCSS_SEARCH_SAMPLES", settings.numPCSSSearchSamples)
+        define("SHADOW_NUM_PCSS_FILTER_SAMPLES", settings.numPCSSFilterSamples)
+        define("SHADOW_PSSM_BORDER_PERCENTAGE", settings.shadowCascadeBorderPercentage)
+
+        if settings.useHardwarePCF:
+            define("USE_HARDWARE_PCF", 1)
+
+
+    def _createSamplerState(self):
         # When using hardware pcf, set the correct filter types
-        if self.settings.useHardwarePCF:
+        if self.pipeline.settings.useHardwarePCF:
             self.pcfSampleState = SamplerState()
             self.pcfSampleState.setMinfilter(SamplerState.FTShadow)
             self.pcfSampleState.setMagfilter(SamplerState.FTShadow)
             self.pcfSampleState.setWrapU(SamplerState.WMClamp)
             self.pcfSampleState.setWrapV(SamplerState.WMClamp)
-
-
-        dTex = self.getAtlasTex()
-        dTex.setWrapU(Texture.WMClamp)
-        dTex.setWrapV(Texture.WMClamp)
-
-    def getAllLights(self):
-        """ Returns all attached lights """
-        return self.lights
 
     def getPCFSampleState(self):
         """ Returns the pcf sample state used to sample the shadow map """
@@ -369,8 +256,7 @@ class LightManager(DebugObject):
         self.lightsVisibleDebugText = None
         self.lightsUpdatedDebugText = None
 
-        if self.settings.displayDebugStats:
-
+        if self.pipeline.settings.displayDebugStats:
             try:
                 from Code.GUI.FastText import FastText
                 self.lightsVisibleDebugText = FastText(pos=Vec2(
@@ -389,17 +275,6 @@ class LightManager(DebugObject):
         self.lightingComputator = shaderNode
         self.allLightsArray.bindTo(shaderNode, "lights")
         self.allShadowsArray.bindTo(shaderNode, "shadowSources")
-
-    def _setLightingCuller(self, shaderNode):
-        """ Sets the render target which recieves the shaderinputs necessary to 
-        cull the lights and pass the result to the lighting computator"""
-        self.debug("Light culler is", shaderNode)
-        self.lightCuller = shaderNode
-        self.allLightsArray.bindTo(shaderNode, "lights")
-
-    def getAtlasTex(self):
-        """ Returns the shadow map atlas texture"""
-        return self.shadowComputeTarget.getDepthTexture()
 
     def _queueShadowUpdate(self, source):
         """ Internal method to add a shadowSource to the list of queued updates """
@@ -421,10 +296,9 @@ class LightManager(DebugObject):
         light.attached = True
         self.lights.append(light)
 
-        if light.hasShadows() and not self.settings.renderShadows:
+        if light.hasShadows() and not self.pipeline.settings.renderShadows:
             self.warn("Attached shadow light but shadowing is disabled in pipeline.ini")
             light.setCastsShadows(False)
-
 
         sources = light.getShadowSources()
 
@@ -461,11 +335,6 @@ class LightManager(DebugObject):
         """ Removes a light. TODO """
         raise NotImplementedError()
 
-    def reloadShader(self):
-        """ Reloads all shaders. This also updates the camera state """
-        self._createTagStates()
-        self._setLightCullingShader()
-
     def setCullBounds(self, bounds):
         """ Sets the current camera bounds used for light culling """
         self.cullBounds = bounds
@@ -475,7 +344,6 @@ class LightManager(DebugObject):
         the shader later """
 
         pstats_WriteBuffers.start()
-
         image = memoryview(self.renderedLightsBuffer.modifyRamImage())
 
         bufferEntrySize = 4
@@ -492,20 +360,19 @@ class LightManager(DebugObject):
 
         offset = 16 * bufferEntrySize
 
-
         # Write light lists
         for lightType in ["PointLight", "PointLightShadow", "DirectionalLight", 
             "DirectionalLightShadow", "SpotLight", "SpotLightShadow"]:
         
             entryCount = len(self.renderedLights[lightType])
 
-            if entryCount > self.maxLights[lightType]:
+            if entryCount > LightLimits.maxLights[lightType]:
                 self.error("Out of lights bounds for", lightType)
 
             if entryCount > 0:
                 # We can write all lights at once, thats pretty cool!
                 image[offset:offset + entryCount * bufferEntrySize] = struct.pack('i' * entryCount, *self.renderedLights[lightType])
-            offset += self.maxLights[lightType] * bufferEntrySize
+            offset += LightLimits.maxLights[lightType] * bufferEntrySize
 
         pstats_WriteBuffers.stop()
 
@@ -518,14 +385,14 @@ class LightManager(DebugObject):
         # Clear dictionary to store the lights rendered this frame
         self.renderedLights = {}
 
-        for lightType in self.maxLights:
+        for lightType in LightLimits.maxLights:
             self.renderedLights[lightType] = []
 
         # Process each light
         for index, light in enumerate(self.lights):
 
             # When shadow maps should be always updated
-            if self.settings.alwaysUpdateAllShadows:
+            if self.pipeline.settings.alwaysUpdateAllShadows:
                 light.queueShadowUpdate()
 
             # Update light if required
@@ -577,18 +444,6 @@ class LightManager(DebugObject):
         """ This is one of the two per-frame-tasks. See class description
         to see what it does """
 
-        # First, disable all regions
-        for region in self.renderRegions:
-            region.setActive(False)
-
-        if self.skip > 0:
-            self.shadowComputeTarget.setActive(False)
-            self.numShadowUpdatesPTA[0] = 0
-            self.skip -= 1
-            return
-
-        self.skip = self.skipRate
-
         # Process shadows
         queuedUpdateLen = len(self.queuedShadowUpdates)
 
@@ -596,16 +451,12 @@ class LightManager(DebugObject):
         numUpdates = 0
         last = "[ "
 
-
         # When there are no updates, disable the buffer
         if len(self.queuedShadowUpdates) < 1:
-            self.shadowComputeTarget.setActive(False)
+            self.shadowComputeTarget.setActiveRegionCount(0)
             self.numShadowUpdatesPTA[0] = 0
 
         else:
-
-            # Otherwise enable the buffer
-            self.shadowComputeTarget.setActive(True)
 
             # Check each update in the queue
             for index, update in enumerate(self.queuedShadowUpdates):
@@ -660,12 +511,11 @@ class LightManager(DebugObject):
                 left, right = atlasPos.x, (atlasPos.x + texScale)
                 bottom, top = atlasPos.y, (atlasPos.y + texScale)
 
-                self.renderRegions[numUpdates].setDimensions(left, right, bottom, top)
-                self.renderRegions[numUpdates].setActive(True)
-
-                self.shadowCameras[numUpdates].setPos(update.cameraNode.getPos())
-                self.shadowCameras[numUpdates].setHpr(update.cameraNode.getHpr())
-                self.shadowCameras[numUpdates].node().setLens(update.getLens())
+                self.shadowPass.setRegionDimensions(numUpdates, left, right, bottom, top)
+                regionCam = self.shadowPass.getRegionCamera(numUpdates)
+                regionCam.setPos(update.cameraNode.getPos())
+                regionCam.setHpr(update.cameraNode.getHpr())
+                regionCam.node().setLens(update.getLens())
 
                 numUpdates += 1
 
@@ -685,6 +535,8 @@ class LightManager(DebugObject):
                 self.queuedShadowUpdates.remove(self.queuedShadowUpdates[0])
 
             self.numShadowUpdatesPTA[0] = numUpdates
+
+            self.shadowPass.setActiveRegionCount(numUpdates)
 
         last += "]"
 

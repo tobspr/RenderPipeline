@@ -469,6 +469,9 @@ class RenderTarget(DebugObject):
     def setClearColor(self, clear=True, color=None):
         """ Adds a color clear """
         self.getInternalRegion().setClearColorActive(clear)
+        
+        self.getInternalBuffer().setClearColorActive(clear)
+
         if clear:
             if color is None:
                 color = Vec4(0)

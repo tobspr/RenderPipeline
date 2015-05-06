@@ -111,7 +111,7 @@ sync-video #f
 textures-power-2 none
 
 # Dump shaders
-# gl-dump-compiled-shaders #f
+gl-dump-compiled-shaders #f
 # notify-level-glgsg debug
 
 # Better GL performance
