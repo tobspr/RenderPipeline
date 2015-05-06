@@ -25,7 +25,7 @@ import copy
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, SamplerState
 from panda3d.core import Texture
-from panda3d.core import Shader, CullFaceAttrib
+from panda3d.core import Shader, CullFaceAttrib, AntialiasAttrib
 
 from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
@@ -61,6 +61,8 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.render()
         self.loadingScreen.setStatus("Creating pipeline")
 
+
+        render.setAntialias(AntialiasAttrib.MMultisample)
 
 
         # Create the render pipeline
@@ -262,9 +264,15 @@ class Main(ShowBase, DebugObject):
                         copiedObj.setPos(x-5, y-5, 2)
 
         # Find transparent objects
-        # matches = self.scene.findAllMatches("**/T__*")
-        # for match in matches:
+
+        # self.transpObjRoot = render.attachNewNode("transparentObjects")
+        matches = self.scene.findAllMatches("**/T__*")
+        for match in matches:
+            print match
+            # match.reparentTo(self.transpObjRoot)
             # self.transparentObjects.append(match)
+            # self.renderPipeline.prepareTransparentObject(match)
+            # match.listTags()
             # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
 
         # Wheter to use a ground floor
@@ -413,9 +421,9 @@ class Main(ShowBase, DebugObject):
             # self.scene.setShader(
                 # self.renderPipeline.getDefaultObjectShader(False))
 
-            # for obj in self.transparentObjects:
-            #     obj.setShader(
-            #         self.renderPipeline.getDefaultTransparencyShader())
+            for obj in self.transparentObjects:
+                obj.setShader(
+                    self.renderPipeline.getDefaultTransparencyShader(), 100)
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()

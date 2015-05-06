@@ -13,13 +13,12 @@ out vec4 colorResult;
 
 // layout (rgba8) uniform image2DArray transparencyLayers;
 // layout (r32f) uniform image2DArray transparencyDepthLayers;
-layout (r32i) uniform iimage2D pixelCountBuffer;
-layout (r32ui) uniform uimage2D listHeadBuffer;
-layout (rgba32ui) uniform uimageBuffer materialDataBuffer;
-layout (r32i) coherent uniform iimage2D spinLockBuffer;
+uniform isampler2D pixelCountBuffer;
+uniform usampler2D listHeadBuffer;
+uniform usamplerBuffer materialDataBuffer;
+uniform isampler2D spinLockBuffer;
 
-
-#pragma include "Includes/Transparency.include"
+#pragma include "Includes/TransparentMaterial.include"
 #pragma include "Includes/PositionReconstruction.include"
 
 
@@ -81,15 +80,15 @@ void main() {
     #ifndef DEBUG_DISABLE_TRANSPARENCY
 
     // Fetch list head
-    uint listHead = imageLoad(listHeadBuffer, ivec2(gl_FragCoord.xy)).x;
+    uint listHead = texelFetch(listHeadBuffer, coord, 0).x;
 
-    uint totalEntryCount = imageLoad(pixelCountBuffer, ivec2(0)).x;
+    uint totalEntryCount = texelFetch(pixelCountBuffer, ivec2(0), 0).x;
 
     // Early out .. have to test if that is faster
-    if (listHead == 0) {
-        colorResult = vec4(currentColor, currentOcclusion);
-        return;
-    } 
+    // if (listHead == 0) {
+    //     colorResult = vec4(currentColor, currentOcclusion);
+    //     return;
+    // } 
 
 
     // Store parts of the data in registers
@@ -107,9 +106,9 @@ void main() {
     while (currentEntry != 0 && entryCounter < MAX_TRANSPARENCY_LAYERS) {
 
         fragments[entryCounter].pointer = currentEntry;
-        fragments[entryCounter].depth = extractMaterialDepth(currentEntry);
+        fragments[entryCounter].depth = extractMaterialDepth(texelFetch(materialDataBuffer, int(currentEntry)));
 
-        currentEntry = extractMaterialNextPointer(currentEntry);
+        currentEntry = texelFetch(materialDataBuffer, int(currentEntry)).w;
         entryCounter ++;
     }
 
@@ -134,7 +133,7 @@ void main() {
 
 
     for (int i = 0; i < entryCounter; i++) {
-        uvec4 data = imageLoad(materialDataBuffer, int(fragments[i].pointer));
+        uvec4 data = texelFetch(materialDataBuffer, int(fragments[i].pointer));
         TransparentMaterial tm = unpackTransparentMaterial(data);
 
         if (tm.depth > pixelDist) continue;
@@ -219,8 +218,10 @@ void main() {
         currentOcclusion *= saturate(tm.alpha + 0.5);    
     }
 
+
     #endif
 
+    currentColor = vec3( float(texelFetch(listHeadBuffer, coord, 0).x) / 1000000.0);
     colorResult = vec4(currentColor, currentOcclusion);
 
 }

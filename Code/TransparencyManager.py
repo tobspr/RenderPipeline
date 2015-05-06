@@ -5,8 +5,8 @@ from panda3d.core import Shader, Texture, SamplerState, GeomEnums, Vec4
 from DebugObject import DebugObject
 from Globals import Globals
 from RenderTarget import RenderTarget
-
 from MemoryMonitor import MemoryMonitor
+from RenderPasses.TransparencyPass import TransparencyPass
 
 class TransparencyManager(DebugObject):
 
@@ -24,28 +24,24 @@ class TransparencyManager(DebugObject):
         self.pipeline = pipeline
         self.maxPixelCount = 1920 * 1080 * 2
 
+        self.initTransparencyPass()
 
     def initTransparencyPass(self):
         """ Creates the pass which renders the transparent objects into the scene """
-        self.transparencyPass = RenderTarget("TransparencyPass")
-        self.transparencyPass.addColorTexture()
-        self.transparencyPass.setColorBits(16)
-        self.transparencyPass.prepareOffscreenBuffer()
-        self.transparencyPass.setClearColor(color=Vec4(0.2,0.5,1.0, 0.0))
+        self.transparencyPass = TransparencyPass()
+        self.pipeline.getRenderPassManager().registerPass(self.transparencyPass)
 
         self.pixelCountBuffer = Texture("MaterialCountBuffer")
         self.pixelCountBuffer.setup2dTexture(1, 1, Texture.TInt, Texture.FR32i)
-
 
         self.materialDataBuffer = Texture("MaterialDataBuffer")
         self.materialDataBuffer.setupBufferTexture(self.maxPixelCount, Texture.TFloat, Texture.FRgba32, GeomEnums.UH_static)
 
         self.listHeadBuffer = Texture("ListHeadBuffer")
-        self.listHeadBuffer.setup2dTexture(self.pipeline.size.x, self.pipeline.size.y, Texture.TInt, Texture.FR32i)
+        self.listHeadBuffer.setup2dTexture(self.pipeline.getSize().x, self.pipeline.getSize().y, Texture.TInt, Texture.FR32i)
 
         self.spinLockBuffer = Texture("SpinLockBuffer")
-        self.spinLockBuffer.setup2dTexture(self.pipeline.size.x, self.pipeline.size.y, Texture.TInt, Texture.FR32i)
-
+        self.spinLockBuffer.setup2dTexture(self.pipeline.getSize().x, self.pipeline.getSize().y, Texture.TInt, Texture.FR32i)
 
         target = self.pipeline.showbase.render
         target.setShaderInput("pixelCountBuffer", self.pixelCountBuffer)
@@ -53,71 +49,27 @@ class TransparencyManager(DebugObject):
         target.setShaderInput("materialDataBuffer", self.materialDataBuffer)
         target.setShaderInput("listHeadBuffer", self.listHeadBuffer)
 
-        self.transparencyPass.setShaderInput("pixelCountBuffer", self.pixelCountBuffer)
-        self.transparencyPass.setShaderInput("spinLockBuffer", self.spinLockBuffer)
-        self.transparencyPass.setShaderInput("listHeadBuffer", self.listHeadBuffer)
-        self.transparencyPass.setShaderInput("materialDataBuffer", self.materialDataBuffer)
+        self.pipeline.getRenderPassManager().registerStaticVariable("transpPixelCountBuffer", self.pixelCountBuffer)
+        self.pipeline.getRenderPassManager().registerStaticVariable("transpSpinLockBuffer", self.spinLockBuffer)
+        self.pipeline.getRenderPassManager().registerStaticVariable("transpListHeadBuffer", self.listHeadBuffer)
+        self.pipeline.getRenderPassManager().registerStaticVariable("transpMaterialDataBuffer", self.materialDataBuffer)
+
 
         self.pixelCountBuffer.setClearColor(Vec4(0, 0, 0, 0))
         self.spinLockBuffer.setClearColor(Vec4(0, 0, 0, 0))
         self.listHeadBuffer.setClearColor(Vec4(0, 0, 0, 0))
-
-
-
 
         MemoryMonitor.addTexture("MaterialCountBuffer", self.pixelCountBuffer)
         MemoryMonitor.addTexture("MaterialDataBuffer", self.materialDataBuffer)
         MemoryMonitor.addTexture("ListHeadBuffer", self.listHeadBuffer)
         MemoryMonitor.addTexture("SpinLockBuffer", self.spinLockBuffer)
 
-    def setCameraPositionHandle(self, camPosHandle):
-        """ Passes the camera position to the computation shader, this should be
-        a PTAVec3 """
-        self.transparencyPass.setShaderInput("cameraPosition", camPosHandle)
-
-    def postRenderCallback(self):
+    def update(self):
         """ Callback after the frame render, to cleanup the buffers """
-        # Globals.base.graphicsEngine.extractTextureData(self.pixelCountBuffer, Globals.base.win.getGsg())
 
         self.pixelCountBuffer.clearImage()
         self.spinLockBuffer.clearImage()
         self.listHeadBuffer.clearImage()
-
-    def setMVPHandle(self, mvpHandle):
-        """ Sets the handle to the mvp, should be a PTAMat4 """
-        self.transparencyPass.setShaderInput("currentMVP", mvpHandle)
-
-    def setPositionTexture(self, tex):
-        """ Sets the position texture, required for the computation """
-        self.transparencyPass.setShaderInput("positionTex", tex)
-
-    def setCameraAndScene(self, cam, scene):
-        """ Sets camera and scene """
-        self.transparencyPass.setShaderInput("mainCam", cam)
-        self.transparencyPass.setShaderInput("mainRender", scene)
-
-    def setReflectionCubemap(self, tex):
-        """ Sets the cubemap used for reflections """
-        self.transparencyPass.setShaderInput("fallbackCubemap", tex)
-
-    def setColorTexture(self, tex):
-        """ Sets the color texture, required for the computation """
-        self.transparencyPass.setShaderInput("sceneTex", tex)
-
-    def setDepthTexture(self, tex):
-        """ Sets the depth texture, required for the computation """
-        self.transparencyPass.setShaderInput("depthTex", tex)
-
-    def reloadShader(self):
-        """ Reloads the shader of the computation node """
-        self._setTransparencyPassShader()
-
-    def _setTransparencyPassShader(self):
-        """ Internal method to create the computation shader """
-        tShader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/TransparencyPass.fragment")
-        self.transparencyPass.setShader(tShader)
 
     def getDefaultShader(self):
         """ Returns the default shader for transparent objects """
@@ -125,8 +77,4 @@ class TransparencyManager(DebugObject):
                 "Shader/DefaultShaders/Transparent/vertex.glsl",
                 "Shader/DefaultShaders/Transparent/fragment.glsl")
         return shader
-
-    def getResultTexture(self):
-        """ Returns the result texture which can be used further in the pipeline """
-        return self.transparencyPass.getColorTexture()
 

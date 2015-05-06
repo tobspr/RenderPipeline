@@ -17,6 +17,7 @@ from AmbientOcclusionManager import AmbientOcclusionManager
 from GlobalIllumination import GlobalIllumination
 from AntialiasingManager import AntialiasingManager
 from Scattering import Scattering
+from TransparencyManager import TransparencyManager
 
 from GUI.PipelineGuiManager import PipelineGuiManager
 
@@ -60,7 +61,8 @@ class RenderingPipeline(DebugObject):
         self.lightManager.addLight(light)
 
     def setGILightSource(self, lightSource):
-        self.globalIllum.setTargetLight(lightSource)
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum.setTargetLight(lightSource)
 
     def prepareMaterials(self, nodePath):
         pass
@@ -70,6 +72,15 @@ class RenderingPipeline(DebugObject):
 
     def getDefaultObjectShader(self, tesselated=False):
         pass
+
+    def getDefaultTransparencyShader(self):
+        """ Returns the default shader for transparent objects """
+        if not self.settings.useTransparency:
+            raise Exception("Transparency is disabled. You cannot fetch the transparency shader.")
+        return self.transparencyManager.getDefaultShader()
+
+    def prepareTransparentObject(self, np):
+        np.setTag("ShadowPassShader", "Transparent")
 
     def getDefaultSkybox(self, scale=40000):
         """ Loads the skybox """
@@ -124,6 +135,7 @@ class RenderingPipeline(DebugObject):
         self.lightManager.updateShadows()
         self.lightManager.processCallbacks()
         self.guiManager.update()
+        self.transparencyManager.update()
         self.antialiasingManager.update()
         self.renderPassManager.preRenderUpdate()
 
@@ -289,7 +301,6 @@ class RenderingPipeline(DebugObject):
                 "The window width has to be a multiple of 2 "
                 "(Current: ", self._size.x, ")")
             return
-
         self._createGUIManager()
 
         # Some basic scene settings
@@ -328,6 +339,7 @@ class RenderingPipeline(DebugObject):
         self.occlusionManager = AmbientOcclusionManager(self)
         self.lightManager = LightManager(self)
         self.antialiasingManager = AntialiasingManager(self)
+        self.transparencyManager = TransparencyManager(self)
 
         self._createGlobalIllum()
 
@@ -348,7 +360,8 @@ class RenderingPipeline(DebugObject):
 
 
         # TODO: Make GI use render passes
-        self.globalIllum.reloadShader()
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum.reloadShader()
 
         # Give the gui a hint when the pipeline is done loading
         if self.settings.displayOnscreenDebugger:

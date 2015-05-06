@@ -62,7 +62,7 @@ class RenderPassManager(DebugObject):
         for inputID, inputSource in inputs.items():
             firstInput = self._getFirstAvailableInput(inputSource, checkVariables = False)
             if not firstInput:
-                self.debug("HINT: Cannot attach because",inputSource, "is not available yet")
+                self.debug("HINT:Missing",inputSource, "for", renderPass.getID())
                 return False
 
         return True
@@ -91,14 +91,15 @@ class RenderPassManager(DebugObject):
             for entry in inputList:
                 passName = entry.split(".")[0]
 
+                if entry in self._availableUniformNames:
+                    if waitForPass and not checkVariables:
+                        return False
+                    return entry
+
                 if self._havePass(passName):
                     waitForPass = True
-
-                if entry in self._availableUniformNames:
-                    return entry
                 
                 if passName == "Variables" and self._checkVariableAvailable(entry):
-                    print inputList, "->", entry, "-> ", waitForPass
                     if waitForPass and not checkVariables:
                         return False 
 
@@ -201,6 +202,7 @@ class RenderPassManager(DebugObject):
                     self._sortedNodes.append(renderPass)
                     self._matchBuffer.remove(renderPass)
                     self._makeUniformsAvailable(renderPass)
+                    self.debug("ATTACHING",renderPass.getID())
                     break
 
         # Create passes

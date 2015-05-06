@@ -60,7 +60,7 @@ void main() {
 
     m.metallic = 0.0;
     m.specular = 0.5;
-    m.roughness = 0.1;
+    m.roughness = 1.0;
     m.baseColor = vec3(vOutput.materialDiffuse);
 
     renderMaterial(m);

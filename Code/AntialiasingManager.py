@@ -40,13 +40,9 @@ class AntialiasingManager(DebugObject):
             self.aaPass = AntialiasingSMAAPass()
             self.jitter = True
 
-
         if self.jitter:
-            print self.pipeline.getSize()
             onePixelShift = Vec2(0.5 / float(self.pipeline.getSize().x), 
                 0.5 / float(self.pipeline.getSize().y)) * self.pipeline.settings.jitterAmount
-
-            print onePixelShift
 
             # Annoying that Vec2 has no multliply-operator for non-floats
             multiplyVec2 = lambda a, b: Vec2(a.x*b.x, a.y*b.y)
@@ -58,8 +54,6 @@ class AntialiasingManager(DebugObject):
 
             print self.jitterOffsets
         self.pipeline.getRenderPassManager().registerPass(self.aaPass)
-        # self.pipeline.getRenderPassManager().registerStaticVariable("antialiasingJitterOffset")
-
 
     def update(self):
         if self.jitter:

@@ -1,51 +1,17 @@
 #pragma once
 
 #pragma include "Includes/Configuration.include"
+#pragma include "Includes/TransparentMaterial.include"
 
 
 
 
 
-
-#define USE_UINT_PACKING 1
-
-struct TransparentMaterial {
-    vec3 color;
-    uint materialType;
-    vec3  normal;
-    float alpha;
-    float depth;
-    uint nextEntry;
-};
-
-TransparentMaterial getDefaultTransparentMaterial() {
-    TransparentMaterial tm;
-    tm.color = vec3(1);
-    tm.materialType = 0;
-    tm.normal = vec3(0,0,1);
-    tm.depth = 1.0;
-    tm.alpha = 1.0;
-    tm.nextEntry = 0u;
-    return tm;
-}
-
-float extractMaterialDepth(uint position) {
-    uvec4 data = imageLoad(materialDataBuffer, int(position) );
-    #if USE_UINT_PACKING
-        return float(data.z) / 0xFFFFFFFF;
-    #else
-        return uintBitsToFloat(data.z);
-    #endif    
-}
 
 void saveMaterialNextPointer(uint pointer, uint position) {
     uvec4 data = imageLoad(materialDataBuffer, int(position) );
     data.w = pointer;
     imageStore(materialDataBuffer, int(position), data);
-}
-
-uint extractMaterialNextPointer(uint position) {
-    return imageLoad(materialDataBuffer, int(position)).w;
 }
 
 void renderTransparentMaterial(TransparentMaterial tm) {
@@ -145,7 +111,7 @@ void renderTransparentMaterial(TransparentMaterial tm) {
                 #else
 
                 tm.nextEntry = listHead;
-                imageStore(listHeadBuffer, coord, uvec4(position));
+                // imageStore(listHeadBuffer, coord, uvec4(position));
 
                 #endif
 
@@ -174,41 +140,11 @@ void renderTransparentMaterial(TransparentMaterial tm) {
 
 
     // Store material
-    imageStore(materialDataBuffer, int(position), uvec4(integer1, integer2, integer3, integer4));
-
+    // imageStore(materialDataBuffer, int(position), uvec4(integer1, integer2, integer3, integer4));
+// 
 
     #endif
 
-    discard;
+    // discard;
 
-}
-
-
-TransparentMaterial unpackTransparentMaterial(uvec4 data) {
-
-    TransparentMaterial tm;
-
-    tm.nextEntry = data.w;
-
-    #if USE_UINT_PACKING
-        tm.depth = float(data.z) / 0xFFFFFFFF;
-    #else
-        tm.depth = uintBitsToFloat(data.z);
-    #endif
-
-    tm.color = vec3(
-        float(data.x & 0xFF) / 255.0,
-        float((data.x >> 8) & 0xFF) / 255.0,
-        float((data.x >> 16) & 0xFF) / 255.0
-    );
-
-    tm.normal = vec3(
-        float(data.y & 0xFF) / 255.0,
-        float((data.y >> 8) & 0xFF) / 255.0,
-        float((data.y >> 16) & 0xFF) / 255.0
-    ) * 2.0 - 1.0;
-
-    tm.alpha = float((data.y >> 24) & 0xFF) / 255.0;
-    tm.materialType = (data.x >> 24) & 0xFF;
-    return tm;
 }

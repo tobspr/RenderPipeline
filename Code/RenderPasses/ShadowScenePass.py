@@ -54,10 +54,17 @@ class ShadowScenePass(RenderPass):
             "Shader/DefaultShaders/ShadowCasting/vertex.glsl",
             "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
         initialState = NodePath("ShadowCasterState")
-        initialState.setShader(casterShader, 30)
-        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
+        # initialState.setShader(casterShader, 200)
         for camera in self.shadowCameras:
             camera.node().setTagState("Default", initialState.getState())
+
+        casterShaderTransparent = Shader.load(Shader.SLGLSL,
+            "Shader/DefaultShaders/TransparentShadowCasting/vertex.glsl",
+            "Shader/DefaultShaders/TransparentShadowCasting/fragment.glsl")
+        initialState = NodePath("ShadowCasterStateTransparent")
+        # initialState.setShader(casterShader, 200)
+        for camera in self.shadowCameras:
+            camera.node().setTagState("Transparent", initialState.getState()) 
 
     def create(self):
 
@@ -86,11 +93,16 @@ class ShadowScenePass(RenderPass):
         self.target.getInternalBuffer().disableClears()
         self.target.getInternalBuffer().setSort(-300)
 
+        # Create default initial state
+        initialState = NodePath("InitialState")
+        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
+
         # Create a camera for each update
         self.shadowCameras = []
         for i in xrange(self.maxRegions):
             shadowCam = Camera("ShadowComputeCamera")
             shadowCam.setTagStateKey("ShadowPassShader")
+            shadowCam.setInitialState(initialState.getState())
             shadowCamNode = self.shadowScene.attachNewNode(shadowCam)
             self.shadowCameras.append(shadowCamNode)
 
@@ -112,6 +124,8 @@ class ShadowScenePass(RenderPass):
         self.pcfSampleState.setMagfilter(SamplerState.FTShadow)
         self.pcfSampleState.setWrapU(SamplerState.WMClamp)
         self.pcfSampleState.setWrapV(SamplerState.WMClamp)
+
+        # Globals.render.setTag("ShadowPassShader", "Default")
 
     def getOutputs(self):
         return {
