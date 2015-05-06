@@ -175,58 +175,54 @@ void main() {
     #ifdef USE_GLOBAL_ILLUMINATION
 
     #ifndef DEBUG_DISABLE_GI
+
+
     // Bilateral upsample global illumination
 
     ivec2 giSampleCoord = screenCoord / 2;
     
-    ivec2 giSampleOffsets[5] = ivec2[](
-        ivec2(0,0),
-        ivec2(-1,0),
-        ivec2(1,0),
-        ivec2(0,-1),
-        ivec2(0,1)
-        // ivec2(-1, -1),
-        // ivec2(-1, 1),
-        // ivec2(1, -1),
-        // ivec2(1, 1)
+    const int giSampleCount = 5;
+
+    vec2 giSampleOffsets[giSampleCount] = vec2[](
+        vec2(0,0),
+        vec2(-1,0),
+        vec2(1,0),
+        vec2(0,-1),
+        vec2(0,1)
+
+        // vec2(1, 1),
+        // vec2(-1, 1),
+        // vec2(-1, -1),
+        // vec2(1, -1)
     );
 
     vec4 giDiffuseResult = vec4(0);
     vec4 giSpecularResult = vec4(0);
     float giValidSamples = 0.01;
 
+    float pixelLZ = getLinearZFromZ(pixelDepth);
 
+    for (int i = 0; i < giSampleCount; i++) {
 
-    for (int i = 0; i < 5; i++) {
-        ivec2 coord = giSampleCoord + giSampleOffsets[i];
-        ivec2 coordScreen = coord * 2;
-        vec3 normalScreen = normalize(texelFetch(data1, coordScreen, 0).xyz);
-        float depthScreen = texelFetch(depth, coordScreen, 0).x;
+        vec2 coord = texcoord + giSampleOffsets[i] / vec2(screenSize) * 0.5;
+        vec3 normalScreen = normalize(textureLod(data1, coord, 0).xyz);
+        float depthScreen = textureLod(depth, coord, 0).x;
+        float reliability = saturate((dot(normalScreen, material.normal)-0.9));
 
-        float reliability = 1.0 - saturate(distance(normalScreen, material.normal));
-        reliability *= 1.0 - saturate( abs(pow(depthScreen,10.0) - pow(pixelDepth, 10.0)) * 200.0);
+        float lz1 = getLinearZFromZ(depthScreen);
 
-        giDiffuseResult += texelFetch(giDiffuseTex, coord, 0) * reliability;
-        giSpecularResult += texelFetch(giReflectionTex, coord, 0) * reliability;
+        reliability *= 1.0 - saturate(abs(lz1 - pixelLZ) * 50.0);
+
+        giDiffuseResult += texture(giDiffuseTex, coord) * reliability;
+        giSpecularResult += texture(giReflectionTex, coord) * reliability;
         giValidSamples += reliability;
 
     }
-
-    // giDiffuseColor = vec4(diffuseColorSamples);
     giDiffuseColor = giDiffuseResult / giValidSamples;
     giSpecularColor = giSpecularResult / giValidSamples;
 
-    if (giValidSamples < 0.5) {
-        giDiffuseColor = texelFetch(giDiffuseTex, giSampleCoord, 0);
-        giSpecularColor = texelFetch(giReflectionTex, giSampleCoord, 0);
-    }
 
-
-
-    // float giSampleDepth = texelFetch(depth, giSampleCoord, 0).x;
-    
-
-    // giDiffuseColor = texelFetch(giDiffuseTex, giSampleCoord, 0);
+    // giSpecularColor = vec4(giValidSamples / giSampleCount);
 
     #endif
     #endif

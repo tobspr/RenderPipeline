@@ -36,7 +36,7 @@ class GlobalIllumination(DebugObject):
         self.targetSpace = Globals.base.render
 
         # Store grid size in world space units
-        self.voxelGridSizeWS = Vec3(40)
+        self.voxelGridSizeWS = Vec3(55)
 
         # Store grid resolution, should be equal for each dimension
 
@@ -85,6 +85,7 @@ class GlobalIllumination(DebugObject):
         self.voxelizeTarget = RenderTarget("DynamicVoxelization")
         self.voxelizeTarget.setSize(self.voxelBaseResolution) 
         self.voxelizeTarget.setColorWrite(False)
+        # self.voxelizeTarget.addColorTexture()
         self.voxelizeTarget.setSource(self.voxelizeCameraNode, Globals.base.win)
         self.voxelizeTarget.prepareSceneRender()
 
@@ -184,6 +185,7 @@ class GlobalIllumination(DebugObject):
         self.convertBuffer = RenderTarget("VoxelConvertBuffer")
         self.convertBuffer.setSize(self.voxelGridResolution.x, self.voxelGridResolution.y)
         self.convertBuffer.setColorWrite(False)
+        # self.convertBuffer.addColorTexture()
         self.convertBuffer.prepareOffscreenBuffer()
         self.convertBuffer.setShaderInput("src", self.voxelGenTex)
         self.convertBuffer.setShaderInput("dest", self.voxelStableTex)
@@ -203,14 +205,16 @@ class GlobalIllumination(DebugObject):
         currentMipmap = 0
         while computeSize.z > 1:
             computeSize /= 2
-            target = RenderTarget("Compute Miplevel")
-            target.setSize(computeSize.x / 2, computeSize.y / 2)
+            target = RenderTarget("GIMiplevel" + str(currentMipmap))
+            target.setSize(computeSize.x, computeSize.y)
             target.setColorWrite(False)
+            # target.addColorTexture()
             target.prepareOffscreenBuffer()
             target.setActive(False)
             target.setShaderInput("sourceMipmap", currentMipmap)
             target.setShaderInput("source", self.voxelStableTex)
             target.setShaderInput("dest", self.voxelStableTex, False, True, -1, currentMipmap + 1)
+            self.mipmapTargets.append(target)
             currentMipmap += 1
 
 
@@ -253,6 +257,8 @@ class GlobalIllumination(DebugObject):
     def process(self):
         """ Processes the gi, this method is called every frame """
 
+        # TODO: Make gi work with all light types
+
         # With no light, there is no gi
         if self.targetLight is None:
             self.fatal("The GI cannot work without a directional target light! Set one "
@@ -273,6 +279,13 @@ class GlobalIllumination(DebugObject):
             self.targetSpace.setShaderInput("dv_uv_start", 
                 self.helperLight.shadowSources[0].getAtlasPos())
 
+            for child in self.mipmapTargets:
+                child.setActive(False)
+            self.convertBuffer.setActive(False)
+
+
+
+
             # Clear the old data in generation texture 
             self.voxelGenTex.clearImage()
             self.voxelizeTarget.setActive(True)
@@ -287,6 +300,7 @@ class GlobalIllumination(DebugObject):
             self.voxelizeCameraNode.setPos(self.gridPos - Vec3(self.voxelGridSizeWS.x, 0, 0))
             self.voxelizeCameraNode.lookAt(self.gridPos)
             self.targetSpace.setShaderInput("dv_direction", 0)
+
 
         elif self.frameIndex == 1:
 
@@ -305,6 +319,11 @@ class GlobalIllumination(DebugObject):
             self.voxelizeCameraNode.setPos(self.gridPos + Vec3(0, 0, self.voxelGridSizeWS.z))
             self.voxelizeCameraNode.lookAt(self.gridPos)
             self.targetSpace.setShaderInput("dv_direction", 2)
+            
+            # Update helper light, so that it is at the right position when Step 1
+            # starts again 
+            self.helperLight.setPos(self.gridPos)
+            self.helperLight.setDirection(direction)
 
         elif self.frameIndex == 3:
 
@@ -315,24 +334,15 @@ class GlobalIllumination(DebugObject):
             for child in self.mipmapTargets:
                 child.setActive(True)
 
-            # Update helper light, so that it is at the right position when Step 1
-            # starts again 
-            self.helperLight.setPos(self.gridPos)
-            self.helperLight.setDirection(direction)
+
 
             # We are done now, update the inputs
             self.ptaGridPos[0] = Vec3(self.gridPos)
             self._updateGridPos()
-            
-        elif self.frameIndex == 4:
-            for child in self.mipmapTargets:
-                child.setActive(False)
-
-            self.convertBuffer.setActive(False)
 
         # Increase frame index
         self.frameIndex += 1
-        self.frameIndex = self.frameIndex % 5
+        self.frameIndex = self.frameIndex % 4
 
     def bindTo(self, node, prefix):
         """ Binds all required shader inputs to a target to compute / display

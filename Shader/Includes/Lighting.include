@@ -16,20 +16,12 @@ uniform samplerCube directionToFace;
 uniform samplerCube fallbackCubemap;
 uniform float fallbackCubemapMipmaps;
 
-const mat4 shadowBiasMatrix = mat4(
-    0.5, 0.0, 0.0, 0.0,
-    0.0, 0.5, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.5, 0.5, 0.5, 1.0
-);
 
 #if USE_HARDWARE_PCF
 uniform sampler2DShadow shadowAtlasPCF;
 #endif
 
 uniform sampler2D shadowAtlas;
-
-
 
 
 
@@ -47,7 +39,8 @@ vec3 computeSpecular(vec3 specularColor, float roughness, float NxL, float LxH, 
 
 float computeMipmapFromRoughness(float roughness) {
     // return max(0.0, fallbackCubemapMipmaps + (log((roughness+0.21)/log(20))+0.52)*3.7);
-    return max(0.0, fallbackCubemapMipmaps - 11 +  pow(roughness, 0.25) * 11.0);
+    return max(0.0, fallbackCubemapMipmaps - 12 +  pow(roughness, 0.25) * 11.0);
+
     // return fallbackCubemapMipmaps - roughness * 11.0;
 }
 
@@ -104,17 +97,6 @@ vec3 computeLightModel(Light light, Material material,
 
 }
 
-vec3 computeEnvironmentBRDF(vec3 specularColor, float roughness, float NxV)
-{
-    const vec4 a = vec4(-1, -0.0275, -0.572, 0.022);
-    const vec4 b = vec4(1, 0.0425, 1.04, -0.04);
-    vec4 r = roughness * a + b;
-    float c = min( r.x * r.x, exp2( -9.28 * NxV ) ) * r.x + r.y;
-    vec2 multiplier = vec2( -1.04, 1.04 ) * c + r.zw;
-    // multiplier.y *= saturate( 50.0 * specularColor.g );
-    return specularColor * multiplier.x + multiplier.y;
-}
-
 vec3 transformCubemapCoordinates(vec3 coord) {
     return normalize(coord.xzy * vec3(1,-1,1));
 }
@@ -127,7 +109,7 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, ve
 
 
     float antialiasingFactor = saturate(length(dFdx(direction)) + length(dFdy(direction)));
-    mipmap += antialiasingFactor * CUBEMAP_ANTIALIASING_FACTOR;
+    mipmap += antialiasingFactor * CUBEMAP_ANTIALIASING_FACTOR * 2.0;
 
     vec3 samples = vec3(0);
 
@@ -204,7 +186,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, 
     result += giAmbient.xyz * material.baseColor * saturate(1.0 - material.metallic) * 1.0;
 
 
-    float diffuseReflectFactor = pow( saturate(1.0 - dot(material.normal,v)), 2.0);
+    // float diffuseReflectFactor = pow( saturate(1.0 - dot(material.normal,v)), 2.0);
 
     // diffuseReflectFactor = 1.0;
 
@@ -220,7 +202,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, 
     vec3 metallicSpecularAmbient = ambientReflected * material.baseColor * material.specular;
 
     // Make metallic materials darker at the border
-    metallicSpecularAmbient *= saturate(1.0 - pow( saturate(1.0 - NxV), 2.0));
+    // metallicSpecularAmbient *= saturate(1.0 - pow( saturate(1.0 - NxV), 2.0));
 
     result += metallicSpecularAmbient * material.metallic;
 
@@ -293,7 +275,8 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
     float biasedDepth = projCoord.z - baseBias;
 
 
-
+    #undef SHADOW_NUM_PCSS_SEARCH_SAMPLES
+    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 64
 
     // Find blocker
     for ( int i = 0; i < SHADOW_NUM_PCSS_SEARCH_SAMPLES; ++i )

@@ -39,9 +39,6 @@ class AmbientOcclusionTechnique(DebugObject):
         Shader/Occlusion/Init.include """
         raise AbstractMethodException()
 
-    def hasSeparatePass(self):
-        """ Returns wheter the occlusion has a separate pass """
-        raise AbstractMethodException()
 
 class AmbientOcclusionTechniqueNone(AmbientOcclusionTechnique):
 
@@ -63,10 +60,6 @@ class AmbientOcclusionTechniqueNone(AmbientOcclusionTechnique):
         """ See parent-class """
         return "NONE"
 
-    def hasSeparatePass(self):
-        """ See parent-class """
-        return False
-
 class AmbientOcclusionTechniqueSAO(AmbientOcclusionTechnique):
 
     """ SAO (Scalable Ambient Obscurance) """
@@ -87,10 +80,6 @@ class AmbientOcclusionTechniqueSAO(AmbientOcclusionTechnique):
         """ See parent-class """
         return "SAO"
 
-    def hasSeparatePass(self):
-        """ See parent-class """
-        return True
-
 class AmbientOcclusionTechniqueHBAO(AmbientOcclusionTechnique):
 
     """ HBAO (Horizon Based Ambient Occlusion) """
@@ -110,7 +99,3 @@ class AmbientOcclusionTechniqueHBAO(AmbientOcclusionTechnique):
     def getIncludeName(self):
         """ See parent-class """
         return "HBAO"
-
-    def hasSeparatePass(self):
-        """ See parent-class """
-        return True

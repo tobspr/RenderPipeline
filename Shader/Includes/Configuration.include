@@ -18,7 +18,7 @@ const float sqrt_of_2 = 1.4142135623;
 #endif
 
 
-#pragma optionNV (unroll all)
+// #pragma optionNV (unroll all)
 
 #define USE_BINDLESS_TEXTURES 0
 
@@ -46,8 +46,8 @@ const float sqrt_of_2 = 1.4142135623;
 
 // Todo: move this to pipeline config
 #define PCSS_RADIUS_WS 0.02
-#define PCSS_SEARCH_RADIUS 15.0
-#define PCSS_FILTER_RADIUS 6.0
+#define PCSS_SEARCH_RADIUS 55.0
+#define PCSS_FILTER_RADIUS 8.0
 #define USE_PIXEL_BASED_PCSS 1
 
 

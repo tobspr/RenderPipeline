@@ -43,6 +43,8 @@ void main() {
     
     vec3 detailNormal = sampledNormal.rgb * 2.0 - 1.0;
 
+    // bumpFactor = 0.0;
+
     vec3 tangent; vec3 binormal;
     reconstructTanBin(tangent, binormal);
 
@@ -54,6 +56,12 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
+
+
+    // m.metallic = 0.0;
+    // m.specular = 0.7;
+    // m.roughness = 0.05;
+    // m.baseColor = vec3(vOutput.materialDiffuse);
 
     renderMaterial(m);
 }

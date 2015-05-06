@@ -31,10 +31,11 @@ void main() {
     ivec3 voxelCoords = ivec3( (voxelSpacePos * vec3(dv_gridResolution)) + 0.0 );
 
     vec4 colorSample = textureLod(p3d_Texture0, texc, 0);
+    // colorSample = vec4(1);
 
     // if (colorSample.a < 0.5) discard;
 
-    vec3 diffuse = colorSample.xyz * color.xyz;
+    vec3 diffuse = pow(colorSample.xyz, vec3(1.0 / 2.2)) * color.xyz;
     // diffuse = colorSample.xyz * 5.0;
 
     vec4 projected = dv_mvp * vec4(positionWorld.xyz, 1);
@@ -57,15 +58,15 @@ void main() {
     }
 
     shadowSum /= voxelShadowSamples;   
-    float ambientFactor = 0.3;
+    float ambientFactor = 0.2;
 
     float shadowFactor = max(ambientFactor, 1.0 - shadowSum);
 
-    vec3 diffuseContribution = saturate(
-            diffuse * shadowFactor * 
-            max(ambientFactor, saturate(dot(dv_lightdir, normal))));
+    vec3 diffuseContribution = diffuse * shadowFactor * saturate(dot(dv_lightdir, normal));
 
-    uint packedColor = packUnorm4x8(vec4(0.0, diffuseContribution));
+    diffuseContribution += vec3(0.2, 0.6, 1.0) * 0.1;
+
+    uint packedColor = packUnorm4x8(vec4(0.0, saturate(diffuseContribution)));
 
     imageAtomicMax(dv_dest_tex, voxelCoords, packedColor);
 

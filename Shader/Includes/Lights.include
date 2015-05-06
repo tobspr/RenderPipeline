@@ -38,7 +38,7 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
 
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
-    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.001, 0.0001, 0.005);
+    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.2, 0.001, 0.0015);
     
     return computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
 }
