@@ -5,10 +5,9 @@ from panda3d.core import Vec3
 
 class SettingsManager(DebugObject):
 
-    """ This class is a base class for loading settings from
-    ini files. Subclasses should implement _addDefaultSettings.
-    Settings can be queried using the [] operator, saving is
-    currently not supported. To load a ini file, loadFromFile
+    """ This class is a base class for loading settings from ini files. 
+    Subclasses should implement _addDefaultSettings. Settings can be accessed as
+    attributes, saving is currently not supported. To load a ini file, loadFromFile
     has to be called.
     """
 
@@ -128,13 +127,3 @@ class SettingsManager(DebugObject):
 
             self.settings[settingName].setValue(settingValue)
             setattr(self, settingName, self.settings[settingName].getValue())
-
-    # def __getitem__(self, name):
-        # """ This function makes accessing the settings via [] possible.
-        # Throws an exception when the setting does not exist. """
-        
-        # if name in self.settings:
-        #     return self.settings[name].getValue()
-        # else:
-        #     raise Exception("The setting '" + str(name) + "' does not exist")
-

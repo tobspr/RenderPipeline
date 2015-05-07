@@ -6,7 +6,6 @@ from panda3d.core import OmniBoundingVolume, Vec3, Vec2, Point3, Point2
 from Light import Light
 from DebugObject import DebugObject
 from LightType import LightType
-from NoSenseException import NoSenseException
 from ShadowSource import ShadowSource
 from Globals import Globals
 
@@ -40,9 +39,6 @@ class GIHelperLight(Light, DebugObject):
         target light. """
         self.targetLight = target
 
-    def _computeLightMat(self):
-        """ Todo """
-
     def _getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
         return LightType.NoType
@@ -54,7 +50,7 @@ class GIHelperLight(Light, DebugObject):
 
     def setRadius(self, x):
         """ This makes no sense, as a directional light has no radius """
-        raise NoSenseException("GIHelperLight has no radius")
+        raise Exception("GIHelperLight has no radius")
 
     def needsUpdate(self):
         """ The helper light should get updated each frame to reposition the

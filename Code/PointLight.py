@@ -1,5 +1,6 @@
 
 import math
+
 from panda3d.core import NodePath, Vec4, Vec3, BoundingSphere, Point3
 from panda3d.core import OmniBoundingVolume
 
@@ -8,7 +9,6 @@ from DebugObject import DebugObject
 from LightType import LightType
 from ShadowSource import ShadowSource
 from Globals import Globals
-
 
 class PointLight(Light, DebugObject):
 
@@ -19,8 +19,7 @@ class PointLight(Light, DebugObject):
     Shadows are simulated using a cubemap, which means that this light has
     6 Shadow maps, and when calling setShadowMapResolution() you are
     actually setting the resolution for all maps. 
-
-    TODO: Add impostor support. """
+    """
 
     def __init__(self):
         """ Creates a new point light. Remember to set a position
@@ -76,25 +75,16 @@ class PointLight(Light, DebugObject):
 
     def _initShadowSources(self):
         """ Internal method to init the shadow sources """
-        # for i in range(2):
-        #     source = ShadowSource()
-        #     source.setupPerspectiveLens(
-        #         self.spacing, self.radius + self.spacing + self.bufferRadius, (160, 160))
-        #     source.setResolution(self.shadowResolution)
-        #     self._addShadowSource(source)
-
         for i in range(6):
             source = ShadowSource()
-            source.setupPerspectiveLens(
-                1.0, self.radius, (100, 100))
+            source.setupPerspectiveLens(1.0, self.radius, (100, 100))
             source.setResolution(self.shadowResolution)
             self._addShadowSource(source)
 
     def _updateShadowSources(self):
-        """ Recomputes the position of the shadow sources. One
-        Source is facing to +x, and the other one to -x. This
-        gives a 360 degree view. """
+        """ Recomputes the position of the shadow sources. """
 
+        # Position each 1 shadow source in 1 direction
         cubemapDirections = [
             Vec3(-1, 0, 0),
             Vec3(1, 0, 0),
@@ -108,16 +98,6 @@ class PointLight(Light, DebugObject):
             self.shadowSources[index].setPos(self.position)
             self.shadowSources[index].lookAt(self.position + direction)
 
-        # self.shadowSources[0].setPos(
-        #     self.position + Vec3(0, self.spacing * 2.0, 0))
-        # self.shadowSources[0].setHpr(Vec3(180, 0, 0))
-
-        # self.shadowSources[1].setPos(
-        #     self.position - Vec3(0, self.spacing * 2.0, 0))
-        # self.shadowSources[1].setHpr(Vec3(0, 0, 0))
-
     def __repr__(self):
         """ Generates a string representation of this instance """
-        # return "PointLight[pos=" + str(self.position) + ", radius=" +
-        # str(self.radius) + "]"
         return "PointLight[id=" + str(self.structElementID) + "]"

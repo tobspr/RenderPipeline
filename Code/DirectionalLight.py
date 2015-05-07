@@ -7,23 +7,25 @@ import math
 from Light import Light
 from DebugObject import DebugObject
 from LightType import LightType
-from NoSenseException import NoSenseException
 from ShadowSource import ShadowSource
 from Globals import Globals
 
 from panda3d.core import PStatCollector
 
-pstats_PCSM = PStatCollector("App:LightManager:ProcessLights:UpdatePCSMSplits")
+pstats_PSSM = PStatCollector("App:LightManager:ProcessLights:UpdatePCSMSplits")
 
 class DirectionalLight(Light, DebugObject):
 
-    """ This light type simulates sunlight, or any other very
-    big light source. When shadows are enabled, PSSM is used.
-    A directional light has no position or radius, only a direction. 
-    Therefore, setRadius and setPos have no effect. 
+    """ This light type simulates sunlight, or any other very big light source. 
+    When shadows are enabled, PSSM is used. A directional light has no position 
+    or radius, only a direction. Therefore, setRadius and setPos have no effect. 
 
-    DirectionalLight do not support debug nodes (yet). It uses a 6-Split PSSM
-    by default (Todo: make more configurable)
+    DirectionalLight does not support debug nodes (yet). It uses a 4-Split PSSM
+    by default. The PSSM can be controlled via setPssmDistance and setPssmSplitPow. 
+    See the method descriptions for more information.
+
+    If you do not use the default camera, you should pass it to the light with
+    setPssmTarget.
 
     """
 
@@ -34,8 +36,8 @@ class DirectionalLight(Light, DebugObject):
         DebugObject.__init__(self, "DirectionalLight")
         self.typeName = "DirectionalLight"
         self.splitCount = 4
-        self.pssmTargetCam = None
-        self.pssmTargetLens = None
+        self.pssmTargetCam = Globals.base.cam
+        self.pssmTargetLens = Globals.base.camLens
         self.pssmFarPlane = 60.0
         self.pssmSplitPow = 2.0
         self.updateIndex = 0
@@ -45,24 +47,24 @@ class DirectionalLight(Light, DebugObject):
 
     def setPssmDistance(self, far_plane):
         """ Sets the distance of the last split. After this distance, no shadow
-        is visible. """
+        is visible. When setting a bigger distance, the shadows reach further but
+        their quality decreases. When setting a lower distance, the shadows reach
+        shorter but their qualit increases. Usually you want to find a tradeoff 
+        between distance and quality."""
         self.pssmFarPlane = far_plane
 
     def setPssmSplitPow(self, split_pow):
         """ Sets the split pow to use. A higher value means the split planes are
-        closer to the camera, a lower value means the split planes are more 
-        uniform distributed. Using a value of 1 will make the distribution 
-        uniform """
+        distributed closer to the camera, a lower value means the split planes 
+        are more uniformly distributed. Using a value of 1 will make the 
+        distribution uniform """
         self.pssmSplitPow = split_pow
 
     def setPssmTarget(self, pssm_cam, pssm_lens):
-        """ Sets the camera and its lens which are used for the pssm. This is
-        usually the main camera """
+        """ Sets the camera and lens which are used for the pssm. This is
+        usually (and by default) the main camera. """
         self.pssmTargetCam = pssm_cam
         self.pssmTargetLens = pssm_lens
-
-    def _computeLightMat(self):
-        """ Todo """
 
     def _getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
@@ -75,7 +77,7 @@ class DirectionalLight(Light, DebugObject):
 
     def setRadius(self, x):
         """ This makes no sense, as a directional light has no radius """
-        raise NoSenseException("DirectionalLight has no radius")
+        raise Exception("DirectionalLight has no radius")
 
     def needsUpdate(self):
         """ Directional lights have to get updated every frame to reposition
@@ -85,18 +87,15 @@ class DirectionalLight(Light, DebugObject):
     def _computeAdditionalData(self):
         """ The directional light has no additional data (yet) to pass to the
         shaders """
+        pass
 
     def _updateDebugNode(self):
         """ Debug nodes are not supported by directional lights (yet), so this
         does nothing """
+        raise Exception("Debug nodes are not supported by directional lights yet")
 
     def _initShadowSources(self):
         """ Creates the shadow sources used for shadowing """
-
-        if self.pssmTargetCam is None:
-            self.fatal("Error during initialization, you have to set a Target with setPssmTarget before calling setCastsShadows.")
-            return
-
         for i in xrange(self.splitCount):
             source = ShadowSource()
             source.setupOrtographicLens(
@@ -109,11 +108,12 @@ class DirectionalLight(Light, DebugObject):
 
         mixVector = lambda p1, p2, a: ((p2*a) + (p1*(1.0-a)))
 
-        pstats_PCSM.start()
+        pstats_PSSM.start()
 
         # Fetch camera data
         camPos = self.pssmTargetCam.getPos()
 
+        # Compute frustum points
         nearPoint = Point3()
         farPoint = Point3()
         self.pssmTargetLens.extrude(Point2(0.0), nearPoint, farPoint)
@@ -126,6 +126,7 @@ class DirectionalLight(Light, DebugObject):
         trNearPoint = Globals.base.render.getRelativePoint(self.pssmTargetCam, trNearPoint)
         trFarPoint = Globals.base.render.getRelativePoint(self.pssmTargetCam, trFarPoint)
 
+        # Position the splits
         # This is the PSSM split function, currently cubic
         splitFunc = lambda x: math.pow(float(x+0.5)/(self.splitCount+0.5), self.pssmSplitPow)
         relativeSplitSize = self.pssmFarPlane / self.pssmTargetLens.getFar()
@@ -156,6 +157,10 @@ class DirectionalLight(Light, DebugObject):
             source.setFilmSize(filmSize, filmSize)
 
             # Stable CSM Snapping
+            # This snaps the source to its texel grids, so that there is no flickering
+            # visible when the source moves. This works by projecting the 
+            # Point (0,0,0) to light space, compute the texcoord differences and
+            # offset the light position by that.
             mvp = Mat4(source.computeMVP())
 
             basePoint = mvp.xform(Point4(0,0,0,1))
@@ -168,15 +173,17 @@ class DirectionalLight(Light, DebugObject):
             offsetY = basePoint.y % texelSize
 
             mvp.invertInPlace()
-
-            newBase = mvp.xform(Point4( (basePoint.x - offsetX) * 2.0 - 1.0, (basePoint.y - offsetY) * 2.0 - 1.0, (basePoint.z) * 2.0 - 1.0, 1))
+            newBase = mvp.xform(Point4( 
+                (basePoint.x - offsetX) * 2.0 - 1.0, 
+                (basePoint.y - offsetY) * 2.0 - 1.0, 
+                (basePoint.z) * 2.0 - 1.0, 1))
             destPos -= Vec3(newBase.x, newBase.y, newBase.z)
             self.shadowSources[i].setPos(destPos)
 
             # Invalidate the source after changing the position
             self.shadowSources[i].invalidate()
 
-        pstats_PCSM.stop()
+        pstats_PSSM.stop()
 
     def __repr__(self):
         """ Generates a representative string for this object """
