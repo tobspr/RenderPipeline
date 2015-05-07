@@ -220,7 +220,6 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     // giResult *= 3.0;
     // giResult *= mix(aoMultiplier, 1.0, 0.5);
-
     giResult = vec4(giResult.xyz, aoMultiplier);
 
     // return vec4(giResult * 1.0);

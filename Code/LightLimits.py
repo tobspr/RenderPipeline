@@ -5,8 +5,8 @@ class LightLimits:
     """ This class stores the hardcoded maximum numbers of lights and shadowmaps """
 
     maxLights = {
-        "PointLight": 15,
-        "PointLightShadow": 4,
+        "PointLight": 0,
+        "PointLightShadow": 7,
         "DirectionalLight": 1,
         "DirectionalLightShadow": 1,
         "SpotLight": 3,
@@ -15,14 +15,14 @@ class LightLimits:
     }
 
     maxPerTileLights = {
-        "PointLight": 15,
-        "PointLightShadow": 4,
+        "PointLight": 0,
+        "PointLightShadow": 7,
         "DirectionalLight": 1,
         "DirectionalLightShadow": 1,
         "SpotLight": 3,
         "SpotLightShadow": 1,
     }
 
-    maxTotalLights = 20
-    maxShadowMaps = 24
+    maxTotalLights = 8
+    maxShadowMaps = 46
 

@@ -3,7 +3,7 @@
 
 
 
-#define USE_UINT_PACKING 1
+#define USE_UINT_PACKING 0
 
 struct TransparentMaterial {
     vec3 color;
@@ -33,26 +33,20 @@ TransparentMaterial unpackTransparentMaterial(uvec4 data) {
 
     tm.nextEntry = data.w;
 
+
+    vec4 unpacked1 = unpackUnorm4x8(data.x);
+    vec4 unpacked2 = unpackUnorm4x8(data.y);
+
+    tm.color = unpacked1.rgb;
+    tm.materialType = uint(unpacked1.w);
+    tm.normal = unpacked2.rgb * 2.0 - 1.0;
+    tm.alpha = unpacked2.w;
+
     #if USE_UINT_PACKING
         tm.depth = float(data.z) / 0xFFFFFFFF;
     #else
         tm.depth = uintBitsToFloat(data.z);
     #endif
-
-    tm.color = vec3(
-        float(data.x & 0xFF) / 255.0,
-        float((data.x >> 8) & 0xFF) / 255.0,
-        float((data.x >> 16) & 0xFF) / 255.0
-    );
-
-    tm.normal = vec3(
-        float(data.y & 0xFF) / 255.0,
-        float((data.y >> 8) & 0xFF) / 255.0,
-        float((data.y >> 16) & 0xFF) / 255.0
-    ) * 2.0 - 1.0;
-
-    tm.alpha = float((data.y >> 24) & 0xFF) / 255.0;
-    tm.materialType = (data.x >> 24) & 0xFF;
     return tm;
 }
 

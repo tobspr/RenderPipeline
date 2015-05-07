@@ -16,9 +16,6 @@ class DeferredScenePass(RenderPass):
             "readyState": "SceneReadyState"
         }
 
-    def setShaders(self):
-        pass
-
     def create(self):
         self.target = RenderTarget("DeferredScenePass")
         self.target.addColorAndDepth()
@@ -30,7 +27,7 @@ class DeferredScenePass(RenderPass):
         self.target.prepareSceneRender()
         self.target.setClearColor(True)
 
-        # self.target.getQuad().node().removeAllChildren()
+        self.target.getQuad().node().removeAllChildren()
 
     def getOutputs(self):
         return {

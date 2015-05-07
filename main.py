@@ -101,10 +101,10 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
-        self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
+        # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
 
 
@@ -160,22 +160,22 @@ class Main(ShowBase, DebugObject):
             self.lastSliderValue = 0.0
 
         # Create some lights
-        for i in xrange(0):
+        for i in xrange(6):
             pointLight = PointLight()
 
-            radius = float(i) / 3.0 * 6.28 + 1.52
-            xoffs = math.sin(radius) * 15.0
-            yoffs = math.cos(radius) * 15.0
+            radius = float(i) / 7.0 * 6.28 + 1.52
+            xoffs = math.sin(radius) * 7.0
+            yoffs = math.cos(radius) * 7.0
 
             # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
-            pointLight.setPos(Vec3( xoffs, yoffs, 15))
+            pointLight.setPos(Vec3( xoffs, yoffs, 7))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
             pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( random(), random(), random()))
 
-            pointLight.setShadowMapResolution(1024)
+            pointLight.setShadowMapResolution(512)
             pointLight.setRadius(30)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
@@ -325,7 +325,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(-12, 0, 12), Vec3(5, 0, 0))
+            Vec3(0, -15, 25), Vec3(0, 0, 3))
         self.controller.setup()
 
         # Load skybox

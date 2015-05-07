@@ -1181,13 +1181,13 @@ class RenderingPipeline(DebugObject):
         defines = []
         define = lambda name, val: defines.append((name, val))
 
-        if self.settings.antialiasingTechnique == "SMAA":
-            quality = self.settings.smaaQuality.upper()
-            if quality in ["LOW", "MEDIUM", "HIGH", "ULTRA"]:
-                define("SMAA_PRESET_" + quality, "")
-            else:
-                self.error("Unrecognized SMAA quality:", quality)
-                return
+        # if self.settings.antialiasingTechnique == "SMAA":
+        #     quality = self.settings.smaaQuality.upper()
+        #     if quality in ["LOW", "MEDIUM", "HIGH", "ULTRA"]:
+        #         define("SMAA_PRESET_" + quality, "")
+        #     else:
+        #         self.error("Unrecognized SMAA quality:", quality)
+        #         return
 
         # define("LIGHTING_COMPUTE_PATCH_SIZE_X", self.settings.computePatchSizeX)
         # define("LIGHTING_COMPUTE_PATCH_SIZE_Y", self.settings.computePatchSizeY)
@@ -1211,8 +1211,8 @@ class RenderingPipeline(DebugObject):
         # if self.settings.enableLightPerTileDebugging:
         #     define("ENABLE_LIGHT_PER_TILE_DEBUG", 1)
 
-        if self.settings.useAdaptiveBrightness:
-            define("USE_ADAPTIVE_BRIGHTNESS", 1)
+        # if self.settings.useAdaptiveBrightness:
+        #     define("USE_ADAPTIVE_BRIGHTNESS", 1)
 
         # define("AMBIENT_CUBEMAP_SAMPLES", self.settings.ambientCubemapSamples)
         # define("SHADOW_MAP_ATLAS_SIZE", self.settings.shadowAtlasSize)
@@ -1233,55 +1233,56 @@ class RenderingPipeline(DebugObject):
         # if self.settings.useHardwarePCF:
         #     define("USE_HARDWARE_PCF", 1)
 
-        define("WINDOW_WIDTH", self.size.x)
-        define("WINDOW_HEIGHT", self.size.y)
+        # define("WINDOW_WIDTH", self.size.x)
+        # define("WINDOW_HEIGHT", self.size.y)
 
         if self.settings.motionBlurEnabled:
             define("USE_MOTION_BLUR", 1)
 
         define("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples)
 
-        # Occlusion
-        define("OCCLUSION_TECHNIQUE_" + self.occlusion.getIncludeName(), 1)
-        define("OCCLUSION_RADIUS", self.settings.occlusionRadius)
-        define("OCCLUSION_STRENGTH", self.settings.occlusionStrength)
-        define("OCCLUSION_SAMPLES", self.settings.occlusionSampleCount)
 
-        if self.settings.displayOnscreenDebugger:
-            define("DEBUGGER_ACTIVE", 1)
+        # Occlusion
+        # define("OCCLUSION_TECHNIQUE_" + self.occlusion.getIncludeName(), 1)
+        # define("OCCLUSION_RADIUS", self.settings.occlusionRadius)
+        # define("OCCLUSION_STRENGTH", self.settings.occlusionStrength)
+        # define("OCCLUSION_SAMPLES", self.settings.occlusionSampleCount)
+
+        # if self.settings.displayOnscreenDebugger:
+            # define("DEBUGGER_ACTIVE", 1)
 
             extraSettings = self.guiManager.getDefines()
             defines += extraSettings
 
-        if self.settings.enableGlobalIllumination:
-            define("USE_GLOBAL_ILLUMINATION", 1)
+        # if self.settings.enableGlobalIllumination:
+        #     define("USE_GLOBAL_ILLUMINATION", 1)
 
-        if self.settings.useTransparency:
-            define("USE_TRANSPARENCY", 1)
-            define("MAX_TRANSPARENCY_LAYERS", self.settings.maxTransparencyLayers)
+        # if self.settings.useTransparency:
+        #     define("USE_TRANSPARENCY", 1)
+        #     define("MAX_TRANSPARENCY_LAYERS", self.settings.maxTransparencyLayers)
 
-        if self.settings.enableScattering:
-            define("USE_SCATTERING", 1)
+        # if self.settings.enableScattering:
+        #     define("USE_SCATTERING", 1)
 
-        if self.haveOcclusion:
-            define("USE_OCCLUSION", 1)
+        # if self.haveOcclusion:
+        #     define("USE_OCCLUSION", 1)
 
-            if self.settings.useTemporalOcclusion:
-                define("ENHANCE_TEMPORAL_OCCLUSION", 1)
+        #     if self.settings.useTemporalOcclusion:
+        #         define("ENHANCE_TEMPORAL_OCCLUSION", 1)
 
         if self.settings.enableSSLR:
             define("USE_SSLR", 1)
 
         # Pass camera near and far plane
-        define("CAMERA_NEAR", Globals.base.camLens.getNear())
-        define("CAMERA_FAR", Globals.base.camLens.getFar())
+        # define("CAMERA_NEAR", Globals.base.camLens.getNear())
+        # define("CAMERA_FAR", Globals.base.camLens.getFar())
 
         # Make sure the configuration file stamp is changed
-        define("RANDOM_TIMESTAMP", random.random())
+        # define("RANDOM_TIMESTAMP", random.random())
 
 
         # Add max light count and light settings
-        self.lightManager.addShaderDefines(defines)
+        # self.lightManager.addShaderDefines(defines)
 
         # Generate
         output = "#pragma once\n"

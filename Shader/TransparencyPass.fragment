@@ -208,6 +208,9 @@ void main() {
 
         // composedColor = pow(composedColor, vec3(1.0 / 2.2));
 
+
+        // composedColor = tm.normal;
+        // tm.alpha = 1.0;
         // cf += 
         // cf = dot(v, tm.normal);
 

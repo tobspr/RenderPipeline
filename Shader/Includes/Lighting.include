@@ -50,7 +50,7 @@ vec3 computeLightModel(Light light, Material material,
         float attenuation, float shadowFactor) {
 
     #if DEBUG_RM_SHADOWS
-        return shadowFactor * attenuation * light.color * 0.05;
+        return shadowFactor * attenuation * light.color;
     #endif
 
     #if USE_SIMPLE_LIGHTING || DEBUG_DISABLE_COMPLEX_LIGHTING
@@ -109,7 +109,7 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, ve
 
 
     float antialiasingFactor = saturate(length(dFdx(direction)) + length(dFdy(direction)));
-    mipmap += antialiasingFactor * CUBEMAP_ANTIALIASING_FACTOR * 2.0;
+    mipmap += antialiasingFactor * CUBEMAP_ANTIALIASING_FACTOR;
 
     vec3 samples = vec3(0);
 
@@ -134,17 +134,21 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, ve
 
 }
 
-vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, vec3 n) {
+vec3 computeAmbient(Material material, vec3 giAmbient, vec4 giSpecular, float occlusionFactor, vec3 v, vec3 n) {
 
 
-    // return vec3(0.0);
 
     #ifdef DEBUG_DISABLE_AMBIENT
         return vec3(0.0);
     #endif
 
+    #ifdef DEBUG_RM_PSSM_SPLITS
+        return vec3(0.01);
+        
+    #endif
+
     #ifdef DEBUG_RM_SHADOWS
-        return vec3(0.1);
+        return vec3(0.001);
     #endif
 
     float NxV = max(0.0, dot(material.normal, v)) + 1e-5;
@@ -152,11 +156,11 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, 
     vec3 reflectedDir = transformCubemapCoordinates(reflect( -v, material.normal ));
     vec3 ambientRefColor = filterEnvironmentMap(fallbackCubemap, material, reflectedDir, v);
 
-    ambientRefColor *= 2.0;
+    // ambientRefColor *= 2.0;
 
 
     // Add global illumination
-    ambientRefColor = giSpecular.xyz +  ambientRefColor * (1.0 - giSpecular.w);
+    // ambientRefColor = giSpecular.xyz +  ambientRefColor * (1.0 - giSpecular.w);
 
     #if 0
 
@@ -184,9 +188,9 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, 
 
     vec3 result = vec3(0);
 
-
+//  * pow(giAmbient.w, 2.0)
     // Diffuse ambient
-    result += giAmbient.xyz * pow(giAmbient.w, 2.0) * material.baseColor * saturate(1.0 - material.metallic) * 1.0;
+    result += giAmbient * occlusionFactor * material.baseColor * saturate(1.0 - material.metallic) * 1.0;
 
 
     // float diffuseReflectFactor = pow( saturate(1.0 - dot(material.normal,v)), 2.0);

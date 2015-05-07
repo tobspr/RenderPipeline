@@ -54,6 +54,9 @@ class TransparencyManager(DebugObject):
         self.pipeline.getRenderPassManager().registerStaticVariable("transpListHeadBuffer", self.listHeadBuffer)
         self.pipeline.getRenderPassManager().registerStaticVariable("transpMaterialDataBuffer", self.materialDataBuffer)
 
+        self.pipeline.getRenderPassManager().registerDefine("USE_TRANSPARENCY", 1)
+        self.pipeline.getRenderPassManager().registerDefine("MAX_TRANSPARENCY_LAYERS", 
+            self.pipeline.settings.maxTransparencyLayers)
 
         self.pixelCountBuffer.setClearColor(Vec4(0, 0, 0, 0))
         self.spinLockBuffer.setClearColor(Vec4(0, 0, 0, 0))

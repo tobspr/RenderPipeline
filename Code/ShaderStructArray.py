@@ -178,7 +178,7 @@ class ShaderStructArray(DebugObject):
         
         self.parents[parent] = uniformName
 
-        for index in range(min(32, self.size) ):
+        for index in range(min(999, self.size) ):
             for attrName, attrType in self.attributes.items():
                 inputName = uniformName + \
                     "[" + str(index) + "" "]" + "." + attrName

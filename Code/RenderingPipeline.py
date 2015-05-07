@@ -100,6 +100,8 @@ class RenderingPipeline(DebugObject):
 
 
     def reloadShaders(self):
+        self.debug("Reloading shaders")
+        self.renderPassManager.writeAutoconfig()
         self.renderPassManager.setShaders()
 
     def getRenderPassManager(self):
@@ -248,6 +250,27 @@ class RenderingPipeline(DebugObject):
         define = lambda name, val: self.renderPassManager.registerDefine(name, val)
         define("WINDOW_WIDTH", self._size.x)
         define("WINDOW_HEIGHT", self._size.y)
+
+        if self.settings.displayOnscreenDebugger:
+            define("DEBUGGER_ACTIVE", 1)
+
+            # extraSettings = self.guiManager.getDefines()
+            # defines += extraSettings
+
+        if self.settings.enableGlobalIllumination:
+            define("USE_GLOBAL_ILLUMINATION", 1)
+
+        # TODO: Move to scattering module
+        if self.settings.enableScattering:
+            define("USE_SCATTERING", 1)
+
+        # TODO: Add sslr
+        # if self.settings.enableSSLR:
+        #     define("USE_SSLR", 1)
+
+        # Pass camera near and far plane
+        define("CAMERA_NEAR", Globals.base.camLens.getNear())
+        define("CAMERA_FAR", Globals.base.camLens.getFar())
 
     def _createGlobalIllum(self):
         if self.settings.enableGlobalIllumination:

@@ -21,6 +21,7 @@ class DynamicExposurePass(RenderPass):
 
         self.pipeline.renderPassManager.registerStaticVariable(
             "dynamicExposureTex", self.lastExposureStorage)
+        self.pipeline.renderPassManager.registerDefine("USE_ADAPTIVE_BRIGHTNESS", 1)
 
     def getID(self):
         return "DynamicExposurePass"

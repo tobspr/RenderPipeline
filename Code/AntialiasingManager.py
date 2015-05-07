@@ -40,6 +40,13 @@ class AntialiasingManager(DebugObject):
             self.aaPass = AntialiasingSMAAPass()
             self.jitter = True
 
+            quality = self.pipeline.settings.smaaQuality.upper()
+            if quality in ["LOW", "MEDIUM", "HIGH", "ULTRA"]:
+                self.pipeline.getRenderPassManager().registerDefine("SMAA_PRESET_" + quality, 1)
+            else:
+                self.error("Unrecognized SMAA quality:", quality)
+                return
+
         if self.jitter:
             onePixelShift = Vec2(0.5 / float(self.pipeline.getSize().x), 
                 0.5 / float(self.pipeline.getSize().y)) * self.pipeline.settings.jitterAmount
@@ -53,7 +60,10 @@ class AntialiasingManager(DebugObject):
             ]
 
             print self.jitterOffsets
+
         self.pipeline.getRenderPassManager().registerPass(self.aaPass)
+
+
 
     def update(self):
         if self.jitter:

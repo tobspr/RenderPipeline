@@ -29,6 +29,7 @@ class LightingPass(RenderPass):
             "giDiffuseTex": ["EdgePreservingBlurPass.blurResult", "Variables.emptyTextureWhite"],
             "giReflectionTex": ["EdgePreservingBlurPass.blurResult", "Variables.emptyTextureWhite"],
             "occlusionTex": ["EdgePreservingBlurPass.blurResult", "Variables.emptyTextureWhite"],
+            "blurredGiandAoTex": ["EdgePreservingBlurPass.blurResult", "Variables.emptyTextureWhite"],
 
             "lastFramePosition": "Variables.emptyTextureWhite", #TODO
             "lastFrameOcclusion": "Variables.emptyTextureWhite", #TODO

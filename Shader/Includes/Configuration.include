@@ -13,11 +13,6 @@ const float sqrt_of_2 = 1.4142135623;
 
 #define M_PI 3.14159265
 
-#ifndef DEBUG_DISABLE_BLUR_OCCLUSION
-    #define USE_OCCLUSION_BLUR
-#endif
-
-
 // #pragma optionNV (unroll all)
 
 #define USE_BINDLESS_TEXTURES 0

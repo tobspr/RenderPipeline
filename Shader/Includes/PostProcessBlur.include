@@ -60,11 +60,10 @@ vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2
 
 vec4 edgePreservingBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex) {
 
-    #ifndef USE_OCCLUSION_BLUR
+    #ifdef DEBUG_DISABLE_UPSCALE_BLUR
         return texture(sourceTex, texcoord);
-    #endif
+    #else
 
-    #ifndef DEBUG_DISABLE_OCCLUSION
 
 
         #define NUM_BLUR_STEPS 17
@@ -125,9 +124,6 @@ vec4 edgePreservingBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, s
         }
 
         return sampledResult / sampleWeights;
-
-    #else
-        return texelFetch(sourceTex, screenCoord, 0);
 
     #endif
 }

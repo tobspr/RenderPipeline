@@ -126,8 +126,9 @@ void renderTransparentMaterial(TransparentMaterial tm) {
 
 
     // Pack material
-    uint integer1 = int(tm.color.x * 250.0 + 0.5) | int(tm.color.y * 250.0 + 0.5) << 8 | int(tm.color.z * 250.0 + 0.5) << 16 | tm.materialType << 24;
-    uint integer2 = int(tm.normal.x * 255.0) | int(tm.normal.y * 255.0) << 8 | int(tm.normal.z * 255.0) << 16 | int(tm.alpha * 255.0) << 24;
+    // uint integer1 = int(tm.color.x * 250.0 + 0.5) | int(tm.color.y * 250.0 + 0.5) << 8 | int(tm.color.z * 250.0 + 0.5) << 16 | tm.materialType << 24;
+    uint integer1 = packUnorm4x8(vec4(tm.color, tm.materialType));
+    uint integer2 = packUnorm4x8(vec4(tm.normal, tm.alpha));
 
     #if USE_UINT_PACKING
         uint integer3 = uint(tm.depth * 0xFFFFFFFF);

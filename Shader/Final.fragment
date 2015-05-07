@@ -8,6 +8,7 @@
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/ChromaticAbberation.include"
 #pragma include "Includes/ColorCorrection.include"
+#pragma include "Includes/FilmGrain.include"
 
 
 in vec2 texcoord;
@@ -22,6 +23,9 @@ uniform sampler2D colorLUT;
 // uniform float motionBlurFactor;
 out vec3 result;
 
+
+
+uniform float osg_FrameTime;
 
 // layout (rgba32f) uniform image2D lastFramePosition;
 // layout (r16f) uniform image2D lastFrameOcclusion;
@@ -60,12 +64,10 @@ void main() {
         result = applyChromaticAbberation(colorTex, texcoord, 1.0);
         
         // Color LUT
-        #ifndef DEBUG_RM_OCCLUSION
-        #ifndef DEBUG_RM_BASECOLOR
         result = applyColorLUT(colorLUT, result);
 
-        #endif
-        #endif
+        // Film grain
+        result = computeGrain(result, texcoord, mod(osg_FrameTime, 1.0) + 1.0);
 
     #else
         result =  textureLod(colorTex, texcoord, 0).xyz;

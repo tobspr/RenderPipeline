@@ -27,4 +27,16 @@ class AmbientOcclusionManager(DebugObject):
 
         self.aoPass = AmbientOcclusionPass()
         self.pipeline.getRenderPassManager().registerPass(self.aoPass)
+
         self.pipeline.getRenderPassManager().registerDefine("OCCLUSION_TECHNIQUE_" + technique, 1)
+        self.pipeline.getRenderPassManager().registerDefine("USE_OCCLUSION", 1)
+
+        self.pipeline.getRenderPassManager().registerDefine("OCCLUSION_RADIUS", 
+            self.pipeline.settings.occlusionRadius)
+        self.pipeline.getRenderPassManager().registerDefine("OCCLUSION_STRENGTH", 
+            self.pipeline.settings.occlusionStrength)
+        self.pipeline.getRenderPassManager().registerDefine("OCCLUSION_SAMPLES", 
+            self.pipeline.settings.occlusionSampleCount)
+
+        if self.pipeline.settings.useTemporalOcclusion:
+            self.pipeline.getRenderPassManager().registerDefine("ENHANCE_TEMPORAL_OCCLUSION", 1)
