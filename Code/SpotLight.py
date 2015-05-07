@@ -34,9 +34,6 @@ class SpotLight(Light, DebugObject):
         use a simple BoundingSphere """
         self.bounds = BoundingSphere(Point3(self.position), self.radius * 2.0)
 
-    def _computeAdditionalData(self):
-        """ SpotLight does not need to store additional data """
-
     def setNearFar(self, near, far):
         """ Sets the near and far plane of the spotlight """
         self.nearPlane = near
@@ -62,4 +59,4 @@ class SpotLight(Light, DebugObject):
 
     def __repr__(self):
         """ Generates a string representation of this instance """
-        return "SpotLight[id=" + str(self.structElementID) + "]"
+        return "SpotLight[]"

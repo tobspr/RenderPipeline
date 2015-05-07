@@ -25,10 +25,34 @@ import math
 
 class GlobalIllumination(DebugObject):
 
-    """ This class handles the global illumination processing. It is still
-    experimental, and thus not commented. """
+    """ This class handles the global illumination processing. To process the
+    global illumination, the scene is first rasterized from 3 directions, and 
+    a 3D voxel grid is created. After that, the mipmaps of the voxel grid are
+    generated. The final shader then performs voxel cone tracing to compute 
+    an ambient, diffuse and specular term.
 
-    updateEnabled = False
+    The gi is split over several frames to reduce the computation cost. Currently
+    there are 5 different steps, split over 4 frames:
+
+    Frame 1: 
+        - Rasterize the scene from the x-axis
+
+    Frame 2:
+        - Rasterize the scene from the y-axis
+
+    Frame 3: 
+        - Rasterize the scene from the z-axis
+
+    Frame 4:
+        - Copy the generated temporary voxel grid into a stable voxel grid
+        - Generate the mipmaps for that stable voxel grid using a gaussian filter
+
+    In the final pass the stable voxel grid is sampled. The voxel tracing selects
+    the mipmap depending on the cone size. This enables small scale details as well
+    as blurry reflections and low-frequency ao / diffuse. For performance reasons,
+    the final pass is executed at half window resolution and then bilateral upscaled.
+    """
+
 
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
@@ -42,8 +66,6 @@ class GlobalIllumination(DebugObject):
         # This is the half voxel grid size
         self.voxelGridSizeWS = Vec3(50)
 
-        # Store grid resolution, should be equal for each dimension
-
         # When you change this resolution, you have to change it in Shader/GI/ConvertGrid.fragment aswell
         self.voxelGridResolution = LVecBase3i(256)
 
@@ -52,14 +74,9 @@ class GlobalIllumination(DebugObject):
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
         self.gridPos = Vec3(0)
 
-    @classmethod
-    def setUpdateEnabled(self, enabled):
-        self.updateEnabled = enabled
-
     def setTargetLight(self, light):
         """ Sets the sun light which is the main source of GI. Only that light
         casts gi. """
-
         if light._getLightType() != LightType.Directional:
             self.error("setTargetLight expects a directional light!")
             return
@@ -67,25 +84,26 @@ class GlobalIllumination(DebugObject):
         self.targetLight = light
         self._createHelperLight()
 
-
     def _createHelperLight(self):
         """ Creates the helper light. We can't use the main directional light
-        because it uses PSSM, so we need an extra shadow map """
+        because it uses PSSM, so we need an extra shadow map that covers the
+        whole voxel grid. """
         self.helperLight = GIHelperLight()
         self.helperLight.setPos(Vec3(50,50,100))
         self.helperLight.setShadowMapResolution(512)
         self.helperLight.setFilmSize(math.sqrt( (self.voxelGridSizeWS.x**2) * 2) * 2 )
         self.helperLight.setCastsShadows(True)
         self.pipeline.addLight(self.helperLight)
-
         self.targetSpace.setShaderInput("giLightUVSize", 
             float(self.helperLight.shadowResolution) / self.pipeline.settings.shadowAtlasSize)
-
         self._updateGridPos()
 
     def setup(self):
         """ Setups everything for the GI to work """
 
+
+        # Create the voxelize pass which is used to voxelize the scene from
+        # several directions
         self.voxelizePass = VoxelizePass()
         self.voxelizePass.setVoxelGridResolution(self.voxelGridResolution)
         self.voxelizePass.setVoxelGridSize(self.voxelGridSizeWS)
@@ -125,6 +143,8 @@ class GlobalIllumination(DebugObject):
         # doing
         self.frameIndex = 0
 
+
+        # Create the various render targets to generate the mipmaps of the stable voxel grid
         self.mipmapTargets = []
         computeSize = LVecBase3i(self.voxelGridResolution)
         currentMipmap = 0
@@ -143,12 +163,10 @@ class GlobalIllumination(DebugObject):
             currentMipmap += 1
 
 
-
+        # Create the final gi pass
         self.finalPass = GlobalIlluminationPass()
         self.pipeline.getRenderPassManager().registerPass(self.finalPass)
-
         self.pipeline.getRenderPassManager().registerDynamicVariable("giVoxelGridData", self.bindTo)
-
 
     def _createConvertShader(self):
         """ Loads the shader for converting the voxel grid """
@@ -158,7 +176,6 @@ class GlobalIllumination(DebugObject):
 
     def _createGenerateMipmapsShader(self):
         """ Loads the shader for generating the voxel grid mipmaps """
-
         computeSizeZ = self.voxelGridResolution.z
         for child in self.mipmapTargets:
             computeSizeZ /= 2
@@ -173,7 +190,8 @@ class GlobalIllumination(DebugObject):
         self._createConvertShader()
 
     def _updateGridPos(self):
-        """ Computes the new center of the grid """
+        """ Computes the new center of the voxel grid. The center pos is also
+        snapped, to avoid flickering. """
 
         # It is important that the grid is snapped, otherwise it will flicker 
         # while the camera moves. When using a snap of 32, everything until
@@ -191,18 +209,11 @@ class GlobalIllumination(DebugObject):
     def update(self):
         """ Processes the gi, this method is called every frame """
 
-        # TODO: Make gi work with all light types
-
         # With no light, there is no gi
         if self.targetLight is None:
-            self.fatal("The GI cannot work without a directional target light! Set one "
+            self.error("The GI cannot work without a directional target light! Set one "
                 "with renderPipeline.setGILightSource(directionalLight) first!")
-
-
-        # When the gi is disabled by the gui manager, don't do anything at all
-        # if not self.updateEnabled:
-        #     self.voxelizeTarget.setActive(False)
-        #     return
+            return
 
         # Fetch current light direction
         direction = self.targetLight.getDirection()
@@ -219,10 +230,13 @@ class GlobalIllumination(DebugObject):
             # Clear the old data in generation texture 
             self.voxelizePass.clearGrid()
             self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "x")
+
+            # Set required inputs
             self.targetSpace.setShaderInput("giLightMVP", Mat4(self.helperLight.shadowSources[0].mvp))
             self.targetSpace.setShaderInput("giVoxelGridStart", self.gridPos - self.voxelGridSizeWS)
             self.targetSpace.setShaderInput("giVoxelGridEnd", self.gridPos + self.voxelGridSizeWS)
             self.targetSpace.setShaderInput("giLightDirection", direction)
+
         elif self.frameIndex == 1:
 
             # Step 2: Voxelize scene from the y-Axis
@@ -258,8 +272,6 @@ class GlobalIllumination(DebugObject):
     def bindTo(self, node, prefix):
         """ Binds all required shader inputs to a target to compute / display
         the global illumination """
-
-        print "bind to", node, prefix
 
         normFactor = Vec3(1.0,
                 float(self.voxelGridResolution.y) / float(self.voxelGridResolution.x) * self.voxelGridSizeWS.y / self.voxelGridSizeWS.x,

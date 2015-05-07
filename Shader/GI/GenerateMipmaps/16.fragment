@@ -1,7 +1,5 @@
+
 #version 400
-
-
+#extension GL_ARB_shader_image_load_store : enable
 #define MIPMAP_SIZE 16
-
 #pragma include "GI/GenerateMipmap.include"
-

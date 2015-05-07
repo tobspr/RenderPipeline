@@ -84,11 +84,6 @@ class DirectionalLight(Light, DebugObject):
         the PSSM frustum """
         return True
 
-    def _computeAdditionalData(self):
-        """ The directional light has no additional data (yet) to pass to the
-        shaders """
-        pass
-
     def _updateDebugNode(self):
         """ Debug nodes are not supported by directional lights (yet), so this
         does nothing """
@@ -160,7 +155,7 @@ class DirectionalLight(Light, DebugObject):
             # This snaps the source to its texel grids, so that there is no flickering
             # visible when the source moves. This works by projecting the 
             # Point (0,0,0) to light space, compute the texcoord differences and
-            # offset the light position by that.
+            # offset the light world space position by that.
             mvp = Mat4(source.computeMVP())
 
             basePoint = mvp.xform(Point4(0,0,0,1))

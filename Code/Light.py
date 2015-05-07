@@ -10,13 +10,12 @@ from ShaderStructArray import ShaderStructElement
 
 class Light(ShaderStructElement):
 
-    """ Abstract light class. All light types are subclasses
-    of this class. This class handles all generic properties
-    of a light. """
+    """ Abstract light class. All light types are subclasses of this class. This 
+    class handles all generic properties of a light, aswell as storing and managing
+    the shadow sources and light updates. """
 
     def __init__(self):
         """ Constructs a new Light, subclasses have to call this """
-
         DebugObject.__init__(self, "AbstractLight")
         ShaderStructElement.__init__(self)
         self.debugNode = NodePath("LightDebug")
@@ -36,8 +35,8 @@ class Light(ShaderStructElement):
         self.sourceIndexes = PTAInt.emptyArray(6)
         self.attached = False
         self.shadowResolution = 512
-        self.ambient = Vec3(0.2, 0.5, 0.8)
 
+        # A light can have up to 6 sources
         for i in range(6):
             self.sourceIndexes[i] = -1
 
@@ -130,11 +129,11 @@ class Light(ShaderStructElement):
         self.queueUpdate()
 
     def needsUpdate(self):
-        """ Wheter the light data is up-to-date or needs an update """
+        """ Returns wheter the light data is up-to-date or needs an update """
         return self.dataNeedsUpdate
 
     def needsShadowUpdate(self):
-        """ Wheter the light shadow map is up-to-date or needs an update """
+        """ Returns wheter the light shadow map is up-to-date or needs an update """
 
         # no update needed if we have no shadows
         if not self.castShadows:
@@ -147,13 +146,12 @@ class Light(ShaderStructElement):
         return False
 
     def queueUpdate(self):
-        """ Queues a light update, means in the next frame the light
-        data will update """
+        """ Queues a light update, that means in the next frame the light data will update """
         self.dataNeedsUpdate = True
 
     def queueShadowUpdate(self):
         """ Queues a shadow update, means invalidating all shadow sources and
-        adding to the shadow-map update queue, beeing processed as fast as
+        adding them to the shadow-map update queue, beeing processed as fast as
         possible """
         self.shadowNeedsUpdate = True
 
@@ -214,7 +212,7 @@ class Light(ShaderStructElement):
 
     def _computeAdditionalData(self):
         """ If child classes need to compute anything fancy, do it here """
-        raise NotImplementedError()
+        pass
 
     def _getLightType(self):
         """ Child classes have to implement this and

@@ -148,14 +148,11 @@ class RenderPassManager(DebugObject):
     def setShaders(self):
         """ Sets the shaders on all passes, by effectively calling setShaders on
         each registered RenderPass """
-
         for renderPass in self._sortedNodes:
             renderPass.setShaders()
 
-
     def preRenderUpdate(self):
         """ Calls the preRenderUpdate on each assigned pass """
-
         for renderPass in self._sortedNodes:
             renderPass.preRenderUpdate()
 

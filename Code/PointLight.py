@@ -39,9 +39,6 @@ class PointLight(Light, DebugObject):
         is simple, as it's only a BoundingSphere """
         self.bounds = BoundingSphere(Point3(self.position), self.radius)
 
-    def _computeAdditionalData(self):
-        """ PointLight does not need to store additional data """
-
     def _updateDebugNode(self):
         """ Internal method to generate new debug geometry. """
         mainNode = NodePath("DebugNodeInner")
@@ -100,4 +97,4 @@ class PointLight(Light, DebugObject):
 
     def __repr__(self):
         """ Generates a string representation of this instance """
-        return "PointLight[id=" + str(self.structElementID) + "]"
+        return "PointLight[]"

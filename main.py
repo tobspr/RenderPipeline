@@ -327,6 +327,9 @@ class Main(ShowBase, DebugObject):
             Vec3(0, -15, 25), Vec3(0, 0, 3))
         self.controller.setup()
 
+        # self.fpCamera = FirstPersonCamera(self, self.cam, self.render)
+        # self.fpCamera.start()
+
         # Load skybox
         self.skybox = self.renderPipeline.getDefaultSkybox()
         self.skybox.reparentTo(render)

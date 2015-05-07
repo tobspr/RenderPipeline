@@ -57,10 +57,6 @@ class GIHelperLight(Light, DebugObject):
         shadow sources """
         return True
 
-    def _computeAdditionalData(self):
-        """ This light has no additional data (yet) to pass to the
-        shaders """
-
     def _updateDebugNode(self):
         """ Debug nodes are not supported by helper lights, this does nothing """
 
