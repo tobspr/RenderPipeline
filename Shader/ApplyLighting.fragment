@@ -71,7 +71,7 @@ uniform ScatteringOptions scatteringOptions;
 #endif
 
 // Dynamic exposure
-#ifdef USE_ADAPTIVE_BRIGHTNESS
+#ifdef USE_DYNAMIC_EXPOSURE
 uniform sampler2D dynamicExposureTex;
 #endif
 
@@ -438,8 +438,8 @@ void main() {
 
     float exposure = 1.0;
 
-    #ifdef USE_ADAPTIVE_BRIGHTNESS
-        // Adaptive Brightness
+    #ifdef USE_DYNAMIC_EXPOSURE
+        // Dynamic Exposure
         exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
     #endif
 

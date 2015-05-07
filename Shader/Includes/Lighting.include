@@ -54,7 +54,7 @@ vec3 computeLightModel(Light light, Material material,
     #endif
 
     #if USE_SIMPLE_LIGHTING || DEBUG_DISABLE_COMPLEX_LIGHTING
-        return light.color * attenuation * shadowFactor * material.baseColor * shadowFactor;
+        return light.color * attenuation * material.baseColor * shadowFactor;
     #else
 
         // Performance optimization
@@ -218,21 +218,28 @@ vec3 computeAmbient(Material material, vec3 giAmbient, vec4 giSpecular, float oc
     return result;
 }
 
-float computePointLightAttenuation(Light light, float distanceToLight) {
+float computePointLightAttenuation(Light light, float d) {
+
+    // return 1.0;
+    float r = light.radius;
+
+    // https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
+    // Inverse falloff
+    float attenuation = 1.0 / (1.0 + 2*d/r + (d*d)/(r*r)); 
 
     // Hard transition
-    // return distanceToLight < light.radius ? 1.0 : 0.0;
+    // return d < light.radius ? 1.0 : 0.0;
 
-    // Soft transition
-    float attenuation = pow(1.0 + (distanceToLight / light.radius) , -2.0);
+    // Linear transition
+    // return saturate(1.0 - d / light.radius);
 
-    // Inverse falloff
-    // float attenuation = pow(saturate(1.0 - pow(distanceToLight / light.radius, 4.0)), 2.0) / (pow(distanceToLight, 2.0) + 1);
+    // return attenuation;
+    // Cut light transition starting at 80% because the curve is exponential and never really gets 0
+    float cutoff = light.radius * 0.7;
+    attenuation *= 1.0 - saturate((d / cutoff) - 1.0) * (0.7 / 0.3);
 
 
-    // Cut light transition starting at 80% because the curve is exponential and never gets really 0
-    float cutoff = light.radius * 0.8;
-    attenuation *= 1.0 - smoothstep(0.0, 1.0, ( (distanceToLight / cutoff) - 1.0) * 4.0 );   
+    // attenuation *= 1.0 - smoothstep(0.0, 1.0, ((d / cutoff) - 1.0) * 4.0 );   
     attenuation = max(0.0, attenuation);
     return attenuation;
 }

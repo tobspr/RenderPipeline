@@ -1,7 +1,7 @@
 
-from panda3d.core import OmniBoundingVolume, Vec3, Vec2, Point3, Point2
-
 import math
+
+from panda3d.core import OmniBoundingVolume, Vec3, Vec2, Point3, Point2
 
 from Light import Light
 from DebugObject import DebugObject
@@ -14,8 +14,11 @@ class GIHelperLight(Light, DebugObject):
 
     """ This light type is used by the Global Illumination. It shades the voxel
     grid from the sun position. During voxelization this lights shadowmap is
-    used to shade the pixel. The light is not visible in the main scene
-    """
+    used to shade the pixel. The light is not visible in the main scene.
+
+    This light is required as directional lights use a PSSM split, so there is
+    no generic shadowmap. The GIHelperLight gets positioned so that it covers the
+    whole voxel grid. """
 
     def __init__(self):
         """ Constructs a new directional light. You have to set a
@@ -67,7 +70,6 @@ class GIHelperLight(Light, DebugObject):
 
     def _initShadowSources(self):
         """ Creates the shadow sources used for shadowing """
-
         source = ShadowSource()
         source.setupOrtographicLens(
             5.0, 2000.0, (self.filmSize, self.filmSize))
@@ -75,8 +77,7 @@ class GIHelperLight(Light, DebugObject):
         self._addShadowSource(source)
 
     def _updateShadowSources(self):
-        """ Updates the PSSM Frustum and all PSSM Splits """
-
+        """ Updates the shadow source to match the light position and direciton """
         self.shadowSources[0].setPos(self.position + self.direction * 500.0)
         self.shadowSources[0].lookAt(self.position)
         self.shadowSources[0].invalidate()

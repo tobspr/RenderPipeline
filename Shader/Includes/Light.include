@@ -2,16 +2,13 @@
 
 
 struct Light {
-    vec3 position;          // 3 * 4 = 12 
-    vec3 color;             // 3 * 4 = 12
-    vec3 direction;         // 3 * 4 = 12
-    int posterIndex;        // 4     = 4
-    int lightType;          // 4     = 4
-    float radius;           // 4     = 4
-    int sourceIndexes[6];   // 4 * 6 = 24
-    vec3 ambient;           // 3 * 4 = 12
-                            // ------------
-                            //       = 83 Bytes
+    vec3 position; 
+    vec3 color;
+    vec3 direction;
+    int posterIndex;
+    int lightType;
+    float radius;
+    int sourceIndexes[6];
 };
 
 

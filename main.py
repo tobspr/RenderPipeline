@@ -128,15 +128,13 @@ class Main(ShowBase, DebugObject):
 
         self.transparentObjects = []
 
-
         # Create a sun light
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
         dirLight.setShadowMapResolution(1024)
-        dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1.0))
+        dirLight.setColor(Vec3(1))
         # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
@@ -164,19 +162,20 @@ class Main(ShowBase, DebugObject):
             pointLight = PointLight()
 
             radius = float(i) / 7.0 * 6.28 + 1.52
-            xoffs = math.sin(radius) * 7.0
-            yoffs = math.cos(radius) * 7.0
+            xoffs = math.sin(radius) * 12.0
+            yoffs = math.cos(radius) * 12.0
 
             # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
             pointLight.setPos(Vec3( xoffs, yoffs, 7))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
-            pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            # pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            # pointLight.setColor(Vec3(1))
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( 1))
-            # pointLight.setColor(Vec3( random(), random(), random()))
+            pointLight.setColor(Vec3( random(), random(), random()))
 
             pointLight.setShadowMapResolution(512)
-            pointLight.setRadius(30)
+            pointLight.setRadius(15)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
@@ -264,14 +263,14 @@ class Main(ShowBase, DebugObject):
         # Find transparent objects
 
         # self.transpObjRoot = render.attachNewNode("transparentObjects")
-        matches = self.scene.findAllMatches("**/T__*")
-        for match in matches:
-            # match.reparentTo(self.transpObjRoot)
-            self.transparentObjects.append(match)
-            self.renderPipeline.prepareTransparentObject(match)
-            # match.listTags()
-            match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
-            match.setColorScale(1,0,1, 1)
+        # matches = self.scene.findAllMatches("**/T__*")
+        # for match in matches:
+        #     # match.reparentTo(self.transpObjRoot)
+        #     self.transparentObjects.append(match)
+        #     self.renderPipeline.prepareTransparentObject(match)
+        #     # match.listTags()
+        #     match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+        #     match.setColorScale(1,0,1, 1)
 
         # Wheter to use a ground floor
         self.usePlane = False

@@ -30,7 +30,6 @@ from RenderPasses.LightingPass import LightingPass
 from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 
-
 class RenderingPipeline(DebugObject):
 
     def __init__(self, showbase):
@@ -95,7 +94,7 @@ class RenderingPipeline(DebugObject):
         skybox.setShaderInput("skytex", skytex)
 
         skybox.setShader(Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultShaders/Opaque/vertex.glsl", "Shader/Skybox/fragment.glsl"), 19)
+                "Shader/DefaultShaders/Opaque/vertex.glsl", "Shader/Skybox/fragment.glsl"), 50)
         return skybox
 
 

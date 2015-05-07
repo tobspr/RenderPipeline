@@ -33,10 +33,16 @@ bool rayIntersectsSphere(vec3 rayStart, vec3 rayEnd, vec3 sphereMid, float spher
 
 bool sphereInFrustum(Frustum frustum, vec4 pos, float radius) {
     bvec4 result;
+    bvec2 result2;
     result.x = -radius <= dot(frustum.left, pos);
     result.y = -radius <= dot(frustum.right, pos);
     result.z = -radius <= dot(frustum.top, pos);
     result.w = -radius <= dot(frustum.bottom, pos);
-    return all(result);
+
+    result2.x = -radius <= dot(frustum.nearPlane, pos);
+    result2.y = -radius <= dot(frustum.farPlane, pos);
+
+    // return result.w;
+    return all(result) && all(result2);
 }
 

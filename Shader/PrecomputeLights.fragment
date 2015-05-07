@@ -42,6 +42,8 @@ uniform mat4 PROJ_MAT;
 uniform mat4 VIEW_MAT;
 uniform mat4 MODEL_VIEW_PROJ_MAT;
 
+uniform vec3 cameraPosition;
+
 const ivec2 patchSize = ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y);
 
 
@@ -138,6 +140,13 @@ void main() {
         texelFetch(renderedLightsBuffer, 5).r);
 
 
+    vec3 maxDepthPoint = calculateSurfacePos(maxDepth, texcoord);
+    vec3 minDepthPoint = calculateSurfacePos(minDepth, texcoord);
+    vec3 frustumEndPoint = calculateSurfacePos(1.0, texcoord);
+    vec3 viewVector = normalize(frustumEndPoint - cameraPosition);
+
+
+
 
     if (false && minDepthLinear > 6000.0) {
         // Only skybox. We can stop here.
@@ -145,7 +154,7 @@ void main() {
     } else {
 
         // Compute tile bounds, needed for frustum
-        vec2 tileScale = vec2(virtualScreenSize) * 0.5f / vec2(patchSize);
+        vec2 tileScale = vec2(screenSize) * 0.5f / vec2(patchSize);
         vec2 tileBias = tileScale - vec2(precomputeCoord);
 
         // Store matrices in local variables as their name
@@ -173,10 +182,12 @@ void main() {
         frustum.near   = minDepthLinear;
         frustum.far    = maxDepthLinear;
 
+        frustum.nearPlane = frustumOffset + vec4(0, 0, 0, -minDepthLinear);
+        frustum.farPlane = frustumOffset + vec4(0, 0, 0, maxDepthLinear);
+
+        // minDepthLinear = 1.0;
         frustum.viewMat = viewMat;
         frustum.mvpMat  = mvpMat;
-
-
 
         int currentBufferPos = 16;
 
@@ -297,6 +308,10 @@ void main() {
             processedSpotLights + processedShadowedSpotLights) / float(10.0);
         vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
         debugOutput = vec4(lightCountIndicator, 1);
+
+        // debugOutput = vec4(maxDepthLinear / 100.0);
+        // debugOutput = vec4( (VIEW_MAT * vec4(maxDepthPoint, 1)).w );
+        // debugOutput = vec4( maxDepthLinear / CAMERA_FAR );
 
     // #endif
 

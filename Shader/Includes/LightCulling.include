@@ -9,46 +9,14 @@
 
 bool isPointLightInFrustum(Light light, Frustum frustum) {
 
-    // return true;
-
     #ifndef LIGHTING_ANY_BOUND_CHECK
         return true;
     #else
-
-    vec4 projectedPos = frustum.viewMat * vec4(light.position, 1);
-
-    // Top/Left/Bottom/Right frustum check
-    if (sphereInFrustum(frustum, projectedPos, light.radius)) {
-
-        #ifndef LIGHTING_ACCURATE_BOUND_CHECK
+        vec4 projectedPos = frustum.viewMat * vec4(light.position, 1);
+        if (sphereInFrustum(frustum, projectedPos, light.radius)) {
             return true;
-        #else
-
-        // Project to screen to get actual depth value
-        vec4 projectedScreen = frustum.mvpMat * vec4(light.position, 1);
-        projectedScreen.xyz = (projectedScreen.xyz / projectedScreen.w);
-
-        // Fetch linear z
-        // We have to use linear space because the radius of the light
-        // is also linear, and otherwise we couldn't compare the values
-        // properly.
-        float linearProjZ = getLinearZFromZ(projectedScreen.z) * 2.0 - 1.0;
-
-        // Check if the light is < max-depth
-        if ( linearProjZ - sqrt_of_2*light.radius < frustum.far ) {
-
-            // Check if the light is > min-depth
-            // Maybe this check can be ommitted as it won't happen very often
-            if (linearProjZ + sqrt_of_2*light.radius > frustum.near) {
-                return true;
-            }
         }
-
-        #endif
-
-    }
-    return false;
-
+        return false;
     #endif
 
 }

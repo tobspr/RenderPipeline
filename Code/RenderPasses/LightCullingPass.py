@@ -1,5 +1,5 @@
 
-from panda3d.core import NodePath, Shader, LVecBase2i, Texture, GeomEnums
+from panda3d.core import NodePath, Shader, LVecBase2i, Texture, GeomEnums, SamplerState
 
 from Code.Globals import Globals
 from Code.RenderPass import RenderPass
@@ -25,8 +25,10 @@ class LightCullingPass(RenderPass):
         return {
             "renderedLightsBuffer": "Variables.renderedLightsBuffer",
             "lights": "Variables.allLights",
+            "depth": "DeferredScenePass.depth",
             "mainCam": "Variables.mainCam",
-            "mainRender": "Variables.mainRender"
+            "mainRender": "Variables.mainRender",
+            "cameraPosition": "Variables.cameraPosition"
         }
 
     def create(self):
@@ -34,6 +36,8 @@ class LightCullingPass(RenderPass):
         self.target.setSize(self.size.x, self.size.y)
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
+
+        self.target.getColorTexture().setMagfilter(SamplerState.FTNearest)
 
         self.makePerTileStorage()
         self.target.setShaderInput("destinationBuffer", self.lightPerTileBuffer)

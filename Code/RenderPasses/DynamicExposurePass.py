@@ -7,21 +7,23 @@ from Code.RenderTarget import RenderTarget
 
 class DynamicExposurePass(RenderPass):
 
+    """ This pass handles the dynamic exposure feature, it downscales the
+    Scene to get the average brightness and then slowly fades to the intended
+    exposure. """
+
     def __init__(self, pipeline):
         RenderPass.__init__(self)
-
         self.pipeline = pipeline
-        self.targetExposure = PTAFloat.emptyArray(1)
-        self.targetExposure[0] = 0.5
-        self.adaptionSpeed = PTAFloat.emptyArray(1)
-        self.adaptionSpeed[0] = 1.0
 
+        # Create the storage for the exposure. We cannot simply use the color output
+        # as the RenderTargetMatcher would have problems with that (Circular Reference)
         self.lastExposureStorage = Texture("Last Exposure")
         self.lastExposureStorage.setup2dTexture(1, 1, Texture.TFloat, Texture.FR32)
 
+        # Registers the texture so the lighting pass can use it
         self.pipeline.renderPassManager.registerStaticVariable(
             "dynamicExposureTex", self.lastExposureStorage)
-        self.pipeline.renderPassManager.registerDefine("USE_ADAPTIVE_BRIGHTNESS", 1)
+
 
     def getID(self):
         return "DynamicExposurePass"
@@ -32,21 +34,29 @@ class DynamicExposurePass(RenderPass):
             "dt": "Variables.frameDelta"
         }
 
-
     def create(self):
+
+        # Fetch the original texture size from the window size
         size = LVecBase2i(Globals.base.win.getXSize(), Globals.base.win.getYSize())
 
+        # Create the first downscale pass which reads the scene texture, does a 
+        # 2x2 inplace box filter, and then converts the result to luminance. 
+        # Using luminance allows faster downscaling, as we can use texelGather then
         self.downscalePass0 = RenderTarget("Downscale Initial")
         self.downscalePass0.addColorTexture()
         self.downscalePass0.setSize(size.x / 2, size.y / 2)
         self.downscalePass0.prepareOffscreenBuffer()
 
+        # Store the current size of the pass
         workSizeX, workSizeY = int(size.x / 2), int(size.y / 2)
 
         self.downscalePasses = []
         passIdx = 0
         lastTex = self.downscalePass0.getColorTexture()
 
+        # Scale the scene until there are only a few pixels left. Each pass does a 
+        # 4x4 inplace box filter, which is cheap because we can sample the luminance
+        # only.
         while workSizeX * workSizeY > 128:
             workSizeX /= 4
             workSizeY /= 4
@@ -59,22 +69,28 @@ class DynamicExposurePass(RenderPass):
             lastTex = scalePass.getColorTexture()
             self.downscalePasses.append(scalePass)
 
+        # Create the final pass which computes the average of all left pixels,
+        # compares that with the last exposure and stores the difference.
         self.finalDownsamplePass = RenderTarget("Downscale Final")
         self.finalDownsamplePass.setSize(1, 1)
         self.finalDownsamplePass.setColorBits(16)
         self.finalDownsamplePass.addColorTexture()
         self.finalDownsamplePass.prepareOffscreenBuffer()
         self.finalDownsamplePass.setShaderInput("luminanceTex", lastTex)
-        self.finalDownsamplePass.setShaderInput("targetExposure", self.targetExposure)
-        self.finalDownsamplePass.setShaderInput("adaptionSpeed", self.adaptionSpeed)
+        self.finalDownsamplePass.setShaderInput("targetExposure", 
+            self.pipeline.settings.targetExposure)
+        self.finalDownsamplePass.setShaderInput("adaptionSpeed", 
+            self.pipeline.settings.brightnessAdaptionSpeed)
 
-        self.lastExposureStorage.setClearColor(Vec4(self.targetExposure[0]))
+        # Clear the storage in the beginning
+        self.lastExposureStorage.setClearColor(Vec4(0))
         self.lastExposureStorage.clearImage()
 
+        # Set defines and other inputs
         self.finalDownsamplePass.setShaderInput("lastExposureTex", self.lastExposureStorage)
+        self.pipeline.renderPassManager.registerDefine("USE_DYNAMIC_EXPOSURE", 1)
 
     def setShaders(self):
-        """ Reloads the shaders for the various passes """
         fpShader = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
             "Shader/AdaptiveBrightnessFirstPass.fragment")

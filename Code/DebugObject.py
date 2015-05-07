@@ -1,13 +1,12 @@
 
-from ConsoleColors import printRedConsoleText, printYellowConsoleText, printGrayConsoleText
 import sys
+from ConsoleColors import printRedConsoleText, printYellowConsoleText, printGrayConsoleText
 
 class DebugObject:
 
-    """ Provides the functions debug, warn, error for classes
-    which inherit from this object, including the name of the
-    class when printing out the message. Most classes inherit
-    from this class. """
+    """ Provides the functions debug, warn, error and fatal for classes which 
+    inherit from this object, including the name of the class when printing out
+    the message. Most classes inherit from this class. """
 
     _outputLevel = 0
     _outputLevels = ["debug", "warning", "error", "fatal"]
@@ -59,6 +58,9 @@ class DebugObject:
             ' '.join([str(i) for i in args])+ "\n")
 
     def fatal(self, *args):
+        """ Outputs a fatal error message, printing out the errors and then calling
+        sys.exit to terminate the program """
+        
         # We have to set output level to 0 here, so we can print out errors
         self._outputLevel = 0
         self.error(*args)

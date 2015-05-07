@@ -52,8 +52,7 @@ class Light(ShaderStructElement):
             "posterIndex": "int",
             "lightType": "int",
             "radius": "float",
-            "sourceIndexes": "array<int>(6)",
-            "ambient": "vec3"
+            "sourceIndexes": "array<int>(6)"
         }
 
     def getTypeName(self):
@@ -69,12 +68,6 @@ class Light(ShaderStructElement):
             raise Exception(
                 "You cannot change the resolution after the light got attached")
         self.shadowResolution = resolution
-
-    def setAmbientColor(self, ambientColor):
-        """ Sets the ambient color for lighting. The default is a bluish-gray.
-        The ambient color will be added to the final light contribution """
-        self.ambient = ambientColor
-        self.queueUpdate()
 
     def setDirection(self, direction):
         """ Sets the direction of the light. This stores from which vector the light

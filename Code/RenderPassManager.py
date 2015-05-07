@@ -68,7 +68,7 @@ class RenderPassManager(DebugObject):
         for inputID, inputSource in inputs.items():
             firstInput = self._getFirstAvailableInput(inputSource, checkVariables = False)
             if not firstInput:
-                self.debug("HINT:Missing",inputSource, "for", renderPass.getID())
+                # self.debug("HINT:Missing",inputSource, "for", renderPass.getID())
                 return False
 
         return True
@@ -210,7 +210,6 @@ class RenderPassManager(DebugObject):
                     self._sortedNodes.append(renderPass)
                     self._matchBuffer.remove(renderPass)
                     self._makeUniformsAvailable(renderPass)
-                    self.debug("ATTACHING",renderPass.getID())
                     break
 
         # Create passes
@@ -218,7 +217,6 @@ class RenderPassManager(DebugObject):
 
         # Create passes by iterating over the sorted lists
         for renderPass in self._sortedNodes:
-            self.debug("Creating pass",renderPass)
 
             renderPass.create()
 
