@@ -101,11 +101,11 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
-        # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
+        self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
-        self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
+        # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
 
 
         # This sources are included in the repo
@@ -133,7 +133,7 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
+        dirLight.setShadowMapResolution(1024)
         dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(1.0))
@@ -159,16 +159,13 @@ class Main(ShowBase, DebugObject):
 
             self.lastSliderValue = 0.0
 
-
-
         # Create some lights
-        for i in xrange(3):
+        for i in xrange(0):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 15.0
             yoffs = math.cos(radius) * 15.0
-
 
             # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
             pointLight.setPos(Vec3( xoffs, yoffs, 15))
@@ -185,7 +182,7 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.addLight(pointLight)
 
         # Create more lights
-        for i in xrange(5):
+        for i in xrange(0):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
@@ -198,7 +195,7 @@ class Main(ShowBase, DebugObject):
             # spotLight.setPos(Vec3(-10.0 + i * 2.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
             # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
-            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
+            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.05)
             # spotLight.setColor(Vec3( random(), random(), random()) * 0.1)
 
             # spotLight.setNearFar(1.0, 20.0)
@@ -274,6 +271,7 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.prepareTransparentObject(match)
             # match.listTags()
             match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+            match.setColorScale(1,0,1, 1)
 
         # Wheter to use a ground floor
         self.usePlane = False
@@ -352,7 +350,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 60)
+                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 50)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 30)

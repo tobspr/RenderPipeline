@@ -140,7 +140,7 @@ void main() {
 
 
         // tm.color = vec3(0.2,0.6,1.0);
-        tm.color = vec3(1);
+        // tm.color = vec3(1);
 
 
         vec3 tmPos = calculateSurfacePos(tm.depth, texcoord);

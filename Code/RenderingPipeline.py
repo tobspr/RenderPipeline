@@ -95,7 +95,7 @@ class RenderingPipeline(DebugObject):
         skybox.setShaderInput("skytex", skytex)
 
         skybox.setShader(Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultShaders/Opaque/vertex.glsl", "Shader/Skybox/fragment.glsl"))
+                "Shader/DefaultShaders/Opaque/vertex.glsl", "Shader/Skybox/fragment.glsl"), 19)
         return skybox
 
 

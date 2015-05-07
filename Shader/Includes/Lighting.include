@@ -136,6 +136,9 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, ve
 
 vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, vec3 v, vec3 n) {
 
+
+    // return vec3(0.0);
+
     #ifdef DEBUG_DISABLE_AMBIENT
         return vec3(0.0);
     #endif
@@ -245,16 +248,12 @@ vec3 reprojectShadow(ShadowSource source, vec3 pos) {
     return (projected.xyz / projected.w * 0.5) + 0.5;
 }
 
-vec3 computeBiasedPosition(Material material, float slopeBias, float normalBias, vec3 l, vec3 n) {
-
-    // return material.position;
-
-    vec3 biasedPos = material.position;
+vec3 computeBiasedPosition(vec3 position, float slopeBias, float normalBias, vec3 l, vec3 n) {
     float baseShift = 1.0;
     vec2 offsets = getShadowOffsets(n, l);
-    biasedPos += baseShift * l * offsets.x * slopeBias;
-    biasedPos += baseShift * n * offsets.y * normalBias; 
-    return biasedPos;
+    position += baseShift * l * offsets.x * slopeBias;
+    position += baseShift * n * offsets.y * normalBias; 
+    return position;
 }
 
 
@@ -345,6 +344,9 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 }
 
 
+
+
+
 float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSize) {
 
     #ifndef DEBUG_DISABLE_PCF
@@ -412,7 +414,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
         return 1.0;
     #endif
 
-    vec3 biasedPos = computeBiasedPosition(material, slopeScaledBias, normalScaledBias, n, l);
+    vec3 biasedPos = computeBiasedPosition(material.position, slopeScaledBias, normalScaledBias, n, l);
     vec3 projCoord = reprojectShadow(source, biasedPos);
 
     float pixScaled = 2.0 / float(source.resolution);
@@ -425,6 +427,28 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     return pcfKernel(source, projCoord, baseBias, vec2(0.5 / SHADOW_MAP_ATLAS_SIZE) );
 }
 
+
+int computePSSMShadowSourceIndex(Light light, vec3 position, float borderFactor, out vec3 projCoord) {
+    int shadow_map_index = 4;
+    projCoord = vec3(0);
+
+    for (int i = 0; i < 4; i++) {
+        int sourceIndex = light.sourceIndexes[i];
+        ShadowSource source = shadowSources[sourceIndex];
+        projCoord = reprojectShadow(source, position);
+
+        if (all(greaterThan(projCoord.xy, vec2(borderFactor))) && all(lessThan(projCoord.xy, vec2(1-borderFactor)))) {
+            // Source can be used
+            shadow_map_index = i;
+            break;
+            // return i;
+        }
+    }
+    // return 4;
+    return shadow_map_index;
+}
+
+
 float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l, 
     float slopeScaledBias, float normalScaledBias, float baseBias, out int map_used) {
 
@@ -434,31 +458,15 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
     #endif
 
 
-    int shadow_map_index = 4;
-    vec3 projCoord = vec3(0);
-
-    for (int i = 0; i < 4; i++) {
-        int sourceIndex = light.sourceIndexes[i];
-        ShadowSource source = shadowSources[sourceIndex];
-        projCoord = reprojectShadow(source, material.position);
-
-        // Border
-        float pixScaled = SHADOW_PSSM_BORDER_PERCENTAGE;
-
-        if (all(greaterThan(projCoord.xy, vec2(pixScaled))) && all(lessThan(projCoord.xy, vec2(1-pixScaled)))) {
-            // Source can be used
-            shadow_map_index = i;
-            break;
-        }
-    }
-
+    vec3 projCoord;
+    int shadow_map_index = computePSSMShadowSourceIndex(light, material.position, SHADOW_PSSM_BORDER_PERCENTAGE, projCoord);
     if (shadow_map_index > 3) return 1.0;
 
     ShadowSource source = shadowSources[light.sourceIndexes[shadow_map_index]];
     float resolutionFactor = 1.0 / source.resolution;
 
-    vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
-    vec3 biasedPos = computeBiasedPosition(material, slopeScaledBias * resolutionFactor, normalScaledBias * resolutionFactor, n, l);
+    // vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
+    vec3 biasedPos = computeBiasedPosition(material.position, slopeScaledBias * resolutionFactor, normalScaledBias * resolutionFactor, n, l);
     projCoord = reprojectShadow(source, biasedPos);
     map_used = shadow_map_index;
     baseBias *= resolutionFactor;
@@ -470,4 +478,72 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
     #endif
 }
 
+
+
+vec3 computeVolumetricLighting(Light light, Material material, vec3 n, vec3 l) {
+
+
+    vec3 startPos = cameraPosition;
+
+    vec3 dir = (material.position - cameraPosition) * 0.99;
+
+    const float volumetricDistance = 20.0;
+
+    if (length(dir) > volumetricDistance) {
+        dir = normalize(dir) * volumetricDistance;
+    }
+
+    vec3 endPos = cameraPosition + dir;
+
+    const int numSteps = 64;
+    vec3 posStep = (endPos - startPos) / float(numSteps);
+
+    vec3 currentPos = startPos;
+    vec3 projCoord = vec3(0);
+
+    // float w = length(material.position);
+
+
+    float resultSum = 0.0;
+
+    for (int i = 0; i < numSteps; i++) {
+        currentPos += posStep;
+        int sourceIdx = computePSSMShadowSourceIndex(light, currentPos, 0.0, projCoord);
+        sourceIdx = 1;
+        // if (sourceIdx < 4) {
+            ShadowSource source = shadowSources[light.sourceIndexes[sourceIdx]];
+            float resolutionFactor = 1.0 / source.resolution;
+            vec3 biasedPos = computeBiasedPosition(currentPos, 40 * resolutionFactor, 60 * resolutionFactor, n, l);
+            projCoord = reprojectShadow(source, biasedPos);
+
+            vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
+
+            #if USE_HARDWARE_PCF
+                // Notice: Maybe use .x? My gtx 670 does not like that though
+                resultSum += textureLod(shadowAtlasPCF, vec3(centerCoord, projCoord.z) , 0);
+            
+            #else
+                float sampled = textureLod(shadowAtlas, centerCoord, 0).x;
+                resultSum += 1.0 - step(sampled, projCoord.z);        
+            #endif
+
+
+        // }
+
+    }
+
+    // resultSum /= float(numSteps);
+    resultSum *= 0.5;
+    // resultSum = saturate(resultSum);
+
+    resultSum = 1.0 - saturate(1.0 - resultSum);
+
+    return vec3(resultSum);
+}
+
+
+
+
 #pragma include "Includes/Lights.include" 
+
+

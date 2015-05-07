@@ -61,11 +61,8 @@ vec3 applyDirectionalLight(Light light, Material material) {
     return computeLightModel(light, material, l, v, n, h, attenuation, 1.0);
 }
 
-vec3 applyDirectionalLightWithShadow(Light light, Material material ) {
+vec3 applyDirectionalLightWithShadow(Light light, Material material) {
 
-
-    float distanceToLight = distance(material.position, light.position);   
-    float distanceRelative = distanceToLight / light.radius; 
     float attenuation = 1.0;
 
     vec3  l = light.direction;
@@ -83,6 +80,9 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material ) {
     float map_use_factor = map_used / 6.0;
 
     vec3 rawLighting = computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
+
+    // rawLighting += 0.1;
+    // rawLighting *= computeVolumetricLighting(light, material, n, l);
 
     #ifdef DEBUG_RM_PSSM_SPLITS
         rawLighting = (rawLighting +0.1) * vec3(map_use_factor, 1.0 -map_use_factor, 0);

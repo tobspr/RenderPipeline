@@ -59,8 +59,8 @@ void main() {
 
 
     m.metallic = 0.0;
-    m.specular = 0.5;
-    m.roughness = 1.0;
+    m.specular = 0.2;
+    m.roughness = 0.4;
     m.baseColor = vec3(1);
 
     renderMaterial(m);

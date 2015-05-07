@@ -315,7 +315,7 @@ void main() {
 
 
     // We can skip lighting for the skybox
-    if (isSkybox) {
+    if (isSkybox && false) {
 
         result += 3.0 * material.baseColor;
 

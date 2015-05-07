@@ -23,6 +23,8 @@ struct PandaMaterial {
 };
 uniform PandaMaterial p3d_Material;
 uniform mat4 p3d_ModelViewProjectionMatrix;
+uniform vec4 p3d_ColorScale;
+
 
 // We need this for the velocity
 uniform mat4 lastMVP;
@@ -41,7 +43,7 @@ void main() {
     vOutput.texcoord = p3d_MultiTexCoord0.xy;
 
     // Also pass diffuse to fragment shader
-    vOutput.materialDiffuse = p3d_Material.diffuse;
+    vOutput.materialDiffuse = p3d_Material.diffuse * p3d_ColorScale;
     vOutput.materialSpecular = p3d_Material.specular;
     vOutput.materialAmbient = p3d_Material.ambient.z;
 

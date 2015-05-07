@@ -1,6 +1,6 @@
 
 from panda3d.core import NodePath, Camera, SamplerState, Shader
-from panda3d.core import ColorWriteAttrib
+from panda3d.core import ColorWriteAttrib, Vec4
 
 from Code.Globals import Globals
 from Code.RenderPass import RenderPass
@@ -115,6 +115,8 @@ class ShadowScenePass(RenderPass):
             dr.setSort(1000)
             dr.setClearDepthActive(True)
             dr.setClearDepth(1.0)
+            dr.setClearColorActive(True)
+            dr.setClearColor(Vec4(1,1,1,1))
             dr.setCamera(self.shadowCameras[i])
             dr.setActive(False)
             self.renderRegions.append(dr)
@@ -125,11 +127,11 @@ class ShadowScenePass(RenderPass):
         self.pcfSampleState.setWrapU(SamplerState.WMClamp)
         self.pcfSampleState.setWrapV(SamplerState.WMClamp)
 
-        Globals.render.setTag("ShadowPassShader", "Default")
+        # Globals.render.setTag("ShadowPassShader", "Default")
 
     def getOutputs(self):
         return {
             "ShadowScenePass.atlas": lambda: self.target.getDepthTexture(),
-            "ShadowScenePass.atlasPCF": lambda: (self.target.getDepthTexture(), self.pcfSampleState)
+            "ShadowScenePass.atlasPCF": lambda: (self.target.getDepthTexture(), self.pcfSampleState),
         }
 
