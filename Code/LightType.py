@@ -10,3 +10,4 @@ class LightType:
     Directional = 2
     Spot = 3
     Area = 4
+    Ambient = 5

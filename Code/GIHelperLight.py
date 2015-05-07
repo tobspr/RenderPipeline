@@ -79,7 +79,6 @@ class GIHelperLight(Light, DebugObject):
 
         self.shadowSources[0].setPos(self.position + self.direction * 500.0)
         self.shadowSources[0].lookAt(self.position)
-        # self.shadowSources[i].setFilmSize(50, filmSize)
         self.shadowSources[0].invalidate()
 
     def __repr__(self):
