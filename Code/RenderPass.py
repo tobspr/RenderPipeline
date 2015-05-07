@@ -1,12 +1,13 @@
 
+from DebugObject import DebugObject
 
-class RenderPass:
+class RenderPass(DebugObject):
 
     """ Abstract class which defines a RenderPass. This is used by the
     RenderPassMatcher. Each pass has to derive from this class """
 
     def __init__(self):
-        pass
+        DebugObject.__init__(self, self.getID())
 
     def getID(self):
         """ This method should return a unique identifier for the render pass """

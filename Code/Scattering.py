@@ -4,7 +4,6 @@ from panda3d.core import Shader
 from DebugObject import DebugObject
 from Globals import Globals
 from RenderTarget import RenderTarget
-from TextureDebugger import TextureDebugger
 from panda3d.core import PTAFloat, PTALVecBase3f
 
 from direct.stdpy.file import isdir
@@ -47,15 +46,7 @@ class Scattering(DebugObject):
         self.settingsPTA = {}
         self.targets = {}
         self.textures = {}
-        self.writeOutput = False
         self.precomputed = False
-
-        if self.writeOutput and not isdir("ScatteringDump"):
-            try:
-                makedirs("ScatteringDump")
-            except:
-                self.debug("Failed to create dump dir!")
-                self.writeOutput = False
 
     def _generatePTAs(self):
         self.debug("Generating PTAs ..")
@@ -215,15 +206,6 @@ class Scattering(DebugObject):
         self.debug("Finished precomputing, also reenabled windows.")
         self.precomputed = True
 
-        # if self.writeOutput:
-        #     base.graphicsEngine.extract_texture_data(
-        #         self.irradianceResult, Globals.base.win.getGsg())
-        #     self.irradianceResult.write(
-        # "Data/Scattering/Result_Irradiance.png")
-        #     base.graphicsEngine.extract_texture_data(
-        #         self.inscatterResult, Globals.base.win.getGsg())
-        # self.inscatterResult.write("Data/Scattering/Result_Inscatter.png")
-
     def getInscatterTexture(self):
         if not self.precomputed:
             self.error("Inscatter texture is not available yet! Precompute "
@@ -254,23 +236,9 @@ class Scattering(DebugObject):
 
         Globals.base.graphicsEngine.renderFrame()
         target.setActive(False)
-
         write = [(targetName + "Color", target.getColorTexture())]
-
         if target.hasAuxTextures():
             write.append((targetName + "Aux", target.getAuxTexture(0)))
-
-        if self.writeOutput:
-            for texname, tex in write:
-                Globals.base.graphicsEngine.extract_texture_data(
-                    tex, Globals.base.win.getGsg())
-
-                dest = "ScatteringDump/" + texname + ".png"
-                if tex.getZSize() > 1:
-                    self.debg.debug3DTexture(tex, dest)
-                else:
-                    tex.write(dest)
-
         target.deleteBuffer()
 
     def _createRT(self, name, w, h, aux=False, shaderName="", layers=1):
@@ -347,9 +315,6 @@ class Scattering(DebugObject):
                        "once")
             return
         self.debug("Precomputing ..")
-
-        if self.writeOutput:
-            self.debg = TextureDebugger()
         self._executePrecompute()
 
         # write out transmittance tex

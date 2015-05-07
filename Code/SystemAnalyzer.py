@@ -6,16 +6,15 @@ import datetime
 
 from panda3d.core import PandaSystem
 
-
 class SystemAnalyzer():
 
     """ Small tool to analyze the system and also check if the users panda
-    build is out of date """
+    build is out of date. """
 
     @classmethod
     def analyze(self):
         """ Analyzes the user system. This should help debugging when the user
-        shares his log """
+        shares his log. """
         print "System analyzer:"
 
         def stat(name, *args):
@@ -32,7 +31,7 @@ class SystemAnalyzer():
 
     @classmethod
     def checkPandaVersionOutOfDate(self, minDay, minMonth, minYear):
-        """ Checks if the panda build is out of date. So users don't complain
+        """ Checks if the panda build is out of date, so users don't complain
         about stuff not working, because they simply didn't update """
 
         built = PandaSystem.getBuildDate()
@@ -41,7 +40,8 @@ class SystemAnalyzer():
 
         if formated < required:
             print "ERROR: Your Panda3D Build is out of date. Update to the latest"
-            print "CVS build in order to use the pipeline!"
+            print "git build in order to use the pipeline: "
+            print "https://github.com/panda3d/panda3d"
             sys.exit(0)
 
         # Check version
@@ -61,4 +61,4 @@ class SystemAnalyzer():
 
 if __name__ == "__main__":
     SystemAnalyzer.analyze()
-    SystemAnalyzer.checkPandaVersionOutOfDate(7,8,2014)
+    SystemAnalyzer.checkPandaVersionOutOfDate(7,5,2015)
