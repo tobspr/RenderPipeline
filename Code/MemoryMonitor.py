@@ -87,7 +87,7 @@ class MemoryMonitor:
         print "VRAM Usage:"
 
         total = 0.0
-        for key, val in sorted(self.memoryEntries.items(), key = lambda v: -v[1]):
+        for key, val in sorted(self.memoryEntries.iteritems(), key = lambda v: -v[1]):
             valMB = round(val / (1024.0 * 1024.0), 1)
             outputLine = ""
             outputLine += key.ljust(50, ' ')

@@ -47,7 +47,7 @@ class Scattering(DebugObject):
     def _generatePTAs(self):
         """ Converts all settings to pta arrays, this is faster than using
         setShaderInput for every uniform """
-        for settingName, settingValue in self.settings.items():
+        for settingName, settingValue in self.settings.iteritems():
             if type(settingValue) == float:
                 self.settingsPTA[settingName] = PTAFloat.emptyArray(1)
                 self.settingsPTA[settingName][0] = settingValue
@@ -262,7 +262,7 @@ class Scattering(DebugObject):
         lowerCaseFirst = lambda x: x[0].lower() + x[1:]
 
         # Make all rendered textures so far available to the target
-        for key, tex in self.textures.items():
+        for key, tex in self.textures.iteritems():
             target.setShaderInput(key, tex)
 
         # Register the created textures
@@ -293,7 +293,7 @@ class Scattering(DebugObject):
 
     def _setInputs(self, node, prefix):
         """ Internal method to set necessary inputs on a render target """
-        for key, val in self.settingsPTA.items():
+        for key, val in self.settingsPTA.iteritems():
             node.setShaderInput(prefix + "." + key, val)
 
     def precompute(self):
@@ -314,7 +314,7 @@ class Scattering(DebugObject):
                       "adjustSetting instead!")
             return
 
-        for key, val in settings.items():
+        for key, val in settings.iteritems():
             if key in self.settings:
                 if type(val) == type(self.settings[key]):
                     self.settings[key] = val

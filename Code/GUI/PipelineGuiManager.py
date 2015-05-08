@@ -220,7 +220,7 @@ class PipelineGuiManager(DebugObject):
 
            
 
-            for name, opts in self.slider_opts.items():
+            for name, opts in self.slider_opts.iteritems():
                 opts["slider"] = BetterSlider(
                     x=20, y=currentY+20, size=230, minValue=opts["min"],maxValue=opts["max"], value=opts["default"], parent=self.debuggerContent, callback=self._optsChanged)
 
@@ -244,7 +244,7 @@ class PipelineGuiManager(DebugObject):
         return
         container = self.pipeline.giPrecomputeBuffer
 
-        for name, opt in self.slider_opts.items():
+        for name, opt in self.slider_opts.iteritems():
             container.setShaderInput("opt_" + name, opt["slider"].getValue())
             opt["value_label"].setText("{:0.4f}".format(opt["slider"].getValue()))
         

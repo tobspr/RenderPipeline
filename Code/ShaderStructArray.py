@@ -49,7 +49,7 @@ class ShaderStructArray(DebugObject):
         self.ptaWrappers = {}
         self.assignedObjects = [None for i in range(numElements)]
 
-        for name, attrType in self.attributes.items():
+        for name, attrType in self.attributes.iteritems():
             arrayType = PTAFloat
             numElements = 1
 
@@ -122,7 +122,7 @@ class ShaderStructArray(DebugObject):
     def _rebindInputs(self, index, value):
         """ Rebinds the shader inputs for an index """
         pstats_SetShaderInputs.start()
-        for attrName, attrType in self.attributes.items():
+        for attrName, attrType in self.attributes.iteritems():
             objValue = getattr(value, attrName)
             # # Cast values to correct types
             # if attrType == "float":
@@ -193,7 +193,7 @@ class ShaderStructArray(DebugObject):
         self.parents[parent] = uniformName
 
         for index in range(min(999, self.size) ):
-            for attrName, attrType in self.attributes.items():
+            for attrName, attrType in self.attributes.iteritems():
                 inputName = uniformName + \
                     "[" + str(index) + "" "]" + "." + attrName
                 inputValue = self.ptaWrappers[attrName][index]
@@ -244,7 +244,7 @@ class ShaderStructElement:
     def onPropertyChanged(self):
         """ This method should be called by the class instance itself
         whenever it modified an exposed value """
-        for structArrayIndex, elementIndex in self.referencedListsIndices.items():
+        for structArrayIndex, elementIndex in self.referencedListsIndices.iteritems():
             ShaderStructArray.AllArrays[structArrayIndex].objectChanged(self, elementIndex)
 
     def assignListIndex(self, structArrayIndex, index):
