@@ -17,16 +17,15 @@ vfs-case-sensitive #f
 # uniquify-matrix #f
 
 # Garbarge collection
-garbage-collect-states #t
+garbage-collect-states #f
 # garbage-collect-states-rate 0.2
 
 
-transform-cache #t
+transform-cache #f
 state-cache #t
 
-
 # Trying this for performance
-# uniquify-transforms #f
+uniquify-transforms #f
 # uniquify-states #f 
 # uniquify-attribs #f
 

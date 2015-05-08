@@ -32,6 +32,8 @@ pstats_PerLightUpdates = PStatCollector("App:LightManager:PerLightUpdates")
 pstats_FetchShadowUpdates = PStatCollector(
     "App:LightManager:FetchShadowUpdates")
 pstats_WriteBuffers = PStatCollector("App:LightManager:WriteBuffers")
+pstats_QueueShadowUpdate = PStatCollector("App:LightManager:QueueShadowUpdate")
+pstats_AppendRenderedLight = PStatCollector("App:LightManager:AppendRenderedLight")
 
 
 class LightManager(DebugObject):
@@ -62,13 +64,18 @@ class LightManager(DebugObject):
         """ Creates a new LightManager. It expects a RenderPipeline as parameter. """
         DebugObject.__init__(self, "LightManager")
 
+        self.maxTotalLights = 100
+        self.maxTotalShadowSources = 100
+
+        self.lightSlots = [None] * self.maxTotalLights
+        self.shadowSourceSlots = [None] * self.maxTotalShadowSources
+
+        self.queuedShadowUpdates = []
         self.renderedLights = {}
+
         self.pipeline = pipeline
 
         # Create arrays to store lights & shadow sources
-        self.lights = []
-        self.shadowSources = []
-        self.queuedShadowUpdates = []
         self.allLightsArray = ShaderStructArray(Light, LightLimits.maxTotalLights)
         self.updateCallbacks = []
 
@@ -211,7 +218,6 @@ class LightManager(DebugObject):
 
         define("SHADOW_MAX_TOTAL_MAPS", LightLimits.maxShadowMaps)
 
-
         define("LIGHTING_COMPUTE_PATCH_SIZE_X", settings.computePatchSizeX)
         define("LIGHTING_COMPUTE_PATCH_SIZE_Y", settings.computePatchSizeY)
         define("LIGHTING_MIN_MAX_DEPTH_ACCURACY", settings.minMaxDepthAccuracy)
@@ -267,10 +273,27 @@ class LightManager(DebugObject):
         self.allLightsArray.bindTo(shaderNode, "lights")
         self.allShadowsArray.bindTo(shaderNode, "shadowSources")
 
-    def _queueShadowUpdate(self, source):
+    def _queueShadowUpdate(self, sourceIndex):
         """ Internal method to add a shadowSource to the list of queued updates """
-        if source not in self.queuedShadowUpdates:
-            self.queuedShadowUpdates.append(source)
+        if sourceIndex not in self.queuedShadowUpdates:
+            self.queuedShadowUpdates.append(sourceIndex)
+
+    def _allocateLightSlot(self, light):
+        """ Tries to find a free light slot. Returns False if no slot is free, if 
+        a slot is free it gets allocated and linked to the light """
+        for index, val in enumerate(self.lightSlots):
+            if val == None:
+                light.setIndex(index)
+                self.lightSlots[index] = light
+                return True
+        return False
+
+    def _findShadowSourceSlot(self):
+        """ Tries to find a free shadow source. Returns False if no slot is free """
+        for index, val in enumerate(self.shadowSourceSlots):
+            if val == None:
+                return index
+        return -1
 
     def addLight(self, light):
         """ Adds a light to the list of rendered lights.
@@ -285,7 +308,12 @@ class LightManager(DebugObject):
             return
 
         light.attached = True
-        self.lights.append(light)
+        # self.lights.append(light)
+
+        if not self._allocateLightSlot(light):
+            self.error("Cannot allocate light slot, out of slots.")
+            return False
+
 
         if light.hasShadows() and not self.pipeline.settings.renderShadows:
             self.warn("Attached shadow light but shadowing is disabled in pipeline.ini")
@@ -310,14 +338,18 @@ class LightManager(DebugObject):
                 self.warn("Adjusting resolution to", tileSize)
                 source.resolution = tileSize
 
-            if source not in self.shadowSources:
-                self.shadowSources.append(source)
+            # Frind slot for source
+            sourceSlotIndex = self._findShadowSourceSlot()
+            if sourceSlotIndex < 0:
+                self.error("Cannot store more shadow sources!")
+                return False
 
-            source.setSourceIndex(self.shadowSources.index(source))
-            light.setSourceIndex(index, source.getSourceIndex())
+            self.shadowSourceSlots[sourceSlotIndex] = source
+            source.setSourceIndex(sourceSlotIndex)
+            light.setSourceIndex(index, sourceSlotIndex)
 
-        index = self.lights.index(light)
-        self.allLightsArray[index] = light
+        # Store light in the shader struct array
+        self.allLightsArray[light.getIndex()] = light
 
         light.queueUpdate()
         light.queueShadowUpdate()
@@ -371,16 +403,20 @@ class LightManager(DebugObject):
         """ This is one of the two per-frame-tasks. See class description
         to see what it does """
 
-        pstats_ProcessLights.start()
 
         # Clear dictionary to store the lights rendered this frame
         self.renderedLights = {}
+        # self.queuedShadowUpdates = []
 
         for lightType in LightLimits.maxLights:
-            self.renderedLights[lightType] = []
+            self.renderedLights[lightType] = []        
+        pstats_ProcessLights.start()
 
         # Process each light
-        for index, light in enumerate(self.lights):
+        for index, light in enumerate(self.lightSlots):
+
+            if light == None:
+                continue
 
             # When shadow maps should be always updated
             if self.pipeline.settings.alwaysUpdateAllShadows:
@@ -393,28 +429,30 @@ class LightManager(DebugObject):
             pstats_PerLightUpdates.stop()
 
             # Perform culling
-
             pstats_CullLights.start()
             if not self.cullBounds.contains(light.getBounds()):
                 continue
             pstats_CullLights.stop()
 
             # Queue shadow updates if necessary
+            pstats_QueueShadowUpdate.start()
             if light.hasShadows() and light.needsShadowUpdate():
                 neededUpdates = light.performShadowUpdate()
                 for update in neededUpdates:
-                    self._queueShadowUpdate(update)
+                    self._queueShadowUpdate(update.getSourceIndex())
+            pstats_QueueShadowUpdate.stop()
 
             # Add light to the correct list now
+            pstats_AppendRenderedLight.start()
             lightTypeName = light.getTypeName()
             if light.hasShadows():
                 lightTypeName += "Shadow"
             self.renderedLights[lightTypeName].append(index)
+            pstats_AppendRenderedLight.stop()
 
         pstats_ProcessLights.stop()
 
         self.writeRenderedLightsToBuffer()
-
 
         # Generate debug text
         if self.lightsVisibleDebugText is not None:
@@ -440,7 +478,7 @@ class LightManager(DebugObject):
 
         # Compute shadow updates
         numUpdates = 0
-        last = "[ "
+        lastRenderedSourcesStr = "[ "
 
         # When there are no updates, disable the buffer
         if len(self.queuedShadowUpdates) < 1:
@@ -450,22 +488,22 @@ class LightManager(DebugObject):
         else:
 
             # Check each update in the queue
-            for index, update in enumerate(self.queuedShadowUpdates):
+            for index, updateID in enumerate(self.queuedShadowUpdates):
 
                 # We only process a limited number of shadow maps
                 if numUpdates >= self.maxShadowUpdatesPerFrame:
                     break
 
+                update = self.shadowSourceSlots[updateID]
                 updateSize = update.getResolution()
 
                 # assign position in atlas if not done yet
                 if not update.hasAtlasPos():
 
                     storePos = self.shadowAtlas.reserveTiles(
-                        updateSize, updateSize, update.getUid())
+                        updateSize, updateSize, update.getUID())
 
                     if not storePos:
-
                         # No space found, try to reduce resolution
                         self.warn(
                             "Could not find space for the shadow map of size", updateSize)
@@ -475,7 +513,7 @@ class LightManager(DebugObject):
                         updateSize = self.shadowAtlas.getTileSize()
                         update.setResolution(updateSize)
                         storePos = self.shadowAtlas.reserveTiles(
-                            updateSize, updateSize, update.getUid())
+                            updateSize, updateSize, update.getUID())
 
                         if not storePos:
                             self.fatal(
@@ -490,13 +528,11 @@ class LightManager(DebugObject):
                 update.update()
 
                 # Store update in array
-                indexInArray = self.shadowSources.index(update)
-                self.allShadowsArray[indexInArray] = update
+                self.allShadowsArray[updateID] = update
                 self.updateShadowsArray[index] = update
 
                 # Compute viewport & set depth clearer
-                texScale = float(update.getResolution()) / \
-                    float(self.shadowAtlas.getSize())
+                texScale = float(update.getResolution()) / float(self.shadowAtlas.getSize())
 
                 atlasPos = update.getAtlasPos()
                 left, right = atlasPos.x, (atlasPos.x + texScale)
@@ -519,22 +555,20 @@ class LightManager(DebugObject):
                 # Only add the uid to the output if the max updates
                 # aren't too much. Otherwise we spam the screen
                 if self.maxShadowUpdatesPerFrame <= 8:
-                    last += str(update.getUid()) + " "
+                    lastRenderedSourcesStr += str(update.getUid()) + " "
 
             # Remove all updates which got processed from the list
-            for i in range(numUpdates):
-                self.queuedShadowUpdates.remove(self.queuedShadowUpdates[0])
-
+            self.queuedShadowUpdates = self.queuedShadowUpdates[numUpdates:]
             self.numShadowUpdatesPTA[0] = numUpdates
 
             self.shadowPass.setActiveRegionCount(numUpdates)
 
-        last += "]"
+        lastRenderedSourcesStr += "]"
 
         # Generate debug text
         if self.lightsUpdatedDebugText is not None:
             self.lightsUpdatedDebugText.setText(
-                'Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + "/" + str(len(self.shadowSources)) + ", Last: " + last + ", Free Tiles: " + str(self.shadowAtlas.getFreeTileCount()) + "/" + str(self.shadowAtlas.getTotalTileCount()))
+                'Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + ", Last: " + lastRenderedSourcesStr + ", Free Tiles: " + str(self.shadowAtlas.getFreeTileCount()) + "/" + str(self.shadowAtlas.getTotalTileCount()))
 
     # Main update
     def update(self):

@@ -261,7 +261,3 @@ class RenderPassManager(DebugObject):
                 self._availableUniforms[outputName] = outputValue
 
         # self.debug(self._sortedNodes)
-
-
-        for key, val in self.staticVariables.items():
-            print key, type(val)

@@ -176,7 +176,7 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
 
-            # self.movingLights.append(pointLight)
+            self.movingLights.append(pointLight)
 
         # Create more lights
         for i in xrange(5):

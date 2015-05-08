@@ -77,7 +77,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         Light. """
         return self.sourceIndex
 
-    def getUid(self):
+    def getUID(self):
         """ Returns the uid of the shadow source """
         return self.index
 
@@ -192,6 +192,9 @@ class ShadowSource(DebugObject, ShaderStructElement):
     def __repr__(self):
         """ Returns a representative string of this instance """
         return "ShadowSource[id=" + str(self.index) + "]"
+
+    def __hash__(self):
+        return self.index
 
     def onUpdated(self):
         """ Gets called when shadow source was updated """

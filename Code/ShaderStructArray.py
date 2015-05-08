@@ -76,10 +76,88 @@ class ShaderStructArray(DebugObject):
             self.ptaWrappers[name] = [
                 arrayType.emptyArray(numElements) for i in range(self.size)]
 
+        # self._initBindFuncs()
+
+    # def _initBindFuncs(self):
+
+    #     self.bind_funcs = []
+
+    #     for attrName, attrType in self.attributes.iteritems():
+    #         if attrType == "float":
+    #             attrFunc = self._rebindFloat
+    #         elif attrType == "int":
+    #             attrFunc = self._rebindInt
+    #         elif attrType == "mat4":
+    #             attrFunc = self._rebindMat4
+    #         elif attrType == "array<int>(6)":
+    #             attrFunc = self._rebindArray6
+    #         else:
+    #             attrFunc = self._rebindGeneric
+
+    #         self.bind_funcs.append((attrName, attrFunc))
+        
+    #     self.bind_funcs = tuple(self.bind_funcs) 
+
+
+    # def _rebindFloat(self, attrName, index, value):
+    #     self.ptaWrappers[attrName][index][0] = float(getattr(value, attrName))
+
+    # def _rebindInt(self, attrName, index, value):
+    #     self.ptaWrappers[attrName][index][0] = int(getattr(value, attrName))
+
+    # def _rebindGeneric(self, attrName, index, value)
+
+
 
     def getUID(self):
         """ Returns the unique index of this array """
         return self.arrayIndex
+
+    def objectChanged(self, obj, index):
+        """ A list object calls this when it changed. Do not call this
+        directly """
+
+        self._rebindInputs(index, obj)
+
+    def _rebindInputs(self, index, value):
+        """ Rebinds the shader inputs for an index """
+        pstats_SetShaderInputs.start()
+        for attrName, attrType in self.attributes.items():
+            objValue = getattr(value, attrName)
+            # # Cast values to correct types
+            # if attrType == "float":
+            #     objValue = float(objValue)
+            # elif attrType == "int":
+            #     objValue = int(objValue)
+            if attrType == "array<int>(6)":
+                for i in range(6):
+                    self.ptaWrappers[attrName][index][i] = objValue[i]
+            else:
+                # print attrName, objValue
+                self.ptaWrappers[attrName][index][0] = objValue
+            # elif attrType == "mat4":
+            #     self.ptaWrappers[attrName][index][0] = objValue
+            # else:
+        pstats_SetShaderInputs.stop()
+
+    def __setitem__(self, index, value):
+        """ Sets the object at index to value. This directly updates the
+        shader inputs. """
+
+        if index < 0 or index >= self.size:
+            raise Exception("Out of bounds!")
+
+        oldObject = self.assignedObjects[index]
+
+        # Remove old reference
+        if value is not None and oldObject is not None \
+                and oldObject is not value:
+            self.assignedObjects[index].removeListReference(self.arrayIndex)
+
+        # Set new reference
+        value.assignListIndex(self.arrayIndex, index)
+        self.assignedObjects[index] = value
+        self._rebindInputs(index, value)
 
     def bindTo(self, parent, uniformName):
         """ In order for an element to recieve this array as an
@@ -121,54 +199,6 @@ class ShaderStructArray(DebugObject):
                 inputValue = self.ptaWrappers[attrName][index]
 
                 parent.setShaderInput(inputName, inputValue)
-
-    def objectChanged(self, obj, index):
-        """ A list object calls this when it changed. Do not call this
-        directly """
-
-        self._rebindInputs(index, obj)
-
-    def _rebindInputs(self, index, value):
-        """ Rebinds the shader inputs for an index """
-        
-        pstats_SetShaderInputs.start()
-        for attrName, attrType in self.attributes.items():
-
-            objValue = getattr(value, attrName)
-
-            # Cast values to correct types
-            if attrType == "float":
-                objValue = float(objValue)
-            elif attrType == "int":
-                objValue = int(objValue)
-            if attrType == "array<int>(6)":
-                for i in range(6):
-                    self.ptaWrappers[attrName][index][i] = objValue[i]
-            elif attrType == "mat4":
-                self.ptaWrappers[attrName][index][0] = objValue
-            else:
-                self.ptaWrappers[attrName][index][0] = objValue
-        pstats_SetShaderInputs.stop()
-
-
-    def __setitem__(self, index, value):
-        """ Sets the object at index to value. This directly updates the
-        shader inputs. """
-
-        if index < 0 or index >= self.size:
-            raise Exception("Out of bounds!")
-
-        oldObject = self.assignedObjects[index]
-
-        # Remove old reference
-        if value is not None and oldObject is not None \
-                and oldObject is not value:
-            self.assignedObjects[index].removeListReference(self.arrayIndex)
-
-        # Set new reference
-        value.assignListIndex(self.arrayIndex, index)
-        self.assignedObjects[index] = value
-        self._rebindInputs(index, value)
 
 
 

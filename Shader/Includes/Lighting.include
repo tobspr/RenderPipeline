@@ -372,6 +372,9 @@ float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSi
     float biasedDepth = projCoord.z - baseBias;
     vec2 filterRadiusUV = 5.0 * projSize;
 
+    // #undef SHADOW_NUM_PCF_SAMPLES
+    // #define SHADOW_NUM_PCF_SAMPLES 64
+
     // PCF Filter
     float sum = 0.0;
     for ( int i = 0; i < SHADOW_NUM_PCF_SAMPLES; ++i )

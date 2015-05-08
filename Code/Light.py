@@ -35,6 +35,7 @@ class Light(ShaderStructElement):
         self.sourceIndexes = PTAInt.emptyArray(6)
         self.attached = False
         self.shadowResolution = 512
+        self.index = -1
 
         # A light can have up to 6 sources
         for i in range(6):
@@ -53,6 +54,14 @@ class Light(ShaderStructElement):
             "radius": "float",
             "sourceIndexes": "array<int>(6)"
         }
+
+    def getIndex(self):
+        """ Returns the light index, this is only set if the light is already attached """
+        return self.index
+
+    def setIndex(self, index):
+        """ Sets the light index, gets called by the LightManager """
+        self.index = index
 
     def getTypeName(self):
         """ Returns the internal id of the light-type, e.g. "PointLight" """
