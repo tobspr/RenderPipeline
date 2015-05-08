@@ -30,6 +30,7 @@ class PipelineGuiManager(DebugObject):
         self.bufferViewerParent = Globals.base.pixel2d.attachNewNode(
             "Buffer Viewer GUI")
         self.bufferViewer = BufferViewerGUI(self.bufferViewerParent)
+        self.setup()
 
     def update(self):
         pass

@@ -99,25 +99,25 @@ class Scattering(DebugObject):
 
         # Transmittance
         self.targets['transmittance'] = self._createRT(
-            "Transmittance", 256, 64, aux=False, shaderName="Transmittance",
+            "Transmittance", 256, 64, shaderName="Transmittance",
             layers=1)
         self._renderOneShot('transmittance')
 
         # Irradiance1 (Produces DeltaE Texture)
         self.targets['irradiance1'] = self._createRT(
-            "Irradiance1", 64, 16, aux=False, shaderName="Irradiance1",
+            "Irradiance1", 64, 16, shaderName="Irradiance1",
             layers=1)
         self._renderOneShot('irradiance1')
 
         # Delta Scattering (Rayleigh + Mie)
         self.targets['deltaScattering'] = self._createRT(
-            "DeltaScattering", 256, 128, aux=True, shaderName="Inscatter1",
+            "DeltaScattering", 256, 128, attachAuxTexture=True, shaderName="Inscatter1",
             layers=32)
         self._renderOneShot('deltaScattering')
 
         # IrradianceE (Produces E Texture)
         self.targets['irradianceE'] = self._createRT(
-            "IrradianceE", 64, 16, aux=False, shaderName="Combine2DTextures",
+            "IrradianceE", 64, 16, shaderName="Combine2DTextures",
             layers=1)
         self.targets['irradianceE'].setShaderInput('factor1', 0.0)
         self.targets['irradianceE'].setShaderInput('factor2', 0.0)
@@ -125,7 +125,7 @@ class Scattering(DebugObject):
 
         # Copy delta scattering into inscatter texture S
         self.targets['combinedDeltaScattering'] = self._createRT(
-            "CombinedDeltaScattering", 256, 128, aux=False,
+            "CombinedDeltaScattering", 256, 128,
             shaderName="CombineDeltaScattering", layers=32)
         self._renderOneShot('combinedDeltaScattering')
 
@@ -136,7 +136,7 @@ class Scattering(DebugObject):
             # Compute Delta J texture
             inscatterSName = 'inscatterS' + passIndex
             self.targets[inscatterSName] = self._createRT(
-                inscatterSName, 256, 128, aux=False, shaderName="InscatterS",
+                inscatterSName, 256, 128, shaderName="InscatterS",
                 layers=32)
             self.targets[inscatterSName].setShaderInput("first", first)
             self._renderOneShot(inscatterSName)
@@ -144,7 +144,7 @@ class Scattering(DebugObject):
             # Compute the new Delta E Texture
             irradianceNName = 'irradianceN' + passIndex
             self.targets[irradianceNName] = self._createRT(
-                irradianceNName, 64, 16, aux=False, shaderName="IrradianceN",
+                irradianceNName, 64, 16, shaderName="IrradianceN",
                 layers=1)
             self.targets[irradianceNName].setShaderInput('first', first)
             self._renderOneShot(irradianceNName)
@@ -156,7 +156,7 @@ class Scattering(DebugObject):
             # Compute new deltaSR
             inscatterNName = 'inscatterN' + passIndex
             self.targets[inscatterNName] = self._createRT(
-                inscatterNName, 256, 128, aux=False, shaderName="InscatterN",
+                inscatterNName, 256, 128, shaderName="InscatterN",
                 layers=32)
             self.targets[inscatterNName].setShaderInput("first", first)
             self.targets[inscatterNName].setShaderInput(
@@ -170,7 +170,7 @@ class Scattering(DebugObject):
             # Add deltaE into irradiance texture E
             irradianceAddName = 'irradianceAdd' + passIndex
             self.targets[irradianceAddName] = self._createRT(
-                irradianceAddName, 64, 16, aux=False,
+                irradianceAddName, 64, 16, 
                 shaderName="Combine2DTextures", layers=1)
             self.targets[irradianceAddName].setShaderInput('first', first)
             self.targets[irradianceAddName].setShaderInput(
@@ -187,7 +187,7 @@ class Scattering(DebugObject):
             # Add deltaS into inscatter texture S
             inscatterAddName = 'inscatterAdd' + passIndex
             self.targets[inscatterAddName] = self._createRT(
-                inscatterAddName, 256, 128, aux=False,
+                inscatterAddName, 256, 128, 
                 shaderName="InscatterAdd", layers=32)
             self.targets[inscatterAddName].setShaderInput("first", first)
             self.targets[inscatterAddName].setShaderInput(

@@ -110,15 +110,19 @@ class LightManager(DebugObject):
         self._createDebugTexts()
 
     def _bindUpdateSources(self, renderPass, name):
+        """ Internal method to bind the shadow update source to a target """
         self.updateShadowsArray.bindTo(renderPass, name)
 
     def _bindAllLights(self, renderPass, name):
+        """ Internal method to bind the global lights array to a target """
         self.allLightsArray.bindTo(renderPass, name)
 
     def _bindAllSources(self, renderPass, name):
+        """ Internal method to bind the global shadow sources to a target """
         self.allShadowsArray.bindTo(renderPass, name)
 
     def _createShadowPass(self):
+        """ Creates the shadow pass, where the shadow atlas is generated into """
         self.shadowPass = ShadowScenePass()
         self.shadowPass.setMaxRegions(self.maxShadowUpdatesPerFrame)
         self.shadowPass.setSize(self.shadowAtlas.getSize())
@@ -138,15 +142,12 @@ class LightManager(DebugObject):
         sizeX = int(math.ceil(float(self.pipeline.getSize().x) / self.patchSize.x))
         sizeY = int(math.ceil(float(self.pipeline.getSize().y) / self.patchSize.y))
 
-
-
         self.lightCullingPass = LightCullingPass()
         self.lightCullingPass.setSize(sizeX, sizeY)
         self.lightCullingPass.setPatchSize(self.patchSize.x, self.patchSize.y)
 
         self.pipeline.getRenderPassManager().registerPass(self.lightCullingPass)
         self.pipeline.getRenderPassManager().registerStaticVariable("lightingTileCount", LVecBase2i(sizeX, sizeY))
-
 
         self.debug("Batch size =", sizeX, "x", sizeY,
                    "Actual Buffer size=", int(sizeX * self.patchSize.x),

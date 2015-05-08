@@ -32,6 +32,12 @@ from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 
 class RenderingPipeline(DebugObject):
 
+    """ This is the main rendering pipeline module. It setups the whole pipeline
+    process, as well as creating the managers for the different effects/passes.
+    It also handles some functions to prepare the scene, e.g. for tesselation.
+    """
+
+
     def __init__(self, showbase):
         """ Creates a new pipeline """
         DebugObject.__init__(self, "RenderingPipeline")
@@ -57,32 +63,38 @@ class RenderingPipeline(DebugObject):
         return self.settings
 
     def addLight(self, light):
+        """ Attaches a new light to the pipeline, this just forwards the call to
+        the light manager. """
         self.lightManager.addLight(light)
 
     def setGILightSource(self, lightSource):
+        """ Sets the light used to compute GI. For now, only directional lights
+        can cast GI. """
         if self.settings.enableGlobalIllumination:
             self.globalIllum.setTargetLight(lightSource)
 
     def prepareMaterials(self, nodePath):
-        pass
-
-    def getDefaultSkybox(self):
-        return NodePath("Skybox")
-
-    def getDefaultObjectShader(self, tesselated=False):
+        """ Prepares all materials of a given nodepath to have at least the 4 
+        default textures in the correct order: [diffuse, normal, specular, roughness] """
         pass
 
     def getDefaultTransparencyShader(self):
-        """ Returns the default shader for transparent objects """
+        """ Returns the default shader to render transparent objects. """
         if not self.settings.useTransparency:
             raise Exception("Transparency is disabled. You cannot fetch the transparency shader.")
         return self.transparencyManager.getDefaultShader()
 
     def prepareTransparentObject(self, np):
+        """ Prepares a transparent object, this should be called on every transparent
+        object """
         np.setTag("ShadowPassShader", "Transparent")
 
     def getDefaultSkybox(self, scale=40000):
-        """ Loads the skybox """
+        """ Loads the default skybox, scaling it by the given scale factor. Note
+        that there should always be a noticeable difference between the skybox
+        scale and the camera far plane, to avoid z-fighting issues. The default
+        skybox also comes with a default skybox shader aswell as a default skybox
+        texture. The shaders and textures can be overridden by the user if required. """
         skybox = loader.loadModel("Models/Skybox/Model.egg.bam")
         skybox.setScale(scale)
 
@@ -92,30 +104,39 @@ class RenderingPipeline(DebugObject):
         skytex.setMinfilter(SamplerState.FTLinear)
         skytex.setMagfilter(SamplerState.FTLinear)
         skybox.setShaderInput("skytex", skytex)
-
         skybox.setShader(Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultShaders/Opaque/vertex.glsl", "Shader/Skybox/fragment.glsl"), 50)
+                "Shader/DefaultShaders/Opaque/vertex.glsl", 
+                "Shader/Skybox/fragment.glsl"), 50)
         return skybox
 
-
     def reloadShaders(self):
+        """ Reloads all shaders and regenerates all intitial states. This function
+        also updates the shader autoconfig """
         self.debug("Reloading shaders")
         self.renderPassManager.writeAutoconfig()
         self.renderPassManager.setShaders()
 
+        # todo: gi -> reload shaders
+
     def getRenderPassManager(self):
+        """ Returns a handle to the render pass manager attribute """
         return self.renderPassManager
 
     def getSize(self):
+        """ Returns the window size """
         return self._size
 
     def _createTasks(self):
+        """ Spanws the pipeline update tasks, this are mainly the pre-render
+        and post-render tasks, whereas the pre-render task has a lower priority
+        than the draw task, and the post-render task has a higher priority. """
         self.showbase.addTask(self._preRenderUpdate, "RP_BeforeRender", sort=-5000)
         self.showbase.addTask(self._postRenderUpdate, "RP_AfterRender", sort=5000)
 
     def _createInputHandles(self):
-        # We use PTA's for shader inputs, because that's faster than
-        # using setShaderInput
+        """ Defines various inputs to be used in the shader passes. Most inputs
+        use pta-arrays, so updating them is faster than using setShaderInput all the
+        time. """
         self.cameraPosition = PTAVecBase3f.emptyArray(1)
         self.lastMVP = PTALMatrix4f.emptyArray(1)
         self.currentMVP = PTALMatrix4f.emptyArray(1)
@@ -131,6 +152,8 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerStaticVariable("frameDelta", self.frameDelta)
 
     def _preRenderUpdate(self, task):
+        """ This is the pre render task which handles updating of all the managers
+        as well as calling the pipeline update task """
         self._updateInputHandles()
         self.lightManager.updateLights()
         self.lightManager.updateShadows()
@@ -139,13 +162,13 @@ class RenderingPipeline(DebugObject):
         self.transparencyManager.update()
         self.antialiasingManager.update()
         self.renderPassManager.preRenderUpdate()
-
         if self.globalIllum:
             self.globalIllum.update()
-
         return task.cont
 
     def _updateInputHandles(self):
+        """ Updates the input-handles on a per frame basis defined in 
+        _createInputHandles """
         # Compute camera bounds
         cameraBounds = self.showbase.camNode.getLens().makeBounds()
         cameraBounds.xform(self.showbase.camera.getMat(self.showbase.render))
@@ -157,37 +180,34 @@ class RenderingPipeline(DebugObject):
         self.cameraPosition[0] = self.showbase.cam.getPos(self.showbase.render)
 
     def _computeMVP(self):
-        """ Computes the current mvp. Actually, this is the
+        """ Computes the current scene mvp. Actually, this is the
         worldViewProjectionMatrix, but for convience it's called mvp. """
         camLens = self.showbase.camLens
         projMat = Mat4.convertMat(
-            CSYupRight,
-            camLens.getCoordinateSystem()) * camLens.getProjectionMat()
-        transformMat = TransformState.makeMat(
-            Mat4.convertMat(self.showbase.win.getGsg().getInternalCoordinateSystem(),
-                            CSZupRight))
+            CSYupRight,camLens.getCoordinateSystem()) * camLens.getProjectionMat()
+        transformMat = TransformState.makeMat(Mat4.convertMat(
+            self.showbase.win.getGsg().getInternalCoordinateSystem(), CSZupRight))
         modelViewMat = transformMat.invertCompose(
             self.showbase.render.getTransform(self.showbase.cam)).getMat()
         return UnalignedLMatrix4f(modelViewMat * projMat)
 
-
-    def _createGUIManager(self):
-        if self.settings.displayOnscreenDebugger:
-            self.guiManager = PipelineGuiManager(self)
-            self.guiManager.setup()
-        else:
-            self.guiManager = None
-
     def _postRenderUpdate(self, task):
+        """ This is the post render update, being called after the draw task. """
         return task.cont
 
     def _createViewSpacePass(self):
+        """ Creates a pass which computes the view space normals and position.
+        This pass is only created if any render pass requires the provided
+        inputs """
         if self.renderPassManager.anyPassRequires("ViewSpacePass.normals") or \
             self.renderPassManager.anyPassRequires("ViewSpacePass.position"):
             self.viewSpacePass = ViewSpacePass()
             self.renderPassManager.registerPass(self.viewSpacePass)
 
     def _createEdgePreservingBlurPass(self):
+        """ Creates a pass which upscales and blurs the global illumination
+        and ambient occlusion. If both gi and ao are enabled, also creates
+        a pass which combines both first before processing them """
         haveAo = self.renderPassManager.anyPassProduces("AmbientOcclusionPass.computeResult")
         haveGi = self.renderPassManager.anyPassProduces("GlobalIlluminationPass.diffuseResult")
 
@@ -201,6 +221,8 @@ class RenderingPipeline(DebugObject):
 
 
     def _createDefaultTextureInputs(self):
+        """ This method loads various textures used in the different render passes
+        and provides them as inputs to the render pass manager """
         for color in ["White", "Black"]:
             emptyTex = loader.loadTexture("Data/Textures/" + color + ".png")
             emptyTex.setMinfilter(SamplerState.FTLinear)
@@ -234,7 +256,6 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerStaticVariable("defaultEnvironmentCubemapMipmaps", 
             cubemapEnv.getExpectedNumMipmapLevels())
 
-
         # Load the color LUT
         colorLUT = loader.loadTexture("Data/ColorLUT/" + self.settings.colorLookupTable)
         colorLUT.setWrapU(SamplerState.WMClamp)
@@ -244,17 +265,15 @@ class RenderingPipeline(DebugObject):
         colorLUT.setMagfilter(SamplerState.FTLinear)
         self.renderPassManager.registerStaticVariable("colorLUT", colorLUT)
 
-
     def _createGenericDefines(self):
+        """ Registers some of the configuration defines, mainly specified in the
+        pipeline config, at the render pass manager """
         define = lambda name, val: self.renderPassManager.registerDefine(name, val)
         define("WINDOW_WIDTH", self._size.x)
         define("WINDOW_HEIGHT", self._size.y)
 
         if self.settings.displayOnscreenDebugger:
             define("DEBUGGER_ACTIVE", 1)
-
-            # extraSettings = self.guiManager.getDefines()
-            # defines += extraSettings
 
         if self.settings.enableGlobalIllumination:
             define("USE_GLOBAL_ILLUMINATION", 1)
@@ -272,6 +291,7 @@ class RenderingPipeline(DebugObject):
         define("CAMERA_FAR", Globals.base.camLens.getFar())
 
     def _createGlobalIllum(self):
+        """ Creates the global illumination manager if enabled in the settings """
         if self.settings.enableGlobalIllumination:
             self.globalIllum = GlobalIllumination(self)
             self.globalIllum.setup()
@@ -279,6 +299,8 @@ class RenderingPipeline(DebugObject):
             self.globalIllum = None
 
     def _precomputeScattering(self):
+        """ Precomputes the scattering model for the default atmosphere if
+        if specified in the settings """
         if self.settings.enableScattering:
             earthScattering = Scattering(self)
             scale = 1000000000
@@ -323,7 +345,9 @@ class RenderingPipeline(DebugObject):
                 "The window width has to be a multiple of 2 "
                 "(Current: ", self._size.x, ")")
             return
-        self._createGUIManager()
+
+        if self.settings.displayOnscreenDebugger:
+            self.guiManager = PipelineGuiManager(self)
 
         # Some basic scene settings
         self.showbase.camLens.setNearFar(0.1, 50000)
