@@ -53,7 +53,7 @@ vec3 computeLightModel(Light light, Material material,
         return shadowFactor * attenuation * light.color;
     #endif
 
-    #if USE_SIMPLE_LIGHTING || DEBUG_DISABLE_COMPLEX_LIGHTING
+    #if DEBUG_DISABLE_COMPLEX_LIGHTING
         return light.color * attenuation * material.baseColor * shadowFactor;
     #else
 
@@ -190,6 +190,7 @@ vec3 computeAmbient(Material material, vec3 giAmbient, vec4 giSpecular, float oc
 
     occlusionFactor = pow(occlusionFactor, 2.0);
 
+
 //  * pow(giAmbient.w, 2.0)
     // Diffuse ambient
     result += giAmbient * occlusionFactor * material.baseColor * saturate(1.0 - material.metallic) * 1.0;
@@ -287,16 +288,16 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
 
     #undef SHADOW_NUM_PCSS_SEARCH_SAMPLES
-    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 64
+    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 32
 
 
     #undef SHADOW_NUM_PCSS_FILTER_SAMPLES
-    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 64
+    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 32
 
     // Find blocker
     for ( int i = 0; i < SHADOW_NUM_PCSS_SEARCH_SAMPLES; ++i )
     {
-        vec2 offset = poissonDisk64[i] * searchRegionRadiusUV;
+        vec2 offset = poissonDisk136[i] * searchRegionRadiusUV;
         float shadowMapDepth = textureLod(shadowAtlas, centerCoord + offset , 0).x;
         float factor = step(shadowMapDepth, biasedDepth);
         numBlockers += factor;
@@ -326,7 +327,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     for ( int i = 0; i < SHADOW_NUM_PCSS_FILTER_SAMPLES; ++i )
     {
-        vec2 offset = poissonDisk64[i] * filterRadiusUV;
+        vec2 offset = poissonDisk136[i] * filterRadiusUV;
         
         #if USE_HARDWARE_PCF
             // Notice: Maybe use .x? My gtx 670 does not like that though
@@ -414,6 +415,8 @@ float pcssKernelDynamicSize(Light light, ShadowSource source, vec3 projCoord, fl
         // The filter size is the difference of both lightspace pixels
         vec2 projSize = abs(proj1.xy - proj2.xy);
 
+        projSize = vec2(max(projSize.x, projSize.y));
+
         return pcssKernel(source, projCoord, baseBias, projSize);
     #else
         return pcssKernel(source, projCoord, baseBias, vec2(1));
@@ -463,7 +466,7 @@ int computePSSMShadowSourceIndex(Light light, vec3 position, float borderFactor,
 }
 
 
-float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l, 
+float computePSSMShadowsForLight(Light light, vec3 position, vec3 n, vec3 l, 
     float slopeScaledBias, float normalScaledBias, float baseBias, out int map_used) {
 
     map_used = 0;
@@ -473,7 +476,7 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
 
 
     vec3 projCoord;
-    int shadow_map_index = computePSSMShadowSourceIndex(light, material.position, SHADOW_PSSM_BORDER_PERCENTAGE, projCoord);
+    int shadow_map_index = computePSSMShadowSourceIndex(light, position, SHADOW_PSSM_BORDER_PERCENTAGE, projCoord);
     // if (shadow_map_index > 3) return 1.0;
 
     // shadow_map_index = 3;
@@ -482,7 +485,7 @@ float computePSSMShadowsForLight(Light light, Material material, vec3 n, vec3 l,
     float resolutionFactor = 1.0 / source.resolution;
 
     // vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
-    vec3 biasedPos = computeBiasedPosition(material.position, slopeScaledBias * resolutionFactor, normalScaledBias * resolutionFactor, n, l);
+    vec3 biasedPos = computeBiasedPosition(position, slopeScaledBias * resolutionFactor, normalScaledBias * resolutionFactor, n, l);
     projCoord = reprojectShadow(source, biasedPos);
     map_used = shadow_map_index;
     baseBias *= resolutionFactor;

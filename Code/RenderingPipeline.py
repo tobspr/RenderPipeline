@@ -30,6 +30,7 @@ from RenderPasses.LightingPass import LightingPass
 from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 
+
 class RenderingPipeline(DebugObject):
 
     """ This is the main rendering pipeline module. It setups the whole pipeline
@@ -106,7 +107,7 @@ class RenderingPipeline(DebugObject):
                 stage.setColor(Vec4(0, 0, 0, 1))
                 np.setTexture(stage, textureOrder[i])
 
-            print np,"has",numStages,"stages, filled up the rest"
+            # self.debug(np,"has",numStages,"stages, filled up the rest")
 
     def getDefaultTransparencyShader(self):
         """ Returns the default shader to render transparent objects. """
@@ -404,8 +405,9 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerPass(self.lightingPass)
 
         # Add dynamic exposure pass
-        self.dynamicExposurePass = DynamicExposurePass(self)
-        self.renderPassManager.registerPass(self.dynamicExposurePass)
+        if self.settings.useAdaptiveBrightness:
+            self.dynamicExposurePass = DynamicExposurePass(self)
+            self.renderPassManager.registerPass(self.dynamicExposurePass)
 
         # Add final pass
         self.finalPostprocessPass = FinalPostprocessPass()

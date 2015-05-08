@@ -24,9 +24,6 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("computePatchSizeX", int, 32)
         self._addSetting("computePatchSizeY", int, 32)
         self._addSetting("minMaxDepthAccuracy", int, 3)
-        self._addSetting("useSimpleLighting", bool, False)
-        self._addSetting("anyLightBoundCheck", bool, True)
-        self._addSetting("accurateLightBoundCheck", bool, True)
         self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
         self._addSetting("ambientCubemapSamples", int, 16)
         self._addSetting("colorLookupTable", str, "Default.png")
@@ -71,5 +68,4 @@ class PipelineSettingsManager(SettingsManager):
         # [Debugging]
         self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayDebugStats", bool, True)
-        self._addSetting("enableLightPerTileDebugging", bool, False)
         self._addSetting("pipelineOutputLevel", str, "debug")

@@ -2,6 +2,16 @@
 
 #pragma include "Includes/Configuration.include"
 
+
+
+
+
+// Prefiltered PCSS Texture
+uniform sampler2D prefilteredPCSSTex;
+
+
+
+
 vec3 applyPointLight(Light light, Material material) {
 
     float distanceToLight = distance(material.position, light.position);   
@@ -72,7 +82,8 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material) {
     ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
 
     int map_used = 0;
-    float shadowFactor = computePSSMShadowsForLight(light, material, n, l, 40.0, 60.0, 0.015, map_used);
+    // float shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 40.0, 60.0, 0.015, map_used);
+    float shadowFactor = texture(prefilteredPCSSTex, texcoord).x;
 
     float map_use_factor = map_used / 6.0;
 

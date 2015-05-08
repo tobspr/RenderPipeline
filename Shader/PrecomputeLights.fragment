@@ -46,10 +46,8 @@ uniform vec3 cameraPosition;
 
 const ivec2 patchSize = ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y);
 
-
-// #if ENABLE_LIGHT_PER_TILE_DEBUG
 out vec4 debugOutput;
-// #endif
+
 
 void main() {
 
@@ -144,8 +142,6 @@ void main() {
     vec3 minDepthPoint = calculateSurfacePos(minDepth, texcoord);
     vec3 frustumEndPoint = calculateSurfacePos(1.0, texcoord);
     vec3 viewVector = normalize(frustumEndPoint - cameraPosition);
-
-
 
 
     if (false && minDepthLinear > 6000.0) {
@@ -302,7 +298,6 @@ void main() {
     imageStore(destinationBuffer, bufferBaseStride + 4, ivec4(processedSpotLights));
     imageStore(destinationBuffer, bufferBaseStride + 5, ivec4(processedShadowedSpotLights));
 
-    // #if ENABLE_LIGHT_PER_TILE_DEBUG
         float lightsVisibleFloat = float(
             processedPointLights + processedShadowedPointLights + 
             processedSpotLights + processedShadowedSpotLights) / float(10.0);
@@ -312,7 +307,5 @@ void main() {
         // debugOutput = vec4(maxDepthLinear / 100.0);
         // debugOutput = vec4( (VIEW_MAT * vec4(maxDepthPoint, 1)).w );
         // debugOutput = vec4( maxDepthLinear / CAMERA_FAR );
-
-    // #endif
 
 }

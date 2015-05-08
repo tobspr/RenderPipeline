@@ -111,7 +111,7 @@ class RenderPassManager(DebugObject):
 
                     return entry                    
 
-            # self.error("No input of",inputList,"is available")
+            # self.warn("No input of",inputList,"is available yet")
             return False
 
         if inputList in self._availableUniformNames:
@@ -125,11 +125,9 @@ class RenderPassManager(DebugObject):
     def anyPassRequires(self, uniformName):
         """ Checks if any of the currently attached passes requires an uniform
         with that name """
-
         for renderPass in self.renderPasses.values():
             inputs = renderPass.getRequiredInputs()
             if uniformName in inputs.values():
-                self.debug(renderPass,"requires value",uniformName)
                 return True
 
         return False
@@ -137,11 +135,9 @@ class RenderPassManager(DebugObject):
     def anyPassProduces(self, uniformName):
         """ Checks if any of the currently attached passes produces an uniform
         with that name """
-
         for renderPass in self.renderPasses.values():
             outputs = renderPass.getOutputs()
             if uniformName in outputs.keys():
-                self.debug(renderPass,"produces value",uniformName)
                 return True
         return False
 
@@ -188,6 +184,7 @@ class RenderPassManager(DebugObject):
         self._matchBuffer = self.renderPasses.values()
         self._sortedNodes = []
         self._availableUniformNames = []
+        self.registerStaticVariable("null", 0)
 
         # When there is no valid configuration, make sure no infinite loop is produced
         maxIterations = 100
@@ -263,4 +260,8 @@ class RenderPassManager(DebugObject):
             for outputName, outputValue in renderPass.getOutputs().items():
                 self._availableUniforms[outputName] = outputValue
 
-        self.debug(self._sortedNodes)
+        # self.debug(self._sortedNodes)
+
+
+        for key, val in self.staticVariables.items():
+            print key, type(val)

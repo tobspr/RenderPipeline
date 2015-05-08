@@ -50,16 +50,19 @@ class LightingPass(RenderPass):
             "directionToFace": "Variables.directionToFaceLookup",
 
             # Dynamic exposure
-            "dynamicExposureTex": "Variables.dynamicExposureTex", #TODO
+            "dynamicExposureTex": ["Variables.dynamicExposureTex", "Variables.null"],
 
             # Scattering
-            "transmittanceSampler": "Variables.transmittanceSampler",
-            "inscatterSampler": "Variables.inscatterSampler",
-            "scatteringOptions": "Variables.scatteringOptions",
+            "transmittanceSampler": ["Variables.transmittanceSampler", "Variables.emptyTextureWhite"],
+            "inscatterSampler": ["Variables.inscatterSampler", "Variables.emptyTextureWhite"],
+            "scatteringOptions": ["Variables.scatteringOptions", "Variables.null"],
 
             # Default environment
             "fallbackCubemap": "Variables.defaultEnvironmentCubemap",
             "fallbackCubemapMipmaps": "Variables.defaultEnvironmentCubemapMipmaps",
+
+            # Prefiltered pccs shadow
+            "prefilteredPCSSTex": "PCSSPreFilterPass.resultTex",
 
             # Scene data
             "noiseTexture": "Variables.noise4x4",

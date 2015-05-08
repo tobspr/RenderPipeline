@@ -83,7 +83,7 @@ class PipelineGuiManager(DebugObject):
             register_feature("Occlusion", "ft_OCCLUSION")
 
 
-        register_feature("Blur GI/Occl.", "ft_UPSCALE_BLUR")
+        register_feature("Upscale Blur", "ft_UPSCALE_BLUR")
 
         register_mode("Lighting", "rm_Lighting")
         register_mode("Raw-Lighting", "rm_Diffuse_Lighting")

@@ -18,7 +18,7 @@ class AntialiasingManager(DebugObject):
     second frame, and then merged with the previous frame result, to achieve 
     better antialiasing. This is like MSAA but splitted over several frames """
 
-    availableTechniques = ["FXAA", "SMAA", "NONE"]
+    availableTechniques = ["FXAA", "SMAA", "None"]
 
     def __init__(self, pipeline):
         """ Creates the manager and directly setups the passes """
@@ -40,7 +40,7 @@ class AntialiasingManager(DebugObject):
             return
 
         # No antialiasing
-        elif technique == "NONE":
+        elif technique == "None":
             return
 
         # FXAA 3.11 by nvidia

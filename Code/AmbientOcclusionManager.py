@@ -10,7 +10,7 @@ class AmbientOcclusionManager(DebugObject):
     to compute ambient occlusion. He also registers the configuration defines
     specified in the pipeline configuration """
 
-    availableTechniques = ["SAO", "HBAO", "NONE"]
+    availableTechniques = ["SAO", "HBAO", "None"]
 
     def __init__(self, pipeline):
         """ Creates the manager and directly creates the passes """
@@ -28,7 +28,7 @@ class AmbientOcclusionManager(DebugObject):
             self.error("Unrecognized technique: " + technique)
             return
 
-        if technique == "NONE":
+        if technique == "None":
             return
 
         # Create the ambient occlusion pass. The technique is selected in the 

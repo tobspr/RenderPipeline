@@ -154,7 +154,7 @@ class Main(ShowBase, DebugObject):
         self.movingLights = []
 
         # Create some lights
-        for i in xrange(6):
+        for i in xrange(0):
             pointLight = PointLight()
 
             radius = float(i) / 7.0 * 6.28 + 1.52

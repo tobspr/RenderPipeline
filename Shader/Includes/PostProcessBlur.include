@@ -6,6 +6,7 @@
 
 
 const float normalsDiscardThreshold = 0.996;
+const float normalsDiscardThresholdShadows = 0.99;
 // const float normalsDiscardThreshold = 0.2;
 
 
@@ -127,3 +128,75 @@ vec4 edgePreservingBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, s
 
     #endif
 }
+
+vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex) {
+
+    #ifdef DEBUG_DISABLE_UPSCALE_BLUR
+        return texture(sourceTex, texcoord);
+    #else
+
+
+
+        #define NUM_BLUR_STEPS 17
+
+        // int(NUM_BLUR_STEPS / 2)
+        #define NUM_BLUR_MID 9
+        #define PIXEL_TO_MID_FACTOR 10.0
+
+        // http://dev.theomader.com/gaussian-kernel-calculator/
+        float blurWeights[NUM_BLUR_STEPS] = float[NUM_BLUR_STEPS]
+        (
+            0.003924,
+            0.008962,
+            0.018331,
+            0.033585,
+            0.055119,
+            0.081029,
+            0.106701,
+            0.125858,
+            0.132980,
+            0.125858,
+            0.106701,
+            0.081029,
+            0.055119,
+            0.033585,
+            0.018331,
+            0.008962,
+            0.003924
+        );
+
+        vec3 normals[NUM_BLUR_STEPS];
+        vec4 samples[NUM_BLUR_STEPS];
+
+        vec2 offset = texcoord;
+        vec2 texelSize = 1.0 / vec2(textureSize(sourceTex, 0));
+        vec2 perStep = texelSize * vec2(blurDirection);
+        offset -= perStep * PIXEL_TO_MID_FACTOR;
+
+        for (int i = 0; i < NUM_BLUR_STEPS; i++) {
+            offset += perStep;
+            normals[i] = texture(normalTex, offset).xyz;
+            samples[i] = texture(sourceTex, offset);
+        }
+
+
+        // pixel normal is the mid normal
+        vec3 normal = normals[NUM_BLUR_MID];
+
+        vec4 sampledResult = vec4(0.0);
+        float sampleWeights = 0.0;
+
+        // Check for edges, as we are performing an edge preserving blur
+        for (int i = 0; i < NUM_BLUR_STEPS; i++) {
+            float weight = blurWeights[i];
+            float normalInfluenceFactor = step(normalsDiscardThresholdShadows, dot(normals[i], normal)) * weight;
+            sampledResult += samples[i]*normalInfluenceFactor;
+            sampleWeights += normalInfluenceFactor;   
+        }
+
+        return sampledResult / sampleWeights;
+
+    #endif
+}
+
+

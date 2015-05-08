@@ -22,8 +22,9 @@ from MemoryMonitor import MemoryMonitor
 from LightLimits import LightLimits
 
 
-from Code.RenderPasses.ShadowScenePass import ShadowScenePass
-from Code.RenderPasses.LightCullingPass import LightCullingPass
+from RenderPasses.ShadowScenePass import ShadowScenePass
+from RenderPasses.LightCullingPass import LightCullingPass
+from RenderPasses.PCSSPreFilterPass import PCSSPreFilterPass
 
 pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
 pstats_CullLights = PStatCollector("App:LightManager:CullLights")
@@ -89,6 +90,7 @@ class LightManager(DebugObject):
 
         # Create shadow compute buffer
         self._createShadowPass()
+        self._createPrefilterPass()
         self._initLightCulling()
 
         # Create the initial shadow state
@@ -127,6 +129,11 @@ class LightManager(DebugObject):
         self.shadowPass.setMaxRegions(self.maxShadowUpdatesPerFrame)
         self.shadowPass.setSize(self.shadowAtlas.getSize())
         self.pipeline.getRenderPassManager().registerPass(self.shadowPass)
+
+    def _createPrefilterPass(self):
+        """ Creates the shadow prefiltering pass """
+        self.prefilterPass = PCSSPreFilterPass()
+        self.pipeline.getRenderPassManager().registerPass(self.prefilterPass)
 
     def _initLightCulling(self):
         """ Creates the pass which gets a list of lights and computes which
@@ -209,20 +216,8 @@ class LightManager(DebugObject):
         define("LIGHTING_COMPUTE_PATCH_SIZE_Y", settings.computePatchSizeY)
         define("LIGHTING_MIN_MAX_DEPTH_ACCURACY", settings.minMaxDepthAccuracy)
 
-        if settings.useSimpleLighting:
-            define("USE_SIMPLE_LIGHTING", 1)
-
-        if settings.anyLightBoundCheck:
-            define("LIGHTING_ANY_BOUND_CHECK", 1)
-
-        if settings.accurateLightBoundCheck:
-            define("LIGHTING_ACCURATE_BOUND_CHECK", 1)
-
         if settings.renderShadows:
             define("USE_SHADOWS", 1)
-
-        if settings.enableLightPerTileDebugging:
-            define("ENABLE_LIGHT_PER_TILE_DEBUG", 1)
 
         define("AMBIENT_CUBEMAP_SAMPLES", settings.ambientCubemapSamples)
         define("SHADOW_MAP_ATLAS_SIZE", settings.shadowAtlasSize)

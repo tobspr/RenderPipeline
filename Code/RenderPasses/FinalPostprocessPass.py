@@ -18,7 +18,7 @@ class FinalPostprocessPass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "colorTex": ["AntialiasingPass.resultTex", "LightingPass.resultTex"],
+            "colorTex": ["AntialiasingPass.resultTex", "TransparencyPass.resultTex", "LightingPass.resultTex"],
             "colorLUT": "Variables.colorLUT"
         }
 

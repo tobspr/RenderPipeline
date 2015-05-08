@@ -1,0 +1,84 @@
+#version 400
+
+
+#extension GL_ARB_shader_image_load_store : enable
+
+// Required, or it runs incredible slow
+#pragma optionNV (unroll all)
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Light.include"
+#pragma include "Includes/Material.include"
+#pragma include "Includes/ShadowSource.include"
+#pragma include "Includes/PositionReconstruction.include"
+
+
+// Light-IDs per tile
+uniform isamplerBuffer lightsPerTileBuffer;
+uniform ivec2 lightingTileCount;
+uniform Light lights[MAX_VISIBLE_LIGHTS]; 
+uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
+
+
+in vec2 texcoord;
+
+uniform sampler2D wsPositionTex;
+uniform sampler2D wsNormalTex;
+uniform vec3 cameraPosition;
+
+#pragma include "Includes/Lighting.include"
+
+
+out vec4 resultColor;
+
+void main() {
+    // Compute texcoords
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy) * 2;
+   
+    ivec2 tileIndex = ivec2(vec2(screenCoord) / 
+        vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y));
+    ivec2 precomputeCoord = tileIndex * 8;
+    int tileBufferOffset = (tileIndex.x + tileIndex.y * lightingTileCount.x) * LIGHTING_PER_TILE_STRIDE;
+
+
+    // Check how many shadowed directional lights affect this tile
+    int countDirectionalLightShadow = min(MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS, 
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 3).x);
+
+    if (countDirectionalLightShadow < 1) {
+        resultColor = vec4(1,0,0,1);
+        return;
+    }
+
+    // Fetch the directional light index
+    int currentTileOffset = tileBufferOffset + 16;
+    currentTileOffset += MAX_TILE_POINT_LIGHTS;
+    currentTileOffset += MAX_TILE_SHADOWED_POINT_LIGHTS;
+    currentTileOffset += MAX_TILE_DIRECTIONAL_LIGHTS;
+
+    int lightId = texelFetch(lightsPerTileBuffer, currentTileOffset).x;
+    Light light = lights[lightId];
+ 
+
+    #if 0
+        vec3 wsPosition = texelFetch(wsPositionTex, screenCoord, 0).xyz;
+        vec3 wsNormal = texelFetch(wsNormalTex, screenCoord, 0).xyz;
+    #else
+        vec3 wsPosition = texture(wsPositionTex, texcoord).xyz;
+        vec3 wsNormal = texture(wsNormalTex, texcoord).xyz;
+    #endif
+
+    int mapUsed = 0;
+    vec3 l = normalize(light.position - wsPosition);
+
+
+
+    float shadows = computePSSMShadowsForLight(light, wsPosition, wsNormal, l, 40.0, 60.0, 0.015, mapUsed);
+
+
+
+// float computePSSMShadowsForLight(Light light, vec3 position, vec3 n, vec3 l, 
+//     float slopeScaledBias, float normalScaledBias, float baseBias, out int map_used) {
+    resultColor = vec4(shadows);
+   
+}

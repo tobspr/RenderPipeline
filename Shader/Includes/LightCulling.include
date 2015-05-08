@@ -8,28 +8,16 @@
 
 
 bool isPointLightInFrustum(Light light, Frustum frustum) {
-
-    #ifndef LIGHTING_ANY_BOUND_CHECK
+    vec4 projectedPos = frustum.viewMat * vec4(light.position, 1);
+    if (sphereInFrustum(frustum, projectedPos, light.radius)) {
         return true;
-    #else
-        vec4 projectedPos = frustum.viewMat * vec4(light.position, 1);
-        if (sphereInFrustum(frustum, projectedPos, light.radius)) {
-            return true;
-        }
-        return false;
-    #endif
-
+    }
+    return false;
 }
 
 
 bool isSpotLightInFrustum(Light light, Frustum frustum) {
-    #ifndef LIGHTING_ANY_BOUND_CHECK
-        return true;
-    #else
-
     // TODO
 
     return true;
-
-    #endif
 }

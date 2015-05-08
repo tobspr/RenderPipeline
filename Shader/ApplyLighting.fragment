@@ -43,6 +43,7 @@ uniform vec3 cameraPosition;
 
 in vec2 texcoord;
 
+
 // Has to be after the uniforms
 #pragma include "Includes/Lighting.include"
 
@@ -59,7 +60,6 @@ layout(location = 1) out vec4 sslrDataResult;
 // #ifdef USE_OCCLUSION
 // uniform sampler2D lastFrameOcclusion;
 // #endif
-
 
 
 // Scattering options
@@ -88,9 +88,7 @@ void main() {
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
-    vec2 correctTexcoord = texcoord;
-   
-
+ 
     int shadowsComputed = 0;
 
     ivec2 tileIndex = ivec2(vec2(screenCoord) / 
@@ -308,11 +306,9 @@ void main() {
 
 
     } else {
-            mixedOcclusionFactor = combinedGiAndAo.w;
 
         #if USE_OCCLUSION || USE_GLOBAL_ILLUMINATION
-        #else
-            mixedOcclusionFactor = 0.0;
+            mixedOcclusionFactor = combinedGiAndAo.w;
         #endif
 
         // mixedOcclusionFactor = 0.5;
