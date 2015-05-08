@@ -119,6 +119,12 @@ class Light(ShaderStructElement):
             self.queueUpdate()
             self.queueShadowUpdate()
 
+    def setZ(self, z):
+        if abs(z - self.position.z) > 0.001:
+            self.position.z = z
+            self.queueUpdate()
+            self.queueShadowUpdate()
+
     def getBounds(self):
         """ Returns the bounds of this light for culling """
         return self.bounds

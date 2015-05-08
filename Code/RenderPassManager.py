@@ -170,7 +170,7 @@ class RenderPassManager(DebugObject):
         for key, value in sorted(self.defines.items()):
             output += "#define " + key + " " + str(value) + "\n"
 
-        output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"
+        # output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"
 
         # Try to write the file
         try:

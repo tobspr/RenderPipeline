@@ -449,7 +449,7 @@ class LightManager(DebugObject):
 
         # When there are no updates, disable the buffer
         if len(self.queuedShadowUpdates) < 1:
-            self.shadowComputeTarget.setActiveRegionCount(0)
+            self.shadowPass.setActiveRegionCount(0)
             self.numShadowUpdatesPTA[0] = 0
 
         else:

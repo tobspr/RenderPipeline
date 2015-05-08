@@ -27,7 +27,8 @@ class DeferredScenePass(RenderPass):
         self.target.prepareSceneRender()
         self.target.setClearColor(True)
 
-        self.target.getQuad().node().removeAllChildren()
+        # Remove the generated fullscreen quad
+        # self.target.removeQuad()
 
     def getOutputs(self):
         return {

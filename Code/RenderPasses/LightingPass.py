@@ -10,6 +10,11 @@ from Code.MemoryMonitor import MemoryMonitor
 
 class LightingPass(RenderPass):
 
+    """ This is the main lighting pass, it combines the inpupts of almost all
+    features to create a combined image. It handles the lighting, shadows and
+    ambient factors. It also computes the scattering based on the precomputed
+    scattering model if specified """
+
     def __init__(self):
         RenderPass.__init__(self)
 
@@ -56,9 +61,6 @@ class LightingPass(RenderPass):
             "fallbackCubemap": "Variables.defaultEnvironmentCubemap",
             "fallbackCubemapMipmaps": "Variables.defaultEnvironmentCubemapMipmaps",
 
-
-
-
             # Scene data
             "noiseTexture": "Variables.noise4x4",
             "cameraPosition": "Variables.cameraPosition",
@@ -68,11 +70,11 @@ class LightingPass(RenderPass):
 
     def create(self):
 
+        # Not much to be done here, most is done in the shader
         self.target = RenderTarget("LightingPass")
         self.target.addColorTexture()
         self.target.setColorBits(16)
         self.target.prepareOffscreenBuffer()
-
 
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 

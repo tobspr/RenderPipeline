@@ -8,6 +8,12 @@ from Code.RenderTarget import RenderTarget
 
 class AntialiasingSMAAPass(RenderPass):
 
+    """ This render pass takes the scene color texture as input and performs
+    antialiasing. The result is an antialiased scene texture which can be
+    processed further. 
+
+    This pass uses temporal SMAA."""
+
     def __init__(self):
         RenderPass.__init__(self)
         self.currentIndex = PTAInt.emptyArray(1)
@@ -23,7 +29,7 @@ class AntialiasingSMAAPass(RenderPass):
         }
 
     def create(self):
-        """ Setups the SMAA. The comments are original from the SMAA.glsl """
+        """ Setups the SMAA. The comments are from the SMAA.glsl """
         #  1. The first step is to create two RGBA temporal render targets for holding
         #|edgesTex| and |blendTex|.
         self._setupEdgesBuffer()
@@ -53,9 +59,6 @@ class AntialiasingSMAAPass(RenderPass):
             sampler.setWrapU(Texture.WMClamp)
             sampler.setWrapV(Texture.WMClamp)
 
-        # self._edgesBuffer.setShaderInput("colorTex", self._colorTexture)
-        # self._edgesBuffer.setShaderInput("depthTex", self._depthTexture)
-
         self._blendBuffer.setShaderInput(
             "edgesTex", self._edgesBuffer.getColorTexture())
         self._blendBuffer.setShaderInput("areaTex", self.areaTex)
@@ -63,14 +66,7 @@ class AntialiasingSMAAPass(RenderPass):
         self._blendBuffer.setShaderInput("currentIndex", self.currentIndex)
 
         for buff in self._neighborBuffers:
-            # buff.setShaderInput("colorTex", self._colorTexture)
-            # buff.setShaderInput("velocityTex", self._velocityTexture)
-            buff.setShaderInput(
-                "blendTex", self._blendBuffer.getColorTexture())
-
-        # self._resolveBuffer.setShaderInput(
-        #     "velocityTex", self._velocityTexture)
-
+            buff.setShaderInput("blendTex", self._blendBuffer.getColorTexture())
 
     def setShaders(self):
         edgeShader = Shader.load(Shader.SLGLSL, 
@@ -131,8 +127,8 @@ class AntialiasingSMAAPass(RenderPass):
         self._resolveBuffer.prepareOffscreenBuffer()
 
     def preRenderUpdate(self):
-        """ Selects the correct buffers """
-
+        """ Selects the correct buffers to write and read to, because they are
+        flipped every frame """
         self._neighborBuffers[self.currentIndex[0]].setActive(False)
         self._resolveBuffer.setShaderInput("lastTex",
                                            self._neighborBuffers[self.currentIndex[0]].getColorTexture())

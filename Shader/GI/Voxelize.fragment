@@ -51,7 +51,7 @@ void main() {
         shadowSum += step(sampledDepth, projCoord.z - 0.0001);
     }
     shadowSum /= voxelShadowSamples;   
-    // shadowSum = 1.0;
+    shadowSum = 1.0;
 
     // Sample and process the color texture
     vec4 colorSample = textureLod(p3d_Texture0, texc, 0);

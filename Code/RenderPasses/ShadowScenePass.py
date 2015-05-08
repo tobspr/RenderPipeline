@@ -8,6 +8,11 @@ from Code.RenderTarget import RenderTarget
 
 class ShadowScenePass(RenderPass):
 
+    """ This pass manages rendering the scene from the perspective of the shadow
+    sources to generate the shadow maps. It also handles creating and managing
+    the different regions of the shadow atlas, aswell as the initial state of
+    all cameras assigned to the regions """
+
     def __init__(self):
         RenderPass.__init__(self)
 
@@ -15,6 +20,8 @@ class ShadowScenePass(RenderPass):
         self.shadowScene = Globals.base.render
 
     def setMaxRegions(self, maxRegions):
+        """ Sets the maximum amount of regions the atlas has. This is usually
+        equal to the maximum number of shadow updates per frame """
         self.maxRegions = maxRegions
 
     def getID(self):
@@ -30,9 +37,12 @@ class ShadowScenePass(RenderPass):
         self.createTagStates()
 
     def setSize(self, size):
+        """ Sets the shadow atlas size """
         self.size = size
 
     def setActiveRegionCount(self, activeCount):
+        """ Sets the number of active regions, disabling all other regions. If the
+        count is less than 1, completely disables the pass """
         if activeCount < 1:
             self.target.setActive(False)
         else:
@@ -44,9 +54,11 @@ class ShadowScenePass(RenderPass):
                     region.setActive(False)
 
     def setRegionDimensions(self, index, l, r, b, t):
+        """ Sets the dimensions of the n-th region to the given dimensions """
         self.renderRegions[index].setDimensions(l, r, b, t)
 
     def getRegionCamera(self, index):
+        """ Returns the camera of the n-th region """
         return self.shadowCameras[index]
 
     def createTagStates(self):
@@ -67,7 +79,6 @@ class ShadowScenePass(RenderPass):
             camera.node().setTagState("Transparent", initialState.getState()) 
 
     def create(self):
-
         # Create the atlas target
         self.target = RenderTarget("ShadowAtlas")
         self.target.setSize(self.size)

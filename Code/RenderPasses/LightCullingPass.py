@@ -9,6 +9,17 @@ from Code.MemoryMonitor import MemoryMonitor
 
 class LightCullingPass(RenderPass):
 
+    """ This pass takes a list of all rendered lights and performs light culling
+    per tile. The result is stored in a buffer which then can be used by the lighting
+    pass to render the lights.
+
+    The buffer maps 1 pixel per tile, so when using a tile size of 32 then there are 
+    50x30 pixels if the window has a size of 1600*960. 
+
+    To cull the lights, the scene depth texture is analyzed and the minimum and
+    maximum depth per tile is extracted. We could use compute shaders for this task,
+    but they are horribly slow. """
+
     def __init__(self):
         RenderPass.__init__(self)
 
@@ -16,9 +27,11 @@ class LightCullingPass(RenderPass):
         return "LightCullingPass"
 
     def setSize(self, sizeX, sizeY):
+        """ Sets the amount of tiles. This is usally screenSize/tileSize """
         self.size = LVecBase2i(sizeX, sizeY)
 
     def setPatchSize(self, patchSizeX, patchSizeY):
+        """ Sets the tile size in pixels """
         self.patchSize = LVecBase2i(patchSizeX, patchSizeY)
 
     def getRequiredInputs(self):
@@ -43,6 +56,9 @@ class LightCullingPass(RenderPass):
         self.target.setShaderInput("destinationBuffer", self.lightPerTileBuffer)
 
     def makePerTileStorage(self):
+        """ Creates the buffer which stores which lights affect which tiles. 
+        The first 16 entries are counters which store how many lights of that
+        type were rendered, and the following entries store the light indices """
         self.tileStride = 0
         self.tileStride += 16 # Counters for the light types
         

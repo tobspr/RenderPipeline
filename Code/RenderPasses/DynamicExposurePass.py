@@ -8,8 +8,8 @@ from Code.RenderTarget import RenderTarget
 class DynamicExposurePass(RenderPass):
 
     """ This pass handles the dynamic exposure feature, it downscales the
-    Scene to get the average brightness and then slowly fades to the intended
-    exposure. """
+    Scene to get the average brightness and then outputs a new exposure which
+    can be used by the lighting pass. """
 
     def __init__(self, pipeline):
         RenderPass.__init__(self)

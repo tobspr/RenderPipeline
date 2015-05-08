@@ -54,8 +54,9 @@ class PipelineGuiManager(DebugObject):
         self.showbase.accept("g", self._toggleGUI)
         self.currentGUIEffect = None
 
-        # self._toggleGUI()
     def _initSettings(self):
+        """ Inits all debugging settings """
+
         currentY = 10
 
         # Render Modes

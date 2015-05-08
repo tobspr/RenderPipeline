@@ -44,7 +44,7 @@ void main() {
     vec3 viewVector = normalize(material.position - cameraPosition);
     vec4 giResult = computeGlobalIllumination(material, viewVector, giData, specularResult, material.normal, cameraPosition);
 
-    giColorResult = vec4(giResult.xyz, 1.0);
+    giColorResult = vec4(giResult);
     giSpecularResult = vec4(specularResult);
     #endif
 

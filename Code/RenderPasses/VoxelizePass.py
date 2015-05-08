@@ -10,6 +10,9 @@ from Code.MemoryMonitor import MemoryMonitor
 
 class VoxelizePass(RenderPass):
 
+    """ This pass manages voxelizing the scene from multiple directions to generate
+    a 3D voxel grid. It handles the camera setup and provides a simple interface. """
+
     def __init__(self):
         RenderPass.__init__(self)
 
@@ -21,16 +24,22 @@ class VoxelizePass(RenderPass):
         }
 
     def setVoxelGridResolution(self, voxelGridResolution):
+        """ Sets the voxel grid resolution, this is the amount of voxels in every
+        direction, so the voxel grid will have voxelGridResolution**3 total voxels. """
         self.voxelGridResolution = voxelGridResolution
 
     def setVoxelGridSize(self, voxelGridSize):
+        """ Sets the size of the voxel grid in world space units. This is the
+        size going from the mid of the voxel grid, so the effective voxel grid
+        will have twice the size specified in voxelGridSize """
         self.voxelGridSize = voxelGridSize
 
     def setActive(self, active):
+        """ Enables and disables this pass """
         self.target.setActive(active)
 
     def initVoxelStorage(self):
-        # Create 3D Texture to store the voxel generation grid
+        """ Creates t he 3D Texture to store the voxel generation grid """
         self.voxelGenTex = Texture("VoxelsTemp")
         self.voxelGenTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
                                         self.voxelGridResolution.z, Texture.TInt, Texture.FR32i)
@@ -43,17 +52,18 @@ class VoxelizePass(RenderPass):
         self.voxelGenTex.setWrapW(Texture.WMClamp)
         self.voxelGenTex.setClearColor(Vec4(0))
 
-
-    def getVoxelTex(self):
-        return self.voxelGenTex
-
-    def clearGrid(self):
-        self.voxelGenTex.clearImage()
-
-    def create(self):
         # Register texture
         MemoryMonitor.addTexture("Voxel Temp Texture", self.voxelGenTex)
 
+    def getVoxelTex(self):
+        """ Returns a handle to the generated voxel texture """
+        return self.voxelGenTex
+
+    def clearGrid(self):
+        """ Clears the voxel grid """
+        self.voxelGenTex.clearImage()
+
+    def create(self):
         # Create voxelize camera
         self.voxelizeCamera = Camera("VoxelizeScene")
         self.voxelizeCameraNode = Globals.render.attachNewNode(self.voxelizeCamera)
@@ -77,6 +87,10 @@ class VoxelizePass(RenderPass):
         self.target.getInternalBuffer().setSort(-399)
 
     def voxelizeSceneFromDirection(self, gridPos, direction="x"):
+        """ Voxelizes the scene from a given direction. This method handles setting 
+        the camera position aswell as the near and far plane. If the pass was disabled,
+        it also enables this pass.  """
+        assert(direction in "x y z".split())
         self.setActive(True)
         if direction == "x":
             self.voxelizeLens.setFilmSize(self.voxelGridSize.y*2, self.voxelGridSize.z*2)
@@ -94,8 +108,7 @@ class VoxelizePass(RenderPass):
             self.voxelizeCameraNode.setPos(gridPos + Vec3(0, 0, self.voxelGridSize.z))
             self.voxelizeCameraNode.lookAt(gridPos)
 
-
-    def _createVoxelizeState(self):
+    def setShaders(self):
         """ Creates the tag state and loades the voxelizer shader """
         voxelizeShader = Shader.load(Shader.SLGLSL, 
             "Shader/GI/Voxelize.vertex",
@@ -112,9 +125,6 @@ class VoxelizePass(RenderPass):
 
         # Apply tag state
         self.voxelizeCamera.setTagState("Default", initialState.getState())
-
-    def setShaders(self):
-        self._createVoxelizeState()
 
     def getOutputs(self):
         return {

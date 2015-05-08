@@ -61,10 +61,6 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.render()
         self.loadingScreen.setStatus("Creating pipeline")
 
-
-        render.setAntialias(AntialiasAttrib.MMultisample)
-
-
         # Create the render pipeline
         self.debug("Creating pipeline")
         self.renderPipeline = RenderingPipeline(self)
@@ -89,9 +85,7 @@ class Main(ShowBase, DebugObject):
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
 
-
-
-         ####### END OF RENDER PIPELINE SETUP #######
+        ####### END OF RENDER PIPELINE SETUP #######
 
         # Select demo scene here:
 
@@ -157,6 +151,8 @@ class Main(ShowBase, DebugObject):
 
             self.lastSliderValue = 0.0
 
+        self.movingLights = []
+
         # Create some lights
         for i in xrange(6):
             pointLight = PointLight()
@@ -168,17 +164,19 @@ class Main(ShowBase, DebugObject):
             # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
             pointLight.setPos(Vec3( xoffs, yoffs, 7))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
-            # pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
             # pointLight.setColor(Vec3(1))
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( 1))
-            pointLight.setColor(Vec3( random(), random(), random()))
+            # pointLight.setColor(Vec3( random(), random(), random()) * 0.2)
 
             pointLight.setShadowMapResolution(512)
-            pointLight.setRadius(15)
+            pointLight.setRadius(25)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
+
+            self.movingLights.append(pointLight)
 
         # Create more lights
         for i in xrange(0):
@@ -206,6 +204,7 @@ class Main(ShowBase, DebugObject):
 
         # Slow mode?
         # self.addTask(self.sleep, "sleep")
+        self.addTask(self.update, "update")
 
         self.loadingScreen.setStatus("Loading scene")
         
@@ -220,6 +219,13 @@ class Main(ShowBase, DebugObject):
     def sleep(self, task):
         import time
         time.sleep(0.1)
+        return task.cont
+
+
+    def update(self, task):
+        for idx, light in enumerate(self.movingLights):
+            light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 8)
+
         return task.cont
 
     def loadScene(self, task=None):
@@ -291,7 +297,7 @@ class Main(ShowBase, DebugObject):
         self.prepareSRGB(self.scene)
 
         # Prepare MAterials
-        self.renderPipeline.prepareMaterials(self.scene)
+        self.renderPipeline.fillTextureStages(render)
 
 
         # Load ground plane if configured
@@ -306,7 +312,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Some artists really don't know about backface culling
-        self.scene.setTwoSided(True)
+        # self.scene.setTwoSided(True)
 
         # Required for tesselation
         # self.convertToPatches(self.scene)

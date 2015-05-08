@@ -152,7 +152,7 @@ void main() {
 
     // Lighting result gets stored in this variables
     vec3 result = vec3(0);
-    vec3 giDiffuseColor = vec3(1);
+    vec3 giDiffuseColor = vec3(0.2);
     vec4 giSpecularColor = vec4(0);
     vec3 ambient = vec3(0);
 
@@ -308,11 +308,11 @@ void main() {
 
 
     } else {
-
-        #if USE_OCCLUSION
             mixedOcclusionFactor = combinedGiAndAo.w;
+
+        #if USE_OCCLUSION || USE_GLOBAL_ILLUMINATION
         #else
-            mixedOcclusionFactor =1.0;
+            mixedOcclusionFactor = 0.0;
         #endif
 
         // mixedOcclusionFactor = 0.5;

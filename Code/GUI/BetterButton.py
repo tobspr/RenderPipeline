@@ -5,9 +5,8 @@ import direct.gui.DirectGuiGlobals as DGG
 from ..Globals import Globals
 from ..DebugObject import DebugObject
 
-
 class BetterButton(DebugObject):
-
+  
     """ This is a wrapper arround DirectButton, providing a simpler interface
     and better visuals """
 

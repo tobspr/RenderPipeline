@@ -80,7 +80,7 @@ class RenderTarget(DebugObject):
         self._haveColorAlpha = True
         self._internalBuffer = None
         self._rename(name)
-        # self.mute()
+        self.mute()
 
     def setCreateOverlayQuad(self, createQuad):
         """ When create quad is set to true, a fullscreen quad will be used to be
@@ -106,13 +106,13 @@ class RenderTarget(DebugObject):
 
     def setLayers(self, layers):
         """ Sets the number of layers. When greater than 1, this enables
-        rendering to a texture array """
+        rendering to a texture array or 3D texture."""
         self._layers = layers
         if layers > 1:
             self._bindMode = GraphicsOutput.RTMBindLayered
 
     def setName(self, name):
-        """ Sets the buffer name to identify in pstats """
+        """ Sets the buffer name to identify it in pstats """
         self._name = name
 
     def setEnableTransparency(self, enabled=True):
@@ -120,8 +120,8 @@ class RenderTarget(DebugObject):
         self._enableTransparency = enabled
 
     def setSize(self, width, height=None):
-        """ Sets the buffer size in pixels. -1 means as big
-        as the current window """
+        """ Sets the buffer size in pixels. -1 means as big as the current 
+        window (default) """
         self._width = width
 
         if height is None:
@@ -139,19 +139,19 @@ class RenderTarget(DebugObject):
         self._writeColor = write
 
     def setColorBits(self, colorBits):
-        """ Sets the required color bits """
+        """ Sets the amount of color bits to request """
         self._colorBits = colorBits
 
     def setAuxBits(self, auxBits):
-        """ Sets the required auxiliary bits """
+        """ Sets the amount  of auxiliary bits to request """
         self._auxBits = auxBits
 
     def setDepthBits(self, bits):
-        """ Sets the required depth bits """
+        """ Sets the amount of depth bits to request """
         self._depthBits = bits
 
     def setShaderInput(self, *args):
-        """ This is a shortcut for setting shader inputs of the buffer """
+        """ This is a shortcut for setting shader inputs on the buffer """
         self.getQuad().setShaderInput(*args)
 
     def setShader(self, shader):
@@ -159,7 +159,7 @@ class RenderTarget(DebugObject):
         self.getQuad().setShader(shader)
 
     def getTarget(self, target):
-        """ Returns the texture object for the given target """
+        """ Returns the texture handle for the given target """
         return self._targets[target]
 
     def getColorTexture(self):
@@ -175,8 +175,8 @@ class RenderTarget(DebugObject):
         return self._internalBuffer
 
     def getInternalRegion(self):
-        """ Returns the internal display region, e.g. if you need to set
-        custom sort values """
+        """ Returns the internal display region, this can be used to set
+        custom sort values."""
         return self._internalBuffer.getDisplayRegion(0)
 
     def getAuxTexture(self, index=0):
@@ -192,28 +192,29 @@ class RenderTarget(DebugObject):
 
     def setSource(self, sourceCam, sourceWin, region=None):
         """ Sets source window and camera. When region is None, it will
-        be set automatically (highly recommended!!) """
+        be set automatically (highly recommended) """
         self._sourceCam = sourceCam
         self._sourceWindow = sourceWin
         self._region = region
 
     def setBindModeLayered(self, layered=True):
         """ When rendering layered, you have to call this. This
-        sets the internal bind mode for the RenderBuffer """
+        sets the internal bind mode for the RenderBuffer. When not using
+        layered bind mode, the rendering might get very slow. """
         if layered:
             self._bindMode = GraphicsOutput.RTMBindLayered
         else:
             self._bindMode = GraphicsOutput.RTMBindOrCopy
 
-    def addRenderTexture(self, ttype):
-        """ Lower level function to add a new target. ttype should be
+    def addRenderTexture(self, targetType):
+        """ Lower level function to add a new target. targetType should be
         a RenderTargetType """
-        if ttype in self._targets:
-            self.error("You cannot add another type of", ttype)
+        if targetType in self._targets:
+            self.error("You cannot add another type of", targetType)
             return False
 
-        self.debug("Adding render texture: ", ttype)
-        self._targets[ttype] = Texture(self._name + "-Tex" + ttype)
+        self.debug("Adding render texture: ", targetType)
+        self._targets[targetType] = Texture(self._name + "-Tex" + targetType)
 
     def addColorTexture(self):
         """ Adds a color target """
@@ -250,15 +251,15 @@ class RenderTarget(DebugObject):
         return target in self._targets
 
     def hasAuxTextures(self):
-        """ Wheter this target has at least 1 aux texture attached """
+        """ Returns wheter this target has at least 1 aux texture attached """
         return self.hasTarget(RenderTargetType.Aux0)
 
     def hasColorTexture(self):
-        """ Wheter this target has a color texture attached """
+        """ Returns wheter this target has a color texture attached """
         return self.hasTarget(RenderTargetType.Color)
 
     def hasDepthTexture(self):
-        """ Wheter this target has a depth texture attached """
+        """ Returns wheter this target has a depth texture attached """
         return self.hasTarget(RenderTargetType.Depth)
 
     def _createBuffer(self):
@@ -395,12 +396,11 @@ class RenderTarget(DebugObject):
             self._active = active
 
     def getQuad(self):
-        """ Returns the quad-node path. You can use this to set shader inputs
-        and so on, although you should use setShaderInput for that """
+        """ Returns the quad-node path. You can use this to set attributes on it """
         return self._quad
 
     def getTexture(self, target):
-        """ Returns the texture assigned to a target. target should be a
+        """ Returns the texture assigned to a target. The target should be a
         RenderTargetType """
         if target not in self._targets:
             self.error(
@@ -410,7 +410,7 @@ class RenderTarget(DebugObject):
         return self.getTarget(target)
 
     def _makeFullscreenQuad(self):
-        """ Create a quad which fills the full screen """
+        """ Create a quad which fills the whole screen """
         cm = CardMaker("BufferQuad")
         cm.setFrameFullscreenQuad()
         quad = NodePath(cm.generate())
@@ -419,14 +419,14 @@ class RenderTarget(DebugObject):
         quad.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
         quad.setColor(Vec4(1, 0.5, 0.5, 1))
 
-        # No culling check
+        # Disable culling
         quad.node().setFinal(True)
         quad.node().setBounds(OmniBoundingVolume())
         quad.setBin("unsorted", 10)
         return quad
 
     def _makeFullscreenCam(self):
-        """ Create a orthographic camera for this buffer """
+        """ Creates an orthographic camera for this buffer """
         bufferCam = Camera("BufferCamera")
         lens = OrthographicLens()
         lens.setFilmSize(2, 2)
@@ -437,7 +437,7 @@ class RenderTarget(DebugObject):
         return bufferCam
 
     def _findRegionForCamera(self):
-        """ Finds the region of the supplied camera """
+        """ Finds the assigned region of the supplied camera """
         for i in range(self._sourceWindow.getNumDisplayRegions()):
             dr = self._sourceWindow.getDisplayRegion(i)
             drcam = dr.getCamera()
@@ -446,7 +446,7 @@ class RenderTarget(DebugObject):
         return None
 
     def _correctClears(self):
-        """ Setups the clear values correctly """
+        """ Setups the clear values correctly for the buffer region """
         region = self._internalBuffer.getDisplayRegion(0)
 
         clears = []
@@ -480,10 +480,6 @@ class RenderTarget(DebugObject):
                 color = Vec4(0)
             self._internalBuffer.setClearColor(color)
 
-    def setClearAux(self, auxNumber, clear=True):
-        """ Adds a color clear """
-        self.getInternalRegion().setClearActive(auxNumber, clear)
-
     def removeQuad(self):
         """ Removes the fullscren quad after creation, this might be required
         when rendering to a scene which is not the main scene """
@@ -498,26 +494,9 @@ class RenderTarget(DebugObject):
         """ Internal method to register the buffer at the buffer viewer """
         BufferViewerGUI.registerBuffer(self._name, self)
 
-    def _unregisterBuffer(self):
-        """ Internal method to unregister the buffer from the buffer viewer """
-        BufferViewerGUI.unregisterBuffer(self._name)
-
-    def isActive(self):
+    def isActive(self): 
         """ Returns wheter this buffer is currently active """
         return self._active
-
-    def updateSize(self):
-        """ Updates the size of this render target. TODO """
-        raise NotImplementedError("Not working yet")
-
-        """
-        wantedX = self._sourceWindow.getXSize(
-        ) if self._width < 1 else self._width
-        wantedY = self._sourceWindow.getYSize(
-        ) if self._height < 1 else self._height
-        self._buffer.setSize(wantedX, wantedY)
-        self._setSizeShaderInput()
-        """
 
     def deleteBuffer(self):
         """ Deletes this buffer, restoring the previous state """
@@ -525,7 +504,7 @@ class RenderTarget(DebugObject):
         MemoryMonitor.unregisterRenderTarget(self._name, self)
         self._engine.removeWindow(self._internalBuffer)
         self._active = False
-        self._unregisterBuffer()
+        BufferViewerGUI.unregisterBuffer(self._name)
 
     def _create(self):
         """ Attempts to create this buffer """
