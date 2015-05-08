@@ -7,6 +7,9 @@ from Code.RenderTarget import RenderTarget
 
 class FinalPostprocessPass(RenderPass):
 
+    """ This pass does the final postprocessing, including color correction and
+    adding a vignette. """
+
     def __init__(self):
         RenderPass.__init__(self)
 
@@ -23,6 +26,8 @@ class FinalPostprocessPass(RenderPass):
         self.target = RenderTarget("Final Pass")
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
+
+        # Make this pass show on the screen
         Globals.base.win.getDisplayRegion(1).setCamera(self.target._quad.getChild(0))
 
     def setShaders(self):

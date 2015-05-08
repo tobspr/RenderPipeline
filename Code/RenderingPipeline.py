@@ -85,33 +85,28 @@ class RenderingPipeline(DebugObject):
         textureOrder = [emptyDiffuseTex, emptyNormalTex, emptySpecularTex, emptyRoughnessTex]
         textureSorts = [0, 10, 20, 30]
 
-        for tex, sort in zip(textureOrder, textureSorts):
-            stage = TextureStage("DefaultStage" + str(sort))
-
-            # When exporting from blender, each stage has a priority of 0.
-            # Using a negative priority will ensure that each node path has a 
-            # valid texture assigned, but if it has a texture exported from blender,
-            # that texture will be used instead of the default texture.
-            stage.setSort(sort)
-            stage.setMode(TextureStage.CMModulate)
-            stage.setColor(Vec4(0, 0, 0, 1))
-
-            # Prepare the texture
+        # Prepare the textures
+        for tex in textureOrder:
             tex.setMinfilter(SamplerState.FTLinear)
             tex.setMagfilter(SamplerState.FTLinear)
             tex.setFormat(Texture.FRgba)
 
-            nodePath.setTexture(stage, tex, -200)
+        # Iterate over all geom nodes
+        for np in nodePath.findAllMatches("**/+GeomNode"):
 
-#         TextureStage Roughness, sort = 30, priority = 0
-#   texcoords = texcoord, mode = modulate, color = 0 0 0 1, scale = 1, 1, saved_re
-# sult = 0, tex_view_offset = 0
+            # Check how many texture stages the nodepath already has
+            stages = np.findAllTextureStages()
+            numStages = len(stages)
 
+            # Fill the texture stages up
+            for i in xrange(numStages, 4):
+                stage = TextureStage("DefaultTexStage" + str(i))
+                stage.setSort(textureSorts[i])
+                stage.setMode(TextureStage.CMModulate)
+                stage.setColor(Vec4(0, 0, 0, 1))
+                np.setTexture(stage, textureOrder[i])
 
-        # for np in nodePath.findAllMatches("**/+GeomNode"):
-            # print np
-        for ts in nodePath.findAllTextureStages():
-            print "\t", ts
+            print np,"has",numStages,"stages, filled up the rest"
 
     def getDefaultTransparencyShader(self):
         """ Returns the default shader to render transparent objects. """

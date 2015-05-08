@@ -5,6 +5,9 @@ from Code.RenderTarget import RenderTarget
 
 class DeferredScenePass(RenderPass):
 
+    """ This is the main scene pass which generates the G-Buffer used for 
+    deferred rendering """
+
     def __init__(self):
         RenderPass.__init__(self)
 

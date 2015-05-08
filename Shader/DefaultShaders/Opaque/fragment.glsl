@@ -47,7 +47,6 @@ void main() {
     
     // Merge the detail normal with the vertex normal
     vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
-    bumpFactor = 0.0;
     vec3 tangent; vec3 binormal;
     reconstructTanBin(tangent, binormal);
     vec3 mixedNormal = mergeNormal(detailNormal, bumpFactor, vOutput.normalWorld, tangent, binormal);
@@ -59,11 +58,6 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
-
-
-    // m.roughness = 0.5;
-    // m.specular = 1.0;
-    // m.metallic = 0.0;
 
     renderMaterial(m);
 }

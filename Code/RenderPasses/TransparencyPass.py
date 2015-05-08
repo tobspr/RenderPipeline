@@ -7,6 +7,10 @@ from Code.RenderTarget import RenderTarget
 
 class TransparencyPass(RenderPass):
 
+    """ This pass reads the per pixel linked lists generated during the deferred
+    scene pass and applies them to the rendered image. To sort the lists a bubble
+    sort algorithm is used """
+
     def __init__(self):
         RenderPass.__init__(self)
 

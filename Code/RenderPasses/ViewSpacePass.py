@@ -7,6 +7,10 @@ from Code.RenderTarget import RenderTarget
 
 class ViewSpacePass(RenderPass):
 
+    """ This pass is created when any pass in the pipeline requires view space
+    normals or positions. It takes the scene depth as input and computes the
+    view space position and normal from that """
+
     def __init__(self):
         RenderPass.__init__(self)
 

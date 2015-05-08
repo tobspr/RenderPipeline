@@ -8,6 +8,9 @@ from Code.RenderTarget import RenderTarget
 
 class CombineGIandAOPass(RenderPass):
 
+    """ This pass combines the global illumination and ambient occlusion textures,
+    to be able to blur them both in one step """
+
     def __init__(self):
         RenderPass.__init__(self)
 

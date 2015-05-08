@@ -9,7 +9,7 @@ from Code.RenderTarget import RenderTarget
 class InitialRenderPass(RenderPass):
 
     """ This pass just fetches some render inputs and makes them available for
-    the default rendering pass """
+    all rendering passes, namely the deferred pass, shadow map pass and  """
 
     def __init__(self):
         RenderPass.__init__(self)

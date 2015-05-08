@@ -7,6 +7,9 @@ from Code.RenderTarget import RenderTarget
 
 class EdgePreservingBlurPass(RenderPass):
 
+    """ This pass performs a edge preserving blur by comparing the scene normals
+    during the blur pass, aswell as as bilateral upscaling the inputs. """
+
     def __init__(self):
         RenderPass.__init__(self)
 

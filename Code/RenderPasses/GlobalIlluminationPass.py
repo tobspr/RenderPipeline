@@ -9,6 +9,10 @@ from Code.MemoryMonitor import MemoryMonitor
 
 class GlobalIlluminationPass(RenderPass):
 
+    """ This pass performs voxel cone tracing over the previously generated
+    voxel grid to compute a diffuse, specular and ambient term which can be
+    used later in the lighting pass """
+
     def __init__(self):
         RenderPass.__init__(self)
 

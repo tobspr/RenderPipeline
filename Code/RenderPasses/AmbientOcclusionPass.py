@@ -7,6 +7,11 @@ from Code.RenderTarget import RenderTarget
 
 class AmbientOcclusionPass(RenderPass):
 
+    """ This pass computes the screen space ambient occlusion if enabled in the
+     settings. As many samples are required for a good looking result, the pass
+     is done at half resolution and then upscaled by the edge preserving blur
+     pass """
+
     def __init__(self):
         RenderPass.__init__(self)
 

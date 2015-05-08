@@ -7,6 +7,12 @@ from Code.RenderTarget import RenderTarget
 
 class AntialiasingFXAAPass(RenderPass):
 
+    """ This render pass takes the scene color texture as input and performs
+    antialiasing. The result is an antialiased scene texture which can be
+    processed further. 
+
+    This pass uses FXAA 3.11 by nvidia."""
+
     def __init__(self):
         RenderPass.__init__(self)
 

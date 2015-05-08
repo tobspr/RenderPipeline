@@ -292,8 +292,7 @@ class RenderTarget(DebugObject):
         # Init buffer object
         self._createBuffer()
 
-        # Prepare fullscreen quad
-        self._quad = self._makeFullscreenQuad()
+
 
         # Prepare initial state
         cs = NodePath("InitialStateDummy")
@@ -312,11 +311,12 @@ class RenderTarget(DebugObject):
 
         self._sourceCam.node().setInitialState(cs.getState())
 
-        # Set new camera
-        bufferCam = self._makeFullscreenCam()
-        bufferCamNode = self._quad.attachNewNode(bufferCam)
-
+    
+        # Prepare fullscreen quad
         if self._createOverlayQuad:
+            self._quad = self._makeFullscreenQuad()
+            bufferCam = self._makeFullscreenCam()
+            bufferCamNode = self._quad.attachNewNode(bufferCam)
             self._region.setCamera(bufferCamNode)
             self._region.setSort(5)
 
@@ -487,8 +487,9 @@ class RenderTarget(DebugObject):
 
     def _setSizeShaderInput(self):
         """ Makes the buffer size available as shader input in the shader """
-        asInput = Vec4(1.0 / self._width, 1.0 / self._height, self._width, self._height)
-        self.setShaderInput("bufferSize", asInput)
+        if self._createOverlayQuad:
+            asInput = Vec4(1.0 / self._width, 1.0 / self._height, self._width, self._height)
+            self.setShaderInput("bufferSize", asInput)
 
     def _registerBuffer(self):
         """ Internal method to register the buffer at the buffer viewer """
