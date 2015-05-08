@@ -98,7 +98,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
 
 
@@ -106,7 +106,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
@@ -154,15 +154,15 @@ class Main(ShowBase, DebugObject):
         self.movingLights = []
 
         # Create some lights
-        for i in xrange(0):
+        for i in xrange(5):
             pointLight = PointLight()
 
-            radius = float(i) / 7.0 * 6.28 + 1.52
+            radius = float(i) / 6.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 12.0
             yoffs = math.cos(radius) * 12.0
 
             # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
-            pointLight.setPos(Vec3( xoffs, yoffs, 7))
+            pointLight.setPos(Vec3( xoffs, yoffs, 12))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
             pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
             # pointLight.setColor(Vec3(1))
@@ -176,14 +176,14 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
 
-            self.movingLights.append(pointLight)
+            # self.movingLights.append(pointLight)
 
         # Create more lights
-        for i in xrange(0):
+        for i in xrange(5):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
-            radius = float(i) / 15.0 * 6.28 + 1.52
+            radius = float(i) / 5.0 * 6.28 + 5.22
             xoffs = math.sin(radius) * 15.0
             yoffs = math.cos(radius) * 15.0
 
@@ -224,7 +224,7 @@ class Main(ShowBase, DebugObject):
 
     def update(self, task):
         for idx, light in enumerate(self.movingLights):
-            light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 8)
+            light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 13)
 
         return task.cont
 

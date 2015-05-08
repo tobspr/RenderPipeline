@@ -7,8 +7,8 @@ class LightLimits:
     and may vary, but for now we hardcode this values. """
 
     maxLights = {
-        "PointLight": 0,
-        "PointLightShadow": 7,
+        "PointLight": 5,
+        "PointLightShadow": 5,
         "DirectionalLight": 1,
         "DirectionalLightShadow": 1,
         "SpotLight": 3,
@@ -17,14 +17,14 @@ class LightLimits:
     }
 
     maxPerTileLights = {
-        "PointLight": 0,
-        "PointLightShadow": 7,
+        "PointLight": 5,
+        "PointLightShadow": 5,
         "DirectionalLight": 1,
         "DirectionalLightShadow": 1,
         "SpotLight": 3,
         "SpotLightShadow": 1,
     }
 
-    maxTotalLights = 8
-    maxShadowMaps = 46
+    maxTotalLights = 13
+    maxShadowMaps = 35
 

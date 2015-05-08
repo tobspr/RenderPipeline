@@ -129,7 +129,7 @@ vec4 edgePreservingBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, s
     #endif
 }
 
-vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex) {
+vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D depthTex) {
 
     #ifdef DEBUG_DISABLE_UPSCALE_BLUR
         return texture(sourceTex, texcoord);
@@ -167,6 +167,7 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
 
         vec3 normals[NUM_BLUR_STEPS];
         vec4 samples[NUM_BLUR_STEPS];
+        float depths[NUM_BLUR_STEPS];
 
         vec2 offset = texcoord;
         vec2 texelSize = 1.0 / vec2(textureSize(sourceTex, 0));
@@ -177,11 +178,14 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
             offset += perStep;
             normals[i] = texture(normalTex, offset).xyz;
             samples[i] = texture(sourceTex, offset);
+            depths[i] = texture(depthTex, offset).x;
         }
 
 
         // pixel normal is the mid normal
         vec3 normal = normals[NUM_BLUR_MID];
+
+        float midDepth = depths[NUM_BLUR_MID];
 
         vec4 sampledResult = vec4(0.0);
         float sampleWeights = 0.0;
@@ -190,6 +194,9 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
         for (int i = 0; i < NUM_BLUR_STEPS; i++) {
             float weight = blurWeights[i];
             float normalInfluenceFactor = step(normalsDiscardThresholdShadows, dot(normals[i], normal)) * weight;
+
+            normalInfluenceFactor *= 1.0 - saturate(abs(midDepth - depths[i]) * 5000.0);
+
             sampledResult += samples[i]*normalInfluenceFactor;
             sampleWeights += normalInfluenceFactor;   
         }

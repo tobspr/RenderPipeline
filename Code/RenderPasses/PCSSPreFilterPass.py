@@ -24,6 +24,7 @@ class PCSSPreFilterPass(RenderPass):
             # Deferred target
             "wsPositionTex": "DeferredScenePass.wsPosition",
             "wsNormalTex": "DeferredScenePass.wsNormal",
+            "depthTex": "DeferredScenePass.depth",
 
             # Lighting
             "lightsPerTileBuffer": "LightCullingPass.lightsPerTile",
