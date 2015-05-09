@@ -21,5 +21,6 @@ Toolkit/Blender Material Library/MaterialLibrary.egg
 .idea/
 /.project
 Samples/03-Jimmy/
+Samples/05-Open-Driving-3D/
 instance.pid
 TODO.txt

@@ -6,77 +6,77 @@
 
 #extension GL_ARB_shader_image_load_store : enable
 
-
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Light.include"
 #pragma include "Includes/Material.include"
 #pragma include "Includes/ShadowSource.include"
-#pragma include "Includes/ColorCorrection.include"
 #pragma include "Includes/PositionReconstruction.include"
-#pragma include "Includes/SphericalHarmonics.include"
 
+
+// Deferred target inpupts
 uniform sampler2D data0;
 uniform sampler2D data1;
 uniform sampler2D data2;
 uniform sampler2D data3;
-
 uniform sampler2D depth;
 
+// Global illumination inputs
 #ifdef USE_GLOBAL_ILLUMINATION
 uniform sampler2D giDiffuseTex;
 uniform sampler2D giReflectionTex;
 #endif
 
+// Combined occlusion and gi from the edge preserving blur
+
 #ifdef USE_OCCLUSION
 uniform sampler2D occlusionTex;
 #endif
 
+
+// Light-IDs per tile
 uniform isamplerBuffer lightsPerTileBuffer;
-
-uniform ivec2 precomputeSize;
-
+uniform ivec2 lightingTileCount;
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
 uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
-in vec2 texcoord;
 
+// Various data
 uniform int frameIndex;
-
 uniform sampler2D noiseTexture;
 uniform vec4 bufferSize;
-
 uniform vec3 cameraPosition;
+
+in vec2 texcoord;
+
 
 // Has to be after the uniforms
 #pragma include "Includes/Lighting.include"
 
 
-
+// Outputs
 layout(location = 0) out vec4 lightingResult;
-
 #ifdef USE_SSLR
 layout(location = 1) out vec4 sslrDataResult;
 #endif
 
 
-uniform sampler2D lastFramePosition;
+// uniform sampler2D lastFramePosition;
 
-#ifdef USE_OCCLUSION
-uniform sampler2D lastFrameOcclusion;
-#endif
+// #ifdef USE_OCCLUSION
+// uniform sampler2D lastFrameOcclusion;
+// #endif
 
+
+// Scattering options
 #ifdef USE_SCATTERING
-
 #pragma include "Scattering/ScatteringOptions.include"
 #pragma include "Scattering/Final.include"
-
 uniform sampler3D inscatterSampler;
 uniform ScatteringOptions scatteringOptions;
 #endif
 
-
-#ifdef USE_ADAPTIVE_BRIGHTNESS
-uniform sampler2D downscaledSceneTex;
-
+// Dynamic exposure
+#ifdef USE_DYNAMIC_EXPOSURE
+uniform sampler2D dynamicExposureTex;
 #endif
 
 
@@ -92,9 +92,7 @@ void main() {
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
-    vec2 correctTexcoord = texcoord;
-   
-
+ 
     int shadowsComputed = 0;
 
     ivec2 tileIndex = ivec2(vec2(screenCoord) / 
@@ -102,7 +100,7 @@ void main() {
 
     ivec2 precomputeCoord = tileIndex * 8;
 
-    int tileBufferOffset = (tileIndex.x + tileIndex.y * precomputeSize.x) * LIGHTING_PER_TILE_STRIDE;
+    int tileBufferOffset = (tileIndex.x + tileIndex.y * lightingTileCount.x) * LIGHTING_PER_TILE_STRIDE;
 
 
     // Extract material data
@@ -115,13 +113,13 @@ void main() {
     // Low roughness values look shitty
     material.roughness = max(0.02, material.roughness);
 
+
     #ifdef DEBUG_RM_LIGHTING
         material.baseColor = vec3(1);
     #endif
     #ifdef DEBUG_RM_PSSM_SPLITS
         material.baseColor = vec3(1);
     #endif
-
 
     #ifdef DEBUG_RM_DIFFUSE_LIGHTING
         material.baseColor = vec3(1);
@@ -156,11 +154,11 @@ void main() {
 
     // Lighting result gets stored in this variables
     vec3 result = vec3(0);
-    vec4 giDiffuseColor = vec4(0.5);
+    vec3 giDiffuseColor = vec3(0.2);
     vec4 giSpecularColor = vec4(0);
     vec3 ambient = vec3(0);
 
-    // Compute depth normal
+    // Compute normal from depth buffer
     vec3 pixelW = vec3(bufferSize.xy, 0);
     vec3 world = getPositionWorld(texcoord);
     vec3 worldX1 = getPositionWorld(texcoord + pixelW.xz);
@@ -172,34 +170,26 @@ void main() {
     float reflectionFactor = saturate( (0.5 - material.roughness) * 5.0 ) ;
 
 
+
     #ifdef USE_GLOBAL_ILLUMINATION
 
     #ifndef DEBUG_DISABLE_GI
 
-
     // Bilateral upsample global illumination
 
     ivec2 giSampleCoord = screenCoord / 2;
+
+
     
     const int giSampleCount = 5;
 
     vec2 giSampleOffsets[giSampleCount] = vec2[](
-        vec2(0,0),
-        vec2(-1,0),
-        vec2(1,0),
-        vec2(0,-1),
-        vec2(0,1)
-
-        // vec2(1, 1),
-        // vec2(-1, 1),
-        // vec2(-1, -1),
-        // vec2(1, -1)
+        vec2(0,0), vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1)
     );
 
-    vec4 giDiffuseResult = vec4(0);
     vec4 giSpecularResult = vec4(0);
+    vec4 giDiffuseResult = vec4(0);
     float giValidSamples = 0.01;
-
     float pixelLZ = getLinearZFromZ(pixelDepth);
 
     for (int i = 0; i < giSampleCount; i++) {
@@ -212,18 +202,13 @@ void main() {
         float lz1 = getLinearZFromZ(depthScreen);
 
         reliability *= 1.0 - saturate(abs(lz1 - pixelLZ) * 50.0);
-
-        giDiffuseResult += texture(giDiffuseTex, coord) * reliability;
         giSpecularResult += texture(giReflectionTex, coord) * reliability;
+        giDiffuseResult += texture(giDiffuseTex, coord) * reliability;
         giValidSamples += reliability;
 
     }
-    giDiffuseColor = giDiffuseResult / giValidSamples;
     giSpecularColor = giSpecularResult / giValidSamples;
-
-
-    // giSpecularColor = vec4(giValidSamples / giSampleCount);
-
+    giDiffuseColor = giDiffuseResult / giValidSamples;
     #endif
     #endif
 
@@ -232,7 +217,7 @@ void main() {
     // waste a gbuffer flag for marking the skybox.
     bool isSkybox = distance(material.position, cameraPosition) > SKYBOX_BEGIN;
     
-    float occlusionTotal = 0.0;
+    float mixedOcclusionFactor = 1.0;
 
     vec3 scatteringReflectedColor = vec3(0,0,0);
     vec3 viewVector = normalize(cameraPosition - material.position);
@@ -260,7 +245,7 @@ void main() {
 
     // Occlusion on skybox leads to artifacts
     if (isSkybox) {
-        occlusionTotal = 0.0;
+        mixedOcclusionFactor = 1.0;
 
         // Push very far away
         posFromDepth *= 1e20;
@@ -277,23 +262,25 @@ void main() {
         viewDir, 
         sunVector,
         inscatterSampler,
+        material.baseColor,
+        isSkybox,
         attenuation, 
         irradianceFactor);
 
-    vec3 reflectVector = reflect(viewVector, material.normal);
-    vec3 startPos = vec3(0);
-    vec3 endPos = reflectVector * 1e17;
-    endPos = vec3(0,0,1e12);
-    vec3 startToEnd = normalize(startPos - endPos);
-    scatteringReflectedColor = scatteringComputeInscatteredLight(
-        scatteringOptions,
-        endPos, 
-        startPos,
-        startToEnd, 
-        sunVector,
-        inscatterSampler,
-        attenuation, 
-        irradianceFactor) * 1.5;
+    // vec3 reflectVector = reflect(viewVector, material.normal);
+    // vec3 startPos = vec3(0);
+    // vec3 endPos = reflectVector * 1e17;
+    // endPos = vec3(0,0,1e12);
+    // vec3 startToEnd = normalize(startPos - endPos);
+    // scatteringReflectedColor = scatteringComputeInscatteredLight(
+    //     scatteringOptions,
+    //     endPos, 
+    //     startPos,
+    //     startToEnd, 
+    //     sunVector,
+    //     inscatterSampler,
+    //     attenuation, 
+    //     irradianceFactor) * 1.5;
 
     #ifdef USE_GLOBAL_ILLUMINATION
     // Complete gi specular
@@ -319,36 +306,40 @@ void main() {
     // We can skip lighting for the skybox
     if (isSkybox) {
 
-        result += 3.0 * material.baseColor;
+        // result += 3.0 * material.baseColor;
 
 
     } else {
 
-
-        // upscale occlusion here
-        #if USE_OCCLUSION
-
-            // Temporal occlusion
-            vec2 velocity = target2data.xy / 255.0;
-            vec2 lastFrameTexcoord = texcoord  + velocity;
-            ivec2 lastFrameCoordInt = ivec2(lastFrameTexcoord * textureSize(lastFramePosition, 0).xy);
-
-            vec3 lastPos = texelFetch(lastFramePosition, lastFrameCoordInt, 0).xyz;
-            float reliability = 1.0 - saturate(distance(lastPos, material.position) * 10.0);
-            occlusionTotal = texture(occlusionTex, texcoord).x;
-
-            float lastOcclusion = texelFetch(lastFrameOcclusion, lastFrameCoordInt, 0).x;
-            occlusionTotal = mix(occlusionTotal, lastOcclusion, 0.5 * saturate(reliability) );
-
+        #if USE_OCCLUSION || USE_GLOBAL_ILLUMINATION
+            mixedOcclusionFactor = texture(occlusionTex, texcoord).w;
         #endif
 
-        #ifdef DEBUG_DISABLE_OCCLUSION
-            occlusionTotal = 0.0;
-        #endif
+        // mixedOcclusionFactor = 0.5;
+
+        // // upscale occlusion here
+        // #if USE_OCCLUSION
+
+        //     // Temporal occlusion
+        //     vec2 velocity = target2data.xy / 255.0;
+        //     vec2 lastFrameTexcoord = texcoord  + velocity;
+        //     ivec2 lastFrameCoordInt = ivec2(lastFrameTexcoord * textureSize(lastFramePosition, 0).xy);
+
+        //     vec3 lastPos = texelFetch(lastFramePosition, lastFrameCoordInt, 0).xyz;
+        //     float reliability = 1.0 - saturate(distance(lastPos, material.position) * 10.0);
+        //     mixedOcclusionFactor = texture(occlusionTex, texcoord).x;
+
+        //     float lastOcclusion = texelFetch(lastFrameOcclusion, lastFrameCoordInt, 0).x;
+        //     mixedOcclusionFactor = mix(mixedOcclusionFactor, lastOcclusion, 0.5 * saturate(reliability) );
+
+        // #endif
+
+        // #ifdef DEBUG_DISABLE_OCCLUSION
+        //     mixedOcclusionFactor = 0.0;
+        // #endif
 
         // Metallic materials don't have much occlusion
         // occlusionResult = mix(occlusionResult, vec4(0.0), saturate(material.metallic-0.3) );
-
 
         #ifndef DEBUG_DISABLE_LIGHTS
 
@@ -429,13 +420,9 @@ void main() {
         #endif
 
         // Ambient / Reflections
+        ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, mixedOcclusionFactor, viewVector, wsNormal);    
+        result += ambient;
 
-        ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, viewVector, wsNormal);    
-        // ambient = vec3(0.2);
-
-        #ifndef DEBUG_RM_PSSM_SPLITS
-            result += ambient;
-        #endif
     }
 
 
@@ -449,16 +436,18 @@ void main() {
     // SRGB
     result.xyz = pow(result.xyz, vec3(1.0 / 2.2) ); 
 
-
-
     float exposure = 1.0;
 
-    #ifdef USE_ADAPTIVE_BRIGHTNESS
-        // Adaptive Brightness
-        exposure = texelFetch(downscaledSceneTex, ivec2(0), 0).x * 10.0;
+    #ifdef USE_DYNAMIC_EXPOSURE
+        // Dynamic Exposure
+        exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
     #endif
 
-    result = 1.0f - exp(-exposure * result);
+    // exposure = 0.5;
+
+    #ifndef DEBUG_VISUALIZATION_ACTIVE
+        result = 1.0f - exp(-exposure * result);
+    #endif
 
     // #define ENABLE_FOG
 
@@ -466,59 +455,52 @@ void main() {
         float fogFactor = saturate( (distance(cameraPosition, material.position)-50.0) / 100.0);
         if (isSkybox) fogFactor = 0.0;
         result = mix(result, vec3(1.0,1.0,1.2), fogFactor);
-        occlusionTotal = mix(occlusionTotal, 0.0, fogFactor * 2.0);
     #endif
 
     #ifdef DEBUG_RM_GI
         result = pow(giDiffuseColor.xyz, vec3(1.0 / 2.2));
         result = 1.0f - exp(-2.0* result);
-        occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_REFLECTIONS
-        result = vec3(giSpecularColor);
-        occlusionTotal = 0.0;        
+        result = vec3(giSpecularColor);   
     #endif
 
     #ifdef DEBUG_RM_BASECOLOR
         result = (material.baseColor);
-    // result.xyz = pow(result.xyz, vec3(1.0 / 2.2) ); 
-        occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_SPECULAR
         result = vec3(material.specular);
-        occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_OCCLUSION
-        result = vec3(1.0);
-        // occlusionTotal = 0.0;
+        #if USE_OCCLUSION
+            result = vec3(mixedOcclusionFactor);
+        #else
+            result = vec3(1);
+        #endif
+        // mixedOcclusionFactor = 0.0;
     #endif
 
     #ifdef DEBUG_RM_METALLIC
         result = vec3(material.metallic);
-        occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_ROUGHNESS
         result = vec3(material.roughness);
-        occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_NORMAL
         result = vec3((material.normal));
         // result = vec3((material.normal.x));
-        occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_AMBIENT
         result = vec3(ambient);
-        occlusionTotal = 0.0;
     #endif
 
     #ifdef DEBUG_RM_PSSM_SPLITS
-        occlusionTotal = 0.0;
     #endif
 
 
@@ -526,12 +508,10 @@ void main() {
         #ifdef USE_SCATTERING
             result = scatteringResult * inscatterFactor;
             result = 1.0f - exp(-1.5 * result);
-            occlusionTotal = 0.0;
         #endif
     #endif
 
     #ifdef DEBUG_RM_SHADOWS
-        occlusionTotal = 0.0;
     #endif  
 
 
@@ -547,5 +527,5 @@ void main() {
     #endif
 
 
-    lightingResult = vec4(result, saturate(occlusionTotal) );
+    lightingResult = vec4(result, 0.0 );
 }

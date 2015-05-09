@@ -6,22 +6,24 @@ from DebugObject import DebugObject
 
 class ShadowAtlas(DebugObject):
 
-    """ This class manages the shadow atlas, used by LightManager.
-    It supports reordering the atlas, for gaining more space,
-    and also helps by fitting all shadow maps most efficiently
-    into the atlas. """
+    """ This class manages the shadow atlas, used by LightManager. It supports 
+    reordering the atlas for gaining more space, and also helps by fitting all
+    shadow maps most efficiently into the atlas. The atlas is split into tiles,
+    and when trying to find a place for a shadowmap, all tiles are checked.
+
+    A shadowmap cannot be smaller than the tile size, and has to be a multiple of
+    it. A smaller tile size means better fitting of the maps into the atlas, but
+    a slower allocation / fitting of new shadowmaps. """
 
     def __init__(self):
         """ Constructs a new shadow atlas """
         DebugObject.__init__(self, "ShadowAtlas")
         self.size = 512
         self.freeTiles = 0
+        self.tileSize  = 32
 
     def create(self):
         """ Creates this atlas, also setting up the atlas texture """
-        # Find a good tile size, it should not be too big but
-        # also not too small
-        self.tileSize  = 32
         self.freeTiles = self.tileSize ** 2
 
         if self.size % self.tileSize is not 0:
@@ -29,6 +31,8 @@ class ShadowAtlas(DebugObject):
                 "Shadow map size has to be a multiple of", self.tileSize)
             return False
 
+        # When there are more than 32*32 tiles, increase tile size until it matches.
+        # Otherwise finding a free tile is way too slow
         while self.size / self.tileSize > 32:
             self.tileSize += 16
 
@@ -51,9 +55,14 @@ class ShadowAtlas(DebugObject):
         return self.size
 
     def getTileSize(self):
-        """ Returns the size of a tile. Shadow maps must not be
-        smaller than this """
+        """ Returns the size of a tile. Shadow maps must not be smaller than this """
         return self.tileSize
+
+    def deallocateTiles(self, tileIndex):
+        for x in xrange(self.tileCount):
+            for y in xrange(self.tileCount):
+                if self.tiles[y][x] == tileIndex:
+                    self.tiles[y][x] = None
 
     def reserveTiles(self, width, height, tileIndex):
         """ Reserves enough tiles to store a tile with the ID tileIndex
@@ -63,13 +72,10 @@ class ShadowAtlas(DebugObject):
         # Convert to tile space
         tileW, tileH = width / self.tileSize, height / self.tileSize
 
-        # self.warn("Finding position for tile of size", tileW, "x", tileH)
-
+        # Iterate over all tiles
         maxIterations = self.tileCount - tileW + 1, self.tileCount - tileH + 1
         tileFound = False
         tilePos = LVecBase2i(-1)
-
-        # Iterate all tiles
         for j in range(0, maxIterations[0]):
             if not tileFound:
                 for i in range(0, maxIterations[1]):
@@ -94,15 +100,15 @@ class ShadowAtlas(DebugObject):
                             tilePos = LVecBase2i(i, j)
                             break
 
+        # When there is a tile found, compute its relative coordinates and reserve it
         if tileFound:
-            # self.debug("Tile #" + str(tileIndex) + " found:",
-                       # tilePos.x * self.tileSize, "/", tilePos.y * self.tileSize)
             self._reserveTile(tilePos.x, tilePos.y, tileW, tileH, tileIndex)
 
             return Vec2(
                 float(tilePos.x) / float(self.tileCount),
                 float(tilePos.y) / float(self.tileCount))
 
+        # Otherwise throw an error
         else:
             self.error("No free tile found! Have to update whole atlas maybe?")
             return None
@@ -113,7 +119,6 @@ class ShadowAtlas(DebugObject):
         for x in range(0, width):
             for y in range(0, height):
                 self.tiles[y + offsetY][x + offsetX] = value
-
         self.freeTiles -= width * height
 
     def getFreeTileCount(self):

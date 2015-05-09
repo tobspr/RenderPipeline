@@ -13,11 +13,6 @@ const float sqrt_of_2 = 1.4142135623;
 
 #define M_PI 3.14159265
 
-#ifndef DEBUG_DISABLE_BLUR_OCCLUSION
-    #define USE_OCCLUSION_BLUR
-#endif
-
-
 // #pragma optionNV (unroll all)
 
 #define USE_BINDLESS_TEXTURES 0
@@ -34,20 +29,12 @@ const float sqrt_of_2 = 1.4142135623;
 #endif
 
 
-// Panda3D does not support custom names for bound textures.
-#define DIFFUSE_TEX p3d_Texture0
-#define NORMAL_TEX p3d_Texture1
-#define SPECULAR_TEX p3d_Texture2
-#define ROUGHNESS_TEX p3d_Texture3
-#define DISPLACEMENT_TEX p3d_Texture4
-
-
 #define SKYBOX_BEGIN 15000.0
 
 // Todo: move this to pipeline config
 #define PCSS_RADIUS_WS 0.02
-#define PCSS_SEARCH_RADIUS 55.0
-#define PCSS_FILTER_RADIUS 8.0
+#define PCSS_SEARCH_RADIUS 5.0
+#define PCSS_FILTER_RADIUS 2.0
 #define USE_PIXEL_BASED_PCSS 1
 
 

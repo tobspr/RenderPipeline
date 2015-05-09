@@ -30,6 +30,7 @@ class PipelineGuiManager(DebugObject):
         self.bufferViewerParent = Globals.base.pixel2d.attachNewNode(
             "Buffer Viewer GUI")
         self.bufferViewer = BufferViewerGUI(self.bufferViewerParent)
+        self.setup()
 
     def update(self):
         pass
@@ -53,8 +54,9 @@ class PipelineGuiManager(DebugObject):
         self.showbase.accept("g", self._toggleGUI)
         self.currentGUIEffect = None
 
-        # self._toggleGUI()
     def _initSettings(self):
+        """ Inits all debugging settings """
+
         currentY = 10
 
         # Render Modes
@@ -79,7 +81,9 @@ class PipelineGuiManager(DebugObject):
         if s.occlusionTechnique != "None":
             register_mode("Occlusion", "rm_Occlusion")
             register_feature("Occlusion", "ft_OCCLUSION")
-            register_feature("Blur Occlusion", "ft_BLUR_OCCLUSION")
+
+
+        register_feature("Upscale Blur", "ft_UPSCALE_BLUR")
 
         register_mode("Lighting", "rm_Lighting")
         register_mode("Raw-Lighting", "rm_Diffuse_Lighting")
@@ -92,9 +96,6 @@ class PipelineGuiManager(DebugObject):
             register_mode("G-Illum", "rm_GI")
             register_mode("GI-Reflections", "rm_Reflections")
             register_feature("G-Illum", "ft_GI")
-
-            register_feature("Update GI", "update_gi")
-
 
         register_mode("Ambient", "rm_Ambient")
         register_feature("Ambient", "ft_AMBIENT")
@@ -219,7 +220,7 @@ class PipelineGuiManager(DebugObject):
 
            
 
-            for name, opts in self.slider_opts.items():
+            for name, opts in self.slider_opts.iteritems():
                 opts["slider"] = BetterSlider(
                     x=20, y=currentY+20, size=230, minValue=opts["min"],maxValue=opts["max"], value=opts["default"], parent=self.debuggerContent, callback=self._optsChanged)
 
@@ -240,49 +241,47 @@ class PipelineGuiManager(DebugObject):
             self._optsChanged()
 
     def _optsChanged(self):
-
+        return
         container = self.pipeline.giPrecomputeBuffer
 
-        for name, opt in self.slider_opts.items():
+        for name, opt in self.slider_opts.iteritems():
             container.setShaderInput("opt_" + name, opt["slider"].getValue())
             opt["value_label"].setText("{:0.4f}".format(opt["slider"].getValue()))
         
 
     def _updateSetting(self, status, name, updateWhenFalse=False):
         # Render Modes
-        if name.startswith("rm_"):
-            modeId = "RM_" + name[3:].upper()
-            self.defines[modeId] = 1 if status else 0
 
-            if name == "rm_Default":
-                self.defines["VISUALIZATION_ACTIVE"] = 0
-            else:
-                self.defines["VISUALIZATION_ACTIVE"] = 1
+        if hasattr(self.pipeline, "renderPassManager"):
 
+            define = lambda key, val: self.pipeline.getRenderPassManager().registerDefine(key, val)
+            undefine = lambda key: self.pipeline.getRenderPassManager().unregisterDefine(key)
 
-        elif name.startswith("ft_"):
-            # instead of enabling per feature, we disable per feature
-            modeId = "DISABLE_" + name[3:].upper()
-            self.defines[modeId] = 0 if status else 1
+            if name.startswith("rm_"):
+                modeId = "DEBUG_RM_" + name[3:].upper()
 
-        elif name == "update_gi":
-            self.pipeline.globalIllum.setUpdateEnabled(status)
+                if status:
+                    define(modeId, 1)
+                else:
+                    undefine(modeId)
 
+                if name == "rm_Default":
+                    undefine("DEBUG_VISUALIZATION_ACTIVE")
+                else:
+                    define("DEBUG_VISUALIZATION_ACTIVE", 1)
 
-        if self.initialized and (status is True or updateWhenFalse):
-            self.pipeline._generateShaderConfiguration()
-            self.pipeline.reloadShaders()
+            elif name.startswith("ft_"):
+                # instead of enabling per feature, we disable per feature
+                modeId = "DEBUG_DISABLE_" + name[3:].upper()
 
-    def getDefines(self):
-        result = []
+                if status:
+                    undefine(modeId)
+                else:
+                    define(modeId, 1)
 
-        for key, val in self.defines.items():
-            # print key, val
-            if val:
-                result.append(("DEBUG_" + key, val))
-
-        # print result
-        return result
+            if self.initialized and (status is True or updateWhenFalse):
+                self.pipeline.reloadShaders()
+                # pass
 
     def _toggleGUI(self):
         self.debug("Toggle overlay")

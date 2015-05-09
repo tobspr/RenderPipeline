@@ -7,72 +7,12 @@ from panda3d.core import PStatCollector
 pstats_SetShaderInputs = PStatCollector("App:ShaderStructArray:SetShaderInputs")
 
 
-
-ShaderStructElementInstances = []
-ShaderStructArrays = []
-
-class ShaderStructElement:
-
-    """ Classes which should be passed to a ShaderStructArray have
-    to be subclasses of this class """
-
-    @classmethod
-    def getExposedAttributes(self):
-        """ Subclasses should implement this method, and return a
-        dictionary of values to expose to the shader. A sample
-        return value might be:
-
-        return {
-            "someVector": "vec3",
-            "someColor": "vec3",
-            "someInt": "int",
-            "someFloat": "float",
-            "someArray": "array<int>(6)",
-        }
-
-        All keys have to be a property of the subclass. Arrays
-        have to be a PTAxxx, e.g. PTAInt for an int array.
-
-        NOTICE: Currently only int arrays of size 6 are supported, until
-        I implement a more general system. """
-
-        raise NotImplementedError()
-
-    def __init__(self):
-        """ Constructor, creates the list of referenced lists """
-        global ShaderStructElementInstances
-        self.structElementID = len(ShaderStructElementInstances)
-        ShaderStructElementInstances.append(self)
-        self.referencedListsIndices = {}
-
-    def onPropertyChanged(self):
-        """ This method should be called by the class instance itself
-        whenever it modifyed an exposed value """
-        global ShaderStructArrays
-
-        for structArrayIndex, elementIndex in self.referencedListsIndices.items():
-            ShaderStructArrays[structArrayIndex].objectChanged(self, elementIndex)
-
-    def assignListIndex(self, structArrayIndex, index):
-        """ A struct array calls this when this object is contained
-        in the array. """
-
-        self.referencedListsIndices[structArrayIndex] = index
-
-    def removeListReference(self, structArrayIndex):
-        """ A struct array calls this when this object got deleted from
-        the list, e.g. by assigning another object at that index """
-
-        if structArrayIndex in self.referencedListsIndices:
-            del self.referencedListsIndices[structArrayIndex]
-
-
-
 class ShaderStructArray(DebugObject):
 
-    """ This class provides the ability to pass python lists
-    as shader inputs, as panda3d lacks this feature (yet). The
-    items are set with the [] operator.
+    AllArrays = []
+
+    """ This class provides the ability to pass python lists as shader inputs, 
+    as panda3d lacks this feature (yet). The items are set with the [] operator.
 
     NOTICE: the the shader inputs for an object are only refreshed
     when using the [] operator. So whenever you change a property
@@ -94,12 +34,11 @@ class ShaderStructArray(DebugObject):
         """ Constructs a new array, containing elements of classType and
         with the size of numElements. classType and numElements can't be
         changed after initialization """
-        global ShaderStructArrays
 
         DebugObject.__init__(self, "ShaderStructArray")
 
-        self.arrayIndex = len(ShaderStructArrays)
-        ShaderStructArrays.append(self)
+        self.arrayIndex = len(self.AllArrays)
+        self.AllArrays.append(self)
 
         self.debug("Init array, size =", numElements)
         self.classType = classType
@@ -110,7 +49,7 @@ class ShaderStructArray(DebugObject):
         self.ptaWrappers = {}
         self.assignedObjects = [None for i in range(numElements)]
 
-        for name, attrType in self.attributes.items():
+        for name, attrType in self.attributes.iteritems():
             arrayType = PTAFloat
             numElements = 1
 
@@ -137,10 +76,88 @@ class ShaderStructArray(DebugObject):
             self.ptaWrappers[name] = [
                 arrayType.emptyArray(numElements) for i in range(self.size)]
 
+        # self._initBindFuncs()
+
+    # def _initBindFuncs(self):
+
+    #     self.bind_funcs = []
+
+    #     for attrName, attrType in self.attributes.iteritems():
+    #         if attrType == "float":
+    #             attrFunc = self._rebindFloat
+    #         elif attrType == "int":
+    #             attrFunc = self._rebindInt
+    #         elif attrType == "mat4":
+    #             attrFunc = self._rebindMat4
+    #         elif attrType == "array<int>(6)":
+    #             attrFunc = self._rebindArray6
+    #         else:
+    #             attrFunc = self._rebindGeneric
+
+    #         self.bind_funcs.append((attrName, attrFunc))
+        
+    #     self.bind_funcs = tuple(self.bind_funcs) 
+
+
+    # def _rebindFloat(self, attrName, index, value):
+    #     self.ptaWrappers[attrName][index][0] = float(getattr(value, attrName))
+
+    # def _rebindInt(self, attrName, index, value):
+    #     self.ptaWrappers[attrName][index][0] = int(getattr(value, attrName))
+
+    # def _rebindGeneric(self, attrName, index, value)
+
+
 
     def getUID(self):
         """ Returns the unique index of this array """
         return self.arrayIndex
+
+    def objectChanged(self, obj, index):
+        """ A list object calls this when it changed. Do not call this
+        directly """
+
+        self._rebindInputs(index, obj)
+
+    def _rebindInputs(self, index, value):
+        """ Rebinds the shader inputs for an index """
+        pstats_SetShaderInputs.start()
+        for attrName, attrType in self.attributes.iteritems():
+            objValue = getattr(value, attrName)
+            # # Cast values to correct types
+            # if attrType == "float":
+            #     objValue = float(objValue)
+            # elif attrType == "int":
+            #     objValue = int(objValue)
+            if attrType == "array<int>(6)":
+                for i in range(6):
+                    self.ptaWrappers[attrName][index][i] = objValue[i]
+            else:
+                # print attrName, objValue
+                self.ptaWrappers[attrName][index][0] = objValue
+            # elif attrType == "mat4":
+            #     self.ptaWrappers[attrName][index][0] = objValue
+            # else:
+        pstats_SetShaderInputs.stop()
+
+    def __setitem__(self, index, value):
+        """ Sets the object at index to value. This directly updates the
+        shader inputs. """
+
+        if index < 0 or index >= self.size:
+            raise Exception("Out of bounds!")
+
+        oldObject = self.assignedObjects[index]
+
+        # Remove old reference
+        if value is not None and oldObject is not None \
+                and oldObject is not value:
+            self.assignedObjects[index].removeListReference(self.arrayIndex)
+
+        # Set new reference
+        value.assignListIndex(self.arrayIndex, index)
+        self.assignedObjects[index] = value
+        self._rebindInputs(index, value)
 
     def bindTo(self, parent, uniformName):
         """ In order for an element to recieve this array as an
@@ -171,65 +188,73 @@ class ShaderStructArray(DebugObject):
 
             uniform Light uniformName[size]
 
-
         You can then access the data as with any other uniform input.
-        """
-
-        
+        """       
         self.parents[parent] = uniformName
 
-        for index in range(min(32, self.size) ):
-            for attrName, attrType in self.attributes.items():
+        for index in range(min(999, self.size) ):
+            for attrName, attrType in self.attributes.iteritems():
                 inputName = uniformName + \
                     "[" + str(index) + "" "]" + "." + attrName
                 inputValue = self.ptaWrappers[attrName][index]
 
                 parent.setShaderInput(inputName, inputValue)
 
-    def objectChanged(self, obj, index):
-        """ A list object calls this when it changed. Do not call this
-        directly """
-
-        self._rebindInputs(index, obj)
-
-    def _rebindInputs(self, index, value):
-        """ Rebinds the shader inputs for an index """
-        
-        pstats_SetShaderInputs.start()
-        for attrName, attrType in self.attributes.items():
-
-            objValue = getattr(value, attrName)
-
-            # Cast values to correct types
-            if attrType == "float":
-                objValue = float(objValue)
-            elif attrType == "int":
-                objValue = int(objValue)
-            if attrType == "array<int>(6)":
-                for i in range(6):
-                    self.ptaWrappers[attrName][index][i] = objValue[i]
-            elif attrType == "mat4":
-                self.ptaWrappers[attrName][index][0] = objValue
-            else:
-                self.ptaWrappers[attrName][index][0] = objValue
-        pstats_SetShaderInputs.stop()
 
 
-    def __setitem__(self, index, value):
-        """ Sets the object at index to value. This directly updates the
-        shader inputs. """
+class ShaderStructElement:
 
-        if index < 0 or index >= self.size:
-            raise Exception("Out of bounds!")
+    """
+    This is the abstract parent class for all classes which can be attached to
+    a ShaderStructArray. Each class should override the getExposedAttributes()
+    method to tell the array which data layout it has.
 
-        oldObject = self.assignedObjects[index]
+    Whenever a property got changed, the class should call onPropertyChanged()
+    to tell the ShaderStructArray that its values should get passed to the
+    shader again.
 
-        # Remove old reference
-        if value is not None and oldObject is not None \
-                and oldObject is not value:
-            self.assignedObjects[index].removeListReference(self.arrayIndex)
+    """
 
-        # Set new reference
-        value.assignListIndex(self.arrayIndex, index)
-        self.assignedObjects[index] = value
-        self._rebindInputs(index, value)
+    @classmethod
+    def getExposedAttributes(self):
+        """ Subclasses should implement this method, and return a
+        dictionary of values to expose to the shader. A sample
+        return value might be:
+
+        return {
+            "someVector": "vec3",
+            "someColor": "vec3",
+            "someInt": "int",
+            "someFloat": "float",
+            "someArray": "array<int>(6)",
+        }
+
+        All keys have to be a property of the subclass. Arrays
+        have to be a PTAxxx, e.g. PTAInt for an int array.
+
+        NOTICE: Currently only int arrays of size 6 are supported, until
+        I implement a more generic system. """
+
+        raise NotImplementedError()
+
+    def __init__(self):
+        """ Constructor, creates the list of referenced lists """
+        self.referencedListsIndices = {}
+
+    def onPropertyChanged(self):
+        """ This method should be called by the class instance itself
+        whenever it modified an exposed value """
+        for structArrayIndex, elementIndex in self.referencedListsIndices.iteritems():
+            ShaderStructArray.AllArrays[structArrayIndex].objectChanged(self, elementIndex)
+
+    def assignListIndex(self, structArrayIndex, index):
+        """ A struct array calls this when this object is contained
+        in the array. """
+        self.referencedListsIndices[structArrayIndex] = index
+
+    def removeListReference(self, structArrayIndex):
+        """ A struct array calls this when this object got deleted from
+        the list, e.g. by assigning another object at that index """
+        if structArrayIndex in self.referencedListsIndices:
+            del self.referencedListsIndices[structArrayIndex]
+

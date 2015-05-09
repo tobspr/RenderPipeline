@@ -17,15 +17,42 @@ from LightType import LightType
 from SettingsManager import SettingsManager
 from MemoryMonitor import MemoryMonitor
 
+from RenderPasses.GlobalIlluminationPass import GlobalIlluminationPass
+from RenderPasses.VoxelizePass import VoxelizePass
+
 import time
 import math
 
 class GlobalIllumination(DebugObject):
 
-    """ This class handles the global illumination processing. It is still
-    experimental, and thus not commented. """
+    """ This class handles the global illumination processing. To process the
+    global illumination, the scene is first rasterized from 3 directions, and 
+    a 3D voxel grid is created. After that, the mipmaps of the voxel grid are
+    generated. The final shader then performs voxel cone tracing to compute 
+    an ambient, diffuse and specular term.
 
-    updateEnabled = False
+    The gi is split over several frames to reduce the computation cost. Currently
+    there are 5 different steps, split over 4 frames:
+
+    Frame 1: 
+        - Rasterize the scene from the x-axis
+
+    Frame 2:
+        - Rasterize the scene from the y-axis
+
+    Frame 3: 
+        - Rasterize the scene from the z-axis
+
+    Frame 4:
+        - Copy the generated temporary voxel grid into a stable voxel grid
+        - Generate the mipmaps for that stable voxel grid using a gaussian filter
+
+    In the final pass the stable voxel grid is sampled. The voxel tracing selects
+    the mipmap depending on the cone size. This enables small scale details as well
+    as blurry reflections and low-frequency ao / diffuse. For performance reasons,
+    the final pass is executed at half window resolution and then bilateral upscaled.
+    """
+
 
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
@@ -36,26 +63,20 @@ class GlobalIllumination(DebugObject):
         self.targetSpace = Globals.base.render
 
         # Store grid size in world space units
-        self.voxelGridSizeWS = Vec3(55)
-
-        # Store grid resolution, should be equal for each dimension
+        # This is the half voxel grid size
+        self.voxelGridSizeWS = Vec3(60)
 
         # When you change this resolution, you have to change it in Shader/GI/ConvertGrid.fragment aswell
         self.voxelGridResolution = LVecBase3i(256)
-        self.voxelBaseResolution = self.voxelGridResolution.x * 4
+
         self.targetLight = None
         self.helperLight = None
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
         self.gridPos = Vec3(0)
 
-    @classmethod
-    def setUpdateEnabled(self, enabled):
-        self.updateEnabled = enabled
-
     def setTargetLight(self, light):
         """ Sets the sun light which is the main source of GI. Only that light
         casts gi. """
-
         if light._getLightType() != LightType.Directional:
             self.error("setTargetLight expects a directional light!")
             return
@@ -63,104 +84,31 @@ class GlobalIllumination(DebugObject):
         self.targetLight = light
         self._createHelperLight()
 
-    def _prepareVoxelScene(self):
-        """ Creates the internal buffer to voxelize the scene on the fly """
-
-        self.voxelizeScene = Globals.render
-
-        # Create voxelize camera
-        self.voxelizeCamera = Camera("VoxelizeScene")
-        self.voxelizeCameraNode = self.voxelizeScene.attachNewNode(self.voxelizeCamera)
-        self.voxelizeLens = OrthographicLens()
-        self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.y*2)
-        self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.x*2)
-        self.voxelizeCamera.setLens(self.voxelizeLens)
-        self.voxelizeCamera.setTagStateKey("VoxelizePassShader")
-        self.targetSpace.setTag("VoxelizePassShader", "Default")
-
-        self.voxelizeCameraNode.setPos(0,0,0)
-        self.voxelizeCameraNode.lookAt(0,0,0)
-
-        # Create voxelize target
-        self.voxelizeTarget = RenderTarget("DynamicVoxelization")
-        self.voxelizeTarget.setSize(self.voxelBaseResolution) 
-        self.voxelizeTarget.setColorWrite(False)
-        # self.voxelizeTarget.addColorTexture()
-        self.voxelizeTarget.setSource(self.voxelizeCameraNode, Globals.base.win)
-        self.voxelizeTarget.prepareSceneRender()
-
-        self.voxelizeTarget.getQuad().node().removeAllChildren()
-        self.voxelizeTarget.getInternalRegion().setSort(-400)
-        self.voxelizeTarget.getInternalBuffer().setSort(-399)
-
-        # Set required inputs to create the voxel grid
-        voxelSize = Vec3(
-                self.voxelGridSizeWS.x * 2.0 / self.voxelGridResolution.x,
-                self.voxelGridSizeWS.y * 2.0 / self.voxelGridResolution.y,
-                self.voxelGridSizeWS.z * 2.0 / self.voxelGridResolution.z
-            )
-
-        self.targetSpace.setShaderInput("dv_gridSize", self.voxelGridSizeWS * 2)
-        self.targetSpace.setShaderInput("dv_voxelSize", voxelSize)
-        self.targetSpace.setShaderInput("dv_gridResolution", self.voxelGridResolution)
-
-
-    def _createVoxelizeState(self):
-        """ Creates the tag state and loades the voxelizer shader """
-        self.voxelizeShader = Shader.load(Shader.SLGLSL, 
-            "Shader/GI/Voxelize.vertex",
-            "Shader/GI/Voxelize.fragment")
-
-        # Create tag state
-        initialState = NodePath("VoxelizerState")
-        initialState.setShader(self.voxelizeShader, 500)
-        initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
-        initialState.setDepthWrite(False)
-        initialState.setDepthTest(False)
-        initialState.setAttrib(DepthTestAttrib.make(DepthTestAttrib.MNone))
-        initialState.setShaderInput("dv_dest_tex", self.voxelGenTex)
-
-        # Apply tag state
-        self.voxelizeCamera.setTagState(
-            "Default", initialState.getState())
-
     def _createHelperLight(self):
         """ Creates the helper light. We can't use the main directional light
-        because it uses PSSM, so we need an extra shadow map """
+        because it uses PSSM, so we need an extra shadow map that covers the
+        whole voxel grid. """
         self.helperLight = GIHelperLight()
         self.helperLight.setPos(Vec3(50,50,100))
         self.helperLight.setShadowMapResolution(512)
         self.helperLight.setFilmSize(math.sqrt( (self.voxelGridSizeWS.x**2) * 2) * 2 )
         self.helperLight.setCastsShadows(True)
         self.pipeline.addLight(self.helperLight)
-
-        self.targetSpace.setShaderInput("dv_uv_size", 
+        self.targetSpace.setShaderInput("giLightUVSize", 
             float(self.helperLight.shadowResolution) / self.pipeline.settings.shadowAtlasSize)
-        self.targetSpace.setShaderInput("dv_atlas", 
-            self.pipeline.getLightManager().getAtlasTex())
-
         self._updateGridPos()
 
     def setup(self):
         """ Setups everything for the GI to work """
 
-        self._prepareVoxelScene()
 
-        # Create 3D Texture to store the voxel generation grid
-        self.voxelGenTex = Texture("VoxelsTemp")
-        self.voxelGenTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
-                                        self.voxelGridResolution.z, Texture.TInt, Texture.FR32i)
-
-        # Set appropriate filter types
-        self.voxelGenTex.setMinfilter(SamplerState.FTNearest)
-        self.voxelGenTex.setMagfilter(Texture.FTNearest)
-        self.voxelGenTex.setWrapU(Texture.WMClamp)
-        self.voxelGenTex.setWrapV(Texture.WMClamp)
-        self.voxelGenTex.setWrapW(Texture.WMClamp)
-        self.voxelGenTex.setClearColor(Vec4(0))
-
-
-        MemoryMonitor.addTexture("Voxel Temp Texture", self.voxelGenTex)
+        # Create the voxelize pass which is used to voxelize the scene from
+        # several directions
+        self.voxelizePass = VoxelizePass()
+        self.voxelizePass.setVoxelGridResolution(self.voxelGridResolution)
+        self.voxelizePass.setVoxelGridSize(self.voxelGridSizeWS)
+        self.voxelizePass.initVoxelStorage()
+        self.pipeline.getRenderPassManager().registerPass(self.voxelizePass)
 
         # Create 3D Texture which is a copy of the voxel generation grid but
         # stable, as the generation grid is updated part by part and that would 
@@ -187,7 +135,7 @@ class GlobalIllumination(DebugObject):
         self.convertBuffer.setColorWrite(False)
         # self.convertBuffer.addColorTexture()
         self.convertBuffer.prepareOffscreenBuffer()
-        self.convertBuffer.setShaderInput("src", self.voxelGenTex)
+        self.convertBuffer.setShaderInput("src", self.voxelizePass.getVoxelTex())
         self.convertBuffer.setShaderInput("dest", self.voxelStableTex)
         self.convertBuffer.setActive(False)
 
@@ -195,11 +143,8 @@ class GlobalIllumination(DebugObject):
         # doing
         self.frameIndex = 0
 
-        # Create the nodes which generate the voxel mipmaps
-        # self.mipmapNodes = self.computeNodes.attachNewNode("GenerateMipmaps")
-        # self.mipmapNodes.setBin("fixed", 15)
-        # self.mipmapNodes.hide()
 
+        # Create the various render targets to generate the mipmaps of the stable voxel grid
         self.mipmapTargets = []
         computeSize = LVecBase3i(self.voxelGridResolution)
         currentMipmap = 0
@@ -218,28 +163,35 @@ class GlobalIllumination(DebugObject):
             currentMipmap += 1
 
 
+        # Create the final gi pass
+        self.finalPass = GlobalIlluminationPass()
+        self.pipeline.getRenderPassManager().registerPass(self.finalPass)
+        self.pipeline.getRenderPassManager().registerDynamicVariable("giVoxelGridData", self.bindTo)
+
     def _createConvertShader(self):
         """ Loads the shader for converting the voxel grid """
-        shader = Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex", "Shader/GI/ConvertGrid.fragment")
+        shader = Shader.load(Shader.SLGLSL, 
+            "Shader/DefaultPostProcess.vertex", "Shader/GI/ConvertGrid.fragment")
         self.convertBuffer.setShader(shader)
 
     def _createGenerateMipmapsShader(self):
         """ Loads the shader for generating the voxel grid mipmaps """
-
         computeSizeZ = self.voxelGridResolution.z
         for child in self.mipmapTargets:
             computeSizeZ /= 2
-            shader = Shader.load(Shader.SLGLSL, "Shader/DefaultPostProcess.vertex", "Shader/GI/GenerateMipmaps/" + str(computeSizeZ) + ".fragment")
+            shader = Shader.load(Shader.SLGLSL, 
+                "Shader/DefaultPostProcess.vertex", 
+                "Shader/GI/GenerateMipmaps/" + str(computeSizeZ) + ".fragment")
             child.setShader(shader)
 
     def reloadShader(self):
         """ Reloads all shaders and updates the voxelization camera state aswell """
         self._createGenerateMipmapsShader()
         self._createConvertShader()
-        self._createVoxelizeState()
 
     def _updateGridPos(self):
-        """ Computes the new center of the grid """
+        """ Computes the new center of the voxel grid. The center pos is also
+        snapped, to avoid flickering. """
 
         # It is important that the grid is snapped, otherwise it will flicker 
         # while the camera moves. When using a snap of 32, everything until
@@ -254,71 +206,46 @@ class GlobalIllumination(DebugObject):
         self.gridPos.y -= self.gridPos.y % stepSizeY
         self.gridPos.z -= self.gridPos.z % stepSizeZ
 
-    def process(self):
+    def update(self):
         """ Processes the gi, this method is called every frame """
-
-        # TODO: Make gi work with all light types
 
         # With no light, there is no gi
         if self.targetLight is None:
-            self.fatal("The GI cannot work without a directional target light! Set one "
+            self.error("The GI cannot work without a directional target light! Set one "
                 "with renderPipeline.setGILightSource(directionalLight) first!")
-
-
-        # When the gi is disabled by the gui manager, don't do anything at all
-        if not self.updateEnabled:
-            self.voxelizeTarget.setActive(False)
             return
-
 
         # Fetch current light direction
         direction = self.targetLight.getDirection()
 
         if self.frameIndex == 0:
             # Step 1: Voxelize scene from the x-Axis
-            self.targetSpace.setShaderInput("dv_uv_start", 
+            self.targetSpace.setShaderInput("giLightUVStart", 
                 self.helperLight.shadowSources[0].getAtlasPos())
 
             for child in self.mipmapTargets:
                 child.setActive(False)
             self.convertBuffer.setActive(False)
 
-
-
-
             # Clear the old data in generation texture 
-            self.voxelGenTex.clearImage()
-            self.voxelizeTarget.setActive(True)
-            self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.y*2, self.voxelGridSizeWS.z*2)
-            self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.x*2)
+            self.voxelizePass.clearGrid()
+            self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "x")
 
-            self.targetSpace.setShaderInput("dv_mvp", Mat4(self.helperLight.shadowSources[0].mvp))
-            self.targetSpace.setShaderInput("dv_gridStart", self.gridPos - self.voxelGridSizeWS)
-            self.targetSpace.setShaderInput("dv_gridEnd", self.gridPos + self.voxelGridSizeWS)
-            self.targetSpace.setShaderInput("dv_lightdir", direction)
-
-            self.voxelizeCameraNode.setPos(self.gridPos - Vec3(self.voxelGridSizeWS.x, 0, 0))
-            self.voxelizeCameraNode.lookAt(self.gridPos)
-            self.targetSpace.setShaderInput("dv_direction", 0)
-
+            # Set required inputs
+            self.targetSpace.setShaderInput("giLightMVP", Mat4(self.helperLight.shadowSources[0].mvp))
+            self.targetSpace.setShaderInput("giVoxelGridStart", self.gridPos - self.voxelGridSizeWS)
+            self.targetSpace.setShaderInput("giVoxelGridEnd", self.gridPos + self.voxelGridSizeWS)
+            self.targetSpace.setShaderInput("giLightDirection", direction)
 
         elif self.frameIndex == 1:
 
             # Step 2: Voxelize scene from the y-Axis
-            self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.z*2)
-            self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.y*2)
-            self.voxelizeCameraNode.setPos(self.gridPos - Vec3(0, self.voxelGridSizeWS.y, 0))
-            self.voxelizeCameraNode.lookAt(self.gridPos)
-            self.targetSpace.setShaderInput("dv_direction", 1)
+            self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "y")
 
         elif self.frameIndex == 2:
 
             # Step 3: Voxelize the scene from the z-Axis 
-            self.voxelizeLens.setFilmSize(self.voxelGridSizeWS.x*2, self.voxelGridSizeWS.y*2)
-            self.voxelizeLens.setNearFar(0.0, self.voxelGridSizeWS.z*2)
-            self.voxelizeCameraNode.setPos(self.gridPos + Vec3(0, 0, self.voxelGridSizeWS.z))
-            self.voxelizeCameraNode.lookAt(self.gridPos)
-            self.targetSpace.setShaderInput("dv_direction", 2)
+            self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "z")
             
             # Update helper light, so that it is at the right position when Step 1
             # starts again 
@@ -328,13 +255,11 @@ class GlobalIllumination(DebugObject):
         elif self.frameIndex == 3:
 
             # Step 4: Extract voxel grid and generate mipmaps
-            self.voxelizeTarget.setActive(False)
+            self.voxelizePass.setActive(False)
             self.convertBuffer.setActive(True)
 
             for child in self.mipmapTargets:
                 child.setActive(True)
-
-
 
             # We are done now, update the inputs
             self.ptaGridPos[0] = Vec3(self.gridPos)

@@ -25,7 +25,7 @@ import copy
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, SamplerState
 from panda3d.core import Texture
-from panda3d.core import Shader, CullFaceAttrib
+from panda3d.core import Shader, CullFaceAttrib, AntialiasAttrib
 
 from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
@@ -61,8 +61,6 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.render()
         self.loadingScreen.setStatus("Creating pipeline")
 
-
-
         # Create the render pipeline
         self.debug("Creating pipeline")
         self.renderPipeline = RenderingPipeline(self)
@@ -86,11 +84,8 @@ class Main(ShowBase, DebugObject):
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
-        self.renderPipeline.enableDefaultEarthScattering()
 
-
-
-         ####### END OF RENDER PIPELINE SETUP #######
+        ####### END OF RENDER PIPELINE SETUP #######
 
         # Select demo scene here:
 
@@ -103,6 +98,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
+        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
 
 
         # This sources are included in the repo
@@ -125,15 +122,13 @@ class Main(ShowBase, DebugObject):
 
         self.transparentObjects = []
 
-
         # Create a sun light
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(512)
-        dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
+        dirLight.setShadowMapResolution(2048)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1.0))
+        dirLight.setColor(Vec3(4))
         # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
@@ -156,46 +151,50 @@ class Main(ShowBase, DebugObject):
 
             self.lastSliderValue = 0.0
 
+        self.movingLights = []
 
+        self.demoLights = []
 
         # Create some lights
-        for i in xrange(3):
+        for i in xrange(5):
             pointLight = PointLight()
 
-            radius = float(i) / 3.0 * 6.28 + 1.52
-            xoffs = math.sin(radius) * 15.0
-            yoffs = math.cos(radius) * 15.0
+            radius = float(i) / 5.0 * 6.28 + 1.52
+            xoffs = math.sin(radius) * 12.0
+            yoffs = math.cos(radius) * 12.0
 
-
-            pointLight.setPos(Vec3(i*4.0 - 7.5, 0.2, 7.0))
-            # pointLight.setPos(Vec3( xoffs, yoffs, 15))
+            # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
+            pointLight.setPos(Vec3( xoffs, yoffs  - 9, 12))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
             pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            # pointLight.setColor(Vec3(1))
             # pointLight.setColor(Vec3( 1))
             # pointLight.setColor(Vec3( 1))
-            # pointLight.setColor(Vec3( random(), random(), random()))
+            # pointLight.setColor(Vec3( random(), random(), random()) * 0.2)
 
             pointLight.setShadowMapResolution(512)
-            pointLight.setRadius(30)
+            pointLight.setRadius(35)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
 
+            self.movingLights.append(pointLight)
+
         # Create more lights
-        for i in xrange(15):
+        for i in xrange(0):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
-            radius = float(i) / 15.0 * 6.28 + 1.52
-            xoffs = math.sin(radius) * 20.0
-            yoffs = math.cos(radius) * 20.0
+            radius = float(i) / 5.0 * 6.28 + 5.22
+            xoffs = math.sin(radius) * 15.0
+            yoffs = math.cos(radius) * 15.0
 
             spotLight.setPos(Vec3( xoffs, yoffs, 12))
 
             # spotLight.setPos(Vec3(-10.0 + i * 2.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
             # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
-            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
+            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.05)
             # spotLight.setColor(Vec3( random(), random(), random()) * 0.1)
 
             # spotLight.setNearFar(1.0, 20.0)
@@ -203,24 +202,52 @@ class Main(ShowBase, DebugObject):
             spotLight.setRadius(30)
             # spotLight.setCastsShadows(True)
             self.renderPipeline.addLight(spotLight)
-            # spotLight.attachDebugNode(render)
+            spotLight.attachDebugNode(render)
 
         # Slow mode?
         # self.addTask(self.sleep, "sleep")
+        self.addTask(self.update, "update")
 
         self.loadingScreen.setStatus("Loading scene")
         
         if True:
             # Show loading screen a bit
-            self.doMethodLater(0.5, self.loadScene, "Load Scene")
+            self.doMethodLater(0.0, self.loadScene, "Load Scene")
         else:
             self.loadScene()
 
-
+        self.accept("z", self.addDemoLight)
+        self.accept("u", self.removeDemoLight)
 
     def sleep(self, task):
         import time
         time.sleep(0.1)
+        return task.cont
+
+    def addDemoLight(self):
+        light = PointLight()
+        light.setPos(Vec3( random() * 15.0 - 7.5, random() * 15.0 - 7.5, 12))
+        light.setColor(Vec3( random(), random(), random()) * 5.0)
+        light.setRadius(15)
+        # light.attachDebugNode(render)
+        # light.setCastsShadows(True)
+        self.renderPipeline.addLight(light)
+
+        self.demoLights.append(light)
+
+    def removeDemoLight(self):
+        if len(self.demoLights) > 0:
+            self.renderPipeline.removeLight(self.demoLights[0])
+            del self.demoLights[0]
+
+
+    def update(self, task):
+        for idx, light in enumerate(self.movingLights):
+            light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 13)
+
+        # self.removeDemoLight()
+        # self.addDemoLight()
+
         return task.cont
 
     def loadScene(self, task=None):
@@ -262,10 +289,16 @@ class Main(ShowBase, DebugObject):
                         copiedObj.setPos(x-5, y-5, 2)
 
         # Find transparent objects
-        matches = self.scene.findAllMatches("**/T__*")
+
+        # self.transpObjRoot = render.attachNewNode("transparentObjects")
+        # matches = self.scene.findAllMatches("**/T__*")
         # for match in matches:
-            # self.transparentObjects.append(match)
-            # match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+        #     # match.reparentTo(self.transpObjRoot)
+        #     self.transparentObjects.append(match)
+        #     self.renderPipeline.prepareTransparentObject(match)
+        #     # match.listTags()
+        #     match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+        #     match.setColorScale(1,0,1, 1)
 
         # Wheter to use a ground floor
         self.usePlane = False
@@ -286,7 +319,7 @@ class Main(ShowBase, DebugObject):
         self.prepareSRGB(self.scene)
 
         # Prepare MAterials
-        self.renderPipeline.prepareMaterials(self.scene)
+        self.renderPipeline.fillTextureStages(render)
 
 
         # Load ground plane if configured
@@ -307,7 +340,6 @@ class Main(ShowBase, DebugObject):
         # self.convertToPatches(self.scene)
 
 
-
         # Hotkey for wireframe
         self.accept("f3", self.toggleSceneWireframe)
 
@@ -320,8 +352,11 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(-5, 5, 12), Vec3(5, 5, 2))
+            Vec3(0, -15, 25), Vec3(0, 0, 3))
         self.controller.setup()
+
+        # self.fpCamera = FirstPersonCamera(self, self.cam, self.render)
+        # self.fpCamera.start()
 
         # Load skybox
         self.skybox = self.renderPipeline.getDefaultSkybox()
@@ -345,10 +380,10 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
+                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 50)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
-            dPos = Vec3(30, (rawValue - 50) * 1.5, 100)
+            dPos = Vec3(30, (rawValue - 50) * 1.5, 30)
 
         if abs(diff) > 0.0001:
             self.dirLight.setPos(dPos)
@@ -411,12 +446,10 @@ class Main(ShowBase, DebugObject):
         self.debug("Reloading Shaders ..")
 
         if self.renderPipeline:
-            self.scene.setShader(
-                self.renderPipeline.getDefaultObjectShader(False))
 
             for obj in self.transparentObjects:
                 obj.setShader(
-                    self.renderPipeline.getDefaultTransparencyShader())
+                    self.renderPipeline.getDefaultTransparencyShader(), 30)
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()

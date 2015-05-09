@@ -3,8 +3,8 @@
 
 class Globals:
 
-    """ This class stores globals, as cython can't handle
-    builtins """
+    """ This class is a singleton to store globals because cython can't handle
+    global variables. """
 
     base = None
     loader = None

@@ -26,6 +26,7 @@ void main() {
     vec4 normalWorld = trans_model_to_world * vec4(p3d_Normal.xyz, 0);
     normal = normalWorld.xyz;
     color.xyz = p3d_Material.diffuse.rgb * p3d_Color.rgb * p3d_ColorScale.rgb;
+    // color.xyz = vec3(1);
     color.w = 1.0;
     texc = p3d_MultiTexCoord0;
 }

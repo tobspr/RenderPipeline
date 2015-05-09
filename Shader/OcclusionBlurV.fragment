@@ -1,0 +1,19 @@
+#version 400
+
+
+#pragma include "Includes/Configuration.include"
+
+const ivec2 blurDirection = ivec2(0,1);
+
+#pragma include "Includes/PostProcessBlur.include"
+
+uniform sampler2D sourceTex;
+uniform sampler2D normalTex;
+
+in vec2 texcoord;
+out vec4 result;
+
+void main() {
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+    result = edgePreservingOcclusionBlur(texcoord, screenCoord, sourceTex, normalTex);
+}

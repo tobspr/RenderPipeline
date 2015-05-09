@@ -1,10 +1,9 @@
 
 from SettingsManager import SettingsManager
 
-
 class PipelineSettingsManager(SettingsManager):
 
-    """ This class is a wrapper arround SettingsManager and
+    """ This class is a subclass of the SettingsManager and
     stores the settings (and their defaults) used by RenderPipeline. """
 
     def __init__(self):
@@ -15,6 +14,7 @@ class PipelineSettingsManager(SettingsManager):
     def _addDefaultSettings(self):
         """ Internal method which populates the settings array with defaults
         and the internal type of settings (like int, bool, ...) """
+
         # [Antialiasing]
         self._addSetting("antialiasingTechnique", str, "SMAA")
         self._addSetting("smaaQuality", str, "Low")
@@ -24,9 +24,6 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("computePatchSizeX", int, 32)
         self._addSetting("computePatchSizeY", int, 32)
         self._addSetting("minMaxDepthAccuracy", int, 3)
-        self._addSetting("useSimpleLighting", bool, False)
-        self._addSetting("anyLightBoundCheck", bool, True)
-        self._addSetting("accurateLightBoundCheck", bool, True)
         self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
         self._addSetting("ambientCubemapSamples", int, 16)
         self._addSetting("colorLookupTable", str, "Default.png")
@@ -36,8 +33,6 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("useAdaptiveBrightness", bool, True)
         self._addSetting("targetExposure", float, 0.8)
         self._addSetting("brightnessAdaptionSpeed", float, 1.0)
-
-
 
         # [Occlusion]
         self._addSetting("occlusionTechnique", str, "None")
@@ -62,7 +57,6 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("useTransparency", bool, True)
         self._addSetting("maxTransparencyLayers", int, 10)
 
-
         # [Motion blur]
         self._addSetting("motionBlurEnabled", bool, True)
         self._addSetting("motionBlurSamples", int, 8)
@@ -74,5 +68,4 @@ class PipelineSettingsManager(SettingsManager):
         # [Debugging]
         self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayDebugStats", bool, True)
-        self._addSetting("enableLightPerTileDebugging", bool, False)
         self._addSetting("pipelineOutputLevel", str, "debug")

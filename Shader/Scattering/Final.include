@@ -22,7 +22,7 @@ vec3 scatteringTransformPosition(ScatteringOptions options, vec3 pos) {
 
 // Compute offset and max path length
 // Explanation: http://s7.directupload.net/images/140803/9xgmx9mt.png
-// (From Sebastian Sperlhofer
+// (From Sebastian Sperlhofer)
 bool scatteringIntersectAtmosphere(
     ScatteringOptions options, 
     vec3 cameraPos, 
@@ -77,11 +77,32 @@ vec3 scatteringComputeInscatteredLight(
     vec3 sunVector,
     sampler3D inscatterSampler,
     // sampler2D transmittanceSampler,
+    vec3 cloudColor,
+    bool isSky,
 
     inout vec3 attenuation, 
     inout float irradianceFactor)
 {
 
+  float distanceLen = distance( normalize(viewDir), normalize(sunVector) );
+  float sunDistance = saturate(1.0 - distanceLen);
+  float sunFactor = pow(sunDistance, 60.0);
+  float sunFactorOuter = pow(sunDistance, 2.0);
+  // sunFactorOuter = 0.0;
+
+  vec3 sunArea = vec3(sunFactor * 120.0 * vec3(1,1,0.8) + sunFactorOuter );
+
+  if (isSky) {
+    sunArea *= 1.0 - saturate(cloudColor * 1.0);
+    sunArea += cloudColor * 5.0;
+  } else {
+    sunArea *= 0.0;
+  }
+
+  // sunArea = saturate(sunArea);
+
+
+  // return sunArea;
   vec3 inscatteredLight = vec3(0.0f, 0.0f, 0.0f);
   float offset;
   float maxPathLength;
@@ -201,6 +222,8 @@ vec3 scatteringComputeInscatteredLight(
 
     }
   }
-  return inscatteredLight ;
+
+
+  return inscatteredLight + sunArea;
 }
 
