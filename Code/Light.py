@@ -1,7 +1,7 @@
 
 
 from panda3d.core import Vec3, NodePath, LineSegs, Vec4, Shader
-from panda3d.core import OmniBoundingVolume
+from panda3d.core import OmniBoundingVolume, Mat4
 from panda3d.core import PTAInt
 from LightType import LightType
 from DebugObject import DebugObject
@@ -36,6 +36,7 @@ class Light(ShaderStructElement):
         self.attached = False
         self.shadowResolution = 512
         self.index = -1
+        self.mvp = Mat4()
 
         # A light can have up to 6 sources
         for i in range(6):
@@ -52,7 +53,8 @@ class Light(ShaderStructElement):
             "posterIndex": "int",
             "lightType": "int",
             "radius": "float",
-            "sourceIndexes": "array<int>(6)"
+            "sourceIndexes": "array<int>(6)",
+            "mvp": "mat4"
         }
 
     def getIndex(self):

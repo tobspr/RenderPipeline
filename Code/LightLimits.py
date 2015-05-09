@@ -25,6 +25,6 @@ class LightLimits:
         "SpotLightShadow": 1,
     }
 
-    maxTotalLights = 16
-    maxShadowMaps = 20
+    maxTotalLights = 10
+    maxShadowMaps = 36
 

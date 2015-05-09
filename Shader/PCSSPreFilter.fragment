@@ -71,6 +71,7 @@ void main() {
     int mapUsed = 0;
     vec3 l = normalize(light.position - wsPosition);
     float shadows = computePSSMShadowsForLight(light, wsPosition, wsNormal, l, 40.0, 60.0, 0.015, mapUsed);
+    // float shadows = 1.0;
     resultColor = vec4(shadows);
 
 }

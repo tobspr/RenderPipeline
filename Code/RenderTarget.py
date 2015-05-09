@@ -131,8 +131,13 @@ class RenderTarget(DebugObject):
 
     def setHalfResolution(self):
         """ Sets the buffer to render at half the size of the window """
-        self._width = self._sourceWindow.getXSize() / 2
-        self._height = self._sourceWindow.getYSize() / 2
+        self._width = (self._sourceWindow.getXSize()+1) / 2
+        self._height = (self._sourceWindow.getYSize()+1) / 2
+
+    def setQuarterResolution(self):
+        """ Sets the buffer to render at half the size of the window """
+        self._width = (self._sourceWindow.getXSize()+3) / 4
+        self._height = (self._sourceWindow.getYSize()+3) / 4
 
     def setColorWrite(self, write):
         """ Sets wheter to write color """

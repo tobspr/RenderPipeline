@@ -27,6 +27,7 @@ from RenderPasses.ViewSpacePass import ViewSpacePass
 from RenderPasses.LightingPass import LightingPass
 from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
+from RenderPasses.VolumetricLightingPass import VolumetricLightingPass
 
 
 class RenderingPipeline(DebugObject):
@@ -192,8 +193,10 @@ class RenderingPipeline(DebugObject):
         self.lightManager.updateLights()
         self.lightManager.updateShadows()
         self.lightManager.processCallbacks()
-        self.guiManager.update()
-        self.transparencyManager.update()
+        if self.guiManager:
+            self.guiManager.update()
+        if self.transparencyManager:
+            self.transparencyManager.update()
         self.antialiasingManager.update()
         self.renderPassManager.preRenderUpdate()
         if self.globalIllum:
@@ -366,6 +369,8 @@ class RenderingPipeline(DebugObject):
 
         if self.settings.displayOnscreenDebugger:
             self.guiManager = PipelineGuiManager(self)
+        else:
+            self.guiManager = None
 
         # Some basic scene settings
         self.showbase.camLens.setNearFar(0.1, 50000)
@@ -396,6 +401,10 @@ class RenderingPipeline(DebugObject):
             self.dynamicExposurePass = DynamicExposurePass(self)
             self.renderPassManager.registerPass(self.dynamicExposurePass)
 
+        # Add volumetric lighting
+        # self.volumetricLightingPass = VolumetricLightingPass()
+        # self.renderPassManager.registerPass(self.volumetricLightingPass)
+
         # Add final pass
         self.finalPostprocessPass = FinalPostprocessPass()
         self.renderPassManager.registerPass(self.finalPostprocessPass)
@@ -404,7 +413,11 @@ class RenderingPipeline(DebugObject):
         self.occlusionManager = AmbientOcclusionManager(self)
         self.lightManager = LightManager(self)
         self.antialiasingManager = AntialiasingManager(self)
-        self.transparencyManager = TransparencyManager(self)
+        
+        if self.settings.useTransparency:
+            self.transparencyManager = TransparencyManager(self)
+        else:
+            self.transparencyManager = None
 
         self._createGlobalIllum()
 
@@ -428,5 +441,5 @@ class RenderingPipeline(DebugObject):
             self.globalIllum.reloadShader()
 
         # Give the gui a hint when the pipeline is done loading
-        if self.settings.displayOnscreenDebugger:
+        if self.guiManager:
             self.guiManager.onPipelineLoaded()

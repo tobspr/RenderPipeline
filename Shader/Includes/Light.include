@@ -8,6 +8,7 @@ struct Light {
     int posterIndex;
     int lightType;
     float radius;
+    mat4 mvp;
     int sourceIndexes[6];
 };
 

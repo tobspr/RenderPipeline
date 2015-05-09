@@ -45,7 +45,12 @@ uniform sampler2D noiseTexture;
 uniform vec4 bufferSize;
 uniform vec3 cameraPosition;
 
+
+uniform sampler2D volumetricLightingTex;
+
 in vec2 texcoord;
+
+
 
 
 // Has to be after the uniforms
@@ -426,6 +431,8 @@ void main() {
     }
 
 
+
+    result *= texture(volumetricLightingTex, texcoord).x;
 
     #ifdef USE_SSLR
         // SSLR Precomputation data

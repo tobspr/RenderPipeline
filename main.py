@@ -122,7 +122,7 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
+        dirLight.setShadowMapResolution(512)
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(2, 2, 1.8))
         # dirLight.setColor(Vec3(0.3))
@@ -164,7 +164,7 @@ class Main(ShowBase, DebugObject):
             pointLight.setRadius(35)
             pointLight.setCastsShadows(True)
             self.renderPipeline.addLight(pointLight)
-            # pointLight.attachDebugNode(render)
+            pointLight.attachDebugNode(render)
             self.movingLights.append(pointLight)
 
         # Create more lights

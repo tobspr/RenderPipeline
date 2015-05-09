@@ -63,6 +63,9 @@ class LightingPass(RenderPass):
             # Prefiltered pccs shadow
             "prefilteredPCSSTex": ["PCSSPreFilterPass.resultTex", "Variables.emptyTextureWhite"],
 
+            # Volumetric lighting
+            "volumetricLightingTex": ["VolumetricLightingPass.resultTex", "Variables.emptyTextureWhite"],
+
             # Scene data
             "noiseTexture": "Variables.noise4x4",
             "cameraPosition": "Variables.cameraPosition",

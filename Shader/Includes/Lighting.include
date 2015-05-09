@@ -297,7 +297,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
     for ( int i = 0; i < SHADOW_NUM_PCSS_SEARCH_SAMPLES; ++i )
     {
         vec2 offset = poissonDisk32[i] * searchRegionRadiusUV;
-        float shadowMapDepth = textureLod(shadowAtlas, centerCoord + offset , 0).x;
+        float shadowMapDepth = texture(shadowAtlas, centerCoord + offset).x;
         float factor = step(shadowMapDepth, biasedDepth);
         numBlockers += factor;
         blockerSum += shadowMapDepth * factor;
@@ -318,11 +318,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
     // PCF Filter
     float sum = 0.0;
 
-    #if USE_PIXEL_BASED_PCSS
-        int pixelOffset = (int(gl_FragCoord.x) * int(gl_FragCoord.y)) % 2;
-    #else
-        int pixelOffset = 0;
-    #endif
+    int pixelOffset = 0;
 
     for ( int i = 0; i < SHADOW_NUM_PCSS_FILTER_SAMPLES; ++i )
     {
@@ -416,7 +412,6 @@ float pcssKernelDynamicSize(Light light, ShadowSource source, vec3 projCoord, fl
 
         // The filter size is the difference of both lightspace pixels
         vec2 projSize = abs(proj1.xy - proj2.xy);
-
         projSize = vec2(max(projSize.x, projSize.y));
 
         return pcssKernel(source, projCoord, baseBias, projSize);

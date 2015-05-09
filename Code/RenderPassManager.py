@@ -23,6 +23,9 @@ class RenderPassManager(DebugObject):
 
     def registerPass(self, renderPass):
         """ Register a new RenderPass """
+        if renderPass.getID() in self.renderPasses:
+            self.error("A same named pass already exists!")
+            return False
         self.renderPasses[renderPass.getID()] = renderPass
 
     def registerStaticVariable(self, name, value):
@@ -277,3 +280,11 @@ class RenderPassManager(DebugObject):
                 self._availableUniforms[outputName] = outputValue
 
         # self.debug(self._sortedNodes)
+    
+        print "Static:"
+        for variable, val in self.staticVariables.iteritems():
+            print variable, type(val)
+
+        print "Dynamic:"
+        for variable, val in self.dynamicVariables.iteritems():
+            print variable, type(val)
