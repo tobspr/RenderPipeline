@@ -42,24 +42,19 @@ class PCSSPreFilterPass(RenderPass):
     def create(self):
         # Not much to be done here, most is done in the shader
         self.target = RenderTarget("PCSSPreFilter")
-        self.target.setHalfResolution()
+        # self.target.setHalfResolution()
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
 
-        self.blurTarget = RenderTarget("PCSSBlur")
-        self.blurTarget.addColorTexture()
-        self.blurTarget.prepareOffscreenBuffer()
+        # self.blurTarget = RenderTarget("PCSSBlur")
+        # self.blurTarget.addColorTexture()
+        # self.blurTarget.prepareOffscreenBuffer()
 
-        self.secondaryBlurTarget = RenderTarget("PCSSBlurSecondary")
-        self.secondaryBlurTarget.addColorTexture()
-        self.secondaryBlurTarget.prepareOffscreenBuffer()
-
-        for target in [self.target, self.blurTarget, self.secondaryBlurTarget]:
+        for target in [self.target]:
             target.getColorTexture().setMinfilter(SamplerState.FTNearest)
             target.getColorTexture().setMagfilter(SamplerState.FTNearest)
 
-        self.blurTarget.setShaderInput("blurSourceTex", self.target.getColorTexture())
-        self.secondaryBlurTarget.setShaderInput("blurSourceTex", self.blurTarget.getColorTexture())
+        # self.blurTarget.setShaderInput("blurSourceTex", self.target.getColorTexture())
 
     def setShaders(self):
         shaderFilter = Shader.load(Shader.SLGLSL, 
@@ -67,25 +62,19 @@ class PCSSPreFilterPass(RenderPass):
             "Shader/PCSSPreFilter.fragment")
         self.target.setShader(shaderFilter)
 
-        shaderBlur = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/PCSSPreFilterBlur.fragment")
-        self.blurTarget.setShader(shaderBlur)
+        # shaderBlur = Shader.load(Shader.SLGLSL, 
+        #     "Shader/DefaultPostProcess.vertex",
+        #     "Shader/PCSSPreFilterBlur.fragment")
+        # self.blurTarget.setShader(shaderBlur)
 
-        shaderSecondaryBlur = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/PCSSPreFilterBlurSecondary.fragment")
-        self.secondaryBlurTarget.setShader(shaderSecondaryBlur)
-
-        return [shaderFilter, shaderBlur, shaderSecondaryBlur]
+        return [shaderFilter]
 
     def setShaderInput(self, name, value, *args):
         self.target.setShaderInput(name, value, *args)
-        self.blurTarget.setShaderInput(name, value, *args)
-        self.secondaryBlurTarget.setShaderInput(name, value, *args)
+        # self.blurTarget.setShaderInput(name, value, *args)
 
     def getOutputs(self):
         return {
-            "PCSSPreFilterPass.resultTex": lambda: self.secondaryBlurTarget.getColorTexture(),
+            "PCSSPreFilterPass.resultTex": lambda: self.target.getColorTexture(),
         }
 

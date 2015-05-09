@@ -82,8 +82,8 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material) {
 
     int map_used = 0;
     // float shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 40.0, 60.0, 0.015, map_used);
-    // float shadowFactor = texture(prefilteredPCSSTex, texcoord).x;
-    float shadowFactor = texelFetch(prefilteredPCSSTex, ivec2(gl_FragCoord.xy) , 0 ).w;
+    float shadowFactor = texture(prefilteredPCSSTex, texcoord).x;
+    // float shadowFactor = texelFetch(prefilteredPCSSTex, ivec2(gl_FragCoord.xy) , 0 ).w;
     float map_use_factor = map_used / 6.0;
 
 
@@ -92,9 +92,7 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material) {
 
     // rawLighting += 0.1;
     // rawLighting *= computeVolumetricLighting(light, material, n, l);
-
-
-
+    
     #ifdef DEBUG_RM_PSSM_SPLITS
         rawLighting = (rawLighting +0.1) * vec3(map_use_factor, 1.0 -map_use_factor, 0);
     #endif

@@ -139,6 +139,7 @@ class LightManager(DebugObject):
         self.prefilterPass = PCSSPreFilterPass()
         self.pipeline.getRenderPassManager().registerPass(self.prefilterPass)
 
+
     def _initLightCulling(self):
         """ Creates the pass which gets a list of lights and computes which
         light affects which tile """
@@ -470,6 +471,7 @@ class LightManager(DebugObject):
             
             # When the light is not ready yet, wait for the next frame
             if delaySpawn:
+                self.debug("Delaying light spawn")
                 continue        
 
 
@@ -586,7 +588,7 @@ class LightManager(DebugObject):
                 # Only add the uid to the output if the max updates
                 # aren't too much. Otherwise we spam the screen
                 if self.maxShadowUpdatesPerFrame <= 8:
-                    lastRenderedSourcesStr += str(update.getUid()) + " "
+                    lastRenderedSourcesStr += str(update.getUID()) + " "
 
             # Remove all updates which got processed from the list
             self.queuedShadowUpdates = self.queuedShadowUpdates[numUpdates:]

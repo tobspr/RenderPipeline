@@ -19,7 +19,7 @@ sys.dont_write_bytecode = True
 
 import math
 import struct
-from random import random
+from random import random, seed
 import copy
 
 from direct.showbase.ShowBase import ShowBase
@@ -69,16 +69,11 @@ class Main(ShowBase, DebugObject):
         # writeDirectory = tempfile.mkdtemp(prefix='Shader-tmp')
         writeDirectory = "Temp/"
 
-        # Clear write directory when app exits
-        # atexit.register(os.remove, writeDirectory)
-
-        # Set a write directory, where the shader cache and so on is stored
-        #self.renderPipeline.getMountManager().setWritePath(writeDirectory)
+        # Set the pipeline base path
         self.renderPipeline.getMountManager().setBasePath(".")
         
         # Load pipeline settings
         self.renderPipeline.loadSettings("Config/pipeline.ini")
-
 
         self.loadingScreen.setStatus("Compiling shaders")
 
@@ -115,12 +110,12 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
 
-
         # Select surrounding scene here
         self.sceneSourceSurround = None
         # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
+        # Store a list of transparent objects
         self.transparentObjects = []
 
         # Create a sun light
@@ -129,7 +124,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setDirection(dPos)
         dirLight.setShadowMapResolution(2048)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(4))
+        dirLight.setColor(Vec3(2, 2, 1.8))
         # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
@@ -163,73 +158,43 @@ class Main(ShowBase, DebugObject):
             radius = float(i) / 5.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 12.0
             yoffs = math.cos(radius) * 12.0
-
-            # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
             pointLight.setPos(Vec3( xoffs, yoffs  - 9, 12))
-            # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
             pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
-            # pointLight.setColor(Vec3(1))
-            # pointLight.setColor(Vec3( 1))
-            # pointLight.setColor(Vec3( 1))
-            # pointLight.setColor(Vec3( random(), random(), random()) * 0.2)
-
             pointLight.setShadowMapResolution(512)
             pointLight.setRadius(35)
             pointLight.setCastsShadows(True)
-            # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
-
+            # pointLight.attachDebugNode(render)
             self.movingLights.append(pointLight)
 
         # Create more lights
-        for i in xrange(15):
-            spotLight = PointLight()
-            # spotLight = SpotLight()
-
+        for i in xrange(0):
+            pointLight = PointLight()
             radius = float(i) / 5.0 * 6.28 + 5.22
             xoffs = math.sin(radius) * 30.0
             yoffs = math.cos(radius) * 30.0
 
-            spotLight.setPos(Vec3( xoffs, yoffs, 12))
+            pointLight.setPos(Vec3( xoffs, yoffs, 12))
+            pointLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
+            pointLight.setRadius(60)
+            self.renderPipeline.addLight(pointLight)
+            # pointLight.attachDebugNode(render)
 
-            # spotLight.setPos(Vec3(-10.0 + i * 2.0, 2.0, 4.0))
-            # spotLight.setColor(Vec3(i,2-i,0))
-            # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
-            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
-            # spotLight.setColor(Vec3( random(), random(), random()) * 0.1)
-
-            # spotLight.setNearFar(1.0, 20.0)
-            # spotLight.setDirection(Vec3(0, 90, 0))
-            spotLight.setRadius(60)
-            # spotLight.setCastsShadows(True)
-            self.renderPipeline.addLight(spotLight)
-            # spotLight.attachDebugNode(render)
-
-        # Slow mode?
-        # self.addTask(self.sleep, "sleep")
+        # Attach update task
         self.addTask(self.update, "update")
 
+        # Update loading screen status
         self.loadingScreen.setStatus("Loading scene")
         
+
+        # Show loading screen a bit
         if True:
-            # Show loading screen a bit
-            self.doMethodLater(0.0, self.loadScene, "Load Scene")
+            self.doMethodLater(0.5, self.loadScene, "Load Scene")
         else:
             self.loadScene()
 
-        self.accept("z", self.addDemoLight)
-        self.accept("u", self.removeDemoLight)
-
-        # for i in xrange(5):
-        #     self.addDemoLight()
-
-
-    def sleep(self, task):
-        import time
-        time.sleep(0.1)
-        return task.cont
-
     def addDemoLight(self):
+        """ Spawns a new light at a random position with a random color """
         light = PointLight()
         light.setPos(Vec3( random() * 50.0 - 25, random() * 50.0 - 25, 12))
         light.setColor(Vec3( random(), random(), random()) * 5.0)
@@ -238,31 +203,35 @@ class Main(ShowBase, DebugObject):
         # light.attachDebugNode(render)
         light.setCastsShadows(True)
         self.renderPipeline.addLight(light)
-
         self.demoLights.append(light)
 
     def removeDemoLight(self):
+        """ Removes the last added demo light if present """
         if len(self.demoLights) > 0:
             self.renderPipeline.removeLight(self.demoLights[0])
             del self.demoLights[0]
 
 
     def update(self, task):
+        """ Main update task """
+
         for idx, light in enumerate(self.movingLights):
             light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 13)
 
+        # Uncomment for party mode :-)
         # self.removeDemoLight()
         # self.addDemoLight()
 
         return task.cont
 
     def loadScene(self, task=None):
-        """ Starts loading the scene """
+        """ Starts loading the scene, this is done async """
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
 
     def onSceneLoaded(self, scene):
+        """ Callback which gets called after the scene got loaded """
 
         self.debug("Successfully loaded scene")
 
@@ -278,24 +247,24 @@ class Main(ShowBase, DebugObject):
             self.sceneSurround.reparentTo(self.scene)
 
 
-        # Performance testing
+        seed(1)
 
-        if True:
+        # Performance testing
+        if False:
             highPolyObj = self.scene.find("**/HighPolyObj")
 
             if highPolyObj is not None and not highPolyObj.isEmpty():
                 highPolyObj.detachNode()
                 self.loadingScreen.setStatus("Preparing Performance Test")
 
-                for x in xrange(10):
-                    for y in xrange(10):
+                for x in xrange(-10, 10):
+                    for y in xrange(-10, 10):
                         copiedObj = copy.deepcopy(highPolyObj)
                         copiedObj.setColorScale(random(), random(), random(), 1)
                         copiedObj.reparentTo(self.scene)
-                        copiedObj.setPos(x-5, y-5, 2)
+                        copiedObj.setPos(x*1.5 + random(), y*1.5 + random(), random()*5.0 + 0.4)
 
-        # Find transparent objects
-
+        # Find transparent objects and mark them as transparent
         # self.transpObjRoot = render.attachNewNode("transparentObjects")
         # matches = self.scene.findAllMatches("**/T__*")
         # for match in matches:
@@ -306,7 +275,7 @@ class Main(ShowBase, DebugObject):
         #     match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
         #     match.setColorScale(1,0,1, 1)
 
-        # Wheter to use a ground floor
+        # Wheter to use a ground plane
         self.usePlane = True
         self.sceneWireframe = False
 
@@ -317,16 +286,15 @@ class Main(ShowBase, DebugObject):
         self.onScenePrepared()
 
     def onScenePrepared(self, cb=None):
+        """ Callback which gets called after the scene got prepared """
 
-        # self.scene = cb
         self.scene.reparentTo(self.render)
 
         # Prepare textures with SRGB format
         self.prepareSRGB(self.scene)
 
-        # Prepare MAterials
+        # Prepare Materials
         # self.renderPipeline.fillTextureStages(render)
-
 
         # Load ground plane if configured
         if self.usePlane:
@@ -345,7 +313,6 @@ class Main(ShowBase, DebugObject):
         # Required for tesselation
         # self.convertToPatches(self.scene)
 
-
         # Hotkey for wireframe
         self.accept("f3", self.toggleSceneWireframe)
 
@@ -355,10 +322,14 @@ class Main(ShowBase, DebugObject):
         # For rdb
         self.accept("f12", self.screenshot)
 
+        # Hotkeys to spawn / remove lights
+        self.accept("z", self.addDemoLight)
+        self.accept("u", self.removeDemoLight)
+
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(0, -10, 15), Vec3(0, 0, 3))
+            Vec3(0, -25, 20), Vec3(0, 0, -5))
         self.controller.setup()
 
         # self.fpCamera = FirstPersonCamera(self, self.cam, self.render)
@@ -455,7 +426,6 @@ class Main(ShowBase, DebugObject):
         self.debug("Reloading Shaders ..")
 
         if self.renderPipeline:
-
             for obj in self.transparentObjects:
                 obj.setShader(
                     self.renderPipeline.getDefaultTransparencyShader(), 30)
@@ -464,7 +434,7 @@ class Main(ShowBase, DebugObject):
                 self.renderPipeline.reloadShaders()
 
     def convertToPatches(self, model):
-        """ Converts a model to patches. This is REQUIRED before beeing able
+        """ Converts a model to patches. This is required before being able
         to use it with tesselation shaders """
         self.debug("Converting model to patches ..")
         for node in model.find_all_matches("**/+GeomNode"):

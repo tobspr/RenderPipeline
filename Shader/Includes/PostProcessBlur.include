@@ -60,7 +60,7 @@ vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2
 
 
 // const float normalsDiscardThresholdShadows = 0.95;
-const float normalsDiscardThresholdShadows = 0.1;
+const float normalsDiscardThresholdShadows = 0.99;
 
 vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D depthTex, bool isSecondary) {
 
@@ -84,8 +84,9 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
 
         // Extract the data of the current pixel we are shading
         vec3 pixelNormal = texelFetch(normalTex, coord, 0).xyz;
-        vec4 pixelBaseColor = texture(sourceTex, texcoord);
-        float pixelDepth = getLinearZFromZ(texelFetch(depthTex, coord, 0).x);
+        // vec4 pixelBaseColor = texture(sourceTex, texcoord);
+        vec4 pixelBaseColor = texelFetch(sourceTex, sourceCoord, 0);
+        float pixelDepth = texelFetch(depthTex, coord, 0).x;
 
         // Weights from (very handy tool):
         // http://dev.theomader.com/gaussian-kernel-calculator/
@@ -95,6 +96,7 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
         float blurWeights[numBlurSteps] = float[numBlurSteps]
         (
             0.06136, 0.24477, 0.38774, 0.24477, 0.06136
+            // 0.27901, 0.44198, 0.27901
         );
 
         // Perform the blur. We could use texel gather here.
@@ -109,14 +111,14 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
 
             // Fetch the sample normal, depth and color
             vec3 sampleNormal = texelFetch(normalTex, sampleCoord, 0).xyz;
-            // float sampleDepth = getLinearZFromZ(texelFetch(depthTex, sampleCoord, 0).x);
+            float sampleDepth = texelFetch(depthTex, sampleCoord, 0).x;
             vec4 sampleColor = texelFetch(sourceTex, sampleCoordHalf, 0);            
 
             // Get the pixel weight and compute its influence
-            float weight = blurWeights[i] * blurWeights[j];
+            float weight = blurWeights[i + sideSteps] * blurWeights[j + sideSteps];
             float pixelImpact = step(normalsDiscardThresholdShadows, dot(pixelNormal, sampleNormal)) * weight;
             // pixelImpact *= 1.0 - saturate( abs(pixelDepth - sampleDepth) * 5.0 );
-            // pixelImpact = 1.0;
+            pixelImpact = 1.0;
             pixelImpact = saturate(pixelImpact);
             sampledResult += sampleColor*pixelImpact;
             sampleWeights += pixelImpact;   
@@ -127,7 +129,7 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
        sampledResult /= max(0.01, sampleWeights);
 
        // Fill the missing weights up - better have a blurred pixel then no pixel
-       sampledResult += pixelBaseColor * saturate(1.0 - sampleWeights);
+       sampledResult += pixelBaseColor * saturate(0.3 - sampleWeights);
 
         return sampledResult;
 

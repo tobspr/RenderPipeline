@@ -61,7 +61,7 @@ class LightingPass(RenderPass):
             "fallbackCubemapMipmaps": "Variables.defaultEnvironmentCubemapMipmaps",
 
             # Prefiltered pccs shadow
-            "prefilteredPCSSTex": "PCSSPreFilterPass.resultTex",
+            "prefilteredPCSSTex": ["PCSSPreFilterPass.resultTex", "Variables.emptyTextureWhite"],
 
             # Scene data
             "noiseTexture": "Variables.noise4x4",

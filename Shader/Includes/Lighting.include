@@ -296,7 +296,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
     // Find blocker
     for ( int i = 0; i < SHADOW_NUM_PCSS_SEARCH_SAMPLES; ++i )
     {
-        vec2 offset = poissonDisk136[i] * searchRegionRadiusUV;
+        vec2 offset = poissonDisk32[i] * searchRegionRadiusUV;
         float shadowMapDepth = textureLod(shadowAtlas, centerCoord + offset , 0).x;
         float factor = step(shadowMapDepth, biasedDepth);
         numBlockers += factor;
@@ -326,7 +326,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     for ( int i = 0; i < SHADOW_NUM_PCSS_FILTER_SAMPLES; ++i )
     {
-        vec2 offset = poissonDisk136[i] * filterRadiusUV;
+        vec2 offset = poissonDisk32[i] * filterRadiusUV;
         
         #if USE_HARDWARE_PCF
             // Notice: Maybe use .x? My gtx 670 does not like that though
