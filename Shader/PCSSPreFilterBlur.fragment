@@ -7,13 +7,16 @@ const ivec2 blurDirection = ivec2(0,1);
 
 #pragma include "Includes/PostProcessBlur.include"
 
-uniform sampler2D sourceTex;
-uniform sampler2D normalTex;
+uniform sampler2D blurSourceTex;
+uniform sampler2D wsNormalTex;
+uniform sampler2D depthTex;
 
 in vec2 texcoord;
 out vec4 result;
 
 void main() {
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
-    result = edgePreservingBlur(texcoord, screenCoord, sourceTex, normalTex);
+    result = edgePreservingShadowBlur(texcoord, screenCoord, blurSourceTex, wsNormalTex, depthTex);
+
+    // result = texture(blurSourceTex, texcoord);
 }

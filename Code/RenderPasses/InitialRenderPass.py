@@ -32,6 +32,7 @@ class InitialRenderPass(RenderPass):
             "Shader/DefaultShaders/Opaque/vertex.glsl",
             "Shader/DefaultShaders/Opaque/fragment.glsl")
         self.scene.setShader(shader, 20)
+        return [shader]
 
     def create(self):
         pass

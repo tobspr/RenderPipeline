@@ -106,10 +106,10 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
-        # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
+        self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
@@ -126,9 +126,9 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(1024)
+        dirLight.setShadowMapResolution(2048)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1))
+        dirLight.setColor(Vec3(4))
         # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
@@ -153,16 +153,18 @@ class Main(ShowBase, DebugObject):
 
         self.movingLights = []
 
+        self.demoLights = []
+
         # Create some lights
         for i in xrange(5):
             pointLight = PointLight()
 
-            radius = float(i) / 6.0 * 6.28 + 1.52
+            radius = float(i) / 5.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 12.0
             yoffs = math.cos(radius) * 12.0
 
             # pointLight.setPos(Vec3(i*4.0 - 7.5, 1.5 + i, 12.0))
-            pointLight.setPos(Vec3( xoffs, yoffs, 12))
+            pointLight.setPos(Vec3( xoffs, yoffs  - 9, 12))
             # pointLight.setColor(Vec3( abs(math.sin(radius) * 2.0), abs(math.cos(radius) * 2.0),1.0))
             pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
             # pointLight.setColor(Vec3(1))
@@ -171,7 +173,7 @@ class Main(ShowBase, DebugObject):
             # pointLight.setColor(Vec3( random(), random(), random()) * 0.2)
 
             pointLight.setShadowMapResolution(512)
-            pointLight.setRadius(25)
+            pointLight.setRadius(35)
             pointLight.setCastsShadows(True)
             # pointLight.attachDebugNode(render)
             self.renderPipeline.addLight(pointLight)
@@ -179,7 +181,7 @@ class Main(ShowBase, DebugObject):
             self.movingLights.append(pointLight)
 
         # Create more lights
-        for i in xrange(5):
+        for i in xrange(0):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
@@ -200,7 +202,7 @@ class Main(ShowBase, DebugObject):
             spotLight.setRadius(30)
             # spotLight.setCastsShadows(True)
             self.renderPipeline.addLight(spotLight)
-            # spotLight.attachDebugNode(render)
+            spotLight.attachDebugNode(render)
 
         # Slow mode?
         # self.addTask(self.sleep, "sleep")
@@ -214,17 +216,37 @@ class Main(ShowBase, DebugObject):
         else:
             self.loadScene()
 
-
+        self.accept("z", self.addDemoLight)
+        self.accept("u", self.removeDemoLight)
 
     def sleep(self, task):
         import time
         time.sleep(0.1)
         return task.cont
 
+    def addDemoLight(self):
+        light = PointLight()
+        light.setPos(Vec3( random() * 15.0 - 7.5, random() * 15.0 - 7.5, 12))
+        light.setColor(Vec3( random(), random(), random()) * 5.0)
+        light.setRadius(15)
+        # light.attachDebugNode(render)
+        # light.setCastsShadows(True)
+        self.renderPipeline.addLight(light)
+
+        self.demoLights.append(light)
+
+    def removeDemoLight(self):
+        if len(self.demoLights) > 0:
+            self.renderPipeline.removeLight(self.demoLights[0])
+            del self.demoLights[0]
+
 
     def update(self, task):
         for idx, light in enumerate(self.movingLights):
             light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 13)
+
+        # self.removeDemoLight()
+        # self.addDemoLight()
 
         return task.cont
 
@@ -252,7 +274,7 @@ class Main(ShowBase, DebugObject):
 
         # Performance testing
 
-        if False:
+        if True:
             highPolyObj = self.scene.find("**/HighPolyObj")
 
             if highPolyObj is not None and not highPolyObj.isEmpty():

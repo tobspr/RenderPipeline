@@ -64,11 +64,8 @@ class LightManager(DebugObject):
         """ Creates a new LightManager. It expects a RenderPipeline as parameter. """
         DebugObject.__init__(self, "LightManager")
 
-        self.maxTotalLights = 100
-        self.maxTotalShadowSources = 100
-
-        self.lightSlots = [None] * self.maxTotalLights
-        self.shadowSourceSlots = [None] * self.maxTotalShadowSources
+        self.lightSlots = [None] * LightLimits.maxTotalLights
+        self.shadowSourceSlots = [None] * LightLimits.maxShadowMaps
 
         self.queuedShadowUpdates = []
         self.renderedLights = {}
@@ -274,9 +271,12 @@ class LightManager(DebugObject):
         self.allShadowsArray.bindTo(shaderNode, "shadowSources")
 
     def _queueShadowUpdate(self, sourceIndex):
-        """ Internal method to add a shadowSource to the list of queued updates """
+        """ Internal method to add a shadowSource to the list of queued updates. Returns
+        the position of the source in queue """
         if sourceIndex not in self.queuedShadowUpdates:
             self.queuedShadowUpdates.append(sourceIndex)
+            return len(self.queuedShadowUpdates) - 1
+        return self.queuedShadowUpdates.index(sourceIndex)
 
     def _allocateLightSlot(self, light):
         """ Tries to find a free light slot. Returns False if no slot is free, if 
@@ -354,9 +354,26 @@ class LightManager(DebugObject):
         light.queueUpdate()
         light.queueShadowUpdate()
 
-    def removeLight(self):
-        """ Removes a light. TODO """
-        raise NotImplementedError()
+    def removeLight(self, light):
+        """ Removes a light from the rendered lights """
+
+        index = light.getIndex()
+        if light.hasShadows():
+            sources = light.getShadowSources()
+
+            for source in sources:
+                self.shadowSourceSlots[source.getSourceIndex()] = None
+                self.shadowAtlas.deallocateTiles(source.getUID())
+
+                # remove the source from the current updates
+                if source.getSourceIndex() in self.queuedShadowUpdates:
+                    self.queuedShadowUpdates.remove(source.getSourceIndex())
+                source.cleanup()
+
+        light.cleanup()
+        del light
+
+        self.lightSlots[index] = None
 
     def setCullBounds(self, bounds):
         """ Sets the current camera bounds used for light culling """
@@ -434,13 +451,27 @@ class LightManager(DebugObject):
                 continue
             pstats_CullLights.stop()
 
+            delaySpawn = False
+
             # Queue shadow updates if necessary
             pstats_QueueShadowUpdate.start()
             if light.hasShadows() and light.needsShadowUpdate():
                 neededUpdates = light.performShadowUpdate()
                 for update in neededUpdates:
-                    self._queueShadowUpdate(update.getSourceIndex())
+                    updatePosition = self._queueShadowUpdate(update.getSourceIndex())
+                    willUpdateNextFrame = updatePosition < self.maxShadowUpdatesPerFrame
+
+                    # If the source did not get rendered so far, and wont get rendered
+                    # in the next frame, delay the rendering of this light
+                    if not willUpdateNextFrame and not update.hasAtlasPos():
+                        delaySpawn = True
+
             pstats_QueueShadowUpdate.stop()
+            
+            # When the light is not ready yet, wait for the next frame
+            if delaySpawn:
+                continue        
+
 
             # Add light to the correct list now
             pstats_AppendRenderedLight.start()

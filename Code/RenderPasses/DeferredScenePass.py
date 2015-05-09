@@ -25,7 +25,7 @@ class DeferredScenePass(RenderPass):
         self.target.addAuxTextures(3)
         self.target.setAuxBits(16)
         self.target.setColorBits(32)
-        self.target.setDepthBits(32)
+        self.target.setDepthBits(16)
         self.target.setCreateOverlayQuad(False)
         self.target.prepareSceneRender()
         self.target.setClearColor(True)
@@ -47,6 +47,4 @@ class DeferredScenePass(RenderPass):
         }
 
     def setShaderInput(self, name, value):
-        print "deferred: set input",name,"=",value
-
-        
+        pass

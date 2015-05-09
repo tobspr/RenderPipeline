@@ -13,8 +13,8 @@ out vec4 occlusionResult;
 void main() {
     #ifndef DEBUG_DISABLE_OCCLUSION
     float result = 1.0 - computeOcclusion(texcoord, ivec2(gl_FragCoord.xy), 1.0);
-    occlusionResult = vec4(1, 1, 1, result);
-    // occlusionResult = vec4(result);
+    // occlusionResult = vec4(1, 1, 1, result);
+    occlusionResult = vec4(result);
     #else
     occlusionResult = vec4(1);
     #endif

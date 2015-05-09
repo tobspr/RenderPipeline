@@ -58,6 +58,12 @@ class ShadowAtlas(DebugObject):
         """ Returns the size of a tile. Shadow maps must not be smaller than this """
         return self.tileSize
 
+    def deallocateTiles(self, tileIndex):
+        for x in xrange(self.tileCount):
+            for y in xrange(self.tileCount):
+                if self.tiles[y][x] == tileIndex:
+                    self.tiles[y][x] = None
+
     def reserveTiles(self, width, height, tileIndex):
         """ Reserves enough tiles to store a tile with the ID tileIndex
         and the dimensions width*height in the atlas and returns the

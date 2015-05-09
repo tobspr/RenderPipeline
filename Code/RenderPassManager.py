@@ -1,8 +1,11 @@
 import time
 
-from DebugObject import DebugObject
-
+from panda3d.core import Shader
 from direct.stdpy.file import open
+
+from DebugObject import DebugObject
+from Globals import Globals
+
 
 class RenderPassManager(DebugObject):
 
@@ -144,8 +147,21 @@ class RenderPassManager(DebugObject):
     def setShaders(self):
         """ Sets the shaders on all passes, by effectively calling setShaders on
         each registered RenderPass """
+
+        generatedShaders = []
+
+        # Fetch all shader objects
         for renderPass in self._sortedNodes:
-            renderPass.setShaders()
+            generatedShaders += renderPass.setShaders()
+
+        Globals.base.graphicsEngine.renderFrame()
+        Globals.base.graphicsEngine.renderFrame()
+        Globals.base.graphicsEngine.renderFrame()
+
+        # Check if they compiled properly
+        # for shader in generatedShaders:
+            # print shader.getErrorFlag(), " " *10 , shader.getFilename(Shader.STFragment)
+        self.debug("Regenerated", len(generatedShaders),"Shaders!")
 
     def preRenderUpdate(self):
         """ Calls the preRenderUpdate on each assigned pass """
@@ -166,7 +182,7 @@ class RenderPassManager(DebugObject):
         for key, value in sorted(self.defines.iteritems()):
             output += "#define " + key + " " + str(value) + "\n"
 
-        # output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"
+        output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"
 
         # Try to write the file
         try:

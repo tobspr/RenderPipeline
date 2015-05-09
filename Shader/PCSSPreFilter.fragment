@@ -60,7 +60,7 @@ void main() {
     Light light = lights[lightId];
  
 
-    #if 0
+    #if 1
         vec3 wsPosition = texelFetch(wsPositionTex, screenCoord, 0).xyz;
         vec3 wsNormal = texelFetch(wsNormalTex, screenCoord, 0).xyz;
     #else
@@ -70,15 +70,7 @@ void main() {
 
     int mapUsed = 0;
     vec3 l = normalize(light.position - wsPosition);
-
-
-
     float shadows = computePSSMShadowsForLight(light, wsPosition, wsNormal, l, 40.0, 60.0, 0.015, mapUsed);
-
-
-
-// float computePSSMShadowsForLight(Light light, vec3 position, vec3 n, vec3 l, 
-//     float slopeScaledBias, float normalScaledBias, float baseBias, out int map_used) {
     resultColor = vec4(shadows);
-   
+
 }

@@ -42,6 +42,8 @@ class TransparencyPass(RenderPass):
             "Shader/TransparencyPass.fragment")
         self.target.setShader(shader)
 
+        return [shader]
+
     def create(self):
         self.target = RenderTarget("TransparencyPass")
         self.target.addColorTexture()

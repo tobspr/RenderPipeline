@@ -39,6 +39,8 @@ class ViewSpacePass(RenderPass):
             "Shader/ViewSpacePass.fragment")
         self.target.setShader(shader)
 
+        return [shader]
+
     def getOutputs(self):
         return {
             "ViewSpacePass.normals": lambda: self.target.getColorTexture(),

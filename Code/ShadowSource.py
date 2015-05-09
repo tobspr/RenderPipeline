@@ -61,6 +61,10 @@ class ShadowSource(DebugObject, ShaderStructElement):
             Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(),
                             CSZupRight))
             
+    def cleanup(self):
+        """ Cleans up the shadow source """
+        self.cameraNode.removeNode()
+
     def setFilmSize(self, size_x, size_y):
         """ Sets the film size of the source, this is equivalent to setFilmSize
         on a Lens. """

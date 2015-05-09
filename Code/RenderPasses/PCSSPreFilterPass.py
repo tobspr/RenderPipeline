@@ -46,41 +46,35 @@ class PCSSPreFilterPass(RenderPass):
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
 
+        self.blurTarget = RenderTarget("PCSSBlur")
+        self.blurTarget.addColorTexture()
+        self.blurTarget.prepareOffscreenBuffer()
 
-        self.blurTargetV = RenderTarget("PCSSBlurV")
-        self.blurTargetV.addColorTexture()
-        self.blurTargetV.prepareOffscreenBuffer()
+        for target in [self.target, self.blurTarget]:
+            target.getColorTexture().setMinfilter(SamplerState.FTNearest)
+            target.getColorTexture().setMagfilter(SamplerState.FTNearest)
 
-        self.blurTargetH = RenderTarget("PCSSBlurH")
-        self.blurTargetH.addColorTexture()
-        self.blurTargetH.prepareOffscreenBuffer()
-
-        self.blurTargetV.setShaderInput("blurSourceTex", self.target.getColorTexture())
-        self.blurTargetH.setShaderInput("blurSourceTex", self.blurTargetV.getColorTexture())
+        self.blurTarget.setShaderInput("blurSourceTex", self.target.getColorTexture())
 
     def setShaders(self):
-        shader = Shader.load(Shader.SLGLSL, 
+        shaderFilter = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
             "Shader/PCSSPreFilter.fragment")
-        self.target.setShader(shader)
+        self.target.setShader(shaderFilter)
 
-        shader = Shader.load(Shader.SLGLSL, 
+        shaderBlur = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/PCSSPreFilterBlurV.fragment")
-        self.blurTargetV.setShader(shader)
+            "Shader/PCSSPreFilterBlur.fragment")
+        self.blurTarget.setShader(shaderBlur)
 
-        shader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/PCSSPreFilterBlurH.fragment")
-        self.blurTargetH.setShader(shader)
+        return [shaderFilter, shaderBlur]
 
     def setShaderInput(self, name, value, *args):
         self.target.setShaderInput(name, value, *args)
-        self.blurTargetV.setShaderInput(name, value, *args)
-        self.blurTargetH.setShaderInput(name, value, *args)
+        self.blurTarget.setShaderInput(name, value, *args)
 
     def getOutputs(self):
         return {
-            "PCSSPreFilterPass.resultTex": lambda: self.blurTargetH.getColorTexture(),
+            "PCSSPreFilterPass.resultTex": lambda: self.blurTarget.getColorTexture(),
         }
 

@@ -17,15 +17,15 @@ vfs-case-sensitive #f
 # uniquify-matrix #f
 
 # Garbarge collection
-garbage-collect-states #f
+garbage-collect-states #t
 # garbage-collect-states-rate 0.2
 
 
-transform-cache #f
+transform-cache #t
 state-cache #t
 
 # Trying this for performance
-uniquify-transforms #f
+# uniquify-transforms #f
 # uniquify-states #f 
 # uniquify-attribs #f
 
@@ -119,7 +119,7 @@ gl-force-no-error #t
 gl-check-errors #f
 gl-force-no-flush #t
 gl-force-no-scissor #t
-gl-debug #t
+gl-debug #f
 
 # notify-level-glgsg debug
 # auto-flip #f
@@ -171,3 +171,4 @@ gl-debug-object-labels #f
 
 
 #notify-level-glgsg debug
+

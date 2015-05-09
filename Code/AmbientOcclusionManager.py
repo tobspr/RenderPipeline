@@ -3,6 +3,7 @@
 from DebugObject import DebugObject
 
 from Code.RenderPasses.AmbientOcclusionPass import AmbientOcclusionPass
+from Code.RenderPasses.OcclusionBlurPass import OcclusionBlurPass
 
 class AmbientOcclusionManager(DebugObject):
 
@@ -35,6 +36,10 @@ class AmbientOcclusionManager(DebugObject):
         # shader later, based on the defines
         self.aoPass = AmbientOcclusionPass()
         self.pipeline.getRenderPassManager().registerPass(self.aoPass)
+
+        # Create the ambient occlusion blur pass
+        self.blurPass = OcclusionBlurPass()
+        self.pipeline.getRenderPassManager().registerPass(self.blurPass)
 
         # Register the configuration defines
         self.pipeline.getRenderPassManager().registerDefine("OCCLUSION_TECHNIQUE_" + technique, 1)

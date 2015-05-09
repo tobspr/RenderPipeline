@@ -39,6 +39,7 @@ class AmbientOcclusionPass(RenderPass):
             "Shader/DefaultPostProcess.vertex",
             "Shader/ComputeOcclusion.fragment")
         self.target.setShader(shader)
+        return [shader]
 
     def getOutputs(self):
         return {

@@ -31,10 +31,9 @@ class LightingPass(RenderPass):
             "data3": "DeferredScenePass.data3",
 
             # GI and occlusion
-            "giDiffuseTex": ["EdgePreservingBlurPass.blurResult", "Variables.emptyTextureWhite"],
-            "giReflectionTex": ["EdgePreservingBlurPass.blurResult", "Variables.emptyTextureWhite"],
-            "occlusionTex": ["EdgePreservingBlurPass.blurResult", "Variables.emptyTextureWhite"],
-            "blurredGiandAoTex": ["EdgePreservingBlurPass.blurResult", "Variables.emptyTextureWhite"],
+            "giDiffuseTex": ["GlobalIlluminationPass.diffuseResult", "Variables.emptyTextureWhite"],
+            "giReflectionTex": ["GlobalIlluminationPass.specularResult", "Variables.emptyTextureWhite"],
+            "occlusionTex": ["OcclusionBlurPass.blurResult", "Variables.emptyTextureWhite"],
 
             "lastFramePosition": "Variables.emptyTextureWhite", #TODO
             "lastFrameOcclusion": "Variables.emptyTextureWhite", #TODO
@@ -72,7 +71,6 @@ class LightingPass(RenderPass):
         }
 
     def create(self):
-
         # Not much to be done here, most is done in the shader
         self.target = RenderTarget("LightingPass")
         self.target.addColorTexture()
@@ -84,6 +82,8 @@ class LightingPass(RenderPass):
             "Shader/DefaultPostProcess.vertex",
             "Shader/ApplyLighting.fragment")
         self.target.setShader(shader)
+
+        return [shader]
 
     def getOutputs(self):
         return {

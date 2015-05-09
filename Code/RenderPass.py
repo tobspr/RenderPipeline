@@ -21,8 +21,10 @@ class RenderPass(DebugObject):
 
     def setShaders(self):
         """ This method will be called every time a change to the shaders is made.
-        The render pass should regenerate its shaders and initial states here. """
-        pass
+        The render pass should regenerate its shaders and initial states here, and
+        return all generated shaders. The render pass manager then checks all shader
+        objects, and will warn the user if a shader did not compile. """
+        return []
 
     def create(self):
         """ This method will be called during the pipeline setup. The render pass

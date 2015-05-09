@@ -91,6 +91,8 @@ class AntialiasingSMAAPass(RenderPass):
             "Shader/Antialiasing/SMAA/Resolve.fragment")
         self._resolveBuffer.setShader(resolveShader)
 
+        return [edgeShader, weightsShader, neighborShader, resolveShader]
+
     def setShaderInput(self, name, value, *args):
         self._edgesBuffer.setShaderInput(name, value, *args)
         for buff in self._neighborBuffers:

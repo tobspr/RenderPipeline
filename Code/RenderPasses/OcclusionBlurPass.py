@@ -5,33 +5,30 @@ from Code.Globals import Globals
 from Code.RenderPass import RenderPass
 from Code.RenderTarget import RenderTarget
 
-class EdgePreservingBlurPass(RenderPass):
+class OcclusionBlurPass(RenderPass):
 
     """ This pass performs a edge preserving blur by comparing the scene normals
-    during the blur pass, aswell as as bilateral upscaling the inputs. """
+    during the blur pass, aswell as as bilateral upscaling the occlusion input. """
 
     def __init__(self):
         RenderPass.__init__(self)
 
     def getID(self):
-        return "EdgePreservingBlurPass"
+        return "OcclusionBlurPass"
 
     def getRequiredInputs(self):
         return {
-            "sourceTex":  [
-                "CombineGIandAOPass.combinedTex",  # If both GI and AO are active, this pass exists
-                "AmbientOcclusionPass.computeResult", 
-                "GlobalIlluminationPass.diffuseResult"],
-            "normalTex": "DeferredScenePass.wsNormal"
+            "sourceTex":  "AmbientOcclusionPass.computeResult", 
+            "normalTex": "DeferredScenePass.wsNormal",
         }
 
     def create(self):
-        self.targetV = RenderTarget("EdgePreservingBlurV")
+        self.targetV = RenderTarget("OcclusionBlurV")
         self.targetV.addColorTexture()
         self.targetV.setColorBits(16)
         self.targetV.prepareOffscreenBuffer()
  
-        self.targetH = RenderTarget("EdgePreservingBlurH")
+        self.targetH = RenderTarget("OcclusionBlurH")
         self.targetH.addColorTexture()
         self.targetH.setColorBits(16)
         self.targetH.prepareOffscreenBuffer()
@@ -41,17 +38,19 @@ class EdgePreservingBlurPass(RenderPass):
     def setShaders(self):
         shaderV = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/EdgePreservingBlurVertical.fragment")
+            "Shader/OcclusionBlurV.fragment")
         self.targetV.setShader(shaderV)
 
         shaderH = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/EdgePreservingBlurHorizontal.fragment")
+            "Shader/OcclusionBlurH.fragment")
         self.targetH.setShader(shaderH)
+
+        return [shaderV, shaderH]
 
     def getOutputs(self):
         return {
-            "EdgePreservingBlurPass.blurResult": lambda: self.targetH.getColorTexture(),
+            "OcclusionBlurPass.blurResult": lambda: self.targetH.getColorTexture(),
         }
 
     def setShaderInput(self, name, value):

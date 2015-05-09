@@ -2,7 +2,7 @@
 import math
 
 from panda3d.core import NodePath, Vec4, Vec3, BoundingSphere, Point3
-from panda3d.core import OmniBoundingVolume
+from panda3d.core import OmniBoundingVolume, CardMaker, TransparencyAttrib
 
 from Light import Light
 from DebugObject import DebugObject
@@ -41,14 +41,19 @@ class PointLight(Light, DebugObject):
 
     def _updateDebugNode(self):
         """ Internal method to generate new debug geometry. """
-        mainNode = NodePath("DebugNodeInner")
-        mainNode.setPos(self.position)
-        lineNode = mainNode.attachNewNode("lines")
+        debugNode = NodePath("PointLightDebugNode")
+        debugNode.setPos(self.position)
 
-        inner = Globals.loader.loadModel("box")
-        inner.setPos(-0.5, -0.5, 0.6)
-        inner.flattenStrong()
-        inner.reparentTo(mainNode)
+        # Create the inner image 
+        cm = CardMaker("PointLightDebug")
+        cm.setFrameFullscreenQuad()
+        innerNode = NodePath(cm.generate())
+        innerNode.setTexture(Globals.loader.loadTexture("Data/GUI/Visualization/PointLight.png"))
+        innerNode.setBillboardPointEye()
+        innerNode.reparentTo(debugNode)
+
+        # Create the outer lines
+        lineNode = debugNode.attachNewNode("lines")
 
         # Generate outer circles
         points1 = []
@@ -64,11 +69,14 @@ class PointLight(Light, DebugObject):
         self._createDebugLine(points1, False).reparentTo(lineNode)
         self._createDebugLine(points2, False).reparentTo(lineNode)
         self._createDebugLine(points3, False).reparentTo(lineNode)
-
         lineNode.setScale(self.radius)
-        mainNode.flattenStrong()
+
+        # Remove the old debug node
         self.debugNode.node().removeAllChildren()
-        mainNode.reparentTo(self.debugNode)
+
+        # Attach the new debug node
+        debugNode.reparentTo(self.debugNode)
+        # self.debugNode.flattenStrong()
 
     def _initShadowSources(self):
         """ Internal method to init the shadow sources """

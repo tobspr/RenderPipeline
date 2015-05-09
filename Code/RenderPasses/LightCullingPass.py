@@ -89,6 +89,8 @@ class LightCullingPass(RenderPass):
             "Shader/PrecomputeLights.fragment")
         self.target.setShader(shader)
 
+        return [shader]
+
     def getOutputs(self):
         return {
             "LightCullingPass.lightsPerTile": lambda: self.lightPerTileBuffer

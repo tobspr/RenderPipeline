@@ -34,7 +34,23 @@ class ShadowScenePass(RenderPass):
         }
 
     def setShaders(self):
-        self.createTagStates()
+        casterShader = Shader.load(Shader.SLGLSL,
+            "Shader/DefaultShaders/ShadowCasting/vertex.glsl",
+            "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
+        initialState = NodePath("ShadowCasterState")
+        initialState.setShader(casterShader, 100)
+        for camera in self.shadowCameras:
+            camera.node().setTagState("Default", initialState.getState())
+
+        casterShaderTransparent = Shader.load(Shader.SLGLSL,
+            "Shader/DefaultShaders/TransparentShadowCasting/vertex.glsl",
+            "Shader/DefaultShaders/TransparentShadowCasting/fragment.glsl")
+        initialState = NodePath("ShadowCasterStateTransparent")
+        initialState.setShader(casterShaderTransparent, 100)
+        for camera in self.shadowCameras:
+            camera.node().setTagState("Transparent", initialState.getState()) 
+
+        return [casterShader, casterShaderTransparent]
 
     def setSize(self, size):
         """ Sets the shadow atlas size """
@@ -60,23 +76,6 @@ class ShadowScenePass(RenderPass):
     def getRegionCamera(self, index):
         """ Returns the camera of the n-th region """
         return self.shadowCameras[index]
-
-    def createTagStates(self):
-        casterShader = Shader.load(Shader.SLGLSL,
-            "Shader/DefaultShaders/ShadowCasting/vertex.glsl",
-            "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
-        initialState = NodePath("ShadowCasterState")
-        initialState.setShader(casterShader, 100)
-        for camera in self.shadowCameras:
-            camera.node().setTagState("Default", initialState.getState())
-
-        casterShaderTransparent = Shader.load(Shader.SLGLSL,
-            "Shader/DefaultShaders/TransparentShadowCasting/vertex.glsl",
-            "Shader/DefaultShaders/TransparentShadowCasting/fragment.glsl")
-        initialState = NodePath("ShadowCasterStateTransparent")
-        initialState.setShader(casterShaderTransparent, 100)
-        for camera in self.shadowCameras:
-            camera.node().setTagState("Transparent", initialState.getState()) 
 
     def create(self):
         # Create the atlas target

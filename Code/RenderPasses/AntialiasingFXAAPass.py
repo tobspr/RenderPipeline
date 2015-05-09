@@ -36,6 +36,8 @@ class AntialiasingFXAAPass(RenderPass):
             "Shader/Antialiasing/FXAA/FXAA3.fragment")
         self.target.setShader(shader)
 
+        return [shader]
+
     def getOutputs(self):
         return {
             "AntialiasingPass.resultTex": lambda: self.target.getColorTexture(),

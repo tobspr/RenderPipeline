@@ -91,21 +91,23 @@ class DynamicExposurePass(RenderPass):
         self.pipeline.renderPassManager.registerDefine("USE_DYNAMIC_EXPOSURE", 1)
 
     def setShaders(self):
-        fpShader = Shader.load(Shader.SLGLSL, 
+        shaderFirstPass = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
             "Shader/AdaptiveBrightnessFirstPass.fragment")
-        self.downscalePass0.setShader(fpShader)
+        self.downscalePass0.setShader(shaderFirstPass)
 
-        dsShader = Shader.load(Shader.SLGLSL, 
+        shaderDownsample = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
             "Shader/AdaptiveBrightnessDownsample.fragment")
         for scalePass in self.downscalePasses:
-            scalePass.setShader(dsShader)
+            scalePass.setShader(shaderDownsample)
 
-        fpShader = Shader.load(Shader.SLGLSL, 
+        shaderFinal = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
             "Shader/AdaptiveBrightnessDownsampleFinal.fragment")
-        self.finalDownsamplePass.setShader(fpShader)
+        self.finalDownsamplePass.setShader(shaderFinal)
+
+        return [shaderFirstPass, shaderDownsample, shaderFinal]
 
     def setShaderInput(self, name, value, *args):
         self.downscalePass0.setShaderInput(name, value, *args)

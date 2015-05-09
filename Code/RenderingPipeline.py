@@ -24,8 +24,6 @@ from GUI.PipelineGuiManager import PipelineGuiManager
 from RenderPasses.InitialRenderPass import InitialRenderPass
 from RenderPasses.DeferredScenePass import DeferredScenePass
 from RenderPasses.ViewSpacePass import ViewSpacePass
-from RenderPasses.EdgePreservingBlurPass import EdgePreservingBlurPass
-from RenderPasses.CombineGIandAOPass import CombineGIandAOPass
 from RenderPasses.LightingPass import LightingPass
 from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
@@ -67,6 +65,11 @@ class RenderingPipeline(DebugObject):
         """ Attaches a new light to the pipeline, this just forwards the call to
         the light manager. """
         self.lightManager.addLight(light)
+
+    def removeLight(self, light):
+        """ Removes a light from the pipeline, this just forwards the call to
+        the light manager. """
+        self.lightManager.removeLight(light)
 
     def setGILightSource(self, lightSource):
         """ Sets the light used to compute GI. For now, only directional lights
@@ -234,22 +237,6 @@ class RenderingPipeline(DebugObject):
             self.renderPassManager.anyPassRequires("ViewSpacePass.position"):
             self.viewSpacePass = ViewSpacePass()
             self.renderPassManager.registerPass(self.viewSpacePass)
-
-    def _createEdgePreservingBlurPass(self):
-        """ Creates a pass which upscales and blurs the global illumination
-        and ambient occlusion. If both gi and ao are enabled, also creates
-        a pass which combines both first before processing them """
-        haveAo = self.renderPassManager.anyPassProduces("AmbientOcclusionPass.computeResult")
-        haveGi = self.renderPassManager.anyPassProduces("GlobalIlluminationPass.diffuseResult")
-
-        if haveAo or haveGi:
-            self.edgePreservingBlurPass = EdgePreservingBlurPass()
-            self.renderPassManager.registerPass(self.edgePreservingBlurPass)
-
-            if haveAo and haveGi:
-                self.combineGIandAOPass = CombineGIandAOPass()
-                self.renderPassManager.registerPass(self.combineGIandAOPass)
-
 
     def _createDefaultTextureInputs(self):
         """ This method loads various textures used in the different render passes
@@ -426,7 +413,6 @@ class RenderingPipeline(DebugObject):
         self._createInputHandles()
         self._createDefaultTextureInputs()
         self._createViewSpacePass()
-        self._createEdgePreservingBlurPass()
 
         # Finally matchup all the render passes and set the shaders
         self.renderPassManager.createPasses()

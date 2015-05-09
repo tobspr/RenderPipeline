@@ -1,6 +1,6 @@
 
 
-from panda3d.core import Vec3, NodePath, LineSegs, Vec4
+from panda3d.core import Vec3, NodePath, LineSegs, Vec4, Shader
 from panda3d.core import OmniBoundingVolume
 from panda3d.core import PTAInt
 from LightType import LightType
@@ -19,7 +19,7 @@ class Light(ShaderStructElement):
         DebugObject.__init__(self, "AbstractLight")
         ShaderStructElement.__init__(self)
         self.debugNode = NodePath("LightDebug")
-        self.visualizationNumSteps = 16
+        self.visualizationNumSteps = 32
         self.dataNeedsUpdate = False
         self.castShadows = False
         self.debugEnabled = False
@@ -66,6 +66,13 @@ class Light(ShaderStructElement):
     def getTypeName(self):
         """ Returns the internal id of the light-type, e.g. "PointLight" """
         return self.typeName
+
+    def getDebugNodeShader(self):
+        """ Returns the default shader used for debug nodes """
+        return Shader.load(Shader.SLGLSL,
+                "Shader/DefaultShaders/DebugNode/vertex.glsl",
+                "Shader/DefaultShaders/DebugNode/fragment.glsl"
+            )
 
     def setShadowMapResolution(self, resolution):
         """ Attempts to set the resolution of the shadow soures. You
@@ -187,6 +194,10 @@ class Light(ShaderStructElement):
 
         self.onPropertyChanged()
 
+    def cleanup(self):
+        """ Cleans up the light before it gets removed """
+        self.debugNode.removeNode()
+
     def performShadowUpdate(self):
         """ Computes which shadow sources need an update and returns these """
         self._updateShadowSources()
@@ -201,6 +212,7 @@ class Light(ShaderStructElement):
         """ Attachs a debug node to parent which shows the bounds of the light.
         VERY SLOW. USE ONLY FOR DEBUGGING """
         self.debugNode.reparentTo(parent)
+        self.debugNode.setShader(self.getDebugNodeShader(), 10000)
         self.debugEnabled = True
         self._updateDebugNode()
 

@@ -35,3 +35,5 @@ class FinalPostprocessPass(RenderPass):
             "Shader/DefaultPostProcess.vertex",
             "Shader/Final.fragment")
         self.target.setShader(shader)
+
+        return [shader]

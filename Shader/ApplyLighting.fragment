@@ -22,11 +22,15 @@ uniform sampler2D depth;
 
 // Global illumination inputs
 #ifdef USE_GLOBAL_ILLUMINATION
+uniform sampler2D giDiffuseTex;
 uniform sampler2D giReflectionTex;
 #endif
 
 // Combined occlusion and gi from the edge preserving blur
-uniform sampler2D blurredGiandAoTex;
+
+#ifdef USE_OCCLUSION
+uniform sampler2D occlusionTex;
+#endif
 
 
 // Light-IDs per tile
@@ -166,9 +170,6 @@ void main() {
     float reflectionFactor = saturate( (0.5 - material.roughness) * 5.0 ) ;
 
 
-    vec4 combinedGiAndAo = texelFetch(blurredGiandAoTex, screenCoord, 0);
-
-
 
     #ifdef USE_GLOBAL_ILLUMINATION
 
@@ -179,8 +180,6 @@ void main() {
     ivec2 giSampleCoord = screenCoord / 2;
 
 
-    giDiffuseColor = combinedGiAndAo.xyz;
-
     
     const int giSampleCount = 5;
 
@@ -189,6 +188,7 @@ void main() {
     );
 
     vec4 giSpecularResult = vec4(0);
+    vec4 giDiffuseResult = vec4(0);
     float giValidSamples = 0.01;
     float pixelLZ = getLinearZFromZ(pixelDepth);
 
@@ -203,10 +203,12 @@ void main() {
 
         reliability *= 1.0 - saturate(abs(lz1 - pixelLZ) * 50.0);
         giSpecularResult += texture(giReflectionTex, coord) * reliability;
+        giDiffuseResult += texture(giDiffuseTex, coord) * reliability;
         giValidSamples += reliability;
 
     }
     giSpecularColor = giSpecularResult / giValidSamples;
+    giDiffuseColor = giDiffuseResult / giValidSamples;
     #endif
     #endif
 
@@ -260,6 +262,8 @@ void main() {
         viewDir, 
         sunVector,
         inscatterSampler,
+        material.baseColor,
+        isSkybox,
         attenuation, 
         irradianceFactor);
 
@@ -302,13 +306,13 @@ void main() {
     // We can skip lighting for the skybox
     if (isSkybox) {
 
-        result += 3.0 * material.baseColor;
+        // result += 3.0 * material.baseColor;
 
 
     } else {
 
         #if USE_OCCLUSION || USE_GLOBAL_ILLUMINATION
-            mixedOcclusionFactor = combinedGiAndAo.w;
+            mixedOcclusionFactor = texture(occlusionTex, texcoord).w;
         #endif
 
         // mixedOcclusionFactor = 0.5;
@@ -439,7 +443,11 @@ void main() {
         exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
     #endif
 
-    result = 1.0f - exp(-exposure * result);
+    // exposure = 0.5;
+
+    #ifndef DEBUG_VISUALIZATION_ACTIVE
+        result = 1.0f - exp(-exposure * result);
+    #endif
 
     // #define ENABLE_FOG
 

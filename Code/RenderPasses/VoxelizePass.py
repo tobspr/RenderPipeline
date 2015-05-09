@@ -126,6 +126,8 @@ class VoxelizePass(RenderPass):
         # Apply tag state
         self.voxelizeCamera.setTagState("Default", initialState.getState())
 
+        return [voxelizeShader]
+
     def getOutputs(self):
         return {
         }

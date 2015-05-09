@@ -47,6 +47,8 @@ class GlobalIlluminationPass(RenderPass):
             "Shader/DefaultPostProcess.vertex",
             "Shader/ComputeGI.fragment")
         self.target.setShader(shader)
+        
+        return [shader]
 
     def getOutputs(self):
         return {
