@@ -60,9 +60,9 @@ vec4 mipmapBasedBlur(vec2 texcoord, vec2 direction, sampler2D colorTex, sampler2
 
 
 // const float normalsDiscardThresholdShadows = 0.95;
-const float normalsDiscardThresholdShadows = 0.9;
+const float normalsDiscardThresholdShadows = 0.1;
 
-vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D depthTex) {
+vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D depthTex, bool isSecondary) {
 
     #ifdef DEBUG_DISABLE_UPSCALE_BLUR
         return texture(sourceTex, texcoord);
@@ -74,11 +74,12 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
         ivec2 coord = ivec2(gl_FragCoord.xy);
         ivec2 sourceCoord = ivec2(coord) / 2;
         ivec2 baseCoord = sourceCoord * 2;
+        ivec2 pixelStep = ivec2(2);
 
-        // When we are doing the second blur step, the input is already full-res, so
-        // upscale it.
-        if (blurDirection == ivec2(1,0)) {
+        if (isSecondary) {
             sourceCoord = coord;
+            baseCoord = coord;
+            pixelStep = ivec2(1);
         }
 
         // Extract the data of the current pixel we are shading
@@ -93,12 +94,7 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
         const int sideSteps = (numBlurSteps - 1) / 2;
         float blurWeights[numBlurSteps] = float[numBlurSteps]
         (
-
-            0.06136, 
-            0.24477, 
-            0.38774, 
-            0.24477, 
-            0.06136
+            0.06136, 0.24477, 0.38774, 0.24477, 0.06136
         );
 
         // Perform the blur. We could use texel gather here.
@@ -108,19 +104,19 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
         for (int i = -sideSteps; i <= sideSteps; i++) {
             for(int j = -sideSteps; j <= sideSteps; j++) {
             // Compute the lookup coords
-            ivec2 sampleCoord = baseCoord + ivec2(j * 2, i * 2);
+            ivec2 sampleCoord = baseCoord + ivec2(j, i) * pixelStep;
             ivec2 sampleCoordHalf = sourceCoord + ivec2(j,i);
 
             // Fetch the sample normal, depth and color
             vec3 sampleNormal = texelFetch(normalTex, sampleCoord, 0).xyz;
-            float sampleDepth = getLinearZFromZ(texelFetch(depthTex, sampleCoord, 0).x);
+            // float sampleDepth = getLinearZFromZ(texelFetch(depthTex, sampleCoord, 0).x);
             vec4 sampleColor = texelFetch(sourceTex, sampleCoordHalf, 0);            
 
             // Get the pixel weight and compute its influence
-            float weight = blurWeights[i+sideSteps];
+            float weight = blurWeights[i] * blurWeights[j];
             float pixelImpact = step(normalsDiscardThresholdShadows, dot(pixelNormal, sampleNormal)) * weight;
-            pixelImpact *= 1.0 - saturate( abs(pixelDepth - sampleDepth) * 5.0 );
-
+            // pixelImpact *= 1.0 - saturate( abs(pixelDepth - sampleDepth) * 5.0 );
+            // pixelImpact = 1.0;
             pixelImpact = saturate(pixelImpact);
             sampledResult += sampleColor*pixelImpact;
             sampleWeights += pixelImpact;   
@@ -146,12 +142,12 @@ vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sou
         return texture(sourceTex, texcoord);
     #else
 
-        #define NUM_BLUR_STEPS 17
-        #define NUM_BLUR_MID 9
-        #define PIXEL_TO_MID_FACTOR 10.0
+        const int numBlurSteps = 17;
+        const int numBlurMid = 9;
+        const float pixelToMidFactor = 10.0;
 
         // http://dev.theomader.com/gaussian-kernel-calculator/
-        float blurWeights[NUM_BLUR_STEPS] = float[NUM_BLUR_STEPS]
+        float blurWeights[numBlurSteps] = float[numBlurSteps]
         (
             0.003924,
             0.008962,
@@ -172,29 +168,28 @@ vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sou
             0.003924
         );
 
-        vec3 normals[NUM_BLUR_STEPS];
-        vec4 samples[NUM_BLUR_STEPS];
+        vec3 normals[numBlurSteps];
+        vec4 samples[numBlurSteps];
 
         vec2 offset = texcoord;
         vec2 texelSize = 1.0 / vec2(textureSize(sourceTex, 0));
         vec2 perStep = texelSize * vec2(blurDirection);
-        offset -= perStep * PIXEL_TO_MID_FACTOR;
+        offset -= perStep * pixelToMidFactor;
 
-        for (int i = 0; i < NUM_BLUR_STEPS; i++) {
+        for (int i = 0; i < numBlurSteps; i++) {
             offset += perStep;
             normals[i] = texture(normalTex, offset).xyz;
             samples[i] = texture(sourceTex, offset);
         }
 
-
         // pixel normal is the mid normal
-        vec3 normal = normals[NUM_BLUR_MID];
+        vec3 normal = normals[numBlurMid];
 
         vec4 sampledResult = vec4(0.0);
         float sampleWeights = 0.0;
 
         // Check for edges, as we are performing an edge preserving blur
-        for (int i = 0; i < NUM_BLUR_STEPS; i++) {
+        for (int i = 0; i < numBlurSteps; i++) {
             float weight = blurWeights[i];
             float normalInfluenceFactor = step(normalsDiscardThreshold, dot(normals[i], normal)) * weight;
             sampledResult += samples[i]*normalInfluenceFactor;

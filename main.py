@@ -24,7 +24,7 @@ import copy
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, SamplerState
-from panda3d.core import Texture
+from panda3d.core import Texture, TextureStage
 from panda3d.core import Shader, CullFaceAttrib, AntialiasAttrib
 
 from Code.MovementController import MovementController
@@ -99,6 +99,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
 
 
@@ -156,7 +157,7 @@ class Main(ShowBase, DebugObject):
         self.demoLights = []
 
         # Create some lights
-        for i in xrange(5):
+        for i in xrange(0):
             pointLight = PointLight()
 
             radius = float(i) / 5.0 * 6.28 + 1.52
@@ -181,28 +182,28 @@ class Main(ShowBase, DebugObject):
             self.movingLights.append(pointLight)
 
         # Create more lights
-        for i in xrange(0):
+        for i in xrange(15):
             spotLight = PointLight()
             # spotLight = SpotLight()
 
             radius = float(i) / 5.0 * 6.28 + 5.22
-            xoffs = math.sin(radius) * 15.0
-            yoffs = math.cos(radius) * 15.0
+            xoffs = math.sin(radius) * 30.0
+            yoffs = math.cos(radius) * 30.0
 
             spotLight.setPos(Vec3( xoffs, yoffs, 12))
 
             # spotLight.setPos(Vec3(-10.0 + i * 2.0, 2.0, 4.0))
             # spotLight.setColor(Vec3(i,2-i,0))
             # spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.2)
-            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.05)
+            spotLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
             # spotLight.setColor(Vec3( random(), random(), random()) * 0.1)
 
             # spotLight.setNearFar(1.0, 20.0)
             # spotLight.setDirection(Vec3(0, 90, 0))
-            spotLight.setRadius(30)
+            spotLight.setRadius(60)
             # spotLight.setCastsShadows(True)
             self.renderPipeline.addLight(spotLight)
-            spotLight.attachDebugNode(render)
+            # spotLight.attachDebugNode(render)
 
         # Slow mode?
         # self.addTask(self.sleep, "sleep")
@@ -219,6 +220,10 @@ class Main(ShowBase, DebugObject):
         self.accept("z", self.addDemoLight)
         self.accept("u", self.removeDemoLight)
 
+        # for i in xrange(5):
+        #     self.addDemoLight()
+
+
     def sleep(self, task):
         import time
         time.sleep(0.1)
@@ -226,11 +231,12 @@ class Main(ShowBase, DebugObject):
 
     def addDemoLight(self):
         light = PointLight()
-        light.setPos(Vec3( random() * 15.0 - 7.5, random() * 15.0 - 7.5, 12))
+        light.setPos(Vec3( random() * 50.0 - 25, random() * 50.0 - 25, 12))
         light.setColor(Vec3( random(), random(), random()) * 5.0)
-        light.setRadius(15)
+        light.setRadius(50)
+        light.setShadowMapResolution(1024)
         # light.attachDebugNode(render)
-        # light.setCastsShadows(True)
+        light.setCastsShadows(True)
         self.renderPipeline.addLight(light)
 
         self.demoLights.append(light)
@@ -301,7 +307,7 @@ class Main(ShowBase, DebugObject):
         #     match.setColorScale(1,0,1, 1)
 
         # Wheter to use a ground floor
-        self.usePlane = False
+        self.usePlane = True
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -319,7 +325,7 @@ class Main(ShowBase, DebugObject):
         self.prepareSRGB(self.scene)
 
         # Prepare MAterials
-        self.renderPipeline.fillTextureStages(render)
+        # self.renderPipeline.fillTextureStages(render)
 
 
         # Load ground plane if configured
@@ -352,7 +358,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         self.controller.setInitialPosition(
-            Vec3(0, -15, 25), Vec3(0, 0, 3))
+            Vec3(0, -10, 15), Vec3(0, 0, 3))
         self.controller.setup()
 
         # self.fpCamera = FirstPersonCamera(self, self.cam, self.render)
@@ -408,12 +414,15 @@ class Main(ShowBase, DebugObject):
             if "diffuse" in tex.getName().lower():
                 # print "Preparing texture", tex.getName()
                 if baseFormat == Texture.FRgb:
-                    tex.setFormat(Texture.FSrgb)
+                    pass
+                    # tex.setFormat(Texture.FSrgb)
                 elif baseFormat == Texture.FRgba:
                     tex.setFormat(Texture.FSrgbAlpha)
+                    pass
                 elif baseFormat == Texture.FSrgb or baseFormat == Texture.FSrgbAlpha:
                     # Format is okay already
-                    pass
+                    tex.setFormat(Texture.FRgb)
+
                 else:
                     print "Unkown texture format:", baseFormat
                     print "\tTexture:", tex

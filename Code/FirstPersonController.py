@@ -68,7 +68,7 @@ class FirstPersonCamera(DirectObject.DirectObject):
         self.movSens = 5
         self.movSensFast = self.movSens * 5
         self.rollSens = 20
-        self.sensX = self.sensY = 0.05
+        self.sensX = self.sensY = 0.1
 
         self.collisionHandler = collisionHandler
         self.collideMask = BitMask32(0x10)
