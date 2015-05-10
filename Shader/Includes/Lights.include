@@ -100,35 +100,45 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material) {
 
 
 
-vec3 applySpotLight(Light light, Material material) {
-
+vec3 computeSpotLight(Light light, Material material, bool computeShadows) {
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 
-    float attenuation = 1.0;
 
     vec3  l = normalize(light.position - material.position);
     vec3  v = normalize(cameraPosition - material.position);
     vec3  n = normalize(material.normal);
     vec3  h = normalize(l + v);
 
-    mat4 mvp = light.mvp;
-    vec4 transformedPoint = mvp * vec4(material.position, 1);
+    vec4 transformedPoint = light.mvp * vec4(material.position, 1);
     vec3 transformedCoord = (transformedPoint.xyz / transformedPoint.w) * 0.5 + 0.5;
 
-    float factor = 0.0;
+    float visibilityFactor = 0.0;
 
-    if (transformedCoord.x >= 0.0 && transformedCoord.y >= 0.0 && transformedCoord.x <= 1.0 && transformedCoord.y <= 1.0 && transformedPoint.w > 0.0) {
-        factor = 1.0;
+    if (transformedCoord.x > 0.01 && transformedCoord.y > 0.01 && transformedCoord.x < 0.99 && 
+        transformedCoord.y < 0.99 && transformedPoint.w > 0.0) {
+        visibilityFactor = 1.0;
     }
 
-    int iesProfile = 0;
+    float shadowFactor = 1.0;
 
+    if (computeShadows) {
+        int shadowSourceIndex = light.sourceIndexes[0];
+        ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
+        shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.3, 0.02, 0.001);
+    }
+
+    int iesProfile = 16;
     float radialFactor = saturate(distance(transformedCoord.xy, vec2(0.5)) * 2.0);
+    float attenuation = 1.0 - radialFactor;
     vec3 iesColor = computeIESProfile(iesProfile, radialFactor, distanceRelative);
-    return computeLightModel(light,material, l,v, n, h, attenuation, 1.0) * factor * iesColor;
+    return computeLightModel(light,material, l,v, n, h, attenuation, shadowFactor) * visibilityFactor * iesColor;
+}
+
+vec3 applySpotLight(Light light, Material material) {
+    return computeSpotLight(light, material, false);
 }
 
 
 vec3 applySpotLightWithShadow(Light light, Material material) {
-    return applySpotLight(light, material);
-}
+    return computeSpotLight(light, material, true);
+} 

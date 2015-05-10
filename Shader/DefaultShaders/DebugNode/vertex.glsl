@@ -5,6 +5,7 @@
 
 // Matrices
 uniform mat4 trans_model_to_world;
+uniform mat4 tpose_world_to_model;
 
 // Material properties
 in vec4 p3d_Vertex;
@@ -33,7 +34,7 @@ uniform mat4 lastMVP;
 void main() {
 
     // Transform normal to world space
-    vOutput.normalWorld   = normalize(trans_model_to_world * vec4(p3d_Normal, 0) ).xyz;
+    vOutput.normalWorld   = normalize(tpose_world_to_model * vec4(p3d_Normal, 0) ).xyz;
 
     // Transform position to world space
     vOutput.positionWorld = (trans_model_to_world * p3d_Vertex).xyz;

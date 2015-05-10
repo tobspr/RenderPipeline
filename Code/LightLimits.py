@@ -11,8 +11,8 @@ class LightLimits:
         "PointLightShadow": 5,
         "DirectionalLight": 1,
         "DirectionalLightShadow": 1,
-        "SpotLight": 3,
-        "SpotLightShadow": 1,
+        "SpotLight": 20,
+        "SpotLightShadow": 20,
         "GIHelperLightShadow": 10
     }
 
@@ -21,10 +21,10 @@ class LightLimits:
         "PointLightShadow": 5,
         "DirectionalLight": 1,
         "DirectionalLightShadow": 1,
-        "SpotLight": 3,
-        "SpotLightShadow": 1,
+        "SpotLight": 20,
+        "SpotLightShadow": 20,
     }
 
-    maxTotalLights = 10
-    maxShadowMaps = 36
+    maxTotalLights = 20
+    maxShadowMaps = 20
 

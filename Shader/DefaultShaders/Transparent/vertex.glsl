@@ -4,6 +4,7 @@
 #pragma include "Includes/VertexOutput.include"
 
 // Matrices
+uniform mat4 itp_normal_to_world;
 uniform mat4 trans_model_to_world;
 
 // Material properties
@@ -32,7 +33,7 @@ uniform mat4 lastMVP;
 void main() {
 
     // Transform normal to world space
-    vOutput.normalWorld   = normalize(trans_model_to_world * vec4(p3d_Normal, 0) ).xyz;
+    vOutput.normalWorld   = normalize(itp_normal_to_world * vec4(p3d_Normal, 0) ).xyz;
 
     // Transform position to world space
     vOutput.positionWorld = (trans_model_to_world * p3d_Vertex).xyz;

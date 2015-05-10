@@ -2,6 +2,7 @@
 
 uniform mat4 p3d_ViewProjectionMatrix;
 uniform mat4 trans_model_to_world;
+uniform mat4 itp_normal_to_world;
 in vec4 p3d_Vertex;
 in vec4 p3d_Normal;
 in vec4 p3d_Color;
@@ -23,7 +24,7 @@ out vec2 texc;
 void main() {
     positionWorld = trans_model_to_world * p3d_Vertex; 
     gl_Position = p3d_ViewProjectionMatrix * positionWorld;
-    vec4 normalWorld = trans_model_to_world * vec4(p3d_Normal.xyz, 0);
+    vec4 normalWorld = itp_normal_to_world * vec4(p3d_Normal.xyz, 0);
     normal = normalWorld.xyz;
     color.xyz = p3d_Material.diffuse.rgb * p3d_Color.rgb * p3d_ColorScale.rgb;
     // color.xyz = vec3(1);

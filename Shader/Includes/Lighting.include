@@ -364,7 +364,7 @@ float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSi
         #if USE_HARDWARE_PCF
             // Notice: Maybe use .x? My gtx 670 does not like that though
             sum += 1.0 - textureLod(shadowAtlasPCF, vec3(centerCoord + offset, biasedDepth) , 0);
-        
+
         #else
             float sampled = textureLod(shadowAtlas, centerCoord + offset , 0).x;
             sum += step(sampled, biasedDepth);        
@@ -417,7 +417,7 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
     vec3 biasedPos = computeBiasedPosition(material.position, slopeScaledBias, normalScaledBias, n, l);
     vec3 projCoord = reprojectShadow(source, biasedPos);
 
-    float pixScaled = 2.0 / float(source.resolution);
+    float pixScaled = 0.0 / float(source.resolution);
 
     if (any(lessThan(projCoord.xy, vec2(pixScaled))) || any(greaterThan(projCoord.xy, vec2(1-pixScaled)))) {
         return 1.0;

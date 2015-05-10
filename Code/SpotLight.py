@@ -38,15 +38,20 @@ class SpotLight(Light, DebugObject):
         """ Internal method to fetch the type of this light, used by Light """
         return LightType.Spot
 
+    def _updateLens(self):
+        """ Internal method which gets called when the lens properties changed """
+        for source in self.shadowSources:
+            source.rebuildMatrixCache()
+
     def cleanup(self):
         """ Internal method which gets called when the light got deleted """
-        print "removing ghost cam"
         self.ghostCameraNode.removeNode()
         Light.cleanup(self)
 
     def setFov(self, fov):
         """ Sets the field of view of the spotlight """
         self.ghostLens.setFov(fov)
+        self._updateLens()
 
     def setPos(self, pos):
         """ Sets the position of the spotlight """
@@ -67,7 +72,6 @@ class SpotLight(Light, DebugObject):
 
         converterMat = Mat4.convertMat(CSYupRight, 
             self.ghostLens.getCoordinateSystem()) * self.ghostLens.getProjectionMat()
-
         modelViewMat = transMat.invertCompose(
             Globals.render.getTransform(self.ghostCameraNode)).getMat()
 
@@ -85,6 +89,7 @@ class SpotLight(Light, DebugObject):
         self.nearPlane = near
         self.radius = far
         self.ghostLens.setNearFar(near, far)
+        self._updateLens()
 
     def _updateDebugNode(self):
         """ Internal method to generate new debug geometry. """
@@ -102,11 +107,6 @@ class SpotLight(Light, DebugObject):
         # Create the outer lines
         lineNode = debugNode.attachNewNode("lines")
 
-
-        # getRelPoint = Globals.base.render.getRelativePoint
-        # extrudePoint = self.ghostLens.extrude
-
-
         currentNodeTransform = render.getTransform(self.ghostCameraNode).getMat()
         currentCamTransform = self.ghostLens.getProjectionMat()
         currentRelativeCamPos = self.ghostCameraNode.getPos(render)
@@ -119,67 +119,11 @@ class SpotLight(Light, DebugObject):
             [7, 6, 2, 3],
         ]
 
-
         for pointArray in pointArrays:
             for i, val in enumerate(pointArray):
                 pointArray[i] = currentCamBounds.getPoint(val)
 
             self._createDebugLine(pointArray, False).reparentTo(lineNode)
-
-        # for i in xrange(8):
-            # point = currentCamBounds.getPoint(i)
-            # points.append(point)
-
-
-        # bounds = self.ghostLens.makeBounds()
-        # print bounds
-        # Compute frustum points
-        # tlNear = Point3()
-        # tlFar = Point3()
-        # extrudePoint(Point2(0.0, 1.0), tlNear, tlFar)
-        # tlNear = getRelPoint(self.ghostCameraNode, tlNear)
-        # tlFar = getRelPoint(self.ghostCameraNode, tlFar)
-
-        # trNear = Point3()
-        # trFar = Point3()
-        # extrudePoint(Point2(1.0, 1.0), trNear, trFar)
-        # trNear = getRelPoint(self.ghostCameraNode, trNear)
-        # trFar = getRelPoint(self.ghostCameraNode, trFar)
-
-        # blNear = Point3()
-        # blFar = Point3()
-        # extrudePoint(Point2(0.0, 0.0), blNear, blFar)
-        # blNear = getRelPoint(self.ghostCameraNode, blNear)
-        # blFar = getRelPoint(self.ghostCameraNode, blFar)
-
-
-        # brNear = Point3()
-        # brFar = Point3()
-        # extrudePoint(Point2(1.0, 0.0), brNear, brFar)
-        # brNear = getRelPoint(self.ghostCameraNode, brNear)
-        # brFar = getRelPoint(self.ghostCameraNode, brFar)
-
-        # points = [
-        #     tlNear, trNear, brNear, brFar
-        # ]
-
-        # self._createDebugLine(points, False).reparentTo(lineNode)
-
-        # # Generate outer circles
-        # points1 = []
-        # points2 = []
-        # points3 = []
-        # for i in range(self.visualizationNumSteps + 1):
-        #     angle = float(
-        #         i) / float(self.visualizationNumSteps) * math.pi * 2.0
-        #     points1.append(Vec3(0, math.sin(angle), math.cos(angle)))
-        #     points2.append(Vec3(math.sin(angle), math.cos(angle), 0))
-        #     points3.append(Vec3(math.sin(angle), 0, math.cos(angle)))
-
-        # self._createDebugLine(points1, False).reparentTo(lineNode)
-        # self._createDebugLine(points2, False).reparentTo(lineNode)
-        # self._createDebugLine(points3, False).reparentTo(lineNode)
-        # lineNode.setScale(self.radius)
 
         # Remove the old debug node
         self.debugNode.node().removeAllChildren()
@@ -191,16 +135,29 @@ class SpotLight(Light, DebugObject):
     def _initShadowSources(self):
         """ Internal method to init the shadow sources """
         source = ShadowSource()
-        source.setupPerspectiveLens(
-            self.nearPlane, self.radius, (self.spotSize.x, self.spotSize.y))
         source.setResolution(self.shadowResolution)
+        source.setLens(self.ghostLens)
         self._addShadowSource(source)
 
     def _updateShadowSources(self):
         """ Recomputes the position of the shadow source """
-
         self.shadowSources[0].setPos(self.position)
-        self.shadowSources[0].lookAt(self.position + self.direction)
+        self.shadowSources[0].setHpr(self.ghostCameraNode.getHpr())
+
+
+
+        # self._computeAdditionalData()
+
+        # self.shadowSources[0].setLens(self.ghostLens)
+
+        # print self.shadowSources[0].getLens() == self.ghostLens
+        # print self.shadowSources[0].getLens().getProjectionMat()
+        # print self.ghostLens.getProjectionMat()
+
+        # print "\n\n"
+        # print Mat4(self.shadowSources[0].computeMVP())
+        # print "VS"
+        # print self.mvp
 
     def __repr__(self):
         """ Generates a string representation of this instance """

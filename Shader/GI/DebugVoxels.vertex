@@ -54,7 +54,7 @@ void main() {
     wpos += shift;
     wpos.xyz += vec3(xOffset, yOffset, zOffset) * scaleFactor;
     wpos.w = 1.0;
-ar
+
     pos = (trans_model_to_world * wpos).xyz;
     nrm = p3d_Normal;
     voxelResult = colorResult;

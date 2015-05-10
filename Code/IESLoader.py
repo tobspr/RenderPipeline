@@ -30,7 +30,7 @@ class IESLoader(DebugObject):
         DebugObject.__init__(self, "IESLoader")
         self.debug("Creating IES Loader")
         self.storage = Texture("IESProfiles")
-        self.storage.setup2dTextureArray(self.IESTableResolution, 1, 32, Texture.TFloat, Texture.FRgb16)
+        self.storage.setup2dTextureArray(self.IESTableResolution, 1, 64, Texture.TFloat, Texture.FRgb16)
         self.storage.setMinfilter(SamplerState.FTLinear)
         self.storage.setMagfilter(SamplerState.FTLinear)
         self.storage.setWrapU(SamplerState.WMClamp)
@@ -106,7 +106,7 @@ class IESLoader(DebugObject):
         if versionString in self.IESVersionTable:
             version = self.IESVersionTable[versionString]
         else:
-            self.warning("No supported IES version found")
+            self.warn("No supported IES version found")
             version = None
 
         # Extract IES properties
@@ -122,7 +122,7 @@ class IESLoader(DebugObject):
         keyword, content = content.split('\n', 1)
 
         if not keyword.startswith('TILT'):
-            self.warning("TILT keyword not found")
+            self.warn("TILT keyword not found")
             return False
 
         # Strip data

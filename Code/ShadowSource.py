@@ -149,6 +149,16 @@ class ShadowSource(DebugObject, ShaderStructElement):
         self.farPlane = far
         self.rebuildMatrixCache()
 
+    def setLens(self, lens):
+        """ Setups the ShadowSource to use an external lens """
+        self.lens = lens
+        self.camera.setLens(self.lens)
+        self.nearPlane = lens.getNear()
+        self.farPlane = lens.getFar()
+        self.nearPlane = 0.5
+        self.farPlane = 50.0
+        self.rebuildMatrixCache()
+
     def setupOrtographicLens(self, near=0.1, far=100.0, filmSize=(512, 512)):
         """ Setups a OrtographicLens with a given near plane, far plane
         and film size. The film size is a tuple in the format (filmWidth, filmHeight)
@@ -169,6 +179,10 @@ class ShadowSource(DebugObject, ShaderStructElement):
     def setPos(self, pos):
         """ Sets the position of the source in world space """
         self.cameraNode.setPos(pos)
+
+    def getPos(self):
+        """ Returns the position of the source in world space """
+        return self.cameraNode.getPos()
 
     def setHpr(self, hpr):
         """ Sets the rotation of the source in world space """

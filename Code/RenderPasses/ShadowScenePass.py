@@ -82,7 +82,7 @@ class ShadowScenePass(RenderPass):
         self.target = RenderTarget("ShadowAtlas")
         self.target.setSize(self.size)
         self.target.addDepthTexture()
-        self.target.setDepthBits(24)
+        self.target.setDepthBits(32)
         self.target.setColorWrite(False)
         self.target.setActive(False)
 

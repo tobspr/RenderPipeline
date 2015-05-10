@@ -129,7 +129,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
-        self.renderPipeline.addLight(dirLight)
+        # self.renderPipeline.addLight(dirLight)
         self.dirLight = dirLight
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
@@ -181,17 +181,20 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
 
 
-        for i in xrange(3):
-            spotLight = SpotLight()
-            spotLight.setColor(Vec3(0.5, 0.8, 1.0) * 4.0)
+        for x in xrange(5):
+            for y in xrange(4):
+                spotLight = SpotLight()
+                spotLight.setColor(Vec3(0.5, 0.8, 1.0) * 4.0)
 
-            lightPos = Vec3(i * 7.0 - 8.0, 3.5, 12)
+                lightPos = Vec3(x * 4.0 - 6.0, y * -4.0, 12)
 
-            spotLight.setPos(lightPos)
-            spotLight.lookAt(lightPos - Vec3(0, 0, 1))
-            spotLight.setFov(130)
-            spotLight.setNearFar(0.5, 13.0)
-            self.renderPipeline.addLight(spotLight)
+                spotLight.setPos(lightPos)
+                spotLight.lookAt(lightPos - Vec3(0, 0, 1))
+                spotLight.setFov(130)
+                spotLight.setShadowMapResolution(512)
+                # spotLight.setCastsShadows(True)
+                spotLight.setNearFar(0.5, 20.0)
+                self.renderPipeline.addLight(spotLight)
             # spotLight.attachDebugNode(render)
             # self.movingLights.append(spotLight)
 
