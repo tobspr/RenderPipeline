@@ -279,12 +279,13 @@ class RenderPassManager(DebugObject):
             for outputName, outputValue in renderPass.getOutputs().iteritems():
                 self._availableUniforms[outputName] = outputValue
 
+        # List variables & passes
         # self.debug(self._sortedNodes)
     
-        print "Static:"
-        for variable, val in self.staticVariables.iteritems():
-            print variable, type(val)
+        # print "Static:"
+        # for variable, val in self.staticVariables.iteritems():
+        #     print variable, type(val)
 
-        print "Dynamic:"
-        for variable, val in self.dynamicVariables.iteritems():
-            print variable, type(val)
+        # print "Dynamic:"
+        # for variable, val in self.dynamicVariables.iteritems():
+        #     print variable, type(val)

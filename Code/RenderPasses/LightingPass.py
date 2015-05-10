@@ -66,6 +66,9 @@ class LightingPass(RenderPass):
             # Volumetric lighting
             "volumetricLightingTex": ["VolumetricLightingPass.resultTex", "Variables.emptyTextureWhite"],
 
+            # IES Profiles
+            "IESProfilesTex": "Variables.IESProfilesTex",
+
             # Scene data
             "noiseTexture": "Variables.noise4x4",
             "cameraPosition": "Variables.cameraPosition",

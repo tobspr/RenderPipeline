@@ -45,13 +45,6 @@ void main() {
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
 
-    bumpFactor = 0.0;
-    specularFactor = 0.5;
-    metallic = 0.0;
-    
-
-    // sampledNormal.xyz = vec3(0.5, 0.5, 1.0);
-
     // Merge the detail normal with the vertex normal
     vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
     vec3 tangent; vec3 binormal;
@@ -65,11 +58,6 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
-
-    m.roughness = 0.7;
-
-
-    // m.baseColor = vec3(sampledNormal.xyz);
 
     renderMaterial(m);
 }

@@ -23,7 +23,7 @@ class MovementController:
         self.mouseSensivity = 0.7
         self.keyboardHprSpeed = 0.8
         # self.smoothness = 0.7
-        self.smoothness = 0.8
+        self.smoothness = 0.75
 
     def setInitialPosition(self, pos, target):
         """ Sets the initial camera position """
@@ -79,7 +79,7 @@ class MovementController:
         self.showbase.accept("shift-up", self._setMovement, [2, 0])
 
         # wireframe + debug + buffer viewer
-        self.showbase.accept("f3", self.showbase.toggleWireframe)
+        # self.showbase.accept("f3", self.showbase.toggleWireframe)
         self.showbase.accept("p",  self._showDebugOutput)
 
         # mouse

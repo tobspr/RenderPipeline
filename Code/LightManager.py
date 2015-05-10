@@ -20,7 +20,7 @@ from ShaderStructArray import ShaderStructArray
 from Globals import Globals
 from MemoryMonitor import MemoryMonitor
 from LightLimits import LightLimits
-
+from IESLoader import IESLoader
 
 from RenderPasses.ShadowScenePass import ShadowScenePass
 from RenderPasses.LightCullingPass import LightCullingPass
@@ -111,7 +111,8 @@ class LightManager(DebugObject):
         self.pipeline.getRenderPassManager().registerStaticVariable("numShadowUpdates", 
             self.numShadowUpdatesPTA)
 
-        self.addShaderDefines()
+        self._loadIESProfiles()
+        self._addShaderDefines()
         self.lightingComputator = None
         self._createDebugTexts()
 
@@ -138,6 +139,15 @@ class LightManager(DebugObject):
         """ Creates the shadow prefiltering pass """
         self.prefilterPass = PCSSPreFilterPass()
         self.pipeline.getRenderPassManager().registerPass(self.prefilterPass)
+
+
+    def _loadIESProfiles(self):
+        """ Loads the ies profiles from Data/IESProfiles. """
+        self.iesLoader = IESLoader()
+        self.iesLoader.loadIESProfiles("Data/IESProfiles/")
+
+        self.pipeline.getRenderPassManager().registerStaticVariable("IESProfilesTex",
+            self.iesLoader.getIESProfileStorageTex())
 
 
     def _initLightCulling(self):
@@ -187,7 +197,7 @@ class LightManager(DebugObject):
 
         MemoryMonitor.addTexture("Rendered Lights Buffer", self.renderedLightsBuffer)
 
-    def addShaderDefines(self):
+    def _addShaderDefines(self):
         """ Adds settings like the maximum light count to the list of defines
         which are available in the shader later """
         define = lambda name, val: self.pipeline.getRenderPassManager().registerDefine(name, val)
@@ -262,14 +272,6 @@ class LightManager(DebugObject):
             except Exception, msg:
                 self.debug(
                     "Overlay is disabled because FastText wasn't loaded")
-
-    def setLightingComputator(self, shaderNode):
-        """ Sets the render target which recieves the shaderinputs necessary to 
-        compute the final lighting result """
-        self.debug("Light computator is", shaderNode)
-        self.lightingComputator = shaderNode
-        self.allLightsArray.bindTo(shaderNode, "lights")
-        self.allShadowsArray.bindTo(shaderNode, "shadowSources")
 
     def _queueShadowUpdate(self, sourceIndex):
         """ Internal method to add a shadowSource to the list of queued updates. Returns
@@ -380,7 +382,7 @@ class LightManager(DebugObject):
         """ Sets the current camera bounds used for light culling """
         self.cullBounds = bounds
 
-    def writeRenderedLightsToBuffer(self):
+    def _writeRenderedLightsToBuffer(self):
         """ Stores the list of rendered lights in the buffer to access it in
         the shader later """
 
@@ -416,6 +418,12 @@ class LightManager(DebugObject):
             offset += LightLimits.maxLights[lightType] * bufferEntrySize
 
         pstats_WriteBuffers.stop()
+
+    def update(self):
+        """ Main update function """
+        self.updateLights()
+        self.updateShadows()
+        self.processCallbacks()
 
     def updateLights(self):
         """ This is one of the two per-frame-tasks. See class description
@@ -485,7 +493,7 @@ class LightManager(DebugObject):
 
         pstats_ProcessLights.stop()
 
-        self.writeRenderedLightsToBuffer()
+        self._writeRenderedLightsToBuffer()
 
         # Generate debug text
         if self.lightsVisibleDebugText is not None:
@@ -602,8 +610,3 @@ class LightManager(DebugObject):
         if self.lightsUpdatedDebugText is not None:
             self.lightsUpdatedDebugText.setText(
                 'Updates: ' + str(numUpdates) + "/" + str(queuedUpdateLen) + ", Last: " + lastRenderedSourcesStr + ", Free Tiles: " + str(self.shadowAtlas.getFreeTileCount()) + "/" + str(self.shadowAtlas.getTotalTileCount()))
-
-    # Main update
-    def update(self):
-        self.updateLights()
-        self.updateShadows()

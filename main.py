@@ -24,7 +24,7 @@ import copy
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, SamplerState
-from panda3d.core import Texture, TextureStage
+from panda3d.core import Texture, TextureStage, RenderModeAttrib
 from panda3d.core import Shader, CullFaceAttrib, AntialiasAttrib
 
 from Code.MovementController import MovementController
@@ -88,7 +88,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
-        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
@@ -105,14 +105,14 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
-        self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
+        # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
 
         # Select surrounding scene here
-        self.sceneSourceSurround = None
-        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        # self.sceneSourceSurround = None
+        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
         # Store a list of transparent objects
@@ -122,7 +122,7 @@ class Main(ShowBase, DebugObject):
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
         dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(512)
+        dirLight.setShadowMapResolution(1024)
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(2, 2, 1.8))
         # dirLight.setColor(Vec3(0.3))
@@ -180,6 +180,21 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.addLight(pointLight)
             # pointLight.attachDebugNode(render)
 
+
+        for i in xrange(3):
+            spotLight = SpotLight()
+            spotLight.setColor(Vec3(0.5, 0.8, 1.0) * 4.0)
+
+            lightPos = Vec3(i * 7.0 - 8.0, 3.5, 12)
+
+            spotLight.setPos(lightPos)
+            spotLight.lookAt(lightPos - Vec3(0, 0, 1))
+            spotLight.setFov(130)
+            spotLight.setNearFar(0.5, 13.0)
+            self.renderPipeline.addLight(spotLight)
+            # spotLight.attachDebugNode(render)
+            # self.movingLights.append(spotLight)
+
         # Attach update task
         self.addTask(self.update, "update")
 
@@ -216,7 +231,8 @@ class Main(ShowBase, DebugObject):
         """ Main update task """
 
         for idx, light in enumerate(self.movingLights):
-            light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 13)
+            light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 10)
+            # light.setZ(5)
 
         # Uncomment for party mode :-)
         # self.removeDemoLight()
@@ -257,8 +273,8 @@ class Main(ShowBase, DebugObject):
                 highPolyObj.detachNode()
                 self.loadingScreen.setStatus("Preparing Performance Test")
 
-                for x in xrange(-10, 10):
-                    for y in xrange(-10, 10):
+                for x in xrange(-5, 5):
+                    for y in xrange(-5, 5):
                         copiedObj = copy.deepcopy(highPolyObj)
                         copiedObj.setColorScale(random(), random(), random(), 1)
                         copiedObj.reparentTo(self.scene)
@@ -276,7 +292,7 @@ class Main(ShowBase, DebugObject):
         #     match.setColorScale(1,0,1, 1)
 
         # Wheter to use a ground plane
-        self.usePlane = True
+        self.usePlane = False
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -371,9 +387,11 @@ class Main(ShowBase, DebugObject):
         self.sceneWireframe = not self.sceneWireframe
 
         if self.sceneWireframe:
-            self.scene.setRenderModeWireframe()
+            render.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MWireframe), 10)
         else:
-            self.scene.clearRenderMode()
+            render.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 10)
+
+        self.skybox.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 20)
 
     def prepareSRGB(self, np):
         """ Sets the correct texture format for all textures found in <np> """

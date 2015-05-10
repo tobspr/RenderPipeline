@@ -5,7 +5,6 @@ from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerSt
 from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight
 from panda3d.core import Texture, UnalignedLMatrix4f, Vec3, PTAFloat, TextureStage
 
-
 from DebugObject import DebugObject
 from MountManager import MountManager
 from PipelineSettingsManager import PipelineSettingsManager
@@ -153,6 +152,8 @@ class RenderingPipeline(DebugObject):
 
         # todo: gi -> reload shaders
 
+
+
     def getRenderPassManager(self):
         """ Returns a handle to the render pass manager attribute """
         return self.renderPassManager
@@ -190,9 +191,7 @@ class RenderingPipeline(DebugObject):
         """ This is the pre render task which handles updating of all the managers
         as well as calling the pipeline update task """
         self._updateInputHandles()
-        self.lightManager.updateLights()
-        self.lightManager.updateShadows()
-        self.lightManager.processCallbacks()
+        self.lightManager.update()
         if self.guiManager:
             self.guiManager.update()
         if self.transparencyManager:
@@ -268,10 +267,10 @@ class RenderingPipeline(DebugObject):
 
         # Load the default environment cubemap
         cubemapEnv = self.showbase.loader.loadCubeMap(
-            self.settings.defaultReflectionCubemap)
+            self.settings.defaultReflectionCubemap, readMipmaps=True)
         cubemapEnv.setMinfilter(SamplerState.FTLinearMipmapLinear)
         cubemapEnv.setMagfilter(SamplerState.FTLinearMipmapLinear)
-        cubemapEnv.setFormat(Texture.FSrgb)
+        cubemapEnv.setFormat(Texture.FRgba)
         self.renderPassManager.registerStaticVariable("defaultEnvironmentCubemap", 
             cubemapEnv)
         self.renderPassManager.registerStaticVariable("defaultEnvironmentCubemapMipmaps", 

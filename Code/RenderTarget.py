@@ -482,8 +482,9 @@ class RenderTarget(DebugObject):
 
         if clear:
             if color is None:
-                color = Vec4(0)
+                color = Vec4(1, 0, 1, 1)
             self._internalBuffer.setClearColor(color)
+            # self.getInternalRegion().setClearColor(color)
 
     def removeQuad(self):
         """ Removes the fullscren quad after creation, this might be required

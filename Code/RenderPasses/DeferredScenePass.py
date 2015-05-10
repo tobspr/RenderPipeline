@@ -29,6 +29,7 @@ class DeferredScenePass(RenderPass):
         self.target.setCreateOverlayQuad(False)
         self.target.prepareSceneRender()
         self.target.setClearColor(True)
+        # self.target.setClearDepth(True)
 
         # Remove the generated fullscreen quad
         # self.target.removeQuad()

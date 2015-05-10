@@ -122,7 +122,6 @@ gl-force-no-scissor #t
 gl-debug #f
 
 # notify-level-glgsg debug
-# auto-flip #f
 
 # gl-enable-memory-barriers #f
 
@@ -165,7 +164,7 @@ show-buffers #f
 
 # GPU Timer queries
 pstats-gpu-timing #t
-auto-flip #t
+auto-flip #f
 
 gl-debug-object-labels #f
 

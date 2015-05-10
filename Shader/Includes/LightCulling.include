@@ -17,7 +17,9 @@ bool isPointLightInFrustum(Light light, Frustum frustum) {
 
 
 bool isSpotLightInFrustum(Light light, Frustum frustum) {
-    // TODO
-
-    return true;
+    vec4 projectedPos = frustum.viewMat * vec4(light.position, 1);
+    if (sphereInFrustum(frustum, projectedPos, light.radius * 2.0)) {
+        return true;
+    }
+    return false;
 }
