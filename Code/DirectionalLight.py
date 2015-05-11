@@ -35,10 +35,10 @@ class DirectionalLight(Light, DebugObject):
         Light.__init__(self)
         DebugObject.__init__(self, "DirectionalLight")
         self.typeName = "DirectionalLight"
-        self.splitCount = 4
+        self.splitCount = 6
         self.pssmTargetCam = Globals.base.cam
         self.pssmTargetLens = Globals.base.camLens
-        self.pssmFarPlane = 60.0
+        self.pssmFarPlane = 600.0
         self.pssmSplitPow = 2.0
         self.updateIndex = 0
 
@@ -66,7 +66,7 @@ class DirectionalLight(Light, DebugObject):
         self.pssmTargetCam = pssm_cam
         self.pssmTargetLens = pssm_lens
 
-    def _getLightType(self):
+    def getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
         return LightType.Directional
 
@@ -94,7 +94,7 @@ class DirectionalLight(Light, DebugObject):
         for i in xrange(self.splitCount):
             source = ShadowSource()
             source.setupOrtographicLens(
-                5.0, 1000.0, (10, 10))
+                5.0, 2000.0, (10, 10))
             source.setResolution(self.shadowResolution)
             self._addShadowSource(source)
 
@@ -144,7 +144,7 @@ class DirectionalLight(Light, DebugObject):
             filmSize = (topPlanePos - midPos).length() * 1.41
             midPos += camPos
 
-            destPos = midPos + self.direction * 300.0
+            destPos = midPos + self.direction * 700.0
 
             # Set source position + rotation
             source.setPos(destPos)

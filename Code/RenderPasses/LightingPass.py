@@ -35,39 +35,27 @@ class LightingPass(RenderPass):
             "giReflectionTex": ["GlobalIlluminationPass.specularResult", "Variables.emptyTextureWhite"],
             "occlusionTex": ["OcclusionBlurPass.blurResult", "Variables.emptyTextureWhite"],
 
-            "lastFramePosition": "Variables.emptyTextureWhite", #TODO
-            "lastFrameOcclusion": "Variables.emptyTextureWhite", #TODO
-
-
-            # Lighting
-            "lightsPerTileBuffer": "LightCullingPass.lightsPerTile",
-            "lightingTileCount": "Variables.lightingTileCount",
-            "lights": "Variables.allLights",
-            "shadowAtlasPCF": "ShadowScenePass.atlasPCF",
-            "shadowAtlas": "ShadowScenePass.atlas",
-            "shadowSources": "Variables.allShadowSources",
-            "directionToFace": "Variables.directionToFaceLookup",
+            # "lastFramePosition": "Variables.emptyTextureWhite", #TODO
+            # "lastFrameOcclusion": "Variables.emptyTextureWhite", #TODO
 
             # Dynamic exposure
             "dynamicExposureTex": ["Variables.dynamicExposureTex", "Variables.null"],
 
             # Scattering
-            "transmittanceSampler": ["Variables.transmittanceSampler", "Variables.emptyTextureWhite"],
-            "inscatterSampler": ["Variables.inscatterSampler", "Variables.emptyTextureWhite"],
-            "scatteringOptions": ["Variables.scatteringOptions", "Variables.null"],
+            "scatteringTex": ["ScatteringPass.resultTex", "Variables.emptyTextureWhite"],
 
             # Default environment
             "fallbackCubemap": "Variables.defaultEnvironmentCubemap",
             "fallbackCubemapMipmaps": "Variables.defaultEnvironmentCubemapMipmaps",
 
-            # Prefiltered pccs shadow
-            "prefilteredPCSSTex": ["PCSSPreFilterPass.resultTex", "Variables.emptyTextureWhite"],
+            # Precomputed unshadowed lights
+            "unshadowedLightsTex": ["UnshadowedLightsPass.resultTex"],
+
+            # Precomputed unshadowed lights
+            "shadowedLightsTex": ["ShadowedLightsPass.resultTex"],
 
             # Volumetric lighting
             "volumetricLightingTex": ["VolumetricLightingPass.resultTex", "Variables.emptyTextureWhite"],
-
-            # IES Profiles
-            "IESProfilesTex": "Variables.IESProfilesTex",
 
             # Scene data
             "noiseTexture": "Variables.noise4x4",
@@ -86,7 +74,7 @@ class LightingPass(RenderPass):
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/ApplyLighting.fragment")
+            "Shader/LightingPass.fragment")
         self.target.setShader(shader)
 
         return [shader]

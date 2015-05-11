@@ -19,6 +19,10 @@ class IESLoader(DebugObject):
         'IESNA91':          1991,
         'IESNA:LM-63-1995': 1995,
         'IESNA:LM-63-2002': 2002,
+
+        # Seems they have their own format
+        "ERCO Leuchten GmbH  BY: ERCO/LUM650/8701": 2003,
+        "ERCO Leuchten GmbH": 2003,
     }
 
     # Controls the size of the precomputed ies tables. Bigger values mean more
@@ -30,7 +34,7 @@ class IESLoader(DebugObject):
         DebugObject.__init__(self, "IESLoader")
         self.debug("Creating IES Loader")
         self.storage = Texture("IESProfiles")
-        self.storage.setup2dTextureArray(self.IESTableResolution, 1, 64, Texture.TFloat, Texture.FRgb16)
+        self.storage.setup2dTextureArray(self.IESTableResolution, 1, 64, Texture.TFloat, Texture.FRgba16)
         self.storage.setMinfilter(SamplerState.FTLinear)
         self.storage.setMagfilter(SamplerState.FTLinear)
         self.storage.setWrapU(SamplerState.WMClamp)
@@ -43,6 +47,13 @@ class IESLoader(DebugObject):
         """ Returns the texture array where all ies profiles are stored in """
         return self.storage
 
+    def getIESProfileIndexByName(self, name):
+        """ Returns the ies profile index if loaded so far, or -1 if no ies
+        profile with that name exists so far """
+        if name in self.profileNames:
+            return self.profileNames.index(name)
+        return -1
+
     def loadIESProfiles(self, directory):
         """ Loads all ies profiles from a given directory """
         self.debug("Loading IES Profiles from", directory)
@@ -53,7 +64,6 @@ class IESLoader(DebugObject):
             if entry.lower().endswith(".ies"):
                 combinedPath = os.path.join(directory, entry)
                 self._loadIESProfile(entry.split(".")[0], combinedPath)
-
 
 
     def _storeIESProfile(self, name, lampRadialGradientData, lampGradientData):
@@ -77,22 +87,27 @@ class IESLoader(DebugObject):
         self.profileNames.append(name)
 
         # Generate gradient texture
-        img = PNMImage(self.IESTableResolution, 1, 3, 2 ** 16 - 1)
+        img = PNMImage(self.IESTableResolution, 1, 4, 2 ** 16 - 1)
 
         for offset in xrange(self.IESTableResolution):
-            radialGradientVal = interpolateValue(lampRadialGradientData, offset / float(self.IESTableResolution))
+            radialGradientValR = interpolateValue(lampRadialGradientData, 
+                (offset + 5.0) / float(self.IESTableResolution))
+            radialGradientValG = interpolateValue(lampRadialGradientData, 
+                offset / float(self.IESTableResolution))
+            radialGradientValB = interpolateValue(lampRadialGradientData, 
+                (offset - 5.0) / float(self.IESTableResolution))
+
             gradientVal = interpolateValue(lampGradientData, offset / float(self.IESTableResolution))
 
-            img.setXel(offset, 0, radialGradientVal, gradientVal, 0)
+            img.setXelA(offset, 0, radialGradientValR, radialGradientValG, radialGradientValB, gradientVal)
 
         # Store gradient texture
         self.storage.load(img, profileIndex, 0)
 
-
     def _loadIESProfile(self, name, filename):
         """ Internal method to load an ies profile. Adapted from
         https://gist.githubusercontent.com/AngryLoki/4364512/raw/ies2cycles.py """
-        self.debug("loading ies profile", filename)
+        # self.debug("Loading ies profile", filename, "as",len(self.profileNames))
 
         profileMultiplier = 1.0
 
@@ -102,11 +117,12 @@ class IESLoader(DebugObject):
 
         # Extract and check version string
         versionString, content = content.split('\n', 1)
+        versionString = versionString.strip()
 
         if versionString in self.IESVersionTable:
             version = self.IESVersionTable[versionString]
         else:
-            self.warn("No supported IES version found")
+            self.warn("No supported IES version found:",versionString)
             version = None
 
         # Extract IES properties
@@ -131,7 +147,7 @@ class IESLoader(DebugObject):
         # Property 0 is the amount of lamps
         numLamps = int(fileData[0])
         if numLamps != 1:
-            self.warn("Only 1 lamp is supported,", numLamps, "found")
+            self.warn("Only 1 lamp is supported,", numLamps, "found:",name)
 
         # Extract further properties
         lumensPerLamp = float(fileData[1])

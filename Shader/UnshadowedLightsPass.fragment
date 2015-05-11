@@ -1,0 +1,106 @@
+#version 400
+
+#pragma optionNV (unroll all)
+
+#define UNSHADOWED_PASS 1
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Light.include"
+#pragma include "Includes/Material.include"
+
+out vec4 result;
+
+// Light-IDs per tile
+uniform isamplerBuffer lightsPerTileBuffer;
+uniform ivec2 lightingTileCount;
+uniform Light lights[MAX_VISIBLE_LIGHTS]; 
+// uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
+
+
+// Deferred target inpupts
+uniform sampler2D data0;
+uniform sampler2D data1;
+uniform sampler2D data2;
+uniform sampler2D data3;
+uniform sampler2D depth;
+
+uniform vec3 cameraPosition;
+
+
+#pragma include "Includes/Lights.include"
+
+
+void main() {
+
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+ 
+    ivec2 tileIndex = ivec2(vec2(screenCoord) / 
+        vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y));
+
+    int tileBufferOffset = (tileIndex.x + tileIndex.y * lightingTileCount.x) * LIGHTING_PER_TILE_STRIDE;
+
+
+    // Extract material data
+    vec4 target0data = texelFetch(data0, screenCoord, 0);
+    vec4 target1data = texelFetch(data1, screenCoord, 0);
+    vec4 target2data = texelFetch(data2, screenCoord, 0);
+    vec4 target3data = texelFetch(data3, screenCoord, 0);
+    Material material = unpackMaterial(target0data, target1data, target2data, target3data);
+
+
+    // Fetch the light counts
+    // We perform a min as it *might* be that we read a wrong value
+    // from the texture. Imagine reading 123123123 from the texture,
+    // then the light processing loop would be 123123123 iterations long,
+    // which simply crashes the driver. With this method it would be only
+    // a few hundreds, which is long but does not crash the driver.
+    int countPointLight = min(MAX_TILE_POINT_LIGHTS, 
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 0).r);
+
+    int countDirectionalLight = min(MAX_TILE_DIRECTIONAL_LIGHTS, 
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 2).r);
+
+    int countSpotLight = min(MAX_TILE_SPOT_LIGHTS, 
+        texelFetch(lightsPerTileBuffer, tileBufferOffset + 4).r);
+
+    countPointLight = 0;
+    countDirectionalLight = 0;
+
+    // Initial tile offset
+    int currentTileOffset = tileBufferOffset + 16;
+
+    // Compute point lights
+    int currentLightId = 0;
+    Light currentLight;
+    vec3 lightingResult = vec3(0);
+
+    for (int i = 0; i < countPointLight; i++) {
+        currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
+        currentLight = lights[currentLightId];
+        lightingResult += applyPointLight(currentLight, material);
+    }
+
+    currentTileOffset += MAX_TILE_POINT_LIGHTS + MAX_TILE_SHADOWED_POINT_LIGHTS;
+
+    // Compute directional lights
+    for (int i = 0; i < countDirectionalLight; i++) {
+        currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
+        currentLight = lights[currentLightId];
+        lightingResult += applyDirectionalLight(currentLight, material);
+    }
+
+    currentTileOffset += MAX_TILE_DIRECTIONAL_LIGHTS + MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS;
+
+    // Compute spot lights
+    for (int i = 0; i < countSpotLight; i++) {
+        currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
+        currentLight = lights[currentLightId];
+        lightingResult += applySpotLight(currentLight, material);
+    }
+
+   currentTileOffset += MAX_TILE_SPOT_LIGHTS + MAX_TILE_SHADOWED_SPOT_LIGHTS;
+
+
+
+    result = vec4(lightingResult, 1.0);
+}

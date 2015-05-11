@@ -1,0 +1,74 @@
+#pragma once
+
+#pragma include "Includes/Configuration.include"
+
+#pragma include "Includes/Lights.include"
+#pragma include "Includes/Lighting.include"
+
+
+// Prefiltered PCSS Texture
+uniform sampler2D prefilteredPCSSTex;
+
+
+vec3 applyPointLightWithShadow(Light light, Material material) {
+
+    float distanceToLight = distance(material.position, light.position);   
+    float distanceRelative = distanceToLight / light.radius; 
+    float attenuation = computePointLightAttenuation(light, distanceToLight);
+
+    vec3  l = normalize(light.position - material.position);
+    vec3  v = normalize(cameraPosition - material.position);
+    vec3  n = normalize(material.normal);
+    vec3  h = normalize(l + v);
+
+
+    // We decide which shadow map to sample using a simple lookup cubemap
+    int faceIndex = int( textureLod(directionToFace, l, 0).r * 5.0);
+    int shadowSourceIndex = light.sourceIndexes[faceIndex];
+    ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
+    float shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.2, 0.001, 0.0015);
+
+
+    return computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
+}
+
+
+
+
+vec3 applyDirectionalLightWithShadow(Light light, Material material) {
+
+    float attenuation = 1.0;
+
+    vec3  l = light.direction;
+    vec3  v = normalize(cameraPosition - material.position);
+    vec3  n = normalize(material.normal);
+    vec3  h = normalize(l + v);
+
+
+    int shadowSourceIndex = light.sourceIndexes[0];
+    ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
+
+    int map_used = 0;
+    // float shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 40.0, 60.0, 0.015, map_used);
+    float shadowFactor = texture(prefilteredPCSSTex, texcoord).x;
+    // float shadowFactor = texelFetch(prefilteredPCSSTex, ivec2(gl_FragCoord.xy) , 0 ).w;
+    float map_use_factor = map_used / 6.0;
+
+
+    // float shadowFactor = 1.0;
+    vec3 rawLighting = computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
+
+    // rawLighting += 0.1;
+    // rawLighting *= computeVolumetricLighting(light, material, n, l);
+    
+    #ifdef DEBUG_RM_PSSM_SPLITS
+        rawLighting = (rawLighting +0.1) * vec3(map_use_factor, 1.0 -map_use_factor, 0);
+    #endif
+
+    return rawLighting;
+}
+
+
+vec3 applySpotLightWithShadow(Light light, Material material) {
+    return computeSpotLight(light, material, true);
+} 

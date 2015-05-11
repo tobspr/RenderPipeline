@@ -88,13 +88,14 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
-        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
+        # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
 
 
@@ -111,8 +112,8 @@ class Main(ShowBase, DebugObject):
         
 
         # Select surrounding scene here
-        # self.sceneSourceSurround = None
-        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        self.sceneSourceSurround = None
+        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
 
         # Store a list of transparent objects
@@ -129,7 +130,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
 
-        # self.renderPipeline.addLight(dirLight)
+        self.renderPipeline.addLight(dirLight)
         self.dirLight = dirLight
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
@@ -181,20 +182,21 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
 
 
-        for x in xrange(5):
-            for y in xrange(4):
-                spotLight = SpotLight()
-                spotLight.setColor(Vec3(0.5, 0.8, 1.0) * 4.0)
+        for x in xrange(0):
+            spotLight = SpotLight()
+            spotLight.setColor(Vec3(0.5, 0.8, 1.0) * 0.2)
+            lightPos = Vec3(x * 3.0 - 7.0, 0, 6)
 
-                lightPos = Vec3(x * 4.0 - 6.0, y * -4.0, 12)
+            lightPos = Vec3(math.sin(x/19.0 * 6.28) * 7.0, math.cos(x/19.0 * 6.28) * 7.0, 10.0)
 
-                spotLight.setPos(lightPos)
-                spotLight.lookAt(lightPos - Vec3(0, 0, 1))
-                spotLight.setFov(130)
-                spotLight.setShadowMapResolution(512)
-                # spotLight.setCastsShadows(True)
-                spotLight.setNearFar(0.5, 20.0)
-                self.renderPipeline.addLight(spotLight)
+            spotLight.setPos(lightPos)
+            spotLight.lookAt(lightPos - Vec3(0, 0, 1))
+            spotLight.setFov(90)
+            spotLight.setShadowMapResolution(512)
+            spotLight.setCastsShadows(True)
+            spotLight.setNearFar(2.0, 15.0)
+            spotLight.setIESProfile("AreaLight")
+            self.renderPipeline.addLight(spotLight)
             # spotLight.attachDebugNode(render)
             # self.movingLights.append(spotLight)
 
@@ -206,7 +208,7 @@ class Main(ShowBase, DebugObject):
         
 
         # Show loading screen a bit
-        if True:
+        if False:
             self.doMethodLater(0.5, self.loadScene, "Load Scene")
         else:
             self.loadScene()
@@ -237,6 +239,9 @@ class Main(ShowBase, DebugObject):
             light.setZ(math.sin(idx +globalClock.getFrameTime())*2.0 + 10)
             # light.setZ(5)
 
+
+        import time
+        # time.sleep(0.5)
         # Uncomment for party mode :-)
         # self.removeDemoLight()
         # self.addDemoLight()
@@ -247,7 +252,9 @@ class Main(ShowBase, DebugObject):
         """ Starts loading the scene, this is done async """
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
-        self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
+        # self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
+        self.scene = loader.loadModel(self.sceneSource)
+        self.onSceneLoaded(self.scene)
 
     def onSceneLoaded(self, scene):
         """ Callback which gets called after the scene got loaded """
@@ -313,7 +320,7 @@ class Main(ShowBase, DebugObject):
         self.prepareSRGB(self.scene)
 
         # Prepare Materials
-        # self.renderPipeline.fillTextureStages(render)
+        self.renderPipeline.fillTextureStages(render)
 
         # Load ground plane if configured
         if self.usePlane:
@@ -363,6 +370,7 @@ class Main(ShowBase, DebugObject):
 
         # Hide loading screen
         self.loadingScreen.hide()
+        # self.toggleSceneWireframe()
 
 
     def setSunPos(self):

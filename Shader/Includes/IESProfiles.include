@@ -5,14 +5,16 @@
 uniform sampler2DArray IESProfilesTex;
 
 vec3 computeIESProfile(int iesProfileID, float radialFactor, float distance) {
+
+    // #ifdef DEBUG_DISABLE_COMPLEX_LIGHTING
+    //     return vec3(radialFactor);
+    // #endif
     
-    float iesRadialFallofR = textureLod(IESProfilesTex, vec3(radialFactor + 1.0 / 256.0, 0.0, iesProfileID), 0).x;
-    float iesRadialFallofG = textureLod(IESProfilesTex, vec3(radialFactor + 0.0 / 256.0, 0.0, iesProfileID), 0).x;
-    float iesRadialFallofB = textureLod(IESProfilesTex, vec3(radialFactor - 1.0 / 256.0, 0.0, iesProfileID), 0).x;
+    radialFactor *= 0.7;
+    vec3 iesRadialFallof = textureLod(IESProfilesTex, 
+        vec3(radialFactor, 0.0, iesProfileID), 0).rgb;
 
-    vec3 iesRadialFalloffColor = vec3(iesRadialFallofR, iesRadialFallofG, iesRadialFallofB);
+    float iesGradient = textureLod(IESProfilesTex, vec3(1.0 - saturate(distance), 0.0, iesProfileID), 0).w;
 
-    float iesGradient = textureLod(IESProfilesTex, vec3(1.0 - saturate(distance), 0.0, iesProfileID), 0).y;
-
-    return iesGradient * iesRadialFalloffColor * 2.0;
+    return iesGradient * iesRadialFallof * 16.0;
 }

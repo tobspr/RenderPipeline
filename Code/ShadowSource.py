@@ -19,7 +19,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
     """
 
     # Store a global index for assigning unique ids to the instances
-    _GlobalShadowIndex = 1000
+    _GlobalShadowIndex = 999
 
     @classmethod
     def getExposedAttributes(self):
@@ -95,6 +95,8 @@ class ShadowSource(DebugObject, ShaderStructElement):
         """ Computes the modelViewProjection matrix for the lens. Actually,
         this is the worldViewProjection matrix, but for convenience it is
         called mvp. """
+
+        self.rebuildMatrixCache()
         projMat = self.converterYUR
         modelViewMat = self.transforMat.invertCompose(
             Globals.render.getTransform(self.cameraNode)).getMat()

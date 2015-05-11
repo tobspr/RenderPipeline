@@ -39,6 +39,7 @@ class ShadowScenePass(RenderPass):
             "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(casterShader, 100)
+        # initialState.setDepthTest(False)
         for camera in self.shadowCameras:
             camera.node().setTagState("Default", initialState.getState())
 
@@ -47,6 +48,7 @@ class ShadowScenePass(RenderPass):
             "Shader/DefaultShaders/TransparentShadowCasting/fragment.glsl")
         initialState = NodePath("ShadowCasterStateTransparent")
         initialState.setShader(casterShaderTransparent, 100)
+        # initialState.setDepthTest(False)
         for camera in self.shadowCameras:
             camera.node().setTagState("Transparent", initialState.getState()) 
 
@@ -59,13 +61,19 @@ class ShadowScenePass(RenderPass):
     def setActiveRegionCount(self, activeCount):
         """ Sets the number of active regions, disabling all other regions. If the
         count is less than 1, completely disables the pass """
+
+
         if activeCount < 1:
             self.target.setActive(False)
+            for region in self.renderRegions:
+                region.setActive(False)
+
         else:
             self.target.setActive(True)
             for index, region in enumerate(self.renderRegions):
                 if index < activeCount:
                     region.setActive(True)
+                    pass
                 else:
                     region.setActive(False)
 
@@ -84,12 +92,13 @@ class ShadowScenePass(RenderPass):
         self.target.addDepthTexture()
         self.target.setDepthBits(32)
         self.target.setColorWrite(False)
-        self.target.setActive(False)
-
+        # self.target.setActive(False)
         self.target.setSource(
             NodePath(Camera("tmp")), Globals.base.win)
 
         self.target.prepareSceneRender()
+        self.target.setClearDepth(False)
+
 
         # Set the appropriate filter modes
         dTex = self.target.getDepthTexture()
@@ -105,7 +114,7 @@ class ShadowScenePass(RenderPass):
 
         # Create default initial state
         initialState = NodePath("InitialState")
-        # initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
+        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
 
         # Create a camera for each update
         self.shadowCameras = []
@@ -125,8 +134,8 @@ class ShadowScenePass(RenderPass):
             dr.setSort(1000)
             dr.setClearDepthActive(True)
             dr.setClearDepth(1.0)
-            dr.setClearColorActive(True)
-            dr.setClearColor(Vec4(1,1,1,1))
+            # dr.setClearColorActive(False)
+            # dr.setClearColor(Vec4(1,1,1,1))
             dr.setCamera(self.shadowCameras[i])
             dr.setActive(False)
             self.renderRegions.append(dr)

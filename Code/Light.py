@@ -25,7 +25,7 @@ class Light(ShaderStructElement):
         self.debugEnabled = False
         self.bounds = OmniBoundingVolume()
         self.shadowSources = []
-        self.lightType = self._getLightType()
+        self.lightType = self.getLightType()
         self.position = Vec3(0)
         self.color = Vec3(1)
         self.posterIndex = -1
@@ -36,6 +36,8 @@ class Light(ShaderStructElement):
         self.attached = False
         self.shadowResolution = 512
         self.index = -1
+        self.iesProfile = -1
+        self.iesProfileName = None
         self.mvp = Mat4()
 
         # A light can have up to 6 sources
@@ -51,11 +53,30 @@ class Light(ShaderStructElement):
             "color": "vec3",
             "direction": "vec3",
             "posterIndex": "int",
+            "iesProfile": "int",
             "lightType": "int",
             "radius": "float",
             "sourceIndexes": "array<int>(6)",
             "mvp": "mat4"
         }
+
+    def setIESProfile(self, profileName):
+        """ Sets the specified ies profile for that light """
+        self.iesProfileName = profileName
+        self.iesProfile = -1
+
+    def getIESProfileName(self):
+        """ Returns the ies profile of this light """
+        return self.iesProfileName
+
+    def setIESProfileIndex(self, index):
+        """ Sets the ies profile index """
+        self.iesProfile = index
+        self.queueUpdate()
+
+    def getIESProfileIndex(self):
+        """ Returns the ies profile index of this light """
+        return self.iesProfile
 
     def getIndex(self):
         """ Returns the light index, this is only set if the light is already attached """
@@ -188,9 +209,6 @@ class Light(ShaderStructElement):
         self._computeAdditionalData()
         self._computeLightBounds()
 
-        if self.castShadows:
-            self._updateShadowSources()
-
         if self.debugEnabled:
             self._updateDebugNode()
 
@@ -243,7 +261,7 @@ class Light(ShaderStructElement):
         """ If child classes need to compute anything fancy, do it here """
         pass
 
-    def _getLightType(self):
+    def getLightType(self):
         """ Child classes have to implement this and
         return the correct type """
         return LightType.NoType

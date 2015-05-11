@@ -323,7 +323,7 @@ class RenderingPipeline(DebugObject):
         if specified in the settings """
         if self.settings.enableScattering:
             earthScattering = Scattering(self)
-            scale = 1000000000
+            scale = 100000
             earthScattering.setSettings({
                 "atmosphereOffset": Vec3(0, 0, - (6360.0 + 9.5) * scale),
                 "atmosphereScale": Vec3(scale)

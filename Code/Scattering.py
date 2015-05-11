@@ -231,12 +231,12 @@ class Scattering(DebugObject):
         target = RenderTarget("Scattering" + name)
         target.setSize(width, height)
         target.addColorTexture()
-        target.setColorBits(16)
+        target.setColorBits(32)
 
         # Adds aux textures if specified
         if attachAuxTexture:
             target.addAuxTextures(1)
-            target.setAuxBits(16)
+            target.setAuxBits(32)
 
         # Add render layers if specified
         if layers > 1:

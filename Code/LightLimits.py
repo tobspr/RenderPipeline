@@ -7,24 +7,24 @@ class LightLimits:
     and may vary, but for now we hardcode this values. """
 
     maxLights = {
-        "PointLight": 15,
-        "PointLightShadow": 5,
-        "DirectionalLight": 1,
-        "DirectionalLightShadow": 1,
-        "SpotLight": 20,
-        "SpotLightShadow": 20,
-        "GIHelperLightShadow": 10
+        "PointLight": 30,
+        "PointLightShadow": 30,
+        "DirectionalLight": 30,
+        "DirectionalLightShadow": 30,
+        "SpotLight": 30,
+        "SpotLightShadow": 30,
+        "GIHelperLightShadow": 30
     }
 
     maxPerTileLights = {
-        "PointLight": 15,
-        "PointLightShadow": 5,
-        "DirectionalLight": 1,
-        "DirectionalLightShadow": 1,
-        "SpotLight": 20,
-        "SpotLightShadow": 20,
+        "PointLight": 30,
+        "PointLightShadow": 30,
+        "DirectionalLight": 30,
+        "DirectionalLightShadow": 30,
+        "SpotLight": 30,
+        "SpotLightShadow": 30,
     }
 
-    maxTotalLights = 20
-    maxShadowMaps = 20
+    maxTotalLights = 19
+    maxShadowMaps = 19
 

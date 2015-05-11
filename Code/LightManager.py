@@ -12,6 +12,7 @@ from panda3d.core import PStatCollector
 from panda3d.core import Shader, Filename
 
 from Light import Light
+from LightType import LightType
 from DebugObject import DebugObject
 from RenderTarget import RenderTarget
 from ShadowSource import ShadowSource
@@ -24,7 +25,9 @@ from IESLoader import IESLoader
 
 from RenderPasses.ShadowScenePass import ShadowScenePass
 from RenderPasses.LightCullingPass import LightCullingPass
-from RenderPasses.PCSSPreFilterPass import PCSSPreFilterPass
+from RenderPasses.ScatteringPass import ScatteringPass
+from RenderPasses.UnshadowedLightsPass import UnshadowedLightsPass
+from RenderPasses.ShadowedLightsPass import ShadowedLightsPass
 
 pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
 pstats_CullLights = PStatCollector("App:LightManager:CullLights")
@@ -94,7 +97,13 @@ class LightManager(DebugObject):
 
         # Create shadow compute buffer
         self._createShadowPass()
-        self._createPrefilterPass()
+        self._createUnshadowedLightsPass()
+        self._createShadowedLightsPass()
+
+        if self.pipeline.settings.enableScattering:
+            self._createScatteringPass()
+
+
         self._initLightCulling()
 
         # Create the initial shadow state
@@ -135,11 +144,20 @@ class LightManager(DebugObject):
         self.shadowPass.setSize(self.shadowAtlas.getSize())
         self.pipeline.getRenderPassManager().registerPass(self.shadowPass)
 
-    def _createPrefilterPass(self):
-        """ Creates the shadow prefiltering pass """
-        self.prefilterPass = PCSSPreFilterPass()
-        self.pipeline.getRenderPassManager().registerPass(self.prefilterPass)
+    def _createUnshadowedLightsPass(self):
+        """ Creates the pass which renders all unshadowed lights """
+        self.unshadowedLightsPass = UnshadowedLightsPass()
+        self.pipeline.getRenderPassManager().registerPass(self.unshadowedLightsPass)
 
+    def _createShadowedLightsPass(self):
+        """ Creates the pass which renders all unshadowed lights """
+        self.shadowedLightsPass = ShadowedLightsPass()
+        self.pipeline.getRenderPassManager().registerPass(self.shadowedLightsPass)
+
+    def _createScatteringPass(self):
+        """ Creates the scattering pass """
+        self.scatteringPass = ScatteringPass()
+        self.pipeline.getRenderPassManager().registerPass(self.scatteringPass)
 
     def _loadIESProfiles(self):
         """ Loads the ies profiles from Data/IESProfiles. """
@@ -479,9 +497,19 @@ class LightManager(DebugObject):
             
             # When the light is not ready yet, wait for the next frame
             if delaySpawn:
-                self.debug("Delaying light spawn")
-                continue        
+                # self.debug("Delaying light spawn")
+                continue
 
+            # Check if the ies profile has been assigned yet
+            if light.getLightType() == LightType.Spot:
+                if light.getIESProfileIndex() < 0 and light.getIESProfileName() is not None:
+                    name = light.getIESProfileName()
+                    index = self.iesLoader.getIESProfileIndexByName(name)
+                    if index < 0:
+                        self.error("Unkown ies profile:",name)
+                        light.setIESProfileIndex(0)
+                    else:
+                        light.setIESProfileIndex(index)
 
             # Add light to the correct list now
             pstats_AppendRenderedLight.start()
@@ -525,7 +553,7 @@ class LightManager(DebugObject):
         if len(self.queuedShadowUpdates) < 1:
             self.shadowPass.setActiveRegionCount(0)
             self.numShadowUpdatesPTA[0] = 0
-
+            
         else:
 
             # Check each update in the queue
@@ -571,7 +599,7 @@ class LightManager(DebugObject):
                 # Store update in array
                 self.allShadowsArray[updateID] = update
                 self.updateShadowsArray[index] = update
-
+                
                 # Compute viewport & set depth clearer
                 texScale = float(update.getResolution()) / float(self.shadowAtlas.getSize())
 

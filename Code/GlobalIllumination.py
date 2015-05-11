@@ -77,7 +77,7 @@ class GlobalIllumination(DebugObject):
     def setTargetLight(self, light):
         """ Sets the sun light which is the main source of GI. Only that light
         casts gi. """
-        if light._getLightType() != LightType.Directional:
+        if light.getLightType() != LightType.Directional:
             self.error("setTargetLight expects a directional light!")
             return
 

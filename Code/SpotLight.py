@@ -34,7 +34,7 @@ class SpotLight(Light, DebugObject):
         self.ghostCameraNode = NodePath(self.ghostCamera)
         self.ghostCameraNode.reparentTo(Globals.render)
 
-    def _getLightType(self):
+    def getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
         return LightType.Spot
 
@@ -77,8 +77,6 @@ class SpotLight(Light, DebugObject):
 
         self.mvp = modelViewMat * converterMat
 
-        # print "computed mvp here"
-
     def _computeLightBounds(self):
         """ Recomputes the bounds of this light. For a SpotLight, we for now
         use a simple BoundingSphere """
@@ -103,6 +101,7 @@ class SpotLight(Light, DebugObject):
         innerNode.setBillboardPointEye()
         innerNode.reparentTo(debugNode)
         innerNode.setPos(self.position)
+        innerNode.setColorScale(1,1,0,1)
 
         # Create the outer lines
         lineNode = debugNode.attachNewNode("lines")
@@ -113,17 +112,42 @@ class SpotLight(Light, DebugObject):
         currentCamBounds = self.ghostLens.makeBounds()
         currentCamBounds.xform(self.ghostCameraNode.getMat(render))
 
+        p = lambda index: currentCamBounds.getPoint(index)
+
+        # Make a circle at the bottom
+        frustumBottomCenter = (p(0) + p(1) + p(2) + p(3)) * 0.25
+        upVector = (p(0) + p(1)) / 2 - frustumBottomCenter
+        rightVector = (p(1) + p(2)) / 2 - frustumBottomCenter
+        points = []
+        for idx in xrange(64):
+            rad = idx / 64.0 * math.pi * 2.0
+            pos = upVector * math.sin(rad) + rightVector * math.cos(rad)
+            pos += frustumBottomCenter
+            points.append(pos)
+        frustumLine = self._createDebugLine(points, True)
+        frustumLine.setColorScale(1,1,0,1)
+        frustumLine.reparentTo(lineNode)
+
+
+        # Create frustum lines which connect the origin to the bottom circle
         pointArrays = [
-            [1, 0, 4, 5, 1, 2, 6, 5],
-            [0, 3, 7, 4],
-            [7, 6, 2, 3],
+            [self.position, frustumBottomCenter + upVector],
+            [self.position, frustumBottomCenter - upVector],
+            [self.position, frustumBottomCenter + rightVector],
+            [self.position, frustumBottomCenter - rightVector],
         ]
 
         for pointArray in pointArrays:
-            for i, val in enumerate(pointArray):
-                pointArray[i] = currentCamBounds.getPoint(val)
+            frustumLine = self._createDebugLine(pointArray, False)
+            frustumLine.setColorScale(1,1,0,1)
+            frustumLine.reparentTo(lineNode)
 
-            self._createDebugLine(pointArray, False).reparentTo(lineNode)
+        # Create line which is in the direction of the spot light
+        startPoint = (p(0) + p(1) + p(2) + p(3)) * 0.25
+        endPoint = (p(4) + p(5) + p(6) + p(7)) * 0.25
+        line = self._createDebugLine([startPoint, endPoint], False)
+        line.setColorScale(1,1,1,1)
+        line.reparentTo(lineNode)
 
         # Remove the old debug node
         self.debugNode.node().removeAllChildren()
@@ -143,21 +167,6 @@ class SpotLight(Light, DebugObject):
         """ Recomputes the position of the shadow source """
         self.shadowSources[0].setPos(self.position)
         self.shadowSources[0].setHpr(self.ghostCameraNode.getHpr())
-
-
-
-        # self._computeAdditionalData()
-
-        # self.shadowSources[0].setLens(self.ghostLens)
-
-        # print self.shadowSources[0].getLens() == self.ghostLens
-        # print self.shadowSources[0].getLens().getProjectionMat()
-        # print self.ghostLens.getProjectionMat()
-
-        # print "\n\n"
-        # print Mat4(self.shadowSources[0].computeMVP())
-        # print "VS"
-        # print self.mvp
 
     def __repr__(self):
         """ Generates a string representation of this instance """

@@ -30,9 +30,9 @@ class ShaderStructArray(DebugObject):
     ShaderStructElement.
     """
 
-    def __init__(self, classType, numElements):
+    def __init__(self, classType, arraySize):
         """ Constructs a new array, containing elements of classType and
-        with the size of numElements. classType and numElements can't be
+        with the size of numElements. classType and arraySize can't be
         changed after initialization """
 
         DebugObject.__init__(self, "ShaderStructArray")
@@ -40,74 +40,53 @@ class ShaderStructArray(DebugObject):
         self.arrayIndex = len(self.AllArrays)
         self.AllArrays.append(self)
 
-        self.debug("Init array, size =", numElements)
+
         self.classType = classType
         self.attributes = classType.getExposedAttributes()
 
-        self.size = numElements
+        self.size = arraySize
         self.parents = {}
         self.ptaWrappers = {}
-        self.assignedObjects = [None for i in range(numElements)]
+        self.assignedObjects = [None for i in range(arraySize)]
+
+        componentSize = 0
 
         for name, attrType in self.attributes.iteritems():
             arrayType = PTAFloat
             numElements = 1
+            numFloats = 1
 
             if attrType == "mat4":
                 arrayType = PTAMat4
+                numFloats = 16
 
             elif attrType == "int":
                 arrayType = PTAInt
+                numFloats = 1
 
             # hacky, but works, will get replaced later by a parser
             elif attrType == "array<int>(6)":
                 arrayType = PTAInt
                 numElements = 6
+                numFloats = 6
 
             elif attrType == "float":
                 arrayType = PTAFloat
+                numFloats = 1
 
             elif attrType == "vec2":
                 arrayType = PTALVecBase2f
+                numFloats = 2
 
             elif attrType == "vec3":
                 arrayType = PTALVecBase3f
+                numFloats = 3
 
+            componentSize += numFloats
             self.ptaWrappers[name] = [
                 arrayType.emptyArray(numElements) for i in range(self.size)]
 
-        # self._initBindFuncs()
-
-    # def _initBindFuncs(self):
-
-    #     self.bind_funcs = []
-
-    #     for attrName, attrType in self.attributes.iteritems():
-    #         if attrType == "float":
-    #             attrFunc = self._rebindFloat
-    #         elif attrType == "int":
-    #             attrFunc = self._rebindInt
-    #         elif attrType == "mat4":
-    #             attrFunc = self._rebindMat4
-    #         elif attrType == "array<int>(6)":
-    #             attrFunc = self._rebindArray6
-    #         else:
-    #             attrFunc = self._rebindGeneric
-
-    #         self.bind_funcs.append((attrName, attrFunc))
-        
-    #     self.bind_funcs = tuple(self.bind_funcs) 
-
-
-    # def _rebindFloat(self, attrName, index, value):
-    #     self.ptaWrappers[attrName][index][0] = float(getattr(value, attrName))
-
-    # def _rebindInt(self, attrName, index, value):
-    #     self.ptaWrappers[attrName][index][0] = int(getattr(value, attrName))
-
-    # def _rebindGeneric(self, attrName, index, value)
-
-
+        self.debug("Init array, size =", self.size,"floats=",componentSize,"total =",self.size * componentSize)
 
     def getUID(self):
         """ Returns the unique index of this array """

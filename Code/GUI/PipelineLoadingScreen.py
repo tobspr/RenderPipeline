@@ -1,6 +1,6 @@
 
 
-from panda3d.core import Vec3, Vec4
+from panda3d.core import Vec3, Vec4, NodePath
 from direct.gui.DirectFrame import DirectFrame
 
 
@@ -19,7 +19,8 @@ class PipelineLoadingScreen:
 
     def render(self):
         """ Inits the loading screen, creating the gui """    
-        self.node = self.showbase.pixel2dp.attachNewNode("Loading Screen")
+        # self.node = self.showbase.pixel2dp.attachNewNode("Loading Screen")
+        self.node = NodePath("")
         self.node.setBin("fixed", 10)
         self.node.setDepthTest(False)
 
@@ -71,12 +72,12 @@ class PipelineLoadingScreen:
         interval3.loop()
         interval4 = self.circlePart4.hprInterval(1.7, Vec3(0,0,270))
         interval4.loop()
-        self.showbase.graphicsEngine.renderFrame()
+        # self.showbase.graphicsEngine.renderFrame()
 
     def setStatus(self, status):
         """ Sets the current loading status """
         self.loadingText.setText(status)
-        self.showbase.graphicsEngine.renderFrame()
+        # self.showbase.graphicsEngine.renderFrame()
 
     def _cleanup(self, task):
         """ Internal method to remove the loading screen """

@@ -71,13 +71,8 @@ layout(location = 1) out vec4 sslrDataResult;
 // #endif
 
 
-// Scattering options
-#ifdef USE_SCATTERING
-#pragma include "Scattering/ScatteringOptions.include"
-#pragma include "Scattering/Final.include"
-uniform sampler3D inscatterSampler;
-uniform ScatteringOptions scatteringOptions;
-#endif
+
+uniform sampler2D scatteringTex;
 
 // Dynamic exposure
 #ifdef USE_DYNAMIC_EXPOSURE
@@ -230,20 +225,18 @@ void main() {
     // Scattering
     #ifdef USE_SCATTERING
 
-    vec3 attenuation;
-    float irradianceFactor;
+    // vec3 attenuation;
+    // float irradianceFactor;
 
     // Reconstruct position - otherwise we have precision errors
-    vec3 viewDir = calculateSurfacePos(1.0, texcoord);
+    // vec3 viewDir = calculateSurfacePos(1.0, texcoord);
 
-    vec3 posFromDepth = calculateSurfacePos(texelFetch(depth, screenCoord, 0).x, texcoord);
-
-
-    vec3 sunVector = vec3(0,0,1);
+    // vec3 posFromDepth = calculateSurfacePos(texelFetch(depth, screenCoord, 0).x, texcoord);
+    // vec3 sunVector = vec3(0,0,1);
 
     // FIXME: Should be set by user
     
-    sunVector = normalize(lights[0].direction);
+    // sunVector = normalize(lights[0].direction);
 
     #ifndef DEBUG_DISABLE_SCATTERING
     float inscatterFactor = 5.0;
@@ -253,25 +246,29 @@ void main() {
         mixedOcclusionFactor = 1.0;
 
         // Push very far away
-        posFromDepth *= 1e20;
-        inscatterFactor = 1.5;
+        // posFromDepth *= 1e20;
+        // inscatterFactor = 1.5;
 
-        reflectionFactor = 0.0;
+        // reflectionFactor = 0.0;
 
     }
 
-    vec3 scatteringResult = scatteringComputeInscatteredLight(
-        scatteringOptions,
-        posFromDepth, 
-        cameraPosition,
-        viewDir, 
-        sunVector,
-        inscatterSampler,
-        material.baseColor,
-        isSkybox,
-        attenuation, 
-        irradianceFactor);
+    // vec3 scatteringResult = scatteringComputeInscatteredLight(
+    //     scatteringOptions,
+    //     posFromDepth, 
+    //     cameraPosition,
+    //     viewDir, 
+    //     sunVector,
+    //     inscatterSampler,
+    //     material.baseColor,
+    //     isSkybox,
+    //     attenuation, 
+    //     irradianceFactor);
 
+    vec3 scatteringResult = texture(scatteringTex, texcoord).xyz;
+
+    
+    result += scatteringResult * inscatterFactor ;
     // vec3 reflectVector = reflect(viewVector, material.normal);
     // vec3 startPos = vec3(0);
     // vec3 endPos = reflectVector * 1e17;
@@ -301,8 +298,7 @@ void main() {
     // scatteringReflectedColor = 1.0 - exp(-4.0 * scatteringReflectedColor);
     // scatteringReflectedColor = scatteringReflectedColor;
 
-    
-        result += scatteringResult * inscatterFactor ;
+
     #endif
 
     #endif
@@ -346,7 +342,13 @@ void main() {
         // Metallic materials don't have much occlusion
         // occlusionResult = mix(occlusionResult, vec4(0.0), saturate(material.metallic-0.3) );
 
-        #ifndef DEBUG_DISABLE_LIGHTS
+        // countPointLight = 0;
+        // countPointLightShadow = 0;
+        // countDirectionalLight = 0;
+        // countDirectionalLightShadow = 0;
+        // countSpotLight = 0;
+
+        #if 0
 
         int currentTileOffset = tileBufferOffset + 16;
 
@@ -533,6 +535,8 @@ void main() {
         result = vec3(loadFactor, 1.0 - loadFactor, 0.0);
     #endif
 
+
+    // result = countPointLight == 0 ? vec3(0,1,0) : vec3(1,0,0);
 
     lightingResult = vec4(result, 0.0 );
 }

@@ -29,7 +29,7 @@ void main() {
 
     // Store the properties
     // m.baseColor = sampledDiffuse.rgb * vec3(1, 1, 0);
-    m.baseColor = vec3(1, 1, 0) * 10.0;
+    m.baseColor = vec3(10) * vOutput.materialDiffuse.xyz;
     m.roughness = 1.0;
     m.specular = 0.0;
     m.metallic = 0.0;

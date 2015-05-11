@@ -13,8 +13,6 @@ const float scatteringEpsilonInscatter = 0.001;
 
 
 vec3 scatteringTransformPosition(ScatteringOptions options, vec3 pos) {
-  // return pos/options.atmosphereScale + options.atmosphereOffset;
-
   // With this, offset is in world-space
   return (pos-options.atmosphereOffset) / options.atmosphereScale;
 }
@@ -100,7 +98,7 @@ vec3 scatteringComputeInscatteredLight(
   }
 
   // sunArea = saturate(sunArea);
-
+  // sunArea = vec3(0);
 
   // return sunArea;
   vec3 inscatteredLight = vec3(0.0f, 0.0f, 0.0f);
@@ -114,11 +112,15 @@ vec3 scatteringComputeInscatteredLight(
   // vec3 transformedViewDir = normalize(transformedPos - transformedCamPos);
   vec3 transformedViewDir = normalize(viewDir);
 
+
   float atmosphericFactor = 1.0;
 
   if(scatteringIntersectAtmosphere(options, transformedCamPos, transformedViewDir, offset, maxPathLength))
   {
-    float pathLength = distance(transformedCamPos, transformedPos);
+    // float pathLength = distance(transformedCamPos, transformedPos);
+    float pathLength = distance(transformedCamPos, transformedPos) * 10000.0;
+
+    // return vec3(pathLength * 100.0);
 
     // check if object occludes atmosphere
     if(pathLength > offset)
@@ -149,6 +151,8 @@ vec3 scatteringComputeInscatteredLight(
         float muEndPos = dot(transformedPos, transformedViewDir) / surfacePosHeight;
         vec4 inscatterSurface = texture4D(options, inscatterSampler, surfacePosHeight, muEndPos, musEndPos, nuStartPos);
 
+        // inscatter = max(inscatter - inscatterSurface, 0.0f);
+        // inscatter = inscatterSurface;
         inscatter = max(inscatter - attenuation.rgbr * inscatterSurface, 0.0f);
         irradianceFactor = 1.0f;
       }
@@ -162,7 +166,7 @@ vec3 scatteringComputeInscatteredLight(
 
       // avoids imprecision problems near horizon by interpolating between two points above and below horizon
       // fíx described in chapter 5.1.2
-      float epsilonScale = 1.0;
+      float epsilonScale = 0.0;
 
       // if (inPlanet) {
       //   epsilonScale = 1.5;
@@ -172,7 +176,7 @@ vec3 scatteringComputeInscatteredLight(
 
       float muHorizon = - sqrt(1.0 -  ((options.radiusGround / startPosHeight) * (options.radiusGround / startPosHeight)) );
       
-      if (abs(muStartPos - muHorizon) < realEpsilonInscatter) 
+      if (abs(muStartPos - muHorizon) < realEpsilonInscatter && false) 
       {
         float realPathLength = pathLength / atmosphericFactor;
 

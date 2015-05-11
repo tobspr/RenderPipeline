@@ -39,7 +39,7 @@ class GIHelperLight(Light, DebugObject):
         target light. """
         self.targetLight = target
 
-    def _getLightType(self):
+    def getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
         return LightType.NoType
 

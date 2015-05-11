@@ -1,0 +1,80 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Scattering/ScatteringOptions.include"
+#pragma include "Scattering/Final.include"
+
+in vec2 texcoord;
+out vec4 result;
+
+uniform sampler3D inscatterSampler;
+uniform ScatteringOptions scatteringOptions;
+
+uniform sampler2D wsPositionTex;
+uniform sampler2D basecolorTex;
+
+uniform vec3 cameraPosition;
+
+void main() {
+
+
+    vec3 cameraPositionZ = cameraPosition;
+
+    vec3 wsPosition = texture(wsPositionTex, texcoord).xyz;
+    vec3 sunVector = normalize(vec3(0.5,0.7,0.5));
+    vec3 baseColor = texture(basecolorTex, texcoord).xyz;
+
+    // wsPosition.z *= 50.0;
+    cameraPositionZ.z = wsPosition.z;
+
+    vec3 viewDir = normalize(wsPosition - cameraPosition);
+    vec3 attenuation;
+    float irradianceFactor;
+
+
+
+    // There should be a more elegant way, but for now it works. I don't want to
+    // waste a gbuffer flag for marking the skybox.r
+    bool isSkybox = distance(wsPosition, cameraPosition) > SKYBOX_BEGIN;
+    
+
+    if (isSkybox) {
+        wsPosition *= 1e10;
+    } else {
+        // viewDir = normalize(wsPosition - cameraPositionZ);
+
+        // wsPosition *= 1e5;
+    }
+
+
+    vec3 scatteringResult = scatteringComputeInscatteredLight(
+        scatteringOptions,
+        wsPosition, 
+        cameraPositionZ,
+        viewDir, 
+        sunVector,
+        inscatterSampler,
+        baseColor,
+        isSkybox,
+        attenuation, 
+        irradianceFactor);
+
+
+    scatteringResult *= 2.5;
+    if (!isSkybox) {
+        float fogFactor = max(0.0, distance(cameraPosition, wsPosition) - 30.0) / 150.0;
+        scatteringResult *= 0.3 * fogFactor;
+        // scatteringResult = vec3(fogFactor);
+    }
+
+
+    #if DEBUG_VISUALIZATION_ACTIVE
+        scatteringResult = vec3(0);
+    #endif
+    // scatteringResult = vec3(attenuation);
+
+    result = vec4(scatteringResult, 1.0);
+    // result = texture(sampler, texcoord);
+}
+

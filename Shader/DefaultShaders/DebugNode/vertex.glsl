@@ -45,7 +45,7 @@ void main() {
     vOutput.texcoord = p3d_MultiTexCoord0.xy;
 
     // Also pass diffuse to fragment shader
-    vOutput.materialDiffuse = p3d_Material.diffuse * p3d_ColorScale * p3d_Color;
+    vOutput.materialDiffuse = p3d_ColorScale;
     vOutput.materialSpecular = p3d_Material.specular;
     vOutput.materialAmbient = p3d_Material.ambient.z;
 

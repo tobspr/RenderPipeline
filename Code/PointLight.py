@@ -30,7 +30,7 @@ class PointLight(Light, DebugObject):
         self.bufferRadius = 0.0
         self.typeName = "PointLight"
 
-    def _getLightType(self):
+    def getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """
         return LightType.Point
 
