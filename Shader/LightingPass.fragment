@@ -11,6 +11,8 @@
 #pragma include "Includes/Material.include"
 #pragma include "Includes/Ambient.include"
 
+in vec2 texcoord;
+
 
 // Deferred target inpupts
 uniform sampler2D data0;
@@ -29,29 +31,31 @@ uniform sampler2D giDiffuseTex;
 uniform sampler2D giReflectionTex;
 #endif
 
-
 // Occlusion input
 #if defined(USE_OCCLUSION)
 uniform sampler2D occlusionTex;
 #endif
 
-// Various data
-uniform int frameIndex;
-uniform vec4 bufferSize;
-uniform vec3 cameraPosition;
-
+// Volumetric lighting
+#if defined(USE_VOLUMETRIC_LIGHTING)
 uniform sampler2D volumetricLightingTex;
+#endif
 
-in vec2 texcoord;
-
+// Various data
+uniform vec3 cameraPosition;
 
 // Outputs
 layout(location = 0) out vec4 lightingResult;
+
+// Output reflection vector for sslr
 #if defined(USE_SSLR)
 layout(location = 1) out vec4 sslrDataResult;
 #endif
 
+// Scattering result
+#if defined(USE_SCATTERING)
 uniform sampler2D scatteringTex;
+#endif
 
 // Dynamic exposure
 #if defined(USE_DYNAMIC_EXPOSURE)
@@ -220,6 +224,30 @@ void main() {
     #if !defined(DEBUG_VISUALIZATION_ACTIVE)
         result = 1.0 - exp(-exposure * result);
     #endif
+
+
+
+    // Debugging outputs
+    #if defined(DEBUG_RM_BASECOLOR)
+        result = material.baseColor;
+    #endif
+
+    #if defined(DEBUG_RM_SPECULAR)
+        result = vec3(material.specular);
+    #endif
+
+    #if defined(DEBUG_RM_METALLIC)
+        result = vec3(material.metallic);
+    #endif
+
+    #if defined(DEBUG_RM_ROUGHNESS)
+        result = vec3(material.roughness);
+    #endif
+
+    #if defined(DEBUG_RM_NORMAL)
+        result = material.normal;
+    #endif
+
 
 
     lightingResult = vec4(result, 0.0 );

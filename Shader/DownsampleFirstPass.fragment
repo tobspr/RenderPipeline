@@ -7,12 +7,6 @@ in vec2 texcoord;
 
 out vec4 result;
 
-
-float getLuminance(vec3 color) {
-    const vec3 W = vec3(0.2125, 0.7154, 0.0721);
-    return dot(color, W);
-}
-
 void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xyz) * 2;
@@ -27,6 +21,6 @@ void main() {
     sampleResult /= 4.0;
 
     // Store luminance only
-    result.xyz = vec3( getLuminance(sampleResult.xyz) );
+    result.xyz = vec3( dot(vec3(0.2125, 0.7154, 0.0721), sampleResult.xyz) );
     result.w = 1.0;
 }

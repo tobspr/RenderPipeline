@@ -125,7 +125,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setDirection(dPos)
         dirLight.setShadowMapResolution(1024)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(2, 2, 1.8) * 4.0)
+        dirLight.setColor(Vec3(1, 1, 0.8))
         # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)

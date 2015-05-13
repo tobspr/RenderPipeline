@@ -110,7 +110,7 @@ class PipelineGuiManager(DebugObject):
             register_feature("Anti-Aliasing", "ft_ANTIALIASING")
 
         register_feature("Shadows", "ft_SHADOWS")
-        register_feature("Color Correction", "ft_COLOR_CORRECTION")
+        register_feature("Correct color", "ft_COLOR_CORRECTION")
         
         if s.renderShadows:
             register_mode("PSSM Splits", "rm_PSSM_SPLITS")

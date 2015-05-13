@@ -214,6 +214,8 @@ class RenderingPipeline(DebugObject):
     def _preRenderUpdate(self, task):
         """ This is the pre render task which handles updating of all the managers
         as well as calling the pipeline update task """
+        if not self.ready:
+            return task.cont
         self._updateInputHandles()
         self.lightManager.update()
         if self.guiManager:
@@ -250,6 +252,8 @@ class RenderingPipeline(DebugObject):
 
     def _postRenderUpdate(self, task):
         """ This is the post render update, being called after the draw task. """
+        if not self.ready:
+            return task.cont
         return task.cont
 
     def _createViewSpacePass(self):
