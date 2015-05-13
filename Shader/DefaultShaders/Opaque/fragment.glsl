@@ -29,7 +29,7 @@ void main() {
     vec4 sampledDiffuse = texture(p3d_Texture0, vOutput.texcoord);
     
     // Alpha test
-    if (sampledDiffuse.a < 0.5) discard;
+    // if (sampledDiffuse.a < 0.5) discard;
 
     // Sample the other maps
     vec4 sampledNormal  = texture(p3d_Texture1, vOutput.texcoord);
@@ -55,6 +55,10 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
+
+
+    m.baseColor = sampledNormal.xyz;
+    // m.baseColor = vec3( abs(vOutput.texcoord), 1);
 
     // Write the material to the G-Buffer
     renderMaterial(m);

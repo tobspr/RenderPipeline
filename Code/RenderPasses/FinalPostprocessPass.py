@@ -33,7 +33,7 @@ class FinalPostprocessPass(RenderPass):
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/Final.fragment")
+            "Shader/FinalPostprocessPass.fragment")
         self.target.setShader(shader)
 
         return [shader]

@@ -1,0 +1,68 @@
+#version 400
+
+#extension GL_EXT_shader_image_load_store : enable
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/ChromaticAbberation.include"
+#pragma include "Includes/ColorCorrection.include"
+#pragma include "Includes/FilmGrain.include"
+#pragma include "Includes/PoissonDisk.include"
+
+
+in vec2 texcoord;
+uniform sampler2D colorTex;
+uniform sampler2D colorLUT;
+
+out vec3 result;
+
+uniform float osg_FrameTime;
+
+// layout (rgba32f) uniform image2D lastFramePosition;
+// layout (r16f) uniform image2D lastFrameOcclusion;
+
+
+// uniform sampler2D currentFramePosition;
+// uniform sampler2D computedOcclusion;
+
+void main() {
+
+    // Store last frame position and occlusion
+    // ivec2 intCoords = ivec2(gl_FragCoord.xy / 2.0);
+    // vec3 lastPosition = texelFetch(currentFramePosition, intCoords * 2, 0).xyz;
+    // imageStore(lastFramePosition, intCoords, vec4(lastPosition, 1.0));
+
+    // #if defined(USE_OCCLUSION)
+    //     float lastOcclusion = texelFetch(computedOcclusion, intCoords, 0).x;
+    //     imageStore(lastFrameOcclusion, intCoords, vec4(lastOcclusion));
+    // #endif
+
+
+    // Fetch screen size, so we don't have to pass it as a shader input
+    ivec2 screenSize = textureSize(colorTex, 0);
+
+    // Screen coordinate (as int vec)
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+
+    // Color correction
+    #if !defined(DEBUG_DISABLE_COLOR_CORRECTION) && !defined(DEBUG_VISUALIZATION_ACTIVE)
+                
+        // Chromatic abberation
+        result = applyChromaticAbberation(colorTex, texcoord, 1.0);
+        
+        // Color LUT
+        result = applyColorLUT(colorLUT, result);
+
+        // Film grain
+        result = computeGrain(result, texcoord, mod(osg_FrameTime, 1.0) + 1.0);
+
+    #else
+        result =  textureLod(colorTex, texcoord, 0).xyz;
+    #endif
+
+    // Vignett
+    float vignett = 1.0 - smoothstep(0, 1, 
+        (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.22) ) * 1.0;
+    result *= vignett;
+
+}

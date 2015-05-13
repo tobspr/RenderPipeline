@@ -91,7 +91,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
-        self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
+        # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
@@ -108,7 +108,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
 
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
+        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
         
 
         # Select surrounding scene here
@@ -208,7 +208,7 @@ class Main(ShowBase, DebugObject):
         
 
         # Show loading screen a bit
-        if False:
+        if True:
             self.doMethodLater(0.5, self.loadScene, "Load Scene")
         else:
             self.loadScene()
@@ -252,9 +252,9 @@ class Main(ShowBase, DebugObject):
         """ Starts loading the scene, this is done async """
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
-        # self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
-        self.scene = loader.loadModel(self.sceneSource)
-        self.onSceneLoaded(self.scene)
+        self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
+        # self.scene = loader.loadModel(self.sceneSource)
+        # self.onSceneLoaded(self.scene)
 
     def onSceneLoaded(self, scene):
         """ Callback which gets called after the scene got loaded """
@@ -324,7 +324,7 @@ class Main(ShowBase, DebugObject):
         self.prepareSRGB(self.scene)
 
         # Prepare Materials
-        self.renderPipeline.fillTextureStages(render)
+        # self.renderPipeline.fillTextureStages(render)
 
         # Load ground plane if configured
         if self.usePlane:
@@ -375,6 +375,7 @@ class Main(ShowBase, DebugObject):
         # Hide loading screen
         self.loadingScreen.hide()
         # self.toggleSceneWireframe()
+        self.renderPipeline.onSceneInitialized()
 
 
     def setSunPos(self):
@@ -416,17 +417,13 @@ class Main(ShowBase, DebugObject):
 
             # Only diffuse textures should be SRGB
             if "diffuse" in tex.getName().lower():
-                # print "Preparing texture", tex.getName()
                 if baseFormat == Texture.FRgb:
-                    pass
-                    # tex.setFormat(Texture.FSrgb)
+                    tex.setFormat(Texture.FSrgb)
                 elif baseFormat == Texture.FRgba:
                     tex.setFormat(Texture.FSrgbAlpha)
-                    pass
                 elif baseFormat == Texture.FSrgb or baseFormat == Texture.FSrgbAlpha:
                     # Format is okay already
-                    tex.setFormat(Texture.FRgb)
-
+                    pass
                 else:
                     print "Unkown texture format:", baseFormat
                     print "\tTexture:", tex

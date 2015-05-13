@@ -3,6 +3,7 @@
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Structures/VertexOutput.struct"
 
+
 #extension GL_EXT_shader_image_load_store : enable
 
 // Input from the vertex shader

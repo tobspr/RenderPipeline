@@ -1,11 +1,7 @@
 #pragma once
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Structures/TransparentMaterial.struct"
-
-
-
-
+#pragma include "Includes/TransparentMaterial.include"
 
 
 void saveMaterialNextPointer(uint pointer, uint position) {

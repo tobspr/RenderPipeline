@@ -42,6 +42,7 @@ class RenderingPipeline(DebugObject):
         DebugObject.__init__(self, "RenderingPipeline")
         self.showbase = showbase
         self.settings = None
+        self.ready = False
         self.mountManager = MountManager()
 
     def getMountManager(self):
@@ -70,6 +71,11 @@ class RenderingPipeline(DebugObject):
         """ Removes a light from the pipeline, this just forwards the call to
         the light manager. """
         self.lightManager.removeLight(light)
+
+    def onSceneInitialized(self):
+        """ Tells the pipeline that the scene is ready to be rendered. This starts
+        shadow updates """
+        self.ready = True
 
     def setGILightSource(self, lightSource):
         """ Sets the light used to compute GI. For now, only directional lights

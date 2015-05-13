@@ -94,18 +94,18 @@ class DynamicExposurePass(RenderPass):
     def setShaders(self):
         shaderFirstPass = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/AdaptiveBrightnessFirstPass.fragment")
+            "Shader/DownsampleFirstPass.fragment")
         self.downscalePass0.setShader(shaderFirstPass)
 
         shaderDownsample = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/AdaptiveBrightnessDownsample.fragment")
+            "Shader/Downsample.fragment")
         for scalePass in self.downscalePasses:
             scalePass.setShader(shaderDownsample)
 
         shaderFinal = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/AdaptiveBrightnessDownsampleFinal.fragment")
+            "Shader/DownsampleFinalPass.fragment")
         self.finalDownsamplePass.setShader(shaderFinal)
 
         return [shaderFirstPass, shaderDownsample, shaderFinal]
