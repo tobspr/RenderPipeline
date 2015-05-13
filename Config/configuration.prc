@@ -25,8 +25,8 @@ transform-cache #t
 state-cache #t
 
 # Trying this for performance
-# uniquify-transforms #f
-# uniquify-states #f 
+uniquify-transforms #t
+uniquify-states #t
 # uniquify-attribs #f
 
 # Faster texture loading
@@ -169,5 +169,8 @@ auto-flip #f
 gl-debug-object-labels #f
 
 
-#notify-level-glgsg debug
+gl-coordinate-system default
+
+# notify-level-gsg spam
+# notify-level-glgsg error
 

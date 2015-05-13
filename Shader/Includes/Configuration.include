@@ -2,31 +2,22 @@
 
 // This is the main configuration file, included by almost all shaders
 
-// Needed for light culling
-const float sqrt_of_2 = 1.4142135623;
-
 // Load Auto-Config
 #pragma include "PipelineTemp/ShaderAutoConfig.include"
 
-// Performance functions
-#pragma include "Includes/Performance.include"
 
-#define M_PI 3.14159265
+#define M_PI 3.1415926536
 
 // #pragma optionNV (unroll all)
 
-#define USE_BINDLESS_TEXTURES 0
+// #define USE_BINDLESS_TEXTURES
 
-#if USE_BINDLESS_TEXTURES
+#if defined(USE_BINDLESS_TEXTURES)
     #define BINDLESS layout(bindless_sampler)
 #else
     #define BINDLESS
 #endif
 
-
-#ifdef DEBUG_DISABLE_SHADOWS
-    #undef USE_SHADOWS
-#endif
 
 
 #define SKYBOX_BEGIN 15000.0
@@ -36,6 +27,10 @@ const float sqrt_of_2 = 1.4142135623;
 #define PCSS_SEARCH_RADIUS 22.0
 #define PCSS_FILTER_RADIUS 3.0
 #define USE_PIXEL_BASED_PCSS 1
+
+
+
+#define DIRECTIONAL_LIGHT_SPLIT_COUNTS 5
 
 
 

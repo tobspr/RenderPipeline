@@ -24,6 +24,7 @@ class PipelineGuiManager(DebugObject):
         self.body = Globals.base.pixel2d
         self.showbase = pipeline.showbase
         self.guiActive = False
+        self.enableGISliders = False
         self.window = UIWindow(
             "Pipeline Debugger", 280, Globals.base.win.getYSize())
         self.defines = {}
@@ -31,6 +32,7 @@ class PipelineGuiManager(DebugObject):
             "Buffer Viewer GUI")
         self.bufferViewer = BufferViewerGUI(self.bufferViewerParent)
         self.setup()
+
 
     def update(self):
         pass
@@ -93,8 +95,9 @@ class PipelineGuiManager(DebugObject):
             register_feature("Scattering", "ft_SCATTERING")
 
         if s.enableGlobalIllumination:
-            register_mode("G-Illum", "rm_GI")
-            register_mode("GI-Reflections", "rm_Reflections")
+            register_mode("GI-Diffuse", "rm_GI_DIFFUSE")
+            register_mode("GI-Ambient", "rm_GI_AMBIENT")
+            register_mode("GI-Specular", "rm_GI_REFLECTIONS")
             register_feature("G-Illum", "ft_GI")
 
         register_mode("Ambient", "rm_Ambient")
@@ -182,7 +185,7 @@ class PipelineGuiManager(DebugObject):
         currentY += 70
 
 
-        if s.enableGlobalIllumination:
+        if s.enableGlobalIllumination and self.enableGISliders:
 
             self.slider_opts = {
                 "ao_cone_height": {
@@ -237,11 +240,14 @@ class PipelineGuiManager(DebugObject):
             
     def onPipelineLoaded(self):
 
-        if self.pipeline.settings.enableGlobalIllumination:
+        if self.pipeline.settings.enableGlobalIllumination and self.enableGISliders:
             self._optsChanged()
 
     def _optsChanged(self):
-        return
+
+        if not self.enableGISliders:
+            return
+
         container = self.pipeline.giPrecomputeBuffer
 
         for name, opt in self.slider_opts.iteritems():

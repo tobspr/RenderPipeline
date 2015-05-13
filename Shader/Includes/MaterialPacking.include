@@ -2,7 +2,6 @@
 
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Material.include"
-#pragma include "Includes/Packing.include"
 
 uniform mat4 lastMVP;
 
@@ -19,7 +18,7 @@ void renderMaterial(Material m) {
     // vec2 color = packColor( m.baseColor );
     vec3 color = m.baseColor.rgb;
 
-    #ifndef DO_NOT_COMPUTE_VELOCITY
+    #if !defined(DO_NOT_COMPUTE_VELOCITY)
     // Compute velocity
     vec4 lastProj = vOutput.lastProjectedPos;
 

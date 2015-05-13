@@ -1,7 +1,7 @@
 
 from panda3d.core import NodePath, Shader, LVecBase2i, Texture, GeomEnums, Vec3
 from panda3d.core import Camera, OrthographicLens, CullFaceAttrib, DepthTestAttrib
-from panda3d.core import SamplerState, Vec4
+from panda3d.core import SamplerState, Vec4, BitMask32
 
 from Code.Globals import Globals
 from Code.RenderPass import RenderPass
@@ -66,6 +66,7 @@ class VoxelizePass(RenderPass):
     def create(self):
         # Create voxelize camera
         self.voxelizeCamera = Camera("VoxelizeScene")
+        self.voxelizeCamera.setCameraMask(BitMask32.bit(4))
         self.voxelizeCameraNode = Globals.render.attachNewNode(self.voxelizeCamera)
         self.voxelizeLens = OrthographicLens()
         self.voxelizeLens.setFilmSize(self.voxelGridSize.x*2, self.voxelGridSize.y*2)
@@ -78,11 +79,11 @@ class VoxelizePass(RenderPass):
         self.target = RenderTarget("VoxelizePass")
         self.target.setSize( self.voxelGridResolution.x * 4 )
         self.target.setColorWrite(False)
-        # self.target.addColorTexture()
+        self.target.setCreateOverlayQuad(False)
         self.target.setSource(self.voxelizeCameraNode, Globals.base.win)
         self.target.prepareSceneRender()
+        self.target.setActive(False)
 
-        self.target.getQuad().node().removeAllChildren()
         self.target.getInternalRegion().setSort(-400)
         self.target.getInternalBuffer().setSort(-399)
 
@@ -92,6 +93,7 @@ class VoxelizePass(RenderPass):
         it also enables this pass.  """
         assert(direction in "x y z".split())
         self.setActive(True)
+
         if direction == "x":
             self.voxelizeLens.setFilmSize(self.voxelGridSize.y*2, self.voxelGridSize.z*2)
             self.voxelizeLens.setNearFar(0.0, self.voxelGridSize.x*2)

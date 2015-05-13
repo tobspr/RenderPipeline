@@ -91,9 +91,9 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
-        # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
+        self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
@@ -106,7 +106,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
-        # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg.bam"
+        # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
 
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg.bam"
         
@@ -125,7 +125,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setDirection(dPos)
         dirLight.setShadowMapResolution(1024)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(2, 2, 1.8))
+        dirLight.setColor(Vec3(2, 2, 1.8) * 4.0)
         # dirLight.setColor(Vec3(0.3))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setCastsShadows(True)
@@ -272,35 +272,38 @@ class Main(ShowBase, DebugObject):
             self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
             self.sceneSurround.reparentTo(self.scene)
 
-
         seed(1)
 
         # Performance testing
-        if False:
+        if True:
             highPolyObj = self.scene.find("**/HighPolyObj")
 
             if highPolyObj is not None and not highPolyObj.isEmpty():
                 highPolyObj.detachNode()
                 self.loadingScreen.setStatus("Preparing Performance Test")
 
-                for x in xrange(-5, 5):
-                    for y in xrange(-5, 5):
+                for x in xrange(-10, 10):
+                    for y in xrange(-10, 10):
                         copiedObj = copy.deepcopy(highPolyObj)
-                        copiedObj.setColorScale(random(), random(), random(), 1)
+                        # copiedObj.setColorScale(random(), random(), random(), 1)
+                        if random() < 0.2:
+                            copiedObj.setColorScale(0.4, 1.2, 2.0, 1.0)
+
                         copiedObj.reparentTo(self.scene)
                         copiedObj.setPos(x*1.5 + random(), y*1.5 + random(), random()*5.0 + 0.4)
 
         # Find transparent objects and mark them as transparent
-        # self.transpObjRoot = render.attachNewNode("transparentObjects")
-        # matches = self.scene.findAllMatches("**/T__*")
-        # for match in matches:
-        #     # match.reparentTo(self.transpObjRoot)
-        #     self.transparentObjects.append(match)
-        #     self.renderPipeline.prepareTransparentObject(match)
-        #     # match.listTags()
-        #     match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
-        #     match.setColorScale(1,0,1, 1)
-
+        self.transpObjRoot = render.attachNewNode("transparentObjects")
+        matches = self.scene.findAllMatches("**/T__*")
+        if matches:
+            for match in matches:
+                # match.reparentTo(self.transpObjRoot)
+                self.transparentObjects.append(match)
+                self.renderPipeline.prepareTransparentObject(match)
+                # match.listTags()
+                match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+                # match.setColorScale(1,0,1, 1)
+                # match.hide(self.renderPipeline.getShadowPassBitmask())
         # Wheter to use a ground plane
         self.usePlane = False
         self.sceneWireframe = False
@@ -308,6 +311,7 @@ class Main(ShowBase, DebugObject):
         # Flatten scene?
         self.loadingScreen.setStatus("Optimizing Scene")
 
+        # self.scene.clearModelNodes()
         # loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
         self.onScenePrepared()
 

@@ -1,0 +1,17 @@
+#pragma once
+
+struct Frustum {
+    vec4 left;
+    vec4 right;
+    vec4 top;
+    vec4 bottom;
+    float near;
+    float far;
+
+    vec4 farPlane;
+    vec4 nearPlane;
+    vec3 viewVector;
+
+    mat4 viewMat;
+    mat4 mvpMat;
+};

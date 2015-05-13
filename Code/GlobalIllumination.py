@@ -3,8 +3,8 @@ from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
 from panda3d.core import Shader, SamplerState
 from panda3d.core import Vec2, LMatrix4f, LVecBase3i, Camera, Mat4
 from panda3d.core import Mat4, OmniBoundingVolume, OrthographicLens
-from panda3d.core import BoundingBox, Point3, CullFaceAttrib
-from panda3d.core import DepthTestAttrib, PTALVecBase3f, ComputeNode
+from panda3d.core import BoundingBox, Point3, CullFaceAttrib, PTAMat4
+from panda3d.core import DepthTestAttrib, PTALVecBase3f, ComputeNode, PTALVecBase2f
 from direct.stdpy.file import isfile, open, join
 
 from Globals import Globals
@@ -73,6 +73,20 @@ class GlobalIllumination(DebugObject):
         self.helperLight = None
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
         self.gridPos = Vec3(0)
+
+        # Create ptas 
+
+        self.ptaLightUVStart = PTALVecBase2f.emptyArray(1)
+        self.ptaLightMVP = PTAMat4.emptyArray(1)
+        self.ptaVoxelGridStart = PTALVecBase3f.emptyArray(1)
+        self.ptaVoxelGridEnd = PTALVecBase3f.emptyArray(1)
+        self.ptaLightDirection = PTALVecBase3f.emptyArray(1)
+
+        self.targetSpace.setShaderInput("giLightUVStart", self.ptaLightUVStart)
+        self.targetSpace.setShaderInput("giLightMVP", self.ptaLightMVP)
+        self.targetSpace.setShaderInput("giVoxelGridStart", self.ptaVoxelGridStart)
+        self.targetSpace.setShaderInput("giVoxelGridEnd", self.ptaVoxelGridEnd)
+        self.targetSpace.setShaderInput("giLightDirection", self.ptaLightDirection)
 
     def setTargetLight(self, light):
         """ Sets the sun light which is the main source of GI. Only that light
@@ -220,11 +234,9 @@ class GlobalIllumination(DebugObject):
 
         if self.frameIndex == 0:
             # Step 1: Voxelize scene from the x-Axis
-            self.targetSpace.setShaderInput("giLightUVStart", 
-                self.helperLight.shadowSources[0].getAtlasPos())
-
             for child in self.mipmapTargets:
                 child.setActive(False)
+
             self.convertBuffer.setActive(False)
 
             # Clear the old data in generation texture 
@@ -232,10 +244,11 @@ class GlobalIllumination(DebugObject):
             self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "x")
 
             # Set required inputs
-            self.targetSpace.setShaderInput("giLightMVP", Mat4(self.helperLight.shadowSources[0].mvp))
-            self.targetSpace.setShaderInput("giVoxelGridStart", self.gridPos - self.voxelGridSizeWS)
-            self.targetSpace.setShaderInput("giVoxelGridEnd", self.gridPos + self.voxelGridSizeWS)
-            self.targetSpace.setShaderInput("giLightDirection", direction)
+            self.ptaLightUVStart[0] = self.helperLight.shadowSources[0].getAtlasPos()
+            self.ptaLightMVP[0] = self.helperLight.shadowSources[0].mvp
+            self.ptaVoxelGridStart[0] = self.gridPos - self.voxelGridSizeWS
+            self.ptaVoxelGridEnd[0] = self.gridPos + self.voxelGridSizeWS
+            self.ptaLightDirection[0] = direction
 
         elif self.frameIndex == 1:
 

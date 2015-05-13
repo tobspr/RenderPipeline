@@ -1,19 +1,11 @@
 #pragma once
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Light.include"
-#pragma include "Includes/Random.include"
+#pragma include "Includes/Structures/Light.struct"
 #pragma include "Includes/LightingModels.include"
-#pragma include "Includes/Material.include"
-#pragma include "Includes/ParabolicTransform.include"
-#pragma include "Includes/ShadowSource.include"
+#pragma include "Includes/Structures/Material.struct"
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/PoissonDisk.include"
-#pragma include "Includes/SphericalHarmonics.include"
-
-
-
-
 
 
 vec3 computeSpecular(vec3 specularColor, float roughness, float NxL, float LxH, float NxV, float NxH) {
@@ -28,15 +20,15 @@ vec3 computeLightModel(Light light, Material material,
         vec3 l, vec3 v, vec3 n, vec3 h, 
         float attenuation, float shadowFactor) {
 
-    #if DEBUG_RM_SHADOWS
+    #if defined(DEBUG_RM_SHADOWS)
         return shadowFactor * attenuation * light.color;
     #endif
 
-    #if DEBUG_DISABLE_COMPLEX_LIGHTING
+    #if defined(DEBUG_DISABLE_COMPLEX_LIGHTING)
         return light.color * attenuation * material.baseColor * shadowFactor;
-    #else
+    #endif
 
-    // Performance optimization
+    // Performance optimization? 
     // if (shadowFactor < 0.001) return vec3(0.0);
 
     vec3 lightingResult = vec3(0);
@@ -71,39 +63,22 @@ vec3 computeLightModel(Light light, Material material,
     lightingResult *= attenuation;
 
     return lightingResult;
-
-    #endif
-
 }
 
 
 float computePointLightAttenuation(Light light, float d) {
-
-    // return 1.0;
     float r = light.radius;
 
     // https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
     // Inverse falloff
     float attenuation = 1.0 / (1.0 + 2*d/r + (d*d)/(r*r)); 
 
-    // Hard transition
-    // return d < light.radius ? 1.0 : 0.0;
-
-    // Linear transition
-    // return saturate(1.0 - d / light.radius);
-
-    // return attenuation;
     // Cut light transition starting at 80% because the curve is exponential and never really gets 0
     float cutoff = light.radius * 0.7;
     attenuation *= 1.0 - saturate((d / cutoff) - 1.0) * (0.7 / 0.3);
 
-
-    // attenuation *= 1.0 - smoothstep(0.0, 1.0, ((d / cutoff) - 1.0) * 4.0 );   
     attenuation = max(0.0, attenuation);
     return attenuation;
 }
-
-
-#pragma include "Includes/Lights.include" 
 
 

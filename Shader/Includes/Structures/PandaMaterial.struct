@@ -1,0 +1,8 @@
+#pragma once
+
+// Material info passed from Panda3D
+struct PandaMaterial {
+    vec4 diffuse;
+    vec3 specular;
+    vec4 ambient;
+};

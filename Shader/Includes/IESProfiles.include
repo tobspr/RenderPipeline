@@ -6,7 +6,7 @@ uniform sampler2DArray IESProfilesTex;
 
 vec3 computeIESProfile(int iesProfileID, float radialFactor, float distance) {
 
-    // #ifdef DEBUG_DISABLE_COMPLEX_LIGHTING
+    // #if defined(DEBUG_DISABLE_COMPLEX_LIGHTING)
     //     return vec3(radialFactor);
     // #endif
     

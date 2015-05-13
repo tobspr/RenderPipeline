@@ -1,6 +1,6 @@
 
 from panda3d.core import NodePath, Camera, SamplerState, Shader
-from panda3d.core import ColorWriteAttrib, Vec4
+from panda3d.core import ColorWriteAttrib, Vec4, BitMask32
 
 from Code.Globals import Globals
 from Code.RenderPass import RenderPass
@@ -39,7 +39,7 @@ class ShadowScenePass(RenderPass):
             "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
         initialState = NodePath("ShadowCasterState")
         initialState.setShader(casterShader, 100)
-        # initialState.setDepthTest(False)
+        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
         for camera in self.shadowCameras:
             camera.node().setTagState("Default", initialState.getState())
 
@@ -48,7 +48,7 @@ class ShadowScenePass(RenderPass):
             "Shader/DefaultShaders/TransparentShadowCasting/fragment.glsl")
         initialState = NodePath("ShadowCasterStateTransparent")
         initialState.setShader(casterShaderTransparent, 100)
-        # initialState.setDepthTest(False)
+        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
         for camera in self.shadowCameras:
             camera.node().setTagState("Transparent", initialState.getState()) 
 
@@ -92,6 +92,7 @@ class ShadowScenePass(RenderPass):
         self.target.addDepthTexture()
         self.target.setDepthBits(32)
         self.target.setColorWrite(False)
+        self.target.setCreateOverlayQuad(False)
         # self.target.setActive(False)
         self.target.setSource(
             NodePath(Camera("tmp")), Globals.base.win)
@@ -106,11 +107,12 @@ class ShadowScenePass(RenderPass):
         dTex.setWrapV(SamplerState.WMClamp)
 
         # Remove the default postprocess quad
-        self.target.getQuad().node().removeAllChildren()
-        self.target.getInternalRegion().setSort(-200)
+        # self.target.getQuad().node().removeAllChildren()
+        # self.target.getInternalRegion().setSort(-200)
         self.target.getInternalRegion().disableClears()
         self.target.getInternalBuffer().disableClears()
-        self.target.getInternalBuffer().setSort(-300)
+        # self.target.getInternalBuffer().setSort(-300)
+
 
         # Create default initial state
         initialState = NodePath("InitialState")
@@ -122,6 +124,7 @@ class ShadowScenePass(RenderPass):
             shadowCam = Camera("ShadowComputeCamera")
             shadowCam.setTagStateKey("ShadowPassShader")
             shadowCam.setInitialState(initialState.getState())
+            shadowCam.setCameraMask(BitMask32.bit(3))
             shadowCamNode = self.shadowScene.attachNewNode(shadowCam)
             self.shadowCameras.append(shadowCamNode)
 
@@ -147,6 +150,9 @@ class ShadowScenePass(RenderPass):
         self.pcfSampleState.setWrapV(SamplerState.WMClamp)
 
         # Globals.render.setTag("ShadowPassShader", "Default")
+
+    def setShaderInput(self, name, val, *args):
+        self.shadowScene.setShaderInput(name, val, *args)
 
     def getOutputs(self):
         return {

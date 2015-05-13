@@ -1,7 +1,7 @@
 #pragma once
 
 
-#pragma include "Includes/VertexOutput.include"
+#pragma include "Includes/Structures/VertexOutput.struct"
 
 // Reconstructs the tangent with the deltas of 
 // the position and texcoord

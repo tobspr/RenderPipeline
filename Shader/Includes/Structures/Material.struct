@@ -1,0 +1,12 @@
+#pragma once
+
+struct Material {
+    vec3 baseColor;
+    float roughness;
+    float metallic;
+    float specular;
+    float translucency;
+    vec3 position;
+    vec3 normal;
+};
+

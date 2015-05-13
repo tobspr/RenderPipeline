@@ -5,7 +5,7 @@
 #pragma include "Includes/Lighting.include"
 
 
-#ifndef UNSHADOWED_PASS
+#if !defined(UNSHADOWED_PASS)
     #pragma include "Includes/Shadows.include"
 
     uniform samplerCube directionToFace;
@@ -25,7 +25,7 @@ vec3 applyPointLight(Light light, Material material) {
     vec3  h = normalize(l + v);
     float shadowFactor = 1.0;
 
-    #ifndef UNSHADOWED_PASS
+    #if !defined(UNSHADOWED_PASS)
         // We decide which shadow map to sample using a simple lookup cubemap
         int faceIndex = int( textureLod(directionToFace, l, 0).r * 5.0);        
         int shadowSourceIndex = light.sourceIndexes[faceIndex];
@@ -49,7 +49,7 @@ vec3 applyDirectionalLight(Light light, Material material) {
     vec3  h = normalize(l + v);
     float shadowFactor = 1.0;
 
-    #ifndef UNSHADOWED_PASS
+    #if !defined(UNSHADOWED_PASS)
         int map_used = 0;
         shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 40.0, 60.0, 0.015, map_used);
     #endif
@@ -83,7 +83,7 @@ vec3 applySpotLight(Light light, Material material) {
     // return vec3(visibilityFactor);
     float shadowFactor = 1.0;
 
-    #ifndef UNSHADOWED_PASS
+    #if !defined(UNSHADOWED_PASS)
         int shadowSourceIndex = light.sourceIndexes[0];
         ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
         shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.01, 0.01, 0.003);

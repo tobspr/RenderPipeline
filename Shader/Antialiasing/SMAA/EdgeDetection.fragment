@@ -1,6 +1,5 @@
 #version 420
 
-
 in vec2 texcoord;
 in vec4 offset[3];
 
@@ -17,7 +16,7 @@ void main() {
     // LUMA
     // result = vec4(SMAALumaEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);
 
-    // COLOR
+    // COLOR (best result)
     result = vec4(SMAAColorEdgeDetectionPS(texcoord, offset, colorTex), 0, 1);
 
     // DEPTH

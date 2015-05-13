@@ -1,12 +1,9 @@
 #version 400
 
-// out vec3 color;
+in vec3 worldpos;
 
 void main() {
-
-    // color = vec3(1,0,1);
-
-    ivec2 coord = ivec2(gl_FragCoord.xy);
-
-    // if ( (coord.x+coord.y) % 5 == 0) discard;
+    // Simulate transparent shadows by using stochastic discard
+    const float stepInterval = 0.1;
+    if (mod(dot(worldpos, vec3(1)), stepInterval) > 0.5 * stepInterval ) discard;
 }

@@ -2,9 +2,9 @@
 
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Light.include"
 #pragma include "Includes/IntersectionTests.include"
 #pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Structures/Light.struct"
 
 
 bool isPointLightInFrustum(Light light, Frustum frustum) {

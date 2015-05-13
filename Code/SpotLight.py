@@ -28,11 +28,13 @@ class SpotLight(Light, DebugObject):
 
         # Used to compute the MVP
         self.ghostCamera = Camera("PointLight")
+        self.ghostCamera.setActive(False)
         self.ghostLens = PerspectiveLens()
         self.ghostLens.setFov(130)
         self.ghostCamera.setLens(self.ghostLens)
         self.ghostCameraNode = NodePath(self.ghostCamera)
         self.ghostCameraNode.reparentTo(Globals.render)
+        self.ghostCameraNode.hide()
 
     def getLightType(self):
         """ Internal method to fetch the type of this light, used by Light """

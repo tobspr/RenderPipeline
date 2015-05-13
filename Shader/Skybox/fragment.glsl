@@ -1,18 +1,13 @@
 #version 410
 
-
-#pragma include "Includes/VertexOutput.include"
+#pragma include "Includes/Structures/VertexOutput.struct"
 
 // Input from the vertex shader
 layout(location=0) in VertexOutput vOutput;
 
 // This is required for the materials
-#pragma include "Includes/Material.include"
+#pragma include "Includes/Structures/Material.struct"
 #pragma include "Includes/MaterialPacking.include"
-
-// Also this enables us to compute the tangent in
-// the fragment shader
-#pragma include "Includes/TangentFromDDX.include"
 
 uniform sampler2D skytex;
 

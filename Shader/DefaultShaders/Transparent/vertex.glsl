@@ -1,11 +1,12 @@
 #version 410
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/VertexOutput.include"
+#pragma include "Includes/Structures/VertexOutput.struct"
+#pragma include "Includes/Structures/PandaMaterial.struct"
 
 // Matrices
-uniform mat4 itp_normal_to_world;
 uniform mat4 trans_model_to_world;
+uniform mat4 tpose_world_to_model;
 
 // Material properties
 in vec4 p3d_Vertex;
@@ -16,31 +17,19 @@ in vec2 p3d_MultiTexCoord0;
 // Outputs
 layout(location=0) out VertexOutput vOutput;
 
-// We get the material info from panda as a struct
-struct PandaMaterial {
-    vec4 diffuse;
-    vec3 specular;
-    vec4 ambient;
-};
 uniform PandaMaterial p3d_Material;
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform vec4 p3d_ColorScale;
 
-
-// We need this for the velocity
-uniform mat4 lastMVP;
-
 void main() {
 
     // Transform normal to world space
-    vOutput.normalWorld   = normalize(itp_normal_to_world * vec4(p3d_Normal, 0) ).xyz;
+    vOutput.normalWorld   = normalize(tpose_world_to_model * vec4(p3d_Normal, 0) ).xyz;
 
     // Transform position to world space
     vOutput.positionWorld = (trans_model_to_world * p3d_Vertex).xyz;
-    // vOutput.positionWorld = (p3d_Vertex).xyz;
 
     // Pass texcoord to fragment shader
-    // vOutput.texcoord = p3d_MultiTexCoord0.xy;
     vOutput.texcoord = p3d_MultiTexCoord0.xy;
 
     // Also pass diffuse to fragment shader

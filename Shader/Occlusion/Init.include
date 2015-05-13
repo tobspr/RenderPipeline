@@ -1,15 +1,16 @@
 #pragma once
 
+// Load the appropriate occlusion technique
 
-
-#ifdef OCCLUSION_TECHNIQUE_NONE
-    #pragma include "Occlusion/None.include"
-#endif
-
-#ifdef OCCLUSION_TECHNIQUE_SAO
+#if defined(OCCLUSION_TECHNIQUE_SAO)
     #pragma include "Occlusion/SAO.include"
 #endif
 
-#ifdef OCCLUSION_TECHNIQUE_HBAO
+#if defined(OCCLUSION_TECHNIQUE_HBAO)
     #pragma include "Occlusion/HBAO.include"
+#endif
+
+
+#if !defined(OCCLUSION_TECHNIQUE_SAO) && !defined(OCCLUSION_TECHNIQUE_HBAO)
+    #error No valid occlusion technique found to include
 #endif

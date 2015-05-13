@@ -1,8 +1,6 @@
 #version 150
 
-
-#pragma include "Scattering/ScatteringOptions.include"
-#pragma include "Scattering/Scattering.include"
+#pragma include "Includes/ScatteringPrecompute.include"
 
 uniform ScatteringOptions options;
 

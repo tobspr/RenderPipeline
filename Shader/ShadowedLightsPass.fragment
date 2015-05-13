@@ -3,9 +3,15 @@
 #pragma optionNV (unroll all)
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Light.include"
+#pragma include "Includes/Structures/Light.struct"
 #pragma include "Includes/Material.include"
-#pragma include "Includes/ShadowSource.include"
+#pragma include "Includes/Structures/ShadowSource.struct"
+
+
+#if defined(DEBUG_DISABLE_SHADOWS)
+    #define UNSHADOWED_PASS 1
+#endif
+
 
 out vec4 result;
 
@@ -47,6 +53,12 @@ void main() {
     vec4 target3data = texelFetch(data3, screenCoord, 0);
     Material material = unpackMaterial(target0data, target1data, target2data, target3data);
 
+
+    // There should be a more elegant way, but for now it works. I don't want to
+    // waste a gbuffer flag for marking the skybox.
+    bool isSkybox = distance(material.position, cameraPosition) > SKYBOX_BEGIN;
+
+    if (isSkybox) discard;
 
     // Fetch the light counts
     // We perform a min as it *might* be that we read a wrong value

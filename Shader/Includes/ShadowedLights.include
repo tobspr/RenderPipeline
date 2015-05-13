@@ -34,7 +34,6 @@ vec3 applyPointLightWithShadow(Light light, Material material) {
 
 
 
-
 vec3 applyDirectionalLightWithShadow(Light light, Material material) {
 
     float attenuation = 1.0;
@@ -58,10 +57,9 @@ vec3 applyDirectionalLightWithShadow(Light light, Material material) {
     // float shadowFactor = 1.0;
     vec3 rawLighting = computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
 
-    // rawLighting += 0.1;
     // rawLighting *= computeVolumetricLighting(light, material, n, l);
     
-    #ifdef DEBUG_RM_PSSM_SPLITS
+    #if defined(DEBUG_RM_PSSM_SPLITS)
         rawLighting = (rawLighting +0.1) * vec3(map_use_factor, 1.0 -map_use_factor, 0);
     #endif
 

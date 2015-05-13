@@ -15,3 +15,13 @@ vec3 mergeNormal(vec3 detailNormal, float detailFactor, vec3 normal, vec3 tangen
     );
 }
 
+vec4 transformParabol(vec4 transformed, float near, float far) {
+    if (transformed.w < 0.0) return vec4(0,0,0,-1000);
+    float l = length(transformed.xyz);
+    transformed /= l;
+    transformed.z += 1;
+    transformed.xy /= transformed.z;   
+    transformed.z = (l - near) / (far - near);
+    transformed.w = 1;
+    return transformed;
+}

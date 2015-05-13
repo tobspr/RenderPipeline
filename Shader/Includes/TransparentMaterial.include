@@ -1,18 +1,10 @@
+#pragma once
 
-
-
+#pragma include "Includes/Structures/TransparentMaterial.struct"
 
 
 #define USE_UINT_PACKING 0
 
-struct TransparentMaterial {
-    vec3 color;
-    uint materialType;
-    vec3  normal;
-    float alpha;
-    float depth;
-    uint nextEntry;
-};
 
 TransparentMaterial getDefaultTransparentMaterial() {
     TransparentMaterial tm;
@@ -26,6 +18,15 @@ TransparentMaterial getDefaultTransparentMaterial() {
 }
 
 
+vec3 decodeNormal(vec3 enc)
+{
+    // return enc;
+    vec4 nn = vec4(enc.xy, 0, 0)*vec4(2,2,0,0) + vec4(-1,-1,1,-1);
+    float l = dot(nn.xyz,-nn.xyw);
+    nn.z = -l;
+    nn.xy *= sqrt(l);
+    return nn.xyz * 2 + vec3(0,0,1);
+}
 
 TransparentMaterial unpackTransparentMaterial(uvec4 data) {
 
@@ -34,15 +35,15 @@ TransparentMaterial unpackTransparentMaterial(uvec4 data) {
     tm.nextEntry = data.w;
 
 
-    vec4 unpacked1 = unpackUnorm4x8(data.x);
-    vec4 unpacked2 = unpackUnorm4x8(data.y);
+    vec4 unpacked1 = unpackSnorm4x8(data.x);
+    vec4 unpacked2 = unpackSnorm4x8(data.y);
 
     tm.color = unpacked1.rgb;
     tm.materialType = uint(unpacked1.w);
-    tm.normal = unpacked2.rgb * 2.0 - 1.0;
+    tm.normal = normalize(unpacked2.rgb);
     tm.alpha = unpacked2.w;
 
-    #if USE_UINT_PACKING
+    #if defined(USE_UINT_PACKING)
         tm.depth = float(data.z) / 0xFFFFFFFF;
     #else
         tm.depth = uintBitsToFloat(data.z);
@@ -54,7 +55,7 @@ TransparentMaterial unpackTransparentMaterial(uvec4 data) {
 
 float extractMaterialDepth(uvec4 data) {
 
-    #if USE_UINT_PACKING
+    #if defined(USE_UINT_PACKING)
         return float(data.z) / 0xFFFFFFFF;
     #else
         return uintBitsToFloat(data.z);

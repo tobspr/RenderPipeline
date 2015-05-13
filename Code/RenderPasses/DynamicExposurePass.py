@@ -73,8 +73,9 @@ class DynamicExposurePass(RenderPass):
         # compares that with the last exposure and stores the difference.
         self.finalDownsamplePass = RenderTarget("Downscale Final")
         self.finalDownsamplePass.setSize(1, 1)
-        self.finalDownsamplePass.setColorBits(16)
-        self.finalDownsamplePass.addColorTexture()
+        # self.finalDownsamplePass.setColorBits(16)
+        # self.finalDownsamplePass.addColorTexture()
+        self.finalDownsamplePass.setColorWrite(False)
         self.finalDownsamplePass.prepareOffscreenBuffer()
         self.finalDownsamplePass.setShaderInput("luminanceTex", lastTex)
         self.finalDownsamplePass.setShaderInput("targetExposure", 

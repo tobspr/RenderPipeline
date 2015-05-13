@@ -46,6 +46,7 @@ class UnshadowedLightsPass(RenderPass):
         self.target.addColorTexture()
         self.target.setColorBits(16)
         self.target.prepareOffscreenBuffer()
+        self.target.setClearColor()
  
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 

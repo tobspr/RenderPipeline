@@ -1,0 +1,18 @@
+#pragma once
+
+struct ScatteringOptions {
+    float radiusGround;
+    float radiusAtmosphere; 
+    float averageGroundReflectance;
+    float rayleighFactor;
+    vec3 betaRayleigh;
+    float mieFactor;
+    vec3 betaMieScattering;
+    vec3 betaMieScatteringAdjusted;
+    float mieG;
+    bool transmittanceNonLinear;
+    bool inscatterNonLinear;
+
+    vec3 atmosphereScale;
+    vec3 atmosphereOffset;
+};

@@ -1,9 +1,9 @@
 #pragma once
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Material.include"
-#pragma include "Includes/GIData.include"
+#pragma include "Includes/Structures/Material.struct"
 #pragma include "Includes/PoissonDisk.include"
+#pragma include "Includes/Structures/GIData.struct"
 
 
 uniform GIData giData;
@@ -36,7 +36,7 @@ vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
         currentDistance += currentConeRadius * coneRatio;
         vec3 currentPos = start + directionStep * currentDistance;
         float currentMip = log2( currentConeRadius + 1.0 ) * 1.5;
-        currentMip = min(currentMip, 4.0);
+        currentMip = min(currentMip, 5.0);
         vec4 currentVal = textureLod(targetTex, currentPos, currentMip );
         result += currentVal * (1.0-result.w);
     }
@@ -91,11 +91,12 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // Compute reflection vector, for specular reflections
     vec3 reflectVector = reflect(viewVector, m.normal);
 
-    #ifndef DEBUG_RM_REFLECTIONS
+    #if !defined(DEBUG_RM_REFLECTIONS)
 
     // Hopefully some GPUs can branch this effectively out. If so, they save
     // a lot of work!
     if (m.specular > 0.001) { 
+
     #endif
 
         // m.roughness = 0.5;
@@ -121,7 +122,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
         specularColor = mix(traced, vec4(0), mixFactor);
 
 
-    #ifndef DEBUG_RM_REFLECTIONS
+    #if !defined(DEBUG_RM_REFLECTIONS)
     }
     #endif
 

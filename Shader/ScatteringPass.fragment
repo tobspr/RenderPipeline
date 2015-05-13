@@ -2,8 +2,7 @@
 
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/PositionReconstruction.include"
-#pragma include "Scattering/ScatteringOptions.include"
-#pragma include "Scattering/Final.include"
+#pragma include "Includes/ApplyScattering.include"
 
 in vec2 texcoord;
 out vec4 result;
@@ -69,7 +68,7 @@ void main() {
     }
 
 
-    #if DEBUG_VISUALIZATION_ACTIVE
+    #if defined(DEBUG_VISUALIZATION_ACTIVE)
         scatteringResult = vec3(0);
     #endif
     // scatteringResult = vec3(attenuation);

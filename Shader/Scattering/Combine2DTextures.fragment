@@ -1,6 +1,5 @@
 #version 150
 
-
 in vec2 texcoord;
 
 // Combines source1 and source2 with the factors factor1 and factor2

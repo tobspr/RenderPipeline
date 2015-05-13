@@ -35,10 +35,15 @@ class DirectionalLight(Light, DebugObject):
         Light.__init__(self)
         DebugObject.__init__(self, "DirectionalLight")
         self.typeName = "DirectionalLight"
-        self.splitCount = 6
+
+        # If you change the split count, change DIRECTIONAL_LIGHT_SPLIT_COUNTS
+        # in Shader/Includes/Configuration.include aswell! This is hardcoded
+        # to improve performance
+        self.splitCount = 5
+
         self.pssmTargetCam = Globals.base.cam
         self.pssmTargetLens = Globals.base.camLens
-        self.pssmFarPlane = 600.0
+        self.pssmFarPlane = 150.0
         self.pssmSplitPow = 2.0
         self.updateIndex = 0
 

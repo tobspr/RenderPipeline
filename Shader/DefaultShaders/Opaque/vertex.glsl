@@ -1,7 +1,8 @@
 #version 410
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/VertexOutput.include"
+#pragma include "Includes/Structures/VertexOutput.struct"
+#pragma include "Includes/Structures/PandaMaterial.struct"
 
 // Matrices
 uniform mat4 trans_model_to_world;
@@ -12,18 +13,12 @@ in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
 in vec4 p3d_Color;
 
+// Texture-Coordinate
 in vec2 p3d_MultiTexCoord0;
-
 
 // Outputs
 layout(location=0) out VertexOutput vOutput;
 
-// We get the material info from panda as a struct
-struct PandaMaterial {
-    vec4 diffuse;
-    vec3 specular;
-    vec4 ambient;
-};
 uniform PandaMaterial p3d_Material;
 uniform vec4 p3d_ColorScale;
 uniform mat4 p3d_ModelViewProjectionMatrix;
@@ -38,10 +33,8 @@ void main() {
 
     // Transform position to world space
     vOutput.positionWorld = (trans_model_to_world * p3d_Vertex).xyz;
-    // vOutput.positionWorld = (p3d_Vertex).xyz;
 
     // Pass texcoord to fragment shader
-    // vOutput.texcoord = p3d_MultiTexCoord0.xy;
     vOutput.texcoord = p3d_MultiTexCoord0.xy;
 
     // Also pass diffuse to fragment shader

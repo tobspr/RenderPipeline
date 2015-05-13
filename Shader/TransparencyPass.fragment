@@ -77,7 +77,7 @@ void main() {
     vec3 currentColor = currentData.xyz;
     float currentOcclusion = currentData.w; 
 
-    #ifndef DEBUG_DISABLE_TRANSPARENCY
+    #if !defined(DEBUG_DISABLE_TRANSPARENCY)
 
     // Fetch list head
     uint listHead = texelFetch(listHeadBuffer, coord, 0).x;
@@ -213,6 +213,9 @@ void main() {
         // tm.alpha = 1.0;
         // cf += 
         // cf = dot(v, tm.normal);
+
+        // composedColor = vec3(tm.normal.z);
+        // tm.alpha = 1.0;
 
         // currentColor = currentColor * (1.0-tm.alpha) + tm.color * tm.alpha * specularComp;
         currentColor = currentColor * (1.0-tm.alpha) + composedColor * tm.alpha;

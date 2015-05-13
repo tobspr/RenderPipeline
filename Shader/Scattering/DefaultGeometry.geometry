@@ -3,7 +3,6 @@
 layout(triangles, invocations=32) in;
 layout(triangle_strip, max_vertices = 3) out;
 
-
 in vec2 texcoordVertex[3];
 out vec2 texcoord;
 out float layer;
@@ -17,5 +16,4 @@ void main() {
         EmitVertex();
     }
     EndPrimitive();
-
 }

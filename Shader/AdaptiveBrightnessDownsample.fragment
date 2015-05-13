@@ -11,6 +11,8 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xyz) * 4;
     vec2 coordLinear = vec2(coord) / textureSize(luminanceTex, 0).xy;
     float sampleResult = 0.0;
+
+    // Efficient downsample using texture gather
     sampleResult += dot(vec4(1), textureGatherOffsets(luminanceTex, coordLinear, ivec2[4](
         ivec2(0, 0),
         ivec2(1, 0),

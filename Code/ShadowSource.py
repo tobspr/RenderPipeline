@@ -46,8 +46,10 @@ class ShadowSource(DebugObject, ShaderStructElement):
 
         self.valid = False
         self.camera = Camera("ShadowSource-" + str(self.index))
+        self.camera.setActive(False)
         self.cameraNode = NodePath(self.camera)
         self.cameraNode.reparentTo(Globals.render)
+        self.cameraNode.hide()
         self.resolution = 512
         self.atlasPos = Vec2(0)
         self.doesHaveAtlasPos = False
@@ -98,8 +100,8 @@ class ShadowSource(DebugObject, ShaderStructElement):
 
         self.rebuildMatrixCache()
         projMat = self.converterYUR
-        modelViewMat = self.transforMat.invertCompose(
-            Globals.render.getTransform(self.cameraNode)).getMat()
+        # modelViewMat = self.transforMat.invertCompose(
+        modelViewMat = Globals.render.getTransform(self.cameraNode).getMat()
         return UnalignedLMatrix4f(modelViewMat * projMat)
 
     def assignAtlasPos(self, x, y):
@@ -175,8 +177,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
 
     def rebuildMatrixCache(self):
         """ Internal method to precompute a part of the MVP to improve performance"""
-        self.converterYUR = Mat4.convertMat(CSYupRight, 
-            self.lens.getCoordinateSystem()) * self.lens.getProjectionMat()
+        self.converterYUR = self.lens.getProjectionMat()
 
     def setPos(self, pos):
         """ Sets the position of the source in world space """

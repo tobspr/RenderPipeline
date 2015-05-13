@@ -4,7 +4,7 @@
 // vertices from that
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/VertexOutput.include"
+#pragma include "Includes/Structures/VertexOutput.struct"
 
 layout(triangles, equal_spacing, ccw) in;
 

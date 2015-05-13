@@ -1,6 +1,5 @@
 #version 400
 
-
 in vec2 texcoord;
 in vec4 offset;
 
@@ -15,9 +14,8 @@ uniform sampler2D velocityTex;
 out vec4 result;
 
 void main() {    
-    // result = vec4(1,0,0,1);
     result = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex, velocityTex);
-    #ifdef DEBUG_DISABLE_ANTIALIASING
+    #if defined(DEBUG_DISABLE_ANTIALIASING)
         result = texture(colorTex, texcoord);
     #endif
 }

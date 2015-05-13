@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/TransparentMaterial.include"
+#pragma include "Includes/Structures/TransparentMaterial.struct"
 
 
 
@@ -14,9 +14,16 @@ void saveMaterialNextPointer(uint pointer, uint position) {
     imageStore(materialDataBuffer, int(position), data);
 }
 
+
+vec3 encodeNormal(vec3 n)
+{
+    vec2 enc = normalize(n.xy) * (sqrt(n.z*0.5+0.5));
+    enc = enc*0.5+0.5;
+    return vec3(enc, 0);
+}
 void renderTransparentMaterial(TransparentMaterial tm) {
 
-    #ifndef DEBUG_DISABLE_TRANSPARENCY
+    #if !defined(DEBUG_DISABLE_TRANSPARENCY)
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
@@ -24,7 +31,8 @@ void renderTransparentMaterial(TransparentMaterial tm) {
     tm.alpha = saturate(tm.alpha);
     tm.nextEntry = 0u;
     tm.materialType = clamp(tm.materialType, 0, 255);
-    tm.normal = saturate(tm.normal * 0.5 + 0.5);
+    // tm.normal = saturate(tm.normal * 0.5 + 0.5);
+    tm.normal = normalize(tm.normal);
     tm.depth = saturate(tm.depth);
 
 
@@ -127,10 +135,10 @@ void renderTransparentMaterial(TransparentMaterial tm) {
 
     // Pack material
     // uint integer1 = int(tm.color.x * 250.0 + 0.5) | int(tm.color.y * 250.0 + 0.5) << 8 | int(tm.color.z * 250.0 + 0.5) << 16 | tm.materialType << 24;
-    uint integer1 = packUnorm4x8(vec4(tm.color, tm.materialType));
-    uint integer2 = packUnorm4x8(vec4(tm.normal, tm.alpha));
+    uint integer1 = packSnorm4x8(vec4(tm.color, tm.materialType));
+    uint integer2 = packSnorm4x8(vec4(tm.normal, tm.alpha));
 
-    #if USE_UINT_PACKING
+    #if defined(USE_UINT_PACKING)
         uint integer3 = uint(tm.depth * 0xFFFFFFFF);
     #else
         uint integer3 = floatBitsToUint(tm.depth);

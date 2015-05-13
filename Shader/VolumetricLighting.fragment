@@ -7,9 +7,9 @@
 #pragma optionNV (unroll all)
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Light.include"
-#pragma include "Includes/Material.include"
-#pragma include "Includes/ShadowSource.include"
+#pragma include "Includes/Structures/Light.struct"
+#pragma include "Includes/Structures/Material.struct"
+#pragma include "Includes/Structures/ShadowSource.struct"
 #pragma include "Includes/PositionReconstruction.include"
 
 
@@ -81,7 +81,7 @@ vec3 computeVolumetricLighting(Light light, vec3 position, vec3 n, vec3 l) {
 
             vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
 
-            #if USE_HARDWARE_PCF
+            #if defined(USE_HARDWARE_PCF)
                 // Notice: Maybe use .x? My gtx 670 does not like that though
                 resultSum += 1.0 - textureLod(shadowAtlasPCF, vec3(centerCoord, projCoord.z) , 0);
             

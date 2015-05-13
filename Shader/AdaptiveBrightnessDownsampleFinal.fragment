@@ -6,22 +6,20 @@
 
 uniform sampler2D luminanceTex;
 layout(r32f) uniform image2D lastExposureTex;
+
 uniform float targetExposure;
 uniform float adaptionSpeed;
 uniform float dt;
 
 in vec2 texcoord;
 
-out vec4 result;
-
 void main() {
-
-
 
     ivec2 texSize = textureSize(luminanceTex, 0);
     int numSamples = texSize.x * texSize.y;
     float sampleSum = 0.0;
 
+    // Filter all remaining texels
     for (int x = 0; x < texSize.x; x++) {
         for (int y = 0; y < texSize.y; y++) {
             sampleSum += texelFetch(luminanceTex, ivec2(x,y), 0).x;
@@ -29,16 +27,14 @@ void main() {
     }
 
     sampleSum /= float(numSamples);
-    float brightnessDiff = targetExposure - (sampleSum);
 
+    // Compute difference between wanted and actual exposure
+    float brightnessDiff = targetExposure - sampleSum;
+
+    // Store new exposure
     float lastExposure = imageLoad(lastExposureTex, ivec2(0)).x;
     float newExposure = lastExposure + brightnessDiff * dt * 10.0 * adaptionSpeed;
-
     newExposure = clamp(newExposure, 1.0, 4.0);
-
     imageStore(lastExposureTex, ivec2(0), vec4(newExposure));
-
-    result.xyz = vec3(newExposure * 0.2);
-    result.w = 1.0;
 
 }

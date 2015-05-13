@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Material.include"
+#pragma include "Includes/Structures/Material.struct"
 
 
 uniform samplerCube fallbackCubemap;
@@ -34,22 +34,14 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction, ve
     return textureLod(tex, direction, mipmap).xyz;
 }
 
-vec3 computeAmbient(Material material, vec3 giAmbient, vec4 giSpecular, float occlusionFactor, vec3 v, vec3 n) {
+vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float occlusionFactor, vec3 v, vec3 n) {
 
 
 
-    #ifdef DEBUG_DISABLE_AMBIENT
+    #if defined(DEBUG_DISABLE_AMBIENT) || defined(DEBUG_RM_PSSM_SPLITS) || defined(DEBUG_RM_SHADOWS)
         return vec3(0.0);
     #endif
 
-    #ifdef DEBUG_RM_PSSM_SPLITS
-        return vec3(0.01);
-        
-    #endif
-
-    #ifdef DEBUG_RM_SHADOWS
-        return vec3(0.001);
-    #endif
 
     float NxV = max(0.0, dot(material.normal, v)) + 1e-5;
 
@@ -87,13 +79,16 @@ vec3 computeAmbient(Material material, vec3 giAmbient, vec4 giSpecular, float oc
     vec3 result = vec3(0);
 
     occlusionFactor = pow(occlusionFactor, 2.0);
+    // occlusionFactor = 1.0;
 
+    // giAmbient.xyz = pow(giAmbient.xyz, vec3(2.0)) * 3.0 + 0.01;
 
 //  * pow(giAmbient.w, 2.0)
     // Diffuse ambient
     
 
-    result += giAmbient * occlusionFactor * material.baseColor * saturate(1.0 - material.metallic) * (1.0 + material.normal.x * 0.2) ;
+    // result += giAmbient.xyz * occlusionFactor * material.baseColor * saturate(1.0 - material.metallic) * (1.0 + material.normal.x * 0.1) * 5.0;
+    result += giAmbient.xyz * occlusionFactor * material.baseColor * saturate(1.0 - material.metallic) * (1.0 + material.normal.x * 0.1) * 1.0 * saturate(1.0 + giAmbient.w) * 5.0;
 
     // float diffuseReflectFactor = pow( saturate(1.0 - dot(material.normal,v)), 2.0);
 
@@ -114,6 +109,9 @@ vec3 computeAmbient(Material material, vec3 giAmbient, vec4 giSpecular, float oc
 
     result += metallicSpecularAmbient * material.metallic;
 
+
+    // result = pow(giAmbient.xyz, vec3(3.0)) + 0.1;
+    // result *= giAmbient.w + 0.2;
 
     return result;
 }

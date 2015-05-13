@@ -22,7 +22,8 @@ class ViewSpacePass(RenderPass):
             "positionTex": "DeferredScenePass.wsPosition",
             "depthTex": "DeferredScenePass.depth",
             "mainRender": "Variables.mainRender",
-            "mainCam": "Variables.mainCam"
+            "mainCam": "Variables.mainCam",
+            "currentViewMat": "Variables.currentViewMat"
         }
 
     def create(self):

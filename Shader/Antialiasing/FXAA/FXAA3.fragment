@@ -696,7 +696,7 @@ out vec4 result;
 void main()
 {
         
-        #ifndef DEBUG_DISABLE_ANTIALIASING
+        #if !defined(DEBUG_DISABLE_ANTIALIASING)
         vec2 rcpFrame; 
         
         rcpFrame.x = 1.0 / WINDOW_WIDTH;

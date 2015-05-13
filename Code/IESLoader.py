@@ -32,7 +32,6 @@ class IESLoader(DebugObject):
     def __init__(self):
         """ Creates a new IES Loader """
         DebugObject.__init__(self, "IESLoader")
-        self.debug("Creating IES Loader")
         self.storage = Texture("IESProfiles")
         self.storage.setup2dTextureArray(self.IESTableResolution, 1, 64, Texture.TFloat, Texture.FRgba16)
         self.storage.setMinfilter(SamplerState.FTLinear)

@@ -1,9 +1,8 @@
-#version 400
+#version 410
 
 
-#pragma include "Includes/VertexOutput.include"
+#pragma include "Includes/Structures/VertexOutput.struct"
 
-#extension GL_ARB_separate_shader_objects : enable
 
 // Input from the vertex shader
 layout(location=0) in VertexOutput vOutput;
@@ -20,8 +19,6 @@ uniform sampler2D p3d_Texture3;
 
 // This include enables us to compute the tangent in the fragment shader
 #pragma include "Includes/TangentFromDDX.include"
-
-uniform float osg_FrameTime;
 
 void main() {
 
@@ -59,5 +56,6 @@ void main() {
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
 
+    // Write the material to the G-Buffer
     renderMaterial(m);
 }

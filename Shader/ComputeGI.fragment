@@ -29,19 +29,20 @@ void main() {
 
     vec4 specularResult = vec4(0);
 
-    #ifdef DEBUG_DISABLE_GI
+    #if defined(DEBUG_DISABLE_GI)
         giColorResult = vec4(1.0);
         giSpecularResult = vec4(0);
     #else
 
-    // Extract material data
+    // Extract material data and view vector
     vec4 target0data = texelFetch(data0, screenCoord, 0);
     vec4 target1data = texelFetch(data1, screenCoord, 0);
     vec4 target2data = texelFetch(data2, screenCoord, 0);
     vec4 target3data = texelFetch(data3, screenCoord, 0);
     Material material = unpackMaterial(target0data, target1data, target2data, target3data);
-
     vec3 viewVector = normalize(material.position - cameraPosition);
+
+    // Compute and store GI
     vec4 giResult = computeGlobalIllumination(material, viewVector, giData, specularResult, material.normal, cameraPosition);
 
     giColorResult = vec4(giResult);

@@ -2,7 +2,7 @@
 
 from panda3d.core import NodePath, Shader, Vec4, TransparencyAttrib, LVecBase2i
 from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerState
-from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight
+from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight, BitMask32
 from panda3d.core import Texture, UnalignedLMatrix4f, Vec3, PTAFloat, TextureStage
 
 from DebugObject import DebugObject
@@ -77,6 +77,18 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableGlobalIllumination:
             self.globalIllum.setTargetLight(lightSource)
 
+    def getMainPassBitmask(self):
+        """ Returns the camera bit used to render the main scene """
+        return BitMask32.bit(2)
+
+    def getShadowPassBitmask(self):
+        """ Returns the camera bit used to render the shadow scene """
+        return BitMask32.bit(3)
+
+    def getVoxelizePassBitmask(self):
+        """ Returns the camera bit used to voxelize the scene for GI """
+        return BitMask32.bit(4)
+
     def fillTextureStages(self, nodePath):
         """ Prepares all materials of a given nodepath to have at least the 4 
         default textures in the correct order: [diffuse, normal, specular, roughness] """
@@ -140,7 +152,7 @@ class RenderingPipeline(DebugObject):
         skybox.setShaderInput("skytex", skytex)
         skybox.setShader(Shader.load(Shader.SLGLSL, 
                 "Shader/DefaultShaders/Opaque/vertex.glsl", 
-                "Shader/Skybox/fragment.glsl"), 50)
+                "Shader/Skybox/fragment.glsl"), 70)
         return skybox
 
     def reloadShaders(self):
@@ -174,6 +186,7 @@ class RenderingPipeline(DebugObject):
         use pta-arrays, so updating them is faster than using setShaderInput all the
         time. """
         self.cameraPosition = PTAVecBase3f.emptyArray(1)
+        self.currentViewMat = PTALMatrix4f.emptyArray(1)
         self.lastMVP = PTALMatrix4f.emptyArray(1)
         self.currentMVP = PTALMatrix4f.emptyArray(1)
         self.frameIndex = PTAInt.emptyArray(1)
@@ -186,6 +199,11 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerStaticVariable("mainCam", self.showbase.cam)
         self.renderPassManager.registerStaticVariable("mainRender", self.showbase.render)
         self.renderPassManager.registerStaticVariable("frameDelta", self.frameDelta)
+        self.renderPassManager.registerStaticVariable("currentViewMat", self.currentViewMat)
+
+        # self.transformMat = TransformState.makeMat(Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(), CSZupRight))
+        self.transformMat = TransformState.makeMat(Mat4.convertMat(CSYupRight, CSZupRight))
+
 
     def _preRenderUpdate(self, task):
         """ This is the pre render task which handles updating of all the managers
@@ -212,6 +230,7 @@ class RenderingPipeline(DebugObject):
 
         self.lastMVP[0] = self.currentMVP[0]
         self.currentMVP[0] = self._computeMVP()
+        self.currentViewMat[0] = UnalignedLMatrix4f(self.transformMat.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
         self.frameDelta[0] = Globals.clock.getDt()
         self.cameraPosition[0] = self.showbase.cam.getPos(self.showbase.render)
 
@@ -219,12 +238,8 @@ class RenderingPipeline(DebugObject):
         """ Computes the current scene mvp. Actually, this is the
         worldViewProjectionMatrix, but for convience it's called mvp. """
         camLens = self.showbase.camLens
-        projMat = Mat4.convertMat(
-            CSYupRight,camLens.getCoordinateSystem()) * camLens.getProjectionMat()
-        transformMat = TransformState.makeMat(Mat4.convertMat(
-            self.showbase.win.getGsg().getInternalCoordinateSystem(), CSZupRight))
-        modelViewMat = transformMat.invertCompose(
-            self.showbase.render.getTransform(self.showbase.cam)).getMat()
+        projMat = camLens.getProjectionMat()
+        modelViewMat = self.showbase.render.getTransform(self.showbase.cam).getMat()
         return UnalignedLMatrix4f(modelViewMat * projMat)
 
     def _postRenderUpdate(self, task):
@@ -375,6 +390,7 @@ class RenderingPipeline(DebugObject):
         self.showbase.camLens.setNearFar(0.1, 50000)
         self.showbase.camLens.setFov(90)
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
+        self.showbase.camNode.setCameraMask(self.getMainPassBitmask())
         self.showbase.render.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
 
         # Create render pass matcher

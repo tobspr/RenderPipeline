@@ -23,7 +23,8 @@ class MovementController:
         self.mouseSensivity = 0.7
         self.keyboardHprSpeed = 0.8
         # self.smoothness = 0.7
-        self.smoothness = 0.9
+        # self.smoothness = 0.9
+        self.smoothness = 0.0
 
     def setInitialPosition(self, pos, target):
         """ Sets the initial camera position """

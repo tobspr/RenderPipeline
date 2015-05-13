@@ -1,7 +1,5 @@
 #version 400
 
-
-
 #extension GL_EXT_shader_image_load_store : enable
 
 #pragma include "Includes/Configuration.include"
@@ -13,18 +11,10 @@
 
 
 in vec2 texcoord;
-
-// uniform sampler2D velocityTex;
 uniform sampler2D colorTex;
-
-
 uniform sampler2D colorLUT;
-// uniform sampler2D depthTex;
 
-// uniform float motionBlurFactor;
 out vec3 result;
-
-
 
 uniform float osg_FrameTime;
 
@@ -37,14 +27,12 @@ uniform float osg_FrameTime;
 
 void main() {
 
-
-
     // Store last frame position and occlusion
     // ivec2 intCoords = ivec2(gl_FragCoord.xy / 2.0);
     // vec3 lastPosition = texelFetch(currentFramePosition, intCoords * 2, 0).xyz;
     // imageStore(lastFramePosition, intCoords, vec4(lastPosition, 1.0));
 
-    // #ifdef USE_OCCLUSION
+    // #if defined(USE_OCCLUSION)
     //     float lastOcclusion = texelFetch(computedOcclusion, intCoords, 0).x;
     //     imageStore(lastFrameOcclusion, intCoords, vec4(lastOcclusion));
     // #endif
@@ -56,11 +44,9 @@ void main() {
     // Screen coordinate (as int vec)
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
 
-    // Color LUT
-    #if !DEBUG_DISABLE_COLOR_CORRECTION && !DEBUG_VISUALIZATION_ACTIVE
-        
-        // Dont color correct when showing occlusion
-        
+    // Color correction
+    #if !defined(DEBUG_DISABLE_COLOR_CORRECTION) && !defined(DEBUG_VISUALIZATION_ACTIVE)
+                
         // Chromatic abberation
         result = applyChromaticAbberation(colorTex, texcoord, 1.0);
         
@@ -74,61 +60,7 @@ void main() {
         result =  textureLod(colorTex, texcoord, 0).xyz;
     #endif
 
-         
-    // Motion Blur
-    #ifdef USE_MOTION_BLUR  
-
-        // Currently disabled. Have to improve it first.
-        
-        #if 0
-        vec2 pixelVelocity = textureLod(velocityTex, texcoord, 0).xy
-            / 255.0 * motionBlurFactor * 1.2;
-
-        float velStrength = length(pixelVelocity);
-
-        // Motion blur
-        vec3 motionResult = textureLod(colorTex, texcoord, 0).xyz;
-        float motionDivide = 0.5;
-
-        for (int i = 1; i < MOTION_BLUR_SAMPLES; i++) {
-            vec2 offset = pixelVelocity * (float(i) / float(MOTION_BLUR_SAMPLES - 1) - 0.5);
-            // motionResult += textureLod(colorTex, texcoord + offset, 0).rgb;
-            vec3 motionSample = textureLod(colorTex, texcoord + offset, 0).rgb;
-            vec2 motionVelocity = textureLod(velocityTex, texcoord + offset, 0).xy
-                / 255.0 * motionBlurFactor * 1.2;
-            float motionFactor =  saturate(1.0 - max(0.0, distance(motionVelocity, pixelVelocity) ) * 2000.0);
-            motionResult += motionSample * motionFactor;
-            motionDivide += motionFactor;
-
-
-        }
-        motionResult /= motionDivide;
-
-        result = mix(result, motionResult, saturate(velStrength*200.0) );
-        // result = mix(result, motionResult, 1.0 );
-    
-
-        #ifdef DEBUG_DISABLE_MOTIONBLUR
-            result = textureLod(colorTex, texcoord, 0).rgb;
-        #endif
-
-        #endif
-    #else
-    #endif
-
-
-    // vec2 pixelSize = 1.0 / vec2(textureSize(colorTex, 0));
-    // vec3 sum = vec3(0);
-    // float factors = 0.0;
-
-    // for (int i = 0; i < 32; i++) {
-    //     vec2 localOffs = poissonDisk32[i] * pixelSize * 5.0;
-    //     sum += texture(colorTex, texcoord + localOffs).xyz;
-    // };
-
-    // // result = sum;
-    // result = sum / 32.0;
-
+    // Vignett
     float vignett = 1.0 - smoothstep(0, 1, 
         (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.22) ) * 1.0;
     result *= vignett;

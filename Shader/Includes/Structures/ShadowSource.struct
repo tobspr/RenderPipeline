@@ -1,0 +1,10 @@
+#pragma once
+
+
+struct ShadowSource {
+    mat4 mvp;  
+    vec2 atlasPos;
+    float farPlane;
+    float nearPlane;
+    int resolution;
+};

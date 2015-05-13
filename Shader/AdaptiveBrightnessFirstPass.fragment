@@ -9,17 +9,16 @@ out vec4 result;
 
 
 float getLuminance(vec3 color) {
-    // Algorithm from Chapter 10 of Graphics Shaders.
     const vec3 W = vec3(0.2125, 0.7154, 0.0721);
     return dot(color, W);
 }
 
 void main() {
 
-
     ivec2 coord = ivec2(gl_FragCoord.xyz) * 2;
     vec4 sampleResult = vec4(0);
 
+    // 2x2 boxfilter
     sampleResult += texelFetch(colorTex, coord, 0);
     sampleResult += texelFetch(colorTex, coord + ivec2(1, 0), 0);
     sampleResult += texelFetch(colorTex, coord + ivec2(0, 1), 0);
@@ -27,11 +26,7 @@ void main() {
 
     sampleResult /= 4.0;
 
+    // Store luminance only
     result.xyz = vec3( getLuminance(sampleResult.xyz) );
     result.w = 1.0;
-
-    // Store only luminance, this avoids using 16 bit textures
-
-
-
 }

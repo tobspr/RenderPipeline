@@ -1,6 +1,5 @@
 #version 400
 
-
 uniform mat4 p3d_ModelViewProjectionMatrix;
 in vec4 p3d_Vertex;
 out vec2 texcoord;

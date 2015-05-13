@@ -1,0 +1,10 @@
+#pragma once
+
+struct TransparentMaterial {
+    vec3 color;
+    uint materialType;
+    vec3  normal;
+    float alpha;
+    float depth;
+    uint nextEntry;
+};

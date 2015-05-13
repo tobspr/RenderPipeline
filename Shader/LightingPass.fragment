@@ -19,24 +19,24 @@ uniform sampler2D data2;
 uniform sampler2D data3;
 uniform sampler2D depth;
 
+// Light computation inputs
 uniform sampler2D shadowedLightsTex;
 uniform sampler2D unshadowedLightsTex;
 
 // Global illumination inputs
-#ifdef USE_GLOBAL_ILLUMINATION
+#if defined(USE_GLOBAL_ILLUMINATION)
 uniform sampler2D giDiffuseTex;
 uniform sampler2D giReflectionTex;
 #endif
 
-// Combined occlusion and gi from the edge preserving blur
 
-#ifdef USE_OCCLUSION
+// Occlusion input
+#if defined(USE_OCCLUSION)
 uniform sampler2D occlusionTex;
 #endif
 
 // Various data
 uniform int frameIndex;
-uniform sampler2D noiseTexture;
 uniform vec4 bufferSize;
 uniform vec3 cameraPosition;
 
@@ -47,23 +47,14 @@ in vec2 texcoord;
 
 // Outputs
 layout(location = 0) out vec4 lightingResult;
-#ifdef USE_SSLR
+#if defined(USE_SSLR)
 layout(location = 1) out vec4 sslrDataResult;
 #endif
-
-
-// uniform sampler2D lastFramePosition;
-
-// #ifdef USE_OCCLUSION
-// uniform sampler2D lastFrameOcclusion;
-// #endif
-
-
 
 uniform sampler2D scatteringTex;
 
 // Dynamic exposure
-#ifdef USE_DYNAMIC_EXPOSURE
+#if defined(USE_DYNAMIC_EXPOSURE)
 uniform sampler2D dynamicExposureTex;
 #endif
 
@@ -72,7 +63,6 @@ vec3 getPositionWorld(vec2 coord) {
     float z = texture(depth, coord).x;
     return calculateSurfacePos(z, coord);
 }
-
 
 void main() {
 
@@ -83,12 +73,12 @@ void main() {
  
     // Lighting result gets stored in this variables
     vec3 result = vec3(0);
-    vec3 giDiffuseColor = vec3(0.2);
+    vec4 giDiffuseColor = vec4(0.2);
     vec4 giSpecularColor = vec4(0);
     vec3 ambient = vec3(0);
 
     // Compute normal from depth buffer
-    vec3 pixelW = vec3(bufferSize.xy, 0);
+    vec3 pixelW = vec3(1.0 / screenSize, 0);
     vec3 world = getPositionWorld(texcoord);
     vec3 worldX1 = getPositionWorld(texcoord + pixelW.xz);
     vec3 worldY1 = getPositionWorld(texcoord + pixelW.zy);
@@ -108,16 +98,13 @@ void main() {
 
 
 
-    #ifdef USE_GLOBAL_ILLUMINATION
-    #if 0
-    #ifndef DEBUG_DISABLE_GI
+    #if defined(USE_GLOBAL_ILLUMINATION) && !defined(DEBUG_DISABLE_GI)
 
     // Bilateral upsample global illumination
+    // TODO: Improve (temporal + upsample)
 
     ivec2 giSampleCoord = screenCoord / 2;
 
-
-    
     const int giSampleCount = 5;
 
     vec2 giSampleOffsets[giSampleCount] = vec2[](
@@ -146,8 +133,7 @@ void main() {
     }
     giSpecularColor = giSpecularResult / giValidSamples;
     giDiffuseColor = giDiffuseResult / giValidSamples;
-    #endif
-    #endif
+
     #endif
 
 
@@ -159,7 +145,7 @@ void main() {
     vec3 viewVector = normalize(cameraPosition - material.position);
 
     // Scattering
-    #ifdef USE_SCATTERING
+    #if defined(USE_SCATTERING)
     vec3 scatteringResult = texture(scatteringTex, texcoord).xyz;
     result += scatteringResult;
     #endif
@@ -172,14 +158,14 @@ void main() {
 
     } else {
 
-        #if USE_OCCLUSION || USE_GLOBAL_ILLUMINATION
+        #if defined(USE_OCCLUSION)
             mixedOcclusionFactor = texture(occlusionTex, texcoord).w;
         #endif
 
         // mixedOcclusionFactor = 0.5;
 
         // // upscale occlusion here
-        // #if USE_OCCLUSION
+        // #if defined(USE_OCCLUSION)
 
         //     // Temporal occlusion
         //     vec2 velocity = target2data.xy / 255.0;
@@ -195,7 +181,7 @@ void main() {
 
         // #endif
 
-        // #ifdef DEBUG_DISABLE_OCCLUSION
+        // #if defined(DEBUG_DISABLE_OCCLUSION)
         //     mixedOcclusionFactor = 0.0;
         // #endif
 
@@ -216,7 +202,7 @@ void main() {
 
     // result *= texture(volumetricLightingTex, texcoord).x;
 
-    #ifdef USE_SSLR
+    #if defined(USE_SSLR)
         // SSLR Precomputation data
         vec3 reflectionVector = normalize(reflect(viewVector, material.normal));
         sslrDataResult = vec4(reflectionVector, reflectionFactor);
@@ -226,14 +212,12 @@ void main() {
     result = pow(result, vec3(1.0 / 2.2) ); 
     float exposure = 1.0;
 
-    #ifdef USE_DYNAMIC_EXPOSURE
-        // Dynamic Exposure
+    // Dynamic Exposure
+    #if defined(USE_DYNAMIC_EXPOSURE)
         exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
     #endif
 
-    // exposure = 0.5;
-
-    #ifndef DEBUG_VISUALIZATION_ACTIVE
+    #if !defined(DEBUG_VISUALIZATION_ACTIVE)
         result = 1.0 - exp(-exposure * result);
     #endif
 
