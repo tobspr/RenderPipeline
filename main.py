@@ -97,6 +97,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
+        # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
 
 
         # This sources are included in the repo
@@ -107,8 +108,9 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
+        self.sceneSource = "Models/Buddha/Buddha.bam"
 
-        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
+        # self.sceneSource = "Toolkit/Blender Material Library/Buddha.bam"
         
 
         # Select surrounding scene here
@@ -312,8 +314,8 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.setStatus("Optimizing Scene")
 
         # self.scene.clearModelNodes()
-        # loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
-        self.onScenePrepared()
+        loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
+        # self.onScenePrepared()
 
     def onScenePrepared(self, cb=None):
         """ Callback which gets called after the scene got prepared """
@@ -324,7 +326,7 @@ class Main(ShowBase, DebugObject):
         self.prepareSRGB(self.scene)
 
         # Prepare Materials
-        # self.renderPipeline.fillTextureStages(render)
+        self.renderPipeline.fillTextureStages(render)
 
         # Load ground plane if configured
         if self.usePlane:

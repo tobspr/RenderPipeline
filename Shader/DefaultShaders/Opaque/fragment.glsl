@@ -37,7 +37,7 @@ void main() {
     vec4 sampledRoughness = texture(p3d_Texture3, vOutput.texcoord);
         
     // Extract the material properties 
-    float bumpFactor = vOutput.materialDiffuse.w * 1.0;
+    float bumpFactor = vOutput.materialDiffuse.w * 0.0;
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
