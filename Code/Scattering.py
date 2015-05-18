@@ -1,15 +1,11 @@
 
-from panda3d.core import Vec3
-from panda3d.core import Shader
-from DebugObject import DebugObject
-from Globals import Globals
-from RenderTarget import RenderTarget
-from panda3d.core import PTAFloat, PTALVecBase3f
+from panda3d.core import Vec3, Texture, Shader, PTAFloat, PTALVecBase3f
 
 from direct.stdpy.file import isdir
 
-# need legacy makedirs here
-from os import makedirs
+from DebugObject import DebugObject
+from Globals import Globals
+from RenderTarget import RenderTarget
 
 
 class Scattering(DebugObject):
@@ -43,6 +39,9 @@ class Scattering(DebugObject):
         self.targets = {}
         self.textures = {}
         self.precomputed = False
+
+        self.inscatterResult = None
+        self.transmittanceResult = None
 
     def _generatePTAs(self):
         """ Converts all settings to pta arrays, this is faster than using

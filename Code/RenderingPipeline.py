@@ -159,6 +159,7 @@ class RenderingPipeline(DebugObject):
         skybox.setShader(Shader.load(Shader.SLGLSL, 
                 "Shader/DefaultShaders/Opaque/vertex.glsl", 
                 "Shader/Skybox/fragment.glsl"), 70)
+        skybox.setName("Skybox")
         return skybox
 
     def reloadShaders(self):

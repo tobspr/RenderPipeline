@@ -1,4 +1,5 @@
 
+
 from panda3d.core import GraphicsOutput, CardMaker, OmniBoundingVolume
 from panda3d.core import AuxBitplaneAttrib, NodePath, OrthographicLens
 from panda3d.core import Camera, Vec4, TransparencyAttrib, StencilAttrib
@@ -507,11 +508,14 @@ class RenderTarget(DebugObject):
 
     def deleteBuffer(self):
         """ Deletes this buffer, restoring the previous state """
-        self.warn("Todo:: Implement delete Buffer")
         MemoryMonitor.unregisterRenderTarget(self._name, self)
+        self._internalBuffer.clearRenderTextures()
         self._engine.removeWindow(self._internalBuffer)
         self._active = False
         BufferViewerGUI.unregisterBuffer(self._name)
+
+        if self._createOverlayQuad:
+            self._quad.removeNode()
 
     def _create(self):
         """ Attempts to create this buffer """
