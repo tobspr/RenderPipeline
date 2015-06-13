@@ -38,6 +38,7 @@ from Code.SpotLight import SpotLight
 from Code.GUI.PipelineLoadingScreen import PipelineLoadingScreen
 
 
+from BOBJLoader import BOBJLoader
 
 class Main(ShowBase, DebugObject):
 
@@ -98,6 +99,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
+        self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
 
 
         # This sources are included in the repo
@@ -108,7 +110,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
-        self.sceneSource = "Models/Buddha/Buddha.bam"
+        # self.sceneSource = "Models/Buddha/Buddha.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/Buddha.bam"
         
@@ -123,23 +125,26 @@ class Main(ShowBase, DebugObject):
 
         # Create a sun light
         dPos = Vec3(60, 30, 100)
-        dirLight = DirectionalLight()
-        dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(1024)
-        dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1, 1, 0.8))
-        # dirLight.setColor(Vec3(0.3))
-        dirLight.setPssmTarget(base.cam, base.camLens)
-        dirLight.setCastsShadows(True)
 
-        self.renderPipeline.addLight(dirLight)
-        self.dirLight = dirLight
-        sunPos = Vec3(56.7587, -31.3601, 189.196)
-        self.dirLight.setPos(sunPos)
-        self.dirLight.setDirection(sunPos)
+        if True:
+            dirLight = DirectionalLight()
+            dirLight.setDirection(dPos)
+            dirLight.setShadowMapResolution(2048)
+            dirLight.setPos(dPos)
+            dirLight.setColor(Vec3(1, 1, 0.8))
+            # dirLight.setColor(Vec3(0.3))
+            dirLight.setPssmTarget(base.cam, base.camLens)
+            dirLight.setCastsShadows(True)
+            dirLight.setPssmDistance(60)
 
-        # Tell the GI which light casts the GI
-        self.renderPipeline.setGILightSource(dirLight)
+            self.renderPipeline.addLight(dirLight)
+            self.dirLight = dirLight
+            sunPos = Vec3(56.7587, -31.3601, 189.196)
+            self.dirLight.setPos(sunPos)
+            self.dirLight.setDirection(sunPos)
+
+            # Tell the GI which light casts the GI
+            self.renderPipeline.setGILightSource(dirLight)
 
         # Slider to move the sun
         if self.renderPipeline.settings.displayOnscreenDebugger:
@@ -256,6 +261,12 @@ class Main(ShowBase, DebugObject):
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
         # self.scene = loader.loadModel(self.sceneSource)
+
+
+        # d = BOBJLoader()
+        # k = d.loadFile("E:/Downloads/Sonstiges/GameBackups/Alte Backups 2/backup_15/data/objects/items/barrett/main.obj")
+        # k.reparentTo(render)
+
         # self.onSceneLoaded(self.scene)
 
     def onSceneLoaded(self, scene):
@@ -281,15 +292,17 @@ class Main(ShowBase, DebugObject):
             highPolyObj = self.scene.find("**/HighPolyObj")
 
             if highPolyObj is not None and not highPolyObj.isEmpty():
-                highPolyObj.detachNode()
+                # highPolyObj.detachNode()
                 self.loadingScreen.setStatus("Preparing Performance Test")
 
-                for x in xrange(-10, 10):
-                    for y in xrange(-10, 10):
+                for x in xrange(0, 20):
+                    # for y in xrange(0, 1):
+                    if True:
+                        y = 5
                         copiedObj = copy.deepcopy(highPolyObj)
-                        # copiedObj.setColorScale(random(), random(), random(), 1)
-                        if random() < 0.2:
-                            copiedObj.setColorScale(0.4, 1.2, 2.0, 1.0)
+                        copiedObj.setColorScale(random(), random(), random(), 1)
+                        # if random() < 0.2:
+                            # copiedObj.setColorScale(0.4, 1.2, 2.0, 1.0)
 
                         copiedObj.reparentTo(self.scene)
                         copiedObj.setPos(x*1.5 + random(), y*1.5 + random(), random()*5.0 + 0.4)
@@ -297,7 +310,7 @@ class Main(ShowBase, DebugObject):
         # Find transparent objects and mark them as transparent
         self.transpObjRoot = render.attachNewNode("transparentObjects")
         matches = self.scene.findAllMatches("**/T__*")
-        if matches:
+        if matches and False:
             for match in matches:
                 # match.reparentTo(self.transpObjRoot)
                 self.transparentObjects.append(match)
@@ -314,8 +327,8 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.setStatus("Optimizing Scene")
 
         # self.scene.clearModelNodes()
-        loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
-        # self.onScenePrepared()
+        # loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
+        self.onScenePrepared()
 
     def onScenePrepared(self, cb=None):
         """ Callback which gets called after the scene got prepared """
@@ -391,14 +404,15 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 50)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 50)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 30)
 
         if abs(diff) > 0.0001:
-            self.dirLight.setPos(dPos)
-            self.dirLight.setDirection(dPos)
+            if hasattr(self, "dirLight"):
+                self.dirLight.setPos(dPos)
+                self.dirLight.setDirection(dPos)
 
     def toggleSceneWireframe(self):
         """ Toggles the scene rendermode """

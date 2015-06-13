@@ -64,7 +64,7 @@ class GlobalIllumination(DebugObject):
 
         # Store grid size in world space units
         # This is the half voxel grid size
-        self.voxelGridSizeWS = Vec3(60)
+        self.voxelGridSizeWS = Vec3(110)
 
         # When you change this resolution, you have to change it in Shader/GI/ConvertGrid.fragment aswell
         self.voxelGridResolution = LVecBase3i(256)

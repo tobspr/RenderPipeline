@@ -51,9 +51,14 @@ vec3 applyDirectionalLight(Light light, Material material) {
 
     #if !defined(UNSHADOWED_PASS)
         int map_used = 0;
-        shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 40.0, 60.0, 0.015, map_used);
-    #endif
+        shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 120.0, 100.0, 0.2, map_used);
 
+        #if defined(DEBUG_RM_PSSM_SPLITS)
+            float factor = float(map_used) / DIRECTIONAL_LIGHT_SPLIT_COUNTS;
+            return vec3(factor, 1.0 - factor, 0);
+        #endif
+
+    #endif
 
     return computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
 }

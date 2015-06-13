@@ -83,6 +83,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // Compute fadeout
     vec3 diffVector = (cameraPosition - m.position) / (data.gridHalfSize);
     float mixFactor = saturate(pow( length(diffVector) * 1.1, 12.0));
+    mixFactor = 0.0;
     localCoordOffs *= data.gridResolution;
 
 
@@ -151,28 +152,30 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
             correctNormal * traceDirection.z
         );
         // aoResult += traceCone(data, data.geometry, localCoord, mixedNormal, 16, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius * 0.1);
-        aoResult += traceCone(data, data.geometry, localCoord, mixedNormal , 16, 1.1227, 0.5682 , 0.727, 0.30228);
+        aoResult += traceCone(data, data.geometry, localCoord, mixedNormal , 16, 1.24, 1.2 , 0.5, 0.05);
     }
     aoResult = aoResult / float(numSamplesAO);
     float aoMultiplier = saturate(1.0 - aoResult.w);
+    aoMultiplier = 1.3 - exp(-0.5 * aoMultiplier);
 
     // Trace gi
 
     #if 1
-    const int numSamplesGI = 16;
+    const int numSamplesGI = 32;
     vec4 giResult = vec4(0);
     for (int i = 0; i < numSamplesGI; i++) {
         vec3 traceDirection = poisson3D_32[i];
-        traceDirection.z = abs(traceDirection.z) * 5.0;
+        traceDirection.z = abs(traceDirection.z) * 1.0;
         vec3 mixedNormal = normalize(
             t * traceDirection.x + 
             b * traceDirection.y + 
             correctNormal * traceDirection.z
         );
         // giResult += traceConeWithCollisions(data, localCoord, mixedNormal , 12, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
-        giResult += traceCone(data, data.geometry, localCoord, mixedNormal , 12, 1.5, 0.3523 , 0.2091, 1.509);
+        giResult += traceCone(data, data.geometry, localCoord, mixedNormal , 32, 1.5, 1.1, 0.4, 1.1);
     }
     giResult = giResult / float(numSamplesGI);
+    giResult *= 4.0;
     #endif
 
 
@@ -181,13 +184,13 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     // Raytrace to visualize voxels
     #if 0
-    int numRaySteps = 300;
+    int numRaySteps = 600;
 
     int mipmap = 0;
     int mipmapScale = 1;
 
     vec3 rayStart = cameraPosition;
-    vec3 rayEnd = cameraPosition + normalize(m.position - cameraPosition) * 50.0; 
+    vec3 rayEnd = cameraPosition + normalize(m.position - cameraPosition) * length(data.gridHalfSize.xy) * 0.1; 
 
     // transform to grid space
     rayStart = (rayStart-gridStart) / (2 * data.gridHalfSize);
@@ -206,12 +209,13 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
         // vec4 texelVal = textureLod(data.geometry, rayPos, 0);
         vec4 texelVal = texelFetch(data.geometry, ivec3(rayPos * vec3(data.gridResolution) + 0.0) / mipmapScale , mipmap);
 
-        if (texelVal.w > 0.1 && !traceFound) {
+        if (texelVal.w > 0.001 && !traceFound) {
             // traceResult += texelVal * (1.0 - traceResult.w);
             traceResultPos = rayPos;
             traceFound = true;
         }
         rayPos += rayStep;
+        rayStep *= 1.01;
     }
 
     traceResult = texelFetch(data.geometry, ivec3(traceResultPos * vec3(data.gridResolution) + 0.0) / mipmapScale , mipmap);
@@ -222,6 +226,8 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // giResult *= 3.0;
     // giResult *= mix(aoMultiplier, 1.0, 0.5);
     giResult = vec4(giResult.xyz, aoMultiplier);
+
+    // giResult = vec4(aoMultiplier)
 
     // return vec4(giResult * 1.0);
     // return vec4(1.02 - exp(-10.5 *giResult));

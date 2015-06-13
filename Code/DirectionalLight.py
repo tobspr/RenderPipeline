@@ -39,12 +39,13 @@ class DirectionalLight(Light, DebugObject):
         # If you change the split count, change DIRECTIONAL_LIGHT_SPLIT_COUNTS
         # in Shader/Includes/Configuration.include aswell! This is hardcoded
         # to improve performance
-        self.splitCount = 5
+        self.splitCount = 6
 
         self.pssmTargetCam = Globals.base.cam
         self.pssmTargetLens = Globals.base.camLens
-        self.pssmFarPlane = 150.0
+        self.pssmFarPlane = 150
         self.pssmSplitPow = 2.0
+        self.sunDistance = 700
         self.updateIndex = 0
 
         # A directional light is always visible
@@ -57,6 +58,11 @@ class DirectionalLight(Light, DebugObject):
         shorter but their qualit increases. Usually you want to find a tradeoff 
         between distance and quality."""
         self.pssmFarPlane = far_plane
+
+    def setSunDistance(self, sun_distance):
+        """ Sets the distance of the sun, relative to the origin of the scene. 
+        Everything above that distance will not recieve shadows! """
+        self.sunDistance = sun_distance
 
     def setPssmSplitPow(self, split_pow):
         """ Sets the split pow to use. A higher value means the split planes are
@@ -99,7 +105,7 @@ class DirectionalLight(Light, DebugObject):
         for i in xrange(self.splitCount):
             source = ShadowSource()
             source.setupOrtographicLens(
-                5.0, 2000.0, (10, 10))
+                -self.sunDistance, self.sunDistance, (10, 10))
             source.setResolution(self.shadowResolution)
             self._addShadowSource(source)
 
@@ -107,6 +113,7 @@ class DirectionalLight(Light, DebugObject):
         """ Updates the PSSM Frustum and all PSSM Splits """
 
         mixVector = lambda p1, p2, a: ((p2*a) + (p1*(1.0-a)))
+
 
         pstats_PSSM.start()
 
@@ -149,7 +156,7 @@ class DirectionalLight(Light, DebugObject):
             filmSize = (topPlanePos - midPos).length() * 1.41
             midPos += camPos
 
-            destPos = midPos + self.direction * 700.0
+            destPos = midPos + self.direction * 1.0
 
             # Set source position + rotation
             source.setPos(destPos)

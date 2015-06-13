@@ -2,7 +2,9 @@
 import os
 
 from panda3d.core import Texture, PNMImage, SamplerState
-# from direct.stdpy.file import open
+from direct.stdpy.file import open, listdir
+
+
 
 from DebugObject import DebugObject
 
@@ -57,7 +59,7 @@ class IESLoader(DebugObject):
         """ Loads all ies profiles from a given directory """
         self.debug("Loading IES Profiles from", directory)
 
-        files = os.listdir(directory)
+        files = listdir(directory)
 
         for entry in files:
             if entry.lower().endswith(".ies"):
@@ -111,7 +113,7 @@ class IESLoader(DebugObject):
         profileMultiplier = 1.0
 
         # Open the IES file
-        with open(filename, 'rt') as handle:
+        with open(filename, 'r') as handle:
             content = handle.read()
 
         # Extract and check version string

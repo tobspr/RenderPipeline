@@ -41,7 +41,7 @@ void main() {
     #if !defined(DEBUG_DISABLE_COLOR_CORRECTION) && !defined(DEBUG_VISUALIZATION_ACTIVE)
                 
         // Chromatic abberation
-        result = applyChromaticAbberation(colorTex, texcoord, 1.0);
+        result = applyChromaticAbberation(colorTex, texcoord, 0.0);
         
         // Color LUT
         result = applyColorLUT(colorLUT, result);
@@ -49,13 +49,14 @@ void main() {
         // Film grain
         result = computeGrain(result, texcoord, mod(osg_FrameTime, 1.0) + 1.0);
 
-        // Vignett
-        result *= 1.0 - smoothstep(0, 1, 
-            (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.22) ) * 1.0;
 
     #else
         result =  textureLod(colorTex, texcoord, 0).xyz;
     #endif
+
+    // Vignett
+    result *= 1.0 - smoothstep(0, 1, 
+        (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.22) ) * 1.0;
 
 
 }

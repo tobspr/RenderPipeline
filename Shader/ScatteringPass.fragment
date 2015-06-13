@@ -60,11 +60,17 @@ void main() {
         irradianceFactor);
 
 
-    scatteringResult *= 2.5;
+    scatteringResult *= 4.5;
+
     if (!isSkybox) {
-        float fogFactor = max(0.0, distance(cameraPosition, wsPosition) - 30.0) / 150.0;
+        float fogFactor = max(0.0, distance(cameraPosition, wsPosition) - 10.0) / 1500.0;
+
         scatteringResult *= 0.3 * fogFactor;
+        // scatteringResult *= 0.0;
         // scatteringResult = vec3(fogFactor);
+    } else {
+        scatteringResult *= 0.35;
+        scatteringResult = pow(scatteringResult, vec3(1.1));
     }
 
 
@@ -72,6 +78,9 @@ void main() {
         scatteringResult = vec3(0);
     #endif
     // scatteringResult = vec3(attenuation);
+
+        // scatteringResult = pow(scatteringResult, vec3(1.0 / 2.2) ); 
+
 
     result = vec4(scatteringResult, 1.0);
     // result = texture(sampler, texcoord);

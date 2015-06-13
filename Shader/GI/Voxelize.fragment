@@ -44,7 +44,9 @@ void main() {
     float pixelSize = 1.0 / SHADOW_MAP_ATLAS_SIZE;
     float kernelRadius = 1.0;
     float shadowSum = 0.0;
-    const int voxelShadowSamples = 16;
+    const int voxelShadowSamples = 32;
+    if (voxelShadowSamples <2) kernelRadius = 0.0;
+
     for (int i = 0; i < voxelShadowSamples; i++) {
         float sampledDepth = texture(shadowAtlas, convertedCoord.xy + poissonDisk64[i] * pixelSize * kernelRadius).x;
         shadowSum += step(sampledDepth, projCoord.z - 0.0001);
@@ -61,11 +63,15 @@ void main() {
     // Compute lighting based on diffuse color and shadow factor
     float shadowAmbientFactor = 0.0;
     float shadowFactor = max(shadowAmbientFactor, 1.0 - shadowSum);
-    vec3 diffuseContribution = diffuse * shadowFactor * saturate(dot(giLightDirection, normalWorld));
+    vec3 diffuseContribution = diffuse * shadowFactor * saturate(dot(giLightDirection, normalWorld)) * 4.0;
     // diffuseContribution += vec3(0.2, 0.6, 1.0) * 0.1;
 
+    float ambientFactor = 0.03;
+    diffuseContribution += ambientFactor * diffuse;
+
+
     // Pack everything into a single uint
-    uint packedColor = packUnorm4x8(vec4(0.0, saturate(diffuseContribution)));
+    uint packedColor = packUnorm4x8(vec4(1.0, saturate(diffuseContribution)));
 
     // Store the data, we use atomic max because that provides the best resulst
     imageAtomicMax(giVoxelGenerationTex, voxelCoords, packedColor);

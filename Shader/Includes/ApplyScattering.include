@@ -83,15 +83,15 @@ vec3 scatteringComputeInscatteredLight(
 
   float distanceLen = distance( normalize(viewDir), normalize(sunVector) );
   float sunDistance = saturate(1.0 - distanceLen);
-  float sunFactor = pow(sunDistance, 60.0);
-  float sunFactorOuter = pow(sunDistance, 2.0);
+  float sunFactor = pow(sunDistance, 80.0) * 0;
+  float sunFactorOuter = pow(sunDistance, 1.0);
   // sunFactorOuter = 0.0;
 
-  vec3 sunArea = vec3(sunFactor * 120.0 * vec3(1,1,0.8) + sunFactorOuter );
+  vec3 sunArea = vec3(sunFactor * 120.0 * vec3(1,1,0.8) + sunFactorOuter * vec3(1.1,1,0.7) * 0.3 );
 
   if (isSky) {
-    sunArea *= 1.0 - saturate(cloudColor * 1.0);
-    sunArea += cloudColor * 5.0;
+    // sunArea *= 1.0 - saturate(cloudColor * 1.0);
+    // sunArea += cloudColor * 5.0;
   } else {
     sunArea *= 0.0;
   }
@@ -117,7 +117,7 @@ vec3 scatteringComputeInscatteredLight(
   if(scatteringIntersectAtmosphere(options, transformedCamPos, transformedViewDir, offset, maxPathLength))
   {
     // float pathLength = distance(transformedCamPos, transformedPos);
-    float pathLength = distance(transformedCamPos, transformedPos) * 10000.0;
+    float pathLength = distance(transformedCamPos, transformedPos) * 1500.0;
 
     // return vec3(pathLength * 100.0);
 
