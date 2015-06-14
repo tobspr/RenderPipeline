@@ -169,9 +169,8 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.writeAutoconfig()
         self.renderPassManager.setShaders()
 
-        # todo: gi -> reload shaders
-
-
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum.reloadShader()
 
     def getRenderPassManager(self):
         """ Returns a handle to the render pass manager attribute """
@@ -262,7 +261,7 @@ class RenderingPipeline(DebugObject):
         This pass is only created if any render pass requires the provided
         inputs """
         if self.renderPassManager.anyPassRequires("ViewSpacePass.normals") or \
-            self.renderPassManager.anyPassRequires("ViewSpacePass.position") or True:
+            self.renderPassManager.anyPassRequires("ViewSpacePass.position"):
             self.viewSpacePass = ViewSpacePass()
             self.renderPassManager.registerPass(self.viewSpacePass)
 
@@ -281,6 +280,7 @@ class RenderingPipeline(DebugObject):
         texNoise.setMinfilter(SamplerState.FTNearest)
         texNoise.setMagfilter(SamplerState.FTNearest)
         self.renderPassManager.registerStaticVariable("noise4x4", texNoise)
+
 
         # Load the cubemap which is used for point light shadow rendering
         cubemapLookup = self.showbase.loader.loadCubeMap(
@@ -400,7 +400,7 @@ class RenderingPipeline(DebugObject):
 
         # Some basic scene settings
         self.showbase.camLens.setNearFar(0.1, 50000)
-        self.showbase.camLens.setFov(90)
+        self.showbase.camLens.setFov(110)
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
         self.showbase.camNode.setCameraMask(self.getMainPassBitmask())
         self.showbase.render.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 100)

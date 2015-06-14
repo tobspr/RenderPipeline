@@ -82,7 +82,7 @@ class IESLoader(DebugObject):
 
         # Add profile name to the list of loaded profiles
         if name in self.profileNames:
-            self.error("Cannot register profile",name,"twice")
+            # self.error("Cannot register profile",name,"twice")
             return False
         profileIndex = len(self.profileNames)
         self.profileNames.append(name)

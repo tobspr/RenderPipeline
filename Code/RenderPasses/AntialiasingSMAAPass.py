@@ -65,6 +65,9 @@ class AntialiasingSMAAPass(RenderPass):
         self._blendBuffer.setShaderInput("searchTex", self.searchTex)
         self._blendBuffer.setShaderInput("currentIndex", self.currentIndex)
 
+        self._resolveBuffer.setShaderInput("lastTex", self._neighborBuffers[0].getColorTexture())
+        self._resolveBuffer.setShaderInput("currentTex", self._neighborBuffers[1].getColorTexture())
+
         for buff in self._neighborBuffers:
             buff.setShaderInput("blendTex", self._blendBuffer.getColorTexture())
 

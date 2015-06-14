@@ -120,6 +120,9 @@ class Scattering(DebugObject):
             layers=1)
         self.targets['irradianceE'].setShaderInput('factor1', 0.0)
         self.targets['irradianceE'].setShaderInput('factor2', 0.0)
+        self.targets['irradianceE'].setShaderInput('source1', Texture())
+        self.targets['irradianceE'].setShaderInput('source2', Texture())
+
         self._renderOneShot('irradianceE')
 
         # Copy delta scattering into inscatter texture S

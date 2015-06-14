@@ -38,7 +38,6 @@ from Code.SpotLight import SpotLight
 from Code.GUI.PipelineLoadingScreen import PipelineLoadingScreen
 
 
-from BOBJLoader import BOBJLoader
 
 class Main(ShowBase, DebugObject):
 
@@ -99,11 +98,11 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
-        self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
+        # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
 
 
         # This sources are included in the repo
-        # self.sceneSource = "Models/CornelBox/Model.egg"
+        self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
@@ -135,7 +134,7 @@ class Main(ShowBase, DebugObject):
             # dirLight.setColor(Vec3(0.3))
             dirLight.setPssmTarget(base.cam, base.camLens)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(60)
+            dirLight.setPssmDistance(90)
 
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
@@ -260,14 +259,7 @@ class Main(ShowBase, DebugObject):
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
-        # self.scene = loader.loadModel(self.sceneSource)
 
-
-        # d = BOBJLoader()
-        # k = d.loadFile("E:/Downloads/Sonstiges/GameBackups/Alte Backups 2/backup_15/data/objects/items/barrett/main.obj")
-        # k.reparentTo(render)
-
-        # self.onSceneLoaded(self.scene)
 
     def onSceneLoaded(self, scene):
         """ Callback which gets called after the scene got loaded """
@@ -373,8 +365,13 @@ class Main(ShowBase, DebugObject):
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
-        self.controller.setInitialPosition(
-            Vec3(0, -25, 20), Vec3(0, 0, -5))
+
+
+        camPos = Vec3(10.3416, -8.26448, 27.6085)
+        camHpr = Vec3(55.2038, -48.3755, 0)
+
+        self.controller.setInitialPositionHpr(
+            camPos, camHpr)
         self.controller.setup()
 
         # self.fpCamera = FirstPersonCamera(self, self.cam, self.render)
@@ -408,6 +405,8 @@ class Main(ShowBase, DebugObject):
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 30)
+
+        # dPos = Vec3(-2, 0, 40)
 
         if abs(diff) > 0.0001:
             if hasattr(self, "dirLight"):

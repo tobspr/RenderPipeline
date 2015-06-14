@@ -21,6 +21,9 @@ uniform sampler2D data2;
 uniform sampler2D data3;
 uniform sampler2D depth;
 
+
+
+
 // Light computation inputs
 uniform sampler2D shadowedLightsTex;
 uniform sampler2D unshadowedLightsTex;
@@ -139,6 +142,8 @@ void main() {
     giDiffuseColor = giDiffuseResult / giValidSamples;
 
     #endif
+
+
 
 
     // There should be a more elegant way, but for now it works. I don't want to

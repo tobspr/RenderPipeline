@@ -12,6 +12,6 @@ void main() {
         uint data = texelFetch(src, localCoord, 0).x;
         vec4 unpacked = unpackUnorm4x8(data);
         vec3 rgb = unpacked.gba;
-        imageStore(dest, localCoord, vec4(rgb, length(unpacked.r) > 0.0001 ? 1.0 : 0.0 )); 
+        imageStore(dest, localCoord, vec4(rgb, length(unpacked.xyz) > 0.0001 ? 1.0 : 0.0 )); 
     }
 }
