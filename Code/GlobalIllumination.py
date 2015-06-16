@@ -75,7 +75,7 @@ class GlobalIllumination(DebugObject):
         self.gridPos = Vec3(0)
 
         self.distributionPassCount = 128
-        self.photonBaseSize = 1024
+        self.photonBaseSize = 512 + 256
 
         # Create ptas 
         self.ptaLightUVStart = PTALVecBase2f.emptyArray(1)
@@ -312,7 +312,7 @@ class GlobalIllumination(DebugObject):
         self.targetSpace.setShaderInput("photonBufferTex", self.photonBuffer)
         self.targetSpace.setShaderInput("photonCounterTex", self.photonCounter)
 
-        texNoise = loader.loadTexture("Data/Textures/PhotonNoise32.png")
+        texNoise = loader.loadTexture("Data/Textures/PhotonNoise64.png")
         texNoise.setMinfilter(SamplerState.FTNearest)
         texNoise.setMagfilter(SamplerState.FTNearest)
 

@@ -96,7 +96,7 @@ void spawnPhoton(vec3 pos, vec3 color, float brightness) {
 
 
     // color = saturate(color) * 0.005;
-    color = saturate(color) * 1.0;
+    color = saturate(color) * 0.4;
     uint packedColor0 = int(color.r * 1024.0);
     uint packedColor1 = int(color.g * 1024.0) | int(color.b * 1024) << 16;
 
@@ -106,6 +106,19 @@ void spawnPhoton(vec3 pos, vec3 color, float brightness) {
 }
 
 
+
+
+vec3 getNoiseAt(vec3 worldPos) {
+    const float photonsPerVoxel = 8.0;
+    const int photonNoiseTexSize = 64;
+    float noiseScale = 1.0 / (2.0 * giData.gridHalfSize.x) * 32.0 * photonsPerVoxel * 4.0;
+    ivec2 noiseCoord = ivec2(
+        worldPos.x*noiseScale, 
+        int(worldPos.y*noiseScale) % photonNoiseTexSize + 
+        int(worldPos.z*noiseScale)*photonNoiseTexSize ) % 
+        ivec2(photonNoiseTexSize, photonNoiseTexSize*photonNoiseTexSize);
+    return texelFetch(noiseTex, noiseCoord, 0).xyz * 2 - 1;
+}
 
 void main() {
 
@@ -130,12 +143,7 @@ void main() {
         vec3 photonColor = photonData2.xyz;
         float photonBrightness = photonData0.w;
 
-        const float photonsPerVoxel = 8.0;
-
-        float noiseScale = 1.0 / (2.0 * giData.gridHalfSize.x) * 32.0 * photonsPerVoxel * 4.0;
-        ivec2 noiseCoord = ivec2(photonPos.x*noiseScale, int(photonPos.y*noiseScale) % 32 + int(photonPos.z*noiseScale)*32 ) % ivec2(32, 1024);
-        vec3 perPhotonNoise = texelFetch(noiseTex, noiseCoord, 0).xyz * 2 - 1;
-
+        vec3 perPhotonNoise = getNoiseAt(photonPos);
         vec3 gridPhotonPos = convertToGrid(photonPos + photonNormal*0.0);
 
         const int numSamples = 32 / 16;
@@ -192,8 +200,7 @@ void main() {
             // vec3 reflectedNormal = reflect(offs, firstIntersectionNormal);
             // reflectedNormal = firstIntersectionNormal;
             
-            ivec2 bouncedNoiseCoord = ivec2(wsFirstIntersection.x*noiseScale, int(wsFirstIntersection.y*noiseScale) % 32 + int(wsFirstIntersection.z*noiseScale)*32 ) % ivec2(32, 1024);
-            vec3 bouncedPhotonNoise = texelFetch(noiseTex, noiseCoord, 0).xyz * 2 - 1;
+            vec3 bouncedPhotonNoise = getNoiseAt(wsFirstIntersection);
             vec3 bouncedOffs = normalize(bouncedPhotonNoise);
 
             bouncedOffs = bouncedOffs * sign(dot(bouncedOffs, firstIntersectionNormal));
@@ -217,7 +224,7 @@ void main() {
 
         }
 
-        // spawnPhoton(photonPos, vec3(photonColorqq), photonBrightness);
+        // spawnPhoton(photonPos, vec3(photonColor), photonBrightness);
 
 
         color = vec4(perPhotonNoise, 0);

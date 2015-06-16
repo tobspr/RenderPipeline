@@ -66,7 +66,7 @@ void main() {
 
             if (length(sampleNormal) > 0.5 ) {
                 //  && distance(sampleNormal, voxelNormalMid) < 0.7
-                combinedSum += data * saturate(0.0+saturate(1.0 - distance(normalize(sampleNormal), normalize(voxelNormalMid)) / 1.5)) * weight;
+                combinedSum += data * saturate(0.1+saturate(1.0 - distance(normalize(sampleNormal), normalize(voxelNormalMid)) / 1.5)) * weight;
                 // combinedSum += data * weight;
             }
 

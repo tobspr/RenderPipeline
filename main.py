@@ -131,11 +131,11 @@ class Main(ShowBase, DebugObject):
             dirLight.setDirection(dPos)
             dirLight.setShadowMapResolution(2048)
             dirLight.setPos(dPos)
-            dirLight.setColor(Vec3(1, 1, 0.8))
+            dirLight.setColor(Vec3(1, 1, 0.8) * 12.0)
             # dirLight.setColor(Vec3(0.3))
             dirLight.setPssmTarget(base.cam, base.camLens)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(150)
+            dirLight.setPssmDistance(30)
 
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
@@ -163,7 +163,7 @@ class Main(ShowBase, DebugObject):
         for i in xrange(0):
             pointLight = PointLight()
 
-            radius = float(i) / 5.0 * 6.28 + 1.52
+            radius = float(i) / 3.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 12.0
             yoffs = math.cos(radius) * 12.0
             pointLight.setPos(Vec3( xoffs, yoffs  - 9, 12))
@@ -178,12 +178,12 @@ class Main(ShowBase, DebugObject):
         # Create more lights
         for i in xrange(0):
             pointLight = PointLight()
-            radius = float(i) / 5.0 * 6.28 + 5.22
-            xoffs = math.sin(radius) * 30.0
-            yoffs = math.cos(radius) * 30.0
+            radius = float(i) / 12.0 * 6.28 + 5.22
+            xoffs = math.sin(radius) * 10.0
+            yoffs = math.cos(radius) * 10.0 + 10
 
             pointLight.setPos(Vec3( xoffs, yoffs, 12))
-            pointLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
+            pointLight.setColor(Vec3(0.2,0.6,1.0) * 0.05)
             pointLight.setRadius(60)
             self.renderPipeline.addLight(pointLight)
             # pointLight.attachDebugNode(render)
