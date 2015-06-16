@@ -102,7 +102,8 @@ class Main(ShowBase, DebugObject):
 
 
         # This sources are included in the repo
-        self.sceneSource = "Models/CornelBox/Model.egg"
+        # self.sceneSource = "Models/CornelBox/Model.egg"
+        self.sceneSource = "Models/LittleHouse/Scene.bam"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
@@ -134,7 +135,7 @@ class Main(ShowBase, DebugObject):
             # dirLight.setColor(Vec3(0.3))
             dirLight.setPssmTarget(base.cam, base.camLens)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(90)
+            dirLight.setPssmDistance(150)
 
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
@@ -150,9 +151,9 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.guiManager.demoSlider.node[
                 "command"] = self.setSunPos
             self.renderPipeline.guiManager.demoSlider.node[
-                "value"] = 80
+                "value"] = 0
 
-            self.lastSliderValue = 0.0
+            self.lastSliderValue = 0.5
 
         self.movingLights = []
 
@@ -367,8 +368,8 @@ class Main(ShowBase, DebugObject):
         self.controller = MovementController(self)
 
 
-        camPos = Vec3(10.3416, -8.26448, 27.6085)
-        camHpr = Vec3(55.2038, -48.3755, 0)
+        camPos = Vec3(7.95356, -3.65982, 4.466)
+        camHpr = Vec3(60.4013, -9.1755, 0)
 
         self.controller.setInitialPositionHpr(
             camPos, camHpr)
@@ -401,10 +402,10 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 50)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 8)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
-            dPos = Vec3(30, (rawValue - 50) * 1.5, 30)
+            dPos = Vec3(30, (rawValue - 50) * 1.5, 0)
 
         # dPos = Vec3(-2, 0, 40)
 

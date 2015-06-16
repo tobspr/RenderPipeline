@@ -53,7 +53,7 @@ vec3 computeLightModel(Light light, Material material,
     lightingResult += specularContribution * material.baseColor * material.specular;
 
     // Evaluate diffuse
-    vec3 diffuseContribution = diffuseColor * NxL * vec3(1.3, 1.3, 1.3) * 7.0;
+    vec3 diffuseContribution = diffuseColor * NxL * vec3(1.3, 1.3, 1.3) * 12.0;
     lightingResult += diffuseContribution;
 
     // Apply shadows

@@ -91,7 +91,7 @@ vec3 scatteringComputeInscatteredLight(
 
   if (isSky) {
     // sunArea *= 1.0 - saturate(cloudColor * 1.0);
-    // sunArea += cloudColor * 5.0;
+    sunArea += cloudColor * 5.0;
   } else {
     sunArea *= 0.0;
   }

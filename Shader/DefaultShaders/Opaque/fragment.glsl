@@ -56,7 +56,6 @@ void main() {
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
 
-
     m.roughness = 0.3;
     m.specular = 1.0;
     m.metallic = 0.0;

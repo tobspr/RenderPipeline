@@ -1,5 +1,6 @@
 #version 400
 
+#pragma optionNV (unroll all)
 #extension GL_EXT_shader_image_load_store : enable
 
 #pragma include "Includes/Configuration.include"
@@ -53,6 +54,7 @@ void main() {
     #else
         result =  textureLod(colorTex, texcoord, 0).xyz;
     #endif
+
 
     // Vignett
     result *= 1.0 - smoothstep(0, 1, 

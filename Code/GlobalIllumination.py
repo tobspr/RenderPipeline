@@ -64,7 +64,7 @@ class GlobalIllumination(DebugObject):
 
         # Store grid size in world space units
         # This is the half voxel grid size
-        self.voxelGridSizeWS = Vec3(40)
+        self.voxelGridSizeWS = Vec3(23)
 
         # When you change this resolution, you have to change it in Shader/GI/ConvertGrid.fragment aswell
         self.voxelGridResolution = LVecBase3i(256)
@@ -74,8 +74,8 @@ class GlobalIllumination(DebugObject):
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
         self.gridPos = Vec3(0)
 
-        self.distributionPassCount = 32
-        self.photonBaseSize = 512+256
+        self.distributionPassCount = 128
+        self.photonBaseSize = 1024
 
         # Create ptas 
         self.ptaLightUVStart = PTALVecBase2f.emptyArray(1)
@@ -115,9 +115,22 @@ class GlobalIllumination(DebugObject):
             float(self.helperLight.shadowResolution) / self.pipeline.settings.shadowAtlasSize)
         self._updateGridPos()
 
+    def _createDebugTexts(self):
+        """ Creates a debug overlay to show GI status """
+        self.debugText = None
+
+
+        try:
+            from Code.GUI.FastText import FastText
+            self.debugText = FastText(pos=Vec2(
+                Globals.base.getAspectRatio() - 0.1, -0.84), rightAligned=True, color=Vec3(0, 1, 0), size=0.036)
+
+        except Exception, msg:
+            self.debug(
+                "GI-Debug text is disabled because FastText wasn't loaded")
+
     def setup(self):
         """ Setups everything for the GI to work """
-
 
         # Create the voxelize pass which is used to voxelize the scene from
         # several directions
@@ -143,6 +156,8 @@ class GlobalIllumination(DebugObject):
         self.voxelStableTex.setWrapV(SamplerState.WMBorderColor)
         self.voxelStableTex.setWrapW(SamplerState.WMBorderColor)
         self.voxelStableTex.setBorderColor(Vec4(0,0,0,0))
+        self.voxelStableTex.setClearColor(Vec4(0))
+        self.voxelStableTex.clearImage()
 
         MemoryMonitor.addTexture("Voxel Grid Texture", self.voxelStableTex)
 
@@ -163,20 +178,70 @@ class GlobalIllumination(DebugObject):
         # lead to flickering
         self.gatherStableTex = Texture("GatherStable")
         self.gatherStableTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
-                                            self.voxelGridResolution.z, Texture.TFloat, Texture.FRgba8)
+                                            self.voxelGridResolution.z, Texture.TFloat, Texture.FRgba16)
 
         # Set appropriate filter types:
         # The stable texture has mipmaps, which are generated during the process.
         # This is required for cone tracing.
         self.gatherStableTex.setMagfilter(SamplerState.FTLinear)
-        self.gatherStableTex.setMinfilter(SamplerState.FTLinearMipmapLinear)
+        self.gatherStableTex.setMinfilter(SamplerState.FTLinear)
         # self.gatherStableTex.setMinfilter(SamplerState.FTLinear)
         self.gatherStableTex.setWrapU(SamplerState.WMBorderColor)
         self.gatherStableTex.setWrapV(SamplerState.WMBorderColor)
         self.gatherStableTex.setWrapW(SamplerState.WMBorderColor)
         self.gatherStableTex.setBorderColor(Vec4(0,0,0,0))
+        self.gatherStableTex.setClearColor(Vec4(0))
+        self.gatherStableTex.clearImage()
+
 
         MemoryMonitor.addTexture("Gather Stable Texture", self.gatherStableTex)
+
+
+        # Create 3D Texture which is a copy of the voxel generation grid but
+        # stable, as the generation grid is updated part by part and that would 
+        # lead to flickering
+        self.gatherStablePongTex = Texture("GatherStablePong")
+        self.gatherStablePongTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
+                                            self.voxelGridResolution.z, Texture.TFloat, Texture.FRgba16)
+
+        # Set appropriate filter types:
+        # The stable texture has mipmaps, which are generated during the process.
+        # This is required for cone tracing.
+        self.gatherStablePongTex.setMagfilter(SamplerState.FTLinear)
+        self.gatherStablePongTex.setMinfilter(SamplerState.FTLinear)
+        # self.gatherStableTex.setMinfilter(SamplerState.FTLinear)
+        self.gatherStablePongTex.setWrapU(SamplerState.WMBorderColor)
+        self.gatherStablePongTex.setWrapV(SamplerState.WMBorderColor)
+        self.gatherStablePongTex.setWrapW(SamplerState.WMBorderColor)
+        self.gatherStablePongTex.setBorderColor(Vec4(0,0,0,0))
+        self.gatherStablePongTex.setClearColor(Vec4(0))
+        self.gatherStablePongTex.clearImage()
+
+        MemoryMonitor.addTexture("Gather Stable Texture - Pong", self.gatherStablePongTex)
+
+
+        # Create 3D Texture which is a copy of the voxel generation grid but
+        # stable, as the generation grid is updated part by part and that would 
+        # lead to flickering
+        self.gatherStablePingTex = Texture("GatherStablePing")
+        self.gatherStablePingTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
+                                            self.voxelGridResolution.z, Texture.TFloat, Texture.FRgba16)
+
+        # Set appropriate filter types:
+        # The stable texture has mipmaps, which are generated during the process.
+        # This is required for cone tracing.
+        self.gatherStablePingTex.setMagfilter(SamplerState.FTLinear)
+        self.gatherStablePingTex.setMinfilter(SamplerState.FTLinear)
+        # selgatherStablePingTexetMinfilter(SamplerState.FTLinear)
+        self.gatherStablePingTex.setWrapU(SamplerState.WMBorderColor)
+        self.gatherStablePingTex.setWrapV(SamplerState.WMBorderColor)
+        self.gatherStablePingTex.setWrapW(SamplerState.WMBorderColor)
+        self.gatherStablePingTex.setBorderColor(Vec4(0,0,0,0))
+        self.gatherStablePingTex.setClearColor(Vec4(0))
+        self.gatherStablePingTex.clearImage()
+
+        MemoryMonitor.addTexture("Gather Stable Texture - Ping", self.gatherStablePingTex)
+
 
 
 
@@ -213,7 +278,7 @@ class GlobalIllumination(DebugObject):
         maxPhotons = self.photonBaseSize * self.photonBaseSize
 
         self.photonBuffer = Texture("Photons")
-        self.photonBuffer.setupBufferTexture(maxPhotons*3, Texture.TFloat, Texture.FRgba32, GeomEnums.UHStatic)
+        self.photonBuffer.setupBufferTexture(maxPhotons*3, Texture.TFloat, Texture.FRgba16, GeomEnums.UHStatic)
         self.photonBuffer.setClearColor(Vec4(0))
         self.photonBuffer.clearImage()
 
@@ -228,15 +293,21 @@ class GlobalIllumination(DebugObject):
         MemoryMonitor.addTexture("Photon Counter", self.photonCounter)
 
 
-        # Create the gather buffer
-        self.gatherGridBuffer = Texture("GatherGrid")
-        self.gatherGridBuffer.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
+        # Create the gather buffers
+        self.gatherGridBuffer0 = Texture("GatherGrid0")
+        self.gatherGridBuffer0.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
                                             self.voxelGridResolution.z, Texture.TInt, Texture.FR32i)
-        self.gatherGridBuffer.setClearColor(Vec4(0))
-        self.gatherGridBuffer.clearImage()
+        self.gatherGridBuffer0.setClearColor(Vec4(0))
+        self.gatherGridBuffer0.clearImage()
 
+        self.gatherGridBuffer1 = Texture("GatherGrid1")
+        self.gatherGridBuffer1.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
+                                            self.voxelGridResolution.z, Texture.TInt, Texture.FR32i)
+        self.gatherGridBuffer1.setClearColor(Vec4(0))
+        self.gatherGridBuffer1.clearImage()
 
-        MemoryMonitor.addTexture("Gather Grid Buffer", self.gatherGridBuffer)
+        MemoryMonitor.addTexture("Gather Grid Buffer 0", self.gatherGridBuffer0)
+        MemoryMonitor.addTexture("Gather Grid Buffer 1", self.gatherGridBuffer1)
 
         self.targetSpace.setShaderInput("photonBufferTex", self.photonBuffer)
         self.targetSpace.setShaderInput("photonCounterTex", self.photonCounter)
@@ -245,35 +316,53 @@ class GlobalIllumination(DebugObject):
         texNoise.setMinfilter(SamplerState.FTNearest)
         texNoise.setMagfilter(SamplerState.FTNearest)
 
+        photonSplitModifier = 16
+
         self.distributionPassSize = (self.photonBaseSize*self.photonBaseSize) / self.distributionPassCount
 
         self.distributionPass = RenderTarget("PhotonDistribution")
-        self.distributionPass.setSize( self.photonBaseSize, self.photonBaseSize / self.distributionPassCount)
+        self.distributionPass.setSize( (self.photonBaseSize / photonSplitModifier) * 4, (self.photonBaseSize / self.distributionPassCount) * photonSplitModifier * 4 )
         self.distributionPass.addColorTexture()
         self.distributionPass.prepareOffscreenBuffer()
         self.distributionPass.setActive(False)
 
         self.distributionPass.setShaderInput("sourcePhotonBufferTex", self.photonBuffer)
         self.distributionPass.setShaderInput("sourcePhotonCounterTex", self.photonCounter)
-        self.distributionPass.setShaderInput("shiftSize", self.photonBaseSize)
+        self.distributionPass.setShaderInput("shiftSize", self.photonBaseSize / photonSplitModifier)
         self.distributionPass.setShaderInput("noiseTex", texNoise)
 
-        self.distributionPass.setShaderInput("gatherGridBuffer", self.gatherGridBuffer)
+        self.distributionPass.setShaderInput("gatherGridBuffer0", self.gatherGridBuffer0)
+        self.distributionPass.setShaderInput("gatherGridBuffer1", self.gatherGridBuffer1)
 
         self.gatherConvertBuffer = RenderTarget("GatherConvertBuffer")
         self.gatherConvertBuffer.setSize(self.voxelGridResolution.x, self.voxelGridResolution.y)
         self.gatherConvertBuffer.setColorWrite(False)
         # self.convertBuffer.addColorTexture()
         self.gatherConvertBuffer.prepareOffscreenBuffer()
-        self.gatherConvertBuffer.setShaderInput("src", self.gatherGridBuffer)
-        self.gatherConvertBuffer.setShaderInput("dest", self.gatherStableTex)
+        self.gatherConvertBuffer.setShaderInput("src0", self.gatherGridBuffer0)
+        self.gatherConvertBuffer.setShaderInput("src1", self.gatherGridBuffer1)
+        self.gatherConvertBuffer.setShaderInput("dest", self.gatherStablePongTex)
         self.gatherConvertBuffer.setActive(False)
 
         self.pipeline.getRenderPassManager().registerStaticVariable("photonGatherGridTex", self.gatherStableTex)
 
         self.bindTo(self.distributionPass, "giData")
 
+        # Setups the render target to convert the voxel grid
+        self.blurBuffer = RenderTarget("PhotonBlurBuffer")
+        self.blurBuffer.setSize(self.voxelGridResolution.x, self.voxelGridResolution.y)
+        self.blurBuffer.setColorWrite(False)
+        # self.blurBuffer.addColorTexture()
+        self.blurBuffer.prepareOffscreenBuffer()
+        self.blurBuffer.setShaderInput("src", self.gatherStableTex)
+        self.blurBuffer.setShaderInput("dest", self.gatherStablePongTex)
+        self.blurBuffer.setShaderInput("voxelGrid", self.voxelStableTex)
+        self.blurBuffer.setShaderInput("direction", Vec3(0))
+        self.blurBuffer.setActive(False)
+
+
         self._updateGridPos()
+        self._createDebugTexts()
 
     def _createConvertShader(self):
         """ Loads the shader for converting the voxel grid """
@@ -301,12 +390,21 @@ class GlobalIllumination(DebugObject):
             "Shader/DefaultPostProcess.vertex", "Shader/GI/DistributePhotons.fragment")
         self.distributionPass.setShader(shader)
 
+    def _createBlurShader(self):
+        """ Creates the photon distribution shader """
+        shader = Shader.load(Shader.SLGLSL, 
+            "Shader/DefaultPostProcess.vertex", "Shader/GI/BlurPhotonGrid.fragment")
+        self.blurBuffer.setShader(shader)
+
     def reloadShader(self):
         """ Reloads all shaders and updates the voxelization camera state aswell """
         self._createGenerateMipmapsShader()
         self._createConvertShader()
         self._createPhotonBoxShader()
         self._createDistributionShader()
+        self._createBlurShader()
+
+        self.frameIndex = 0
 
     def _createPhotonBoxShader(self):
         """ Loads the shader to visualize the photons """
@@ -346,9 +444,16 @@ class GlobalIllumination(DebugObject):
 
         # print "\n\nRENDER STEP"
 
-        if self.frameIndex == 0:
-            # print "voxelize x"
+        # Disable all render targets first
+        self.convertBuffer.setActive(False)
+        for child in self.mipmapTargets:
+            child.setActive(False) 
+        self.gatherConvertBuffer.setActive(False)
+        self.voxelizePass.setActive(False)
+        self.distributionPass.setActive(False)
+        self.blurBuffer.setActive(False)
 
+        if self.frameIndex == 0:
 
             # Set required inputs
             self.ptaLightUVStart[0] = self.helperLight.shadowSources[0].getAtlasPos()
@@ -357,14 +462,7 @@ class GlobalIllumination(DebugObject):
             self.ptaVoxelGridEnd[0] = self.gridPos + self.voxelGridSizeWS
             self.ptaLightDirection[0] = direction
 
-            print "Voxelize scene arround",self.ptaGridPos[0]
-
             # Step 1: Voxelize scene from the x-Axis
-            for child in self.mipmapTargets:
-                child.setActive(False)
-
-            self.convertBuffer.setActive(False)
-            self.gatherConvertBuffer.setActive(False)
             self.photonCounter.clearImage()
             
             # Clear the old data in generation texture 
@@ -373,7 +471,6 @@ class GlobalIllumination(DebugObject):
 
 
         elif self.frameIndex == 1:
-            # print "voxelize y"
 
             # Step 2: Voxelize scene from the y-Axis
             self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "y")
@@ -385,14 +482,13 @@ class GlobalIllumination(DebugObject):
             self.voxelizePass.voxelizeSceneFromDirection(self.gridPos, "z")
             
         elif self.frameIndex > 2 and self.frameIndex < 3 + self.distributionPassCount:
-
-            self.voxelizePass.setActive(False)
+            
             self.distributionPass.setActive(True)
-            self.convertBuffer.setActive(False)
 
             if self.frameIndex == 3:
                 self.convertBuffer.setActive(True) 
-                self.gatherGridBuffer.clearImage()
+                self.gatherGridBuffer0.clearImage()
+                self.gatherGridBuffer1.clearImage()
 
                 # Update helper light, so that it is at the right position when Step 1
                 # starts again 
@@ -405,22 +501,43 @@ class GlobalIllumination(DebugObject):
             self.distributionPass.setShaderInput("photonOffset", photonOffset)
             self.distributionPass.setShaderInput("baseVoxelGridPos", self.gridPos)
 
+            if self.debugText is not None:
+                self.debugText.setText("GI Pass " + str(passIndex) + " / " + str(self.distributionPassCount))
+
+        elif self.frameIndex >= 3 + self.distributionPassCount and self.frameIndex < 6 + self.distributionPassCount:
+
+            blurPassIdx = self.frameIndex - 3 - self.distributionPassCount
+
+            if blurPassIdx == 0:
+                # self.gatherStablePongTex.clearImage()
+                # self.gatherStablePingTex.clearImage()
+                self.gatherConvertBuffer.setActive(True) 
+
+            self.blurBuffer.setActive(True)
+
+            if blurPassIdx == 0:
+                self.blurBuffer.setShaderInput("direction", Vec3(1,0,0))
+                self.blurBuffer.setShaderInput("src", self.gatherStablePongTex)
+                self.blurBuffer.setShaderInput("dest", self.gatherStablePingTex)
+
+            elif blurPassIdx == 1:
+                self.blurBuffer.setShaderInput("direction", Vec3(0,1,0))
+                self.blurBuffer.setShaderInput("src", self.gatherStablePingTex)
+                self.blurBuffer.setShaderInput("dest", self.gatherStablePongTex)
+
+            elif blurPassIdx == 2:
+                self.blurBuffer.setShaderInput("direction", Vec3(0,0,1))
+                self.blurBuffer.setShaderInput("src", self.gatherStablePongTex)
+                self.blurBuffer.setShaderInput("dest", self.gatherStableTex)
+                self.ptaGridPos[0] = Vec3(self.gridPos)
         else:
-            print "final pass"
-            self.distributionPass.setActive(False)
 
             # Step 4: Extract voxel grid and generate mipmaps
-            # self.convertBuffer.setActive(True) 
-            self.gatherConvertBuffer.setActive(True) 
 
             # for child in self.mipmapTargets:
             #     child.setActive(True)
-            
-            self.ptaGridPos[0] = Vec3(self.gridPos)
             self._updateGridPos()
-
-            
-
+        
 
         # print "Targets:"
         # print "\tVoxelize Target:", self.voxelizePass.target.isActive()
@@ -430,7 +547,7 @@ class GlobalIllumination(DebugObject):
 
         # Increase frame index
         self.frameIndex += 1
-        self.frameIndex = self.frameIndex % (4 + self.distributionPassCount)
+        self.frameIndex = self.frameIndex % (4 + self.distributionPassCount + 3)
 
     def bindTo(self, node, prefix):
         """ Binds all required shader inputs to a target to compute / display
