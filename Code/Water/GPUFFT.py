@@ -2,8 +2,8 @@
 from panda3d.core import PNMImage, Texture, LVecBase3d, NodePath, Shader
 from panda3d.core import ShaderAttrib, LVecBase2i, Vec2
 
-from Code.DebugObject import DebugObject
-from Code.Globals import Globals
+from ..DebugObject import DebugObject
+from ..Globals import Globals
 
 import math
 

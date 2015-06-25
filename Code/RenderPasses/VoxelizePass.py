@@ -3,9 +3,9 @@ from panda3d.core import NodePath, Shader, LVecBase2i, Texture, GeomEnums, Vec3
 from panda3d.core import Camera, OrthographicLens, CullFaceAttrib, DepthTestAttrib
 from panda3d.core import SamplerState, Vec4, BitMask32
 
-from Code.Globals import Globals
-from Code.RenderPass import RenderPass
-from Code.RenderTarget import RenderTarget
+from ..Globals import Globals
+from ..RenderPass import RenderPass
+from ..RenderTarget import RenderTarget
 from Code.MemoryMonitor import MemoryMonitor
 
 class VoxelizePass(RenderPass):
