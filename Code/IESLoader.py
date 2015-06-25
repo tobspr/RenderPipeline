@@ -1,8 +1,7 @@
-
 import os
 
-from panda3d.core import Texture, PNMImage, SamplerState
-# from direct.stdpy.file import open
+from panda3d.core import Texture, PNMImage, SamplerState, VirtualFileSystem
+from direct.stdpy.file import listdir, open
 
 from DebugObject import DebugObject
 
@@ -57,7 +56,7 @@ class IESLoader(DebugObject):
         """ Loads all ies profiles from a given directory """
         self.debug("Loading IES Profiles from", directory)
 
-        files = os.listdir(directory)
+        files = listdir(directory)
 
         for entry in files:
             if entry.lower().endswith(".ies"):
@@ -89,11 +88,11 @@ class IESLoader(DebugObject):
         img = PNMImage(self.IESTableResolution, 1, 4, 2 ** 16 - 1)
 
         for offset in xrange(self.IESTableResolution):
-            radialGradientValR = interpolateValue(lampRadialGradientData, 
+            radialGradientValR = interpolateValue(lampRadialGradientData,
                 (offset + 5.0) / float(self.IESTableResolution))
-            radialGradientValG = interpolateValue(lampRadialGradientData, 
+            radialGradientValG = interpolateValue(lampRadialGradientData,
                 offset / float(self.IESTableResolution))
-            radialGradientValB = interpolateValue(lampRadialGradientData, 
+            radialGradientValB = interpolateValue(lampRadialGradientData,
                 (offset - 5.0) / float(self.IESTableResolution))
 
             gradientVal = interpolateValue(lampGradientData, offset / float(self.IESTableResolution))
@@ -111,7 +110,7 @@ class IESLoader(DebugObject):
         profileMultiplier = 1.0
 
         # Open the IES file
-        with open(filename, 'rt') as handle:
+        with open(filename, 'r') as handle:
             content = handle.read()
 
         # Extract and check version string
