@@ -15,6 +15,9 @@ class PipelineSettingsManager(SettingsManager):
         """ Internal method which populates the settings array with defaults
         and the internal type of settings (like int, bool, ...) """
 
+        # [General]
+        self._addSetting("preventMultipleInstances", bool, False)
+
         # [Antialiasing]
         self._addSetting("antialiasingTechnique", str, "SMAA")
         self._addSetting("smaaQuality", str, "Low")

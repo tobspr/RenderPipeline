@@ -41,7 +41,7 @@ vec3 computeLightModel(Light light, Material material,
     float roughness = clamp(material.roughness, 0.005, 1.0);
 
     // pre-computed cross products
-    float NxL = saturate(dot(n, l));
+    float NxL = max(0.0, dot(n, l));
     float LxH = saturate(dot(l, h));
     float NxV = abs(dot(n, v)) + 1e-5;
     float NxH = saturate(dot(n, h));
@@ -50,9 +50,10 @@ vec3 computeLightModel(Light light, Material material,
     vec3 specularContribution = computeSpecular(specularColor, roughness, NxL, LxH, NxV, NxH) * NxL;
 
     // Energy conservation
-    lightingResult += specularContribution * material.baseColor;
+    lightingResult += specularContribution * material.baseColor * material.specular;
 
     // Evaluate diffuse
+    // vec3 diffuseContribution = diffuseColor * NxL * vec3(1.3, 1.3, 1.3) * 12.0;
     vec3 diffuseContribution = diffuseColor * NxL * light.color;
     lightingResult += diffuseContribution;
 

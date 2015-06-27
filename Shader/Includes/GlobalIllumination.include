@@ -7,7 +7,7 @@
 
 
 uniform GIData giData;
-
+uniform sampler3D photonGatherGridTex;
 
 
 uniform float THIS_UNIFORM_DOES_NOT_EXIST_AND_IS_NEVER_BOUND_NOR_USED;
@@ -35,10 +35,12 @@ vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
         currentConeRadius *= stepRatio; 
         currentDistance += currentConeRadius * coneRatio;
         vec3 currentPos = start + directionStep * currentDistance;
-        float currentMip = log2( currentConeRadius + 1.0 ) * 1.5;
+        float currentMip = log2( currentConeRadius + 1.0 ) * 0.5;
         currentMip = min(currentMip, 5.0);
-        vec4 currentVal = textureLod(targetTex, currentPos, currentMip );
-        result += currentVal * (1.0-result.w);
+        currentMip = 0.0;
+        vec4 currentVal = textureLod(photonGatherGridTex, currentPos, currentMip );
+        vec4 currentValGeometry = textureLod(data.geometry, currentPos, currentMip );
+        result += vec4(currentVal.xyz, currentValGeometry.w) * (1.0-result.w);
     }
     return result;
 }
@@ -77,12 +79,90 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     vec3 localCoord = (biasedPosition-gridStart) / (2 * data.gridHalfSize);
     vec3 localCoordOffs = mod(localCoord, 1.0 / data.gridResolution);
 
+
+    ivec3 localCoordInGrid = ivec3(localCoord * data.gridResolution);
+
+    // vec3 averagedColor = texelFetch(photonGatherGridTex, localCoordInGrid, 0);
+
+
+
+    specularColor = vec4(0.2, 0.6, 1.0, 1);
+
+
+
+
+
+
+    const int numSamples = 128;
+
+    vec3 averagedColor = textureLod(photonGatherGridTex, localCoord, 0).xyz;
+    return vec4(averagedColor, 1);
+
+    // vec3 averagedColor = vec3(0);
+
+    for (int i = 0; i < numSamples; i++) {
+
+        vec3 direction = normalize(poissonDisk128_3D[i]*2-1);
+        direction = direction * sign(dot(direction, m.normal));
+        direction = cross(direction, m.normal);
+
+        vec3 directionStep = direction / vec3(data.gridResolution);
+        // directionStep *= 0.3;
+
+        vec3 currrentOffs = localCoord;
+        for (int stepIdx = 0; stepIdx < 2; stepIdx ++) {
+
+            currrentOffs += directionStep;
+            float factor = saturate(1.0 - distance(currrentOffs, localCoord) * 25.0);
+            averagedColor = max(averagedColor, textureLod(photonGatherGridTex, currrentOffs, 0).xyz * factor);
+            // averagedColor += textureLod(photonGatherGridTex, currrentOffs, 0).xyz * factor;
+
+        }
+
+
+    }
+
+    // averagedColor *= 0.01;
+    averagedColor *= 0.2;
+
+    return vec4(averagedColor, 1);
+
+
+
+    vec3 vs = 0.3 / data.gridResolution;
+    vec4 blurredResult;
+
+    blurredResult = textureLod(photonGatherGridTex, localCoord, 0);
+    blurredResult *= 0;
+        
+
+    const int filterSize = 1;
+    for (int i = -filterSize; i <= filterSize; i++) {
+        for (int j = -filterSize; j <= filterSize; j++) {
+            for (int k = -filterSize; k <= filterSize; k++) {
+                vec4 sampledResult = textureLod(photonGatherGridTex, localCoord + vec3(i,j,k) * vs, 0) * 
+                    saturate(1.0 - length(vec3(i, j, k)) * 0.09);
+                blurredResult = max(blurredResult, sampledResult);
+                // blurredResult += sampledResult;
+            }
+        }
+    }
+
+    // blurredResult *= 0.01;
+    // return vec4(unpackUnorm4x8(result).xyz, 0.0);
+    // blurredResult = 1.0 - exp(-0.2 * blurredResult);
+
+    // return blurredResult;
+
+
+
     // Bias position again
     localCoord += 0.0 / data.gridResolution * m.normal;
 
     // Compute fadeout
     vec3 diffVector = (cameraPosition - m.position) / (data.gridHalfSize);
     float mixFactor = saturate(pow( length(diffVector) * 1.1, 12.0));
+    mixFactor = 0.0;
     localCoordOffs *= data.gridResolution;
 
 
@@ -151,28 +231,30 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
             correctNormal * traceDirection.z
         );
         // aoResult += traceCone(data, data.geometry, localCoord, mixedNormal, 16, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius * 0.1);
-        aoResult += traceCone(data, data.geometry, localCoord, mixedNormal , 16, 1.1227, 0.5682 , 0.727, 0.30228);
+        aoResult += traceCone(data, data.geometry, localCoord, mixedNormal , 16, 1.24, 1.2 , 0.5, 0.05);
     }
     aoResult = aoResult / float(numSamplesAO);
     float aoMultiplier = saturate(1.0 - aoResult.w);
+    aoMultiplier = 1.3 - exp(-0.5 * aoMultiplier);
 
     // Trace gi
 
     #if 1
-    const int numSamplesGI = 16;
+    const int numSamplesGI = 32;
     vec4 giResult = vec4(0);
     for (int i = 0; i < numSamplesGI; i++) {
         vec3 traceDirection = poisson3D_32[i];
-        traceDirection.z = abs(traceDirection.z) * 5.0;
+        traceDirection.z = abs(traceDirection.z) * 1.0;
         vec3 mixedNormal = normalize(
             t * traceDirection.x + 
             b * traceDirection.y + 
             correctNormal * traceDirection.z
         );
         // giResult += traceConeWithCollisions(data, localCoord, mixedNormal , 12, opt_ao_step_ratio, opt_ao_cone_ratio , opt_ao_start_distance, opt_ao_initial_radius);
-        giResult += traceCone(data, data.geometry, localCoord, mixedNormal , 12, 1.5, 0.3523 , 0.2091, 1.509);
+        giResult += traceCone(data, data.geometry, localCoord, mixedNormal , 16, 1.2, 1.9, 1.0, 1.1);
     }
     giResult = giResult / float(numSamplesGI);
+    giResult *= 4.0;
     #endif
 
 
@@ -180,14 +262,14 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     // return vec4(localCoord, 0);
 
     // Raytrace to visualize voxels
-    #if 0
-    int numRaySteps = 300;
+    #if 1
+    int numRaySteps = 500;
 
     int mipmap = 0;
     int mipmapScale = 1;
 
     vec3 rayStart = cameraPosition;
-    vec3 rayEnd = cameraPosition + normalize(m.position - cameraPosition) * 50.0; 
+    vec3 rayEnd = cameraPosition + normalize(m.position - cameraPosition) * length(data.gridHalfSize.xy) * 0.1; 
 
     // transform to grid space
     rayStart = (rayStart-gridStart) / (2 * data.gridHalfSize);
@@ -205,23 +287,28 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
         // vec4 texelVal = textureLod(data.geometry, rayPos, 0);
         vec4 texelVal = texelFetch(data.geometry, ivec3(rayPos * vec3(data.gridResolution) + 0.0) / mipmapScale , mipmap);
+        // vec4 texelVal = texelFetch(photonGatherGridTex, ivec3(rayPos * vec3(data.gridResolution) + 0.0) / mipmapScale , mipmap);
 
-        if (texelVal.w > 0.1 && !traceFound) {
+        if (texelVal.w > 0.001 && !traceFound) {
             // traceResult += texelVal * (1.0 - traceResult.w);
             traceResultPos = rayPos;
             traceFound = true;
         }
         rayPos += rayStep;
+        rayStep *= 1.01;
     }
 
     traceResult = texelFetch(data.geometry, ivec3(traceResultPos * vec3(data.gridResolution) + 0.0) / mipmapScale , mipmap);
+    // traceResult = texelFetch(photonGatherGridTex, ivec3(traceResultPos * vec3(data.gridResolution) + 0.0) / mipmapScale , mipmap);
     return vec4(traceResult.xyz, 1);
     #endif
 
 
     // giResult *= 3.0;
     // giResult *= mix(aoMultiplier, 1.0, 0.5);
-    giResult = vec4(giResult.xyz, aoMultiplier);
+    giResult = vec4(giResult.xyz, 1);
+
+    // giResult = vec4(aoMultiplier)
 
     // return vec4(giResult * 1.0);
     // return vec4(1.02 - exp(-10.5 *giResult));

@@ -1,7 +1,8 @@
 import os
 
-from panda3d.core import Texture, PNMImage, SamplerState, VirtualFileSystem
-from direct.stdpy.file import listdir, open
+from panda3d.core import Texture, PNMImage, SamplerState
+from direct.stdpy.file import open, listdir
+
 
 from DebugObject import DebugObject
 
@@ -79,7 +80,7 @@ class IESLoader(DebugObject):
 
         # Add profile name to the list of loaded profiles
         if name in self.profileNames:
-            self.error("Cannot register profile",name,"twice")
+            # self.error("Cannot register profile",name,"twice")
             return False
         profileIndex = len(self.profileNames)
         self.profileNames.append(name)

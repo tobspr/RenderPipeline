@@ -56,9 +56,9 @@ void main() {
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
 
-
-    // m.baseColor = sampledNormal.xyz;
-    // m.baseColor = vec3( abs(vOutput.texcoord), 1);
+    m.roughness = 0.4;
+    m.specular = 0.8;
+    // m.metallic = 0.0;
 
     // Write the material to the G-Buffer
     renderMaterial(m);

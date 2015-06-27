@@ -70,8 +70,8 @@ void main() {
     int countSpotLight = min(MAX_TILE_SPOT_LIGHTS, 
         texelFetch(lightsPerTileBuffer, tileBufferOffset + 4).r);
 
-    countPointLight = 0;
-    countDirectionalLight = 0;
+    // countPointLight = 0;
+    // countDirectionalLight = 0;
 
     // Initial tile offset
     int currentTileOffset = tileBufferOffset + 16;
@@ -106,7 +106,6 @@ void main() {
     }
 
    currentTileOffset += MAX_TILE_SPOT_LIGHTS + MAX_TILE_SHADOWED_SPOT_LIGHTS;
-
 
 
     result = vec4(lightingResult, 1.0);

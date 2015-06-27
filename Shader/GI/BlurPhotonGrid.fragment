@@ -1,0 +1,90 @@
+#version 430
+
+#pragma include "Includes/Configuration.include"
+
+uniform sampler3D src;
+uniform sampler3D voxelGrid;
+uniform writeonly image3D dest;
+
+out vec4 color;
+
+uniform vec3 direction;
+
+
+
+bool hasVoxel(ivec3 baseCoord, int x, int y, int z) {
+    return texelFetch(src, baseCoord + ivec3(x, y, z), 0).x > 0;
+}
+
+void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec3 vSum = vec3(0);
+
+    const int numBlurSteps = 17;
+    const int sideSteps = (numBlurSteps - 1) / 2;
+    float blurWeights[numBlurSteps] = float[numBlurSteps]
+    (
+        0.003924,
+        0.008962,
+        0.018331,
+        0.033585,
+        0.055119,
+        0.081029,
+        0.106701,
+        0.125858,
+        0.132980,
+        0.125858,
+        0.106701,
+        0.081029,
+        0.055119,
+        0.033585,
+        0.018331,
+        0.008962,
+        0.003924
+    );
+
+
+
+    for (int z = 0; z < 256; z++) {
+        ivec3 localCoord = ivec3(coord, z);
+        
+        vec3 voxelNormalMid = texelFetch(voxelGrid, localCoord, 0).xyz * 2 - 1;
+
+
+        vec4 data = texelFetch(src, localCoord, 0);
+        imageStore(dest, localCoord, data);
+
+        #if 1
+        vec4 combinedSum = vec4(0);
+
+        for (int i = 0; i < numBlurSteps; i++) {
+            float weight = blurWeights[i];
+            float offs = float(i - sideSteps);
+
+            vec4 data = texelFetch(src, localCoord + ivec3(offs * direction), 0);
+            vec3 sampleNormal = texelFetch(voxelGrid, localCoord + ivec3(offs * direction), 0).xyz * 2 - 1;
+
+            if (length(sampleNormal) > 0.5 ) {
+                //  && distance(sampleNormal, voxelNormalMid) < 0.7
+                combinedSum += data * saturate(0.1+saturate(1.0 - distance(normalize(sampleNormal), normalize(voxelNormalMid)) / 1.5)) * weight;
+                // combinedSum += data * weight;
+            }
+
+            // combinedSum = max(combinedSum, data * saturate(0.5 + weight));
+            // combinedSum = max(combinedSum, data);
+
+        }
+
+        // combinedSum *= 10.0;
+
+        imageStore(dest, localCoord, combinedSum);
+        #endif
+
+
+        // uint data = texelFetch(src, localCoord, 0).x;
+
+    }
+
+    color = vec4(vSum * 0.1, 1);
+
+}

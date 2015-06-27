@@ -401,6 +401,10 @@ class RenderTarget(DebugObject):
             # self._region.setActive(active)
             self._active = active
 
+    def isActive(self):
+        """ Returns wheter the buffer is active """
+        return self._active
+
     def getQuad(self):
         """ Returns the quad-node path. You can use this to set attributes on it """
         return self._quad

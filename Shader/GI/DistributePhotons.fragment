@@ -1,0 +1,237 @@
+#version 430
+
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Structures/GIData.struct"
+#pragma include "Includes/PoissonDisk.include"
+
+out vec4 color;
+
+
+
+uniform GIData giData;
+
+
+uniform int photonOffset;
+uniform samplerBuffer sourcePhotonBufferTex;
+uniform isampler2D sourcePhotonCounterTex;
+uniform sampler2D noiseTex;
+uniform vec3 baseVoxelGridPos;
+
+layout(r32ui) uniform uimage3D gatherGridBuffer0;
+layout(r32ui) uniform uimage3D gatherGridBuffer1;
+
+
+vec3 convertToGrid(vec3 worldPos) {
+    vec3 gridStart = baseVoxelGridPos - giData.gridHalfSize;
+    vec3 gridEnd = baseVoxelGridPos + giData.gridHalfSize;
+    vec3 localCoord = (worldPos-gridStart) / (2 * giData.gridHalfSize);
+    return localCoord;
+}
+
+vec3 convertFromGrid(vec3 gridPos) {
+    vec3 gridStart = baseVoxelGridPos - giData.gridHalfSize;
+    return gridPos*2*giData.gridHalfSize + gridStart;
+}
+
+
+vec3 snapToGrid(vec3 gridPos) {
+    return gridPos - mod(gridPos, 1.0 / float(giData.gridResolution.x));
+    // return gridPos;
+}
+
+ivec3 getVoxelID(vec3 gridPos) {
+    return ivec3(gridPos * giData.gridResolution + 0.5);
+}
+
+// Start pos in voxel space
+void raycast(vec3 startPos, vec3 direction, out vec3 voxelColor, out vec3 voxelPos) {
+
+    voxelColor = vec3(0);
+    voxelPos = vec3(0);
+
+    const int numSteps = 250;
+
+    direction = normalize(direction);
+    float max_comp = max(direction.x, max(direction.y, direction.z));
+    // direction /= max_comp;
+    // direction *= 2.0;
+
+    vec3 directionStep = direction / numSteps;
+    vec3 currentPos = startPos;
+    currentPos += 2.0 * normalize(direction) / vec3(giData.gridResolution);
+
+    // ivec3 currentVoxelID = getVoxelID(currentPos);
+
+    for (int i = 0; i < numSteps; i++) {
+        currentPos += directionStep;
+
+        // currentPos = snapToGrid(clamp(currentPos, vec3(0), vec3(1)));
+        // vec4 voxelData = textureLod(giData.voxels, currentPos, 0);
+        vec4 voxelData = texelFetch(giData.voxels, ivec3(currentPos * giData.gridResolution), 0);
+        if (voxelData.w > 0.5) {
+
+            vec3 voxelNormal = (voxelData.xyz * 2 - 1);
+
+            if (dot(voxelNormal, -direction) > 0) {
+
+                voxelPos = currentPos;
+                voxelColor = voxelData.xyz;
+                return;
+            }
+        }
+
+    }
+
+}
+
+
+uniform int shiftSize;
+
+void spawnPhoton(vec3 pos, vec3 color, float brightness) {
+    vec3 voxelSpacePos = convertToGrid(pos);
+    ivec3 voxelGridPos = ivec3(voxelSpacePos * giData.gridResolution);
+
+    // uint packedColor = packUnorm4x8(vec4(0, color * 0.05));
+
+
+    // color = saturate(color) * 0.005;
+    color = saturate(color) * 0.4;
+    uint packedColor0 = int(color.r * 1024.0);
+    uint packedColor1 = int(color.g * 1024.0) | int(color.b * 1024) << 16;
+
+    imageAtomicAdd(gatherGridBuffer0, voxelGridPos, packedColor0);
+    imageAtomicAdd(gatherGridBuffer1, voxelGridPos, packedColor1);
+
+}
+
+
+
+
+vec3 getNoiseAt(vec3 worldPos) {
+    const float photonsPerVoxel = 8.0;
+    const int photonNoiseTexSize = 64;
+    float noiseScale = 1.0 / (2.0 * giData.gridHalfSize.x) * 32.0 * photonsPerVoxel * 4.0;
+    ivec2 noiseCoord = ivec2(
+        worldPos.x*noiseScale, 
+        int(worldPos.y*noiseScale) % photonNoiseTexSize + 
+        int(worldPos.z*noiseScale)*photonNoiseTexSize ) % 
+        ivec2(photonNoiseTexSize, photonNoiseTexSize*photonNoiseTexSize);
+    return texelFetch(noiseTex, noiseCoord, 0).xyz * 2 - 1;
+}
+
+void main() {
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 photonCoord = ivec2(coord / 4);
+    ivec2 localOffs = coord % 4;
+    int photonID = photonCoord.x + photonCoord.y * shiftSize + photonOffset;
+
+
+    int photonCount = texelFetch(sourcePhotonCounterTex, ivec2(0), 0).x;
+
+    if (photonID >= photonCount) {
+        color = vec4(1,1,0,1);
+    } else {
+
+        vec4 photonData0 = texelFetch(sourcePhotonBufferTex, photonID*3);
+        vec4 photonData1 = texelFetch(sourcePhotonBufferTex, photonID*3 + 1);
+        vec4 photonData2 = texelFetch(sourcePhotonBufferTex, photonID*3 + 2);
+
+        vec3 photonPos = convertFromGrid(photonData1.xyz);
+        vec3 photonNormal = normalize(photonData0.xyz);
+        vec3 photonColor = photonData2.xyz;
+        float photonBrightness = photonData0.w;
+
+        vec3 perPhotonNoise = getNoiseAt(photonPos);
+        vec3 gridPhotonPos = convertToGrid(photonPos + photonNormal*0.0);
+
+        const int numSamples = 32 / 16;
+        // const int numSamples = 0;
+        int sampleOffs = (localOffs.x + localOffs.y * 4) * 2;
+
+        // numSamples = 0;
+        for (int i = 0; i < numSamples; i++) {
+
+            vec3 offs = vec3(0);
+
+            // if (numSamples > 32) {
+                // offs = poissonDisk128_3D[i]*2-1;
+            // } else {
+                offs = poisson3D_32[sampleOffs + i];
+            // }
+
+            vec3 firstIntersectionPos;
+            vec3 firstIntersectionColor;
+
+            offs += perPhotonNoise * 1.0;
+            offs = normalize(offs);
+            offs = offs * sign(dot(offs, photonNormal));
+            offs += photonNormal * 0.01;
+            offs = normalize(offs);
+
+
+
+            float factor = max(0.1, dot(offs, photonNormal));
+
+            // if (factor < 0.3) continue;
+            // factor = sin(factor);
+            // factor = 1.0;
+
+
+            raycast(gridPhotonPos, offs, firstIntersectionColor, firstIntersectionPos);
+
+            vec3 wsFirstIntersection = convertFromGrid(firstIntersectionPos);
+            vec3 firstIntersectionNormal = firstIntersectionColor * 2 - 1;
+
+            float rayTravelDist = distance(firstIntersectionPos, gridPhotonPos);
+            // factor *= 0.0 + saturate(1.0 - rayTravelDist * 0.5) * 5.0;
+            // factor *= 5.0;
+
+            photonColor *= factor;
+
+
+            spawnPhoton(wsFirstIntersection, photonColor, photonBrightness);
+
+            // Second bounce
+            vec3 secondIntersectionPos;
+            vec3 secondIntersectionColor;
+
+            // vec3 reflectedNormal = reflect(offs, firstIntersectionNormal);
+            // reflectedNormal = firstIntersectionNormal;
+            
+            vec3 bouncedPhotonNoise = getNoiseAt(wsFirstIntersection);
+            vec3 bouncedOffs = normalize(bouncedPhotonNoise);
+
+            bouncedOffs = bouncedOffs * sign(dot(bouncedOffs, firstIntersectionNormal));
+            bouncedOffs += firstIntersectionNormal * 0.01;
+            bouncedOffs = normalize(bouncedOffs);
+
+            raycast(firstIntersectionPos, bouncedOffs, secondIntersectionColor, secondIntersectionPos);
+
+
+            float factorBounce = max(0.1, dot(bouncedOffs, firstIntersectionNormal));
+            // factorBounce = 1.0;
+
+            // photonColor *= max(0.3, dot(offs, firstIntersectionNormal));
+            photonColor *= factorBounce * 0.5;
+
+            vec3 wsSecondIntersection = convertFromGrid(secondIntersectionPos);
+            spawnPhoton(wsSecondIntersection, photonColor, photonBrightness);
+// 
+
+
+
+        }
+
+        // spawnPhoton(photonPos, vec3(photonColor), photonBrightness);
+
+
+        color = vec4(perPhotonNoise, 0);
+        // color = vec4( sampleOffs / 32.0, 0, 0, 1);
+
+    }
+
+    // color = vec4(localOffs / 4.0, 0, 0);
+
+}

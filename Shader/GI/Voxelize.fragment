@@ -25,6 +25,30 @@ uniform sampler2D shadowAtlas;
 uniform layout(r32ui) uimage3D giVoxelGenerationTex;
 out vec4 result;
 
+
+layout(rgba16f) uniform imageBuffer photonBufferTex;
+layout(r32i) uniform iimage2D photonCounterTex;
+
+// http://the-witness.net/news/2013/09/shadow-mapping-summary-part-1/
+// Apply a bias to the shadowmaps
+vec2 getShadowOffsets(vec3 N, vec3 L) {
+    float cos_alpha = saturate(dot(N, L));
+    float offset_scale_N = sqrt(1 - cos_alpha*cos_alpha); // sin(acos(L·N))
+    float offset_scale_L = offset_scale_N / cos_alpha;    // tan(acos(L·N))
+    return vec2(offset_scale_N, min(2, offset_scale_L));
+}
+
+
+// Compute slope and normal scaled shadow bias
+vec3 computeBiasedPosition(vec3 position, float slopeBias, float normalBias, vec3 l, vec3 n) {
+    float baseShift = 1.0;
+    vec2 offsets = getShadowOffsets(n, l);
+    position += baseShift * l * offsets.x * slopeBias;
+    position += baseShift * n * offsets.y * normalBias; 
+    return position;
+}
+
+
 void main() {
 
     // Convert world position to voxel grid position
@@ -34,7 +58,9 @@ void main() {
     ivec3 voxelCoords = ivec3(voxelSpacePos * imageSize(giVoxelGenerationTex));
 
     // Project world position to shadow map space
-    vec4 projCoord = giLightMVP * vec4(positionWorld.xyz, 1);
+
+    vec3 biasedPosition = computeBiasedPosition(positionWorld.xyz, 0.5, 0.5, giLightDirection, normalWorld);
+    vec4 projCoord = giLightMVP * vec4(biasedPosition, 1);
     projCoord.xyz = (projCoord.xyz / projCoord.w * 0.5) + 0.5;
 
     // Convert shadow map space to shadow atlas space
@@ -44,7 +70,9 @@ void main() {
     float pixelSize = 1.0 / SHADOW_MAP_ATLAS_SIZE;
     float kernelRadius = 1.0;
     float shadowSum = 0.0;
-    const int voxelShadowSamples = 16;
+    const int voxelShadowSamples = 32;
+    if (voxelShadowSamples <2) kernelRadius = 0.0;
+
     for (int i = 0; i < voxelShadowSamples; i++) {
         float sampledDepth = texture(shadowAtlas, convertedCoord.xy + poissonDisk64[i] * pixelSize * kernelRadius).x;
         shadowSum += step(sampledDepth, projCoord.z - 0.0001);
@@ -55,20 +83,74 @@ void main() {
     // Sample and process the color texture
     vec4 colorSample = textureLod(p3d_Texture0, texcoord, 0);
     vec3 diffuse = pow(colorSample.xyz, vec3(1.0 / 2.2)) * materialColor.xyz;
+    diffuse = materialColor.xyz;
+    // vec3 diffuse = pow(colorSample.xyz, vec3(1.0 / 2.2));
     // diffuse = vec3(1);
     // if (colorSample.a < 0.5) discard;
 
     // Compute lighting based on diffuse color and shadow factor
     float shadowAmbientFactor = 0.0;
     float shadowFactor = max(shadowAmbientFactor, 1.0 - shadowSum);
-    vec3 diffuseContribution = diffuse * shadowFactor * saturate(dot(giLightDirection, normalWorld));
+    vec3 diffuseContribution = diffuse * saturate(0.4+shadowFactor) * saturate(dot(giLightDirection, normalWorld)) * 4.0;
     // diffuseContribution += vec3(0.2, 0.6, 1.0) * 0.1;
 
-    // Pack everything into a single uint
-    uint packedColor = packUnorm4x8(vec4(0.0, saturate(diffuseContribution)));
+    float ambientFactor = 0.03;
+    diffuseContribution += ambientFactor * diffuse;
 
-    // Store the data, we use atomic max because that provides the best resulst
-    imageAtomicMax(giVoxelGenerationTex, voxelCoords, packedColor);
+
+    // float brightness = length(diffuseContribution);
+    // diffuseContribution = diffuse;
+
+
+
+    diffuse = vec3(diffuseContribution);
+    // diffuse = vec3(1);
+
+
+    if (shadowFactor > 0.1) {
+    // if (false) {
+
+        // Spawn photon
+        int idx = imageAtomicAdd(photonCounterTex, ivec2(0), 1);
+        vec3 reflectedNormal = normalize(normalWorld);
+        // reflectedNormal = reflect(giLightDirection, normalWorld);
+        imageStore(photonBufferTex, idx*3, vec4(reflectedNormal, shadowFactor));
+
+
+
+        imageStore(photonBufferTex, idx*3+1, vec4(voxelSpacePos.xyz, 0.0));
+        imageStore(photonBufferTex, idx*3+2, vec4(vec3(diffuse), 0.0));
+        // imageStore(photonBufferTex, idx*2, vec4(0.25));
+        // imageStore(photonBufferTex, idx*2+1, vec4(0.5));
+        // imageStore(photonBufferTex, idx*2+1, vec4(1,1,1, 0.0));
+    }
+
+    // diffuseContribution = vec3( saturate(normalWorld * 0.5 + 0.5));
+    diffuseContribution = 0.1 + vec3( saturate(-normalWorld));
+
+    float lightEmissionZup =  max(0.0, dot(normalWorld, vec3(0, 0, 1)));
+
+
+    vec3 voxelNormal = normalize(normalWorld);
+
+    // Pack everything into a single uint
+    // uint packedColor = packUnorm4x8(vec4(saturate(diffuseContribution), 0));
+    // uint packedColor = uint( max(0, normalWorld.x) * 32.0);
+    uint packedColor = uint(0);
+
+    packedColor |= uint(max(0, voxelNormal.x) * 31.0);
+    packedColor |= uint(max(0, -voxelNormal.x) * 31.0) << 5;
+    packedColor |= uint(max(0, voxelNormal.y) * 31.0) << 10;
+    packedColor |= uint(max(0, -voxelNormal.y) * 31.0) << 15;
+    packedColor |= uint(max(0, voxelNormal.z) * 31.0) << 20;
+    packedColor |= uint(max(0, -voxelNormal.z) * 31.0) << 25;
+
+
+    // Store the data, we use atomic max because that provides the best results
+    // imageAtomicAdd(giVoxelGenerationTex, voxelCoords, packedColor);
+    // imageAtomicAdd(giVoxelGenerationTex, voxelCoords, packedColor);
+    // imageAtomicOr(giVoxelGenerationTex, voxelCoords, uvec4(packedColor));
+    imageAtomicOr(giVoxelGenerationTex, voxelCoords, packedColor);
     // imageAtomicOr(giVoxelGenerationTex, voxelCoords, packedColor);
     // imageStore(giVoxelGenerationTex, voxelCoords, ivec4(packedColor));
 

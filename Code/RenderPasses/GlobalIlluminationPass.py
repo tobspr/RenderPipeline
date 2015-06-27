@@ -27,6 +27,8 @@ class GlobalIlluminationPass(RenderPass):
             "data2": "DeferredScenePass.data2",
             "data3": "DeferredScenePass.data3",
             "giData": "Variables.giVoxelGridData",
+            "photonGatherGridTex": "Variables.photonGatherGridTex",
+            
 
             "cameraPosition": "Variables.cameraPosition",
             "mainCam": "Variables.mainCam",

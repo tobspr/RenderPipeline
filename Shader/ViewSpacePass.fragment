@@ -68,7 +68,7 @@ void main() {
 
     // vsNormal.z *= -1;
 
-    outNormalVS = vsNormal.rgb;
+    outNormalVS = vsNormal.xyz;
     outPositionVS = positionVS.rgb;
     // outPositionVS = vec3(0);
 }

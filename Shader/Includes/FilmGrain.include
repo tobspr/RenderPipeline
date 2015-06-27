@@ -28,7 +28,7 @@ const float permTexUnit = 1.0/256.0;        // Perm texture texel-size
 const float permTexUnitHalf = 0.5/256.0;    // Half perm texture texel-size
 
 
-const float grainamount = 0.02; //grain amount
+const float grainamount = 0.01; //grain amount
 bool colored = false; //colored noise?
 float coloramount = 0.6;
 float grainsize = 1.7; //grain particle size (1.5 - 2.5)

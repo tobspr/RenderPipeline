@@ -13,8 +13,8 @@ void reconstructTanBin(out vec3 tangent, out vec3 binormal) {
     vec2 st2 = dFdy(vOutput.texcoord);
  
     tangent = normalize(Q1*st2.t - Q2*st1.t);
-    binormal = normalize(cross(tangent, vOutput.normalWorld));
-    // binormal = normalize(-Q1*st2.s + Q2*st1.s);
+    // binormal = normalize(cross(tangent, vOutput.normalWorld));
+    binormal = normalize(-Q1*st2.s + Q2*st1.s);
 
 
     // http://stackoverflow.com/questions/5255806/how-to-calculate-tangent-and-binormal
@@ -46,3 +46,4 @@ void reconstructTanBin(out vec3 tangent, out vec3 binormal) {
 
 
 }
+
