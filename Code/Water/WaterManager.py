@@ -3,8 +3,8 @@
 from panda3d.core import Texture, NodePath, ShaderAttrib, LVecBase2i, PTAFloat
 from panda3d.core import Vec2, PNMImage, LVecBase3d, Shader
 
-from Code.DebugObject import DebugObject
-from Code.Globals import Globals
+from ..DebugObject import DebugObject
+from ..Globals import Globals
 from GPUFFT import GPUFFT
 
 from random import random as generateRandom

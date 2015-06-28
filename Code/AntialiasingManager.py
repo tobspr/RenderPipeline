@@ -5,8 +5,8 @@ from panda3d.core import PTAVecBase2f, Vec2
 from DebugObject import DebugObject
 from Globals import Globals
 
-from RenderPasses.AntialiasingFXAAPass import AntialiasingFXAAPass
-from RenderPasses.AntialiasingSMAAPass import AntialiasingSMAAPass
+from .RenderPasses.AntialiasingFXAAPass import AntialiasingFXAAPass
+from .RenderPasses.AntialiasingSMAAPass import AntialiasingSMAAPass
 
 class AntialiasingManager(DebugObject):
 

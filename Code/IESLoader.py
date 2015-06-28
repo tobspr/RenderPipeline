@@ -1,9 +1,7 @@
-
 import os
 
 from panda3d.core import Texture, PNMImage, SamplerState
 from direct.stdpy.file import open, listdir
-
 
 
 from DebugObject import DebugObject
@@ -91,11 +89,11 @@ class IESLoader(DebugObject):
         img = PNMImage(self.IESTableResolution, 1, 4, 2 ** 16 - 1)
 
         for offset in xrange(self.IESTableResolution):
-            radialGradientValR = interpolateValue(lampRadialGradientData, 
+            radialGradientValR = interpolateValue(lampRadialGradientData,
                 (offset + 5.0) / float(self.IESTableResolution))
-            radialGradientValG = interpolateValue(lampRadialGradientData, 
+            radialGradientValG = interpolateValue(lampRadialGradientData,
                 offset / float(self.IESTableResolution))
-            radialGradientValB = interpolateValue(lampRadialGradientData, 
+            radialGradientValB = interpolateValue(lampRadialGradientData,
                 (offset - 5.0) / float(self.IESTableResolution))
 
             gradientVal = interpolateValue(lampGradientData, offset / float(self.IESTableResolution))

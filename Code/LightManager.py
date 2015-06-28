@@ -23,11 +23,11 @@ from MemoryMonitor import MemoryMonitor
 from LightLimits import LightLimits
 from IESLoader import IESLoader
 
-from RenderPasses.ShadowScenePass import ShadowScenePass
-from RenderPasses.LightCullingPass import LightCullingPass
-from RenderPasses.ScatteringPass import ScatteringPass
-from RenderPasses.UnshadowedLightsPass import UnshadowedLightsPass
-from RenderPasses.ShadowedLightsPass import ShadowedLightsPass
+from .RenderPasses.ShadowScenePass import ShadowScenePass
+from .RenderPasses.LightCullingPass import LightCullingPass
+from .RenderPasses.ScatteringPass import ScatteringPass
+from .RenderPasses.UnshadowedLightsPass import UnshadowedLightsPass
+from .RenderPasses.ShadowedLightsPass import ShadowedLightsPass
 
 pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
 pstats_CullLights = PStatCollector("App:LightManager:CullLights")
