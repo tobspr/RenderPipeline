@@ -2,9 +2,9 @@
 
 from panda3d.core import Shader
 
-from Code.Globals import Globals
-from Code.RenderPass import RenderPass
-from Code.RenderTarget import RenderTarget
+from ..Globals import Globals
+from ..RenderPass import RenderPass
+from ..RenderTarget import RenderTarget
 
 class InitialRenderPass(RenderPass):
 
