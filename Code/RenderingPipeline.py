@@ -169,9 +169,8 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.writeAutoconfig()
         self.renderPassManager.setShaders()
 
-        # todo: gi -> reload shaders
-
-
+        if self.settings.enableGlobalIllumination:
+            self.globalIllum.reloadShader()
 
     def getRenderPassManager(self):
         """ Returns a handle to the render pass manager attribute """
@@ -282,6 +281,7 @@ class RenderingPipeline(DebugObject):
         texNoise.setMagfilter(SamplerState.FTNearest)
         self.renderPassManager.registerStaticVariable("noise4x4", texNoise)
 
+
         # Load the cubemap which is used for point light shadow rendering
         cubemapLookup = self.showbase.loader.loadCubeMap(
             "Data/Cubemaps/DirectionLookup/#.png")
@@ -351,7 +351,7 @@ class RenderingPipeline(DebugObject):
             earthScattering = Scattering(self)
             scale = 100000
             earthScattering.setSettings({
-                "atmosphereOffset": Vec3(0, 0, - (6360.0 + 9.5) * scale),
+                "atmosphereOffset": Vec3(0, 0, - (6360.0 + 16.5) * scale),
                 "atmosphereScale": Vec3(scale)
             })
             earthScattering.precompute()
@@ -372,8 +372,9 @@ class RenderingPipeline(DebugObject):
         # Mount everything first
         self.mountManager.mount()
 
-        # Check if there is already another instance running
-        if not self.mountManager.getLock():
+        # Check if there is already another instance running, but only if specified
+        # in the settings
+        if self.settings.preventMultipleInstances and not self.mountManager.getLock():
             self.fatal("Another instance of the rendering pipeline is already running")
             return
 
@@ -399,7 +400,7 @@ class RenderingPipeline(DebugObject):
 
         # Some basic scene settings
         self.showbase.camLens.setNearFar(0.1, 50000)
-        self.showbase.camLens.setFov(90)
+        self.showbase.camLens.setFov(110)
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
         self.showbase.camNode.setCameraMask(self.getMainPassBitmask())
         self.showbase.render.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 100)

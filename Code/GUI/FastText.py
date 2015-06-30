@@ -96,6 +96,7 @@ class FastText:
             uniform float displData[100];
             out vec2 texcoord;
             uniform vec2 pos;
+            uniform sampler2D font;
             uniform vec2 size;
 
             void main() {
@@ -103,7 +104,9 @@ class FastText:
                 ivec2 offsetDispl = ivec2( rawDispl % 16, rawDispl / 16);
                 vec2 offsetCoordReal = vec2(offsetDispl.x / 16.0,
                     (5.0 - offsetDispl.y) / 6.0);
-                texcoord = p3d_MultiTexCoord0 / vec2(16,6) + offsetCoordReal;
+                vec2 halfOffset = 2.0 / textureSize(font, 0);
+                texcoord = clamp(p3d_MultiTexCoord0, halfOffset, 1.0 - halfOffset) / vec2(16,6) + offsetCoordReal;
+
                 vec4 offset = vec4(gl_InstanceID*size.x*0.55 , 0, 0, 0) +
                     vec4(pos.x, 0, pos.y, 0);
                 vec4 finalPos = p3d_Vertex * vec4(size.x, size.x, size.x, 1.0)

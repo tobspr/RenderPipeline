@@ -35,10 +35,12 @@ class PipelineLoadingScreen:
 
         self.font = loader.loadFont("Data/Font/Multicolore.otf")
 
-        xOffs = (w - 1920) / 2.0
-        yOffs = (h - 1080) / 2.0
+        
 
-        self.bgImage = BetterOnscreenImage(image="Data/GUI/LoadingScreen.png", parent=self.node, w=1920, h=1080, x=xOffs, y=yOffs)
+        xOffs = (w - 2560) / 2.0
+        yOffs = (h - 1440) / 2.0
+
+        self.bgImage = BetterOnscreenImage(image="Data/GUI/LoadingScreen.png", parent=self.node, w=2560, h=1440, x=xOffs, y=yOffs)
 
         cr = 212
 

@@ -68,21 +68,20 @@ framebuffer-stencil #f
 # Not resizable
 win-fixed-size #t
 # win-size 1616 976
-win-size 1600 900
+# win-size 1600 900
+win-size 2500 1400
 # win-size 1600 960
 # win-size 1920 1080
 # fullscreen #t
 # win-size 1280 720
 
-# Icon
-# icon-filename lalala
 
 # Show custom cursor
 # cursor-filename lalala
 
 # The title of the window
 window-title Render Pipeline by tobspr 
-
+icon-filename Data/icon.ico
 
 # Framebuffers use SRGB
 framebuffer-srgb #f

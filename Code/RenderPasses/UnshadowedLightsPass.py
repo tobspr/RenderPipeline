@@ -1,9 +1,9 @@
 
 from panda3d.core import NodePath, Shader, LVecBase2i, Texture, GeomEnums
 
-from Code.Globals import Globals
-from Code.RenderPass import RenderPass
-from Code.RenderTarget import RenderTarget
+from ..Globals import Globals
+from ..RenderPass import RenderPass
+from ..RenderTarget import RenderTarget
 
 class UnshadowedLightsPass(RenderPass):
 

@@ -18,25 +18,39 @@ class MovementController:
         self.speed = 0.2
         self.initialPosition = Vec3(0)
         self.initialDestination = Vec3(0)
+        self.initialHpr = Vec3(0)
         self.mouseEnabled = False
         self.lastMousePos = [0,0]
         self.mouseSensivity = 0.7
         self.keyboardHprSpeed = 0.8
+        self.useHpr = False
         # self.smoothness = 0.7
-        self.smoothness = 0.9
+        self.smoothness = 0.0
         # self.smoothness = 0.0
 
     def setInitialPosition(self, pos, target):
         """ Sets the initial camera position """
         self.initialPosition = pos
         self.initialDestination = target
+        self.useHpr = False
+        self._resetToInitial()
+
+    def setInitialPositionHpr(self, pos, hpr):
+        """ Sets the initial camera position """
+        self.initialPosition = pos
+        self.initialHpr = hpr
+        self.useHpr = True
         self._resetToInitial()
 
     def _resetToInitial(self):
         """ Resets the camera to the initial position """
         self.showbase.camera.setPos(self.initialPosition)
-        self.showbase.camera.lookAt(
-            self.initialDestination.x, self.initialDestination.y, self.initialDestination.z)
+
+        if self.useHpr:
+            self.showbase.camera.setHpr(self.initialHpr)
+        else:
+            self.showbase.camera.lookAt(
+                self.initialDestination.x, self.initialDestination.y, self.initialDestination.z)
 
     def _setMovement(self, direction, amount):
         self.movement[direction] = amount

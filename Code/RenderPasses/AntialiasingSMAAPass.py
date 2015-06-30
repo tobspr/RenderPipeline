@@ -2,9 +2,9 @@
 from panda3d.core import NodePath, Shader, LVecBase2i, Texture, PTAFloat, Vec4
 from panda3d.core import PTAInt
 
-from Code.Globals import Globals
-from Code.RenderPass import RenderPass
-from Code.RenderTarget import RenderTarget
+from ..Globals import Globals
+from ..RenderPass import RenderPass
+from ..RenderTarget import RenderTarget
 
 class AntialiasingSMAAPass(RenderPass):
 
@@ -64,6 +64,9 @@ class AntialiasingSMAAPass(RenderPass):
         self._blendBuffer.setShaderInput("areaTex", self.areaTex)
         self._blendBuffer.setShaderInput("searchTex", self.searchTex)
         self._blendBuffer.setShaderInput("currentIndex", self.currentIndex)
+
+        self._resolveBuffer.setShaderInput("lastTex", self._neighborBuffers[0].getColorTexture())
+        self._resolveBuffer.setShaderInput("currentTex", self._neighborBuffers[1].getColorTexture())
 
         for buff in self._neighborBuffers:
             buff.setShaderInput("blendTex", self._blendBuffer.getColorTexture())

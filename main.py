@@ -98,17 +98,19 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
+        # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
+        # self.sceneSource = "Models/LittleHouse/Scene.egg"
 
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
-        self.sceneSource = "Models/Buddha/Buddha.bam"
+        # self.sceneSource = "Models/Buddha/Buddha.bam"
 
         # self.sceneSource = "Toolkit/Blender Material Library/Buddha.bam"
         
@@ -117,38 +119,42 @@ class Main(ShowBase, DebugObject):
         self.sceneSourceSurround = None
         # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
+        # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
         # Store a list of transparent objects
         self.transparentObjects = []
 
         # Create a sun light
         dPos = Vec3(60, 30, 100)
-        dirLight = DirectionalLight()
-        dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(1024)
-        dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(1, 1, 0.8))
-        # dirLight.setColor(Vec3(0.3))
-        dirLight.setPssmTarget(base.cam, base.camLens)
-        dirLight.setCastsShadows(True)
 
-        self.renderPipeline.addLight(dirLight)
-        self.dirLight = dirLight
-        sunPos = Vec3(56.7587, -31.3601, 189.196)
-        self.dirLight.setPos(sunPos)
-        self.dirLight.setDirection(sunPos)
+        if True:
+            dirLight = DirectionalLight()
+            dirLight.setDirection(dPos)
+            dirLight.setShadowMapResolution(2048)
+            dirLight.setPos(dPos)
+            dirLight.setColor(Vec3(1, 1, 0.8) * 12.0)
+            # dirLight.setColor(Vec3(0.3))
+            dirLight.setPssmTarget(base.cam, base.camLens)
+            dirLight.setCastsShadows(True)
+            dirLight.setPssmDistance(150)
 
-        # Tell the GI which light casts the GI
-        self.renderPipeline.setGILightSource(dirLight)
+            self.renderPipeline.addLight(dirLight)
+            self.dirLight = dirLight
+            sunPos = Vec3(56.7587, -31.3601, 189.196)
+            self.dirLight.setPos(sunPos)
+            self.dirLight.setDirection(sunPos)
+
+            # Tell the GI which light casts the GI
+            self.renderPipeline.setGILightSource(dirLight)
 
         # Slider to move the sun
         if self.renderPipeline.settings.displayOnscreenDebugger:
             self.renderPipeline.guiManager.demoSlider.node[
                 "command"] = self.setSunPos
             self.renderPipeline.guiManager.demoSlider.node[
-                "value"] = 80
+                "value"] = 0
 
-            self.lastSliderValue = 0.0
+            self.lastSliderValue = 0.5
 
         self.movingLights = []
 
@@ -158,7 +164,7 @@ class Main(ShowBase, DebugObject):
         for i in xrange(0):
             pointLight = PointLight()
 
-            radius = float(i) / 5.0 * 6.28 + 1.52
+            radius = float(i) / 3.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 12.0
             yoffs = math.cos(radius) * 12.0
             pointLight.setPos(Vec3( xoffs, yoffs  - 9, 12))
@@ -173,12 +179,12 @@ class Main(ShowBase, DebugObject):
         # Create more lights
         for i in xrange(0):
             pointLight = PointLight()
-            radius = float(i) / 5.0 * 6.28 + 5.22
-            xoffs = math.sin(radius) * 30.0
-            yoffs = math.cos(radius) * 30.0
+            radius = float(i) / 12.0 * 6.28 + 5.22
+            xoffs = math.sin(radius) * 10.0
+            yoffs = math.cos(radius) * 10.0 + 10
 
             pointLight.setPos(Vec3( xoffs, yoffs, 12))
-            pointLight.setColor(Vec3(0.2,0.6,1.0) * 0.1)
+            pointLight.setColor(Vec3(0.2,0.6,1.0) * 0.05)
             pointLight.setRadius(60)
             self.renderPipeline.addLight(pointLight)
             # pointLight.attachDebugNode(render)
@@ -218,12 +224,12 @@ class Main(ShowBase, DebugObject):
     def addDemoLight(self):
         """ Spawns a new light at a random position with a random color """
         light = PointLight()
-        light.setPos(Vec3( random() * 50.0 - 25, random() * 50.0 - 25, 12))
-        light.setColor(Vec3( random(), random(), random()) * 5.0)
-        light.setRadius(50)
+        light.setPos(Vec3( random() * 5.0 - 2.5, random() * 5.0 - 2.5, 7))
+        light.setColor(Vec3( random(), random(), random()) * 2.0)
+        light.setRadius(20)
         light.setShadowMapResolution(1024)
         # light.attachDebugNode(render)
-        light.setCastsShadows(True)
+        # light.setCastsShadows(True)
         self.renderPipeline.addLight(light)
         self.demoLights.append(light)
 
@@ -242,7 +248,7 @@ class Main(ShowBase, DebugObject):
             # light.setZ(5)
 
 
-        import time
+        # import time
         # time.sleep(0.5)
         # Uncomment for party mode :-)
         # self.removeDemoLight()
@@ -255,8 +261,7 @@ class Main(ShowBase, DebugObject):
         # Load scene from disk
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
-        # self.scene = loader.loadModel(self.sceneSource)
-        # self.onSceneLoaded(self.scene)
+
 
     def onSceneLoaded(self, scene):
         """ Callback which gets called after the scene got loaded """
@@ -273,6 +278,9 @@ class Main(ShowBase, DebugObject):
             self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
             self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
             self.sceneSurround.reparentTo(self.scene)
+            self.sceneSurround.setScale(0.7)
+            self.sceneSurround.setH(180)
+            self.sceneSurround.setPos(0, -4.7, 0.73)
 
         seed(1)
 
@@ -281,15 +289,17 @@ class Main(ShowBase, DebugObject):
             highPolyObj = self.scene.find("**/HighPolyObj")
 
             if highPolyObj is not None and not highPolyObj.isEmpty():
-                highPolyObj.detachNode()
+                # highPolyObj.detachNode()
                 self.loadingScreen.setStatus("Preparing Performance Test")
 
-                for x in xrange(-10, 10):
-                    for y in xrange(-10, 10):
+                for x in xrange(0, 20):
+                    # for y in xrange(0, 1):
+                    if True:
+                        y = 5
                         copiedObj = copy.deepcopy(highPolyObj)
-                        # copiedObj.setColorScale(random(), random(), random(), 1)
-                        if random() < 0.2:
-                            copiedObj.setColorScale(0.4, 1.2, 2.0, 1.0)
+                        copiedObj.setColorScale(random(), random(), random(), 1)
+                        # if random() < 0.2:
+                            # copiedObj.setColorScale(0.4, 1.2, 2.0, 1.0)
 
                         copiedObj.reparentTo(self.scene)
                         copiedObj.setPos(x*1.5 + random(), y*1.5 + random(), random()*5.0 + 0.4)
@@ -297,7 +307,7 @@ class Main(ShowBase, DebugObject):
         # Find transparent objects and mark them as transparent
         self.transpObjRoot = render.attachNewNode("transparentObjects")
         matches = self.scene.findAllMatches("**/T__*")
-        if matches:
+        if matches and False:
             for match in matches:
                 # match.reparentTo(self.transpObjRoot)
                 self.transparentObjects.append(match)
@@ -314,8 +324,8 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.setStatus("Optimizing Scene")
 
         # self.scene.clearModelNodes()
-        loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
-        # self.onScenePrepared()
+        # loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
+        self.onScenePrepared()
 
     def onScenePrepared(self, cb=None):
         """ Callback which gets called after the scene got prepared """
@@ -340,7 +350,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Some artists really don't know about backface culling
-        # self.scene.setTwoSided(True)
+        self.scene.setTwoSided(True)
 
         # Required for tesselation
         # self.convertToPatches(self.scene)
@@ -360,8 +370,13 @@ class Main(ShowBase, DebugObject):
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
-        self.controller.setInitialPosition(
-            Vec3(0, -25, 20), Vec3(0, 0, -5))
+
+
+        camPos = Vec3(7.95356, -3.65982, 4.466)
+        camHpr = Vec3(60.4013, -9.1755, 0)
+
+        self.controller.setInitialPositionHpr(
+            camPos, camHpr)
         self.controller.setup()
 
         # self.fpCamera = FirstPersonCamera(self, self.cam, self.render)
@@ -391,14 +406,17 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 50)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 30)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
-            dPos = Vec3(30, (rawValue - 50) * 1.5, 30)
+            dPos = Vec3(30, (rawValue - 50) * 1.5, 0)
+
+        # dPos = Vec3(-2, 0, 40)
 
         if abs(diff) > 0.0001:
-            self.dirLight.setPos(dPos)
-            self.dirLight.setDirection(dPos)
+            if hasattr(self, "dirLight"):
+                self.dirLight.setPos(dPos)
+                self.dirLight.setDirection(dPos)
 
     def toggleSceneWireframe(self):
         """ Toggles the scene rendermode """

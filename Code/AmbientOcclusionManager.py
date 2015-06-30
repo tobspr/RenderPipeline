@@ -2,8 +2,8 @@
 
 from DebugObject import DebugObject
 
-from Code.RenderPasses.AmbientOcclusionPass import AmbientOcclusionPass
-from Code.RenderPasses.OcclusionBlurPass import OcclusionBlurPass
+from .RenderPasses.AmbientOcclusionPass import AmbientOcclusionPass
+from .RenderPasses.OcclusionBlurPass import OcclusionBlurPass
 
 class AmbientOcclusionManager(DebugObject):
 

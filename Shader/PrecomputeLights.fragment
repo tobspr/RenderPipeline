@@ -177,7 +177,7 @@ void main() {
         frustum.near   = minDepthLinear;
         frustum.far    = maxDepthLinear;
 
-        frustum.nearPlane = frustumOffset + vec4(0, 0, 0, -minDepthLinear);
+        frustum.nearPlane = frustumOffset + vec4(0, 0, 0, minDepthLinear);
         frustum.farPlane = frustumOffset + vec4(0, 0, 0, maxDepthLinear);
 
         // minDepthLinear = 1.0;
@@ -303,7 +303,7 @@ void main() {
         vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
         debugOutput = vec4(lightCountIndicator, 1);
 
-        // debugOutput = vec4(maxDepthLinear / 100.0);
+        // debugOutput = vec4(minDepthLinear / 10.0);
         // debugOutput = vec4( (VIEW_MAT * vec4(maxDepthPoint, 1)).w );
         // debugOutput = vec4( maxDepthLinear / CAMERA_FAR );
 

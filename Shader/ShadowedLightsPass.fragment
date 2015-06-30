@@ -112,9 +112,12 @@ void main() {
         lightingResult += applySpotLight(currentLight, material);
     }
 
-   currentTileOffset += MAX_TILE_SHADOWED_SPOT_LIGHTS;
+    currentTileOffset += MAX_TILE_SHADOWED_SPOT_LIGHTS;
 
 
-
-    result = vec4(lightingResult, 1.0);
+    #if defined(DEBUG_RM_AMBIENT)
+        result = vec4(0);
+    #else
+        result = vec4(lightingResult, 1.0);
+    #endif
 }

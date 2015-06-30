@@ -6,7 +6,7 @@ from DebugObject import DebugObject
 from Globals import Globals
 from RenderTarget import RenderTarget
 from MemoryMonitor import MemoryMonitor
-from RenderPasses.TransparencyPass import TransparencyPass
+from .RenderPasses.TransparencyPass import TransparencyPass
 
 class TransparencyManager(DebugObject):
 

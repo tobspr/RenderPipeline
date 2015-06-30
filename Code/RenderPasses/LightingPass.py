@@ -3,9 +3,9 @@ from panda3d.core import NodePath, Shader, LVecBase2i, Texture, GeomEnums, Vec3
 from panda3d.core import Camera, OrthographicLens, CullFaceAttrib, DepthTestAttrib
 from panda3d.core import SamplerState, Vec4
 
-from Code.Globals import Globals
-from Code.RenderPass import RenderPass
-from Code.RenderTarget import RenderTarget
+from ..Globals import Globals
+from ..RenderPass import RenderPass
+from ..RenderTarget import RenderTarget
 from Code.MemoryMonitor import MemoryMonitor
 
 class LightingPass(RenderPass):
@@ -29,11 +29,13 @@ class LightingPass(RenderPass):
             "data1": "DeferredScenePass.data1",
             "data2": "DeferredScenePass.data2",
             "data3": "DeferredScenePass.data3",
+            "depth": "DeferredScenePass.depth",
 
             # GI and occlusion
             "giDiffuseTex": ["GlobalIlluminationPass.diffuseResult", "Variables.emptyTextureWhite"],
             "giReflectionTex": ["GlobalIlluminationPass.specularResult", "Variables.emptyTextureWhite"],
             "occlusionTex": ["OcclusionBlurPass.blurResult", "Variables.emptyTextureWhite"],
+
 
             # "lastFramePosition": "Variables.emptyTextureWhite", #TODO
             # "lastFrameOcclusion": "Variables.emptyTextureWhite", #TODO

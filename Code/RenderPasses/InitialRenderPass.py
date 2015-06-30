@@ -2,9 +2,9 @@
 
 from panda3d.core import Shader
 
-from Code.Globals import Globals
-from Code.RenderPass import RenderPass
-from Code.RenderTarget import RenderTarget
+from ..Globals import Globals
+from ..RenderPass import RenderPass
+from ..RenderTarget import RenderTarget
 
 class InitialRenderPass(RenderPass):
 
@@ -24,7 +24,10 @@ class InitialRenderPass(RenderPass):
             "numUpdates": "Variables.numShadowUpdates",
             "updateSources": "Variables.shadowUpdateSources",
             "shadowAtlas": "ShadowScenePass.atlas",
-            "cameraPosition": "Variables.cameraPosition"
+            "cameraPosition": "Variables.cameraPosition",
+            "mainCam": "Variables.mainCam",
+            "mainRender": "Variables.mainRender",
+            "currentViewMat": "Variables.currentViewMat",
         }
 
     def setShaders(self):

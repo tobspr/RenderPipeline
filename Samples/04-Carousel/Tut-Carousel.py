@@ -34,7 +34,6 @@ from direct.gui.DirectGui import *
 from Code.RenderingPipeline import RenderingPipeline
 from Code.DirectionalLight import DirectionalLight
 from Code.Scattering import Scattering
-from Code.BetterShader import BetterShader
 from Code.GlobalIllumination import GlobalIllumination
 
 #Importing math constants and functions
@@ -68,6 +67,8 @@ class World(ShowBase):
 
     self.addTask(self.moveTask, "move")
 
+    self.renderPipeline.onSceneInitialized()
+
 
     #This creates the on screen title that is in every tutorial
     self.title = OnscreenText(text="Panda3D: Tutorial 2 - Carousel",
@@ -89,7 +90,6 @@ class World(ShowBase):
 
   def reloadShader(self):
       self.renderPipeline.reloadShaders()
-      render.setShader(self.renderPipeline.getDefaultObjectShader())
 
   def moveTask(self, task):
 
@@ -154,24 +154,15 @@ class World(ShowBase):
     self.env.setScale(7)
 
 
-    # Add earth scattering
-    self.renderPipeline.enableDefaultEarthScattering()
-    self.loadSkybox()
+    # Load skybox
+    self.skybox = self.renderPipeline.getDefaultSkybox()
+    self.skybox.reparentTo(render)
+
 
     self.reloadShader()
 
-  def loadSkybox(self):
-      """ Loads the sample skybox. Will get replaced later """
-      self.skybox = self.loader.loadModel(
-          "../../Models/Skybox/Model.egg.bam")
-      self.skybox.setScale(40000)
-      self.skybox.reparentTo(self.render)
-
   def reloadShader(self):
       self.renderPipeline.reloadShaders()
-      render.setShader(self.renderPipeline.getDefaultObjectShader())
-      self.skybox.setShader(Shader.load(Shader.SLGLSL, 
-          "DefaultObjectShader/vertex.glsl", "Skybox/fragment.glsl"))
 
   #Panda Lighting
   def setupLights(self):
@@ -181,7 +172,6 @@ class World(ShowBase):
     dirLight.setDirection(dPos)
     dirLight.setShadowMapResolution(2048)
     dirLight.setPssmTarget(self.cam, self.camLens)
-    # dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
     dirLight.setCastsShadows(True)
     dirLight.setPos(dPos)
     dirLight.setColor(Vec3(6))

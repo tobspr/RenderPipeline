@@ -63,12 +63,7 @@ void main() {
     vec4 vsNormal = VIEW_MAT * vec4(normal, 0);
     vsNormal = normalize(vsNormal);
 
-    // positionVS.xyz = positionVS.xzy;
-    // vsNormal.xyz = vsNormal.xzy;
-
-    // vsNormal.z *= -1;
-
-    outNormalVS = vsNormal.rgb;
+    outNormalVS = vsNormal.xyz;
     outPositionVS = positionVS.rgb;
-    // outPositionVS = vec3(0);
+
 }

@@ -39,8 +39,11 @@ bool sphereInFrustum(Frustum frustum, vec4 pos, float radius) {
     result.z = -radius <= dot(frustum.top, pos);
     result.w = -radius <= dot(frustum.bottom, pos);
 
+    // return all(result);
+
     result2.x = -radius <= dot(frustum.nearPlane, pos);
     result2.y = -radius <= dot(frustum.farPlane, pos);
+    // result2.y = true;
 
     // return result.w;
     return all(result) && all(result2);
