@@ -204,9 +204,6 @@ class World(ShowBase):
         # collisions occuring
         # self.cTrav.showCollisions(render)
 
-        # Add earth scattering
-        self.renderPipeline.enableDefaultEarthScattering()
-
         self.skybox = self.renderPipeline.getDefaultSkybox()
         self.skybox.reparentTo(render)
 
@@ -215,10 +212,11 @@ class World(ShowBase):
 
         self.reloadShader()
 
+        self.renderPipeline.onSceneInitialized()
+        
 
     def reloadShader(self):
         self.renderPipeline.reloadShaders()
-        render.setShader(self.renderPipeline.getDefaultObjectShader())
 
     # Records the state of the arrow keys
     def setKey(self, key, value):

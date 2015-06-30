@@ -59,7 +59,7 @@ void main() {
 
     // Project world position to shadow map space
 
-    vec3 biasedPosition = computeBiasedPosition(positionWorld.xyz, 0.5, 0.5, giLightDirection, normalWorld);
+    vec3 biasedPosition = computeBiasedPosition(positionWorld.xyz, 0.0, 0.0, giLightDirection, normalWorld);
     vec4 projCoord = giLightMVP * vec4(biasedPosition, 1);
     projCoord.xyz = (projCoord.xyz / projCoord.w * 0.5) + 0.5;
 
@@ -70,7 +70,7 @@ void main() {
     float pixelSize = 1.0 / SHADOW_MAP_ATLAS_SIZE;
     float kernelRadius = 1.0;
     float shadowSum = 0.0;
-    const int voxelShadowSamples = 32;
+    const int voxelShadowSamples = 1;
     if (voxelShadowSamples <2) kernelRadius = 0.0;
 
     for (int i = 0; i < voxelShadowSamples; i++) {
@@ -97,17 +97,19 @@ void main() {
     float ambientFactor = 0.03;
     diffuseContribution += ambientFactor * diffuse;
 
+    diffuseContribution = saturate(dot(giLightDirection, normalWorld)) * diffuse;
+
 
     // float brightness = length(diffuseContribution);
     // diffuseContribution = diffuse;
 
 
 
-    diffuse = vec3(diffuseContribution);
+    diffuse = vec3(diffuseContribution) * vec3(1,1,1.1) * 4;
     // diffuse = vec3(1);
 
 
-    if (shadowFactor > 0.1) {
+    if (shadowFactor > 0.9) {
     // if (false) {
 
         // Spawn photon

@@ -103,7 +103,7 @@ class Main(ShowBase, DebugObject):
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        self.sceneSource = "Models/LittleHouse/Scene.bam"
+        self.sceneSource = "Models/LittleHouse/Scene.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
@@ -119,6 +119,7 @@ class Main(ShowBase, DebugObject):
         self.sceneSourceSurround = None
         # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
+        self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
         # Store a list of transparent objects
         self.transparentObjects = []
@@ -135,7 +136,7 @@ class Main(ShowBase, DebugObject):
             # dirLight.setColor(Vec3(0.3))
             dirLight.setPssmTarget(base.cam, base.camLens)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(30)
+            dirLight.setPssmDistance(150)
 
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
@@ -223,12 +224,12 @@ class Main(ShowBase, DebugObject):
     def addDemoLight(self):
         """ Spawns a new light at a random position with a random color """
         light = PointLight()
-        light.setPos(Vec3( random() * 50.0 - 25, random() * 50.0 - 25, 12))
-        light.setColor(Vec3( random(), random(), random()) * 5.0)
-        light.setRadius(50)
+        light.setPos(Vec3( random() * 5.0 - 2.5, random() * 5.0 - 2.5, 7))
+        light.setColor(Vec3( random(), random(), random()) * 2.0)
+        light.setRadius(20)
         light.setShadowMapResolution(1024)
         # light.attachDebugNode(render)
-        light.setCastsShadows(True)
+        # light.setCastsShadows(True)
         self.renderPipeline.addLight(light)
         self.demoLights.append(light)
 
@@ -247,7 +248,7 @@ class Main(ShowBase, DebugObject):
             # light.setZ(5)
 
 
-        import time
+        # import time
         # time.sleep(0.5)
         # Uncomment for party mode :-)
         # self.removeDemoLight()
@@ -277,6 +278,9 @@ class Main(ShowBase, DebugObject):
             self.debug("Loading Surround-Scene '" + self.sceneSourceSurround + "'")
             self.sceneSurround = self.loader.loadModel(self.sceneSourceSurround)
             self.sceneSurround.reparentTo(self.scene)
+            self.sceneSurround.setScale(0.7)
+            self.sceneSurround.setH(180)
+            self.sceneSurround.setPos(0, -4.7, 0.73)
 
         seed(1)
 
@@ -346,7 +350,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Some artists really don't know about backface culling
-        # self.scene.setTwoSided(True)
+        self.scene.setTwoSided(True)
 
         # Required for tesselation
         # self.convertToPatches(self.scene)
@@ -402,7 +406,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 8)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 3)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)

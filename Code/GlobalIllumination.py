@@ -64,7 +64,7 @@ class GlobalIllumination(DebugObject):
 
         # Store grid size in world space units
         # This is the half voxel grid size
-        self.voxelGridSizeWS = Vec3(23)
+        self.voxelGridSizeWS = Vec3(40)
 
         # When you change this resolution, you have to change it in Shader/GI/ConvertGrid.fragment aswell
         self.voxelGridResolution = LVecBase3i(256)
@@ -74,8 +74,9 @@ class GlobalIllumination(DebugObject):
         self.ptaGridPos = PTALVecBase3f.emptyArray(1)
         self.gridPos = Vec3(0)
 
-        self.distributionPassCount = 128
-        self.photonBaseSize = 512 + 256
+        self.distributionPassCount = 32
+        self.photonScaleFactor = 1
+        self.photonBaseSize = 256
 
         # Create ptas 
         self.ptaLightUVStart = PTALVecBase2f.emptyArray(1)
@@ -137,6 +138,7 @@ class GlobalIllumination(DebugObject):
         self.voxelizePass = VoxelizePass()
         self.voxelizePass.setVoxelGridResolution(self.voxelGridResolution)
         self.voxelizePass.setVoxelGridSize(self.voxelGridSizeWS)
+        self.voxelizePass.setPhotonScaleFactor(self.photonScaleFactor)
         self.voxelizePass.initVoxelStorage()
         self.pipeline.getRenderPassManager().registerPass(self.voxelizePass)
 
@@ -316,7 +318,7 @@ class GlobalIllumination(DebugObject):
         texNoise.setMinfilter(SamplerState.FTNearest)
         texNoise.setMagfilter(SamplerState.FTNearest)
 
-        photonSplitModifier = 16
+        photonSplitModifier = 8
 
         self.distributionPassSize = (self.photonBaseSize*self.photonBaseSize) / self.distributionPassCount
 

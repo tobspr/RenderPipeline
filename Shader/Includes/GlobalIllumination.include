@@ -69,7 +69,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     // If not in gi range, ignore this pixel
     // TODO: Check if early out is actually faster
-    if (!isInGrid) return vec4(boundsColor);
+    if (!isInGrid) return vec4(1,0,0,0);
 
 
     // Bias position a bit, so self shadowing gets less strong
@@ -88,73 +88,10 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     specularColor = vec4(0.2, 0.6, 1.0, 1);
 
+    vec3 averagedColor = textureLod(photonGatherGridTex, localCoord, 0).xyz * 0.1;
 
-
-
-
-
-    const int numSamples = 128;
-
-    vec3 averagedColor = textureLod(photonGatherGridTex, localCoord, 0).xyz;
-    return vec4(averagedColor, 1);
-
-    // vec3 averagedColor = vec3(0);
-
-    for (int i = 0; i < numSamples; i++) {
-
-        vec3 direction = normalize(poissonDisk128_3D[i]*2-1);
-        direction = direction * sign(dot(direction, m.normal));
-        direction = cross(direction, m.normal);
-
-        vec3 directionStep = direction / vec3(data.gridResolution);
-        // directionStep *= 0.3;
-
-        vec3 currrentOffs = localCoord;
-        for (int stepIdx = 0; stepIdx < 2; stepIdx ++) {
-
-            currrentOffs += directionStep;
-            float factor = saturate(1.0 - distance(currrentOffs, localCoord) * 25.0);
-            averagedColor = max(averagedColor, textureLod(photonGatherGridTex, currrentOffs, 0).xyz * factor);
-            // averagedColor += textureLod(photonGatherGridTex, currrentOffs, 0).xyz * factor;
-
-        }
-
-
-    }
-
-    // averagedColor *= 0.01;
-    averagedColor *= 0.2;
 
     return vec4(averagedColor, 1);
-
-
-
-    vec3 vs = 0.3 / data.gridResolution;
-    vec4 blurredResult;
-
-    blurredResult = textureLod(photonGatherGridTex, localCoord, 0);
-    blurredResult *= 0;
-        
-
-    const int filterSize = 1;
-    for (int i = -filterSize; i <= filterSize; i++) {
-        for (int j = -filterSize; j <= filterSize; j++) {
-            for (int k = -filterSize; k <= filterSize; k++) {
-                vec4 sampledResult = textureLod(photonGatherGridTex, localCoord + vec3(i,j,k) * vs, 0) * 
-                    saturate(1.0 - length(vec3(i, j, k)) * 0.09);
-                blurredResult = max(blurredResult, sampledResult);
-                // blurredResult += sampledResult;
-            }
-        }
-    }
-
-    // blurredResult *= 0.01;
-    // return vec4(unpackUnorm4x8(result).xyz, 0.0);
-    // blurredResult = 1.0 - exp(-0.2 * blurredResult);
-
-    // return blurredResult;
-
-
 
     // Bias position again
     localCoord += 0.0 / data.gridResolution * m.normal;

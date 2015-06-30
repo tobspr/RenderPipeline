@@ -43,6 +43,11 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
     #endif
 
 
+    #if defined(DEBUG_RM_GI_AMBIENT)
+        return giAmbient.xyz;
+    #endif
+
+
     float NxV = max(0.0, dot(material.normal, v)) + 1e-5;
 
     vec3 reflectedDir = transformCubemapCoordinates(reflect( -v, material.normal ));
@@ -94,7 +99,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
     
 
     // result += giAmbient.xyz * occlusionFactor * material.baseColor * saturate(1.0 - material.metallic) * (1.0 + material.normal.x * 0.1) * 5.0;
-    result += giAmbient.xyz * occlusionFactor * material.baseColor * saturate(1.0 - material.metallic) * 1.0 * saturate(1.0 + giAmbient.w) * 1.5 * vec3(1.0,1.0,1.0) * saturate(0.5 + pow(material.normal.z, 3.0) * 1.0 * 0.0);
+    result += giAmbient.xyz * occlusionFactor * material.baseColor * saturate(1.0 - material.metallic) * 1.0 * saturate(1.0 + giAmbient.w) * 3.2 * vec3(1.0,1.0,1.1) * saturate(0.5 + pow(material.normal.z, 3.0) * 1.0 * 0.0);
 
     // result = vec3( pow(material.normal.z, 3.0) );
     // float diffuseReflectFactor = pow( saturate(1.0 - dot(material.normal,v)), 2.0);
@@ -117,6 +122,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
     result += metallicSpecularAmbient * material.metallic;
 
     result = giAmbient.xyz * 2.0 * occlusionFactor * material.baseColor;
+    // result = giAmbient.xyz;
     // result = (giAmbient.xyz+0.0001);
     // result = giAmbient.xyz * 1.5;
     // result = pow(giAmbient.xyz, vec3(3.0)) + 0.1;

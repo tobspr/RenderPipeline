@@ -34,6 +34,12 @@ class VoxelizePass(RenderPass):
         will have twice the size specified in voxelGridSize """
         self.voxelGridSize = voxelGridSize
 
+    def setPhotonScaleFactor(self, factor):
+        """ Sets the density of the photon grid. A number of 1 means that for
+        every bright voxel 1 photon will be spawned. A number of 4 for example
+        means that for ever bright voxel 4x4x4 = 64 Photons will be spawned. """
+        self.photonScaleFactor = factor
+
     def setActive(self, active):
         """ Enables and disables this pass """
         self.target.setActive(active)
@@ -77,7 +83,7 @@ class VoxelizePass(RenderPass):
 
         # Create voxelize tareet
         self.target = RenderTarget("VoxelizePass")
-        self.target.setSize(self.voxelGridResolution.x * 4)
+        self.target.setSize(self.voxelGridResolution.x * self.photonScaleFactor)
         # self.target.setColorWrite(False)
         self.target.addColorTexture()
         self.target.setCreateOverlayQuad(False)

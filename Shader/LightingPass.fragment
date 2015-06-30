@@ -254,6 +254,10 @@ void main() {
     #endif
 
 
+    #if defined(DEBUG_RM_GI_AMBIENT)
+        result = ambient;
+    #endif
+
 
     lightingResult = vec4(result, 0.0 );
 }
