@@ -83,7 +83,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
     vec3 result = vec3(0);
 
-    occlusionFactor = pow(occlusionFactor, 2.0);
+    occlusionFactor = pow(occlusionFactor, 4.0);
 
     #if defined(USE_GLOBAL_ILLUMINATION)
         // occlusionFactor = 0.5 + giAmbient.w * 0.5;
@@ -121,7 +121,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
     result += metallicSpecularAmbient * material.metallic;
 
-    result = giAmbient.xyz * 2.0 * occlusionFactor * material.baseColor;
+    // result = giAmbient.xyz * 2.0 * occlusionFactor * material.baseColor;
     // result = giAmbient.xyz;
     // result = (giAmbient.xyz+0.0001);
     // result = giAmbient.xyz * 1.5;

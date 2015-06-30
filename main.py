@@ -99,14 +99,14 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
+        # self.sceneSource = "Models/LittleHouse/Scene.egg"
 
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        self.sceneSource = "Models/LittleHouse/Scene.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
@@ -119,7 +119,7 @@ class Main(ShowBase, DebugObject):
         self.sceneSourceSurround = None
         # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
-        self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
+        # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
         # Store a list of transparent objects
         self.transparentObjects = []
@@ -406,7 +406,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 3)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 30)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)
