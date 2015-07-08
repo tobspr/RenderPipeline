@@ -30,14 +30,6 @@
 #define USE_PIXEL_BASED_PCSS 0
 
 
-
 #define DIRECTIONAL_LIGHT_SPLIT_COUNTS 6
-
-
-#define TRANSPARENCY_RANGE 100.0
-
-
-
-
 
 #pragma include "Includes/CommonFunctions.include"
