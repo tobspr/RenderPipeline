@@ -360,6 +360,13 @@ class RenderingPipeline(DebugObject):
 
             self.scattering = earthScattering
 
+    def getScattering(self):
+        """ Returns the scattering instance if scattering is enabled, otherwise
+        throws an exception """
+        if not self.settings.enableScattering:
+            raise Exception("Scattering is not enabled, you can not fetch the scattering instance.")
+        return self.scattering
+
     def create(self):
         """ Creates the pipeline """
 
