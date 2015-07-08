@@ -74,5 +74,8 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
     result += metallicSpecularAmbient * material.metallic;
 
+    // Take ambient factor into account
+    result *= GLOBAL_AMBIENT_FACTOR;
+
     return result;
 }

@@ -329,6 +329,9 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableScattering:
             define("USE_SCATTERING", 1)
 
+
+        define("GLOBAL_AMBIENT_FACTOR", self.settings.globalAmbientFactor)
+
         # TODO: Add sslr
         # if self.settings.enableSSLR:
         #     define("USE_SSLR", 1)

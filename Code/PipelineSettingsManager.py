@@ -36,6 +36,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("useAdaptiveBrightness", bool, True)
         self._addSetting("targetExposure", float, 0.8)
         self._addSetting("brightnessAdaptionSpeed", float, 1.0)
+        self._addSetting("globalAmbientFactor", float, 1.0)
 
         # [Occlusion]
         self._addSetting("occlusionTechnique", str, "None")
