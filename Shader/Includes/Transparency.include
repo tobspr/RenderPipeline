@@ -21,6 +21,8 @@ void renderTransparentMaterial(TransparentMaterial tm) {
 
     #if !defined(DEBUG_DISABLE_TRANSPARENCY)
 
+    if (tm.depth > 1.0) discard;
+
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     tm.color = saturate(tm.color);
@@ -30,6 +32,8 @@ void renderTransparentMaterial(TransparentMaterial tm) {
     // tm.normal = saturate(tm.normal * 0.5 + 0.5);
     tm.normal = normalize(tm.normal);
     tm.depth = saturate(tm.depth);
+
+    // tm.depth = 4.0;
 
 
     // if (position >= 100000000) return;

@@ -69,7 +69,7 @@ framebuffer-stencil #f
 win-fixed-size #t
 # win-size 1616 976
 # win-size 1600 900
-win-size 2500 1400
+win-size 2500 1300
 # win-size 1600 960
 # win-size 1920 1080
 # fullscreen #t

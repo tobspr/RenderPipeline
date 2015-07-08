@@ -259,5 +259,10 @@ void main() {
     #endif
 
 
+    #if defined(DEBUG_RM_OCCLUSION)
+        result = vec3(mixedOcclusionFactor);
+    #endif
+
+
     lightingResult = vec4(result, 0.0 );
 }

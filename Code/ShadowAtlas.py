@@ -63,6 +63,7 @@ class ShadowAtlas(DebugObject):
             for y in xrange(self.tileCount):
                 if self.tiles[y][x] == tileIndex:
                     self.tiles[y][x] = None
+                    self.freeTiles += 1
 
     def reserveTiles(self, width, height, tileIndex):
         """ Reserves enough tiles to store a tile with the ID tileIndex

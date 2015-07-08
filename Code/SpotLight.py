@@ -52,6 +52,7 @@ class SpotLight(Light, DebugObject):
 
     def setFov(self, fov):
         """ Sets the field of view of the spotlight """
+        assert(fov > 1 and fov < 180)
         self.ghostLens.setFov(fov)
         self._updateLens()
 
@@ -68,16 +69,12 @@ class SpotLight(Light, DebugObject):
         """ Internal method to recompute the spotlight MVP """
         self.ghostCameraNode.setPos(self.position)
 
-        transMat = TransformState.makeMat(
-            Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(),
-                            CSZupRight))
+        projMat = self.ghostLens.getProjectionMat()
 
-        converterMat = Mat4.convertMat(CSYupRight, 
-            self.ghostLens.getCoordinateSystem()) * self.ghostLens.getProjectionMat()
-        modelViewMat = transMat.invertCompose(
-            Globals.render.getTransform(self.ghostCameraNode)).getMat()
+        modelViewMat = Globals.render.getTransform(self.ghostCameraNode).getMat()
+        self.mvp = modelViewMat * projMat
 
-        self.mvp = modelViewMat * converterMat
+        print "computed new mvp, hpr=",self.ghostCameraNode.getHpr()
 
     def _computeLightBounds(self):
         """ Recomputes the bounds of this light. For a SpotLight, we for now

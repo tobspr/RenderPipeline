@@ -19,7 +19,7 @@ sys.dont_write_bytecode = True
 
 import math
 import struct
-from random import random, seed
+from random import random, seed, randint
 import copy
 
 from direct.showbase.ShowBase import ShowBase
@@ -93,7 +93,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
@@ -106,7 +106,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
@@ -132,7 +132,7 @@ class Main(ShowBase, DebugObject):
             dirLight.setDirection(dPos)
             dirLight.setShadowMapResolution(2048)
             dirLight.setPos(dPos)
-            dirLight.setColor(Vec3(1, 1, 0.8) * 12.0)
+            dirLight.setColor(Vec3(1, 1, 0.8) * 2.0)
             # dirLight.setColor(Vec3(0.3))
             dirLight.setPssmTarget(base.cam, base.camLens)
             dirLight.setCastsShadows(True)
@@ -223,13 +223,20 @@ class Main(ShowBase, DebugObject):
 
     def addDemoLight(self):
         """ Spawns a new light at a random position with a random color """
-        light = PointLight()
-        light.setPos(Vec3( random() * 5.0 - 2.5, random() * 5.0 - 2.5, 7))
-        light.setColor(Vec3( random(), random(), random()) * 2.0)
-        light.setRadius(20)
-        light.setShadowMapResolution(1024)
+        randomRadius = 25.0
+        light = SpotLight()
+        spot = Vec3( (random()-0.5) * randomRadius, (random()-0.5) * randomRadius, 22)
+        light.setPos(spot)
+        light.lookAt(Vec3(spot.x,spot.y,0))
+        # print "pos is", spot,"look at",Vec3(spot.x,spot.y,0)
+        light.setColor(Vec3( random(), random(), random()) * 0.2)
+        light.setNearFar(1.0, 50)
+        light.setFov(140)
+        # light.setIESProfile("XArrow")
+        light.setIESProfileIndex(randint(0, 30))
+        light.setShadowMapResolution(2048)
         # light.attachDebugNode(render)
-        # light.setCastsShadows(True)
+        light.setCastsShadows(True)
         self.renderPipeline.addLight(light)
         self.demoLights.append(light)
 
@@ -307,7 +314,7 @@ class Main(ShowBase, DebugObject):
         # Find transparent objects and mark them as transparent
         self.transpObjRoot = render.attachNewNode("transparentObjects")
         matches = self.scene.findAllMatches("**/T__*")
-        if matches and False:
+        if matches:
             for match in matches:
                 # match.reparentTo(self.transpObjRoot)
                 self.transparentObjects.append(match)

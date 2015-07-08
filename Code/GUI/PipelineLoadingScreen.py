@@ -27,6 +27,13 @@ class PipelineLoadingScreen:
 
         w, h = self.showbase.win.getXSize(), self.showbase.win.getYSize()
 
+        scaleX = w / 2560.0
+        scaleY = h / 1440.0
+
+        imageScale = max(scaleX, scaleY)
+        imageW = 2560 * imageScale
+        imageH = 1440 * imageScale
+
         self.bgFrame = DirectFrame(parent=self.node,
                                    frameColor=(0.9, 0.9, 0.9, 1.0),
                                    frameSize=(0, w, -h, 0))
@@ -37,10 +44,10 @@ class PipelineLoadingScreen:
 
         
 
-        xOffs = (w - 2560) / 2.0
-        yOffs = (h - 1440) / 2.0
+        xOffs = (w - imageW) / 2.0
+        yOffs = (h - imageH) / 2.0
 
-        self.bgImage = BetterOnscreenImage(image="Data/GUI/LoadingScreen.png", parent=self.node, w=2560, h=1440, x=xOffs, y=yOffs)
+        self.bgImage = BetterOnscreenImage(image="Data/GUI/LoadingScreen.png", parent=self.node, w=imageW, h=imageH, x=xOffs, y=yOffs)
 
         cr = 212
 

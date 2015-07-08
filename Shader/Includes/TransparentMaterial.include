@@ -3,7 +3,7 @@
 #pragma include "Includes/Structures/TransparentMaterial.struct"
 
 
-#define USE_UINT_PACKING 0
+// #define USE_UINT_PACKING 0
 
 
 TransparentMaterial getDefaultTransparentMaterial() {

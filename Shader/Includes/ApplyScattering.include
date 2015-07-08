@@ -12,7 +12,6 @@ const float scatteringEpsilonInscatter = 0.001;
 
 
 vec3 scatteringTransformPosition(ScatteringOptions options, vec3 pos) {
-  // With this, offset is in world-space
   return (pos-options.atmosphereOffset) / options.atmosphereScale;
 }
 
@@ -117,7 +116,9 @@ vec3 scatteringComputeInscatteredLight(
   if(scatteringIntersectAtmosphere(options, transformedCamPos, transformedViewDir, offset, maxPathLength))
   {
     // float pathLength = distance(transformedCamPos, transformedPos);
-    float pathLength = distance(transformedCamPos, transformedPos) * 1500.0;
+    // float pathLength = distance(transformedCamPos, transformedPos) * 1500.0;
+    float pathLength = distance(transformedCamPos, transformedPos);
+
 
     // return vec3(pathLength * 100.0);
 

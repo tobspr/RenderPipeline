@@ -241,6 +241,7 @@ class RenderingPipeline(DebugObject):
         self.currentViewMat[0] = UnalignedLMatrix4f(self.transformMat.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
         self.frameDelta[0] = Globals.clock.getDt()
         self.cameraPosition[0] = self.showbase.cam.getPos(self.showbase.render)
+        self.frameIndex[0] = self.frameIndex[0] + 1
 
     def _computeMVP(self):
         """ Computes the current scene mvp. Actually, this is the
@@ -357,6 +358,8 @@ class RenderingPipeline(DebugObject):
             earthScattering.precompute()
             earthScattering.provideInputs()
 
+            self.scattering = earthScattering
+
     def create(self):
         """ Creates the pipeline """
 
@@ -399,7 +402,7 @@ class RenderingPipeline(DebugObject):
             self.guiManager = None
 
         # Some basic scene settings
-        self.showbase.camLens.setNearFar(0.1, 50000)
+        self.showbase.camLens.setNearFar(0.1, 500000)
         self.showbase.camLens.setFov(110)
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
         self.showbase.camNode.setCameraMask(self.getMainPassBitmask())

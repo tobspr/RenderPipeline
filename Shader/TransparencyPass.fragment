@@ -119,7 +119,7 @@ void main() {
 
     // Check scene depth
     vec3 pixelPos = texelFetch(positionTex, coord,0).xyz;
-    float pixelDist = distance(cameraPosition, pixelPos) / CAMERA_FAR;
+    float pixelDist = distance(cameraPosition, pixelPos) / TRANSPARENCY_RANGE;
 
 
     // Get some vectors
@@ -227,7 +227,7 @@ void main() {
 
     #endif
 
-    // currentColor = vec3( float(texelFetch(listHeadBuffer, coord, 0).x) / 1000000.0);
+
     colorResult = vec4(currentColor, currentOcclusion);
 
 }
