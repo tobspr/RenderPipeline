@@ -74,7 +74,7 @@ void main() {
     }
 
 
-    #if defined(DEBUG_VISUALIZATION_ACTIVE)
+    #if defined(DEBUG_VISUALIZATION_ACTIVE) && !defined(DEBUG_RM_SCATTERING)
         scatteringResult = vec3(0);
     #endif
     // scatteringResult = vec3(attenuation);

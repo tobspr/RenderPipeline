@@ -90,6 +90,13 @@ void main() {
         return;
     } 
 
+    // Transparency does not support debug render modes, so just hide transparent 
+    // objects in case a debugmode is active
+    #if defined(DEBUG_VISUALIZATION_ACTIVE)
+        colorResult = vec4(currentColor, currentOcclusion);
+        return;
+    #endif
+
 
     // Store parts of the data in registers
     MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS];

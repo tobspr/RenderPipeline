@@ -54,8 +54,23 @@ vec3 applyDirectionalLight(Light light, Material material) {
         shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 20.0, 20.0, 0.01, map_used);
 
         #if defined(DEBUG_RM_PSSM_SPLITS)
-            float factor = float(map_used) / DIRECTIONAL_LIGHT_SPLIT_COUNTS;
-            return vec3(factor, 1.0 - factor, 0);
+            // float factor = float(map_used) / DIRECTIONAL_LIGHT_SPLIT_COUNTS;
+            // return vec3(factor, 1.0 - factor, 0);
+
+
+        vec3 splitColor = vec3(0);
+
+        if (map_used == -1)  splitColor = vec3(0.2);
+        if (map_used == 0)  splitColor = vec3(1,0,0);
+        if (map_used == 1)  splitColor = vec3(0,1,0);
+        if (map_used == 2)  splitColor = vec3(0,0,1);
+        if (map_used == 3)  splitColor = vec3(1,0,1);
+        if (map_used == 4)  splitColor = vec3(0,1,1);
+        if (map_used == 5)  splitColor = vec3(1,1,0);
+
+
+        return splitColor * (0.05 + shadowFactor);
+
         #endif
 
     #endif

@@ -253,14 +253,16 @@ void main() {
         result = material.normal;
     #endif
 
-
     #if defined(DEBUG_RM_GI_AMBIENT)
         result = ambient;
     #endif
 
-
     #if defined(DEBUG_RM_OCCLUSION)
         result = vec3(mixedOcclusionFactor);
+    #endif
+
+    #if defined(DEBUG_RM_SCATTERING)
+        result = vec3(scatteringResult);
     #endif
 
 

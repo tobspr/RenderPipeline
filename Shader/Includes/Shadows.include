@@ -228,7 +228,7 @@ int computePSSMShadowSourceIndex(Light light, vec3 position, float borderFactor,
 
 float computePSSMShadowsForLight(Light light, vec3 position, vec3 n, vec3 l, 
     float slopeScaledBias, float normalScaledBias, float baseBias, out int map_used) {
-    map_used = 0;
+    map_used = -1;
 
     #if defined(DEBUG_DISABLE_SHADOWS)
         return 1.0;
