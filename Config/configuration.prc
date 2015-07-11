@@ -172,4 +172,3 @@ gl-coordinate-system default
 
 # notify-level-gsg spam
 # notify-level-glgsg error
-

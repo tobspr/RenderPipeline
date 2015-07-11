@@ -370,6 +370,15 @@ class RenderingPipeline(DebugObject):
             raise Exception("Scattering is not enabled, you can not fetch the scattering instance.")
         return self.scattering
 
+
+    def recreate(self):
+        """ Destroys and recreates the pipeline, preserving all lights """
+        raise NotImplementedError()
+
+    def destroy(self):
+        """ Destroys the pipeline, cleaning up all buffers and textures """
+        raise NotImplementedError()
+
     def create(self):
         """ Creates the pipeline """
 

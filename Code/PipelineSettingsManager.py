@@ -30,13 +30,17 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
         self._addSetting("ambientCubemapSamples", int, 16)
         self._addSetting("colorLookupTable", str, "Default.png")
-        self._addSetting("enableScattering", bool, False)
         self._addSetting("enableSSLR", bool, True)
         self._addSetting("cubemapAntialiasingFactor", float, 5.0)
         self._addSetting("useAdaptiveBrightness", bool, True)
         self._addSetting("targetExposure", float, 0.8)
         self._addSetting("brightnessAdaptionSpeed", float, 1.0)
         self._addSetting("globalAmbientFactor", float, 1.0)
+
+        # [Scattering]
+        self._addSetting("enableScattering", bool, False)
+        self._addSetting("useSkyboxScattering", bool, True)
+        self._addSetting("useSkyboxClouds", bool, True)
 
         # [Occlusion]
         self._addSetting("occlusionTechnique", str, "None")

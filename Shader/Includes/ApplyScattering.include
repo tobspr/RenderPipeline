@@ -80,34 +80,34 @@ vec3 scatteringComputeInscatteredLight(
     inout float irradianceFactor)
 {
 
-  float distanceLen = distance( normalize(viewDir), normalize(sunVector) );
-  float sunDistance = saturate(1.0 - distanceLen);
-  float sunFactor = pow(sunDistance, 80.0) * 0;
-  float sunFactorOuter = pow(sunDistance, 1.0);
-  // sunFactorOuter = 0.0;
 
-  vec3 sunArea = vec3(sunFactor * 120.0 * vec3(1,1,0.8) + sunFactorOuter * vec3(1.1,1,0.7) * 0.3 );
+  #if defined(USE_SKYBOX_CLOUDS)
+    float distanceLen = distance( normalize(viewDir), normalize(sunVector) );
+    float sunDistance = saturate(1.0 - distanceLen);
+    float sunFactor = pow(sunDistance, 80.0) * 0;
+    float sunFactorOuter = pow(sunDistance, 1.0);
 
-  if (isSky) {
-    // sunArea *= 1.0 - saturate(cloudColor * 1.0);
-    sunArea += cloudColor * 5.0;
-  } else {
-    sunArea *= 0.0;
-  }
+    vec3 sunArea = vec3(sunFactor * 120.0 * vec3(1,1,0.8) + sunFactorOuter * vec3(1.1,1,0.7) * 0.3 );
 
-  // sunArea = saturate(sunArea);
-  // sunArea = vec3(0);
+    if (isSky) {
+      // sunArea *= 1.0 - saturate(cloudColor * 1.0);
+      sunArea += cloudColor * 5.0;
+    } else {
+      sunArea *= 0.0;
+    }
 
-  // return sunArea;
-  vec3 inscatteredLight = vec3(0.0f, 0.0f, 0.0f);
+  #else
+    vec3 sunArea = vec3(0);
+  #endif
+
+
+  vec3 inscatteredLight = vec3(0, 0.0, 0);
   float offset;
   float maxPathLength;
   float sunIntensity = 100.0;
-  // vec3 sunVector = normalize(vec3(0,0,1));
 
   vec3 transformedPos = scatteringTransformPosition(options, surfacePos);
   vec3 transformedCamPos = scatteringTransformPosition(options, cameraPos);
-  // vec3 transformedViewDir = normalize(transformedPos - transformedCamPos);
   vec3 transformedViewDir = normalize(viewDir);
 
 
@@ -115,12 +115,7 @@ vec3 scatteringComputeInscatteredLight(
 
   if(scatteringIntersectAtmosphere(options, transformedCamPos, transformedViewDir, offset, maxPathLength))
   {
-    // float pathLength = distance(transformedCamPos, transformedPos);
-    // float pathLength = distance(transformedCamPos, transformedPos) * 1500.0;
     float pathLength = distance(transformedCamPos, transformedPos);
-
-
-    // return vec3(pathLength * 100.0);
 
     // check if object occludes atmosphere
     if(pathLength > offset)
@@ -219,10 +214,6 @@ vec3 scatteringComputeInscatteredLight(
       inscatteredLight = max(inscatter.rgb * phaseR + getMie(options, inscatter) *
         phaseM, 0.0f);
       inscatteredLight *= sunIntensity;
-
-
-
-      // return inscatter.rgb * 1.0;
 
     }
   }

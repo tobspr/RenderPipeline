@@ -93,13 +93,14 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
-        # self.sceneSource = "Models/LittleHouse/Scene.egg"
+        self.sceneSource = "Demoscene.ignore/Avolition/level_a1.bam"
+        # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
         # This sources are included in the repo
@@ -219,6 +220,7 @@ class Main(ShowBase, DebugObject):
             self.doMethodLater(0.5, self.loadScene, "Load Scene")
         else:
             self.loadScene()
+
 
     def addDemoLight(self):
         """ Spawns a new light at a random position with a random color """
@@ -412,7 +414,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 30)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 9)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)

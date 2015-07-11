@@ -20,6 +20,7 @@ class MountManager(DebugObject):
         self.writePath = "Temp/"
         self.basePath = "."
         self.lockFile = "instance.pid"
+        self.modelPaths = []
 
     def setWritePath(self, pth):
         """ Set a writable directory for generated files. This can be a string
@@ -131,15 +132,18 @@ class MountManager(DebugObject):
         # and then on the model-path. Append the Shader directory to the modelpath
         # to ensure the shader includes can be found.
         base_path = Filename(self.basePath)
-        getModelPath().appendDirectory(join(base_path.getFullpath(), 'Shader'))
+        self.modelPaths.append(join(base_path.getFullpath(), 'Shader'))
 
         # Add the pipeline root directory to the model path aswell
-        getModelPath().appendDirectory(base_path.getFullpath())
+        self.modelPaths.append(base_path.getFullpath())
 
         # Append the write path to the model directory to make pragma include 
         # find the ShaderAutoConfig.include
         write_path = Filename(self.writePath)
-        getModelPath().appendDirectory(write_path.getFullpath())
+        self.modelPaths.append(write_path.getFullpath())
+
+        for pth in self.modelPaths:
+            getModelPath().appendDirectory(pth)
 
     def unmount(self):
         """ Unmounts the VFS """

@@ -1,5 +1,12 @@
-#pragma once
+# pragma once
 
+
+
+#ifndef POSITION_REC_123
+#define POSITION_REC_123 1
+#else
+#error DOUBLE INCLUDE!
+#endif
 
 uniform mat4 trans_clip_of_mainCam_to_mainRender;
 

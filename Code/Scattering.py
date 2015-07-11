@@ -285,6 +285,12 @@ class Scattering(DebugObject):
         self.pipeline.renderPassManager.registerDynamicVariable(
             "scatteringOptions", self.bindTo)
 
+        if self.pipeline.settings.useSkyboxScattering:
+            self.pipeline.renderPassManager.registerDefine("USE_SKYBOX_SCATTERING", "1")
+
+        if self.pipeline.settings.useSkyboxClouds:
+            self.pipeline.renderPassManager.registerDefine("USE_SKYBOX_CLOUDS", "1")
+
     def bindTo(self, node, prefix):
         """ Sets all necessary inputs to compute the scattering on a render target """
         if not self.precomputed:

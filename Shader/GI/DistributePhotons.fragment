@@ -85,7 +85,7 @@ void spawnPhoton(vec3 pos, vec3 color, float brightness) {
     vec3 voxelSpacePos = convertToGrid(pos);
     ivec3 voxelGridPos = ivec3(voxelSpacePos * giData.gridResolution);
 
-    color = saturate(color) * 0.5;
+    color = saturate(color) * 0.05;
     uint packedColor0 = int(color.r * 1024.0);
     uint packedColor1 = int(color.g * 1024.0) | int(color.b * 1024) << 16;
 

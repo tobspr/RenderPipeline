@@ -17,8 +17,8 @@ uniform sampler2D viewSpacePosition;
 #define SAO_NUM_SPIRAL_TURNS      64
 #define SAO_VARIATION             1
 
-const float saoConstIntensity = 5.7;
-const float saoSampleRadiusWS = 3.0;
+const float saoConstIntensity = 0.7;
+const float saoSampleRadiusWS = 10.0;
 const float saoBias = 0.05;
 const float saoEpsilon = 0.02;
 

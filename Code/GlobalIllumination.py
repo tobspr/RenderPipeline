@@ -64,7 +64,7 @@ class GlobalIllumination(DebugObject):
 
         # Store grid size in world space units
         # This is the half voxel grid size
-        self.voxelGridSizeWS = Vec3(40)
+        self.voxelGridSizeWS = Vec3(90)
 
         # When you change this resolution, you have to change it in Shader/GI/ConvertGrid.fragment aswell
         self.voxelGridResolution = LVecBase3i(256)
@@ -75,8 +75,8 @@ class GlobalIllumination(DebugObject):
         self.gridPos = Vec3(0)
 
         self.distributionPassCount = 32
-        self.photonScaleFactor = 1
-        self.photonBaseSize = 256
+        self.photonScaleFactor = 6
+        self.photonBaseSize = 512 + 256
 
         # Create ptas 
         self.ptaLightUVStart = PTALVecBase2f.emptyArray(1)
