@@ -29,7 +29,7 @@ void main() {
     vec4 sampledDiffuse = texture(p3d_Texture0, vOutput.texcoord);
     
     // Alpha test
-    // if (sampledDiffuse.a < 0.5) discard;
+    // if (sampledDiffuse.a < 0.01) discard;
 
     // Sample the other maps
     vec4 sampledNormal  = texture(p3d_Texture1, vOutput.texcoord);
@@ -37,7 +37,12 @@ void main() {
     vec4 sampledRoughness = texture(p3d_Texture3, vOutput.texcoord);
         
     // Extract the material properties 
-    float bumpFactor = vOutput.materialDiffuse.w * 0.0;
+    float bumpFactor = vOutput.materialDiffuse.w;
+    bumpFactor = 0.4;
+
+
+    bumpFactor *= saturate(length(sampledNormal.w));
+
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
@@ -46,6 +51,9 @@ void main() {
     vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
     vec3 tangent; vec3 binormal;
     reconstructTanBin(tangent, binormal);
+
+    bumpFactor *= saturate(length(tangent));
+
     vec3 mixedNormal = mergeNormal(detailNormal, bumpFactor, vOutput.normalWorld, tangent, binormal);
 
     // Store the properties
@@ -58,9 +66,12 @@ void main() {
 
 
     // m.baseColor = sampledNormal.rgb; 
-    m.roughness = 1.0;
+    m.roughness = 0.4;
     m.metallic = 0.0;
-    m.specular = 0.5;
+    m.specular = 1.0;
+    m.baseColor = vec3(sampledDiffuse.xyz);
+
+    // m.baseColor = vec3(bumpFactor);
 
     // Write the material to the G-Buffer
     renderMaterial(m);

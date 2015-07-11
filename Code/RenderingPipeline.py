@@ -504,3 +504,5 @@ class RenderingPipeline(DebugObject):
         # Give the gui a hint when the pipeline is done loading
         if self.guiManager:
             self.guiManager.onPipelineLoaded()
+
+        self.reloadShaders()

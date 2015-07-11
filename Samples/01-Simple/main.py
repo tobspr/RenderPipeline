@@ -38,9 +38,17 @@ class App(ShowBase):
         # Now create the pipeline
         self.renderPipeline.create()
 
+        # Load the skybox
+        self.skybox = self.renderPipeline.getDefaultSkybox()
+        self.skybox.reparentTo(render)
+
+
 
         # At this point we are done with the initialization. Now you want to
         # load your scene, and create the game logic. 
+
+        # Call this to tell the pipeline that the scene is done loading
+        self.renderPipeline.onSceneInitialized()
 
 # Create a new instance and run forever
 app = App()

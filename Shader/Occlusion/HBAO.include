@@ -8,10 +8,10 @@
 #define HBAO_NUM_SAMPLE_DIRECTIONS 22
 #define HBAO_TANGENT_BIAS 0.1
 #define HBAO_NUM_SAMPLING_STEPS 16
-#define HBAO_SAMPLING_STEP 0.006
+#define HBAO_SAMPLING_STEP 0.003
 
-#define HBAO_SCALE 1.5
-#define HBAO_SAMPLING_RADIUS 2.1
+#define HBAO_SCALE 1.3
+#define HBAO_SAMPLING_RADIUS 1.1
 
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;
