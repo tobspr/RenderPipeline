@@ -53,7 +53,7 @@ class App(ShowBase):
 
         base.disableMouse()
 
-        self.scene = loader.loadModel("models/level_b1.bam")
+        self.scene = loader.loadModel("models/level1.bam")
         self.scene.reparentTo(render)
 
         base.cam.setPos(0, 0, 15)
@@ -120,7 +120,7 @@ class App(ShowBase):
         velocityX = self.movement[0] * cos(actorH)
         velocityY = self.movement[0] * sin(actorH)
 
-        self.actor.setPos(self.actor.getPos() - Vec3(velocityX, velocityY, 0) * globalClock.getDt() * 1.7)
+        self.actor.setPos(self.actor.getPos() - Vec3(velocityX, velocityY, 0) * globalClock.getDt() * 3.7)
 
 
         base.cam.setPos(self.actor.getPos() + Vec3(cos(actorH)*3,sin(actorH)*3, 3))

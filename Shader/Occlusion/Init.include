@@ -3,14 +3,21 @@
 // Load the appropriate occlusion technique
 
 #if defined(OCCLUSION_TECHNIQUE_SAO)
+    #define OCCLUSION_INCLUDED 1
     #pragma include "Occlusion/SAO.include"
 #endif
 
 #if defined(OCCLUSION_TECHNIQUE_HBAO)
+    #define OCCLUSION_INCLUDED 1
     #pragma include "Occlusion/HBAO.include"
 #endif
 
+#if defined(OCCLUSION_TECHNIQUE_TSAO)
+    #define OCCLUSION_INCLUDED 1
+    #pragma include "Occlusion/TSAO.include"
+#endif
 
-#if !defined(OCCLUSION_TECHNIQUE_SAO) && !defined(OCCLUSION_TECHNIQUE_HBAO)
+
+#if !defined(OCCLUSION_INCLUDED)
     #error No valid occlusion technique found to include
 #endif

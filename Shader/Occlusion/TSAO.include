@@ -1,0 +1,58 @@
+#pragma once
+ 
+#pragma optionNV (unroll all)
+
+// TobSpr Ambient Occlusion
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/PoissonDisk.include"
+
+uniform sampler2D viewSpaceNormals;
+uniform sampler2D viewSpacePosition;
+
+uniform sampler2D worldSpaceNormals;
+uniform sampler2D worldSpacePosition;
+ 
+
+#define TSAO_PIXEL_RADIUS 50
+#define TSAO_HALO_REDUCTION_FACTOR 1.0
+
+float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
+
+  vec3 originVS = textureLod(worldSpacePosition, coord, 0).xyz;
+  vec2 coordStep = vec2(TSAO_PIXEL_RADIUS) / textureSize(viewSpacePosition, 0).xy;
+  vec3 normalVS = textureLod(worldSpaceNormals, coord, 0).xyz;
+
+  float aoSum = 0.0;
+
+  for (int i = 0; i < 136; i++) {
+    vec2 offs = poissonDisk136[i];
+    vec2 sampleCoord = coord + offs * coordStep;
+    vec3 sampleNormal = textureLod(worldSpaceNormals, sampleCoord, 0).xyz;
+    vec3 samplePos = textureLod(worldSpacePosition, sampleCoord, 0).xyz;
+    vec3 vecToSample = normalize(samplePos - originVS);
+
+    float sampleLength = distance(samplePos, originVS);
+    float sampleVis = 
+                  saturate(dot(vecToSample, normalVS)) * 
+                  // (1.0 - saturate(-dot(sampleNormal, normalVS))) * 
+                  (1.0 - saturate(dot(vecToSample, sampleNormal) * TSAO_HALO_REDUCTION_FACTOR)) * 
+                  // saturate(1.0 / length(offs*0.1));
+                  1.0;
+
+
+
+    aoSum += sampleVis;
+
+
+
+  }
+
+  aoSum /= 136.0;
+  aoSum = saturate(aoSum);
+  // aoSum *= 2.0;
+  // aoSum = 1.0 - aoSum;
+  aoSum = saturate(aoSum);
+
+  return aoSum;
+
+}

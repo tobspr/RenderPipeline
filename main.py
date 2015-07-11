@@ -89,7 +89,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
-        # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
+        self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
@@ -99,7 +99,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
-        self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
+        # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
@@ -316,17 +316,19 @@ class Main(ShowBase, DebugObject):
                         copiedObj.setPos(x*1.5 + random(), y*1.5 + random(), random()*5.0 + 0.4)
 
         # Find transparent objects and mark them as transparent
-        self.transpObjRoot = render.attachNewNode("transparentObjects")
-        matches = self.scene.findAllMatches("**/T__*")
-        if matches:
-            for match in matches:
-                # match.reparentTo(self.transpObjRoot)
-                self.transparentObjects.append(match)
-                self.renderPipeline.prepareTransparentObject(match)
-                # match.listTags()
-                match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
-                # match.setColorScale(1,0,1, 1)
-                # match.hide(self.renderPipeline.getShadowPassBitmask())
+        if self.renderPipeline.settings.useTransparency:
+            self.transpObjRoot = render.attachNewNode("transparentObjects")
+            matches = self.scene.findAllMatches("**/T__*")
+            if matches:
+                for match in matches:
+                    # match.reparentTo(self.transpObjRoot)
+                    self.transparentObjects.append(match)
+                    self.renderPipeline.prepareTransparentObject(match)
+                    # match.listTags()
+                    match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
+                    # match.setColorScale(1,0,1, 1)
+                    # match.hide(self.renderPipeline.getShadowPassBitmask())
+                
         # Wheter to use a ground plane
         self.usePlane = False
         self.sceneWireframe = False

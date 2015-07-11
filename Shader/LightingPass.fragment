@@ -104,7 +104,7 @@ void main() {
     float reflectionFactor = saturate( (0.5 - material.roughness) * 5.0 ) ;
 
     float fogFactor = smoothstep(0.0, 1.0, distance(cameraPosition, material.position) / 30.0);
-    // fogFactor = 0.0;
+    fogFactor = 0.0;
 
     #if defined(USE_GLOBAL_ILLUMINATION) && !defined(DEBUG_DISABLE_GI)
 

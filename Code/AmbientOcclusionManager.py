@@ -11,7 +11,7 @@ class AmbientOcclusionManager(DebugObject):
     to compute ambient occlusion. He also registers the configuration defines
     specified in the pipeline configuration """
 
-    availableTechniques = ["SAO", "HBAO", "None"]
+    availableTechniques = ["SAO", "HBAO", "TSAO", "None"]
 
     def __init__(self, pipeline):
         """ Creates the manager and directly creates the passes """
