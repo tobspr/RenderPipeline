@@ -15,4 +15,5 @@ struct ScatteringOptions {
 
     vec3 atmosphereScale;
     vec3 atmosphereOffset;
+    vec3 sunVector;
 };

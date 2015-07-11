@@ -83,6 +83,12 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableGlobalIllumination:
             self.globalIllum.setTargetLight(lightSource)
 
+    def setScatteringSource(self, lightSource):
+        """ Sets the light source used for the scattering, can be a point or 
+        directional light """
+        if self.settings.enableScattering:
+            self.scattering.setSunLight(lightSource)
+
     def getMainPassBitmask(self):
         """ Returns the camera bit used to render the main scene """
         return BitMask32.bit(2)
@@ -226,6 +232,10 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.preRenderUpdate()
         if self.globalIllum:
             self.globalIllum.update()
+
+        if self.scattering:
+            self.scattering.update()
+
         return task.cont
 
     def _updateInputHandles(self):
@@ -362,6 +372,8 @@ class RenderingPipeline(DebugObject):
             earthScattering.provideInputs()
 
             self.scattering = earthScattering
+        else:
+            self.scattering = None
 
     def getScattering(self):
         """ Returns the scattering instance if scattering is enabled, otherwise

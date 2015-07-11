@@ -6,6 +6,7 @@ from direct.stdpy.file import isdir
 from DebugObject import DebugObject
 from Globals import Globals
 from RenderTarget import RenderTarget
+from LightType import LightType
 
 
 class Scattering(DebugObject):
@@ -31,7 +32,8 @@ class Scattering(DebugObject):
             "transmittanceNonLinear": True,
             "inscatterNonLinear": True,
             "atmosphereOffset": Vec3(0),
-            "atmosphereScale": Vec3(1)
+            "atmosphereScale": Vec3(1),
+            "sunVector": Vec3(0,1,0)
         }
 
         # Store all parameters in a pta, that is faster than using setShaderInput
@@ -39,6 +41,7 @@ class Scattering(DebugObject):
         self.targets = {}
         self.textures = {}
         self.precomputed = False
+        self.sunLight = None
 
         self.inscatterResult = None
         self.transmittanceResult = None
@@ -69,9 +72,10 @@ class Scattering(DebugObject):
         if name in self.settingsPTA:
             if type(value) not in [float, Vec3]:
                 self.warn("You cannot change this value at runtime. "
-                          "Only floats and vec3 are supported.")
+                          "Only floats and vec3s are supported.")
                 return
             self.settingsPTA[name][0] = value
+            self.settings[name] = value
 
     def _executePrecompute(self):
         """ Executes the precomputation for the scattering. This disables all 
@@ -313,6 +317,22 @@ class Scattering(DebugObject):
         self.debug("Precomputing ..")
         self._executePrecompute()
 
+    def setSunVector(self, sunVector):
+        """ Sets the sun vector, used to render the atmosphere. This equals to
+        calling adjustSetting('sunVector', sunVector) """
+        self.adjustSetting("sunVector", sunVector)
+
+        print "sunVector = ", sunVector
+
+    def setSunLight(self, sunLight):
+        """ Sets a sun light, the scattering will use the direction of the sun
+        light to render the atmopshere """
+
+        if not sunLight or sunLight.getLightType() not in [LightType.Point, LightType.Directional]:
+            self.error("The sun light has to be a point or directional light")
+        else:
+            self.sunLight = sunLight
+
     def setSettings(self, settings):
         """ Sets the settings used for the precomputation. If a setting is not
         specified, the default is used """
@@ -331,3 +351,17 @@ class Scattering(DebugObject):
                         "Wrong type for", key, "- should be", type(self.settings[key]))
             else:
                 self.warn("Unrecognized setting:", key)
+
+    def update(self):
+        """ Updates the scattering, gets called on a per-frame basis """
+        if self.sunLight:
+
+            # Compute the sun vector as the vector from the middle of the planet
+            # to the middle of the sun, as the sun is an area point light, and
+            # not a single point.
+            planetMid = self.settings["atmosphereOffset"]
+            sunMid = self.sunLight.position
+            sunVector = sunMid - planetMid
+            sunVector.normalize()
+
+            self.setSunVector(sunVector)

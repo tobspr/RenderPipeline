@@ -70,7 +70,6 @@ vec3 scatteringComputeInscatteredLight(
     vec3 surfacePos, 
     vec3 cameraPos,
     vec3 viewDir, 
-    vec3 sunVector,
     sampler3D inscatterSampler,
     // sampler2D transmittanceSampler,
     vec3 cloudColor,
@@ -82,9 +81,9 @@ vec3 scatteringComputeInscatteredLight(
 
 
   #if defined(USE_SKYBOX_CLOUDS)
-    float distanceLen = distance( normalize(viewDir), normalize(sunVector) );
+    float distanceLen = distance( normalize(viewDir), normalize(options.sunVector) );
     float sunDistance = saturate(1.0 - distanceLen);
-    float sunFactor = pow(sunDistance, 80.0) * 0;
+    float sunFactor = pow(sunDistance, 80.0);
     float sunFactorOuter = pow(sunDistance, 1.0);
 
     vec3 sunArea = vec3(sunFactor * 120.0 * vec3(1,1,0.8) + sunFactorOuter * vec3(1.1,1,0.7) * 0.3 );
@@ -127,14 +126,14 @@ vec3 scatteringComputeInscatteredLight(
 
       // starting position of path is now ensured to be inside atmosphere, was either originally there or has been moved to top boundary
       float muStartPos = dot(startPos, transformedViewDir) / startPosHeight;
-      float nuStartPos = dot(transformedViewDir, sunVector);
-      float musStartPos = dot(startPos, sunVector) / startPosHeight;
+      float nuStartPos = dot(transformedViewDir, options.sunVector);
+      float musStartPos = dot(startPos, options.sunVector) / startPosHeight;
 
         // in-scattering for infinite ray (light in-scattered when no surface hit or object behind atmosphere)
       vec4 inscatter = max(texture4D(options, inscatterSampler, startPosHeight, muStartPos, musStartPos, nuStartPos ), 0.0f);
 
       float surfacePosHeight = length(transformedPos);
-      float musEndPos = dot(transformedPos, sunVector) / surfacePosHeight;
+      float musEndPos = dot(transformedPos, options.sunVector) / surfacePosHeight;
 
       // check if object hit is inside atmosphere
       if(pathLength < maxPathLength)
