@@ -99,7 +99,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
-        self.sceneSource = "Demoscene.ignore/Avolition/level_a1.bam"
+        self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
@@ -132,7 +132,7 @@ class Main(ShowBase, DebugObject):
             dirLight.setDirection(dPos)
             dirLight.setShadowMapResolution(2048)
             dirLight.setPos(dPos)
-            dirLight.setColor(Vec3(1, 1, 0.8) * 2.0)
+            dirLight.setColor(Vec3(1.5, 1.2, 0.8) * 2.0)
             # dirLight.setColor(Vec3(0.3))
             dirLight.setPssmTarget(base.cam, base.camLens)
             dirLight.setCastsShadows(True)
@@ -225,17 +225,19 @@ class Main(ShowBase, DebugObject):
 
     def addDemoLight(self):
         """ Spawns a new light at a random position with a random color """
-        randomRadius = 25.0
+        randomRadius = 90.0
         light = SpotLight()
-        spot = Vec3( (random()-0.5) * randomRadius, (random()-0.5) * randomRadius, 22)
+        # spot = Vec3( (random()-0.5) * randomRadius, (random()-0.5) * randomRadius, 22)
+        spot = self.cam.getPos(self.render)
         light.setPos(spot)
         light.lookAt(Vec3(spot.x,spot.y,0))
         # print "pos is", spot,"look at",Vec3(spot.x,spot.y,0)
-        light.setColor(Vec3( random(), random(), random()) * 0.2)
+        # light.setColor(Vec3( random(), random(), random()) * 0.2)
+        light.setColor(Vec3( 1.0, 0.5, 0.3) * 0.05)
         light.setNearFar(1.0, 50)
         light.setFov(140)
-        # light.setIESProfile("XArrow")
-        light.setIESProfileIndex(randint(0, 30))
+        light.setIESProfile("SoftArrow")
+        # light.setIESProfileIndex(randint(0, 30))
         light.setShadowMapResolution(2048)
         # light.attachDebugNode(render)
         light.setCastsShadows(True)
@@ -245,8 +247,8 @@ class Main(ShowBase, DebugObject):
     def removeDemoLight(self):
         """ Removes the last added demo light if present """
         if len(self.demoLights) > 0:
-            self.renderPipeline.removeLight(self.demoLights[0])
-            del self.demoLights[0]
+            self.renderPipeline.removeLight(self.demoLights[-1])
+            del self.demoLights[-1]
 
 
     def update(self, task):

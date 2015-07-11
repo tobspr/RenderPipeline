@@ -322,8 +322,6 @@ class Scattering(DebugObject):
         calling adjustSetting('sunVector', sunVector) """
         self.adjustSetting("sunVector", sunVector)
 
-        print "sunVector = ", sunVector
-
     def setSunLight(self, sunLight):
         """ Sets a sun light, the scattering will use the direction of the sun
         light to render the atmopshere """

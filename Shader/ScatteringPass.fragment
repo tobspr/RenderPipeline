@@ -52,7 +52,7 @@ void main() {
         irradianceFactor);
 
 
-    #if 0
+    #if 1
 
     scatteringResult *= 4.5;
 

@@ -103,7 +103,8 @@ void main() {
     float pixelDepth = texelFetch(depth, screenCoord,0 ).x;
     float reflectionFactor = saturate( (0.5 - material.roughness) * 5.0 ) ;
 
-
+    float fogFactor = smoothstep(0.0, 1.0, distance(cameraPosition, material.position) / 140.0);
+    fogFactor = 0.0;
 
     #if defined(USE_GLOBAL_ILLUMINATION) && !defined(DEBUG_DISABLE_GI)
 
@@ -265,6 +266,7 @@ void main() {
         result = vec3(scatteringResult);
     #endif
 
+    result = mix(result, vec3(0), fogFactor);
 
     lightingResult = vec4(result, 0.0 );
 }
