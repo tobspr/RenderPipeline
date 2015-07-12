@@ -5,17 +5,16 @@ from ..Globals import Globals
 from ..RenderPass import RenderPass
 from ..RenderTarget import RenderTarget
 
-class TransparencyPass(RenderPass):
+class TransparencyShadePass(RenderPass):
 
     """ This pass reads the per pixel linked lists generated during the deferred
-    scene pass and applies them to the rendered image. To sort the lists a bubble
-    sort algorithm is used """
+    scene pass and lights the transparent pixels """
 
     def __init__(self):
         RenderPass.__init__(self)
 
     def getID(self):
-        return "TransparencyPass"
+        return "TransparencyShadePass"
 
     def getRequiredInputs(self):
         return {
@@ -34,26 +33,46 @@ class TransparencyPass(RenderPass):
             "listHeadBuffer": "Variables.transpListHeadBuffer",
             "materialDataBuffer": "Variables.transpMaterialDataBuffer",
 
-            "transparencyShadeResult": "TransparencyShadePass.resultTex",
+            "renderedLightsBuffer": "Variables.renderedLightsBuffer",
+
+            # Default environment
+            "fallbackCubemap": "Variables.defaultEnvironmentCubemap",
+            "fallbackCubemapMipmaps": "Variables.defaultEnvironmentCubemapMipmaps",
+
+            # Lighting
+            "lights": "Variables.allLights",
+            "shadowAtlasPCF": "ShadowScenePass.atlasPCF",
+            "shadowAtlas": "ShadowScenePass.atlas",
+            "shadowSources": "Variables.allShadowSources",
+            "directionToFace": "Variables.directionToFaceLookup",
+
+            # IES Profiles
+            "IESProfilesTex": "Variables.IESProfilesTex",
+
+            "cameraPosition": "Variables.cameraPosition",
+            "mainCam": "Variables.mainCam",
+            "mainRender": "Variables.mainRender"
 
         }
 
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultPostProcess.vertex",
-            "Shader/TransparencyPass.fragment")
+            "Shader/TransparencyShade/vertex.glsl",
+            "Shader/TransparencyShade/fragment.glsl",
+            "Shader/TransparencyShade/geometry.glsl",
+            )
         self.target.setShader(shader)
 
         return [shader]
 
     def create(self):
-        self.target = RenderTarget("TransparencyPass")
+        self.target = RenderTarget("TransparencyShadePass")
+        self.target.setSize(200, 200)
         self.target.addColorTexture()
-        self.target.setColorBits(16)
         self.target.prepareOffscreenBuffer()
 
     def getOutputs(self):
         return {
-            "TransparencyPass.resultTex": lambda: self.target.getColorTexture(),
+            "TransparencyShadePass.resultTex": lambda: self.target.getColorTexture(),
         }
 

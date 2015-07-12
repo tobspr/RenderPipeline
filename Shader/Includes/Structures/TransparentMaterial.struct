@@ -2,9 +2,12 @@
 
 struct TransparentMaterial {
     vec3 color;
-    uint materialType;
-    vec3  normal;
+    vec3 normal;
     float alpha;
     float depth;
+    vec2 texcoord;
+    float roughness;
+    float specular;
+    float metallic;
     uint nextEntry;
 };

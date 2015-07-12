@@ -205,7 +205,7 @@ void main() {
 
         // Ambient / Reflections
         ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, 
-            mixedOcclusionFactor, viewVector, wsNormal);    
+            mixedOcclusionFactor, viewVector);    
         result += ambient;
 
     }

@@ -76,10 +76,9 @@ class DynamicObjectsManager(DebugObject):
                 indexWriter = GeomVertexWriter(newVertexData, "dovindex")
 
                 while not vtxReader.isAtEnd():
-                    self.currentIndex += 1
                     data = vtxReader.getData3f()
-                    allocatedIndex = self.currentIndex
-                    indexWriter.setData1i(allocatedIndex)
+                    indexWriter.setData1i(self.currentIndex)
+                    self.currentIndex += 1
 
         # Assign the standard animated shader
         shader = Shader.load(Shader.SLGLSL, 

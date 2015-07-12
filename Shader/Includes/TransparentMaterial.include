@@ -3,17 +3,20 @@
 #pragma include "Includes/Structures/TransparentMaterial.struct"
 
 
-// #define USE_UINT_PACKING 0
+// #define USE_UINT_PACKING 1
 
 
 TransparentMaterial getDefaultTransparentMaterial() {
     TransparentMaterial tm;
     tm.color = vec3(1);
-    tm.materialType = 0;
     tm.normal = vec3(0,0,1);
-    tm.depth = 1.0;
     tm.alpha = 1.0;
+    tm.depth = 1.0;
     tm.nextEntry = 0u;
+    tm.roughness = 0;
+    tm.specular = 0.0;
+    tm.metallic = 0.0;
+    tm.texcoord = vec2(0);
     return tm;
 }
 
@@ -28,38 +31,66 @@ vec3 decodeNormal(vec3 enc)
     return nn.xyz * 2 + vec3(0,0,1);
 }
 
-TransparentMaterial unpackTransparentMaterial(uvec4 data) {
+TransparentMaterial unpackTransparentMaterial(uvec4 data1, uvec4 data2) {
 
     TransparentMaterial tm;
 
-    tm.nextEntry = data.w;
+    tm.nextEntry = data1.w;
 
 
-    vec4 unpacked1 = unpackSnorm4x8(data.x);
-    vec4 unpacked2 = unpackSnorm4x8(data.y);
+    vec4 unpacked1 = unpackSnorm4x8(data1.x);
+    vec4 unpacked2 = unpackSnorm4x8(data1.y);
 
     tm.color = unpacked1.rgb;
-    tm.materialType = uint(unpacked1.w);
+    tm.roughness = unpacked1.w;
     tm.normal = normalize(unpacked2.rgb);
     tm.alpha = unpacked2.w;
 
     #if defined(USE_UINT_PACKING)
-        tm.depth = float(data.z) / 0xFFFFFFFF;
+        tm.depth = float(data1.z) / 0xFFFFFFFF;
     #else
-        tm.depth = uintBitsToFloat(data.z);
+        tm.depth = uintBitsToFloat(data1.z);
     #endif
+
+    tm.texcoord = vec2(data2.xy) / 1000000.0;
+    tm.specular = float(data2.z) / 1000000.0; 
+    tm.metallic = float(data2.w) / 1000000.0; 
+
     return tm;
 }
 
 
 
-float extractMaterialDepth(uvec4 data) {
+float extractMaterialDepth(uvec4 data1) {
 
     #if defined(USE_UINT_PACKING)
-        return float(data.z) / 0xFFFFFFFF;
+        return float(data1.z) / 0xFFFFFFFF;
     #else
-        return uintBitsToFloat(data.z);
+        return uintBitsToFloat(data1.z);
     #endif    
+}
+
+void packTransparentMaterial(TransparentMaterial tm, out uvec4 data1, out uvec4 data2) {
+
+    uint integer1 = packSnorm4x8(vec4(tm.color, tm.roughness));
+    uint integer2 = packSnorm4x8(vec4(tm.normal, tm.alpha));
+
+    #if defined(USE_UINT_PACKING)
+        uint integer3 = uint(tm.depth * 0xFFFFFFFF);
+    #else
+        uint integer3 = floatBitsToUint(tm.depth);
+    #endif
+
+    uint integer4 = tm.nextEntry;
+
+    uint integer5 = uint(tm.texcoord.x * 1000000.0) ;
+    uint integer6 = uint(tm.texcoord.y * 1000000.0) ;
+    uint integer7 = uint(tm.specular * 1000000.0);
+    uint integer8 = uint(tm.metallic * 1000000.0);
+
+    data1 = uvec4(integer1, integer2, integer3, integer4);
+    data2 = uvec4(integer5, integer6, integer7, integer8);
+
 }
 
 

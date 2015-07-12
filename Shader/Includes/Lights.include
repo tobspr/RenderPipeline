@@ -13,7 +13,7 @@
 
 
 
-vec3 applyPointLight(Light light, Material material) {
+vec3 applyPointLight(Light light, Material material, bool useShadows) {
 
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 
@@ -25,19 +25,22 @@ vec3 applyPointLight(Light light, Material material) {
     vec3  h = normalize(l + v);
     float shadowFactor = 1.0;
 
+
     #if !defined(UNSHADOWED_PASS)
+    if (useShadows) {
         // We decide which shadow map to sample using a simple lookup cubemap
         int faceIndex = int( textureLod(directionToFace, l, 0).r * 5.0);        
         int shadowSourceIndex = light.sourceIndexes[faceIndex];
         ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
         shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.2, 0.001, 0.0015);
+    }
     #endif
 
     return computeLightModel(light, material, l,v, n, h, attenuation, shadowFactor);
 }
 
 
-vec3 applyDirectionalLight(Light light, Material material) {
+vec3 applyDirectionalLight(Light light, Material material, bool useShadows) {
 
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 
@@ -50,6 +53,7 @@ vec3 applyDirectionalLight(Light light, Material material) {
     float shadowFactor = 1.0;
 
     #if !defined(UNSHADOWED_PASS)
+    if (useShadows) {
         int map_used = 0;
         shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 20.0, 20.0, 0.01, map_used);
 
@@ -73,13 +77,15 @@ vec3 applyDirectionalLight(Light light, Material material) {
 
         #endif
 
+    }
+
     #endif
 
     return computeLightModel(light, material, l, v, n, h, attenuation, shadowFactor);
 }
 
 
-vec3 applySpotLight(Light light, Material material) {
+vec3 applySpotLight(Light light, Material material, bool useShadows) {
 
     float distanceToLight = distance(material.position, light.position);   
     float distanceRelative = distanceToLight / light.radius; 
@@ -99,15 +105,14 @@ vec3 applySpotLight(Light light, Material material) {
         visibilityFactor = 1.0;
     }
 
-
-    // return vec3(visibilityFactor);
     float shadowFactor = 1.0;
 
     #if !defined(UNSHADOWED_PASS)
+    if (useShadows) {
         int shadowSourceIndex = light.sourceIndexes[0];
         ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
         shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.2, 0.01, 0.0001);
-        // shadowFactor = pcfKernel(currentSource, transformedCoord, 0.0, vec2(0.0001));
+    }
     #endif
 
     float radialFactor = saturate(distance(transformedCoord.xy, vec2(0.5)) * 2.0);

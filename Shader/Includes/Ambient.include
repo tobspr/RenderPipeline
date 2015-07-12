@@ -34,7 +34,7 @@ vec3 filterEnvironmentMap(samplerCube tex, Material material, vec3 direction) {
 
 
 
-vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float occlusionFactor, vec3 v, vec3 n) {
+vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float occlusionFactor, vec3 v) {
 
 
 

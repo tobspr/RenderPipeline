@@ -25,7 +25,8 @@ void main() {
     tm.color = vOutput.materialDiffuse.xyz;
     tm.alpha = 0.4;
     tm.normal = normalize(vOutput.normalWorld);
-    tm.depth = distance(cameraPosition, vOutput.positionWorld) / TRANSPARENCY_RANGE;
-    tm.materialType = 0;
+    tm.roughness = 0.5;
+    tm.specular = 0.5;
+    tm.metallic = 0.0;
     renderTransparentMaterial(tm);
 }

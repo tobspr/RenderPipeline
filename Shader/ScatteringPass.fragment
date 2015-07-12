@@ -28,8 +28,8 @@ void main() {
     #endif
 
     vec3 viewDir = normalize(wsPosition - cameraPosition);
-    vec3 attenuation;
-    float irradianceFactor;
+    vec3 attenuation = vec3(0);
+    float irradianceFactor = 0.0;
 
     // There should be a more elegant way, but for now it works. I don't want to
     // waste a gbuffer flag for marking the skybox.r

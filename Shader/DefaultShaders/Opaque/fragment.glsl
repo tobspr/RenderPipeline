@@ -38,10 +38,6 @@ void main() {
         
     // Extract the material properties 
     float bumpFactor = vOutput.materialDiffuse.w;
-    bumpFactor = 0.0;
-
-
-    // bumpFactor *= saturate(length(sampledNormal.w));
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
@@ -51,8 +47,6 @@ void main() {
     vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
     vec3 tangent; vec3 binormal;
     reconstructTanBin(tangent, binormal);
-
-    // bumpFactor *= saturate(length(tangent));
 
     vec3 mixedNormal = mergeNormal(detailNormal, bumpFactor, vOutput.normalWorld, tangent, binormal);
 
@@ -64,14 +58,11 @@ void main() {
     m.normal = mixedNormal;
     m.position = vOutput.positionWorld;
 
-
     // m.baseColor = sampledNormal.rgb; 
-    m.roughness = 0.4;
-    m.metallic = 0.0;
-    m.specular = 1.0;
+    // m.roughness = 0.4;
+    // m.metallic = 0.0;
+    // m.specular = 1.0;
     // m.baseColor = vec3(sampledDiffuse.xyz);
-
-    // m.baseColor = vec3(vOutput.materialDiffuse.xyz);
 
     // Write the material to the G-Buffer
     renderMaterial(m);

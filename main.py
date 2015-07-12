@@ -93,7 +93,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
@@ -111,8 +111,9 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
-        self.sceneSource = "Models/Buddha/Buddha.bam"
+        # self.sceneSource = "Models/Buddha/Buddha.bam"
         # self.sceneSource = "Toolkit/Blender Material Library/Buddha.bam"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
         
 
         # Select surrounding scene here
@@ -419,7 +420,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 30.0)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 20.0)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)

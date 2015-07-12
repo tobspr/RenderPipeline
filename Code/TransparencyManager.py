@@ -7,6 +7,7 @@ from Globals import Globals
 from RenderTarget import RenderTarget
 from MemoryMonitor import MemoryMonitor
 from .RenderPasses.TransparencyPass import TransparencyPass
+from .RenderPasses.TransparencyShadePass import TransparencyShadePass
 
 class TransparencyManager(DebugObject):
 
@@ -26,13 +27,17 @@ class TransparencyManager(DebugObject):
         # This stores the maximum amount of transparent pixels which can be on the
         # screen at one time. If the amount of pixels exceeds this value, strong
         # artifacts will occur!
-        self.maxPixelCount = 1920 * 1080 * 2
+        self.maxPixelCount = 1920 * 1080 * 3
         self.initTransparencyPass()
 
     def initTransparencyPass(self):
         """ Creates the pass which renders the transparent objects into the scene """
         self.transparencyPass = TransparencyPass()
         self.pipeline.getRenderPassManager().registerPass(self.transparencyPass)
+
+        self.transparencyShadePass = TransparencyShadePass()
+        self.pipeline.getRenderPassManager().registerPass(self.transparencyShadePass)
+        
 
         # Create the atomic counter which stores the amount of rendered transparent
         # pixels. For now this a 1x1 texture, as atomic counters are not implemented.

@@ -91,7 +91,7 @@ void main() {
     for (int i = 0; i < countPointLight; i++) {
         currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
         currentLight = lights[currentLightId];
-        lightingResult += applyPointLight(currentLight, material);
+        lightingResult += applyPointLight(currentLight, material, true);
     }
 
     currentTileOffset += MAX_TILE_SHADOWED_POINT_LIGHTS + MAX_TILE_DIRECTIONAL_LIGHTS;
@@ -100,7 +100,7 @@ void main() {
     for (int i = 0; i < countDirectionalLight; i++) {
         currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
         currentLight = lights[currentLightId];
-        lightingResult += applyDirectionalLight(currentLight, material);
+        lightingResult += applyDirectionalLight(currentLight, material, true);
     }
 
     currentTileOffset += MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS + MAX_TILE_SPOT_LIGHTS;
@@ -109,7 +109,7 @@ void main() {
     for (int i = 0; i < countSpotLight; i++) {
         currentLightId = texelFetch(lightsPerTileBuffer, currentTileOffset + i).r;
         currentLight = lights[currentLightId];
-        lightingResult += applySpotLight(currentLight, material);
+        lightingResult += applySpotLight(currentLight, material, true);
     }
 
     currentTileOffset += MAX_TILE_SHADOWED_SPOT_LIGHTS;
