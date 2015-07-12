@@ -11,7 +11,7 @@ uniform sampler2D velocityTex;
 #define SMAA_INCLUDE_VS 0
 
 // This removes ghosting for objects with wrong velocity
-// #define SMAA_REPROJECTION_WEIGHT_SCALE 100000.0
+#define SMAA_REPROJECTION_WEIGHT_SCALE 100000.0
 #pragma include "Includes/SMAA-Wrapper.include"
 
 out vec4 result;

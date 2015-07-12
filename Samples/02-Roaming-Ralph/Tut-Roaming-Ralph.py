@@ -131,6 +131,8 @@ class World(ShowBase):
         self.ralph.setScale(.2)
         self.ralph.setPos(ralphStartPos)
 
+        self.renderPipeline.registerDynamicObject(self.ralph)
+
         # Create a floater object.  We use the "floater" as a temporary
         # variable in a variety of calculations.
 

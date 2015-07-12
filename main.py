@@ -89,7 +89,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
-        self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
+        # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
@@ -111,7 +111,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
-        # self.sceneSource = "Models/Buddha/Buddha.bam"
+        self.sceneSource = "Models/Buddha/Buddha.bam"
         # self.sceneSource = "Toolkit/Blender Material Library/Buddha.bam"
         
 

@@ -53,7 +53,7 @@ class App(ShowBase):
 
         base.disableMouse()
 
-        self.scene = loader.loadModel("models/level1.bam")
+        self.scene = loader.loadModel("models/level_a1.bam")
         self.scene.reparentTo(render)
 
         base.cam.setPos(0, 0, 15)
@@ -69,6 +69,8 @@ class App(ShowBase):
         self.actorModel.reparentTo(self.actor)
         self.actorModel.loop("walk")
 
+        self.renderPipeline.registerDynamicObject(self.actorModel)
+
         self.accept("w", self.setMovementX, [1])
         self.accept("w-repeat", self.setMovementX, [1])
         self.accept("w-up", self.setMovementX, [0])
@@ -81,21 +83,25 @@ class App(ShowBase):
         self.accept("d-up", self.setMovementY, [0])
 
 
-        # Create a light at the camera position
-        light = SpotLight()
-        light.setPos(Vec3(0,0,20))
-        light.lookAt(Vec3(0,0,0))
-        light.setColor(Vec3( 1.0, 0.5, 0.3) * 0.5)
-        light.setNearFar(1.0, 50)
-        light.setFov(140)
-        light.setIESProfile("SoftArrow")
-        light.setShadowMapResolution(8192)
-        light.setCastsShadows(True)
-        self.renderPipeline.addLight(light)
-        self.playerLight = light
+        lightPositions = [
+            (Vec3(0, 0, 20), Vec3(1.0,0.5,0.3)),
+            (Vec3(50, 5, 20), Vec3(1.0,0.5,0.3)),
+            (Vec3(10, 70, 20), Vec3(1.0,0.5,0.3)),
+        ]
+
+        for pos, col in lightPositions:
+            light = SpotLight()
+            light.setPos(pos)
+            light.lookAt(Vec3(0,0,0))
+            light.setColor(col * 0.2)
+            light.setNearFar(1.0, 50)
+            light.setFov(140)
+            light.setIESProfile("XSplit")
+            light.setShadowMapResolution(4096)
+            light.setCastsShadows(True)
+            self.renderPipeline.addLight(light)
 
         self.movement = [0, 0]
-
         self.addTask(self.update, "update")
 
         # Call this to tell the pipeline that the scene is done loading
@@ -125,10 +131,6 @@ class App(ShowBase):
 
         base.cam.setPos(self.actor.getPos() + Vec3(cos(actorH)*3,sin(actorH)*3, 3))
         base.cam.lookAt(self.actor.getPos() + Vec3(0,0,2.5))
-
-        # self.playerLight.setPos(self.actor.getPos() + Vec3(0, 0, 20))
-        # self.playerLight.lookAt(self.actor.getPos())
-        
 
 
         return task.cont

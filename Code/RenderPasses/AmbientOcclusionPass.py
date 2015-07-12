@@ -28,6 +28,8 @@ class AmbientOcclusionPass(RenderPass):
             "viewSpacePosition": "ViewSpacePass.position",
             "worldSpaceNormals": "DeferredScenePass.wsNormal",
             "worldSpacePosition": "DeferredScenePass.wsPosition",
+            "depthTex": "DeferredScenePass.depth",
+            "cameraPosition": "Variables.cameraPosition",
         }
 
     def create(self):

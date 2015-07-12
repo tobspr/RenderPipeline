@@ -59,7 +59,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
     vec3 result = vec3(0);
 
-    occlusionFactor = pow(occlusionFactor, 3.0);
+    occlusionFactor = pow(occlusionFactor, 4.0);
 
     #if defined(USE_GLOBAL_ILLUMINATION)
         // occlusionFactor = 0.5 + giAmbient.w * 0.5;
@@ -72,7 +72,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
                 material.baseColor *                        // Tint by material color
                 saturate(1.0 - material.metallic) *         // No diffuse ambient for metallic objects
                 saturate(1.0 + giAmbient.w) *               // Global Illumination Occlusion
-                0.4 * vec3(1.0,1.0,1.2) *                 // Color tint
+                0.2 * vec3(1.0,1.1,1.5) *                 // Color tint
                 (0.5 + ambientDirColor * 1.0)               // Diffuse reflections
     ;
 

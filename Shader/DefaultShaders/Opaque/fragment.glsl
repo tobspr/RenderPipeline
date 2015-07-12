@@ -71,7 +71,7 @@ void main() {
     m.specular = 1.0;
     // m.baseColor = vec3(sampledDiffuse.xyz);
 
-    // m.baseColor = vec3(bumpFactor);
+    // m.baseColor = vec3(vOutput.materialDiffuse.xyz);
 
     // Write the material to the G-Buffer
     renderMaterial(m);
