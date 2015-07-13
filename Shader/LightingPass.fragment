@@ -50,10 +50,6 @@ uniform vec3 cameraPosition;
 // Outputs
 layout(location = 0) out vec4 lightingResult;
 
-// Output reflection vector for sslr
-#if defined(USE_SSLR)
-layout(location = 1) out vec4 sslrDataResult;
-#endif
 
 // Scattering result
 #if defined(USE_SCATTERING)
@@ -212,12 +208,7 @@ void main() {
 
     // result *= texture(volumetricLightingTex, texcoord).x;
 
-    #if defined(USE_SSLR)
-        // SSLR Precomputation data
-        vec3 reflectionVector = normalize(reflect(viewVector, material.normal));
-        sslrDataResult = vec4(reflectionVector, reflectionFactor);
-    #endif
-
+    float sslrFactor = material.specular * (1.0 - material.roughness);
 
     #if !defined(USE_TRANSPARENCY)
         // SRGB
@@ -273,5 +264,5 @@ void main() {
 
     result = mix(result, vec3(0), fogFactor);
 
-    lightingResult = vec4(result, 0.0 );
+    lightingResult = vec4(result, isSkybox ? 0.0 : sslrFactor);
 }

@@ -1,0 +1,21 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+
+const ivec2 blurDirection = ivec2(1,0);
+
+#pragma include "Includes/PostProcessBlur.include"
+
+uniform sampler2D previousTex;
+uniform sampler2D normalTex;
+uniform sampler2D positionTex;
+uniform sampler2D colorTex;
+in vec2 texcoord;
+out vec4 result;
+
+
+void main() {
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+    result = texture(colorTex, texcoord);
+    result += edgePreservingSSLRBlur(texcoord, screenCoord, previousTex, normalTex, positionTex);
+}

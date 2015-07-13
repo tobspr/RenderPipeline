@@ -37,7 +37,7 @@ void main() {
     vec4 sampledRoughness = texture(p3d_Texture3, vOutput.texcoord);
         
     // Extract the material properties
-    float bumpFactor = vOutput.materialDiffuse.w * 0.2;
+    float bumpFactor = vOutput.materialDiffuse.w * 0.1;
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
@@ -60,8 +60,8 @@ void main() {
 
     // m.baseColor = sampledNormal.rgb; 
     // m.roughness = 0.4;
-    // m.metallic = 0.0;
-    // m.specular = 1.0;
+    m.metallic = 1.0;
+    m.specular = 1.0;
 
     // Write the material to the G-Buffer
     renderMaterial(m);

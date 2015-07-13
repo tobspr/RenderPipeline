@@ -28,6 +28,7 @@ from RenderPasses.LightingPass import LightingPass
 from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 from RenderPasses.VolumetricLightingPass import VolumetricLightingPass
+from RenderPasses.SSLRPass import SSLRPass
 
 class RenderingPipeline(DebugObject):
 
@@ -472,6 +473,11 @@ class RenderingPipeline(DebugObject):
         if self.settings.useAdaptiveBrightness:
             self.dynamicExposurePass = DynamicExposurePass(self)
             self.renderPassManager.registerPass(self.dynamicExposurePass)
+
+        # Add SSLR pass
+        if self.settings.enableSSLR:
+            self.sslrPass = SSLRPass()
+            self.renderPassManager.registerPass(self.sslrPass)
 
         # Add volumetric lighting
         # self.volumetricLightingPass = VolumetricLightingPass()
