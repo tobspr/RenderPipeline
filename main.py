@@ -91,7 +91,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
-        self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
+        # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
@@ -99,7 +99,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
-        # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
+        self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
@@ -192,7 +192,7 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
 
 
-        for x in xrange(10):
+        for x in xrange(0):
             spotLight = SpotLight()
             spotLight.setColor(Vec3(0.5, 0.8, 1.0) * 0.2)
 

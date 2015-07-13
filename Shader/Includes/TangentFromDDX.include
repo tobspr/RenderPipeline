@@ -12,7 +12,19 @@ void reconstructTanBin(out vec3 tangent, out vec3 binormal) {
     vec2 st1 = dFdx(vOutput.texcoord);
     vec2 st2 = dFdy(vOutput.texcoord);
  
-    tangent = normalize(Q1*st2.t - Q2*st1.t);
-    binormal = normalize(-Q1*st2.s + Q2*st1.s);
+    tangent = normalize(Q1*st2.y - Q2*st1.y);
+
+
+    // Fix issues when the texture coordinate is wrong, this happens when
+    // two adjacent vertices have the same texture coordinate, as the gradient
+    // is 0 then. We just assume some hard-coded tangent and binormal then
+    if (abs(st1.y) < 0.00001 && abs(st2.y) < 0.00001) {
+        tangent = cross(vOutput.normalWorld, vec3(0,1,0));        
+    }
+
+    binormal = normalize(cross(tangent, vOutput.normalWorld));
+
+
+
 }
 

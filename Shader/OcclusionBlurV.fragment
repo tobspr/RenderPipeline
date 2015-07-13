@@ -9,11 +9,12 @@ const ivec2 blurDirection = ivec2(0,1);
 
 uniform sampler2D sourceTex;
 uniform sampler2D normalTex;
+uniform sampler2D positionTex;
 
 in vec2 texcoord;
 out vec4 result;
 
 void main() {
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
-    result = edgePreservingOcclusionBlur(texcoord, screenCoord, sourceTex, normalTex);
+    result = edgePreservingOcclusionBlur(texcoord, screenCoord, sourceTex, normalTex, positionTex);
 }

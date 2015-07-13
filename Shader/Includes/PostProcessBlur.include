@@ -4,7 +4,8 @@
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/PositionReconstruction.include"
 
-const float normalsDiscardThreshold = 0.996;
+const float normalsDiscardThreshold = 0.997;
+const float occlusionMaxDistanceBlur = 0.05;
 const float normalsDiscardThresholdShadows = 0.99;
 
 vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D depthTex, bool isSecondary) {
@@ -82,67 +83,62 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
 
 
 
-vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex) {
+vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D positionTex) {
 
     #if defined(DEBUG_DISABLE_UPSCALE_BLUR)
         return texture(sourceTex, texcoord);
     #endif
 
-    const int numBlurSteps = 17;
-    const int numBlurMid = 9;
-    const float pixelToMidFactor = 10.0;
+    const int numBlurSteps = 5;
+    const int sideSteps = (numBlurSteps - 1) / 2;
 
     // http://dev.theomader.com/gaussian-kernel-calculator/
     float blurWeights[numBlurSteps] = float[numBlurSteps]
     (
-        0.003924,
-        0.008962,
-        0.018331,
-        0.033585,
-        0.055119,
-        0.081029,
-        0.106701,
-        0.125858,
-        0.132980,
-        0.125858,
-        0.106701,
-        0.081029,
-        0.055119,
-        0.033585,
-        0.018331,
-        0.008962,
-        0.003924
+        // 0.003924,
+        // 0.008962,
+        // 0.018331,
+        // 0.033585,
+        // 0.055119,
+        // 0.081029,
+        // 0.106701,
+        // 0.125858,
+        // 0.132980,
+        // 0.125858,
+        // 0.106701,
+        // 0.081029,
+        // 0.055119,
+        // 0.033585,
+        // 0.018331,
+        // 0.008962,
+        // 0.003924
+        0.06136, 0.24477, 0.38774, 0.24477, 0.06136
     );
 
-    vec3 normals[numBlurSteps];
-    vec4 samples[numBlurSteps];
-
-    vec2 offset = texcoord;
+    vec3 pixelNormal = texture(normalTex, texcoord).xyz;
+    vec3 pixelPosition = texture(positionTex, texcoord).xyz;
     vec2 texelSize = 1.0 / vec2(textureSize(sourceTex, 0));
-    vec2 perStep = texelSize * vec2(blurDirection);
-    offset -= perStep * pixelToMidFactor;
 
-    for (int i = 0; i < numBlurSteps; i++) {
-        offset += perStep;
-        normals[i] = texture(normalTex, offset).xyz;
-        samples[i] = texture(sourceTex, offset);
-    }
-
-    // pixel normal is the mid normal
-    vec3 normal = normals[numBlurMid];
 
     vec4 sampledResult = vec4(0.0);
     float sampleWeights = 0.0;
 
-    // Check for edges, as we are performing an edge preserving blur
-    for (int i = 0; i < numBlurSteps; i++) {
-        float weight = blurWeights[i];
-        float normalInfluenceFactor = step(normalsDiscardThreshold, dot(normals[i], normal)) * weight;
-        sampledResult += samples[i]*normalInfluenceFactor;
-        sampleWeights += normalInfluenceFactor;   
+    for (int i = -sideSteps; i <= sideSteps; i++) {
+        float weight = blurWeights[i+sideSteps];
+        vec2 sampleCoord = texcoord + i * blurDirection * texelSize * 1;
+        vec3 sampleNormal = texture(normalTex, sampleCoord).xyz;
+        vec4 sampleOcclusion = texture(sourceTex, sampleCoord);
+        vec3 samplePosition = texture(positionTex, sampleCoord).xyz;
+
+        float normalInfluenceFactor = step(normalsDiscardThreshold, dot(sampleNormal, pixelNormal));
+        float distanceInfluenceFactor = saturate(occlusionMaxDistanceBlur / distance(samplePosition, pixelPosition) );
+        float pixelFactor = weight * normalInfluenceFactor * distanceInfluenceFactor;
+
+        sampledResult += sampleOcclusion*pixelFactor;
+        sampleWeights += pixelFactor;   
     }
 
-    return sampledResult / sampleWeights;
+    return sampledResult / max(0.1, sampleWeights);
 
 }
 

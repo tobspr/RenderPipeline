@@ -84,10 +84,14 @@ void main() {
     // Early out .. have to test if that is faster
     if (listHead == 0) {
 
-        currentColor = 1.0 - exp(-exposure * currentColor);
 
-        // SRGB
-        currentColor = pow(currentColor, vec3(1.0 / 2.2) );
+        #if !defined(DEBUG_VISUALIZATION_ACTIVE)
+
+            // SRGB
+            currentColor = pow(currentColor, vec3(1.0 / 2.2) );
+            currentColor = 1.0 - exp(-exposure * currentColor);
+        #endif
+
         colorResult = vec4(currentColor, currentOcclusion);
         return;
     } 
@@ -141,9 +145,12 @@ void main() {
     }
 
 
-    // SRGB
-    currentColor = pow(currentColor, vec3(1.0 / 2.2) );
-    currentColor = 1.0 - exp(-exposure * currentColor);
+
+    #if !defined(DEBUG_VISUALIZATION_ACTIVE)
+        // SRGB
+        currentColor = pow(currentColor, vec3(1.0 / 2.2) );
+        currentColor = 1.0 - exp(-exposure * currentColor);
+    #endif
 
     #endif
 
