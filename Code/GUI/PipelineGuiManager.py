@@ -127,6 +127,7 @@ class PipelineGuiManager(DebugObject):
         # register_mode("h Debug", "rm_SSaLR")
 
         if s.enableSSLR:
+            register_mode("SSLR", "rm_SSLR")
             register_feature("SSLR", "ft_SSLR")
 
 

@@ -5,10 +5,10 @@
 #pragma include "Includes/PositionReconstruction.include"
 
 const float normalsDiscardThreshold = 0.997;
-const float sslrNormalsDiscardThreshold = 0.997;
+const float sslrNormalsDiscardThreshold = 0.998;
 const float occlusionMaxDistanceBlur = 0.05;
 const float normalsDiscardThresholdShadows = 0.99;
-const float sslrMaxDistanceBlur = 0.5;
+const float sslrMaxDistanceBlur = 0.1;
 
 vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D depthTex, bool isSecondary) {
 
@@ -91,30 +91,30 @@ vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sou
         return texture(sourceTex, texcoord);
     #endif
 
-    const int numBlurSteps = 5;
+    const int numBlurSteps = 17;
     const int sideSteps = (numBlurSteps - 1) / 2;
 
     // http://dev.theomader.com/gaussian-kernel-calculator/
     float blurWeights[numBlurSteps] = float[numBlurSteps]
     (
-        // 0.003924,
-        // 0.008962,
-        // 0.018331,
-        // 0.033585,
-        // 0.055119,
-        // 0.081029,
-        // 0.106701,
-        // 0.125858,
-        // 0.132980,
-        // 0.125858,
-        // 0.106701,
-        // 0.081029,
-        // 0.055119,
-        // 0.033585,
-        // 0.018331,
-        // 0.008962,
-        // 0.003924
-        0.06136, 0.24477, 0.38774, 0.24477, 0.06136
+        0.003924,
+        0.008962,
+        0.018331,
+        0.033585,
+        0.055119,
+        0.081029,
+        0.106701,
+        0.125858,
+        0.132980,
+        0.125858,
+        0.106701,
+        0.081029,
+        0.055119,
+        0.033585,
+        0.018331,
+        0.008962,
+        0.003924
+        // 0.06136, 0.24477, 0.38774, 0.24477, 0.06136
     );
 
     vec3 pixelNormal = texture(normalTex, texcoord).xyz;
@@ -127,7 +127,7 @@ vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sou
 
     for (int i = -sideSteps; i <= sideSteps; i++) {
         float weight = blurWeights[i+sideSteps];
-        vec2 sampleCoord = texcoord + i * blurDirection * texelSize * 1;
+        vec2 sampleCoord = texcoord + i * blurDirection * texelSize * 2;
         vec3 sampleNormal = texture(normalTex, sampleCoord).xyz;
         vec4 sampleOcclusion = texture(sourceTex, sampleCoord);
         vec3 samplePosition = texture(positionTex, sampleCoord).xyz;

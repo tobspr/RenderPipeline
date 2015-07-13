@@ -65,15 +65,16 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
 
     #undef SHADOW_NUM_PCSS_SEARCH_SAMPLES
-    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 64
+    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 32
 
     #undef SHADOW_NUM_PCSS_FILTER_SAMPLES
-    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 64
+    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 32
 
     // Find blocker
     for ( int i = 0; i < SHADOW_NUM_PCSS_SEARCH_SAMPLES; ++i )
     {
-        vec2 offset = poissonDisk64[i] * searchRegionRadiusUV;
+        // vec2 offset = poissonDisk64[i] * searchRegionRadiusUV;
+        vec2 offset = poissonDisk32[i] * searchRegionRadiusUV;
         float shadowMapDepth = texture(shadowAtlas, centerCoord + offset).x;
         float factor = step(shadowMapDepth, biasedDepth);
         numBlockers += factor;

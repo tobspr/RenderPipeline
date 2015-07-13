@@ -34,7 +34,7 @@ class SSLRPass(RenderPass):
 
     def create(self):
         self.target = RenderTarget("SSLR")
-        # self.target.setHalfResolution()
+        self.target.setHalfResolution()
         self.target.addColorTexture()
         self.target.setColorBits(16)
         self.target.prepareOffscreenBuffer()

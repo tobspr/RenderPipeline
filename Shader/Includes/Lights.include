@@ -111,7 +111,7 @@ vec3 applySpotLight(Light light, Material material, bool useShadows) {
     if (useShadows) {
         int shadowSourceIndex = light.sourceIndexes[0];
         ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
-        shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.2, 0.01, 0.0001);
+        shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.2, 0.01, 0.0003);
     }
     #endif
 

@@ -17,5 +17,13 @@ out vec4 result;
 void main() {
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
     result = texture(colorTex, texcoord);
-    result += edgePreservingSSLRBlur(texcoord, screenCoord, previousTex, normalTex, positionTex);
+
+    vec4 sslrResult = edgePreservingSSLRBlur(texcoord, screenCoord, previousTex, normalTex, positionTex);
+
+    #if defined(DEBUG_RM_SSLR) 
+        result = sslrResult * 3.0 + 0.1;
+    #else
+        result += sslrResult;
+    #endif
+
 }

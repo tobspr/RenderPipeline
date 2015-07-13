@@ -27,9 +27,8 @@ uniform mat4 currentMVP;
 out vec4 result;
 
 
-#define SSLR_RADIUS_WORLD_SPACE 25.0
-#define SSLR_CONE_AMOUNT 1
-#define SSLR_PER_CONE_STEPS 128
+#define SSLR_RADIUS_WORLD_SPACE 15.0
+#define SSLR_PER_CONE_STEPS 64
 #define SSLR_FADE_DISTANCE 0.06
 
 
@@ -151,7 +150,7 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
 
 
     // result = texture(colorTex, currentPos.xy) * fade;
-    if (lastCoordPos.x < 0.0 || lastCoordPos.y < 0.0 || distance(lastCoordPos.xy, texcoord) < 0.004) {
+    if (lastCoordPos.x < 0.0 || lastCoordPos.y < 0.0 || distance(lastCoordPos.xy, texcoord) < 0.007) {
         result = vec4(0);
     } else {
         result = texture(colorTex, lastCoordPos.xy);
@@ -170,7 +169,7 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
 
 void main() {
 
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 coord = ivec2(gl_FragCoord.xy)*2;
 
     #if !defined(DEBUG_DISABLE_SSLR)
     // vec4 sslrPerPixelData = texelFetch(sslrDataTex, coord, 0);
@@ -211,8 +210,8 @@ void main() {
     vec4 traceResult = traceRayTo(reflectionTargetWorld, SSLR_PER_CONE_STEPS, pixelDepth, reflectionVector);
     traceResult *= sslrFactor * 0.5;
 
-    #if defined(DEBUG_VISUALIZATION_ACTIVE)
-        traceResult = vec(0);
+    #if defined(DEBUG_VISUALIZATION_ACTIVE) && !defined(DEBUG_RM_SSLR)
+        traceResult = vec4(0);
     #endif
 
     result = traceResult;
@@ -220,7 +219,7 @@ void main() {
 
     #else
 
-    result = texture(colorTex, texcoord);
+    result = vec4(0);
 
     #endif
 
