@@ -44,7 +44,7 @@ void main() {
 
     // Extract pixel id
     ivec2 pixelCoord = ivec2(gl_FragCoord.xy);
-    uint pixelOffset = batchOffset + pixelCoord.x * 200 + pixelCoord.y;
+    uint pixelOffset = batchOffset + pixelCoord.x * TRANSPARENCY_BATCH_SIZE + pixelCoord.y;
 
     // Don't shade unused pixels
     if (pixelOffset > totalEntryCount) {
@@ -64,6 +64,8 @@ void main() {
     material.roughness = tm.roughness;
     material.metallic = tm.metallic;
     material.specular = tm.specular;
+
+
 
     // Shade the pixel data
     vec3 lightingResult = vec3(0);
@@ -159,14 +161,14 @@ void main() {
 
     currentBufferPos += MAX_SHADOWED_SPOT_LIGHTS;
 
-    tm.color = lightingResult * 0.1;
+    tm.color = max(lightingResult, vec3(0.0));
 
 
     // Compute ambient
     vec3 viewVector = normalize(cameraPosition - material.position);
-    tm.color += computeAmbient(material, vec4(1), vec4(0), 1.0, viewVector) * 0.3;
+    tm.color += computeAmbient(material, vec4(0.5), vec4(0), 1.0, viewVector);
 
-
+    tm.color *= 0.1;
 
 
     // Store the new pixel data

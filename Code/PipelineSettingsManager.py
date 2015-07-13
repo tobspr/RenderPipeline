@@ -65,6 +65,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("useTransparency", bool, True)
         self._addSetting("maxTransparencyLayers", int, 10)
         self._addSetting("maxTransparencyRange", float, 100.0)
+        self._addSetting("transparencyBatchSize", int, 200.0)
 
         # [Motion blur]
         self._addSetting("motionBlurEnabled", bool, True)

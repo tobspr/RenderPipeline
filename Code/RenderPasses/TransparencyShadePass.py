@@ -12,9 +12,14 @@ class TransparencyShadePass(RenderPass):
 
     def __init__(self):
         RenderPass.__init__(self)
+        self.batchSize = 100
 
     def getID(self):
         return "TransparencyShadePass"
+
+    def setBatchSize(self, size):
+        """ Sets the size of a batch in pixels """
+        self.batchSize = size
 
     def getRequiredInputs(self):
         return {
@@ -67,7 +72,7 @@ class TransparencyShadePass(RenderPass):
 
     def create(self):
         self.target = RenderTarget("TransparencyShadePass")
-        self.target.setSize(200, 200)
+        self.target.setSize(self.batchSize, self.batchSize)
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
 

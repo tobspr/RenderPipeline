@@ -93,7 +93,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
-        self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
@@ -107,7 +107,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
@@ -133,7 +133,7 @@ class Main(ShowBase, DebugObject):
             dirLight.setDirection(dPos)
             dirLight.setShadowMapResolution(2048)
             dirLight.setPos(dPos)
-            dirLight.setColor(Vec3(1.5, 1.2, 0.8) * 2.0)
+            dirLight.setColor(Vec3(1.5, 1.2, 0.8))
             # dirLight.setColor(Vec3(0.3))
             dirLight.setPssmTarget(base.cam, base.camLens)
             dirLight.setCastsShadows(True)
@@ -192,19 +192,18 @@ class Main(ShowBase, DebugObject):
             # pointLight.attachDebugNode(render)
 
 
-        for x in xrange(0):
+        for x in xrange(10):
             spotLight = SpotLight()
             spotLight.setColor(Vec3(0.5, 0.8, 1.0) * 0.2)
-            lightPos = Vec3(x * 3.0 - 7.0, 0, 6)
 
-            lightPos = Vec3(math.sin(x/19.0 * 6.28) * 7.0, math.cos(x/19.0 * 6.28) * 7.0, 10.0)
+            lightPos = Vec3(math.sin(x/10.0 * 6.28) * 12.0, math.cos(x/10.0 * 6.28) * 12.0, 17.0)
 
             spotLight.setPos(lightPos)
             spotLight.lookAt(lightPos - Vec3(0, 0, 1))
-            spotLight.setFov(90)
-            spotLight.setShadowMapResolution(512)
-            spotLight.setCastsShadows(True)
-            spotLight.setNearFar(2.0, 15.0)
+            spotLight.setFov(140)
+            # spotLight.setShadowMapResolution(512)
+            # spotLight.setCastsShadows(True)
+            spotLight.setNearFar(2.0, 30.0)
             spotLight.setIESProfile("AreaLight")
             self.renderPipeline.addLight(spotLight)
             # spotLight.attachDebugNode(render)

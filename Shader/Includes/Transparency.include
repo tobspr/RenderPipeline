@@ -4,27 +4,23 @@
 #pragma include "Includes/TransparentMaterial.include"
 
 
-void saveMaterialNextPointer(uint pointer, uint position) {
-    uvec4 data = imageLoad(materialDataBuffer, int(position)*2 );
-    data.w = pointer;
-    imageStore(materialDataBuffer, int(position)*2, data);
-}
+// Transparency bufers
+layout (r32ui) coherent uniform uimage2D pixelCountBuffer;
+layout (r32ui) coherent uniform uimage2D listHeadBuffer;
+layout (r32i) coherent uniform iimage2D spinLockBuffer;
+layout (rgba32ui) coherent uniform uimageBuffer materialDataBuffer;
 
 
-vec3 encodeNormal(vec3 n)
-{
-    vec2 enc = normalize(n.xy) * (sqrt(n.z*0.5+0.5));
-    enc = enc*0.5+0.5;
-    return vec3(enc, 0);
-}
 void renderTransparentMaterial(TransparentMaterial tm) {
 
     #if !defined(DEBUG_DISABLE_TRANSPARENCY)
 
+    // Discard fragments which are out of the transparency range
     if (tm.depth > 1.0) discard;
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
+    // Normalize material properties
     tm.texcoord = gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     tm.color = saturate(tm.color);
     tm.alpha = saturate(tm.alpha);
@@ -34,9 +30,6 @@ void renderTransparentMaterial(TransparentMaterial tm) {
     tm.roughness = saturate(tm.roughness);
     tm.specular = saturate(tm.specular);
     tm.metallic = saturate(tm.metallic);
-
-    // tm.depth = 4.0;
-
 
     // Spinlock while editing the linked list
     bool done = false;
@@ -54,19 +47,26 @@ void renderTransparentMaterial(TransparentMaterial tm) {
         if (locked == 0)
         {
 
-            // Insert the material to the per pixel list
-            uint listHead = imageLoad(listHeadBuffer, coord).x;
+            // Insert the material to the per pixel list by basically doing
+            // list.insert(0, entry), as this is faster than list.append(entry)
 
-            // We are the first fragment
+            // Fetch the current list head
+            uint listHead = imageLoad(listHeadBuffer, coord).x;
+            
+            // Replace the list head
+            imageStore(listHeadBuffer, coord, uvec4(position) );
+
+            // When we are the first fragment (so there is no fragment linked to
+            // the pixel yet) we don't have any next entry
             if (listHead == 0u) {
-                imageStore(listHeadBuffer, coord, uvec4(position) );
                 tm.nextEntry = 0u;
+
+            // When there are further entries, our next entry is the old list head
             } else {
                 tm.nextEntry = listHead;
-                imageStore(listHeadBuffer, coord, uvec4(position));
             }
 
-
+            // Release lock
             memoryBarrier();
             imageAtomicExchange(spinLockBuffer, coord, 0);
             done = true;

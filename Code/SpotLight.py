@@ -74,8 +74,6 @@ class SpotLight(Light, DebugObject):
         modelViewMat = Globals.render.getTransform(self.ghostCameraNode).getMat()
         self.mvp = modelViewMat * projMat
 
-        print "computed new mvp, hpr=",self.ghostCameraNode.getHpr()
-
     def _computeLightBounds(self):
         """ Recomputes the bounds of this light. For a SpotLight, we for now
         use a simple BoundingSphere """

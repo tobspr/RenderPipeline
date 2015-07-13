@@ -1,5 +1,7 @@
 #version 410
 
+#pragma include "Includes/Configuration.include"
+
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 120) out;
 
@@ -13,7 +15,7 @@ uniform isampler2D pixelCountBuffer;
 void main() {
 
     uint totalEntryCount = texelFetch(pixelCountBuffer, ivec2(0), 0).x;
-    uint batchEntries = 200 * 200;
+    uint batchEntries = TRANSPARENCY_BATCH_SIZE * TRANSPARENCY_BATCH_SIZE;
 
     uint batchesToSpawn = uint(ceil(float(totalEntryCount) / float(batchEntries)));
     batchesToSpawn = min(batchesToSpawn, 40);

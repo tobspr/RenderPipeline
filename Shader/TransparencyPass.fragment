@@ -1,4 +1,4 @@
-#version 400
+#version 420
 
 
 
@@ -30,7 +30,6 @@ uniform sampler2D positionTex;
 uniform samplerCube fallbackCubemap;
 
 uniform vec3 cameraPosition;
-
 uniform mat4 currentMVP;
 
 
@@ -62,10 +61,6 @@ MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fra
 }
 
 
-vec3 convertCubemapCoordBecauseIFailed(vec3 coord) {
-    return normalize(coord.xzy * vec3(1,-1,1));
-}
-
 void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -83,18 +78,26 @@ void main() {
 
     uint totalEntryCount = texelFetch(pixelCountBuffer, ivec2(0), 0).x;
 
+    
+    float exposure = 1.0;
+
     // Early out .. have to test if that is faster
     if (listHead == 0) {
+
+        currentColor = 1.0 - exp(-exposure * currentColor);
+
+        // SRGB
+        currentColor = pow(currentColor, vec3(1.0 / 2.2) );
         colorResult = vec4(currentColor, currentOcclusion);
         return;
     } 
 
     // Transparency does not support debug render modes, so just hide transparent 
     // objects in case a debugmode is active
-    #if defined(DEBUG_VISUALIZATION_ACTIVE)
-        colorResult = vec4(currentColor, currentOcclusion);
-        return;
-    #endif
+    // #if defined(DEBUG_VISUALIZATION_ACTIVE)
+    //     colorResult = vec4(currentColor, currentOcclusion);
+    //     return;
+    // #endif
 
     // Store parts of the data in registers
     MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS];
@@ -114,18 +117,20 @@ void main() {
 
     // Sort data
     fragments = bubbleSortFragments(fragments, entryCounter);
-    
+
 
     // Check scene depth
     vec3 pixelPos = texelFetch(positionTex, coord,0).xyz;
     float pixelDepth = texelFetch(depthTex, coord,0).x;
-    // float pixelDist = distance(cameraPosition, pixelPos) / TRANSPARENCY_RANGE;
 
     for (int i = 0; i < entryCounter; i++) {
         uvec4 data1 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2);
         uvec4 data2 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2+1);
         TransparentMaterial tm = unpackTransparentMaterial(data1, data2);
-        tm.color *= 2.0;
+        tm.color *= 10.0;
+
+        // Exposure
+
 
         if (tm.depth > pixelDepth) continue;
 
@@ -135,6 +140,10 @@ void main() {
         currentOcclusion *= saturate(tm.alpha + 0.5);
     }
 
+
+    // SRGB
+    currentColor = pow(currentColor, vec3(1.0 / 2.2) );
+    currentColor = 1.0 - exp(-exposure * currentColor);
 
     #endif
 

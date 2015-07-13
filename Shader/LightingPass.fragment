@@ -218,17 +218,22 @@ void main() {
         sslrDataResult = vec4(reflectionVector, reflectionFactor);
     #endif
 
-    // SRGB
-    result = pow(result, vec3(1.0 / 2.2) ); 
-    float exposure = 1.0;
 
-    // Dynamic Exposure
-    #if defined(USE_DYNAMIC_EXPOSURE)
-        exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
-    #endif
+    #if !defined(USE_TRANSPARENCY)
+        // SRGB
+        result = pow(result, vec3(1.0 / 2.2) );
+         
+        float exposure = 1.0;
 
-    #if !defined(DEBUG_VISUALIZATION_ACTIVE) || defined(DEBUG_RM_LIGHTING)
-        result = 1.0 - exp(-exposure * result);
+        // Dynamic Exposure
+        #if defined(USE_DYNAMIC_EXPOSURE)
+            exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
+        #endif
+
+        #if !defined(DEBUG_VISUALIZATION_ACTIVE) || defined(DEBUG_RM_LIGHTING)
+            result = 1.0 - exp(-exposure * result);
+        #endif
+
     #endif
 
 

@@ -25,3 +25,5 @@ vec4 transformParabol(vec4 transformed, float near, float far) {
     transformed.w = 1;
     return transformed;
 }
+
+
