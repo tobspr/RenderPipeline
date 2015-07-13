@@ -5,9 +5,9 @@
 // https://gist.github.com/fisch0920/6770346
 
 // number of directions to sample in UV space
-#define HBAO_NUM_SAMPLE_DIRECTIONS 16
+#define HBAO_NUM_SAMPLE_DIRECTIONS 22
 #define HBAO_TANGENT_BIAS 0.1
-#define HBAO_NUM_SAMPLING_STEPS 8
+#define HBAO_NUM_SAMPLING_STEPS 16
 #define HBAO_SAMPLING_STEP 0.003
 
 #define HBAO_SCALE 1.3

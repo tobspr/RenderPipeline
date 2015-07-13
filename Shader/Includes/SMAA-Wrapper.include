@@ -14,7 +14,6 @@
 
 vec2 flipTexcoord(vec2 coord) {
     return coord;
-    // return vec2(coord.x, 1.0 - coord.y);
 }
 
 
