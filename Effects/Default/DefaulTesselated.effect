@@ -1,0 +1,30 @@
+
+
+
+pass Default:
+
+    vertex:
+        template default
+
+    fragment:
+        template default
+
+    tesscontrol:
+        template default
+
+    tesseval:
+        template default
+
+pass Shadows:
+
+    vertex:
+        template default
+
+    fragment:
+        template default
+
+    tesscontrol:
+        template default
+
+    tesseval:
+        template default

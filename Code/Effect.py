@@ -189,7 +189,7 @@ class Effect(DebugObject):
         for param, lines in parameters.iteritems():
             if param == "in":
                 for line in lines:
-                    inserts["SHADER_IN_OUT"].append(line.rstrip(";") + ";");
+                    inserts["SHADER_IN_OUT"].append("in " + line.rstrip(";") + ";");
             elif param == "out":
                 for line in lines:
                     inserts["SHADER_IN_OUT"].append("out " + line.rstrip(";") + ";");
