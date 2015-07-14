@@ -94,14 +94,14 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
-        self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
+        # self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
-        # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
+        self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
         # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
@@ -132,20 +132,13 @@ class Main(ShowBase, DebugObject):
 
         if True:
             dirLight = DirectionalLight()
-            dirLight.setDirection(dPos)
+            dirLight.setPos(dPos * 100000.0)
             dirLight.setShadowMapResolution(2048)
-            dirLight.setPos(dPos)
-            dirLight.setColor(Vec3(1.5, 1.2, 0.8))
-            # dirLight.setColor(Vec3(0.3))
-            dirLight.setPssmTarget(base.cam, base.camLens)
+            dirLight.setColor(1.5, 1.2, 0.8)
             dirLight.setCastsShadows(True)
             dirLight.setPssmDistance(50)
-
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
-            sunPos = Vec3(56.7587, -31.3601, 189.196)
-            self.dirLight.setPos(sunPos)
-            self.dirLight.setDirection(sunPos)
 
             # Tell the GI which light casts the GI
             self.renderPipeline.setGILightSource(dirLight)
@@ -171,8 +164,8 @@ class Main(ShowBase, DebugObject):
             radius = float(i) / 3.0 * 6.28 + 1.52
             xoffs = math.sin(radius) * 12.0
             yoffs = math.cos(radius) * 12.0
-            pointLight.setPos(Vec3( xoffs, yoffs  - 9, 12))
-            pointLight.setColor(Vec3( 0.3, 0.75, 1.0))
+            pointLight.setPos(xoffs, yoffs  - 9, 12)
+            pointLight.setColor(0.3, 0.75, 1.0)
             pointLight.setShadowMapResolution(512)
             pointLight.setRadius(35)
             pointLight.setCastsShadows(True)
@@ -336,7 +329,7 @@ class Main(ShowBase, DebugObject):
                 match.remove()
 
         # Wheter to use a ground plane
-        self.usePlane = False
+        self.usePlane = True
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -434,8 +427,7 @@ class Main(ShowBase, DebugObject):
 
         if abs(diff) > 0.0001:
             if hasattr(self, "dirLight"):
-                self.dirLight.setPos(dPos * 10000000000.0)
-                self.dirLight.setDirection(dPos)
+                self.dirLight.setPos(dPos * 100000000.0)
 
     def toggleSceneWireframe(self):
         """ Toggles the scene rendermode """

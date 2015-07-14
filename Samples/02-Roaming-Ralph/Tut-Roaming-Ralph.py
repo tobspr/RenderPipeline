@@ -79,16 +79,15 @@ class World(ShowBase):
         # Add a directional light
         dPos = Vec3(40, 40, 40)
         dirLight = DirectionalLight()
-        dirLight.setDirection(dPos)
+        dirLight.setPos(dPos * 1000000.0)
         dirLight.setShadowMapResolution(2048)
-        dirLight.setPssmTarget(self.cam, self.camLens)
-        # dirLight.setAmbientColor(Vec3(0.1,0.1,0.1))
         dirLight.setCastsShadows(True)
-        dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(6))
+        dirLight.setColor(6, 6, 6)
         self.renderPipeline.addLight(dirLight)
-        if self.renderPipeline.settings.enableGlobalIllumination:
-            self.renderPipeline.globalIllum.setTargetLight(dirLight)
+        self.renderPipeline.setGILightSource(dirLight)
+
+
+
 
         self.keyMap = {
             "left": 0, "right": 0, "forward": 0, "cam-left": 0, "cam-right": 0}
@@ -212,13 +211,9 @@ class World(ShowBase):
         self.skybox.reparentTo(render)
 
         self.prepareSRGB(render)
-
-
         self.reloadShader()
-
         self.renderPipeline.onSceneInitialized()
         
-
     def reloadShader(self):
         self.renderPipeline.reloadShaders()
 

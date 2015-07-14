@@ -148,7 +148,8 @@ void main() {
 
     // Ignore pixels with low reflection factor, including the skybox
     if (pixelColor.w < 0.05) {
-        discard;
+        result = vec4(0);
+        return;
     }
 
     // Compute reflection vector

@@ -135,10 +135,10 @@ class RenderingPipeline(DebugObject):
 
         # Create shadow caster state
         if effect.getSetting("castShadows"):
-            initialState = NodePath("EffectInitialState")
-            initialState.setShader(effect.getShader("Shadows"), sort)
+            initialState = NodePath("EffectInitialState"+str(effect.getEffectID()))
+            initialState.setShader(effect.getShader("Shadows"), sort + 20)
             initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
-            stateName = "NodeEffect-" + str(effect.getEffectID())
+            stateName = "NodeEffect" + str(effect.getEffectID())
             self.lightManager.shadowPass.registerTagState(stateName, initialState.getState())
             obj.setTag("ShadowPassShader", stateName)
 

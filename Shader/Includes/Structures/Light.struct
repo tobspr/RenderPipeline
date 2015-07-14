@@ -3,7 +3,6 @@
 struct Light {
     vec3 position; 
     vec3 color;
-    vec3 direction;
     int posterIndex;
     int iesProfile;
     int lightType;

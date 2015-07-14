@@ -170,7 +170,7 @@ float pcssKernelDynamicSize(Light light, ShadowSource source, vec3 projCoord, fl
     // Project 2 points on the xy plane to find out the filter radius in shadowmap space.
     // This ensures the correct filtering radius for split shadow sources
     vec3 point1 = vec3(0,0,0);
-    vec3 point2 = normalize(cross(vec3(0, 0, 1), light.direction));
+    vec3 point2 = normalize(cross(vec3(0, 0, 1), light.position));
     point2 *= PCSS_RADIUS_WS;
 
     vec3 proj1 = reprojectShadow(source, point1);

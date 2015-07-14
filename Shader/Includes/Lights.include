@@ -46,7 +46,8 @@ vec3 applyDirectionalLight(Light light, Material material, bool useShadows) {
     float distanceRelative = distanceToLight / light.radius; 
     float attenuation = 1.0;
 
-    vec3  l = light.direction;
+    // vec3  l = light.direction;
+    vec3  l = normalize(light.position - material.position);
     vec3  v = normalize(cameraPosition - material.position);
     vec3  n = normalize(material.normal);
     vec3  h = normalize(l + v);

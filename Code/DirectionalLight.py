@@ -17,8 +17,9 @@ pstats_PSSM = PStatCollector("App:LightManager:ProcessLights:UpdatePCSMSplits")
 class DirectionalLight(Light, DebugObject):
 
     """ This light type simulates sunlight, or any other very big light source. 
-    When shadows are enabled, PSSM is used. A directional light has no position 
-    or radius, only a direction. Therefore, setRadius and setPos have no effect. 
+    When shadows are enabled, PSSM is used. The directional light should be set
+    far away from the scene, to simulate a sun, so very big coordinates are required
+    for the directional light to behave like a directional light. 
 
     DirectionalLight does not support debug nodes (yet). It uses a 4-Split PSSM
     by default. The PSSM can be controlled via setPssmDistance and setPssmSplitPow. 
@@ -30,8 +31,7 @@ class DirectionalLight(Light, DebugObject):
     """
 
     def __init__(self):
-        """ Constructs a new directional light. You have to set a
-        direction for this light to work properly"""
+        """ Constructs a new directional light. """
         Light.__init__(self)
         DebugObject.__init__(self, "DirectionalLight")
         self.typeName = "DirectionalLight"
@@ -141,6 +141,9 @@ class DirectionalLight(Light, DebugObject):
         self.updateIndex += 1
         self.updateIndex = self.updateIndex % 2
 
+        direction = Vec3(self.position)
+        direction.normalize()
+
         # Process each cascade
         for i in xrange(self.splitCount):
 
@@ -156,7 +159,7 @@ class DirectionalLight(Light, DebugObject):
             filmSize = (topPlanePos - midPos).length() * 1.41
             midPos += camPos
 
-            destPos = midPos + self.direction * 1.0
+            destPos = midPos + direction * 1.0
 
             # Set source position + rotation
             source.setPos(destPos)

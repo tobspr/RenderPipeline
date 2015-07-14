@@ -29,7 +29,6 @@ class Light(ShaderStructElement):
         self.position = Vec3(0)
         self.color = Vec3(1)
         self.posterIndex = -1
-        self.direction = Vec3(0)
         self.radius = 10.0
         self.typeName = ""
         self.sourceIndexes = PTAInt.emptyArray(6)
@@ -51,7 +50,6 @@ class Light(ShaderStructElement):
         return {
             "position": "vec3",
             "color": "vec3",
-            "direction": "vec3",
             "posterIndex": "int",
             "iesProfile": "int",
             "lightType": "int",
@@ -107,20 +105,6 @@ class Light(ShaderStructElement):
                 "You cannot change the resolution after the light got attached")
         self.shadowResolution = resolution
 
-    def setDirection(self, direction):
-        """ Sets the direction of the light. This stores from which vector the light
-        comes from. If your sun comes from totally above for example, this vector would
-        be (0.0,0.0,1.0). The vector will get normalized, so you can for example pass your
-        sun position. Only affects DirectionalLights """
-        copied = Vec3(direction)
-        copied.normalize()
-        self.direction = copied
-        self.queueUpdate()
-        self.queueShadowUpdate()
-
-    def getDirection(self):
-        """ Returns the direction of the light """
-        return self.direction
 
     def setRadius(self, radius):
         """ Sets the radius of the light. Only affects PointLights """
@@ -148,9 +132,14 @@ class Light(ShaderStructElement):
             self.shadowSources = []
             self.shadowNeedsUpdate = False
 
-    def setPos(self, pos):
-        """ Sets the position of the light. Does not affect
-        directional lights """
+    def setPos(self, *args):
+        """ Sets the position of the light. """
+
+        # Assume vec3 when only 1 argument is passed
+        if len(args) == 1:
+            pos = args[0]
+        else:
+            pos = Vec3(*args)
 
         # If the position is very similar, don't update
         if (pos - self.position).length() > 0.001:
@@ -168,8 +157,14 @@ class Light(ShaderStructElement):
         """ Returns the bounds of this light for culling """
         return self.bounds
 
-    def setColor(self, col):
+    def setColor(self, *args):
         """ Sets the color of the light """
+
+        if len(args) == 0:
+            col = args[0]
+        else:
+            col = Vec3(*args)
+
         self.color = col
         self.queueUpdate()
 

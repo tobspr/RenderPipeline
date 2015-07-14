@@ -102,7 +102,7 @@ class World(ShowBase):
   def moveTask(self, task):
 
     counter = globalClock.getFrameTime() * 0.5
-    self.sun.setDirection(Vec3(sin(counter) * 70, cos(counter) * 60, sin(counter*1.6323) * 20.0 + 60.0))
+    self.sun.setPos(Vec3(sin(counter) * 70, cos(counter) * 60, sin(counter*1.6323) * 20.0 + 60.0) * 1000000.0)
 
     return task.cont
 
@@ -177,12 +177,11 @@ class World(ShowBase):
     # Add a directional light
     dPos = Vec3(40, 40, 40)
     dirLight = DirectionalLight()
-    dirLight.setDirection(dPos)
     dirLight.setShadowMapResolution(2048)
     dirLight.setPssmTarget(self.cam, self.camLens)
     dirLight.setCastsShadows(True)
-    dirLight.setPos(dPos)
-    dirLight.setColor(Vec3(6))
+    dirLight.setPos(dPos * 10000.0)
+    dirLight.setColor(6, 6, 6)
     self.renderPipeline.addLight(dirLight)
 
     self.sun = dirLight
