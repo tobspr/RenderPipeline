@@ -372,10 +372,6 @@ class RenderingPipeline(DebugObject):
 
         define("GLOBAL_AMBIENT_FACTOR", self.settings.globalAmbientFactor)
 
-        # TODO: Add sslr
-        # if self.settings.enableSSLR:
-        #     define("USE_SSLR", 1)
-
         # Pass camera near and far plane
         define("CAMERA_NEAR", Globals.base.camLens.getNear())
         define("CAMERA_FAR", Globals.base.camLens.getFar())
@@ -390,7 +386,7 @@ class RenderingPipeline(DebugObject):
 
     def _precomputeScattering(self):
         """ Precomputes the scattering model for the default atmosphere if
-        if specified in the settings """
+        specified in the settings """
         if self.settings.enableScattering:
             earthScattering = Scattering(self)
             scale = 100000
@@ -400,7 +396,6 @@ class RenderingPipeline(DebugObject):
             })
             earthScattering.precompute()
             earthScattering.provideInputs()
-
             self.scattering = earthScattering
         else:
             self.scattering = None
@@ -420,6 +415,16 @@ class RenderingPipeline(DebugObject):
     def destroy(self):
         """ Destroys the pipeline, cleaning up all buffers and textures """
         raise NotImplementedError()
+
+    def convertToPatches(self, model):
+        """ Converts a model to patches. This is required before being able
+        to use it with tesselation shaders """
+        self.debug("Converting model to patches ..")
+        for node in model.findAllMatches("**/+GeomNode"):
+            geomNode = node.node()
+            numGeoms = geomNode.getNumGeoms()
+            for i in range(numGeoms):
+                geomNode.modifyGeom(i).makePatchesInPlace()
 
     def create(self):
         """ Creates the pipeline """
