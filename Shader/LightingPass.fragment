@@ -209,6 +209,7 @@ void main() {
     // result *= texture(volumetricLightingTex, texcoord).x;
 
     float sslrFactor = material.specular * (1.0 - material.roughness);
+    // sslrFactor = max(0.0, material.normal.z);
 
     #if !defined(USE_TRANSPARENCY)
         // SRGB
@@ -263,6 +264,8 @@ void main() {
     #endif
 
     result = mix(result, vec3(0), fogFactor);
+
+
 
     lightingResult = vec4(result, isSkybox ? 0.0 : sslrFactor);
 }

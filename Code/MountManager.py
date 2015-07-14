@@ -113,6 +113,10 @@ class MountManager(DebugObject):
         vfs.mountLoop(join(self.basePath, 'Data'), 'Data', 0)
         vfs.mountLoop(join(self.basePath, 'Models'), 'Models', 0)
         vfs.mountLoop(join(self.basePath, 'Config'), 'Config', 0)
+        vfs.mountLoop(join(self.basePath, 'Effects'), 'Effects', 0)
+
+        # Mount shaders under a different name to access them from the effects
+        vfs.mountLoop(join(self.basePath, 'Shader'), 'ShaderMount', 0)
 
         # Ensure the pipeline write path exists, and if not, create it
         if not isdir(self.writePath):

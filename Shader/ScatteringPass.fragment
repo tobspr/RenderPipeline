@@ -22,27 +22,29 @@ void main() {
 
     vec3 wsPosition = texture(wsPositionTex, texcoord).xyz;
     vec3 baseColor = texture(basecolorTex, texcoord).xyz;
+    vec3 wsPosModified = wsPosition;
 
     #if defined(USE_SKYBOX_SCATTERING)
-        cameraPositionZ.z = wsPosition.z;
+        cameraPositionZ.z = wsPosModified.z;
     #endif
 
-    vec3 viewDir = normalize(wsPosition - cameraPosition);
+    vec3 viewDir = normalize(wsPosModified - cameraPosition);
     vec3 attenuation = vec3(0);
     float irradianceFactor = 0.0;
 
     // There should be a more elegant way, but for now it works. I don't want to
     // waste a gbuffer flag for marking the skybox.r
-    bool isSkybox = distance(wsPosition, cameraPosition) > SKYBOX_BEGIN;
+    bool isSkybox = distance(wsPosModified, cameraPosition) > SKYBOX_BEGIN;
     
 
+    wsPosModified *= 1e10;
     if (isSkybox) {
-        wsPosition *= 1e10;
+        // wsPosition *= 1e10;
     }
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
         scatteringOptions,
-        wsPosition, 
+        wsPosModified, 
         cameraPositionZ,
         viewDir, 
         inscatterSampler,
@@ -57,8 +59,8 @@ void main() {
     scatteringResult *= 4.5;
 
     if (!isSkybox) {
-        float fogFactor = max(0.0, distance(cameraPosition, wsPosition) - 10.0) / 1500.0;
-
+        float fogFactor = max(0.0, distance(cameraPosition, wsPosition) - 25.0) / 800.0;
+        // scatteringResult *= 0.2;
         scatteringResult *= 0.3 * fogFactor;
         // scatteringResult *= 0.0;
         // scatteringResult = vec3(fogFactor);

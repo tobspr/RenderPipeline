@@ -80,12 +80,6 @@ class DynamicObjectsManager(DebugObject):
                     indexWriter.setData1i(self.currentIndex)
                     self.currentIndex += 1
 
-        # Assign the standard animated shader
-        shader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultShaders/Opaque/vertex_dynamic.glsl",
-            "Shader/DefaultShaders/Opaque/fragment.glsl")
-        obj.setShader(shader, 25)
-
     def unregisterObject(self, obj):
         """ Unregisters a dynamic object which was registered with registerObject.
         This frees up the space used by the object and should be called whenever

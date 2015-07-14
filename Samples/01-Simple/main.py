@@ -42,8 +42,6 @@ class App(ShowBase):
         self.skybox = self.renderPipeline.getDefaultSkybox()
         self.skybox.reparentTo(render)
 
-
-
         # At this point we are done with the initialization. Now you want to
         # load your scene, and create the game logic. 
 

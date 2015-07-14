@@ -31,11 +31,12 @@ class InitialRenderPass(RenderPass):
         }
 
     def setShaders(self):
-        shader = Shader.load(Shader.SLGLSL, 
-            "Shader/DefaultShaders/Opaque/vertex.glsl",
-            "Shader/DefaultShaders/Opaque/fragment.glsl")
-        self.scene.setShader(shader, 20)
-        return [shader]
+        # shader = Shader.load(Shader.SLGLSL, 
+        #     "Shader/DefaultShaders/Opaque/vertex.glsl",
+        #     "Shader/DefaultShaders/Opaque/fragment.glsl")
+        # self.scene.setShader(shader, 20)
+        # return [shader]
+        return []
 
     def create(self):
         pass

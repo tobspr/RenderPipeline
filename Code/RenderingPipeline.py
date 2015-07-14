@@ -4,12 +4,14 @@ from panda3d.core import NodePath, Shader, Vec4, TransparencyAttrib, LVecBase2i
 from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerState
 from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight, BitMask32
 from panda3d.core import Texture, UnalignedLMatrix4f, Vec3, PTAFloat, TextureStage
+from panda3d.core import ColorWriteAttrib
 
 from DebugObject import DebugObject
 from SystemAnalyzer import SystemAnalyzer
 from Scattering import Scattering
 from Globals import Globals
 from GlobalIllumination import GlobalIllumination
+from EffectLoader import EffectLoader
 
 from PipelineSettingsManager import PipelineSettingsManager
 from LightManager import LightManager
@@ -101,6 +103,34 @@ class RenderingPipeline(DebugObject):
         """ Returns the camera bit used to voxelize the scene for GI """
         return BitMask32.bit(4)
 
+    def setEffect(self, obj, effect, properties = None, sort=0):
+        """ Applies the effect to an object with the given properties """
+
+        effect = self.effectLoader.loadEffect(effect, properties)
+
+        if effect.getSetting("transparent"):
+            pass
+
+        if effect.getSetting("dynamic"):
+            self.registerDynamicObject(obj)
+
+        if not effect.getSetting("castShadows"):
+            obj.hide(self.getShadowPassBitmask())
+
+        if not effect.getSetting("castGI"):
+            obj.hide(self.getVoxelizePassBitmask())
+
+        obj.setShader(effect.getShader("Default"), sort)
+
+        # Create shadow caster state
+        if effect.getSetting("castShadows"):
+            initialState = NodePath("EffectInitialState")
+            initialState.setShader(effect.getShader("Shadows"), sort)
+            initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
+            stateName = "NodeEffect-" + str(effect.getEffectID())
+            self.lightManager.shadowPass.registerTagState(stateName, initialState.getState())
+            obj.setTag("ShadowPassShader", stateName)
+
     def fillTextureStages(self, nodePath):
         """ Prepares all materials of a given nodepath to have at least the 4 
         default textures in the correct order: [diffuse, normal, specular, roughness] """
@@ -134,19 +164,6 @@ class RenderingPipeline(DebugObject):
                 stage.setColor(Vec4(0, 0, 0, 1))
                 np.setTexture(stage, textureOrder[i])
 
-            # self.debug(np,"has",numStages,"stages, filled up the rest")
-
-    def getDefaultTransparencyShader(self):
-        """ Returns the default shader to render transparent objects. """
-        if not self.settings.useTransparency:
-            raise Exception("Transparency is disabled. You cannot fetch the transparency shader.")
-        return self.transparencyManager.getDefaultShader()
-
-    def prepareTransparentObject(self, np):
-        """ Prepares a transparent object, this should be called on every transparent
-        object """
-        np.setTag("ShadowPassShader", "Transparent")
-
     def registerDynamicObject(self, np):
         """ Registers a new dynamic object to the pipeline. Every object which moves
         or transforms its vertices (like actors) has to be registered to make sure
@@ -174,9 +191,10 @@ class RenderingPipeline(DebugObject):
         skytex.setMinfilter(SamplerState.FTLinear)
         skytex.setMagfilter(SamplerState.FTLinear)
         skybox.setShaderInput("skytex", skytex)
-        skybox.setShader(Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultShaders/Opaque/vertex.glsl", 
-                "Shader/Skybox/fragment.glsl"), 70)
+        self.setEffect(skybox, "Effects/Default/Skybox.effect", {
+            "castShadows": False, 
+            "normalMapping": False, 
+            "castGI": False}, 100)
         skybox.setName("Skybox")
         return skybox
 
@@ -408,6 +426,9 @@ class RenderingPipeline(DebugObject):
 
         self.debug("Setting up render pipeline")
 
+        # Handy shortcut
+        self.showbase.accept("r", self.reloadShaders)
+
         if self.settings is None:
             self.error("You have to call loadSettings first!")
             return
@@ -498,6 +519,7 @@ class RenderingPipeline(DebugObject):
         else:
             self.transparencyManager = None
 
+
         self._createGlobalIllum()
 
         # Make variables available
@@ -514,8 +536,17 @@ class RenderingPipeline(DebugObject):
         # Create the update tasks
         self._createTasks()
 
+        # Create the effect loader
+        self.effectLoader = EffectLoader(self)
 
-        # TODO: Make GI use render passes
+        # Apply the default effect to the scene
+        self.setEffect(Globals.render, "Effects/Default/Default.effect", {
+            "transparent": False,
+            "normalMapping": False,
+            "alphaTest": True,
+
+            }, -10)
+
         if self.settings.enableGlobalIllumination:
             self.globalIllum.reloadShader()
 

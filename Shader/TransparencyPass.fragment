@@ -60,6 +60,8 @@ MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fra
   return fragments;
 }
 
+uniform layout(rgba16f) image2D velocityTex;
+
 
 void main() {
 
@@ -96,6 +98,9 @@ void main() {
         return;
     } 
 
+    vec4 currentVelocityData = imageLoad(velocityTex, coord);
+
+
     // Transparency does not support debug render modes, so just hide transparent 
     // objects in case a debugmode is active
     // #if defined(DEBUG_VISUALIZATION_ACTIVE)
@@ -119,6 +124,7 @@ void main() {
     }
 
 
+
     // Sort data
     fragments = bubbleSortFragments(fragments, entryCounter);
 
@@ -127,23 +133,31 @@ void main() {
     vec3 pixelPos = texelFetch(positionTex, coord,0).xyz;
     float pixelDepth = texelFetch(depthTex, coord,0).x;
 
+    vec2 lastVelocity = vec2(0);
+    int renderedLayers = 0;
+
     for (int i = 0; i < entryCounter; i++) {
         uvec4 data1 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2);
         uvec4 data2 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2+1);
         TransparentMaterial tm = unpackTransparentMaterial(data1, data2);
-        tm.color *= 10.0;
-
-        // Exposure
-
+        tm.baseColor *= 10.0;
 
         if (tm.depth > pixelDepth) continue;
 
-        currentColor = currentColor * (1.0-tm.alpha) + tm.color * tm.alpha;
+        currentColor = currentColor * (1.0-tm.alpha) + tm.baseColor * tm.alpha;
 
         // Reduces occlusion but still avoids halos
         currentOcclusion *= saturate(tm.alpha + 0.5);
+
+        renderedLayers += 1;
+        lastVelocity = tm.velocity / 255.0;
     }
 
+
+    if (renderedLayers > 0) {
+        currentVelocityData.xy = lastVelocity;
+        imageStore(velocityTex, coord, currentVelocityData);
+    }
 
 
     #if !defined(DEBUG_VISUALIZATION_ACTIVE)

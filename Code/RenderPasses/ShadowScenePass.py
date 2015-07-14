@@ -34,25 +34,12 @@ class ShadowScenePass(RenderPass):
         }
 
     def setShaders(self):
-        casterShader = Shader.load(Shader.SLGLSL,
-            "Shader/DefaultShaders/ShadowCasting/vertex.glsl",
-            "Shader/DefaultShaders/ShadowCasting/fragment.glsl")
-        initialState = NodePath("ShadowCasterState")
-        initialState.setShader(casterShader, 100)
-        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
-        for camera in self.shadowCameras:
-            camera.node().setTagState("Default", initialState.getState())
+        return []
 
-        casterShaderTransparent = Shader.load(Shader.SLGLSL,
-            "Shader/DefaultShaders/TransparentShadowCasting/vertex.glsl",
-            "Shader/DefaultShaders/TransparentShadowCasting/fragment.glsl")
-        initialState = NodePath("ShadowCasterStateTransparent")
-        initialState.setShader(casterShaderTransparent, 100)
-        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
+    def registerTagState(self, name, state):
+        """ Registers a new tag state """
         for camera in self.shadowCameras:
-            camera.node().setTagState("Transparent", initialState.getState()) 
-
-        return [casterShader, casterShaderTransparent]
+            camera.node().setTagState(name, state) 
 
     def setSize(self, size):
         """ Sets the shadow atlas size """

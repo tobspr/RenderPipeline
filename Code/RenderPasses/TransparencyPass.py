@@ -35,7 +35,7 @@ class TransparencyPass(RenderPass):
             "materialDataBuffer": "Variables.transpMaterialDataBuffer",
 
             "transparencyShadeResult": "TransparencyShadePass.resultTex",
-
+            "velocityTex": "DeferredScenePass.velocity",
         }
 
     def setShaders(self):

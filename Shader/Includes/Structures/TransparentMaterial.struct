@@ -1,7 +1,7 @@
 #pragma once
 
 struct TransparentMaterial {
-    vec3 color;
+    vec3 baseColor;
     vec3 normal;
     float alpha;
     float depth;
@@ -10,4 +10,5 @@ struct TransparentMaterial {
     float specular;
     float metallic;
     uint nextEntry;
+    vec2 velocity;
 };

@@ -24,7 +24,7 @@
 
 // Todo: move this to pipeline config
 // #define PCSS_RADIUS_WS 0.2
-#define PCSS_RADIUS_WS 0.004
+#define PCSS_RADIUS_WS 0.008
 #define PCSS_SEARCH_RADIUS 15.0
 #define PCSS_FILTER_RADIUS 15.0
 #define USE_PIXEL_BASED_PCSS 0

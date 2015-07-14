@@ -27,39 +27,32 @@ uniform mat4 currentMVP;
 out vec4 result;
 
 
-#define SSLR_RADIUS_WORLD_SPACE 15.0
-#define SSLR_PER_CONE_STEPS 64
+#define SSLR_SCREEN_RADIUS 0.3
+#define SSLR_STEPS 64
 #define SSLR_FADE_DISTANCE 0.06
-
-
-#define SSLR_BINARY_SEARCH_STEPS 0
-
 
 
 vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector) {
 
+    // Convert target world position to screen space
     vec4 transformedTarget = currentMVP * vec4(endPosWorld, 1);
     transformedTarget.xyz = (transformedTarget.xyz / transformedTarget.w) * 0.5 + 0.5; 
 
-
     vec3 currentCoord = vec3(texcoord, depth);
 
-    vec3 traceVector = normalize(transformedTarget.xyz - currentCoord) * 0.4;
+    // Normalize the vector to a certain length
+    vec3 traceVector = normalize(transformedTarget.xyz - currentCoord) * SSLR_SCREEN_RADIUS;
     vec3 coordStep = traceVector / float(steps);
-
-
-    // currentCoord += coordStep * 3.0;
 
     vec3 lastCoordPos = vec3(-1);
 
-
+    // Read current pixel data
     vec3 pixelNormal = texture(normalTex, texcoord).xyz;
     vec3 pixelPos = texture(positionTex, texcoord).xyz;
 
-
+    // 
     float foundDiff = 1.0;
-    float maxDepthDiff = 0.0005 / (getLinearZFromZ(depth));
-    maxDepthDiff = 0.0002;
+    float maxDepthDiff = 0.0002;
 
     // Trace Ray
     for (int i = 0; i < steps; i++) {
@@ -74,15 +67,10 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
         float depthDiff = currentCoord.z - sampleDepth;
 
         if ( depthDiff > 0.0 && depthDiff < maxDepthDiff ) {
-
-            vec3 sampleNormal = texture(normalTex, currentCoord.xy).xyz;
             vec3 samplePos = texture(positionTex, currentCoord.xy).xyz;
-
-            float visibilityFactor = max(0.0, dot(-sampleNormal, pixelNormal));
-
             vec3 vectorToSurface = pixelPos - samplePos;
 
-            visibilityFactor = dot(-vectorToSurface, pixelNormal);
+            float visibilityFactor = dot(-vectorToSurface, pixelNormal);
 
             // visibilityFactor = 1.0;
             if ( visibilityFactor > 0.0) {
@@ -102,30 +90,6 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
     vec3 currentStep = coordStep;
     vec3 currentPos =  lastCoordPos;
 
-    for (int i = 0; i < SSLR_BINARY_SEARCH_STEPS; i++) {
-
-        vec3 coordTop = currentPos + currentStep * 0.5;
-        vec3 coordBot = currentPos - currentStep * 0.5;
-
-        float dTop = texture(depthTex, coordTop.xy).x;
-        float dBot = texture(depthTex, coordBot.xy).x;
-
-        float diffTop = abs(coordTop.z - dTop);
-        float diffBot = abs(coordBot.z - dBot);
-        
-        if (diffTop <= 0.0) diffTop = 101.0;
-        if (diffBot <= 0.0) diffTop = 100.0;
-
-        currentStep *= 0.5;
-
-        if (diffTop < diffBot) {
-            currentPos += currentStep;
-        } else {
-            currentPos -= currentStep;
-        }
-
-    }   
-
 
     float fade = 1.0;
 
@@ -143,7 +107,7 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
     // fade *= 1.0 - saturate(actualDepthDiff * 20000.0);
 
 
-    float stepsDone = (currentPos.x - texcoord.x) / coordStep.x / SSLR_PER_CONE_STEPS;
+    float stepsDone = (currentPos.x - texcoord.x) / coordStep.x / SSLR_STEPS;
 
     // fade *= 1.0 - saturate( saturate(stepsDone-0.3) * 10.0);
 
@@ -155,9 +119,9 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
     } else {
         result = texture(colorTex, lastCoordPos.xy);
 
-        if (result.w < 0.5) {
-            result = vec4(0);
-        }
+        // if (result.w < 0.5) {
+            // result = vec4(0);
+        // }
         // result = vec4(positionTex);
 
 
@@ -172,12 +136,6 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy)*2;
 
     #if !defined(DEBUG_DISABLE_SSLR)
-    // vec4 sslrPerPixelData = texelFetch(sslrDataTex, coord, 0);
-
-    // vec3 reflectionVector = sslrPerPixelData.xyz;
-    // float sslrFactor = sslrPerPixelData.w;
-
-
 
     // Fetch pixel data
     float pixelDepth = texelFetch(depthTex, coord, 0).x;
@@ -185,29 +143,25 @@ void main() {
     vec3 pixelPos = texelFetch(positionTex, coord, 0).xyz;
     vec4 pixelColor = texelFetch(colorTex, coord, 0);
 
+    // The lighting pass outputs the reflection factor in the alpha component
     float sslrFactor = pixelColor.w;
 
-    // Ignore skybox
-    if (pixelColor.w < 0.01) {
-        result = vec4(0);
-        return;
+    // Ignore pixels with low reflection factor, including the skybox
+    if (pixelColor.w < 0.05) {
+        discard;
     }
 
+    // Compute reflection vector
     vec3 viewVector = normalize(pixelPos - cameraPosition);
-
     vec3 reflectionVector = reflect(viewVector, pixelNormal);
 
-
-
-
-    float fragmentDistance = getLinearZFromZ(pixelDepth);
-
     // Convert reflection vector to world space
-    // vec3 reflectionTargetWorld = pixelPos + normalize(reflectionVector) / distance(cameraPosition, pixelPos) * SSLR_RADIUS_WORLD_SPACE;
-    vec3 reflectionTargetWorld = pixelPos + reflectionVector * SSLR_RADIUS_WORLD_SPACE;
+    vec3 reflectionTargetWorld = pixelPos + reflectionVector;
 
-
-    vec4 traceResult = traceRayTo(reflectionTargetWorld, SSLR_PER_CONE_STEPS, pixelDepth, reflectionVector);
+    // Raytrace along the reflection vector
+    vec4 traceResult = traceRayTo(reflectionTargetWorld, SSLR_STEPS, pixelDepth, reflectionVector);
+    
+    // Take the sslr factor into account
     traceResult *= sslrFactor * 0.5;
 
     #if defined(DEBUG_VISUALIZATION_ACTIVE) && !defined(DEBUG_RM_SSLR)
@@ -215,7 +169,6 @@ void main() {
     #endif
 
     result = traceResult;
-
 
     #else
 

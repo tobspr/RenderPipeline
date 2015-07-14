@@ -103,11 +103,3 @@ class TransparencyManager(DebugObject):
         self.pixelCountBuffer.clearImage()
         self.spinLockBuffer.clearImage()
         self.listHeadBuffer.clearImage()
-
-    def getDefaultShader(self):
-        """ Returns the default shader for transparent objects """
-        shader = Shader.load(Shader.SLGLSL, 
-                "Shader/DefaultShaders/Transparent/vertex.glsl",
-                "Shader/DefaultShaders/Transparent/fragment.glsl")
-        return shader
-

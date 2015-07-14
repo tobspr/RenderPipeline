@@ -36,7 +36,6 @@ uniform isampler2D pixelCountBuffer;
 
 #pragma include "Includes/Lights.include"
 
-
 void main() {
 
     // Extract total number of transparent pixels
@@ -58,7 +57,7 @@ void main() {
 
     // Create a new materal, based on the shading model
     Material material = getDefaultMaterial();
-    material.baseColor = tm.color;
+    material.baseColor = tm.baseColor;
     material.position = calculateSurfacePos(tm.depth, tm.texcoord);
     material.normal = tm.normal; 
     material.roughness = tm.roughness;
@@ -161,14 +160,14 @@ void main() {
 
     currentBufferPos += MAX_SHADOWED_SPOT_LIGHTS;
 
-    tm.color = max(lightingResult, vec3(0.0));
+    tm.baseColor = max(lightingResult, vec3(0.0));
 
 
     // Compute ambient
     vec3 viewVector = normalize(cameraPosition - material.position);
-    tm.color += computeAmbient(material, vec4(0.5), vec4(0), 1.0, viewVector);
+    tm.baseColor += computeAmbient(material, vec4(0.5), vec4(0), 1.0, viewVector);
 
-    tm.color *= 0.1;
+    tm.baseColor *= 0.1;
 
 
     // Store the new pixel data

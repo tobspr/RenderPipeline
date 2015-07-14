@@ -102,6 +102,13 @@ class SettingsManager(DebugObject):
         content = handle.readlines()
         handle.close()
 
+        # Set to default settings
+        for name, setting in self.settings.iteritems():
+            setting.setValue(setting.default)
+            setattr(self, name, setting.default)
+
+        # Read new settings
+        
         for line in content:
             line = line.strip()
 

@@ -22,7 +22,7 @@ void renderTransparentMaterial(TransparentMaterial tm) {
 
     // Normalize material properties
     tm.texcoord = gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-    tm.color = saturate(tm.color);
+    tm.baseColor = saturate(tm.baseColor);
     tm.alpha = saturate(tm.alpha);
     tm.nextEntry = 0u;
     tm.normal = normalize(tm.normal);
@@ -30,6 +30,15 @@ void renderTransparentMaterial(TransparentMaterial tm) {
     tm.roughness = saturate(tm.roughness);
     tm.specular = saturate(tm.specular);
     tm.metallic = saturate(tm.metallic);
+
+    // Compute the velocity:
+    // Usually it would be lastProj.xy / lastProj.w * 0.5 + 0.5
+    // But the vertex shader already does the * 0.5
+    vec2 fragCoord = vec2(coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    vec2 lastTexcoord = vOutput.lastProjectedPos.xy / vOutput.lastProjectedPos.w + 0.5;
+
+    // * 255 prevents precision errors
+    tm.velocity = (lastTexcoord - fragCoord) * 255.0;
 
     // Spinlock while editing the linked list
     bool done = false;

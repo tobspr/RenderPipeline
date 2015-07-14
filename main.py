@@ -88,18 +88,20 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
-        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
+        self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
+        # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
         # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
@@ -117,8 +119,8 @@ class Main(ShowBase, DebugObject):
         
 
         # Select surrounding scene here
-        # self.sceneSourceSurround = None
-        self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
+        self.sceneSourceSurround = None
+        # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
@@ -137,7 +139,7 @@ class Main(ShowBase, DebugObject):
             # dirLight.setColor(Vec3(0.3))
             dirLight.setPssmTarget(base.cam, base.camLens)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(150)
+            dirLight.setPssmDistance(50)
 
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
@@ -214,7 +216,7 @@ class Main(ShowBase, DebugObject):
 
         # Update loading screen status
         self.loadingScreen.setStatus("Loading scene")
-        
+       
 
         # Show loading screen a bit
         if True:
@@ -321,14 +323,18 @@ class Main(ShowBase, DebugObject):
             matches = self.scene.findAllMatches("**/T__*")
             if matches:
                 for match in matches:
-                    # match.reparentTo(self.transpObjRoot)
                     self.transparentObjects.append(match)
-                    self.renderPipeline.prepareTransparentObject(match)
-                    # match.listTags()
+                    # self.renderPipeline.prepareTransparentObject(match)
+                    self.renderPipeline.setEffect(match, "Effects/Default/Default.effect", {
+                        "transparent": True
+                        })
                     match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
-                    # match.setColorScale(1,0,1, 1)
-                    # match.hide(self.renderPipeline.getShadowPassBitmask())
-                
+
+        for i in ["53", "54", "55", "56", "57"]:
+            matches = self.scene.findAllMatches("**/" + i)
+            for match in matches:
+                match.remove()
+
         # Wheter to use a ground plane
         self.usePlane = False
         self.sceneWireframe = False
@@ -363,7 +369,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Some artists really don't know about backface culling
-        self.scene.setTwoSided(True)
+        # self.scene.setTwoSided(True)
 
         # Required for tesselation
         # self.convertToPatches(self.scene)
@@ -385,8 +391,8 @@ class Main(ShowBase, DebugObject):
         self.controller = MovementController(self)
 
 
-        camPos = Vec3(7.95356, -3.65982, 4.466)
-        camHpr = Vec3(60.4013, -9.1755, 0)
+        camPos = Vec3(-2.5, -10.5, 7.5)
+        camHpr = Vec3(0, -14, 0)
 
         self.controller.setInitialPositionHpr(
             camPos, camHpr)
@@ -489,9 +495,9 @@ class Main(ShowBase, DebugObject):
         self.debug("Reloading Shaders ..")
 
         if self.renderPipeline:
-            for obj in self.transparentObjects:
-                obj.setShader(
-                    self.renderPipeline.getDefaultTransparencyShader(), 30)
+            # for obj in self.transparentObjects:
+            #     obj.setShader(
+            #         self.renderPipeline.getDefaultTransparencyShader(), 30)
 
             if refreshPipeline:
                 self.renderPipeline.reloadShaders()
