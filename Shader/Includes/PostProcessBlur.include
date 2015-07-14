@@ -91,30 +91,37 @@ vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sou
         return texture(sourceTex, texcoord);
     #endif
 
-    const int numBlurSteps = 17;
+    #if defined(USE_LOW_QUALITY_BLUR)
+        const int numBlurSteps = 5;
+    #else
+        const int numBlurSteps = 17;
+    #endif
     const int sideSteps = (numBlurSteps - 1) / 2;
 
     // http://dev.theomader.com/gaussian-kernel-calculator/
     float blurWeights[numBlurSteps] = float[numBlurSteps]
     (
-        0.003924,
-        0.008962,
-        0.018331,
-        0.033585,
-        0.055119,
-        0.081029,
-        0.106701,
-        0.125858,
-        0.132980,
-        0.125858,
-        0.106701,
-        0.081029,
-        0.055119,
-        0.033585,
-        0.018331,
-        0.008962,
-        0.003924
-        // 0.06136, 0.24477, 0.38774, 0.24477, 0.06136
+        #if defined(USE_LOW_QUALITY_BLUR)
+            0.06136, 0.24477, 0.38774, 0.24477, 0.06136
+        #else
+            0.003924,
+            0.008962,
+            0.018331,
+            0.033585,
+            0.055119,
+            0.081029,
+            0.106701,
+            0.125858,
+            0.132980,
+            0.125858,
+            0.106701,
+            0.081029,
+            0.055119,
+            0.033585,
+            0.018331,
+            0.008962,
+            0.003924
+        #endif
     );
 
     vec3 pixelNormal = texture(normalTex, texcoord).xyz;

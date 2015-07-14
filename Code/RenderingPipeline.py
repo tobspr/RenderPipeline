@@ -103,6 +103,17 @@ class RenderingPipeline(DebugObject):
         """ Returns the camera bit used to voxelize the scene for GI """
         return BitMask32.bit(4)
 
+    def createMaterial(self, baseColor, roughness=0.5, specular=0.5, metallic=0.0, bumpFactor=0.0):
+        """ Creates and returns a new material with the given physically based
+        parameters """
+        material = Material()
+        material.set_diffuse(VBase4(baseColor.x, baseColor.y, baseColor.z, bumpFactor))
+        material.set_ambient(VBase4(0.0))
+        material.set_emission(VBase4(0.0))
+        material.set_shininess(0.0)
+        material.set_specular(VBase4(specular, metallic, roughness, 0.0))
+        return material
+
     def setEffect(self, obj, effect, properties = None, sort=0):
         """ Applies the effect to an object with the given properties """
 

@@ -369,7 +369,7 @@ class Main(ShowBase, DebugObject):
 
 
         # Some artists really don't know about backface culling
-        # self.scene.setTwoSided(True)
+        self.scene.setTwoSided(True)
 
         # Required for tesselation
         # self.convertToPatches(self.scene)
