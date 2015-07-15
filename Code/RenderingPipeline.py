@@ -202,7 +202,7 @@ class RenderingPipeline(DebugObject):
         skytex.setMinfilter(SamplerState.FTLinear)
         skytex.setMagfilter(SamplerState.FTLinear)
         skybox.setShaderInput("skytex", skytex)
-        self.setEffect(skybox, "Effects/Default/Skybox.effect", {
+        self.setEffect(skybox, "Effects/Skybox/Skybox.effect", {
             "castShadows": False, 
             "normalMapping": False, 
             "castGI": False}, 100)
