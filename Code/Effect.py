@@ -193,10 +193,15 @@ class Effect(DebugObject):
             elif param == "out":
                 for line in lines:
                     inserts["SHADER_IN_OUT"].append("out " + line.rstrip(";") + ";");
-
             elif param == "uniform":
                 for line in lines:
                     inserts["SHADER_IN_OUT"].append("uniform " + line.rstrip(";") + ";"); 
+            elif param == "include":
+                for line in lines:
+                    includePath = line.strip('"')
+                    inserts["SHADER_IN_OUT"].append("#pragma include \"" +includePath + "\""); 
+            else:
+                self.warn("Unkown parameter", param)
 
 
         if "SHADER_IN_OUT" not in inserts:
@@ -281,7 +286,7 @@ class Effect(DebugObject):
                         paramName = line.split()[0]
 
                         # Check if the param is supported
-                        if paramName not in ["in", "out", "template", "insert", "uniform"]:
+                        if paramName not in ["in", "out", "template", "insert", "uniform", "include"]:
                             self.error("Unkown keyword", paramName)
                             continue
 
