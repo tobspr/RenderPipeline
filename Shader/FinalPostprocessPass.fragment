@@ -39,6 +39,9 @@ void main() {
     // Screen coordinate (as int vec)
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
 
+
+
+
     #if !defined(DEBUG_DISABLE_COLOR_CORRECTION) && !defined(DEBUG_VISUALIZATION_ACTIVE)
                 
         // Chromatic abberation

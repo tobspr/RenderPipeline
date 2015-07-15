@@ -1,3 +1,4 @@
+
 #pragma once
 
 #pragma include "Includes/Configuration.include"
@@ -35,16 +36,17 @@
 
 vec3 applyColorLUT(sampler2D lut, vec3 color) {
 
-
+    color = saturate(color);
     float lutSize = float(textureSize(lut, 0).y);
-    color = clamp(color, vec3(0.5 / lutSize), vec3(1.0 - 0.5 / lutSize));
+    color = clamp(color, vec3(1.0 / lutSize), vec3(1.0 - 1.0 / lutSize));
     vec2 texcXY = vec2(color.r / lutSize, 1.0 - color.g);
 
     int frameZ = int(color.b * lutSize);
-    float offsZ = fract(color.b * lutSize); 
+    float lerpFactor = fract(color.b * lutSize); 
 
-    vec3 sample1 = texture(lut, texcXY + vec2(frameZ / lutSize, 0)).rgb;
+    vec3 sample1 = texture(lut, texcXY + vec2(frameZ / lutSize, 0) ).rgb;
     vec3 sample2 = texture(lut, texcXY + vec2( (frameZ + 1) / lutSize, 0)).rgb;
 
-    return mix(sample1, sample2, offsZ);
+
+    return mix(sample1, sample2, lerpFactor);
 }
