@@ -72,6 +72,8 @@ class BetterOnscreenImage(DebugObject):
         """ Converts 2d coordinates to pandas coordinate system """
         return Vec3(x + self.w / 2.0, 1, -y - self.h / 2.0)
 
+    def remove(self):
+        self._node.remove()
 
     def hide(self):
         self._node.hide()

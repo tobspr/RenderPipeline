@@ -26,4 +26,6 @@ void main() {
         result += sslrResult;
     #endif
 
+    result.w = 1.0;
+
 }

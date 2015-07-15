@@ -8,6 +8,7 @@ from panda3d.core import ColorWriteAttrib
 
 from DebugObject import DebugObject
 from SystemAnalyzer import SystemAnalyzer
+from BugReporter import BugReporter
 from Scattering import Scattering
 from Globals import Globals
 from GlobalIllumination import GlobalIllumination
@@ -22,6 +23,7 @@ from AntialiasingManager import AntialiasingManager
 from TransparencyManager import TransparencyManager
 from DynamicObjectsManager import DynamicObjectsManager
 from GUI.PipelineGuiManager import PipelineGuiManager
+from GUI.BetterOnscreenImage import BetterOnscreenImage
 
 from RenderPasses.InitialRenderPass import InitialRenderPass
 from RenderPasses.DeferredScenePass import DeferredScenePass
@@ -31,6 +33,8 @@ from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 from RenderPasses.VolumetricLightingPass import VolumetricLightingPass
 from RenderPasses.SSLRPass import SSLRPass
+
+from direct.gui.DirectFrame import DirectFrame
 
 class RenderingPipeline(DebugObject):
 
@@ -437,13 +441,31 @@ class RenderingPipeline(DebugObject):
             for i in range(numGeoms):
                 geomNode.modifyGeom(i).makePatchesInPlace()
 
+    def createBugReport(self):
+        """ Creates a bug report """
+
+        w, h = self.showbase.win.getXSize(), self.showbase.win.getYSize()
+
+        overlayBg = DirectFrame(parent=self.showbase.pixel2dp,
+                                   frameColor=(0.05, 0.05, 0.05, 0.8),
+                                   frameSize=(0, w, -h, 0))  # state=DGG.NORMAL
+        overlay = BetterOnscreenImage(image="Data/GUI/BugReport.png", parent=self.showbase.pixel2dp, w=757, h=398, x=(w-757)/2, y=(h-398)/2)
+
+        for i in xrange(2):
+            self.showbase.graphicsEngine.renderFrame()
+        reporter = BugReporter(self)
+        overlay.remove()
+        overlayBg.remove()
+
+
     def create(self):
         """ Creates the pipeline """
 
         self.debug("Setting up render pipeline")
 
-        # Handy shortcut
+        # Handy shortcuts
         self.showbase.accept("r", self.reloadShaders)
+        self.showbase.accept("f7", self.createBugReport)
 
         if self.settings is None:
             self.error("You have to call loadSettings first!")

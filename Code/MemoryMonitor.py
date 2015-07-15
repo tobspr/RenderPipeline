@@ -54,7 +54,7 @@ class MemoryMonitor:
     @classmethod
     def addTexture(self, name, tex):
         """ Adds a texture to the list of textures which are currently used """
-        self.memoryEntries["[TEX] " + name] = self._calculateTexSize(tex)
+        self.memoryEntries["[TEX] " + name] = (self._calculateTexSize(tex), tex)
 
     @classmethod
     def addRenderTarget(self, name, target):
@@ -70,7 +70,7 @@ class MemoryMonitor:
             texSize = self._calculateTexSize(tex)
 
             # Store the texture
-            self.memoryEntries[name + "." + targetType] = texSize
+            self.memoryEntries[name + "." + targetType] = (texSize, tex)
 
     @classmethod
     def unregisterRenderTarget(self, name, target):
@@ -87,7 +87,7 @@ class MemoryMonitor:
         print "VRAM Usage:"
 
         total = 0.0
-        for key, val in sorted(self.memoryEntries.iteritems(), key = lambda v: -v[1]):
+        for key, (val, hanlde) in sorted(self.memoryEntries.iteritems(), key = lambda v: -v[1][0]):
             valMB = round(val / (1024.0 * 1024.0), 1)
             outputLine = ""
             outputLine += key.ljust(50, ' ')

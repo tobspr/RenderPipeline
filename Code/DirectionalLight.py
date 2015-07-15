@@ -197,4 +197,4 @@ class DirectionalLight(Light, DebugObject):
 
     def __repr__(self):
         """ Generates a representative string for this object """
-        return "DirectionalLight[pos=" + str(self.position) + ", dir=" + str(self.direction) + "]"
+        return "DirectionalLight[pos=" + str(self.position) + "]"
