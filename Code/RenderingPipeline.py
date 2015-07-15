@@ -235,8 +235,11 @@ class RenderingPipeline(DebugObject):
         """ Spanws the pipeline update tasks, this are mainly the pre-render
         and post-render tasks, whereas the pre-render task has a lower priority
         than the draw task, and the post-render task has a higher priority. """
-        self.showbase.addTask(self._preRenderUpdate, "RP_BeforeRender", sort=-5000)
-        self.showbase.addTask(self._postRenderUpdate, "RP_AfterRender", sort=5000)
+        self.showbase.addTask(self._preRenderUpdate, "RP_BeforeRender", sort=10)
+        self.showbase.addTask(self._postRenderUpdate, "RP_AfterRender", sort=100)
+
+        for task in self.showbase.taskMgr.getAllTasks():
+            print task, task.getSort()
 
     def _createInputHandles(self):
         """ Defines various inputs to be used in the shader passes. Most inputs
@@ -291,7 +294,7 @@ class RenderingPipeline(DebugObject):
         cameraBounds.xform(self.showbase.camera.getMat(self.showbase.render))
         self.lightManager.setCullBounds(cameraBounds)
 
-        self.lastMVP[0] = self.currentMVP[0]
+        self.lastMVP[0] = UnalignedLMatrix4f(self.currentMVP[0])
         self.currentMVP[0] = self._computeMVP()
         self.currentViewMat[0] = UnalignedLMatrix4f(self.transformMat.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
         self.frameDelta[0] = Globals.clock.getDt()

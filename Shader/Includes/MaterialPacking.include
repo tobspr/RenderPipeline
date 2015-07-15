@@ -15,6 +15,7 @@ void renderMaterial(Material m) {
     vec3 color = m.baseColor.rgb;
 
     #if !defined(DO_NOT_COMPUTE_VELOCITY)
+    
     // Compute velocity
     vec4 lastProj = vOutput.lastProjectedPos;
 
@@ -22,8 +23,6 @@ void renderMaterial(Material m) {
     // But the vertex shader already does the * 0.5
     vec2 lastTexcoord = lastProj.xy / lastProj.w + 0.5;
     vec2 fragCoord = (ivec2(gl_FragCoord.xy) + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    // * 255 prevents precision errors
     vec2 velocity = (lastTexcoord - fragCoord) * 255.0;
 
     #else

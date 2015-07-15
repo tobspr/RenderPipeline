@@ -21,6 +21,7 @@ class InitialRenderPass(RenderPass):
     def getRequiredInputs(self):
         return {
             "lastMVP": "Variables.lastMVP",
+            "currentMVP": "Variables.currentMVP",
             "numUpdates": "Variables.numShadowUpdates",
             "updateSources": "Variables.shadowUpdateSources",
             "shadowAtlas": "ShadowScenePass.atlas",
@@ -28,6 +29,7 @@ class InitialRenderPass(RenderPass):
             "mainCam": "Variables.mainCam",
             "mainRender": "Variables.mainRender",
             "currentViewMat": "Variables.currentViewMat",
+            "frameIndex": "Variables.frameIndex"
         }
 
     def setShaders(self):

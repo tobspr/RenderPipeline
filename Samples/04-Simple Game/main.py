@@ -68,6 +68,7 @@ class App(ShowBase):
         self.actorModel.setH(-90)
         self.actorModel.reparentTo(self.actor)
         self.actorModel.loop("walk")
+        self.actorModel.setBlend(frameBlend = True)
 
         self.renderPipeline.setEffect(self.actorModel, "Effects/Default/Default.effect", {
             "dynamic": True

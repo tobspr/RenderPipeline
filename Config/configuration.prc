@@ -91,7 +91,7 @@ framebuffer-multisample #f
 multisamples 0
 
 # No V-Sync
-sync-video #f
+sync-video #t
 
 
 # Compress texture?
@@ -172,3 +172,6 @@ gl-coordinate-system default
 
 # notify-level-gsg spam
 # notify-level-glgsg error
+
+
+interpolate-frames 1

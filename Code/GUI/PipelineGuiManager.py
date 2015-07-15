@@ -79,6 +79,7 @@ class PipelineGuiManager(DebugObject):
         register_mode("Roughness", "rm_Roughness")
         register_mode("Specular", "rm_Specular")
         register_mode("Normal", "rm_Normal")
+        register_mode("Velocity", "rm_Velocity")
 
         if s.occlusionTechnique != "None":
             register_mode("Occlusion", "rm_Occlusion")

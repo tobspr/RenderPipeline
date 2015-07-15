@@ -7,6 +7,8 @@ from DebugObject import DebugObject
 from MemoryMonitor import MemoryMonitor
 from Globals import Globals
 
+from GUI.BufferViewerGUI import BufferViewerGUI
+
 class DynamicObjectsManager(DebugObject):
 
     """ The dynamic objects manager stores a buffer for each vertex and tracks
@@ -18,22 +20,33 @@ class DynamicObjectsManager(DebugObject):
         DebugObject.__init__(self, "DynamicObjectsManager")
         self.pipeline = pipeline
         self.currentIndex = 0
-        self.maxVertexCount = 1000000
+        self.maxVertexCount = 50000
+        self.split = 500
         self.init()
 
     def init(self):
         """ Initializes the vertex buffers and makes them available as shader
         inputs. """
 
-        self.vertexBuffer = Texture("VertexPositionBuffer")
-        self.vertexBuffer.setupBufferTexture(self.maxVertexCount, Texture.TFloat, 
-            Texture.FRgba32, GeomEnums.UH_static)
-        self.vertexBuffer.setClearColor(Vec4(0))
-        self.vertexBuffer.clearImage()
+        self.vertexBuffers = []
 
-        MemoryMonitor.addTexture("DynamicObjectVtxBuffer", self.vertexBuffer)
+        for i in xrange(2):
+            vertexBuffer = Texture("VertexPositionBuffer-" + str(i))
+            vertexBuffer.setup2dTexture(self.split, self.maxVertexCount / self.split, Texture.TFloat, Texture.FRgba32)
+            vertexBuffer.setClearColor(Vec4(0))
+            vertexBuffer.clearImage()
 
-        Globals.render.setShaderInput("DynamicObjectVtxBuffer", self.vertexBuffer)
+            MemoryMonitor.addTexture("DynamicObjectVtxBuffer"+str(i), vertexBuffer)
+            Globals.render.setShaderInput("dynamicObjectVtxBuffer"+str(i), vertexBuffer)
+
+            BufferViewerGUI.registerTexture("Vtx Positions " + str(i), vertexBuffer)
+            vertexBuffer.setWrapU(Texture.WMClamp)
+            vertexBuffer.setWrapV(Texture.WMClamp)
+            vertexBuffer.setMinfilter(Texture.FTNearest)
+            vertexBuffer.setMagfilter(Texture.FTNearest)
+            self.vertexBuffers.append(vertexBuffer)
+
+        Globals.render.setShaderInput("dynamicVtxSplit", self.split)
 
     def update(self):
         """ Update method, currently not used """

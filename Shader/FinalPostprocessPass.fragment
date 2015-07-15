@@ -24,6 +24,8 @@ uniform float osg_FrameTime;
 // uniform sampler2D currentFramePosition;
 // uniform sampler2D computedOcclusion;
 
+uniform sampler2D velocityTex;
+
 void main() {
 
     // Store last frame position and occlusion
@@ -59,9 +61,22 @@ void main() {
     #endif
 
 
+
+
     // Vignett
     result.xyz *= 1.0 - smoothstep(0, 1, 
         (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.2, 1.0)  ) - 0.22) ) * 1.0;
     result.w = 1.0;
+
+
+    #if defined(DEBUG_RM_VELOCITY)
+        vec2 velocity = textureLod(velocityTex, texcoord, 0).xy;
+        // result.w = 1);
+        // result.xyz = textureLod(colorTex, texcoord + velocity, 0).xyz;
+
+        // result.xy = pow(abs(velocity)*0.3, vec2(3.0));
+        result.xy = abs(velocity) * 5.0;
+        result.zw = vec2(0, 1);
+    #endif
 
 }
