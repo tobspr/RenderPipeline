@@ -109,9 +109,9 @@ class Main(ShowBase, DebugObject):
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        # self.sceneSource = "Models/HouseSet/Model.egg"
+        self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"

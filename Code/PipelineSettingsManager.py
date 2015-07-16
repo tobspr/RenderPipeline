@@ -49,6 +49,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("occlusionSampleCount", int, 16)
         self._addSetting("useTemporalOcclusion", bool, True)
         self._addSetting("useLowQualityBlur", bool, False)
+        self._addSetting("useOcclusionNoise", bool, True)
         
         # [Shadows]
         self._addSetting("renderShadows", bool, True)

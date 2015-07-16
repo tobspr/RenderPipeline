@@ -92,7 +92,7 @@ framebuffer-multisample #f
 multisamples 0
 
 # No V-Sync
-sync-video #t
+sync-video #f
 
 
 # Compress texture?

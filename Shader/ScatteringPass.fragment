@@ -59,7 +59,7 @@ void main() {
     scatteringResult *= 4.5;
 
     if (!isSkybox) {
-        float fogFactor = max(0.0, distance(cameraPosition, wsPosition) - 50.0) / 1500.0;
+        float fogFactor = max(0.0, distance(cameraPosition, wsPosition) - 150.0) / 1500.0;
         // scatteringResult *= 0.2;
         scatteringResult *= 0.3 * fogFactor;
         // scatteringResult *= 0.0;

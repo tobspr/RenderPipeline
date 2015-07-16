@@ -248,6 +248,7 @@ class RenderingPipeline(DebugObject):
         time. """
         self.cameraPosition = PTAVecBase3f.emptyArray(1)
         self.currentViewMat = PTALMatrix4f.emptyArray(1)
+        self.currentProjMatInv = PTALMatrix4f.emptyArray(1)
         self.lastMVP = PTALMatrix4f.emptyArray(1)
         self.currentMVP = PTALMatrix4f.emptyArray(1)
         self.frameIndex = PTAInt.emptyArray(1)
@@ -261,6 +262,7 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerStaticVariable("mainRender", self.showbase.render)
         self.renderPassManager.registerStaticVariable("frameDelta", self.frameDelta)
         self.renderPassManager.registerStaticVariable("currentViewMat", self.currentViewMat)
+        self.renderPassManager.registerStaticVariable("currentProjMatInv", self.currentProjMatInv)
 
         self.transformMat = TransformState.makeMat(Mat4.convertMat(CSYupRight, CSZupRight))
 
@@ -296,6 +298,7 @@ class RenderingPipeline(DebugObject):
         self.lastMVP[0] = UnalignedLMatrix4f(self.currentMVP[0])
         self.currentMVP[0] = self._computeMVP()
         self.currentViewMat[0] = UnalignedLMatrix4f(self.transformMat.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
+        self.currentProjMatInv[0] = UnalignedLMatrix4f(self.showbase.camLens.getProjectionMatInv())
         self.frameDelta[0] = Globals.clock.getDt()
         self.cameraPosition[0] = self.showbase.cam.getPos(self.showbase.render)
         self.frameIndex[0] = self.frameIndex[0] + 1

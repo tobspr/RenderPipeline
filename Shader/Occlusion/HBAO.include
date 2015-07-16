@@ -5,16 +5,20 @@
 // https://gist.github.com/fisch0920/6770346
 
 // number of directions to sample in UV space
-#define HBAO_NUM_SAMPLE_DIRECTIONS 12
+#define HBAO_NUM_SAMPLE_DIRECTIONS 8
 #define HBAO_TANGENT_BIAS 0.1
-#define HBAO_NUM_SAMPLING_STEPS 8
-#define HBAO_SAMPLING_STEP 0.004
+#define HBAO_NUM_SAMPLING_STEPS 4
+#define HBAO_SAMPLING_STEP 0.01
 
-#define HBAO_SCALE 1.2
-#define HBAO_SAMPLING_RADIUS 1.0
+#define HBAO_SCALE 1.8
+#define HBAO_SAMPLING_RADIUS 2.5
 
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;
+
+uniform mat4 currentProjMatInv;
+uniform sampler2D depthTex;
+uniform sampler2D noiseTex;
 
 const float TWO_PI = 2.0 * M_PI;
 
@@ -26,20 +30,23 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   float total = 0.0f;
   float sample_direction_increment = TWO_PI / HBAO_NUM_SAMPLE_DIRECTIONS;
  
-
-  float hbaoScale = 1.0;
-
   #if defined(ENHANCE_TEMPORAL_OCCLUSION)
     float frame_angle_offset = sample_direction_increment * 0.5 * (frameIndex %2);
   #else
     float frame_angle_offset = 0;
+  #endif  
+
+  #if defined(USE_OCCLUSION_NOISE)
+    float noise = texelFetch(noiseTex, ivec2(gl_FragCoord) % 4, 0).x * 2.0 - 1.0;
+  #else
+    float noise = 0.0; 
   #endif
 
 
   for(uint i = 0; i < HBAO_NUM_SAMPLE_DIRECTIONS; i++)
   {
     // no jittering or randomization of sampling direction just yet
-    float sampling_angle = i * sample_direction_increment + frame_angle_offset; // azimuth angle theta in the paper
+    float sampling_angle = i * sample_direction_increment + frame_angle_offset + noise * sample_direction_increment; // azimuth angle theta in the paper
     vec2 sampleDir = vec2(cos(sampling_angle), sin(sampling_angle));
     // we will now march along sampleDir and calculate the horizon
     // horizon starts with the tangent plane to the surface, whose angle we can get from the normal
@@ -50,12 +57,23 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
     for (uint j = 0; j < HBAO_NUM_SAMPLING_STEPS; j++)
     {
       // march along the sampling direction and see what the horizon is
-      vec2 sampleOffset = float(j+1) * HBAO_SAMPLING_STEP * sampleDir * hbaoScale;
+      vec2 sampleOffset = float(j+1) * HBAO_SAMPLING_STEP * sampleDir;
       vec2 offTex = coord + sampleOffset;
- 
-      vec3 off_viewPos = texture(viewSpacePosition, offTex).xyz;
+  
+
+      #if 0 
+        // Sample precomputed view pos
+        vec3 sampleViewPos = textureLod(viewSpacePosition, offTex, 0).xyz;
+      #else
+        // Compute view pos from depth, faster for small kernels
+        float depth = textureLod(depthTex, offTex, 0).x;
+        vec3 ndc = vec3(offTex, depth) * 2.0 - 1.0;
+        vec4 sampleViewPos = currentProjMatInv * vec4(ndc, 1.0);
+        sampleViewPos.xyz = sampleViewPos.xzy / sampleViewPos.w * vec3(1,1,-1);
+      #endif
+
       // we now have the view space position of the offset point
-      vec3 diff = off_viewPos - viewPos;
+      vec3 diff = sampleViewPos.xyz - viewPos;
       if (length(diff) < HBAO_SAMPLING_RADIUS)
       {
         // skip samples which are outside of our local sampling radius
@@ -65,7 +83,6 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
       }
     } // sampling steps
  
-    // the paper uses this attenuation but I like the other way better
     float normDiff = length(lastDiff) / HBAO_SAMPLING_RADIUS;
     // float attenuation = 1 - normDiff*normDiff;
     float attenuation = 1.0 / (1 + length(lastDiff));
@@ -75,9 +92,8 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   } // sampling directions
  
   total /= HBAO_NUM_SAMPLE_DIRECTIONS;
-  total = pow(total, 1.5);
+  // total = pow(total, 0.5);
   total = clamp(total, 0.0, 1.0);
   return total;
-
 
 }

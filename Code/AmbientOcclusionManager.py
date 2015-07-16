@@ -54,3 +54,5 @@ class AmbientOcclusionManager(DebugObject):
             self.pipeline.getRenderPassManager().registerDefine("ENHANCE_TEMPORAL_OCCLUSION", 1)
         if self.pipeline.settings.useLowQualityBlur:
             self.pipeline.getRenderPassManager().registerDefine("USE_LOW_QUALITY_BLUR", 1)
+        if self.pipeline.settings.useOcclusionNoise:
+            self.pipeline.getRenderPassManager().registerDefine("USE_OCCLUSION_NOISE", 1)
