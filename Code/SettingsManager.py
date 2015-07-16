@@ -88,6 +88,12 @@ class SettingsManager(DebugObject):
 
         raise NotImplementedError()
 
+    def setSetting(self, key, val):
+        """ Adjust a setting """
+        assert key in self.settings
+        self.settings[key].setValue(val)
+        setattr(self, key, self.settings[key].getValue())
+
     def loadFromFile(self, filename):
         """ Attempts to load settings from a given file. When the file
         does not exist, nothing happens, and an error is printed """
