@@ -104,7 +104,7 @@ class PipelineGuiManager(DebugObject):
         register_mode("Ambient", "rm_Ambient")
         register_feature("Ambient", "ft_AMBIENT")
 
-        if s.motionBlurEnabled:
+        if s.enableMotionBlur:
             register_feature("Motion Blur", "ft_MOTIONBLUR")
 
         if s.antialiasingTechnique != "None":

@@ -33,6 +33,7 @@ from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 from RenderPasses.VolumetricLightingPass import VolumetricLightingPass
 from RenderPasses.SSLRPass import SSLRPass
+from RenderPasses.MotionBlurPass import MotionBlurPass
 
 from direct.gui.DirectFrame import DirectFrame
 
@@ -261,9 +262,7 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerStaticVariable("frameDelta", self.frameDelta)
         self.renderPassManager.registerStaticVariable("currentViewMat", self.currentViewMat)
 
-        # self.transformMat = TransformState.makeMat(Mat4.convertMat(Globals.base.win.getGsg().getInternalCoordinateSystem(), CSZupRight))
         self.transformMat = TransformState.makeMat(Mat4.convertMat(CSYupRight, CSZupRight))
-
 
     def _preRenderUpdate(self, task):
         """ This is the pre render task which handles updating of all the managers
@@ -387,12 +386,16 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableScattering:
             define("USE_SCATTERING", 1)
 
-
         define("GLOBAL_AMBIENT_FACTOR", self.settings.globalAmbientFactor)
 
         # Pass camera near and far plane
         define("CAMERA_NEAR", Globals.base.camLens.getNear())
         define("CAMERA_FAR", Globals.base.camLens.getFar())
+
+        # Motion blur settings
+        define("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples)
+        define("MOTION_BLUR_FACTOR", self.settings.motionBlurFactor)
+        define("MOTION_BLUR_DILATE_PIXELS", self.settings.motionBlurDilatePixels)
 
     def _createGlobalIllum(self):
         """ Creates the global illumination manager if enabled in the settings """
@@ -540,6 +543,11 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableSSLR:
             self.sslrPass = SSLRPass()
             self.renderPassManager.registerPass(self.sslrPass)
+
+        # Add motion blur pass
+        if self.settings.enableMotionBlur:
+            self.motionBlurPass = MotionBlurPass()
+            self.renderPassManager.registerPass(self.motionBlurPass)
 
         # Add volumetric lighting
         # self.volumetricLightingPass = VolumetricLightingPass()

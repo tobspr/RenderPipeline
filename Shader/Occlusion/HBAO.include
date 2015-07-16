@@ -11,7 +11,7 @@
 #define HBAO_SAMPLING_STEP 0.004
 
 #define HBAO_SCALE 1.2
-#define HBAO_SAMPLING_RADIUS 2.1
+#define HBAO_SAMPLING_RADIUS 1.0
 
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;

@@ -26,10 +26,6 @@ https://github.com/tobspr/RenderPipeline/wiki
 
 ### Features
 
-[Todo] means the feature is not implemented yet.
-
-[Improve] means it is implemented, but has to get improved to look good.
-
 ##### Physically based shading / lighting
 ##### Deferred rendering
 ##### Order Independent Transparency
@@ -43,7 +39,7 @@ https://github.com/tobspr/RenderPipeline/wiki
 
 ##### Dynamic Scene Voxelization
 
-##### [Improve] Screen Space Local Reflections
+##### Screen Space Local Reflections
 
 ##### High quality Shadows
 - PCF for PointLights, SpotLights
@@ -58,14 +54,14 @@ https://github.com/tobspr/RenderPipeline/wiki
 ##### Supported Lights:
 - Point Lights
 - Directional Lights
+- Spot Lights
 - [Todo] Ambient Lights
-- [Todo] Spot Lights
 - [Todo] Area Lights
 
 ##### Color LUT, Dynamic Exposure and Chromatic Abberation
 ##### Blur
 - [Todo] Bokeh DOF
-- [Improve] Motion blur based on velocity
+- Per object and camera motion blur
 
 ##### Tesselation
 

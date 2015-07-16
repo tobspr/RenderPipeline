@@ -75,7 +75,7 @@ void main() {
         // result.xyz = textureLod(colorTex, texcoord + velocity, 0).xyz;
 
         // result.xy = pow(abs(velocity)*0.3, vec2(3.0));
-        result.xy = abs(velocity) * 5.0;
+        result.xy = (velocity) * 5.0;
         result.zw = vec2(0, 1);
     #endif
 

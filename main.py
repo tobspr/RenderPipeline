@@ -37,6 +37,7 @@ from Code.GlobalIllumination import GlobalIllumination
 from Code.SpotLight import SpotLight
 from Code.GUI.PipelineLoadingScreen import PipelineLoadingScreen
 
+from direct.interval.IntervalGlobal import Sequence
 
 
 class Main(ShowBase, DebugObject):
@@ -59,7 +60,7 @@ class Main(ShowBase, DebugObject):
         # Show loading screen
         self.loadingScreen = PipelineLoadingScreen(self)
         self.loadingScreen.render()
-        self.loadingScreen.setStatus("Creating pipeline")
+        self.loadingScreen.setStatus("Creating pipeline", 10)
 
         # Create the render pipeline
         self.debug("Creating pipeline")
@@ -75,7 +76,7 @@ class Main(ShowBase, DebugObject):
         # Load pipeline settings
         self.renderPipeline.loadSettings("Config/pipeline.ini")
 
-        self.loadingScreen.setStatus("Compiling shaders")
+        self.loadingScreen.setStatus("Compiling shaders", 20)
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
@@ -101,7 +102,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
-        self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
+        # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
+        # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
         # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
@@ -109,7 +111,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
@@ -208,7 +210,7 @@ class Main(ShowBase, DebugObject):
         self.addTask(self.update, "update")
 
         # Update loading screen status
-        self.loadingScreen.setStatus("Loading scene")
+        self.loadingScreen.setStatus("Loading scene", 55)
        
 
         # Show loading screen a bit
@@ -274,7 +276,7 @@ class Main(ShowBase, DebugObject):
 
         self.debug("Successfully loaded scene")
 
-        self.loadingScreen.setStatus("Loading skybox")
+        self.loadingScreen.setStatus("Loading skybox", 70)
 
         self.scene = scene
         self.scene.prepareScene(self.win.getGsg())
@@ -296,7 +298,7 @@ class Main(ShowBase, DebugObject):
 
             if highPolyObj is not None and not highPolyObj.isEmpty():
                 # highPolyObj.detachNode()
-                self.loadingScreen.setStatus("Preparing Performance Test")
+                self.loadingScreen.setStatus("Preparing Performance Test", 75)
 
                 for x in xrange(0, 20):
                     # for y in xrange(0, 1):
@@ -317,7 +319,6 @@ class Main(ShowBase, DebugObject):
             if matches:
                 for match in matches:
                     self.transparentObjects.append(match)
-                    # self.renderPipeline.prepareTransparentObject(match)
                     self.renderPipeline.setEffect(match, "Effects/Default/Default.effect", {
                         "transparent": True
                         })
@@ -333,7 +334,7 @@ class Main(ShowBase, DebugObject):
         self.sceneWireframe = False
 
         # Flatten scene?
-        self.loadingScreen.setStatus("Optimizing Scene")
+        self.loadingScreen.setStatus("Optimizing Scene", 90)
 
         # self.scene.clearModelNodes()
         # loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
@@ -358,11 +359,20 @@ class Main(ShowBase, DebugObject):
             self.groundPlane.setScale(12.0)
             self.groundPlane.setTwoSided(True)
             self.groundPlane.flattenStrong()
-            self.groundPlane.reparentTo(self.scene)
+            self.groundPlane.reparentTo(render)
 
+
+        # lerpTop = self.scene.posInterval(0.4, Vec3(0, 0, 7), startPos=Vec3(0,0,2))
+        # lerpBot = self.scene.posInterval(0.4, Vec3(0, 0, 2), startPos=Vec3(0,0,7))
+        # sequence = Sequence(lerpTop, lerpBot)
+        # sequence.loop()
+
+        # self.renderPipeline.setEffect(self.scene, "Effects/Default/Default.effect", {
+        #     "dynamic": True,
+        #     })
 
         # Some artists really don't know about backface culling
-        self.scene.setTwoSided(True)
+        # self.scene.setTwoSided(True)
 
         # Required for tesselation
         # self.convertToPatches(self.scene)

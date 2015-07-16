@@ -69,9 +69,10 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("transparencyBatchSize", int, 200)
 
         # [Motion blur]
-        self._addSetting("motionBlurEnabled", bool, True)
+        self._addSetting("enableMotionBlur", bool, False)
         self._addSetting("motionBlurSamples", int, 8)
         self._addSetting("motionBlurFactor", float, 1.0)
+        self._addSetting("motionBlurDilatePixels", float, 10.0)
 
         # [Global Illumination]
         self._addSetting("enableGlobalIllumination", bool, False)

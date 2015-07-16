@@ -1,0 +1,73 @@
+#version 400
+
+#pragma optionNV (unroll all)
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PoissonDisk.include"
+
+in vec2 texcoord;
+out vec4 resultColor;
+
+
+uniform sampler2D colorTex;
+uniform sampler2D dilatedVelocityTex;
+
+
+uniform float frameDelta;
+
+void main() {
+
+    // Compute texcoords
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+
+
+    #if defined(DEBUG_DISABLE_MOTIONBLUR)
+    vec4 sourceColor = texture(colorTex, texcoord);
+    resultColor = vec4(sourceColor);
+
+    #else
+    vec4 sourceColor = texture(colorTex, texcoord);
+    vec2 velocity = texture(dilatedVelocityTex,texcoord).xy;
+
+
+
+
+    const int numSamples = MOTION_BLUR_SAMPLES;
+
+    vec2 pixelSize = 1.0 / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    vec4 colorSum = vec4(0);
+
+    for (int i = 0; i < numSamples; i++) {
+        vec2 sampleCoord = texcoord + (float(i)/float(numSamples) - 0.5) * velocity * 0.005 * MOTION_BLUR_FACTOR / frameDelta;
+        colorSum += texture(colorTex, sampleCoord);
+    }
+
+    colorSum /= numSamples;
+    // colorSum.xyz *= 0.5;
+    // colorSum.w = saturate(colorSum);
+    // colorSum.xyz /= 0.7 + 0.3 * colorSum.w;
+    // colorSum /= max(1.0, mix(1.0, colorSum.w, 0.15) );
+// 
+    // colorSum.xyz *= 0.3;
+    // colorSum.xyz *= 1.0 / (1.0 + saturate(length(velocity)*0.5));
+
+    // colorSum /= numSamples;
+
+    // colorSum = vec4(cos(0.1+atan(velocity.x, velocity.y)/(2.0*M_PI)+0.5), sin(atan(velocity.y, velocity.x)/(2.0*M_PI)+0.5),0 , 1);
+    // colorSum = vec4(cos(0.1+sin(atan(velocity.x, velocity.y)/(2.0*M_PI)+0.5))*0.0, sin(tan(1.0-cos(atan(velocity.y, velocity.x)/(2.0*M_PI))))*5.0,0 , 1);
+
+    // colorSum = vec4(velocity.y / 255.0 * WINDOW_WIDTH / 50.0, 0, 0, 1);
+    // colorSum = vec4(colorSum.w / 20.0);
+    // colorSum = mix(sourceColor, colorSum, saturate(colorSum.w * 0.2) * length(colorSum.xyz) );
+    // colorSum.w = 1.0;
+
+    // colorSum = vec4(velocity, 0, 0);
+
+    resultColor = vec4(colorSum);
+
+
+
+
+    #endif
+}

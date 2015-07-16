@@ -1,0 +1,63 @@
+#version 400
+
+#pragma optionNV (unroll all)
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PoissonDisk.include"
+
+in vec2 texcoord;
+out vec4 resultColor;
+
+
+uniform sampler2D colorTex;
+uniform sampler2D velocityTex;
+
+
+
+
+void main() {
+
+    // Compute texcoords
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+
+
+    #if defined(DEBUG_DISABLE_MOTIONBLUR)
+    vec4 sourceColor = texture(colorTex, texcoord);
+    resultColor = vec4(sourceColor);
+
+    #else
+
+
+    vec4 sourceColor = texture(colorTex, texcoord);
+
+    vec2 velocity = texture(velocityTex,texcoord).xy;
+
+
+
+    const int numSamples = 64;
+
+    vec2 pixelSize = 1.0 / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    vec2 averagedVelocity = vec2(0);
+
+    for (int i = 0; i < numSamples; i++) {
+        vec2 offs = poissonDisk64[i] * pixelSize * MOTION_BLUR_DILATE_PIXELS;
+        vec2 offsetVector = normalize(offs);
+        vec2 pixelVelocity = texture(velocityTex, texcoord + offs).xy / 255.0;
+        if (length(pixelVelocity) < 0.001) continue;
+        vec2 normalizedVelocity = normalize(pixelVelocity);
+        float bias = 0.99;
+        float factor = saturate(abs(dot(offsetVector, normalizedVelocity)) - bias) * (1.0 / (1.0-bias));
+        averagedVelocity += pixelVelocity * factor;
+    }
+
+    averagedVelocity /= numSamples;
+    averagedVelocity *= 255.0;
+
+    resultColor = vec4(averagedVelocity, 0, 1);
+
+
+
+
+    #endif
+}
