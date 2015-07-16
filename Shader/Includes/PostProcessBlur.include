@@ -165,6 +165,7 @@ vec4 edgePreservingSSLRBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTe
         return texture(sourceTex, texcoord);
     #endif
 
+
     const int numBlurSteps = 17;
     const int sideSteps = (numBlurSteps - 1) / 2;
 
@@ -201,7 +202,7 @@ vec4 edgePreservingSSLRBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTe
 
     for (int i = -sideSteps; i <= sideSteps; i++) {
         float weight = blurWeights[i+sideSteps];
-        vec2 sampleCoord = texcoord + i * blurDirection * texelSize;
+        vec2 sampleCoord = texcoord + i * blurDirection * texelSize * 0.75;
         vec3 sampleNormal = texture(normalTex, sampleCoord).xyz;
         vec4 sampleOcclusion = texture(sourceTex, sampleCoord);
         vec3 samplePosition = texture(positionTex, sampleCoord).xyz;

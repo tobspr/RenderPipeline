@@ -1,0 +1,128 @@
+
+
+
+pass Default:
+
+    vertex:
+        template default
+        include "Includes/PositionReconstruction.include"
+        uniform vec3 cameraPosition;
+        uniform sampler2D waterHeightfield;
+        uniform float waterHeight;
+
+        insert @WS_POSITION:
+            vec2 coord = vec2( (p3d_Vertex.xz*1.4)  * 0.5 + 0.5);
+
+            // Compute ray start and direction
+            vec3 rayStart = cameraPosition;
+            vec3 rayDir = normalize(rayStart - calculateSurfacePos(1.0, coord));
+
+            // Intersect the ray with the water
+            float distance = (-rayStart.z+waterHeight) / rayDir.z;
+            vec3 intersectedPos = vec3(1,0,1);
+
+            float maxWaterDist = 3000.0;
+
+            // If plane is hit
+            if (distance < 0.0) {
+                intersectedPos = rayStart + rayDir * distance;
+            } else {
+                intersectedPos = vec3(rayStart.xy + rayDir.xy * -maxWaterDist, 0.0);
+            }  
+
+            vOutput.positionWorld = vec3(intersectedPos);
+            vOutput.texcoord = vec2(vOutput.positionWorld.xy / 17.0);
+
+            vec3 displace = texture(waterHeightfield, vOutput.texcoord).xyz + texture(waterHeightfield, vOutput.texcoord * 0.2).xyz;
+            vOutput.positionWorld += displace * vec3(0.6, 0.6, 1.5) * 1.7;
+
+        insert @VERTEX_PROJECTION:
+            vOutput.lastProjectedPos = currentMVP * vec4(vOutput.positionWorld.xyz, 1.0) * vec4(1,1,1,2);
+            gl_Position = currentMVP * vec4(vOutput.positionWorld.xyz, 1);
+
+    fragment:
+        template default
+
+        uniform sampler2D waterHeightfield;
+        uniform sampler2D waterNormal;
+
+        insert @MATERIAL:
+
+            vec3 normalDetail = texture(waterNormal, vOutput.texcoord).xyz;
+            vec3 normal = (normalDetail + texture(waterNormal, vOutput.texcoord * 0.2).xyz) * 0.5;
+            vec3 disp = (texture(waterHeightfield, vOutput.texcoord).xyz +  texture(waterHeightfield, vOutput.texcoord * 0.2).xyz) * 0.5;
+
+            float fold = pow(max(0.0, mix(normal.z, normalDetail.z, 0.4)*3.0), 6.0) * 20.0;
+
+            normal = normalize(vec3(normal.x, normal.y, 16.0 / 512.0));
+
+
+            m.baseColor = vec3(0.02,0.15, 0.6) * 0.1;
+            m.baseColor += fold * vec3(10.0);
+            m.baseColor += vec3(0.0, 0.1, 0.02) * pow(disp.z, 2.0) * 1.2;
+
+            m.normal = normal;
+            m.metallic = 1.0;
+            m.specular = 0.5;
+            m.roughness = 0.07;
+
+
+            #if defined(IS_TRANSPARENT)
+            m.alpha = 0.7;
+            #endif
+
+
+pass Shadows:
+
+    vertex:
+        template default
+        include "Includes/PositionReconstruction.include"
+        uniform vec3 cameraPosition;
+        uniform sampler2D waterHeightfield;
+        uniform mat4 p3d_ViewProjectionMatrix;
+        uniform mat4 p3d_ViewProjectionMatrixInverse;
+        uniform mat4 trans_apiclip_to_world;
+        uniform float waterHeight;
+        
+
+        insert @FUNCTIONS:
+
+            vec3 reprojectCoord(vec2 coord, float depth) {
+                vec4 proj = p3d_ViewProjectionMatrixInverse * vec4(coord, depth*2.0-1.0, 1.0);
+                proj.xyz /= proj.w;
+                return proj.xyz;
+            }
+
+        insert @WS_POSITION:
+
+            vec2 coord = p3d_Vertex.xz * 1.2;
+
+            // Compute ray start and direction
+            vec3 rayStart = reprojectCoord(coord, 0.0);
+            vec3 rayDir = normalize(rayStart - reprojectCoord(coord, 1.0));
+
+            // Intersect the ray with the water
+            float distance = (-rayStart.z+waterHeight) / rayDir.z;
+            vec3 intersectedPos = vec3(0);
+            float maxWaterDist = 3000.0;
+
+            // If plane is hit
+            if (distance < 0.0) {
+                intersectedPos = rayStart + rayDir * distance;
+            } else {
+                intersectedPos = vec3(rayStart.xy + rayDir.xy * -maxWaterDist, 0.0);
+            }  
+
+            worldPos.xyz = vec3(intersectedPos);
+            texcoord = vec2(worldPos.xy / 17.0);
+
+            // vec3 displace = texture(waterHeightfield, texcoord).xyz;
+            // worldPos.xyz += displace * vec3(0.6, 0.6, 1.5) * 1.7;
+
+        insert @VERTEX_PROJECTION:
+
+            gl_Position = p3d_ViewProjectionMatrix * worldPos;   
+
+
+    fragment:
+        template default

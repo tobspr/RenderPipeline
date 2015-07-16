@@ -34,25 +34,27 @@ void main() {
 
 
 
-    const int numSamples = 64;
+    const int numSamples = 32;
 
     vec2 pixelSize = 1.0 / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     vec2 averagedVelocity = vec2(0);
 
     for (int i = 0; i < numSamples; i++) {
-        vec2 offs = poissonDisk64[i] * pixelSize * MOTION_BLUR_DILATE_PIXELS;
+        vec2 offs = poissonDisk32[i] * pixelSize * MOTION_BLUR_DILATE_PIXELS * 0.1;
         vec2 offsetVector = normalize(offs);
         vec2 pixelVelocity = texture(velocityTex, texcoord + offs).xy / 255.0;
-        if (length(pixelVelocity) < 0.001) continue;
+        // if (length(pixelVelocity) < 0.001) continue;
         vec2 normalizedVelocity = normalize(pixelVelocity);
-        float bias = 0.99;
+        float bias = 0.8;
         float factor = saturate(abs(dot(offsetVector, normalizedVelocity)) - bias) * (1.0 / (1.0-bias));
+
         averagedVelocity += pixelVelocity * factor;
     }
 
     averagedVelocity /= numSamples;
     averagedVelocity *= 255.0;
+    averagedVelocity *= 3.0;
 
     resultColor = vec4(averagedVelocity, 0, 1);
 

@@ -210,6 +210,7 @@ void main() {
 
     float sslrFactor = material.specular * (1.0 - material.roughness);
     // sslrFactor = max(0.0, material.normal.z);
+    // sslrFactor = 1.0;
 
     #if !defined(USE_TRANSPARENCY)
         // SRGB

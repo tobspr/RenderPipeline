@@ -6,9 +6,10 @@ sys.path.insert(0, '../../')
 
 # Now import the pipeline
 from Code.RenderingPipeline import RenderingPipeline
+from Code.MovementController import MovementController
 
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile
+from panda3d.core import loadPrcFile, Vec3
 
 # Create a showbase class
 class App(ShowBase):
@@ -42,8 +43,16 @@ class App(ShowBase):
         self.skybox = self.renderPipeline.getDefaultSkybox()
         self.skybox.reparentTo(render)
 
+
+        # Create the default movement controler
+        self.controller = MovementController(self)
+        self.controller.setInitialPositionHpr(
+            Vec3(-2.5, -10.5, 7.5), Vec3(0, -14, 0))
+        self.controller.setup()
+
         # At this point we are done with the initialization. Now you want to
         # load your scene, and create the game logic. 
+
 
         # Call this to tell the pipeline that the scene is done loading
         self.renderPipeline.onSceneInitialized()

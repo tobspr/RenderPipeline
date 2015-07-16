@@ -27,15 +27,22 @@ class MotionBlurPass(RenderPass):
 
     def create(self):
 
-        self.targetDilate = RenderTarget("MotionBlurDilateVelocity")
-        self.targetDilate.addColorTexture()
-        self.targetDilate.setColorBits(16)
-        self.targetDilate.prepareOffscreenBuffer()
+        self.targetDilate0 = RenderTarget("MotionBlurDilateVelocity0")
+        self.targetDilate0.addColorTexture()
+        self.targetDilate0.setColorBits(16)
+        self.targetDilate0.prepareOffscreenBuffer()
+        # self.targetDilate0.setShaderInput("velocitySource", )
+
+        self.targetDilate1 = RenderTarget("MotionBlurDilateVelocity1")
+        self.targetDilate1.addColorTexture()
+        self.targetDilate1.setColorBits(16)
+        self.targetDilate1.prepareOffscreenBuffer()
+        self.targetDilate1.setShaderInput("velocityTex", self.targetDilate0.getColorTexture())
 
         self.target = RenderTarget("MotionBlur")
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
-        self.target.setShaderInput("dilatedVelocityTex", self.targetDilate.getColorTexture())
+        self.target.setShaderInput("dilatedVelocityTex", self.targetDilate1.getColorTexture())
 
 
     def setShaders(self):
@@ -47,14 +54,17 @@ class MotionBlurPass(RenderPass):
         shaderDilate = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
             "Shader/MotionBlurDilate.fragment")
-        self.targetDilate.setShader(shaderDilate)
+        self.targetDilate0.setShader(shaderDilate)
+        self.targetDilate1.setShader(shaderDilate)
 
         return [shader, shaderDilate]
 
     def setShaderInput(self, name, value):
         self.target.setShaderInput(name, value)
-        self.targetDilate.setShaderInput(name, value)
+        self.targetDilate0.setShaderInput(name, value)
 
+        if name is not "velocityTex":
+            self.targetDilate1.setShaderInput(name, value)
 
     def getOutputs(self):
         return {

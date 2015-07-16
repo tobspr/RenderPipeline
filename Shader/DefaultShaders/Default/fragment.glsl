@@ -56,6 +56,12 @@ void main() {
         vec3 mixedNormal = vOutput.normalWorld.xyz;
     #endif
 
+    // TESTING
+    #if 0
+        mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
+        sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
+    #endif
+
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;

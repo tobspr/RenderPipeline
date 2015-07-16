@@ -24,7 +24,7 @@ class MovementController:
         self.mouseSensivity = 0.7
         self.keyboardHprSpeed = 0.8
         self.useHpr = False
-        self.smoothness = 0.8
+        self.smoothness = 0.9
         # self.smoothness = 0.0
         # self.smoothness = 0.0
 
@@ -175,7 +175,7 @@ class MovementController:
         self.showbase.camera.setPos(
             self.showbase.camera.getPos() + self.velocity)
         
-        self.velocity *= self.smoothness  + 0.0
+        self.velocity *= self.smoothness
 
         # transform rotation (keyboard keys)
         rotationSpeed = self.keyboardHprSpeed * 100.0 * self.showbase.taskMgr.globalClock.getDt()

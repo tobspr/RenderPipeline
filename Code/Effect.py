@@ -251,7 +251,7 @@ class Effect(DebugObject):
             line = line.rstrip()
             if len(line.strip()) < 1:
                 continue
-            if line.strip().startswith("//") or line.strip().startswith("#"):
+            if line.strip().startswith("//"):
                 continue
             strippedLines.append(line)
         

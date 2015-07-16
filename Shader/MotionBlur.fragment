@@ -39,8 +39,9 @@ void main() {
     vec4 colorSum = vec4(0);
 
     for (int i = 0; i < numSamples; i++) {
-        vec2 sampleCoord = texcoord + (float(i)/float(numSamples) - 0.5) * velocity * 0.005 * MOTION_BLUR_FACTOR / frameDelta;
+        vec2 sampleCoord = texcoord + (float(i)/float(numSamples) - 0.5) * velocity * pixelSize * 0.2 * MOTION_BLUR_FACTOR / frameDelta;
         colorSum += texture(colorTex, sampleCoord);
+        // colorSum += length(velocity) / 5.0;
     }
 
     colorSum /= numSamples;

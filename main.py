@@ -37,6 +37,8 @@ from Code.GlobalIllumination import GlobalIllumination
 from Code.SpotLight import SpotLight
 from Code.GUI.PipelineLoadingScreen import PipelineLoadingScreen
 
+from Code.Water.ProjectedWaterGrid import ProjectedWaterGrid
+
 from direct.interval.IntervalGlobal import Sequence
 
 
@@ -109,8 +111,8 @@ class Main(ShowBase, DebugObject):
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        self.sceneSource = "Models/HouseSet/Model.egg"
-        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Models/HouseSet/Model.egg"
+        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
@@ -135,10 +137,10 @@ class Main(ShowBase, DebugObject):
         if True:
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
-            dirLight.setShadowMapResolution(2048)
+            dirLight.setShadowMapResolution(1024)
             dirLight.setColor(1.5, 1.2, 0.8)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(50)
+            dirLight.setPssmDistance(550)
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
 
@@ -330,7 +332,7 @@ class Main(ShowBase, DebugObject):
                 match.remove()
 
         # Wheter to use a ground plane
-        self.usePlane = True
+        self.usePlane = False
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -372,7 +374,13 @@ class Main(ShowBase, DebugObject):
         #     })
 
         # Some artists really don't know about backface culling
-        # self.scene.setTwoSided(True)
+        self.scene.setTwoSided(True)
+
+        # Create some ocean
+        self.water = ProjectedWaterGrid(self.renderPipeline)
+
+
+
 
         # Required for tesselation
         # self.convertToPatches(self.scene)

@@ -18,7 +18,7 @@ uniform sampler2D normalTex;
 
 uniform vec3 cameraPosition;
 
-
+uniform samplerCube defaultCubemap;
 
 uniform mat4 currentMVP;
 
@@ -27,9 +27,9 @@ uniform mat4 currentMVP;
 out vec4 result;
 
 
-#define SSLR_SCREEN_RADIUS 0.3
-#define SSLR_STEPS 64
-#define SSLR_FADE_DISTANCE 0.06
+#define SSLR_SCREEN_RADIUS 0.4
+#define SSLR_STEPS 32
+#define SSLR_FADE_DISTANCE 0.4
 
 
 vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector) {
@@ -69,6 +69,8 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
         if ( depthDiff > 0.0 && depthDiff < maxDepthDiff ) {
             vec3 samplePos = texture(positionTex, currentCoord.xy).xyz;
             vec3 vectorToSurface = pixelPos - samplePos;
+
+            if (length(vectorToSurface) > 100.0) continue;
 
             float visibilityFactor = dot(-vectorToSurface, pixelNormal);
 
@@ -120,12 +122,13 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
         result = texture(colorTex, lastCoordPos.xy);
 
         // if (result.w < 0.5) {
-            // result = vec4(0);
+        //     result = vec4(0);
         // }
         // result = vec4(positionTex);
 
 
         result.xyz *= fade;
+        result.w = fade;
     }
     
     return result;
@@ -133,7 +136,7 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
 
 void main() {
 
-    ivec2 coord = ivec2(gl_FragCoord.xy)*2;
+    ivec2 coord = ivec2(gl_FragCoord.xy);
 
     #if !defined(DEBUG_DISABLE_SSLR)
 
@@ -145,6 +148,7 @@ void main() {
 
     // The lighting pass outputs the reflection factor in the alpha component
     float sslrFactor = pixelColor.w;
+
 
     // Ignore pixels with low reflection factor, including the skybox
     if (pixelColor.w < 0.05) {
@@ -162,8 +166,14 @@ void main() {
     // Raytrace along the reflection vector
     vec4 traceResult = traceRayTo(reflectionTargetWorld, SSLR_STEPS, pixelDepth, reflectionVector);
     
+    vec3 fallbackResult = texture(defaultCubemap, reflectionVector).xyz;
+
+    traceResult.xyz = mix(fallbackResult, traceResult.xyz, traceResult.w);
+
     // Take the sslr factor into account
     traceResult *= sslrFactor * 0.5;
+
+
 
     #if defined(DEBUG_VISUALIZATION_ACTIVE) && !defined(DEBUG_RM_SSLR)
         traceResult = vec4(0);

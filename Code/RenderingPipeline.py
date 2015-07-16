@@ -125,7 +125,9 @@ class RenderingPipeline(DebugObject):
         effect = self.effectLoader.loadEffect(effect, properties)
 
         if effect.getSetting("transparent"):
-            pass
+            if not self.settings.useTransparency:
+                self.error("Cannot assign transparent material when transparency is disabled")
+                return False
 
         if effect.getSetting("dynamic"):
             self.registerDynamicObject(obj)
@@ -239,8 +241,15 @@ class RenderingPipeline(DebugObject):
         self.showbase.addTask(self._preRenderUpdate, "RP_BeforeRender", sort=10)
         self.showbase.addTask(self._postRenderUpdate, "RP_AfterRender", sort=100)
 
-        for task in self.showbase.taskMgr.getAllTasks():
-            print task, task.getSort()
+        # for task in self.showbase.taskMgr.getAllTasks():
+            # print task, task.getSort()
+
+    def _createLastFrameBuffers(self):
+        """ Creates the buffers which store the last frame depth, as the render
+        target matcher cannot handle this """
+
+        # self.lastFrameDepth = Texture()
+        # self.lastFrameDepth.setup2dTexture()
 
     def _createInputHandles(self):
         """ Defines various inputs to be used in the shader passes. Most inputs
@@ -413,7 +422,7 @@ class RenderingPipeline(DebugObject):
         specified in the settings """
         if self.settings.enableScattering:
             earthScattering = Scattering(self)
-            scale = 100000
+            scale = 100
             earthScattering.setSettings({
                 "atmosphereOffset": Vec3(0, 0, - (6360.0 + 16.5) * scale),
                 "atmosphereScale": Vec3(scale)
@@ -513,7 +522,7 @@ class RenderingPipeline(DebugObject):
             self.guiManager = None
 
         # Some basic scene settings
-        self.showbase.camLens.setNearFar(0.1, 500000)
+        self.showbase.camLens.setNearFar(0.1, 50000)
         self.showbase.camLens.setFov(110)
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
         self.showbase.camNode.setCameraMask(self.getMainPassBitmask())
@@ -522,6 +531,8 @@ class RenderingPipeline(DebugObject):
         # Create render pass matcher
         self.renderPassManager = RenderPassManager()
 
+        # Create last frame buffers
+        self._createLastFrameBuffers()
 
         self._precomputeScattering()
 

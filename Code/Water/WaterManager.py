@@ -52,7 +52,7 @@ class WaterManager(DebugObject):
             Texture.TFloat, Texture.FRgba16)
 
         self.combineShader = Shader.loadCompute(Shader.SLGLSL,
-            "Shader/Water/Combine.compute")
+            "Shader/WaterFFT/Combine.compute")
 
         self.ptaTime = PTAFloat.emptyArray(1)
 
@@ -66,7 +66,7 @@ class WaterManager(DebugObject):
             for y in xrange(self.options.size):
                 rand1 = self._getGaussianRandom() / 10.0 + 0.5
                 rand2 = self._getGaussianRandom() / 10.0 + 0.5
-                self.randomStorage.setXel(x, y, LVecBase3d(rand1, rand2, 0))
+                self.randomStorage.setXel(x, y, float(rand1), float(rand2), 0)
                 self.randomStorage.setAlpha(x, y, 1.0)
 
         self.randomStorageTex = Texture("RandomStorage")
@@ -85,7 +85,7 @@ class WaterManager(DebugObject):
 
         # Create the shader which populates the initial height texture
         self.shaderInitialHeight = Shader.loadCompute(Shader.SLGLSL,
-            "Shader/Water/InitialHeight.compute")
+            "Shader/WaterFFT/InitialHeight.compute")
         self.nodeInitialHeight = NodePath("initialHeight")
         self.nodeInitialHeight.setShader(self.shaderInitialHeight)
         self.nodeInitialHeight.setShaderInput("dest", self.texInitialHeight)
@@ -119,7 +119,7 @@ class WaterManager(DebugObject):
 
         # Also create the shader which updates the spectrum
         self.shaderUpdate = Shader.loadCompute(Shader.SLGLSL,
-            "Shader/Water/Update.compute")
+            "Shader/WaterFFT/Update.compute")
         self.nodeUpdate = NodePath("update")
         self.nodeUpdate.setShader(self.shaderUpdate)
         self.nodeUpdate.setShaderInput("outH0x", self.heightTextures[0])

@@ -29,12 +29,14 @@ class SSLRPass(RenderPass):
             "mainCam": "Variables.mainCam",
             "mainRender": "Variables.mainRender",
 
+            "defaultCubemap": "Variables.defaultEnvironmentCubemap",
+
             "colorTex": ["TransparencyPass.resultTex", "LightingPass.resultTex"]
         }
 
     def create(self):
         self.target = RenderTarget("SSLR")
-        self.target.setHalfResolution()
+        # self.target.setHalfResolution()
         self.target.addColorTexture()
         self.target.setColorBits(16)
         self.target.prepareOffscreenBuffer()
