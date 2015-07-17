@@ -13,7 +13,7 @@ class ProjectedWaterGrid(DebugObject):
         DebugObject.__init__(self, "ProjectedWaterGrid")
         self.debug("Creating water grid")
 
-        self.waterLevel = 0.0
+        self.waterLevel = -9.0
 
         self.model = Globals.loader.loadModel("Data/InternalModels/ScreenSpaceGrid.bam")
         self.model.reparentTo(Globals.base.render)
@@ -26,10 +26,10 @@ class ProjectedWaterGrid(DebugObject):
         self.model.setMat(Mat4.identMat())
         self.model.clearTransform()
 
-        # hmap = Globals.loader.loadTexture("Data/Textures/DefaultWaterHeightfield.png")
-        # hmap.setWrapU(Texture.WMRepeat)        
-        # hmap.setWrapV(Texture.WMRepeat)
-        # self.model.setShaderInput("waterHeightfield", hmap)       
+        foam = Globals.loader.loadTexture("Data/Textures/WaterFoam.png")
+        foam.setWrapU(Texture.WMRepeat)        
+        foam.setWrapV(Texture.WMRepeat)
+        self.model.setShaderInput("waterFoam", foam)       
         
         # nmap = Globals.loader.loadTexture("Data/Textures/DefaultWaterNormal.png")
         # nmap.setWrapU(Texture.WMRepeat)        
@@ -54,8 +54,11 @@ class ProjectedWaterGrid(DebugObject):
 
         self.pipeline.setEffect(self.model, "Effects/Water/ProjectedWater.effect", {
             # "transparent": True,
-            "castShadows": True
+            "castShadows": False,
+            "tesselated": True
         })
+
+        pipeline.convertToPatches(self.model)
 
 
         pipeline.showbase.addTask(self.updateTask, "updateWater")

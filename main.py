@@ -97,7 +97,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
-        # self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
+        self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
@@ -112,7 +112,7 @@ class Main(ShowBase, DebugObject):
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
-        self.sceneSource = "Models/PSSMTest/Model.egg.bam"
+        # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
@@ -140,7 +140,7 @@ class Main(ShowBase, DebugObject):
             dirLight.setShadowMapResolution(1024)
             dirLight.setColor(1.5, 1.2, 0.8)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(550)
+            dirLight.setPssmDistance(250)
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
 

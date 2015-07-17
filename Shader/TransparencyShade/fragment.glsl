@@ -165,9 +165,10 @@ void main() {
 
     // Compute ambient
     vec3 viewVector = normalize(cameraPosition - material.position);
+    tm.baseColor += computeAmbient(material, vec4(1.0), vec4(0), 0.8, viewVector);
 
-    // tm.baseColor *= 0.1;
-    tm.baseColor += computeAmbient(material, vec4(1.0), vec4(0), 1.0, viewVector);
+    tm.baseColor *= 3.0;
+
 
 
     // Store the new pixel data

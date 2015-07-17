@@ -255,6 +255,18 @@ class Effect(DebugObject):
                 continue
             strippedLines.append(line)
         
+        # Check for defines
+        for line in strippedLines:
+            if line.startswith("define"):
+                parts = line.split()
+                if len(parts) < 3:
+                    self.warn("Invalid define:", line)
+                    continue
+                defineName = parts[1]
+                defineVal = " ".join(parts[2:])
+
+                self.defines[defineName] = defineVal
+
         # Extract blocks
         stageBlocks = self._handleBlocks(strippedLines)
 

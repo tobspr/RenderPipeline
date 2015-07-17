@@ -1,6 +1,11 @@
 
 
 
+define WATER_DISPLACE vec3(5.5, 5.5, 5.5) * 0.2
+define WATER_COORD_FACTOR 7.0
+define WATER_LOWRES_FACTOR 0.1
+
+
 pass Default:
 
     vertex:
@@ -11,7 +16,7 @@ pass Default:
         uniform float waterHeight;
 
         insert @WS_POSITION:
-            vec2 coord = vec2( (p3d_Vertex.xz*1.4)  * 0.5 + 0.5);
+            vec2 coord = vec2( (p3d_Vertex.xz * 1.2)  * 0.5 + 0.5);
 
             // Compute ray start and direction
             vec3 rayStart = cameraPosition;
@@ -19,8 +24,7 @@ pass Default:
 
             // Intersect the ray with the water
             float distance = (-rayStart.z+waterHeight) / rayDir.z;
-            vec3 intersectedPos = vec3(1,0,1);
-
+            vec3 intersectedPos = vec3(0);
             float maxWaterDist = 3000.0;
 
             // If plane is hit
@@ -31,44 +35,83 @@ pass Default:
             }  
 
             vOutput.positionWorld = vec3(intersectedPos);
-            vOutput.texcoord = vec2(vOutput.positionWorld.xy / 17.0);
+            vOutput.texcoord = vec2(vOutput.positionWorld.xy / WATER_COORD_FACTOR);
 
-            vec3 displace = texture(waterHeightfield, vOutput.texcoord).xyz + texture(waterHeightfield, vOutput.texcoord * 0.2).xyz;
-            vOutput.positionWorld += displace * vec3(0.6, 0.6, 1.5) * 1.7;
+            // Fade displacement at borders
+            float fade = 1.0;
+            float fadeArea = 0.2;
+
+            fade *= saturate(coord.x / fadeArea);
+            fade *= saturate( (1.0 - coord.y) / fadeArea);
+
+            fade *= saturate(coord.y / fadeArea);
+            fade *= saturate( (1.0 - coord.y) / fadeArea);
+
+            vec3 displace = texture(waterHeightfield, vOutput.texcoord).xyz + texture(waterHeightfield, vOutput.texcoord * WATER_LOWRES_FACTOR).xyz * 2.0 - 1.0;
+            vOutput.positionWorld += displace * WATER_DISPLACE * fade;
+
 
         insert @VERTEX_PROJECTION:
-            vOutput.lastProjectedPos = currentMVP * vec4(vOutput.positionWorld.xyz, 1.0) * vec4(1,1,1,2);
+            vOutput.lastProjectedPos = lastMVP * vec4(vOutput.positionWorld.xyz, 1.0) * vec4(1,1,1,2);
             gl_Position = currentMVP * vec4(vOutput.positionWorld.xyz, 1);
+
+
+    tesscontrol:
+        template default
+
+        insert @TESS_LEVEL:
+            TessLevelInner = 6.0;
+            TessLevelOuter = 6.0;
+
+    tesseval:
+        template default
 
     fragment:
         template default
 
         uniform sampler2D waterHeightfield;
         uniform sampler2D waterNormal;
+        uniform sampler2D waterFoam;
+        uniform vec3 cameraPosition;
 
         insert @MATERIAL:
 
             vec3 normalDetail = texture(waterNormal, vOutput.texcoord).xyz;
-            vec3 normal = (normalDetail + texture(waterNormal, vOutput.texcoord * 0.2).xyz) * 0.5;
-            vec3 disp = (texture(waterHeightfield, vOutput.texcoord).xyz +  texture(waterHeightfield, vOutput.texcoord * 0.2).xyz) * 0.5;
+            vec3 normal = (normalDetail + texture(waterNormal, vOutput.texcoord * WATER_LOWRES_FACTOR).xyz) * 0.5;
+            vec3 disp = (texture(waterHeightfield, vOutput.texcoord).xyz +  texture(waterHeightfield, vOutput.texcoord * WATER_LOWRES_FACTOR).xyz) * 0.5;
+            vec3 foam = texture(waterFoam, vOutput.texcoord * 2.0).xyz;
 
-            float fold = pow(max(0.0, mix(normal.z, normalDetail.z, 0.4)*3.0), 6.0) * 20.0;
+
+            float fold = saturate(pow(normalDetail.z, 3.0) * 2.0);
 
             normal = normalize(vec3(normal.x, normal.y, 16.0 / 512.0));
 
 
-            m.baseColor = vec3(0.02,0.15, 0.6) * 0.1;
-            m.baseColor += fold * vec3(10.0);
-            m.baseColor += vec3(0.0, 0.1, 0.02) * pow(disp.z, 2.0) * 1.2;
+            vec3 groundCol = vec3(0.12, 0.39, 0.5) * 0.2;
+
+            m.baseColor = groundCol;
+            m.baseColor += saturate(pow(disp.z, 2.0)) * vec3(0.18, 0.5, 0.6) * 0.1;
+
+            m.baseColor *= 2.0;
+
+            // m.baseColor = vec3(0.1,0.2, 0.25) * 0.1;
+            // m.baseColor = vec3(0.0, 0.1, 0.02) * 0.1;
+            m.baseColor += fold * vec3(1.0,1.0,1.4);
+            // m.baseColor += vec3(0.0, 0.1, 0.02) * pow(1.0-disp.z, 2.0) * 1.9;
+            // m.baseColor += vec3(0.05,0.1,0.5) * (0.1 + pow(disp.z, 1.6)) * 12.9;
+            // m.baseColor = vec3(fold);
+
+            m.baseColor = pow(m.baseColor, vec3(2.0));
+
 
             m.normal = normal;
             m.metallic = 1.0;
-            m.specular = 0.5;
-            m.roughness = 0.07;
+            m.specular = 1.0;
+            m.roughness = 0.074;
 
 
             #if defined(IS_TRANSPARENT)
-            m.alpha = 0.7;
+            m.alpha = 0.995;
             #endif
 
 
@@ -114,7 +157,7 @@ pass Shadows:
             }  
 
             worldPos.xyz = vec3(intersectedPos);
-            texcoord = vec2(worldPos.xy / 17.0);
+            texcoord = vec2(worldPos.xy / WATER_COORD_FACTOR);
 
             // vec3 displace = texture(waterHeightfield, texcoord).xyz;
             // worldPos.xyz += displace * vec3(0.6, 0.6, 1.5) * 1.7;
@@ -122,6 +165,14 @@ pass Shadows:
         insert @VERTEX_PROJECTION:
 
             gl_Position = p3d_ViewProjectionMatrix * worldPos;   
+
+
+
+    tesscontrol:
+        template default
+
+    tesseval:
+        template default
 
 
     fragment:

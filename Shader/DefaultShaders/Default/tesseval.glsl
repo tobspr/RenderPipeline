@@ -24,6 +24,9 @@ uniform sampler2D p3d_Texture4;
 
 uniform mat4 p3d_ViewProjectionMatrix;
 
+#pragma ENTRY_POINT SHADER_IN_OUT
+
+
 void main()
 {
     float u = gl_TessCoord.x;

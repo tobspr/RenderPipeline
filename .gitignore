@@ -27,3 +27,5 @@ TODO.txt
 Models/VertexPerformanceTest/Scene.egg
 Models/LittleHouse/
 BugReports/
+Toolkit/EnvironmapPrefilter/result/
+Toolkit/EnvironmapPrefilter/source/

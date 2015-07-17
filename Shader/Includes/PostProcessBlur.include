@@ -4,9 +4,9 @@
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/PositionReconstruction.include"
 
-const float sslrNormalsDiscardThreshold = 0.998;
+const float sslrNormalsDiscardThreshold = 0.99;
 const float normalsDiscardThresholdShadows = 0.99;
-const float sslrMaxDistanceBlur = 0.1;
+const float sslrMaxDistanceBlur = 0.5;
 
 vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D depthTex, bool isSecondary) {
 

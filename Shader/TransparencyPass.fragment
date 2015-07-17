@@ -140,14 +140,14 @@ void main() {
         uvec4 data1 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2);
         uvec4 data2 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2+1);
         TransparentMaterial tm = unpackTransparentMaterial(data1, data2);
-        tm.baseColor *= 10.0;
+        // tm.baseColor *= 10.0;
 
         if (tm.depth > pixelDepth) continue;
 
         currentColor = currentColor * (1.0-tm.alpha) + tm.baseColor * tm.alpha;
 
         // Reduces sslr 
-        currentSSLRFactor *= saturate(tm.alpha + 0.5);
+        // currentSSLRFactor *= saturate(tm.alpha + 0.5);
 
         renderedLayers += 1;
         lastVelocity = tm.velocity / 255.0;

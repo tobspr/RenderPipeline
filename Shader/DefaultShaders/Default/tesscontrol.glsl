@@ -7,19 +7,24 @@ layout(vertices = 3) out;
 in VertexOutput vOutput[];
 out VertexOutput tcOutput[];
 
-// This two variables determine the tesselation
-float TessLevelInner = 4.0;
-float TessLevelOuter = 4.0;
 
 #define ID gl_InvocationID
+
+#pragma ENTRY_POINT SHADER_IN_OUT
 
 void main()
 {
     tcOutput[ID] = vOutput[ID];
 
-    if (ID == 0) {
 
-        // -- if you need to compute any tesselation factors, do it here --
+
+
+    if (ID == 0) {
+        // This two variables determine the tesselation
+        float TessLevelInner = 4.0;
+        float TessLevelOuter = 4.0;
+
+        #pragma ENTRY_POINT TESS_LEVEL
 
         gl_TessLevelInner[0] = TessLevelInner;
         gl_TessLevelOuter[0] = TessLevelOuter;
