@@ -201,7 +201,7 @@ class RenderingPipeline(DebugObject):
         scale and the camera far plane, to avoid z-fighting issues. The default
         skybox also comes with a default skybox shader aswell as a default skybox
         texture. The shaders and textures can be overridden by the user if required. """
-        skybox = loader.loadModel("Models/Skybox/Model.egg.bam")
+        skybox = loader.loadModel("Data/InternalModels/Skybox.bam")
         skybox.setScale(scale)
 
         skytex = loader.loadTexture("Data/Skybox/sky.jpg")
