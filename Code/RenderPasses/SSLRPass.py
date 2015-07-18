@@ -12,9 +12,14 @@ class SSLRPass(RenderPass):
 
     def __init__(self):
         RenderPass.__init__(self)
+        self.halfRes = False
 
     def getID(self):
         return "SSLRPass"
+
+    def setHalfRes(self, halfRes):
+        """ Controlls wheter the sslr pass runs at full or half resolution """
+        self.halfRes = halfRes
 
     def getRequiredInputs(self):
         return {
@@ -36,7 +41,9 @@ class SSLRPass(RenderPass):
 
     def create(self):
         self.target = RenderTarget("SSLR")
-        # self.target.setHalfResolution()
+
+        if self.halfRes:
+            self.target.setHalfResolution()
         self.target.addColorTexture()
         self.target.setColorBits(16)
         self.target.prepareOffscreenBuffer()
@@ -53,8 +60,6 @@ class SSLRPass(RenderPass):
 
         self.targetV.setShaderInput("previousTex", self.target.getColorTexture())
         self.targetH.setShaderInput("previousTex", self.targetV.getColorTexture())
-
-
 
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 
@@ -79,8 +84,6 @@ class SSLRPass(RenderPass):
         self.target.setShaderInput(name, value)
         self.targetH.setShaderInput(name, value)
         self.targetV.setShaderInput(name, value)
-
-
 
     def getOutputs(self):
         return {

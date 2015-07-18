@@ -23,6 +23,8 @@ from AntialiasingManager import AntialiasingManager
 from TransparencyManager import TransparencyManager
 from DynamicObjectsManager import DynamicObjectsManager
 from GUI.PipelineGuiManager import PipelineGuiManager
+from SSLRManager import SSLRManager
+
 from GUI.BetterOnscreenImage import BetterOnscreenImage
 
 from RenderPasses.InitialRenderPass import InitialRenderPass
@@ -32,7 +34,6 @@ from RenderPasses.LightingPass import LightingPass
 from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 from RenderPasses.VolumetricLightingPass import VolumetricLightingPass
-from RenderPasses.SSLRPass import SSLRPass
 from RenderPasses.MotionBlurPass import MotionBlurPass
 
 from direct.gui.DirectFrame import DirectFrame
@@ -288,6 +289,7 @@ class RenderingPipeline(DebugObject):
             self.transparencyManager.update()
         self.antialiasingManager.update()
         self.renderPassManager.preRenderUpdate()
+        self.sslrManager.update()
         if self.globalIllum:
             self.globalIllum.update()
         if self.scattering:
@@ -553,11 +555,6 @@ class RenderingPipeline(DebugObject):
             self.dynamicExposurePass = DynamicExposurePass(self)
             self.renderPassManager.registerPass(self.dynamicExposurePass)
 
-        # Add SSLR pass
-        if self.settings.enableSSLR:
-            self.sslrPass = SSLRPass()
-            self.renderPassManager.registerPass(self.sslrPass)
-
         # Add motion blur pass
         if self.settings.enableMotionBlur:
             self.motionBlurPass = MotionBlurPass()
@@ -576,6 +573,7 @@ class RenderingPipeline(DebugObject):
         self.lightManager = LightManager(self)
         self.antialiasingManager = AntialiasingManager(self)
         self.dynamicObjectsManager = DynamicObjectsManager(self)
+        self.sslrManager = SSLRManager(self)
         
         if self.settings.useTransparency:
             self.transparencyManager = TransparencyManager(self)

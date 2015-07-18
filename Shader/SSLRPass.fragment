@@ -27,9 +27,9 @@ uniform mat4 currentMVP;
 out vec4 result;
 
 
-#define SSLR_SCREEN_RADIUS 0.4
-#define SSLR_STEPS 32
-#define SSLR_FADE_DISTANCE 0.4
+// #define SSLR_SCREEN_RADIUS 0.8
+// #define SSLR_STEPS 32
+// #define SSLR_FADE_DISTANCE 0.8
 
 
 vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector) {
@@ -103,7 +103,7 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
     fade *= saturate(currentPos.y / fadeArea);
     fade *= saturate( (1.0 - currentPos.y) / fadeArea);
 
-    fade *= saturate(SSLR_FADE_DISTANCE / distance(texcoord, currentPos.xy));
+    fade *= saturate(SSLR_SCREEN_RADIUS / distance(texcoord, currentPos.xy));
 
     float actualDepthDiff = abs(texture(depthTex, currentPos.xy).x - currentPos.z);
     // fade *= 1.0 - saturate(actualDepthDiff * 20000.0);
@@ -138,6 +138,10 @@ void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
+    #if defined(SSLR_HALF_RES)
+        coord *= 2;
+    #endif
+
     #if !defined(DEBUG_DISABLE_SSLR)
 
     // Fetch pixel data
@@ -168,7 +172,7 @@ void main() {
     
     vec3 fallbackResult = texture(defaultCubemap, reflectionVector).xyz;
 
-    traceResult.xyz = mix(fallbackResult, traceResult.xyz, traceResult.w);
+    // traceResult.xyz = mix(fallbackResult, traceResult.xyz, traceResult.w);
 
     // Take the sslr factor into account
     traceResult *= sslrFactor * 0.5;

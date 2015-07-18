@@ -97,7 +97,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
-        self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
+        # self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
@@ -106,6 +106,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
+        self.sceneSource = "Demoscene.ignore/TestScene/Test.bam"
         # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
@@ -118,7 +119,6 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
         # self.sceneSource = "Models/Buddha/Buddha.bam"
-        # self.sceneSource = "Toolkit/Blender Material Library/Buddha.bam"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
         
 
@@ -140,7 +140,7 @@ class Main(ShowBase, DebugObject):
             dirLight.setShadowMapResolution(1024)
             dirLight.setColor(1.5, 1.2, 0.8)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(250)
+            dirLight.setPssmDistance(190)
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
 
@@ -351,7 +351,7 @@ class Main(ShowBase, DebugObject):
         self.prepareSRGB(self.scene)
 
         # Prepare Materials
-        self.renderPipeline.fillTextureStages(render)
+        # self.renderPipeline.fillTextureStages(render)
 
         # Load ground plane if configured
         if self.usePlane:
@@ -436,7 +436,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 12.0)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 23.0)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)

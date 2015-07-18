@@ -1,9 +1,10 @@
 
 
 
-define WATER_DISPLACE vec3(5.5, 5.5, 5.5) * 0.2
-define WATER_COORD_FACTOR 7.0
-define WATER_LOWRES_FACTOR 0.1
+define WATER_DISPLACE vec3(8.5, 8.5, 6.5) * 0.4
+define WATER_COORD_FACTOR 20.0
+define WATER_LOWRES_FACTOR 0.23
+define WATER_DISPLACE_DIST 800.0
 
 
 pass Default:
@@ -23,13 +24,13 @@ pass Default:
             vec3 rayDir = normalize(rayStart - calculateSurfacePos(1.0, coord));
 
             // Intersect the ray with the water
-            float distance = (-rayStart.z+waterHeight) / rayDir.z;
+            float dist = (-rayStart.z+waterHeight) / rayDir.z;
             vec3 intersectedPos = vec3(0);
             float maxWaterDist = 3000.0;
 
             // If plane is hit
-            if (distance < 0.0) {
-                intersectedPos = rayStart + rayDir * distance;
+            if (dist < 0.0) {
+                intersectedPos = rayStart + rayDir * dist;
             } else {
                 intersectedPos = vec3(rayStart.xy + rayDir.xy * -maxWaterDist, 0.0);
             }  
@@ -48,20 +49,20 @@ pass Default:
             fade *= saturate( (1.0 - coord.y) / fadeArea);
 
             vec3 displace = texture(waterHeightfield, vOutput.texcoord).xyz + texture(waterHeightfield, vOutput.texcoord * WATER_LOWRES_FACTOR).xyz * 2.0 - 1.0;
-            vOutput.positionWorld += displace * WATER_DISPLACE * fade;
+            float displaceFactor = 1.0 - saturate(distance(cameraPosition, intersectedPos) / WATER_DISPLACE_DIST);
 
+            vOutput.positionWorld += displace * WATER_DISPLACE * fade * displaceFactor;
 
         insert @VERTEX_PROJECTION:
             vOutput.lastProjectedPos = lastMVP * vec4(vOutput.positionWorld.xyz, 1.0) * vec4(1,1,1,2);
             gl_Position = currentMVP * vec4(vOutput.positionWorld.xyz, 1);
 
-
     tesscontrol:
         template default
 
         insert @TESS_LEVEL:
-            TessLevelInner = 6.0;
-            TessLevelOuter = 6.0;
+            TessLevelInner = 1.0;
+            TessLevelOuter = 1.0;
 
     tesseval:
         template default
@@ -81,6 +82,10 @@ pass Default:
             vec3 disp = (texture(waterHeightfield, vOutput.texcoord).xyz +  texture(waterHeightfield, vOutput.texcoord * WATER_LOWRES_FACTOR).xyz) * 0.5;
             vec3 foam = texture(waterFoam, vOutput.texcoord * 2.0).xyz;
 
+            float displaceFactor = 1.0 - saturate(distance(vOutput.positionWorld, cameraPosition) / WATER_DISPLACE_DIST);
+            normal = mix(vec3(0, 0, 1), normal, displaceFactor);
+            normalDetail = mix(vec3(0, 0, 1), normalDetail, displaceFactor);
+
 
             float fold = saturate(pow(normalDetail.z, 3.0) * 2.0);
 
@@ -96,7 +101,7 @@ pass Default:
 
             // m.baseColor = vec3(0.1,0.2, 0.25) * 0.1;
             // m.baseColor = vec3(0.0, 0.1, 0.02) * 0.1;
-            m.baseColor += fold * vec3(1.0,1.0,1.4);
+            m.baseColor += fold * vec3(1.0,1.0,1.4) * displaceFactor;
             // m.baseColor += vec3(0.0, 0.1, 0.02) * pow(1.0-disp.z, 2.0) * 1.9;
             // m.baseColor += vec3(0.05,0.1,0.5) * (0.1 + pow(disp.z, 1.6)) * 12.9;
             // m.baseColor = vec3(fold);

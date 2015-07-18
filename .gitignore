@@ -10,7 +10,7 @@ Core/Linux/
 Cython/
 *.psd
 Temp/
-Models/**.blend
+Models/*.blend
 Models/PBSTest/Scene.egg
 *.blend1
 *.blend2

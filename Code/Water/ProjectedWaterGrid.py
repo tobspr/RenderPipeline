@@ -13,7 +13,7 @@ class ProjectedWaterGrid(DebugObject):
         DebugObject.__init__(self, "ProjectedWaterGrid")
         self.debug("Creating water grid")
 
-        self.waterLevel = -9.0
+        self.waterLevel = -2.0
 
         self.model = Globals.loader.loadModel("Data/InternalModels/ScreenSpaceGrid.bam")
         self.model.reparentTo(Globals.base.render)
@@ -46,10 +46,6 @@ class ProjectedWaterGrid(DebugObject):
         self.model.setShaderInput("waterNormal", self.manager.getNormalTexture())       
 
 
-
-
-
-
         self.pipeline = pipeline
 
         self.pipeline.setEffect(self.model, "Effects/Water/ProjectedWater.effect", {
@@ -59,8 +55,6 @@ class ProjectedWaterGrid(DebugObject):
         })
 
         pipeline.convertToPatches(self.model)
-
-
         pipeline.showbase.addTask(self.updateTask, "updateWater")
 
     def updateTask(self, task):
