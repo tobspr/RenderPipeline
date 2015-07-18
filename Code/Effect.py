@@ -35,6 +35,7 @@ class Effect(DebugObject):
 
         self._handleProperties()
         self.name = filename.replace("\\", "/").split("/")[-1].split(".")[0]
+        self._rename("Effect-" + self.name)
 
         with open(filename, "r") as handle:
             content = handle.readlines()
@@ -200,6 +201,8 @@ class Effect(DebugObject):
                 for line in lines:
                     includePath = line.strip('"')
                     inserts["SHADER_IN_OUT"].append("#pragma include \"" +includePath + "\""); 
+            elif param == "template":
+                pass
             else:
                 self.warn("Unkown parameter", param)
 

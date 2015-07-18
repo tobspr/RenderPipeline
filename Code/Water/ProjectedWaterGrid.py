@@ -50,8 +50,8 @@ class ProjectedWaterGrid(DebugObject):
 
         self.pipeline.setEffect(self.model, "Effects/Water/ProjectedWater.effect", {
             # "transparent": True,
-            "castShadows": False,
-            "tesselated": True
+            "castShadows": False
+            # "tesselated": True
         })
 
         pipeline.convertToPatches(self.model)
