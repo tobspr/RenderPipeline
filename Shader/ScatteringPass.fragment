@@ -12,6 +12,7 @@ uniform ScatteringOptions scatteringOptions;
 
 uniform sampler2D wsPositionTex;
 uniform sampler2D basecolorTex;
+uniform sampler2D cloudsTex;
 
 uniform vec3 cameraPosition;
 
@@ -21,8 +22,14 @@ void main() {
     vec3 cameraPositionZ = cameraPosition;
 
     vec3 wsPosition = texture(wsPositionTex, texcoord).xyz;
-    vec3 baseColor = texture(basecolorTex, texcoord).xyz;
+
+    #if defined(CLOUDS_ENABLED)
+        vec4 baseColor = texture(cloudsTex, texcoord);
+    #else
+        vec4 baseColor = texture(basecolorTex, texcoord);
+    #endif
     vec3 wsPosModified = wsPosition;
+
 
     #if defined(DEBUG_DISABLE_SCATTERING)
         result = vec4(baseColor.xyz, 1);

@@ -83,6 +83,9 @@ class PipelineSettingsManager(SettingsManager):
         # [Global Illumination]
         self._addSetting("enableGlobalIllumination", bool, False)
 
+        # [Clouds]
+        self._addSetting("enableClouds", bool, False)
+
         # [Debugging]
         self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayDebugStats", bool, True)

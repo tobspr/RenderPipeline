@@ -24,7 +24,7 @@ class MovementController:
         self.mouseSensivity = 0.7
         self.keyboardHprSpeed = 0.8
         self.useHpr = False
-        self.smoothness = 0.9
+        self.smoothness = 0.4
         # self.smoothness = 0.0
         # self.smoothness = 0.0
 

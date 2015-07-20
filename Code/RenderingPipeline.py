@@ -24,6 +24,7 @@ from TransparencyManager import TransparencyManager
 from DynamicObjectsManager import DynamicObjectsManager
 from GUI.PipelineGuiManager import PipelineGuiManager
 from SSLRManager import SSLRManager
+from CloudManager import CloudManager
 
 from GUI.BetterOnscreenImage import BetterOnscreenImage
 
@@ -285,11 +286,13 @@ class RenderingPipeline(DebugObject):
         self.lightManager.update()
         if self.guiManager:
             self.guiManager.update()
-        if self.transparencyManager:
+        if self.settings.useTransparency:
             self.transparencyManager.update()
         self.antialiasingManager.update()
         self.renderPassManager.preRenderUpdate()
         self.sslrManager.update()
+        if self.settings.enableClouds:
+            self.cloudManager.update()
         if self.globalIllum:
             self.globalIllum.update()
         if self.scattering:
@@ -577,9 +580,9 @@ class RenderingPipeline(DebugObject):
         
         if self.settings.useTransparency:
             self.transparencyManager = TransparencyManager(self)
-        else:
-            self.transparencyManager = None
 
+        if self.settings.enableClouds:
+            self.cloudManager = CloudManager(self)
 
         self._createGlobalIllum()
 

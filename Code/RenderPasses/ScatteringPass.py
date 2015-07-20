@@ -28,9 +28,11 @@ class ScatteringPass(RenderPass):
             "mainCam": "Variables.mainCam",
 
             "wsPositionTex": "DeferredScenePass.wsPosition",
-            "basecolorTex": "DeferredScenePass.data3"
+            "basecolorTex": "DeferredScenePass.data3",
             # "viewSpaceNormals": "ViewSpacePass.normals",
             # "viewSpacePosition": "ViewSpacePass.position"
+
+            "cloudsTex": ["CloudRenderPass.resultTex", "Variables.emptyTextureWhite"]
         }
 
     def create(self):

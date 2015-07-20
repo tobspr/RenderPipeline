@@ -24,8 +24,9 @@ void main() {
 
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;   
 
+    #pragma ENTRY_POINT SHADER_END
+    
     #pragma ENTRY_POINT VERTEX_PROJECTION
 
-    #pragma ENTRY_POINT SHADER_END
 
 }

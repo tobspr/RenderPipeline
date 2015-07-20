@@ -11,6 +11,8 @@ const float scatteringEpsilon = 0.1;
 const float scatteringEpsilonInscatter = 0.001;
 
 
+
+
 vec3 scatteringTransformPosition(ScatteringOptions options, vec3 pos) {
   return (pos-options.atmosphereOffset) / options.atmosphereScale;
 }
@@ -72,7 +74,7 @@ vec3 scatteringComputeInscatteredLight(
     vec3 viewDir, 
     sampler3D inscatterSampler,
     // sampler2D transmittanceSampler,
-    vec3 cloudColor,
+    vec4 cloudColor,
     bool isSky,
 
     inout vec3 attenuation, 
@@ -86,19 +88,20 @@ vec3 scatteringComputeInscatteredLight(
     float sunFactor = pow(sunDistance, 80.0);
     float sunFactorOuter = pow(sunDistance, 1.0);
 
-    vec3 sunArea = vec3(sunFactor * 120.0 * vec3(1,1,0.8) + sunFactorOuter * vec3(1.1,1,0.7) * 0.3 );
-
+    vec4 sunArea = vec4(sunFactor * 120.0 * vec4(1,1,0.8, 1) + sunFactorOuter * vec4(1.1,1,0.7, 1) * 0.3 );
+    // sunArea = vec4(0);
     if (isSky) {
       // sunArea *= 1.0 - saturate(cloudColor * 1.0);
-      sunArea += cloudColor * 5.0;
+      // sunArea += cloudColor;
     } else {
       sunArea *= 0.0;
     }
 
   #else
-    vec3 sunArea = vec3(0);
+    vec3 sunArea = vec4(0);
   #endif
 
+  sunArea *= 1.0 - pow(cloudColor.w, 1.0);
 
   vec3 inscatteredLight = vec3(0, 0.0, 0);
   float offset;
@@ -203,7 +206,6 @@ vec3 scatteringComputeInscatteredLight(
         inscatter = mix(inScatterA, inScatterB, t);
       }
 
-
       // avoids imprecision problems in Mie scattering when sun is below horizon
       // fíx described in chapter 5.1.3
       // inscatter.w *= smoothstep(0.00, 0.02, musStartPos);
@@ -218,6 +220,6 @@ vec3 scatteringComputeInscatteredLight(
   }
 
 
-  return inscatteredLight + sunArea;
+  return mix(inscatteredLight + sunArea.xyz, cloudColor.xyz + sunArea.xyz, cloudColor.w * (isSky ? 1.0 : 0.0));
 }
 

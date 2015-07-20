@@ -24,7 +24,7 @@ class RenderPassManager(DebugObject):
     def registerPass(self, renderPass):
         """ Register a new RenderPass """
         if renderPass.getID() in self.renderPasses:
-            self.error("A same named pass already exists!")
+            self.error("A pass with the ID '" + renderPass.getID() + "' already exists!")
             return False
         self.renderPasses[renderPass.getID()] = renderPass
 

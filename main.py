@@ -402,7 +402,7 @@ class Main(ShowBase, DebugObject):
         self.controller = MovementController(self)
 
 
-        camPos = Vec3(-2.5, -10.5, 7.5)
+        camPos = Vec3(-2.5, -10, 55)
         camHpr = Vec3(0, -14, 0)
 
         self.controller.setInitialPositionHpr(
