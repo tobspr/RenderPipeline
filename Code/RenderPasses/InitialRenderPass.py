@@ -29,7 +29,10 @@ class InitialRenderPass(RenderPass):
             "mainCam": "Variables.mainCam",
             "mainRender": "Variables.mainRender",
             "currentViewMat": "Variables.currentViewMat",
-            "frameIndex": "Variables.frameIndex"
+            "frameIndex": "Variables.frameIndex",
+            "scatteringSunDirection": "Variables.scatteringSunDirection",
+            
+
         }
 
     def setShaders(self):

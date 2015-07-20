@@ -288,6 +288,8 @@ class Scattering(DebugObject):
             "inscatterSampler", self.inscatterResult)
         self.pipeline.renderPassManager.registerDynamicVariable(
             "scatteringOptions", self.bindTo)
+        self.pipeline.renderPassManager.registerStaticVariable(
+            "scatteringSunDirection", self.settingsPTA["sunVector"])
 
         if self.pipeline.settings.useSkyboxScattering:
             self.pipeline.renderPassManager.registerDefine("USE_SKYBOX_SCATTERING", "1")
