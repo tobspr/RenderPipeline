@@ -54,7 +54,6 @@ class Main(ShowBase, DebugObject):
 
         # Create the pipeline, and enable scattering
         self.renderPipeline.create()
-        self.renderPipeline.enableDefaultEarthScattering()
 
         # Load some demo source
         self.sceneSource = "Models/SmoothCube/Cube.bam"
@@ -96,17 +95,13 @@ class Main(ShowBase, DebugObject):
         # Hotkey for wireframe
         self.accept("f3", self.toggleSceneWireframe)
 
-        # Hotkey to reload all shaders
-        self.accept("r", self.setShaders)
 
         # Create a sun light
         dPos = Vec3(60, 30, 100)
         dirLight = DirectionalLight()
-        dirLight.setDirection(dPos)
-        dirLight.setShadowMapResolution(2048)
-        dirLight.setAmbientColor(Vec3(0.0, 0.0, 0.0))
+        dirLight.setShadowMapResolution(1024)
         dirLight.setPos(dPos)
-        dirLight.setColor(Vec3(3))
+        dirLight.setColor(Vec3(1))
         dirLight.setPssmTarget(base.cam, base.camLens)
         dirLight.setPssmDistance(50.0)
         dirLight.setCastsShadows(True)
@@ -115,10 +110,11 @@ class Main(ShowBase, DebugObject):
         self.dirLight = dirLight
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
-        self.dirLight.setDirection(sunPos)
 
         # Tell the GI which light casts the GI
         self.renderPipeline.setGILightSource(dirLight)
+        self.renderPipeline.setScatteringSource(dirLight)
+
 
         # Slider to move the sun
         if self.renderPipeline.settings.displayOnscreenDebugger:
@@ -133,8 +129,10 @@ class Main(ShowBase, DebugObject):
         self.skybox = self.renderPipeline.getDefaultSkybox()
         self.skybox.reparentTo(render)
 
-        # Set default object shaders
-        self.setShaders(refreshPipeline=False)
+        self.renderPipeline.setEffect(self.model, "DynamicMaterial.effect")
+
+
+        self.renderPipeline.onSceneInitialized()
 
         self.createGUI()
 
@@ -233,14 +231,13 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 100)
+                math.sin(rawValue) * 100.0, math.cos(rawValue) * 100.0, 200)
             # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 100)
 
         if abs(diff) > 0.0001:
-            self.dirLight.setPos(dPos)
-            self.dirLight.setDirection(dPos)
+            self.dirLight.setPos(dPos * 10000000.0)
 
     def toggleSceneWireframe(self):
         """ Toggles the scene rendermode """
@@ -276,24 +273,6 @@ class Main(ShowBase, DebugObject):
             tex.setMagfilter(Texture.FTLinear)
             tex.setAnisotropicDegree(16)
 
-    def setShaders(self, refreshPipeline=True):
-        """ Sets all shaders """
-        self.debug("Reloading Shaders ..")
-
-        if self.renderPipeline:
-            self.scene.setShader(
-                self.renderPipeline.getDefaultObjectShader(False))
-
-            self.model.setShader(Shader.load(Shader.SLGLSL, 
-                "DefaultObjectShader/vertex.glsl",
-                "dynamicMaterialFragment.glsl"))
-
-            if refreshPipeline:
-                self.renderPipeline.reloadShaders()
-
-        if self.skybox:
-            self.skybox.setShader(Shader.load(Shader.SLGLSL, 
-                "DefaultObjectShader/vertex.glsl", "Skybox/fragment.glsl"))
 
     def convertToPatches(self, model):
         """ Converts a model to patches. This is REQUIRED before beeing able

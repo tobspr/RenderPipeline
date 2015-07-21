@@ -57,7 +57,7 @@ void main() {
     #endif
 
     // TESTING
-    #if 0
+    #if 1
         mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
         sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
     #endif

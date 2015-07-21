@@ -97,7 +97,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
-        # self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
+        self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
@@ -106,7 +106,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
-        self.sceneSource = "Demoscene.ignore/TestScene/Test.bam"
+        # self.sceneSource = "Demoscene.ignore/TestScene/Test.bam"
         # self.sceneSource = "Models/LittleHouse/Scene.bam"
 
 
@@ -118,7 +118,6 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
-        # self.sceneSource = "Models/Buddha/Buddha.bam"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
         
 
@@ -181,12 +180,12 @@ class Main(ShowBase, DebugObject):
         for i in xrange(0):
             pointLight = PointLight()
             radius = float(i) / 12.0 * 6.28 + 5.22
-            xoffs = math.sin(radius) * 10.0
-            yoffs = math.cos(radius) * 10.0 + 10
-
+            xoffs = math.sin(radius) * 50.0
+            yoffs = math.cos(radius) * 50.0
             pointLight.setPos(Vec3( xoffs, yoffs, 12))
-            pointLight.setColor(Vec3(0.2,0.6,1.0) * 0.05)
-            pointLight.setRadius(60)
+            # pointLight.setColor(Vec3(0.2,0.6,1.0) * 0.05)
+            pointLight.setColor(random(), random(), random())
+            pointLight.setRadius(90)
             self.renderPipeline.addLight(pointLight)
             # pointLight.attachDebugNode(render)
 

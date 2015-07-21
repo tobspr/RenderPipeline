@@ -151,6 +151,11 @@ class RenderingPipeline(DebugObject):
             self.lightManager.shadowPass.registerTagState(stateName, initialState.getState())
             obj.setTag("ShadowPassShader", stateName)
 
+    def reloadEffects(self):
+        """ Reloads all effects from disk """
+        pass
+
+
     def fillTextureStages(self, nodePath):
         """ Prepares all materials of a given nodepath to have at least the 4 
         default textures in the correct order: [diffuse, normal, specular, roughness] """
@@ -224,9 +229,9 @@ class RenderingPipeline(DebugObject):
         self.debug("Reloading shaders")
         self.renderPassManager.writeAutoconfig()
         self.renderPassManager.setShaders()
-
         if self.settings.enableGlobalIllumination:
             self.globalIllum.reloadShader()
+        self.reloadEffects()
 
     def getRenderPassManager(self):
         """ Returns a handle to the render pass manager attribute """
@@ -617,5 +622,3 @@ class RenderingPipeline(DebugObject):
         # Give the gui a hint when the pipeline is done loading
         if self.guiManager:
             self.guiManager.onPipelineLoaded()
-
-        self.reloadShaders()
