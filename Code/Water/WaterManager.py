@@ -19,7 +19,7 @@ class OceanOptions:
     size = 128
 
     windDir = Vec2(0.8, 0.6)
-    windSpeed = 600.0
+    windSpeed = 1600.0
     windDependency = 0.2
     choppyScale = 1.3
     patchLength = 2000.0

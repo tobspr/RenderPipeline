@@ -54,6 +54,8 @@ layout(location = 0) out vec4 lightingResult;
 // Scattering result
 #if defined(USE_SCATTERING)
 uniform sampler2D scatteringTex;
+
+uniform sampler2D scatteringReflectedTex;
 #endif
 
 // Dynamic exposure
@@ -198,7 +200,6 @@ void main() {
         result += texture(shadowedLightsTex, texcoord).xyz;
         result += texture(unshadowedLightsTex, texcoord).xyz;
 
-
         // Ambient / Reflections
         ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, 
             mixedOcclusionFactor, viewVector);    
@@ -250,6 +251,7 @@ void main() {
 
     #if defined(DEBUG_RM_NORMAL)
         result = material.normal;
+        // result = vec3(-material.normal.z);
     #endif
 
     #if defined(DEBUG_RM_GI_AMBIENT)

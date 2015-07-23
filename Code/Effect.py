@@ -16,8 +16,6 @@ class Effect(DebugObject):
         Effect.effectCount += 1
 
         self.effectID = Effect.effectCount
-        self.shaderParts = {"Default": {}, "Shadows": {}}
-        self.shaderObjs = {"Default": None, "Shadows": None}
         self.name = "Effect"
         self.properties = {
             "transparent": False,
@@ -27,12 +25,16 @@ class Effect(DebugObject):
             "castShadows": True,
             "castGI": True,
         }
-        self.defines = {}
+        self.assignments = {"Default": [], "Shadows": []}
 
     def load(self, filename):
         """ Loads the effect from a given filename """
         self.debug("Load effect from", filename)
 
+        self.defines = {}
+        self.source = filename
+        self.shaderParts = {"Default": {}, "Shadows": {}}
+        self.shaderObjs = {"Default": None, "Shadows": None}
         self._handleProperties()
         self.name = filename.replace("\\", "/").split("/")[-1].split(".")[0]
         self._rename("Effect-" + self.name)
@@ -42,6 +44,22 @@ class Effect(DebugObject):
 
         self._parse(content)
         self._createShaderObjects()
+
+    def assignNode(self, node, mode, sort=0):
+        """ Adds the node to the assigned nodes of the mode. This is used when
+        reloading shaders """
+        if node not in self.assignments[mode]:
+            self.assignments[mode].append((node, sort))
+        node.setShader(self.getShader(mode), sort)
+
+    def reload(self):
+        """ Reloads the effect from disk """
+        self.debug("Reloading")
+
+        self.load(self.source)
+
+        for node, sort in self.assignments["Default"]:
+            node.setShader(self.getShader("Default"), sort)
 
     def getSerializedSettings(self, properties=None):
         """ Serializes the effects properties to a string """

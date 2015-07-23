@@ -141,7 +141,7 @@ texture-minfilter linear
 lock-to-one-cpu #f
 support-threads #t
 
-# driver-generate-mipmaps #f
+driver-generate-mipmaps #t
 # gl-ignore-mipmaps #t
 
 gl-immutable-texture-storage #t

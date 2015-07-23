@@ -114,7 +114,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/CornelBox/Model.egg"
         # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
-        # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
+        self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
@@ -137,9 +137,9 @@ class Main(ShowBase, DebugObject):
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
             dirLight.setShadowMapResolution(1024)
-            dirLight.setColor(1.5, 1.2, 0.8)
+            dirLight.setColor(Vec3(1.5, 1.2, 0.8) * 6.0)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(190)
+            dirLight.setPssmDistance(140)
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
 
@@ -152,7 +152,7 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.guiManager.demoSlider.node[
                 "command"] = self.setSunPos
             self.renderPipeline.guiManager.demoSlider.node[
-                "value"] = 0
+                "value"] = 50
 
             self.lastSliderValue = 0.5
 
@@ -394,7 +394,7 @@ class Main(ShowBase, DebugObject):
         self.accept("f12", self.screenshot)
 
         # Hotkeys to spawn / remove lights
-        self.accept("z", self.addDemoLight)
+        self.accept("is", self.addDemoLight)
         self.accept("u", self.removeDemoLight)
 
         # Create movement controller (Freecam)
@@ -435,8 +435,8 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 23.0)
-            # dPos = Vec3(100, 100, (rawValue - 50) * 10.0)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 23.0 + math.sin(rawValue)*50.0)
+            dPos = Vec3(100, 100, self.lastSliderValue - 20)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)
 

@@ -8,7 +8,7 @@
 const float scatteringEpsilon = 0.1;
 
 
-const float scatteringEpsilonInscatter = 0.001;
+const float scatteringEpsilonInscatter = 0.1;
 
 
 
@@ -88,11 +88,11 @@ vec3 scatteringComputeInscatteredLight(
     float sunFactor = pow(sunDistance, 80.0);
     float sunFactorOuter = pow(sunDistance, 1.0);
 
-    vec4 sunArea = vec4(sunFactor * 120.0 * vec4(1,1,0.8, 1) + sunFactorOuter * vec4(1.1,1,0.7, 1) * 0.3 );
+    vec4 sunArea = vec4(sunFactor * 120.0 * vec4(1,1,0.8, 1) + sunFactorOuter * vec4(1.1,1,0.7, 1) * 0.1 );
     // sunArea = vec4(0);
     if (isSky) {
       // sunArea *= 1.0 - saturate(cloudColor * 1.0);
-      // sunArea += cloudColor;
+      // sunArea += cloudColor * 5.0;
     } else {
       sunArea *= 0.0;
     }
@@ -173,7 +173,7 @@ vec3 scatteringComputeInscatteredLight(
 
       float muHorizon = - sqrt(1.0 -  ((options.radiusGround / startPosHeight) * (options.radiusGround / startPosHeight)) );
       
-      if (abs(muStartPos - muHorizon) < realEpsilonInscatter && false) 
+      if (     false   &&    abs(muStartPos - muHorizon) < realEpsilonInscatter) 
       {
         float realPathLength = pathLength / atmosphericFactor;
 
@@ -220,6 +220,7 @@ vec3 scatteringComputeInscatteredLight(
   }
 
 
-  return mix(inscatteredLight + sunArea.xyz, cloudColor.xyz + sunArea.xyz, cloudColor.w * (isSky ? 1.0 : 0.0));
+
+  return mix(inscatteredLight + sunArea.xyz*inscatteredLight.xyz*5.0, cloudColor.xyz + sunArea.xyz, cloudColor.w * (isSky ? 1.0 : 0.0));
 }
 

@@ -140,7 +140,8 @@ class RenderingPipeline(DebugObject):
         if not effect.getSetting("castGI"):
             obj.hide(self.getVoxelizePassBitmask())
 
-        obj.setShader(effect.getShader("Default"), sort)
+        # obj.setShader(effect.getShader("Default"), sort)
+        effect.assignNode(obj, "Default", sort)
 
         # Create shadow caster state
         if effect.getSetting("castShadows"):
@@ -150,11 +151,6 @@ class RenderingPipeline(DebugObject):
             stateName = "NodeEffect" + str(effect.getEffectID())
             self.lightManager.shadowPass.registerTagState(stateName, initialState.getState())
             obj.setTag("ShadowPassShader", stateName)
-
-    def reloadEffects(self):
-        """ Reloads all effects from disk """
-        pass
-
 
     def fillTextureStages(self, nodePath):
         """ Prepares all materials of a given nodepath to have at least the 4 
@@ -231,7 +227,10 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.setShaders()
         if self.settings.enableGlobalIllumination:
             self.globalIllum.reloadShader()
-        self.reloadEffects()
+
+    def reloadEffects(self):
+        """ Reloads all effects """
+        self.effectLoader.reloadEffects()
 
     def getRenderPassManager(self):
         """ Returns a handle to the render pass manager attribute """
@@ -434,7 +433,7 @@ class RenderingPipeline(DebugObject):
             earthScattering = Scattering(self)
             scale = 100
             earthScattering.setSettings({
-                "atmosphereOffset": Vec3(0, 0, - (6360.0 + 16.5) * scale),
+                "atmosphereOffset": Vec3(0, 0, - (6360.0 + 0.2) * scale),
                 "atmosphereScale": Vec3(scale)
             })
             earthScattering.precompute()
@@ -493,6 +492,7 @@ class RenderingPipeline(DebugObject):
 
         # Handy shortcuts
         self.showbase.accept("r", self.reloadShaders)
+        self.showbase.accept("t", self.reloadEffects)
         self.showbase.accept("f7", self.createBugReport)
 
         if self.settings is None:

@@ -18,6 +18,7 @@ from Code.DirectionalLight import DirectionalLight
 from Code.Scattering import Scattering
 
 from Code.GlobalIllumination import GlobalIllumination
+from Code.Water.ProjectedWaterGrid import ProjectedWaterGrid
 
 from panda3d.core import CollisionTraverser, CollisionNode
 from panda3d.core import CollisionHandlerQueue, CollisionRay
@@ -77,7 +78,7 @@ class World(ShowBase):
         self.renderPipeline.create()
 
         # Add a directional light
-        dPos = Vec3(40, 40, 40)
+        dPos = Vec3(40, 40, 15)
         dirLight = DirectionalLight()
         dirLight.setPos(dPos * 1000000.0)
         dirLight.setShadowMapResolution(2048)
@@ -85,6 +86,7 @@ class World(ShowBase):
         dirLight.setColor(6, 6, 6)
         self.renderPipeline.addLight(dirLight)
         self.renderPipeline.setGILightSource(dirLight)
+        self.renderPipeline.setScatteringSource(dirLight)
 
 
 
@@ -207,6 +209,12 @@ class World(ShowBase):
         # collisions occuring
         # self.cTrav.showCollisions(render)
 
+
+        # Create some ocean
+        self.water = ProjectedWaterGrid(self.renderPipeline)
+        self.water.setWaterLevel(-2.0)
+
+        # Create the skybox
         self.skybox = self.renderPipeline.getDefaultSkybox()
         self.skybox.reparentTo(render)
 

@@ -26,6 +26,7 @@ from IESLoader import IESLoader
 from .RenderPasses.ShadowScenePass import ShadowScenePass
 from .RenderPasses.LightCullingPass import LightCullingPass
 from .RenderPasses.ScatteringPass import ScatteringPass
+from .RenderPasses.ScatteringCubemapPass import ScatteringCubemapPass
 from .RenderPasses.UnshadowedLightsPass import UnshadowedLightsPass
 from .RenderPasses.ShadowedLightsPass import ShadowedLightsPass
 
@@ -158,6 +159,10 @@ class LightManager(DebugObject):
         """ Creates the scattering pass """
         self.scatteringPass = ScatteringPass()
         self.pipeline.getRenderPassManager().registerPass(self.scatteringPass)
+
+        self.scatteringCubemapPass = ScatteringCubemapPass()
+        self.pipeline.getRenderPassManager().registerPass(self.scatteringCubemapPass)
+
 
     def _loadIESProfiles(self):
         """ Loads the ies profiles from Data/IESProfiles. """

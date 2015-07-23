@@ -28,8 +28,8 @@ class ScatteringPass(RenderPass):
             "mainCam": "Variables.mainCam",
 
             "wsPositionTex": "DeferredScenePass.wsPosition",
+            "wsNormalTex": "DeferredScenePass.wsNormal",
             "basecolorTex": "DeferredScenePass.data3",
-            # "viewSpaceNormals": "ViewSpacePass.normals",
             # "viewSpacePosition": "ViewSpacePass.position"
 
             "cloudsTex": ["CloudRenderPass.resultTex", "Variables.emptyTextureWhite"]
@@ -38,6 +38,8 @@ class ScatteringPass(RenderPass):
     def create(self):
         self.target = RenderTarget("Scattering")
         self.target.addColorTexture()
+        self.target.addAuxTexture()
+        self.target.setAuxBits(16)
         self.target.setColorBits(16)
         self.target.prepareOffscreenBuffer()
  
@@ -51,4 +53,5 @@ class ScatteringPass(RenderPass):
     def getOutputs(self):
         return {
             "ScatteringPass.resultTex": lambda: self.target.getColorTexture(),
+            "ScatteringPass.resultReflectedTex": lambda: self.target.getAuxTexture(0),
         }

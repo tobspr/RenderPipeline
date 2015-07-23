@@ -30,7 +30,7 @@ class InitialRenderPass(RenderPass):
             "mainRender": "Variables.mainRender",
             "currentViewMat": "Variables.currentViewMat",
             "frameIndex": "Variables.frameIndex",
-            "scatteringSunDirection": "Variables.scatteringSunDirection",
+            "scatteringSunDirection": ["Variables.scatteringSunDirection", "Variables.null"],
             
 
         }

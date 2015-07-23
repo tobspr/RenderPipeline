@@ -28,3 +28,8 @@ class EffectLoader(DebugObject):
         self.effectCache[cache_name] = effect
 
         return effect
+
+    def reloadEffects(self):
+        """ Reloads all effects """
+        for effect in self.effectCache.values():
+            effect.reload()
