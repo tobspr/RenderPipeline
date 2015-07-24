@@ -509,7 +509,7 @@
 #endif
 
 #ifndef SMAA_DECODE_VELOCITY
-#define SMAA_DECODE_VELOCITY(sample) (sample.rg / -255.0)
+#define SMAA_DECODE_VELOCITY(sample) (sample.rg * -1.0)
 #endif
 
 //-----------------------------------------------------------------------------
@@ -1310,6 +1310,9 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
         float2 velocity = blendingWeight.x * SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, blendingCoord.xy));
         velocity += blendingWeight.y * SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, blendingCoord.zw));
 
+        velocity = SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, texcoord));
+        // velocity = vec2(0);
+
         // Pack velocity into the alpha channel:
         color.a = sqrt(5.0 * length(velocity));
         #endif
@@ -1339,6 +1342,9 @@ float4 SMAAResolvePS(float2 texcoord,
     // Reproject current coordinates and fetch previous pixel:
     float4 previous = SMAASamplePoint(previousColorTex, texcoord + velocity);
 
+    // #undef SMAA_REPROJECTION_WEIGHT_SCALE
+    // #define SMAA_REPROJECTION_WEIGHT_SCALE 100.0
+
     // Attenuate the previous pixel if the velocity is different:
     float delta = abs(current.a * current.a - previous.a * previous.a) / 5.0;
     float weight = 0.5 * saturate(1.0 - sqrt(delta) * SMAA_REPROJECTION_WEIGHT_SCALE);
@@ -1348,6 +1354,8 @@ float4 SMAAResolvePS(float2 texcoord,
         weight = 0.0;
     }
 
+    weight = 0.5;
+    // return vec4(previous.xyz, 1);
     // Blend the pixels according to the calculated weight:
     return lerp(current, previous, weight);
     #else

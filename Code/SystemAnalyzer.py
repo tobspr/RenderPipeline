@@ -26,6 +26,7 @@ class SystemAnalyzer():
         stat("Panda3D-Compiler", PandaSystem.getCompiler())
         stat("Panda3D-Distributor", PandaSystem.getDistributor())
         stat("Panda3D-Version", PandaSystem.getVersionString())
+        stat("Panda3D-GITCommit", PandaSystem.getGitCommit())
         stat("Panda3D-Platform", PandaSystem.getPlatform())
         stat("Panda3D-Official?", PandaSystem.isOfficialVersion())
 

@@ -1,0 +1,14 @@
+#pragma once
+
+
+// Compute normal from a heightmap
+vec3 compute_terrain_normal(sampler2D map, vec2 terrain_coord, float terrain_height, out vec3 tangent, out vec3 binormal) {
+    vec3 pixel_size = vec3(1.0, -1.0, 0) / textureSize(map, 0).xxx;
+    float h_u0 = texture(map, terrain_coord + pixel_size.yz).x * terrain_height;
+    float h_u1 = texture(map, terrain_coord + pixel_size.xz).x * terrain_height;
+    float h_v0 = texture(map, terrain_coord + pixel_size.zy).x * terrain_height;
+    float h_v1 = texture(map, terrain_coord + pixel_size.zx).x * terrain_height;
+    tangent = normalize(vec3(1, 0, h_u1 - h_u0));
+    binormal = normalize(vec3(0, 1, h_v1 - h_v0));
+    return normalize(cross(tangent, binormal));
+}

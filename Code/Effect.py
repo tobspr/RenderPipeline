@@ -24,6 +24,7 @@ class Effect(DebugObject):
             "dynamic": False,
             "castShadows": True,
             "castGI": True,
+            "mainPass": True
         }
         self.assignments = {"Default": [], "Shadows": []}
 

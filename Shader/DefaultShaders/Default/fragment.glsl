@@ -13,6 +13,8 @@ uniform sampler2D p3d_Texture1;
 uniform sampler2D p3d_Texture2;
 uniform sampler2D p3d_Texture3;
 
+uniform int frameIndex;
+
 // This is required for the materials
 #pragma include "Includes/MaterialPacking.include"
 #pragma include "Includes/CommonFunctions.include"
@@ -82,6 +84,15 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
 
+
+    // Antialiasing debugging
+    #if 0
+    if (frameIndex%2==0) {
+        m.baseColor = vec3(0.2,0.6,1.0);
+    } else {
+        m.baseColor = vec3(1.0,0.6,0.2);
+    }
+    #endif
 
     #pragma ENTRY_POINT MATERIAL
 

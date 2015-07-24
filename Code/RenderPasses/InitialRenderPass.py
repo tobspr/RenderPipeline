@@ -30,6 +30,9 @@ class InitialRenderPass(RenderPass):
             "mainRender": "Variables.mainRender",
             "currentViewMat": "Variables.currentViewMat",
             "frameIndex": "Variables.frameIndex",
+            "terrainScale": "Variables.null",
+            "terrainOffset": "Variables.null",
+            "terrainHeightmap": "Variables.emptyTextureWhite",
             "scatteringSunDirection": ["Variables.scatteringSunDirection", "Variables.null"],
             
 

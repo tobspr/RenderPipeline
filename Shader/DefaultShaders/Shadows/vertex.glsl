@@ -3,7 +3,7 @@
 #pragma include "Includes/Configuration.include"
 
 in vec4 p3d_Vertex;
-uniform mat4 p3d_ModelViewProjectionMatrix;
+uniform mat4 p3d_ViewProjectionMatrix;
 uniform mat4 trans_model_to_world;
 
 
@@ -22,10 +22,9 @@ void main() {
 
     #pragma ENTRY_POINT WS_POSITION
 
-    gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;   
+    gl_Position = p3d_ViewProjectionMatrix * worldPos;   
 
     #pragma ENTRY_POINT SHADER_END
-    
     #pragma ENTRY_POINT VERTEX_PROJECTION
 
 

@@ -36,6 +36,9 @@ from RenderPasses.DynamicExposurePass import DynamicExposurePass
 from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 from RenderPasses.VolumetricLightingPass import VolumetricLightingPass
 from RenderPasses.MotionBlurPass import MotionBlurPass
+from RenderPasses.SceneFinishPass import SceneFinishPass
+
+from GUI.BufferViewerGUI import BufferViewerGUI
 
 from direct.gui.DirectFrame import DirectFrame
 
@@ -140,7 +143,9 @@ class RenderingPipeline(DebugObject):
         if not effect.getSetting("castGI"):
             obj.hide(self.getVoxelizePassBitmask())
 
-        # obj.setShader(effect.getShader("Default"), sort)
+        if not effect.getSetting("mainPass"):
+            obj.hide(self.getMainPassBitmask())
+
         effect.assignNode(obj, "Default", sort)
 
         # Create shadow caster state
@@ -148,6 +153,7 @@ class RenderingPipeline(DebugObject):
             initialState = NodePath("EffectInitialState"+str(effect.getEffectID()))
             initialState.setShader(effect.getShader("Shadows"), sort + 20)
             initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
+            # initialState.setInstanceCount(600)
             stateName = "NodeEffect" + str(effect.getEffectID())
             self.lightManager.shadowPass.registerTagState(stateName, initialState.getState())
             obj.setTag("ShadowPassShader", stateName)
@@ -254,8 +260,11 @@ class RenderingPipeline(DebugObject):
         """ Creates the buffers which store the last frame depth, as the render
         target matcher cannot handle this """
 
-        # self.lastFrameDepth = Texture()
-        # self.lastFrameDepth.setup2dTexture()
+        self.lastFrameDepth = Texture("LastFrameDepth")
+        self.lastFrameDepth.setup2dTexture(self.showbase.win.getXSize(), self.showbase.win.getYSize(),
+            Texture.TFloat, Texture.FR32)
+        BufferViewerGUI.registerTexture("LastFrameDepth", self.lastFrameDepth)
+        self.renderPassManager.registerStaticVariable("lastFrameDepth", self.lastFrameDepth)
 
     def _createInputHandles(self):
         """ Defines various inputs to be used in the shader passes. Most inputs
@@ -501,6 +510,7 @@ class RenderingPipeline(DebugObject):
 
         self.debug("Checking required Panda3D version ..")
         SystemAnalyzer.checkPandaVersionOutOfDate(29,04,2015)
+        SystemAnalyzer.analyze()
 
         # Mount everything first
         self.mountManager.mount()
@@ -575,6 +585,10 @@ class RenderingPipeline(DebugObject):
         # Add final pass
         self.finalPostprocessPass = FinalPostprocessPass()
         self.renderPassManager.registerPass(self.finalPostprocessPass)
+
+        # Add scene finish pass
+        self.sceneFinishPass = SceneFinishPass()
+        self.renderPassManager.registerPass(self.sceneFinishPass)
 
         # Create managers
         self.occlusionManager = AmbientOcclusionManager(self)

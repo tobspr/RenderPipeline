@@ -23,7 +23,7 @@ void renderMaterial(Material m) {
     // But the vertex shader already does the * 0.5
     vec2 lastTexcoord = lastProj.xy / lastProj.w + 0.5;
     vec2 fragCoord = (ivec2(gl_FragCoord.xy) + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-    vec2 velocity = (lastTexcoord - fragCoord) * 255.0;
+    vec2 velocity = (lastTexcoord - fragCoord);
 
     #else
     vec2 velocity = vec2(0);

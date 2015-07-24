@@ -28,6 +28,7 @@ class MemoryMonitor:
             26: 4,     # Depth 32 Bit
             27: 2,     # FR16     
             34: 4,     # FR32i
+            35: 4,     # FR32
         }
 
         # Get format and compute size per component

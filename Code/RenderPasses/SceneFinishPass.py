@@ -5,36 +5,34 @@ from ..Globals import Globals
 from ..RenderPass import RenderPass
 from ..RenderTarget import RenderTarget
 
-class FinalPostprocessPass(RenderPass):
+class SceneFinishPass(RenderPass):
 
-    """ This pass does the final postprocessing, including color correction and
-    adding a vignette. """
+    """ This pass copies the current frame textures to the last frame textures. """
 
     def __init__(self):
         RenderPass.__init__(self)
 
     def getID(self):
-        return "FinalPostprocessPass"
+        return "SceneFinishPass"
 
     def getRequiredInputs(self):
         return {
             "colorTex": ["MotionBlurPass.resultTex", "AntialiasingPass.resultTex", "SSLRPass.resultTex", "TransparencyPass.resultTex", "LightingPass.resultTex"],
             "colorLUT": "Variables.colorLUT",
             "velocityTex": "DeferredScenePass.velocity",
+            "depthTex": "DeferredScenePass.depth",
+            "lastFrameDepthTex": "Variables.lastFrameDepth"
         }
 
     def create(self):
-        self.target = RenderTarget("Final Pass")
+        self.target = RenderTarget("Scene Finish Pass")
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
-
-        # Make this pass show on the screen
-        Globals.base.win.getDisplayRegion(1).setCamera(self.target._quad.getChild(0))
 
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 
             "Shader/DefaultPostProcess.vertex",
-            "Shader/FinalPostprocessPass.fragment")
+            "Shader/SceneFinishPass.fragment")
         self.target.setShader(shader)
 
         return [shader]
