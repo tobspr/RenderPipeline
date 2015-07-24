@@ -78,7 +78,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
 
     vec3 environmentColor = scatteringReflected * 1.5;
-    environmentColor = ambientRefColor * 1.5;
+    // environmentColor = ambientRefColor * 1.5;
     environmentColor = pow(environmentColor, vec3(1.0 / 2.2));
     environmentColor *= pow(ambientRefColor, vec3(1.0 / 1.0));
 
