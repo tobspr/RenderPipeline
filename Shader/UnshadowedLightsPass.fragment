@@ -28,6 +28,8 @@ uniform sampler2D depth;
 uniform vec3 cameraPosition;
 
 
+in vec2 texcoord;
+
 #pragma include "Includes/Lights.include"
 
 

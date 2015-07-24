@@ -24,9 +24,8 @@ void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 localCoord = coord % cubemapSize;
-    vec2 floatCoord = (localCoord / vec2(cubemapSize)) * 2-1;
+    vec2 floatCoord = (localCoord / vec2(cubemapSize)) * 2.0 - 1.0;
     int faceIndex = coord.x / cubemapSize; 
-
 
     vec3 baseDir = vec3(0);
 
@@ -37,6 +36,7 @@ void main() {
     else if (faceIndex == 4) baseDir = vec3(floatCoord.x, -floatCoord.y, -1);
     else if (faceIndex == 5) baseDir = vec3(-floatCoord.x, -floatCoord.y, 1);
 
+    // if (faceIndex == 1) baseDir = vec3(0);
 
     baseDir = normalize(baseDir);
 

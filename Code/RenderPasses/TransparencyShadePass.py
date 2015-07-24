@@ -51,6 +51,10 @@ class TransparencyShadePass(RenderPass):
             "shadowSources": "Variables.allShadowSources",
             "directionToFace": "Variables.directionToFaceLookup",
 
+            "scatteringCubemap": ["ScatteringCubemapPass.resultCubemap", "Variables.defaultEnvironmentCubemap"],
+            "scatteringAttenuation": ["ScatteringPass.attenuationTex", "Variables.emptyTextureWhite"],
+
+
             # IES Profiles
             "IESProfilesTex": "Variables.IESProfilesTex",
 

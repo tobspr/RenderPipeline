@@ -45,7 +45,6 @@ class LightingPass(RenderPass):
 
             # Scattering
             "scatteringTex": ["ScatteringPass.resultTex", "Variables.emptyTextureWhite"],
-            "scatteringReflectedTex": ["ScatteringPass.resultReflectedTex", "Variables.emptyTextureWhite"],
 
             # Default environment
             "fallbackCubemap": "Variables.defaultEnvironmentCubemap",
@@ -57,6 +56,8 @@ class LightingPass(RenderPass):
             # Precomputed unshadowed lights
             "shadowedLightsTex": ["ShadowedLightsPass.resultTex"],
             "scatteringCubemap": ["ScatteringCubemapPass.resultCubemap", "Variables.defaultEnvironmentCubemap"],
+            "scatteringAttenuation": ["ScatteringPass.attenuationTex", "Variables.emptyTextureWhite"],
+
 
             # Volumetric lighting
             "volumetricLightingTex": ["VolumetricLightingPass.resultTex", "Variables.emptyTextureWhite"],

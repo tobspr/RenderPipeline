@@ -21,6 +21,7 @@ class ScatteringPass(RenderPass):
             # Scattering
             "transmittanceSampler": ["Variables.transmittanceSampler", "Variables.emptyTextureWhite"],
             "inscatterSampler": ["Variables.inscatterSampler", "Variables.emptyTextureWhite"],
+            "irradianceSampler": ["Variables.irradianceSampler", "Variables.emptyTextureWhite"],
             "scatteringOptions": ["Variables.scatteringOptions", "Variables.null"],
 
             "mainRender": "Variables.mainRender",
@@ -53,5 +54,5 @@ class ScatteringPass(RenderPass):
     def getOutputs(self):
         return {
             "ScatteringPass.resultTex": lambda: self.target.getColorTexture(),
-            "ScatteringPass.resultReflectedTex": lambda: self.target.getAuxTexture(0),
+            "ScatteringPass.attenuationTex": lambda: self.target.getAuxTexture(0),
         }

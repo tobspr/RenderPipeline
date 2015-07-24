@@ -54,8 +54,6 @@ layout(location = 0) out vec4 lightingResult;
 // Scattering result
 #if defined(USE_SCATTERING)
 uniform sampler2D scatteringTex;
-
-uniform sampler2D scatteringReflectedTex;
 #endif
 
 // Dynamic exposure

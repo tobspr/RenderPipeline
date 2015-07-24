@@ -14,6 +14,15 @@
 #pragma include "Includes/Structures/Light.struct"
 #pragma include "Includes/Structures/ShadowSource.struct"
 
+
+
+// Doesn't work with transparency
+#undef CUBEMAP_ANTIALIASING_FACTOR
+#define CUBEMAP_ANTIALIASING_FACTOR 0.0
+
+#define DISABLE_ATTENUATION_READ 1
+
+
 #pragma include "Includes/Ambient.include"
 
 
@@ -33,6 +42,7 @@ flat in uint batchOffset;
 layout(rgba32ui) uniform uimageBuffer materialDataBuffer;
 
 uniform isampler2D pixelCountBuffer;
+
 
 #pragma include "Includes/Lights.include"
 
@@ -160,14 +170,14 @@ void main() {
 
     currentBufferPos += MAX_SHADOWED_SPOT_LIGHTS;
 
-    tm.baseColor = max(lightingResult, vec3(0.0));
+    tm.baseColor = max(lightingResult * 0.5, vec3(0.0));
 
 
     // Compute ambient
     vec3 viewVector = normalize(cameraPosition - material.position);
-    tm.baseColor += computeAmbient(material, vec4(1.0), vec4(0), 0.8, viewVector, vec3(1));
+    tm.baseColor += computeAmbient(material, vec4(1.0), vec4(0), 0.8, viewVector);
 
-    tm.baseColor *= 3.0;
+    tm.baseColor *= 0.1;
 
 
 

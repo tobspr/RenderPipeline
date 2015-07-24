@@ -54,6 +54,9 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
     vec3 ambientRefColor = filterEnvironmentMap(fallbackCubemap, material, transformCubemapCoordinates(reflectedDir));
 
 
+    vec3 iblColor = textureLod(fallbackCubemap, transformCubemapCoordinates(material.normal), fallbackCubemapMipmaps - 4).xyz;
+
+
     #if defined(USE_SCATTERING)
     vec3 scatteringReflected = textureLod(scatteringCubemap, reflectedDir, 0).xyz;
     #else
@@ -75,6 +78,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
 
     vec3 environmentColor = scatteringReflected * 1.5;
+    environmentColor = ambientRefColor * 1.5;
     environmentColor = pow(environmentColor, vec3(1.0 / 2.2));
     environmentColor *= pow(ambientRefColor, vec3(1.0 / 1.0));
 
@@ -93,11 +97,12 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
                 material.baseColor *                        // Tint by material color
                 saturate(1.0 - material.metallic) *         // No diffuse ambient for metallic objects
                 saturate(1.0 + giAmbient.w) *               // Global Illumination Occlusion
-                0.5 * vec3(1.0,1.05,1.1)                    // Color tint
+                0.2 * vec3(1.0,1.2,1.7)                    // Color tint
+                *mix(iblColor, vec3(1), 0.3)
     ;
 
 
-    result += borderFactor * environmentColor * 0.4 * saturate(1.0 - 0*material.metallic) * material.specular;
+    result += borderFactor * environmentColor * 2.4 * saturate(1.0 - 0*material.metallic) * material.specular;
 
 
     vec3 metallicSpecularAmbient = mix(environmentColor, material.baseColor, material.translucency) * mix(occlusionFactor, 1.0, 0.0) * material.specular;

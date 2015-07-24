@@ -8,6 +8,7 @@
 #pragma include "Includes/PoissonDisk.include"
 
 
+
 vec3 computeSpecular(vec3 specularColor, float roughness, float NxL, float LxH, float NxV, float NxH) {
     float specularD = DistributionBRDF(roughness, NxH);
     float specularG = GeometricBRDF(roughness, NxV, NxL);

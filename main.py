@@ -97,7 +97,9 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
-        self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
+        # self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
+        # self.sceneSource = "Demoscene.ignore/EiffelTower/Scene.bam"
+        # self.sceneSource = "Demoscene.ignore/HarvesterModel/Model.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
@@ -223,15 +225,15 @@ class Main(ShowBase, DebugObject):
 
     def addDemoLight(self):
         """ Spawns a new light at a random position with a random color """
-        randomRadius = 90.0
+        randomRadius = 40.0
         light = SpotLight()
-        # spot = Vec3( (random()-0.5) * randomRadius, (random()-0.5) * randomRadius, 22)
-        spot = self.cam.getPos(self.render)
+        spot = Vec3( (random()-0.5) * randomRadius, (random()-0.5) * randomRadius, 22)
+        # spot = self.cam.getPos(self.render)
         light.setPos(spot)
         light.lookAt(Vec3(spot.x,spot.y,0))
         # print "pos is", spot,"look at",Vec3(spot.x,spot.y,0)
-        # light.setColor(Vec3( random(), random(), random()) * 0.2)
-        light.setColor(Vec3( 1.0, 0.5, 0.3) * 0.05)
+        light.setColor(Vec3( random(), random(), random()) * 0.2)
+        # light.setColor(Vec3( 1.0, 0.5, 0.3) * 0.05)
         light.setNearFar(1.0, 50)
         light.setFov(140)
         light.setIESProfile("SoftArrow")
@@ -258,7 +260,8 @@ class Main(ShowBase, DebugObject):
 
 
         # import time
-        # time.sleep(0.5)
+        # time.sleep(0.2)
+
         # Uncomment for party mode :-)
         # self.removeDemoLight()
         # self.addDemoLight()
@@ -319,6 +322,8 @@ class Main(ShowBase, DebugObject):
             matches = self.scene.findAllMatches("**/T__*")
             if matches:
                 for match in matches:
+                    match.hide()
+                    continue
                     self.transparentObjects.append(match)
                     self.renderPipeline.setEffect(match, "Effects/Default/Default.effect", {
                         "transparent": True
@@ -363,8 +368,8 @@ class Main(ShowBase, DebugObject):
             self.groundPlane.reparentTo(render)
 
 
-        # lerpTop = self.scene.posInterval(0.4, Vec3(0, 0, 7), startPos=Vec3(0,0,2))
-        # lerpBot = self.scene.posInterval(0.4, Vec3(0, 0, 2), startPos=Vec3(0,0,7))
+        # lerpTop = self.scene.posInterval(0.8, Vec3(0, 0, 7), startPos=Vec3(0,0,2))
+        # lerpBot = self.scene.posInterval(0.8, Vec3(0, 0, 2), startPos=Vec3(0,0,7))
         # sequence = Sequence(lerpTop, lerpBot)
         # sequence.loop()
 
@@ -373,10 +378,10 @@ class Main(ShowBase, DebugObject):
         #     })
 
         # Some artists really don't know about backface culling
-        self.scene.setTwoSided(True)
+        # self.scene.setTwoSided(True)
 
         # Create some ocean
-        self.water = ProjectedWaterGrid(self.renderPipeline)
+        # self.water = ProjectedWaterGrid(self.renderPipeline)
 
 
 
@@ -394,15 +399,14 @@ class Main(ShowBase, DebugObject):
         self.accept("f12", self.screenshot)
 
         # Hotkeys to spawn / remove lights
-        self.accept("is", self.addDemoLight)
-        self.accept("u", self.removeDemoLight)
+        self.accept("u", self.addDemoLight)
+        self.accept("i", self.removeDemoLight)
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
 
-
-        camPos = Vec3(-2.5, -10, 55)
-        camHpr = Vec3(0, -14, 0)
+        camPos = Vec3(-4.92549, -7.57746, 7.20246)
+        camHpr = Vec3(-42.3281, -1.38704, 0)
 
         self.controller.setInitialPositionHpr(
             camPos, camHpr)

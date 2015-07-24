@@ -39,6 +39,8 @@ struct MaterialPointer {
     float depth;
 };
 
+// #undef MAX_TRANSPARENCY_LAYERS
+// #define MAX_TRANSPARENCY_LAYERS 20
 
 //Bubble sort used to sort fragments
 MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS], int size) {
@@ -106,7 +108,7 @@ void main() {
     // #if defined(DEBUG_VISUALIZATION_ACTIVE)
     //     colorResult = vec4(currentColor, currentSSLRFactor);
     //     return;
-    // #endif
+
 
     // Store parts of the data in registers
     MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS];
@@ -140,7 +142,7 @@ void main() {
         uvec4 data1 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2);
         uvec4 data2 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2+1);
         TransparentMaterial tm = unpackTransparentMaterial(data1, data2);
-        // tm.baseColor *= 10.0;
+        tm.baseColor *= 10.0;
 
         if (tm.depth > pixelDepth) continue;
 

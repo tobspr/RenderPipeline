@@ -9,6 +9,8 @@ out vec4 result;
 out vec4 resultReflected;
 
 uniform sampler3D inscatterSampler;
+uniform sampler2D irradianceSampler;
+uniform sampler2D transmittanceSampler;
 uniform ScatteringOptions scatteringOptions;
 
 uniform sampler2D wsPositionTex;
@@ -79,7 +81,19 @@ void main() {
         attenuation, 
         irradianceFactor);
 
-    resultReflected = vec4(0.2, 0.6, 1.0, 1.0);
+
+    vec3 scatteringSpacePosition = scatteringTransformPosition(scatteringOptions, wsPosition * 1.0);
+    float surfacePosHeight = length(scatteringSpacePosition);
+    float musSurfacePos = dot(scatteringSpacePosition, scatteringOptions.sunVector) / surfacePosHeight;
+
+    vec3 irradianceSurface = irradiance(scatteringOptions, irradianceSampler, surfacePosHeight, musSurfacePos) ;
+
+    // attenuate direct sun light on its path from top of atmosphere to 
+    vec3 attenuationSunLight = transmittance(scatteringOptions, transmittanceSampler, surfacePosHeight, musSurfacePos);
+    vec3 reflectedLight = attenuationSunLight;
+
+
+    resultReflected = vec4(reflectedLight * 1.0, 1.0);
 
 
     #if 1
