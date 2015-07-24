@@ -20,7 +20,7 @@ class DynamicObjectsManager(DebugObject):
         DebugObject.__init__(self, "DynamicObjectsManager")
         self.pipeline = pipeline
         self.currentIndex = 0
-        self.maxVertexCount = 50000
+        self.maxVertexCount = 5000000
         self.split = 500
         self.init()
 
@@ -92,6 +92,9 @@ class DynamicObjectsManager(DebugObject):
                     data = vtxReader.getData3f()
                     indexWriter.setData1i(self.currentIndex)
                     self.currentIndex += 1
+
+                if self.currentIndex > self.maxVertexCount:
+                    self.error("Max dynamic vertex count of", self.maxVertexCount, "reached!")
 
     def unregisterObject(self, obj):
         """ Unregisters a dynamic object which was registered with registerObject.
