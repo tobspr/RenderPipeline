@@ -13,6 +13,11 @@
 #endif
 
 
+#if defined(USE_SCATTERING)
+uniform sampler2D scatteringAttenuation;
+#endif
+
+
 out vec4 result;
 
 // Light-IDs per tile

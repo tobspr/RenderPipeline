@@ -83,11 +83,11 @@ class World(ShowBase):
         dirLight.setPos(dPos * 1000000.0)
         dirLight.setShadowMapResolution(2048)
         dirLight.setCastsShadows(True)
-        dirLight.setColor(6, 6, 6)
+        dirLight.setColor(Vec3(8))
         self.renderPipeline.addLight(dirLight)
         self.renderPipeline.setGILightSource(dirLight)
         self.renderPipeline.setScatteringSource(dirLight)
-
+        self.dirLight = dirLight
 
 
 
@@ -212,7 +212,7 @@ class World(ShowBase):
 
         # Create some ocean
         self.water = ProjectedWaterGrid(self.renderPipeline)
-        self.water.setWaterLevel(-2.0)
+        self.water.setWaterLevel(-4.0)
 
         # Create the skybox
         self.skybox = self.renderPipeline.getDefaultSkybox()
@@ -221,6 +221,19 @@ class World(ShowBase):
         self.prepareSRGB(render)
         self.reloadShader()
         self.renderPipeline.onSceneInitialized()
+
+        # Add demo slider to move the sun position
+        if self.renderPipeline.settings.displayOnscreenDebugger:
+            self.renderPipeline.guiManager.demoSlider.node[
+                "command"] = self.setSunPos
+            self.renderPipeline.guiManager.demoSlider.node[
+                "value"] = 50
+
+    def setSunPos(self):
+        rawValue = self.renderPipeline.guiManager.demoSlider.node["value"]
+        dPos = Vec3(100, 100, rawValue - 20)
+        self.dirLight.setPos(dPos * 100000000.0)
+
         
     def reloadShader(self):
         self.renderPipeline.reloadShaders()

@@ -28,13 +28,11 @@ class OcclusionBlurPass(RenderPass):
         self.targetV = RenderTarget("OcclusionBlurV")
         self.targetV.setHalfResolution()
         self.targetV.addColorTexture()
-        self.targetV.setColorBits(16)
         self.targetV.prepareOffscreenBuffer()
  
         self.targetH = RenderTarget("OcclusionBlurH")
         self.targetH.setHalfResolution()
         self.targetH.addColorTexture()
-        self.targetH.setColorBits(16)
         self.targetH.prepareOffscreenBuffer()
 
         self.targetH.setShaderInput("processedSourceTex", self.targetV.getColorTexture())

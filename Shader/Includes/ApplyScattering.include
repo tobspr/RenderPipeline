@@ -85,7 +85,7 @@ vec3 scatteringComputeInscatteredLight(
   #if defined(USE_SKYBOX_CLOUDS)
     float distanceLen = distance( normalize(viewDir), normalize(options.sunVector) );
     float sunDistance = saturate(1.0 - distanceLen);
-    float sunFactor = pow(sunDistance, 80.0);
+    float sunFactor = pow(sunDistance, 150.0);
     float sunFactorOuter = pow(sunDistance, 1.0);
 
     vec4 sunArea = vec4(sunFactor * 120.0 * vec4(1,1,0.8, 1) + sunFactorOuter * vec4(1.1,1,0.7, 1) * 0.1 );
@@ -102,7 +102,7 @@ vec3 scatteringComputeInscatteredLight(
   #endif
 
   // sunArea *= 1.0 - pow(cloudColor.w, 1.0);
-  sunArea *= 0.0;
+  // sunArea *= 0.0;
 
   vec3 inscatteredLight = vec3(0, 0.0, 0);
   float offset;

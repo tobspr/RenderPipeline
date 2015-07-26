@@ -153,7 +153,10 @@ class RenderingPipeline(DebugObject):
             initialState = NodePath("EffectInitialState"+str(effect.getEffectID()))
             initialState.setShader(effect.getShader("Shadows"), sort + 20)
             initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
-            # initialState.setInstanceCount(600)
+
+            # Fix for the shadowed terrain. Initial state doesn't seem to work with instancing
+            # initialState.setInstanceCount(500)
+
             stateName = "NodeEffect" + str(effect.getEffectID())
             self.lightManager.shadowPass.registerTagState(stateName, initialState.getState())
             obj.setTag("ShadowPassShader", stateName)
@@ -203,7 +206,7 @@ class RenderingPipeline(DebugObject):
         registerDynamicObject """
         self.dynamicObjectsManager.unregisterObject(np)
 
-    def getDefaultSkybox(self, scale=40000):
+    def getDefaultSkybox(self, scale=60000):
         """ Loads the default skybox, scaling it by the given scale factor. Note
         that there should always be a noticeable difference between the skybox
         scale and the camera far plane, to avoid z-fighting issues. The default
@@ -440,9 +443,9 @@ class RenderingPipeline(DebugObject):
         specified in the settings """
         if self.settings.enableScattering:
             earthScattering = Scattering(self)
-            scale = 100
+            scale = 150
             earthScattering.setSettings({
-                "atmosphereOffset": Vec3(0, 0, - (6360.0 + 0.2) * scale),
+                "atmosphereOffset": Vec3(0, 0, - (6360.0 + 0.7) * scale),
                 "atmosphereScale": Vec3(scale)
             })
             earthScattering.precompute()
@@ -542,7 +545,7 @@ class RenderingPipeline(DebugObject):
             self.guiManager = None
 
         # Some basic scene settings
-        self.showbase.camLens.setNearFar(0.1, 50000)
+        self.showbase.camLens.setNearFar(0.1, 70000)
         self.showbase.camLens.setFov(110)
         self.showbase.win.setClearColor(Vec4(1.0, 0.0, 1.0, 1.0))
         self.showbase.camNode.setCameraMask(self.getMainPassBitmask())

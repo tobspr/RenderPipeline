@@ -95,7 +95,7 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   vec3 originVS = sao_getPositionVS(coord);
   vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
 
-  #if ENHANCE_TEMPORAL_OCCLUSION
+  #if defined(USE_TEMPORAL_OCCLUSION)
     float randomPatternRotationAngle = (frameIndex % 2);
   #else
     float randomPatternRotationAngle = 0.0;

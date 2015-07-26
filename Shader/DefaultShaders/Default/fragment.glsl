@@ -94,6 +94,14 @@ void main() {
     }
     #endif
 
+    // Material debugging
+    #if 0
+    m.baseColor = sampledDiffuse.rgb;
+    m.roughness = 1.0;
+    m.specular = 0.01;
+    m.metallic = 0.0;
+    #endif
+
     #pragma ENTRY_POINT MATERIAL
 
     // Write the material to the G-Buffer

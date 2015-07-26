@@ -7,7 +7,13 @@ out vec4 result;
 
 uniform sampler2D velocityTex;
 uniform sampler2D depthTex;
-uniform layout(r32f) image2D lastFrameDepthTex;
+
+#if defined(USE_TEMPORAL_OCCLUSION)
+uniform writeonly image2D lastFrameOcclusionTex;
+uniform sampler2D currentOcclusionTex;
+#endif
+
+uniform writeonly image2D lastFrameDepthTex;
 
 
 void main() {
@@ -18,6 +24,15 @@ void main() {
     // Store last frame depth
     float depth = texelFetch(depthTex, screenCoord, 0).x;
     imageStore(lastFrameDepthTex, screenCoord, vec4(depth));
+
+    // Store last frame occlusion
+    #if defined(USE_TEMPORAL_OCCLUSION)
+
+    vec4 occlusion = texelFetch(currentOcclusionTex, screenCoord, 0);
+    imageStore(lastFrameOcclusionTex, screenCoord, occlusion);
+
+    #endif
+
 
     result = vec4(pow(depth, 15.0));
 

@@ -65,10 +65,10 @@ void main() {
 
 
     #else
-    if (isSkybox) {
-        // wsPosModified *= 1e20;
-    }
     #endif
+    if (isSkybox) {
+        wsPosModified *= 1e10;
+    }
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(
         scatteringOptions,
@@ -82,7 +82,8 @@ void main() {
         irradianceFactor);
 
 
-    vec3 scatteringSpacePosition = scatteringTransformPosition(scatteringOptions, wsPosition * 1.0);
+    vec3 scatteringSpacePosition = scatteringTransformPosition(scatteringOptions, wsPosition * vec3(0));
+
     float surfacePosHeight = length(scatteringSpacePosition);
     float musSurfacePos = dot(scatteringSpacePosition, scatteringOptions.sunVector) / surfacePosHeight;
 
@@ -90,10 +91,10 @@ void main() {
 
     // attenuate direct sun light on its path from top of atmosphere to 
     vec3 attenuationSunLight = transmittance(scatteringOptions, transmittanceSampler, surfacePosHeight, musSurfacePos);
-    vec3 reflectedLight = attenuationSunLight;
+    vec3 reflectedLight = attenuation * attenuationSunLight;
 
 
-    resultReflected = vec4(reflectedLight * 1.0, 1.0);
+    resultReflected = vec4(max(vec3(0.0), reflectedLight), 1.0);
 
 
     #if 1
@@ -101,13 +102,13 @@ void main() {
     scatteringResult *= 4.5;
 
     if (!isSkybox) {
-        float fogFactor = saturate( (distance(cameraPosition, wsPosition) - 5.0) / 5550.0);
+        float fogFactor = saturate( (distance(cameraPosition, wsPosition) - 5.0) / 580.0);
         // scatteringResult *= 0.2;
         // fogFactor = smoothstep(0.0, 1.0, fogFactor);
         // fogFactor = 0.0;
         // fogFactor = 0.4;
         // fogFactor = saturate(fogFactor);
-        scatteringResult *= 0.5 * fogFactor;
+        scatteringResult *= 0.3 * fogFactor;
         // scatteringResult *= 0.0;
         // scatteringResult *= 0.0;
         // scatteringResult = vec3(fogFactor);

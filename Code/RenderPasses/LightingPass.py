@@ -34,11 +34,8 @@ class LightingPass(RenderPass):
             # GI and occlusion
             "giDiffuseTex": ["GlobalIlluminationPass.diffuseResult", "Variables.emptyTextureWhite"],
             "giReflectionTex": ["GlobalIlluminationPass.specularResult", "Variables.emptyTextureWhite"],
-            "occlusionTex": ["OcclusionBlurPass.blurResult", "Variables.emptyTextureWhite"],
+            "occlusionTex": ["OcclusionCombinePass.resultTex", "OcclusionBlurPass.blurResult", "Variables.emptyTextureWhite"],
 
-
-            # "lastFramePosition": "Variables.emptyTextureWhite", #TODO
-            # "lastFrameOcclusion": "Variables.emptyTextureWhite", #TODO
 
             # Dynamic exposure
             "dynamicExposureTex": ["Variables.dynamicExposureTex", "Variables.null"],

@@ -7,18 +7,21 @@
 // number of directions to sample in UV space
 #define HBAO_NUM_SAMPLE_DIRECTIONS OCCLUSION_SAMPLES
 #define HBAO_TANGENT_BIAS 0.1
-#define HBAO_NUM_SAMPLING_STEPS 4
-#define HBAO_SAMPLING_STEP 0.015 * OCCLUSION_RADIUS
+#define HBAO_NUM_SAMPLING_STEPS 8
+#define HBAO_SAMPLING_STEP 0.05 * OCCLUSION_RADIUS
 
-#define HBAO_SCALE 2.6 * OCCLUSION_STRENGTH
+#define HBAO_SCALE 1.6 * OCCLUSION_STRENGTH
 #define HBAO_SAMPLING_RADIUS 0.5 * OCCLUSION_RADIUS
 
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;
+uniform sampler2D worldSpacePosition;
 
 uniform mat4 currentProjMatInv;
 uniform sampler2D depthTex;
 uniform sampler2D noiseTex;
+
+uniform vec3 cameraPosition;
 
 const float TWO_PI = 2.0 * M_PI;
 
@@ -30,7 +33,7 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   float total = 0.0f;
   float sample_direction_increment = TWO_PI / HBAO_NUM_SAMPLE_DIRECTIONS;
  
-  #if defined(ENHANCE_TEMPORAL_OCCLUSION)
+  #if defined(USE_TEMPORAL_OCCLUSION)
     float frame_angle_offset = sample_direction_increment * 0.5 * (frameIndex %2);
   #else
     float frame_angle_offset = 0;
@@ -43,9 +46,14 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   #endif
 
 
+  float dist = distance(cameraPosition, texture(worldSpacePosition, coord).xyz);
+  float pixelFactor = 1.0 / dist;
+
+  pixelFactor = 2.5;
+
   for(uint i = 0; i < HBAO_NUM_SAMPLE_DIRECTIONS; i++)
   {
-    // no jittering or randomization of sampling direction just yet
+
     float sampling_angle = i * sample_direction_increment + frame_angle_offset + noise * sample_direction_increment; // azimuth angle theta in the paper
     vec2 sampleDir = vec2(cos(sampling_angle), sin(sampling_angle));
     // we will now march along sampleDir and calculate the horizon
@@ -57,8 +65,15 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
     for (uint j = 0; j < HBAO_NUM_SAMPLING_STEPS; j++)
     {
       // march along the sampling direction and see what the horizon is
-      vec2 sampleOffset = float(j+1) * HBAO_SAMPLING_STEP * sampleDir;
+      vec2 sampleOffset = float(j+1) * HBAO_SAMPLING_STEP * sampleDir * pixelFactor;
+
+
       vec2 offTex = coord + sampleOffset;
+
+      // Fix issues at screen border
+      if (any(greaterThan(offTex, vec2(1))) || any(lessThan(offTex, vec2(0)))) {
+        continue;
+      }
   
 
       #if 0 
@@ -83,7 +98,7 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
       }
     } // sampling steps
  
-    float normDiff = length(lastDiff) / HBAO_SAMPLING_RADIUS;
+    // float normDiff = length(lastDiff) / HBAO_SAMPLING_RADIUS;
     // float attenuation = 1 - normDiff*normDiff;
     float attenuation = 1.0 / (1 + length(lastDiff));
     // now compare horizon angle to tangent angle to get ambient occlusion

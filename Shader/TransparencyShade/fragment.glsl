@@ -23,8 +23,8 @@
 #define DISABLE_ATTENUATION_READ 1
 
 
-#pragma include "Includes/Ambient.include"
 
+uniform sampler2D scatteringAttenuation;
 
 
 uniform Light lights[MAX_VISIBLE_LIGHTS]; 
@@ -43,6 +43,7 @@ layout(rgba32ui) uniform uimageBuffer materialDataBuffer;
 
 uniform isampler2D pixelCountBuffer;
 
+#pragma include "Includes/Ambient.include"
 
 #pragma include "Includes/Lights.include"
 
@@ -73,7 +74,6 @@ void main() {
     material.roughness = tm.roughness;
     material.metallic = tm.metallic;
     material.specular = tm.specular;
-
 
 
     // Shade the pixel data

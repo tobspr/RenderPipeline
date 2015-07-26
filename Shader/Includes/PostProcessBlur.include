@@ -85,8 +85,8 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
 
 
 
-const float normalsDiscardThreshold = 0.95;
-const float occlusionMaxDistanceBlur = 0.1;
+const float normalsDiscardThreshold = 0.99;
+const float occlusionMaxDistanceBlur = 0.01;
 
 vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D positionTex) {
 
@@ -147,7 +147,7 @@ vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sou
         float distanceInfluenceFactor = saturate(occlusionMaxDistanceBlur / distance(samplePosition, pixelPosition) );
         float pixelFactor = weight * normalInfluenceFactor * distanceInfluenceFactor;
         // pixelFactor = weight;
-        pixelFactor = weight * normalInfluenceFactor;
+        // pixelFactor = weight * normalInfluenceFactor;
         sampledResult += sampleOcclusion*pixelFactor;
         sampleWeights += pixelFactor;   
     }

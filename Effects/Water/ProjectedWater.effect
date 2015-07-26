@@ -1,7 +1,7 @@
 
 
-define GLOBAL_WATER_SCALE 0.2
-define WATER_DISPLACE (vec3(1.0, 1.0, 1.1) * 1.8 * GLOBAL_WATER_SCALE)
+define GLOBAL_WATER_SCALE 0.8
+define WATER_DISPLACE (vec3(1.0, 1.0, 0.7) * 2.8 * GLOBAL_WATER_SCALE)
 define WATER_COORD_FACTOR (20.0 * GLOBAL_WATER_SCALE)
 define WATER_LOWRES_FACTOR 0.216
 define WATER_DISPLACE_DIST 5500.0
@@ -27,7 +27,7 @@ pass Default:
             // Intersect the ray with the water
             float dist = (-rayStart.z+waterHeight) / rayDir.z;
             vec3 intersectedPos = vec3(0);
-            float maxWaterDist = 15000.0;
+            float maxWaterDist = 25000.0;
 
             // If plane is hit
             if (dist < 0.0) {
@@ -55,7 +55,6 @@ pass Default:
             float displaceFactor = 1.0 - saturate(distance(cameraPosition, intersectedPos) / WATER_DISPLACE_DIST);
 
             vOutput.positionWorld += displace * WATER_DISPLACE * fade * displaceFactor;
-
 
         insert @VERTEX_PROJECTION:
             vOutput.lastProjectedPos = lastMVP * vec4(vOutput.positionWorld.xyz, 1.0) * vec4(1,1,1,2);
@@ -92,10 +91,10 @@ pass Default:
             vec2 terrainCoord = vec2(vOutput.positionWorld.xy - terrainOffset.xy) / hmapSize / terrainScale.xy;
             float terrainHeight = texture(terrainHeightmap, terrainCoord).x * terrainScale.z + terrainOffset.z;
 
-            float sampleLod = saturate(distance(vOutput.positionWorld, cameraPosition) / 1000.0);
+            float sampleLod = saturate( (distance(vOutput.positionWorld, cameraPosition)-10.0) / 1000.0);
             sampleLod = pow(log2(1.0 + sampleLod), 0.45);
             sampleLod = clamp(sampleLod, 0.0, 0.6);
-            sampleLod = 0.0;
+            // sampleLod = 0.0;
 
             vec3 normalDetail = textureLod(waterNormal, vOutput.texcoord, sampleLod ).xyz;
             vec3 normalLow = textureLod(waterNormal, vOutput.texcoord * WATER_LOWRES_FACTOR, sampleLod).xyz;
@@ -113,7 +112,9 @@ pass Default:
             float heightDifference = abs(waterHeight - terrainHeight + disp.z * (WATER_DISPLACE).z );
             float foamFactor = 1.0 - saturate(heightDifference * 0.05);
 
-            vec3 foam = textureLod(waterFoam, vOutput.texcoord * 0.9, sampleLod).xyz 
+            // foamFactor = 0.0;
+
+            vec3 foam = textureLod(waterFoam, vOutput.texcoord * 0.4, sampleLod).xyz 
                         * textureLod(waterFoam, vOutput.texcoord * 0.3, sampleLod).xyz;
             foam = pow(foam, vec3(3.0));
             foam = foam.xxx;
@@ -123,7 +124,7 @@ pass Default:
 
             fold *= saturate(1.0 - displaceFactor * 1.0);
 
-            normal = normalize(vec3(normal.x, normal.y, 12.0 / 512.0));
+            normal = normalize(vec3(normal.x, normal.y, 7.0 / 512.0));
                 
 
 
@@ -148,7 +149,10 @@ pass Default:
             m.baseColor = pow(m.baseColor, vec3(2.0));
             // m.baseColor *= 0.0;
 
+
+            #if !defined(IS_TRANSPARENT)
             m.translucency = 1.0;
+            #endif
 
 
 
@@ -158,14 +162,15 @@ pass Default:
 
             m.baseColor *= 20.0;
 
-            m.normal = normal;
+            m.normal = normal * (cameraPosition.z < waterHeight ? -1 : 1);
             m.metallic = 1.0;
             m.specular = 1.0;
-            m.roughness = 0.06;
+            m.roughness = 0.09;
 
 
             #if defined(IS_TRANSPARENT)
-            m.alpha = 0.995;
+            m.alpha = 1.0 - saturate(foamFactor);
+            m.alpha = 1.0;
             #endif
 
 
