@@ -8,7 +8,7 @@ out vec4 result;
 uniform sampler2D velocityTex;
 uniform sampler2D depthTex;
 
-#if defined(USE_TEMPORAL_OCCLUSION)
+#if defined(USE_OCCLUSION) && defined(USE_TEMPORAL_OCCLUSION)
 uniform writeonly image2D lastFrameOcclusionTex;
 uniform sampler2D currentOcclusionTex;
 #endif
@@ -26,11 +26,9 @@ void main() {
     imageStore(lastFrameDepthTex, screenCoord, vec4(depth));
 
     // Store last frame occlusion
-    #if defined(USE_TEMPORAL_OCCLUSION)
-
+    #if defined(USE_OCCLUSION) && defined(USE_TEMPORAL_OCCLUSION)
     vec4 occlusion = texelFetch(currentOcclusionTex, screenCoord, 0);
     imageStore(lastFrameOcclusionTex, screenCoord, occlusion);
-
     #endif
 
 

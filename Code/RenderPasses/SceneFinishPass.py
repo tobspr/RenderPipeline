@@ -23,7 +23,7 @@ class SceneFinishPass(RenderPass):
             "depthTex": "DeferredScenePass.depth",
             "lastFrameDepthTex": "Variables.lastFrameDepth",
             "lastFrameOcclusionTex": ["Variables.lastFrameOcclusion", "Variables.emptyTextureWhite"],
-            "currentOcclusionTex": ["OcclusionCombinePass.resultTex"]
+            "currentOcclusionTex": ["OcclusionCombinePass.resultTex", "Variables.emptyTextureWhite"]
         }
 
     def create(self):
