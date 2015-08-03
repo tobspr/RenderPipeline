@@ -7,18 +7,15 @@
 #pragma optionNV (unroll all)
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Structures/Light.struct"
+#pragma include "Includes/UBOs/Lights.ubo"
+#pragma include "Includes/UBOs/Shadows.ubo"
 #pragma include "Includes/Structures/Material.struct"
-#pragma include "Includes/Structures/ShadowSource.struct"
 #pragma include "Includes/PositionReconstruction.include"
 
 
 // Light-IDs per tile
 uniform isamplerBuffer lightsPerTileBuffer;
 uniform ivec2 lightingTileCount;
-uniform Light lights[MAX_VISIBLE_LIGHTS]; 
-uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
-
 
 in vec2 texcoord;
 

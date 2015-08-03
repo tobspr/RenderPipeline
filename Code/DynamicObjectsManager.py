@@ -20,7 +20,7 @@ class DynamicObjectsManager(DebugObject):
         DebugObject.__init__(self, "DynamicObjectsManager")
         self.pipeline = pipeline
         self.currentIndex = 0
-        self.maxVertexCount = 5000000
+        self.maxVertexCount = 500000
         self.split = 500
         self.init()
 

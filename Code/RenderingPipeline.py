@@ -4,7 +4,7 @@ from panda3d.core import NodePath, Shader, Vec4, TransparencyAttrib, LVecBase2i
 from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerState
 from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight, BitMask32
 from panda3d.core import Texture, UnalignedLMatrix4f, Vec3, PTAFloat, TextureStage
-from panda3d.core import ColorWriteAttrib
+from panda3d.core import ColorWriteAttrib, Vec2
 
 from DebugObject import DebugObject
 from SystemAnalyzer import SystemAnalyzer
@@ -290,6 +290,9 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerStaticVariable("frameDelta", self.frameDelta)
         self.renderPassManager.registerStaticVariable("currentViewMat", self.currentViewMat)
         self.renderPassManager.registerStaticVariable("currentProjMatInv", self.currentProjMatInv)
+        self.renderPassManager.registerStaticVariable("zeroVec2", Vec2(0))
+        self.renderPassManager.registerStaticVariable("zeroVec3", Vec3(0))
+        self.renderPassManager.registerStaticVariable("zeroVec4", Vec4(0))
 
         self.transformMat = TransformState.makeMat(Mat4.convertMat(CSYupRight, CSZupRight))
 
@@ -333,11 +336,18 @@ class RenderingPipeline(DebugObject):
         self.cameraPosition[0] = self.showbase.cam.getPos(self.showbase.render)
         self.frameIndex[0] = self.frameIndex[0] + 1
 
-    def _computeMVP(self):
+    def _computeMVP(self, flattenProjection = False):
         """ Computes the current scene mvp. Actually, this is the
-        worldViewProjectionMatrix, but for convience it's called mvp. """
+        worldViewProjectionMatrix, but for convience it's called mvp. 
+        When flattenProjection is True, the film offset will be removed from the
+        matrix. """
         camLens = self.showbase.camLens
-        projMat = camLens.getProjectionMat()
+        projMat = Mat4(camLens.getProjectionMat())
+
+        if flattenProjection:
+            projMat.setCell(1, 0, 0.0)
+            projMat.setCell(1, 1, 0.0)
+
         modelViewMat = self.showbase.render.getTransform(self.showbase.cam).getMat()
         return UnalignedLMatrix4f(modelViewMat * projMat)
 
@@ -419,6 +429,9 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableScattering:
             define("USE_SCATTERING", 1)
 
+        if self.settings.useDebugAttachments:
+            define("USE_DEBUG_ATTACHMENTS", 1)
+
         define("GLOBAL_AMBIENT_FACTOR", self.settings.globalAmbientFactor)
 
         # Pass camera near and far plane
@@ -429,6 +442,8 @@ class RenderingPipeline(DebugObject):
         define("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples)
         define("MOTION_BLUR_FACTOR", self.settings.motionBlurFactor)
         define("MOTION_BLUR_DILATE_PIXELS", self.settings.motionBlurDilatePixels)
+
+
 
     def _createGlobalIllum(self):
         """ Creates the global illumination manager if enabled in the settings """
@@ -590,7 +605,7 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerPass(self.finalPostprocessPass)
 
         # Add scene finish pass
-        self.sceneFinishPass = SceneFinishPass()
+        self.sceneFinishPass = SceneFinishPass(self)
         self.renderPassManager.registerPass(self.sceneFinishPass)
 
         # Create managers
@@ -628,7 +643,7 @@ class RenderingPipeline(DebugObject):
         # Apply the default effect to the scene
         self.setEffect(Globals.render, "Effects/Default/Default.effect", {
             "transparent": False,
-            "normalMapping": False,
+            "normalMapping": True,
             "alphaTest": True,
 
             }, -10)

@@ -72,7 +72,7 @@ win-fixed-size #t
 # win-size 2500 1300
 # win-size 1600 960
 win-size 1920 1080
-# fullscreen #t
+fullscreen #f
 # win-size 2560 1440
 # win-size 1280 720
 
@@ -110,7 +110,7 @@ sync-video #f
 textures-power-2 none
 
 # Dump shaders
-gl-dump-compiled-shaders #f
+#gl-dump-compiled-shaders #t
 # notify-level-glgsg debug
 
 # Better GL performance

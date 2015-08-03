@@ -15,7 +15,7 @@ class MovementController:
         self.movement = [0, 0, 0]
         self.velocity = Vec3(0.0)
         self.hprMovement = [0,0]
-        self.speed = 0.2
+        self.speed = 1.0
         self.initialPosition = Vec3(0)
         self.initialDestination = Vec3(0)
         self.initialHpr = Vec3(0)
@@ -24,7 +24,7 @@ class MovementController:
         self.mouseSensivity = 0.7
         self.keyboardHprSpeed = 0.8
         self.useHpr = False
-        self.smoothness = 0.4
+        self.smoothness = 0.0
         # self.smoothness = 0.0
         # self.smoothness = 0.0
 

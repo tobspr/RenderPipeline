@@ -1,11 +1,12 @@
-#version 400
+#version 420
 
 #pragma optionNV (unroll all)
 
 #define UNSHADOWED_PASS 1
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Structures/Light.struct"
+#pragma include "Includes/UBOs/Lights.ubo"
+#pragma include "Includes/UBOs/Shadows.ubo"
 #pragma include "Includes/Material.include"
 
 
@@ -19,8 +20,6 @@ out vec4 result;
 // Light-IDs per tile
 uniform isamplerBuffer lightsPerTileBuffer;
 uniform ivec2 lightingTileCount;
-uniform Light lights[MAX_VISIBLE_LIGHTS]; 
-// uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 
 
 // Deferred target inpupts

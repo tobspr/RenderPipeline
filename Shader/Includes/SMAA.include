@@ -1310,9 +1310,6 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
         float2 velocity = blendingWeight.x * SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, blendingCoord.xy));
         velocity += blendingWeight.y * SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, blendingCoord.zw));
 
-        velocity = SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, texcoord));
-        // velocity = vec2(0);
-
         // Pack velocity into the alpha channel:
         color.a = sqrt(5.0 * length(velocity));
         #endif
@@ -1354,7 +1351,7 @@ float4 SMAAResolvePS(float2 texcoord,
         weight = 0.0;
     }
 
-    weight = 0.5;
+    // weight = 0.5;
     // return vec4(previous.xyz, 1);
     // Blend the pixels according to the calculated weight:
     return lerp(current, previous, weight);

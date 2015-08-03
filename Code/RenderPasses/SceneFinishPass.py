@@ -9,8 +9,10 @@ class SceneFinishPass(RenderPass):
 
     """ This pass copies the current frame textures to the last frame textures. """
 
-    def __init__(self):
+    def __init__(self, pipeline):
         RenderPass.__init__(self)
+        self.pipeline = pipeline
+
 
     def getID(self):
         return "SceneFinishPass"
@@ -28,7 +30,9 @@ class SceneFinishPass(RenderPass):
 
     def create(self):
         self.target = RenderTarget("Scene Finish Pass")
-        self.target.addColorTexture()
+
+        if self.pipeline.settings.useDebugAttachments:
+            self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
 
     def setShaders(self):

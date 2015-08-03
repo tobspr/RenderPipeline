@@ -64,8 +64,9 @@ class AntialiasingManager(DebugObject):
         if self.jitter:
 
             # Compute how big a pixel is on screen
+            aspect = float(self.pipeline.getSize().x) / float(self.pipeline.getSize().y)
             onePixelShift = Vec2(0.5 / float(self.pipeline.getSize().x), 
-                0.5 / float(self.pipeline.getSize().y)) * self.pipeline.settings.jitterAmount * 0.5
+                0.5 / float(self.pipeline.getSize().y) / aspect) * self.pipeline.settings.jitterAmount
 
             # Annoying that Vec2 has no multliply-operator for non-floats
             multiplyVec2 = lambda a, b: Vec2(a.x*b.x, a.y*b.y)

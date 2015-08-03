@@ -3,7 +3,11 @@
 #pragma include "Includes/Configuration.include"
 
 in vec2 texcoord;
+
+
+#if defined(USE_DEBUG_ATTACHMENTS)
 out vec4 result;
+#endif
 
 uniform sampler2D velocityTex;
 uniform sampler2D depthTex;
@@ -32,6 +36,9 @@ void main() {
     #endif
 
 
-    result = vec4(pow(depth, 15.0));
+
+    #if defined(USE_DEBUG_ATTACHMENTS)
+        result = vec4(pow(depth, 100.0));
+    #endif
 
 }

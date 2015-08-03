@@ -1,4 +1,4 @@
-#version 400
+#version 420
 
 
 
@@ -12,7 +12,7 @@
 
 // Includes
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Structures/Light.struct"
+#pragma include "Includes/UBOs/Lights.ubo"
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/Structures/Frustum.struct"
 #pragma include "Includes/LightCulling.include"
@@ -27,7 +27,7 @@ uniform isamplerBuffer renderedLightsBuffer;
 
 
 // Per-Light data and count
-uniform Light lights[MAX_VISIBLE_LIGHTS];
+// uniform Light lights[MAX_VISIBLE_LIGHTS];
 uniform vec4 bufferSize;
 
 
@@ -45,8 +45,9 @@ uniform vec3 cameraPosition;
 
 const ivec2 patchSize = ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y);
 
+#if defined(USE_DEBUG_ATTACHMENTS)
 out vec4 debugOutput;
-
+#endif
 
 void main() {
 
@@ -297,6 +298,7 @@ void main() {
     imageStore(destinationBuffer, bufferBaseStride + 4, ivec4(processedSpotLights));
     imageStore(destinationBuffer, bufferBaseStride + 5, ivec4(processedShadowedSpotLights));
 
+    #if defined(USE_DEBUG_ATTACHMENTS)
         float lightsVisibleFloat = float(
             processedPointLights + processedShadowedPointLights + 
             processedSpotLights + processedShadowedSpotLights) / float(20.0);
@@ -304,6 +306,7 @@ void main() {
         debugOutput = vec4(lightCountIndicator, 1);
 
         debugOutput = vec4(minDepthLinear / 10.0);
+    #endif
         // debugOutput = vec4( (VIEW_MAT * vec4(maxDepthPoint, 1)).w );
         // debugOutput = vec4( maxDepthLinear / CAMERA_FAR );
 

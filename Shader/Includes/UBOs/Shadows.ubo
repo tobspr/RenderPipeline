@@ -1,0 +1,9 @@
+#pragma once
+
+#pragma include "Includes/Structures/ShadowSource.struct"
+
+uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS];
+
+//layout(shared, binding=1) uniform ShadowsUBO {
+//  ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
+//};

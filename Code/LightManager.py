@@ -160,7 +160,7 @@ class LightManager(DebugObject):
         self.scatteringPass = ScatteringPass()
         self.pipeline.getRenderPassManager().registerPass(self.scatteringPass)
 
-        self.scatteringCubemapPass = ScatteringCubemapPass()
+        self.scatteringCubemapPass = ScatteringCubemapPass(self.pipeline)
         self.pipeline.getRenderPassManager().registerPass(self.scatteringCubemapPass)
 
 
@@ -187,7 +187,7 @@ class LightManager(DebugObject):
         sizeX = int(math.ceil(float(self.pipeline.getSize().x) / self.patchSize.x))
         sizeY = int(math.ceil(float(self.pipeline.getSize().y) / self.patchSize.y))
 
-        self.lightCullingPass = LightCullingPass()
+        self.lightCullingPass = LightCullingPass(self.pipeline)
         self.lightCullingPass.setSize(sizeX, sizeY)
         self.lightCullingPass.setPatchSize(self.patchSize.x, self.patchSize.y)
 
@@ -286,7 +286,7 @@ class LightManager(DebugObject):
 
         if self.pipeline.settings.displayDebugStats:
             try:
-                from Code.GUI.FastText import FastText
+                from .GUI.FastText import FastText
                 self.lightsVisibleDebugText = FastText(pos=Vec2(
                     Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 1, 0), size=0.036)
                 self.lightsUpdatedDebugText = FastText(pos=Vec2(

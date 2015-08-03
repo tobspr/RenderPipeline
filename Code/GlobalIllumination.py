@@ -122,7 +122,7 @@ class GlobalIllumination(DebugObject):
 
 
         try:
-            from Code.GUI.FastText import FastText
+            from .GUI.FastText import FastText
             self.debugText = FastText(pos=Vec2(
                 Globals.base.getAspectRatio() - 0.1, -0.84), rightAligned=True, color=Vec3(0, 1, 0), size=0.036)
 

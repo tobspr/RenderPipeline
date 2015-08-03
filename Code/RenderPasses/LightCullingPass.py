@@ -4,8 +4,8 @@ from panda3d.core import NodePath, Shader, LVecBase2i, Texture, GeomEnums, Sampl
 from ..Globals import Globals
 from ..RenderPass import RenderPass
 from ..RenderTarget import RenderTarget
-from Code.LightLimits import LightLimits
-from Code.MemoryMonitor import MemoryMonitor
+from ..LightLimits import LightLimits
+from ..MemoryMonitor import MemoryMonitor
 
 class LightCullingPass(RenderPass):
 
@@ -20,8 +20,9 @@ class LightCullingPass(RenderPass):
     maximum depth per tile is extracted. We could use compute shaders for this task,
     but they are horribly slow. """
 
-    def __init__(self):
+    def __init__(self, pipeline):
         RenderPass.__init__(self)
+        self.pipeline = pipeline
 
     def getID(self):
         return "LightCullingPass"
@@ -47,10 +48,13 @@ class LightCullingPass(RenderPass):
     def create(self):
         self.target = RenderTarget("ComputeLightTileBounds")
         self.target.setSize(self.size.x, self.size.y)
-        self.target.addColorTexture()
+
+        if self.pipeline.settings.useDebugAttachments:
+            self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
 
-        self.target.getColorTexture().setMagfilter(SamplerState.FTNearest)
+        if self.pipeline.settings.useDebugAttachments:
+            self.target.getColorTexture().setMagfilter(SamplerState.FTNearest)
 
         self.makePerTileStorage()
         self.target.setShaderInput("destinationBuffer", self.lightPerTileBuffer)

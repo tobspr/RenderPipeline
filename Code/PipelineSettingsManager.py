@@ -40,6 +40,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("enableScattering", bool, False)
         self._addSetting("useSkyboxScattering", bool, True)
         self._addSetting("useSkyboxClouds", bool, True)
+        self._addSetting("scatteringCubemapSize", int, 256)
 
         # [SSLR]
         self._addSetting("enableSSLR", bool, True)
@@ -90,3 +91,4 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayDebugStats", bool, True)
         self._addSetting("pipelineOutputLevel", str, "debug")
+        self._addSetting("useDebugAttachments", bool, False)

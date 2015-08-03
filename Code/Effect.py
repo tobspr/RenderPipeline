@@ -20,7 +20,7 @@ class Effect(DebugObject):
         self.properties = {
             "transparent": False,
             "alphaTest": False,
-            "normalMapping": False,
+            "normalMapping": True,
             "dynamic": False,
             "castShadows": True,
             "castGI": True,

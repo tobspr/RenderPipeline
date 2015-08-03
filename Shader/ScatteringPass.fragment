@@ -102,13 +102,13 @@ void main() {
     scatteringResult *= 4.5;
 
     if (!isSkybox) {
-        float fogFactor = saturate( (distance(cameraPosition, wsPosition) - 5.0) / 580.0);
+        float fogFactor = saturate( (distance(cameraPosition, wsPosition) - 5.0) / 5000.0);
         // scatteringResult *= 0.2;
         // fogFactor = smoothstep(0.0, 1.0, fogFactor);
         // fogFactor = 0.0;
         // fogFactor = 0.4;
         // fogFactor = saturate(fogFactor);
-        scatteringResult *= 0.3 * fogFactor;
+        // scatteringResult *= 0.5 * fogFactor;
         // scatteringResult *= 0.0;
         // scatteringResult *= 0.0;
         // scatteringResult = vec3(fogFactor);

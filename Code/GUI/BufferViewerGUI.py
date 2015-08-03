@@ -85,18 +85,21 @@ class BufferViewerGUI(DebugObject):
         self.innerPadding = 8
         self.paddingTop = 40
 
+        self.renderPassesOnly = False
+
         self.createComponents()
 
     def createComponents(self):
         self.buffersParent = self.window.getContentNode().attachNewNode(
             "buffers")
-        self.toggleAlphaBtn = CheckboxWithLabel(
+        self.togglePassOnly = CheckboxWithLabel(
             parent=self.window.getContentNode(), x=10, y=10,
-            textSize=15, text="Alpha only", chbChecked=False,
-            chbCallback=self.setAlphaRendering)
+            textSize=15, text="Display render passes only", chbChecked=False,
+            chbCallback=self.setShowRenderPasses)
 
-    def setAlphaRendering(self, toggle):
-        self.debug("show alpha:", toggle)
+    def setShowRenderPasses(self, toggle):
+        self.renderPassesOnly = toggle
+        self.renderBuffers()
 
     def calculateTexSize(self, tex):
         dataSize = MemoryMonitor._calculateTexSize(tex)
@@ -111,6 +114,10 @@ class BufferViewerGUI(DebugObject):
 
         for name in self.bufferOrder:
             target = self.buffers[name]
+
+            if isinstance(target, FakeBuffer) and self.renderPassesOnly:
+                continue
+
             for targetType in RenderTargetType.All:
                 if not target.hasTarget(targetType):
                     continue
@@ -180,7 +187,7 @@ class BufferViewerGUI(DebugObject):
             transparent=False, nearFilter=False, anyFilter=False)
 
         backBtn = BetterButton(
-            self.buffersParent, 150, 2, "Back", callback=self.renderBuffers)
+            self.buffersParent, 230, 2, "Back", callback=self.renderBuffers)
 
     def onMouseOver(self, node, a):
         node['frameColor'] = (1, 1, 1, 0.4)

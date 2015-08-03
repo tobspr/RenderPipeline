@@ -6,7 +6,7 @@ from panda3d.core import SamplerState, Vec4
 from ..Globals import Globals
 from ..RenderPass import RenderPass
 from ..RenderTarget import RenderTarget
-from Code.MemoryMonitor import MemoryMonitor
+from ..MemoryMonitor import MemoryMonitor
 
 class VolumetricLightingPass(RenderPass):
 

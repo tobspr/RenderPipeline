@@ -5,7 +5,10 @@
 #pragma include "Includes/ApplyScattering.include"
 
 in vec2 texcoord;
+
+#if defined(USE_DEBUG_ATTACHMENTS)
 out vec4 result;
+#endif
 
 uniform sampler3D inscatterSampler;
 uniform ScatteringOptions scatteringOptions;
@@ -60,7 +63,10 @@ void main() {
 
     imageStore(cubemapDest, ivec3(localCoord, faceIndex), vec4(scatteringResult, 1.0));
 
-    result = vec4(scatteringResult, 1.0);
+
+    #if defined(USE_DEBUG_ATTACHMENTS)
+        result = vec4(scatteringResult, 1.0);
+    #endif
 
 }
 

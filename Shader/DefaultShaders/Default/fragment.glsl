@@ -37,6 +37,9 @@ void main() {
     // Binary alpha test
     #if defined(USE_ALPHA_TEST)
         if (sampledDiffuse.a < 0.5) discard;
+        
+        // Testing
+        // if (length(sampledDiffuse.xyz) < 0.0001) discard;
     #endif
 
     // Sample the other maps
@@ -47,6 +50,7 @@ void main() {
     // Extract the material properties
     #if defined(USE_NORMAL_MAPPING)
         float bumpFactor = vOutput.materialDiffuse.w;
+        bumpFactor = 0.0;
 
         // Merge the detail normal with the vertex normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
@@ -58,7 +62,7 @@ void main() {
         vec3 mixedNormal = vOutput.normalWorld.xyz;
     #endif
 
-    // TESTING
+    // Testing
     #if 0
         mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
         sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
@@ -83,24 +87,6 @@ void main() {
     m.specular = sampledSpecular.r * specularFactor;
     m.metallic = metallic;
     m.normal = mixedNormal;
-
-
-    // Antialiasing debugging
-    #if 0
-    if (frameIndex%2==0) {
-        m.baseColor = vec3(0.2,0.6,1.0);
-    } else {
-        m.baseColor = vec3(1.0,0.6,0.2);
-    }
-    #endif
-
-    // Material debugging
-    #if 0
-    m.baseColor = sampledDiffuse.rgb;
-    m.roughness = 1.0;
-    m.specular = 0.01;
-    m.metallic = 0.0;
-    #endif
 
     #pragma ENTRY_POINT MATERIAL
 

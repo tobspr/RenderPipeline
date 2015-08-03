@@ -11,8 +11,8 @@
 #pragma include "Includes/TransparentMaterial.include"
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/Material.include"
-#pragma include "Includes/Structures/Light.struct"
-#pragma include "Includes/Structures/ShadowSource.struct"
+#pragma include "Includes/UBOs/Lights.ubo"
+#pragma include "Includes/UBOs/Shadows.ubo"
 
 
 
@@ -25,10 +25,6 @@
 
 
 uniform sampler2D scatteringAttenuation;
-
-
-uniform Light lights[MAX_VISIBLE_LIGHTS]; 
-uniform ShadowSource shadowSources[SHADOW_MAX_TOTAL_MAPS]; 
 
 uniform isamplerBuffer renderedLightsBuffer;
 
