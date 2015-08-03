@@ -14,6 +14,7 @@ Thanks especially to rdb and all the others for support & help!
 
 You can find a lot more <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa?dl=0">here</a>:
 
+![Terrain](http://fs1.directupload.net/images/150803/33uuhjc3.png)
 ![Couch Scene](http://fs2.directupload.net/images/150502/jl66b4cc.png)
 ![Transparency Test](http://fs2.directupload.net/images/150503/78h7dpz9.png)
 ![BRDF Test #2](http://fs1.directupload.net/images/141222/9sgebqmw.png)
