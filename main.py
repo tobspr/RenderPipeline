@@ -146,7 +146,6 @@ class Main(ShowBase, DebugObject):
             self.dirLight = dirLight
 
             # Tell the GI which light casts the GI
-            self.renderPipeline.setGILightSource(dirLight)
             self.renderPipeline.setScatteringSource(dirLight)
 
         # Slider to move the sun
@@ -384,8 +383,8 @@ class Main(ShowBase, DebugObject):
         # self.scene.setTwoSided(True)
 
         # Create some ocean
-        self.water = ProjectedWaterGrid(self.renderPipeline)
-        self.water.setWaterLevel(-100)
+        # self.water = ProjectedWaterGrid(self.renderPipeline)
+        # self.water.setWaterLevel(-100)
 
 
 

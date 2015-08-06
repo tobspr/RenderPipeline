@@ -53,7 +53,6 @@ pstats-target-frame-rate 30.0
 #threading-model App/Cull/Draw
 
 
-
 # Try for better performance
 # prefer-single-buffer #t
 
@@ -71,7 +70,7 @@ win-fixed-size #t
 # win-size 1600 900
 # win-size 2500 1300
 # win-size 1600 960
-win-size 1600 900 
+win-size 1920 1080
 fullscreen #f
 # win-size 2560 1440
 # win-size 1280 720

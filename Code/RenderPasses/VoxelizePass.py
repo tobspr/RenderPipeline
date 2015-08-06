@@ -34,32 +34,13 @@ class VoxelizePass(RenderPass):
         will have twice the size specified in voxelGridSize """
         self.voxelGridSize = voxelGridSize
 
-    def setPhotonScaleFactor(self, factor):
-        """ Sets the density of the photon grid. A number of 1 means that for
-        every bright voxel 1 photon will be spawned. A number of 4 for example
-        means that for ever bright voxel 4x4x4 = 64 Photons will be spawned. """
-        self.photonScaleFactor = factor
+    def setGridResolutionMultiplier(self, factor):
+        """ Sets the density of the voxel grid. """
+        self.gridResolutionMultiplier = factor
 
     def setActive(self, active):
         """ Enables and disables this pass """
         self.target.setActive(active)
-
-    def initVoxelStorage(self):
-        """ Creates t he 3D Texture to store the voxel generation grid """
-        self.voxelGenTex = Texture("VoxelsTemp")
-        self.voxelGenTex.setup3dTexture(self.voxelGridResolution.x, self.voxelGridResolution.y, 
-                                        self.voxelGridResolution.z, Texture.TInt, Texture.FR32i)
-
-        # Set appropriate filter types
-        self.voxelGenTex.setMinfilter(SamplerState.FTNearest)
-        self.voxelGenTex.setMagfilter(Texture.FTNearest)
-        self.voxelGenTex.setWrapU(Texture.WMClamp)
-        self.voxelGenTex.setWrapV(Texture.WMClamp)
-        self.voxelGenTex.setWrapW(Texture.WMClamp)
-        self.voxelGenTex.setClearColor(Vec4(0))
-
-        # Register texture
-        MemoryMonitor.addTexture("Voxel Temp Texture", self.voxelGenTex)
 
     def getVoxelTex(self):
         """ Returns a handle to the generated voxel texture """
@@ -75,15 +56,15 @@ class VoxelizePass(RenderPass):
         self.voxelizeCamera.setCameraMask(BitMask32.bit(4))
         self.voxelizeCameraNode = Globals.render.attachNewNode(self.voxelizeCamera)
         self.voxelizeLens = OrthographicLens()
-        self.voxelizeLens.setFilmSize(self.voxelGridSize.x*2, self.voxelGridSize.y*2)
-        self.voxelizeLens.setNearFar(0.0, self.voxelGridSize.x*2)
+        self.voxelizeLens.setFilmSize(self.voxelGridSize*2, self.voxelGridSize*2)
+        self.voxelizeLens.setNearFar(0.0, self.voxelGridSize*2)
         self.voxelizeCamera.setLens(self.voxelizeLens)
         self.voxelizeCamera.setTagStateKey("VoxelizePassShader")
         Globals.render.setTag("VoxelizePassShader", "Default")
 
         # Create voxelize tareet
         self.target = RenderTarget("VoxelizePass")
-        self.target.setSize(self.voxelGridResolution.x * self.photonScaleFactor)
+        self.target.setSize(self.voxelGridResolution * self.gridResolutionMultiplier)
         # self.target.setColorWrite(False)
         self.target.addColorTexture()
         self.target.setCreateOverlayQuad(False)
@@ -98,45 +79,44 @@ class VoxelizePass(RenderPass):
         """ Voxelizes the scene from a given direction. This method handles setting 
         the camera position aswell as the near and far plane. If the pass was disabled,
         it also enables this pass.  """
-        assert(direction in "x y z".split())
+        assert(direction in ["x", "y","z"])
         self.setActive(True)
 
         if direction == "x":
-            self.voxelizeLens.setFilmSize(self.voxelGridSize.y*2, self.voxelGridSize.z*2)
-            self.voxelizeLens.setNearFar(0.0, self.voxelGridSize.x*2)
-            self.voxelizeCameraNode.setPos(gridPos - Vec3(self.voxelGridSize.x, 0, 0))
+            self.voxelizeLens.setFilmSize(self.voxelGridSize*2, self.voxelGridSize * 2)
+            self.voxelizeLens.setNearFar(0.0, self.voxelGridSize*2)
+            self.voxelizeCameraNode.setPos(gridPos - Vec3(self.voxelGridSize, 0, 0))
             self.voxelizeCameraNode.lookAt(gridPos)
         elif direction == "y":
-            self.voxelizeLens.setFilmSize(self.voxelGridSize.x*2, self.voxelGridSize.z*2)
-            self.voxelizeLens.setNearFar(0.0, self.voxelGridSize.y*2)
-            self.voxelizeCameraNode.setPos(gridPos - Vec3(0, self.voxelGridSize.y, 0))
+            self.voxelizeLens.setFilmSize(self.voxelGridSize*2, self.voxelGridSize*2)
+            self.voxelizeLens.setNearFar(0.0, self.voxelGridSize*2)
+            self.voxelizeCameraNode.setPos(gridPos - Vec3(0, self.voxelGridSize, 0))
             self.voxelizeCameraNode.lookAt(gridPos)
         elif direction == "z":
-            self.voxelizeLens.setFilmSize(self.voxelGridSize.x*2, self.voxelGridSize.y*2)
-            self.voxelizeLens.setNearFar(0.0, self.voxelGridSize.z*2)
-            self.voxelizeCameraNode.setPos(gridPos + Vec3(0, 0, self.voxelGridSize.z))
+            self.voxelizeLens.setFilmSize(self.voxelGridSize*2, self.voxelGridSize*2)
+            self.voxelizeLens.setNearFar(0.0, self.voxelGridSize*2)
+            self.voxelizeCameraNode.setPos(gridPos + Vec3(0, 0, self.voxelGridSize))
             self.voxelizeCameraNode.lookAt(gridPos)
 
     def setShaders(self):
         """ Creates the tag state and loades the voxelizer shader """
-        voxelizeShader = Shader.load(Shader.SLGLSL, 
-            "Shader/GI/Voxelize.vertex",
-            "Shader/GI/Voxelize.fragment")
+        self.registerTagState("Default", NodePath("DefaultVoxelizeState"))
+        return []
 
-        # Create tag state
-        initialState = NodePath("VoxelizerState")
-        initialState.setShader(voxelizeShader, 500)
-        initialState.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
-        initialState.setDepthWrite(False)
-        initialState.setDepthTest(False)
-        initialState.setAttrib(DepthTestAttrib.make(DepthTestAttrib.MNone))
-        initialState.setShaderInput("giVoxelGenerationTex", self.voxelGenTex)
+    def registerTagState(self, name, state):
+        """ Registers a new tag state """
+        state.setAttrib(CullFaceAttrib.make(CullFaceAttrib.MCullNone))
+        state.setDepthWrite(False)
+        state.setDepthTest(False)
+        state.setAttrib(DepthTestAttrib.make(DepthTestAttrib.MNone))
+        state.setShaderInput("voxelizeCam", self.voxelizeCameraNode)
+        self.voxelizeCamera.setTagState(name, state.getState()) 
 
-        # Apply tag state
-        self.voxelizeCamera.setTagState("Default", initialState.getState())
-
-        return [voxelizeShader]
+    def setShaderInput(self, *args):
+        Globals.base.render.setShaderInput(*args)
 
     def getOutputs(self):
         return {
         }
+
+

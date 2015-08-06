@@ -18,6 +18,8 @@ vec3 applyPointLight(Light light, Material material, bool useShadows) {
     float distanceRelative = distanceToLight / light.radius; 
     float attenuation = computePointLightAttenuation(light, distanceToLight);
 
+    attenuation = step(distanceRelative, 1);
+
     vec3  l = normalize(light.position - material.position);
     vec3  v = normalize(cameraPosition - material.position);
     vec3  n = normalize(material.normal);

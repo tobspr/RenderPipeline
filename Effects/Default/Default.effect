@@ -17,3 +17,11 @@ pass Shadows:
 
     fragment:
         template default
+
+pass Voxelize:
+
+    vertex:
+        template default
+
+    fragment:
+        template default
