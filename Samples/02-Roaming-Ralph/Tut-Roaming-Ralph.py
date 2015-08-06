@@ -81,7 +81,7 @@ class World(ShowBase):
         dPos = Vec3(40, 40, 15)
         dirLight = DirectionalLight()
         dirLight.setPos(dPos * 1000000.0)
-        dirLight.setShadowMapResolution(2048)
+        dirLight.setShadowMapResolution(1024)
         dirLight.setCastsShadows(True)
         dirLight.setColor(Vec3(8))
         self.renderPipeline.addLight(dirLight)

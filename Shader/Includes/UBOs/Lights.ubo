@@ -2,8 +2,8 @@
 
 #pragma include "Includes/Structures/Light.struct"
 
-//uniform Light lights[MAX_VISIBLE_LIGHTS];
+uniform Light lights[MAX_VISIBLE_LIGHTS];
 
-layout(std140) uniform LightsUBO {
-  Light lights[MAX_VISIBLE_LIGHTS]; 
-};
+// layout(std140) uniform LightsUBO {
+  // Light lights[MAX_VISIBLE_LIGHTS]; 
+// };

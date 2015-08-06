@@ -88,11 +88,11 @@ vec3 scatteringComputeInscatteredLight(
     float sunFactor = pow(sunDistance, 150.0);
     float sunFactorOuter = pow(sunDistance, 1.0);
 
-    vec4 sunArea = vec4(sunFactor * 120.0 * vec4(1,1,0.8, 1) + sunFactorOuter * vec4(1.1,1,0.7, 1) * 0.1 );
+    vec4 sunArea = vec4(sunFactor * 80.0 * vec4(1,1,0.8, 1) + sunFactorOuter * vec4(1.9,1,0.5, 1) * 0.1 );
     // sunArea = vec4(0);
     if (isSky) {
       // sunArea *= 1.0 - saturate(cloudColor * 1.0);
-      // sunArea += cloudColor * 5.0;
+      // sunArea += pow(cloudColor, vec4(2.2)) * 2.0;
     } else {
       sunArea *= 0.0;
     }

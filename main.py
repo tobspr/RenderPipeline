@@ -23,7 +23,7 @@ from random import random, seed, randint
 import copy
 
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile, Vec3, SamplerState
+from panda3d.core import loadPrcFile, Vec3, SamplerState, ClockObject
 from panda3d.core import Texture, TextureStage, RenderModeAttrib
 from panda3d.core import Shader, CullFaceAttrib, AntialiasAttrib
 
@@ -104,7 +104,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
-        # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
+        self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
@@ -114,7 +114,7 @@ class Main(ShowBase, DebugObject):
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
-        self.sceneSource = "Models/HouseSet/Model.egg"
+        # self.sceneSource = "Models/HouseSet/Model.egg"
         # self.sceneSource = "Models/PSSMTest/Model.egg.bam"
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
@@ -138,7 +138,7 @@ class Main(ShowBase, DebugObject):
         if True:
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
-            dirLight.setShadowMapResolution(1024)
+            dirLight.setShadowMapResolution(2048)
             dirLight.setColor(Vec3(1.5, 1.2, 0.8) * 6.0)
             dirLight.setCastsShadows(True)
             dirLight.setPssmDistance(140)
@@ -163,7 +163,7 @@ class Main(ShowBase, DebugObject):
         self.demoLights = []
 
         # Create some lights
-        for i in xrange(0):
+        for i in xrange(2):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
@@ -173,9 +173,9 @@ class Main(ShowBase, DebugObject):
             pointLight.setColor(0.3, 0.75, 1.0)
             pointLight.setShadowMapResolution(512)
             pointLight.setRadius(35)
-            pointLight.setCastsShadows(True)
+            # pointLight.setCastsShadows(True)
             self.renderPipeline.addLight(pointLight)
-            pointLight.attachDebugNode(render)
+            # pointLight.attachDebugNode(render)
             self.movingLights.append(pointLight)
 
         # Create more lights
@@ -261,6 +261,8 @@ class Main(ShowBase, DebugObject):
 
         # import time
         # time.sleep(0.2)
+        # globalClock.setMode(ClockObject.MLimited)
+        # globalClock.setFrameRate(30)
 
         # Uncomment for party mode :-)
         # self.removeDemoLight()
@@ -322,8 +324,8 @@ class Main(ShowBase, DebugObject):
             matches = self.scene.findAllMatches("**/T__*")
             if matches:
                 for match in matches:
-                    match.hide()
-                    continue
+                    # match.hide()
+                    # continue
                     self.transparentObjects.append(match)
                     self.renderPipeline.setEffect(match, "Effects/Default/Default.effect", {
                         "transparent": True
@@ -336,7 +338,7 @@ class Main(ShowBase, DebugObject):
                 match.remove()
 
         # Wheter to use a ground plane
-        self.usePlane = False
+        self.usePlane = True
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -361,7 +363,7 @@ class Main(ShowBase, DebugObject):
         if self.usePlane:
             self.groundPlane = self.loader.loadModel(
                 "Models/Plane/Model.egg.bam")
-            self.groundPlane.setPos(0, 0, -0.0001)
+            self.groundPlane.setPos(0, 0, -5.0)
             self.groundPlane.setScale(12.0)
             self.groundPlane.setTwoSided(True)
             self.groundPlane.flattenStrong()
@@ -373,6 +375,7 @@ class Main(ShowBase, DebugObject):
         # sequence = Sequence(lerpTop, lerpBot)
         # sequence.loop()
 
+
         # self.renderPipeline.setEffect(self.scene, "Effects/Default/Default.effect", {
         #     "dynamic": True,
         #     })
@@ -382,7 +385,7 @@ class Main(ShowBase, DebugObject):
 
         # Create some ocean
         self.water = ProjectedWaterGrid(self.renderPipeline)
-
+        self.water.setWaterLevel(-100)
 
 
 
@@ -439,8 +442,8 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 23.0 + math.sin(rawValue)*50.0)
-            dPos = Vec3(100, 100, self.lastSliderValue - 20)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 70.0)
+            # dPos = Vec3(100, 100, self.lastSliderValue*2 10)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)
 

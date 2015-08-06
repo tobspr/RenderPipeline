@@ -75,7 +75,7 @@ void main() {
     // Create a material to store the material type dependent properties on it
     #if defined(IS_TRANSPARENT)
         TransparentMaterial m = getDefaultTransparentMaterial();
-        m.alpha = 1.0;
+        m.alpha = 0.5;
     #else
         Material m = getDefaultMaterial();
         m.position = vOutput.positionWorld;

@@ -25,7 +25,6 @@ class ShadowedLightsPass(RenderPass):
             "data3": "DeferredScenePass.data3",
             "depth": "DeferredScenePass.depth",
 
-
             # Lighting
             "lightsPerTileBuffer": "LightCullingPass.lightsPerTile",
             "lightingTileCount": "Variables.lightingTileCount",
@@ -43,7 +42,6 @@ class ShadowedLightsPass(RenderPass):
             "mainRender": "Variables.mainRender",
 
             "scatteringAttenuation": ["ScatteringPass.attenuationTex", "Variables.emptyTextureWhite"],
-
         }
 
     def create(self):

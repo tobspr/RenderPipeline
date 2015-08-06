@@ -34,7 +34,7 @@ class TransparencyPass(RenderPass):
             "listHeadBuffer": "Variables.transpListHeadBuffer",
             "materialDataBuffer": "Variables.transpMaterialDataBuffer",
 
-            "transparencyShadeResult": "TransparencyShadePass.resultTex",
+            "transparencyShadeResult": "TransparencyShadePass.resultState",
             "velocityTex": "DeferredScenePass.velocity",
         }
 

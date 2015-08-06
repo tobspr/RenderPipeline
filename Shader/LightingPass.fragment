@@ -156,12 +156,15 @@ void main() {
     // Scattering
     #if defined(USE_SCATTERING)
     vec3 scatteringResult = texture(scatteringTex, texcoord).xyz;
-    result += scatteringResult;
+    
     #endif
 
     // We can skip lighting for the skybox
-    if (isSkybox) {
+    if (isSkybox) { 
 
+        #if defined(USE_SCATTERING)
+            result = scatteringResult;
+        #endif
         // result += 3.0 * material.baseColor;
 
 
@@ -205,6 +208,13 @@ void main() {
         ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, 
             mixedOcclusionFactor, viewVector);    
         result += ambient;
+
+        #if defined(USE_SCATTERING)
+            float fogFactor =  saturate( (distance(cameraPosition, material.position) - 5.0) / 5000.0);
+            fogFactor *= saturate(0.5 + max(0.0, material.position.z) / 1000.0);
+            fogFactor = smoothstep(0, 1, fogFactor);
+            result = mix(vec3(result), scatteringResult, fogFactor);
+        #endif
 
     }
 
