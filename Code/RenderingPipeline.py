@@ -25,6 +25,7 @@ from DynamicObjectsManager import DynamicObjectsManager
 from GUI.PipelineGuiManager import PipelineGuiManager
 from SSLRManager import SSLRManager
 from CloudManager import CloudManager
+from MemoryMonitor import MemoryMonitor
 
 from GUI.BetterOnscreenImage import BetterOnscreenImage
 
@@ -89,12 +90,6 @@ class RenderingPipeline(DebugObject):
         shadow updates """
         self.ready = True
 
-    def setGILightSource(self, lightSource):
-        """ Sets the light used to compute GI. For now, only directional lights
-        can cast GI. """
-        if self.settings.enableGlobalIllumination:
-            self.globalIllum.setTargetLight(lightSource)
-
     def setScatteringSource(self, lightSource):
         """ Sets the light source used for the scattering, can be a point or 
         directional light """
@@ -127,6 +122,11 @@ class RenderingPipeline(DebugObject):
     def setEffect(self, obj, effect, properties = None, sort=0):
         """ Applies the effect to an object with the given properties """
 
+        if isinstance(obj, list) or isinstance(obj, tuple):
+            for part in obj:
+                self.setEffect(part, effect, properties, sort)
+            return
+
         effect = self.effectLoader.loadEffect(effect, properties)
 
         if effect.getSetting("transparent"):
@@ -149,17 +149,20 @@ class RenderingPipeline(DebugObject):
         effect.assignNode(obj, "Default", sort)
 
         # Create shadow caster state
-        if effect.getSetting("castShadows"):
-            initialState = NodePath("EffectInitialState"+str(effect.getEffectID()))
+        if effect.getSetting("castShadows") and effect.hasShader("Shadows"):
+            initialState = NodePath("EffectInitialShadowState"+str(effect.getEffectID()))
             initialState.setShader(effect.getShader("Shadows"), sort + 20)
-            initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
-
-            # Fix for the shadowed terrain. Initial state doesn't seem to work with instancing
-            # initialState.setInstanceCount(500)
-
             stateName = "NodeEffect" + str(effect.getEffectID())
-            self.lightManager.shadowPass.registerTagState(stateName, initialState.getState())
+            self.lightManager.shadowPass.registerTagState(stateName, initialState)
             obj.setTag("ShadowPassShader", stateName)
+
+        # Create GI state
+        if effect.getSetting("castGI") and self.settings.enableGlobalIllumination and effect.hasShader("Voxelize"):
+            initialState = NodePath("EffectInitialGIState"+str(effect.getEffectID()))
+            initialState.setShader(effect.getShader("Voxelize"), sort + 21)
+            stateName = "NodeGIEffect" + str(effect.getEffectID())
+            self.globalIllum.voxelizePass.registerTagState(stateName, initialState)
+            obj.setTag("VoxelizePassShader", stateName)
 
     def fillTextureStages(self, nodePath):
         """ Prepares all materials of a given nodepath to have at least the 4 
@@ -267,6 +270,7 @@ class RenderingPipeline(DebugObject):
         self.lastFrameDepth.setup2dTexture(self.showbase.win.getXSize(), self.showbase.win.getYSize(),
             Texture.TFloat, Texture.FR32)
         BufferViewerGUI.registerTexture("LastFrameDepth", self.lastFrameDepth)
+        MemoryMonitor.addTexture("LastFrameDepth", self.lastFrameDepth)
         self.renderPassManager.registerStaticVariable("lastFrameDepth", self.lastFrameDepth)
 
     def _createInputHandles(self):
@@ -422,9 +426,6 @@ class RenderingPipeline(DebugObject):
         if self.settings.displayOnscreenDebugger:
             define("DEBUGGER_ACTIVE", 1)
 
-        if self.settings.enableGlobalIllumination:
-            define("USE_GLOBAL_ILLUMINATION", 1)
-
         # TODO: Move to scattering module
         if self.settings.enableScattering:
             define("USE_SCATTERING", 1)
@@ -442,8 +443,6 @@ class RenderingPipeline(DebugObject):
         define("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples)
         define("MOTION_BLUR_FACTOR", self.settings.motionBlurFactor)
         define("MOTION_BLUR_DILATE_PIXELS", self.settings.motionBlurDilatePixels)
-
-
 
     def _createGlobalIllum(self):
         """ Creates the global illumination manager if enabled in the settings """

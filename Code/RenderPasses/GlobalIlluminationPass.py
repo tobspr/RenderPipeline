@@ -26,10 +26,16 @@ class GlobalIlluminationPass(RenderPass):
             "data1": "DeferredScenePass.data1",
             "data2": "DeferredScenePass.data2",
             "data3": "DeferredScenePass.data3",
-            "giData": "Variables.giVoxelGridData",
-            "photonGatherGridTex": "Variables.photonGatherGridTex",
-            
+            "giData": "Variables.giData",
 
+            "giVoxelData0": "Variables.giVoxelData0",
+            "giVoxelData1": "Variables.giVoxelData1",
+            "giVoxelData2": "Variables.giVoxelData2",
+            "giVoxelData3": "Variables.giVoxelData3",
+            "giVoxelData4": "Variables.giVoxelData4",
+
+            "frameIndex": "Variables.frameIndex",
+           
             "cameraPosition": "Variables.cameraPosition",
             "mainCam": "Variables.mainCam",
             "mainRender": "Variables.mainRender"
@@ -37,7 +43,7 @@ class GlobalIlluminationPass(RenderPass):
 
     def create(self):
         self.target = RenderTarget("GlobalIlluminationPass")
-        self.target.setHalfResolution()
+        # self.target.setHalfResolution()
         self.target.addColorTexture()
         self.target.addAuxTexture()
         self.target.setColorBits(16)

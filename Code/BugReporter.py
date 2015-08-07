@@ -16,8 +16,6 @@ import shutil
 from os.path import join, isdir
 from cStringIO import StringIO
 
-
-
 # Log stdout and stderr
 class Log(object):
     def __init__(self, orig_out):

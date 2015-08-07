@@ -21,7 +21,8 @@ class FastText:
 
         self.data = PTAFloat.empty_array(100)
         self.lastText = ""
-        self.size = size
+        self.size = 16.0 / base.win.getYSize() * 2.0
+
         self.square.setShaderInput("displData", self.data)
 
         self.rightAligned = rightAligned
@@ -55,7 +56,7 @@ class FastText:
         self.square.setInstanceCount(len(text))
 
         if self.rightAligned:
-            self.posOffset = Vec2(-float(len(text)) * self.size * 0.55, 0)
+            self.posOffset = Vec2(-float(len(text)) * self.size * 0.56, 0)
         else:
             self.posOffset = Vec2(0)
         c = 0
@@ -106,8 +107,7 @@ class FastText:
                     (5.0 - offsetDispl.y) / 6.0);
                 vec2 halfOffset = 2.0 / textureSize(font, 0);
                 texcoord = clamp(p3d_MultiTexCoord0, halfOffset, 1.0 - halfOffset) / vec2(16,6) + offsetCoordReal;
-
-                vec4 offset = vec4(gl_InstanceID*size.x*0.55 , 0, 0, 0) +
+                vec4 offset = vec4(gl_InstanceID*size.x*0.56 , 0, 0, 0) +
                     vec4(pos.x, 0, pos.y, 0);
                 vec4 finalPos = p3d_Vertex * vec4(size.x, size.x, size.x, 1.0)
                     + offset;

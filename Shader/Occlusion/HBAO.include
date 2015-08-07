@@ -11,7 +11,7 @@
 #define HBAO_SAMPLING_STEP 0.02 * OCCLUSION_RADIUS
 
 #define HBAO_SCALE 2.1 * OCCLUSION_STRENGTH
-#define HBAO_SAMPLING_RADIUS 93.9 * OCCLUSION_RADIUS
+#define HBAO_SAMPLING_RADIUS 1.9 * OCCLUSION_RADIUS
 
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;

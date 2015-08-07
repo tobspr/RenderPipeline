@@ -26,7 +26,7 @@ class Effect(DebugObject):
             "castGI": True,
             "mainPass": True
         }
-        self.assignments = {"Default": [], "Shadows": []}
+        self.assignments = {"Default": [], "Shadows": [], "Voxelize": []}
 
     def load(self, filename):
         """ Loads the effect from a given filename """
@@ -34,8 +34,8 @@ class Effect(DebugObject):
 
         self.defines = {}
         self.source = filename
-        self.shaderParts = {"Default": {}, "Shadows": {}}
-        self.shaderObjs = {"Default": None, "Shadows": None}
+        self.shaderParts = {"Default": {}, "Shadows": {}, "Voxelize": {}}
+        self.shaderObjs = {"Default": None, "Shadows": None, "Voxelize": None}
         self._handleProperties()
         self.name = filename.replace("\\", "/").split("/")[-1].split(".")[0]
         self._rename("Effect-" + self.name)
@@ -55,7 +55,6 @@ class Effect(DebugObject):
 
     def reload(self):
         """ Reloads the effect from disk """
-        self.debug("Reloading")
 
         self.load(self.source)
 
@@ -295,7 +294,7 @@ class Effect(DebugObject):
         for stageBlock in stageBlocks:
             blockName = stageBlock[0].rstrip(":").split()[-1]
 
-            if blockName not in ["Default", "Shadows"]:
+            if blockName not in ["Default", "Shadows", "Voxelize"]:
                 self.error("Unkown block name:", blockName)
                 continue
 

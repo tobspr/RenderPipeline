@@ -38,8 +38,11 @@ class ShadowScenePass(RenderPass):
 
     def registerTagState(self, name, state):
         """ Registers a new tag state """
+        state.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
+        initialState = state.getState()
+
         for camera in self.shadowCameras:
-            camera.node().setTagState(name, state) 
+            camera.node().setTagState(name, initialState) 
 
     def setSize(self, size):
         """ Sets the shadow atlas size """

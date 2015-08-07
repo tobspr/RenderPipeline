@@ -48,7 +48,7 @@ bool coord_inside(vec2 coord, vec2 min_coord, vec2 max_coord) {
 
 float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSize) {
 
-    #if defined(DEBUG_DISABLE_PCSS)
+    #if defined(DEBUG_DISABLE_PCSS) || defined(DISABLE_PCSS)
         vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
         float biasedDepth = projCoord.z - baseBias;
         float sampled = textureLod(shadowAtlas, centerCoord, 0).x;
@@ -65,16 +65,16 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
 
     #undef SHADOW_NUM_PCSS_SEARCH_SAMPLES
-    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 32
+    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 64
 
     #undef SHADOW_NUM_PCSS_FILTER_SAMPLES
-    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 32
+    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 64
 
     // Find blocker
     for ( int i = 0; i < SHADOW_NUM_PCSS_SEARCH_SAMPLES; ++i )
     {
-        // vec2 offset = poissonDisk64[i] * searchRegionRadiusUV;
-        vec2 offset = poissonDisk32[i] * searchRegionRadiusUV;
+        vec2 offset = poissonDisk64[i] * searchRegionRadiusUV;
+        // vec2 offset = poissonDisk32[i] * searchRegionRadiusUV;
         float shadowMapDepth = texture(shadowAtlas, centerCoord + offset).x;
         float factor = step(shadowMapDepth, biasedDepth);
         numBlockers += factor;
@@ -125,7 +125,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
 float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSize) {
 
-    #if defined(DEBUG_DISABLE_PCF)
+    #if defined(DEBUG_DISABLE_PCF) || defined(DISABLE_PCF)
         vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
         float biasedDepth = projCoord.z - baseBias;
         float sampled = textureLod(shadowAtlas, centerCoord, 0).x;
@@ -207,6 +207,11 @@ float computeShadowsForSource(ShadowSource source, Material material, vec3 n, ve
 
 
 int computePSSMShadowSourceIndex(Light light, vec3 position, float borderFactor, out vec3 projCoord) {
+
+    #if defined(PSSM_FIXED_CASCADE_INDEX)
+        return PSSM_FIXED_CASCADE_INDEX;
+    #endif
+
     int shadow_map_index = DIRECTIONAL_LIGHT_SPLIT_COUNTS;
     projCoord = vec3(0);
 
@@ -242,11 +247,16 @@ float computePSSMShadowsForLight(Light light, vec3 position, vec3 n, vec3 l,
     ShadowSource source = shadowSources[light.sourceIndexes[shadow_map_index]];
     float resolutionFactor = 1.0 / source.resolution;
 
+
     // vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
     vec3 biasedPos = computeBiasedPosition(position, slopeScaledBias * resolutionFactor, normalScaledBias * resolutionFactor, n, l);
     projCoord = reprojectShadow(source, biasedPos);
     map_used = shadow_map_index;
     baseBias *= resolutionFactor;
+
+    // Fix issues with low cascades
+    baseBias *= 1.0 + shadow_map_index;
+    baseBias *= 1.0 + shadow_map_index;
 
     #if defined(USE_PCSS)
         return pcssKernelDynamicSize(light, source, projCoord, baseBias);

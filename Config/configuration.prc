@@ -53,7 +53,6 @@ pstats-target-frame-rate 30.0
 #threading-model App/Cull/Draw
 
 
-
 # Try for better performance
 # prefer-single-buffer #t
 

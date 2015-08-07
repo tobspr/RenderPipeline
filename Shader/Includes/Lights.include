@@ -18,6 +18,8 @@ vec3 applyPointLight(Light light, Material material, bool useShadows) {
     float distanceRelative = distanceToLight / light.radius; 
     float attenuation = computePointLightAttenuation(light, distanceToLight);
 
+    // attenuation = step(distanceRelative, 1);
+
     vec3  l = normalize(light.position - material.position);
     vec3  v = normalize(cameraPosition - material.position);
     vec3  n = normalize(material.normal);
@@ -48,8 +50,6 @@ vec3 applyDirectionalLight(Light light, Material material, bool useShadows) {
     vec3  h = normalize(l + v);
     float shadowFactor = 1.0;
 
-    // return vec3(dot(n, l));
-
     #if defined(USE_SCATTERING) && !defined(DISABLE_ATTENUATION_READ)
         vec3 scatteringFactor = texture(scatteringAttenuation, texcoord).xyz;
     #else
@@ -59,7 +59,7 @@ vec3 applyDirectionalLight(Light light, Material material, bool useShadows) {
     #if !defined(UNSHADOWED_PASS)
     if (useShadows) {
         int map_used = 0;
-        shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 60.0, 60.0, 0.01, map_used);
+        shadowFactor = computePSSMShadowsForLight(light, material.position, n, l, 40.0, 40.0, 0.003, map_used);
 
         #if defined(DEBUG_RM_PSSM_SPLITS)
             // float factor = float(map_used) / DIRECTIONAL_LIGHT_SPLIT_COUNTS;

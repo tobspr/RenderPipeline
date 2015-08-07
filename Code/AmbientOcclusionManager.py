@@ -4,9 +4,10 @@ from panda3d.core import Texture
 from .Globals import Globals
 from DebugObject import DebugObject
 
-from .RenderPasses.AmbientOcclusionPass import AmbientOcclusionPass
-from .RenderPasses.OcclusionBlurPass import OcclusionBlurPass
-from .RenderPasses.OcclusionCombinePass import OcclusionCombinePass
+from RenderPasses.AmbientOcclusionPass import AmbientOcclusionPass
+from RenderPasses.OcclusionBlurPass import OcclusionBlurPass
+from RenderPasses.OcclusionCombinePass import OcclusionCombinePass
+from MemoryMonitor import MemoryMonitor
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
@@ -70,7 +71,7 @@ class AmbientOcclusionManager(DebugObject):
             self.pipeline.getRenderPassManager().registerStaticVariable("lastFrameOcclusion", self.lastFrameOcclusionTex)
 
             BufferViewerGUI.registerTexture("LastFrameOcclusion", self.lastFrameOcclusionTex)
-
+            MemoryMonitor.addTexture("LastFrameOcclusion", self.lastFrameOcclusionTex)
             self.pipeline.getRenderPassManager().registerDefine("USE_TEMPORAL_OCCLUSION", 1)
             self.combinePass = OcclusionCombinePass()
             self.pipeline.getRenderPassManager().registerPass(self.combinePass)

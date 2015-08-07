@@ -65,8 +65,8 @@ void main() {
     // Testing
     #if 0
         mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
-        sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
     #endif
+        // sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
@@ -75,7 +75,7 @@ void main() {
     // Create a material to store the material type dependent properties on it
     #if defined(IS_TRANSPARENT)
         TransparentMaterial m = getDefaultTransparentMaterial();
-        m.alpha = 1.0;
+        m.alpha = 0.5;
     #else
         Material m = getDefaultMaterial();
         m.position = vOutput.positionWorld;
@@ -87,6 +87,10 @@ void main() {
     m.specular = sampledSpecular.r * specularFactor;
     m.metallic = metallic;
     m.normal = mixedNormal;
+
+    // m.baseColor = vOutput.materialDiffuse.rgb;
+    m.metallic = 0;
+    m.roughness = 1.0;
 
     #pragma ENTRY_POINT MATERIAL
 

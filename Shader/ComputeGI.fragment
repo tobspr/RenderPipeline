@@ -25,7 +25,7 @@ layout(location=1) out vec4 giSpecularResult;
 void main() {
 
     // Screen coordinate (as int vec)
-    ivec2 screenCoord = ivec2(gl_FragCoord.xy) * 2;
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
 
     vec4 specularResult = vec4(0);
 

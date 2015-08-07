@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma optionNV (unroll all)
+
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Structures/Material.struct"
 #pragma include "Includes/PoissonDisk.include"
@@ -7,33 +9,131 @@
 
 
 uniform GIData giData;
-uniform sampler3D photonGatherGridTex;
+uniform sampler3D giVoxelData0;
+uniform sampler3D giVoxelData1;
+uniform sampler3D giVoxelData2;
+uniform sampler3D giVoxelData3;
+uniform sampler3D giVoxelData4;
 
 
-vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
-    int iterations, float stepRatio, float coneRatio, float startDistance, float initialConeRadius) {
+struct Voxel {
+    vec3 posX;
+    vec3 negX;
+    vec3 posY;
+    vec3 negY;
+    vec3 posZ;
+    vec3 negZ;
+    float solid;
+};
 
-    vec3 directionStep = normalize(direction) / (2.0 * data.gridHalfSize);
 
-    vec4 result = vec4(0);
+uniform int frameIndex;
 
-    float currentDistance = startDistance;
-    float currentConeRadius = initialConeRadius;
+Voxel fetchVoxel(vec3 coord, float lod) {
+    vec4 sample0 = textureLod(giVoxelData0, coord, lod);
+    vec4 sample1 = textureLod(giVoxelData1, coord, lod);
+    vec4 sample2 = textureLod(giVoxelData2, coord, lod);
+    vec4 sample3 = textureLod(giVoxelData3, coord, lod);
+    vec4 sample4 = textureLod(giVoxelData4, coord, lod);
 
-    // TODO: Optimize
-    for (int i = 0; i < iterations; i++) {
-        currentConeRadius *= stepRatio; 
-        currentDistance += currentConeRadius * coneRatio;
-        vec3 currentPos = start + directionStep * currentDistance;
-        float currentMip = log2( currentConeRadius + 1.0 ) * 0.5;
-        currentMip = min(currentMip, 5.0);
-        currentMip = 0.0;
-        vec4 currentVal = textureLod(photonGatherGridTex, currentPos, currentMip );
-        vec4 currentValGeometry = textureLod(data.geometry, currentPos, currentMip );
-        result += vec4(currentVal.xyz, currentValGeometry.w) * (1.0-result.w);
-    }
-    return result;
+
+    Voxel v;
+    v.posX = vec3(sample0.x, sample1.z, sample3.x);
+    v.negX = vec3(sample0.y, sample1.w, sample3.y);
+    v.posY = vec3(sample0.z, sample2.x, sample3.z);
+    v.negY = vec3(sample0.w, sample2.y, sample3.w);
+    v.posZ = vec3(sample1.x, sample2.z, sample4.x);
+    v.negZ = vec3(sample1.y, sample2.w, sample4.y);
+    v.solid = sample4.w;
+    return v;
 }
+
+bool hasVoxel(vec3 coord, float lod) {
+    return textureLod(giVoxelData4, coord, lod).w > 0.7;
+}
+
+// vec4 traceCone(GIData data, sampler3D targetTex, vec3 start, vec3 direction,
+//     int iterations, float stepRatio, float coneRatio, float startDistance, float initialConeRadius) {
+
+//     vec3 directionStep = normalize(direction) / (2.0 * data.gridHalfSize);
+
+//     vec4 result = vec4(0);
+
+//     float currentDistance = startDistance;
+//     float currentConeRadius = initialConeRadius;
+
+//     // TODO: Optimize
+//     for (int i = 0; i < iterations; i++) {
+//         currentConeRadius *= stepRatio; 
+//         currentDistance += currentConeRadius * coneRatio;
+//         vec3 currentPos = start + directionStep * currentDistance;
+//         float currentMip = log2( currentConeRadius + 1.0 ) * 0.5;
+//         currentMip = min(currentMip, 5.0);
+//         currentMip = 0.0;
+//         vec4 currentVal = textureLod(photonGatherGridTex, currentPos, currentMip );
+//         vec4 currentValGeometry = textureLod(data.geometry, currentPos, currentMip );
+//         result += vec4(currentVal.xyz, currentValGeometry.w) * (1.0-result.w);
+//     }
+//     return result;
+// }
+
+uniform float opt_mip_multiplier;
+uniform float opt_step_multiplier;
+
+vec3 findIntersection(vec3 start, vec3 direction, float mipMultiplier, float stepMultiplier, int numSteps) {
+
+
+    direction = normalize(direction);
+    vec3 dest = start + direction * 0.05;
+    vec3 stepWidth = (dest - start) / numSteps;
+    vec3 currentPos = start;
+    bool found = false;
+    vec3 resultIntersection = vec3(0);
+    vec3 dir = vec3(1, -1, 0);
+
+    float mip = 0.1;
+    currentPos += stepWidth;
+    currentPos += stepWidth;
+
+    for (int i = 0; i < numSteps; i++) {
+        // ivec3 coord = ivec3(currentPos * giData.resolution);
+        currentPos += stepWidth;
+
+        if (any(greaterThan(currentPos, vec3(1))) || any(lessThan(currentPos, vec3(0)))) return resultIntersection;
+
+        vec3 cpos = currentPos - fract(currentPos * giData.resolution) / giData.resolution;
+        if (hasVoxel(cpos, mip) && !found) {
+
+
+            // found = true;
+            // resultVoxel = fetchVoxel(coord, 0);
+            Voxel v = fetchVoxel(cpos, mip);
+            vec3 col = vec3(0);
+            col += saturate(dot(dir.xzz, -direction)) * v.posX;
+            col += saturate(dot(dir.yzz, -direction)) * v.negX;
+            col += saturate(dot(dir.zxz, -direction)) * v.posY;
+            col += saturate(dot(dir.zyz, -direction)) * v.negY;
+            col += saturate(dot(dir.zzx, -direction)) * v.posZ;
+            col += saturate(dot(dir.zzy, -direction)) * v.negZ;
+            // col /= max(0.1, v.solid);
+            resultIntersection = col;
+            found = true;
+
+
+        } 
+
+        mip *= mipMultiplier;
+        mip *= mipMultiplier;
+        stepWidth *= stepMultiplier;
+
+    }
+
+
+
+    return resultIntersection;
+}
+
+
 
 vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec4 specularColor, vec3 flatNormal, vec3 cameraPosition) {
 
@@ -43,13 +143,12 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     // Fetch the normal used to compute the cone directions
     // vec3 correctNormal = normalize(cross(dFdx(m.position), dFdy(m.position)));
-    vec3 correctNormal = m.normal;
+    // vec3 correctNormal = m.normal;
 
     // Compute grid variables
-    vec3 gridStart = data.gridPos - data.gridHalfSize;
-    vec3 gridEnd = data.gridPos + data.gridHalfSize;
-    vec3 voxelSize = (gridEnd - gridStart) / vec3(data.gridResolution);
-
+    vec3 gridStart = data.position - data.size*0.9;
+    vec3 gridEnd = data.position + data.size*0.9;
+    float voxelSize = (2.0 * data.size) / data.resolution;
 
     // Check if the pixel is in the grid
     bool isInGrid = all(greaterThan(m.position, gridStart)) && 
@@ -59,30 +158,57 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     // If not in gi range, ignore this pixel
     // TODO: Check if early out is actually faster
-    if (!isInGrid) return vec4(1,0,0,0);
-
+    if (!isInGrid) return vec4(2);
 
     // Bias position a bit, so self shadowing gets less strong
-    vec3 biasedPosition = m.position + m.normal * voxelSize * 0.0;
+    vec3 biasedPosition = m.position + m.normal * voxelSize * 2.0;
 
     // Compute coordinate in voxel space
-    vec3 localCoord = (biasedPosition-gridStart) / (2 * data.gridHalfSize);
-    vec3 localCoordOffs = mod(localCoord, 1.0 / data.gridResolution);
+    vec3 localCoord = (biasedPosition-data.position + data.size) / (2 * data.size);
+    vec3 localCoordOffs = mod(localCoord, 1.0 / data.resolution);
+    ivec3 localCoordInGrid = ivec3(localCoord * data.resolution);
+    specularColor = vec4(0.2, 0.6, 1.0, 0);
 
-
-    ivec3 localCoordInGrid = ivec3(localCoord * data.gridResolution);
-
-    // vec3 averagedColor = texelFetch(photonGatherGridTex, localCoordInGrid, 0);
-
-
-
-    specularColor = vec4(0.2, 0.6, 1.0, 1);
-
-    vec3 averagedColor = textureLod(photonGatherGridTex, localCoord, 0).xyz * 0.1;
+    // vec3 averagedColor = textureLod(photonGatherGridTex, localCoord, 0).xyz * 0.1;
 
     // averagedColor = pow(averagedColor, vec3(1.5));
+    // Voxel v = fetchVoxel(localCoordInGrid, 0);
+    // vec3 v = findIntersection(locaalCoord, viewVector);
+
+    // vec3 resultSum = vec3(0);
+
+    // for (int i = 0; i < 16; i++) {
+    //     vec3 offs = poisson3D_32[i*2 + frameIndex%2];
+    //     offs *= sign(dot(offs, m.normal)+0.0001);
+    //     resultSum += findIntersection(localCoord, offs, opt_mip_multiplier, opt_step_multiplier, 8);
+    // }
+
+    // vec3 reflectedDir = reflect(viewVector, m.normal)Cas;
+    // specularColor.xyz = findIntersection(localCoord, reflectedDir, 1.0, 1.01, 32);
+    // specularColor.w = length(specularColor.xyz) > 0.01 ? 1.0 : 0.0;
+
+    // resultSum /= 8.0;
+    // resultSum *= 2.0;
+    Voxel v = fetchVoxel(localCoord, 0);
+    vec3 resultSum = vec3(0);
 
 
-    return vec4(averagedColor, 1);
+
+    resultSum += saturate(1.0 + (-m.normal.x)) * v.posX;
+    resultSum += saturate(1.0 + (m.normal.x)) * v.negX;
+    resultSum += saturate(1.0 + (-m.normal.y)) * v.posY;
+    resultSum += saturate(1.0 + (m.normal.y)) * v.negY;
+    resultSum += saturate(1.0 + (-m.normal.z)) * v.posZ;
+    resultSum += saturate(1.0 + (m.normal.z)) * v.negZ;
+
+
+    resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
+    resultSum *= 0.1;
+// resultSum *= 20.0;
+
+    resultSum += 0.05;
+    // vec4 sample0 = textureLod(giVoxelData1, localCoord, 1);
+
+    return vec4(resultSum, 1);
 
 }

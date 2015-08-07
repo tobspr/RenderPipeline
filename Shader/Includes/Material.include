@@ -31,6 +31,14 @@ Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, vec4 data3) {
 }
 
 
+Material unpackGBufferMaterial(sampler2D tex0, sampler2D tex1, sampler2D tex2, sampler2D tex3, ivec2 coord) {
+    vec4 tex0data = texelFetch(tex0, coord, 0);
+    vec4 tex1data = texelFetch(tex1, coord, 0);
+    vec4 tex2data = texelFetch(tex2, coord, 0);
+    vec4 tex3data = texelFetch(tex3, coord, 0);
+    return unpackMaterial(tex0data, tex1data, tex2data, tex3data);
+}
+
 Material getDefaultMaterial() {
     Material m;
     m.baseColor = vec3(1);

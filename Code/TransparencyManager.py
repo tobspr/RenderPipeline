@@ -35,7 +35,7 @@ class TransparencyManager(DebugObject):
         self.transparencyPass = TransparencyPass()
         self.pipeline.getRenderPassManager().registerPass(self.transparencyPass)
 
-        self.transparencyShadePass = TransparencyShadePass()
+        self.transparencyShadePass = TransparencyShadePass(self.pipeline)
         self.transparencyShadePass.setBatchSize(self.pipeline.settings.transparencyBatchSize)
         self.pipeline.getRenderPassManager().registerPass(self.transparencyShadePass)
         

@@ -2,13 +2,17 @@
 
 #pragma include "Includes/Configuration.include"
 
+
+#if !defined(USE_IES_PROFILES)
 uniform sampler2DArray IESProfilesTex;
+#endif
+
 
 vec3 computeIESProfile(int iesProfileID, float radialFactor, float distance) {
 
-    // #if defined(DEBUG_DISABLE_COMPLEX_LIGHTING)
-    //     return vec3(radialFactor);
-    // #endif
+    #if defined(DISABLE_IES_PROFILES)
+        return vec3(radialFactor);
+    #endif
     
     radialFactor *= 0.7;
     vec3 iesRadialFallof = textureLod(IESProfilesTex, 

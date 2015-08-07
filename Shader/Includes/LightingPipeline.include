@@ -1,0 +1,136 @@
+#pragma once
+
+#pragma include "Includes/Lights.include"
+#pragma include "Includes/Structures/Material.struct"
+
+// This include handles the extraction of lights from the buffer and their shading
+
+#define DO_PROCESS_SHADOWED_LIGHTS defined(PROCESS_SHADOWED_LIGHTS) && PROCESS_SHADOWED_LIGHTS
+#define DO_PROCESS_UNSHADOWED_LIGHTS defined(PROCESS_UNSHADOWED_LIGHTS) && PROCESS_UNSHADOWED_LIGHTS
+
+
+#ifndef IS_PER_TILE_IGHTING
+#define IS_PER_TILE_IGHTING 0
+#endif
+
+
+
+
+vec3 computeLighting(isamplerBuffer lights_buffer, Material material, int offset) {
+
+    vec3 lightingResult = vec3(0);
+ 
+
+    // Fetch limits depending on wheter the lighting process is per tile or not
+    #if IS_PER_TILE_IGHTING
+        const int maxPointLights                = MAX_TILE_POINT_LIGHTS;
+        const int maxShadowedPointLights        = MAX_TILE_SHADOWED_POINT_LIGHTS;
+        const int maxDirectionalLights          = MAX_TILE_DIRECTIONAL_LIGHTS;
+        const int maxShadowedDirectionalLights  = MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS;
+        const int maxSpotLights                 = MAX_TILE_SPOT_LIGHTS;
+        const int maxShadowedSpotLights         = MAX_TILE_SHADOWED_SPOT_LIGHTS;
+    #else
+        const int maxPointLights                = MAX_POINT_LIGHTS;
+        const int maxShadowedPointLights        = MAX_SHADOWED_POINT_LIGHTS;
+        const int maxDirectionalLights          = MAX_DIRECTIONAL_LIGHTS;
+        const int maxShadowedDirectionalLights  = MAX_SHADOWED_DIRECTIONAL_LIGHTS;
+        const int maxSpotLights                 = MAX_SPOT_LIGHTS;
+        const int maxShadowedSpotLights         = MAX_SHADOWED_SPOT_LIGHTS;
+    #endif
+
+    // Read light counts
+    int countPointLight = min(maxPointLights,
+        texelFetch(lights_buffer, 0).r);
+
+    int countPointLightShadow = min(maxShadowedPointLights, 
+        texelFetch(lights_buffer, 1).r);
+
+    int countDirectionalLight = min(maxDirectionalLights, 
+        texelFetch(lights_buffer, 2).r);
+
+    int countDirectionalLightShadow = min(maxShadowedDirectionalLights, 
+        texelFetch(lights_buffer, 3).r);
+
+    int countSpotLight = min(maxSpotLights, 
+        texelFetch(lights_buffer, 4).r);
+
+    int countSpotLightShadow = min(maxShadowedSpotLights, 
+        texelFetch(lights_buffer, 5).r);
+
+    // The light data starts at a certain offset, also add the per tile offset
+    // if specified
+    int currentBufferPos = 16 + offset;
+
+
+    // Process Point Lights
+    #if DO_PROCESS_UNSHADOWED_LIGHTS
+    for (int i = 0; i < countPointLight; i++) {
+        int index = texelFetch(lights_buffer, currentBufferPos + i).x;
+        lightingResult += applyPointLight(lights[index], material, false);
+
+    }
+    #endif
+
+    currentBufferPos += maxPointLights;
+
+    // Process shadowed point lights
+    #if DO_PROCESS_SHADOWED_LIGHTS
+    for (int i = 0; i < countPointLightShadow; i++) {
+        int index = texelFetch(lights_buffer, currentBufferPos + i).x;
+        lightingResult += applyPointLight(lights[index], material, true);
+    }
+    #endif
+
+    currentBufferPos += maxShadowedPointLights;
+
+    // Process directional lights
+    #if DO_PROCESS_UNSHADOWED_LIGHTS
+    for (int i = 0; i < countDirectionalLight; i++) {
+        int index = texelFetch(lights_buffer, currentBufferPos + i).x;
+        lightingResult += applyDirectionalLight(lights[index], material, false);
+    }
+    #endif
+
+    currentBufferPos += maxDirectionalLights;
+
+    // Process shadowed directional lights
+    #if DO_PROCESS_SHADOWED_LIGHTS
+    for (int i = 0; i < countDirectionalLightShadow; i++) {
+        int index = texelFetch(lights_buffer, currentBufferPos + i).x;
+        lightingResult += applyDirectionalLight(lights[index], material, true);
+
+    }
+    #endif
+
+    currentBufferPos += maxShadowedDirectionalLights;
+
+    // Process Spot Lights 
+    #if DO_PROCESS_UNSHADOWED_LIGHTS
+    for (int i = 0; i < countSpotLight; i++) {
+        int index = texelFetch(lights_buffer, currentBufferPos + i).x;
+        lightingResult += applySpotLight(lights[index], material, false);
+    }
+    #endif
+
+    currentBufferPos += maxSpotLights;
+
+
+    // Process shadowed Spot lights
+    #if DO_PROCESS_SHADOWED_LIGHTS
+    for (int i = 0; i < countSpotLightShadow; i++) {
+        int index = texelFetch(lights_buffer, currentBufferPos + i).x;
+        lightingResult += applySpotLight(lights[index], material, true);
+    }
+    #endif
+
+    currentBufferPos += maxShadowedSpotLights;
+
+
+    return lightingResult;
+
+}
+
+
+vec3 computeLighting(isamplerBuffer lights_buffer, Material material) {
+    return computeLighting(lights_buffer, material, 0);
+}

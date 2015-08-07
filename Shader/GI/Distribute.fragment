@@ -1,0 +1,142 @@
+#version 430
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Structures/VoxelDirections.struct"
+
+
+
+#if defined(USE_DEBUG_ATTACHMENTS)
+out vec4 color;
+#endif
+
+uniform writeonly image3D dst0;
+uniform writeonly image3D dst1;
+uniform writeonly image3D dst2;
+uniform writeonly image3D dst3;
+uniform writeonly image3D dst4;
+
+uniform sampler3D src0;
+uniform sampler3D src1;
+uniform sampler3D src2;
+uniform sampler3D src3;
+uniform sampler3D src4;
+
+
+struct Voxel {
+    vec3 posX;
+    vec3 negX;
+    vec3 posY;
+    vec3 negY;
+    vec3 posZ;
+    vec3 negZ;
+};
+
+Voxel fetchVoxel(ivec3 coord) {
+    vec4 sample0 = texelFetch(src0, coord, 0);
+    vec4 sample1 = texelFetch(src1, coord, 0);
+    vec4 sample2 = texelFetch(src2, coord, 0);
+    vec4 sample3 = texelFetch(src3, coord, 0);
+    vec4 sample4 = texelFetch(src4, coord, 0);
+    Voxel v;
+
+    if (coord.x < 0 || coord.y < 0 || coord.z < 0 || coord.x >= GI_GRID_RESOLUTION || coord.y >= GI_GRID_RESOLUTION || coord.z >= GI_GRID_RESOLUTION) {
+        v.posX = vec3(0);
+        v.negX = vec3(0);
+        v.posY = vec3(0);
+        v.negY = vec3(0);
+        v.posZ = vec3(0);
+        v.negZ = vec3(0);
+        return v;
+    }
+
+    v.posX = vec3(sample0.x, sample1.z, sample3.x);
+    v.negX = vec3(sample0.y, sample1.w, sample3.y);
+    v.posY = vec3(sample0.z, sample2.x, sample3.z);
+    v.negY = vec3(sample0.w, sample2.y, sample3.w);
+    v.posZ = vec3(sample1.x, sample2.z, sample4.x);
+    v.negZ = vec3(sample1.y, sample2.w, sample4.y);
+    return v;
+}
+
+void storeVoxel(ivec3 coord, Voxel v) {
+    imageStore(dst0, coord, vec4(v.posX.r, v.negX.r, v.posY.r, v.negY.r));
+    imageStore(dst1, coord, vec4(v.posZ.r, v.negZ.r, v.posX.g, v.negX.g));
+    imageStore(dst2, coord, vec4(v.posY.g, v.negY.g, v.posZ.g, v.negZ.g));
+    imageStore(dst3, coord, vec4(v.posX.b, v.negX.b, v.posY.b, v.negY.b));
+    imageStore(dst4, coord, vec4(v.posZ.b, v.negZ.b, 0,0));
+}
+
+
+
+#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2) if (length(v. NEG_DIR_NAME ) < maxCol || true) {   \
+            for (int c1 = -1; c1 <= 1; c1++) {     \
+                for (int c2 = -1; c2 <= 1; c2++) {    \
+                    v. DIR_NAME += fetchVoxel(localCoord + ivec3( TEMPL0, TEMPL1, TEMPL2 )). DIR_NAME * mixF * (saturate(0.3 + (length(vec2(c1, c2))))); \
+                } \
+            } \
+        }
+
+
+void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
+    #if defined(USE_DEBUG_ATTACHMENTS)
+        vec3 vSum = vec3(0);
+    #endif
+        
+    for (int z = 0; z < GI_GRID_RESOLUTION; z++) {
+        ivec3 localCoord = ivec3(coord, z);
+        Voxel v = fetchVoxel(localCoord);
+
+
+
+        float mixF = 0.025;
+        // mixF = 2.2;
+        float maxCol = 2000.0;
+
+        // if (length(v.posX) < maxCol)
+        //     v.posX += fetchVoxel(localCoord + ivec3(-1, 0, 0)).posX * mixF;
+        
+        // if (length(v.negX) < maxCol)
+        //     v.negX += fetchVoxel(localCoord + ivec3(1, 0, 0)).negX * mixF;
+
+        // if (length(v.posY) < maxCol)
+        //     v.posY += fetchVoxel(localCoord + ivec3(0, -1, 0)).posY * mixF;
+        
+        // if (length(v.negY) < maxCol)
+        //     v.negY += fetchVoxel(localCoord + ivec3(0, 1, 0)).negY * mixF;
+
+        // if (length(v.posZ) < maxCol)
+        //     v.posZ += fetchVoxel(localCoord + ivec3(0, 0, -1)).posZ * mixF;
+
+        // if (length(v.negZ) < maxCol)
+        //     v.negZ += fetchVoxel(localCoord + ivec3(0, 0, 1)).negZ * mixF;
+
+
+        // PosX side
+        EVALUATE_DIRECTION(posX, negX, -1, c1, c2 )
+        EVALUATE_DIRECTION(negX, posX, 1, c1, c2 )
+        EVALUATE_DIRECTION(posY, negY, c1, -1, c2 )
+        EVALUATE_DIRECTION(negY, posY, c1, 1, c2 )
+        EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 )
+        EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 )
+
+
+        
+
+        
+
+        #if defined(USE_DEBUG_ATTACHMENTS)
+        vSum += v.posX * 0.1 + v.negX * 0.1 + v.posZ * 0.1 +  v.negZ * 0.1 + v.posY * 0.1 + v.negY * 0.1;
+        #endif
+
+        storeVoxel(localCoord, v);
+    }
+
+
+
+    #if defined(USE_DEBUG_ATTACHMENTS)
+        color = vec4(vSum, 1);
+    #endif
+
+}

@@ -288,9 +288,9 @@ class LightManager(DebugObject):
             try:
                 from .GUI.FastText import FastText
                 self.lightsVisibleDebugText = FastText(pos=Vec2(
-                    Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 1, 0), size=0.036)
+                    Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
                 self.lightsUpdatedDebugText = FastText(pos=Vec2(
-                    Globals.base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 1, 0), size=0.036)
+                    Globals.base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
 
             except Exception, msg:
                 self.debug(

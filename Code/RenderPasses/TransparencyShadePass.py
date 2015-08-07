@@ -10,9 +10,10 @@ class TransparencyShadePass(RenderPass):
     """ This pass reads the per pixel linked lists generated during the deferred
     scene pass and lights the transparent pixels """
 
-    def __init__(self):
+    def __init__(self, pipeline):
         RenderPass.__init__(self)
         self.batchSize = 100
+        self.pipeline = pipeline
 
     def getID(self):
         return "TransparencyShadePass"
@@ -77,11 +78,13 @@ class TransparencyShadePass(RenderPass):
     def create(self):
         self.target = RenderTarget("TransparencyShadePass")
         self.target.setSize(self.batchSize, self.batchSize)
-        self.target.addColorTexture()
+
+        if self.pipeline.settings.useDebugAttachments:
+            self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
 
     def getOutputs(self):
         return {
-            "TransparencyShadePass.resultTex": lambda: self.target.getColorTexture(),
+            "TransparencyShadePass.resultState": lambda: 1,
         }
 
