@@ -55,7 +55,6 @@ class Effect(DebugObject):
 
     def reload(self):
         """ Reloads the effect from disk """
-        self.debug("Reloading")
 
         self.load(self.source)
 

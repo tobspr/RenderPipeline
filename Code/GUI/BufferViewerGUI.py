@@ -129,8 +129,13 @@ class BufferViewerGUI(DebugObject):
 
                 sizeStr += " - " + str(self.calculateTexSize(tex)) + " MB"
 
-                node = DirectFrame(parent=self.buffersParent, frameColor=(
-                    1, 1, 1, 0.2), frameSize=(-self.innerPadding, self.texWidth + self.innerPadding, -self.texHeight - 30 - self.innerPadding, self.innerPadding + 15),
+                col = (1,1,1,0.2)
+
+                if not MemoryMonitor.isRegistered(tex):
+                    col = (1,0.2,0,1)
+                    print "Not found:", tex
+
+                node = DirectFrame(parent=self.buffersParent, frameColor=col, frameSize=(-self.innerPadding, self.texWidth + self.innerPadding, -self.texHeight - 30 - self.innerPadding, self.innerPadding + 15),
                     state=DGG.NORMAL)
                 node.setPos(
                     20 + posX * (self.texWidth + self.texPadding), 0, -self.paddingTop - 22 - posY * (self.texHeight + self.texPadding + 44))

@@ -25,6 +25,7 @@ from DynamicObjectsManager import DynamicObjectsManager
 from GUI.PipelineGuiManager import PipelineGuiManager
 from SSLRManager import SSLRManager
 from CloudManager import CloudManager
+from MemoryMonitor import MemoryMonitor
 
 from GUI.BetterOnscreenImage import BetterOnscreenImage
 
@@ -269,6 +270,7 @@ class RenderingPipeline(DebugObject):
         self.lastFrameDepth.setup2dTexture(self.showbase.win.getXSize(), self.showbase.win.getYSize(),
             Texture.TFloat, Texture.FR32)
         BufferViewerGUI.registerTexture("LastFrameDepth", self.lastFrameDepth)
+        MemoryMonitor.addTexture("LastFrameDepth", self.lastFrameDepth)
         self.renderPassManager.registerStaticVariable("lastFrameDepth", self.lastFrameDepth)
 
     def _createInputHandles(self):
@@ -424,9 +426,6 @@ class RenderingPipeline(DebugObject):
         if self.settings.displayOnscreenDebugger:
             define("DEBUGGER_ACTIVE", 1)
 
-        if self.settings.enableGlobalIllumination:
-            define("USE_GLOBAL_ILLUMINATION", 1)
-
         # TODO: Move to scattering module
         if self.settings.enableScattering:
             define("USE_SCATTERING", 1)
@@ -444,8 +443,6 @@ class RenderingPipeline(DebugObject):
         define("MOTION_BLUR_SAMPLES", self.settings.motionBlurSamples)
         define("MOTION_BLUR_FACTOR", self.settings.motionBlurFactor)
         define("MOTION_BLUR_DILATE_PIXELS", self.settings.motionBlurDilatePixels)
-
-
 
     def _createGlobalIllum(self):
         """ Creates the global illumination manager if enabled in the settings """

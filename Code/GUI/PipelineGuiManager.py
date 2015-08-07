@@ -1,9 +1,10 @@
 
-from panda3d.core import Vec3
+from panda3d.core import Vec3, Vec2
 from direct.interval.IntervalGlobal import Parallel, Sequence, Wait
 
 from ..Globals import Globals
 from ..DebugObject import DebugObject
+from ..MemoryMonitor import MemoryMonitor
 from BufferViewerGUI import BufferViewerGUI
 from BetterOnscreenImage import BetterOnscreenImage
 from BetterSlider import BetterSlider
@@ -24,7 +25,7 @@ class PipelineGuiManager(DebugObject):
         self.body = Globals.base.pixel2d
         self.showbase = pipeline.showbase
         self.guiActive = False
-        self.enableGISliders = False
+        self.enableGISliders = True
         self.window = UIWindow(
             "Pipeline Debugger", 280, Globals.base.win.getYSize())
         self.defines = {}
@@ -34,8 +35,21 @@ class PipelineGuiManager(DebugObject):
         self.setup()
 
 
+
     def update(self):
-        pass
+        if self.memUsageText:
+
+            memstr = str(round(MemoryMonitor.getEstimatedMemUsage() / 1024.0 / 1024.0, 2))
+
+            numTextureBytes = 0
+            for tex in Globals.render.findAllTextures():
+                numTextureBytes += MemoryMonitor._calculateTexSize(tex)
+
+            texstr = str(round(numTextureBytes / 1024.0 / 1024.0, 2))
+
+
+
+            self.memUsageText.setText("VRAM Usage: " + memstr + " MB / Textures: " + texstr + " MB")
 
     def setup(self):
         """ Setups this manager """
@@ -55,6 +69,17 @@ class PipelineGuiManager(DebugObject):
         self._initSettings()
         self.showbase.accept("g", self._toggleGUI)
         self.currentGUIEffect = None
+        self.memUsageText = None
+
+        if self.pipeline.settings.displayDebugStats:
+            try:
+                from FastText import FastText
+                self.memUsageText = FastText(pos=Vec2(
+                    Globals.base.getAspectRatio() - 0.1, 0.76), rightAligned=True, color=Vec3(0.2, 1, 0), size=0.03)
+
+            except Exception, msg:
+                self.warn(
+                    "Overlay is disabled because FastText wasn't loaded")
 
     def _initSettings(self):
         """ Inits all debugging settings """
@@ -190,37 +215,18 @@ class PipelineGuiManager(DebugObject):
         if s.enableGlobalIllumination and self.enableGISliders:
 
             self.slider_opts = {
-                "ao_cone_height": {
-                    "name": "AO Cone Height",
-                    "min": 0.0001,
-                    "max": 4.0,
-                    "default": 0.5,
-                },
-                "ao_step_ratio": {
-                    "name": "AO Step Ratio",
+                "mip_multiplier": {
+                    "name": "Mip Multiplier",
                     "min": 1.0,
-                    "max": 2.5,
-                    "default": 1.1,
+                    "max": 3.0,
+                    "default": 1.0,
                 },
-                "ao_cone_ratio": {
-                    "name": "AO Cone Ratio",
-                    "min": 0.00001,
-                    "max": 2.5,
-                    "default": 1.1,
+                "step_multiplier": {
+                    "name": "Step Multiplier",
+                    "min": 1.0,
+                    "max": 3.0,
+                    "default": 1.0,
                 },
-                "ao_start_distance": {
-                    "name": "AO Start Offset",
-                    "min": -2.0,
-                    "max": 2.0,
-                    "default": 0.5,
-                },
-                "ao_initial_radius": {
-                    "name": "AO Initial Cone Radius",
-                    "min": 0.0001,
-                    "max": 5.0,
-                    "default": 1.2,
-                },
-
             }
 
            
@@ -238,6 +244,7 @@ class PipelineGuiManager(DebugObject):
                                                size=15, color=Vec3(0.6),mayChange=True)
                 currentY += 50
 
+
         self.initialized = True
             
     def onPipelineLoaded(self):
@@ -250,7 +257,7 @@ class PipelineGuiManager(DebugObject):
         if not self.enableGISliders:
             return
 
-        container = self.pipeline.giPrecomputeBuffer
+        container = self.pipeline.globalIllum.finalPass
 
         for name, opt in self.slider_opts.iteritems():
             container.setShaderInput("opt_" + name, opt["slider"].getValue())

@@ -7,11 +7,11 @@
 // number of directions to sample in UV space
 #define HBAO_NUM_SAMPLE_DIRECTIONS OCCLUSION_SAMPLES
 #define HBAO_TANGENT_BIAS 0.2
-#define HBAO_NUM_SAMPLING_STEPS 4
-#define HBAO_SAMPLING_STEP 0.07 * OCCLUSION_RADIUS
+#define HBAO_NUM_SAMPLING_STEPS 12
+#define HBAO_SAMPLING_STEP 0.02 * OCCLUSION_RADIUS
 
 #define HBAO_SCALE 2.1 * OCCLUSION_STRENGTH
-#define HBAO_SAMPLING_RADIUS 93.9 * OCCLUSION_RADIUS
+#define HBAO_SAMPLING_RADIUS 1.9 * OCCLUSION_RADIUS
 
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;
@@ -21,7 +21,7 @@ uniform mat4 currentProjMatInv;
 uniform sampler2D depthTex;
 uniform sampler2D noiseTex;
 
-uniform vec3 cameraPosition
+uniform vec3 cameraPosition;
 
 const float TWO_PI = 2.0 * M_PI;
 

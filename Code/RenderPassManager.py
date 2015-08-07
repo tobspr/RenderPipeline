@@ -157,10 +157,6 @@ class RenderPassManager(DebugObject):
         for renderPass in self._sortedNodes:
             generatedShaders += renderPass.setShaders()
 
-        Globals.base.graphicsEngine.renderFrame()
-        Globals.base.graphicsEngine.renderFrame()
-        Globals.base.graphicsEngine.renderFrame()
-
         # Check if they compiled properly
         # for shader in generatedShaders:
             # print shader.getErrorFlag(), " " *10 , shader.getFilename(Shader.STFragment)

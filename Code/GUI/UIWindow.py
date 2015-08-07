@@ -23,7 +23,7 @@ class UIWindow(DebugObject):
         self.parent = parent
 
         self.bgFrame = DirectFrame(parent=self.node,
-                                   frameColor=(0.2, 0.2, 0.2, 0.9),
+                                   frameColor=(0.15, 0.15, 0.15, 0.95),
                                    frameSize=(0, w, -h, 0))  # state=DGG.NORMAL
 
         self.titleFrame = DirectFrame(parent=self.node,

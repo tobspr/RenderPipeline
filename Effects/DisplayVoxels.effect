@@ -1,0 +1,91 @@
+
+
+
+pass Default:
+
+    vertex:
+        template default
+
+        include "Includes/Structures/GIData.struct"
+
+        uniform GIData giData;
+
+
+        insert @WS_POSITION:
+            int cubeID = gl_InstanceID;
+            float x = cubeID % GI_GRID_RESOLUTION;
+            float y = cubeID / (GI_GRID_RESOLUTION*GI_GRID_RESOLUTION);
+            float z = (cubeID / GI_GRID_RESOLUTION) % GI_GRID_RESOLUTION;
+
+            float voxelSize = (2.0 * giData.size) / giData.resolution;
+            vOutput.positionWorld *= voxelSize * 0.98;
+            vOutput.positionWorld += (giData.position) - giData.size;
+            vOutput.positionWorld += voxelSize * vec3(x, y, z);
+            vOutput.positionWorld += 0.01;
+
+            // vOutput.positionWorld.xy += vec2(x, y) * 3.0;
+
+
+    fragment:
+        template default
+
+
+        include "Includes/Structures/GIData.struct"
+
+        uniform GIData giData;
+
+        uniform sampler3D giDataTex0;
+        uniform sampler3D giDataTex1;
+        uniform sampler3D giDataTex2;
+        uniform sampler3D giDataTex3;
+        uniform sampler3D giDataTex4;
+
+        insert @MATERIAL:
+
+            vec3 vsCoord = (vOutput.positionWorld - giData.position + giData.size) / (2.0 * giData.size);
+            ivec3 vsiCoord = ivec3(vsCoord * giData.resolution);
+            vec4 data0 = texelFetch(giDataTex0, vsiCoord, 0);
+            vec4 data1 = texelFetch(giDataTex1, vsiCoord, 0);
+            vec4 data2 = texelFetch(giDataTex2, vsiCoord, 0);
+            vec4 data3 = texelFetch(giDataTex3, vsiCoord, 0);
+            vec4 data4 = texelFetch(giDataTex4, vsiCoord, 0);
+
+            float csum = dot(data0, vec4(1)) 
+                         + dot(data1, vec4(1)) 
+                         + dot(data2, vec4(1)) 
+                         + dot(data3, vec4(1)) 
+                         + dot(data4, vec4(1));
+
+            // if (csum < 0.01) discard;
+
+            vec3 combinedColor = vec3(0);
+
+            if (abs(m.normal.x) > 0.5) {
+                combinedColor.x = mix(data0.x, data0.y, m.normal.x < 0.0 ? 1 : 0);
+                combinedColor.y = mix(data1.z, data1.w, m.normal.x < 0.0 ? 1 : 0);
+                combinedColor.z = mix(data3.x, data3.y, m.normal.x < 0.0 ? 1 : 0);
+            }
+
+            if (abs(m.normal.y) > 0.5) {
+                combinedColor.x = mix(data0.z, data0.w, m.normal.y < 0.0 ? 1 : 0);
+                combinedColor.y = mix(data2.x, data2.y, m.normal.y < 0.0 ? 1 : 0);
+                combinedColor.z = mix(data3.z, data3.w, m.normal.y < 0.0 ? 1 : 0);
+            }
+
+            if (abs(m.normal.z) > 0.5) {
+                combinedColor.x = mix(data1.x, data1.y, m.normal.z < 0.0 ? 1 : 0);
+                combinedColor.y = mix(data2.z, data2.w, m.normal.z < 0.0 ? 1 : 0);
+                combinedColor.z = mix(data4.x, data4.y, m.normal.z < 0.0 ? 1 : 0);
+            }
+
+            if (length(combinedColor) < 0.1) discard;
+
+            combinedColor *= 0.1;
+
+            m.normal = vOutput.normalWorld; 
+            m.specular = 0;
+            m.metallic = 0;
+            m.roughness = 1;
+            m.baseColor = vec3(combinedColor);
+
+

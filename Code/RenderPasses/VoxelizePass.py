@@ -13,14 +13,28 @@ class VoxelizePass(RenderPass):
     """ This pass manages voxelizing the scene from multiple directions to generate
     a 3D voxel grid. It handles the camera setup and provides a simple interface. """
 
-    def __init__(self):
+    def __init__(self, pipeline):
         RenderPass.__init__(self)
+        self.pipeline = pipeline
 
     def getID(self):
         return "VoxelizePass"
 
     def getRequiredInputs(self):
         return {
+
+            # Lighting
+            "renderedLightsBuffer": "Variables.renderedLightsBuffer",
+            "lights": "Variables.allLights",
+            "shadowAtlasPCF": "ShadowScenePass.atlasPCF",
+            "shadowAtlas": "ShadowScenePass.atlas",
+            "shadowSources": "Variables.allShadowSources",
+            "directionToFace": "Variables.directionToFaceLookup",
+
+            "cameraPosition": "Variables.cameraPosition",
+            "mainCam": "Variables.mainCam",
+            "mainRender": "Variables.mainRender",
+
         }
 
     def setVoxelGridResolution(self, voxelGridResolution):
@@ -40,7 +54,8 @@ class VoxelizePass(RenderPass):
 
     def setActive(self, active):
         """ Enables and disables this pass """
-        self.target.setActive(active)
+        if hasattr(self, "target"):
+            self.target.setActive(active)
 
     def getVoxelTex(self):
         """ Returns a handle to the generated voxel texture """
@@ -65,15 +80,19 @@ class VoxelizePass(RenderPass):
         # Create voxelize tareet
         self.target = RenderTarget("VoxelizePass")
         self.target.setSize(self.voxelGridResolution * self.gridResolutionMultiplier)
-        # self.target.setColorWrite(False)
-        self.target.addColorTexture()
+        
+        if self.pipeline.settings.useDebugAttachments:
+            self.target.addColorTexture()
+        else:
+            self.target.setColorWrite(False)
+
         self.target.setCreateOverlayQuad(False)
         self.target.setSource(self.voxelizeCameraNode, Globals.base.win)
         self.target.prepareSceneRender()
         self.target.setActive(False)
 
-        self.target.getInternalRegion().setSort(-400)
-        self.target.getInternalBuffer().setSort(-399)
+        # self.target.getInternalRegion().setSort(-400)
+        # self.target.getInternalBuffer().setSort(-399)
 
     def voxelizeSceneFromDirection(self, gridPos, direction="x"):
         """ Voxelizes the scene from a given direction. This method handles setting 

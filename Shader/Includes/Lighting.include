@@ -25,7 +25,7 @@ vec3 computeLightModel(Light light, Material material,
         return shadowFactor * attenuation * light.color;
     #endif
 
-    #if defined(DEBUG_DISABLE_COMPLEX_LIGHTING)
+    #if defined(DEBUG_DISABLE_COMPLEX_LIGHTING) || defined(DISABLE_COMLPEX_LIGHTING)
         return light.color * attenuation * material.baseColor * shadowFactor;
     #endif
 

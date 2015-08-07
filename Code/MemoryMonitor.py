@@ -1,4 +1,5 @@
 
+from panda3d.core import Texture
 
 from RenderTargetType import RenderTargetType
 
@@ -20,13 +21,17 @@ class MemoryMonitor:
 
         # Assign the texture format a size
         textureTypes = {
-            7:  4 * 1, # RGBA (Unkown type, we will just assume 8 bit)
+            7:  3 * 1, # RGB (Unkown type, we will just assume 8 bit)
+            12:  4 * 1, # RGBA (Unkown type, we will just assume 8 bit)
+            18:  1, # LUMINANCE
+
             16: 4 * 1, # RGBA8
             21: 4 * 2, # RGBA16
             22: 4 * 4, # RGBA32
             25: 3,     # Depth 24 Bit
             26: 4,     # Depth 32 Bit
-            27: 2,     # FR16     
+            27: 2,     # FR16 
+            31: 4,  # FSRGB_ALPHA    
             34: 4,     # FR32i
             35: 4,     # FR32
         }
@@ -88,7 +93,8 @@ class MemoryMonitor:
         print "VRAM Usage:"
 
         total = 0.0
-        for key, (val, hanlde) in sorted(self.memoryEntries.iteritems(), key = lambda v: -v[1][0]):
+
+        for key, (val, handle) in sorted(self.memoryEntries.iteritems(), key = lambda v: -v[1][0]):
             valMB = round(val / (1024.0 * 1024.0), 1)
             outputLine = ""
             outputLine += key.ljust(50, ' ')
@@ -99,3 +105,19 @@ class MemoryMonitor:
 
         print "-"*79
         print " "*49, round(total / (1024.0 * 1024.0), 1), "MB"
+
+    @classmethod
+    def getEstimatedMemUsage(self):
+        """ Returns the estimated memory usage in Bytes """
+        totalSum = 0
+        for key, (val, handle) in self.memoryEntries.iteritems():
+            totalSum += val
+        return totalSum
+
+    @classmethod
+    def isRegistered(self, tex):
+        """ Checks if the texture is registered """
+        for key, (val, handle) in self.memoryEntries.iteritems():
+            if handle == tex:
+                return True
+        return False

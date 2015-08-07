@@ -23,7 +23,6 @@
 #define DISABLE_ATTENUATION_READ 1
 
 
-
 uniform sampler2D scatteringAttenuation;
 
 uniform isamplerBuffer renderedLightsBuffer;

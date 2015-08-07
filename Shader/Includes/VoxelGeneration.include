@@ -1,0 +1,48 @@
+#pragma once
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Structures/GIData.struct"
+
+uniform layout(r32i) iimage3D voxelGenDestR;
+uniform layout(r32i) iimage3D voxelGenDestG;
+uniform layout(r32i) iimage3D voxelGenDestB;
+
+uniform GIData giData;
+
+
+
+int packContributions(vec3 normal, float factor) {
+    vec3 dir = vec3(1, -1, 0);
+    return (int(saturate(dot(dir.xzz, normal)) * factor * 31) & 0x1F) << 0*5 |
+           (int(saturate(dot(dir.yzz, normal)) * factor * 31) & 0x1F) << 1*5 |
+           (int(saturate(dot(dir.zxz, normal)) * factor * 31) & 0x1F) << 2*5 |
+           (int(saturate(dot(dir.zyz, normal)) * factor * 31) & 0x1F) << 3*5 |
+           (int(saturate(dot(dir.zzx, normal)) * factor * 31) & 0x1F) << 4*5 |
+           (int(saturate(dot(dir.zzy, normal)) * factor * 31) & 0x1F) << 5*5;
+
+}
+
+void spawnVoxel(vec3 position, vec3 normal, vec3 color) {
+    
+    vec3 voxelPos = (position - giData.positionGeneration + giData.size) / (2.0 * giData.size);
+    // voxelPos += 0.5 / giData.resolution;
+    ivec3 voxelCoord = ivec3(voxelPos * giData.resolution);
+
+    color = saturate(color);
+
+    normal = normalize(normal);
+    // normal = vec3(1, 0, 0);
+
+
+    int packedR = packContributions(normal, color.r); 
+    int packedG = packContributions(normal, color.g); 
+    int packedB = packContributions(normal, color.b); 
+            
+    imageAtomicOr(voxelGenDestR, voxelCoord, packedR);
+    imageAtomicOr(voxelGenDestG, voxelCoord, packedG);
+    imageAtomicOr(voxelGenDestB, voxelCoord, packedB);
+    // imageStore(voxelGenDestR, voxelCoord, ivec4(packedR));
+    // imageStore(voxelGenDestG, voxelCoord, ivec4(packedG));
+    // imageStore(voxelGenDestB, voxelCoord, ivec4(packedB));
+
+}

@@ -97,14 +97,14 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
-        # self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
+        self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
         # self.sceneSource = "Demoscene.ignore/EiffelTower/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/HarvesterModel/Model.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
-        self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
+        # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
@@ -162,20 +162,20 @@ class Main(ShowBase, DebugObject):
         self.demoLights = []
 
         # Create some lights
-        for i in xrange(2):
+        for i in xrange(0):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
-            xoffs = math.sin(radius) * 12.0
-            yoffs = math.cos(radius) * 12.0
-            pointLight.setPos(xoffs, yoffs  - 9, 12)
-            pointLight.setColor(0.3, 0.75, 1.0)
+            xoffs = i * 3.0
+            yoffs = math.cos(radius) * 0.0
+            pointLight.setPos(0, 0, 15)
+            pointLight.setColor(Vec3(0.2,0.6,1.0)*6)
             pointLight.setShadowMapResolution(512)
-            pointLight.setRadius(35)
-            # pointLight.setCastsShadows(True)
+            pointLight.setRadius(18)
+            pointLight.setCastsShadows(True)
             self.renderPipeline.addLight(pointLight)
             # pointLight.attachDebugNode(render)
-            self.movingLights.append(pointLight)
+            # self.movingLights.append(pointLight)
 
         # Create more lights
         for i in xrange(0):
@@ -261,7 +261,7 @@ class Main(ShowBase, DebugObject):
         # import time
         # time.sleep(0.2)
         # globalClock.setMode(ClockObject.MLimited)
-        # globalClock.setFrameRate(30)
+        # globalClock.setFrameRate(10)
 
         # Uncomment for party mode :-)
         # self.removeDemoLight()
@@ -284,6 +284,7 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.setStatus("Loading skybox", 70)
 
         self.scene = scene
+        # self.scene.hide(self.renderPipeline.getMainPassBitmask())
         self.scene.prepareScene(self.win.getGsg())
 
         # Load surround scene
@@ -337,7 +338,7 @@ class Main(ShowBase, DebugObject):
                 match.remove()
 
         # Wheter to use a ground plane
-        self.usePlane = True
+        self.usePlane = False
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -362,7 +363,7 @@ class Main(ShowBase, DebugObject):
         if self.usePlane:
             self.groundPlane = self.loader.loadModel(
                 "Models/Plane/Model.egg.bam")
-            self.groundPlane.setPos(0, 0, -5.0)
+            # self.groundPlane.setPos(0, 0, -5.0)
             self.groundPlane.setScale(12.0)
             self.groundPlane.setTwoSided(True)
             self.groundPlane.flattenStrong()
@@ -441,7 +442,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 70.0)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 20.0)
             # dPos = Vec3(100, 100, self.lastSliderValue*2 10)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)
