@@ -91,13 +91,13 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
-        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
         # self.sceneSource = "Demoscene.ignore/SSLRTest/scene.egg"
         # self.sceneSource = "Demoscene.ignore/BMW/Bmw.egg"
-        self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
+        # self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
         # self.sceneSource = "Demoscene.ignore/EiffelTower/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/HarvesterModel/Model.egg"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
@@ -109,8 +109,6 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
         # self.sceneSource = "Demoscene.ignore/TestScene/Test.bam"
-        # self.sceneSource = "Models/LittleHouse/Scene.bam"
-
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
@@ -121,7 +119,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
-        
+        self.sceneSource = "nik-dragon.egg.pz"
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
@@ -139,7 +137,7 @@ class Main(ShowBase, DebugObject):
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
             dirLight.setShadowMapResolution(2048)
-            dirLight.setColor(Vec3(1.5, 1.2, 0.8) * 6.0)
+            dirLight.setColor(Vec3(1.1, 1.05, 0.9) * 3.0)
             dirLight.setCastsShadows(True)
             dirLight.setPssmDistance(140)
             self.renderPipeline.addLight(dirLight)
@@ -299,7 +297,7 @@ class Main(ShowBase, DebugObject):
         seed(1)
 
         # Performance testing
-        if True:
+        if False:
             highPolyObj = self.scene.find("**/HighPolyObj")
 
             if highPolyObj is not None and not highPolyObj.isEmpty():
@@ -338,7 +336,7 @@ class Main(ShowBase, DebugObject):
                 match.remove()
 
         # Wheter to use a ground plane
-        self.usePlane = False
+        self.usePlane = True
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -357,14 +355,13 @@ class Main(ShowBase, DebugObject):
         self.prepareSRGB(self.scene)
 
         # Prepare Materials
-        # self.renderPipeline.fillTextureStages(render)
+        self.renderPipeline.fillTextureStages(render)
 
         # Load ground plane if configured
         if self.usePlane:
             self.groundPlane = self.loader.loadModel(
-                "Models/Plane/Model.egg.bam")
+                "Models/Plane/Model.bam")
             # self.groundPlane.setPos(0, 0, -5.0)
-            self.groundPlane.setScale(12.0)
             self.groundPlane.setTwoSided(True)
             self.groundPlane.flattenStrong()
             self.groundPlane.reparentTo(render)
@@ -382,6 +379,8 @@ class Main(ShowBase, DebugObject):
 
         # Some artists really don't know about backface culling
         # self.scene.setTwoSided(True)
+
+        self.scene.setPos(0, 0, 10)
 
         # Create some ocean
         # self.water = ProjectedWaterGrid(self.renderPipeline)

@@ -247,11 +247,16 @@ float computePSSMShadowsForLight(Light light, vec3 position, vec3 n, vec3 l,
     ShadowSource source = shadowSources[light.sourceIndexes[shadow_map_index]];
     float resolutionFactor = 1.0 / source.resolution;
 
+
     // vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
     vec3 biasedPos = computeBiasedPosition(position, slopeScaledBias * resolutionFactor, normalScaledBias * resolutionFactor, n, l);
     projCoord = reprojectShadow(source, biasedPos);
     map_used = shadow_map_index;
     baseBias *= resolutionFactor;
+
+    // Fix issues with low cascades
+    baseBias *= 1.0 + shadow_map_index;
+    baseBias *= 1.0 + shadow_map_index;
 
     #if defined(USE_PCSS)
         return pcssKernelDynamicSize(light, source, projCoord, baseBias);

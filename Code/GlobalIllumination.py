@@ -240,7 +240,9 @@ class GlobalIllumination(DebugObject):
 
         self.distributeTarget = RenderTarget("DistributeVoxels")
         self.distributeTarget.setSize(self.voxelGridResolution, self.voxelGridResolution)
-        self.distributeTarget.addColorTexture()
+
+        if self.pipeline.settings.useDebugAttachments:
+            self.distributeTarget.addColorTexture()
         self.distributeTarget.prepareOffscreenBuffer()
 
         # Set a near-filter to the texture

@@ -277,6 +277,10 @@ void main() {
         result = vec3(scatteringResult);
     #endif
 
+    #if defined(DEBUG_RM_GI_DIFFUSE)
+        result = vec3(giDiffuseColor * 0.5);
+    #endif
+
     result = mix(result, vec3(0), fogFactor);
 
 

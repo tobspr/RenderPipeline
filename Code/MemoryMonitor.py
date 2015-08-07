@@ -21,7 +21,9 @@ class MemoryMonitor:
 
         # Assign the texture format a size
         textureTypes = {
+            6: 1, # ALPHA
             7:  3 * 1, # RGB (Unkown type, we will just assume 8 bit)
+            9:  3 * 1, # FRGBA8
             12:  4 * 1, # RGBA (Unkown type, we will just assume 8 bit)
             18:  1, # LUMINANCE
 
@@ -31,7 +33,8 @@ class MemoryMonitor:
             25: 3,     # Depth 24 Bit
             26: 4,     # Depth 32 Bit
             27: 2,     # FR16 
-            31: 4,  # FSRGB_ALPHA    
+            30: 3,     # FSRGB
+            31: 4,     # FSRGB_ALPHA    
             34: 4,     # FR32i
             35: 4,     # FR32
         }

@@ -122,7 +122,6 @@ class PipelineGuiManager(DebugObject):
 
         if s.enableGlobalIllumination:
             register_mode("GI-Diffuse", "rm_GI_DIFFUSE")
-            register_mode("GI-Ambient", "rm_GI_AMBIENT")
             register_mode("GI-Specular", "rm_GI_REFLECTIONS")
             register_feature("G-Illum", "ft_GI")
 

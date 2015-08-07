@@ -63,10 +63,10 @@ void main() {
     #endif
 
     // Testing
-    #if 1
+    #if 0
         mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
-        // sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
     #endif
+        // sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
@@ -88,8 +88,8 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
 
-    m.baseColor = sampledDiffuse.rgb;
-
+    // m.baseColor = vOutput.materialDiffuse.rgb;
+    m.metallic = 0;
     m.roughness = 1.0;
 
     #pragma ENTRY_POINT MATERIAL

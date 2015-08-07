@@ -203,7 +203,7 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
 
     resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
-    resultSum *= 0.2;
+    resultSum *= 0.3;
 // resultSum *= 20.0;
 
     resultSum += 0.05;

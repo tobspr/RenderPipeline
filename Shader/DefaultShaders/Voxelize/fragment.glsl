@@ -89,10 +89,6 @@ void main() {
     m.metallic = metallic;
     m.normal = vOutput.normalWorld.xyz;
 
-    #if 1
-    m.normal = vOutput.normalWorld.xzy * vec3(1,1,-1);
-    #endif
-
     m.specular = 0.0;
     m.metallic = 0.0;
     m.roughness = 1.0;
