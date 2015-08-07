@@ -91,7 +91,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
-        self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
@@ -119,7 +119,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
-        self.sceneSource = "nik-dragon.egg.pz"
+        self.sceneSource = "panda"
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
@@ -379,8 +379,6 @@ class Main(ShowBase, DebugObject):
 
         # Some artists really don't know about backface culling
         # self.scene.setTwoSided(True)
-
-        self.scene.setPos(0, 0, 10)
 
         # Create some ocean
         # self.water = ProjectedWaterGrid(self.renderPipeline)

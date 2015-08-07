@@ -59,7 +59,7 @@ class GlobalIllumination(DebugObject):
         self.pipeline = pipeline
 
         # Grid size in world space units
-        self.voxelGridSize = 150.0
+        self.voxelGridSize = 80.0
         
         # Grid resolution in pixels
         self.voxelGridResolution = 64
