@@ -20,11 +20,11 @@
 
 
 
-#define SKYBOX_BEGIN 35000.0
+#define SKYBOX_BEGIN 15000.0
 
 // Todo: move this to pipeline config
 // #define PCSS_RADIUS_WS 0.2
-#define PCSS_RADIUS_WS 0.04
+#define PCSS_RADIUS_WS 0.01
 #define PCSS_SEARCH_RADIUS 15.0
 #define PCSS_FILTER_RADIUS 15.0
 #define USE_PIXEL_BASED_PCSS 0
@@ -32,3 +32,5 @@
 #define DIRECTIONAL_LIGHT_SPLIT_COUNTS 6
 
 #pragma include "Includes/CommonFunctions.include"
+
+#define USE_DEFAULT_COORD_SYS 1

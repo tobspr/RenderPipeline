@@ -74,14 +74,14 @@ class BufferViewerGUI(DebugObject):
         Globals.base.accept("v", self.toggle)
 
         self.window = UIWindow(
-            "Buffer Viewer", 1300, 850, parent)
+            "Buffer Viewer", 1480, 1040, parent)
 
         self.window.getNode().setPos(255, 1, -20)
 
         self.texWidth = 160
         self.texHeight = 90
         self.texPadding = 22
-        self.pageSize = 6
+        self.pageSize = 7
         self.innerPadding = 8
         self.paddingTop = 40
 

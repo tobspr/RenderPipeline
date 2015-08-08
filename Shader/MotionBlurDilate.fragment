@@ -46,15 +46,18 @@ void main() {
         vec2 pixelVelocity = texture(velocityTex, texcoord + offs).xy / 255.0;
         // if (length(pixelVelocity) < 0.001) continue;
         vec2 normalizedVelocity = normalize(pixelVelocity);
-        float bias = 0.8;
+        float bias = 0.2;
         float factor = saturate(abs(dot(offsetVector, normalizedVelocity)) - bias) * (1.0 / (1.0-bias));
 
         averagedVelocity += pixelVelocity * factor;
     }
 
     averagedVelocity /= numSamples;
+    // averagedVelocity *= 2.0,
     averagedVelocity *= 255.0;
     averagedVelocity *= 3.0;
+
+    // averagedVelocity = velocity;
 
     resultColor = vec4(averagedVelocity, 0, 1);
 

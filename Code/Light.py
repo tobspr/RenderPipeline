@@ -88,13 +88,6 @@ class Light(ShaderStructElement):
         """ Returns the internal id of the light-type, e.g. "PointLight" """
         return self.typeName
 
-    def getDebugNodeShader(self):
-        """ Returns the default shader used for debug nodes """
-        return Shader.load(Shader.SLGLSL,
-                "Shader/DefaultShaders/DebugNode/vertex.glsl",
-                "Shader/DefaultShaders/DebugNode/fragment.glsl"
-            )
-
     def setShadowMapResolution(self, resolution):
         """ Attempts to set the resolution of the shadow soures. You
         cannot call this after the light got attached to the LightManager,
@@ -223,13 +216,17 @@ class Light(ShaderStructElement):
         self.shadowNeedsUpdate = not len(queued) < 1
         return queued
 
-    def attachDebugNode(self, parent):
+    def attachDebugNode(self):
         """ Attachs a debug node to parent which shows the bounds of the light.
         VERY SLOW. USE ONLY FOR DEBUGGING """
-        self.debugNode.reparentTo(parent)
-        self.debugNode.setShader(self.getDebugNodeShader(), 10000)
+        self.debugNode.reparentTo(render.find("RPLightDebugNodes"))
         self.debugEnabled = True
         self._updateDebugNode()
+
+    def detachDebugNode(self):
+        """ Detachs the debug node """
+        self.debugEnabled = False
+        self.debugNode.detach()
 
     def setSourceIndex(self, sourceId, index):
         """ Sets the global shadow source index for the given source """

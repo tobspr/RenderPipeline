@@ -26,6 +26,7 @@ class PointLight(Light, DebugObject):
         and a radius """
         Light.__init__(self)
         DebugObject.__init__(self, "PointLight")
+        self.bounds = BoundingSphere()
         self.spacing = 0.5
         self.bufferRadius = 0.0
         self.typeName = "PointLight"
@@ -37,7 +38,8 @@ class PointLight(Light, DebugObject):
     def _computeLightBounds(self):
         """ Recomputes the bounds of this light. For a PointLight, this
         is simple, as it's only a BoundingSphere """
-        self.bounds = BoundingSphere(Point3(self.position), self.radius)
+        self.bounds.setCenter(self.position)
+        self.bounds.setRadius(self.radius)
 
     def _updateDebugNode(self):
         """ Internal method to generate new debug geometry. """

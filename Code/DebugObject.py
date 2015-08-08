@@ -1,6 +1,9 @@
 
 import sys
-from ConsoleColors import printRedConsoleText, printYellowConsoleText, printGrayConsoleText
+
+from Colorama import init as init_colorama
+from Colorama import Fore, Back, Style
+init_colorama()
 
 class DebugObject:
 
@@ -38,24 +41,25 @@ class DebugObject:
         but provides useful information for the developer """
         if self.muted or self._outputLevel > 0:
             return
-        printGrayConsoleText(self._debug_name.ljust(20))
-        print "",' '.join([str(i) for i in args])
+    
+        print Fore.GREEN + "[-] " + self._debug_name.ljust(25) + Fore.WHITE +  \
+            ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL
 
     def warn(self, *args):
         """ Outputs a warning message, something that failed or does
         not work, but does not prevent the program from running """
         if self.muted or self._outputLevel > 1:
             return
-        printYellowConsoleText("Warning: " + self._debug_name +
-            ": " + ' '.join([str(i) for i in args]) + "\n")
+        print Fore.YELLOW + Style.BRIGHT + "[!] " + (self._debug_name).ljust(25) + \
+            Fore.YELLOW + Style.BRIGHT + ' '.join([str(i) for i in args]) + Fore.RESET + Style.RESET_ALL
 
     def error(self, *args):
         """ Outputs an error message, something really serious.
         Hopefully this never get's called! Errors also can't be muted """
         if self._outputLevel > 2:
             return
-        printRedConsoleText("\n\n\nError: " + self._debug_name + ": " + \
-            ' '.join([str(i) for i in args])+ "\n")
+        print Fore.RED + Style.BRIGHT + "\n\n\n[!!!] " + (self._debug_name).ljust(23) + \
+            ' '.join([str(i) for i in args])+ "\n\n\n" + Fore.RESET + Style.RESET_ALL
 
     def fatal(self, *args):
         """ Outputs a fatal error message, printing out the errors and then calling

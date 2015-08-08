@@ -461,6 +461,12 @@ class LightManager(DebugObject):
             self.renderedLights[lightType] = []        
         pstats_ProcessLights.start()
 
+        # Fetch gi grid bounds
+        giGridBounds = None
+        if self.pipeline.settings.enableGlobalIllumination:
+            giGridBounds = self.pipeline.globalIllum.getBounds()
+
+
         # Process each light
         for index, light in enumerate(self.lightSlots):
 
@@ -479,8 +485,17 @@ class LightManager(DebugObject):
 
             # Perform culling
             pstats_CullLights.start()
-            if not self.cullBounds.contains(light.getBounds()):
-                continue
+            lightBounds = light.getBounds()
+            if not self.cullBounds.contains(lightBounds):
+                
+                # In case the light is not in the camera frustum, check if the light is
+                # in the gi frustum
+                if giGridBounds:
+                    if not giGridBounds.contains(lightBounds):
+                        continue
+                else:
+                    continue
+
             pstats_CullLights.stop()
 
             delaySpawn = False

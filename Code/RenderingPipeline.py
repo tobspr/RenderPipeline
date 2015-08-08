@@ -540,8 +540,8 @@ class RenderingPipeline(DebugObject):
             return
 
         self.debug("Checking required Panda3D version ..")
-        SystemAnalyzer.checkPandaVersionOutOfDate(29,04,2015)
-        SystemAnalyzer.analyze()
+        SystemAnalyzer.checkPandaVersionOutOfDate(8,8,2015)
+        # SystemAnalyzer.analyze()
 
         # Mount everything first
         self.mountManager.mount()
@@ -653,6 +653,9 @@ class RenderingPipeline(DebugObject):
         camDummyNode = render.attachNewNode("RPCameraDummys")
         camDummyNode.hide()
 
+        # Create an empty node at render space to store the light debug nodes
+        lightDebugNode = render.attachNewNode("RPLightDebugNodes")
+
         # Finally matchup all the render passes and set the shaders
         self.renderPassManager.createPasses()
         self.renderPassManager.writeAutoconfig()
@@ -671,6 +674,16 @@ class RenderingPipeline(DebugObject):
             "alphaTest": True,
 
             }, -10)
+
+
+        # Apply the debug effect to the light debug nodes
+        self.setEffect(lightDebugNode, "Effects/LightDebug.effect", {
+            "transparent": False,
+            "normalMapping": False,
+            "alphaTest": True,
+            "castShadows": False,
+            "castGI": False
+        }, 100)
 
         if self.settings.enableGlobalIllumination:
             self.globalIllum.reloadShader()

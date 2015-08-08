@@ -106,7 +106,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
-        # self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
@@ -119,7 +119,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
-        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
+        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
         # self.sceneSource = "box"
 
         # Select surrounding scene here
@@ -161,19 +161,20 @@ class Main(ShowBase, DebugObject):
         self.demoLights = []
 
         # Create some lights
-        for i in xrange(0):
+        for i in xrange(10):
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
-            xoffs = i * 3.0
+            xoffs = (i-5) * 10.0
             yoffs = math.cos(radius) * 0.0
-            pointLight.setPos(0, 0, 15)
-            pointLight.setColor(Vec3(0.2,0.6,1.0)*6)
-            pointLight.setShadowMapResolution(512)
+            pointLight.setPos(xoffs, 0, 8)
+            # pointLight.setColor(Vec3(0.2,0.6,1.0)*6)
+            pointLight.setColor(Vec3(random(), random(), random())*3)
+            # pointLight.setShadowMapResolution(512)
             pointLight.setRadius(18)
-            pointLight.setCastsShadows(True)
+            # pointLight.setCastsShadows(True)
             self.renderPipeline.addLight(pointLight)
-            # pointLight.attachDebugNode(render)
+            # pointLight.attachDebugNode()
             # self.movingLights.append(pointLight)
 
         # Create more lights
@@ -215,7 +216,7 @@ class Main(ShowBase, DebugObject):
        
 
         # Show loading screen a bit
-        if True:
+        if False:
             self.doMethodLater(0.5, self.loadScene, "Load Scene")
         else:
             self.loadScene()
@@ -387,7 +388,7 @@ class Main(ShowBase, DebugObject):
         # self.water.setWaterLevel(10)
 
         # 
-        if False:
+        if True:
             b1, b2 = self.scene.getTightBounds()
 
             c1 = loader.loadModel("Demoscene.ignore/CubeOpen/Scene.bam")

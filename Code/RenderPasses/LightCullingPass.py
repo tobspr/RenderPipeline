@@ -42,7 +42,9 @@ class LightCullingPass(RenderPass):
             "depth": "DeferredScenePass.depth",
             "mainCam": "Variables.mainCam",
             "mainRender": "Variables.mainRender",
-            "cameraPosition": "Variables.cameraPosition"
+            "cameraPosition": "Variables.cameraPosition",
+            "currentViewMat": "Variables.currentViewMat"
+
         }
 
     def create(self):

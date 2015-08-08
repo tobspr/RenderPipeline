@@ -37,7 +37,7 @@ void main() {
     
     // Binary alpha test
     #if defined(USE_ALPHA_TEST)
-        // if (sampledDiffuse.a < 0.5) discard;
+        if (sampledDiffuse.a < 0.5) discard;
         
         // Testing
         // if (length(sampledDiffuse.sxyz) < 0.0001) discard;
@@ -51,7 +51,7 @@ void main() {
     // Extract the material properties
     #if defined(USE_NORMAL_MAPPING)
         float bumpFactor = vOutput.materialDiffuse.w;
-        // bumpFactor *= 0.7;
+        bumpFactor = 0.0;
 
         // Merge the detail normal with the vertex normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
@@ -69,7 +69,7 @@ void main() {
         mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
     #endif
         
-    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
+    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(1.8));
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;

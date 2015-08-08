@@ -210,7 +210,7 @@ void main() {
         result += ambient;
 
         #if defined(USE_SCATTERING)
-            float fogFactor =  saturate( (distance(cameraPosition, material.position) - 5.0) / 6000.0);
+            float fogFactor =  saturate( (distance(cameraPosition, material.position) - 5.0) / 600.0);
             // fogFactor *= saturate(0.7 + max(0.0, material.position.z) / 1000.0);
             fogFactor = smoothstep(0, 1, fogFactor);
             fogFactor = 0.0;

@@ -40,22 +40,22 @@ vec3 computeLighting(isamplerBuffer lights_buffer, Material material, int offset
 
     // Read light counts
     int countPointLight = min(maxPointLights,
-        texelFetch(lights_buffer, 0).r);
+        texelFetch(lights_buffer, offset + 0).r);
 
     int countPointLightShadow = min(maxShadowedPointLights, 
-        texelFetch(lights_buffer, 1).r);
+        texelFetch(lights_buffer, offset + 1).r);
 
     int countDirectionalLight = min(maxDirectionalLights, 
-        texelFetch(lights_buffer, 2).r);
+        texelFetch(lights_buffer, offset + 2).r);
 
     int countDirectionalLightShadow = min(maxShadowedDirectionalLights, 
-        texelFetch(lights_buffer, 3).r);
+        texelFetch(lights_buffer, offset + 3).r);
 
     int countSpotLight = min(maxSpotLights, 
-        texelFetch(lights_buffer, 4).r);
+        texelFetch(lights_buffer, offset + 4).r);
 
     int countSpotLightShadow = min(maxShadowedSpotLights, 
-        texelFetch(lights_buffer, 5).r);
+        texelFetch(lights_buffer, offset + 5).r);
 
     // The light data starts at a certain offset, also add the per tile offset
     // if specified

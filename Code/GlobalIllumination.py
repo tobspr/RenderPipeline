@@ -3,7 +3,7 @@ from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
 from panda3d.core import Shader, SamplerState, GeomEnums
 from panda3d.core import Vec2, LMatrix4f, LVecBase3i, Camera, Mat4
 from panda3d.core import Mat4, OmniBoundingVolume, OrthographicLens
-from panda3d.core import BoundingBox, Point3, CullFaceAttrib, PTAMat4
+from panda3d.core import BoundingBox, Point3, CullFaceAttrib, PTAMat4, BoundingBox
 from panda3d.core import DepthTestAttrib, PTALVecBase3f, ComputeNode, PTALVecBase2f
 from direct.stdpy.file import isfile, open, join
 
@@ -64,6 +64,8 @@ class GlobalIllumination(DebugObject):
         # Grid resolution in pixels
         self.voxelGridResolution = 64
 
+        self.bounds = BoundingBox()
+
         # Create the task manager
         self.taskManager = DistributedTaskManager()
 
@@ -120,12 +122,24 @@ class GlobalIllumination(DebugObject):
         dests = self.pongDataTextures if swap else self.pingDataTextures
 
         if idx == 19:
-            self.gridPosLive[0] = self.gridPosTemp[0]
+            self.publishGrid()
+
+
             dests = self.dataTextures
 
         for i in xrange(5):
             self.distributeTarget.setShaderInput("src" + str(i), sources[i])
             self.distributeTarget.setShaderInput("dst" + str(i), dests[i])
+
+    def publishGrid(self):
+        """ This function gets called when the grid is ready to be used, and updates
+        the live grid data """
+        self.gridPosLive[0] = self.gridPosTemp[0]
+        self.bounds.setMinMax(self.gridPosLive[0]-Vec3(self.voxelGridSize), self.gridPosLive[0]+Vec3(self.voxelGridSize))
+
+    def getBounds(self):
+        """ Returns the bounds of the gi grid """
+        return self.bounds
 
     def update(self):
         """ Processes the gi, this method is called every frame """
