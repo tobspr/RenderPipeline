@@ -38,6 +38,8 @@ from RenderPasses.FinalPostprocessPass import FinalPostprocessPass
 from RenderPasses.VolumetricLightingPass import VolumetricLightingPass
 from RenderPasses.MotionBlurPass import MotionBlurPass
 from RenderPasses.SceneFinishPass import SceneFinishPass
+from RenderPasses.BloomPass import BloomPass
+from RenderPasses.SkyboxMaskPass import SkyboxMaskPass
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
@@ -370,6 +372,15 @@ class RenderingPipeline(DebugObject):
             self.viewSpacePass = ViewSpacePass()
             self.renderPassManager.registerPass(self.viewSpacePass)
 
+    def _createSkyboxMaskPass(self):
+        """ Creates a pass which computes the skybox mask.
+        This pass is only created if any render pass requires the provided
+        inputs """
+
+        if self.renderPassManager.anyPassRequires("SkyboxMaskPass.resultTex"):
+            self.skyboxMaskPass = SkyboxMaskPass()
+            self.renderPassManager.registerPass(self.skyboxMaskPass)
+
     def _createDefaultTextureInputs(self):
         """ This method loads various textures used in the different render passes
         and provides them as inputs to the render pass manager """
@@ -434,6 +445,9 @@ class RenderingPipeline(DebugObject):
             define("USE_DEBUG_ATTACHMENTS", 1)
 
         define("GLOBAL_AMBIENT_FACTOR", self.settings.globalAmbientFactor)
+
+        if self.settings.useColorCorrection:
+            define("USE_COLOR_CORRECTION", 1)
 
         # Pass camera near and far plane
         define("CAMERA_NEAR", Globals.base.camLens.getNear())
@@ -599,6 +613,12 @@ class RenderingPipeline(DebugObject):
         # self.volumetricLightingPass = VolumetricLightingPass()
         # self.renderPassManager.registerPass(self.volumetricLightingPass)
 
+        # Add bloom pass
+        if self.settings.enableBloom:
+            self.bloomPass = BloomPass()
+            self.renderPassManager.registerPass(self.bloomPass)
+
+
         # Add final pass
         self.finalPostprocessPass = FinalPostprocessPass()
         self.renderPassManager.registerPass(self.finalPostprocessPass)
@@ -627,6 +647,11 @@ class RenderingPipeline(DebugObject):
         self._createInputHandles()
         self._createDefaultTextureInputs()
         self._createViewSpacePass()
+        self._createSkyboxMaskPass()
+
+        # Create an empty node at render space to store all dummmy cameras on
+        camDummyNode = render.attachNewNode("RPCameraDummys")
+        camDummyNode.hide()
 
         # Finally matchup all the render passes and set the shaders
         self.renderPassManager.createPasses()

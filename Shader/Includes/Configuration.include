@@ -29,7 +29,6 @@
 #define PCSS_FILTER_RADIUS 15.0
 #define USE_PIXEL_BASED_PCSS 0
 
-
 #define DIRECTIONAL_LIGHT_SPLIT_COUNTS 6
 
 #pragma include "Includes/CommonFunctions.include"

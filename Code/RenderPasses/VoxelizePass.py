@@ -67,7 +67,7 @@ class VoxelizePass(RenderPass):
 
     def create(self):
         # Create voxelize camera
-        self.voxelizeCamera = Camera("VoxelizeScene")
+        self.voxelizeCamera = Camera("VoxelizeCamera")
         self.voxelizeCamera.setCameraMask(BitMask32.bit(4))
         self.voxelizeCameraNode = Globals.render.attachNewNode(self.voxelizeCamera)
         self.voxelizeLens = OrthographicLens()

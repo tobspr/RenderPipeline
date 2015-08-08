@@ -92,6 +92,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/MasterSword/Scene2.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Couch2/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/Couch/couch.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/LittleHouse/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LivingRoom2/LivingRoom.egg"
         # self.sceneSource = "Demoscene.ignore/LostEmpire/Model.egg"
@@ -105,6 +106,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
+        # self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
@@ -117,9 +119,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
-        # self.sceneSource = "Models/VertexPerformanceTest/Scene.egg"
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
-        self.sceneSource = "panda"
+        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
+        # self.sceneSource = "box"
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
@@ -305,9 +306,9 @@ class Main(ShowBase, DebugObject):
                 self.loadingScreen.setStatus("Preparing Performance Test", 75)
 
                 for x in xrange(0, 20):
-                    # for y in xrange(0, 1):
-                    if True:
-                        y = 5
+                    for y in xrange(0, 1):
+                    # if True:
+                        # y = 5
                         copiedObj = copy.deepcopy(highPolyObj)
                         copiedObj.setColorScale(random(), random(), random(), 1)
                         # if random() < 0.2:
@@ -330,10 +331,10 @@ class Main(ShowBase, DebugObject):
                         })
                     match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
 
-        for i in ["53", "54", "55", "56", "57"]:
-            matches = self.scene.findAllMatches("**/" + i)
-            for match in matches:
-                match.remove()
+        # for i in ["53", "54", "55", "56", "57"]:
+        #     matches = self.scene.findAllMatches("**/" + i)
+        #     for match in matches:
+        #         match.remove()
 
         # Wheter to use a ground plane
         self.usePlane = True
@@ -360,10 +361,11 @@ class Main(ShowBase, DebugObject):
         # Load ground plane if configured
         if self.usePlane:
             self.groundPlane = self.loader.loadModel(
-                "Models/Plane/Model.bam")
+                "Models/Plane/Plane.bam")
             # self.groundPlane.setPos(0, 0, -5.0)
             self.groundPlane.setTwoSided(True)
             self.groundPlane.flattenStrong()
+            self.groundPlane.setName("GroundPlane")
             self.groundPlane.reparentTo(render)
 
 
@@ -378,14 +380,21 @@ class Main(ShowBase, DebugObject):
         #     })
 
         # Some artists really don't know about backface culling
-        # self.scene.setTwoSided(True)
+        self.scene.setTwoSided(True)
 
         # Create some ocean
         # self.water = ProjectedWaterGrid(self.renderPipeline)
-        # self.water.setWaterLevel(-100)
+        # self.water.setWaterLevel(10)
 
+        # 
+        if False:
+            b1, b2 = self.scene.getTightBounds()
 
-
+            c1 = loader.loadModel("Demoscene.ignore/CubeOpen/Scene.bam")
+            c1.setPos(b1)
+            c1.setScale(b2-b1)
+            c1.reparentTo(render)
+        
         # Required for tesselation
         # self.convertToPatches(self.scene)
 
@@ -405,8 +414,8 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
 
-        camPos = Vec3(-4.92549, -7.57746, 7.20246)
-        camHpr = Vec3(-42.3281, -1.38704, 0)
+        camPos = Vec3(-8.75898, -6.39353, 7.767)
+        camHpr = Vec3(-51.5156, -25.3426, 0)
 
         self.controller.setInitialPositionHpr(
             camPos, camHpr)

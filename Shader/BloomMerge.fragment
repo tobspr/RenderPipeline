@@ -1,0 +1,35 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+
+uniform sampler2D colorTex;
+uniform sampler2D bloomTex;
+uniform sampler2D skyboxMask;
+
+in vec2 texcoord;
+out vec4 result;
+
+void main() {
+
+    ivec2 coord = ivec2(gl_FragCoord.xyz);
+
+    // Use bilinear filtering
+    vec4 bloomResult = texture(bloomTex, texcoord);
+    vec4 colorResult = texelFetch(colorTex, coord, 0);
+
+    float luminance = dot(vec4(0.2125, 0.7154, 0.0721, 0), colorResult);
+
+    float skybox = texelFetch(skyboxMask, coord, 0).x;
+
+    // result = colorResult + mix(vec4(0),bloomResult, saturate(1.0 - luminance*1.0) );
+    // result = colorResult + mix(vec4(0),bloomResult, saturate(1.0 - luminance*1.0) );
+    result = colorResult + bloomResult * saturate(1.2 - skybox) * saturate(1.0 - luminance*0.6); 
+
+    #if defined(DEBUG_RM_BLOOM)
+        result = bloomResult;
+    #endif
+
+    #if defined(DEBUG_DISABLE_BLOOM)  || defined(DEBUG_VISUALIZATION_ACTIVE)
+        result = colorResult;
+    #endif
+}

@@ -31,15 +31,16 @@ uniform int frameIndex;
 
 
 void main() {
+
     // Sample the diffuse color
     vec4 sampledDiffuse = texture(p3d_Texture0, vOutput.texcoord);
     
     // Binary alpha test
     #if defined(USE_ALPHA_TEST)
-        if (sampledDiffuse.a < 0.5) discard;
+        // if (sampledDiffuse.a < 0.5) discard;
         
         // Testing
-        // if (length(sampledDiffuse.xyz) < 0.0001) discard;
+        // if (length(sampledDiffuse.sxyz) < 0.0001) discard;
     #endif
 
     // Sample the other maps
@@ -50,7 +51,7 @@ void main() {
     // Extract the material properties
     #if defined(USE_NORMAL_MAPPING)
         float bumpFactor = vOutput.materialDiffuse.w;
-        bumpFactor = 0.0;
+        // bumpFactor *= 0.7;
 
         // Merge the detail normal with the vertex normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
@@ -61,12 +62,14 @@ void main() {
     #else
         vec3 mixedNormal = vOutput.normalWorld.xyz;
     #endif
+    
 
     // Testing
     #if 0
         mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
     #endif
-        // sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
+        
+    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
@@ -81,6 +84,7 @@ void main() {
         m.position = vOutput.positionWorld;
     #endif
 
+
     // Store the properties
     m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
     m.roughness = sampledRoughness.r * roughnessFactor;
@@ -88,9 +92,10 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
 
-    // m.baseColor = vOutput.materialDiffuse.rgb;
-    m.metallic = 0;
-    m.roughness = 1.0;
+    // m.baseColor = sampledDiffuse.rgb;
+    // m.metallic = 1.0;
+    // m.roughness = 0.0;
+    // m.specular = 1.0;
 
     #pragma ENTRY_POINT MATERIAL
 

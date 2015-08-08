@@ -35,6 +35,7 @@ class SSLRPass(RenderPass):
             "mainRender": "Variables.mainRender",
 
             "defaultCubemap": "Variables.defaultEnvironmentCubemap",
+            "skyboxMask": "SkyboxMaskPass.resultTex",
 
             "colorTex": ["TransparencyPass.resultTex", "LightingPass.resultTex"]
         }

@@ -155,6 +155,10 @@ class PipelineGuiManager(DebugObject):
             register_mode("SSLR", "rm_SSLR")
             register_feature("SSLR", "ft_SSLR")
 
+        if s.enableBloom:
+            register_mode("Bloom", "rm_BLOOM")
+            register_feature("Bloom", "ft_BLOOM")
+
 
         if s.useTransparency:
             register_feature("Transparency", "ft_TRANSPARENCY")

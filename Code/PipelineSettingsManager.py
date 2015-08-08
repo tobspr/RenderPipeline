@@ -35,6 +35,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("targetExposure", float, 0.8)
         self._addSetting("brightnessAdaptionSpeed", float, 1.0)
         self._addSetting("globalAmbientFactor", float, 1.0)
+        self._addSetting("useColorCorrection", bool, True)
 
         # [Scattering]
         self._addSetting("enableScattering", bool, False)
@@ -83,9 +84,13 @@ class PipelineSettingsManager(SettingsManager):
 
         # [Global Illumination]
         self._addSetting("enableGlobalIllumination", bool, False)
+        self._addSetting("giVoxelGridSize", float, 100.0)
 
         # [Clouds]
         self._addSetting("enableClouds", bool, False)
+
+        # [Bloom]
+        self._addSetting("enableBloom", bool, False)
 
         # [Debugging]
         self._addSetting("displayOnscreenDebugger", bool, False)

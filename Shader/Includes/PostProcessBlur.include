@@ -86,7 +86,7 @@ vec4 edgePreservingShadowBlur(vec2 texcoord, ivec2 screenCoord, sampler2D source
 
 
 const float normalsDiscardThreshold = 0.99;
-const float occlusionMaxDistanceBlur = 0.01;
+const float occlusionMaxDistanceBlur = 0.05;
 
 vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D positionTex) {
 
@@ -269,4 +269,53 @@ vec4 cloudBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D 
     }
 
     return sampledResult / max(0.1, sampleWeights);
+}
+
+
+vec4 bloomBlur(ivec2 screenCoord, sampler2D sourceTex) {
+
+    #if defined(DEBUG_DISABLE_UPSCALE_BLUR)
+        return texelFetch(sourceTex, screenCoord, 0);
+    #endif
+
+    const int numBlurSteps = 25;
+    const int sideSteps = (numBlurSteps - 1) / 2;
+
+    // http://dev.theomader.com/gaussian-kernel-calculator/
+    float blurWeights[numBlurSteps] = float[numBlurSteps]
+    (
+        0.004571,
+        0.00723,
+        0.010989,
+        0.016048,
+        0.022521,
+        0.03037,
+        0.039354,
+        0.049003,
+        0.058632,
+        0.067411,
+        0.074476,
+        0.079066,
+        0.080657,
+        0.079066,
+        0.074476,
+        0.067411,
+        0.058632,
+        0.049003,
+        0.039354,
+        0.03037,
+        0.022521,
+        0.016048,
+        0.010989,
+        0.00723,
+        0.004571
+    );
+
+    vec4 sampledResult = vec4(0.0);
+
+    for (int i = -sideSteps; i <= sideSteps; i++) {
+        sampledResult += texelFetch(sourceTex, screenCoord + i * blurDirection, 0) * blurWeights[i+sideSteps];
+    }
+
+    return sampledResult;
 }

@@ -9,6 +9,7 @@
 #pragma include "Includes/ColorCorrection.include"
 #pragma include "Includes/FilmGrain.include"
 #pragma include "Includes/PoissonDisk.include"
+#pragma include "Includes/Sharpen.include"
 
 
 in vec2 texcoord;
@@ -27,11 +28,19 @@ uniform float osg_FrameTime;
 uniform sampler2D velocityTex;
 
 void main() {
-    #if !defined(DEBUG_DISABLE_COLOR_CORRECTION) && !defined(DEBUG_VISUALIZATION_ACTIVE)
+    #if !defined(DEBUG_DISABLE_COLOR_CORRECTION) && !defined(DEBUG_VISUALIZATION_ACTIVE) && defined(USE_COLOR_CORRECTION)
                 
+
+        // float sharpness = 20.0;
+        result.xyz = sharpenTexture(colorTex, texcoord, 0.5);
+        // result.xyz =  textureLod(colorTex, texcoord, 0).xyz;
+        // result.xyz -= textureLod(colorTex, texcoord + 0.02 / vec2(WINDOW_WIDTH, WINDOW_HEIGHT), 0).xyz * sharpness;
+        // result.xyz += textureLod(colorTex, texcoord - 0.02 / vec2(WINDOW_WIDTH, WINDOW_HEIGHT), 0).xyz * sharpness;
+
         // Chromatic abberation
-        result.xyz = applyChromaticAbberation(colorTex, texcoord, 0.0);
-        
+        // result.xyz = applyChromaticAbberation(colorTex, texcoord, result.xyz, 1.0);
+
+
         // Color LUT
         result.xyz = applyColorLUT(colorLUT, result.xyz);
 
@@ -47,6 +56,7 @@ void main() {
 
 
     // Vignett
+
     result.xyz *= 1.0 - smoothstep(0, 1, 
         (length( (texcoord - vec2(0.5, 0.5)) * vec2(0.9, 1.0)  )) );
     result.w = 1.0;

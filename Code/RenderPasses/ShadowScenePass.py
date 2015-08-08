@@ -103,18 +103,12 @@ class ShadowScenePass(RenderPass):
         self.target.getInternalBuffer().disableClears()
         # self.target.getInternalBuffer().setSort(-300)
 
-
-        # Create default initial state
-        initialState = NodePath("InitialState")
-        initialState.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff))
-
         # Create a camera for each update
         self.shadowCameras = []
         for i in xrange(self.maxRegions):
-            shadowCam = Camera("ShadowComputeCamera")
+            shadowCam = Camera("ShadowMapCamera-" + str(i))
             shadowCam.setTagStateKey("ShadowPassShader")
-            shadowCam.setInitialState(initialState.getState())
-            shadowCam.setCameraMask(BitMask32.bit(3))
+            # shadowCam.setCameraMask(BitMask32.bit(3))
             shadowCamNode = self.shadowScene.attachNewNode(shadowCam)
             self.shadowCameras.append(shadowCamNode)
 

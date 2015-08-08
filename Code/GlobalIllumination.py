@@ -59,7 +59,7 @@ class GlobalIllumination(DebugObject):
         self.pipeline = pipeline
 
         # Grid size in world space units
-        self.voxelGridSize = 80.0
+        self.voxelGridSize = self.pipeline.settings.giVoxelGridSize
         
         # Grid resolution in pixels
         self.voxelGridResolution = 64
@@ -99,7 +99,8 @@ class GlobalIllumination(DebugObject):
                 # tex.clearImage()
 
         self.voxelizePass.voxelizeSceneFromDirection(self.gridPosTemp[0], "yxz"[idx])
-        self.debugText.setText("GI Grid Center: " + ", ".join(str(round(i, 2)) for i in self.gridPosTemp[0]) )
+        if self.debugText is not None:
+            self.debugText.setText("GI Grid Center: " + ", ".join(str(round(i, 2)) for i in self.gridPosTemp[0]) )
 
     def stepConvert(self, idx):
         # print "convert:", idx+1,"/",2 

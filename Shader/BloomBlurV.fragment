@@ -1,0 +1,16 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+
+const ivec2 blurDirection = ivec2(0, 1);
+#pragma include "Includes/PostProcessBlur.include"
+
+uniform sampler2D bloomTex;
+uniform sampler2D colorTex;
+
+out vec4 result;
+
+void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xyz);
+    result = bloomBlur(coord, bloomTex);
+}
