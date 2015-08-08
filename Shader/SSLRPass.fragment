@@ -15,10 +15,11 @@ uniform sampler2D colorTex;
 uniform sampler2D depthTex;
 uniform sampler2D positionTex;
 uniform sampler2D normalTex;
+uniform sampler2D skyboxMask;
 
 uniform vec3 cameraPosition;
 
-uniform samplerCube defaultCubemap;
+// uniform samplerCube defaultCubemap;
 
 uniform mat4 currentMVP;
 
@@ -27,11 +28,11 @@ uniform mat4 currentMVP;
 out vec4 result;
 
 
-#undef SSLR_SCREEN_RADIUS
-#undef SSLR_STEPS
+// #undef SSLR_SCREEN_RADIUS
+// #undef SSLR_STEPS
 // #undef SSLR_FADE_DISTANCE
-#define SSLR_SCREEN_RADIUS 1.0
-#define SSLR_STEPS 256
+// #define SSLR_SCREEN_RADIUS 0.2
+// #define SSLR_STEPS 64
 // #define SSLR_FADE_DISTANCE 0.8
 
 
@@ -82,24 +83,10 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
 
 
         if ( depthDiff > 0.0 && depthDiff < maxDepthDiff ) {
-            vec3 samplePos = texture(positionTex, currentCoord.xy).xyz;
-            vec3 vectorToSurface = pixelPos - samplePos;
-
-            // return vec4(samplePos, 1);
-
-            // if (length(vectorToSurface) > 5000.0) continue;
-
-            float visibilityFactor = dot(-vectorToSurface, pixelNormal);
-
-            visibilityFactor = 1.0;
-            if ( visibilityFactor > 0.0) {
-
-                // Found match
-                lastCoordPos = currentCoord;
-                foundDiff = depthDiff;
-                break;
-
-            }
+            // Found match
+            lastCoordPos = currentCoord;
+            foundDiff = depthDiff;
+            break;
         }
 
     }
@@ -108,9 +95,6 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
     vec3 coordBeforePos = lastCoordPos - coordStep;
     vec3 currentStep = coordStep;
     vec3 currentPos =  lastCoordPos;
-    // return vec4(lastCoordPos.xy, 0, 0);
-    // return vec4(0);
-
 
     float fade = 1.0;
 
@@ -122,7 +106,11 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
     fade *= saturate(currentPos.y / fadeArea);
     fade *= saturate( (1.0 - currentPos.y) / fadeArea);
 
-    fade *= saturate(SSLR_SCREEN_RADIUS / distance(texcoord, currentPos.xy));
+    fade *= 1.0 - saturate(distance(texcoord, currentPos.xy) / SSLR_SCREEN_RADIUS);
+
+    // return vec4(fade);
+
+
 
     float actualDepthDiff = abs(texture(depthTex, currentPos.xy).x - currentPos.z);
     // fade *= 1.0 - saturate(actualDepthDiff * 20000.0);
@@ -130,20 +118,14 @@ vec4 traceRayTo(vec3 endPosWorld, int steps, float depth, vec3 reflectionVector)
 
     float stepsDone = (currentPos.x - texcoord.x) / coordStep.x / SSLR_STEPS;
 
-    // fade *= 1.0 - saturate( saturate(stepsDone-0.3) * 10.0);
-
+    float skymask = texture(skyboxMask, lastCoordPos.xy).x;
 
 
     // result = texture(colorTex, currentPos.xy) * fade;
-    if (lastCoordPos.x < 0.0 || lastCoordPos.y < 0.0 || distance(lastCoordPos.xy, texcoord) < 0.001) {
+    if (lastCoordPos.x < 0.0 || lastCoordPos.y < 0.0 || distance(lastCoordPos.xy, texcoord) < 0.01 || skymask > 0.5) {
         result = vec4(0);
     } else {
         result = texture(colorTex, lastCoordPos.xy);
-
-        // if (result.w < 0.5) {
-        //     result = vec4(0);
-        // }
-        // result = vec4(positionTex);
 
 
         result.xyz *= fade;
@@ -189,11 +171,12 @@ void main() {
     // Raytrace along the reflection vector
     vec4 traceResult = traceRayTo(reflectionTargetWorld, SSLR_STEPS, pixelDepth, reflectionVector);
     
-    vec3 fallbackResult = texture(defaultCubemap, reflectionVector).xyz;
+    // vec3 fallbackResult = texture(defaultCubemap, reflectionVector).xyz;
 
     // traceResult.xyz = mix(fallbackResult, traceResult.xyz, traceResult.w);
 
     // Take the sslr factor into account
+    // traceResult*= traceResult.w;
     traceResult *= sslrFactor;
 
     // traceResult = vec4(reflectionVector, 1);

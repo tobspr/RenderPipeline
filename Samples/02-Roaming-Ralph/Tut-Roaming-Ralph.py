@@ -85,7 +85,6 @@ class World(ShowBase):
         dirLight.setCastsShadows(True)
         dirLight.setColor(Vec3(8))
         self.renderPipeline.addLight(dirLight)
-        self.renderPipeline.setGILightSource(dirLight)
         self.renderPipeline.setScatteringSource(dirLight)
         self.dirLight = dirLight
 

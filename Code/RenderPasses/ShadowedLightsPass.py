@@ -42,6 +42,8 @@ class ShadowedLightsPass(RenderPass):
             "mainRender": "Variables.mainRender",
 
             "scatteringAttenuation": ["ScatteringPass.attenuationTex", "Variables.emptyTextureWhite"],
+            
+            "skyboxMask": "SkyboxMaskPass.resultTex",
         }
 
     def create(self):

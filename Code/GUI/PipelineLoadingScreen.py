@@ -135,7 +135,7 @@ class PipelineLoadingScreen:
         # Hide render till we're done
         render.hide()
 
-        self.showbase.graphicsEngine.renderFrame()
+        # self.showbase.graphicsEngine.renderFrame()
 
         self.setStatus("Initializing", 5)
 
@@ -143,7 +143,7 @@ class PipelineLoadingScreen:
         """ Sets the current loading status """
         self.loadingText.setText(status.upper())
         self.loadingDescText.setText(str(percentage) + "%")
-        self.showbase.graphicsEngine.renderFrame()
+        # self.showbase.graphicsEngine.renderFrame()
 
         w = self.showbase.win.getXSize()
         l = percentage / 100.0 * w

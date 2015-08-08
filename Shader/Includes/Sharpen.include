@@ -1,0 +1,32 @@
+#pragma once
+
+#pragma include "Includes/Configuration.include"
+
+
+
+vec3 sharpenTexture(sampler2D tex, vec2 coord, float sharpenFactor) {
+
+    vec3 midSample = textureLod(tex, coord, 0).xyz;
+    vec3 surrSample = vec3(0);
+    vec2 offsSize = sharpenFactor / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    const int numSamples = 2;
+
+
+    for (int x = -numSamples; x <= numSamples; x++) {
+        for (int y = -numSamples; y <= numSamples; y++) {
+            surrSample += textureLod(tex, coord + vec2(x, y) * offsSize, 0).xyz;
+        }
+    }
+
+    surrSample /= (numSamples*2+1) * (numSamples*2+1);
+
+    sharpenFactor = saturate(sharpenFactor);
+    midSample -= surrSample * 0.5;
+    midSample *= 2.0;
+    // midSample *= 1.0 + sharpenFactor;
+
+
+    return midSample;
+}
+
+

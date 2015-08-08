@@ -30,6 +30,8 @@ uniform sampler2D data3;
 
 uniform vec3 cameraPosition;
 
+uniform sampler2D skyboxMask;
+
 #pragma include "Includes/Lights.include"
 
 // Lighting pipeline settings
@@ -51,7 +53,8 @@ void main() {
     Material material = unpackGBufferMaterial(data0, data1, data2, data3, screenCoord);
 
     // Check for skybox, in that case don't do the lighting pass
-    if (distance(material.position, cameraPosition) > SKYBOX_BEGIN) discard;
+    if (texelFetch(skyboxMask, screenCoord, 0).x > 0.5) discard;
+
 
     vec3 lightingResult = computeLighting(lightsPerTileBuffer, material, tileBufferOffset);
 

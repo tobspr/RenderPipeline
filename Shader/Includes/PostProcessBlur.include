@@ -275,7 +275,7 @@ vec4 cloudBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D 
 vec4 bloomBlur(ivec2 screenCoord, sampler2D sourceTex) {
 
     #if defined(DEBUG_DISABLE_UPSCALE_BLUR)
-        return texture(sourceTex, texcoord);
+        return texelFetch(sourceTex, screenCoord, 0);
     #endif
 
     const int numBlurSteps = 25;

@@ -31,6 +31,7 @@ uniform int frameIndex;
 
 
 void main() {
+
     // Sample the diffuse color
     vec4 sampledDiffuse = texture(p3d_Texture0, vOutput.texcoord);
     
@@ -50,7 +51,7 @@ void main() {
     // Extract the material properties
     #if defined(USE_NORMAL_MAPPING)
         float bumpFactor = vOutput.materialDiffuse.w;
-        // bumpFactor = 0.0;
+        // bumpFactor *= 0.7;
 
         // Merge the detail normal with the vertex normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
@@ -67,7 +68,8 @@ void main() {
     #if 0
         mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
     #endif
-        sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
+        
+    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(2.2));
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
@@ -82,6 +84,7 @@ void main() {
         m.position = vOutput.positionWorld;
     #endif
 
+
     // Store the properties
     m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
     m.roughness = sampledRoughness.r * roughnessFactor;
@@ -90,8 +93,9 @@ void main() {
     m.normal = mixedNormal;
 
     // m.baseColor = sampledDiffuse.rgb;
-    m.metallic = 0.0;
-    // m.roughness = 1.0;
+    // m.metallic = 1.0;
+    // m.roughness = 0.0;
+    // m.specular = 1.0;
 
     #pragma ENTRY_POINT MATERIAL
 

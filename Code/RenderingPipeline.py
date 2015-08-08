@@ -446,6 +446,9 @@ class RenderingPipeline(DebugObject):
 
         define("GLOBAL_AMBIENT_FACTOR", self.settings.globalAmbientFactor)
 
+        if self.settings.useColorCorrection:
+            define("USE_COLOR_CORRECTION", 1)
+
         # Pass camera near and far plane
         define("CAMERA_NEAR", Globals.base.camLens.getNear())
         define("CAMERA_FAR", Globals.base.camLens.getFar())

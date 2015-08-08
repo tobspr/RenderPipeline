@@ -1,4 +1,16 @@
 
+
+
+# win-size 1616 976
+# win-size 1600 900
+# win-size 2500 1300
+win-size 1920 1080
+# win-size 2560 1440
+# fullscreen #t
+# win-size 2560 1440
+# win-size 1280 720
+
+
 # No stack trace on assertion
 assert-abort #f
 
@@ -66,14 +78,7 @@ framebuffer-stencil #f
 
 # Not resizable
 win-fixed-size #t
-# win-size 1616 976
-# win-size 1600 900
-# win-size 2500 1300
-# win-size 1600 960
-win-size 1920 1080
-fullscreen #f
-# win-size 2560 1440
-# win-size 1280 720
+
 
 
 # Show custom cursor
@@ -118,7 +123,7 @@ gl-force-no-error #t
 gl-check-errors #f
 gl-force-no-flush #t
 gl-force-no-scissor #t
-gl-debug #f
+gl-debug #t
 
 # notify-level-glgsg debug
 
@@ -143,7 +148,7 @@ support-threads #t
 driver-generate-mipmaps #t
 # gl-ignore-mipmaps #t
 
-gl-immutable-texture-storage #t
+gl-immutable-texture-storage #f
 
 # notify-level-gobj debug
 

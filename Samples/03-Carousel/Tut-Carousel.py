@@ -185,9 +185,6 @@ class World(ShowBase):
     self.renderPipeline.addLight(dirLight)
 
     self.sun = dirLight
-
-    if self.renderPipeline.settings.enableGlobalIllumination:
-        self.renderPipeline.globalIllum.setTargetLight(dirLight)
     
   def startCarousel(self):
     #Here's where we actually create the intervals to move the carousel

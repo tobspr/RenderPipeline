@@ -109,7 +109,7 @@ void main() {
         // fogFactor = 0.4;
         // fogFactor = saturate(fogFactor);
         // scatteringResult *= 0.5 * fogFactor;
-        scatteringResult *= 0.3;
+        scatteringResult *= 1.2;
         // scatteringResult *= 0.0;
         // scatteringResult = vec3(fogFactor);
     } else {

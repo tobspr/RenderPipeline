@@ -63,18 +63,23 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
     float numBlockers = 0.0;
     float biasedDepth = projCoord.z - baseBias;
 
+    #if SHADOW_NUM_PCSS_SEARCH_SAMPLES > 64
+        #error Not more than 64 pcss search samples supported
+    #endif
 
-    #undef SHADOW_NUM_PCSS_SEARCH_SAMPLES
-    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 64
-
-    #undef SHADOW_NUM_PCSS_FILTER_SAMPLES
-    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 64
+    #if SHADOW_NUM_PCSS_FILTER_SAMPLES > 64
+        #error Not more than 64 pcss filter samples supported
+    #endif
 
     // Find blocker
     for ( int i = 0; i < SHADOW_NUM_PCSS_SEARCH_SAMPLES; ++i )
     {
+        #if SHADOW_NUM_PCSS_SEARCH_SAMPLES > 32
         vec2 offset = poissonDisk64[i] * searchRegionRadiusUV;
-        // vec2 offset = poissonDisk32[i] * searchRegionRadiusUV;
+        #else
+        vec2 offset = poissonDisk32[i] * searchRegionRadiusUV;
+        #endif
+
         float shadowMapDepth = texture(shadowAtlas, centerCoord + offset).x;
         float factor = step(shadowMapDepth, biasedDepth);
         numBlockers += factor;
@@ -100,7 +105,11 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     for ( int i = 0; i < SHADOW_NUM_PCSS_FILTER_SAMPLES; ++i )
     {
+        #if SHADOW_NUM_PCSS_FILTER_SAMPLES > 32
         vec2 offset = poissonDisk64[i] * filterRadiusUV;
+        #else
+        vec2 offset = poissonDisk32[i] * filterRadiusUV;
+        #endif
         
         #if defined(USE_HARDWARE_PCF)
             // Notice: Maybe use .x? My gtx 670 does not like that though
@@ -136,14 +145,25 @@ float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSi
     float biasedDepth = projCoord.z - baseBias;
     vec2 filterRadiusUV = 4.0 * projSize;
 
-    #undef SHADOW_NUM_PCF_SAMPLES
-    #define SHADOW_NUM_PCF_SAMPLES 32
+    // #undef SHADOW_NUM_PCF_SAMPLES
+    // #define SHADOW_NUM_PCF_SAMPLES 32
+
+
+    #if SHADOW_NUM_PCF_SAMPLES > 64
+        #error Not more than 64 PCF samples supported
+    #endif
+
 
     // PCF Filter
     float sum = 0.0;
     for ( int i = 0; i < SHADOW_NUM_PCF_SAMPLES; ++i )
     {
+        #if SHADOW_NUM_PCF_SAMPLES > 32
+        vec2 offset = poissonDisk64[i] * filterRadiusUV;
+        #else
         vec2 offset = poissonDisk32[i] * filterRadiusUV;
+        #endif
+        
         #if defined(USE_HARDWARE_PCF)
             // Notice: Maybe use .x? My gtx 670 does not like that though
             sum += 1.0 - textureLod(shadowAtlasPCF, vec3(centerCoord + offset, biasedDepth) , 0);

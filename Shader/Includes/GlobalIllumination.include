@@ -203,7 +203,8 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     resultSum *= 2.0;
 // resultSum *= 20.0;
 
-    resultSum += 0.02;
+    resultSum += 0.04;
+    // resultSum += 0.3;
     // vec4 sample0 = textureLod(giVoxelData1, localCoord, 1);
 
     return vec4(resultSum, 1);

@@ -128,7 +128,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
     environmentColor = mix(environmentColor, giSpecular.xyz, giSpecular.w );
 
 
-    vec3 metallicSpecularAmbient = mix(environmentColor, material.baseColor, material.translucency) * mix(occlusionFactor, 1.0, 0.0) * material.specular;
+    vec3 metallicSpecularAmbient = mix(environmentColor, material.baseColor, material.translucency) * mix(occlusionFactor, 1.0, 0.9) * material.specular;
     // metallicSpecularAmbient = ambientRefColor * material.specular * 0.5;
 
     // Make metallic materials brighter at the border

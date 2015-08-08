@@ -106,7 +106,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
-        self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
+        # self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
@@ -119,8 +119,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/PBSTest/Scene.egg.bam"
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
-        # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.egg"
-        # self.sceneSource = "panda"
+        self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
+        # self.sceneSource = "box"
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
@@ -386,13 +386,14 @@ class Main(ShowBase, DebugObject):
         # self.water = ProjectedWaterGrid(self.renderPipeline)
         # self.water.setWaterLevel(10)
 
+        # 
+        if False:
+            b1, b2 = self.scene.getTightBounds()
 
-        b1, b2 = self.scene.getTightBounds()
-
-        c1 = loader.loadModel("Demoscene.ignore/CubeOpen/Scene.bam")
-        c1.setPos(b1)
-        c1.setScale(b2-b1)
-        c1.reparentTo(render)
+            c1 = loader.loadModel("Demoscene.ignore/CubeOpen/Scene.bam")
+            c1.setPos(b1)
+            c1.setScale(b2-b1)
+            c1.reparentTo(render)
         
         # Required for tesselation
         # self.convertToPatches(self.scene)
@@ -413,8 +414,8 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
 
-        camPos = Vec3(-4.92549, -7.57746, 7.20246)
-        camHpr = Vec3(-42.3281, -1.38704, 0)
+        camPos = Vec3(-8.75898, -6.39353, 7.767)
+        camHpr = Vec3(-51.5156, -25.3426, 0)
 
         self.controller.setInitialPositionHpr(
             camPos, camHpr)

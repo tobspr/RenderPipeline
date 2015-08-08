@@ -7,11 +7,11 @@
 // number of directions to sample in UV space
 #define HBAO_NUM_SAMPLE_DIRECTIONS OCCLUSION_SAMPLES
 #define HBAO_TANGENT_BIAS 0.2
-#define HBAO_NUM_SAMPLING_STEPS 12
+#define HBAO_NUM_SAMPLING_STEPS 6
 #define HBAO_SAMPLING_STEP 0.04 * OCCLUSION_RADIUS
 
 #define HBAO_SCALE 3.6 * OCCLUSION_STRENGTH
-#define HBAO_SAMPLING_RADIUS 3.9 * OCCLUSION_RADIUS
+#define HBAO_SAMPLING_RADIUS 5.9 * OCCLUSION_RADIUS
 
 uniform sampler2D viewSpaceNormals;
 uniform sampler2D viewSpacePosition;
@@ -49,8 +49,8 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   float dist = distance(cameraPosition, texture(worldSpacePosition, coord).xyz);
   float pixelFactor = 3.0 / dist;
 
-  // pixelFactor = 0.5;
-
+  // pixelFactor = 0.1;
+// 
   for(uint i = 0; i < HBAO_NUM_SAMPLE_DIRECTIONS; i++)
   {
 
