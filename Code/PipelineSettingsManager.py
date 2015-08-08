@@ -87,6 +87,9 @@ class PipelineSettingsManager(SettingsManager):
         # [Clouds]
         self._addSetting("enableClouds", bool, False)
 
+        # [Bloom]
+        self._addSetting("enableBloom", bool, False)
+
         # [Debugging]
         self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayDebugStats", bool, True)

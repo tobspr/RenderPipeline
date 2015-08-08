@@ -114,7 +114,7 @@ void main() {
         // scatteringResult = vec3(fogFactor);
     } else {
         scatteringResult *= 0.3;
-        // scatteringResult = pow(scatteringResult, vec3(0.5));
+        // scatteringResult = pow(scatteringResult, vec3(0.8));
     }
 
 

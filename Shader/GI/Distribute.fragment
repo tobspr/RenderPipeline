@@ -68,10 +68,10 @@ void storeVoxel(ivec3 coord, Voxel v) {
 
 
 
-#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2) if (length(v. NEG_DIR_NAME ) < maxCol || true) {   \
+#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2) if (length(v. NEG_DIR_NAME ) < maxCol) {   \
             for (int c1 = -1; c1 <= 1; c1++) {     \
                 for (int c2 = -1; c2 <= 1; c2++) {    \
-                    v. DIR_NAME += fetchVoxel(localCoord + ivec3( TEMPL0, TEMPL1, TEMPL2 )). DIR_NAME * mixF * (saturate(0.3 + (length(vec2(c1, c2))))); \
+                    v. DIR_NAME += fetchVoxel(localCoord + ivec3( TEMPL0, TEMPL1, TEMPL2 )). DIR_NAME * mixF * (saturate(1.0  - 0.5*(length(vec2(c1, c2))))); \
                 } \
             } \
         }
@@ -91,29 +91,9 @@ void main() {
 
 
         float mixF = 0.025;
-        // mixF = 2.2;
-        float maxCol = 2000.0;
+        mixF = 0.03;
+        float maxCol = 0.01;
 
-        // if (length(v.posX) < maxCol)
-        //     v.posX += fetchVoxel(localCoord + ivec3(-1, 0, 0)).posX * mixF;
-        
-        // if (length(v.negX) < maxCol)
-        //     v.negX += fetchVoxel(localCoord + ivec3(1, 0, 0)).negX * mixF;
-
-        // if (length(v.posY) < maxCol)
-        //     v.posY += fetchVoxel(localCoord + ivec3(0, -1, 0)).posY * mixF;
-        
-        // if (length(v.negY) < maxCol)
-        //     v.negY += fetchVoxel(localCoord + ivec3(0, 1, 0)).negY * mixF;
-
-        // if (length(v.posZ) < maxCol)
-        //     v.posZ += fetchVoxel(localCoord + ivec3(0, 0, -1)).posZ * mixF;
-
-        // if (length(v.negZ) < maxCol)
-        //     v.negZ += fetchVoxel(localCoord + ivec3(0, 0, 1)).negZ * mixF;
-
-
-        // PosX side
         EVALUATE_DIRECTION(posX, negX, -1, c1, c2 )
         EVALUATE_DIRECTION(negX, posX, 1, c1, c2 )
         EVALUATE_DIRECTION(posY, negY, c1, -1, c2 )

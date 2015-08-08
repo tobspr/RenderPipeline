@@ -1,6 +1,6 @@
 
 
-define GLOBAL_WATER_SCALE 2.0
+define GLOBAL_WATER_SCALE 0.4
 define WATER_DISPLACE (vec3(1.0, 1.0, 0.7) * 2.8 * GLOBAL_WATER_SCALE)
 define WATER_COORD_FACTOR (20.0 * GLOBAL_WATER_SCALE)
 define WATER_LOWRES_FACTOR 0.21
@@ -163,9 +163,9 @@ pass Default:
             m.baseColor *= 20.0;
 
             m.normal = normal * (cameraPosition.z < waterHeight ? -1 : 1);
-            m.metallic = 1.0;
+            m.metallic = 0.7;
             m.specular = 1.0;
-            m.roughness = 0.09;
+            m.roughness = 0.06;
 
 
             #if defined(IS_TRANSPARENT)

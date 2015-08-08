@@ -158,10 +158,10 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
 
     // If not in gi range, ignore this pixel
     // TODO: Check if early out is actually faster
-    if (!isInGrid) return vec4(2);
+    if (!isInGrid) return vec4(0.4);
 
     // Bias position a bit, so self shadowing gets less strong
-    vec3 biasedPosition = m.position + m.normal * voxelSize * 2.0;
+    vec3 biasedPosition = m.position + m.normal * voxelSize * 1.0;
 
     // Compute coordinate in voxel space
     vec3 localCoord = (biasedPosition-data.position + data.size) / (2 * data.size);
@@ -192,21 +192,18 @@ vec4 computeGlobalIllumination(Material m, vec3 viewVector, GIData data, out vec
     Voxel v = fetchVoxel(localCoord, 0);
     vec3 resultSum = vec3(0);
 
-
-
-    resultSum += saturate(1.0 + (-m.normal.x)) * v.posX;
-    resultSum += saturate(1.0 + (m.normal.x)) * v.negX;
-    resultSum += saturate(1.0 + (-m.normal.y)) * v.posY;
-    resultSum += saturate(1.0 + (m.normal.y)) * v.negY;
-    resultSum += saturate(1.0 + (-m.normal.z)) * v.posZ;
-    resultSum += saturate(1.0 + (m.normal.z)) * v.negZ;
-
+    resultSum += saturate(1.0 + 0.5 * (m.normal.x)) * v.posX;
+    resultSum += saturate(1.0 + 0.5 * (-m.normal.x)) * v.negX;
+    resultSum += saturate(1.0 + 0.5 * (m.normal.y)) * v.posY;
+    resultSum += saturate(1.0 + 0.5 * (-m.normal.y)) * v.negY;
+    resultSum += saturate(1.0 + 0.5 * (m.normal.z)) * v.posZ;
+    resultSum += saturate(1.0 + 0.5 * (-m.normal.z)) * v.negZ;
 
     resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
-    resultSum *= 0.1;
+    resultSum *= 2.0;
 // resultSum *= 20.0;
 
-    resultSum += 0.05;
+    resultSum += 0.02;
     // vec4 sample0 = textureLod(giVoxelData1, localCoord, 1);
 
     return vec4(resultSum, 1);

@@ -48,7 +48,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         self.camera = Camera("ShadowSource-" + str(self.index))
         self.camera.setActive(False)
         self.cameraNode = NodePath(self.camera)
-        self.cameraNode.reparentTo(Globals.render)
+        self.cameraNode.reparentTo(Globals.render.find("RPCameraDummys"))
         self.cameraNode.hide()
         self.resolution = 512
         self.atlasPos = Vec2(0)

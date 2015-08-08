@@ -92,7 +92,7 @@ vec3 scatteringComputeInscatteredLight(
     // sunArea = vec4(0);
     if (isSky) {
       // sunArea *= 1.0 - saturate(cloudColor * 1.0);
-      // sunArea += pow(cloudColor, vec4(2.2)) * 2.0;
+      // sunArea += pow(cloudColor, vec4(1.0)) * 4.0;
     } else {
       sunArea *= 0.0;
     }
@@ -222,6 +222,6 @@ vec3 scatteringComputeInscatteredLight(
 
 
 
-  return mix(inscatteredLight + sunArea.xyz*inscatteredLight.xyz*5.0, cloudColor.xyz + sunArea.xyz, cloudColor.w * (isSky ? 1.0 : 0.0));
+  return mix(inscatteredLight + sunArea.xyz, cloudColor.xyz + sunArea.xyz, cloudColor.w * (isSky ? 1.0 : 0.0));
 }
 
