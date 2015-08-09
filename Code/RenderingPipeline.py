@@ -508,6 +508,19 @@ class RenderingPipeline(DebugObject):
             for i in range(numGeoms):
                 geomNode.modifyGeom(i).makePatchesInPlace()
 
+    def toggleGui(self):
+        """ Toggles the gui, useful for creating screenshots """
+        if self.guiVisible:
+            # Globals.base.pixel2d.hide()
+            Globals.base.render2d.hide()
+            Globals.base.setFrameRateMeter(False)
+
+        else:
+            # Globals.base.pixel2d.show()
+            Globals.base.render2d.show()
+            Globals.base.setFrameRateMeter(True)
+        self.guiVisible = not self.guiVisible
+
     def createBugReport(self):
         """ Creates a bug report """
 
@@ -530,10 +543,14 @@ class RenderingPipeline(DebugObject):
 
         self.debug("Setting up render pipeline")
 
+        self.guiVisible = True
+
         # Handy shortcuts
         self.showbase.accept("r", self.reloadShaders)
         self.showbase.accept("t", self.reloadEffects)
         self.showbase.accept("f7", self.createBugReport)
+        self.showbase.accept("f8", self.toggleGui)
+
 
         if self.settings is None:
             self.error("You have to call loadSettings first!")

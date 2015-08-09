@@ -29,6 +29,7 @@ struct Voxel {
     vec3 negY;
     vec3 posZ;
     vec3 negZ;
+    bool solid;
 };
 
 Voxel fetchVoxel(ivec3 coord) {
@@ -55,6 +56,7 @@ Voxel fetchVoxel(ivec3 coord) {
     v.negY = vec3(sample0.w, sample2.y, sample3.w);
     v.posZ = vec3(sample1.x, sample2.z, sample4.x);
     v.negZ = vec3(sample1.y, sample2.w, sample4.y);
+    v.solid = sample4.w > 0.1;
     return v;
 }
 
@@ -63,18 +65,18 @@ void storeVoxel(ivec3 coord, Voxel v) {
     imageStore(dst1, coord, vec4(v.posZ.r, v.negZ.r, v.posX.g, v.negX.g));
     imageStore(dst2, coord, vec4(v.posY.g, v.negY.g, v.posZ.g, v.negZ.g));
     imageStore(dst3, coord, vec4(v.posX.b, v.negX.b, v.posY.b, v.negY.b));
-    imageStore(dst4, coord, vec4(v.posZ.b, v.negZ.b, 0,0));
+    imageStore(dst4, coord, vec4(v.posZ.b, v.negZ.b, 0,v.solid ? 1.0 : 0.0));
 }
 
 
 
-#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2) if (length(v. NEG_DIR_NAME ) < maxCol) {   \
-            for (int c1 = -1; c1 <= 1; c1++) {     \
-                for (int c2 = -1; c2 <= 1; c2++) {    \
-                    v. DIR_NAME += fetchVoxel(localCoord + ivec3( TEMPL0, TEMPL1, TEMPL2 )). DIR_NAME * mixF * (saturate(1.0  - 0.5*(length(vec2(c1, c2))))); \
-                } \
-            } \
-        }
+#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2)  \
+for (int c1 = -1; c1 <= 1; c1++) {     \
+    for (int c2 = -1; c2 <= 1; c2++) {    \
+        v. DIR_NAME += fetchVoxel(localCoord + ivec3( TEMPL0, TEMPL1, TEMPL2 )). DIR_NAME * mixF * (saturate(1.0  - 0.5*(length(vec2(c1, c2))))); \
+    } \
+}
+
 
 
 void main() {
@@ -91,20 +93,17 @@ void main() {
 
 
         float mixF = 0.025;
-        mixF = 0.03;
-        float maxCol = 0.01;
+        mixF = 0.02;
 
-        EVALUATE_DIRECTION(posX, negX, -1, c1, c2 )
-        EVALUATE_DIRECTION(negX, posX, 1, c1, c2 )
-        EVALUATE_DIRECTION(posY, negY, c1, -1, c2 )
-        EVALUATE_DIRECTION(negY, posY, c1, 1, c2 )
-        EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 )
-        EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 )
-
-
-        
-
-        
+        if (!v.solid) {
+            EVALUATE_DIRECTION(posX, negX, -1, c1, c2 )
+            EVALUATE_DIRECTION(negX, posX, 1, c1, c2 )
+            EVALUATE_DIRECTION(posY, negY, c1, -1, c2 )
+            EVALUATE_DIRECTION(negY, posY, c1, 1, c2 )
+            EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 )
+            EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 )
+        }
+            
 
         #if defined(USE_DEBUG_ATTACHMENTS)
         vSum += v.posX * 0.1 + v.negX * 0.1 + v.posZ * 0.1 +  v.negZ * 0.1 + v.posY * 0.1 + v.negY * 0.1;

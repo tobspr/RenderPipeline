@@ -2,7 +2,7 @@
 from panda3d.core import Texture, NodePath, ShaderAttrib, Vec4, Vec3
 from panda3d.core import Shader, SamplerState, GeomEnums
 from panda3d.core import Vec2, LMatrix4f, LVecBase3i, Camera, Mat4
-from panda3d.core import Mat4, OmniBoundingVolume, OrthographicLens
+from panda3d.core import Mat4, OmniBoundingVolume, OrthographicLens, PTAFloat
 from panda3d.core import BoundingBox, Point3, CullFaceAttrib, PTAMat4, BoundingBox
 from panda3d.core import DepthTestAttrib, PTALVecBase3f, ComputeNode, PTALVecBase2f
 from direct.stdpy.file import isfile, open, join
@@ -64,13 +64,21 @@ class GlobalIllumination(DebugObject):
         # Grid resolution in pixels
         self.voxelGridResolution = 64
 
+        # Has to be a multiple of 2
+        self.distributionSteps = 20
+
         self.bounds = BoundingBox()
+        self.renderCount = 0
 
         # Create the task manager
         self.taskManager = DistributedTaskManager()
 
         self.gridPosLive = PTALVecBase3f.emptyArray(1)
         self.gridPosTemp = PTALVecBase3f.emptyArray(1)
+
+        # Store ready state
+        self.readyStateFlag = PTAFloat.emptyArray(1)
+        self.readyStateFlag[0] = 0
 
         self.frameIndex = 0
         self.steps = []
@@ -80,12 +88,16 @@ class GlobalIllumination(DebugObject):
     def _createDebugTexts(self):
         """ Creates a debug overlay to show GI status """
         self.debugText = None
+        self.buildingText = None
 
         if self.pipeline.settings.displayDebugStats:
             try:
                 from .GUI.FastText import FastText
                 self.debugText = FastText(pos=Vec2(
                     Globals.base.getAspectRatio() - 0.1, 0.88), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
+                self.buildingText = FastText(pos=Vec2(-
+                    Globals.base.getAspectRatio() + 0.2, -0.78), rightAligned=False, color=Vec3(1, 0, 0.1), size=0.03)
+                self.buildingText.setText("BUILDING GI ... ")
 
             except Exception, msg:
                 self.debug(
@@ -100,9 +112,18 @@ class GlobalIllumination(DebugObject):
             # for tex in self.generationTextures:
                 # tex.clearImage()
 
+            if self.debugText is not None:
+                self.debugText.setText("GI Grid Center: " + ", ".join(str(round(i, 2)) for i in self.gridPosTemp[0]) + " / GI Frame " + str(self.renderCount) )
+                self.renderCount += 1
+
+            if self.renderCount == 3:
+                self.readyStateFlag[0] = 1.0
+                if self.buildingText:
+                    self.buildingText.remove()
+                    self.buildingText = None
+
+
         self.voxelizePass.voxelizeSceneFromDirection(self.gridPosTemp[0], "yxz"[idx])
-        if self.debugText is not None:
-            self.debugText.setText("GI Grid Center: " + ", ".join(str(round(i, 2)) for i in self.gridPosTemp[0]) )
 
     def stepConvert(self, idx):
         # print "convert:", idx+1,"/",2 
@@ -121,7 +142,7 @@ class GlobalIllumination(DebugObject):
         sources = self.pingDataTextures if swap else self.pongDataTextures
         dests = self.pongDataTextures if swap else self.pingDataTextures
 
-        if idx == 19:
+        if idx == self.distributionSteps - 1:
             self.publishGrid()
 
 
@@ -171,7 +192,7 @@ class GlobalIllumination(DebugObject):
 
         self.taskManager.addTask(3, self.stepVoxelize)
         self.taskManager.addTask(1, self.stepConvert)
-        self.taskManager.addTask(20, self.stepDistribute)
+        self.taskManager.addTask(self.distributionSteps, self.stepDistribute)
 
         # Create the voxelize pass which is used to voxelize the scene from
         # several directions
@@ -292,19 +313,23 @@ class GlobalIllumination(DebugObject):
         self.finalPass = GlobalIlluminationPass()
         self.pipeline.getRenderPassManager().registerPass(self.finalPass)
         self.pipeline.getRenderPassManager().registerDynamicVariable("giData", self.bindTo)
+        self.pipeline.getRenderPassManager().registerStaticVariable("giReadyState", self.readyStateFlag)
 
 
 
-        # self.voxelCube = loader.loadModel("Box")
-        # self.voxelCube.reparentTo(render)
-        # self.voxelCube.node().setFinal(True)
-        # self.voxelCube.node().setBounds(OmniBoundingVolume())
-        # self.voxelCube.setInstanceCount(self.voxelGridResolution**3)
-        # self.voxelCube.hide()
-        # self.bindTo(self.voxelCube, "giData")
-        
-        # for i in xrange(5):
-        #     self.voxelCube.setShaderInput("giDataTex" + str(i), self.dataTextures[i])
+
+        if False:
+            self.voxelCube = loader.loadModel("Box")
+            self.voxelCube.reparentTo(render)
+            self.voxelCube.setTwoSided(True)
+            self.voxelCube.node().setFinal(True)
+            self.voxelCube.node().setBounds(OmniBoundingVolume())
+            self.voxelCube.setInstanceCount(self.voxelGridResolution**3)
+            # self.voxelCube.hide()
+            self.bindTo(self.voxelCube, "giData")
+            
+            for i in xrange(5):
+                self.voxelCube.setShaderInput("giDataTex" + str(i), self.pingDataTextures[i])
 
         self.disableTargets()
 
@@ -351,11 +376,13 @@ class GlobalIllumination(DebugObject):
         # self._createGenerateMipmapsShader()
         # self._createPhotonBoxShader()
         # self._createBlurShader()
-        # self.pipeline.setEffect(self.voxelCube, "Effects/DisplayVoxels.effect", {
-        #     "normalMapping": False,
-        #     "castShadows": False,
-        #     "castGI": False
-        # })
+
+        if hasattr(self, "voxelCube"):
+            self.pipeline.setEffect(self.voxelCube, "Effects/DisplayVoxels.effect", {
+                "normalMapping": False,
+                "castShadows": False,
+                "castGI": False
+            })
 
     def _createPhotonBoxShader(self):
         """ Loads the shader to visualize the photons """

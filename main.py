@@ -106,8 +106,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
-        self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
-        # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
+        # self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
         # self.sceneSource = "Demoscene.ignore/TestScene/Test.bam"
@@ -162,6 +162,7 @@ class Main(ShowBase, DebugObject):
 
         # Create some lights
         for i in xrange(10):
+            continue
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
@@ -388,7 +389,7 @@ class Main(ShowBase, DebugObject):
         # self.water.setWaterLevel(10)
 
         # 
-        if True:
+        if "sponza" in self.sceneSource:
             b1, b2 = self.scene.getTightBounds()
 
             c1 = loader.loadModel("Demoscene.ignore/CubeOpen/Scene.bam")
@@ -449,7 +450,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 20.0)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 35.0)
             # dPos = Vec3(100, 100, self.lastSliderValue*2 10)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)

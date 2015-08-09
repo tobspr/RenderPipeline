@@ -22,12 +22,13 @@ uniform writeonly image3D voxelDataDest4;
 
 VoxelDirections unpackData(int packedData) {
     VoxelDirections dir;
-    dir.posX = ((packedData >> 0*5) & 0x1F) / 31.0;
-    dir.negX = ((packedData >> 1*5) & 0x1F) / 31.0;
-    dir.posY = ((packedData >> 2*5) & 0x1F) / 31.0;
-    dir.negY = ((packedData >> 3*5) & 0x1F) / 31.0;
-    dir.posZ = ((packedData >> 4*5) & 0x1F) / 31.0;
-    dir.negZ = ((packedData >> 5*5) & 0x1F) / 31.0;
+    float scaleF = 2.0;
+    dir.posX = ((packedData >> 0*5) & 0x1F) / 31.0 * scaleF;
+    dir.negX = ((packedData >> 1*5) & 0x1F) / 31.0 * scaleF;
+    dir.posY = ((packedData >> 2*5) & 0x1F) / 31.0 * scaleF;
+    dir.negY = ((packedData >> 3*5) & 0x1F) / 31.0 * scaleF;
+    dir.posZ = ((packedData >> 4*5) & 0x1F) / 31.0 * scaleF;
+    dir.negZ = ((packedData >> 5*5) & 0x1F) / 31.0 * scaleF;
     return dir;
 }
 

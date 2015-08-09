@@ -27,6 +27,7 @@ class GlobalIlluminationPass(RenderPass):
             "data2": "DeferredScenePass.data2",
             "data3": "DeferredScenePass.data3",
             "giData": "Variables.giData",
+            "giReadyState": "Variables.giReadyState",
 
             "giVoxelData0": "Variables.giVoxelData0",
             "giVoxelData1": "Variables.giVoxelData1",

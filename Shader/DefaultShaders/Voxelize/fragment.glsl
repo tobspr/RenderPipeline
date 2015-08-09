@@ -78,6 +78,8 @@ void main() {
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
 
+    sampledDiffuse.rgb = pow(sampledDiffuse.rgb, vec3(1.4));
+
     // Create a material to store the material type dependent properties on it
     Material m = getDefaultMaterial();
     m.position = vOutput.positionWorld;
@@ -92,18 +94,24 @@ void main() {
     m.specular = 0.0;
     m.metallic = 0.0;
     m.roughness = 1.0;
+    // m.baseColor = sampledDiffuse.rgb;
+
+
+
     // m.baseColor = vec3(1);
 
     #pragma ENTRY_POINT MATERIAL
 
 
-    result = vec4(0.2,0.6,1.0,1.0);
-    vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 2.0;
+    vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 0.5;
+    result = vec4(lightingResult, 1);
 
-    // lightingResult += vec3(1,1,1) * 0.002 * m.baseColor * GLOBAL_AMBIENT_FACTOR;
+
+
+    // lightingResult += vec3(1,1,1) * 0.2 * m.baseColor * GLOBAL_AMBIENT_FACTOR;
 
     // SRGB Correction
-    lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
+    // lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
 
     // Create a voxel for the material
     spawnVoxel(m.position, m.normal, lightingResult);

@@ -42,7 +42,7 @@ pass Default:
 
         insert @MATERIAL:
 
-            vec3 vsCoord = (vOutput.positionWorld - giData.position + giData.size) / (2.0 * giData.size);
+            vec3 vsCoord = (vOutput.positionWorld - giData.positionGeneration + giData.size) / (2.0 * giData.size);
             ivec3 vsiCoord = ivec3(vsCoord * giData.resolution);
             vec4 data0 = texelFetch(giDataTex0, vsiCoord, 0);
             vec4 data1 = texelFetch(giDataTex1, vsiCoord, 0);
@@ -78,7 +78,7 @@ pass Default:
                 combinedColor.z = mix(data4.x, data4.y, m.normal.z < 0.0 ? 1 : 0);
             }
 
-            if (length(combinedColor) < 0.1) discard;
+            if (length(combinedColor) < 0.5) discard;
 
             combinedColor *= 0.1;
 

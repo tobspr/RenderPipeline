@@ -142,3 +142,7 @@ class FastText:
             TransparencyAttrib.make(TransparencyAttrib.MAlpha), 100)
         self.square.reparentTo(Globals.base.aspect2d)
         return self.square
+
+    def remove(self):
+        self.square.removeNode()
+        
