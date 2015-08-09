@@ -273,6 +273,9 @@ class LightManager(DebugObject):
         if settings.useHardwarePCF:
             define("USE_HARDWARE_PCF", 1)
 
+        if settings.enableAlphaTestedShadows:
+            define("USE_ALPHA_TESTED_SHADOWS", 1)
+
     def processCallbacks(self):
         """ Processes all updates from the previous frame """
         for update in self.updateCallbacks:
