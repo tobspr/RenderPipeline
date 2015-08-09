@@ -70,6 +70,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("numPCSSFilterSamples", int, 64)
         self._addSetting("useHardwarePCF", bool, False)
         self._addSetting("alwaysUpdateAllShadows", bool, False)
+        self._addSetting("pcssSampleRadius", float, 0.01)
 
         # [Transparency]
         self._addSetting("useTransparency", bool, True)

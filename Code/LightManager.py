@@ -262,6 +262,7 @@ class LightManager(DebugObject):
         define("SHADOW_GEOMETRY_MAX_VERTICES", settings.maxShadowUpdatesPerFrame * 3)
         define("CUBEMAP_ANTIALIASING_FACTOR", settings.cubemapAntialiasingFactor)
         define("SHADOW_NUM_PCF_SAMPLES", settings.numPCFSamples)
+        define("PCSS_SAMPLE_RADIUS", settings.pcssSampleRadius)
 
         if settings.usePCSS:
             define("USE_PCSS", 1)
