@@ -128,10 +128,8 @@ vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sou
     );
 
     ivec2 sourceCoord = screenCoord * 2;
-
     vec3 pixelNormal = texelFetch(normalTex, sourceCoord, 0).xyz;
     float pixelDepth = getLinearZFromZ(texelFetch(depthTex, sourceCoord, 0).x);
-    vec2 texelSize = 1.0 / vec2(textureSize(sourceTex, 0));
 
     vec4 sampledResult = vec4(0.0);
     float sampleWeights = 0.0;
@@ -155,14 +153,11 @@ vec4 edgePreservingOcclusionBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sou
 
 
 
-
-
 vec4 edgePreservingSSLRBlur(vec2 texcoord, ivec2 screenCoord, sampler2D sourceTex, sampler2D normalTex, sampler2D positionTex) {
 
     #if defined(DEBUG_DISABLE_UPSCALE_BLUR)
         return texture(sourceTex, texcoord);
     #endif
-
 
     const int numBlurSteps = 17;
     const int sideSteps = (numBlurSteps - 1) / 2;

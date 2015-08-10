@@ -11,14 +11,14 @@ uniform sampler2D viewSpacePosition;
 
 
 #undef OCCLUSION_SAMPLES
-#define OCCLUSION_SAMPLES 256
+#define OCCLUSION_SAMPLES 32
 
 // total number of samples at each fragment
-#define SAO_NUM_SPIRAL_TURNS      64
+#define SAO_NUM_SPIRAL_TURNS      8
 #define SAO_VARIATION             1
 
-const float saoConstIntensity = 0.7;
-const float saoSampleRadiusWS = 10.0;
+const float saoConstIntensity = 5.0;
+const float saoSampleRadiusWS = 20.0;
 const float saoBias = 0.05;
 const float saoEpsilon = 0.02;
 

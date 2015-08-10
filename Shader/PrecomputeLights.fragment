@@ -17,7 +17,7 @@
 
 in vec2 texcoord;
 
-BINDLESS uniform sampler2D depth;
+uniform sampler2D depth;
 
 layout (r32i) uniform writeonly iimageBuffer destinationBuffer;
 

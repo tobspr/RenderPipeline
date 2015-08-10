@@ -4,12 +4,10 @@
 
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/UBOs/Lights.ubo"
-#pragma include "Includes/UBOs/Shadows.ubo"
 #pragma include "Includes/Material.include"
 
-#if defined(DEBUG_DISABLE_SHADOWS)
-    #define UNSHADOWED_PASS 1
-#endif
+#define UNSHADOWED_PASS 1
+
 
 #if defined(USE_SCATTERING)
 uniform sampler2D scatteringAttenuation;

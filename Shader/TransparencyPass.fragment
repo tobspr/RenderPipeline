@@ -2,6 +2,10 @@
 
 
 
+// Unrolling speeds up this pass a lot on nvidia cards
+#pragma optionNV (unroll all)
+
+
 #extension GL_EXT_shader_image_load_store : enable
 
 #pragma include "Includes/Configuration.include"

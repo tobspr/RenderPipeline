@@ -43,7 +43,6 @@ uniform sampler2D skyboxMask;
 
 
 void main() {
-
     // Get tile index and offset
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
     ivec2 tileIndex = ivec2(vec2(screenCoord) / vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y));

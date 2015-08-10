@@ -65,7 +65,7 @@ class GlobalIllumination(DebugObject):
         self.voxelGridResolution = 64
 
         # Has to be a multiple of 2
-        self.distributionSteps = 20
+        self.distributionSteps = 30
 
         self.slideCount = int(math.sqrt(self.voxelGridResolution))
 

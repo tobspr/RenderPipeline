@@ -2,6 +2,10 @@
 
 #pragma include "Includes/Configuration.include"
 
+
+// Unrolling speeds up this pass a lot on nvidia cards
+#pragma optionNV (unroll all)
+
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 120) out;
 
