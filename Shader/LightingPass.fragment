@@ -18,8 +18,7 @@ in vec2 texcoord;
 uniform sampler2D data0;
 uniform sampler2D data1;
 uniform sampler2D data2;
-uniform sampler2D data3;
-uniform sampler2D depth;
+uniform sampler2D depthTex;
 
 
 
@@ -62,11 +61,13 @@ uniform sampler2D scatteringAttenuation;
 uniform sampler2D dynamicExposureTex;
 #endif
 
+uniform sampler2D skyboxMask;
+
 #pragma include "Includes/Ambient.include"
 
 
 vec3 getPositionWorld(vec2 coord) {
-    float z = texture(depth, coord).x;
+    float z = texture(depthTex, coord).x;
     return calculateSurfacePos(z, coord);
 }
 
@@ -92,63 +93,24 @@ void main() {
     wsNormal = normalize(wsNormal);
 
     // Extract material data
-    vec4 target0data = texelFetch(data0, screenCoord, 0);
-    vec4 target1data = texelFetch(data1, screenCoord, 0);
-    vec4 target2data = texelFetch(data2, screenCoord, 0);
-    vec4 target3data = texelFetch(data3, screenCoord, 0);
-    Material material = unpackMaterial(target0data, target1data, target2data, target3data);
+    Material material = unpackGBufferMaterial(data0, data1, data2, depthTex, screenCoord, texcoord);
 
 
-    float pixelDepth = texelFetch(depth, screenCoord,0 ).x;
+
+    float pixelDepth = texelFetch(depthTex, screenCoord,0 ).x;
     float reflectionFactor = saturate( (0.5 - material.roughness) * 5.0 ) ;
 
     float fogFactor = smoothstep(0.0, 1.0, distance(cameraPosition, material.position) / 30.0);
     fogFactor = 0.0;
 
     #if defined(USE_GLOBAL_ILLUMINATION) && !defined(DEBUG_DISABLE_GI)
-
-    // Bilateral upsample global illumination
-    // TODO: Improve (temporal + upsample)
-
-    ivec2 giSampleCoord = screenCoord / 2;
-
-    const int giSampleCount = 5;
-
-    vec2 giSampleOffsets[giSampleCount] = vec2[](
-        vec2(0,0), vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1)
-    );
-
-    vec4 giSpecularResult = vec4(0);
-    vec4 giDiffuseResult = vec4(0);
-    float giValidSamples = 0.01;
-    float pixelLZ = getLinearZFromZ(pixelDepth);
-
-    for (int i = 0; i < giSampleCount; i++) {
-
-        vec2 coord = texcoord + giSampleOffsets[i] / vec2(screenSize) * 0.5;
-        vec3 normalScreen = normalize(textureLod(data1, coord, 0).xyz);
-        float depthScreen = textureLod(depth, coord, 0).x;
-        float reliability = saturate((dot(normalScreen, material.normal)-0.9));
-
-        float lz1 = getLinearZFromZ(depthScreen);
-
-        reliability *= 1.0 - saturate(abs(lz1 - pixelLZ) * 50.0);
-        giSpecularResult += texture(giReflectionTex, coord) * reliability;
-        giDiffuseResult += texture(giDiffuseTex, coord) * reliability;
-        giValidSamples += reliability;
-
-    }
-    giSpecularColor = giSpecularResult / giValidSamples;
-    giDiffuseColor = giDiffuseResult / giValidSamples;
-
+        giDiffuseColor = texelFetch(giDiffuseTex, screenCoord, 0);
+        giSpecularColor = texelFetch(giReflectionTex, screenCoord, 0);
     #endif
-
-
-
 
     // There should be a more elegant way, but for now it works. I don't want to
     // waste a gbuffer flag for marking the skybox.
-    bool isSkybox = distance(material.position, cameraPosition) > SKYBOX_BEGIN;
+    bool isSkybox = texelFetch(skyboxMask, screenCoord, 0).x > 0.5;
     
     float mixedOcclusionFactor = 1.0;
     vec3 viewVector = normalize(cameraPosition - material.position);
@@ -174,33 +136,6 @@ void main() {
             mixedOcclusionFactor = texture(occlusionTex, texcoord).w;
         #endif
 
-        // mixedOcclusionFactor = 0.5;
-
-        // // upscale occlusion here
-        // #if defined(USE_OCCLUSION)
-
-        //     // Temporal occlusion
-        //     vec2 velocity = target2data.xy / 255.0;
-        //     vec2 lastFrameTexcoord = texcoord  + velocity;
-        //     ivec2 lastFrameCoordInt = ivec2(lastFrameTexcoord * textureSize(lastFramePosition, 0).xy);
-
-        //     vec3 lastPos = texelFetch(lastFramePosition, lastFrameCoordInt, 0).xyz;
-        //     float reliability = 1.0 - saturate(distance(lastPos, material.position) * 10.0);
-        //     mixedOcclusionFactor = texture(occlusionTex, texcoord).x;
-
-        //     float lastOcclusion = texelFetch(lastFrameOcclusion, lastFrameCoordInt, 0).x;
-        //     mixedOcclusionFactor = mix(mixedOcclusionFactor, lastOcclusion, 0.5 * saturate(reliability) );
-
-        // #endif
-
-        // #if defined(DEBUG_DISABLE_OCCLUSION)
-        //     mixedOcclusionFactor = 0.0;
-        // #endif
-
-        // Metallic materials don't have much occlusion
-        // occlusionResult = mix(occlusionResult, vec4(0.0), saturate(material.metallic-0.3) );
-       
-
         result += texture(shadowedLightsTex, texcoord).xyz;
         result += texture(unshadowedLightsTex, texcoord).xyz;
 
@@ -215,7 +150,7 @@ void main() {
             // fogFactor *= saturate(-0.05 + max(0.0, material.position.z) / 800.0);
             fogFactor = smoothstep(0, 1, fogFactor);
             // fogFactor = 0.0;
-            result = mix(vec3(result), scatteringResult * 12.0, fogFactor);
+            // result = mix(vec3(result), scatteringResult * 12.0, fogFactor);
         #endif
 
     }

@@ -21,12 +21,6 @@ class TransparencyPass(RenderPass):
         return {
             "sceneTex": "LightingPass.resultTex",
             "cameraPosition": "Variables.cameraPosition",
-            "currentMVP": "Variables.currentMVP",
-            "positionTex": "DeferredScenePass.wsPosition",
-            "mainCam": "Variables.mainCam",
-            "mainRender": "Variables.mainRender",
-            "fallbackCubemap": "Variables.defaultEnvironmentCubemap",
-            "fallbackCubemapMipmaps": "Variables.defaultEnvironmentCubemapMipmaps",
             "depthTex": "DeferredScenePass.depth",
 
             "pixelCountBuffer": "Variables.transpPixelCountBuffer",

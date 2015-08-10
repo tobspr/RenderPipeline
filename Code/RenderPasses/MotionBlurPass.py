@@ -17,9 +17,6 @@ class MotionBlurPass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "worldSpaceNormals": "DeferredScenePass.wsNormal",
-            "worldSpacePosition": "DeferredScenePass.wsPosition",
-            "depthTex": "DeferredScenePass.depth",
             "velocityTex": "DeferredScenePass.velocity",
             "frameDelta": "Variables.frameDelta",
             "colorTex": ["AntialiasingPass.resultTex", "SSLRPass.resultTex", "TransparencyPass.resultTex", "LightingPass.resultTex"],

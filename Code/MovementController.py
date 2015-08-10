@@ -231,8 +231,11 @@ class MovementController:
         # display camera pos
         elif selectedOption == 4:
             print "Debug information:"
-            print "\tCamera is at", self.showbase.cam.getPos(self.showbase.render)
-            print "\tCamera hpr is", self.showbase.cam.getHpr(self.showbase.render)
+            campos = self.showbase.cam.getPos(self.showbase.render)
+            camrot = self.showbase.cam.getHpr(self.showbase.render)
+            print "camPos = Vec3(" + str(round(campos.x, 2)) + "," + str(round(campos.y, 2)) + "," + str(round(campos.z, 2)) + ")"
+            print "camHpr = Vec3(" + str(round(camrot.x, 2)) + "," + str(round(camrot.y, 2)) + "," + str(round(camrot.z, 2)) + ")"
+
 
         # show scene graph
         elif selectedOption == 5:

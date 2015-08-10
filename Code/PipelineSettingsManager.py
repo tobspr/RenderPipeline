@@ -39,8 +39,6 @@ class PipelineSettingsManager(SettingsManager):
 
         # [Scattering]
         self._addSetting("enableScattering", bool, False)
-        self._addSetting("useSkyboxScattering", bool, True)
-        self._addSetting("useSkyboxClouds", bool, True)
         self._addSetting("scatteringCubemapSize", int, 256)
 
         # [SSLR]

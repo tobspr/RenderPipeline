@@ -95,23 +95,17 @@ void main() {
     m.metallic = 0.0;
     m.roughness = 1.0;
     // m.baseColor = sampledDiffuse.rgb;
-
-
-
     // m.baseColor = vec3(1);
 
     #pragma ENTRY_POINT MATERIAL
 
-
     vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 0.5;
     result = vec4(lightingResult, 1);
-
-
 
     // lightingResult += vec3(1,1,1) * 0.2 * m.baseColor * GLOBAL_AMBIENT_FACTOR;
 
     // SRGB Correction
-    // lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
+    lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
 
     // Create a voxel for the material
     spawnVoxel(m.position, m.normal, lightingResult);

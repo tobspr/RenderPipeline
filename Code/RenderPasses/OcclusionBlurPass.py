@@ -20,7 +20,7 @@ class OcclusionBlurPass(RenderPass):
         return {
             "sourceTex":  "AmbientOcclusionPass.computeResult", 
             "normalTex": "DeferredScenePass.wsNormal",
-            "positionTex": "DeferredScenePass.wsPosition",
+            "depthTex": "DeferredScenePass.depth",
 
         }
 

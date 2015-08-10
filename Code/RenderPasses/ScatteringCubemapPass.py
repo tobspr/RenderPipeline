@@ -19,26 +19,12 @@ class ScatteringCubemapPass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-
-            # Scattering
             "transmittanceSampler": ["Variables.transmittanceSampler", "Variables.emptyTextureWhite"],
             "inscatterSampler": ["Variables.inscatterSampler", "Variables.emptyTextureWhite"],
             "scatteringOptions": ["Variables.scatteringOptions", "Variables.null"],
-
-            "mainRender": "Variables.mainRender",
-            "cameraPosition": "Variables.cameraPosition",
-            "mainCam": "Variables.mainCam",
-
-            "wsPositionTex": "DeferredScenePass.wsPosition",
-            "wsNormalTex": "DeferredScenePass.wsNormal",
-            "basecolorTex": "DeferredScenePass.data3",
-            # "viewSpacePosition": "ViewSpacePass.position"
-
-            "cloudsTex": ["CloudRenderPass.resultTex", "Variables.emptyTextureWhite"]
         }
 
     def create(self):
-
         self.cubemap = Texture("Scattering Cubemap")
         self.cubemap.setupCubeMap(self.cubemapSize, Texture.TFloat, Texture.FRgba16)
         self.cubemap.setMinfilter(Texture.FTLinearMipmapLinear)

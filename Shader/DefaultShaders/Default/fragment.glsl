@@ -51,7 +51,7 @@ void main() {
     // Extract the material properties
     #if defined(USE_NORMAL_MAPPING)
         float bumpFactor = vOutput.materialDiffuse.w;
-        // bumpFactor *= 2.0;
+        // bumpFactor *= 0.0;
 
         // Merge the detail normal with the vertex normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
@@ -64,12 +64,14 @@ void main() {
     #endif
     
 
+
+
     // Testing
     #if 0
         mixedNormal = vOutput.normalWorld.xzy * vec3(1,1,-1);
     #endif
         
-    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(1.4));
+    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(1.7));
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
@@ -92,15 +94,18 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
 
-    // m.baseColor = sampledDiffuse.rgb;
-    // m.metallic = 1.0;
+    // m.baseColor = mix(vec3(1,0,0), sampledDiffuse.rgb, step(m.position.z, 0.001));
+    // m.metallic = step(0.001, m.position.z);
     // m.roughness = 0.0;
     // m.specular = 1.0;
+
+
 
     #pragma ENTRY_POINT MATERIAL
 
     // Write the material to the G-Buffer
     #if defined(IS_TRANSPARENT)
+    m.baseColor = vec3(1, 0.2, 0.2) * 0.1;
         renderTransparentMaterial(m);
     #else
         renderMaterial(m);

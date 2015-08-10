@@ -180,3 +180,5 @@ gl-coordinate-system default
 
 
 interpolate-frames 1
+
+#gl-version 3 2

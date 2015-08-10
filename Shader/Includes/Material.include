@@ -1,18 +1,20 @@
 #pragma once
 
 #pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/Structures/Material.struct"
 
-Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, vec4 data3) {
+Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, sampler2D depthTex, vec2 texcoord) {
     Material m;
 
-    m.position = data0.xyz;
-    m.roughness = max(0.01, data0.w);
-    m.normal = data1.xyz;
-    m.baseColor = data3.xyz;
-    m.metallic = data2.w;
-    m.specular = data2.z;
-    m.translucency = data1.w;
+    float depth = textureLod(depthTex, texcoord, 0).x;
+    m.position = calculateSurfacePos(depth, texcoord);
+    m.roughness = max(0.01, data2.w);
+    m.normal = data0.xyz;
+    m.baseColor = data2.xyz;
+    m.metallic = data1.w;
+    m.specular = data1.z;
+    m.translucency = data0.w;
 
     // Material debug render modes
     #if defined(DEBUG_RM_LIGHTING)
@@ -31,12 +33,11 @@ Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, vec4 data3) {
 }
 
 
-Material unpackGBufferMaterial(sampler2D tex0, sampler2D tex1, sampler2D tex2, sampler2D tex3, ivec2 coord) {
+Material unpackGBufferMaterial(sampler2D tex0, sampler2D tex1, sampler2D tex2, sampler2D depthTex, ivec2 coord, vec2 texcoord) {
     vec4 tex0data = texelFetch(tex0, coord, 0);
     vec4 tex1data = texelFetch(tex1, coord, 0);
     vec4 tex2data = texelFetch(tex2, coord, 0);
-    vec4 tex3data = texelFetch(tex3, coord, 0);
-    return unpackMaterial(tex0data, tex1data, tex2data, tex3data);
+    return unpackMaterial(tex0data, tex1data, tex2data, depthTex, texcoord);
 }
 
 Material getDefaultMaterial() {

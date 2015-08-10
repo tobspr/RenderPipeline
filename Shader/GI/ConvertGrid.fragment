@@ -1,13 +1,10 @@
 #version 430
 
 #pragma include "Includes/Configuration.include"
-#pragma include "Includes/Structures/VoxelDirections.struct"
 
 uniform isampler3D voxelGenSrcR;
 uniform isampler3D voxelGenSrcG;
 uniform isampler3D voxelGenSrcB;
-// uniform writeonly image3D dest;
-
 
 #if defined(USE_DEBUG_ATTACHMENTS)
 out vec4 color;
@@ -19,6 +16,14 @@ uniform writeonly image3D voxelDataDest2;
 uniform writeonly image3D voxelDataDest3;
 uniform writeonly image3D voxelDataDest4;
 
+struct VoxelDirections {
+    float posX;
+    float negX;
+    float posY;
+    float negY;
+    float posZ;
+    float negZ;
+};
 
 VoxelDirections unpackData(int packedData) {
     VoxelDirections dir;
@@ -33,30 +38,25 @@ VoxelDirections unpackData(int packedData) {
 }
 
 
-
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
-        
-    // Compute 3D Coordinate from 2D Coordinate
-    int z = int(coord.x / GI_GRID_RESOLUTION) + int(coord.y / GI_GRID_RESOLUTION) * GI_SLIDE_COUNT;
-    ivec3 localCoord = ivec3(coord % GI_GRID_RESOLUTION, z);
+    ivec3 coord3D = convert_2d_to_3d(coord, GI_GRID_RESOLUTION, GI_SLIDE_COUNT);
 
-   
-    int valR = texelFetch(voxelGenSrcR, localCoord, 0).x;
-    int valG = texelFetch(voxelGenSrcG, localCoord, 0).x;
-    int valB = texelFetch(voxelGenSrcB, localCoord, 0).x;
+    int valR = texelFetch(voxelGenSrcR, coord3D, 0).x;
+    int valG = texelFetch(voxelGenSrcG, coord3D, 0).x;
+    int valB = texelFetch(voxelGenSrcB, coord3D, 0).x;
 
     VoxelDirections voxelR = unpackData(valR);
     VoxelDirections voxelG = unpackData(valG);
     VoxelDirections voxelB = unpackData(valB);
 
-    float solid = (valR > 1 || valG > 1 || valB > 1) ? 1 : 0; 
+    float solid = valR+valG+valB > 1 ? 1 : 0; 
 
-    imageStore(voxelDataDest0, localCoord, vec4(voxelR.posX, voxelR.negX, voxelR.posY, voxelR.negY));
-    imageStore(voxelDataDest1, localCoord, vec4(voxelR.posZ, voxelR.negZ, voxelG.posX, voxelG.negX));
-    imageStore(voxelDataDest2, localCoord, vec4(voxelG.posY, voxelG.negY, voxelG.posZ, voxelG.negZ));
-    imageStore(voxelDataDest3, localCoord, vec4(voxelB.posX, voxelB.negX, voxelB.posY, voxelB.negY));
-    imageStore(voxelDataDest4, localCoord, vec4(voxelB.posZ, voxelB.negZ, 0, solid));
+    imageStore(voxelDataDest0, coord3D, vec4(voxelR.posX, voxelG.posX, voxelB.posX,  voxelR.negZ));
+    imageStore(voxelDataDest1, coord3D, vec4(voxelR.negX, voxelG.negX, voxelB.negX,  voxelG.negZ));
+    imageStore(voxelDataDest2, coord3D, vec4(voxelR.posY, voxelG.posY, voxelB.posY,  voxelB.negZ));
+    imageStore(voxelDataDest3, coord3D, vec4(voxelR.negY, voxelG.negY, voxelB.negY,  0));
+    imageStore(voxelDataDest4, coord3D, vec4(voxelR.posZ, voxelG.posZ, voxelB.posZ,  solid));
 
     #if defined(USE_DEBUG_ATTACHMENTS)
         color = vec4(

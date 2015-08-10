@@ -18,8 +18,7 @@ class SkyboxMaskPass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "positionTex": "DeferredScenePass.wsPosition",
-            "cameraPosition": "Variables.cameraPosition",         
+            "depthTex": "DeferredScenePass.depth"
         }
 
     def create(self):

@@ -111,7 +111,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
     // ambientRefColor = pow(ambientRefColor, vec3(0.2)) * 0.7;
     // ambientRefColor = pow(ambientRefColor, vec3(5.0));
-    // return ambientRefColor;
+    // return ambientRefColor;s
 
 
     result += 
@@ -127,10 +127,10 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
 
     result += borderFactor * environmentColor * 
-        3.5 * saturate(1.0+material.metallic) * 
+        0.4 * saturate(1.0+material.metallic) * 
         material.specular * 
         mix(pow(iblColor, vec3(1.0)), vec3(1), 1.0) * 
-        mix(occlusionFactor, 1.0, 0.0) * (1.0 - material.roughness);
+        mix(occlusionFactor, 1.0, 0.0) * (1.0 - material.roughness) * mix(vec3(1.0),giAmbient.xyz, 1); 
 
     // return result;
 
@@ -140,7 +140,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
     vec3 metallicSpecularAmbient = mix(environmentColor, material.baseColor, material.translucency) 
 
-            * mix(occlusionFactor, 1.0, 1.0) * material.specular * 2.0 * mix(vec3(1.0),giAmbient.xyz, 0) * 0.1;
+            * mix(occlusionFactor, 1.0, 1.0) * material.specular * 2.0 * mix(vec3(1.0),giAmbient.xyz, 1) * 0.02;
 
     // metallicSpecularAmbient = ambientRefColor * material.specular * 0.5;
 

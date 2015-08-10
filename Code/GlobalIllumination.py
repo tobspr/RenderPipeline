@@ -97,9 +97,8 @@ class GlobalIllumination(DebugObject):
                 from .GUI.FastText import FastText
                 self.debugText = FastText(pos=Vec2(
                     Globals.base.getAspectRatio() - 0.1, 0.88), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
-                self.buildingText = FastText(pos=Vec2(-
-                    Globals.base.getAspectRatio() + 0.2, -0.78), rightAligned=False, color=Vec3(1, 0, 0.1), size=0.03)
-                self.buildingText.setText("BUILDING GI ... ")
+                self.buildingText = FastText(pos=Vec2(-0.3, 0), rightAligned=False, color=Vec3(1, 1, 0), size=0.03)
+                self.buildingText.setText("PREPARING GI, PLEASE BE PATIENT ....")
 
             except Exception, msg:
                 self.debug(
@@ -114,6 +113,8 @@ class GlobalIllumination(DebugObject):
             # for tex in self.generationTextures:
                 # tex.clearImage()
 
+            self.clearGridTarget.setActive(True)
+
             if self.debugText is not None:
                 self.debugText.setText("GI Grid Center: " + ", ".join(str(round(i, 2)) for i in self.gridPosTemp[0]) + " / GI Frame " + str(self.renderCount) )
                 self.renderCount += 1
@@ -124,20 +125,15 @@ class GlobalIllumination(DebugObject):
                     self.buildingText.remove()
                     self.buildingText = None
 
-
         self.voxelizePass.voxelizeSceneFromDirection(self.gridPosTemp[0], "yxz"[idx])
 
-    def stepConvert(self, idx):
-        # print "convert:", idx+1,"/",2 
-        self.convertGridTarget.setActive(True)
-        self.clearGridTarget.setActive(True)
-
-
-        # for target in self.mipmapTargets:
-        #     target.setActive(True)
 
     def stepDistribute(self, idx):
         
+        if idx == 0:
+            self.convertGridTarget.setActive(True)
+            
+
         self.distributeTarget.setActive(True)
 
         swap = idx % 2 == 0
@@ -186,6 +182,7 @@ class GlobalIllumination(DebugObject):
         """ Setups everything for the GI to work """
 
         assert(self.voxelGridResolution in [16, 32, 64, 128, 256, 512])
+        assert(self.distributionSteps % 2 == 0)
 
         self._createDebugTexts()
 
@@ -196,7 +193,6 @@ class GlobalIllumination(DebugObject):
         self.pipeline.getRenderPassManager().registerDefine("GI_GRID_RESOLUTION", self.voxelGridResolution)
 
         self.taskManager.addTask(3, self.stepVoxelize)
-        self.taskManager.addTask(1, self.stepConvert)
         self.taskManager.addTask(self.distributionSteps, self.stepDistribute)
 
         # Create the voxelize pass which is used to voxelize the scene from
@@ -282,7 +278,7 @@ class GlobalIllumination(DebugObject):
             tex.setBorderColor(Vec4(0))
 
         self.distributeTarget = RenderTarget("DistributeVoxels")
-        self.distributeTarget.setSize(self.voxelGridResolution * 8, self.voxelGridResolution * 8)
+        self.distributeTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideCount)
 
         if self.pipeline.settings.useDebugAttachments:
             self.distributeTarget.addColorTexture()
@@ -402,7 +398,7 @@ class GlobalIllumination(DebugObject):
         # It is important that the grid is snapped, otherwise it will flicker 
         # while the camera moves. When using a snap of 32, everything until
         # the log2(32) = 5th mipmap is stable. 
-        snap = 1.0
+        snap = 4.0
         stepSizeX = float(self.voxelGridSize * 2.0) / float(self.voxelGridResolution) * snap
         stepSizeY = float(self.voxelGridSize * 2.0) / float(self.voxelGridResolution) * snap
         stepSizeZ = float(self.voxelGridSize * 2.0) / float(self.voxelGridResolution) * snap

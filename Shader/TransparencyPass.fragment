@@ -19,18 +19,11 @@ uniform usamplerBuffer materialDataBuffer;
 uniform isampler2D spinLockBuffer;
 
 #pragma include "Includes/TransparentMaterial.include"
-#pragma include "Includes/PositionReconstruction.include"
-
 
 uniform sampler2D sceneTex;
 uniform sampler2D depthTex;
-uniform sampler2D positionTex;
-
-
-uniform samplerCube fallbackCubemap;
 
 uniform vec3 cameraPosition;
-uniform mat4 currentMVP;
 
 
 // Temporary structure used for sorting
@@ -131,8 +124,6 @@ void main() {
     fragments = bubbleSortFragments(fragments, entryCounter);
 
 
-    // Check scene depth
-    vec3 pixelPos = texelFetch(positionTex, coord,0).xyz;
     float pixelDepth = texelFetch(depthTex, coord,0).x;
 
     vec2 lastVelocity = vec2(0);
@@ -155,7 +146,7 @@ void main() {
         lastVelocity = tm.velocity / 255.0;
     }
 
-
+    // update velocity
     if (renderedLayers > 0) {
         currentVelocityData.xy = lastVelocity;
         imageStore(velocityTex, coord, currentVelocityData);

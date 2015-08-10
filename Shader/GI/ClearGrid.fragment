@@ -8,11 +8,8 @@ uniform writeonly iimage3D voxelGenTexB;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    // Compute 3D Coordinate from 2D Coordinate
-    int z = int(coord.x / GI_GRID_RESOLUTION) + int(coord.y / GI_GRID_RESOLUTION) * GI_SLIDE_COUNT;
-    ivec3 localCoord = ivec3(coord % GI_GRID_RESOLUTION, z);
-
-    imageStore(voxelGenTexR, localCoord, ivec4(0));
-    imageStore(voxelGenTexG, localCoord, ivec4(0));
-    imageStore(voxelGenTexB, localCoord, ivec4(0));
+    ivec3 coord3D = convert_2d_to_3d(coord, GI_GRID_RESOLUTION, GI_SLIDE_COUNT);
+    imageStore(voxelGenTexR, coord3D, ivec4(0));
+    imageStore(voxelGenTexG, coord3D, ivec4(0));
+    imageStore(voxelGenTexB, coord3D, ivec4(0));
 }

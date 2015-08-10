@@ -3,12 +3,10 @@
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Material.include"
 
-uniform mat4 lastMVP;
 
 layout(location=0) out vec4 color0;
 layout(location=1) out vec4 color1;
 layout(location=2) out vec4 color2;
-layout(location=3) out vec4 color3;
 
 void renderMaterial(Material m) {
     vec3 normal = normalize(m.normal);
@@ -35,8 +33,7 @@ void renderMaterial(Material m) {
     m.specular = saturate(m.specular);
 
     // Output
-    color0 = vec4(m.position.x, m.position.y, m.position.z, m.roughness);
-    color1 = vec4(normal.x, normal.y,normal.z, m.translucency);
-    color2 = vec4(velocity.x, velocity.y, m.specular, m.metallic);
-    color3 = vec4(color.x, color.y, color.z, 0);
+    color0 = vec4(normal.x, normal.y, normal.z, m.translucency);
+    color1 = vec4(velocity.x, velocity.y, m.specular, m.metallic);
+    color2 = vec4(color.x, color.y, color.z, m.roughness);
 }

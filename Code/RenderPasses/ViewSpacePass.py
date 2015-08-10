@@ -19,7 +19,6 @@ class ViewSpacePass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "positionTex": "DeferredScenePass.wsPosition",
             "depthTex": "DeferredScenePass.depth",
             "mainRender": "Variables.mainRender",
             "mainCam": "Variables.mainCam",

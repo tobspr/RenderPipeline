@@ -24,19 +24,13 @@ class TransparencyShadePass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "sceneTex": "LightingPass.resultTex",
             "cameraPosition": "Variables.cameraPosition",
-            "currentMVP": "Variables.currentMVP",
-            "positionTex": "DeferredScenePass.wsPosition",
             "mainCam": "Variables.mainCam",
             "mainRender": "Variables.mainRender",
             "fallbackCubemap": "Variables.defaultEnvironmentCubemap",
             "fallbackCubemapMipmaps": "Variables.defaultEnvironmentCubemapMipmaps",
-            "depthTex": "DeferredScenePass.depth",
 
             "pixelCountBuffer": "Variables.transpPixelCountBuffer",
-            "spinLockBuffer": "Variables.transpSpinLockBuffer",
-            "listHeadBuffer": "Variables.transpListHeadBuffer",
             "materialDataBuffer": "Variables.transpMaterialDataBuffer",
 
             "renderedLightsBuffer": "Variables.renderedLightsBuffer",
@@ -53,15 +47,17 @@ class TransparencyShadePass(RenderPass):
             "directionToFace": "Variables.directionToFaceLookup",
 
             "scatteringCubemap": ["ScatteringCubemapPass.resultCubemap", "Variables.defaultEnvironmentCubemap"],
-            "scatteringAttenuation": ["ScatteringPass.attenuationTex", "Variables.emptyTextureWhite"],
-
 
             # IES Profiles
             "IESProfilesTex": "Variables.IESProfilesTex",
 
             "cameraPosition": "Variables.cameraPosition",
             "mainCam": "Variables.mainCam",
-            "mainRender": "Variables.mainRender"
+            "mainRender": "Variables.mainRender",
+
+            # We don't need this input, but by requiring this we ensure this pass
+            # is actually executed after the deferred pass
+            "depthTex": "DeferredScenePass.depth"
 
         }
 

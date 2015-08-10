@@ -28,10 +28,10 @@ class ScatteringPass(RenderPass):
             "cameraPosition": "Variables.cameraPosition",
             "mainCam": "Variables.mainCam",
 
-            "wsPositionTex": "DeferredScenePass.wsPosition",
-            "wsNormalTex": "DeferredScenePass.wsNormal",
-            "basecolorTex": "DeferredScenePass.data3",
-            # "viewSpacePosition": "ViewSpacePass.position"
+            "skyboxMask": "SkyboxMaskPass.resultTex",
+
+            "depthTex": "DeferredScenePass.depth",
+            "basecolorTex": "DeferredScenePass.data2",
 
             "cloudsTex": ["CloudRenderPass.resultTex", "Variables.emptyTextureWhite"]
         }

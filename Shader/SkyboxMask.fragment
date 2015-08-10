@@ -1,21 +1,18 @@
 #version 400
 
 #pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
 
-uniform vec3 cameraPosition;
-uniform sampler2D positionTex;
+uniform sampler2D depthTex;
 
+in vec2 texcoord;
 out vec4 result;
 
 void main() {
-    result = vec4(0);
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    vec3 wsPos = texelFetch(positionTex, coord, 0).xyz;
-    float dist = distance(wsPos, cameraPosition);
-
-    if (dist > SKYBOX_BEGIN) {
-        result = vec4(1);
-    }
+    float depth  = texelFetch(depthTex, coord, 0).x;
+    float dist = getLinearZFromZ(depth);
+    result = vec4(step(SKYBOX_BEGIN, dist));
 
 }

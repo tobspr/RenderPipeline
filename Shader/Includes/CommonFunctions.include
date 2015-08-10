@@ -27,3 +27,6 @@ vec4 transformParabol(vec4 transformed, float near, float far) {
 }
 
 
+ivec3 convert_2d_to_3d(ivec2 coord, int slice_res, int slice_size) {
+    return ivec3(coord % slice_res, int(coord.x / slice_res) + int(coord.y / slice_res) * slice_size);
+}

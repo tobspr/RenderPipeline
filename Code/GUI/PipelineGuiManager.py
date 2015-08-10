@@ -25,7 +25,7 @@ class PipelineGuiManager(DebugObject):
         self.body = Globals.base.pixel2d
         self.showbase = pipeline.showbase
         self.guiActive = False
-        self.enableGISliders = True
+        self.enableGISliders = False
         self.window = UIWindow(
             "Pipeline Debugger", 280, Globals.base.win.getYSize())
         self.defines = {}

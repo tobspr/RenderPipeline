@@ -20,7 +20,7 @@ class CloudRenderPass(RenderPass):
             "mainRender": "Variables.mainRender",
             "mainCam": "Variables.mainCam",
             "worldSpaceNormals": "DeferredScenePass.wsNormal",
-            "worldSpacePosition": "DeferredScenePass.wsPosition",
+            # "worldSpacePosition": "DeferredScenePass.wsPosition",
             "cameraPosition": "Variables.cameraPosition",
 
             "cloudVoxelGrid": "Variables.cloudVoxelGrid",

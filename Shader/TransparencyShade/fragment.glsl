@@ -15,35 +15,27 @@
 #pragma include "Includes/UBOs/Shadows.ubo"
 
 
-
 // Doesn't work with transparency
 #undef CUBEMAP_ANTIALIASING_FACTOR
 #define CUBEMAP_ANTIALIASING_FACTOR 0.0
-
 #define DISABLE_ATTENUATION_READ 1
 
 
-uniform sampler2D scatteringAttenuation;
-
 uniform isamplerBuffer renderedLightsBuffer;
-
 uniform vec3 cameraPosition;
 
+flat in uint batchOffset;
 in vec2 texcoord;
 
 #if defined(USE_DEBUG_ATTACHMENTS)
 out vec4 result;
 #endif
 
-flat in uint batchOffset;
-
 layout(rgba32ui) uniform uimageBuffer materialDataBuffer;
-
 uniform isampler2D pixelCountBuffer;
 
 #pragma include "Includes/Ambient.include"
 #pragma include "Includes/Lights.include"
-
 
 // Lighting pipeline settings
 #define PROCESS_SHADOWED_LIGHTS 1
@@ -61,7 +53,7 @@ void main() {
     // Extract pixel id
     ivec2 pixelCoord = ivec2(gl_FragCoord.xy);
     uint pixelOffset = batchOffset + pixelCoord.x * TRANSPARENCY_BATCH_SIZE + pixelCoord.y;
-
+    
     // Don't shade unused pixels
     if (pixelOffset > totalEntryCount) {
         discard;
@@ -81,7 +73,6 @@ void main() {
     material.metallic = tm.metallic;
     material.specular = tm.specular;
 
-
     // Shade the pixel data
     vec3 lightingResult = computeLighting(renderedLightsBuffer, material);
 
@@ -90,8 +81,9 @@ void main() {
 
     // Compute ambient
     vec3 viewVector = normalize(cameraPosition - material.position);
-    tm.baseColor += computeAmbient(material, vec4(1.0), vec4(0), 0.8, viewVector);
-    tm.baseColor *= 0.1;
+    tm.baseColor += computeAmbient(material, vec4(1.0), vec4(0), 0.2, viewVector);
+    // tm.baseColor *= 0.1;
+
     
     // Store the new pixel data
     uvec4 data1, data2;
@@ -100,7 +92,7 @@ void main() {
     imageStore(materialDataBuffer, int(pixelOffset)*2+1, data2);
 
     #if defined(USE_DEBUG_ATTACHMENTS)
-        result = vec4(tm.normal, 1);
+        result = vec4(tm.baseColor * 1.0, 1);
     #endif
 
 

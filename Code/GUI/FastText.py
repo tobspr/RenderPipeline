@@ -122,7 +122,9 @@ class FastText:
             out vec4 result;
             void main() {
                 float textFactor = texture(font, texcoord).x;
-                result = vec4(color, textFactor);
+                vec2 texsize = textureSize(font, 0);
+                float textShadow = texture(font, texcoord + vec2(-1.5, 1.5) / texsize).x;
+                result = vec4( mix(vec3(0), color, textFactor), textFactor + textShadow);
 
             }
         """)

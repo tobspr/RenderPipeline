@@ -101,15 +101,16 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Tuscany/Tuscany.egg"
         # self.sceneSource = "Demoscene.ignore/EiffelTower/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/HarvesterModel/Model.egg"
+        # self.sceneSource = "Demoscene.ignore/AudiR8/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/OldHouse/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
-        # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
-        # self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
-        self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
+        # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"s
+        self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
+        # # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
-        # self.sceneSource = "Demoscene.ignore/Alphatest/alphatest.egg"
+        # self.sceneSource = "Demoscene.ignore/Alphatest/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/TestScene/Test.bam"
 
         # This sources are included in the repo
@@ -128,6 +129,11 @@ class Main(ShowBase, DebugObject):
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
         # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
+        # Wheter to create the default ground plane
+        self.usePlane = False
+
+
+
         # Store a list of transparent objects
         self.transparentObjects = []
 
@@ -138,9 +144,9 @@ class Main(ShowBase, DebugObject):
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
             dirLight.setShadowMapResolution(2048)
-            dirLight.setColor(Vec3(1.1, 1.05, 0.9) * 3.0)
+            dirLight.setColor(Vec3(1.1, 1.05, 0.9) * 6.0)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(140)
+            dirLight.setPssmDistance(180)
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
 
@@ -152,7 +158,7 @@ class Main(ShowBase, DebugObject):
             self.renderPipeline.guiManager.demoSlider.node[
                 "command"] = self.setSunPos
             self.renderPipeline.guiManager.demoSlider.node[
-                "value"] = 50
+                "value"] = 89
 
             self.lastSliderValue = 0.5
 
@@ -339,7 +345,7 @@ class Main(ShowBase, DebugObject):
         #         match.remove()
 
         # Wheter to use a ground plane
-        self.usePlane = True
+        
         self.sceneWireframe = False
 
         # Flatten scene?
@@ -415,9 +421,9 @@ class Main(ShowBase, DebugObject):
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
-
-        camPos = Vec3(-8.75898, -6.39353, 7.767)
-        camHpr = Vec3(-51.5156, -25.3426, 0)
+        
+        camPos = Vec3(-25.23,1.21,31.41)
+        camHpr = Vec3(268.74,-2.29,0.0) 
 
         self.controller.setInitialPositionHpr(
             camPos, camHpr)

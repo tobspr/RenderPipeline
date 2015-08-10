@@ -17,8 +17,6 @@ class OcclusionCombinePass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "normalTex": "DeferredScenePass.wsNormal",
-            "positionTex": "DeferredScenePass.wsPosition",
             "velocityTex": "DeferredScenePass.velocity",
 
             "currentOcclusionTex":  ["OcclusionBlurPass.blurResult", "AmbientOcclusionPass.computeResult"], 

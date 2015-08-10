@@ -23,7 +23,7 @@ void main() {
 
     vec4 bloom = vec4(0);
 
-    if (luminance > 0.8) {
+    if (luminance > 0.9) {
         bloom = samples * 0.6;
     }
     // Extract bright spots

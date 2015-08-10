@@ -6,7 +6,6 @@ from panda3d.core import Camera, Vec4, TransparencyAttrib, StencilAttrib
 from panda3d.core import ColorWriteAttrib, DepthWriteAttrib, Texture  
 from panda3d.core import WindowProperties, FrameBufferProperties, GraphicsPipe
 
-
 from RenderTargetType import RenderTargetType
 from MemoryMonitor import MemoryMonitor
 from DebugObject import DebugObject
@@ -424,6 +423,7 @@ class RenderTarget(DebugObject):
         cm = CardMaker("BufferQuad")
         cm.setFrameFullscreenQuad()
         quad = NodePath(cm.generate())
+
         quad.setDepthTest(0)
         quad.setDepthWrite(0)
         quad.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
@@ -523,6 +523,9 @@ class RenderTarget(DebugObject):
 
     def _create(self):
         """ Attempts to create this buffer """
+
+        # if len(self._targets.keys()) < 1:
+            # print "WARNING:", self._debug_name, "has no attachments!"
 
         colorIsFloat = self._colorBits >= 16
         auxIsFloat = self._auxBits >= 16
