@@ -17,28 +17,34 @@ You can find a lot more <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAAB
 ![Sponza](http://fs1.directupload.net/images/150810/ampc4zkd.png)
 ![Terrain](http://fs1.directupload.net/images/150803/33uuhjc3.png)
 ![Couch Scene](http://fs2.directupload.net/images/150502/jl66b4cc.png)
-![Transparency Test](http://fs2.directupload.net/images/150503/78h7dpz9.png)
-![BRDF Test #2](http://fs1.directupload.net/images/141222/9sgebqmw.png)
-
 
 ### Setup
 You can find the wiki & instructions how to setup the pipeline at
 https://github.com/tobspr/RenderPipeline/wiki
 
+Please not that the wiki is a bit outdated! 
+
+### Requirements
+
+- OpenGL 4.3 capable GPU
+- Panda3D Development Build ( https://github.com/panda3d/panda3d )
+- 1GB Graphics Memory recommended (Can run with less, too)
+
 ### Features
 
-##### Physically based shading / lighting
+##### Physically based shading
 ##### Deferred rendering
 ##### Order Independent Transparency
 ##### Temporal Ambient Occlusion
 - SAO and HBAO
 
+##### Tile based light culling
+
 ##### Realtime Global Illumination
-- Voxel cone traced global illumination
-- Cone traced specular reflections
-- Cone traced low frequency ambient occlusion
+- Light propagation volumes
 
 ##### Dynamic Scene Voxelization
+- Coming soon: Voxel based light shafts
 
 ##### Screen Space Local Reflections
 
@@ -50,6 +56,8 @@ https://github.com/tobspr/RenderPipeline/wiki
 ##### [Todo] Screen space subsurface scattering
 ##### Multi-Hemisphere-Skybox
 
+##### [Coming soon] Dynamic volumetric clouds
+
 ##### Atmospheric Scattering
 
 ##### Supported Lights:
@@ -59,10 +67,14 @@ https://github.com/tobspr/RenderPipeline/wiki
 - [Todo] Ambient Lights
 - [Todo] Area Lights
 
-##### Color LUT, Dynamic Exposure and Chromatic Abberation
+
+##### Dynamic scene exposure
+##### Color LUT, Chromatic Abberation, Grain and Sharpen
 ##### Blur
 - [Todo] Bokeh DOF
 - Per object and camera motion blur
+
+##### Bloom
 
 ##### Tesselation
 
