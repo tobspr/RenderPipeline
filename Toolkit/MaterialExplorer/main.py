@@ -9,6 +9,8 @@ sys.dont_write_bytecode = True
 import math
 import struct
 
+from random import random
+
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3
 from panda3d.core import Texture
@@ -26,6 +28,7 @@ from Code.GUI.BetterOnscreenImage import BetterOnscreenImage
 from Code.GUI.BetterSlider import BetterSlider
 from Code.GUI.BetterOnscreenText import BetterOnscreenText
 from Code.GUI.UIWindow import UIWindow
+
 
 class Main(ShowBase, DebugObject):
 
@@ -56,14 +59,38 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.create()
 
         # Load some demo source
-        self.sceneSource = "Models/SmoothCube/Cube.bam"
+        # self.sceneSource = "Models/SmoothCube/Cube.bam"
+        self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
 
         # Load scene from disk
-        self.debug("Loading Scene '" + self.sceneSource + "'")
-        self.model = self.loader.loadModel(self.sceneSource)
         self.scene = render.attachNewNode("Scene")
-        self.model.reparentTo(self.scene)
-        self.model.setZ(1.0)
+        self.debug("Loading Scene '" + self.sceneSource + "'")
+
+        self.model = self.scene.attachNewNode("model")
+
+        for metallic in xrange(2):
+            for roughness in xrange(10):
+                for specular in xrange(10):
+
+                    model = self.loader.loadModel(self.sceneSource)
+                    model.reparentTo(self.model)
+                    model.setZ(1.0)
+                    model.setX(metallic * 40.0 + roughness*3.0)
+                    model.setY(specular*3.0)
+
+                    model.setShaderInput("opt_roughness", roughness / 10.0)
+                    model.setShaderInput("opt_metallic", metallic)
+                    model.setShaderInput("opt_specular", specular / 10.0)
+
+
+        # Create some lights
+        for i in xrange(10):
+            pointLight = PointLight()
+            xoffs = (i-25) * 15.0
+            pointLight.setPos(xoffs, 0, 8)
+            pointLight.setColor(Vec3(random(), random(), random())*1)
+            pointLight.setRadius(15)
+            self.renderPipeline.addLight(pointLight)
 
         # Wheter to use a ground floor
         self.usePlane = True
@@ -75,7 +102,7 @@ class Main(ShowBase, DebugObject):
         # Load ground plane if configured
         if self.usePlane:
             self.groundPlane = self.loader.loadModel(
-                "Models/Plane/Model.egg.bam")
+                "Models/Plane/Plane.bam")
             self.groundPlane.setPos(0, 0, 0)
             self.groundPlane.setScale(2.0)
             self.groundPlane.setTwoSided(True)
@@ -111,8 +138,6 @@ class Main(ShowBase, DebugObject):
         sunPos = Vec3(56.7587, -31.3601, 189.196)
         self.dirLight.setPos(sunPos)
 
-        # Tell the GI which light casts the GI
-        self.renderPipeline.setGILightSource(dirLight)
         self.renderPipeline.setScatteringSource(dirLight)
 
 
@@ -131,31 +156,31 @@ class Main(ShowBase, DebugObject):
 
         self.renderPipeline.setEffect(self.model, "DynamicMaterial.effect")
 
-
         self.renderPipeline.onSceneInitialized()
 
         self.createGUI()
 
     def createGUI(self):
         self.slider_opts = {
-            "roughness": {
-                "name": "Roughness",
-                "min": 0.0001,
-                "max": 1.0,
-                "default": 0.4,
-            },
-            "metallic": {
-                "name": "Metallic",
-                "min": 0.0001,
-                "max": 1.0,
-                "default": 0.0,
-            },
-            "specular": {
-                "name": "Specular",
-                "min": 0.0001,
-                "max": 1.0,
-                "default": 0.5,
-            },
+
+            # "roughness": {
+            #     "name": "Roughness",
+            #     "min": 0.0001,
+            #     "max": 1.0,
+            #     "default": 0.4,
+            # },
+            # "metallic": {
+            #     "name": "Metallic",
+            #     "min": 0.0001,
+            #     "max": 1.0,
+            #     "default": 0.0,
+            # },
+            # "specular": {
+            #     "name": "Specular",
+            #     "min": 0.0001,
+            #     "max": 1.0,
+            #     "default": 0.5,
+            # },
             "basecolor_r": {
                 "name": "Base Color [Red]",
                 "min": 0.0001,
@@ -180,7 +205,7 @@ class Main(ShowBase, DebugObject):
 
         }
 
-        self.sliderOrder = ["roughness", "metallic", "specular", "", "basecolor_r", "basecolor_g", "basecolor_b"]
+        self.sliderOrder = ["basecolor_r", "basecolor_g", "basecolor_b"]
 
 
         self.guiParent = UIWindow(

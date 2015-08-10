@@ -255,8 +255,7 @@ class LightManager(DebugObject):
 
         if settings.renderShadows:
             define("USE_SHADOWS", 1)
-
-        define("AMBIENT_CUBEMAP_SAMPLES", settings.ambientCubemapSamples)
+            
         define("SHADOW_MAP_ATLAS_SIZE", settings.shadowAtlasSize)
         define("SHADOW_MAX_UPDATES_PER_FRAME", settings.maxShadowUpdatesPerFrame)
         define("SHADOW_GEOMETRY_MAX_VERTICES", settings.maxShadowUpdatesPerFrame * 3)

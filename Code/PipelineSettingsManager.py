@@ -28,7 +28,6 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("computePatchSizeY", int, 32)
         self._addSetting("minMaxDepthAccuracy", int, 3)
         self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
-        self._addSetting("ambientCubemapSamples", int, 16)
         self._addSetting("colorLookupTable", str, "Default.png")
         self._addSetting("cubemapAntialiasingFactor", float, 5.0)
         self._addSetting("useAdaptiveBrightness", bool, True)

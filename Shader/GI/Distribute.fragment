@@ -21,7 +21,6 @@ uniform sampler3D src2;
 uniform sampler3D src3;
 uniform sampler3D src4;
 
-
 struct Voxel {
     vec3 posX;
     vec3 negX;
@@ -38,17 +37,8 @@ Voxel fetchVoxel(ivec3 coord) {
     vec4 sample2 = texelFetch(src2, coord, 0);
     vec4 sample3 = texelFetch(src3, coord, 0);
     vec4 sample4 = texelFetch(src4, coord, 0);
-    Voxel v;
 
-    if (coord.x < 0 || coord.y < 0 || coord.z < 0 || coord.x >= GI_GRID_RESOLUTION || coord.y >= GI_GRID_RESOLUTION || coord.z >= GI_GRID_RESOLUTION) {
-        v.posX = vec3(0);
-        v.negX = vec3(0);
-        v.posY = vec3(0);
-        v.negY = vec3(0);
-        v.posZ = vec3(0);
-        v.negZ = vec3(0);
-        return v;
-    }
+    Voxel v;
 
     v.posX = vec3(sample0.x, sample1.z, sample3.x);
     v.negX = vec3(sample0.y, sample1.w, sample3.y);
@@ -65,7 +55,7 @@ void storeVoxel(ivec3 coord, Voxel v) {
     imageStore(dst1, coord, vec4(v.posZ.r, v.negZ.r, v.posX.g, v.negX.g));
     imageStore(dst2, coord, vec4(v.posY.g, v.negY.g, v.posZ.g, v.negZ.g));
     imageStore(dst3, coord, vec4(v.posX.b, v.negX.b, v.posY.b, v.negY.b));
-    imageStore(dst4, coord, vec4(v.posZ.b, v.negZ.b, 0,v.solid ? 1.0 : 0.0));
+    imageStore(dst4, coord, vec4(v.posZ.b, v.negZ.b, 0, v.solid ? 1.0 : 0.0));
 }
 
 
@@ -73,49 +63,39 @@ void storeVoxel(ivec3 coord, Voxel v) {
 #define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2)  \
 for (int c1 = -1; c1 <= 1; c1++) {     \
     for (int c2 = -1; c2 <= 1; c2++) {    \
-        v. DIR_NAME += fetchVoxel(localCoord + ivec3( TEMPL0, TEMPL1, TEMPL2 )). DIR_NAME * mixF * (saturate(1.0  - 0.5*(length(vec2(c1, c2))))); \
+        v. DIR_NAME += fetchVoxel(localCoord + ivec3( TEMPL0, TEMPL1, TEMPL2 )). DIR_NAME * distributionFactor * (saturate(1.0  - 0.5*(length(vec2(c1, c2))))); \
     } \
 }
-
 
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    #if defined(USE_DEBUG_ATTACHMENTS)
-        vec3 vSum = vec3(0);
-    #endif
-        
-    for (int z = 0; z < GI_GRID_RESOLUTION; z++) {
-        ivec3 localCoord = ivec3(coord, z);
-        Voxel v = fetchVoxel(localCoord);
+    // Compute 3D Coordinate from 2D Coordinate
+    int z = int(coord.x / GI_GRID_RESOLUTION) + int(coord.y / GI_GRID_RESOLUTION) * GI_SLIDE_COUNT;
+    ivec3 localCoord = ivec3(coord % GI_GRID_RESOLUTION, z);
 
+    // Fetch current voxel
+    Voxel v = fetchVoxel(localCoord);
 
+    float distributionFactor = 0.02;
 
-        float mixF = 0.025;
-        mixF = 0.02;
-
-        if (!v.solid) {
-            EVALUATE_DIRECTION(posX, negX, -1, c1, c2 )
-            EVALUATE_DIRECTION(negX, posX, 1, c1, c2 )
-            EVALUATE_DIRECTION(posY, negY, c1, -1, c2 )
-            EVALUATE_DIRECTION(negY, posY, c1, 1, c2 )
-            EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 )
-            EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 )
-        }
-            
-
-        #if defined(USE_DEBUG_ATTACHMENTS)
-        vSum += v.posX * 0.1 + v.negX * 0.1 + v.posZ * 0.1 +  v.negZ * 0.1 + v.posY * 0.1 + v.negY * 0.1;
-        #endif
-
-        storeVoxel(localCoord, v);
+    // Evaluate each direction
+    if (!v.solid) {
+        EVALUATE_DIRECTION(posX, negX, -1, c1, c2 )
+        EVALUATE_DIRECTION(negX, posX, 1, c1, c2 )
+        EVALUATE_DIRECTION(posY, negY, c1, -1, c2 )
+        EVALUATE_DIRECTION(negY, posY, c1, 1, c2 )
+        EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 )
+        EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 )
     }
 
+    // Store the modified voxel
+    storeVoxel(localCoord, v);
 
 
     #if defined(USE_DEBUG_ATTACHMENTS)
-        color = vec4(vSum, 1);
+        color = vec4(v.posX + v.negX + v.posZ +  v.negZ + v.posY + v.negY, 1);
     #endif
 
 }

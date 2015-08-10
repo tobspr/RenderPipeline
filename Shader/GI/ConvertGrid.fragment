@@ -36,42 +36,33 @@ VoxelDirections unpackData(int packedData) {
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
-
-    #if defined(USE_DEBUG_ATTACHMENTS)
-        vec3 vSum = vec3(0);
-    #endif
         
-    for (int z = 0; z < GI_GRID_RESOLUTION; z++) {
-        ivec3 localCoord = ivec3(coord, z);
-       
-        int valR = texelFetch(voxelGenSrcR, localCoord, 0).x;
-        int valG = texelFetch(voxelGenSrcG, localCoord, 0).x;
-        int valB = texelFetch(voxelGenSrcB, localCoord, 0).x;
+    // Compute 3D Coordinate from 2D Coordinate
+    int z = int(coord.x / GI_GRID_RESOLUTION) + int(coord.y / GI_GRID_RESOLUTION) * GI_SLIDE_COUNT;
+    ivec3 localCoord = ivec3(coord % GI_GRID_RESOLUTION, z);
 
-        VoxelDirections voxelR = unpackData(valR);
-        VoxelDirections voxelG = unpackData(valG);
-        VoxelDirections voxelB = unpackData(valB);
+   
+    int valR = texelFetch(voxelGenSrcR, localCoord, 0).x;
+    int valG = texelFetch(voxelGenSrcG, localCoord, 0).x;
+    int valB = texelFetch(voxelGenSrcB, localCoord, 0).x;
 
-        #if defined(USE_DEBUG_ATTACHMENTS)
-            vSum.x += voxelR.posX * 0.1 + voxelR.negX * 0.1;
-            vSum.y += voxelR.posY * 0.1 + voxelR.negY * 0.1;
-            vSum.z += voxelR.posZ * 0.1 + voxelR.negZ * 0.1;
-        #endif
+    VoxelDirections voxelR = unpackData(valR);
+    VoxelDirections voxelG = unpackData(valG);
+    VoxelDirections voxelB = unpackData(valB);
 
-        float solid = (valR > 1 || valG > 1 || valB > 1) ? 1 : 0; 
+    float solid = (valR > 1 || valG > 1 || valB > 1) ? 1 : 0; 
 
-        imageStore(voxelDataDest0, localCoord, vec4(voxelR.posX, voxelR.negX, voxelR.posY, voxelR.negY));
-        imageStore(voxelDataDest1, localCoord, vec4(voxelR.posZ, voxelR.negZ, voxelG.posX, voxelG.negX));
-        imageStore(voxelDataDest2, localCoord, vec4(voxelG.posY, voxelG.negY, voxelG.posZ, voxelG.negZ));
-        imageStore(voxelDataDest3, localCoord, vec4(voxelB.posX, voxelB.negX, voxelB.posY, voxelB.negY));
-        imageStore(voxelDataDest4, localCoord, vec4(voxelB.posZ, voxelB.negZ, 0, solid));
-
-    }
-
-
+    imageStore(voxelDataDest0, localCoord, vec4(voxelR.posX, voxelR.negX, voxelR.posY, voxelR.negY));
+    imageStore(voxelDataDest1, localCoord, vec4(voxelR.posZ, voxelR.negZ, voxelG.posX, voxelG.negX));
+    imageStore(voxelDataDest2, localCoord, vec4(voxelG.posY, voxelG.negY, voxelG.posZ, voxelG.negZ));
+    imageStore(voxelDataDest3, localCoord, vec4(voxelB.posX, voxelB.negX, voxelB.posY, voxelB.negY));
+    imageStore(voxelDataDest4, localCoord, vec4(voxelB.posZ, voxelB.negZ, 0, solid));
 
     #if defined(USE_DEBUG_ATTACHMENTS)
-        color = vec4(vSum, 1);
+        color = vec4(
+                voxelR.posX + voxelR.negX + voxelR.posY + voxelR.negY + voxelR.posZ + voxelR.negZ,
+                voxelG.posX + voxelG.negX + voxelG.posY + voxelG.negY + voxelG.posZ + voxelG.negZ,
+                voxelB.posX + voxelB.negX + voxelB.posY + voxelB.negY + voxelB.posZ + voxelB.negZ, 1);
     #endif
 
 }

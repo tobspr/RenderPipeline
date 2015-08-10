@@ -98,8 +98,11 @@ class Effect(DebugObject):
 
     def _createShaderObjects(self):
         """ Creates the shaders from the parsed shader code """
-
         for stage, parts in self.shaderParts.iteritems():
+            if len(parts) < 1:
+                # No program defined
+                continue
+
             programs = {"vertex": "", "fragment": "", "geometry": "", 
                 "tesscontrol": "", "tesseval": ""}
             for progName, progCode in parts.iteritems():

@@ -4,7 +4,7 @@ from panda3d.core import NodePath, Shader, Vec4, TransparencyAttrib, LVecBase2i
 from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerState
 from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight, BitMask32
 from panda3d.core import Texture, UnalignedLMatrix4f, Vec3, PTAFloat, TextureStage
-from panda3d.core import ColorWriteAttrib, Vec2
+from panda3d.core import ColorWriteAttrib, Vec2, AlphaTestAttrib
 
 from DebugObject import DebugObject
 from SystemAnalyzer import SystemAnalyzer
@@ -123,7 +123,6 @@ class RenderingPipeline(DebugObject):
 
     def setEffect(self, obj, effect, properties = None, sort=0):
         """ Applies the effect to an object with the given properties """
-
         if isinstance(obj, list) or isinstance(obj, tuple):
             for part in obj:
                 self.setEffect(part, effect, properties, sort)
@@ -151,6 +150,7 @@ class RenderingPipeline(DebugObject):
         effect.assignNode(obj, "Default", sort)
 
         # Create shadow caster state
+
         if effect.getSetting("castShadows") and effect.hasShader("Shadows"):
             initialState = NodePath("EffectInitialShadowState"+str(effect.getEffectID()))
             initialState.setShader(effect.getShader("Shadows"), sort + 20)
@@ -692,6 +692,7 @@ class RenderingPipeline(DebugObject):
 
             }, -10)
 
+        render.setAttrib(AlphaTestAttrib.make(AlphaTestAttrib.MNone, 1), 999999)
 
         # Apply the debug effect to the light debug nodes
         self.setEffect(lightDebugNode, "Effects/LightDebug.effect", {

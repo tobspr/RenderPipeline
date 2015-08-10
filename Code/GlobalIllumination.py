@@ -67,6 +67,8 @@ class GlobalIllumination(DebugObject):
         # Has to be a multiple of 2
         self.distributionSteps = 20
 
+        self.slideCount = int(math.sqrt(self.voxelGridResolution))
+
         self.bounds = BoundingBox()
         self.renderCount = 0
 
@@ -183,9 +185,12 @@ class GlobalIllumination(DebugObject):
     def setup(self):
         """ Setups everything for the GI to work """
 
+        assert(self.voxelGridResolution in [16, 32, 64, 128, 256, 512])
+
         self._createDebugTexts()
 
         self.pipeline.getRenderPassManager().registerDefine("USE_GLOBAL_ILLUMINATION", 1)
+        self.pipeline.getRenderPassManager().registerDefine("GI_SLIDE_COUNT", self.slideCount)
 
         # make the grid resolution a constant
         self.pipeline.getRenderPassManager().registerDefine("GI_GRID_RESOLUTION", self.voxelGridResolution)
@@ -217,7 +222,7 @@ class GlobalIllumination(DebugObject):
         self.bindTo(Globals.render, "giData")
 
         self.convertGridTarget = RenderTarget("ConvertGIGrid")
-        self.convertGridTarget.setSize(self.voxelGridResolution, self.voxelGridResolution)
+        self.convertGridTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideCount)
 
         if self.pipeline.settings.useDebugAttachments:
             self.convertGridTarget.addColorTexture()
@@ -229,7 +234,7 @@ class GlobalIllumination(DebugObject):
             self.convertGridTarget.getColorTexture().setMagfilter(Texture.FTNearest)
 
         self.clearGridTarget = RenderTarget("ClearGIGrid")
-        self.clearGridTarget.setSize(self.voxelGridResolution, self.voxelGridResolution)
+        self.clearGridTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideCount)
         if self.pipeline.settings.useDebugAttachments:
             self.clearGridTarget.addColorTexture()
         self.clearGridTarget.prepareOffscreenBuffer()
@@ -245,15 +250,8 @@ class GlobalIllumination(DebugObject):
         for i in xrange(5):
             tex = Texture("GIDataTex" + str(i))
             tex.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FRgba16)
-            tex.setMinfilter(Texture.FTLinear)
-            tex.setMagfilter(Texture.FTLinear)
-            tex.setWrapU(Texture.WMBorderColor)
-            tex.setWrapV(Texture.WMBorderColor)
-            tex.setWrapW(Texture.WMBorderColor)
-            tex.setBorderColor(Vec4(0))
             MemoryMonitor.addTexture("VoxelDataTex-" + str(i), tex)
-
-            
+           
             self.dataTextures.append(tex)
             self.pipeline.getRenderPassManager().registerStaticVariable("giVoxelData" + str(i), tex)
 
@@ -261,21 +259,30 @@ class GlobalIllumination(DebugObject):
         self.pongDataTextures = []
 
         for i in xrange(5):
-            tex = Texture("GIPingDataTex" + str(i))
-            tex.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FRgba16)
-            MemoryMonitor.addTexture("VoxelPingDataTex-" + str(i), tex)
-            self.pingDataTextures.append(tex)
+            texPing = Texture("GIPingDataTex" + str(i))
+            texPing.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FRgba16)
+            MemoryMonitor.addTexture("VoxelPingDataTex-" + str(i), texPing)
+            self.pingDataTextures.append(texPing)
 
-            tex = Texture("GIPongDataTex" + str(i))
-            tex.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FRgba16)
-            MemoryMonitor.addTexture("VoxelPongDataTex-" + str(i), tex)
-            self.pongDataTextures.append(tex)
+            texPong = Texture("GIPongDataTex" + str(i))
+            texPong.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FRgba16)
+            MemoryMonitor.addTexture("VoxelPongDataTex-" + str(i), texPong)
+            self.pongDataTextures.append(texPong)
 
             self.convertGridTarget.setShaderInput("voxelDataDest"+str(i), self.pingDataTextures[i])
 
+        
+        # Set texture wrap modes
+        for tex in self.pingDataTextures + self.pongDataTextures + self.dataTextures:
+            tex.setMinfilter(Texture.FTLinear)
+            tex.setMagfilter(Texture.FTLinear)
+            tex.setWrapU(Texture.WMBorderColor)
+            tex.setWrapV(Texture.WMBorderColor)
+            tex.setWrapW(Texture.WMBorderColor)
+            tex.setBorderColor(Vec4(0))
 
         self.distributeTarget = RenderTarget("DistributeVoxels")
-        self.distributeTarget.setSize(self.voxelGridResolution, self.voxelGridResolution)
+        self.distributeTarget.setSize(self.voxelGridResolution * 8, self.voxelGridResolution * 8)
 
         if self.pipeline.settings.useDebugAttachments:
             self.distributeTarget.addColorTexture()
@@ -285,8 +292,6 @@ class GlobalIllumination(DebugObject):
         if self.pipeline.settings.useDebugAttachments:
             self.distributeTarget.getColorTexture().setMinfilter(Texture.FTNearest)
             self.distributeTarget.getColorTexture().setMagfilter(Texture.FTNearest)
-
-
 
         # Create the various render targets to generate the mipmaps of the stable voxel grid
         # self.mipmapTargets = []
@@ -316,8 +321,7 @@ class GlobalIllumination(DebugObject):
         self.pipeline.getRenderPassManager().registerStaticVariable("giReadyState", self.readyStateFlag)
 
 
-
-
+        # Visualize voxels
         if False:
             self.voxelCube = loader.loadModel("Box")
             self.voxelCube.reparentTo(render)

@@ -4,15 +4,15 @@
 float DistributionBRDF(float roughness, float NxH)
 {
 
-    float m = roughness * roughness;
-    float m2 = m * m;
-    float d = ( NxH * m2 - NxH ) * NxH + 1;
-    return m2 / ( d*d );
-
     // float m = roughness * roughness;
     // float m2 = m * m;
-    // float NoH2 = NxH * NxH;
-    // return exp( (NoH2 - 1) / (m2 * NoH2) ) / ( M_PI * m2 * NoH2 * NoH2 );
+    // float d = ( NxH * m2 - NxH ) * NxH + 1;
+    // return m2 / ( d*d );
+
+    float m = roughness * roughness;
+    float m2 = m * m;
+    float NoH2 = NxH * NxH;
+    return exp( (NoH2 - 1) / (m2 * NoH2) ) / ( M_PI * m2 * NoH2 * NoH2 );
 
     // float m = roughness * roughness;
     // float m2 = m * m;
@@ -71,4 +71,13 @@ float Vis_Smith( float Roughness, float NoV, float NoL )
     float Vis_SmithV = NoV + sqrt( NoV * (NoV - NoV * a2) + a2 );
     float Vis_SmithL = NoL + sqrt( NoL * (NoL - NoL * a2) + a2 );
     return 1.0 / ( Vis_SmithV * Vis_SmithL );
+}
+
+
+
+vec3 computeSpecular(vec3 specularColor, float roughness, float NxL, float LxH, float NxV, float NxH) {
+    float specularD = DistributionBRDF(roughness, NxH);
+    float specularG = GeometricBRDF(roughness, NxV, NxL);
+    vec3  specularF = FresnelBRDF(specularColor, LxH);
+    return (specularD * specularG) * specularF;
 }
