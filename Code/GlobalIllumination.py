@@ -117,7 +117,8 @@ class GlobalIllumination(DebugObject):
 
             if self.debugText is not None:
                 self.debugText.setText("GI Grid Center: " + ", ".join(str(round(i, 2)) for i in self.gridPosTemp[0]) + " / GI Frame " + str(self.renderCount) )
-                self.renderCount += 1
+            
+            self.renderCount += 1
 
             if self.renderCount == 3:
                 self.readyStateFlag[0] = 1.0
