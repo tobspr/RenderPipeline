@@ -71,8 +71,8 @@ void main() {
 
     // Sample the other maps
     // vec4 sampledNormal  = texture(p3d_Texture1, vOutput.texcoord);
-    vec4 sampledSpecular = texture(p3d_Texture2, vOutput.texcoord);
-    vec4 sampledRoughness = texture(p3d_Texture3, vOutput.texcoord);    
+    vec4 sampledSpecular = textureLod(p3d_Texture2, vOutput.texcoord, 0);
+    vec4 sampledRoughness = textureLod(p3d_Texture3, vOutput.texcoord, 0);    
 
     float specularFactor = vOutput.materialSpecular.x;
     float metallic = vOutput.materialSpecular.y;
@@ -99,13 +99,13 @@ void main() {
 
     #pragma ENTRY_POINT MATERIAL
 
-    vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 0.5;
+    vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 2.0;
     result = vec4(lightingResult, 1);
-
     // lightingResult += vec3(1,1,1) * 0.2 * m.baseColor * GLOBAL_AMBIENT_FACTOR;
 
     // SRGB Correction
     lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
+    lightingResult = saturate(lightingResult);
 
     // Create a voxel for the material
     spawnVoxel(m.position, m.normal, lightingResult);

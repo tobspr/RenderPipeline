@@ -26,7 +26,6 @@ class AmbientOcclusionPass(RenderPass):
             "noiseTexture": "Variables.noise4x4",
             "viewSpaceNormals": "ViewSpacePass.normals",
             "viewSpacePosition": "ViewSpacePass.position",
-            "worldSpaceNormals": "DeferredScenePass.wsNormal",
             "depthTex": "DeferredScenePass.depth",
             "cameraPosition": "Variables.cameraPosition",
             "currentViewMat": "Variables.currentViewMat",

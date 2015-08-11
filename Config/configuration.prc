@@ -4,11 +4,12 @@
 # win-size 1616 976
 # win-size 1600 900
 # win-size 2500 1300
-win-size 1920 1080
+# win-size 500 300
 # win-size 2560 1440
-# fullscreen #t
-# win-size 2560 1440
+fullscreen #f
+win-size 1600 900
 # win-size 1280 720
+#win-size 1600 900
 
 
 # No stack trace on assertion
@@ -146,7 +147,7 @@ lock-to-one-cpu #f
 support-threads #t
 
 driver-generate-mipmaps #t
-# gl-ignore-mipmaps #t
+#gl-ignore-mipmaps #t
 
 gl-immutable-texture-storage #f
 
@@ -181,4 +182,4 @@ gl-coordinate-system default
 
 interpolate-frames 1
 
-#gl-version 3 2
+#gl-version 4 3

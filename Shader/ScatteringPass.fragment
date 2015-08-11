@@ -76,7 +76,6 @@ void main() {
     vec3 reflectedLight = attenuation * attenuationSunLight;
     resultReflected = vec4(max(vec3(0.0), reflectedLight), 1.0);
 
-
     scatteringResult *= 4.5;
 
     if (!isSkybox) {

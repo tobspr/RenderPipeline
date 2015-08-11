@@ -108,7 +108,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"s
         self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
-        # # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
+        # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/TestScene/Test.bam"
@@ -121,7 +121,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
-        # self.sceneSource = "box"
+        self.sceneSource = "panda"
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
@@ -130,7 +130,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
         # Wheter to create the default ground plane
-        self.usePlane = False
+        self.usePlane = True
 
 
 
@@ -143,7 +143,7 @@ class Main(ShowBase, DebugObject):
         if True:
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
-            dirLight.setShadowMapResolution(2048)
+            dirLight.setShadowMapResolution(512)
             dirLight.setColor(Vec3(1.1, 1.05, 0.9) * 6.0)
             dirLight.setCastsShadows(True)
             dirLight.setPssmDistance(180)
@@ -512,7 +512,7 @@ class Main(ShowBase, DebugObject):
             light.setRadius(prefab.getScale().x)
             light.setColor(Vec3(2))
             light.setPos(prefab.getPos())
-            light.setShadowMapResolution(2048)
+            light.setShadowMapResolution(512)
             light.setCastsShadows(False)
             self.renderPipeline.addLight(light)
             print "Adding Light:", prefab.getPos(), prefab.getScale()

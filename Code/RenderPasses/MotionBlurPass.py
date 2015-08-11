@@ -19,7 +19,7 @@ class MotionBlurPass(RenderPass):
         return {
             "velocityTex": "DeferredScenePass.velocity",
             "frameDelta": "Variables.frameDelta",
-            "colorTex": ["AntialiasingPass.resultTex", "SSLRPass.resultTex", "TransparencyPass.resultTex", "LightingPass.resultTex"],
+            "colorTex": ["AntialiasingPass.resultTex", "ExposurePass.resultTex"],
         }
 
     def create(self):

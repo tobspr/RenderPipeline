@@ -47,7 +47,7 @@ class ShadowAtlas(DebugObject):
 
     def setSize(self, size):
         """ Sets the shadow atlas size in pixels """
-        assert(size >= 128 and size <= 8192)
+        assert(size >= 128 and size <= 16384)
         self.size = size
 
     def getSize(self):

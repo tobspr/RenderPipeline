@@ -4,34 +4,39 @@
 
 uniform sampler2D colorTex;
 
+// Speed up the downsampling on nvidia cards
+#pragma optionNV (unroll all)
 
 out vec4 result;
+
+float getLuminance(vec4 color) {
+    return dot(vec4(0.2125, 0.7154, 0.0721, 0), color);
+}
 
 void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xyz) * 4;
 
-    vec4 samples = vec4(0);
+    // Find the brightest pixel while downsampling
+    vec4 maxCol = vec4(0);
+    float maxLum = 0.0;
     for (int x = 0; x < 4; x++) {
         for (int y = 0; y < 4; y++) {
-            samples += texelFetch(colorTex, coord + ivec2(x, y), 0);
+            vec4 sampled = texelFetch(colorTex, coord + ivec2(x, y), 0);
+            float sampleLum = getLuminance(sampled);
+            if (sampleLum > maxLum) {
+                maxLum = sampleLum;
+                maxCol = sampled;
+            }
         }
     }
-    samples /= 16.0;
-
-    float luminance = dot(vec4(0.2125, 0.7154, 0.0721, 0), samples);
+    float luminance = maxLum;
 
     vec4 bloom = vec4(0);
 
-    if (luminance > 0.9) {
-        bloom = samples * 0.6;
+    if (luminance > 0.4) {
+        bloom = maxCol;
     }
-    // Extract bright spots
-    // samples -= 0.7;
-    // samples *= 15.0;
-    // samples = max(vec4(0), samples);
-    // samples = saturate(samples);
-    // samples *= 0.2;
 
     result = vec4(bloom.xyz,1.0);
 }

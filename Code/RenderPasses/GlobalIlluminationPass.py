@@ -22,10 +22,10 @@ class GlobalIlluminationPass(RenderPass):
     def getRequiredInputs(self):
         return {
 
-            "data0": "DeferredScenePass.data0",
-            "data1": "DeferredScenePass.data1",
-            "data2": "DeferredScenePass.data2",
+            "normalTex": "DeferredScenePass.wsNormal",
             "depthTex": "DeferredScenePass.depth",
+            "skyboxMask": "SkyboxMaskPass.resultTex",
+
             "giData": "Variables.giData",
             "giReadyState": "Variables.giReadyState",
 
@@ -34,8 +34,6 @@ class GlobalIlluminationPass(RenderPass):
             "giVoxelData2": "Variables.giVoxelData2",
             "giVoxelData3": "Variables.giVoxelData3",
             "giVoxelData4": "Variables.giVoxelData4",
-
-            "frameIndex": "Variables.frameIndex",
            
             "cameraPosition": "Variables.cameraPosition",
             "mainCam": "Variables.mainCam",
@@ -48,7 +46,7 @@ class GlobalIlluminationPass(RenderPass):
         self.target.addColorTexture()
         self.target.addAuxTexture()
         self.target.setColorBits(16)
-        self.target.setAuxBits(16)
+        # self.target.setAuxBits(16)
         self.target.prepareOffscreenBuffer()
  
     def setShaders(self):

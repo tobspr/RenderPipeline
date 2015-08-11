@@ -24,7 +24,7 @@ class AntialiasingSMAAPass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "colorTex": ["BloomPass.resultTex","SSLRPass.resultTex", "TransparencyPass.resultTex", "LightingPass.resultTex"],
+            "colorTex": ["BloomPass.resultTex","ExposurePass.resultTex"],
             "velocityTex": "DeferredScenePass.velocity",
             "currentDepthTex": "DeferredScenePass.depth",
             "lastDepthTex": "Variables.lastFrameDepth",

@@ -35,10 +35,6 @@ class LightingPass(RenderPass):
             "giReflectionTex": ["GlobalIlluminationPass.specularResult", "Variables.emptyTextureWhite"],
             "occlusionTex": ["OcclusionCombinePass.resultTex", "OcclusionBlurPass.blurResult", "Variables.emptyTextureWhite"],
 
-
-            # Dynamic exposure
-            "dynamicExposureTex": ["Variables.dynamicExposureTex", "Variables.null"],
-
             # Scattering
             "scatteringTex": ["ScatteringPass.resultTex", "Variables.emptyTextureWhite"],
 
@@ -51,9 +47,10 @@ class LightingPass(RenderPass):
 
             # Precomputed unshadowed lights
             "shadowedLightsTex": ["ShadowedLightsPass.resultTex"],
+
+            # Scattering
             "scatteringCubemap": ["ScatteringCubemapPass.resultCubemap", "Variables.defaultEnvironmentCubemap"],
             "scatteringAttenuation": ["ScatteringPass.attenuationTex", "Variables.emptyTextureWhite"],
-
 
             # Volumetric lighting
             "volumetricLightingTex": ["VolumetricLightingPass.resultTex", "Variables.emptyTextureWhite"],

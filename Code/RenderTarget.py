@@ -521,6 +521,14 @@ class RenderTarget(DebugObject):
         if self._createOverlayQuad:
             self._quad.removeNode()
 
+        for target in RenderTargetType.All:
+            if self.hasTarget(target):
+                tex = self.getTarget(target)
+
+                # TODO: Doesn'T work with scattering yet
+                # tex.releaseAll()
+
+
     def _create(self):
         """ Attempts to create this buffer """
 
@@ -631,7 +639,12 @@ class RenderTarget(DebugObject):
             bufferProps.setDepthBits(self._depthBits)
             bufferProps.setFloatDepth(True)
 
+            if self._depthBits != 32:
+                self.error("You cannot request a non-32bit float depth buffer!")
 
+            if self._depthBits == 16:
+                # depthTarget.setComponentType(Texture.TFloat)
+                depthTarget.setFormat(Texture.FDepthComponent16)
             if self._depthBits == 24:
                 # depthTarget.setComponentType(Texture.TFloat)
                 depthTarget.setFormat(Texture.FDepthComponent24)
@@ -729,7 +742,10 @@ class RenderTarget(DebugObject):
         if self.hasTarget(RenderTargetType.Depth):
             depthTarget = self.getTarget(RenderTargetType.Depth)
 
-            if self._depthBits == 24:
+            if self._depthBits == 16:
+                # depthTarget.setComponentType(Texture.TFloat)
+                depthTarget.setFormat(Texture.FDepthComponent16)
+            elif self._depthBits == 24:
                 # depthTarget.setComponentType(Texture.TFloat)
                 depthTarget.setFormat(Texture.FDepthComponent24)
             elif self._depthBits == 32:

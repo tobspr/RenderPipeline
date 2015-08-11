@@ -427,6 +427,17 @@ class RenderingPipeline(DebugObject):
         colorLUT.setMagfilter(SamplerState.FTLinear)
         self.renderPassManager.registerStaticVariable("colorLUT", colorLUT)
 
+
+        # Load the normal quantization tex
+        normalQuantTex = loader.loadTexture("Data/NormalQuantization/NormalQuantizationTex.png")
+        normalQuantTex.setMinfilter(Texture.FTLinearMipmapLinear)
+        normalQuantTex.setMagfilter(Texture.FTLinear)
+        normalQuantTex.setWrapU(Texture.WMRepeat)
+        normalQuantTex.setWrapV(Texture.WMRepeat)
+        normalQuantTex.setFormat(Texture.FRgba16)
+        self.showbase.render.setShaderInput("normalQuantizationTex", normalQuantTex)
+
+
     def _createGenericDefines(self):
         """ Registers some of the configuration defines, mainly specified in the
         pipeline config, at the render pass manager """
@@ -521,7 +532,7 @@ class RenderingPipeline(DebugObject):
             Globals.base.setFrameRateMeter(True)
         self.guiVisible = not self.guiVisible
 
-    def createBugReport(self):
+    def _createBugReport(self):
         """ Creates a bug report """
 
         w, h = self.showbase.win.getXSize(), self.showbase.win.getYSize()
@@ -537,6 +548,15 @@ class RenderingPipeline(DebugObject):
         overlay.remove()
         overlayBg.remove()
 
+    def _setGuiShaders(self):
+        """ Sets the default shaders to the gui, this is required when disabling
+        the fixed function pipeline """
+        # shader = Shader.load(Shader.SLGLSL, "Shader/GUI/vertex.glsl", "Shader/GUI/fragment.glsl")
+        # for target in [self.showbase.aspect2d]:
+        #     target.setShader(shader, 20)
+        pass
+
+
 
     def create(self):
         """ Creates the pipeline """
@@ -548,7 +568,7 @@ class RenderingPipeline(DebugObject):
         # Handy shortcuts
         self.showbase.accept("r", self.reloadShaders)
         self.showbase.accept("t", self.reloadEffects)
-        self.showbase.accept("f7", self.createBugReport)
+        self.showbase.accept("f7", self._createBugReport)
         self.showbase.accept("f8", self.toggleGui)
 
 
@@ -702,6 +722,8 @@ class RenderingPipeline(DebugObject):
             "castShadows": False,
             "castGI": False
         }, 100)
+
+        self._setGuiShaders()
 
         if self.settings.enableGlobalIllumination:
             self.globalIllum.reloadShader()

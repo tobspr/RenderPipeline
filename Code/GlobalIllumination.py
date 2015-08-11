@@ -399,7 +399,7 @@ class GlobalIllumination(DebugObject):
         # It is important that the grid is snapped, otherwise it will flicker 
         # while the camera moves. When using a snap of 32, everything until
         # the log2(32) = 5th mipmap is stable. 
-        snap = 4.0
+        snap = 1.0
         stepSizeX = float(self.voxelGridSize * 2.0) / float(self.voxelGridResolution) * snap
         stepSizeY = float(self.voxelGridSize * 2.0) / float(self.voxelGridResolution) * snap
         stepSizeZ = float(self.voxelGridSize * 2.0) / float(self.voxelGridResolution) * snap

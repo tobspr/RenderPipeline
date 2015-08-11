@@ -23,12 +23,13 @@ from MemoryMonitor import MemoryMonitor
 from LightLimits import LightLimits
 from IESLoader import IESLoader
 
-from .RenderPasses.ShadowScenePass import ShadowScenePass
-from .RenderPasses.LightCullingPass import LightCullingPass
-from .RenderPasses.ScatteringPass import ScatteringPass
-from .RenderPasses.ScatteringCubemapPass import ScatteringCubemapPass
-from .RenderPasses.UnshadowedLightsPass import UnshadowedLightsPass
-from .RenderPasses.ShadowedLightsPass import ShadowedLightsPass
+from RenderPasses.ShadowScenePass import ShadowScenePass
+from RenderPasses.LightCullingPass import LightCullingPass
+from RenderPasses.ScatteringPass import ScatteringPass
+from RenderPasses.ScatteringCubemapPass import ScatteringCubemapPass
+from RenderPasses.UnshadowedLightsPass import UnshadowedLightsPass
+from RenderPasses.ShadowedLightsPass import ShadowedLightsPass
+from RenderPasses.ExposurePass import ExposurePass
 
 pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
 pstats_CullLights = PStatCollector("App:LightManager:CullLights")
@@ -100,6 +101,7 @@ class LightManager(DebugObject):
         self._createShadowPass()
         self._createUnshadowedLightsPass()
         self._createShadowedLightsPass()
+        self._createExposurePass()
 
         if self.pipeline.settings.enableScattering:
             self._createScatteringPass()
@@ -154,6 +156,11 @@ class LightManager(DebugObject):
         """ Creates the pass which renders all unshadowed lights """
         self.shadowedLightsPass = ShadowedLightsPass()
         self.pipeline.getRenderPassManager().registerPass(self.shadowedLightsPass)
+
+    def _createExposurePass(self):
+        """ Creates the pass which applies the exposure and color correction """
+        self.exposurePass = ExposurePass()
+        self.pipeline.getRenderPassManager().registerPass(self.exposurePass)
 
     def _createScatteringPass(self):
         """ Creates the scattering pass """

@@ -100,7 +100,7 @@ class App(ShowBase):
             light.setNearFar(1.0, 50)
             light.setFov(140)
             light.setIESProfile("XSplit")
-            light.setShadowMapResolution(4096)
+            light.setShadowMapResolution(1024)
             light.setCastsShadows(True)
             self.renderPipeline.addLight(light)
 

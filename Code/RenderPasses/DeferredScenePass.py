@@ -24,15 +24,13 @@ class DeferredScenePass(RenderPass):
         self.target.addColorAndDepth()
         self.target.addAuxTextures(2)
         self.target.setAuxBits(16)
-        self.target.setColorBits(16)
-        self.target.setDepthBits(16)
+        # self.target.setColorBits(8)
+        self.target.setDepthBits(32)
         self.target.setCreateOverlayQuad(False)
         self.target.prepareSceneRender()
         self.target.setClearColor(True)
         # self.target.setClearDepth(True)
 
-        # Remove the generated fullscreen quad
-        # self.target.removeQuad()
 
     def getOutputs(self):
         return {

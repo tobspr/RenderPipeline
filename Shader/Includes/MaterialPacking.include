@@ -8,8 +8,32 @@ layout(location=0) out vec4 color0;
 layout(location=1) out vec4 color1;
 layout(location=2) out vec4 color2;
 
+uniform sampler2D normalQuantizationTex;
+
+
+vec3 quantizizeNormal(vec3 normal)
+{
+    normal = normalize(normal);
+    vec3 normalUnsigned = abs(normal.rgb);
+    float maxComponent = max(normalUnsigned.z, max(normalUnsigned.x, normalUnsigned.y));
+    vec2 cubeCoord = normalUnsigned.z<maxComponent?(normalUnsigned.y<maxComponent?normalUnsigned.yz:normalUnsigned.xz):normalUnsigned.xy;
+    cubeCoord = cubeCoord.x < cubeCoord.y ? cubeCoord.yx : cubeCoord.xy;
+    cubeCoord.y /= cubeCoord.x;
+    normal /= maxComponent;
+
+    // look-up fitting length and scale the normal to get the best fit
+    float fittingScale = texture(normalQuantizationTex, cubeCoord).x;
+
+    // scale the normal to get the best fit
+    normal *= max(1.0 / 128.0, min(1.0, fittingScale));
+    normal = normal * 0.5 + 0.5;
+    return normal;
+}
+
+
+
 void renderMaterial(Material m) {
-    vec3 normal = normalize(m.normal);
+    vec3 normal = quantizizeNormal(m.normal);
     vec3 color = m.baseColor.rgb;
 
     #if !defined(DO_NOT_COMPUTE_VELOCITY)
@@ -26,6 +50,7 @@ void renderMaterial(Material m) {
     #else
     vec2 velocity = vec2(0);
     #endif
+
 
     // Saturate
     m.roughness = saturate(m.roughness);

@@ -15,9 +15,6 @@ in vec2 texcoord;
 out vec4 colorResult;
 
 
-// layout (rgba8) uniform image2DArray transparencyLayers;
-// layout (r32f) uniform image2DArray transparencyDepthLayers;
-uniform isampler2D pixelCountBuffer;
 uniform usampler2D listHeadBuffer;
 uniform usamplerBuffer materialDataBuffer;
 uniform isampler2D spinLockBuffer;
@@ -66,8 +63,7 @@ void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-
-    // Render Data
+    // Fetch current scene data, including the sslr factor to pass it through
     vec4 currentData = texture(sceneTex, texcoord);
     vec3 currentColor = currentData.xyz;
     float currentSSLRFactor = currentData.w; 
@@ -77,56 +73,33 @@ void main() {
     // Fetch list head
     uint listHead = texelFetch(listHeadBuffer, coord, 0).x;
 
-    uint totalEntryCount = texelFetch(pixelCountBuffer, ivec2(0), 0).x;
-
-    
     float exposure = 1.0;
 
     // Early out .. have to test if that is faster
     if (listHead == 0) {
-
-
-        #if !defined(DEBUG_VISUALIZATION_ACTIVE)
-
-            // SRGB
-            currentColor = pow(currentColor, vec3(1.0 / 2.2) );
-            currentColor = 1.0 - exp(-exposure * currentColor);
-        #endif
-
-        colorResult = vec4(currentColor, currentSSLRFactor);
+        colorResult = currentData;
         return;
     } 
 
+    // Fetch current velocity
     vec4 currentVelocityData = imageLoad(velocityTex, coord);
-
-
-    // Transparency does not support debug render modes, so just hide transparent 
-    // objects in case a debugmode is active
-    // #if defined(DEBUG_VISUALIZATION_ACTIVE)
-    //     colorResult = vec4(currentColor, currentSSLRFactor);
-    //     return;
-
 
     // Store parts of the data in registers
     MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS];
 
-    // Copy parts of the data
+    // Copy the first n fragments from the per pixel list to local registers
     uint currentEntry = listHead;
     int entryCounter = 0;
     while (currentEntry != 0 && entryCounter < MAX_TRANSPARENCY_LAYERS) {
-
         fragments[entryCounter].pointer = currentEntry;
         fragments[entryCounter].depth = extractMaterialDepth(texelFetch(materialDataBuffer, int(currentEntry)*2));
-
         currentEntry = texelFetch(materialDataBuffer, int(currentEntry)*2).w;
         entryCounter ++;
     }
 
-
-
-    // Sort data
+    // Sort the data
+    // TODO: Maybe make this faster? Sorting in a shader is painfully slow
     fragments = bubbleSortFragments(fragments, entryCounter);
-
 
     float pixelDepth = texelFetch(depthTex, coord,0).x;
 

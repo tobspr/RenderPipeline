@@ -13,14 +13,11 @@
 
 in vec2 texcoord;
 
-
 // Deferred target inpupts
 uniform sampler2D data0;
 uniform sampler2D data1;
 uniform sampler2D data2;
 uniform sampler2D depthTex;
-
-
 
 
 // Light computation inputs
@@ -56,10 +53,6 @@ uniform sampler2D scatteringTex;
 uniform sampler2D scatteringAttenuation;
 #endif
 
-// Dynamic exposure
-#if defined(USE_DYNAMIC_EXPOSURE)
-uniform sampler2D dynamicExposureTex;
-#endif
 
 uniform sampler2D skyboxMask;
 
@@ -73,7 +66,6 @@ vec3 getPositionWorld(vec2 coord) {
 
 void main() {
 
-
     // Compute texcoords
     ivec2 screenSize = textureSize(data0, 0);
     ivec2 screenCoord = ivec2(gl_FragCoord.xy);
@@ -84,66 +76,48 @@ void main() {
     vec4 giSpecularColor = vec4(0);
     vec3 ambient = vec3(0);
 
-    // Compute normal from depth buffer
-    vec3 pixelW = vec3(1.0 / screenSize, 0);
-    vec3 world = getPositionWorld(texcoord);
-    vec3 worldX1 = getPositionWorld(texcoord + pixelW.xz);
-    vec3 worldY1 = getPositionWorld(texcoord + pixelW.zy);
-    vec3 wsNormal = (cross(world - worldX1, world - worldY1));
-    wsNormal = normalize(wsNormal);
-
     // Extract material data
     Material material = unpackGBufferMaterial(data0, data1, data2, depthTex, screenCoord, texcoord);
 
-
-
-    float pixelDepth = texelFetch(depthTex, screenCoord,0 ).x;
-    float reflectionFactor = saturate( (0.5 - material.roughness) * 5.0 ) ;
-
-    float fogFactor = smoothstep(0.0, 1.0, distance(cameraPosition, material.position) / 30.0);
-    fogFactor = 0.0;
-
+    // Fetch GI result
     #if defined(USE_GLOBAL_ILLUMINATION) && !defined(DEBUG_DISABLE_GI)
         giDiffuseColor = texelFetch(giDiffuseTex, screenCoord, 0);
         giSpecularColor = texelFetch(giReflectionTex, screenCoord, 0);
     #endif
 
-    // There should be a more elegant way, but for now it works. I don't want to
-    // waste a gbuffer flag for marking the skybox.
-    bool isSkybox = texelFetch(skyboxMask, screenCoord, 0).x > 0.5;
-    
+
+    bool isSkybox = texelFetch(skyboxMask, screenCoord, 0).x > 0.5;    
     float mixedOcclusionFactor = 1.0;
     vec3 viewVector = normalize(cameraPosition - material.position);
 
     // Scattering
     #if defined(USE_SCATTERING)
     vec3 scatteringResult = texture(scatteringTex, texcoord).xyz;
-    
     #endif
 
-    // We can skip lighting for the skybox
+    // We can skip ambient for the skybox
     if (isSkybox) { 
-
         #if defined(USE_SCATTERING)
             result = scatteringResult;
+        #else
+            result = vec3(0);
         #endif
-        // result += 3.0 * material.baseColor;
-
-
     } else {
 
         #if defined(USE_OCCLUSION)
             mixedOcclusionFactor = texture(occlusionTex, texcoord).w;
         #endif
 
+        // Add precomputed lights
         result += texture(shadowedLightsTex, texcoord).xyz;
         result += texture(unshadowedLightsTex, texcoord).xyz;
 
         // Ambient / Reflections
-        ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, 
-            mixedOcclusionFactor, viewVector);    
+        ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, mixedOcclusionFactor, viewVector);    
         result += ambient;
 
+
+        // Fog, TODO (make it look good)
         #if defined(USE_SCATTERING)
             float fogFactor =  saturate( (distance(cameraPosition, material.position) - 1.0) / 5000.0);
             // fogFactor = 1.0;
@@ -155,32 +129,30 @@ void main() {
 
     }
 
-    // result *= texture(volumetricLightingTex, texcoord).x;
-
+    // Compute material reflective factor
     float sslrFactor = material.specular * (1.0 - material.roughness);
-    // sslrFactor = max(0.0, material.normal.z);
-    // sslrFactor = 1.0;
 
-    #if !defined(USE_TRANSPARENCY)
-        // SRGB
-        result = pow(result, vec3(1.0 / 2.2) );
+    // #if !defined(USE_TRANSPARENCY)
+    //     // SRGB
+    //     result = pow(result, vec3(1.0 / 2.2) );
          
-        float exposure = 1.0;
+    //     float exposure = 1.0;
 
-        // Dynamic Exposure
-        #if defined(USE_DYNAMIC_EXPOSURE)
-            exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
-        #endif
+    //     // Dynamic Exposure
+    //     #if defined(USE_DYNAMIC_EXPOSURE)
+    //         exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
+    //     #endif
 
-        #if !defined(DEBUG_VISUALIZATION_ACTIVE) || defined(DEBUG_RM_LIGHTING)
-            result = 1.0 - exp(-exposure * result);
-        #endif
+    //     #if !defined(DEBUG_VISUALIZATION_ACTIVE) || defined(DEBUG_RM_LIGHTING)
+    //         result = 1.0 - exp(-exposure * result);
+    //     #endif
 
-    #endif
+    // #endif
 
 
 
-    // Debugging outputs
+    // Debugging modes
+
     #if defined(DEBUG_RM_BASECOLOR)
         result = material.baseColor;
     #endif
@@ -199,7 +171,6 @@ void main() {
 
     #if defined(DEBUG_RM_NORMAL)
         result = material.normal;
-        // result = vec3(-material.normal.z);
     #endif
 
     #if defined(DEBUG_RM_GI_AMBIENT)
@@ -220,10 +191,6 @@ void main() {
     #if defined(DEBUG_RM_GI_REFLECTIONS)
         result = vec3(giSpecularColor);
     #endif
-
-    result = mix(result, vec3(0), fogFactor);
-
-
 
     lightingResult = vec4(result, isSkybox ? 0.0 : sslrFactor);
 }

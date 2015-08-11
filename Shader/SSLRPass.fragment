@@ -6,6 +6,7 @@
 #extension GL_EXT_shader_image_load_store : enable
 
 #pragma include "Includes/Configuration.include"
+#pragma include "Includes/Material.include"
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/PoissonDisk.include"
 
@@ -13,7 +14,6 @@ in vec2 texcoord;
 
 uniform sampler2D colorTex;
 uniform sampler2D depthTex;
-uniform sampler2D positionTex;
 uniform sampler2D normalTex;
 uniform sampler2D skyboxMask;
 
@@ -100,8 +100,11 @@ void main() {
 
     // Fetch pixel data
     float pixelDepth = texelFetch(depthTex, coord, 0).x;
-    vec3 pixelNormal = texelFetch(normalTex, coord, 0).xyz;
-    vec3 pixelPos = texelFetch(positionTex, coord, 0).xyz;
+    vec3 pixelNormal = unpackGBufferNormal(texelFetch(normalTex, coord, 0).xyz);
+    // vec3 pixelPos = texelFetch(positionTex, coord, 0).xyz;
+
+    vec3 pixelPos = calculateSurfacePos(pixelDepth, texcoord);
+
     vec4 pixelColor = texelFetch(colorTex, coord, 0);
 
     // The lighting pass outputs the reflection factor in the alpha component
@@ -109,10 +112,10 @@ void main() {
 
 
     // Ignore pixels with low reflection factor, including the skybox
-    // if (pixelColor.w < 0.05) {
-    //     result = vec4(0);
-    //     return;
-    // }
+    if (sslrFactor < 0.05) {
+        result = vec4(0);
+        return;
+    }
 
     // Compute reflection vector
     vec3 viewVector = normalize(pixelPos - cameraPosition);
@@ -129,7 +132,7 @@ void main() {
     // traceResult.xyz = mix(fallbackResult, traceResult.xyz, traceResult.w);
 
     // Take the sslr factor into account
-    // traceResult *= sslrFactor;
+    traceResult *= sslrFactor;
 
 
     #if defined(DEBUG_VISUALIZATION_ACTIVE) && !defined(DEBUG_RM_SSLR)

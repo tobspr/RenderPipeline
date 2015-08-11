@@ -51,7 +51,7 @@ void main() {
     // Extract the material properties
     #if defined(USE_NORMAL_MAPPING)
         float bumpFactor = vOutput.materialDiffuse.w;
-        // bumpFactor *= 0.0;
+        bumpFactor *= 0.0;
 
         // Merge the detail normal with the vertex normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
@@ -99,13 +99,13 @@ void main() {
     // m.roughness = 0.0;
     // m.specular = 1.0;
 
+    // m.baseColor = vec3(vOutput.materialDiffuse.rgb);
 
 
     #pragma ENTRY_POINT MATERIAL
 
     // Write the material to the G-Buffer
     #if defined(IS_TRANSPARENT)
-    m.baseColor = vec3(1, 0.2, 0.2) * 0.1;
         renderTransparentMaterial(m);
     #else
         renderMaterial(m);

@@ -109,6 +109,10 @@ class Effect(DebugObject):
                 fname = self._createShaderFile(stage, progName, progCode)
                 programs[progName] = fname
 
+            if programs["vertex"] == "":
+                self.error("No vertex program for stage '" + stage + "' defined! Using default shader!")
+                continue
+
             params = [programs["vertex"], programs["fragment"], programs["geometry"], 
                 programs["tesscontrol"], programs["tesseval"]]
             shaderObj = Shader.load(Shader.SLGLSL, *params)

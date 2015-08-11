@@ -25,7 +25,6 @@ class SSLRPass(RenderPass):
         return {
 
             "normalTex": "DeferredScenePass.wsNormal",
-            "positionTex": "DeferredScenePass.wsPosition",
             "depthTex": "DeferredScenePass.depth",
 
             "currentMVP": "Variables.currentMVP",

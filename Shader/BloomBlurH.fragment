@@ -6,10 +6,9 @@ const ivec2 blurDirection = ivec2(1, 0);
 #pragma include "Includes/PostProcessBlur.include"
 
 uniform sampler2D bloomTex;
-
+in vec2 texcoord;
 out vec4 result;
 
 void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xyz);
-    result = bloomBlur(coord, bloomTex);
+    result = bloomBlur(texcoord, bloomTex);
 }

@@ -74,7 +74,7 @@ class Main(ShowBase, DebugObject):
 
                     model = self.loader.loadModel(self.sceneSource)
                     model.reparentTo(self.model)
-                    model.setZ(1.0)
+                    model.setZ(5.0)
                     model.setX(metallic * 40.0 + roughness*3.0)
                     model.setY(specular*3.0)
 
@@ -130,7 +130,7 @@ class Main(ShowBase, DebugObject):
         dirLight.setPos(dPos)
         dirLight.setColor(Vec3(1))
         dirLight.setPssmTarget(base.cam, base.camLens)
-        dirLight.setPssmDistance(50.0)
+        dirLight.setPssmDistance(180.0)
         dirLight.setCastsShadows(True)
 
         self.renderPipeline.addLight(dirLight)
@@ -235,6 +235,8 @@ class Main(ShowBase, DebugObject):
                                            text=str(opts["default"]), align="right", parent=self.windowNode,
                                            size=15, color=Vec3(0.6),mayChange=True)
             currentY += 50
+
+        # self.guiParent.getNode().hide()
 
     def materialOptionChanged(self):
         container = self.model

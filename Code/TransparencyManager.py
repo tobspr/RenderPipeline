@@ -27,7 +27,7 @@ class TransparencyManager(DebugObject):
         # This stores the maximum amount of transparent pixels which can be on the
         # screen at one time. If the amount of pixels exceeds this value, strong
         # artifacts will occur!
-        self.maxPixelCount = 1920 * 1080 * 3
+        self.maxPixelCount = 1920 * 1080 / 2
         self.initTransparencyPass()
 
     def initTransparencyPass(self):
