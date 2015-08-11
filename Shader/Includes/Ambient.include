@@ -140,7 +140,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
     vec3 metallicSpecularAmbient = mix(environmentColor, material.baseColor, material.translucency) 
 
-            * mix(occlusionFactor, 1.0, 1.0) * material.specular * 2.0 * mix(vec3(1.0),giAmbient.xyz, 1) * 0.02;
+            * mix(occlusionFactor, 1.0, 1.0) * material.specular * 2.0 * mix(vec3(1.0),giAmbient.xyz, 1) * 0.7;
 
     // metallicSpecularAmbient = ambientRefColor * material.specular * 0.5;
 
