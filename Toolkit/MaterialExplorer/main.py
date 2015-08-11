@@ -82,9 +82,17 @@ class Main(ShowBase, DebugObject):
                     model.setShaderInput("opt_metallic", metallic)
                     model.setShaderInput("opt_specular", specular / 10.0)
 
+        ntex = loader.loadTexture("DemoNormalTex.png")
+        ntex.setWrapU(Texture.WMRepeat)
+        ntex.setWrapV(Texture.WMRepeat)
+        ntex.setMinfilter(Texture.FTLinear)
+        ntex.setMagfilter(Texture.FTLinear)
+        self.model.setShaderInput("demoBumpTex", ntex)
+
 
         # Create some lights
         for i in xrange(10):
+            continue
             pointLight = PointLight()
             xoffs = (i-25) * 15.0
             pointLight.setPos(xoffs, 0, 8)
@@ -157,6 +165,7 @@ class Main(ShowBase, DebugObject):
         self.renderPipeline.setEffect(self.model, "DynamicMaterial.effect")
 
         self.renderPipeline.onSceneInitialized()
+        self.renderPipeline.fillTextureStages(render)
 
         self.createGUI()
 

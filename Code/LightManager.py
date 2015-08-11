@@ -82,6 +82,7 @@ class LightManager(DebugObject):
         self.updateCallbacks = []
 
         self.cullBounds = None
+        self.lightingComputator = None
         self.shadowScene = Globals.render
 
         # Create atlas
@@ -125,7 +126,6 @@ class LightManager(DebugObject):
 
         self._loadIESProfiles()
         self._addShaderDefines()
-        self.lightingComputator = None
         self._createDebugTexts()
 
     def _bindUpdateSources(self, renderPass, name):
@@ -272,6 +272,9 @@ class LightManager(DebugObject):
 
         if settings.usePCSS:
             define("USE_PCSS", 1)
+
+        if settings.useDiffuseAntialiasing:
+            define("USE_DIFFUSE_ANTIALIASING", 1)
 
         define("SHADOW_NUM_PCSS_SEARCH_SAMPLES", settings.numPCSSSearchSamples)
         define("SHADOW_NUM_PCSS_FILTER_SAMPLES", settings.numPCSSFilterSamples)

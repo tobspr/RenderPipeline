@@ -121,7 +121,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
-        self.sceneSource = "panda"
+        # self.sceneSource = "panda"
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
@@ -130,7 +130,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
         # Wheter to create the default ground plane
-        self.usePlane = True
+        self.usePlane = False
 
 
 
@@ -143,7 +143,7 @@ class Main(ShowBase, DebugObject):
         if True:
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
-            dirLight.setShadowMapResolution(512)
+            dirLight.setShadowMapResolution(2048)
             dirLight.setColor(Vec3(1.1, 1.05, 0.9) * 6.0)
             dirLight.setCastsShadows(True)
             dirLight.setPssmDistance(180)
@@ -422,9 +422,8 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         
-        camPos = Vec3(-25.23,1.21,31.41)
-        camHpr = Vec3(268.74,-2.29,0.0) 
-
+        camPos = Vec3(-17.3,-23.33,11.99)
+        camHpr = Vec3(323.8,-6.55,0.0)
         self.controller.setInitialPositionHpr(
             camPos, camHpr)
         self.controller.setup()
@@ -475,7 +474,7 @@ class Main(ShowBase, DebugObject):
             render.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MWireframe), 10)
         else:
             render.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 10)
-
+            
         self.skybox.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 20)
 
     def prepareSRGB(self, np):

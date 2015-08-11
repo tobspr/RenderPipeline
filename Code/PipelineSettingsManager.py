@@ -36,6 +36,7 @@ class PipelineSettingsManager(SettingsManager):
         self._addSetting("globalAmbientFactor", float, 1.0)
         self._addSetting("useColorCorrection", bool, True)
         self._addSetting("enableAlphaTestedShadows", bool, True)
+        self._addSetting("useDiffuseAntialiasing", bool, True)
 
         # [Scattering]
         self._addSetting("enableScattering", bool, False)

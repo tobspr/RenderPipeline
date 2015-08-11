@@ -52,7 +52,7 @@ void main() {
 
 
         float weight = 0.5 - 0.5 * saturate(distance(currentWP, lastWP) * 5.0);
-        // weight = 0.5;
+        // weight = 0.0;
 
         // Fix issues with big velocities
         if (any(lessThan(texcoord+velocity,vec2(0))) || any(greaterThan(texcoord+velocity, vec2(1)))) {

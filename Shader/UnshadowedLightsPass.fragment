@@ -24,6 +24,7 @@ uniform ivec2 lightingTileCount;
 uniform sampler2D data0;
 uniform sampler2D data1;
 uniform sampler2D data2;
+uniform sampler2D data3;
 uniform sampler2D depthTex;
 
 uniform vec3 cameraPosition;
@@ -48,7 +49,7 @@ void main() {
     int tileBufferOffset = (tileIndex.x + tileIndex.y * lightingTileCount.x) * LIGHTING_PER_TILE_STRIDE;
 
     // Extract material data
-    Material material = unpackGBufferMaterial(data0, data1, data2, depthTex, screenCoord, texcoord);
+    Material material = unpackGBufferMaterial(data0, data1, data2, data3, depthTex, screenCoord, texcoord);
 
     // Check for skybox, in that case don't do the lighting pass
     if (texelFetch(skyboxMask, screenCoord, 0).x > 0.5) discard;

@@ -26,13 +26,14 @@ class MemoryMonitor:
             9:  3 * 1, # FRGBA8
             12:  4 * 1, # RGBA (Unkown type, we will just assume 8 bit)
             18:  1, # LUMINANCE
-
+            19:  2, # LUMINANCE_ALPHA
             16: 4 * 1, # RGBA8
             21: 4 * 2, # RGBA16
             22: 4 * 4, # RGBA32
             25: 3,     # Depth 24 Bit
             26: 4,     # Depth 32 Bit
             27: 2,     # FR16 
+            29: 3 * 2, # FRGB16
             30: 3,     # FSRGB
             31: 4,     # FSRGB_ALPHA    
             34: 4,     # FR32i

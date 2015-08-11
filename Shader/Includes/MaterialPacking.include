@@ -7,9 +7,9 @@
 layout(location=0) out vec4 color0;
 layout(location=1) out vec4 color1;
 layout(location=2) out vec4 color2;
+layout(location=3) out vec4 color3;
 
 uniform sampler2D normalQuantizationTex;
-
 
 vec3 quantizizeNormal(vec3 normal)
 {
@@ -57,8 +57,14 @@ void renderMaterial(Material m) {
     m.metallic = saturate(m.metallic);
     m.specular = saturate(m.specular);
 
+    m.diffuseAAFactor = (max(length(m.diffuseAAFactor), 0.95) - 0.95) / 0.05;
+
     // Output
     color0 = vec4(normal.x, normal.y, normal.z, m.translucency);
     color1 = vec4(velocity.x, velocity.y, m.specular, m.metallic);
     color2 = vec4(color.x, color.y, color.z, m.roughness);
+    color3 = vec4(m.diffuseAAFactor, 0, 0, 0);
+
+
+
 }

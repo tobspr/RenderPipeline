@@ -15,6 +15,7 @@ sys.path.insert(0, '../../')
 # Now import the pipeline
 from Code.RenderingPipeline import RenderingPipeline
 from Code.DirectionalLight import DirectionalLight
+from Code.PointLight import PointLight
 from Code.Scattering import Scattering
 
 from Code.GlobalIllumination import GlobalIllumination
@@ -208,10 +209,9 @@ class World(ShowBase):
         # collisions occuring
         # self.cTrav.showCollisions(render)
 
-
         # Create some ocean
-        self.water = ProjectedWaterGrid(self.renderPipeline)
-        self.water.setWaterLevel(-4.0)
+        # self.water = ProjectedWaterGrid(self.renderPipeline)
+        # self.water.setWaterLevel(-3.0)
 
         # Create the skybox
         self.skybox = self.renderPipeline.getDefaultSkybox()

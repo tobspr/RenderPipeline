@@ -1,5 +1,5 @@
 
-from panda3d.core import Vec3, Vec2
+from panda3d.core import Vec3, Vec2, TexturePool
 from direct.interval.IntervalGlobal import Parallel, Sequence, Wait
 
 from ..Globals import Globals
@@ -42,14 +42,22 @@ class PipelineGuiManager(DebugObject):
             memstr = str(round(MemoryMonitor.getEstimatedMemUsage() / 1024.0 / 1024.0, 2))
 
             numTextureBytes = 0
-            for tex in Globals.render.findAllTextures():
+            renderTextures = Globals.render.findAllTextures()
+            for tex in renderTextures:
                 numTextureBytes += MemoryMonitor._calculateTexSize(tex)
 
             texstr = str(round(numTextureBytes / 1024.0 / 1024.0, 2))
 
+            otherTextures = TexturePool.findAllTextures()
+            numOtherBytes = 0
+            for tex in otherTextures:
+                if tex not in renderTextures:
+                    numOtherBytes += MemoryMonitor._calculateTexSize(tex)
+            
+            otherstr = str(round(numOtherBytes / 1024.0 / 1024.0, 2))
 
+            self.memUsageText.setText("VRAM Usage: " + memstr + " MB / Textures: " + texstr + " MB / Other: " + otherstr + " MB")
 
-            self.memUsageText.setText("VRAM Usage: " + memstr + " MB / Textures: " + texstr + " MB")
 
     def setup(self):
         """ Setups this manager """
@@ -162,6 +170,9 @@ class PipelineGuiManager(DebugObject):
 
         if s.useTransparency:
             register_feature("Transparency", "ft_TRANSPARENCY")
+
+        if s.useDiffuseAntialiasing:
+            register_feature("Diffuse AA", "ft_DIFFUSE_AA")
 
         # register_mode("Shadow Load", "rm_SHADOW_COMPUTATIONS")
         # register_mode("Lights Load", "rm_LIGHT_COMPUTATIONS")

@@ -41,6 +41,9 @@ uniform sampler2D p3d_Texture3;
 #define DISABLE_PCSS 1
 #define DISABLE_PCF 1
 
+// Don't use diffuse AA
+#define DISABLE_DIFFUSE_AA 1
+
 // #define PSSM_FIXED_CASCADE_INDEX 4
 
 // Lighting pass inputs

@@ -4,7 +4,7 @@ from panda3d.core import NodePath, Shader, Vec4, TransparencyAttrib, LVecBase2i
 from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerState
 from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight, BitMask32
 from panda3d.core import Texture, UnalignedLMatrix4f, Vec3, PTAFloat, TextureStage
-from panda3d.core import ColorWriteAttrib, Vec2, AlphaTestAttrib
+from panda3d.core import ColorWriteAttrib, Vec2, AlphaTestAttrib, PStatClient
 
 from DebugObject import DebugObject
 from SystemAnalyzer import SystemAnalyzer
@@ -551,10 +551,10 @@ class RenderingPipeline(DebugObject):
     def _setGuiShaders(self):
         """ Sets the default shaders to the gui, this is required when disabling
         the fixed function pipeline """
-        # shader = Shader.load(Shader.SLGLSL, "Shader/GUI/vertex.glsl", "Shader/GUI/fragment.glsl")
-        # for target in [self.showbase.aspect2d]:
-        #     target.setShader(shader, 20)
-        pass
+        shader = Shader.load(Shader.SLGLSL, "Shader/GUI/vertex.glsl", "Shader/GUI/fragment.glsl")
+        for target in [self.showbase.aspect2d, self.showbase.render2d, self.showbase.pixel2d,
+            self.showbase.aspect2dp, self.showbase.render2dp, self.showbase.pixel2dp]:
+            target.setShader(shader, 20)
 
 
 
@@ -566,6 +566,7 @@ class RenderingPipeline(DebugObject):
         self.guiVisible = True
 
         # Handy shortcuts
+        self.showbase.accept("1", PStatClient.connect)
         self.showbase.accept("r", self.reloadShaders)
         self.showbase.accept("t", self.reloadEffects)
         self.showbase.accept("f7", self._createBugReport)

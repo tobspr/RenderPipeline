@@ -8,5 +8,7 @@ struct Material {
     float translucency;
     vec3 position;
     vec3 normal;
+    
+    float diffuseAAFactor;
 };
 

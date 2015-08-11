@@ -8,6 +8,24 @@
 #pragma include "Includes/PoissonDisk.include"
 
 
+#if defined(USE_DIFFUSE_ANTIALIASING) && !defined(DEBUG_DISABLE_DIFFUSE_AA) && !defined(DISABLE_DIFFUSE_AA)
+// http://advances.realtimerendering.com/s2012/Ubisoft/Rock-Solid%20Shading.pdf
+float DiffuseAA(vec3 n, vec3 l, float w) {
+    float a = dot(n, l);
+    // float w = max(length(n), 0.95);
+    // w = (w * 0.05) + 0.95;
+    float x = sqrt(1.0 - w);
+    float x0 = 0.373837*a;
+    float x1 = 0.66874*x;
+    float n2  = x0 + x1;
+    return w*((abs(x0) <= x1) ? n2*n2/x : saturate(a));
+}
+#else
+float DiffuseAA(vec3 n, vec3 l, float w) {
+    return max(0.0, dot(n, l));
+}
+#endif
+
 
 vec3 computeLightModel(Light light, Material material, 
         vec3 l, vec3 v, vec3 n, vec3 h, 
@@ -33,15 +51,17 @@ vec3 computeLightModel(Light light, Material material,
     float roughness = clamp(material.roughness, 0.01, 1.0);
 
     // pre-computed cross products
-    float NxL = max(0.0, dot(n, l));
+    float NxL = DiffuseAA(n, l, material.diffuseAAFactor);
     float LxH = saturate(dot(l, h));
     float NxV = abs(dot(n, v)) + 1e-5;
     float NxH = saturate(dot(n, h));
 
+
+
     // Evaluate specular
     vec3 specularContribution = max(vec3(0), computeSpecular(specularColor, roughness, NxL, LxH, NxV, NxH) * NxL);
 
-    lightingResult += specularContribution * material.specular / M_PI;
+    lightingResult += specularContribution * material.specular * 30.0;
 
     // Evaluate diffuse
     lightingResult += diffuseColor * NxL * light.color;

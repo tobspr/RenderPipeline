@@ -14,12 +14,18 @@ pass Default:
         uniform float opt_basecolor_r;
         uniform float opt_basecolor_g;
         uniform float opt_basecolor_b;
+        uniform sampler2D demoBumpTex;
+
+        insert @DETAIL_NORMAL:
+            bumpFactor = 1.0;
+            detailNormal = texture(demoBumpTex, vOutput.texcoord).xyz * 2 - 1;
 
         insert @MATERIAL:
             m.baseColor = vec3(opt_basecolor_r, opt_basecolor_g, opt_basecolor_b);
             m.metallic = opt_metallic;
             m.specular = opt_specular;
             m.roughness = opt_roughness;
+
 
 pass Shadows:
     vertex:
@@ -50,3 +56,4 @@ pass Voxelize:
             m.metallic = opt_metallic;
             m.specular = opt_specular;
             m.roughness = opt_roughness;
+            m.baseColor = vec3(vOutput.texcoord, 0);

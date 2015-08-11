@@ -4,12 +4,15 @@
 #define saturate(v) clamp(v, 0, 1)
 
 // Constructs a normal from a normal, binormal and tangent
-vec3 mergeNormal(vec3 detailNormal, float detailFactor, vec3 normal, vec3 tangent, vec3 binormal) {
-    detailNormal = normalize(mix(vec3(0,0,1), detailNormal, detailFactor));
+vec3 mergeNormal(inout vec3 detailNormal, float detailFactor, vec3 normal, vec3 tangent, vec3 binormal) {
+    detailNormal = mix(vec3(0,0,1), detailNormal, detailFactor);
+
+    // Seperate normalization
+    vec3 normalizedDetailNormal = normalize(detailNormal);
     return normalize(
-        (tangent * detailNormal.x) + 
-        (binormal * detailNormal.y) + 
-        (normalize(normal) * detailNormal.z)
+        (tangent * normalizedDetailNormal.x) + 
+        (binormal * normalizedDetailNormal.y) + 
+        (normalize(normal) * normalizedDetailNormal.z)
     );
 }
 

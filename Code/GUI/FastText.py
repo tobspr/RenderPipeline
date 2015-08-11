@@ -105,12 +105,12 @@ class FastText:
                 ivec2 offsetDispl = ivec2( rawDispl % 16, rawDispl / 16);
                 vec2 offsetCoordReal = vec2(offsetDispl.x / 16.0,
                     (5.0 - offsetDispl.y) / 6.0);
-                vec2 halfOffset = 2.0 / textureSize(font, 0);
+                vec2 halfOffset = 1.0 / textureSize(font, 0);
                 texcoord = clamp(p3d_MultiTexCoord0, halfOffset, 1.0 - halfOffset) / vec2(16,6) + offsetCoordReal;
                 vec4 offset = vec4(gl_InstanceID*size.x*0.56 , 0, 0, 0) +
                     vec4(pos.x, 0, pos.y, 0);
-                vec4 finalPos = p3d_Vertex * vec4(size.x, size.x, size.x, 1.0)
-                    + offset;
+
+                vec4 finalPos = p3d_Vertex * vec4(size.xxx, 1.0) + offset;
                 gl_Position = p3d_ModelViewProjectionMatrix * finalPos;
             }
             """, """
@@ -123,7 +123,17 @@ class FastText:
             void main() {
                 float textFactor = texture(font, texcoord).x;
                 vec2 texsize = textureSize(font, 0);
-                float textShadow = texture(font, texcoord + vec2(-1.5, 1.5) / texsize).x;
+                ivec2 icoord = ivec2(texcoord * texsize);
+                ivec2 cidx = icoord / ivec2(16, 6);
+                vec2 minCoord = (cidx * vec2(16, 6) + vec2(1.0)) / texsize;
+                vec2 maxCoord = ((cidx + 1) * vec2(16, 6) - vec2(1.0)) / texsize;
+                float outlineSize = 0.75;
+                float textShadow = clamp(
+                    texture(font, clamp(texcoord + vec2(-outlineSize, -outlineSize) / texsize, minCoord, maxCoord)).x + 
+                    texture(font, clamp(texcoord + vec2(outlineSize, -outlineSize) / texsize, minCoord, maxCoord)).x + 
+                    texture(font, clamp(texcoord + vec2(-outlineSize, outlineSize) / texsize, minCoord, maxCoord)).x + 
+                    texture(font, clamp(texcoord + vec2(outlineSize, outlineSize) / texsize, minCoord, maxCoord)).x, 0, 1) * 0.7;
+
                 result = vec4( mix(vec3(0), color, textFactor), textFactor + textShadow);
 
             }
@@ -139,7 +149,7 @@ class FastText:
         c.setFrame(-0.5, 0.5, -0.5, 0.5)
         self.square = NodePath(c.generate())
         self.square.setShaderInput("font", self.fontTex)
-        self.square.setShader(self.fontShader)
+        self.square.setShader(self.fontShader, 100)
         self.square.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MAlpha), 100)
         self.square.reparentTo(Globals.base.aspect2d)

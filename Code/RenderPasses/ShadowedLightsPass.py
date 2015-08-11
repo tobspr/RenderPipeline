@@ -22,6 +22,7 @@ class ShadowedLightsPass(RenderPass):
             "data0": "DeferredScenePass.data0",
             "data1": "DeferredScenePass.data1",
             "data2": "DeferredScenePass.data2",
+            "data3": "DeferredScenePass.data3",
             "depthTex": "DeferredScenePass.depth",
 
             # Lighting

@@ -7,9 +7,9 @@
 # win-size 500 300
 # win-size 2560 1440
 fullscreen #f
-win-size 1600 900
+#win-size 1920 1080
 # win-size 1280 720
-#win-size 1600 900
+win-size 1920 1080
 
 
 # No stack trace on assertion
@@ -124,7 +124,7 @@ gl-force-no-error #t
 gl-check-errors #f
 gl-force-no-flush #t
 gl-force-no-scissor #t
-gl-debug #t
+gl-debug #f
 
 # notify-level-glgsg debug
 
@@ -168,7 +168,7 @@ notify-level-pnmimage error
 show-buffers #f
 
 # GPU Timer queries
-pstats-gpu-timing #t
+pstats-gpu-timing #f
 auto-flip #f
 
 gl-debug-object-labels #f
@@ -183,3 +183,9 @@ gl-coordinate-system default
 interpolate-frames 1
 
 #gl-version 4 3
+
+
+
+# Disable workarround in panda which causes our shadow atlas to take twice
+# the amount of vram it should:
+gl-force-fbo-color false

@@ -48,16 +48,20 @@ void main() {
     vec4 sampledSpecular = texture(p3d_Texture2, vOutput.texcoord);
     vec4 sampledRoughness = texture(p3d_Texture3, vOutput.texcoord);
         
+
+
     // Extract the material properties
     #if defined(USE_NORMAL_MAPPING)
         float bumpFactor = vOutput.materialDiffuse.w;
-        bumpFactor *= 0.0;
+        // bumpFactor *= 0.0;
 
         // Merge the detail normal with the vertex normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
+        
+        #pragma ENTRY_POINT DETAIL_NORMAL
+        
         vec3 tangent; vec3 binormal;
         reconstructTanBin(tangent, binormal);
-
         vec3 mixedNormal = mergeNormal(detailNormal, bumpFactor, vOutput.normalWorld, tangent, binormal);
     #else
         vec3 mixedNormal = vOutput.normalWorld.xyz;
@@ -84,6 +88,11 @@ void main() {
     #else
         Material m = getDefaultMaterial();
         m.position = vOutput.positionWorld;
+
+        #if defined(USE_NORMAL_MAPPING)
+            m.diffuseAAFactor = length(detailNormal);
+        #endif
+
     #endif
 
 
@@ -99,7 +108,7 @@ void main() {
     // m.roughness = 0.0;
     // m.specular = 1.0;
 
-    // m.baseColor = vec3(vOutput.materialDiffuse.rgb);
+    m.baseColor = vec3(sampledDiffuse.rgb);
 
 
     #pragma ENTRY_POINT MATERIAL

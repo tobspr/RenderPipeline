@@ -22,9 +22,8 @@ class DeferredScenePass(RenderPass):
     def create(self):
         self.target = RenderTarget("DeferredScenePass")
         self.target.addColorAndDepth()
-        self.target.addAuxTextures(2)
+        self.target.addAuxTextures(3)
         self.target.setAuxBits(16)
-        # self.target.setColorBits(8)
         self.target.setDepthBits(32)
         self.target.setCreateOverlayQuad(False)
         self.target.prepareSceneRender()
@@ -41,6 +40,7 @@ class DeferredScenePass(RenderPass):
             "DeferredScenePass.data0": lambda: self.target.getColorTexture(),
             "DeferredScenePass.data1": lambda: self.target.getAuxTexture(0),
             "DeferredScenePass.data2": lambda: self.target.getAuxTexture(1),
+            "DeferredScenePass.data3": lambda: self.target.getAuxTexture(2),
         }
 
     def setShaderInput(self, name, value):

@@ -71,7 +71,7 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
     if (!isInGrid) return vec4(0.4);
 
     // Bias position a bit, so self shadowing gets less strong
-    vec3 biasedPosition = pos + normal * voxelSize * 0.8;
+    vec3 biasedPosition = pos + normal * voxelSize * 0.5;
 
     // Compute coordinate in voxel space
     vec3 localCoord = (biasedPosition-giData.position + giData.size) / (2 * giData.size);
@@ -82,16 +82,16 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
     Voxel v = fetchVoxel(localCoord, 0);
     vec3 resultSum = vec3(0);
 
-    resultSum += saturate(1.0 + (-normal.x)) * v.posX;
-    resultSum += saturate(1.0 + (normal.x)) * v.negX;
-    resultSum += saturate(1.0 + (-normal.y)) * v.posY;
-    resultSum += saturate(1.0 + (normal.y)) * v.negY;
-    resultSum += saturate(1.0 + (-normal.z)) * v.posZ;
-    resultSum += saturate(1.0 + (normal.z)) * v.negZ;
+    resultSum += saturate(1.0 + 0.5 *(-normal.x)) * v.posX;
+    resultSum += saturate(1.0 + 0.5 *(normal.x)) * v.negX;
+    resultSum += saturate(1.0 + 0.5 *(-normal.y)) * v.posY;
+    resultSum += saturate(1.0 + 0.5 *(normal.y)) * v.negY;
+    resultSum += saturate(1.0 + 0.5 *(-normal.z)) * v.posZ;
+    resultSum += saturate(1.0 + 0.5 *(normal.z)) * v.negZ;
 
     // resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
     // resultSum = v.posZ * 1.0;
-    resultSum *= 0.1;
+    resultSum *= 0.2;
     // resultSum *= 0.5;
 
 
