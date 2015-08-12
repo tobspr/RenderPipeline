@@ -122,7 +122,7 @@ class Effect(DebugObject):
         """ Writes the shader code to a temporary file and returns the path to that
         file """
 
-        filename = "PipelineTemp/Effect" + str(self.getEffectID()) + "_" + self.name + "_" + stage + "_" + part + "_" + self.getSerializedSettings() + ".tmp.glsl"
+        filename = "PipelineTemp/$$-Effect" + str(self.getEffectID()) + "_" + self.name + "_" + stage + "_" + part + "_" + self.getSerializedSettings() + ".tmp.glsl"
 
         with open(filename, "w") as handle:
             handle.write(code)

@@ -5,6 +5,8 @@ from DebugObject import DebugObject
 from direct.stdpy.file import join, isdir, isfile
 import os
 
+import atexit
+
 
 class MountManager(DebugObject):
 
@@ -19,8 +21,10 @@ class MountManager(DebugObject):
         DebugObject.__init__(self, "MountManager")
         self.writePath = "Temp/"
         self.basePath = "."
-        self.lockFile = "instance.pid"
+        self.lockFile = "Temp/instance.pid"
         self.modelPaths = []
+
+        atexit.register(self.cleanup)
 
     def setWritePath(self, pth):
         """ Set a writable directory for generated files. This can be a string
@@ -31,8 +35,8 @@ class MountManager(DebugObject):
         access to the basePath. It will be wise to at least use tempfile
         like tempfile.mkdtemp(prefix='Shader-tmp'), or an application directory
         in the user's home/app dir."""
-
         self.writePath = Filename.fromOsSpecific(pth).getFullpath()
+        self.lockFile = join(self.writePath, "instance.pid")
 
     def setBasePath(self, pth):
         """ Sets the path where the base shaders and models on are contained. This
@@ -102,6 +106,34 @@ class MountManager(DebugObject):
         """ Internal method to write the current pid to the instance.pid lockfile """
         with open(self.lockFile, "w") as handle:
             handle.write(str(os.getpid()))
+
+    def _tryRemove(self, fname):
+        """ Tries to remove the specified filename, returns either True or False
+        depending if we had success or not """
+        try:
+            os.remove(fname)
+            return True
+        except Exception, msg:
+            pass
+        return False
+
+    def cleanup(self):
+        """ Gets called when the application exists """
+
+        # Try removing the lockfile
+        self._tryRemove(self.lockFile)
+
+        # Try removing the shader auto config
+        self._tryRemove(join(self.writePath, "ShaderAutoConfig.include"))
+
+        # Check for further tempfiles in the write path
+        for f in os.listdir(self.writePath):
+            pth = join(self.writePath, f)
+
+            # Tempfiles from the pipeline start with "$$" to avoid removing user-
+            # created files.
+            if isfile(pth) and f.startswith("$$"):
+                self._tryRemove(pth)
 
     def mount(self):
         """ Inits the VFS Mounts """
