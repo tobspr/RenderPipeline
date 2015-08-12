@@ -10,10 +10,16 @@ uniform sampler2DArray IESProfilesTex;
 
 vec3 computeIESProfile(int iesProfileID, float radialFactor, float distance) {
 
+
+
     #if defined(DISABLE_IES_PROFILES)
-        return vec3(radialFactor);
+        return vec3(radialFactor) * 5.0;
     #endif
     
+    if (iesProfileID < 0) {
+        return vec3(radialFactor) * 5.0;
+    }
+
     radialFactor *= 0.7;
     vec3 iesRadialFallof = textureLod(IESProfilesTex, 
         vec3(radialFactor, 0.0, iesProfileID), 0).rgb;
