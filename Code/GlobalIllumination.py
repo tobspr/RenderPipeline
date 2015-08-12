@@ -271,12 +271,16 @@ class GlobalIllumination(DebugObject):
         
         # Set texture wrap modes
         for tex in self.pingDataTextures + self.pongDataTextures + self.dataTextures:
-            tex.setMinfilter(Texture.FTLinear)
-            tex.setMagfilter(Texture.FTLinear)
+            tex.setMinfilter(Texture.FTNearest)
+            tex.setMagfilter(Texture.FTNearest)
             tex.setWrapU(Texture.WMBorderColor)
             tex.setWrapV(Texture.WMBorderColor)
             tex.setWrapW(Texture.WMBorderColor)
             tex.setBorderColor(Vec4(0))
+
+        for tex in self.dataTextures:
+            tex.setMinfilter(Texture.FTLinear)
+            tex.setMagfilter(Texture.FTLinear)
 
         self.distributeTarget = RenderTarget("DistributeVoxels")
         self.distributeTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideCount)

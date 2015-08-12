@@ -70,7 +70,7 @@ void storeVoxel(ivec3 coord, Voxel v) {
 #define EVALUATE_DIRECTION(DIR_NAME, TEMPL0, TEMPL1, TEMPL2)  \
 for (int c1 = -1; c1 <= 1; c1++) {     \
     for (int c2 = -1; c2 <= 1; c2++) {    \
-        v. DIR_NAME += fetchVoxel(floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize). DIR_NAME * distributionFactor * (saturate(1.0  - 0.0*(length(vec2(c1, c2))))); \
+        v. DIR_NAME += fetchVoxel(floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize). DIR_NAME * distributionFactor * (saturate(1.0  - 0.4*(length(vec2(c1, c2))))); \
     } \
 }
 

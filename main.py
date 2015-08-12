@@ -121,7 +121,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
-        # self.sceneSource = "panda"
+        self.sceneSource = "panda"
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
@@ -130,7 +130,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
         # Wheter to create the default ground plane
-        self.usePlane = False
+        self.usePlane = True
 
 
 

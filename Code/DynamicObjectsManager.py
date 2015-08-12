@@ -9,6 +9,8 @@ from Globals import Globals
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
+import math
+
 class DynamicObjectsManager(DebugObject):
 
     """ The dynamic objects manager stores a buffer for each vertex and tracks
@@ -21,7 +23,7 @@ class DynamicObjectsManager(DebugObject):
         self.pipeline = pipeline
         self.currentIndex = 0
         self.maxVertexCount = 500000
-        self.split = 500
+        self.split = int(math.sqrt(self.maxVertexCount))
         self.init()
 
     def init(self):
