@@ -113,4 +113,7 @@ void main() {
     #else
         renderMaterial(m);
     #endif
+
+    #pragma ENTRY_POINT SHADER_END
+
 }

@@ -12,3 +12,8 @@ struct VertexOutput {
 
     vec4 lastProjectedPos;
 };
+
+struct ShadowVertexOutput {
+    vec3 positionWorld;
+    vec2 texcoord;
+};

@@ -51,7 +51,6 @@ void main() {
     // Transform position to world space
     vOutput.positionWorld = (trans_model_to_world * p3d_Vertex).xyz;
 
-
     // Pass texcoord to fragment shader
     vOutput.texcoord = p3d_MultiTexCoord0.xy;
 
@@ -59,7 +58,6 @@ void main() {
     vOutput.materialDiffuse = p3d_Material.diffuse * p3d_ColorScale * p3d_Color;
     vOutput.materialSpecular = p3d_Material.specular;
     vOutput.materialAmbient = p3d_Material.ambient.z;
-
     
     #pragma ENTRY_POINT WS_POSITION
 
@@ -82,15 +80,12 @@ void main() {
 
     vOutput.lastProjectedPos = lastMVP * lastPosWorld * vec4(1,1,1,2);
 
-    #pragma ENTRY_POINT SHADER_END
-
     // Transform vertex to window space
     // Only required when not using tesselation shaders
     gl_Position = currentMVP * vec4(vOutput.positionWorld, 1);
     // gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 
-    
     #pragma ENTRY_POINT VERTEX_PROJECTION
-
+    #pragma ENTRY_POINT SHADER_END
 }
 
