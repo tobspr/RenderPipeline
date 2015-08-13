@@ -86,6 +86,7 @@ class PipelineSettingsManager(SettingsManager):
         # [Global Illumination]
         self._addSetting("enableGlobalIllumination", bool, False)
         self._addSetting("giVoxelGridSize", float, 100.0)
+        self._addSetting("giQualityLevel", str, "High")
 
         # [Clouds]
         self._addSetting("enableClouds", bool, False)

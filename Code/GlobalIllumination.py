@@ -54,19 +54,27 @@ class GlobalIllumination(DebugObject):
     the final pass is executed at half window resolution and then bilateral upscaled.
     """
 
+    QualityLevels = ["Low", "Medium", "High"]
 
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
         self.pipeline = pipeline
 
+        self.qualityLevel = self.pipeline.settings.giQualityLevel
+
+        if self.qualityLevel not in self.QualityLevels:
+            self.fatal("Unsupported gi quality level:" + self.qualityLevel)
+
+        self.qualityLevelIndex = self.QualityLevels.index(self.qualityLevel)
+
         # Grid size in world space units
         self.voxelGridSize = self.pipeline.settings.giVoxelGridSize
         
         # Grid resolution in pixels
-        self.voxelGridResolution = 128
+        self.voxelGridResolution = [32, 64, 128][self.qualityLevelIndex]
 
         # Has to be a multiple of 2
-        self.distributionSteps = 60
+        self.distributionSteps = [16, 30, 60][self.qualityLevelIndex]
         self.slideCount = int(self.voxelGridResolution / 8) 
         self.slideVertCount = self.voxelGridResolution / self.slideCount       
 
@@ -186,6 +194,7 @@ class GlobalIllumination(DebugObject):
 
         self.pipeline.getRenderPassManager().registerDefine("USE_GLOBAL_ILLUMINATION", 1)
         self.pipeline.getRenderPassManager().registerDefine("GI_SLIDE_COUNT", self.slideCount)
+        self.pipeline.getRenderPassManager().registerDefine("GI_QUALITY_LEVEL", self.qualityLevelIndex)
 
         # make the grid resolution a constant
         self.pipeline.getRenderPassManager().registerDefine("GI_GRID_RESOLUTION", self.voxelGridResolution)

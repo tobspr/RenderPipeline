@@ -110,7 +110,16 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
 
     // resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
     // resultSum = v.posZ * 1.0;
-    resultSum *= 0.0002;
+    // resultSum *= 0.0002;
+
+    #if GI_QUALITY_LEVEL == 0
+        resultSum *= 0.5;
+    #elif GI_QUALITY_LEVEL == 1
+        resultSum *= 0.07;
+    #elif GI_QUALITY_LEVEL == 2
+        resultSum *= 0.0003;
+    #endif
+
     // resultSum *= 0.5;
     // SRGB
     // resultSum = pow(resultSum, vec3(1.0 / 4.2));
