@@ -134,7 +134,7 @@ class GlobalIllumination(DebugObject):
         
         if idx == 0:
 
-            skyBegin = 130.0
+            skyBegin = 142.0
             skyInGrid = (skyBegin - self.gridPosTemp[0].z) / (2.0 * self.voxelGridSize)
             skyInGrid = int(skyInGrid * self.voxelGridResolution)
             self.convertGridTarget.setShaderInput("skyStartZ", skyInGrid)

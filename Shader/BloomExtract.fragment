@@ -35,7 +35,7 @@ void main() {
     vec4 bloom = vec4(0);
 
     if (luminance > 0.6) {
-        bloom = maxCol * 0.37;
+        bloom = maxCol * 0.7;
     }
 
     result = vec4(bloom.xyz,1.0);

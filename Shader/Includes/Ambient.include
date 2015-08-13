@@ -91,7 +91,7 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
 
     vec3 result = vec3(0);
 
-    occlusionFactor = pow(occlusionFactor, 2.0);
+    occlusionFactor = pow(occlusionFactor, 1.0);
     // occlusionFactor = pow(saturate(occlusionFactor - 0.4), 1.5) * 3.0;
     // occlusionFactor = 1.0;
     // giAmbient.xyz = vec3(1);

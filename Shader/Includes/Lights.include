@@ -33,7 +33,7 @@ vec3 applyPointLight(Light light, Material material, bool useShadows) {
         int faceIndex = int( textureLod(directionToFace, l, 0).r * 5.0);        
         int shadowSourceIndex = light.sourceIndexes[faceIndex];
         ShadowSource currentSource = shadowSources[shadowSourceIndex]; 
-        shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.2, 0.001, 0.0015);
+        shadowFactor = computeShadowsForSource(currentSource, material, n, l, 0.1, 0.0005, 0.0005);
     }
     #endif
 

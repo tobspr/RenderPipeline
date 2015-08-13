@@ -141,7 +141,7 @@ class Main(ShowBase, DebugObject):
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
             dirLight.setShadowMapResolution(2048)
-            dirLight.setColor(Vec3(1.0, 1.0, 1.0) * 2.0)
+            dirLight.setColor(Vec3(1.0, 1.0, 1.0) * 5.0)
             dirLight.setCastsShadows(True)
             dirLight.setPssmDistance(140)
             self.renderPipeline.addLight(dirLight)

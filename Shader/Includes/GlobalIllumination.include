@@ -97,7 +97,7 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
     resultSum += saturate(1.0 + mixFactor * (normal.z)) * v.negZ;
 
     #else
-    float amb = 0.2;
+    float amb = 0.3;
     resultSum += saturate(amb + saturate(-normal.x)) * v.posX;
     resultSum += saturate(amb + saturate(normal.x)) * v.negX;
     resultSum += saturate(amb + saturate(-normal.y)) * v.posY;
@@ -120,12 +120,15 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
         resultSum *= 0.0003;
     #endif
 
-    // resultSum *= 0.5;
+
+
+    resultSum *= 2.0;
+
     // SRGB
-    // resultSum = pow(resultSum, vec3(1.0 / 4.2));
+    // resultSum = pow(resultSum, vec3(1.0 / 2.2));
     // resultSum = vec3(1);
     // resultSum += 0.3;
-    resultSum += vec3(0.019, 0.019, 0.02) * 0.4;
+    resultSum += vec3(0.017, 0.019, 0.02) * 0.5;
 
     // if (any(lessThan(localCoordOffs, vec3(0.05) ))) {
     //     resultSum = mix(resultSum, vec3(1, 0, 0), 0.05);

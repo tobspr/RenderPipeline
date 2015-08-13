@@ -27,7 +27,7 @@ struct VoxelDirections {
 
 VoxelDirections unpackData(int packedData) {
     VoxelDirections dir;
-    float scaleF = 0.2;
+    float scaleF = 0.1;
     dir.posX = ((packedData >> 0*5) & 0x1F) / 31.0 * scaleF;
     dir.negX = ((packedData >> 1*5) & 0x1F) / 31.0 * scaleF;
     dir.posY = ((packedData >> 2*5) & 0x1F) / 31.0 * scaleF;
@@ -54,7 +54,7 @@ void main() {
     float solid = step(1, max(valR, max(valG, valB)));
 
     if (coord3D.z >= skyStartZ) {
-        vec3 skyColor = vec3(0.6, 0.8, 1.3) * 0.2;
+        vec3 skyColor = vec3(0.6, 0.8, 1.3) * 0.05;
         voxelR.negZ = skyColor.r;
         voxelG.negZ = skyColor.g;
         voxelB.negZ = skyColor.b;
