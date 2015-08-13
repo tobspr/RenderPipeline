@@ -66,8 +66,8 @@ class AmbientOcclusionManager(DebugObject):
             
             # Create a texture to store the last frame occlusion
             self.lastFrameOcclusionTex = Texture("LastFrameOcclusion")
-            self.lastFrameOcclusionTex.setup2dTexture(Globals.base.win.getXSize(),
-                Globals.base.win.getYSize(), Texture.TFloat, Texture.FR16)
+            self.lastFrameOcclusionTex.setup2dTexture(Globals.resolution.x,
+                Globals.resolution.y, Texture.TFloat, Texture.FR16)
             self.pipeline.getRenderPassManager().registerStaticVariable("lastFrameOcclusion", self.lastFrameOcclusionTex)
 
             BufferViewerGUI.registerTexture("LastFrameOcclusion", self.lastFrameOcclusionTex)

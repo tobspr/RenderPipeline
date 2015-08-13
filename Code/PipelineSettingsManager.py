@@ -17,6 +17,7 @@ class PipelineSettingsManager(SettingsManager):
 
         # [General]
         self._addSetting("preventMultipleInstances", bool, False)
+        self._addSetting("resolution3D", float, 1.0)
 
         # [Antialiasing]
         self._addSetting("antialiasingTechnique", str, "SMAA")

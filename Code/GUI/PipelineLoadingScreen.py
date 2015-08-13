@@ -28,7 +28,7 @@ class PipelineLoadingScreen:
 
         self.showbase.setFrameRateMeter(False)
 
-        w, h = self.showbase.win.getXSize(), self.showbase.win.getYSize()
+        w, h = base.win.getXSize(), base.win.getYSize()
 
         scaleX = w / 2560.0
         scaleY = h / 1440.0

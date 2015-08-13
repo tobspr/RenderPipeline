@@ -193,8 +193,8 @@ class LightManager(DebugObject):
 
         # size has to be a multiple of the compute unit size
         # but still has to cover the whole screen
-        sizeX = int(math.ceil(float(self.pipeline.getSize().x) / self.patchSize.x))
-        sizeY = int(math.ceil(float(self.pipeline.getSize().y) / self.patchSize.y))
+        sizeX = int(math.ceil(float(Globals.resolution.x) / self.patchSize.x))
+        sizeY = int(math.ceil(float(Globals.resolution.y) / self.patchSize.y))
 
         self.lightCullingPass = LightCullingPass(self.pipeline)
         self.lightCullingPass.setSize(sizeX, sizeY)

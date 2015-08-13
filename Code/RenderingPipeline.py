@@ -251,10 +251,6 @@ class RenderingPipeline(DebugObject):
         """ Returns a handle to the render pass manager attribute """
         return self.renderPassManager
 
-    def getSize(self):
-        """ Returns the window size """
-        return self._size
-
     def _createTasks(self):
         """ Spanws the pipeline update tasks, this are mainly the pre-render
         and post-render tasks, whereas the pre-render task has a lower priority
@@ -270,7 +266,7 @@ class RenderingPipeline(DebugObject):
         target matcher cannot handle this """
 
         self.lastFrameDepth = Texture("LastFrameDepth")
-        self.lastFrameDepth.setup2dTexture(self.showbase.win.getXSize(), self.showbase.win.getYSize(),
+        self.lastFrameDepth.setup2dTexture(Globals.resolution.x, Globals.resolution.y,
             Texture.TFloat, Texture.FR32)
         BufferViewerGUI.registerTexture("LastFrameDepth", self.lastFrameDepth)
         MemoryMonitor.addTexture("LastFrameDepth", self.lastFrameDepth)
@@ -443,8 +439,8 @@ class RenderingPipeline(DebugObject):
         """ Registers some of the configuration defines, mainly specified in the
         pipeline config, at the render pass manager """
         define = lambda name, val: self.renderPassManager.registerDefine(name, val)
-        define("WINDOW_WIDTH", self._size.x)
-        define("WINDOW_HEIGHT", self._size.y)
+        define("WINDOW_WIDTH", Globals.resolution.x)
+        define("WINDOW_HEIGHT", Globals.resolution.y)
 
         if self.settings.displayOnscreenDebugger:
             define("DEBUGGER_ACTIVE", 1)
@@ -593,16 +589,19 @@ class RenderingPipeline(DebugObject):
         # Store globals, as cython can't handle them
         self.debug("Setting up globals")
         Globals.load(self.showbase)
+            
+        Globals.resolution = LVecBase2i( \
+            int(self.showbase.win.getXSize() * self.settings.resolution3D),
+            int(self.showbase.win.getYSize() * self.settings.resolution3D))
+
         Globals.font = loader.loadFont("Data/Font/SourceSansPro-Semibold.otf")
         Globals.font.setPixelsPerUnit(25)
 
-        self._size = LVecBase2i(self.showbase.win.getXSize(), self.showbase.win.getYSize())
-
         # Check size
-        if self._size.x % 2 == 1:
+        if Globals.resolution.x % 2 == 1:
             self.fatal(
                 "The window width has to be a multiple of 2 "
-                "(Current: ", self._size.x, ")")
+                "(Current: ", Globals.resolution.x, ")")
             return
 
         if self.settings.displayOnscreenDebugger:

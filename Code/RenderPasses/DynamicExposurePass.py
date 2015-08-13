@@ -37,7 +37,7 @@ class DynamicExposurePass(RenderPass):
     def create(self):
 
         # Fetch the original texture size from the window size
-        size = LVecBase2i(Globals.base.win.getXSize(), Globals.base.win.getYSize())
+        size = LVecBase2i(Globals.resolution.x, Globals.resolution.y)
 
         # Create the first downscale pass which reads the scene texture, does a 
         # 2x2 inplace box filter, and then converts the result to luminance. 

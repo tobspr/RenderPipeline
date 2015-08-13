@@ -81,8 +81,8 @@ void main() {
     if (!isSkybox) {
         scatteringResult *= 1.2;
     } else {
-        scatteringResult *= 0.4;
-        scatteringResult = pow(scatteringResult, vec3(0.5)) * 2.3;
+        scatteringResult *= 0.2;
+        scatteringResult = pow(scatteringResult, vec3(0.5)) * 1.8;
         
     }
 

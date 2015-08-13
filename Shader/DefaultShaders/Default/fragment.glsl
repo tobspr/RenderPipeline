@@ -105,9 +105,9 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
 
-    m.metallic = 0;
-    m.specular = 0.04;
-    m.roughness = 0.4;
+    // m.metallic = 0;
+    // m.specular = 0.04;
+    // m.roughness = 0.4;
 
     // Entry point for the user to modify the material
     #pragma ENTRY_POINT MATERIAL

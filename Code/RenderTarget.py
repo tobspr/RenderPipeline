@@ -131,13 +131,13 @@ class RenderTarget(DebugObject):
 
     def setHalfResolution(self):
         """ Sets the buffer to render at half the size of the window """
-        self._width = (self._sourceWindow.getXSize()+1) / 2
-        self._height = (self._sourceWindow.getYSize()+1) / 2
+        self._width = (Globals.resolution.x+1) / 2
+        self._height = (Globals.resolution.y+1) / 2
 
     def setQuarterResolution(self):
         """ Sets the buffer to render at half the size of the window """
-        self._width = (self._sourceWindow.getXSize()+3) / 4
-        self._height = (self._sourceWindow.getYSize()+3) / 4
+        self._width = (Globals.resolution.x+3) / 4
+        self._height = (Globals.resolution.y+3) / 4
 
     def setColorWrite(self, write):
         """ Sets wheter to write color """
@@ -269,10 +269,8 @@ class RenderTarget(DebugObject):
 
     def _createBuffer(self):
         """ Internal method to create the buffer object """
-        self._width = self._sourceWindow.getXSize(
-        ) if self._width < 1 else self._width
-        self._height = self._sourceWindow.getYSize(
-        ) if self._height < 1 else self._height
+        self._width = Globals.resolution.x if self._width < 1 else self._width
+        self._height = Globals.resolution.y if self._height < 1 else self._height
 
         self.debug("Creating buffer")
 

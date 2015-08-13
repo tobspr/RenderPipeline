@@ -56,13 +56,13 @@ class TransparencyManager(DebugObject):
         # each window pixel. The index stored in this buffer is the index into the 
         # materialDataBuffer
         self.listHeadBuffer = Texture("ListHeadBuffer")
-        self.listHeadBuffer.setup2dTexture(self.pipeline.getSize().x, self.pipeline.getSize().y, 
+        self.listHeadBuffer.setup2dTexture(Gloabls.resolution.x, Globals.resolution.y, 
             Texture.TInt, Texture.FR32i)
 
         # Creates the spinlock buffer, which ensures that writing to the listHeadBuffer
         # is sequentially
         self.spinLockBuffer = Texture("SpinLockBuffer")
-        self.spinLockBuffer.setup2dTexture(self.pipeline.getSize().x, self.pipeline.getSize().y, 
+        self.spinLockBuffer.setup2dTexture(Gloabls.resolution.x, Globals.resolution.y, 
             Texture.TInt, Texture.FR32i)
 
         # Set the buffers as input to the main scene. Maybe we can do this more elegant

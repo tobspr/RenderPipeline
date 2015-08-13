@@ -25,6 +25,9 @@ class FinalPostprocessPass(RenderPass):
 
     def create(self):
         self.target = RenderTarget("Final Pass")
+        # The final pass is at full res
+        self.target.setSize(Globals.base.win.getXSize(), Globals.base.win.getYSize())
+
         self.target.addColorTexture()
         self.target.prepareOffscreenBuffer()
 

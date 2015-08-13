@@ -119,14 +119,13 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
-        # self.sceneSource = "panda"
+        # self.sceneSource = "environment"
 
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
         # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
         # self.sceneSourceSurround = "Demoscene.ignore/LivingRoom/LivingRoom.egg"
-        # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
         # Wheter to create the default ground plane
         self.usePlane = False
@@ -142,7 +141,7 @@ class Main(ShowBase, DebugObject):
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
             dirLight.setShadowMapResolution(2048)
-            dirLight.setColor(Vec3(1.0, 1.0, 1.0) * 12.0)
+            dirLight.setColor(Vec3(1.0, 1.0, 1.0) * 2.0)
             dirLight.setCastsShadows(True)
             dirLight.setPssmDistance(140)
             self.renderPipeline.addLight(dirLight)
@@ -269,7 +268,7 @@ class Main(ShowBase, DebugObject):
         """ Starts loading the scene, this is done async """
         # Load scene from disk
 
-        if not os.path.isfile(self.sceneSource):
+        if not os.path.isfile(self.sceneSource) and self.sceneSource not in ["panda", "environment"]:
             self.error("The scene source could not be found!")
             dlLink = None
 

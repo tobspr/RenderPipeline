@@ -19,3 +19,4 @@ class Globals:
         self.render = showbase.render
         self.clock = showbase.taskMgr.globalClock
         self.font = None
+        self.resolution = None
