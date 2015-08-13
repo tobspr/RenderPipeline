@@ -1,28 +1,20 @@
 ## Deferred Render Pipeline
 
 This is my deferred render pipeline, implemented in Panda3D. This 
-pipeline aims to handle the complete graphics pipeline, giving the user the ability to focus on making the game, and not the graphics.
+pipeline aims to handle the complete graphics pipeline, giving the user the 
+ability to focus on making the game, and not the graphics.
 
 **Forum Thread**: http://www.panda3d.org/forums/viewtopic.php?f=6&t=17050
 
 This pipeline is still in developement, feel free to join :)
 
-For questions & suggestions you can find me at #panda3d on freenode.
+For questions & suggestions you can find me at `#panda3d` on freenode. 
 Thanks especially to rdb and all the others for support & help!
 
-### Screenshots
+### Installation & Usage
 
-You can find a lot more <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa?dl=0">here</a>:
-
-![Sponza](http://fs1.directupload.net/images/150810/ampc4zkd.png)
-![Terrain](http://fs1.directupload.net/images/150803/33uuhjc3.png)
-![Couch Scene](http://fs2.directupload.net/images/150502/jl66b4cc.png)
-
-### Setup
 You can find the wiki & instructions how to setup the pipeline at
-https://github.com/tobspr/RenderPipeline/wiki
-
-Please not that the wiki is a bit outdated! 
+https://github.com/tobspr/RenderPipeline/wiki/Getting-Started
 
 ### Requirements
 
@@ -78,3 +70,11 @@ Please not that the wiki is a bit outdated!
 
 ##### Tesselation
 
+
+### Screenshots
+
+You can find a lot more screenshots <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa?dl=0">here</a>, or in the forum thread.
+
+![Sponza](http://fs1.directupload.net/images/150810/ampc4zkd.png)
+![Terrain](http://fs1.directupload.net/images/150803/33uuhjc3.png)
+![Couch Scene](http://fs2.directupload.net/images/150502/jl66b4cc.png)
