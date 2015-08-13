@@ -121,6 +121,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
         # self.sceneSource = "panda"
 
+
         # Select surrounding scene here
         self.sceneSourceSurround = None
         # self.sceneSourceSurround = "Demoscene.ignore/Couch/Surrounding.egg"
@@ -267,6 +268,20 @@ class Main(ShowBase, DebugObject):
     def loadScene(self, task=None):
         """ Starts loading the scene, this is done async """
         # Load scene from disk
+
+        if not os.path.isfile(self.sceneSource):
+            self.error("The scene source could not be found!")
+            dlLink = None
+
+            if "DabrovicSponza" in self.sceneSource:
+                dlLink = "http://rdb.name/renderpipeline/DabrovicSponza.7z"
+
+            if dlLink is not None:
+                self.error("You can download it from here: " + dlLink)
+                self.error("After downloading, extract it to '" + self.sceneSource + "'")
+
+            sys.exit(0)
+
         self.debug("Loading Scene '" + self.sceneSource + "'")
         self.loader.loadModel(self.sceneSource, callback = self.onSceneLoaded)
 
