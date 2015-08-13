@@ -1,0 +1,19 @@
+#pragma once
+
+
+struct VertexOutput {
+    vec3 positionWorld;
+    vec3 normalWorld;
+    vec2 texcoord;
+
+    vec4 materialDiffuse;
+    vec3 materialSpecular;
+    float materialAmbient;
+
+    vec4 lastProjectedPos;
+};
+
+struct ShadowVertexOutput {
+    vec3 positionWorld;
+    vec2 texcoord;
+};

@@ -1,0 +1,197 @@
+#version 400
+
+
+// Required, or it runs incredible slow
+#pragma optionNV (unroll all)
+
+#extension GL_ARB_shader_image_load_store : enable
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Material.include"
+
+
+in vec2 texcoord;
+
+// Deferred target inpupts
+uniform sampler2D data0;
+uniform sampler2D data1;
+uniform sampler2D data2;
+uniform sampler2D data3;
+uniform sampler2D depthTex;
+
+
+// Light computation inputs
+uniform sampler2D shadowedLightsTex;
+uniform sampler2D unshadowedLightsTex;
+
+// Global illumination inputs
+#if defined(USE_GLOBAL_ILLUMINATION)
+uniform sampler2D giDiffuseTex;
+uniform sampler2D giReflectionTex;
+#endif
+
+// Occlusion input
+#if defined(USE_OCCLUSION)
+uniform sampler2D occlusionTex;
+#endif
+
+// Volumetric lighting
+#if defined(USE_VOLUMETRIC_LIGHTING)
+uniform sampler2D volumetricLightingTex;
+#endif
+
+// Various data
+uniform vec3 cameraPosition;
+
+// Outputs
+layout(location = 0) out vec4 lightingResult;
+
+
+// Scattering result
+#if defined(USE_SCATTERING)
+uniform sampler2D scatteringTex;
+uniform sampler2D scatteringAttenuation;
+#endif
+
+
+uniform sampler2D skyboxMask;
+
+#pragma include "Includes/Ambient.include"
+
+
+vec3 getPositionWorld(vec2 coord) {
+    float z = texture(depthTex, coord).x;
+    return calculateSurfacePos(z, coord);
+}
+
+void main() {
+
+    // Compute texcoords
+    ivec2 screenSize = textureSize(data0, 0);
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+ 
+    // Lighting result gets stored in this variables
+    vec3 result = vec3(0);
+    vec4 giDiffuseColor = vec4(1.0);
+    vec4 giSpecularColor = vec4(0);
+    vec3 ambient = vec3(0);
+
+    // Extract material data
+    Material material = unpackGBufferMaterial(data0, data1, data2, data3, depthTex, screenCoord, texcoord);
+
+    // Fetch GI result
+    #if defined(USE_GLOBAL_ILLUMINATION) && !defined(DEBUG_DISABLE_GI)
+        giDiffuseColor = texelFetch(giDiffuseTex, screenCoord, 0);
+        giSpecularColor = texelFetch(giReflectionTex, screenCoord, 0);
+    #endif
+
+
+    bool isSkybox = texelFetch(skyboxMask, screenCoord, 0).x > 0.5;    
+    float mixedOcclusionFactor = 1.0;
+    vec3 viewVector = normalize(cameraPosition - material.position);
+
+    // Scattering
+    #if defined(USE_SCATTERING)
+    vec3 scatteringResult = texture(scatteringTex, texcoord).xyz;
+    #endif
+
+    // We can skip ambient for the skybox
+    if (isSkybox) { 
+        #if defined(USE_SCATTERING)
+            result = scatteringResult;
+        #else
+            result = vec3(0);
+        #endif
+    } else {
+
+        #if defined(USE_OCCLUSION)
+            mixedOcclusionFactor = texture(occlusionTex, texcoord).w;
+        #endif
+
+        // Add precomputed lights
+        result += texture(shadowedLightsTex, texcoord).xyz;
+        result += texture(unshadowedLightsTex, texcoord).xyz;
+
+        // Ambient / Reflections
+        ambient = computeAmbient(material, giDiffuseColor, giSpecularColor, mixedOcclusionFactor, viewVector);    
+        result += ambient;
+
+
+        // Fog, TODO (make it look good)
+        #if defined(USE_SCATTERING)
+            float fogFactor =  saturate( (distance(cameraPosition, material.position) - 1.0) / 3500.0);
+            // fogFactor = 1.0;
+            // fogFactor *= saturate(-0.05 + max(0.0, material.position.z) / 800.0);
+            fogFactor = smoothstep(0, 1, saturate(fogFactor));
+            // fogFactor = 0.0;
+            // result = mix(vec3(result), scatteringResult*0.2, fogFactor);
+        #endif
+
+    }
+
+    // Compute material reflective factor
+    float sslrFactor = material.specular * (1.0 - material.roughness);
+
+    // #if !defined(USE_TRANSPARENCY)
+    //     // SRGB
+    //     result = pow(result, vec3(1.0 / 2.2) );
+         
+    //     float exposure = 1.0;
+
+    //     // Dynamic Exposure
+    //     #if defined(USE_DYNAMIC_EXPOSURE)
+    //         exposure = texelFetch(dynamicExposureTex, ivec2(0), 0).x;
+    //     #endif
+
+    //     #if !defined(DEBUG_VISUALIZATION_ACTIVE) || defined(DEBUG_RM_LIGHTING)
+    //         result = 1.0 - exp(-exposure * result);
+    //     #endif
+
+    // #endif
+
+
+
+    // Debugging modes
+
+    #if defined(DEBUG_RM_BASECOLOR)
+        result = material.baseColor;
+    #endif
+
+    #if defined(DEBUG_RM_SPECULAR)
+        result = vec3(material.specular);
+    #endif
+
+    #if defined(DEBUG_RM_METALLIC)
+        result = vec3(material.metallic);
+    #endif
+
+    #if defined(DEBUG_RM_ROUGHNESS)
+        result = vec3(material.roughness);
+    #endif
+
+    #if defined(DEBUG_RM_NORMAL)
+        result = material.normal;
+    #endif
+
+    #if defined(DEBUG_RM_GI_AMBIENT)
+        result = ambient;
+    #endif
+
+    #if defined(DEBUG_RM_OCCLUSION)
+        result = vec3(mixedOcclusionFactor);
+    #endif
+
+    #if defined(DEBUG_RM_SCATTERING)
+        result = vec3(scatteringResult);
+    #endif
+
+    #if defined(DEBUG_RM_GI_DIFFUSE)
+        result = vec3(giDiffuseColor * 0.5);
+    #endif
+    #if defined(DEBUG_RM_GI_REFLECTIONS)
+        result = vec3(giSpecularColor);
+    #endif
+
+    lightingResult = vec4(result, isSkybox ? 0.0 : sslrFactor);
+}

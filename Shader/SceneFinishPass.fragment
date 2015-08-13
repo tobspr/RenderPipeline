@@ -1,0 +1,44 @@
+#version 430
+
+#pragma include "Includes/Configuration.include"
+
+in vec2 texcoord;
+
+
+#if defined(USE_DEBUG_ATTACHMENTS)
+out vec4 result;
+#endif
+
+uniform sampler2D velocityTex;
+uniform sampler2D depthTex;
+
+#if defined(USE_OCCLUSION) && defined(USE_TEMPORAL_OCCLUSION)
+uniform writeonly image2D lastFrameOcclusionTex;
+uniform sampler2D currentOcclusionTex;
+#endif
+
+uniform writeonly image2D lastFrameDepthTex;
+
+
+void main() {
+
+    // Screen coordinate (as int vec)
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+
+    // Store last frame depth
+    float depth = texelFetch(depthTex, screenCoord, 0).x;
+    imageStore(lastFrameDepthTex, screenCoord, vec4(depth));
+
+    // Store last frame occlusion
+    #if defined(USE_OCCLUSION) && defined(USE_TEMPORAL_OCCLUSION)
+    vec4 occlusion = texelFetch(currentOcclusionTex, screenCoord, 0);
+    imageStore(lastFrameOcclusionTex, screenCoord, occlusion);
+    #endif
+
+
+
+    #if defined(USE_DEBUG_ATTACHMENTS)
+        result = vec4(pow(depth, 100.0));
+    #endif
+
+}

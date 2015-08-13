@@ -1,0 +1,37 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+
+#extension GL_EXT_shader_image_load_store : enable
+
+uniform sampler2D luminanceTex;
+layout(r32f) uniform image2D lastExposureTex;
+
+uniform float targetExposure;
+uniform float adaptionSpeed;
+uniform float dt;
+
+in vec2 texcoord;
+
+void main() {
+
+    ivec2 texSize = textureSize(luminanceTex, 0);
+
+    // Filter all remaining texels
+    int numSamples = texSize.x * texSize.y;
+    float sampleSum = 0.0;
+    for (int x = 0; x < texSize.x; x++) {
+        for (int y = 0; y < texSize.y; y++) {
+            sampleSum += texelFetch(luminanceTex, ivec2(x,y), 0).x;
+        }
+    }
+    sampleSum /= float(numSamples);
+
+    // Compute difference between wanted and actual exposure
+    float brightnessDiff = targetExposure - sampleSum;
+
+    // Store new exposure
+    float lastExposure = imageLoad(lastExposureTex, ivec2(0)).x;
+    float newExposure = clamp(lastExposure + brightnessDiff * dt * 10.0 * adaptionSpeed, 1.0, 8.0);
+    imageStore(lastExposureTex, ivec2(0), vec4(newExposure));
+}

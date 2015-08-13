@@ -1,0 +1,14 @@
+
+pass Default:
+
+    vertex:
+        template default
+
+    fragment:
+        template default
+
+        insert @MATERIAL:
+            m.specular = 0;
+            m.metallic = 0;
+            m.roughness = 1;
+            m.baseColor = sampledDiffuse.rgb * vec3(1,1,0);

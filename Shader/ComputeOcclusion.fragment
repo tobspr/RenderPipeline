@@ -1,0 +1,20 @@
+#version 400
+
+uniform int frameIndex;
+uniform sampler2D noiseTexture;
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Occlusion/Init.include"
+
+in vec2 texcoord;
+out vec4 occlusionResult;
+
+void main() {
+    #if !defined(DEBUG_DISABLE_OCCLUSION)
+        float result = 1.0 - computeOcclusion(texcoord, ivec2(gl_FragCoord.xy), 1.0);
+        occlusionResult = vec4(result);
+    #else
+        occlusionResult = vec4(1);
+    #endif
+}

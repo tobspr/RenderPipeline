@@ -1,0 +1,64 @@
+#pragma once
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Structures/Material.struct"
+
+
+
+
+vec3 unpackGBufferNormal(vec3 sampledNormal) {
+    return normalize(sampledNormal*2.0-1.0);
+}
+
+
+Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, vec4 data3, sampler2D depthTex, vec2 texcoord) {
+    Material m;
+
+    float depth = textureLod(depthTex, texcoord, 0).x;
+    m.position = calculateSurfacePos(depth, texcoord);
+    m.roughness = max(0.01, data2.w);
+    m.normal = unpackGBufferNormal(data0.xyz);
+    m.baseColor = data2.xyz;
+    m.metallic = data1.w;
+    m.specular = data1.z;
+    m.translucency = data0.w;
+    m.diffuseAAFactor = 0.95 + data3.x * 0.05;
+
+    // Material debug render modes
+    #if defined(DEBUG_RM_LIGHTING)
+        m.baseColor = vec3(0.3);
+    #endif
+
+    #if defined(DEBUG_RM_DIFFUSE_LIGHTING)
+        m.baseColor = vec3(1);
+        m.metallic = 0.0;
+        m.specular = 0.0;
+        m.roughness = 1.0;
+        m.translucency = 0.0;
+    #endif
+    
+    return m;
+}
+
+
+Material unpackGBufferMaterial(sampler2D tex0, sampler2D tex1, sampler2D tex2, sampler2D tex3, sampler2D depthTex, ivec2 coord, vec2 texcoord) {
+    vec4 tex0data = texelFetch(tex0, coord, 0);
+    vec4 tex1data = texelFetch(tex1, coord, 0);
+    vec4 tex2data = texelFetch(tex2, coord, 0);
+    vec4 tex3data = texelFetch(tex3, coord, 0);
+    return unpackMaterial(tex0data, tex1data, tex2data, tex3data, depthTex, texcoord);
+}
+
+Material getDefaultMaterial() {
+    Material m;
+    m.baseColor = vec3(1);
+    m.roughness = 0.5;
+    m.metallic = 0.5;
+    m.specular = 0.5;
+    m.translucency = 0.0;
+    m.position = vec3(0);
+    m.normal = vec3(1);
+    m.diffuseAAFactor = 1.0;
+    return m;
+}

@@ -1,0 +1,69 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+
+in vec2 texcoord;
+in vec4 offset;
+
+uniform sampler2D currentTex;
+uniform sampler2D lastTex;
+
+uniform sampler2D velocityTex;
+uniform sampler2D currentDepthTex;
+uniform sampler2D lastDepthTex;
+
+uniform mat4 currentMVP;
+uniform mat4 lastMVP;
+
+#define SMAA_INCLUDE_VS 0
+
+// This removes ghosting for objects with wrong velocity
+// #define SMAA_REPROJECTION_WEIGHT_SCALE 10000.0
+#pragma include "Includes/SMAA-Wrapper.include"
+
+out vec4 result;
+
+void main() {    
+    // result = SMAAResolvePS(texcoord, currentTex, lastTex, velocityTex);
+
+
+     #if SMAA_REPROJECTION
+        // Velocity is assumed to be calculated for motion blur, so we need to
+        // inverse it for reprojection:
+        float2 velocity = -SMAA_DECODE_VELOCITY(texture(velocityTex, texcoord).rg);
+
+        // Fetch current pixel:
+        float4 current = texture(currentTex, texcoord);
+
+        // Reproject current coordinates and fetch previous pixel:
+        float4 previous = texture(lastTex, texcoord + velocity);
+
+        float currentDepth = texture(currentDepthTex, texcoord).x;
+        float lastDepth = texture(lastDepthTex, texcoord + velocity).x;
+
+        vec4 currentNDC = vec4(texcoord*2-1, currentDepth*2-1, 1);
+        vec4 currentWP = inverse(currentMVP) * currentNDC;
+        // currentWP.xyz /= currentWP.w;
+
+        vec4 lastNDC = vec4( (texcoord+velocity)*2-1, lastDepth*2-1, 1);
+        vec4 lastWP = inverse(lastMVP) * lastNDC;
+        // lastWP.xyz /= lastWP.w;
+
+
+        float weight = 0.5 - 0.5 * saturate(distance(currentWP, lastWP) * 5.0);
+        // weight = 0.0;
+
+        // Fix issues with big velocities
+        if (any(lessThan(texcoord+velocity,vec2(0))) || any(greaterThan(texcoord+velocity, vec2(1)))) {
+            weight = 0.0;
+        }
+        result = lerp(current, previous, weight);
+    #else
+        // Just blend the pixels:
+        float4 current = texture(currentTex, texcoord);
+        float4 previous = texture(lastTex, texcoord);
+        result = lerp(current, previous, 0.5);
+    #endif
+
+}

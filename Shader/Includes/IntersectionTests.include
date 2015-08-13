@@ -1,0 +1,47 @@
+#pragma once
+
+#pragma include "Includes/Structures/Frustum.struct"
+
+/*
+float intersectionHelperSquare(float v) { 
+    return v * v; 
+}
+
+bool cubeIntersectsSphere(vec3 aabbMin, vec3 aabbMax, vec3 sphereMid, float sphereRadius)
+{
+    float dist_squared = sphereRadius * sphereRadius;
+    if (sphereMid.x < aabbMin.x) dist_squared -= intersectionHelperSquare(sphereMid.x - aabbMin.x);
+    else if (sphereMid.x > aabbMax.x) dist_squared -= intersectionHelperSquare(sphereMid.x - aabbMax.x);
+    if (sphereMid.y < aabbMin.y) dist_squared -= intersectionHelperSquare(sphereMid.y - aabbMin.y);
+    else if (sphereMid.y > aabbMax.y) dist_squared -= intersectionHelperSquare(sphereMid.y - aabbMax.y);
+    if (sphereMid.z < aabbMin.z) dist_squared -= intersectionHelperSquare(sphereMid.z - aabbMin.z);
+    else if (sphereMid.z > aabbMax.z) dist_squared -= intersectionHelperSquare(sphereMid.z - aabbMax.z);
+    return dist_squared > 0;
+}
+
+
+bool rayIntersectsSphere(vec3 rayStart, vec3 rayEnd, vec3 sphereMid, float sphereRadius) 
+{
+    vec3 d = rayEnd - rayStart;
+    float a = dot(d, d);
+    float b = 2.0 * dot(d, rayStart - sphereMid);
+    float c = dot(sphereMid, sphereMid) + dot(rayStart, rayStart) - 2.0 * dot(sphereMid, rayStart) - sphereRadius*sphereRadius;
+    float test = b*b - 4.0*a*c;
+    return test >= 0.0;
+}
+*/
+
+bool sphereInFrustum(Frustum frustum, vec4 pos, float radius) {
+    bvec4 result;
+    bvec2 result2;
+    result.x = -radius <= dot(frustum.left, pos);
+    result.y = -radius <= dot(frustum.right, pos);
+    result.z = -radius <= dot(frustum.top, pos);
+    result.w = -radius <= dot(frustum.bottom, pos);
+    
+    result2.x = -radius <= dot(frustum.nearPlane, pos);
+    result2.y = -radius <= dot(frustum.farPlane, pos);
+
+    return all(result) && all(result2);
+}
+

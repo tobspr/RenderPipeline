@@ -1,0 +1,14 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+
+uniform sampler2D depthTex;
+out vec4 result;
+
+void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    float depth  = texelFetch(depthTex, coord, 0).x;
+    float dist = getLinearZFromZ(depth);
+    result = vec4(step(SKYBOX_BEGIN, dist));
+}

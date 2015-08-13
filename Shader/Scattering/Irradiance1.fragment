@@ -1,0 +1,14 @@
+#version 150
+
+#pragma include "Includes/ScatteringPrecompute.include"
+
+uniform ScatteringOptions options;
+
+in vec2 texcoord;
+out vec4 color;
+
+void main() {
+    float r, muS;
+    getIrradianceRMuS(options, r, muS);
+    color = vec4( transmittance(options, r, muS) * max(muS, 0.0) , 0.0);
+}

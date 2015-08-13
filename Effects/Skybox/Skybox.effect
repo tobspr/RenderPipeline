@@ -1,0 +1,18 @@
+
+pass Default:
+
+    vertex:
+        template default
+
+    fragment:
+        template default
+        uniform sampler2D skytex
+
+        insert @MATERIAL:
+            vec2 skycoord = clamp(vOutput.texcoord * vec2(1,2) + vec2(0, 0.04), vec2(0, 0.99), vec2(1, 1.9));
+            float borderFactor = saturate( pow((skycoord.y-1.0) * 10.0, 5.0));
+            m.baseColor = texture(skytex, skycoord).xxx * borderFactor;
+            // m.baseColor = vec3(borderFactor);
+            m.specular = 0.0;
+            m.roughness = 0.0;
+            m.metallic = 0.0;

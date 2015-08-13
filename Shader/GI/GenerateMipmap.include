@@ -1,0 +1,49 @@
+
+// This file gets included by the auto-generated generate mipmmap shaders
+
+uniform sampler3D source0;
+uniform sampler3D source1;
+uniform sampler3D source2;
+uniform sampler3D source3;
+uniform sampler3D source4;
+
+uniform layout(rgba8) image3D dest0;
+uniform layout(rgba8) image3D dest1;
+uniform layout(rgba8) image3D dest2;
+uniform layout(rgba8) image3D dest3;
+uniform layout(rgba8) image3D dest4;
+
+uniform int sourceMipmap;
+ 
+vec4 fetch(sampler3D source, ivec3 coords, int x, int y, int z, float weight) {
+    return texelFetch(source, coords + ivec3(x, y, z), sourceMipmap) * weight;
+}
+
+void generate_mipmaps(ivec3 coord, ivec3 coordUpper, sampler3D source, layout(rgba8) image3D dest) {
+        vec4 combined = vec4(0);
+        combined += fetch(source, coordUpper, 0,0,0, 0.125);
+        combined += fetch(source, coordUpper, 1,0,0, 0.125);
+        combined += fetch(source, coordUpper, 0,1,0, 0.125);
+        combined += fetch(source, coordUpper, 1,1,0, 0.125);
+        combined += fetch(source, coordUpper, 0,0,1, 0.125);
+        combined += fetch(source, coordUpper, 1,0,1, 0.125);
+        combined += fetch(source, coordUpper, 0,1,1, 0.125);
+        combined += fetch(source, coordUpper, 1,1,1, 0.125);
+        // combined /= max(0.01, combined.w);
+        combined *= 8.0;
+        imageStore(dest, coord, combined );
+}
+
+void main() {
+
+    for (int z = 0; z < MIPMAP_SIZE; z++) {
+        ivec3 texelCoords = ivec3(gl_FragCoord.xy, z);
+        ivec3 texelCoordsUpper = texelCoords * 2;
+        generate_mipmaps(texelCoords, texelCoordsUpper, source0, dest0);
+        generate_mipmaps(texelCoords, texelCoordsUpper, source1, dest1);
+        generate_mipmaps(texelCoords, texelCoordsUpper, source2, dest2);
+        generate_mipmaps(texelCoords, texelCoordsUpper, source3, dest3);
+        generate_mipmaps(texelCoords, texelCoordsUpper, source4, dest4);        
+    }
+
+}

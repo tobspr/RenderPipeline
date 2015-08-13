@@ -1,0 +1,45 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+
+uniform sampler2D luminanceTex;
+in vec2 texcoord;
+
+out vec4 result;
+
+void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xyz) * 4;
+    vec2 coordLinear = vec2(coord) / textureSize(luminanceTex, 0).xy;
+    float sampleResult = 0.0;
+
+    // Efficient downsample using texture gather
+    sampleResult += dot(vec4(1), textureGatherOffsets(luminanceTex, coordLinear, ivec2[4](
+        ivec2(0, 0),
+        ivec2(1, 0),
+        ivec2(0, 1),
+        ivec2(1, 1)
+     )));
+    sampleResult += dot(vec4(1), textureGatherOffsets(luminanceTex, coordLinear, ivec2[4](
+        ivec2(0, 2),
+        ivec2(1, 3),
+        ivec2(0, 2),
+        ivec2(1, 3)
+     )));
+    sampleResult += dot(vec4(1), textureGatherOffsets(luminanceTex, coordLinear, ivec2[4](
+        ivec2(2, 0),
+        ivec2(3, 1),
+        ivec2(2, 0),
+        ivec2(3, 1)
+     )));
+    sampleResult += dot(vec4(1), textureGatherOffsets(luminanceTex, coordLinear, ivec2[4](
+        ivec2(2, 3),
+        ivec2(3, 2),
+        ivec2(2, 3),
+        ivec2(3, 2)
+     )));
+
+    sampleResult /= 16.0;
+
+    result.xyz = vec3(sampleResult);
+    result.w = 1.0;
+}

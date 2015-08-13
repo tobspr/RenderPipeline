@@ -1,0 +1,73 @@
+#pragma once
+
+#pragma include "Includes/Structures/TransparentMaterial.struct"
+
+
+TransparentMaterial getDefaultTransparentMaterial() {
+    TransparentMaterial tm;
+    tm.baseColor = vec3(1);
+    tm.normal = vec3(0,0,1);
+    tm.alpha = 1.0;
+    tm.depth = 1.0;
+    tm.nextEntry = 0u;
+    tm.roughness = 0;
+    tm.specular = 0.0;
+    tm.metallic = 0.0;
+    tm.texcoord = vec2(0);
+    tm.velocity = vec2(0);
+    return tm;
+}
+
+
+TransparentMaterial unpackTransparentMaterial(uvec4 data1, uvec4 data2) {
+
+    TransparentMaterial tm;
+
+    tm.nextEntry = data1.w;
+    tm.depth = uintBitsToFloat(data1.z);
+
+    vec2 comp1 = unpackSnorm2x16(data1.x);
+    vec2 comp2 = unpackSnorm2x16(data1.y);
+    vec2 comp3 = unpackSnorm2x16(data2.x);
+    vec4 comp4 = unpackUnorm4x8(data2.y);
+    vec2 comp5 = unpackUnorm2x16(data2.z);
+    vec2 comp6 = unpackSnorm2x16(data2.w);
+
+    tm.baseColor = vec3(comp1, comp2.x);
+    tm.normal = vec3(comp2.y, comp3);
+    tm.alpha = comp4.x;
+    tm.roughness = comp4.y;
+    tm.specular = comp4.z;
+    tm.metallic = comp4.w;
+    tm.texcoord = comp5.xy;
+    tm.velocity = comp6.xy;
+
+    return tm;
+}
+
+
+
+float extractMaterialDepth(uvec4 data1) {
+    return uintBitsToFloat(data1.z);
+}
+
+
+void packTransparentMaterial(TransparentMaterial tm, out uvec4 data1, out uvec4 data2) {
+
+    // Data layout is:
+    // () means packed (packSnorm4x8 or packSnorm2x16)
+    // [] means uvec4
+
+    // [(r, g), (b, nx), depth, nextEntry]
+    // [(ny, nz), (alpha, roughness, specular, metallic), (texcoord.x, texcoord.y), (velocity.x, velocity.y)]
+
+    data1.x = packSnorm2x16(vec2(tm.baseColor.r, tm.baseColor.g));
+    data1.y = packSnorm2x16(vec2(tm.baseColor.b, tm.normal.x));
+    data1.z = floatBitsToUint(tm.depth);
+    data1.w = tm.nextEntry;
+
+    data2.x = packSnorm2x16(vec2(tm.normal.y, tm.normal.z));
+    data2.y = packUnorm4x8(vec4(tm.alpha, tm.roughness, tm.specular, tm.metallic));
+    data2.z = packUnorm2x16(vec2(tm.texcoord.x, tm.texcoord.y));
+    data2.w = packSnorm2x16(vec2(tm.velocity.x, tm.velocity.y));
+}

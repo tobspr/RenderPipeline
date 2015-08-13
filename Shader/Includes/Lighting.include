@@ -1,0 +1,94 @@
+#pragma once
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Structures/Light.struct"
+#pragma include "Includes/LightingModels.include"
+#pragma include "Includes/Structures/Material.struct"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/PoissonDisk.include"
+
+
+#if defined(USE_DIFFUSE_ANTIALIASING) && !defined(DEBUG_DISABLE_DIFFUSE_AA) && !defined(DISABLE_DIFFUSE_AA)
+// http://advances.realtimerendering.com/s2012/Ubisoft/Rock-Solid%20Shading.pdf
+float DiffuseAA(vec3 n, vec3 l, float w) {
+    float a = dot(n, l);
+    // float w = max(length(n), 0.95);
+    // w = (w * 0.05) + 0.95;
+    float x = sqrt(1.0 - w);
+    float x0 = 0.373837*a;
+    float x1 = 0.66874*x;
+    float n2  = x0 + x1;
+    return w*((abs(x0) <= x1) ? n2*n2/x : saturate(a));
+}
+#else
+float DiffuseAA(vec3 n, vec3 l, float w) {
+    return max(0.0, dot(n, l));
+}
+#endif
+
+
+vec3 computeLightModel(Light light, Material material, 
+        vec3 l, vec3 v, vec3 n, vec3 h, 
+        float attenuation, float shadowFactor) {
+
+    #if defined(DEBUG_RM_SHADOWS)
+        return shadowFactor * attenuation * light.color;
+    #endif
+
+    #if defined(DEBUG_DISABLE_COMPLEX_LIGHTING) || defined(DISABLE_COMLPEX_LIGHTING)
+        return light.color * attenuation * material.baseColor * shadowFactor;
+    #endif
+
+    // Performance optimization? 
+    if (shadowFactor < 0.001) return vec3(0.0);
+
+    vec3 lightingResult = vec3(0);
+    vec3 specularColor = vec3(material.specular) * light.color;
+
+    // Clamp material metallic to prevent precision errors
+    vec3 diffuseColor = mix(material.baseColor, vec3(0.0), saturate(material.metallic*1.01) );
+
+    float roughness = clamp(material.roughness, 0.01, 1.0);
+
+    // pre-computed cross products
+    float NxL = DiffuseAA(n, l, material.diffuseAAFactor);
+    float LxH = saturate(dot(l, h));
+    float NxV = abs(dot(n, v)) + 1e-5;
+    float NxH = saturate(dot(n, h));
+
+
+
+    // Evaluate specular
+    vec3 specularContribution = max(vec3(0), computeSpecular(specularColor, roughness, NxL, LxH, NxV, NxH) * NxL);
+
+    lightingResult += specularContribution * material.specular * 30.0;
+
+    // Evaluate diffuse
+    lightingResult += diffuseColor * NxL * light.color;
+
+    // Apply shadows
+    lightingResult *= shadowFactor;
+
+    // Apply point light attenuation
+    lightingResult *= attenuation;
+
+    return lightingResult;
+}
+
+
+float computePointLightAttenuation(Light light, float d) {
+    float r = light.radius;
+
+    // https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
+    // Inverse falloff
+    float attenuation = 1.0 / (1.0 + 2*d/r + (d*d)/(r*r)); 
+
+    // Cut light transition starting at 80% because the curve is exponential and never really gets 0
+    float cutoff = light.radius * 0.7;
+    attenuation *= 1.0 - saturate((d / cutoff) - 1.0) * (0.7 / 0.3);
+
+    attenuation = max(0.0, attenuation);
+    return attenuation;
+}
+
+

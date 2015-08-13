@@ -1,0 +1,27 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+
+uniform sampler2D sceneTex;
+
+out vec4 result;
+
+void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
+    vec3 sceneColor = texelFetch(sceneTex, coord, 0).xyz;
+
+    #if !defined(DEBUG_VISUALIZATION_ACTIVE)
+        // SRGB
+        sceneColor = pow(sceneColor, vec3(1.0 / 2.2));
+
+        // Exposure
+        float exposure = 1.0;
+        sceneColor = 1.0 - exp(-exposure * sceneColor);
+
+    #endif
+
+    result.xyz = sceneColor;
+    result.w = 1.0;
+        
+}

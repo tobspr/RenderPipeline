@@ -1,0 +1,11 @@
+#pragma once
+
+struct GIData {
+    vec3 position;
+    vec3 positionGeneration;
+    float size;
+    int resolution;
+    // ivec3 gridResolution;
+    // sampler3D voxels;
+    // sampler3D geometry;
+};

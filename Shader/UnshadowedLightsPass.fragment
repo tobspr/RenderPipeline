@@ -1,0 +1,65 @@
+#version 420
+
+#pragma optionNV (unroll all)
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/UBOs/Lights.ubo"
+#pragma include "Includes/Material.include"
+
+#define UNSHADOWED_PASS 1
+
+
+#if defined(USE_SCATTERING)
+uniform sampler2D scatteringAttenuation;
+#endif
+
+in vec2 texcoord;
+out vec4 result;
+
+// Light-IDs per tile
+uniform isamplerBuffer lightsPerTileBuffer;
+uniform ivec2 lightingTileCount;
+
+// Deferred target inpupts
+uniform sampler2D data0;
+uniform sampler2D data1;
+uniform sampler2D data2;
+uniform sampler2D data3;
+uniform sampler2D depthTex;
+
+uniform vec3 cameraPosition;
+
+uniform sampler2D skyboxMask;
+
+#pragma include "Includes/Lights.include"
+
+// Lighting pipeline settings
+#define PROCESS_SHADOWED_LIGHTS 0
+#define PROCESS_UNSHADOWED_LIGHTS 1
+#define IS_PER_TILE_LIGHTING 1
+
+#pragma include "Includes/LightingPipeline.include"
+
+
+void main() {
+
+    // Get tile index and offset
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+    ivec2 tileIndex = ivec2(vec2(screenCoord) / vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y));
+    int tileBufferOffset = (tileIndex.x + tileIndex.y * lightingTileCount.x) * LIGHTING_PER_TILE_STRIDE;
+
+    // Extract material data
+    Material material = unpackGBufferMaterial(data0, data1, data2, data3, depthTex, screenCoord, texcoord);
+
+    // Check for skybox, in that case don't do the lighting pass
+    if (texelFetch(skyboxMask, screenCoord, 0).x > 0.5) discard;
+
+
+    vec3 lightingResult = computeLighting(lightsPerTileBuffer, material, tileBufferOffset);
+
+    #if defined(DEBUG_RM_AMBIENT)
+        result = vec4(0);
+    #else
+        result = vec4(lightingResult, 1.0);
+    #endif
+}

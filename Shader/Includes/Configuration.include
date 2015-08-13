@@ -1,0 +1,30 @@
+#pragma once
+
+// This is the main configuration file, included by almost all shaders
+
+
+// Load Shader auto-config
+#pragma include "PipelineTemp/ShaderAutoConfig.include"
+
+// Commonly used variables and settings
+#define M_PI 3.1415926536
+#define USE_DEFAULT_COORD_SYS 1
+
+// Optional: Unroll all loops
+// #pragma optionNV (unroll all)
+
+// Used to determine the skybox mask
+#define SKYBOX_BEGIN 15000.0
+
+
+// PCSS Constants
+#define PCSS_SEARCH_RADIUS 15.0
+#define PCSS_FILTER_RADIUS 15.0
+#define USE_PIXEL_BASED_PCSS 0
+
+// Number of pssm splits, should match with DirectionalLight.p
+#define DIRECTIONAL_LIGHT_SPLIT_COUNTS 6
+
+// Include commonly used functinos
+#pragma include "Includes/CommonFunctions.include"
+

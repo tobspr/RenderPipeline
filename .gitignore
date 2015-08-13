@@ -1,0 +1,33 @@
+# Compiled
+.pyd
+.pyc
+*.pyc
+*.ignore
+*.sublime-workspace
+*.sublime-project
+Core/Windows/
+Core/Linux/
+Cython/
+*.psd
+Temp/
+Models/**/*.blend
+Models/PBSTest/Scene.egg
+*.blend1
+*.blend2
+Toolkit/Voxelizer/convert
+Toolkit/Voxelizer/temp
+Toolkit/Blender Material Library/tex
+Toolkit/Blender Material Library/MaterialLibrary.egg
+.idea/
+/.project
+Samples/03-Jimmy/
+Samples/05-Open-Driving-3D/
+instance.pid
+TODO.txt
+Models/VertexPerformanceTest/Scene.egg
+Models/LittleHouse/
+BugReports/
+Toolkit/EnvironmapPrefilter/result/
+Toolkit/EnvironmapPrefilter/source/
+Tmain.py
+run.bat

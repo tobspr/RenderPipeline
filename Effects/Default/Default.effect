@@ -1,0 +1,27 @@
+
+
+
+pass Default:
+
+    vertex:
+        template default
+
+    fragment:
+        template default
+
+
+pass Shadows:
+
+    vertex:
+        template default
+
+    fragment:
+        template default
+
+pass Voxelize:
+
+    vertex:
+        template default
+
+    fragment:
+        template default

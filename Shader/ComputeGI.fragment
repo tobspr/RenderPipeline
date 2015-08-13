@@ -1,0 +1,54 @@
+#version 430
+
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Material.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/ColorCorrection.include"
+
+
+
+uniform sampler2D normalTex;
+uniform sampler2D depthTex;
+uniform sampler2D skyboxMask;
+uniform vec3 cameraPosition;
+
+in vec2 texcoord;
+
+layout(location=0) out vec4 giColorResult;
+layout(location=1) out vec4 giSpecularResult;
+
+#pragma include "Includes/GlobalIllumination.include"
+
+void main() {
+
+    // Screen coordinate (as int vec)
+    ivec2 screenCoord = ivec2(gl_FragCoord.xy);
+
+    vec4 specularResult = vec4(0);
+
+    #if defined(DEBUG_DISABLE_GI)
+        giColorResult = vec4(1.0);
+        giSpecularResult = vec4(0);
+    #else
+
+    // No GI for the skybox
+    if (texelFetch(skyboxMask, screenCoord, 0).x > 0.5) {
+        giColorResult = vec4(0);
+        giSpecularResult = vec4(0);
+        return;
+    }
+
+    float pixelDepth = texelFetch(depthTex, screenCoord, 0).x;
+    vec3 pixelPos = calculateSurfacePos(pixelDepth, texcoord);
+    vec3 pixelNormal = unpackGBufferNormal(texelFetch(normalTex, screenCoord, 0).xyz);
+    vec3 viewVector = normalize(cameraPosition - pixelPos);
+
+    // Compute and store GI
+    vec4 giResult = computeGlobalIllumination(pixelPos, pixelNormal, viewVector, specularResult);
+
+    giColorResult = vec4(giResult);
+    giSpecularResult = vec4(specularResult);
+    #endif
+
+}

@@ -1,0 +1,33 @@
+#version 150
+
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+
+in vec2 texcoord;
+
+uniform sampler2D depthTex;
+
+
+out vec4 outNormalVS;
+out vec4 outPositionVS;
+
+// Compute view pos from depth
+vec3 computeViewSpacePos(vec2 coord) { 
+    float depth = textureLod(depthTex, coord, 0).x;
+    return calculateViewPos(depth, coord);
+}
+
+uniform vec4 bufferSize;
+
+void main() {
+    // This computes the view space normals and position from the world-space
+    // position buffer used to compute occlusion
+    vec3 viewPos = computeViewSpacePos(texcoord);
+    vec3 viewPosX1 = computeViewSpacePos(texcoord + vec2(1.0 / WINDOW_WIDTH, 0));
+    vec3 viewPosY1 = computeViewSpacePos(texcoord + vec2(0, 1.0 / WINDOW_HEIGHT));
+    vec3 viewNormal = normalize(cross(viewPos - viewPosX1, viewPos - viewPosY1));
+
+    outNormalVS = vec4(viewNormal.xyz, 1);
+    outPositionVS = vec4( viewPos.xyz, 1);
+}

@@ -1,0 +1,28 @@
+#version 150
+
+#pragma include "Includes/ScatteringPrecompute.include"
+
+uniform ScatteringOptions options;
+
+in vec2 texcoord;
+out vec4 result;
+in float layer;
+
+uniform sampler3D deltaSSampler;
+uniform sampler3D addSampler;
+
+
+
+void main() {
+
+    vec4 dhdH; 
+    float r; 
+    getDhdhR(options, int(layer), dhdH, r);
+
+    float mu, muS, nu;
+    getMuMuSNu(options, r, dhdH, mu, muS, nu);
+
+    vec3 uvw = vec3(gl_FragCoord.xy / vec2(256, 128), (layer + scatteringLayerShift) / 32.0 );
+    vec4 src = texture(addSampler, uvw);
+    result = src + vec4(texture(deltaSSampler, uvw).rgb / phaseFunctionR(options, nu), 0.0);
+}

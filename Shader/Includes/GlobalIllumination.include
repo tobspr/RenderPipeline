@@ -1,0 +1,114 @@
+#pragma once
+
+#pragma optionNV (unroll all)
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Structures/Material.struct"
+#pragma include "Includes/PoissonDisk.include"
+#pragma include "Includes/Structures/GIData.struct"
+
+uniform GIData giData;
+uniform float giReadyState;
+uniform sampler3D giVoxelData0;
+uniform sampler3D giVoxelData1;
+uniform sampler3D giVoxelData2;
+uniform sampler3D giVoxelData3;
+uniform sampler3D giVoxelData4;
+
+struct Voxel {
+    vec3 posX;
+    vec3 negX;
+    vec3 posY;
+    vec3 negY;
+    vec3 posZ;
+    vec3 negZ;
+    float solid;
+};
+
+
+uniform int frameIndex;
+
+Voxel fetchVoxel(vec3 coord, float lod) {
+    vec4 sample0 = textureLod(giVoxelData0, coord, lod);
+    vec4 sample1 = textureLod(giVoxelData1, coord, lod);
+    vec4 sample2 = textureLod(giVoxelData2, coord, lod);
+    vec4 sample3 = textureLod(giVoxelData3, coord, lod);
+    vec4 sample4 = textureLod(giVoxelData4, coord, lod);
+
+
+    Voxel v;
+    v.posX = vec3(sample0.x, sample0.y, sample0.z);
+    v.negX = vec3(sample1.x, sample1.y, sample1.z);
+    v.posY = vec3(sample2.x, sample2.y, sample2.z);
+    v.negY = vec3(sample3.x, sample3.y, sample3.z);
+    v.posZ = vec3(sample4.x, sample4.y, sample4.z);
+
+    v.negZ = vec3(sample0.w, sample1.w, sample2.w);
+    v.solid = sample4.w;
+    return v;
+}
+
+vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 specularColor) {
+
+    // In case the gi is still building
+    if (giReadyState < 0.5) {
+        return vec4(0.4);
+    }
+
+    // Compute grid variables
+    vec3 gridStart = giData.position - giData.size*0.9;
+    vec3 gridEnd = giData.position + giData.size*0.9;
+    float voxelSize = (2.0 * giData.size) / giData.resolution;
+
+    // Check if the pixel is in the grid
+    bool isInGrid = all(greaterThan(pos, gridStart)) && 
+                    all(lessThan(pos, gridEnd));
+
+    specularColor = vec4(0);
+
+    // If not in gi range, ignore this pixel
+    // TODO: Check if early out is actually faster
+    if (!isInGrid) return vec4(0.4);
+
+    // Bias position a bit, so self shadowing gets less strong
+    vec3 biasedPosition = pos + normal * voxelSize * 1.0;
+
+    // Compute coordinate in voxel space
+    vec3 localCoord = (biasedPosition-giData.position + giData.size) / (2 * giData.size);
+    vec3 localCoordOffs = mod(localCoord+ 0.5/giData.resolution, 1.0 / giData.resolution) * giData.resolution;
+
+
+    ivec3 localCoordInGrid = ivec3(localCoord * giData.resolution);
+    specularColor = vec4(0.2, 0.6, 1.0, 0);
+
+    Voxel v = fetchVoxel(localCoord, 0);
+    vec3 resultSum = vec3(0);
+
+    float mixFactor = 0.0;
+
+    resultSum += saturate(1.0 + mixFactor * (-normal.x)) * v.posX;
+    resultSum += saturate(1.0 + mixFactor * (normal.x)) * v.negX;
+    resultSum += saturate(1.0 + mixFactor * (-normal.y)) * v.posY;
+    resultSum += saturate(1.0 + mixFactor * (normal.y)) * v.negY;
+    resultSum += saturate(1.0 + mixFactor * (-normal.z)) * v.posZ;
+    resultSum += saturate(1.0 + mixFactor * (normal.z)) * v.negZ;
+
+    // resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
+    // resultSum = v.posZ * 1.0;
+    resultSum *= 0.2;
+    // resultSum *= 0.5;
+    // SRGB
+    // resultSum = pow(resultSum, vec3(1.0 / 4.2));
+    // resultSum = vec3(1);
+    // resultSum += 0.3;
+    resultSum += vec3(0.021, 0.019, 0.014) * 0.5;
+
+    // if (any(lessThan(localCoordOffs, vec3(0.05) ))) {
+    //     resultSum = mix(resultSum, vec3(1, 0, 0), 0.05);
+    // }
+
+
+
+    return vec4(resultSum, 1);
+
+}

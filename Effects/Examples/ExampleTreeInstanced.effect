@@ -1,0 +1,32 @@
+
+# This effect displaces a tree on the z-plane. 
+
+pass Default:
+
+    vertex:
+        template default
+        uniform int numInstanceRows;
+
+        insert @WS_POSITION:
+            int treeID = gl_InstanceID;
+            float x = treeID % numInstanceRows;
+            float y = treeID / numInstanceRows;
+            vOutput.positionWorld.xy += vec2(x, y) * 3.0;
+
+    fragment:
+        template default
+
+
+pass Shadows:
+
+    vertex:
+        template default
+        uniform int numInstanceRows;
+        insert @WS_POSITION:
+            int treeID = gl_InstanceID;
+            float x = treeID % numInstanceRows;
+            float y = treeID / numInstanceRows;
+            worldPos.xy += vec2(x, y) * 3.0;
+
+    fragment:
+        template default

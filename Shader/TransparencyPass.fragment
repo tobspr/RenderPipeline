@@ -1,0 +1,144 @@
+#version 420
+
+
+
+// Unrolling speeds up this pass a lot on nvidia cards
+#pragma optionNV (unroll all)
+
+
+#extension GL_EXT_shader_image_load_store : enable
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/LightingModels.include"
+
+in vec2 texcoord;
+out vec4 colorResult;
+
+
+uniform usampler2D listHeadBuffer;
+uniform usamplerBuffer materialDataBuffer;
+uniform isampler2D spinLockBuffer;
+
+#pragma include "Includes/TransparentMaterial.include"
+
+uniform sampler2D sceneTex;
+uniform sampler2D depthTex;
+
+uniform vec3 cameraPosition;
+
+
+// Temporary structure used for sorting
+struct MaterialPointer {
+    uint pointer;
+    float depth;
+};
+
+// #undef MAX_TRANSPARENCY_LAYERS
+// #define MAX_TRANSPARENCY_LAYERS 20
+
+//Bubble sort used to sort fragments
+MaterialPointer[MAX_TRANSPARENCY_LAYERS] bubbleSortFragments(MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS], int size) {
+  for (int i = (size - 2); i >= 0; --i) {
+    for (int j = 0; j <= i; ++j) {
+      if (fragments[j].depth < fragments[j+1].depth) {
+        MaterialPointer temp;
+        temp.pointer = fragments[j+1].pointer;
+        temp.depth = fragments[j+1].depth;
+
+        fragments[j+1].pointer = fragments[j].pointer;
+        fragments[j+1].depth = fragments[j].depth;
+
+        fragments[j].pointer = temp.pointer;
+        fragments[j].depth = temp.depth;
+      }
+    }
+  }
+  return fragments;
+}
+
+uniform layout(rgba16f) image2D velocityTex;
+
+
+void main() {
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
+    // Fetch current scene data, including the sslr factor to pass it through
+    vec4 currentData = texture(sceneTex, texcoord);
+    vec3 currentColor = currentData.xyz;
+    float currentSSLRFactor = currentData.w; 
+
+    #if !defined(DEBUG_DISABLE_TRANSPARENCY)
+
+    // Fetch list head
+    uint listHead = texelFetch(listHeadBuffer, coord, 0).x;
+
+    float exposure = 1.0;
+
+    // Early out .. have to test if that is faster
+    if (listHead == 0) {
+        colorResult = currentData;
+        return;
+    } 
+
+    // Fetch current velocity
+    vec4 currentVelocityData = imageLoad(velocityTex, coord);
+
+    // Store parts of the data in registers
+    MaterialPointer fragments[MAX_TRANSPARENCY_LAYERS];
+
+    // Copy the first n fragments from the per pixel list to local registers
+    uint currentEntry = listHead;
+    int entryCounter = 0;
+    while (currentEntry != 0 && entryCounter < MAX_TRANSPARENCY_LAYERS) {
+        fragments[entryCounter].pointer = currentEntry;
+        fragments[entryCounter].depth = extractMaterialDepth(texelFetch(materialDataBuffer, int(currentEntry)*2));
+        currentEntry = texelFetch(materialDataBuffer, int(currentEntry)*2).w;
+        entryCounter ++;
+    }
+
+    // Sort the data
+    // TODO: Maybe make this faster? Sorting in a shader is painfully slow
+    fragments = bubbleSortFragments(fragments, entryCounter);
+
+    float pixelDepth = texelFetch(depthTex, coord,0).x;
+
+    vec2 lastVelocity = vec2(0);
+    int renderedLayers = 0;
+
+    for (int i = 0; i < entryCounter; i++) {
+        uvec4 data1 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2);
+        uvec4 data2 = texelFetch(materialDataBuffer, int(fragments[i].pointer)*2+1);
+        TransparentMaterial tm = unpackTransparentMaterial(data1, data2);
+        tm.baseColor *= 10.0;
+
+        if (tm.depth > pixelDepth) continue;
+
+        currentColor = currentColor * (1.0-tm.alpha) + tm.baseColor * tm.alpha;
+
+        // Reduces sslr 
+        // currentSSLRFactor *= saturate(tm.alpha + 0.5);
+
+        renderedLayers += 1;
+        lastVelocity = tm.velocity / 255.0;
+    }
+
+    // update velocity
+    if (renderedLayers > 0) {
+        currentVelocityData.xy = lastVelocity;
+        imageStore(velocityTex, coord, currentVelocityData);
+    }
+
+
+    #if !defined(DEBUG_VISUALIZATION_ACTIVE)
+        // SRGB
+        currentColor = pow(currentColor, vec3(1.0 / 2.2) );
+        currentColor = 1.0 - exp(-exposure * currentColor);
+    #endif
+
+    #endif
+
+
+    colorResult = vec4(currentColor, currentSSLRFactor);
+
+}

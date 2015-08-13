@@ -1,0 +1,301 @@
+#version 420
+
+
+#extension GL_ARB_shader_image_load_store : enable
+
+// TODO: Make some benchmarks to see wheter unrolling
+// is faster or slower ..
+
+// #pragma optionNV (unroll all)
+
+// Includes
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/UBOs/Lights.ubo"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Structures/Frustum.struct"
+#pragma include "Includes/LightCulling.include"
+
+in vec2 texcoord;
+
+uniform sampler2D depth;
+
+layout (r32i) uniform writeonly iimageBuffer destinationBuffer;
+
+uniform isamplerBuffer renderedLightsBuffer;
+
+
+// Per-Light data and count
+// uniform Light lights[MAX_VISIBLE_LIGHTS];
+uniform vec4 bufferSize;
+
+
+// Matrices used for the culling
+// I defined constants because the names are quite long ..
+// But I think that will be fixed by rdb's new input system soon 
+
+#define PROJ_MAT trans_view_of_mainCam_to_clip_of_mainCam
+#define VIEW_MAT currentViewMat
+uniform mat4 PROJ_MAT;
+uniform mat4 VIEW_MAT;
+
+uniform vec3 cameraPosition;
+
+const ivec2 patchSize = ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y);
+
+#if defined(USE_DEBUG_ATTACHMENTS)
+out vec4 debugOutput;
+#endif
+
+void main() {
+
+    // Common variables
+    ivec2 screenSize = textureSize(depth, 0);
+
+    // How many patches there are (e.g. 50x30 for a resolution of 1600x960)
+    ivec2 precomputeSize = ivec2(bufferSize.zw);
+
+    // Our patch ID (0 .. precomputeSize)
+    ivec2 precomputeCoord = ivec2(gl_FragCoord.xy);
+
+    // Position on screen
+    ivec2 virtualScreenSize = (precomputeSize) * patchSize;
+    ivec2 screenCoord = ivec2( (gl_FragCoord.xy - 0.5) * patchSize);
+
+    // Base stride, this is where our data block begins
+    int bufferBaseStride = (precomputeCoord.x + precomputeCoord.y * precomputeSize.x) * LIGHTING_PER_TILE_STRIDE;
+
+    // This points to the beginning of the light data block
+    int currentBufferOrigin = bufferBaseStride + 16;
+
+    // Compute Min and Max depth
+    float minDepth = 1.0;
+    float maxDepth = 0.0;
+
+    ivec2 clampMax = ivec2(screenSize) - 1;
+    ivec2 newCoord;
+    float storedDepth;
+
+    // vec2 texelSize = 1.0 / screenSize;
+    // vec2 screenCoordTexel = vec2(newCoord) / screenSize;
+    // vec2 newCoordTexel;
+
+    // Compute min / max depth per tile
+    for (int x = 0; x < LIGHTING_COMPUTE_PATCH_SIZE_X; x+=LIGHTING_MIN_MAX_DEPTH_ACCURACY) {
+        for (int y = 0; y < LIGHTING_COMPUTE_PATCH_SIZE_Y; y+=LIGHTING_MIN_MAX_DEPTH_ACCURACY) {
+            newCoord = screenCoord + ivec2(x + y%2,y);
+            // newCoordTexel = vec2(x,y) * texelSize + screenCoordTexel;
+
+            // Check if out of screen bounds.
+            // This is necessary if the precompute size is bigger than the
+            // screen size. Otherwise the outer tiles will have a maxDepth of
+            // 0 because they sample values which are outside of the colortex. 
+            newCoord = min(newCoord, clampMax);
+            // newCoordTexel = min(newCoordTexel, vec2(1.0) );
+
+            storedDepth = texelFetch(depth, newCoord, 0).r;
+
+            // storedDepth = texture(depth, newCoordTexel);
+
+            minDepth = min(minDepth, storedDepth);
+            maxDepth = max(maxDepth, storedDepth);
+
+        }
+    }
+
+    // Also store linear depth to be able to compare
+    // light depth and min/max depth easily
+    float minDepthLinear = getLinearZFromZ(minDepth);
+    float maxDepthLinear = getLinearZFromZ(maxDepth);
+
+    // Init counters
+    int processedPointLights = 0;
+    int processedShadowedPointLights = 0;
+    int processedDirectionalLights = 0;
+    int processedShadowedDirectionalLights = 0;
+    int processedSpotLights = 0;
+    int processedShadowedSpotLights = 0;
+
+    // Read light counts
+    int countPointLight = min(MAX_POINT_LIGHTS, 
+        texelFetch(renderedLightsBuffer, 0).r);
+
+    int countPointLightShadow = min(MAX_SHADOWED_POINT_LIGHTS, 
+        texelFetch(renderedLightsBuffer, 1).r);
+
+    int countDirectionalLight = min(MAX_DIRECTIONAL_LIGHTS, 
+        texelFetch(renderedLightsBuffer, 2).r);
+
+    int countDirectionalLightShadow = min(MAX_SHADOWED_DIRECTIONAL_LIGHTS, 
+        texelFetch(renderedLightsBuffer, 3).r);
+
+    int countSpotLight = min(MAX_SPOT_LIGHTS, 
+        texelFetch(renderedLightsBuffer, 4).r);
+
+    int countSpotLightShadow = min(MAX_SHADOWED_SPOT_LIGHTS, 
+        texelFetch(renderedLightsBuffer, 5).r);
+
+
+    vec3 maxDepthPoint = calculateSurfacePos(maxDepth, texcoord);
+    vec3 minDepthPoint = calculateSurfacePos(minDepth, texcoord);
+    vec3 frustumEndPoint = calculateSurfacePos(1.0, texcoord);
+    vec3 viewVector = normalize(frustumEndPoint - cameraPosition);
+
+
+    if (minDepthLinear > SKYBOX_BEGIN) {
+        // Only skybox. We can stop here.
+
+    } else {
+
+        // Compute tile bounds, needed for frustum
+        vec2 tileScale = vec2(virtualScreenSize) / vec2( 2.0 * patchSize);
+        vec2 tileBias = tileScale - vec2(precomputeCoord);
+
+
+        // Build frustum
+        // Based on http://gamedev.stackexchange.com/questions/67431/deferred-tiled-shading-tile-frusta-calculation-in-opengl
+        // (Which is based on DICE's presentation)
+        vec4 frustumRL = vec4(-PROJ_MAT[0][0] * tileScale.x, 0.0f, tileBias.x, 0.0f);
+        vec4 frustumTL = vec4(0.0f, -PROJ_MAT[2][1] * tileScale.y, tileBias.y, 0.0f);
+
+        // The doc said frustumOffset = vec4(0,0,1,0) but panda uses 
+        // apparently an inverted coordinate system
+        const vec4 frustumOffset = vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+        // Calculate frustum planes
+        Frustum frustum;
+        frustum.left   = normalize(frustumOffset - frustumRL);
+        frustum.right  = normalize(frustumOffset + frustumRL);
+        frustum.top    = normalize(frustumOffset - frustumTL);
+        frustum.bottom = normalize(frustumOffset + frustumTL);
+
+        frustum.nearPlane = vec4(0, 0, -1.0, -minDepthLinear);
+        frustum.farPlane = vec4(0, 0, 1.0, maxDepthLinear);
+        frustum.viewMat = VIEW_MAT;
+
+
+        int currentBufferPos = 16;
+
+        // Process Point Lights
+        for (int i = 0; i < countPointLight; i++) {
+            int index = texelFetch(renderedLightsBuffer, currentBufferPos + i).x;
+            Light light = lights[index];
+            if (isPointLightInFrustum(light, frustum)) {
+                imageStore(destinationBuffer, currentBufferOrigin + processedPointLights, ivec4(index));
+                processedPointLights += 1;
+
+                // Make sure we dont write more lights than we actually have
+                if (processedPointLights >= MAX_TILE_POINT_LIGHTS) break;
+            }
+
+        }
+
+        currentBufferOrigin += MAX_TILE_POINT_LIGHTS;
+        currentBufferPos += MAX_POINT_LIGHTS;
+
+        // Process shadowed point lights
+        for (int i = 0; i < countPointLightShadow; i++) {
+            int index = texelFetch(renderedLightsBuffer, currentBufferPos + i).x;
+            Light light = lights[index];
+            if (isPointLightInFrustum(light, frustum)) {
+                imageStore(destinationBuffer, currentBufferOrigin + processedShadowedPointLights, ivec4(index));
+                processedShadowedPointLights += 1;
+
+                // Make sure we dont write more lights than we actually have
+                if (processedShadowedPointLights >= MAX_TILE_SHADOWED_POINT_LIGHTS) break;
+            }
+        }
+
+        currentBufferOrigin += MAX_TILE_SHADOWED_POINT_LIGHTS;
+        currentBufferPos += MAX_SHADOWED_POINT_LIGHTS;
+
+        // Process directional lights
+        for (int i = 0; i < countDirectionalLight; i++) {
+            // No frustum check. Directional lights are always visible
+            int index = texelFetch(renderedLightsBuffer, currentBufferPos + i).x;
+            Light light = lights[index];
+            imageStore(destinationBuffer, currentBufferOrigin + processedDirectionalLights, ivec4(index));
+            processedDirectionalLights += 1;
+
+            // Make sure we dont write more lights than we actually have
+            if (processedDirectionalLights >= MAX_TILE_DIRECTIONAL_LIGHTS) break;
+
+        }
+
+        currentBufferOrigin += MAX_TILE_DIRECTIONAL_LIGHTS;
+        currentBufferPos += MAX_DIRECTIONAL_LIGHTS;
+
+        // Process shadowed directional lights
+        for (int i = 0; i < countDirectionalLightShadow; i++) {
+            // No frustum check. Directional lights are always visible
+            int index = texelFetch(renderedLightsBuffer, currentBufferPos + i).x;
+            Light light = lights[index];
+            imageStore(destinationBuffer, currentBufferOrigin + processedShadowedDirectionalLights, ivec4(index));
+            processedShadowedDirectionalLights += 1;
+
+            // Make sure we dont write more lights than we actually have
+            if (processedShadowedDirectionalLights >= MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS) break;
+
+        }
+
+        currentBufferOrigin += MAX_TILE_SHADOWED_DIRECTIONAL_LIGHTS;
+        currentBufferPos += MAX_SHADOWED_DIRECTIONAL_LIGHTS;
+
+        // Process Spot Lights
+        for (int i = 0; i < countSpotLight; i++) {
+            int index = texelFetch(renderedLightsBuffer, currentBufferPos + i).x;
+            Light light = lights[index];
+            if (isSpotLightInFrustum(light, frustum)) {
+                imageStore(destinationBuffer, currentBufferOrigin + processedSpotLights, ivec4(index));
+                processedSpotLights += 1;
+
+                // Make sure we dont write more lights than we actually have
+                if (processedSpotLights >= MAX_TILE_SPOT_LIGHTS) break;
+
+            }
+        }
+
+        currentBufferOrigin += MAX_TILE_SPOT_LIGHTS;
+        currentBufferPos += MAX_SPOT_LIGHTS;
+
+
+        // Process shadowed Spot lights
+        for (int i = 0; i < countSpotLightShadow; i++) {
+            int index = texelFetch(renderedLightsBuffer, currentBufferPos + i).x;
+            Light light = lights[index];
+            if (isSpotLightInFrustum(light, frustum)) {
+                imageStore(destinationBuffer, currentBufferOrigin + processedShadowedSpotLights, ivec4(index));
+                processedShadowedSpotLights += 1;
+
+                // Make sure we dont write more lights than we actually have
+                if (processedShadowedSpotLights >= MAX_TILE_SHADOWED_SPOT_LIGHTS) break;
+
+            }
+        }
+
+        currentBufferOrigin += MAX_TILE_SHADOWED_SPOT_LIGHTS;
+        currentBufferPos += MAX_SHADOWED_SPOT_LIGHTS;
+        
+
+    }
+
+    // Store counters
+    imageStore(destinationBuffer, bufferBaseStride + 0, ivec4(processedPointLights));
+    imageStore(destinationBuffer, bufferBaseStride + 1, ivec4(processedShadowedPointLights));
+    imageStore(destinationBuffer, bufferBaseStride + 2, ivec4(processedDirectionalLights));
+    imageStore(destinationBuffer, bufferBaseStride + 3, ivec4(processedShadowedDirectionalLights));
+    imageStore(destinationBuffer, bufferBaseStride + 4, ivec4(processedSpotLights));
+    imageStore(destinationBuffer, bufferBaseStride + 5, ivec4(processedShadowedSpotLights));
+
+    #if defined(USE_DEBUG_ATTACHMENTS)
+        float lightsVisibleFloat = float(
+            processedPointLights + processedShadowedPointLights + 
+            processedSpotLights + processedShadowedSpotLights) / float(5.0);
+        vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
+        debugOutput = vec4(lightCountIndicator, 1);
+
+
+        // debugOutput = vec4( (VIEW_MAT * vec4(0, 0, 15, 1)).z * 0.01);
+        // debugOutput = vec4(minDepthLinear / 60.0);
+    #endif
+
+}

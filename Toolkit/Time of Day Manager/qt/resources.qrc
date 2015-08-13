@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="src">
+    <file>res/knobHover.png</file>
+    <file>res/knob.png</file>
+    <file>res/curveBG.png</file>
+    <file>res/icon.png</file>
+    <file>res/TimeManagerLogo.png</file>
+  </qresource>
+</RCC>

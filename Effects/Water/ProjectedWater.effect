@@ -1,0 +1,228 @@
+
+
+define GLOBAL_WATER_SCALE 0.3
+define WATER_DISPLACE (vec3(1.0, 1.0, 0.9) * 2.8 * GLOBAL_WATER_SCALE)
+define WATER_COORD_FACTOR (20.0 * GLOBAL_WATER_SCALE)
+define WATER_LOWRES_FACTOR 0.18
+define WATER_DISPLACE_DIST 25000.0
+
+
+pass Default:
+
+    vertex:
+
+        template default
+        include "Includes/PositionReconstruction.include"
+        uniform vec3 cameraPosition;
+        uniform sampler2D waterHeightfield;
+        uniform float waterHeight;
+
+        insert @WS_POSITION:
+            vec2 coord = vec2( (p3d_Vertex.xz * 1.1)  * 0.5 + 0.5);
+
+            // Compute ray start and direction
+            vec3 rayStart = cameraPosition;
+            vec3 rayDir = normalize(rayStart - calculateSurfacePos(1.0, coord));
+
+            // Intersect the ray with the water
+            float dist = (-rayStart.z+waterHeight) / rayDir.z;
+            vec3 intersectedPos = vec3(0);
+            float maxWaterDist = 25000.0;
+
+            // If plane is hit
+            if (dist < 0.0) {
+                intersectedPos = rayStart + rayDir * dist;
+            } else {
+                intersectedPos = vec3(rayStart.xy + rayDir.xy * -maxWaterDist, 0.0);
+            }  
+
+            vOutput.positionWorld = vec3(intersectedPos);
+            vOutput.texcoord = vec2(vOutput.positionWorld.xy / WATER_COORD_FACTOR);
+
+            // Fade displacement at borders
+            float fade = 1.0;
+            float fadeArea = 0.12;
+
+            fade *= saturate(coord.x / fadeArea);
+            fade *= saturate( (1.0 - coord.y) / fadeArea);
+
+            fade *= saturate(coord.y / fadeArea);
+            fade *= saturate( (1.0 - coord.y) / fadeArea);
+            // fade = 1.0;
+            float displaceLod = 0.0;
+
+            vec3 displace = textureLod(waterHeightfield, vOutput.texcoord, displaceLod).xyz + textureLod(waterHeightfield, vOutput.texcoord * WATER_LOWRES_FACTOR, displaceLod).xyz * 2.0 - 1.0;
+            float displaceFactor = 1.0 - saturate(distance(cameraPosition, intersectedPos) / WATER_DISPLACE_DIST);
+
+            vOutput.positionWorld += displace * WATER_DISPLACE * fade * displaceFactor;
+
+        insert @VERTEX_PROJECTION:
+            // vOutput.lastProjectedPos = vec4(0);
+            gl_Position = currentMVP * vec4(vOutput.positionWorld.xyz, 1);
+
+    // tesscontrol:
+    //     template default
+
+    //     insert @TESS_LEVEL:
+    //         TessLevelInner = 1.0;
+    //         TessLevelOuter = 1.0;
+
+    // tesseval:
+    //     template default
+
+    fragment:
+        template default
+
+        uniform sampler2D waterHeightfield;
+        uniform sampler2D waterNormal;
+        uniform sampler2D waterFoam;
+        uniform float waterHeight;
+        uniform vec3 cameraPosition;
+
+        uniform sampler2D terrainHeightmap;
+        uniform vec3 terrainScale;
+        uniform vec3 terrainOffset;
+
+        insert @MATERIAL:
+
+
+            float hmapSize = textureSize(terrainHeightmap, 0).x;
+            // vec2 terrainCoord = vec2(vOutput.positionWorld.xy * terrainScale.xy + terrainOffset.xy) / hmapSize;
+            vec2 terrainCoord = vec2(vOutput.positionWorld.xy - terrainOffset.xy) / hmapSize / terrainScale.xy;
+            float terrainHeight = texture(terrainHeightmap, terrainCoord).x * terrainScale.z + terrainOffset.z;
+
+            float sampleLod = saturate( (distance(vOutput.positionWorld, cameraPosition)-10.0) / 500.0);
+            sampleLod = pow(log2(1.0 + sampleLod), 0.45);
+            sampleLod = clamp(sampleLod, 0.0, 0.55);
+            sampleLod = 0.0;
+
+            vec3 normalDetail = textureLod(waterNormal, vOutput.texcoord, sampleLod ).xyz;
+            vec3 normalLow = textureLod(waterNormal, vOutput.texcoord * WATER_LOWRES_FACTOR, sampleLod).xyz;
+            vec3 normal = (normalDetail + normalLow) * 0.5;
+
+            vec3 dispDetail = textureLod(waterHeightfield, vOutput.texcoord, sampleLod).xyz;
+            vec3 dispLow = textureLod(waterHeightfield, vOutput.texcoord * WATER_LOWRES_FACTOR, sampleLod).xyz;
+            vec3 disp = (dispDetail + dispLow) * 0.5;
+
+            float displaceFactor = saturate(distance(vOutput.positionWorld, cameraPosition) / WATER_DISPLACE_DIST);
+            // displaceFactor = 0.0;
+            normal = mix(normal, vec3(0,0,1), displaceFactor);
+            // normalDetail = mix(vec3(0, 0, 1), normalDetail, displaceFactor);
+
+            float heightDifference = abs(waterHeight - terrainHeight + disp.z * (WATER_DISPLACE).z );
+            float foamFactor = 1.0 - saturate(heightDifference * 0.1);
+
+            foamFactor = 0.0;
+
+            vec3 foam = textureLod(waterFoam, vOutput.texcoord * 0.1, sampleLod).xyz 
+                        * textureLod(waterFoam, vOutput.texcoord * 0.2, sampleLod).xyz;
+            foam = pow(foam, vec3(3.0));
+            foam = foam.xxx;
+
+
+            float fold = max(0.0, pow( mix(normalLow.z * normalDetail.z * 25.0, normalDetail.z, 0.5), 2.1) * 0.2);
+
+            fold *= saturate(1.0 - displaceFactor * 1.0);
+
+            normal = normalize(vec3(normal.x, normal.y, 12.0 / 512.0));
+                
+            // normal = vec3(0, 0, 1);
+
+            vec3 groundCol = vec3(0.12, 0.39, 0.5) * 0.04;
+
+            m.baseColor = groundCol;
+            // m.baseColor += saturate(pow(disp.z, 0.8)) * vec3(0.18, 0.5, 0.6) * 0.03;
+
+            // m.baseColor *= 2.2;
+
+            // m.baseColor = vec3(0.1,0.2, 0.25) * 0.1;
+            // m.baseColor = vec3(0.0, 0.1, 0.02) * 0.1;
+            // m.baseColor = foam * vec3(1.5,1.0,1.0) * displaceFactor * 1.0;
+            m.baseColor += fold * vec3(1.0,1.0,1.0) * 4.0 * 0.0;
+
+            m.baseColor += foamFactor * foam * 1.0;
+
+
+            m.baseColor = pow(m.baseColor, vec3(2.0));
+            // m.baseColor *= 0.0;
+
+            #if !defined(IS_TRANSPARENT)
+            m.translucency = 1.0;
+            #endif
+
+            m.baseColor *= 20.0;
+
+            m.normal = normal * (cameraPosition.z < waterHeight ? -1 : 1);
+            m.metallic = 1.0;
+            m.specular = 1.0;
+            m.roughness = 0.3;
+
+
+            #if defined(IS_TRANSPARENT)
+            m.alpha = 1.0 - saturate(foamFactor);
+            m.alpha = 1.0;
+            #endif
+
+
+pass Shadows:
+
+    vertex:
+        template default
+        include "Includes/PositionReconstruction.include"
+        uniform vec3 cameraPosition;
+        uniform sampler2D waterHeightfield;
+        uniform mat4 p3d_ViewProjectionMatrix;
+        uniform mat4 p3d_ViewProjectionMatrixInverse;
+        uniform mat4 trans_apiclip_to_world;
+        uniform float waterHeight;
+        
+
+        insert @FUNCTIONS:
+
+            vec3 reprojectCoord(vec2 coord, float depth) {
+                vec4 proj = p3d_ViewProjectionMatrixInverse * vec4(coord, depth*2.0-1.0, 1.0);
+                proj.xyz /= proj.w;
+                return proj.xyz;
+            }
+
+        insert @WS_POSITION:
+
+            vec2 coord = p3d_Vertex.xz * 1.2;
+
+            // Compute ray start and direction
+            vec3 rayStart = reprojectCoord(coord, 0.0);
+            vec3 rayDir = normalize(rayStart - reprojectCoord(coord, 1.0));
+
+            // Intersect the ray with the water
+            float distance = (-rayStart.z+waterHeight) / rayDir.z;
+            vec3 intersectedPos = vec3(0);
+            float maxWaterDist = 3000.0;
+
+            // If plane is hit
+            if (distance < 0.0) {
+                intersectedPos = rayStart + rayDir * distance;
+            } else {
+                intersectedPos = vec3(rayStart.xy + rayDir.xy * -maxWaterDist, 0.0);
+            }  
+
+            worldPos.xyz = vec3(intersectedPos);
+            texcoord = vec2(worldPos.xy / WATER_COORD_FACTOR);
+
+            // vec3 displace = texture(waterHeightfield, texcoord).xyz;
+            // worldPos.xyz += displace * vec3(0.6, 0.6, 1.5) * 1.7;
+
+        insert @VERTEX_PROJECTION:
+
+            gl_Position = p3d_ViewProjectionMatrix * worldPos;   
+
+
+
+    // tesscontrol:
+    //     template default
+
+    // tesseval:
+    //     template default
+
+
+    fragment:
+        template default

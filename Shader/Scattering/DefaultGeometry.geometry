@@ -1,0 +1,19 @@
+#version 410
+
+layout(triangles, invocations=32) in;
+layout(triangle_strip, max_vertices = 3) out;
+
+in vec2 texcoordVertex[3];
+out vec2 texcoord;
+out float layer;
+
+void main() {
+    for (int i = 0; i < 3; i++) {
+        gl_Position = gl_in[i].gl_Position;
+        gl_Layer = gl_InvocationID;
+        layer = gl_Layer;
+        texcoord = texcoordVertex[i];
+        EmitVertex();
+    }
+    EndPrimitive();
+}

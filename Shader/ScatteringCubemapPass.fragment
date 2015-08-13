@@ -1,0 +1,53 @@
+#version 430
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/ApplyScattering.include"
+
+in vec2 texcoord;
+
+#if defined(USE_DEBUG_ATTACHMENTS)
+out vec4 result;
+#endif
+
+uniform sampler3D inscatterSampler;
+uniform ScatteringOptions scatteringOptions;
+uniform int cubemapSize;
+
+layout(rgba16f) uniform imageCube cubemapDest;
+
+void main() {
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 localCoord = coord % cubemapSize;
+    vec2 floatCoord = localCoord / vec2(cubemapSize) * 2.0 - 1.0;
+    int faceIndex = coord.x / cubemapSize; 
+
+    // Compute cubemap direction
+    vec3 baseDir = getCubemapCoordinate(faceIndex, floatCoord);
+
+    // Compute scattering
+    vec3 attenuation = vec3(0);
+    float irradianceFactor = 0.0;
+
+    // TODO: Verify the baseDir direction!
+    baseDir.z = -baseDir.z;
+
+    vec3 scatteringResult = scatteringComputeInscatteredLight(
+        scatteringOptions,
+        baseDir * 100000.0, 
+        vec3(0,0,10),
+        baseDir, 
+        inscatterSampler,
+        vec4(0),
+        true,
+        attenuation, 
+        irradianceFactor);
+
+    imageStore(cubemapDest, ivec3(localCoord, faceIndex), vec4(scatteringResult, 1.0));
+
+    #if defined(USE_DEBUG_ATTACHMENTS)
+        result = vec4(scatteringResult, 1.0);
+    #endif
+
+}
+

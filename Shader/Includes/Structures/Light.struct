@@ -1,0 +1,12 @@
+#pragma once
+
+struct Light {
+    vec3 position; 
+    vec3 color;
+    int posterIndex;
+    int iesProfile;
+    int lightType;
+    float radius;
+    mat4 mvp;
+    int sourceIndexes[6];
+};

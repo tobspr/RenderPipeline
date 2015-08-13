@@ -1,0 +1,29 @@
+#pragma once
+
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/IntersectionTests.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/Structures/Light.struct"
+
+
+// FIXME
+bool isPointLightInFrustum(Light light, Frustum frustum) {
+    // return true;
+    vec4 projectedPos = frustum.viewMat * vec4(light.position, 1);
+    if (sphereInFrustum(frustum, projectedPos, light.radius)) {
+        return true;
+    }
+    return false;
+}
+
+
+// FIXME
+bool isSpotLightInFrustum(Light light, Frustum frustum) {
+    return true;
+    vec4 projectedPos = frustum.viewMat * vec4(light.position, 1);
+    if (sphereInFrustum(frustum, projectedPos, light.radius * 3.0)) {
+        return true;
+    }
+    return false;
+}

@@ -1,0 +1,59 @@
+
+
+pass Default:
+
+    vertex:
+        template default
+
+    fragment:
+        template default
+        // Material options
+        uniform float opt_roughness;
+        uniform float opt_metallic;
+        uniform float opt_specular;
+        uniform float opt_basecolor_r;
+        uniform float opt_basecolor_g;
+        uniform float opt_basecolor_b;
+        uniform sampler2D demoBumpTex;
+
+        insert @DETAIL_NORMAL:
+            bumpFactor = 1.0;
+            detailNormal = texture(demoBumpTex, vOutput.texcoord).xyz * 2 - 1;
+
+        insert @MATERIAL:
+            m.baseColor = vec3(opt_basecolor_r, opt_basecolor_g, opt_basecolor_b);
+            m.metallic = opt_metallic;
+            m.specular = opt_specular;
+            m.roughness = opt_roughness;
+
+
+pass Shadows:
+    vertex:
+        template default
+
+    fragment:
+        template default
+
+
+
+pass Voxelize:
+    
+    vertex:
+        template default
+
+    fragment:
+        template default
+        // Material options
+        uniform float opt_roughness;
+        uniform float opt_metallic;
+        uniform float opt_specular;
+        uniform float opt_basecolor_r;
+        uniform float opt_basecolor_g;
+        uniform float opt_basecolor_b;
+
+        insert @MATERIAL:
+            m.baseColor = vec3(opt_basecolor_r, opt_basecolor_g, opt_basecolor_b);
+            m.metallic = opt_metallic;
+            m.specular = opt_specular;
+            m.roughness = opt_roughness;
+            m.baseColor = vec3(vOutput.texcoord, 0);

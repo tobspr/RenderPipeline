@@ -1,0 +1,23 @@
+#pragma once
+
+
+vec3 applyChromaticAbberation(sampler2D source, vec2 texcoord, float strength) {
+
+
+
+    float chromaticFactor = saturate(length( (texcoord-vec2(0.5)) * vec2(0.5,0.4)  )-0.15) * 20.0 * strength;
+    ivec2 screenSize = textureSize(source, 0);
+
+    float multiplier = texcoord.x > 0.5 ? -1.0 : 1.0;
+
+    vec2 redAbVector = vec2(chromaticFactor,0) / screenSize * multiplier;
+    vec2 greenAbVector = vec2(0);
+    vec2 blueAbVector = vec2(-chromaticFactor,0) / screenSize * multiplier;
+
+    vec3 result;
+    result.r = textureLod(source, texcoord + redAbVector, 0).r;
+    result.g = textureLod(source, texcoord + greenAbVector, 0).g;
+    result.b = textureLod(source, texcoord + blueAbVector, 0).b;
+
+    return result;
+}

@@ -1,0 +1,215 @@
+#version 400
+
+// #pragma optionNV (unroll all)
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/PoissonDisk.include"
+#pragma include "Includes/Noise3D.include"
+
+
+#pragma include "Includes/ApplyScattering.include"
+uniform ScatteringOptions scatteringOptions;
+
+
+in vec2 texcoord;
+out vec4 colorResult;
+out vec4 positionResult;
+
+uniform vec3 cameraPosition;
+uniform sampler2D worldSpacePosition;
+
+uniform float cloudStartHeight;
+uniform float cloudEndHeight;
+uniform sampler3D cloudVoxelGrid;
+uniform sampler3D cloudNoise;
+
+uniform samplerCube fallbackCubemap;
+
+vec3 transformCubemapCoordinates(vec3 coord) {
+    return normalize(coord.xzy * vec3(1,-1,1));
+}
+
+
+float getCloudFactor(vec3 coord) {
+
+
+    coord.z *= 128.0 / 756.0;
+
+    // return 1.0 - saturate(distance(mod(coord, 1.0), vec3(0.5, 0.5, 0.5 * 128.0 /756.0)) / 0.1);
+    return mix(saturate(snoise(coord*64.523)*0.5+0.5), 1.0, 0.8) * 
+        mix(saturate(snoise(coord*16.523)*0.5+0.5), 1.0, 0.4) * 
+        mix(saturate(snoise(coord*6.523)*0.5+0.5), 1.0, 0.2) * 
+        saturate(snoise(coord*3.523)*0.5+0.2) * saturate(coord.z / 0.2);
+
+    // vec3 noiseScale = vec3(1, 1, 128.0 / 756.0);
+    // return max(0.0, textureLod(cloudVoxelGrid, coord, 0).x 
+    //             - 0.04 * textureLod(cloudNoise, coord * 32.0 * noiseScale, 0).x
+    //             - 0.01 * textureLod(cloudNoise, coord * 128.0 * noiseScale, 0).x);
+}
+
+void main() {
+
+    colorResult = vec4(1,1,1, 1.0);
+    positionResult = vec4(0.2, 0.6, 1.0, 1.0);
+
+
+    // trace to sun vector
+    vec3 sunVector = normalize(scatteringOptions.sunVector);
+
+    vec3 pixelPos = texture(worldSpacePosition, texcoord, 0).xyz;
+
+    vec3 rayStart = cameraPosition;
+    vec3 rayEnd = pixelPos;
+    vec3 rayDir = normalize(rayStart - rayEnd);
+
+    // Intersect with lower plane
+    float distLower = (-rayStart.z+cloudStartHeight) / rayDir.z;
+    float distUpper = (-rayStart.z+cloudEndHeight) / rayDir.z;
+
+
+    float distanceLen = distance( normalize(-rayDir), normalize(sunVector) );
+    float sunDistance = saturate(1.0 - distanceLen);
+    float sunFactor = pow(sunDistance, 150.0);
+    float sunFactorOuter = pow(sunDistance, 4.0);
+
+    float distanceFactor = smoothstep(0.0, 1.0, saturate(-rayDir.z * 22.0));
+    distanceFactor  = 1.0;
+
+    vec3 sunArea = vec3(sunFactor * 120.0 * vec3(1,1,0.8) + sunFactorOuter * vec3(1.1,1,0.7) * 0.9 );
+
+
+    if (distUpper < 0.0) {
+        vec3 intersectLower = rayStart + rayDir * distLower;
+        vec3 intersectUpper = rayStart + rayDir * distUpper;
+
+        colorResult = vec4(intersectLower, 1.0);
+
+        const int numSteps = 32;
+        const int numStepsSun = 8;
+
+        vec3 currentPos = intersectLower;
+        vec3 posStep = (intersectUpper - intersectLower) / numSteps;
+
+        float hitFactor = 1.0;
+
+        vec3 pixelSize = 1.0 / textureSize(cloudVoxelGrid, 0).xyz;
+        vec3 firstHit = vec3(0);
+
+        float opacity = 0.0;
+        float opacityFactor = 0.0;
+
+        for (int i = 0; i < numSteps; i++) {
+
+            vec3 sampleCoord = vec3(currentPos.xy / 15000.0, (currentPos.z-cloudStartHeight) / (cloudEndHeight - cloudStartHeight)  );           
+            float sampleVal = getCloudFactor(sampleCoord);
+            opacity += sampleVal;
+           
+            if (length(firstHit) < 0.001 && sampleVal > 0.002) {
+                firstHit = sampleCoord;
+                opacityFactor = 1.0;
+            } 
+
+            currentPos += posStep;
+        }
+
+        positionResult.xyz = firstHit;
+        positionResult.w = 1.0;
+
+        // opacity *= 0.08 * 512.0 / numSteps;
+        // opacity = pow(opacity ,4.0);
+        // opacity -= 0.1;
+        opacity = saturate(opacity);
+
+        float cloudMask = length(firstHit) > 0.0001 ? 1.0 : 0.0;
+
+        currentPos = firstHit;
+        vec3 endPos = currentPos + vec3(0,0, 1) * 0.4;
+
+        posStep = (endPos - currentPos) / numStepsSun;
+        float intersections = 0.0;
+
+        // trace brightness
+        for (int i = 0; i < numStepsSun; i++) {
+            if (currentPos.z > 1.0) break;
+
+            intersections += getCloudFactor(currentPos);
+            currentPos += posStep;
+        }
+
+        intersections /= numStepsSun;
+
+
+        // trace thickness
+
+        vec3 normal = vec3(0);
+        float ao_hits = 0.0;
+
+
+
+
+
+
+        // for (int i = 0; i < 32; i++) {
+            // vec3 offs = poisson3D_32[i] * pixelSize * 45.0;
+            // float sampleHit = getCloudFactor(firstHit + offs);
+            // ao_hits += sampleHit;
+            // normal += sampleHit * normalize(-offs);
+        // }
+        const int kernelRadius = 3;
+        for (int x = -kernelRadius; x <= kernelRadius; x++) {
+            for (int y = -kernelRadius; y <= kernelRadius; y++) {
+                for (int z = -kernelRadius; z <= kernelRadius; z++) {
+                    vec3 offs = vec3(x, y, z) * pixelSize * 2.0;
+                    float sampleHit = getCloudFactor(firstHit + offs);
+                    normal += sampleHit * (-offs);
+                    ao_hits += sampleHit;
+                }       
+            }            
+        }
+
+        normal = normalize(normal);
+
+        // normal = normalize(normal * vec3(1,1,128.0 / 756.0));
+
+        // vec3 normalDetail = vec3(0);
+        // for (int i = 0; i < 32; i++) {
+        //     vec3 offs = poisson3D_32[i] * pixelSize * 4.0;
+        //     float sampleHit = getCloudFactor(firstHit + offs);
+        //     ao_hits += sampleHit;
+        //     normalDetail += sampleHit * normalize(-offs);
+        // }
+        // normalDetail = normalize(normalDetail * vec3(1,1,128.0 / 756.0));
+
+        ao_hits /= 5.0;
+
+        // normal = mix(normal,normalDetail, 0.0);
+
+        float ao_factor = 1.0 - 0.8*saturate(ao_hits);
+
+        // ao_factor = 1.0;
+
+        vec3 ambientResult = textureLod(fallbackCubemap, transformCubemapCoordinates(normal), 14).xyz;
+        ambientResult = vec3(1);
+        // colorSum /= numSteps;
+        // colorSum = pow(colorSum * 6.1, vec3(2.0));
+        // colorSum *= 0.5;
+        float brightness = saturate(1.0 - 0.7 * saturate(intersections * 5.0));
+
+        // brightness = mix(1.0,brightness, distanceFactor);
+
+        vec3 sunColor = saturate(mix(vec3(0.1,0.2,0.4)*0.4, vec3(1.5,1.2,1)*1.7, saturate(dot(sunVector, normal))));
+
+        colorResult.xyz = vec3(cloudMask * ao_factor * brightness * sunColor * ambientResult * 5.0 );
+        // colorResult.xyz = vec3(colorSum * saturate(mix(vec3(0.1,0.2,0.4)*0.4, vec3(1.5,1.2,1)*1.7, saturate(dot(sunVector, normal)))));
+        colorResult.xyz += sunArea * (1.0 - opacity) * 7.0;
+
+        colorResult.xyz = vec3(cloudMask * abs(normal.y) );
+        colorResult.w = opacity * distanceFactor;
+    }
+
+    // colorResult.xyz = vec3(sunArea);
+
+    // colorResult.xyz = vec3(snoise(vec3(texcoord*15.0, 0.0))*0.5 + 0.5);
+
+}

@@ -1,0 +1,33 @@
+#version 400
+
+
+#pragma include "Includes/Configuration.include"
+
+in vec2 texcoord;
+
+uniform sampler2D currentOcclusionTex;
+uniform sampler2D lastFrameDepth;
+uniform sampler2D lastFrameOcclusion;
+uniform sampler2D velocityTex;
+uniform mat4 currentMVP;
+uniform mat4 lastMVP;
+
+out vec4 result;
+
+void main() {
+
+
+    vec2 velocity = texture(velocityTex, texcoord).xy;
+    vec2 lastCoord = texcoord + velocity;
+    vec4 currentOcclusion = texture(currentOcclusionTex, texcoord);
+    vec4 lastOcclusion = texture(lastFrameOcclusion, lastCoord);
+    
+    float weight = 0.5;
+
+
+    if (any(greaterThan(lastCoord, vec2(1))) || any(lessThan(lastCoord, vec2(0)))) {
+        weight = 0.0;
+    }
+
+    result = mix(currentOcclusion, lastOcclusion, weight);
+}

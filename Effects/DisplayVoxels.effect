@@ -1,0 +1,110 @@
+
+
+
+pass Default:
+
+    vertex:
+        template default
+
+        include "Includes/Structures/GIData.struct"
+
+        uniform GIData giData;
+
+
+        insert @WS_POSITION:
+            int cubeID = gl_InstanceID;
+            float x = cubeID % GI_GRID_RESOLUTION;
+            float y = cubeID / (GI_GRID_RESOLUTION*GI_GRID_RESOLUTION);
+            float z = (cubeID / GI_GRID_RESOLUTION) % GI_GRID_RESOLUTION;
+
+            float voxelSize = (2.0 * giData.size) / giData.resolution;
+            vOutput.positionWorld *= voxelSize * 0.3;
+            vOutput.positionWorld += (giData.position) - giData.size;
+            vOutput.positionWorld += voxelSize * vec3(x, y, z);
+            vOutput.positionWorld += 0.01;
+
+            // vOutput.positionWorld.xy += vec2(x, y) * 3.0;
+
+
+    fragment:
+        template default
+
+
+        include "Includes/Structures/GIData.struct"
+
+        uniform GIData giData;
+
+        uniform sampler3D giDataTex0;
+        uniform sampler3D giDataTex1;
+        uniform sampler3D giDataTex2;
+        uniform sampler3D giDataTex3;
+        uniform sampler3D giDataTex4;
+
+        insert @FUNCTIONS:
+
+            struct Voxel {
+                vec3 posX;
+                vec3 negX;
+                vec3 posY;
+                vec3 negY;
+                vec3 posZ;
+                vec3 negZ;
+                bool solid;
+            };
+
+            Voxel fetchVoxel(vec3 coord) {
+
+                // textureLod() seems to be the fastest, even faster than texelFetch() and texture()
+                vec4 sample0 = textureLod(giDataTex0, coord, 0);
+                vec4 sample1 = textureLod(giDataTex1, coord, 0);
+                vec4 sample2 = textureLod(giDataTex2, coord, 0);
+                vec4 sample3 = textureLod(giDataTex3, coord, 0);
+                vec4 sample4 = textureLod(giDataTex4, coord, 0);
+                
+                Voxel v;
+
+                v.posX = vec3(sample0.x, sample0.y, sample0.z);
+                v.negX = vec3(sample1.x, sample1.y, sample1.z);
+                v.posY = vec3(sample2.x, sample2.y, sample2.z);
+                v.negY = vec3(sample3.x, sample3.y, sample3.z);
+                v.posZ = vec3(sample4.x, sample4.y, sample4.z);
+
+                v.negZ = vec3(sample0.w, sample1.w, sample2.w);
+
+                v.solid = sample4.w > 0.1;
+                return v;
+            }
+
+        insert @MATERIAL:
+
+            vec3 vsCoord = (vOutput.positionWorld - giData.positionGeneration + giData.size) / (2.0 * giData.size);
+            ivec3 vsiCoord = ivec3(vsCoord * giData.resolution);
+            Voxel v = fetchVoxel(vsCoord);
+
+
+            vec3 combinedColor = vec3(0);
+
+            if (abs(m.normal.x) > 0.5) {
+                combinedColor = mix(v.posX, v.negX, m.normal.x < 0.0 ? 1 : 0);
+            }
+
+            if (abs(m.normal.y) > 0.5) {
+                combinedColor = mix(v.posY, v.negY, m.normal.y < 0.0 ? 1 : 0);
+            }
+
+            if (abs(m.normal.z) > 0.5) {
+                combinedColor = mix(v.posZ, v.negZ, m.normal.z < 0.0 ? 1 : 0);
+            }
+
+            combinedColor *= 0.1;
+            // if (!v.solid) discard;
+            if (length(combinedColor) < 0.05) discard;
+
+
+            m.normal = vOutput.normalWorld; 
+            m.specular = 0;
+            m.metallic = 0;
+            m.roughness = 1;
+            m.baseColor = vec3(combinedColor);
+
+
