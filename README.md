@@ -75,6 +75,6 @@ https://github.com/tobspr/RenderPipeline/wiki/Getting-Started
 
 You can find a lot more screenshots <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa?dl=0">here</a>, or in the forum thread.
 
-![Sponza](http://fs1.directupload.net/images/150810/ampc4zkd.png)
+![Sponza](http://fs1.directupload.net/images/150813/eonuaryk.png)
 ![Terrain](http://fs1.directupload.net/images/150803/33uuhjc3.png)
 ![Couch Scene](http://fs2.directupload.net/images/150502/jl66b4cc.png)
