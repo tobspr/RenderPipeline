@@ -28,6 +28,7 @@ uniform int frameIndex;
 #endif
 
 #pragma ENTRY_POINT SHADER_IN_OUT
+#pragma ENTRY_POINT FUNCTIONS
 
 
 void main() {
@@ -74,7 +75,7 @@ void main() {
     #endif
         
     // Most textures are not in sRGB, account for that
-    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(1.7));
+    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(1.5));
 
     // Extract material properties
     float specularFactor = vOutput.materialSpecular.x;
@@ -103,6 +104,10 @@ void main() {
     m.specular = sampledSpecular.r * specularFactor;
     m.metallic = metallic;
     m.normal = mixedNormal;
+
+    // m.metallic = 0;
+    // m.specular = 0.04;
+    // m.roughness = 0.4;
 
     // Entry point for the user to modify the material
     #pragma ENTRY_POINT MATERIAL

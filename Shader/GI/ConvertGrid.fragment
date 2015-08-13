@@ -27,7 +27,7 @@ struct VoxelDirections {
 
 VoxelDirections unpackData(int packedData) {
     VoxelDirections dir;
-    float scaleF = 2.0;
+    float scaleF = 0.01;
     dir.posX = ((packedData >> 0*5) & 0x1F) / 31.0 * scaleF;
     dir.negX = ((packedData >> 1*5) & 0x1F) / 31.0 * scaleF;
     dir.posY = ((packedData >> 2*5) & 0x1F) / 31.0 * scaleF;
@@ -49,7 +49,7 @@ void main() {
     VoxelDirections voxelG = unpackData(valG);
     VoxelDirections voxelB = unpackData(valB);
 
-    float solid = step(1, valR+valG+valB); 
+    float solid = step(1, max(valR, max(valG, valB))); 
 
     imageStore(voxelDataDest0, coord3D, vec4(voxelR.posX, voxelG.posX, voxelB.posX,  voxelR.negZ));
     imageStore(voxelDataDest1, coord3D, vec4(voxelR.negX, voxelG.negX, voxelB.negX,  voxelG.negZ));
@@ -61,7 +61,10 @@ void main() {
         color = vec4(
                 voxelR.posX + voxelR.negX + voxelR.posY + voxelR.negY + voxelR.posZ + voxelR.negZ,
                 voxelG.posX + voxelG.negX + voxelG.posY + voxelG.negY + voxelG.posZ + voxelG.negZ,
-                voxelB.posX + voxelB.negX + voxelB.posY + voxelB.negY + voxelB.posZ + voxelB.negZ, 1);
+                voxelB.posX + voxelB.negX + voxelB.posY + voxelB.negY + voxelB.posZ + voxelB.negZ, 1) * 10.0;
+        color += vec4(1,1, 0, 1) * solid;
     #endif
+
+
 
 }

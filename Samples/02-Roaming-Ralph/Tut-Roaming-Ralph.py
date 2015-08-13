@@ -210,8 +210,8 @@ class World(ShowBase):
         # self.cTrav.showCollisions(render)
 
         # Create some ocean
-        # self.water = ProjectedWaterGrid(self.renderPipeline)
-        # self.water.setWaterLevel(-3.0)
+        self.water = ProjectedWaterGrid(self.renderPipeline)
+        self.water.setWaterLevel(-3.0)
 
         # Create the skybox
         self.skybox = self.renderPipeline.getDefaultSkybox()

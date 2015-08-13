@@ -6,25 +6,25 @@
 
 #pragma include "Includes/PositionReconstruction.include"
 
-uniform sampler2D viewSpaceNormals;
-uniform sampler2D viewSpacePosition;
+uniform sampler2D depthTex;
 
 
 #undef OCCLUSION_SAMPLES
-#define OCCLUSION_SAMPLES 32
+  #define OCCLUSION_SAMPLES 32
 
 // total number of samples at each fragment
-#define SAO_NUM_SPIRAL_TURNS      8
+#define SAO_NUM_SPIRAL_TURNS      4
 #define SAO_VARIATION             1
 
-const float saoConstIntensity = 5.0;
-const float saoSampleRadiusWS = 20.0;
+const float saoConstIntensity = 4.0;
+const float saoSampleRadiusWS = OCCLUSION_RADIUS * 1.0;
 const float saoBias = 0.05;
 const float saoEpsilon = 0.02;
 
  
 vec3 sao_getPositionVS(vec2 uv) {
-  return textureLod(viewSpacePosition, uv, 0).xyz;
+  float d = textureLod(depthTex, uv, 0).x;
+  return calculateViewPos(d, uv);
 }
 
 // returns a unit vector and a screen-space radius for the tap on a unit disk 
@@ -93,7 +93,13 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
   
 
   vec3 originVS = sao_getPositionVS(coord);
-  vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
+  
+  // Compute normal based on depth buffer
+  vec3 originVSX1 = sao_getPositionVS(coord + vec2(1.0 / WINDOW_WIDTH, 0));
+  vec3 originVSY1 = sao_getPositionVS(coord + vec2(0, 1.0 / WINDOW_HEIGHT));
+
+  // vec3 normalVS = texture(viewSpaceNormals, coord).xyz;
+  vec3 normalVS = normalize(cross(originVS - originVSX1, originVS - originVSY1));
 
   #if defined(USE_TEMPORAL_OCCLUSION)
     float randomPatternRotationAngle = (frameIndex % 2);
@@ -114,6 +120,8 @@ float computeOcclusion(vec2 coord, ivec2 coordInt, float distanceToCamera) {
     occlusion += sao_sampleAO(coord, originVS, normalVS, radiusSS, i, randomPatternRotationAngle);
   }
   
+
+
   occlusion = occlusion / float(OCCLUSION_SAMPLES) * saoConstIntensity;
   return occlusion;
 }

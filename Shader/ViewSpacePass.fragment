@@ -7,36 +7,27 @@
 in vec2 texcoord;
 
 uniform sampler2D depthTex;
-uniform mat4 currentViewMat;
+
 
 out vec4 outNormalVS;
 out vec4 outPositionVS;
 
-
-vec3 getPositionWorld(ivec2 coord) {
-    float z = texelFetch(depthTex, coord, 0).x;
-    return calculateSurfacePos(z, coord / vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+// Compute view pos from depth
+vec3 computeViewSpacePos(vec2 coord) { 
+    float depth = textureLod(depthTex, coord, 0).x;
+    return calculateViewPos(depth, coord);
 }
 
 uniform vec4 bufferSize;
 
 void main() {
     // This computes the view space normals and position from the world-space
-    // position buffer used to compute occlusions
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+    // position buffer used to compute occlusion
+    vec3 viewPos = computeViewSpacePos(texcoord);
+    vec3 viewPosX1 = computeViewSpacePos(texcoord + vec2(1.0 / WINDOW_WIDTH, 0));
+    vec3 viewPosY1 = computeViewSpacePos(texcoord + vec2(0, 1.0 / WINDOW_HEIGHT));
+    vec3 viewNormal = normalize(cross(viewPos - viewPosX1, viewPos - viewPosY1));
 
-    vec3 pixelW = vec3(bufferSize.xy, 0);
-    vec3 world   = getPositionWorld(coord);
-    vec3 worldX1 = getPositionWorld(coord + ivec2(1, 0));
-    vec3 worldY1 = getPositionWorld(coord + ivec2(0, 1));
-
-    vec3 worldDx = world - worldX1;
-    vec3 worldDy = world - worldY1;
-
-    vec3 worldSpaceNormal = normalize(cross(worldDx, worldDy));
-    vec4 viewSpaceNormal = normalize(currentViewMat * vec4(worldSpaceNormal, 0));
-    vec4 viewSpacePosition = currentViewMat * vec4(world, 1);
-
-    outNormalVS = vec4(viewSpaceNormal.xyz, 1);
-    outPositionVS = vec4(viewSpacePosition.xyz, 1);
+    outNormalVS = vec4(viewNormal.xyz, 1);
+    outPositionVS = vec4( viewPos.xyz, 1);
 }

@@ -193,6 +193,14 @@ class BufferViewerGUI(DebugObject):
 
         backBtn = BetterButton(
             self.buffersParent, 230, 2, "Back", callback=self.renderBuffers)
+        writeBtn = BetterButton(
+            self.buffersParent, 350, 2, "Write to Disk", callback=partial(self.writeTexToDisk, tex))
+
+    def writeTexToDisk(self, tex):
+        print "Writing",tex,"to disk .."
+        Globals.base.graphicsEngine.extractTextureData(tex, Globals.base.win.getGsg())
+        tex.write(tex.getName() + ".png")
+        print "Done!"
 
     def onMouseOver(self, node, a):
         node['frameColor'] = (1, 1, 1, 0.4)

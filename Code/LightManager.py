@@ -31,6 +31,8 @@ from RenderPasses.UnshadowedLightsPass import UnshadowedLightsPass
 from RenderPasses.ShadowedLightsPass import ShadowedLightsPass
 from RenderPasses.ExposurePass import ExposurePass
 
+from GUI.FastText import FastText
+
 pstats_ProcessLights = PStatCollector("App:LightManager:ProcessLights")
 pstats_CullLights = PStatCollector("App:LightManager:CullLights")
 pstats_PerLightUpdates = PStatCollector("App:LightManager:PerLightUpdates")
@@ -298,16 +300,10 @@ class LightManager(DebugObject):
         self.lightsUpdatedDebugText = None
 
         if self.pipeline.settings.displayDebugStats:
-            try:
-                from .GUI.FastText import FastText
-                self.lightsVisibleDebugText = FastText(pos=Vec2(
-                    Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
-                self.lightsUpdatedDebugText = FastText(pos=Vec2(
-                    Globals.base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
-
-            except Exception, msg:
-                self.debug(
-                    "Overlay is disabled because FastText wasn't loaded")
+            self.lightsVisibleDebugText = FastText(pos=Vec2(
+                Globals.base.getAspectRatio() - 0.1, 0.84), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
+            self.lightsUpdatedDebugText = FastText(pos=Vec2(
+                Globals.base.getAspectRatio() - 0.1, 0.8), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
 
     def _queueShadowUpdate(self, sourceIndex):
         """ Internal method to add a shadowSource to the list of queued updates. Returns

@@ -27,7 +27,7 @@ Material unpackMaterial(vec4 data0, vec4 data1, vec4 data2, vec4 data3, sampler2
 
     // Material debug render modes
     #if defined(DEBUG_RM_LIGHTING)
-        m.baseColor = vec3(1);
+        m.baseColor = vec3(0.3);
     #endif
 
     #if defined(DEBUG_RM_DIFFUSE_LIGHTING)

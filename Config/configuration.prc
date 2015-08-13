@@ -120,7 +120,7 @@ gl-force-fbo-color false
 
 
 # Set the minimum openGL version
-gl-version 3 2
+#gl-version 3 2
 
 # Animations on the gpu. This is WIP, the default shader has to get adjusted first!
 # hardware-animated-vertices #t
@@ -172,6 +172,8 @@ gl-debug-object-labels #f
 
 
 
+
 # Default window settings
 depth-bits 0
 color-bits 0
+

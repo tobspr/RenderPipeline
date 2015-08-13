@@ -71,35 +71,43 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
     if (!isInGrid) return vec4(0.4);
 
     // Bias position a bit, so self shadowing gets less strong
-    vec3 biasedPosition = pos + normal * voxelSize * 0.5;
+    vec3 biasedPosition = pos + normal * voxelSize * 1.0;
 
     // Compute coordinate in voxel space
     vec3 localCoord = (biasedPosition-giData.position + giData.size) / (2 * giData.size);
-    vec3 localCoordOffs = mod(localCoord, 1.0 / giData.resolution);
+    vec3 localCoordOffs = mod(localCoord+ 0.5/giData.resolution, 1.0 / giData.resolution) * giData.resolution;
+
+
     ivec3 localCoordInGrid = ivec3(localCoord * giData.resolution);
     specularColor = vec4(0.2, 0.6, 1.0, 0);
 
     Voxel v = fetchVoxel(localCoord, 0);
     vec3 resultSum = vec3(0);
 
-    resultSum += saturate(1.0 + 0.5 *(-normal.x)) * v.posX;
-    resultSum += saturate(1.0 + 0.5 *(normal.x)) * v.negX;
-    resultSum += saturate(1.0 + 0.5 *(-normal.y)) * v.posY;
-    resultSum += saturate(1.0 + 0.5 *(normal.y)) * v.negY;
-    resultSum += saturate(1.0 + 0.5 *(-normal.z)) * v.posZ;
-    resultSum += saturate(1.0 + 0.5 *(normal.z)) * v.negZ;
+    float mixFactor = 0.0;
+
+    resultSum += saturate(1.0 + mixFactor * (-normal.x)) * v.posX;
+    resultSum += saturate(1.0 + mixFactor * (normal.x)) * v.negX;
+    resultSum += saturate(1.0 + mixFactor * (-normal.y)) * v.posY;
+    resultSum += saturate(1.0 + mixFactor * (normal.y)) * v.negY;
+    resultSum += saturate(1.0 + mixFactor * (-normal.z)) * v.posZ;
+    resultSum += saturate(1.0 + mixFactor * (normal.z)) * v.negZ;
 
     // resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
     // resultSum = v.posZ * 1.0;
     resultSum *= 0.2;
     // resultSum *= 0.5;
-
-
     // SRGB
     // resultSum = pow(resultSum, vec3(1.0 / 4.2));
+    // resultSum = vec3(1);
+    // resultSum += 0.3;
+    resultSum += vec3(0.021, 0.019, 0.014) * 0.5;
 
-    // resultSum += 0.5;
-    // resultSum += 0.04;
+    // if (any(lessThan(localCoordOffs, vec3(0.05) ))) {
+    //     resultSum = mix(resultSum, vec3(1, 0, 0), 0.05);
+    // }
+
+
 
     return vec4(resultSum, 1);
 

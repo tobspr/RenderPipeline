@@ -79,6 +79,7 @@ class FastText:
         self.fontTex.setMinfilter(Texture.FTLinear)
         self.fontTex.setMagfilter(Texture.FTLinear)
         self.fontTex.setAnisotropicDegree(16)
+        self.fontTex.setFormat(Texture.FRgba)
 
     def _loadCharset(self):
         self.charset = """ !"#$%&'()*+,-./"""
@@ -109,13 +110,11 @@ class FastText:
                 texcoord = clamp(p3d_MultiTexCoord0, halfOffset, 1.0 - halfOffset) / vec2(16,6) + offsetCoordReal;
                 vec4 offset = vec4(gl_InstanceID*size.x*0.56 , 0, 0, 0) +
                     vec4(pos.x, 0, pos.y, 0);
-
                 vec4 finalPos = p3d_Vertex * vec4(size.xxx, 1.0) + offset;
                 gl_Position = p3d_ModelViewProjectionMatrix * finalPos;
             }
             """, """
             #version 150
-            #pragma file FastText.fragment
             in vec2 texcoord;
             uniform sampler2D font;
             uniform vec3 color;
@@ -149,9 +148,9 @@ class FastText:
         c.setFrame(-0.5, 0.5, -0.5, 0.5)
         self.square = NodePath(c.generate())
         self.square.setShaderInput("font", self.fontTex)
-        self.square.setShader(self.fontShader, 100)
+        self.square.setShader(self.fontShader, 1000)
         self.square.setAttrib(
-            TransparencyAttrib.make(TransparencyAttrib.MAlpha), 100)
+            TransparencyAttrib.make(TransparencyAttrib.MAlpha), 1000)
         self.square.reparentTo(Globals.base.aspect2d)
         return self.square
 

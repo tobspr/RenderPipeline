@@ -21,12 +21,13 @@ class MemoryMonitor:
 
         # Assign the texture format a size
         textureTypes = {
-            6: 1, # ALPHA
+            3: 1,      # FRED
+            6: 1,      # ALPHA
             7:  3 * 1, # RGB (Unkown type, we will just assume 8 bit)
             9:  3 * 1, # FRGBA8
-            12:  4 * 1, # RGBA (Unkown type, we will just assume 8 bit)
-            18:  1, # LUMINANCE
-            19:  2, # LUMINANCE_ALPHA
+            12:  4 * 1,# RGBA (Unkown type, we will just assume 8 bit)
+            18:  1,    # LUMINANCE
+            19:  2,    # LUMINANCE_ALPHA
             16: 4 * 1, # RGBA8
             21: 4 * 2, # RGBA16
             22: 4 * 4, # RGBA32
@@ -40,6 +41,7 @@ class MemoryMonitor:
             35: 4,     # FR32
         }
 
+
         # Get format and compute size per component
         form = tex.getFormat()
         componentSize = 0
@@ -51,6 +53,13 @@ class MemoryMonitor:
 
         # Fetch the amount of pixels
         pixelCount = tex.getXSize() * tex.getYSize() * tex.getZSize()
+
+        # Check for deprecated formats
+        deprecated = [18, 19, 6]
+
+        if form in deprecated:
+            # print "DEPRECATED FORMAT:", form, "USED BY",tex.getName()
+            pass
 
         # Mipmaps take approx 33% of the texture size, so just multiply the pixel
         # count by that amount

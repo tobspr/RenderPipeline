@@ -10,11 +10,11 @@
 out vec4 color;
 #endif
 
-uniform writeonly image3D dst0;
-uniform writeonly image3D dst1;
-uniform writeonly image3D dst2;
-uniform writeonly image3D dst3;
-uniform writeonly image3D dst4;
+uniform coherent writeonly image3D dst0;
+uniform coherent writeonly image3D dst1;
+uniform coherent writeonly image3D dst2;
+uniform coherent writeonly image3D dst3;
+uniform coherent writeonly image3D dst4;
 
 uniform sampler3D src0;
 uniform sampler3D src1;
@@ -56,49 +56,55 @@ Voxel fetchVoxel(vec3 coord) {
 }
 
 void storeVoxel(ivec3 coord, Voxel v) {
-
     imageStore(dst0, coord, vec4(v.posX.r, v.posX.g, v.posX.b,    v.negZ.r));
     imageStore(dst1, coord, vec4(v.negX.r, v.negX.g, v.negX.b,    v.negZ.g));
     imageStore(dst2, coord, vec4(v.posY.r, v.posY.g, v.posY.b,    v.negZ.b));
     imageStore(dst3, coord, vec4(v.negY.r, v.negY.g, v.negY.b,    0));
     imageStore(dst4, coord, vec4(v.posZ.r, v.posZ.g, v.posZ.b,    v.solid ? 1.0 : 0.0));
-
 }
 
 
 // Preventing a lot of code duplicating by making this a define
-#define EVALUATE_DIRECTION(DIR_NAME, TEMPL0, TEMPL1, TEMPL2)  \
+#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2)  \
 for (int c1 = -1; c1 <= 1; c1++) {     \
     for (int c2 = -1; c2 <= 1; c2++) {    \
-        v. DIR_NAME += fetchVoxel(floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize). DIR_NAME * distributionFactor * (saturate(1.0  - 0.4*(length(vec2(c1, c2))))); \
+        Voxel tmp = fetchVoxel(floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize);\
+        v. DIR_NAME += tmp. DIR_NAME * distributionFactor * (saturate(1.0  - 0.0*(length(vec2(c1, c2))))); \
+        if (tmp.solid) {\
+            v. DIR_NAME += v. NEG_DIR_NAME * bounceFactor;\
+        }\
+        \
     } \
 }
+
+uniform bool isLastStep;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec3 coord3D = convert_2d_to_3d(coord, GI_GRID_RESOLUTION, GI_SLIDE_COUNT);
     vec3 floatCoord3D = (coord3D+0.5) / GI_GRID_RESOLUTION;
-    float voxelSize = 0.5 / GI_GRID_RESOLUTION;
+    float voxelSize = 1.0 / GI_GRID_RESOLUTION;
 
     // Fetch current voxel
     Voxel v = fetchVoxel(floatCoord3D);
 
-    float distributionFactor = 0.02;
+    float distributionFactor = 0.03;
+    float bounceFactor = distributionFactor * 1.0;
 
     // Evaluate each direction
-    if (!v.solid) {
-        EVALUATE_DIRECTION(posX, -1, c1, c2 );
-        EVALUATE_DIRECTION(negX, 1, c1, c2 );
-        EVALUATE_DIRECTION(posY, c1, -1, c2 );
-        EVALUATE_DIRECTION(negY, c1, 1, c2 );
-        EVALUATE_DIRECTION(posZ, c1, c2, -1 );
-        EVALUATE_DIRECTION(negZ, c1, c2, 1 );
+    if (!v.solid || isLastStep) {
+        EVALUATE_DIRECTION(posX, negX, -1, c1, c2 );
+        EVALUATE_DIRECTION(negX, posX, 1, c1, c2 );
+        EVALUATE_DIRECTION(posY, negY, c1, -1, c2 );
+        EVALUATE_DIRECTION(negY, posY, c1, 1, c2 );
+        EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 );
+        EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 );
     }
 
     // Store the modified voxel
     storeVoxel(coord3D, v);
 
     #if defined(USE_DEBUG_ATTACHMENTS)
-        color = vec4(v.posX + v.negX + v.posZ +  v.negZ + v.posY + v.negY, 1);
+        color = vec4(v.posX + v.negX + v.posZ + v.negZ + v.posY + v.negY, 1);
     #endif
 }

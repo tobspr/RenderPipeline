@@ -1,5 +1,7 @@
 #version 400
 
+#pragma include "Includes/Configuration.include"
+
 uniform sampler2D sceneTex;
 
 out vec4 result;
@@ -9,12 +11,15 @@ void main() {
 
     vec3 sceneColor = texelFetch(sceneTex, coord, 0).xyz;
 
-    // SRGB
-    sceneColor = pow(sceneColor, vec3(1.0 / 2.2));
+    #if !defined(DEBUG_VISUALIZATION_ACTIVE)
+        // SRGB
+        sceneColor = pow(sceneColor, vec3(1.0 / 2.2));
 
-    // Exposure
-    float exposure = 1.0;
-    sceneColor = 1.0 - exp(-exposure * sceneColor);
+        // Exposure
+        float exposure = 1.0;
+        sceneColor = 1.0 - exp(-exposure * sceneColor);
+
+    #endif
 
     result.xyz = sceneColor;
     result.w = 1.0;

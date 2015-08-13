@@ -18,9 +18,8 @@ uniform sampler2D p3d_Texture3;
 #pragma include "Includes/UBOs/Lights.ubo"
 #pragma include "Includes/UBOs/Shadows.ubo"
 
-
 #pragma ENTRY_POINT SHADER_IN_OUT
-
+#pragma ENTRY_POINT FUNCTIONS
 
 // Modify the lighting settings to get the lowest possible quality for voxelization
 
@@ -60,7 +59,6 @@ uniform vec3 cameraPosition;
 
 #pragma include "Includes/LightingPipeline.include"
 
-
 out vec4 result;
 
 void main() {
@@ -94,6 +92,7 @@ void main() {
     m.metallic = metallic;
     m.normal = vOutput.normalWorld.xyz;
 
+    // Make everything diffuse
     m.specular = 0.0;
     m.metallic = 0.0;
     m.roughness = 1.0;
@@ -102,8 +101,9 @@ void main() {
 
     #pragma ENTRY_POINT MATERIAL
 
-    vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 2.0;
+    vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 0.1;
     result = vec4(lightingResult, 1);
+
     // lightingResult += vec3(1,1,1) * 0.2 * m.baseColor * GLOBAL_AMBIENT_FACTOR;
 
     // SRGB Correction

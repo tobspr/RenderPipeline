@@ -3,7 +3,6 @@
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Structures/VertexOutput.struct"
 
-#pragma ENTRY_POINT SHADER_IN_OUT
 
 #if defined(USE_ALPHA_TEST) && defined(USE_ALPHA_TESTED_SHADOWS)
 
@@ -12,6 +11,10 @@ layout(location=0) in ShadowVertexOutput vOutput;
 uniform sampler2D p3d_Texture0;
 
 #endif
+
+#pragma ENTRY_POINT SHADER_IN_OUT
+#pragma ENTRY_POINT FUNCTIONS
+
 
 void main() {
 

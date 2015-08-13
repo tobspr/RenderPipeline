@@ -25,6 +25,7 @@ uniform vec4 p3d_ColorScale;
 uniform mat4 trans_mainRender_to_clip_of_voxelizeCam;
 
 #pragma ENTRY_POINT SHADER_IN_OUT
+#pragma ENTRY_POINT FUNCTIONS
 
 void main() {
 

@@ -41,7 +41,6 @@ from Code.Water.ProjectedWaterGrid import ProjectedWaterGrid
 
 from direct.interval.IntervalGlobal import Sequence
 
-
 class Main(ShowBase, DebugObject):
 
     """ This is the render pipeline testing showbase """
@@ -57,7 +56,6 @@ class Main(ShowBase, DebugObject):
 
         # Init the showbase
         ShowBase.__init__(self)
-
 
         # Show loading screen
         self.loadingScreen = PipelineLoadingScreen(self)
@@ -106,8 +104,8 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/DemoTerrain/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/TransparencyTest/Scene.egg"
         # self.sceneSource = "Demoscene.ignore/SanMiguel/Scene.bam"
-        # self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"s
-        self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
+        self.sceneSource = "Demoscene.ignore/DabrovicSponza/Scene.egg"
+        # self.sceneSource = "Demoscene.ignore/Sponza/sponza.egg.bam"
         # self.sceneSource = "Demoscene.ignore/Avolition/level5.bam"
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/Scene.bam"
@@ -121,7 +119,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
-        self.sceneSource = "panda"
+        # self.sceneSource = "panda"
 
         # Select surrounding scene here
         self.sceneSourceSurround = None
@@ -130,8 +128,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSourceSurround = "Models/LittleHouse/couch.bam"
 
         # Wheter to create the default ground plane
-        self.usePlane = True
-
+        self.usePlane = False
 
 
         # Store a list of transparent objects
@@ -144,9 +141,9 @@ class Main(ShowBase, DebugObject):
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
             dirLight.setShadowMapResolution(2048)
-            dirLight.setColor(Vec3(1.1, 1.05, 0.9) * 6.0)
+            dirLight.setColor(Vec3(1.1, 1.05, 0.9) * 12.0)
             dirLight.setCastsShadows(True)
-            dirLight.setPssmDistance(180)
+            dirLight.setPssmDistance(140)
             self.renderPipeline.addLight(dirLight)
             self.dirLight = dirLight
 
@@ -291,8 +288,9 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.setStatus("Loading skybox", 70)
 
         self.scene = scene
-        # self.scene.hide(self.renderPipeline.getMainPassBitmask())
         self.scene.prepareScene(self.win.getGsg())
+        # render.hide(self.renderPipeline.getVoxelizePassBitmask())
+        # self.scene.hide(self.renderPipeline.getVoxelizePassBitmask())
 
         # Load surround scene
         if self.sceneSourceSurround is not None:
@@ -339,10 +337,10 @@ class Main(ShowBase, DebugObject):
                         })
                     match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
 
-        # for i in ["53", "54", "55", "56", "57"]:
-        #     matches = self.scene.findAllMatches("**/" + i)
-        #     for match in matches:
-        #         match.remove()
+        # for i in ["53", "54", "55", "56", "57", "Sphere", "Cube.001"]:
+            # matches = self.scene.findAllMatches("**/" + i)
+            # for match in matches:
+                # match.remove()
 
         # Wheter to use a ground plane
         
@@ -455,7 +453,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 35.0)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 19.0)
             # dPos = Vec3(100, 100, self.lastSliderValue*2 10)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)
@@ -472,8 +470,10 @@ class Main(ShowBase, DebugObject):
 
         if self.sceneWireframe:
             render.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MWireframe), 10)
+            render2d.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MWireframe), 10)
         else:
             render.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 10)
+            render2d.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 10)
             
         self.skybox.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 20)
 

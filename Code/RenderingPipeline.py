@@ -225,6 +225,7 @@ class RenderingPipeline(DebugObject):
         skytex.setWrapV(SamplerState.WMRepeat)
         skytex.setMinfilter(SamplerState.FTLinear)
         skytex.setMagfilter(SamplerState.FTLinear)
+        skytex.setFormat(Texture.FRed)
         skybox.setShaderInput("skytex", skytex)
         self.setEffect(skybox, "Effects/Skybox/Skybox.effect", {
             "castShadows": False, 
@@ -554,8 +555,8 @@ class RenderingPipeline(DebugObject):
         shader = Shader.load(Shader.SLGLSL, "Shader/GUI/vertex.glsl", "Shader/GUI/fragment.glsl")
         for target in [self.showbase.aspect2d, self.showbase.render2d, self.showbase.pixel2d,
             self.showbase.aspect2dp, self.showbase.render2dp, self.showbase.pixel2dp]:
-            target.setShader(shader, 50)
-
+            # target.setShader(shader, 50)
+            pass
 
     def create(self):
         """ Creates the pipeline """

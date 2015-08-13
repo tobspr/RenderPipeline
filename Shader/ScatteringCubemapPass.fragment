@@ -23,20 +23,13 @@ void main() {
     int faceIndex = coord.x / cubemapSize; 
 
     // Compute cubemap direction
-    vec3 baseDir = vec3(0);
-    if (faceIndex == 0) baseDir = vec3(1, -floatCoord.y, floatCoord.x);
-    else if (faceIndex == 1) baseDir = vec3(-1, -floatCoord.y, -floatCoord.x);
-    else if (faceIndex == 2) baseDir = vec3(floatCoord.x, 1, -floatCoord.y);
-    else if (faceIndex == 3) baseDir = vec3(floatCoord.x, -1, floatCoord.y);
-    else if (faceIndex == 4) baseDir = vec3(floatCoord.x, -floatCoord.y, -1);
-    else if (faceIndex == 5) baseDir = vec3(-floatCoord.x, -floatCoord.y, 1);
-
-    // Normalize cubemap direction to convert it to a coordinate
-    baseDir = normalize(baseDir);
+    vec3 baseDir = getCubemapCoordinate(faceIndex, floatCoord);
 
     // Compute scattering
     vec3 attenuation = vec3(0);
     float irradianceFactor = 0.0;
+
+    // TODO: Verify the baseDir direction!
     baseDir.z = -baseDir.z;
 
     vec3 scatteringResult = scatteringComputeInscatteredLight(

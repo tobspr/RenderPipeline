@@ -16,6 +16,7 @@ from LightType import LightType
 from SettingsManager import SettingsManager
 from MemoryMonitor import MemoryMonitor
 from DistributedTaskManager import DistributedTaskManager
+from GUI.FastText import FastText
 
 from RenderPasses.GlobalIlluminationPass import GlobalIlluminationPass
 from RenderPasses.VoxelizePass import VoxelizePass
@@ -62,12 +63,12 @@ class GlobalIllumination(DebugObject):
         self.voxelGridSize = self.pipeline.settings.giVoxelGridSize
         
         # Grid resolution in pixels
-        self.voxelGridResolution = 64
+        self.voxelGridResolution = 128
 
         # Has to be a multiple of 2
-        self.distributionSteps = 30
-
-        self.slideCount = int(math.sqrt(self.voxelGridResolution))
+        self.distributionSteps = 40
+        self.slideCount = int(self.voxelGridResolution / 8) 
+        self.slideVertCount = self.voxelGridResolution / self.slideCount       
 
         self.bounds = BoundingBox()
         self.renderCount = 0
@@ -85,24 +86,16 @@ class GlobalIllumination(DebugObject):
         self.frameIndex = 0
         self.steps = []
 
-
-
     def _createDebugTexts(self):
         """ Creates a debug overlay to show GI status """
         self.debugText = None
         self.buildingText = None
 
         if self.pipeline.settings.displayDebugStats:
-            try:
-                from .GUI.FastText import FastText
-                self.debugText = FastText(pos=Vec2(
-                    Globals.base.getAspectRatio() - 0.1, 0.88), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
-                self.buildingText = FastText(pos=Vec2(-0.3, 0), rightAligned=False, color=Vec3(1, 1, 0), size=0.03)
-                self.buildingText.setText("PREPARING GI, PLEASE BE PATIENT ....")
-
-            except Exception, msg:
-                self.debug(
-                    "GI-Debug text is disabled because FastText wasn't loaded")
+            self.debugText = FastText(pos=Vec2(
+                Globals.base.getAspectRatio() - 0.1, 0.88), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
+            self.buildingText = FastText(pos=Vec2(-0.3, 0), rightAligned=False, color=Vec3(1, 1, 0), size=0.03)
+            self.buildingText.setText("PREPARING GI, PLEASE BE PATIENT ....")
 
     def stepVoxelize(self, idx):
         
@@ -126,14 +119,13 @@ class GlobalIllumination(DebugObject):
                     self.buildingText.remove()
                     self.buildingText = None
 
-        self.voxelizePass.voxelizeSceneFromDirection(self.gridPosTemp[0], "yxz"[idx])
+        self.voxelizePass.voxelizeSceneFromDirection(self.gridPosTemp[0], "xyz"[idx])
 
 
     def stepDistribute(self, idx):
         
         if idx == 0:
-            self.convertGridTarget.setActive(True)
-            
+            self.convertGridTarget.setActive(True)           
 
         self.distributeTarget.setActive(True)
 
@@ -143,13 +135,13 @@ class GlobalIllumination(DebugObject):
 
         if idx == self.distributionSteps - 1:
             self.publishGrid()
-
-
             dests = self.dataTextures
 
         for i in xrange(5):
             self.distributeTarget.setShaderInput("src" + str(i), sources[i])
             self.distributeTarget.setShaderInput("dst" + str(i), dests[i])
+
+        self.distributeTarget.setShaderInput("isLastStep", idx >= self.distributionSteps-4)
 
     def publishGrid(self):
         """ This function gets called when the grid is ready to be used, and updates
@@ -219,7 +211,7 @@ class GlobalIllumination(DebugObject):
         self.bindTo(Globals.render, "giData")
 
         self.convertGridTarget = RenderTarget("ConvertGIGrid")
-        self.convertGridTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideCount)
+        self.convertGridTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideVertCount)
 
         if self.pipeline.settings.useDebugAttachments:
             self.convertGridTarget.addColorTexture()
@@ -231,7 +223,7 @@ class GlobalIllumination(DebugObject):
             self.convertGridTarget.getColorTexture().setMagfilter(Texture.FTNearest)
 
         self.clearGridTarget = RenderTarget("ClearGIGrid")
-        self.clearGridTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideCount)
+        self.clearGridTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideVertCount)
         if self.pipeline.settings.useDebugAttachments:
             self.clearGridTarget.addColorTexture()
         self.clearGridTarget.prepareOffscreenBuffer()
@@ -239,6 +231,7 @@ class GlobalIllumination(DebugObject):
         for idx, color in enumerate("rgb"):
             self.convertGridTarget.setShaderInput("voxelGenSrc" + color.upper(), self.generationTextures[idx])
             self.clearGridTarget.setShaderInput("voxelGenTex" + color.upper(), self.generationTextures[idx])
+
 
         # Create the data textures
         self.dataTextures = []
@@ -267,10 +260,10 @@ class GlobalIllumination(DebugObject):
             self.pongDataTextures.append(texPong)
 
             self.convertGridTarget.setShaderInput("voxelDataDest"+str(i), self.pingDataTextures[i])
-
+            # self.clearGridTarget.setShaderInput("voxelDataDest" + str(i), self.pongDataTextures[i])
         
         # Set texture wrap modes
-        for tex in self.pingDataTextures + self.pongDataTextures + self.dataTextures:
+        for tex in self.pingDataTextures + self.pongDataTextures + self.dataTextures + self.generationTextures:
             tex.setMinfilter(Texture.FTNearest)
             tex.setMagfilter(Texture.FTNearest)
             tex.setWrapU(Texture.WMBorderColor)
@@ -283,7 +276,7 @@ class GlobalIllumination(DebugObject):
             tex.setMagfilter(Texture.FTLinear)
 
         self.distributeTarget = RenderTarget("DistributeVoxels")
-        self.distributeTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideCount)
+        self.distributeTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideVertCount)
 
         if self.pipeline.settings.useDebugAttachments:
             self.distributeTarget.addColorTexture()
@@ -293,6 +286,7 @@ class GlobalIllumination(DebugObject):
         if self.pipeline.settings.useDebugAttachments:
             self.distributeTarget.getColorTexture().setMinfilter(Texture.FTNearest)
             self.distributeTarget.getColorTexture().setMagfilter(Texture.FTNearest)
+
 
         # Create the various render targets to generate the mipmaps of the stable voxel grid
         # self.mipmapTargets = []
@@ -326,7 +320,7 @@ class GlobalIllumination(DebugObject):
         if False:
             self.voxelCube = loader.loadModel("Box")
             self.voxelCube.reparentTo(render)
-            self.voxelCube.setTwoSided(True)
+            # self.voxelCube.setTwoSided(True)
             self.voxelCube.node().setFinal(True)
             self.voxelCube.node().setBounds(OmniBoundingVolume())
             self.voxelCube.setInstanceCount(self.voxelGridResolution**3)

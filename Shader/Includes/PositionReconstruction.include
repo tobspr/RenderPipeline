@@ -2,6 +2,7 @@
 
 
 uniform mat4 trans_clip_of_mainCam_to_mainRender;
+uniform mat4 currentProjMatInv;
 
 const float ndcNear = CAMERA_NEAR;
 const float ndcFar = CAMERA_FAR;
@@ -61,4 +62,11 @@ vec3 calculateSurfacePos(float z, vec2 tcoord, float near, float far, mat4 clipT
   vec4 clipPos = vec4(getZFromNdc(ndcPos, near, far));
   clipPos.xyz = ndcPos * clipPos.w;
   return (clipToRender * clipPos).xyz;
+}
+
+
+vec3 calculateViewPos(float z, vec2 tcoord) {
+  vec3 ndc = vec3(tcoord, z) * 2.0 - 1.0;
+  vec4 sampleViewPos = currentProjMatInv * vec4(ndc, 1.0);
+  return (sampleViewPos.xzy * vec3(1,1,-1)) / sampleViewPos.w ;
 }

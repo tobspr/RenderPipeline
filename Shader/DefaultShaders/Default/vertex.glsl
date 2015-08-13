@@ -40,6 +40,7 @@ uniform mat4 currentMVP;
 #endif
 
 #pragma ENTRY_POINT SHADER_IN_OUT
+#pragma ENTRY_POINT FUNCTIONS
 
 uniform int frameIndex;
 
