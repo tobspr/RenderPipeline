@@ -26,5 +26,5 @@ class LightLimits:
     }
 
     maxTotalLights = 3
-    maxShadowMaps = 7
+    maxShadowMaps = 32
 

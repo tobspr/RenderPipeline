@@ -27,7 +27,7 @@ struct VoxelDirections {
 
 VoxelDirections unpackData(int packedData) {
     VoxelDirections dir;
-    float scaleF = 0.01;
+    float scaleF = 0.2;
     dir.posX = ((packedData >> 0*5) & 0x1F) / 31.0 * scaleF;
     dir.negX = ((packedData >> 1*5) & 0x1F) / 31.0 * scaleF;
     dir.posY = ((packedData >> 2*5) & 0x1F) / 31.0 * scaleF;
@@ -36,6 +36,8 @@ VoxelDirections unpackData(int packedData) {
     dir.negZ = ((packedData >> 5*5) & 0x1F) / 31.0 * scaleF;
     return dir;
 }
+
+uniform int skyStartZ;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -49,7 +51,14 @@ void main() {
     VoxelDirections voxelG = unpackData(valG);
     VoxelDirections voxelB = unpackData(valB);
 
-    float solid = step(1, max(valR, max(valG, valB))); 
+    float solid = step(1, max(valR, max(valG, valB)));
+
+    if (coord3D.z >= skyStartZ) {
+        vec3 skyColor = vec3(0.6, 0.8, 1.3) * 0.2;
+        voxelR.negZ = skyColor.r;
+        voxelG.negZ = skyColor.g;
+        voxelB.negZ = skyColor.b;
+    } 
 
     imageStore(voxelDataDest0, coord3D, vec4(voxelR.posX, voxelG.posX, voxelB.posX,  voxelR.negZ));
     imageStore(voxelDataDest1, coord3D, vec4(voxelR.negX, voxelG.negX, voxelB.negX,  voxelG.negZ));

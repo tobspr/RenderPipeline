@@ -72,9 +72,11 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
 
     // Bias position a bit, so self shadowing gets less strong
     vec3 biasedPosition = pos + normal * voxelSize * 1.0;
+    vec3 biasedSkyPosition = pos + normal * voxelSize * 1.0;
 
     // Compute coordinate in voxel space
     vec3 localCoord = (biasedPosition-giData.position + giData.size) / (2 * giData.size);
+    vec3 localSkyCoord = (biasedSkyPosition-giData.position + giData.size) / (2 * giData.size);
     vec3 localCoordOffs = mod(localCoord+ 0.5/giData.resolution, 1.0 / giData.resolution) * giData.resolution;
 
 
@@ -84,7 +86,8 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
     Voxel v = fetchVoxel(localCoord, 0);
     vec3 resultSum = vec3(0);
 
-    float mixFactor = 0.0;
+    #if 0
+    float mixFactor = 1.0;
 
     resultSum += saturate(1.0 + mixFactor * (-normal.x)) * v.posX;
     resultSum += saturate(1.0 + mixFactor * (normal.x)) * v.negX;
@@ -93,21 +96,58 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
     resultSum += saturate(1.0 + mixFactor * (-normal.z)) * v.posZ;
     resultSum += saturate(1.0 + mixFactor * (normal.z)) * v.negZ;
 
+    #else
+    float amb = 0.2;
+    resultSum += saturate(amb + saturate(-normal.x)) * v.posX;
+    resultSum += saturate(amb + saturate(normal.x)) * v.negX;
+    resultSum += saturate(amb + saturate(-normal.y)) * v.posY;
+    resultSum += saturate(amb + saturate(normal.y)) * v.negY;
+    resultSum += saturate(amb + saturate(-normal.z)) * v.posZ;
+    resultSum += saturate(amb + saturate(normal.z)) * v.negZ;
+
+
+    #endif
+
     // resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
     // resultSum = v.posZ * 1.0;
-    resultSum *= 0.2;
+    resultSum *= 0.0002;
     // resultSum *= 0.5;
     // SRGB
     // resultSum = pow(resultSum, vec3(1.0 / 4.2));
     // resultSum = vec3(1);
     // resultSum += 0.3;
-    resultSum += vec3(0.021, 0.019, 0.014) * 0.5;
+    resultSum += vec3(0.019, 0.019, 0.02) * 0.4;
 
     // if (any(lessThan(localCoordOffs, vec3(0.05) ))) {
     //     resultSum = mix(resultSum, vec3(1, 0, 0), 0.05);
     // }
 
 
+    // Trace sky accessibility
+    /*
+    float skyAccess = 0.0;
+
+    vec3 startCoord = localSkyCoord;
+
+    for (int p = 0; p < 16; p++) {
+        vec3 offs = normalize(vec3(0, 0, 1) + 0.9 * poisson3D_32[p * 2]);
+
+        float traceSolid = 0;
+        vec3 currCoord = localSkyCoord;
+        vec3 skyStep = offs / giData.resolution * 0.5;
+        for (int i = 0; i < 32; i++) {
+            float solidness = textureLod(giVoxelData4, currCoord, 0).w;
+            traceSolid = max(traceSolid, solidness);
+            currCoord += skyStep;
+        }   
+        skyAccess += traceSolid;
+    }
+    skyAccess /= 16.0;
+    skyAccess = saturate(1.0 - skyAccess);
+
+    
+    specularColor = vec4(skyAccess);
+    */
 
     return vec4(resultSum, 1);
 

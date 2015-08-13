@@ -79,7 +79,7 @@ void main() {
     float metallic = vOutput.materialSpecular.y;
     float roughnessFactor = vOutput.materialSpecular.z;
 
-    sampledDiffuse.rgb = pow(sampledDiffuse.rgb, vec3(1.4));
+    // sampledDiffuse.rgb = pow(sampledDiffuse.rgb, vec3(1.4));
 
     // Create a material to store the material type dependent properties on it
     Material m = getDefaultMaterial();
@@ -107,6 +107,7 @@ void main() {
     // lightingResult += vec3(1,1,1) * 0.2 * m.baseColor * GLOBAL_AMBIENT_FACTOR;
 
     // SRGB Correction
+    lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
     lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
     lightingResult = saturate(lightingResult);
 

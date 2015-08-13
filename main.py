@@ -141,7 +141,7 @@ class Main(ShowBase, DebugObject):
             dirLight = DirectionalLight()
             dirLight.setPos(dPos * 100000.0)
             dirLight.setShadowMapResolution(2048)
-            dirLight.setColor(Vec3(1.1, 1.05, 0.9) * 12.0)
+            dirLight.setColor(Vec3(1.0, 1.0, 1.0) * 12.0)
             dirLight.setCastsShadows(True)
             dirLight.setPssmDistance(140)
             self.renderPipeline.addLight(dirLight)
@@ -228,21 +228,12 @@ class Main(ShowBase, DebugObject):
 
     def addDemoLight(self):
         """ Spawns a new light at a random position with a random color """
-        randomRadius = 40.0
-        light = SpotLight()
-        spot = Vec3( (random()-0.5) * randomRadius, (random()-0.5) * randomRadius, 22)
-        # spot = self.cam.getPos(self.render)
+        light = PointLight()
+        spot = self.cam.getPos(self.render)
         light.setPos(spot)
-        light.lookAt(Vec3(spot.x,spot.y,0))
-        # print "pos is", spot,"look at",Vec3(spot.x,spot.y,0)
-        light.setColor(Vec3( random(), random(), random()) * 0.2)
-        # light.setColor(Vec3( 1.0, 0.5, 0.3) * 0.05)
-        light.setNearFar(1.0, 50)
-        light.setFov(140)
-        light.setIESProfile("SoftArrow")
-        # light.setIESProfileIndex(randint(0, 30))
-        light.setShadowMapResolution(2048)
-        # light.attachDebugNode(render)
+        light.setRadius(45)
+        light.setColor(Vec3(1.3,1.05,0.9) * 0.1)
+        light.setShadowMapResolution(512)
         light.setCastsShadows(True)
         self.renderPipeline.addLight(light)
         self.demoLights.append(light)
@@ -420,8 +411,8 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         
-        camPos = Vec3(-17.3,-23.33,11.99)
-        camHpr = Vec3(323.8,-6.55,0.0)
+        camPos = Vec3(-34.31,1.66,22.55)
+        camHpr = Vec3(269.79,-2.74,0.0)
         self.controller.setInitialPositionHpr(
             camPos, camHpr)
         self.controller.setup()
@@ -453,7 +444,7 @@ class Main(ShowBase, DebugObject):
         if radial:
             rawValue = rawValue / 100.0 * 2.0 * math.pi
             dPos = Vec3(
-                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 19.0)
+                math.sin(rawValue) * 30.0, math.cos(rawValue) * 30.0, 32.0)
             # dPos = Vec3(100, 100, self.lastSliderValue*2 10)
         else:
             dPos = Vec3(30, (rawValue - 50) * 1.5, 0)

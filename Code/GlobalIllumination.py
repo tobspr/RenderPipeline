@@ -66,7 +66,7 @@ class GlobalIllumination(DebugObject):
         self.voxelGridResolution = 128
 
         # Has to be a multiple of 2
-        self.distributionSteps = 40
+        self.distributionSteps = 60
         self.slideCount = int(self.voxelGridResolution / 8) 
         self.slideVertCount = self.voxelGridResolution / self.slideCount       
 
@@ -125,6 +125,11 @@ class GlobalIllumination(DebugObject):
     def stepDistribute(self, idx):
         
         if idx == 0:
+
+            skyBegin = 130.0
+            skyInGrid = (skyBegin - self.gridPosTemp[0].z) / (2.0 * self.voxelGridSize)
+            skyInGrid = int(skyInGrid * self.voxelGridResolution)
+            self.convertGridTarget.setShaderInput("skyStartZ", skyInGrid)
             self.convertGridTarget.setActive(True)           
 
         self.distributeTarget.setActive(True)
@@ -141,7 +146,7 @@ class GlobalIllumination(DebugObject):
             self.distributeTarget.setShaderInput("src" + str(i), sources[i])
             self.distributeTarget.setShaderInput("dst" + str(i), dests[i])
 
-        self.distributeTarget.setShaderInput("isLastStep", idx >= self.distributionSteps-4)
+        self.distributeTarget.setShaderInput("isLastStep", idx >= self.distributionSteps-1)
 
     def publishGrid(self):
         """ This function gets called when the grid is ready to be used, and updates

@@ -19,8 +19,8 @@ void main() {
 
     vec2 velocity = texture(velocityTex, texcoord).xy;
     vec2 lastCoord = texcoord + velocity;
-    vec4 currentOcclusion = texture(currentOcclusionTex, texcoord);
-    vec4 lastOcclusion = texture(lastFrameOcclusion, lastCoord);
+    vec4 currentOcclusion = texture(currentOcclusionTex, texcoord).xxxw;
+    vec4 lastOcclusion = texture(lastFrameOcclusion, lastCoord).xxxw;
     
     float weight = 0.5;
 

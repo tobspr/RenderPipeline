@@ -289,7 +289,7 @@ void main() {
     #if defined(USE_DEBUG_ATTACHMENTS)
         float lightsVisibleFloat = float(
             processedPointLights + processedShadowedPointLights + 
-            processedSpotLights + processedShadowedSpotLights) / float(5.0);
+            processedSpotLights + processedShadowedSpotLights + processedDirectionalLights + processedShadowedDirectionalLights) / float(5.0);
         vec3 lightCountIndicator = vec3(lightsVisibleFloat, 1.0 - lightsVisibleFloat , 0);
         debugOutput = vec4(lightCountIndicator, 1);
 

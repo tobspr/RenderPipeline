@@ -125,6 +125,8 @@ void main() {
             // fogFactor *= saturate(-0.05 + max(0.0, material.position.z) / 800.0);
             fogFactor = smoothstep(0, 1, saturate(fogFactor));
             // fogFactor = 0.0;
+
+            // result += giSpecularColor.x * scatteringResult * saturate( (material.position.z-15.0) / 300.0) * 20.0;
             // result = mix(vec3(result), scatteringResult*0.2, fogFactor);
         #endif
 

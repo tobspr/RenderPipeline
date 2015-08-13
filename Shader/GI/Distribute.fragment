@@ -69,7 +69,8 @@ void storeVoxel(ivec3 coord, Voxel v) {
 for (int c1 = -1; c1 <= 1; c1++) {     \
     for (int c2 = -1; c2 <= 1; c2++) {    \
         Voxel tmp = fetchVoxel(floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize);\
-        v. DIR_NAME += tmp. DIR_NAME * distributionFactor * (saturate(1.0  - 0.0*(length(vec2(c1, c2))))); \
+        v. DIR_NAME += tmp. DIR_NAME * distributionFactor * (saturate(1.0  - 0.1*(length(vec2(c1, c2))))); \
+        //v. DIR_NAME *= 0.9; \
         if (tmp.solid) {\
             v. DIR_NAME += v. NEG_DIR_NAME * bounceFactor;\
         }\
@@ -88,8 +89,8 @@ void main() {
     // Fetch current voxel
     Voxel v = fetchVoxel(floatCoord3D);
 
-    float distributionFactor = 0.03;
-    float bounceFactor = distributionFactor * 1.0;
+    float distributionFactor = 0.028;
+    float bounceFactor = distributionFactor * 0.1;
 
     // Evaluate each direction
     if (!v.solid || isLastStep) {
