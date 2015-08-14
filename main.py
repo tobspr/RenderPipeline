@@ -110,6 +110,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Demoscene.ignore/Sphere/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/Alphatest/Scene.bam"
         # self.sceneSource = "Demoscene.ignore/TestScene/Test.bam"
+        # self.sceneSource = "Demoscene.ignore/BokehTest/Scene.egg"
 
         # This sources are included in the repo
         # self.sceneSource = "Models/CornelBox/Model.egg"
@@ -342,10 +343,10 @@ class Main(ShowBase, DebugObject):
                         })
                     match.setAttrib(CullFaceAttrib.make(CullFaceAttrib.M_none))
 
-        # for i in ["53", "54", "55", "56", "57", "Sphere", "Cube.001"]:
-            # matches = self.scene.findAllMatches("**/" + i)
-            # for match in matches:
-                # match.remove()
+        for i in ["53", "54", "55", "56", "57"]:
+            matches = self.scene.findAllMatches("**/" + i)
+            for match in matches:
+                match.remove()
 
         # Wheter to use a ground plane
         
@@ -366,9 +367,6 @@ class Main(ShowBase, DebugObject):
         # Prepare textures with SRGB format
         self.prepareSRGB(self.scene)
 
-        # Prepare Materials
-        self.renderPipeline.fillTextureStages(render)
-
         # Load ground plane if configured
         if self.usePlane:
             self.groundPlane = self.loader.loadModel(
@@ -378,6 +376,10 @@ class Main(ShowBase, DebugObject):
             self.groundPlane.flattenStrong()
             self.groundPlane.setName("GroundPlane")
             self.groundPlane.reparentTo(render)
+
+
+        # Prepare Materials
+        self.renderPipeline.fillTextureStages(render)
 
 
         # lerpTop = self.scene.posInterval(0.8, Vec3(0, 0, 7), startPos=Vec3(0,0,2))
@@ -395,7 +397,7 @@ class Main(ShowBase, DebugObject):
 
         # Create some ocean
         # self.water = ProjectedWaterGrid(self.renderPipeline)
-        # self.water.setWaterLevel(10)
+        # self.water.setWaterLevel(-10)
 
         # 
         if "sponza" in self.sceneSource:

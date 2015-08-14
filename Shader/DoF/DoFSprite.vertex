@@ -1,0 +1,46 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+
+uniform mat4 p3d_ModelViewProjectionMatrix;
+
+in vec4 p3d_Vertex;
+uniform vec4 bufferSize;
+out vec2 texcoord;
+out vec2 pcoord;
+out float spriteColorMult;
+uniform sampler2D sourceTex;
+
+
+void main() {
+    texcoord = sign(p3d_Vertex.xz * 0.5 + 0.5);
+
+    // ivec2 pixelPos = ivec2(bufferSize.z/2.0, bufferSize.w/2.0);
+    int id = gl_InstanceID;
+    int w = int(bufferSize.z);
+    ivec2 pixelPos = ivec2(id % w, id / w);
+    pcoord = vec2(pixelPos*1);
+
+
+    vec2 localPos = vec2(pixelPos) / bufferSize.zw;
+    localPos = localPos * 2.0 - 1.0;
+    
+    vec4 sampleData = texelFetch(sourceTex, ivec2(pcoord), 0);
+
+    vec2 spriteSize = sampleData.w * 22.0 / bufferSize.zw;
+
+    spriteColorMult = clamp(1.0 / sampleData.w, 0.01, 1000.0);
+
+    if (sampleData.w < 0.3) {
+        gl_Position = vec4(-1000.0, -1000.0, 0, 1);
+    } else {
+
+
+        gl_Position = vec4(
+            p3d_Vertex.x * spriteSize.x + localPos.x, 
+            p3d_Vertex.z * spriteSize.y + localPos.y, 0, 1);
+    }
+
+
+
+}

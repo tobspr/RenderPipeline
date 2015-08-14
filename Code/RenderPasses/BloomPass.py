@@ -19,7 +19,7 @@ class BloomPass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "colorTex": ["ExposurePass.resultTex", "SSLRPass.resultTex", "TransparencyPass.resultTex", "LightingPass.resultTex"],
+            "colorTex": ["DOFPass.resultTex", "ExposurePass.resultTex", "SSLRPass.resultTex", "TransparencyPass.resultTex", "LightingPass.resultTex"],
             "mainRender": "Variables.mainRender",
             "mainCam": "Variables.mainCam",
             "skyboxMask": "SkyboxMaskPass.resultTex"

@@ -86,7 +86,8 @@ void main() {
     m.position = vOutput.positionWorld;
 
     // Store the properties
-    m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
+    // m.baseColor = sampledDiffuse.rgb * vOutput.materialDiffuse.rgb;
+    m.baseColor = vOutput.materialDiffuse.rgb;
     m.roughness = sampledRoughness.r * roughnessFactor;
     m.specular = sampledSpecular.r * specularFactor;
     m.metallic = metallic;
@@ -101,12 +102,15 @@ void main() {
 
     #pragma ENTRY_POINT MATERIAL
 
-    vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 0.1;
+    vec3 lightingResult = computeLighting(renderedLightsBuffer, m) * 0.2;
     result = vec4(lightingResult, 1);
 
     // lightingResult += vec3(1,1,1) * 0.2 * m.baseColor * GLOBAL_AMBIENT_FACTOR;
 
     // SRGB Correction
+
+    // Dunno why, but this looks best
+    lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
     lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
     lightingResult = pow(lightingResult, vec3(1.0 / 2.2));
     lightingResult = saturate(lightingResult);

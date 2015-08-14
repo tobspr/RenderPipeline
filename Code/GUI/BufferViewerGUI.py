@@ -85,7 +85,7 @@ class BufferViewerGUI(DebugObject):
         self.innerPadding = 8
         self.paddingTop = 40
 
-        self.renderPassesOnly = False
+        self.renderPassesOnly = True
 
         self.createComponents()
 
@@ -94,7 +94,7 @@ class BufferViewerGUI(DebugObject):
             "buffers")
         self.togglePassOnly = CheckboxWithLabel(
             parent=self.window.getContentNode(), x=10, y=10,
-            textSize=15, text="Display render passes only", chbChecked=False,
+            textSize=15, text="Display render passes only", chbChecked=True,
             chbCallback=self.setShowRenderPasses)
 
     def setShowRenderPasses(self, toggle):

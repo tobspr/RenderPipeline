@@ -51,10 +51,11 @@ void main() {
         float bumpFactor = vOutput.materialDiffuse.w;
 
         // For testing, most models don't have a bump factor defined!
-        bumpFactor *= 0.4;
+        bumpFactor *= 0.5;
 
         // Extract detail normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
+
 
         // Entry point for the user to define their own detail normal
         #pragma ENTRY_POINT DETAIL_NORMAL
@@ -75,7 +76,7 @@ void main() {
     #endif
         
     // Most textures are not in sRGB, account for that
-    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(1.9));
+    sampledDiffuse.xyz = pow(sampledDiffuse.xyz, vec3(1.7));
 
     // Extract material properties
     float specularFactor = vOutput.materialSpecular.x;
@@ -105,9 +106,9 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
 
-    m.metallic = 0;
-    m.specular = 0.2;
-    m.roughness = 0.5;
+    // m.metallic = 1;
+    m.specular = 0.5;
+    // m.roughness = 0.0;
 
     // Entry point for the user to modify the material
     #pragma ENTRY_POINT MATERIAL

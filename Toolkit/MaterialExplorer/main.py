@@ -190,6 +190,12 @@ class Main(ShowBase, DebugObject):
             #     "max": 1.0,
             #     "default": 0.5,
             # },
+            "bump_factor": {
+                "name": "Bump Factor",
+                "min": 0.0001,
+                "max": 1.0,
+                "default": 0.5,
+            },
             "basecolor_r": {
                 "name": "Base Color [Red]",
                 "min": 0.0001,
@@ -214,7 +220,7 @@ class Main(ShowBase, DebugObject):
 
         }
 
-        self.sliderOrder = ["basecolor_r", "basecolor_g", "basecolor_b"]
+        self.sliderOrder = ["basecolor_r", "basecolor_g", "basecolor_b", "bump_factor"]
 
 
         self.guiParent = UIWindow(

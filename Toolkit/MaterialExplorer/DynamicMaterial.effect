@@ -14,10 +14,11 @@ pass Default:
         uniform float opt_basecolor_r;
         uniform float opt_basecolor_g;
         uniform float opt_basecolor_b;
+        uniform float opt_bump_factor;
         uniform sampler2D demoBumpTex;
 
         insert @DETAIL_NORMAL:
-            bumpFactor = 1.0;
+            bumpFactor = opt_bump_factor;
             detailNormal = texture(demoBumpTex, vOutput.texcoord).xyz * 2 - 1;
 
         insert @MATERIAL:
@@ -25,7 +26,6 @@ pass Default:
             m.metallic = opt_metallic;
             m.specular = opt_specular;
             m.roughness = opt_roughness;
-
 
 pass Shadows:
     vertex:

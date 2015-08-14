@@ -284,41 +284,8 @@ vec4 bloomBlur(vec2 texcoord, sampler2D sourceTex) {
         return textureLod(sourceTex, texcoord, 0);
     #endif
 
-    // const int numBlurSteps = 25;
-    // const int sideSteps = (numBlurSteps - 1) / 2;
-
-    // // http://dev.theomader.com/gaussian-kernel-calculator/
-    // float blurWeights[numBlurSteps] = float[numBlurSteps]
-    // (
-    //     0.004571,
-    //     0.00723,
-    //     0.010989,
-    //     0.016048,
-    //     0.022521,
-    //     0.03037,
-    //     0.039354,
-    //     0.049003,
-    //     0.058632,
-    //     0.067411,
-    //     0.074476,
-    //     0.079066,
-    //     0.080657,
-    //     0.079066,
-    //     0.074476,
-    //     0.067411,
-    //     0.058632,
-    //     0.049003,
-    //     0.039354,
-    //     0.03037,
-    //     0.022521,
-    //     0.016048,
-    //     0.010989,
-    //     0.00723,
-    //     0.004571
-    // );
-
-    // vec2 pixelStep = (1.0 / textureSize(sourceTex, 0).xy) * blurDirection;
-    vec2 pixelStep = (1.0 / vec2(480, 270)) * blurDirection;
+    vec2 pixelStep = (1.0 / textureSize(sourceTex, 0).xy) * blurDirection;
+    // vec2 pixelStep = (1.0 / vec2(480, 270)) * blurDirection;
 
     const int numOffsets = 7;
     float blurWeights[numOffsets] = float[numOffsets] ( 
@@ -335,9 +302,53 @@ vec4 bloomBlur(vec2 texcoord, sampler2D sourceTex) {
         sampledResult += textureLod(sourceTex, texcoord - pixelStep * blurOffsets[i], 0) * blurWeights[i];
     }
 
-
-
-
-
     return sampledResult;
+}
+
+
+float evaluateDofInfluence(float pixelCoC, float sampleCoC) {
+    return abs(pixelCoC-sampleCoC) < 0.1 ? 1.0 : 0.0; 
+}
+
+vec4 dofBlur(vec2 texcoord, sampler2D sourceTex, float CoC) {
+
+    #if defined(DEBUG_DISABLE_UPSCALE_BLUR)
+        return textureLod(sourceTex, texcoord, 0);
+    #endif
+
+    vec2 pixelStep = (1.0 / textureSize(sourceTex, 0).xy) * blurDirection * saturate(2.0 * CoC);
+    // vec2 pixelStep = (1.0 / vec2(480, 270)) * blurDirection;
+
+    const int numOffsets = 8;
+    // http://dev.theomader.com/gaussian-kernel-calculator/
+    float blurWeights[numOffsets] = float[numOffsets]
+    (
+        0.125858,
+        0.106701,
+        0.081029,
+        0.055119,
+        0.033585,
+        0.018331,
+        0.008962,
+        0.003924
+    );
+
+    float initialWeight = 0.132980;
+    vec4 sampledResult = textureLod(sourceTex, texcoord, 0)*initialWeight;
+    float sampleWeights = initialWeight;
+
+
+
+    for (int i = 0; i < numOffsets; i++) {
+        vec4 sample1 = textureLod(sourceTex, texcoord + pixelStep * (i+1), 0);
+        vec4 sample2 = textureLod(sourceTex, texcoord - pixelStep * (i+1), 0);
+        float influence1 = evaluateDofInfluence(CoC, sample1.w) * blurWeights[i];
+        float influence2 = evaluateDofInfluence(CoC, sample2.w) * blurWeights[i];
+        sampleWeights += influence1 + influence2;
+        sampledResult += influence1 * sample1 + influence2 * sample2;
+
+
+    }
+
+    return sampledResult / max(0.1, sampleWeights);
 }

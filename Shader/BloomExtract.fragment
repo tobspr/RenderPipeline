@@ -9,10 +9,6 @@ uniform sampler2D colorTex;
 
 out vec4 result;
 
-float getLuminance(vec4 color) {
-    return dot(vec4(0.2125, 0.7154, 0.0721, 0), color);
-}
-
 void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xyz) * 4;
@@ -23,7 +19,7 @@ void main() {
     for (int x = 0; x < 4; x++) {
         for (int y = 0; y < 4; y++) {
             vec4 sampled = texelFetch(colorTex, coord + ivec2(x, y), 0);
-            float sampleLum = getLuminance(sampled);
+            float sampleLum = getLuminance(sampled.xyz);
             if (sampleLum > maxLum) {
                 maxLum = sampleLum;
                 maxCol = sampled;
@@ -34,8 +30,8 @@ void main() {
 
     vec4 bloom = vec4(0);
 
-    if (luminance > 0.6) {
-        bloom = maxCol * 0.7;
+    if (luminance > 0.5) {
+        bloom = maxCol * 0.6;
     }
 
     result = vec4(bloom.xyz,1.0);

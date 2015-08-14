@@ -60,16 +60,13 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
     vec3 attenuation = vec3(1);
     #endif
 
-    // return attenuation;
-
     vec3 reflectedDir = (reflect( -v, material.normal ));
     vec3 ambientRefColor = filterEnvironmentMap(fallbackCubemap, material, transformCubemapCoordinates(reflectedDir));
 
 
     vec3 iblColor = textureLod(fallbackCubemap, transformCubemapCoordinates(material.normal), fallbackCubemapMipmaps - 2).xyz;
-    iblColor = pow(iblColor, vec3(2.5)) * 3.0;
+    iblColor = pow(iblColor, vec3(1.0 / 2.5));
 
-    // return iblColor;
 
     #if defined(USE_SCATTERING)
 
@@ -80,41 +77,14 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
     vec3 scatteringAmbient = vec3(1);
     #endif  
 
-    // return giAmbient.xyz;r
 
-
-
-    vec3 environmentColor = scatteringReflected * 1.5;
+    vec3 environmentColor = pow(scatteringReflected, vec3(1.0 / 1.2)) * 6.0;
     environmentColor = ambientRefColor * 2.0;
-    environmentColor = pow(environmentColor, vec3(1.5));
-    // return environmentColor;
+    environmentColor = mix(environmentColor, giSpecular.xyz, giSpecular.w);
 
     vec3 result = vec3(0);
 
-    occlusionFactor = pow(occlusionFactor, 1.0);
-    // occlusionFactor = pow(saturate(occlusionFactor - 0.4), 1.5) * 3.0;
-    // occlusionFactor = 1.0;
-    // giAmbient.xyz = vec3(1);
-
-    #if defined(USE_GLOBAL_ILLUMINATION)
-        // occlusionFactor = 0.5 + giAmbient.w * 0.5;
-    #endif
-
-
-    // environmentColor /= 430.0;
-    // environmentColor -= 0.5;
-    // environmentColor = max(vec3(0), environmentColor);
-    // environmentColor = pow(environmentColor, vec3(1.0 / 2.2));
-    // environmentColor *= pow(ambientRefColor, vec3(1.0 / 1.0));
-
-    // environmentColor = scatteringReflected;
-
-    // environmentColor = ambientRefColor;
-
-    // ambientRefColor = pow(ambientRefColor, vec3(0.2)) * 0.7;
-    // ambientRefColor = pow(ambientRefColor, vec3(5.0));
-    // return ambientRefColor;s
-
+    occlusionFactor = pow(occlusionFactor, 2.0);
 
     result += 
                 giAmbient.xyz *                             // Global Illumination 
@@ -123,46 +93,30 @@ vec3 computeAmbient(Material material, vec4 giAmbient, vec4 giSpecular, float oc
                 saturate(1.0 - material.metallic) *         // No diffuse ambient for metallic objects
                 saturate(1.0 + giAmbient.w) *               // Global Illumination Occlusion
                 0.3 * vec3(1.0,1.0,1.0)                    // Color tint
-                *mix(iblColor*0.5, vec3(0.5), 0.8) * 
+                *mix(iblColor, vec3(0.5), 1.0) * 
                 mix(scatteringAmbient*1.0, vec3(1), 1.0)
     ;
 
 
     result += borderFactor * environmentColor * 
-        0.1 * saturate(1.0+material.metallic) * 
+        1.0 * saturate(0.02 + material.metallic) * 
         material.specular * 
         mix(pow(iblColor, vec3(1.0)), vec3(1), 1.0) * 
-        mix(occlusionFactor, 1.0, 0.0) * (1.0 - material.roughness) * mix(vec3(1.0),giAmbient.xyz, 1); 
-
-    // return result;
-
-    // return vec3(giSpecular.w);
-    // environmentColor = mix(environmentColor, giSpecular.xyz, giSpecular.w );
+        mix(occlusionFactor, 1.0, 1.0) * 
+        saturate(1.0 - material.roughness);
 
 
     vec3 metallicSpecularAmbient = mix(environmentColor, material.baseColor, material.translucency) 
 
             * mix(occlusionFactor, 1.0, 1.0) * material.specular * 2.0 * mix(vec3(1.0),giAmbient.xyz, 1) * 0.05;
 
-    // metallicSpecularAmbient = ambientRefColor * material.specular * 0.5;
-
-    // return environmentColor;
-
-    // Make metallic materials brighter at the border
 
     result += metallicSpecularAmbient * material.metallic;
 
     // Take ambient factor into account
     result *= GLOBAL_AMBIENT_FACTOR;
 
-    result *= 2.0 * attenuation;
-
-    // result *= (0.01 + pow(attenuation, vec3(1.0 / 2.2)));
-
-
-
-    // result = ambientRefColor;
-
+    // result *= 2.0 * attenuation;
 
     return result;
 }

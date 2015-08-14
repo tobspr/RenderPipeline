@@ -88,8 +88,8 @@ void main() {
     // Fetch current voxel
     Voxel v = fetchVoxel(floatCoord3D);
 
-    float distributionFactor = 0.028;
-    float bounceFactor = distributionFactor * 0.1;
+    float distributionFactor = 0.027;
+    float bounceFactor = distributionFactor * 0.0;
 
     // Evaluate each direction
     if (!v.solid || isLastStep) {

@@ -61,7 +61,7 @@ vec3 computeLightModel(Light light, Material material,
     // Evaluate specular
     vec3 specularContribution = max(vec3(0), computeSpecular(specularColor, roughness, NxL, LxH, NxV, NxH) * NxL);
 
-    lightingResult += specularContribution * material.specular * 0.03;
+    lightingResult += specularContribution * material.specular * M_PI;
 
     // Evaluate diffuse
     lightingResult += diffuseColor * NxL * light.color;

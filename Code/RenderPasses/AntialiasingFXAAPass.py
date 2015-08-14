@@ -21,7 +21,7 @@ class AntialiasingFXAAPass(RenderPass):
 
     def getRequiredInputs(self):
         return {
-            "colorTex": ["BloomPass.resultTex", "ExposurePass.resultTex"]
+            "colorTex": ["DOFPass.resultTex", "BloomPass.resultTex", "ExposurePass.resultTex"]
         }
 
     def create(self):

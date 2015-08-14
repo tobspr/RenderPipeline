@@ -23,7 +23,7 @@ void main() {
 
     // result = colorResult + mix(vec4(0),bloomResult, saturate(1.0 - luminance*1.0) );
     // result = colorResult + mix(vec4(0),bloomResult, saturate(1.0 - luminance*1.0) );
-    result = colorResult + bloomResult * saturate(3.0 - skybox) * saturate(1.0 - luminance*1.0); 
+    result = colorResult + bloomResult * saturate(16  - skybox) * saturate(1.0 - luminance*0.0); 
 
     #if defined(DEBUG_DISABLE_BLOOM)  || defined(DEBUG_VISUALIZATION_ACTIVE)
         result = colorResult;

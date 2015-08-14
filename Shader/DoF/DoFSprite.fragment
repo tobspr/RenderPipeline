@@ -1,0 +1,17 @@
+#version 400
+
+
+uniform sampler2D bokehTex;
+uniform sampler2D sourceTex;
+in vec2 texcoord;
+in vec2 pcoord;
+in float spriteColorMult;
+
+out vec4 color;
+
+void main() {
+    vec4 shape = textureLod(bokehTex, texcoord, 0);
+    vec4 shapeColor = texelFetch(sourceTex, ivec2(pcoord), 0);
+    shapeColor.w = 1.0;
+    color = shape * shapeColor * spriteColorMult * 0.01;
+}

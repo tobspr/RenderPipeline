@@ -50,9 +50,11 @@ Voxel fetchVoxel(vec3 coord, float lod) {
 
 vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 specularColor) {
 
+    vec4 offColor = vec4(vec3(1.5), 1.0);
+
     // In case the gi is still building
     if (giReadyState < 0.5) {
-        return vec4(0.4);
+        return offColor;
     }
 
     // Compute grid variables
@@ -68,20 +70,34 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
 
     // If not in gi range, ignore this pixel
     // TODO: Check if early out is actually faster
-    if (!isInGrid) return vec4(0.4);
+    if (!isInGrid) return offColor;
+
+
 
     // Bias position a bit, so self shadowing gets less strong
     vec3 biasedPosition = pos + normal * voxelSize * 1.0;
-    vec3 biasedSkyPosition = pos + normal * voxelSize * 1.0;
+    vec3 biasedReflPosition = pos + normal * voxelSize * 1.1;
 
     // Compute coordinate in voxel space
     vec3 localCoord = (biasedPosition-giData.position + giData.size) / (2 * giData.size);
-    vec3 localSkyCoord = (biasedSkyPosition-giData.position + giData.size) / (2 * giData.size);
+    vec3 localReflCoord = (biasedReflPosition-giData.position + giData.size) / (2 * giData.size);
     vec3 localCoordOffs = mod(localCoord+ 0.5/giData.resolution, 1.0 / giData.resolution) * giData.resolution;
 
 
+    // Compute fade factor
+    float fade = 1;
+    float fadeArea = 0.1;
+    fade *= saturate(localCoord.x / fadeArea);
+    fade *= saturate( (1.0 - localCoord.x) / fadeArea);
+    fade *= saturate(localCoord.y / fadeArea);
+    fade *= saturate( (1.0 - localCoord.y) / fadeArea);
+    fade *= saturate(localCoord.z / fadeArea);
+    fade *= saturate( (1.0 - localCoord.z) / fadeArea);
+
+
+
     ivec3 localCoordInGrid = ivec3(localCoord * giData.resolution);
-    specularColor = vec4(0.2, 0.6, 1.0, 0);
+    specularColor = vec4(0);
 
     Voxel v = fetchVoxel(localCoord, 0);
     vec3 resultSum = vec3(0);
@@ -97,13 +113,14 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
     resultSum += saturate(1.0 + mixFactor * (normal.z)) * v.negZ;
 
     #else
-    float amb = 0.3;
-    resultSum += saturate(amb + saturate(-normal.x)) * v.posX;
-    resultSum += saturate(amb + saturate(normal.x)) * v.negX;
-    resultSum += saturate(amb + saturate(-normal.y)) * v.posY;
-    resultSum += saturate(amb + saturate(normal.y)) * v.negY;
-    resultSum += saturate(amb + saturate(-normal.z)) * v.posZ;
-    resultSum += saturate(amb + saturate(normal.z)) * v.negZ;
+    float amb = 0.2;
+    float fact = 1.0;
+    resultSum += saturate(amb + fact*saturate(-normal.x)) * v.posX;
+    resultSum += saturate(amb + fact*saturate(normal.x)) * v.negX;
+    resultSum += saturate(amb + fact*saturate(-normal.y)) * v.posY;
+    resultSum += saturate(amb + fact*saturate(normal.y)) * v.negY;
+    resultSum += saturate(amb + fact*saturate(-normal.z)) * v.posZ;
+    resultSum += saturate(amb + fact*saturate(normal.z)) * v.negZ;
 
 
     #endif
@@ -123,44 +140,51 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
 
 
     resultSum *= 2.0;
+    // resultSum = resultSum.yyy;
 
     // SRGB
-    // resultSum = pow(resultSum, vec3(1.0 / 2.2));
-    // resultSum = vec3(1);
-    // resultSum += 0.3;
-    resultSum += vec3(0.017, 0.019, 0.02) * 0.5;
+    resultSum += vec3(0.017, 0.019, 0.02) * 0.01;
+    resultSum = pow(resultSum, vec3(1.0 / 2.2));
+
 
     // if (any(lessThan(localCoordOffs, vec3(0.05) ))) {
     //     resultSum = mix(resultSum, vec3(1, 0, 0), 0.05);
     // }
 
 
-    // Trace sky accessibility
-    /*
-    float skyAccess = 0.0;
+    // Trace specular
+    #if 0
+    const int numSpecularSteps = 16;
+    vec3 startCoord = localReflCoord;
+    vec3 reflectedVec = reflect(-viewVector, normal);
+    vec3 endCoord = startCoord + normalize(reflectedVec) * 0.4;
+    vec3 coordStep = (endCoord - startCoord) / float(numSpecularSteps);
+    vec3 specularIntersection = vec3(0);
+    float accum = 0.0;
 
-    vec3 startCoord = localSkyCoord;
+    for (int i = 0; i < numSpecularSteps; i++) {
 
-    for (int p = 0; p < 16; p++) {
-        vec3 offs = normalize(vec3(0, 0, 1) + 0.9 * poisson3D_32[p * 2]);
-
-        float traceSolid = 0;
-        vec3 currCoord = localSkyCoord;
-        vec3 skyStep = offs / giData.resolution * 0.5;
-        for (int i = 0; i < 32; i++) {
-            float solidness = textureLod(giVoxelData4, currCoord, 0).w;
-            traceSolid = max(traceSolid, solidness);
-            currCoord += skyStep;
-        }   
-        skyAccess += traceSolid;
+        float solidness = step(0.5, textureLod(giVoxelData4, startCoord, 0).w);
+        float impact = solidness * saturate(1.0 - accum);
+        specularIntersection += impact * startCoord;
+        accum += impact;
+        startCoord += coordStep;
+        // coordStep *= 1.1;
     }
-    skyAccess /= 16.0;
-    skyAccess = saturate(1.0 - skyAccess);
 
+    if (specularIntersection.x >= 0.01) {
+        specularIntersection -= reflectedVec / giData.resolution * 0.5;
+        Voxel refV = fetchVoxel(specularIntersection, 0);
+        vec3 reflColor = (refV.posX+refV.negX + refV.posY+ refV.negY +refV.posZ+refV.negZ) * 0.001;
+        reflColor += vec3(0.017, 0.019, 0.02) * 1.0;
+        specularColor.xyz = pow(reflColor, vec3(1.0 / 1.6));
+        specularColor.w = 1.0;
+    }
+
+    #endif
     
-    specularColor = vec4(skyAccess);
-    */
 
-    return vec4(resultSum, 1);
+
+    return vec4(mix(offColor.xyz, resultSum, fade), 1);
 
 }

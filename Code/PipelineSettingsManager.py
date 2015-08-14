@@ -94,6 +94,9 @@ class PipelineSettingsManager(SettingsManager):
         # [Bloom]
         self._addSetting("enableBloom", bool, False)
 
+        # [Depth of Field]
+        self._addSetting("enableDOF", bool, True)
+
         # [Debugging]
         self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayDebugStats", bool, True)

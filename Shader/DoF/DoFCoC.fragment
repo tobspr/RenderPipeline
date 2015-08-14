@@ -1,0 +1,68 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+
+
+uniform sampler2D depthTex;
+uniform sampler2D colorTex;
+uniform sampler2D skyboxMask;
+in vec2 texcoord;
+
+out vec4 spriteColor;
+out vec4 sceneBlurColor;
+
+
+void main() {
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
+
+    float skybox = texelFetch(skyboxMask, coord, 0).x;
+
+    // Compute avg brightness
+    vec3 pixelCol = texelFetch(colorTex, coord, 0).xyz;
+    float dist = getLinearZFromZ(texture(depthTex, texcoord).x);
+
+    vec3 avgCol = vec3(0);
+    const int numAroundSamples = 5;
+    for (int x = -numAroundSamples; x <= numAroundSamples; x++) {
+        for (int y = -numAroundSamples; y <= numAroundSamples; y++) {
+            if (x == 0 && y == 0) continue;
+            avgCol = max(avgCol, texelFetch(colorTex, coord+ ivec2(x, y), 0).xyz);
+        }
+    }
+    // avgCol /= (float(numAroundSamples*2+1) * float(numAroundSamples*2+1)) - 1;
+
+    // TODO: Make this a define
+    float blurBegin = 5.0;
+    float blurEnd = 150.0;
+
+    float blurFactor = saturate( (dist - blurBegin) / (blurEnd - blurBegin) );
+
+    float pixelLum = getLuminance(pixelCol);
+    float avgLum = getLuminance(avgCol);
+
+    sceneBlurColor = vec4(0);
+    spriteColor = vec4(0);
+
+    if ( (pixelLum > avgLum - 0.02 && pixelLum > 0.4) ) {
+        if (blurFactor > 0.2) {
+            spriteColor.xyz = pow(pixelCol, vec3(1.6)) * 0.8;
+            spriteColor.w = blurFactor * 0.9 * (0.2 + pixelLum*1.0);
+        }
+    }
+
+    if (skybox > 0.5) {
+        spriteColor.xyz *= 0.01;
+    }
+
+    if (spriteColor.w < 0.2) {
+        spriteColor.w = 0;
+        spriteColor.xyz *= 0;
+    }
+
+    sceneBlurColor = vec4(pixelCol, blurFactor);
+    spriteColor = vec4(blurFactor);
+}
+

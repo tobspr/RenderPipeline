@@ -1,0 +1,35 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+
+
+
+// uniform sampler2D spriteTex;
+uniform sampler2D sceneBlurTex;
+uniform sampler2D colorTex;
+
+
+in vec2 texcoord;
+out vec4 color;
+
+
+void main() {
+
+    vec4 sceneColor = textureLod(colorTex, texcoord, 0);
+    // vec4 spriteColor = textureLod(spriteTex, texcoord, 0);
+    vec4 spriteColor = vec4(0);
+    vec4 blurredColor = textureLod(sceneBlurTex, texcoord, 0);
+
+    vec4 combinedBlur = blurredColor + spriteColor * 1.0;
+
+    float mergeFactor = pow(blurredColor.w, 0.5);
+
+    mergeFactor = 1.0;
+
+
+    vec4 mergedResult = mix(sceneColor, combinedBlur, mergeFactor );
+
+    color = mergedResult;
+}
+

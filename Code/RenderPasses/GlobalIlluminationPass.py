@@ -4,7 +4,6 @@ from panda3d.core import NodePath, Shader, LVecBase2i, Texture, GeomEnums
 from ..Globals import Globals
 from ..RenderPass import RenderPass
 from ..RenderTarget import RenderTarget
-from ..LightLimits import LightLimits
 from ..MemoryMonitor import MemoryMonitor
 
 class GlobalIlluminationPass(RenderPass):

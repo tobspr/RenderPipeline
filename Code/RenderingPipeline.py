@@ -40,6 +40,7 @@ from RenderPasses.MotionBlurPass import MotionBlurPass
 from RenderPasses.SceneFinishPass import SceneFinishPass
 from RenderPasses.BloomPass import BloomPass
 from RenderPasses.SkyboxMaskPass import SkyboxMaskPass
+from RenderPasses.DOFPass import DOFPass
 
 from GUI.BufferViewerGUI import BufferViewerGUI
 
@@ -654,6 +655,11 @@ class RenderingPipeline(DebugObject):
         if self.settings.enableBloom:
             self.bloomPass = BloomPass()
             self.renderPassManager.registerPass(self.bloomPass)
+
+        # Add dof pass
+        if self.settings.enableDOF:
+            self.dofPass = DOFPass()
+            self.renderPassManager.registerPass(self.dofPass)
 
 
         # Add final pass
