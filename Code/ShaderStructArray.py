@@ -17,7 +17,7 @@ class ShaderStructArray(DebugObject):
     NOTICE: the the shader inputs for an object are only refreshed
     when using the [] operator. So whenever you change a property
     of an object, you have to call myShaderStructArray[index] = Object,
-    regardless wheter the object is already in the list or not.
+    regardless Whether the object is already in the list or not.
     EDIT: The object itself can also call onPropertyChanged() to force
     an update. Notice, that everytime this function is called, the
     shader-inputs are refeshed for that object. You should probably only

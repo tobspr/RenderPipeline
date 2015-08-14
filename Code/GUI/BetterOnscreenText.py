@@ -8,7 +8,7 @@ from ..DebugObject import DebugObject
 
 class BetterOnscreenText(DebugObject):
 
-    """ Simple wrapper arround OnscreenText, providing a simpler interface
+    """ Simple wrapper around OnscreenText, providing a simpler interface
     and better visuals """
 
     def __init__(self, text="", parent=None, x=0, y=0, size=10, align="left",
@@ -46,6 +46,6 @@ class BetterOnscreenText(DebugObject):
         return self.initialPos
 
     def posInterval(self, *args, **kwargs):
-        """ Returns a pos interval, this is a wrapper arround
+        """ Returns a pos interval, this is a wrapper around
         NodePath.posInterval """
         return self._node.posInterval(*args, **kwargs)

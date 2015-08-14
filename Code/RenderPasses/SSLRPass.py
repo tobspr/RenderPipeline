@@ -18,7 +18,7 @@ class SSLRPass(RenderPass):
         return "SSLRPass"
 
     def setHalfRes(self, halfRes):
-        """ Controlls wheter the sslr pass runs at full or half resolution """
+        """ controls Whether the sslr pass runs at full or half resolution """
         self.halfRes = halfRes
 
     def getRequiredInputs(self):

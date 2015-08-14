@@ -17,7 +17,7 @@ from GUI.BufferViewerGUI import BufferViewerGUI
 class RenderTarget(DebugObject):
 
     """ This is a high level interface for creating buffers
-    and render-to-textures. It internally wraps arround RenderBuffer
+    and render-to-textures. It internally wraps around RenderBuffer
     but also takes care of sorting and clearing, and especially
     setting up the scene rendering when using render-to-texture.
 
@@ -88,7 +88,7 @@ class RenderTarget(DebugObject):
         self._createOverlayQuad = createQuad
 
     def setHaveColorAlpha(self, color_alpha):
-        """ Sets wheter the color buffer has an alpha channel or not """
+        """ Sets Whether the color buffer has an alpha channel or not """
         self._haveColorAlpha = color_alpha
 
     def setUseTextureArrays(self, state=True):
@@ -116,7 +116,7 @@ class RenderTarget(DebugObject):
         self._name = name
 
     def setEnableTransparency(self, enabled=True):
-        """ Sets wheter objects can be transparent in this buffer """
+        """ Sets Whether objects can be transparent in this buffer """
         self._enableTransparency = enabled
 
     def setSize(self, width, height=None):
@@ -140,7 +140,7 @@ class RenderTarget(DebugObject):
         self._height = (Globals.resolution.y+3) / 4
 
     def setColorWrite(self, write):
-        """ Sets wheter to write color """
+        """ Sets Whether to write color """
         self._writeColor = write
 
     def setColorBits(self, colorBits):
@@ -256,15 +256,15 @@ class RenderTarget(DebugObject):
         return target in self._targets
 
     def hasAuxTextures(self):
-        """ Returns wheter this target has at least 1 aux texture attached """
+        """ Returns Whether this target has at least 1 aux texture attached """
         return self.hasTarget(RenderTargetType.Aux0)
 
     def hasColorTexture(self):
-        """ Returns wheter this target has a color texture attached """
+        """ Returns Whether this target has a color texture attached """
         return self.hasTarget(RenderTargetType.Color)
 
     def hasDepthTexture(self):
-        """ Returns wheter this target has a depth texture attached """
+        """ Returns Whether this target has a depth texture attached """
         return self.hasTarget(RenderTargetType.Depth)
 
     def _createBuffer(self):
@@ -399,7 +399,7 @@ class RenderTarget(DebugObject):
             self._active = active
 
     def isActive(self):
-        """ Returns wheter the buffer is active """
+        """ Returns Whether the buffer is active """
         return self._active
 
     def getQuad(self):
@@ -505,7 +505,7 @@ class RenderTarget(DebugObject):
         BufferViewerGUI.registerBuffer(self._name, self)
 
     def isActive(self): 
-        """ Returns wheter this buffer is currently active """
+        """ Returns Whether this buffer is currently active """
         return self._active
 
     def deleteBuffer(self):

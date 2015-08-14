@@ -109,11 +109,11 @@ class Light(ShaderStructElement):
         return self.shadowSources
 
     def hasShadows(self):
-        """ Returns wheter the light casts shadows """
+        """ Returns Whether the light casts shadows """
         return self.castShadows
 
     def setCastsShadows(self, shadows=True):
-        """ Sets wheter the light casts shadows or not """
+        """ Sets Whether the light casts shadows or not """
         self.castShadows = shadows
 
         if self.castShadows:
@@ -162,11 +162,11 @@ class Light(ShaderStructElement):
         self.queueUpdate()
 
     def needsUpdate(self):
-        """ Returns wheter the light data is up-to-date or needs an update """
+        """ Returns Whether the light data is up-to-date or needs an update """
         return self.dataNeedsUpdate
 
     def needsShadowUpdate(self):
-        """ Returns wheter the light shadow map is up-to-date or needs an update """
+        """ Returns Whether the light shadow map is up-to-date or needs an update """
 
         # no update needed if we have no shadows
         if not self.castShadows:

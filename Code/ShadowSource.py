@@ -122,7 +122,7 @@ class ShadowSource(DebugObject, ShaderStructElement):
         return self.atlasPos
 
     def hasAtlasPos(self):
-        """ Returns wheter this ShadowSource has already a position in the
+        """ Returns Whether this ShadowSource has already a position in the
         shadow atlas, or is currently unassigned """
         return self.doesHaveAtlasPos
 

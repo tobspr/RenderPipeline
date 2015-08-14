@@ -88,7 +88,7 @@ class Effect(DebugObject):
                 self.warn("Unkown setting:", key)
 
     def hasShader(self, stage):
-        """ Returns wheter there exists a shader for the given stage """
+        """ Returns Whether there exists a shader for the given stage """
         return stage in self.shaderObjs and self.shaderObjs[stage] is not None
 
     def getShader(self, stage):

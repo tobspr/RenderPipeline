@@ -6,7 +6,7 @@ from direct.gui.DirectSlider import DirectSlider
 
 class BetterSlider:
 
-    """ This is a simple wrapper arround DirectSlider, providing a simpler
+    """ This is a simple wrapper around DirectSlider, providing a simpler
     interface and better visuals """
 
     def __init__(self, x, y, parent, size=100, minValue=0, maxValue=100,

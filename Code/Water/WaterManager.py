@@ -31,7 +31,7 @@ class OceanOptions:
 
 class WaterManager(DebugObject):
 
-    """ Simple wrapper arround WaterDisplacement which combines 3 displacement
+    """ Simple wrapper around WaterDisplacement which combines 3 displacement
     maps into one, and also generates a normal map """
 
     def __init__(self):

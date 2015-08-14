@@ -7,7 +7,7 @@ from ..RenderTarget import RenderTarget
 
 class SkyboxMaskPass(RenderPass):
 
-    """ This pass outputs a mask for the scene, storing wheter a material is a skybox
+    """ This pass outputs a mask for the scene, storing Whether a material is a skybox
     or not """
 
     def __init__(self):

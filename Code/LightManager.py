@@ -333,7 +333,7 @@ class LightManager(DebugObject):
     def addLight(self, light):
         """ Adds a light to the list of rendered lights.
 
-        NOTICE: You have to set relevant properties like wheter the light
+        NOTICE: You have to set relevant properties like Whether the light
         casts shadows or the shadowmap resolution before calling this! 
         Otherwise it won't work (and maybe crash? I didn't test, 
         just DON'T DO IT!) """

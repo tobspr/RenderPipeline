@@ -49,7 +49,7 @@ class RenderingPipeline(DebugObject):
 
     """ This is the main rendering pipeline module. It setups the whole pipeline
     process, as well as creating the managers for the different effects/passes.
-    It also handles some functions to prepare the scene, e.g. for tesselation.
+    It also handles some functions to prepare the scene, e.g. for tessellation.
     """
 
     def __init__(self, showbase):
@@ -508,7 +508,7 @@ class RenderingPipeline(DebugObject):
 
     def convertToPatches(self, model):
         """ Converts a model to patches. This is required before being able
-        to use it with tesselation shaders """
+        to use it with tessellation shaders """
         self.debug("Converting model to patches ..")
         for node in model.findAllMatches("**/+GeomNode"):
             geomNode = node.node()

@@ -7,7 +7,7 @@ from ..DebugObject import DebugObject
 
 class BetterButton(DebugObject):
   
-    """ This is a wrapper arround DirectButton, providing a simpler interface
+    """ This is a wrapper around DirectButton, providing a simpler interface
     and better visuals """
 
     def __init__(self, parent, x, y, text, width=50, callback=None,

@@ -9,7 +9,7 @@ from ..Globals import Globals
 
 class BetterCheckbox(DebugObject):
 
-    """ This is a wrapper arround DirectCheckBox, providing a simpler interface
+    """ This is a wrapper around DirectCheckBox, providing a simpler interface
     and better visuals """
 
     def __init__(self, parent=None, x=0, y=0, callback=None, extraArgs=None,

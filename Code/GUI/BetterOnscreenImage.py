@@ -50,12 +50,12 @@ class BetterOnscreenImage(DebugObject):
         return self.initialPos
 
     def posInterval(self, *args, **kwargs):
-        """ Returns a pos interval, this is a wrapper arround
+        """ Returns a pos interval, this is a wrapper around
         NodePath.posInterval """
         return self._node.posInterval(*args, **kwargs)
 
     def hprInterval(self, *args, **kwargs):
-        """ Returns a hpr interval, this is a wrapper arround
+        """ Returns a hpr interval, this is a wrapper around
         NodePath.hprInterval """
         return self._node.hprInterval(*args, **kwargs)
 

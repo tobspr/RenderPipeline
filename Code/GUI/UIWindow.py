@@ -10,7 +10,7 @@ from direct.gui.DirectFrame import DirectFrame
 
 class UIWindow(DebugObject):
 
-    """ This is a simple wrapper arround DirectFrame, which simulates a window,
+    """ This is a simple wrapper around DirectFrame, which simulates a window,
     including a title """
 
     def __init__(self, title, w=100, h=100, parent=None):
