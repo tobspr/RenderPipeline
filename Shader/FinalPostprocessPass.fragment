@@ -5,7 +5,7 @@
 
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/PositionReconstruction.include"
-#pragma include "Includes/ChromaticAbberation.include"
+#pragma include "Includes/ChromaticAberration.include"
 #pragma include "Includes/ColorCorrection.include"
 #pragma include "Includes/FilmGrain.include"
 #pragma include "Includes/PoissonDisk.include"
@@ -20,26 +20,16 @@ out vec4 result;
 
 uniform float osg_FrameTime;
 
-// layout (rgba32f) uniform image2D lastFramePosition;
-// layout (r16f) uniform image2D lastFrameOcclusion;
-// uniform sampler2D currentFramePosition;
-// uniform sampler2D computedOcclusion;
-
 uniform sampler2D velocityTex;
 
 void main() {
     #if !defined(DEBUG_DISABLE_COLOR_CORRECTION) && !defined(DEBUG_VISUALIZATION_ACTIVE) && defined(USE_COLOR_CORRECTION)
-                
-
-        // float sharpness = 20.0;
+                    
+        // Sharpen
         result.xyz = sharpenTexture(colorTex, texcoord, 0.5);
-        // result.xyz =  textureLod(colorTex, texcoord, 0).xyz;
-        // result.xyz -= textureLod(colorTex, texcoord + 0.02 / vec2(WINDOW_WIDTH, WINDOW_HEIGHT), 0).xyz * sharpness;
-        // result.xyz += textureLod(colorTex, texcoord - 0.02 / vec2(WINDOW_WIDTH, WINDOW_HEIGHT), 0).xyz * sharpness;
 
-        // Chromatic abberation
-        // result.xyz = applyChromaticAbberation(colorTex, texcoord, result.xyz, 1.0);
-
+        // Chromatic aberration
+        // result.xyz = applyChromaticAberration(colorTex, texcoord, result.xyz, 1.0);
 
         // Color LUT
         result.xyz = applyColorLUT(colorLUT, result.xyz);
@@ -47,15 +37,11 @@ void main() {
         // Film grain
         result.xyz = computeGrain(result.xyz, texcoord, mod(osg_FrameTime, 1.0) + 1.0);
 
-
     #else
         result.xyz =  textureLod(colorTex, texcoord, 0).xyz;
     #endif
 
-
-
-
-    // Vignett
+    // Vignette
     #if !defined(DEBUG_VISUALIZATION_ACTIVE)
         result.xyz *= 1.0 - smoothstep(0, 1, 
             (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.3, 1.0) * 1.1  ) - 0.2) ) * 0.4;
@@ -65,10 +51,6 @@ void main() {
 
     #if defined(DEBUG_RM_VELOCITY)
         vec2 velocity = textureLod(velocityTex, texcoord, 0).xy;
-        // result.w = 1);
-        // result.xyz = textureLod(colorTex, texcoord + velocity, 0).xyz;
-
-        // result.xy = pow(abs(velocity)*0.3, vec2(3.0));
         result.xy = (velocity) * 5.0;
         result.zw = vec2(0, 1);
     #endif

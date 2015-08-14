@@ -3,7 +3,7 @@
 
 #extension GL_ARB_shader_image_load_store : enable
 
-// TODO: Make some benchmarks to see wheter unrolling
+// TODO: Make some benchmarks to see Whether unrolling
 // is faster or slower ..
 
 // #pragma optionNV (unroll all)

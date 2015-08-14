@@ -1,7 +1,7 @@
 #pragma once
 
 
-vec3 applyChromaticAbberation(sampler2D source, vec2 texcoord, float strength) {
+vec3 applyChromaticAberration(sampler2D source, vec2 texcoord, float strength) {
 
 
 

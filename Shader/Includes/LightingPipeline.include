@@ -21,7 +21,7 @@ vec3 computeLighting(isamplerBuffer lights_buffer, Material material, int offset
     vec3 lightingResult = vec3(0);
  
 
-    // Fetch limits depending on wheter the lighting process is per tile or not
+    // Fetch limits depending on Whether the lighting process is per tile or not
     #if IS_PER_TILE_IGHTING
         const int maxPointLights                = MAX_TILE_POINT_LIGHTS;
         const int maxShadowedPointLights        = MAX_TILE_SHADOWED_POINT_LIGHTS;
