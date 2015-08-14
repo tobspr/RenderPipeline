@@ -1,6 +1,6 @@
 ## Deferred Render Pipeline
 
-**NOTE:** I recently created a new master to clean up the repositority. Please
+**NOTE:** I recently created a new master to clean up the repository. Please
 use a clean checkout of the new master branch to continue to work with the pipeline!
 
 
@@ -11,7 +11,7 @@ ability to focus on making the game, and not the graphics.
 
 **Forum Thread**: http://www.panda3d.org/forums/viewtopic.php?f=6&t=17050
 
-This pipeline is still in developement, feel free to join :)
+This pipeline is still in development, feel free to join :)
 
 For questions & suggestions you can find me at `#panda3d` on freenode. 
 Thanks especially to rdb and all the others for support & help!
@@ -66,14 +66,14 @@ https://github.com/tobspr/RenderPipeline/wiki/Getting-Started
 
 
 ##### Dynamic scene exposure
-##### Color LUT, Chromatic Abberation, Grain and Sharpen
+##### Color LUT, Chromatic Aberration, Grain and Sharpen
 ##### Blur
 - [Todo] Bokeh DOF
 - Per object and camera motion blur
 
 ##### Bloom
 
-##### Tesselation
+##### Tessellation
 
 
 ### Screenshots
