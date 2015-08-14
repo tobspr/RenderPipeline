@@ -1,5 +1,10 @@
 ## Deferred Render Pipeline
 
+**NOTE:** I recently created a new master to clean up the repositority. Please
+use a clean checkout of the new master branch to continue to work with the pipeline!
+
+
+
 This is my deferred render pipeline, implemented in Panda3D. This 
 pipeline aims to handle the complete graphics pipeline, giving the user the 
 ability to focus on making the game, and not the graphics.
