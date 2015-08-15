@@ -120,7 +120,7 @@ void main() {
 
         // Fog, TODO (make it look good)
         #if defined(USE_SCATTERING)
-            float fogFactor =  saturate( (distance(cameraPosition, material.position) - 1.0) / 1300.0);
+            float fogFactor =  saturate( (distance(cameraPosition, material.position) - 1.0) / 1900.0);
             // fogFactor = 1.0;
             // fogFactor *= saturate(-0.05 + max(0.0, material.position.z) / 800.0);
             // fogFactor += material.position.z / 800.0;
@@ -128,7 +128,7 @@ void main() {
             // fogFactor = 0.0;
 
             // result += giSpecularColor.x * scatteringResult * saturate( (material.position.z-15.0) / 300.0) * 20.0;
-            result = mix(vec3(result), result + pow(scatteringResult, vec3(0.9))*4.0, fogFactor);
+            // result = mix(vec3(result), result + pow(scatteringResult, vec3(0.9))*4.0, fogFactor);
         #endif
 
     }

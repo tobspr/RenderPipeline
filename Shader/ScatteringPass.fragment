@@ -82,7 +82,7 @@ void main() {
         scatteringResult *= 1.2;
     } else {
         scatteringResult *= 0.1;
-        scatteringResult = pow(scatteringResult, vec3(0.5)) * 1.1;
+        scatteringResult = pow(scatteringResult, vec3(0.5)) * 2.1;
         
     }
 

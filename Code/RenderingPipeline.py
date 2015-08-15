@@ -239,6 +239,9 @@ class RenderingPipeline(DebugObject):
         """ Reloads all shaders and regenerates all intitial states. This function
         also updates the shader autoconfig """
         self.debug("Reloading shaders")
+        if self.guiManager:
+            self.guiManager.onRegenerateShaders()
+
         self.renderPassManager.writeAutoconfig()
         self.renderPassManager.setShaders()
         if self.settings.enableGlobalIllumination:
@@ -321,6 +324,8 @@ class RenderingPipeline(DebugObject):
         if self.scattering:
             self.scattering.update()
         self.dynamicObjectsManager.update()
+
+
 
         return task.cont
 

@@ -51,7 +51,7 @@ void main() {
         float bumpFactor = vOutput.materialDiffuse.w;
 
         // For testing, most models don't have a bump factor defined!
-        bumpFactor *= 0.5;
+        bumpFactor *= 0.0;
 
         // Extract detail normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;
@@ -106,9 +106,9 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
 
-    // m.metallic = 1;
-    m.specular = 0.5;
-    // m.roughness = 0.0;
+    m.metallic = 0;
+    m.specular = 0.0;
+    m.roughness = 0.6;
 
     // Entry point for the user to modify the material
     #pragma ENTRY_POINT MATERIAL

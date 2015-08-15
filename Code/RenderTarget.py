@@ -79,6 +79,8 @@ class RenderTarget(DebugObject):
         self._useTextureArrays = False
         self._haveColorAlpha = True
         self._internalBuffer = None
+        self._camera = None
+        self._node = None
         self._rename(name)
         self.mute()
 
@@ -157,11 +159,11 @@ class RenderTarget(DebugObject):
 
     def setShaderInput(self, *args):
         """ This is a shortcut for setting shader inputs on the buffer """
-        self.getQuad().setShaderInput(*args)
+        self.getNode().setShaderInput(*args)
 
     def setShader(self, shader):
         """ This is a shortcut for setting shaders to the buffer """
-        self.getQuad().setShader(shader)
+        self.getNode().setShader(shader)
 
     def getTarget(self, target):
         """ Returns the texture handle for the given target """
@@ -295,8 +297,6 @@ class RenderTarget(DebugObject):
         # Init buffer object
         self._createBuffer()
 
-
-
         # Prepare initial state
         cs = NodePath("InitialStateDummy")
         cs.setState(self._sourceCam.node().getInitialState())
@@ -314,13 +314,17 @@ class RenderTarget(DebugObject):
 
         self._sourceCam.node().setInitialState(cs.getState())
 
-    
+        self._node = NodePath("RTRoot")
+
         # Prepare fullscreen quad
         if self._createOverlayQuad:
+            
             self._quad = self._makeFullscreenQuad()
+            self._quad.reparentTo(self._node)
+            
             bufferCam = self._makeFullscreenCam()
-            bufferCamNode = self._quad.attachNewNode(bufferCam)
-            self._region.setCamera(bufferCamNode)
+            self._camera = self._node.attachNewNode(bufferCam)
+            self._region.setCamera(self._camera)
             self._region.setSort(5)
 
         # Set clears
@@ -364,7 +368,9 @@ class RenderTarget(DebugObject):
         self._createBuffer()
 
         # Prepare fullscreen quad
+        self._node = NodePath("RTRoot")
         self._quad = self._makeFullscreenQuad()
+        self._quad.reparentTo(self._node)
 
         # Prepare fullscreen camera
         bufferCam = self._makeFullscreenCam()
@@ -379,10 +385,10 @@ class RenderTarget(DebugObject):
 
         bufferCam.setInitialState(initialState.getState())
 
-        bufferCamNode = self._quad.attachNewNode(bufferCam)
+        self._camera = self._node.attachNewNode(bufferCam)
 
         bufferRegion = self._internalBuffer.getDisplayRegion(0)
-        bufferRegion.setCamera(bufferCamNode)
+        bufferRegion.setCamera(self._camera)
         bufferRegion.setActive(1)
         self._setSizeShaderInput()
 
@@ -405,6 +411,11 @@ class RenderTarget(DebugObject):
     def getQuad(self):
         """ Returns the quad-node path. You can use this to set attributes on it """
         return self._quad
+
+    def getNode(self):
+        """ Returns the buffer top node path, where the quad and camera is parented
+        to """
+        return self._node
 
     def getTexture(self, target):
         """ Returns the texture assigned to a target. The target should be a

@@ -55,6 +55,37 @@ Voxel fetchVoxel(vec3 coord) {
     return v;
 }
 
+vec3 getVoxel_posX(vec3 coord) {
+    return textureLod(src0, coord, 0).xyz;
+}
+
+vec3 getVoxel_negX(vec3 coord) {
+    return textureLod(src1, coord, 0).xyz;
+}
+
+vec3 getVoxel_posY(vec3 coord) {
+    return textureLod(src2, coord, 0).xyz;
+}
+
+vec3 getVoxel_negY(vec3 coord) {
+    return textureLod(src3, coord, 0).xyz;
+}
+
+vec3 getVoxel_posZ(vec3 coord) {
+    return textureLod(src4, coord, 0).xyz;
+}
+
+vec3 getVoxel_negZ(vec3 coord) {
+    // UGH
+    return vec3(
+        textureLod(src0, coord, 0).x,
+        textureLod(src0, coord, 0).y,
+        textureLod(src0, coord, 0).z);
+}
+
+
+
+
 void storeVoxel(ivec3 coord, Voxel v) {
     imageStore(dst0, coord, vec4(v.posX.r, v.posX.g, v.posX.b,    v.negZ.r));
     imageStore(dst1, coord, vec4(v.negX.r, v.negX.g, v.negX.b,    v.negZ.g));
@@ -65,40 +96,57 @@ void storeVoxel(ivec3 coord, Voxel v) {
 
 
 // Preventing a lot of code duplicating by making this a define
-#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2)  \
-for (int c1 = -1; c1 <= 1; c1++) {     \
-    for (int c2 = -1; c2 <= 1; c2++) {    \
-        Voxel tmp = fetchVoxel(floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize);\
-        v. DIR_NAME += tmp. DIR_NAME * distributionFactor * (saturate(1.0  - 0.1*(length(vec2(c1, c2))))); \
-        if (tmp.solid) {\
-            v. DIR_NAME += v. NEG_DIR_NAME * bounceFactor;\
-        }\
-        \
-    } \
-}
+// #define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2)  \
+// tmp = fetchVoxel(floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize);\
+// v. DIR_NAME += tmp. DIR_NAME * distributionFactor * 2.25;
+
+
+#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2) \
+v. DIR_NAME += getVoxel_ ## DIR_NAME (floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize) * distributionFactor;
+
+// const float bounceFactor = distributionFactor * 0.0;
+/*
+if (tmp.solid && false) {\
+    v. DIR_NAME += v. NEG_DIR_NAME * bounceFactor;\
+}\
+*/
 
 uniform bool isLastStep;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec3 coord3D = convert_2d_to_3d(coord, GI_GRID_RESOLUTION, GI_SLIDE_COUNT);
-    vec3 floatCoord3D = (coord3D+0.5) / GI_GRID_RESOLUTION;
+    vec3 floatCoord3D = (coord3D + 0.5) / GI_GRID_RESOLUTION;
     float voxelSize = 1.0 / GI_GRID_RESOLUTION;
 
     // Fetch current voxel
     Voxel v = fetchVoxel(floatCoord3D);
 
-    float distributionFactor = 0.027;
-    float bounceFactor = distributionFactor * 0.0;
+    const float distributionFactor = 0.027 * 2.25;
 
     // Evaluate each direction
     if (!v.solid || isLastStep) {
-        EVALUATE_DIRECTION(posX, negX, -1, c1, c2 );
-        EVALUATE_DIRECTION(negX, posX, 1, c1, c2 );
-        EVALUATE_DIRECTION(posY, negY, c1, -1, c2 );
-        EVALUATE_DIRECTION(negY, posY, c1, 1, c2 );
-        EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 );
-        EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 );
+        Voxel tmp;
+
+        // Using sample offsets of 2.0 / 3.0, we can achieve a 3x3 box kernel
+        // using only 2x2 taps! (We just have to normalize it by multiplying it
+        // With 4.0/9.0 due to the reduced amount of samples, 4 instead of 9)
+        float sampleOffs = 2.0 / 3.0;
+        
+        float c1, c2;
+        for (int x = 0; x < 2; x++) {
+            for (int y = 0; y < 2; y++) {
+                c1 = sampleOffs * sign(2*x-1);
+                c2 = sampleOffs * sign(2*y-1);
+                EVALUATE_DIRECTION(posX, negX, -1, c1, c2 );
+                EVALUATE_DIRECTION(negX, posX, 1, c1, c2 );
+                EVALUATE_DIRECTION(posY, negY, c1, -1, c2 );
+                EVALUATE_DIRECTION(negY, posY, c1, 1, c2 );
+                EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 );
+                EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 );
+
+            }
+        }
     }
 
     // Store the modified voxel

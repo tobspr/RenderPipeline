@@ -1,0 +1,31 @@
+#version 400
+
+#pragma include "Includes/Configuration.include"
+
+uniform mat4 p3d_ModelViewProjectionMatrix;
+
+
+uniform ivec2 tileCount;
+in vec4 p3d_Vertex;
+out vec2 texcoord;
+
+flat out int tileIndex;
+
+void main() {
+
+    tileIndex = gl_InstanceID;
+    ivec2 tilePos = ivec2(tileIndex % tileCount.x, tileIndex / tileCount.x);
+
+    vec2 tileScale = vec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    ivec2 tileOffs = tilePos * ivec2(LIGHTING_COMPUTE_PATCH_SIZE_X, LIGHTING_COMPUTE_PATCH_SIZE_Y);
+    vec2 tileOffsF = tileOffs / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    tileOffsF = tileOffsF * 2.0 - 1.0;
+
+
+    gl_Position = vec4(
+        (p3d_Vertex.x*0.5+0.5) * tileScale.x*2 + tileOffsF.x,
+        (p3d_Vertex.z*0.5+0.5) * tileScale.y*2 + tileOffsF.y,
+        0, 1);
+    texcoord = sign(p3d_Vertex.xz * 0.5 + 0.5);
+
+}

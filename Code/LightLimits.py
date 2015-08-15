@@ -8,23 +8,22 @@ class LightLimits:
 
     maxLights = {
         "PointLight": 3,
-        "PointLightShadow": 3,
+        "PointLightShadow": 5,
         "DirectionalLight": 3,
         "DirectionalLightShadow": 3,
         "SpotLight": 3,
         "SpotLightShadow": 3,
-        "GIHelperLightShadow": 3
     }
 
     maxPerTileLights = {
         "PointLight": 3,
-        "PointLightShadow": 3,
+        "PointLightShadow": 5,
         "DirectionalLight": 3,
         "DirectionalLightShadow": 3,
         "SpotLight": 3,
         "SpotLightShadow": 3,
     }
 
-    maxTotalLights = 3
-    maxShadowMaps = 32
+    maxTotalLights = 6
+    maxShadowMaps = 36
 

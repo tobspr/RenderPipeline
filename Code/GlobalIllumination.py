@@ -278,8 +278,8 @@ class GlobalIllumination(DebugObject):
         
         # Set texture wrap modes
         for tex in self.pingDataTextures + self.pongDataTextures + self.dataTextures + self.generationTextures:
-            tex.setMinfilter(Texture.FTNearest)
-            tex.setMagfilter(Texture.FTNearest)
+            tex.setMinfilter(Texture.FTLinear)
+            tex.setMagfilter(Texture.FTLinear)
             tex.setWrapU(Texture.WMBorderColor)
             tex.setWrapV(Texture.WMBorderColor)
             tex.setWrapW(Texture.WMBorderColor)

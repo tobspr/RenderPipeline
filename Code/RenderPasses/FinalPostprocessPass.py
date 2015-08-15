@@ -32,7 +32,7 @@ class FinalPostprocessPass(RenderPass):
         self.target.prepareOffscreenBuffer()
 
         # Make this pass show on the screen
-        Globals.base.win.getDisplayRegion(1).setCamera(self.target._quad.getChild(0))
+        Globals.base.win.getDisplayRegion(1).setCamera(self.target._camera)
 
     def setShaders(self):
         shader = Shader.load(Shader.SLGLSL, 

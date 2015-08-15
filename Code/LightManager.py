@@ -30,6 +30,7 @@ from RenderPasses.ScatteringCubemapPass import ScatteringCubemapPass
 from RenderPasses.UnshadowedLightsPass import UnshadowedLightsPass
 from RenderPasses.ShadowedLightsPass import ShadowedLightsPass
 from RenderPasses.ExposurePass import ExposurePass
+from RenderPasses.ApplyLightsPass import ApplyLightsPass
 
 from GUI.FastText import FastText
 
@@ -84,6 +85,7 @@ class LightManager(DebugObject):
         self.updateCallbacks = []
 
         self.cullBounds = None
+        self.numTiles = None
         self.lightingComputator = None
         self.shadowScene = Globals.render
 
@@ -100,17 +102,19 @@ class LightManager(DebugObject):
         self.allShadowsArray = ShaderStructArray(
             ShadowSource, LightLimits.maxShadowMaps)
 
+        self._initLightCulling()
+
+
         # Create shadow compute buffer
         self._createShadowPass()
         self._createUnshadowedLightsPass()
         self._createShadowedLightsPass()
+        self._createApplyLightsPass()
         self._createExposurePass()
 
         if self.pipeline.settings.enableScattering:
             self._createScatteringPass()
 
-
-        self._initLightCulling()
 
         # Create the initial shadow state
         self.shadowScene.setTag("ShadowPassShader", "Default")
@@ -153,6 +157,13 @@ class LightManager(DebugObject):
         """ Creates the pass which renders all unshadowed lights """
         self.unshadowedLightsPass = UnshadowedLightsPass()
         self.pipeline.getRenderPassManager().registerPass(self.unshadowedLightsPass)
+
+    def _createApplyLightsPass(self):
+        """ Creates the pass which applies all lights """
+        self.applyLightsPass = ApplyLightsPass(self.pipeline)
+        self.applyLightsPass.setTileCount(self.numTiles)
+        self.pipeline.getRenderPassManager().registerPass(self.applyLightsPass)
+
 
     def _createShadowedLightsPass(self):
         """ Creates the pass which renders all unshadowed lights """
@@ -207,6 +218,8 @@ class LightManager(DebugObject):
                    "Actual Buffer size=", int(sizeX * self.patchSize.x),
                    "x", int(sizeY * self.patchSize.y))
 
+        self.numTiles = LVecBase2i(sizeX, sizeY)
+
         # Create the buffer which stores the rendered lights
         self._makeRenderedLightsBuffer()
 
@@ -260,7 +273,6 @@ class LightManager(DebugObject):
 
         define("LIGHTING_COMPUTE_PATCH_SIZE_X", settings.computePatchSizeX)
         define("LIGHTING_COMPUTE_PATCH_SIZE_Y", settings.computePatchSizeY)
-        define("LIGHTING_MIN_MAX_DEPTH_ACCURACY", settings.minMaxDepthAccuracy)
 
         if settings.renderShadows:
             define("USE_SHADOWS", 1)

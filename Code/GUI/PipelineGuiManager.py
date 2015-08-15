@@ -12,6 +12,8 @@ from BetterOnscreenText import BetterOnscreenText
 from CheckboxWithLabel import CheckboxWithLabel
 from CheckboxCollection import CheckboxCollection
 from UIWindow import UIWindow
+from FastText import FastText
+from PerformanceOverlay import PerformanceOverlay
 
 
 class PipelineGuiManager(DebugObject):
@@ -58,6 +60,17 @@ class PipelineGuiManager(DebugObject):
 
             self.memUsageText.setText("VRAM Usage: " + memstr + " MB / Textures: " + texstr + " MB / Other: " + otherstr + " MB")
 
+        if self.fpsText:
+            clock = Globals.clock
+            self.fpsText.setText("Frame time over {:3.1f}s     Avg: {:3.2f}     Max: {:3.2f}     Deviation: {:3.2f}".format(
+                clock.getAverageFrameRateInterval(), 
+                1000.0 / clock.getAverageFrameRate(),
+                clock.getMaxFrameDuration() * 1000.0,
+                clock.calcFrameRateDeviation() * 1000.0
+                ))
+
+        if self.perfOverlay:
+            self.perfOverlay.update()
 
     def setup(self):
         """ Setups this manager """
@@ -78,16 +91,27 @@ class PipelineGuiManager(DebugObject):
         self.showbase.accept("g", self._toggleGUI)
         self.currentGUIEffect = None
         self.memUsageText = None
+        self.fpsText = None
+        self.perfOverlay = None
+
+        self.regenerateShaderHint = BetterOnscreenImage(
+            image="Data/GUI/RegeneratingShaders.png", parent=self.rootNode,
+            x=(Globals.base.win.getXSize() - 280)/2, y=Globals.base.win.getYSize() - 90, w=280, h=56)
+        self.hintFadeEffect = None
+        self.regenerateShaderHint.hide()
 
         if self.pipeline.settings.displayDebugStats:
-            try:
-                from FastText import FastText
-                self.memUsageText = FastText(pos=Vec2(
-                    Globals.base.getAspectRatio() - 0.1, 0.76), rightAligned=True, color=Vec3(0.2, 1, 0), size=0.03)
+            self.memUsageText = FastText(pos=Vec2(
+                Globals.base.getAspectRatio() - 0.1, 0.76), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
+            self.fpsText = FastText(pos=Vec2(
+                Globals.base.getAspectRatio() - 0.1, 0.72), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
+            # self.fpsText.setText("Frame time 12   Max:  34.22")
 
-            except Exception, msg:
-                self.warn(
-                    "Overlay is disabled because FastText wasn't loaded")
+        if self.pipeline.settings.displayPerformanceOverlay:
+            self.perfOverlay = PerformanceOverlay(self.pipeline)
+            self.showbase.accept("tab", self.perfOverlay.toggle)
+
+        # Globals.clock.setAverageFrameRateInterval(3.0)
 
     def _initSettings(self):
         """ Inits all debugging settings """
@@ -156,8 +180,6 @@ class PipelineGuiManager(DebugObject):
 
         register_feature("Env. Filtering", "ft_FILTER_ENVIRONMENT")
         register_feature("PBS", "ft_COMPLEX_LIGHTING")
-
-        # register_mode("h Debug", "rm_SSaLR")
 
         if s.enableSSLR:
             register_mode("SSLR", "rm_SSLR")
@@ -265,6 +287,21 @@ class PipelineGuiManager(DebugObject):
 
         if self.pipeline.settings.enableGlobalIllumination and self.enableGISliders:
             self._optsChanged()
+
+
+    def onRegenerateShaders(self):
+
+        if self.hintFadeEffect:
+            self.hintFadeEffect.finish()
+
+        self.regenerateShaderHint.show()
+        Globals.base.graphicsEngine.renderFrame()
+        Globals.base.graphicsEngine.renderFrame()
+        Globals.base.graphicsEngine.renderFrame()
+
+        self.regenerateShaderHint.hide()
+
+
 
     def _optsChanged(self):
 

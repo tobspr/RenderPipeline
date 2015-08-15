@@ -27,7 +27,6 @@ class PipelineSettingsManager(SettingsManager):
         # [Lighting]
         self._addSetting("computePatchSizeX", int, 32)
         self._addSetting("computePatchSizeY", int, 32)
-        self._addSetting("minMaxDepthAccuracy", int, 3)
         self._addSetting("defaultReflectionCubemap", str, "Default-0/#.png")
         self._addSetting("colorLookupTable", str, "Default.png")
         self._addSetting("cubemapAntialiasingFactor", float, 5.0)
@@ -100,5 +99,6 @@ class PipelineSettingsManager(SettingsManager):
         # [Debugging]
         self._addSetting("displayOnscreenDebugger", bool, False)
         self._addSetting("displayDebugStats", bool, True)
+        self._addSetting("displayPerformanceOverlay", bool, True)
         self._addSetting("pipelineOutputLevel", str, "debug")
         self._addSetting("useDebugAttachments", bool, False)

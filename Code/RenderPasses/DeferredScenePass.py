@@ -3,6 +3,8 @@ from ..Globals import Globals
 from ..RenderPass import RenderPass
 from ..RenderTarget import RenderTarget
 
+from panda3d.core import Texture
+
 class DeferredScenePass(RenderPass):
 
     """ This is the main scene pass which generates the G-Buffer used for 
@@ -29,7 +31,6 @@ class DeferredScenePass(RenderPass):
         self.target.prepareSceneRender()
         self.target.setClearColor(True)
         # self.target.setClearDepth(True)
-
 
     def getOutputs(self):
         return {

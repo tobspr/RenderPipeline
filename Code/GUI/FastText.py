@@ -12,7 +12,11 @@ class FastText:
     instanced cards and a texture atlas """
 
     def __init__(self, pos=Vec2(0), rightAligned=False, color=Vec3(0, 0, 0),
-                 size=0.04):
+                 size=0.04, parent=None):
+        if parent is None:
+            parent = Globals.base.aspect2d
+
+        self.parent = parent
 
         self._loadCharset()
         self._prepareFontTextures()
@@ -151,9 +155,14 @@ class FastText:
         self.square.setShader(self.fontShader, 1000)
         self.square.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MAlpha), 1000)
-        self.square.reparentTo(Globals.base.aspect2d)
+        self.square.reparentTo(self.parent)
         return self.square
 
     def remove(self):
         self.square.removeNode()
         
+    def show(self):
+        self.square.show()
+
+    def hide(self):
+        self.square.hide()
