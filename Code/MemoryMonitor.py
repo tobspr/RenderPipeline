@@ -21,24 +21,25 @@ class MemoryMonitor:
 
         # Assign the texture format a size
         textureTypes = {
-            3: 1,      # FRED
-            6: 1,      # ALPHA
-            7:  3 * 1, # RGB (Unkown type, we will just assume 8 bit)
-            9:  3 * 1, # FRGBA8
-            12:  4 * 1,# RGBA (Unkown type, we will just assume 8 bit)
-            18:  1,    # LUMINANCE
-            19:  2,    # LUMINANCE_ALPHA
-            16: 4 * 1, # RGBA8
-            21: 4 * 2, # RGBA16
-            22: 4 * 4, # RGBA32
-            25: 3,     # Depth 24 Bit
+            3:  1,     # FRED
+            6:  1,     # ALPHA
+            7:  4,     # RGB (Unkown type, we will just assume 8 bit)
+            9:  4,     # FRGBA8
+            12: 4,     # RGBA (Unkown type, we will just assume 8 bit)
+            18: 1,     # LUMINANCE
+            19: 2,     # LUMINANCE_ALPHA
+            16: 4,     # RGBA8
+            21: 8,     # RGBA16
+            22: 16,    # RGBA32
+            25: 4,     # Depth 24 Bit
             26: 4,     # Depth 32 Bit
             27: 2,     # FR16 
-            29: 3 * 2, # FRGB16
-            30: 3,     # FSRGB
+            29: 8,     # FRGB16
+            30: 4,     # FSRGB
             31: 4,     # FSRGB_ALPHA    
             34: 4,     # FR32i
-            35: 4,     # FR32
+            35: 4,     # FR32,
+            42: 4,     # FR11G11B10
         }
 
 
@@ -61,13 +62,16 @@ class MemoryMonitor:
             # print "DEPRECATED FORMAT:", form, "USED BY",tex.getName()
             pass
 
-        # Mipmaps take approx 33% of the texture size, so just multiply the pixel
-        # count by that amount
-        if tex.usesMipmaps():
-            pixelCount *= 1.33
-
         # Multiply the size of the component by the amount of pixels
-        dataSize = componentSize * pixelCount
+        dataSize = int(componentSize * pixelCount)
+        
+        # Mipmaps take approx 33% of the texture size, so just multiply it with that amount
+        if tex.usesMipmaps():
+            dataSize = (dataSize * 4) / 3
+
+        if dataSize != tex.estimateTextureMemory():
+            print "Format",form,"does not match:", dataSize, "vs", tex.estimateTextureMemory()
+
         return dataSize
 
     @classmethod

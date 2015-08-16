@@ -46,7 +46,6 @@ void main() {
 
     // Compute and store GI
     vec4 giResult = computeGlobalIllumination(pixelPos, pixelNormal, viewVector, specularResult);
-
     giColorResult = vec4(giResult);
     giSpecularResult = vec4(specularResult);
     #endif

@@ -51,7 +51,7 @@ void main() {
         float bumpFactor = vOutput.materialDiffuse.w;
 
         // For testing, most models don't have a bump factor defined!
-        bumpFactor *= 0.0;
+        bumpFactor *= 0.5;
 
         // Extract detail normal
         vec3 detailNormal = sampledNormal.xyz * 2.0 - 1.0;

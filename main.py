@@ -356,8 +356,8 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.setStatus("Optimizing Scene", 90)
 
         # self.scene.clearModelNodes()
-        # loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
-        self.onScenePrepared()
+        loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
+        # self.onScenePrepared()
 
     def onScenePrepared(self, cb=None):
         """ Callback which gets called after the scene got prepared """
@@ -427,7 +427,7 @@ class Main(ShowBase, DebugObject):
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
         
-        camPos = Vec3(-34.31,1.66,22.55)
+        camPos = Vec3(-33.23,-2.81,18.4)
         camHpr = Vec3(269.79,-2.74,0.0)
         self.controller.setInitialPositionHpr(
             camPos, camHpr)

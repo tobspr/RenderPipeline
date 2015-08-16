@@ -29,8 +29,8 @@ class DeferredScenePass(RenderPass):
         self.target.setDepthBits(32)
         self.target.setCreateOverlayQuad(False)
         self.target.prepareSceneRender()
-        self.target.setClearColor(True)
-        # self.target.setClearDepth(True)
+        self.target.setClearColor(False)
+        self.target.setClearDepth(True)
 
     def getOutputs(self):
         return {

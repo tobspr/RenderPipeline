@@ -128,7 +128,7 @@ void main() {
             // fogFactor = 0.0;
 
             // result += giSpecularColor.x * scatteringResult * saturate( (material.position.z-15.0) / 300.0) * 20.0;
-            // result = mix(vec3(result), result + pow(scatteringResult, vec3(0.9))*4.0, fogFactor);
+            result = mix(vec3(result), result + pow(scatteringResult, vec3(0.9))*4.0, fogFactor);
         #endif
 
     }

@@ -580,7 +580,7 @@ class RenderingPipeline(DebugObject):
             return
 
         self.debug("Checking required Panda3D version ..")
-        SystemAnalyzer.checkPandaVersionOutOfDate(8,8,2015)
+        SystemAnalyzer.checkPandaVersionOutOfDate(12,8,2015)
         # SystemAnalyzer.analyze()
 
         # Mount everything first

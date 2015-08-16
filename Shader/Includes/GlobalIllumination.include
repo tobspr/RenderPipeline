@@ -9,11 +9,13 @@
 
 uniform GIData giData;
 uniform float giReadyState;
-uniform sampler3D giVoxelData0;
-uniform sampler3D giVoxelData1;
-uniform sampler3D giVoxelData2;
-uniform sampler3D giVoxelData3;
-uniform sampler3D giVoxelData4;
+uniform sampler3D giVoxelDataPosX;
+uniform sampler3D giVoxelDataNegX;
+uniform sampler3D giVoxelDataPosY;
+uniform sampler3D giVoxelDataNegY;
+uniform sampler3D giVoxelDataPosZ;
+uniform sampler3D giVoxelDataNegZ;
+uniform sampler3D voxelSolidTex;
 
 struct Voxel {
     vec3 posX;
@@ -28,25 +30,45 @@ struct Voxel {
 
 uniform int frameIndex;
 
-Voxel fetchVoxel(vec3 coord, float lod) {
-    vec4 sample0 = textureLod(giVoxelData0, coord, lod);
-    vec4 sample1 = textureLod(giVoxelData1, coord, lod);
-    vec4 sample2 = textureLod(giVoxelData2, coord, lod);
-    vec4 sample3 = textureLod(giVoxelData3, coord, lod);
-    vec4 sample4 = textureLod(giVoxelData4, coord, lod);
 
-
+Voxel fetchVoxel(vec3 coord) {
+    // textureLod() seems to be the fastest, even faster than texelFetch() and texture()
     Voxel v;
-    v.posX = vec3(sample0.x, sample0.y, sample0.z);
-    v.negX = vec3(sample1.x, sample1.y, sample1.z);
-    v.posY = vec3(sample2.x, sample2.y, sample2.z);
-    v.negY = vec3(sample3.x, sample3.y, sample3.z);
-    v.posZ = vec3(sample4.x, sample4.y, sample4.z);
 
-    v.negZ = vec3(sample0.w, sample1.w, sample2.w);
-    v.solid = sample4.w;
+    v.posX = textureLod(giVoxelDataPosX, coord, 0).xyz;
+    v.negX = textureLod(giVoxelDataNegX, coord, 0).xyz;
+    v.posY = textureLod(giVoxelDataPosY, coord, 0).xyz;
+    v.negY = textureLod(giVoxelDataNegY, coord, 0).xyz;
+    v.posZ = textureLod(giVoxelDataPosZ, coord, 0).xyz;
+    v.negZ = textureLod(giVoxelDataNegZ, coord, 0).xyz;
+    v.solid = textureLod(voxelSolidTex, coord, 0).x;
     return v;
 }
+
+
+
+vec4 getVoxelInfluence(vec3 coord, vec3 normal) {
+    Voxel v = fetchVoxel(coord);
+    vec4 resultSum;
+    float amb = 0.2;
+    float fact = 1.0;
+    resultSum.xyz += saturate(amb + fact*saturate(-normal.x)) * v.posX;
+    resultSum.xyz += saturate(amb + fact*saturate(normal.x)) * v.negX;
+    resultSum.xyz += saturate(amb + fact*saturate(-normal.y)) * v.posY;
+    resultSum.xyz += saturate(amb + fact*saturate(normal.y)) * v.negY;
+    resultSum.xyz += saturate(amb + fact*saturate(-normal.z)) * v.posZ;
+    resultSum.xyz += saturate(amb + fact*saturate(normal.z)) * v.negZ;
+
+    // resultSum.w = (1.05 - v.solid);
+    // resultSum.xyz *= resultSum.w;
+    
+    return resultSum;
+}
+
+float getVoxelSolidness(vec3 coord) {
+    return textureLod(voxelSolidTex, coord, 0).x;
+}
+
 
 vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 specularColor) {
 
@@ -99,51 +121,76 @@ vec4 computeGlobalIllumination(vec3 pos, vec3 normal, vec3 viewVector, out vec4 
     ivec3 localCoordInGrid = ivec3(localCoord * giData.resolution);
     specularColor = vec4(0);
 
-    Voxel v = fetchVoxel(localCoord, 0);
+
     vec3 resultSum = vec3(0);
 
-    #if 0
-    float mixFactor = 1.0;
+    #if GI_QUALITY_LEVEL == 4
 
-    resultSum += saturate(1.0 + mixFactor * (-normal.x)) * v.posX;
-    resultSum += saturate(1.0 + mixFactor * (normal.x)) * v.negX;
-    resultSum += saturate(1.0 + mixFactor * (-normal.y)) * v.posY;
-    resultSum += saturate(1.0 + mixFactor * (normal.y)) * v.negY;
-    resultSum += saturate(1.0 + mixFactor * (-normal.z)) * v.posZ;
-    resultSum += saturate(1.0 + mixFactor * (normal.z)) * v.negZ;
+    vec4 summedUp = vec4(0);
+
+    for (int i = 0; i < 4; i++) {
+        vec3 offs = poisson3D_32[i*8];
+        // offs *= sign(dot(offs, normal));
+        offs = normalize(offs + 0.5*normal);
+        summedUp += getVoxelInfluence(localCoord + offs / giData.resolution, normal);
+    }
+    summedUp /= max(0.1, summedUp.w);
+    // summedUp /= 4;
+    resultSum.xyz = summedUp.xyz;
+
+    // Voxel ao
+    float aoSum = 0.0;
+    float aoRadius = 2.0;
+    for (int i = 0; i < 32; i++) {
+        vec3 offs = normalize(poisson3D_32[i]);
+        // offs *= sign(dot(offs, normal));
+        aoSum += getVoxelSolidness(localCoord + offs / giData.resolution * aoRadius);
+    }
+
+
+    aoSum /= 32.0;
+    // aoSum = 1.0 - saturate(aoSum);
+    // aoSum *= 3000.0;
+
+    resultSum.xyz *= aoSum;
+
+
 
     #else
-    float amb = 0.2;
-    float fact = 1.0;
-    resultSum += saturate(amb + fact*saturate(-normal.x)) * v.posX;
-    resultSum += saturate(amb + fact*saturate(normal.x)) * v.negX;
-    resultSum += saturate(amb + fact*saturate(-normal.y)) * v.posY;
-    resultSum += saturate(amb + fact*saturate(normal.y)) * v.negY;
-    resultSum += saturate(amb + fact*saturate(-normal.z)) * v.posZ;
-    resultSum += saturate(amb + fact*saturate(normal.z)) * v.negZ;
-
-
+    resultSum.xyz = getVoxelInfluence(localCoord, normal).xyz;
     #endif
+
+
 
     // resultSum = v.posX + v.negX + v.posY + v.negY + v.posZ + v.negZ;
     // resultSum = v.posZ * 1.0;
     // resultSum *= 0.0002;
 
-    #if GI_QUALITY_LEVEL == 0
+    float ambientFactor = 1.0;
+
+
+    // Scale GI intensity based on the voxel grid size
+    // - Also scale ambient to reduce artifacts
+
+    #if GI_QUALITY_LEVEL == 0 // LOW
         resultSum *= 0.5;
-    #elif GI_QUALITY_LEVEL == 1
+        ambientFactor = 450.0;
+    #elif GI_QUALITY_LEVEL == 1 // MEDIUM
         resultSum *= 0.07;
-    #elif GI_QUALITY_LEVEL == 2
+        ambientFactor = 100.0;
+    #elif GI_QUALITY_LEVEL == 2 // HIGH
         resultSum *= 0.0003;
+        ambientFactor *= 2.0;
+    #elif GI_QUALITY_LEVEL == 3 // ULTRA
+        resultSum *= 0.0001;
+        ambientFactor *= 1.0;
     #endif
-
-
 
     resultSum *= 2.0;
     // resultSum = resultSum.yyy;
 
     // SRGB
-    resultSum += vec3(0.017, 0.019, 0.02) * 0.01;
+    resultSum += vec3(0.017, 0.019, 0.02) * 0.01 * ambientFactor;
     resultSum = pow(resultSum, vec3(1.0 / 2.2));
 
 

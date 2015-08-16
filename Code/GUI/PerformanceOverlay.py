@@ -25,21 +25,17 @@ class PerformanceOverlay(DebugObject):
         self.avgSamples = 60
         self.lastTextUpdate = 0
         self.frameDataRdy = False
+        self.startDummyPstats = False
         self.setup()
         self.hide()
 
     def setup(self):
 
         self.tryStartPstats()
-
         self.averagedEntries = []
 
-
         self.node = Globals.base.aspect2d.attachNewNode("PerfOverlay")
-
         ww, wh = Globals.base.win.getXSize(), Globals.base.win.getYSize()
-
-
 
         bg = DirectFrame(parent=self.node,
                        frameColor=(0.1, 0.1, 0.1, 0.9),
@@ -53,7 +49,6 @@ class PerformanceOverlay(DebugObject):
                 yoffs = 0.6 - i * 0.055
                 xoffs = -0.95 + col * 0.95
                 bgcol = (0, 0, 0, 0.2) if i % 2 == 0 else (0.3, 0.3, 0.3, 0.1)
-
 
                 if i == 0:
                     bgcol = (0.34, 0.56, 0.2, 1)
@@ -81,7 +76,7 @@ class PerformanceOverlay(DebugObject):
         to make pstats generate timings """
         self.procHandle = None
 
-        if not PStatClient.getGlobalPstats().isConnected():
+        if not PStatClient.getGlobalPstats().isConnected() and self.startDummyPstats:
             self.debug("Starting dummy pstats (text-stats)")
             nullFile = open(os.devnull, 'w')
             self.procHandle = subprocess.Popen(["text-stats"], stdout=nullFile, stderr=nullFile)
