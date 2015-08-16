@@ -21,7 +21,6 @@ layout(location=0) out VertexOutput vOutput;
 
 uniform PandaMaterial p3d_Material;
 uniform vec4 p3d_ColorScale;
-uniform mat4 p3d_ModelViewProjectionMatrix;
 
 // We need this for the velocity
 uniform mat4 lastMVP;
@@ -84,7 +83,6 @@ void main() {
     // Transform vertex to window space
     // Only required when not using tesselation shaders
     gl_Position = currentMVP * vec4(vOutput.positionWorld, 1);
-    // gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 
     #pragma ENTRY_POINT VERTEX_PROJECTION
     #pragma ENTRY_POINT SHADER_END

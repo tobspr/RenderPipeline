@@ -10,11 +10,13 @@ uniform isampler3D voxelGenSrcB;
 out vec4 color;
 #endif
 
-uniform writeonly image3D voxelDataDest0;
-uniform writeonly image3D voxelDataDest1;
-uniform writeonly image3D voxelDataDest2;
-uniform writeonly image3D voxelDataDest3;
-uniform writeonly image3D voxelDataDest4;
+uniform writeonly image3D voxelDataDestPosX;
+uniform writeonly image3D voxelDataDestNegX;
+uniform writeonly image3D voxelDataDestPosY;
+uniform writeonly image3D voxelDataDestNegY;
+uniform writeonly image3D voxelDataDestPosZ;
+uniform writeonly image3D voxelDataDestNegZ;
+uniform writeonly image3D voxelSolidDest;
 
 struct VoxelDirections {
     float posX;
@@ -61,11 +63,20 @@ void main() {
         voxelB.negZ = skyColor.b;
     } 
 
-    imageStore(voxelDataDest0, coord3D, vec4(voxelR.posX, voxelG.posX, voxelB.posX,  voxelR.negZ));
-    imageStore(voxelDataDest1, coord3D, vec4(voxelR.negX, voxelG.negX, voxelB.negX,  voxelG.negZ));
-    imageStore(voxelDataDest2, coord3D, vec4(voxelR.posY, voxelG.posY, voxelB.posY,  voxelB.negZ));
-    imageStore(voxelDataDest3, coord3D, vec4(voxelR.negY, voxelG.negY, voxelB.negY,  0));
-    imageStore(voxelDataDest4, coord3D, vec4(voxelR.posZ, voxelG.posZ, voxelB.posZ,  solid));
+    imageStore(voxelDataDestPosX, coord3D, vec4(voxelR.posX, voxelG.posX, voxelB.posX, 0));
+    imageStore(voxelDataDestNegX, coord3D, vec4(voxelR.negX, voxelG.negX, voxelB.negX, 0));
+    imageStore(voxelDataDestPosY, coord3D, vec4(voxelR.posY, voxelG.posY, voxelB.posY, 0));
+    imageStore(voxelDataDestNegY, coord3D, vec4(voxelR.negY, voxelG.negY, voxelB.negY, 0));
+    imageStore(voxelDataDestPosZ, coord3D, vec4(voxelR.posZ, voxelG.posZ, voxelB.posZ, 0));
+    imageStore(voxelDataDestNegZ, coord3D, vec4(voxelR.negZ, voxelG.negZ, voxelB.negZ, 0));
+
+    imageStore(voxelSolidDest, coord3D, vec4(solid));
+
+    // imageStore(voxelDataDest0, coord3D, vec4(voxelR.posX, voxelG.posX, voxelB.posX,  voxelR.negZ));
+    // imageStore(voxelDataDest1, coord3D, vec4(voxelR.negX, voxelG.negX, voxelB.negX,  voxelG.negZ));
+    // imageStore(voxelDataDest2, coord3D, vec4(voxelR.posY, voxelG.posY, voxelB.posY,  voxelB.negZ));
+    // imageStore(voxelDataDest3, coord3D, vec4(voxelR.negY, voxelG.negY, voxelB.negY,  0));
+    // imageStore(voxelDataDest4, coord3D, vec4(voxelR.posZ, voxelG.posZ, voxelB.posZ,  solid));
 
     #if defined(USE_DEBUG_ATTACHMENTS)
         color = vec4(

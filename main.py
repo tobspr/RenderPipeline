@@ -24,8 +24,8 @@ import copy
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, SamplerState, ClockObject
-from panda3d.core import Texture, TextureStage, RenderModeAttrib
-from panda3d.core import Shader, CullFaceAttrib, AntialiasAttrib
+from panda3d.core import Texture, TextureStage, RenderModeAttrib, RenderState
+from panda3d.core import Shader, CullFaceAttrib, TransparencyAttrib
 
 from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
@@ -120,7 +120,7 @@ class Main(ShowBase, DebugObject):
         # self.sceneSource = "Models/HDRTest/Scene.egg"
         # self.sceneSource = "Models/GITestScene/Scene.egg"
         # self.sceneSource = "Toolkit/Blender Material Library/MaterialLibrary.bam"
-        # self.sceneSource = "environment"
+        # self.sceneSource = "panda"
 
 
         # Select surrounding scene here
@@ -165,21 +165,21 @@ class Main(ShowBase, DebugObject):
         self.demoLights = []
 
         # Create some lights
-        for i in xrange(10):
+        for i in xrange(5):
             continue
             pointLight = PointLight()
 
             radius = float(i) / 3.0 * 6.28 + 1.52
-            xoffs = (i-5) * 10.0
+            xoffs = (i-3) * 10.0
             yoffs = math.cos(radius) * 0.0
             pointLight.setPos(xoffs, 0, 8)
             # pointLight.setColor(Vec3(0.2,0.6,1.0)*6)
             pointLight.setColor(Vec3(random(), random(), random())*3)
-            # pointLight.setShadowMapResolution(512)
+            pointLight.setShadowMapResolution(512)
             pointLight.setRadius(18)
-            # pointLight.setCastsShadows(True)
+            pointLight.setCastsShadows(True)
             self.renderPipeline.addLight(pointLight)
-            # pointLight.attachDebugNode()
+            pointLight.attachDebugNode()
             # self.movingLights.append(pointLight)
 
         # Create more lights
@@ -233,7 +233,7 @@ class Main(ShowBase, DebugObject):
         spot = self.cam.getPos(self.render)
         light.setPos(spot)
         light.setRadius(45)
-        light.setColor(Vec3(1.3,1.05,0.9) * 0.1)
+        light.setColor(Vec3(1.3,1.05,0.9) * 2.0)
         light.setShadowMapResolution(512)
         light.setCastsShadows(True)
         self.renderPipeline.addLight(light)
@@ -356,8 +356,8 @@ class Main(ShowBase, DebugObject):
         self.loadingScreen.setStatus("Optimizing Scene", 90)
 
         # self.scene.clearModelNodes()
-        # loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
-        self.onScenePrepared()
+        loader.asyncFlattenStrong(self.scene, inPlace=False, callback=self.onScenePrepared)
+        # self.onScenePrepared()
 
     def onScenePrepared(self, cb=None):
         """ Callback which gets called after the scene got prepared """
@@ -393,7 +393,7 @@ class Main(ShowBase, DebugObject):
         #     })
 
         # Some artists really don't know about backface culling
-        self.scene.setTwoSided(True)
+        # self.scene.setTwoSided(True)
 
         # Create some ocean
         # self.water = ProjectedWaterGrid(self.renderPipeline)
@@ -426,9 +426,9 @@ class Main(ShowBase, DebugObject):
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
-        
-        camPos = Vec3(-34.31,1.66,22.55)
-        camHpr = Vec3(269.79,-2.74,0.0)
+                
+        camPos = Vec3(-34.68,-2.88,20.01)
+        camHpr = Vec3(272.67,-5.55,0.0)
         self.controller.setInitialPositionHpr(
             camPos, camHpr)
         self.controller.setup()
@@ -477,10 +477,10 @@ class Main(ShowBase, DebugObject):
 
         if self.sceneWireframe:
             render.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MWireframe), 10)
-            render2d.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MWireframe), 10)
+            # render2d.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MWireframe), 10)
         else:
             render.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 10)
-            render2d.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 10)
+            # render2d.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 10)
             
         self.skybox.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MFilled), 20)
 

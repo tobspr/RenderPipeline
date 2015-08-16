@@ -60,6 +60,7 @@ void main() {
     // Position on screen
     ivec2 virtualScreenSize = (precomputeSize) * patchSize;
     ivec2 screenCoord = ivec2( (gl_FragCoord.xy - 0.5) * patchSize);
+    vec2 floatScreenCoord = screenCoord / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Base stride, this is where our data block begins
     int bufferBaseStride = (precomputeCoord.x + precomputeCoord.y * precomputeSize.x) * LIGHTING_PER_TILE_STRIDE;
@@ -72,33 +73,21 @@ void main() {
     float maxDepth = 0.0;
 
     ivec2 clampMax = ivec2(screenSize) - 1;
-    ivec2 newCoord;
+    // ivec2 newCoord;
+    vec2 newCoord;
+    vec2 pixelSize = 1.0 / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     float storedDepth;
 
-    // vec2 texelSize = 1.0 / screenSize;
-    // vec2 screenCoordTexel = vec2(newCoord) / screenSize;
-    // vec2 newCoordTexel;
 
-    // Compute min / max depth per tile
-    for (int x = 0; x < LIGHTING_COMPUTE_PATCH_SIZE_X; x+=LIGHTING_MIN_MAX_DEPTH_ACCURACY) {
-        for (int y = 0; y < LIGHTING_COMPUTE_PATCH_SIZE_Y; y+=LIGHTING_MIN_MAX_DEPTH_ACCURACY) {
-            newCoord = screenCoord + ivec2(x + y%2,y);
-            // newCoordTexel = vec2(x,y) * texelSize + screenCoordTexel;
+    // Compute min / max depth per tile, using textureGather
+    for (int x = 0; x < LIGHTING_COMPUTE_PATCH_SIZE_X - 1; x+=2) {
+        for (int y = 0; y < LIGHTING_COMPUTE_PATCH_SIZE_Y - 1; y+=2) {
+            newCoord = floatScreenCoord + vec2(x,y) * pixelSize;
+            newCoord = min(newCoord, 1.0 - 1.5*pixelSize);
+            vec4 samples = textureGather(depth, newCoord, 0);
 
-            // Check if out of screen bounds.
-            // This is necessary if the precompute size is bigger than the
-            // screen size. Otherwise the outer tiles will have a maxDepth of
-            // 0 because they sample values which are outside of the colortex. 
-            newCoord = min(newCoord, clampMax);
-            // newCoordTexel = min(newCoordTexel, vec2(1.0) );
-
-            storedDepth = texelFetch(depth, newCoord, 0).r;
-
-            // storedDepth = texture(depth, newCoordTexel);
-
-            minDepth = min(minDepth, storedDepth);
-            maxDepth = max(maxDepth, storedDepth);
-
+            minDepth = min5(minDepth, samples.x, samples.y, samples.z, samples.w);
+            maxDepth = max5(maxDepth, samples.x, samples.y, samples.z, samples.w);
         }
     }
 
@@ -296,6 +285,7 @@ void main() {
 
         // debugOutput = vec4( (VIEW_MAT * vec4(0, 0, 15, 1)).z * 0.01);
         // debugOutput = vec4(minDepthLinear / 60.0);
+        // debugOutput = vec4(floatScreenCoord, 0, 1);
     #endif
 
 }

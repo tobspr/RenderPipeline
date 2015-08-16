@@ -31,6 +31,8 @@ uniform sampler2D depthTex;
 
 uniform vec3 cameraPosition;
 
+uniform int frameIndex;
+
 uniform sampler2D skyboxMask;
 
 #pragma include "Includes/Lights.include"

@@ -12,16 +12,16 @@ pass Default:
 
 pass Shadows:
 
-    vertex:
-        template default
-
     fragment:
         template default
 
 pass Voxelize:
 
-    vertex:
+    fragment:
         template default
+
+pass EarlyZ:
 
     fragment:
         template default
+

@@ -37,7 +37,7 @@ class SystemAnalyzer():
 
         built = PandaSystem.getBuildDate()
         formated = datetime.datetime.strptime(built, "%b %d %Y %H:%M:%S")
-        required = datetime.datetime(minYear, minMonth, minDay, 12, 00)
+        required = datetime.datetime(minYear, minMonth, minDay, 00, 00)
 
         if formated < required:
             print "ERROR: Your Panda3D Build is out of date. Update to the latest"

@@ -40,6 +40,7 @@ class ShadowedLightsPass(RenderPass):
             "cameraPosition": "Variables.cameraPosition",
             "mainCam": "Variables.mainCam",
             "mainRender": "Variables.mainRender",
+            "frameIndex": "Variables.frameIndex",
 
             "scatteringAttenuation": ["ScatteringPass.attenuationTex", "Variables.emptyTextureWhite"],
             

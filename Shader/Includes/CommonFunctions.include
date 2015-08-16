@@ -3,6 +3,16 @@
 // GLSL really needs this as a builtin!
 #define saturate(v) clamp(v, 0, 1)
 
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+
+#define max4(a, b, c, d) max(a, max(b, max(c, d)))
+#define min4(a, b, c, d) min(a, min(b, max(c, d)))
+
+#define max5(a, b, c, d, e) max(a, max(b, max(c, max(d, e))))
+#define min5(a, b, c, d, e) min(a, min(b, max(c, max(d, e))))
+
+
 // Constructs a normal from a normal, binormal and tangent
 vec3 mergeNormal(inout vec3 detailNormal, float detailFactor, vec3 normal, vec3 tangent, vec3 binormal) {
     detailNormal = mix(vec3(0,0,1), detailNormal, detailFactor);
@@ -50,3 +60,6 @@ vec3 getCubemapCoordinate(int faceIndex, vec2 coord) {
 float getLuminance(vec3 color) {
     return dot(vec3(0.2125, 0.7154, 0.0721), color);
 }
+
+
+

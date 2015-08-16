@@ -12,6 +12,8 @@ uniform sampler2D p3d_Texture1;
 uniform sampler2D p3d_Texture2;
 uniform sampler2D p3d_Texture3;
 
+uniform int frameIndex;
+
 // This is required for the materials
 #pragma include "Includes/Material.include"
 #pragma include "Includes/VoxelGeneration.include"

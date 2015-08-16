@@ -27,6 +27,8 @@ uniform vec3 cameraPosition;
 flat in uint batchOffset;
 in vec2 texcoord;
 
+uniform int frameIndex;
+
 #if defined(USE_DEBUG_ATTACHMENTS)
 out vec4 result;
 #endif

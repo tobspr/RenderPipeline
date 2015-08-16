@@ -9,6 +9,8 @@ uniform sampler2D shadowAtlas;
 uniform sampler2DShadow shadowAtlasPCF;
 #endif
 
+uniform float osg_FrameTime;
+
 
 // Converts a [0 .. 1] coordinate to atlas space
 vec2 convertAtlasCoord(vec2 rawCoord, ShadowSource source) {
@@ -24,6 +26,23 @@ vec2 getShadowOffsets(vec3 N, vec3 L) {
     float offset_scale_L = offset_scale_N / cos_alpha;    // tan(acos(L·N))
     return vec2(offset_scale_N, min(2, offset_scale_L));
 }
+
+
+// Compute shadow noise
+// From: Next generation post processing in Call of Duty Advanced Warfare
+float getShadowNoise(float scale) {
+    vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
+    return -scale + 2.0 * scale * fract( magic.z * fract( dot( gl_FragCoord.xy + vec2(scale * (frameIndex%2), 0), magic.xy ) ) );
+}
+
+
+// Rotates an offset
+vec2 rotateCoordinate(vec2 offs, float angle) {
+    float sn = sin(angle);
+    float cs = cos(angle);
+    return vec2(offs.x * cs - offs.y * sn, offs.x * sn + offs.y * cs);
+}
+
 
 // Shadow transformation, replaces the shadow transformation matrix (should be faster)
 vec3 reprojectShadow(ShadowSource source, vec3 pos) {
@@ -57,7 +76,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     vec2 centerCoord = convertAtlasCoord(projCoord.xy, source);
    
-    vec2 searchRegionRadiusUV = PCSS_SEARCH_RADIUS * projSize;
+    vec2 searchRegionRadiusUV = PCSS_SEARCH_RADIUS * projSize * 0.05;
 
     float blockerSum = 0.0;
     float numBlockers = 0.0;
@@ -71,6 +90,17 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
         #error Not more than 64 pcss filter samples supported
     #endif
 
+    #undef SHADOW_NUM_PCSS_FILTER_SAMPLES
+    #define SHADOW_NUM_PCSS_FILTER_SAMPLES 8
+
+    #undef SHADOW_NUM_PCSS_SEARCH_SAMPLES
+    #define SHADOW_NUM_PCSS_SEARCH_SAMPLES 8
+
+
+
+    float shadowNoise = getShadowNoise(2.0 * M_PI);
+
+
     // Find blocker
     for ( int i = 0; i < SHADOW_NUM_PCSS_SEARCH_SAMPLES; ++i )
     {
@@ -80,6 +110,8 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
         vec2 offset = poissonDisk32[i] * searchRegionRadiusUV;
         #endif
 
+        // offset = rotateCoordinate(offset, shadowNoise);
+
         float shadowMapDepth = texture(shadowAtlas, centerCoord + offset).x;
         float factor = step(shadowMapDepth, biasedDepth);
         numBlockers += factor;
@@ -88,11 +120,11 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     float avgBlockerDepth = blockerSum / numBlockers;
     float penumbraSize = abs(biasedDepth - avgBlockerDepth) / biasedDepth * 20.0;
-
+    penumbraSize = 0.1;
 
     // return float(numBlockers) / SHADOW_NUM_PCSS_SEARCH_SAMPLES;
 
-    if (numBlockers < 0.5) return 1.0;
+    // if (numBlockers < 0.5) return 1.0;
 
     // penumbraSize = min(max(penumbraSize, 0.01), 1.0);
 
@@ -103,6 +135,7 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
 
     int pixelOffset = 0;
 
+
     for ( int i = 0; i < SHADOW_NUM_PCSS_FILTER_SAMPLES; ++i )
     {
         #if SHADOW_NUM_PCSS_FILTER_SAMPLES > 32
@@ -110,7 +143,12 @@ float pcssKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projS
         #else
         vec2 offset = poissonDisk32[i] * filterRadiusUV;
         #endif
-        
+
+        offset = spiral8[i] * filterRadiusUV;
+    
+        offset = rotateCoordinate(offset, shadowNoise);        
+
+
         #if defined(USE_HARDWARE_PCF)
             // Notice: Maybe use .x? My gtx 670 does not like that though
             sum += 1.0 - textureLod(shadowAtlasPCF, vec3(centerCoord + offset + pixelOffset * offset * 0.1, biasedDepth) , 0);
@@ -147,12 +185,15 @@ float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSi
 
     // #undef SHADOW_NUM_PCF_SAMPLES
     // #define SHADOW_NUM_PCF_SAMPLES 32
+    float shadowNoise = getShadowNoise(2.0 * M_PI);
 
 
     #if SHADOW_NUM_PCF_SAMPLES > 64
         #error Not more than 64 PCF samples supported
     #endif
 
+    #undef SHADOW_NUM_PCF_SAMPLES
+    #define SHADOW_NUM_PCF_SAMPLES 8
 
     // PCF Filter
     float sum = 0.0;
@@ -163,6 +204,9 @@ float pcfKernel(ShadowSource source, vec3 projCoord, float baseBias, vec2 projSi
         #else
         vec2 offset = poissonDisk32[i] * filterRadiusUV;
         #endif
+
+        offset = spiral8[i] * filterRadiusUV;
+        offset = rotateCoordinate(offset, shadowNoise);
         
         #if defined(USE_HARDWARE_PCF)
             // Notice: Maybe use .x? My gtx 670 does not like that though
@@ -199,6 +243,8 @@ float pcssKernelDynamicSize(Light light, ShadowSource source, vec3 projCoord, fl
     // The filter size is the difference of both lightspace pixels
     vec2 projSize = abs(proj1.xy - proj2.xy);
     projSize = vec2(max(projSize.x, projSize.y));
+
+    // projSize = vec2(1.0 / source.resolution);
 
     return pcssKernel(source, projCoord, baseBias, projSize);
     

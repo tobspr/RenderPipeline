@@ -79,6 +79,8 @@ class RenderTarget(DebugObject):
         self._useTextureArrays = False
         self._haveColorAlpha = True
         self._internalBuffer = None
+        self._camera = None
+        self._node = None
         self._rename(name)
         self.mute()
 
@@ -157,11 +159,11 @@ class RenderTarget(DebugObject):
 
     def setShaderInput(self, *args):
         """ This is a shortcut for setting shader inputs on the buffer """
-        self.getQuad().setShaderInput(*args)
+        self.getNode().setShaderInput(*args)
 
     def setShader(self, shader):
         """ This is a shortcut for setting shaders to the buffer """
-        self.getQuad().setShader(shader)
+        self.getNode().setShader(shader)
 
     def getTarget(self, target):
         """ Returns the texture handle for the given target """
@@ -286,7 +288,7 @@ class RenderTarget(DebugObject):
         this to set custom clears """
         return self._region
 
-    def prepareSceneRender(self):
+    def prepareSceneRender(self, earlyZ = False, earlyZCam = None):
         """ Renders the scene of the source camera to the buffer. See the
         documentation of this class for further information """
 
@@ -294,8 +296,6 @@ class RenderTarget(DebugObject):
 
         # Init buffer object
         self._createBuffer()
-
-
 
         # Prepare initial state
         cs = NodePath("InitialStateDummy")
@@ -314,13 +314,22 @@ class RenderTarget(DebugObject):
 
         self._sourceCam.node().setInitialState(cs.getState())
 
-    
+        if earlyZ:
+            self._earlyZRegion = self._internalBuffer.makeDisplayRegion()
+            self._earlyZRegion.setSort(-10)
+            self._earlyZRegion.setCamera(earlyZCam)
+
+        self._node = NodePath("RTRoot")
+
         # Prepare fullscreen quad
         if self._createOverlayQuad:
+            
             self._quad = self._makeFullscreenQuad()
+            self._quad.reparentTo(self._node)
+            
             bufferCam = self._makeFullscreenCam()
-            bufferCamNode = self._quad.attachNewNode(bufferCam)
-            self._region.setCamera(bufferCamNode)
+            self._camera = self._node.attachNewNode(bufferCam)
+            self._region.setCamera(self._camera)
             self._region.setSort(5)
 
         # Set clears
@@ -347,8 +356,14 @@ class RenderTarget(DebugObject):
 
         bufferRegion.setCamera(self._sourceCam)
         bufferRegion.setActive(1)
-        # bufferRegion.setClearDepthActive(False)
+        bufferRegion.setClearDepthActive(False)
         bufferRegion.setSort(20)
+
+        if earlyZ:
+            self._earlyZRegion.disableClears()
+            self._earlyZRegion.setClearDepthActive(True)
+            self._earlyZRegion.setActive(1)
+
 
         self._setSizeShaderInput()
 
@@ -364,7 +379,9 @@ class RenderTarget(DebugObject):
         self._createBuffer()
 
         # Prepare fullscreen quad
+        self._node = NodePath("RTRoot")
         self._quad = self._makeFullscreenQuad()
+        self._quad.reparentTo(self._node)
 
         # Prepare fullscreen camera
         bufferCam = self._makeFullscreenCam()
@@ -379,10 +396,10 @@ class RenderTarget(DebugObject):
 
         bufferCam.setInitialState(initialState.getState())
 
-        bufferCamNode = self._quad.attachNewNode(bufferCam)
+        self._camera = self._node.attachNewNode(bufferCam)
 
         bufferRegion = self._internalBuffer.getDisplayRegion(0)
-        bufferRegion.setCamera(bufferCamNode)
+        bufferRegion.setCamera(self._camera)
         bufferRegion.setActive(1)
         self._setSizeShaderInput()
 
@@ -406,6 +423,11 @@ class RenderTarget(DebugObject):
         """ Returns the quad-node path. You can use this to set attributes on it """
         return self._quad
 
+    def getNode(self):
+        """ Returns the buffer top node path, where the quad and camera is parented
+        to """
+        return self._node
+
     def getTexture(self, target):
         """ Returns the texture assigned to a target. The target should be a
         RenderTargetType """
@@ -422,8 +444,8 @@ class RenderTarget(DebugObject):
         cm.setFrameFullscreenQuad()
         quad = NodePath(cm.generate())
 
-        quad.setDepthTest(0)
-        quad.setDepthWrite(0)
+        quad.setDepthTest(False)
+        quad.setDepthWrite(False)
         quad.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
         quad.setColor(Vec4(1, 0.5, 0.5, 1))
 
@@ -472,16 +494,20 @@ class RenderTarget(DebugObject):
 
         return clears
 
-    def setClearDepth(self, clear=True):
+    def setClearDepth(self, clear=True, force=False):
         """ Adds a depth clear """
         self._internalBuffer.setClearDepthActive(clear)
         if clear:
-            self._internalBuffer.setClearDepth(0.0)
+            self._internalBuffer.setClearDepth(1.0)
+
+        if force:
+            self.getInternalRegion().setClearDepth(clear)
 
     def setClearColor(self, clear=True, color=None):
         """ Adds a color clear """
         self.getInternalRegion().setClearColorActive(clear)
         self._internalBuffer.setClearColorActive(clear)
+
 
         if clear:
             if color is None:
@@ -638,7 +664,8 @@ class RenderTarget(DebugObject):
             bufferProps.setFloatDepth(True)
 
             if self._depthBits != 32:
-                self.error("You cannot request a non-32bit float depth buffer!")
+                self.error("You cannot request a non-32bit float depth buffer! Requesting a non-float depth buffer instead")
+                bufferProps.setFloatDepth(False)
 
             if self._depthBits == 16:
                 # depthTarget.setComponentType(Texture.TFloat)
@@ -686,7 +713,7 @@ class RenderTarget(DebugObject):
         self._internalBuffer = self._engine.makeOutput(
             self._sourceWindow.getPipe(), self._name, 1,
             bufferProps, windowProps,
-            GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,
+            GraphicsPipe.BFRefuseWindow,
             self._sourceWindow.getGsg(), self._sourceWindow)
 
         if self._internalBuffer is None:

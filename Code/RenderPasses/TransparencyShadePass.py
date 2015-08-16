@@ -54,6 +54,7 @@ class TransparencyShadePass(RenderPass):
             "cameraPosition": "Variables.cameraPosition",
             "mainCam": "Variables.mainCam",
             "mainRender": "Variables.mainRender",
+            "frameIndex": "Variables.frameIndex",
 
             # We don't need this input, but by requiring this we ensure this pass
             # is actually executed after the deferred pass

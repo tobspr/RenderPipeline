@@ -5,6 +5,7 @@ from panda3d.core import PTAVecBase3f, PTAFloat, PTALMatrix4f, PTAInt, SamplerSt
 from panda3d.core import CSYupRight, TransformState, Mat4, CSZupRight, BitMask32
 from panda3d.core import Texture, UnalignedLMatrix4f, Vec3, PTAFloat, TextureStage
 from panda3d.core import ColorWriteAttrib, Vec2, AlphaTestAttrib, PStatClient
+from panda3d.core import RenderState, TransformState
 
 from DebugObject import DebugObject
 from SystemAnalyzer import SystemAnalyzer
@@ -45,6 +46,8 @@ from RenderPasses.DOFPass import DOFPass
 from GUI.BufferViewerGUI import BufferViewerGUI
 
 from direct.gui.DirectFrame import DirectFrame
+
+import time
 
 class RenderingPipeline(DebugObject):
 
@@ -150,8 +153,15 @@ class RenderingPipeline(DebugObject):
 
         effect.assignNode(obj, "Default", sort)
 
-        # Create shadow caster state
+        # Create EarlyZ state
+        if effect.getSetting("mainPass") and effect.hasShader("EarlyZ"):
+            initialState = NodePath("EffectInitialEarlyZState"+str(effect.getEffectID()))
+            initialState.setShader(effect.getShader("EarlyZ"), sort + 22)
+            stateName = "NodeEffect" + str(effect.getEffectID())
+            self.deferredScenePass.registerEarlyZTagState(stateName, initialState)
+            obj.setTag("EarlyZShader", stateName)
 
+        # Create shadow caster state
         if effect.getSetting("castShadows") and effect.hasShader("Shadows"):
             initialState = NodePath("EffectInitialShadowState"+str(effect.getEffectID()))
             initialState.setShader(effect.getShader("Shadows"), sort + 20)
@@ -239,6 +249,9 @@ class RenderingPipeline(DebugObject):
         """ Reloads all shaders and regenerates all intitial states. This function
         also updates the shader autoconfig """
         self.debug("Reloading shaders")
+        if self.guiManager:
+            self.guiManager.onRegenerateShaders()
+
         self.renderPassManager.writeAutoconfig()
         self.renderPassManager.setShaders()
         if self.settings.enableGlobalIllumination:
@@ -321,8 +334,17 @@ class RenderingPipeline(DebugObject):
         if self.scattering:
             self.scattering.update()
         self.dynamicObjectsManager.update()
-
+        self._checkForStateClear()
         return task.cont
+
+    def _checkForStateClear(self):
+        """ This method regulary clears the state cache """
+        if not hasattr(self, "lastStateClear"):
+            self.lastStateClear = 0
+        if Globals.clock.getFrameTime() - self.lastStateClear > self.settings.stateCacheClearInterval:
+            RenderState.clearCache()
+            TransformState.clearCache()
+            self.lastStateClear = Globals.clock.getFrameTime()
 
     def _updateInputHandles(self):
         """ Updates the input-handles on a per frame basis defined in 
@@ -575,7 +597,7 @@ class RenderingPipeline(DebugObject):
             return
 
         self.debug("Checking required Panda3D version ..")
-        SystemAnalyzer.checkPandaVersionOutOfDate(8,8,2015)
+        SystemAnalyzer.checkPandaVersionOutOfDate(12,8,2015)
         # SystemAnalyzer.analyze()
 
         # Mount everything first
@@ -630,7 +652,7 @@ class RenderingPipeline(DebugObject):
         self.renderPassManager.registerPass(self.initialRenderPass)
 
         # Add deferred pass
-        self.deferredScenePass = DeferredScenePass()
+        self.deferredScenePass = DeferredScenePass(self)
         self.renderPassManager.registerPass(self.deferredScenePass)
 
         # Add lighting pass

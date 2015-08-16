@@ -1,7 +1,7 @@
 
 from panda3d.core import NodePath, Shader, Vec2, PTAFloat
 from panda3d.core import TransparencyAttrib, PTALVecBase2f
-from panda3d.core import Texture, Vec3, CardMaker
+from panda3d.core import Texture, Vec3, CardMaker, PTALVecBase3f
 
 from ..Globals import Globals
 
@@ -12,7 +12,11 @@ class FastText:
     instanced cards and a texture atlas """
 
     def __init__(self, pos=Vec2(0), rightAligned=False, color=Vec3(0, 0, 0),
-                 size=0.04):
+                 size=0.04, parent=None):
+        if parent is None:
+            parent = Globals.base.aspect2d
+
+        self.parent = parent
 
         self._loadCharset()
         self._prepareFontTextures()
@@ -28,8 +32,9 @@ class FastText:
         self.rightAligned = rightAligned
         self.pos = pos
         self.posOffset = Vec2(0)
-        self.color = color
-            
+        self.color = PTALVecBase3f.emptyArray(1)
+        self.color[0] = color
+
         self.posPTA = PTALVecBase2f.emptyArray(1)
         self.square.setShaderInput("pos", self.posPTA)
 
@@ -69,8 +74,7 @@ class FastText:
             self.posPTA[0] = self.pos + self.posOffset
 
     def setColor(self, r, g, b):
-        self.color = Vec3(r, g, b)
-        self._updateInputs()
+        self.color[0] = Vec3(r, g, b)
 
     def _prepareFontTextures(self):
         texPath = "Data/Textures/font.png"
@@ -151,9 +155,14 @@ class FastText:
         self.square.setShader(self.fontShader, 1000)
         self.square.setAttrib(
             TransparencyAttrib.make(TransparencyAttrib.MAlpha), 1000)
-        self.square.reparentTo(Globals.base.aspect2d)
+        self.square.reparentTo(self.parent)
         return self.square
 
     def remove(self):
         self.square.removeNode()
         
+    def show(self):
+        self.square.show()
+
+    def hide(self):
+        self.square.hide()

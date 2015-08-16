@@ -25,7 +25,7 @@ class MovementController:
         self.keyboardHprSpeed = 0.8
         self.useHpr = False
         self.smoothness = 0.8
-        # self.smoothness = 0.0
+        self.smoothness = 0.0
         # self.smoothness = 0.0
 
     def setInitialPosition(self, pos, target):

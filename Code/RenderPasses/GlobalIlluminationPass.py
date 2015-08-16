@@ -28,15 +28,18 @@ class GlobalIlluminationPass(RenderPass):
             "giData": "Variables.giData",
             "giReadyState": "Variables.giReadyState",
 
-            "giVoxelData0": "Variables.giVoxelData0",
-            "giVoxelData1": "Variables.giVoxelData1",
-            "giVoxelData2": "Variables.giVoxelData2",
-            "giVoxelData3": "Variables.giVoxelData3",
-            "giVoxelData4": "Variables.giVoxelData4",
+            "giVoxelDataPosX": "Variables.giVoxelDataPosX",
+            "giVoxelDataNegX": "Variables.giVoxelDataNegX",
+            "giVoxelDataPosY": "Variables.giVoxelDataPosY",
+            "giVoxelDataNegY": "Variables.giVoxelDataNegY",
+            "giVoxelDataPosZ": "Variables.giVoxelDataPosZ",
+            "giVoxelDataNegZ": "Variables.giVoxelDataNegZ",
+            "voxelSolidTex": "Variables.giVoxelSolidTex",
            
             "cameraPosition": "Variables.cameraPosition",
             "mainCam": "Variables.mainCam",
-            "mainRender": "Variables.mainRender"
+            "mainRender": "Variables.mainRender",
+            "frameIndex": "Variables.frameIndex"
         }
 
     def create(self):

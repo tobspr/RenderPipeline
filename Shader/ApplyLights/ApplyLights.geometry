@@ -1,0 +1,16 @@
+#version 400
+
+layout(triangles) in;
+in vec2[3] texcoord;
+
+layout(triangle_strip, max_vertices = 3) out;
+out vec2 texcoord_out;
+
+void main(void) {
+  for (int i = 0; i < gl_in.length(); ++i) {
+    gl_Position = gl_in[i].gl_Position;
+    texcoord_out = texcoord[i];
+    EmitVertex();
+  }
+  EndPrimitive();
+}

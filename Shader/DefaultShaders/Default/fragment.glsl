@@ -38,7 +38,7 @@ void main() {
     
     // Binary alpha test
     #if defined(USE_ALPHA_TEST)
-        if (sampledDiffuse.a < 0.5) discard;
+        // if (sampledDiffuse.a < 0.5) discard;
     #endif
 
     // Sample the other maps
@@ -106,9 +106,10 @@ void main() {
     m.metallic = metallic;
     m.normal = mixedNormal;
 
-    // m.metallic = 1;
-    m.specular = 0.5;
-    // m.roughness = 0.0;
+    // m.metallic = 0;
+    m.specular = 0.0;
+    // m.roughness = 0.6;
+    // m.baseColor = vec3(1);
 
     // Entry point for the user to modify the material
     #pragma ENTRY_POINT MATERIAL

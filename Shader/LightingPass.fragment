@@ -120,7 +120,7 @@ void main() {
 
         // Fog, TODO (make it look good)
         #if defined(USE_SCATTERING)
-            float fogFactor =  saturate( (distance(cameraPosition, material.position) - 1.0) / 1300.0);
+            float fogFactor =  saturate( (distance(cameraPosition, material.position) - 1.0) / 1900.0);
             // fogFactor = 1.0;
             // fogFactor *= saturate(-0.05 + max(0.0, material.position.z) / 800.0);
             // fogFactor += material.position.z / 800.0;

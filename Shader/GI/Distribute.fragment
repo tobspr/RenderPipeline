@@ -10,17 +10,23 @@
 out vec4 color;
 #endif
 
-uniform coherent writeonly image3D dst0;
-uniform coherent writeonly image3D dst1;
-uniform coherent writeonly image3D dst2;
-uniform coherent writeonly image3D dst3;
-uniform coherent writeonly image3D dst4;
+uniform coherent writeonly image3D dstPosX;
+uniform coherent writeonly image3D dstNegX;
+uniform coherent writeonly image3D dstPosY;
+uniform coherent writeonly image3D dstNegY;
+uniform coherent writeonly image3D dstPosZ;
+uniform coherent writeonly image3D dstNegZ;
 
-uniform sampler3D src0;
-uniform sampler3D src1;
-uniform sampler3D src2;
-uniform sampler3D src3;
-uniform sampler3D src4;
+uniform sampler3D srcPosX;
+uniform sampler3D srcNegX;
+uniform sampler3D srcPosY;
+uniform sampler3D srcNegY;
+uniform sampler3D srcPosZ;
+uniform sampler3D srcNegZ;
+
+uniform sampler3D voxelSolidTex;
+uniform coherent writeonly image3D voxelSolidWriteTex;
+
 
 struct Voxel {
     vec3 posX;
@@ -33,78 +39,80 @@ struct Voxel {
 };
 
 Voxel fetchVoxel(vec3 coord) {
-
     // textureLod() seems to be the fastest, even faster than texelFetch() and texture()
-    vec4 sample0 = textureLod(src0, coord, 0);
-    vec4 sample1 = textureLod(src1, coord, 0);
-    vec4 sample2 = textureLod(src2, coord, 0);
-    vec4 sample3 = textureLod(src3, coord, 0);
-    vec4 sample4 = textureLod(src4, coord, 0);
-    
     Voxel v;
 
-    v.posX = vec3(sample0.x, sample0.y, sample0.z);
-    v.negX = vec3(sample1.x, sample1.y, sample1.z);
-    v.posY = vec3(sample2.x, sample2.y, sample2.z);
-    v.negY = vec3(sample3.x, sample3.y, sample3.z);
-    v.posZ = vec3(sample4.x, sample4.y, sample4.z);
-
-    v.negZ = vec3(sample0.w, sample1.w, sample2.w);
-
-    v.solid = sample4.w > 0.1;
+    v.posX = textureLod(srcPosX, coord, 0).xyz;
+    v.negX = textureLod(srcNegX, coord, 0).xyz;
+    v.posY = textureLod(srcPosY, coord, 0).xyz;
+    v.negY = textureLod(srcNegY, coord, 0).xyz;
+    v.posZ = textureLod(srcPosZ, coord, 0).xyz;
+    v.negZ = textureLod(srcNegZ, coord, 0).xyz;
+    v.solid = textureLod(voxelSolidTex, coord, 0).x > 0.5;
     return v;
 }
 
+
 void storeVoxel(ivec3 coord, Voxel v) {
-    imageStore(dst0, coord, vec4(v.posX.r, v.posX.g, v.posX.b,    v.negZ.r));
-    imageStore(dst1, coord, vec4(v.negX.r, v.negX.g, v.negX.b,    v.negZ.g));
-    imageStore(dst2, coord, vec4(v.posY.r, v.posY.g, v.posY.b,    v.negZ.b));
-    imageStore(dst3, coord, vec4(v.negY.r, v.negY.g, v.negY.b,    0));
-    imageStore(dst4, coord, vec4(v.posZ.r, v.posZ.g, v.posZ.b,    v.solid ? 1.0 : 0.0));
-}
-
-
-// Preventing a lot of code duplicating by making this a define
-#define EVALUATE_DIRECTION(DIR_NAME, NEG_DIR_NAME, TEMPL0, TEMPL1, TEMPL2)  \
-for (int c1 = -1; c1 <= 1; c1++) {     \
-    for (int c2 = -1; c2 <= 1; c2++) {    \
-        Voxel tmp = fetchVoxel(floatCoord3D + vec3( TEMPL0, TEMPL1, TEMPL2 ) * voxelSize);\
-        v. DIR_NAME += tmp. DIR_NAME * distributionFactor * (saturate(1.0  - 0.1*(length(vec2(c1, c2))))); \
-        if (tmp.solid) {\
-            v. DIR_NAME += v. NEG_DIR_NAME * bounceFactor;\
-        }\
-        \
-    } \
+    imageStore(dstPosX, coord, vec4(v.posX.r, v.posX.g, v.posX.b, 0));
+    imageStore(dstNegX, coord, vec4(v.negX.r, v.negX.g, v.negX.b, 0));
+    imageStore(dstPosY, coord, vec4(v.posY.r, v.posY.g, v.posY.b, 0));
+    imageStore(dstNegY, coord, vec4(v.negY.r, v.negY.g, v.negY.b, 0));
+    imageStore(dstPosZ, coord, vec4(v.posZ.r, v.posZ.g, v.posZ.b, 0));
+    imageStore(dstNegZ, coord, vec4(v.negZ.r, v.negZ.g, v.negZ.b, 0));
 }
 
 uniform bool isLastStep;
+uniform bool writeSolidness;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec3 coord3D = convert_2d_to_3d(coord, GI_GRID_RESOLUTION, GI_SLIDE_COUNT);
-    vec3 floatCoord3D = (coord3D+0.5) / GI_GRID_RESOLUTION;
+    vec3 floatCoord3D = (coord3D + 0.5) / GI_GRID_RESOLUTION;
     float voxelSize = 1.0 / GI_GRID_RESOLUTION;
 
     // Fetch current voxel
     Voxel v = fetchVoxel(floatCoord3D);
 
-    float distributionFactor = 0.027;
-    float bounceFactor = distributionFactor * 0.0;
+    // Multiply with 4.0/9.0 (=2.25), see below
+    const float distributionFactor = 0.027 * 2.25;
 
     // Evaluate each direction
-    if (!v.solid || isLastStep) {
-        EVALUATE_DIRECTION(posX, negX, -1, c1, c2 );
-        EVALUATE_DIRECTION(negX, posX, 1, c1, c2 );
-        EVALUATE_DIRECTION(posY, negY, c1, -1, c2 );
-        EVALUATE_DIRECTION(negY, posY, c1, 1, c2 );
-        EVALUATE_DIRECTION(posZ, negZ, c1, c2, -1 );
-        EVALUATE_DIRECTION(negZ, posZ, c1, c2, 1 );
+    if (!v.solid || (isLastStep && true)) {
+        Voxel tmp;
+
+        // Using sample offsets of 2.0 / 3.0, we can achieve a 3x3 box kernel
+        // using only 2x2 taps! (We just have to normalize it by multiplying itp
+        // With 4.0/9.0 due to the reduced amount of samples, 4 instead of 9)
+        float sampleOffs = 2.0 / 3.0;
+        
+        float c1, c2;
+        for (int x = 0; x < 2; x++) {
+            for (int y = 0; y < 2; y++) {
+                vec4 dirs = vec4(
+                    sampleOffs * sign(2*x-1),
+                    sampleOffs * sign(2*y-1),
+                    1.0, -1.0) * voxelSize;
+
+                v.posX += textureLod(srcPosX, floatCoord3D + dirs.wxy, 0).xyz * distributionFactor;
+                v.negX += textureLod(srcNegX, floatCoord3D + dirs.zxy, 0).xyz * distributionFactor;
+                v.posY += textureLod(srcPosY, floatCoord3D + dirs.xwy, 0).xyz * distributionFactor;
+                v.negY += textureLod(srcNegY, floatCoord3D + dirs.xzy, 0).xyz * distributionFactor;
+                v.posZ += textureLod(srcPosZ, floatCoord3D + dirs.xyw, 0).xyz * distributionFactor;
+                v.negZ += textureLod(srcNegZ, floatCoord3D + dirs.xyz, 0).xyz * distributionFactor;
+            }
+        }
     }
 
     // Store the modified voxel
     storeVoxel(coord3D, v);
 
+    if (writeSolidness) {
+        imageStore(voxelSolidWriteTex, coord3D, vec4(v.solid ? 1.0 : 0.0));
+    }
+
     #if defined(USE_DEBUG_ATTACHMENTS)
         color = vec4(v.posX + v.negX + v.posZ + v.negZ + v.posY + v.negY, 1);
+        // color = vec4(v.solid ? 1.0 : 0.0);
     #endif
 }

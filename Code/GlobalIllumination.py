@@ -54,7 +54,7 @@ class GlobalIllumination(DebugObject):
     the final pass is executed at half window resolution and then bilateral upscaled.
     """
 
-    QualityLevels = ["Low", "Medium", "High"]
+    QualityLevels = ["Low", "Medium", "High", "Ultra"]
 
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GlobalIllumnination")
@@ -71,10 +71,10 @@ class GlobalIllumination(DebugObject):
         self.voxelGridSize = self.pipeline.settings.giVoxelGridSize
         
         # Grid resolution in pixels
-        self.voxelGridResolution = [32, 64, 128][self.qualityLevelIndex]
+        self.voxelGridResolution = [32, 64, 128, 192][self.qualityLevelIndex]
 
         # Has to be a multiple of 2
-        self.distributionSteps = [16, 30, 60][self.qualityLevelIndex]
+        self.distributionSteps = [16, 30, 60, 90][self.qualityLevelIndex]
         self.slideCount = int(self.voxelGridResolution / 8) 
         self.slideVertCount = self.voxelGridResolution / self.slideCount       
 
@@ -150,11 +150,15 @@ class GlobalIllumination(DebugObject):
             self.publishGrid()
             dests = self.dataTextures
 
-        for i in xrange(5):
-            self.distributeTarget.setShaderInput("src" + str(i), sources[i])
-            self.distributeTarget.setShaderInput("dst" + str(i), dests[i])
+        for i, direction in enumerate(self.directions):
+            self.distributeTarget.setShaderInput("src" + direction, sources[i])
+            self.distributeTarget.setShaderInput("dst" + direction, dests[i])
 
-        self.distributeTarget.setShaderInput("isLastStep", idx >= self.distributionSteps-1)
+        # Only do the last blur-step on high+ quality, leads to artifacts otherwise
+        # due to the low grid resolution
+        if self.qualityLevel in ["High", "Ultra"]:
+            self.distributeTarget.setShaderInput("isLastStep", idx >= self.distributionSteps-1)
+        self.distributeTarget.setShaderInput("writeSolidness", idx >= self.distributionSteps-1)
 
     def publishGrid(self):
         """ This function gets called when the grid is ready to be used, and updates
@@ -186,8 +190,6 @@ class GlobalIllumination(DebugObject):
 
     def setup(self):
         """ Setups everything for the GI to work """
-
-        assert(self.voxelGridResolution in [16, 32, 64, 128, 256, 512])
         assert(self.distributionSteps % 2 == 0)
 
         self._createDebugTexts()
@@ -249,40 +251,42 @@ class GlobalIllumination(DebugObject):
 
         # Create the data textures
         self.dataTextures = []
+        self.directions = ["PosX", "NegX", "PosY", "NegY", "PosZ", "NegZ"]
 
-
-        for i in xrange(5):
-            tex = Texture("GIDataTex" + str(i))
-            tex.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FRgba16)
-            MemoryMonitor.addTexture("VoxelDataTex-" + str(i), tex)
-           
+        for i, direction in enumerate(self.directions):
+            tex = Texture("GIDataTex" + direction)
+            tex.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FR11G11B10)
+            MemoryMonitor.addTexture("VoxelDataTex-" + direction, tex)
             self.dataTextures.append(tex)
-            self.pipeline.getRenderPassManager().registerStaticVariable("giVoxelData" + str(i), tex)
+            self.pipeline.getRenderPassManager().registerStaticVariable("giVoxelData" + direction, tex)
 
+
+        # Create ping / pong textures
         self.pingDataTextures = []
         self.pongDataTextures = []
 
-        for i in xrange(5):
-            texPing = Texture("GIPingDataTex" + str(i))
-            texPing.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FRgba16)
-            MemoryMonitor.addTexture("VoxelPingDataTex-" + str(i), texPing)
+        for i, direction in enumerate(self.directions):
+            texPing = Texture("GIPingDataTex" + direction)
+            texPing.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FR11G11B10)
+            MemoryMonitor.addTexture("VoxelPingDataTex-" + direction, texPing)
             self.pingDataTextures.append(texPing)
 
-            texPong = Texture("GIPongDataTex" + str(i))
-            texPong.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FRgba16)
-            MemoryMonitor.addTexture("VoxelPongDataTex-" + str(i), texPong)
+            texPong = Texture("GIPongDataTex" + direction)
+            texPong.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FR11G11B10)
+            MemoryMonitor.addTexture("VoxelPongDataTex-" + direction, texPong)
             self.pongDataTextures.append(texPong)
 
-            self.convertGridTarget.setShaderInput("voxelDataDest"+str(i), self.pingDataTextures[i])
+            self.convertGridTarget.setShaderInput("voxelDataDest"+direction, self.pingDataTextures[i])
             # self.clearGridTarget.setShaderInput("voxelDataDest" + str(i), self.pongDataTextures[i])
         
         # Set texture wrap modes
         for tex in self.pingDataTextures + self.pongDataTextures + self.dataTextures + self.generationTextures:
-            tex.setMinfilter(Texture.FTNearest)
-            tex.setMagfilter(Texture.FTNearest)
+            tex.setMinfilter(Texture.FTLinear)
+            tex.setMagfilter(Texture.FTLinear)
             tex.setWrapU(Texture.WMBorderColor)
             tex.setWrapV(Texture.WMBorderColor)
             tex.setWrapW(Texture.WMBorderColor)
+            tex.setAnisotropicDegree(0)
             tex.setBorderColor(Vec4(0))
 
         for tex in self.dataTextures:
@@ -291,7 +295,6 @@ class GlobalIllumination(DebugObject):
 
         self.distributeTarget = RenderTarget("DistributeVoxels")
         self.distributeTarget.setSize(self.voxelGridResolution * self.slideCount, self.voxelGridResolution * self.slideVertCount)
-
         if self.pipeline.settings.useDebugAttachments:
             self.distributeTarget.addColorTexture()
         self.distributeTarget.prepareOffscreenBuffer()
@@ -301,26 +304,23 @@ class GlobalIllumination(DebugObject):
             self.distributeTarget.getColorTexture().setMinfilter(Texture.FTNearest)
             self.distributeTarget.getColorTexture().setMagfilter(Texture.FTNearest)
 
+        self.distributeTarget.setShaderInput("isLastStep", False)
 
-        # Create the various render targets to generate the mipmaps of the stable voxel grid
-        # self.mipmapTargets = []
-        # computeSize = self.voxelGridResolution
-        # currentMipmap = 0
-        # while computeSize > 1:
-        #     computeSize /= 2
-        #     target = RenderTarget("GIMipLevel" + str(currentMipmap))
-        #     target.setSize(computeSize, computeSize)
-        #     # target.setColorWrite(False)
-        #     target.addColorTexture()
-        #     target.prepareOffscreenBuffer()
-        #     target.setActive(False)
-        #     target.setShaderInput("sourceMipmap", currentMipmap)
+        # Create solidness texture
+        self.voxelSolidTex = Texture("GIDataSolidTex")
+        self.voxelSolidTex.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FR16)
+        self.convertGridTarget.setShaderInput("voxelSolidDest", self.voxelSolidTex)
+        self.distributeTarget.setShaderInput("voxelSolidTex", self.voxelSolidTex)
+        MemoryMonitor.addTexture("VoxelSolidTex", self.voxelSolidTex)
 
-        #     for i in xrange(5):
-        #         target.setShaderInput("source" + str(i), self.dataTextures[i])
-        #         target.setShaderInput("dest" + str(i), self.dataTextures[i], False, True, -1, currentMipmap + 1)
-        #     self.mipmapTargets.append(target)
-        #     currentMipmap += 1
+        self.voxelSolidStableTex = Texture("GIDataSolidStableTex")
+        self.voxelSolidStableTex.setup3dTexture(self.voxelGridResolution, self.voxelGridResolution, self.voxelGridResolution, Texture.TFloat, Texture.FR16)
+
+        self.distributeTarget.setShaderInput("voxelSolidWriteTex", self.voxelSolidStableTex)
+        self.pipeline.getRenderPassManager().registerStaticVariable("giVoxelSolidTex", self.voxelSolidStableTex)
+
+
+
 
 
         # Create the final gi pass
