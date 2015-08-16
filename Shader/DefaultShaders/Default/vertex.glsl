@@ -59,7 +59,7 @@ void main() {
     vOutput.materialSpecular = p3d_Material.specular;
     vOutput.materialAmbient = p3d_Material.ambient.z;
     
-    // #pragma ENTRY_POINT WS_POSITION
+    #pragma ENTRY_POINT WS_POSITION
 
     vec4 lastPosWorld = vec4(vOutput.positionWorld, 1);
 
