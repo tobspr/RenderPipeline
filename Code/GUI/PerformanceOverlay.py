@@ -22,10 +22,20 @@ class PerformanceOverlay(DebugObject):
         self.visible = False
         self.frameIndex = 0
         self.numSamples = 0
-        self.avgSamples = 60
+        self.avgSamples = 80
         self.lastTextUpdate = 0
         self.frameDataRdy = False
-        self.startDummyPstats = False
+        self.startDummyPstats = True
+
+
+        self.acronyms = {
+            "window1:dr_1": "GUI:dr_1",
+            "window1:dr_0": "GUI:dr_0",
+            "DeferredScenePass:dr_0": "GBuffer Pass",
+            "DeferredScenePass:dr_1": "EarlyZ Pass",
+
+        }
+
         self.setup()
         self.hide()
 
@@ -39,14 +49,14 @@ class PerformanceOverlay(DebugObject):
 
         bg = DirectFrame(parent=self.node,
                        frameColor=(0.1, 0.1, 0.1, 0.9),
-                       frameSize=(-1.45, 1.45, -0.78, 0.67))  # state=DGG.NORMAL
+                       frameSize=(-1.45, 1.45, -0.88, 0.57))  # state=DGG.NORMAL
 
         self.textLines = []
         self.averages = {}
 
         for col in xrange(3):
             for i in xrange(25):
-                yoffs = 0.6 - i * 0.055
+                yoffs = 0.5 - i * 0.055
                 xoffs = -0.95 + col * 0.95
                 bgcol = (0, 0, 0, 0.2) if i % 2 == 0 else (0.3, 0.3, 0.3, 0.1)
 
@@ -115,18 +125,30 @@ class PerformanceOverlay(DebugObject):
             for idx, (name, dur) in enumerate(self.averagedEntries):
                 if idx >= len(self.textLines):
                     break
-                self.textLines[idx][0].setText(name.replace("~", "").replace("Draw:", ""))  
+
+                parsedName = name.replace("~", "").replace("Draw:", "")
+                if parsedName in self.acronyms:
+                    parsedName = self.acronyms[parsedName]
+
+                self.textLines[idx][0].setText(parsedName)  
                 self.textLines[idx][1].setText("{:5.2f}".format(dur * 1000.0))  
                 self.textLines[idx][0].show()
                 self.textLines[idx][1].show()
 
                 if name.startswith("~"):
-                    self.textLines[idx][0].setColor(1, 1, 0)
-                    self.textLines[idx][1].setColor(1, 1, 0)
-                else:
                     self.textLines[idx][0].setColor(1, 1, 1)
                     self.textLines[idx][1].setColor(1, 1, 1)
+                else:
+                    r, g, b = self.getColorsFromString(parsedName.split(":")[0])
 
+                    self.textLines[idx][0].setColor(r, g, b)
+                    self.textLines[idx][1].setColor(r, g, b)
+
+    def getColorsFromString(self, string, minBrightness=0.3):
+        ohash = abs(hash(string))
+        r, g, b = ohash&0xFF, (ohash>>8)&0xFF, (ohash>>16)/0xFF
+        negInf = 1.0 - minBrightness
+        return minBrightness + r/255.0 * negInf, minBrightness + g/255.0 * negInf, minBrightness + b/255.0 * negInf
 
     def updateTimings(self):
 

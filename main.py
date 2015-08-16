@@ -24,8 +24,8 @@ import copy
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, Vec3, SamplerState, ClockObject
-from panda3d.core import Texture, TextureStage, RenderModeAttrib
-from panda3d.core import Shader, CullFaceAttrib, AntialiasAttrib
+from panda3d.core import Texture, TextureStage, RenderModeAttrib, RenderState
+from panda3d.core import Shader, CullFaceAttrib, TransparencyAttrib
 
 from Code.MovementController import MovementController
 from Code.RenderingPipeline import RenderingPipeline
@@ -393,7 +393,7 @@ class Main(ShowBase, DebugObject):
         #     })
 
         # Some artists really don't know about backface culling
-        self.scene.setTwoSided(True)
+        # self.scene.setTwoSided(True)
 
         # Create some ocean
         # self.water = ProjectedWaterGrid(self.renderPipeline)
@@ -426,9 +426,9 @@ class Main(ShowBase, DebugObject):
 
         # Create movement controller (Freecam)
         self.controller = MovementController(self)
-        
-        camPos = Vec3(-33.23,-2.81,18.4)
-        camHpr = Vec3(269.79,-2.74,0.0)
+                
+        camPos = Vec3(-34.68,-2.88,20.01)
+        camHpr = Vec3(272.67,-5.55,0.0)
         self.controller.setInitialPositionHpr(
             camPos, camHpr)
         self.controller.setup()

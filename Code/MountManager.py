@@ -120,6 +120,8 @@ class MountManager(DebugObject):
     def cleanup(self):
         """ Gets called when the application exists """
 
+        self.debug("Cleaning up ..")
+
         # Try removing the lockfile
         self._tryRemove(self.lockFile)
 

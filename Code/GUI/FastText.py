@@ -1,7 +1,7 @@
 
 from panda3d.core import NodePath, Shader, Vec2, PTAFloat
 from panda3d.core import TransparencyAttrib, PTALVecBase2f
-from panda3d.core import Texture, Vec3, CardMaker
+from panda3d.core import Texture, Vec3, CardMaker, PTALVecBase3f
 
 from ..Globals import Globals
 
@@ -32,8 +32,9 @@ class FastText:
         self.rightAligned = rightAligned
         self.pos = pos
         self.posOffset = Vec2(0)
-        self.color = color
-            
+        self.color = PTALVecBase3f.emptyArray(1)
+        self.color[0] = color
+
         self.posPTA = PTALVecBase2f.emptyArray(1)
         self.square.setShaderInput("pos", self.posPTA)
 
@@ -73,8 +74,7 @@ class FastText:
             self.posPTA[0] = self.pos + self.posOffset
 
     def setColor(self, r, g, b):
-        self.color = Vec3(r, g, b)
-        self._updateInputs()
+        self.color[0] = Vec3(r, g, b)
 
     def _prepareFontTextures(self):
         texPath = "Data/Textures/font.png"

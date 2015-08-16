@@ -18,6 +18,10 @@ class PipelineSettingsManager(SettingsManager):
         # [General]
         self._addSetting("preventMultipleInstances", bool, False)
         self._addSetting("resolution3D", float, 1.0)
+        self._addSetting("stateCacheClearInterval", float, 0.2)
+
+        # [Rendering]
+        self._addSetting("enableEarlyZ", bool, True)
 
         # [Antialiasing]
         self._addSetting("antialiasingTechnique", str, "SMAA")

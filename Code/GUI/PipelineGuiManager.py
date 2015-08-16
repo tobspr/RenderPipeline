@@ -1,5 +1,5 @@
 
-from panda3d.core import Vec3, Vec2, TexturePool
+from panda3d.core import Vec3, Vec2, TexturePool, RenderState, TransformState
 from direct.interval.IntervalGlobal import Parallel, Sequence, Wait
 
 from ..Globals import Globals
@@ -69,8 +69,13 @@ class PipelineGuiManager(DebugObject):
                 clock.calcFrameRateDeviation() * 1000.0
                 ))
 
+        if self.stateText:
+            self.stateText.setText("{:6d} Render States, {:6d} Transform States".format(RenderState.getNumStates(), TransformState.getNumStates()))
+
         if self.perfOverlay:
             self.perfOverlay.update()
+
+
 
     def setup(self):
         """ Setups this manager """
@@ -93,6 +98,7 @@ class PipelineGuiManager(DebugObject):
         self.memUsageText = None
         self.fpsText = None
         self.perfOverlay = None
+        self.stateText = None
 
         self.regenerateShaderHint = BetterOnscreenImage(
             image="Data/GUI/RegeneratingShaders.png", parent=self.rootNode,
@@ -105,7 +111,9 @@ class PipelineGuiManager(DebugObject):
                 Globals.base.getAspectRatio() - 0.1, 0.76), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
             self.fpsText = FastText(pos=Vec2(
                 Globals.base.getAspectRatio() - 0.1, 0.72), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
-            # self.fpsText.setText("Frame time 12   Max:  34.22")
+            self.stateText = FastText(pos=Vec2(
+                Globals.base.getAspectRatio() - 0.1, 0.68), rightAligned=True, color=Vec3(1, 1, 0), size=0.03)
+
 
         if self.pipeline.settings.displayPerformanceOverlay:
             self.perfOverlay = PerformanceOverlay(self.pipeline)

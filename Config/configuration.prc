@@ -19,7 +19,6 @@ pstats-gpu-timing #t
 gl-debug #t
 
 
-s
 
 
 # ----------------- Misc Settings -----------------
@@ -43,7 +42,7 @@ frame-rate-meter-update-interval 1.0
 frame-rate-meter-text-pattern %0.2f fps
 frame-rate-meter-ms-text-pattern %0.3f ms
 frame-rate-meter-layer-sort 1000
-frame-rate-meter-scale 0.04
+frame-rate-meter-scale 0.036
 frame-rate-meter-side-margins 0.4
 
 
@@ -61,7 +60,6 @@ text-page-size 128 128
 # Disable stencil, its not used in the pipeline
 support-stencil #f
 framebuffer-stencil #f
-
 
 # Don't use srgb correction, we do that ourself
 framebuffer-srgb #f
@@ -171,9 +169,8 @@ auto-flip #f
 gl-debug-object-labels #f
 
 
-
-
 # Default window settings
 depth-bits 0
 color-bits 0
 
+framebuffer-depth #f

@@ -286,6 +286,7 @@ class GlobalIllumination(DebugObject):
             tex.setWrapU(Texture.WMBorderColor)
             tex.setWrapV(Texture.WMBorderColor)
             tex.setWrapW(Texture.WMBorderColor)
+            tex.setAnisotropicDegree(0)
             tex.setBorderColor(Vec4(0))
 
         for tex in self.dataTextures:

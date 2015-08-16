@@ -31,6 +31,7 @@ class MemoryMonitor:
             16: 4,     # RGBA8
             21: 8,     # RGBA16
             22: 16,    # RGBA32
+            24: 2,     # FDEPTHCOMOPONENT
             25: 4,     # Depth 24 Bit
             26: 4,     # Depth 32 Bit
             27: 2,     # FR16 
@@ -69,8 +70,8 @@ class MemoryMonitor:
         if tex.usesMipmaps():
             dataSize = (dataSize * 4) / 3
 
-        if dataSize != tex.estimateTextureMemory():
-            print "Format",form,"does not match:", dataSize, "vs", tex.estimateTextureMemory()
+        # if dataSize != tex.estimateTextureMemory():
+            # print "Format",form,"does not match:", dataSize, "vs", tex.estimateTextureMemory()
 
         return dataSize
 

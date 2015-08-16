@@ -288,7 +288,7 @@ class RenderTarget(DebugObject):
         this to set custom clears """
         return self._region
 
-    def prepareSceneRender(self):
+    def prepareSceneRender(self, earlyZ = False, earlyZCam = None):
         """ Renders the scene of the source camera to the buffer. See the
         documentation of this class for further information """
 
@@ -313,6 +313,11 @@ class RenderTarget(DebugObject):
             cs.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff), 100)
 
         self._sourceCam.node().setInitialState(cs.getState())
+
+        if earlyZ:
+            self._earlyZRegion = self._internalBuffer.makeDisplayRegion()
+            self._earlyZRegion.setSort(-10)
+            self._earlyZRegion.setCamera(earlyZCam)
 
         self._node = NodePath("RTRoot")
 
@@ -351,8 +356,14 @@ class RenderTarget(DebugObject):
 
         bufferRegion.setCamera(self._sourceCam)
         bufferRegion.setActive(1)
-        # bufferRegion.setClearDepthActive(False)
+        bufferRegion.setClearDepthActive(False)
         bufferRegion.setSort(20)
+
+        if earlyZ:
+            self._earlyZRegion.disableClears()
+            self._earlyZRegion.setClearDepthActive(True)
+            self._earlyZRegion.setActive(1)
+
 
         self._setSizeShaderInput()
 
@@ -433,8 +444,8 @@ class RenderTarget(DebugObject):
         cm.setFrameFullscreenQuad()
         quad = NodePath(cm.generate())
 
-        quad.setDepthTest(0)
-        quad.setDepthWrite(0)
+        quad.setDepthTest(False)
+        quad.setDepthWrite(False)
         quad.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
         quad.setColor(Vec4(1, 0.5, 0.5, 1))
 
@@ -483,16 +494,20 @@ class RenderTarget(DebugObject):
 
         return clears
 
-    def setClearDepth(self, clear=True):
+    def setClearDepth(self, clear=True, force=False):
         """ Adds a depth clear """
         self._internalBuffer.setClearDepthActive(clear)
         if clear:
-            self._internalBuffer.setClearDepth(0.0)
+            self._internalBuffer.setClearDepth(1.0)
+
+        if force:
+            self.getInternalRegion().setClearDepth(clear)
 
     def setClearColor(self, clear=True, color=None):
         """ Adds a color clear """
         self.getInternalRegion().setClearColorActive(clear)
         self._internalBuffer.setClearColorActive(clear)
+
 
         if clear:
             if color is None:
@@ -649,7 +664,8 @@ class RenderTarget(DebugObject):
             bufferProps.setFloatDepth(True)
 
             if self._depthBits != 32:
-                self.error("You cannot request a non-32bit float depth buffer!")
+                self.error("You cannot request a non-32bit float depth buffer! Requesting a non-float depth buffer instead")
+                bufferProps.setFloatDepth(False)
 
             if self._depthBits == 16:
                 # depthTarget.setComponentType(Texture.TFloat)
@@ -697,7 +713,7 @@ class RenderTarget(DebugObject):
         self._internalBuffer = self._engine.makeOutput(
             self._sourceWindow.getPipe(), self._name, 1,
             bufferProps, windowProps,
-            GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,
+            GraphicsPipe.BFRefuseWindow,
             self._sourceWindow.getGsg(), self._sourceWindow)
 
         if self._internalBuffer is None:

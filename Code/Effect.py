@@ -26,7 +26,7 @@ class Effect(DebugObject):
             "castGI": True,
             "mainPass": True
         }
-        self.assignments = {"Default": [], "Shadows": [], "Voxelize": []}
+        self.assignments = {"Default": [], "Shadows": [], "Voxelize": [], "EarlyZ": []}
 
     def load(self, filename):
         """ Loads the effect from a given filename """
@@ -34,8 +34,8 @@ class Effect(DebugObject):
 
         self.defines = {}
         self.source = filename
-        self.shaderParts = {"Default": {}, "Shadows": {}, "Voxelize": {}}
-        self.shaderObjs = {"Default": None, "Shadows": None, "Voxelize": None}
+        self.shaderParts = {"Default": {}, "Shadows": {}, "Voxelize": {}, "EarlyZ": {}}
+        self.shaderObjs = {"Default": None, "Shadows": None, "Voxelize": None, "EarlyZ": None}
         self._handleProperties()
         self.name = filename.replace("\\", "/").split("/")[-1].split(".")[0]
         self._rename("Effect-" + self.name)
@@ -110,7 +110,18 @@ class Effect(DebugObject):
                 programs[progName] = fname
 
             if programs["vertex"] == "":
-                self.error("No vertex program for stage '" + stage + "' defined! Using default shader!")
+
+                # Default stage always needs a vertex shader
+                # if stage == "Default":
+                self.error("No vertex program stage "+ stage + " defined! Using default shader!")
+                # else:
+                #     if "Default" in self.shaderParts and "vertex" in self.shaderParts["Default"]:
+                #         vertex_prog = self.shaderParts["Default"]["vertex"]
+                #         programs["vertex"] = vertex_prog
+                #         self.warn("Using vertex shader from default stage for stage " + stage)
+                #     else:
+                #         self.error("Stage " + stage + " has no vertex program, and no default stage is available!")
+
                 continue
 
             params = [programs["vertex"], programs["fragment"], programs["geometry"], 
@@ -298,10 +309,13 @@ class Effect(DebugObject):
         # Extract blocks
         stageBlocks = self._handleBlocks(strippedLines)
 
+
+        defaultArgs = {}
+
         for stageBlock in stageBlocks:
             blockName = stageBlock[0].rstrip(":").split()[-1]
 
-            if blockName not in ["Default", "Shadows", "Voxelize"]:
+            if blockName not in ["Default", "Shadows", "Voxelize", "EarlyZ"]:
                 self.error("Unkown block name:", blockName)
                 continue
 
@@ -362,6 +376,28 @@ class Effect(DebugObject):
                         else:
                             inserts[entryPoint] = blockContent
 
-                # Create the shader code and store it
                 code = self._createShaderCode(parameters, inserts, blockName, partName)
                 self.shaderParts[blockName][partName] = code
+
+                if blockName == "Default":
+                    defaultArgs[partName] = (parameters, inserts)
+
+
+
+        # Fill all stages with values from the default stage, e.g. if there is 
+        # no vertex code for EarlyZ defined, use the one from the default stage
+        for blockName, parts in self.shaderParts.iteritems():
+
+            if len(parts) < 1:
+                # if no parts are defined at all, skip this stage
+                continue
+
+            if blockName != "Default":
+                # Fill stages with the values from the default shader
+                for defaultPart in self.shaderParts["Default"]:
+                    if defaultPart not in parts:
+                        self.debug("Filling stage " + blockName + "." + defaultPart + " with values from default stage")
+                        parameters, inserts = defaultArgs[defaultPart]
+                        code = self._createShaderCode(parameters, inserts, blockName, defaultPart)
+                        self.shaderParts[blockName][defaultPart] = code
+                        
