@@ -1,0 +1,24 @@
+.pyd
+.pyc
+*.pyc
+*.ignore
+*.sublime-workspace
+*.sublime-project
+Core/Windows/
+Core/Linux/
+Cython/
+*.psd
+Temp/
+Models/**.blend
+Models/PBSTest/Scene.egg
+*.blend1
+*.blend2
+Toolkit/Voxelizer/convert
+Toolkit/Voxelizer/temp
+Toolkit/Blender Material Library/tex
+Toolkit/Blender Material Library/MaterialLibrary.egg
+.idea/
+/.project
+Samples/03-Jimmy/
+instance.pid
+TODO.txt
