@@ -23,4 +23,4 @@ class PointLight(Light):
 
     def getLightType(self):
         """ Returns the type of this light """
-        return 1
+        return self.LTPointLight

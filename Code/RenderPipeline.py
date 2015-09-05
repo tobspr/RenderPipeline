@@ -42,7 +42,11 @@ class RenderPipeline(DebugObject):
     def getStageMgr(self):
         """ Returns a handle to the stage manager object """
         return self.stageMgr
-            
+
+    def addLight(self, light):
+        """ Adds a new light """
+        self.lightMgr.addLight(light)
+
     def create(self):
         """ This creates the pipeline, and setups all buffers. It also constructs
         the showbase """

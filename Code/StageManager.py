@@ -48,6 +48,10 @@ class StageManager(DebugObject):
 
         self.stages.append(stage)
 
+    def addInput(self, key, value):
+        """ Registers a new shader input """
+        self.inputs[key] = value
+
     def define(self, key, value):
         """ Registers a new define for the shader auto config """
         self.defines[key] = value

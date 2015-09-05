@@ -24,7 +24,6 @@ class BufferViewer(DraggableWindow):
     @classmethod
     def registerEntry(self, entry):
         """ Adds a new target to the registered entries """
-        print "Register entry:",entry
         self.registeredEntries.append(entry)
 
     @classmethod

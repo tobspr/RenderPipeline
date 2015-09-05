@@ -48,6 +48,7 @@ class Image(DebugObject):
     def __init__(self, name):
         """ Internal method """ 
         DebugObject.__init__(self, name)
+        self.debug("Constructed new image '" + name + "'")
         self.tex = None
         self.debug("Constructed new image:", name)
 

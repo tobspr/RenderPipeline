@@ -2,10 +2,15 @@
 from panda3d.core import Vec3
 
 from ..Util.DebugObject import DebugObject
+from ..Util.FunctionDecorators import protected
 
 class Light(DebugObject):
 
     """ This is the abstract base class for all Lights """
+
+    # Light Types
+    LTNone = 0
+    LTPointLight = 1
 
     def __init__(self):
         DebugObject.__init__(self, "Light")
@@ -32,6 +37,10 @@ class Light(DebugObject):
         """ Sets the light color. Accepts the same parameters as a Vec3 """
         self.color = Vec3(*args)
         self._markDirty()
+
+    def __repr__(self):
+        return "Light(type={0}, pos={1}, color={2})".format(
+            self.getLightType(), self.position, self.color)
 
     @protected
     def _markDirty(self):

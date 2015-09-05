@@ -26,11 +26,6 @@ class CollectUsedCellsStage(RenderStage):
 
     def create(self):
 
-        self.clearBufferTarget = self._createTarget("ClearCellBuffer")
-        self.clearBufferTarget.setSize(1, 1)
-        self.clearBufferTarget.addColorTexture()
-        self.clearBufferTarget.prepareOffscreenBuffer()
-
         self.target = self._createTarget("CollectUsedCells")
         self.target.setSize(self.tileAmount.x, self.tileAmount.y)
         self.target.addColorTexture()
@@ -49,15 +44,12 @@ class CollectUsedCellsStage(RenderStage):
         self.target.setShaderInput("cellListBuffer", self.cellListBuffer.tex)
         self.target.setShaderInput("cellListIndices", self.cellIndexBuffer.tex)
 
-        self.clearBufferTarget.setShaderInput("target", self.cellListBuffer.tex)
-
     def update(self):
-        # self.cellListBuffer.clearImage()
+        self.cellListBuffer.clearImage()
         self.cellIndexBuffer.clearImage()
 
     def setShaders(self):
         self.target.setShader(self._loadShader("Stages/CollectUsedCells.fragment"))
-        self.clearBufferTarget.setShader(self._loadShader("Stages/ClearCellBuffer.fragment"))
 
     def resize(self):
         self.debug("Resizing pass")
