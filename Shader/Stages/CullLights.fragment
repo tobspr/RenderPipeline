@@ -1,0 +1,37 @@
+#version 430
+
+#pragma include "Includes/Configuration.include"
+#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/LightCulling.include"
+
+out vec4 result;
+
+uniform isamplerBuffer CellListBuffer;
+uniform writeonly iimageBuffer perCellLightsBuffer;
+
+void main() {
+
+    int sliceWidth = 512;
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    int idx = coord.x + coord.y * sliceWidth + 1;
+    int numTotalCells = texelFetch(CellListBuffer, 0).x;
+
+    if (idx > numTotalCells) {
+        result = vec4(0.2, 0, 0, 1);
+        return;
+    }
+
+    int packedCellData = texelFetch(CellListBuffer, idx).x;
+
+    int cellX = packedCellData & 0x3FF;
+    int cellY = (packedCellData >> 10) & 0x3FF;
+    int cellSlice = (packedCellData >> 20) & 0x3FF;
+
+    float linearDepthStart = getLinearDepthFromSlice(cellSlice);
+    float linearDepthEnd = getLinearDepthFromSlice(cellSlice + 1);
+
+    // float depthStart = 
+
+
+    result = vec4(vec3(cellSlice / float(LC_TILE_SLICES) ), 1.0);
+}

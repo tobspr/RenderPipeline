@@ -1,0 +1,7 @@
+#pragma once
+
+
+
+#pragma include "$$PipelineTemp/ShaderAutoConfig.include"
+
+

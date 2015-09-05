@@ -1,0 +1,20 @@
+#pragma once
+#pragma include  "Includes/Configuration.include"
+#pragma include  "Includes/PositionReconstruction.include"
+
+
+int getSliceFromLinearDepth(float linear_depth) {
+    return int( linear_depth / 100.0 * LC_TILE_SLICES);
+}
+
+float getLinearDepthFromSlice(int slice) {
+    return slice * 100.0 / float(LC_TILE_SLICES);
+}
+
+ivec3 getCellIndex(ivec2 texcoord, float depth) {
+    float linear_depth = getLinearZFromZ(depth);
+    ivec2 tile = texcoord / ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
+    return ivec3(tile, getSliceFromLinearDepth(linear_depth));
+}
+
+

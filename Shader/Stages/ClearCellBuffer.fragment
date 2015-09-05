@@ -1,0 +1,7 @@
+#version 430
+
+uniform writeonly iimageBuffer target;
+
+void main() {
+    imageStore(target, 0, ivec4(0));
+}
