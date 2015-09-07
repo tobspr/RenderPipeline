@@ -13,6 +13,10 @@ from ..Globals import Globals
 from ..Stages.FlagUsedCellsStage import FlagUsedCellsStage
 from ..Stages.CollectUsedCellsStage import CollectUsedCellsStage
 from ..Stages.CullLightsStage import CullLightsStage
+from ..Stages.ApplyLightsStage import ApplyLightsStage
+
+from ..Interface.GPUCommandQueue import GPUCommandQueue
+from ..Interface.GPUCommand import GPUCommand
 
 from Light import Light
 
@@ -26,7 +30,9 @@ class LightManager(DebugObject):
 
         self._computeTileSize()
         self._initLightStorage()
+        self._initCommandQueue()
         self._initStages()
+
 
     def initDefines(self):
         """ Inits the common defines """
@@ -52,39 +58,73 @@ class LightManager(DebugObject):
             return self.error("Light limit of", 2**16, "reached!")
 
         # Store slot in light, so we can access it later
-        light.__slot = slot
+        light.setSlot(slot)
+        self.lights[slot] = light
 
-        self._updateMaxLightIndex()
+        # Create the command and attach it
+        commandAdd = GPUCommand(GPUCommand.CMD_STORE_LIGHT)
+        light.addToStream(commandAdd)
+
+        # Enforce a width of 4xVec4
+        commandAdd.enforceWidth(4 * 4 + 1)
+        self.cmdQueue.addCommand(commandAdd)        
+
+        # Now that the light is attached, we can set the dirty flag, because
+        # the newest data is now on the gpu
+        light.dirty = False
+
+        # Update max light index
+        if slot > self.ptaMaxLightIndex[0]:
+            self.ptaMaxLightIndex[0] = slot
 
 
     def removeLight(self, light):
         """ Removes a light """
-        if not hasattr(light, "__slot"):
+        if not light.hasSlot():
             return self.error("Tried to detach light which is not attached!")
 
         # Todo: Implement me
 
-        self.lights[light.__slot] = None
-        del light.__slot
+        self.lights[light.getSlot()] = None
+        light.removeSlot()
 
-        self._updateMaxLightIndex()
+        # TODO: Udpate max light index!
+
+
+    def update(self):
+        """ Main update method to process the gpu commands """
+
+        # Check for dirty lights
+        # dirtyLights = []
+        # for i in xrange(self.ptaMaxLightIndex[0] + 1):
+        #     light = self.lights[i]
+        #     if light and light.dirty:
+        #         dirtyLights.append(light)
+
+        # # Process dirty lights
+        # for light in dirtyLights:
+        #     self.debug("Updating dirty light", light)
+                
+        #     # TODO: Enqueue update command
+        #     light.dirty = False
+
+        self.cmdQueue.processQueue()
+
+    def reloadShaders(self):
+        """ Reloads all assigned shaders """
+        self.cmdQueue.reloadShaders()
 
     @protected
-    def _updateMaxLightIndex(self):
-        """ Checks for the last light index """
-        try:
-            maxIdx = next(i for i,v in itertools.izip(xrange(len(self.lights)-1, 0, -1), reversed(self.lights)) if v is not None)
-        except StopIteration: 
-            maxIdx = 0
-        self.debug("Max light index is", maxIdx)
-        self.ptaMaxLightIndex[0] = maxIdx
+    def _initCommandQueue(self):
+        self.cmdQueue = GPUCommandQueue(self.pipeline)
+        self.cmdQueue.registerInput("LightData", self.imgLightData.tex)
 
     @protected
     def _initLightStorage(self):
         """ Creates the buffer to store the light data """
 
         perLightVec4s = 3
-        self.imgLightData = Image.createBuffer("LightData", 2**16 * perLightVec4s, Texture.FRgba32, Texture.TFloat)
+        self.imgLightData = Image.createBuffer("LightData", 2**16 * perLightVec4s, Texture.TFloat, Texture.FRgba32)
         self.imgLightData.setClearColor(0)
         self.imgLightData.clearImage()
 
@@ -92,8 +132,8 @@ class LightManager(DebugObject):
         self.ptaMaxLightIndex[0] = 0
 
         # Register the buffer
-        self.pipeline.getStageMgr().addInput("AllLightsData", self.imgLightData)
-        self.pipeline.getStageMgr().addInput("MaxLightIndex", self.ptaMaxLightIndex)
+        self.pipeline.getStageMgr().addInput("AllLightsData", self.imgLightData.tex)
+        self.pipeline.getStageMgr().addInput("maxLightIndex", self.ptaMaxLightIndex)
 
     @protected
     def _computeTileSize(self):
@@ -119,4 +159,7 @@ class LightManager(DebugObject):
         self.cullLightsStage = CullLightsStage(self.pipeline)
         self.cullLightsStage.setTileAmount(self.numTiles)
         self.pipeline.getStageMgr().addStage(self.cullLightsStage)
+        
+        self.applyLightsStage = ApplyLightsStage(self)
+        self.pipeline.getStageMgr().addStage(self.applyLightsStage)
         

@@ -97,6 +97,12 @@ class PipeViewer(DraggableWindow):
                 img = BetterOnscreenImage(image=pipeTex, parent=node, x=0, y=50 + pipeIdx * 110.0, 
                     w=w, h=h, anyFilter=False, transparent=False)
 
+            for inputPipe in stage.getInputPipes():
+                idx = currentPipes.index(inputPipe)
+                r, g, b = rgbFromString(inputPipe)
+                marker = DirectFrame(parent=node, frameSize=(0, 10, 40, -40), frameColor=(r, g, b, 1),
+                    pos=(5, 1, -95 - idx *110.0))
+
         self.pipeDescriptions = self._contentNode.attachNewNode("pipeDescriptions")
         self.pipeDescriptions.setScale(1, 1, -1)
 

@@ -10,6 +10,7 @@ from Stages.EarlyZStage import EarlyZStage
 from Stages.FlagUsedCellsStage import FlagUsedCellsStage
 from Stages.CollectUsedCellsStage import CollectUsedCellsStage
 from Stages.CullLightsStage import CullLightsStage
+from Stages.ApplyLightsStage import ApplyLightsStage
 
 from GUI.PipeViewer import PipeViewer
 
@@ -20,7 +21,8 @@ class StageManager(DebugObject):
         EarlyZStage,
         FlagUsedCellsStage,
         CollectUsedCellsStage,
-        CullLightsStage
+        CullLightsStage,
+        ApplyLightsStage
     ]
 
     """ This manager takes a list of RenderStages and puts them into an order,
@@ -80,15 +82,15 @@ class StageManager(DebugObject):
                 stage.setShaderInput(pipe, self.pipes[pipe])
 
             # Check if all inputs are available, and set them
-            for inputBinding, inputSrc in stage.getRequiredInputs().iteritems():
-                if inputSrc not in self.inputs and inputSrc not in self.ubos:
-                    self.error("Input '" + inputSrc + "' is missing for", stage)
+            for inputBinding in stage.getRequiredInputs():
+                if inputBinding not in self.inputs and inputBinding not in self.ubos:
+                    self.error("Input '" + inputBinding + "' is missing for", stage)
                     continue
 
-                if inputSrc in self.inputs:
-                    stage.setShaderInput(inputBinding, self.inputs[inputSrc])
+                if inputBinding in self.inputs:
+                    stage.setShaderInput(inputBinding, self.inputs[inputBinding])
                 else:
-                    ubo = self.ubos[inputSrc]
+                    ubo = self.ubos[inputBinding]
                     ubo.bindTo(stage)
 
 

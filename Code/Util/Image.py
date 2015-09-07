@@ -13,7 +13,7 @@ class Image(DebugObject):
     track of all images """
 
     @classmethod
-    def createBuffer(self, name="Texture", size=0, cformat=Texture.FRgba, ctype=Texture.TFloat):
+    def createBuffer(self, name, size, cformat, ctype):
         img = self("Image2D-" + name)
         img.tex = Texture(name)
         img.tex.setupBufferTexture(size, cformat, ctype, GeomEnums.UHStatic)
@@ -21,7 +21,7 @@ class Image(DebugObject):
         return img
 
     @classmethod
-    def create2D(self, name="Texture", w=0, h=0, cformat=Texture.FRgba, ctype=Texture.TFloat):
+    def create2D(self, name, w, h, cformat, ctype):
         img = self("Image2D-" + name)
         img.tex = Texture(name)
         img.tex.setup2dTexture( w, h, cformat, ctype)
@@ -29,7 +29,7 @@ class Image(DebugObject):
         return img
 
     @classmethod
-    def create2DArray(self, name="Texture", w=0, h=0, z=0, cformat=Texture.FRgba, ctype=Texture.TFloat):
+    def create2DArray(self, name, w, h, z, cformat, ctype):
         img = self("Image2D-" + name)
         img.tex = Texture(name)
         img.tex.setup2dTextureArray( w, h, z, cformat, ctype)
@@ -37,7 +37,7 @@ class Image(DebugObject):
         return img
 
     @classmethod
-    def create3D(self, name="Texture", w=0, h=0, z=0, cformat=Texture.FRgba, ctype=Texture.TFloat):
+    def create3D(self, name, w, h, z, cformat, ctype):
         img = self("Image3D-" + name)
         img.tex = Texture(name)
         img.tex.setup3dTexture( w, h, z, cformat, ctype)
@@ -48,9 +48,8 @@ class Image(DebugObject):
     def __init__(self, name):
         """ Internal method """ 
         DebugObject.__init__(self, name)
-        self.debug("Constructed new image '" + name + "'")
+        # self.debug("Constructed new image '" + name + "'")
         self.tex = None
-        self.debug("Constructed new image:", name)
 
     def destroy(self):
         """ Destroys the image """

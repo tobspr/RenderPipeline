@@ -1,5 +1,5 @@
 
-from panda3d.core import Vec3, Texture, Shader
+from panda3d.core import Vec3, Texture, Shader, LVecBase2i
 
 from ..Util.FunctionDecorators import protected
 from DraggableWindow import DraggableWindow
@@ -67,6 +67,7 @@ class TexturePreview(DraggableWindow):
                 image.setShader(self.display2DTexArrayShader)
             else:
                 image.setShader(self.display3DTexShader)
+        image.setShaderInput("viewSize", LVecBase2i(int(scaleX*w), int(scaleY*h) ) )
         image.setShaderInput("slice", 0)
         self.previewImage = image
         self.show()

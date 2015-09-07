@@ -23,10 +23,9 @@ class RenderStage(DebugObject):
         self.targets = {}
 
     def getRequiredInputs(self):
-        """ This method should return which shader inputs are required for this
-        stage, where the key specifies the name they will be available in the shader,
-        and the value specifies the name of the variable """
-        return {}
+        """ This method should return a list of shader inputs which are required 
+        for this stage """
+        return []
 
     def getInputPipes(self):
         """ This method should return which pipes are required for this stage.

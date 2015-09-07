@@ -24,3 +24,8 @@ class PointLight(Light):
     def getLightType(self):
         """ Returns the type of this light """
         return self.LTPointLight
+
+    def addToStream(self, command):
+        Light.addToStream(self, command)
+        command.pushFloat(self.radius)
+        command.pushFloat(self.innerRadius)

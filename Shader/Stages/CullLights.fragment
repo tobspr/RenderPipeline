@@ -3,11 +3,20 @@
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/LightCulling.include"
+#pragma include "Includes/Lights.include"
+#pragma include "Includes/Structures/Frustum.struct"
 
 out vec4 result;
 
 uniform isamplerBuffer CellListBuffer;
 uniform writeonly iimageBuffer perCellLightsBuffer;
+
+uniform samplerBuffer AllLightsData;
+uniform int maxLightIndex;
+
+#define PROJ_MAT trans_view_of_mainCam_to_clip_of_mainCam
+uniform mat4 PROJ_MAT;
+uniform mat4 currentViewMat;
 
 void main() {
 
@@ -30,8 +39,78 @@ void main() {
     float linearDepthStart = getLinearDepthFromSlice(cellSlice);
     float linearDepthEnd = getLinearDepthFromSlice(cellSlice + 1);
 
-    // float depthStart = 
+    int storageOffs = (MAX_LIGHTS_PER_CELL+1) * idx;
+    int numRenderedLights = 0;
 
 
-    result = vec4(vec3(cellSlice / float(LC_TILE_SLICES) ), 1.0);
+    // Per tile bounds
+    ivec2 precomputeSize = ivec2(LC_TILE_AMOUNT_X, LC_TILE_AMOUNT_Y);
+    ivec2 patchSize = ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
+    ivec2 virtualScreenSize = precomputeSize * patchSize;
+
+    vec2 tileScale = vec2(virtualScreenSize) / vec2( 2.0 * patchSize);
+    vec2 tileBias = tileScale - vec2(cellX, cellY);
+
+    // Build frustum
+    // Based on http://gamedev.stackexchange.com/questions/67431/deferred-tiled-shading-tile-frusta-calculation-in-opengl
+    // (Which is based on DICE's presentation)
+    vec4 frustumRL = vec4(-PROJ_MAT[0][0] * tileScale.x, 0.0f, tileBias.x, 0.0f);
+    vec4 frustumTL = vec4(0.0f, -PROJ_MAT[2][1] * tileScale.y, tileBias.y, 0.0f);
+
+    // The doc said frustumOffset = vec4(0,0,1,0) but panda uses 
+    // apparently an inverted coordinate system
+    const vec4 frustumOffset = vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+    float minDepthLinear = 0;
+    float maxDepthLinear = 999999999.0;
+
+    // Calculate frustum planes
+    Frustum frustum;
+    frustum.left   = normalize(frustumOffset - frustumRL);
+    frustum.right  = normalize(frustumOffset + frustumRL);
+    frustum.top    = normalize(frustumOffset - frustumTL);
+    frustum.bottom = normalize(frustumOffset + frustumTL);
+
+    frustum.nearPlane = vec4(0, 0, -1.0, -minDepthLinear);
+    frustum.farPlane = vec4(0, 0, 1.0, maxDepthLinear);
+    frustum.viewMat = currentViewMat;
+
+
+    // Cull all lights
+    for (int i = 0; i < maxLightIndex + 1 && numRenderedLights < MAX_LIGHTS_PER_CELL; i++) {
+        int dataOffs = i * 4;
+        vec4 data0 = texelFetch(AllLightsData, dataOffs + 0);
+        int lightType = int(data0.x);
+
+        // No light
+        if (lightType < 1) continue;
+
+        vec4 data1 = texelFetch(AllLightsData, dataOffs + 1);
+        vec4 data2 = texelFetch(AllLightsData, dataOffs + 2);
+        vec4 data3 = texelFetch(AllLightsData, dataOffs + 3);
+
+        bool visible = false;
+
+        vec3 lightPos = data0.yzw;
+
+        if (lightType == LT_POINT_LIGHT) {
+            // TODO: Implement me
+            float radius = data1.w;
+            visible = isPointLightInFrustum(lightPos, radius, frustum);
+            // visible = true;
+        }
+
+
+        if (visible) {
+            numRenderedLights ++;
+            imageStore(perCellLightsBuffer, storageOffs + numRenderedLights, ivec4(i));
+        }
+
+
+    }
+
+
+    imageStore(perCellLightsBuffer, storageOffs, ivec4(numRenderedLights));
+
+    result = vec4(vec3(idx / 100.0 ), 1.0);
 }

@@ -1,5 +1,6 @@
 
-from panda3d.core import LVecBase2i
+from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
+from panda3d.core import Mat4, CSYupRight, CSZupRight
 from direct.showbase.ShowBase import ShowBase
 
 from Util.DebugObject import DebugObject
@@ -70,17 +71,17 @@ class RenderPipeline(DebugObject):
 
         # Create the stage manager
         self.stageMgr = StageManager(self)
-
+        self._createCommonInputs()
 
         # Create the light manager
         self.lightMgr = LightManager(self)
 
         self.stageMgr.addStage(EarlyZStage(self))
         self.stageMgr.setup()
-
-        # Add common defines and create the shaders
         self._createCommonDefines()
-        self.stageMgr.setShaders()
+
+
+        self.reloadShaders()
 
 
         self.initBindings()
@@ -94,11 +95,14 @@ class RenderPipeline(DebugObject):
     def reloadShaders(self):
         """ Reloads all shaders """
         self.stageMgr.setShaders()
+        self.lightMgr.reloadShaders()
 
     @protected
     def _preRenderUpdate(self, task):
         """ Update task which gets called before the update """
+        self._updateCommonInputs()
         self.stageMgr.updateStages()
+        self.lightMgr.update()
         return task.cont
 
     @protected
@@ -120,6 +124,25 @@ class RenderPipeline(DebugObject):
         define("CAMERA_FAR", round(Globals.base.camLens.getFar(), 3))
 
         self.lightMgr.initDefines()
+
+    @protected
+    def _createCommonInputs(self):
+        """ Creates commonly used inputs """
+
+        self.stageMgr.addInput("mainCam", self.showbase.cam)
+        self.stageMgr.addInput("mainRender", self.showbase.render)
+
+        self.ptaCurrentViewMat = PTAMat4.emptyArray(1)
+        self.stageMgr.addInput("currentViewMat", self.ptaCurrentViewMat)
+
+        self.coordinateConverter = TransformState.makeMat(Mat4.convertMat(CSYupRight, CSZupRight))
+
+    @protected
+    def _updateCommonInputs(self):
+        """ Updates the commonly used inputs """
+
+        self.ptaCurrentViewMat[0] = UnalignedLMatrix4f(
+            self.coordinateConverter.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
 
     @protected
     def _adjustCameraSettings(self):

@@ -1,7 +1,7 @@
 
 from functools import partial
 
-from panda3d.core import Texture, Vec3, Shader
+from panda3d.core import Texture, Vec3, Shader, Vec2, LVecBase2i
 from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectGui import DGG
@@ -168,9 +168,14 @@ class BufferViewer(DraggableWindow):
 
             # Scale image so it always fits
             w, h = stageTex.getXSize(), stageTex.getYSize()
-            scaleX = float(entryWidth-30) / w
-            scaleY = float(entryHeight-60) / h
+            scaleX = float(entryWidth-30) / max(1, w)
+            scaleY = float(entryHeight-60) / max(1, h)
             scaleFactor = min(scaleX, scaleY)
+
+            if stageTex.getTextureType() == Texture.TTBufferTexture:
+                scaleFactor = 1
+                w = entryWidth - 30
+                h = entryHeight - 60
 
             preview = BetterOnscreenImage(image=stageTex, w=scaleFactor*w, h=scaleFactor*h, 
                 anyFilter=False, parent=node, x=10, y=40, transparent=False)
@@ -178,6 +183,7 @@ class BufferViewer(DraggableWindow):
             if stageTex.getZSize() <= 1:
                 if stageTex.getTextureType() == Texture.TTBufferTexture:
                     preview.setShader(self.displayBufferTexShader)
+                    preview.setShaderInput("viewSize", LVecBase2i(int(scaleFactor*w), int(scaleFactor*h)) )
                 else:
                     preview.setShader(self.display2DTexShader)
             else:

@@ -7,12 +7,6 @@ class EarlyZStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "EarlyZStage", pipeline)
 
-    def getRequiredInputs(self):
-        return {}
-
-    def getInputPipes(self):
-        return []
-
     def getProducedPipes(self):
         return {
             "GBufferDepth": self.target.getDepthTexture()

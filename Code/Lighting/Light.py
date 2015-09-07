@@ -14,6 +14,7 @@ class Light(DebugObject):
 
     def __init__(self):
         DebugObject.__init__(self, "Light")
+        self.dirty = False
         self.position = Vec3(0)
         self.color = Vec3(0)
 
@@ -24,7 +25,12 @@ class Light(DebugObject):
     def addToStream(self, command):
         """ Adds the light to a command stream, subclasses should implement this,
         and call this method, then add their own data """
+        
+        # Light Header
+        command.pushInt(self.getSlot())
         command.pushInt(self.getLightType())
+
+        # Light Data start
         command.pushVec3(self.position)
         command.pushVec3(self.color)
         
@@ -38,7 +44,29 @@ class Light(DebugObject):
         self.color = Vec3(*args)
         self._markDirty()
 
+    def isDirty(self):
+        """ Returns whether the light needs an update """
+        return self.dirty
+
+    def setSlot(self, slot):
+        """ Internal method to set a slot """
+        self.__slot = slot
+
+    def hasSlot(self):
+        """ Internal method to check whether a slot is assigned """
+        return hasattr(self, "__slot")
+
+    def getSlot(self):
+        """ Returns the slot if it is assigned, otherwise throws an exception """
+        return self.__slot
+
+    def removeSlot(self):
+        """ Removes the slot assigned to the light """
+        del self.__slot
+
+    @protected
     def __repr__(self):
+        """ Returns a representative string of the light """
         return "Light(type={0}, pos={1}, color={2})".format(
             self.getLightType(), self.position, self.color)
 
@@ -46,5 +74,4 @@ class Light(DebugObject):
     def _markDirty(self):
         """ Marks the light as dirty, it will get updated at the beginning of
         the next frame """
-        print "Mark light dirty!"
-
+        self.dirty = True

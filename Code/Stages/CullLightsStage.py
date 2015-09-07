@@ -27,12 +27,24 @@ class CullLightsStage(RenderStage):
 
     def getProducedDefines(self):
         return {
-            "LC_SHADE_SLICES": self.numRows
+            "LC_SHADE_SLICES": self.numRows,
+            "MAX_LIGHTS_PER_CELL": 128
         }
+
+    def getRequiredInputs(self):
+        return [
+            "AllLightsData",
+            "maxLightIndex",
+            "mainCam",
+            "currentViewMat"
+        ]
 
     def create(self):
         maxCells = self.tileAmount.x * self.tileAmount.y * self.pipeline.settings.lightGridSlices
+        maxLightsPerCell = 128
+
         self.numRows = int(math.ceil(maxCells / 512.0))
+
 
         self.target = self._createTarget("CullLights")
         self.target.setSize(512, self.numRows)
@@ -40,14 +52,13 @@ class CullLightsStage(RenderStage):
         self.target.prepareOffscreenBuffer()
         self.target.setClearColor(color=Vec4(0.2, 0.6, 1.0, 1.0))
 
-        self.perCellLights = Image.createBuffer("PerCellLights", maxCells, Texture.TInt, Texture.FR16)
+        self.perCellLights = Image.createBuffer("PerCellLights", maxCells * (maxLightsPerCell + 1), Texture.TInt, Texture.FR32)
         self.perCellLights.setClearColor(0)
 
         self.target.setShaderInput("perCellLightsBuffer", self.perCellLights.tex)
 
     def update(self):
-        # self.cellListBuffer.clearImage()
-        # self.cellIndexBuffer.clearImage()
+        # self.perCellLights.clearImage()
         pass
 
     def setShaders(self):
