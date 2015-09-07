@@ -120,8 +120,8 @@ class RenderPipeline(DebugObject):
         define("WINDOW_HEIGHT", Globals.resolution.y)
 
         # Pass camera near and far plane
-        define("CAMERA_NEAR", round(Globals.base.camLens.getNear(), 3))
-        define("CAMERA_FAR", round(Globals.base.camLens.getFar(), 3))
+        define("CAMERA_NEAR", round(Globals.base.camLens.getNear(), 5))
+        define("CAMERA_FAR", round(Globals.base.camLens.getFar(), 5))
 
         self.lightMgr.initDefines()
 
@@ -141,8 +141,7 @@ class RenderPipeline(DebugObject):
     def _updateCommonInputs(self):
         """ Updates the commonly used inputs """
 
-        self.ptaCurrentViewMat[0] = UnalignedLMatrix4f(
-            self.coordinateConverter.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
+        self.ptaCurrentViewMat[0] = UnalignedLMatrix4f(self.coordinateConverter.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
 
     @protected
     def _adjustCameraSettings(self):
