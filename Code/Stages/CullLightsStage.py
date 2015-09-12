@@ -28,7 +28,7 @@ class CullLightsStage(RenderStage):
     def getProducedDefines(self):
         return {
             "LC_SHADE_SLICES": self.numRows,
-            "MAX_LIGHTS_PER_CELL": 128
+            "MAX_LIGHTS_PER_CELL": 512
         }
 
     def getRequiredInputs(self):
@@ -41,7 +41,7 @@ class CullLightsStage(RenderStage):
 
     def create(self):
         maxCells = self.tileAmount.x * self.tileAmount.y * self.pipeline.settings.lightGridSlices
-        maxLightsPerCell = 128
+        maxLightsPerCell = 512
 
         self.numRows = int(math.ceil(maxCells / 512.0))
 

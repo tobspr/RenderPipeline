@@ -13,7 +13,7 @@ from ..Globals import Globals
 from ..Stages.FlagUsedCellsStage import FlagUsedCellsStage
 from ..Stages.CollectUsedCellsStage import CollectUsedCellsStage
 from ..Stages.CullLightsStage import CullLightsStage
-from ..Stages.ApplyLightsStage import ApplyLightsStage
+from ..Stages.ForwardPlusStage import ForwardPlusStage
 
 from ..Interface.GPUCommandQueue import GPUCommandQueue
 from ..Interface.GPUCommand import GPUCommand
@@ -159,7 +159,6 @@ class LightManager(DebugObject):
         self.cullLightsStage = CullLightsStage(self.pipeline)
         self.cullLightsStage.setTileAmount(self.numTiles)
         self.pipeline.getStageMgr().addStage(self.cullLightsStage)
-        
-        self.applyLightsStage = ApplyLightsStage(self)
-        self.pipeline.getStageMgr().addStage(self.applyLightsStage)
-        
+
+        self.forwardPlusStage = ForwardPlusStage(self)
+        self.pipeline.getStageMgr().addStage(self.forwardPlusStage)

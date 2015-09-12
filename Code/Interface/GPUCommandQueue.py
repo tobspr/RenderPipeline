@@ -17,7 +17,7 @@ class GPUCommandQueue(DebugObject):
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GPUCommandQueue")
         self.pipeline = pipeline
-        self.commandsPerFrame = 1
+        self.commandsPerFrame = 30
         self.ptaNumCommands = PTAInt.emptyArray(1)
         self._createDataStorage()
         self._createCommandTarget()

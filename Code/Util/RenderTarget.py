@@ -176,6 +176,16 @@ class RenderTarget(DebugObject):
         """ Sets the amount of depth bits to request """
         self._depthBits = bits
 
+    def makeMainTarget(self):
+        """ Makes this target show on screen """
+        Globals.base.win.getDisplayRegion(1).setCamera(self._camera)
+        self._engine.removeWindow(self._internalBuffer)
+        self._internalBuffer.clearRenderTextures()
+
+        # if self._createOverlayQuad:
+        #     self._quad.removeNode()
+
+
     def setShaderInput(self, *args):
         """ This is a shortcut for setting shader inputs on the buffer """
         self.getNode().setShaderInput(*args)

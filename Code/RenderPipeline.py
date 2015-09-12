@@ -1,6 +1,6 @@
 
 from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
-from panda3d.core import Mat4, CSYupRight, CSZupRight
+from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f
 from direct.showbase.ShowBase import ShowBase
 
 from Util.DebugObject import DebugObject
@@ -15,6 +15,8 @@ from Lighting.LightManager import LightManager
 from GUI.OnscreenDebugger import OnscreenDebugger
 
 from Stages.EarlyZStage import EarlyZStage
+from Stages.FinalStage import FinalStage
+
 
 class RenderPipeline(DebugObject):
 
@@ -61,7 +63,8 @@ class RenderPipeline(DebugObject):
         # Load the globals
         Globals.load(self.showbase)
         Globals.font = Globals.loader.loadFont("Data/Font/DebugFont.ttf")
-        Globals.resolution = LVecBase2i(self.showbase.win.getXSize(), self.showbase.win.getYSize())
+        Globals.resolution = LVecBase2i(self.showbase.win.getXSize(), 
+            self.showbase.win.getYSize())
 
         # Adjust the camera settings
         self._adjustCameraSettings()
@@ -77,25 +80,25 @@ class RenderPipeline(DebugObject):
         self.lightMgr = LightManager(self)
 
         self.stageMgr.addStage(EarlyZStage(self))
+        self.stageMgr.addStage(FinalStage(self))
+        
         self.stageMgr.setup()
         self._createCommonDefines()
-
-
         self.reloadShaders()
+        self._initBindings()
 
-
-        self.initBindings()
-
-    def initBindings(self):
-        """ Inits the tasks and keybindings """
-        self.showbase.accept("r", self.reloadShaders)
-        self.showbase.addTask(self._preRenderUpdate, "RP_BeforeRender", sort=10)
-        self.showbase.addTask(self._postRenderUpdate, "RP_AfterRender", sort=100)
 
     def reloadShaders(self):
         """ Reloads all shaders """
         self.stageMgr.setShaders()
         self.lightMgr.reloadShaders()
+
+    @protected
+    def _initBindings(self):
+        """ Inits the tasks and keybindings """
+        self.showbase.accept("r", self.reloadShaders)
+        self.showbase.addTask(self._preRenderUpdate, "RP_BeforeRender", sort=10)
+        self.showbase.addTask(self._postRenderUpdate, "RP_AfterRender", sort=100)
 
     @protected
     def _preRenderUpdate(self, task):
@@ -129,8 +132,11 @@ class RenderPipeline(DebugObject):
     def _createCommonInputs(self):
         """ Creates commonly used inputs """
 
+        self.ptaCameraPos = PTAVecBase3f.emptyArray(1)
+
         self.stageMgr.addInput("mainCam", self.showbase.cam)
         self.stageMgr.addInput("mainRender", self.showbase.render)
+        self.stageMgr.addInput("cameraPosition", self.ptaCameraPos)
 
         self.ptaCurrentViewMat = PTAMat4.emptyArray(1)
         self.stageMgr.addInput("currentViewMat", self.ptaCurrentViewMat)
@@ -142,6 +148,7 @@ class RenderPipeline(DebugObject):
         """ Updates the commonly used inputs """
 
         self.ptaCurrentViewMat[0] = UnalignedLMatrix4f(self.coordinateConverter.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
+        self.ptaCameraPos[0] = base.camera.getPos(render)
 
     @protected
     def _adjustCameraSettings(self):

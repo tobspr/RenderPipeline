@@ -2,7 +2,7 @@
 
 
 #define saturate(v) clamp(v, 0, 1)
-
+#define M_PI 3.14159265359
 
 #pragma include "$$PipelineTemp/ShaderAutoConfig.include"
 

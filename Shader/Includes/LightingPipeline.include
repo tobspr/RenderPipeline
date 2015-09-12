@@ -1,0 +1,92 @@
+#pragma once
+
+#pragma include "Includes/Structures/Material.struct"
+#pragma include "Includes/LightCulling.include"
+#pragma include "Includes/Lights.include"
+#pragma include "Includes/BRDF.include"
+
+
+uniform isampler2DArray CellIndices;
+uniform isamplerBuffer PerCellLights;
+uniform samplerBuffer AllLightsData;
+
+uniform vec3 cameraPosition;
+
+vec3 shade_material_from_buffer(Material m) {
+
+    // Find tile id
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    float depth = gl_FragCoord.z;
+    ivec3 tile = getCellIndex(coord, depth);
+
+
+    if (tile.z >= LC_TILE_SLICES) {
+        return vec3(0, 0, 0);
+    }
+
+    
+    // Find per tile lights
+    int cellIndex = texelFetch(CellIndices, tile, 0).x;
+    int dataOffs = cellIndex * (MAX_LIGHTS_PER_CELL+1);
+    int numLights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, dataOffs).x);
+
+
+
+    vec3 shadingResult = vec3(0);
+
+    // Compute view vector
+    vec3 v = normalize(m.position - cameraPosition);
+        
+    // Iterate over all lights
+    for (int i = 0; i < numLights; i++) {
+
+        // Fetch light ID
+        int lightOffs = texelFetch(PerCellLights, dataOffs + i + 1).x * 4;
+
+        // Fetch per light packed data
+        vec4 data0 = texelFetch(AllLightsData, lightOffs + 0);
+        vec4 data1 = texelFetch(AllLightsData, lightOffs + 1);
+        vec4 data2 = texelFetch(AllLightsData, lightOffs + 2);
+        vec4 data3 = texelFetch(AllLightsData, lightOffs + 3);
+
+        // Extract common light data, which is equal for each light type
+        int lightType = int(data0.x);
+        vec3 lightPos = data0.yzw;
+        vec3 lightColor = data1.xyz;
+
+        float attenuation = 0;
+        vec3 l = vec3(0);
+        vec3 n = m.normal;
+
+        // Special handling for different light types
+        if (lightType == LT_POINT_LIGHT) {
+            float radius = data1.w;
+            float innerRadius = data2.x;
+            attenuation = computePointLightAttenuation(radius, distance(m.position, lightPos));
+            l = normalize(lightPos - m.position);
+        }
+
+        // Actual lighting using a BRDF
+        vec3 h = normalize(l + v);
+
+        // Precomputed dot products
+        float NxL = max(0, dot(n, l));
+        float LxH = max(0, dot(l, h));
+        float NxV = max(0, dot(n, v));
+        float NxH = max(0, dot(n, h));
+        float VxH = max(0, dot(-v, h));
+
+
+        // Diffuse contribution
+        shadingResult += lambertianBRDF(m.diffuse, NxL) * lightColor * attenuation;
+
+
+
+
+    }
+
+    // Ambient
+    shadingResult += m.diffuse * 0.001;
+    shadingResult *= 3.0;
+    return shadingResult;
+}

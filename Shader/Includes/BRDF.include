@@ -1,0 +1,10 @@
+#pragma once
+
+#pragma include "Includes/Configuration.include"
+
+
+
+
+vec3 lambertianBRDF(vec3 diffuse, float NxL) {
+    return  diffuse * NxL / M_PI;
+}

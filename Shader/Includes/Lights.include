@@ -17,6 +17,6 @@ float computePointLightAttenuation(float r, float d) {
     float linearAttenuation = 1.0 - saturate(d / r);
 
     attenuation = max(0.0, attenuation * linearAttenuation);
-    attenuation = linearAttenuation;
+    // attenuation = linearAttenuation;
     return attenuation;
 } 

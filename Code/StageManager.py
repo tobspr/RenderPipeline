@@ -10,7 +10,8 @@ from Stages.EarlyZStage import EarlyZStage
 from Stages.FlagUsedCellsStage import FlagUsedCellsStage
 from Stages.CollectUsedCellsStage import CollectUsedCellsStage
 from Stages.CullLightsStage import CullLightsStage
-from Stages.ApplyLightsStage import ApplyLightsStage
+from Stages.ForwardPlusStage import ForwardPlusStage
+from Stages.FinalStage import FinalStage
 
 from GUI.PipeViewer import PipeViewer
 
@@ -22,7 +23,8 @@ class StageManager(DebugObject):
         FlagUsedCellsStage,
         CollectUsedCellsStage,
         CullLightsStage,
-        ApplyLightsStage
+        ForwardPlusStage,
+        FinalStage
     ]
 
     """ This manager takes a list of RenderStages and puts them into an order,
