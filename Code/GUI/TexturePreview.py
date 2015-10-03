@@ -1,7 +1,5 @@
 
 from panda3d.core import Vec3, Texture, Shader, LVecBase2i
-
-from ..Util.FunctionDecorators import protected
 from DraggableWindow import DraggableWindow
 from BetterOnscreenImage import BetterOnscreenImage
 from BetterOnscreenText import BetterOnscreenText
@@ -72,13 +70,13 @@ class TexturePreview(DraggableWindow):
         self.previewImage = image
         self.show()
 
-    @protected
+    
     def _setSlice(self):
         idx = int(self.sliceSlider.getValue())
         self.previewImage.setShaderInput("slice", idx)
         self.sliceText.setText("Slice: " + str(idx))
 
-    @protected
+    
     def _createShaders(self):
         """ Create the shaders to display the textures """
         self.display2DTexShader = Shader.load(Shader.SLGLSL,
@@ -90,7 +88,7 @@ class TexturePreview(DraggableWindow):
         self.displayBufferTexShader = Shader.load(Shader.SLGLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/displayBufferTex.glsl")
 
-    @protected
+    
     def _createComponents(self):
         """ Internal method to init the components """
         DraggableWindow._createComponents(self)

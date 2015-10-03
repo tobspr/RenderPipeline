@@ -5,7 +5,6 @@ from panda3d.core import PTAInt, PTAFloat, Texture, Shader
 
 from ..Util.DebugObject import DebugObject
 from ..Util.Image import Image
-from ..Util.FunctionDecorators import protected
 from ..Util.RenderTarget import RenderTarget
 from GPUCommand import GPUCommand
 
@@ -31,7 +30,7 @@ class GPUCommandQueue(DebugObject):
     def processQueue(self):
         """ Processes the n first commands of the queue """
 
-        self.dataTexture.clearImage()
+        self.dataTexture.clear_image()
         commands = self.commands[:self.commandsPerFrame]
         self.commands = self.commands[self.commandsPerFrame:]
         self.ptaNumCommands[0] = len(commands)
@@ -65,19 +64,19 @@ class GPUCommandQueue(DebugObject):
         """ Registers an new shader input to the command target """
         self.commandTarget.setShaderInput(key, val)
 
-    @protected
+    
     def _createDataStorage(self):
         """ Creates the buffer used to transfer commands """
         commandBufferSize = self.commandsPerFrame * 32
         self.debug("Allocating command buffer of size", commandBufferSize)
-        self.dataTexture = Image.createBuffer("CommandQueue", commandBufferSize, Texture.TFloat, Texture.FR32)
-        self.dataTexture.setClearColor(0)
+        self.dataTexture = Image.create_buffer("CommandQueue", commandBufferSize, Texture.TFloat, Texture.FR32)
+        self.dataTexture.set_clear_color(0)
 
-    @protected
+    
     def _createCommandTarget(self):
         """ Creates the target which processes the commands """
         self.commandTarget = RenderTarget("CommandTarget")
-        self.commandTarget.addColorTexture()
+        # self.commandTarget.addColorTexture()
         self.commandTarget.setSize(1, 1)
         self.commandTarget.prepareOffscreenBuffer()
         self.commandTarget.setShaderInput("CommandQueue", self.dataTexture.tex)

@@ -1,5 +1,5 @@
-.pyd
-.pyc
+*.pyd
+*.pyc
 *.ignore
 *.sublime-workspace
 *.sublime-project
@@ -10,3 +10,6 @@ Models/
 *.blend1
 *.blend2
 main.py
+Data/NormalQuantization/*.png
+CodeConventions.txt
+*.old

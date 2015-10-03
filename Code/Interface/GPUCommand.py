@@ -1,6 +1,5 @@
 
 from ..Util.DebugObject import DebugObject
-from ..Util.FunctionDecorators import protected
 
 class GPUCommand(DebugObject):
 
@@ -54,7 +53,7 @@ class GPUCommand(DebugObject):
         self.debug("PUSH_MAT4", val)
         raise NotImplementedError()
 
-    @protected
+    
     def __repr__(self):
         """ Returns a representative string of the command """
         return "GPUCommand(type={0}, len={1})".format(self.command_type, self.getDataSize())

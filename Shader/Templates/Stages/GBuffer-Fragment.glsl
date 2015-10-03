@@ -1,13 +1,16 @@
 #version 430
 
+#define IS_GBUFFER_SHADER 1
+
 #pragma include "Includes/Configuration.include"
 #pragma include "Includes/Structures/VertexOutput.struct"
 #pragma include "Includes/Structures/Material.struct"
-#pragma include "Includes/ForwardPlusShading.include"
+#pragma include "Includes/GBufferPacking.include"
 
 layout(location=0) in VertexOutput vOutput;
 
 uniform sampler2D p3d_Texture0;
+
 
 void main() {
 
@@ -21,6 +24,7 @@ void main() {
     m.specular = 1.0;
     m.roughness = 1.0;
 
-    process_and_render_material(m);
+
+    render_material(m);
 }
 

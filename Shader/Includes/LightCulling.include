@@ -3,12 +3,18 @@
 #pragma include "Includes/PositionReconstruction.include"
 #pragma include "Includes/Structures/Frustum.struct"
 
+
+#define LIGHT_CULLING_DIST 200.0
+#define SLICE_POW_FACTOR 0.5
+
+
 int getSliceFromLinearDepth(float linear_depth) {
-    return int( linear_depth / 800.0 * LC_TILE_SLICES);
+    return int( 
+        pow(linear_depth / LIGHT_CULLING_DIST, SLICE_POW_FACTOR) * LC_TILE_SLICES);
 }
 
 float getLinearDepthFromSlice(int slice) {
-    return slice * 800.0 / float(LC_TILE_SLICES);
+    return pow(slice / float(LC_TILE_SLICES), 1.0 / SLICE_POW_FACTOR) * LIGHT_CULLING_DIST;
 }
 
 ivec3 getCellIndex(ivec2 texcoord, float depth) {

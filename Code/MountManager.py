@@ -2,80 +2,81 @@
 import os
 import atexit
 
-from panda3d.core import Filename, VirtualFileSystem, getModelPath
+from panda3d.core import Filename, VirtualFileSystem, get_model_path
 from direct.stdpy.file import join, isdir, isfile
 
 from Util.DebugObject import DebugObject
 
+
 class MountManager(DebugObject):
 
     """ This classes mounts the required directories for the pipeline to run.
-    This is important if the pipeline is in a subdirectory for example. The mount
-    manager also handles the lock, storing the current PID into a file named
-    instance.pid and ensuring that there is only 1 instance of the pipeline running
-    at one time. """
+    This is important if the pipeline is in a subdirectory for example. The
+    mount manager also handles the lock, storing the current PID into a file
+    named instance.pid and ensuring that there is only 1 instance of the
+    pipeline running at one time. """
 
     def __init__(self, pipeline):
         """ Creates a new mount manager """
-        DebugObject.__init__(self, "MountManager")
-        self.pipeline = pipeline
-        self.writePath = "Temp/"
-        self.basePath = "."
-        self.lockFile = "Temp/instance.pid"
-        self.modelPaths = []
-        self.mounted = False
+        DebugObject.__init__(self)
+        self._pipeline = pipeline
+        self._write_path = "Temp/"
+        self._base_path = "."
+        self._lock_file = "Temp/instance.pid"
+        self._model_paths = []
+        self._mounted = False
 
-        atexit.register(self.onExitCleanup)
+        atexit.register(self._on_exit_cleanup)
 
-    def setWritePath(self, pth):
+    def set_write_path(self, pth):
         """ Set a writable directory for generated files. This can be a string
         path name or a multifile with openReadWrite(). If no pathname is set
         then the root directory is used.
 
         Applications are usually installed system wide and wont have write
-        access to the basePath. It will be wise to at least use tempfile
+        access to the _base_path. It will be wise to at least use tempfile
         like tempfile.mkdtemp(prefix='Shader-tmp'), or an application directory
         in the user's home/app dir."""
-        self.writePath = Filename.fromOsSpecific(pth).getFullpath()
-        self.lockFile = join(self.writePath, "instance.pid")
+        self._writePath = Filename.from_os_specific(pth).get_fullpath()
+        self._lockFile = join(self._writePath, "instance.pid")
 
-    def setBasePath(self, pth):
+    def set_base_path(self, pth):
         """ Sets the path where the base shaders and models on are contained. This
         is usually the root of the rendering pipeline folder """
         self.debug("Set base path to '" + pth + "'")
-        self.basePath = Filename.fromOsSpecific(pth).getFullpath()
+        self._base_path = Filename.from_os_specific(pth).get_fullpath()
 
-    def getLock(self):
-        """ Checks if we are the only instance running. If there is no instance running,
-        write the current PID to the instance.pid file. If the instance file exists,
-        checks if the specified process still runs. This way only 1 instance of
-        the pipeline can be run at one time. """
+    def get_lock(self):
+        """ Checks if we are the only instance running. If there is no instance
+        running, write the current PID to the instance.pid file. If the
+        instance file exists, checks if the specified process still runs. This
+        way only 1 instance of the pipeline can be run at one time. """
 
         # Check if there is a lockfile at all
-        if isfile(self.lockFile):
+        if isfile(self._lock_file):
             # Read process id from lockfile
             try:
-                with open(self.lockFile, "r") as handle:
+                with open(self._lock_file, "r") as handle:
                     pid = int(handle.readline())
             except Exception, msg:
-                self.error("Failed to read lockfile")
+                self.error("Failed to read lockfile:", msg)
                 return False
 
             # Check if the process is still running
-            if self._checkPIDRunning(pid):
+            if self._is_pid_running(pid):
                 self.error("Found running instance")
                 return False
 
-            # Process is not running anymore, we can write the lockfile and continue
-            self._writeLock()
+            # Process is not running anymore, we can write the lockfile
+            self._write_lock()
             return True
 
         else:
             # When there is no lockfile, just create it and continue
-            self._writeLock()
+            self._write_lock()
             return True
 
-    def _checkPIDRunning(self, pid):
+    def _is_pid_running(self, pid):
         """ Checks if a pid is still running """
 
         # Code snippet from ntrrgc
@@ -101,85 +102,88 @@ class MountManager(DebugObject):
             else:
                 return False
 
-    def _writeLock(self):
-        """ Internal method to write the current pid to the instance.pid lockfile """
-        with open(self.lockFile, "w") as handle:
+    def _write_lock(self):
+        """ Internal method to write the current process id to the instance.pid
+        lockfile. This is used to ensure no second instance of the pipeline is
+        running. """
+
+        with open(self._lock_file, "w") as handle:
             handle.write(str(os.getpid()))
 
-    def _tryRemove(self, fname):
+    def _try_remove(self, fname):
         """ Tries to remove the specified filename, returns either True or False
         depending if we had success or not """
         try:
             os.remove(fname)
             return True
-        except Exception, msg:
+        except Exception:
             pass
         return False
 
-    def onExitCleanup(self):
+    def _on_exit_cleanup(self):
         """ Gets called when the application exists """
 
         self.debug("Cleaning up ..")
 
         # Try removing the lockfile
-        self._tryRemove(self.lockFile)
+        self._try_remove(self._lock_file)
 
         # Try removing the shader auto config
-        self._tryRemove(join(self.writePath, "ShaderAutoConfig.include"))
+        self._try_remove(join(self._write_path, "ShaderAutoConfig.include"))
 
         # Check for further tempfiles in the write path
-        for f in os.listdir(self.writePath):
-            pth = join(self.writePath, f)
+        for f in os.listdir(self._write_path):
+            pth = join(self._write_path, f)
 
             # Tempfiles from the pipeline start with "$$" to distinguish them
             # from user created files
             if isfile(pth) and f.startswith("$$"):
-                self._tryRemove(pth)
+                self._try_remove(pth)
 
     def mount(self):
         """ Inits the VFS Mounts """
 
         self.debug("Setting up virtual filesystem.")
-        self.mounted = True
-        vfs = VirtualFileSystem.getGlobalPtr()
+        self._mounted = True
+        vfs = VirtualFileSystem.get_global_ptr()
 
         # Mount data and models
-        vfs.mountLoop(join(self.basePath, 'Data'), 'Data', 0)
-        vfs.mountLoop(join(self.basePath, 'Models'), 'Models', 0)
-        vfs.mountLoop(join(self.basePath, 'Config'), 'Config', 0)
-        vfs.mountLoop(join(self.basePath, 'Effects'), 'Effects', 0)
+        vfs.mount_loop(join(self._base_path, 'Data'), 'Data', 0)
+        vfs.mount_loop(join(self._base_path, 'Models'), 'Models', 0)
+        vfs.mount_loop(join(self._base_path, 'Config'), 'Config', 0)
+        vfs.mount_loop(join(self._base_path, 'Effects'), 'Effects', 0)
 
         # Mount shaders under a different name to access them from the effects
-        vfs.mountLoop(join(self.basePath, 'Shader'), 'ShaderMount', 0)
+        vfs.mount_loop(join(self._base_path, 'Shader'), 'ShaderMount', 0)
 
         # Ensure the pipeline write path exists, and if not, create it
-        if not isdir(self.writePath):
+        if not isdir(self._write_path):
             self.debug("Creating temp path, it does not exist yet")
             try:
-                os.makedirs(self.writePath, 0777)
+                os.makedirs(self._write_path, 0777)
             except Exception, msg:
-                self.fatal("Failed to create temp path:",msg)
+                self.fatal("Failed to create temp path:", msg)
 
         # Mount the pipeline temp path
-        self.debug("Mounting",self.writePath,"as $$PipelineTemp/")
-        vfs.mountLoop(self.writePath, '$$PipelineTemp/', 0)
+        self.debug("Mounting", self._write_path, "as $$PipelineTemp/")
+        vfs.mount_loop(self._write_path, '$$PipelineTemp/', 0)
 
-        # #pragma include "something" searches in current directory first, 
-        # and then on the model-path. Append the Shader directory to the modelpath
-        # to ensure the shader includes can be found.
-        base_path = Filename(self.basePath)
-        self.modelPaths.append(join(base_path.getFullpath(), 'Shader'))
+        # #pragma include "something" searches in current directory first,
+        # and then on the model-path. Append the Shader directory to the
+        # modelpath to ensure the shader includes can be found.
+        base_path = Filename(self._base_path)
+        self._model_paths.append(join(base_path.get_fullpath(), 'Shader'))
 
         # Add the pipeline root directory to the model path aswel
-        self.modelPaths.append(base_path.getFullpath())
+        self._model_paths.append(base_path.get_fullpath())
 
-        # Append the write path to the model directory to make pragma include 
+        # Append the write path to the model directory to make pragma include
         # find the ShaderAutoConfig.include
-        write_path = Filename(self.writePath)
-        self.modelPaths.append(write_path.getFullpath())
+        write_path = Filename(self._write_path)
+        self._model_paths.append(write_path.getFullpath())
 
-        for pth in self.modelPaths:
-            getModelPath().appendDirectory(pth)
+        for pth in self._model_paths:
+            get_model_path().append_directory(pth)
 
     def unmount(self):
         """ Unmounts the VFS """

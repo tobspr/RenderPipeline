@@ -10,13 +10,13 @@ class Globals:
     clock = None
     font = None
     resolution = None
-    
+
     @classmethod
-    def load(self, showbase):
+    def load(cls, showbase):
         """ Fetches the globals from a given showbase """
-        self.base = showbase
-        self.loader = showbase.loader
-        self.render = showbase.render
-        self.clock = showbase.taskMgr.globalClock
-        self.font = None
-        self.resolution = None
+        cls.base = showbase
+        cls.loader = showbase.loader
+        cls.render = showbase.render
+        cls.clock = showbase.taskMgr.globalClock
+        cls.font = None
+        cls.resolution = None

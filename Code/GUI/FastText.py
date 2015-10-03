@@ -91,7 +91,7 @@ class FastText(DebugObject):
          self.card.removeNode()
 
 
-    @protected
+    
     def _extractFontData(self):
         """ Internal method to extract the font atlas """
 
@@ -138,7 +138,7 @@ class FastText(DebugObject):
         self.fontData = [fontInstance, page, glyphData, pageBlurred]
         self.fontPagePool[self.cacheKey] = self.fontData
 
-    @protected
+    
     def _generateCard(self):
         """ Generates the card used for text rendering """
         c = CardMaker("TextCard")
@@ -154,7 +154,7 @@ class FastText(DebugObject):
             TransparencyAttrib.make(TransparencyAttrib.MAlpha), 1000)
         self.card.reparentTo(self.parent)
 
-    @protected
+    
     def _makeFontShader(self):
         """ Generates the shader used for font rendering """
         return Shader.make(Shader.SLGLSL, """

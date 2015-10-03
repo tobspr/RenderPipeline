@@ -3,6 +3,7 @@
 #pragma include "Includes/Structures/Material.struct"
 #pragma include "Includes/LightCulling.include"
 #pragma include "Includes/Lights.include"
+#pragma include "Includes/LightTypes.include"
 #pragma include "Includes/BRDF.include"
 
 
@@ -12,30 +13,18 @@ uniform samplerBuffer AllLightsData;
 
 uniform vec3 cameraPosition;
 
-vec3 shade_material_from_buffer(Material m) {
-
-    // Find tile id
-    ivec2 coord = ivec2(gl_FragCoord.xy);
-    float depth = gl_FragCoord.z;
-    ivec3 tile = getCellIndex(coord, depth);
-
-
-    if (tile.z >= LC_TILE_SLICES) {
-        return vec3(0, 0, 0);
-    }
-
+vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     
     // Find per tile lights
     int cellIndex = texelFetch(CellIndices, tile, 0).x;
     int dataOffs = cellIndex * (MAX_LIGHTS_PER_CELL+1);
     int numLights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, dataOffs).x);
 
-
-
     vec3 shadingResult = vec3(0);
 
     // Compute view vector
-    vec3 v = normalize(m.position - cameraPosition);
+    vec3 v = normalize(cameraPosition - m.position);
+
         
     // Iterate over all lights
     for (int i = 0; i < numLights; i++) {
@@ -56,37 +45,25 @@ vec3 shade_material_from_buffer(Material m) {
 
         float attenuation = 0;
         vec3 l = vec3(0);
-        vec3 n = m.normal;
+
 
         // Special handling for different light types
         if (lightType == LT_POINT_LIGHT) {
             float radius = data1.w;
             float innerRadius = data2.x;
+            innerRadius = 2.0;
+
+
+
             attenuation = computePointLightAttenuation(radius, distance(m.position, lightPos));
             l = normalize(lightPos - m.position);
         }
 
-        // Actual lighting using a BRDF
-        vec3 h = normalize(l + v);
-
-        // Precomputed dot products
-        float NxL = max(0, dot(n, l));
-        float LxH = max(0, dot(l, h));
-        float NxV = max(0, dot(n, v));
-        float NxH = max(0, dot(n, h));
-        float VxH = max(0, dot(-v, h));
-
-
-        // Diffuse contribution
-        shadingResult += lambertianBRDF(m.diffuse, NxL) * lightColor * attenuation;
-
+        shadingResult += applyLight(m, v, l, lightColor, attenuation, 1.0);
 
 
 
     }
 
-    // Ambient
-    shadingResult += m.diffuse * 0.001;
-    shadingResult *= 3.0;
     return shadingResult;
 }

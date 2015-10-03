@@ -1,74 +1,74 @@
 
 import math
 
-from panda3d.core import Texture, Shader, Vec4
+from panda3d.core import Texture, Vec4
 
 from ..RenderStage import RenderStage
-from ..Util.RenderTarget import RenderTarget
 from ..Util.Image import Image
+
 
 class CullLightsStage(RenderStage):
 
+    """ This stage takes the list of used cells and creates a list of lights
+    for each cell """
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CullLightsStage", pipeline)
-        self.tileAmount = None
+        self._tile_amount = None
+        self._max_lights_per_cell = 512
 
-    def setTileAmount(self, tileAmount):
+    def set_tile_amount(self, tile_amount):
         """ Sets the cell tile size """
-        self.tileAmount = tileAmount
+        self._tile_amount = tile_amount
 
-    def getInputPipes(self):
+    def get_input_pipes(self):
         return ["CellListBuffer"]
 
-    def getProducedPipes(self):
+    def get_produced_pipes(self):
         return {
-            "PerCellLights": self.perCellLights.tex
+            "PerCellLights": self._per_cell_lights.tex
         }
 
-    def getProducedDefines(self):
+    def get_produced_defines(self):
         return {
-            "LC_SHADE_SLICES": self.numRows,
-            "MAX_LIGHTS_PER_CELL": 512
+            "LC_SHADE_SLICES": self._num_rows,
+            "MAX_LIGHTS_PER_CELL": self._max_lights_per_cell
         }
 
-    def getRequiredInputs(self):
-        return [
-            "AllLightsData",
-            "maxLightIndex",
-            "mainCam",
-            "currentViewMat"
-        ]
+    def get_required_inputs(self):
+        return ["AllLightsData", "maxLightIndex", "mainCam", "currentViewMat"]
 
     def create(self):
-        maxCells = self.tileAmount.x * self.tileAmount.y * self.pipeline.settings.lightGridSlices
-        maxLightsPerCell = 512
+        max_cells = self._tile_amount.x * self._tile_amount.y * \
+            self._pipeline.settings.lightGridSlices
 
-        self.numRows = int(math.ceil(maxCells / 512.0))
+        self._num_rows = int(math.ceil(max_cells / 512.0))
+        self._target = self._create_target("CullLights")
+        self._target.setSize(512, self._num_rows)
+        # self._target.addColorTexture()
+        self._target.prepareOffscreenBuffer()
+        self._target.setClearColor(color=Vec4(0.2, 0.6, 1.0, 1.0))
 
+        self._per_cell_lights = Image.create_buffer("PerCellLights",
+            max_cells * (self._max_lights_per_cell + 1), Texture.T_int,
+            Texture.F_r32)
+        self._per_cell_lights.set_clear_color(0)
 
-        self.target = self._createTarget("CullLights")
-        self.target.setSize(512, self.numRows)
-        self.target.addColorTexture()
-        self.target.prepareOffscreenBuffer()
-        self.target.setClearColor(color=Vec4(0.2, 0.6, 1.0, 1.0))
-
-        self.perCellLights = Image.createBuffer("PerCellLights", maxCells * (maxLightsPerCell + 1), Texture.TInt, Texture.FR32)
-        self.perCellLights.setClearColor(0)
-
-        self.target.setShaderInput("perCellLightsBuffer", self.perCellLights.tex)
+        self._target.setShaderInput("perCellLightsBuffer",
+            self._per_cell_lights.tex)
 
     def update(self):
         # self.perCellLights.clearImage()
         pass
 
-    def setShaders(self):
-        self.target.setShader(self._loadShader("Stages/CullLights.vertex", "Stages/CullLights.fragment"))
+    def set_shaders(self):
+        self._target.setShader(self._load_shader("Stages/CullLights.vertex",
+                                                "Stages/CullLights.fragment"))
 
     def resize(self):
+        RenderStage.resize(self)
         self.debug("Resizing pass")
 
     def cleanup(self):
+        RenderStage.cleanup(self)
         self.debug("Cleanup pass")
-    
-
-

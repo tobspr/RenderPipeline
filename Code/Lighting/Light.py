@@ -2,7 +2,6 @@
 from panda3d.core import Vec3
 
 from ..Util.DebugObject import DebugObject
-from ..Util.FunctionDecorators import protected
 
 class Light(DebugObject):
 
@@ -64,13 +63,13 @@ class Light(DebugObject):
         """ Removes the slot assigned to the light """
         del self.__slot
 
-    @protected
+    
     def __repr__(self):
         """ Returns a representative string of the light """
         return "Light(type={0}, pos={1}, color={2})".format(
             self.getLightType(), self.position, self.color)
 
-    @protected
+    
     def _markDirty(self):
         """ Marks the light as dirty, it will get updated at the beginning of
         the next frame """

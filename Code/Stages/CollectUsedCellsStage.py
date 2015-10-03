@@ -1,61 +1,66 @@
 
-from panda3d.core import Texture, Shader
+from panda3d.core import Texture
 
 from ..RenderStage import RenderStage
-from ..Util.RenderTarget import RenderTarget
 from ..Util.Image import Image
+
 
 class CollectUsedCellsStage(RenderStage):
 
+    """ This stage collects the flagged cells from the FlagUsedCellsStage and
+    makes a list of them """
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CollectUsedCellsStage", pipeline)
-        self.tileAmount = None
+        self._tile_amount = None
 
-    def setTileAmount(self, tileAmount):
+    def set_tile_amount(self, tile_amount):
         """ Sets the cell tile size """
-        self.tileAmount = tileAmount
+        self._tile_amount = tile_amount
 
-    def getInputPipes(self):
+    def get_input_pipes(self):
         return ["FlaggedCells"]
 
-    def getProducedPipes(self):
+    def get_produced_pipes(self):
         return {
-            "CellListBuffer": self.cellListBuffer.tex,
-            "CellIndices": self.cellIndexBuffer.tex,
+            "CellListBuffer": self._cell_list_buffer.tex,
+            "CellIndices": self._cell_index_buffer.tex,
         }
 
     def create(self):
+        self._target = self._create_target("CollectUsedCells")
+        self._target.setSize(self._tile_amount.x, self._tile_amount.y)
+        # self._target.addColorTexture()
+        self._target.prepareOffscreenBuffer()
 
-        self.target = self._createTarget("CollectUsedCells")
-        self.target.setSize(self.tileAmount.x, self.tileAmount.y)
-        self.target.addColorTexture()
-        self.target.prepareOffscreenBuffer()
+        max_cells = self._tile_amount.x * self._tile_amount.y * \
+            self._pipeline.settings.lightGridSlices
+        self.debug("Allocating", max_cells, "cells")
 
-        maxCells = self.tileAmount.x * self.tileAmount.y * self.pipeline.settings.lightGridSlices
-        self.debug("Allocating", maxCells,"cells")
+        self._cell_list_buffer = Image.create_buffer("CellList", max_cells,
+                                                  Texture.T_int, Texture.F_r32i)
+        self._cell_list_buffer.set_clear_color(0)
 
-        self.cellListBuffer = Image.createBuffer("CellList", maxCells, Texture.TInt, Texture.FR32i)
-        self.cellListBuffer.setClearColor(0)
+        self._cell_index_buffer = Image.create_2d_array("CellIndices",
+            self._tile_amount.x, self._tile_amount.y,
+            self._pipeline.settings.lightGridSlices, Texture.T_int, Texture.F_r32i)
+        self._cell_index_buffer.set_clear_color(0)
 
-        self.cellIndexBuffer = Image.create2DArray("CellIndices", self.tileAmount.x, 
-            self.tileAmount.y, self.pipeline.settings.lightGridSlices, Texture.TInt, Texture.FR32i)
-        self.cellIndexBuffer.setClearColor(0)
-
-        self.target.setShaderInput("cellListBuffer", self.cellListBuffer.tex)
-        self.target.setShaderInput("cellListIndices", self.cellIndexBuffer.tex)
+        self._target.setShaderInput("cellListBuffer", self._cell_list_buffer.tex)
+        self._target.setShaderInput("cellListIndices", self._cell_index_buffer.tex)
 
     def update(self):
-        self.cellListBuffer.clearImage()
-        self.cellIndexBuffer.clearImage()
+        self._cell_list_buffer.clear_image()
+        self._cell_index_buffer.clear_image()
 
-    def setShaders(self):
-        self.target.setShader(self._loadShader("Stages/CollectUsedCells.fragment"))
+    def set_shaders(self):
+        self._target.setShader(
+            self._load_shader("Stages/CollectUsedCells.fragment"))
 
     def resize(self):
+        RenderStage.resize(self)
         self.debug("Resizing pass")
 
     def cleanup(self):
+        RenderStage.cleanup(self)
         self.debug("Cleanup pass")
-    
-
-

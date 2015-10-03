@@ -9,7 +9,6 @@ from BufferViewer import BufferViewer
 from PipeViewer import PipeViewer
 
 from ..Util.DebugObject import DebugObject
-from ..Util.FunctionDecorators import protected
 from ..Globals import Globals
 
 
@@ -26,7 +25,7 @@ class OnscreenDebugger(DebugObject):
         self._createComponents()
         self._initKeybindings()
 
-    @protected
+    
     def _createComponents(self):
         """ Creates the gui components """
 
@@ -46,7 +45,7 @@ class OnscreenDebugger(DebugObject):
         self.bufferViewer = BufferViewer(self.pipeline)
         self.pipeViewer = PipeViewer(self.pipeline)
 
-    @protected
+    
     def _createTopbar(self):
         """ Creates the topbar """
         self.logoBackground = DirectFrame(parent=self.fullscreenNode, frameSize=(1.0, 0, 0, -1),
@@ -61,7 +60,7 @@ class OnscreenDebugger(DebugObject):
         # Hide the logo text in the beginning
         self.pipelineLogoText.setPos(150, -100)
 
-    @protected
+    
     def _createDebugger(self):
         """ Creates the debugger contents """
 
@@ -72,14 +71,14 @@ class OnscreenDebugger(DebugObject):
         self.debuggerBgBottom = DirectFrame(parent=self.debuggerNode, frameSize=(self.debuggerWidth, 0, 0, -15),
             pos=(40, 0, -self.debuggerHeight + 20), frameColor=(0.05, 0.05, 0.05, 1))
 
-    @protected
+    
     def _initKeybindings(self):
         """ Inits the debugger keybindings """
         Globals.base.accept("g", self._toggleDebugger)
         Globals.base.accept("v", self.bufferViewer.toggle)
         Globals.base.accept("c", self.pipeViewer.toggle)
 
-    @protected
+    
     def _toggleDebugger(self):
         """ Internal method to hide or show the debugger """
         if self.debuggerInterval is not None:

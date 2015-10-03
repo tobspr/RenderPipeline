@@ -7,7 +7,6 @@ from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectGui import DGG
 
 from ..Util.DebugObject import DebugObject
-from ..Util.FunctionDecorators import protected
 from ..Util.Generic import rgbFromString
 from ..Globals import Globals
 from TexturePreview import TexturePreview
@@ -52,7 +51,7 @@ class BufferViewer(DraggableWindow):
             self._performUpdate()
             self.show()
 
-    @protected
+    
     def _createShaders(self):
         """ Create the shaders to display the textures """
         self.display2DTexShader = Shader.load(Shader.SLGLSL,
@@ -64,7 +63,7 @@ class BufferViewer(DraggableWindow):
         self.displayBufferTexShader = Shader.load(Shader.SLGLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/displayBufferTex.glsl")
 
-    @protected
+    
     def _createComponents(self):
         """ Creates the window components """
         DraggableWindow._createComponents(self)
@@ -87,13 +86,13 @@ class BufferViewer(DraggableWindow):
         self._contentNode.setScale(1, 1, -1)
         self._contentNode.setZ(self.scrollHeight)
 
-    @protected
+    
     def _removeComponents(self):
         """ Removes all components of the buffer viewer """
         self._contentNode.removeChildren()
         self.texPreview.hide()
 
-    @protected
+    
     def _performUpdate(self):
         """ Collects all entries, extracts their images and updates the render """
 
@@ -114,22 +113,22 @@ class BufferViewer(DraggableWindow):
 
         self._renderStages()
 
-    @protected
+    
     def _onTextureHovered(self, hoverFrame, evt=None):
         """ Internal method when a texture is hovered """
         hoverFrame["frameColor"] = (0, 0, 0, 0.1)
 
-    @protected
+    
     def _onTextureBlurred(self, hoverFrame, evt=None):
         """ Internal method when a texture is blurred """
         hoverFrame["frameColor"] = (0, 0, 0, 0)
 
-    @protected
+    
     def _onTextureClicked(self, texHandle, evt=None):
         """ Internal method when a texture is blurred """
         self.texPreview.present(texHandle)
 
-    @protected
+    
     def _renderStages(self):
         """ Renders the stages to the window """
 

@@ -4,7 +4,6 @@ from panda3d.core import Texture, Vec3
 from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectFrame import DirectFrame
 
-from ..Util.FunctionDecorators import protected
 from ..Util.Generic import rgbFromString
 from DraggableWindow import DraggableWindow
 from BetterOnscreenText import BetterOnscreenText
@@ -50,7 +49,7 @@ class PipeViewer(DraggableWindow):
 
         return task.cont
 
-    @protected
+    
     def _populateContent(self):
         """ Reads the pipes and stages from the stage manager and renders those """
         self.created = True
@@ -62,7 +61,7 @@ class PipeViewer(DraggableWindow):
         pipePixelSize = 3
 
         # Generate stages
-        for offs, stage in enumerate(self.stageMgr.stages):
+        for offs, stage in enumerate(self.stageMgr._stages):
             node = self._contentNode.attachNewNode("stage")
             node.setPos(220 + offs * 200.0, 0, 20)
             node.setScale(1, 1, -1)
@@ -87,11 +86,11 @@ class PipeViewer(DraggableWindow):
                     frameColor=(r, g, b, 1), pos=(0, 1, -95 - pipeIdx * 110.0))
 
                 if pipeTex.getZSize() > 1:
-                    self.debug("Ignoring 3D image", pipeTex.getName())
+                    self.debug("Ignoring 3D image", pipeTex.get_name())
                     continue
 
                 if pipeTex.getTextureType() == Texture.TTBufferTexture:
-                    self.debug("Ignoring texture buffer", pipeTex.getName())
+                    self.debug("Ignoring texture buffer", pipeTex.get_name())
                     continue
 
                 img = BetterOnscreenImage(image=pipeTex, parent=node, x=0, y=50 + pipeIdx * 110.0, 
@@ -115,7 +114,7 @@ class PipeViewer(DraggableWindow):
                 x=20, y=120 + idx*110, size=15, color=Vec3(0.2, 0.2, 0.2))
 
 
-    @protected
+    
     def _createComponents(self):
         """ Internal method to create the window components """
         DraggableWindow._createComponents(self)

@@ -1,49 +1,52 @@
 
-from panda3d.core import Texture, Shader
+from panda3d.core import Texture
 
 from ..RenderStage import RenderStage
-from ..Util.RenderTarget import RenderTarget
 from ..Util.Image import Image
+
 
 class FlagUsedCellsStage(RenderStage):
 
+    """ This stage flags all used cells based on the depth buffer """
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "FlagUsedCellsStage", pipeline)
-        self.tileAmount = None
+        self._tile_amount = None
 
-    def setTileAmount(self, tileAmount):
+    def set_tile_amount(self, tile_amount):
         """ Sets the cell tile size """
-        self.tileAmount = tileAmount
+        self._tile_amount = tile_amount
 
-    def getInputPipes(self):
+    def get_input_pipes(self):
         return ["GBufferDepth"]
 
-    def getProducedPipes(self):
-        return {"FlaggedCells": self.cellGridFlags.tex}
+    def get_produced_pipes(self):
+        return {"FlaggedCells": self._cell_grid_flags.tex}
 
     def create(self):
 
-        self.target = self._createTarget("FlagUsedCells")
-        self.target.addColorTexture()
-        self.target.prepareOffscreenBuffer()
+        self._target = self._create_target("FlagUsedCells")
+        # self._target.addColorTexture()
+        self._target.prepareOffscreenBuffer()
 
-        self.cellGridFlags = Image.create2DArray("CellGridFlags", self.tileAmount.x, 
-            self.tileAmount.y, self.pipeline.settings.lightGridSlices, Texture.TFloat, Texture.FR16)
-        self.cellGridFlags.setClearColor(0)
+        self._cell_grid_flags = Image.create_2d_array("CellGridFlags",
+            self._tile_amount.x, self._tile_amount.y,
+            self._pipeline.settings.lightGridSlices,
+            Texture.T_float, Texture.F_r16)
+        self._cell_grid_flags.set_clear_color(0)
 
-        self.target.setShaderInput("cellGridFlags", self.cellGridFlags.tex)
+        self._target.setShaderInput("cellGridFlags", self._cell_grid_flags.tex)
 
     def update(self):
-        self.cellGridFlags.clearImage()
+        self._cell_grid_flags.clear_image()
 
-    def setShaders(self):
-        self.target.setShader(self._loadShader("Stages/FlagUsedCells.fragment"))
+    def set_shaders(self):
+        self._target.setShader(self._load_shader("Stages/FlagUsedCells.fragment"))
 
     def resize(self):
+        RenderStage.resize(self)
         self.debug("Resizing pass")
 
     def cleanup(self):
+        RenderStage.cleanup(self)
         self.debug("Cleanup pass")
-    
-
-

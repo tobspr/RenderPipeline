@@ -6,7 +6,6 @@ from direct.gui.DirectButton import DirectButton
 from direct.gui.DirectGui import DGG
 
 from ..Util.DebugObject import DebugObject
-from ..Util.FunctionDecorators import protected
 from ..Globals import Globals
 from BetterOnscreenText import BetterOnscreenText
 
@@ -48,7 +47,7 @@ class DraggableWindow(DebugObject):
         self._stopDrag()
         self._node.removeNode()
 
-    @protected
+    
     def _createComponents(self):
         """ Creates the window components """
         parent = Globals.base.pixel2d
@@ -67,7 +66,7 @@ class DraggableWindow(DebugObject):
         self.titleBar.bind(DGG.B1RELEASE, self._stopDrag)
         self.btnClose.bind(DGG.B1CLICK, self._requestClose)
 
-    @protected
+    
     def _startDrag(self, evt=None):
         """ Gets called when the user starts dragging the window """
         self.dragging = True
@@ -76,24 +75,24 @@ class DraggableWindow(DebugObject):
         Globals.base.taskMgr.add(self._onTick, "UIWindowDrag", uponDeath=self._stopDrag)
         self.dragOffset = self.pos - self._getMousePos()
 
-    @protected
+    
     def _requestClose(self, evt=None):
         """ This method gets called when the close button gets clicked """
         self.hide()
 
-    @protected
+    
     def _stopDrag(self, evt=None):
         """ Gets called when the user stops dragging the window """
         Globals.base.taskMgr.remove("UIWindowDrag")
         self.dragging = False
 
-    @protected
+    
     def _getMousePos(self):
         """ Internal helper function to get the mouse position """
         mx, my = Globals.base.win.getPointer(0).getX(), Globals.base.win.getPointer(0).getY()
         return Vec2(mx, my)
 
-    @protected
+    
     def _setPos(self, pos):
         """ Moves the window to the specified position """
         self.pos = pos
@@ -103,7 +102,7 @@ class DraggableWindow(DebugObject):
         self.pos.y = min(self.pos.y, Globals.base.win.getYSize() - 50)
         self._node.setPos(self.pos.x, 1, -self.pos.y)
 
-    @protected
+    
     def _onTick(self, task):
         """ Task which updates the window while being dragged """
         self._setPos(self._getMousePos() + self.dragOffset)

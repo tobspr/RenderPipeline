@@ -2,132 +2,122 @@
 import time
 from direct.stdpy.file import open
 
-from Util.DebugObject import DebugObject
-from Util.FunctionDecorators import protected
-
-from RenderStage import RenderStage
-from Stages.EarlyZStage import EarlyZStage
-from Stages.FlagUsedCellsStage import FlagUsedCellsStage
-from Stages.CollectUsedCellsStage import CollectUsedCellsStage
-from Stages.CullLightsStage import CullLightsStage
-from Stages.ForwardPlusStage import ForwardPlusStage
-from Stages.FinalStage import FinalStage
-
 from GUI.PipeViewer import PipeViewer
+from Util.DebugObject import DebugObject
+
 
 class StageManager(DebugObject):
-
-    # This defines the order of all stages, in case they are attached
-    stageOrder = [
-        EarlyZStage,
-        FlagUsedCellsStage,
-        CollectUsedCellsStage,
-        CullLightsStage,
-        ForwardPlusStage,
-        FinalStage
-    ]
-
     """ This manager takes a list of RenderStages and puts them into an order,
     and also connects the different pipes """
 
+    # This defines the order of all stages, in case they are attached
+    _STAGE_ORDER = [
+        "GBufferStage",
+        "FlagUsedCellsStage",
+        "CollectUsedCellsStage",
+        "CullLightsStage",
+        "ApplyLightsStage",
+        "AmbientStage",
+        "FinalStage"
+    ]
+
     def __init__(self, pipeline):
         """ Constructs the stage manager """
-        DebugObject.__init__(self, "StageManager")
-        self.stages = []
-        self.inputs = {}
-        self.pipes = {}
-        self.ubos = {}
-        self.defines = {}
-        self.pipeline = pipeline
+        DebugObject.__init__(self)
+        self._stages = []
+        self._inputs = {}
+        self._pipes = {}
+        self._ubos = {}
+        self._defines = {}
+        self._pipeline = pipeline
 
         # Register the manager so the pipe viewer can read our data
         PipeViewer.registerStageMgr(self)
 
-    def addStage(self, stage):
+    def add_stage(self, stage):
         """ Adds a new stage """
 
-        if stage.__class__ not in self.stageOrder:
-            self.error("They stage type '" + stage.getName() + "' is not registered yet!")
+        if stage.get_stage_id() not in self._STAGE_ORDER:
+            self.error("They stage type", stage.get_name(),
+                       "is not registered yet!")
             return
 
-        self.stages.append(stage)
+        self._stages.append(stage)
 
-    def addInput(self, key, value):
+    def add_input(self, key, value):
         """ Registers a new shader input """
-        self.inputs[key] = value
+        self._inputs[key] = value
 
     def define(self, key, value):
         """ Registers a new define for the shader auto config """
-        self.defines[key] = value
+        self._defines[key] = value
 
     def setup(self):
         """ Setups the stages """
         self.debug("Setup stages ...")
 
         # Sort stages
-        self.stages.sort(key = lambda stage: self.stageOrder.index(stage.__class__))
+        self._stages.sort(key=lambda stage: self._STAGE_ORDER.index(
+            stage.get_stage_id()))
 
         # Process each stage
-        for stage in self.stages:
-            self.debug("Creating stage", stage.__class__)
-
-
-            # Create the pass
+        for stage in self._stages:
+            self.debug("Creating stage", stage.get_stage_id())
             stage.create()
 
             # Check if all pipes are available, and set them
-            for pipe in stage.getInputPipes():
-                if pipe not in self.pipes:
+            for pipe in stage.get_input_pipes():
+                if pipe not in self._pipes:
                     self.error("Pipe '" + pipe + "' is missing for", stage)
                     continue
 
-                stage.setShaderInput(pipe, self.pipes[pipe])
+                stage.set_shader_input(pipe, self._pipes[pipe])
 
             # Check if all inputs are available, and set them
-            for inputBinding in stage.getRequiredInputs():
-                if inputBinding not in self.inputs and inputBinding not in self.ubos:
-                    self.error("Input '" + inputBinding + "' is missing for", stage)
+            for input_binding in stage.get_required_inputs():
+                if input_binding not in self._inputs and \
+                   input_binding not in self._ubos:
+                    self.error("Input", input_binding, "is missing for", stage)
                     continue
 
-                if inputBinding in self.inputs:
-                    stage.setShaderInput(inputBinding, self.inputs[inputBinding])
+                if input_binding in self._inputs:
+                    stage.set_shader_input(input_binding,
+                                           self._inputs[input_binding])
                 else:
-                    ubo = self.ubos[inputBinding]
-                    ubo.bindTo(stage)
-
+                    ubo = self._ubos[input_binding]
+                    ubo.bind_to(stage)
 
             # Register all the new pipes, inputs and defines
-            for pipeName, pipeData in stage.getProducedPipes().iteritems():
-                self.pipes[pipeName] = pipeData
+            for pipe_name, pipe_data in stage.get_produced_pipes().iteritems():
+                self._pipes[pipe_name] = pipe_data
 
-            for defineName, defineData in stage.getProducedDefines().iteritems():
-                if defineName in self.defines:
-                    self.warn("Stage",stage,"overrides define",defineName)
-                self.defines[defineName] = defineData
+            for define_name, data in stage.get_produced_defines().iteritems():
+                if define_name in self._defines:
+                    self.warn("Stage", stage, "overrides define", define_name)
+                self._defines[define_name] = data
 
-            for inputName, inputData in stage.getProducedInputs().iteritems():
-                if inputName in self.inputs:
-                    self.warn("Stage",stage,"overrides input", inputName)
-                self.inputs[inputName] = inputData
+            for input_name, data in stage.get_produced_inputs().iteritems():
+                if input_name in self._inputs:
+                    self.warn("Stage", stage, "overrides input", input_name)
+                self.inputs[input_name] = data
 
-    def setShaders(self):
+    def set_shaders(self):
         """ This pass sets the shaders to all passes and also generates the
         shader auto config"""
 
         # First genereate the auto config
-        self._writeAutoconfig()
+        self._write_autoconfig()
 
         # Then generate the shaders
-        for stage in self.stages:
-            stage.setShaders()
+        for stage in self._stages:
+            stage.set_shaders()
 
-    def updateStages(self):
+    def update_stages(self):
         """ Calls the update method for each stage """
-        for stage in self.stages:
+        for stage in self._stages:
             stage.update()
-            
-    @protected
-    def _writeAutoconfig(self):
+
+    def _write_autoconfig(self):
         """ Writes the shader auto config, based on the defines specified by the
         different stages """
 
@@ -138,7 +128,7 @@ class StageManager(DebugObject):
         output += "// Autogenerated by RenderingPipeline\n"
         output += "// Do not edit! Your changes will be lost.\n\n"
 
-        for key, value in sorted(self.defines.iteritems()):
+        for key, value in sorted(self._defines.iteritems()):
             output += "#define " + key + " " + str(value) + "\n"
 
         output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"
@@ -148,6 +138,5 @@ class StageManager(DebugObject):
             with open("$$PipelineTemp/ShaderAutoConfig.include", "w") as handle:
                 handle.write(output)
         except Exception, msg:
-            self.error("Error writing shader autoconfig. Maybe no write-access?")
+            self.error("Error writing shader autoconfig:", msg)
             return
-

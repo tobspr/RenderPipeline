@@ -3,15 +3,13 @@
 from panda3d.core import GraphicsOutput, CardMaker, OmniBoundingVolume
 from panda3d.core import AuxBitplaneAttrib, NodePath, OrthographicLens
 from panda3d.core import Camera, Vec4, TransparencyAttrib, StencilAttrib
-from panda3d.core import ColorWriteAttrib, DepthWriteAttrib, Texture  
+from panda3d.core import ColorWriteAttrib, DepthWriteAttrib, Texture
 from panda3d.core import WindowProperties, FrameBufferProperties, GraphicsPipe
 
 # from MemoryMonitor import MemoryMonitor
 from DebugObject import DebugObject
 from ..Globals import Globals
 from ..GUI.BufferViewer import BufferViewer
-from FunctionDecorators import protected
-
 
 class RenderTargetType:
 
@@ -360,7 +358,6 @@ class RenderTarget(DebugObject):
         self._correctClears()
 
         bufferRegion.setClearStencilActive(False)
-        # self._sourceWindow.setClearStencilActive(False)
 
         # Set aux clears
         targetCheck = [
@@ -379,7 +376,9 @@ class RenderTarget(DebugObject):
 
         bufferRegion.setCamera(self._sourceCam)
         bufferRegion.setActive(1)
-        bufferRegion.setClearDepthActive(False)
+
+        if earlyZ:
+            bufferRegion.setClearDepthActive(False)
         bufferRegion.setSort(20)
 
         if earlyZ:
@@ -510,7 +509,7 @@ class RenderTarget(DebugObject):
                 # TODO: Doesn'T work with scattering yet
                 # tex.releaseAll()
 
-    @protected
+    
     def _makeFullscreenQuad(self):
         """ Create a quad which fills the whole screen """
         cm = CardMaker("BufferQuad")
@@ -528,7 +527,7 @@ class RenderTarget(DebugObject):
         quad.setBin("unsorted", 10)
         return quad
 
-    @protected
+    
     def _makeFullscreenCam(self):
         """ Creates an orthographic camera for this buffer """
         bufferCam = Camera("BufferCamera")
@@ -540,7 +539,7 @@ class RenderTarget(DebugObject):
         bufferCam.setCullBounds(OmniBoundingVolume())
         return bufferCam
 
-    @protected
+    
     def _findRegionForCamera(self):
         """ Finds the assigned region of the supplied camera """
         for i in range(self._sourceWindow.getNumDisplayRegions()):
@@ -550,7 +549,7 @@ class RenderTarget(DebugObject):
                 return dr
         return None
 
-    @protected
+    
     def _correctClears(self):
         """ Setups the clear values correctly for the buffer region """
         region = self._internalBuffer.getDisplayRegion(0)
@@ -570,19 +569,19 @@ class RenderTarget(DebugObject):
 
         return clears
 
-    @protected
+    
     def _setSizeShaderInput(self):
         """ Makes the buffer size available as shader input in the shader """
         if self._createOverlayQuad:
             asInput = Vec4(1.0 / self._width, 1.0 / self._height, self._width, self._height)
             self.setShaderInput("bufferSize", asInput)
 
-    @protected
+    
     def _registerBuffer(self):
         """ Internal method to register the buffer at the buffer viewer """
         BufferViewer.registerEntry(self)
 
-    @protected
+    
     def _createBuffer(self):
         """ Internal method to create the buffer object """
         self._width = Globals.resolution.x if self._width < 1 else self._width
@@ -597,7 +596,7 @@ class RenderTarget(DebugObject):
         if self._region is None:
             self._region = self._internalBuffer.makeDisplayRegion()
 
-    @protected
+    
     def _create(self):
         """ Attempts to create this buffer """
 

@@ -2,10 +2,9 @@
 from panda3d.core import Texture, Vec4, GeomEnums
 
 from DebugObject import DebugObject
-from FunctionDecorators import protected
 from ..Globals import Globals
-
 from ..GUI.BufferViewer import BufferViewer
+
 
 class Image(DebugObject):
 
@@ -13,42 +12,40 @@ class Image(DebugObject):
     track of all images """
 
     @classmethod
-    def createBuffer(self, name, size, cformat, ctype):
-        img = self("Image2D-" + name)
+    def create_buffer(cls, name, size, cformat, ctype):
+        img = cls("Image2D-" + name)
         img.tex = Texture(name)
-        img.tex.setupBufferTexture(size, cformat, ctype, GeomEnums.UHStatic)
+        img.tex.setup_buffer_texture(size, cformat, ctype, GeomEnums.UHStatic)
         img.register()
         return img
 
     @classmethod
-    def create2D(self, name, w, h, cformat, ctype):
-        img = self("Image2D-" + name)
+    def create_2d(cls, name, w, h, cformat, ctype):
+        img = cls("Image2D-" + name)
         img.tex = Texture(name)
-        img.tex.setup2dTexture( w, h, cformat, ctype)
+        img.tex.setup_2d_texture(w, h, cformat, ctype)
         img.register()
         return img
 
     @classmethod
-    def create2DArray(self, name, w, h, z, cformat, ctype):
-        img = self("Image2D-" + name)
+    def create_2d_array(cls, name, w, h, z, cformat, ctype):
+        img = cls("Image2D-" + name)
         img.tex = Texture(name)
-        img.tex.setup2dTextureArray( w, h, z, cformat, ctype)
+        img.tex.setup_2d_texture_array(w, h, z, cformat, ctype)
         img.register()
         return img
 
     @classmethod
-    def create3D(self, name, w, h, z, cformat, ctype):
-        img = self("Image3D-" + name)
+    def create_3d(cls, name, w, h, z, cformat, ctype):
+        img = cls("Image3D-" + name)
         img.tex = Texture(name)
-        img.tex.setup3dTexture( w, h, z, cformat, ctype)
+        img.tex.setup_3d_texture(w, h, z, cformat, ctype)
         img.register()
         return img
 
-    @protected
     def __init__(self, name):
-        """ Internal method """ 
+        """ Internal method to create a new image """
         DebugObject.__init__(self, name)
-        # self.debug("Constructed new image '" + name + "'")
         self.tex = None
 
     def destroy(self):
@@ -57,17 +54,18 @@ class Image(DebugObject):
 
     def write(self, pth):
         """ Writes the image to disk """
-        Globals.base.graphicsEngine.extractTextureData(self.tex, Globals.base.win.getGsg())
+        Globals.base.graphicsEngine.extractTextureData(self.tex,
+            Globals.base.win.getGsg())
         self.tex.write(pth)
 
     def register(self):
         """ Registers the image for memory tracking and debugging """
         BufferViewer.registerEntry(self)
 
-    def setClearColor(self, *args):
+    def set_clear_color(self, *args):
         """ Sets the clear color of the texture """
-        self.tex.setClearColor(Vec4(*args))
+        self.tex.set_clear_color(Vec4(*args))
 
-    def clearImage(self):
+    def clear_image(self):
         """ Clears the texture to the color specified with setClearColor """
-        self.tex.clearImage()
+        self.tex.clear_image()

@@ -4,14 +4,14 @@ from panda3d.core import Vec3
 from direct.stdpy.file import isfile, open
 
 from DebugObject import DebugObject
-from FunctionDecorators import protected
+
 
 class SettingsLoader(DebugObject):
 
-    """ This class is a base class for loading settings from ini files. 
-    Subclasses should implement _addDefaultSettings. Settings can be accessed as
-    attributes, saving is currently not supported. To load a ini file, loadFromFile
-    has to be called.
+    """ This class is a base class for loading settings from ini files.
+    Subclasses should implement _addDefaultSettings. Settings can be accessed
+    as attributes, saving is currently not supported. To load a ini file,
+    load_from_file has to be called.
     """
 
     class Setting:
@@ -21,90 +21,91 @@ class SettingsLoader(DebugObject):
         type and default-value of a property. Also it handles the casting
         of strings to the desired type """
 
-        def __init__(self, name, sType, default):
-            """ Constructs a new Setting. sType should be a generic type,
+        def __init__(self, name, setting_type, default):
+            """ Constructs a new Setting. setting_type should be a generic type,
             like int, bool, str. """
 
             self.name = name
-            self.type = sType
+            self.setting_type = setting_type
             self.default = default
             self.value = self.default
 
-        def setValue(self, val):
+        def set_value(self, val):
             """ Attempts to set the current value to val. When the value is not
             castable, the current value is set to the default value """
 
             try:
                 # Extra check for bools, as a string always is true when
                 # non-zero
-                if self.type == bool:
+                if isinstance(self.setting_type, bool):
                     val = val.lower()
                     if val not in ["true", "false"]:
                         return False
                     self.value = val == "true"
 
                 # Special check for vectors
-                elif self.type == Vec3:
-
+                elif isinstance(self.setting_type, Vec3):
                     values = [float(i) for i in val.strip().split(";")]
                     if len(values) != 3:
                         return False
-
                     self.value = Vec3(*values)
 
                 # Strings may use '"'
-                elif self.type == str:
-                    self.value = self.type(val).strip('"')
+                elif isinstance(self.setting_type, str):
+                    self.value = self.setting_type(val).strip('"\'')
 
+                # Otherwise just cast the type
                 else:
-                    self.value = self.type(val)
-
+                    self.value = self.setting_type(val)
             except:
                 self.value = self.default
                 return False
-
             return True
 
-        def getValue(self):
+        def get_value(self):
             """ Returns the current value """
-
             return self.value
+
+        def reset_to_default(self):
+            """ Resets the value to the default value """
+            self.value = self.default
+
+        def get_default(self):
+            """ Returns the default value of the setting """
+            return self.default
 
     def __init__(self, name, pipeline):
         """ Creates a new settings manager. Subclasses should implement
-        _addDefaultSettings to populate the settings. Otherwise this class
-        won't be able to read the options. With loadFromFile a ini file is
+        _add_default_settings to populate the settings. Otherwise this class
+        won't be able to read the options. With load_from_file an ini file is
         read, and the settings are filled with values from it. """
+        DebugObject.__init__(self, name)
+        self._settings = {}
+        self._pipeline = pipeline
+        self._file_loaded = False
+        self._add_default_settings()
 
-        DebugObject.__init__(self, "SettingsLoader")
-        self.settings = {}
-        self.pipeline = pipeline
-        self.fileLoaded = False
-        self._addDefaultSettings()
-
-    @protected
-    def _addSetting(self, name, sType, default):
+    def _add_setting(self, name, setting_type, default):
         """ Internal shortcut to add a setting to the list of supported
-        settings """
-        self.settings[name] = self.Setting(name, sType, default)
+        settings. """
+        self._settings[name] = self.Setting(name, setting_type, default)
 
-    @protected
-    def _addDefaultSettings(self):
+    def _add_default_settings(self):
         """ Child classes have to implement this. """
         raise NotImplementedError()
 
-    def isFileLoaded(self):
+    def is_file_loaded(self):
         """ Returns wheter the settings were loaded from a file, otherwise
         the settings will be the default settings """
-        return self.fileLoaded
+        return self._file_loaded
 
-    def setSetting(self, key, val):
+    def set_setting(self, key, val):
         """ Adjust a setting """
-        assert key in self.settings
-        self.settings[key].setValue(val)
-        setattr(self, key, self.settings[key].getValue())
+        assert key in self._settings
+        self._settings[key].set_value(val)
+        setattr(self, key, self._settings[key].get_value())
 
-    def loadFromFile(self, filename):
+    def load_from_file(self, filename):
         """ Attempts to load settings from a given file. When the file
         does not exist, nothing happens, and an error is printed """
 
@@ -114,15 +115,14 @@ class SettingsLoader(DebugObject):
             self.error("File not found:", filename)
             return
 
-        self.fileLoaded = True
-        handle = open(filename, "r")
-        content = handle.readlines()
-        handle.close()
+        self._file_loaded = True
+        with open(filename, "r") as handle:
+            content = handle.readlines()
 
         # Set to default settings
-        for name, setting in self.settings.iteritems():
-            setting.setValue(setting.default)
-            setattr(self, name, setting.default)
+        for name, setting in self._settings.iteritems():
+            setting.set_value(setting.get_default())
+            setattr(self, name, setting.get_default())
 
         # Read new settings
         for line in content:
@@ -138,15 +138,14 @@ class SettingsLoader(DebugObject):
                 continue
 
             parts = line.split("=")
-            settingName = parts[0].strip()
-            settingValue = ""
+            setting_name = parts[0].strip()
+            setting_value = ""
 
             if len(parts) > 1:
-                settingValue = parts[1].strip()
+                setting_value = parts[1].strip()
 
-            if settingName not in self.settings:
-                self.warn("Unrecognized setting:", settingName)
+            if setting_name not in self._settings:
+                self.warn("Unrecognized setting:", setting_name)
                 continue
 
-            self.settings[settingName].setValue(settingValue)
-            setattr(self, settingName, self.settings[settingName].getValue())
+            self.set_setting(setting_name, setting_value)

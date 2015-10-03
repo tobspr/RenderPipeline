@@ -1,0 +1,27 @@
+
+# Default effect file, used for all objects if not overridden
+
+Vertex:
+    template: default
+    inout:
+        uniform vec3 cameraPos;
+        uniform mat4 currentMVP;
+        in vec4 p3d_Normal;
+
+    transformation:
+        p3d_Position += vec3(0.1, 0.2, 0.3);
+
+
+Fragment.GBuffer:
+    template: default
+
+    material:
+        m.baseColor *= 2.0;
+        m.specular = 0.3;
+
+Fragment.Shadows:
+    template: default
+
+Fragment.Voxelize:
+    template: default
+

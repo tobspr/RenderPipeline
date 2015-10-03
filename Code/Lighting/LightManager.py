@@ -6,14 +6,16 @@ from panda3d.core import Vec2, LVecBase2i, Texture, PTAInt
 
 from ..Util.DebugObject import DebugObject
 from ..Util.Image import Image
-from ..Util.FunctionDecorators import protected
 
 from ..Globals import Globals
 
 from ..Stages.FlagUsedCellsStage import FlagUsedCellsStage
 from ..Stages.CollectUsedCellsStage import CollectUsedCellsStage
 from ..Stages.CullLightsStage import CullLightsStage
-from ..Stages.ForwardPlusStage import ForwardPlusStage
+from ..Stages.ApplyLightsStage import ApplyLightsStage
+from ..Stages.AmbientStage import AmbientStage
+from ..Stages.GBufferStage import GBufferStage
+from ..Stages.FinalStage import FinalStage
 
 from ..Interface.GPUCommandQueue import GPUCommandQueue
 from ..Interface.GPUCommand import GPUCommand
@@ -114,28 +116,28 @@ class LightManager(DebugObject):
         """ Reloads all assigned shaders """
         self.cmdQueue.reloadShaders()
 
-    @protected
+    
     def _initCommandQueue(self):
         self.cmdQueue = GPUCommandQueue(self.pipeline)
         self.cmdQueue.registerInput("LightData", self.imgLightData.tex)
 
-    @protected
+    
     def _initLightStorage(self):
         """ Creates the buffer to store the light data """
 
         perLightVec4s = 3
-        self.imgLightData = Image.createBuffer("LightData", 2**16 * perLightVec4s, Texture.TFloat, Texture.FRgba32)
-        self.imgLightData.setClearColor(0)
-        self.imgLightData.clearImage()
+        self.imgLightData = Image.create_buffer("LightData", 2**16 * perLightVec4s, Texture.TFloat, Texture.FRgba32)
+        self.imgLightData.set_clear_color(0)
+        self.imgLightData.clear_image()
 
         self.ptaMaxLightIndex = PTAInt.emptyArray(1)
         self.ptaMaxLightIndex[0] = 0
 
         # Register the buffer
-        self.pipeline.getStageMgr().addInput("AllLightsData", self.imgLightData.tex)
-        self.pipeline.getStageMgr().addInput("maxLightIndex", self.ptaMaxLightIndex)
+        self.pipeline.getStageMgr().add_input("AllLightsData", self.imgLightData.tex)
+        self.pipeline.getStageMgr().add_input("maxLightIndex", self.ptaMaxLightIndex)
 
-    @protected
+    
     def _computeTileSize(self):
         """ Computes how many tiles there are on screen """
 
@@ -145,20 +147,29 @@ class LightManager(DebugObject):
         self.debug("Tile size =",self.tileSize.x,"x",self.tileSize.y, ", Num tiles =",numTilesX,"x",numTilesY)
         self.numTiles = LVecBase2i(numTilesX, numTilesY)
 
-    @protected
+    
     def _initStages(self):
         """ Inits all required stages """
         self.flagCellsStage = FlagUsedCellsStage(self.pipeline)
-        self.flagCellsStage.setTileAmount(self.numTiles)
-        self.pipeline.getStageMgr().addStage(self.flagCellsStage)
+        self.flagCellsStage.set_tile_amount(self.numTiles)
+        self.pipeline.getStageMgr().add_stage(self.flagCellsStage)
 
         self.collectCellsStage = CollectUsedCellsStage(self.pipeline)
-        self.collectCellsStage.setTileAmount(self.numTiles)
-        self.pipeline.getStageMgr().addStage(self.collectCellsStage)
+        self.collectCellsStage.set_tile_amount(self.numTiles)
+        self.pipeline.getStageMgr().add_stage(self.collectCellsStage)
 
         self.cullLightsStage = CullLightsStage(self.pipeline)
-        self.cullLightsStage.setTileAmount(self.numTiles)
-        self.pipeline.getStageMgr().addStage(self.cullLightsStage)
+        self.cullLightsStage.set_tile_amount(self.numTiles)
+        self.pipeline.getStageMgr().add_stage(self.cullLightsStage)
 
-        self.forwardPlusStage = ForwardPlusStage(self)
-        self.pipeline.getStageMgr().addStage(self.forwardPlusStage)
+        self.applyLightsStage = ApplyLightsStage(self)
+        self.pipeline.getStageMgr().add_stage(self.applyLightsStage)
+
+        self.ambientStage = AmbientStage(self)
+        self.pipeline.getStageMgr().add_stage(self.ambientStage)
+
+        self.gbufferStage = GBufferStage(self)
+        self.pipeline.getStageMgr().add_stage(self.gbufferStage)
+
+        self.finalStage = FinalStage(self)
+        self.pipeline.getStageMgr().add_stage(self.finalStage)
