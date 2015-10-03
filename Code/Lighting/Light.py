@@ -26,12 +26,12 @@ class Light(DebugObject):
         and call this method, then add their own data """
         
         # Light Header
-        command.pushInt(self.getSlot())
-        command.pushInt(self.getLightType())
+        command.push_int(self.getSlot())
+        command.push_int(self.getLightType())
 
         # Light Data start
-        command.pushVec3(self.position)
-        command.pushVec3(self.color)
+        command.push_vec3(self.position)
+        command.push_vec3(self.color)
         
     def setPos(self, *args):
         """ Sets the light position. Accepts the same parameters as a Vec3 """

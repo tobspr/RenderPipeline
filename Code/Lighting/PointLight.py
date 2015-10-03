@@ -27,5 +27,5 @@ class PointLight(Light):
 
     def addToStream(self, command):
         Light.addToStream(self, command)
-        command.pushFloat(self.radius)
-        command.pushFloat(self.innerRadius)
+        command.push_float(self.radius)
+        command.push_float(self.innerRadius)

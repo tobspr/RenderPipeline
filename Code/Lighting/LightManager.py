@@ -68,8 +68,8 @@ class LightManager(DebugObject):
         light.addToStream(commandAdd)
 
         # Enforce a width of 4xVec4
-        commandAdd.enforceWidth(4 * 4 + 1)
-        self.cmdQueue.addCommand(commandAdd)        
+        commandAdd.enforce_width(4 * 4 + 1)
+        self.cmdQueue.add_command(commandAdd)        
 
         # Now that the light is attached, we can set the dirty flag, because
         # the newest data is now on the gpu
@@ -110,17 +110,16 @@ class LightManager(DebugObject):
         #     # TODO: Enqueue update command
         #     light.dirty = False
 
-        self.cmdQueue.processQueue()
+        self.cmdQueue.process_queue()
 
     def reloadShaders(self):
         """ Reloads all assigned shaders """
-        self.cmdQueue.reloadShaders()
+        self.cmdQueue.reload_shaders()
 
     
     def _initCommandQueue(self):
         self.cmdQueue = GPUCommandQueue(self.pipeline)
-        self.cmdQueue.registerInput("LightData", self.imgLightData.tex)
-
+        self.cmdQueue.register_input("LightData", self.imgLightData.tex)
     
     def _initLightStorage(self):
         """ Creates the buffer to store the light data """

@@ -1,35 +1,24 @@
 
-
-import hashlib
-import sys
-sys.path.insert(0, "../")
-
 from Effect import Effect
 
-
-class EffectLoader():
+class EffectLoader:
 
     def __init__(self):
         self.effectCache = {}
 
-    def loadEffect(self, filename, options):
+    def load_effect(self, filename, options):
         """ Loads an effect from a given filename with the specified options """
-        effectHash = Effect._generateHash(filename, options)
+        effect_hash = Effect._generate_hash(filename, options)
 
         # Check if the effect already exists in the cache
-        if effectHash in self.effectCache:
-            return self.effectCache[effectHash]
+        if effect_hash in self.effectCache:
+            return self.effectCache[effect_hash]
 
         effect = Effect()
-        effect.setOptions(options)
+        effect.set_options(options)
 
         if not effect.load(filename):
             print "Could not load effect!"
             return False
 
         return effect
-
-if __name__ == "__main__":
-    
-    l = EffectLoader()
-    l.loadEffect("../../Effects/Default.yaml", {})
