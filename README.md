@@ -1,8 +1,6 @@
 ## Deferred Render Pipeline
 
-**NOTE:** I recently created a new master to clean up the repository. Please
-use a clean checkout of the new master branch to continue to work with the pipeline!
-
+**IMPORTANT**: I am currently working on refactoring the pipeline. You can check the current progress in the "refactoring_beta" branch, although it is still very experimental, however, there will be no commits to the master branch until the refactoring is done!
 
 
 This is my deferred render pipeline, implemented in Panda3D. This 
