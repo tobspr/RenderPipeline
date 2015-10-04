@@ -11,61 +11,61 @@ class MovementController:
     view the demo scenes. """
 
     def __init__(self, showbase):
-        self.showbase = showbase
-        self.movement = [0, 0, 0]
-        self.velocity = Vec3(0.0)
-        self.hprMovement = [0,0]
-        self.speed = 1.0
-        self.initialPosition = Vec3(0)
-        self.initialDestination = Vec3(0)
-        self.initialHpr = Vec3(0)
-        self.mouseEnabled = False
-        self.lastMousePos = [0,0]
-        self.mouseSensivity = 0.7
-        self.keyboardHprSpeed = 0.8
-        self.useHpr = False
-        self.smoothness = 0.8
-        self.smoothness = 0.0
-        # self.smoothness = 0.0
+        self._showbase = showbase
+        self._movement = [0, 0, 0]
+        self._velocity = Vec3(0.0)
+        self._hpr_movement = [0, 0]
+        self._speed = 1.0
+        self._initial_position = Vec3(0)
+        self._initial_destination = Vec3(0)
+        self._initial_hpr = Vec3(0)
+        self._mouse_enabled = False
+        self._last_mouse_pos = [0, 0]
+        self._mouse_sensivity = 0.7
+        self._keyboard_hpr_speed = 0.8
+        self._use_hpr = False
+        self._smoothness = 0.8
+        self._smoothness = 0.0
+        # self._smoothness = 0.0
 
-    def setInitialPosition(self, pos, target):
+    def set_initial_position(self, pos, target):
         """ Sets the initial camera position """
-        self.initialPosition = pos
-        self.initialDestination = target
-        self.useHpr = False
-        self._resetToInitial()
+        self._initial_position = pos
+        self._initial_destination = target
+        self._use_hpr = False
+        self._reset_to_initial()
 
-    def setInitialPositionHpr(self, pos, hpr):
+    def set_initial_position_hpr(self, pos, hpr):
         """ Sets the initial camera position """
-        self.initialPosition = pos
-        self.initialHpr = hpr
-        self.useHpr = True
-        self._resetToInitial()
+        self._initial_position = pos
+        self._initial_hpr = hpr
+        self._use_hpr = True
+        self._reset_to_initial()
 
-    def _resetToInitial(self):
+    def _reset_to_initial(self):
         """ Resets the camera to the initial position """
-        self.showbase.camera.setPos(self.initialPosition)
+        self._showbase.camera.set_pos(self._initial_position)
 
-        if self.useHpr:
-            self.showbase.camera.setHpr(self.initialHpr)
+        if self._use_hpr:
+            self._showbase.camera.set_hpr(self._initial_hpr)
         else:
-            self.showbase.camera.lookAt(
-                self.initialDestination.x, self.initialDestination.y, self.initialDestination.z)
+            self._showbase.camera.look_at(
+                self._initial_destination.x, self._initial_destination.y, self._initial_destination.z)
 
-    def _setMovement(self, direction, amount):
-        self.movement[direction] = amount
+    def _set_movement(self, direction, amount):
+        self._movement[direction] = amount
 
-    def _setHprMovement(self, direction, amount):
-        self.hprMovement[direction] = amount
+    def _set_hpr_movement(self, direction, amount):
+        self._hpr_movement[direction] = amount
 
-    def _setMouseEnabled(self, enabled):
-        self.mouseEnabled = enabled
+    def _set_mouse_enabled(self, enabled):
+        self._mouse_enabled = enabled
 
-    def _increaseSpeed(self):
-        self.speed *= 1.4
+    def _increase_speed(self):
+        self._speed *= 1.4
 
-    def _decreaseSpeed(self):
-        self.speed *= 0.6
+    def _decrease_speed(self):
+        self._speed *= 0.6
 
     def unbind(self):
         """ Unbinds the movement controler and restores the previous state """
@@ -76,116 +76,115 @@ class MovementController:
         """ Attaches the movement controller and inits the keybindings """
 
         # x
-        self.showbase.accept("w",       self._setMovement, [0, 1])
-        self.showbase.accept("w-up",    self._setMovement, [0, 0])
-        self.showbase.accept("s",       self._setMovement, [0, -1])
-        self.showbase.accept("s-up",    self._setMovement, [0, 0])
+        self._showbase.accept("w",       self._set_movement, [0, 1])
+        self._showbase.accept("w-up",    self._set_movement, [0, 0])
+        self._showbase.accept("s",       self._set_movement, [0, -1])
+        self._showbase.accept("s-up",    self._set_movement, [0, 0])
 
         # y
-        self.showbase.accept("a",       self._setMovement, [1, -1])
-        self.showbase.accept("a-up",    self._setMovement, [1, 0])
-        self.showbase.accept("d",       self._setMovement, [1, 1])
-        self.showbase.accept("d-up",    self._setMovement, [1, 0])
+        self._showbase.accept("a",       self._set_movement, [1, -1])
+        self._showbase.accept("a-up",    self._set_movement, [1, 0])
+        self._showbase.accept("d",       self._set_movement, [1, 1])
+        self._showbase.accept("d-up",    self._set_movement, [1, 0])
 
         # z
-        self.showbase.accept("space",   self._setMovement, [2, 1])
-        self.showbase.accept("space-up", self._setMovement, [2, 0])
-        self.showbase.accept("shift",   self._setMovement, [2, -1])
-        self.showbase.accept("shift-up", self._setMovement, [2, 0])
+        self._showbase.accept("space",   self._set_movement, [2, 1])
+        self._showbase.accept("space-up", self._set_movement, [2, 0])
+        self._showbase.accept("shift",   self._set_movement, [2, -1])
+        self._showbase.accept("shift-up", self._set_movement, [2, 0])
 
         # wireframe + debug + buffer viewer
-        # self.showbase.accept("f3", self.showbase.toggleWireframe)
-        self.showbase.accept("p",  self._showDebugOutput)
+        # self._showbase.accept("f3", self._showbase.toggle_wireframe)
+        self._showbase.accept("p",  self._show_debug_output)
 
         # mouse
-        self.showbase.accept("mouse1",    self._setMouseEnabled, [True])
-        self.showbase.accept("mouse1-up", self._setMouseEnabled, [False])
+        self._showbase.accept("mouse1",    self._set_mouse_enabled, [True])
+        self._showbase.accept("mouse1-up", self._set_mouse_enabled, [False])
 
         # arrow mouse navigation
-        self.showbase.accept("arrow_up",        self._setHprMovement, [1, 1])
-        self.showbase.accept("arrow_up-up",     self._setHprMovement, [1, 0])
-        self.showbase.accept("arrow_down",      self._setHprMovement, [1, -1])
-        self.showbase.accept("arrow_down-up",   self._setHprMovement, [1, 0])
-        self.showbase.accept("arrow_left",      self._setHprMovement, [0, 1])
-        self.showbase.accept("arrow_left-up",   self._setHprMovement, [0, 0])
-        self.showbase.accept("arrow_right",     self._setHprMovement, [0, -1])
-        self.showbase.accept("arrow_right-up",  self._setHprMovement, [0, 0])
+        self._showbase.accept("arrow_up",        self._set_hpr_movement, [1, 1])
+        self._showbase.accept("arrow_up-up",     self._set_hpr_movement, [1, 0])
+        self._showbase.accept("arrow_down",      self._set_hpr_movement, [1, -1])
+        self._showbase.accept("arrow_down-up",   self._set_hpr_movement, [1, 0])
+        self._showbase.accept("arrow_left",      self._set_hpr_movement, [0, 1])
+        self._showbase.accept("arrow_left-up",   self._set_hpr_movement, [0, 0])
+        self._showbase.accept("arrow_right",     self._set_hpr_movement, [0, -1])
+        self._showbase.accept("arrow_right-up",  self._set_hpr_movement, [0, 0])
 
         # increase / decrease speed
-        self.showbase.accept("+", self._increaseSpeed)
-        self.showbase.accept("-", self._decreaseSpeed)
+        self._showbase.accept("+", self._increase_speed)
+        self._showbase.accept("-", self._decrease_speed)
 
         # disable modifier buttons to be able to move while pressing shift for
         # example
-        self.showbase.mouseWatcherNode.setModifierButtons(ModifierButtons())
-        self.showbase.buttonThrowers[
-            0].node().setModifierButtons(ModifierButtons())
+        self._showbase.mouseWatcherNode.set_modifier_buttons(ModifierButtons())
+        self._showbase.buttonThrowers[0].node().set_modifier_buttons(ModifierButtons())
 
         # disable pandas builtin mouse control
-        self.showbase.disableMouse()
+        self._showbase.disableMouse()
 
         # add ourself as an update task
-        self.showbase.addTask(
+        self._showbase.addTask(
             self._update, "updateMovementController", priority=-19000)
 
 
-        self.showbase.accept("1", PStatClient.connect)
-        self.showbase.accept("3", self._resetToInitial)
+        self._showbase.accept("1", PStatClient.connect)
+        self._showbase.accept("3", self._reset_to_initial)
 
     def _update(self, task):
         """ Internal update method """
 
         # Update mouse first
-        if self.showbase.mouseWatcherNode.hasMouse():
-            x = self.showbase.mouseWatcherNode.getMouseX()
-            y = self.showbase.mouseWatcherNode.getMouseY()
-            self.currentMousePos = [x * 90 * self.mouseSensivity, y * 70 * self.mouseSensivity]
+        if self._showbase.mouseWatcherNode.has_mouse():
+            x = self._showbase.mouseWatcherNode.get_mouse_x()
+            y = self._showbase.mouseWatcherNode.get_mouse_y()
+            self._current_mouse_pos = [x * 90 * self._mouse_sensivity, y * 70 * self._mouse_sensivity]
 
-            if self.mouseEnabled:
-                diffx = self.lastMousePos[0] - self.currentMousePos[0]
-                diffy = self.lastMousePos[1] - self.currentMousePos[1]
+            if self._mouse_enabled:
+                diffx = self._last_mouse_pos[0] - self._current_mouse_pos[0]
+                diffy = self._last_mouse_pos[1] - self._current_mouse_pos[1]
 
                 # no move on the beginning
-                if self.lastMousePos[0] == 0 and self.lastMousePos[1] == 0:
+                if self._last_mouse_pos[0] == 0 and self._last_mouse_pos[1] == 0:
                     diffx = 0
                     diffy = 0
 
-                self.showbase.camera.setH(self.showbase.camera.getH() + diffx)
-                self.showbase.camera.setP(self.showbase.camera.getP() - diffy)
+                self._showbase.camera.set_h(self._showbase.camera.get_h() + diffx)
+                self._showbase.camera.set_p(self._showbase.camera.get_p() - diffy)
 
-            self.lastMousePos = self.currentMousePos[:]
+            self._last_mouse_pos = self._current_mouse_pos[:]
 
         # Compute movement in render space
-        movementDirection = (Vec3(self.movement[1], self.movement[0], 0)
-                             * self.speed
-                             * self.showbase.taskMgr.globalClock.getDt() * 100.0)
+        movementDirection = (Vec3(self._movement[1], self._movement[0], 0)
+                             * self._speed
+                             * self._showbase.taskMgr.globalClock.get_dt() * 100.0)
 
         # Transform by camera direction
-        cameraQuaternion = self.showbase.camera.getQuat(self.showbase.render)
+        cameraQuaternion = self._showbase.camera.get_quat(self._showbase.render)
         translatedDirection = cameraQuaternion.xform(movementDirection)
       
 
         # zforce is independent of camera direction
-        translatedDirection.addZ(
-            self.movement[2] * self.showbase.taskMgr.globalClock.getDt() * 40.0 * self.speed)
+        translatedDirection.add_z(
+            self._movement[2] * self._showbase.taskMgr.globalClock.get_dt() * 40.0 * self._speed)
 
-        self.velocity += translatedDirection*0.15
+        self._velocity += translatedDirection*0.15
 
         # apply new position
-        self.showbase.camera.setPos(
-            self.showbase.camera.getPos() + self.velocity)
+        self._showbase.camera.set_pos(
+            self._showbase.camera.get_pos() + self._velocity)
         
-        self.velocity *= self.smoothness
+        self._velocity *= self._smoothness
 
         # transform rotation (keyboard keys)
-        rotationSpeed = self.keyboardHprSpeed * 100.0 * self.showbase.taskMgr.globalClock.getDt()
-        self.showbase.camera.setHpr(self.showbase.camera.getHpr() + Vec3(self.hprMovement[0],self.hprMovement[1],0) * rotationSpeed )
+        rotationSpeed = self._keyboard_hpr_speed * 100.0 * self._showbase.taskMgr.globalClock.get_dt()
+        self._showbase.camera.set_hpr(self._showbase.camera.get_hpr() + Vec3(self._hpr_movement[0],self._hpr_movement[1],0) * rotationSpeed )
 
         return task.cont
 
 
 
-    def _showDebugOutput(self):
+    def _show_debug_output(self):
         """ Lists the available debug options """
         print "\n" * 5
         print "DEBUG MENU"
@@ -221,18 +220,18 @@ class MovementController:
         # frame rate meter
         elif selectedOption == 2:
             print "Toggling frame rate meter .."
-            self.showbase.setFrameRateMeter(not self.showbase.frameRateMeter)
+            self._showbase.setFrameRateMeter(not self._showbase.frameRateMeter)
 
         # initial position
         elif selectedOption == 3:
             print "Reseting camera position / hpr .."
-            self._resetToInitial()
+            self._reset_to_initial()
 
         # display camera pos
         elif selectedOption == 4:
             print "Debug information:"
-            campos = self.showbase.cam.getPos(self.showbase.render)
-            camrot = self.showbase.cam.getHpr(self.showbase.render)
+            campos = self._showbase.cam.get_pos(self._showbase.render)
+            camrot = self._showbase.cam.get_hpr(self._showbase.render)
             print "camPos = Vec3(" + str(round(campos.x, 2)) + "," + str(round(campos.y, 2)) + "," + str(round(campos.z, 2)) + ")"
             print "camHpr = Vec3(" + str(round(camrot.x, 2)) + "," + str(round(camrot.y, 2)) + "," + str(round(camrot.z, 2)) + ")"
 
@@ -241,21 +240,21 @@ class MovementController:
         elif selectedOption == 5:
             print "SCENE GRAPH:"
             print "-" * 50
-            self.showbase.render.ls()
+            self._showbase.render.ls()
             print "-" * 50
             print
             print "ANALYZED:"
             print "-" * 50
-            self.showbase.render.analyze()
+            self._showbase.render.analyze()
             print "-" * 50
 
         # placement window
         elif selectedOption == 6:
             print "Opening placement window. You need tkinter installed to be able to use it"
-            self.showbase.render.place()
+            self._showbase.render.place()
             # print "It seems .place() is currently not working. Sorry!!"
-    
+
         # vram analyszs
         elif selectedOption == 7:
             print "Analyzing VRAM ..."
-            MemoryMonitor.analyzeMemory()
+            MemoryMonitor.analyze_memory()

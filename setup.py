@@ -72,6 +72,8 @@ exec_python_file("Data/NormalQuantization/generate.py")
 print_step("Extracting .gz files ...")
 extract_gz_files("Data/BuiltinModels/")
 
+print_step("Filtering default cubemap")
+exec_python_file("Data/DefaultCubemap/filter.py")
 
 # Further setup code follows here
 

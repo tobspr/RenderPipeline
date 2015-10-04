@@ -47,7 +47,7 @@ class GBufferStage(RenderStage):
             self._prepass_cam.set_name("EarlyZCamera")
             self._prepass_cam_node = Globals.base.camera.attach_new_node(
                 self._prepass_cam)
-            Globals.render.setTag("EarlyZShader", "Default")
+            Globals.render.set_tag("EarlyZShader", "Default")
         else:
             self._prepass_cam = None
 

@@ -40,12 +40,11 @@ class CullLightsStage(RenderStage):
 
     def create(self):
         max_cells = self._tile_amount.x * self._tile_amount.y * \
-            self._pipeline.get_settings().lightGridSlices
+            self._pipeline.get_settings().LightGridSlices
 
         self._num_rows = int(math.ceil(max_cells / 512.0))
         self._target = self._create_target("CullLights")
         self._target.set_size(512, self._num_rows)
-        # self._target.addColorTexture()
         self._target.prepare_offscreen_buffer()
         self._target.set_clear_color(color=Vec4(0.2, 0.6, 1.0, 1.0))
 
@@ -56,10 +55,6 @@ class CullLightsStage(RenderStage):
 
         self._target.set_shader_input("perCellLightsBuffer",
             self._per_cell_lights.get_texture())
-
-    def update(self):
-        # self._per_cell_lights.clearImage()
-        pass
 
     def set_shaders(self):
         self._target.set_shader(self._load_shader("Stages/CullLights.vertex",

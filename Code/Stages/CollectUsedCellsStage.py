@@ -31,7 +31,7 @@ class CollectUsedCellsStage(RenderStage):
         self._target = self._create_target("CollectUsedCells")
         self._target.set_size(self._tile_amount.x, self._tile_amount.y)
         self._target.prepare_offscreen_buffer()
-        num_slices = self._pipeline.get_settings().lightGridSlices
+        num_slices = self._pipeline.get_settings().LightGridSlices
         max_cells = self._tile_amount.x * self._tile_amount.y * num_slices
         self.debug("Allocating", max_cells, "cells")
 

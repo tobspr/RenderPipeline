@@ -30,7 +30,7 @@ class OnscreenDebugger(DebugObject):
         """ Creates the gui components """
 
         # Component values
-        self._debugger_width = 380
+        self._debugger_width = 470
         self._debugger_height = 800
 
         # Create states
@@ -48,15 +48,15 @@ class OnscreenDebugger(DebugObject):
     def _create_topbar(self):
         """ Creates the topbar """
         self._pipeline_logo = BetterOnscreenImage(image="Data/GUI/OnscreenDebugger/PipelineLogo.png", 
-                                                  x=40, y=20,
+                                                  x=20, y=30,
                                                   parent=self._fullscreen_node)
         self._pipeline_logo_text = BetterOnscreenImage(image="Data/GUI/OnscreenDebugger/PipelineLogoText.png", 
-                                                       x=144, y=48,
+                                                       x=134, y=60,
                                                        parent=self._fullscreen_node)
         self._topbar = DirectFrame(parent=self._fullscreen_node,
                                    frameSize=(5000, 0, 0, -22),
                                    pos=(0, 0, 0),
-                                   frameColor=(0.094, 0.094, 0.094, 1))
+                                   frameColor=(0.168, 0.168, 0.168, 1))
         # Hide the logo text in the beginning
         self._pipeline_logo_text.set_pos(150, -100)
 
@@ -64,16 +64,17 @@ class OnscreenDebugger(DebugObject):
         """ Creates the debugger contents """
 
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
-        self._debugger_node.set_z(self._debugger_height)
+        self._debugger_node.set_x(-self._debugger_width)
         self._debugger_bg = DirectFrame(parent=self._debugger_node,
                                         frameSize=(self._debugger_width, 0, 0,
-                                                   -self._debugger_height + 20),
-                                        pos=(40, 0, 0),
-                                        frameColor=(0.05, 0.05, 0.05, 1))
-        self._debugger_bg_bottom = DirectFrame(parent=self._debugger_node,
-                                               frameSize=(self._debugger_width, 0, 0, -15),
-                                               pos=(40, 0, -self._debugger_height + 20),
-                                               frameColor=(0.05, 0.05, 0.05, 1))
+                                                   -2000),
+                                        pos=(0, 0, 0),
+                                        frameColor=(0.12, 0.12, 0.12, 1))
+        self._debugger_bg_bottom = DirectFrame(parent=self._fullscreen_node,
+                                               # frameSize=(self._debugger_width, 0, 0, -15),
+                                               frameSize=(self._debugger_width, 0, 0, -1),
+                                               pos=(0, 0, -19),
+                                               frameColor=(0.168, 0.168, 0.168, 1))
 
     def _init_keybindings(self):
         """ Inits the debugger keybindings """
@@ -86,34 +87,38 @@ class OnscreenDebugger(DebugObject):
         if self._debugger_interval is not None:
             self._debugger_interval.finish()
 
+
+
         if self._debugger_visible:
             # Hide Debugger
             self._debugger_interval = Sequence(
                 Parallel(
-                    self._debugger_node.posInterval(0.16,
-                                                     Vec3(0, 0, self._debugger_height),
+                    self._debugger_node.posInterval(0.12,
+                                                     Vec3(-self._debugger_width, 0, 0),
                                                      Vec3(0, 0, 0), blendType="easeInOut"),
                     self._pipeline_logo_text.pos_interval(0.16,
                                                           self._pipeline_logo_text.get_initial_pos() + Vec3(0, 0, 100),
                                                           self._pipeline_logo_text.get_initial_pos, blendType="easeInOut"),
-                    self._pipeline_logo.hpr_interval(0.2, Vec3(0, 0, 0),
+                    self._pipeline_logo.hpr_interval(0.12, Vec3(0, 0, 0),
                                                      Vec3(0, 0, 90),
                                                      blendType="easeInOut"),
+                    self._debugger_bg_bottom.scaleInterval(0.12, Vec3(1,1,1), Vec3(1,1,120), blendType="easeInOut")
                 ))
         else:
             # Show debugger
             self._debugger_interval = Sequence(
                 Parallel(
-                    self._pipeline_logo.hpr_interval(0.2, Vec3(0, 0, 90),
+                    self._pipeline_logo.hpr_interval(0.12, Vec3(0, 0, 90),
                                                      Vec3(0, 0, 0),
                                                      blendType="easeInOut"),
-                    self._pipeline_logo_text.pos_interval(0.16, 
+                    self._pipeline_logo_text.pos_interval(0.12, 
                                                           self._pipeline_logo_text.get_initial_pos(),
                                                           self._pipeline_logo_text.get_initial_pos()  + Vec3(0, 0, 100),
                                                           blendType="easeInOut"),
-                    self._debugger_node.posInterval(0.16, Vec3(0, 0, 0),
-                                                     Vec3(0, 0, self._debugger_height),
-                                                     blendType="easeInOut")
+                    self._debugger_node.posInterval(0.12, Vec3(0, 0, 0),
+                                                     Vec3(-self._debugger_width, 0),
+                                                     blendType="easeInOut"),
+                    self._debugger_bg_bottom.scaleInterval(0.12, Vec3(1,1,120), Vec3(1,1,1), blendType="easeInOut")
                 ))
         self._debugger_interval.start()
         self._debugger_visible = not self._debugger_visible

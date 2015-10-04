@@ -19,7 +19,7 @@ class AmbientStage(RenderStage):
                 "GBuffer2"]
 
     def get_required_inputs(self):
-        return ["mainCam", "mainRender"]
+        return ["mainCam", "mainRender", "DefaultEnvmap", "cameraPosition"]
 
     def create(self):
         self._target = self._create_target("AmbientStage")

@@ -16,3 +16,4 @@ CodeConventions.txt
 Documentation/
 *.bam
 *.egg
+Data/DefaultCubemap/Filtered/

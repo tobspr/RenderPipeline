@@ -40,15 +40,21 @@ class RenderPipeline(DebugObject):
 
     def get_stage_mgr(self):
         """ Returns a handle to the stage manager object """
-        return self.stage_mgr
+        return self._stage_mgr
 
     def add_light(self, light):
         """ Adds a new light """
-        self.light_mgr.add_light(light)
+        self._light_mgr.add_light(light)
 
     def get_settings(self):
         """ Returns a handle to the settings"""
         return self._settings
+
+    def create_default_skybox(self, size=40000):
+        """ Returns the default skybox """
+        skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox.egg.bam")
+        skybox.set_scale(size)
+        skybox.reparentTo(Globals.render)
 
     def create(self):
         """ This creates the pipeline, and setups all buffers. It also constructs
@@ -70,24 +76,24 @@ class RenderPipeline(DebugObject):
         self._adjust_camera_settings()
 
         # Create the debugger
-        self.debugger = OnscreenDebugger(self)
+        self._debugger = OnscreenDebugger(self)
 
         # Create the stage manager
-        self.stage_mgr = StageManager(self)
+        self._stage_mgr = StageManager(self)
         self._create_common_inputs()
 
         # Create the light manager
-        self.light_mgr = LightManager(self)
+        self._light_mgr = LightManager(self)
 
-        self.stage_mgr.setup()
+        self._stage_mgr.setup()
         self._create_common_defines()
         self.reload_shaders()
         self._init_bindings()
 
     def reload_shaders(self):
         """ Reloads all shaders """
-        self.stage_mgr.set_shaders()
-        self.light_mgr.reload_shaders()
+        self._stage_mgr.set_shaders()
+        self._light_mgr.reload_shaders()
 
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
@@ -98,8 +104,8 @@ class RenderPipeline(DebugObject):
     def _pre_render_update(self, task):
         """ Update task which gets called before the update """
         self._update_common_inputs()
-        self.stage_mgr.update_stages()
-        self.light_mgr.update()
+        self._stage_mgr.update_stages()
+        self._light_mgr.update()
         return task.cont
 
     def _post_render_update(self, task):
@@ -108,7 +114,7 @@ class RenderPipeline(DebugObject):
 
     def _create_common_defines(self):
         """ Creates commonly used defines for the shader auto config """
-        define = self.stage_mgr.define
+        define = self._stage_mgr.define
 
         # 3D viewport size
         define("WINDOW_WIDTH", Globals.resolution.x)
@@ -118,21 +124,21 @@ class RenderPipeline(DebugObject):
         define("CAMERA_NEAR", round(Globals.base.camLens.get_near(), 5))
         define("CAMERA_FAR", round(Globals.base.camLens.get_far(), 5))
 
-        self.light_mgr.init_defines()
+        self._light_mgr.init_defines()
 
     def _create_common_inputs(self):
         """ Creates commonly used inputs """
 
-        self.pta_camera_pos = PTAVecBase3f.empty_array(1)
+        self._pta_camera_pos = PTAVecBase3f.empty_array(1)
 
-        self.stage_mgr.add_input("mainCam", self._showbase.cam)
-        self.stage_mgr.add_input("mainRender", self._showbase.render)
-        self.stage_mgr.add_input("cameraPosition", self.pta_camera_pos)
+        self._stage_mgr.add_input("mainCam", self._showbase.cam)
+        self._stage_mgr.add_input("mainRender", self._showbase.render)
+        self._stage_mgr.add_input("cameraPosition", self._pta_camera_pos)
 
-        self.pta_current_view_mat = PTAMat4.empty_array(1)
-        self.stage_mgr.add_input("currentViewMat", self.pta_current_view_mat)
+        self._pta_current_view_mat = PTAMat4.empty_array(1)
+        self._stage_mgr.add_input("currentViewMat", self._pta_current_view_mat)
 
-        self.coordinate_converter = TransformState.make_mat(
+        self._coordinate_converter = TransformState.make_mat(
             Mat4.convert_mat(CSYupRight, CSZupRight))
 
         self._load_common_textures()
@@ -140,6 +146,7 @@ class RenderPipeline(DebugObject):
     def _load_common_textures(self):
         """ Loads commonly used textures """
 
+        # Load the normal quantization tex
         quant_tex = Globals.loader.loadTexture(
             "Data/NormalQuantization/NormalQuantizationTex-#.png",
             readMipmaps=True)
@@ -150,13 +157,23 @@ class RenderPipeline(DebugObject):
         quant_tex.set_format(Texture.FRgba16)
         self._showbase.render.set_shader_input("NormalQuantizationTex", quant_tex)
 
+        # Load the fallback cubemap
+        self.debug("Loading environment cubemap")
+        envmap = Globals.loader.loadCubeMap("Data/DefaultCubemap/Filtered/#-#.png", readMipmaps=True)
+        envmap.set_minfilter(Texture.FTLinearMipmapLinear)
+        envmap.set_magfilter(Texture.FTLinear)
+        envmap.set_wrap_u(Texture.WMRepeat)
+        envmap.set_wrap_v(Texture.WMRepeat)
+        envmap.set_wrap_w(Texture.WMRepeat)
+        self._stage_mgr.add_input("DefaultEnvmap", envmap)
+
     def _update_common_inputs(self):
         """ Updates the commonly used inputs """
 
-        self.pta_current_view_mat[0] = UnalignedLMatrix4f(
-            self.coordinate_converter.invert_compose(
+        self._pta_current_view_mat[0] = UnalignedLMatrix4f(
+            self._coordinate_converter.invert_compose(
                 self._showbase.render.get_transform(self._showbase.cam)).get_mat())
-        self.pta_camera_pos[0] = self._showbase.camera.get_pos(render)
+        self._pta_camera_pos[0] = self._showbase.camera.get_pos(render)
 
     def _adjust_camera_settings(self):
         """ Sets the default camera settings """

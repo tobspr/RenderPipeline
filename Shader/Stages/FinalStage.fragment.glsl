@@ -15,8 +15,8 @@ void main() {
     
 
     // Vignette
-   // correctedColor *= 1.0 - smoothstep(0, 1, 
-   //          (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.3, 1.0) * 1.1  ) - 0.2) ) * 0.8;
+   correctedColor *= 1.0 - smoothstep(0, 1, 
+            (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.3, 1.0) * 1.1  ) - 0.2) ) * 0.5;
 
     result.xyz = correctedColor;
     result.w = 1.0;

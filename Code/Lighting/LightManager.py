@@ -1,8 +1,7 @@
 
 import math
-import itertools
 
-from panda3d.core import Vec2, LVecBase2i, Texture, PTAInt
+from panda3d.core import LVecBase2i, Texture, PTAInt
 
 from ..Util.DebugObject import DebugObject
 from ..Util.Image import Image
@@ -22,31 +21,35 @@ from ..Interface.GPUCommand import GPUCommand
 
 from Light import Light
 
+
 class LightManager(DebugObject):
 
+    """ This class manages all the lights """
+
+    _MAX_LIGHTS = 2 ** 16
+
     def __init__(self, pipeline):
+        """ Constructs the light manager """
         DebugObject.__init__(self, "LightManager")
-        self.pipeline = pipeline
+        self._pipeline = pipeline
 
-        self.lights = [None] * 2**16
+        self._lights = [None] * self._MAX_LIGHTS
 
-        self._computeTileSize()
-        self._initLightStorage()
-        self._initCommandQueue()
-        self._initStages()
-
+        self._compute_tile_size()
+        self._init_light_storage()
+        self._init_command_queue()
+        self._init_stages()
 
     def init_defines(self):
         """ Inits the common defines """
-        define = self.pipeline.get_stage_mgr().define
+        define = self._pipeline.get_stage_mgr().define
+        settings = self._pipeline.get_settings()
 
-        settings = self.pipeline.get_settings()
-
-        define("LC_TILE_SIZE_X", settings.lightGridSizeX)
-        define("LC_TILE_SIZE_Y", settings.lightGridSizeY)
-        define("LC_TILE_AMOUNT_X", self.numTiles.x)
-        define("LC_TILE_AMOUNT_Y", self.numTiles.y)
-        define("LC_TILE_SLICES", settings.lightGridSlices)
+        define("LC_TILE_SIZE_X", settings.LightGridSizeX)
+        define("LC_TILE_SIZE_Y", settings.LightGridSizeY)
+        define("LC_TILE_AMOUNT_X", self._num_tiles.x)
+        define("LC_TILE_AMOUNT_Y", self._num_tiles.y)
+        define("LC_TILE_SLICES", settings.LightGridSlices)
 
     def add_light(self, light):
         """ Adds a new light """
@@ -54,121 +57,123 @@ class LightManager(DebugObject):
         assert(isinstance(light, Light))
 
         # Find the first free slot
-        slot = next((i for i, x in enumerate(self.lights) if x is None), None)
+        slot = next((i for i, x in enumerate(self._lights) if x is None), None)
 
         if slot is None:
             return self.error("Light limit of", 2**16, "reached!")
 
         # Store slot in light, so we can access it later
         light.set_slot(slot)
-        self.lights[slot] = light
+        self._lights[slot] = light
 
         # Create the command and attach it
-        commandAdd = GPUCommand(GPUCommand.CMD_STORE_LIGHT)
-        light.add_to_stream(commandAdd)
+        command_add = GPUCommand(GPUCommand.CMD_STORE_LIGHT)
+        light.add_to_stream(command_add)
 
         # Enforce a width of 4xVec4
-        commandAdd.enforce_width(4 * 4 + 1)
-        self.cmdQueue.add_command(commandAdd)        
+        command_add.enforce_width(4 * 4 + 1)
+        self._cmd_queue.add_command(command_add)        
 
         # Now that the light is attached, we can set the dirty flag, because
         # the newest data is now on the gpu
         light._unset_dirty()
 
         # Update max light index
-        if slot > self.ptaMaxLightIndex[0]:
-            self.ptaMaxLightIndex[0] = slot
+        if slot > self._pta_max_light_index[0]:
+            self._pta_max_light_index[0] = slot
 
-
-    def removeLight(self, light):
+    def remove_light(self, light):
         """ Removes a light """
-        if not light.hasSlot():
+        if not light.has_slot():
             return self.error("Tried to detach light which is not attached!")
 
         # Todo: Implement me
 
-        self.lights[light.getSlot()] = None
-        light.removeSlot()
+        self._lights[light.get_slot()] = None
+        light.remove_slot()
 
         # TODO: Udpate max light index!
-
+        raise NotImplementedError()
 
     def update(self):
         """ Main update method to process the gpu commands """
 
         # Check for dirty lights
         # dirtyLights = []
-        # for i in xrange(self.ptaMaxLightIndex[0] + 1):
-        #     light = self.lights[i]
+        # for i in xrange(self._pta_max_light_index[0] + 1):
+        #     light = self._lights[i]
         #     if light and light.dirty:
         #         dirtyLights.append(light)
 
         # # Process dirty lights
         # for light in dirtyLights:
         #     self.debug("Updating dirty light", light)
-                
         #     # TODO: Enqueue update command
         #     light.dirty = False
-
-        self.cmdQueue.process_queue()
+        self._cmd_queue.process_queue()
 
     def reload_shaders(self):
         """ Reloads all assigned shaders """
-        self.cmdQueue.reload_shaders()
+        self._cmd_queue.reload_shaders()
 
-    
-    def _initCommandQueue(self):
-        self.cmdQueue = GPUCommandQueue(self.pipeline)
-        self.cmdQueue.register_input("LightData", self.imgLightData.get_texture())
-    
-    def _initLightStorage(self):
+    def _init_command_queue(self):
+        self._cmd_queue = GPUCommandQueue(self._pipeline)
+        self._cmd_queue.register_input(
+            "LightData", self._img_light_data.get_texture())
+
+    def _init_light_storage(self):
         """ Creates the buffer to store the light data """
 
-        perLightVec4s = 3
-        self.imgLightData = Image.create_buffer("LightData", 2**16 * perLightVec4s, Texture.TFloat, Texture.FRgba32)
-        self.imgLightData.set_clear_color(0)
-        self.imgLightData.clear_image()
+        per_light_vec4s = 3
+        self._img_light_data = Image.create_buffer(
+            "LightData", self._MAX_LIGHTS * per_light_vec4s, Texture.T_float,
+            Texture.F_rgba32)
+        self._img_light_data.set_clear_color(0)
+        self._img_light_data.clear_image()
 
-        self.ptaMaxLightIndex = PTAInt.emptyArray(1)
-        self.ptaMaxLightIndex[0] = 0
+        self._pta_max_light_index = PTAInt.empty_array(1)
+        self._pta_max_light_index[0] = 0
 
         # Register the buffer
-        self.pipeline.get_stage_mgr().add_input("AllLightsData", self.imgLightData.get_texture())
-        self.pipeline.get_stage_mgr().add_input("maxLightIndex", self.ptaMaxLightIndex)
+        self._pipeline.get_stage_mgr().add_input("AllLightsData", self._img_light_data.get_texture())
+        self._pipeline.get_stage_mgr().add_input("maxLightIndex", self._pta_max_light_index)
 
-    
-    def _computeTileSize(self):
+    def _compute_tile_size(self):
         """ Computes how many tiles there are on screen """
 
-        self.tileSize = LVecBase2i(self.pipeline.get_settings().lightGridSizeX, self.pipeline.get_settings().lightGridSizeY)
-        numTilesX = int(math.ceil(Globals.resolution.x / float(self.tileSize.x)))
-        numTilesY = int(math.ceil(Globals.resolution.y / float(self.tileSize.y)))
-        self.debug("Tile size =",self.tileSize.x,"x",self.tileSize.y, ", Num tiles =",numTilesX,"x",numTilesY)
-        self.numTiles = LVecBase2i(numTilesX, numTilesY)
+        self._tile_size = LVecBase2i(
+            self._pipeline.get_settings().LightGridSizeX,
+            self._pipeline.get_settings().LightGridSizeY)
+        num_tiles_x = int(math.ceil(Globals.resolution.x /
+                                    float(self._tile_size.x)))
+        num_tiles_y = int(math.ceil(Globals.resolution.y /
+                                    float(self._tile_size.y)))
+        self.debug("Tile size =", self._tile_size.x, "x", self._tile_size.y,
+                   ", Num tiles =", num_tiles_x, "x", num_tiles_y)
+        self._num_tiles = LVecBase2i(num_tiles_x, num_tiles_y)
 
-    
-    def _initStages(self):
+    def _init_stages(self):
         """ Inits all required stages """
-        self.flagCellsStage = FlagUsedCellsStage(self.pipeline)
-        self.flagCellsStage.set_tile_amount(self.numTiles)
-        self.pipeline.get_stage_mgr().add_stage(self.flagCellsStage)
+        self._flag_cells_stage = FlagUsedCellsStage(self._pipeline)
+        self._flag_cells_stage.set_tile_amount(self._num_tiles)
+        self._pipeline.get_stage_mgr().add_stage(self._flag_cells_stage)
 
-        self.collectCellsStage = CollectUsedCellsStage(self.pipeline)
-        self.collectCellsStage.set_tile_amount(self.numTiles)
-        self.pipeline.get_stage_mgr().add_stage(self.collectCellsStage)
+        self._collect_cells_stage = CollectUsedCellsStage(self._pipeline)
+        self._collect_cells_stage.set_tile_amount(self._num_tiles)
+        self._pipeline.get_stage_mgr().add_stage(self._collect_cells_stage)
 
-        self.cullLightsStage = CullLightsStage(self.pipeline)
-        self.cullLightsStage.set_tile_amount(self.numTiles)
-        self.pipeline.get_stage_mgr().add_stage(self.cullLightsStage)
+        self._cull_lights_stage = CullLightsStage(self._pipeline)
+        self._cull_lights_stage.set_tile_amount(self._num_tiles)
+        self._pipeline.get_stage_mgr().add_stage(self._cull_lights_stage)
 
-        self.applyLightsStage = ApplyLightsStage(self)
-        self.pipeline.get_stage_mgr().add_stage(self.applyLightsStage)
+        self._apply_lights_stage = ApplyLightsStage(self)
+        self._pipeline.get_stage_mgr().add_stage(self._apply_lights_stage)
 
-        self.ambientStage = AmbientStage(self)
-        self.pipeline.get_stage_mgr().add_stage(self.ambientStage)
+        self._ambient_stage = AmbientStage(self)
+        self._pipeline.get_stage_mgr().add_stage(self._ambient_stage)
 
-        self.gbufferStage = GBufferStage(self)
-        self.pipeline.get_stage_mgr().add_stage(self.gbufferStage)
+        self._gbuffer_stage = GBufferStage(self)
+        self._pipeline.get_stage_mgr().add_stage(self._gbuffer_stage)
 
-        self.finalStage = FinalStage(self)
-        self.pipeline.get_stage_mgr().add_stage(self.finalStage)
+        self._final_stage = FinalStage(self)
+        self._pipeline.get_stage_mgr().add_stage(self._final_stage)

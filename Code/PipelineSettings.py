@@ -30,9 +30,9 @@ class PipelineSettings(SettingsLoader):
         # self._add_setting("jitterAmount", float, 1.0)
 
         # [Lighting]
-        self._add_setting("lightGridSizeX", int, 32)
-        self._add_setting("lightGridSizeY", int, 32)
-        self._add_setting("lightGridSlices", int, 16)
+        self._add_setting("LightGridSizeX", int, 32)
+        self._add_setting("LightGridSizeY", int, 32)
+        self._add_setting("LightGridSlices", int, 16)
         # self._add_setting("defaultReflectionCubemap", str, "Default-0/#.png")
         # self._add_setting("colorLookupTable", str, "Default.png")
         # self._add_setting("cubemapAntialiasingFactor", float, 5.0)

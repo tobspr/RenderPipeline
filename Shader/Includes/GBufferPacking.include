@@ -17,8 +17,9 @@ vec3 normal_quantization(vec3 normal)
 {
     normal = normalize(normal);
     vec3 normalUnsigned = abs(normal.rgb);
-    float maxComponent = max(normalUnsigned.z, max(normalUnsigned.x, normalUnsigned.y));
-    vec2 cubeCoord = normalUnsigned.z<maxComponent?(normalUnsigned.y<maxComponent?normalUnsigned.yz:normalUnsigned.xz):normalUnsigned.xy;
+    float maxComponent = max(normalUnsigned.x, max(normalUnsigned.y, normalUnsigned.z));
+    vec2 cubeCoord = normalUnsigned.z < maxComponent ?
+        (normalUnsigned.y < maxComponent ? normalUnsigned.yz : normalUnsigned.xz) : normalUnsigned.xy;
     cubeCoord = cubeCoord.x < cubeCoord.y ? cubeCoord.yx : cubeCoord.xy;
     cubeCoord.y /= cubeCoord.x;
     normal /= maxComponent;
@@ -27,8 +28,7 @@ vec3 normal_quantization(vec3 normal)
     float fittingScale = texture(NormalQuantizationTex, cubeCoord).x;
 
     // scale the normal to get the best fit
-    const float border = 3.0;
-    normal *= max(border / 128.0, min(1.0 - border / 128.0, fittingScale));
+    normal *= fittingScale;
     normal = normal * 0.5 + 0.5;
     return normal;
 }
