@@ -93,7 +93,7 @@ class TexturePreview(DraggableWindow):
         """ Create the shaders to display the textures """
         self._display_2d_tex_shader = Shader.load(Shader.SL_GLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/display2DTex.glsl")
-        self._display_2d_tex_shader = Shader.load(Shader.SL_GLSL,
+        self._display_3d_tex_shader = Shader.load(Shader.SL_GLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/analyze3DTex.glsl")
         self._display_2d_tex_array_shader = Shader.load(Shader.SL_GLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/analyze2DTexArray.glsl")

@@ -14,3 +14,5 @@ Data/NormalQuantization/*.png
 CodeConventions.txt
 *.old
 Documentation/
+*.bam
+*.egg

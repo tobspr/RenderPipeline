@@ -47,13 +47,8 @@ class OnscreenDebugger(DebugObject):
 
     def _create_topbar(self):
         """ Creates the topbar """
-        self._logo_background = DirectFrame(parent=self._fullscreen_node,
-                                            frameSize=(1.0, 0, 0, -1),
-                                            pos=(40, 0, -10),
-                                            frameColor=(0.094, 0.094, 0.094, 1),
-                                            scale=(100, 0, 100))
         self._pipeline_logo = BetterOnscreenImage(image="Data/GUI/OnscreenDebugger/PipelineLogo.png", 
-                                                  x=40, y=10,
+                                                  x=40, y=20,
                                                   parent=self._fullscreen_node)
         self._pipeline_logo_text = BetterOnscreenImage(image="Data/GUI/OnscreenDebugger/PipelineLogoText.png", 
                                                        x=144, y=48,
@@ -101,26 +96,17 @@ class OnscreenDebugger(DebugObject):
                     self._pipeline_logo_text.pos_interval(0.16,
                                                           self._pipeline_logo_text.get_initial_pos() + Vec3(0, 0, 100),
                                                           self._pipeline_logo_text.get_initial_pos, blendType="easeInOut"),
-                ), Parallel(
                     self._pipeline_logo.hpr_interval(0.2, Vec3(0, 0, 0),
-                                                     Vec3(0, 0, 270),
+                                                     Vec3(0, 0, 90),
                                                      blendType="easeInOut"),
-                    self._logo_background.scaleInterval(0.2, Vec3(103, 0, 100),
-                                                         Vec3(self._debugger_width, 0, 100),
-                                                         blendType="easeInOut"),
                 ))
         else:
             # Show debugger
             self._debugger_interval = Sequence(
                 Parallel(
-                    self._pipeline_logo.hpr_interval(0.2, Vec3(0, 0, 270),
+                    self._pipeline_logo.hpr_interval(0.2, Vec3(0, 0, 90),
                                                      Vec3(0, 0, 0),
                                                      blendType="easeInOut"),
-                    self._logo_background.scaleInterval(0.2,
-                                                         Vec3(self._debugger_width, 0, 100),
-                                                         Vec3(103, 0, 100),
-                                                         blendType="easeInOut")),
-                Parallel(
                     self._pipeline_logo_text.pos_interval(0.16, 
                                                           self._pipeline_logo_text.get_initial_pos(),
                                                           self._pipeline_logo_text.get_initial_pos()  + Vec3(0, 0, 100),
