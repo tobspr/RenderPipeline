@@ -3,20 +3,21 @@ from panda3d.core import TransparencyAttrib, Vec3, Texture
 from direct.gui.OnscreenImage import OnscreenImage
 
 from ..Util.DebugObject import DebugObject
+from ..Globals import Globals
+
 
 class BetterOnscreenImage(DebugObject):
 
-    """ Simple wrapper arroun OnscreenImage, providing a simpler interface and
-    better visuals """
+    """ Simple wrapper arround OnscreenImage, providing a simpler interface """
 
     def __init__(self, image=None, parent=None, x=0, y=0, w=None, h=None,
-                 transparent=True, nearFilter=True, anyFilter=True):
+                 transparent=True, near_filter=True, any_filter=True):
         """ Creates a new image, taking (x,y) as topleft coordinates.
 
-        When nearFilter is set to true, a near filter will be set to the
+        When near_filter is set to true, a near filter will be set to the
         texture passed. This provides sharper images.
 
-        When anyFilter is set to false, the passed image won't be modified at
+        When any_filter is set to false, the passed image won't be modified at
         all. This enables you to display existing textures, otherwise the
         texture would get a near filter in the 3D View, too. """
 
@@ -26,7 +27,7 @@ class BetterOnscreenImage(DebugObject):
             if not isinstance(image, str):
                 print "Invalid argument to image parameter:", image
                 return
-            image = loader.loadTexture(image)
+            image = Globals.loader.loadTexture(image)
 
             if w is None or h is None:
                 w, h = image.getXSize(), image.getYSize()
@@ -35,15 +36,15 @@ class BetterOnscreenImage(DebugObject):
                 w = 10
                 h = 10
 
-        self.w, self.h = w, h
-        self.initialPos = self.translatePos(x, y)
+        self._w, self._h = w, h
+        self._initial_pos = self._translate_pos(x, y)
 
         self._node = OnscreenImage(
             image=image, parent=parent, pos=self.initialPos,
             scale=(w / 2.0, 1, h / 2.0))
 
         if transparent:
-            self._node.setTransparency(TransparencyAttrib.MAlpha)
+            self._node.set_transparency(TransparencyAttrib.MAlpha)
 
         tex = self._node.getTexture()
 

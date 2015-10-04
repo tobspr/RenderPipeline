@@ -60,12 +60,12 @@ class LightManager(DebugObject):
             return self.error("Light limit of", 2**16, "reached!")
 
         # Store slot in light, so we can access it later
-        light.setSlot(slot)
+        light.set_slot(slot)
         self.lights[slot] = light
 
         # Create the command and attach it
         commandAdd = GPUCommand(GPUCommand.CMD_STORE_LIGHT)
-        light.addToStream(commandAdd)
+        light.add_to_stream(commandAdd)
 
         # Enforce a width of 4xVec4
         commandAdd.enforce_width(4 * 4 + 1)
@@ -73,7 +73,7 @@ class LightManager(DebugObject):
 
         # Now that the light is attached, we can set the dirty flag, because
         # the newest data is now on the gpu
-        light.dirty = False
+        light._unset_dirty()
 
         # Update max light index
         if slot > self.ptaMaxLightIndex[0]:

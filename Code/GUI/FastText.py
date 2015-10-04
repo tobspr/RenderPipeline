@@ -5,7 +5,6 @@ from panda3d.core import DynamicTextFont, Vec4, PTALVecBase4, CardMaker, Vec2
 from panda3d.core import Texture, PNMImage, Vec3
 
 from ..Util.DebugObject import DebugObject
-from ..Util.FunctionDecorators import protected
 from ..Globals import Globals
 
 class FastText(DebugObject):

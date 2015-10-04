@@ -13,3 +13,4 @@ main.py
 Data/NormalQuantization/*.png
 CodeConventions.txt
 *.old
+Documentation/

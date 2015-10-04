@@ -100,12 +100,12 @@ class RenderStage(DebugObject):
         assert len(args) > 0 and len(args) <= 3
         if len(args) == 1:
             return Shader.load(Shader.SLGLSL,
-                               "Shader/DefaultPostProcess.vertex",
-                               "Shader/" + args[0])
+                               "Shader/DefaultPostProcess.vertex.glsl",
+                               "Shader/" + args[0] + ".glsl")
         elif len(args) == 2:
-            return Shader.load(Shader.SLGLSL, "Shader/" + args[0],
-                               "Shader/" + args[1])
+            return Shader.load(Shader.SLGLSL, "Shader/" + args[0] + ".glsl",
+                               "Shader/" + args[1] + ".glsl")
         elif len(args) == 3:
-            return Shader.load(Shader.SLGLSL, "Shader/" + args[0],
-                               "Shader/" + args[1],
-                               "Shader/" + args[2])
+            return Shader.load(Shader.SLGLSL, "Shader/" + args[0] + ".glsl",
+                               "Shader/" + args[1] + ".glsl",
+                               "Shader/" + args[2] + ".glsl")
