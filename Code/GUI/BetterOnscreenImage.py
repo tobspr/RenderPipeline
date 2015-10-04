@@ -30,71 +30,76 @@ class BetterOnscreenImage(DebugObject):
             image = Globals.loader.loadTexture(image)
 
             if w is None or h is None:
-                w, h = image.getXSize(), image.getYSize()
+                w, h = image.get_x_size(), image.get_y_size()
         else:
             if w is None or h is None:
                 w = 10
                 h = 10
 
-        self._w, self._h = w, h
+        self._width, self._height = w, h
         self._initial_pos = self._translate_pos(x, y)
 
         self._node = OnscreenImage(
-            image=image, parent=parent, pos=self.initialPos,
-            scale=(w / 2.0, 1, h / 2.0))
+            image=image, parent=parent, pos=self._initial_pos,
+            scale=(self._width / 2.0, 1, self._height / 2.0))
 
         if transparent:
-            self._node.set_transparency(TransparencyAttrib.MAlpha)
+            self._node.set_transparency(TransparencyAttrib.M_alpha)
 
-        tex = self._node.getTexture()
+        tex = self._node.get_texture()
 
-        if nearFilter and anyFilter:
-            tex.setMinfilter(Texture.FTNearest)
-            tex.setMagfilter(Texture.FTNearest)
+        if near_filter and any_filter:
+            tex.set_minfilter(Texture.FT_nearest)
+            tex.set_magfilter(Texture.FT_nearest)
 
-        if anyFilter:
-            tex.setAnisotropicDegree(8)
-            tex.setWrapU(Texture.WMClamp)
-            tex.setWrapV(Texture.WMClamp)
+        if any_filter:
+            tex.set_anisotropic_degree(8)
+            tex.set_wrap_u(Texture.WM_clamp)
+            tex.set_wrap_v(Texture.WM_clamp)
 
-    def getInitialPos(self):
+    def get_initial_pos(self):
         """ Returns the initial position of the image. This can be used for
         animations """
-        return self.initialPos
+        return self._initial_pos
 
-    def posInterval(self, *args, **kwargs):
+    def pos_interval(self, *args, **kwargs):
         """ Returns a pos interval, this is a wrapper around
         NodePath.posInterval """
         return self._node.posInterval(*args, **kwargs)
 
-    def hprInterval(self, *args, **kwargs):
+    def hpr_interval(self, *args, **kwargs):
         """ Returns a hpr interval, this is a wrapper around
         NodePath.hprInterval """
         return self._node.hprInterval(*args, **kwargs)
 
-    def setImage(self, img):
+    def set_image(self, img):
         """ Sets the current image """
-        self._node.setImage(img)
+        self._node.set_image(img)
 
-    def setPos(self, x, y):
+    def set_pos(self, x, y):
         """ Sets the position """
-        self._node.setPos(self.translatePos(x, y))
+        self._node.set_pos(self._translate_pos(x, y))
 
-    def translatePos(self, x, y):
+    def _translate_pos(self, x, y):
         """ Converts 2d coordinates to pandas coordinate system """
-        return Vec3(x + self.w / 2.0, 1, -y - self.h / 2.0)
+        return Vec3(x + self._width / 2.0, 1, -y - self._height / 2.0)
 
-    def setShader(self, shader):
-        self._node.setShader(shader)
+    def set_shader(self, shader):
+        """ Sets a shader to be used for rendering the image """
+        self._node.set_shader(shader)
 
-    def setShaderInput(self, *args):
-        self._node.setShaderInput(*args)
+    def set_shader_input(self, *args):
+        """ Sets a shader input on the image """
+        self._node.set_shader_input(*args)
 
     def remove(self):
+        """ Removes the image """
         self._node.remove()
 
     def hide(self):
+        """ Hides the image """
         self._node.hide()
 
     def show(self):
+        """ Shows the image if it was previously hidden """
         self._node.show()

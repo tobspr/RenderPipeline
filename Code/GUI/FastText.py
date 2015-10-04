@@ -7,154 +7,156 @@ from panda3d.core import Texture, PNMImage, Vec3
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
 
+
 class FastText(DebugObject):
 
     """ This class is a fast text renderer which is made for onscreen overlays
     to have minimal to no performance impact """
 
-    fontPagePool = {}
-    supportedGlyphs = string.ascii_letters + string.digits + string.punctuation + " "
+    _FONT_PAGE_POOL = {}
+    _SUPPORTED_GLYPHS = (string.ascii_letters + string.digits +
+                         string.punctuation + " ")
 
-    def __init__(self, font="Data/Font/SourceSansPro-Bold.otf", pixelSize=16, pos=Vec2(0), color=Vec3(1), outline=Vec4(0, 0, 0, 1)):
+    def __init__(self, font="Data/Font/SourceSansPro-Bold.otf", pixel_size=16,
+                 pos=Vec2(0), color=Vec3(1), outline=Vec4(0, 0, 0, 1)):
         """ Creates a new text instance with the given font and pixel size """
-        DebugObject.__init__(self, FastText)
-        self.font = font
-        self.size = pixelSize
-        self.position = Vec2(pos)
-        self.cacheKey = self.font + "##" + str(self.size)
-        self.parent = Globals.base.aspect2d
-        self.ptaPosition = PTALVecBase4.emptyArray(100)
-        self.ptaUV = PTALVecBase4.emptyArray(100)
-        self.ptaColor = PTALVecBase4.emptyArray(2)
-        self.ptaColor[0] = Vec4(color.x, color.y, color.z, 1.0)
-        self.ptaColor[1] = Vec4(outline)
-        self.text = ""
+        DebugObject.__init__(self)
+        self._font = font
+        self._size = pixel_size
+        self._position = Vec2(pos)
+        self._cache_key = self._font + "##" + str(self._size)
+        self._parent = Globals.base.aspect2d
+        self._pta_position = PTALVecBase4.empty_array(100)
+        self._pta_uv = PTALVecBase4.empty_array(100)
+        self._pta_color = PTALVecBase4.empty_array(2)
+        self._pta_color[0] = Vec4(color.x, color.y, color.z, 1.0)
+        self._pta_color[1] = Vec4(outline)
+        self._text = ""
 
-        if self.cacheKey in self.fontPagePool:
-            self.fontData = self.fontPagePool[self.cacheKey]
+        if self._cache_key in self._FONT_PAGE_POOL:
+            self._font_data = self._FONT_PAGE_POOL[self._cache_key]
         else:
             self.debug("Creating new font cache entry")
-            self._extractFontData()
+            self._extract_font_data()
+        self._generate_card()
 
-        self._generateCard()
-
-    def setColor(self, r, g, b):
+    def set_color(self, r, g, b):
         """ Sets the text color """
-        self.ptaColor[0] = Vec4(r, g, b, 1)
+        self._pta_color[0] = Vec4(r, g, b, 1)
 
-    def setOutlineColor(self, r=0.0, g=0.0, b=0.0, a=1.0):
+    def set_outline_color(self, r=0.0, g=0.0, b=0.0, a=1.0):
         """ Sets the text outline color """
         if isinstance(r, Vec4):
-            self.ptaColor[1] = r
+            self._pta_color[1] = r
         else:
-            self.ptaColor[1] = Vec4(r, g, b, a)
+            self._pta_color[1] = Vec4(r, g, b, a)
 
-    def setPos(self, x, y):
+    def set_pos(self, x, y):
         """ Sets the position of the text """
-        self.position = Vec2(x, y)
+        self._position = Vec2(x, y)
 
-    def setText(self, text):
+    def set_text(self, text):
         """ Sets the text, up to a number of 100 chars """
-        self.text = text[:100]
+        self._text = text[:100]
 
     def update(self):
         """ Updates the text """
-        advanceX = 0.0
-        textScaleX = self.size * 2.0 / float(Globals.base.win.getYSize())
-        textScaleY = textScaleX
-        
-        for charPos, char in enumerate(self.text):
-            idx = self.supportedGlyphs.index(char)
-            uvBegin, uvSize, posBegin, posSize, advance = self.fontData[2][idx]
+        advance_x = 0.0
+        text_scale_x = self._size * 2.0 / float(Globals.base.win.get_y_size())
+        text_scale_y = text_scale_x
 
-            self.ptaUV[charPos] = Vec4(uvBegin[0], uvBegin[1], uvSize[0], uvSize[1])
-            self.ptaPosition[charPos] = Vec4( 
-                self.position.x + (advanceX + posBegin[0])*textScaleX,
-                self.position.y + posBegin[1] * textScaleY,
-                posSize[0] * textScaleX,
-                posSize[1] * textScaleY)
-            advanceX += advance
+        for char_pos, char in enumerate(self._text):
+            idx = self._SUPPORTED_GLYPHS.index(char)
+            uv_begin, uv_size, pos_begin, pos_size, advance = self._font_data[2][idx]
 
-        self.card.setInstanceCount(len(self.text))
+            self._pta_uv[char_pos] = Vec4(uv_begin[0], uv_begin[1],
+                                          uv_size[0], uv_size[1])
+            self._pta_position[char_pos] = Vec4(
+                self._position.x + (advance_x + pos_begin[0]) * text_scale_x,
+                self._position.y + pos_begin[1] * text_scale_y,
+                pos_size[0] * text_scale_x,
+                pos_size[1] * text_scale_y)
+            advance_x += advance
+
+        self._card.set_instance_coutn(len(self._text))
 
     def show(self):
         """ Shows the text """
-        self.card.show()
+        self._card.show()
 
     def hide(self):
         """ Hides the text """
-        self.card.hide()
+        self._card.hide()
 
     def remove(self):
-         """ Removes the text """
-         self.card.removeNode()
+        """ Removes the text """
+        self._card.remove_node()
 
-
-    
-    def _extractFontData(self):
+    def _extract_font_data(self):
         """ Internal method to extract the font atlas """
 
         # Create a new font instance to generate a font-texture-page
-        fontInstance = DynamicTextFont(self.font)
+        font_instance = DynamicTextFont(self._font)
 
-        atlasSize = 1024 if i > 30 else 512 
-        fontInstance.setPageSize(atlasSize, atlasSize)
-        fontInstance.setPixelsPerUnit(int(self.size * 1.5))
-        fontInstance.setTextureMargin(int(self.size / 4.0 * 1.5))
-        
+        atlas_size = 1024 if i > 30 else 512 
+        font_instance.set_page_size(atlas_size, atlas_size)
+        font_instance.set_pixels_per_unit(int(self._size * 1.5))
+        font_instance.set_texture_margin(int(self._size / 4.0 * 1.5))
+
         # Register the glyphs, this automatically creates the font-texture page
-        for glyph in self.supportedGlyphs:
-            fontInstance.getGlyph(ord(glyph))
+        for glyph in self._SUPPORTED_GLYPHS:
+            font_instance.get_glyph(ord(glyph))
 
         # Extract the page
-        page = fontInstance.getPage(0)
-        page.setMinfilter(Texture.FTLinear)
-        page.setMagfilter(Texture.FTLinear)
-        page.setAnisotropicDegree(0)
+        page = font_instance.get_page(0)
+        page.set_minfilter(Texture.FT_linear)
+        page.set_magfilter(Texture.FT_linear)
+        page.set_anisotropic_degree(0)
 
-        blurpnm = PNMImage(atlasSize, atlasSize, 4, 256)
+        blurpnm = PNMImage(atlas_size, atlas_size, 4, 256)
         page.store(blurpnm)
-        blurpnm.gaussianFilter(self.size / 4)
-        pageBlurred = Texture("PageBlurred")
-        pageBlurred.setup2dTexture(atlasSize, atlasSize, Texture.TUnsignedByte, Texture.FRgba8)
-        pageBlurred.load(blurpnm)
+        blurpnm.gaussian_filter(self._size / 4)
+        page_blurred = Texture("PageBlurred")
+        page_blurred.setup_2d_texture(atlas_size, atlas_size,
+                                      Texture.T_unsigned_byte, Texture.F_rgba8)
+        page_blurred.load(blurpnm)
 
         # Extract glyph data
-        glyphData = []
+        glyph_data = []
 
-        for glyph in self.supportedGlyphs:
-            glyphInstance = fontInstance.getGlyph(ord(glyph))
-            uvBegin = glyphInstance.getUvLeft(), glyphInstance.getUvBottom()
-            uvSize = glyphInstance.getUvRight() - uvBegin[0], glyphInstance.getUvTop() - uvBegin[1]
+        for glyph in self._SUPPORTED_GLYPHS:
+            glyph_instance = font_instance.get_glyph(ord(glyph))
+            uv_begin = (glyph_instance.get_uv_left(),
+                        glyph_instance.get_uv_bottom())
+            uv_size = (glyph_instance.get_uv_right() - uv_begin[0],
+                       glyph_instance.get_uv_top() - uv_begin[1])
 
-            posBegin = glyphInstance.getLeft(), glyphInstance.getBottom()
-            posSize = glyphInstance.getRight() - posBegin[0], glyphInstance.getTop() - posBegin[1]
+            pos_begin = glyph_instance.get_left(), glyph_instance.get_bottom()
+            pos_size = (glyph_instance.get_right() - pos_begin[0],
+                        glyph_instance.get_top() - pos_begin[1])
+            advance = glyph_instance.get_advance()
 
-            advance = glyphInstance.getAdvance()
+            glyph_data.append((uv_begin, uv_size, pos_begin, pos_size, advance))
 
-            glyphData.append( (uvBegin, uvSize, posBegin, posSize, advance) )
+        self._font_data = [font_instance, page, glyph_data, page_blurred]
+        self._FONT_PAGE_POOL[self._cache_key] = self._font_data
 
-        self.fontData = [fontInstance, page, glyphData, pageBlurred]
-        self.fontPagePool[self.cacheKey] = self.fontData
-
-    
-    def _generateCard(self):
+    def _generate_card(self):
         """ Generates the card used for text rendering """
         c = CardMaker("TextCard")
-        c.setFrame(0, 1, 0, 1)
-        self.card = NodePath(c.generate())
-        self.card.setShaderInput("fontPageTex", self.fontData[1])
-        self.card.setShaderInput("fontPageBlurredTex", self.fontData[3])
-        self.card.setShaderInput("positionData", self.ptaPosition)
-        self.card.setShaderInput("color", self.ptaColor)
-        self.card.setShaderInput("uvData", self.ptaUV)
-        self.card.setShader(self._makeFontShader(), 1000)
-        self.card.setAttrib(
-            TransparencyAttrib.make(TransparencyAttrib.MAlpha), 1000)
-        self.card.reparentTo(self.parent)
+        c.set_frame(0, 1, 0, 1)
+        self._card = NodePath(c.generate())
+        self._card.set_shader_input("fontPageTex", self._font_data[1])
+        self._card.set_shader_input("fontPageBlurredTex", self._font_data[3])
+        self._card.set_shader_input("positionData", self._pta_position)
+        self._card.set_shader_input("color", self._pta_color)
+        self._card.set_shader_input("uvData", self._pta_uv)
+        self._card.set_shader(self._make_font_shader(), 1000)
+        self._card.set_attrib(
+            TransparencyAttrib.make(TransparencyAttrib.M_alpha), 1000)
+        self._card.reparent_to(self._parent)
 
-    
-    def _makeFontShader(self):
+    def _make_font_shader(self):
         """ Generates the shader used for font rendering """
         return Shader.make(Shader.SLGLSL, """
             #version 150
@@ -170,7 +172,8 @@ class FastText(DebugObject):
                 vec4 pos = positionData[offset];
                 vec4 uv = uvData[offset];
                 texcoord = uv.xy + p3d_MultiTexCoord0 * uv.zw;
-                vec4 finalPos = p3d_Vertex * vec4(pos.z, 0, pos.w, 1.0) + vec4(pos.x, 0, pos.y, 0);
+                vec4 finalPos = p3d_Vertex * vec4(pos.z, 0, pos.w, 1.0) +
+                                vec4(pos.x, 0, pos.y, 0);
                 gl_Position = p3d_ModelViewProjectionMatrix * finalPos;
             }
             """, """
@@ -182,31 +185,9 @@ class FastText(DebugObject):
             out vec4 result;
             void main() {
                 result = texture(fontPageTex, texcoord);
-                float outlineResult = texture(fontPageBlurredTex, texcoord).x * 4.0 * (1.0 - result.w);
+                float outlineResult = texture(fontPageBlurredTex, texcoord).x
+                                      * 4.0 * (1.0 - result.w);
                 result.xyz = (1.0 - result.xyz ) * color[0].xyz;
                 result = mix(result, color[1] * outlineResult, 1.0 - result.w);
             }
         """)
-
-
-if __name__ == "__main__":
-
-    from panda3d.core import *
-    loadPrcFileData("", "win-size 1920 1080")
-    loadPrcFileData("", "show-frame-rate-meter #t")
-    loadPrcFileData("", "sync-video #f")
-    import direct.directbase.DirectStart
-    import time
-
-    posY = 0.9
-
-    for i in xrange(8, 64, 3):
-        f = FastText(font="../../Data/Font/DebugFont.ttf", pixelSize=i)
-        f.setText("Hello World!")
-        f.setPos(-1.0, posY)
-        f.setOutlineColor(0, 0, 0, 0)
-        f.update()
-
-        posY -= (i*2+10.0) / float(Globals.base.win.getYSize())
-
-    run()

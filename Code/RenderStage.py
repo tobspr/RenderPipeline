@@ -79,7 +79,7 @@ class RenderStage(DebugObject):
         """ This method sets a shader input on all stages, which is mainly used
         by the stage manager """
         for target in self._targets.values():
-            target.setShaderInput(*args)
+            target.set_shader_input(*args)
 
     def update(self):
         """ This method gets called every frame """

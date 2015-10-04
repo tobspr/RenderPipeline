@@ -36,11 +36,11 @@ class LightManager(DebugObject):
         self._initStages()
 
 
-    def initDefines(self):
+    def init_defines(self):
         """ Inits the common defines """
-        define = self.pipeline.getStageMgr().define
+        define = self.pipeline.get_stage_mgr().define
 
-        settings = self.pipeline.settings
+        settings = self.pipeline.get_settings()
 
         define("LC_TILE_SIZE_X", settings.lightGridSizeX)
         define("LC_TILE_SIZE_Y", settings.lightGridSizeY)
@@ -48,7 +48,7 @@ class LightManager(DebugObject):
         define("LC_TILE_AMOUNT_Y", self.numTiles.y)
         define("LC_TILE_SLICES", settings.lightGridSlices)
 
-    def addLight(self, light):
+    def add_light(self, light):
         """ Adds a new light """
 
         assert(isinstance(light, Light))
@@ -112,14 +112,14 @@ class LightManager(DebugObject):
 
         self.cmdQueue.process_queue()
 
-    def reloadShaders(self):
+    def reload_shaders(self):
         """ Reloads all assigned shaders """
         self.cmdQueue.reload_shaders()
 
     
     def _initCommandQueue(self):
         self.cmdQueue = GPUCommandQueue(self.pipeline)
-        self.cmdQueue.register_input("LightData", self.imgLightData.tex)
+        self.cmdQueue.register_input("LightData", self.imgLightData.get_texture())
     
     def _initLightStorage(self):
         """ Creates the buffer to store the light data """
@@ -133,14 +133,14 @@ class LightManager(DebugObject):
         self.ptaMaxLightIndex[0] = 0
 
         # Register the buffer
-        self.pipeline.getStageMgr().add_input("AllLightsData", self.imgLightData.tex)
-        self.pipeline.getStageMgr().add_input("maxLightIndex", self.ptaMaxLightIndex)
+        self.pipeline.get_stage_mgr().add_input("AllLightsData", self.imgLightData.get_texture())
+        self.pipeline.get_stage_mgr().add_input("maxLightIndex", self.ptaMaxLightIndex)
 
     
     def _computeTileSize(self):
         """ Computes how many tiles there are on screen """
 
-        self.tileSize = LVecBase2i(self.pipeline.settings.lightGridSizeX, self.pipeline.settings.lightGridSizeY)
+        self.tileSize = LVecBase2i(self.pipeline.get_settings().lightGridSizeX, self.pipeline.get_settings().lightGridSizeY)
         numTilesX = int(math.ceil(Globals.resolution.x / float(self.tileSize.x)))
         numTilesY = int(math.ceil(Globals.resolution.y / float(self.tileSize.y)))
         self.debug("Tile size =",self.tileSize.x,"x",self.tileSize.y, ", Num tiles =",numTilesX,"x",numTilesY)
@@ -151,24 +151,24 @@ class LightManager(DebugObject):
         """ Inits all required stages """
         self.flagCellsStage = FlagUsedCellsStage(self.pipeline)
         self.flagCellsStage.set_tile_amount(self.numTiles)
-        self.pipeline.getStageMgr().add_stage(self.flagCellsStage)
+        self.pipeline.get_stage_mgr().add_stage(self.flagCellsStage)
 
         self.collectCellsStage = CollectUsedCellsStage(self.pipeline)
         self.collectCellsStage.set_tile_amount(self.numTiles)
-        self.pipeline.getStageMgr().add_stage(self.collectCellsStage)
+        self.pipeline.get_stage_mgr().add_stage(self.collectCellsStage)
 
         self.cullLightsStage = CullLightsStage(self.pipeline)
         self.cullLightsStage.set_tile_amount(self.numTiles)
-        self.pipeline.getStageMgr().add_stage(self.cullLightsStage)
+        self.pipeline.get_stage_mgr().add_stage(self.cullLightsStage)
 
         self.applyLightsStage = ApplyLightsStage(self)
-        self.pipeline.getStageMgr().add_stage(self.applyLightsStage)
+        self.pipeline.get_stage_mgr().add_stage(self.applyLightsStage)
 
         self.ambientStage = AmbientStage(self)
-        self.pipeline.getStageMgr().add_stage(self.ambientStage)
+        self.pipeline.get_stage_mgr().add_stage(self.ambientStage)
 
         self.gbufferStage = GBufferStage(self)
-        self.pipeline.getStageMgr().add_stage(self.gbufferStage)
+        self.pipeline.get_stage_mgr().add_stage(self.gbufferStage)
 
         self.finalStage = FinalStage(self)
-        self.pipeline.getStageMgr().add_stage(self.finalStage)
+        self.pipeline.get_stage_mgr().add_stage(self.finalStage)

@@ -37,8 +37,8 @@ class MountManager(DebugObject):
         access to the _base_path. It will be wise to at least use tempfile
         like tempfile.mkdtemp(prefix='Shader-tmp'), or an application directory
         in the user's home/app dir."""
-        self._writePath = Filename.from_os_specific(pth).get_fullpath()
-        self._lockFile = join(self._writePath, "instance.pid")
+        self._write_path = Filename.from_os_specific(pth).get_fullpath()
+        self._lock_file = join(self._write_path, "instance.pid")
 
     def set_base_path(self, pth):
         """ Sets the path where the base shaders and models on are contained. This
@@ -180,7 +180,7 @@ class MountManager(DebugObject):
         # Append the write path to the model directory to make pragma include
         # find the ShaderAutoConfig.include
         write_path = Filename(self._write_path)
-        self._model_paths.append(write_path.getFullpath())
+        self._model_paths.append(write_path.get_fullpath())
 
         for pth in self._model_paths:
             get_model_path().append_directory(pth)

@@ -16,29 +16,28 @@ class GBufferStage(RenderStage):
 
     def get_produced_pipes(self):
         return {
-            "GBufferDepth": self._target.getDepthTexture(),
-            "GBuffer0": self._target.getColorTexture(),
-            "GBuffer1": self._target.getAuxTexture(0),
-            "GBuffer2": self._target.getAuxTexture(1),
+            "GBufferDepth": self._target.get_depth_texture(),
+            "GBuffer0": self._target.get_color_texture(),
+            "GBuffer1": self._target.get_aux_texture(0),
+            "GBuffer2": self._target.get_aux_texture(1),
         }
 
     def create(self):
-        early_z = True
+        early_z = False
 
         self._prepare_early_z(early_z)
 
         self._target = self._create_target("GBuffer")
-        self._target.addDepthTexture()
-        self._target.addColorTexture()
-        self._target.addAuxTextures(2)
-        self._target.setDepthBits(32)
-        # self._target.setColorBits(16)
+        self._target.add_depth_texture()
+        self._target.add_color_texture()
+        self._target.add_aux_textures(2)
+        self._target.set_depth_bits(32)
 
         if early_z:
-            self._target.prepareSceneRender(earlyZ=True,
-                                            earlyZCam=self._prepass_cam_node)
+            self._target.prepare_scene_render(early_z=True,
+                                              early_z_cam=self._prepass_cam_node)
         else:
-            self._target.prepareSceneRender()
+            self._target.prepare_scene_render()
 
     def _prepare_early_z(self, early_z=False):
         """ Prepares the earlyz stage """
@@ -69,12 +68,12 @@ class GBufferStage(RenderStage):
         Globals.base.camNode.set_initial_state(initial_node.get_state())
 
     def set_shaders(self):
-        Globals.render.setShader(Shader.load(Shader.SL_GLSL,
+        Globals.render.set_shader(Shader.load(Shader.SL_GLSL,
             "Shader/Templates/Vertex.glsl",
             "Shader/Templates/Stages/GBuffer-Fragment.glsl"))
 
     def set_shader_input(self, *args):
-        Globals.render.setShaderInput(*args)
+        Globals.render.set_shader_input(*args)
 
     def resize(self):
         RenderStage.resize(self)

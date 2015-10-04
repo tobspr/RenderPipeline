@@ -4,10 +4,12 @@
 import os
 import sys
 import subprocess
+import io
 
 devnull = open(os.path.devnull, "w")
 setup_dir = os.path.dirname(os.path.realpath(__file__))
 current_step = 0
+
 
 
 def error(msg):
@@ -22,14 +24,18 @@ def print_step(title):
     print "\n\n[", current_step, "]", title
 
 
+
 def exec_python_file(pth):
     basedir = os.path.dirname(os.path.abspath(os.path.join(setup_dir, pth)))
     print "\tRunning script:", pth
     try:
         os.chdir(basedir)
-        subprocess.call(["ppython", "-B", os.path.basename(pth)],
-                        stdout=devnull,
-                        stderr=devnull)
+        output = subprocess.check_output(["ppython", "-B", os.path.basename(pth)], stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, msg:
+        print "Python script didn't return properly:"
+        print msg
+        error("Failed to execute '" + pth + "'")
+
     except Exception, msg:
         print "Python script error:", msg
         error("Error during script execution")

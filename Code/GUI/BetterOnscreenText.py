@@ -8,44 +8,44 @@ from ..Util.DebugObject import DebugObject
 
 class BetterOnscreenText(DebugObject):
 
-    """ Simple wrapper around OnscreenText, providing a simpler interface
-    and better visuals """
+    """ Simple wrapper around OnscreenText, providing a simpler interface """
 
     def __init__(self, text="", parent=None, x=0, y=0, size=10, align="left",
-                 color=None, mayChange=False, font=None):
+                 color=None, may_change=False, font=None):
+        """ Constructs a new text. The parameters are almost equal to the
+        parameters of OnscreenText """
         DebugObject.__init__(self, "BetterOnscreenText")
 
         if color is None:
             color = Vec3(1)
 
-        alignMode = TextNode.ALeft
+        align_mode = TextNode.A_left
 
         if align == "center":
-            alignMode = TextNode.ACenter
+            align_mode = TextNode.A_center
         elif align == "right":
-            alignMode = TextNode.ARight
-
+            align_mode = TextNode.A_right
 
         if font is None:
             font = Globals.font
 
-        self.initialPos = Vec2(x, -y)
-
+        self._initial_pos = Vec2(x, -y)
         self._node = OnscreenText(
-            text=text, parent=parent, pos=self.initialPos, scale=size,
-            align=alignMode, fg=Vec4(color.x, color.y, color.z, 1.0),
-            font=font, mayChange=mayChange)
+            text=text, parent=parent, pos=self._initial_pos, scale=size,
+            align=align_mode, fg=Vec4(color.x, color.y, color.z, 1.0),
+            font=font, mayChange=may_change)
 
-    def setText(self, text):
-        """ Changes the text """
+    def set_text(self, text):
+        """ Changes the text, remember to pass may_change to the constructor,
+        otherwise this method does not work. """
         self._node["text"] = text
 
-    def getInitialPos(self):
+    def get_initial_pos(self):
         """ Returns the initial position of the text. This can be used for
         animations """
-        return self.initialPos
+        return self._initial_pos
 
-    def posInterval(self, *args, **kwargs):
+    def pos_interval(self, *args, **kwargs):
         """ Returns a pos interval, this is a wrapper around
-        NodePath.posInterval """
-        return self._node.posInterval(*args, **kwargs)
+        NodePath.pos_interval """
+        return self._node.pos_interval(*args, **kwargs)

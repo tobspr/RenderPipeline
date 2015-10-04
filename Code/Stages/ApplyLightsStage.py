@@ -14,19 +14,19 @@ class ApplyLightsStage(RenderStage):
                 "CellIndices", "PerCellLights"]
 
     def get_produced_pipes(self):
-        return {"ShadedScene": self._target.getColorTexture()}
+        return {"ShadedScene": self._target.get_color_texture()}
 
     def get_required_inputs(self):
         return ["AllLightsData", "mainCam", "mainRender", "cameraPosition"]
 
     def create(self):
         self._target = self._create_target("ApplyLights")
-        self._target.addColorTexture()
-        self._target.setColorBits(16)
-        self._target.prepareOffscreenBuffer()
+        self._target.add_color_texture()
+        self._target.set_color_bits(16)
+        self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):
-        self._target.setShader(self._load_shader("Stages/ApplyLights.fragment"))
+        self._target.set_shader(self._load_shader("Stages/ApplyLights.fragment"))
 
     def resize(self):
         self.debug("Resizing pass")

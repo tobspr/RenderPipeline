@@ -4,136 +4,143 @@ from panda3d.core import Texture, Vec3
 from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectFrame import DirectFrame
 
-from ..Util.Generic import rgbFromString
+from ..Util.Generic import rgb_from_string
 from DraggableWindow import DraggableWindow
 from BetterOnscreenText import BetterOnscreenText
 from BetterOnscreenImage import BetterOnscreenImage
 
 from ..Globals import Globals
 
+
 class PipeViewer(DraggableWindow):
 
-    """ Small tool which displays the order of the graphics pipe """
+    """ Small tool which displays the order of the graphic pipes """
 
-    stageMgr = None
+    _STAGE_MGR = None
 
     @classmethod
-    def registerStageMgr(self, mgr):
-        self.stageMgr = mgr
+    def register_stage_mgr(cls, mgr):
+        cls._STAGE_MGR = mgr
 
     def __init__(self, pipeline):
-        DraggableWindow.__init__(self, width=1300, height=900, title="Pipe Inspector")
-        self.pipeline = pipeline
-        self.scrollWidth = 8000
-        self.scrollHeight = 2000
-        self.created = False
-        self._createComponents()
+        DraggableWindow.__init__(self, width=1300, height=900,
+                                 title="Pipe Inspector")
+        self._pipeline = pipeline
+        self._scroll_width = 8000
+        self._scroll_height = 2000
+        self._created = False
+        self._create_components()
         self.hide()
 
     def toggle(self):
-        """ Toggles the pipe viewer """        
-        if self.visible:
+        """ Toggles the pipe viewer """
+        if self._visible:
             Globals.base.taskMgr.remove("UpdatePipeViewer")
             self.hide()
         else:
-            Globals.base.taskMgr.add(self.updateTask, "UpdatePipeViewer")
-            if not self.created:
-                self._populateContent()
+            Globals.base.taskMgr.add(self._update_task, "UpdatePipeViewer")
+            if not self._created:
+                self._populate_content()
             self.show()
-    
-    def updateTask(self, task=None):
-        """ Updates the viewer """
-        scrollValue = self._contentFrame.horizontalScroll["value"]
-        scrollValue *= 2.45
-        self.pipeDescriptions.setX(scrollValue * 2759.0 )
 
+    def _update_task(self, task=None):
+        """ Updates the viewer """
+        scroll_value = self._content_frame.horizontalScroll["value"]
+        scroll_value *= 2.45
+        self._pipe_descriptions.set_x(scroll_value * 2759.0)
         return task.cont
 
-    
-    def _populateContent(self):
-        """ Reads the pipes and stages from the stage manager and renders those """
-        self.created = True
-        self.pipeNode = self._contentNode.attachNewNode("pipes")
-        self.pipeNode.setScale(1, 1, -1)
-        self.stageNode = self._contentNode.attachNewNode("stages")
-        currentPipes = []
-
-        pipePixelSize = 3
+    def _populate_content(self):
+        """ Reads the pipes and stages from the stage manager and renders those
+        into the window """
+        self._created = True
+        self._pipe_node = self._content_node.attach_new_node("pipes")
+        self._pipe_node.set_scale(1, 1, -1)
+        self._stage_node = self._content_node.attach_new_node("stages")
+        current_pipes = []
+        pipe_pixel_size = 3
 
         # Generate stages
-        for offs, stage in enumerate(self.stageMgr._stages):
-            node = self._contentNode.attachNewNode("stage")
-            node.setPos(220 + offs * 200.0, 0, 20)
-            node.setScale(1, 1, -1)
-            bg = DirectFrame(parent=node, frameSize=(10, 150, 0, -3600), frameColor=(0.2,0.2,0.2,1))
-            stageHeader = BetterOnscreenText(text=str(stage.getName().replace("Stage", "")), parent=node, x=20, y=25, size=15)
-            
-            for outputPipe, pipeTex in stage.getProducedPipes().iteritems():
-                pipeIdx = 0
-                r, g, b = rgbFromString(outputPipe)
-                if outputPipe in currentPipes:
-                    pipeIdx = currentPipes.index(outputPipe)
+        for offs, stage in enumerate(self._STAGE_MGR._stages):
+            node = self._content_node.attach_new_node("stage")
+            node.set_pos(220 + offs * 200.0, 0, 20)
+            node.set_scale(1, 1, -1)
+            DirectFrame(parent=node, frameSize=(10, 150, 0, -3600),
+                        frameColor=(0.2, 0.2, 0.2, 1))
+            BetterOnscreenText(text=str(stage.get_name().replace("Stage", "")),
+                               parent=node, x=20, y=25, size=15)
+
+            for output_pipe, pipe_tex in stage.get_produced_pipes().iteritems():
+                pipe_idx = 0
+                r, g, b = rgb_from_string(output_pipe)
+                if output_pipe in current_pipes:
+                    pipe_idx = current_pipes.index(output_pipe)
                 else:
-                    currentPipes.append(outputPipe)
-                    pipeIdx = len(currentPipes) - 1
-                    pipeLine = DirectFrame(parent=node, frameSize=(0, 8000, pipePixelSize/2, -pipePixelSize/2), 
-                        frameColor=(r, g, b, 1), pos=(10, 1, -95 - pipeIdx * 110.0) )
-
+                    current_pipes.append(output_pipe)
+                    pipe_idx = len(current_pipes) - 1
+                    DirectFrame(parent=node,
+                                frameSize=(0, 8000, pipe_pixel_size / 2,
+                                           -pipe_pixel_size / 2),
+                                frameColor=(r, g, b, 1),
+                                pos=(10, 1, -95 - pipe_idx * 110.0))
                 w = 160
-                h = Globals.base.win.getYSize() / float(Globals.base.win.getXSize()) * w
-                pipeBg = DirectFrame(parent=node, 
-                    frameSize=(-pipePixelSize, w+pipePixelSize, h/2 + pipePixelSize, -h/2 - pipePixelSize), 
-                    frameColor=(r, g, b, 1), pos=(0, 1, -95 - pipeIdx * 110.0))
+                h = Globals.base.win.get_y_size() /\
+                    float(Globals.base.win.get_x_size()) * w
+                DirectFrame(parent=node,
+                            frameSize=(-pipe_pixel_size, w + pipe_pixel_size,
+                                       h / 2 + pipe_pixel_size,
+                                       -h / 2 - pipe_pixel_size),
+                            frameColor=(r, g, b, 1),
+                            pos=(0, 1, -95 - pipe_idx * 110.0))
 
-                if pipeTex.getZSize() > 1:
-                    self.debug("Ignoring 3D image", pipeTex.get_name())
+                if pipe_tex.get_z_size() > 1:
+                    self.debug("Ignoring 3D image", pipe_tex.get_name())
                     continue
 
-                if pipeTex.getTextureType() == Texture.TTBufferTexture:
-                    self.debug("Ignoring texture buffer", pipeTex.get_name())
+                if pipe_tex.get_texture_type() == Texture.TT_buffer_texture:
+                    self.debug("Ignoring texture buffer", pipe_tex.get_name())
                     continue
 
-                img = BetterOnscreenImage(image=pipeTex, parent=node, x=0, y=50 + pipeIdx * 110.0, 
-                    w=w, h=h, anyFilter=False, transparent=False)
+                BetterOnscreenImage(image=pipe_tex, parent=node,
+                                    x=0, y=50 + pipe_idx * 110.0,
+                                    w=w, h=h, any_filter=False,
+                                    transparent=False)
 
-            for inputPipe in stage.getInputPipes():
-                idx = currentPipes.index(inputPipe)
-                r, g, b = rgbFromString(inputPipe)
-                marker = DirectFrame(parent=node, frameSize=(0, 10, 40, -40), frameColor=(r, g, b, 1),
-                    pos=(5, 1, -95 - idx *110.0))
+            for input_pipe in stage.get_input_pipes():
+                idx = current_pipes.index(input_pipe)
+                r, g, b = rgb_from_string(input_pipe)
+                DirectFrame(parent=node, frameSize=(0, 10, 40, -40),
+                            frameColor=(r, g, b, 1),
+                            pos=(5, 1, -95 - idx * 110.0))
 
-        self.pipeDescriptions = self._contentNode.attachNewNode("pipeDescriptions")
-        self.pipeDescriptions.setScale(1, 1, -1)
+        self._pipe_descriptions = self._content_node.attach_new_node(
+            "PipeDescriptions")
+        self._pipe_descriptions.set_scale(1, 1, -1)
 
         # Generate the pipe descriptions
-        for idx, pipe in enumerate(currentPipes):
-            r, g, b = rgbFromString(pipe)
-            pipeBg = DirectFrame(parent=self.pipeDescriptions, frameSize=(0, 180, -90, -140), 
-                frameColor=(r, g, b, 1.0), pos=(0, 1, -idx*110.0))
-            pipeHeader = BetterOnscreenText(parent=self.pipeDescriptions, text=pipe, 
-                x=20, y=120 + idx*110, size=15, color=Vec3(0.2, 0.2, 0.2))
+        for idx, pipe in enumerate(current_pipes):
+            r, g, b = rgb_from_string(pipe)
+            DirectFrame(parent=self._pipe_descriptions,
+                        frameSize=(0, 180, -90, -140),
+                        frameColor=(r, g, b, 1.0), pos=(0, 1, -idx * 110.0))
+            BetterOnscreenText(parent=self._pipe_descriptions, text=pipe,
+                               x=20, y=120 + idx * 110, size=15,
+                               color=Vec3(0.2, 0.2, 0.2))
 
-
-    
-    def _createComponents(self):
+    def _create_components(self):
         """ Internal method to create the window components """
-        DraggableWindow._createComponents(self)
+        DraggableWindow._create_components(self)
 
-        self._contentFrame = DirectScrolledFrame(
-            frameSize=(0, self.width - 40, 0, self.height - 80),
-            canvasSize=(0, self.scrollWidth, 0, self.scrollHeight),
+        self._content_frame = DirectScrolledFrame(
+            frameSize=(0, self._width - 40, 0, self._height - 80),
+            canvasSize=(0, self._scroll_width, 0, self._scroll_height),
             autoHideScrollBars=False,
             scrollBarWidth=20.0,
             frameColor=(0, 0, 0, 0),
             verticalScroll_relief=False,
             horizontalScroll_relief=False,
-            # horizontalScroll_incButton_relief=False,
-            # horizontalScroll_decButton_relief=False,
-            # horizontalScroll_thumb_relief=False,
             parent=self._node,
-            pos=(20, 1, -self.height + 20)
-            )
-        self._contentNode = self._contentFrame.getCanvas().attachNewNode("PipeComponents")
-        self._contentNode.setScale(1, 1, -1)
-        self._contentNode.setZ(self.scrollHeight)
-        # self._contentNode.setX(-self.scrollWidth)
+            pos=(20, 1, -self._height + 20))
+        self._content_node = self._content_frame.getCanvas().attach_new_node("PipeComponents")
+        self._content_node.set_scale(1, 1, -1)
+        self._content_node.set_z(self._scroll_height)

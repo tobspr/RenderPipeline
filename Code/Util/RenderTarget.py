@@ -11,20 +11,21 @@ from DebugObject import DebugObject
 from ..Globals import Globals
 from ..GUI.BufferViewer import BufferViewer
 
+
 class RenderTargetType:
 
     """ This stores the possible types of targets beeing able
     to be attached to a RenderTarget. Python does not support
     enums (yet) so this is a class. """
 
-    Color = "color"
-    Depth = "depth"
-    Aux0 = "aux0"
-    Aux1 = "aux1"
-    Aux2 = "aux2"
-    Aux3 = "aux3"
+    COLOR = "color"
+    DEPTH = "depth"
+    AUX_0 = "aux0"
+    AUX_1 = "aux1"
+    AUX_2 = "aux2"
+    AUX_3 = "aux3"
 
-    All = ["depth", "color", "aux0", "aux1", "aux2", "aux3"]
+    ALL = ["depth", "color", "aux0", "aux1", "aux2", "aux3"]
 
 
 class RenderTarget(DebugObject):
@@ -35,62 +36,62 @@ class RenderTarget(DebugObject):
     setting up the scene rendering when using render-to-texture.
 
     After creating a RenderTarget, you have to add targets with
-    addRenderTexture, with target beeing RenderTargetType.XXX. There
-    are shortcuts for this like addColorTexture and addDepthTexture.
+    add_render_texture, with target beeing RenderTargetType.XXX. There
+    are shortcuts for this like add_color_texture and add_depth_texture.
 
     When not setting a size, the size will be the size of the specified
-    window (set with setSource, default is base.win). Using setSize(-1, -1)
+    window (set with set_source, default is base.win). Using set_size(-1, -1)
     has the same effect.
 
-    Then you can either call prepareSceneRender(), which will render
-    the scene of the sourceCam (set with setSource, default is base.cam)
-    to the buffer, or call prepareOffscreenBuffer(), which will just
+    Then you can either call prepare_scene_render(), which will render
+    the scene of the sourceCam (set with set_source, default is base.cam)
+    to the buffer, or call prepare_offscreen_buffer(), which will just
     create an offscreen buffer.
 
     A sample setup might look like this:
 
         target = RenderTarget("My Fancy Target")
 
-        # This adds RenderTargetType.Color and RenderTargetType.Depth
-        target.addColorAndDepth()
+        # This adds RenderTargetType.COLOR and RenderTargetType.DEPTH
+        target.add_color_and_depth()
 
-        # This adds RenderTargetType.Aux0 and RenderTargetType.Aux1
-        target.addAuxTextures(2)
-        target.setAuxBits(16)
-        target.setColorBits(16)
-        target.setDepthBits(32)
-        target.prepareSceneRender()
+        # This adds RenderTargetType.AUX_0 and RenderTargetType.AUX_1
+        target.add_aux_textures(2)
+        target.set_aux_bits(16)
+        target.set_color_bits(16)
+        target.set_depth_bits(32)
+        target.prepare_scene_render()
 
     """
 
-    numBuffersAllocated = 0
+    _NUM_BUFFERS_ALLOCATED = 0
 
     def __init__(self, name="DefaultRT"):
         """ Creates a new RenderTarget with the given name. Use a
         descriptive name as it will show with this name in pstats """
         DebugObject.__init__(self, "RenderTarget")
         self._targets = {}
-        self._bindMode = GraphicsOutput.RTMBindOrCopy
-        self._depthBits = 16
+        self._bind_mode = GraphicsOutput.RTMBindOrCopy
+        self._depth_bits = 16
         self._quad = None
-        self._sourceCam = Globals.base.cam
-        self._sourceWindow = Globals.base.win
+        self._source_cam = Globals.base.cam
+        self._source_window = Globals.base.win
         self._width = -1
         self._height = -1
         self._name = name
-        self._colorBits = 8
-        self._auxBits = 8
-        self._region = self._findRegionForCamera()
-        self._enableTransparency = False
+        self._color_bits = 8
+        self._aux_bits = 8
+        self._region = self._find_region_for_camera()
+        self._enable_transparency = False
         self._layers = 0
-        self._createOverlayQuad = True
-        self._writeColor = True
+        self._create_overlay_quad = True
+        self._write_color = True
         self._multisamples = 0
         self._engine = Globals.base.graphicsEngine
         self._active = False
-        self._useTextureArrays = False
-        self._haveColorAlpha = True
-        self._internalBuffer = None
+        self._use_texture_arrays = False
+        self._have_color_alpha = True
+        self._internal_buffer = None
         self._camera = None
         self._node = None
         self._rename(name)
@@ -98,48 +99,48 @@ class RenderTarget(DebugObject):
 
     def __getitem__(self, name):
         """ Handy function to be able to to RenderTarget["color"] instead of
-        RenderTarget.getTarget("color") """
-        return self.getTarget(name)
+        RenderTarget.get_target("color") """
+        return self.get_target(name)
 
-    def setCreateOverlayQuad(self, createQuad):
+    def set_create_overlay_quad(self, create_quad):
         """ When create quad is set to true, a fullscreen quad will be used to be
         able to directly apply a shader to it """
-        self._createOverlayQuad = createQuad
+        self._create_overlay_quad = create_quad
 
-    def setHaveColorAlpha(self, color_alpha):
+    def set_have_color_alpha(self, color_alpha):
         """ Sets Whether the color buffer has an alpha channel or not """
-        self._haveColorAlpha = color_alpha
+        self._have_color_alpha = color_alpha
 
-    def setUseTextureArrays(self, state=True):
-        """ Makes the render buffer use a 2D texture array when rendering 
+    def set_use_texture_arrays(self, state=True):
+        """ Makes the render buffer use a 2D texture array when rendering
         layers. Otherwise a 3D Texture is choosen """
-        self._useTextureArrays = state
+        self._use_texture_arrays = state
 
-    def setMultisamples(self, samples):
+    def set_multisamples(self, samples):
         """ Sets the amount of multisamples to use """
         self._multisamples = samples
 
-    def setEngine(self, engine):
+    def set_engine(self, engine):
         """ Sets the graphic engine to use """
         self._engine = engine
 
-    def setLayers(self, layers):
+    def set_layers(self, layers):
         """ Sets the number of layers. When greater than 1, this enables
         rendering to a texture array or 3D texture."""
         self._layers = layers
         if layers > 1:
-            self._bindMode = GraphicsOutput.RTMBindLayered
+            self._bind_mode = GraphicsOutput.RTMBindLayered
 
-    def setName(self, name):
+    def set_name(self, name):
         """ Sets the buffer name to identify it in pstats """
         self._name = name
 
-    def setEnableTransparency(self, enabled=True):
+    def set_enable_transparency(self, enabled=True):
         """ Sets Whether objects can be transparent in this buffer """
-        self._enableTransparency = enabled
+        self._enable_transparency = enabled
 
-    def setSize(self, width, height=None):
-        """ Sets the buffer size in pixels. -1 means as big as the current 
+    def set_size(self, width, height=None):
+        """ Sets the buffer size in pixels. -1 means as big as the current
         window (default) """
         self._width = width
 
@@ -148,309 +149,313 @@ class RenderTarget(DebugObject):
 
         self._height = height
 
-    def setHalfResolution(self):
+    def set_half_resolution(self):
         """ Sets the buffer to render at half the size of the window """
-        self._width = (Globals.resolution.x+1) / 2
-        self._height = (Globals.resolution.y+1) / 2
+        self._width = (Globals.resolution.x + 1) / 2
+        self._height = (Globals.resolution.y + 1) / 2
 
-    def setQuarterResolution(self):
+    def set_quarter_resolution(self):
         """ Sets the buffer to render at half the size of the window """
-        self._width = (Globals.resolution.x+3) / 4
-        self._height = (Globals.resolution.y+3) / 4
+        self._width = (Globals.resolution.x + 3) / 4
+        self._height = (Globals.resolution.y + 3) / 4
 
-    def setColorWrite(self, write):
+    def set_color_write(self, write):
         """ Sets Whether to write color """
-        self._writeColor = write
+        self._write_color = write
 
-    def setColorBits(self, colorBits):
+    def set_color_bits(self, color_bits):
         """ Sets the amount of color bits to request """
-        self._colorBits = colorBits
+        self._color_bits = color_bits
 
-    def setAuxBits(self, auxBits):
+    def set_aux_bits(self, aux_bits):
         """ Sets the amount  of auxiliary bits to request """
-        self._auxBits = auxBits
+        self._aux_bits = aux_bits
 
-    def setDepthBits(self, bits):
+    def set_depth_bits(self, bits):
         """ Sets the amount of depth bits to request """
-        self._depthBits = bits
+        self._depth_bits = bits
 
-    def makeMainTarget(self):
+    def make_main_target(self):
         """ Makes this target show on screen """
-        Globals.base.win.getDisplayRegion(1).setCamera(self._camera)
-        self._engine.removeWindow(self._internalBuffer)
-        self._internalBuffer.clearRenderTextures()
+        Globals.base.win.get_display_region(1).set_camera(self._camera)
+        self._engine.remove_window(self._internal_buffer)
+        self._internal_buffer.clear_render_textures()
 
-        # if self._createOverlayQuad:
-        #     self._quad.removeNode()
+        # Globals.base.win.get_display_region(2).set_active(False)
+        for idx in xrange(Globals.base.win.get_num_display_regions()):
+            dr = Globals.base.win.get_display_region(idx)
+            if idx not in [1, 2, 4]:
+                # overlay display region
+                dr.set_active(False)
 
-
-    def setShaderInput(self, *args):
+    def set_shader_input(self, *args):
         """ This is a shortcut for setting shader inputs on the buffer """
-        self.getNode().setShaderInput(*args)
+        self.get_node().set_shader_input(*args)
 
-    def setShader(self, shader):
+    def set_shader(self, shader):
         """ This is a shortcut for setting shaders to the buffer """
-        self.getNode().setShader(shader)
+        self.get_node().set_shader(shader)
 
-    def getTarget(self, target):
+    def get_target(self, target):
         """ Returns the texture handle for the given target """
         return self._targets[target]
 
-    def getColorTexture(self):
+    def get_color_texture(self):
         """ Returns the handle to the color texture """
-        return self.getTexture(RenderTargetType.Color)
+        return self.get_texture(RenderTargetType.COLOR)
 
-    def getDepthTexture(self):
+    def get_depth_texture(self):
         """ Returns the handle to the depth texture """
-        return self.getTexture(RenderTargetType.Depth)
+        return self.get_texture(RenderTargetType.DEPTH)
 
-    def getInternalBuffer(self):
+    def get_internal_buffer(self):
         """ Returns the internal buffer object """
-        return self._internalBuffer
+        return self._internal_buffer
 
-    def getInternalRegion(self):
+    def get_internal_region(self):
         """ Returns the internal display region, this can be used to set
         custom sort values."""
-        return self._internalBuffer.getDisplayRegion(0)
+        return self._internal_buffer.get_display_region(0)
 
-    def getAuxTexture(self, index=0):
+    def get_aux_texture(self, index=0):
         """ Returns the n-th aux texture, starting at 0 """
         assert(index < 4)
-        auxTextures = [
-            RenderTargetType.Aux0,
-            RenderTargetType.Aux1,
-            RenderTargetType.Aux2,
-            RenderTargetType.Aux3
+        aux_textures = [
+            RenderTargetType.AUX_0,
+            RenderTargetType.AUX_1,
+            RenderTargetType.AUX_2,
+            RenderTargetType.AUX_3
         ]
-        return self.getTexture(auxTextures[index])
+        return self.get_texture(aux_textures[index])
 
-    def setSource(self, sourceCam, sourceWin, region=None):
+    def set_source(self, source_cam, source_win, region=None):
         """ Sets source window and camera. When region is None, it will
         be set automatically (highly recommended) """
-        self._sourceCam = sourceCam
-        self._sourceWindow = sourceWin
+        self._source_cam = source_cam
+        self._source_window = source_win
         self._region = region
 
-    def setBindModeLayered(self, layered=True):
+    def set_bind_mode_layered(self, layered=True):
         """ When rendering layered, you have to call this. This
         sets the internal bind mode for the RenderBuffer. When not using
         layered bind mode, the rendering might get very slow. """
         if layered:
-            self._bindMode = GraphicsOutput.RTMBindLayered
+            self._bind_mode = GraphicsOutput.RTM_bind_layered
         else:
-            self._bindMode = GraphicsOutput.RTMBindOrCopy
+            self._bind_mode = GraphicsOutput.RTM_bind_or_copy
 
-    def addRenderTexture(self, targetType):
-        """ Lower level function to add a new target. targetType should be
+    def add_render_texture(self, target_type):
+        """ Lower level function to add a new target. target_type should be
         a RenderTargetType """
-        if targetType in self._targets:
-            self.error("You cannot add another type of", targetType)
+        if target_type in self._targets:
+            self.error("You cannot add another type of", target_type)
             return False
 
-        self.debug("Adding render texture: ", targetType)
-        self._targets[targetType] = Texture(self._name + "-" + targetType[0].upper() + targetType[1:])
+        self.debug("Adding render texture: ", target_type)
+        self._targets[target_type] = Texture(self._name + "-" +
+                                             target_type[0].upper() +
+                                             target_type[1:])
 
-    def addColorTexture(self):
+    def add_color_texture(self):
         """ Adds a color target """
-        return self.addRenderTexture(RenderTargetType.Color)
+        return self.add_render_texture(RenderTargetType.COLOR)
 
-    def addDepthTexture(self):
+    def add_depth_texture(self):
         """ Adds a depth target """
-        return self.addRenderTexture(RenderTargetType.Depth)
+        return self.add_render_texture(RenderTargetType.DEPTH)
 
-    def addColorAndDepth(self):
+    def add_color_and_depth(self):
         """ Adds a color and depth target """
-        self.addColorTexture()
-        self.addDepthTexture()
+        self.add_color_texture()
+        self.add_depth_texture()
 
-    def addAuxTextures(self, num):
+    def add_aux_textures(self, num):
         """ Adds n aux textures. num should be between 1 and 4 """
         assert(num > 0 and num <= 4)
         targets = [
-            RenderTargetType.Aux0,
-            RenderTargetType.Aux1,
-            RenderTargetType.Aux2,
-            RenderTargetType.Aux3,
+            RenderTargetType.AUX_0,
+            RenderTargetType.AUX_1,
+            RenderTargetType.AUX_2,
+            RenderTargetType.AUX_3,
         ]
 
         for i in range(num):
-            self.addRenderTexture(targets[i])
+            self.add_render_texture(targets[i])
 
-    def addAuxTexture(self):
+    def add_aux_texture(self):
         """ Adds a single aux texture """
-        self.addAuxTextures(1)
+        self.add_aux_textures(1)
 
-    def getAllTargets(self):
+    def get_all_targets(self):
         """ Returns all attached targets """
         targets = []
-        for target in RenderTargetType.All:
-            if self.hasTarget(target):
+        for target in RenderTargetType.ALL:
+            if self.has_target(target):
                 targets.append(target)
         return targets
 
-    def hasTarget(self, target):
+    def has_target(self, target):
         """ Check if a target is assigned to this target """
         return target in self._targets
 
-    def hasAuxTextures(self):
+    def has_aux_textures(self):
         """ Returns Whether this target has at least 1 aux texture attached """
-        return self.hasTarget(RenderTargetType.Aux0)
+        return self.has_target(RenderTargetType.AUX_0)
 
-    def hasColorTexture(self):
+    def has_color_texture(self):
         """ Returns Whether this target has a color texture attached """
-        return self.hasTarget(RenderTargetType.Color)
+        return self.has_target(RenderTargetType.COLOR)
 
-    def hasDepthTexture(self):
+    def has_depth_texture(self):
         """ Returns Whether this target has a depth texture attached """
-        return self.hasTarget(RenderTargetType.Depth)
+        return self.has_target(RenderTargetType.DEPTH)
 
-    def getRegion(self):
+    def get_region(self):
         """ Returns the display region of this target. You can use
         this to set custom clears """
         return self._region
 
-    def prepareSceneRender(self, earlyZ = False, earlyZCam = None):
+    def prepare_scene_render(self, early_z=False, early_z_cam=None):
         """ Renders the scene of the source camera to the buffer. See the
         documentation of this class for further information """
 
         self.debug("Preparing scene render")
 
         # Init buffer object
-        self._createBuffer()
+        self._create_buffer()
 
         # Prepare initial state
         cs = NodePath("InitialStateDummy")
-        cs.setState(self._sourceCam.node().getInitialState())
-        if self.hasTarget(RenderTargetType.Aux0):
-            cs.setAttrib(AuxBitplaneAttrib.make(self._auxBits), 20)
+        cs.set_state(self._source_cam.node().get_initial_state())
+        if self.has_target(RenderTargetType.AUX_0):
+            cs.set_attrib(AuxBitplaneAttrib.make(self._aux_bits), 20)
 
-        cs.setAttrib(StencilAttrib.makeOff(), 20)
+        cs.set_attrib(StencilAttrib.make_off(), 20)
 
-        if not self._enableTransparency:
-            cs.setAttrib(
-                TransparencyAttrib.make(TransparencyAttrib.MNone), 100)
+        if not self._enable_transparency:
+            cs.set_attrib(
+                TransparencyAttrib.make(TransparencyAttrib.M_none), 100)
 
-        if not self._writeColor:
-            cs.setAttrib(ColorWriteAttrib.make(ColorWriteAttrib.COff), 100)
+        if not self._write_color:
+            cs.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 100)
 
-        self._sourceCam.node().setInitialState(cs.getState())
+        self._source_cam.node().set_initial_state(cs.get_state())
 
-        if earlyZ:
-            self._earlyZRegion = self._internalBuffer.makeDisplayRegion()
-            self._earlyZRegion.setSort(-10)
-            self._earlyZRegion.setCamera(earlyZCam)
+        if early_z:
+            self._early_z_region = self._internal_buffer.make_display_region()
+            self._early_z_region.set_sort(-10)
+            self._early_z_region.set_camera(early_z_cam)
 
         self._node = NodePath("RTRoot")
 
         # Prepare fullscreen quad
-        if self._createOverlayQuad:
-            
-            self._quad = self._makeFullscreenQuad()
-            self._quad.reparentTo(self._node)
-            
-            bufferCam = self._makeFullscreenCam()
-            self._camera = self._node.attachNewNode(bufferCam)
-            self._region.setCamera(self._camera)
-            self._region.setSort(5)
+        if self._create_overlay_quad:
+
+            self._quad = self._make_fullscreen_quad()
+            self._quad.reparent_to(self._node)
+
+            buffer_cam = self._make_fullscreen_cam()
+            self._camera = self._node.attach_new_node(buffer_cam)
+            self._region.set_camera(self._camera)
+            self._region.set_sort(5)
 
         # Set clears
-        bufferRegion = self._internalBuffer.getDisplayRegion(0)
-        self._correctClears()
+        buffer_region = self._internal_buffer.get_display_region(0)
+        self._correct_clears()
 
-        bufferRegion.setClearStencilActive(False)
+        buffer_region.set_clear_stencil_active(False)
 
         # Set aux clears
-        targetCheck = [
-            (RenderTargetType.Aux0, GraphicsOutput.RTPAuxRgba0),
-            (RenderTargetType.Aux1, GraphicsOutput.RTPAuxRgba1),
-            (RenderTargetType.Aux2, GraphicsOutput.RTPAuxRgba2),
-            (RenderTargetType.Aux3, GraphicsOutput.RTPAuxRgba3),
+        target_check = [
+            (RenderTargetType.AUX_0, GraphicsOutput.RTP_aux_rgba_0),
+            (RenderTargetType.AUX_1, GraphicsOutput.RTP_aux_rgba_1),
+            (RenderTargetType.AUX_2, GraphicsOutput.RTP_aux_rgba_2),
+            (RenderTargetType.AUX_3, GraphicsOutput.RTP_aux_rgba_3),
         ]
-        for target, targetBindPos in targetCheck:
-            if self.hasTarget(target):
-                bufferRegion.setClearActive(targetBindPos, 1)
-                bufferRegion.setClearValue(
+        for target, targetBindPos in target_check:
+            if self.has_target(target):
+                buffer_region.set_clear_active(targetBindPos, 1)
+                buffer_region.set_clear_value(
                     targetBindPos, Vec4(0.5, 0.5, 1.0, 0.0))
 
-        self._region.disableClears()
+        self._region.disable_clears()
 
-        bufferRegion.setCamera(self._sourceCam)
-        bufferRegion.setActive(1)
+        buffer_region.set_camera(self._source_cam)
+        buffer_region.set_active(1)
 
-        if earlyZ:
-            bufferRegion.setClearDepthActive(False)
-        bufferRegion.setSort(20)
+        if early_z:
+            buffer_region.set_clear_depth_active(False)
+        buffer_region.set_sort(20)
 
-        if earlyZ:
-            self._earlyZRegion.disableClears()
-            self._earlyZRegion.setClearDepthActive(True)
-            self._earlyZRegion.setActive(1)
+        if early_z:
+            self._early_z_region.disable_clears()
+            self._early_z_region.set_clear_depth_active(True)
+            self._early_z_region.set_active(1)
 
-
-        self._setSizeShaderInput()
+        self._set_size_shader_input()
 
         self._active = True
-        self._registerBuffer()
+        self._register_buffer()
 
-    def prepareOffscreenBuffer(self):
+    def prepare_offscreen_buffer(self):
         """ Creates an offscreen buffer for this target """
 
         self.debug("Preparing offscreen buffer")
 
         # Init buffer object
-        self._createBuffer()
+        self._create_buffer()
 
         # Prepare fullscreen quad
         self._node = NodePath("RTRoot")
-        self._quad = self._makeFullscreenQuad()
-        self._quad.reparentTo(self._node)
+        self._quad = self._make_fullscreen_quad()
+        self._quad.reparent_to(self._node)
 
         # Prepare fullscreen camera
-        bufferCam = self._makeFullscreenCam()
-        initialState = NodePath("is")
+        buffer_cam = self._make_fullscreen_cam()
+        initial_state = NodePath("is")
 
-        if not self._writeColor:
-            initialState.setAttrib(
-                ColorWriteAttrib.make(ColorWriteAttrib.COff), 1000)
+        if not self._write_color:
+            initial_state.set_attrib(
+                ColorWriteAttrib.make(ColorWriteAttrib.C_off), 1000)
 
-        initialState.setAttrib(
-            DepthWriteAttrib.make(DepthWriteAttrib.MNone), 1000)
+        initial_state.set_attrib(
+            DepthWriteAttrib.make(DepthWriteAttrib.M_none), 1000)
 
-        bufferCam.setInitialState(initialState.getState())
+        buffer_cam.set_initial_state(initial_state.get_state())
 
-        self._camera = self._node.attachNewNode(bufferCam)
+        self._camera = self._node.attach_new_node(buffer_cam)
 
-        bufferRegion = self._internalBuffer.getDisplayRegion(0)
-        bufferRegion.setCamera(self._camera)
-        bufferRegion.setActive(1)
-        self._setSizeShaderInput()
+        buffer_region = self._internal_buffer.get_display_region(0)
+        buffer_region.set_camera(self._camera)
+        buffer_region.set_active(1)
+        self._set_size_shader_input()
 
         self._active = True
-        self._registerBuffer()
+        self._register_buffer()
 
-    def setActive(self, active):
+    def set_active(self, active):
         """ You can enable / disable the buffer with this. When disabled,
         shaders on this buffer aren't executed """
         if self._active is not active:
-            self._internalBuffer.getDisplayRegion(
-                0).setActive(active)
-            # self._region.setActive(active)
+            self._internal_buffer.get_display_region(
+                0).set_active(active)
+            # self._region.set_active(active)
             self._active = active
 
-    def isActive(self):
+    def is_active(self):
         """ Returns Whether the buffer is active """
         return self._active
 
-    def getQuad(self):
+    def get_quad(self):
         """ Returns the quad-node path. You can use this to set attributes on it """
         return self._quad
 
-    def getNode(self):
+    def get_node(self):
         """ Returns the buffer top node path, where the quad and camera is parented
         to """
         return self._node
 
-    def getTexture(self, target):
+    def get_texture(self, target):
         """ Returns the texture assigned to a target. The target should be a
         RenderTargetType """
         if target not in self._targets:
@@ -458,131 +463,123 @@ class RenderTarget(DebugObject):
                 "The target", target, "isn't bound to this RenderTarget!")
             return
 
-        return self.getTarget(target)
+        return self.get_target(target)
 
-    def setClearDepth(self, clear=True, force=False):
+    def set_clear_depth(self, clear=True, force=False):
         """ Adds a depth clear """
-        self._internalBuffer.setClearDepthActive(clear)
+        self._internal_buffer.set_clear_depth_active(clear)
         if clear:
-            self._internalBuffer.setClearDepth(1.0)
+            self._internal_buffer.set_clear_depth(1.0)
 
         if force:
-            self.getInternalRegion().setClearDepth(clear)
+            self.get_internal_region().set_clear_depth(clear)
 
-    def setClearColor(self, clear=True, color=None):
+    def set_clear_color(self, clear=True, color=None):
         """ Adds a color clear """
-        self.getInternalRegion().setClearColorActive(clear)
-        self._internalBuffer.setClearColorActive(clear)
-
+        self.get_internal_region().set_clear_color_active(clear)
+        self._internal_buffer.set_clear_color_active(clear)
 
         if clear:
             if color is None:
                 color = Vec4(1, 0, 1, 1)
-            self._internalBuffer.setClearColor(color)
-            # self.getInternalRegion().setClearColor(color)
+            self._internal_buffer.set_clear_color(color)
+            # self.get_internal_region().set_clear_color(color)
 
-    def removeQuad(self):
+    def remove_quad(self):
         """ Removes the fullscren quad after creation, this might be required
         when rendering to a scene which is not the main scene """
-        self.getQuad().node().removeAllChildren()
+        self.get_quad().node().remove_all_children()
 
-
-    def isActive(self): 
+    def is_active(self):
         """ Returns Whether this buffer is currently active """
         return self._active
 
-    def deleteBuffer(self):
+    def delete_buffer(self):
         """ Deletes this buffer, restoring the previous state """
-        # MemoryMonitor.unregisterRenderTarget(self._name, self)
-        self._internalBuffer.clearRenderTextures()
-        self._engine.removeWindow(self._internalBuffer)
+        # MemoryMonitor.unregister_render_target(self._name, self)
+        self._internal_buffer.clear_render_textures()
+        self._engine.remove_window(self._internal_buffer)
         self._active = False
-        BufferViewer.unregisterEntry(self)
+        BufferViewer.unregister_entry(self)
 
-        if self._createOverlayQuad:
-            self._quad.removeNode()
+        if self._create_overlay_quad:
+            self._quad.remove_node()
 
-        for target in RenderTargetType.All:
-            if self.hasTarget(target):
-                tex = self.getTarget(target)
+        for target in RenderTargetType.ALL:
+            if self.has_target(target):
+                tex = self.get_target(target)
 
                 # TODO: Doesn'T work with scattering yet
-                # tex.releaseAll()
+                # tex.release_all()
 
-    
-    def _makeFullscreenQuad(self):
+    def _make_fullscreen_quad(self):
         """ Create a quad which fills the whole screen """
         cm = CardMaker("BufferQuad")
-        cm.setFrameFullscreenQuad()
+        cm.set_frame_fullscreen_quad()
         quad = NodePath(cm.generate())
 
-        quad.setDepthTest(False)
-        quad.setDepthWrite(False)
-        quad.setAttrib(TransparencyAttrib.make(TransparencyAttrib.MNone), 1000)
-        quad.setColor(Vec4(1, 0.5, 0.5, 1))
+        quad.set_depth_test(False)
+        quad.set_depth_write(False)
+        quad.set_attrib(TransparencyAttrib.make(TransparencyAttrib.M_none), 1000)
+        quad.set_color(Vec4(1, 0.5, 0.5, 1))
 
         # Disable culling
-        quad.node().setFinal(True)
-        quad.node().setBounds(OmniBoundingVolume())
-        quad.setBin("unsorted", 10)
+        quad.node().set_final(True)
+        quad.node().set_bounds(OmniBoundingVolume())
+        quad.set_bin("unsorted", 10)
         return quad
 
-    
-    def _makeFullscreenCam(self):
+    def _make_fullscreen_cam(self):
         """ Creates an orthographic camera for this buffer """
-        bufferCam = Camera("BufferCamera")
+        buffer_cam = Camera("BufferCamera")
         lens = OrthographicLens()
-        lens.setFilmSize(2, 2)
-        lens.setFilmOffset(0, 0)
-        lens.setNearFar(-1000, 1000)
-        bufferCam.setLens(lens)
-        bufferCam.setCullBounds(OmniBoundingVolume())
-        return bufferCam
+        lens.set_film_size(2, 2)
+        lens.set_film_offset(0, 0)
+        lens.set_near_far(-1000, 1000)
+        buffer_cam.set_lens(lens)
+        buffer_cam.set_cull_bounds(OmniBoundingVolume())
+        return buffer_cam
 
-    
-    def _findRegionForCamera(self):
+    def _find_region_for_camera(self):
         """ Finds the assigned region of the supplied camera """
-        for i in range(self._sourceWindow.getNumDisplayRegions()):
-            dr = self._sourceWindow.getDisplayRegion(i)
-            drcam = dr.getCamera()
-            if (drcam == self._sourceCam):
+        for i in range(self._source_window.get_num_display_regions()):
+            dr = self._source_window.get_display_region(i)
+            drcam = dr.get_camera()
+            if (drcam == self._source_cam):
                 return dr
         return None
 
-    
-    def _correctClears(self):
+    def _correct_clears(self):
         """ Setups the clear values correctly for the buffer region """
-        region = self._internalBuffer.getDisplayRegion(0)
+        region = self._internal_buffer.get_display_region(0)
 
         clears = []
 
         for i in range(GraphicsOutput.RTPCOUNT):
-            active, value = self._sourceWindow.getClearActive(
-                i), self._sourceWindow.getClearValue(i)
+            active, value = self._source_window.get_clear_active(
+                i), self._source_window.get_clear_value(i)
 
             if not active:
-                active, value = self._region.getClearActive(
-                    i), self._region.getClearValue(i)
+                active, value = self._region.get_clear_active(
+                    i), self._region.get_clear_value(i)
 
-            region.setClearActive(i, active)
-            region.setClearValue(i, value)
+            region.set_clear_active(i, active)
+            region.set_clear_value(i, value)
 
         return clears
 
-    
-    def _setSizeShaderInput(self):
+    def _set_size_shader_input(self):
         """ Makes the buffer size available as shader input in the shader """
-        if self._createOverlayQuad:
-            asInput = Vec4(1.0 / self._width, 1.0 / self._height, self._width, self._height)
-            self.setShaderInput("bufferSize", asInput)
+        if self._create_overlay_quad:
+            size_input = Vec4(1.0 / self._width, 1.0 / self._height,
+                              self._width, self._height)
+            self.set_shader_input("bufferSize", size_input)
 
-    
-    def _registerBuffer(self):
+    def _register_buffer(self):
         """ Internal method to register the buffer at the buffer viewer """
-        BufferViewer.registerEntry(self)
+        BufferViewer.register_entry(self)
 
-    
-    def _createBuffer(self):
+    def _create_buffer(self):
         """ Internal method to create the buffer object """
         self._width = Globals.resolution.x if self._width < 1 else self._width
         self._height = Globals.resolution.y if self._height < 1 else self._height
@@ -594,237 +591,224 @@ class RenderTarget(DebugObject):
             return False
 
         if self._region is None:
-            self._region = self._internalBuffer.makeDisplayRegion()
+            self._region = self._internal_buffer.make_display_region()
 
-    
     def _create(self):
         """ Attempts to create this buffer """
 
         # if len(self._targets.keys()) < 1:
-            # print "WARNING:", self._debug_name, "has no attachments!"
+            # self.error("no attachments!")
 
-        colorIsFloat = self._colorBits >= 16
-        auxIsFloat = self._auxBits >= 16
+        color_is_float = self._color_bits >= 16
+        aux_is_float = self._aux_bits >= 16
 
-        self.debug("Bitcount: color=" + str(self._colorBits) +
-                   "; aux=" + str(self._auxBits) + "; depth=" + str(self._depthBits))
+        self.debug("Bitcount: color=" + str(self._color_bits) +
+                   "; aux=" + str(self._aux_bits) + "; depth=" + str(self._depth_bits))
 
         # set wrap modes for color + auxtextures,
         # also set correct formats:
         # panda doesnt use sized formats automatically, this
         # gives problems when using imageLoad / imageStore
         prepare = [
-            RenderTargetType.Color,
-            RenderTargetType.Aux0,
-            RenderTargetType.Aux1,
-            RenderTargetType.Aux2,
-            RenderTargetType.Aux3,
+            RenderTargetType.COLOR,
+            RenderTargetType.AUX_0,
+            RenderTargetType.AUX_1,
+            RenderTargetType.AUX_2,
+            RenderTargetType.AUX_3,
         ]
 
         for target in prepare:
-            if not self.hasTarget(target):
+            if not self.has_target(target):
                 continue
-            handle = self.getTarget(target)
-            handle.setWrapU(Texture.WMClamp)
-            handle.setWrapV(Texture.WMClamp)
-            handle.setWrapW(Texture.WMClamp)
-            handle.setMinfilter(Texture.FTLinear)
-            handle.setMagfilter(Texture.FTLinear)
-            handle.setAnisotropicDegree(0)
+            handle = self.get_target(target)
+            handle.set_wrap_u(Texture.WMClamp)
+            handle.set_wrap_v(Texture.WMClamp)
+            handle.set_wrap_w(Texture.WMClamp)
+            handle.set_minfilter(Texture.FTLinear)
+            handle.set_magfilter(Texture.FTLinear)
+            handle.set_anisotropic_degree(0)
 
-            handle.setXSize(self._width)
-            handle.setYSize(self._height)
+            handle.set_x_size(self._width)
+            handle.set_y_size(self._height)
 
-            if target == RenderTargetType.Color:
-                if colorIsFloat:
-                    handle.setComponentType(Texture.TFloat)
+            if target == RenderTargetType.COLOR:
+                if color_is_float:
+                    handle.set_component_type(Texture.TFloat)
 
-                if self._colorBits == 8:
-                    if self._haveColorAlpha:
-                        handle.setFormat(Texture.FRgba8)
+                if self._color_bits == 8:
+                    if self._have_color_alpha:
+                        handle.set_format(Texture.FRgba8)
                     else:
-                        handle.setFormat(Texture.FRgb8)
+                        handle.set_format(Texture.FRgb8)
 
-                elif self._colorBits == 16:
-                    if self._haveColorAlpha:
-                        handle.setFormat(Texture.FRgba16)
+                elif self._color_bits == 16:
+                    if self._have_color_alpha:
+                        handle.set_format(Texture.FRgba16)
                     else:
-                        handle.setFormat(Texture.FRgb16)
+                        handle.set_format(Texture.FRgb16)
 
-                elif self._colorBits == 32:
-                    if self._haveColorAlpha:
-                        handle.setFormat(Texture.FRgba32)
+                elif self._color_bits == 32:
+                    if self._have_color_alpha:
+                        handle.set_format(Texture.FRgba32)
                     else:
-                        handle.setFormat(Texture.FRgb32)
+                        handle.set_format(Texture.FRgb32)
             else:
-                if auxIsFloat:
-                    handle.setComponentType(Texture.TFloat)
+                if aux_is_float:
+                    handle.set_component_type(Texture.TFloat)
 
-                if self._auxBits == 8:
-                    handle.setFormat(Texture.FRgba8)
-                elif self._auxBits == 16:
-                    handle.setFormat(Texture.FRgba16)
-                elif self._auxBits == 32:
-                    handle.setFormat(Texture.FRgba32)
+                if self._aux_bits == 8:
+                    handle.set_format(Texture.FRgba8)
+                elif self._aux_bits == 16:
+                    handle.set_format(Texture.FRgba16)
+                elif self._aux_bits == 32:
+                    handle.set_format(Texture.FRgba32)
 
             if self._layers > 1:
-                if self._useTextureArrays:
+                if self._use_texture_arrays:
                     handle.setup2dTextureArray(self._layers)
                 else:
                     handle.setup3dTexture(self._layers)
 
         # set layers for depth texture
-        if self._layers > 1 and self.hasTarget(RenderTargetType.Depth):
-            if self._useTextureArrays:
-                self.getTarget(RenderTargetType.Depth).setup2dTextureArray(
+        if self._layers > 1 and self.has_target(RenderTargetType.DEPTH):
+            if self._use_texture_arrays:
+                self.get_target(RenderTargetType.DEPTH).setup2dTextureArray(
                     self._layers)
             else:
-                self.getTarget(RenderTargetType.Depth).setup3dTexture(
+                self.get_target(RenderTargetType.DEPTH).setup3dTexture(
                     self._layers)
 
-
         # Create buffer descriptors
-        windowProps = WindowProperties.size(self._width, self._height)
-        bufferProps = FrameBufferProperties()
+        window_props = WindowProperties.size(self._width, self._height)
+        buffer_props = FrameBufferProperties()
 
         # Set color and alpha bits
-        if self.hasTarget(RenderTargetType.Color):
-            bufferProps.setRgbaBits(self._colorBits, self._colorBits, self._colorBits, self._colorBits if self._haveColorAlpha else 0)
-            if colorIsFloat:
-                bufferProps.setFloatColor(True)
-
+        if self.has_target(RenderTargetType.COLOR):
+            buffer_props.set_rgba_bits(self._color_bits, self._color_bits,
+                                       self._color_bits, self._color_bits
+                                       if self._have_color_alpha else 0)
+            if color_is_float:
+                buffer_props.set_float_color(True)
 
         # Set aux bits
-        if self.hasTarget(RenderTargetType.Aux0) and auxIsFloat:
+        if self.has_target(RenderTargetType.AUX_0) and aux_is_float:
             # FRAMEBUFFER INCOMPLETE when using this to render to a 3d texture
-            # bufferProps.setAuxFloat(True)
+            # buffer_props.set_aux_float(True)
             pass
 
         # Set depth bits and depth texture format
-        if self.hasTarget(RenderTargetType.Depth):
-            depthTarget = self.getTarget(RenderTargetType.Depth)
+        if self.has_target(RenderTargetType.DEPTH):
+            depth_target = self.get_target(RenderTargetType.DEPTH)
 
-            bufferProps.setDepthBits(self._depthBits)
-            bufferProps.setFloatDepth(True)
+            buffer_props.set_depth_bits(self._depth_bits)
+            buffer_props.set_float_depth(True)
 
-            if self._depthBits != 32:
-                self.error("You cannot request a non-32bit float depth buffer! Requesting a non-float depth buffer instead")
-                bufferProps.setFloatDepth(False)
+            if self._depth_bits != 32:
+                self.error("You cannot request a non-32bit float depth buffer!"
+                           " Requesting a non-float depth buffer instead!")
+                buffer_props.set_float_depth(False)
 
-            if self._depthBits == 16:
-                # depthTarget.setComponentType(Texture.TFloat)
-                depthTarget.setFormat(Texture.FDepthComponent16)
-            if self._depthBits == 24:
-                # depthTarget.setComponentType(Texture.TFloat)
-                depthTarget.setFormat(Texture.FDepthComponent24)
-            elif self._depthBits == 32:
-                # depthTarget.setComponentType(Texture.TFloat)
-                depthTarget.setFormat(Texture.FDepthComponent32)
+            if self._depth_bits == 16:
+                depth_target.set_format(Texture.FDepthComponent16)
+            if self._depth_bits == 24:
+                depth_target.set_format(Texture.FDepthComponent24)
+            elif self._depth_bits == 32:
+                depth_target.set_format(Texture.FDepthComponent32)
 
-            depthTarget.setXSize(self._width)
-            depthTarget.setYSize(self._height)
+            depth_target.set_x_size(self._width)
+            depth_target.set_y_size(self._height)
 
         # We need no stencil (not supported yet)
-        bufferProps.setStencilBits(0)
+        buffer_props.set_stencil_bits(0)
 
-        numAuxtex = 0
+        num_auxtex = 0
 
         # Python really needs switch()
         # FIXME: Why is it 2 when only 1 AUX texture is attached?!
-        if self.hasTarget(RenderTargetType.Aux3):
-            numAuxtex = 3
-        elif self.hasTarget(RenderTargetType.Aux2):
-            numAuxtex = 3
-        elif self.hasTarget(RenderTargetType.Aux1):
-            numAuxtex = 2
-        elif self.hasTarget(RenderTargetType.Aux0):
-            numAuxtex = 1
-
-        self.debug("Num Auxtex=", numAuxtex)
+        if self.has_target(RenderTargetType.AUX_3):
+            num_auxtex = 3
+        elif self.has_target(RenderTargetType.AUX_2):
+            num_auxtex = 3
+        elif self.has_target(RenderTargetType.AUX_1):
+            num_auxtex = 2
+        elif self.has_target(RenderTargetType.AUX_0):
+            num_auxtex = 1
 
         # Add aux textures (either 8 or 16 bit)
-        if auxIsFloat:
-            bufferProps.setAuxHrgba(numAuxtex)
+        if aux_is_float:
+            buffer_props.set_aux_hrgba(num_auxtex)
         else:
-            bufferProps.setAuxRgba(numAuxtex)
+            buffer_props.set_aux_rgba(num_auxtex)
 
-        bufferProps.setMultisamples(self._multisamples)
+        buffer_props.set_multisamples(self._multisamples)
 
         # Register the target for the memory monitoring
-        # MemoryMonitor.addRenderTarget(self._name, self)
+        # MemoryMonitor.add_render_target(self._name, self)
 
         # Create internal graphics output
-        self._internalBuffer = self._engine.makeOutput(
-            self._sourceWindow.getPipe(), self._name, 1,
-            bufferProps, windowProps,
+        self._internal_buffer = self._engine.make_output(
+            self._source_window.get_pipe(), self._name, 1,
+            buffer_props, window_props,
             GraphicsPipe.BFRefuseWindow,
-            self._sourceWindow.getGsg(), self._sourceWindow)
+            self._source_window.get_gsg(), self._source_window)
 
-        if self._internalBuffer is None:
+        if self._internal_buffer is None:
             self.error("Failed to create buffer :(")
             return False
 
         # Add render targets
-        if self.hasTarget(RenderTargetType.Depth):
-            self._internalBuffer.addRenderTexture(
-                self.getTarget(RenderTargetType.Depth), self._bindMode,
+        if self.has_target(RenderTargetType.DEPTH):
+            self._internal_buffer.add_render_texture(
+                self.get_target(RenderTargetType.DEPTH), self._bind_mode,
                 GraphicsOutput.RTPDepth)
 
-        if self.hasTarget(RenderTargetType.Color):
-            self._internalBuffer.addRenderTexture(
-                self.getTarget(RenderTargetType.Color), self._bindMode,
+        if self.has_target(RenderTargetType.COLOR):
+            self._internal_buffer.add_render_texture(
+                self.get_target(RenderTargetType.COLOR), self._bind_mode,
                 GraphicsOutput.RTPColor)
 
         modes = [
-            (RenderTargetType.Aux0, GraphicsOutput.RTPAuxHrgba0,
+            (RenderTargetType.AUX_0, GraphicsOutput.RTPAuxHrgba0,
              GraphicsOutput.RTPAuxRgba0),
-            (RenderTargetType.Aux1, GraphicsOutput.RTPAuxHrgba1,
+            (RenderTargetType.AUX_1, GraphicsOutput.RTPAuxHrgba1,
              GraphicsOutput.RTPAuxRgba1),
-            (RenderTargetType.Aux2, GraphicsOutput.RTPAuxHrgba2,
+            (RenderTargetType.AUX_2, GraphicsOutput.RTPAuxHrgba2,
              GraphicsOutput.RTPAuxRgba2),
-            (RenderTargetType.Aux3, GraphicsOutput.RTPAuxHrgba3,
+            (RenderTargetType.AUX_3, GraphicsOutput.RTPAuxHrgba3,
              GraphicsOutput.RTPAuxRgba3),
         ]
 
-
-        for target, floatMode, normalMode in modes:
-            if self.hasTarget(target):
-                self._internalBuffer.addRenderTexture(
-                    self.getTarget(target), self._bindMode,
-                    floatMode if auxIsFloat else normalMode)
+        for target, float_mode, normal_mode in modes:
+            if self.has_target(target):
+                self._internal_buffer.add_render_texture(
+                    self.get_target(target), self._bind_mode,
+                    float_mode if aux_is_float else normal_mode)
 
         # Increment global sort counter
-        RenderTarget.numBuffersAllocated += 1
-        self._sort = -300 + RenderTarget.numBuffersAllocated * 10
+        RenderTarget._NUM_BUFFERS_ALLOCATED += 1
+        self._sort = -300 + RenderTarget._NUM_BUFFERS_ALLOCATED * 10
 
-        self.debug("our sort value is", self._sort)
-        self._internalBuffer.setSort(self._sort)
-        self._internalBuffer.disableClears()
-        self._internalBuffer.getDisplayRegion(0).disableClears()
+        self._internal_buffer.set_sort(self._sort)
+        self._internal_buffer.disable_clears()
+        self._internal_buffer.get_display_region(0).disable_clears()
 
         for i in xrange(16):
-            self._internalBuffer.setClearActive(i, False)
-            self._internalBuffer.getDisplayRegion(0).setClearActive(i, False)
+            self._internal_buffer.set_clear_active(i, False)
+            self._internal_buffer.get_display_region(0).set_clear_active(i, False)
 
-        self._internalBuffer.setClearStencilActive(False)
+        self._internal_buffer.set_clear_stencil_active(False)
 
-        if self.hasTarget(RenderTargetType.Depth):
-            depthTarget = self.getTarget(RenderTargetType.Depth)
+        if self.has_target(RenderTargetType.DEPTH):
+            depth_target = self.get_target(RenderTargetType.DEPTH)
 
-            if self._depthBits == 16:
-                # depthTarget.setComponentType(Texture.TFloat)
-                depthTarget.setFormat(Texture.FDepthComponent16)
-            elif self._depthBits == 24:
-                # depthTarget.setComponentType(Texture.TFloat)
-                depthTarget.setFormat(Texture.FDepthComponent24)
-            elif self._depthBits == 32:
-                # depthTarget.setComponentType(Texture.TFloat)
-                depthTarget.setFormat(Texture.FDepthComponent32)
-
+            if self._depth_bits == 16:
+                depth_target.set_format(Texture.FDepthComponent16)
+            elif self._depth_bits == 24:
+                depth_target.set_format(Texture.FDepthComponent24)
+            elif self._depth_bits == 32:
+                depth_target.set_format(Texture.FDepthComponent32)
         return True
-
 
     def __repr__(self):
         """ Returns a representative string of this instance """
         return "RenderTarget('" + self._name + "')"
-

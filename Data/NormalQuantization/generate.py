@@ -11,6 +11,7 @@ sys.path.insert(0, "../../")
 from panda3d.core import *
 loadPrcFileData("", "textures-power-2 none")
 loadPrcFileData("", "window-type offscreen")
+loadPrcFileData("", "notify-level-display error")
 
 import direct.directbase.DirectStart
 from Code.Globals import Globals
@@ -21,10 +22,10 @@ mip = 0
 
 while TEXTURE_SIZE >= 2:
     target = RenderTarget()
-    target.setSize(TEXTURE_SIZE, TEXTURE_SIZE)
-    target.addColorTexture()
-    target.setColorBits(16)
-    target.prepareOffscreenBuffer()
+    target.set_size(TEXTURE_SIZE, TEXTURE_SIZE)
+    target.add_color_texture()
+    target.set_color_bits(16)
+    target.prepare_offscreen_buffer()
 
     vertex_shader = """
     #version 400
@@ -102,11 +103,11 @@ while TEXTURE_SIZE >= 2:
     }
 
     """
-    target.setShader(Shader.make(Shader.SLGLSL, vertex_shader, fragment_shader))
-    base.graphicsEngine.renderFrame()
-    k = target.getColorTexture()
-    base.graphicsEngine.extractTextureData(k, base.win.getGsg())
+    target.set_shader(Shader.make(Shader.SLGLSL, vertex_shader, fragment_shader))
+    base.graphicsEngine.render_frame()
+    k = target.get_color_texture()
+    base.graphicsEngine.extractTextureData(k, base.win.get_gsg())
     k.write("NormalQuantizationTex-" + str(mip) + ".png")
     mip += 1
     TEXTURE_SIZE /= 2
-    target.deleteBuffer()
+    target.delete_buffer()

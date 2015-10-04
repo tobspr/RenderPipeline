@@ -21,27 +21,27 @@ class FlagUsedCellsStage(RenderStage):
         return ["GBufferDepth"]
 
     def get_produced_pipes(self):
-        return {"FlaggedCells": self._cell_grid_flags.tex}
+        return {"FlaggedCells": self._cell_grid_flags.get_texture()}
 
     def create(self):
 
         self._target = self._create_target("FlagUsedCells")
         # self._target.addColorTexture()
-        self._target.prepareOffscreenBuffer()
+        self._target.prepare_offscreen_buffer()
 
         self._cell_grid_flags = Image.create_2d_array("CellGridFlags",
             self._tile_amount.x, self._tile_amount.y,
-            self._pipeline.settings.lightGridSlices,
+            self._pipeline.get_settings().lightGridSlices,
             Texture.T_float, Texture.F_r16)
         self._cell_grid_flags.set_clear_color(0)
 
-        self._target.setShaderInput("cellGridFlags", self._cell_grid_flags.tex)
+        self._target.set_shader_input("cellGridFlags", self._cell_grid_flags.get_texture())
 
     def update(self):
         self._cell_grid_flags.clear_image()
 
     def set_shaders(self):
-        self._target.setShader(self._load_shader("Stages/FlagUsedCells.fragment"))
+        self._target.set_shader(self._load_shader("Stages/FlagUsedCells.fragment"))
 
     def resize(self):
         RenderStage.resize(self)

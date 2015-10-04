@@ -1,76 +1,76 @@
 
 from functools import partial
 
-from panda3d.core import Texture, Vec3, Shader, Vec2, LVecBase2i
+from panda3d.core import Texture, Vec3, Shader, LVecBase2i
 from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectGui import DGG
 
-from ..Util.DebugObject import DebugObject
-from ..Util.Generic import rgbFromString
+from ..Util.Generic import rgb_from_string
 from ..Globals import Globals
 from TexturePreview import TexturePreview
 from BetterOnscreenImage import BetterOnscreenImage
 from BetterOnscreenText import BetterOnscreenText
 from DraggableWindow import DraggableWindow
 
+
 class BufferViewer(DraggableWindow):
 
     """ This class provides a view into the buffers to inspect them """
 
-    registeredEntries = []
+    _REGISTERED_ENTRIES = []
 
     @classmethod
-    def registerEntry(self, entry):
+    def register_entry(cls, entry):
         """ Adds a new target to the registered entries """
-        self.registeredEntries.append(entry)
+        cls._REGISTERED_ENTRIES.append(entry)
 
     @classmethod
-    def unregisterEntry(self, entry):
+    def unregister_entry(cls, entry):
         """ Removes a target from the registered entries """
-        if entry in self.registeredEntries:
-            self.registeredEntries.remove(entry)
+        if entry in cls._REGISTERED_ENTRIES:
+            cls._REGISTERED_ENTRIES.remove(entry)
 
     def __init__(self, pipeline):
-        DraggableWindow.__init__(self, width=1400, height=800, title="Buffer Viewer")
-        self.pipeline = pipeline
-        self.scrollHeight = 3000
-        self.stages = []
-        self._createShaders()
-        self._createComponents()
-        self.texPreview = TexturePreview()
-        self.texPreview.hide()
+        """ Constructs the buffer viewer """
+        DraggableWindow.__init__(self, width=1400, height=800,
+                                 title="Buffer Viewer")
+        self._pipeline = pipeline
+        self._scroll_height = 3000
+        self._stages = []
+        self._create_shaders()
+        self._create_components()
+        self._tex_preview = TexturePreview()
+        self._tex_preview.hide()
         self.hide()
 
     def toggle(self):
         """ Updates all the buffers and then toggles the buffer viewer """
-        if self.visible:
-            self._removeComponents()
+        if self._visible:
+            self._remove_components()
             self.hide()
         else:
-            self._performUpdate()
+            self._perform_update()
             self.show()
 
-    
-    def _createShaders(self):
+    def _create_shaders(self):
         """ Create the shaders to display the textures """
-        self.display2DTexShader = Shader.load(Shader.SLGLSL,
+        self._display_2d_tex_shader = Shader.load(Shader.SL_GLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/display2DTex.glsl")
-        self.display3DTexShader = Shader.load(Shader.SLGLSL,
+        self._display_3d_tex_shader = Shader.load(Shader.SL_GLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/display3DTex.glsl")
-        self.display2DTexArrayShader = Shader.load(Shader.SLGLSL,
+        self._display_2d_tex_array_shader = Shader.load(Shader.SL_GLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/display2DTexArray.glsl")
-        self.displayBufferTexShader = Shader.load(Shader.SLGLSL,
+        self._display_buffer_tex_shader = Shader.load(Shader.SL_GLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/displayBufferTex.glsl")
 
-    
-    def _createComponents(self):
+    def _create_components(self):
         """ Creates the window components """
-        DraggableWindow._createComponents(self)
+        DraggableWindow._create_components(self)
 
-        self._contentFrame = DirectScrolledFrame(
-            frameSize=(0, self.width - 40, 0, self.height - 80),
-            canvasSize=(0, self.width - 80, 0, self.scrollHeight),
+        self._content_frame = DirectScrolledFrame(
+            frameSize=(0, self._width - 40, 0, self._height - 80),
+            canvasSize=(0, self._width - 80, 0, self._scroll_height),
             autoHideScrollBars=False,
             scrollBarWidth=20.0,
             frameColor=(0, 0, 0, 0),
@@ -80,113 +80,120 @@ class BufferViewer(DraggableWindow):
             horizontalScroll_decButton_relief=False,
             horizontalScroll_thumb_relief=False,
             parent=self._node,
-            pos=(20, 1, -self.height + 20)
-            )
-        self._contentNode = self._contentFrame.getCanvas().attachNewNode("BufferComponents")
-        self._contentNode.setScale(1, 1, -1)
-        self._contentNode.setZ(self.scrollHeight)
+            pos=(20, 1, -self._height + 20))
+        self._content_node = self._content_frame.getCanvas().attach_new_node(
+            "BufferComponents")
+        self._content_node.set_scale(1, 1, -1)
+        self._content_node.set_z(self._scroll_height)
 
-    
-    def _removeComponents(self):
+    def _remove_components(self):
         """ Removes all components of the buffer viewer """
-        self._contentNode.removeChildren()
-        self.texPreview.hide()
+        self._content_node.removeChildren()
+        self._tex_preview.hide()
 
-    
-    def _performUpdate(self):
-        """ Collects all entries, extracts their images and updates the render """
+    def _perform_update(self):
+        """ Collects all entries, extracts their images and re-renders the
+        window """
 
         # Collect texture stages
-        self.stages = []
-        for entry in self.registeredEntries:
+        self._stages = []
+        for entry in self._REGISTERED_ENTRIES:
             if isinstance(entry, Texture):
-                self.stages.append(entry)
+                self._stages.append(entry)
             # Cant use isinstance or we get circular references
             elif str(entry.__class__).endswith("RenderTarget"):
-                for target in entry.getAllTargets():
-                    self.stages.append(entry.getTarget(target))
+                for target in entry.get_all_targets():
+                    self._stages.append(entry.get_target(target))
             # Cant use isinstance or we get circular references
             elif str(entry.__class__).endswith("Image"):
-                self.stages.append(entry.tex)
+                self._stages.append(entry.get_texture())
             else:
                 self.warn("Unrecognized instance!", entry.__class__)
 
-        self._renderStages()
+        self._render_stages()
 
-    
-    def _onTextureHovered(self, hoverFrame, evt=None):
+    def _on_texture_hovered(self, hover_frame, evt=None):
         """ Internal method when a texture is hovered """
-        hoverFrame["frameColor"] = (0, 0, 0, 0.1)
+        hover_frame["frameColor"] = (0, 0, 0, 0.1)
 
-    
-    def _onTextureBlurred(self, hoverFrame, evt=None):
+    def _on_texture_blurred(self, hover_frame, evt=None):
         """ Internal method when a texture is blurred """
-        hoverFrame["frameColor"] = (0, 0, 0, 0)
+        hover_frame["frameColor"] = (0, 0, 0, 0)
 
-    
-    def _onTextureClicked(self, texHandle, evt=None):
+    def _on_texture_clicked(self, tex_handle, evt=None):
         """ Internal method when a texture is blurred """
-        self.texPreview.present(texHandle)
+        self._tex_preview.present(tex_handle)
 
-    
-    def _renderStages(self):
+    def _render_stages(self):
         """ Renders the stages to the window """
 
-        self._removeComponents()
-        entriesPerRow = 5
-        aspect = Globals.base.win.getYSize() / float(Globals.base.win.getXSize())
-        entryWidth = 255
-        entryHeight = (entryWidth-20) * aspect + 55
+        self._remove_components()
+        entries_per_row = 5
+        aspect = Globals.base.win.get_y_size() /\
+            float(Globals.base.win.get_x_size())
+        entry_width = 255
+        entry_height = (entry_width - 20) * aspect + 55
 
-        for index, stageTex in enumerate(self.stages):
-            stageName = stageTex.getName()
-            stagePrefix = "-".join(stageName.split("-")[:-1]) if "-" in stageName else stageName
+        # Iterate over all stages
+        for index, stage_tex in enumerate(self._stages):
+            stage_name = stage_tex.get_name()
+            stage_prefix = "-".join(stage_name.split("-")[:-1]) \
+                if "-" in stage_name else stage_name
 
-            xoffs = index % entriesPerRow
-            yoffs = index / entriesPerRow
+            xoffs = index % entries_per_row
+            yoffs = index / entries_per_row
 
-            node = self._contentNode.attachNewNode("Preview")
-            node.setSz(-1)
-            node.setPos(30 + xoffs * entryWidth, 1, yoffs * entryHeight)
+            node = self._content_node.attach_new_node("Preview")
+            node.set_sz(-1)
+            node.set_pos(30 + xoffs * entry_width, 1, yoffs * entry_height)
 
-            r,g,b = rgbFromString(stagePrefix, minBrightness=0.4)
+            r, g, b = rgb_from_string(stage_prefix, min_brightness=0.4)
 
-            frame = DirectFrame(parent=node, frameSize=(0, entryWidth - 10, 0, -entryHeight + 10), 
-                frameColor=(r, g, b, 1.0),
-                pos=(0, 0, 0))
+            DirectFrame(parent=node,
+                        frameSize=(0, entry_width - 10, 0, -entry_height + 10),
+                        frameColor=(r, g, b, 1.0),
+                        pos=(0, 0, 0))
 
-            frameHover = DirectFrame(parent=node, frameSize=(0, entryWidth - 10, 0, -entryHeight + 10), 
-                frameColor=(0, 0, 0, 0),
-                pos=(0, 0, 0), state=DGG.NORMAL)
-            frameHover.bind(DGG.ENTER, partial(self._onTextureHovered, frameHover))
-            frameHover.bind(DGG.EXIT, partial(self._onTextureBlurred, frameHover))
-            frameHover.bind(DGG.B1PRESS, partial(self._onTextureClicked, stageTex))
-            # frameHover.hide()
+            frame_hover = DirectFrame(parent=node,
+                                      frameSize=(0, entry_width - 10, 0, -entry_height + 10),
+                                      frameColor=(0, 0, 0, 0),
+                                      pos=(0, 0, 0), state=DGG.NORMAL)
+            frame_hover.bind(DGG.ENTER,
+                             partial(self._on_texture_hovered, frame_hover))
+            frame_hover.bind(DGG.EXIT,
+                             partial(self._on_texture_blurred, frame_hover))
+            frame_hover.bind(DGG.B1PRESS,
+                             partial(self._on_texture_clicked, stage_tex))
 
-            caption = BetterOnscreenText(text=stageName, x=10, y=26, parent=node, size=15, color=Vec3(0.2))
+            BetterOnscreenText(text=stage_name, x=10, y=26, parent=node,
+                               size=15, color=Vec3(0.2))
 
             # Scale image so it always fits
-            w, h = stageTex.getXSize(), stageTex.getYSize()
-            scaleX = float(entryWidth-30) / max(1, w)
-            scaleY = float(entryHeight-60) / max(1, h)
-            scaleFactor = min(scaleX, scaleY)
+            w, h = stage_tex.get_x_size(), stage_tex.get_y_size()
+            scale_x = float(entry_width - 30) / max(1, w)
+            scale_y = float(entry_height - 60) / max(1, h)
+            scale_factor = min(scale_x, scale_y)
 
-            if stageTex.getTextureType() == Texture.TTBufferTexture:
-                scaleFactor = 1
-                w = entryWidth - 30
-                h = entryHeight - 60
+            if stage_tex.get_texture_type() == Texture.TT_buffer_texture:
+                scale_factor = 1
+                w = entry_width - 30
+                h = entry_height - 60
 
-            preview = BetterOnscreenImage(image=stageTex, w=scaleFactor*w, h=scaleFactor*h, 
-                anyFilter=False, parent=node, x=10, y=40, transparent=False)
+            preview = BetterOnscreenImage(image=stage_tex, w=scale_factor * w,
+                                          h=scale_factor * h, any_filter=False,
+                                          parent=node, x=10, y=40,
+                                          transparent=False)
 
-            if stageTex.getZSize() <= 1:
-                if stageTex.getTextureType() == Texture.TTBufferTexture:
-                    preview.setShader(self.displayBufferTexShader)
-                    preview.setShaderInput("viewSize", LVecBase2i(int(scaleFactor*w), int(scaleFactor*h)) )
+            if stage_tex.get_z_size() <= 1:
+                if stage_tex.get_texture_type() == Texture.TT_buffer_texture:
+                    preview.set_shader(self._display_buffer_tex_shader)
+                    preview.set_shader_input("viewSize", LVecBase2i(
+                        int(scale_factor * w),
+                        int(scale_factor * h)))
                 else:
-                    preview.setShader(self.display2DTexShader)
+                    preview.set_shader(self._display_2d_tex_shader)
             else:
-                if stageTex.getTextureType() == Texture.TT2dTextureArray:
-                    preview.setShader(self.display2DTexArrayShader)
+                if stage_tex.get_texture_type() == Texture.TT_2d_texture_array:
+                    preview.set_shader(self._display_2d_tex_array_shader)
                 else:
-                    preview.setShader(self.display3DTexShader)
+                    preview.set_shader(self._display_3d_tex_shader)

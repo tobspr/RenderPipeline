@@ -3,9 +3,12 @@
 
 import hashlib
 
-def rgbFromString(text, minBrightness=0.2):
+
+def rgb_from_string(text, min_brightness=0.2):
     """ Creates a rgb color from a given string """
     ohash = hashlib.md5(text).hexdigest()
-    r, g, b = int(ohash[0:2],16), int(ohash[2:4],16), int(ohash[4:6],16) 
-    negInf = 1.0 - minBrightness
-    return minBrightness + r/255.0 * negInf, minBrightness + g/255.0 * negInf, minBrightness + b/255.0 * negInf
+    r, g, b = int(ohash[0:2], 16), int(ohash[2:4], 16), int(ohash[4:6], 16)
+    neg_inf = 1.0 - min_brightness
+    return (min_brightness + r / 255.0 * neg_inf,
+            min_brightness + g / 255.0 * neg_inf,
+            min_brightness + b / 255.0 * neg_inf)

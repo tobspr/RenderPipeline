@@ -25,10 +25,10 @@ class SettingsLoader(DebugObject):
             """ Constructs a new Setting. setting_type should be a generic type,
             like int, bool, str. """
 
-            self.name = name
-            self.setting_type = setting_type
-            self.default = default
-            self.value = self.default
+            self._name = name
+            self._setting_type = setting_type
+            self._default = default
+            self._value = self._default
 
         def set_value(self, val):
             """ Attempts to set the current value to val. When the value is not
@@ -37,42 +37,42 @@ class SettingsLoader(DebugObject):
             try:
                 # Extra check for bools, as a string always is true when
                 # non-zero
-                if isinstance(self.setting_type, bool):
+                if isinstance(self._setting_type, bool):
                     val = val.lower()
                     if val not in ["true", "false"]:
                         return False
-                    self.value = val == "true"
+                    self._value = val == "true"
 
                 # Special check for vectors
-                elif isinstance(self.setting_type, Vec3):
+                elif isinstance(self._setting_type, Vec3):
                     values = [float(i) for i in val.strip().split(";")]
                     if len(values) != 3:
                         return False
-                    self.value = Vec3(*values)
+                    self._value = Vec3(*values)
 
                 # Strings may use '"'
-                elif isinstance(self.setting_type, str):
-                    self.value = self.setting_type(val).strip('"\'')
+                elif isinstance(self._setting_type, str):
+                    self._value = self._setting_type(val).strip('"\'')
 
                 # Otherwise just cast the type
                 else:
-                    self.value = self.setting_type(val)
+                    self._value = self._setting_type(val)
             except:
-                self.value = self.default
+                self._value = self._default
                 return False
             return True
 
         def get_value(self):
             """ Returns the current value """
-            return self.value
+            return self._value
 
         def reset_to_default(self):
             """ Resets the value to the default value """
-            self.value = self.default
+            self._value = self._default
 
         def get_default(self):
             """ Returns the default value of the setting """
-            return self.default
+            return self._default
 
     def __init__(self, name, pipeline):
         """ Creates a new settings manager. Subclasses should implement

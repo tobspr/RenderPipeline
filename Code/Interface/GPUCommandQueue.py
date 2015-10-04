@@ -39,7 +39,7 @@ class GPUCommandQueue(DebugObject):
 
         if len(data) > 0:
             # Pack the data into the buffer
-            image = memoryview(self._data_texture.tex.modify_ram_image())
+            image = memoryview(self._data_texture.get_texture().modify_ram_image())
             data_size_bytes = len(data) * 4
             image[data_size_bytes:] = "\0" * (len(image) - data_size_bytes)
             image[0:data_size_bytes] = struct.pack('f' * len(data), *data)
@@ -54,11 +54,11 @@ class GPUCommandQueue(DebugObject):
         shader = Shader.load(Shader.SL_GLSL,
                              "Shader/DefaultPostProcess.vertex.glsl",
                              "Shader/ProcessCommandQueue.fragment.glsl")
-        self._command_target.setShader(shader)
+        self._command_target.set_shader(shader)
 
     def register_input(self, key, val):
         """ Registers an new shader input to the command target """
-        self._command_target.setShaderInput(key, val)
+        self._command_target.set_shader_input(key, val)
 
     def _create_data_storage(self):
         """ Creates the buffer used to transfer commands """
@@ -71,8 +71,7 @@ class GPUCommandQueue(DebugObject):
     def _create_command_target(self):
         """ Creates the target which processes the commands """
         self._command_target = RenderTarget("CommandTarget")
-        # self.commandTarget.addColorTexture()
-        self._command_target.setSize(1, 1)
-        self._command_target.prepareOffscreenBuffer()
-        self._command_target.setShaderInput("CommandQueue", self._data_texture.tex)
-        self._command_target.setShaderInput("commandCount", self._pta_num_commands)
+        self._command_target.set_size(1, 1)
+        self._command_target.prepare_offscreen_buffer()
+        self._command_target.set_shader_input("CommandQueue", self._data_texture.get_texture())
+        self._command_target.set_shader_input("commandCount", self._pta_num_commands)

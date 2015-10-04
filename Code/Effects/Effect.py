@@ -58,7 +58,7 @@ class Effect:
                 self._parse_vertex_template(val)
             elif key.startswith("Fragment."):
                 key_pass = key.replace("Fragment.", "")
-                if key_pass in self._Passes:
+                if key_pass in self._PASSES:
                     self._parse_fragment_template(key_pass, val)
                 else:
                     print "Error: Unrecognized pass:", key_pass

@@ -25,141 +25,140 @@ class RenderPipeline(DebugObject):
 
         DebugObject.__init__(self, "RenderPipeline")
         self.debug("Starting pipeline ..")
-        self.showbase = showbase
-        self.mountManager = MountManager(self)
-        self.settings = PipelineSettings(self)
+        self._showbase = showbase
+        self._mount_manager = MountManager(self)
+        self._settings = PipelineSettings(self)
 
-    def getMountManager(self):
+    def get_mount_manager(self):
         """ Returns a handle to the mount manager """
-        return self.mountManager
+        return self._mount_manager
 
-    def loadSettings(self, path):
+    def load_settings(self, path):
         """ Loads the pipeline configuration from a given filename. If you call
         this more than once, only the settings of the last file will be used """
-        self.settings.load_from_file(path)
+        self._settings.load_from_file(path)
 
-    def getStageMgr(self):
+    def get_stage_mgr(self):
         """ Returns a handle to the stage manager object """
-        return self.stageMgr
+        return self.stage_mgr
 
-    def addLight(self, light):
+    def add_light(self, light):
         """ Adds a new light """
-        self.lightMgr.addLight(light)
+        self.light_mgr.add_light(light)
+
+    def get_settings(self):
+        """ Returns a handle to the settings"""
+        return self._settings
 
     def create(self):
         """ This creates the pipeline, and setups all buffers. It also constructs
         the showbase """
 
-        if not self.settings.is_file_loaded():
+        if not self._settings.is_file_loaded():
             self.warn("No settings file loaded! Using default settings")
 
         # Construct the showbase
-        ShowBase.__init__(self.showbase)
+        ShowBase.__init__(self._showbase)
 
         # Load the globals
-        Globals.load(self.showbase)
+        Globals.load(self._showbase)
         Globals.font = Globals.loader.loadFont("Data/Font/DebugFont.ttf")
-        Globals.resolution = LVecBase2i(self.showbase.win.getXSize(), 
-            self.showbase.win.getYSize())
+        Globals.resolution = LVecBase2i(self._showbase.win.get_x_size(),
+            self._showbase.win.get_y_size())
 
         # Adjust the camera settings
-        self._adjustCameraSettings()
+        self._adjust_camera_settings()
 
         # Create the debugger
         self.debugger = OnscreenDebugger(self)
 
         # Create the stage manager
-        self.stageMgr = StageManager(self)
-        self._createCommonInputs()
+        self.stage_mgr = StageManager(self)
+        self._create_common_inputs()
 
         # Create the light manager
-        self.lightMgr = LightManager(self)
+        self.light_mgr = LightManager(self)
 
-        self.stageMgr.setup()
-        self._createCommonDefines()
-        self.reloadShaders()
-        self._initBindings()
+        self.stage_mgr.setup()
+        self._create_common_defines()
+        self.reload_shaders()
+        self._init_bindings()
 
-
-    def reloadShaders(self):
+    def reload_shaders(self):
         """ Reloads all shaders """
-        self.stageMgr.set_shaders()
-        self.lightMgr.reloadShaders()
+        self.stage_mgr.set_shaders()
+        self.light_mgr.reload_shaders()
 
-    
-    def _initBindings(self):
+    def _init_bindings(self):
         """ Inits the tasks and keybindings """
-        self.showbase.accept("r", self.reloadShaders)
-        self.showbase.addTask(self._preRenderUpdate, "RP_BeforeRender", sort=10)
-        self.showbase.addTask(self._postRenderUpdate, "RP_AfterRender", sort=100)
+        self._showbase.accept("r", self.reload_shaders)
+        self._showbase.addTask(self._pre_render_update, "RP_BeforeRender", sort=10)
+        self._showbase.addTask(self._post_render_update, "RP_AfterRender", sort=100)
 
-    
-    def _preRenderUpdate(self, task):
+    def _pre_render_update(self, task):
         """ Update task which gets called before the update """
-        self._updateCommonInputs()
-        self.stageMgr.update_stages()
-        self.lightMgr.update()
+        self._update_common_inputs()
+        self.stage_mgr.update_stages()
+        self.light_mgr.update()
         return task.cont
 
-    
-    def _postRenderUpdate(self, task):
+    def _post_render_update(self, task):
         """ Update task which gets called after the update """
         return task.cont
 
-    
-    def _createCommonDefines(self):
+    def _create_common_defines(self):
         """ Creates commonly used defines for the shader auto config """
-        define = self.stageMgr.define
+        define = self.stage_mgr.define
 
         # 3D viewport size
         define("WINDOW_WIDTH", Globals.resolution.x)
         define("WINDOW_HEIGHT", Globals.resolution.y)
 
         # Pass camera near and far plane
-        define("CAMERA_NEAR", round(Globals.base.camLens.getNear(), 5))
-        define("CAMERA_FAR", round(Globals.base.camLens.getFar(), 5))
+        define("CAMERA_NEAR", round(Globals.base.camLens.get_near(), 5))
+        define("CAMERA_FAR", round(Globals.base.camLens.get_far(), 5))
 
-        self.lightMgr.initDefines()
+        self.light_mgr.init_defines()
 
-    
-    def _createCommonInputs(self):
+    def _create_common_inputs(self):
         """ Creates commonly used inputs """
 
-        self.ptaCameraPos = PTAVecBase3f.emptyArray(1)
+        self.pta_camera_pos = PTAVecBase3f.empty_array(1)
 
-        self.stageMgr.add_input("mainCam", self.showbase.cam)
-        self.stageMgr.add_input("mainRender", self.showbase.render)
-        self.stageMgr.add_input("cameraPosition", self.ptaCameraPos)
+        self.stage_mgr.add_input("mainCam", self._showbase.cam)
+        self.stage_mgr.add_input("mainRender", self._showbase.render)
+        self.stage_mgr.add_input("cameraPosition", self.pta_camera_pos)
 
-        self.ptaCurrentViewMat = PTAMat4.emptyArray(1)
-        self.stageMgr.add_input("currentViewMat", self.ptaCurrentViewMat)
+        self.pta_current_view_mat = PTAMat4.empty_array(1)
+        self.stage_mgr.add_input("currentViewMat", self.pta_current_view_mat)
 
-        self.coordinateConverter = TransformState.makeMat(Mat4.convertMat(CSYupRight, CSZupRight))
+        self.coordinate_converter = TransformState.make_mat(
+            Mat4.convert_mat(CSYupRight, CSZupRight))
 
-        self._loadCommonTextures()
+        self._load_common_textures()
 
-    
-    def _loadCommonTextures(self):
+    def _load_common_textures(self):
         """ Loads commonly used textures """
 
-        quantTex = loader.loadTexture("Data/NormalQuantization/NormalQuantizationTex-#.png", readMipmaps=True)
-        quantTex.setMinfilter(Texture.FTLinearMipmapLinear)
-        quantTex.setMagfilter(Texture.FTLinear)
-        quantTex.setWrapU(Texture.WMRepeat)
-        quantTex.setWrapV(Texture.WMRepeat)
-        quantTex.setFormat(Texture.FRgba16)
-        self.showbase.render.setShaderInput("NormalQuantizationTex", quantTex)
+        quant_tex = Globals.loader.loadTexture(
+            "Data/NormalQuantization/NormalQuantizationTex-#.png",
+            readMipmaps=True)
+        quant_tex.set_minfilter(Texture.FTLinearMipmapLinear)
+        quant_tex.set_magfilter(Texture.FTLinear)
+        quant_tex.set_wrap_u(Texture.WMRepeat)
+        quant_tex.set_wrap_v(Texture.WMRepeat)
+        quant_tex.set_format(Texture.FRgba16)
+        self._showbase.render.set_shader_input("NormalQuantizationTex", quant_tex)
 
-
-    
-    def _updateCommonInputs(self):
+    def _update_common_inputs(self):
         """ Updates the commonly used inputs """
 
-        self.ptaCurrentViewMat[0] = UnalignedLMatrix4f(self.coordinateConverter.invertCompose(self.showbase.render.getTransform(self.showbase.cam)).getMat())
-        self.ptaCameraPos[0] = base.camera.getPos(render)
+        self.pta_current_view_mat[0] = UnalignedLMatrix4f(
+            self.coordinate_converter.invert_compose(
+                self._showbase.render.get_transform(self._showbase.cam)).get_mat())
+        self.pta_camera_pos[0] = self._showbase.camera.get_pos(render)
 
-    
-    def _adjustCameraSettings(self):
+    def _adjust_camera_settings(self):
         """ Sets the default camera settings """
-        self.showbase.camLens.setNearFar(0.1, 70000)
-        self.showbase.camLens.setFov(110)
+        self._showbase.camLens.set_near_far(0.1, 70000)
+        self._showbase.camLens.set_fov(110)

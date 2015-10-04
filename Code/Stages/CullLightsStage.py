@@ -26,7 +26,7 @@ class CullLightsStage(RenderStage):
 
     def get_produced_pipes(self):
         return {
-            "PerCellLights": self._per_cell_lights.tex
+            "PerCellLights": self._per_cell_lights.get_texture()
         }
 
     def get_produced_defines(self):
@@ -40,30 +40,30 @@ class CullLightsStage(RenderStage):
 
     def create(self):
         max_cells = self._tile_amount.x * self._tile_amount.y * \
-            self._pipeline.settings.lightGridSlices
+            self._pipeline.get_settings().lightGridSlices
 
         self._num_rows = int(math.ceil(max_cells / 512.0))
         self._target = self._create_target("CullLights")
-        self._target.setSize(512, self._num_rows)
+        self._target.set_size(512, self._num_rows)
         # self._target.addColorTexture()
-        self._target.prepareOffscreenBuffer()
-        self._target.setClearColor(color=Vec4(0.2, 0.6, 1.0, 1.0))
+        self._target.prepare_offscreen_buffer()
+        self._target.set_clear_color(color=Vec4(0.2, 0.6, 1.0, 1.0))
 
         self._per_cell_lights = Image.create_buffer("PerCellLights",
             max_cells * (self._max_lights_per_cell + 1), Texture.T_int,
             Texture.F_r32)
         self._per_cell_lights.set_clear_color(0)
 
-        self._target.setShaderInput("perCellLightsBuffer",
-            self._per_cell_lights.tex)
+        self._target.set_shader_input("perCellLightsBuffer",
+            self._per_cell_lights.get_texture())
 
     def update(self):
-        # self.perCellLights.clearImage()
+        # self._per_cell_lights.clearImage()
         pass
 
     def set_shaders(self):
-        self._target.setShader(self._load_shader("Stages/CullLights.vertex",
-                                                "Stages/CullLights.fragment"))
+        self._target.set_shader(self._load_shader("Stages/CullLights.vertex",
+                                                  "Stages/CullLights.fragment"))
 
     def resize(self):
         RenderStage.resize(self)

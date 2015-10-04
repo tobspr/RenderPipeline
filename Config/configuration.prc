@@ -13,6 +13,7 @@ icon-filename Data/GUI/icon.ico
 # gl-dump-compiled-shaders #t
 # notify-level-glgsg debug
 # notify-level-gobj debug
+notify-level-glgsg error
 pstats-gpu-timing #t
 gl-debug #t
 

@@ -18,12 +18,12 @@ class FinalStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("FinalStage")
-        self._target.addColorTexture()
-        self._target.prepareOffscreenBuffer()
-        self._target.makeMainTarget()
+        self._target.add_color_texture()
+        self._target.prepare_offscreen_buffer()
+        self._target.make_main_target()
 
     def set_shaders(self):
-        self._target.setShader(self._load_shader("Stages/FinalStage.fragment"))
+        self._target.set_shader(self._load_shader("Stages/FinalStage.fragment"))
 
     def resize(self):
         RenderStage.resize(self)

@@ -30,16 +30,16 @@ class DebugObject:
         if name is None:
             name = str(self.__class__).split(".")[-1]
         self._rename(name)
-        self.muted = False
+        self._muted = False
 
     def mute(self):
         """ Mutes this object. This prevents any further output """
-        self.muted = True
+        self._muted = True
 
     def unmute(self):
         """ Unmutes this object. Undoes a mute(), and lets this
         Object instance continue to write debug output """
-        self.muted = False
+        self._muted = False
 
     def get_name(self):
         """ Returns the name of the debug object """
@@ -48,7 +48,7 @@ class DebugObject:
     def debug(self, *args):
         """ Outputs a debug message, something that is not necessarry
         but provides useful information for the developer """
-        if self.muted or self._output_level > 0:
+        if self._muted or self._output_level > 0:
             return
         print Fore.GREEN + "[-] " + self._debug_name.ljust(25) + Fore.WHITE +  \
             ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL
@@ -56,7 +56,7 @@ class DebugObject:
     def warn(self, *args):
         """ Outputs a warning message, something that failed or does
         not work, but does not prevent the program from running """
-        if self.muted or self._output_level > 1:
+        if self._muted or self._output_level > 1:
             return
         print Fore.YELLOW + Style.BRIGHT + "[!] " + (self._debug_name).ljust(25) + \
             Fore.YELLOW + Style.BRIGHT + ' '.join([str(i) for i in args]) + \

@@ -11,7 +11,7 @@ class AmbientStage(RenderStage):
 
     def get_produced_pipes(self):
         return {
-            "ShadedScene": self._target.getColorTexture()
+            "ShadedScene": self._target.get_color_texture()
         }
 
     def get_input_pipes(self):
@@ -23,13 +23,13 @@ class AmbientStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("AmbientStage")
-        self._target.addColorTexture()
-        self._target.setColorBits(16)
-        self._target.prepareOffscreenBuffer()
-        self._target.setClearDepth(True)
+        self._target.add_color_texture()
+        self._target.set_color_bits(16)
+        self._target.prepare_offscreen_buffer()
+        self._target.set_clear_depth(True)
 
     def set_shaders(self):
-        self._target.setShader(
+        self._target.set_shader(
             self._load_shader("Stages/AmbientStage.fragment"))
 
     def resize(self):

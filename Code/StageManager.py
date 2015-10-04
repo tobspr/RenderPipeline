@@ -32,7 +32,7 @@ class StageManager(DebugObject):
         self._pipeline = pipeline
 
         # Register the manager so the pipe viewer can read our data
-        PipeViewer.registerStageMgr(self)
+        PipeViewer.register_stage_mgr(self)
 
     def add_stage(self, stage):
         """ Adds a new stage """
@@ -99,7 +99,7 @@ class StageManager(DebugObject):
             for input_name, data in stage.get_produced_inputs().iteritems():
                 if input_name in self._inputs:
                     self.warn("Stage", stage, "overrides input", input_name)
-                self.inputs[input_name] = data
+                self._inputs[input_name] = data
 
     def set_shaders(self):
         """ This pass sets the shaders to all passes and also generates the
