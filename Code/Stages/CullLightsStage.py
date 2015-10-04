@@ -57,8 +57,8 @@ class CullLightsStage(RenderStage):
             self._per_cell_lights.get_texture())
 
     def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/CullLights.vertex",
-                                                  "Stages/CullLights.fragment"))
+        self._target.set_shader(self._load_shader("Stages/CullLights.vert",
+                                                  "Stages/CullLights.frag"))
 
     def resize(self):
         RenderStage.resize(self)

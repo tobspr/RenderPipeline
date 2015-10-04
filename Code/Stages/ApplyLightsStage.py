@@ -26,7 +26,7 @@ class ApplyLightsStage(RenderStage):
         self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/ApplyLights.fragment"))
+        self._target.set_shader(self._load_shader("Stages/ApplyLights.frag"))
 
     def resize(self):
         self.debug("Resizing pass")

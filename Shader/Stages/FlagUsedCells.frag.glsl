@@ -1,7 +1,7 @@
 #version 430
 
-#pragma include  "Includes/Configuration.include"
-#pragma include  "Includes/LightCulling.include"
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/LightCulling.inc.glsl"
 
 out vec4 result;
 

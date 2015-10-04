@@ -40,7 +40,7 @@ class FlagUsedCellsStage(RenderStage):
         self._cell_grid_flags.clear_image()
 
     def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/FlagUsedCells.fragment"))
+        self._target.set_shader(self._load_shader("Stages/FlagUsedCells.frag"))
 
     def resize(self):
         RenderStage.resize(self)

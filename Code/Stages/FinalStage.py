@@ -23,7 +23,7 @@ class FinalStage(RenderStage):
         self._target.make_main_target()
 
     def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/FinalStage.fragment"))
+        self._target.set_shader(self._load_shader("Stages/FinalStage.frag"))
 
     def resize(self):
         RenderStage.resize(self)

@@ -1,11 +1,11 @@
 #pragma once
 
-#pragma include "Includes/Structures/Material.struct"
-#pragma include "Includes/LightCulling.include"
-#pragma include "Includes/Lights.include"
-#pragma include "Includes/LightTypes.include"
-#pragma include "Includes/BRDF.include"
-
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/Structures/Material.struct.glsl"
+#pragma include "Includes/LightCulling.inc.glsl"
+#pragma include "Includes/Lights.inc.glsl"
+#pragma include "Includes/LightTypes.inc.glsl"
+#pragma include "Includes/BRDF.inc.glsl"
 
 uniform isampler2DArray CellIndices;
 uniform isamplerBuffer PerCellLights;

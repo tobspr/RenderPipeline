@@ -1,7 +1,7 @@
 #version 400
 
-#pragma include "Includes/Configuration.include"
-#pragma include "Includes/GBufferPacking.include"
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/GBufferPacking.inc.glsl"
 
 in vec2 texcoord;
 uniform sampler2D ShadedScene;

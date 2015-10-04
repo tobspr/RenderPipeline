@@ -30,7 +30,7 @@ class AmbientStage(RenderStage):
 
     def set_shaders(self):
         self._target.set_shader(
-            self._load_shader("Stages/AmbientStage.fragment"))
+            self._load_shader("Stages/AmbientStage.frag"))
 
     def resize(self):
         RenderStage.resize(self)

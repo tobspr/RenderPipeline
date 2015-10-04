@@ -1,8 +1,6 @@
 #pragma once
 
-#pragma include "Includes/Configuration.include"
-
-
+#pragma include "Includes/Configuration.inc.glsl"
 
 
 vec3 lambertianBRDF(vec3 diffuse, float NxL) {

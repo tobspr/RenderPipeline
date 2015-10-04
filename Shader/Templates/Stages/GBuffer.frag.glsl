@@ -2,10 +2,10 @@
 
 #define IS_GBUFFER_SHADER 1
 
-#pragma include "Includes/Configuration.include"
-#pragma include "Includes/Structures/VertexOutput.struct"
-#pragma include "Includes/Structures/Material.struct"
-#pragma include "Includes/GBufferPacking.include"
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/Structures/VertexOutput.struct.glsl"
+#pragma include "Includes/Structures/Material.struct.glsl"
+#pragma include "Includes/GBufferPacking.inc.glsl"
 
 layout(location=0) in VertexOutput vOutput;
 

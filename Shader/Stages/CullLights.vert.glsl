@@ -1,6 +1,6 @@
 #version 400
 
-#pragma include "Includes/Configuration.include"
+#pragma include "Includes/Configuration.inc.glsl"
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
 

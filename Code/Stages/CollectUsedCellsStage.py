@@ -56,7 +56,7 @@ class CollectUsedCellsStage(RenderStage):
 
     def set_shaders(self):
         self._target.set_shader(
-            self._load_shader("Stages/CollectUsedCells.fragment"))
+            self._load_shader("Stages/CollectUsedCells.frag"))
 
     def resize(self):
         RenderStage.resize(self)

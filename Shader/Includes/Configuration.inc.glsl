@@ -7,7 +7,6 @@
 #pragma include "$$PipelineTemp/ShaderAutoConfig.include"
 
 
-
 // Fixes the cubemap direction
 vec3 fix_cubemap_coord(vec3 coord) {
     return normalize(coord.xzy * vec3(1,-1,1));

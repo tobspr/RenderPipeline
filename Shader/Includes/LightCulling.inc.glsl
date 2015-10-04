@@ -1,7 +1,8 @@
 #pragma once
-#pragma include "Includes/Configuration.include"
-#pragma include "Includes/PositionReconstruction.include"
-#pragma include "Includes/Structures/Frustum.struct"
+
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/PositionReconstruction.inc.glsl"
+#pragma include "Includes/Structures/Frustum.struct.glsl"
 
 
 #define LIGHT_CULLING_DIST 200.0

@@ -1,5 +1,7 @@
 #version 420
 
+#pragma include "Includes/Configuration.inc.glsl"
+
 out vec4 result;
 
 uniform samplerBuffer CommandQueue;

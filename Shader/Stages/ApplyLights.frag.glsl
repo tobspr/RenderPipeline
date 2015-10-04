@@ -1,11 +1,11 @@
 #version 400
 
-#pragma include "Includes/Configuration.include"
-#pragma include "Includes/LightCulling.include"
-#pragma include "Includes/PositionReconstruction.include"
-#pragma include "Includes/LightingPipeline.include"
-#pragma include "Includes/GBufferPacking.include"
-#pragma include "Includes/Structures/Material.struct"
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/LightCulling.inc.glsl"
+#pragma include "Includes/PositionReconstruction.inc.glsl"
+#pragma include "Includes/LightingPipeline.inc.glsl"
+#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/Structures/Material.struct.glsl"
 
 in vec2 texcoord;
 out vec4 result;

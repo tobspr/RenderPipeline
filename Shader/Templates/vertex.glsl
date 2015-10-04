@@ -1,7 +1,7 @@
 #version 430
 
-#pragma include "Includes/Configuration.include"
-#pragma include "Includes/Structures/VertexOutput.struct"
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/Structures/VertexOutput.struct.glsl"
 
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;

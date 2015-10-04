@@ -1,7 +1,7 @@
 #pragma once
 
-
-#pragma include "Includes/Structures/Material.struct"
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/Structures/Material.struct.glsl"
 
 #if defined(IS_GBUFFER_SHADER)
 
@@ -46,7 +46,7 @@ void render_material(Material m) {
 
 #else
 
-#pragma include "Includes/PositionReconstruction.include"
+#pragma include "Includes/PositionReconstruction.inc.glsl"
 
 Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D GBuffer1, sampler2D GBuffer2) {  
     Material m;

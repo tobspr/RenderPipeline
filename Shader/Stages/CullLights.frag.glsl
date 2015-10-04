@@ -1,10 +1,10 @@
 #version 430
 
-#pragma include "Includes/Configuration.include"
-#pragma include "Includes/PositionReconstruction.include"
-#pragma include "Includes/LightCulling.include"
-#pragma include "Includes/LightTypes.include"
-#pragma include "Includes/Structures/Frustum.struct"
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/PositionReconstruction.inc.glsl"
+#pragma include "Includes/LightCulling.inc.glsl"
+#pragma include "Includes/LightTypes.inc.glsl"
+#pragma include "Includes/Structures/Frustum.struct.glsl"
 
 out vec4 result;
 
