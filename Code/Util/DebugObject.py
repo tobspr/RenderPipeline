@@ -1,10 +1,11 @@
 
 import sys
 
-# Load and init colorama
+# Load and init colorama, used to color the output
 from ..External.Colorama import init as init_colorama
 from ..External.Colorama import Fore, Style
 init_colorama()
+
 
 class DebugObject:
 

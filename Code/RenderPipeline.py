@@ -68,8 +68,13 @@ class RenderPipeline(DebugObject):
 
         # Load the globals
         Globals.load(self._showbase)
-        Globals.font = Globals.loader.loadFont("Data/Font/DebugFont.ttf")
-        Globals.resolution = LVecBase2i(self._showbase.win.get_x_size(),
+        Globals.font = Globals.loader.loadFont("Data/Font/Roboto-Light.ttf")
+        # Globals.font = Globals.loader.loadFont("Data/Font/DebugFont.ttf")
+        Globals.font.set_pixels_per_unit(25)
+        Globals.font.set_poly_margin(0.0)
+        Globals.font.set_texture_margin(1)
+        Globals.resolution = LVecBase2i(
+            self._showbase.win.get_x_size(),
             self._showbase.win.get_y_size())
 
         # Adjust the camera settings

@@ -63,10 +63,10 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
     vec4 data2 = texelFetch(GBuffer2, coord, 0);
 
     m.diffuse = data0.xyz;
-    m.roughness = data0.w;
+    m.roughness = max(0.01, data0.w);
     m.normal = normalize(data1.xyz * 2 - 1);
     m.metallic = data1.w;
-    m.specular = data2.x;
+    m.specular = max(0.01, data2.x);
 
     return m;
 }

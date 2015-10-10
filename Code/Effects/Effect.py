@@ -1,10 +1,14 @@
 
 import copy
 
-from External.PyYAML import yaml
+from ..External.PyYAML import yaml
+from ..Util.DebugObject import DebugObject
 
 
-class Effect:
+class Effect(DebugObject):
+
+    """ This class represents an instance of a compiled effect. It can be loaded
+    from a File. """
 
     _DEFAULT_OPTIONS = {
 
@@ -20,6 +24,7 @@ class Effect:
 
     def __init__(self):
         """ Constructs a new empty effect """
+        DebugObject.__init__(self)
         self._options = copy.deepcopy(self._DEFAULT_OPTIONS)
         self._source = ""
 
@@ -27,7 +32,7 @@ class Effect:
         """ Sets the effect options, overriding the default options """
         for key, val in options.iteritems():
             if key not in self._options:
-                print "ERROR: Unkown option:", key
+                self.error("Unkown option:", key)
                 continue
             self._options[key] = val
 
@@ -41,15 +46,15 @@ class Effect:
             with open(filename, "r") as handle:
                 parsed_yaml = yaml.load(handle)
         except IOError, msg:
-            print "Could not find file:", filename, "!"
-            print msg
+            self.error("Could not find or open file:", filename, "!")
+            self.error(msg)
             return False
         except yaml.YAMLError, msg:
-            print "Could not parse file:", filename, "!"
-            print msg
+            self.error("Invalid yaml-syntax in file:", filename, "!")
+            self.error(msg)
             return False
 
-        self._parse_content(parsed_yaml)
+        return self._parse_content(parsed_yaml)
 
     def _parse_content(self, parsed_yaml):
         """ Internal method to construct the effect from a yaml object """
@@ -61,18 +66,21 @@ class Effect:
                 if key_pass in self._PASSES:
                     self._parse_fragment_template(key_pass, val)
                 else:
-                    print "Error: Unrecognized pass:", key_pass
+                    self.error("Unrecognized pass:", key_pass)
             else:
-                print "Error: Unrecognized section:", key
+                self.error("Unrecognized section:", key)
 
     def _parse_vertex_template(self, vertex_data):
         """ Parses a vertex template """
         default_template = ""
-        shader = self._construct_shader_from_data(vertex_data)
+        shader = self._construct_shader_from_data(default_template, vertex_data)
 
     def _parse_fragment_template(self, pass_id, fragment_data):
         """ Parses a fragment template """
-        shader = self._construct_shader_from_data(fragment_data)
+        default_template = ""
+        shader = self._construct_shader_from_data(default_template, fragment_data)
 
-    def _construct_shader_from_data(self, data):
+    def _construct_shader_from_data(self, default_template, data):
         """ Constructs a shader from a given dataset """
+        print "\nConstruct shader from data:"
+        print data

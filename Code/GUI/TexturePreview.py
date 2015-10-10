@@ -11,7 +11,7 @@ class TexturePreview(DraggableWindow):
     """ Small window which provides a preview of a texture """
     def __init__(self):
         DraggableWindow.__init__(self, width=1600, height=900,
-                                 title="Texture Preview")
+                                 title="Texture Viewer")
         self._current_tex = None
         self._create_components()
         self._create_shaders()

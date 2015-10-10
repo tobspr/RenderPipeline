@@ -1,10 +1,14 @@
 
 from Effect import Effect
+from ..Util.DebugObject import DebugObject
 
 
-class EffectLoader:
+class EffectLoader(DebugObject):
+
+    """ This class handles the loading and caching of effects """
 
     def __init__(self):
+        DebugObject.__init__(self)
         self._effect_cache = {}
 
     def load_effect(self, filename, options):
@@ -19,7 +23,7 @@ class EffectLoader:
         effect.set_options(options)
 
         if not effect.load(filename):
-            print "Could not load effect!"
+            self.error("Could not load effect!")
             return False
 
         return effect

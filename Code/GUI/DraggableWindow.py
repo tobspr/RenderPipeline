@@ -1,6 +1,6 @@
 
 
-from panda3d.core import Vec2, TransparencyAttrib
+from panda3d.core import Vec2, TransparencyAttrib, Vec3
 from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectButton import DirectButton
 from direct.gui.DirectGui import DGG
@@ -52,33 +52,38 @@ class DraggableWindow(DebugObject):
         parent = Globals.base.pixel2d
         self._node = parent.attach_new_node("Window")
         self._node.set_pos(self._pos.x, 1, -self._pos.y)
-        border_px = 4
+        border_px = 1
         self._border_frame = DirectFrame(pos=(0, 1, 0),
                                          frameSize=(-border_px,
                                                     self._width + border_px,
                                                     border_px,
                                                     -self._height - border_px),
-                                         frameColor=(0.34, 0.564, 0.192, 1.0),
+                                         frameColor=(0.0, 0.0, 0.0, 1),
                                          parent=self._node, state=DGG.NORMAL)
+        # self._border_frame.hide()
         self._background = DirectFrame(pos=(0, 1, 0),
                                        frameSize=(0, self._width,
                                                   0, -self._height),
-                                       frameColor=(0.1, 0.1, 0.1, 1),
+                                       frameColor=(0.098, 0.098, 0.098, 1),
                                        parent=self._node)
         self._title_bar = DirectFrame(pos=(0, 1, 0),
-                                      frameSize=(0, self._width, 0, -40),
-                                      frameColor=(0.15, 0.15, 0.15, 1),
+                                      frameSize=(0, self._width, 0, -45),
+                                      frameColor=(0.058, 0.058, 0.058, 1),
                                       parent=self._node, state=DGG.NORMAL)
-        self._window_title = BetterOnscreenText(parent=self._node, x=10, y=26,
-                                                text=self._title, size=18)
-        self._btn_close = DirectButton(relief=False, pressEffect=1,
-                                       pos=(self._width - 20, 1, -20),
-                                       scale=(14, 1, 14), parent=self._node,
+        self._window_title = BetterOnscreenText(parent=self._node, x=12, y=29,
+                                                text=self._title, size=19,
+                                                color=Vec3(0.7))
+        self._btn_close = DirectButton(relief=DGG.FLAT, pressEffect=1,
+                                       pos=(self._width - 22, 1, -22),
+                                       frameColor=(0, 0, 0, 0),
+                                       scale=(20, 1, 20), parent=self._node,
                                        image="Data/GUI/CloseWindow.png")
 
         # Init bindings
         self._btn_close.set_transparency(TransparencyAttrib.M_alpha)
         self._btn_close.bind(DGG.B1CLICK, self._request_close)
+        self._btn_close.bind(DGG.WITHIN, self._on_close_btn_hover)
+        self._btn_close.bind(DGG.WITHOUT, self._on_close_btn_out)
         self._title_bar.bind(DGG.B1PRESS, self._start_drag)
         self._title_bar.bind(DGG.B1RELEASE, self._stop_drag)
 
@@ -90,6 +95,14 @@ class DraggableWindow(DebugObject):
         Globals.base.taskMgr.add(self._on_tick, "UIWindowDrag",
                                  uponDeath=self._stop_drag)
         self._drag_offset = self._pos - self._get_mouse_pos()
+
+    def _on_close_btn_hover(self, evt=None):
+        """ Internal method when the close button got hovered """
+        self._btn_close["frameColor"] = (1.0, 0.2, 0.2, 1.0)
+
+    def _on_close_btn_out(self, evt=None):
+        """ Internal method when the close button is no longer hovered """
+        self._btn_close["frameColor"] = (0, 0, 0, 0)
 
     def _request_close(self, evt=None):
         """ This method gets called when the close button gets clicked """

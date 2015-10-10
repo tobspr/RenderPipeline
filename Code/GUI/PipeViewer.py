@@ -24,7 +24,7 @@ class PipeViewer(DraggableWindow):
 
     def __init__(self, pipeline):
         DraggableWindow.__init__(self, width=1300, height=900,
-                                 title="Pipe Inspector")
+                                 title="Pipeline Visualizer")
         self._pipeline = pipeline
         self._scroll_width = 8000
         self._scroll_height = 2000

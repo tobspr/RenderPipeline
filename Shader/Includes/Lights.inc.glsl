@@ -27,8 +27,8 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
 
     // return lightColor * attenuation * fsaturate(dot(m.normal, l));
 
-    m.roughness = 0.2;
-    m.metallic = 1.0;
+    // m.roughness = 0.2;
+    // m.metallic = 1.0;
 
 
     vec3 shadingResult = vec3(0);
@@ -37,8 +37,8 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     if (shadow < 0.001) 
         return shadingResult;
 
-    vec3 specularColor = mix(vec3(0), m.diffuse, m.metallic);
-    specularColor = m.diffuse;
+    vec3 specularColor = mix(vec3(0), m.diffuse, m.specular);
+    // specularColor = m.diffuse;
     vec3 diffuseColor = mix(m.diffuse, vec3(0), m.metallic);
 
     vec3 n = m.normal;

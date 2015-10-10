@@ -34,7 +34,7 @@ class BufferViewer(DraggableWindow):
     def __init__(self, pipeline):
         """ Constructs the buffer viewer """
         DraggableWindow.__init__(self, width=1400, height=800,
-                                 title="Buffer Viewer")
+                                 title="Buffer- and Image-Browser")
         self._pipeline = pipeline
         self._scroll_height = 3000
         self._stages = []
@@ -69,7 +69,7 @@ class BufferViewer(DraggableWindow):
         DraggableWindow._create_components(self)
 
         self._content_frame = DirectScrolledFrame(
-            frameSize=(0, self._width - 40, 0, self._height - 80),
+            frameSize=(0, self._width - 15, 0, self._height - 50),
             canvasSize=(0, self._width - 80, 0, self._scroll_height),
             autoHideScrollBars=False,
             scrollBarWidth=20.0,
@@ -80,7 +80,7 @@ class BufferViewer(DraggableWindow):
             horizontalScroll_decButton_relief=False,
             horizontalScroll_thumb_relief=False,
             parent=self._node,
-            pos=(20, 1, -self._height + 20))
+            pos=(0, 1, -self._height - 10))
         self._content_node = self._content_frame.getCanvas().attach_new_node(
             "BufferComponents")
         self._content_node.set_scale(1, 1, -1)
