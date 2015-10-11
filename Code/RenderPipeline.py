@@ -5,6 +5,7 @@ from direct.showbase.ShowBase import ShowBase
 
 from Util.DebugObject import DebugObject
 
+from CommonResources import CommonResources
 from MountManager import MountManager
 from PipelineSettings import PipelineSettings
 from Globals import Globals
@@ -85,7 +86,6 @@ class RenderPipeline(DebugObject):
 
         # TODO: Apply the shader from different stages
 
-
     def create(self):
         """ This creates the pipeline, and setups all buffers. It also constructs
         the showbase. The settings should have been loaded before calling this,
@@ -103,19 +103,19 @@ class RenderPipeline(DebugObject):
         Globals.resolution = LVecBase2i(
             self._showbase.win.get_x_size(),
             self._showbase.win.get_y_size())
-        self._load_default_font()
 
         # Adjust the camera settings
         self._adjust_camera_settings()
 
         # Create the various managers and instances
+        self._com_resources = CommonResources(self)
         self._debugger = OnscreenDebugger(self)
         self._effect_loader = EffectLoader()
         self._stage_mgr = StageManager(self)
         self._light_mgr = LightManager(self)
 
-        # Setup common inputs and defines
-        self._create_common_inputs()
+        # Load common inputs and defines
+        self._com_resources.load()
         self._create_common_defines()
 
         # Setup the managers
@@ -131,15 +131,6 @@ class RenderPipeline(DebugObject):
         self._stage_mgr.set_shaders()
         self._light_mgr.reload_shaders()
 
-    def _load_default_font(self):
-        """ Loads the default font used for rendering and assigns it to 
-        Globals.font for further usage """
-        Globals.font = Globals.loader.loadFont("Data/Font/Roboto-Light.ttf")
-        # Globals.font = Globals.loader.loadFont("Data/Font/DebugFont.ttf")
-        Globals.font.set_pixels_per_unit(25)
-        Globals.font.set_poly_margin(0.0)
-        Globals.font.set_texture_margin(1)
-        
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
         self._showbase.accept("r", self.reload_shaders)
@@ -148,7 +139,7 @@ class RenderPipeline(DebugObject):
 
     def _pre_render_update(self, task):
         """ Update task which gets called before the update """
-        self._update_common_inputs()
+        self._com_resources.update()
         self._stage_mgr.update_stages()
         self._light_mgr.update()
         return task.cont
@@ -170,60 +161,6 @@ class RenderPipeline(DebugObject):
         define("CAMERA_FAR", round(Globals.base.camLens.get_far(), 5))
 
         self._light_mgr.init_defines()
-
-    def _create_common_inputs(self):
-        """ Creates commonly used inputs """
-
-        self._pta_camera_pos = PTAVecBase3f.empty_array(1)
-        self._pta_current_view_proj_mat = PTAMat4.empty_array(1)
-
-        self._stage_mgr.add_input("mainCam", self._showbase.cam)
-        self._stage_mgr.add_input("mainRender", self._showbase.render)
-        self._stage_mgr.add_input("cameraPosition", self._pta_camera_pos)
-        self._stage_mgr.add_input("currentViewProjMat", self._pta_current_view_proj_mat)
-
-        self._pta_view_mat_zup = PTAMat4.empty_array(1)
-        self._stage_mgr.add_input("currentViewMatZup", self._pta_view_mat_zup)
-
-        self._coordinate_converter = TransformState.make_mat(
-            Mat4.convert_mat(CSYupRight, CSZupRight))
-
-        self._load_common_textures()
-
-    def _load_common_textures(self):
-        """ Loads commonly used textures """
-
-        # Load the normal quantization tex
-        quant_tex = Globals.loader.loadTexture(
-            "Data/NormalQuantization/NormalQuantizationTex-#.png",
-            readMipmaps=True)
-        quant_tex.set_minfilter(Texture.FTLinearMipmapLinear)
-        quant_tex.set_magfilter(Texture.FTLinear)
-        quant_tex.set_wrap_u(Texture.WMRepeat)
-        quant_tex.set_wrap_v(Texture.WMRepeat)
-        quant_tex.set_format(Texture.FRgba16)
-        self._showbase.render.set_shader_input("NormalQuantizationTex", quant_tex)
-
-        # Load the fallback cubemap
-        self.debug("Loading environment cubemap")
-        envmap = Globals.loader.loadCubeMap("Data/DefaultCubemap/Filtered/#-#.png", readMipmaps=True)
-        envmap.set_minfilter(Texture.FTLinearMipmapLinear)
-        envmap.set_magfilter(Texture.FTLinear)
-        envmap.set_wrap_u(Texture.WMRepeat)
-        envmap.set_wrap_v(Texture.WMRepeat)
-        envmap.set_wrap_w(Texture.WMRepeat)
-        self._stage_mgr.add_input("DefaultEnvmap", envmap)
-
-    def _update_common_inputs(self):
-        """ Updates the commonly used inputs """
-
-        view_transform = self._showbase.render.get_transform(self._showbase.cam)
-        self._pta_view_mat_zup[0] = (
-            self._coordinate_converter.invert_compose(view_transform).get_mat())
-        self._pta_camera_pos[0] = self._showbase.camera.get_pos(render)
-
-        self._pta_current_view_proj_mat[0] = view_transform.get_mat() *\
-            self._showbase.camLens.get_projection_mat()
 
     def _adjust_camera_settings(self):
         """ Sets the default camera settings """
