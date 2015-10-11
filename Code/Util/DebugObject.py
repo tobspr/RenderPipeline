@@ -32,6 +32,13 @@ class DebugObject:
             name = str(self.__class__).split(".")[-1]
         self._rename(name)
         self._muted = False
+        self._debug_color = Fore.GREEN
+
+    def _set_debug_color(self, color, style=None):
+        """ Sets the color used to output debug messages """
+        self._debug_color = getattr(Fore, color.upper())
+        if style:
+            self._debug_color+= getattr(Style, style.upper())
 
     def mute(self):
         """ Mutes this object. This prevents any further output """
@@ -51,7 +58,8 @@ class DebugObject:
         but provides useful information for the developer """
         if self._muted or self._output_level > 0:
             return
-        print Fore.GREEN + "[-] " + self._debug_name.ljust(25) + Fore.WHITE +  \
+        print self._debug_color + "[-] " + \
+            self._debug_name.ljust(25) + Style.RESET_ALL + Fore.WHITE +  \
             ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL
 
     def warn(self, *args):

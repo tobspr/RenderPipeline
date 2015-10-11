@@ -62,7 +62,6 @@ class StageManager(DebugObject):
 
         # Process each stage
         for stage in self._stages:
-            self.debug("Creating stage", stage.get_stage_id())
             stage.create()
 
             # Check if all pipes are available, and set them

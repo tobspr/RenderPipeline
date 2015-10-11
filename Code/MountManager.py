@@ -1,5 +1,6 @@
 
 import os
+import sys
 import atexit
 
 from panda3d.core import Filename, VirtualFileSystem, get_model_path
@@ -169,9 +170,13 @@ class MountManager(DebugObject):
         vfs.mount_loop(join(self._base_path, 'Models'), 'Models', 0)
         vfs.mount_loop(join(self._base_path, 'Config'), 'Config', 0)
         vfs.mount_loop(join(self._base_path, 'Effects'), 'Effects', 0)
+        vfs.mount_loop(join(self._base_path, 'Plugins'), 'Plugins', 0)
 
         # Mount shaders under a different name to access them from the effects
         vfs.mount_loop(join(self._base_path, 'Shader'), 'ShaderMount', 0)
+
+        # sys.path.insert(0, ".")
+        # sys.path.insert(0, "./Code/")
 
         # Mount the pipeline temp path:
         # If no write path is specified, use a virtual ramdisk

@@ -12,6 +12,7 @@ from Globals import Globals
 from StageManager import StageManager
 from Lighting.LightManager import LightManager
 from Effects.EffectLoader import EffectLoader
+from PluginAPI.PluginManager import PluginManager
 
 from GUI.OnscreenDebugger import OnscreenDebugger
 
@@ -69,6 +70,11 @@ class RenderPipeline(DebugObject):
                         {"cast_shadows": False}, 100)
         return skybox
 
+    def get_plugin_mgr(self):
+        """ Returns a handle to the pl ugin manager, this can be used to trigger
+        hooks """
+        return self._plugin_mgr
+
     def set_effect(self, object, effect_src, options = None, sort = 30):
         """ Sets an effect to the given object, using the specified options.
         Check out the effect documentation for more information about possible
@@ -109,6 +115,7 @@ class RenderPipeline(DebugObject):
 
         # Create the various managers and instances
         self._com_resources = CommonResources(self)
+        self._plugin_mgr = PluginManager(self)
         self._debugger = OnscreenDebugger(self)
         self._effect_loader = EffectLoader()
         self._stage_mgr = StageManager(self)
@@ -122,6 +129,7 @@ class RenderPipeline(DebugObject):
         self._stage_mgr.setup()
         self.reload_shaders()
         self._init_bindings()
+        self._plugin_mgr.load_plugins()
         
         # Set the default effect on render
         self.set_effect(Globals.render, "Effects/Default.yaml", {}, -10)
@@ -142,10 +150,12 @@ class RenderPipeline(DebugObject):
         self._com_resources.update()
         self._stage_mgr.update_stages()
         self._light_mgr.update()
+        self._plugin_mgr.trigger_hook("pre_render_update")
         return task.cont
 
     def _post_render_update(self, task):
         """ Update task which gets called after the update """
+        self._plugin_mgr.trigger_hook("post_render_update")
         return task.cont
 
     def _create_common_defines(self):
