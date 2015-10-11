@@ -37,7 +37,6 @@ void render_material(Material m) {
 
     m.normal = normal_quantization(m.normal);
     m.diffuse = saturate(m.diffuse);
-
     gbuffer_out_0 = vec4(m.diffuse, m.roughness);
     gbuffer_out_1 = vec4(m.normal, m.metallic);
     gbuffer_out_2 = vec4(m.specular, 0, 0, 1);

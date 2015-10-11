@@ -5,6 +5,7 @@ from panda3d.core import CSYupRight, CSZupRight
 from Util.DebugObject import DebugObject
 from Globals import Globals
 
+
 class CommonResources(DebugObject):
 
     """ This class manages the loading and binding of commonly used resources,

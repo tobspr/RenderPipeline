@@ -17,8 +17,7 @@ Fragment.GBuffer:
     template: default
     inject:
         material:
-            m.diffuse *= 2.0;
-            m.specular = 0.3;
+            /**/
 
 Fragment.Shadows:
     template: default

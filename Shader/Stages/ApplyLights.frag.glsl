@@ -30,6 +30,5 @@ void main() {
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
 
     result.xyz = shade_material_from_tile_buffer(m, tile);
-    // result.xyz = m.normal.yxyy;
     result.w = 1.0;
 }

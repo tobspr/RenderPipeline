@@ -62,8 +62,5 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     vec3 fresnel = Fresnel( specularColor, VxH );
 
     shadingResult += distribution * visibility * fresnel * NxL * lightColor * NxV;
-
-
     return shadingResult * attenuation * shadow;
-
 }

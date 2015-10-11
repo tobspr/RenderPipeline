@@ -15,11 +15,11 @@ from Effects.EffectLoader import EffectLoader
 
 from GUI.OnscreenDebugger import OnscreenDebugger
 
-
 class RenderPipeline(DebugObject):
 
     """ This is the main pipeline logic, it combines all components of the pipeline
-    to form a working system """
+    to form a working system. It does not do much work itself, but instead setups
+    all the managers and systems to be able to do their work. """
 
     def __init__(self, showbase):
         """ Creates a new pipeline with a given showbase instance. This should be
