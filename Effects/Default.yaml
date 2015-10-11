@@ -8,18 +8,16 @@ Vertex:
     inout:
         - uniform vec3 cameraPos;
         - uniform mat4 currentMVP;
-        - in vec4 p3d_Normal;
 
     inject:
         vertex:
-            vOutput.position += vec3(0.1, 0.2, 0.3);
-
+            // vOutput.position += vec3(0.1, 0.2, 2.3);
 
 Fragment.GBuffer:
     template: default
     inject:
         material:
-            m.baseColor *= 2.0;
+            m.diffuse *= 2.0;
             m.specular = 0.3;
 
 Fragment.Shadows:

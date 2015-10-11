@@ -36,7 +36,7 @@ class CullLightsStage(RenderStage):
         }
 
     def get_required_inputs(self):
-        return ["AllLightsData", "maxLightIndex", "mainCam", "currentViewMat"]
+        return ["AllLightsData", "maxLightIndex", "mainCam", "currentViewMatZup"]
 
     def create(self):
         max_cells = self._tile_amount.x * self._tile_amount.y * \

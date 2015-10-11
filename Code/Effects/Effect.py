@@ -13,9 +13,8 @@ class Effect(DebugObject):
     from a File. """
 
     _DEFAULT_OPTIONS = {
-        "option1": True,
-        "option2": 5,
-        "option4": 32
+        "cast_shadows": True,
+        "transparent": False
     }
 
     _PASSES = ["GBuffer", "Shadows", "Voxelize"]
@@ -78,6 +77,12 @@ class Effect(DebugObject):
 
         return True
 
+    def get_shader_obj(self, pass_id):
+        if pass_id not in self._shader_objs:
+            self.warn("Pass '" + pass_id + "' not found!")
+            return False
+        return self._shader_objs[pass_id]
+
     def _convert_filename_to_name(self, filename):
         """ Constructs an effect name from a filename """
         return filename.replace(".yaml", "").replace("Effects/", "")\
@@ -117,7 +122,10 @@ class Effect(DebugObject):
         # Add defines to the injects
         injects['defines'] = []
         for key, val in self._options.iteritems():
-            injects['defines'].append("#define " + key + " " + str(val))
+            val_str = str(val)
+            if isinstance(val, bool):
+                val_str = "1" if val else "0" 
+            injects['defines'].append("#define OPT_" + key.upper() + " " + val_str)
 
         # Parse dependencies
         if "dependencies" in data:
@@ -134,10 +142,11 @@ class Effect(DebugObject):
         if "inject" in data:
             data_injects = data["inject"]
             for key, val in data_injects.iteritems():
+                val = [i.strip() + ";" for i in val.strip(";").split(";")]
                 if key in injects:
-                    injects[key].append(val)
+                    injects[key] += val
                 else:
-                    injects[key] = [val]
+                    injects[key] = val
 
         # Check for unrecognized keys
         for key in data:

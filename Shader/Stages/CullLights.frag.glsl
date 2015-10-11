@@ -16,7 +16,7 @@ uniform int maxLightIndex;
 
 #define PROJ_MAT trans_view_of_mainCam_to_clip_of_mainCam
 uniform mat4 PROJ_MAT;
-uniform mat4 currentViewMat;
+uniform mat4 currentViewMatZup;
 
 void main() {
 
@@ -68,7 +68,7 @@ void main() {
 
     frustum.nearPlane = vec4(0, 0, -1.0, -linearDepthStart);
     frustum.farPlane = vec4(0, 0, 1.0, linearDepthEnd);
-    frustum.viewMat = currentViewMat;
+    frustum.viewMat = currentViewMatZup;
 
     // Cull all lights
     for (int i = 0; i < maxLightIndex + 1 && numRenderedLights < MAX_LIGHTS_PER_CELL; i++) {

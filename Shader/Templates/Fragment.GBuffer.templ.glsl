@@ -31,7 +31,7 @@ void main() {
     m.metallic = 0;
     m.specular = specular;
     m.roughness = roughness;
-
+    
     %MATERIAL%
 
     render_material(m);

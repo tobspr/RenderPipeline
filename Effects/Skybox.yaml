@@ -1,0 +1,19 @@
+
+Vertex:
+    template: default
+
+Fragment.GBuffer:
+    template: default
+    inject:
+        material:
+            m.diffuse = vec3(0.2, 0.6, 1.0);
+            m.specular = 0.0;
+            m.metallic = 0.0;
+            m.roughness = 1.0;
+            m.normal = vOutput.normal;
+
+Fragment.Shadows:
+    template: default
+
+Fragment.Voxelize:
+    template: default

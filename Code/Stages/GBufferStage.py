@@ -22,6 +22,9 @@ class GBufferStage(RenderStage):
             "GBuffer2": self._target.get_aux_texture(1),
         }
 
+    def get_required_inputs(self):
+        return ["currentViewProjMat"]
+
     def create(self):
         early_z = False
 
@@ -68,9 +71,7 @@ class GBufferStage(RenderStage):
         Globals.base.camNode.set_initial_state(initial_node.get_state())
 
     def set_shaders(self):
-        Globals.render.set_shader(Shader.load(Shader.SL_GLSL,
-            "Shader/Templates/Vertex.templ.glsl",
-            "Shader/Templates/Fragment.GBuffer.templ.glsl"))
+        pass
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
