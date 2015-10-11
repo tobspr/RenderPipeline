@@ -1,9 +1,11 @@
 
 import copy
 
+from panda3d.core import Shader
+
 from ..External.PyYAML import yaml
 from ..Util.DebugObject import DebugObject
-
+from ..Util.ShaderTemplate import ShaderTemplate
 
 class Effect(DebugObject):
 
@@ -11,7 +13,9 @@ class Effect(DebugObject):
     from a File. """
 
     _DEFAULT_OPTIONS = {
-
+        "option1": True,
+        "option2": 5,
+        "option4": 32
     }
 
     _PASSES = ["GBuffer", "Shadows", "Voxelize"]
@@ -19,8 +23,14 @@ class Effect(DebugObject):
     @classmethod
     def _generate_hash(cls, filename, options):
         """ Generates an unique hash based on the effect path and options """
-        # TODO: Implement me
-        return 1
+        constructed_dict = {}
+        for key in sorted(Effect._DEFAULT_OPTIONS.keys()):
+            if key in options:
+                val = options[key]
+            else:
+                val = Effect._DEFAULT_OPTIONS[key]
+            constructed_dict[key] = val
+        return hash(frozenset(constructed_dict.items()))
 
     def __init__(self):
         """ Constructs a new empty effect """
@@ -39,7 +49,10 @@ class Effect(DebugObject):
     def load(self, filename):
         """ Loads the effect from the given filename """
         self._source = filename
+        self._effect_name = self._convert_filename_to_name(filename)
         parsed_yaml = None
+        self._shader_paths = {}
+        self._shader_objs = {}
 
         # Get file content and parse it
         try:
@@ -54,33 +67,86 @@ class Effect(DebugObject):
             self.error(msg)
             return False
 
-        return self._parse_content(parsed_yaml)
+        self._parse_content(parsed_yaml)
+
+        # Construct a shader for each pass
+        for pass_id in self._PASSES:
+            vertex_src = self._shader_paths["Vertex"]
+            fragment_src = self._shader_paths["Fragment." + pass_id]
+            self._shader_objs[pass_id] = Shader.load(
+                Shader.SL_GLSL, vertex_src, fragment_src)
+
+        return True
+
+    def _convert_filename_to_name(self, filename):
+        """ Constructs an effect name from a filename """
+        return filename.replace(".yaml", "").replace("Effects/", "")\
+            .replace("/", "_").replace("\\", "_").replace(".", "-")
 
     def _parse_content(self, parsed_yaml):
         """ Internal method to construct the effect from a yaml object """
         for key, val in parsed_yaml.iteritems():
-            if key == "Vertex":
-                self._parse_vertex_template(val)
-            elif key.startswith("Fragment."):
-                key_pass = key.replace("Fragment.", "")
-                if key_pass in self._PASSES:
-                    self._parse_fragment_template(key_pass, val)
-                else:
-                    self.error("Unrecognized pass:", key_pass)
-            else:
-                self.error("Unrecognized section:", key)
+            self._parse_shader_template(key, val)
 
-    def _parse_vertex_template(self, vertex_data):
-        """ Parses a vertex template """
-        default_template = ""
-        shader = self._construct_shader_from_data(default_template, vertex_data)
+        # Create missing programs using the default options
+        if "Vertex" not in parsed_yaml:
+            self._parse_shader_template("Vertex", {})
 
-    def _parse_fragment_template(self, pass_id, fragment_data):
+        for key in self._PASSES:
+            if "Fragment." + key not in parsed_yaml:
+                self._parse_shader_template("Fragment." + key, {})
+
+
+    def _parse_shader_template(self, shader_id, data):
         """ Parses a fragment template """
-        default_template = ""
-        shader = self._construct_shader_from_data(default_template, fragment_data)
-
-    def _construct_shader_from_data(self, default_template, data):
+        default_template = "Shader/Templates/" + shader_id + ".templ.glsl"
+        shader_path = self._construct_shader_from_data(shader_id, default_template, data)
+        self._shader_paths[shader_id] = shader_path
+        
+    def _construct_shader_from_data(self, shader_id, default_template, data):
         """ Constructs a shader from a given dataset """
-        print "\nConstruct shader from data:"
-        print data
+        injects = {}
+        template_src = default_template
+
+        # Check the template
+        if "template" in data:
+            data_template = data["template"]
+            if data_template != "default":
+                template_src = data_template
+
+        # Add defines to the injects
+        injects['defines'] = []
+        for key, val in self._options.iteritems():
+            injects['defines'].append("#define " + key + " " + str(val))
+
+        # Parse dependencies
+        if "dependencies" in data:
+            injects["includes"] = []
+            for dependency in data["dependencies"]:
+                include_str = "#pragma include \"" + dependency + "\""
+                injects["includes"].append(include_str)
+
+        # Append inouts
+        if "inout" in data:
+            injects["inout"] = data["inout"]
+
+        # Append aditional injects
+        if "inject" in data:
+            data_injects = data["inject"]
+            for key, val in data_injects.iteritems():
+                if key in injects:
+                    injects[key].append(val)
+                else:
+                    injects[key] = [val]
+
+        # Check for unrecognized keys
+        for key in data:
+            if key not in ["dependencies", "inout", "inject", "template"]:
+                self.warn("Unrecognized key:", key)
+
+        shader = ShaderTemplate(template_src, self._effect_name + "@" + shader_id)
+
+        for key, val in injects.iteritems():
+            shader.register_template_value(key, val)
+
+        return shader.create()

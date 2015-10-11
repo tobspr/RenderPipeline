@@ -47,7 +47,7 @@ void main() {
     vec3 specular_color = m.diffuse * m.specular;
     float VxH = max(0, dot(viewVector, halfwayVector));
 
-    vec3 diffuse_ambient = vec3(0.2) * m.diffuse * (1.0 - m.metallic);
+    vec3 diffuse_ambient = vec3(0.02) * m.diffuse * (1.0 - m.metallic);
     vec3 specular_ambient = 
         fresnel_with_roughness(specular_color, VxH, m.roughness, m.metallic) * env_default_color / M_PI
     ;

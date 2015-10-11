@@ -1,35 +1,29 @@
 
 # Default effect file, used for all objects if not overridden
 
-
 Vertex:
     template: default
     dependencies:
-        - file1.inc.glsl
-        - file2.inc.glsl
+        - Includes/PositionReconstruction.inc.glsl
     inout:
         - uniform vec3 cameraPos;
         - uniform mat4 currentMVP;
         - in vec4 p3d_Normal;
 
     inject:
-        transformation:
-            p3d_Position += vec3(0.1, 0.2, 0.3);
+        vertex:
+            vOutput.position += vec3(0.1, 0.2, 0.3);
 
 
 Fragment.GBuffer:
     template: default
-
     inject:
         material:
             m.baseColor *= 2.0;
             m.specular = 0.3;
 
-
 Fragment.Shadows:
     template: default
 
-
 Fragment.Voxelize:
     template: default
-

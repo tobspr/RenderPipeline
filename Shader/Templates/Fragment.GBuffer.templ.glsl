@@ -1,5 +1,7 @@
 #version 430
 
+%DEFINES%
+
 #define IS_GBUFFER_SHADER 1
 
 #pragma include "Includes/Configuration.inc.glsl"
@@ -7,12 +9,16 @@
 #pragma include "Includes/Structures/Material.struct.glsl"
 #pragma include "Includes/GBufferPacking.inc.glsl"
 
+%INCLUDES%
+
 layout(location=0) in VertexOutput vOutput;
 
 uniform sampler2D p3d_Texture0;
 
 uniform float roughness;
 uniform float specular;
+
+%INOUT%
 
 void main() {
 
@@ -26,7 +32,7 @@ void main() {
     m.specular = specular;
     m.roughness = roughness;
 
-
+    %MATERIAL%
 
     render_material(m);
 }

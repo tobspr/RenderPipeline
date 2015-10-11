@@ -3,7 +3,7 @@ import os
 import atexit
 
 from panda3d.core import Filename, VirtualFileSystem, get_model_path
-from panda3d.core import VirtualFileMountRamdisk, VirtualFileMountSystem
+from panda3d.core import VirtualFileMountRamdisk
 from direct.stdpy.file import join, isdir, isfile
 
 from Util.DebugObject import DebugObject
@@ -23,7 +23,7 @@ class MountManager(DebugObject):
         self._pipeline = pipeline
         self._write_path = None
         self._base_path = "."
-        self._lock_file = "Temp/instance.pid"
+        self._lock_file = "instance.pid"
         self._model_paths = []
         self._mounted = False
 
@@ -34,16 +34,11 @@ class MountManager(DebugObject):
         path name or a multifile with openReadWrite(). If no pathname is set
         then the root directory is used.
 
-        This feature is usualy only used for debugging, the pipeline will dump
+        This feature is usually only used for debugging, the pipeline will dump
         all generated shaders and other temporary files to that directory.
         If you don't need this, you can use set_virtual_write_path(), which
         will create the temporary path in the VirtualFileSystem, thus not
-        writing any files to disk.
-
-        Applications are usually installed system wide and wont have write
-        access to the _base_path. It will be wise to at least use tempfile
-        like tempfile.mkdtemp(prefix='Shader-tmp'), or an application directory
-        in the user's home/app dir."""
+        writing any files to disk. """
         self._write_path = Filename.from_os_specific(pth).get_fullpath()
         self._lock_file = join(self._write_path, "instance.pid")
 
@@ -142,7 +137,7 @@ class MountManager(DebugObject):
 
             # Try removing the lockfile
             self._try_remove(self._lock_file)
-            
+
             # Try removing the shader auto config
             self._try_remove(join(self._write_path, "ShaderAutoConfig.include"))
 
@@ -150,8 +145,8 @@ class MountManager(DebugObject):
             for f in os.listdir(self._write_path):
                 pth = join(self._write_path, f)
 
-                # Tempfiles from the pipeline start with "$$" to distinguish them
-                # from user created files
+                # Tempfiles from the pipeline start with "$$" to distinguish
+                # them from user created files
                 if isfile(pth) and f.startswith("$$"):
                     self._try_remove(pth)
 

@@ -69,8 +69,8 @@ class GBufferStage(RenderStage):
 
     def set_shaders(self):
         Globals.render.set_shader(Shader.load(Shader.SL_GLSL,
-            "Shader/Templates/Vertex.glsl",
-            "Shader/Templates/Stages/GBuffer.frag.glsl"))
+            "Shader/Templates/Vertex.templ.glsl",
+            "Shader/Templates/Fragment.GBuffer.templ.glsl"))
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

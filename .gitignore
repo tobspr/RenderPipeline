@@ -17,3 +17,4 @@ Documentation/
 *.bam
 *.egg
 Data/DefaultCubemap/Filtered/
+desktop.ini
