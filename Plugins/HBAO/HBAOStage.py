@@ -1,13 +1,11 @@
 
-from ..RenderStage import RenderStage
+from ...Code.RenderStage import RenderStage
 
 
-class AmbientStage(RenderStage):
-
-    """ This stage computes the ambient term """
+class HBAOStage(RenderStage):
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "AmbientStage", pipeline)
+        RenderStage.__init__(self, "HBAOStage", pipeline)
 
     def get_produced_pipes(self):
         return {
@@ -15,18 +13,18 @@ class AmbientStage(RenderStage):
         }
 
     def get_input_pipes(self):
-        return ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
-                "GBuffer2"]
+        return ["ShadedScene", "GBufferDepth"]
 
     def get_required_inputs(self):
-        return ["mainCam", "mainRender", "DefaultEnvmap", "cameraPosition"]
+        # return ["mainCam", "mainRender", "DefaultEnvmap", "cameraPosition"]
+        return ["mainCam", "mainRender"]
 
     def create(self):
-        self._target = self._create_target("AmbientStage")
+        self._target = self._create_target("HBAODownscaleDepth")
         self._target.add_color_texture()
         self._target.set_color_bits(16)
         self._target.prepare_offscreen_buffer()
-
+        
     def set_shaders(self):
         self._target.set_shader(
             self._load_shader("Stages/AmbientStage.frag"))

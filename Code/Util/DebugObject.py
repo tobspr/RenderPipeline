@@ -58,7 +58,7 @@ class DebugObject:
         but provides useful information for the developer """
         if self._muted or self._output_level > 0:
             return
-        print self._debug_color + "[-] " + \
+        print self._debug_color + ">> " + \
             self._debug_name.ljust(25) + Style.RESET_ALL + Fore.WHITE +  \
             ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL
 

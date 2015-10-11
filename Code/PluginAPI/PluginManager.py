@@ -1,5 +1,4 @@
 
-import imp
 import re
 
 from direct.stdpy.file import open, isfile
@@ -25,7 +24,7 @@ class PluginManager(DebugObject):
         for plugin in plugins:
             self.debug("Loading plugin", plugin)
             plugin_class = self._try_load_plugin(plugin)
-            self._plugin_instances.append(plugin_class())
+            self._plugin_instances.append(plugin_class(self._pipeline))
 
     def _load_plugin_config(self):
         """ Loads the plugin config and extracts the list of activated plugins """
@@ -60,9 +59,8 @@ class PluginManager(DebugObject):
         # I tried everything, but imp and importlib don't seem to import the 
         # module in the current package. Until I haven't found a better solution,
         # I have to use this ugly code.
-        imp_str = "from ...Plugins." + plugin_id + " import Plugin_" +\
-                  plugin_id + " as TempPlugin"
-        exec imp_str
+        imp_str = "from ...Plugins.{0}.Plugin{0} import Plugin{0} as TempPlugin"
+        exec(imp_str.format(plugin_id))
         return TempPlugin
 
     def trigger_hook(self, hook_name):
