@@ -15,7 +15,7 @@ loadPrcFileData("", "notify-level-display error")
 
 import direct.directbase.DirectStart
 from Code.Globals import Globals
-from Code.Util.RenderTarget import RenderTarget
+from Code.RenderTarget import RenderTarget
 Globals.load(base)
 
 mip = 0

@@ -1,6 +1,5 @@
 
 from ...Code.PluginAPI.Plugin import Plugin
-from ...Code.Util.RenderTarget import RenderTarget
 from ...Code.RenderStage import RenderStage
 
 from HBAOStage import HBAOStage

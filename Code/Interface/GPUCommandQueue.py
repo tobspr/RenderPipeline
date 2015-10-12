@@ -5,7 +5,7 @@ from panda3d.core import PTAInt, Texture, Shader
 
 from ..Util.DebugObject import DebugObject
 from ..Util.Image import Image
-from ..Util.RenderTarget import RenderTarget
+from ..RenderTarget import RenderTarget
 from GPUCommand import GPUCommand
 
 

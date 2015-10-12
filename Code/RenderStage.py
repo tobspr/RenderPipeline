@@ -2,7 +2,7 @@
 from panda3d.core import Shader
 
 from Util.DebugObject import DebugObject
-from Util.RenderTarget import RenderTarget
+from RenderTarget import RenderTarget
 
 
 class RenderStage(DebugObject):
