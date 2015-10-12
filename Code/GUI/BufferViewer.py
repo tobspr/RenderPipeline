@@ -8,6 +8,7 @@ from direct.gui.DirectGui import DGG
 
 from ..Util.Generic import rgb_from_string
 from ..Globals import Globals
+from ..RenderTarget import RenderTarget
 from TexturePreview import TexturePreview
 from BetterOnscreenImage import BetterOnscreenImage
 from BetterOnscreenText import BetterOnscreenText
@@ -35,6 +36,7 @@ class BufferViewer(DraggableWindow):
         """ Constructs the buffer viewer """
         DraggableWindow.__init__(self, width=1400, height=800,
                                  title="Buffer- and Image-Browser")
+        RenderTarget.RT_CREATE_HANDLER = self.register_entry
         self._pipeline = pipeline
         self._scroll_height = 3000
         self._stages = []
