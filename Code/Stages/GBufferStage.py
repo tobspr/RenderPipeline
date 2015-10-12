@@ -16,10 +16,10 @@ class GBufferStage(RenderStage):
 
     def get_produced_pipes(self):
         return {
-            "GBufferDepth": self._target.get_depth_texture(),
-            "GBuffer0": self._target.get_color_texture(),
-            "GBuffer1": self._target.get_aux_texture(0),
-            "GBuffer2": self._target.get_aux_texture(1),
+            "GBufferDepth": self._target['depth'],
+            "GBuffer0": self._target['color'],
+            "GBuffer1": self._target['aux0'],
+            "GBuffer2": self._target['aux1'],
         }
 
     def get_required_inputs(self):

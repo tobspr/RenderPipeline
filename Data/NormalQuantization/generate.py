@@ -105,7 +105,7 @@ while TEXTURE_SIZE >= 2:
     """
     target.set_shader(Shader.make(Shader.SLGLSL, vertex_shader, fragment_shader))
     base.graphicsEngine.render_frame()
-    k = target.get_color_texture()
+    k = target['color']
     base.graphicsEngine.extractTextureData(k, base.win.get_gsg())
     k.write("NormalQuantizationTex-" + str(mip) + ".png")
     mip += 1

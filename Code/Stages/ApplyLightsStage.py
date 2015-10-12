@@ -14,7 +14,7 @@ class ApplyLightsStage(RenderStage):
                 "CellIndices", "PerCellLights"]
 
     def get_produced_pipes(self):
-        return {"ShadedScene": self._target.get_color_texture()}
+        return {"ShadedScene": self._target['color']}
 
     def get_required_inputs(self):
         return ["AllLightsData", "mainCam", "mainRender", "cameraPosition"]

@@ -9,14 +9,13 @@ class HBAOStage(RenderStage):
 
     def get_produced_pipes(self):
         return {
-            "ShadedScene": self._target.get_color_texture()
+            "ShadedScene": self._target['color']
         }
 
     def get_input_pipes(self):
         return ["ShadedScene", "GBufferDepth"]
 
     def get_required_inputs(self):
-        # return ["mainCam", "mainRender", "DefaultEnvmap", "cameraPosition"]
         return ["mainCam", "mainRender"]
 
     def create(self):
