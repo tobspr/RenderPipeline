@@ -105,7 +105,7 @@ class BufferViewer(DraggableWindow):
             # Cant use isinstance or we get circular references
             elif str(entry.__class__).endswith("RenderTarget"):
                 for target in entry.get_all_targets():
-                    self._stages.append(entry.get_target(target))
+                    self._stages.append(entry[target])
             # Cant use isinstance or we get circular references
             elif str(entry.__class__).endswith("Image"):
                 self._stages.append(entry.get_texture())
