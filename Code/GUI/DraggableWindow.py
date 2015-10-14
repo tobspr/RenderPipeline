@@ -14,14 +14,18 @@ class DraggableWindow(DebugObject):
 
     """ This is a simple draggable but not resizeable window """
 
-    def __init__(self, width=800, height=500, title="Window"):
+    def __init__(self, width=800, height=500, title="Window", parent=None):
         DebugObject.__init__(self, "Window-" + title)
         self._width = width
         self._height = height
         self._title = title
         self._visible = True
-        self._pos = Vec2((Globals.base.win.get_x_size() - self._width) / 2,
-                         (Globals.base.win.get_y_size() - self._height) / 2)
+        self._parent = parent if parent else Globals.base.pixel2d
+        self._context_scale = 1.0 / parent.get_sx()
+        self._context_width = Globals.base.win.get_x_size() * self._context_scale
+        self._context_height = Globals.base.win.get_y_size() * self._context_scale
+        self._pos = Vec2((self._context_width - self._width) / 2,
+                         (self._context_height - self._height) / 2)
         self._dragging = False
         self._drag_offset = Vec2(0)
 
@@ -49,8 +53,7 @@ class DraggableWindow(DebugObject):
 
     def _create_components(self):
         """ Creates the window components """
-        parent = Globals.base.pixel2d
-        self._node = parent.attach_new_node("Window")
+        self._node = self._parent.attach_new_node("Window")
         self._node.set_pos(self._pos.x, 1, -self._pos.y)
         border_px = 1
         self._border_frame = DirectFrame(pos=(0, 1, 0),
@@ -91,7 +94,7 @@ class DraggableWindow(DebugObject):
         """ Gets called when the user starts dragging the window """
         self._dragging = True
         self._node.detach_node()
-        self._node.reparent_to(Globals.base.pixel2d)
+        self._node.reparent_to(self._parent)
         Globals.base.taskMgr.add(self._on_tick, "UIWindowDrag",
                                  uponDeath=self._stop_drag)
         self._drag_offset = self._pos - self._get_mouse_pos()
@@ -114,18 +117,19 @@ class DraggableWindow(DebugObject):
         self._dragging = False
 
     def _get_mouse_pos(self):
-        """ Internal helper function to get the mouse position """
+        """ Internal helper function to get the mouse position, scaled by
+        the context scale """
         mx, my = (Globals.base.win.get_pointer(0).get_x(),
                   Globals.base.win.get_pointer(0).get_y())
-        return Vec2(mx, my)
+        return Vec2(mx, my) * self._context_scale
 
     def _set_pos(self, pos):
         """ Moves the window to the specified position """
         self._pos = pos
         self._pos.x = max(self._pos.x, -self._width + 100)
         self._pos.y = max(self._pos.y, 25)
-        self._pos.x = min(self._pos.x, Globals.base.win.get_x_size() - 100)
-        self._pos.y = min(self._pos.y, Globals.base.win.get_y_size() - 50)
+        self._pos.x = min(self._pos.x, self._context_width - 100)
+        self._pos.y = min(self._pos.y, self._context_height - 50)
         self._node.set_pos(self._pos.x, 1, -self._pos.y)
 
     def _on_tick(self, task):

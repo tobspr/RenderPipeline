@@ -34,6 +34,11 @@ class OnscreenDebugger(DebugObject):
     def _create_components(self):
         """ Creates the gui components """
 
+        # When using small resolutions, scale the GUI so its still useable,
+        # otherwise the sub-windows are bigger than the main window
+        scale_factor = min(1.0, Globals.base.win.get_x_size() / 1800.0)
+        self._fullscreen_node.set_scale(scale_factor)
+
         # Component values
         self._debugger_width = 420
         self._debugger_height = 800
@@ -47,8 +52,8 @@ class OnscreenDebugger(DebugObject):
         # Create the actual GUI
         self._create_debugger()
         self._create_topbar()
-        self._buffer_viewer = BufferViewer(self._pipeline)
-        self._pipe_viewer = PipeViewer(self._pipeline)
+        self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
+        self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
 
     def _create_topbar(self):
         """ Creates the topbar """

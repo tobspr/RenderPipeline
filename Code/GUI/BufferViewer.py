@@ -32,9 +32,9 @@ class BufferViewer(DraggableWindow):
         if entry in cls._REGISTERED_ENTRIES:
             cls._REGISTERED_ENTRIES.remove(entry)
 
-    def __init__(self, pipeline):
+    def __init__(self, pipeline, parent):
         """ Constructs the buffer viewer """
-        DraggableWindow.__init__(self, width=1400, height=800,
+        DraggableWindow.__init__(self, width=1400, height=800, parent=parent,
                                  title="Buffer- and Image-Browser")
         RenderTarget.RT_CREATE_HANDLER = self.register_entry
         self._pipeline = pipeline
@@ -42,7 +42,7 @@ class BufferViewer(DraggableWindow):
         self._stages = []
         self._create_shaders()
         self._create_components()
-        self._tex_preview = TexturePreview()
+        self._tex_preview = TexturePreview(self._pipeline, parent)
         self._tex_preview.hide()
         self.hide()
 

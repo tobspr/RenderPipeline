@@ -22,8 +22,8 @@ class PipeViewer(DraggableWindow):
     def register_stage_mgr(cls, mgr):
         cls._STAGE_MGR = mgr
 
-    def __init__(self, pipeline):
-        DraggableWindow.__init__(self, width=1300, height=900,
+    def __init__(self, pipeline, parent):
+        DraggableWindow.__init__(self, width=1300, height=900, parent=parent,
                                  title="Pipeline Visualizer")
         self._pipeline = pipeline
         self._scroll_width = 8000
