@@ -59,7 +59,7 @@ class PipeViewer(DraggableWindow):
         self._stage_node = self._content_node.attach_new_node("stages")
         current_pipes = []
         pipe_pixel_size = 3
-        pipe_height = 90
+        pipe_height = 100
 
         # Generate stages
         for offs, stage in enumerate(self._STAGE_MGR._stages):
@@ -103,7 +103,7 @@ class PipeViewer(DraggableWindow):
                 else:
                     icon_file = None
                     BetterOnscreenImage(image=pipe_tex, parent=node,
-                                        x=0, y=55 + pipe_idx * pipe_height,
+                                        x=0, y=50 + pipe_idx * pipe_height,
                                         w=w, h=h, any_filter=False,
                                         transparent=False)
 
