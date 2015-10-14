@@ -8,6 +8,9 @@ import io
 import gzip
 import shutil
 
+sys.dont_write_bytecode = True
+
+
 devnull = open(os.path.devnull, "w")
 setup_dir = os.path.dirname(os.path.realpath(__file__))
 current_step = 0
