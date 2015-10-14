@@ -3,7 +3,8 @@ import copy
 
 from panda3d.core import Shader
 
-from ..External.PyYAML import yaml
+from ..External.PyYAML import load as YAMLLoad
+from ..External.PyYAML import YAMLError
 from ..Util.DebugObject import DebugObject
 from ..Util.ShaderTemplate import ShaderTemplate
 
@@ -29,7 +30,7 @@ class Effect(DebugObject):
             else:
                 val = Effect._DEFAULT_OPTIONS[key]
             constructed_dict[key] = val
-        return hash(frozenset(constructed_dict.items()))
+        return hash(frozenset(list(constructed_dict.items())))
 
     def __init__(self):
         """ Constructs a new empty effect """
@@ -39,7 +40,7 @@ class Effect(DebugObject):
 
     def set_options(self, options):
         """ Sets the effect options, overriding the default options """
-        for key, val in options.iteritems():
+        for key, val in list(options.items()):
             if key not in self._options:
                 self.error("Unkown option:", key)
                 continue
@@ -56,12 +57,12 @@ class Effect(DebugObject):
         # Get file content and parse it
         try:
             with open(filename, "r") as handle:
-                parsed_yaml = yaml.load(handle)
-        except IOError, msg:
+                parsed_yaml = YAMLLoad(handle)
+        except IOError as msg:
             self.error("Could not find or open file:", filename, "!")
             self.error(msg)
             return False
-        except yaml.YAMLError, msg:
+        except YAMLError as msg:
             self.error("Invalid yaml-syntax in file:", filename, "!")
             self.error(msg)
             return False
@@ -90,7 +91,7 @@ class Effect(DebugObject):
 
     def _parse_content(self, parsed_yaml):
         """ Internal method to construct the effect from a yaml object """
-        for key, val in parsed_yaml.iteritems():
+        for key, val in list(parsed_yaml.items()):
             self._parse_shader_template(key, val)
 
         # Create missing programs using the default options
@@ -121,7 +122,7 @@ class Effect(DebugObject):
 
         # Add defines to the injects
         injects['defines'] = []
-        for key, val in self._options.iteritems():
+        for key, val in list(self._options.items()):
             val_str = str(val)
             if isinstance(val, bool):
                 val_str = "1" if val else "0" 
@@ -141,7 +142,7 @@ class Effect(DebugObject):
         # Append aditional injects
         if "inject" in data:
             data_injects = data["inject"]
-            for key, val in data_injects.iteritems():
+            for key, val in list(data_injects.items()):
                 val = [i.strip() + ";" for i in val.strip(";").split(";")]
                 if key in injects:
                     injects[key] += val
@@ -155,7 +156,7 @@ class Effect(DebugObject):
 
         shader = ShaderTemplate(template_src, self._effect_name + "@" + shader_id)
 
-        for key, val in injects.iteritems():
+        for key, val in list(injects.items()):
             shader.register_template_value(key, val)
 
         return shader.create()

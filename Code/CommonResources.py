@@ -2,8 +2,8 @@
 from panda3d.core import PTAVecBase3f, PTAMat4, Texture, TransformState, Mat4
 from panda3d.core import CSYupRight, CSZupRight
 
-from Util.DebugObject import DebugObject
-from Globals import Globals
+from .Util.DebugObject import DebugObject
+from .Globals import Globals
 
 
 class CommonResources(DebugObject):

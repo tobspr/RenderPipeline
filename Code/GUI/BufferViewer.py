@@ -9,10 +9,10 @@ from direct.gui.DirectGui import DGG
 from ..Util.Generic import rgb_from_string
 from ..Globals import Globals
 from ..RenderTarget import RenderTarget
-from TexturePreview import TexturePreview
-from BetterOnscreenImage import BetterOnscreenImage
-from BetterOnscreenText import BetterOnscreenText
-from DraggableWindow import DraggableWindow
+from .TexturePreview import TexturePreview
+from .BetterOnscreenImage import BetterOnscreenImage
+from .BetterOnscreenText import BetterOnscreenText
+from .DraggableWindow import DraggableWindow
 
 
 class BufferViewer(DraggableWindow):
@@ -103,11 +103,11 @@ class BufferViewer(DraggableWindow):
             if isinstance(entry, Texture):
                 self._stages.append(entry)
             # Cant use isinstance or we get circular references
-            elif str(entry.__class__).endswith("RenderTarget"):
+            elif entry.__class__.__name__ == "RenderTarget":
                 for target in entry.get_all_targets():
                     self._stages.append(entry[target])
             # Cant use isinstance or we get circular references
-            elif str(entry.__class__).endswith("Image"):
+            elif entry.__class__.__name__ == "Image":
                 self._stages.append(entry.get_texture())
             else:
                 self.warn("Unrecognized instance!", entry.__class__)
@@ -143,8 +143,7 @@ class BufferViewer(DraggableWindow):
                 if "-" in stage_name else stage_name
 
             xoffs = index % entries_per_row
-            yoffs = index / entries_per_row
-
+            yoffs = index // entries_per_row
             node = self._content_node.attach_new_node("Preview")
             node.set_sz(-1)
             node.set_pos(30 + xoffs * entry_width, 1, yoffs * entry_height)

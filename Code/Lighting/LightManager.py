@@ -19,7 +19,7 @@ from ..Stages.FinalStage import FinalStage
 from ..Interface.GPUCommandQueue import GPUCommandQueue
 from ..Interface.GPUCommand import GPUCommand
 
-from Light import Light
+from .Light import Light
 
 
 class LightManager(DebugObject):

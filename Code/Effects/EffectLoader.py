@@ -1,5 +1,5 @@
 
-from Effect import Effect
+from .Effect import Effect
 from ..Util.DebugObject import DebugObject
 
 

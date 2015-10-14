@@ -1,4 +1,6 @@
 
+from __future__ import print_function
+
 import sys
 
 # Load and init colorama, used to color the output
@@ -29,7 +31,7 @@ class DebugObject:
         representative about the class. If no name is given, the classname
         is used """
         if name is None:
-            name = str(self.__class__).split(".")[-1]
+            name = self.__class__.__name__
         self._rename(name)
         self._muted = False
         self._debug_color = Fore.GREEN
@@ -58,27 +60,27 @@ class DebugObject:
         but provides useful information for the developer """
         if self._muted or self._output_level > 0:
             return
-        print self._debug_color + ">> " + \
-            self._debug_name.ljust(25) + Style.RESET_ALL + Fore.WHITE +  \
-            ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL
+        print(self._debug_color + ">> " + \
+            self._debug_name.ljust(25) + " " + Style.RESET_ALL + Fore.WHITE +\
+            ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL)
 
     def warn(self, *args):
         """ Outputs a warning message, something that failed or does
         not work, but does not prevent the program from running """
         if self._muted or self._output_level > 1:
             return
-        print Fore.YELLOW + Style.BRIGHT + "[!] " + (self._debug_name).ljust(25) + \
-            Fore.YELLOW + Style.BRIGHT + ' '.join([str(i) for i in args]) + \
-            Fore.RESET + Style.RESET_ALL
+        print(Fore.YELLOW + Style.BRIGHT + "[!] " + (self._debug_name).ljust(25) + \
+            Fore.YELLOW + Style.BRIGHT + " " + ' '.join([str(i) for i in args]) + \
+            Fore.RESET + Style.RESET_ALL)
 
     def error(self, *args):
         """ Outputs an error message, something really serious.
         Hopefully this never get's called! Errors also can't be muted """
         if self._output_level > 2:
             return
-        print Fore.RED + Style.BRIGHT + "\n\n\n[!!!] " + \
-            (self._debug_name).ljust(23) + ' '.join([str(i) for i in args]) + \
-            "\n\n\n" + Fore.RESET + Style.RESET_ALL
+        print(Fore.RED + Style.BRIGHT + "\n\n\n[!!!] " + \
+            (self._debug_name).ljust(23) + " " + ' '.join([str(i) for i in args]) + \
+            "\n\n\n" + Fore.RESET + Style.RESET_ALL)
 
     def fatal(self, *args):
         """ Outputs a fatal error message, printing out the errors and then

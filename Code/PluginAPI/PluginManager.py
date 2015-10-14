@@ -2,7 +2,7 @@
 import re
 
 from direct.stdpy.file import open, isfile
-from Plugin import Plugin
+from .Plugin import Plugin
 
 from ..Util.DebugObject import DebugObject
 
@@ -61,7 +61,7 @@ class PluginManager(DebugObject):
         # I have to use this ugly code.
         imp_str = "from ...Plugins.{0}.Plugin{0} import Plugin{0} as TempPlugin"
         exec(imp_str.format(plugin_id))
-        return TempPlugin
+        return locals()["TempPlugin"]
 
     def trigger_hook(self, hook_name):
         """ Triggers the hook, executing all handlers attached to that hook """

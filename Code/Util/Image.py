@@ -1,7 +1,7 @@
 
 from panda3d.core import Texture, Vec4, GeomEnums
 
-from DebugObject import DebugObject
+from .DebugObject import DebugObject
 from ..Globals import Globals
 from ..GUI.BufferViewer import BufferViewer
 

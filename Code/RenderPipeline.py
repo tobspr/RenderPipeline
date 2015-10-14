@@ -1,21 +1,23 @@
 
+import sys
+
 from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
 from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f, Texture
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
-from Util.DebugObject import DebugObject
+from .Util.DebugObject import DebugObject
 
-from CommonResources import CommonResources
-from MountManager import MountManager
-from PipelineSettings import PipelineSettings
-from Globals import Globals
-from StageManager import StageManager
-from Lighting.LightManager import LightManager
-from Effects.EffectLoader import EffectLoader
-from PluginAPI.PluginManager import PluginManager
+from .CommonResources import CommonResources
+from .MountManager import MountManager
+from .PipelineSettings import PipelineSettings
+from .Globals import Globals
+from .StageManager import StageManager
+from .Lighting.LightManager import LightManager
+from .Effects.EffectLoader import EffectLoader
+from .PluginAPI.PluginManager import PluginManager
 
-from GUI.OnscreenDebugger import OnscreenDebugger
+from .GUI.OnscreenDebugger import OnscreenDebugger
 
 class RenderPipeline(DebugObject):
 
@@ -27,7 +29,7 @@ class RenderPipeline(DebugObject):
         """ Creates a new pipeline with a given showbase instance. This should be
         done before intializing the ShowBase, the pipeline will take care of that. """
         DebugObject.__init__(self, "RenderPipeline")
-        self.debug("Starting pipeline ..")
+        self.debug("Starting pipeline, using Python" + str(sys.version_info.major))
         self._showbase = showbase
         self._mount_manager = MountManager(self)
         self._settings = PipelineSettings(self)

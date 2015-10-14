@@ -2,7 +2,7 @@
 from ...Code.PluginAPI.Plugin import Plugin
 from ...Code.RenderStage import RenderStage
 
-from HBAOStage import HBAOStage
+from .HBAOStage import HBAOStage
 
 class PluginHBAO(Plugin):
 

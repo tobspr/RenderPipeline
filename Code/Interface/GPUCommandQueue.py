@@ -6,7 +6,7 @@ from panda3d.core import PTAInt, Texture, Shader
 from ..Util.DebugObject import DebugObject
 from ..Util.Image import Image
 from ..RenderTarget import RenderTarget
-from GPUCommand import GPUCommand
+from .GPUCommand import GPUCommand
 
 
 class GPUCommandQueue(DebugObject):
@@ -41,7 +41,7 @@ class GPUCommandQueue(DebugObject):
             # Pack the data into the buffer
             image = memoryview(self._data_texture.get_texture().modify_ram_image())
             data_size_bytes = len(data) * 4
-            image[data_size_bytes:] = "\0" * (len(image) - data_size_bytes)
+            image[data_size_bytes:] = struct.pack('B', 0) * (len(image) - data_size_bytes)
             image[0:data_size_bytes] = struct.pack('f' * len(data), *data)
 
     def add_command(self, command):

@@ -62,23 +62,23 @@ def filter_cubemap(orig_pth):
         os.makedirs("Filtered/")
 
     # Copy original cubemap
-    for i in xrange(6):
+    for i in range(6):
        shutil.copyfile(orig_pth.replace("#", str(i)), "Filtered/0-" + str(i) + ".png")
 
     mip = 0
     while True:
-        print "Filtering mipmap", mip
+        print("Filtering mipmap", mip)
         mip += 1
         pth = "Filtered/" + str(mip - 1) + "-#.png"
         dst_pth = "Filtered/" + str(mip) + "-#.png"
         first_img = load_nth_face(pth, 0)
-        size = first_img.get_x_size() / 2
+        size = first_img.get_x_size() // 2
         if size < 1:
             break
         blur_size = max(1, int(size * 0.006))
         blur_size += mip
         effective_size = size + 2 * blur_size
-        faces = [load_nth_face(pth, i) for i in xrange(6)]
+        faces = [load_nth_face(pth, i) for i in range(6)]
 
         cubemap = loader.loadCubeMap(pth)
         node = NodePath("")
@@ -90,8 +90,8 @@ def filter_cubemap(orig_pth):
 
         final_img = PNMImage(size, size, 3)
 
-        for i in xrange(6):
-            print "\tFiltering face", i
+        for i in range(6):
+            print("\tFiltering face", i)
             face_dest = dst_pth.replace("#", str(i))
             dst = Texture("Face-" + str(i))
             dst.setup_2d_texture(effective_size, effective_size,
@@ -101,8 +101,8 @@ def filter_cubemap(orig_pth):
             node.set_shader_input("FaceIndex", i)
             node.set_shader_input("DestTex", dst)
             attr = node.get_attrib(ShaderAttrib)
-            base.graphicsEngine.dispatch_compute(( (effective_size+15) / 16,
-                                                   (effective_size+15) / 16, 1),
+            base.graphicsEngine.dispatch_compute(( (effective_size+15) // 16,
+                                                   (effective_size+15) // 16, 1),
                                                  attr, base.win.get_gsg())
 
             base.graphicsEngine.extract_texture_data(dst, base.win.get_gsg())

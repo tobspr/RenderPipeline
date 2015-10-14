@@ -3,7 +3,7 @@
 from panda3d.core import Shader
 from direct.stdpy.file import open
 
-from DebugObject import DebugObject
+from .DebugObject import DebugObject
 
 
 class ShaderTemplate(DebugObject):

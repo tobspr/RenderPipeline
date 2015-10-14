@@ -1,9 +1,9 @@
 
 from panda3d.core import Vec3, Texture, Shader, LVecBase2i
-from DraggableWindow import DraggableWindow
-from BetterOnscreenImage import BetterOnscreenImage
-from BetterOnscreenText import BetterOnscreenText
-from BetterSlider import BetterSlider
+from .DraggableWindow import DraggableWindow
+from .BetterOnscreenImage import BetterOnscreenImage
+from .BetterOnscreenText import BetterOnscreenText
+from .BetterSlider import BetterSlider
 
 
 class TexturePreview(DraggableWindow):

@@ -7,7 +7,7 @@ from panda3d.core import Filename, VirtualFileSystem, get_model_path
 from panda3d.core import VirtualFileMountRamdisk
 from direct.stdpy.file import join, isdir, isfile
 
-from Util.DebugObject import DebugObject
+from .Util.DebugObject import DebugObject
 
 
 class MountManager(DebugObject):
@@ -67,7 +67,7 @@ class MountManager(DebugObject):
             try:
                 with open(self._lock_file, "r") as handle:
                     pid = int(handle.readline())
-            except Exception, msg:
+            except Exception as msg:
                 self.error("Failed to read lockfile:", msg)
                 return False
 
@@ -190,8 +190,8 @@ class MountManager(DebugObject):
             if not isdir(self._write_path):
                 self.debug("Creating temp path, it does not exist yet")
                 try:
-                    os.makedirs(self._write_path, 0777)
-                except Exception, msg:
+                    os.makedirs(self._write_path, 0o777)
+                except Exception as msg:
                     self.fatal("Failed to create temp path:", msg)
             self.debug("Mounting", self._write_path, "as $$PipelineTemp/")
             vfs.mount_loop(self._write_path, '$$PipelineTemp/', 0)

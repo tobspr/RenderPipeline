@@ -5,9 +5,9 @@ from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectFrame import DirectFrame
 
 from ..Util.Generic import rgb_from_string
-from DraggableWindow import DraggableWindow
-from BetterOnscreenText import BetterOnscreenText
-from BetterOnscreenImage import BetterOnscreenImage
+from .DraggableWindow import DraggableWindow
+from .BetterOnscreenText import BetterOnscreenText
+from .BetterOnscreenImage import BetterOnscreenImage
 
 from ..Globals import Globals
 
@@ -71,7 +71,7 @@ class PipeViewer(DraggableWindow):
             BetterOnscreenText(text=str(stage.get_name().replace("Stage", "")),
                                parent=node, x=20, y=25, size=15)
 
-            for output_pipe, pipe_tex in stage.get_produced_pipes().iteritems():
+            for output_pipe, pipe_tex in list(stage.get_produced_pipes().items()):
                 pipe_idx = 0
                 r, g, b = rgb_from_string(output_pipe)
                 if output_pipe in current_pipes:

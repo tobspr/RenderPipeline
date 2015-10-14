@@ -109,5 +109,5 @@ while TEXTURE_SIZE >= 2:
     base.graphicsEngine.extractTextureData(k, base.win.get_gsg())
     k.write("NormalQuantizationTex-" + str(mip) + ".png")
     mip += 1
-    TEXTURE_SIZE /= 2
+    TEXTURE_SIZE //= 2
     target.delete_buffer()

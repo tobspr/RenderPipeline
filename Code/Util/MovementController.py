@@ -186,75 +186,75 @@ class MovementController:
 
     def _show_debug_output(self):
         """ Lists the available debug options """
-        print "\n" * 5
-        print "DEBUG MENU"
-        print "-" * 50
-        print "Select an option:"
-        print "\t(1) Connect to pstats"
-        print "\t(2) Toggle frame rate meter"
-        print "\t(3) Reset to initial position"
-        print "\t(4) Display camera position"
-        print "\t(5) Show scene graph"
-        print "\t(6) Open placement window"
-        print "\t(7) Analyze VRAM"
-        print
+        print(("\n" * 5))
+        print("DEBUG MENU")
+        print(("-" * 50))
+        print("Select an option:")
+        print("\t(1) Connect to pstats")
+        print("\t(2) Toggle frame rate meter")
+        print("\t(3) Reset to initial position")
+        print("\t(4) Display camera position")
+        print("\t(5) Show scene graph")
+        print("\t(6) Open placement window")
+        print("\t(7) Analyze VRAM")
+        print()
 
-        selectedOption = raw_input("Which do you want to choose?: ")
+        selectedOption = eval(input("Which do you want to choose?: "))
 
         try:
             selectedOption = int(selectedOption.strip())
         except:
-            print "Option has to be a valid number!"
+            print("Option has to be a valid number!")
             return False
 
         if selectedOption < 1 or selectedOption > 7:
-            print "Invalid option!"
+            print("Invalid option!")
             return False
 
         # pstats
         if selectedOption == 1:
-            print "Connecting to pstats .."
-            print "If you have no pstats running, this will take 5 seconds to timeout .."
+            print("Connecting to pstats ..")
+            print("If you have no pstats running, this will take 5 seconds to timeout ..")
             PStatClient.connect()
 
         # frame rate meter
         elif selectedOption == 2:
-            print "Toggling frame rate meter .."
+            print("Toggling frame rate meter ..")
             self._showbase.setFrameRateMeter(not self._showbase.frameRateMeter)
 
         # initial position
         elif selectedOption == 3:
-            print "Reseting camera position / hpr .."
+            print("Reseting camera position / hpr ..")
             self._reset_to_initial()
 
         # display camera pos
         elif selectedOption == 4:
-            print "Debug information:"
+            print("Debug information:")
             campos = self._showbase.cam.get_pos(self._showbase.render)
             camrot = self._showbase.cam.get_hpr(self._showbase.render)
-            print "camPos = Vec3(" + str(round(campos.x, 2)) + "," + str(round(campos.y, 2)) + "," + str(round(campos.z, 2)) + ")"
-            print "camHpr = Vec3(" + str(round(camrot.x, 2)) + "," + str(round(camrot.y, 2)) + "," + str(round(camrot.z, 2)) + ")"
+            print(("camPos = Vec3(" + str(round(campos.x, 2)) + "," + str(round(campos.y, 2)) + "," + str(round(campos.z, 2)) + ")"))
+            print(("camHpr = Vec3(" + str(round(camrot.x, 2)) + "," + str(round(camrot.y, 2)) + "," + str(round(camrot.z, 2)) + ")"))
 
 
         # show scene graph
         elif selectedOption == 5:
-            print "SCENE GRAPH:"
-            print "-" * 50
+            print("SCENE GRAPH:")
+            print(("-" * 50))
             self._showbase.render.ls()
-            print "-" * 50
-            print
-            print "ANALYZED:"
-            print "-" * 50
+            print(("-" * 50))
+            print()
+            print("ANALYZED:")
+            print(("-" * 50))
             self._showbase.render.analyze()
-            print "-" * 50
+            print(("-" * 50))
 
         # placement window
         elif selectedOption == 6:
-            print "Opening placement window. You need tkinter installed to be able to use it"
+            print("Opening placement window. You need tkinter installed to be able to use it")
             self._showbase.render.place()
             # print "It seems .place() is currently not working. Sorry!!"
 
         # vram analyszs
         elif selectedOption == 7:
-            print "Analyzing VRAM ..."
+            print("Analyzing VRAM ...")
             MemoryMonitor.analyze_memory()

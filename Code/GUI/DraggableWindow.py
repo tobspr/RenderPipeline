@@ -7,7 +7,7 @@ from direct.gui.DirectGui import DGG
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
-from BetterOnscreenText import BetterOnscreenText
+from .BetterOnscreenText import BetterOnscreenText
 
 
 class DraggableWindow(DebugObject):

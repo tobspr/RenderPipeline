@@ -3,7 +3,7 @@
 from panda3d.core import Vec3
 from direct.stdpy.file import isfile, open
 
-from DebugObject import DebugObject
+from .DebugObject import DebugObject
 
 
 class SettingsLoader(DebugObject):
@@ -120,7 +120,7 @@ class SettingsLoader(DebugObject):
             content = handle.readlines()
 
         # Set to default settings
-        for name, setting in self._settings.iteritems():
+        for name, setting in list(self._settings.items()):
             setting.set_value(setting.get_default())
             setattr(self, name, setting.get_default())
 

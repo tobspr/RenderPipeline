@@ -7,10 +7,10 @@ from direct.gui.DirectGuiBase import DGG
 from direct.interval.IntervalGlobal import Parallel, Sequence
 
 
-from BetterOnscreenImage import BetterOnscreenImage
-from BufferViewer import BufferViewer
-from PipeViewer import PipeViewer
-from BetterOnscreenText import BetterOnscreenText
+from .BetterOnscreenImage import BetterOnscreenImage
+from .BufferViewer import BufferViewer
+from .PipeViewer import PipeViewer
+from .BetterOnscreenText import BetterOnscreenText
 
 
 from ..Util.DebugObject import DebugObject

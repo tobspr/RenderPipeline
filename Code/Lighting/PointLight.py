@@ -1,6 +1,6 @@
 
 
-from Light import Light
+from .Light import Light
 
 
 class PointLight(Light):

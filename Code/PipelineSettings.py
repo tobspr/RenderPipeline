@@ -1,5 +1,5 @@
 
-from Util.SettingsLoader import SettingsLoader
+from .Util.SettingsLoader import SettingsLoader
 
 
 class PipelineSettings(SettingsLoader):

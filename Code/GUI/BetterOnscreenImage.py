@@ -25,7 +25,7 @@ class BetterOnscreenImage(DebugObject):
 
         if not isinstance(image, Texture):
             if not isinstance(image, str):
-                print "Invalid argument to image parameter:", image
+                self.warn("Invalid argument to image parameter:", image)
                 return
             image = Globals.loader.loadTexture(image)
 
