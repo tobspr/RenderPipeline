@@ -59,6 +59,7 @@ class PipeViewer(DraggableWindow):
         self._stage_node = self._content_node.attach_new_node("stages")
         current_pipes = []
         pipe_pixel_size = 3
+        pipe_height = 90
 
         # Generate stages
         for offs, stage in enumerate(self._STAGE_MGR._stages):
@@ -82,7 +83,7 @@ class PipeViewer(DraggableWindow):
                                 frameSize=(0, 8000, pipe_pixel_size / 2,
                                            -pipe_pixel_size / 2),
                                 frameColor=(r, g, b, 1),
-                                pos=(10, 1, -95 - pipe_idx * 110.0))
+                                pos=(10, 1, -95 - pipe_idx * pipe_height))
                 w = 160
                 h = Globals.base.win.get_y_size() /\
                     float(Globals.base.win.get_x_size()) * w
@@ -91,41 +92,60 @@ class PipeViewer(DraggableWindow):
                                        h / 2 + pipe_pixel_size,
                                        -h / 2 - pipe_pixel_size),
                             frameColor=(r, g, b, 1),
-                            pos=(0, 1, -95 - pipe_idx * 110.0))
+                            pos=(0, 1, -95 - pipe_idx * pipe_height))
+
 
                 if pipe_tex.get_z_size() > 1:
-                    self.debug("Ignoring 3D image", pipe_tex.get_name())
-                    continue
+                    icon_file = "Data/GUI/OnscreenDebugger/IconTexture.png"
 
-                if pipe_tex.get_texture_type() == Texture.TT_buffer_texture:
-                    self.debug("Ignoring texture buffer", pipe_tex.get_name())
-                    continue
+                elif pipe_tex.get_texture_type() == Texture.TT_buffer_texture:
+                    icon_file = "Data/GUI/OnscreenDebugger/IconBufferTexture.png"
+                else:
+                    icon_file = None
+                    BetterOnscreenImage(image=pipe_tex, parent=node,
+                                        x=0, y=55 + pipe_idx * pipe_height,
+                                        w=w, h=h, any_filter=False,
+                                        transparent=False)
 
-                BetterOnscreenImage(image=pipe_tex, parent=node,
-                                    x=0, y=50 + pipe_idx * 110.0,
-                                    w=w, h=h, any_filter=False,
-                                    transparent=False)
+                if icon_file:
+                    BetterOnscreenImage(image=icon_file, parent=node,
+                                        x=55, y=65 + pipe_idx * pipe_height,
+                                        w=48, h=48, near_filter=False,
+                                        transparent=True)
+
+                    tex_desc = pipe_tex.format_texture_type(pipe_tex.get_texture_type())
+                    tex_desc += " - " + pipe_tex.format_format(pipe_tex.get_format()).upper()
+
+                    BetterOnscreenText(text=tex_desc, parent=node,
+                                        x=55 + 48/2, y=130 + pipe_idx * pipe_height, color=Vec3(0.2),
+                                        size=12, align="center")
 
             for input_pipe in stage.get_input_pipes():
                 idx = current_pipes.index(input_pipe)
                 r, g, b = rgb_from_string(input_pipe)
                 DirectFrame(parent=node, frameSize=(0, 10, 40, -40),
                             frameColor=(r, g, b, 1),
-                            pos=(5, 1, -95 - idx * 110.0))
+                            pos=(5, 1, -95 - idx * pipe_height))
 
         self._pipe_descriptions = self._content_node.attach_new_node(
             "PipeDescriptions")
         self._pipe_descriptions.set_scale(1, 1, -1)
 
+        DirectFrame(parent=self._pipe_descriptions, frameSize=(0, 190, 0, -5000),
+            frameColor=(0.1, 0.1, 0.1, 1.0))
+
         # Generate the pipe descriptions
         for idx, pipe in enumerate(current_pipes):
             r, g, b = rgb_from_string(pipe)
             DirectFrame(parent=self._pipe_descriptions,
-                        frameSize=(0, 180, -90, -140),
-                        frameColor=(r, g, b, 1.0), pos=(0, 1, -idx * 110.0))
+                        frameSize=(0, 180, -95, -135),
+                        frameColor=(r, g, b, 1.0), pos=(0, 1, -idx * pipe_height))
             BetterOnscreenText(parent=self._pipe_descriptions, text=pipe,
-                               x=20, y=120 + idx * 110, size=15,
-                               color=Vec3(0.2, 0.2, 0.2))
+                               x=42, y=121 + idx * pipe_height, size=15,
+                               color=Vec3(0.1))
+            BetterOnscreenImage(parent=self._pipe_descriptions,
+                image="Data/GUI/OnscreenDebugger/IconPipe.png", 
+                x=9, y=103 + idx * pipe_height, transparent=True, near_filter=False)
 
     def _create_components(self):
         """ Internal method to create the window components """
