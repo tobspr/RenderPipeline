@@ -77,4 +77,9 @@ exec_python_file("Data/DefaultCubemap/filter.py")
 
 # Further setup code follows here
 
+
+# Write install flag
+with open(os.path.join(setup_dir, "Data/install.flag"), "wb") as handle:
+    handle.write("1")
+
 print "\n\n-- Setup finished! --"

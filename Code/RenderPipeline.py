@@ -2,6 +2,7 @@
 from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
 from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f, Texture
 from direct.showbase.ShowBase import ShowBase
+from direct.stdpy.file import isfile
 
 from Util.DebugObject import DebugObject
 
@@ -100,6 +101,10 @@ class RenderPipeline(DebugObject):
 
         if not self._settings.is_file_loaded():
             self.warn("No settings file loaded! Using default settings")
+
+        # Check if the pipeline was properly installed
+        if not isfile("Data/install.flag"):
+            self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
 
         # Construct the showbase
         ShowBase.__init__(self._showbase)

@@ -18,3 +18,5 @@ Documentation/
 *.egg
 Data/DefaultCubemap/Filtered/
 desktop.ini
+Data/install.flag
+
