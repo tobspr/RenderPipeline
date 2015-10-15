@@ -1,6 +1,6 @@
 
 
-from panda3d.core import Vec3
+from panda3d.core import Vec3, Vec2, RenderState, TransformState
 from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectOptionMenu import DirectOptionMenu
 from direct.gui.DirectGuiBase import DGG
@@ -13,6 +13,7 @@ from .PipeViewer import PipeViewer
 from .BetterOnscreenText import BetterOnscreenText
 from .BetterLabeledCheckbox import BetterLabeledCheckbox
 from .CheckboxCollection import CheckboxCollection
+from .FastText import FastText
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
@@ -53,8 +54,13 @@ class OnscreenDebugger(DebugObject):
         # Create the actual GUI
         self._create_debugger()
         self._create_topbar()
+        self._create_stats()
         self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
         self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
+
+    def update(self):
+        """ Updates the gui """
+        self._update_stats()
 
     def _create_topbar(self):
         """ Creates the topbar """
@@ -71,6 +77,33 @@ class OnscreenDebugger(DebugObject):
         # Hide the logo text in the beginning
         self._pipeline_logo_text.set_pos(150, -150)
         self._topbar.hide()
+
+    def _create_stats(self):
+        """ Creates the stats overlay """
+
+        self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
+        self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.2, 1, 0.8)
+
+        self._debug_lines = []
+
+        for i in xrange(2):
+            self._debug_lines.append(FastText(pos=Vec2(0, -i * 0.05),
+                parent=self._overlay_node, pixel_size=20, align="right"))
+
+    def _update_stats(self):
+        """ Updates the stats overlay """
+
+        clock = Globals.clock
+        self._debug_lines[0].set_text("Frame time:   avg {:3.2f}   max {:3.2f}".format( 
+            1000.0 / max(0.001, clock.get_average_frame_rate()),
+            clock.get_max_frame_duration() * 1000.0))
+        self._debug_lines[1].set_text(
+            "{:6d}  Render States     {:6d}  Transform States".format(
+                RenderState.get_num_states(), TransformState.get_num_states()))
+
+
+        for line in self._debug_lines:
+            line.update()
 
     def _create_debugger(self):
         """ Creates the debugger contents """

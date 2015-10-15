@@ -154,6 +154,7 @@ class RenderPipeline(DebugObject):
 
     def _pre_render_update(self, task):
         """ Update task which gets called before the update """
+        self._debugger.update()
         self._com_resources.update()
         self._stage_mgr.update_stages()
         self._light_mgr.update()

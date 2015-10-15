@@ -2,7 +2,8 @@
 import string
 
 from panda3d.core import DynamicTextFont, Vec4, PTALVecBase4, CardMaker, Vec2
-from panda3d.core import Texture, PNMImage, Vec3
+from panda3d.core import Texture, PNMImage, Vec3, NodePath, Shader
+from panda3d.core import TransparencyAttrib, PTAFloat
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
@@ -17,16 +18,18 @@ class FastText(DebugObject):
     _SUPPORTED_GLYPHS = (string.ascii_letters + string.digits +
                          string.punctuation + " ")
 
-    def __init__(self, font="Data/Font/SourceSansPro-Bold.otf", pixel_size=16,
-                 pos=Vec2(0), color=Vec3(1), outline=Vec4(0, 0, 0, 1)):
+    def __init__(self, font="Data/Font/DebugFont.ttf", pixel_size=16, align="left",
+                 pos=Vec2(0), color=Vec3(1), outline=Vec4(0, 0, 0, 1), parent=None):
         """ Creates a new text instance with the given font and pixel size """
         DebugObject.__init__(self)
         self._font = font
         self._size = pixel_size
+        self._align = align
         self._position = Vec2(pos)
         self._cache_key = self._font + "##" + str(self._size)
-        self._parent = Globals.base.aspect2d
+        self._parent = Globals.base.aspect2d if parent is None else parent
         self._pta_position = PTALVecBase4.empty_array(100)
+        self._pta_offset = PTAFloat.empty_array(1)
         self._pta_uv = PTALVecBase4.empty_array(100)
         self._pta_color = PTALVecBase4.empty_array(2)
         self._pta_color[0] = Vec4(color.x, color.y, color.z, 1.0)
@@ -78,7 +81,14 @@ class FastText(DebugObject):
                 pos_size[1] * text_scale_y)
             advance_x += advance
 
-        self._card.set_instance_coutn(len(self._text))
+        if self._align == "left":
+            self._pta_offset[0] = 0
+        elif self._align == "center":
+            self._pta_offset[0] = -advance_x * text_scale_x * 0.5
+        elif self._align == "right":
+            self._pta_offset[0] = -advance_x * text_scale_x
+
+        self._card.set_instance_count(len(self._text))
 
     def show(self):
         """ Shows the text """
@@ -98,7 +108,7 @@ class FastText(DebugObject):
         # Create a new font instance to generate a font-texture-page
         font_instance = DynamicTextFont(self._font)
 
-        atlas_size = 1024 if i > 30 else 512 
+        atlas_size = 1024 if self._size > 30 else 512 
         font_instance.set_page_size(atlas_size, atlas_size)
         font_instance.set_pixels_per_unit(int(self._size * 1.5))
         font_instance.set_texture_margin(int(self._size / 4.0 * 1.5))
@@ -151,6 +161,7 @@ class FastText(DebugObject):
         self._card.set_shader_input("positionData", self._pta_position)
         self._card.set_shader_input("color", self._pta_color)
         self._card.set_shader_input("uvData", self._pta_uv)
+        self._card.set_shader_input("offset", self._pta_offset)
         self._card.set_shader(self._make_font_shader(), 1000)
         self._card.set_attrib(
             TransparencyAttrib.make(TransparencyAttrib.M_alpha), 1000)
@@ -165,15 +176,16 @@ class FastText(DebugObject):
             in vec2 p3d_MultiTexCoord0;
             uniform vec4 positionData[100];
             uniform vec4 uvData[100];
+            uniform float offset;
             out vec2 texcoord;
 
             void main() {
-                int offset = int(gl_InstanceID);
-                vec4 pos = positionData[offset];
-                vec4 uv = uvData[offset];
+                int instance_offset = int(gl_InstanceID);
+                vec4 pos = positionData[instance_offset];
+                vec4 uv = uvData[instance_offset];
                 texcoord = uv.xy + p3d_MultiTexCoord0 * uv.zw;
                 vec4 finalPos = p3d_Vertex * vec4(pos.z, 0, pos.w, 1.0) +
-                                vec4(pos.x, 0, pos.y, 0);
+                                vec4(pos.x + offset, 0, pos.y, 0);
                 gl_Position = p3d_ModelViewProjectionMatrix * finalPos;
             }
             """, """

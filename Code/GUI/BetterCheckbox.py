@@ -24,14 +24,14 @@ class BetterCheckbox(DebugObject):
 
         # Set near filter, otherwise textures look like crap
         for tex in [checked_img, unchecked_img]:
-            tex.set_minfilter(Texture.FT_nearest)
-            tex.set_magfilter(Texture.FT_nearest)
+            tex.set_minfilter(Texture.FT_linear)
+            tex.set_magfilter(Texture.FT_linear)
             tex.set_anisotropic_degree(0)
             tex.set_wrap_u(Texture.WM_clamp)
             tex.set_wrap_v(Texture.WM_clamp)
 
         self._node = DirectCheckBox(parent=parent, pos=(
-            x + 11, 1, -y - 8), scale=(24 / 2.0, 1, 24 / 2.0),
+            x + 11, 1, -y - 8), scale=(16 / 2.0, 1, 16 / 2.0),
             checkedImage=checked_img, uncheckedImage=unchecked_img,
             image=unchecked_img, extraArgs = extra_args, state=DGG.NORMAL,
             relief=DGG.FLAT, command=self._update_status)
