@@ -2,7 +2,7 @@
 # ---------------  Window settings  --------------
 
 fullscreen #f
-win-size 1920 1080
+win-size 1800 950
 window-title Render Pipeline by tobspr 
 icon-filename Data/GUI/icon.ico
 
@@ -35,7 +35,7 @@ state-cache #t
 
 
 # Frame rate meter
-show-frame-rate-meter #t
+show-frame-rate-meter #f
 frame-rate-meter-milliseconds #t
 frame-rate-meter-update-interval 1.0
 frame-rate-meter-text-pattern %0.2f fps

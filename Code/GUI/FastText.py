@@ -178,6 +178,7 @@ class FastText(DebugObject):
             uniform vec4 uvData[100];
             uniform float offset;
             out vec2 texcoord;
+            out float glyphidx;
 
             void main() {
                 int instance_offset = int(gl_InstanceID);

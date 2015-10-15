@@ -94,11 +94,12 @@ class OnscreenDebugger(DebugObject):
         """ Updates the stats overlay """
 
         clock = Globals.clock
-        self._debug_lines[0].set_text("Frame time:   avg {:3.2f}   max {:3.2f}".format( 
+        self._debug_lines[0].set_text("Frame time     {:3.2f} avg    {:3.0f} fps    {:3.2f} max".format( 
             1000.0 / max(0.001, clock.get_average_frame_rate()),
+            clock.get_average_frame_rate(),
             clock.get_max_frame_duration() * 1000.0))
         self._debug_lines[1].set_text(
-            "{:6d}  Render States     {:6d}  Transform States".format(
+            "{:6d}  render states  |  {:6d}  transform states".format(
                 RenderState.get_num_states(), TransformState.get_num_states()))
 
 
