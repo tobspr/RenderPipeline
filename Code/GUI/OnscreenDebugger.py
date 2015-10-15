@@ -43,7 +43,7 @@ class OnscreenDebugger(DebugObject):
         self._fullscreen_node.set_scale(scale_factor)
 
         # Component values
-        self._debugger_width = 480
+        self._debugger_width = 470
 
         # Create states
         self._debugger_visible = False
@@ -86,7 +86,7 @@ class OnscreenDebugger(DebugObject):
 
         self._debug_lines = []
 
-        for i in xrange(2):
+        for i in range(2):
             self._debug_lines.append(FastText(pos=Vec2(0, -i * 0.05),
                 parent=self._overlay_node, pixel_size=20, align="right"))
 
@@ -120,13 +120,11 @@ class OnscreenDebugger(DebugObject):
                                                frameSize=(self._debugger_width,
                                                           0, 0, -1),
                                                pos=(0, 0, 1),
-                                               # frameColor=(0.058, 0.058, 0.058, 1))
                                                frameColor=(0.09, 0.09, 0.09, 1))
         self._debugger_divider = DirectFrame(parent=self._debugger_node,
                                                frameSize=(self._debugger_width,
-                                                          0, 0, -2),
+                                                          0, 0, -3),
                                                pos=(0, 0, -125),
-                                               # frameColor=(0.7, 0.7, 0.24, 1))
                                                frameColor=(0.15, 0.15, 0.15, 1))
 
         self._create_debugger_content()
@@ -135,8 +133,8 @@ class OnscreenDebugger(DebugObject):
         """ Internal method to create the content of the debugger """
 
         debugger_content = self._debugger_node.attach_new_node("DebuggerContent")
-        debugger_content.set_z(-180)
-        debugger_content.set_x(50)
+        debugger_content.set_z(-190)
+        debugger_content.set_x(40)
         heading_color = Vec3(0.7, 0.7, 0.24) * 1.2
         BetterOnscreenText(parent=debugger_content, text="Render Mode:", x=0,
             y=0, size=20, color=heading_color)
@@ -158,7 +156,7 @@ class OnscreenDebugger(DebugObject):
             offs_x = (idx % 2) * 220
             box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
                 y=offs_y, text=mode, text_color=Vec3(0.9), radio=True,
-                chb_checked=(mode == "Default"), text_size=17)
+                chb_checked=(mode == "Default"), text_size=17, expand_width=160)
             collection.add(box.get_checkbox())
 
 
@@ -180,7 +178,7 @@ class OnscreenDebugger(DebugObject):
             offs_x = (idx % 2) * 220
             box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
                 y=offs_y, text=feature, text_color=Vec3(0.9), radio=False,
-                chb_checked=True, text_size=17)
+                chb_checked=True, text_size=17, expand_width=160)
 
 
     def _init_keybindings(self):

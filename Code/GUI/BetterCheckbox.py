@@ -36,9 +36,10 @@ class BetterCheckbox(DebugObject):
             image=unchecked_img, extraArgs = extra_args, state=DGG.NORMAL,
             relief=DGG.FLAT, command=self._update_status)
 
-        self._node["frameColor"] = (0, 0, 0, 0.0)
-        self._node["frameSize"] = (-2, 2 + expand_width / 7.5, -1.6, 1.6)
-
+        self._node["frameColor"] = (0, 0, 0, 0)
+        self._node["frameSize"] = (-3, 2 + expand_width / 7.5, -2.35, 2.35)
+        self._node.bind(DGG.WITHIN, self._on_node_enter)
+        self._node.bind(DGG.WITHOUT, self._on_node_leave)
         self._node.set_transparency(TransparencyAttrib.M_alpha)
 
         self._callback = callback
@@ -54,6 +55,14 @@ class BetterCheckbox(DebugObject):
 
         self._collection = coll
 
+    def _on_node_enter(self, event=None):
+        """ Internal callback when the node gets hovered """
+        self._node["frameColor"] = (0, 0, 0, 0.3)
+
+    def _on_node_leave(self, event=None):
+        """ Internal callback when the node gets no longer hovered """
+        self._node["frameColor"] = (0, 0, 0, 0)
+
     def get_collection(self):
         """ Returns a handle to the assigned checkbox collection, or None
         if no collection was assigned """
@@ -62,11 +71,16 @@ class BetterCheckbox(DebugObject):
     def _update_status(self, status, *args):
         """ Internal method when another checkbox in the same radio group
         changed it's value """
+
+        if not status and self._collection:
+            self._node.commandFunc(None)
+            return
+
         if self._collection:
             if status:
                 self._collection._changed(self)
                 # A radio box can't be unchecked
-                self._node["state"] = DGG.DISABLED
+                # self._node["state"] = DGG.DISABLED
 
         if self._callback is not None:
             self._callback(*([status] + self._extra_args))
