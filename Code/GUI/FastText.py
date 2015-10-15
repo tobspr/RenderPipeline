@@ -107,6 +107,7 @@ class FastText(DebugObject):
 
         # Create a new font instance to generate a font-texture-page
         font_instance = DynamicTextFont(self._font)
+        font_instance.setFg(Vec4(1))
 
         atlas_size = 1024 if self._size > 30 else 512 
         font_instance.set_page_size(atlas_size, atlas_size)
@@ -130,6 +131,8 @@ class FastText(DebugObject):
         page_blurred.setup_2d_texture(atlas_size, atlas_size,
                                       Texture.T_unsigned_byte, Texture.F_rgba8)
         page_blurred.load(blurpnm)
+        page.set_format(Texture.F_red)
+
 
         # Extract glyph data
         glyph_data = []
@@ -197,10 +200,10 @@ class FastText(DebugObject):
             uniform vec4 color[2];
             out vec4 result;
             void main() {
-                result = texture(fontPageTex, texcoord);
+                result = texture(fontPageTex, texcoord).xxxx;
                 float outlineResult = texture(fontPageBlurredTex, texcoord).x
                                       * 4.0 * (1.0 - result.w);
-                result.xyz = (1.0 - result.xyz ) * color[0].xyz;
+                result.xyz *= color[0].xyz;
                 result = mix(result, color[1] * outlineResult, 1.0 - result.w);
             }
         """)

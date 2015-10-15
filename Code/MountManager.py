@@ -171,6 +171,7 @@ class MountManager(DebugObject):
         vfs.mount_loop(join(self._base_path, 'Config'), 'Config', 0)
         vfs.mount_loop(join(self._base_path, 'Effects'), 'Effects', 0)
         vfs.mount_loop(join(self._base_path, 'Plugins'), 'Plugins', 0)
+        vfs.mount_loop(join(self._base_path, 'Config'), 'Config', 0)
 
         # Mount shaders under a different name to access them from the effects
         vfs.mount_loop(join(self._base_path, 'Shader'), 'ShaderMount', 0)
