@@ -130,28 +130,26 @@ class BufferViewer(DraggableWindow):
         """ Renders the stages to the window """
 
         self._remove_components()
-        entries_per_row = 5
+        entries_per_row = 6
         aspect = Globals.base.win.get_y_size() /\
             float(Globals.base.win.get_x_size())
-        entry_width = 255
+        entry_width = 235
         entry_height = (entry_width - 20) * aspect + 55
 
         # Iterate over all stages
         for index, stage_tex in enumerate(self._stages):
             stage_name = stage_tex.get_name()
-            stage_prefix = "-".join(stage_name.split("-")[:-1]) \
-                if "-" in stage_name else stage_name
 
             xoffs = index % entries_per_row
             yoffs = index // entries_per_row
             node = self._content_node.attach_new_node("Preview")
             node.set_sz(-1)
-            node.set_pos(30 + xoffs * entry_width, 1, yoffs * entry_height)
+            node.set_pos(10 + xoffs * (entry_width - 14), 1, yoffs * (entry_height-14))
 
-            r, g, b = rgb_from_string(stage_prefix, min_brightness=0.4)
+            r, g, b = rgb_from_string(stage_name)
 
             DirectFrame(parent=node,
-                        frameSize=(0, entry_width - 10, 0, -entry_height + 10),
+                        frameSize=(7, entry_width - 17, -7, -entry_height + 17),
                         frameColor=(r, g, b, 1.0),
                         pos=(0, 0, 0))
 
@@ -166,7 +164,7 @@ class BufferViewer(DraggableWindow):
             frame_hover.bind(DGG.B1PRESS,
                              partial(self._on_texture_clicked, stage_tex))
 
-            BetterOnscreenText(text=stage_name, x=10, y=26, parent=node,
+            BetterOnscreenText(text=stage_name, x=15, y=29, parent=node,
                                size=15, color=Vec3(0.2))
 
             # Scale image so it always fits
