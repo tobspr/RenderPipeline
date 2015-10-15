@@ -88,7 +88,7 @@ class OnscreenDebugger(DebugObject):
 
         for i in range(2):
             self._debug_lines.append(FastText(pos=Vec2(0, -i * 0.05),
-                parent=self._overlay_node, pixel_size=20, align="right"))
+                parent=self._overlay_node, pixel_size=18, align="right"))
 
     def _update_stats(self):
         """ Updates the stats overlay """
@@ -141,12 +141,22 @@ class OnscreenDebugger(DebugObject):
 
         render_modes = [
             "Default",
-            "Ambient",
-            "Diffuse",
-            "Specular",
             "Metallic",
+            "BaseColor",
             "Roughness",
-            "Ambient Occlusion"
+            "Specular",
+            "Normal",
+            "Velocity",
+            "Occlusion",
+            "Lighting",
+            "Raw-Lighting",
+            "Scattering",
+            "GI-Diffuse",
+            "GI-Specular",
+            "Ambient",
+            "PSSM-Splits",
+            "Shadowing",
+            "Bloom"
         ]
 
         collection = CheckboxCollection()
@@ -162,12 +172,21 @@ class OnscreenDebugger(DebugObject):
 
         offs_top = 150 + (len(render_modes) // 2) * 37
         features = [
-            "Ambient Occlusion",
-            "PBS Shading",
-            "Diffuse Ambient",
-            "Specular Ambient",
+            "Occlusion",
+            "Upscale Blur",
+            "Scattering",
+            "Global Illumination",
+            "Ambient",
+            "Motion Blur",
+            "Anti-Aliasing",
             "Shadows",
-            "Color Correction"
+            "Correct color",
+            "PCSS",
+            "PCF",
+            "Env. Filtering",
+            "PB Shading",
+            "Bloom",
+            "Diffuse AA"
         ]
 
         BetterOnscreenText(parent=debugger_content, text="Feature selection:", x=0,

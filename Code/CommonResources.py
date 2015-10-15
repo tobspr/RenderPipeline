@@ -26,7 +26,7 @@ class CommonResources(DebugObject):
         """ Loads the default font used for rendering and assigns it to 
         Globals.font for further usage """
         # Globals.font = Globals.loader.loadFont("Data/Font/Roboto-Light.ttf")
-        Globals.font = Globals.loader.loadFont("Data/Font/SourceSansPro-Bold.otf")
+        # Globals.font = Globals.loader.loadFont("Data/Font/SourceSansPro-Bold.otf")
         Globals.font = Globals.loader.loadFont("Data/Font/DebugFont.ttf")
         Globals.font.set_pixels_per_unit(25)
         Globals.font.set_poly_margin(0.0)

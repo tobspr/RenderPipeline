@@ -37,7 +37,7 @@ class BetterCheckbox(DebugObject):
             relief=DGG.FLAT, command=self._update_status)
 
         self._node["frameColor"] = (0, 0, 0, 0)
-        self._node["frameSize"] = (-3, 2 + expand_width / 7.5, -2.35, 2.35)
+        self._node["frameSize"] = (-2.6, 2 + expand_width / 7.5, -2.35, 2.35)
         self._node.bind(DGG.WITHIN, self._on_node_enter)
         self._node.bind(DGG.WITHOUT, self._on_node_leave)
         self._node.set_transparency(TransparencyAttrib.M_alpha)
@@ -52,12 +52,11 @@ class BetterCheckbox(DebugObject):
     def _set_collection(self, coll):
         """ Internal method to add a checkbox to a checkbox collection, this
         is used for radio-buttons """
-
         self._collection = coll
 
     def _on_node_enter(self, event=None):
         """ Internal callback when the node gets hovered """
-        self._node["frameColor"] = (0, 0, 0, 0.3)
+        self._node["frameColor"] = (0, 0, 0, 0.6)
 
     def _on_node_leave(self, event=None):
         """ Internal callback when the node gets no longer hovered """
