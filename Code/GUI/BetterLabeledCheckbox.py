@@ -24,7 +24,7 @@ class BetterLabeledCheckbox(DebugObject):
             parent=parent, x=x, y=y,
             callback=chb_callback, extra_args=chb_args,
             checked=chb_checked, radio=radio)
-        self._text = BetterOnscreenText(x=x + 33, y=y + 10 + text_size // 4,
+        self._text = BetterOnscreenText(x=x + 33, y=y + 9 + text_size // 4,
                                        text=text, align="left", parent=parent,
                                        size=text_size, color=text_color)
 

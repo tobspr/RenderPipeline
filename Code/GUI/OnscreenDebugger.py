@@ -42,7 +42,7 @@ class OnscreenDebugger(DebugObject):
         self._fullscreen_node.set_scale(scale_factor)
 
         # Component values
-        self._debugger_width = 470
+        self._debugger_width = 480
 
         # Create states
         self._debugger_visible = False
@@ -124,7 +124,7 @@ class OnscreenDebugger(DebugObject):
             offs_x = (idx % 2) * 220
             box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
                 y=offs_y, text=mode, text_color=Vec3(0.9), radio=True,
-                chb_checked=(mode == "Default"))
+                chb_checked=(mode == "Default"), text_size=17)
             collection.add(box.get_checkbox())
 
 
@@ -146,7 +146,7 @@ class OnscreenDebugger(DebugObject):
             offs_x = (idx % 2) * 220
             box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
                 y=offs_y, text=feature, text_color=Vec3(0.9), radio=False,
-                chb_checked=True, text_size=15)
+                chb_checked=True, text_size=17)
 
 
     def _init_keybindings(self):
