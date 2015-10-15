@@ -11,7 +11,8 @@ from .BetterOnscreenImage import BetterOnscreenImage
 from .BufferViewer import BufferViewer
 from .PipeViewer import PipeViewer
 from .BetterOnscreenText import BetterOnscreenText
-
+from .BetterLabeledCheckbox import BetterLabeledCheckbox
+from .CheckboxCollection import CheckboxCollection
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
@@ -37,11 +38,11 @@ class OnscreenDebugger(DebugObject):
         # When using small resolutions, scale the GUI so its still useable,
         # otherwise the sub-windows are bigger than the main window
         scale_factor = min(1.0, Globals.base.win.get_x_size() / 1800.0)
+        scale_factor = 1.0
         self._fullscreen_node.set_scale(scale_factor)
 
         # Component values
-        self._debugger_width = 420
-        self._debugger_height = 800
+        self._debugger_width = 470
 
         # Create states
         self._debugger_visible = False
@@ -58,11 +59,11 @@ class OnscreenDebugger(DebugObject):
     def _create_topbar(self):
         """ Creates the topbar """
         self._pipeline_logo = BetterOnscreenImage(
-            image="Data/GUI/OnscreenDebugger/PipelineLogo.png", x=20, y=20,
+            image="Data/GUI/OnscreenDebugger/PipelineLogo.png", x=30, y=30,
             parent=self._fullscreen_node)
         self._pipeline_logo_text = BetterOnscreenImage(
-            image="Data/GUI/OnscreenDebugger/PipelineLogoText.png", x=114,
-            y=45, parent=self._fullscreen_node)
+            image="Data/GUI/OnscreenDebugger/PipelineLogoText.png", x=124,
+            y=55, parent=self._fullscreen_node)
         self._topbar = DirectFrame(parent=self._fullscreen_node,
                                    frameSize=(5000, 0, 0, -22),
                                    pos=(0, 0, 0),
@@ -77,7 +78,7 @@ class OnscreenDebugger(DebugObject):
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_x(-self._debugger_width)
         self._debugger_bg = DirectFrame(parent=self._debugger_node,
-                                        frameSize=(self._debugger_width, 0, 0,
+                                        frameSize=(self._debugger_width, 0, -121,
                                                    -2000),
                                         pos=(0, 0, 0),
                                         frameColor=(0.09, 0.09, 0.09, 1))
@@ -85,7 +86,14 @@ class OnscreenDebugger(DebugObject):
                                                frameSize=(self._debugger_width,
                                                           0, 0, -1),
                                                pos=(0, 0, 1),
-                                               frameColor=(0.058, 0.058, 0.058, 1))
+                                               # frameColor=(0.058, 0.058, 0.058, 1))
+                                               frameColor=(0.09, 0.09, 0.09, 1))
+        self._debugger_divider = DirectFrame(parent=self._debugger_node,
+                                               frameSize=(self._debugger_width,
+                                                          0, 0, -2),
+                                               pos=(0, 0, -125),
+                                               # frameColor=(0.7, 0.7, 0.24, 1))
+                                               frameColor=(0.15, 0.15, 0.15, 1))
 
         self._create_debugger_content()
 
@@ -93,10 +101,52 @@ class OnscreenDebugger(DebugObject):
         """ Internal method to create the content of the debugger """
 
         debugger_content = self._debugger_node.attach_new_node("DebuggerContent")
-        debugger_content.set_z(-160)
-        debugger_content.set_x(30)
+        debugger_content.set_z(-180)
+        debugger_content.set_x(50)
+        heading_color = Vec3(0.7, 0.7, 0.24) * 1.2
         BetterOnscreenText(parent=debugger_content, text="Render Mode:", x=0,
-            y=0, size=20, color=Vec3(0.9))
+            y=0, size=20, color=heading_color)
+
+        render_modes = [
+            "Default",
+            "Ambient",
+            "Diffuse",
+            "Specular",
+            "Metallic",
+            "Roughness",
+            "Ambient Occlusion"
+        ]
+
+        collection = CheckboxCollection()
+
+        for idx, mode in enumerate(render_modes):
+            offs_y = (idx // 2) * 37 + 40
+            offs_x = (idx % 2) * 220
+            box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
+                y=offs_y, text=mode, text_color=Vec3(0.9), radio=True,
+                chb_checked=(mode == "Default"))
+            collection.add(box.get_checkbox())
+
+
+        offs_top = 150 + (len(render_modes) // 2) * 37
+        features = [
+            "Ambient Occlusion",
+            "PBS Shading",
+            "Diffuse Ambient",
+            "Specular Ambient",
+            "Shadows",
+            "Color Correction"
+        ]
+
+        BetterOnscreenText(parent=debugger_content, text="Feature selection:", x=0,
+            y=offs_top, size=20, color=heading_color)
+
+        for idx, feature in enumerate(features):
+            offs_y = (idx // 2) * 37 + 40 + offs_top
+            offs_x = (idx % 2) * 220
+            box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
+                y=offs_y, text=feature, text_color=Vec3(0.9), radio=False,
+                chb_checked=True, text_size=15)
 
 
     def _init_keybindings(self):
@@ -124,7 +174,7 @@ class OnscreenDebugger(DebugObject):
                     self._pipeline_logo.hpr_interval(
                         0.12, Vec3(0, 0, 0), Vec3(0, 0, 90), blendType="easeInOut"),
                     self._debugger_bg_bottom.scaleInterval(
-                        0.12, Vec3(1, 1, 1), Vec3(1, 1, 110), blendType="easeInOut")
+                        0.12, Vec3(1, 1, 1), Vec3(1, 1, 125), blendType="easeInOut")
                 ))
         else:
             # Show debugger
@@ -140,7 +190,7 @@ class OnscreenDebugger(DebugObject):
                         0.12, Vec3(0, 0, 0), Vec3(-self._debugger_width, 0),
                         blendType="easeInOut"),
                     self._debugger_bg_bottom.scaleInterval(
-                        0.12, Vec3(1, 1, 110), Vec3(1, 1, 1), blendType="easeInOut")
+                        0.12, Vec3(1, 1, 125), Vec3(1, 1, 1), blendType="easeInOut")
                 ))
         self._debugger_interval.start()
         self._debugger_visible = not self._debugger_visible
