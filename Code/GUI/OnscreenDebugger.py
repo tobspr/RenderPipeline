@@ -82,7 +82,7 @@ class OnscreenDebugger(DebugObject):
         """ Creates the stats overlay """
 
         self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
-        self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.2, 1, 0.8)
+        self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.07, 1, 1.0 - 0.07)
 
         self._debug_lines = []
 
@@ -94,12 +94,12 @@ class OnscreenDebugger(DebugObject):
         """ Updates the stats overlay """
 
         clock = Globals.clock
-        self._debug_lines[0].set_text("Frame time     {:3.2f} avg    {:3.0f} fps    {:3.2f} max".format( 
-            1000.0 / max(0.001, clock.get_average_frame_rate()),
+        self._debug_lines[0].set_text("{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms".format( 
             clock.get_average_frame_rate(),
+            1000.0 / max(0.001, clock.get_average_frame_rate()),
             clock.get_max_frame_duration() * 1000.0))
         self._debug_lines[1].set_text(
-            "{:6d}  render states  |  {:6d}  transform states".format(
+            "{:4d} render states  |  {:4d} transform states".format(
                 RenderState.get_num_states(), TransformState.get_num_states()))
 
 

@@ -3,6 +3,7 @@ import sys
 
 from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
 from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f, Texture
+from panda3d.core import RenderState
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -151,9 +152,18 @@ class RenderPipeline(DebugObject):
         self._showbase.accept("r", self.reload_shaders)
         self._showbase.addTask(self._pre_render_update, "RP_BeforeRender", sort=10)
         self._showbase.addTask(self._post_render_update, "RP_AfterRender", sort=100)
+        self._showbase.taskMgr.doMethodLater(0.5, self._clear_state_cache, "RP_ClearStateCache")
+
+    def _clear_state_cache(self, task=None):
+        """ Task which repeatedly clears the state cache to avoid storing
+        unused states. """
+        task.delayTime = 1
+        TransformState.clear_cache()
+        RenderState.clear_cache()
+        return task.again
 
     def _pre_render_update(self, task):
-        """ Update task which gets called before the update """
+        """ Update task which gets called before the rendering """
         self._debugger.update()
         self._com_resources.update()
         self._stage_mgr.update_stages()
@@ -162,7 +172,7 @@ class RenderPipeline(DebugObject):
         return task.cont
 
     def _post_render_update(self, task):
-        """ Update task which gets called after the update """
+        """ Update task which gets called after the rendering """
         self._plugin_mgr.trigger_hook("post_render_update")
         return task.cont
 
