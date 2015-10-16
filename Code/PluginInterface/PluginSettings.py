@@ -1,4 +1,6 @@
 
+from ..Util.DebugObject import DebugObject
+
 class BasePluginSetting(object):
 
     """ Base class for all plugin settings """
@@ -70,8 +72,12 @@ class PluginSettingEnum(BasePluginSetting):
         BasePluginSetting.__init__(self, runtime)
         self._enum_values = args
         self._value = 0
-        if value is not None and value in self._enum_values:
-            self._value = self._enum_values.index(selected)
+        if value is not None:
+            if value not in self._enum_values:
+                DebugObject.global_warn("PluginSettingEnum",
+                    "Warning: ", value, "is not contained in the enum!")
+            else:
+                self._value = self._enum_values.index(value)
 
     def get_enum_values(self):
         """ Returns all possible values of the enum """

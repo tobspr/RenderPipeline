@@ -2,21 +2,9 @@
 
 from ..Util.DebugObject import DebugObject
 
-class Plugin(DebugObject):
+class BasePlugin(DebugObject):
 
     """ This is the base plugin class from which all plugins should derive. """
-
-    class Hook(object):
-
-        """ This is a function decorator which can be used to mark hooks instead
-        of calling _bind_to_hook """
-
-        def __init__(self, hook_name):
-            self.hook_id = hook_name
-
-        def __call__(self, func):
-            func.hook_id = self.hook_id
-            return func
 
     def __init__(self, pipeline, plugin_name = "default"):
         """ Constructs the plugin, also checks is all plugin properties are set
@@ -35,7 +23,6 @@ class Plugin(DebugObject):
             self.warn("No plugin settings defined!")
 
         for attr in dir(self):
-            # print "ATTR:", attr, getattr(self, attr)
             val = getattr(self, attr)
             if hasattr(val, "hook_id"):
                 self._bind_to_hook(val.hook_id, val)

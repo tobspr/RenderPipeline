@@ -43,7 +43,7 @@ class OnscreenDebugger(DebugObject):
         self._fullscreen_node.set_scale(scale_factor)
 
         # Component values
-        self._debugger_width = 470
+        self._debugger_width = 460
 
         # Create states
         self._debugger_visible = False
@@ -159,11 +159,13 @@ class OnscreenDebugger(DebugObject):
             "Bloom"
         ]
 
+
+        row_width = 200
         collection = CheckboxCollection()
 
         for idx, mode in enumerate(render_modes):
             offs_y = (idx // 2) * 37 + 40
-            offs_x = (idx % 2) * 220
+            offs_x = (idx % 2) * row_width
             box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
                 y=offs_y, text=mode, text_color=Vec3(0.9), radio=True,
                 chb_checked=(mode == "Default"), text_size=17, expand_width=160)
@@ -194,7 +196,7 @@ class OnscreenDebugger(DebugObject):
 
         for idx, feature in enumerate(features):
             offs_y = (idx // 2) * 37 + 40 + offs_top
-            offs_x = (idx % 2) * 220
+            offs_x = (idx % 2) * row_width
             box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
                 y=offs_y, text=feature, text_color=Vec3(0.9), radio=False,
                 chb_checked=True, text_size=17, expand_width=160)

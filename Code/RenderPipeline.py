@@ -16,8 +16,8 @@ from .Globals import Globals
 from .StageManager import StageManager
 from .Lighting.LightManager import LightManager
 from .Effects.EffectLoader import EffectLoader
-from .PluginAPI.PluginManager import PluginManager
-
+from .PluginInterface.PluginManager import PluginManager
+from .RenderTarget import RenderTarget
 from .GUI.OnscreenDebugger import OnscreenDebugger
 
 class RenderPipeline(DebugObject):
@@ -117,6 +117,9 @@ class RenderPipeline(DebugObject):
         Globals.resolution = LVecBase2i(
             self._showbase.win.get_x_size(),
             self._showbase.win.get_y_size())
+
+        # Connect the render target output function to the debug object
+        RenderTarget.RT_OUTPUT_FUNC = lambda *args: DebugObject.global_warn("RenderTarget", *args[1:])
 
         # Adjust the camera settings
         self._adjust_camera_settings()

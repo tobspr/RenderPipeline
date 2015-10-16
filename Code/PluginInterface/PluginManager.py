@@ -1,8 +1,8 @@
 
 import re
+import importlib
 
 from direct.stdpy.file import open, isfile
-from .Plugin import Plugin
 
 from ..Util.DebugObject import DebugObject
 
@@ -24,7 +24,8 @@ class PluginManager(DebugObject):
         for plugin in plugins:
             self.debug("Loading plugin", plugin)
             plugin_class = self._try_load_plugin(plugin)
-            self._plugin_instances.append(plugin_class(self._pipeline))
+            if plugin_class:
+                self._plugin_instances.append(plugin_class(self._pipeline))
 
     def _load_plugin_config(self):
         """ Loads the plugin config and extracts the list of activated plugins """
@@ -54,15 +55,23 @@ class PluginManager(DebugObject):
         plugin_main = plugin_path + "__init__.py"
         if not isfile(plugin_main):
             self.warn("Cannot load",plugin_id,"because __init__.py was not found")
-            return
+            return None
 
-        # I tried everything, but imp and importlib don't seem to import the 
-        # module in the current package. Until I haven't found a better solution,
-        # I have to use this ugly code.
-        imp_str = "from ...Plugins.{0}.Plugin{0} import Plugin{0} as TempPlugin"
-        exec(imp_str.format(plugin_id))
-        return locals()["TempPlugin"]
+        module_path = "RenderPipeline.Plugins." + plugin_id + ".Plugin"
+
+        try:
+            module = importlib.import_module(module_path)
+        except Exception as msg:
+            self.warn("Could not import",plugin_id,"because of an import error:")
+            self.warn(msg)
+            return None
+            
+        if not hasattr(module, "Plugin"):
+            self.warn("Plugin",plugin_id,"has no main Plugin class defined!")
+            return None
+
+        return module.Plugin
 
     def trigger_hook(self, hook_name):
-        """ Triggers the hook, executing all handlers attached to that hook """
+        """ Triggers a hook, executing all handlers attached to that hook """
         pass
