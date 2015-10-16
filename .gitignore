@@ -9,7 +9,6 @@ Models/
 *.blend
 *.blend1
 *.blend2
-main.py
 Data/NormalQuantization/*.png
 CodeConventions.txt
 *.old

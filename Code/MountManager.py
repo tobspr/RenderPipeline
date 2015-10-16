@@ -208,7 +208,6 @@ class MountManager(DebugObject):
 
         # Append the write path to the model directory to make pragma include
         # find the ShaderAutoConfig.include
-        # write_path = Filename(self._write_path)
         self._model_paths.append("$$PipelineTemp")
 
         for pth in self._model_paths:
