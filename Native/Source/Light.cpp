@@ -3,6 +3,7 @@
 
 
 Light::Light(LightType light_type) {
+    // cout << "Construct light" << endl;
     _light_type = light_type;
     _dirty = false;
     _slot = -1;
@@ -11,6 +12,7 @@ Light::Light(LightType light_type) {
 }
 
 Light::~Light() {
+    // cout << "Destruct light" << endl;
 }
 
 

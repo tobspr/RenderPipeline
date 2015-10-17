@@ -74,15 +74,16 @@ class MainApp(ShowBase):
         self.lights = []
 
         # Add some random lights
-        for i in range(64):
-            light = PointLight()
-            light.set_pos( Vec3(random(), random(), 1.0) * 30 - 15)
-            light.set_color(random(), random(), random()) 
-            light.set_radius(20)
-            self.lights.append(light)
-            self.render_pipeline.add_light(light)
+        sqr = 4
+        for x in range(sqr):
+            for y in range(sqr):
+                light = PointLight()
+                light.set_pos( Vec3(x, y, 0.5) * 2)
+                light.set_color(random(), random(), random()) 
+                light.set_radius(5)
+                self.lights.append(light)
+                self.render_pipeline.add_light(light)
         
-
         # Init movement controller
         self.controller = MovementController(self)
         self.controller.set_initial_position(Vec3(10), Vec3(0))
@@ -91,8 +92,9 @@ class MainApp(ShowBase):
         self.addTask(self.update_task, "update_task")
 
     def update_task(self, task=None):
-        for light in self.lights:
-            light.set_pos(Vec3(random(), random(), 1.0) * 30 - 15)
+        # for light in self.lights:
+            # light.set_color(random(), random(), random())
+            # light.set_pos(Vec3(random(), random(), 1.0) * 30 - 15)
         return task.cont
 
 

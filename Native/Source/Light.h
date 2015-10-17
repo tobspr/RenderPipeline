@@ -6,9 +6,10 @@
 #include "pandabase.h"
 #include "luse.h"
 #include "GPUCommand.h"
+#include "referenceCount.h"
 
 
-class Light {
+class Light : public ReferenceCount {
 
     PUBLISHED:
 
@@ -49,6 +50,8 @@ class Light {
         LVecBase3f _position;
         LVecBase3f _color;
         LightType _light_type;
+
+
 
 };
 

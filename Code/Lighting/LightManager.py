@@ -17,7 +17,7 @@ from ..Stages.GBufferStage import GBufferStage
 from ..Stages.FinalStage import FinalStage
 
 from ..GPUCommandQueue import GPUCommandQueue
-from ...Native import GPUCommand, Light
+from ...Native import GPUCommand, Light, LightStorage
 
 
 class LightManager(DebugObject):
@@ -30,7 +30,7 @@ class LightManager(DebugObject):
         """ Constructs the light manager """
         DebugObject.__init__(self, "LightManager")
         self._pipeline = pipeline
-        self._lights = [None] * self._MAX_LIGHTS
+        self._light_storage = LightStorage()
 
         self._compute_tile_size()
         self._init_light_storage()
@@ -50,31 +50,8 @@ class LightManager(DebugObject):
 
     def add_light(self, light):
         """ Adds a new light """
-
-        assert(isinstance(light, Light))
-
-        # Find the first free slot
-        slot = next((i for i, x in enumerate(self._lights) if x is None), None)
-
-        if slot is None:
-            return self.error("Light limit of", 2**16, "reached!")
-
-        # Store slot in light, so we can access it later
-        light.assign_slot(slot)
-        self._lights[slot] = light
-
-        # Create the command and attach it
-        command_add = GPUCommand(GPUCommand.CMD_store_light)
-        light.write_to_command(command_add)
-        self._cmd_queue.add_command(command_add)        
-
-        # Now that the light is attached, we can remove the dirty flag, because
-        # the newest data is now on the gpu
-        light.unset_dirty_flag()
-
-        # Update max light index
-        if slot > self._pta_max_light_index[0]:
-            self._pta_max_light_index[0] = slot
+        self._light_storage.add_light(light)
+        self._pta_max_light_index[0] = self._light_storage.get_max_light_index();
 
     def remove_light(self, light):
         """ Removes a light """
@@ -82,29 +59,14 @@ class LightManager(DebugObject):
             return self.error("Tried to detach light which is not attached!")
 
         # Todo: Implement me
-
-        self._lights[light.get_slot()] = None
+        # TODO: Udpate max light index!
         light.remove_slot()
 
-        # TODO: Udpate max light index!
         raise NotImplementedError()
 
     def update(self):
         """ Main update method to process the gpu commands """
-
-        # Check for dirty lights
-        dirtyLights = []
-        for i in range(self._pta_max_light_index[0] + 1):
-            light = self._lights[i]
-            if light and light.is_dirty():
-                dirtyLights.append(light)
-
-        # Process dirty lights
-        for light in dirtyLights:
-            command_update = GPUCommand(GPUCommand.CMD_store_light)
-            light.write_to_command(command_update)
-            self._cmd_queue.add_command(command_update)    
-            light.unset_dirty_flag()
+        self._light_storage.update()
         self._cmd_queue.process_queue()
 
     def reload_shaders(self):
@@ -115,6 +77,7 @@ class LightManager(DebugObject):
         self._cmd_queue = GPUCommandQueue(self._pipeline)
         self._cmd_queue.register_input(
             "LightData", self._img_light_data.get_texture())
+        self._light_storage.set_command_list(self._cmd_queue.get_cmd_list())
 
     def _init_light_storage(self):
         """ Creates the buffer to store the light data """

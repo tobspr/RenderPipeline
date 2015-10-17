@@ -28,6 +28,10 @@ class GPUCommandQueue(DebugObject):
         """ Clears all commands currently being in the queue """
         raise NotImplementedError()
 
+    def get_cmd_list(self):
+        """ Returns a handle to the command list """
+        return self._command_list
+
     def process_queue(self):
         """ Processes the n first commands of the queue """
         pointer = self._data_texture.get_texture().modify_ram_image()

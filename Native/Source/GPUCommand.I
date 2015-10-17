@@ -6,6 +6,7 @@ inline void GPUCommand::push_int(int v) {
 inline void GPUCommand::push_float(float v) {
     if (_current_index >= 32) {
         cerr << "GPUCommand out of bounds!" << endl;
+        return;
     }
     _data[_current_index] = v;
     _current_index ++;

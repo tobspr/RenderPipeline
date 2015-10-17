@@ -5,7 +5,7 @@
 #pragma include "Includes/Structures/Frustum.struct.glsl"
 
 
-#define LIGHT_CULLING_DIST 200.0
+#define LIGHT_CULLING_DIST 500.0
 #define SLICE_POW_FACTOR 0.5
 
 
