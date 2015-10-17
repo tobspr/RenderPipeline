@@ -36,6 +36,7 @@ if len(sys.argv) != 2 or sys.argv[1] != "dev":
     print("Please have a look at the samples located at Samples/")
     sys.exit(0)
 
+from random import random
 
 
 from direct.showbase.ShowBase import ShowBase
@@ -71,6 +72,14 @@ class MainApp(ShowBase):
         plane.reparent_to(render)
         self.render_pipeline.create_default_skybox()
 
+
+        # Add some random lights
+        for i in range(64):
+            light = PointLight()
+            light.set_pos( Vec3(random(), random(), 1.0) * 30 - 15)
+            light.set_color(random(), random(), random()) 
+            light.set_radius(20)
+            self.render_pipeline.add_light(light)
         
 
         # Init movement controller

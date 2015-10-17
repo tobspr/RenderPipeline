@@ -18,4 +18,6 @@ Documentation/
 Data/DefaultCubemap/Filtered/
 desktop.ini
 Data/install.flag
-
+Native/Windows
+Native/Linux
+Native/Source/Interrogate*

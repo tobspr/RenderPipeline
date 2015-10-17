@@ -1,4 +1,4 @@
-
+from __future__ import print_function
 
 # This setups the pipeline
 import os
@@ -34,10 +34,9 @@ def exec_python_file(pth):
     print("\tRunning script:", pth)
     try:
         os.chdir(basedir)
-        output = subprocess.check_output(["ppython", "-B", os.path.basename(pth)], stderr=subprocess.STDOUT)
+        output = subprocess.check_output(["ppython", "-B", os.path.basename(pth)], stderr=sys.stderr)
     except subprocess.CalledProcessError as msg:
-        print("Python script didn't return properly:")
-        print(msg)
+        print("Python script didn't return properly!")
         error("Failed to execute '" + pth + "'")
 
     except Exception as msg:
@@ -61,16 +60,18 @@ def extract_gz_files(pth):
 
 print("\nRender Pipeline Setup 1.0\n")
 print("-" * 79)
-print_step("Checking if ppython is on your path")
+print_step("Checking if python is on your path")
 
 try:
-    subprocess.call(["ppython", "--version"], stdout=devnull, stderr=devnull)
+    subprocess.call(["python", "--version"], stdout=devnull, stderr=devnull)
 except OSError:
-    error("Could not find ppython on your path")
+    error("Could not find python on your path")
+
+print_step("Compiling the native code (This might take a while!)")
+exec_python_file("Native/Scripts/setup_native.py")
 
 print_step("Generating normal quantization textures")
 exec_python_file("Data/NormalQuantization/generate.py")
-
 
 print_step("Extracting .gz files ...")
 extract_gz_files("Data/BuiltinModels/")
@@ -79,7 +80,6 @@ print_step("Filtering default cubemap")
 exec_python_file("Data/DefaultCubemap/filter.py")
 
 # Further setup code follows here
-
 
 # Write install flag
 with open(os.path.join(setup_dir, "Data/install.flag"), "w") as handle:
