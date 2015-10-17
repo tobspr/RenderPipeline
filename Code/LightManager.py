@@ -60,8 +60,6 @@ class LightManager(DebugObject):
 
         self._light_storage.remove_light(light)
 
-
-
     def update(self):
         """ Main update method to process the gpu commands """
         self._light_storage.update()
@@ -80,7 +78,7 @@ class LightManager(DebugObject):
     def _init_light_storage(self):
         """ Creates the buffer to store the light data """
 
-        per_light_vec4s = 3
+        per_light_vec4s = 4
         self._img_light_data = Image.create_buffer(
             "LightData", self._MAX_LIGHTS * per_light_vec4s, Texture.T_float,
             Texture.F_rgba32)

@@ -79,7 +79,7 @@ class MainApp(ShowBase):
         self.lights = []
 
         # Add some random lights
-        sqr = 16
+        sqr = 254
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()
@@ -113,9 +113,6 @@ class MainApp(ShowBase):
             # light.set_color(random(), random(), random())
             # light.set_pos(Vec3(random(), random(), 1.0) * 30 - 15)
         return task.cont
-
-
-
 
 
 MainApp().run()

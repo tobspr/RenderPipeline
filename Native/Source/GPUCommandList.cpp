@@ -17,6 +17,9 @@ void GPUCommandList::add_command(GPUCommand cmd) {
     _commands.push_back(cmd);
 }
 
+int GPUCommandList::get_num_commands() {
+    return _commands.size();
+}
 
 int GPUCommandList::write_commands_to(const PTA_uchar &dest, int limit) {
     int num_commands_written = 0;

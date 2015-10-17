@@ -20,11 +20,13 @@ class LightStorage {
 
         void update();
         int get_max_light_index();
+        int get_num_stored_lights();
 
     protected:
         
         Light* _lights[MAX_LIGHT_COUNT];
         int _max_light_index;
+        int _num_stored_lights;
         GPUCommandList *_cmd_list;
 
 };

@@ -94,14 +94,15 @@ class OnscreenDebugger(DebugObject):
         """ Updates the stats overlay """
 
         clock = Globals.clock
-        self._debug_lines[0].set_text("{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms".format( 
+        self._debug_lines[0].set_text("{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format( 
             clock.get_average_frame_rate(),
             1000.0 / max(0.001, clock.get_average_frame_rate()),
             clock.get_max_frame_duration() * 1000.0))
         self._debug_lines[1].set_text(
-            "{:4d} render states  |  {:4d} transform states".format(
-                RenderState.get_num_states(), TransformState.get_num_states()))
-
+            "{:4d} render states  |  {:4d} transform states |  {:4d} commands |  {:6d} lights".format(
+                RenderState.get_num_states(), TransformState.get_num_states(),
+                self._pipeline._light_mgr._cmd_queue.get_num_queued_commands(),
+                self._pipeline._light_mgr._light_storage.get_num_stored_lights()))
 
         for line in self._debug_lines:
             line.update()

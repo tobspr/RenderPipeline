@@ -14,6 +14,7 @@ class GPUCommandList {
         ~GPUCommandList();
 
         void add_command(GPUCommand cmd);
+        int get_num_commands();
         int write_commands_to(const PTA_uchar &dest, int limit = 32);
 
     protected:

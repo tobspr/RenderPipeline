@@ -11,6 +11,7 @@ uniform int commandCount;
 // Command indices
 #define CMD_INVALID 0
 #define CMD_STORE_LIGHT 1
+#define CMD_REMOVE_LIGHT 2
 
 int readInt(inout int offset) {
     int val = int(texelFetch(CommandQueue, offset).x);
@@ -61,6 +62,15 @@ void main() {
             imageStore(LightData, offs + 2, data2);
             imageStore(LightData, offs + 3, data3);
 
+        // CMD_REMOVE_LIGHT
+        } else if (commandType == CMD_REMOVE_LIGHT) {
+
+            int slot = readInt(currentBufferOffs);
+            int offs = slot * 4;
+            imageStore(LightData, offs + 0, vec4(0));
+            imageStore(LightData, offs + 1, vec4(0));
+            imageStore(LightData, offs + 2, vec4(0));
+            imageStore(LightData, offs + 3, vec4(0));
         }
 
 

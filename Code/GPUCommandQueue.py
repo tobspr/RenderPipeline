@@ -17,7 +17,7 @@ class GPUCommandQueue(DebugObject):
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GPUCommandQueue")
         self._pipeline = pipeline
-        self._commands_per_frame = 120
+        self._commands_per_frame = 512
         self._command_list = GPUCommandList()
         self._pta_num_commands = PTAInt.empty_array(1)
         self._create_data_storage()
@@ -31,6 +31,11 @@ class GPUCommandQueue(DebugObject):
     def get_cmd_list(self):
         """ Returns a handle to the command list """
         return self._command_list
+
+    def get_num_queued_commands(self):
+        """ Returns the amount of queued commands, which are waiting to get
+        executed on the gpu """
+        return self._command_list.get_num_commands()
 
     def process_queue(self):
         """ Processes the n first commands of the queue """

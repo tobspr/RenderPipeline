@@ -7,6 +7,7 @@ LightStorage::LightStorage() {
     for (int i = 0; i < MAX_LIGHT_COUNT; i++) {
         _lights[i] = nullptr;
     }
+    _num_stored_lights = 0;
     _max_light_index = 0;
     _cmd_list = nullptr;
 }
@@ -50,6 +51,8 @@ void LightStorage::add_light(PT(Light) light) {
         return;
     }
 
+    _num_stored_lights ++;
+
     _max_light_index = max(_max_light_index, slot);
 
     _lights[slot] = light;
@@ -70,7 +73,18 @@ void LightStorage::remove_light(PT(Light) light) {
     _lights[light->get_slot()] = nullptr;
 
     GPUCommand cmd_remove(GPUCommand::CMD_remove_light);
+    cmd_remove.push_int(light->get_slot());
     _cmd_list->add_command(cmd_remove);
+
+    _num_stored_lights --;
+
+    // Correct max light index
+    if (light->get_slot() == _max_light_index) {
+       
+        int curr = _max_light_index;
+        while (!_lights[curr--]);
+        _max_light_index = curr;
+    }
 
     light->remove_slot();
 
@@ -78,6 +92,10 @@ void LightStorage::remove_light(PT(Light) light) {
     // have to decrease the reference aswell
     light->unref();
 
+}
+
+int LightStorage::get_num_stored_lights() {
+    return _num_stored_lights;
 }
 
 void LightStorage::update() {
