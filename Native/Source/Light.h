@@ -26,8 +26,10 @@ class Light {
         virtual void write_to_command(GPUCommand &cmd);
 
         inline void mark_dirty();
-        inline void set_position(const LVecBase3f &pos);
-        inline void set_position(float x, float y, float z);
+        inline void unset_dirty_flag();
+        inline bool is_dirty();
+        inline void set_pos(const LVecBase3f &pos);
+        inline void set_pos(float x, float y, float z);
 
         inline void set_color(const LVecBase3f &color);
         inline void set_color(float r, float g, float b);
@@ -37,6 +39,8 @@ class Light {
         inline bool has_slot();
         inline void remove_slot();
         inline void assign_slot(int slot);
+
+        inline int get_slot();
 
     protected:
         

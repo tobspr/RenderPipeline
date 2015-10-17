@@ -6,8 +6,6 @@
 #include "pandabase.h"
 #include "luse.h"
 
-#include <vector>
-
 class GPUCommand {
 
     PUBLISHED:
@@ -19,10 +17,6 @@ class GPUCommand {
         GPUCommand(CommandType command_type);
         ~GPUCommand();
 
-
-        inline size_t get_data_size();
-        void enforce_width(size_t width, float fill_value=0.0);
-
         inline void push_int(int v);
         inline void push_float(float v);
         inline void push_vec3(const LVecBase3f &v);
@@ -31,12 +25,12 @@ class GPUCommand {
 
         void write_to(const PTA_uchar &dest, size_t command_index);
 
-
         void print_data();
 
     private:
         CommandType _command_type;
-        vector<float> _data;
+        int _current_index;
+        float _data[32];
 };
 
 

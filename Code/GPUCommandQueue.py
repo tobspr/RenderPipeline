@@ -7,7 +7,7 @@ from .Util.DebugObject import DebugObject
 from .Util.Image import Image
 from .RenderTarget import RenderTarget
 
-from ..Native import GPUCommand
+from ..Native import GPUCommand, GPUCommandList
 
 class GPUCommandQueue(DebugObject):
 
@@ -17,7 +17,8 @@ class GPUCommandQueue(DebugObject):
     def __init__(self, pipeline):
         DebugObject.__init__(self, "GPUCommandQueue")
         self._pipeline = pipeline
-        self._commands_per_frame = 30
+        self._commands_per_frame = 120
+        self._command_list = GPUCommandList()
         self._pta_num_commands = PTAInt.empty_array(1)
         self._create_data_storage()
         self._create_command_target()
@@ -29,21 +30,14 @@ class GPUCommandQueue(DebugObject):
 
     def process_queue(self):
         """ Processes the n first commands of the queue """
-        self._data_texture.clear_image()
-        commands = self._commands[:self._commands_per_frame]
-        self._commands = self._commands[self._commands_per_frame:]
-        self._pta_num_commands[0] = len(commands)
         pointer = self._data_texture.get_texture().modify_ram_image()
-        
-        # Pack the data into the buffer
-        for idx, command in enumerate(commands):
-            command.enforce_width(32)
-            command.write_to(pointer, idx)
+        num_commands_exec = self._command_list.write_commands_to(
+            pointer, self._commands_per_frame)
+        self._pta_num_commands[0] = num_commands_exec
 
     def add_command(self, command):
         """ Adds a new command """
-        assert isinstance(command, GPUCommand)
-        self._commands.append(command)
+        self._command_list.add_command(command)
 
     def reload_shaders(self):
         """ Reloads the command shader """

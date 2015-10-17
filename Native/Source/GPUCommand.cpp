@@ -9,27 +9,23 @@
 
 GPUCommand::GPUCommand(CommandType command_type) {
     _command_type = command_type;
-    _data.push_back((float)command_type);
+    for (int i = 1; i < 32; i++) {
+        _data[i] = 0.0;
+    }
+    _current_index = 1;
+    _data[0] = (float)command_type;
 }
 
 GPUCommand::~GPUCommand() {
+
+    
+    
 }
-
-
-void GPUCommand::enforce_width(size_t width, float fill_value) {
-    if (_data.size() > width) {
-        cerr << "enforce_width: command exceeds width!" << endl;
-        return;
-    }
-
-    _data.resize(width, fill_value);
-}
-
 
 void GPUCommand::print_data() {
-    cout << "GPUCommand(type=" << _command_type << ", size=" << _data.size() << ")" << endl;
+    cout << "GPUCommand(type=" << _command_type << ", size=" << _current_index << ")" << endl;
     cout << "Data: ";
-    for (int k = 0; k < _data.size(); k++) {
+    for (int k = 0; k < 32; k++) {
         cout << _data[k] << " ";
     }
     cout << endl;

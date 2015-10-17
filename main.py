@@ -65,13 +65,13 @@ class MainApp(ShowBase):
         self.render_pipeline.create()
 
 
-
         # Load some models
-
         plane = loader.loadModel("Models/GroundPlane/Scene.bam")
         plane.reparent_to(render)
         self.render_pipeline.create_default_skybox()
 
+
+        self.lights = []
 
         # Add some random lights
         for i in range(64):
@@ -79,13 +79,21 @@ class MainApp(ShowBase):
             light.set_pos( Vec3(random(), random(), 1.0) * 30 - 15)
             light.set_color(random(), random(), random()) 
             light.set_radius(20)
+            self.lights.append(light)
             self.render_pipeline.add_light(light)
         
 
         # Init movement controller
         self.controller = MovementController(self)
         self.controller.set_initial_position(Vec3(10), Vec3(0))
-        self.controller.setup()
+        self.controller.setup() 
+
+        self.addTask(self.update_task, "update_task")
+
+    def update_task(self, task=None):
+        for light in self.lights:
+            light.set_pos(Vec3(random(), random(), 1.0) * 30 - 15)
+        return task.cont
 
 
 

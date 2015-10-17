@@ -1,29 +1,27 @@
 
-
-
-inline size_t GPUCommand::get_data_size() {
-    return _data.size();    
-}
-
 inline void GPUCommand::push_int(int v) {
-    _data.push_back((float)v);
+    push_float((float)v);
 }
 
 inline void GPUCommand::push_float(float v) {
-    _data.push_back(v);
+    if (_current_index >= 32) {
+        cerr << "GPUCommand out of bounds!" << endl;
+    }
+    _data[_current_index] = v;
+    _current_index ++;
 }
 
 inline void GPUCommand::push_vec3(const LVecBase3f &v) {
-    _data.push_back(v.get_x());
-    _data.push_back(v.get_y());
-    _data.push_back(v.get_z());
+    push_float(v.get_x());
+    push_float(v.get_y());
+    push_float(v.get_z());
 }
 
 inline void GPUCommand::push_vec4(const LVecBase4f &v) {
-    _data.push_back(v.get_x());
-    _data.push_back(v.get_y());
-    _data.push_back(v.get_z());
-    _data.push_back(v.get_w());
+    push_float(v.get_x());
+    push_float(v.get_y());
+    push_float(v.get_z());
+    push_float(v.get_w());
 }
 
 inline void GPUCommand::push_mat4(const LMatrix4f &v) {

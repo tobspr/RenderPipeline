@@ -17,9 +17,7 @@ from ..Stages.GBufferStage import GBufferStage
 from ..Stages.FinalStage import FinalStage
 
 from ..GPUCommandQueue import GPUCommandQueue
-from ...Native import GPUCommand
-
-from .Light import Light
+from ...Native import GPUCommand, Light
 
 
 class LightManager(DebugObject):
@@ -32,7 +30,6 @@ class LightManager(DebugObject):
         """ Constructs the light manager """
         DebugObject.__init__(self, "LightManager")
         self._pipeline = pipeline
-
         self._lights = [None] * self._MAX_LIGHTS
 
         self._compute_tile_size()
@@ -63,17 +60,17 @@ class LightManager(DebugObject):
             return self.error("Light limit of", 2**16, "reached!")
 
         # Store slot in light, so we can access it later
-        light.set_slot(slot)
+        light.assign_slot(slot)
         self._lights[slot] = light
 
         # Create the command and attach it
         command_add = GPUCommand(GPUCommand.CMD_store_light)
-        light.add_to_stream(command_add)
+        light.write_to_command(command_add)
         self._cmd_queue.add_command(command_add)        
 
-        # Now that the light is attached, we can set the dirty flag, because
+        # Now that the light is attached, we can remove the dirty flag, because
         # the newest data is now on the gpu
-        light._unset_dirty()
+        light.unset_dirty_flag()
 
         # Update max light index
         if slot > self._pta_max_light_index[0]:
@@ -96,17 +93,18 @@ class LightManager(DebugObject):
         """ Main update method to process the gpu commands """
 
         # Check for dirty lights
-        # dirtyLights = []
-        # for i in xrange(self._pta_max_light_index[0] + 1):
-        #     light = self._lights[i]
-        #     if light and light.dirty:
-        #         dirtyLights.append(light)
+        dirtyLights = []
+        for i in range(self._pta_max_light_index[0] + 1):
+            light = self._lights[i]
+            if light and light.is_dirty():
+                dirtyLights.append(light)
 
-        # # Process dirty lights
-        # for light in dirtyLights:
-        #     self.debug("Updating dirty light", light)
-        #     # TODO: Enqueue update command
-        #     light.dirty = False
+        # Process dirty lights
+        for light in dirtyLights:
+            command_update = GPUCommand(GPUCommand.CMD_store_light)
+            light.write_to_command(command_update)
+            self._cmd_queue.add_command(command_update)    
+            light.unset_dirty_flag()
         self._cmd_queue.process_queue()
 
     def reload_shaders(self):

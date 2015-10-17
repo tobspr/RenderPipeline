@@ -1,3 +1,5 @@
 @echo off
-ppython -B Scripts/compile.py
+cd Scripts/
+python setup_native.py
+
 pause
