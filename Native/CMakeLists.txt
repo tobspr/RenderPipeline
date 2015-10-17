@@ -77,19 +77,16 @@ include_directories("${PYTHON_INCLUDE_DIRS}")
 include_directories("${BULLET_INCLUDE_DIRS}")
 
 # Run interrogate over the files
-# message("Running interrogate ..")
 
-execute_process(
+EXECUTE_PROCESS(
     COMMAND "${PYTHON_EXECUTABLE}" "Scripts/interrogate.py" "${PANDA_BIN}" "${PANDA_LIBS}" "${PANDA_INCLUDE_DIR}"
     OUTPUT_VARIABLE output
     ERROR_VARIABLE errors
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
-if(NOT (${errors} STREQUAL ""))
+if(NOT ("${errors}" STREQUAL ""))
     message(FATAL_ERROR "Interrogate failed: ${errors}")
 endif()
-
-message("Interrogate output: ${output} ${errors}")
 
 # Collect sources for compiling
 file(GLOB SOURCES Source/*.cpp)
