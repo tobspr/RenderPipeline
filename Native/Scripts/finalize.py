@@ -27,3 +27,5 @@ for file in possible_files:
 
 if source_file:
     copyfile(source_file, target_location)
+else:
+    print("Failed to find source file!")

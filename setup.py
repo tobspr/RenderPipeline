@@ -18,21 +18,21 @@ current_step = 0
 
 
 def error(msg):
-    print("ERROR: ", msg)
-    print("The installation failed!")
+    print("Setup failed: ", msg)
+    print("Please fix the errors and then rerun this file")
     sys.exit(0)
 
 
 def print_step(title):
     global current_step
     current_step += 1
-    print("\n\n[", current_step, "]", title)
+    print("\n\n[", str(current_step).zfill(2), "] ", title)
 
 
 def exec_python_file(pth):
     basedir = os.path.dirname(os.path.abspath(os.path.join(setup_dir, pth))) + "/"
+    print("\tRunning script:", pth)
     pth = os.path.basename(pth)
-    print("\tRunning script:", pth,"in", basedir)
     os.chdir(basedir)
     try:
         output = subprocess.check_output(["python", "-B", pth], stderr=sys.stderr)
@@ -59,25 +59,42 @@ def extract_gz_files(pth):
             except Exception as msg:
                 error("Failed to extract file '" + f + "': " + str(msg))
 
+def check_repo_complete():
+
+    # Check if the render target submodule exists
+    if not os.path.isfile(os.path.join(setup_dir, "Code/RenderTarget/RenderTarget.py")):
+        print("-" * 79)
+        print("  You didn't checkout the RenderTarget submodule!")
+        print("  Please checkout the whole repository, and also make sure you ")
+        print("  did 'git submodule init' and 'git submodule update' if you use")
+        print("  a command line client!")
+        print("-" * 79)
+        error("RenderTarget submodule missing")
+
+
 print("\nRender Pipeline Setup 1.0\n")
 print("-" * 79)
-print_step("Checking if python is on your path")
+print_step("Checking if python is on your path ..")
 
 try:
     subprocess.call(["python", "--version"], stdout=devnull, stderr=devnull)
 except OSError:
     error("Could not find python on your path")
 
-print_step("Compiling the native code (This might take a while!)")
+
+print_step("Checking if the repo is complete ..")
+check_repo_complete()
+
+print_step("Compiling the native code .. (This might take a while!)")
 exec_python_file("Native/Scripts/setup_native.py")
 
-print_step("Generating normal quantization textures")
+print_step("Generating normal quantization textures ..")
 exec_python_file("Data/NormalQuantization/generate.py")
 
 print_step("Extracting .gz files ...")
 extract_gz_files("Data/BuiltinModels/")
 
-print_step("Filtering default cubemap")
+print_step("Filtering default cubemap ..")
 exec_python_file("Data/DefaultCubemap/filter.py")
 
 # Further setup code follows here
@@ -86,4 +103,4 @@ exec_python_file("Data/DefaultCubemap/filter.py")
 with open(os.path.join(setup_dir, "Data/install.flag"), "w") as handle:
     handle.write("1")
 
-print("\n\n-- Setup finished! --")
+print("\n\n-- Setup finished sucessfully! --")
