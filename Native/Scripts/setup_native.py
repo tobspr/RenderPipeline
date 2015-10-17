@@ -53,8 +53,15 @@ except Exception as msg:
 
 
 # Check if the generated binary exists
-if not os.path.isfile("../RSNative.pyd"):
-    error("Compilation finished but could not find binary (RSNative.pyd)!")
+if platform.system() == "Windows":
+    expected_bin = "RSNative.pyd"
+elif platform.system() == "Linux":
+    expected_bin = "RSNative.so"
+
+
+if not os.path.isfile("../" + expected_bin):
+    error("Compilation finished but could not find binary (" + expected_bin + ")!")
+
 
 print("Success!")
 sys.exit(0)

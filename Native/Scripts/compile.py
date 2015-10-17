@@ -12,15 +12,15 @@ from os.path import isfile, dirname, realpath, join
 NATIVE_SRC = join(dirname(realpath(__file__)), "..")
 SOLUTION_PATH = join(NATIVE_SRC, "Windows/RSNative.sln")
 
+
 def hint_manually_msvc():
     print("Could not automatically compile the project! Please head over to", file=sys.stderr)
     print("Native/Windows/ and compile the solution RSNative.sln in release mode!", file=sys.stderr)
     sys.exit(1)
 
+
 def do_compile():
     print("Trying to compile the solution ..")
-
-
 
     if platform.system() == "Windows":
         # print("ERROR: Only windows supported yet, to build on linux", file=sys.stderr)

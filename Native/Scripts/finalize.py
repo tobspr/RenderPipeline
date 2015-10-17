@@ -14,6 +14,7 @@ if platform.system() == "Windows":
         "Windows/x64/Release/RSNative.pyd",
     ]
     target_location = "RSNative.pyd"
+    
 elif platform.system() == "Linux":
     possible_files = [
         "Linux/RSNative.so"
