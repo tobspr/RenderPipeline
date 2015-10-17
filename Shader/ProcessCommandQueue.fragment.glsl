@@ -36,6 +36,9 @@ void main() {
 
     // Process each command
     for (int commandIdx = 0; commandIdx < commandCount; commandIdx++) {
+
+        currentBufferOffs = commandIdx * 32;
+
         int commandType = readInt(currentBufferOffs);
 
         // CMD_INVALID

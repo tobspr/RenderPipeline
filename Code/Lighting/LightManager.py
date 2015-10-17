@@ -16,8 +16,8 @@ from ..Stages.AmbientStage import AmbientStage
 from ..Stages.GBufferStage import GBufferStage
 from ..Stages.FinalStage import FinalStage
 
-from ..Interface.GPUCommandQueue import GPUCommandQueue
-from ..Interface.GPUCommand import GPUCommand
+from ..GPUCommandQueue import GPUCommandQueue
+from ...Native import GPUCommand
 
 from .Light import Light
 
@@ -67,11 +67,8 @@ class LightManager(DebugObject):
         self._lights[slot] = light
 
         # Create the command and attach it
-        command_add = GPUCommand(GPUCommand.CMD_STORE_LIGHT)
+        command_add = GPUCommand(GPUCommand.CMD_store_light)
         light.add_to_stream(command_add)
-
-        # Enforce a width of 4xVec4
-        command_add.enforce_width(4 * 4 + 1)
         self._cmd_queue.add_command(command_add)        
 
         # Now that the light is attached, we can set the dirty flag, because

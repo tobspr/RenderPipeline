@@ -85,8 +85,9 @@ system(cmd)
 # print("\nRunning interrogate_module ..")
 cmd = PANDA_BIN + "/interrogate_module "
 cmd += "-python-native " 
-cmd += "-module RSCoreModules " 
-cmd += "-library RSCoreModules " 
+cmd += "-import panda3d.core " 
+cmd += "-module " + MODULE_NAME + " " 
+cmd += "-library " + MODULE_NAME + " " 
 cmd += "-oc Source/InterrogateModule.cpp " 
 cmd += "Source/Interrogate.in " 
 # print(cmd)

@@ -3,11 +3,11 @@ import struct
 
 from panda3d.core import PTAInt, Texture, Shader
 
-from ..Util.DebugObject import DebugObject
-from ..Util.Image import Image
-from ..RenderTarget import RenderTarget
-from .GPUCommand import GPUCommand
+from .Util.DebugObject import DebugObject
+from .Util.Image import Image
+from .RenderTarget import RenderTarget
 
+from ..Native import GPUCommand
 
 class GPUCommandQueue(DebugObject):
 
@@ -33,16 +33,19 @@ class GPUCommandQueue(DebugObject):
         commands = self._commands[:self._commands_per_frame]
         self._commands = self._commands[self._commands_per_frame:]
         self._pta_num_commands[0] = len(commands)
-        data = []
-        for command in commands:
-            data += command.get_data()
+        # data = []
+        # for command in commands:
+        #     data += command.get_data()
 
-        if len(data) > 0:
+        # if len(data) > 0:
+        pointer = self._data_texture.get_texture().modify_ram_image()
+        for idx, command in enumerate(commands):
             # Pack the data into the buffer
-            image = memoryview(self._data_texture.get_texture().modify_ram_image())
-            data_size_bytes = len(data) * 4
-            image[data_size_bytes:] = struct.pack('B', 0) * (len(image) - data_size_bytes)
-            image[0:data_size_bytes] = struct.pack('f' * len(data), *data)
+            # # data_size_bytes = len(data) * 4
+            # image[0:data_size_bytes] = struct.pack('f' * len(data), *data)
+            # image[data_size_bytes:] = struct.pack('B', 0) * (len(image) - data_size_bytes)
+            command.enforce_width(32)
+            command.write_to(pointer, idx)
 
     def add_command(self, command):
         """ Adds a new command """
