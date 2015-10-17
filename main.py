@@ -96,7 +96,19 @@ class MainApp(ShowBase):
 
         self.addTask(self.update_task, "update_task")
 
+        self.dummy_light = None
+
     def update_task(self, task=None):
+
+        if self.dummy_light:
+            self.render_pipeline.remove_light(self.dummy_light)
+
+        self.dummy_light = PointLight()
+        self.dummy_light.set_pos(random()*10, random()*10, 5)
+        self.dummy_light.set_color(0.2, 0.6, 1.0)
+        self.dummy_light.set_radius(20)
+        self.render_pipeline.add_light(self.dummy_light)
+
         # for light in self.lights:
             # light.set_color(random(), random(), random())
             # light.set_pos(Vec3(random(), random(), 1.0) * 30 - 15)

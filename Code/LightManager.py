@@ -58,11 +58,9 @@ class LightManager(DebugObject):
         if not light.has_slot():
             return self.error("Tried to detach light which is not attached!")
 
-        # Todo: Implement me
-        # TODO: Udpate max light index!
-        light.remove_slot()
+        self._light_storage.remove_light(light)
 
-        raise NotImplementedError()
+
 
     def update(self):
         """ Main update method to process the gpu commands """

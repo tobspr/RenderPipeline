@@ -51,6 +51,7 @@ class Light : public ReferenceCount {
         LVecBase3f _color;
         LightType _light_type;
 
+        double big_array[8192 * 32];
 
 
 };

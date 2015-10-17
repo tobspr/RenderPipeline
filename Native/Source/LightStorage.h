@@ -15,6 +15,7 @@ class LightStorage {
         ~LightStorage();
 
         void add_light(PT(Light) light);
+        void remove_light(PT(Light) light);
         void set_command_list(GPUCommandList *cmd_list);
 
         void update();

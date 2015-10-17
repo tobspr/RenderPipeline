@@ -61,6 +61,24 @@ void LightStorage::add_light(PT(Light) light) {
     _cmd_list->add_command(cmd_add);
 }
 
+void LightStorage::remove_light(PT(Light) light) {
+    if (!light->has_slot()) {
+        cerr << "Cannot detach light, light has no slot!" << endl;
+        return;
+    }
+
+    _lights[light->get_slot()] = nullptr;
+
+    GPUCommand cmd_remove(GPUCommand::CMD_remove_light);
+    _cmd_list->add_command(cmd_remove);
+
+    light->remove_slot();
+
+    // Since we referenced the light when we stored it, we
+    // have to decrease the reference aswell
+    light->unref();
+
+}
 
 void LightStorage::update() {
 

@@ -11,7 +11,8 @@ class GPUCommand {
     PUBLISHED:
 
         enum CommandType {
-            CMD_store_light = 1
+            CMD_store_light = 1,
+            CMD_remove_light = 2
         };
 
         GPUCommand(CommandType command_type);

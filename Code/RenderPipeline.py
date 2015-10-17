@@ -58,6 +58,11 @@ class RenderPipeline(DebugObject):
         documentation for further information. """
         self._light_mgr.add_light(light)
 
+    def remove_light(self, light):
+        """ Removes a previously attached light, check out the LightManager
+        documentation for further information. """
+        self._light_mgr.remove_light(light)
+
     def get_settings(self):
         """ Returns a handle to the settings, returns an empty PipelineSettings
         object if no settings have been loaded so far. """
