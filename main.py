@@ -68,19 +68,24 @@ class MainApp(ShowBase):
         # Load some models
         plane = loader.loadModel("Models/GroundPlane/Scene.bam")
         plane.reparent_to(render)
+        
+        panda = loader.loadModel("panda")
+        panda.reparent_to(render)
+
         self.render_pipeline.create_default_skybox()
+
 
 
         self.lights = []
 
         # Add some random lights
-        sqr = 4
+        sqr = 16
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()
-                light.set_pos( Vec3(x, y, 0.5) * 2)
+                light.set_pos( Vec3(x-sqr//2, y-sqr//2, 1.5) * 5)
                 light.set_color(random(), random(), random()) 
-                light.set_radius(5)
+                light.set_radius(15)
                 self.lights.append(light)
                 self.render_pipeline.add_light(light)
         

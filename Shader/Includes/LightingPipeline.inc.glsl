@@ -1,5 +1,7 @@
 #pragma once
 
+
+
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"
 #pragma include "Includes/LightCulling.inc.glsl"
@@ -19,6 +21,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     int cellIndex = texelFetch(CellIndices, tile, 0).x;
     int dataOffs = cellIndex * (MAX_LIGHTS_PER_CELL+1);
     int numLights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, dataOffs).x);
+
 
     vec3 shadingResult = vec3(0);
 
@@ -47,13 +50,13 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         vec3 l = vec3(0);
 
         // Special handling for different light types
-        if (lightType == LT_POINT_LIGHT) {
+        // if (lightType == LT_POINT_LIGHT) {
             float radius = data1.w;
-            float innerRadius = data2.x;
-            innerRadius = 2.0;
+            // float innerRadius = data2.x;
+            // innerRadius = 2.0;
             attenuation = computePointLightAttenuation(radius, distance(m.position, lightPos));
             l = normalize(lightPos - m.position);
-        }
+        // }
 
         shadingResult += applyLight(m, v, l, lightColor, attenuation, 1.0);
 

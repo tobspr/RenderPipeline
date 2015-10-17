@@ -17,6 +17,7 @@ float computePointLightAttenuation(float r, float d) {
 
     float linearAttenuation = 1.0 - saturate(d / r);
 
+
     attenuation = max(0.0, attenuation * linearAttenuation);
     // attenuation = linearAttenuation;
     // return step(r, d);
@@ -25,7 +26,7 @@ float computePointLightAttenuation(float r, float d) {
 
 vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, float shadow) {
 
-    // return lightColor * attenuation * fsaturate(dot(m.normal, l));
+    // return lightColor * attenuation * saturate(dot(m.normal, l));
 
     // m.roughness = 0.2;
     // m.metallic = 1.0;

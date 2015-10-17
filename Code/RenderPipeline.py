@@ -14,7 +14,7 @@ from .MountManager import MountManager
 from .PipelineSettings import PipelineSettings
 from .Globals import Globals
 from .StageManager import StageManager
-from .Lighting.LightManager import LightManager
+from .LightManager import LightManager
 from .Effects.EffectLoader import EffectLoader
 from .PluginInterface.PluginManager import PluginManager
 from .RenderTarget import RenderTarget
@@ -69,7 +69,7 @@ class RenderPipeline(DebugObject):
         parented to render aswell. """
         skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox.egg.bam")
         skybox.set_scale(size)
-        skybox.reparentTo(Globals.render)
+        skybox.reparent_to(Globals.render)
         self.set_effect(skybox, "Effects/Skybox.yaml", 
                         {"cast_shadows": False}, 100)
         return skybox

@@ -30,7 +30,7 @@ void main() {
     m.position = vOutput.position;
     m.metallic = 0;
     m.specular = 0.5;
-    m.roughness = 0.5;
+    m.roughness = 0.2;
     
     %MATERIAL%
 

@@ -43,7 +43,7 @@ class BetterCheckbox(DebugObject):
         self._node.set_transparency(TransparencyAttrib.M_alpha)
 
         self._callback = callback
-        self._extra_Args = extra_args
+        self._extra_args = extra_args
         self._collection = None
 
         if checked:

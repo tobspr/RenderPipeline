@@ -107,7 +107,7 @@ class FastText(DebugObject):
 
         # Create a new font instance to generate a font-texture-page
         font_instance = DynamicTextFont(self._font)
-        font_instance.setFg(Vec4(1))
+        font_instance.set_fg(Vec4(1))
 
         atlas_size = 1024 if self._size > 30 else 512 
         font_instance.set_page_size(atlas_size, atlas_size)
