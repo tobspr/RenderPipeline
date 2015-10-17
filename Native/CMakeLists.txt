@@ -40,7 +40,6 @@ else()
   find_package(PythonInterp REQUIRED)
   find_package(Bullet)
 
-  set(PANDA_BIN "/usr/bin" CACHE PATH "Location of Panda tools such as Interrogate")
 
   # Locate the headers
   find_path(PANDA_INCLUDE_DIR dtoolbase.h PATH_SUFFIXES panda3d)
@@ -59,6 +58,14 @@ else()
     message(FATAL_ERROR "Could not find panda3d headers!")
   endif()
 
+  set(PANDA_BIN "/usr/bin" CACHE PATH "Location of Panda tools such as Interrogate")
+
+endif()
+
+
+# Make sure interrogate exists
+if(NOT (EXISTS "${PANDA_BIN}/interrogate") AND NOT (EXISTS "${PANDA_BIN}/interrogate.exe"))
+    message(FATAL_ERROR "Could not locate interrogate executable in ${PANDA_BIN}! Correct the path in CMakeLists.txt!")
 endif()
 
 
@@ -78,7 +85,11 @@ execute_process(
     ERROR_VARIABLE errors
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
-message(STATUS "Interrogate output: ${output} ${errors}")
+if(NOT (${errors} STREQUAL ""))
+    message(FATAL_ERROR "Interrogate failed: ${errors}")
+endif()
+
+message("Interrogate output: ${output} ${errors}")
 
 # Collect sources for compiling
 file(GLOB SOURCES Source/*.cpp)

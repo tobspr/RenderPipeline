@@ -4,6 +4,7 @@ import sys
 import platform
 from os import system, getcwd, listdir
 from direct.stdpy.file import join, isfile
+import subprocess
 
 
 if len(sys.argv) != 4:
@@ -44,7 +45,7 @@ allSourcesStr = ' '.join(['"' + i + '"' for i in allSources])
 
 # print("\nRunning interrogate ..")
 
-cmd = PANDA_BIN + "/interrogate "
+cmd = '"' + PANDA_BIN + '/interrogate" '
 cmd += "-fnames -string -refcount -assert -python-native "
 cmd += "-S" + PANDA_INCLUDE + "/parser-inc "
 cmd += "-S" + PANDA_INCLUDE + "/ "
@@ -76,10 +77,12 @@ if COMPILER=="GCC":
 for define in defines:
     cmd += "-D" + define + " "
 cmd += allSourcesStr
-
-# print("Executing: ", cmd)
-system(cmd)
-
+print("CMD =", cmd)
+try:
+    subprocess.call(cmd, shell=True)
+except Exception as msg:
+    print("Error executing interrogate command:", msg, file=sys.stderr)
+    sys.exit(1)
 
 
 
@@ -91,5 +94,9 @@ cmd += "-module " + MODULE_NAME + " "
 cmd += "-library " + MODULE_NAME + " " 
 cmd += "-oc Source/InterrogateModule.cpp " 
 cmd += "Source/Interrogate.in " 
-# print(cmd)
-system(cmd)
+
+try:
+    subprocess.call(cmd, shell=True)
+except Exception as msg:
+    print("Error executing interrogate_module command: ", msg, file=sys.stderr)
+    sys.exit(1)
