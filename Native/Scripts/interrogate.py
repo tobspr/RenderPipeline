@@ -54,6 +54,7 @@ cmd += "-oc Source/InterrogateWrapper.cpp "
 cmd += "-od Source/Interrogate.in "
 cmd += "-module " + MODULE_NAME + " "
 cmd += "-library " + MODULE_NAME + " "
+cmd += "-nomangle "
 
 # Defines required to parse the panda source
 defines = ["CPPPARSER", "__STDC__=1", "__cplusplus=201103L"]
