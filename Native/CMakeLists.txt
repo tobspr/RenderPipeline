@@ -22,6 +22,7 @@ if (WIN32)
 
   set(BULLET_LIBRARIES "")
   set(BULLET_INCLUDE_DIRS "${PANDA_THIRDPARTY}/bullet/include")
+  set(EIGEN_INCLUDE_DIRS "${PANDA_THIRDPARTY}/eigen/include")
 
   # Check if all supplied files exist
   set(CHECK_PATHS ${PANDA_BIN} ${PANDA_LIBS} ${PANDA_LIBRARY_DIRS} ${PANDA_INCLUDE_DIR} ${PYTHON_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_EXECUTABLE} ${PANDA_THIRDPARTY})
@@ -40,6 +41,7 @@ else()
   find_package(PythonInterp REQUIRED)
   find_package(Bullet)
 
+  set(EIGEN_INCLUDE_DIRS "/usr/include/eigen3")
 
   # Locate the headers
   find_path(PANDA_INCLUDE_DIR dtoolbase.h PATH_SUFFIXES panda3d)
@@ -75,16 +77,17 @@ include_directories("${PANDA_INCLUDE_DIR}")
 # Also link python includes / libraries
 include_directories("${PYTHON_INCLUDE_DIRS}")
 include_directories("${BULLET_INCLUDE_DIRS}")
+include_directories("${EIGEN_INCLUDE_DIRS}")
 
 # Run interrogate over the files
-
 EXECUTE_PROCESS(
     COMMAND "${PYTHON_EXECUTABLE}" "Scripts/interrogate.py" "${PANDA_BIN}" "${PANDA_LIBS}" "${PANDA_INCLUDE_DIR}"
     OUTPUT_VARIABLE output
     ERROR_VARIABLE errors
+    RESULT_VARIABLE return_code
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
-if(NOT ("${errors}" STREQUAL ""))
+if(NOT ("${return_code}" STREQUAL "0"))
     message(FATAL_ERROR "Interrogate failed: ${output} ${errors}")
 endif()
 
