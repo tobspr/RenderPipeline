@@ -33,17 +33,18 @@ os.chdir(output_path)
 
 print("Running cmake ..")
 
+cmake_args = []
+
+if platform.system() == "Windows":
+   cmake_args += ['-GVisual Studio 10 2010 Win64']
+
 try:
-    subprocess.check_output(["cmake", "../", '-GVisual Studio 10 2010 Win64'], stderr=sys.stderr)
+    subprocess.check_output(["cmake", "../"] + cmake_args, stderr=sys.stderr)
 except Exception as msg:
     error("cmake failed:", msg)
 
 print("Compiling solution ..")
-
-
 os.chdir(current_dir)
-
-
 
 try:
     subprocess.check_output(["python", "compile.py"], stderr=sys.stderr)

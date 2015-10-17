@@ -30,11 +30,12 @@ def print_step(title):
 
 
 def exec_python_file(pth):
-    basedir = os.path.dirname(os.path.abspath(os.path.join(setup_dir, pth)))
-    print("\tRunning script:", pth)
+    basedir = os.path.dirname(os.path.abspath(os.path.join(setup_dir, pth))) + "/"
+    pth = os.path.basename(pth)
+    print("\tRunning script:", pth,"in", basedir)
+    os.chdir(basedir)
     try:
-        os.chdir(basedir)
-        output = subprocess.check_output(["ppython", "-B", os.path.basename(pth)], stderr=sys.stderr)
+        output = subprocess.check_output(["python", "-B", pth], stderr=sys.stderr)
     except subprocess.CalledProcessError as msg:
         print("Python script didn't return properly!")
         error("Failed to execute '" + pth + "'")
