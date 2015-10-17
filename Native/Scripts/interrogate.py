@@ -77,7 +77,7 @@ if COMPILER=="GCC":
 for define in defines:
     cmd += "-D" + define + " "
 cmd += allSourcesStr
-print("CMD =", cmd)
+
 try:
     subprocess.call(cmd, shell=True)
 except Exception as msg:

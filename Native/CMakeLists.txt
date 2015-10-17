@@ -7,8 +7,8 @@ set(CMAKE_BUILD_TYPE "Release")
 if (WIN32)
   
   # Default settings for windows. Usually you only have to adjust this two variables
-  set(WIN_PANDA_PATH "D:/P3D/1.9GIT" CACHE PATH "Location of the Panda3D source directory")
-  set(BUILD_DIR_NAME "built_x64_buffered" CACHE PATH "Name of the output folder, usually built or built_x64")
+  set(WIN_PANDA_PATH "D:/P3D/1.9GIT")
+  set(BUILD_DIR_NAME "built_x64_buffered")
 
   # These vars are based on the WIN_PANDA_PATH and usually are correct
   set(PANDA_BIN "${WIN_PANDA_PATH}/${BUILD_DIR_NAME}/bin")
@@ -27,7 +27,7 @@ if (WIN32)
   set(CHECK_PATHS ${PANDA_BIN} ${PANDA_LIBS} ${PANDA_LIBRARY_DIRS} ${PANDA_INCLUDE_DIR} ${PYTHON_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_EXECUTABLE} ${PANDA_THIRDPARTY})
   foreach(PATH ${CHECK_PATHS})
     if(NOT (EXISTS "${PATH}"))
-        message(FATAL_ERROR "The supplied path '${PATH}' does not exist! Correct the path in CMakeLists.txt!")
+        message(FATAL_ERROR "The supplied path '${PATH}' does not exist! Correct the path in Native/CMakeLists.txt (Line 10 and 11)!")
     endif()
   endforeach()
 
@@ -58,14 +58,14 @@ else()
     message(FATAL_ERROR "Could not find panda3d headers!")
   endif()
 
-  set(PANDA_BIN "/usr/bin" CACHE PATH "Location of Panda tools such as Interrogate")
+  set(PANDA_BIN "/usr/bin")
 
 endif()
 
 
 # Make sure interrogate exists
 if(NOT (EXISTS "${PANDA_BIN}/interrogate") AND NOT (EXISTS "${PANDA_BIN}/interrogate.exe"))
-    message(FATAL_ERROR "Could not locate interrogate executable in ${PANDA_BIN}! Correct the path in CMakeLists.txt!")
+    message(FATAL_ERROR "Could not locate interrogate executable in ${PANDA_BIN}! Correct the path in Native/CMakeLists.txt (Line 61)!")
 endif()
 
 
@@ -85,7 +85,7 @@ EXECUTE_PROCESS(
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
 if(NOT ("${errors}" STREQUAL ""))
-    message(FATAL_ERROR "Interrogate failed: ${errors}")
+    message(FATAL_ERROR "Interrogate failed: ${output} ${errors}")
 endif()
 
 # Collect sources for compiling
