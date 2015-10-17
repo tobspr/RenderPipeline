@@ -14,7 +14,7 @@ if platform.system() == "Windows":
         "Windows/x64/Release/RSNative.pyd",
     ]
     target_location = "RSNative.pyd"
-    
+
 elif platform.system() == "Linux":
     possible_files = [
         "Linux/RSNative.so"
@@ -26,5 +26,4 @@ for file in possible_files:
         source_file = file
 
 if source_file:
-    copyfile(source_file, target_file)
-
+    copyfile(source_file, target_location)
