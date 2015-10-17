@@ -1,4 +1,6 @@
-#pragma once
+
+#ifndef RP_POINT_LIGHT_H
+#define RP_POINT_LIGHT_H
 
 
 #include "pandabase.h"
@@ -13,3 +15,5 @@ class PointLight : public Light {
 
 
 };
+
+#endif // RP_POINT_LIGHT_H

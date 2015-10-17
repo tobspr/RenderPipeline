@@ -1,4 +1,6 @@
-#pragma once
+
+#ifndef RP_LIGHT_H
+#define RP_LIGHT_H
 
 
 #include "pandabase.h"
@@ -47,3 +49,5 @@ class Light {
 };
 
 #include "Light.I"
+
+#endif // RP_LIGHT_H

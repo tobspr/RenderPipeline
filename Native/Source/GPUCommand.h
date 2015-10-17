@@ -1,5 +1,6 @@
-#pragma once
 
+#ifndef RP_GPU_COMMAND_H
+#define RP_GPU_COMMAND_H
 
 #include "dtool_config.h"
 #include "pandabase.h"
@@ -40,3 +41,5 @@ class GPUCommand {
 
 
 #include "GPUCommand.I"
+
+#endif // RP_GPU_COMMAND_H
