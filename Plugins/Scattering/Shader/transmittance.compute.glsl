@@ -1,7 +1,7 @@
 #version 440
 
 
-#pragma include "common.glsl"
+#pragma include "scattering_common.glsl"
 
 
 layout(local_size_x = 16, local_size_y = 16) in;
@@ -30,6 +30,6 @@ void main() {
     float r, muS;
     getTransmittanceRMu(r, muS);
     vec3 depth = betaR * opticalDepth(HR, r, muS) + betaMEx * opticalDepth(HM, r, muS);
-    imageStore(dest, coord, vec4(exp(-depth), 1.0));
+    imageStore(dest, coord, vec4(exp(-depth), SCAT_DEBUG_ALPHA));
 
 }

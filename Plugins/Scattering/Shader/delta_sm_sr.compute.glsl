@@ -1,7 +1,7 @@
 #version 440
 
 
-#pragma include "common.glsl"
+#pragma include "scattering_common.glsl"
 
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
@@ -66,7 +66,7 @@ void main() {
     // store separately Rayleigh and Mie contributions, WITHOUT the phase function factor
     // (cf "Angular precision")
 
-    imageStore(destDeltaSR, ivec3(coord, layer), vec4(ray, 1.0));
-    imageStore(destDeltaSM, ivec3(coord, layer), vec4(mie, 1.0));
+    imageStore(destDeltaSR, ivec3(coord, layer), vec4(ray, SCAT_DEBUG_ALPHA));
+    imageStore(destDeltaSM, ivec3(coord, layer), vec4(mie, SCAT_DEBUG_ALPHA));
 
 }

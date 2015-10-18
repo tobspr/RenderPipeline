@@ -109,3 +109,18 @@ class RenderStage(DebugObject):
             return Shader.load(Shader.SLGLSL, "Shader/" + args[0] + ".glsl",
                                "Shader/" + args[1] + ".glsl",
                                "Shader/" + args[2] + ".glsl")
+
+    def _load_plugin_shader(self, plugin_name, *args):
+        """ Loads a shader from the plugin directory. This method is useful
+        for RenderStages created by plugins. For a description of the arguments,
+        see the _load_shader function. """
+
+        plugin_loc = "Plugins/" + plugin_name + "/"
+        path_args = [plugin_loc + i for i in args]
+
+        if len(args) == 1:
+            return Shader.load(Shader.SLGLSL,
+                               "Shader/DefaultPostProcess.vertex.glsl",
+                               path_args[0])
+        else:
+            return Shader.load(Shader.SLGLSL, *path_args)

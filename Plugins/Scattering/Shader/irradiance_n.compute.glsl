@@ -1,7 +1,7 @@
 #version 440
 
 
-#pragma include "common.glsl"
+#pragma include "scattering_common.glsl"
 
 
 layout(local_size_x = 16, local_size_y = 16) in;
@@ -45,6 +45,6 @@ void main() {
         }
     }
 
-    imageStore(dest, coord, vec4(result, 1.0));
+    imageStore(dest, coord, vec4(result, SCAT_DEBUG_ALPHA));
 
 }

@@ -140,23 +140,26 @@ class RenderPipeline(DebugObject):
         # Load common inputs and defines
         self._com_resources.load()
         self._create_common_defines()
+        self._plugin_mgr.load_plugins()
+
+        self._plugin_mgr.trigger_hook("on_stage_setup")
 
         # Setup the managers
         self._stage_mgr.setup()
-        self.reload_shaders()
+        self._stage_mgr.set_shaders()
+        self._light_mgr.reload_shaders()
         self._init_bindings()
-        self._plugin_mgr.load_plugins()
         
         # Set the default effect on render
         self.set_effect(Globals.render, "Effects/Default.yaml", {}, -10)
 
         self._plugin_mgr.trigger_hook("on_pipeline_create")
 
-
     def reload_shaders(self):
         """ Reloads all shaders """
         self._stage_mgr.set_shaders()
         self._light_mgr.reload_shaders()
+        self._plugin_mgr.trigger_hook("on_shader_reload")
 
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
@@ -203,5 +206,5 @@ class RenderPipeline(DebugObject):
 
     def _adjust_camera_settings(self):
         """ Sets the default camera settings """
-        self._showbase.camLens.set_near_far(0.1, 70000)
+        self._showbase.camLens.set_near_far(2.0, 70000)
         self._showbase.camLens.set_fov(110)

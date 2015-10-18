@@ -7,8 +7,18 @@
 
 // These can be overridden depending on if the shader is a compute shader
 // or a regular fragment shader
+#ifndef NO_COMPUTE_SHADER
 #define PIXEL_X gl_GlobalInvocationID.x
 #define PIXEL_Y gl_GlobalInvocationID.y
+#else
+#define PIXEL_X gl_FragCoord.x
+#define PIXEL_Y gl_FragCoord.x
+#endif
+
+
+// This define can be set to 1.0 when writing out the scattering textures, so
+// the alpha channel is not 0.0 and the texture cannot get displayed
+#define SCAT_DEBUG_ALPHA 0.0
 
 
 // Actual include:
@@ -52,14 +62,17 @@
 const float Rg = 6360.0;
 const float Rt = 6420.0;
 const float RL = 6421.0;
-const int TRANSMITTANCE_W = 256;
-const int TRANSMITTANCE_H = 64;
-const int SKY_W = 64;
-const int SKY_H = 16;
+const int TRANSMITTANCE_W = 256 * 4;
+const int TRANSMITTANCE_H = 64 * 4;
+const int SKY_W = 64*4;
+const int SKY_H = 16*4;
+
 const int RES_R = 32;
 const int RES_MU = 128;
 const int RES_MU_S = 32;
 const int RES_NU = 8;
+
+
 
 // ----------------------------------------------------------------------------
 // PHYSICAL MODEL PARAMETERS

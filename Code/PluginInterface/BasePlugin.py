@@ -52,6 +52,5 @@ class BasePlugin(DebugObject):
             np.set_shader_input(key, val)
 
         attr = np.get_attrib(ShaderAttrib)
-        self.debug("Executing compute shader:", shader_obj)
         Globals.base.graphicsEngine.dispatch_compute((ntx, nty, ntz),
             attr, Globals.base.win.get_gsg())
