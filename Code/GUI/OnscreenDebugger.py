@@ -99,7 +99,7 @@ class OnscreenDebugger(DebugObject):
             1000.0 / max(0.001, clock.get_average_frame_rate()),
             clock.get_max_frame_duration() * 1000.0))
         self._debug_lines[1].set_text(
-            "{:4d} render states  |  {:4d} transform states |  {:4d} commands |  {:6d} lights".format(
+            "{:4d} render states  |  {:4d} transform states  |  {:4d} commands  |  {:6d} lights".format(
                 RenderState.get_num_states(), TransformState.get_num_states(),
                 self._pipeline._light_mgr._cmd_queue.get_num_queued_commands(),
                 self._pipeline._light_mgr._light_storage.get_num_stored_lights()))
@@ -113,7 +113,7 @@ class OnscreenDebugger(DebugObject):
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_x(-self._debugger_width)
         self._debugger_bg = DirectFrame(parent=self._debugger_node,
-                                        frameSize=(self._debugger_width, 0, -121,
+                                        frameSize=(self._debugger_width, 0, -127,
                                                    -2000),
                                         pos=(0, 0, 0),
                                         frameColor=(0.09, 0.09, 0.09, 1))
@@ -228,7 +228,7 @@ class OnscreenDebugger(DebugObject):
                     self._pipeline_logo.hpr_interval(
                         0.12, Vec3(0, 0, 0), Vec3(0, 0, 90), blendType="easeInOut"),
                     self._debugger_bg_bottom.scaleInterval(
-                        0.12, Vec3(1, 1, 1), Vec3(1, 1, 125), blendType="easeInOut")
+                        0.12, Vec3(1, 1, 1), Vec3(1, 1, 126), blendType="easeInOut")
                 ))
         else:
             # Show debugger
@@ -244,7 +244,7 @@ class OnscreenDebugger(DebugObject):
                         0.12, Vec3(0, 0, 0), Vec3(-self._debugger_width, 0),
                         blendType="easeInOut"),
                     self._debugger_bg_bottom.scaleInterval(
-                        0.12, Vec3(1, 1, 125), Vec3(1, 1, 1), blendType="easeInOut")
+                        0.12, Vec3(1, 1, 126), Vec3(1, 1, 1), blendType="easeInOut")
                 ))
         self._debugger_interval.start()
         self._debugger_visible = not self._debugger_visible

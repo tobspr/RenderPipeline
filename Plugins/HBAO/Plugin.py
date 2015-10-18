@@ -17,7 +17,7 @@ class Plugin(BasePlugin):
     }
 
     def __init__(self, pipeline):
-        BasePlugin.__init__(self, pipeline, "HBAO")
+        BasePlugin.__init__(self, pipeline)
 
     @PluginHook("on_shader_create")
     def create_stages(self):

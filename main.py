@@ -73,13 +73,10 @@ class MainApp(ShowBase):
         panda.reparent_to(render)
 
         self.render_pipeline.create_default_skybox()
-
-
-
         self.lights = []
 
         # Add some random lights
-        sqr = 254
+        sqr = 32
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()
@@ -92,10 +89,9 @@ class MainApp(ShowBase):
         # Init movement controller
         self.controller = MovementController(self)
         self.controller.set_initial_position(Vec3(10), Vec3(0))
-        self.controller.setup() 
+        self.controller.setup()
 
         self.addTask(self.update_task, "update_task")
-
         self.dummy_light = None
 
     def update_task(self, task=None):
@@ -105,8 +101,8 @@ class MainApp(ShowBase):
 
         self.dummy_light = PointLight()
         self.dummy_light.set_pos(random()*10, random()*10, 5)
-        self.dummy_light.set_color(0.2, 0.6, 1.0)
-        self.dummy_light.set_radius(20)
+        self.dummy_light.set_color( Vec3(0.2, 0.6, 1.0) * 3.0 )
+        self.dummy_light.set_radius(30)
         self.render_pipeline.add_light(self.dummy_light)
 
         # for light in self.lights:

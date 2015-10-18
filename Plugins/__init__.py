@@ -5,4 +5,4 @@
 from ..Code.PluginInterface.BasePlugin import BasePlugin
 from ..Code.PluginInterface.PluginHook import PluginHook
 from ..Code.PluginInterface.PluginSettings import PluginSettingInt, PluginSettingFloat, PluginSettingEnum
-
+from ..Code.Util.Image import Image

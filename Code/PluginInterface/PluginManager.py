@@ -16,6 +16,7 @@ class PluginManager(DebugObject):
         self._pipeline = pipeline
         self._valid_name_regexp = re.compile('^[a-zA-Z0-9_]+$')
         self._plugin_instances = []
+        self._hooks = {}
 
     def load_plugins(self):
         """ Loads all plugins from the plugin directory """
@@ -72,6 +73,16 @@ class PluginManager(DebugObject):
 
         return module.Plugin
 
+    def add_hook_binding(self, hook_name, handler):
+        """ Attaches a new handler to a hook """
+        if hook_name in self._hooks:
+            self._hooks[hook_name].append(handler)
+        else:
+            self._hooks[hook_name] = [handler]
+
     def trigger_hook(self, hook_name):
         """ Triggers a hook, executing all handlers attached to that hook """
-        pass
+        if hook_name in self._hooks:
+            for handler in self._hooks[hook_name]:
+                handler()
+                

@@ -1,6 +1,6 @@
 #pragma once
 
-#pragma optionNV (unroll all)
+// #pragma optionNV (unroll all)
 
 #define saturate(v) clamp(v, 0, 1)
 #define M_PI 3.14159265359

@@ -210,6 +210,10 @@ class MountManager(DebugObject):
         # find the ShaderAutoConfig.include
         self._model_paths.append("$$PipelineTemp")
 
+        # Add the plugins dir to the model path so plugins can include their 
+        # own resources more easily
+        self._model_paths.append("Plugins")
+
         for pth in self._model_paths:
             get_model_path().append_directory(pth)
 

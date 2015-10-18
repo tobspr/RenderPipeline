@@ -20,3 +20,4 @@ void main() {
 
     result.w = 1.0;
 }
+

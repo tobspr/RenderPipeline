@@ -53,7 +53,10 @@ class Image(DebugObject):
         """ Writes the image to disk """
         Globals.base.graphicsEngine.extract_texture_data(self._tex,
                                                          Globals.base.win.get_gsg())
-        self._tex.write(pth)
+        if self._tex.get_texture_type() == Texture.TT_3d_texture:
+            self._tex.write(pth, 0, 0, True, False)
+        else:
+            self._tex.write(pth)
 
     def register(self):
         """ Registers the image for memory tracking and debugging """
