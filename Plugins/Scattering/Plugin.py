@@ -33,7 +33,7 @@ class Plugin(BasePlugin):
 
     @PluginHook("on_stage_setup")
     def on_setup(self):
-        print("setup scattering stage")
+        self.debug("Setting up scattering stage ..")
         self._display_stage = ScatteringStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._display_stage)
 

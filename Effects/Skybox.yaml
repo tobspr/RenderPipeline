@@ -2,6 +2,10 @@
 Vertex:
     template: default
 
+    inject:
+        transformation:
+            gl_Position.w = 1.0;
+
 Fragment.GBuffer:
     template: default
     inject:

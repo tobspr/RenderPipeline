@@ -20,8 +20,8 @@ class StageManager(DebugObject):
         
         
         "ScatteringStage",
-
         "AmbientStage",
+        "SSLRStage",
         "FinalStage"
     ]
 

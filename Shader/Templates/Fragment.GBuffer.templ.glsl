@@ -29,8 +29,8 @@ void main() {
     m.normal = vOutput.normal;
     m.position = vOutput.position;
     m.metallic = 0;
-    m.specular = 0.5;
-    m.roughness = 0.2;
+    m.specular = 1.0;
+    m.roughness = 0.1;
     
     %MATERIAL%
 
