@@ -1,6 +1,5 @@
 #version 400
 
-
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/GBufferPacking.inc.glsl"
 
@@ -17,16 +16,12 @@ uniform sampler2D GBuffer2;
 
 uniform sampler3D inscatterSampler;
 
-
 in vec2 texcoord;
-
 out vec4 result;
-
 uniform vec3 cameraPosition;
 
-
 const float sunIntensity = 50.0;
-const vec3 sunVector = normalize(vec3(0.1, 0.8, -0.02));
+const vec3 sunVector = normalize(vec3(0.1, 0.8, 0.5));
 
 vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)
 {
@@ -66,7 +61,7 @@ vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)
 
         vec4 inscatterSurface = texture4D(inscatterSampler, surfacePosHeight, 
             0.0, musEndPos, nuStartPos);
-        inscatterSurface *= saturate(pathLength / 5000.0);
+        inscatterSurface *= saturate(pathLength / 15000.0);
         inscatter = inscatterSurface;
     }
     else
@@ -91,8 +86,10 @@ void main() {
     vec3 view_vector = normalize(m.position - cameraPosition);
     vec3 scattering_result = vec3(0);
 
-    vec3 inscatteredLight = DoScattering(m.position, view_vector);
-    scattering_result = 1.0 - exp(-1.0 * inscatteredLight);
+    vec3 inscattered_light = DoScattering(m.position, view_vector);
+    // scattering_result = 1.0 - exp(-1.0 * inscatteredLight);
+    scattering_result = 1.0 - exp(-inscattered_light);
+
 
     result = texture(ShadedScene, texcoord);
     result.xyz += scattering_result;

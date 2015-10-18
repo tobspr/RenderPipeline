@@ -12,8 +12,12 @@ void main() {
     vec4 sceneColor = texture(ShadedScene, texcoord);
 
     vec3 correctedColor = sceneColor.xyz;
+    
+    
     correctedColor = pow(correctedColor, vec3(1.0 / 2.2));
     
+
+
 
     // Vignette
    correctedColor *= 1.0 - smoothstep(0, 1, 
