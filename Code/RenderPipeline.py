@@ -206,5 +206,5 @@ class RenderPipeline(DebugObject):
 
     def _adjust_camera_settings(self):
         """ Sets the default camera settings """
-        self._showbase.camLens.set_near_far(2.0, 70000)
+        self._showbase.camLens.set_near_far(0.1, 70000)
         self._showbase.camLens.set_fov(110)

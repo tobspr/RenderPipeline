@@ -70,8 +70,9 @@ class MainApp(ShowBase):
         # plane.set_scale(1)
         plane.reparent_to(render)
         
-        panda = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
-        # panda.set_scale(0.05)
+        # panda = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        panda = loader.loadModel("box")
+        panda.set_scale(3.0)
         panda.reparent_to(render)
 
         self.render_pipeline.create_default_skybox()

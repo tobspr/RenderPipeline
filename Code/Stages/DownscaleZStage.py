@@ -30,7 +30,7 @@ class DownscaleZStage(RenderStage):
         current_res = res.x, res.y
 
         self._depth_storage = Image.create_2d("DownscaledZ", res.x, res.y, Texture.T_float, Texture.F_rg32)
-        self._depth_storage.get_texture().set_minfilter(Texture.FT_linear_mipmap_linear)
+        self._depth_storage.get_texture().set_minfilter(Texture.FT_nearest_mipmap_nearest)
         self._depth_storage.get_texture().set_magfilter(Texture.FT_linear)
         self._depth_storage.get_texture().set_wrap_u(Texture.WM_clamp)
         self._depth_storage.get_texture().set_wrap_v(Texture.WM_clamp)

@@ -16,7 +16,7 @@ class SSLRStage(RenderStage):
 
     def get_input_pipes(self):
         return ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
-                "GBuffer2"]
+                "GBuffer2", "DownscaledDepth"]
 
     def get_required_inputs(self):
         return ["mainCam", "mainRender", "cameraPosition", "currentViewProjMat"]
