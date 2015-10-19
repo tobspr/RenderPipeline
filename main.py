@@ -101,11 +101,11 @@ class MainApp(ShowBase):
         if self.dummy_light:
             self.render_pipeline.remove_light(self.dummy_light)
 
-        self.dummy_light = PointLight()
-        self.dummy_light.set_pos(random()*10, random()*10, 5)
-        self.dummy_light.set_color( Vec3(0.2, 0.6, 1.0) * 3.0 )
-        self.dummy_light.set_radius(30)
-        self.render_pipeline.add_light(self.dummy_light)
+        # self.dummy_light = PointLight()
+        # self.dummy_light.set_pos(random()*10, random()*10, 5)
+        # self.dummy_light.set_color( Vec3(0.2, 0.6, 1.0) * 3.0 )
+        # self.dummy_light.set_radius(30)
+        # self.render_pipeline.add_light(self.dummy_light)
 
         # for light in self.lights:
             # light.set_color(random(), random(), random())

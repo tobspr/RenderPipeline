@@ -57,6 +57,21 @@ class TexturePreview(DraggableWindow):
                            color=Vec3(0.34, 0.564, 0.192),
                            align="right")
 
+        if tex.uses_mipmaps():
+            # Create mip slider
+            max_mips = tex.get_expected_num_mipmap_levels() - 1
+            self._mip_slider = BetterSlider(parent=self._content_node,
+                                            size=200, min_value=0,
+                                            max_value=max_mips,
+                                            callback=self._set_mip, x=850,
+                                            y=63, value=0)
+            self._mip_text = BetterOnscreenText(text="Mipmap: 5",
+                                                parent=self._content_node,
+                                                x=1080, y=70, size=18,
+                                                color=Vec3(0.6, 0.6, 0.6),
+                                                may_change=1)
+
+
         # Assign shaders
         if tex.get_z_size() <= 1:
             if tex.get_texture_type() == Texture.TT_buffer_texture:
@@ -75,6 +90,9 @@ class TexturePreview(DraggableWindow):
                                                   x=710, y=70, size=18,
                                                   color=Vec3(0.6, 0.6, 0.6),
                                                   may_change=1)
+
+
+
             if tex.get_texture_type() == Texture.TT_2d_texture_array:
                 image.set_shader(self._display_2d_tex_array_shader)
             else:
@@ -82,6 +100,7 @@ class TexturePreview(DraggableWindow):
         image.set_shader_input("viewSize",
                                LVecBase2i(int(scale_x * w), int(scale_y * h)))
         image.set_shader_input("slice", 0)
+        image.set_shader_input("mipmap", 0)
         self._preview_image = image
         self.show()
 
@@ -89,6 +108,11 @@ class TexturePreview(DraggableWindow):
         idx = int(self._slice_slider.get_value())
         self._preview_image.set_shader_input("slice", idx)
         self._slice_text.set_text("Slice: " + str(idx))
+
+    def _set_mip(self):
+        idx = int(self._mip_slider.get_value())
+        self._preview_image.set_shader_input("mipmap", idx)
+        self._mip_text.set_text("Mipmap: " + str(idx))
 
     def _create_shaders(self):
         """ Create the shaders to display the textures """

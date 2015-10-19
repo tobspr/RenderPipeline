@@ -183,6 +183,8 @@ class BufferViewer(DraggableWindow):
                                           parent=node, x=10, y=40,
                                           transparent=False)
 
+            preview.set_shader_input("mipmap", 0)
+
             if stage_tex.get_z_size() <= 1:
                 if stage_tex.get_texture_type() == Texture.TT_buffer_texture:
                     preview.set_shader(self._display_buffer_tex_shader)

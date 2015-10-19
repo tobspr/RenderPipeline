@@ -13,6 +13,7 @@ class StageManager(DebugObject):
     # This defines the order of all stages, in case they are attached
     _STAGE_ORDER = [
         "GBufferStage",
+        "DownscaleZStage",
         "FlagUsedCellsStage",
         "CollectUsedCellsStage",
         "CullLightsStage",
