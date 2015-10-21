@@ -29,11 +29,14 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
         return vec3(0);
     }
 
-
     // Raytracing constants
     const int loop_max = 256;
-    const float ray_epsilon = 1.01;
+    const float ray_epsilon = 1.0005;
     const float hit_bias = 0.002;
+
+    // Limit the maximum amount of mipmaps. This important, choosing a too
+    // high value will introduce artifacts.
+    const int max_mips = 7;
 
     // Iteration parameters
     int mipmap = 0;
@@ -43,7 +46,8 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
     vec3 pos = ray_start;
 
     // Move pos by a small bias to avoid self intersection
-    pos += ray_dir * 0.01;
+    pos += ray_dir * 0.02;
+
 
     while (mipmap > -1 && max_iter --> 0)
     {
@@ -78,10 +82,10 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
 
         // The maximum k is the minimum of the both sub-k's since if one component-maximum
         // is reached, the ray is out of the cell
-        float max_k = min(max_k_v.x, max_k_v.y);
+        float max_k = min(max_k_v.x, max_k_v.y) + hit_bias;
 
         // Same applies to the min_k, but because min_k is negative we have to use max()
-        float min_k = min(min_k_v.x, min_k_v.y);
+        float min_k = min(min_k_v.x, min_k_v.y) - hit_bias;
 
         // Fetch the current minimum cell plane height
         float cell_z = textureLod(DownscaledDepth, pos.xy, mipmap).x;
@@ -93,7 +97,7 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
         float k = (cell_z - pos.z) / ray_dir.z;
 
         // Check if we intersected the cell
-        if (k < max_k + hit_bias)
+        if (k < max_k)
         {
 
             // Optional: Abort when ray didn't exactly intersect:
@@ -113,16 +117,35 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
             // mipmap:
             mipmap -= 1;
         } else {
-            // If we hit nothing, move to the next cell, with a small bias
+            // If we hit nothing, move to the next cell and mipmap, with a small bias
+
             pos += max_k * ray_dir * ray_epsilon;
-            mipmap += 1;
+
+            mipmap = min(mipmap + 1, max_mips);
         }
-
     }
-
     return vec3(0);
 }
 
+vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
+{
+
+    vec3 intersection = trace_ray(ro, rd);
+    if(length(intersection) > 0.0001 && distance(intersection.xy, texcoord) > 0.001) {
+
+        vec3 intersected_color = texture(ShadedScene, intersection.xy).xyz;
+        vec3 intersected_normal = get_gbuffer_normal(GBuffer1, intersection.xy);
+
+        float dprod = dot(intersected_normal, m.normal);
+        float fade_factor = 1.0 - saturate(dprod * 1.0);
+
+        return intersected_color * fade_factor;
+    }
+
+    return vec3(0, 0, 0);
+
+
+}
 
 void main() { 
 
@@ -152,11 +175,15 @@ void main() {
 
 
 
-        vec3 intersection_coord = trace_ray(ray_origin, ray_direction);
-        intersection_coord.z = 0.0;
-        if (length(intersection_coord) > 0.001) {
-        sslr_result = texture(ShadedScene, intersection_coord.xy).xyz;
-        }
+
+
+        sslr_result = trace_ray_smart(m, ray_origin, ray_direction);
+
+        // vec3 intersection_coord = trace_ray(ray_origin, ray_direction);
+        // intersection_coord.z = 0.0;
+        // if (length(intersection_coord) > 0.001) {
+        // sslr_result = texture(ShadedScene, intersection_coord.xy).xyz;
+        // }
         // sslr_result = intersection_coord;
 
     }
@@ -164,5 +191,5 @@ void main() {
 
 
     result = texture(ShadedScene, texcoord);
-    result.xyz = sslr_result;
+    result.xyz += sslr_result;
 }

@@ -70,4 +70,8 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
     return m;
 }
 
+vec3 get_gbuffer_normal(sampler2D GBuffer1, vec2 texcoord) {
+    return normalize(texture(GBuffer1, texcoord).xyz * 2 - 1);
+}
+
 #endif

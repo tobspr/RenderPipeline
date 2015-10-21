@@ -1,6 +1,7 @@
 
 
 import _winreg
+import platform
 
 def get_key_values(parent_key, key):
 
@@ -25,18 +26,14 @@ def get_key_values(parent_key, key):
 def get_installed_vc_versions():
 
     key = "SOFTWARE\Microsoft\VisualStudio\SxS\VS7\\"
-    key_x64 = "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VS7\\"
+        
+    if platform.architecture()[0] == "64bit":
+        key = "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VS7\\"
     installed_versions = get_key_values(_winreg.HKEY_LOCAL_MACHINE, key)
-    installed_versions_64 = get_key_values(_winreg.HKEY_LOCAL_MACHINE, key_x64)
 
     merged_values = {}
 
     for data in installed_versions:
-        version, path = data[0], data[1]
-        merged_values[version] = path
-        
-    # Override versions if we found a path in the x64 reg
-    for data in installed_versions_64:
         version, path = data[0], data[1]
         merged_values[version] = path
 

@@ -70,16 +70,18 @@ class MainApp(ShowBase):
         # plane.set_scale(1)
         plane.reparent_to(render)
         
-        panda = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
-        # panda = loader.loadModel("box")
-        # panda.set_scale(3.0)
+        # panda = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        panda = loader.loadModel("Models/Sponza.ignore/Scene.bam")
+        # panda = loader.loadModel("panda")
+        # panda = loader.loadModel("environment")
+        # panda.set_scale(0.1)
         panda.reparent_to(render)
 
         self.render_pipeline.create_default_skybox()
         self.lights = []
 
         # Add some random lights
-        sqr = 2
+        sqr = 4
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()

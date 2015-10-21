@@ -81,7 +81,6 @@ try:
 except OSError:
     error("Could not find python on your path")
 
-
 print_step("Checking if the repo is complete ..")
 check_repo_complete()
 
