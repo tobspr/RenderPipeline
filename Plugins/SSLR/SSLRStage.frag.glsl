@@ -21,119 +21,145 @@ in vec2 texcoord;
 out vec4 result;
 
 
+vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
+{   
+
+    // Don't trace rays facing towards the camera
+    if (ray_dir.z < 0.0) {
+        return vec3(0);
+    }
+
+
+    // Raytracing constants
+    const int loop_max = 256;
+    const float ray_epsilon = 1.01;
+    const float hit_bias = 0.002;
+
+    // Iteration parameters
+    int mipmap = 0;
+    int max_iter = loop_max;
+    ivec2 work_size = SCREEN_SIZE_INT;
+    ray_dir = normalize(ray_dir);
+    vec3 pos = ray_start;
+
+    // Move pos by a small bias to avoid self intersection
+    pos += ray_dir * 0.01;
+
+    while (mipmap > -1 && max_iter --> 0)
+    {
+
+        // Check if we are out of screen bounds, if so, return
+        if (pos.x < 0.0 || pos.y < 0.0 || pos.x > 1.0 || pos.y > 1.0)
+        {
+            return vec3(0,0,0);
+        }
+
+        work_size = textureSize(DownscaledDepth, mipmap).xy;
+
+   
+        // Compute the fractional part of the coordinate (scaled by the working size)
+        // so the values will be between 0.0 and 1.0
+        vec2 fract_coord = mod(pos.xy * work_size, 1.0);
+
+        // Modify fract coord based on which direction we are stepping in.
+        // Fract coord now contains the percentage how far we moved already in
+        // the current cell in each direction.  
+        fract_coord.x = ray_dir.x > 0.0 ? fract_coord.x : 1.0 - fract_coord.x;
+        fract_coord.y = ray_dir.y > 0.0 ? fract_coord.y : 1.0 - fract_coord.y;
+
+        // Compute maximum k and minimum k for which the ray would still be
+        // inside of the cell.
+        vec2 max_k_v = (1.0 / abs(ray_dir.xy)) / work_size.xy;
+        vec2 min_k_v = -max_k_v * fract_coord.xy;
+
+        // Scale the maximum k by the percentage we already processed in the current cell,
+        // since e.g. if we already moved 50%, we can only move another 50%.
+        max_k_v *= 1.0 - fract_coord.xy;
+
+        // The maximum k is the minimum of the both sub-k's since if one component-maximum
+        // is reached, the ray is out of the cell
+        float max_k = min(max_k_v.x, max_k_v.y);
+
+        // Same applies to the min_k, but because min_k is negative we have to use max()
+        float min_k = min(min_k_v.x, min_k_v.y);
+
+        // Fetch the current minimum cell plane height
+        float cell_z = textureLod(DownscaledDepth, pos.xy, mipmap).x;
+        
+        // Check if the ray intersects with the cell plane. We have the following
+        // equation: 
+        // pos.z + k * ray_dir.z = cell.z
+        // So k is:
+        float k = (cell_z - pos.z) / ray_dir.z;
+
+        // Check if we intersected the cell
+        if (k < max_k + hit_bias)
+        {
+
+            // Optional: Abort when ray didn't exactly intersect:
+            // if (k < min_k - hit_bias && mipmap <= 0) {
+            //     return vec3(0);
+            // } 
+
+            // Clamp k
+            k = max(min_k, k);
+ 
+            if (mipmap <= 0) {
+                pos += k * ray_dir * ray_epsilon;
+                return pos;
+            }
+
+            // If we hit anything at a higher mipmap, step up to a higher detailed
+            // mipmap:
+            mipmap -= 1;
+        } else {
+            // If we hit nothing, move to the next cell, with a small bias
+            pos += max_k * ray_dir * ray_epsilon;
+            mipmap += 1;
+        }
+
+    }
+
+    return vec3(0);
+}
+
+
 void main() { 
 
     
+    vec3 sslr_result = vec3(0);
+
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
     vec3 view_dir = normalize(m.position - cameraPosition);
-
     vec3 reflected_dir = reflect(view_dir, m.normal );
 
-    vec3 target_pos = m.position + reflected_dir * 0.5;
+    float scale_factor = 0.1 + saturate(distance(m.position, cameraPosition) / 1000.0) * 10.0;
+
+    vec3 target_pos = m.position + reflected_dir * scale_factor;
     vec4 transformed_pos = currentViewProjMat * vec4(target_pos, 1);
     transformed_pos.xyz /= transformed_pos.w;
     transformed_pos.xyz = transformed_pos.xyz * 0.5 + 0.5;
 
-    vec3 curr_pos = vec3(texcoord, textureLod(DownscaledDepth, texcoord, 0).x);
-    vec3 raydir = normalize(transformed_pos.xyz - curr_pos);
-    // curr_pos += raydir * 0.001;
-    vec3 sslr_result = vec3(0);
+    float pixel_depth = textureLod(DownscaledDepth, texcoord, 0).x;
 
-    bool hit = true;
+    if (distance(m.position, cameraPosition) > 1000) {
 
-    int mip = 0;
-    int num_iter = 256;
-    vec2 mip_size = vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    } else {
 
-    float movebias = 0.01;
-    float searchbias = 0.00;
-
-    float mc_x = 1.0 / abs(raydir.x);
-    float mc_y = 1.0 / abs(raydir.x);
+        vec3 ray_origin = vec3(texcoord, pixel_depth);
+        vec3 ray_dest = transformed_pos.xyz;
+        vec3 ray_direction = normalize(ray_dest - ray_origin);
 
 
-    while (mip > -1 && mip < 10 && num_iter --> 0) {
-        
-        // Find fraction of pixel coordinate
-        vec2 fract_coord = fract(curr_pos.xy * mip_size);
 
-        // Find out wheter to march up or down
-        float step_x = raydir.x > 0.0 ? 1.0 - fract_coord.x : fract_coord.x;
-        float step_y = raydir.y > 0.0 ? 1.0 - fract_coord.y : fract_coord.y;
-
-        // Divide by the mip size since we multiplied by that before
-        step_x /= mip_size.x;
-        step_y /= mip_size.y;
-        
-        // Normalize the offset by the raymarch direction
-        step_x /= abs(raydir.x);
-        step_y /= abs(raydir.y);
-
-        // March by the smallest distance required to move to the 
-        // next cell. A small bias is used to make sure we actually move
-        // into the next cell.
-        float step_c = min(mc_x / mip_size.x, mc_y / mip_size.y);
-
-        float final_step = min(step_x, step_y);
-        curr_pos += raydir * final_step * (1.0 + movebias);
-
-        float depth_bias = raydir.z * step_c;
-
-        // curr_pos = saturate(curr_pos);
-        // depth_bias = 0.0;
-
-        vec2 cell_z = textureLod(DownscaledDepth, curr_pos.xy, mip).xy;
-        float cell_min = cell_z.x;
-        float cell_max = cell_z.y;
-
-        float start_z = curr_pos.z;
-        float end_z = start_z + depth_bias;
-
-        // Intersection
-        if (start_z > cell_min || end_z > cell_min) {
-            if (start_z < cell_max || end_z < cell_max) {
-                // hit = true;
-                break;
-            } else {
-                mip --;
-                mip_size *= 2.0;
-            }
-        } else {
-            mip ++;
-            mip_size /= 2.0;
+        vec3 intersection_coord = trace_ray(ray_origin, ray_direction);
+        intersection_coord.z = 0.0;
+        if (length(intersection_coord) > 0.001) {
+        sslr_result = texture(ShadedScene, intersection_coord.xy).xyz;
         }
+        // sslr_result = intersection_coord;
 
-
-        // // Increase mip level?
-        // if (depth_diff < 0.0) {
-        //     mip ++;
-        //     mip_size /= 2.0;
-        // } 
-
-        // // Decrease mip level?
-        // if (depth_diff > 0.0) {
-        //     mip --;
-        //     mip_size *= 2.0;
-        // }
     }
-
-
-    if (hit) {
-        if (any(lessThan(curr_pos.xy, vec2(0))) || any(greaterThan(curr_pos.xy, vec2(1)))) {
-
-        } else {        
-
-            vec3 hit_normal = normalize(texture(GBuffer1, curr_pos.xy).xyz);
-
-            if (dot(hit_normal, m.normal) > 0.8) {
-
-            } else {
-                sslr_result = texture(ShadedScene, curr_pos.xy).xyz;
-            }
-        }
-    }
-
-    // sslr_result = vec3( mip / 5.0);
 
 
 
