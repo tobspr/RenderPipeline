@@ -30,9 +30,9 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
     }
 
     // Raytracing constants
-    const int loop_max = 256;
+    const int loop_max = 512;
     const float ray_epsilon = 1.0005;
-    const float hit_bias = 0.002;
+    const float hit_bias = 0.001;
 
     // Limit the maximum amount of mipmaps. This important, choosing a too
     // high value will introduce artifacts.
@@ -46,7 +46,7 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
     vec3 pos = ray_start;
 
     // Move pos by a small bias to avoid self intersection
-    pos += ray_dir * 0.02;
+    pos += ray_dir * 0.005;
 
 
     while (mipmap > -1 && max_iter --> 0)
@@ -55,7 +55,7 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
         // Check if we are out of screen bounds, if so, return
         if (pos.x < 0.0 || pos.y < 0.0 || pos.x > 1.0 || pos.y > 1.0)
         {
-            return vec3(0,0,0);
+            return vec3(0);
         }
 
         work_size = textureSize(DownscaledDepth, mipmap).xy;
@@ -101,8 +101,8 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
         {
 
             // Optional: Abort when ray didn't exactly intersect:
-            // if (k < min_k - hit_bias && mipmap <= 0) {
-            //     return vec3(0);
+            // if (k < 0.0 && mipmap <= 0) {
+                // return vec3(0);
             // } 
 
             // Clamp k
@@ -137,7 +137,9 @@ vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
         vec3 intersected_normal = get_gbuffer_normal(GBuffer1, intersection.xy);
 
         float dprod = dot(intersected_normal, m.normal);
-        float fade_factor = 1.0 - saturate(dprod * 1.0);
+        float fade_factor = 1.0 - saturate(dprod * 10.5);
+        // fade_factor = step(dprod, 0.02);
+        // fade_factor = 1.0;
 
         return intersected_color * fade_factor;
     }
