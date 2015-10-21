@@ -5,30 +5,35 @@ project (RSNative)
 set(CMAKE_BUILD_TYPE "Release")
 
 if (WIN32)
+
+  set(PYTHON_EXECUTABLE "ppython")
   
-  # Default settings for windows. Usually you only have to adjust this two variables
-  set(WIN_PANDA_PATH "D:/P3D/1.9GIT")
-  set(BUILD_DIR_NAME "built_x64_buffered")
+  # Find panda path
+  EXECUTE_PROCESS(
+    COMMAND "${PYTHON_EXECUTABLE}" "Scripts/pandapath.py"
+    OUTPUT_VARIABLE WIN_PANDA_PATH
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+
+
+  set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/thirdparty")
 
   # These vars are based on the WIN_PANDA_PATH and usually are correct
-  set(PANDA_BIN "${WIN_PANDA_PATH}/${BUILD_DIR_NAME}/bin")
-  set(PANDA_LIBRARY_DIRS "${WIN_PANDA_PATH}/${BUILD_DIR_NAME}/lib")
-  set(PANDA_INCLUDE_DIR "${WIN_PANDA_PATH}/${BUILD_DIR_NAME}/include")
-  set(PANDA_THIRDPARTY "${WIN_PANDA_PATH}/thirdparty/win-libs-vc10-x64")
+  set(PANDA_BIN "${WIN_PANDA_PATH}/bin")
+  set(PANDA_LIBRARY_DIRS "${WIN_PANDA_PATH}/lib")
+  set(PANDA_INCLUDE_DIR "${WIN_PANDA_PATH}/include")
 
-  set(PYTHON_LIBRARIES "${WIN_PANDA_PATH}/${BUILD_DIR_NAME}/python/libs/python27.lib")
-  set(PYTHON_INCLUDE_DIRS "${WIN_PANDA_PATH}/${BUILD_DIR_NAME}/python/include")
-  set(PYTHON_EXECUTABLE "${WIN_PANDA_PATH}/${BUILD_DIR_NAME}/python/python.exe")
+  set(PYTHON_LIBRARIES "${WIN_PANDA_PATH}/python/libs/python27.lib")
+  set(PYTHON_INCLUDE_DIRS "${WIN_PANDA_PATH}/python/include")
 
   set(BULLET_LIBRARIES "")
-  set(BULLET_INCLUDE_DIRS "${PANDA_THIRDPARTY}/bullet/include")
-  set(EIGEN_INCLUDE_DIRS "${PANDA_THIRDPARTY}/eigen/include")
+  set(BULLET_INCLUDE_DIRS "${THIRDPARTY_DIR}/bullet/include")
+  set(EIGEN_INCLUDE_DIRS "${THIRDPARTY_DIR}/eigen/include")
 
   # Check if all supplied files exist
-  set(CHECK_PATHS ${PANDA_BIN} ${PANDA_LIBS} ${PANDA_LIBRARY_DIRS} ${PANDA_INCLUDE_DIR} ${PYTHON_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_EXECUTABLE} ${PANDA_THIRDPARTY})
+  set(CHECK_PATHS ${PANDA_BIN} ${PANDA_LIBRARY_DIRS} ${PANDA_INCLUDE_DIR} ${PYTHON_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${THIRDPARTY_DIR})
   foreach(PATH ${CHECK_PATHS})
     if(NOT (EXISTS "${PATH}"))
-        message(FATAL_ERROR "The supplied path '${PATH}' does not exist! Correct the path in Native/CMakeLists.txt (Line 10 and 11)!")
+        message(FATAL_ERROR "The supplied path '${PATH}' could not be found!")
     endif()
   endforeach()
 

@@ -25,7 +25,7 @@ else:
 
 if not os.path.isdir(output_path):
     try:
-        os.makedirs(output_path)
+        os.makedirs(output_pth)
     except:
         error("Failed to create output dir!")
 
@@ -36,7 +36,21 @@ print("Running cmake ..")
 cmake_args = []
 
 if platform.system() == "Windows":
-   cmake_args += ['-GVisual Studio 10 2010 Win64']
+    
+    # find visual studio studio
+    from vc_api import get_installed_vc_versions
+    versions = get_installed_vc_versions()
+    if "10.0" in versions:
+        cmake_args += ['-GVisual Studio 10 2010']
+    else:
+        if len(versions) < 1:
+            print("WARNING: No installed Visual Studio version found! Trying to")
+            print("compile with default compiler, but this might fail!")
+        else:
+            print("WARNING: Could not find Visual studio 2010! Trying to compile with")
+            print("default compiler, but this might fail!")
+            print("Installed visual studio versions: " + ','.join(versions.keys()))
+
 
 try:
     subprocess.check_output(["cmake", "../"] + cmake_args, stderr=sys.stderr)

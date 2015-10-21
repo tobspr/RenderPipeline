@@ -23,11 +23,28 @@ def do_compile():
     print("Trying to compile the solution ..")
 
     if platform.system() == "Windows":
-        # print("ERROR: Only windows supported yet, to build on linux", file=sys.stderr)
-        # print("cd into Linux/ and manually compile with g++", file=sys.stderr)
-        # sys.exit(1)
 
-        devenv_pth = "C:/Program Files (x86)/Microsoft Visual Studio 10.0/Common7/IDE/devenv.exe"
+        # Find used visual studio version
+        from vc_api import get_installed_vc_versions
+        vc_versions = get_installed_vc_versions()
+
+        vc_version = None
+
+        if "10.0" in vc_versions:
+            vc_version = "10.0"
+        
+        elif len(vc_versions.keys()) > 0:
+            # Use highest possible version
+            vc_version = list(sorted(vc_versions.keys()))[-1]
+            print("WARNING: Could not find Visual Studio 2010. Using highest available", file=sys.stderr)
+            print("Visual Studio Version (" + vc_version + ").", file=sys.stderr)
+
+        if vc_version is None:
+            print("No installed Visual Studio version found!", file=sys.stderr)
+            return hint_manually_msvc()
+
+        devenv_pth = join(str(vc_versions[vc_version]), "Common7/IDE/devenv.exe")
+
         if not isfile(devenv_pth):
             print("devenv.exe not found! Expected it at:", devenv_pth, file=sys.stderr)
             return hint_manually_msvc()
