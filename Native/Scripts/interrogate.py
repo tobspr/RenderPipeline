@@ -37,12 +37,6 @@ def checkIgnore(source):
 allSources = [i for i in listdir("Source") if isfile(join("Source", i)) and checkIgnore(i) and i.endswith(".h") ]
 
 
-
-# interrogate -v -srcdir panda/src/express -Ipanda/src/express -D CPPPARSER -D __STDC__=1 -D __cplusplus=201103L -D _X86_ -D WIN32_VC -D WIN32 -D _WIN32 -D WIN64_VC -D WIN64 -D _WIN64 -D _MSC_VER=1600 -D "__declspec(param)=" -D __cdecl -D _near -D _far -D __near -D __far -D __stdcall -oc built_x64_buffered/tmp/libp3express_igate.cxx -od built_x64_buffered/pandac/input/libp3express.in -fnames -string -refcount -assert -python-native -Sbuilt_x64_buffered/include/parser-inc -Ipanda/src/express -Sbuilt_x64_buffered/tmp -Sbuilt_x64_buffered/include -Sthirdparty/win-python-x64/include -Sthirdparty/win-libs-vc10-x64/zlib/include -Sthirdparty/win-libs-vc10-x64/openssl/include -Sthirdparty/win-libs-vc10-x64/extras/include -module panda3d.core -library libp3express buffer.h checksumHashGenerator.h circBuffer.h compress_string.h config_express.h copy_stream.h datagram.h datagramGenerator.h datagramIterator.h datagramSink.h dcast.h encrypt_string.h error_
-
-
-
-
 # print("\nRunning interrogate ..")
 
 cmd = [PANDA_BIN + '/interrogate']
@@ -90,10 +84,10 @@ except subprocess.CalledProcessError as msg:
 # print("\nRunning interrogate_module ..")
 cmd = [PANDA_BIN + "/interrogate_module"]
 cmd += ["-python-native"]
-cmd += ["-import panda3d.core"] 
-cmd += ["-module " + MODULE_NAME] 
-cmd += ["-library " + MODULE_NAME] 
-cmd += ["-oc Source/InterrogateModule.cpp"] 
+cmd += ["-import", "panda3d.core"] 
+cmd += ["-module", MODULE_NAME] 
+cmd += ["-library", MODULE_NAME] 
+cmd += ["-oc", "Source/InterrogateModule.cpp"] 
 cmd += ["Source/Interrogate.in"]
 
 try:
