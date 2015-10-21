@@ -15,7 +15,7 @@ if (WIN32)
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
 
-  set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/thirdparty")
+  set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/thirdparty/win-libs-vc10-x64")
 
   # These vars are based on the WIN_PANDA_PATH and usually are correct
   set(PANDA_BIN "${WIN_PANDA_PATH}/bin")

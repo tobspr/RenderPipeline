@@ -25,9 +25,9 @@ else:
 
 if not os.path.isdir(output_path):
     try:
-        os.makedirs(output_pth)
-    except:
-        error("Failed to create output dir!")
+        os.makedirs(output_path)
+    except Exception as msg: 
+        error("Failed to create output dir:", msg)
 
 os.chdir(output_path)
 
@@ -40,16 +40,30 @@ if platform.system() == "Windows":
     # find visual studio studio
     from vc_api import get_installed_vc_versions
     versions = get_installed_vc_versions()
+
+
+    # Specify 64-bit compiler when using a 64 bit panda sdk build
+    bit_suffix = ""
+    if platform.architecture()[0] == "64bit":
+        bit_suffix = " Win64"
+
     if "10.0" in versions:
-        cmake_args += ['-GVisual Studio 10 2010']
+        cmake_args += ['-GVisual Studio 10 2010' + bit_suffix]
     else:
-        if len(versions) < 1:
-            print("WARNING: No installed Visual Studio version found! Trying to")
-            print("compile with default compiler, but this might fail!")
+        if len(versions.keys()) < 1:
+            print("WARNING: No installed Visual Studio version found! Trying to", file=sys.stderr)
+            print("compile with default compiler, but this might fail!", file=sys.stderr)
         else:
-            print("WARNING: Could not find Visual studio 2010! Trying to compile with")
-            print("default compiler, but this might fail!")
-            print("Installed visual studio versions: " + ','.join(versions.keys()))
+            vc_version = list(sorted(versions.keys()))[-1]
+            
+            print("WARNING: Could not find Visual studio 2010! Trying to compile with", file=sys.stderr)
+            print("highest visual studio version (" + vc_version + "), but this might fail!", file=sys.stderr)
+            print("Installed visual studio versions: " + ','.join(versions.keys()), file=sys.stderr)
+
+            vc_int_version = int(float(vc_version))
+
+            cmake_args += ['-GVisual Studio ' + str(vc_int_version) + bit_suffix]
+        
 
 
 try:
