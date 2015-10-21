@@ -8,9 +8,9 @@ import subprocess
 
 
 if len(sys.argv) != 4:
-    print("Invalid arguments!")
-    print("Arguments must be: [panda-bin] [panda-libs] [panda-include]")
-    sys.exit(0)
+    print("Invalid arguments!", file=sys.stderr)
+    print("Arguments must be: [panda-bin] [panda-libs] [panda-include]", file=sys.stderr)
+    sys.exit(1)
 
 # Parameters
 PANDA_BIN = sys.argv[1]
@@ -35,7 +35,7 @@ def checkIgnore(source):
     return True
 
 allSources = [i for i in listdir("Source") if isfile(join("Source", i)) and checkIgnore(i) and i.endswith(".h") ]
-allSourcesStr = ' '.join(['"' + i + '"' for i in allSources])
+
 
 
 # interrogate -v -srcdir panda/src/express -Ipanda/src/express -D CPPPARSER -D __STDC__=1 -D __cplusplus=201103L -D _X86_ -D WIN32_VC -D WIN32 -D _WIN32 -D WIN64_VC -D WIN64 -D _WIN64 -D _MSC_VER=1600 -D "__declspec(param)=" -D __cdecl -D _near -D _far -D __near -D __far -D __stdcall -oc built_x64_buffered/tmp/libp3express_igate.cxx -od built_x64_buffered/pandac/input/libp3express.in -fnames -string -refcount -assert -python-native -Sbuilt_x64_buffered/include/parser-inc -Ipanda/src/express -Sbuilt_x64_buffered/tmp -Sbuilt_x64_buffered/include -Sthirdparty/win-python-x64/include -Sthirdparty/win-libs-vc10-x64/zlib/include -Sthirdparty/win-libs-vc10-x64/openssl/include -Sthirdparty/win-libs-vc10-x64/extras/include -module panda3d.core -library libp3express buffer.h checksumHashGenerator.h circBuffer.h compress_string.h config_express.h copy_stream.h datagram.h datagramGenerator.h datagramIterator.h datagramSink.h dcast.h encrypt_string.h error_
@@ -45,17 +45,18 @@ allSourcesStr = ' '.join(['"' + i + '"' for i in allSources])
 
 # print("\nRunning interrogate ..")
 
-cmd = '"' + PANDA_BIN + '/interrogate" '
-cmd += "-fnames -string -refcount -assert -python-native "
-cmd += "-S" + PANDA_INCLUDE + "/parser-inc "
-cmd += "-S" + PANDA_INCLUDE + "/ "
-cmd += "-I" + PANDA_BIN + "/include/ "
-cmd += "-srcdir \"" + join(cwd, "Source") + "\" "
-cmd += "-oc Source/InterrogateWrapper.cpp "
-cmd += "-od Source/Interrogate.in "
-cmd += "-module " + MODULE_NAME + " "
-cmd += "-library " + MODULE_NAME + " "
-cmd += "-nomangle "
+cmd = [PANDA_BIN + '/interrogate']
+cmd += ["-fnames", "-string", "-refcount", "-assert", "-python-native"]
+cmd += ["-S" + PANDA_INCLUDE + "/parser-inc"]
+cmd += ["-S" + PANDA_INCLUDE + "/"]
+cmd += ["-I" + PANDA_BIN + "/include/"]
+cmd += ["-srcdir",  join(cwd, "Source") ]
+cmd += ["-oc", "Source/InterrogateWrapper.cpp"]
+cmd += ["-od", "Source/Interrogate.in"]
+cmd += ["-module", MODULE_NAME]
+cmd += ["-library", MODULE_NAME]
+
+# cmd += ["-nomangle"]
 
 # Defines required to parse the panda source
 defines = ["CPPPARSER", "__STDC__=1", "__cplusplus=201103L"]
@@ -75,28 +76,31 @@ if COMPILER=="GCC":
         defines += ['__i386__']
 
 for define in defines:
-    cmd += "-D" + define + " "
-cmd += allSourcesStr
+    cmd += ["-D" + define]
+cmd += allSources
 
 try:
-    subprocess.call(cmd, shell=True)
-except Exception as msg:
-    print("Error executing interrogate command:", msg, file=sys.stderr)
+    subprocess.check_output(cmd, stderr=sys.stderr)
+except subprocess.CalledProcessError as msg:
+    print("Error executing interrogate command:", msg, msg.output, file=sys.stderr)
     sys.exit(1)
 
 
 
 # print("\nRunning interrogate_module ..")
-cmd = PANDA_BIN + "/interrogate_module "
-cmd += "-python-native " 
-cmd += "-import panda3d.core " 
-cmd += "-module " + MODULE_NAME + " " 
-cmd += "-library " + MODULE_NAME + " " 
-cmd += "-oc Source/InterrogateModule.cpp " 
-cmd += "Source/Interrogate.in " 
+cmd = [PANDA_BIN + "/interrogate_module"]
+cmd += ["-python-native"]
+cmd += ["-import panda3d.core"] 
+cmd += ["-module " + MODULE_NAME] 
+cmd += ["-library " + MODULE_NAME] 
+cmd += ["-oc Source/InterrogateModule.cpp"] 
+cmd += ["Source/Interrogate.in"]
 
 try:
-    subprocess.call(cmd, shell=True)
-except Exception as msg:
-    print("Error executing interrogate_module command: ", msg, file=sys.stderr)
+    subprocess.check_output(cmd, stderr=sys.stderr)
+except subprocess.CalledProcessError as msg:
+    print("Error executing interrogate_module command: ", msg.output, file=sys.stderr)
     sys.exit(1)
+
+
+sys.exit(0)

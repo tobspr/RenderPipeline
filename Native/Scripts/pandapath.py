@@ -8,7 +8,7 @@ import panda3d
 
 def get_sdk_path():
     pp = os.path.join(os.path.dirname(panda3d.__file__), "..\\")
-    pp = os.path.abspath(pp)
+    pp = os.path.abspath(pp).rstrip("/")
     return pp
 
 if __name__ == "__main__":

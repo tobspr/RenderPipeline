@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 
 """ This script generates the normal quantization texture used by the pipeline,
 based on a paper by cryengine. It also generates the mipmaps """
@@ -10,9 +12,12 @@ sys.path.insert(0, "../../")
 
 from panda3d.core import *
 loadPrcFileData("", "textures-power-2 none")
-loadPrcFileData("", "window-type offscreen")
-loadPrcFileData("", "notify-level-display error")
+# loadPrcFileData("", "window-type offscreen")
+loadPrcFileData("", "win-size 100 100")
 
+# loadPrcFileData("", "notify-level-display error")
+
+print("test")
 import direct.directbase.DirectStart
 from Code.Globals import Globals
 from Code.RenderTarget import RenderTarget

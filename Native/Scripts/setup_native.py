@@ -33,7 +33,7 @@ os.chdir(output_path)
 
 print("Running cmake ..")
 
-cmake_args = []
+cmake_args = ['-DCMAKE_BUILD_TYPE=Release']
 
 if platform.system() == "Windows":
     
@@ -41,6 +41,7 @@ if platform.system() == "Windows":
     from vc_api import get_installed_vc_versions
     versions = get_installed_vc_versions()
 
+    # cmake_args += ['--config', 'Release']
 
     # Specify 64-bit compiler when using a 64 bit panda sdk build
     bit_suffix = ""
@@ -66,19 +67,19 @@ if platform.system() == "Windows":
         
 
 
+
 try:
     subprocess.check_output(["cmake", "../"] + cmake_args, stderr=sys.stderr)
-except Exception as msg:
-    error("cmake failed:", msg)
+except subprocess.CalledProcessError as msg:
+    error("Cmake Error:", msg.output)
 
 print("Compiling solution ..")
 os.chdir(current_dir)
 
 try:
     subprocess.check_output(["python", "compile.py"], stderr=sys.stderr)
-except Exception as msg:
-    error("Compilation failed:", msg)
-
+except subprocess.CalledProcessError as msg:
+    error("Compilation failed:", msg.output)
 
 # Check if the generated binary exists
 if platform.system() == "Windows":

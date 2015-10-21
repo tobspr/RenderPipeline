@@ -5,7 +5,8 @@ from panda3d.core import PNMImage, load_prc_file_data, Texture, NodePath
 from panda3d.core import Shader, ShaderAttrib
 
 load_prc_file_data("", "textures-power-2 none")
-load_prc_file_data("", "window-type offscreen")
+# load_prc_file_data("", "window-type offscreen")
+load_prc_file_data("", "win-size 100 100")
 load_prc_file_data("", "notify-level-display error")
 
 import direct.directbase.DirectStart

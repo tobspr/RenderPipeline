@@ -52,7 +52,7 @@ def do_compile():
         try:
             output = subprocess.check_output([devenv_pth, SOLUTION_PATH, "/build", "Release", "/projectconfig", "Release"], stderr=sys.stderr)
         except subprocess.CalledProcessError as msg:
-            print("Compilation-Error:", msg, file=sys.stderr)
+            print("Compilation-Error:", msg.output, file=sys.stderr)
             return hint_manually_msvc()
 
         print("Success!")
@@ -66,7 +66,7 @@ def do_compile():
         try:
             output = subprocess.check_output(["make"], stderr=sys.stderr)
         except subprocess.CalledProcessError as msg:
-            print("make failed!", file=sys.stderr)
+            print("make failed:", msg.output, file=sys.stderr)
             sys.exit(1)
 
     else:
