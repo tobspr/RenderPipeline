@@ -30,7 +30,7 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
     }
 
     // Raytracing constants
-    const int loop_max = 512;
+    const int loop_max = 128;
     const float ray_epsilon = 1.0005;
     const float hit_bias = 0.001;
 
@@ -127,10 +127,47 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
     return vec3(0);
 }
 
+
+
+
+
+vec3 trace_ray_fast(vec3 ro, vec3 rd) {
+
+    const int mipmap = 3;
+    ivec2 work_size = textureSize(DownscaledDepth, mipmap).xy;
+
+    rd = normalize(rd);
+
+    // Compute step size
+    vec2 ks = 1.0 / abs(rd.xy) / work_size;
+    float kstep = min(ks.x, ks.y) * 1.001;
+    vec3 pos = ro;
+
+    int max_iter = 30;
+
+    while (max_iter --> 0) {
+
+        pos += kstep * rd;
+
+        vec2 cell_z = textureLod(DownscaledDepth, pos.xy, mipmap).xy; 
+
+        if (pos.z > cell_z.y) {
+            return pos;
+        }
+
+    }
+
+    return vec3(0);
+
+}
+
+
+
 vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
 {
 
-    vec3 intersection = trace_ray(ro, rd);
+    // vec3 intersection = trace_ray(ro, rd);
+    vec3 intersection = trace_ray_fast(ro, rd);
     if(length(intersection) > 0.0001 && distance(intersection.xy, texcoord) > 0.001) {
 
         vec3 intersected_color = texture(ShadedScene, intersection.xy).xyz;
@@ -149,6 +186,23 @@ vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
 
 }
 
+
+vec3 get_ray_direction(vec3 position, vec3 normal, vec3 view_dir, vec3 ro) {
+    vec3 reflected_dir = reflect(view_dir, normal );
+
+    float scale_factor = 0.1 + 
+        saturate(distance(position, cameraPosition) / 1000.0) * 10.0;
+
+    vec3 target_pos = position + reflected_dir * scale_factor;
+    vec4 transformed_pos = currentViewProjMat * vec4(target_pos, 1);
+    transformed_pos.xyz /= transformed_pos.w;
+    transformed_pos.xyz = transformed_pos.xyz * 0.5 + 0.5;
+
+    return normalize(transformed_pos.xyz - ro);
+
+
+}
+
 void main() { 
 
     
@@ -156,14 +210,6 @@ void main() {
 
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
     vec3 view_dir = normalize(m.position - cameraPosition);
-    vec3 reflected_dir = reflect(view_dir, m.normal );
-
-    float scale_factor = 0.1 + saturate(distance(m.position, cameraPosition) / 1000.0) * 10.0;
-
-    vec3 target_pos = m.position + reflected_dir * scale_factor;
-    vec4 transformed_pos = currentViewProjMat * vec4(target_pos, 1);
-    transformed_pos.xyz /= transformed_pos.w;
-    transformed_pos.xyz = transformed_pos.xyz * 0.5 + 0.5;
 
     float pixel_depth = textureLod(DownscaledDepth, texcoord, 0).x;
 
@@ -171,15 +217,37 @@ void main() {
 
     } else {
 
+
+
         vec3 ray_origin = vec3(texcoord, pixel_depth);
-        vec3 ray_dest = transformed_pos.xyz;
-        vec3 ray_direction = normalize(ray_dest - ray_origin);
 
 
+        vec3 offs[8] = vec3[](
+            vec3(-0.134, 0.044, -0.825),
+            vec3(0.045, -0.431, -0.529),
+            vec3(-0.537, 0.195, -0.371),
+            vec3(0.525, -0.397, 0.713),
+            vec3(0.895, 0.302, 0.139),
+            vec3(-0.613, -0.408, -0.141),
+            vec3(0.307, 0.822, 0.169),
+            vec3(-0.819, 0.037, -0.388)
+        );
 
+        for (int i = 0; i < 8; i++) {
 
+            vec3 jo = vec3( mod(gl_FragCoord.x, 2.0), mod(gl_FragCoord.y, 2.0), 0.0 );
 
-        sslr_result = trace_ray_smart(m, ray_origin, ray_direction);
+            vec3 ray_direction = get_ray_direction(m.position, normalize(m.normal + (offs[i] +jo) * 0.03), view_dir, ray_origin);
+
+            sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
+
+        }
+
+        sslr_result /= 8.0;
+
+        // sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
+        // sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
+        // sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
 
         // vec3 intersection_coord = trace_ray(ray_origin, ray_direction);
         // intersection_coord.z = 0.0;
