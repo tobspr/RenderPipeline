@@ -76,6 +76,14 @@ class BetterOnscreenImage(DebugObject):
         """ Sets the current image """
         self._node.set_image(img)
 
+    def get_width(self):
+        """ Returns the width of the image in pixels """
+        return self._width
+
+    def get_height(self):
+        """ Returns the height of the image in pixels """
+        return self._height
+
     def set_pos(self, x, y):
         """ Sets the position """
         self._node.set_pos(self._translate_pos(x, y))

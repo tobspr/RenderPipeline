@@ -131,32 +131,92 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
 
 
 
-vec3 trace_ray_fast(vec3 ro, vec3 rd) {
+vec3 trace_ray_fast(vec3 ro, vec3 ray_dir) {
 
-    const int mipmap = 3;
-    ivec2 work_size = textureSize(DownscaledDepth, mipmap).xy;
 
-    rd = normalize(rd);
-
-    // Compute step size
-    vec2 ks = 1.0 / abs(rd.xy) / work_size;
-    float kstep = min(ks.x, ks.y) * 1.001;
-    vec3 pos = ro;
-
-    int max_iter = 30;
-
-    while (max_iter --> 0) {
-
-        pos += kstep * rd;
-
-        vec2 cell_z = textureLod(DownscaledDepth, pos.xy, mipmap).xy; 
-
-        if (pos.z > cell_z.y) {
-            return pos;
-        }
-
+    // Don't trace rays facing towards the camera
+    if (ray_dir.z <= 0.0) {
+        return vec3(0);
     }
 
+    const int mipmap = 4;
+    const float ray_epsilon = 1.0005;
+    const float hit_bias = 0.001;
+    ivec2 work_size = textureSize(DownscaledDepth, mipmap).xy;
+
+    ray_dir = normalize(ray_dir);
+    vec3 pos = ro;
+
+    int max_iter = 50;
+
+    pos += ray_dir * 0.08;
+
+    while (max_iter --> 0)
+    {
+
+        // Check if we are out of screen bounds, if so, return
+        if (pos.x < 0.0 || pos.y < 0.0 || pos.x > 1.0 || pos.y > 1.0)
+        {
+            return vec3(0);
+        }
+   
+        // Compute the fractional part of the coordinate (scaled by the working size)
+        // so the values will be between 0.0 and 1.0
+        vec2 fract_coord = mod(pos.xy * work_size, 1.0);
+
+        // Modify fract coord based on which direction we are stepping in.
+        // Fract coord now contains the percentage how far we moved already in
+        // the current cell in each direction.  
+        fract_coord.x = ray_dir.x > 0.0 ? fract_coord.x : 1.0 - fract_coord.x;
+        fract_coord.y = ray_dir.y > 0.0 ? fract_coord.y : 1.0 - fract_coord.y;
+
+        // Compute maximum k and minimum k for which the ray would still be
+        // inside of the cell.
+        vec2 max_k_v = (1.0 / abs(ray_dir.xy)) / work_size.xy;
+        vec2 min_k_v = -max_k_v * fract_coord.xy;
+
+        // Scale the maximum k by the percentage we already processed in the current cell,
+        // since e.g. if we already moved 50%, we can only move another 50%.
+        max_k_v *= 1.0 - fract_coord.xy;
+
+        // The maximum k is the minimum of the both sub-k's since if one component-maximum
+        // is reached, the ray is out of the cell
+        float max_k = min(max_k_v.x, max_k_v.y) + hit_bias;
+
+        // Same applies to the min_k, but because min_k is negative we have to use max()
+        float min_k = max(min_k_v.x, min_k_v.y) - hit_bias;
+
+        // Fetch the current minimum cell plane height
+        vec2 cell_z = textureLod(DownscaledDepth, pos.xy, mipmap).xy;
+        float zmin = cell_z.x;
+        float zmax = cell_z.x;
+
+        float zstart = pos.z + min_k * ray_dir.z;
+        float zend = pos.z + max_k * ray_dir.z;
+
+        // Check if the ray intersects with the cell plane. We have the following
+        // equation: 
+        // pos.z + k * ray_dir.z = cell.z
+        // So k is:
+        // float k = (cell_z - pos.z) / ray_dir.z;
+
+        // float z_start = pos + k 
+
+        // Check if we intersected the cell
+        if ( (zstart > zmin && zstart < zmax) || (zend > zmin && zend < zmax) || (zstart < zmin && zstart > zmax) )
+        {
+            // Clamp k
+            // k = max(min_k, k);
+ 
+            pos += max_k * ray_dir * ray_epsilon;
+            return pos;
+
+        } 
+        // If we hit nothing, move to the next cell and mipmap, with a small bias
+        pos += max_k * ray_dir * ray_epsilon;
+
+
+    }
     return vec3(0);
 
 }
@@ -174,7 +234,7 @@ vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
         vec3 intersected_normal = get_gbuffer_normal(GBuffer1, intersection.xy);
 
         float dprod = dot(intersected_normal, m.normal);
-        float fade_factor = 1.0 - saturate(dprod * 10.5);
+        float fade_factor = 1.0 - saturate( (dprod) * 3.5);
         // fade_factor = step(dprod, 0.02);
         // fade_factor = 1.0;
 
@@ -237,7 +297,7 @@ void main() {
 
             vec3 jo = vec3( mod(gl_FragCoord.x, 2.0), mod(gl_FragCoord.y, 2.0), 0.0 );
 
-            vec3 ray_direction = get_ray_direction(m.position, normalize(m.normal + (offs[i] +jo) * 0.03), view_dir, ray_origin);
+            vec3 ray_direction = get_ray_direction(m.position, normalize(m.normal + (offs[i] +jo) * 0.008), view_dir, ray_origin);
 
             sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
 

@@ -24,7 +24,7 @@ class OnscreenDebugger(DebugObject):
     """ This class manages the onscreen gui """
 
     def __init__(self, pipeline):
-        DebugObject.__init__(self, "OnscreenDebugger")
+        DebugObject.__init__(self)
         self.debug("Creating debugger")
         self._pipeline = pipeline
 

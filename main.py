@@ -46,12 +46,14 @@ sys.path.insert(0, "../")
 from RenderPipeline import *
 from RenderPipeline.Code.Util.MovementController import MovementController
 
+
 class MainApp(ShowBase):
 
     def __init__(self):
 
 
         self.render_pipeline = RenderPipeline(self)
+        self.render_pipeline.set_default_loading_screen()
 
         # Set the base path and mount the directories
         self.render_pipeline.get_mount_manager().set_base_path(".")
@@ -70,8 +72,8 @@ class MainApp(ShowBase):
         # plane.set_scale(1)
         plane.reparent_to(render)
         
-        # panda = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
-        panda = loader.loadModel("Models/Sponza.ignore/Scene.bam")
+        panda = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        # panda = loader.loadModel("Models/Sponza.ignore/Scene.bam")
         # panda = loader.loadModel("panda")
         # panda = loader.loadModel("environment")
         # panda.set_scale(0.1)

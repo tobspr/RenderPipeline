@@ -20,7 +20,7 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
     int cubemap_size = textureSize(map, 0).x;
     float num_mipmaps = 1 + floor(log2(cubemap_size));
     float reflectivity = 1.0 - roughness;
-    return num_mipmaps - 2 - reflectivity * 8.0;
+    return num_mipmaps - 2 - reflectivity * 12.0;
 }
 
 

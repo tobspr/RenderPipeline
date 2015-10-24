@@ -94,7 +94,7 @@ class MovementController:
         self._showbase.accept("shift-up", self._set_movement, [2, 0])
 
         # wireframe + debug + buffer viewer
-        # self._showbase.accept("f3", self._showbase.toggle_wireframe)
+        self._showbase.accept("f3", self._showbase.toggleWireframe)
         self._showbase.accept("p",  self._show_debug_output)
 
         # mouse

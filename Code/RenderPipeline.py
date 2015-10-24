@@ -19,6 +19,7 @@ from .Effects.EffectLoader import EffectLoader
 from .PluginInterface.PluginManager import PluginManager
 from .RenderTarget import RenderTarget
 from .GUI.OnscreenDebugger import OnscreenDebugger
+from .GUI.PipelineLoadingScreen import PipelineLoadingScreen, EmptyLoadingScreen
 
 class RenderPipeline(DebugObject):
 
@@ -30,16 +31,30 @@ class RenderPipeline(DebugObject):
         """ Creates a new pipeline with a given showbase instance. This should be
         done before intializing the ShowBase, the pipeline will take care of that. """
         DebugObject.__init__(self, "RenderPipeline")
-        self.debug("Starting pipeline, using Python" + str(sys.version_info.major))
+        self.debug("Starting pipeline, using Python", sys.version_info.major)
         self._showbase = showbase
         self._mount_manager = MountManager(self)
         self._settings = PipelineSettings(self)
+        self._loading_screen = EmptyLoadingScreen()
 
     def get_mount_manager(self):
         """ Returns a handle to the mount manager. This can be used for setting
         the base path and also modifying the temp path. See the MountManager
         documentation for further information. """
         return self._mount_manager
+
+    def set_loading_screen(self, loading_screen):
+        """ Sets a loading screen to be used while loading the pipeline. When
+        the pipeline gets constructed (and creates the showbase), create()
+        will be called on the object. During the loading progress, 
+        progress(msg) will be called. After the loading is finished,
+        remove() will be called. If a custom loading screen is passed, those
+        methods should be implemented. """
+        self._loading_screen = loading_screen
+
+    def set_default_loading_screen(self):
+        """ Tells the pipeline to use the default loading screen. """
+        self._loading_screen = PipelineLoadingScreen(self)
 
     def load_settings(self, path):
         """ Loads the pipeline configuration from a given filename. Usually this
@@ -80,7 +95,7 @@ class RenderPipeline(DebugObject):
         return skybox
 
     def get_plugin_mgr(self):
-        """ Returns a handle to the pl ugin manager, this can be used to trigger
+        """ Returns a handle to the plugin manager, this can be used to trigger
         hooks """
         return self._plugin_mgr
 
@@ -126,6 +141,9 @@ class RenderPipeline(DebugObject):
         # Connect the render target output function to the debug object
         RenderTarget.RT_OUTPUT_FUNC = lambda *args: DebugObject.global_warn("RenderTarget", *args[1:])
 
+        # Create the loading screen
+        self._loading_screen.create()
+
         # Adjust the camera settings
         self._adjust_camera_settings()
 
@@ -154,6 +172,9 @@ class RenderPipeline(DebugObject):
         self.set_effect(Globals.render, "Effects/Default.yaml", {}, -10)
 
         self._plugin_mgr.trigger_hook("on_pipeline_create")
+
+        # Hide the loading screen
+        self._loading_screen.remove()
 
     def reload_shaders(self):
         """ Reloads all shaders """
