@@ -15,9 +15,9 @@ with open(dest, "w") as handle:
     pass
 
 # model = loader.loadModel("Scene.bam")
-model = loader.loadModel("panda")
-model.flatten_strong()
-# model = loader.loadModel("test_model.bam")
+# model = loader.loadModel("panda")
+model = loader.loadModel("test_model.bam")
+# model.flatten_strong()
 
 
 geom_nodes = model.find_all_matches("**/+GeomNode")
@@ -27,3 +27,4 @@ for geom_node in geom_nodes:
         geom = geom_node.get_geom(geom_idx)
         geom_state = geom_node.get_geom_state(geom_idx)
         MeshSplitter.split_geom(geom, "model.rpsg", True)
+        sys.exit(0)

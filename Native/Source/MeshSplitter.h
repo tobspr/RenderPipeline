@@ -8,7 +8,7 @@
 #include "pvector.h"
 #include "filename.h"
 
-#define TRI_GROUP_SIZE 32
+#define TRI_GROUP_SIZE 256
 
 
 class MeshSplitter {
@@ -21,9 +21,11 @@ class MeshSplitter {
         struct Vertex {
             LVecBase3f pos;
             LVecBase3f normal;
+            LVecBase2f uv;
 
             Vertex() {};
-            Vertex(LVecBase3f c_pos, LVecBase3f c_nrm) : pos(c_pos), normal(c_nrm) {};
+            Vertex(const LVecBase3f &c_pos, const LVecBase3f &c_nrm, const LVecBase2f &c_uv) 
+                : pos(c_pos), normal(c_nrm), uv(c_uv) {};
         };
 
         struct Triangle {
@@ -44,6 +46,7 @@ class MeshSplitter {
 
 
     PUBLISHED:
+
         static void split_geom(CPT(Geom) geom, const Filename &dest, bool append = false);
 
     private:

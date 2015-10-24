@@ -22,3 +22,4 @@ Native/Windows
 Native/Linux
 Native/Source/Interrogate*
 Plugins/Scattering/Tex
+*.rpsg

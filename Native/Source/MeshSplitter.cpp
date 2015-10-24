@@ -5,6 +5,8 @@
 #include <limits.h>
 #include <algorithm>
 
+#include "datagram.h"
+
 
 void MeshSplitter::split_geom(CPT(Geom) geom, const Filename &dest, bool append) {
 
@@ -44,19 +46,32 @@ void MeshSplitter::split_geom(CPT(Geom) geom, const Filename &dest, bool append)
     cout << "Writing out model file .." << endl;
     ofstream outp(dest.get_fullpath(), ios_base::app);
 
+    Datagram dg;
+
+    dg.add_string("RPSG");
+    dg.add_uint32(results.size());
+
     for (TriangleResultList::iterator rstart = results.begin(); rstart != results.end(); ++rstart) {
+
+        dg.add_uint32((*rstart)->triangles.size());
 
         for (TriangleList::iterator start = (*rstart)->triangles.begin(); start != (*rstart)->triangles.end(); ++start) {
             Triangle *tri = *start;
             for (int i = 0; i < 3; ++i) {
-                outp << tri->vertices[i].pos.get_x() << ",";
-                outp << tri->vertices[i].pos.get_y() << ",";
-                outp << tri->vertices[i].pos.get_z() << "/";
+                dg.add_float32(tri->vertices[i].pos.get_x());
+                dg.add_float32(tri->vertices[i].pos.get_y());
+                dg.add_float32(tri->vertices[i].pos.get_z());
+                dg.add_float32(tri->vertices[i].normal.get_x());
+                dg.add_float32(tri->vertices[i].normal.get_y());
+                dg.add_float32(tri->vertices[i].normal.get_z());
+                dg.add_float32(tri->vertices[i].uv.get_x());
+                dg.add_float32(tri->vertices[i].uv.get_y());
             }
-            outp << "|";
         }
-        outp << endl;
     }
+
+    // dg.write(outp);
+    outp << dg.get_message();
 
     outp.close();
 
@@ -72,6 +87,13 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
     CPT(GeomVertexData) vertex_data = geom->get_vertex_data();
     GeomVertexReader vertex_reader(vertex_data, "vertex");
     GeomVertexReader normal_reader(vertex_data, "normal");
+    GeomVertexReader uv_reader(vertex_data, "texcoord");
+
+    if (!uv_reader.has_column()) {
+        cout << "ERROR: Mesh has no uv coordinates assigned!" << endl;
+        return;
+    }
+
 
     // Collect all triangles
     for (int prim_idx = 0; prim_idx < geom->get_num_primitives(); ++prim_idx) {
@@ -93,10 +115,11 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
                 normal_reader.set_row(vtx_mapped);
                 LVecBase3f vtx_pos = vertex_reader.get_data3f();
                 LVecBase3f vtx_nrm = normal_reader.get_data3f();
+                LVecBase2f vtx_uv = uv_reader.get_data2f();
 
                 // TODO: The vertex position might be in model space. Convert it to
                 // world space first
-                tri->vertices[offs] = Vertex(vtx_pos, vtx_nrm);
+                tri->vertices[offs] = Vertex(vtx_pos, vtx_nrm, vtx_uv);
             }
 
             // Compute the triangle normal
@@ -161,13 +184,10 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
     int size_ok = TRI_GROUP_SIZE * 0.9;
 
 
-    int num_optimization = 0;
+    int num_optimization = 10000;
 
     // Perform the optimization several times
-    while (num_optimization++ < 10000) {
-
-        // if (num_optimization % 500 == 0)
-            // cout << "Optimization " << num_optimization << " of " << 10000 << " (" << results.size() << " strips)" << endl;
+    while (num_optimization --> 0) {
 
         // Iterate over all chunks
         for(TriangleResultList::iterator iter = results.begin(); iter != results.end(); ++iter) {
@@ -183,8 +203,8 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
 
                 // Increase the area twice by its size, to get the search radius
                 LVecBase3f bb_size = (search_max - search_min);
-                search_min -= bb_size * 6.0;
-                search_max += bb_size * 6.0;
+                search_min -= bb_size * 2.0;
+                search_max += bb_size * 2.0;
 
                 // Find all intersecting chunks where this chunk could be merged with
                 TriangleResultList intersecting;
@@ -198,9 +218,10 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
                     continue;
                 } 
 
-                // Find chunk with the biggest size from the neighbours
-                // Chunk* max_arround = *min_element(intersecting.begin(), intersecting.end(), compare_chunk_size);
+                // Find chunk with the smallest size from the neighbours
+                Chunk* closest = *max_element(intersecting.begin(), intersecting.end(), compare_chunk_size);
 
+                /*
                 // Find closest chunk
                 LVecBase3f chunk_mid = (current_chunk->bb_min + current_chunk->bb_max) * 0.5;
                 Chunk *closest = nullptr;
@@ -215,6 +236,8 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
 
                 // This should be always true
                 assert(closest != nullptr);
+
+                */
 
                 // Merge chunks
                 closest->triangles.splice(closest->triangles.begin(), current_chunk->triangles);
