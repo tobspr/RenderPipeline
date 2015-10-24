@@ -9,7 +9,8 @@ import direct.directbase.DirectStart
 from panda3d.core import *
 
 
-model = loader.loadModel("Scene.bam")
+# model = loader.loadModel("Scene.bam")
+model = loader.loadModel("test_model.bam")
 
 
 geom_nodes = model.find_all_matches("**/+GeomNode")

@@ -3,17 +3,74 @@
 #include "MeshSplitter.h"
 
 #include <limits.h>
+#include <algorithm>
 
 
 void MeshSplitter::split_geom(CPT(Geom) geom) {
-    cout << "Splitting geom .." << endl;
+
+
+    cout << "Reading in geometry .." << endl;
+    TriangleList all_triangles;
+    read_triangles(geom, all_triangles);
+
+    cout << "Read in " << all_triangles.size() << " triangles." << endl;
+
+    // Early exit?
+    if (all_triangles.size() < 1) {
+        cout << "Empty geom!" << endl;
+        return;
+    }
+
+
+    cout << "Finding bounding volume .." << endl;
+    LVecBase3f bb_start, bb_end;
+    find_minmax(all_triangles, bb_start, bb_end);
+
+
+    cout << "Traversing recursive to find chunks of size " << TRI_GROUP_SIZE << " ..." << endl;
+    TriangleResultList results;
+
+    traverse_recursive(all_triangles, bb_start, bb_end, results, 10);
+
+    cout << "Found " << results.size() << " Strips! This is an effective count of " << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
+
+    cout << "Optimizing results and merging small chunks .. " << endl;
+    // optimize_results(results);
+
+    cout << "Optimized version has " << results.size() << " Strips! This is an effective count of " << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
+
+
+    // Write results
+    cout << "Writing out model file .." << endl;
+    ofstream outp("model.rpsg");
+
+    for (TriangleResultList::iterator rstart = results.begin(); rstart != results.end(); ++rstart) {
+
+        for (TriangleList::iterator start = (*rstart)->triangles.begin(); start != (*rstart)->triangles.end(); ++start) {
+            Triangle *tri = *start;
+            for (int i = 0; i < 3; ++i) {
+                outp << tri->vertices[i].pos.get_x() << ",";
+                outp << tri->vertices[i].pos.get_y() << ",";
+                outp << tri->vertices[i].pos.get_z() << "/";
+            }
+            outp << "|";
+        }
+        outp << endl;
+    }
+
+    outp.close();
+
+    // TODO: Delete all triangles from all_triangles, since they are not reference counted.
+
+}
+
+
+void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
 
     // Create a vertex reader to simplify the reading of positions
     CPT(GeomVertexData) vertex_data = geom->get_vertex_data();
     GeomVertexReader vertex_reader(vertex_data, "vertex");
     GeomVertexReader normal_reader(vertex_data, "normal");
-
-    TriangleList all_triangles;
 
     // Collect all triangles
     for (int prim_idx = 0; prim_idx < geom->get_num_primitives(); ++prim_idx) {
@@ -33,8 +90,8 @@ void MeshSplitter::split_geom(CPT(Geom) geom) {
                 int vtx_mapped = primitive->get_vertex(vtx_idx);
                 vertex_reader.set_row(vtx_mapped);
                 normal_reader.set_row(vtx_mapped);
-                LVecBase3 vtx_pos = vertex_reader.get_data3f();
-                LVecBase3 vtx_nrm = normal_reader.get_data3f();
+                LVecBase3f vtx_pos = vertex_reader.get_data3f();
+                LVecBase3f vtx_nrm = normal_reader.get_data3f();
 
                 // TODO: The vertex position might be in model space. Convert it to
                 // world space first
@@ -43,32 +100,29 @@ void MeshSplitter::split_geom(CPT(Geom) geom) {
             }
 
             // Compute the triangle normal
-            LVecBase3 v0 = tri->vertices[1].pos - tri->vertices[0].pos;
-            LVecBase3 v1 = tri->vertices[2].pos - tri->vertices[0].pos;
+            LVecBase3f v0 = tri->vertices[1].pos - tri->vertices[0].pos;
+            LVecBase3f v1 = tri->vertices[2].pos - tri->vertices[0].pos;
 
-            LVecBase3 face_normal = v0.cross(v1);
+            LVecBase3f face_normal = v0.cross(v1);
 
             // Make sure the normal points into the right direction, compute
             // the dot product between the normal of the first vertex and the
             // face, if it is negative, we have to swap the normal
             float fv_dot = tri->vertices[0].normal.dot(face_normal);
             tri->face_normal = fv_dot >= 0.0 ? face_normal : face_normal; 
-
-            all_triangles.push_back(tri);
-           
+            result.push_back(tri);
         }
     } 
+}
 
-    // Early exit?
-    if (all_triangles.size() < 1) {
-        cout << "Empty geom!" << endl;
-        return;
-    }
+
+
+void MeshSplitter::find_minmax(TriangleList tris, LVecBase3f &bb_min, LVecBase3f &bb_max) {
 
     // Find a bounding box enclosing all triangles
     float min_x = FLT_MAX, min_y = FLT_MAX, min_z = FLT_MAX;
     float max_x = FLT_MIN, max_y = FLT_MIN, max_z = FLT_MIN;
-    for (TriangleList::iterator start = all_triangles.begin(); start != all_triangles.end(); ++start) {
+    for (TriangleList::iterator start = tris.begin(); start != tris.end(); ++start) {
         Triangle *tri = *start;
         for (int vtx_idx = 0; vtx_idx < 3; ++vtx_idx) {
             min_x = min(min_x, tri->vertices[vtx_idx].pos.get_x());
@@ -83,7 +137,7 @@ void MeshSplitter::split_geom(CPT(Geom) geom) {
 
     const float b_bias = 0.0;
 
-    // Increase bounding volume a bit
+    // Increase bounding volume by a small bias
     min_x -= b_bias;
     min_y -= b_bias;
     min_z -= b_bias;
@@ -92,63 +146,93 @@ void MeshSplitter::split_geom(CPT(Geom) geom) {
     max_y += b_bias;
     max_z += b_bias;
 
-    cout << "Found " << all_triangles.size() << " triangles .." << endl;
-    cout << "Bounding box is from (" << min_x << "," << min_y << "," << min_z 
-         << ") to (" << max_x << "," << max_y << "," << max_z << ")" << endl;
+    bb_min = LVecBase3f(min_x, min_y, min_z);
+    bb_max = LVecBase3f(max_x, max_y, max_z);
+}
 
 
-    LVecBase3 bb_start(min_x, min_y, min_z);
-    LVecBase3 bb_end(max_x, max_y, max_z);
+bool compare_chunk_size(MeshSplitter::Chunk* a, MeshSplitter::Chunk* b) {
+    return a->triangles.size() < b->triangles.size();
+}
+
+void MeshSplitter::optimize_results(TriangleResultList &results) {
+
+    // Chunks which are filled up to certain percentage are ok
+    int size_ok = TRI_GROUP_SIZE * 0.5;
 
 
+    int num_optimization = 0;
 
-    int num_not_intersecting = 0;
+    // Perform the optimization several times
+    while (num_optimization++ < 10000) {
 
-    // This is just for testing and safety purposes. It checks if all triangles
-    // are inside the computed bounding box.
-    for (TriangleList::iterator start = all_triangles.begin(); start != all_triangles.end(); ++start) {
-        Triangle *tri = *start;
-        if (!triangle_intersects(bb_start, bb_end, tri)) {
-            // cout << "  ERROR! Triangle does not intersect object bounding box?" << endl;
-            num_not_intersecting ++;
-        }
-    }
+        if (num_optimization % 500 == 0)
+            cout << "Optimization " << num_optimization << " of " << 10000 << " (" << results.size() << " strips)" << endl;
 
-    cout << "Not intersecting triangles: " << num_not_intersecting << " out of " << all_triangles.size() << endl;
+        // Iterate over all chunks
+        for(TriangleResultList::iterator iter = results.begin(); iter != results.end(); ++iter) {
 
-    cout << "Traversing recursive ..." << endl;
-    TriangleResultList results;
+            Chunk* current_chunk = *iter;
 
-    traverse_recursive(all_triangles, bb_start, bb_end, results, 10);
+            // Check if the chunk is not satisfying
+            if(current_chunk->triangles.size() < size_ok) {
 
-    cout << "Found " << results.size() << " Strips! This is an effective count of " << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
+                // Get the area arround the chunk
+                LVecBase3f search_min = current_chunk->bb_min;
+                LVecBase3f search_max = current_chunk->bb_max;
 
-    // Write results
-    cout << "Writing out model file .." << endl;
-    ofstream outp("model.rpsg");
+                // Increase the area twice by its size, to get the search radius
+                LVecBase3f bb_size = (search_max - search_min);
+                search_min -= bb_size * 1.8;
+                search_max += bb_size * 1.8;
 
-    for (int result_idx = 0; result_idx < results.size(); ++result_idx) {
+                // Find all intersecting chunks where this chunk could be merged with
+                TriangleResultList intersecting;
+                find_intersecting_chunks(results, intersecting, search_min, search_max, TRI_GROUP_SIZE - current_chunk->triangles.size());
+                
+                // Remove our current chunk from the list of surrounding chunks
+                intersecting.remove(current_chunk);
 
-        for (TriangleList::iterator start = results[result_idx].begin(); start != results[result_idx].end(); ++start) {
-            Triangle *tri = *start;
-            for (int i = 0; i < 3; ++i) {
-                outp << tri->vertices[i].pos.get_x() << ",";
-                outp << tri->vertices[i].pos.get_y() << ",";
-                outp << tri->vertices[i].pos.get_z() << "/";
+                if (intersecting.size() < 1) {
+                    // Bad ... no neighbours, can't optimize it
+                    continue;
+                } 
+
+                // Find chunk with the biggest size from the neighbours
+                // Chunk* max_arround = *min_element(intersecting.begin(), intersecting.end(), compare_chunk_size);
+
+                // Find closest chunk
+                LVecBase3f chunk_mid = (current_chunk->bb_min + current_chunk->bb_max) * 0.5;
+                Chunk *closest = nullptr;
+                float closest_dist = FLT_MAX;
+                for (TriangleResultList::iterator siter = intersecting.begin(); siter != intersecting.end(); ++siter) {
+                    float dist = (((*siter)->bb_min + (*iter)->bb_max) * 0.5 - chunk_mid).length_squared();
+                    if (dist < closest_dist) {
+                        closest_dist = dist;
+                        closest = *siter;
+                    }
+                }
+
+                // This should be always true
+                assert(closest != nullptr);
+
+                // Merge chunks
+                closest->triangles.splice(closest->triangles.begin(), current_chunk->triangles);
+                results.remove(current_chunk);
+
+
+                // Update bounding box
+                find_minmax(closest->triangles, closest->bb_min, closest->bb_max);
+
+                // We have to break here, since our iterator is most likely invalid now
+                break;
             }
-            outp << "|";
         }
 
-        outp << endl;
     }
-
-
-    outp.close();
-
-
-    // TODO: Delete all triangles from all_triangles, since they are not reference counted.
 
 }
+
 
 
 void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVecBase3f bb_start, const LVecBase3f bb_end, TriangleResultList &results, int depth_left) {
@@ -160,9 +244,6 @@ void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVec
 
     // Create a vector to store all triangles which match
     TriangleList matching_triangle_list;
-
-    // Assuming an even distribution, we will match about 1 / 8 of the parent triangles
-    // matching_triangles.reserve(parent_triangles.size() / 8);
 
     // Intersect triangles
     for (TriangleList::iterator start = parent_triangles.begin(); start != parent_triangles.end(); ++start) {
@@ -182,38 +263,33 @@ void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVec
 
     // If we hit less than n triangles, we can create a strip and stop traversing
     if (matching_triangle_list.size() <= TRI_GROUP_SIZE) {
-        // cout << "Stop traversing! Create chunk of size " << matching_triangles.size() << " (parent had " << parent_triangles.size() << ")" << endl;
-        // results.push_back(matching_triangles);
 
-        // for (int i = 0 < matching_triangle_list.size(); ++i) {
-            // parent_triangles.remove(matching_triangle_list[i]);
-        // }
         // Take all matches from the pool
         for (TriangleList::iterator start = matching_triangle_list.begin(); start != matching_triangle_list.end(); ++start) {
             parent_triangles.remove(*start);
         }
 
-        results.push_back(matching_triangle_list);
+        // Construct a new chunk
+        Chunk* chunk = new Chunk();
+        chunk->triangles = matching_triangle_list;
+        find_minmax(chunk->triangles, chunk->bb_min, chunk->bb_max);
+
+        results.push_back(chunk);
 
         return;
     }
 
-    //cout << "Split chunk:" << endl;
-    //cout << "From " << bb_start << " to " << bb_end << " == " << matching_triangles.size() << endl;
-
     LVecBase3f half_size = (bb_end - bb_start) / 2.0;
 
-    // Otherwise we split the chunk in eight smaller chunks
+    // Otherwise we split the chunk in eight smaller chunks.
+    // If we have a "flat" octree in one dimension, we treat it as a quadtree.
     for (int x = 0; x < 2; ++x) {
-        
         if (x != 0 && half_size.get_x() < 0.0001) continue;
         
         for (int y = 0; y < 2; ++y) {
-
             if (y != 0 && half_size.get_y() < 0.0001) continue;
         
             for (int z = 0; z < 2; ++z) {
-
                 if (z != 0 && half_size.get_z() < 0.0001) continue;
 
                 LVecBase3f chunk_start(
@@ -221,18 +297,11 @@ void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVec
                     bb_start.get_y() + y * half_size.get_y(),
                     bb_start.get_z() + z * half_size.get_z()
                 );
-                //cout << " -> " << chunk_start << " / " << chunk_start + half_size << endl;
                 traverse_recursive(matching_triangle_list, chunk_start, chunk_start + half_size, results, depth_left - 1);
             }
         }
     }
-
-    // traverse_recursive(matching_triangles, LVecBase3f(), LVecBase3f());
-
-
-
 }
-
 
 
 // Inspired from
@@ -290,7 +359,7 @@ bool MeshSplitter::triangle_intersects(const LVecBase3f &bb_min, const LVecBase3
         project_triangle(tri, normal, tri_min, tri_max);
 
         // No intersection, since the point was not in the box
-        if (tri_max < bb_min[i] || tri_min >= bb_max[i])
+        if (tri_max < bb_min[i] || tri_min > bb_max[i])
             return false;
     }
 
@@ -303,8 +372,8 @@ bool MeshSplitter::triangle_intersects(const LVecBase3f &bb_min, const LVecBase3
     // Test the edge cross products
     LVecBase3f tri_edges[3] = {
         tri->vertices[0].pos - tri->vertices[1].pos,
-        tri->vertices[0].pos - tri->vertices[2].pos,
-        tri->vertices[0].pos - tri->vertices[0].pos,
+        tri->vertices[1].pos - tri->vertices[2].pos,
+        tri->vertices[2].pos - tri->vertices[0].pos,
     };
 
     for (int i = 0; i < 3; ++i) {
@@ -321,4 +390,27 @@ bool MeshSplitter::triangle_intersects(const LVecBase3f &bb_min, const LVecBase3
     return true;
 
 
+}
+
+bool MeshSplitter::chunk_intersects(const LVecBase3f &a_min, const LVecBase3f &a_max, const LVecBase3f &b_min, const LVecBase3f &b_max) {
+
+    if (a_max.get_x() < b_min.get_x()) return false; // a is left of b
+    if (a_min.get_x() > b_max.get_x()) return false; // a is right of b
+    if (a_max.get_y() < b_min.get_y()) return false; // a is above b
+    if (a_min.get_y() > b_max.get_y()) return false; // a is below b
+    if (a_max.get_z() < b_min.get_z()) return false; // a is behind b
+    if (a_min.get_z() > b_max.get_z()) return false; // a is infront of b
+
+    return true;
+}
+
+// When max size is set, only chunks with a size <= max_size are returned
+void MeshSplitter::find_intersecting_chunks(TriangleResultList &results, TriangleResultList &intersecting, const LVecBase3f &search_min, const LVecBase3f &search_max, int max_size) {
+    for(TriangleResultList::iterator iter = results.begin(); iter != results.end(); ++iter) {
+        if (chunk_intersects(search_min, search_max, (*iter)->bb_min, (*iter)->bb_max)) {
+            if ((*iter)->triangles.size() <= max_size) {
+                intersecting.push_back(*iter);
+            }
+        }
+    }
 }

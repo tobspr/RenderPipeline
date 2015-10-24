@@ -12,6 +12,7 @@ with open("model.rpsg", "r") as handle:
 v = 0
 
 def get_c():
+    return Vec4(random(), random(), random(), 1)
     global v
     v += 1
     return Vec4(v / 1000.0,  1.0 - (v / 1000.0), v % 2, 1)
@@ -49,7 +50,7 @@ def generate_geom(tri_list):
 
 
 for idx, line in enumerate(lines):
-    if idx % 1000 == 0:
+    if idx % 500 == 0:
         print "Processing strip", idx
     line = line.strip()
     if len(line) < 1:
@@ -63,8 +64,6 @@ for idx, line in enumerate(lines):
         vtxs = [read_vec(s) for s in tri.split("/")[0:3]]
         vstrip.append(vtxs)
 
-
-    print(len(vstrip))
     generate_geom(vstrip)
 
 
