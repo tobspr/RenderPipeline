@@ -7,6 +7,9 @@
 #include "geomVertexReader.h"
 #include "pvector.h"
 
+#define TRI_GROUP_SIZE 1024
+
+
 class MeshSplitter {
 
     private:
@@ -28,9 +31,16 @@ class MeshSplitter {
         };
 
 
+    typedef list<Triangle*> TriangleList;
+    typedef vector<TriangleList> TriangleResultList;
+
+
+
     PUBLISHED:
         static void split_geom(CPT(Geom) geom);
         static bool triangle_intersects(const LVecBase3f &bb_min, const LVecBase3f &bb_max, Triangle* tri);
 
+    private:
+        static void traverse_recursive(TriangleList &parent_triangles, const LVecBase3f bb_start, const LVecBase3f bb_end, TriangleResultList &results, int depth_left);
 
 };
