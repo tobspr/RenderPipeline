@@ -6,8 +6,9 @@
 #include "geomPrimitive.h"
 #include "geomVertexReader.h"
 #include "pvector.h"
+#include "filename.h"
 
-#define TRI_GROUP_SIZE 512
+#define TRI_GROUP_SIZE 32
 
 
 class MeshSplitter {
@@ -43,7 +44,7 @@ class MeshSplitter {
 
 
     PUBLISHED:
-        static void split_geom(CPT(Geom) geom);
+        static void split_geom(CPT(Geom) geom, const Filename &dest, bool append = false);
 
     private:
         static bool triangle_intersects(const LVecBase3f &bb_min, const LVecBase3f &bb_max, Triangle* tri);
