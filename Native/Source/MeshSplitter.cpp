@@ -14,7 +14,6 @@ void MeshSplitter::split_geom(CPT(Geom) geom, const Filename &dest, bool append)
     cout << "Reading in geometry .." << endl;
     TriangleList all_triangles;
     read_triangles(geom, all_triangles);
-
     cout << "Read in " << all_triangles.size() << " triangles." << endl;
 
     // Early exit?
@@ -23,39 +22,43 @@ void MeshSplitter::split_geom(CPT(Geom) geom, const Filename &dest, bool append)
         return;
     }
 
-
     cout << "Finding bounding volume .." << endl;
     LVecBase3f bb_start, bb_end;
     find_minmax(all_triangles, bb_start, bb_end);
-
 
     cout << "Traversing recursive to find chunks of size " << TRI_GROUP_SIZE << " ..." << endl;
     TriangleResultList results;
 
     traverse_recursive(all_triangles, bb_start, bb_end, results, 10);
-
-    cout << "Found " << results.size() << " Strips! This is an effective count of " << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
-
+    cout << "Found " << results.size() << " Strips! This is an effective count of "
+         << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
     cout << "Optimizing results and merging small chunks .. " << endl;
     optimize_results(results);
 
-    cout << "Optimized version has " << results.size() << " Strips! This is an effective count of " << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
-
-
-    // Write results
+    cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
+         << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
     cout << "Writing out model file .." << endl;
-    ofstream outp(dest.get_fullpath(), ios_base::app);
+    
+    write_results(results, dest, append);
+
+    // TODO: Delete all triangles
+    // TODO: Delete all chunks
+
+}
+
+
+
+void MeshSplitter::write_results(const TriangleResultList &results, const Filename &dest, bool append) {
 
     Datagram dg;
-
-    dg.add_string("RPSG");
+    dg.add_fixed_string("RPSG", 4);
     dg.add_uint32(results.size());
 
-    for (TriangleResultList::iterator rstart = results.begin(); rstart != results.end(); ++rstart) {
+    for (TriangleResultList::const_iterator rstart = results.cbegin(); rstart != results.cend(); ++rstart) {
 
         dg.add_uint32((*rstart)->triangles.size());
 
-        for (TriangleList::iterator start = (*rstart)->triangles.begin(); start != (*rstart)->triangles.end(); ++start) {
+        for (TriangleList::const_iterator start = (*rstart)->triangles.cbegin(); start != (*rstart)->triangles.cend(); ++start) {
             Triangle *tri = *start;
             for (int i = 0; i < 3; ++i) {
                 dg.add_float32(tri->vertices[i].pos.get_x());
@@ -70,14 +73,10 @@ void MeshSplitter::split_geom(CPT(Geom) geom, const Filename &dest, bool append)
         }
     }
 
-    // dg.write(outp);
-    outp << dg.get_message();
-
-    outp.close();
-
-    // TODO: Delete all triangles
-    // TODO: Delete all chunks
-
+    std::ofstream outfile;
+    outfile.open(dest.get_fullpath(), ios::out | ios::binary);
+    outfile.write((char*)dg.get_data(), dg.get_length());
+    outfile.close();
 }
 
 
@@ -89,11 +88,15 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
     GeomVertexReader normal_reader(vertex_data, "normal");
     GeomVertexReader uv_reader(vertex_data, "texcoord");
 
+    if (!normal_reader.has_column()) {
+        cout << "ERROR: Mesh has no stored normals!" << endl;
+        return;
+    }
+
     if (!uv_reader.has_column()) {
         cout << "ERROR: Mesh has no uv coordinates assigned!" << endl;
         return;
     }
-
 
     // Collect all triangles
     for (int prim_idx = 0; prim_idx < geom->get_num_primitives(); ++prim_idx) {
@@ -113,6 +116,7 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
                 int vtx_mapped = primitive->get_vertex(vtx_idx);
                 vertex_reader.set_row(vtx_mapped);
                 normal_reader.set_row(vtx_mapped);
+                uv_reader.set_row(vtx_mapped);
                 LVecBase3f vtx_pos = vertex_reader.get_data3f();
                 LVecBase3f vtx_nrm = normal_reader.get_data3f();
                 LVecBase2f vtx_uv = uv_reader.get_data2f();
@@ -140,12 +144,12 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
 
 
 
-void MeshSplitter::find_minmax(TriangleList tris, LVecBase3f &bb_min, LVecBase3f &bb_max) {
+void MeshSplitter::find_minmax(const TriangleList &tris, LVecBase3f &bb_min, LVecBase3f &bb_max) {
 
     // Find a bounding box enclosing all triangles
     float min_x = FLT_MAX, min_y = FLT_MAX, min_z = FLT_MAX;
     float max_x = FLT_MIN, max_y = FLT_MIN, max_z = FLT_MIN;
-    for (TriangleList::iterator start = tris.begin(); start != tris.end(); ++start) {
+    for (TriangleList::const_iterator start = tris.cbegin(); start != tris.cend(); ++start) {
         Triangle *tri = *start;
         for (int vtx_idx = 0; vtx_idx < 3; ++vtx_idx) {
             min_x = min(min_x, tri->vertices[vtx_idx].pos.get_x());
@@ -158,19 +162,8 @@ void MeshSplitter::find_minmax(TriangleList tris, LVecBase3f &bb_min, LVecBase3f
         }
     }
 
-    const float b_bias = 0.0;
-
-    // Increase bounding volume by a small bias
-    min_x -= b_bias;
-    min_y -= b_bias;
-    min_z -= b_bias;
-
-    max_x += b_bias;
-    max_y += b_bias;
-    max_z += b_bias;
-
-    bb_min = LVecBase3f(min_x, min_y, min_z);
-    bb_max = LVecBase3f(max_x, max_y, max_z);
+    bb_min.set(min_x, min_y, min_z);
+    bb_max.set(max_x, max_y, max_z);
 }
 
 
@@ -184,7 +177,7 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
     int size_ok = TRI_GROUP_SIZE * 0.9;
 
 
-    int num_optimization = 10000;
+    int num_optimization = 50000;
 
     // Perform the optimization several times
     while (num_optimization --> 0) {
@@ -430,9 +423,9 @@ bool MeshSplitter::chunk_intersects(const LVecBase3f &a_min, const LVecBase3f &a
 }
 
 // When max size is set, only chunks with a size <= max_size are returned
-void MeshSplitter::find_intersecting_chunks(TriangleResultList &results, TriangleResultList &intersecting,
+void MeshSplitter::find_intersecting_chunks(const TriangleResultList &results, TriangleResultList &intersecting,
     const LVecBase3f &search_min, const LVecBase3f &search_max, int max_size) {
-    for(TriangleResultList::iterator iter = results.begin(); iter != results.end(); ++iter) {
+    for(TriangleResultList::const_iterator iter = results.cbegin(); iter != results.cend(); ++iter) {
         if (chunk_intersects(search_min, search_max, (*iter)->bb_min, (*iter)->bb_max)) {
             if ((*iter)->triangles.size() <= max_size) {
                 intersecting.push_back(*iter);

@@ -11,12 +11,9 @@ from panda3d.core import *
 
 dest = "model.rpsg"
 
-with open(dest, "w") as handle:
-    pass
-
-# model = loader.loadModel("Scene.bam")
+model = loader.loadModel("Scene.bam")
 # model = loader.loadModel("panda")
-model = loader.loadModel("test_model.bam")
+# model = loader.loadModel("test_model.bam")
 # model.flatten_strong()
 
 

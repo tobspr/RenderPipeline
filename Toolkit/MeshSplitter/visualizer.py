@@ -1,25 +1,34 @@
 
 
 
+
 from panda3d.core import *
 from random import random
 import direct.directbase.DirectStart
 
+import sys
 
-with open("model.rpsg", "r") as handle:
-    lines = handle.readlines()
+
+with open("model.rpsg", "rb") as handle:
+    data = handle.read()
+
+
+dg = Datagram(data)
+dgi = DatagramIterator(dg)
+
+header = dgi.get_fixed_string(4)
+num_strips = dgi.get_uint32()
+
+if header != "RPSG":
+    print "Missing RPSG header (was: "  + header + ")!"
+    sys.exit(0)
+
 
 v = 0
 
-def get_c():
+def get_color():
     return Vec4(random(), random(), random(), 1)
-    global v
-    v += 1
-    return Vec4(v / 1000.0,  1.0 - (v / 1000.0), v % 2, 1)
 
-def read_vec(s):
-    data = [float(i) for i in s.split(",")[0:3]]
-    return Vec3(*data)
 
 root_gn = GeomNode("geomNode")
 
@@ -42,29 +51,44 @@ def generate_geom(tri_list):
     # triangles.add_consecutive_vertices(0, len(tri_list) * 3)
 
     
-    gstate = RenderState.make(ColorAttrib.make_flat(get_c()))
+    gstate = RenderState.make(ColorAttrib.make_flat(get_color()))
 
     geom = Geom(vdata)
     geom.add_primitive(triangles)
     root_gn.add_geom(geom, gstate)
 
 
-for idx, line in enumerate(lines):
+for idx in range(num_strips):
     if idx % 500 == 0:
         print "Processing strip", idx
-    line = line.strip()
-    if len(line) < 1:
-        continue
 
-    tris = line.split("|")
-    vstrip = []
-    for tri in tris:
-        if len(tri) < 1:
-            continue
-        vtxs = [read_vec(s) for s in tri.split("/")[0:3]]
-        vstrip.append(vtxs)
 
-    generate_geom(vstrip)
+    num_tris = dgi.get_uint32()
+
+    triangles = []
+
+    for tidx in range(num_tris):
+
+        vertices = []
+
+        for i in range(3):
+            vx = dgi.get_float32()
+            vy = dgi.get_float32()
+            vz = dgi.get_float32()
+            
+            nx = dgi.get_float32()
+            ny = dgi.get_float32()
+            nz = dgi.get_float32()
+
+            u = dgi.get_float32()
+            v = dgi.get_float32()
+
+            vertices.append(Vec3(vx, vy, vz))
+
+        triangles.append(vertices)
+
+
+    generate_geom(triangles)
 
 
 

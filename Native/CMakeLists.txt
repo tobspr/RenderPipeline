@@ -117,6 +117,9 @@ IF(MSVC)
     ADD_DEFINITIONS("/wd4267")
     ADD_DEFINITIONS("/wd4996")
     ADD_DEFINITIONS("/wd4101")
+    ADD_DEFINITIONS("/DEBUG")
+    ADD_DEFINITIONS("/Zi")
+    # ADD_DEFINITIONS("/MTd")
 
     ADD_DEFINITIONS("/D WIN32 /D CRT_SECURE_NO_WARNINGS /D _WINDOWS /D _USRDLL")
 
@@ -145,8 +148,8 @@ FOREACH (flags_var_to_scrub
     CMAKE_C_FLAGS_RELEASE
     CMAKE_C_FLAGS_RELWITHDEBINFO
     CMAKE_C_FLAGS_MINSIZEREL)
-  string (REGEX REPLACE "(^| )[/-]D *NDEBUG($| )" " "
-    "${flags_var_to_scrub}" "${${flags_var_to_scrub}}")
+  # string (REGEX REPLACE "(^| )[/-]D *NDEBUG($| )" " "
+    # "${flags_var_to_scrub}" "${${flags_var_to_scrub}}")
 ENDFOREACH()
 
 target_link_libraries(RSNative ${PYTHON_LIBRARIES} ${PANDA_LIBRARIES} ${BULLET_LIBRARIES})
