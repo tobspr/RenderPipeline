@@ -75,7 +75,7 @@ endif()
 
 # Make sure interrogate exists
 if(NOT (EXISTS "${PANDA_BIN}/interrogate") AND NOT (EXISTS "${PANDA_BIN}/interrogate.exe"))
-    message(FATAL_ERROR "Could not locate interrogate executable in ${PANDA_BIN}! Correct the path in Native/CMakeLists.txt (Line 61)!")
+    message(FATAL_ERROR "Could not locate interrogate executable in ${PANDA_BIN}! Correct the path in Native/CMakeLists.txt!")
 endif()
 
 
@@ -100,7 +100,8 @@ if(NOT ("${return_code}" STREQUAL "0"))
 endif()
 
 # Collect sources for compiling
-file(GLOB SOURCES Source/*.cpp)
+file(GLOB_RECURSE SOURCES Source/*.cpp)
+
 set(SOURCES ${SOURCES_H} ${SOURCES})
 
 # Optimizations
@@ -126,7 +127,7 @@ IF(MSVC)
 ELSE()
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=native -march=native")
 ENDIF()
-   
+  
 
 # Build library
 add_library(RSNative MODULE ${SOURCES})

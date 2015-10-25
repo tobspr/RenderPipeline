@@ -5,6 +5,7 @@
 #include "datagramIterator.h"
 
 #include "SGTriangleStrip.h"
+#include "SGDataset.h"
 
 
 

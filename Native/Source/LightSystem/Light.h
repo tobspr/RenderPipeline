@@ -4,9 +4,12 @@
 
 
 #include "pandabase.h"
-#include "luse.h"
-#include "GPUCommand.h"
 #include "referenceCount.h"
+#include "luse.h"
+
+
+#include "../GPUCommand/GPUCommand.h"
+
 
 
 class Light : public ReferenceCount {

@@ -3,8 +3,7 @@
 #include "pandabase.h"
 #include "filename.h"
 
-#include "SGDataset.h"
-
+class SGDataset;
 
 
 typedef int DatasetReference;

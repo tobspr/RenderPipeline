@@ -4,7 +4,7 @@
 
 
 #include "pandabase.h"
-#include "Light.h"
+#include "../LightSystem/Light.h"
 
 
 class PointLight : public Light {

@@ -2,9 +2,10 @@
 #ifndef RP_COMMAND_LIST_H
 #define RP_COMMAND_LIST_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <list>
-#include "GPUCommand.h"
+
+#include "../GPUCommand/GPUCommand.h"
 
 
 class GPUCommandList {

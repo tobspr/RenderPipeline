@@ -2,9 +2,8 @@
 #ifndef RP_LIGHT_STORAGE_H
 #define RP_LIGHT_STORAGE_H
 
-#include "Light.h"
-#include "GPUCommandList.h"
-
+#include "../LightSystem/Light.h"
+#include "../GPUCommand/GPUCommandList.h"
 
 #define MAX_LIGHT_COUNT 65000
 

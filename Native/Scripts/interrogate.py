@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 import platform
 from os import system, getcwd, listdir
-from direct.stdpy.file import join, isfile
+from direct.stdpy.file import join, isfile, isdir
 import subprocess
 
 
@@ -22,20 +22,34 @@ MODULE_NAME = "RSNative"
 COMPILER="MSVC" if platform.system() == "Windows" else "GCC"
 IS_64_BIT=sys.maxsize > 2 ** 32
 
-
-
 cwd = getcwd().replace("\\", "/").rstrip("/")
 
 ignoreFiles = ["InterrogateModule.cpp", "InterrogateWrapper.cpp"]
 
-def checkIgnore(source):
+def check_ignore(source):
     for f in ignoreFiles:
         if f.lower() in source.lower():
             return False
     return True
 
-allSources = [i for i in listdir("Source") if isfile(join("Source", i)) and checkIgnore(i) and i.endswith(".h") ]
 
+def find_sources(base_dir):
+    sources = []
+    files = listdir(base_dir)
+    for f in files:
+        fpath = join(base_dir, f)
+        if isfile(fpath) and check_ignore(f) and f.endswith(".h"):
+            sources.append(fpath)
+        elif isdir(fpath):
+            sources += find_sources(fpath)
+
+    return sources
+
+
+all_sources = find_sources("Source/")
+
+# Strip path
+all_sources = [i.replace("Source/", "") for i in all_sources]
 
 # print("\nRunning interrogate ..")
 
@@ -44,16 +58,18 @@ cmd += ["-fnames", "-string", "-refcount", "-assert", "-python-native"]
 cmd += ["-S" + PANDA_INCLUDE + "/parser-inc"]
 cmd += ["-S" + PANDA_INCLUDE + "/"]
 cmd += ["-I" + PANDA_BIN + "/include/"]
+
 cmd += ["-srcdir",  join(cwd, "Source") ]
+
 cmd += ["-oc", "Source/InterrogateWrapper.cpp"]
 cmd += ["-od", "Source/Interrogate.in"]
 cmd += ["-module", MODULE_NAME]
 cmd += ["-library", MODULE_NAME]
 
-# cmd += ["-nomangle"]
+cmd += ["-nomangle"]
 
 # Defines required to parse the panda source
-defines = ["CPPPARSER", "__STDC__=1", "__cplusplus=201103L"]
+defines = ["INTERROGATE", "CPPPARSER", "__STDC__=1", "__cplusplus=201103L"]
 
 if COMPILER=="MSVC":
     defines += ["__inline", "_X86_", "WIN32_VC", "WIN32", "_WIN32"]
@@ -71,13 +87,28 @@ if COMPILER=="GCC":
 
 for define in defines:
     cmd += ["-D" + define]
-cmd += allSources
+cmd += all_sources
 
 try:
     subprocess.check_output(cmd, stderr=sys.stderr)
 except subprocess.CalledProcessError as msg:
     print("Error executing interrogate command:", msg, msg.output, file=sys.stderr)
     sys.exit(1)
+
+
+
+# Dirty hack: Since interrogate seems to be unable to handle relative imports,
+# we delete all relative imports from the generated files
+
+with open("Source/InterrogateWrapper.cpp", "r") as handle:
+    lines = handle.readlines()
+
+# Strip lines
+lines = [i for i in lines if not i.startswith('#include "..')]
+
+# Write the new lines
+with open("Source/InterrogateWrapper.cpp", "w") as handle:
+    handle.write(''.join(lines))
 
 
 
