@@ -145,7 +145,7 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
                 /*
                 // Find closest chunk
                 LVecBase3f chunk_mid = (current_chunk->bb_min + current_chunk->bb_max) * 0.5;
-                Chunk *closest = nullptr;
+                Chunk *closest = NULL;
                 float closest_dist = FLT_MAX;
                 for (TriangleResultList::iterator siter = intersecting.begin(); siter != intersecting.end(); ++siter) {
                     float dist = (((*siter)->bb_min + (*iter)->bb_max) * 0.5 - chunk_mid).length_squared();
@@ -156,7 +156,7 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
                 }
 
                 // This should be always true
-                assert(closest != nullptr);
+                assert(closest != NULL);
 
                 */
 

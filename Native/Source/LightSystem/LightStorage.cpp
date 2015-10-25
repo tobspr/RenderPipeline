@@ -5,11 +5,11 @@
 
 LightStorage::LightStorage() {
     for (int i = 0; i < MAX_LIGHT_COUNT; i++) {
-        _lights[i] = nullptr;
+        _lights[i] = NULL;
     }
     _num_stored_lights = 0;
     _max_light_index = 0;
-    _cmd_list = nullptr;
+    _cmd_list = NULL;
 }
 
 
@@ -40,7 +40,7 @@ void LightStorage::add_light(PT(RPLight) light) {
     // Find the first free slot
     int slot = -1;
     for (size_t k = 0; k < MAX_LIGHT_COUNT; k++) {
-        if (_lights[k] == nullptr) {
+        if (_lights[k] == NULL) {
             slot = k;
             break;
         }
@@ -70,7 +70,7 @@ void LightStorage::remove_light(PT(RPLight) light) {
         return;
     }
 
-    _lights[light->get_slot()] = nullptr;
+    _lights[light->get_slot()] = NULL;
 
     GPUCommand cmd_remove(GPUCommand::CMD_remove_light);
     cmd_remove.push_int(light->get_slot());

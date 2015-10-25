@@ -16,7 +16,7 @@ SGNode::SGNode(const string &name, StaticGeometryHandler *handler,  int dataset_
     _dataset_ref = dataset_reference;
     _dataset = _handler->get_dataset(dataset_reference);
 
-    if (_dataset == nullptr) {
+    if (_dataset == NULL) {
         cout << "ERROR: No dataset with id " << dataset_reference << " found!" << endl;
         return;
     }

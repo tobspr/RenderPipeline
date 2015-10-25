@@ -3,7 +3,7 @@
 #include "SGTriangleStrip.h"
 
 SGDataset::SGDataset() {
-    _bounds = nullptr;
+    _bounds = NULL;
 }
 
 
