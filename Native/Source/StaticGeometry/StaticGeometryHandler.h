@@ -24,10 +24,14 @@ class StaticGeometryHandler {
 
         SGDataset* get_dataset(DatasetReference dataset);
         void add_for_draw(DatasetReference dataset, const LMatrix4f &transform);
-        void on_scene_finish();
 
         PT(Texture) get_dataset_tex();
         PT(Texture) get_mapping_tex();
+        PT(Texture) get_indirect_tex();
+        PT(Texture) get_drawn_objects_tex();
+        PT(Texture) get_dynamic_strips_tex();
+
+        void clear_render_list();
 
     private:
 
@@ -46,10 +50,16 @@ class StaticGeometryHandler {
         };
 
         typedef vector<DrawEntry> DrawList;
-        DrawList _draw_list;
+
+
 
         PT(Texture) _dataset_tex;
-        PT(Texture) _mapping_tex; 
+        PT(Texture) _mapping_tex;
+        PT(Texture) _indirect_tex;
+        PT(Texture) _drawn_objects_tex;
+        PT(Texture) _dynamic_strips_tex;
+
         int _dataset_index;
+        int _num_rendered_objects;
 };
 

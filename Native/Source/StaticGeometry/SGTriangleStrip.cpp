@@ -54,7 +54,7 @@ void SGTriangleStrip::load_from_datagram(DatagramIterator &dgi) {
 }
 
 
-void SGTriangleStrip::write_to(PTA_uchar data, int offset) {
+void SGTriangleStrip::write_to(PTA_uchar &data, int offset) {
 
     float* f_data = reinterpret_cast<float*>(data.p());
 
@@ -66,14 +66,14 @@ void SGTriangleStrip::write_to(PTA_uchar data, int offset) {
     _index = offset;
 
     // Write all vertices
-    for (int i = 0; i < _vertex_data.size(); ++i) {
+    for (size_t i = 0; i < _vertex_data.size(); ++i) {
         PerVertexData vertex = _vertex_data[i];
 
         f_data[write_offset++] = vertex.pos.get_x();
         f_data[write_offset++] = vertex.pos.get_y();
         f_data[write_offset++] = vertex.pos.get_z();
 
-        f_data[write_offset++] = 1.5;
+        f_data[write_offset++] = 0.0;
         // f_data[write_offset ++] = vertex.normal.get_x();
         // f_data[write_offset ++] = vertex.normal.get_y();
         // f_data[write_offset ++] = vertex.normal.get_z();
@@ -82,12 +82,10 @@ void SGTriangleStrip::write_to(PTA_uchar data, int offset) {
         // f_data[write_offset ++] = vertex.uv.get_y();
    }
 
-   cout << "Wrote " << _vertex_data.size() << " vertices to " << _index << endl;
-
    // Fill empty space with zeroes
    // int fill_vertices = SG_TRI_GROUP_SIZE * 3 - _vertex_data.size();
    // for (int i = 0; i < fill_vertices; ++i) {
-   //      for (int k = 0; k < 8; ++k) {
+   //      for (int k = 0; k < 4; ++k) {
    //          f_data[write_offset++] = 0.0;
    //      }  
    // }

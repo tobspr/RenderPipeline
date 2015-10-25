@@ -5,6 +5,7 @@
 #include "RPPointLight.h"
 #include "SGNode.h"
 #include "SGRenderNode.h"
+#include "SGRenderCallback.h"
 
 #include "dconfig.h"
 
@@ -27,6 +28,7 @@ init_librsnative() {
 
   // RPLight::init_type();
   // RPPointLight::init_type();
+  SGRenderCallback::init_type();
   SGNode::init_type();
   SGRenderNode::init_type();
 }

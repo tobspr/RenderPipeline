@@ -4,6 +4,12 @@
 
 from panda3d.core import *
 from random import random
+
+
+load_prc_file("../../Config/configuration.prc")
+load_prc_file_data("", "show-frame-rate-meter #t")
+load_prc_file_data("", "gl-debug #t")
+
 import direct.directbase.DirectStart
 
 import sys
@@ -27,29 +33,41 @@ uniform mat4 p3d_ModelViewProjectionMatrix;
 in vec4 p3d_Vertex;
 
 uniform sampler2D DatasetTex;
-uniform isampler2D MappingTex;
+uniform isamplerBuffer DynamicStripsTex;
+
+uniform samplerBuffer DrawnObjectsTex;
 
 out vec4 col;
 
 void main() {
-
-    int strip_idx = gl_InstanceID;
+    
+    int strip_offs = gl_InstanceID;
     int vtx_idx = gl_VertexID;
 
-    int obj_idx = 0;
-    int strip_offs = texelFetch(MappingTex, ivec2(strip_idx, obj_idx), 0).x;
+    int object_id = texelFetch(DynamicStripsTex, strip_offs * 2 + 1).x;
+    int strip_id = texelFetch(DynamicStripsTex, strip_offs * 2 + 2).x;
 
+    // Read transform from object data
+    int dobj_offs = 1 + 5 * object_id;
 
-    int data_offs = vtx_idx * 2;
+    vec4 mt0 = texelFetch(DrawnObjectsTex, dobj_offs + 1).rgba;
+    vec4 mt1 = texelFetch(DrawnObjectsTex, dobj_offs + 2).rgba;
+    vec4 mt2 = texelFetch(DrawnObjectsTex, dobj_offs + 3).rgba;
+    vec4 mt3 = texelFetch(DrawnObjectsTex, dobj_offs + 4).rgba;
 
-    vec4 data0 = texelFetch(DatasetTex, ivec2(data_offs + 0, strip_offs), 0).bgra;
-    vec4 data1 = texelFetch(DatasetTex, ivec2(data_offs + 1, strip_offs), 0).abgr;
+    mat4 transform = mat4(mt0, mt1, mt2, mt3); 
+
+    int data_offs = vtx_idx;
+
+    vec4 data0 = texelFetch(DatasetTex, ivec2(data_offs + 0, strip_id), 0).bgra;
+    //vec4 data1 = texelFetch(DatasetTex, ivec2(data_offs + 1, strip_offs), 0).abgr;
 
     vec4 vtx_pos = vec4(data0.xyz, 1);
 
-    col = vec4(vtx_idx / 256.0);
+    col = vec4(strip_id / 200.0, 1.0 - (strip_id / 200.0), 0, 1);
     col.w = 1.0;
-    col.r = 0.0;
+
+    vtx_pos = transform * vtx_pos;
 
     gl_Position = p3d_ModelViewProjectionMatrix * vtx_pos;    
 } """
@@ -76,19 +94,26 @@ handler = StaticGeometryHandler()
 
 # Load model
 model_dataset = handler.load_dataset("model.rpsg")
-node = SGNode("test", handler, model_dataset)
-np = render.attach_new_node(node)
 
+for x in xrange(3):
+    for y in xrange(3):
 
-# render.set_pos(10, 10, 5)
+        node = SGNode("test", handler, model_dataset)
+        np = render.attach_new_node(node)
+
+        np.set_scale(0.2)
+        np.set_pos(x, y, 0)
+
 
 
 # np.set_scale(0.5)
+collect_shader = Shader.load_compute(Shader.SL_GLSL, "collect_objects.compute.glsl")
 
-finish_node = SGRenderNode(handler)
+
+finish_node = SGRenderNode(handler, collect_shader)
 finish_np = render.attach_new_node(finish_node)
 finish_np.set_shader(shader, 1000)
-finish_np.set_instance_count(23)
+finish_np.set_instance_count( (154 + 1) * 9 )
 finish_np.set_two_sided(True)
 base.run()
 

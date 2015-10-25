@@ -15,16 +15,31 @@ StaticGeometryHandler::StaticGeometryHandler() {
 
     _dataset_tex = new Texture("DatasetStorage");
     _mapping_tex = new Texture("DatasetMappings");
+    _indirect_tex = new Texture("SGIndirectTex");
+    _drawn_objects_tex = new Texture("DrawnObjectsList");
+    _dynamic_strips_tex = new Texture("DynamicStripList");
     _dataset_index = 0;
+    _num_rendered_objects = 0;
 
-    // Storage for 1024 strips should be enough for now
+    // The dataset texture stores the data of all triangle strips. It can be quite
+    // huge, however storage for 1024 strips should be enough for now.
     _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3, 1024, Texture::T_float, Texture::F_rgba32);
-
 
     // The mapping tex assigns strips to a dataset. Right now a dataset can have
     // up to 1024 strips, and we support up to 10 datasets
     _mapping_tex->setup_2d_texture(1024, 10, Texture::T_int, Texture::F_r32i);
 
+    // Store a texture to make indirect drawing work .. somehow
+    _indirect_tex->setup_buffer_texture(4, Texture::T_int, Texture::F_r32i, GeomEnums::UH_dynamic);
+
+    // Store a list of rendered objects, for each object this stores
+    // the object index, and its transform matrix.
+    _drawn_objects_tex->setup_buffer_texture(8192, Texture::T_float, Texture::F_rgba32, GeomEnums::UH_dynamic);
+
+    // This texture is used to write all rendered strips to.
+    // For each rendered strip, there is an object reference (to get the transform mat),
+    // and a global strip reference.
+    _dynamic_strips_tex->setup_buffer_texture(8192, Texture::T_int, Texture::F_r32i, GeomEnums::UH_static);
 }
 
 
@@ -86,7 +101,7 @@ DatasetReference StaticGeometryHandler::load_dataset(const Filename &src) {
     }
 
     // Write out debug textures?
-    _dataset_tex->write("dataset.png");
+    // _dataset_tex->write("dataset.png");
     // _mapping_tex->write("mappings.png");
 
     // Attach dataset, clean up the variables, and finally return a handle to the dataset
@@ -103,13 +118,43 @@ SGDataset* StaticGeometryHandler::get_dataset(DatasetReference dataset) {
 
 
 void StaticGeometryHandler::add_for_draw(DatasetReference dataset, const LMatrix4f &transform) {
-    _draw_list.clear();
-    _draw_list.push_back(DrawEntry(dataset, transform));
+
+    PTA_uchar handle = _drawn_objects_tex->modify_ram_image();
+    float* f_handle = reinterpret_cast<float*>(handle.p());
+    
+
+    // Store the new amount of rendered objects
+    f_handle[0] = _num_rendered_objects + 1;
+    f_handle[1] = 0;
+    f_handle[2] = 0;
+    f_handle[3] = 0;
+
+    int data_offset = 4 + _num_rendered_objects * 20;
+
+    f_handle[data_offset++] = dataset; // Render object with ID n
+    f_handle[data_offset++] = 0; // reserved
+    f_handle[data_offset++] = 0; // reserved
+    f_handle[data_offset++] = 0; // reserved
+
+    for (LMatrix4f::iterator iter = transform.begin(); iter != transform.end(); ++iter) {
+        f_handle[data_offset++] = (*iter);
+    }
+
+    _num_rendered_objects ++;
+
 }
 
 
-void StaticGeometryHandler::on_scene_finish() {
-    // Now actually draw all elements
+void StaticGeometryHandler::clear_render_list() {
+    _num_rendered_objects = 0;
+
+    // Write the new amount of rendered objects
+    // PTA_uchar handle = _drawn_objects_tex->modify_ram_image();
+    // float* f_handle = reinterpret_cast<float*>(handle.p());
+    // f_handle[0] = 0; // 0 Rendered Objects
+    // f_handle[1] = 0; // reserved
+    // f_handle[2] = 0; // reserved
+    // f_handle[3] = 0; // reserved
 }
 
 
@@ -119,5 +164,20 @@ PT(Texture) StaticGeometryHandler::get_dataset_tex() {
 
 PT(Texture) StaticGeometryHandler::get_mapping_tex() {
     return _mapping_tex;
+}
+
+
+PT(Texture) StaticGeometryHandler::get_indirect_tex() {
+    return _indirect_tex;
+}
+
+
+PT(Texture) StaticGeometryHandler::get_drawn_objects_tex() {
+    return _drawn_objects_tex;
+}
+
+
+PT(Texture) StaticGeometryHandler::get_dynamic_strips_tex() {
+    return _dynamic_strips_tex;
 }
 

@@ -11,7 +11,7 @@ class SGTriangleStrip {
         ~SGTriangleStrip();
 
         void load_from_datagram(DatagramIterator &dgi);
-        void write_to(PTA_uchar data, int offset);
+        void write_to(PTA_uchar &data, int offset);
 
         int get_index() const;
 

@@ -4,15 +4,19 @@
 #include "pandabase.h"
 #include "pandaNode.h"
 #include "renderState.h"
+#include "shader.h"
+#include "callbackData.h"
 
 class StaticGeometryHandler;
+
+
 
 // This node is attached to the scene graph and called last, it renders all
 // static geometry to a buffer
 class SGRenderNode : public PandaNode {
 
     PUBLISHED:
-        SGRenderNode(StaticGeometryHandler* handler);
+        SGRenderNode(StaticGeometryHandler* handler, PT(Shader) collector_shader);
         ~SGRenderNode();
 
     public:
@@ -20,6 +24,7 @@ class SGRenderNode : public PandaNode {
         virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
         virtual bool is_renderable() const;
 
+        void do_draw_callback(CallbackData* cbdata, int reason);
         
     private:
 
@@ -28,7 +33,7 @@ class SGRenderNode : public PandaNode {
         StaticGeometryHandler* _handler;
         PT(Geom) _geom_strip;
         CPT(RenderState) _base_render_state;
-
+        CPT(RenderState) _collect_render_state;
 
     public:
       static TypeHandle get_class_type() {
