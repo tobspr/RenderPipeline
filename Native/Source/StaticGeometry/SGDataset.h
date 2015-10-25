@@ -3,6 +3,7 @@
 #include "pandabase.h"
 #include "luse.h"
 #include "datagramIterator.h"
+#include "boundingBox.h"
 
 #include <list>
 
@@ -18,10 +19,13 @@ class SGDataset {
         void read_bounds(DatagramIterator &dgi);
         void attach_strip(const SGTriangleStrip *strip);
 
+        PT(BoundingBox) get_bounds();
+
     private:
 
         LVecBase3f _bb_min;
         LVecBase3f _bb_max;
+        PT(BoundingBox) _bounds;
         list<const SGTriangleStrip*> _strips;
 
 };

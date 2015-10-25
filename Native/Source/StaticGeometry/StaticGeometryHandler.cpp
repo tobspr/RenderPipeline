@@ -69,5 +69,11 @@ DatasetReference StaticGeometryHandler::load_dataset(const Filename &src) {
 
 
 SGDataset* StaticGeometryHandler::get_dataset(DatasetReference dataset) {
-    return NULL;
+    return _datasets.at(dataset);
+}
+
+
+void StaticGeometryHandler::add_for_draw(DatasetReference dataset, const LMatrix4f &transform) {
+    cout << "Adding dataset " << dataset << " for draw" << endl;
+    cout << "\tMat = " << transform << endl;
 }
