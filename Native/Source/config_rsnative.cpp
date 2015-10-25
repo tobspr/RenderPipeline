@@ -21,6 +21,7 @@ init_librsnative() {
     return;
   }
   initialized = true;
+  cout << "Initialized! " << endl;
 
   RPLight::init_type();
   RPPointLight::init_type();

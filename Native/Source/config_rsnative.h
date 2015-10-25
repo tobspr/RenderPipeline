@@ -10,5 +10,5 @@
 
 NotifyCategoryDecl(rsnative, EXPORT_CLASS, EXPORT_TEMPL);
 
-extern EXPCL_PANDASKEL void init_librsnative();
+extern void init_librsnative();
 

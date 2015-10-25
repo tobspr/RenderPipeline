@@ -57,7 +57,11 @@ cmd = [PANDA_BIN + '/interrogate']
 cmd += ["-fnames", "-string", "-refcount", "-assert", "-python-native"]
 cmd += ["-S" + PANDA_INCLUDE + "/parser-inc"]
 cmd += ["-S" + PANDA_INCLUDE + "/"]
-cmd += ["-I" + PANDA_BIN + "/include/"]
+
+# Add all subdirectories
+for pth in listdir("Source/"):
+    if isdir(join("Source/", pth)):
+        cmd += ["-I" + join("Source/", pth)]
 
 cmd += ["-srcdir",  join(cwd, "Source") ]
 

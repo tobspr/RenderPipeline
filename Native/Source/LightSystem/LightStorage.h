@@ -26,7 +26,7 @@ class LightStorage {
         RPLight* _lights[MAX_LIGHT_COUNT];
         int _max_light_index;
         int _num_stored_lights;
-        GPUCommandList *_cmd_list;
+        GPUCommandList* _cmd_list;
 
 };
 
