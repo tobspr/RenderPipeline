@@ -73,9 +73,9 @@ else()
 endif()
 
 
-# Make sure interrogate exists
-if(NOT (EXISTS "${PANDA_BIN}/interrogate") AND NOT (EXISTS "${PANDA_BIN}/interrogate.exe"))
-    message(FATAL_ERROR "Could not locate interrogate executable in ${PANDA_BIN}! Correct the path in Native/CMakeLists.txt!")
+# Make sure interrogate exists in windows, assume its on the path in linux
+if(WIN32 AND NOT (EXISTS "${PANDA_BIN}/interrogate.exe"))
+    message(FATAL_ERROR "Could not locate interrogate executable in ${PANDA_BIN}!")
 endif()
 
 

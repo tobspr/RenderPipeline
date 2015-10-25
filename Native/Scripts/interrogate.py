@@ -19,20 +19,22 @@ PANDA_INCLUDE = sys.argv[3]
 MODULE_NAME = "RSNative"
 
 
-COMPILER="MSVC" if platform.system() == "Windows" else "GCC"
-IS_64_BIT=sys.maxsize > 2 ** 32
+COMPILER = "MSVC" if platform.system() == "Windows" else "GCC"
+IS_64_BIT = sys.maxsize > 2 ** 32
+USE_ABS_PATH = platform.system() == "Windows"
 
+
+# Extract cwd and convert it to a valid filepath
 cwd = getcwd().replace("\\", "/").rstrip("/")
 
-ignoreFiles = ["InterrogateModule.cpp", "InterrogateWrapper.cpp"]
-
+# This function checks if a file is on the ignore list, or not
 def check_ignore(source):
-    for f in ignoreFiles:
+    for f in ["InterrogateModule.cpp", "InterrogateWrapper.cpp"]:
         if f.lower() in source.lower():
             return False
     return True
 
-
+# Collects all header files recursively
 def find_sources(base_dir):
     sources = []
     files = listdir(base_dir)
@@ -45,15 +47,17 @@ def find_sources(base_dir):
 
     return sources
 
-
+# Collect source files and convert them to a relative path
 all_sources = find_sources("Source/")
-
-# Strip path
 all_sources = [i.replace("Source/", "") for i in all_sources]
 
-# print("\nRunning interrogate ..")
 
-cmd = [PANDA_BIN + '/interrogate']
+# Create interrogate command
+if USE_ABS_PATH:
+    cmd = [PANDA_BIN + '/interrogate']
+else:
+    cmd = ['interrogate']
+
 cmd += ["-fnames", "-string", "-refcount", "-assert", "-python-native"]
 cmd += ["-S" + PANDA_INCLUDE + "/parser-inc"]
 cmd += ["-S" + PANDA_INCLUDE + "/"]
@@ -100,8 +104,14 @@ except subprocess.CalledProcessError as msg:
     sys.exit(1)
 
 
-# print("\nRunning interrogate_module ..")
-cmd = [PANDA_BIN + "/interrogate_module"]
+
+
+# Create module command
+if USE_ABS_PATH:
+    cmd = [PANDA_BIN + '/interrogate_module']
+else:
+    cmd = ['interrogate_module']
+
 cmd += ["-python-native"]
 cmd += ["-import", "panda3d.core"] 
 cmd += ["-module", MODULE_NAME] 
