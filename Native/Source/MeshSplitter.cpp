@@ -420,19 +420,29 @@ void MeshSplitterWriter::process(const Filename &dest) {
          << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
     cout << "Writing out model file .." << endl;
     
-    write_results(dest, results);
+    write_results(dest, results, bb_start, bb_end);
 
 }
 
 
-void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter::TriangleResultList &results) {
+void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter::TriangleResultList &results, const LVecBase3f &bb_min, const LVecBase3f &bb_max) {
     Datagram dg;
     dg.add_fixed_string("RPSG", 4);
     dg.add_uint32(results.size());
 
+    // Write model bounds
+    dg.add_float32(bb_min.get_x());
+    dg.add_float32(bb_min.get_y());
+    dg.add_float32(bb_min.get_z());
+
+    dg.add_float32(bb_max.get_x());
+    dg.add_float32(bb_max.get_y());
+    dg.add_float32(bb_max.get_z());
+
     for (MeshSplitter::TriangleResultList::const_iterator rstart = results.cbegin(); rstart != results.cend(); ++rstart) {
 
         dg.add_uint32((*rstart)->triangles.size());
+
 
         for (MeshSplitter::TriangleList::const_iterator start = (*rstart)->triangles.cbegin(); start != (*rstart)->triangles.cend(); ++start) {
             MeshSplitter::Triangle *tri = *start;

@@ -73,7 +73,7 @@ class MeshSplitterWriter {
 
     private:
 
-        void write_results(const Filename &dest, const MeshSplitter::TriangleResultList &results);
+        void write_results(const Filename &dest, const MeshSplitter::TriangleResultList &results, const LVecBase3f &bb_min, const LVecBase3f &bb_max);
 
         typedef list<CPT(Geom)> GeomList;
 

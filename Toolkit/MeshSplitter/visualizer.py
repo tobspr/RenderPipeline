@@ -9,14 +9,19 @@ import direct.directbase.DirectStart
 import sys
 sys.path.insert(0, "../../")
 
-from Native.RSNative import StaticGeometryHandler
+from Native.RSNative import StaticGeometryHandler, SGNode
 
 handler = StaticGeometryHandler()
 
 model_dataset = handler.load_dataset("model.rpsg")
 
+node = SGNode("test", handler, model_dataset)
+np = render.attach_new_node(node)
+np.set_pos(10, 10, 5)
+np.set_scale(0.5)
 
 
+base.run()
 
 sys.exit(0)
 

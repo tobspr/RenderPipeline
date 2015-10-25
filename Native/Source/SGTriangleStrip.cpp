@@ -1,7 +1,5 @@
 
-
-#include "StaticGeometry.h"
-
+#include "SGTriangleStrip.h"
 
 
 SGTriangleStrip::SGTriangleStrip() {
@@ -39,24 +37,6 @@ void SGTriangleStrip::load_from_datagram(DatagramIterator &dgi) {
             dgi.get_float32();
         }
     }
-}
-
-
-
-SGDataset::SGDataset() {
-
-
-}
-
-
-SGDataset::~SGDataset() {
-
-
-}
-
-
-void SGDataset::attach_strip(const SGTriangleStrip *strip) {
-    _strips.push_back(strip);
 }
 
 
