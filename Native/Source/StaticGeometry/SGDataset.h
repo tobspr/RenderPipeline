@@ -18,6 +18,7 @@ class SGDataset {
 
         void read_bounds(DatagramIterator &dgi);
         void attach_strip(const SGTriangleStrip *strip);
+        void write_mappings(PTA_uchar data, int offset);    
 
         PT(BoundingBox) get_bounds();
 
@@ -26,6 +27,7 @@ class SGDataset {
         LVecBase3f _bb_min;
         LVecBase3f _bb_max;
         PT(BoundingBox) _bounds;
-        list<const SGTriangleStrip*> _strips;
-
+        
+        typedef list<const SGTriangleStrip*> StripList;
+        StripList _strips;
 };

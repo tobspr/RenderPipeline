@@ -9,28 +9,27 @@ import direct.directbase.DirectStart
 import sys
 sys.path.insert(0, "../../")
 
-from Native.RSNative import StaticGeometryHandler, SGNode, SGFinishNode
+from Native.RSNative import StaticGeometryHandler, SGNode, SGRenderNode
 
 # This is usually done by the pipeline
 handler = StaticGeometryHandler()
-finish_node = SGFinishNode(handler)
-finish_np = render.attach_new_node(finish_node)
+
 
 # Load model
 model_dataset = handler.load_dataset("model.rpsg")
 node = SGNode("test", handler, model_dataset)
 np = render.attach_new_node(node)
-# np.set_pos(10, 10, 5)
+# render.set_pos(10, 10, 5)
+
+
 # np.set_scale(0.5)
 
+finish_node = SGRenderNode(handler)
+finish_np = render.attach_new_node(finish_node)
 
 base.run()
 
 sys.exit(0)
-
-
-
-
 
 
 

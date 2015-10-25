@@ -7,9 +7,23 @@
 #include "SGTriangleStrip.h"
 #include "SGDataset.h"
 
+#include "../common.h"
+
 
 
 StaticGeometryHandler::StaticGeometryHandler() {
+
+    _dataset_tex = new Texture("DatasetStorage");
+    _mapping_tex = new Texture("DatasetMappings");
+    _dataset_index = 0;
+
+    // Storage for 1024 strips should be enough for now
+    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 2, 1024, Texture::T_float, Texture::F_rgba32);
+
+
+    // The mapping tex assigns strips to a dataset. Right now a dataset can have
+    // up to 1024 strips, and we support up to 10 datasets
+    _mapping_tex->setup_2d_texture(1024, 10, Texture::T_int, Texture::F_r32i);
 
 }
 
@@ -54,16 +68,28 @@ DatasetReference StaticGeometryHandler::load_dataset(const Filename &src) {
     SGDataset *dataset = new SGDataset();
     dataset->read_bounds(dgi);
 
-    // Read in all strips
+    // Read in all strips and store them
+    PTA_uchar dataset_handle = _dataset_tex->modify_ram_image();
     for (size_t i = 0; i < num_strips; ++i) {
         SGTriangleStrip* strip = new  SGTriangleStrip();
         strip->load_from_datagram(dgi);
+        strip->write_to(dataset_handle, _dataset_index++);
         dataset->attach_strip(strip);
     }
+
+    PTA_uchar mapping_handle = _mapping_tex->modify_ram_image();
+
+    dataset->write_mappings(mapping_handle, _datasets.size());
+
+    // Write out debug textures?
+    // _dataset_tex->write("dataset.png");
+    // _mapping_tex->write("mappings.png");
 
     // Attach dataset, clean up the variables, and finally return a handle to the dataset
     _datasets.push_back(dataset);
     delete [] data;
+
+
     return _datasets.size() - 1;
 }
 
@@ -76,4 +102,9 @@ SGDataset* StaticGeometryHandler::get_dataset(DatasetReference dataset) {
 void StaticGeometryHandler::add_for_draw(DatasetReference dataset, const LMatrix4f &transform) {
     cout << "Adding dataset " << dataset << " for draw" << endl;
     cout << "\tMat = " << transform << endl;
+}
+
+
+void StaticGeometryHandler::on_scene_finish() {
+    // Now actually draw all elements
 }

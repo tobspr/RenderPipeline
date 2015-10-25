@@ -8,11 +8,11 @@ class StaticGeometryHandler;
 
 // This node is attached to the scene graph and called last, it renders all
 // static geometry to a buffer
-class SGFinishNode : public PandaNode {
+class SGRenderNode : public PandaNode {
 
     PUBLISHED:
-        SGFinishNode(StaticGeometryHandler* handler);
-        ~SGFinishNode();
+        SGRenderNode(StaticGeometryHandler* handler);
+        ~SGRenderNode();
 
     public:
 

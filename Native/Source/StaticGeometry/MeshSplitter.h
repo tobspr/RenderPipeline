@@ -8,7 +8,7 @@
 #include "pvector.h"
 #include "filename.h"
 
-#define TRI_GROUP_SIZE 1024
+#include "../common.h"
 
 
 class MeshSplitter {
@@ -55,7 +55,7 @@ class MeshSplitter {
 
         static void optimize_results(TriangleResultList &results);
 
-        static void find_intersecting_chunks(const TriangleResultList &results, TriangleResultList &intersecting, const LVecBase3f &search_min, const LVecBase3f &search_max, int max_size = TRI_GROUP_SIZE);
+        static void find_intersecting_chunks(const TriangleResultList &results, TriangleResultList &intersecting, const LVecBase3f &search_min, const LVecBase3f &search_max, int max_size = SG_TRI_GROUP_SIZE);
 };
 
 

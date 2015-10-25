@@ -102,7 +102,7 @@ bool compare_chunk_size(MeshSplitter::Chunk* a, MeshSplitter::Chunk* b) {
 void MeshSplitter::optimize_results(TriangleResultList &results) {
 
     // Chunks which are filled up to certain percentage are ok
-    int size_ok = TRI_GROUP_SIZE * 0.9;
+    int size_ok = SG_TRI_GROUP_SIZE * 0.9;
 
 
     int num_optimization = 50000;
@@ -129,7 +129,7 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
 
                 // Find all intersecting chunks where this chunk could be merged with
                 TriangleResultList intersecting;
-                find_intersecting_chunks(results, intersecting, search_min, search_max, TRI_GROUP_SIZE - current_chunk->triangles.size());
+                find_intersecting_chunks(results, intersecting, search_min, search_max, SG_TRI_GROUP_SIZE - current_chunk->triangles.size());
                 
                 // Remove our current chunk from the list of surrounding chunks
                 intersecting.remove(current_chunk);
@@ -205,7 +205,7 @@ void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVec
     }
 
     // If we hit less than n triangles, we can create a strip and stop traversing
-    if (matching_triangle_list.size() <= TRI_GROUP_SIZE) {
+    if (matching_triangle_list.size() <= SG_TRI_GROUP_SIZE) {
 
         // Take all matches from the pool
         for (TriangleList::iterator start = matching_triangle_list.begin(); start != matching_triangle_list.end(); ++start) {
@@ -407,17 +407,17 @@ void MeshSplitterWriter::process(const Filename &dest) {
     LVecBase3f bb_start, bb_end;
     MeshSplitter::find_minmax(all_triangles, bb_start, bb_end);
 
-    cout << "Traversing recursive to find chunks of size " << TRI_GROUP_SIZE << " ..." << endl;
+    cout << "Traversing recursive to find chunks of size " << SG_TRI_GROUP_SIZE << " ..." << endl;
     MeshSplitter::TriangleResultList results;
 
     MeshSplitter::traverse_recursive(all_triangles, bb_start, bb_end, results, 10);
     cout << "Found " << results.size() << " Strips! This is an effective count of "
-         << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
+         << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
     cout << "Optimizing results and merging small chunks .. " << endl;
     MeshSplitter::optimize_results(results);
 
     cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
-         << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
+         << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
     cout << "Writing out model file .." << endl;
     
     write_results(dest, results, bb_start, bb_end);
