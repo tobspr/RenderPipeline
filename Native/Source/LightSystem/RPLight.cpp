@@ -1,7 +1,7 @@
 
 #include "RPLight.h"
 
-TypeHandle RPLight::_type_handle;
+// TypeHandle RPLight::_type_handle;
 
 RPLight::RPLight(LightType light_type) {
     // cout << "Construct light" << endl;

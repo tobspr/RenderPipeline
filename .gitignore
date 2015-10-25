@@ -23,3 +23,4 @@ Native/Linux
 Native/Source/Interrogate*
 Plugins/Scattering/Tex
 *.rpsg
+Native/compilation_log.txt

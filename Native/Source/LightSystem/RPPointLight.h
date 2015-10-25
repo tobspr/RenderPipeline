@@ -24,21 +24,21 @@ class RPPointLight : public RPLight {
         float _radius;
         float _inner_radius;
 
-    public:
-      static TypeHandle get_class_type() {
-        return _type_handle;
-      }
-      static void init_type() {
-        RPLight::init_type();
-        register_type(_type_handle, "RPPointLight",
-                      RPLight::get_class_type());
-      }
-      virtual TypeHandle get_type() const {
-        return get_class_type();
-      }
+    // public:
+    //   static TypeHandle get_class_type() {
+    //     return _type_handle;
+    //   }
+    //   static void init_type() {
+    //     RPLight::init_type();
+    //     register_type(_type_handle, "RPPointLight",
+    //                   RPLight::get_class_type());
+    //   }
+    //   virtual TypeHandle get_type() const {
+    //     return get_class_type();
+    //   }
 
-    private:
-      static TypeHandle _type_handle;
+    // private:
+    //   static TypeHandle _type_handle;
 
 
 };

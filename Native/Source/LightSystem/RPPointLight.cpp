@@ -2,7 +2,7 @@
 #include "RPPointLight.h"
 
 
-TypeHandle RPPointLight::_type_handle;
+// TypeHandle RPPointLight::_type_handle;
 
 
 

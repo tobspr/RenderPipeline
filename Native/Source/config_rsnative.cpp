@@ -25,8 +25,8 @@ init_librsnative() {
   initialized = true;
   cout << "Initialized! " << endl;
 
-  RPLight::init_type();
-  RPPointLight::init_type();
+  // RPLight::init_type();
+  // RPPointLight::init_type();
   SGNode::init_type();
   SGRenderNode::init_type();
 }

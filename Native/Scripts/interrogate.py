@@ -69,7 +69,6 @@ def execute(command):
 all_sources = find_sources("Source/")
 all_sources = [i.replace("Source/", "") for i in all_sources]
 
-
 # Create interrogate command
 if USE_ABS_PATH:
     cmd = [PANDA_BIN + '/interrogate']
@@ -116,7 +115,9 @@ if COMPILER=="GCC":
 
 for define in defines:
     cmd += ["-D" + define]
+
 cmd += all_sources
+# cmd += ["config_rsnative.h"]q
 
 # try:
 #     subprocess.check_output(cmd, stderr=sys.stderr)
