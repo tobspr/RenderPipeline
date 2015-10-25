@@ -29,9 +29,9 @@ class RPPointLight : public RPLight {
         return _type_handle;
       }
       static void init_type() {
-        ReferenceCount::init_type();
+        RPLight::init_type();
         register_type(_type_handle, "RPPointLight",
-                      ReferenceCount::get_class_type());
+                      RPLight::get_class_type());
       }
       virtual TypeHandle get_type() const {
         return get_class_type();
