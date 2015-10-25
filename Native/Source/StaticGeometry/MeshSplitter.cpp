@@ -443,18 +443,19 @@ void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter:
 
         dg.add_uint32((*rstart)->triangles.size());
 
-
         for (MeshSplitter::TriangleList::const_iterator start = (*rstart)->triangles.cbegin(); start != (*rstart)->triangles.cend(); ++start) {
             MeshSplitter::Triangle *tri = *start;
             for (int i = 0; i < 3; ++i) {
                 dg.add_float32(tri->vertices[i].pos.get_x());
                 dg.add_float32(tri->vertices[i].pos.get_y());
                 dg.add_float32(tri->vertices[i].pos.get_z());
-                dg.add_float32(tri->vertices[i].normal.get_x());
-                dg.add_float32(tri->vertices[i].normal.get_y());
-                dg.add_float32(tri->vertices[i].normal.get_z());
-                dg.add_float32(tri->vertices[i].uv.get_x());
-                dg.add_float32(tri->vertices[i].uv.get_y());
+
+                // dg.add_float32(tri->vertices[i].normal.get_x());
+                // dg.add_float32(tri->vertices[i].normal.get_y());
+                // dg.add_float32(tri->vertices[i].normal.get_z());
+                
+                // dg.add_float32(tri->vertices[i].uv.get_x());
+                // dg.add_float32(tri->vertices[i].uv.get_y());
             }
         }
     }

@@ -102,6 +102,11 @@ endif()
 # Collect sources for compiling
 file(GLOB_RECURSE SOURCES Source/*.cpp)
 
+include_directories("Source/GPUCommand/")
+include_directories("Source/LightSystem/")
+include_directories("Source/StaticGeometry/")
+include_directories("Source/")
+
 set(SOURCES ${SOURCES_H} ${SOURCES})
 
 # Optimizations

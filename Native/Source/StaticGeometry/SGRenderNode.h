@@ -3,6 +3,7 @@
 
 #include "pandabase.h"
 #include "pandaNode.h"
+#include "renderState.h"
 
 class StaticGeometryHandler;
 
@@ -18,8 +19,13 @@ class SGRenderNode : public PandaNode {
 
         virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
         virtual bool is_renderable() const;
+
         
     private:
-        StaticGeometryHandler* _handler;
 
+        void create_default_geom();
+
+        StaticGeometryHandler* _handler;
+        PT(Geom) _geom_strip;
+        CPT(RenderState) _base_render_state;
 };

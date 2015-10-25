@@ -96,22 +96,6 @@ except subprocess.CalledProcessError as msg:
     sys.exit(1)
 
 
-
-# Dirty hack: Since interrogate seems to be unable to handle relative imports,
-# we delete all relative imports from the generated files
-
-with open("Source/InterrogateWrapper.cpp", "r") as handle:
-    lines = handle.readlines()
-
-# Strip lines
-lines = [i for i in lines if not i.startswith('#include "..')]
-
-# Write the new lines
-with open("Source/InterrogateWrapper.cpp", "w") as handle:
-    handle.write(''.join(lines))
-
-
-
 # print("\nRunning interrogate_module ..")
 cmd = [PANDA_BIN + "/interrogate_module"]
 cmd += ["-python-native"]

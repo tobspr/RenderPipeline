@@ -1,8 +1,9 @@
 
-#include "Light.h"
+#include "RPLight.h"
 
+TypeHandle RPLight::_type_handle;
 
-Light::Light(LightType light_type) {
+RPLight::RPLight(LightType light_type) {
     // cout << "Construct light" << endl;
     _light_type = light_type;
     _dirty = false;
@@ -11,12 +12,12 @@ Light::Light(LightType light_type) {
     _color.set(1, 1, 1);
 }
 
-Light::~Light() {
+RPLight::~RPLight() {
     // cout << "Destruct light" << endl;
 }
 
 
-void Light::write_to_command(GPUCommand &cmd) {
+void RPLight::write_to_command(GPUCommand &cmd) {
     cmd.push_int(_slot);
     cmd.push_int(_light_type);
     cmd.push_vec3(_position);

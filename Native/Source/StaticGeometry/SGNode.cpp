@@ -36,6 +36,5 @@ void SGNode::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     CPT(TransformState) internal_transform = data.get_internal_transform(trav);
 
     // TODO: Construct a correct matrix which contains the MVP of the node
-
     _handler->add_for_draw(_dataset_ref, get_transform()->get_mat());
 }

@@ -10,6 +10,65 @@ import sys
 sys.path.insert(0, "../../")
 
 from Native.RSNative import StaticGeometryHandler, SGNode, SGRenderNode
+from Code.Util.MovementController import MovementController
+
+
+controller = MovementController(base)
+controller.set_initial_position(Vec3(5), Vec3(0))
+controller.setup()
+
+
+vtx_shader = """
+#version 150
+
+
+uniform mat4 p3d_ModelViewProjectionMatrix;
+
+in vec4 p3d_Vertex;
+
+uniform sampler2D DatasetTex;
+uniform isampler2D MappingTex;
+
+out vec4 col;
+
+void main() {
+
+    int strip_idx = gl_InstanceID;
+    int vtx_idx = gl_VertexID;
+
+    int obj_idx = 0;
+    int strip_offs = texelFetch(MappingTex, ivec2(strip_idx, obj_idx), 0).x;
+
+
+    int data_offs = vtx_idx * 2;
+
+    vec4 data0 = texelFetch(DatasetTex, ivec2(data_offs + 0, strip_offs), 0).bgra;
+    vec4 data1 = texelFetch(DatasetTex, ivec2(data_offs + 1, strip_offs), 0).abgr;
+
+    vec4 vtx_pos = vec4(data0.xyz, 1);
+
+    col = vec4(vtx_idx / 256.0);
+    col.w = 1.0;
+    col.r = 0.0;
+
+    gl_Position = p3d_ModelViewProjectionMatrix * vtx_pos;    
+} """
+
+
+frag_shader = """
+#version 150
+
+in vec4 col;
+out vec4 result;
+
+void main() {
+
+    result = col;
+}
+"""
+
+shader = Shader.make(Shader.SL_GLSL, vtx_shader, frag_shader)
+
 
 # This is usually done by the pipeline
 handler = StaticGeometryHandler()
@@ -19,6 +78,8 @@ handler = StaticGeometryHandler()
 model_dataset = handler.load_dataset("model.rpsg")
 node = SGNode("test", handler, model_dataset)
 np = render.attach_new_node(node)
+
+
 # render.set_pos(10, 10, 5)
 
 
@@ -26,7 +87,9 @@ np = render.attach_new_node(node)
 
 finish_node = SGRenderNode(handler)
 finish_np = render.attach_new_node(finish_node)
-
+finish_np.set_shader(shader, 1000)
+finish_np.set_instance_count(23)
+finish_np.set_two_sided(True)
 base.run()
 
 sys.exit(0)
@@ -35,96 +98,3 @@ sys.exit(0)
 
 
 
-
-
-
-################## OLD CODE ####################
-
-
-with open("model.rpsg", "rb") as handle:
-    data = handle.read()
-
-
-dg = Datagram(data)
-dgi = DatagramIterator(dg)
-
-header = dgi.get_fixed_string(4)
-num_strips = dgi.get_uint32()
-
-if header != "RPSG":
-    print "Missing RPSG header (was: "  + header + ")!"
-    sys.exit(0)
-
-v = 0
-
-def get_color():
-    return Vec4(random(), random(), random(), 1)
-
-
-root_gn = GeomNode("geomNode")
-
-
-def generate_geom(tri_list):
-    
-    vformat = GeomVertexFormat.get_v3()
-    vdata = GeomVertexData("vdata", vformat, Geom.UH_static)
-    vdata.set_num_rows(len(tri_list))
-
-    vwriter = GeomVertexWriter(vdata, "vertex")
-
-    for tri in tri_list:
-        for vtx in tri:
-            vwriter.add_data3f(vtx + Vec3(0, 0, v * 0.0))
-
-    triangles = GeomTriangles(Geom.UH_static)
-
-    triangles.add_next_vertices( len(tri_list) * 3)
-    # triangles.add_consecutive_vertices(0, len(tri_list) * 3)
-
-    
-    gstate = RenderState.make(ColorAttrib.make_flat(get_color()))
-
-    geom = Geom(vdata)
-    geom.add_primitive(triangles)
-    root_gn.add_geom(geom, gstate)
-
-
-for idx in range(num_strips):
-    if idx % 500 == 0:
-        print "Processing strip", idx
-
-
-    num_tris = dgi.get_uint32()
-
-    triangles = []
-
-    for tidx in range(num_tris):
-
-        vertices = []
-
-        for i in range(3):
-            vx = dgi.get_float32()
-            vy = dgi.get_float32()
-            vz = dgi.get_float32()
-            
-            nx = dgi.get_float32()
-            ny = dgi.get_float32()
-            nz = dgi.get_float32()
-
-            u = dgi.get_float32()
-            v = dgi.get_float32()
-
-            vertices.append(Vec3(vx, vy, vz))
-
-        triangles.append(vertices)
-
-
-    generate_geom(triangles)
-
-
-
-np = render.attach_new_node(root_gn)
-np.set_two_sided(True)
-base.accept("f3", base.toggleWireframe)
-
-run()

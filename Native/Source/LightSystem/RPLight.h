@@ -2,17 +2,11 @@
 #ifndef RP_LIGHT_H
 #define RP_LIGHT_H
 
-
-#include "pandabase.h"
 #include "referenceCount.h"
 #include "luse.h"
+#include "GPUCommand.h"
 
-
-#include "../GPUCommand/GPUCommand.h"
-
-
-
-class Light : public ReferenceCount {
+class RPLight : public ReferenceCount {
 
     PUBLISHED:
 
@@ -22,8 +16,8 @@ class Light : public ReferenceCount {
         };
 
     public:
-        Light(LightType light_type);
-        ~Light();
+        RPLight(LightType light_type);
+        ~RPLight();
 
     PUBLISHED:
 
@@ -54,8 +48,25 @@ class Light : public ReferenceCount {
         LVecBase3f _color;
         LightType _light_type;
 
+
+    public:
+      static TypeHandle get_class_type() {
+        return _type_handle;
+      }
+      static void init_type() {
+        ReferenceCount::init_type();
+        register_type(_type_handle, "RPLight",
+                      ReferenceCount::get_class_type());
+      }
+      virtual TypeHandle get_type() const {
+        return get_class_type();
+      }
+
+    private:
+      static TypeHandle _type_handle;
+
 };
 
-#include "Light.I"
+#include "RPLight.I"
 
 #endif // RP_LIGHT_H

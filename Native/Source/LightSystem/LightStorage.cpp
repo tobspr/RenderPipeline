@@ -27,7 +27,7 @@ int LightStorage::get_max_light_index() {
 
 
 
-void LightStorage::add_light(PT(Light) light) {
+void LightStorage::add_light(PT(RPLight) light) {
     if (light->has_slot()) {
         cerr << "LightStorage: cannot add light since it already has a slot!" << endl;
         return;
@@ -64,7 +64,7 @@ void LightStorage::add_light(PT(Light) light) {
     _cmd_list->add_command(cmd_add);
 }
 
-void LightStorage::remove_light(PT(Light) light) {
+void LightStorage::remove_light(PT(RPLight) light) {
     if (!light->has_slot()) {
         cerr << "Cannot detach light, light has no slot!" << endl;
         return;

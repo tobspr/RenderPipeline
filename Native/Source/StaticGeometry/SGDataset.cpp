@@ -52,4 +52,4 @@ void SGDataset::write_mappings(PTA_uchar data, int offset) {
     }
 
     cout << "Wrote mappings up to " << write_offs << endl; 
-}    
+} 

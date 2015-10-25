@@ -8,7 +8,7 @@
 #include "pvector.h"
 #include "filename.h"
 
-#include "../common.h"
+#include "common.h"
 
 
 class MeshSplitter {

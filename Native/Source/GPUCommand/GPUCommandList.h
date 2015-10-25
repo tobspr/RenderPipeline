@@ -5,7 +5,7 @@
 #include "pandabase.h"
 #include <list>
 
-#include "../GPUCommand/GPUCommand.h"
+#include "GPUCommand.h"
 
 
 class GPUCommandList {

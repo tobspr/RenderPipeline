@@ -7,7 +7,7 @@
 #include "SGTriangleStrip.h"
 #include "SGDataset.h"
 
-#include "../common.h"
+#include "common.h"
 
 
 
@@ -18,7 +18,7 @@ StaticGeometryHandler::StaticGeometryHandler() {
     _dataset_index = 0;
 
     // Storage for 1024 strips should be enough for now
-    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 2, 1024, Texture::T_float, Texture::F_rgba32);
+    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3, 1024, Texture::T_float, Texture::F_rgba32);
 
 
     // The mapping tex assigns strips to a dataset. Right now a dataset can have
@@ -81,14 +81,17 @@ DatasetReference StaticGeometryHandler::load_dataset(const Filename &src) {
 
     dataset->write_mappings(mapping_handle, _datasets.size());
 
+    if (dgi.get_remaining_size() != 0) {
+        cout << "Corrupt RPSG file! " << dgi.get_remaining_size() << " bytes left!" << endl;
+    }
+
     // Write out debug textures?
-    // _dataset_tex->write("dataset.png");
+    _dataset_tex->write("dataset.png");
     // _mapping_tex->write("mappings.png");
 
     // Attach dataset, clean up the variables, and finally return a handle to the dataset
     _datasets.push_back(dataset);
     delete [] data;
-
 
     return _datasets.size() - 1;
 }
@@ -100,11 +103,21 @@ SGDataset* StaticGeometryHandler::get_dataset(DatasetReference dataset) {
 
 
 void StaticGeometryHandler::add_for_draw(DatasetReference dataset, const LMatrix4f &transform) {
-    cout << "Adding dataset " << dataset << " for draw" << endl;
-    cout << "\tMat = " << transform << endl;
+    _draw_list.clear();
+    _draw_list.push_back(DrawEntry(dataset, transform));
 }
 
 
 void StaticGeometryHandler::on_scene_finish() {
     // Now actually draw all elements
 }
+
+
+PT(Texture) StaticGeometryHandler::get_dataset_tex() {
+    return _dataset_tex;
+}
+
+PT(Texture) StaticGeometryHandler::get_mapping_tex() {
+    return _mapping_tex;
+}
+
