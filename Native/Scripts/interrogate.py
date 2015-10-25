@@ -13,6 +13,9 @@ if len(sys.argv) != 4:
     sys.exit(1)
 
 # Parameters
+
+VERBOSE = False
+
 PANDA_BIN = sys.argv[1]
 PANDA_LIBS = sys.argv[2]
 PANDA_INCLUDE = sys.argv[3]
@@ -47,6 +50,21 @@ def find_sources(base_dir):
 
     return sources
 
+def execute(command):    
+    if VERBOSE:
+        with subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=1, universal_newlines=True) as p:
+            for line in p.stdout:
+                print(line, end='', file=sys.stderr)
+            for line in p.stderr:
+                print("STDERR: ", line, end='', file=sys.stderr)
+    else:
+        try:
+            subprocess.check_output(command, stderr=sys.stderr)
+        except subprocess.CalledProcessError as msg:
+            print("Error executing interrogate command:", msg, msg.output, file=sys.stderr)
+            sys.exit(1)
+
+
 # Collect source files and convert them to a relative path
 all_sources = find_sources("Source/")
 all_sources = [i.replace("Source/", "") for i in all_sources]
@@ -76,6 +94,9 @@ cmd += ["-library", MODULE_NAME]
 
 cmd += ["-nomangle"]
 
+if VERBOSE:
+    cmd += ["-v"]
+
 # Defines required to parse the panda source
 defines = ["INTERROGATE", "CPPPARSER", "__STDC__=1", "__cplusplus=201103L"]
 
@@ -97,13 +118,12 @@ for define in defines:
     cmd += ["-D" + define]
 cmd += all_sources
 
-try:
-    subprocess.check_output(cmd, stderr=sys.stderr)
-except subprocess.CalledProcessError as msg:
-    print("Error executing interrogate command:", msg, msg.output, file=sys.stderr)
-    sys.exit(1)
-
-
+# try:
+#     subprocess.check_output(cmd, stderr=sys.stderr)
+# except subprocess.CalledProcessError as msg:
+#     print("Error executing interrogate command:", msg, msg.output, file=sys.stderr)
+#     sys.exit(1)
+execute(cmd)
 
 
 # Create module command
@@ -119,11 +139,14 @@ cmd += ["-library", MODULE_NAME]
 cmd += ["-oc", "Source/InterrogateModule.cpp"] 
 cmd += ["Source/Interrogate.in"]
 
-try:
-    subprocess.check_output(cmd, stderr=sys.stderr)
-except subprocess.CalledProcessError as msg:
-    print("Error executing interrogate_module command: ", msg.output, file=sys.stderr)
-    sys.exit(1)
+# try:
+#     subprocess.check_output(cmd, stderr=sys.stderr)
+# except subprocess.CalledProcessError as msg:
+#     print("Error executing interrogate_module command: ", msg.output, file=sys.stderr)
+#     sys.exit(1)
+
+execute(cmd)
+
 
 
 sys.exit(0)
