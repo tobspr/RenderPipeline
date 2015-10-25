@@ -33,7 +33,6 @@ class MeshSplitter {
             LVecBase3f face_normal;
         };
 
-
         typedef list<Triangle*> TriangleList;
 
         struct Chunk {
@@ -44,14 +43,9 @@ class MeshSplitter {
 
         typedef list<Chunk*> TriangleResultList;
 
+    public:
 
-    PUBLISHED:
-
-        static void split_geom(CPT(Geom) geom, const Filename &dest, bool append = false);
-
-    private:
-
-        static void write_results(const TriangleResultList &results, const Filename &dest, bool append);
+        static void read_triangles(CPT(Geom) geom, TriangleList &result);
 
         static bool triangle_intersects(const LVecBase3f &bb_min, const LVecBase3f &bb_max, Triangle* tri);
         static bool chunk_intersects(const LVecBase3f &bb_min_a, const LVecBase3f &bb_max_a, const LVecBase3f &bb_min_b, const LVecBase3f &bb_max_b);
@@ -59,9 +53,30 @@ class MeshSplitter {
         static void traverse_recursive(TriangleList &parent_triangles, const LVecBase3f bb_start, const LVecBase3f bb_end, TriangleResultList &results, int depth_left);
         static void find_minmax(const TriangleList &tris, LVecBase3f &bb_min, LVecBase3f &bb_max);
 
-        static void read_triangles(CPT(Geom) geom, TriangleList &result);
         static void optimize_results(TriangleResultList &results);
 
         static void find_intersecting_chunks(const TriangleResultList &results, TriangleResultList &intersecting, const LVecBase3f &search_min, const LVecBase3f &search_max, int max_size = TRI_GROUP_SIZE);
+};
+
+
+
+// This small class just wraps arround mesh splitter and handles the combining of geoms
+// and the writing of the .rpsg files
+class MeshSplitterWriter {
+
+    PUBLISHED:
+        MeshSplitterWriter();
+        ~MeshSplitterWriter();
+
+        void add_geom(CPT(Geom));
+        void process(const Filename &dest);
+
+    private:
+
+        void write_results(const Filename &dest, const MeshSplitter::TriangleResultList &results);
+
+        typedef list<CPT(Geom)> GeomList;
+
+        GeomList _attached_geoms;
 };
 

@@ -8,78 +8,6 @@
 #include "datagram.h"
 
 
-void MeshSplitter::split_geom(CPT(Geom) geom, const Filename &dest, bool append) {
-
-
-    cout << "Reading in geometry .." << endl;
-    TriangleList all_triangles;
-    read_triangles(geom, all_triangles);
-    cout << "Read in " << all_triangles.size() << " triangles." << endl;
-
-    // Early exit?
-    if (all_triangles.size() < 1) {
-        cout << "Empty geom!" << endl;
-        return;
-    }
-
-    cout << "Finding bounding volume .." << endl;
-    LVecBase3f bb_start, bb_end;
-    find_minmax(all_triangles, bb_start, bb_end);
-
-    cout << "Traversing recursive to find chunks of size " << TRI_GROUP_SIZE << " ..." << endl;
-    TriangleResultList results;
-
-    traverse_recursive(all_triangles, bb_start, bb_end, results, 10);
-    cout << "Found " << results.size() << " Strips! This is an effective count of "
-         << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
-    cout << "Optimizing results and merging small chunks .. " << endl;
-    optimize_results(results);
-
-    cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
-         << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
-    cout << "Writing out model file .." << endl;
-    
-    write_results(results, dest, append);
-
-    // TODO: Delete all triangles
-    // TODO: Delete all chunks
-
-}
-
-
-
-void MeshSplitter::write_results(const TriangleResultList &results, const Filename &dest, bool append) {
-
-    Datagram dg;
-    dg.add_fixed_string("RPSG", 4);
-    dg.add_uint32(results.size());
-
-    for (TriangleResultList::const_iterator rstart = results.cbegin(); rstart != results.cend(); ++rstart) {
-
-        dg.add_uint32((*rstart)->triangles.size());
-
-        for (TriangleList::const_iterator start = (*rstart)->triangles.cbegin(); start != (*rstart)->triangles.cend(); ++start) {
-            Triangle *tri = *start;
-            for (int i = 0; i < 3; ++i) {
-                dg.add_float32(tri->vertices[i].pos.get_x());
-                dg.add_float32(tri->vertices[i].pos.get_y());
-                dg.add_float32(tri->vertices[i].pos.get_z());
-                dg.add_float32(tri->vertices[i].normal.get_x());
-                dg.add_float32(tri->vertices[i].normal.get_y());
-                dg.add_float32(tri->vertices[i].normal.get_z());
-                dg.add_float32(tri->vertices[i].uv.get_x());
-                dg.add_float32(tri->vertices[i].uv.get_y());
-            }
-        }
-    }
-
-    std::ofstream outfile;
-    outfile.open(dest.get_fullpath(), ios::out | ios::binary);
-    outfile.write((char*)dg.get_data(), dg.get_length());
-    outfile.close();
-}
-
-
 void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
 
     // Create a vertex reader to simplify the reading of positions
@@ -269,7 +197,6 @@ void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVec
         }
     }
 
-
    // cout << "Checking chunk .. from " << parent_triangles.size() << " intersected " << matching_triangles.size() << endl;
 
     // If we hit no triangles, just stop
@@ -432,4 +359,98 @@ void MeshSplitter::find_intersecting_chunks(const TriangleResultList &results, T
             }
         }
     }
+}
+
+
+
+
+MeshSplitterWriter::MeshSplitterWriter() {
+
+}
+
+MeshSplitterWriter::~MeshSplitterWriter() {
+
+}
+
+void MeshSplitterWriter::add_geom(CPT(Geom) geom) {
+    _attached_geoms.push_back(geom);
+}
+
+
+void MeshSplitterWriter::process(const Filename &dest) {
+
+    // Check for an empty writer
+    if (_attached_geoms.size() < 1) {
+        cout << "No geoms attached!" << endl;
+        return;
+    }
+
+    // Construct a list to store all triangles
+    MeshSplitter::TriangleList all_triangles;
+
+    // Iterate over all geoms and collect their triangles
+    for(GeomList::const_iterator iter = _attached_geoms.cbegin(); iter != _attached_geoms.cend(); ++iter) {
+        CPT(Geom) geom = *iter;
+
+        MeshSplitter::read_triangles(geom, all_triangles);
+    }
+
+    // Early exit?
+    if (all_triangles.size() < 1) {
+        cout << "Empty geom!" << endl;
+        return;
+    }
+
+    cout << "Found " << all_triangles.size() << " triangles" << endl;
+
+    cout << "Finding bounding volume .." << endl;
+    LVecBase3f bb_start, bb_end;
+    MeshSplitter::find_minmax(all_triangles, bb_start, bb_end);
+
+    cout << "Traversing recursive to find chunks of size " << TRI_GROUP_SIZE << " ..." << endl;
+    MeshSplitter::TriangleResultList results;
+
+    MeshSplitter::traverse_recursive(all_triangles, bb_start, bb_end, results, 10);
+    cout << "Found " << results.size() << " Strips! This is an effective count of "
+         << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
+    cout << "Optimizing results and merging small chunks .. " << endl;
+    MeshSplitter::optimize_results(results);
+
+    cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
+         << results.size() * TRI_GROUP_SIZE << " triangles" << endl;
+    cout << "Writing out model file .." << endl;
+    
+    write_results(dest, results);
+
+}
+
+
+void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter::TriangleResultList &results) {
+    Datagram dg;
+    dg.add_fixed_string("RPSG", 4);
+    dg.add_uint32(results.size());
+
+    for (MeshSplitter::TriangleResultList::const_iterator rstart = results.cbegin(); rstart != results.cend(); ++rstart) {
+
+        dg.add_uint32((*rstart)->triangles.size());
+
+        for (MeshSplitter::TriangleList::const_iterator start = (*rstart)->triangles.cbegin(); start != (*rstart)->triangles.cend(); ++start) {
+            MeshSplitter::Triangle *tri = *start;
+            for (int i = 0; i < 3; ++i) {
+                dg.add_float32(tri->vertices[i].pos.get_x());
+                dg.add_float32(tri->vertices[i].pos.get_y());
+                dg.add_float32(tri->vertices[i].pos.get_z());
+                dg.add_float32(tri->vertices[i].normal.get_x());
+                dg.add_float32(tri->vertices[i].normal.get_y());
+                dg.add_float32(tri->vertices[i].normal.get_z());
+                dg.add_float32(tri->vertices[i].uv.get_x());
+                dg.add_float32(tri->vertices[i].uv.get_y());
+            }
+        }
+    }
+
+    std::ofstream outfile;
+    outfile.open(dest.get_fullpath(), ios::out | ios::binary);
+    outfile.write((char*)dg.get_data(), dg.get_length());
+    outfile.close();
 }

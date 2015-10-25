@@ -7,6 +7,31 @@ from random import random
 import direct.directbase.DirectStart
 
 import sys
+sys.path.insert(0, "../../")
+
+from Native.RSNative import StaticGeometryHandler
+
+handler = StaticGeometryHandler()
+
+model_dataset = handler.load_dataset("model.rpsg")
+
+
+
+
+sys.exit(0)
+
+
+
+
+
+
+
+
+
+
+
+
+################## OLD CODE ####################
 
 
 with open("model.rpsg", "rb") as handle:
@@ -22,7 +47,6 @@ num_strips = dgi.get_uint32()
 if header != "RPSG":
     print "Missing RPSG header (was: "  + header + ")!"
     sys.exit(0)
-
 
 v = 0
 
