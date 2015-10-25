@@ -136,7 +136,7 @@ IF(MSVC)
     ADD_DEFINITIONS("/D WIN32 /D CRT_SECURE_NO_WARNINGS /D _WINDOWS /D _USRDLL")
 
 ELSE()
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=native -march=native")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=native -march=native -std=c++11")
 ENDIF()
   
 

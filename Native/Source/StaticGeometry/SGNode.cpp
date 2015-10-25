@@ -9,6 +9,9 @@
 #include "cullTraverser.h"
 #include "cullBinAttrib.h"
 
+
+TypeHandle SGNode::_type_handle;
+
 SGNode::SGNode(const string &name, StaticGeometryHandler *handler,  int dataset_reference) 
     : PandaNode(name) {
 

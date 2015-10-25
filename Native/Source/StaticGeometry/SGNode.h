@@ -27,4 +27,20 @@ class SGNode : public PandaNode {
         SGDataset* _dataset;
         int _dataset_ref;
 
+
+    public:
+      static TypeHandle get_class_type() {
+        return _type_handle;
+      }
+      static void init_type() {
+        PandaNode::init_type();
+        register_type(_type_handle, "SGNode", PandaNode::get_class_type());
+      }
+      virtual TypeHandle get_type() const {
+        return get_class_type();
+      }
+
+    private:
+      static TypeHandle _type_handle;
+
 };

@@ -16,6 +16,8 @@
 
 #include "../common.h"
 
+TypeHandle SGRenderNode::_type_handle;
+
 SGRenderNode::SGRenderNode(StaticGeometryHandler *handler) : PandaNode("SGRender") {
     _handler = handler;
     set_internal_bounds(new OmniBoundingVolume);

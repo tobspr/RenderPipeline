@@ -55,8 +55,7 @@ class RPLight : public ReferenceCount {
       }
       static void init_type() {
         ReferenceCount::init_type();
-        register_type(_type_handle, "RPLight",
-                      ReferenceCount::get_class_type());
+        register_type(_type_handle, "RPLight", ReferenceCount::get_class_type());
       }
       virtual TypeHandle get_type() const {
         return get_class_type();
