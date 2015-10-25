@@ -15,4 +15,8 @@ class SGNode : public PandaNode {
         SGNode(const string &name, StaticGeometryHandler* handler, int dataset);
         ~SGNode();
 
+    protected:
+
+        StaticGeometryHandler *_handler;
+
 };
