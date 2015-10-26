@@ -2,6 +2,8 @@
 
 #include "SGRenderNode.h"
 
+#include "dtool_config.h"
+
 #include "omniBoundingVolume.h"
 #include "cullBinAttrib.h"
 #include "cullableObject.h"
@@ -34,7 +36,6 @@ SGRenderNode::SGRenderNode(StaticGeometryHandler *handler, PT(Shader) collector_
     CPT(RenderAttrib) sattrib = ShaderAttrib::make_off();
     sattrib = DCAST(ShaderAttrib, sattrib)->set_shader_input("DatasetTex", handler->get_dataset_tex());
     sattrib = DCAST(ShaderAttrib, sattrib)->set_shader_input("MappingTex", handler->get_mapping_tex());
-    sattrib = DCAST(ShaderAttrib, sattrib)->set_shader_input("IndirectTex", handler->get_indirect_tex());
     sattrib = DCAST(ShaderAttrib, sattrib)->set_shader_input("DrawnObjectsTex", handler->get_drawn_objects_tex());
     sattrib = DCAST(ShaderAttrib, sattrib)->set_shader_input("DynamicStripsTex", handler->get_dynamic_strips_tex());
 
@@ -44,7 +45,9 @@ SGRenderNode::SGRenderNode(StaticGeometryHandler *handler, PT(Shader) collector_
 
 
     _collect_render_state = RenderState::make(
-        DCAST(ShaderAttrib, sattrib)->set_shader(collector_shader)
+         DCAST(ShaderAttrib, 
+			DCAST(ShaderAttrib, sattrib)->set_shader(collector_shader)
+			)->set_shader_input("IndirectTex", handler->get_indirect_tex())
     );
 
 }
@@ -92,23 +95,22 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
         // Render default object
 			
 		Thread *current_thread = Thread::get_current_thread();
-		  
 		
-		const GeomPipelineReader* geom_reader = new GeomPipelineReader(obj->_geom, current_thread);
+		const GeomPipelineReader geom_reader(obj->_geom, current_thread);
 
-		CPT(GeomVertexData) vertex_data = geom_reader->get_vertex_data();
+		CPT(GeomVertexData) vertex_data = geom_reader.get_vertex_data();
 		PT(GeomMunger) munger = gsg->get_geom_munger(obj->_state, current_thread);
 		if (!munger->munge_geom(obj->_geom, vertex_data, true, current_thread)) {
 			cout << "ERROR: munge geom failed " << endl;
-			return;// error
+			return;
 		}
 
-		const GeomVertexDataPipelineReader* data_reader = new GeomVertexDataPipelineReader(vertex_data, current_thread);
-		data_reader->check_array_readers();
+		const GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
+		data_reader.check_array_readers();
 
-		// Bind vertex buffer and shit
-		if (!gsg->begin_draw_primitives(geom_reader, munger, data_reader, true)) {
-		  return;// error
+		if (!gsg->begin_draw_primitives(&geom_reader, munger, &data_reader, true)) {
+			cout << "Error: begin draw primitives failed" << endl;
+			return;
 		}
 
 		// Prepare the image buffer texture
@@ -117,14 +119,23 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
 		assert(gtc->_buffer != 0);
 
 		GLGraphicsStateGuardian* glgsg = (GLGraphicsStateGuardian*)gsg;
+
+		cout << "gl bind buffer = " << glgsg->_glBindBuffer << endl;
+		cout << "gl multi draw arrays indirect = " << glgsg->_glMultiDrawArraysIndirect << endl;
 		
+		cout << "Binding buffer " << gtc->_buffer << endl;
 		glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gtc->_buffer);
-		glgsg->_glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 0, 0);
+
+		cout << "Draw arrays indirect " << endl;
+		glgsg->_glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 1, 0);
+
+		cout << "Unbinding buffer " << endl;
+		glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+		cout << "Done! " << endl;
 
 		gsg->end_draw_primitives();
 
-		delete data_reader;
-		delete geom_reader;
 
 	}
 }

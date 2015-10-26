@@ -9,6 +9,7 @@ from random import random
 load_prc_file("../../Config/configuration.prc")
 load_prc_file_data("", "show-frame-rate-meter #t")
 load_prc_file_data("", "gl-debug #t")
+load_prc_file_data("", "notify-level-glgsg debug")
 
 import direct.directbase.DirectStart
 
