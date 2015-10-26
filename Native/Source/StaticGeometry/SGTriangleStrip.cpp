@@ -83,12 +83,12 @@ void SGTriangleStrip::write_to(PTA_uchar &data, int offset) {
    }
 
    // Fill empty space with zeroes
-   // int fill_vertices = SG_TRI_GROUP_SIZE * 3 - _vertex_data.size();
-   // for (int i = 0; i < fill_vertices; ++i) {
-   //      for (int k = 0; k < 4; ++k) {
-   //          f_data[write_offset++] = 0.0;
-   //      }  
-   // }
+   int fill_vertices = SG_TRI_GROUP_SIZE * 3 - _vertex_data.size();
+   for (int i = 0; i < fill_vertices; ++i) {
+        for (int k = 0; k < 4; ++k) {
+            f_data[write_offset++] = 0.0;
+        }  
+   }
 }
 
 int SGTriangleStrip::get_index() const {

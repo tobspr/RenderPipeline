@@ -25,6 +25,7 @@ SGNode::SGNode(const string &name, StaticGeometryHandler *handler,  int dataset_
     }
 
     set_internal_bounds(_dataset->get_bounds());
+    set_final(true);
 }
 
 SGNode::~SGNode() {

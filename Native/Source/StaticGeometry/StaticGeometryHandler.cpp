@@ -34,12 +34,12 @@ StaticGeometryHandler::StaticGeometryHandler() {
 
     // Store a list of rendered objects, for each object this stores
     // the object index, and its transform matrix.
-    _drawn_objects_tex->setup_buffer_texture(8192, Texture::T_float, Texture::F_rgba32, GeomEnums::UH_dynamic);
+    _drawn_objects_tex->setup_buffer_texture(8192 * 8, Texture::T_float, Texture::F_rgba32, GeomEnums::UH_dynamic);
 
     // This texture is used to write all rendered strips to.
     // For each rendered strip, there is an object reference (to get the transform mat),
     // and a global strip reference.
-    _dynamic_strips_tex->setup_buffer_texture(8192, Texture::T_int, Texture::F_r32i, GeomEnums::UH_static);
+    _dynamic_strips_tex->setup_buffer_texture(8192 * 8, Texture::T_int, Texture::F_r32i, GeomEnums::UH_static);
 }
 
 
@@ -122,7 +122,6 @@ void StaticGeometryHandler::add_for_draw(DatasetReference dataset, const LMatrix
     PTA_uchar handle = _drawn_objects_tex->modify_ram_image();
     float* f_handle = reinterpret_cast<float*>(handle.p());
     
-
     // Store the new amount of rendered objects
     f_handle[0] = _num_rendered_objects + 1;
     f_handle[1] = 0;
@@ -146,15 +145,8 @@ void StaticGeometryHandler::add_for_draw(DatasetReference dataset, const LMatrix
 
 
 void StaticGeometryHandler::clear_render_list() {
+    cout << "rendered " << _num_rendered_objects << " objects " << endl;
     _num_rendered_objects = 0;
-
-    // Write the new amount of rendered objects
-    // PTA_uchar handle = _drawn_objects_tex->modify_ram_image();
-    // float* f_handle = reinterpret_cast<float*>(handle.p());
-    // f_handle[0] = 0; // 0 Rendered Objects
-    // f_handle[1] = 0; // reserved
-    // f_handle[2] = 0; // reserved
-    // f_handle[3] = 0; // reserved
 }
 
 

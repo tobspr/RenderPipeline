@@ -10,6 +10,7 @@
 #include "geomVertexWriter.h"
 #include "geomTriangles.h"
 #include "shaderAttrib.h"
+#include "geomVertexData.h"
 #include "geom.h"
 
 #include "StaticGeometryHandler.h"
@@ -67,6 +68,7 @@ void SGRenderNode::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     CPT(RenderState) state = _base_render_state->compose(data._state);
     CullableObject *object =
       new CullableObject(_geom_strip, state, internal_transform);
+    object->set_draw_callback(new SGRenderCallback(this, 1));
     trav->get_cull_handler()->record_object(object, trav);
 
     _handler->clear_render_list();
@@ -76,17 +78,48 @@ void SGRenderNode::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
 void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
 
     GeomDrawCallbackData *data = (GeomDrawCallbackData *)cbdata;
+    CullableObject *obj = data->get_object();
     GraphicsStateGuardianBase *gsg = data->get_gsg();
-
-    // cout << "Doing draw callback with reason " << reason << endl;
-    // gsg->dispatch_compute(it->get_x(), it->get_y(), it->get_z());
-
+	
     if (reason == 0) {
         // Execute collector shader
         gsg->dispatch_compute(1, 1, 1);
-    }
+    } else if (reason == 1) {
+        // Render default object
 
+    
+			
+		Thread *current_thread = Thread::get_current_thread();
+		const GeomPipelineReader* geom_reader = new GeomPipelineReader(obj->_geom, current_thread);
 
+		CPT(GeomVertexData) vertex_data = geom_reader->get_vertex_data();
+		PT(GeomMunger) munger = gsg->get_geom_munger(obj->_state, current_thread);
+		if (!munger->munge_geom(obj->_geom, vertex_data, true, current_thread)) {
+			cout << "ERROR: munge geom failed " << endl;
+			return;// error
+		}
+
+		const GeomVertexDataPipelineReader* data_reader = new GeomVertexDataPipelineReader(vertex_data, current_thread);
+		data_reader->check_array_readers();
+
+		// Bind vertex buffer and shit
+		if (!gsg->begin_draw_primitives(geom_reader, munger, data_reader, true)) {
+		  return;// error
+		}
+
+		// Prepare the image buffer texture
+		//GLTextureContext *gtc = DCAST(GLTextureContext, texture->prepare_now(gsg));
+		//assert(gtc->_buffer != 0);
+
+		//glBindBuffer(GL_WHATEVER_INDIRECT_DRAW_BUFFER, gtc->_buffer);
+		//glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 0, 0);
+
+		gsg->end_draw_primitives();
+
+		delete data_reader;
+		delete geom_reader;
+
+	}
 }
 
 

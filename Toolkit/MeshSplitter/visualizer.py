@@ -95,8 +95,8 @@ handler = StaticGeometryHandler()
 # Load model
 model_dataset = handler.load_dataset("model.rpsg")
 
-for x in xrange(3):
-    for y in xrange(3):
+for x in xrange(11):
+    for y in xrange(11):
 
         node = SGNode("test", handler, model_dataset)
         np = render.attach_new_node(node)
@@ -113,7 +113,7 @@ collect_shader = Shader.load_compute(Shader.SL_GLSL, "collect_objects.compute.gl
 finish_node = SGRenderNode(handler, collect_shader)
 finish_np = render.attach_new_node(finish_node)
 finish_np.set_shader(shader, 1000)
-finish_np.set_instance_count( (154 + 1) * 9 )
+finish_np.set_instance_count( (88 + 1) * 11 * 11 )
 finish_np.set_two_sided(True)
 base.run()
 
