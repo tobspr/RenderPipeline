@@ -9,6 +9,7 @@ layout(local_size_x=128, local_size_y=1, local_size_z=1) in;
 uniform samplerBuffer DrawnObjectsTex;
 
 uniform isampler2D MappingTex;
+uniform iimageBuffer IndirectTex;
 
 uniform layout(r32i) iimageBuffer DynamicStripsTex;
 
@@ -20,6 +21,10 @@ void main() {
 
     // Reset counter in the beginning
     imageStore(DynamicStripsTex, 0, ivec4(0));
+    imageStore(IndirectTex, 0, ivec4(0));
+    imageStore(IndirectTex, 1, ivec4(0));
+    imageStore(IndirectTex, 2, ivec4(0));
+    imageStore(IndirectTex, 3, ivec4(0));
 
     barrier();
 
@@ -40,6 +45,8 @@ void main() {
             int strip_id = texelFetch(MappingTex, ivec2(k+1, object_id), 0).x;
 
             int offset = imageAtomicAdd(DynamicStripsTex, 0, 1) * 2;
+            imageAtomicAdd(IndirectTex, 0, 1);
+
             imageStore(DynamicStripsTex, offset + 1, ivec4(thread_id));
             imageStore(DynamicStripsTex, offset + 2, ivec4(strip_id));
         }

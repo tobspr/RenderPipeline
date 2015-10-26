@@ -13,8 +13,12 @@
 #include "geomVertexData.h"
 #include "geom.h"
 
+
 #include "StaticGeometryHandler.h"
 #include "SGRenderCallback.h"
+
+#include "glgsg.h"
+
 
 #include "../common.h"
 
@@ -86,10 +90,10 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
         gsg->dispatch_compute(1, 1, 1);
     } else if (reason == 1) {
         // Render default object
-
-    
 			
 		Thread *current_thread = Thread::get_current_thread();
+		  
+		
 		const GeomPipelineReader* geom_reader = new GeomPipelineReader(obj->_geom, current_thread);
 
 		CPT(GeomVertexData) vertex_data = geom_reader->get_vertex_data();
@@ -108,11 +112,14 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
 		}
 
 		// Prepare the image buffer texture
-		//GLTextureContext *gtc = DCAST(GLTextureContext, texture->prepare_now(gsg));
-		//assert(gtc->_buffer != 0);
+		TextureContext* tc = _handler->get_indirect_tex()->prepare_now( 0, gsg->get_prepared_objects(), gsg );
+		GLTextureContext *gtc = (GLTextureContext*)tc;
+		assert(gtc->_buffer != 0);
 
-		//glBindBuffer(GL_WHATEVER_INDIRECT_DRAW_BUFFER, gtc->_buffer);
-		//glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 0, 0);
+		GLGraphicsStateGuardian* glgsg = (GLGraphicsStateGuardian*)gsg;
+		
+		glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gtc->_buffer);
+		glgsg->_glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 0, 0);
 
 		gsg->end_draw_primitives();
 
