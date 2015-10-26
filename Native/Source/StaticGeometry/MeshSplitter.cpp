@@ -124,8 +124,8 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
 
                 // Increase the area twice by its size, to get the search radius
                 LVecBase3f bb_size = (search_max - search_min);
-                search_min -= bb_size * 2.0;
-                search_max += bb_size * 2.0;
+                search_min -= bb_size * 0.5;
+                search_max += bb_size * 0.5;
 
                 // Find all intersecting chunks where this chunk could be merged with
                 TriangleResultList intersecting;
@@ -441,7 +441,18 @@ void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter:
 
     for (MeshSplitter::TriangleResultList::const_iterator rstart = results.cbegin(); rstart != results.cend(); ++rstart) {
 
+        MeshSplitter::find_minmax((*rstart)->triangles, (*rstart)->bb_min, (*rstart)->bb_max);
+
         dg.add_uint32((*rstart)->triangles.size());
+
+        // Write chunk bounds
+        dg.add_float32((*rstart)->bb_min.get_x());
+        dg.add_float32((*rstart)->bb_min.get_y());
+        dg.add_float32((*rstart)->bb_min.get_z());
+
+        dg.add_float32((*rstart)->bb_max.get_x());
+        dg.add_float32((*rstart)->bb_max.get_y());
+        dg.add_float32((*rstart)->bb_max.get_z());
 
         for (MeshSplitter::TriangleList::const_iterator start = (*rstart)->triangles.cbegin(); start != (*rstart)->triangles.cend(); ++start) {
             MeshSplitter::Triangle *tri = *start;

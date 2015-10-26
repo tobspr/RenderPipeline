@@ -21,9 +21,13 @@ StaticGeometryHandler::StaticGeometryHandler() {
     _dataset_index = 0;
     _num_rendered_objects = 0;
 
+
+    const int max_objects_per_frame = 128;
+    const int max_strips_per_frame = 100000;
+
     // The dataset texture stores the data of all triangle strips. It can be quite
     // huge, however storage for 1024 strips should be enough for now.
-    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3, 1024, Texture::T_float, Texture::F_rgba32);
+    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3 + 2, 1024, Texture::T_float, Texture::F_rgba32);
 
     // The mapping tex assigns strips to a dataset. Right now a dataset can have
     // up to 1024 strips, and we support up to 10 datasets
@@ -39,7 +43,7 @@ StaticGeometryHandler::StaticGeometryHandler() {
     // This texture is used to write all rendered strips to.
     // For each rendered strip, there is an object reference (to get the transform mat),
     // and a global strip reference.
-    _dynamic_strips_tex->setup_buffer_texture(8192 * 8, Texture::T_int, Texture::F_r32i, GeomEnums::UH_static);
+    _dynamic_strips_tex->setup_buffer_texture(8192 * 128, Texture::T_int, Texture::F_r32i, GeomEnums::UH_static);
 }
 
 
@@ -145,7 +149,7 @@ void StaticGeometryHandler::add_for_draw(DatasetReference dataset, const LMatrix
 
 
 void StaticGeometryHandler::clear_render_list() {
-    cout << "rendered " << _num_rendered_objects << " objects " << endl;
+    // cout << "rendered " << _num_rendered_objects << " objects " << endl;
     _num_rendered_objects = 0;
 }
 

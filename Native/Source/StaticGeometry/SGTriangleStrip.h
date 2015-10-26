@@ -25,6 +25,10 @@ class SGTriangleStrip {
 
         int _index;
 
+        LVecBase3f bb_min;
+        LVecBase3f bb_max;
+
+
         vector<PerVertexData> _vertex_data;
 
 };

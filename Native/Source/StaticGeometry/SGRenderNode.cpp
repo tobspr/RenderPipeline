@@ -116,23 +116,24 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
 		// Prepare the image buffer texture
 		TextureContext* tc = _handler->get_indirect_tex()->prepare_now( 0, gsg->get_prepared_objects(), gsg );
 		GLTextureContext *gtc = (GLTextureContext*)tc;
+		gsg->update_texture(gtc, true);
 		assert(gtc->_buffer != 0);
 
 		GLGraphicsStateGuardian* glgsg = (GLGraphicsStateGuardian*)gsg;
 
-		cout << "gl bind buffer = " << glgsg->_glBindBuffer << endl;
-		cout << "gl multi draw arrays indirect = " << glgsg->_glMultiDrawArraysIndirect << endl;
+		//cout << "gl bind buffer = " << glgsg->_glBindBuffer << endl;
+		//cout << "gl multi draw arrays indirect = " << glgsg->_glMultiDrawArraysIndirect << endl;
 		
-		cout << "Binding buffer " << gtc->_buffer << endl;
+		//cout << "Binding buffer " << gtc->_buffer << endl;
 		glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gtc->_buffer);
 
-		cout << "Draw arrays indirect " << endl;
+		//cout << "Draw arrays indirect " << endl;
 		glgsg->_glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 1, 0);
 
-		cout << "Unbinding buffer " << endl;
-		glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+		//cout << "Unbinding buffer " << endl;
+		//glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-		cout << "Done! " << endl;
+		//cout << "Done! " << endl;
 
 		gsg->end_draw_primitives();
 

@@ -5,6 +5,8 @@
 
 SGTriangleStrip::SGTriangleStrip() {
     _index = -1;
+    bb_min.set(0, 0, 0);
+    bb_max.set(0, 0, 0);
 }
 
 SGTriangleStrip::~SGTriangleStrip() {
@@ -25,6 +27,16 @@ void SGTriangleStrip::load_from_datagram(DatagramIterator &dgi) {
         cout << "ERROR: Strip size > " << SG_TRI_GROUP_SIZE << endl;
         return;
     }
+
+    // Read bounding volume
+    bb_min.set_x(dgi.get_float32());
+    bb_min.set_y(dgi.get_float32());
+    bb_min.set_z(dgi.get_float32());
+
+    bb_max.set_x(dgi.get_float32());
+    bb_max.set_y(dgi.get_float32());
+    bb_max.set_z(dgi.get_float32());
+
 
     // Read in all triangles from the strip
     for (size_t k = 0; k < strip_size; ++k) {
@@ -60,10 +72,22 @@ void SGTriangleStrip::write_to(PTA_uchar &data, int offset) {
 
     // Compute the write offset:
     // 3 Triangles, each 4 floats:
-    size_t write_offset = offset * SG_TRI_GROUP_SIZE * 3 * 4;
+    // Additionally increase the offset by 8 since we store the bounding volume too
+    size_t write_offset = offset * (SG_TRI_GROUP_SIZE * 3 * 4 + 8);
 
     // Store our write position
     _index = offset;
+
+    f_data[write_offset++] = bb_min.get_x();
+    f_data[write_offset++] = bb_min.get_y();
+    f_data[write_offset++] = bb_min.get_z();
+    f_data[write_offset++] = 0;
+
+    f_data[write_offset++] = bb_max.get_x();
+    f_data[write_offset++] = bb_max.get_y();
+    f_data[write_offset++] = bb_max.get_z();
+    f_data[write_offset++] = 0;
+
 
     // Write all vertices
     for (size_t i = 0; i < _vertex_data.size(); ++i) {
