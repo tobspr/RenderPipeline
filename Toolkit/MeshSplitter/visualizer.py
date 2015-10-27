@@ -8,7 +8,7 @@ from random import random
 
 load_prc_file("../../Config/configuration.prc")
 load_prc_file_data("", "show-frame-rate-meter #t")
-load_prc_file_data("", "gl-debug #f")
+load_prc_file_data("", "gl-debug #t")
 # load_prc_file_data("", "notify-level-glgsg debug")
 
 import direct.directbase.DirectStart
@@ -21,7 +21,7 @@ from Code.Util.MovementController import MovementController
 
 
 controller = MovementController(base)
-controller.set_initial_position(Vec3(5), Vec3(0))
+controller.set_initial_position(Vec3(3), Vec3(0))
 controller.setup()
 
 
@@ -60,21 +60,22 @@ void main() {
 
     mat4 transform = mat4(mt0, mt1, mt2, mt3); 
 
-    int data_offs = 2 + vtx_idx;
+    // 2 for bounds, 1 for visibility
+    int data_offs = 2 + 1 + vtx_idx;
 
     vec4 data0 = texelFetch(DatasetTex, ivec2(data_offs + 0, strip_id), 0).bgra;
     //vec4 data1 = texelFetch(DatasetTex, ivec2(data_offs + 1, strip_offs), 0).abgr;
 
     vec4 vtx_pos = vec4(data0.xyz, 1);
 
-    col = vec4(strip_id / 200.0, 1.0 - (strip_id / 200.0), 0, 1);
+    col = vec4(strip_id / 1250.0, 1.0 - (strip_id / 1250.0), (strip_id % 4) / 4.0, 1);
     col.w = 1.0;
 
     vec3 nrm = normalize(vtx_pos.xyz);
 
+    //col.xyz = vec3( (dot(nrm, vec3(1, 0, 0))) < 0.5 ? 1.0 : 0.0);
     vtx_pos = transform * vtx_pos;
 
-    col.xyz = nrm;
 
     gl_Position = p3d_ModelViewProjectionMatrix * vtx_pos;    
 } """
@@ -102,8 +103,8 @@ handler = StaticGeometryHandler()
 # Load model
 model_dataset = handler.load_dataset("model.rpsg")
 
-for x in xrange(11):
-    for y in xrange(11):
+for x in xrange(1):
+    for y in xrange(1):
 
         node = SGNode("test", handler, model_dataset)
         np = render.attach_new_node(node)
@@ -113,6 +114,9 @@ for x in xrange(11):
 
 
 
+base.camLens.setNearFar(0.01, 1000.0)
+base.camLens.setFov(120)
+
 # np.set_scale(0.5)
 collect_shader = Shader.load_compute(Shader.SL_GLSL, "collect_objects.compute.glsl")
 
@@ -120,6 +124,17 @@ collect_shader = Shader.load_compute(Shader.SL_GLSL, "collect_objects.compute.gl
 finish_node = SGRenderNode(handler, collect_shader)
 finish_np = render.attach_new_node(finish_node)
 finish_np.set_shader(shader, 1000)
+
+def update(task):
+    cpos = base.camera.getPos(render)
+    cdir = base.camera.getQuat(render).getForward()
+    finish_np.set_shader_input("cameraPosition", cpos)
+    finish_np.set_shader_input("cameraDirection", cdir)
+
+    return task.cont
+
+base.addTask(update, "update")
+
 base.run()
 
 sys.exit(0)

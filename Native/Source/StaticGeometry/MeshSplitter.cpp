@@ -59,6 +59,7 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
             LVecBase3f v1 = tri->vertices[2].pos - tri->vertices[0].pos;
 
             LVecBase3f face_normal = v0.cross(v1);
+            face_normal.normalize();
 
             // Make sure the normal points into the right direction, compute
             // the dot product between the normal of the first vertex and the
@@ -363,6 +364,37 @@ void MeshSplitter::find_intersecting_chunks(const TriangleResultList &results, T
 
 
 
+void MeshSplitter::find_common_vector(const MeshSplitter::Chunk* chunk, LVecBase3f &cvector, float& max_angle_diff) {
+
+    const float PI = 3.14159265359;
+
+    // First, average all vectors to get a common vector
+    cvector.set(0, 0, 0);
+
+    for(TriangleList::const_iterator iter = chunk->triangles.cbegin(); iter != chunk->triangles.cend(); ++iter) {
+        cvector += (*iter)->face_normal;
+    }
+
+    cvector.normalize();
+
+    max_angle_diff = -1000000.0;
+
+    // Now, for each normal, check the angle between the face and the common vector,
+    // and find the maximum 
+
+    for(TriangleList::const_iterator iter = chunk->triangles.cbegin(); iter != chunk->triangles.cend(); ++iter) {
+        float angle = acos((*iter)->face_normal.dot(cvector));
+        if (angle < 0.0) angle += 2.0 * PI;
+
+        if (angle > max_angle_diff) {
+            max_angle_diff = angle;
+         }
+    }
+
+    // cout << "Common vector is " << cvector << " and diff is " << max_angle_diff << endl;
+}
+
+
 
 MeshSplitterWriter::MeshSplitterWriter() {
 
@@ -414,7 +446,7 @@ void MeshSplitterWriter::process(const Filename &dest) {
     cout << "Found " << results.size() << " Strips! This is an effective count of "
          << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
     cout << "Optimizing results and merging small chunks .. " << endl;
-    MeshSplitter::optimize_results(results);
+    //MeshSplitter::optimize_results(results);
 
     cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
          << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
@@ -441,6 +473,7 @@ void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter:
 
     for (MeshSplitter::TriangleResultList::const_iterator rstart = results.cbegin(); rstart != results.cend(); ++rstart) {
 
+        // Make sure the minmax is still correct
         MeshSplitter::find_minmax((*rstart)->triangles, (*rstart)->bb_min, (*rstart)->bb_max);
 
         dg.add_uint32((*rstart)->triangles.size());
@@ -453,6 +486,17 @@ void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter:
         dg.add_float32((*rstart)->bb_max.get_x());
         dg.add_float32((*rstart)->bb_max.get_y());
         dg.add_float32((*rstart)->bb_max.get_z());
+
+        // Compute and find common vector
+        LVecBase3f common_vector;
+        float angle_diff;
+        MeshSplitter::find_common_vector(*rstart, common_vector, angle_diff);
+
+        dg.add_float32(common_vector.get_x());
+        dg.add_float32(common_vector.get_y());
+        dg.add_float32(common_vector.get_z());
+        dg.add_float32(angle_diff);
+
 
         for (MeshSplitter::TriangleList::const_iterator start = (*rstart)->triangles.cbegin(); start != (*rstart)->triangles.cend(); ++start) {
             MeshSplitter::Triangle *tri = *start;

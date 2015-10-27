@@ -27,7 +27,9 @@ StaticGeometryHandler::StaticGeometryHandler() {
 
     // The dataset texture stores the data of all triangle strips. It can be quite
     // huge, however storage for 1024 strips should be enough for now.
-    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3 + 2, 1024, Texture::T_float, Texture::F_rgba32);
+    // We add +2 for the bounding volume
+    // We add +1 for the visibility flags
+    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3 + 2 + 1, 1024, Texture::T_float, Texture::F_rgba32);
 
     // The mapping tex assigns strips to a dataset. Right now a dataset can have
     // up to 1024 strips, and we support up to 10 datasets

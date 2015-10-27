@@ -39,16 +39,13 @@ SGRenderNode::SGRenderNode(StaticGeometryHandler *handler, PT(Shader) collector_
     sattrib = DCAST(ShaderAttrib, sattrib)->set_shader_input("DrawnObjectsTex", handler->get_drawn_objects_tex());
     sattrib = DCAST(ShaderAttrib, sattrib)->set_shader_input("DynamicStripsTex", handler->get_dynamic_strips_tex());
 
-    _base_render_state = RenderState::make(
-        sattrib
-    );
+    _base_render_state = RenderState::make(sattrib);
 
-
-    _collect_render_state = RenderState::make(
-         DCAST(ShaderAttrib, 
-			DCAST(ShaderAttrib, sattrib)->set_shader(collector_shader)
-			)->set_shader_input("IndirectTex", handler->get_indirect_tex())
-    );
+    CPT(RenderAttrib) collect_attrib = sattrib;
+    collect_attrib = DCAST(ShaderAttrib, collect_attrib)->set_shader(collector_shader, 100000);
+    collect_attrib = DCAST(ShaderAttrib, collect_attrib)->set_shader_input("IndirectTex", handler->get_indirect_tex());
+  
+    _collect_render_state = RenderState::make(collect_attrib);
 
 }
 
@@ -65,7 +62,8 @@ void SGRenderNode::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
 
 
     // Execute the collector shader
-    CullableObject *collect_obj = new CullableObject(NULL, _collect_render_state, TransformState::make_identity());
+    CullableObject *collect_obj = new CullableObject(NULL, 
+        data._state->compose(_collect_render_state), TransformState::make_identity());
     collect_obj->set_draw_callback(new SGRenderCallback(this, 0));
     trav->get_cull_handler()->record_object(collect_obj, trav);
 
@@ -73,7 +71,7 @@ void SGRenderNode::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     // Finally render the triangle strip
     CPT(TransformState) internal_transform = data.get_internal_transform(trav);
     CPT(RenderState) state = _base_render_state->compose(data._state);
-    CullableObject *object =
+    CullableObject *object = 
       new CullableObject(_geom_strip, state, internal_transform);
     object->set_draw_callback(new SGRenderCallback(this, 1));
     trav->get_cull_handler()->record_object(object, trav);
@@ -121,19 +119,8 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
 
 		GLGraphicsStateGuardian* glgsg = (GLGraphicsStateGuardian*)gsg;
 
-		//cout << "gl bind buffer = " << glgsg->_glBindBuffer << endl;
-		//cout << "gl multi draw arrays indirect = " << glgsg->_glMultiDrawArraysIndirect << endl;
-		
-		//cout << "Binding buffer " << gtc->_buffer << endl;
 		glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gtc->_buffer);
-
-		//cout << "Draw arrays indirect " << endl;
 		glgsg->_glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 1, 0);
-
-		//cout << "Unbinding buffer " << endl;
-		//glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-
-		//cout << "Done! " << endl;
 
 		gsg->end_draw_primitives();
 

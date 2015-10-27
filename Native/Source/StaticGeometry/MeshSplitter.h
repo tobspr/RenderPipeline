@@ -55,6 +55,9 @@ class MeshSplitter {
 
         static void optimize_results(TriangleResultList &results);
 
+        static void find_common_vector(const Chunk* chunk, LVecBase3f &cvector, float& max_angle_diff);
+
+
         static void find_intersecting_chunks(const TriangleResultList &results, TriangleResultList &intersecting, const LVecBase3f &search_min, const LVecBase3f &search_max, int max_size = SG_TRI_GROUP_SIZE);
 };
 
