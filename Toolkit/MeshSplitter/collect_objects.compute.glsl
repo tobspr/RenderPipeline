@@ -16,16 +16,6 @@ uniform sampler2D DatasetTex;
 
 uniform vec3 cameraPosition;
 
-struct Visibility {
-    bool pos_x;
-    bool neg_x;
-    bool pos_y;
-    bool neg_y;
-    bool pos_z;
-    bool neg_z;
-
-};
-
 
 const float HALF_PI = 1.57079632679;
 const float TWO_PI = 6.28318530718;
