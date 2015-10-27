@@ -2,7 +2,12 @@ from __future__ import print_function
 
 
 """ This script generates the normal quantization texture used by the pipeline,
-based on a paper by cryengine. It also generates the mipmaps """
+based on a paper by cryengine:
+
+http://advances.realtimerendering.com/s2010/Kaplanyan-CryEngine3(SIGGRAPH%202010%20Advanced%20RealTime%20Rendering%20Course).pdf
+Page 39 to 49
+
+It also generates the mipmaps. """
 
 
 TEXTURE_SIZE = 2048

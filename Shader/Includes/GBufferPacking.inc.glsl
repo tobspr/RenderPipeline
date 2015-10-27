@@ -12,7 +12,10 @@ layout(location=1) out vec4 gbuffer_out_1;
 layout(location=2) out vec4 gbuffer_out_2;
 
 
-// Normal Quantization as described in the cryengine paper
+// Normal Quantization as described in the cryengine paper:
+// http://advances.realtimerendering.com/s2010/Kaplanyan-CryEngine3(SIGGRAPH%202010%20Advanced%20RealTime%20Rendering%20Course).pdf
+// Page 39 to 49
+
 vec3 normal_quantization(vec3 normal)
 {
     normal = normalize(normal);
@@ -28,10 +31,12 @@ vec3 normal_quantization(vec3 normal)
     float fittingScale = texture(NormalQuantizationTex, cubeCoord).x;
 
     // scale the normal to get the best fit
-    normal *= fittingScale;
-    normal = normal * 0.5 + 0.5;
+    // normal *= fittingScale;
+    // normal = normal * 0.5 + 0.5;
     return normal;
 }
+
+
 
 void render_material(Material m) {
 
@@ -63,7 +68,8 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
 
     m.diffuse = data0.xyz;
     m.roughness = max(0.01, data0.w);
-    m.normal = normalize(data1.xyz * 2 - 1);
+    // m.normal = normalize(data1.xyz * 2 - 1);
+    m.normal = normalize(data1.xyz);
     m.metallic = data1.w;
     m.specular = max(0.01, data2.x);
 
@@ -71,7 +77,8 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
 }
 
 vec3 get_gbuffer_normal(sampler2D GBuffer1, vec2 texcoord) {
-    return normalize(texture(GBuffer1, texcoord).xyz * 2 - 1);
+    // return normalize(texture(GBuffer1, texcoord).xyz * 2 - 1);
+    return normalize(texture(GBuffer1, texcoord).xyz);
 }
 
 #endif

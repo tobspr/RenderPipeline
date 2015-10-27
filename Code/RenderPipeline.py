@@ -180,6 +180,10 @@ class RenderPipeline(DebugObject):
         """ Reloads all shaders """
         self._stage_mgr.set_shaders()
         self._light_mgr.reload_shaders()
+
+        # Set the default effect on render
+        self.set_effect(Globals.render, "Effects/Default.yaml", {}, -10)
+        
         self._plugin_mgr.trigger_hook("on_shader_reload")
 
     def _init_bindings(self):

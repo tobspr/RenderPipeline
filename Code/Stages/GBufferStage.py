@@ -34,6 +34,8 @@ class GBufferStage(RenderStage):
         self._target.add_depth_texture()
         self._target.add_color_texture()
         self._target.add_aux_textures(2)
+        self._target.set_color_bits(16)
+        self._target.set_aux_bits(16)
         self._target.set_depth_bits(32)
 
         if early_z:

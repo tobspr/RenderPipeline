@@ -17,19 +17,13 @@ float computePointLightAttenuation(float r, float d) {
 
     float linearAttenuation = 1.0 - saturate(d / r);
 
-
     attenuation = max(0.0, attenuation * linearAttenuation);
-    // attenuation = linearAttenuation;
-    // return step(r, d);
     return attenuation;
 } 
 
 vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, float shadow) {
 
-    // return lightColor * attenuation * saturate(dot(m.normal, l));
-
-    // m.roughness = 0.2;
-    // m.metallic = 1.0;
+    float scaled_roughness = ConvertRoughness(m.roughness);
 
 
     vec3 shadingResult = vec3(0);
@@ -48,20 +42,19 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     // Precomputed dot products
     float NxL = max(0, dot(n, l));
     float LxH = max(0, dot(l, h));
-    float NxV = max(1e-5, dot(n, v));
+    float NxV = abs(dot(n, v)) + 1e-5;
     float NxH = max(0, dot(n, h));
     float VxH = max(0, dot(v, h));
 
     // Diffuse contribution
-    shadingResult += lambertianBRDF(diffuseColor, NxL) * lightColor;
+    shadingResult = BRDFDiffuseNormalized(NxV, NxL, LxH, m.roughness) * NxL * lightColor * diffuseColor / M_PI;
 
     // Specular contribution
-    // Generalized microfacet specular
+    float distribution = BRDFDistribution_GGX(NxH, scaled_roughness);
+    float visibility = BRDFVisibilitySmithGGX(NxL, NxV, scaled_roughness);
+    vec3 fresnel = BRDFSchlick( specularColor, VxH, scaled_roughness) * NxL * NxV / M_PI;
 
-    float distribution = Distribution(m.roughness, NxH);
-    float visibility = GeometricVisibility(m.roughness, NxV, NxL, VxH);
-    vec3 fresnel = Fresnel( specularColor, VxH );
+    shadingResult += (distribution * visibility * fresnel) / max(0.0001, 4.0 * NxV * max(0.001, NxL) ) * lightColor;
 
-    shadingResult += distribution * visibility * fresnel * NxL * lightColor * NxV;
     return shadingResult * attenuation * shadow;
 }

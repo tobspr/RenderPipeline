@@ -15,8 +15,8 @@ layout(location=0) in VertexOutput vOutput;
 
 uniform sampler2D p3d_Texture0;
 
-// uniform float roughness;
-// uniform float specular;
+uniform float roughness;
+uniform float specular;
 
 %INOUT%
 
@@ -29,8 +29,8 @@ void main() {
     m.normal = vOutput.normal;
     m.position = vOutput.position;
     m.metallic = 0;
-    m.specular = 1.0;
-    m.roughness = 0.01;
+    m.specular = specular;
+    m.roughness = roughness;
     
     %MATERIAL%
 

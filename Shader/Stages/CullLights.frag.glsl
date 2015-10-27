@@ -56,7 +56,6 @@ void main() {
     vec4 frustumRL = vec4(-PROJ_MAT[0][0] * tileScale.x, 0.0f, tileBias.x, 0.0f);
     vec4 frustumTL = vec4(0.0f, -PROJ_MAT[2][1] * tileScale.y, tileBias.y, 0.0f);
 
-
     const vec4 frustumOffset = vec4(0.0f, 0.0f, -1.0f, 0.0f);
 
     // Calculate frustum planes

@@ -67,27 +67,33 @@ class MainApp(ShowBase):
         self.render_pipeline.create()
 
 
+        render.set_shader_input("roughness", 0.5)
+        render.set_shader_input("specular", 0.5)
+
+
         # Load some models
         plane = loader.loadModel("Models/GroundPlane/Scene.bam")
         # plane.set_scale(1)
         plane.reparent_to(render)
-        
-        panda = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
-        # panda = loader.loadModel("Models/Sponza.ignore/Scene.bam")
-        # panda = loader.loadModel("panda")
-        # panda = loader.loadModel("environment")
-        # panda.set_scale(0.1)
-        panda.reparent_to(render)
+            
+        for roughness in range(0, 11):
+            for specular in range(0, 11):
+                model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+                # model = loader.loadModel("Toolkit/MeshSplitter/test_model.bam")
+                model.set_pos( (roughness-5) * 3, (specular-5) * 3, 1.4)
+                model.set_shader_input("roughness", roughness / 10.0)
+                model.set_shader_input("specular", specular / 10.0)
+                model.reparent_to(render)
 
         self.render_pipeline.create_default_skybox()
         self.lights = []
 
         # Add some random lights
-        sqr = 4
+        sqr = 8
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()
-                light.set_pos( Vec3(x-sqr//2, y-sqr//2, 1.5) * 5)
+                light.set_pos( Vec3(x-sqr//2, y-sqr//2, 2.0) * 4)
                 light.set_color(random(), random(), random()) 
                 light.set_radius(15)
                 self.lights.append(light)
