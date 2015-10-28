@@ -1,4 +1,4 @@
 #pragma once
 
 
-#define SG_TRI_GROUP_SIZE 18000
+#define SG_TRI_GROUP_SIZE 4096

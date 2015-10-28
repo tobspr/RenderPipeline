@@ -12,11 +12,12 @@ from panda3d.core import *
 dest = "model.rpsg"
 
 # model = loader.loadModel("Scene.bam")
-# model = loader.loadModel("panda")
-model = loader.loadModel("test_model.bam")
+model = loader.loadModel("panda")
+# model = loader.loadModel("test_model.bam")
 
 model.flatten_strong()
 
+print("Loaded model ...")
 
 writer = MeshSplitterWriter()
 
@@ -28,7 +29,10 @@ for geom_node in geom_nodes:
         geom_state = geom_node.get_geom_state(geom_idx)
         # MeshSplitter.split_geom(geom, "model.rpsg", True)
         # sys.exit(0)
+        print ("Adding geom: ", geom)
         writer.add_geom(geom)
 
-
+print("Processing ....")
 writer.process("model.rpsg")
+
+print("Done!")

@@ -420,6 +420,8 @@ void MeshSplitterWriter::process(const Filename &dest) {
     // Construct a list to store all triangles
     MeshSplitter::TriangleList all_triangles;
 
+    cout << "Reading in triangles ..." << endl;
+
     // Iterate over all geoms and collect their triangles
     for(GeomList::const_iterator iter = _attached_geoms.cbegin(); iter != _attached_geoms.cend(); ++iter) {
         CPT(Geom) geom = *iter;

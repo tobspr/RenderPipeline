@@ -87,11 +87,22 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
     GraphicsStateGuardianBase *gsg = data->get_gsg();
 	
     if (reason == 0) {
+    
         // Execute collector shader
         gsg->dispatch_compute(1, 1, 1);
+    
+
     } else if (reason == 1) {
         // Render default object
-			
+
+        // Make sure indirect draw is supported
+        if (! ((GLGraphicsStateGuardian*)gsg)->get_supports_indirect_draw()) {
+            cout << "ERROR: Driver does not support indirect draw. This is required for " 
+                 << "static geometry rendering!" << endl;
+            return;
+        }
+
+
 		Thread *current_thread = Thread::get_current_thread();
 		
 		const GeomPipelineReader geom_reader(obj->_geom, current_thread);
@@ -120,7 +131,8 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
 		GLGraphicsStateGuardian* glgsg = (GLGraphicsStateGuardian*)gsg;
 
 		glgsg->_glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gtc->_buffer);
-		glgsg->_glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 1, 0);
+		// glgsg->_glMultiDrawArraysIndirect(GL_TRIANGLES, 0, 1, 0);
+		glgsg->_glDrawArraysIndirect(GL_TRIANGLES, 0);
 
 		gsg->end_draw_primitives();
 
