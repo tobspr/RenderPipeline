@@ -2,6 +2,8 @@
 #include "SGDataset.h"
 #include "SGTriangleStrip.h"
 
+#include "common.h"
+
 SGDataset::SGDataset() {
     _bounds = NULL;
 }
@@ -23,10 +25,7 @@ void SGDataset::read_bounds(DatagramIterator &dgi) {
 }
 
 void SGDataset::attach_strip(const SGTriangleStrip *strip) {
-    if (_strips.size() >= 1023) {
-        cout << "ERROR! Dataset cannot store more than 1023 strips" << endl;
-        return;
-    }
+
     _strips.push_back(strip);
 }
 
@@ -41,7 +40,7 @@ void SGDataset::write_mappings(PTA_uchar data, int offset) {
     // Convert to an int array
     int *i_data = reinterpret_cast<int*>(data.p());
 
-    int write_offs = 1024 * offset;
+    int write_offs = (SG_MAX_DATASET_STRIPS+1) * offset;
 
     // Write the amount of strips
     i_data[write_offs++] = _strips.size();
@@ -50,6 +49,4 @@ void SGDataset::write_mappings(PTA_uchar data, int offset) {
     for (StripList::const_iterator iter = _strips.cbegin(); iter != _strips.cend(); ++iter) {
         i_data[write_offs++] = (*iter)->get_index();
     }
-
-    cout << "Wrote mappings up to " << write_offs << endl; 
 } 

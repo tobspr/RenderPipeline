@@ -42,19 +42,19 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     // Precomputed dot products
     float NxL = max(0, dot(n, l));
     float LxH = max(0, dot(l, h));
-    float NxV = abs(dot(n, v)) + 1e-5;
+    float NxV = abs(dot(n, v)) + 1e-7;
     float NxH = max(0, dot(n, h));
     float VxH = max(0, dot(v, h));
 
     // Diffuse contribution
-    shadingResult = BRDFDiffuseNormalized(NxV, NxL, LxH, m.roughness) * NxL * lightColor * diffuseColor / M_PI;
+    shadingResult = BRDFDiffuseNormalized(NxV, NxL, LxH, scaled_roughness) * NxL * lightColor * diffuseColor / M_PI;
 
     // Specular contribution
     float distribution = BRDFDistribution_GGX(NxH, scaled_roughness);
     float visibility = BRDFVisibilitySmithGGX(NxL, NxV, scaled_roughness);
     vec3 fresnel = BRDFSchlick( specularColor, VxH, scaled_roughness) * NxL * NxV / M_PI;
 
-    shadingResult += (distribution * visibility * fresnel) / max(0.0001, 4.0 * NxV * max(0.001, NxL) ) * lightColor;
+    shadingResult += (distribution * visibility * fresnel) / max(0.001, 4.0 * NxV * max(0.001, NxL) ) * lightColor;
 
     return shadingResult * attenuation * shadow;
 }

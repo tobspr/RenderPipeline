@@ -39,6 +39,15 @@ class MeshSplitter {
             TriangleList triangles;
             LVecBase3f bb_min;
             LVecBase3f bb_max;
+            LVecBase3f common_vector;
+            float max_angle_diff;
+
+            bool compare_common_vec(const Chunk *a, const Chunk *b) {
+                float angle_a = acos(common_vector.dot(a->common_vector));
+                float angle_b = acos(common_vector.dot(a->common_vector));
+                return angle_a < angle_b;
+            }
+
         };
 
         typedef list<Chunk*> TriangleResultList;
@@ -46,18 +55,12 @@ class MeshSplitter {
     public:
 
         static void read_triangles(CPT(Geom) geom, TriangleList &result);
-
         static bool triangle_intersects(const LVecBase3f &bb_min, const LVecBase3f &bb_max, Triangle* tri);
         static bool chunk_intersects(const LVecBase3f &bb_min_a, const LVecBase3f &bb_max_a, const LVecBase3f &bb_min_b, const LVecBase3f &bb_max_b);
-
         static void traverse_recursive(TriangleList &parent_triangles, const LVecBase3f bb_start, const LVecBase3f bb_end, TriangleResultList &results, int depth_left);
         static void find_minmax(const TriangleList &tris, LVecBase3f &bb_min, LVecBase3f &bb_max);
-
         static void optimize_results(TriangleResultList &results);
-
-        static void find_common_vector(const Chunk* chunk, LVecBase3f &cvector, float& max_angle_diff);
-
-
+        static void find_common_vector(const TriangleList &triangles, LVecBase3f &cvector, float& max_angle_diff);
         static void find_intersecting_chunks(const TriangleResultList &results, TriangleResultList &intersecting, const LVecBase3f &search_min, const LVecBase3f &search_max, int max_size = SG_TRI_GROUP_SIZE);
 };
 

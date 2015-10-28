@@ -40,6 +40,10 @@ uniform samplerBuffer DrawnObjectsTex;
 
 out vec4 col;
 
+float rand(float co){
+    return fract(sin(dot(co, 12.9898)) * 43758.5453);
+}
+
 void main() {
     
     int strip_offs = gl_InstanceID;
@@ -61,17 +65,18 @@ void main() {
     mat4 transform = mat4(mt0, mt1, mt2, mt3); 
 
     // 2 for bounds, 1 for visibility
-    int data_offs = 2 + 1 + vtx_idx;
+    int data_offs = 2 + 1 + vtx_idx * 2;
 
     vec4 data0 = texelFetch(DatasetTex, ivec2(data_offs + 0, strip_id), 0).bgra;
-    //vec4 data1 = texelFetch(DatasetTex, ivec2(data_offs + 1, strip_offs), 0).abgr;
+    vec4 data1 = texelFetch(DatasetTex, ivec2(data_offs + 1, strip_id), 0).bgra;
 
     vec4 vtx_pos = vec4(data0.xyz, 1);
 
-    col = vec4(strip_id / 1250.0, 1.0 - (strip_id / 1250.0), (strip_id % 4) / 4.0, 1);
+    col = vec4(rand(strip_id), 1.0 - (strip_id % 32 / 32.0), (strip_id % 4) / 4.0, 1);
     col.w = 1.0;
 
-    vec3 nrm = normalize(vtx_pos.xyz);
+    vec3 nrm = normalize(vec3(data0.w, data1.xy));
+    col.xyz = nrm;
 
     //col.xyz = vec3( (dot(nrm, vec3(1, 0, 0))) < 0.5 ? 1.0 : 0.0);
     vtx_pos = transform * vtx_pos;
@@ -103,8 +108,8 @@ handler = StaticGeometryHandler()
 # Load model
 model_dataset = handler.load_dataset("model.rpsg")
 
-for x in xrange(1):
-    for y in xrange(1):
+for x in xrange(10):
+    for y in xrange(10):
 
         node = SGNode("test", handler, model_dataset)
         np = render.attach_new_node(node)

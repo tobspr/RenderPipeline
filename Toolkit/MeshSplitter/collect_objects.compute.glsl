@@ -1,7 +1,9 @@
-
 #version 430
 
-layout(local_size_x=32, local_size_y=1, local_size_z=1) in;
+
+#pragma include "../../Native/Source/common.h"
+
+layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
 
 // This shader takes the list of rendered objects with their transforms, 
 // and spawns a strip for each rendered object
@@ -32,10 +34,10 @@ void main() {
 
     if (thread_id == 0) {
         // imageStore(DynamicStripsTex, 0, ivec4(0));
-        imageStore(IndirectTex, 0, ivec4(4096 * 3));
-        imageStore(IndirectTex, 1, ivec4(1));
+        imageStore(IndirectTex, 0, ivec4(SG_TRI_GROUP_SIZE * 3));
+        imageStore(IndirectTex, 1, ivec4(0));
         imageStore(IndirectTex, 2, ivec4(0));
-        imageStore(IndirectTex, 3, ivec4(1));
+        imageStore(IndirectTex, 3, ivec4(0));
     }
 
     barrier();
@@ -81,15 +83,11 @@ void main() {
             vec3 common_vec = normalize(strip_data_2.xyz);
             float max_angle = strip_data_2.w;
 
-            // max_angle = min(max_angle, TWO_PI + max_angle);
-
             float angle_diff = acos((dot(common_vec, vec_to_obj)));
 
-            // angle_diff = min(angle_diff, TWO_PI + angle_diff);
-
-            // if (angle_diff > max_angle + HALF_PI )  {
-            //     continue;
-            // } 
+            if (angle_diff > max_angle + HALF_PI )  {
+                continue;
+            } 
 
 
         // int offset = imageAtomicAdd(DynamicStripsTex, 0, 1) * 2;

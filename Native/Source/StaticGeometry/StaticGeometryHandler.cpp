@@ -26,26 +26,29 @@ StaticGeometryHandler::StaticGeometryHandler() {
     const int max_strips_per_frame = 100000;
 
     // The dataset texture stores the data of all triangle strips. It can be quite
-    // huge, however storage for 1024 strips should be enough for now.
-    // We add +2 for the bounding volume
-    // We add +1 for the visibility flags
-    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3 + 2 + 1, 1024, Texture::T_float, Texture::F_rgba32);
+    // huge, however it does not have to get uploaded every frame.
+    // We add +2 for the bounding volume, and +1 for the visibility flags to the x-size.
+    // For the y size, we add 1 to store the number of strips in the first component.
+    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3 * 2 + 2 + 1, SG_MAX_DATASET_STRIPS + 1, Texture::T_float, Texture::F_rgba32);
 
     // The mapping tex assigns strips to a dataset. Right now a dataset can have
-    // up to 1024 strips, and we support up to 10 datasets
-    _mapping_tex->setup_2d_texture(1024, 10, Texture::T_int, Texture::F_r32i);
+    // up to n strips, and we support up to 32 datasets
+    _mapping_tex->setup_2d_texture(SG_MAX_DATASET_STRIPS, 32, Texture::T_int, Texture::F_r32i);
 
-    // Store a texture to make indirect drawing work .. somehow
+    // Store a texture which is used in the indirect draw call
     _indirect_tex->setup_buffer_texture(4, Texture::T_int, Texture::F_r32i, GeomEnums::UH_dynamic);
 
     // Store a list of rendered objects, for each object this stores
     // the object index, and its transform matrix.
-    _drawn_objects_tex->setup_buffer_texture(8192 * 8, Texture::T_float, Texture::F_rgba32, GeomEnums::UH_dynamic);
+    // We reserve 1 pixel to store the amount of drawn objects, and each object
+    // takes 1 pixel for its id and 4 pixels for its transform matrix.
+    _drawn_objects_tex->setup_buffer_texture(1 + max_objects_per_frame * 5, Texture::T_float, Texture::F_rgba32, GeomEnums::UH_dynamic);
 
     // This texture is used to write all rendered strips to.
     // For each rendered strip, there is an object reference (to get the transform mat),
     // and a global strip reference.
-    _dynamic_strips_tex->setup_buffer_texture(8192 * 128, Texture::T_int, Texture::F_r32i, GeomEnums::UH_static);
+    // For each strip we store a thread id and a strip id, so we multiply by 2
+    _dynamic_strips_tex->setup_buffer_texture(max_strips_per_frame * 2, Texture::T_int, Texture::F_r32i, GeomEnums::UH_static);
 }
 
 
@@ -84,7 +87,23 @@ DatasetReference StaticGeometryHandler::load_dataset(const Filename &src) {
     // For now we assume the file is structured correctly, and the header is
     // correct aswell
     string header = dgi.get_fixed_string(4);
+    size_t tri_group_size = dgi.get_uint32();
+
+    if (tri_group_size != SG_TRI_GROUP_SIZE) {
+        cout << "ERROR: The rpsg file uses a tri-group size of " << tri_group_size << ", but expected"
+            << " a size of "<< SG_TRI_GROUP_SIZE << endl;
+        cout << "Please regenerate the file!" << endl;
+        delete [] data;
+        return -1;    
+    } 
+
     size_t num_strips = dgi.get_uint32();
+
+    if (num_strips >= SG_MAX_DATASET_STRIPS) {
+        cout << "ERROR! Dataset exceeds maximum amount of " << SG_MAX_DATASET_STRIPS << " strips (has " << num_strips << ")!" << endl;
+        delete [] data;
+        return -1;
+    }
 
     SGDataset *dataset = new SGDataset();
     dataset->read_bounds(dgi);
@@ -119,6 +138,10 @@ DatasetReference StaticGeometryHandler::load_dataset(const Filename &src) {
 
 
 SGDataset* StaticGeometryHandler::get_dataset(DatasetReference dataset) {
+    if (dataset < 0 || dataset >= _datasets.size()) {
+        cout << "ERROR: Could not find dataset with id " << dataset << endl;
+        return NULL;        
+    }
     return _datasets.at(dataset);
 }
 

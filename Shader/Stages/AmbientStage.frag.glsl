@@ -20,25 +20,30 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
     int cubemap_size = textureSize(map, 0).x;
     float num_mipmaps = 1 + floor(log2(cubemap_size));
     float reflectivity = 1.0 - roughness;
-    return num_mipmaps - 2 - reflectivity * 7.0;
+    return num_mipmaps - reflectivity * 6.5;
 }
 
 
 vec3 fresnel_with_roughness(vec3 specular_color, float VxH, float roughness, float metallic) {
-    return mix(BRDFSchlick(specular_color, VxH, roughness), specular_color, max(roughness, metallic) ) * (2.0 - roughness);
+    return mix(BRDFSchlick(specular_color, VxH, roughness), specular_color, max(roughness, metallic) );
 
 }
 
 void main() {
-
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
     vec3 view_vector = normalize(m.position - cameraPosition);
     vec4 ambient = vec4(0);
 
+    float conv_roughness = ConvertRoughness(m.roughness);
+
     vec3 reflection_coord = reflect(view_vector, m.normal);
     vec3 env_coord = fix_cubemap_coord(reflection_coord);
-    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness);
+    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, conv_roughness);
     vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz;
+
+    // SRGB
+    env_default_color = pow(env_default_color, vec3(2.2)) * 2.0;
+
     vec3 halfway_vector = normalize(reflection_coord + view_vector);
 
     vec3 specular_color = m.diffuse * m.specular;
@@ -46,8 +51,8 @@ void main() {
 
     vec3 diffuse_ambient = vec3(0.02) * m.diffuse * (1.0 - m.metallic);
     vec3 specular_ambient = 
-        fresnel_with_roughness(specular_color, VxH, m.roughness, m.metallic) *
-        env_default_color / M_PI * 0.1;
+        fresnel_with_roughness(specular_color, VxH, conv_roughness, m.metallic) *
+        env_default_color / M_PI * 0.5;
 
     ambient.xyz = diffuse_ambient + specular_ambient;
     result = texture(ShadedScene, texcoord) * 1 + ambient * 1;

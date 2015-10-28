@@ -26,6 +26,7 @@ void main() {
 
     Material m;
     m.diffuse = diffuseSample.xyz;
+    // m.diffuse *= vec3(1.0, 0.0, 0.0);
     m.normal = vOutput.normal;
     m.position = vOutput.position;
     m.metallic = 0;

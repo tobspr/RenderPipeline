@@ -16,14 +16,15 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
     GeomVertexReader normal_reader(vertex_data, "normal");
     GeomVertexReader uv_reader(vertex_data, "texcoord");
 
+    bool has_uv = uv_reader.has_column();
+
     if (!normal_reader.has_column()) {
         cout << "ERROR: Mesh has no stored normals!" << endl;
         return;
     }
 
-    if (!uv_reader.has_column()) {
-        cout << "ERROR: Mesh has no uv coordinates assigned!" << endl;
-        return;
+    if (!has_uv) {
+        cout << "WARNING: Mesh has no uv coordinates assigned!" << endl;
     }
 
     // Collect all triangles
@@ -47,8 +48,12 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
                 uv_reader.set_row(vtx_mapped);
                 LVecBase3f vtx_pos = vertex_reader.get_data3f();
                 LVecBase3f vtx_nrm = normal_reader.get_data3f();
-                LVecBase2f vtx_uv = uv_reader.get_data2f();
+                LVecBase2f vtx_uv(0);
 
+                if (has_uv) {
+                    vtx_uv = uv_reader.get_data2f();
+                }
+                
                 // TODO: The vertex position might be in model space. Convert it to
                 // world space first
                 tri->vertices[offs] = Vertex(vtx_pos, vtx_nrm, vtx_uv);
@@ -96,14 +101,11 @@ void MeshSplitter::find_minmax(const TriangleList &tris, LVecBase3f &bb_min, LVe
 }
 
 
-bool compare_chunk_size(MeshSplitter::Chunk* a, MeshSplitter::Chunk* b) {
-    return a->triangles.size() < b->triangles.size();
-}
 
 void MeshSplitter::optimize_results(TriangleResultList &results) {
 
     // Chunks which are filled up to certain percentage are ok
-    int size_ok = SG_TRI_GROUP_SIZE * 0.9;
+    int size_ok = SG_TRI_GROUP_SIZE * 0.8;
 
 
     int num_optimization = 50000;
@@ -141,17 +143,14 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
                 } 
 
                 // Find chunk with the smallest size from the neighbours
-                Chunk* closest = *max_element(intersecting.begin(), intersecting.end(), compare_chunk_size);
+                //Chunk* closest = *max_element(intersecting.begin(), intersecting.end(), current_chunk->compare_common_vec);
 
-                /*
-                // Find closest chunk
-                LVecBase3f chunk_mid = (current_chunk->bb_min + current_chunk->bb_max) * 0.5;
+                
+                // Find chunk with the best fitting angle
+                // LVecBase3f chunk_mid = (current_chunk->bb_min + current_chunk->bb_max) * 0.5;
                 Chunk *closest = NULL;
-                float closest_dist = FLT_MAX;
                 for (TriangleResultList::iterator siter = intersecting.begin(); siter != intersecting.end(); ++siter) {
-                    float dist = (((*siter)->bb_min + (*iter)->bb_max) * 0.5 - chunk_mid).length_squared();
-                    if (dist < closest_dist) {
-                        closest_dist = dist;
+                    if (closest == NULL || current_chunk->compare_common_vec(closest, *siter)) {
                         closest = *siter;
                     }
                 }
@@ -159,7 +158,6 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
                 // This should be always true
                 assert(closest != NULL);
 
-                */
 
                 // Merge chunks
                 closest->triangles.splice(closest->triangles.begin(), current_chunk->triangles);
@@ -168,6 +166,7 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
 
                 // Update bounding box
                 find_minmax(closest->triangles, closest->bb_min, closest->bb_max);
+                find_common_vector(closest->triangles, closest->common_vector, closest->max_angle_diff);
 
                 // We have to break here, since our iterator is most likely invalid now
                 break;
@@ -217,9 +216,9 @@ void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVec
         Chunk* chunk = new Chunk();
         chunk->triangles = matching_triangle_list;
         find_minmax(chunk->triangles, chunk->bb_min, chunk->bb_max);
+        find_common_vector(chunk->triangles, chunk->common_vector, chunk->max_angle_diff);
 
         results.push_back(chunk);
-
         return;
     }
 
@@ -364,14 +363,14 @@ void MeshSplitter::find_intersecting_chunks(const TriangleResultList &results, T
 
 
 
-void MeshSplitter::find_common_vector(const MeshSplitter::Chunk* chunk, LVecBase3f &cvector, float& max_angle_diff) {
+void MeshSplitter::find_common_vector(const TriangleList &triangles, LVecBase3f &cvector, float& max_angle_diff) {
 
     const float PI = 3.14159265359;
 
     // First, average all vectors to get a common vector
     cvector.set(0, 0, 0);
 
-    for(TriangleList::const_iterator iter = chunk->triangles.cbegin(); iter != chunk->triangles.cend(); ++iter) {
+    for(TriangleList::const_iterator iter = triangles.cbegin(); iter != triangles.cend(); ++iter) {
         cvector += (*iter)->face_normal;
     }
 
@@ -382,7 +381,7 @@ void MeshSplitter::find_common_vector(const MeshSplitter::Chunk* chunk, LVecBase
     // Now, for each normal, check the angle between the face and the common vector,
     // and find the maximum 
 
-    for(TriangleList::const_iterator iter = chunk->triangles.cbegin(); iter != chunk->triangles.cend(); ++iter) {
+    for(TriangleList::const_iterator iter = triangles.cbegin(); iter != triangles.cend(); ++iter) {
         float angle = acos((*iter)->face_normal.dot(cvector));
         if (angle < 0.0) angle += 2.0 * PI;
 
@@ -393,8 +392,6 @@ void MeshSplitter::find_common_vector(const MeshSplitter::Chunk* chunk, LVecBase
 
     // cout << "Common vector is " << cvector << " and diff is " << max_angle_diff << endl;
 }
-
-
 
 MeshSplitterWriter::MeshSplitterWriter() {
 
@@ -444,11 +441,11 @@ void MeshSplitterWriter::process(const Filename &dest) {
     cout << "Traversing recursive to find chunks of size " << SG_TRI_GROUP_SIZE << " ..." << endl;
     MeshSplitter::TriangleResultList results;
 
-    MeshSplitter::traverse_recursive(all_triangles, bb_start, bb_end, results, 10);
+    MeshSplitter::traverse_recursive(all_triangles, bb_start, bb_end, results, 15);
     cout << "Found " << results.size() << " Strips! This is an effective count of "
          << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
     cout << "Optimizing results and merging small chunks .. " << endl;
-    //MeshSplitter::optimize_results(results);
+    MeshSplitter::optimize_results(results);
 
     cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
          << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
@@ -462,6 +459,12 @@ void MeshSplitterWriter::process(const Filename &dest) {
 void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter::TriangleResultList &results, const LVecBase3f &bb_min, const LVecBase3f &bb_max) {
     Datagram dg;
     dg.add_fixed_string("RPSG", 4);
+
+
+    // Write some format information
+    dg.add_uint32(SG_TRI_GROUP_SIZE);
+
+
     dg.add_uint32(results.size());
 
     // Write model bounds
@@ -473,46 +476,47 @@ void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter:
     dg.add_float32(bb_max.get_y());
     dg.add_float32(bb_max.get_z());
 
-    for (MeshSplitter::TriangleResultList::const_iterator rstart = results.cbegin(); rstart != results.cend(); ++rstart) {
+    for (MeshSplitter::TriangleResultList::const_iterator iter = results.cbegin(); iter != results.cend(); ++iter) {
+
+        MeshSplitter::Chunk* chunk = *iter;
 
         // Make sure the minmax is still correct
-        MeshSplitter::find_minmax((*rstart)->triangles, (*rstart)->bb_min, (*rstart)->bb_max);
+        MeshSplitter::find_minmax(chunk->triangles, chunk->bb_min, chunk->bb_max);
 
-        dg.add_uint32((*rstart)->triangles.size());
+        // Make sure the common vector is still correct
+        MeshSplitter::find_common_vector(chunk->triangles, chunk->common_vector, chunk->max_angle_diff);
+
+        dg.add_uint32(chunk->triangles.size());
 
         // Write chunk bounds
-        dg.add_float32((*rstart)->bb_min.get_x());
-        dg.add_float32((*rstart)->bb_min.get_y());
-        dg.add_float32((*rstart)->bb_min.get_z());
+        dg.add_float32(chunk->bb_min.get_x());
+        dg.add_float32(chunk->bb_min.get_y());
+        dg.add_float32(chunk->bb_min.get_z());
 
-        dg.add_float32((*rstart)->bb_max.get_x());
-        dg.add_float32((*rstart)->bb_max.get_y());
-        dg.add_float32((*rstart)->bb_max.get_z());
+        dg.add_float32(chunk->bb_max.get_x());
+        dg.add_float32(chunk->bb_max.get_y());
+        dg.add_float32(chunk->bb_max.get_z());
 
-        // Compute and find common vector
-        LVecBase3f common_vector;
-        float angle_diff;
-        MeshSplitter::find_common_vector(*rstart, common_vector, angle_diff);
-
-        dg.add_float32(common_vector.get_x());
-        dg.add_float32(common_vector.get_y());
-        dg.add_float32(common_vector.get_z());
-        dg.add_float32(angle_diff);
+        // Write common vector
+        dg.add_float32(chunk->common_vector.get_x());
+        dg.add_float32(chunk->common_vector.get_y());
+        dg.add_float32(chunk->common_vector.get_z());
+        dg.add_float32(chunk->max_angle_diff);
 
 
-        for (MeshSplitter::TriangleList::const_iterator start = (*rstart)->triangles.cbegin(); start != (*rstart)->triangles.cend(); ++start) {
+        for (MeshSplitter::TriangleList::const_iterator start = chunk->triangles.cbegin(); start != chunk->triangles.cend(); ++start) {
             MeshSplitter::Triangle *tri = *start;
             for (int i = 0; i < 3; ++i) {
                 dg.add_float32(tri->vertices[i].pos.get_x());
                 dg.add_float32(tri->vertices[i].pos.get_y());
                 dg.add_float32(tri->vertices[i].pos.get_z());
 
-                // dg.add_float32(tri->vertices[i].normal.get_x());
-                // dg.add_float32(tri->vertices[i].normal.get_y());
-                // dg.add_float32(tri->vertices[i].normal.get_z());
+                dg.add_float32(tri->vertices[i].normal.get_x());
+                dg.add_float32(tri->vertices[i].normal.get_y());
+                dg.add_float32(tri->vertices[i].normal.get_z());
                 
-                // dg.add_float32(tri->vertices[i].uv.get_x());
-                // dg.add_float32(tri->vertices[i].uv.get_y());
+                dg.add_float32(tri->vertices[i].uv.get_x());
+                dg.add_float32(tri->vertices[i].uv.get_y());
             }
         }
     }

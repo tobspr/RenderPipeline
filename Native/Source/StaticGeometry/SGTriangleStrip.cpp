@@ -61,13 +61,13 @@ void SGTriangleStrip::load_from_datagram(DatagramIterator &dgi) {
             vertex.pos.set_z(dgi.get_float32());
                 
             // Normal
-            // vertex.normal.set_x(dgi.get_float32());
-            // vertex.normal.set_y(dgi.get_float32());
-            // vertex.normal.set_z(dgi.get_float32());
+            vertex.normal.set_x(dgi.get_float32());
+            vertex.normal.set_y(dgi.get_float32());
+            vertex.normal.set_z(dgi.get_float32());
                 
             // UV
-            // vertex.uv.set_x(dgi.get_float32());
-            // vertex.uv.set_y(dgi.get_float32());
+            vertex.uv.set_x(dgi.get_float32());
+            vertex.uv.set_y(dgi.get_float32());
 
             _vertex_data.push_back(vertex);
         }
@@ -80,10 +80,10 @@ void SGTriangleStrip::write_to(PTA_uchar &data, int offset) {
     float* f_data = reinterpret_cast<float*>(data.p());
 
     // Compute the write offset:
-    // 3 Triangles, each 4 floats:
+    // 3 Triangles, each 8 floats:
     // Additionally increase the offset by 8 since we store the bounding volume too
     // And add 4 fields since we also store visibility
-    size_t write_offset = offset * (SG_TRI_GROUP_SIZE * 3 * 4 + 8 + 4);
+    size_t write_offset = offset * (SG_TRI_GROUP_SIZE * 3 * 8 + 8 + 4);
 
     // Store our write position
     _index = offset;
@@ -113,19 +113,19 @@ void SGTriangleStrip::write_to(PTA_uchar &data, int offset) {
         f_data[write_offset++] = vertex.pos.get_y();
         f_data[write_offset++] = vertex.pos.get_z();
 
-        f_data[write_offset++] = 0.0;
-        // f_data[write_offset ++] = vertex.normal.get_x();
-        // f_data[write_offset ++] = vertex.normal.get_y();
-        // f_data[write_offset ++] = vertex.normal.get_z();
+        // f_data[write_offset++] = 0.0;
+        f_data[write_offset ++] = vertex.normal.get_x();
+        f_data[write_offset ++] = vertex.normal.get_y();
+        f_data[write_offset ++] = vertex.normal.get_z();
 
-        // f_data[write_offset ++] = vertex.uv.get_x();
-        // f_data[write_offset ++] = vertex.uv.get_y();
+        f_data[write_offset ++] = vertex.uv.get_x();
+        f_data[write_offset ++] = vertex.uv.get_y();
    }
 
    // Fill empty space with zeroes
    int fill_vertices = SG_TRI_GROUP_SIZE * 3 - _vertex_data.size();
    for (int i = 0; i < fill_vertices; ++i) {
-        for (int k = 0; k < 4; ++k) {
+        for (int k = 0; k < 8; ++k) {
             f_data[write_offset++] = 0.0;
         }  
    }
