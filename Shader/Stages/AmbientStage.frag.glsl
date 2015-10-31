@@ -70,9 +70,10 @@ void main() {
 
         float LxH = saturate(dot(view_vector, h));
         float NxL = max(0, -dot(m.normal, reflected_dir));
+        float NxV = abs(dot(m.normal, view_vector));
 
         // Different terms for metallic and diffuse objects
-        vec3 env_metallic = mix(saturate(0.1 + pow(1.0 - LxH, 1.0)), 0.6, m.roughness*0.0) * m.diffuse * 2.0;
+        vec3 env_metallic = mix(saturate(0.15 + pow(NxV, 5.0)), 0.6, m.roughness*0.0) * m.diffuse * 4.0;
 
         vec3 env_diffuse = saturate( saturate(pow(LxH , 12.0 )) * (1.0 - m.roughness)) * vec3(0.2);
 

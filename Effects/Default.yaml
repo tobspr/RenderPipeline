@@ -3,21 +3,9 @@
 
 Vertex:
     template: default
-    dependencies:
-        - Includes/PositionReconstruction.inc.glsl
-    inout:
-        - uniform vec3 cameraPos;
-        - uniform mat4 currentMVP;
-
-    inject:
-        vertex:
-            // vOutput.position += vec3(0.1, 0.2, 2.3);
 
 Fragment.GBuffer:
     template: default
-    inject:
-        material:
-            /**/
 
 Fragment.Shadows:
     template: default

@@ -7,11 +7,13 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/VertexOutput.struct.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
 
 %INCLUDES%
 
 layout(location=0) in VertexOutput vOutput;
+
+// Late include of the gbuffer packing since it needs the vOutput
+#pragma include "Includes/GBufferPacking.inc.glsl"
 
 uniform sampler2D p3d_Texture0;
 

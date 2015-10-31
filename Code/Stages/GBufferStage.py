@@ -23,7 +23,7 @@ class GBufferStage(RenderStage):
         }
 
     def get_required_inputs(self):
-        return ["currentViewProjMat"]
+        return ["currentViewProjMat", "lastViewProjMat"]
 
     def create(self):
         early_z = False

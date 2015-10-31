@@ -42,9 +42,18 @@ void render_material(Material m) {
 
     m.normal = normal_quantization(m.normal);
     m.diffuse = saturate(m.diffuse);
+    
+    // Compute velocity
+
+    vec4 last_proj_pos = vOutput.last_proj_position;
+    vec2 last_texcoord = fma(last_proj_pos.xy / last_proj_pos.w, vec2(0.5), vec2(0.5));
+    vec2 curr_texcoord = vec2(gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+    vec2 velocity = (curr_texcoord - last_texcoord) * 255.0;
+
     gbuffer_out_0 = vec4(m.diffuse, m.roughness);
     gbuffer_out_1 = vec4(m.normal, m.metallic);
-    gbuffer_out_2 = vec4(m.specular, 0, 0, 1);
+    gbuffer_out_2 = vec4(m.specular, velocity.x, velocity.y, 1);
+
 }
 
 

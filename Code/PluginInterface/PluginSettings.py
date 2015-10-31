@@ -10,7 +10,7 @@ class BasePluginSetting(object):
         self._value = None
 
     def is_runtime(self):
-        """ Returns wheter the settings contains a value which can be
+        """ Returns whether the settings contains a value which can be
         changed at runtime """
         return self._runtime
 

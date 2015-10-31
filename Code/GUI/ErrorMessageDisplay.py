@@ -43,7 +43,7 @@ class ErrorMessageDisplay(DebugObject):
         self._error_node.set_z(self._num_errors * 30)
         self._num_errors += 1
 
-        if slef._num_errors > 100:
+        if self._num_errors > 100:
             self.clear_messages()
             self.add_error("Error count exceeded. Cleared errors ..")
 

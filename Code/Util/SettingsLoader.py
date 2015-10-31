@@ -95,7 +95,7 @@ class SettingsLoader(DebugObject):
         raise NotImplementedError()
 
     def is_file_loaded(self):
-        """ Returns wheter the settings were loaded from a file, otherwise
+        """ Returns whether the settings were loaded from a file, otherwise
         the settings will be the default settings """
         return self._file_loaded
 

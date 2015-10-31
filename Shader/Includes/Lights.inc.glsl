@@ -21,12 +21,13 @@ float computePointLightAttenuation(float r, float d) {
     return attenuation;
 } 
 
+// @TODO: Make this method faster
 vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, float shadow) {
 
+    // Debug: Fast rendering path
+    // return max(0, dot(m.normal, l)) * lightColor * attenuation * m.diffuse;
+
     float scaled_roughness = ConvertRoughness(m.roughness);
-
-    // scaled_roughness = m.roughness;
-
     vec3 shadingResult = vec3(0);
         
     // Skip shadows
@@ -35,7 +36,6 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
 
     // vec3 specularColor = mix(vec3(0), m.diffuse, m.specular);
     vec3 specularColor = mix(vec3(1), m.diffuse * 2.0, m.metallic) * lightColor;
-    // specularColor = m.diffuse;
     vec3 diffuseColor = mix(m.diffuse, vec3(0), m.metallic);
 
     vec3 n = m.normal;

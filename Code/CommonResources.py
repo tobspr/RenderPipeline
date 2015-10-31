@@ -37,6 +37,7 @@ class CommonResources(DebugObject):
         registers them to the stage manager so they can be used for rendering """
         self._pta_camera_pos = PTAVecBase3f.empty_array(1)
         self._pta_current_view_proj_mat = PTAMat4.empty_array(1)
+        self._pta_last_view_proj_mat = PTAMat4.empty_array(1)
         self._pta_view_mat_zup = PTAMat4.empty_array(1)
 
         stage_mgr = self._pipeline.get_stage_mgr()
@@ -44,6 +45,7 @@ class CommonResources(DebugObject):
         stage_mgr.add_input("mainRender", self._showbase.render)
         stage_mgr.add_input("cameraPosition", self._pta_camera_pos)
         stage_mgr.add_input("currentViewProjMat", self._pta_current_view_proj_mat)
+        stage_mgr.add_input("lastViewProjMat", self._pta_last_view_proj_mat)
         stage_mgr.add_input("currentViewMatZup", self._pta_view_mat_zup)
 
         # Create a converter matrix to transform coordinates from Yup to Zup
@@ -101,6 +103,7 @@ class CommonResources(DebugObject):
         self._pta_view_mat_zup[0] = (
             self._coordinate_converter.invert_compose(view_transform).get_mat())
         self._pta_camera_pos[0] = self._showbase.camera.get_pos(render)
+        self._pta_last_view_proj_mat[0] = self._pta_current_view_proj_mat[0]
         self._pta_current_view_proj_mat[0] = view_transform.get_mat() *\
             self._showbase.camLens.get_projection_mat()
 
