@@ -1,4 +1,6 @@
 
+import os
+
 from panda3d.core import Shader
 
 from .Util.DebugObject import DebugObject
@@ -134,13 +136,17 @@ class RenderStage(DebugObject):
                                "Shader/" + args[1] + ".glsl",
                                "Shader/" + args[2] + ".glsl")
 
-    def _load_plugin_shader(self, plugin_name, *args):
+    def load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful
         for RenderStages created by plugins. For a description of the arguments,
         see the _load_shader function. """
 
-        plugin_loc = "Plugins/" + plugin_name + "/"
-        path_args = [plugin_loc + i for i in args]
+        # The __module__ contains something like RenderPipeline.Plugins.XXX.YYY
+        # We want XXX so we take the second parameter
+        plugin_name = str(self.__class__.__module__).split(".")[2]        
+
+        plugin_loc = "Plugins/" + plugin_name + "/Shader/Stages/"
+        path_args = [os.path.join(plugin_loc, i) for i in args]
 
         if len(args) == 1:
             return Shader.load(Shader.SLGLSL,

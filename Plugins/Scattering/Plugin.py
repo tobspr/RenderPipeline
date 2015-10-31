@@ -31,10 +31,8 @@ class Plugin(BasePlugin):
         self._create_shaders()
         self._precompute()
 
-
     @PluginHook("on_stage_setup")
     def on_setup(self):
-
         self.debug("Setting up scattering stage ..")
         self._display_stage = ScatteringStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._display_stage)
@@ -81,7 +79,7 @@ class Plugin(BasePlugin):
         """ Creates all the shaders used for precomputing """
         self._shaders = {}
 
-        resource_path = self.get_resource("Shader/")
+        resource_path = self.get_shader_resource("")
         for f in os.listdir(resource_path):
             fpath = os.path.join(resource_path, f)
             if os.path.isfile(fpath) and f.endswith(".compute.glsl"):
@@ -99,15 +97,11 @@ class Plugin(BasePlugin):
                 "dest": self._textures["transmittance"].get_texture()
             }, (self.trans_w, self.trans_h, 1))
 
-        # self._textures["transmittance"].write(self.get_resource("Tex/transmittance.png"))
-
         # Delta E
         self.exec_compute_shader(self._shaders["delta_e"], {
                 "transmittanceSampler": self._textures["transmittance"].get_texture(),
                 "dest": self._textures["delta_e"].get_texture()
             }, (self.sky_w, self.sky_h, 1))
-
-        # self._textures["delta_e"].write(self.get_resource("Tex/delta_e.png"))
 
         # Delta S
         self.exec_compute_shader(self._shaders["delta_sm_sr"], {
@@ -116,17 +110,12 @@ class Plugin(BasePlugin):
                 "destDeltaSM": self._textures["delta_sm"].get_texture()
             }, (self.res_mu_s_nu, self.res_mu, self.res_r), (8, 8, 8))
 
-        # self._textures["delta_sr"].write(self.get_resource("Tex/delta_sr_#.png"))
-        # self._textures["delta_sm"].write(self.get_resource("Tex/delta_sm_#.png"))
-
         # Copy deltaE to irradiance texture
         self.exec_compute_shader(self._shaders["copy_irradiance"], {
                 "k": 0.0,
                 "deltaESampler": self._textures["delta_e"].get_texture(),
                 "dest": self._textures["irradiance"].get_texture()
             }, (self.sky_w, self.sky_h, 1))
-
-        # self._textures["irradiance"].write(self.get_resource("Tex/irradiance.png"))
 
         # Copy delta s into inscatter texture
         self.exec_compute_shader(self._shaders["copy_inscatter"], {
@@ -148,8 +137,6 @@ class Plugin(BasePlugin):
                     "first": first
                 }, (self.res_mu_s_nu, self.res_mu, self.res_r), (8, 8, 8))
 
-            # self._textures["delta_j"].write(self.get_resource("Tex/delta_j_i0_#.png"))
-
             # Delta E
             self.exec_compute_shader(self._shaders["irradiance_n"], {
                     "transmittanceSampler": self._textures["transmittance"].get_texture(),
@@ -159,8 +146,6 @@ class Plugin(BasePlugin):
                     "first": first
                 }, (self.sky_w, self.sky_h, 1))
 
-            # self._textures["delta_e"].write(self.get_resource("Tex/delta_e_i0.png"))
-
             # Delta Sr
             self.exec_compute_shader(self._shaders["delta_sr"], {
                     "transmittanceSampler": self._textures["transmittance"].get_texture(),
@@ -169,15 +154,11 @@ class Plugin(BasePlugin):
                     "first": first
                 }, (self.res_mu_s_nu, self.res_mu, self.res_r), (8, 8, 8))
 
-            # self._textures["delta_sr"].write(self.get_resource("Tex/delta_sr_i0_#.png"))
-
             # Add delta E to irradiance
             self.exec_compute_shader(self._shaders["add_delta_e"], {
                     "deltaESampler": self._textures["delta_e"].get_texture(),
                     "dest": self._textures["irradiance"].get_texture(),
                 }, (self.sky_w, self.sky_h, 1))
-
-            # self._textures["irradiance"].write(self.get_resource("Tex/irradiance_i0.png"))
 
             # Add deltaSr to inscatter texture
             self.exec_compute_shader(self._shaders["add_delta_sr"], {
@@ -185,7 +166,10 @@ class Plugin(BasePlugin):
                     "dest": self._textures["inscatter"].get_texture()
                 }, (self.res_mu_s_nu, self.res_mu, self.res_r), (8, 8, 8))
 
-            # self._textures["inscatter"].write(self.get_resource("Tex/inscatter_i0_#.png"))
-        self._display_stage.set_shader_input("inscatterSampler", self._textures["inscatter"].get_texture())
-        self._display_stage.set_shader_input("transmittanceSampler", self._textures["transmittance"].get_texture())
-        self._display_stage.set_shader_input("irradianceSampler", self._textures["irradiance"].get_texture())
+        # Make stages available
+        self._display_stage.set_shader_input("inscatterSampler",
+            self._textures["inscatter"].get_texture())
+        self._display_stage.set_shader_input("transmittanceSampler",
+            self._textures["transmittance"].get_texture())
+        self._display_stage.set_shader_input("irradianceSampler",
+            self._textures["irradiance"].get_texture())

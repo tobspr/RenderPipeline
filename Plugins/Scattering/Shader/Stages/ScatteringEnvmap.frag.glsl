@@ -9,7 +9,7 @@ out vec4 result;
 
 uniform vec3 cameraPosition;
 
-#pragma include "compute_scattering.inc.glsl"
+#pragma include "../compute_scattering.inc.glsl"
 
 uniform writeonly imageCube DestCubemap;
 

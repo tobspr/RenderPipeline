@@ -32,8 +32,14 @@ class BasePlugin(DebugObject):
         self._pipeline.get_plugin_mgr().add_hook_binding(hook_name, handler)
 
     def get_resource(self, pth):
-        """ Converts a local path from a plugin directory into an absolute path """
-        return "Plugins/" + self.NAME + "/" + pth.lstrip("/")
+        """ Converts a local path from the plugins Resource/ directory into
+        an absolute path """
+        return "Plugins/" + self.NAME + "/Resources/" + pth.lstrip("/")
+
+    def get_shader_resource(self, pth):
+        """ Converts a local path from the plugins Shader/ directory into
+        an absolute path """
+        return "Plugins/" + self.NAME + "/Shader/" + pth.lstrip("/")
 
     def exec_compute_shader(self, shader_obj, shader_inputs, exec_size, 
             workgroup_size=(16, 16, 1)):

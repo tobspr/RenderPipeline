@@ -18,11 +18,10 @@ class Plugin(BasePlugin):
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
 
-    @PluginHook("on_shader_create")
-    def create_stages(self):
-        pass
-
     @PluginHook("on_pipeline_create")
-    def reload_shaders(self):
+    def init(self):
         pass
 
+    @PluginHook("on_shader_create")
+    def create_shaders(self):
+        pass

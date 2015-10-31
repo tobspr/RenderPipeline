@@ -66,16 +66,15 @@ void main() {
         #endif
 
 
-        // SRGB
-
         vec3 h = normalize(reflected_dir + view_vector);
 
         float LxH = saturate(dot(view_vector, h));
         float NxL = max(0, -dot(m.normal, reflected_dir));
 
+        // Different terms for metallic and diffuse objects
         vec3 env_metallic = mix(saturate(0.1 + pow(1.0 - LxH, 1.0)), 0.6, m.roughness*0.5) * m.diffuse * 2.0;
-        vec3 env_diffuse = saturate( saturate(pow(LxH , 5.0 ))
-                            *  (1.0 - m.roughness)) * vec3(0.5);
+        vec3 env_diffuse = saturate( saturate(pow(LxH , 5.0 )) * (1.0 - m.roughness)) * vec3(0.5);
+
 
         vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
 

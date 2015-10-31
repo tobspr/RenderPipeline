@@ -16,8 +16,11 @@ void main() {
     int numUsedSlices = int(ceil(numTotalCells / 512))+1;
     float percentageHeight = numUsedSlices / float(LC_SHADE_SLICES);
 
-    float pcHeight = p3d_Vertex.z * 0.5 + 0.5;
+    float pcHeight = p3d_Vertex.y * 0.5 + 0.5;
     
     gl_Position = vec4(p3d_Vertex.x, (pcHeight * percentageHeight) * 2 - 1 , 0, 1);
-    texcoord = sign(p3d_Vertex.xz * 0.5 + 0.5);
+    texcoord = sign(p3d_Vertex.xy * 0.5 + 0.5);
+
+
+
 }
