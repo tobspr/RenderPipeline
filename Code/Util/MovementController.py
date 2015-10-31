@@ -199,7 +199,7 @@ class MovementController:
         print("\t(7) Analyze VRAM")
         print()
 
-        selectedOption = eval(input("Which do you want to choose?: "))
+        selectedOption = input("Which do you want to choose?: ")
 
         try:
             selectedOption = int(selectedOption.strip())

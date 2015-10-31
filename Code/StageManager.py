@@ -18,11 +18,11 @@ class StageManager(DebugObject):
         "CollectUsedCellsStage",
         "CullLightsStage",
         "ApplyLightsStage",
-        
-        
         "ScatteringStage",
         "AmbientStage",
         "SSLRStage",
+        "ColorCorrectionStage",
+        "SMAAStage",
         "FinalStage"
     ]
 
@@ -35,16 +35,20 @@ class StageManager(DebugObject):
         self._ubos = {}
         self._defines = {}
         self._pipeline = pipeline
+        self._created = False
 
         # Register the manager so the pipe viewer can read our data
         PipeViewer.register_stage_mgr(self)
 
     def add_stage(self, stage):
         """ Adds a new stage """
-
         if stage.get_stage_id() not in self._STAGE_ORDER:
             self.error("They stage type", stage.get_name(),
                        "is not registered yet!")
+            return
+
+        if self._created:
+            self.error("Cannot attach stage, stages are already created!")
             return
 
         self._stages.append(stage)
@@ -60,6 +64,8 @@ class StageManager(DebugObject):
     def setup(self):
         """ Setups the stages """
         self.debug("Setup stages ...")
+
+        self._created = True
 
         # Sort stages
         self._stages.sort(key=lambda stage: self._STAGE_ORDER.index(

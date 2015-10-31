@@ -14,6 +14,7 @@ from .BetterOnscreenText import BetterOnscreenText
 from .BetterLabeledCheckbox import BetterLabeledCheckbox
 from .CheckboxCollection import CheckboxCollection
 from .FastText import FastText
+from .ErrorMessageDisplay import ErrorMessageDisplay
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
@@ -32,6 +33,7 @@ class OnscreenDebugger(DebugObject):
             "PipelineDebugger")
         self._create_components()
         self._init_keybindings()
+        self._init_notify()
 
     def _create_components(self):
         """ Creates the gui components """
@@ -58,9 +60,15 @@ class OnscreenDebugger(DebugObject):
         self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
         self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
 
+    def _init_notify(self):
+        """ Inits the notify stream which gets all output from panda and parses
+        it """
+        self._error_msg_handler = ErrorMessageDisplay()
+
     def update(self):
         """ Updates the gui """
         self._update_stats()
+        self._error_msg_handler.update()    
 
     def _create_topbar(self):
         """ Creates the topbar """

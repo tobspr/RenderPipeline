@@ -34,8 +34,8 @@ class Plugin(BasePlugin):
     @PluginHook("on_stage_setup")
     def on_setup(self):
         self.debug("Setting up scattering stage ..")
-        self._display_stage = ScatteringStage(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(self._display_stage)
+        self._display_stage = self.make_stage(ScatteringStage)
+        self.register_stage(self._display_stage)
 
     @PluginHook("on_shader_reload")
     def on_shader_reload(self):

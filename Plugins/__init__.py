@@ -10,7 +10,7 @@ from ..Code.PluginInterface.PluginSettings import PluginSettingInt, PluginSettin
 from ..Code.Util.Image import Image
 from ..Code.RenderStage import RenderStage
 from ..Code.RenderTarget import RenderTarget
-
+from ..Code.Globals import Globals
 from ..Code.Stages import *
 
 

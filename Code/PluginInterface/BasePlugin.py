@@ -41,6 +41,14 @@ class BasePlugin(DebugObject):
         an absolute path """
         return "Plugins/" + self.NAME + "/Shader/" + pth.lstrip("/")
 
+    def register_stage(self, stage):
+        """ Shortcut to register a render stage """
+        self._pipeline.get_stage_mgr().add_stage(stage)
+
+    def make_stage(self, stage_type):
+        """ Shortcut to create a new render stage from a given class type """
+        return stage_type(self._pipeline)
+
     def exec_compute_shader(self, shader_obj, shader_inputs, exec_size, 
             workgroup_size=(16, 16, 1)):
         """ Executes a compute shader. The shader object should be a shader

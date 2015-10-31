@@ -10,17 +10,13 @@ class Plugin(BasePlugin):
 
     NAME = "SSLR"
     DESCRIPTION = """ This plugin adds support for Screen Space Local Reflections """
-    SETTINGS = {
-    }
+    SETTINGS = {}
 
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
 
     @PluginHook("on_stage_setup")
     def create_stages(self):
-        self.debug("Setting up stages")
-        self._sslr_stage = SSLRStage(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(self._sslr_stage)
-        
-
-
+        self.debug("Setting up SSLR stage ..")
+        self._sslr_stage = self.make_stage(SSLRStage)
+        self.register_stage(self._sslr_stage)

@@ -27,7 +27,6 @@ void main() {
 
     Material m;
     m.diffuse = diffuseSample.xyz;
-    // m.diffuse *= vec3(1.0, 0.0, 0.0);
     m.normal = vOutput.normal;
     m.position = vOutput.position;
     m.metallic = metallic;
@@ -35,7 +34,6 @@ void main() {
     m.roughness = roughness;
     
     if (specular > 0.4) {
-        // m.diffuse = pow(vec3(1.000, 0.766, 0.336), vec3(1.0));
         m.diffuse = vec3(0.5);
     }
 

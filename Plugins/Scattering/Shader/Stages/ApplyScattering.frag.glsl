@@ -25,28 +25,17 @@ void main() {
         
     vec3 view_vector = normalize(m.position - cameraPosition);
     vec3 scattering_result = vec3(0);
-
-
-
     vec3 inscattered_light = DoScattering(m.position, view_vector);
-
-
-    // scattering_result = 1.0 - exp(-1.0 * inscatteredLight);
 
     if (is_skybox(m, cameraPosition) && m.position.z > 0.0) {
         vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-        
         scattering_result = 1.0 - exp(-0.2 * inscattered_light);
-
         scattering_result += pow(cloud_color, vec3(1.2)) * 0.5;
 
     } else {
         scattering_result = 1.0 - exp(-0.2*inscattered_light);
-
-
     }
 
     result = texture(ShadedScene, texcoord);
     result.xyz += scattering_result;
-
 }

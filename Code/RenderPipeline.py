@@ -178,6 +178,8 @@ class RenderPipeline(DebugObject):
 
     def reload_shaders(self):
         """ Reloads all shaders """
+        self._debugger._error_msg_handler.clear_messages()
+        
         self._stage_mgr.set_shaders()
         self._light_mgr.reload_shaders()
 

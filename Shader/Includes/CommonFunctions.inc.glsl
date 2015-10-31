@@ -3,6 +3,9 @@
 #define saturate(v) clamp(v, 0, 1)
 
 #define M_PI 3.14159265359
+#define HALF_PI 1.57079632679
+#define TWO_PI 6.28318530718
+
 
 
 // Fixes the cubemap direction
