@@ -6,6 +6,9 @@ class AmbientStage(RenderStage):
 
     """ This stage computes the ambient term """
 
+    required_inputs = ["mainCam", "mainRender", "DefaultEnvmap", "cameraPosition"]
+    required_pipes = ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1", "GBuffer2"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "AmbientStage", pipeline)
 
@@ -13,13 +16,6 @@ class AmbientStage(RenderStage):
         return {
             "ShadedScene": self._target['color']
         }
-
-    def get_input_pipes(self):
-        return ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
-                "GBuffer2"]
-
-    def get_required_inputs(self):
-        return ["mainCam", "mainRender", "DefaultEnvmap", "cameraPosition"]
 
     def create(self):
         self._target = self._create_target("AmbientStage")

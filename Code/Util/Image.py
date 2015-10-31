@@ -12,31 +12,38 @@ class Image(DebugObject):
     track of all images """
 
     @classmethod
-    def create_buffer(cls, name, size, cformat, ctype):
+    def create_buffer(cls, name, size, comp_type, comp_format):
         img = cls("Image2D-" + name)
-        img.get_texture().setup_buffer_texture(size, cformat, ctype,
+        img.get_texture().setup_buffer_texture(size, comp_type, comp_format,
                                                GeomEnums.UH_static)
         img.register()
         return img
 
     @classmethod
-    def create_2d(cls, name, w, h, cformat, ctype):
+    def create_2d(cls, name, w, h, comp_type, comp_format):
         img = cls("Image2D-" + name)
-        img.get_texture().setup_2d_texture(w, h, cformat, ctype)
+        img.get_texture().setup_2d_texture(w, h, comp_type, comp_format)
         img.register()
         return img
 
     @classmethod
-    def create_2d_array(cls, name, w, h, z, cformat, ctype):
+    def create_2d_array(cls, name, w, h, z, comp_type, comp_format):
         img = cls("Image2D-" + name)
-        img.get_texture().setup_2d_texture_array(w, h, z, cformat, ctype)
+        img.get_texture().setup_2d_texture_array(w, h, z, comp_type, comp_format)
         img.register()
         return img
 
     @classmethod
-    def create_3d(cls, name, w, h, z, cformat, ctype):
+    def create_3d(cls, name, w, h, z, comp_type, comp_format):
         img = cls("Image3D-" + name)
-        img.get_texture().setup_3d_texture(w, h, z, cformat, ctype)
+        img.get_texture().setup_3d_texture(w, h, z, comp_type, comp_format)
+        img.register()
+        return img
+
+    @classmethod
+    def create_cube(cls, name, size, comp_type, comp_format):
+        img = cls("ImageCube-" + name)
+        img.get_texture().setup_cube_map(size, comp_type, comp_format)
         img.register()
         return img
 

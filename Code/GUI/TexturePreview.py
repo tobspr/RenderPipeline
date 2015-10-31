@@ -29,7 +29,7 @@ class TexturePreview(DraggableWindow):
         scale_y = (self._height - 110.0) / h
         scale_f = min(scale_x, scale_y)
         image = BetterOnscreenImage(image=tex, parent=self._content_node, x=20,
-                                    y=90, w=scale_x * w, h=scale_y * h,
+                                    y=90, w=scale_f * w, h=scale_f * h,
                                     any_filter=False, transparent=False)
         description = ""
 

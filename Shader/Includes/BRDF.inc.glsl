@@ -12,7 +12,7 @@ http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbit
 
 
 float ConvertRoughness(float roughness) {
-    return saturate(pow(roughness, 3.0) + 0.003);
+    return saturate(pow(roughness, 2.0) + 0.003);
 }
 
 

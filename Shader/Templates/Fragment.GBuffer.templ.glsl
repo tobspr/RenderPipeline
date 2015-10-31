@@ -16,6 +16,7 @@ layout(location=0) in VertexOutput vOutput;
 uniform sampler2D p3d_Texture0;
 
 uniform float roughness;
+uniform float metallic;
 uniform float specular;
 
 %INOUT%
@@ -29,12 +30,16 @@ void main() {
     // m.diffuse *= vec3(1.0, 0.0, 0.0);
     m.normal = vOutput.normal;
     m.position = vOutput.position;
-    m.metallic = 0;
+    m.metallic = metallic;
     m.specular = specular;
     m.roughness = roughness;
     
+    if (specular > 0.4) {
+        // m.diffuse = pow(vec3(1.000, 0.766, 0.336), vec3(1.0));
+        m.diffuse = vec3(0.5);
+    }
+
     %MATERIAL%
 
     render_material(m);
 }
-

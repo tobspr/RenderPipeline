@@ -25,6 +25,7 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
 
     float scaled_roughness = ConvertRoughness(m.roughness);
 
+    // scaled_roughness = m.roughness;
 
     vec3 shadingResult = vec3(0);
         
@@ -32,7 +33,8 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     if (shadow < 0.001) 
         return shadingResult;
 
-    vec3 specularColor = mix(vec3(0), m.diffuse, m.specular);
+    // vec3 specularColor = mix(vec3(0), m.diffuse, m.specular);
+    vec3 specularColor = mix(vec3(1), m.diffuse * 2.0, m.metallic) * lightColor;
     // specularColor = m.diffuse;
     vec3 diffuseColor = mix(m.diffuse, vec3(0), m.metallic);
 
@@ -54,7 +56,12 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     float visibility = BRDFVisibilitySmithGGX(NxL, NxV, scaled_roughness);
     vec3 fresnel = BRDFSchlick( specularColor, VxH, scaled_roughness) * NxL * NxV / M_PI;
 
-    shadingResult += (distribution * visibility * fresnel) / max(0.001, 4.0 * NxV * max(0.001, NxL) ) * lightColor;
+    // Energy conservation
+    float energy = 1.0 + pow(m.roughness * 4.0, 3.0);
+
+    shadingResult += (distribution * visibility * fresnel) / max(0.001, 4.0 * NxV * max(0.001, NxL) ) * energy * m.specular * specularColor;
+
+
 
     return shadingResult * attenuation * shadow;
 }

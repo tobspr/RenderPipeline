@@ -1,24 +1,12 @@
-#version 400
 
-#pragma include "Includes/Configuration.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+
 
 // Include local scattering code
 #define NO_COMPUTE_SHADER 1
-#pragma include "Shader/scattering_common.glsl"
+#pragma include "scattering_common.glsl"
 
-uniform sampler2D ShadedScene;
-
-uniform sampler2D GBufferDepth;
-uniform sampler2D GBuffer0;
-uniform sampler2D GBuffer1;
-uniform sampler2D GBuffer2;
 
 uniform sampler3D inscatterSampler;
-
-in vec2 texcoord;
-out vec4 result;
-uniform vec3 cameraPosition;
 
 const float sunIntensity = 50.0;
 const vec3 sunVector = normalize(vec3(0.1, 0.8, 0.01));
@@ -79,32 +67,3 @@ vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)
     return inscatteredLight;
 }
 
-void main() {
-
-    Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
-        
-    vec3 view_vector = normalize(m.position - cameraPosition);
-    vec3 scattering_result = vec3(0);
-
-    vec3 inscattered_light = DoScattering(m.position, view_vector);
-
-
-    // scattering_result = 1.0 - exp(-1.0 * inscatteredLight);
-
-    if (is_skybox(m, cameraPosition) && m.position.z > 0.0) {
-        vec3 cloud_color = m.diffuse;
-        
-        scattering_result = 1.0 - exp(-0.2 * inscattered_light);
-
-        scattering_result += pow(cloud_color, vec3(1.2)) * 0.5;
-
-    } else {
-        scattering_result = 1.0 - exp(-0.2*inscattered_light);
-
-
-    }
-
-    result = texture(ShadedScene, texcoord);
-    result.xyz += scattering_result;
-
-}

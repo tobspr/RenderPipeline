@@ -16,13 +16,12 @@ class PluginManager(DebugObject):
         self._pipeline = pipeline
         self._valid_name_regexp = re.compile('^[a-zA-Z0-9_]+$')
         self._plugin_instances = []
+        self._enabled_plugins = self._load_plugin_config()
         self._hooks = {}
 
     def load_plugins(self):
         """ Loads all plugins from the plugin directory """
-        plugins = self._load_plugin_config()
-
-        for plugin in plugins:
+        for plugin in self._enabled_plugins:
             self.debug("Loading plugin", plugin)
             plugin_class = self._try_load_plugin(plugin)
             if plugin_class:
@@ -86,3 +85,11 @@ class PluginManager(DebugObject):
             for handler in self._hooks[hook_name]:
                 handler()
                 
+    def init_defines(self):
+        """ Creates the defines which can be used in shaders """
+
+        for plugin in self._enabled_plugins:
+            self._pipeline.get_stage_mgr().define("HAVE_PLUGIN_" + plugin, 1)
+
+
+

@@ -55,6 +55,7 @@ class CommonResources(DebugObject):
         stage manager """
         self._load_normal_quantization()
         self._load_environment_cubemap()
+        self._load_skydome()
 
     def _load_normal_quantization(self):
         """ Loads the normal quantization tex, used to compress normals to
@@ -82,12 +83,16 @@ class CommonResources(DebugObject):
         envmap.set_wrap_w(Texture.WM_repeat)
         self._pipeline.get_stage_mgr().add_input("DefaultEnvmap", envmap)
 
+    def _load_skydome(self):
+        """ Loads the skydome """
+        self.debug("Loading skydome ..")
+        skydome = Globals.loader.loadTexture("Data/BuiltinModels/Skybox/Skybox2.jpg")
+        skydome.set_wrap_u(Texture.WM_clamp)
+        skydome.set_wrap_v(Texture.WM_clamp)
+        self._pipeline.get_stage_mgr().add_input("DefaultSkydome", skydome)
+
     def load_default_skybox(self):
         skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox/Skybox.egg.bam")
-        skytex = Globals.loader.loadTexture("Data/BuiltinModels/Skybox/Skybox2.jpg")
-        skytex.set_wrap_u(Texture.WM_clamp)
-        skytex.set_wrap_v(Texture.WM_clamp)
-        skybox.set_shader_input("skytex", skytex)
         return skybox
 
     def update(self):

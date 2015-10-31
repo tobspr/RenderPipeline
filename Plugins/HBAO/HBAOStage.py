@@ -1,6 +1,5 @@
 
-from ...Code.RenderStage import RenderStage
-
+from .. import RenderStage
 
 class HBAOStage(RenderStage):
 

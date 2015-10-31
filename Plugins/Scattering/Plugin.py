@@ -4,6 +4,7 @@ import os
 # Load plugin api
 from .. import *
 
+
 from panda3d.core import Texture, Shader
 from ScatteringStage import ScatteringStage
 
@@ -26,13 +27,14 @@ class Plugin(BasePlugin):
 
     @PluginHook("on_pipeline_create")
     def on_create(self):
-        
         self._create_textures()
         self._create_shaders()
         self._precompute()
 
+
     @PluginHook("on_stage_setup")
     def on_setup(self):
+
         self.debug("Setting up scattering stage ..")
         self._display_stage = ScatteringStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._display_stage)

@@ -65,6 +65,8 @@ class BufferViewer(DraggableWindow):
             "Shader/GUI/vertex.glsl", "Shader/GUI/display2DTexArray.glsl")
         self._display_buffer_tex_shader = Shader.load(Shader.SL_GLSL,
             "Shader/GUI/vertex.glsl", "Shader/GUI/displayBufferTex.glsl")
+        self._display_cubemap_shader = Shader.load(Shader.SL_GLSL,
+            "Shader/GUI/vertex.glsl", "Shader/GUI/displayCubemap.glsl")
 
     def _create_components(self):
         """ Creates the window components """
@@ -196,5 +198,7 @@ class BufferViewer(DraggableWindow):
             else:
                 if stage_tex.get_texture_type() == Texture.TT_2d_texture_array:
                     preview.set_shader(self._display_2d_tex_array_shader)
+                elif stage_tex.get_texture_type() == Texture.TT_cube_map:
+                    preview.set_shader(self._display_cubemap_shader)
                 else:
                     preview.set_shader(self._display_3d_tex_shader)

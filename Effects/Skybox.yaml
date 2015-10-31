@@ -2,25 +2,12 @@
 Vertex:
     template: default
 
-    inout:
-        - out layout(location=7) vec3 vpos;
-
-    inject:
-        vertex:
-            vpos = p3d_Vertex.xyz;
-
 Fragment.GBuffer:
     template: default
 
-    inout:
-        - uniform sampler2D skytex;
-        - in layout(location=7) vec3 vpos;
-
     inject:
         material:
-            float angle = atan(vOutput.position.y, vOutput.position.x);
-            vec2 coord = vec2( (angle+M_PI) / (2.0 * M_PI), vpos.z + 0.05);
-            m.diffuse = texture(skytex, coord).xyz;
+            m.diffuse = vec3(1, 0, 1);
             m.specular = 0.0;
             m.metallic = 0.0;
             m.roughness = 1.0;

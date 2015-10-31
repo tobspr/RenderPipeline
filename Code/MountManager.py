@@ -27,6 +27,7 @@ class MountManager(DebugObject):
         self._lock_file = "instance.pid"
         self._model_paths = []
         self._mounted = False
+        self._do_cleanup = True
 
         atexit.register(self._on_exit_cleanup)
 
@@ -54,6 +55,12 @@ class MountManager(DebugObject):
         is usually the root of the rendering pipeline folder """
         self.debug("Set base path to '" + pth + "'")
         self._base_path = Filename.from_os_specific(pth).get_fullpath()
+
+    def disable_cleanup(self):
+        """ Disables the cleanup of the tempfolder after the application stopped.
+        This is mostly useful for debugging, to analyze the generated tempfiles
+        even after the pipeline stopped running """
+        self._do_cleanup = False
 
     def get_lock(self):
         """ Checks if we are the only instance running. If there is no instance
@@ -132,31 +139,32 @@ class MountManager(DebugObject):
     def _on_exit_cleanup(self):
         """ Gets called when the application exists """
 
-        self.debug("Cleaning up ..")
+        if self._do_cleanup:
+            self.debug("Cleaning up ..")
 
-        if self._write_path is not None:
+            if self._write_path is not None:
 
-            # Try removing the lockfile
-            self._try_remove(self._lock_file)
+                # Try removing the lockfile
+                self._try_remove(self._lock_file)
 
-            # Try removing the shader auto config
-            self._try_remove(join(self._write_path, "ShaderAutoConfig.include"))
+                # Try removing the shader auto config
+                self._try_remove(join(self._write_path, "ShaderAutoConfig.include"))
 
-            # Check for further tempfiles in the write path
-            for f in os.listdir(self._write_path):
-                pth = join(self._write_path, f)
+                # Check for further tempfiles in the write path
+                for f in os.listdir(self._write_path):
+                    pth = join(self._write_path, f)
 
-                # Tempfiles from the pipeline start with "$$" to distinguish
-                # them from user created files
-                if isfile(pth) and f.startswith("$$"):
-                    self._try_remove(pth)
+                    # Tempfiles from the pipeline start with "$$" to distinguish
+                    # them from user created files
+                    if isfile(pth) and f.startswith("$$"):
+                        self._try_remove(pth)
 
-            # Delete the write path if no files are left
-            if len(os.listdir(self._write_path)) < 1:
-                try:
-                    os.removedirs(self._write_path)
-                except:
-                    pass
+                # Delete the write path if no files are left
+                if len(os.listdir(self._write_path)) < 1:
+                    try:
+                        os.removedirs(self._write_path)
+                    except:
+                        pass
 
     def mount(self):
         """ Inits the VFS Mounts """

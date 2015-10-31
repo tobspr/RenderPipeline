@@ -16,6 +16,26 @@ class RenderStage(DebugObject):
     Using a pipe system ensures that new techniques can be inserted easily,
     without the other techniques even being aware of them """
 
+    @classmethod
+    def add_input_requirement(cls, input_name):
+        """ Adds a new input to the list of required inputs for this stage """
+        if not hasattr(cls, "required_inputs"):
+            DebugObject.global_warn("RenderStage", "The stage " + str(cls) +\
+                " has no static input list! Can not call add_input_requirement.")
+            return
+        if input_name not in cls.required_inputs:
+            cls.required_inputs.append(input_name)
+
+    @classmethod
+    def add_pipe_requirement(cls, pipe_name):
+        """ Adds a new pipe to the list of required pipes for this stage """
+        if not hasattr(cls, "required_pipes"):
+            DebugObject.global_warn("RenderStage", "The stage " + str(cls) +\
+                " has no static input pipe list! Can not call add_pipe_requirement.")
+            return
+        if pipe_name not in cls.required_pipes:
+            cls.required_pipes.append(pipe_name)
+
     def __init__(self, stage_id, pipeline):
         """ Creates a new render stage """
         DebugObject.__init__(self, stage_id)
@@ -30,12 +50,16 @@ class RenderStage(DebugObject):
     def get_required_inputs(self):
         """ This method should return a list of shader inputs which are required
         for this stage """
+        if hasattr(self, "required_inputs"):
+            return self.required_inputs
         return []
 
     def get_input_pipes(self):
         """ This method should return which pipes are required for this stage.
         The key specifies the name under they will be available in the shader,
         while the value specifies the name of the pipe """
+        if hasattr(self, "required_pipes"):
+            return self.required_pipes
         return []
 
     def get_produced_pipes(self):

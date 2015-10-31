@@ -228,6 +228,7 @@ class RenderPipeline(DebugObject):
         define("CAMERA_FAR", round(Globals.base.camLens.get_far(), 5))
 
         self._light_mgr.init_defines()
+        self._plugin_mgr.init_defines()
 
     def _adjust_camera_settings(self):
         """ Sets the default camera settings """

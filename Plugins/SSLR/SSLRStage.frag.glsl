@@ -36,7 +36,7 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
 
     // Limit the maximum amount of mipmaps. This important, choosing a too
     // high value will introduce artifacts.
-    const int max_mips = 7;
+    const int max_mips = 2;
 
     // Iteration parameters
     int mipmap = 0;
@@ -141,7 +141,7 @@ vec3 trace_ray_fast(vec3 ro, vec3 ray_dir) {
 
     const int mipmap = 4;
     const float ray_epsilon = 1.0005;
-    const float hit_bias = 0.001;
+    const float hit_bias = 0.01;
     ivec2 work_size = textureSize(DownscaledDepth, mipmap).xy;
 
     ray_dir = normalize(ray_dir);
@@ -149,7 +149,7 @@ vec3 trace_ray_fast(vec3 ro, vec3 ray_dir) {
 
     int max_iter = 50;
 
-    pos += ray_dir * 0.08;
+    pos += ray_dir * 0.05;
 
     while (max_iter --> 0)
     {
@@ -226,9 +226,9 @@ vec3 trace_ray_fast(vec3 ro, vec3 ray_dir) {
 vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
 {
 
-    // vec3 intersection = trace_ray(ro, rd);
-    vec3 intersection = trace_ray_fast(ro, rd);
-    if(length(intersection) > 0.0001 && distance(intersection.xy, texcoord) > 0.001) {
+    vec3 intersection = trace_ray(ro, rd);
+    // vec3 intersection = trace_ray_fast(ro, rd);
+    if(length(intersection) > 0.0001 && distance(intersection.xy, texcoord) > 0.00001) {
 
         vec3 intersected_color = texture(ShadedScene, intersection.xy).xyz;
         vec3 intersected_normal = get_gbuffer_normal(GBuffer1, intersection.xy);
@@ -251,7 +251,7 @@ vec3 get_ray_direction(vec3 position, vec3 normal, vec3 view_dir, vec3 ro) {
     vec3 reflected_dir = reflect(view_dir, normal );
 
     float scale_factor = 0.1 + 
-        saturate(distance(position, cameraPosition) / 1000.0) * 10.0;
+        saturate(distance(position, cameraPosition) / 1000.0) * 0.0;
 
     vec3 target_pos = position + reflected_dir * scale_factor;
     vec4 transformed_pos = currentViewProjMat * vec4(target_pos, 1);
@@ -273,14 +273,13 @@ void main() {
 
     float pixel_depth = textureLod(DownscaledDepth, texcoord, 0).x;
 
-    if (distance(m.position, cameraPosition) > 1000) {
+    if (distance(m.position, cameraPosition) > 10000) {
 
     } else {
 
 
 
         vec3 ray_origin = vec3(texcoord, pixel_depth);
-
 
         vec3 offs[8] = vec3[](
             vec3(-0.134, 0.044, -0.825),
@@ -293,17 +292,19 @@ void main() {
             vec3(-0.819, 0.037, -0.388)
         );
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 1; i++) {
 
             vec3 jo = vec3( mod(gl_FragCoord.x, 2.0), mod(gl_FragCoord.y, 2.0), 0.0 );
 
-            vec3 ray_direction = get_ray_direction(m.position, normalize(m.normal + (offs[i] +jo) * 0.008), view_dir, ray_origin);
+            vec3 ray_direction = get_ray_direction(m.position, normalize(m.normal + (offs[i] +jo) * 0.00), view_dir, ray_origin);
 
             sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
-
+            // sslr_result += ray_direction;
         }
 
-        sslr_result /= 8.0;
+        sslr_result /= 1.0;
+
+
 
         // sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
         // sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
