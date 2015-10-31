@@ -31,29 +31,34 @@ vec3 fresnel_with_roughness(vec3 specular_color, float VxH, float roughness, flo
 
 void main() {
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
+
+
     vec3 view_vector = normalize(m.position - cameraPosition);
     vec4 ambient = vec4(0);
 
-    float conv_roughness = ConvertRoughness(m.roughness);
+    if (!is_skybox(m, cameraPosition)) {
+        float conv_roughness = ConvertRoughness(m.roughness);
 
-    vec3 reflection_coord = reflect(view_vector, m.normal);
-    vec3 env_coord = fix_cubemap_coord(reflection_coord);
-    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, conv_roughness);
-    vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz;
+        vec3 reflection_coord = reflect(view_vector, m.normal);
+        vec3 env_coord = fix_cubemap_coord(reflection_coord);
+        float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, conv_roughness);
+        vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz;
 
-    // SRGB
-    env_default_color = pow(env_default_color, vec3(2.2)) * 2.0;
+        // SRGB
+        env_default_color = pow(env_default_color, vec3(2.2)) * 2.0;
 
-    vec3 halfway_vector = normalize(reflection_coord + view_vector);
+        vec3 halfway_vector = normalize(reflection_coord + view_vector);
 
-    vec3 specular_color = m.diffuse * m.specular;
-    float VxH = max(0, dot(view_vector, halfway_vector));
+        vec3 specular_color = m.diffuse * m.specular;
+        float VxH = max(0, dot(view_vector, halfway_vector));
 
-    vec3 diffuse_ambient = vec3(0.02) * m.diffuse * (1.0 - m.metallic);
-    vec3 specular_ambient = 
-        fresnel_with_roughness(specular_color, VxH, conv_roughness, m.metallic) *
-        env_default_color / M_PI * 0.5;
+        vec3 diffuse_ambient = vec3(0.02) * m.diffuse * (1.0 - m.metallic);
+        vec3 specular_ambient = 
+            fresnel_with_roughness(specular_color, VxH, conv_roughness, m.metallic) *
+            env_default_color / M_PI * 0.5;
 
-    ambient.xyz = diffuse_ambient + specular_ambient;
+        ambient.xyz = diffuse_ambient + specular_ambient;
+    }
+    
     result = texture(ShadedScene, texcoord) * 1 + ambient * 1;
 }

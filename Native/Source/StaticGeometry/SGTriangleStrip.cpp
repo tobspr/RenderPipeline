@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+
+
 SGTriangleStrip::SGTriangleStrip() {
     _index = -1;
     _bb_min.set(0, 0, 0);
@@ -88,22 +90,23 @@ void SGTriangleStrip::write_to(PTA_uchar &data, int offset) {
     // Store our write position
     _index = offset;
 
-
+    // Write bounds min
     f_data[write_offset++] = _bb_min.get_x();
     f_data[write_offset++] = _bb_min.get_y();
     f_data[write_offset++] = _bb_min.get_z();
     f_data[write_offset++] = 0;
 
+    // Write bounds max
     f_data[write_offset++] = _bb_max.get_x();
     f_data[write_offset++] = _bb_max.get_y();
     f_data[write_offset++] = _bb_max.get_z();
     f_data[write_offset++] = 0;
 
+    // Write common vector and max angle
     f_data[write_offset++] = _common_vector.get_x();
     f_data[write_offset++] = _common_vector.get_y();
     f_data[write_offset++] = _common_vector.get_z();
     f_data[write_offset++] = _angle_difference;
-
 
     // Write all vertices
     for (size_t i = 0; i < _vertex_data.size(); ++i) {

@@ -87,7 +87,7 @@ class RenderPipeline(DebugObject):
         """ Returns the default skybox, with a scale of <size>, and all
         proper effects and shaders already applied. The skybox is already 
         parented to render aswell. """
-        skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox.egg.bam")
+        skybox = self._com_resources.load_default_skybox()
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
         self.set_effect(skybox, "Effects/Skybox.yaml", 

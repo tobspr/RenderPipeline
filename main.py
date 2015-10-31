@@ -71,19 +71,20 @@ class MainApp(ShowBase):
         render.set_shader_input("specular", 0.5)
 
 
-        # Load some models
         plane = loader.loadModel("Models/GroundPlane/Scene.bam")
-        # plane.set_scale(1)
         plane.reparent_to(render)
-            
+        
+        # Load some models
+        model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        model.flatten_strong()
+
         for roughness in range(0, 11):
             for specular in range(0, 11):
-                model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
-                # model = loader.loadModel("Toolkit/MeshSplitter/test_model.bam")
-                model.set_pos( (roughness-5) * 2.3, (specular-5) * 2.3, 0)
-                model.set_shader_input("roughness", roughness / 10.0)
-                model.set_shader_input("specular", specular / 10.0)
-                model.reparent_to(render)
+                placeholder = render.attach_new_node("placeholder")
+                placeholder.set_pos( (roughness-5) * 2.3, (specular-5) * 2.3, 0)
+                placeholder.set_shader_input("roughness", roughness / 10.0)
+                placeholder.set_shader_input("specular", specular / 10.0)
+                model.instance_to(placeholder)
 
         self.render_pipeline.create_default_skybox()
         self.lights = []

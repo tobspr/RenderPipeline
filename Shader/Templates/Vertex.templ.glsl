@@ -15,9 +15,10 @@ uniform mat4 currentViewProjMat;
 uniform mat4 trans_model_to_world;
 uniform mat4 tpose_world_to_model;
 
+out layout(location=0) VertexOutput vOutput;
+
 %INOUT%
 
-out layout(location=0) VertexOutput vOutput;
 
 void main() {
     

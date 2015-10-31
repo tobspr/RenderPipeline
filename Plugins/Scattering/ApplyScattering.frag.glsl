@@ -21,7 +21,7 @@ out vec4 result;
 uniform vec3 cameraPosition;
 
 const float sunIntensity = 50.0;
-const vec3 sunVector = normalize(vec3(0.1, 0.8, 0.5));
+const vec3 sunVector = normalize(vec3(0.1, 0.8, 0.01));
 
 vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)
 {
@@ -87,9 +87,22 @@ void main() {
     vec3 scattering_result = vec3(0);
 
     vec3 inscattered_light = DoScattering(m.position, view_vector);
-    // scattering_result = 1.0 - exp(-1.0 * inscatteredLight);
-    scattering_result = 1.0 - exp(-inscattered_light);
 
+
+    // scattering_result = 1.0 - exp(-1.0 * inscatteredLight);
+
+    if (is_skybox(m, cameraPosition) && m.position.z > 0.0) {
+        vec3 cloud_color = m.diffuse;
+        
+        scattering_result = 1.0 - exp(-0.2 * inscattered_light);
+
+        scattering_result += pow(cloud_color, vec3(1.2)) * 0.5;
+
+    } else {
+        scattering_result = 1.0 - exp(-0.2*inscattered_light);
+
+
+    }
 
     result = texture(ShadedScene, texcoord);
     result.xyz += scattering_result;

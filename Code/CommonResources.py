@@ -82,6 +82,14 @@ class CommonResources(DebugObject):
         envmap.set_wrap_w(Texture.WM_repeat)
         self._pipeline.get_stage_mgr().add_input("DefaultEnvmap", envmap)
 
+    def load_default_skybox(self):
+        skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox/Skybox.egg.bam")
+        skytex = Globals.loader.loadTexture("Data/BuiltinModels/Skybox/Skybox2.jpg")
+        skytex.set_wrap_u(Texture.WM_clamp)
+        skytex.set_wrap_v(Texture.WM_clamp)
+        skybox.set_shader_input("skytex", skytex)
+        return skybox
+
     def update(self):
         """ Updates the commonly used resources, mostly the shader inputs """
         view_transform = self._showbase.render.get_transform(self._showbase.cam)
@@ -90,3 +98,4 @@ class CommonResources(DebugObject):
         self._pta_camera_pos[0] = self._showbase.camera.get_pos(render)
         self._pta_current_view_proj_mat[0] = view_transform.get_mat() *\
             self._showbase.camLens.get_projection_mat()
+

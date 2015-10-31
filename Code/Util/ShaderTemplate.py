@@ -69,6 +69,11 @@ class ShaderTemplate(DebugObject):
                     if len(insertions) > 0:
                         parsed_lines.append("/* Hook " + hook_name + " */")
                     for nr, line_i in enumerate(insertions):
+
+                        if line_i == None:
+                            self.warn("Empty insertion '" + hook_name + "'")
+                            continue
+
                         # Dont indent defines and pragmas
                         if line_i.startswith("#"):
                             parsed_lines.append(line_i)

@@ -143,6 +143,15 @@ class Effect(DebugObject):
         if "inject" in data:
             data_injects = data["inject"]
             for key, val in list(data_injects.items()):
+                if val is None:
+                    self.warn("Empty insertion: '" + key + "'")
+                    continue
+
+                if isinstance(val, list) or isinstance(val, tuple):
+                    self.warn("Invalid syntax, you used a list but you should have used a string:")
+                    self.warn(val)
+                    continue
+
                 val = [i.strip() + ";" for i in val.strip(";").split(";")]
                 if key in injects:
                     injects[key] += val

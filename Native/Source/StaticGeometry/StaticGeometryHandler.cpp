@@ -29,7 +29,7 @@ StaticGeometryHandler::StaticGeometryHandler() {
     // huge, however it does not have to get uploaded every frame.
     // We add +2 for the bounding volume, and +1 for the visibility flags to the x-size.
     // For the y size, we add 1 to store the number of strips in the first component.
-    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3 * 2 + 2 + 1, SG_MAX_DATASET_STRIPS + 1, Texture::T_float, Texture::F_rgba32);
+    _dataset_tex->setup_2d_texture(SG_TRI_GROUP_SIZE * 3 * 2 + 2 + 1, SG_MAX_DATASET_STRIPS, Texture::T_float, Texture::F_rgba16);
 
     // The mapping tex assigns strips to a dataset. Right now a dataset can have
     // up to n strips, and we support up to 32 datasets
@@ -42,13 +42,14 @@ StaticGeometryHandler::StaticGeometryHandler() {
     // the object index, and its transform matrix.
     // We reserve 1 pixel to store the amount of drawn objects, and each object
     // takes 1 pixel for its id and 4 pixels for its transform matrix.
-    _drawn_objects_tex->setup_buffer_texture(1 + max_objects_per_frame * 5, Texture::T_float, Texture::F_rgba32, GeomEnums::UH_dynamic);
+    // _drawn_objects_tex->setup_buffer_texture(1 + max_objects_per_frame * 5, Texture::T_float, Texture::F_rgba16, GeomEnums::UH_dynamic);
+    _drawn_objects_tex->setup_2d_texture(1 + max_objects_per_frame * 5, 1, Texture::T_float, Texture::F_rgba32);
 
     // This texture is used to write all rendered strips to.
     // For each rendered strip, there is an object reference (to get the transform mat),
     // and a global strip reference.
     // For each strip we store a thread id and a strip id, so we multiply by 2
-    _dynamic_strips_tex->setup_buffer_texture(max_strips_per_frame * 2, Texture::T_int, Texture::F_r32i, GeomEnums::UH_static);
+    _dynamic_strips_tex->setup_buffer_texture(max_strips_per_frame, Texture::T_int, Texture::F_rg32, GeomEnums::UH_static);
 }
 
 

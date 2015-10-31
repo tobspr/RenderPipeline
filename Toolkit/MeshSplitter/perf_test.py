@@ -21,9 +21,10 @@ controller.set_initial_position(Vec3(5), Vec3(0))
 controller.setup()
 
 
-for x in xrange(10):
-    for y in xrange(10):
+for x in xrange(1):
+    for y in xrange(1):
         model = loader.loadModel("Scene.bam")
+        model.flatten_strong()
         model.reparent_to(render)
         model.set_scale(0.2)
         model.set_pos(x * 0.5, y * 0.5, 0)

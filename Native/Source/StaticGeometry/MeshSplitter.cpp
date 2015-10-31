@@ -102,11 +102,20 @@ void MeshSplitter::find_minmax(const TriangleList &tris, LVecBase3f &bb_min, LVe
 
 
 
-void MeshSplitter::optimize_results(TriangleResultList &results) {
+void MeshSplitter::optimize_results(TriangleResultList &results, const LVecBase3f &search_area) {
 
     // Chunks which are filled up to certain percentage are ok
-    int size_ok = SG_TRI_GROUP_SIZE * 0.8;
+    int size_ok = SG_TRI_GROUP_SIZE * 0.95;
 
+
+    // Make sure every chunk has correct bounds and common vectors, this should
+    // already be the case, but safe is safe
+    for (TriangleResultList::iterator iter = results.begin(); iter != results.end(); ++iter) {
+        Chunk *chunk = *iter;
+        find_minmax(chunk->triangles, chunk->bb_min, chunk->bb_max);
+        find_common_vector(chunk->triangles, chunk->common_vector, chunk->max_angle_diff);
+
+    }
 
     int num_optimization = 50000;
 
@@ -122,13 +131,10 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
             if(current_chunk->triangles.size() < size_ok) {
 
                 // Get the area arround the chunk
-                LVecBase3f search_min = current_chunk->bb_min;
-                LVecBase3f search_max = current_chunk->bb_max;
+                LVecBase3f search_mid = (current_chunk->bb_min + current_chunk->bb_max) * 0.5;
+                LVecBase3f search_min = search_mid - search_area;
+                LVecBase3f search_max = search_mid + search_area;
 
-                // Increase the area twice by its size, to get the search radius
-                LVecBase3f bb_size = (search_max - search_min);
-                search_min -= bb_size * 0.5;
-                search_max += bb_size * 0.5;
 
                 // Find all intersecting chunks where this chunk could be merged with
                 TriangleResultList intersecting;
@@ -150,7 +156,7 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
                 // LVecBase3f chunk_mid = (current_chunk->bb_min + current_chunk->bb_max) * 0.5;
                 Chunk *closest = NULL;
                 for (TriangleResultList::iterator siter = intersecting.begin(); siter != intersecting.end(); ++siter) {
-                    if (closest == NULL || current_chunk->compare_common_vec(closest, *siter)) {
+                    if (closest == NULL || !current_chunk->compare_common_vec(closest, *siter)) {
                         closest = *siter;
                     }
                 }
@@ -162,7 +168,6 @@ void MeshSplitter::optimize_results(TriangleResultList &results) {
                 // Merge chunks
                 closest->triangles.splice(closest->triangles.begin(), current_chunk->triangles);
                 results.remove(current_chunk);
-
 
                 // Update bounding box
                 find_minmax(closest->triangles, closest->bb_min, closest->bb_max);
@@ -339,12 +344,12 @@ bool MeshSplitter::triangle_intersects(const LVecBase3f &bb_min, const LVecBase3
 
 bool MeshSplitter::chunk_intersects(const LVecBase3f &a_min, const LVecBase3f &a_max, const LVecBase3f &b_min, const LVecBase3f &b_max) {
 
-    if (a_max.get_x() < b_min.get_x()) return false; // a is left of b
-    if (a_min.get_x() > b_max.get_x()) return false; // a is right of b
-    if (a_max.get_y() < b_min.get_y()) return false; // a is above b
-    if (a_min.get_y() > b_max.get_y()) return false; // a is below b
-    if (a_max.get_z() < b_min.get_z()) return false; // a is behind b
-    if (a_min.get_z() > b_max.get_z()) return false; // a is infront of b
+    if (a_max.get_x() <= b_min.get_x()) return false; // a is left of b
+    if (a_min.get_x() >= b_max.get_x()) return false; // a is right of b
+    if (a_max.get_y() <= b_min.get_y()) return false; // a is above b
+    if (a_min.get_y() >= b_max.get_y()) return false; // a is below b
+    if (a_max.get_z() <= b_min.get_z()) return false; // a is behind b
+    if (a_min.get_z() >= b_max.get_z()) return false; // a is infront of b
 
     return true;
 }
@@ -383,7 +388,7 @@ void MeshSplitter::find_common_vector(const TriangleList &triangles, LVecBase3f 
 
     for(TriangleList::const_iterator iter = triangles.cbegin(); iter != triangles.cend(); ++iter) {
         float angle = acos((*iter)->face_normal.dot(cvector));
-        if (angle < 0.0) angle += 2.0 * PI;
+        // if (angle < 0.0) angle += 2.0 * PI;
 
         if (angle > max_angle_diff) {
             max_angle_diff = angle;
@@ -434,7 +439,6 @@ void MeshSplitterWriter::process(const Filename &dest) {
 
     cout << "Found " << all_triangles.size() << " triangles" << endl;
 
-    cout << "Finding bounding volume .." << endl;
     LVecBase3f bb_start, bb_end;
     MeshSplitter::find_minmax(all_triangles, bb_start, bb_end);
 
@@ -444,11 +448,17 @@ void MeshSplitterWriter::process(const Filename &dest) {
     MeshSplitter::traverse_recursive(all_triangles, bb_start, bb_end, results, 15);
     cout << "Found " << results.size() << " Strips! This is an effective count of "
          << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
-    cout << "Optimizing results and merging small chunks .. " << endl;
-    MeshSplitter::optimize_results(results);
 
-    cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
-         << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
+    if (true) {
+        LVecBase3f search_area = (bb_end - bb_start) * 0.1;
+
+        cout << "Optimizing results and merging small chunks .. " << endl;
+        MeshSplitter::optimize_results(results, search_area);
+
+        cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
+             << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
+    }
+    
     cout << "Writing out model file .." << endl;
     
     write_results(dest, results, bb_start, bb_end);
