@@ -93,7 +93,7 @@ class BufferViewer(DraggableWindow):
 
         self._chb_show_images = BetterLabeledCheckbox(parent=self._node,
             x=20, y=60, chb_callback=self._set_show_images, chb_checked=False,
-            text="Display image resources", text_color=Vec3(0.5), expand_width=150)
+            text="Display image resources", text_color=Vec3(0.5), expand_width=200)
 
     def _set_show_images(self, arg):
         self._display_images = arg
@@ -158,10 +158,10 @@ class BufferViewer(DraggableWindow):
             node.set_sz(-1)
             node.set_pos(10 + xoffs * (entry_width - 14), 1, yoffs * (entry_height-14))
 
-            r, g, b = rgb_from_string(stage_name)
-
             if stage_name.startswith("Image"):
                 r, g, b = 0.4, 0.4, 0.4
+            else:
+                r, g, b = rgb_from_string(''.join(stage_name.split("-")[:-1]))
 
             DirectFrame(
                 parent=node, frameSize=(7, entry_width - 17, -7, -entry_height + 17),

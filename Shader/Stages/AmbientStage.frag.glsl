@@ -28,10 +28,10 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
 
     float reflectivity = saturate(1.0 - roughness);
 
-    // Increase mipmap at extreme roughness, linear doesn't work well theres
+    // Increase mipmap at extreme roughness, linear doesn't work well there
     // reflectivity += saturate(reflectivity - 0.9) * 2.0;
 
-    return int(num_mipmaps - reflectivity * 8.0);
+    return (num_mipmaps - reflectivity * 9.0);
 }
 
 
@@ -48,29 +48,6 @@ void main() {
         vec3 reflected_dir = reflect(view_vector, m.normal);
         vec3 env_coord = fix_cubemap_coord(reflected_dir);
 
-        float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness);
-
-        vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz;
-        vec3 env_amb = vec3(0);
-
-        #if HAVE_PLUGIN(Scattering)
-
-            vec3 scat_coord = reflected_dir;
-            float scat_mipmap = get_mipmap_for_roughness(ScatteringCubemap, m.roughness);
-            vec3 env_scattering_color = textureLod(ScatteringCubemap, scat_coord, scat_mipmap).xyz;
-
-            env_default_color = env_scattering_color * M_PI;
-
-            // env_default_color = pow(env_default_color, vec3(1.0 / 2.2));
-
-            // Cheap irradiance
-            env_amb = textureLod(ScatteringCubemap, m.normal, 6).xyz;
-
-
-        #endif
-
-        // env_default_color = vec3(1, 0, 0);
-
 
         vec3 h = -normalize(reflected_dir - view_vector);
         // vec3 h = m.normal;
@@ -79,9 +56,32 @@ void main() {
         float NxL = max(0, dot(m.normal, reflected_dir));
         float NxV = abs(dot(m.normal, view_vector));
 
+
+        float mipmap_bias = saturate(pow(1.0 - NxV, 5.0)) * 3.0;
+        mipmap_bias = 0.0;
+
+        float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
+
+        vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz;
+        vec3 env_amb = vec3(0);
+
+        #if HAVE_PLUGIN(Scattering)
+
+            vec3 scat_coord = reflected_dir;
+            float scat_mipmap = get_mipmap_for_roughness(ScatteringCubemap, m.roughness) + mipmap_bias;
+            vec3 env_scattering_color = textureLod(ScatteringCubemap, scat_coord, scat_mipmap).xyz;
+
+            env_default_color = env_scattering_color * M_PI;
+
+            // Cheap irradiance
+            env_amb = textureLod(ScatteringCubemap, m.normal, 6).xyz;
+
+
+        #endif
+
         // Different terms for metallic and diffuse objects
         vec3 env_metallic = m.diffuse;
-        env_metallic *= 0.3 + pow(LxH, 1.0) * 0.7;
+        env_metallic *= 1.0 + pow(LxH, 1.0) * 0.0;
 
         vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 2.0 )) 
                            * (1.0 - m.roughness)) * vec3(0.2);
@@ -93,6 +93,8 @@ void main() {
 
         ambient.xyz += diffuse_ambient + specular_ambient;
         ambient.xyz += env_amb * 0.2 * m.diffuse * (1.0 - m.metallic);
+
+        // ambient.xyz = vec3( pow(1.0 - NxV, 10.0) );
 
     }
     

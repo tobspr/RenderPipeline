@@ -9,7 +9,7 @@ class SMAAStage(RenderStage):
 
     """ This stage does the actual SMAA """
 
-    required_pipes = ["ShadedScene", "GBufferDepth", "ColorCorrectedScene"]
+    required_pipes = ["ShadedScene", "GBufferDepth", "GBuffer2"]
     required_inputs = ["mainCam", "mainRender", "cameraPosition"]
 
     def __init__(self, pipeline):
@@ -27,9 +27,14 @@ class SMAAStage(RenderStage):
     def set_jitter_index(self, idx):
         self._jitter_index[0] = idx
 
+        self._neighbor_targets[0].set_active(idx == 0)
+        self._neighbor_targets[1].set_active(idx == 1)
+
+        self._resolve_target.set_shader_input("CurrentTex", self._neighbor_targets[idx]["color"])
+        self._resolve_target.set_shader_input("LastTex", self._neighbor_targets[1-idx]["color"])
 
     def get_produced_pipes(self):
-        return {"ColorCorrectedScene": self._neighbor_target['color']}
+        return {"ShadedScene": self._resolve_target['color']}
 
     def create(self):
 
@@ -48,27 +53,32 @@ class SMAAStage(RenderStage):
         self._blend_target.set_shader_input("EdgeTex", self._edge_target["color"])
         self._blend_target.set_shader_input("AreaTex", self._area_tex)
         self._blend_target.set_shader_input("SearchTex", self._search_tex)
+        self._blend_target.set_shader_input("JitterIndex", self._jitter_index)
+
 
         # Neighbor blending
-        self._neighbor_target = self._create_target("SMAANeighbor")
-        self._neighbor_target.add_color_texture(bits=16)
-        self._neighbor_target.prepare_offscreen_buffer()
-        self._neighbor_target.set_clear_color()
+        self._neighbor_targets = []
+        for i in range(2):
 
-        self._neighbor_target.set_shader_input("BlendTex", self._blend_target["color"])
+            target = self._create_target("SMAANeighbor-" + str(i))
+            target.add_color_texture(bits=16)
+            target.prepare_offscreen_buffer()
+            target.set_shader_input("BlendTex", self._blend_target["color"])
+            self._neighbor_targets.append(target)
 
         # Resolving
         self._resolve_target = self._create_target("SMAAResolve")
         self._resolve_target.add_color_texture(bits=16)
         self._resolve_target.prepare_offscreen_buffer()
 
-        self._resolve_target.set_shader_input("CurrentTex", self._neighbor_target["color"])
         self._resolve_target.set_shader_input("JitterIndex", self._jitter_index)
 
     def set_shaders(self):
         self._edge_target.set_shader(self.load_plugin_shader("EdgeDetection.frag.glsl"))
         self._blend_target.set_shader(self.load_plugin_shader("BlendingWeights.frag.glsl"))
-        self._neighbor_target.set_shader(self.load_plugin_shader("NeighborhoodBlending.frag.glsl"))
+        for target in self._neighbor_targets:
+            target.set_shader(self.load_plugin_shader("NeighborhoodBlending.frag.glsl"))
+        self._resolve_target.set_shader(self.load_plugin_shader("Resolve.frag.glsl"))
 
     def resize(self):
         RenderStage.resize(self)

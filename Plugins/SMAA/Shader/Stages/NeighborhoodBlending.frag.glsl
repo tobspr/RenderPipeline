@@ -4,7 +4,7 @@
 #pragma include "../SMAAWrap.inc.glsl"
 
 uniform sampler2D BlendTex;
-uniform sampler2D ColorCorrectedScene;
+uniform sampler2D ShadedScene;
 
 in vec2 texcoord;
 out vec4 result;
@@ -17,8 +17,8 @@ void main() {
 
     // Actual Fragment shader
     #if SMAA_REPROJECTION
-        result = SMAANeighborhoodBlendingPS(texcoord, offset, ColorCorrectedScene, BlendTex, velocityTex);
+        result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex, velocityTex);
     #else
-        result = SMAANeighborhoodBlendingPS(texcoord, offset, ColorCorrectedScene, BlendTex);
+        result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex);
     #endif
 }

@@ -44,10 +44,9 @@ void render_material(Material m) {
     m.diffuse = saturate(m.diffuse);
     
     // Compute velocity
-
     vec4 last_proj_pos = vOutput.last_proj_position;
     vec2 last_texcoord = fma(last_proj_pos.xy / last_proj_pos.w, vec2(0.5), vec2(0.5));
-    vec2 curr_texcoord = vec2(gl_FragCoord.xy / vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+    vec2 curr_texcoord = vec2( (ivec2(gl_FragCoord.xy)) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
     vec2 velocity = (curr_texcoord - last_texcoord) * 255.0;
 
     gbuffer_out_0 = vec4(m.diffuse, m.roughness);
@@ -76,7 +75,7 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
     vec4 data2 = texelFetch(GBuffer2, coord, 0);
 
     m.diffuse = data0.xyz;
-    m.roughness = max(0.01, data0.w);
+    m.roughness = max(0.05, data0.w);
     // m.normal = normalize(data1.xyz * 2 - 1);
     m.normal = normalize(data1.xyz);
     m.metallic = data1.w;
@@ -88,6 +87,10 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
 vec3 get_gbuffer_normal(sampler2D GBuffer1, vec2 texcoord) {
     // return normalize(texture(GBuffer1, texcoord).xyz * 2 - 1);
     return normalize(texture(GBuffer1, texcoord).xyz);
+}
+
+vec2 get_velocity(sampler2D GBuffer2, ivec2 texcoord) {
+    return texelFetch(GBuffer2, texcoord, 0).yz / 255.0;
 }
 
 bool is_skybox(Material m, vec3 camera_pos) {

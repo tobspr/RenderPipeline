@@ -46,7 +46,7 @@ class ScatteringStage(RenderStage):
         self._mip_targets = []
         while mipsize >= 2:
             mipsize = mipsize // 2
-            target = self._create_target("DownscaleScatterCubemap")
+            target = self._create_target("DownscaleScatterCubemap-" + str(mipsize))
             target.set_size(mipsize * 6, mipsize)
             # target.add_color_texture()
             target.prepare_offscreen_buffer()

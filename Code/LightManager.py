@@ -15,7 +15,6 @@ from .Stages.ApplyLightsStage import ApplyLightsStage
 from .Stages.AmbientStage import AmbientStage
 from .Stages.GBufferStage import GBufferStage
 from .Stages.FinalStage import FinalStage
-from .Stages.ColorCorrectionStage import ColorCorrectionStage
 from .Stages.DownscaleZStage import DownscaleZStage
 
 from .GPUCommandQueue import GPUCommandQueue
@@ -136,6 +135,3 @@ class LightManager(DebugObject):
 
         self._downscale_z_stage = DownscaleZStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._downscale_z_stage)
-
-        self._color_correct_stage = ColorCorrectionStage(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(self._color_correct_stage)

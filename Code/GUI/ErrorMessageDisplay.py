@@ -13,9 +13,9 @@ class ErrorMessageDisplay(DebugObject):
 
     def __init__(self):
         DebugObject.__init__(self)
-        self._init_notify()
         self._num_errors = 0
         self._error_node = Globals.base.pixel2d.attach_new_node("ErrorDisplay")
+        self._notify_stream = None
 
     def _init_notify(self):
         """ Internal method to init the stream to catch all notify messages """
@@ -25,11 +25,13 @@ class ErrorMessageDisplay(DebugObject):
     def update(self):
         """ Updates the error display, fetching all new messages from the notify
         stream """
+        if not self._notify_stream:
+            self._init_notify()
+            
         while self._notify_stream.is_text_available():
             line = self._notify_stream.get_line().strip()
             print(line)
-            if "error" in line.lower():
-                self.add_error(line)
+            self.add_error(line)
 
     def add_error(self, msg):
         """ Adds a new error message """

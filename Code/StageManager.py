@@ -1,10 +1,15 @@
 
 import time
+
+from panda3d.core import Texture
 from direct.stdpy.file import open
 
+from .Globals import Globals
 from .GUI.PipeViewer import PipeViewer
 from .Util.DebugObject import DebugObject
+from .Util.Image import Image
 
+from .Stages.UpdatePreviousPipesStage import UpdatePreviousPipesStage
 
 class StageManager(DebugObject):
     """ This manager takes a list of RenderStages and puts them into an order,
@@ -14,6 +19,7 @@ class StageManager(DebugObject):
     _STAGE_ORDER = [
         "GBufferStage",
         "DownscaleZStage",
+        "ReprojectStage",
         "FlagUsedCellsStage",
         "CollectUsedCellsStage",
         "CullLightsStage",
@@ -21,9 +27,9 @@ class StageManager(DebugObject):
         "ScatteringStage",
         "AmbientStage",
         "SSLRStage",
-        "ColorCorrectionStage",
         "SMAAStage",
-        "FinalStage"
+        "FinalStage",
+        "UpdatePreviousPipesStage"
     ]
 
     def __init__(self, pipeline):
@@ -33,6 +39,7 @@ class StageManager(DebugObject):
         self._inputs = {}
         self._pipes = {}
         self._ubos = {}
+        self._previous_pipes = {}
         self._defines = {}
         self._pipeline = pipeline
         self._created = False
@@ -77,6 +84,22 @@ class StageManager(DebugObject):
 
             # Check if all pipes are available, and set them
             for pipe in stage.get_input_pipes():
+
+                if pipe.startswith("PreviousFrame::"):
+                    # Special case: Pipes from the previous frame. We assume those
+                    # pipes have the same size as the window and a format of
+                    # F_rgba16. Could be subject to change.
+                    pipe_name = pipe.split("::")[-1]
+                    if pipe_name not in self._previous_pipes:
+                        self.debug("Storing previous frame pipe for " + pipe_name)
+                        pipe_tex = Image.create_2d("Prev-" + pipe_name, 
+                            Globals.base.win.get_x_size(),
+                            Globals.base.win.get_y_size(), Texture.T_float, Texture.F_rgba16)
+                        pipe_tex.get_texture().clear_image()
+                        self._previous_pipes[pipe_name] = pipe_tex.get_texture()
+                    stage.set_shader_input("Previous_" + pipe_name, self._previous_pipes[pipe_name])
+                    continue
+
                 if pipe not in self._pipes:
                     self.error("Pipe '" + pipe + "' is missing for", stage)
                     continue
@@ -110,6 +133,25 @@ class StageManager(DebugObject):
                 if input_name in self._inputs:
                     self.warn("Stage", stage, "overrides input", input_name)
                 self._inputs[input_name] = data
+
+        # Finally create the stage which stores all the current pipes in the 
+        # previous pipes textures:
+        if self._previous_pipes:
+            self._prev_stage = UpdatePreviousPipesStage(self._pipeline)
+
+            for prev_pipe, prev_tex in self._previous_pipes.items():
+
+                if prev_pipe not in self._pipes:
+                    self.error("Attempted to use previous frame data from pipe " + prev_pipe,
+                        "However, that pipe was never created!")
+                    continue
+
+                # Tell the stage to transfer the data from the current pipe to
+                # the current texture
+                self._prev_stage.add_transfer(self._pipes[prev_pipe], prev_tex)
+
+            self._prev_stage.create()
+            self._stages.append(self._prev_stage)
 
     def set_shaders(self):
         """ This pass sets the shaders to all passes and also generates the

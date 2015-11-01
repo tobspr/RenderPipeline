@@ -114,6 +114,8 @@ class RenderStage(DebugObject):
     def _create_target(self, name):
         """ Creates a new render target with the given name and attachs it to the
         list of targets """
+        if name in self._targets:
+            self.warn("Overriding existing target: " + name)
         self._targets[name] = RenderTarget(name)
         return self._targets[name]
 
@@ -124,17 +126,13 @@ class RenderStage(DebugObject):
         argument should be the fragment shader. If three arguments are passed,
         the order should be vertex, fragment, geometry """
         assert len(args) > 0 and len(args) <= 3
+        args = ["Shader/" + i + ".glsl" if "$$PipelineTemp" not in i else i for i in args]
         if len(args) == 1:
             return Shader.load(Shader.SLGLSL,
                                "Shader/DefaultPostProcess.vertex.glsl",
-                               "Shader/" + args[0] + ".glsl")
-        elif len(args) == 2:
-            return Shader.load(Shader.SLGLSL, "Shader/" + args[0] + ".glsl",
-                               "Shader/" + args[1] + ".glsl")
-        elif len(args) == 3:
-            return Shader.load(Shader.SLGLSL, "Shader/" + args[0] + ".glsl",
-                               "Shader/" + args[1] + ".glsl",
-                               "Shader/" + args[2] + ".glsl")
+                               "" + args[0])
+        else:
+            return Shader.load(Shader.SLGLSL, *args)
 
     def load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful
@@ -146,7 +144,7 @@ class RenderStage(DebugObject):
         plugin_name = str(self.__class__.__module__).split(".")[2]        
 
         plugin_loc = "Plugins/" + plugin_name + "/Shader/Stages/"
-        path_args = [os.path.join(plugin_loc, i) for i in args]
+        path_args = [os.path.join(plugin_loc, i) if not "$$PipelineTemp" in i else i for i in args]
 
         if len(args) == 1:
             return Shader.load(Shader.SLGLSL,
