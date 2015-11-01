@@ -59,9 +59,9 @@ void main() {
             float scat_mipmap = get_mipmap_for_roughness(ScatteringCubemap, m.roughness);
             vec3 env_scattering_color = textureLod(ScatteringCubemap, scat_coord, scat_mipmap).xyz;
 
-            env_default_color = env_scattering_color * 3.0;
+            env_default_color = env_scattering_color * M_PI;
 
-            // env_default_color = pow(env_default_color, vec3(2.2));
+            // env_default_color = pow(env_default_color, vec3(1.0 / 2.2));
 
             // Cheap irradiance
             env_amb = textureLod(ScatteringCubemap, m.normal, 6).xyz;
@@ -81,7 +81,7 @@ void main() {
 
         // Different terms for metallic and diffuse objects
         vec3 env_metallic = m.diffuse;
-        // env_metallic += pow(1.0 - LxH, 1.0) * m.diffuse * 0.5;
+        env_metallic *= 0.3 + pow(LxH, 1.0) * 0.7;
 
         vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 2.0 )) 
                            * (1.0 - m.roughness)) * vec3(0.2);
@@ -93,7 +93,6 @@ void main() {
 
         ambient.xyz += diffuse_ambient + specular_ambient;
         ambient.xyz += env_amb * 0.2 * m.diffuse * (1.0 - m.metallic);
-
 
     }
     

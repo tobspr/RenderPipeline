@@ -69,7 +69,7 @@ class MainApp(ShowBase):
         self.render_pipeline.create()
 
 
-        render.set_shader_input("roughness", 0.0)
+        render.set_shader_input("roughness", 0.5)
         render.set_shader_input("metallic", 0.0)
         render.set_shader_input("specular", 0.1)
 

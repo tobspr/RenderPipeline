@@ -37,7 +37,7 @@ void main() {
     inscattered_light += pow(sky_color, vec3(1.2)) * 0.5;
 
     if (horizon < 0.0) {
-        inscattered_light *= 0.1;
+        inscattered_light *= 0.05;
         inscattered_light += pow(vec3(92, 82, 60) * (1.0 / 255.0), vec3(1.0 / 1.2)) * (-horizon) * 0.6;
     }
 

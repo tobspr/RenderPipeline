@@ -49,7 +49,7 @@ vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)
 
         vec4 inscatterSurface = texture4D(inscatterSampler, surfacePosHeight, 
             0.0, musEndPos, nuStartPos);
-        inscatterSurface *= saturate(pathLength / 15000.0);
+        inscatterSurface *= saturate(pathLength / 5000.0);
         inscatter = inscatterSurface;
     }
     else
