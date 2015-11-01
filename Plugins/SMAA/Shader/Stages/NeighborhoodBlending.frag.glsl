@@ -21,5 +21,4 @@ void main() {
     #else
         result = SMAANeighborhoodBlendingPS(texcoord, offset, ColorCorrectedScene, BlendTex);
     #endif
-
 }

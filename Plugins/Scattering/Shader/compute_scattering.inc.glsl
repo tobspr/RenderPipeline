@@ -9,7 +9,7 @@
 uniform sampler3D inscatterSampler;
 
 const float sunIntensity = 50.0;
-const vec3 sunVector = normalize(vec3(0.1, 0.8, 0.01));
+const vec3 sunVector = normalize(vec3(0.1, 0.8, 0.001));
 
 vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)
 {
@@ -42,7 +42,7 @@ vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)
 
     float musEndPos = sunVector.z;
 
-    if(pathLength < 30000 || viewDir.z < 0.0)
+    if(pathLength < 30000 || viewDir.z < -0.0001)
     {
         // reduce total in-scattered light when surface hit
         // attenuation = analyticTransmittance(surfacePosHeight, surfacePos.z / Rt, 1.0);

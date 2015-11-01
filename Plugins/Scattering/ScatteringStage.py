@@ -24,7 +24,7 @@ class ScatteringStage(RenderStage):
                 "GBuffer2"]
 
     def get_required_inputs(self):
-        return ["mainCam", "mainRender", "cameraPosition", "DefaultSkydome"]
+        return ["mainCam", "mainRender", "cameraPosition", "DefaultSkydome", "DefaultEnvmap"]
 
     def create(self):
         self._target = self._create_target("ScatteringStage")

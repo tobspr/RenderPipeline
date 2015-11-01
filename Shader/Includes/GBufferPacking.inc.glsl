@@ -91,7 +91,7 @@ vec3 get_gbuffer_normal(sampler2D GBuffer1, vec2 texcoord) {
 }
 
 bool is_skybox(Material m, vec3 camera_pos) {
-    return distance(m.position, camera_pos) > 10000.0;
+    return distance(m.position, camera_pos) > 30000.0;
 }
 
 #endif
