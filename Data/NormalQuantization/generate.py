@@ -32,8 +32,7 @@ mip = 0
 while TEXTURE_SIZE >= 2:
     target = RenderTarget()
     target.set_size(TEXTURE_SIZE, TEXTURE_SIZE)
-    target.add_color_texture()
-    target.set_color_bits(16)
+    target.add_color_texture(bits=16)
     target.prepare_offscreen_buffer()
 
     vertex_shader = """

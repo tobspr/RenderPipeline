@@ -18,8 +18,7 @@ class ApplyLightsStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("ApplyLights")
-        self._target.add_color_texture()
-        self._target.set_color_bits(16)
+        self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):

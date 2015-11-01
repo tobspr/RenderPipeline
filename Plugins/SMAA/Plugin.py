@@ -1,5 +1,5 @@
 
-from panda3d.core import Texture
+from panda3d.core import Texture, Vec2
 
 # Load plugin api
 from .. import *
@@ -16,6 +16,8 @@ class Plugin(BasePlugin):
 
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
+        self._jitter_index = 0
+        self._compute_jitters()
 
     @PluginHook("on_stage_setup")
     def setup_stages(self):
@@ -23,6 +25,24 @@ class Plugin(BasePlugin):
         self._smaa_stage = self.make_stage(SMAAStage)
         self.register_stage(self._smaa_stage)
         self._load_textures()
+
+    @PluginHook("pre_render_update")
+    def update(self):
+
+        # Apply jitter for temporal aa
+        jitter = self._jitters[self._jitter_index]
+        Globals.base.camLens.set_film_offset(jitter)
+        self._smaa_stage.set_jitter_index(self._jitter_index)
+
+        # Sawp jitter index
+        self._jitter_index = 1 - self._jitter_index
+
+    def _compute_jitters(self):
+        self._jitters = []
+        for x, y in ((-0.25,  0.25),(0.25, -0.25)):
+            jitter_x = x / float(Globals.base.win.get_x_size())
+            jitter_y = y / float(Globals.base.win.get_x_size())
+            self._jitters.append((jitter_x, jitter_y))
 
     def _load_textures(self):
         self.debug("Loading SMAA textures ..")
@@ -37,3 +57,4 @@ class Plugin(BasePlugin):
 
         self._smaa_stage.set_area_tex(self.area_tex)
         self._smaa_stage.set_search_tex(self.search_tex)
+

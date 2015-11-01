@@ -30,24 +30,23 @@ class CollectUsedCellsStage(RenderStage):
         self._target = self._create_target("CollectUsedCells")
         self._target.set_size(self._tile_amount.x, self._tile_amount.y)
         self._target.prepare_offscreen_buffer()
+
         num_slices = self._pipeline.get_settings().LightGridSlices
         max_cells = self._tile_amount.x * self._tile_amount.y * num_slices
+
         self.debug("Allocating", max_cells, "cells")
-
-        self._cell_list_buffer = Image.create_buffer("CellList", max_cells,
-                                                     Texture.T_int,
-                                                     Texture.F_r32i)
+        self._cell_list_buffer = Image.create_buffer(
+            "CellList", max_cells, Texture.T_int, Texture.F_r32i)
         self._cell_list_buffer.set_clear_color(0)
-
         self._cell_index_buffer = Image.create_2d_array(
             "CellIndices", self._tile_amount.x, self._tile_amount.y,
             num_slices, Texture.T_int, Texture.F_r32i)
         self._cell_index_buffer.set_clear_color(0)
 
-        self._target.set_shader_input("cellListBuffer",
-                                      self._cell_list_buffer.get_texture())
-        self._target.set_shader_input("cellListIndices",
-                                      self._cell_index_buffer.get_texture())
+        self._target.set_shader_input(
+            "cellListBuffer", self._cell_list_buffer.get_texture())
+        self._target.set_shader_input(
+            "cellListIndices", self._cell_index_buffer.get_texture())
 
     def update(self):
         self._cell_list_buffer.clear_image()

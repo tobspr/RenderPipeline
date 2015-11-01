@@ -16,9 +16,8 @@ class ColorCorrectionStage(RenderStage):
         return {"ColorCorrectedScene": self._target["color"]}
 
     def create(self):
-        self._target = self._create_target("FinalStage")
-        self._target.add_color_texture()
-        self._target.set_color_bits(16)
+        self._target = self._create_target("ColorCorrection")
+        self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):

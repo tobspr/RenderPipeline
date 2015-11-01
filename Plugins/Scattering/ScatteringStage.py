@@ -26,8 +26,7 @@ class ScatteringStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("ScatteringStage")
-        self._target.add_color_texture()
-        self._target.set_color_bits(16)
+        self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 
         self._scatter_cubemap = Image.create_cube("ScatteringCubemap", 256, Texture.T_float, Texture.F_rgba16)
