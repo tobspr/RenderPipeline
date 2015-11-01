@@ -13,7 +13,7 @@ from .TexturePreview import TexturePreview
 from .BetterOnscreenImage import BetterOnscreenImage
 from .BetterOnscreenText import BetterOnscreenText
 from .DraggableWindow import DraggableWindow
-
+from .BetterLabeledCheckbox import BetterLabeledCheckbox
 
 class BufferViewer(DraggableWindow):
 
@@ -39,6 +39,7 @@ class BufferViewer(DraggableWindow):
         RenderTarget.RT_CREATE_HANDLER = self.register_entry
         self._pipeline = pipeline
         self._scroll_height = 3000
+        self._display_images = False
         self._stages = []
         self._create_shaders()
         self._create_components()
@@ -73,7 +74,7 @@ class BufferViewer(DraggableWindow):
         DraggableWindow._create_components(self)
 
         self._content_frame = DirectScrolledFrame(
-            frameSize=(0, self._width - 15, 0, self._height - 50),
+            frameSize=(0, self._width - 15, 0, self._height - 90),
             canvasSize=(0, self._width - 80, 0, self._scroll_height),
             autoHideScrollBars=False,
             scrollBarWidth=20.0,
@@ -84,11 +85,19 @@ class BufferViewer(DraggableWindow):
             horizontalScroll_decButton_relief=False,
             horizontalScroll_thumb_relief=False,
             parent=self._node,
-            pos=(0, 1, -self._height - 10))
+            pos=(0, 1, -self._height))
         self._content_node = self._content_frame.getCanvas().attach_new_node(
             "BufferComponents")
         self._content_node.set_scale(1, 1, -1)
         self._content_node.set_z(self._scroll_height)
+
+        self._chb_show_images = BetterLabeledCheckbox(parent=self._node,
+            x=20, y=60, chb_callback=self._set_show_images, chb_checked=False,
+            text="Display image resources", text_color=Vec3(0.5), expand_width=150)
+
+    def _set_show_images(self, arg):
+        self._display_images = arg
+        self._perform_update()
 
     def _remove_components(self):
         """ Removes all components of the buffer viewer """
@@ -110,7 +119,8 @@ class BufferViewer(DraggableWindow):
                     self._stages.append(entry[target])
             # Cant use isinstance or we get circular references
             elif entry.__class__.__name__ == "Image":
-                self._stages.append(entry.get_texture())
+                if self._display_images:
+                    self._stages.append(entry.get_texture())
             else:
                 self.warn("Unrecognized instance!", entry.__class__)
 
@@ -150,21 +160,22 @@ class BufferViewer(DraggableWindow):
 
             r, g, b = rgb_from_string(stage_name)
 
-            DirectFrame(parent=node,
-                        frameSize=(7, entry_width - 17, -7, -entry_height + 17),
-                        frameColor=(r, g, b, 1.0),
-                        pos=(0, 0, 0))
+            if stage_name.startswith("Image"):
+                r, g, b = 0.4, 0.4, 0.4
 
-            frame_hover = DirectFrame(parent=node,
-                                      frameSize=(0, entry_width - 10, 0, -entry_height + 10),
-                                      frameColor=(0, 0, 0, 0),
-                                      pos=(0, 0, 0), state=DGG.NORMAL)
-            frame_hover.bind(DGG.ENTER,
-                             partial(self._on_texture_hovered, frame_hover))
-            frame_hover.bind(DGG.EXIT,
-                             partial(self._on_texture_blurred, frame_hover))
-            frame_hover.bind(DGG.B1PRESS,
-                             partial(self._on_texture_clicked, stage_tex))
+            DirectFrame(
+                parent=node, frameSize=(7, entry_width - 17, -7, -entry_height + 17),
+                frameColor=(r, g, b, 1.0), pos=(0, 0, 0))
+
+            frame_hover = DirectFrame(
+                parent=node, frameSize=(0, entry_width - 10, 0, -entry_height + 10),
+                frameColor=(0, 0, 0, 0), pos=(0, 0, 0), state=DGG.NORMAL)
+            frame_hover.bind(
+                DGG.ENTER, partial(self._on_texture_hovered, frame_hover))
+            frame_hover.bind(
+                DGG.EXIT, partial(self._on_texture_blurred, frame_hover))
+            frame_hover.bind(
+                DGG.B1PRESS, partial(self._on_texture_clicked, stage_tex))
 
             BetterOnscreenText(text=stage_name, x=15, y=29, parent=node,
                                size=15, color=Vec3(0.2))
@@ -180,10 +191,9 @@ class BufferViewer(DraggableWindow):
                 w = entry_width - 30
                 h = entry_height - 60
 
-            preview = BetterOnscreenImage(image=stage_tex, w=scale_factor * w,
-                                          h=scale_factor * h, any_filter=False,
-                                          parent=node, x=10, y=40,
-                                          transparent=False)
+            preview = BetterOnscreenImage(
+                image=stage_tex, w=scale_factor * w, h=scale_factor * h,
+                any_filter=False, parent=node, x=10, y=40, transparent=False)
 
             preview.set_shader_input("mipmap", 0)
 
