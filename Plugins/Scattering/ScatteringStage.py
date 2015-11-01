@@ -10,6 +10,11 @@ class ScatteringStage(RenderStage):
 
     """ This stage uses the precomputed data to display the scattering """
 
+    required_pipes = ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
+                      "GBuffer2"]
+    required_inputs = ["mainCam", "mainRender", "cameraPosition", "DefaultSkydome",
+                       "DefaultEnvmap"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ScatteringStage", pipeline)
 
@@ -18,13 +23,6 @@ class ScatteringStage(RenderStage):
             "ShadedScene": self._target['color'],
             "ScatteringCubemap": self._scatter_cubemap.get_texture()
         }
-
-    def get_input_pipes(self):
-        return ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
-                "GBuffer2"]
-
-    def get_required_inputs(self):
-        return ["mainCam", "mainRender", "cameraPosition", "DefaultSkydome", "DefaultEnvmap"]
 
     def create(self):
         self._target = self._create_target("ScatteringStage")

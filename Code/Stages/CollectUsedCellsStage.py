@@ -10,6 +10,8 @@ class CollectUsedCellsStage(RenderStage):
     """ This stage collects the flagged cells from the FlagUsedCellsStage and
     makes a list of them """
 
+    required_pipes = ["FlaggedCells"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CollectUsedCellsStage", pipeline)
         self._tile_amount = None
@@ -17,9 +19,6 @@ class CollectUsedCellsStage(RenderStage):
     def set_tile_amount(self, tile_amount):
         """ Sets the cell tile size """
         self._tile_amount = tile_amount
-
-    def get_input_pipes(self):
-        return ["FlaggedCells"]
 
     def get_produced_pipes(self):
         return {

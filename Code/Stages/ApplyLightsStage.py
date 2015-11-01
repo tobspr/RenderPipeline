@@ -6,18 +6,15 @@ class ApplyLightsStage(RenderStage):
 
     """ This stage applies the lights to the scene using the gbuffer """
 
+    required_inputs = ["AllLightsData", "mainCam", "mainRender", "cameraPosition"]
+    required_pipes = ["GBufferDepth", "GBuffer0", "GBuffer1", "GBuffer2",
+                "CellIndices", "PerCellLights"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ApplyLightsStage", pipeline)
 
-    def get_input_pipes(self):
-        return ["GBufferDepth", "GBuffer0", "GBuffer1", "GBuffer2",
-                "CellIndices", "PerCellLights"]
-
     def get_produced_pipes(self):
         return {"ShadedScene": self._target['color']}
-
-    def get_required_inputs(self):
-        return ["AllLightsData", "mainCam", "mainRender", "cameraPosition"]
 
     def create(self):
         self._target = self._create_target("ApplyLights")

@@ -12,6 +12,9 @@ class CullLightsStage(RenderStage):
     """ This stage takes the list of used cells and creates a list of lights
     for each cell """
 
+    required_pipes = ["CellListBuffer"]
+    required_inputs = ["AllLightsData", "maxLightIndex", "mainCam", "currentViewMatZup"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CullLightsStage", pipeline)
         self._tile_amount = None
@@ -21,22 +24,14 @@ class CullLightsStage(RenderStage):
         """ Sets the cell tile size """
         self._tile_amount = tile_amount
 
-    def get_input_pipes(self):
-        return ["CellListBuffer"]
-
     def get_produced_pipes(self):
-        return {
-            "PerCellLights": self._per_cell_lights.get_texture()
-        }
+        return {"PerCellLights": self._per_cell_lights.get_texture()}
 
     def get_produced_defines(self):
         return {
             "LC_SHADE_SLICES": self._num_rows,
             "MAX_LIGHTS_PER_CELL": self._max_lights_per_cell
         }
-
-    def get_required_inputs(self):
-        return ["AllLightsData", "maxLightIndex", "mainCam", "currentViewMatZup"]
 
     def create(self):
         max_cells = self._tile_amount.x * self._tile_amount.y * \

@@ -3,19 +3,14 @@ from .. import RenderStage
 
 class HBAOStage(RenderStage):
 
+    required_pipes = ["ShadedScene", "GBufferDepth"]
+    required_inputs = ["mainCam", "mainRender"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "HBAOStage", pipeline)
 
     def get_produced_pipes(self):
-        return {
-            "ShadedScene": self._target['color']
-        }
-
-    def get_input_pipes(self):
-        return ["ShadedScene", "GBufferDepth"]
-
-    def get_required_inputs(self):
-        return ["mainCam", "mainRender"]
+        return {"ShadedScene": self._target['color']}
 
     def create(self):
         self._target = self._create_target("HBAODownscaleDepth")

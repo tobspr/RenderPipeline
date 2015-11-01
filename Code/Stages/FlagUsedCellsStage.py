@@ -9,6 +9,8 @@ class FlagUsedCellsStage(RenderStage):
 
     """ This stage flags all used cells based on the depth buffer """
 
+    required_pipes = ["GBufferDepth"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "FlagUsedCellsStage", pipeline)
         self._tile_amount = None
@@ -17,14 +19,10 @@ class FlagUsedCellsStage(RenderStage):
         """ Sets the cell tile size """
         self._tile_amount = tile_amount
 
-    def get_input_pipes(self):
-        return ["GBufferDepth"]
-
     def get_produced_pipes(self):
         return {"FlaggedCells": self._cell_grid_flags.get_texture()}
 
     def create(self):
-
         self._target = self._create_target("FlagUsedCells")
         self._target.prepare_offscreen_buffer()
 

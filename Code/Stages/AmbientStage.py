@@ -13,9 +13,7 @@ class AmbientStage(RenderStage):
         RenderStage.__init__(self, "AmbientStage", pipeline)
 
     def get_produced_pipes(self):
-        return {
-            "ShadedScene": self._target['color']
-        }
+        return {"ShadedScene": self._target['color']}
 
     def create(self):
         self._target = self._create_target("AmbientStage")

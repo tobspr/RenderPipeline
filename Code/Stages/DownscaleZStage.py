@@ -11,17 +11,13 @@ class DownscaleZStage(RenderStage):
 
     """ This stage downscales the z buffer """
 
+    required_pipes = ["GBufferDepth"] 
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "DownscaleZStage", pipeline)
 
     def get_produced_pipes(self):
-        return {
-            "DownscaledDepth": self._depth_storage.get_texture()
-        }
-
-    def get_input_pipes(self):
-        return ["GBufferDepth"]
-
+        return {"DownscaledDepth": self._depth_storage.get_texture()}
 
     def create(self):
 

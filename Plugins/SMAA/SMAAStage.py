@@ -9,6 +9,9 @@ class SMAAStage(RenderStage):
 
     """ This stage does the actual SMAA """
 
+    required_pipes = ["ShadedScene", "GBufferDepth", "ColorCorrectedScene"]
+    required_inputs = ["mainCam", "mainRender", "cameraPosition"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "SMAAStage", pipeline)
         self._area_tex = None
@@ -21,15 +24,7 @@ class SMAAStage(RenderStage):
         self._search_tex = tex
 
     def get_produced_pipes(self):
-        return {
-            "ColorCorrectedScene": self._neighbor_target['color'],
-        }
-
-    def get_input_pipes(self):
-        return ["ShadedScene", "GBufferDepth", "ColorCorrectedScene"]
-
-    def get_required_inputs(self):
-        return ["mainCam", "mainRender", "cameraPosition"]
+        return {"ColorCorrectedScene": self._neighbor_target['color']}
 
     def create(self):
         self._edge_target = self._create_target("SMAAEdges")

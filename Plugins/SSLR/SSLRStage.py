@@ -6,20 +6,16 @@ class SSLRStage(RenderStage):
 
     """ This stage does the SSLR pass """
 
+    required_inputs = ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
+                       "GBuffer2", "DownscaledDepth"]
+    required_pipes = ["mainCam", "mainRender", "cameraPosition",
+                      "currentViewProjMat"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "SSLRStage", pipeline)
 
     def get_produced_pipes(self):
-        return {
-            "ShadedScene": self._target['color']
-        }
-
-    def get_input_pipes(self):
-        return ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
-                "GBuffer2", "DownscaledDepth"]
-
-    def get_required_inputs(self):
-        return ["mainCam", "mainRender", "cameraPosition", "currentViewProjMat"]
+        return {"ShadedScene": self._target['color']}
 
     def create(self):
         self._target = self._create_target("SSLRStage")

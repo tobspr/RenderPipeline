@@ -11,6 +11,8 @@ class GBufferStage(RenderStage):
     """ This is the main pass stage, rendering the objects and creating the
     GBuffer which is used in later stages """
 
+    required_inputs = ["currentViewProjMat", "lastViewProjMat", "cameraPosition"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "GBufferStage", pipeline)
 
@@ -22,14 +24,9 @@ class GBufferStage(RenderStage):
             "GBuffer2": self._target['aux1'],
         }
 
-    def get_required_inputs(self):
-        return ["currentViewProjMat", "lastViewProjMat", "cameraPosition"]
-
     def create(self):
         early_z = False
-
         self._prepare_early_z(early_z)
-
         self._target = self._create_target("GBuffer")
         self._target.add_depth_texture()
         self._target.add_color_texture()
@@ -71,9 +68,6 @@ class GBufferStage(RenderStage):
                 DepthTestAttrib.make(DepthTestAttrib.M_less_equal))
 
         Globals.base.camNode.set_initial_state(initial_node.get_state())
-
-    def set_shaders(self):
-        pass
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

@@ -7,14 +7,13 @@ class ColorCorrectionStage(RenderStage):
     """ This stage does the SRGB correction and further postprocess color
     correction effects"""
 
+    required_pipes = ["ShadedScene"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ColorCorrectionStage", pipeline)
 
     def get_produced_pipes(self):
         return {"ColorCorrectedScene": self._target["color"]}
-
-    def get_input_pipes(self):
-        return ["ShadedScene"]
 
     def create(self):
         self._target = self._create_target("FinalStage")

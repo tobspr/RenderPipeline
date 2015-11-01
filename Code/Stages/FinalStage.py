@@ -7,14 +7,10 @@ class FinalStage(RenderStage):
     """ This stage is the final stage and outputs the shaded scene to the
     screen """
 
+    required_pipes = ["ColorCorrectedScene"]
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "FinalStage", pipeline)
-
-    def get_produced_pipes(self):
-        return {}
-
-    def get_input_pipes(self):
-        return ["ColorCorrectedScene"]
 
     def create(self):
         self._target = self._create_target("FinalStage")
