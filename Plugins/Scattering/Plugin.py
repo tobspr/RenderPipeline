@@ -25,7 +25,7 @@ class Plugin(BasePlugin):
         self.res_r, self.res_mu, self.res_mu_s, self.res_nu = 32, 128, 32, 8
         self.res_mu_s_nu = self.res_mu_s * self.res_nu
 
-    @PluginHook("on_pipeline_create")
+    @PluginHook("on_pipeline_created")
     def on_create(self):
         self._create_textures()
         self._create_shaders()

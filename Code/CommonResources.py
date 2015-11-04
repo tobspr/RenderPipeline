@@ -96,7 +96,7 @@ class CommonResources(DebugObject):
         self._pipeline.get_stage_mgr().add_input("DefaultSkydome", skydome)
 
     def load_default_skybox(self):
-        skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox/Skybox.egg.bam")
+        skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox/Skybox.bam")
         return skybox
 
     def update(self):

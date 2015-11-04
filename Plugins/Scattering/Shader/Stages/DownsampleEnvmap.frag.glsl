@@ -2,6 +2,7 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/ImportanceSampling.inc.glsl"
+#pragma include "Includes/BRDF.inc.glsl"
 
 #pragma optionNV (unroll all)
 
@@ -25,7 +26,7 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    float sample_size = 0.1 + current_mip * 0.15;
+    float sample_roughness = 0.1 + current_mip * 0.15;
 
     vec3 accum = vec3(0);
     
@@ -37,9 +38,10 @@ void main() {
 
         for (int i = 0; i < num_samples; ++i) {
             vec2 Xi = Hammersley(i, num_samples);
-            vec3 Li = ImportanceSampleGGX(Xi, sample_size, n);
+            vec3 Li = ImportanceSampleGGX(Xi, sample_roughness, n);
 
-            float weight = max(0.0, dot(n, Li));
+            float NxL = max(0.0, dot(n, Li));
+            float weight = NxL;
             vec3 fval = textureLod(SourceMipmap, Li, current_mip).xyz;
             accum += fval * weight;
         }

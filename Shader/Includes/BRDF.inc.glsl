@@ -36,11 +36,11 @@ float BRDFDistribution_Beckmann(float NxH, float roughness) {
 }
 
 
-float BRDFDistribution_GGX(float NxH , float m)
+float BRDFDistribution_GGX(float NxH , float roughness)
 {
-    float m2 = m * m;
-    float f = (NxH * m2 - NxH) * NxH + 1;
-    return m2 / (f * f);
+    float r_sq = roughness * roughness;
+    float f = (NxH * r_sq - NxH) * NxH + 1;
+    return r_sq / (f * f);
 }
 
 float BRDFGeometricVisibility_CookTorrance(float NxL, float NxV, float NxH, float VxH) {

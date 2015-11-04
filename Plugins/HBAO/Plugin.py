@@ -23,7 +23,7 @@ class Plugin(BasePlugin):
     def create_stages(self):
         pass
 
-    @PluginHook("on_pipeline_create")
+    @PluginHook("on_pipeline_created")
     def reload_shaders(self):
         pass
 

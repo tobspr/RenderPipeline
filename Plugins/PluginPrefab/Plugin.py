@@ -18,7 +18,7 @@ class Plugin(BasePlugin):
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
 
-    @PluginHook("on_pipeline_create")
+    @PluginHook("on_pipeline_created")
     def init(self):
         pass
 

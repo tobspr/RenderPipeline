@@ -129,18 +129,10 @@ class RenderPipeline(DebugObject):
         if not isfile("Data/install.flag"):
             self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
 
-        # Construct the showbase
+        # Construct the showbase and init global variables
         ShowBase.__init__(self._showbase)
-
-        # Load the globals
-        Globals.load(self._showbase)
-        Globals.resolution = LVecBase2i(
-            self._showbase.win.get_x_size(),
-            self._showbase.win.get_y_size())
-
-        # Connect the render target output function to the debug object
-        RenderTarget.RT_OUTPUT_FUNC = lambda *args: DebugObject.global_warn("RenderTarget", *args[1:])
-
+        self._init_globals()
+    
         # Create the loading screen
         self._loading_screen.create()
 
@@ -171,7 +163,7 @@ class RenderPipeline(DebugObject):
         # Set the default effect on render
         self.set_effect(Globals.render, "Effects/Default.yaml", {}, -10)
 
-        self._plugin_mgr.trigger_hook("on_pipeline_create")
+        self._plugin_mgr.trigger_hook("on_pipeline_created")
 
         # Hide the loading screen
         self._loading_screen.remove()
@@ -183,10 +175,19 @@ class RenderPipeline(DebugObject):
         self._stage_mgr.set_shaders()
         self._light_mgr.reload_shaders()
 
-        # Set the default effect on render
+        # Set the default effect on render and trigger the reload hook
         self.set_effect(Globals.render, "Effects/Default.yaml", {}, -10)
-        
         self._plugin_mgr.trigger_hook("on_shader_reload")
+
+    def _init_globals(self):
+        """ Inits all global bindings """
+        Globals.load(self._showbase)
+        Globals.resolution = LVecBase2i(
+            self._showbase.win.get_x_size(),
+            self._showbase.win.get_y_size())
+
+        # Connect the render target output function to the debug object
+        RenderTarget.RT_OUTPUT_FUNC = lambda *args: DebugObject.global_warn("RenderTarget", *args[1:])
 
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
