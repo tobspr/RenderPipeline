@@ -15,6 +15,7 @@ from Code.RenderStage import RenderStage
 from Code.RenderTarget import RenderTarget
 from Code.Globals import Globals
 from Code.Stages import *
+from Code.Native import *
 
 
 def get_internal_stage_handle(module):

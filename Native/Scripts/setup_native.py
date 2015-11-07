@@ -86,7 +86,7 @@ elif platform.system() == "Linux":
     expected_bin = "RSNative.so"
 
 
-if not os.path.isfile("../" + expected_bin):
+if not os.path.isfile("../../Code/Native/" + expected_bin):
     error("Compilation finished but could not find binary (" + expected_bin + ")!")
 
 
