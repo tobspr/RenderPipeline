@@ -1,8 +1,6 @@
+from __future__ import print_function
 
 from panda3d.core import ModifierButtons, Vec3, PStatClient
-
-# from MemoryMonitor import MemoryMonitor
-
 
 class MovementController:
 
@@ -26,7 +24,6 @@ class MovementController:
         self._use_hpr = False
         self._smoothness = 0.8
         self._smoothness = 0.0
-        # self._smoothness = 0.0
 
     def set_initial_position(self, pos, target):
         """ Sets the initial camera position """
@@ -195,16 +192,14 @@ class MovementController:
         print("\t(3) Reset to initial position")
         print("\t(4) Display camera position")
         print("\t(5) Show scene graph")
-        print("\t(6) Open placement window")
-        print("\t(7) Analyze VRAM")
         print()
 
         selectedOption = input("Which do you want to choose?: ")
 
         try:
-            selectedOption = int(selectedOption.strip())
-        except:
-            print("Option has to be a valid number!")
+            selectedOption = int(selectedOption)
+        except Exception as msg:
+            print("Option has to be a valid number:", msg)
             return False
 
         if selectedOption < 1 or selectedOption > 7:
@@ -235,7 +230,6 @@ class MovementController:
             print(("camPos = Vec3(" + str(round(campos.x, 2)) + "," + str(round(campos.y, 2)) + "," + str(round(campos.z, 2)) + ")"))
             print(("camHpr = Vec3(" + str(round(camrot.x, 2)) + "," + str(round(camrot.y, 2)) + "," + str(round(camrot.z, 2)) + ")"))
 
-
         # show scene graph
         elif selectedOption == 5:
             print("SCENE GRAPH:")
@@ -247,14 +241,3 @@ class MovementController:
             print(("-" * 50))
             self._showbase.render.analyze()
             print(("-" * 50))
-
-        # placement window
-        elif selectedOption == 6:
-            print("Opening placement window. You need tkinter installed to be able to use it")
-            self._showbase.render.place()
-            # print "It seems .place() is currently not working. Sorry!!"
-
-        # vram analyszs
-        elif selectedOption == 7:
-            print("Analyzing VRAM ...")
-            MemoryMonitor.analyze_memory()

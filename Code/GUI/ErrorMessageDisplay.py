@@ -25,6 +25,8 @@ class ErrorMessageDisplay(DebugObject):
     def update(self):
         """ Updates the error display, fetching all new messages from the notify
         stream """
+        return
+        
         if not self._notify_stream:
             self._init_notify()
             
