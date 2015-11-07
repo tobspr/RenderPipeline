@@ -21,6 +21,7 @@ class Plugin(BasePlugin):
         self._rig = PSSMCameraRig(5)
         self._update_enabled = True
         self._node = Globals.base.render.attach_new_node("PSSMCameraRig")
+        self._node.hide()
         self._rig.reparent_to(self._node)
         Globals.base.accept("u", self._toggle_update_enabled)
 

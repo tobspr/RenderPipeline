@@ -44,7 +44,7 @@ void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
 
 
 NodePath PSSMCameraRig::get_camera(int index) {
-    nassertv(index >= 0 && index < _cam_nodes.size());
+    nassertr(index >= 0 && index < _cam_nodes.size(), NodePath());
     return _cam_nodes[index];
 }
 
