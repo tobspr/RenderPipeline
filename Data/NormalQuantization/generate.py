@@ -10,7 +10,7 @@ Page 39 to 49
 It also generates the mipmaps. """
 
 
-TEXTURE_SIZE = 2048
+TEXTURE_SIZE = 4096
 
 import sys
 sys.path.insert(0, "../../")
@@ -31,23 +31,17 @@ mip = 0
 
 while TEXTURE_SIZE >= 2:
     target = RenderTarget()
-    target.set_size(TEXTURE_SIZE, TEXTURE_SIZE)
+    target.set_size(TEXTURE_SIZE)
     target.add_color_texture(bits=16)
     target.prepare_offscreen_buffer()
 
-    vertex_shader = """
-    #version 400
+    target_stitch = RenderTarget()
+    target_stitch.set_size(TEXTURE_SIZE)
+    target_stitch.add_color_texture(bits=16)
+    target_stitch.prepare_offscreen_buffer()
 
-    uniform mat4 p3d_ModelViewProjectionMatrix;
-
-    in vec4 p3d_Vertex;
-    out vec2 texcoord;
-
-    void main() {
-        gl_Position = vec4(p3d_Vertex.x, p3d_Vertex.z, 0, 1);
-        texcoord = sign(p3d_Vertex.xz * 0.5 + 0.5);
-    }
-    """
+    with open("../../Shader/DefaultPostProcess.vertex.glsl", "r") as handle:
+        vertex_shader = handle.read()
 
     fragment_shader = """
     #version 400
@@ -62,11 +56,11 @@ while TEXTURE_SIZE >= 2:
         return v;
     }
 
-    vec3 FindMinimumQuantizationError(vec3 normal)
+    float FindMinimumQuantizationError(vec3 normal)
     {
         normal /= max(abs(normal.x), max(abs(normal.y), abs(normal.z)));
         float fMinError = 100000.0;
-        vec3 fOut = normal;
+        float fOut = 0.2;
         for(float nStep = 1.5;nStep <= 127.5;++nStep)
         {
             float t = nStep / 127.5;
@@ -88,7 +82,7 @@ while TEXTURE_SIZE >= 2:
             if(fError < fMinError)
             {
                 fMinError = fError;
-                fOut = vec3(t);
+                fOut = t;
             }
         }
         return fOut;
@@ -97,25 +91,81 @@ while TEXTURE_SIZE >= 2:
 
     void main() {
         const int cmap_size = """ + str(TEXTURE_SIZE) + """;
-        ivec2 coord = ivec2(gl_FragCoord.xy + 0.5);
-        vec2 lc = coord / float(cmap_size);
-        lc.y = 1.0 - lc.y;
-        lc.y *= lc.x;
+        vec2 tcoord = gl_FragCoord.xy / vec2(cmap_size);
 
-        vec3 baseDir = normalize(vec3(1, lc.x, lc.y));
-        vec3 minimumError = FindMinimumQuantizationError(baseDir);
-        float res = minimumError.x;
-        res /= max(abs(baseDir.x), max(abs(baseDir.y), abs(baseDir.z)));
-        result.xyz = vec3(res);
+        vec2 lc = tcoord + vec2(0, 0);
+        //vec2 lc = tcoord * 2 - 1;
+
+        vec3 baseDir = vec3(1.0, lc.x, lc.y);
+        baseDir = normalize(baseDir);
+
+        float minimumError = FindMinimumQuantizationError(baseDir);
+
+        result.xyz = vec3(minimumError);
+
+        if (minimumError > 1.0) {
+            result.xyz = vec3(1, 0, 0);
+        }
+        if (tcoord.x < tcoord.y) {
+            //result.xyz = vec3(0, 0, 1);
+        }
+
         result.w = 1.0;
     }
 
     """
+
+
+    stitch_frag = """
+    #version 400
+    out vec4 result;
+    uniform sampler2D SourceTex;
+    void main() {
+        const int cmap_size = """ + str(TEXTURE_SIZE) + """;
+        vec2 texc = gl_FragCoord.xy / vec2(cmap_size);
+        vec2 scoord = texc;
+
+
+        if (false) {
+            scoord.x *= scoord.y;
+            scoord *= 2.0;
+
+            if (scoord.x > 1.0) scoord.x = 2 - scoord.x;
+            if (scoord.y > 1.0) scoord.y = 2 - scoord.y;
+        }
+
+        vec3 samp = texture(SourceTex, scoord).xyz;
+
+
+        result = vec4(samp, 1.0);
+    }
+
+    """ 
+
+    target['color'].set_minfilter(Texture.FT_nearest)
+    target['color'].set_magfilter(Texture.FT_nearest)
+    target['color'].set_wrap_u(Texture.WM_border_color)
+    target['color'].set_wrap_v(Texture.WM_border_color)
+    target['color'].set_border_color(Vec4(1,0, 0, 1))
+
     target.set_shader(Shader.make(Shader.SLGLSL, vertex_shader, fragment_shader))
+    target_stitch.set_shader(Shader.make(Shader.SLGLSL, vertex_shader, stitch_frag))
+
+    target_stitch.set_shader_input("SourceTex", target["color"])
+
     base.graphicsEngine.render_frame()
-    k = target['color']
+
+    k = target_stitch['color']
     base.graphicsEngine.extractTextureData(k, base.win.get_gsg())
-    k.write("NormalQuantizationTex-" + str(mip) + ".png")
+
+    p = PNMImage()
+    k.store(p)
+    p.set_num_channels(1)
+
+    p.write("NormalQuantizationTex-" + str(mip) + ".png")
     mip += 1
     TEXTURE_SIZE //= 2
+
+
     target.delete_buffer()
+    target_stitch.delete_buffer()

@@ -81,7 +81,7 @@ void main() {
 
         // Different terms for metallic and diffuse objects
         vec3 env_metallic = m.diffuse;
-        env_metallic *= 1.0 + pow(LxH, 1.0) * 0.0;
+        env_metallic *= 0.5 + pow(LxH, 1.0) * 0.5;
 
         vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 2.0 )) 
                            * (1.0 - m.roughness)) * vec3(0.2);

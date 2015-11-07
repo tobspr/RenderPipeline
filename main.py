@@ -75,7 +75,7 @@ class MainApp(ShowBase):
 
 
         plane = loader.loadModel("Models/GroundPlane/Scene.bam")
-        plane.set_scale(10.0)
+        # plane.set_scale(10.0)
         plane.reparent_to(render)
         
         # Load some models

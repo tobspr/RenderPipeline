@@ -67,11 +67,14 @@ class CommonResources(DebugObject):
         quant_tex = Globals.loader.loadTexture(
             "Data/NormalQuantization/NormalQuantizationTex-#.png",
             readMipmaps=True)
+        # quant_tex = Globals.loader.loadTexture(
+            # "Data/NormalQuantization/Reference.png")
         quant_tex.set_minfilter(Texture.FT_linear_mipmap_linear)
         quant_tex.set_magfilter(Texture.FT_linear)
-        quant_tex.set_wrap_u(Texture.WM_repeat)
-        quant_tex.set_wrap_v(Texture.WM_repeat)
-        quant_tex.set_format(Texture.F_rgba16)
+        quant_tex.set_wrap_u(Texture.WM_mirror)
+        quant_tex.set_wrap_v(Texture.WM_mirror)
+        quant_tex.set_anisotropic_degree(0)
+        quant_tex.set_format(Texture.F_r16)
         self._showbase.render.set_shader_input("NormalQuantizationTex", quant_tex)
 
     def _load_environment_cubemap(self):

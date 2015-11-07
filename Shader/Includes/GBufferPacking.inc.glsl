@@ -18,22 +18,24 @@ layout(location=2) out vec4 gbuffer_out_2;
 
 vec3 normal_quantization(vec3 normal)
 {
+    
     normal = normalize(normal);
-    vec3 normalUnsigned = abs(normal.rgb);
-    float maxComponent = max(normalUnsigned.x, max(normalUnsigned.y, normalUnsigned.z));
-    vec2 cubeCoord = normalUnsigned.z < maxComponent ?
-        (normalUnsigned.y < maxComponent ? normalUnsigned.yz : normalUnsigned.xz) : normalUnsigned.xy;
-    cubeCoord = cubeCoord.x < cubeCoord.y ? cubeCoord.yx : cubeCoord.xy;
-    cubeCoord.y /= cubeCoord.x;
-    normal /= maxComponent;
+    // return normal * 0.5 + 0.5;
+    vec3 normal_abs = abs(normal.xyz);
+    float max_comp = max(normal_abs.x, max(normal_abs.y, normal_abs.z));
+    vec2 cube_coord = normal_abs.z < max_comp ?
+        (normal_abs.y < max_comp ? normal.yz : normal.xz) : normal.xy;
+
+    cube_coord /= max_comp;    
+
+    ivec2 face_offs = ivec2( (cube_coord + 1.0));
+    cube_coord = cube_coord + 1;
 
     // look-up fitting length and scale the normal to get the best fit
-    float fittingScale = texture(NormalQuantizationTex, cubeCoord).x;
+    float fitting_scale = texture(NormalQuantizationTex, cube_coord).x;
 
-    // scale the normal to get the best fit
-    // normal *= fittingScale;
-    // normal = normal * 0.5 + 0.5;
-    return normal;
+    return normal * fitting_scale * 0.5 + 0.5;
+    // return vec3(min_scale);
 }
 
 
@@ -76,8 +78,8 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
 
     m.diffuse = data0.xyz;
     m.roughness = max(0.05, data0.w);
-    // m.normal = normalize(data1.xyz * 2 - 1);
-    m.normal = normalize(data1.xyz);
+    m.normal = normalize(data1.xyz * 2 - 1);
+    // m.normal = normalize(data1.xyz);
     m.metallic = data1.w;
     m.specular = max(0.01, data2.x);
 
@@ -85,8 +87,8 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
 }
 
 vec3 get_gbuffer_normal(sampler2D GBuffer1, vec2 texcoord) {
-    // return normalize(texture(GBuffer1, texcoord).xyz * 2 - 1);
-    return normalize(texture(GBuffer1, texcoord).xyz);
+    return normalize(texture(GBuffer1, texcoord).xyz * 2 - 1);
+    // return normalize(texture(GBuffer1, texcoord).xyz);
 }
 
 vec2 get_velocity(sampler2D GBuffer2, ivec2 texcoord) {

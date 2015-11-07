@@ -28,8 +28,8 @@ class GBufferStage(RenderStage):
         early_z = False
         self._prepare_early_z(early_z)
         self._target = self._create_target("GBuffer")
-        self._target.add_color_and_depth(color_bits=16, depth_bits=32)
-        self._target.add_aux_textures(2, bits=16)
+        self._target.add_color_and_depth(color_bits=8, depth_bits=32)
+        self._target.add_aux_textures(2, bits=8)
 
         if early_z:
             self._target.prepare_scene_render(early_z=True,

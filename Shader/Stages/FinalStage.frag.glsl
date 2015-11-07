@@ -11,11 +11,15 @@ out vec4 result;
 void main() {
 
     vec3 sceneColor = texture(ShadedScene, texcoord).xyz;
-    // sceneColor = sqrt(sceneColor);
+
     // sceneColor = Tonemap_Linear(sceneColor);
     // sceneColor = Tonemap_Optimized(sceneColor);
     // sceneColor = Tonemap_Reinhard(sceneColor);
     sceneColor = Tonemap_Uncharted2(sceneColor);
+
+    // saturate
+    // sceneColor = saturate(sceneColor - 0.1) * 1.2;
+
 
 
     // Vignette
