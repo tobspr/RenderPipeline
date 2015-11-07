@@ -16,6 +16,8 @@ class PSSMCameraRig {
         void set_sun_distance(float distance);
         void fit_to_camera(NodePath &cam_node, const LVecBase3f &light_vector);    
 
+        NodePath get_camera(int index);
+
         void reparent_to(NodePath &parent);
 
     public:

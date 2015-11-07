@@ -6,7 +6,7 @@
 
 PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
     _pssm_distance = 100.0;
-    _sun_distance = 200.0;
+    _sun_distance = 500.0;
     init_cam_nodes(num_splits);
 }
 
@@ -41,6 +41,13 @@ void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
 
     }
 }
+
+
+NodePath PSSMCameraRig::get_camera(int index) {
+    nassertv(index >= 0 && index < _cam_nodes.size());
+    return _cam_nodes[index];
+}
+
 
 
 void PSSMCameraRig::reparent_to(NodePath &parent) {
@@ -125,19 +132,29 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
             if (screen_points[k].get_x() > max_extent.get_x()) max_extent.set_x(screen_points[k].get_x());
             if (screen_points[k].get_y() > max_extent.get_y()) max_extent.set_y(screen_points[k].get_y());
             
-            if (screen_points[k].get_x() < max_extent.get_x()) max_extent.set_x(screen_points[k].get_x());
-            if (screen_points[k].get_y() < max_extent.get_y()) max_extent.set_y(screen_points[k].get_y());
+            if (screen_points[k].get_x() < min_extent.get_x()) min_extent.set_x(screen_points[k].get_x());
+            if (screen_points[k].get_y() < min_extent.get_y()) min_extent.set_y(screen_points[k].get_y());
 
-            // cout << "projected " << point << " to " << proj_point << "(" << proj_point.get_y() << ")" << endl;
+            // cout << "projected " << point << " to " << proj_point << endl;
+            // Find min / max projected depth to adjust far plane
             if (proj_point.get_y() > max_extent.get_z()) max_extent.set_z(proj_point.get_y());
             if (proj_point.get_y() < min_extent.get_z()) min_extent.set_z(proj_point.get_y());
         }
 
+        float x_center = (min_extent.get_x() + max_extent.get_x()) * 0.5;
+        float y_center = (min_extent.get_y() + max_extent.get_y()) * 0.5;
+        float x_size = max_extent.get_x() - x_center;
+        float y_size = max_extent.get_y() - y_center;
 
-        cout << "Z-Min / Z-Max = " << min_extent.get_z()  << " / " << max_extent.get_z() << endl;
-        cam->get_lens()->set_near_far(1, max_extent.get_z());
+        // Compute new film size
+        cam->get_lens()->set_film_size(x_size, y_size);
 
-        cam->show_frustum();
+        // Compute new film offset
+        cam->get_lens()->set_film_offset(x_center * 0.5, y_center * 0.5);
+
+        // Compute new near / far
+        cam->get_lens()->set_near_far(min_extent.get_z(), max_extent.get_z());
+
     }
 }
 

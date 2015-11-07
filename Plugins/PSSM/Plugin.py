@@ -30,7 +30,7 @@ class Plugin(BasePlugin):
 
     @PluginHook("pre_render_update")
     def update(self):
-        sun_vector = Vec3(0.2, 0.3, 1.0)
+        sun_vector = Vec3(0.0, 0.0, 1.0)
         sun_vector.normalize()
 
         if self._update_enabled:
