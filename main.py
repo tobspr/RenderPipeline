@@ -42,9 +42,9 @@ from random import random
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import load_prc_file, Vec3
 
-sys.path.insert(0, "../")
-from RenderPipeline import *
-from RenderPipeline.Code.Util.MovementController import MovementController
+# sys.path.insert(0, "../")
+from __init__ import *
+from Code.Util.MovementController import MovementController
 
 
 class MainApp(ShowBase):

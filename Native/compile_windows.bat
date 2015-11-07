@@ -1,5 +1,5 @@
 @echo off
 cd Scripts/
-python setup_native.py
+python -B setup_native.py
 
 pause

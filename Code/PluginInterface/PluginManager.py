@@ -21,11 +21,20 @@ class PluginManager(DebugObject):
 
     def load_plugins(self):
         """ Loads all plugins from the plugin directory """
+        self.debug("Loading plugins ..")
+        failed_plugins = []
         for plugin in self._enabled_plugins:
             self.debug("Loading plugin", plugin)
             plugin_class = self._try_load_plugin(plugin)
             if plugin_class:
                 self._plugin_instances.append(plugin_class(self._pipeline))
+            else:
+                failed_plugins.append(plugin)
+
+        # Unregister plugins which failed to load
+        for plugin in failed_plugins:
+            self._enabled_plugins.remove(plugin)
+
 
     def _load_plugin_config(self):
         """ Loads the plugin config and extracts the list of activated plugins """
@@ -57,7 +66,7 @@ class PluginManager(DebugObject):
             self.warn("Cannot load",plugin_id,"because __init__.py was not found")
             return None
 
-        module_path = "RenderPipeline.Plugins." + plugin_id + ".Plugin"
+        module_path = "Plugins." + plugin_id + ".Plugin"
 
         try:
             module = importlib.import_module(module_path)
@@ -87,7 +96,7 @@ class PluginManager(DebugObject):
                 
     def init_defines(self):
         """ Creates the defines which can be used in shaders """
-
+        self.debug("INitializing defines")
         for plugin in self._enabled_plugins:
             self._pipeline.get_stage_mgr().define("HAVE_PLUGIN_" + plugin, 1)
 

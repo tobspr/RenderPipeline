@@ -5,8 +5,6 @@ import sys
 import subprocess
 import platform
 
-
-
 devnull = open(os.path.devnull, "w")
 current_dir = os.getcwd()
 
@@ -77,7 +75,7 @@ print("Compiling solution ..")
 os.chdir(current_dir)
 
 try:
-    subprocess.check_output(["python", "compile.py"], stderr=sys.stderr)
+    subprocess.check_output(["python", "-B", "compile.py"], stderr=sys.stderr)
 except subprocess.CalledProcessError as msg:
     error("Compilation failed:", msg.output)
 

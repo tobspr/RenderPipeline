@@ -147,10 +147,12 @@ class RenderPipeline(DebugObject):
         self._stage_mgr = StageManager(self)
         self._light_mgr = LightManager(self)
 
+        # Load plugins
+        self._plugin_mgr.load_plugins()
+
         # Load common inputs and defines
         self._com_resources.load()
         self._create_common_defines()
-        self._plugin_mgr.load_plugins()
 
         self._plugin_mgr.trigger_hook("on_stage_setup")
 

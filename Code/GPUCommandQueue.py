@@ -7,7 +7,7 @@ from .Util.DebugObject import DebugObject
 from .Util.Image import Image
 from .RenderTarget import RenderTarget
 
-from ..Native import GPUCommand, GPUCommandList
+from .Native import GPUCommand, GPUCommandList
 
 class GPUCommandQueue(DebugObject):
 

@@ -18,7 +18,7 @@ from .Stages.FinalStage import FinalStage
 from .Stages.DownscaleZStage import DownscaleZStage
 
 from .GPUCommandQueue import GPUCommandQueue
-from ..Native import GPUCommand, Light, LightStorage
+from .Native import GPUCommand, Light, LightStorage
 
 
 class LightManager(DebugObject):

@@ -139,9 +139,9 @@ class RenderStage(DebugObject):
         for RenderStages created by plugins. For a description of the arguments,
         see the _load_shader function. """
 
-        # The __module__ contains something like RenderPipeline.Plugins.XXX.YYY
+        # The __module__ contains something like Plugins.XXX.YYY
         # We want XXX so we take the second parameter
-        plugin_name = str(self.__class__.__module__).split(".")[2]        
+        plugin_name = str(self.__class__.__module__).split(".")[1] 
 
         plugin_loc = "Plugins/" + plugin_name + "/Shader/Stages/"
         path_args = [os.path.join(plugin_loc, i) if not "$$PipelineTemp" in i else i for i in args]
