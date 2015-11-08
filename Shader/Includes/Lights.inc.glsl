@@ -57,7 +57,8 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     vec3 fresnel = BRDFSchlick( specularColor, VxH, scaled_roughness) * NxL * NxV / M_PI;
 
     // Energy conservation
-    float energy = 1.0 + pow(m.roughness * 4.0, 3.0);
+    // float energy = 1.0 + pow(m.roughness * 1.0, 3.0);
+    float energy = 1.0;
 
     shadingResult += (distribution * visibility * fresnel) / max(0.001, 4.0 * NxV * max(0.001, NxL) ) * energy * m.specular * specularColor;
 

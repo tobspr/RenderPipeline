@@ -5,7 +5,6 @@
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/LightingPipeline.inc.glsl"
 #pragma include "Includes/GBufferPacking.inc.glsl"
-#pragma include "Includes/Structures/Material.struct.glsl"
 
 in vec2 texcoord;
 out vec4 result;

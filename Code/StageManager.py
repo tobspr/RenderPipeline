@@ -183,6 +183,10 @@ class StageManager(DebugObject):
         output += "// Do not edit! Your changes will be lost.\n\n"
 
         for key, value in sorted(self._defines.items()):
+
+            # Cannot cast bools to string directly
+            if type(value) == bool:
+                value = 1 if value else 0
             output += "#define " + key + " " + str(value) + "\n"
 
         output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"

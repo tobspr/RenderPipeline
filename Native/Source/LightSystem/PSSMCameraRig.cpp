@@ -6,9 +6,10 @@
 
 
 PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
+    nassertv(num_splits > 0 && num_splits <= MAX_PSSM_SPLITS);
     _pssm_distance = 100.0;
     _sun_distance = 500.0;
-    _camera_mvps = PTA_LMatrix4f::empty_array(MAX_PSSM_SPLITS);
+    _camera_mvps = PTA_LMatrix4f::empty_array(num_splits);
     init_cam_nodes(num_splits);
 }
 
@@ -30,8 +31,6 @@ void PSSMCameraRig::set_sun_distance(float distance) {
 
 
 void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
-    nassertv(num_splits > 0 && num_splits <= MAX_PSSM_SPLITS);
-
     _cam_nodes.reserve(num_splits);
     for (size_t i = 0; i < num_splits; ++i)
     {

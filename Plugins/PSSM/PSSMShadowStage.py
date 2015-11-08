@@ -27,6 +27,9 @@ class PSSMShadowStage(RenderStage):
     def get_split_region(self, index):
         return self._split_regions[index]
 
+    def get_shadow_tex(self):
+        return self._target["depth"]
+
     def create(self):
         self._target = self._create_target("PSSMShadowMap")
         self._target.set_source(None, Globals.base.win)

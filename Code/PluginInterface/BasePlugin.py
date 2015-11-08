@@ -20,7 +20,6 @@ class BasePlugin(DebugObject):
         # Set a special output color for plugins
         self._set_debug_color("magenta", "bright")
         
-
         for attr in dir(self):
             val = getattr(self, attr)
             if hasattr(val, "hook_id"):
@@ -52,6 +51,10 @@ class BasePlugin(DebugObject):
     def make_stage(self, stage_type):
         """ Shortcut to create a new render stage from a given class type """
         return stage_type(self._pipeline)
+
+    def add_define(self, key, value):
+        """ Adds a new define. This should be called in the on_stage_setup hook """
+        self._pipeline.get_stage_mgr().define(key, value)
 
     def exec_compute_shader(self, shader_obj, shader_inputs, exec_size, 
             workgroup_size=(16, 16, 1)):

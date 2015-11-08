@@ -63,6 +63,16 @@ class PS_Float(BasePluginSetting):
         self._value = max(min(float(val), self._max_value), self._min_value)
 
 
+class PS_Bool(BasePluginSetting):
+
+    """ A setting storing a bool, either true or false """
+    def __init__(self, value=True, runtime=False):
+        BasePluginSetting.__init__(self, runtime)
+        self.set_value(value)
+
+    def set_value(self, val):
+        self._value = True if val else False
+
 class PS_Enum(BasePluginSetting):
 
     def __init__(self, *args, **kwargs):

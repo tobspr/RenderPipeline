@@ -1,7 +1,7 @@
 
 # Load plugin api
 from .. import *
-from panda3d.core import Vec3, NodePath, Camera
+from panda3d.core import Vec3, NodePath, Camera, Texture
 
 # Load some plugin classes here
 from PSSMShadowStage import PSSMShadowStage
@@ -17,6 +17,7 @@ class Plugin(BasePlugin):
         "sun_distance": PS_Float(min_value=100.0, max_value=10000.0, value=500.0),
         "split_count": PS_Int(min_value=2, max_value=10, value=5),
         "resolution": PS_Int(min_value=128, max_value=4096, value=2048),
+        "use_pcf": PS_Bool(value=True)
     }
 
     def __init__(self, pipeline):
@@ -35,6 +36,9 @@ class Plugin(BasePlugin):
 
         self._pssm_stage = self.make_stage(PSSMStage)
         self.register_stage(self._pssm_stage)
+
+        self.add_define("PSSM_NUM_SPLITS", self["split_count"])
+        self.add_define("PSSM_USE_PCF", self["use_pcf"])
 
     @PluginHook("on_pipeline_created")
     def init(self):
@@ -63,6 +67,11 @@ class Plugin(BasePlugin):
 
         # Accept a shortcut to enable / disable the update of PSSM
         Globals.base.accept("u", self._toggle_update_enabled)
+
+        # Set the PCF filter type in case we use pcf
+        if self["use_pcf"]:
+            self._shadow_stage.get_shadow_tex().set_minfilter(Texture.FT_shadow)
+            self._shadow_stage.get_shadow_tex().set_magfilter(Texture.FT_shadow)
 
         # Set inputs
         self._pssm_stage.set_shader_input("pssm_split_distance", self["pssm_distance"])

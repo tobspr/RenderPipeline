@@ -99,7 +99,7 @@ class MainApp(ShowBase):
         self.lights = []
 
         # Add some random lights
-        sqr = 1
+        sqr = 0
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()
