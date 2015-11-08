@@ -122,7 +122,7 @@ void main() {
         }
 
         float avg_blocker_depth = sum_blockers / num_blockers;
-        float penumbra_size = abs(ref_depth - avg_blocker_depth) / ref_depth * 100.0;
+        float penumbra_size = max(0, ref_depth - avg_blocker_depth) / ref_depth * 20.0;
 
 
         penumbra_size = max(0.001, penumbra_size);

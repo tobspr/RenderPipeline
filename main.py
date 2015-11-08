@@ -80,12 +80,15 @@ class MainApp(ShowBase):
         
         # Load some models
         # model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
-        model = loader.loadModel("box")
+        model = loader.loadModel("Models/Test.ignore/Car0.bam")
+        # model = loader.loadModel("box")
         # model.set_scale(0.2)
+        model.set_two_sided(True)
         model.flatten_strong()
 
 
-        if True:
+
+        if False:
             for roughness in range(11):
                 for metallic in range(2):
                     placeholder = render.attach_new_node("placeholder")
@@ -94,6 +97,11 @@ class MainApp(ShowBase):
                     placeholder.set_shader_input("metallic", metallic / 1.0)
                     placeholder.set_shader_input("specular", 0.5)
                     model.instance_to(placeholder)
+        else:
+            model.reparent_to(render)
+            model.set_shader_input("metallic", 1.0)
+            model.set_shader_input("specular", 0.5)
+            model.set_shader_input("roughness", 0.3)
 
         self.render_pipeline.create_default_skybox()
         self.lights = []

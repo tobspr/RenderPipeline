@@ -34,7 +34,7 @@ void main() {
     }
 
     // Fade out when velocity gets too big
-    const float max_velocity = 5.0 / WINDOW_WIDTH; 
+    const float max_velocity = 5.0 / WINDOW_HEIGHT; 
     weight *= 1.0 - saturate(length(velocity) / max_velocity);
 
     // weight = 1.0;

@@ -49,10 +49,10 @@ void main() {
         vec3 env_coord = fix_cubemap_coord(reflected_dir);
 
 
-        vec3 h = normalize(view_vector - reflected_dir);
-        // vec3 h = m.normal;
+        // vec3 h = normalize(view_vector - reflected_dir);
+        vec3 h = normalize(m.normal + view_vector);
 
-        float LxH = saturate(dot(view_vector, h));
+        float LxH = 1 - saturate(dot(view_vector, h));
         float NxL = max(0, dot(m.normal, reflected_dir));
         float NxV = abs(dot(m.normal, view_vector));
 
@@ -81,18 +81,18 @@ void main() {
 
         // Different terms for metallic and diffuse objects
         vec3 env_metallic = m.diffuse;
-        // env_metallic *= 0.7 + pow(LxH, 1.0) * 0.3;
+        env_metallic *= 0.0 + pow(LxH, 1.0) * 1.0;
 
         vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 5.0 )) 
-                           * (1.0 - m.roughness)) * vec3(0.2);
+                           * (1.0 - m.roughness)) * vec3(0.1);
 
         vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
 
-        vec3 diffuse_ambient = vec3(0.1) * m.diffuse * (1.0 - m.metallic);
+        vec3 diffuse_ambient = vec3(0.02) * m.diffuse * (1.0 - m.metallic);
         vec3 specular_ambient = env_factor * env_default_color * 0.8;
 
         ambient.xyz += diffuse_ambient + specular_ambient;
-        ambient.xyz += env_amb * 0.15 * m.diffuse * (1.0 - m.metallic);
+        ambient.xyz += env_amb * 0.05 * m.diffuse * (1.0 - m.metallic);
 
         // ambient.xyz = vec3( pow(1.0 - NxV, 10.0) );
 

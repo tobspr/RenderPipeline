@@ -14,7 +14,7 @@ class Plugin(BasePlugin):
     NAME = "PSSM"
     DESCRIPTION = """ This plugin adds support for directional shadows using PSSM"""
     SETTINGS = {
-        "pssm_distance": PS_Float(min_value=10.0, max_value=3000.0, value=40.0, runtime=True),
+        "pssm_distance": PS_Float(min_value=10.0, max_value=3000.0, value=70.0, runtime=True),
         "sun_distance": PS_Float(min_value=100.0, max_value=10000.0, value=500.0),
         "split_count": PS_Int(min_value=2, max_value=10, value=8),
         "resolution": PS_Int(min_value=128, max_value=4096, value=2048),
@@ -86,7 +86,7 @@ class Plugin(BasePlugin):
 
         # factor = globalClock.get_frame_time() * 0.5
         # sun_vector = Vec3(cos(factor), sin(factor), sin(factor*2.0) * 0.5 + 0.6)
-        sun_vector = Vec3(0.05, 0.8, 0.4)
+        sun_vector = Vec3(-0.5, 0.3, 0.3)
         sun_vector.normalize()
 
         self._pta_sun_vector[0] = sun_vector
