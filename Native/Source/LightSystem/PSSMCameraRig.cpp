@@ -78,6 +78,29 @@ const PTA_LMatrix4f &PSSMCameraRig::get_mvp_array() {
 }
 
 
+LPoint3f PSSMCameraRig::get_snap_offset(LMatrix4f mat, int resolution) {
+
+    LPoint4f base_point = mat.get_row(3);
+    base_point *= 0.5; base_point += 0.5;
+
+    float texel_size = 1.0 / (float)(resolution);
+
+    float offset_x =  fmod(base_point.get_x(), texel_size);
+    float offset_y =  fmod(base_point.get_y(), texel_size);
+
+    // Reproject the offset back, for that we need the inverse MVP
+    mat.invert_in_place();
+    LPoint4f new_base_point = mat.xform(LPoint4f(
+            (base_point.get_x() - offset_x) * 2.0 - 1.0,
+            (base_point.get_y() - offset_y) * 2.0 - 1.0,
+            base_point.get_z() * 2.0 - 1.0, 1));
+
+    return LPoint3f(
+        -new_base_point.get_x(),
+        -new_base_point.get_x(),
+        -new_base_point.get_x());
+}
+
 
 void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_distance, const LVecBase3f& light_vector) {
     nassertv(!_parent.is_empty());
@@ -163,8 +186,16 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
 
         // Compute the camera MVP
         LMatrix4f mvp = merged_transform * cam->get_lens()->get_view_mat() * cam->get_lens()->get_projection_mat();
-        _camera_mvps.set_element(i, mvp);        
 
+        // Stable Snapping
+        LPoint3f snap_offset = get_snap_offset(mvp, 2048);
+        _cam_nodes[i].set_pos(_cam_nodes[i], snap_offset);
+
+        // Compute the new mvp, since we changed the snap offset
+        merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
+        mvp = merged_transform * cam->get_lens()->get_view_mat() * cam->get_lens()->get_projection_mat();
+
+        _camera_mvps.set_element(i, mvp);
     }
 }
 

@@ -7,7 +7,7 @@ class PSSMStage(RenderStage):
 
     required_inputs = ["mainCam", "mainRender", "cameraPosition"]
     required_pipes = ["ShadedScene", "PSSMShadowAtlas", "GBufferDepth", 
-                      "GBuffer0", "GBuffer1", "GBuffer2"]
+                      "GBuffer0", "GBuffer1", "GBuffer2", "PSSMShadowAtlasPCF"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "PSSMStage", pipeline)

@@ -80,7 +80,7 @@ class MainApp(ShowBase):
         
         # Load some models
         # model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
-        model = loader.loadModel("Panda")
+        model = loader.loadModel("panda")
         model.set_scale(0.2)
         model.flatten_strong()
 

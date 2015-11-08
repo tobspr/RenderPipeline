@@ -33,9 +33,9 @@ void main() {
     vec3 inscattered_light = DoScattering(direction * 10000000.0, direction);
     vec3 sky_color = textureLod(DefaultSkydome, get_skydome_coord(direction), 0).xyz;
 
-    // inscattered_light = 1.0 - exp(-0.2 * inscattered_light);
-    inscattered_light *= 0.3;
-    inscattered_light += pow(sky_color, vec3(1.2)) * 1.5;
+    inscattered_light = 1.0 - exp(-0.2 * inscattered_light);
+    // inscattered_light *= 0.3;
+    inscattered_light += pow(sky_color, vec3(1.2)) * 0.8;
 
 
     if (horizon < 0.0) {

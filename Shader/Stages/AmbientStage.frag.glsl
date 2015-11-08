@@ -81,9 +81,9 @@ void main() {
 
         // Different terms for metallic and diffuse objects
         vec3 env_metallic = m.diffuse;
-        // env_metallic *= 0.1 + pow(1.0 - LxH, 1.0) * 0.9;
+        env_metallic *= 0.3 + pow(LxH, 1.0) * 0.7;
 
-        vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 2.0 )) 
+        vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 5.0 )) 
                            * (1.0 - m.roughness)) * vec3(0.2);
 
         vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
@@ -92,7 +92,7 @@ void main() {
         vec3 specular_ambient = env_factor * env_default_color * 0.8;
 
         ambient.xyz += diffuse_ambient + specular_ambient;
-        ambient.xyz += env_amb * 0.2 * m.diffuse * (1.0 - m.metallic);
+        ambient.xyz += env_amb * 0.15 * m.diffuse * (1.0 - m.metallic);
 
         // ambient.xyz = vec3( pow(1.0 - NxV, 10.0) );
 

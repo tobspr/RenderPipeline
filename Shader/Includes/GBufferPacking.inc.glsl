@@ -96,7 +96,7 @@ vec2 get_velocity(sampler2D GBuffer2, ivec2 texcoord) {
 }
 
 bool is_skybox(Material m, vec3 camera_pos) {
-    return distance(m.position, camera_pos) > 30000.0;
+    return distance(m.position, camera_pos) > 20000.0;
 }
 
 #endif

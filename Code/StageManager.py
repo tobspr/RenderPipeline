@@ -106,7 +106,11 @@ class StageManager(DebugObject):
                     self.error("Pipe '" + pipe + "' is missing for", stage)
                     continue
 
-                stage.set_shader_input(pipe, self._pipes[pipe])
+                pipe_value = self._pipes[pipe]
+                if isinstance(pipe_value, list) or isinstance(pipe_value, tuple):
+                    stage.set_shader_input(pipe, *pipe_value)
+                else:
+                    stage.set_shader_input(pipe, pipe_value)
 
             # Check if all inputs are available, and set them
             for input_binding in stage.get_required_inputs():

@@ -11,7 +11,6 @@ out vec4 result;
 void main() {
 
     vec3 sceneColor = texture(ShadedScene, texcoord).xyz;
-    // sceneColor = saturate(sceneColor - 0.015) * 1.2;
 
     // sceneColor = Tonemap_Linear(sceneColor);
     // sceneColor = Tonemap_Optimized(sceneColor);

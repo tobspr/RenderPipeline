@@ -221,8 +221,8 @@ class RenderPipeline(DebugObject):
         """ Task which repeatedly clears the state cache to avoid storing
         unused states. """
         task.delayTime = 1
-        TransformState.clear_cache()
-        RenderState.clear_cache()
+        # TransformState.clear_cache()
+        # RenderState.clear_cache()
         return task.again
 
     def _pre_render_update(self, task):

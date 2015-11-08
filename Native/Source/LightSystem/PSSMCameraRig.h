@@ -21,6 +21,7 @@ class PSSMCameraRig {
 
         NodePath get_camera(int index);
 
+
         void reparent_to(NodePath &parent);
         const PTA_LMatrix4f &get_mvp_array();
 
@@ -39,6 +40,7 @@ class PSSMCameraRig {
         void init_cam_nodes(size_t num_splits);
         void compute_pssm_splits(const LMatrix4f& transform, float max_distance, const LVecBase3f &light_vector);
         LPoint3f get_interpolated_point(CoordinateOrigin origin, float depth);
+        LPoint3f get_snap_offset(LMatrix4f mat, int resolution);
 
         vector<NodePath> _cam_nodes;
 

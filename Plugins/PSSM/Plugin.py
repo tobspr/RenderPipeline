@@ -16,7 +16,7 @@ class Plugin(BasePlugin):
     SETTINGS = {
         "pssm_distance": PS_Float(min_value=10.0, max_value=3000.0, value=40.0, runtime=True),
         "sun_distance": PS_Float(min_value=100.0, max_value=10000.0, value=500.0),
-        "split_count": PS_Int(min_value=2, max_value=10, value=5),
+        "split_count": PS_Int(min_value=2, max_value=10, value=8),
         "resolution": PS_Int(min_value=128, max_value=4096, value=2048),
         "use_pcf": PS_Bool(value=True)
     }
@@ -70,11 +70,6 @@ class Plugin(BasePlugin):
 
         # Accept a shortcut to enable / disable the update of PSSM
         Globals.base.accept("u", self._toggle_update_enabled)
-
-        # Set the PCF filter type in case we use pcf
-        if self["use_pcf"]:
-            self._shadow_stage.get_shadow_tex().set_minfilter(Texture.FT_shadow)
-            self._shadow_stage.get_shadow_tex().set_magfilter(Texture.FT_shadow)
 
         # Set inputs
         self._pssm_stage.set_shader_input("pssm_split_distance", self["pssm_distance"])
