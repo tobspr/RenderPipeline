@@ -6,7 +6,7 @@ set(CMAKE_BUILD_TYPE "Release")
 
 if (WIN32)
 
-  set(PYTHON_EXECUTABLE "ppython")
+  set(PYTHON_EXECUTABLE CACHE STRING "python")
   
   # Find panda path
   EXECUTE_PROCESS(

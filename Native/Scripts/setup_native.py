@@ -19,7 +19,7 @@ if platform.system() == "Windows":
 elif platform.system() == "Linux":
     output_path = "../Linux/"
 else:
-    error("Unsupported Platform!")
+    error("Unsupported Platform: " + platform.system())
 
 if not os.path.isdir(output_path):
     try:
@@ -32,6 +32,7 @@ os.chdir(output_path)
 print("Running cmake ..")
 
 cmake_args = ['-DCMAKE_BUILD_TYPE=Release']
+cmake_args = ['-DPYTHON_EXECUTABLE:STRING=' + sys.executable]
 
 if platform.system() == "Windows":
     
@@ -62,9 +63,6 @@ if platform.system() == "Windows":
             vc_int_version = int(float(vc_version))
 
             cmake_args += ['-GVisual Studio ' + str(vc_int_version) + bit_suffix]
-        
-
-
 
 try:
     subprocess.check_output(["cmake", "../"] + cmake_args, stderr=sys.stderr)
@@ -75,7 +73,7 @@ print("Compiling solution ..")
 os.chdir(current_dir)
 
 try:
-    subprocess.check_output(["python", "-B", "compile.py"], stderr=sys.stderr)
+    subprocess.check_output([sys.executable, "-B", "compile.py"], stderr=sys.stderr)
 except subprocess.CalledProcessError as msg:
     error("Compilation failed:", msg.output)
 
@@ -88,7 +86,6 @@ elif platform.system() == "Linux":
 
 if not os.path.isfile("../../Code/Native/" + expected_bin):
     error("Compilation finished but could not find binary (" + expected_bin + ")!")
-
 
 print("Success!")
 sys.exit(0)

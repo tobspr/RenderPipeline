@@ -35,7 +35,7 @@ def exec_python_file(pth):
     pth = os.path.basename(pth)
     os.chdir(basedir)
     try:
-        output = subprocess.check_output(["python", "-B", pth], stderr=sys.stderr)
+        output = subprocess.check_output([sys.executable, "-B", pth], stderr=sys.stderr)
     except subprocess.CalledProcessError as msg:
         print("Python script didn't return properly!")
         error("Failed to execute '" + pth + "'")
@@ -74,12 +74,6 @@ def check_repo_complete():
 
 print("\nRender Pipeline Setup 1.0\n")
 print("-" * 79)
-print_step("Checking if python is on your path ..")
-
-try:
-    subprocess.call(["python", "--version"], stdout=devnull, stderr=devnull)
-except OSError:
-    error("Could not find python on your path")
 
 print_step("Checking if the repo is complete ..")
 check_repo_complete()
