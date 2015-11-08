@@ -26,6 +26,10 @@ class BasePlugin(DebugObject):
             if hasattr(val, "hook_id"):
                 self._bind_to_hook(val.hook_id, val)
 
+    def __getitem__(self, name):
+        """ Handy function to access the settings of the plugin """
+        return self.SETTINGS[name].value()
+
     def _bind_to_hook(self, hook_name, handler):
         """ Binds the handler to a given hook_name. When the hook is executed
         in the pipeline code, the handler gets called """

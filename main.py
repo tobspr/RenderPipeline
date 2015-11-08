@@ -82,23 +82,24 @@ class MainApp(ShowBase):
         model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
         # model = loader.loadModel("Panda")
         # model.set_scale(0.2)
-        # model.flatten_strong()
+        model.flatten_strong()
 
 
-        for roughness in range(0, 11):
-            for metallic in range(0, 2):
-                placeholder = render.attach_new_node("placeholder")
-                placeholder.set_pos( (roughness-5) * 2.3, (metallic) * 5.3, 0)
-                placeholder.set_shader_input("roughness", roughness / 10.0)
-                placeholder.set_shader_input("metallic", metallic / 1.0)
-                placeholder.set_shader_input("specular", 0.5)
-                model.instance_to(placeholder)
+        if True:
+            for roughness in range(11):
+                for metallic in range(2):
+                    placeholder = render.attach_new_node("placeholder")
+                    placeholder.set_pos( (roughness-5) * 2.3, (metallic) * 5.3, 0)
+                    placeholder.set_shader_input("roughness", roughness / 10.0)
+                    placeholder.set_shader_input("metallic", metallic / 1.0)
+                    placeholder.set_shader_input("specular", 0.5)
+                    model.instance_to(placeholder)
 
         self.render_pipeline.create_default_skybox()
         self.lights = []
 
         # Add some random lights
-        sqr = 8
+        sqr = 1
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()

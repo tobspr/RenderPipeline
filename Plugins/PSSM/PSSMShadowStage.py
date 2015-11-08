@@ -16,7 +16,7 @@ class PSSMShadowStage(RenderStage):
         self._split_regions = []
 
     def get_produced_pipes(self):
-        return {"PSSMShadowMap": self._target['depth']}
+        return {"PSSMShadowAtlas": self._target['depth']}
 
     def set_num_splits(self, splits):
         self._num_splits = splits
@@ -29,18 +29,17 @@ class PSSMShadowStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("PSSMShadowMap")
-        self._target.set_source(NodePath(Camera("temp")), Globals.base.win)
+        self._target.set_source(None, Globals.base.win)
         self._target.set_size(self._split_resolution * self._num_splits, self._split_resolution)
-        self._target.add_color_and_depth(color_bits=8, depth_bits=32)
-
+        self._target.add_depth_texture(bits=32)
         self._target.set_create_overlay_quad(False)
-        # self._target.set_color_write(False)
+        self._target.set_color_write(False)
         self._target.prepare_scene_render()
 
         # Remove all unused display regions
         internal_buffer = self._target.get_internal_buffer()
-        # internal_buffer.remove_all_display_regions()
-        # internal_buffer.get_display_region(0).set_active(False)
+        internal_buffer.remove_all_display_regions()
+        internal_buffer.get_display_region(0).set_active(False)
 
         # Prepare the display regions
         for i in range(self._num_splits):

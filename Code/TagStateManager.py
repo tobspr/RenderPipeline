@@ -1,6 +1,6 @@
 
 
-from panda3d.core import NodePath, BitMask32
+from panda3d.core import NodePath, BitMask32, ColorWriteAttrib
 
 from .Util.DebugObject import DebugObject
 from .Globals import Globals
@@ -31,6 +31,7 @@ class TagStateManager(DebugObject):
         self.debug("Constructing new state", name)
         initial_state = NodePath(name)
         initial_state.set_shader(shader, sort)
+        initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.COff), 100000)
         state_name = "S-" + name
         object.set_tag(self.TAG_SHADOWS, state_name)
         for cam in self._shadow_cameras:
@@ -41,5 +42,9 @@ class TagStateManager(DebugObject):
         The manager then setups all required tags and keeps track of updating them """ 
         source.node().set_tag_state_key(self.TAG_SHADOWS)
         source.node().set_camera_mask(self.MASK_SHADOWS)
+
+        initial_state = NodePath("ShadowInitial")
+        initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.COff), 100000)
+        source.node().set_initial_state(initial_state.get_state())
         self._shadow_cameras.append(source)
 

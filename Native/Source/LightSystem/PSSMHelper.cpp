@@ -1,6 +1,7 @@
 
 #include "PSSMHelper.h"
 
+/*
 
 #include <Eigen/Dense>
 
@@ -30,6 +31,7 @@ LMatrix4f PSSMHelper::find_projection_mat(
             const LVector4f &far_ur,
             const LVector4f &far_ll,
             const LVector4f &far_lr) {
+
 
 
     // We have 8*4 = 32 equations, which require 16 coefficients each
@@ -69,3 +71,4 @@ LMatrix4f PSSMHelper::find_projection_mat(
 }
 
 
+*/

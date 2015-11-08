@@ -25,6 +25,7 @@ class StageManager(DebugObject):
         "CollectUsedCellsStage",
         "CullLightsStage",
         "ApplyLightsStage",
+        "PSSMStage",
         "ScatteringStage",
         "AmbientStage",
         "SSLRStage",

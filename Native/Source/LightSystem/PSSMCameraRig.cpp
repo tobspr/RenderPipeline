@@ -1,12 +1,14 @@
 
 #include "PSSMCameraRig.h"
 
+#include <cmath>
 #include "orthographicLens.h"
 
 
 PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
     _pssm_distance = 100.0;
     _sun_distance = 500.0;
+    _camera_mvps = PTA_LMatrix4f::empty_array(MAX_PSSM_SPLITS);
     init_cam_nodes(num_splits);
 }
 
@@ -28,7 +30,7 @@ void PSSMCameraRig::set_sun_distance(float distance) {
 
 
 void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
-    nassertv(num_splits > 0 && num_splits < 10);
+    nassertv(num_splits > 0 && num_splits <= MAX_PSSM_SPLITS);
 
     _cam_nodes.reserve(num_splits);
     for (size_t i = 0; i < num_splits; ++i)
@@ -57,8 +59,13 @@ void PSSMCameraRig::reparent_to(NodePath &parent) {
 
 
 float get_split_start(size_t split_index, size_t max_splits) {
-    // Use a linear split scheme for now
-    return (float)split_index / (float)max_splits;
+    // Use a pure logarithmic split scheme for now
+    float linear_factor = (float)split_index / (float)max_splits;
+
+    // Split is computed as: k = log(linear + 1.0);
+    // Assuming we have k, then we need exp(k) - 1.0
+
+    return exp(linear_factor) - 1.0;
 }
 
 
@@ -66,6 +73,11 @@ LPoint3f PSSMCameraRig::get_interpolated_point(CoordinateOrigin origin, float de
     nassertr(depth >= 0.0 && depth <= 1.0, NULL);  
     return _curr_near_points[origin] * (1.0 - depth) + _curr_far_points[origin] * depth;   
 }
+
+const PTA_LMatrix4f &PSSMCameraRig::get_mvp_array() {
+    return _camera_mvps;
+}
+
 
 
 void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_distance, const LVecBase3f& light_vector) {
@@ -101,9 +113,6 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         cam->get_lens()->set_film_size(1, 1);
         cam->get_lens()->set_film_offset(0, 0);
         cam->get_lens()->set_near_far(1, 100);
-            
-        // Show frustum for debugging?
-        // cam->show_frustum();
 
         // Collect all points which define the frustum
         LVecBase3f proj_points[8];
@@ -152,6 +161,10 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
 
         // Compute new near / far
         cam->get_lens()->set_near_far(min_extent.get_z(), max_extent.get_z());
+
+        // Compute the camera MVP
+        LMatrix4f mvp = merged_transform * cam->get_lens()->get_view_mat() * cam->get_lens()->get_projection_mat();
+        _camera_mvps.set_element(i, mvp);        
 
     }
 }

@@ -4,6 +4,8 @@
 #include "pandabase.h"
 #include "luse.h"
 
+/*
+
 class PSSMHelper {
 
     PUBLISHED:
@@ -20,3 +22,6 @@ class PSSMHelper {
             const LVector4f &far_lr);
 
 };
+
+
+*/
