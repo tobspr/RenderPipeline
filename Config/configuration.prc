@@ -57,8 +57,8 @@ text-page-size 128 128
 #threading-model App/Cull/Draw
 
 # Disable stencil, its not used in the pipeline
-support-stencil #f
-framebuffer-stencil #f
+support-stencil #t
+framebuffer-stencil #t
 
 # Don't use srgb correction, we do that ourself
 framebuffer-srgb #f

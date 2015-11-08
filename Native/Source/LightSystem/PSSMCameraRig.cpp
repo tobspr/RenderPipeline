@@ -159,7 +159,7 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         cam->get_lens()->set_film_offset(x_center * 0.5, y_center * 0.5);
 
         // Compute new near / far
-        cam->get_lens()->set_near_far(min_extent.get_z(), max_extent.get_z());
+        cam->get_lens()->set_near_far(1, max_extent.get_z());
 
         // Compute the camera MVP
         LMatrix4f mvp = merged_transform * cam->get_lens()->get_view_mat() * cam->get_lens()->get_projection_mat();

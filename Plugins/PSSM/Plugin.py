@@ -1,7 +1,8 @@
 
 # Load plugin api
 from .. import *
-from panda3d.core import Vec3, NodePath, Camera, Texture
+from panda3d.core import Vec3, NodePath, Camera, Texture, PTAVecBase3f
+from math import cos, sin
 
 # Load some plugin classes here
 from PSSMShadowStage import PSSMShadowStage
@@ -25,6 +26,7 @@ class Plugin(BasePlugin):
         self._resolution = 512
         self._sun_distance = 500.0
         self._update_enabled = True
+        self._pta_sun_vector = PTAVecBase3f.empty_array(1)
 
 
     @PluginHook("on_stage_setup")
@@ -39,6 +41,7 @@ class Plugin(BasePlugin):
 
         self.add_define("PSSM_NUM_SPLITS", self["split_count"])
         self.add_define("PSSM_USE_PCF", self["use_pcf"])
+        self.add_define("PSSM_RESOLUTION", self["resolution"])
 
     @PluginHook("on_pipeline_created")
     def init(self):
@@ -77,6 +80,7 @@ class Plugin(BasePlugin):
         self._pssm_stage.set_shader_input("pssm_split_distance", self["pssm_distance"])
         self._pssm_stage.set_shader_input("pssm_split_count", self["split_count"])
         self._pssm_stage.set_shader_input("pssm_mvps", self._rig.get_mvp_array())
+        self._pssm_stage.set_shader_input("pssm_sun_vector", self._pta_sun_vector)
 
     @PluginHook("on_shader_create")
     def create_shaders(self):
@@ -84,11 +88,18 @@ class Plugin(BasePlugin):
 
     @PluginHook("pre_render_update")
     def update(self):
+
+        # factor = globalClock.get_frame_time() * 0.5
+        # sun_vector = Vec3(cos(factor), sin(factor), sin(factor*2.0) * 0.5 + 0.6)
         sun_vector = Vec3(0.05, 0.8, 0.4)
         sun_vector.normalize()
 
+        self._pta_sun_vector[0] = sun_vector
+
         if self._update_enabled:
             self._rig.fit_to_camera(Globals.base.camera, sun_vector)
+
+
 
     @SettingChanged("pssm_distance")
     def update_pssm_distance(self):

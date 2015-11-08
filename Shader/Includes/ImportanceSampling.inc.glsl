@@ -45,11 +45,11 @@ vec3 ImportanceSampleGGX(vec2 Xi, float roughness, vec3 n)
   float cos_theta = sqrt((1 - Xi.y) / (1 + (r_square*r_square - 1) * Xi.y));   
   float sin_theta = sqrt(1 - cos_theta * cos_theta);
 
+
   vec3 h;
   h.x = sin_theta * cos(phi);
   h.y = sin_theta * sin(phi);
   h.z = cos_theta;
-
 
   vec3 up_vector = abs(n.z) < 0.999 ? vec3(0, 0, 1) : vec3(1, 0, 0);
   vec3 tangent = normalize(cross(up_vector, n));

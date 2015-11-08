@@ -34,7 +34,7 @@ void main() {
 
         // -------- Importance Sampling ----------
 
-        const int num_samples = 64;
+        const int num_samples = 128;
 
         for (int i = 0; i < num_samples; ++i) {
             vec2 Xi = Hammersley(i, num_samples);

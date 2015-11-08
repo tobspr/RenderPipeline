@@ -79,9 +79,9 @@ class MainApp(ShowBase):
         plane.reparent_to(render)
         
         # Load some models
-        model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
-        # model = loader.loadModel("Panda")
-        # model.set_scale(0.2)
+        # model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        model = loader.loadModel("Panda")
+        model.set_scale(0.2)
         model.flatten_strong()
 
 
