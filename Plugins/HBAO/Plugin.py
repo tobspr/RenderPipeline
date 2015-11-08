@@ -10,11 +10,7 @@ class Plugin(BasePlugin):
 
     NAME = "HBAO"
     DESCRIPTION = """ This plugin adds support for HBAO """
-    SETTINGS = {
-        "some_setting":         PluginSettingInt(0, 5, value=1),
-        "some_other_setting":   PluginSettingFloat(0.5, 2.0, runtime=True),
-        "some_enum":            PluginSettingEnum("Value1", "Value2", "Value3", value="Value2"),
-    }
+    SETTINGS = {}
 
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)

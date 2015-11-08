@@ -13,8 +13,7 @@ class Plugin(BasePlugin):
 
     NAME = "Scattering"
     DESCRIPTION = """ This plugin adds support for Atmospheric Scattering """
-    SETTINGS = {
-    }
+    SETTINGS = {}
 
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)

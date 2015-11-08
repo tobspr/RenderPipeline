@@ -38,7 +38,7 @@ class PipeViewer(DraggableWindow):
             Globals.base.taskMgr.remove("UpdatePipeViewer")
             self.hide()
         else:
-            Globals.base.taskMgr.add(self._update_task, "UpdatePipeViewer")
+            Globals.base.taskMgr.add(self._update_task, "RP_GUI_UpdatePipeViewer")
             if not self._created:
                 self._populate_content()
             self.show()

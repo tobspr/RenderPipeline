@@ -14,12 +14,12 @@ class BasePluginSetting(object):
         changed at runtime """
         return self._runtime
 
-    def get_value(self):
+    def value(self):
         """ Returns the value of the setting """
         return self._value
 
 
-class PluginSettingInt(BasePluginSetting):
+class PS_Int(BasePluginSetting):
 
     """ A setting storing a single integer """
 
@@ -41,7 +41,7 @@ class PluginSettingInt(BasePluginSetting):
         self._value = max(min(int(val), self._max_value), self._min_value)
 
 
-class PluginSettingFloat(BasePluginSetting):
+class PS_Float(BasePluginSetting):
 
     """ A setting storing a single float """
 
@@ -63,7 +63,7 @@ class PluginSettingFloat(BasePluginSetting):
         self._value = max(min(float(val), self._max_value), self._min_value)
 
 
-class PluginSettingEnum(BasePluginSetting):
+class PS_Enum(BasePluginSetting):
 
     def __init__(self, *args, **kwargs):
         assert(len(args) > 0)

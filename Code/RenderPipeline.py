@@ -195,7 +195,8 @@ class RenderPipeline(DebugObject):
         """ Inits the tasks and keybindings """
         self._showbase.accept("r", self.reload_shaders)
         self._showbase.addTask(self._pre_render_update, "RP_BeforeRender", sort=10)
-        self._showbase.addTask(self._post_render_update, "RP_AfterRender", sort=100)
+        self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
+        self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=1000)
         self._showbase.taskMgr.doMethodLater(0.5, self._clear_state_cache, "RP_ClearStateCache")
 
     def _clear_state_cache(self, task=None):
@@ -212,10 +213,16 @@ class RenderPipeline(DebugObject):
         self._com_resources.update()
         self._stage_mgr.update_stages()
         self._light_mgr.update()
+        return task.cont
+
+    def _plugin_pre_render_update(self, task):
+        """ Update task which gets called before the rendering, and updates the
+        plugins. This is a seperate task to split the work, and be able to do
+        better performance analysis """
         self._plugin_mgr.trigger_hook("pre_render_update")
         return task.cont
 
-    def _post_render_update(self, task):
+    def _plugin_post_render_update(self, task):
         """ Update task which gets called after the rendering """
         self._plugin_mgr.trigger_hook("post_render_update")
         return task.cont

@@ -114,7 +114,7 @@ class MainApp(ShowBase):
         self.controller.set_initial_position(Vec3(10), Vec3(0))
         self.controller.setup()
 
-        self.addTask(self.update_task, "update_task")
+        self.addTask(self.update_task, "Main_UpdateTask")
         self.dummy_light = None
 
     def update_task(self, task=None):

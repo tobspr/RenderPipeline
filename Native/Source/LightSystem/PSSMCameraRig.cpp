@@ -135,7 +135,6 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
             if (screen_points[k].get_x() < min_extent.get_x()) min_extent.set_x(screen_points[k].get_x());
             if (screen_points[k].get_y() < min_extent.get_y()) min_extent.set_y(screen_points[k].get_y());
 
-            // cout << "projected " << point << " to " << proj_point << endl;
             // Find min / max projected depth to adjust far plane
             if (proj_point.get_y() > max_extent.get_z()) max_extent.set_z(proj_point.get_y());
             if (proj_point.get_y() < min_extent.get_z()) min_extent.set_z(proj_point.get_y());

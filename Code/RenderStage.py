@@ -127,12 +127,13 @@ class RenderStage(DebugObject):
         the order should be vertex, fragment, geometry """
         assert len(args) > 0 and len(args) <= 3
         args = ["Shader/" + i + ".glsl" if "$$PipelineTemp" not in i else i for i in args]
+
+        # If only one shader is specified, assume its a postprocess fragment shader,
+        # and use the default vertex shader
         if len(args) == 1:
-            return Shader.load(Shader.SLGLSL,
-                               "Shader/DefaultPostProcess.vertex.glsl",
-                               "" + args[0])
-        else:
-            return Shader.load(Shader.SLGLSL, *args)
+            args = ["Shader/DefaultPostProcess.vertex.glsl"] + args
+
+        return Shader.load(Shader.SLGLSL, *args)
 
     def load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful
@@ -146,9 +147,9 @@ class RenderStage(DebugObject):
         plugin_loc = "Plugins/" + plugin_name + "/Shader/Stages/"
         path_args = [os.path.join(plugin_loc, i) if not "$$PipelineTemp" in i else i for i in args]
 
+        # If only one shader is specified, assume its a postprocess fragment shader,
+        # and use the default vertex shader
         if len(args) == 1:
-            return Shader.load(Shader.SLGLSL,
-                               "Shader/DefaultPostProcess.vertex.glsl",
-                               path_args[0])
-        else:
-            return Shader.load(Shader.SLGLSL, *path_args)
+            path_args = ["Shader/DefaultPostProcess.vertex.glsl"] + path_args
+
+        return Shader.load(Shader.SLGLSL, *path_args)
