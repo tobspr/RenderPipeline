@@ -3,7 +3,7 @@ import sys
 
 from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
 from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f, Texture
-from panda3d.core import RenderState
+from panda3d.core import RenderState, BitMask32
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -18,6 +18,7 @@ from .LightManager import LightManager
 from .Effects.EffectLoader import EffectLoader
 from .PluginInterface.PluginManager import PluginManager
 from .RenderTarget import RenderTarget
+from .TagStateManager import TagStateManager
 from .GUI.OnscreenDebugger import OnscreenDebugger
 from .GUI.PipelineLoadingScreen import PipelineLoadingScreen, EmptyLoadingScreen
 
@@ -91,13 +92,17 @@ class RenderPipeline(DebugObject):
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
         self.set_effect(skybox, "Effects/Skybox.yaml", 
-                        {"cast_shadows": False}, 100)
+                        {"render_shadows": False}, 100)
         return skybox
 
     def get_plugin_mgr(self):
         """ Returns a handle to the plugin manager, this can be used to trigger
         hooks """
         return self._plugin_mgr
+
+    def get_tag_mgr(self):
+        """ Returns a handle to the tag state manager """
+        return self._tag_mgr
 
     def set_effect(self, object, effect_src, options = None, sort = 30):
         """ Sets an effect to the given object, using the specified options.
@@ -107,14 +112,24 @@ class RenderPipeline(DebugObject):
         current effect sort is less than the new effect sort (passed by the
         sort parameter). """
 
-        effect_handle = self._effect_loader.load_effect(effect_src, options)
-        if not effect_handle:
-            self.error("Could not apply effect")           
+        effect = self._effect_loader.load_effect(effect_src, options)
+        if not effect:
+            return self.error("Could not apply effect")           
 
         # Apply default stage shader
-        object.set_shader(effect_handle.get_shader_obj("GBuffer"), sort)
-
-        # TODO: Apply the shader from different stages
+        if not effect.get_option("render_gbuffer"):
+            object.hide(TagStateManager.MASK_GBUFFER)
+        else:
+            object.set_shader(effect.get_shader_obj("GBuffer"), sort)
+            object.show(TagStateManager.MASK_GBUFFER)
+        
+        # Apply shadow stage shader
+        if not effect.get_option("render_shadows"):
+            object.hide(TagStateManager.MASK_SHADOWS)
+        else:
+            shader = effect.get_shader_obj("Shadows")
+            self._tag_mgr.apply_shadow_state(object, shader, str(effect.get_effect_id()), 25 + sort)
+            object.show(TagStateManager.MASK_SHADOWS)
 
     def create(self):
         """ This creates the pipeline, and setups all buffers. It also constructs
@@ -141,6 +156,7 @@ class RenderPipeline(DebugObject):
 
         # Create the various managers and instances
         self._com_resources = CommonResources(self)
+        self._tag_mgr = TagStateManager(self)
         self._plugin_mgr = PluginManager(self)
         self._debugger = OnscreenDebugger(self)
         self._effect_loader = EffectLoader()
@@ -162,13 +178,15 @@ class RenderPipeline(DebugObject):
         self._light_mgr.reload_shaders()
         self._init_bindings()
         
+        # Trigger the finish plugin hook
+        self._plugin_mgr.trigger_hook("on_pipeline_created")
+
         # Set the default effect on render
         self.set_effect(Globals.render, "Effects/Default.yaml", {}, -10)
 
-        self._plugin_mgr.trigger_hook("on_pipeline_created")
-
         # Hide the loading screen
         self._loading_screen.remove()
+
 
     def reload_shaders(self):
         """ Reloads all shaders """

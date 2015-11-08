@@ -36,19 +36,16 @@ void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
         Lens *lens = new OrthographicLens();
         lens->set_film_size(1, 1);
         lens->set_near_far(1, 1000);
-        PT(Camera) cam = new Camera("pssm-cam" + to_string(i), lens);
+        PT(Camera) cam = new Camera("pssm-cam-" + to_string(i), lens);
         _cam_nodes.push_back(NodePath(cam));
 
     }
 }
 
-
 NodePath PSSMCameraRig::get_camera(int index) {
     nassertr(index >= 0 && index < _cam_nodes.size(), NodePath());
     return _cam_nodes[index];
 }
-
-
 
 void PSSMCameraRig::reparent_to(NodePath &parent) {
     nassertv(_cam_nodes.size() > 0);
@@ -82,7 +79,6 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         float split_start = get_split_start(i, _cam_nodes.size()) * max_distance;
         float split_end = get_split_start(i + 1, _cam_nodes.size()) * max_distance;
 
-
         LVecBase3f start_points[4];
         LVecBase3f end_points[4];
 
@@ -105,6 +101,9 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         cam->get_lens()->set_film_size(1, 1);
         cam->get_lens()->set_film_offset(0, 0);
         cam->get_lens()->set_near_far(1, 100);
+            
+        // Show frustum for debugging?
+        // cam->show_frustum();
 
         // Collect all points which define the frustum
         LVecBase3f proj_points[8];

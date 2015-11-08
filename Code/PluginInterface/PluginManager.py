@@ -96,7 +96,7 @@ class PluginManager(DebugObject):
                 
     def init_defines(self):
         """ Creates the defines which can be used in shaders """
-        self.debug("INitializing defines")
+        self.debug("Initializing defines")
         for plugin in self._enabled_plugins:
             self._pipeline.get_stage_mgr().define("HAVE_PLUGIN_" + plugin, 1)
 

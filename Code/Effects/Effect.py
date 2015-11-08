@@ -14,11 +14,13 @@ class Effect(DebugObject):
     from a File. """
 
     _DEFAULT_OPTIONS = {
-        "cast_shadows": True,
-        "transparent": False
+        "render_gbuffer": True,
+        "render_shadows": True
     }
 
     _PASSES = ["GBuffer", "Shadows", "Voxelize"]
+
+    _EFFECT_ID = 0
 
     @classmethod
     def _generate_hash(cls, filename, options):
@@ -35,8 +37,18 @@ class Effect(DebugObject):
     def __init__(self):
         """ Constructs a new empty effect """
         DebugObject.__init__(self)
+        self._effect_id = Effect._EFFECT_ID
+        Effect._EFFECT_ID += 1
         self._options = copy.deepcopy(self._DEFAULT_OPTIONS)
         self._source = ""
+
+    def get_effect_id(self):
+        """ Returns a unique id for the effect """
+        return self._effect_id
+
+    def get_option(self, name):
+        """ Returns a given option value by name """
+        return self._options[name]
 
     def set_options(self, options):
         """ Sets the effect options, overriding the default options """
