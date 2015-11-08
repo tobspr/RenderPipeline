@@ -7,6 +7,8 @@
 
 uniform sampler2D NormalQuantizationTex;
 
+uniform mat4 currentViewProjMatNoJitter;
+
 layout(location=0) out vec4 gbuffer_out_0;
 layout(location=1) out vec4 gbuffer_out_1;
 layout(location=2) out vec4 gbuffer_out_2;
@@ -48,7 +50,12 @@ void render_material(Material m) {
     // Compute velocity
     vec4 last_proj_pos = vOutput.last_proj_position;
     vec2 last_texcoord = fma(last_proj_pos.xy / last_proj_pos.w, vec2(0.5), vec2(0.5));
-    vec2 curr_texcoord = vec2( (ivec2(gl_FragCoord.xy)) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+
+    // vec2 curr_texcoord = vec2( (gl_FragCoord.xy) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+
+    vec4 curr_proj_pos = currentViewProjMatNoJitter * vec4(vOutput.position, 1);
+    vec2 curr_texcoord = fma(curr_proj_pos.xy / curr_proj_pos.w, vec2(0.5), vec2(0.5));
+
     vec2 velocity = (curr_texcoord - last_texcoord) * 255.0;
 
     gbuffer_out_0 = vec4(m.diffuse, m.roughness);

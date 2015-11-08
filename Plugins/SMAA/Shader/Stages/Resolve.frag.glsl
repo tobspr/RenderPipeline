@@ -21,8 +21,29 @@ void main() {
     vec4 current_color = texture(CurrentTex, texcoord);
     vec4 last_color = texture(LastTex, old_coord);
 
-    float blend_factor = 0.5;
 
-    result = mix(current_color, last_color, blend_factor);
+
+    // Blend the pixels according to the calculated weight:
+    // return lerp(current, previous, weight);
+
+    float weight = 0.5;
+
+    // Out of screen
+    if (old_coord.x < 0.0 || old_coord.x > 1.0 || old_coord.y < 0.0 || old_coord.y > 1.0) {
+        weight = 0.0;
+    }
+
+    // Fade out when velocity gets too big
+    const float max_velocity = 5.0 / WINDOW_WIDTH; 
+    weight *= 1.0 - saturate(length(velocity) / max_velocity);
+
+    // weight = 1.0;
+    // weight = 0.5;
+
+
+
+    result = mix(current_color, last_color, weight);
+    // result = vec4(length(velocity) * 4000.0);
+    // result = vec4(weight);
 }
 

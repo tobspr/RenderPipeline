@@ -48,7 +48,7 @@ class CommonResources(DebugObject):
         stage_mgr.add_input("currentViewProjMat", self._pta_current_view_proj_mat)
         stage_mgr.add_input("lastViewProjMatNoJitter", self._pta_last_view_proj_mat)
         stage_mgr.add_input("currentViewMatZup", self._pta_view_mat_zup)
-        stage_mgr.add_input("currentViewMatNoJitter", self._pta_current_view_proj_mat_nojitter)
+        stage_mgr.add_input("currentViewProjMatNoJitter", self._pta_current_view_proj_mat_nojitter)
 
         # Create a converter matrix to transform coordinates from Yup to Zup
         self._coordinate_converter = TransformState.make_mat(

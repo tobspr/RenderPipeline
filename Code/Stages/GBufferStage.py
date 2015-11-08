@@ -11,7 +11,7 @@ class GBufferStage(RenderStage):
     """ This is the main pass stage, rendering the objects and creating the
     GBuffer which is used in later stages """
 
-    required_inputs = ["currentViewProjMat", "lastViewProjMatNoJitter", "cameraPosition"]
+    required_inputs = ["currentViewProjMat", "lastViewProjMatNoJitter", "cameraPosition", "currentViewProjMatNoJitter"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "GBufferStage", pipeline)
@@ -29,7 +29,7 @@ class GBufferStage(RenderStage):
         self._prepare_early_z(early_z)
         self._target = self._create_target("GBuffer")
         self._target.add_color_and_depth(color_bits=8, depth_bits=32)
-        self._target.add_aux_textures(2, bits=8)
+        self._target.add_aux_textures(2, bits=16)
 
         if early_z:
             self._target.prepare_scene_render(early_z=True,

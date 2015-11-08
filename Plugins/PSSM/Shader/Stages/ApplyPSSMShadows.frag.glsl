@@ -49,7 +49,7 @@ void main() {
 
     // TODO: Move to python
     vec3 sun_vector = normalize(pssm_sun_vector);
-    vec3 sun_color = vec3(4, 4, 4);
+    vec3 sun_color = vec3(4.5, 4.25, 4);
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -91,9 +91,9 @@ void main() {
         const float slope_bias = 0.005;
         const float normal_bias = 0.005;
         const float fixed_bias = 0.0002;
-        const int num_samples = 16;
+        const int num_samples = 32;
         const int num_search_samples = 32;
-        const float filter_radius = 20.0 / PSSM_RESOLUTION;
+        const float filter_radius = 35.0 / PSSM_RESOLUTION;
         
         vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, sun_vector);
 
@@ -122,7 +122,7 @@ void main() {
         }
 
         float avg_blocker_depth = sum_blockers / num_blockers;
-        float penumbra_size = abs(ref_depth - avg_blocker_depth) / ref_depth * 50.0;
+        float penumbra_size = abs(ref_depth - avg_blocker_depth) / ref_depth * 100.0;
 
 
         penumbra_size = max(0.001, penumbra_size);
@@ -130,13 +130,14 @@ void main() {
 
         // Do the actual filtering
         for (int i = 0; i < num_samples; ++i) {
-            vec2 offset = poisson_disk_2D_16[i] * filter_size;
+            vec2 offset = poisson_disk_2D_32[i] * filter_size;
             shadow_factor += get_shadow(projected_coord + offset, ref_depth);
         }
 
         shadow_factor /= num_samples;
-    
-        // shadow_factor = filter_size.x * 100.0;
+
+        shadow_factor *= 1.4;
+        shadow_factor = saturate(shadow_factor);
     }
 
     // Compute the light influence
@@ -145,7 +146,9 @@ void main() {
 
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor);
 
-    // lighting_result = vec3(shadow_factor);
+    float split_f = split / float(pssm_split_count);
+    // lighting_result *= rvec3(1 - split_f, split_f, 0);
+
 
     result = scene_color + vec4(lighting_result, 0);
 }

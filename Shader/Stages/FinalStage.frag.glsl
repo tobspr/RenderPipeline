@@ -17,13 +17,10 @@ void main() {
     // sceneColor = Tonemap_Reinhard(sceneColor);
     sceneColor = Tonemap_Uncharted2(sceneColor);
 
-    // saturate
-
 
 
     // Vignette
-   sceneColor *= 1.0 - smoothstep(0, 1, 
-            (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.3, 1.0) * 1.1  ) - 0.2) ) * 0.5;
+   sceneColor *= 1.0 - smoothstep(0, 1, (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.3, 1.0) * 1.1  ) - 0.2) ) * 0.5;
 
     result.xyz = sceneColor;
     result.w = 1.0;
