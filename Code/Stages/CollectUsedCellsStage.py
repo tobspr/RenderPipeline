@@ -31,7 +31,7 @@ class CollectUsedCellsStage(RenderStage):
         self._target.set_size(self._tile_amount.x, self._tile_amount.y)
         self._target.prepare_offscreen_buffer()
 
-        num_slices = self._pipeline.get_settings().LightGridSlices
+        num_slices = self._pipeline.get_setting("lighting.culling_grid_slices")
         max_cells = self._tile_amount.x * self._tile_amount.y * num_slices
 
         self.debug("Allocating", max_cells, "cells")

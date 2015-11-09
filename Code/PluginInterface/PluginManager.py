@@ -6,8 +6,7 @@ from direct.stdpy.file import open, isfile
 
 from ..Util.DebugObject import DebugObject
 
-from ..External.PyYAML import load as YAMLLoad
-from ..External.PyYAML import YAMLError
+from ..External.PyYAML import YAMLLoad, YAMLError
 
 class PluginManager(DebugObject):
 
@@ -60,6 +59,11 @@ class PluginManager(DebugObject):
             self.warn("Malformed plugin config, could not find root entry!")
             self.warn("Disabling all plugins ...")
             return []
+
+        # In case no plugins are activated, the root key is just None, return
+        # an empty list in that case
+        if parsed_yaml["enabled"] is None:
+            return set()
 
         # Make the plugin a list a set, to make sure we don't have entries twice
         return set(parsed_yaml["enabled"])

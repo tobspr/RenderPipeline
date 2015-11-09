@@ -8,10 +8,10 @@ from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
 from .Util.DebugObject import DebugObject
+from .Util.SettingsLoader import SettingsLoader
 
 from .CommonResources import CommonResources
 from .MountManager import MountManager
-from .PipelineSettings import PipelineSettings
 from .Globals import Globals
 from .StageManager import StageManager
 from .LightManager import LightManager
@@ -35,7 +35,7 @@ class RenderPipeline(DebugObject):
         self.debug("Starting pipeline, using Python", sys.version_info.major)
         self._showbase = showbase
         self._mount_manager = MountManager(self)
-        self._settings = PipelineSettings(self)
+        self._settings = SettingsLoader(self, "Pipeline Settings")
         self._loading_screen = EmptyLoadingScreen()
 
     def get_mount_manager(self):
@@ -79,10 +79,10 @@ class RenderPipeline(DebugObject):
         documentation for further information. """
         self._light_mgr.remove_light(light)
 
-    def get_settings(self):
+    def get_setting(self, setting_name):
         """ Returns a handle to the settings, returns an empty PipelineSettings
         object if no settings have been loaded so far. """
-        return self._settings
+        return self._settings[setting_name]
 
     def create_default_skybox(self, size=40000):
         """ Returns the default skybox, with a scale of <size>, and all
@@ -91,8 +91,7 @@ class RenderPipeline(DebugObject):
         skybox = self._com_resources.load_default_skybox()
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
-        self.set_effect(skybox, "Effects/Skybox.yaml", 
-                        {"render_shadows": False}, 100)
+        self.set_effect(skybox, "Effects/Skybox.yaml", {"render_shadows": False}, 100)
         return skybox
 
     def get_plugin_mgr(self):
@@ -138,7 +137,7 @@ class RenderPipeline(DebugObject):
         (see MountManager). """
 
         if not self._settings.is_file_loaded():
-            self.warn("No settings file loaded! Using default settings")
+            return self.error("No settings file loaded! Please call load_settings.")
 
         # Check if the pipeline was properly installed
         if not isfile("Data/install.flag"):

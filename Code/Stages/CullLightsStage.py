@@ -35,7 +35,7 @@ class CullLightsStage(RenderStage):
 
     def create(self):
         max_cells = self._tile_amount.x * self._tile_amount.y * \
-            self._pipeline.get_settings().LightGridSlices
+            self._pipeline.get_setting("lighting.culling_grid_slices")
 
         self._num_rows = int(math.ceil(max_cells / 512.0))
         self._target = self._create_target("CullLights")

@@ -28,7 +28,7 @@ class FlagUsedCellsStage(RenderStage):
 
         self._cell_grid_flags = Image.create_2d_array("CellGridFlags",
             self._tile_amount.x, self._tile_amount.y,
-            self._pipeline.get_settings().LightGridSlices,
+            self._pipeline.get_setting("lighting.culling_grid_slices"),
             Texture.T_float, Texture.F_r16)
         self._cell_grid_flags.set_clear_color(0)
 

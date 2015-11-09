@@ -8,14 +8,11 @@
 
 #if defined(IS_GBUFFER_SHADER)
 
-
 uniform mat4 currentViewProjMatNoJitter;
 
 layout(location=0) out vec4 gbuffer_out_0;
 layout(location=1) out vec4 gbuffer_out_1;
 layout(location=2) out vec4 gbuffer_out_2;
-
-
 
 #if USE_NORMAL_QUANTIZATION
 // Normal Quantization as described in the cryengine paper:
@@ -48,8 +45,9 @@ vec3 normal_quantization(vec3 normal)
 
 #else
 
-vec3 normal_quantization(vec3 normal) {return normalize(normal);} 
-
+vec3 normal_quantization(vec3 normal) {
+    return normalize(normal);
+} 
 
 #endif
 

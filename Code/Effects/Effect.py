@@ -3,8 +3,7 @@ import copy
 
 from panda3d.core import Shader
 
-from ..External.PyYAML import load as YAMLLoad
-from ..External.PyYAML import YAMLError
+from ..External.PyYAML import YAMLLoad, YAMLError
 from ..Util.DebugObject import DebugObject
 from ..Util.ShaderTemplate import ShaderTemplate
 

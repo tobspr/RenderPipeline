@@ -41,13 +41,13 @@ class LightManager(DebugObject):
     def init_defines(self):
         """ Inits the common defines """
         define = self._pipeline.get_stage_mgr().define
-        settings = self._pipeline.get_settings()
 
-        define("LC_TILE_SIZE_X", settings.LightGridSizeX)
-        define("LC_TILE_SIZE_Y", settings.LightGridSizeY)
+        define("LC_TILE_SIZE_X", self._pipeline.get_setting("lighting.culling_grid_size_x"))
+        define("LC_TILE_SIZE_Y", self._pipeline.get_setting("lighting.culling_grid_size_y"))
         define("LC_TILE_AMOUNT_X", self._num_tiles.x)
         define("LC_TILE_AMOUNT_Y", self._num_tiles.y)
-        define("LC_TILE_SLICES", settings.LightGridSlices)
+        define("LC_TILE_SLICES", self._pipeline.get_setting("lighting.culling_grid_slices"))
+        define("LC_MAX_DISTANCE", self._pipeline.get_setting("lighting.culling_max_distance"))
 
     def add_light(self, light):
         """ Adds a new light """
@@ -97,8 +97,8 @@ class LightManager(DebugObject):
         """ Computes how many tiles there are on screen """
 
         self._tile_size = LVecBase2i(
-            self._pipeline.get_settings().LightGridSizeX,
-            self._pipeline.get_settings().LightGridSizeY)
+            self._pipeline.get_setting("lighting.culling_grid_size_x"),
+            self._pipeline.get_setting("lighting.culling_grid_size_x"))
         num_tiles_x = int(math.ceil(Globals.resolution.x /
                                     float(self._tile_size.x)))
         num_tiles_y = int(math.ceil(Globals.resolution.y /

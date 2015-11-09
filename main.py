@@ -63,7 +63,7 @@ class MainApp(ShowBase):
 
         # Load the default prc file and settings
         load_prc_file("Config/configuration.prc")
-        self.render_pipeline.load_settings("Config/pipeline.ini")
+        self.render_pipeline.load_settings("Config/pipeline.yaml")
 
         # Create the pipeline
         self.render_pipeline.create()
