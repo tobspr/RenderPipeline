@@ -1,0 +1,11 @@
+
+# This file stores which plugins should be loaded.
+# To disable a plugin, comment out the line with '#'
+
+enabled:
+    # - HBAO
+    - Scattering
+    # - SSLR
+    - SMAA
+    - PSSM
+

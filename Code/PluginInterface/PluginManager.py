@@ -6,6 +6,8 @@ from direct.stdpy.file import open, isfile
 
 from ..Util.DebugObject import DebugObject
 
+from ..External.PyYAML import load as YAMLLoad
+from ..External.PyYAML import YAMLError
 
 class PluginManager(DebugObject):
 
@@ -38,25 +40,29 @@ class PluginManager(DebugObject):
 
     def _load_plugin_config(self):
         """ Loads the plugin config and extracts the list of activated plugins """
-        plugin_cfg = "Config/plugins.ini"
-        self.debug("Loading plugin config")
-        if not isfile(plugin_cfg):
-            self.error("Could not open '" + plugin_cfg + "'")
+        plugin_cfg = "Config/plugins.yaml"
 
-        with open(plugin_cfg, "r") as handle:
-            lines = handle.readlines()
+        # Get file content and parse it
+        try:
+            with open(plugin_cfg, "r") as handle:
+                parsed_yaml = YAMLLoad(handle)
+        except IOError as msg:
+            self.error("Could not find or open plugin config:", plugin_cfg, "!")
+            self.error(msg)
+            return False
+        except YAMLError as msg:
+            self.error("Invalid yaml-syntax in plugin config:", plugin_cfg, "!")
+            self.error(msg)
+            return False
 
-        activated_plugins = set()
-        for line in lines:
-            if line.startswith("require="):
-                plugin_name = line.split("=")[-1].strip('";\n')
-                # Make sure the plugin name is valid
-                if not self._valid_name_regexp.match(plugin_name):
-                    self.warn("Invalid plugin name: '" + plugin_name + "'")
-                    continue
-                activated_plugins.add(plugin_name)
+        # Find root key
+        if "enabled" not in parsed_yaml:
+            self.warn("Malformed plugin config, could not find root entry!")
+            self.warn("Disabling all plugins ...")
+            return []
 
-        return activated_plugins
+        # Make the plugin a list a set, to make sure we don't have entries twice
+        return set(parsed_yaml["enabled"])
 
     def _try_load_plugin(self, plugin_id):
         """ Attempts to load a plugin with a given name """

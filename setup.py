@@ -46,7 +46,6 @@ def exec_python_file(pth):
 
 
 def extract_gz_files(pth):
-    pth = os.path.join(setup_dir, pth)
     files = os.listdir(pth)
     for f in files:
         fullpath = os.path.join(pth, f)
@@ -58,6 +57,9 @@ def extract_gz_files(pth):
                     shutil.copyfileobj(src, dest)
             except Exception as msg:
                 error("Failed to extract file '" + f + "': " + str(msg))
+        elif os.path.isdir(fullpath):
+            extract_gz_files(fullpath)
+
 
 def check_repo_complete():
 
@@ -85,7 +87,7 @@ print_step("Generating normal quantization textures ..")
 exec_python_file("Data/NormalQuantization/generate.py")
 
 print_step("Extracting .gz files ...")
-extract_gz_files("Data/BuiltinModels/")
+extract_gz_files(os.path.join(setup_dir, "Data/"))
 
 print_step("Filtering default cubemap ..")
 exec_python_file("Data/DefaultCubemap/filter.py")

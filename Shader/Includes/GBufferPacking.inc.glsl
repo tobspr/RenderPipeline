@@ -3,9 +3,11 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"
 
+#define USE_NORMAL_QUANTIZATION 0
+
+
 #if defined(IS_GBUFFER_SHADER)
 
-uniform sampler2D NormalQuantizationTex;
 
 uniform mat4 currentViewProjMatNoJitter;
 
@@ -14,9 +16,12 @@ layout(location=1) out vec4 gbuffer_out_1;
 layout(location=2) out vec4 gbuffer_out_2;
 
 
+
+#if USE_NORMAL_QUANTIZATION
 // Normal Quantization as described in the cryengine paper:
 // http://advances.realtimerendering.com/s2010/Kaplanyan-CryEngine3(SIGGRAPH%202010%20Advanced%20RealTime%20Rendering%20Course).pdf
 // Page 39 to 49
+uniform sampler2D NormalQuantizationTex;
 
 vec3 normal_quantization(vec3 normal)
 {
@@ -41,6 +46,12 @@ vec3 normal_quantization(vec3 normal)
 }
 
 
+#else
+
+vec3 normal_quantization(vec3 normal) {return normalize(normal);} 
+
+
+#endif
 
 void render_material(Material m) {
 
@@ -85,7 +96,13 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
 
     m.diffuse = data0.xyz;
     m.roughness = max(0.05, data0.w);
-    m.normal = normalize(data1.xyz * 2 - 1);
+
+    #if USE_NORMAL_QUANTIZATION
+        m.normal = normalize(data1.xyz * 2 - 1);
+    #else
+        m.normal = normalize(data1.xyz);
+    #endif
+
     // m.normal = normalize(data1.xyz);
     m.metallic = data1.w;
     m.specular = max(0.01, data2.x);
@@ -94,8 +111,11 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
 }
 
 vec3 get_gbuffer_normal(sampler2D GBuffer1, vec2 texcoord) {
-    return normalize(texture(GBuffer1, texcoord).xyz * 2 - 1);
-    // return normalize(texture(GBuffer1, texcoord).xyz);
+    #if USE_NORMAL_QUANTIZATION
+        return normalize( fma(texture(GBuffer1, texcoord).xyz, vec3(2.0),  vec3(-1.0)) );
+    #else
+        return normalize(texture(GBuffer1, texcoord).xyz);
+    #endif
 }
 
 vec2 get_velocity(sampler2D GBuffer2, ivec2 texcoord) {
@@ -106,4 +126,4 @@ bool is_skybox(Material m, vec3 camera_pos) {
     return distance(m.position, camera_pos) > 20000.0;
 }
 
-#endif
+#endif 
