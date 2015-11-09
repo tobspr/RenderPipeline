@@ -1,0 +1,38 @@
+
+name: Plugin Prefab
+author: tobspr <tobias.springer1@gmail.com>
+version: 0.1
+description: >
+    This is the default plugin prefab, which can be used to create other
+    plugins. When creating a plugin, just copy the plugin to your own folder
+    and modify all required settings.
+
+settings:
+
+    some_int_setting:
+        type: int
+        range: [0, 10]
+        label: Some integer setting
+        description: Description of the setting.
+
+    some_float_setting:
+        type: float
+        range: [-5.3, 2.9]
+        default: 2.5
+        label: Some float setting
+        description: Description of the setting.
+        runtime: true
+
+    some_enum:
+        type: enum
+        values: [value1, value2, value3]
+        default: value2
+        label: Some enum setting
+        description: Description of the setting.
+
+    some_bool:
+        type: bool
+        default: false
+        label: Some boolean setting
+        description: Description of the setting.
+
