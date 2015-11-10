@@ -41,8 +41,8 @@ class PipelineLoadingScreen(DebugObject):
 
         self._fullscreen_node = Globals.base.pixel2dp.attach_new_node(
             "PipelineDebugger")
-        self._fullscreen_node.setBin("fixed", 10)
-        self._fullscreen_node.setDepthTest(False)
+        self._fullscreen_node.set_bin("fixed", 10)
+        self._fullscreen_node.set_depth_test(False)
 
         self._fullscreen_bg = BetterOnscreenImage(image="Data/GUI/LoadingScreen/Background.png",
             x=0, y=0, w=sw, h=sh, parent=self._fullscreen_node)

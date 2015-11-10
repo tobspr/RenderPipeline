@@ -10,7 +10,7 @@ if (WIN32)
   
   # Find panda path
   EXECUTE_PROCESS(
-    COMMAND "${PYTHON_EXECUTABLE}" "Scripts/pandapath.py"
+    COMMAND "${PYTHON_EXECUTABLE}" "-B" "Scripts/pandapath.py"
     OUTPUT_VARIABLE WIN_PANDA_PATH
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
@@ -89,7 +89,7 @@ include_directories("${EIGEN_INCLUDE_DIRS}")
 
 # Run interrogate over the files
 EXECUTE_PROCESS(
-    COMMAND "${PYTHON_EXECUTABLE}" "Scripts/interrogate.py" "${PANDA_BIN}" "${PANDA_LIBS}" "${PANDA_INCLUDE_DIR}"
+    COMMAND "${PYTHON_EXECUTABLE}" "-B" "Scripts/interrogate.py" "${PANDA_BIN}" "${PANDA_LIBS}" "${PANDA_INCLUDE_DIR}"
     OUTPUT_VARIABLE output
     ERROR_VARIABLE errors
     RESULT_VARIABLE return_code
@@ -170,6 +170,6 @@ target_link_libraries(RSNative ${PYTHON_LIBRARIES} ${PANDA_LIBRARIES} ${BULLET_L
 add_custom_command(
     TARGET RSNative
     POST_BUILD
-    COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/Scripts/finalize.py" "$<TARGET_FILE:RSNative>"
+    COMMAND "${PYTHON_EXECUTABLE}" "-B" "${CMAKE_CURRENT_LIST_DIR}/Scripts/finalize.py" "$<TARGET_FILE:RSNative>"
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
