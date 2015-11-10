@@ -39,6 +39,7 @@ class PSSMCameraRig {
 
         void init_cam_nodes(size_t num_splits);
         void compute_pssm_splits(const LMatrix4f& transform, float max_distance, const LVecBase3f &light_vector);
+        LMatrix4f compute_mvp(int cam_index);
         LPoint3f get_interpolated_point(CoordinateOrigin origin, float depth);
         LPoint3f get_snap_offset(LMatrix4f mat, int resolution);
 
@@ -50,6 +51,9 @@ class PSSMCameraRig {
         LPoint3f _curr_far_points[4];
         float _pssm_distance;
         float _sun_distance;
+        bool _use_fixed_film_size;
+        bool _find_tight_frustum;
+        int _resolution;
         NodePath _parent;
 
         PTA_LMatrix4f _camera_mvps;

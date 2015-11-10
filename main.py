@@ -101,7 +101,7 @@ class MainApp(ShowBase):
             model.reparent_to(render)
             model.set_shader_input("metallic", 1.0)
             model.set_shader_input("specular", 0.5)
-            model.set_shader_input("roughness", 0.3)
+            model.set_shader_input("roughness", 0.0)
 
         self.render_pipeline.create_default_skybox()
         self.lights = []

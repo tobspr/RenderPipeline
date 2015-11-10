@@ -13,7 +13,7 @@
 
 
 #define HAVE_PLUGIN(PLUGIN_NAME) ( HAVE_PLUGIN_ ## PLUGIN_NAME )
-#define GET_SETTING(PLUGIN_NAME, SETTING_NAME) PLUGIN_NAME ## __ ## SETTING_NAME
+#define GET_SETTING(PLUGIN_NAME, SETTING_NAME) ( PLUGIN_NAME ## __ ## SETTING_NAME )
 
 #pragma include "CommonFunctions.inc.glsl"
 
