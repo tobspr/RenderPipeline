@@ -33,6 +33,10 @@ class PluginConfig(DebugObject):
         assert(self._loaded)
         return self._properties["version"]
 
+    def get_settings(self):
+        """ Returns a dictionary with all setting handles """
+        return self._settings
+
     def get_setting(self, setting):
         """ Returns a setting by name, shortcut for get_setting_handle(name).value """
         return self.get_setting_handle(setting).value

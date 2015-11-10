@@ -17,7 +17,7 @@ uniform sampler2D GBuffer1;
 uniform sampler2D GBuffer2;
 uniform sampler2D ShadedScene;
 
-#if PSSM_USE_PCF
+#if GET_SETTING(PSSM, use_pcf)
     uniform sampler2DShadow PSSMShadowAtlasPCF;
 #endif
 
@@ -25,7 +25,7 @@ uniform sampler2D PSSMShadowAtlas;
 
 uniform float pssm_split_distance;
 uniform int pssm_split_count;
-uniform mat4 pssm_mvps[PSSM_NUM_SPLITS];
+uniform mat4 pssm_mvps[GET_SETTING(PSSM, split_count)];
 uniform vec3 pssm_sun_vector;
 
 
@@ -35,7 +35,7 @@ vec2 get_split_coord(vec2 local_coord, int split_index) {
 }
 
 float get_shadow(vec2 coord, float refz) {
-    #if PSSM_USE_PCF
+    #if GET_SETTING(PSSM, use_pcf)
         return texture(PSSMShadowAtlasPCF, vec3(coord, refz));
     #else
         float depth_sample = texture(PSSMShadowAtlas, coord, 0).x;
@@ -93,7 +93,7 @@ void main() {
         const float fixed_bias = 0.0002;
         const int num_samples = 32;
         const int num_search_samples = 32;
-        const float filter_radius = 35.0 / PSSM_RESOLUTION;
+        const float filter_radius = 35.0 / GET_SETTING(PSSM, resolution);
         
         vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, sun_vector);
 

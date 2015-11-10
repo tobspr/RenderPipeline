@@ -27,10 +27,6 @@ class Plugin(BasePlugin):
         self._pssm_stage = self.make_stage(PSSMStage)
         self.register_stage(self._pssm_stage)
 
-        self.add_define("PSSM_NUM_SPLITS", self.get_setting("split_count"))
-        self.add_define("PSSM_USE_PCF", self.get_setting("use_pcf"))
-        self.add_define("PSSM_RESOLUTION", self.get_setting("resolution"))
-
     @PluginHook("on_pipeline_created")
     def init(self):
         self.debug("Init pssm ..")

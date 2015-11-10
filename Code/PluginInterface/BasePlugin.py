@@ -48,6 +48,14 @@ class BasePlugin(DebugObject):
         in the pipeline code, the handler gets called """
         self._pipeline.get_plugin_mgr().add_hook_binding(hook_name, handler)
 
+    def define_static_plugin_settings(self):
+        """ Makes all plugin settings available in shaders by using defines.
+        This ignores settings which are marked as runtime changeable. """
+
+        for name, setting in self._config.get_settings().items():
+            if not setting.runtime:
+                self._pipeline.get_stage_mgr().define(self._id + "__" + name, setting.value)
+
     def get_config(self):
         """ Returns a handle to the plugin config object """
         return self._config

@@ -101,6 +101,8 @@ class PluginManager(DebugObject):
         self.debug("Initializing defines")
         for plugin in self._enabled_plugins:
             self._pipeline.get_stage_mgr().define("HAVE_PLUGIN_" + plugin, 1)
-
+            
+        for instance in self._plugin_instances:
+            instance.define_static_plugin_settings()
 
 
