@@ -11,13 +11,16 @@ class Plugin(BasePlugin):
 
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
-        self._jitter_index = 0
-        self._compute_jitters()
+
+        if self.get_setting("use_reprojection"):
+            self._jitter_index = 0
+            self._compute_jitters()
 
     @PluginHook("on_stage_setup")
     def setup_stages(self):
         self.debug("Setting up SMAA stages ..")
         self._smaa_stage = self.make_stage(SMAAStage)
+        self._smaa_stage.set_use_reprojection(self.get_setting("use_reprojection"))
         self.register_stage(self._smaa_stage)
         self._load_textures()
 
@@ -25,12 +28,14 @@ class Plugin(BasePlugin):
     def update(self):
 
         # Apply jitter for temporal aa
-        jitter = self._jitters[self._jitter_index]
-        Globals.base.camLens.set_film_offset(jitter)
-        self._smaa_stage.set_jitter_index(self._jitter_index)
+        if self.get_setting("use_reprojection"):
+            jitter = self._jitters[self._jitter_index]
+            Globals.base.camLens.set_film_offset(jitter)
+            self._smaa_stage.set_jitter_index(self._jitter_index)
 
-        # Sawp jitter index
-        self._jitter_index = 1 - self._jitter_index
+            # Sawp jitter index
+            self._jitter_index = 1 - self._jitter_index
+
 
     def _compute_jitters(self):
         self._jitters = []

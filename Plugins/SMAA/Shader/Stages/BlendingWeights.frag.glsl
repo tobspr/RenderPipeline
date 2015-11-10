@@ -19,8 +19,11 @@ void main() {
     vec2 pixcoord;
     SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
 
-    vec4 subsampleIndices = JitterIndex == 0 ? vec4(1, 1, 1, 0) : vec4(2, 2, 2, 0);
-
+    #if GET_SETTING(SMAA, use_reprojection)
+        vec4 subsampleIndices = JitterIndex == 0 ? vec4(1, 1, 1, 0) : vec4(2, 2, 2, 0);
+    #else
+        vec4 subsampleIndices = vec4(0);
+    #endif
 
     // Actual Fragment shader
     result = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, EdgeTex, AreaTex, SearchTex, subsampleIndices);

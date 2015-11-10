@@ -16,7 +16,11 @@ class SMAAStage(RenderStage):
         RenderStage.__init__(self, "SMAAStage", pipeline)
         self._area_tex = None
         self._search_tex = None
+        self._reprojection = True
         self._jitter_index = PTAInt.empty_array(1)
+
+    def set_use_reprojection(self, reproject):
+        self._reprojection = reproject
 
     def set_area_tex(self, tex):
         self._area_tex = tex
@@ -34,7 +38,8 @@ class SMAAStage(RenderStage):
         self._resolve_target.set_shader_input("LastTex", self._neighbor_targets[1-idx]["color"])
 
     def get_produced_pipes(self):
-        return {"ShadedScene": self._resolve_target['color']}
+        return {"ShadedScene": 
+            self._resolve_target["color"] if self._reprojection else self._neighbor_targets[0]["color"]}
 
     def create(self):
 
@@ -58,7 +63,7 @@ class SMAAStage(RenderStage):
 
         # Neighbor blending
         self._neighbor_targets = []
-        for i in range(2):
+        for i in range(2 if self._reprojection else 1):
 
             target = self._create_target("SMAANeighbor-" + str(i))
             target.add_color_texture(bits=16)
@@ -67,18 +72,20 @@ class SMAAStage(RenderStage):
             self._neighbor_targets.append(target)
 
         # Resolving
-        self._resolve_target = self._create_target("SMAAResolve")
-        self._resolve_target.add_color_texture(bits=16)
-        self._resolve_target.prepare_offscreen_buffer()
-
-        self._resolve_target.set_shader_input("JitterIndex", self._jitter_index)
+        if self._reprojection:
+            self._resolve_target = self._create_target("SMAAResolve")
+            self._resolve_target.add_color_texture(bits=16)
+            self._resolve_target.prepare_offscreen_buffer()
+            self._resolve_target.set_shader_input("JitterIndex", self._jitter_index)
 
     def set_shaders(self):
         self._edge_target.set_shader(self.load_plugin_shader("EdgeDetection.frag.glsl"))
         self._blend_target.set_shader(self.load_plugin_shader("BlendingWeights.frag.glsl"))
         for target in self._neighbor_targets:
             target.set_shader(self.load_plugin_shader("NeighborhoodBlending.frag.glsl"))
-        self._resolve_target.set_shader(self.load_plugin_shader("Resolve.frag.glsl"))
+
+        if self._reprojection:
+            self._resolve_target.set_shader(self.load_plugin_shader("Resolve.frag.glsl"))
 
     def resize(self):
         RenderStage.resize(self)

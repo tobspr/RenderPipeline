@@ -13,6 +13,7 @@
 
 // #define SMAA_PREDICATION 1
 
+
 // SMAA defines its own saturate, make sure we don't run into conflicts
 #ifdef saturate
 #undef saturate
