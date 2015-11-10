@@ -8,3 +8,24 @@ if sys.version_info < (3, 0):
 else:
     from .yaml_py3 import load as YAMLLoad
     from .yaml_py3 import YAMLError as YAMLError
+
+
+def YAMLEasyLoad(filename):
+    """ This method is a wrapper arround YAMLLoad, and provides error checking """
+    from direct.stdpy.file import open
+    from ...Util.DebugObject import DebugObject
+
+    try:
+        with open(filename, "r") as handle:
+            parsed_yaml = YAMLLoad(handle)
+    except IOError as msg:
+        DebugObject.global_error("YAMLLoader", "Could not find or open file:", filename)
+        DebugObject.global_error("YAMLLoader", msg)
+        raise Exception("Failed to load YAML file: File not found")
+
+    except YAMLError as msg:
+        DebugObject.global_error("YAMLLoader", "Invalid yaml-syntax in file:", filename)
+        DebugObject.global_error("YAMLLoader", msg)
+        raise Exception("Failed to load YAML file: Invalid syntax")
+
+    return parsed_yaml

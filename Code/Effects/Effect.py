@@ -2,8 +2,9 @@
 import copy
 
 from panda3d.core import Shader
+from direct.stdpy.file import open
 
-from ..External.PyYAML import YAMLLoad, YAMLError
+from ..External.PyYAML import YAMLEasyLoad
 from ..Util.DebugObject import DebugObject
 from ..Util.ShaderTemplate import ShaderTemplate
 
@@ -61,23 +62,11 @@ class Effect(DebugObject):
         """ Loads the effect from the given filename """
         self._source = filename
         self._effect_name = self._convert_filename_to_name(filename)
-        parsed_yaml = None
         self._shader_paths = {}
         self._shader_objs = {}
 
-        # Get file content and parse it
-        try:
-            with open(filename, "r") as handle:
-                parsed_yaml = YAMLLoad(handle)
-        except IOError as msg:
-            self.error("Could not find or open file:", filename, "!")
-            self.error(msg)
-            return False
-        except YAMLError as msg:
-            self.error("Invalid yaml-syntax in file:", filename, "!")
-            self.error(msg)
-            return False
-
+        # Load the YAML file
+        parsed_yaml = YAMLEasyLoad(filename)
         self._parse_content(parsed_yaml)
 
         # Construct a shader for each pass

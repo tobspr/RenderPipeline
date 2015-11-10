@@ -4,15 +4,10 @@ from panda3d.core import Texture, Vec2
 # Load plugin api
 from .. import *
 
-
 from SMAAStage import SMAAStage
 
 # Create the main plugin
 class Plugin(BasePlugin):
-
-    NAME = "SMAA"
-    DESCRIPTION = """ This plugin adds support for SMAA T2 """
-    SETTINGS = {}
 
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)

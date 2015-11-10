@@ -8,10 +8,6 @@ from .HBAOStage import HBAOStage
 # Create the main plugin
 class Plugin(BasePlugin):
 
-    NAME = "HBAO"
-    DESCRIPTION = """ This plugin adds support for HBAO """
-    SETTINGS = {}
-
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
 

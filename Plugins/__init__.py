@@ -13,7 +13,6 @@ sys.path.insert(0, "../")
 # Include a subset of the pipeline classes and the plugin api
 from Code.PluginInterface.BasePlugin import BasePlugin
 from Code.PluginInterface.PluginHook import PluginHook, SettingChanged
-from Code.PluginInterface.PluginSettings import PS_Int, PS_Float, PS_Enum, PS_Bool
 from Code.Util.Image import Image
 from Code.RenderStage import RenderStage
 from Code.RenderTarget import RenderTarget

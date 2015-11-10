@@ -12,3 +12,10 @@ def rgb_from_string(text, min_brightness=0.6):
     return (min_brightness + r / 255.0 * neg_inf,
             min_brightness + g / 255.0 * neg_inf,
             min_brightness + b / 255.0 * neg_inf)
+
+
+def consume(dictionary, key):
+    """ Reads a value from a dict, and removes the key"""
+    value = dictionary[key]
+    del dictionary[key]
+    return value

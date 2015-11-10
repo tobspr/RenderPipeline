@@ -37,6 +37,15 @@ class DebugObject(object):
             Fore.YELLOW + Style.BRIGHT + " " + ' '.join([str(i) for i in args[1:]]) + \
             Fore.RESET + Style.RESET_ALL)
 
+    @staticmethod
+    def global_error(*args):
+        """ This method can be used from a static context to print an error.
+        The first argument should be the name of the object / context, all
+        other arguments should be the message. """
+        print(Fore.RED + Style.BRIGHT + "\n\n\n[!!!] " + \
+            (args[0]).ljust(23) + " " + ' '.join([str(i) for i in args[1:]]) + \
+            "\n\n\n" + Fore.RESET + Style.RESET_ALL)
+
     def __init__(self, name=None):
         """ Initiates the DebugObject with a given name. The name should be
         representative about the class. If no name is given, the classname

@@ -1,11 +1,14 @@
 
-from __future__ import division
+from __future__ import division, print_function
 
 from math import ceil
 
+from panda3d.core import NodePath, ShaderAttrib
+from direct.stdpy.file import isfile
+
 from ..Globals import Globals
 from ..Util.DebugObject import DebugObject
-from panda3d.core import NodePath, ShaderAttrib
+from .PluginConfig import PluginConfig
 
 class BasePlugin(DebugObject):
 
@@ -14,35 +17,54 @@ class BasePlugin(DebugObject):
     def __init__(self, pipeline):
         """ Constructs the plugin, also checks if all plugin properties are set
         properly """
-        DebugObject.__init__(self, "Plugin::" + self.NAME)
+
+        # Find the plugin name:
+        # The __module__ contains something like Plugins.XXX.YYY
+        # We want XXX so we take the second parameter
+        self._id = str(self.__class__.__module__).split(".")[1] 
+        DebugObject.__init__(self, "Plugin::" + self._id)
         self._pipeline = pipeline
+        self._config = PluginConfig()
 
         # Set a special output color for plugins
         self._set_debug_color("magenta", "bright")
-        
+        self._init_bindings()
+        self._load_config()
+
+    def _init_bindings(self):
+        """ Binds all hooks marked with @PluginHook """
         for attr in dir(self):
             val = getattr(self, attr)
             if hasattr(val, "hook_id"):
                 self._bind_to_hook(val.hook_id, val)
 
-    def __getitem__(self, name):
-        """ Handy function to access the settings of the plugin """
-        return self.SETTINGS[name].value()
+    def _load_config(self):
+        """ Loads the plugin configuration from the plugin directory """
+        expected_path = "Plugins/" + self._id + "/config.yaml"
+        self._config.load(expected_path)
 
     def _bind_to_hook(self, hook_name, handler):
         """ Binds the handler to a given hook_name. When the hook is executed
         in the pipeline code, the handler gets called """
         self._pipeline.get_plugin_mgr().add_hook_binding(hook_name, handler)
 
+    def get_config(self):
+        """ Returns a handle to the plugin config object """
+        return self._config
+
+    def get_setting(self, name):
+        """ Shortcut for get_config().get_setting() """
+        return self._config.get_setting(name)
+
     def get_resource(self, pth):
         """ Converts a local path from the plugins Resource/ directory into
         an absolute path """
-        return "Plugins/" + self.NAME + "/Resources/" + pth.lstrip("/")
+        return "Plugins/" + self._id + "/Resources/" + pth.lstrip("/")
 
     def get_shader_resource(self, pth):
         """ Converts a local path from the plugins Shader/ directory into
         an absolute path """
-        return "Plugins/" + self.NAME + "/Shader/" + pth.lstrip("/")
+        return "Plugins/" + self._id + "/Shader/" + pth.lstrip("/")
 
     def register_stage(self, stage):
         """ Shortcut to register a render stage """

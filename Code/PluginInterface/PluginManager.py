@@ -6,7 +6,7 @@ from direct.stdpy.file import open, isfile
 
 from ..Util.DebugObject import DebugObject
 
-from ..External.PyYAML import YAMLLoad, YAMLError
+from ..External.PyYAML import YAMLEasyLoad
 
 class PluginManager(DebugObject):
 
@@ -25,10 +25,12 @@ class PluginManager(DebugObject):
         self.debug("Loading plugins ..")
         failed_plugins = []
         for plugin in self._enabled_plugins:
-            self.debug("Loading plugin", plugin)
             plugin_class = self._try_load_plugin(plugin)
             if plugin_class:
-                self._plugin_instances.append(plugin_class(self._pipeline))
+                plugin_instance = plugin_class(self._pipeline)
+                self._plugin_instances.append(plugin_instance)
+                self.debug("Loaded", plugin_instance.get_config().get_name(), "version",
+                    plugin_instance.get_config().get_version())
             else:
                 failed_plugins.append(plugin)
 
@@ -42,17 +44,7 @@ class PluginManager(DebugObject):
         plugin_cfg = "Config/plugins.yaml"
 
         # Get file content and parse it
-        try:
-            with open(plugin_cfg, "r") as handle:
-                parsed_yaml = YAMLLoad(handle)
-        except IOError as msg:
-            self.error("Could not find or open plugin config:", plugin_cfg, "!")
-            self.error(msg)
-            return False
-        except YAMLError as msg:
-            self.error("Invalid yaml-syntax in plugin config:", plugin_cfg, "!")
-            self.error(msg)
-            return False
+        parsed_yaml = YAMLEasyLoad(plugin_cfg)
 
         # Find root key
         if "enabled" not in parsed_yaml:

@@ -1,0 +1,12 @@
+
+name: Atmospheric Scattering
+author: tobspr <tobias.springer1@gmail.com>
+version: 1.0
+description: >
+    This plugin adds support for Atmospheric Scattering, based on the work from
+    Eric Bruneton (http://evasion.inrialpes.fr/~Eric.Bruneton/).
+    It also adds support for atmospheric fog.
+
+settings:
+    
+    # TODO

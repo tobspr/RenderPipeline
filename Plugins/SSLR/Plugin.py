@@ -8,10 +8,6 @@ from SSLRStage import SSLRStage
 # Create the main plugin
 class Plugin(BasePlugin):
 
-    NAME = "SSLR"
-    DESCRIPTION = """ This plugin adds support for Screen Space Local Reflections """
-    SETTINGS = {}
-
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
 

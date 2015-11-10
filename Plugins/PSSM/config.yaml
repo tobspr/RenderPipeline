@@ -1,0 +1,65 @@
+
+name: PSSM
+author: tobspr <tobias.springer1@gmail.com>
+version: 1.0
+description: >
+    This plugin adds support for Parallel Split Shadow Maps (PSSM),
+    and also sun shading. 
+
+settings:
+
+    pssm_distance:
+        type: float
+        range: [10.0, 3000.0]
+        default: 70.0
+        runtime: true
+        label: Maximum shadow distance
+        description: >
+            This controlls the maximum distance up to where shadows
+            are rendered. A higher distance means further shadows,
+            but also a worse shadow quality.
+
+    sun_distance:
+        type: float
+        range: [100.0, 10000.0]
+        default: 500.0
+        label: Sun distance
+        description: >
+            This controlls how far the sun is away from the scene.
+            Basically you don't need to adjust this setting, but in
+            case you get artifacts, try increasing this setting.
+
+    split_count:
+        type: int
+        range: [2, 10]
+        default: 8
+        label: Amount of PSSM Splits / Cascades
+        description: >
+            This controlls how many splits are used for the PSSM.
+            A higher amount of splits increases the shadow map
+            detail and quality, but also increases the performance
+            cost by a lot. For every split, the scene has to get
+            rendered again, so be careful when choosing high amount
+            of splits.
+
+    resolution:
+        type: int
+        range: [128, 3072]
+        default: 2048
+        label: Shadowmap resolution
+        description: >
+            This controlls the resolution of the individual shadowmaps
+            of the splits. If you choose a resolution of 512 for example,
+            and you have 10 splits, then that makes a total resolution
+            of 5120 * 512 for the shadow map. Be careful when choosing high
+            defaults, the shadow map will soon take a huge amount of VRam.
+
+    use_pcf:
+        type: bool
+        default: true
+        label: Use hardware filtering (PCF)        
+        description: >
+            This setting turns PCF on or off. It provides a better shadow
+            quality, and theoretically a better performance. However, not all
+            GPU's seem to support it.
+

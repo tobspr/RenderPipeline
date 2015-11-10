@@ -4,7 +4,7 @@ from panda3d.core import Vec3
 from direct.stdpy.file import isfile, open
 
 from .DebugObject import DebugObject
-from ..External.PyYAML import YAMLLoad, YAMLError
+from ..External.PyYAML import YAMLEasyLoad
 
 class SettingsLoader(DebugObject):
 
@@ -46,19 +46,8 @@ class SettingsLoader(DebugObject):
             self.error("File not found:", filename)
             return
 
-        # Get file content and parse it
-        try:
-            with open(filename, "r") as handle:
-                parsed_yaml = YAMLLoad(handle)
-        except IOError as msg:
-            self.error("Could not find or open config file:", filename)
-            self.error(msg)
-            return False
-        except YAMLError as msg:
-            self.error("Invalid yaml-syntax in config file:", filename)
-            self.error(msg)
-            return False
-
+        # Load actual settings file
+        parsed_yaml = YAMLEasyLoad(filename)
         self._file_loaded = True
 
         if "settings" not in parsed_yaml:
