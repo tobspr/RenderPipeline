@@ -188,8 +188,11 @@ class MountManager(DebugObject):
         # Mount shaders under a different name to access them from the effects
         vfs.mount_loop(join(self._base_path, 'Shader'), 'ShaderMount', 0)
 
-        # sys.path.insert(0, ".")
-        # sys.path.insert(0, "./Code/")
+        # Add plugin folder to the include path
+        sys.path.insert(0, join(self._base_path, 'Plugins'))
+
+        # Add current folder to the include path
+        sys.path.insert(0, self._base_path)
 
         # Mount the pipeline temp path:
         # If no write path is specified, use a virtual ramdisk
