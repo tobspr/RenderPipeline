@@ -3,7 +3,7 @@
 # To disable a plugin, comment out the line with '#'
 
 enabled:
-    # - HBAO
+    - HBAO
     - Scattering
     # - SSLR
     - SMAA

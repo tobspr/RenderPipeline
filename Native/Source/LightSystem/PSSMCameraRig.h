@@ -4,6 +4,7 @@
 #include "luse.h"
 #include "camera.h"
 #include "nodePath.h"
+
 #include <vector>
 
 
@@ -20,14 +21,18 @@ class PSSMCameraRig {
         void set_use_fixed_film_size(bool flag);
         void set_use_tight_frustum(bool flag);
         void set_resolution(int resolution);
+        void set_use_stable_csm(bool flag);
 
-        void fit_to_camera(NodePath &cam_node, const LVecBase3f &light_vector);    
+        void fit_to_camera(NodePath &cam_node, const LVecBase3f &light_vector);
+
+        void reset_film_size_cache();
 
         NodePath get_camera(int index);
 
 
         void reparent_to(NodePath &parent);
         const PTA_LMatrix4f &get_mvp_array();
+        const PTA_float &get_rotation_array();
 
     public:
 
@@ -48,6 +53,7 @@ class PSSMCameraRig {
         LPoint3f get_snap_offset(LMatrix4f mat, int resolution);
 
         vector<NodePath> _cam_nodes;
+        vector<LVecBase2f> _max_film_sizes;
 
         // Current near and far points
         // Order: UL, UR, LL, LR (See CoordinateOrigin)
@@ -57,10 +63,12 @@ class PSSMCameraRig {
         float _sun_distance;
         bool _use_fixed_film_size;
         bool _find_tight_frustum;
+        bool _use_stable_csm;
         int _resolution;
         NodePath _parent;
 
         PTA_LMatrix4f _camera_mvps;
+        PTA_float _camera_rotations;
 
 };
 

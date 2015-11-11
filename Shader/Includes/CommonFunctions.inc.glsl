@@ -8,6 +8,8 @@
 
 
 
+
+
 // Fixes the cubemap direction
 vec3 fix_cubemap_coord(vec3 coord) {
     return normalize(coord.xzy * vec3(1,-1,1));
@@ -48,5 +50,21 @@ vec3 texcoord_to_cubemap(int cubemap_size, ivec2 coord, out ivec2 clamped_coord,
 vec3 texcoord_to_cubemap(int cubemap_size, ivec2 coord) {
     ivec2 clamped_coord; int face;
     return texcoord_to_cubemap(cubemap_size, coord, clamped_coord, face);
+}
+
+
+// Rotate a vector by an angle
+vec2 rotate(vec2 vector, float angle) {
+    float cos_alpha = cos(angle);
+    float sin_alpha = sin(angle);
+    return vec2(
+        vector.x * cos_alpha - vector.y * sin_alpha,
+        vector.x * sin_alpha + vector.y * cos_alpha 
+    );
+}
+
+// Returns a coordinate which can be used for bilateral upscaling
+ivec2 get_bilateral_coord(ivec2 coord) {
+    return (coord + 1) / 2 - 1;
 }
 

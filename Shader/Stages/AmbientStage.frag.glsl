@@ -19,6 +19,10 @@ uniform vec3 cameraPosition;
     uniform samplerCube ScatteringCubemap;
 #endif
 
+#if HAVE_PLUGIN(HBAO)
+    uniform sampler2D AmbientOcclusion;
+#endif
+
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
@@ -37,6 +41,8 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
 
 
 void main() {
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
 
     vec3 view_vector = normalize(m.position - cameraPosition);
@@ -75,6 +81,7 @@ void main() {
 
             // Cheap irradiance
             env_amb = textureLod(ScatteringCubemap, m.normal, 5).xyz;
+            // env_amb *= 0;
 
 
         #endif
@@ -84,7 +91,7 @@ void main() {
         env_metallic *= 0.0 + pow(LxH, 1.0) * 1.0;
 
         vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 5.0 )) 
-                           * (1.0 - m.roughness)) * vec3(0.1);
+                           * (1.0 - m.roughness)) * vec3(0.2) * max(0, m.normal.z) * 0;
 
         vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
 
@@ -94,9 +101,15 @@ void main() {
         ambient.xyz += diffuse_ambient + specular_ambient;
         ambient.xyz += env_amb * 0.05 * m.diffuse * (1.0 - m.metallic);
 
-        // ambient.xyz = vec3( pow(1.0 - NxV, 10.0) );
+        #if HAVE_PLUGIN(HBAO)
+            ambient.xyz = max(ambient.xyz, vec3(0));
+            float occlusion = texelFetch(AmbientOcclusion, coord, 0).x;
+            ambient *= pow(occlusion, 1.0);
 
+        #endif
     }
     
+    ambient.w = 0.0;
+
     result = texture(ShadedScene, texcoord) * 1 +  ambient * 1;
 }

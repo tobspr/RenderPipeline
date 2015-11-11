@@ -68,7 +68,6 @@ class MainApp(ShowBase):
         # Create the pipeline
         self.render_pipeline.create()
 
-
         render.set_shader_input("roughness", 0.5)
         render.set_shader_input("metallic", 0.0)
         render.set_shader_input("specular", 0.1)
@@ -80,6 +79,7 @@ class MainApp(ShowBase):
         
         # Load some models
         # model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        # model = loader.loadModel("Models/Test.ignore/Statue.bam")
         model = loader.loadModel("Models/Test.ignore/Car0.bam")
         # model = loader.loadModel("box")
         # model.set_scale(0.2)
@@ -101,7 +101,7 @@ class MainApp(ShowBase):
             model.reparent_to(render)
             model.set_shader_input("metallic", 1.0)
             model.set_shader_input("specular", 0.5)
-            model.set_shader_input("roughness", 0.0)
+            model.set_shader_input("roughness", 0.1)
 
         self.render_pipeline.create_default_skybox()
         self.lights = []

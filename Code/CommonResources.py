@@ -40,6 +40,7 @@ class CommonResources(DebugObject):
         self._pta_current_view_proj_mat_nojitter = PTAMat4.empty_array(1)
         self._pta_last_view_proj_mat = PTAMat4.empty_array(1)
         self._pta_view_mat_zup = PTAMat4.empty_array(1)
+        self._pta_proj_mat = PTAMat4.empty_array(1)
 
         stage_mgr = self._pipeline.get_stage_mgr()
         stage_mgr.add_input("mainCam", self._showbase.cam)
@@ -48,6 +49,7 @@ class CommonResources(DebugObject):
         stage_mgr.add_input("currentViewProjMat", self._pta_current_view_proj_mat)
         stage_mgr.add_input("lastViewProjMatNoJitter", self._pta_last_view_proj_mat)
         stage_mgr.add_input("currentViewMatZup", self._pta_view_mat_zup)
+        stage_mgr.add_input("currentProjMat", self._pta_proj_mat)
         stage_mgr.add_input("currentViewProjMatNoJitter", self._pta_current_view_proj_mat_nojitter)
 
         # Create a converter matrix to transform coordinates from Yup to Zup
@@ -113,6 +115,7 @@ class CommonResources(DebugObject):
         # Compute view projection matrices
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
         self._pta_current_view_proj_mat[0] = view_transform.get_mat() * proj_mat
+        self._pta_proj_mat[0] = proj_mat
 
         # Remove jitter
         proj_mat.set_cell(1, 0, 0.0)

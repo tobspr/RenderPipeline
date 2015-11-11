@@ -30,7 +30,7 @@ assert-abort #f
 # wrong cased directory paths :(
 vfs-case-sensitive #f
 
-transform-cache #t
+transform-cache #f
 state-cache #t
 
 

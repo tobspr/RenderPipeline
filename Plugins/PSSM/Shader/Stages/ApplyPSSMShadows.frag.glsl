@@ -1,5 +1,7 @@
 #version 400
 
+#pragma optionNV (unroll all)
+
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/GBufferPacking.inc.glsl"
@@ -26,6 +28,7 @@ uniform sampler2D PSSMShadowAtlas;
 uniform float pssm_split_distance;
 uniform int pssm_split_count;
 uniform mat4 pssm_mvps[GET_SETTING(PSSM, split_count)];
+uniform float pssm_rotations[GET_SETTING(PSSM, split_count)];
 uniform vec3 pssm_sun_vector;
 
 
@@ -84,18 +87,30 @@ void main() {
 
     } else {
 
+
         // Get the MVP for the current split        
         mat4 mvp = pssm_mvps[split];
 
+        // Rotation is from 0 .. 1 whereas 0 means 0 degree and 1 means 90 degree
+        // So 90 degree is half pi:
+        float rotation = pssm_rotations[split] * HALF_PI;
+
         // Get the dynamic and fixed bias
-        const float slope_bias = 0.005;
+        const float slope_bias = 0.009;
         const float normal_bias = 0.005;
-        const float fixed_bias = 0.0002;
+        const float fixed_bias = 0.0001;
         const int num_samples = 32;
-        const int num_search_samples = 32;
-        const float filter_radius = 35.0 / GET_SETTING(PSSM, resolution);
+        const int num_search_samples = 16;
+
+        // const int num_samples = 1;
+        // const int num_search_samples = 1;
+
+        const float filter_radius = 15.0 / GET_SETTING(PSSM, resolution);
         
         vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, sun_vector);
+
+        vec2 split_min = get_split_coord(vec2(0), split);
+        vec2 split_max = get_split_coord(vec2(1), split);
 
         // Project the current pixel to the view of the light
         vec3 projected = project(mvp, biased_pos);
@@ -106,7 +121,7 @@ void main() {
         float ref_depth = projected.z - fixed_bias;
 
         // Find filter size
-        vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);
+        vec4 filter_size = find_filter_size(mvp, sun_vector, filter_radius, rotation);
 
         // Find penumbra size
 
@@ -114,30 +129,40 @@ void main() {
         float sum_blockers = 0.0;
         for (int i = 0; i < num_search_samples; ++i) {
 
-            vec2 offset = poisson_disk_2D_32[i] * filter_size;
-            float sampled_depth = texture(PSSMShadowAtlas, projected_coord + offset).x;
+            vec2 offset = poisson_disk_2D_16[i];
+            float sampled_depth = texture(PSSMShadowAtlas,
+                projected_coord + 
+                offset.xy * filter_size.xy + 
+                offset.xy * filter_size.zw).x;
             float factor = step(sampled_depth, ref_depth);
             num_blockers += factor;
             sum_blockers += sampled_depth * factor;
         }
 
         float avg_blocker_depth = sum_blockers / num_blockers;
-        float penumbra_size = max(0, ref_depth - avg_blocker_depth) / ref_depth * 20.0;
+        float penumbra_size = max(0, ref_depth - avg_blocker_depth) / ref_depth * 100.0;
 
 
-        penumbra_size = max(0.001, penumbra_size);
+        // penumbra_size = max(0.001, min(1.0, penumbra_size));
         filter_size *= penumbra_size;
+
 
         // Do the actual filtering
         for (int i = 0; i < num_samples; ++i) {
-            vec2 offset = poisson_disk_2D_32[i] * filter_size;
-            shadow_factor += get_shadow(projected_coord + offset, ref_depth);
+            vec2 offset = poisson_disk_2D_32[i];
+            shadow_factor += get_shadow(
+                projected_coord +
+                offset.xy * filter_size.xy + 
+                offset.xy * filter_size.zw, ref_depth);
         }
 
         shadow_factor /= num_samples;
 
-        shadow_factor *= 1.4;
+
+        shadow_factor = shadow_factor * (1.3) -  0.3;
+        // shadow_factor = pow(shadow_factor, 2.2);
         shadow_factor = saturate(shadow_factor);
+
     }
 
     // Compute the light influence
@@ -146,8 +171,8 @@ void main() {
 
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor);
 
-    float split_f = split / float(pssm_split_count);
-    // lighting_result *= rvec3(1 - split_f, split_f, 0);
+    // float split_f = saturate(split / float(pssm_split_count));
+    // lighting_result *= vec3(1 - split_f, split_f, 0);
 
 
     result = scene_color + vec4(lighting_result, 0);

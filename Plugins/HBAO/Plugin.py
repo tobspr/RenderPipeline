@@ -1,21 +1,27 @@
 
-# Load plugin api
+# Load the plugin api
 from .. import *
 
-# Load some plugin classes
-from .HBAOStage import HBAOStage
+from HBAOStage import HBAOStage
 
-# Create the main plugin
 class Plugin(BasePlugin):
 
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
 
-    @PluginHook("on_shader_create")
-    def create_stages(self):
-        pass
+    @PluginHook("on_stage_setup")
+    def setup_stages(self):
+        self._hbao_stage = self.create_stage(HBAOStage)
+
+        # Make the ambient stage use our output
+        get_internal_stage_handle(AmbientStage).add_pipe_requirement("AmbientOcclusion")
+
 
     @PluginHook("on_pipeline_created")
-    def reload_shaders(self):
+    def init(self):
+        pass
+
+    @SettingChanged("some_setting")
+    def update_some_setting(self):
         pass
 

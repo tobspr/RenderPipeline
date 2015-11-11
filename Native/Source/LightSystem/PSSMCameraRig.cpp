@@ -11,8 +11,10 @@ PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
     _sun_distance = 500.0;
     _use_fixed_film_size = false;
     _find_tight_frustum = true;
+    _use_stable_csm = true;
     _resolution = 512;
     _camera_mvps = PTA_LMatrix4f::empty_array(num_splits);
+    _camera_rotations = PTA_float::empty_array(num_splits);
     init_cam_nodes(num_splits);
 }
 
@@ -44,8 +46,21 @@ void PSSMCameraRig::set_resolution(int resolution) {
     _resolution = resolution;
 }
 
+void PSSMCameraRig::set_use_stable_csm(bool flag) {
+    _use_stable_csm = flag;
+}
+
+void PSSMCameraRig::reset_film_size_cache() {
+    for (size_t i = 0; i < _max_film_sizes.size(); ++i) {
+        _max_film_sizes[i].set(0, 0);
+    }
+}
+
+
+
 void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
     _cam_nodes.reserve(num_splits);
+    _max_film_sizes.resize(num_splits);
     for (size_t i = 0; i < num_splits; ++i)
     {
         Lens *lens = new OrthographicLens();
@@ -53,7 +68,7 @@ void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
         lens->set_near_far(1, 1000);
         PT(Camera) cam = new Camera("pssm-cam-" + to_string(i), lens);
         _cam_nodes.push_back(NodePath(cam));
-
+        _max_film_sizes[i].set(0, 0);
     }
 }
 
@@ -96,6 +111,10 @@ LPoint3f PSSMCameraRig::get_interpolated_point(CoordinateOrigin origin, float de
 
 const PTA_LMatrix4f &PSSMCameraRig::get_mvp_array() {
     return _camera_mvps;
+}
+
+const PTA_float &PSSMCameraRig::get_rotation_array() {
+    return _camera_rotations;
 }
 
 
@@ -182,7 +201,8 @@ void merge_points_interleaved(LVecBase3f (&dest)[8], LVecBase3f const (&array1)[
 
 
 LVecBase3f get_angle_vector(float progress) {
-    LVecBase3f result = (0, 1 - progress, progress);
+    LVecBase3f result(0, 1.0 - progress, progress);
+    // LVecBase3f result(1 - progress, 0, progress);
 	result.normalize();
     return result;
 }
@@ -221,24 +241,30 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         _cam_nodes[i].set_pos(cam_start);
         _cam_nodes[i].look_at(split_mid);
 
-        if (!_use_fixed_film_size) {
+        // Reset rotation
+        _camera_rotations[i] = 0.0;
 
-            // Collect all points which define the frustum
-            LVecBase3f proj_points[8];
-            merge_points_interleaved(proj_points, start_points, end_points);
+
+        // Collect all points which define the frustum
+        LVecBase3f proj_points[8];
+        merge_points_interleaved(proj_points, start_points, end_points);
+        LVecBase3f best_min_extent, best_max_extent;
+
+        // Disable angle-finding in case we don't use a tight frustun
+        if (_find_tight_frustum) {
 
             // Try out all angles
             const int num_iterations = 90;
             float best_angle = 0.0;
             float best_angle_score = 1e20;
-            LVecBase3f best_min_extent, best_max_extent;
+            float normal_angle_score = 0;
 
-            for (float progress = 0.0; progress < 1.0; progress += 1.0 / num_iterations) {
+            for (float progress = 0.0; progress < 1.0; progress += 1.0 / (float)num_iterations) {
 
                 // Apply the angle to the camera rotation
                 _cam_nodes[i].look_at(split_mid, get_angle_vector(progress));
 
-                // Find minimum and maximum extends of the points
+                // Find minimum and maximum extents of the points
                 LVecBase3f min_extent, max_extent;
                 LMatrix4f merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
                 find_min_max_extents(min_extent, max_extent, merged_transform, proj_points, cam);
@@ -251,40 +277,55 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
                 // since we render less objects then
                 float score = film_size.get_x() * film_size.get_y();
 
+                // cout << "\tAngle " << progress << " has a score of " << score << " with a vec of " << get_angle_vector(progress) << endl;
+
                 if (score < best_angle_score) {
                     best_angle = progress;
                     best_angle_score = score;
                     best_min_extent = min_extent;
                     best_max_extent = max_extent;
                 }
+
+                if (progress == 0.0) {
+                    normal_angle_score = score;
+                }
             }
-
-            cout << "Best angle was at" << best_angle << " with an area of " << best_angle_score << endl;    
             _cam_nodes[i].look_at(split_mid, get_angle_vector(best_angle));
+            _camera_rotations[i] = best_angle;
+        } else {
+            // Find minimum and maximum extents of the points
+            LMatrix4f merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
+            find_min_max_extents(best_min_extent, best_max_extent, merged_transform, proj_points, cam);
+        }
 
-            LVecBase2f film_size, film_offset;
-            get_film_properties(film_size, film_offset, best_min_extent, best_max_extent);
+        LVecBase2f film_size, film_offset;
+        get_film_properties(film_size, film_offset, best_min_extent, best_max_extent);
 
-            // Compute new film size
-            cam->get_lens()->set_film_size(film_size);
+        if (_use_fixed_film_size) {
+            // In case we use a fixed film size, store the maximum film size, and
+            // only change the film size if a new maximum is there
+            if (_max_film_sizes[i].get_x() < film_size.get_x()) _max_film_sizes[i].set_x(film_size.get_x());
+            if (_max_film_sizes[i].get_y() < film_size.get_y()) _max_film_sizes[i].set_y(film_size.get_y());
 
-            // Compute new film offset
-            cam->get_lens()->set_film_offset(film_offset);
-
-            // cam->get_lens()->set_near_far(50, max_extent.get_z());
-            cam->get_lens()->set_near_far(best_min_extent.get_z(), best_max_extent.get_z());
+            cam->get_lens()->set_film_size(_max_film_sizes[i]);
 
         } else {
-
-            cam->get_lens()->set_film_size(30, 30);
-            cam->get_lens()->set_near_far(400, 600.0);
+            
+            // Set actual film size
+            cam->get_lens()->set_film_size(film_size);
         }
+
+        // Compute new film offset
+        cam->get_lens()->set_film_offset(film_offset);
+
+        cam->get_lens()->set_near_far(10, best_max_extent.get_z());
+
 
         // Compute the camera MVP
         LMatrix4f mvp = compute_mvp(i);
 
         // Stable CSM Snapping
-        if (false) {
+        if (_use_stable_csm) {
             LPoint3f snap_offset = get_snap_offset(mvp, _resolution);
             _cam_nodes[i].set_pos(_cam_nodes[i].get_pos() + snap_offset);
 

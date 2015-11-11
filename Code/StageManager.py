@@ -27,6 +27,7 @@ class StageManager(DebugObject):
         "ApplyLightsStage",
         "PSSMStage",
         "ScatteringStage",
+        "HBAOStage",
         "AmbientStage",
         "SSLRStage",
         "SMAAStage",

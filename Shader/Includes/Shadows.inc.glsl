@@ -7,11 +7,13 @@ vec3 project(mat4 mvp, vec3 pos) {
 }
 
 
-vec2 find_filter_size(mat4 projection, vec3 light, float sample_radius) {
+
+
+vec4 find_filter_size(mat4 projection, vec3 light, float sample_radius, float rotation) {
 
     // Scale y component by the slope
     light = normalize(light);
-    float slope = max(0.05, abs(light.z * light.z) );
+    float slope = max(0.05, abs(light.z) );
 
 
     // Find an arbitrary tangent and bitangent to the given normal
@@ -22,15 +24,32 @@ vec2 find_filter_size(mat4 projection, vec3 light, float sample_radius) {
     // tangent = vec3(1, 0, 0);
     // binormal = vec3(0, 1, 0);
     
-    // Project 'em all
-    vec3 proj_origin = project(projection, vec3(0));
-    vec3 proj_offset = project(projection, tangent + binormal);
+    // tangent = vec3(0, 0, 0);
+    // binormal = vec3(1, 1, 1);
+    
+    // Project everything
+    // TODO: We could actually only use the 3x3 part of the mat and save the
+    // origin projection.
+    vec2 proj_origin = project(projection, vec3(0)).xy;
+    vec2 proj_tangent = (project(projection, tangent).xy - proj_origin);
+    vec2 proj_binormal = (project(projection, binormal).xy - proj_origin);
+
+    proj_tangent = rotate(proj_tangent, -rotation);
+    proj_binormal = rotate(proj_binormal, -rotation);
+
+
+    // return proj_binormal.xyxy * sample_radius;
+
+    return vec4(
+            proj_tangent,
+            proj_binormal) * sample_radius;
     // vec3 proj_offset = project(projection, vec3(1, 1, 1));
 
     // Get the difference between the projected vectors
-    vec2 delta = abs(proj_offset - proj_origin).xy;
+    // vec2 delta = abs(proj_offset - proj_origin).xy;
 
-    return vec2(delta.x, delta.y / slope) * sample_radius;
+    // return vec2(delta.x, delta.y / slope) * sample_radius;
+    // return vec2(delta) * sample_radius;
 }
 
 

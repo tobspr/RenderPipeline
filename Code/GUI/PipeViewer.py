@@ -95,6 +95,9 @@ class PipeViewer(DraggableWindow):
                             pos=(0, 1, -95 - pipe_idx * pipe_height))
 
 
+                if type(pipe_tex) == list or type(pipe_tex) == tuple:
+                    pipe_tex = pipe_tex[0]
+
                 if pipe_tex.get_z_size() > 1:
                     icon_file = "Data/GUI/OnscreenDebugger/IconTexture.png"
 

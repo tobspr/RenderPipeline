@@ -74,13 +74,11 @@ class BasePlugin(DebugObject):
         an absolute path """
         return "Plugins/" + self._id + "/Shader/" + pth.lstrip("/")
 
-    def register_stage(self, stage):
-        """ Shortcut to register a render stage """
-        self._pipeline.get_stage_mgr().add_stage(stage)
-
-    def make_stage(self, stage_type):
+    def create_stage(self, stage_type):
         """ Shortcut to create a new render stage from a given class type """
-        return stage_type(self._pipeline)
+        stage_handle = stage_type(self._pipeline)
+        self._pipeline.get_stage_mgr().add_stage(stage_handle)
+        return stage_handle
 
     def add_define(self, key, value):
         """ Adds a new define. This should be called in the on_stage_setup hook """

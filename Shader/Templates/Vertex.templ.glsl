@@ -21,6 +21,13 @@ uniform mat4 tpose_world_to_model;
 
 out layout(location=0) VertexOutput vOutput;
 
+
+uniform struct {
+    vec4 diffuse;
+    vec3 specular;
+    vec4 ambient;
+} p3d_Material;
+
 %INOUT%
 
 
@@ -32,6 +39,12 @@ void main() {
 
     // @TODO: Use last frame model matrix
     vOutput.last_proj_position = lastViewProjMatNoJitter * (trans_model_to_world * p3d_Vertex);
+
+    // Get material properties
+    vOutput.material_color     = p3d_Material.diffuse.xyz;
+    vOutput.material_specular  = p3d_Material.specular.r;
+    vOutput.material_metallic  = p3d_Material.specular.g;
+    vOutput.material_roughness = p3d_Material.specular.b;
 
     %VERTEX%
 
