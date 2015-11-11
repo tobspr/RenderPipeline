@@ -17,6 +17,10 @@ class PSSMCameraRig {
 
         void set_pssm_distance(float distance);
         void set_sun_distance(float distance);
+        void set_use_fixed_film_size(bool flag);
+        void set_use_tight_frustum(bool flag);
+        void set_resolution(int resolution);
+
         void fit_to_camera(NodePath &cam_node, const LVecBase3f &light_vector);    
 
         NodePath get_camera(int index);

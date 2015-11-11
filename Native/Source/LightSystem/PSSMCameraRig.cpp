@@ -32,6 +32,17 @@ void PSSMCameraRig::set_sun_distance(float distance) {
     _sun_distance = distance;
 }
 
+void PSSMCameraRig::set_use_fixed_film_size(bool flag) {
+    _use_fixed_film_size = flag;
+}
+
+void PSSMCameraRig::set_use_tight_frustum(bool flag) {
+    _find_tight_frustum = flag;
+}
+
+void PSSMCameraRig::set_resolution(int resolution) {
+    _resolution = resolution;
+}
 
 void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
     _cam_nodes.reserve(num_splits);
@@ -170,6 +181,12 @@ void merge_points_interleaved(LVecBase3f (&dest)[8], LVecBase3f const (&array1)[
 }
 
 
+LVecBase3f get_angle_vector(float progress) {
+    LVecBase3f result = (0, 1 - progress, progress);
+	result.normalize();
+    return result;
+}
+
 void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_distance, const LVecBase3f& light_vector) {
     nassertv(!_parent.is_empty());
 
@@ -210,39 +227,43 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
             LVecBase3f proj_points[8];
             merge_points_interleaved(proj_points, start_points, end_points);
 
-
             // Try out all angles
+            const int num_iterations = 90;
             float best_angle = 0.0;
-            float best_angle_score = 1000000.0;
+            float best_angle_score = 1e20;
             LVecBase3f best_min_extent, best_max_extent;
 
-            for (int angle = 0; angle < 360; ++angle) {
+            for (float progress = 0.0; progress < 1.0; progress += 1.0 / num_iterations) {
 
-                // Set transform
-    
+                // Apply the angle to the camera rotation
+                _cam_nodes[i].look_at(split_mid, get_angle_vector(progress));
+
                 // Find minimum and maximum extends of the points
                 LVecBase3f min_extent, max_extent;
                 LMatrix4f merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
                 find_min_max_extents(min_extent, max_extent, merged_transform, proj_points, cam);
 
+                // Get the minimum film size required to cover all points
                 LVecBase2f film_size, film_offset;
                 get_film_properties(film_size, film_offset, min_extent, max_extent);
 
-                float score = film_size.get_x() * film_size.get_x() + film_size.get_y() * film_size.get_y();
+                // The "score" is the area of the film, smaller values are better,
+                // since we render less objects then
+                float score = film_size.get_x() * film_size.get_y();
 
                 if (score < best_angle_score) {
-                    best_angle = angle;
+                    best_angle = progress;
                     best_angle_score = score;
                     best_min_extent = min_extent;
                     best_max_extent = max_extent;
                 }
             }
 
-            cout << "Best angle was at" << best_angle << endl;
+            cout << "Best angle was at" << best_angle << " with an area of " << best_angle_score << endl;    
+            _cam_nodes[i].look_at(split_mid, get_angle_vector(best_angle));
 
             LVecBase2f film_size, film_offset;
             get_film_properties(film_size, film_offset, best_min_extent, best_max_extent);
-
 
             // Compute new film size
             cam->get_lens()->set_film_size(film_size);
@@ -278,6 +299,12 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
 
 void PSSMCameraRig::fit_to_camera(NodePath &cam_node, const LVecBase3f &light_vector) {
     nassertv(!cam_node.is_empty());
+
+    // Check if a configuration error occured
+    if (_use_fixed_film_size && _find_tight_frustum) {
+        // If we use a fixed film size, we cannot use a tight frustum
+        cout << "Warning: If you use a fixed film size, you cannot use the tight frustum option" << endl;
+    }
 
     // Get camera node transform
     const LMatrix4f &transform = cam_node.get_transform()->get_mat();
