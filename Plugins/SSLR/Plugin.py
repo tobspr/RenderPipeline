@@ -3,7 +3,7 @@
 from .. import *
 
 # Load some plugin classes here
-from SSLRStage import SSLRStage
+from .SSLRStage import SSLRStage
 
 # Create the main plugin
 class Plugin(BasePlugin):

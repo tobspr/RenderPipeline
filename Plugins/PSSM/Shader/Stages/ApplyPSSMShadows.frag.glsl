@@ -96,7 +96,7 @@ void main() {
         float rotation = pssm_rotations[split] * HALF_PI;
 
         // Get the dynamic and fixed bias
-        const float slope_bias = 0.009;
+        const float slope_bias = 0.0;
         const float normal_bias = 0.005;
         const float fixed_bias = 0.0001;
         const int num_samples = 32;
@@ -105,7 +105,7 @@ void main() {
         // const int num_samples = 1;
         // const int num_search_samples = 1;
 
-        const float filter_radius = 15.0 / GET_SETTING(PSSM, resolution);
+        const float filter_radius = 25.0 / GET_SETTING(PSSM, resolution);
         
         vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, sun_vector);
 
@@ -140,7 +140,7 @@ void main() {
         }
 
         float avg_blocker_depth = sum_blockers / num_blockers;
-        float penumbra_size = max(0, ref_depth - avg_blocker_depth) / ref_depth * 100.0;
+        float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) / ref_depth * 100.0;
 
 
         // penumbra_size = max(0.001, min(1.0, penumbra_size));

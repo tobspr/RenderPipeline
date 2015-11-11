@@ -4,7 +4,7 @@ from panda3d.core import Texture, Vec2
 # Load plugin api
 from .. import *
 
-from SMAAStage import SMAAStage
+from .SMAAStage import SMAAStage
 
 # Create the main plugin
 class Plugin(BasePlugin):

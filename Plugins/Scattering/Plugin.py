@@ -6,7 +6,7 @@ from .. import *
 
 
 from panda3d.core import Texture, Shader
-from ScatteringStage import ScatteringStage
+from .ScatteringStage import ScatteringStage
 
 # Create the main plugin
 class Plugin(BasePlugin):

@@ -53,6 +53,7 @@ float BRDFGeometricVisibility_CookTorrance(float NxL, float NxV, float NxH, floa
 }
 
 
+
 float BRDFDiffuseNormalized(float NxV, float NxL, float LxH, float roughness )
 {
     float energyBias = mix(0.0, 0.5, roughness);

@@ -2,7 +2,7 @@
 # Load the plugin api
 from .. import *
 
-from HBAOStage import HBAOStage
+from .HBAOStage import HBAOStage
 
 class Plugin(BasePlugin):
 

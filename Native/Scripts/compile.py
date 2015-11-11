@@ -81,7 +81,7 @@ def do_compile():
             pass
 
 
-        print("Success!")
+        print("Success!", file=sys.stderr)
         sys.exit(0)
 
     elif platform.system() == "Linux":

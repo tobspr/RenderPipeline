@@ -12,6 +12,8 @@ uniform sampler2D GBuffer0;
 uniform sampler2D GBuffer1;
 uniform sampler2D GBuffer2;
 
+uniform sampler2D PrefilteredBRDF;
+
 uniform samplerCube DefaultEnvmap;
 uniform vec3 cameraPosition;
 
@@ -45,22 +47,20 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
 
-    vec3 view_vector = normalize(m.position - cameraPosition);
+    vec3 view_vector = normalize(cameraPosition - m.position);
     vec4 ambient = vec4(0);
 
     if (!is_skybox(m, cameraPosition)) {
         float conv_roughness = ConvertRoughness(m.roughness);
 
-        vec3 reflected_dir = reflect(view_vector, m.normal);
+        vec3 reflected_dir = reflect(-view_vector, m.normal);
         vec3 env_coord = fix_cubemap_coord(reflected_dir);
 
 
         // vec3 h = normalize(view_vector - reflected_dir);
         vec3 h = normalize(m.normal + view_vector);
 
-        float LxH = 1 - saturate(dot(view_vector, h));
-        float NxL = max(0, dot(m.normal, reflected_dir));
-        float NxV = abs(dot(m.normal, view_vector));
+        float NxV = saturate(dot(m.normal, view_vector));
 
 
         float mipmap_bias = saturate(pow(1.0 - NxV, 5.0)) * 3.0;
@@ -86,18 +86,23 @@ void main() {
 
         #endif
 
+        // Get prefiltered BRDF
+        vec2 prefilter_brdf = textureLod(PrefilteredBRDF, vec2(m.roughness, NxV), 0).xy;
+        vec3 prefilter_color = prefilter_brdf.y + m.diffuse * prefilter_brdf.y;
+
+
         // Different terms for metallic and diffuse objects
         vec3 env_metallic = m.diffuse;
-        env_metallic *= 0.0 + pow(LxH, 1.0) * 1.0;
-        // env_metallic = pow(env_metallic * 0.5, vec3(2.4));
+        // env_metallic *= 0.0 + pow(LxH, 2.0) * 1.0;
+        env_metallic = pow(env_metallic, vec3(2.2));
+        // env_metallic *= vec3(1.5, 1.1, 0.4);
+        // env_metallic *= 1.2;
 
-        vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 5.0 )) 
-                           * (1.0 - m.roughness)) * vec3(0.2) * max(0, m.normal.z) * 0;
-
+        vec3 env_diffuse = prefilter_color * 0.2;
         vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
 
         vec3 diffuse_ambient = vec3(0.02) * m.diffuse * (1.0 - m.metallic);
-        vec3 specular_ambient = env_factor * env_default_color * 0.8;
+        vec3 specular_ambient = env_factor * env_default_color * 0.1;
 
         ambient.xyz += diffuse_ambient + specular_ambient;
         ambient.xyz += env_amb * 0.05 * m.diffuse * (1.0 - m.metallic);
@@ -105,10 +110,14 @@ void main() {
         #if HAVE_PLUGIN(HBAO)
             ambient.xyz = max(ambient.xyz, vec3(0));
             float occlusion = texelFetch(AmbientOcclusion, coord, 0).x;
-            ambient *= pow(occlusion, 3.0);
+            ambient *= pow(occlusion, 2.0);
 
         #endif
+
+            // ambient = vec4( prefilter_color, 0 );
+
     }
+
     
     ambient.w = 0.0;
 

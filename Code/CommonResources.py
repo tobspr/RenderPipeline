@@ -61,6 +61,7 @@ class CommonResources(DebugObject):
         stage manager """
         self._load_normal_quantization()
         self._load_environment_cubemap()
+        self.load_prefilter_brdf()
         self._load_skydome()
 
     def _load_normal_quantization(self):
@@ -91,6 +92,18 @@ class CommonResources(DebugObject):
         envmap.set_wrap_v(Texture.WM_repeat)
         envmap.set_wrap_w(Texture.WM_repeat)
         self._pipeline.get_stage_mgr().add_input("DefaultEnvmap", envmap)
+
+    def load_prefilter_brdf(self):
+        """ Loads the prefiltered brdf """
+        brdf_tex = Globals.loader.loadTexture(
+            "Data/EnvironmentBRDF/PrefilteredEnvBRDF.png")
+        brdf_tex.set_minfilter(Texture.FT_linear)
+        brdf_tex.set_magfilter(Texture.FT_linear)
+        brdf_tex.set_wrap_u(Texture.WM_clamp)
+        brdf_tex.set_wrap_v(Texture.WM_clamp)
+        brdf_tex.set_anisotropic_degree(0)
+        brdf_tex.set_format(Texture.F_rgba16)
+        self._pipeline.get_stage_mgr().add_input("PrefilteredBRDF", brdf_tex)
 
     def _load_skydome(self):
         """ Loads the skydome """

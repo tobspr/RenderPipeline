@@ -13,7 +13,7 @@ void main() {
 
 
     const float tangent_bias = 0.15;
-    const float sampling_radius = 30.0;
+    const float sampling_radius = 1.0;
 
     vec2 sample_coord = texcoord;
     ivec2 coord = ivec2(gl_FragCoord).xy;

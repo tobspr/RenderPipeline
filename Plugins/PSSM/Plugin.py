@@ -1,11 +1,13 @@
 
+from __future__ import print_function
+
 from .. import *
 
 from panda3d.core import Vec3, NodePath, Camera, Texture, PTAVecBase3f
 from math import cos, sin
 
-from PSSMShadowStage import PSSMShadowStage
-from PSSMStage import PSSMStage
+from .PSSMShadowStage import PSSMShadowStage
+from .PSSMStage import PSSMStage
 
 class Plugin(BasePlugin):
 
@@ -86,7 +88,7 @@ class Plugin(BasePlugin):
 
     @SettingChanged("pssm_distance")
     def update_pssm_distance(self):
-        print "Adjusting pssm distance"
+        print("Adjusting pssm distance")
 
     def _toggle_update_enabled(self):
         self._update_enabled = not self._update_enabled
