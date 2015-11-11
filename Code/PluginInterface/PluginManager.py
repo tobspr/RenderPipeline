@@ -1,5 +1,6 @@
 
 import re
+from os.path import join
 import importlib
 
 from direct.stdpy.file import open, isfile
@@ -62,7 +63,7 @@ class PluginManager(DebugObject):
 
     def _try_load_plugin(self, plugin_id):
         """ Attempts to load a plugin with a given name """
-        plugin_path = "Plugins/" + plugin_id + "/"
+        plugin_path = join(self._pipeline.get_mount_mgr().get_base_path(), "Plugins", plugin_id)
         plugin_main = plugin_path + "__init__.py"
         if not isfile(plugin_main):
             self.warn("Cannot load",plugin_id,"because __init__.py was not found")

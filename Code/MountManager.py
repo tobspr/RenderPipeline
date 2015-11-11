@@ -62,6 +62,10 @@ class MountManager(DebugObject):
         even after the pipeline stopped running """
         self._do_cleanup = False
 
+    def get_base_path(self):
+        """ Returns the base path previously set with set_base_path """
+        return self._base_path
+
     def get_lock(self):
         """ Checks if we are the only instance running. If there is no instance
         running, write the current PID to the instance.pid file. If the
