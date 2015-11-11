@@ -105,7 +105,7 @@ float get_split_start(size_t split_index, size_t max_splits) {
 
 
 LPoint3f PSSMCameraRig::get_interpolated_point(CoordinateOrigin origin, float depth) {
-    nassertr(depth >= 0.0 && depth <= 1.0, NULL);  
+    nassertr(depth >= 0.0 && depth <= 1.0, LPoint3f());  
     return _curr_near_points[origin] * (1.0 - depth) + _curr_far_points[origin] * depth;   
 }
 

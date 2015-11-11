@@ -165,8 +165,7 @@ driver-generate-mipmaps #t
 gl-immutable-texture-storage #f
 
 auto-flip #f
-gl-debug-object-labels #f
-
+gl-debug-object-labels #t
 
 # Default window settings
 # depth-bits 0

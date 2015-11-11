@@ -89,6 +89,7 @@ void main() {
         // Different terms for metallic and diffuse objects
         vec3 env_metallic = m.diffuse;
         env_metallic *= 0.0 + pow(LxH, 1.0) * 1.0;
+        // env_metallic = pow(env_metallic * 0.5, vec3(2.4));
 
         vec3 env_diffuse = saturate( saturate(pow(1.0 - LxH , 5.0 )) 
                            * (1.0 - m.roughness)) * vec3(0.2) * max(0, m.normal.z) * 0;
@@ -104,7 +105,7 @@ void main() {
         #if HAVE_PLUGIN(HBAO)
             ambient.xyz = max(ambient.xyz, vec3(0));
             float occlusion = texelFetch(AmbientOcclusion, coord, 0).x;
-            ambient *= pow(occlusion, 1.0);
+            ambient *= pow(occlusion, 3.0);
 
         #endif
     }

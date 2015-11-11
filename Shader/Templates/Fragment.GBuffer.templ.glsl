@@ -29,6 +29,7 @@ void main() {
     vec4 sampled_specular  = texture(p3d_Texture2, vOutput.texcoord);
     vec4 sampled_roughness = texture(p3d_Texture3, vOutput.texcoord);
 
+    sampled_diffuse.xyz = pow(sampled_diffuse.xyz, vec3(2.2));
 
     Material m;
     m.diffuse = vOutput.material_color * sampled_diffuse.xyz;

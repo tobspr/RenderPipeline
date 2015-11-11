@@ -13,12 +13,12 @@ void main() {
 
 
     const float tangent_bias = 0.15;
-    const float sampling_radius = 20.3;
+    const float sampling_radius = 30.0;
 
     vec2 sample_coord = texcoord;
     ivec2 coord = ivec2(gl_FragCoord).xy;
 
-    vec2 sample_radius = vec2(40.0) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    vec2 sample_radius = vec2(50.0) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     float averaged_samples = 0.0;
 
@@ -74,7 +74,7 @@ void main() {
 
     averaged_samples /= num_radii;
 
-    averaged_samples = pow(averaged_samples * 1.5, 1.2);
+    averaged_samples = pow(averaged_samples * 1.5, 1.0);
 
     result = vec4(1 - saturate(averaged_samples));
     // result = vec4(mid_nrm, 1);

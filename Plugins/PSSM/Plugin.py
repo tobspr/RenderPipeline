@@ -71,7 +71,7 @@ class Plugin(BasePlugin):
 
     @PluginHook("pre_render_update")
     def update(self):
-        sun_vector = Vec3(-0.5, 0.3, 0.3)
+        sun_vector = Vec3(0.3, 0.3, 0.5)
         sun_vector.normalize()
         self._pta_sun_vector[0] = sun_vector
 
