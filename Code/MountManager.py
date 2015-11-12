@@ -216,7 +216,7 @@ class MountManager(DebugObject):
         # and then on the model-path. Append the Shader directory to the
         # modelpath to ensure the shader includes can be found.
         base_path = Filename(self._base_path)
-        self._model_paths.append(join(base_path.get_fullpath(), 'Shader'))
+        self._model_paths.append(join(base_path.get_fullpath(), "Shader"))
 
         # Add the pipeline root directory to the model path aswel
         self._model_paths.append(base_path.get_fullpath())
@@ -227,7 +227,7 @@ class MountManager(DebugObject):
 
         # Add the plugins dir to the model path so plugins can include their 
         # own resources more easily
-        self._model_paths.append("Plugins")
+        self._model_paths.append(join(base_path.get_fullpath(), "Plugins"))
 
         for pth in self._model_paths:
             get_model_path().append_directory(pth)
