@@ -22,6 +22,10 @@ class BasePluginSetting(DebugObject):
         self.runtime = False
         self.shader_runtime = False
 
+    def is_dynamic(self):
+        """ Returns wheter the setting is dynamic """
+        return self.runtime or self.shader_runtime
+
     @classmethod
     def load_from_yaml(cls, yaml):
         """ Constructs a new base plugin from a given yaml string """

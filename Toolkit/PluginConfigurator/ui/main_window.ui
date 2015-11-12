@@ -33,16 +33,16 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
-    <normaloff>:/icon/Data/GUI/icon.png</normaloff>:/icon/Data/GUI/icon.png</iconset>
+    <normaloff>:/icon/res/icon.png</normaloff>:/icon/res/icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QListWidget" name="lst_plugins">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>100</y>
+      <y>140</y>
       <width>251</width>
-      <height>671</height>
+      <height>631</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -66,35 +66,20 @@ padding: 5px;
      </property>
     </item>
    </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>30</y>
-      <width>401</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>18</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>RenderPipeline Plugin Configurator</string>
-    </property>
-   </widget>
    <widget class="QFrame" name="frame_details">
     <property name="geometry">
      <rect>
       <x>300</x>
-      <y>100</y>
+      <y>140</y>
       <width>881</width>
-      <height>671</height>
+      <height>631</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
     <property name="frameShape">
-     <enum>QFrame::Box</enum>
+     <enum>QFrame::StyledPanel</enum>
     </property>
     <property name="frameShadow">
      <enum>QFrame::Plain</enum>
@@ -221,7 +206,7 @@ Plugin Desc Line 4
        <x>30</x>
        <y>150</y>
        <width>831</width>
-       <height>501</height>
+       <height>461</height>
       </rect>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -368,10 +353,68 @@ Plugin Desc Line 4
      </item>
     </widget>
    </widget>
-   <zorder>lst_plugins</zorder>
-   <zorder>label</zorder>
-   <zorder>frame_details</zorder>
-   <zorder>area_plugin_settings</zorder>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1200</width>
+      <height>120</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="resources.qrc">:/res/res/plugin_configurator_logo.png</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_select_plugin">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>410</y>
+      <width>391</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #888;</string>
+    </property>
+    <property name="text">
+     <string>Select a Plugin to change its settings</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_restart_pipeline">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>80</y>
+      <width>481</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <stylestrategy>PreferAntialias</stylestrategy>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #F44;</string>
+    </property>
+    <property name="text">
+     <string>Pipeline needs to be restarted in order to see all setting changes!</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

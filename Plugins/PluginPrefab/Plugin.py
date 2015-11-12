@@ -8,7 +8,7 @@ class Plugin(BasePlugin):
     def __init__(self, pipeline):
         BasePlugin.__init__(self, pipeline)
 
-    @PluginHook("on_stage_setup"):
+    @PluginHook("on_stage_setup")
     def setup_stages(self):
         """ This method gets called when the pipeline setups the render
         stages. You should create your custom stages here """

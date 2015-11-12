@@ -36,8 +36,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._interface = PluginInterface()
         self._current_plugin = None
         self._current_plugin_instance = None
-
-        self.frame_details.hide()
+        self.lbl_restart_pipeline.hide()
+        self._set_settings_visible(False)
         # self.lst_plugins.connect("onSelectionChanged()", self.on_plugin_selected)
         # self.lst_plugins.selectionChanged.connect(self.on_plugin_selected)
         # QtCore.QObject.connect(self.lst_plugins, QtCore.SIGNAL('selectionChanged()'), self.on_plugin_selected)
@@ -65,12 +65,11 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._current_plugin_instance = self._interface.get_plugin_by_id(self._current_plugin)
         assert(self._current_plugin_instance is not None)
         self._render_current_plugin()
-        self.frame_details.show()
+        self._set_settings_visible(True)
 
     def _rewrite_plugin_config(self):
         """ Rewrites the plugin configuration """
         self._interface.write_configuration()
-
 
     def _render_current_plugin(self):
         """ Displays the currently selected plugin """        
@@ -83,6 +82,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self.lbl_plugin_desc.setText(self._current_plugin_instance.get_config().get_description())
 
         self._render_current_settings()
+
+    def _show_restart_hint(self):
+        """ Shows a hint to restart the pipeline """
+        self.lbl_restart_pipeline.show()
 
     def _render_current_settings(self):
         """ Renders the current plugin settings """
@@ -104,7 +107,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             item_default.setTextAlignment(QtCore.Qt.AlignCenter)
             self.table_plugin_settings.setItem(index, 1, item_default)
 
-            setting_widget = self._get_widget_for_setting(self._current_plugin, name, handle)
+            setting_widget = self._get_widget_for_setting(name, handle)
             if isinstance(setting_widget, QtGui.QTableWidgetItem):
                 self.table_plugin_settings.setItem(index, 2, setting_widget)
             else:
@@ -114,20 +117,26 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             item_desc.setText(handle.description)
             self.table_plugin_settings.setItem(index, 3, item_desc)
 
-    def _do_update_setting(self, plugin_id, setting_id, value):
-        self._interface.update_setting(plugin_id, setting_id, value)
+    def _do_update_setting(self, setting_id, value):
+        self._interface.update_setting(self._current_plugin, setting_id, value)
         self._interface.write_configuration()
 
-    def _on_setting_bool_changed(self, plugin_id, setting_id, value):
-        self._do_update_setting(plugin_id, setting_id, value == QtCore.Qt.Checked)
+        # Check whether the setting is a runtime setting 
+        setting_handle = self._current_plugin_instance.get_config().get_setting_handle(setting_id)
+        if not setting_handle.is_dynamic():
+            self._show_restart_hint()
 
-    def _on_setting_scalar_changed(self, plugin_id, setting_id, value):
-        self._do_update_setting(plugin_id, setting_id, value)
 
-    def _on_setting_enum_changed(self, plugin_id, setting_id, value):
-        self._do_update_setting(plugin_id, setting_id, value)
+    def _on_setting_bool_changed(self, setting_id, value):
+        self._do_update_setting(setting_id, value == QtCore.Qt.Checked)
 
-    def _get_widget_for_setting(self, plugin_id, setting_id, setting):
+    def _on_setting_scalar_changed(self, setting_id, value):
+        self._do_update_setting(setting_id, value)
+
+    def _on_setting_enum_changed(self, setting_id, value):
+        self._do_update_setting(setting_id, value)
+
+    def _get_widget_for_setting(self, setting_id, setting):
         """ Returns an appropriate widget to control the given setting """
 
         if setting.type == "BOOL":
@@ -135,7 +144,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             box.setChecked(QtCore.Qt.Checked if setting.value else QtCore.Qt.Unchecked)
             box.setStyleSheet("margin-left:45%; margin-right:45%;")
             connect(box, QtCore.SIGNAL("stateChanged(int)"), 
-                partial(self._on_setting_bool_changed, plugin_id, setting_id))
+                partial(self._on_setting_bool_changed, setting_id))
             return box
 
         elif setting.type == "INT":
@@ -145,7 +154,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             box.setValue(setting.value)
             box.setAlignment(QtCore.Qt.AlignCenter)
             connect(box, QtCore.SIGNAL("valueChanged(int)"), 
-                partial(self._on_setting_scalar_changed, plugin_id, setting_id))
+                partial(self._on_setting_scalar_changed, setting_id))
             return box
 
         elif setting.type == "FLOAT":
@@ -155,7 +164,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             box.setValue(setting.value)
             box.setAlignment(QtCore.Qt.AlignCenter)
             connect(box, QtCore.SIGNAL("valueChanged(double)"), 
-                partial(self._on_setting_scalar_changed, plugin_id, setting_id))
+                partial(self._on_setting_scalar_changed, setting_id))
             return box
 
         elif setting.type == "ENUM":
@@ -163,7 +172,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             for value in setting.values:
                 box.addItem(value)
             connect(box, QtCore.SIGNAL("currentIndexChanged(QString)"), 
-                partial(self._on_setting_enum_changed, plugin_id, setting_id))
+                partial(self._on_setting_enum_changed, setting_id))
             box.setCurrentIndex(setting.values.index(setting.value))
 
             return box
@@ -172,11 +181,20 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         fallback.setText("??" + setting.type)
         return fallback
 
+    def _set_settings_visible(self, flag):
+        """ Sets wheter the settings panel is visible or not """
+        if flag:
+            self.lbl_select_plugin.hide()
+            self.frame_details.show()
+        else:
+            self.lbl_select_plugin.show()
+            self.frame_details.hide()
+
     def _load_plugin_list(self):
         """ Reloads the whole plugin list """
         print("Loading plugin list")
 
-        self.frame_details.hide()
+        self._set_settings_visible(False)
 
         # Plugins are all plugins in the plugins directory
         self._interface.unload_plugins()
