@@ -110,11 +110,11 @@ class PluginSettingENUM(BasePluginSetting):
     """ Setting which stores an enumeration """
 
     def load_additional_settings(self, yaml):
-        values = consume(yaml, "values")
-        if not isinstance(values, list) and not isinstance(values, tuple):
+        self.values = consume(yaml, "values")
+        if not isinstance(self.values, list) and not isinstance(self.values, tuple):
             raise BadSettingException("Value enumeration is not a list")
 
-        if self.default not in values:
+        if self.default not in self.values:
             raise BadSettingException("Default value not contained in enumeration")
 
 
