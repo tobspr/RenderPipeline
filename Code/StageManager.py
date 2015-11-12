@@ -165,7 +165,7 @@ class StageManager(DebugObject):
         shader auto config"""
 
         # First genereate the auto config
-        self._write_autoconfig()
+        self.write_autoconfig()
 
         # Then generate the shaders
         for stage in self._stages:
@@ -176,7 +176,7 @@ class StageManager(DebugObject):
         for stage in self._stages:
             stage.update()
 
-    def _write_autoconfig(self):
+    def write_autoconfig(self):
         """ Writes the shader auto config, based on the defines specified by the
         different stages """
 

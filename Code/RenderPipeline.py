@@ -9,6 +9,7 @@ from direct.stdpy.file import isfile
 
 from .Util.DebugObject import DebugObject
 from .Util.SettingsLoader import SettingsLoader
+from .Util.UDPListenerService import UDPListenerService
 
 from .CommonResources import CommonResources
 from .MountManager import MountManager
@@ -186,6 +187,7 @@ class RenderPipeline(DebugObject):
         # Hide the loading screen
         self._loading_screen.remove()
 
+        self._start_listener()
         self.debug("Finished initialization.")
 
     def reload_shaders(self):
@@ -225,8 +227,28 @@ class RenderPipeline(DebugObject):
         # RenderState.clear_cache()
         return task.again
 
+    def _start_listener(self):
+        """ Starts a listener thread which listens for incoming connections to
+        trigger a shader reload. This is used by the Plugin Configurator to dynamically
+        update settings. """
+        self._listener_update_queue = []
+        UDPListenerService.listener_thread(UDPListenerService.DEFAULT_PORT, self._on_reload_trigger)
+
+    def _on_reload_trigger(self, msg):
+        """ Internal method which gets called when a message arrived to the 
+        listener """
+
+        # Dont process the message directly, instead do that in the main thread
+        self._listener_update_queue.append(msg)
+
     def _pre_render_update(self, task):
         """ Update task which gets called before the rendering """
+
+        # Check if we need to update anything
+        if self._listener_update_queue:
+            update = self._listener_update_queue.pop(0)
+            self._plugin_mgr.on_setting_change(update)
+
         self._debugger.update()
         self._com_resources.update()
         self._stage_mgr.update_stages()

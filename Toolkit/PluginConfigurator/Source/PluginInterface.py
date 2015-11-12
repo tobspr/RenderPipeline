@@ -23,7 +23,7 @@ class PluginInterface(object):
 
         for f in files:
             abspath = join(self._plugin_dir, f)
-            if isdir(abspath) and f != "PluginPrefa2b":
+            if isdir(abspath) and f != "PluginPrefab":
                 plugins.append(f)
 
         return plugins

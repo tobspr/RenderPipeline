@@ -24,6 +24,8 @@ class BasePlugin(DebugObject):
         self._id = str(self.__class__.__module__).split(".")[1] 
         DebugObject.__init__(self, "Plugin::" + self._id)
         self._pipeline = pipeline
+        self._setting_change_handlers = {}
+        self._assigned_stages = []
         self._config = PluginConfig()
 
         # Set a special output color for plugins
@@ -37,6 +39,19 @@ class BasePlugin(DebugObject):
             val = getattr(self, attr)
             if hasattr(val, "hook_id"):
                 self._bind_to_hook(val.hook_id, val)
+            if hasattr(val, "setting_id"):
+                self._setting_change_handlers[val.setting_id] = val
+
+    def handle_setting_change(self, name):
+        """ Gets called when a dynamic setting got called """
+        self.debug("Handling setting change:", name)
+        if name in self._setting_change_handlers:
+            self._setting_change_handlers[name]()
+
+    def reload_stage_shaders(self):
+        """ Reloads all shaders of all stages used by the plugin """
+        for stage in self._assigned_stages:
+            stage.set_shaders()
 
     def _load_config(self):
         """ Loads the plugin configuration from the plugin directory """
@@ -55,6 +70,10 @@ class BasePlugin(DebugObject):
         for name, setting in self._config.get_settings().items():
             if not setting.runtime:
                 self._pipeline.get_stage_mgr().define(self._id + "__" + name, setting.value)
+
+    def get_id(self):
+        """ Returns the id of the plugin """
+        return self._id
 
     def get_config(self):
         """ Returns a handle to the plugin config object """
@@ -78,6 +97,7 @@ class BasePlugin(DebugObject):
         """ Shortcut to create a new render stage from a given class type """
         stage_handle = stage_type(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(stage_handle)
+        self._assigned_stages.append(stage_handle)
         return stage_handle
 
     def add_define(self, key, value):

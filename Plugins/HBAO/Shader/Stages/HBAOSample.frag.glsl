@@ -32,8 +32,8 @@ void main() {
 
     float averaged_samples = 0.0;
 
-    const int num_radii = 16;
-    const int num_raymarch = 3;
+    const int num_radii = GET_SETTING(HBAO, ray_count);
+    const int num_raymarch = GET_SETTING(HBAO, ray_steps);
 
     vec4 mid_data = texelFetch(DepthSource, coord, 0);
     vec3 mid_vp = mid_data.xyz;

@@ -26,15 +26,17 @@
 
 
 import sys
+import getpass
 
 
 # This check is required, because many people downloading the pipeline think this
 # is the mainfile, while its only my main testing file. So this check here
 # is to avoid confusion.
 if len(sys.argv) != 2 or sys.argv[1] != "dev":
-    print("This file is not meant to be run by the user!")
-    print("Please have a look at the samples located at Samples/")
-    sys.exit(0)
+    if getpass.getuser() != "tspringe":
+        print("This file is not meant to be run by the user!")
+        print("Please have a look at the samples located at Samples/")
+        sys.exit(0)
 
 from random import random
 

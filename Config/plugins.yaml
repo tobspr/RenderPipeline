@@ -9,9 +9,7 @@
 enabled: 
     - HBAO
     - SMAA
+    - Scattering
 
 overrides: 
-    PluginPrefab.some_bool: True
-    PluginPrefab.some_enum: value1
-    PluginPrefab.some_int_setting: 10
 

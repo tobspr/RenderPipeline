@@ -25,6 +25,7 @@ except ImportError as msg:
 from ui.main_window_generated import Ui_MainWindow
 
 from Source.PluginInterface import PluginInterface
+from Code.Util.UDPListenerService import UDPListenerService
 
 connect = QtCore.QObject.connect
 
@@ -38,11 +39,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._current_plugin_instance = None
         self.lbl_restart_pipeline.hide()
         self._set_settings_visible(False)
-        # self.lst_plugins.connect("onSelectionChanged()", self.on_plugin_selected)
-        # self.lst_plugins.selectionChanged.connect(self.on_plugin_selected)
-        # QtCore.QObject.connect(self.lst_plugins, QtCore.SIGNAL('selectionChanged()'), self.on_plugin_selected)
-
-        # print(type(self.lst_plugins).selectionChanged)
 
         connect(self.lst_plugins, QtCore.SIGNAL("itemSelectionChanged()"), self.on_plugin_selected)
         connect(self.lst_plugins, QtCore.SIGNAL("itemChanged(QListWidgetItem*)"), self.on_plugin_state_changed)
@@ -54,7 +50,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         state = item.checkState() == QtCore.Qt.Checked
         self._interface.set_plugin_state(plugin_id, state)
         self._rewrite_plugin_config()
-
 
     def on_plugin_selected(self):
         """ Gets called when a plugin got selected in the plugin list """
@@ -100,6 +95,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         for index, (name, handle) in enumerate(settings.items()):
             item_label = QtGui.QTableWidgetItem()
             item_label.setText(handle.label)
+
+            if handle.is_dynamic():
+                item_label.setBackground(QtGui.QColor(150, 255, 150, 255))
+
             self.table_plugin_settings.setItem(index, 0, item_label)
 
             item_default = QtGui.QTableWidgetItem()
@@ -125,7 +124,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         setting_handle = self._current_plugin_instance.get_config().get_setting_handle(setting_id)
         if not setting_handle.is_dynamic():
             self._show_restart_hint()
-
+        else:
+            print("Sending reload packet ...")
+            # In case the setting is dynamic, notice the pipeline about it:
+            UDPListenerService.ping_location(UDPListenerService.DEFAULT_PORT, self._current_plugin + "." + setting_id)
 
     def _on_setting_bool_changed(self, setting_id, value):
         self._do_update_setting(setting_id, value == QtCore.Qt.Checked)
@@ -205,7 +207,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         for plugin in plugins:
             item = QtGui.QListWidgetItem()
-            item.setText(plugin.get_name())
+            item.setText(plugin.get_id())
 
             if self._interface.is_plugin_enabled(plugin.get_id()):
                 item.setCheckState(QtCore.Qt.Checked)
