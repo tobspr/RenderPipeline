@@ -12,6 +12,7 @@ settings:
     some_int_setting:
         type: int
         range: [0, 10]
+        default: 5
         label: Some integer setting
         description: Description of the setting.
 

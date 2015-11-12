@@ -110,7 +110,7 @@ void main() {
         #if HAVE_PLUGIN(HBAO)
             ambient.xyz = max(ambient.xyz, vec3(0));
             float occlusion = texelFetch(AmbientOcclusion, coord, 0).x;
-            ambient *= pow(occlusion, 2.0);
+            ambient *= pow(occlusion, 5.0);
 
         #endif
 

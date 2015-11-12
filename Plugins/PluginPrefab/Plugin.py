@@ -1,9 +1,7 @@
-
 # Load the plugin api
 from .. import *
 
-# Load some plugin classes here
-
+# Load your additional plugin classes here, if required
 
 class Plugin(BasePlugin):
 
@@ -12,13 +10,16 @@ class Plugin(BasePlugin):
 
     @PluginHook("on_stage_setup"):
     def setup_stages(self):
-        pass
+        """ This method gets called when the pipeline setups the render
+        stages. You should create your custom stages here """
 
     @PluginHook("on_pipeline_created")
-    def init(self):
-        pass
+    def on_created(self):
+        """ This method gets called after the pipeline finished the setup,
+        and is about to start rendering """
 
     @SettingChanged("some_setting")
     def update_some_setting(self):
-        pass
-
+        """ This method gets called when the setting "some_setting"
+        of your plugin gets called. You should do all work to update required
+        inputs etc. yourself. """

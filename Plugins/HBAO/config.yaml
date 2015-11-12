@@ -7,4 +7,25 @@ description: >
 
 settings:
 
-    # TODO
+    ray_count: 
+        type: int
+        range: [4, 128]
+        default: 32
+        shader_runtime: true
+        label: Amount of Rays
+        description: >
+            Number of rays to use, a higher amount of rays provides a better
+            quality, but the performance decreases lineary.
+
+    ray_steps:
+        type: int
+        range: [1, 16]
+        default: 4
+        shader_runtime: true
+        label: Samples per Ray
+        description: >
+            Amount of samples to use for each ray while raymarching along the
+            tangent direction. A higher amount of samples catches details
+            better, but also decreases performance by a lot.
+
+            
