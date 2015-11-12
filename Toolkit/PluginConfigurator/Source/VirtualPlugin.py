@@ -28,6 +28,11 @@ class VirtualPlugin(object):
         self._config = PluginConfig()
         self._config.load(self._config_pth)
 
+    def consume_overrides(self, overrides):
+        """ Removes all keys from the dictionary which belong to this
+        plugin and applies them to the settings """
+        self._config.consume_overrides(self.get_id(), overrides)
+
     def get_name(self):
         return self._config.get_name()
 

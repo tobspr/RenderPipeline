@@ -33,7 +33,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
-    <normaloff>:/icon/res/icon.ico</normaloff>:/icon/res/icon.ico</iconset>
+    <normaloff>:/icon/Data/GUI/icon.png</normaloff>:/icon/Data/GUI/icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QListWidget" name="lst_plugins">
@@ -368,21 +368,10 @@ Plugin Desc Line 4
      </item>
     </widget>
    </widget>
-   <widget class="QComboBox" name="comboBox">
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>40</y>
-      <width>69</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
    <zorder>lst_plugins</zorder>
    <zorder>label</zorder>
    <zorder>frame_details</zorder>
    <zorder>area_plugin_settings</zorder>
-   <zorder>comboBox</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

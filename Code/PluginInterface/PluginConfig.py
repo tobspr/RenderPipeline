@@ -54,13 +54,24 @@ class PluginConfig(DebugObject):
             return False
         return self._settings[setting]
 
-    def apply_overrides(self, overrides):
+    def consume_overrides(self, plugin_id, overrides):
         """ Given a list of overrides, apply those to the settings given by 
         this plugin. The overrides should be a dictionary, where the key
         is PluginID.setting_name, and the value is the new value. Settings from
-        other plugins are ignored, unkown settings trigger an error. """
+        other plugins are ignored, unkown settings trigger an error. All matched
+        settings will be removed from the dictionary. """
         assert(self._loaded)
-        self.debug("Applying overrides")
+
+        # need a copy to iterate
+        for key in list(overrides.keys()):
+            if key.startswith(plugin_id):
+                setting_name = ".".join(key.split(".")[1:])
+                setting_value = overrides[key]
+
+                if setting_name not in self._settings:
+                    raise BadSettingException("Unrecognized override: " + key)
+
+                self._settings[setting_name].set_value(setting_value)
 
     def load(self, filename):
         """ Loads the plugin configuration from a given filename """

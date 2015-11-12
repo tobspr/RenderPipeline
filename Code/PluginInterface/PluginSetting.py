@@ -59,14 +59,17 @@ class BasePluginSetting(DebugObject):
             instance.load_additional_settings(yaml)
         except Exception as msg:
             raise BadSettingException("Failed to init type:", msg)
-            
+
+        # Set default value, using the set_value function to check if the
+        # default is valid
+        instance.set_value(instance.default)
+        instance.default = instance.value
+
         # Check if all settings got "consumed"
         if yaml:
             raise BadSettingException("Unrecognized settings-keys: ", yaml.keys())
 
 
-        # Finally set the value to the default
-        instance.value = instance.default
         return instance
 
 
@@ -80,10 +83,12 @@ class PluginSettingINT(BasePluginSetting):
         int_range = consume(yaml, "range")
         self.min_value = int(int_range[0])
         self.max_value = int(int_range[1])
-        self.default = int(self.default)
 
-        if self.default < self.min_value or self.default > self.max_value:
-            raise BadSettingException("Default exceeds value range")
+    def set_value(self, val):
+        val = int(val)
+        if val < self.min_value or val > self.max_value:
+            raise BadSettingException("Given value exceeds value range: " + str(val))
+        self.value = val
 
 class PluginSettingFLOAT(BasePluginSetting):
 
@@ -93,18 +98,25 @@ class PluginSettingFLOAT(BasePluginSetting):
         flt_range = consume(yaml, "range")
         self.min_value = float(flt_range[0])
         self.max_value = float(flt_range[1])
-        self.default = float(self.default)
 
-        if self.default < self.min_value or self.default > self.max_value:
-            raise BadSettingException("Default exceeds value range")
+    def set_value(self, val):
+        val = float(val)
+        if val < self.min_value or val > self.max_value:
+            raise BadSettingException("Given value exceeds value range: " + str(val))
+        self.value = val
 
 class PluginSettingBOOL(BasePluginSetting):
         
     """ Setting which stores a single bool """
 
     def load_additional_settings(self, yaml):
-        self.default = True if self.default else False
+        pass
 
+    def set_value(self, val):
+        if not isinstance(val, int) and not isinstance(val, bool):
+            raise BadSettingException("Unkown data value for bool: "  + str(val))
+        self.value = True if val else False
+        
 class PluginSettingENUM(BasePluginSetting):
 
     """ Setting which stores an enumeration """
@@ -114,7 +126,9 @@ class PluginSettingENUM(BasePluginSetting):
         if not isinstance(self.values, list) and not isinstance(self.values, tuple):
             raise BadSettingException("Value enumeration is not a list")
 
-        if self.default not in self.values:
-            raise BadSettingException("Default value not contained in enumeration")
+    def set_value(self, val):
+        if val not in self.values:
+            raise BadSettingException("Value not contained in enumeration: " + str(val))
+        self.value = val
 
 

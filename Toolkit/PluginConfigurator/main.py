@@ -7,6 +7,7 @@ This tool offers an interface to configure the pipeline
 
 from __future__ import print_function
 import sys
+from functools import partial
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
@@ -44,8 +45,16 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         # print(type(self.lst_plugins).selectionChanged)
 
         connect(self.lst_plugins, QtCore.SIGNAL("itemSelectionChanged()"), self.on_plugin_selected)
+        connect(self.lst_plugins, QtCore.SIGNAL("itemChanged(QListWidgetItem*)"), self.on_plugin_state_changed)
 
         self._load_plugin_list()
+
+    def on_plugin_state_changed(self, item):
+        plugin_id = item._plugin_id
+        state = item.checkState() == QtCore.Qt.Checked
+        self._interface.set_plugin_state(plugin_id, state)
+        self._rewrite_plugin_config()
+
 
     def on_plugin_selected(self):
         """ Gets called when a plugin got selected in the plugin list """
@@ -57,6 +66,11 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         assert(self._current_plugin_instance is not None)
         self._render_current_plugin()
         self.frame_details.show()
+
+    def _rewrite_plugin_config(self):
+        """ Rewrites the plugin configuration """
+        self._interface.write_configuration()
+
 
     def _render_current_plugin(self):
         """ Displays the currently selected plugin """        
@@ -90,7 +104,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             item_default.setTextAlignment(QtCore.Qt.AlignCenter)
             self.table_plugin_settings.setItem(index, 1, item_default)
 
-            setting_widget = self._get_widget_for_setting(handle)
+            setting_widget = self._get_widget_for_setting(self._current_plugin, name, handle)
             if isinstance(setting_widget, QtGui.QTableWidgetItem):
                 self.table_plugin_settings.setItem(index, 2, setting_widget)
             else:
@@ -100,13 +114,28 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             item_desc.setText(handle.description)
             self.table_plugin_settings.setItem(index, 3, item_desc)
 
-    def _get_widget_for_setting(self, setting):
+    def _do_update_setting(self, plugin_id, setting_id, value):
+        self._interface.update_setting(plugin_id, setting_id, value)
+        self._interface.write_configuration()
+
+    def _on_setting_bool_changed(self, plugin_id, setting_id, value):
+        self._do_update_setting(plugin_id, setting_id, value == QtCore.Qt.Checked)
+
+    def _on_setting_scalar_changed(self, plugin_id, setting_id, value):
+        self._do_update_setting(plugin_id, setting_id, value)
+
+    def _on_setting_enum_changed(self, plugin_id, setting_id, value):
+        self._do_update_setting(plugin_id, setting_id, value)
+
+    def _get_widget_for_setting(self, plugin_id, setting_id, setting):
         """ Returns an appropriate widget to control the given setting """
 
         if setting.type == "BOOL":
             box = QtGui.QCheckBox()
             box.setChecked(QtCore.Qt.Checked if setting.value else QtCore.Qt.Unchecked)
             box.setStyleSheet("margin-left:45%; margin-right:45%;")
+            connect(box, QtCore.SIGNAL("stateChanged(int)"), 
+                partial(self._on_setting_bool_changed, plugin_id, setting_id))
             return box
 
         elif setting.type == "INT":
@@ -115,6 +144,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             box.setMaximum(setting.max_value)
             box.setValue(setting.value)
             box.setAlignment(QtCore.Qt.AlignCenter)
+            connect(box, QtCore.SIGNAL("valueChanged(int)"), 
+                partial(self._on_setting_scalar_changed, plugin_id, setting_id))
             return box
 
         elif setting.type == "FLOAT":
@@ -123,13 +154,16 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             box.setMaximum(setting.max_value)
             box.setValue(setting.value)
             box.setAlignment(QtCore.Qt.AlignCenter)
+            connect(box, QtCore.SIGNAL("valueChanged(double)"), 
+                partial(self._on_setting_scalar_changed, plugin_id, setting_id))
             return box
 
         elif setting.type == "ENUM":
             box = QtGui.QComboBox()
             for value in setting.values:
                 box.addItem(value)
-
+            connect(box, QtCore.SIGNAL("currentIndexChanged(QString)"), 
+                partial(self._on_setting_enum_changed, plugin_id, setting_id))
             box.setCurrentIndex(setting.values.index(setting.value))
 
             return box
@@ -143,6 +177,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         print("Loading plugin list")
 
         self.frame_details.hide()
+
         # Plugins are all plugins in the plugins directory
         self._interface.unload_plugins()
         self._interface.load_plugins()
@@ -161,8 +196,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             item._plugin_id = plugin.get_id()
             self.lst_plugins.addItem(item)
-        
-
 
 # Start application
 app = QtGui.QApplication(sys.argv)
