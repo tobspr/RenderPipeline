@@ -14,7 +14,7 @@ sys.dont_write_bytecode = True
 devnull = open(os.path.devnull, "w")
 setup_dir = os.path.dirname(os.path.realpath(__file__))
 current_step = 0
-
+skip_native = len(sys.argv) > 1 and "--skip-native" in sys.argv
 
 
 def error(msg):
@@ -80,8 +80,9 @@ print("-" * 79)
 print_step("Checking if the repo is complete ..")
 check_repo_complete()
 
-print_step("Compiling the native code .. (This might take a while!)")
-exec_python_file("Native/Scripts/setup_native.py")
+if not skip_native:
+    print_step("Compiling the native code .. (This might take a while!)")
+    exec_python_file("Native/Scripts/setup_native.py")
 
 print_step("Generating normal quantization textures ..")
 exec_python_file("Data/NormalQuantization/generate.py")
