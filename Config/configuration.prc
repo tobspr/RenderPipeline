@@ -48,7 +48,7 @@ frame-rate-meter-side-margins 0.4
 # Set text settings
 text-minfilter linear
 text-magfilter linear
-text-page-size 128 128
+text-page-size 512 512
 
 # For smoother animations
 # even-animation #t

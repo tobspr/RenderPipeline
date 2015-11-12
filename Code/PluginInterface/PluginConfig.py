@@ -33,6 +33,11 @@ class PluginConfig(DebugObject):
         assert(self._loaded)
         return self._properties["version"]
 
+    def get_author(self):
+        """ Returns the author of the plugin """
+        assert(self._loaded)
+        return self._properties["author"]
+
     def get_settings(self):
         """ Returns a dictionary with all setting handles """
         return self._settings
@@ -79,6 +84,9 @@ class PluginConfig(DebugObject):
 
         # Copy over the regular properties
         self._properties = parsed_yaml
+
+        # Make the version a string
+        self._properties["version"] = str(self._properties["version"])
 
         # Process the settings
         self._process_settings(settings)
