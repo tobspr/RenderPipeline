@@ -108,7 +108,9 @@ const float mieG = 0.65;*/
 const int TRANSMITTANCE_INTEGRAL_SAMPLES = 500;
 const int INSCATTER_INTEGRAL_SAMPLES = 50;
 const int IRRADIANCE_INTEGRAL_SAMPLES = 32;
-const int INSCATTER_SPHERICAL_INTEGRAL_SAMPLES = 16;
+
+// Needs to be a low value, leads to driver crashes otherwise
+const int INSCATTER_SPHERICAL_INTEGRAL_SAMPLES = 8;
 
 // ----------------------------------------------------------------------------
 // PARAMETERIZATION OPTIONS

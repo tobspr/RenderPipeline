@@ -186,6 +186,7 @@ class RenderPipeline(DebugObject):
         # Hide the loading screen
         self._loading_screen.remove()
 
+        self.debug("Finished initialization.")
 
     def reload_shaders(self):
         """ Reloads all shaders """
