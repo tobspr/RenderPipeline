@@ -4,7 +4,7 @@ import os
 # Load plugin api
 from .. import *
 
-
+from direct.stdpy.file import listdir, isfile
 from panda3d.core import Texture, Shader
 from .ScatteringStage import ScatteringStage
 
@@ -74,9 +74,9 @@ class Plugin(BasePlugin):
         self._shaders = {}
 
         resource_path = self.get_shader_resource("")
-        for f in os.listdir(resource_path):
+        for f in listdir(resource_path):
             fpath = os.path.join(resource_path, f)
-            if os.path.isfile(fpath) and f.endswith(".compute.glsl"):
+            if isfile(fpath) and f.endswith(".compute.glsl"):
                 shader_name = f.split(".")[0]
                 shader_obj = Shader.load_compute(Shader.SL_GLSL, fpath)
                 self._shaders[shader_name] = shader_obj

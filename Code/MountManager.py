@@ -155,6 +155,8 @@ class MountManager(DebugObject):
                 self._try_remove(join(self._write_path, "ShaderAutoConfig.include"))
 
                 # Check for further tempfiles in the write path
+                # We explicitely use os.listdir here instead of pandas listdir,
+                # to work with actual paths
                 for f in os.listdir(self._write_path):
                     pth = join(self._write_path, f)
 

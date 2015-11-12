@@ -1,7 +1,7 @@
 from __future__ import print_function 
 
-from os import listdir
-from os.path import isfile, isdir, join
+from direct.stdpy.file import listdir, isfile, isdir
+from os.path import join
 
 from VirtualPlugin import VirtualPlugin, BadPluginException
 from Code.External.PyYAML import YAMLEasyLoad
