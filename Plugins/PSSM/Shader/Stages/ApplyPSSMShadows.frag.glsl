@@ -98,7 +98,7 @@ void main() {
         // Get the dynamic and fixed bias
         const float slope_bias = 0.0;
         const float normal_bias = 0.005;
-        const float fixed_bias = 0.0001;
+        const float fixed_bias = 0.0003;
         const int num_samples = 32;
         const int num_search_samples = 16;
 

@@ -20,6 +20,7 @@ class BasePluginSetting(DebugObject):
         self.label = None
         self.description = None
         self.runtime = False
+        self.shader_runtime = False
 
     @classmethod
     def load_from_yaml(cls, yaml):
@@ -50,12 +51,20 @@ class BasePluginSetting(DebugObject):
         if "runtime" in yaml:
             instance.runtime = True if consume(yaml, "runtime") else False
 
+        if "shader_runtime" in yaml:
+            instance.shader_runtime = True if consume(yaml, "shader_runtime") else False
+
         # Load type specific settings
         try:
             instance.load_additional_settings(yaml)
         except Exception as msg:
             raise BadSettingException("Failed to init type:", msg)
             
+        # Check if all settings got "consumed"
+        if yaml:
+            raise BadSettingException("Unrecognized settings-keys: ", yaml.keys())
+
+
         # Finally set the value to the default
         instance.value = instance.default
         return instance

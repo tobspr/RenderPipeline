@@ -78,12 +78,12 @@ class MainApp(ShowBase):
         plane.reparent_to(render)
         
         # Load some models
-        # model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
         # model = loader.loadModel("Models/Test.ignore/Statue.bam")
-        model = loader.loadModel("Models/Test.ignore/Car0.bam")
+        # model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
         # model = loader.loadModel("box")
         # model.set_scale(0.2)
-        model.set_two_sided(True)
+        # model.set_two_sided(True)
         model.flatten_strong()
 
 
