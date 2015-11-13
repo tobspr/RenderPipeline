@@ -1,6 +1,6 @@
 
 import socket
-import thread
+from threading import Thread
 
 class UDPListenerService(object):
 
@@ -40,9 +40,11 @@ class UDPListenerService(object):
     @classmethod
     def ping_thread(cls, port, message):
         """ Starts a new thread which sends a given message to a port """
-        thread.start_new_thread(cls.do_ping, (port, message))
-        
+        t = Thread(target=cls.do_ping, args=(port, message))
+        t.start()
+
     @classmethod
     def listener_thread(cls, port, callback):
         """ Starts a new thread listening to the given port """
-        thread.start_new_thread(cls.do_listen, (port, callback))
+        t = Thread(target=cls.do_listen, args=(port, callback))
+        t.start()
