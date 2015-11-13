@@ -11,9 +11,8 @@ class UDPListenerService(object):
     DEFAULT_PORT = 62323
     
     @staticmethod
-    def ping_location(port, message="PING"):
+    def do_ping(port, message="PING"):
         """ Sends a given message to a given port and immediately returns """
-        # print("Pinging localhost:" + str(port))
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             sock.sendto(message, ("127.0.0.1", port))
@@ -39,23 +38,11 @@ class UDPListenerService(object):
             sock.close()
 
     @classmethod
+    def ping_thread(cls, port, message):
+        """ Starts a new thread which sends a given message to a port """
+        thread.start_new_thread(cls.do_ping, (port, message))
+        
+    @classmethod
     def listener_thread(cls, port, callback):
         """ Starts a new thread listening to the given port """
         thread.start_new_thread(cls.do_listen, (port, callback))
-
-
-if __name__ == "__main__":
-
-    # Example usage:
-
-    if True:
-        # Client
-        UDPListenerService.ping_location(UDPListenerService.DEFAULT_PORT)
-    else:
-        # Server
-        def callback(msg):
-            print("MSG:", msg)
-
-        UDPListenerService.listener_thread(UDPListenerService.DEFAULT_PORT, callback)
-
-        while True: pass

@@ -7,6 +7,6 @@ description: >
     Eric Bruneton (http://evasion.inrialpes.fr/~Eric.Bruneton/).
     It also adds support for atmospheric fog.
 
-settings:
+settings: 
     
     # TODO

@@ -1,0 +1,120 @@
+
+name: Ambient Occlusion
+author: tobspr <tobias.springer1@gmail.com>
+version: 1.0
+description: >
+    This plugin adds support for different ambient Occlusion techniques.
+
+settings: !!omap
+
+    - technique:
+        type: enum
+        values: ["SSAO", "HBAO", "SSVO", "ALCHEMY", "UE4AO"]
+        default: SSAO
+        shader_runtime: true
+        label: Technique
+        description: >
+            The kernel to use for computing ambient occlusion. The settings below
+            depend on the kernel, so decide for a kernel first!
+
+
+    # General settings
+
+    - sample_radius:
+        type: float
+        range: [5, 200]
+        default: 50
+        shader_runtime: true
+        label: Sample Radius
+        description: >
+            Size of the sampling radius in pixels, higher values might look better,
+            but also perform worse due to less caching.
+    
+
+    # Settings for SSAO
+
+
+    - ssao_sample_count:
+        display_if: {technique: "SSAO"}
+        type: int
+        range: [1, 32]
+        default: 32
+        shader_runtime: true
+        label: Sample Count
+        description: >
+            Amount of samples to use. A higher amount of samples provides a better
+            quality but also a decrease in performance.
+
+    - ssao_bias:
+        display_if: {technique: "SSAO"}
+        type: float
+        range: [0.0, 1.0]
+        default: 0.1
+        shader_runtime: true
+        label: Depth Bias
+        description: >
+            This is a small bias which prevents self-shadowing artifacts.
+
+    - ssao_max_distance:
+        display_if: {technique: "SSAO"}
+        type: float
+        range: [0.0, 10.0]
+        default: 3.0
+        shader_runtime: true
+        label: Max distance
+        description: >
+            Prevents halos by specifying the maximum distance between two
+            pixels to account for ambient occlusion
+
+
+
+    # - ray_count: 
+    #     type: int
+    #     range: [4, 64]
+    #     default: 32
+    #     shader_runtime: true
+    #     label: Amount of Rays
+    #     description: >
+    #         Number of rays to use, a higher amount of rays provides a better
+    #         quality, but the performance decreases lineary.
+
+    # - ray_steps:
+    #     type: int
+    #     range: [1, 12]
+    #     default: 4
+    #     shader_runtime: true
+    #     label: Samples per Ray
+    #     description: >
+    #         Amount of samples to use for each ray while raymarching along the
+    #         tangent direction. A higher amount of samples catches details
+    #         better, but also decreases performance by a lot.
+
+    # - sample_radius:
+    #     type: float
+    #     range: [5, 100]
+    #     default: 50
+    #     shader_runtime: true
+    #     label: Sample Radius
+    #     description: >
+    #         Size of the sampling radius in pixels, higher values might look better,
+    #         but also perform worse due to less caching.
+
+    # - tangent_bias:
+    #     type: float
+    #     range: [0.0, 1.5]
+    #     default: 0.4
+    #     shader_runtime: true
+    #     label: Tangent Bias
+    #     description: >
+    #         This setting increases the bias of the tangent angle. If you increase
+    #         this value, the ambient occlusion will miss some samples, but it also
+    #         reduces artifacts.
+
+    # - max_sample_distance:
+    #     type: float
+    #     range: [0.01, 10.0]
+    #     default: 0.5
+    #     shader_runtime: true
+    #     label: Max sample distance
+    #     description: >
+    #         This setting specifies the maximum distance a sample may have to the center sample, in world space units. This prevents halos, and should be set as small as possible without getting artifacts.

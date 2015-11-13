@@ -128,7 +128,7 @@ class CommonResources(DebugObject):
         # Compute view projection matrices
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
         self._pta_current_view_proj_mat[0] = view_transform.get_mat() * proj_mat
-        self._pta_proj_mat[0] = proj_mat
+        self._pta_proj_mat[0] = Mat4.convert_mat(CSYupRight, CSZupRight) * proj_mat
 
         # Remove jitter
         proj_mat.set_cell(1, 0, 0.0)

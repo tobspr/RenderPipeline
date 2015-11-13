@@ -17,7 +17,7 @@ uniform mat4 p3d_ViewProjectionMatrix;
 
 uniform mat4 lastViewProjMatNoJitter;
 uniform mat4 trans_model_to_world;
-uniform mat4 tpose_world_to_model;
+uniform mat3 tpose_world_to_model;
 
 out layout(location=0) VertexOutput vOutput;
 
@@ -34,7 +34,7 @@ uniform struct {
 void main() {
     
     vOutput.texcoord = p3d_MultiTexCoord0;
-    vOutput.normal = normalize(tpose_world_to_model * vec4(p3d_Normal, 0) ).xyz;
+    vOutput.normal = normalize(tpose_world_to_model * p3d_Normal).xyz;
     vOutput.position = (trans_model_to_world * p3d_Vertex).xyz;
 
     // @TODO: Use last frame model matrix

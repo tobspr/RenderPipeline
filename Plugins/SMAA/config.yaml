@@ -5,9 +5,9 @@ version: 1.0
 description: >
     This plugin adds support for SMAA, a post process antialiasing technique.
 
-settings:
+settings: !!omap
 
-    use_reprojection:
+    - use_reprojection:
         type: bool
         default: true
         label: Use temporal antialiasing (SMAA T2)
@@ -18,7 +18,7 @@ settings:
             the last frame get merged. This way, flickering is reduced by a lot,
             and the image becomes more smooth. 
 
-    smaa_quality:
+    - smaa_quality:
         type: enum
         default: ultra
         values: ["low", "medium", "high", "ultra"]

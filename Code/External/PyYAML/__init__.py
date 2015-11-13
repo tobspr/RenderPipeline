@@ -1,14 +1,16 @@
 
 import sys
+import collections
 
 # Import different PyYaml versions depending on the used python version 
 if sys.version_info < (3, 0):
     from .yaml_py2 import load as YAMLLoad
     from .yaml_py2 import YAMLError as YAMLError
+    from .yaml_py2 import SafeLoader
 else:
     from .yaml_py3 import load as YAMLLoad
     from .yaml_py3 import YAMLError as YAMLError
-
+    from .yaml_py3 import SafeLoader
 
 def YAMLEasyLoad(filename):
     """ This method is a wrapper arround YAMLLoad, and provides error checking """
@@ -17,7 +19,7 @@ def YAMLEasyLoad(filename):
 
     try:
         with open(filename, "r") as handle:
-            parsed_yaml = YAMLLoad(handle)
+            parsed_yaml = YAMLLoad(handle, Loader=SafeLoader)
     except IOError as msg:
         DebugObject.global_error("YAMLLoader", "Could not find or open file:", filename)
         DebugObject.global_error("YAMLLoader", msg)

@@ -14,11 +14,10 @@ vec3 get_view_pos(ivec2 coord) {
 }
 
 void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xy) * 2;
+    ivec2 coord = ivec2(gl_FragCoord.xy);
     vec3 view_pos = get_view_pos(coord + ivec2(0, 0));
     
     float view_depth = texelFetch(GBufferDepth, coord, 0).x;
-
 
     // Do some work to find a good view normal
     vec3 view_pos_dxp = get_view_pos(coord + ivec2(1, 0));

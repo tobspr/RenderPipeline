@@ -6,7 +6,5 @@ description: >
     This plugin adds support for Screen Space Local Reflections, a screen space
     reflection technique. This technique is very buggy right now!
 
-settings:
-
+settings: 
     # TODO
-    

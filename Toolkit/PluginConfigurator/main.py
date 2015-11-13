@@ -91,16 +91,33 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         while self.table_plugin_settings.rowCount() > 0:
             self.table_plugin_settings.removeRow(0)
 
-        self.table_plugin_settings.setRowCount(len(settings))
+        label_font = QtGui.QFont()
+        label_font.setPointSize(10)
 
         for index, (name, handle) in enumerate(settings.items()):
-            item_label = QtGui.QTableWidgetItem()
-            item_label.setText(handle.label)
+
+            # Dont show hidden settings
+            if not handle.evaluate_display_conditions(settings):
+                continue
+
+            # Increase row count
+            self.table_plugin_settings.insertRow(index)
+
+            label = QtGui.QLabel()
+            label.setText(handle.label)
+            label.setWordWrap(True)
+            label.setFont(label_font)
+            # item_label = QtGui.QTableWidgetItem()
+            # item_label.setText(handle.label)
+            # item_label.setStyleSheet("padding-left: 10px;")            
 
             if handle.is_dynamic():
-                item_label.setBackground(QtGui.QColor(200, 255, 200, 255))
+                # label.setBackground(QtGui.QColor(200, 255, 200, 255))
+                label.setStyleSheet("background: rgba(200, 255, 200, 255);")
 
-            self.table_plugin_settings.setItem(index, 0, item_label)
+            label.setMargin(10)
+
+            self.table_plugin_settings.setCellWidget(index, 0, label)
 
             item_default = QtGui.QTableWidgetItem()
             item_default.setText(str(handle.default))
@@ -116,17 +133,32 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
     def _do_update_setting(self, setting_id, value):
         # print("Update setting: ", setting_id, value)
-        self._interface.update_setting(self._current_plugin, setting_id, value)
-        self._interface.write_configuration()
 
         # Check whether the setting is a runtime setting 
         setting_handle = self._current_plugin_instance.get_config().get_setting_handle(setting_id)
+
+        # Skip the setting in case the value is equal
+        if setting_handle.value == value:
+            # print("Skipping setting")
+            return
+            
+        # Otherwise set the new value
+        setting_handle.set_value(value)
+
+        self._interface.update_setting(self._current_plugin, setting_id, value)
+        self._interface.write_configuration()
+
         if not setting_handle.is_dynamic():
             self._show_restart_hint()
         else:
             # print("Sending reload packet ...")
             # In case the setting is dynamic, notice the pipeline about it:
-            UDPListenerService.ping_location(UDPListenerService.DEFAULT_PORT, self._current_plugin + "." + setting_id)
+            UDPListenerService.ping_thread(UDPListenerService.DEFAULT_PORT, self._current_plugin + "." + setting_id)
+
+        # Update GUI, but only in case of enum values, since they can trigger
+        # display conditions:
+        if setting_handle.type == "ENUM":
+            self._render_current_settings()
 
     def _on_setting_bool_changed(self, setting_id, value):
         self._do_update_setting(setting_id, value == QtCore.Qt.Checked)
@@ -138,7 +170,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._do_update_setting(setting_id, value)
 
     def _on_setting_slider_changed(self, setting_id, bound_objs, value):
-        value /= 1000.0 # was stored packed
+        value /= 100000.0 # was stored packed
         self._do_update_setting(setting_id, value)
 
         for obj in bound_objs:
@@ -148,7 +180,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._do_update_setting(setting_id, value)
         # Assume objects are sliders, so we need to rescale the value
         for obj in bound_objs:
-            obj.setValue(value * 1000.0)
+            obj.setValue(value * 100000.0)
 
     def _get_widget_for_setting(self, setting_id, setting):
         """ Returns an appropriate widget to control the given setting """
@@ -169,19 +201,21 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             if setting.type == "FLOAT":
                 box = QtGui.QDoubleSpinBox()
+                
+                if setting.max_value - setting.min_value < 1.0:
+                    box.setDecimals(4)
             else:
                 box = QtGui.QSpinBox()
             box.setMinimum(setting.min_value)
             box.setMaximum(setting.max_value)
             box.setValue(setting.value)
             box.setAlignment(QtCore.Qt.AlignCenter)
-            
 
             slider = QtGui.QSlider()
             slider.setOrientation(QtCore.Qt.Horizontal)
-            slider.setMinimum(setting.min_value * 1000.0)
-            slider.setMaximum(setting.max_value * 1000.0)
-            slider.setValue(setting.value * 1000.0) 
+            slider.setMinimum(setting.min_value * 100000.0)
+            slider.setMaximum(setting.max_value * 100000.0)
+            slider.setValue(setting.value * 100000.0) 
 
             layout.addWidget(box)
             layout.addWidget(slider)

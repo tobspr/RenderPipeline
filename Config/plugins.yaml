@@ -7,19 +7,16 @@
 
 
 enabled: 
-    - TSAO
+    - AO
 
 overrides: 
-    PSSM.pssm_distance: 5.0
-    PSSM.resolution: 2048
-    PSSM.split_count: 3
-    PSSM.sun_distance: 100.0
-    PSSM.use_pcf: True
+    AO.sample_radius: 83.0
+    AO.ssao_bias: 0.0
+    AO.ssao_max_distance: 6.57
+    AO.ssao_sample_count: 32
+    AO.technique: SSAO
+    PSSM.pssm_distance: 561.21
+    PSSM.sun_distance: 2787.14
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
-    TSAO.max_sample_distance: 2.86
-    TSAO.ray_count: 21
-    TSAO.ray_steps: 6
-    TSAO.sample_radius: 29.43
-    TSAO.tangent_bias: 0.13
 

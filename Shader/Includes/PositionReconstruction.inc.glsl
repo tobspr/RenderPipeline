@@ -65,9 +65,11 @@ vec3 calculateSurfacePos(float z, vec2 tcoord, float near, float far, mat4 clipT
 
 
 vec3 calculateViewPos(float z, vec2 tcoord) {
-  vec3 ndc = vec3(tcoord, z) * 2.0 - 1.0;
-  vec4 sampleViewPos = inverse(currentProjMat) * vec4(ndc, 1.0);
-  // vec4 sampleViewPos = currentProjMatInv * vec4(ndc, 1.0);
+  // vec3 ndc = vec3(tcoord, z) * 2.0 - 1.0;
 
-  return (sampleViewPos.xzy * vec3(1,1,-1)) / sampleViewPos.w ;
+  //@TODO: Use fma
+  vec3 ndc = vec3(tcoord.xy * 2.0 - 1.0, z);
+  vec4 sampleViewPos = inverse(currentProjMat) * vec4(ndc, 1.0);
+  return sampleViewPos.xyz / sampleViewPos.w;
 }
+

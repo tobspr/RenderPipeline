@@ -1,6 +1,7 @@
 
-from direct.stdpy.file import open
+import collections
 
+from direct.stdpy.file import open
 
 from ..Util.DebugObject import DebugObject
 from ..External.PyYAML import YAMLEasyLoad
@@ -15,7 +16,7 @@ class PluginConfig(DebugObject):
     def __init__(self):
         DebugObject.__init__(self)
         self._properties = {}
-        self._settings = {}
+        self._settings = collections.OrderedDict()
         self._loaded = False
 
     def get_name(self):
@@ -111,9 +112,10 @@ class PluginConfig(DebugObject):
         if settings is None:
             return
 
-        for setting_id in settings:
+
+        for setting_id, setting_value in settings:
             try:
-                setting = BasePluginSetting.load_from_yaml(settings[setting_id])
+                setting = BasePluginSetting.load_from_yaml(setting_value)
             except BadSettingException as msg:
                 self.error("Could not parse setting", setting_id, msg)
                 continue

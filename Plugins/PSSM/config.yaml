@@ -6,9 +6,9 @@ description: >
     This plugin adds support for Parallel Split Shadow Maps (PSSM),
     and also sun shading. 
 
-settings:
+settings: !!omap
 
-    pssm_distance:
+    - pssm_distance:
         type: float
         range: [5.0, 3000.0]
         default: 70.0
@@ -19,7 +19,7 @@ settings:
             are rendered. A higher distance means further shadows,
             but also a worse shadow quality.
 
-    sun_distance:
+    - sun_distance:
         type: float
         range: [100.0, 10000.0]
         default: 500.0
@@ -29,7 +29,7 @@ settings:
             Basically you don't need to adjust this setting, but in
             case you get artifacts, try increasing this setting.
 
-    split_count:
+    - split_count:
         type: int
         range: [2, 10]
         default: 7
@@ -42,7 +42,7 @@ settings:
             rendered again, so be careful when choosing high amount
             of splits.
 
-    resolution:
+    - resolution:
         type: int
         range: [128, 3072]
         default: 2048
@@ -54,7 +54,7 @@ settings:
             of 5120 * 512 for the shadow map. Be careful when choosing high
             defaults, the shadow map will soon take a huge amount of VRam.
 
-    use_pcf:
+    - use_pcf:
         type: bool
         default: true
         label: Use hardware filtering (PCF)        

@@ -42,7 +42,7 @@ class OnscreenDebugger(DebugObject):
         # When using small resolutions, scale the GUI so its still useable,
         # otherwise the sub-windows are bigger than the main window
         scale_factor = min(1.0, Globals.base.win.get_x_size() / 1800.0)
-        scale_factor = 1.0
+        # scale_factor = 1.0
         self._fullscreen_node.set_scale(scale_factor)
 
         # Component values

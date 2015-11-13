@@ -7,16 +7,16 @@ description: >
     plugins. When creating a plugin, just copy the plugin to your own folder
     and modify all required settings.
 
-settings:
+settings: !!omap
 
-    some_int_setting:
+    - some_int_setting:
         type: int
         range: [0, 10]
         default: 5
         label: Some integer setting
         description: Description of the setting.
 
-    some_float_setting:
+    - some_float_setting:
         type: float
         range: [-5.3, 2.9]
         default: 2.5
@@ -24,14 +24,14 @@ settings:
         description: Description of the setting.
         runtime: true
 
-    some_enum:
+    - some_enum:
         type: enum
         values: [value1, value2, value3]
         default: value2
         label: Some enum setting
         description: Description of the setting.
 
-    some_bool:
+    - some_bool:
         type: bool
         default: false
         label: Some boolean setting

@@ -3,6 +3,7 @@
 from ..Util.DebugObject import DebugObject
 from ..Util.Generic import consume
 
+
 class BadSettingException(Exception):
     pass
 
@@ -21,10 +22,21 @@ class BasePluginSetting(DebugObject):
         self.description = None
         self.runtime = False
         self.shader_runtime = False
+        self.display_conditions = {}
 
     def is_dynamic(self):
         """ Returns wheter the setting is dynamic """
         return self.runtime or self.shader_runtime
+
+    def evaluate_display_conditions(self, settings):
+        """ Checks wheter the setting should be visible for a given set of
+        settings """
+        for setting_id, required_value in self.display_conditions.items():
+            if setting_id not in settings:
+                return False 
+            if settings[setting_id].value != required_value:
+                return False
+        return True
 
     @classmethod
     def load_from_yaml(cls, yaml):
@@ -69,10 +81,13 @@ class BasePluginSetting(DebugObject):
         instance.set_value(instance.default)
         instance.default = instance.value
 
+        # Check for a display condition
+        if "display_if" in yaml:
+            instance.display_conditions = consume(yaml, "display_if")
+
         # Check if all settings got "consumed"
         if yaml:
             raise BadSettingException("Unrecognized settings-keys: ", yaml.keys())
-
 
         return instance
 
