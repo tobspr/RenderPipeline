@@ -50,6 +50,8 @@ void main() {
     vec3 view_vector = normalize(cameraPosition - m.position);
     vec4 ambient = vec4(0);
 
+    #if !DEBUG_MODE
+
     if (!is_skybox(m, cameraPosition)) {
         float conv_roughness = ConvertRoughness(m.roughness);
 
@@ -114,11 +116,10 @@ void main() {
 
         #endif
 
-            // ambient = vec4( prefilter_color, 0 );
-
     }
 
-    
+    #endif
+
     ambient.w = 0.0;
 
     result = texture(ShadedScene, texcoord) * 1 +  ambient * 1;

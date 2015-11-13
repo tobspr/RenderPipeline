@@ -71,6 +71,17 @@ class StageManager(DebugObject):
         """ Registers a new define for the shader auto config """
         self._defines[key] = value
 
+    def remove_define_if(self, condition):
+        """ Removes all defines matching condition, condition should be a
+        function or lambda taking 1 argument (the name of the define). """
+        to_remove = []
+        for define in self._defines:
+            if condition(define):
+                to_remove.append(define)
+
+        for rm in to_remove:
+            del self._defines[rm]
+
     def setup(self):
         """ Setups the stages """
         self.debug("Setup stages ...")

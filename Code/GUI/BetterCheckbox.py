@@ -47,7 +47,7 @@ class BetterCheckbox(DebugObject):
         self._collection = None
 
         if checked:
-            self._set_checked(True)
+            self._set_checked(True, False)
 
     def _set_collection(self, coll):
         """ Internal method to add a checkbox to a checkbox collection, this
@@ -84,7 +84,7 @@ class BetterCheckbox(DebugObject):
         if self._callback is not None:
             self._callback(*([status] + self._extra_args))
 
-    def _set_checked(self, val):
+    def _set_checked(self, val, do_callback=True):
         """ Internal method to check/uncheck the checkbox """
         self._node["isChecked"] = val
 
@@ -93,5 +93,5 @@ class BetterCheckbox(DebugObject):
         else:
             self._node['image'] = self._node['uncheckedImage']
 
-        if self._callback is not None:
+        if do_callback and self._callback is not None:
             self._callback(*([val] + self._extra_args))

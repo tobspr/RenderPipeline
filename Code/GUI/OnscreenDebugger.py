@@ -18,6 +18,7 @@ from .ErrorMessageDisplay import ErrorMessageDisplay
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
+from functools import partial
 
 
 class OnscreenDebugger(DebugObject):
@@ -151,38 +152,39 @@ class OnscreenDebugger(DebugObject):
             y=0, size=20, color=heading_color)
 
         render_modes = [
-            "Default",
-            "Metallic",
-            "BaseColor",
-            "Roughness",
-            "Specular",
-            "Normal",
-            "Velocity",
-            "Occlusion",
-            "Lighting",
-            "Raw-Lighting",
-            "Scattering",
-            "GI-Diffuse",
-            "GI-Specular",
-            "Ambient",
-            "PSSM-Splits",
-            "Shadowing",
-            "Bloom"
+            ("Default", ""),
+            ("Metallic", "METALLIC"),
+            ("BaseColor", "BASECOLOR"),
+            ("Roughness", "ROUGHNESS"),
+            ("Specular", "SPECULAR"),
+            ("Normal", "NORMAL"),
+            # ("Velocity", "VELOCITY")
+            # ("Occlusion",
+            # "Lighting",
+            # "Raw-Lighting",
+            # "Scattering",
+            # "GI-Diffuse",
+            # "GI-Specular",
+            # "Ambient",
+            # "PSSM-Splits",
+            # "Shadowing",
+            # "Bloom"
         ]
 
 
         row_width = 200
         collection = CheckboxCollection()
 
-        for idx, mode in enumerate(render_modes):
+        for idx, (mode, mode_id) in enumerate(render_modes):
             offs_y = (idx // 2) * 37 + 40
             offs_x = (idx % 2) * row_width
             box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
                 y=offs_y, text=mode, text_color=Vec3(0.9), radio=True,
-                chb_checked=(mode == "Default"), text_size=17, expand_width=160)
+                chb_checked=(mode == "Default"), text_size=17, expand_width=160,
+                chb_callback=partial(self._set_render_mode, mode_id))
             collection.add(box.get_checkbox())
 
-
+        """
         offs_top = 150 + (len(render_modes) // 2) * 37
         features = [
             "Occlusion",
@@ -211,7 +213,25 @@ class OnscreenDebugger(DebugObject):
             box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
                 y=offs_y, text=feature, text_color=Vec3(0.9), radio=False,
                 chb_checked=True, text_size=17, expand_width=160)
+        """
 
+    def _set_render_mode(self, mode_id, value):
+        """ Callback which gets called when a render mode got selected """
+        if not value:
+            return
+        
+        # Clear old defines
+        self._pipeline.get_stage_mgr().remove_define_if(lambda name: name.startswith("_RM__"))
+
+        # print("Setting render mode: ", mode_id)
+        if mode_id == "":
+            self._pipeline.get_stage_mgr().define("ANY_DEBUG_MODE", 0)
+        else:
+            self._pipeline.get_stage_mgr().define("ANY_DEBUG_MODE", 1)
+            self._pipeline.get_stage_mgr().define("_RM__" + mode_id, 1)
+
+        # Reload all shaders
+        self._pipeline.reload_shaders()
 
     def _init_keybindings(self):
         """ Inits the debugger keybindings """

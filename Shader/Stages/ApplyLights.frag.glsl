@@ -30,4 +30,29 @@ void main() {
 
     result.xyz = shade_material_from_tile_buffer(m, tile);
     result.w = 1.0;
+
+    #if MODE_ACTIVE(METALLIC)
+        result.xyz = vec3(m.metallic);
+    #endif
+
+
+    #if MODE_ACTIVE(BASECOLOR)
+        result.xyz = vec3(m.diffuse);
+    #endif
+
+
+    #if MODE_ACTIVE(ROUGHNESS)
+        result.xyz = vec3(m.roughness);
+    #endif
+
+
+    #if MODE_ACTIVE(SPECULAR)
+        result.xyz = vec3(m.specular);
+    #endif
+
+
+    #if MODE_ACTIVE(NORMAL)
+        result.xyz = vec3(m.normal * 0.5 + 0.5);
+    #endif
+
 }

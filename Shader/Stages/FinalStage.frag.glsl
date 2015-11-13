@@ -15,12 +15,14 @@ void main() {
     // sceneColor = Tonemap_Linear(sceneColor);
     // sceneColor = Tonemap_Optimized(sceneColor);
     // sceneColor = Tonemap_Reinhard(sceneColor);
-    sceneColor = Tonemap_Uncharted2(sceneColor);
 
+    #if !DEBUG_MODE
+        sceneColor = Tonemap_Uncharted2(sceneColor);
 
+        // Vignette
+       sceneColor *= 1.0 - smoothstep(0, 1, (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.3, 1.0) * 1.1  ) - 0.2) ) * 0.5;
 
-    // Vignette
-   sceneColor *= 1.0 - smoothstep(0, 1, (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.3, 1.0) * 1.1  ) - 0.2) ) * 0.5;
+    #endif
 
     result.xyz = sceneColor;
     result.w = 1.0;
