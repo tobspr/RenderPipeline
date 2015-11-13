@@ -9,7 +9,7 @@ class SMAAStage(RenderStage):
 
     """ This stage does the actual SMAA """
 
-    required_pipes = ["ShadedScene", "GBufferDepth", "GBuffer2"]
+    required_pipes = ["ShadedScene", "GBufferDepth", "GBuffer2", "GBuffer1"]
     required_inputs = ["mainCam", "mainRender", "cameraPosition"]
 
     def __init__(self, pipeline):
@@ -43,11 +43,22 @@ class SMAAStage(RenderStage):
 
     def create(self):
 
+        # Scene conversion
+        self._srgb_target = self._create_target("SMAATemporarySRGB")
+        self._srgb_target.add_color_texture(bits=8)
+        self._srgb_target.add_aux_texture(bits=8)
+        self._srgb_target.prepare_offscreen_buffer()
+        self._srgb_target.set_clear_color()
+
         # Edge detection
         self._edge_target = self._create_target("SMAAEdges")
         self._edge_target.add_color_texture(bits=16)
         self._edge_target.prepare_offscreen_buffer()
         self._edge_target.set_clear_color()
+
+
+        self._edge_target.set_shader_input("SRGBSource", self._srgb_target["color"])
+        self._edge_target.set_shader_input("PredicationSource", self._srgb_target["aux0"])
 
         # Weight blending
         self._blend_target = self._create_target("SMAABlendWeights")
@@ -69,8 +80,10 @@ class SMAAStage(RenderStage):
             target.add_color_texture(bits=16)
             target.prepare_offscreen_buffer()
             target.set_shader_input("BlendTex", self._blend_target["color"])
+            target.set_shader_input("SRGBSource", self._srgb_target["color"])
             self._neighbor_targets.append(target)
 
+    
         # Resolving
         if self._reprojection:
             self._resolve_target = self._create_target("SMAAResolve")
@@ -79,6 +92,7 @@ class SMAAStage(RenderStage):
             self._resolve_target.set_shader_input("JitterIndex", self._jitter_index)
 
     def set_shaders(self):
+        self._srgb_target.set_shader(self.load_plugin_shader("TemporarySRGB.frag.glsl"))
         self._edge_target.set_shader(self.load_plugin_shader("EdgeDetection.frag.glsl"))
         self._blend_target.set_shader(self.load_plugin_shader("BlendingWeights.frag.glsl"))
         for target in self._neighbor_targets:

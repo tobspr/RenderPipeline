@@ -65,11 +65,21 @@ class BasePlugin(DebugObject):
 
     def define_static_plugin_settings(self):
         """ Makes all plugin settings available in shaders by using defines.
-        This ignores settings which are marked as runtime changeable. """
+        This ignores settings which are marked as runtime changeable (but includes
+        shader runtime settings). """
 
         for name, setting in self._config.get_settings().items():
             if not setting.runtime:
-                self._pipeline.get_stage_mgr().define(self._id + "__" + name, setting.value)
+
+                if setting.type == "ENUM":
+                    # define all enum values
+                    for idx, value in enumerate(setting.values):
+                        self._pipeline.get_stage_mgr().define(self._id + "_ENUM_" + name + "_" + value, idx)
+
+                    self._pipeline.get_stage_mgr().define(self._id + "__" + name, setting.values.index(setting.value))
+                
+                else:
+                    self._pipeline.get_stage_mgr().define(self._id + "__" + name, setting.value)
 
     def get_id(self):
         """ Returns the id of the plugin """

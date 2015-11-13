@@ -50,6 +50,10 @@ class PluginManager(DebugObject):
         # Get file content and parse it
         parsed_yaml = YAMLEasyLoad(plugin_cfg)
 
+        if parsed_yaml is None:
+            self.error("Failed to load plugin config!")
+            return False
+        
         # Find root key
         if "enabled" not in parsed_yaml or "overrides" not in parsed_yaml:
             self.warn("Malformed plugin config, could not find root entry!")

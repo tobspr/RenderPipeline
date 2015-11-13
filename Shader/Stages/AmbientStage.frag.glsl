@@ -21,7 +21,7 @@ uniform vec3 cameraPosition;
     uniform samplerCube ScatteringCubemap;
 #endif
 
-#if HAVE_PLUGIN(HBAO)
+#if HAVE_PLUGIN(TSAO)
     uniform sampler2D AmbientOcclusion;
 #endif
 
@@ -107,7 +107,7 @@ void main() {
         ambient.xyz += diffuse_ambient + specular_ambient;
         ambient.xyz += env_amb * 0.05 * m.diffuse * (1.0 - m.metallic);
 
-        #if HAVE_PLUGIN(HBAO)
+        #if HAVE_PLUGIN(TSAO)
             ambient.xyz = max(ambient.xyz, vec3(0));
             float occlusion = texelFetch(AmbientOcclusion, coord, 0).x;
             ambient *= pow(occlusion, 5.0);

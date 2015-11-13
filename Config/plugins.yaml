@@ -7,9 +7,19 @@
 
 
 enabled: 
-    - HBAO
-    - SMAA
-    - Scattering
+    - TSAO
 
 overrides: 
+    PSSM.pssm_distance: 5.0
+    PSSM.resolution: 2048
+    PSSM.split_count: 3
+    PSSM.sun_distance: 100.0
+    PSSM.use_pcf: True
+    SMAA.smaa_quality: ultra
+    SMAA.use_reprojection: True
+    TSAO.max_sample_distance: 2.86
+    TSAO.ray_count: 21
+    TSAO.ray_steps: 6
+    TSAO.sample_radius: 29.43
+    TSAO.tangent_bias: 0.13
 

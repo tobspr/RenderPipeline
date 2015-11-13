@@ -15,7 +15,7 @@ uniform sampler2D NrmSource;
 
 void main() {
 
-    const float tangent_bias = 0.1;
+    const float tangent_bias = GET_SETTING(TSAO, tangent_bias);
     const float max_sampling_radius = 0.4;
 
     vec2 sample_coord = texcoord;
@@ -25,15 +25,15 @@ void main() {
     vec3 surface_pos = calculateSurfacePos(depth, sample_coord);
     float surface_scale = distance(surface_pos, cameraPosition);
 
-    vec2 sample_radius = vec2(50.0) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    vec2 sample_radius = vec2(GET_SETTING(TSAO, sample_radius)) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Get an uniform distribution
     sample_radius *= 10.0 / surface_scale;
 
     float averaged_samples = 0.0;
 
-    const int num_radii = GET_SETTING(HBAO, ray_count);
-    const int num_raymarch = GET_SETTING(HBAO, ray_steps);
+    const int num_radii = GET_SETTING(TSAO, ray_count);
+    const int num_raymarch = GET_SETTING(TSAO, ray_steps);
 
     vec4 mid_data = texelFetch(DepthSource, coord, 0);
     vec3 mid_vp = mid_data.xyz;
@@ -65,7 +65,7 @@ void main() {
             vec4 data = textureLod(DepthSource, offcoord, 0);
             vec3 vp_diff = data.xyz - mid_vp;
 
-            float factor = length(vp_diff) / 1.0;
+            float factor = length(vp_diff) / GET_SETTING(TSAO, max_sample_distance);
             
             if (factor < 1.0) {
                 last_diff = vp_diff;

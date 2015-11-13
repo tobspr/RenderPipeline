@@ -2,7 +2,7 @@
 # Load the plugin api
 from .. import *
 
-from .HBAOStage import HBAOStage
+from .TSAOStage import TSAOStage
 
 class Plugin(BasePlugin):
 
@@ -11,11 +11,10 @@ class Plugin(BasePlugin):
 
     @PluginHook("on_stage_setup")
     def setup_stages(self):
-        self._hbao_stage = self.create_stage(HBAOStage)
+        self._stage = self.create_stage(TSAOStage)
 
         # Make the ambient stage use our output
         get_internal_stage_handle(AmbientStage).add_pipe_requirement("AmbientOcclusion")
-
 
     @PluginHook("on_pipeline_created")
     def init(self):

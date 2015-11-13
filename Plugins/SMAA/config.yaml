@@ -18,4 +18,15 @@ settings:
             the last frame get merged. This way, flickering is reduced by a lot,
             and the image becomes more smooth. 
 
+    smaa_quality:
+        type: enum
+        default: ultra
+        values: ["low", "medium", "high", "ultra"]
+        label: SMAA Quality Preset
+        shader_runtime: true
+        description: >
+            The quality of the smaa algorithm. Usually you should choose "ultra",
+            since it does not have a significant higher cost, but provides way
+            better quality. However, on low-end systems, it might be desireable
+            to turn this value down.
 

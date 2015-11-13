@@ -35,51 +35,86 @@
    <iconset resource="resources.qrc">
     <normaloff>:/icon/res/icon.png</normaloff>:/icon/res/icon.png</iconset>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QListWidget" name="lst_plugins">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>140</y>
+      <y>180</y>
       <width>251</width>
-      <height>631</height>
+      <height>521</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QListWidget::item {
-padding: 5px;
-}</string>
+
+padding: 12px 6px;
+background: #333;
+outline: 0 !important;
+margin-bottom: 4px;
+
+}
+
+QListWidget::item:hover {
+background: #3a3a3a;
+}
+
+QListWidget::item:selected {
+background: #9a3;
+}
+
+QListWidget {
+background: #1b1b1b;
+padding: 0;
+color: #eee;
+/*
+background: #222;
+padding: 5px 8px;
+border: 1px solid #444;
+*/
+}
+
+* {
+outline: 0;
+}
+</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="lineWidth">
+     <number>0</number>
     </property>
     <item>
      <property name="text">
-      <string>Item 1</string>
+      <string>  Item 1</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Item 2</string>
+      <string>  Item 2</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Item 3</string>
+      <string>  Item 3</string>
      </property>
     </item>
    </widget>
    <widget class="QFrame" name="frame_details">
     <property name="geometry">
      <rect>
-      <x>300</x>
-      <y>140</y>
-      <width>881</width>
-      <height>631</height>
+      <x>290</x>
+      <y>120</y>
+      <width>911</width>
+      <height>671</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
     <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+     <enum>QFrame::NoFrame</enum>
     </property>
     <property name="frameShadow">
      <enum>QFrame::Plain</enum>
@@ -100,6 +135,9 @@ padding: 5px;
       <font>
        <pointsize>14</pointsize>
       </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #222;</string>
      </property>
      <property name="text">
       <string>lbl_plugin_name</string>
@@ -172,7 +210,7 @@ padding: 5px;
        <x>30</x>
        <y>70</y>
        <width>591</width>
-       <height>91</height>
+       <height>51</height>
       </rect>
      </property>
      <property name="font">
@@ -186,9 +224,7 @@ padding: 5px;
      <property name="text">
       <string>lbl_plugin_desc
 Plugin Desc Line 2
-Plugin Desc Line 3
-Plugin Desc Line 4
-</string>
+Plugin Desc Line 3</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
@@ -204,10 +240,13 @@ Plugin Desc Line 4
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>150</y>
-       <width>831</width>
-       <height>461</height>
+       <y>130</y>
+       <width>861</width>
+       <height>531</height>
       </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOn</enum>
@@ -222,7 +261,7 @@ Plugin Desc Line 4
       <bool>false</bool>
      </property>
      <property name="alternatingRowColors">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::NoSelection</enum>
@@ -293,14 +332,7 @@ Plugin Desc Line 4
      </row>
      <column>
       <property name="text">
-       <string>Name</string>
-      </property>
-      <property name="background">
-       <color>
-        <red>0</red>
-        <green>150</green>
-        <blue>0</blue>
-       </color>
+       <string>Setting</string>
       </property>
      </column>
      <column>
@@ -352,6 +384,31 @@ Plugin Desc Line 4
       </property>
      </item>
     </widget>
+    <widget class="QLabel" name="lbl_restart_pipeline">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>20</y>
+       <width>481</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+       <stylestrategy>PreferAntialias</stylestrategy>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #F44;</string>
+     </property>
+     <property name="text">
+      <string>Pipeline needs to be restarted in order to see all changes!</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
@@ -361,6 +418,10 @@ Plugin Desc Line 4
       <width>1200</width>
       <height>120</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 3px solid #000;
+border-width: 0 0 0px 0;</string>
     </property>
     <property name="text">
      <string/>
@@ -372,7 +433,7 @@ Plugin Desc Line 4
    <widget class="QLabel" name="lbl_select_plugin">
     <property name="geometry">
      <rect>
-      <x>560</x>
+      <x>540</x>
       <y>410</y>
       <width>391</width>
       <height>31</height>
@@ -387,34 +448,216 @@ Plugin Desc Line 4
      <string notr="true">color: #888;</string>
     </property>
     <property name="text">
-     <string>Select a Plugin to change its settings</string>
+     <string>Select a plugin on the left side to change its settings</string>
     </property>
    </widget>
-   <widget class="QLabel" name="lbl_restart_pipeline">
+   <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>680</x>
-      <y>80</y>
-      <width>481</width>
-      <height>31</height>
+      <x>0</x>
+      <y>120</y>
+      <width>291</width>
+      <height>681</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <pointsize>11</pointsize>
-      <stylestrategy>PreferAntialias</stylestrategy>
-     </font>
+    <property name="autoFillBackground">
+     <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #F44;</string>
+     <string notr="true">background: #1b1b1b;</string>
     </property>
-    <property name="text">
-     <string>Pipeline needs to be restarted in order to see all setting changes!</string>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
     </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
     </property>
+    <widget class="QLabel" name="lbl_plugin_name_2">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>251</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <kerning>false</kerning>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #ddd;border: 0;</string>
+     </property>
+     <property name="text">
+      <string>Installed Plugins</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lbl_hint_restart">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>600</y>
+       <width>241</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="palette">
+      <palette>
+       <active>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>107</red>
+           <green>107</green>
+           <blue>107</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>107</red>
+           <green>107</green>
+           <blue>107</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>120</red>
+           <green>120</green>
+           <blue>120</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>27</red>
+           <green>27</green>
+           <blue>27</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <stylestrategy>PreferAntialias</stylestrategy>
+       <kerning>true</kerning>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: #1b1b1b;
+border-top: 2px solid #444;
+border-right: 0px solid #9A3;</string>
+     </property>
+     <property name="text">
+      <string>Settings with a green background are changeable while the pipeline is running, all other settings require a pipeline restart.</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
+     </property>
+     <property name="scaledContents">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
+   <zorder>frame</zorder>
+   <zorder>lst_plugins</zorder>
+   <zorder>frame_details</zorder>
+   <zorder>label</zorder>
+   <zorder>lbl_select_plugin</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

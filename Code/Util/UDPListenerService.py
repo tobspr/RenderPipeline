@@ -13,7 +13,7 @@ class UDPListenerService(object):
     @staticmethod
     def ping_location(port, message="PING"):
         """ Sends a given message to a given port and immediately returns """
-        print("Pinging localhost:" + str(port))
+        # print("Pinging localhost:" + str(port))
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             sock.sendto(message, ("127.0.0.1", port))

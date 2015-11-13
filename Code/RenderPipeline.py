@@ -231,7 +231,7 @@ class RenderPipeline(DebugObject):
         """ Starts a listener thread which listens for incoming connections to
         trigger a shader reload. This is used by the Plugin Configurator to dynamically
         update settings. """
-        self._listener_update_queue = []
+        self._listener_update_queue = set()
         UDPListenerService.listener_thread(UDPListenerService.DEFAULT_PORT, self._on_reload_trigger)
 
     def _on_reload_trigger(self, msg):
@@ -239,14 +239,14 @@ class RenderPipeline(DebugObject):
         listener """
 
         # Dont process the message directly, instead do that in the main thread
-        self._listener_update_queue.append(msg)
+        self._listener_update_queue.add(msg)
 
     def _pre_render_update(self, task):
         """ Update task which gets called before the rendering """
 
         # Check if we need to update anything
         if self._listener_update_queue:
-            update = self._listener_update_queue.pop(0)
+            update = self._listener_update_queue.pop()
             self._plugin_mgr.on_setting_change(update)
 
         self._debugger.update()

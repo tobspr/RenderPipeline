@@ -42,14 +42,19 @@ class PluginInterface(object):
             print("ERROR: Could not find key 'enabled' in plugin config")
             return
 
-        self._enabled_plugins = content["enabled"]
+        if content["enabled"]:
+            self._enabled_plugins = content["enabled"]
+        else:
+            self._enabled_plugins = []
 
         if not "overrides" in content:
             print("ERROR: Could not find key 'overrides' in plugin config")
             return
 
-        self._overrides = content["overrides"]
-
+        if content["overrides"]:
+            self._overrides = content["overrides"]
+        else:
+            self._overrides = {}
 
     def load_plugins(self):
         """ Loads all plugins into memory """
@@ -153,6 +158,6 @@ class PluginInterface(object):
         with open(plugin_dest, "w") as handle:
             handle.write(yaml)
 
-        print("Wrote plugin configuration!")
+        # print("Wrote plugin configuration!")
 
 

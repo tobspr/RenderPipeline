@@ -50,6 +50,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         state = item.checkState() == QtCore.Qt.Checked
         self._interface.set_plugin_state(plugin_id, state)
         self._rewrite_plugin_config()
+        self._show_restart_hint()
 
     def on_plugin_selected(self):
         """ Gets called when a plugin got selected in the plugin list """
@@ -97,7 +98,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             item_label.setText(handle.label)
 
             if handle.is_dynamic():
-                item_label.setBackground(QtGui.QColor(150, 255, 150, 255))
+                item_label.setBackground(QtGui.QColor(200, 255, 200, 255))
 
             self.table_plugin_settings.setItem(index, 0, item_label)
 
@@ -107,16 +108,14 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             self.table_plugin_settings.setItem(index, 1, item_default)
 
             setting_widget = self._get_widget_for_setting(name, handle)
-            if isinstance(setting_widget, QtGui.QTableWidgetItem):
-                self.table_plugin_settings.setItem(index, 2, setting_widget)
-            else:
-                self.table_plugin_settings.setCellWidget(index, 2, setting_widget)
+            self.table_plugin_settings.setCellWidget(index, 2, setting_widget)
 
             item_desc = QtGui.QTableWidgetItem()
             item_desc.setText(handle.description)
             self.table_plugin_settings.setItem(index, 3, item_desc)
 
     def _do_update_setting(self, setting_id, value):
+        # print("Update setting: ", setting_id, value)
         self._interface.update_setting(self._current_plugin, setting_id, value)
         self._interface.write_configuration()
 
@@ -125,7 +124,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         if not setting_handle.is_dynamic():
             self._show_restart_hint()
         else:
-            print("Sending reload packet ...")
+            # print("Sending reload packet ...")
             # In case the setting is dynamic, notice the pipeline about it:
             UDPListenerService.ping_location(UDPListenerService.DEFAULT_PORT, self._current_plugin + "." + setting_id)
 
@@ -138,36 +137,62 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
     def _on_setting_enum_changed(self, setting_id, value):
         self._do_update_setting(setting_id, value)
 
+    def _on_setting_slider_changed(self, setting_id, bound_objs, value):
+        value /= 1000.0 # was stored packed
+        self._do_update_setting(setting_id, value)
+
+        for obj in bound_objs:
+            obj.setValue(value)
+
+    def _on_setting_spinbox_changed(self, setting_id, bound_objs, value):
+        self._do_update_setting(setting_id, value)
+        # Assume objects are sliders, so we need to rescale the value
+        for obj in bound_objs:
+            obj.setValue(value * 1000.0)
+
     def _get_widget_for_setting(self, setting_id, setting):
         """ Returns an appropriate widget to control the given setting """
+
+        widget = QtGui.QWidget()
+        layout = QtGui.QVBoxLayout()
+        widget.setLayout(layout)
 
         if setting.type == "BOOL":
             box = QtGui.QCheckBox()
             box.setChecked(QtCore.Qt.Checked if setting.value else QtCore.Qt.Unchecked)
-            box.setStyleSheet("margin-left:45%; margin-right:45%;")
+            box.setStyleSheet("margin-left:30%;")
             connect(box, QtCore.SIGNAL("stateChanged(int)"), 
                 partial(self._on_setting_bool_changed, setting_id))
-            return box
+            layout.addWidget(box)
 
-        elif setting.type == "INT":
-            box = QtGui.QSpinBox()
+        elif setting.type == "FLOAT" or setting.type == "INT":
+
+            if setting.type == "FLOAT":
+                box = QtGui.QDoubleSpinBox()
+            else:
+                box = QtGui.QSpinBox()
             box.setMinimum(setting.min_value)
             box.setMaximum(setting.max_value)
             box.setValue(setting.value)
             box.setAlignment(QtCore.Qt.AlignCenter)
-            connect(box, QtCore.SIGNAL("valueChanged(int)"), 
-                partial(self._on_setting_scalar_changed, setting_id))
-            return box
+            
 
-        elif setting.type == "FLOAT":
-            box = QtGui.QDoubleSpinBox()
-            box.setMinimum(setting.min_value)
-            box.setMaximum(setting.max_value)
-            box.setValue(setting.value)
-            box.setAlignment(QtCore.Qt.AlignCenter)
-            connect(box, QtCore.SIGNAL("valueChanged(double)"), 
-                partial(self._on_setting_scalar_changed, setting_id))
-            return box
+            slider = QtGui.QSlider()
+            slider.setOrientation(QtCore.Qt.Horizontal)
+            slider.setMinimum(setting.min_value * 1000.0)
+            slider.setMaximum(setting.max_value * 1000.0)
+            slider.setValue(setting.value * 1000.0) 
+
+            layout.addWidget(box)
+            layout.addWidget(slider)
+
+            connect(slider, QtCore.SIGNAL("valueChanged(int)"), 
+                partial(self._on_setting_slider_changed, setting_id, [box]))
+
+            value_type = "int" if setting.type == "INT" else "double"
+
+            connect(box, QtCore.SIGNAL("valueChanged(" + value_type + ")"), 
+                partial(self._on_setting_spinbox_changed, setting_id, [slider]))
 
         elif setting.type == "ENUM":
             box = QtGui.QComboBox()
@@ -177,11 +202,9 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
                 partial(self._on_setting_enum_changed, setting_id))
             box.setCurrentIndex(setting.values.index(setting.value))
 
-            return box
+            layout.addWidget(box)
 
-        fallback = QtGui.QTableWidgetItem()
-        fallback.setText("??" + setting.type)
-        return fallback
+        return widget
 
     def _set_settings_visible(self, flag):
         """ Sets wheter the settings panel is visible or not """
@@ -207,7 +230,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         for plugin in plugins:
             item = QtGui.QListWidgetItem()
-            item.setText(plugin.get_id())
+            item.setText(" " + plugin.get_name())
 
             if self._interface.is_plugin_enabled(plugin.get_id()):
                 item.setCheckState(QtCore.Qt.Checked)

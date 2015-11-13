@@ -6,8 +6,6 @@ win-size 1920 1080
 window-title Render Pipeline by tobspr 
 icon-filename Data/GUI/icon.ico
 
-
-
 # --------------  Debugging options  --------------
 
 # gl-dump-compiled-shaders #t
@@ -18,23 +16,25 @@ pstats-gpu-timing #t
 gl-debug #t
 
 
-
-
 # ----------------- Misc Settings -----------------
 
 # No stack trace on assertion
-assert-abort #f
+# TODO: Check if this is actually required
+# assert-abort #f
 
 # File system should be case sensitive
-# NOTICE: Set this to #f if you are using tempfile. Because it returns
-# wrong cased directory paths :(
+# NOTICE: Set this to #f if you are using tempfile, since it returns
+# wrong cased directory paths
 vfs-case-sensitive #f
 
+# Disable transform cache, it just seems to slow stuff down with no
+# actual benefit
 transform-cache #f
+
+# Enable state cache, this seems to actually help the performance by a lot
 state-cache #t
 
-
-# Frame rate meter
+# Frame rate meter style
 show-frame-rate-meter #f
 frame-rate-meter-milliseconds #t
 frame-rate-meter-update-interval 1.0
@@ -43,7 +43,6 @@ frame-rate-meter-ms-text-pattern %0.3f ms
 frame-rate-meter-layer-sort 1000
 frame-rate-meter-scale 0.036
 frame-rate-meter-side-margins 0.4
-
 
 # Set text settings
 text-minfilter linear
@@ -103,23 +102,18 @@ gl-coordinate-system default
 # and are played at 60 FPS
 interpolate-frames 1
 
-
 # Disable workarround in panda which causes our shadow atlas to take twice
 # the amount of vram it should, due to an intel driver bug.
 gl-force-fbo-color false
 
 
-
-
-
-
 # ----------- OpenGL / Performance Settings ------------
 
-
 # Set the minimum openGL version
-#gl-version 3 2
+# gl-version 3 2
 
-# Animations on the gpu. This is WIP, the default shader has to get adjusted first!
+# Animations on the gpu. The default shader has to get adjusted to support this
+# feature before this option can be turned on.
 # hardware-animated-vertices #t
 
 # Try this options for performance
@@ -153,9 +147,9 @@ gl-force-no-scissor #t
 # Eventually disable memory barriers, have to check if this is faster
 # gl-enable-memory-barriers #f
 
-# Enable threading
-lock-to-one-cpu #f
-support-threads #t
+# Disable threading
+lock-to-one-cpu #t
+support-threads #f
 
 # Let the driver generate the mipmaps
 driver-generate-mipmaps #t
