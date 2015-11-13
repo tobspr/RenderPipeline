@@ -48,8 +48,6 @@ void main() {
                 float nrm_diff = max(0, dot(sample_nrm, mid_nrm));
                 weight *= 1.0 - saturate(depth_diff);
                 weight *= pow(nrm_diff, 1.0 / max_nrm_diff);
-
-
             }
 
             weight = max(0.01, weight);

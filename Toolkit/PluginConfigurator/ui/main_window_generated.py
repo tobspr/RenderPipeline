@@ -174,7 +174,7 @@ class Ui_MainWindow(object):
         self.table_plugin_settings.horizontalHeader().setStretchLastSection(True)
         self.table_plugin_settings.verticalHeader().setVisible(False)
         self.table_plugin_settings.verticalHeader().setCascadingSectionResizes(False)
-        self.table_plugin_settings.verticalHeader().setDefaultSectionSize(80)
+        self.table_plugin_settings.verticalHeader().setDefaultSectionSize(70)
         self.table_plugin_settings.verticalHeader().setHighlightSections(False)
         self.table_plugin_settings.verticalHeader().setMinimumSectionSize(100)
         self.table_plugin_settings.verticalHeader().setSortIndicatorShown(False)

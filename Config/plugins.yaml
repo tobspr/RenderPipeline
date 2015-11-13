@@ -8,11 +8,14 @@
 
 enabled: 
     - AO
+    - Scattering
 
 overrides: 
-    AO.sample_radius: 83.0
-    AO.ssao_bias: 0.0
-    AO.ssao_max_distance: 6.57
+    AO.blur_depth_factor: 2.0
+    AO.blur_normal_factor: 2.0
+    AO.sample_radius: 200.0
+    AO.ssao_bias: 0.03
+    AO.ssao_max_distance: 2.56999
     AO.ssao_sample_count: 32
     AO.technique: SSAO
     PSSM.pssm_distance: 561.21

@@ -10,7 +10,11 @@ float sample_offset = sample_radius * pixel_size.x;
 float range_accum = 0.0;
 float accum = 0.0;
 for (int i = 0; i < num_samples; ++i) {
+
     vec3 offset = poisson_disk_3D_32[i];
+
+    offset *= noise_vec;
+    // offset = normalize(offset);
 
     // Flip offset in case it faces away from the normal
     offset = offset * sign(dot(offset, pixel_normal));

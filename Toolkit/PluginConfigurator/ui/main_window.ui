@@ -303,7 +303,7 @@ Plugin Desc Line 3</string>
       <bool>false</bool>
      </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>80</number>
+      <number>70</number>
      </attribute>
      <attribute name="verticalHeaderHighlightSections">
       <bool>false</bool>
