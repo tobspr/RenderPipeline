@@ -17,11 +17,11 @@ uniform sampler2D Noise4x4;
 
 // Functions which can be used by the kernels
 float get_depth_at(vec2 coord) {
-    return textureLod(GBufferDepth, coord, 0).w;
+    return textureLod(GBufferDepth, coord, 0).x;
 }
 
 float get_depth_at(ivec2 coord) {
-    return texelFetch(GBufferDepth, coord, 0).w;
+    return texelFetch(GBufferDepth, coord, 0).x;
 }
 
 
@@ -93,6 +93,10 @@ void main() {
     #if ENUM_V_ACTIVE(AO, technique, SSAO)
 
         #pragma include "../SSAO.kernel.glsl"
+
+    #else
+
+        #error Unkown AO technique!
 
     #endif
 

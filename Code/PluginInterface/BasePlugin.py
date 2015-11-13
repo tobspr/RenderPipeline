@@ -69,8 +69,7 @@ class BasePlugin(DebugObject):
         shader runtime settings). """
 
         for name, setting in self._config.get_settings().items():
-            if not setting.runtime:
-
+            if not setting.runtime or setting.shader_runtime:
                 if setting.type == "ENUM":
                     # define all enum values
                     for idx, value in enumerate(setting.values):

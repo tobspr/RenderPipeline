@@ -9,17 +9,19 @@
 enabled: 
     - AO
     - Scattering
+    - PSSM
+    - SMAA
 
 overrides: 
     AO.blur_depth_factor: 2.0
     AO.blur_normal_factor: 2.0
-    AO.sample_radius: 200.0
+    AO.sample_radius: 122.0
     AO.ssao_bias: 0.03
     AO.ssao_max_distance: 2.56999
     AO.ssao_sample_count: 32
     AO.technique: SSAO
-    PSSM.pssm_distance: 561.21
-    PSSM.sun_distance: 2787.14
+    PSSM.pssm_distance: 21.93
+    PSSM.sun_distance: 100.0
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
 

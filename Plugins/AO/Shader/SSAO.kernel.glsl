@@ -13,7 +13,7 @@ for (int i = 0; i < num_samples; ++i) {
 
     vec3 offset = poisson_disk_3D_32[i];
 
-    offset *= noise_vec;
+    offset += noise_vec;
     // offset = normalize(offset);
 
     // Flip offset in case it faces away from the normal

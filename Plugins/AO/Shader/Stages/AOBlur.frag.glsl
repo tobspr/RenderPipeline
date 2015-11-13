@@ -42,7 +42,11 @@ void main() {
 
     for (int i = -blur_size + 1; i < blur_size; ++i) {
         float weight = weights[abs(i)];
-        ivec2 offcord = coord + i * blur_direction;
+
+        // Notice: We can advance 2 pixels at once, since
+        // we did a bilateral upscale. So only every second pixel
+        // contains new information
+        ivec2 offcord = coord + i * blur_direction * 2;
         vec4 sampled = texelFetch(SourceTex, offcord, 0);
         vec3 nrm = get_gbuffer_normal(GBuffer1, offcord);
         float d = get_lin_z(offcord);
