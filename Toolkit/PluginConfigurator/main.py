@@ -100,16 +100,16 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             if not handle.evaluate_display_conditions(settings):
                 continue
 
+            row_index = self.table_plugin_settings.rowCount()
+
             # Increase row count
-            self.table_plugin_settings.insertRow(index)
+            self.table_plugin_settings.insertRow(self.table_plugin_settings.rowCount())
+
 
             label = QtGui.QLabel()
             label.setText(handle.label)
             label.setWordWrap(True)
             label.setFont(label_font)
-            # item_label = QtGui.QTableWidgetItem()
-            # item_label.setText(handle.label)
-            # item_label.setStyleSheet("padding-left: 10px;")            
 
             if handle.is_dynamic():
                 # label.setBackground(QtGui.QColor(200, 255, 200, 255))
@@ -117,19 +117,19 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             label.setMargin(10)
 
-            self.table_plugin_settings.setCellWidget(index, 0, label)
+            self.table_plugin_settings.setCellWidget(row_index, 0, label)
 
             item_default = QtGui.QTableWidgetItem()
             item_default.setText(str(handle.default))
             item_default.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.table_plugin_settings.setItem(index, 1, item_default)
+            self.table_plugin_settings.setItem(row_index, 1, item_default)
 
             setting_widget = self._get_widget_for_setting(name, handle)
-            self.table_plugin_settings.setCellWidget(index, 2, setting_widget)
+            self.table_plugin_settings.setCellWidget(row_index, 2, setting_widget)
 
             item_desc = QtGui.QTableWidgetItem()
             item_desc.setText(handle.description)
-            self.table_plugin_settings.setItem(index, 3, item_desc)
+            self.table_plugin_settings.setItem(row_index, 3, item_desc)
 
     def _do_update_setting(self, setting_id, value):
         # print("Update setting: ", setting_id, value)

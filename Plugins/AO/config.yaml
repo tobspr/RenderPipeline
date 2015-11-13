@@ -3,7 +3,7 @@ name: Ambient Occlusion
 author: tobspr <tobias.springer1@gmail.com>
 version: 1.0
 description: >
-    This plugin adds support for different ambient Occlusion techniques.
+    This plugin adds support for different ambient occlusion techniques.
 
 settings: !!omap
 
@@ -73,7 +73,7 @@ settings: !!omap
         shader_runtime: true
         label: Depth Bias
         description: >
-            This is a small bias which prevents self-shadowing artifacts on
+            This is a small bias which prevents self-occlusion artifacts on
             curved objects.
 
     - ssao_max_distance:
@@ -87,3 +87,47 @@ settings: !!omap
             Prevents halos by specifying the maximum distance between two
             pixels to account for ambient occlusion. The distance should be
             in world space.
+
+    # Settings for HBAO
+
+    - hbao_ray_count:
+        display_if: {technique: "HBAO"}
+        type: int
+        range: [3, 32]
+        default: 16
+        shader_runtime: true
+        label: Ray count
+        description: >
+            Amount of rays to march from the pixel position. 
+
+    - hbao_ray_steps:
+        display_if: {technique: "HBAO"}
+        type: int
+        range: [1, 16]
+        default: 3
+        shader_runtime: true
+        label: Ray steps
+        description: >
+            Amount of steps to perform for each ray.
+
+    - hbao_tangent_bias:
+        display_if: {technique: "HBAO"}
+        type: float
+        range: [0.0, 1.0]
+        default: 0.1
+        shader_runtime: true
+        label: Tangent bias
+        description: >
+            Used to prevent self-occlusion on curved objects, this increases the tangent angle
+            by a fixed value.
+
+    - hbao_max_distance:
+        display_if: {technique: "HBAO"}
+        type: float
+        range: [0.01, 20.0]
+        default: 7.0
+        shader_runtime: true
+        label: Max sample distance
+        description: >
+            Maximum distance of a sample to the pixel center in world space
+

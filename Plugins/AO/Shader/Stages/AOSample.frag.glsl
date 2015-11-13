@@ -11,7 +11,6 @@ out vec4 result;
 
 uniform vec3 cameraPosition;
 uniform sampler2D GBufferDepth;
-
 uniform sampler2D Noise4x4;
 
 
@@ -24,20 +23,14 @@ float get_depth_at(ivec2 coord) {
     return texelFetch(GBufferDepth, coord, 0).x;
 }
 
-
 vec3 get_view_pos_at(vec2 coord) {
-    // vec2 tcoord = (coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     return calculateViewPos(get_depth_at(coord), coord);
-
-    // return textureLod(ViewSpacePosDepth, coord, 0).xyz;
 }
 
 vec3 get_view_pos_at(ivec2 coord) {
     vec2 tcoord = (coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     return get_view_pos_at(tcoord);
 }
-
-
 
 vec3 get_pixel_normal(ivec2 coord) {
 
@@ -50,12 +43,11 @@ vec3 get_pixel_normal(ivec2 coord) {
     vec3 dx_nx = get_view_pos_at(coord + ivec2(-1, 0)) - view_pos;
     vec3 dx_ny = get_view_pos_at(coord + ivec2(0, -1)) - view_pos;
 
-    // Find the closest normal
+    // Find the closest distance in depth
     vec3 dx_x = abs(dx_px.z) < abs(dx_nx.z) ? vec3(dx_px) : vec3(dx_nx);
     vec3 dx_y = abs(dx_py.z) < abs(dx_ny.z) ? vec3(dx_py) : vec3(dx_ny);
 
-    vec3 nrm = normalize(cross(normalize(dx_x), normalize(dx_y)));
-    return nrm;
+    return normalize(cross(normalize(dx_x), normalize(dx_y)));
 }
 
 void main() {
@@ -78,12 +70,10 @@ void main() {
 
     vec3 noise_vec = texelFetch(Noise4x4, ivec2(gl_FragCoord.xy) % 4, 0).xyz * 2.0 - 1.0;
 
-
     if (view_dist > 10000.0) {
         result = vec4(1);
         return;
     }
-
 
     float kernel_scale = 10.0 / view_dist;
 
@@ -93,6 +83,10 @@ void main() {
     #if ENUM_V_ACTIVE(AO, technique, SSAO)
 
         #pragma include "../SSAO.kernel.glsl"
+
+    #elif ENUM_V_ACTIVE(AO, technique, HBAO)
+
+        #pragma include "../HBAO.kernel.glsl"
 
     #else
 

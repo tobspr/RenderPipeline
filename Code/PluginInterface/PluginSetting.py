@@ -33,6 +33,7 @@ class BasePluginSetting(DebugObject):
         settings """
         for setting_id, required_value in self.display_conditions.items():
             if setting_id not in settings:
+                self.warn("Unkown display dependency setting:", setting_id)
                 return False 
             if settings[setting_id].value != required_value:
                 return False
@@ -104,7 +105,10 @@ class PluginSettingINT(BasePluginSetting):
         self.max_value = int(int_range[1])
 
     def set_value(self, val):
-        val = int(val)
+        try:
+            val = int(val)
+        except ValueError as msg:
+            raise BadSettingException(msg)
         if val < self.min_value or val > self.max_value:
             raise BadSettingException("Given value exceeds value range: " + str(val))
         self.value = val
@@ -119,7 +123,11 @@ class PluginSettingFLOAT(BasePluginSetting):
         self.max_value = float(flt_range[1])
 
     def set_value(self, val):
-        val = float(val)
+        try:
+            val = float(val)
+        except ValueError as msg:
+            raise BadSettingException(msg)
+
         if val < self.min_value or val > self.max_value:
             raise BadSettingException("Given value exceeds value range: " + str(val))
         self.value = val
