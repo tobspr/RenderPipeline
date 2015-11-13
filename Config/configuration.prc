@@ -49,6 +49,10 @@ text-minfilter linear
 text-magfilter linear
 text-page-size 512 512
 
+# Better text performance since rdb's patch
+text-flatten 0
+text-dynamic-merge 1
+
 # For smoother animations
 # even-animation #t
 
