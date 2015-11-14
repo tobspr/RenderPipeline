@@ -143,7 +143,8 @@ class OnscreenDebugger(DebugObject):
 
         self._hint_reloading = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/ShaderReloadHint.png",
-            x=80, y=Globals.base.win.get_y_size() - 100, parent=self._fullscreen_node)
+            x=80, y=Globals.base.win.get_y_size() - 100,
+            parent=Globals.base.pixel2d)
         self.set_reload_hint_visible(False)
 
     def set_reload_hint_visible(self, flag):

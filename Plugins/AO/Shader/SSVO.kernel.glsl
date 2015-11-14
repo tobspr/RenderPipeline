@@ -11,12 +11,9 @@ of the spheres volume is then used to compute AO.
 
 const int num_samples = GET_SETTING(AO, ssvo_sample_count);
 
-const float bias = 0.2;
-
-
 float accum = 0.0;
 float accum_count = 0;
-float sphere_radius = GET_SETTING(AO, ssvo_sphere_radius);
+float sphere_radius = GET_SETTING(AO, ssvo_sphere_radius) / kernel_scale;
 
 for (int i = 0; i < num_samples; ++i) {
 
@@ -30,6 +27,10 @@ for (int i = 0; i < num_samples; ++i) {
 
     // Project sample position to screen space
     vec3 proj = viewToScreen(sample_pos);
+
+    if (proj.x < 0.0 || proj.y < 0.0 || proj.x > 1.0 || proj.y > 1.0) {
+        continue;
+    }
 
     // Project it back to view space, using the actual depth
     float proj_depth = get_depth_at(proj.xy);
@@ -58,23 +59,12 @@ for (int i = 0; i < num_samples; ++i) {
     // Compute line integral
     float dist_factor = (real_dist - dist_start) / (dist_end - dist_start);
 
-    // if (dist_factor > - bias && dist_factor < 2 + bias) {
-        accum += saturate(dist_factor);
-        // accum_count += 1.0;
-        // accum_count += 0.75;
-    // } 
-    // accum_count += 0.25;
+    accum += saturate(dist_factor);
     accum_count += 1.0;
-        // accum += 0.0;
-        // accum_count += 0.1;
-    // }
 
 }
 
 accum /= max(1.0, accum_count);
-
-// Since on average, half of the sphere is occluded, multiply the factor by 2
-accum *= 1.5;
 accum = saturate(accum);
 result = vec4(accum);
 
