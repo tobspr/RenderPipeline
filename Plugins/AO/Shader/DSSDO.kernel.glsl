@@ -23,7 +23,10 @@ for (int i = 0; i < num_samples; ++i) {
 
     // Get random offset in worldspace
     vec3 offset = (poisson_disk_3D_64[i] + noise_vec.xyz * 0.4) * max_distance;
-    offset = offset * sign(dot(offset, pixel_world_normal));
+    
+    // Flip offset in case it faces away
+    offset = faceforward(offset, offset, pixel_world_normal);
+
     vec3 offset_pos = pixel_world_pos + offset;
 
     // Get world pos at that random pos

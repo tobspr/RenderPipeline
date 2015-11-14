@@ -25,7 +25,7 @@ for (int i = 0; i < num_samples; ++i) {
     offset /= 2.0;
 
     // Flip offset in case it faces away from the normal
-    offset = offset * sign(dot(offset, pixel_normal));
+    offset = faceforward(offset, offset, pixel_normal);
 
     // Compute offset position in view space
     vec3 offset_pos = pixel_view_pos + offset * sample_offset / kernel_scale * 20.0;
