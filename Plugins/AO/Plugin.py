@@ -15,6 +15,7 @@ class Plugin(BasePlugin):
 
         # Make the ambient stage use our output
         get_internal_stage_handle(AmbientStage).add_pipe_requirement("AmbientOcclusion")
+        get_internal_stage_handle(ApplyLightsStage).add_pipe_requirement("AmbientOcclusion")
 
     @PluginHook("on_pipeline_created")
     def init(self):

@@ -6,7 +6,7 @@ from random import random
 
 class AOStage(RenderStage):
 
-    required_pipes = ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1", "GBuffer2"]
+    required_pipes = ["GBufferDepth", "GBuffer0", "GBuffer1", "GBuffer2"]
     required_inputs = ["mainCam", "mainRender", "currentProjMat", "cameraPosition"]
 
     def __init__(self, pipeline):

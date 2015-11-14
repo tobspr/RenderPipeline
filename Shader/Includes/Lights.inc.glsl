@@ -4,6 +4,12 @@
 #pragma include "Includes/Structures/Material.struct.glsl"
 #pragma include "Includes/BRDF.inc.glsl"
 
+#if IS_SCREEN_SPACE
+#if HAVE_PLUGIN(AO)
+uniform sampler2D AmbientOcclusion;
+#endif
+#endif
+
 
 
 float computePointLightAttenuation(float r, float d) {
@@ -62,7 +68,27 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
 
     shadingResult += (distribution * visibility * fresnel) / max(0.001, 4.0 * NxV * max(0.001, NxL) ) * energy * m.specular * specularColor;
 
+    // Special case for DSSDO
+    #if IS_SCREEN_SPACE
 
+        #if HAVE_PLUGIN(AO)
+
+            #if ENUM_V_ACTIVE(AO, technique, DSSDO)
+                // DSSDO
+                ivec2 coord = ivec2(gl_FragCoord.xy);
+                vec4 ao_sample = texelFetch(AmbientOcclusion, coord, 0);
+                float occlusion_factor = 1.0 - saturate(dot(vec4(l, 0), ao_sample)) * ao_sample.w;
+                occlusion_factor = pow(occlusion_factor, 5.0);
+                shadingResult = vec3( occlusion_factor );
+
+            #endif
+
+        #endif
+
+    #endif
+
+    // shadingResult *= 5.0;
+    // attenuation = 1.0;
 
     return shadingResult * attenuation * shadow;
 }

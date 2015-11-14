@@ -1,6 +1,11 @@
 #version 400
 
 #pragma include "Includes/Configuration.inc.glsl"
+
+// Tell the lighting pipeline we are doing this in screen space, so gl_FragCoord
+// is available.
+#define IS_SCREEN_SPACE 1
+
 #pragma include "Includes/LightCulling.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/LightingPipeline.inc.glsl"

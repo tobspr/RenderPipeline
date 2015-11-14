@@ -1,6 +1,7 @@
 #pragma once
 
 uniform mat4 trans_clip_of_mainCam_to_mainRender;
+uniform mat4 trans_mainRender_to_clip_of_mainCam;
 uniform mat4 currentProjMatInv;
 uniform mat4 currentProjMat;
 
@@ -78,4 +79,12 @@ vec3 viewToScreen(vec3 view_pos) {
   projected.xyz /= projected.w;
   projected.xy = fma(projected.xy, vec2(0.5), vec2(0.5));
   return projected.xyz;
+}
+
+
+vec3 worldToScreen(vec3 world_pos) {
+  vec4 proj = trans_mainRender_to_clip_of_mainCam * vec4(world_pos, 1);
+  proj.xyz /= proj.w;
+  proj.xy = fma(proj.xy, vec2(0.5), vec2(0.5));
+  return proj.xyz;
 }

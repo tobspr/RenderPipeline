@@ -5,12 +5,14 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/PoissonDisk.inc.glsl"
+#pragma include "Includes/GBufferPacking.inc.glsl"
 
 in vec2 texcoord;
 out vec4 result;
 
 uniform vec3 cameraPosition;
 uniform sampler2D GBufferDepth;
+uniform sampler2D GBuffer1;
 uniform sampler2D Noise4x4;
 
 
@@ -34,6 +36,11 @@ vec3 get_view_pos_at(ivec2 coord) {
 
 vec3 get_world_pos_at(vec2 coord) {
     return calculateSurfacePos(get_depth_at(coord), coord);
+}
+
+vec3 get_world_pos_at(ivec2 coord) {
+    vec2 tcoord = (coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+    return calculateSurfacePos(get_depth_at(tcoord), tcoord);
 }
 
 
@@ -65,13 +72,15 @@ void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy) * 2;
 
+    // Shader variables
     vec3 pixel_normal = get_pixel_normal(coord);
     float pixel_depth = get_depth_at(coord);
     vec3 pixel_view_pos = get_view_pos_at(coord);
+    vec3 pixel_world_pos = get_world_pos_at(coord);
+    vec3 pixel_world_normal = get_gbuffer_normal(GBuffer1, coord);
 
-    vec3 material_pos = calculateSurfacePos(texelFetch(GBufferDepth, coord, 0).x, texcoord);
-    vec3 view_vector = normalize(material_pos - cameraPosition);
-    float view_dist = distance(material_pos, cameraPosition);
+    vec3 view_vector = normalize(pixel_world_pos - cameraPosition);
+    float view_dist = distance(pixel_world_pos, cameraPosition);
 
     vec3 noise_vec = texelFetch(Noise4x4, ivec2(gl_FragCoord.xy) % 4, 0).xyz * 2.0 - 1.0;
 
@@ -80,6 +89,7 @@ void main() {
         return;
     }
 
+    // float kernel_scale = 10.0 / getLinearZFromZ(pixel_depth);
     float kernel_scale = 10.0 / view_dist;
 
     const float sample_radius = GET_SETTING(AO, sample_radius); 
@@ -92,6 +102,10 @@ void main() {
     #elif ENUM_V_ACTIVE(AO, technique, HBAO)
 
         #pragma include "../HBAO.kernel.glsl"
+
+    #elif ENUM_V_ACTIVE(AO, technique, DSSDO)
+
+        #pragma include "../DSSDO.kernel.glsl"
 
     #elif ENUM_V_ACTIVE(AO, technique, SSVO)
 

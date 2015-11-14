@@ -110,9 +110,13 @@ void main() {
         ambient.xyz += env_amb * 0.05 * m.diffuse * (1.0 - m.metallic);
 
         #if HAVE_PLUGIN(AO)
-            ambient.xyz = max(ambient.xyz, vec3(0));
-            float occlusion = texelFetch(AmbientOcclusion, coord, 0).x;
-            ambient *= pow(occlusion, 5.0);
+
+            // Don't use this when using DSSDO
+            #if !ENUM_V_ACTIVE(AO, technique, DSSDO)
+                ambient.xyz = max(ambient.xyz, vec3(0));
+                float occlusion = texelFetch(AmbientOcclusion, coord, 0).x;
+                ambient *= pow(occlusion, 5.0);
+            #endif
 
         #endif
 

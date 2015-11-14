@@ -22,7 +22,7 @@ overrides:
     AO.ssao_sample_count: 32
     AO.ssvo_sample_count: 32
     AO.ssvo_sphere_radius: 1.2504
-    AO.technique: SSVO
+    AO.technique: DSSDO
     PSSM.pssm_distance: 21.93
     PSSM.sun_distance: 100.0
     SMAA.smaa_quality: ultra

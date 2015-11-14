@@ -68,3 +68,13 @@ ivec2 get_bilateral_coord(ivec2 coord) {
     return (coord + 1) / 2 - 1;
 }
 
+
+bool out_of_screen(vec2 tcoord) {
+    return tcoord.x < 0.0 || tcoord.y < 0.0 || tcoord.x > 1.0 || tcoord.y > 1.0;    
+}
+
+void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
+    vec3 v0 = normal.z < 0.9 ? vec3(0, 0, 1) : vec3(0, 1, 0);
+    tangent = normalize(cross(v0, normal));
+    bitangent = normalize(cross(tangent, normal));
+}
