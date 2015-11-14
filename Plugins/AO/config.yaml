@@ -10,7 +10,7 @@ settings: !!omap
     - technique:
         type: enum
         values: ["SSAO", "HBAO", "SSVO", "ALCHEMY", "UE4AO"]
-        default: SSAO
+        default: ALCHEMY
         shader_runtime: true
         label: Technique
         description: >
@@ -148,13 +148,23 @@ settings: !!omap
     - ssvo_sphere_radius:
         display_if: {technique: "SSVO"}
         type: float
-        range: [0.05, 5.0]
+        range: [0.1, 35.0]
         default: 1.0
         shader_runtime: true
         label: Sphere sample radius
         description: >
             Size of the sphere in view space to integrate. High values may produce
             artifacts.
+
+    - ssvo_max_distance:
+        display_if: {technique: "SSVO"}
+        type: float
+        range: [0.05, 10.0]
+        default: 3.0
+        shader_runtime: true
+        label: Max distance
+        description: >
+            Maximum distance until a sample gets rejected, in world space. This prevents halos arround objects.
 
 
     # Settings for ALCHEMY

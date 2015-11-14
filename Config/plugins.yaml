@@ -24,9 +24,10 @@ overrides:
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 1.43
     AO.ssao_sample_count: 32
+    AO.ssvo_max_distance: 3.04
     AO.ssvo_sample_count: 32
-    AO.ssvo_sphere_radius: 5.0
-    AO.technique: SSVO
+    AO.ssvo_sphere_radius: 4.59
+    AO.technique: UE4AO
     PSSM.pssm_distance: 21.93
     PSSM.sun_distance: 100.0
     SMAA.smaa_quality: ultra
