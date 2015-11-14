@@ -7,9 +7,20 @@ from VirtualPlugin import VirtualPlugin, BadPluginException
 from Code.External.PyYAML import YAMLEasyLoad
 from Code.PluginInterface.PluginConfig import BadSettingException
 
+class PluginConfigError(Exception):
+    """ Exception which is raised when something went wrong during reading the
+    plugin configuration """
+    pass
+
 class PluginInterface(object):
 
+    """ This emulates the functionality of the PluginManager of the pipeline,
+    but outside of the pipeline. It also handles loading and writing of the
+    plugin configuration file. """
+
     def __init__(self):
+        """ Constructs a new interface, for now we assume the plugins are at a
+        fixed path """
         self._plugin_dir = "../../Plugins/"
         self._plugin_instances = []
         self._enabled_plugins = []
@@ -17,40 +28,37 @@ class PluginInterface(object):
 
     def get_available_plugins(self):
         """ Returns a list of all installed plugins """
-
         plugins = []
         files = listdir(self._plugin_dir)
-
         for f in files:
             abspath = join(self._plugin_dir, f)
             if isdir(abspath) and f != "PluginPrefab":
                 plugins.append(f)
-
         return plugins
 
     def _load_plugin_config(self):
-        """ Checks all plugins enabled by the user """
+        """ Loads the plugin configuration from the pipeline Config directory,
+        and gets the list of enabled plugins and settings from that. """
         plugin_cfg = "../../Config/plugins.yaml"
 
         if not isfile(plugin_cfg):
-            print("ERROR: Could not find plugin config at", plugin_cfg)
-            return
+            raise PluginConfigError("Could not find plugin config at " + plugin_cfg)
 
         content = YAMLEasyLoad(plugin_cfg)
 
+        # Check if all required keys are in the yaml file
         if not "enabled" in content:
-            print("ERROR: Could not find key 'enabled' in plugin config")
-            return
+            raise PluginConfigError("Could not find key 'enabled' in plugin config")
+        if not "overrides" in content:
+            raise PluginConfigError("Could not find key 'overrides' in plugin config")
 
+        # Get the list of enabled plugin ID's
         if content["enabled"]:
             self._enabled_plugins = content["enabled"]
         else:
             self._enabled_plugins = []
 
-        if not "overrides" in content:
-            print("ERROR: Could not find key 'overrides' in plugin config")
-            return
-
+        # Get the list of setting overrides
         if content["overrides"]:
             self._overrides = content["overrides"]
         else:
@@ -63,21 +71,20 @@ class PluginInterface(object):
         plugin_ids = self.get_available_plugins()
 
         for plugin in plugin_ids:
+
+            # Try loading the plugin, and see what happens
             try:
                 plugin_instance = self._load_plugin(plugin)
             except BadPluginException as msg:
                 print("Bad plugin", plugin)
                 print(msg)
                 continue
-            # except Exception as msg:
-                # print("Unexpected exception loading", plugin)
-                # print(msg)
-                # continue
             except BadSettingException as msg:
                 print("Bad setting for", plugin)
                 print(msg)
                 continue
 
+            # Try applying the overrides, and see what happens
             try:
                 plugin_instance.consume_overrides(self._overrides)
             except BadSettingException as msg:
@@ -104,7 +111,6 @@ class PluginInterface(object):
         for plugin in self._plugin_instances:
             if plugin.get_id() == plugin_id:
                 return plugin
-
         return None
 
     def get_plugin_instances(self):
