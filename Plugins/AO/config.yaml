@@ -42,7 +42,7 @@ settings: !!omap
             will not get weighted.
 
     - sample_radius:
-        display_if: {technique: ["SSAO", "HBAO"]}
+        display_if: {technique: ["SSAO", "HBAO", "ALCHEMY"]}
         type: float
         range: [5, 200]
         default: 50
@@ -132,8 +132,29 @@ settings: !!omap
         description: >
             Maximum distance of a sample to the pixel center in world space
 
-    # Settings for SSDO
 
+    # Settings for DSSDO
+
+    - dssdo_num_samples:
+        display_if: {technique: "DSSDO"}
+        type: int
+        range: [4, 32]
+        default: 32
+        shader_runtime: true
+        label: Sample count
+        description: >
+            Amount of random samples to take, a higher sample count increases
+            the quality but also decreases the performance.
+
+    - dssdo_max_distance:
+        display_if: {technique: "DSSDO"}
+        type: float
+        range: [0.02, 2.0]
+        default: 0.25
+        shader_runtime: true
+        label: Sample radius
+        description: >
+            Size of the sample kernel in world space units.
 
 
     # Settings for SSVO
@@ -158,3 +179,28 @@ settings: !!omap
         description: >
             Size of the sphere in view space to integrate. High values may produce
             artifacts.
+
+
+    # Settings for ALCHEMY
+
+    - alchemy_num_samples:
+        display_if: {technique: "ALCHEMY"}
+        type: int
+        range: [4, 32]
+        default: 16
+        shader_runtime: true
+        label: Sample Count
+        description: >
+            Amount of samples to use. A higher amount of samples provides a better
+            quality but also a decrease in performance.
+
+    - alchemy_max_distance:
+        display_if: {technique: "ALCHEMY"}
+        type: float
+        range: [0.1, 20.0]
+        default: 10.0
+        shader_runtime: true
+        label: Maximum distance
+        description: >
+            Specifies the maximum distance between two samples until one sample
+            is rejected. This prevents halos arround objects.

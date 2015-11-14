@@ -111,6 +111,10 @@ void main() {
 
         #pragma include "../SSVO.kernel.glsl"
 
+    #elif ENUM_V_ACTIVE(AO, technique, ALCHEMY)
+
+        #pragma include "../ALCHEMY.kernel.glsl"
+
     #else
 
         #error Unkown AO technique!
