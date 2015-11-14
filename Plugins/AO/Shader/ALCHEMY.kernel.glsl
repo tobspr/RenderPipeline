@@ -26,15 +26,18 @@ for (int i = 0; i < num_samples; ++i) {
     // Get the vector s-p to that sample position
     vec3 sample_vec = normalize(off_pos - pixel_view_pos);
 
+
     // Check if the distance matches, discard matches which are too far away
-    if (distance(off_pos, pixel_view_pos) < max_dist) {
+    float dist = distance(off_pos, pixel_view_pos) / max_dist;
+    if (dist < 1.0) {
 
         // Weight sample by the angle
-        accum += max(0, dot(pixel_normal, sample_vec));
+        accum += max(0, dot(pixel_normal, sample_vec)) / dist;
     }
 
 }
 
 // Normalize values
 accum /= num_samples;
+accum *= 0.5;
 result = vec4(1 - saturate(accum));
