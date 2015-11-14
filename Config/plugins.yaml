@@ -25,8 +25,8 @@ overrides:
     AO.ssao_max_distance: 1.43
     AO.ssao_sample_count: 32
     AO.ssvo_sample_count: 32
-    AO.ssvo_sphere_radius: 1.2504
-    AO.technique: HBAO
+    AO.ssvo_sphere_radius: 5.0
+    AO.technique: SSVO
     PSSM.pssm_distance: 21.93
     PSSM.sun_distance: 100.0
     SMAA.smaa_quality: ultra

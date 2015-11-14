@@ -13,57 +13,38 @@ const int num_samples = GET_SETTING(AO, ssvo_sample_count);
 
 float accum = 0.0;
 float accum_count = 0;
-float sphere_radius = GET_SETTING(AO, ssvo_sphere_radius) / kernel_scale;
+vec2 sphere_radius = GET_SETTING(AO, ssvo_sphere_radius) / kernel_scale * pixel_size;
+
+float pixel_linz = getLinearZFromZ(pixel_depth);
+float max_depth_diff = 10.0 / kernel_scale;
+
 
 for (int i = 0; i < num_samples; ++i) {
 
-    // Compute offset in view space, in a sphere with the given radius
-    // arround the current view space point
-    vec3 offset = poisson_disk_3D_32[i];
-    // offset += noise_vec * length(offset) * 0.5;
-    // offset /= 2.0;
-    // offset = normalize(offset);
-    vec3 sample_pos = pixel_view_pos + offset * sphere_radius;
 
-    // Project sample position to screen space
-    vec3 proj = viewToScreen(sample_pos);
+    vec2 offset = poisson_disk_2D_32[i];
+    offset += noise_vec.xy * 0.1;
+    vec2 offcoord = texcoord + offset * sphere_radius * 5.0;
 
-    if (proj.x < 0.0 || proj.y < 0.0 || proj.x > 1.0 || proj.y > 1.0) {
-        continue;
+    float sphere_height = sqrt(  1 - dot(offset, offset) );
+
+
+    float depth_a = get_depth_at(offcoord);
+    float depth_linz = getLinearZFromZ(depth_a);
+
+    float diff = (depth_linz - pixel_linz) / max_depth_diff;
+
+
+    if (diff < sphere_height && diff > -sphere_height) {
+
+        float percentage = (diff+sphere_height) / (2.0*sphere_height);
+        accum += percentage;
+
+        accum_count += 1.0;
     }
 
-    // Project it back to view space, using the actual depth
-    float proj_depth = get_depth_at(proj.xy);
-    vec3 proj_surface = calculateViewPos(proj_depth, proj.xy);
-
-    // Get ray properties. Our ray starts at (0, 0, 0) so we can simplify the 
-    // equation by a lot
-    vec3 ray_dir = normalize(sample_pos);
-    vec3 sphere_center = pixel_view_pos;
-
-    // Intersect ray with sphere
-    // https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
-    float ray_by_oc = dot(ray_dir, -sphere_center);
-    float sqr = ray_by_oc * ray_by_oc - dot(sphere_center, sphere_center) + sphere_radius * sphere_radius;
-
-    float dist_a = -(ray_by_oc) + sqrt(sqr);
-    float dist_b = -(ray_by_oc) - sqrt(sqr);
-
-    // Get intersection min and max point
-    float dist_start = min(dist_a, dist_b);
-    float dist_end = max(dist_a, dist_b);
-
-    // Compute actual dist
-    float real_dist = length(proj_surface);
-
-    // Compute line integral
-    float dist_factor = (real_dist - dist_start) / (dist_end - dist_start);
-
-    accum += saturate(dist_factor);
-    accum_count += 1.0;
-
 }
-
+// accum /= num_samples;
 accum /= max(1.0, accum_count);
 accum = saturate(accum);
 result = vec4(accum);
