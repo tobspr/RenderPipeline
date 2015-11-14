@@ -213,4 +213,3 @@ class StageManager(DebugObject):
                 handle.write(output)
         except Exception as msg:
             self.error("Error writing shader autoconfig:", msg)
-            return

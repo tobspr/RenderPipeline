@@ -114,8 +114,8 @@ class PluginSettingINT(BasePluginSetting):
         except ValueError as msg:
             raise BadSettingException(msg)
         if val < self.min_value or val > self.max_value:
-            raise BadSettingException("Given value exceeds value range: " + str(val))
-        self.value = val
+            self.warn("Given value exceeds value range: " + str(val))
+        self.value = max(self.min_value, min(self.max_value, val))
 
 class PluginSettingFLOAT(BasePluginSetting):
 
@@ -133,8 +133,8 @@ class PluginSettingFLOAT(BasePluginSetting):
             raise BadSettingException(msg)
 
         if val < self.min_value or val > self.max_value:
-            raise BadSettingException("Given value exceeds value range: " + str(val))
-        self.value = val
+            self.warn("Given value exceeds value range: " + str(val))
+        self.value = max(self.min_value, min(self.max_value, val))
 
 class PluginSettingBOOL(BasePluginSetting):
         

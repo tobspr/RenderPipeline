@@ -70,8 +70,6 @@ class PluginManager(DebugObject):
         if parsed_yaml["overrides"] is not None:
             self._overrides = parsed_yaml["overrides"]
 
-        self.debug("Loaded", len(self._overrides), "overrides")
-
     def reload_settings(self):
         """ Reloads all plugin settings from the plugin config file """
         self.debug("Reloading plugin settings ...")
@@ -82,7 +80,6 @@ class PluginManager(DebugObject):
 
     def on_setting_change(self, setting_name):
         """ This method gets called when a setting got dynamically changed """
-        self.debug("Setting changed:", setting_name)
         self.reload_settings()
 
         setting_name = setting_name.split(".")
@@ -116,7 +113,6 @@ class PluginManager(DebugObject):
 
                     # Update only the plugin shaders
                     plugin.reload_stage_shaders()
-
 
 
     def _try_load_plugin(self, plugin_id):

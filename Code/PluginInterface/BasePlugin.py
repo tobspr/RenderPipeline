@@ -44,7 +44,6 @@ class BasePlugin(DebugObject):
 
     def handle_setting_change(self, name):
         """ Gets called when a dynamic setting got called """
-        self.debug("Handling setting change:", name)
         if name in self._setting_change_handlers:
             self._setting_change_handlers[name]()
 

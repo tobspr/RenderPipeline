@@ -74,7 +74,7 @@ for (int i = 0; i < num_samples; ++i) {
 accum /= max(1.0, accum_count);
 
 // Since on average, half of the sphere is occluded, multiply the factor by 2
-// accum *= 2.0;
+accum *= 1.5;
 accum = saturate(accum);
 result = vec4(accum);
 

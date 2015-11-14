@@ -141,6 +141,18 @@ class OnscreenDebugger(DebugObject):
 
         self._create_debugger_content()
 
+        self._hint_reloading = BetterOnscreenImage(
+            image="Data/GUI/OnscreenDebugger/ShaderReloadHint.png",
+            x=80, y=Globals.base.win.get_y_size() - 100, parent=self._fullscreen_node)
+        self.set_reload_hint_visible(False)
+
+    def set_reload_hint_visible(self, flag):
+        """ Sets wheter the shader reload hint is visible """
+        if flag:
+            self._hint_reloading.show()
+        else:
+            self._hint_reloading.hide()
+
     def _create_debugger_content(self):
         """ Internal method to create the content of the debugger """
 

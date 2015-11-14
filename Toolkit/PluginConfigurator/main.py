@@ -7,10 +7,13 @@ This tool offers an interface to configure the pipeline
 
 from __future__ import print_function
 import sys
+import time
+from threading import Thread
 from functools import partial
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
+
 
 # Load all PyQt classes
 try:
@@ -39,11 +42,21 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._current_plugin_instance = None
         self.lbl_restart_pipeline.hide()
         self._set_settings_visible(False)
+        self._update_queue = set()
 
         connect(self.lst_plugins, QtCore.SIGNAL("itemSelectionChanged()"), self.on_plugin_selected)
         connect(self.lst_plugins, QtCore.SIGNAL("itemChanged(QListWidgetItem*)"), self.on_plugin_state_changed)
 
         self._load_plugin_list()
+
+        update_thread = Thread(target=self.update_thread, args=())
+        update_thread.start()
+
+    def closeEvent(self, event):
+        event.accept()
+        import os
+        os._exit(1)
+
 
     def on_plugin_state_changed(self, item):
         plugin_id = item._plugin_id
@@ -62,6 +75,15 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         assert(self._current_plugin_instance is not None)
         self._render_current_plugin()
         self._set_settings_visible(True)
+
+    def update_thread(self):
+
+        while True:
+            if len(self._update_queue) > 0:
+                item = self._update_queue.pop()
+                UDPListenerService.ping_thread(UDPListenerService.DEFAULT_PORT, item)
+                time.sleep(0.4)
+
 
     def _rewrite_plugin_config(self):
         """ Rewrites the plugin configuration """
@@ -153,7 +175,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         else:
             # print("Sending reload packet ...")
             # In case the setting is dynamic, notice the pipeline about it:
-            UDPListenerService.ping_thread(UDPListenerService.DEFAULT_PORT, self._current_plugin + "." + setting_id)
+            self._update_queue.add(self._current_plugin + "." + setting_id)
 
         # Update GUI, but only in case of enum values, since they can trigger
         # display conditions:

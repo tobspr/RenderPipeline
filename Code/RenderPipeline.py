@@ -1,5 +1,6 @@
 
 import sys
+import time
 
 from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
 from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f, Texture
@@ -193,13 +194,18 @@ class RenderPipeline(DebugObject):
     def reload_shaders(self):
         """ Reloads all shaders """
         self._debugger._error_msg_handler.clear_messages()
-        
+        self._debugger.set_reload_hint_visible(True)
+        self._showbase.graphicsEngine.render_frame()
+        self._showbase.graphicsEngine.render_frame()
+
         self._stage_mgr.set_shaders()
         self._light_mgr.reload_shaders()
 
         # Set the default effect on render and trigger the reload hook
         self.set_effect(Globals.render, "Effects/Default.yaml", {}, -10)
         self._plugin_mgr.trigger_hook("on_shader_reload")
+
+        self._debugger.set_reload_hint_visible(False)
 
     def _init_globals(self):
         """ Inits all global bindings """
@@ -234,26 +240,49 @@ class RenderPipeline(DebugObject):
         self._listener_update_queue = set()
         UDPListenerService.listener_thread(UDPListenerService.DEFAULT_PORT, self._on_reload_trigger)
 
+        # Since we use a thread for listening, make sure the new thread gets closed
+        # after the ShowBase stopped running
+        old_run = self._showbase.run
+        def new_run(*args):
+            try:
+                old_run(*args)
+            except SystemExit as msg:
+                pass
+
+            # Todo: maybe just stop the thread instead of shutting everything down
+            import os
+            os._exit(0)
+        self._showbase.run = new_run
+
     def _on_reload_trigger(self, msg):
         """ Internal method which gets called when a message arrived to the 
         listener """
 
-        # Dont process the message directly, instead do that in the main thread
+        # Dont process the message directly, instead do that in the main thread,
+        # after a short delay
+        time.sleep(0.1)
         self._listener_update_queue.add(msg)
 
     def _pre_render_update(self, task):
         """ Update task which gets called before the rendering """
-
-        # Check if we need to update anything
-        if self._listener_update_queue:
-            update = self._listener_update_queue.pop()
-            self._plugin_mgr.on_setting_change(update)
-
+        self._check_listener_queue()
         self._debugger.update()
         self._com_resources.update()
         self._stage_mgr.update_stages()
         self._light_mgr.update()
         return task.cont
+
+    def _check_listener_queue(self):
+        """ Checks if any new messages from the listener arrived, and if so, processes
+        them """
+         # Check if we need to update anything
+        if hasattr(self, "_listener_update_queue") and self._listener_update_queue:
+            # self._debugger.set_reload_hint_visible(True)
+            # self._showbase.graphicsEngine.render_frame()
+            # self._showbase.graphicsEngine.render_frame()
+            update = self._listener_update_queue.pop()
+            self._plugin_mgr.on_setting_change(update)
+            # self._debugger.set_reload_hint_visible(False)
 
     def _plugin_pre_render_update(self, task):
         """ Update task which gets called before the rendering, and updates the

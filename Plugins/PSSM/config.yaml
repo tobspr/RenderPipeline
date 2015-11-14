@@ -8,10 +8,10 @@ description: >
 
 settings: !!omap
 
-    - pssm_distance:
+    - max_distance:
         type: float
-        range: [5.0, 400.0]
-        default: 70.0
+        range: [5.0, 100.0]
+        default: 50.0
         runtime: true
         shader_runtime: true
         label: Maximum shadow distance

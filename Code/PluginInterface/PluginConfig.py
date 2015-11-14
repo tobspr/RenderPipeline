@@ -70,8 +70,9 @@ class PluginConfig(DebugObject):
                 setting_value = overrides[key]
 
                 if setting_name not in self._settings:
-                    raise BadSettingException("Unrecognized override: " + key)
-
+                    self.warn("Unrecognized override: " + key)
+                    continue
+                    
                 self._settings[setting_name].set_value(setting_value)
 
     def load(self, filename):

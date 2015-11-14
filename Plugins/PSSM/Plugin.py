@@ -36,10 +36,10 @@ class Plugin(BasePlugin):
         # Construct the actual PSSM rig
         self._rig = PSSMCameraRig(self.get_setting("split_count"))
         self._rig.set_sun_distance(self.get_setting("sun_distance"))
-        self._rig.set_pssm_distance(self.get_setting("pssm_distance"))
+        self._rig.set_pssm_distance(self.get_setting("max_distance"))
         self._rig.set_use_stable_csm(True)
-        self._rig.set_use_fixed_film_size(False)
-        self._rig.set_use_tight_frustum(True)
+        self._rig.set_use_fixed_film_size(True)
+        self._rig.set_use_tight_frustum(False)
         self._rig.set_resolution(self.get_setting("resolution"))
 
         self._rig.reparent_to(self._node)
@@ -61,7 +61,6 @@ class Plugin(BasePlugin):
         Globals.base.accept("u", self._toggle_update_enabled)
 
         # Set inputs
-        self._pssm_stage.set_shader_input("pssm_split_distance", self.get_setting("pssm_distance"))
         self._pssm_stage.set_shader_input("pssm_split_count", self.get_setting("split_count"))
         self._pssm_stage.set_shader_input("pssm_mvps", self._rig.get_mvp_array())
         self._pssm_stage.set_shader_input("pssm_rotations", self._rig.get_rotation_array())
@@ -86,9 +85,13 @@ class Plugin(BasePlugin):
                 self._last_cache_reset = globalClock.get_frame_time()
                 self._rig.reset_film_size_cache()
 
-    @SettingChanged("pssm_distance")
+    @SettingChanged("max_distance")
     def update_pssm_distance(self):
-        self._rig.set_pssm_distance(self.get_setting("pssm_distance"))
+        self._rig.set_pssm_distance(self.get_setting("max_distance"))
+
+    @SettingChanged("sun_distance")
+    def update_sun_distance(self):
+        self._rig.set_sun_distance(self.get_setting("sun_distance"))
 
     def _toggle_update_enabled(self):
         self._update_enabled = not self._update_enabled

@@ -25,15 +25,13 @@ uniform sampler2D ShadedScene;
 
 uniform sampler2D PSSMShadowAtlas;
 
-uniform float pssm_split_distance;
-uniform int pssm_split_count;
 uniform mat4 pssm_mvps[GET_SETTING(PSSM, split_count)];
 uniform float pssm_rotations[GET_SETTING(PSSM, split_count)];
 uniform vec3 pssm_sun_vector;
 
 
 vec2 get_split_coord(vec2 local_coord, int split_index) {
-    local_coord.x = (local_coord.x + split_index) / float(pssm_split_count);
+    local_coord.x = (local_coord.x + split_index) / float(GET_SETTING(PSSM, split_count));
     return local_coord;
 }
 
@@ -68,12 +66,11 @@ void main() {
     // Compute split index
     float depth = texelFetch(GBufferDepth, coord, 0).x;
     float linear_depth = getLinearZFromZ(depth);
-    int split = int( log(1 + linear_depth / pssm_split_distance) * pssm_split_count);
-
+    int split = int( log(1 + linear_depth / GET_SETTING(PSSM, max_distance)) * GET_SETTING(PSSM, split_count));
 
     // Compute the shadowing factor
     // If we are out of the PSSM range:    
-    if (split >= pssm_split_count) {
+    if (split >= GET_SETTING(PSSM, split_count)) {
 
         // If we have the skybox, just stop
         if (is_skybox(m, cameraPosition)) {
@@ -171,8 +168,8 @@ void main() {
 
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor);
 
-    // float split_f = saturate(split / float(pssm_split_count));
-    // lighting_result *= vec3(1 - split_f, split_f, 0);
+    float split_f = saturate(split / float(GET_SETTING(PSSM, split_count)));
+    lighting_result *= vec3(1 - split_f, split_f, 0);
 
 
     result = scene_color + vec4(lighting_result, 0);
