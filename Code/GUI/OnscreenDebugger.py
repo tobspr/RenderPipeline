@@ -178,7 +178,7 @@ class OnscreenDebugger(DebugObject):
             # "Scattering",
             # "GI-Diffuse",
             # "GI-Specular",
-            # "Ambient",
+            ("Ambient Occlusion", "OCCLUSION"),
             # "PSSM-Splits",
             # "Shadowing",
             # "Bloom"

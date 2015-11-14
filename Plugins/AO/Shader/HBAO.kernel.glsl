@@ -6,6 +6,7 @@ const float tangent_bias = GET_SETTING(AO, hbao_tangent_bias);
 const float max_sample_distance = GET_SETTING(AO, hbao_max_distance);
 
 float accum = 0.0;
+vec3 bent_normal = vec3(pixel_view_normal * 3.0);
 
 for (int i = 0; i < num_angles; ++i) {
     float angle = (i + 0.5 * noise_vec.x) / float(num_angles) * TWO_PI;
@@ -13,7 +14,7 @@ for (int i = 0; i < num_angles; ++i) {
     vec2 sample_dir = vec2(cos(angle), sin(angle));
 
     // Find the tangent andle
-    float tangent_angle = acos(dot(vec3(sample_dir, 0), pixel_normal)) - (0.5 * M_PI) + tangent_bias;
+    float tangent_angle = acos(dot(vec3(sample_dir, 0), pixel_view_normal)) - (0.5 * M_PI) + tangent_bias;
 
     // Assume the horizon angle is the same as the tangent angle at the beginning
     // of the ray
@@ -25,7 +26,9 @@ for (int i = 0; i < num_angles; ++i) {
     for (int k = 0; k < num_ray_steps; ++k) {
         
         // Get new texture coordinate
-        vec2 texc = texcoord + sample_dir * (k + 0.5) / num_ray_steps * pixel_size * sample_radius * 0.45;
+        vec2 texc = texcoord + 
+            sample_dir * (k + 0.5 + 0.3 * noise_vec.y) / 
+                num_ray_steps * pixel_size * sample_radius * 0.45;
         
         // Fetch view pos at that position and compare it
         vec3 view_pos = get_view_pos_at(texc);
@@ -45,13 +48,23 @@ for (int i = 0; i < num_angles; ++i) {
     // Now that we know the average horizon angle, add it to the result
     // For that we simply take the angle-difference
     float occlusion = saturate(sin(horizon_angle) - sin(tangent_angle));
-    // occlusion *= 1.0 / (1 + length(last_diff));
-    accum += occlusion;    
+    occlusion *= 1.0 / (1 + length(last_diff));
+    accum += occlusion;
+
+    // Update bent normal
+    if (dot(abs(last_diff), vec3(1)) > 0.5) {
+        bent_normal += (occlusion) * normalize(-last_diff);
+    }
+    // bent_normal += (last_diff);
+    // bent_normal += normalize(last_diff);
 
 }
 
 // Normalize samples
-
 accum /= num_angles;
-// accum *= 5.0;
-result = vec4(1 - accum);
+
+// Normalize bent normal
+bent_normal /= max(1.0, length(bent_normal));
+bent_normal = viewNormalToWorld(bent_normal);
+
+result = vec4(bent_normal, 1 - 1.5*accum);

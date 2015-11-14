@@ -72,17 +72,11 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     #if IS_SCREEN_SPACE
 
         #if HAVE_PLUGIN(AO)
-
-            #if ENUM_V_ACTIVE(AO, technique, DSSDO)
-                // DSSDO
-                ivec2 coord = ivec2(gl_FragCoord.xy);
-                vec4 ao_sample = texelFetch(AmbientOcclusion, coord, 0);
-                float occlusion_factor = 1.0 - saturate(dot(vec4(-l, 0), ao_sample));
-                occlusion_factor = pow(occlusion_factor, 5.0);
-                shadingResult *= occlusion_factor;
-
-            #endif
-
+            ivec2 coord = ivec2(gl_FragCoord.xy);
+            vec4 ao_sample = texelFetch(AmbientOcclusion, coord, 0);
+            float occlusion_factor = 1.0 - saturate(dot(vec4(-l, 0), ao_sample));
+            occlusion_factor = pow(occlusion_factor, 3.0);
+            shadingResult *= occlusion_factor;
         #endif
 
     #endif

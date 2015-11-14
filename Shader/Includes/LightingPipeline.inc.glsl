@@ -17,6 +17,10 @@ uniform vec3 cameraPosition;
 
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     
+    #if DEBUG_MODE
+        return vec3(0);
+    #endif
+
     // Find per tile lights
     int cellIndex = texelFetch(CellIndices, tile, 0).x;
     int dataOffs = cellIndex * (MAX_LIGHTS_PER_CELL+1);

@@ -1,6 +1,9 @@
 #pragma once
 
 uniform mat4 trans_clip_of_mainCam_to_mainRender;
+uniform mat4 trans_view_of_mainCam_to_mainRender;
+uniform mat4 trans_mainRender_to_view_of_mainCam;
+uniform mat3 tpose_clip_of_mainCam_to_mainRender;
 uniform mat4 trans_mainRender_to_clip_of_mainCam;
 uniform mat4 currentProjMatInv;
 uniform mat4 currentProjMat;
@@ -66,11 +69,12 @@ vec3 calculateSurfacePos(float z, vec2 tcoord, float near, float far, mat4 clipT
 
 
 vec3 calculateViewPos(float z, vec2 tcoord) {
-  // vec3 ndc = vec3(tcoord, z) * 2.0 - 1.0;
 
   //@TODO: Use fma
   vec3 ndc = vec3(tcoord.xy * 2.0 - 1.0, z);
   vec4 sampleViewPos = inverse(currentProjMat) * vec4(ndc, 1.0);
+  // sampleViewPos.xyz = sampleViewPos.xzy;
+  // sampleViewPos.z = -sampleViewPos.z;
   return sampleViewPos.xyz / sampleViewPos.w;
 }
 
@@ -80,6 +84,17 @@ vec3 viewToScreen(vec3 view_pos) {
   projected.xy = fma(projected.xy, vec2(0.5), vec2(0.5));
   return projected.xyz;
 }
+
+vec3 viewNormalToWorld(vec3 view_normal) {
+
+  // Need to transform coordinate system, should't be required,
+  // seems to be some bug
+
+  view_normal = view_normal.xzy * vec3(1, -1, 1);
+  return normalize((vec4(view_normal.xyz, 0) * trans_mainRender_to_view_of_mainCam).xyz);
+}
+
+
 
 
 vec3 worldToScreen(vec3 world_pos) {

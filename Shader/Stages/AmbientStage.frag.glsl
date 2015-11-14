@@ -112,12 +112,9 @@ void main() {
         #if HAVE_PLUGIN(AO)
 
             // Don't use this when using DSSDO
-            // #if !ENUM_V_ACTIVE(AO, technique, DSSDO)
-                ambient.xyz = max(ambient.xyz, vec3(0));
-                float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
-                ambient *= pow(occlusion, 3.0);
-                // ambient *= pow(occlusion, 0.5);
-            // #endif
+            ambient.xyz = max(ambient.xyz, vec3(0));
+            float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
+            ambient *= pow(occlusion, 3.0);
 
         #endif
 
@@ -126,6 +123,13 @@ void main() {
     #endif
 
     ambient.w = 0.0;
+
+    #if DEBUG_MODE
+        #if MODE_ACTIVE(OCCLUSION)
+            float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
+            ambient = vec4(pow(occlusion, 1.5));
+        #endif
+    #endif
 
     result = texture(ShadedScene, texcoord) * 1 +  ambient * 1;
 }

@@ -9,7 +9,7 @@ settings: !!omap
 
     - technique:
         type: enum
-        values: ["SSAO", "HBAO", "DSSDO", "SSVO", "ALCHEMY", "UE4AO"]
+        values: ["SSAO", "HBAO", "SSVO", "ALCHEMY", "UE4AO"]
         default: SSAO
         shader_runtime: true
         label: Technique
@@ -131,30 +131,6 @@ settings: !!omap
         label: Max sample distance
         description: >
             Maximum distance of a sample to the pixel center in world space
-
-
-    # Settings for DSSDO
-
-    - dssdo_num_samples:
-        display_if: {technique: "DSSDO"}
-        type: int
-        range: [4, 32]
-        default: 32
-        shader_runtime: true
-        label: Sample count
-        description: >
-            Amount of random samples to take, a higher sample count increases
-            the quality but also decreases the performance.
-
-    - dssdo_max_distance:
-        display_if: {technique: "DSSDO"}
-        type: float
-        range: [0.02, 2.0]
-        default: 0.25
-        shader_runtime: true
-        label: Sample radius
-        description: >
-            Size of the sample kernel in world space units.
 
 
     # Settings for SSVO

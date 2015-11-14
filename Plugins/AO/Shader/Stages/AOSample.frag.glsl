@@ -44,7 +44,7 @@ vec3 get_world_pos_at(ivec2 coord) {
 }
 
 
-vec3 get_pixel_normal(ivec2 coord) {
+vec3 get_view_normal(ivec2 coord) {
 
     vec3 view_pos = get_view_pos_at(coord);
 
@@ -73,9 +73,9 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy) * 2;
 
     // Shader variables
-    vec3 pixel_normal = get_pixel_normal(coord);
     float pixel_depth = get_depth_at(coord);
     vec3 pixel_view_pos = get_view_pos_at(coord);
+    vec3 pixel_view_normal = get_view_normal(coord);
     vec3 pixel_world_pos = get_world_pos_at(coord);
     vec3 pixel_world_normal = get_gbuffer_normal(GBuffer1, coord);
 
@@ -102,10 +102,6 @@ void main() {
     #elif ENUM_V_ACTIVE(AO, technique, HBAO)
 
         #pragma include "../HBAO.kernel.glsl"
-
-    #elif ENUM_V_ACTIVE(AO, technique, DSSDO)
-
-        #pragma include "../DSSDO.kernel.glsl"
 
     #elif ENUM_V_ACTIVE(AO, technique, SSVO)
 

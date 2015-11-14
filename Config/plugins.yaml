@@ -8,6 +8,8 @@
 
 enabled: 
     - AO
+    - SMAA
+    - Scattering
 
 overrides: 
     AO.alchemy_max_distance: 12.89
@@ -18,13 +20,13 @@ overrides:
     AO.hbao_ray_count: 9
     AO.hbao_ray_steps: 4
     AO.hbao_tangent_bias: 0.17
-    AO.sample_radius: 60.71
+    AO.sample_radius: 200.0
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 1.43
-    AO.ssao_sample_count: 8
+    AO.ssao_sample_count: 32
     AO.ssvo_sample_count: 32
     AO.ssvo_sphere_radius: 1.2504
-    AO.technique: ALCHEMY
+    AO.technique: HBAO
     PSSM.pssm_distance: 21.93
     PSSM.sun_distance: 100.0
     SMAA.smaa_quality: ultra
