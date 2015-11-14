@@ -42,6 +42,7 @@ settings: !!omap
             will not get weighted.
 
     - sample_radius:
+        display_if: {technique: ["SSAO", "HBAO"]}
         type: float
         range: [5, 200]
         default: 50
@@ -131,3 +132,29 @@ settings: !!omap
         description: >
             Maximum distance of a sample to the pixel center in world space
 
+    # Settings for SSDO
+
+
+
+    # Settings for SSVO
+    - ssvo_sample_count:
+        display_if: {technique: "SSVO"}
+        type: int
+        range: [1, 32]
+        default: 16
+        shader_runtime: true
+        label: Sample Count
+        description: >
+            Amount of samples to use. A higher amount of samples provides a better
+            quality but also a decrease in performance.
+
+    - ssvo_sphere_radius:
+        display_if: {technique: "SSVO"}
+        type: float
+        range: [0.05, 5.0]
+        default: 1.0
+        shader_runtime: true
+        label: Sphere sample radius
+        description: >
+            Size of the sphere in view space to integrate. High values may produce
+            artifacts.

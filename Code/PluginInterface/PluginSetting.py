@@ -34,9 +34,13 @@ class BasePluginSetting(DebugObject):
         for setting_id, required_value in self.display_conditions.items():
             if setting_id not in settings:
                 self.warn("Unkown display dependency setting:", setting_id)
-                return False 
-            if settings[setting_id].value != required_value:
                 return False
+            if isinstance(required_value, list) or isinstance(required_value, tuple):
+                if settings[setting_id].value not in required_value:
+                    return False 
+            else:
+                if settings[setting_id].value != required_value:
+                    return False
         return True
 
     @classmethod

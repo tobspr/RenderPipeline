@@ -11,7 +11,7 @@ enabled:
 
 overrides: 
     AO.blur_depth_factor: 2.0
-    AO.blur_normal_factor: 2.0
+    AO.blur_normal_factor: 2.0001
     AO.hbao_max_distance: 14.0
     AO.hbao_ray_count: 9
     AO.hbao_ray_steps: 4
@@ -20,7 +20,9 @@ overrides:
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 10.0
     AO.ssao_sample_count: 32
-    AO.technique: HBAO
+    AO.ssvo_sample_count: 32
+    AO.ssvo_sphere_radius: 1.2504
+    AO.technique: SSVO
     PSSM.pssm_distance: 21.93
     PSSM.sun_distance: 100.0
     SMAA.smaa_quality: ultra

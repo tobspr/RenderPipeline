@@ -73,3 +73,9 @@ vec3 calculateViewPos(float z, vec2 tcoord) {
   return sampleViewPos.xyz / sampleViewPos.w;
 }
 
+vec3 viewToScreen(vec3 view_pos) {
+  vec4 projected = currentProjMat * vec4(view_pos, 1);
+  projected.xyz /= projected.w;
+  projected.xy = fma(projected.xy, vec2(0.5), vec2(0.5));
+  return projected.xyz;
+}

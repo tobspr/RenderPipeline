@@ -1,6 +1,12 @@
 
-// CryEngine SSAO
-// Samples the depth buffer in a hemisphere arround the current pixel
+/* 
+
+CryEngine SSAO - Screen Space Ambient Occlusion
+
+Samples the depth buffer in a hemisphere arround the current pixel to approximate
+AO.
+
+*/
 
 const int num_samples = GET_SETTING(AO, ssao_sample_count);
 const float bias = GET_SETTING(AO, ssao_bias) * 0.001;
@@ -25,9 +31,7 @@ for (int i = 0; i < num_samples; ++i) {
     vec3 offset_pos = pixel_view_pos + offset * sample_offset / kernel_scale * 20.0;
 
     // Project offset position to screen space
-    vec4 projected = currentProjMat * vec4(offset_pos, 1);
-    projected.xyz /= projected.w;
-    projected.xy = fma(projected.xy, vec2(0.5), vec2(0.5));
+    vec3 projected = viewToScreen(offset_pos);
 
     // Fetch the expected depth
     float sample_depth = get_depth_at(projected.xy);

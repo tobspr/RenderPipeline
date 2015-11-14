@@ -32,6 +32,11 @@ vec3 get_view_pos_at(ivec2 coord) {
     return get_view_pos_at(tcoord);
 }
 
+vec3 get_world_pos_at(vec2 coord) {
+    return calculateSurfacePos(get_depth_at(coord), coord);
+}
+
+
 vec3 get_pixel_normal(ivec2 coord) {
 
     vec3 view_pos = get_view_pos_at(coord);
@@ -87,6 +92,10 @@ void main() {
     #elif ENUM_V_ACTIVE(AO, technique, HBAO)
 
         #pragma include "../HBAO.kernel.glsl"
+
+    #elif ENUM_V_ACTIVE(AO, technique, SSVO)
+
+        #pragma include "../SSVO.kernel.glsl"
 
     #else
 
