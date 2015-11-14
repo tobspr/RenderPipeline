@@ -112,11 +112,12 @@ void main() {
         #if HAVE_PLUGIN(AO)
 
             // Don't use this when using DSSDO
-            #if !ENUM_V_ACTIVE(AO, technique, DSSDO)
+            // #if !ENUM_V_ACTIVE(AO, technique, DSSDO)
                 ambient.xyz = max(ambient.xyz, vec3(0));
-                float occlusion = texelFetch(AmbientOcclusion, coord, 0).x;
-                ambient *= pow(occlusion, 5.0);
-            #endif
+                float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
+                ambient *= pow(occlusion, 3.0);
+                // ambient *= pow(occlusion, 0.5);
+            // #endif
 
         #endif
 

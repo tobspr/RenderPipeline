@@ -168,8 +168,8 @@ void main() {
 
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor);
 
-    float split_f = saturate(split / float(GET_SETTING(PSSM, split_count)));
-    lighting_result *= vec3(1 - split_f, split_f, 0);
+    // float split_f = saturate(split / float(GET_SETTING(PSSM, split_count)));
+    // lighting_result *= vec3(1 - split_f, split_f, 0);
 
 
     result = scene_color + vec4(lighting_result, 0);

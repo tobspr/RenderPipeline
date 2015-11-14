@@ -77,9 +77,9 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
                 // DSSDO
                 ivec2 coord = ivec2(gl_FragCoord.xy);
                 vec4 ao_sample = texelFetch(AmbientOcclusion, coord, 0);
-                float occlusion_factor = 1.0 - saturate(dot(vec4(l, 0), ao_sample)) * ao_sample.w;
+                float occlusion_factor = 1.0 - saturate(dot(vec4(-l, 0), ao_sample));
                 occlusion_factor = pow(occlusion_factor, 5.0);
-                shadingResult = vec3( occlusion_factor );
+                shadingResult *= occlusion_factor;
 
             #endif
 

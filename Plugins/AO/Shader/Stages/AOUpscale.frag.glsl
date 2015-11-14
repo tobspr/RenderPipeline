@@ -50,7 +50,7 @@ void main() {
                 weight *= pow(nrm_diff, 1.0 / max_nrm_diff);
             }
 
-            weight = max(0.01, weight);
+            weight = max(0.1, weight);
 
             accum += source_sample * weight;
             weights += weight;

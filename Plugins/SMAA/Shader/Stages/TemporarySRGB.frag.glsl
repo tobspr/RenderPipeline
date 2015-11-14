@@ -20,7 +20,6 @@ void main() {
     vec3 nrm = get_gbuffer_normal(GBuffer1, coord);
 
     scene_data.xyz = Tonemap_Uncharted2(scene_data.xyz);
-    scene_data.xyz *= 2.0;
     scene_data.w = 1.0;
     result = scene_data;
     result_predication = vec4(nrm * 0.5 + 0.5, 0);
