@@ -1,8 +1,13 @@
 
+RenderPipeline
+======
 
-.. automodule:: Code
 
 
-.. automodule:: Plugins
+.. toctree::
+    .. automodule:: Code
+        :members:
 
+    .. automodule:: Plugins
+        :members:
 
