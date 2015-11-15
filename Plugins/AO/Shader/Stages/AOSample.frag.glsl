@@ -110,6 +110,10 @@ void main() {
 
         #pragma include "../ALCHEMY.kernel.glsl"
 
+    #elif ENUM_V_ACTIVE(AO, technique, UE4AO)
+
+        #pragma include "../UE4AO.kernel.glsl"
+
     #else
 
         #error Unkown AO technique!

@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 import platform
 from os import system, getcwd, listdir
-from direct.stdpy.file import join, isfile, isdir
+from os.path import join, isfile, isdir
 import subprocess
 
 

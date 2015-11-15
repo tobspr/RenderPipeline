@@ -224,3 +224,40 @@ settings: !!omap
         description: >
             Specifies the maximum distance between two samples until one sample
             is rejected. This prevents halos arround objects.
+
+
+    # Settings for UE4AO
+
+    - ue4ao_sample_radius:
+        display_if: {technique: ["UE4AO"]}
+        type: float
+        range: [5, 400]
+        default: 50
+        shader_runtime: true
+        label: Sample Radius
+        description: >
+            Size of the sampling radius in pixels, higher values might look better,
+            but also perform worse due to less caching.
+
+    - ue4ao_sample_count:
+        display_if: {technique: "UE4AO"}
+        type: int
+        range: [4, 32]
+        default: 16
+        shader_runtime: true
+        label: Sample Count
+        description: >
+            Amount of samples to use. A higher amount of samples provides a better
+            quality but also a decrease in performance.
+
+    - ue4ao_max_distance:
+        display_if: {technique: "UE4AO"}
+        type: float
+        range: [0.1, 20.0]
+        default: 10.0
+        shader_runtime: true
+        label: Maximum distance
+        description: >
+            Specifies the maximum distance between two samples until one sample
+            is rejected. This prevents halos arround objects.
+

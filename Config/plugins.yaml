@@ -12,11 +12,11 @@ enabled:
     - Scattering
 
 overrides: 
-    AO.alchemy_max_distance: 8.23
-    AO.alchemy_num_samples: 32
-    AO.alchemy_sample_radius: 172.88
-    AO.blur_depth_factor: 2.0
-    AO.blur_normal_factor: 2.0001
+    AO.alchemy_max_distance: 2.5
+    AO.alchemy_num_samples: 8
+    AO.alchemy_sample_radius: 120.21
+    AO.blur_depth_factor: 10.0
+    AO.blur_normal_factor: 1.5
     AO.hbao_max_distance: 2.34
     AO.hbao_ray_count: 8
     AO.hbao_ray_steps: 3
@@ -27,10 +27,13 @@ overrides:
     AO.ssao_max_distance: 2.58
     AO.ssao_sample_count: 32
     AO.ssao_sample_radius: 57.67
-    AO.ssvo_max_distance: 1.63
-    AO.ssvo_sample_count: 32
-    AO.ssvo_sphere_radius: 3.59
+    AO.ssvo_max_distance: 0.46
+    AO.ssvo_sample_count: 11
+    AO.ssvo_sphere_radius: 1.26
     AO.technique: UE4AO
+    AO.ue4ao_max_distance: 2.0
+    AO.ue4ao_sample_count: 8
+    AO.ue4ao_sample_radius: 120.0
     PSSM.sun_distance: 100.0
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True

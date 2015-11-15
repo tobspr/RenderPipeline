@@ -120,7 +120,8 @@ vec3 get_gbuffer_normal(sampler2D GBuffer1, ivec2 coord) {
     #if USE_NORMAL_QUANTIZATION
         return normalize( fma(texelFetch(GBuffer1, coord, 0).xyz, vec3(2.0),  vec3(-1.0)) );
     #else
-        return normalize(texelFetch(GBuffer1, coord, 0).xyz);
+        // return normalize(texelFetch(GBuffer1, coord, 0).xyz);
+        return (texelFetch(GBuffer1, coord, 0).xyz);
     #endif
 }
 
