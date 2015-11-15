@@ -116,6 +116,9 @@ class PluginConfig(DebugObject):
         if settings is None:
             return
 
+        if not isinstance(settings, list) or not isinstance(settings[0], tuple):
+            self.error("Settings array is not an ordered map! (Declare it as !!omap).")
+            return
 
         for setting_id, setting_value in settings:
             try:

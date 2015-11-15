@@ -114,6 +114,9 @@ class PluginManager(DebugObject):
                     # Update only the plugin shaders
                     plugin.reload_stage_shaders()
 
+                    # Trigger an explicit reload hook
+                    plugin.trigger_hook_explicit("on_shader_reload")
+
 
     def _try_load_plugin(self, plugin_id):
         """ Attempts to load a plugin with a given name """

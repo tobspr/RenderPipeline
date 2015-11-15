@@ -26,6 +26,7 @@ class BasePlugin(DebugObject):
         self._pipeline = pipeline
         self._setting_change_handlers = {}
         self._assigned_stages = []
+        self._hooks = {}
         self._config = PluginConfig()
 
         # Set a special output color for plugins
@@ -61,6 +62,12 @@ class BasePlugin(DebugObject):
         """ Binds the handler to a given hook_name. When the hook is executed
         in the pipeline code, the handler gets called """
         self._pipeline.get_plugin_mgr().add_hook_binding(hook_name, handler)
+        self._hooks[hook_name] = handler
+
+    def trigger_hook_explicit(self, hook_name):
+        """ Triggers a hook for this plugin only. """
+        if hook_name in self._hooks:
+            self._hooks[hook_name]()
 
     def define_static_plugin_settings(self):
         """ Makes all plugin settings available in shaders by using defines.

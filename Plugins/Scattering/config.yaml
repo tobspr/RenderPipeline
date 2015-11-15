@@ -7,6 +7,49 @@ description: >
     Eric Bruneton (http://evasion.inrialpes.fr/~Eric.Bruneton/).
     It also adds support for atmospheric fog.
 
-settings: 
+settings: !!omap
     
-    # TODO
+    - ground_reflectance:
+        type: float
+        range: [0.01, 1.0]
+        default: 0.1
+        shader_runtime: true
+        label: Ground Reflectance
+        description: >
+            Average ground reflectance
+
+    - rayleigh_height_scale:
+        type: float
+        range: [1.0, 16.0]
+        default: 8.0
+        shader_runtime: true
+        label: Rayleigh height scale
+        description: >  
+            Rayleigh height scale
+
+    - mie_height_scale:
+        type: float
+        range: [0.5, 5.0]
+        default: 1.2
+        shader_runtime: true
+        label: Mie height scale
+        description: >
+            Mie height scale
+
+    - mie_phase_factor:
+        type: float
+        range: [0.1, 1.0]
+        default: 0.8
+        shader_runtime: true
+        label: Mie Phase
+        description: >
+            Mie phase factor
+
+    - beta_mie_scattering:
+        type: float
+        range: [1, 30]
+        default: 4
+        shader_runtime: true
+        label: Beta Mie Scattering
+        description: >
+            Beta Mie Scattering
