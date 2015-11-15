@@ -17,6 +17,7 @@ const float max_distance = GET_SETTING(AO, ue4ao_max_distance);
 float accum = 0.0;
 float accum_count = 0.0;
 
+
 for (int i = 0; i < num_samples; ++i) {
     
     vec2 offset = poisson_disk_2D_32[i] + noise_vec.xy * 0.3;
@@ -68,4 +69,8 @@ for (int i = 0; i < num_samples; ++i) {
 // accum /= num_samples;
 accum /= max(1.0, accum_count);
 
-result = vec4(1 - saturate(accum));
+// Bent normal not supported yet
+vec3 bent_normal = pixel_world_normal;
+
+result = vec4(bent_normal, 1 - saturate(accum));
+

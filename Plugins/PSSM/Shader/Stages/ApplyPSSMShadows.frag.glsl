@@ -166,7 +166,7 @@ void main() {
     vec3 v = normalize(cameraPosition - m.position);
     vec3 l = sun_vector;
 
-    lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor);
+    lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
 
     // float split_f = saturate(split / float(GET_SETTING(PSSM, split_count)));
     // lighting_result *= vec3(1 - split_f, split_f, 0);

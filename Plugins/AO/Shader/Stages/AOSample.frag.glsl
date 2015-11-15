@@ -123,6 +123,9 @@ void main() {
 
     result.w = pow(result.w, GET_SETTING(AO, occlusion_strength));
 
+    // Pack normal
+    result.xyz = result.xyz * 0.5 + 0.5;
+
 }
 
 

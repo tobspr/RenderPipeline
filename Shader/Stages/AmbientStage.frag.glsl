@@ -28,10 +28,7 @@ uniform vec3 cameraPosition;
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
-    int cubemap_size = textureSize(map, 0).x;
-    float num_mipmaps = 1 + floor(log2(cubemap_size));
-
-
+    int num_mipmaps = get_mipmap_count(map);
     float reflectivity = saturate(1.0 - roughness);
 
     // Increase mipmap at extreme roughness, linear doesn't work well there
@@ -69,9 +66,11 @@ void main() {
         mipmap_bias = 0.0;
 
         float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
-
         vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz;
-        vec3 env_amb = vec3(0);
+
+        int env_amb_mip = get_mipmap_count(DefaultEnvmap) - 5;
+
+        vec3 env_amb = textureLod(DefaultEnvmap, m.normal, env_amb_mip).xyz;
 
         #if HAVE_PLUGIN(Scattering)
 

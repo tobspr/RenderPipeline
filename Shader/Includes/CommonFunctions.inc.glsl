@@ -78,3 +78,10 @@ void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
     tangent = normalize(cross(v0, normal));
     bitangent = normalize(cross(tangent, normal));
 }
+
+
+// Returns the number of mipmaps of a cubemap
+int get_mipmap_count(samplerCube cubemap) {
+    int cubemap_size = textureSize(cubemap, 0).x;
+    return int(1 + floor(log2(cubemap_size)));
+}

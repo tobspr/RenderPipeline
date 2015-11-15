@@ -15,6 +15,12 @@ uniform samplerBuffer AllLightsData;
 
 uniform vec3 cameraPosition;
 
+#if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
+uniform sampler2D AmbientOcclusion;
+#endif
+
+
+
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     
     #if DEBUG_MODE
@@ -26,6 +32,14 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     int dataOffs = cellIndex * (MAX_LIGHTS_PER_CELL+1);
     int numLights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, dataOffs).x);
 
+
+    // Get directional occlusion
+    vec4 directional_occlusion = vec4(0);
+
+    #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
+        ivec2 coord = ivec2(gl_FragCoord.xy);
+        directional_occlusion = texelFetch(AmbientOcclusion, coord, 0);
+    #endif
 
     vec3 shadingResult = vec3(0);
 
@@ -62,7 +76,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
             l = normalize(lightPos - m.position);
         // }
 
-        shadingResult += applyLight(m, v, l, lightColor, attenuation, 1.0);
+        shadingResult += applyLight(m, v, l, lightColor, attenuation, 1.0, directional_occlusion);
 
 
     }

@@ -20,19 +20,19 @@ class AOStage(RenderStage):
         # TODO: 8 bits should be enough I think
         self._target = self._create_target("AOSample")
         self._target.set_half_resolution()
-        self._target.add_color_texture(bits=16)
+        self._target.add_color_texture(bits=8)
         self._target.prepare_offscreen_buffer()
 
         self._target_upscale = self._create_target("AOUpscale")
-        self._target_upscale.add_color_texture(bits=16)
+        self._target_upscale.add_color_texture(bits=8)
         self._target_upscale.prepare_offscreen_buffer()
 
         self._target_blur_v = self._create_target("AOBlurV")
-        self._target_blur_v.add_color_texture(bits=16)
+        self._target_blur_v.add_color_texture(bits=8)
         self._target_blur_v.prepare_offscreen_buffer()
 
         self._target_blur_h = self._create_target("AOBlurH")
-        self._target_blur_h.add_color_texture(bits=16)
+        self._target_blur_h.add_color_texture(bits=8)
         self._target_blur_h.prepare_offscreen_buffer()
 
         self._target_upscale.set_shader_input("SourceTex", self._target["color"])

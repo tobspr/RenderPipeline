@@ -4,12 +4,6 @@
 #pragma include "Includes/Structures/Material.struct.glsl"
 #pragma include "Includes/BRDF.inc.glsl"
 
-#if IS_SCREEN_SPACE
-#if HAVE_PLUGIN(AO)
-uniform sampler2D AmbientOcclusion;
-#endif
-#endif
-
 
 
 float computePointLightAttenuation(float r, float d) {
@@ -28,7 +22,7 @@ float computePointLightAttenuation(float r, float d) {
 } 
 
 // @TODO: Make this method faster
-vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, float shadow) {
+vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, float shadow, vec4 directional_occlusion) {
 
     // Debug: Fast rendering path
     // return max(0, dot(m.normal, l)) * lightColor * attenuation * m.diffuse;
@@ -69,16 +63,10 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     shadingResult += (distribution * visibility * fresnel) / max(0.001, 4.0 * NxV * max(0.001, NxL) ) * energy * m.specular * specularColor;
 
     // Special case for DSSDO
-    #if IS_SCREEN_SPACE
-
-        #if HAVE_PLUGIN(AO)
-            ivec2 coord = ivec2(gl_FragCoord.xy);
-            vec4 ao_sample = texelFetch(AmbientOcclusion, coord, 0);
-            float occlusion_factor = 1.0 - saturate(dot(vec4(-l, 0), ao_sample));
-            occlusion_factor = pow(occlusion_factor, 3.0);
-            shadingResult *= occlusion_factor;
-        #endif
-
+    #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
+        float occlusion_factor = 1.0 - saturate(dot(vec4(-l, 0), directional_occlusion));
+        occlusion_factor = pow(occlusion_factor, 3.0);
+        shadingResult *= occlusion_factor;
     #endif
 
     // shadingResult *= 5.0;
