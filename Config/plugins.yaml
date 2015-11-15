@@ -10,6 +10,7 @@ enabled:
     - AO
     - SMAA
     - Scattering
+    - PSSM
 
 overrides: 
     AO.alchemy_max_distance: 2.5
@@ -36,12 +37,12 @@ overrides:
     AO.ue4ao_sample_radius: 120.0
     PSSM.filter_radius: 26.38
     PSSM.filter_sample_count: 32
-    PSSM.fixed_bias: 0.0
-    PSSM.max_distance: 5.0
-    PSSM.normal_bias: 0.0
+    PSSM.fixed_bias: 0.17
+    PSSM.max_distance: 37.46
+    PSSM.normal_bias: 1.21
     PSSM.pcss_penumbra_size: 22.5
     PSSM.pcss_search_samples: 10
-    PSSM.slope_bias: 0.3
+    PSSM.slope_bias: 0.83
     PSSM.sun_distance: 100.0
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra

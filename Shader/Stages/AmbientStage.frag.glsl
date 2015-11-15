@@ -52,11 +52,9 @@ void main() {
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
 
 
-    // Get view vector - TODO: This one is inverted! Use the right one
-    vec3 view_vector = normalize(cameraPosition - m.position);
+    // Get view vector
+    vec3 view_vector = normalize(m.position - cameraPosition);
 
-    // Get halfway vector
-    vec3 h = normalize(m.normal + view_vector);
 
     // Store the accumulated ambient term in a variable
     vec4 ambient = vec4(0);
@@ -68,13 +66,13 @@ void main() {
 
 
         // Get reflection directory
-        vec3 reflected_dir = reflect(-view_vector, m.normal);
+        vec3 reflected_dir = reflect(view_vector, m.normal);
 
         // Get environment coordinate, cubemaps have a different coordinate system
         vec3 env_coord = fix_cubemap_coord(reflected_dir);
 
         // Compute angle between normal and view vector
-        float NxV = saturate(dot(m.normal, view_vector));
+        float NxV = abs(dot(m.normal, view_vector));
 
         // OPTIONAL: Increase mipmap level at grazing angles to decrease aliasing
         float mipmap_bias = saturate(pow(1.0 - NxV, 5.0)) * 3.0;
@@ -106,8 +104,8 @@ void main() {
         #endif
 
         // Get prefiltered BRDF
-        vec2 prefilter_brdf = textureLod(PrefilteredBRDF, vec2(m.roughness, NxV), 0).xy;
-        vec3 prefilter_color = prefilter_brdf.y + m.diffuse * prefilter_brdf.y;
+        vec2 prefilter_brdf = textureLod(PrefilteredBRDF, vec2(1-m.roughness, NxV), 0).xy;
+        vec3 prefilter_color = m.diffuse * prefilter_brdf.x + prefilter_brdf.y;
 
 
         // Different terms for metallic and diffuse objects:
@@ -126,7 +124,7 @@ void main() {
         vec3 diffuse_ambient = vec3(0.02) * m.diffuse * (1.0 - m.metallic);
 
         // Specular ambeint term
-        vec3 specular_ambient = env_factor * env_default_color * 0.1;
+        vec3 specular_ambient = env_factor * env_default_color;
 
         // Add diffuse and specular ambient term
         ambient.xyz += diffuse_ambient + specular_ambient;
@@ -142,6 +140,8 @@ void main() {
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
+
+        // ambient.xyz = vec3(specular_ambient);
 
     }
 
