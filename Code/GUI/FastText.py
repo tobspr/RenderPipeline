@@ -3,7 +3,7 @@ import string
 
 from panda3d.core import DynamicTextFont, Vec4, PTALVecBase4, CardMaker, Vec2
 from panda3d.core import Texture, PNMImage, Vec3, NodePath, Shader
-from panda3d.core import TransparencyAttrib, PTAFloat
+from panda3d.core import TransparencyAttrib, PTAFloat, VBase4
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
@@ -66,19 +66,18 @@ class FastText(DebugObject):
         """ Updates the text """
         advance_x = 0.0
         text_scale_x = self._size * 2.0 / float(Globals.base.win.get_y_size())
+        # text_scale_y = self._size * 2.0 * 2.0 / float(Globals.base.win.get_y_size())
         text_scale_y = text_scale_x
 
         for char_pos, char in enumerate(self._text):
             idx = self._SUPPORTED_GLYPHS.index(char)
-            uv_begin, uv_size, pos_begin, pos_size, advance = self._font_data[2][idx]
-
-            self._pta_uv[char_pos] = Vec4(uv_begin[0], uv_begin[1],
-                                          uv_size[0], uv_size[1])
+            uv, pos, advance = self._font_data[2][idx]
+            self._pta_uv[char_pos] = uv
             self._pta_position[char_pos] = Vec4(
-                self._position.x + (advance_x + pos_begin[0]) * text_scale_x,
-                self._position.y + pos_begin[1] * text_scale_y,
-                pos_size[0] * text_scale_x,
-                pos_size[1] * text_scale_y)
+                self._position.x + (advance_x + pos[0]) * text_scale_x,
+                self._position.y + pos[1] * text_scale_y,
+                self._position.x + (advance_x + pos[2]) * text_scale_x,
+                self._position.y + pos[3] * text_scale_y)
             advance_x += advance
 
         if self._align == "left":
@@ -115,8 +114,9 @@ class FastText(DebugObject):
         font_instance.set_texture_margin(int(self._size / 4.0 * 1.5))
 
         # Register the glyphs, this automatically creates the font-texture page
+        glyph_instances = []
         for glyph in self._SUPPORTED_GLYPHS:
-            font_instance.get_glyph(ord(glyph))
+            glyph_instances.append(font_instance.get_glyph(ord(glyph)))
 
         # Extract the page
         page = font_instance.get_page(0)
@@ -133,25 +133,29 @@ class FastText(DebugObject):
         page_blurred.load(blurpnm)
         page.set_format(Texture.F_red)
 
-
         # Extract glyph data
         glyph_data = []
 
-        for glyph in self._SUPPORTED_GLYPHS:
-            glyph_instance = font_instance.get_glyph(ord(glyph))
-            uv_begin = (glyph_instance.get_uv_left(),
-                        glyph_instance.get_uv_bottom())
-            uv_size = (glyph_instance.get_uv_right() - uv_begin[0],
-                       glyph_instance.get_uv_top() - uv_begin[1])
+        for index, glyph in enumerate(self._SUPPORTED_GLYPHS):
+            glyph_instance = glyph_instances[index]
+            dimensions = VBase4()
+            texcoords = VBase4()
 
-            pos_begin = glyph_instance.get_left(), glyph_instance.get_bottom()
-            pos_size = (glyph_instance.get_right() - pos_begin[0],
-                        glyph_instance.get_top() - pos_begin[1])
+            # Spaces have no position, skip them
+            if glyph == " ":
+                glyph_data.append((VBase4(0), VBase4(0), glyph_instance.get_advance()))
+                continue
+
+            if not glyph_instance.get_quad(dimensions, texcoords):
+                self.warn("Could not get glyph data for: '" + glyph + "'")
+                glyph_data.append((VBase4(0), VBase4(0), 0))
+                continue
+
             advance = glyph_instance.get_advance()
-
-            glyph_data.append((uv_begin, uv_size, pos_begin, pos_size, advance))
+            glyph_data.append((texcoords, dimensions, advance))
 
         self._font_data = [font_instance, page, glyph_data, page_blurred]
+        self._glyph_instances = glyph_instances
         self._FONT_PAGE_POOL[self._cache_key] = self._font_data
 
     def _generate_card(self):
@@ -187,10 +191,16 @@ class FastText(DebugObject):
                 int instance_offset = int(gl_InstanceID);
                 vec4 pos = positionData[instance_offset];
                 vec4 uv = uvData[instance_offset];
-                texcoord = uv.xy + p3d_MultiTexCoord0 * uv.zw;
-                vec4 finalPos = p3d_Vertex * vec4(pos.z, 0, pos.w, 1.0) +
-                                vec4(pos.x + offset, 0, pos.y, 0);
-                gl_Position = p3d_ModelViewProjectionMatrix * finalPos;
+                texcoord = mix(uv.xy, uv.zw, p3d_MultiTexCoord0);
+                /*vec4 finalPos = p3d_Vertex * vec4(pos.z, 0, pos.w, 1.0) +
+                                vec4(pos.x + offset, 0, pos.y, 0);*/
+
+                vec4 final_pos = vec4(offset, 0, 0, 1);
+
+                final_pos.x += mix(pos.x, pos.z, p3d_Vertex.x);
+                final_pos.z = mix(pos.y, pos.w, p3d_Vertex.z);
+
+                gl_Position = p3d_ModelViewProjectionMatrix * final_pos;
             }
             """, """
             #version 150

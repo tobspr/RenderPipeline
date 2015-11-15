@@ -72,7 +72,7 @@ class BetterCheckbox(DebugObject):
         changed it's value """
 
         if not status and self._collection:
-            self._node.command_func(None)
+            self._node.commandFunc(None)
             return
 
         if self._collection:
