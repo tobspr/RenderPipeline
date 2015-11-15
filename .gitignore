@@ -24,3 +24,4 @@ Native/Source/Interrogate*
 Plugins/Scattering/Tex
 *.rpsg
 Native/compilation_log.txt
+Docs/Sphinx-1.3.1
