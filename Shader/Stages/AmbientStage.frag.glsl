@@ -113,7 +113,7 @@ void main() {
             // Don't use this when using DSSDO
             ambient.xyz = max(ambient.xyz, vec3(0));
             float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
-            ambient *= pow(occlusion, 3.0);
+            ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
 

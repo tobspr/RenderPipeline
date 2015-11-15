@@ -1,7 +1,6 @@
 
 
 from ..Util.DebugObject import DebugObject
-from ..Util.Generic import consume
 
 
 class BadSettingException(Exception):
@@ -53,7 +52,7 @@ class BasePluginSetting(DebugObject):
                 raise BadSettingException("Missing key: " + prop)
 
         # Find the type of the setting
-        typename = consume(yaml, "type").strip().upper()
+        typename = yaml.pop("type").strip().upper()
         classname = "PluginSetting" + typename
 
         # Check if there is a typehandler for that type
@@ -63,17 +62,17 @@ class BasePluginSetting(DebugObject):
             raise BadSettingException("Unkown type: " + typename)
 
         # Read the settings which are equal for each type
-        instance.default = consume(yaml, "default")
+        instance.default = yaml.pop("default")
         instance.type = typename
-        instance.label = consume(yaml, "label").strip()
-        instance.description = consume(yaml, "description").strip()
+        instance.label = yaml.pop("label").strip()
+        instance.description = yaml.pop("description").strip()
 
         # Check if the setting is changeable at runtime
         if "runtime" in yaml:
-            instance.runtime = True if consume(yaml, "runtime") else False
+            instance.runtime = True if yaml.pop("runtime") else False
 
         if "shader_runtime" in yaml:
-            instance.shader_runtime = True if consume(yaml, "shader_runtime") else False
+            instance.shader_runtime = True if yaml.pop("shader_runtime") else False
 
         # Load type specific settings
         try:
@@ -88,7 +87,7 @@ class BasePluginSetting(DebugObject):
 
         # Check for a display condition
         if "display_if" in yaml:
-            instance.display_conditions = consume(yaml, "display_if")
+            instance.display_conditions = yaml.pop("display_if")
 
         # Check if all settings got "consumed"
         if yaml:
@@ -104,7 +103,7 @@ class PluginSettingINT(BasePluginSetting):
     """ Setting which stores a single integer """
 
     def load_additional_settings(self, yaml):
-        int_range = consume(yaml, "range")
+        int_range = yaml.pop("range")
         self.min_value = int(int_range[0])
         self.max_value = int(int_range[1])
 
@@ -122,7 +121,7 @@ class PluginSettingFLOAT(BasePluginSetting):
     """ Settings which stores a single float """
 
     def load_additional_settings(self, yaml):
-        flt_range = consume(yaml, "range")
+        flt_range = yaml.pop("range")
         self.min_value = float(flt_range[0])
         self.max_value = float(flt_range[1])
 
@@ -153,7 +152,7 @@ class PluginSettingENUM(BasePluginSetting):
     """ Setting which stores an enumeration """
 
     def load_additional_settings(self, yaml):
-        self.values = consume(yaml, "values")
+        self.values = yaml.pop("values")
         if not isinstance(self.values, list) and not isinstance(self.values, tuple):
             raise BadSettingException("Value enumeration is not a list")
 

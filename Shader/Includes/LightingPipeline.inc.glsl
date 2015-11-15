@@ -38,7 +38,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
         ivec2 coord = ivec2(gl_FragCoord.xy);
-        directional_occlusion = texelFetch(AmbientOcclusion, coord, 0);
+        directional_occlusion = normalize(texelFetch(AmbientOcclusion, coord, 0) * 2.0 - 1.0);
     #endif
 
     vec3 shadingResult = vec3(0);

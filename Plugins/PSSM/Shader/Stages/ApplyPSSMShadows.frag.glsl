@@ -92,7 +92,7 @@ void main() {
         float rotation = pssm_rotations[split] * HALF_PI;
 
         // Get the plugin settings
-        const float slope_bias = GET_SETTING(PSSM, slope_bias) * 0.005;
+        const float slope_bias = GET_SETTING(PSSM, slope_bias) * 0.05;
         const float normal_bias = GET_SETTING(PSSM, normal_bias) * 0.005;
         const float fixed_bias = GET_SETTING(PSSM, fixed_bias) * 0.001;
         const int num_samples = GET_SETTING(PSSM, filter_sample_count);
@@ -157,7 +157,7 @@ void main() {
 
             // Penumbra size also takes average blocker depth into account
             float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) / 
-                ref_depth * GET_SETTING(PCSS, pcss_penumbra_size);
+                ref_depth * GET_SETTING(PSSM, pcss_penumbra_size);
 
             // Apply penumbra size
             filter_size *= penumbra_size;
@@ -193,7 +193,12 @@ void main() {
     // Compute the sun lighting
     vec3 v = normalize(cameraPosition - m.position);
     vec3 l = sun_vector;
-
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
+
+
+    // float factor = float(split) / GET_SETTING(PSSM, split_count);
+    // lighting_result *= vec3(factor, 1 - factor, 0);
+
+
     result = scene_color + vec4(lighting_result, 0);
 }

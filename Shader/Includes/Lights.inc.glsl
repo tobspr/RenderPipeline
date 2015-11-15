@@ -64,13 +64,10 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
 
     // Special case for DSSDO
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
-        float occlusion_factor = 1.0 - saturate(dot(vec4(-l, 0), directional_occlusion));
+        float occlusion_factor = saturate(dot(vec4(l, 1), directional_occlusion));
         occlusion_factor = pow(occlusion_factor, 3.0);
         shadingResult *= occlusion_factor;
     #endif
-
-    // shadingResult *= 5.0;
-    // attenuation = 1.0;
 
     return shadingResult * attenuation * shadow;
 }
