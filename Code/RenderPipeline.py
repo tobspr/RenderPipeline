@@ -89,7 +89,7 @@ class RenderPipeline(DebugObject):
     def create_default_skybox(self, size=40000):
         """ Returns the default skybox, with a scale of <size>, and all
         proper effects and shaders already applied. The skybox is already 
-        parented to render aswell. """
+        parented to render as well. """
         skybox = self._com_resources.load_default_skybox()
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)

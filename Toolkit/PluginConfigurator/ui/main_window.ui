@@ -398,30 +398,6 @@ Plugin Desc Line 3</string>
       </property>
      </item>
     </widget>
-    <widget class="QLabel" name="lbl_restart_pipeline">
-     <property name="geometry">
-      <rect>
-       <x>400</x>
-       <y>70</y>
-       <width>475</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color: #F44;</string>
-     </property>
-     <property name="text">
-      <string>Pipeline needs to be restarted in order to see all changes!</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
     <widget class="QPushButton" name="btn_reset_plugin_settings">
      <property name="geometry">
       <rect>
@@ -679,11 +655,36 @@ border-right: 0px solid #9A3;</string>
      </property>
     </widget>
    </widget>
+   <widget class="QLabel" name="lbl_restart_pipeline">
+    <property name="geometry">
+     <rect>
+      <x>688</x>
+      <y>80</y>
+      <width>475</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #F44;</string>
+    </property>
+    <property name="text">
+     <string>Pipeline needs to be restarted in order to see all changes!</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
    <zorder>frame</zorder>
    <zorder>lst_plugins</zorder>
    <zorder>frame_details</zorder>
    <zorder>label</zorder>
    <zorder>lbl_select_plugin</zorder>
+   <zorder>lbl_restart_pipeline</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

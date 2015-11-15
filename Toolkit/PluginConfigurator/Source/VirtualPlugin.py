@@ -1,4 +1,5 @@
 
+from __future__ import print_function
 
 from os.path import join, isdir, isfile
 from Code.PluginInterface.PluginConfig import PluginConfig
@@ -30,7 +31,14 @@ class VirtualPlugin(object):
         """ Loads the plugin config """
 
         self._config = PluginConfig()
-        self._config.load(self._config_pth)
+        
+        try:
+            self._config.load(self._config_pth)
+        except Exception as msg:
+            print("Plugin", self._plugin_id,"failed to load config.yaml:")
+            print(msg)
+            raise BadPluginException(msg)
+
 
     def consume_overrides(self, overrides):
         """ Removes all keys from the dictionary which belong to this

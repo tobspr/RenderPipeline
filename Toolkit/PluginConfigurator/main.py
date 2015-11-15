@@ -149,6 +149,12 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         label_font.setPointSize(10)
         label_font.setFamily("Segoe UI")
 
+        desc_font = QtGui.QFont()
+        desc_font.setPointSize(8)
+        desc_font.setFamily("Segoe UI")
+
+
+
         for index, (name, handle) in enumerate(settings.items()):
 
             # Dont show hidden settings
@@ -191,7 +197,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             label_desc = QtGui.QLabel()
             label_desc.setText(handle.description)
             label_desc.setWordWrap(True)
-            label_desc.setFont(label_font)            
+            label_desc.setFont(desc_font)            
             label_desc.setStyleSheet("color: #555;padding: 5px;")
 
             self.table_plugin_settings.setCellWidget(row_index, 3, label_desc)
@@ -220,9 +226,9 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             # In case the setting is dynamic, notice the pipeline about it:
             self._update_queue.add(self._current_plugin + "." + setting_id)
 
-        # Update GUI, but only in case of enum values, since they can trigger
+        # Update GUI, but only in case of enum and bool values, since they can trigger
         # display conditions:
-        if setting_handle.type == "ENUM":
+        if setting_handle.type == "ENUM" or setting_handle.type == "BOOL":
             self._render_current_settings()
 
     def _on_setting_bool_changed(self, setting_id, value):

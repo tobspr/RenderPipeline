@@ -4,7 +4,7 @@ author: tobspr <tobias.springer1@gmail.com>
 version: 1.0
 description: >
     This plugin adds support for Parallel Split Shadow Maps (PSSM),
-    and also sun shading. 
+    and also sun lighting.
 
 settings: !!omap
 
@@ -16,9 +16,10 @@ settings: !!omap
         shader_runtime: true
         label: Maximum shadow distance
         description: >
-            This controlls the maximum distance up to where shadows
+            This controls the maximum distance up to where shadows
             are rendered. A higher distance means further shadows,
-            but also a worse shadow quality.
+            but also a worse shadow quality. This setting is in logarithmic
+            world-space units. A value of 50 means a maximum distance of 50*(e-1).
 
     - sun_distance:
         type: float
@@ -26,7 +27,8 @@ settings: !!omap
         default: 500.0
         label: Sun distance
         description: >
-            This controlls how far the sun is away from the scene.
+            This controls how far the sun is away from the scene, to avoid
+            clipping objects outside of the frustum which still cast shadows.
             Basically you don't need to adjust this setting, but in
             case you get artifacts, try increasing this setting.
 
@@ -36,7 +38,7 @@ settings: !!omap
         default: 7
         label: Amount of PSSM Splits / Cascades
         description: >
-            This controlls how many splits are used for the PSSM.
+            This controls how many splits are used for the PSSM.
             A higher amount of splits increases the shadow map
             detail and quality, but also increases the performance
             cost by a lot. For every split, the scene has to get
@@ -49,7 +51,7 @@ settings: !!omap
         default: 2048
         label: Shadowmap resolution
         description: >
-            This controlls the resolution of the individual shadowmaps
+            This controls the resolution of the individual shadowmaps
             of the splits. If you choose a resolution of 512 for example,
             and you have 10 splits, then that makes a total resolution
             of 5120 * 512 for the shadow map. Be careful when choosing high
@@ -60,7 +62,108 @@ settings: !!omap
         default: true
         label: Use hardware filtering (PCF)        
         description: >
-            This setting turns PCF on or off. It provides a better shadow
-            quality, and theoretically a better performance. However, not all
-            GPU's seem to support it.
+            This setting turns Percentage Closer Filtering on or off (A simple
+            2x2 bilinear filter provided by the GPU).
+            It provides a better shadow quality, and theoretically a better 
+            performance. However, not all GPU's seem to support it.
+
+    - filter_sample_count:
+        type: int
+        range: [4, 32]
+        default: 16
+        shader_runtime: true
+        label: Filtering samples
+        description: >
+            Amount of samples to take for filtering the shadow. The samples are
+            choosen randomly on a poisson disk. Higher values provide a better
+            shadow quality, but also are more expensive.
+
+    - filter_radius:
+        type: float
+        range: [5, 100]
+        default: 25
+        shader_runtime: true
+        label: Shadow filtering radius
+        description: >
+            This setting controls the filter size, higher values mean a more
+            smooth penumbra. Too high values might (and will) produce artifacts.
+            This setting has almost no measureable impact on performance.
+
+    - fixed_bias:
+        type: float
+        range: [0.0, 2.0]
+        default: 0.3
+        shader_runtime: true
+        label: Depth Bias
+        description: > 
+            Depth-Based bias. This avoids self-shadowing issues (also known)
+            as Shadow-Acne. Too high values will produce gaps in the shadows,
+            so try to find the lowest possible value.
+
+    - slope_bias:
+        type: float
+        range: [0.0, 5.0]
+        default: 1.0
+        shader_runtime: true
+        label: Slope Bias
+        description: >
+            Slope-Based bias. This avoid self-shadowing issues as well, but instead
+            of the fixed bias it adds bias based on the angle between the light
+            and the surface.
+
+    - normal_bias:
+        type: float
+        range: [0.0, 5.0]
+        default: 1.0
+        shader_runtime: true
+        label: Normal Bias
+        description: >
+            Normal-Based bias. This moves the sample position by a small amount
+            into the direction of the surface normal, to avoid self shadowing.
+
+    # PCSS settings
+
+    - use_pcss:
+        type: bool
+        default: true
+        shader_runtime: true
+        label: Use PCSS
+        description: >
+            PCSS adds support for variable penumbra size shadows. Without PCSS,
+            all shadows have the same penumbra size at all places. With PCSS,
+            the shadow penumbra size increases based on the distance. However,
+            PCSS requires additionally computations, and thus is slower than
+            regular filtering.
+
+    - pcss_search_samples:
+        display_if: {use_pcss: true}
+        type: int
+        range: [4, 32]
+        default: 16
+        shader_runtime: true
+        label: PCSS Penumbra samples
+        description: >
+            Amount of samples to take for finding the penumbra size. Higher values
+            might produce better results at the cost of performance. 
+
+    - pcss_penumbra_size:
+        display_if: {use_pcss: true}
+        type: float
+        range: [10, 300.0]
+        default: 100.0
+        shader_runtime: true
+        label: PCSS Penumbra scale
+        description: >
+            Scales the penumbra by a fixed factor. This is an artistic setting,
+            and does not affect performance much. Lower settings will cause a
+            smaller penumbra, while higher settings produce a bigger one. Too
+            high values might cause artifacts in the filtering.
+
+
+
+
+
+
+
+
 

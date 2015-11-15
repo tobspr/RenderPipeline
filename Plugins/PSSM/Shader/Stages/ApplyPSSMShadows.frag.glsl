@@ -45,7 +45,6 @@ float get_shadow(vec2 coord, float refz) {
 }
 
 
-
 void main() {
 
     // TODO: Move to python
@@ -92,85 +91,109 @@ void main() {
         // So 90 degree is half pi:
         float rotation = pssm_rotations[split] * HALF_PI;
 
-        // Get the dynamic and fixed bias
-        const float slope_bias = 0.0;
-        const float normal_bias = 0.005;
-        const float fixed_bias = 0.0003;
-        const int num_samples = 32;
-        const int num_search_samples = 16;
+        // Get the plugin settings
+        const float slope_bias = GET_SETTING(PSSM, slope_bias) * 0.005;
+        const float normal_bias = GET_SETTING(PSSM, normal_bias) * 0.005;
+        const float fixed_bias = GET_SETTING(PSSM, fixed_bias) * 0.001;
+        const int num_samples = GET_SETTING(PSSM, filter_sample_count);
+        const float filter_radius = GET_SETTING(PSSM, filter_radius) / GET_SETTING(PSSM, resolution);
 
-        // const int num_samples = 1;
-        // const int num_search_samples = 1;
 
-        const float filter_radius = 25.0 / GET_SETTING(PSSM, resolution);
-        
-        vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, sun_vector);
-
-        vec2 split_min = get_split_coord(vec2(0), split);
-        vec2 split_max = get_split_coord(vec2(1), split);
+        // Compute the biased position based on the normal and slope scaled
+        // bias.
+        vec3 biased_pos = get_biased_position(m.position, 
+            slope_bias, normal_bias, m.normal, sun_vector);
 
         // Project the current pixel to the view of the light
         vec3 projected = project(mvp, biased_pos);
         vec2 projected_coord = get_split_coord(projected.xy, split);
 
-        // Do the actual filtering
-
+        // Compute the fixed bias
         float ref_depth = projected.z - fixed_bias;
 
         // Find filter size
         vec4 filter_size = find_filter_size(mvp, sun_vector, filter_radius, rotation);
 
-        // Find penumbra size
-
-        float num_blockers = 0.0;
-        float sum_blockers = 0.0;
-        for (int i = 0; i < num_search_samples; ++i) {
-
-            vec2 offset = poisson_disk_2D_16[i];
-            float sampled_depth = texture(PSSMShadowAtlas,
-                projected_coord + 
-                offset.xy * filter_size.xy + 
-                offset.xy * filter_size.zw).x;
-            float factor = step(sampled_depth, ref_depth);
-            num_blockers += factor;
-            sum_blockers += sampled_depth * factor;
-        }
-
-        float avg_blocker_depth = sum_blockers / num_blockers;
-        float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) / ref_depth * 100.0;
 
 
-        // penumbra_size = max(0.001, min(1.0, penumbra_size));
-        filter_size *= penumbra_size;
+
+        #if GET_SETTING(PSSM, use_pcss)
+
+            {
+            /*
+                
+                PCSS Kernel
+
+                Scan the region of the pixel for blockers, penumbra size is
+                amount of blockers compared to non-blockers.
+
+            */
+
+            const int num_search_samples = GET_SETTING(PSSM, pcss_search_samples);
+
+            float num_blockers = 0.0;
+            float sum_blockers = 0.0;
+
+            for (int i = 0; i < num_search_samples; ++i) {
+
+                // Find random sample locations on a poisson disk
+                vec2 offset = poisson_disk_2D_16[i];
+
+                // Find depth at sample location
+                float sampled_depth = texture(PSSMShadowAtlas,
+                    projected_coord + 
+                    offset.xy * filter_size.xy + 
+                    offset.xy * filter_size.zw).x;
+
+                // Compare the depth with the pixel depth, in case its smaller,
+                // we found a blocker
+                float factor = step(sampled_depth, ref_depth);
+                num_blockers += factor;
+                sum_blockers += sampled_depth * factor;
+            }
+
+            // Examine ratio between blockers and non-blockers
+            float avg_blocker_depth = sum_blockers / num_blockers;
+
+            // Penumbra size also takes average blocker depth into account
+            float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) / 
+                ref_depth * GET_SETTING(PCSS, pcss_penumbra_size);
+
+            // Apply penumbra size
+            filter_size *= penumbra_size;
+
+            }
+
+        #endif
 
 
-        // Do the actual filtering
+        // Do the actual shadow map filtering
         for (int i = 0; i < num_samples; ++i) {
+
+            // Get sample from a random poisson disk
             vec2 offset = poisson_disk_2D_32[i];
+
+            // Find depth and apply contribution
             shadow_factor += get_shadow(
                 projected_coord +
                 offset.xy * filter_size.xy + 
                 offset.xy * filter_size.zw, ref_depth);
         }
 
+        // Normalize shadow factor
         shadow_factor /= num_samples;
 
-
+        // Scale the shadow factor a bit, artistic choice
         shadow_factor = shadow_factor * (1.3) -  0.3;
-        // shadow_factor = pow(shadow_factor, 2.2);
         shadow_factor = saturate(shadow_factor);
 
     }
 
-    // Compute the light influence
+
+    // Compute the sun lighting
     vec3 v = normalize(cameraPosition - m.position);
     vec3 l = sun_vector;
 
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
-
-    // float split_f = saturate(split / float(GET_SETTING(PSSM, split_count)));
-    // lighting_result *= vec3(1 - split_f, split_f, 0);
-
-
     result = scene_color + vec4(lighting_result, 0);
 }

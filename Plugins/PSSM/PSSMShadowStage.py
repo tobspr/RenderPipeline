@@ -58,9 +58,8 @@ class PSSMShadowStage(RenderStage):
             dr = internal_buffer.make_display_region(
                 i / self._num_splits,
                 i / self._num_splits + 1 / self._num_splits, 0, 1)
-            dr.set_clear_color(Vec4(i / self._num_splits, 0.2, 0.6, 1.0))
             dr.set_clear_depth(1)
-            dr.set_clear_color_active(True)
+            dr.set_clear_color_active(False)
             dr.set_clear_depth_active(True)
             dr.set_sort(25 + i)
             dr.set_active(True)
