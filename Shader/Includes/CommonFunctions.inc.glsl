@@ -74,10 +74,20 @@ bool out_of_screen(vec2 tcoord) {
 }
 
 void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
-    vec3 v0 = normal.z < 0.9 ? vec3(0, 0, 1) : vec3(0, 1, 0);
+    vec3 v0 = abs(normal.z) < 0.99 ? vec3(0, 0, 1) : vec3(0, 1, 0);
     tangent = normalize(cross(v0, normal));
     bitangent = normalize(cross(tangent, normal));
 }
+
+
+vec3 tangent_to_world(vec3 vec, vec3 tangent)
+{
+    vec3 v0 = abs(tangent.z) < 0.99 ? vec3(0, 0, 1) : vec3(1, 0, 0);
+    vec3 tangent_x = normalize( cross( v0, tangent ) );
+    vec3 tangent_y = cross( tangent, tangent_x );
+    return tangent_x * vec.x + tangent_y * vec.y + tangent * vec.z;
+}
+
 
 
 // Returns the number of mipmaps of a cubemap

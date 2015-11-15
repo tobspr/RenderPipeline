@@ -26,13 +26,14 @@ void main() {
 
     ivec2 clamped_coord; int face;
     vec3 direction = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
-
     float horizon = direction.z;
     direction.z = abs(direction.z);
 
     vec3 inscattered_light = DoScattering(direction * 10000000.0, direction);
     vec3 sky_color = textureLod(DefaultSkydome, get_skydome_coord(direction), 0).xyz;
 
+    inscattered_light = 1.0 - exp(-0.2*inscattered_light);
+    
     // inscattered_light = 1.0 - exp(-1.0 * inscattered_light);
     // inscattered_light = sqrt(inscattered_light);
     // inscattered_light *= 0.3;
@@ -45,7 +46,6 @@ void main() {
     }
 
     imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0) );
-
     result.xyz = inscattered_light;
 
 }

@@ -26,7 +26,7 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    float sample_roughness = 0.1 + current_mip * 0.15;
+    float sample_roughness = 0.0 + current_mip * 0.1;
 
     vec3 accum = vec3(0);
     
@@ -34,19 +34,24 @@ void main() {
 
         // -------- Importance Sampling ----------
 
-        const int num_samples = 32;
+        const int num_samples = 64;
+        float accum_weights = 0.0;
 
         for (int i = 0; i < num_samples; ++i) {
             vec2 Xi = Hammersley(i, num_samples);
-            vec3 Li = ImportanceSampleGGX(Xi, sample_roughness, n);
+            vec3 h = ImportanceSampleGGX(Xi, sample_roughness, n);
 
-            float NxL = max(0.0, dot(n, Li));
+            vec3 l = 2.0 * dot( n, h ) * h - n;
+
+            float NxL = saturate(dot(n, l));
             float weight = NxL;
-            vec3 fval = textureLod(SourceMipmap, Li, current_mip).xyz;
+            vec3 fval = textureLod(SourceMipmap, l, current_mip).xyz;
             accum += fval * weight;
+            accum_weights += weight;
         }
 
-        accum /= num_samples;
+        accum /= max(0.01, accum_weights);
+        // accum /= num_samples;
 
     #else
 

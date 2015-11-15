@@ -193,6 +193,7 @@ class RenderPipeline(DebugObject):
 
     def reload_shaders(self):
         """ Reloads all shaders """
+        self.debug("Reloading shaders ..")
         self._debugger._error_msg_handler.clear_messages()
         self._debugger.set_reload_hint_visible(True)
         self._showbase.graphicsEngine.render_frame()
