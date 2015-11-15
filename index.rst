@@ -1,8 +1,14 @@
 
+RenderPipeline
+==============
 
-.. automodule:: Code
+Deferred Render Pipeline for Panda3D
 
 
-.. automodule:: Plugins
+.. toctree::
+    .. automodule:: Code
+        :members:
 
+    .. automodule:: Plugins
+        :members:
 
