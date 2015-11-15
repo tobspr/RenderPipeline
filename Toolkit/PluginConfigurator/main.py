@@ -46,8 +46,14 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         connect(self.lst_plugins, QtCore.SIGNAL("itemSelectionChanged()"), self.on_plugin_selected)
         connect(self.lst_plugins, QtCore.SIGNAL("itemChanged(QListWidgetItem*)"), self.on_plugin_state_changed)
+        connect(self.btn_reset_plugin_settings, QtCore.SIGNAL("clicked()"), self.on_reset_plugin_settings)
 
         self._load_plugin_list()
+
+        # Adjust column widths
+        self.table_plugin_settings.setColumnWidth(0, 120)
+        self.table_plugin_settings.setColumnWidth(1, 80)
+        self.table_plugin_settings.setColumnWidth(2, 150)
 
         update_thread = Thread(target=self.update_thread, args=())
         update_thread.start()
@@ -57,6 +63,27 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         import os
         os._exit(1)
 
+    def on_reset_plugin_settings(self):
+        """ Gets called when the user wants to reset settings of a plugin """
+
+        # Ask the user if he's really sure about it
+        msg = "Are you sure you want to reset the settings of '" + self._current_plugin_instance.get_name() + "'?\n"
+        msg+= "This cannot be undone! They will be lost forever (a long time!)."
+        reply = QtGui.QMessageBox.question(self, "Warning", 
+                         msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            
+            QtGui.QMessageBox.information(self, "Success", "Settings have been reset! You may have to restart the pipeline.")
+            self._interface.reset_plugin_settings(self._current_plugin)
+
+            # Save config
+            self._interface.write_configuration()
+
+            # Always show the restart hint, even if its not always required
+            self._show_restart_hint()
+
+            # Re-render everything
+            self._load_plugin_list()
 
     def on_plugin_state_changed(self, item):
         plugin_id = item._plugin_id
@@ -68,6 +95,11 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
     def on_plugin_selected(self):
         """ Gets called when a plugin got selected in the plugin list """
         selected_item = self.lst_plugins.selectedItems()
+        if not selected_item:
+            self._current_plugin = None
+            self._current_plugin_instance = None
+            self._set_settings_visible(False)
+            return
         assert(len(selected_item) == 1)
         selected_item = selected_item[0]
         self._current_plugin = selected_item._plugin_id
@@ -115,6 +147,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         label_font = QtGui.QFont()
         label_font.setPointSize(10)
+        label_font.setFamily("Segoe UI")
 
         for index, (name, handle) in enumerate(settings.items()):
 
@@ -136,6 +169,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             if handle.is_dynamic():
                 # label.setBackground(QtGui.QColor(200, 255, 200, 255))
                 label.setStyleSheet("background: rgba(200, 255, 200, 255);")
+            else:
+                label.setStyleSheet("background: rgba(230, 230, 230, 255);")
 
             label.setMargin(10)
 
@@ -149,9 +184,17 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             setting_widget = self._get_widget_for_setting(name, handle)
             self.table_plugin_settings.setCellWidget(row_index, 2, setting_widget)
 
-            item_desc = QtGui.QTableWidgetItem()
-            item_desc.setText(handle.description)
-            self.table_plugin_settings.setItem(row_index, 3, item_desc)
+            # item_desc = QtGui.QTableWidgetItem()
+            # item_desc.setText(handle.description)
+            # item_desc.setForeground(QtGui.QColor(100, 100, 100, 255))
+
+            label_desc = QtGui.QLabel()
+            label_desc.setText(handle.description)
+            label_desc.setWordWrap(True)
+            label_desc.setFont(label_font)            
+            label_desc.setStyleSheet("color: #555;padding: 5px;")
+
+            self.table_plugin_settings.setCellWidget(row_index, 3, label_desc)
 
     def _do_update_setting(self, setting_id, value):
         # print("Update setting: ", setting_id, value)
@@ -209,12 +252,12 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         widget = QtGui.QWidget()
         layout = QtGui.QVBoxLayout()
+        layout.setAlignment(QtCore.Qt.AlignCenter)
         widget.setLayout(layout)
 
         if setting.type == "BOOL":
             box = QtGui.QCheckBox()
             box.setChecked(QtCore.Qt.Checked if setting.value else QtCore.Qt.Unchecked)
-            box.setStyleSheet("margin-left:30%;")
             connect(box, QtCore.SIGNAL("stateChanged(int)"), 
                 partial(self._on_setting_bool_changed, setting_id))
             layout.addWidget(box)
@@ -274,6 +317,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
     def _load_plugin_list(self):
         """ Reloads the whole plugin list """
         print("Loading plugin list")
+
+        # Reset selection
+        self._current_plugin = None
+        self._current_plugin_instance = None
 
         self._set_settings_visible(False)
 

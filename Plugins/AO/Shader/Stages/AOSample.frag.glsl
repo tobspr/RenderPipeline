@@ -92,8 +92,7 @@ void main() {
     // float kernel_scale = 10.0 / getLinearZFromZ(pixel_depth);
     float kernel_scale = 10.0 / view_dist;
 
-    const float sample_radius = GET_SETTING(AO, sample_radius); 
-    
+
     // Include the appropriate kernel
     #if ENUM_V_ACTIVE(AO, technique, SSAO)
 
@@ -116,6 +115,9 @@ void main() {
         #error Unkown AO technique!
 
     #endif
+
+
+    result.w = pow(result.w, GET_SETTING(AO, occlusion_strength));
 
 }
 

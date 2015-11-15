@@ -94,6 +94,14 @@ class PluginInterface(object):
 
             self._plugin_instances.append(plugin_instance)
 
+    def reset_plugin_settings(self, plugin_id):
+        """ Resets all settings of a given plugin """
+
+        # Need a copy to iterate
+        for key in list(self._overrides.keys()):
+            if key.startswith(plugin_id + "."):
+                del self._overrides[key]
+
     def is_plugin_enabled(self, plugin_id):
         """ Returns wheter a plugin is currently enabled """
         return plugin_id in self._enabled_plugins

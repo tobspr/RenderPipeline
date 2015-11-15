@@ -8,6 +8,7 @@ AO.
 
 */
 
+const float sample_radius = GET_SETTING(AO, ssao_sample_radius);     
 const int num_samples = GET_SETTING(AO, ssao_sample_count);
 const float bias = GET_SETTING(AO, ssao_bias) * 0.005;
 const float max_range = GET_SETTING(AO, ssao_max_distance);

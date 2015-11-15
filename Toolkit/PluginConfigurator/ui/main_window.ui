@@ -241,9 +241,14 @@ Plugin Desc Line 3</string>
       <rect>
        <x>30</x>
        <y>130</y>
-       <width>861</width>
+       <width>845</width>
        <height>531</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -261,12 +266,21 @@ Plugin Desc Line 3</string>
       <bool>false</bool>
      </property>
      <property name="alternatingRowColors">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::NoSelection</enum>
      </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="textElideMode">
+      <enum>Qt::ElideNone</enum>
+     </property>
      <property name="verticalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="horizontalScrollMode">
       <enum>QAbstractItemView::ScrollPerPixel</enum>
      </property>
      <property name="showGrid">
@@ -388,15 +402,14 @@ Plugin Desc Line 3</string>
      <property name="geometry">
       <rect>
        <x>400</x>
-       <y>20</y>
-       <width>481</width>
+       <y>70</y>
+       <width>475</width>
        <height>31</height>
       </rect>
      </property>
      <property name="font">
       <font>
-       <pointsize>11</pointsize>
-       <stylestrategy>PreferAntialias</stylestrategy>
+       <pointsize>12</pointsize>
       </font>
      </property>
      <property name="styleSheet">
@@ -407,6 +420,19 @@ Plugin Desc Line 3</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_reset_plugin_settings">
+     <property name="geometry">
+      <rect>
+       <x>714</x>
+       <y>20</y>
+       <width>161</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Reset Settings of this Plugin</string>
      </property>
     </widget>
    </widget>

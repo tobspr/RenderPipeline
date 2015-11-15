@@ -63,14 +63,17 @@ class PluginConfig(DebugObject):
         settings will be removed from the dictionary. """
         assert(self._loaded)
 
+
         # need a copy to iterate
         for key in list(overrides.keys()):
             if key.startswith(plugin_id):
                 setting_name = ".".join(key.split(".")[1:])
                 setting_value = overrides[key]
 
+
                 if setting_name not in self._settings:
                     self.warn("Unrecognized override: " + key)
+                    del overrides[key]
                     continue
                     
                 self._settings[setting_name].set_value(setting_value)

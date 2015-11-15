@@ -20,15 +20,14 @@ overrides:
     AO.hbao_ray_count: 9
     AO.hbao_ray_steps: 4
     AO.hbao_tangent_bias: 0.17
-    AO.sample_radius: 200.0
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 1.43
     AO.ssao_sample_count: 32
+    AO.ssao_sample_radius: 50.0
     AO.ssvo_max_distance: 3.04
     AO.ssvo_sample_count: 32
     AO.ssvo_sphere_radius: 4.59
-    AO.technique: UE4AO
-    PSSM.pssm_distance: 21.93
+    AO.technique: SSAO
     PSSM.sun_distance: 100.0
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True

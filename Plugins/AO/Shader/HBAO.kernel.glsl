@@ -1,5 +1,7 @@
 
 
+
+const float sample_radius = GET_SETTING(AO, hbao_sample_radius);     
 const int num_angles = GET_SETTING(AO, hbao_ray_count);
 const int num_ray_steps = GET_SETTING(AO, hbao_ray_steps);
 const float tangent_bias = GET_SETTING(AO, hbao_tangent_bias);

@@ -41,10 +41,26 @@ settings: !!omap
             If a pixel exceeds the distance to the mid pixel by this amount, it
             will not get weighted.
 
-    - sample_radius:
-        display_if: {technique: ["SSAO", "HBAO", "ALCHEMY"]}
+    - occlusion_strength:
         type: float
-        range: [5, 200]
+        range: [0.1, 6.0]
+        default: 1.0
+        shader_runtime: true
+        label: Occlusion Strength 
+        description: >
+            This controls the strength of the occlusion. Higher values will make
+            the occlusion look darker, and lower values will make it less
+            noticeable. You most likely will have to adjust it differently for
+            every technique.
+
+
+
+    # Settings for SSAO
+
+    - ssao_sample_radius:
+        display_if: {technique: ["SSAO"]}
+        type: float
+        range: [5, 400]
         default: 50
         shader_runtime: true
         label: Sample Radius
@@ -52,9 +68,6 @@ settings: !!omap
             Size of the sampling radius in pixels, higher values might look better,
             but also perform worse due to less caching.
     
-
-    # Settings for SSAO
-
     - ssao_sample_count:
         display_if: {technique: "SSAO"}
         type: int
@@ -91,6 +104,17 @@ settings: !!omap
 
     # Settings for HBAO
 
+    - hbao_sample_radius:
+        display_if: {technique: ["HBAO"]}
+        type: float
+        range: [5, 400]
+        default: 50
+        shader_runtime: true
+        label: Sample Radius
+        description: >
+            Size of the sampling radius in pixels, higher values might look better,
+            but also perform worse due to less caching.
+    
     - hbao_ray_count:
         display_if: {technique: "HBAO"}
         type: int
@@ -168,6 +192,18 @@ settings: !!omap
 
 
     # Settings for ALCHEMY
+
+
+    - alchemy_sample_radius:
+        display_if: {technique: ["ALCHEMY"]}
+        type: float
+        range: [5, 400]
+        default: 50
+        shader_runtime: true
+        label: Sample Radius
+        description: >
+            Size of the sampling radius in pixels, higher values might look better,
+            but also perform worse due to less caching.
 
     - alchemy_num_samples:
         display_if: {technique: "ALCHEMY"}
