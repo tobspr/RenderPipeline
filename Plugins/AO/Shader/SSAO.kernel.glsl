@@ -10,7 +10,7 @@ AO.
 
 const float sample_radius = GET_SETTING(AO, ssao_sample_radius);     
 const int num_samples = GET_SETTING(AO, ssao_sample_count);
-const float bias = GET_SETTING(AO, ssao_bias) * 0.005;
+const float bias = GET_SETTING(AO, ssao_bias) * 0.5;
 const float max_range = GET_SETTING(AO, ssao_max_distance);
 
 float sample_offset = sample_radius * pixel_size.x;
@@ -31,7 +31,7 @@ for (int i = 0; i < num_samples; ++i) {
     offset = faceforward(offset, offset, -pixel_view_normal);
 
     // Compute offset position in view space
-    vec3 offset_pos = pixel_view_pos + offset * sample_offset / kernel_scale * 20.0;
+    vec3 offset_pos = pixel_view_pos + offset * sample_offset * 20.0;
 
     // Project offset position to screen space
     vec3 projected = viewToScreen(offset_pos);
@@ -44,9 +44,9 @@ for (int i = 0; i < num_samples; ++i) {
     float linz_b = getLinearZFromZ(sample_depth);
 
     // Compare both depths by distance to find the AO factor
-    float modifier = step(distance(linz_a, linz_b), max_range);
+    float modifier = step(distance(linz_a, linz_b), max_range * kernel_scale * 0.2);
     range_accum += modifier * 0.5 + 0.5;
-    modifier *= step(sample_depth + bias, projected.z);
+    modifier *= step(linz_b + bias, linz_a);
     accum += modifier;
 
     // Update Bent Normal
@@ -59,4 +59,8 @@ bent_normal = viewNormalToWorld(bent_normal);
 
 // normalize samples
 accum /= max(0.1, range_accum);
+
+// Renormalize to match with the other techniques
+accum *= 0.5;
+
 result = vec4(bent_normal, 1 - saturate(accum));

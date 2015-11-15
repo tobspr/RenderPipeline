@@ -53,8 +53,6 @@ settings: !!omap
             noticeable. You most likely will have to adjust it differently for
             every technique.
 
-
-
     # Settings for SSAO
 
     - ssao_sample_radius:
