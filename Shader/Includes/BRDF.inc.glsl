@@ -80,3 +80,19 @@ float BRDFDistribution(float NxH, float roughness)
     return BRDFDistribution_GGX(NxH, roughness);
 }
 
+
+
+// No mathematical background, I just matched this to fit the mitsuba
+// pathtracing renderings
+vec3 BRDFEnvironment( vec3 specular_color, float roughness, float NxV )
+{
+    float r_sqrt = sqrt(roughness);
+
+    roughness = 0.1;
+    float fresnel_5 = (pow(NxV, 4.0 - 4.0 * r_sqrt ));
+
+    float constant_factor = 0.001;
+    float fresnel_factor = 0.25 * saturate(1 - 1.75 * r_sqrt);
+
+    return specular_color * fresnel_5 * fresnel_factor + constant_factor;
+}

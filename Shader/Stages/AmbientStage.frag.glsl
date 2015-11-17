@@ -38,7 +38,7 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
 
     // Increase mipmap at extreme roughness, linear doesn't work well there
     // reflectivity += saturate(reflectivity - 0.9) * 2.0;
-    return roughness * 10.0;
+    return sqrt(roughness) * 7.0;
     // return (num_mipmaps - reflectivity * 9.0);
 }
 
@@ -51,10 +51,8 @@ void main() {
     // Get material properties
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
 
-
     // Get view vector
-    vec3 view_vector = normalize(m.position - cameraPosition);
-
+    vec3 view_vector = normalize(cameraPosition - m.position);
 
     // Store the accumulated ambient term in a variable
     vec4 ambient = vec4(0);
@@ -66,13 +64,13 @@ void main() {
 
 
         // Get reflection directory
-        vec3 reflected_dir = reflect(view_vector, m.normal);
+        vec3 reflected_dir = reflect(-view_vector, m.normal);
 
         // Get environment coordinate, cubemaps have a different coordinate system
         vec3 env_coord = fix_cubemap_coord(reflected_dir);
 
         // Compute angle between normal and view vector
-        float NxV = abs(dot(m.normal, view_vector));
+        float NxV = max(1e-5, dot(m.normal, view_vector));
 
         // OPTIONAL: Increase mipmap level at grazing angles to decrease aliasing
         float mipmap_bias = saturate(pow(1.0 - NxV, 5.0)) * 3.0;
@@ -99,29 +97,33 @@ void main() {
             env_default_color = env_scattering_color;
 
             // Cheap irradiance
-            env_amb = textureLod(ScatteringCubemap, m.normal, 5).xyz;
+            env_amb = textureLod(ScatteringCubemap, m.normal, 4).xyz;
 
         #endif
 
-        // Get prefiltered BRDF
-        vec2 prefilter_brdf = textureLod(PrefilteredBRDF, vec2(1-m.roughness, NxV), 0).xy;
-        vec3 prefilter_color = m.diffuse * prefilter_brdf.x + prefilter_brdf.y;
+        // Get prefiltered BRDF, use 1 - NxV since y is flipped
+        vec2 prefilter_brdf = textureLod(PrefilteredBRDF, vec2(m.roughness, NxV), 0).xy;
+        // vec3 prefilter_color = m.diffuse * (1-prefilter_brdf.x) * 1.0 + prefilter_brdf.y * 0;
 
-
+        // vec3 prefilter_color = pow(1-NxV, 5.0) + 0.01 * m.diffuse;
+        vec3 prefilter_color = BRDFEnvironment(m.diffuse, m.roughness, 1-NxV);
+ 
         // Different terms for metallic and diffuse objects:
 
         // Metallic specular term: Just plain reflections
-        vec3 env_metallic = m.diffuse;
+        vec3 env_metallic = m.diffuse * prefilter_brdf.x + prefilter_brdf.y;
+        // vec3 env_metallic = m.diffuse;
+        // env_metallic = vec3(m.diffuse);
 
-        // Diffuse specular term: Prefiltered BRDF. TODO: Do we really need the´0.2?
-        vec3 env_diffuse = prefilter_color * 0.2;
+        // Diffuse specular term: Prefiltered BRDF
+        vec3 env_diffuse = prefilter_color;
 
         // Mix diffuse and metallic specular term based on material metallic,
         // and multiply it by the material specular
         vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
 
         // Diffuse ambient term, weight it by 0 for metallics
-        vec3 diffuse_ambient = vec3(0.02) * m.diffuse * (1.0 - m.metallic);
+        vec3 diffuse_ambient = vec3(0.024) * m.diffuse * (1.0 - m.metallic);
 
         // Specular ambeint term
         vec3 specular_ambient = env_factor * env_default_color;
@@ -130,7 +132,7 @@ void main() {
         ambient.xyz += diffuse_ambient + specular_ambient;
 
         // Add "fake" irradiance term
-        ambient.xyz += env_amb * 0.05 * m.diffuse * (1.0 - m.metallic);
+        ambient.xyz += env_amb * 0.08 * m.diffuse * (1.0 - m.metallic);
 
 
         #if HAVE_PLUGIN(AO)
@@ -141,7 +143,6 @@ void main() {
 
         #endif
 
-        // ambient.xyz = vec3(specular_ambient);
 
     }
 
@@ -153,7 +154,8 @@ void main() {
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
             float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
-            ambient = vec4(pow(occlusion, 1.5));
+            result = vec4(pow(occlusion, 1.5));
+            return;
         #endif
     #endif
 

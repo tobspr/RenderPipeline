@@ -55,6 +55,7 @@ void render_material(Material m) {
 
     m.normal = normal_quantization(m.normal);
     m.diffuse = saturate(m.diffuse);
+    m.roughness *= m.roughness;
     
     // Compute velocity
     vec4 last_proj_pos = vOutput.last_proj_position;
@@ -66,6 +67,8 @@ void render_material(Material m) {
     vec2 curr_texcoord = fma(curr_proj_pos.xy / curr_proj_pos.w, vec2(0.5), vec2(0.5));
 
     vec2 velocity = (curr_texcoord - last_texcoord) * 255.0;
+
+
 
     gbuffer_out_0 = vec4(m.diffuse, m.roughness);
     gbuffer_out_1 = vec4(m.normal, m.metallic);
@@ -93,7 +96,7 @@ Material unpack_material(sampler2D GBufferDepth, sampler2D GBuffer0, sampler2D G
     vec4 data2 = texelFetch(GBuffer2, coord, 0);
 
     m.diffuse = data0.xyz;
-    m.roughness = max(0.05, data0.w);
+    m.roughness = max(0.001, data0.w);
 
     #if USE_NORMAL_QUANTIZATION
         m.normal = normalize(data1.xyz * 2 - 1);

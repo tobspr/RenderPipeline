@@ -49,11 +49,15 @@ void main() {
 
     // TODO: Move to python
     vec3 sun_vector = normalize(pssm_sun_vector);
-    vec3 sun_color = vec3(4.5, 4.25, 4);
+    vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec4 scene_color = texelFetch(ShadedScene, coord, 0);
+
+    // Get noise vector
+    vec2 noise_vec = poisson_disk_2D_32[coord.x%4 + (coord.y%4)*4];
+
 
     // Get the material data
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
@@ -112,7 +116,7 @@ void main() {
         float ref_depth = projected.z - fixed_bias;
 
         // Find filter size
-        vec4 filter_size = find_filter_size(mvp, sun_vector, filter_radius, rotation);
+        vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius, rotation);
 
 
 
@@ -137,13 +141,11 @@ void main() {
             for (int i = 0; i < num_search_samples; ++i) {
 
                 // Find random sample locations on a poisson disk
-                vec2 offset = poisson_disk_2D_16[i];
+                vec2 offset = poisson_disk_2D_32[i];
 
                 // Find depth at sample location
                 float sampled_depth = texture(PSSMShadowAtlas,
-                    projected_coord + 
-                    offset.xy * filter_size.xy + 
-                    offset.xy * filter_size.zw).x;
+                    projected_coord + offset * filter_size).x;
 
                 // Compare the depth with the pixel depth, in case its smaller,
                 // we found a blocker
@@ -175,16 +177,15 @@ void main() {
 
             // Find depth and apply contribution
             shadow_factor += get_shadow(
-                projected_coord +
-                offset.xy * filter_size.xy + 
-                offset.xy * filter_size.zw, ref_depth);
+                projected_coord + offset * filter_size, ref_depth);
         }
 
         // Normalize shadow factor
         shadow_factor /= num_samples;
 
         // Scale the shadow factor a bit, artistic choice
-        shadow_factor = shadow_factor * (1.3) -  0.3;
+        // shadow_factor = shadow_factor * (1.3) -  0.3;
+
         shadow_factor = saturate(shadow_factor);
 
     }

@@ -229,9 +229,9 @@ class RenderPipeline(DebugObject):
     def _clear_state_cache(self, task=None):
         """ Task which repeatedly clears the state cache to avoid storing
         unused states. """
-        task.delayTime = 1
-        # TransformState.clear_cache()
-        # RenderState.clear_cache()
+        task.delayTime = 3.0
+        TransformState.clear_cache()
+        RenderState.clear_cache()
         return task.again
 
     def _start_listener(self):
@@ -315,4 +315,4 @@ class RenderPipeline(DebugObject):
     def _adjust_camera_settings(self):
         """ Sets the default camera settings """
         self._showbase.camLens.set_near_far(0.1, 70000)
-        self._showbase.camLens.set_fov(110)
+        self._showbase.camLens.set_fov(90)

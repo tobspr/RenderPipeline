@@ -13,36 +13,37 @@ enabled:
     - PSSM
 
 overrides: 
-    AO.alchemy_max_distance: 2.5
-    AO.alchemy_num_samples: 8
-    AO.alchemy_sample_radius: 120.21
-    AO.blur_depth_factor: 10.0
-    AO.blur_normal_factor: 1.5
-    AO.hbao_max_distance: 20.0
-    AO.hbao_ray_count: 8
-    AO.hbao_ray_steps: 4
-    AO.hbao_sample_radius: 245.29167
-    AO.hbao_tangent_bias: 0.19
-    AO.occlusion_strength: 1.91917
+    AO.alchemy_max_distance: 3.0
+    AO.alchemy_num_samples: 32
+    AO.alchemy_sample_radius: 245.29167
+    AO.blur_depth_factor: 1.17
+    AO.blur_normal_factor: 0.84
+    AO.hbao_max_distance: 12.67
+    AO.hbao_ray_count: 12
+    AO.hbao_ray_steps: 1
+    AO.hbao_sample_radius: 301.25
+    AO.hbao_tangent_bias: 0.18
+    AO.occlusion_strength: 2.50999
     AO.ssao_bias: 0.025
-    AO.ssao_max_distance: 2.58
-    AO.ssao_sample_count: 32
-    AO.ssao_sample_radius: 57.67
-    AO.ssvo_max_distance: 0.46
-    AO.ssvo_sample_count: 11
-    AO.ssvo_sphere_radius: 1.26
-    AO.technique: SSAO
+    AO.ssao_max_distance: 2.0
+    AO.ssao_sample_count: 28
+    AO.ssao_sample_radius: 139.96
+    AO.ssvo_max_distance: 1.38
+    AO.ssvo_sample_count: 32
+    AO.ssvo_sphere_radius: 7.95
+    AO.technique: ALCHEMY
     AO.ue4ao_max_distance: 2.0
     AO.ue4ao_sample_count: 8
     AO.ue4ao_sample_radius: 120.0
-    PSSM.filter_radius: 26.38
+    PSSM.filter_radius: 10.54
     PSSM.filter_sample_count: 32
-    PSSM.fixed_bias: 0.17
-    PSSM.max_distance: 37.46
-    PSSM.normal_bias: 1.21
-    PSSM.pcss_penumbra_size: 22.5
-    PSSM.pcss_search_samples: 10
-    PSSM.slope_bias: 0.83
+    PSSM.fixed_bias: 0.07
+    PSSM.max_distance: 13.71
+    PSSM.normal_bias: 0.28999
+    PSSM.pcss_penumbra_size: 19.67
+    PSSM.pcss_search_samples: 15
+    PSSM.slope_bias: 0.28999
+    PSSM.split_count: 3
     PSSM.sun_distance: 100.0
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra

@@ -7,7 +7,7 @@ http://filmicgames.com/archives/75
 
 */
 
-const float exposure_adjustment = 3.0;
+const float exposure_adjustment = 2.0;
 
 vec3 Tonemap_Linear(vec3 color)
 {

@@ -2,6 +2,7 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/ImportanceSampling.inc.glsl"
+#pragma include "Includes/PoissonDisk.inc.glsl"
 #pragma include "Includes/BRDF.inc.glsl"
 
 #pragma optionNV (unroll all)
@@ -26,7 +27,7 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    float sample_roughness = 0.0 + current_mip * 0.1;
+    float sample_roughness = 0.03 + pow(current_mip, 1.4) * 0.04;
 
     vec3 accum = vec3(0);
     
@@ -38,8 +39,18 @@ void main() {
         float accum_weights = 0.0;
 
         for (int i = 0; i < num_samples; ++i) {
-            vec2 Xi = Hammersley(i, num_samples);
-            vec3 h = ImportanceSampleGGX(Xi, sample_roughness, n);
+            // vec2 Xi = Hammersley(i, num_samples);
+            vec2 Xi = poisson_disk_2D_64[i] * sample_roughness;
+
+            vec3 tangent, binormal;
+            find_arbitrary_tangent(n, tangent, binormal);
+
+            vec3 h = normalize(
+                    Xi.x * tangent +
+                    Xi.y * binormal + 
+                    1.0 * n
+                );
+            // vec3 h = ImportanceSampleGGX(Xi, sample_roughness, n);
 
             vec3 l = 2.0 * dot( n, h ) * h - n;
 
