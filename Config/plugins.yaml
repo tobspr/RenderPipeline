@@ -35,13 +35,14 @@ overrides:
     AO.ue4ao_max_distance: 2.0
     AO.ue4ao_sample_count: 8
     AO.ue4ao_sample_radius: 120.0
-    PSSM.filter_radius: 10.54
+    PSSM.filter_radius: 5.0
     PSSM.filter_sample_count: 32
     PSSM.fixed_bias: 0.07
     PSSM.max_distance: 13.71
     PSSM.normal_bias: 0.28999
     PSSM.pcss_penumbra_size: 19.67
     PSSM.pcss_search_samples: 15
+    PSSM.resolution: 2048
     PSSM.slope_bias: 0.28999
     PSSM.split_count: 3
     PSSM.sun_distance: 100.0
