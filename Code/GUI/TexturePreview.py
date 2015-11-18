@@ -22,7 +22,7 @@ class TexturePreview(DraggableWindow):
         self._current_tex = tex
 
         # Remove old content
-        self._content_node.removeChildren()
+        self._content_node.node().remove_all_children()
 
         w, h = tex.get_x_size(), tex.get_y_size()
         scale_x = (self._width - 40.0) / w

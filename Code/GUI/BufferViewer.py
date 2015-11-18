@@ -101,7 +101,7 @@ class BufferViewer(DraggableWindow):
 
     def _remove_components(self):
         """ Removes all components of the buffer viewer """
-        self._content_node.removeChildren()
+        self._content_node.node().remove_all_children()
         self._tex_preview.hide()
 
     def _perform_update(self):
