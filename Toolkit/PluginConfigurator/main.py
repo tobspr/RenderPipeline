@@ -27,7 +27,8 @@ except ImportError as msg:
 # Load the generated UI Layout
 from ui.main_window_generated import Ui_MainWindow
 
-from Source.PluginInterface import PluginInterface
+from Code.PluginInterface.Virtual.VirtualPluginInterface import VirtualPluginInterface
+from Code.PluginInterface.Virtual.VirtualPlugin import VirtualPlugin
 from Code.Util.UDPListenerService import UDPListenerService
 
 connect = QtCore.QObject.connect
@@ -37,7 +38,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
-        self._interface = PluginInterface()
+        self._interface = VirtualPluginInterface()
         self._current_plugin = None
         self._current_plugin_instance = None
         self.lbl_restart_pipeline.hide()
@@ -109,7 +110,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._set_settings_visible(True)
 
     def update_thread(self):
-
         while True:
             if len(self._update_queue) > 0:
                 item = self._update_queue.pop()
@@ -153,8 +153,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         desc_font.setPointSize(8)
         desc_font.setFamily("Segoe UI")
 
-
-
         for index, (name, handle) in enumerate(settings.items()):
 
             # Dont show hidden settings
@@ -165,7 +163,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             # Increase row count
             self.table_plugin_settings.insertRow(self.table_plugin_settings.rowCount())
-
 
             label = QtGui.QLabel()
             label.setText(handle.label)
@@ -190,10 +187,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             setting_widget = self._get_widget_for_setting(name, handle)
             self.table_plugin_settings.setCellWidget(row_index, 2, setting_widget)
 
-            # item_desc = QtGui.QTableWidgetItem()
-            # item_desc.setText(handle.description)
-            # item_desc.setForeground(QtGui.QColor(100, 100, 100, 255))
-
             label_desc = QtGui.QLabel()
             label_desc.setText(handle.description)
             label_desc.setWordWrap(True)
@@ -203,7 +196,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             self.table_plugin_settings.setCellWidget(row_index, 3, label_desc)
 
     def _do_update_setting(self, setting_id, value):
-        # print("Update setting: ", setting_id, value)
 
         # Check whether the setting is a runtime setting 
         setting_handle = self._current_plugin_instance.get_config().get_setting_handle(setting_id)
@@ -222,8 +214,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         if not setting_handle.is_dynamic():
             self._show_restart_hint()
         else:
-            # print("Sending reload packet ...")
             # In case the setting is dynamic, notice the pipeline about it:
+            # print("Sending reload packet ...")
             self._update_queue.add(self._current_plugin + "." + setting_id)
 
         # Update GUI, but only in case of enum and bool values, since they can trigger
@@ -353,7 +345,5 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 app = QtGui.QApplication(sys.argv)
 configurator = PluginConfigurator()
 configurator.show()
-
-
 app.exec_()
 

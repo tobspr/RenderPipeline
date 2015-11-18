@@ -180,15 +180,12 @@ class MountManager(DebugObject):
         vfs = VirtualFileSystem.get_global_ptr()
 
         # Mount data and models
-        vfs.mount_loop(join(self._base_path, 'Data'), 'Data', 0)
-        vfs.mount_loop(join(self._base_path, 'Models'), 'Models', 0)
-        vfs.mount_loop(join(self._base_path, 'Config'), 'Config', 0)
-        vfs.mount_loop(join(self._base_path, 'Effects'), 'Effects', 0)
-        vfs.mount_loop(join(self._base_path, 'Plugins'), 'Plugins', 0)
-        vfs.mount_loop(join(self._base_path, 'Config'), 'Config', 0)
-
-        # Mount shaders under a different name to access them from the effects
-        vfs.mount_loop(join(self._base_path, 'Shader'), 'Shader', 0)
+        dirs_to_mount = ["Data", "Config", "Effects", "Plugins", "Config", "Shader"]
+        for directory in dirs_to_mount:
+            vfs.mount_loop(join(self._base_path, directory), directory, 0)
+        
+        if isdir(join(self._base_path, "Models")):
+            vfs.mount_loop(join(self._base_path, 'Models'), 'Models', 0)
 
         # Add plugin folder to the include path
         sys.path.insert(0, join(self._base_path, 'Plugins'))
@@ -208,7 +205,7 @@ class MountManager(DebugObject):
             if not isdir(self._write_path):
                 self.debug("Creating temp path, it does not exist yet")
                 try:
-                    os.makedirs(self._write_path, 0o777)
+                    os.makedirs(self._write_path)
                 except Exception as msg:
                     self.fatal("Failed to create temp path:", msg)
             self.debug("Mounting", self._write_path, "as $$PipelineTemp/")
@@ -220,7 +217,7 @@ class MountManager(DebugObject):
         base_path = Filename(self._base_path)
         self._model_paths.append(join(base_path.get_fullpath(), "Shader"))
 
-        # Add the pipeline root directory to the model path aswel
+        # Add the pipeline root directory to the model path as well
         self._model_paths.append(base_path.get_fullpath())
 
         # Append the write path to the model directory to make pragma include
@@ -231,6 +228,7 @@ class MountManager(DebugObject):
         # own resources more easily
         self._model_paths.append(join(base_path.get_fullpath(), "Plugins"))
 
+        # Write the model paths to the global model path
         for pth in self._model_paths:
             get_model_path().append_directory(pth)
 

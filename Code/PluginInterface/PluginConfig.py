@@ -5,7 +5,8 @@ from direct.stdpy.file import open
 
 from ..Util.DebugObject import DebugObject
 from ..External.PyYAML import YAMLEasyLoad
-from .PluginSetting import BasePluginSetting, BadSettingException
+from .PluginExceptions import BadSettingException
+from .PluginSetting import BasePluginSetting
 
 class PluginConfig(DebugObject):
 

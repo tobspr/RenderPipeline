@@ -3,16 +3,11 @@ from __future__ import print_function
 from direct.stdpy.file import listdir, isfile, isdir
 from os.path import join
 
-from VirtualPlugin import VirtualPlugin, BadPluginException
-from Code.External.PyYAML import YAMLEasyLoad
-from Code.PluginInterface.PluginConfig import BadSettingException
+from .VirtualPlugin import VirtualPlugin
+from ..PluginExceptions import PluginConfigError, BadPluginException, BadSettingException
+from ...External.PyYAML import YAMLEasyLoad
 
-class PluginConfigError(Exception):
-    """ Exception which is raised when something went wrong during reading the
-    plugin configuration """
-    pass
-
-class PluginInterface(object):
+class VirtualPluginInterface(object):
 
     """ This emulates the functionality of the PluginManager of the pipeline,
     but outside of the pipeline. It also handles loading and writing of the

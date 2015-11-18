@@ -2,16 +2,13 @@
 from __future__ import print_function
 
 from os.path import join, isdir, isfile
-from Code.PluginInterface.PluginConfig import PluginConfig
-
-class BadPluginException(Exception):
-    """ Exception which is raised when a plugin failed to load """
-    pass
+from ..PluginConfig import PluginConfig
+from ..PluginExceptions import BadPluginException
 
 class VirtualPlugin(object):
 
     """ This is a virtual plugin which emulates the functionality of a 
-    Pipeline Plugin outside of the pipeline """
+    Pipeline Plugin outside of the pipeline. """
 
     def __init__(self):
         pass

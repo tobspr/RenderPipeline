@@ -3,10 +3,6 @@
 from ..Util.DebugObject import DebugObject
 
 
-class BadSettingException(Exception):
-    pass
-
-
 class BasePluginSetting(DebugObject):
     
     """ This is the base plugin setting, which is used by the plugin config.
