@@ -29,7 +29,7 @@ class DayTimeEditor(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        self.resize(1200, 800)
+        self.resize(580, 480)
 
         self.centralwidget = QtGui.QWidget(self)
 
