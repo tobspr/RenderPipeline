@@ -686,16 +686,6 @@ border-right: 0px solid #9A3;</string>
    <zorder>lbl_select_plugin</zorder>
    <zorder>lbl_restart_pipeline</zorder>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1200</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
  </widget>
  <resources>
   <include location="resources.qrc"/>

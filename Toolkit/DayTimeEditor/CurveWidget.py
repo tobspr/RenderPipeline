@@ -33,6 +33,8 @@ class CurveWidget(QtGui.QWidget):
         curve.set_color(0, 0, 255)
         self.curves.append(curve)
 
+        # Store current display time
+        self._current_time = 0.5
 
         # Widget render constants
         self._cv_point_size = 3
@@ -139,6 +141,11 @@ class CurveWidget(QtGui.QWidget):
         local_value *= self.width() - self._legend_border
         return local_value
 
+    def set_current_time(self, local_time):
+        """ Sets the current displayed time, should range from 0 to 1 """
+        self._current_time = max(0.0, min(1.0, local_time))
+        self.update()
+
     def _draw(self, painter):
         """ Internal method to draw the widget """
 
@@ -146,9 +153,9 @@ class CurveWidget(QtGui.QWidget):
         canvas_height = self.height() - self._legend_border - self._bar_h
 
         # Draw field background
-        painter.setPen(QtGui.QColor(170, 170, 170))
-        painter.setBrush(QtGui.QColor(230, 230, 230))
-        painter.drawRect(0, 0, self.width() - 1, self.height() - 1)
+        # painter.setPen(QtGui.QColor(200, 200, 200))
+        # painter.setBrush(QtGui.QColor(230, 230, 230))
+        # painter.drawRect(0, 0, self.width() - 1, self.height() - 1)
 
         # Draw legend
             
@@ -160,8 +167,8 @@ class CurveWidget(QtGui.QWidget):
 
         # Draw vertical lines
         painter.setPen(QtGui.QColor(200, 200, 200))
-        for i in range(num_vert_lines):
-            line_pos = i*line_spacing_x + self._legend_border 
+        for i in range(num_vert_lines + 1):
+            line_pos = i*line_spacing_x + self._legend_border - 1
             painter.drawLine(line_pos, self._bar_h, line_pos, canvas_height + self._bar_h)
 
         # Draw horizontal lines
@@ -183,7 +190,7 @@ class CurveWidget(QtGui.QWidget):
             if i == 0:
                 offpos_x = -2
             elif i == num_vert_lines:
-                offpos_x = -33
+                offpos_x = -27
             time_string = str(int(float(i) / num_vert_lines * 24)).zfill(2) + ":00"
             painter.drawText(line_pos + offpos_x, canvas_height + self._bar_h + 18, time_string)  
 
@@ -216,6 +223,16 @@ class CurveWidget(QtGui.QWidget):
                 painter.drawRect(offs_x - self._cv_point_size, offs_y - self._cv_point_size, 
                     2*self._cv_point_size, 2*self._cv_point_size)
 
+
+        # Draw bar background
+        bar_half_height = 4
+        bar_top_pos = 10
+
+        painter.setBrush(QtGui.QColor(255, 0, 0))
+        painter.setPen(QtGui.QColor(110, 110, 110))
+
+        painter.drawRect(self._legend_border - 1, bar_top_pos - 1, self.width() - self._legend_border, 2*bar_half_height + 2)
+
         # Draw bar
         if len(self.curves) == 1:
             bar_curve = self.curves[0]
@@ -235,6 +252,14 @@ class CurveWidget(QtGui.QWidget):
                 g = max(0, min(255, int(bar_curve[1].get_value(relv) * 255.0)))
                 b = max(0, min(255, int(bar_curve[2].get_value(relv) * 255.0)))
                 painter.setPen(QtGui.QColor(r, g, b))
-            painter.drawLine(xpos, 6, xpos, self._bar_h - 6)
+            painter.drawLine(xpos, bar_top_pos, xpos, bar_top_pos + 2 * bar_half_height)
 
 
+        # Display current time
+        pen = QtGui.QPen()
+        pen.setColor(QtGui.QColor(255, 100, 100))
+        pen.setStyle(QtCore.Qt.DashLine)
+        painter.setPen(pen)
+
+        xoffs = self._legend_border + self._current_time * canvas_width
+        painter.drawLine(xoffs, self._bar_h, xoffs, self._bar_h + canvas_height)
