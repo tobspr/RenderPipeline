@@ -413,7 +413,7 @@ QLabel {border: 0;}</string>
      <string notr="true">color: #222;</string>
     </property>
     <property name="text">
-     <string>Time</string>
+     <string>Time of Day</string>
     </property>
    </widget>
    <widget class="QLabel" name="lbl_select_setting">

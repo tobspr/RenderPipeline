@@ -35,10 +35,10 @@ class VirtualPlugin(DebugObject):
             self.warn(msg)
             raise BadPluginException(msg)
 
-    def consume_overrides(self, overrides):
+    def apply_overrides(self, overrides):
         """ Removes all keys from the dictionary which belong to this
         plugin and applies them to the settings """
-        self._config.consume_overrides(self.get_id(), overrides)
+        self._config.apply_overrides(self.get_id(), overrides)
 
     def get_name(self):
         """ Returns the name of the virtual plugin """

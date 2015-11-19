@@ -196,7 +196,7 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Reset to Default", None))
         self.lbl_setting_desc.setText(_translate("MainWindow", "Description: Some Desc", None))
         self.time_label.setText(_translate("MainWindow", "11:15", None))
-        self.lbl_time.setText(_translate("MainWindow", "Time", None))
+        self.lbl_time.setText(_translate("MainWindow", "Time of Day", None))
         self.lbl_select_setting.setText(_translate("MainWindow", "Select a setting on the left to modify its value", None))
 
 import resources_rc

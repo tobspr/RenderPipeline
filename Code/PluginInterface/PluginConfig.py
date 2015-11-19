@@ -64,12 +64,11 @@ class PluginConfig(DebugObject):
             return False
         return self._settings[setting]
 
-    def consume_overrides(self, plugin_id, overrides):
+    def apply_overrides(self, plugin_id, overrides):
         """ Given a list of overrides, apply those to the settings given by 
         this plugin. The overrides should be a dictionary, where the key
         is PluginID.setting_name, and the value is the new value. Settings from
-        other plugins are ignored, unkown settings trigger an error. All matched
-        settings will be removed from the dictionary. """
+        other plugins are ignored, unkown settings trigger an error """
         assert(self._loaded)
 
         # need a copy to iterate
@@ -78,13 +77,22 @@ class PluginConfig(DebugObject):
                 setting_name = ".".join(key.split(".")[1:])
                 setting_value = overrides[key]
 
-
                 if setting_name not in self._settings:
                     self.warn("Unrecognized override: " + key)
                     del overrides[key]
                     continue
                     
                 self._settings[setting_name].set_value(setting_value)
+
+    def apply_daytime_curves(self, curves):
+        """ Applies all daytime curves from the daytime configuration file
+        to the current settings """
+
+        for setting_id, curve in curves.items():
+            if setting_id not in self._daytime_settings:
+                self.warn("Unrecognized daytime override: " + setting_id)
+                continue
+            self._daytime_settings[setting_id].set_cv_points(curve)
 
     def load(self, filename):
         """ Loads the plugin configuration from a given filename """

@@ -37,7 +37,7 @@ class VirtualPluginInterface(BasePluginInterface):
 
             # Try applying the overrides, and see what happens
             try:
-                plugin_instance.consume_overrides(self._overrides)
+                plugin_instance.apply_overrides(self._overrides)
             except BadSettingException as msg:
                 self.warn("Error applying overrides, bad setting")
                 self.warn(msg)

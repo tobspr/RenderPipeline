@@ -43,8 +43,7 @@ class Curve:
     def set_single_value(self, val):
         """ Sets the curve to be linear, and only use a single value """
         self._cv_points = [
-            [0.25, val],
-            [0.75, val]
+            [0.5, val],
         ]
         self.build_curve()
 
@@ -108,6 +107,11 @@ class Curve:
     def set_cv_value(self, index, x_value, y_value):
         """ Updates the cv point at the given index """
         self._cv_points[index] = [x_value, y_value]
+
+    def set_cv_points(self, points):
+        """ Sets the cv points to the given list of points """
+        self._cv_points = points
+        self.build_curve()
 
     def get_curve_scale(self):
         """ Returns the scale of the curve """

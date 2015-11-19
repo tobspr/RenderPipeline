@@ -77,6 +77,9 @@ class DayTimeSettingSCALAR(DayTimeSetting):
         elif self.unit == "percent":
             return unicode(round(val,2 )) + u"%" 
 
+    def format_nonlinear(self, val):
+        return self.format(self.from_linear_space(val))
+
     def to_linear_space(self, val):
         return (float(val) - self.min_value) / (self.max_value - self.min_value)
 
@@ -85,10 +88,14 @@ class DayTimeSettingSCALAR(DayTimeSetting):
 
     def init_curves(self):
         curve = Curve()
-        print(self.label,":",self.default, "->", self.to_linear_space(self.default))
-        print("\t", self.min_value, self.max_value)
         curve.set_single_value(self.to_linear_space(self.default))
         self.curves = [curve]
+
+    def set_cv_points(self, points):
+        self.curves[0].set_cv_points(points)
+
+    def get_value(self, offset):
+        return self.from_linear_space(self.curves[0].get_value(offset))
 
 class DayTimeSettingCOLOR(DayTimeSetting):
 
@@ -111,7 +118,14 @@ class DayTimeSettingCOLOR(DayTimeSetting):
         self.default = val
 
     def format(self, val):
-        return str(val)
+        s = "[{:3.0f} {:3.0f} {:3.0f}]".format(*val)
+        return s
+
+    def format_nonlinear(self, val):
+        if isinstance(val, list):
+            return self.format(val)
+        else:
+            return str(round(val, 2))
 
     def init_curves(self):
         curve_r = Curve()
@@ -127,3 +141,13 @@ class DayTimeSettingCOLOR(DayTimeSetting):
         curve_b.set_single_value(self.default[2] / 255.0)
 
         self.curves = [curve_r, curve_g, curve_b]
+
+    def set_cv_points(self, points):
+        self.curves[0].set_cv_points(points["r"])
+        self.curves[1].set_cv_points(points["g"])
+        self.curves[2].set_cv_points(points["b"])   
+
+    def get_value(self, offset):
+        return (self.curves[0].get_value(offset) * 255.0,
+                self.curves[1].get_value(offset) * 255.0,
+                self.curves[2].get_value(offset) * 255.0)

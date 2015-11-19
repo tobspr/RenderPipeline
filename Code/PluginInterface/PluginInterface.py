@@ -28,7 +28,7 @@ class PluginInterface(BasePluginInterface):
                 # In case the plugin loaded, create a instance of it, register
                 # the settings and initializes it.
                 plugin_instance = plugin_class(self._pipeline)
-                plugin_instance.get_config().consume_overrides(plugin,
+                plugin_instance.get_config().apply_overrides(plugin,
                     self.get_overrides())
                 self._plugin_instances.append(plugin_instance)
                 self.debug("Loaded", plugin_instance.get_config().get_name())
@@ -42,7 +42,7 @@ class PluginInterface(BasePluginInterface):
     def reload_overrides(self):
         """ Reloads the overrides """        
         for plugin in self._plugin_instances:
-            plugin.get_config().consume_overrides(plugin.get_id(),
+            plugin.get_config().apply_overrides(plugin.get_id(),
                 self.get_overrides())
 
     def get_plugin_handle(self, plugin_id):
