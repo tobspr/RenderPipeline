@@ -1,11 +1,11 @@
 
 from os.path import join
 
-from ..PluginInterface import PluginInterface
+from ..BasePluginInterface import BasePluginInterface
 from .VirtualPlugin import VirtualPlugin
 from ..PluginExceptions import BadPluginException, BadSettingException
 
-class VirtualPluginInterface(PluginInterface):
+class VirtualPluginInterface(BasePluginInterface):
     
     """ This is the virtual plugin interface, which extends the given plugin
     interface with methods to load virtual plugins """

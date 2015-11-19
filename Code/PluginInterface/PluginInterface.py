@@ -1,134 +1,81 @@
 
 
-import re
+import importlib
 
-from direct.stdpy.file import listdir, isfile, isdir
-from os.path import join
+from direct.stdpy.file import isdir, isfile, join
 
+from .BasePluginInterface import BasePluginInterface
 
-from ..Util.DebugObject import DebugObject
-from .PluginExceptions import PluginConfigError, BadPluginException, BadSettingException
-from ..External.PyYAML import YAMLEasyLoad
+class PluginInterface(BasePluginInterface):
 
-class PluginInterface(DebugObject):
+    """ Implementation of the plugin interface which is used by the pipeline """
 
-    """ This is the interface which manages loading and parsing the plugin
-    configurations. It also handles writing of the plugin configuration file. """
-
-    def __init__(self):
-        """ Constructs a new interface"""
-        DebugObject.__init__(self)
-        self._base_dir = "../../"
+    def __init__(self, pipeline):
+        BasePluginInterface.__init__(self)
+        self._pipeline = pipeline
         self._plugin_instances = []
-        self._enabled_plugins = []
-        self._overrides = {}
-        self._valid_name_regexp = re.compile('^[a-zA-Z0-9_]+$')
 
-    def set_base_dir(self, pth):
-        """ Sets the path of the plugin directory, in this directory the
-        PluginInterface expects the Plugins/ folder to be located. """
-        self._base_dir = pth
+    def load_plugins(self):
+        """ Loads all plugins from the plugin directory """
+        self.debug("Loading plugins ..")
+        failed_plugins = []
 
-    def get_available_plugins(self):
-        """ Returns a list of all installed plugins, no matter if they are
-        enabled or not. This also does no check if the plugin names are valid. """
-        plugins = []
-        files = listdir(join(self._base_dir, "Plugins"))
-        for f in files:
-            abspath = join(self._base_dir, "Plugins", f)
-            if isdir(abspath) and f != "PluginPrefab":
-                plugins.append(f)
-        return plugins
+        # Try to load all enabled plugins
+        for plugin in self.get_enabled_plugins():
+            plugin_class = self._try_load_plugin(plugin)
 
-    def get_overrides(self):
-        """ Returns a handle to the dictionary of overrides, which store the
-        setting-values of the plugins """
-        return self._overrides
+            if plugin_class:
+                # In case the plugin loaded, create a instance of it, register
+                # the settings and initializes it.
+                plugin_instance = plugin_class(self._pipeline)
+                plugin_instance.get_config().consume_overrides(plugin,
+                    self.get_overrides())
+                self._plugin_instances.append(plugin_instance)
+                self.debug("Loaded", plugin_instance.get_config().get_name())
+            else:
+                failed_plugins.append(plugin)
 
-    def disable_plugin(self, plugin_id):
-        """ Removes a plugin from the list of enabled plugins, this has no effect
-        until write_configuration() was called. """
-        self._enabled_plugins.remove(plugin_id)
+        # Unregister plugins which failed to load
+        for plugin in failed_plugins:
+            self.disable_plugin(plugin)
 
-    def load_plugin_config(self):
-        """ Loads the plugin configuration from the pipeline Config directory,
-        and gets the list of enabled plugins and settings from that. """
-        plugin_cfg = join(self._base_dir, "Config/plugins.yaml")
+    def reload_overrides(self):
+        """ Reloads the overrides """        
+        for plugin in self._plugin_instances:
+            plugin.get_config().consume_overrides(plugin.get_id(),
+                self.get_overrides())
 
-        if not isfile(plugin_cfg):
-            raise PluginConfigError("Could not find plugin config at " + plugin_cfg)
+    def get_plugin_handle(self, plugin_id):
+        """ Returns a handle to the plugin given its id, or None if the plugin
+        could not be found """
+        for instance in self._plugin_instances:
+            if instance.get_id() == plugin_id:
+                return instance
+        return None
 
-        content = YAMLEasyLoad(plugin_cfg)
+    def get_plugin_instances(self):
+        """ Returns a list of plugin instances """
+        return self._plugin_instances
 
-        # Check if all required keys are in the yaml file
-        if not "enabled" in content:
-            raise PluginConfigError("Could not find key 'enabled' in plugin config")
-        if not "overrides" in content:
-            raise PluginConfigError("Could not find key 'overrides' in plugin config")
+    def _try_load_plugin(self, plugin_id):
+        """ Attempts to load a plugin with a given name """
+        plugin_path = join(self._base_dir, "Plugins", plugin_id)
+        plugin_main = join(plugin_path, "__init__.py")
+        if not isfile(plugin_main):
+            self.warn("Cannot load",plugin_id,"because __init__.py was not found")
+            return None
 
-        # Get the list of enabled plugin ID's
-        if content["enabled"]:
-            self._enabled_plugins = content["enabled"]
-        else:
-            self._enabled_plugins = []
+        module_path = "Plugins." + plugin_id + ".Plugin"
 
-        # Get the list of setting overrides
-        if content["overrides"]:
-            self._overrides = content["overrides"]
-        else:
-            self._overrides = {}
-
-    def reset_plugin_settings(self, plugin_id):
-        """ Resets all settings of a given plugin, this has no effect until
-        write_configuration() was called. """
-        # Need a copy to iterate
-        for key in list(self._overrides.keys()):
-            if key.startswith(plugin_id + "."):
-                del self._overrides[key]
-
-    def is_plugin_enabled(self, plugin_id):
-        """ Returns whether a plugin is currently enabled """
-        return plugin_id in self._enabled_plugins
-
-    def get_enabled_plugins(self):
-        """ Returns the list of enabled plugin-ids """
-        return self._enabled_plugins
+        try:
+            module = importlib.import_module(module_path)
+        except Exception as msg:
+            self.warn("Could not import",plugin_id,"because of an import error:")
+            self.warn(msg)
+            return None
             
-    def set_plugin_state(self, plugin_id, state):
-        """ Sets wheter a plugin is enabled or not. This has no effect until
-        write_configuration() is called """
-        if not state and plugin_id in self._enabled_plugins:
-            self._enabled_plugins.remove(plugin_id)
+        if not hasattr(module, "Plugin"):
+            self.warn("Plugin",plugin_id,"has no main Plugin class defined!")
+            return None
 
-        if state and plugin_id not in self._enabled_plugins:
-            self._enabled_plugins.append(plugin_id)
-
-    def write_configuration(self):
-        """ Writes the plugin configuration """
-        yaml = "\n\n"
-        yaml+= "# This file was autogenerated by the Plugin Configurator\n"
-        yaml+= "# Please avoid editing this file manually, instead use \n"
-        yaml+= "# the Plugin Configurator located at Toolkit/PluginConfigurator/.\n"
-        yaml+= "# Any comments and formattings in this file will be lost!\n"
-        yaml+= "\n\n"
-
-        # Write enabled plugins 
-        yaml+= "enabled: \n"
-
-        for plugin in self._enabled_plugins:
-            yaml += "    - " + plugin + "\n"
-
-        yaml += "\n"
-
-        # Write overrides
-        yaml += "overrides: \n"
-        for override in sorted(self._overrides):
-            new_value = self._overrides[override]
-            yaml += "    " + override + ": " + str(new_value) + "\n"
-        yaml += "\n"
-
-        plugin_dest = join(self._base_dir, "Config/plugins.yaml")
-
-        with open(plugin_dest, "w") as handle:
-            handle.write(yaml)
-
+        return module.Plugin
