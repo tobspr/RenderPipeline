@@ -278,5 +278,5 @@ class CurveWidget(QtGui.QWidget):
         painter.drawLine(xoffs, self._bar_h, xoffs, self._bar_h + canvas_height)
 
         # Draw usage hints
-        painter.setPen(QtGui.QColor(150, 150, 150))
+        painter.setPen(QtGui.QColor(100, 100, 100))
         painter.drawText(self._legend_border - 2, self.height() - 2, "Click on the curve to add new control points, click and drag existing points to move them.")

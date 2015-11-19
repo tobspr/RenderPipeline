@@ -9,6 +9,7 @@ from __future__ import print_function
 import sys
 import time
 from functools import partial
+from threading import Thread
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
@@ -38,6 +39,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         QtGui.QMainWindow.__init__(self)
         self.setupUi()
         self._tree_widgets = []
+        self._cmd_queue = set()
 
         # Construct a new virtual interface since we don't run in the pipeline
         self._interface = VirtualPluginInterface()
@@ -59,6 +61,10 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self._on_time_changed(self.time_slider.value())
         self.set_settings_visible(False)
 
+
+        self._bg_thread = Thread(target=self.updateThread)
+        self._bg_thread.start()
+
     def set_settings_visible(self, visibility):
         if not visibility:
             self.frame_current_setting.hide()
@@ -66,6 +72,32 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.frame_current_setting.show()
             self.lbl_select_setting.hide()
+
+    def closeEvent(self, event):
+        event.accept()
+        import os
+        os._exit(1)
+
+    def updateThread(self):
+        """ Seperate update thread """
+
+        while True:
+            if self._cmd_queue:
+                cmd = self._cmd_queue.pop()
+                if cmd == "settime":
+                    # TODO: Send time change over network
+                    pass
+                    
+                elif cmd == "write_settings":
+
+                    # Write settings
+                    self._daytime.write_configuration()
+
+                    #TODO: Send update change over network
+                else:
+                    print("Unkown cmd:", cmd)
+
+            time.sleep(0.2)
 
     def setupUi(self):
         """ Setups the UI Components """
@@ -83,7 +115,6 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
     def _update_tree_widgets(self):
         """ Updates the tree widgets """
         for setting_handle, widget in self._tree_widgets:
-            print("Update", setting_handle.label)
             value = setting_handle.get_value(self._current_time)
 
             formatted = setting_handle.format(value)
@@ -94,7 +125,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
     def _on_curve_edited(self):
         """ Called when the curve got edited in the curve widget """
-
+        self._cmd_queue.add("write_settings")
         self._update_tree_widgets()
 
     def _on_setting_selected(self):
@@ -132,6 +163,8 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self.edit_widget.set_current_time(ftime)
         self._current_time = ftime
         self._update_tree_widgets()
+
+        self._cmd_queue.add("settime")
 
     def _update_settings_list(self):
         """ Updates the list of visible settings """

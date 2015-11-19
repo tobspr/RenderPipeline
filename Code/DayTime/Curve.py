@@ -9,6 +9,7 @@ class Curve:
 
     def __init__(self):
         self._curve = None
+        self._modified = False
 
         # Append some points to the border, to make sure the curve matches at
         # the edges
@@ -28,6 +29,10 @@ class Curve:
         # Build the curve
         self.build_curve()
 
+    def was_modified(self):
+        """ Returns wheter the curve was modified since the creation """
+        return self._modified
+
     def get_cv_points(self):
         """ Returns a list of all controll points """
         return self._cv_points
@@ -45,12 +50,14 @@ class Curve:
         self._cv_points = [
             [0.5, val],
         ]
+        self._modified = False
         self.build_curve()
 
     def append_cv(self, x, y):
         """ Appends a new cv and returns the index of the attached cv """
         self._cv_points.append([x, y])
         self.build_curve()
+        self._modified = True
         return len(self._cv_points) - 1
 
     def remove_cv(self, index):
@@ -58,28 +65,14 @@ class Curve:
         one control point is left """
         if len(self._cv_points) > 1:
             del self._cv_points[index]
+        self._modified = True
         self.build_curve()
-
-    def _get_cv_tangent(self, index):
-        """ Returns the tangent of the nth point """
-        pb = self._cv_points[(index-1) % len(self._cv_points)]
-        pm = self._cv_points[index]
-        pa = self._cv_points[(index+1) % len(self._cv_points)]
-
-        get_diff = lambda p1, p2: Vec3( p1[0]-p2[0], p1[1]-p2[1], 0)
-
-        tangent_left = get_diff(pm, pb)
-        tangent_right = get_diff(pa, pm)
-
-        tangent_avg = (tangent_left + tangent_right) * 0.5
-        return tangent_avg
 
     def build_curve(self):
         """ Rebuilds the curve based on the controll point values """
 
         sorted_points = sorted(self._cv_points, key=lambda v: v[0])
         first_point = sorted_points[0]
-
         fitter = CurveFitter()
 
         # Duplicate curve at the beginning
@@ -107,15 +100,13 @@ class Curve:
     def set_cv_value(self, index, x_value, y_value):
         """ Updates the cv point at the given index """
         self._cv_points[index] = [x_value, y_value]
+        self._modified = True
 
     def set_cv_points(self, points):
         """ Sets the cv points to the given list of points """
         self._cv_points = points
+        self._modified = True
         self.build_curve()
-
-    def get_curve_scale(self):
-        """ Returns the scale of the curve """
-        return self._curve.get_max_t()
 
     def get_value(self, offset): 
         """ Returns the value on the curve ranging whereas the offset should be
@@ -124,3 +115,7 @@ class Curve:
         point = Vec3(0)
         self._curve.evaluate_xyz(offset, point)
         return point.y
+
+    def serialize(self):
+        """ Returns the value of the curve as yaml list """
+        return "[" + ','.join([ "[{},{}]".format(round(a,5),round(b,5)) for a, b in self._cv_points]) + "]"

@@ -141,3 +141,4 @@ class BasePluginInterface(DebugObject):
 
         with open(plugin_dest, "w") as handle:
             handle.write(yaml)
+

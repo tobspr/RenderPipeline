@@ -17,6 +17,20 @@ class DayTimeSetting(DebugObject):
         self.default = None
         self.curves = []
 
+    def was_modified(self):
+        """ Returns wheter any of the curves were modified """
+        for curve in self.curves:
+            if curve.was_modified():
+                return True
+        return False
+    
+    def serialize(self):
+        return ("[" + "{},"*len(self.curves) ).format(*[i.serialize() for i in self.curves]).rstrip(",") + "]"
+
+    def set_cv_points(self, points):
+        for i, point_data in enumerate(points):
+            self.curves[i].set_cv_points(point_data)
+
     @classmethod
     def load_from_yaml(cls, yaml):
         """ Constructs a new daytime setting from a given yaml string """
@@ -53,6 +67,7 @@ class DayTimeSetting(DebugObject):
 
         return instance
 
+
 class DayTimeSettingSCALAR(DayTimeSetting):
 
     """ Setting which stores a single scalar """
@@ -81,18 +96,15 @@ class DayTimeSettingSCALAR(DayTimeSetting):
         return self.format(self.from_linear_space(val))
 
     def to_linear_space(self, val):
-        return (float(val) - self.min_value) / (self.max_value - self.min_value)
+        return max(0, min(1, (float(val) - self.min_value) / (self.max_value - self.min_value)))
 
     def from_linear_space(self, val):
-        return float(val) * (self.max_value - self.min_value) + self.min_value
+        return float(max(0, min(1, val))) * (self.max_value - self.min_value) + self.min_value
 
     def init_curves(self):
         curve = Curve()
         curve.set_single_value(self.to_linear_space(self.default))
         self.curves = [curve]
-
-    def set_cv_points(self, points):
-        self.curves[0].set_cv_points(points)
 
     def get_value(self, offset):
         return self.from_linear_space(self.curves[0].get_value(offset))
@@ -142,12 +154,9 @@ class DayTimeSettingCOLOR(DayTimeSetting):
 
         self.curves = [curve_r, curve_g, curve_b]
 
-    def set_cv_points(self, points):
-        self.curves[0].set_cv_points(points["r"])
-        self.curves[1].set_cv_points(points["g"])
-        self.curves[2].set_cv_points(points["b"])   
-
     def get_value(self, offset):
-        return (self.curves[0].get_value(offset) * 255.0,
-                self.curves[1].get_value(offset) * 255.0,
-                self.curves[2].get_value(offset) * 255.0)
+        return (min(255, self.curves[0].get_value(offset) * 255.0),
+                min(255, self.curves[1].get_value(offset) * 255.0),
+                min(255, self.curves[2].get_value(offset) * 255.0))
+
+        
