@@ -66,7 +66,7 @@ void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
         Lens *lens = new OrthographicLens();
         lens->set_film_size(1, 1);
         lens->set_near_far(1, 1000);
-        PT(Camera) cam = new Camera("pssm-cam-" + to_string(i), lens);
+        PT(Camera) cam = new Camera("pssm-cam-" + to_string((int)i), lens);
         _cam_nodes.push_back(NodePath(cam));
         _max_film_sizes[i].set(0, 0);
     }
