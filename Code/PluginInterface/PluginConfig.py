@@ -85,14 +85,13 @@ class PluginConfig(DebugObject):
         parsed_yaml = YAMLEasyLoad(filename)
 
         # Make sure all required properties are set
-        for prop in ["name", "author", "version", "description", "settings"]:
+        for prop in ["name", "author", "version", "description", "settings", "daytime_settings"]:
             if prop not in parsed_yaml:
                 self.error("Missing key in plugin config:", prop)
                 return False
 
         # Take out the settings, we process them seperately
-        settings = parsed_yaml["settings"]
-        del parsed_yaml["settings"]
+        settings = parsed_yaml.pop("settings")
 
         # Strip line breaks and spaces from all string properties
         for key, value in parsed_yaml.items():

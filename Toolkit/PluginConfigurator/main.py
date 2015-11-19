@@ -28,12 +28,14 @@ except ImportError as msg:
 from ui.main_window_generated import Ui_MainWindow
 
 from Code.PluginInterface.Virtual.VirtualPluginInterface import VirtualPluginInterface
-from Code.PluginInterface.Virtual.VirtualPlugin import VirtualPlugin
 from Code.Util.UDPListenerService import UDPListenerService
 
 connect = QtCore.QObject.connect
 
 class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
+
+    """ Interface to change the plugin settings """
+
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -104,7 +106,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         assert(len(selected_item) == 1)
         selected_item = selected_item[0]
         self._current_plugin = selected_item._plugin_id
-        self._current_plugin_instance = self._interface.get_plugin_by_id(self._current_plugin)
+        self._current_plugin_instance = self._interface.get_plugin_handle(self._current_plugin)
         assert(self._current_plugin_instance is not None)
         self._render_current_plugin()
         self._set_settings_visible(True)
@@ -324,7 +326,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         # Plugins are all plugins in the plugins directory
         self._interface.unload_plugins()
-        self._interface.load_plugins()
+        self._interface.load_virtual_plugins()
         plugins = self._interface.get_plugin_instances()
 
         self.lst_plugins.clear()

@@ -54,3 +54,36 @@ settings: !!omap
         description: >
             Beta Mie Scattering
 
+daytime_settings: !!omap
+    
+    - sun_intensity:
+        type: scalar
+        unit: percent
+        range: [0.0, 200.0]
+        default: 30.0
+        label: Sun Intensity
+        description: Controls the intensity of the sun
+
+    - sun_color:
+        type: color
+        default: [126, 255, 100]
+        label: Sun Color
+        description: Sun Color
+
+    - sun_angle:
+        type: scalar
+        unit: angle
+        range: [0.0, 360.0]
+        default: 180
+        label: Sun Angle
+        description: Angle of the sun.
+
+    - sun_height:
+        type: scalar
+        unit: percent
+        range: [0.0, 1.0]
+        default: 0.5
+        label: Sun height
+        description: Height of the sun.
+
+

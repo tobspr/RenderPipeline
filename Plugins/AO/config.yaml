@@ -261,3 +261,6 @@ settings: !!omap
             Specifies the maximum distance between two samples until one sample
             is rejected. This prevents halos arround objects.
 
+
+
+daytime_settings:

@@ -30,3 +30,4 @@ settings: !!omap
             better quality. However, on low-end systems, it might be desireable
             to turn this value down.
 
+daytime_settings:

@@ -1,82 +1,61 @@
 
-import re
 from os.path import join
 import importlib
 
 from direct.stdpy.file import open, isfile
 
 from ..Util.DebugObject import DebugObject
-
 from ..External.PyYAML import YAMLEasyLoad
+from .PluginInterface import PluginInterface
 
 class PluginManager(DebugObject):
 
-    """ This class manages the loading and handling of plugins """
+    """ This class manages the loading and handling of plugins. It uses the
+    PluginInterface internally to read the configuration. """
 
     def __init__(self, pipeline):
         DebugObject.__init__(self)
         self._pipeline = pipeline
-        self._valid_name_regexp = re.compile('^[a-zA-Z0-9_]+$')
+        self._interface = PluginInterface()
         self._plugin_instances = []
-        self._overrides = {}
-        self._enabled_plugins = []
         self._hooks = {}
-        self._load_plugin_config()
+
+        # Load enabled plugin list
+        self._interface.set_base_dir(".")
+        self._interface.load_plugin_config()
 
     def load_plugins(self):
         """ Loads all plugins from the plugin directory """
         self.debug("Loading plugins ..")
         failed_plugins = []
-        for plugin in self._enabled_plugins:
+
+        # Try to load all enabled plugins
+        for plugin in self._interface.get_enabled_plugins():
             plugin_class = self._try_load_plugin(plugin)
+
             if plugin_class:
+                # In case the plugin loaded, create a instance of it, register
+                # the settings and initializes it.
                 plugin_instance = plugin_class(self._pipeline)
-                plugin_instance.get_config().consume_overrides(plugin, self._overrides)
+                plugin_instance.get_config().consume_overrides(plugin,
+                    self._interface.get_overrides())
                 self._plugin_instances.append(plugin_instance)
-                self.debug("Loaded", plugin_instance.get_config().get_name(), "version",
-                    plugin_instance.get_config().get_version())
+                self.debug("Loaded", plugin_instance.get_config().get_name())
             else:
                 failed_plugins.append(plugin)
 
         # Unregister plugins which failed to load
         for plugin in failed_plugins:
-            self._enabled_plugins.remove(plugin)
-
-
-    def _load_plugin_config(self):
-        """ Loads the plugin config and extracts the list of activated plugins """
-        plugin_cfg = "Config/plugins.yaml"
-
-        # Get file content and parse it
-        parsed_yaml = YAMLEasyLoad(plugin_cfg)
-
-        if parsed_yaml is None:
-            self.error("Failed to load plugin config!")
-            return False
-        
-        # Find root key
-        if "enabled" not in parsed_yaml or "overrides" not in parsed_yaml:
-            self.warn("Malformed plugin config, could not find root entry!")
-            self.warn("Disabling all plugins ...")
-            return False
-
-        # In case no plugins are activated, the root key is just None
-        if parsed_yaml["enabled"] is not None:
-
-            # Make the plugin a list a set, to make sure we don't have entries twice
-            self._enabled_plugins = set(parsed_yaml["enabled"])
-
-        # Load the overrides
-        if parsed_yaml["overrides"] is not None:
-            self._overrides = parsed_yaml["overrides"]
+            self._interface.disable_plugin(plugin)
 
     def reload_settings(self):
         """ Reloads all plugin settings from the plugin config file """
         self.debug("Reloading plugin settings ...")
-        self._load_plugin_config()
+        self._interface.load_plugin_config()
 
         for plugin in self._plugin_instances:
-            plugin.get_config().consume_overrides(plugin.get_id(), self._overrides)
+            plugin.get_config().consume_overrides(plugin.get_id(),
+                self._interface.get_overrides())
 
     def on_setting_change(self, setting_name):
         """ This method gets called when a setting got dynamically changed """
@@ -157,7 +136,7 @@ class PluginManager(DebugObject):
     def init_defines(self):
         """ Creates the defines which can be used in shaders """
         self.debug("Initializing defines")
-        for plugin in self._enabled_plugins:
+        for plugin in self._interface.get_enabled_plugins():
             self._pipeline.get_stage_mgr().define("HAVE_PLUGIN_" + plugin, 1)
             
         for instance in self._plugin_instances:

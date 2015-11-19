@@ -1,41 +1,39 @@
 
-from __future__ import print_function
 
 from os.path import join, isdir, isfile
 from ..PluginConfig import PluginConfig
 from ..PluginExceptions import BadPluginException
+from ...Util.DebugObject import DebugObject
 
-class VirtualPlugin(object):
+class VirtualPlugin(DebugObject):
 
     """ This is a virtual plugin which emulates the functionality of a 
     Pipeline Plugin outside of the pipeline. """
 
-    def __init__(self):
-        pass
-
-    def load(self, plugin_id):
-        """ Loads the virtual plugin from a given id """
+    def __init__(self, plugin_id):
+        DebugObject.__init__(self, "Plugin-" + str(plugin_id))
         self._plugin_id = plugin_id
-        self._plugin_pth = join("../../Plugins/", self._plugin_id)
-        self._config_pth = join(self._plugin_pth, "config.yaml")
+        self._path = "../../Plugins/"
+
+    def set_plugin_path(self, pth):
+        """ Sets the path of the plugin """
+        self._path = pth
+
+    def load(self):
+        """ Loads the virtual plugin"""
+        self._config_pth = join(self._path, "config.yaml")
 
         if not isfile(self._config_pth):
             raise BadPluginException("Missing file " + self._config_pth)
-
-        self._load_config()
-
-    def _load_config(self):
-        """ Loads the plugin config """
 
         self._config = PluginConfig()
         
         try:
             self._config.load(self._config_pth)
         except Exception as msg:
-            print("Plugin", self._plugin_id,"failed to load config.yaml:")
-            print(msg)
+            self.warn("Plugin", self._plugin_id,"failed to load config.yaml:")
+            self.warn(msg)
             raise BadPluginException(msg)
-
 
     def consume_overrides(self, overrides):
         """ Removes all keys from the dictionary which belong to this
