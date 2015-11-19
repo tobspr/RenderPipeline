@@ -26,6 +26,8 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(1200, 800)
+        MainWindow.setMinimumSize(QtCore.QSize(1200, 800))
+        MainWindow.setMaximumSize(QtCore.QSize(1200, 800))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/res/res/icon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)

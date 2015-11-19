@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 
+from panda3d.core import PTAFloat, PTAVecBase3f
+
 from ..Util.DebugObject import DebugObject
 from ..PluginInterface.PluginExceptions import BadSettingException
 from .Curve import Curve
@@ -67,7 +69,6 @@ class DayTimeSetting(DebugObject):
 
         return instance
 
-
 class DayTimeSettingSCALAR(DayTimeSetting):
 
     """ Setting which stores a single scalar """
@@ -108,6 +109,13 @@ class DayTimeSettingSCALAR(DayTimeSetting):
 
     def get_value(self, offset):
         return self.from_linear_space(self.curves[0].get_value(offset))
+
+    def get_pta_type(self):
+        return PTAFloat
+
+    def get_glsl_type(self):
+        return "float"
+
 
 class DayTimeSettingCOLOR(DayTimeSetting):
 
@@ -159,4 +167,8 @@ class DayTimeSettingCOLOR(DayTimeSetting):
                 min(255, self.curves[1].get_value(offset) * 255.0),
                 min(255, self.curves[2].get_value(offset) * 255.0))
 
-        
+    def get_pta_type(self):
+        return PTAVecBase3f
+
+    def get_glsl_type(self):
+        return "vec3"

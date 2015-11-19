@@ -116,7 +116,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             if len(self._update_queue) > 0:
                 item = self._update_queue.pop()
                 UDPListenerService.ping_thread(UDPListenerService.DEFAULT_PORT, item)
-                time.sleep(0.4)
+            time.sleep(0.3)
 
 
     def _rewrite_plugin_config(self):

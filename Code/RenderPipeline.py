@@ -23,6 +23,7 @@ from .RenderTarget import RenderTarget
 from .TagStateManager import TagStateManager
 from .GUI.OnscreenDebugger import OnscreenDebugger
 from .GUI.PipelineLoadingScreen import PipelineLoadingScreen, EmptyLoadingScreen
+from .DayTime.DayTimeManager import DayTimeManager
 
 class RenderPipeline(DebugObject):
 
@@ -163,9 +164,11 @@ class RenderPipeline(DebugObject):
         self._effect_loader = EffectLoader()
         self._stage_mgr = StageManager(self)
         self._light_mgr = LightManager(self)
+        self._daytime_mgr = DayTimeManager(self)
 
-        # Load plugins
+        # Load plugins and daytime settings
         self._plugin_mgr.load_plugins()
+        self._daytime_mgr.load_settings()
 
         # Load common inputs and defines
         self._com_resources.load()

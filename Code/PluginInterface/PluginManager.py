@@ -23,6 +23,10 @@ class PluginManager(DebugObject):
         self._interface.load_plugin_config()
         self._interface.reload_overrides()
 
+    def get_interface(self):
+        """ Returns a handle to the plugin interface """
+        return self._interface
+
     def load_plugins(self):
         """ Loads all enabled plugins """
         self._interface.load_plugins()

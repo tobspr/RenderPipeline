@@ -10,6 +10,18 @@
     <height>800</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>1200</width>
+    <height>800</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1200</width>
+    <height>800</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Day Time Editor</string>
   </property>
@@ -269,7 +281,7 @@ background: #ddd;border: 1px solid #aaa;
         <height>461</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="prefab_edit_widget" stretch="">
+      <layout class="QVBoxLayout" name="prefab_edit_widget">
        <property name="spacing">
         <number>0</number>
        </property>

@@ -25,7 +25,7 @@ except ImportError as msg:
 
 from ui.main_window_generated import Ui_MainWindow
 from CurveWidget import CurveWidget
-from Code.DayTime.DayTimeManager import DayTimeManager
+from Code.DayTime.DayTimeInterface import DayTimeInterface
 from Code.PluginInterface.Virtual.VirtualPluginInterface import VirtualPluginInterface
 
 connect = QtCore.QObject.connect
@@ -48,7 +48,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self._interface.load_plugins()
 
         # Construct a new daytime manager with that interface
-        self._daytime = DayTimeManager(self._interface)
+        self._daytime = DayTimeInterface(self._interface)
         self._daytime.set_base_dir("../../")
         self._daytime.load()
 
