@@ -86,4 +86,3 @@ daytime_settings: !!omap
         label: Sun Altidude
         description: Vertical angle of the sun
 
-

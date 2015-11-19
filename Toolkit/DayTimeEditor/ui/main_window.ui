@@ -169,7 +169,7 @@
      <string>Settings</string>
     </property>
    </widget>
-   <widget class="QFrame" name="frame">
+   <widget class="QFrame" name="frame_current_setting">
     <property name="geometry">
      <rect>
       <x>410</x>
@@ -214,6 +214,11 @@
        <width>261</width>
        <height>16</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="styleSheet">
       <string notr="true">color: #888;</string>
@@ -279,6 +284,11 @@ background: #ddd;border: 1px solid #aaa;
        <width>261</width>
        <height>16</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="styleSheet">
       <string notr="true">color: #888;</string>
@@ -406,13 +416,35 @@ QLabel {border: 0;}</string>
      <string>Time</string>
     </property>
    </widget>
+   <widget class="QLabel" name="lbl_select_setting">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>480</y>
+      <width>421</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #aaa;</string>
+    </property>
+    <property name="text">
+     <string>Select a setting on the left to modify its value</string>
+    </property>
+   </widget>
    <zorder>frame_2</zorder>
    <zorder>label</zorder>
    <zorder>settings_tree</zorder>
    <zorder>label_2</zorder>
-   <zorder>frame</zorder>
+   <zorder>frame_current_setting</zorder>
    <zorder>frame_4</zorder>
    <zorder>lbl_time</zorder>
+   <zorder>lbl_select_setting</zorder>
   </widget>
  </widget>
  <resources>

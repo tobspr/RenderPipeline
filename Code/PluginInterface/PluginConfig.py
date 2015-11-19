@@ -44,7 +44,13 @@ class PluginConfig(DebugObject):
 
     def get_settings(self):
         """ Returns a dictionary with all setting handles """
+        assert(self._loaded)
         return self._settings
+
+    def get_daytime_settings(self):
+        """ Returns a dictionary with all daytime setting handles """
+        assert(self._loaded)
+        return self._daytime_settings
 
     def get_setting(self, setting):
         """ Returns a setting by name, shortcut for get_setting_handle(name).value """

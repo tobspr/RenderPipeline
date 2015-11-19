@@ -1,6 +1,8 @@
+# -*- encoding: utf-8 -*-
 
 from ..Util.DebugObject import DebugObject
 from ..PluginInterface.PluginExceptions import BadSettingException
+from .Curve import Curve
 
 class DayTimeSetting(DebugObject):
     
@@ -13,7 +15,7 @@ class DayTimeSetting(DebugObject):
         self.label = None
         self.description = None
         self.default = None
-        self.cvs = []
+        self.curves = []
 
     @classmethod
     def load_from_yaml(cls, yaml):
@@ -40,6 +42,7 @@ class DayTimeSetting(DebugObject):
 
         try:
             instance.load_additional_settings(yaml)
+            instance.init_curves()
         except Exception as msg:
             raise BadSettingException("Failed to init type:", msg)
 
@@ -66,6 +69,27 @@ class DayTimeSettingSCALAR(DayTimeSetting):
             raise BadSettingException("Default out of range:", val)
         self.default = float(val)
 
+    def format(self, val):
+        if self.unit is None:
+            return val
+        elif self.unit == "degree":
+            return unicode(round(val, 1)) + u"°"
+        elif self.unit == "percent":
+            return unicode(round(val,2 )) + u"%" 
+
+    def to_linear_space(self, val):
+        return (float(val) - self.min_value) / (self.max_value - self.min_value)
+
+    def from_linear_space(self, val):
+        return float(val) * (self.max_value - self.min_value) + self.min_value
+
+    def init_curves(self):
+        curve = Curve()
+        print(self.label,":",self.default, "->", self.to_linear_space(self.default))
+        print("\t", self.min_value, self.max_value)
+        curve.set_single_value(self.to_linear_space(self.default))
+        self.curves = [curve]
+
 class DayTimeSettingCOLOR(DayTimeSetting):
 
     """ Setting which stores a color """
@@ -80,4 +104,26 @@ class DayTimeSettingCOLOR(DayTimeSetting):
         if len(val) != 3:
             raise BadSettingException("Invalid component count for color, should be 3 but is", len(val))
 
+        for comp in val:
+            if comp < 0 or comp > 255:
+                raise BadSettingException("Color component out of range: " + comp)
+
         self.default = val
+
+    def format(self, val):
+        return str(val)
+
+    def init_curves(self):
+        curve_r = Curve()
+        curve_g = Curve()
+        curve_b = Curve()
+
+        curve_r.set_color(255, 0, 0)
+        curve_g.set_color(0, 255, 0)
+        curve_b.set_color(0, 0, 255)
+
+        curve_r.set_single_value(self.default[0] / 255.0)
+        curve_g.set_single_value(self.default[1] / 255.0)
+        curve_b.set_single_value(self.default[2] / 255.0)
+
+        self.curves = [curve_r, curve_g, curve_b]

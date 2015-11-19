@@ -40,6 +40,14 @@ class Curve:
         """ Returns the display color of the curve """
         return self._color
 
+    def set_single_value(self, val):
+        """ Sets the curve to be linear, and only use a single value """
+        self._cv_points = [
+            [0.25, val],
+            [0.75, val]
+        ]
+        self.build_curve()
+
     def append_cv(self, x, y):
         """ Appends a new cv and returns the index of the attached cv """
         self._cv_points.append([x, y])

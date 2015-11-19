@@ -17,21 +17,7 @@ class CurveWidget(QtGui.QWidget):
         """ Constructs the CurveWidget, we start with an initial curve """
         QtGui.QWidget.__init__(self, parent)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
-
-        self.curves = []
-
-        # Append initial curve
-        curve = Curve()
-        curve.set_color(255, 0, 0)
-        self.curves.append(curve)
-
-        curve = Curve()
-        curve.set_color(0, 255, 0)
-        self.curves.append(curve)
-
-        curve = Curve()
-        curve.set_color(0, 0, 255)
-        self.curves.append(curve)
+        self._curves = []
 
         # Store current display time
         self._current_time = 0.5
@@ -49,6 +35,7 @@ class CurveWidget(QtGui.QWidget):
         # (CurveIndex, PointIndex)
         self._selected_point = None
 
+        self.unit_processor = lambda v: str(round(v, 2))
 
     def paintEvent(self, e):
         """ Internal QT paint event, draws the entire widget """
@@ -65,7 +52,7 @@ class CurveWidget(QtGui.QWidget):
         mouse_x = mouse_pos.x() - self._legend_border
         mouse_y = mouse_pos.y() - self._bar_h
 
-        for index, curve in enumerate(self.curves):
+        for index, curve in enumerate(self._curves):
 
             # Check for clicks on control points
             for cv_index, (x, y) in enumerate(curve.get_cv_points()):
@@ -98,6 +85,9 @@ class CurveWidget(QtGui.QWidget):
         
     def mouseMoveEvent(self, event):
         """ Internal mouse-move handler """
+        if len(self._curves) < 1:
+            return
+
         if self._drag_point is not None:
             mouse_x = event.pos().x() - self._drag_point[2][0] - self._legend_border
             mouse_y = event.pos().y() - self._drag_point[2][1] - self._bar_h
@@ -107,10 +97,10 @@ class CurveWidget(QtGui.QWidget):
             local_y = 1 - max(0, min(1, mouse_y / float(self.height() - self._legend_border - self._bar_h)))
 
             # Set new point data
-            self.curves[self._drag_point[0]].set_cv_value(self._drag_point[1], local_x, local_y)
+            self._curves[self._drag_point[0]].set_cv_value(self._drag_point[1], local_x, local_y)
 
             # Redraw curve
-            self.curves[self._drag_point[0]].build_curve()
+            self._curves[self._drag_point[0]].build_curve()
             self.update()
 
     def keyPressEvent(self, event):
@@ -122,11 +112,17 @@ class CurveWidget(QtGui.QWidget):
     def delete_current_point(self):
         """ Deletes the currently selected point """
         if self._selected_point is not None:
-            self.curves[self._selected_point[0]].remove_cv(self._selected_point[1])
+            self._curves[self._selected_point[0]].remove_cv(self._selected_point[1])
             self._selected_point = None
             self._drag_point = None
             self.update()
 
+    def set_curves(self, curves):
+        """ Sets the list of displayed curves """
+        self._selected_point = None
+        self._drag_point = None
+        self._curves = curves
+        self.update()
 
     def _get_y_value_for(self, local_value):
         """ Converts a value from 0 to 1 to a value from 0 .. canvas height """
@@ -181,7 +177,8 @@ class CurveWidget(QtGui.QWidget):
         painter.setPen(QtGui.QColor(120, 120, 120))
         for i in range(num_horiz_lines):
             line_pos = canvas_height - i*line_spacing_y + self._bar_h
-            painter.drawText(6, line_pos + 3, str(round(float(i) / (num_horiz_lines-1), 2)))
+            # painter.drawText(6, line_pos + 3, str(round(float(i) / (num_horiz_lines-1), 2)))
+            painter.drawText(6, line_pos + 3, self.unit_processor(float(i) / (num_horiz_lines-1)))
 
         # Draw horizontal legend labels
         for i in range(num_vert_lines + 1):
@@ -196,7 +193,7 @@ class CurveWidget(QtGui.QWidget):
 
 
         # Draw curve
-        for index, curve in enumerate(self.curves):
+        for index, curve in enumerate(self._curves):
             painter.setPen(QtGui.QColor(*curve.get_color()))
             last_value = 0
             for i in range(canvas_width):
@@ -234,19 +231,22 @@ class CurveWidget(QtGui.QWidget):
         painter.drawRect(self._legend_border - 1, bar_top_pos - 1, self.width() - self._legend_border, 2*bar_half_height + 2)
 
         # Draw bar
-        if len(self.curves) == 1:
-            bar_curve = self.curves[0]
+        if len(self._curves) == 0:
+            return
+
+
+        if len(self._curves) == 1:
+            bar_curve = self._curves[0]
         else:
-            bar_curve = self.curves[0:3]
+            bar_curve = self._curves[0:3]
 
         for i in range(canvas_width - 1):
             xpos = self._legend_border + i
             relv = float(i) / float(canvas_width)
 
-            if len(bar_curve) == 1:
+            if len(self._curves) == 1:
                 val = max(0, min(255, int(bar_curve.get_value(relv) * 255.0)))
                 painter.setPen(QtGui.QColor(val, val, val))
-                painter.drawLine(xpos, 6, xpos, self._bar_h - 6)
             else:
                 r = max(0, min(255, int(bar_curve[0].get_value(relv) * 255.0)))
                 g = max(0, min(255, int(bar_curve[1].get_value(relv) * 255.0)))
