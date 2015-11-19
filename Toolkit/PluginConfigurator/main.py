@@ -326,7 +326,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         # Plugins are all plugins in the plugins directory
         self._interface.unload_plugins()
-        self._interface.load_virtual_plugins()
+        self._interface.load_plugins()
         plugins = self._interface.get_plugin_instances()
 
         self.lst_plugins.clear()

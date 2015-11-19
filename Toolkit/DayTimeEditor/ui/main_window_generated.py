@@ -102,6 +102,10 @@ class Ui_MainWindow(object):
         self.prefab_edit_widget = QtGui.QVBoxLayout(self.verticalLayoutWidget)
         self.prefab_edit_widget.setSpacing(0)
         self.prefab_edit_widget.setObjectName(_fromUtf8("prefab_edit_widget"))
+        self.lbl_setting_desc = QtGui.QLabel(self.frame)
+        self.lbl_setting_desc.setGeometry(QtCore.QRect(190, 30, 261, 16))
+        self.lbl_setting_desc.setStyleSheet(_fromUtf8("color: #888;"))
+        self.lbl_setting_desc.setObjectName(_fromUtf8("lbl_setting_desc"))
         self.frame_2 = QtGui.QFrame(self.centralwidget)
         self.frame_2.setGeometry(QtCore.QRect(0, 120, 391, 681))
         self.frame_2.setStyleSheet(_fromUtf8("background: #1b1b1b;"))
@@ -176,6 +180,7 @@ class Ui_MainWindow(object):
         self.lbl_current_setting.setText(_translate("MainWindow", "Occlusion Strength", None))
         self.lbl_plugin_src.setText(_translate("MainWindow", "Plugin: Ambient Occlusion", None))
         self.pushButton.setText(_translate("MainWindow", "Reset to Default", None))
+        self.lbl_setting_desc.setText(_translate("MainWindow", "Description: Some Desc", None))
         self.time_label.setText(_translate("MainWindow", "11:15", None))
         self.lbl_time.setText(_translate("MainWindow", "Time", None))
 

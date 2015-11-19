@@ -10,7 +10,7 @@ class VirtualPluginInterface(BasePluginInterface):
     """ This is the virtual plugin interface, which extends the given plugin
     interface with methods to load virtual plugins """
 
-    def load_virtual_plugins(self):
+    def load_plugins(self):
         """ Loads all plugins as virtual plugins into the pipeline, it can be
         used to access plugin data outside of the pipeline """
         self.load_plugin_config()

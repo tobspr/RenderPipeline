@@ -30,6 +30,10 @@ class BasePluginInterface(DebugObject):
         """ Abstract method, to be implemented by subclasses """
         raise NotImplementedError()
 
+    def load_plugins(self):
+        """ Abstract method, to be implemented by subclasses """
+        raise NotImplementedError()
+
     def set_base_dir(self, pth):
         """ Sets the path of the plugin directory, in this directory the
         PluginInterface expects the Plugins/ folder to be located. """

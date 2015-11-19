@@ -70,20 +70,20 @@ daytime_settings: !!omap
         label: Sun Color
         description: Sun Color
 
-    - sun_angle:
+    - sun_azimuth:
         type: scalar
-        unit: angle
+        unit: degree
         range: [0.0, 360.0]
         default: 180
-        label: Sun Angle
-        description: Angle of the sun.
+        label: Sun Azimuth
+        description: Horizontal angle of the sun
 
-    - sun_height:
+    - sun_altitude:
         type: scalar
-        unit: percent
-        range: [0.0, 1.0]
-        default: 0.5
-        label: Sun height
-        description: Height of the sun.
+        unit: degree
+        range: [-180.0, 180.0]
+        default: 60
+        label: Sun Altidude
+        description: Vertical angle of the sun
 
 

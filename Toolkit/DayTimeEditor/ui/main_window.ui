@@ -271,6 +271,22 @@ background: #ddd;border: 1px solid #aaa;
       </layout>
      </widget>
     </widget>
+    <widget class="QLabel" name="lbl_setting_desc">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>30</y>
+       <width>261</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #888;</string>
+     </property>
+     <property name="text">
+      <string>Description: Some Desc</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QFrame" name="frame_2">
     <property name="geometry">

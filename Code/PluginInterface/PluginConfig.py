@@ -7,6 +7,7 @@ from ..Util.DebugObject import DebugObject
 from ..External.PyYAML import YAMLEasyLoad
 from .PluginExceptions import BadSettingException
 from .PluginSetting import BasePluginSetting
+from ..DayTime.DayTimeSetting import DayTimeSetting
 
 class PluginConfig(DebugObject):
 
@@ -18,6 +19,7 @@ class PluginConfig(DebugObject):
         DebugObject.__init__(self)
         self._properties = {}
         self._settings = collections.OrderedDict()
+        self._daytime_settings = collections.OrderedDict()
         self._loaded = False
 
     def get_name(self):
@@ -64,7 +66,6 @@ class PluginConfig(DebugObject):
         settings will be removed from the dictionary. """
         assert(self._loaded)
 
-
         # need a copy to iterate
         for key in list(overrides.keys()):
             if key.startswith(plugin_id):
@@ -92,6 +93,7 @@ class PluginConfig(DebugObject):
 
         # Take out the settings, we process them seperately
         settings = parsed_yaml.pop("settings")
+        daytime_settings = parsed_yaml.pop("daytime_settings")
 
         # Strip line breaks and spaces from all string properties
         for key, value in parsed_yaml.items():
@@ -106,12 +108,12 @@ class PluginConfig(DebugObject):
 
         # Process the settings
         self._process_settings(settings)
+        self._process_daytime_settings(daytime_settings)
         self._loaded = True
 
     def _process_settings(self, settings):
         """ Internal method to process the settings """
-
-        # In case no setting are specified, the settings are not a dict, but
+        # In case no settings are specified, the settings are not a dict, but
         # simply None, in that case just do nothing
         if settings is None:
             return
@@ -128,3 +130,21 @@ class PluginConfig(DebugObject):
                 continue
             self._settings[setting_id] = setting
 
+    def _process_daytime_settings(self, settings):
+        """ Internal method to process the daytime settings """
+        # In case no settings are specified, the settings are not a dict, but
+        # simply None, in that case just do nothing
+        if settings is None:
+            return
+
+        if not isinstance(settings, list) or not isinstance(settings[0], tuple):
+            self.error("Daytime-Settings array is not an ordered map! (Declare it as !!omap).")
+            return
+
+        for setting_id, setting_value in settings:
+            try:
+                setting = DayTimeSetting.load_from_yaml(setting_value)
+            except BadSettingException as msg:
+                self.error("Could not parse daytime setting", setting_id, msg)
+                continue
+            self._daytime_settings[setting_id] = setting
