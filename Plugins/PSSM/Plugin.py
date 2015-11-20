@@ -4,7 +4,7 @@ from __future__ import print_function
 from .. import *
 
 from panda3d.core import Vec3, NodePath, Camera, Texture, PTAVecBase3f
-from math import cos, sin
+from math import cos, sin, pi
 
 from .PSSMShadowStage import PSSMShadowStage
 from .PSSMStage import PSSMStage
@@ -72,8 +72,22 @@ class Plugin(BasePlugin):
 
     @PluginHook("pre_render_update")
     def update(self):
-        sun_vector = Vec3(0.3, 0.3, 0.5)
-        sun_vector.normalize()
+
+        if not self.is_plugin_loaded("Scattering"):
+            sun_vector = Vec3(0.3, 0.3, 0.5)
+            sun_vector.normalize()
+        else:
+            sun_altitude = self.get_daytime_setting("sun_altitude", plugin_name="Scattering")
+            sun_azimuth = self.get_daytime_setting("sun_azimuth", plugin_name="Scattering")
+    
+            theta = sun_altitude / 180.0 * pi
+            phi = sun_azimuth / 180.0 * pi
+                
+            sun_vector = Vec3(
+                sin(theta) * cos(phi),
+                sin(theta) * sin(phi),
+                cos(theta))
+        
         self._pta_sun_vector[0] = sun_vector
 
         if self._update_enabled:

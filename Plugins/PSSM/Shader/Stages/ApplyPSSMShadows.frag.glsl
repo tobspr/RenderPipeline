@@ -11,8 +11,6 @@
 
 out vec4 result;
 
-// uniform vec3 cameraPosition;
-
 uniform sampler2D GBufferDepth;
 uniform sampler2D GBuffer0;
 uniform sampler2D GBuffer1;
@@ -47,9 +45,15 @@ float get_shadow(vec2 coord, float refz) {
 
 void main() {
 
-    // TODO: Move to python
-    vec3 sun_vector = normalize(pssm_sun_vector);
-    vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
+    #if HAVE_PLUGIN(Scattering)
+        vec3 sun_vector = sun_azimuth_to_angle(
+            TimeOfDay.Scattering.sun_azimuth,
+            TimeOfDay.Scattering.sun_altitude);
+        vec3 sun_color = TimeOfDay.Scattering.sun_color;
+    #else
+        vec3 sun_vector = normalize(pssm_sun_vector);
+        vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
+    #endif
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -57,7 +61,6 @@ void main() {
 
     // Get noise vector
     vec2 noise_vec = poisson_disk_2D_32[coord.x%4 + (coord.y%4)*4];
-
 
     // Get the material data
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
@@ -86,7 +89,6 @@ void main() {
         }
 
     } else {
-
 
         // Get the MVP for the current split        
         mat4 mvp = pssm_mvps[split];
@@ -117,8 +119,6 @@ void main() {
 
         // Find filter size
         vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius, rotation);
-
-
 
 
         #if GET_SETTING(PSSM, use_pcss)
@@ -196,10 +196,8 @@ void main() {
     vec3 l = sun_vector;
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
 
-
     // float factor = float(split) / GET_SETTING(PSSM, split_count);
     // lighting_result *= vec3(factor, 1 - factor, 0);
-
 
     result = scene_color + vec4(lighting_result, 0);
 }

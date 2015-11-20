@@ -34,6 +34,10 @@ class BasePluginInterface(DebugObject):
         """ Abstract method, to be implemented by subclasses """
         raise NotImplementedError()
 
+    def has_plugin_handle(self, plugin):
+        """ Checks wheter a handle for the given plugin exists """
+        return self.get_plugin_handle(plugin) is not None
+
     def set_base_dir(self, pth):
         """ Sets the path of the plugin directory, in this directory the
         PluginInterface expects the Plugins/ folder to be located. """
@@ -46,7 +50,7 @@ class BasePluginInterface(DebugObject):
         files = listdir(join(self._base_dir, "Plugins"))
         for f in files:
             abspath = join(self._base_dir, "Plugins", f)
-            if isdir(abspath) and f != "PluginPrefab":
+            if isdir(abspath) and f not in ["PluginPrefab"]:
                 plugins.append(f)
         return plugins
 

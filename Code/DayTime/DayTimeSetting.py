@@ -110,6 +110,9 @@ class DayTimeSettingSCALAR(DayTimeSetting):
     def get_value(self, offset):
         return self.from_linear_space(self.curves[0].get_value(offset))
 
+    def get_scaled_value(self, offset):
+        return self.get_value(offset)
+
     def get_pta_type(self):
         return PTAFloat
 
@@ -166,6 +169,11 @@ class DayTimeSettingCOLOR(DayTimeSetting):
         return (min(255, self.curves[0].get_value(offset) * 255.0),
                 min(255, self.curves[1].get_value(offset) * 255.0),
                 min(255, self.curves[2].get_value(offset) * 255.0))
+
+    def get_scaled_value(self, offset):
+        return (min(1.0, self.curves[0].get_value(offset)),
+                min(1.0, self.curves[1].get_value(offset)),
+                min(1.0, self.curves[2].get_value(offset)))
 
     def get_pta_type(self):
         return PTAVecBase3f

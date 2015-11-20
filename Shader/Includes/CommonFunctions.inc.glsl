@@ -7,9 +7,6 @@
 #define TWO_PI 6.28318530718
 
 
-
-
-
 // Fixes the cubemap direction
 vec3 fix_cubemap_coord(vec3 coord) {
     return normalize(coord.xzy * vec3(1,-1,1));
@@ -95,3 +92,20 @@ int get_mipmap_count(samplerCube cubemap) {
     int cubemap_size = textureSize(cubemap, 0).x;
     return int(1 + floor(log2(cubemap_size)));
 }
+
+
+vec3 spherical_to_vector(float theta, float phi) {
+    float sin_theta = sin(theta);
+    return vec3(
+        sin_theta * cos(phi),
+        sin_theta * sin(phi),
+        cos(theta)
+    );
+}
+
+vec3 sun_azimuth_to_angle(float azimuth, float altitude) {
+    float theta = altitude / 180.0 * M_PI;
+    float phi = azimuth / 180.0 * M_PI;
+    return spherical_to_vector(theta, phi);
+}
+

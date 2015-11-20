@@ -106,6 +106,10 @@ class RenderPipeline(DebugObject):
         """ Returns a handle to the tag state manager """
         return self._tag_mgr
 
+    def get_daytime_mgr(self):
+        """ Returns a handle to the DayTime manager """
+        return self._daytime_mgr
+
     def set_effect(self, object, effect_src, options = None, sort = 30):
         """ Sets an effect to the given object, using the specified options.
         Check out the effect documentation for more information about possible
@@ -224,7 +228,7 @@ class RenderPipeline(DebugObject):
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
         self._showbase.accept("r", self.reload_shaders)
-        self._showbase.addTask(self._pre_render_update, "RP_BeforeRender", sort=10)
+        self._showbase.addTask(self._manager_update_task, "RP_UpdateManagers", sort=10)
         self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
         self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=1000)
         self._showbase.taskMgr.doMethodLater(0.5, self._clear_state_cache, "RP_ClearStateCache")
@@ -267,10 +271,11 @@ class RenderPipeline(DebugObject):
         time.sleep(0.1)
         self._listener_update_queue.add(msg)
 
-    def _pre_render_update(self, task):
+    def _manager_update_task(self, task):
         """ Update task which gets called before the rendering """
         self._check_listener_queue()
         self._debugger.update()
+        self._daytime_mgr.update()
         self._com_resources.update()
         self._stage_mgr.update_stages()
         self._light_mgr.update()

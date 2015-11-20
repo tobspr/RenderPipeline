@@ -98,6 +98,12 @@ class BasePlugin(DebugObject):
         """ Shortcut for get_config().get_setting() """
         return self._config.get_setting(name)
 
+    def get_daytime_setting(self, setting_name, plugin_id=None):
+        """ Returns the daytime setting """
+        if plugin_id is None:
+            plugin_id = self.get_id()
+        return self._pipeline.get_daytime_mgr().get_setting_value(plugin_id, setting_name)
+
     def get_resource(self, pth):
         """ Converts a local path from the plugins Resource/ directory into
         an absolute path """
@@ -107,6 +113,10 @@ class BasePlugin(DebugObject):
         """ Converts a local path from the plugins Shader/ directory into
         an absolute path """
         return "Plugins/" + self._id + "/Shader/" + pth.lstrip("/")
+
+    def is_plugin_loaded(self, plugin):
+        """ Returns whether a plugin is currently loaded """
+        return self._pipeline.get_plugin_mgr().get_interface().has_plugin_handle(plugin) 
 
     def create_stage(self, stage_type):
         """ Shortcut to create a new render stage from a given class type """

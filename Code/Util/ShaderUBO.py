@@ -47,6 +47,12 @@ class ShaderUBO(DebugObject):
         for pta_name, pta_handle in self._ptas.items():
             target.set_shader_input(self._name + "." + pta_name, pta_handle)
 
+    def update_input(self, name, value):
+        """ Updates an existing input """
+        if not isinstance(value, tuple) and not isinstance(value, list):
+            value = [value]
+        self._ptas[name][0] = type(self._ptas[name][0])(*value)
+
     def generate_shader_code(self):
         """ Generates the GLSL shader code to use the UBO """
 

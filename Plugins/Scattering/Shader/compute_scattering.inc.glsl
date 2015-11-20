@@ -1,15 +1,15 @@
 
 
-
 // Include local scattering code
 #define NO_COMPUTE_SHADER 1
 #pragma include "scattering_common.glsl"
 
-
 uniform sampler3D inscatterSampler;
 
-const float sunIntensity = 10.0;
-const vec3 sunVector = normalize(vec3(0.3, 0.3, 0.5));
+float sunIntensity = TimeOfDay.Scattering.sun_intensity;
+vec3 sunVector = sun_azimuth_to_angle(
+        TimeOfDay.Scattering.sun_azimuth,
+        TimeOfDay.Scattering.sun_altitude);
 
 
 vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)

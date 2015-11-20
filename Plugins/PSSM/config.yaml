@@ -4,7 +4,9 @@ author: tobspr <tobias.springer1@gmail.com>
 version: 1.0
 description: >
     This plugin adds support for Parallel Split Shadow Maps (PSSM),
-    and also sun lighting.
+    and also sun lighting. You should enable the atmospheric scattering plugin,
+    otherwise the sun position will be fixed.
+
 
 settings: !!omap
 

@@ -15,6 +15,7 @@ class DayTimeManager(DebugObject):
         self._interface = DayTimeInterface(self._pipeline.get_plugin_mgr().get_interface())
         self._settings = {}
         self._ubo = ShaderUBO("TimeOfDay")
+        self._daytime = 0.4
 
     def load_settings(self):
         """ Loads the daytime settings """
@@ -30,6 +31,20 @@ class DayTimeManager(DebugObject):
                 
         self._generate_shader_config()
         self._register_shader_inputs()
+
+    def update(self):
+        """ Updates all the daytime inputs """
+        for setting_name, handle in self._settings.items():    
+            setting_value = handle.get_scaled_value(self._daytime)
+            self._ubo.update_input(setting_name, setting_value)
+
+    def get_setting_value(self, plugin, setting):
+        """ Returns the current value of a setting """
+        key = plugin + "." + setting
+        if key not in self._settings:
+            self.warn("Setting not found:", plugin,"->", setting)
+            return None
+        return self._settings[key].get_value(self._daytime)
 
     def _register_shader_inputs(self):
         """ Registers the daytime pta's to the stage manager """
