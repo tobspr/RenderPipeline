@@ -59,7 +59,7 @@ daytime_settings: !!omap
     - sun_intensity:
         type: scalar
         unit: percent
-        range: [0.0, 200.0]
+        range: [0.0, 40.0]
         default: 30.0
         label: Sun Intensity
         description: Controls the intensity of the sun
@@ -81,7 +81,7 @@ daytime_settings: !!omap
     - sun_altitude:
         type: scalar
         unit: degree
-        range: [-180.0, 180.0]
+        range: [0.0, 100.0]
         default: 60
         label: Sun Altidude
         description: Vertical angle of the sun

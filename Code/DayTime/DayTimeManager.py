@@ -12,7 +12,9 @@ class DayTimeManager(DebugObject):
     def __init__(self, pipeline):
         DebugObject.__init__(self)
         self._pipeline = pipeline
-        self._interface = DayTimeInterface(self._pipeline.get_plugin_mgr().get_interface())
+        self._interface = DayTimeInterface(
+            self._pipeline.get_plugin_mgr().get_interface())
+        self._interface.set_base_dir(".")
         self._settings = {}
         self._ubo = ShaderUBO("TimeOfDay")
         self._daytime = 0.4
@@ -20,7 +22,6 @@ class DayTimeManager(DebugObject):
     def load_settings(self):
         """ Loads the daytime settings """
         self.debug("Loading Time of Day settings ..")
-        self._interface.set_base_dir(".")
         self._interface.load()
 
         for plugin in self._pipeline.get_plugin_mgr().get_interface().get_plugin_instances():
@@ -31,6 +32,15 @@ class DayTimeManager(DebugObject):
                 
         self._generate_shader_config()
         self._register_shader_inputs()
+
+    def reload_config(self):
+        """ Reloads the daytime config """
+        self.debug("Reloading daytime config ..")
+        self._interface.load()
+
+    def set_time(self, t):
+        """ Sets the current time of day """
+        self._daytime = t
 
     def update(self):
         """ Updates all the daytime inputs """

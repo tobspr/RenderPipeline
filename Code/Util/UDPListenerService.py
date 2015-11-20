@@ -6,9 +6,10 @@ class UDPListenerService(object):
 
     """ This class provides a simple server and client interface to send pings
     via the local network. It is mainly used to dynamically update the pipeline
-    settings after they got changed by the Plugin Configurator. """
+    settings after they got changed by the various configurators. """
 
-    DEFAULT_PORT = 62323
+    CONFIG_PORT = 62324
+    DAYTIME_PORT = 62325
     
     @staticmethod
     def do_ping(port, message="PING"):

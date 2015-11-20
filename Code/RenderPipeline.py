@@ -10,7 +10,7 @@ from direct.stdpy.file import isfile
 
 from .Util.DebugObject import DebugObject
 from .Util.SettingsLoader import SettingsLoader
-from .Util.UDPListenerService import UDPListenerService
+from .Util.NetworkUpdateListener import NetworkUpdateListener
 
 from .CommonResources import CommonResources
 from .MountManager import MountManager
@@ -245,22 +245,9 @@ class RenderPipeline(DebugObject):
         """ Starts a listener thread which listens for incoming connections to
         trigger a shader reload. This is used by the Plugin Configurator to dynamically
         update settings. """
-        self._listener_update_queue = set()
-        UDPListenerService.listener_thread(UDPListenerService.DEFAULT_PORT, self._on_reload_trigger)
 
-        # Since we use a thread for listening, make sure the new thread gets closed
-        # after the ShowBase stopped running
-        old_run = self._showbase.run
-        def new_run(*args):
-            try:
-                old_run(*args)
-            except SystemExit as msg:
-                pass
-
-            # Todo: maybe just stop the thread instead of shutting everything down
-            import os
-            os._exit(0)
-        self._showbase.run = new_run
+        self._listener = NetworkUpdateListener(self)
+        self._listener.setup()
 
     def _on_reload_trigger(self, msg):
         """ Internal method which gets called when a message arrived to the 
@@ -273,7 +260,7 @@ class RenderPipeline(DebugObject):
 
     def _manager_update_task(self, task):
         """ Update task which gets called before the rendering """
-        self._check_listener_queue()
+        self._listener.update()
         self._debugger.update()
         self._daytime_mgr.update()
         self._com_resources.update()
@@ -281,17 +268,6 @@ class RenderPipeline(DebugObject):
         self._light_mgr.update()
         return task.cont
 
-    def _check_listener_queue(self):
-        """ Checks if any new messages from the listener arrived, and if so, processes
-        them """
-         # Check if we need to update anything
-        if hasattr(self, "_listener_update_queue") and self._listener_update_queue:
-            # self._debugger.set_reload_hint_visible(True)
-            # self._showbase.graphicsEngine.render_frame()
-            # self._showbase.graphicsEngine.render_frame()
-            update = self._listener_update_queue.pop()
-            self._plugin_mgr.on_setting_change(update)
-            # self._debugger.set_reload_hint_visible(False)
 
     def _plugin_pre_render_update(self, task):
         """ Update task which gets called before the rendering, and updates the

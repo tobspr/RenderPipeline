@@ -27,9 +27,9 @@ from ui.main_window_generated import Ui_MainWindow
 from CurveWidget import CurveWidget
 from Code.DayTime.DayTimeInterface import DayTimeInterface
 from Code.PluginInterface.Virtual.VirtualPluginInterface import VirtualPluginInterface
+from Code.Util.UDPListenerService import UDPListenerService
 
 connect = QtCore.QObject.connect
-
 
 class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
@@ -61,7 +61,6 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self._on_time_changed(self.time_slider.value())
         self.set_settings_visible(False)
 
-
         self._bg_thread = Thread(target=self.updateThread)
         self._bg_thread.start()
 
@@ -86,14 +85,15 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
                 cmd = self._cmd_queue.pop()
                 if cmd == "settime":
                     # TODO: Send time change over network
-                    pass
-                    
+                    local_time = self._current_time
+                    UDPListenerService.do_ping(UDPListenerService.DAYTIME_PORT, "settime " + str(local_time))
+
                 elif cmd == "write_settings":
 
                     # Write settings
                     self._daytime.write_configuration()
+                    UDPListenerService.do_ping(UDPListenerService.DAYTIME_PORT, "loadconf")
 
-                    #TODO: Send update change over network
                 else:
                     print("Unkown cmd:", cmd)
 
