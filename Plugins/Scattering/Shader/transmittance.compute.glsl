@@ -1,6 +1,5 @@
 #version 440
 
-
 #pragma include "scattering_common.glsl"
 
 

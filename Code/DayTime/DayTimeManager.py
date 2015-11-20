@@ -1,6 +1,8 @@
 
+from direct.stdpy.file import open
 
 from ..Util.DebugObject import DebugObject
+from ..Util.ShaderUBO import ShaderUBO
 from .DayTimeInterface import DayTimeInterface
 
 class DayTimeManager(DebugObject):
@@ -12,8 +14,7 @@ class DayTimeManager(DebugObject):
         self._pipeline = pipeline
         self._interface = DayTimeInterface(self._pipeline.get_plugin_mgr().get_interface())
         self._settings = {}
-        self._ptas = {}
-        self._definitions = {}
+        self._ubo = ShaderUBO("TimeOfDay")
 
     def load_settings(self):
         """ Loads the daytime settings """
@@ -22,28 +23,25 @@ class DayTimeManager(DebugObject):
         self._interface.load()
 
         for plugin in self._pipeline.get_plugin_mgr().get_interface().get_plugin_instances():
-            self._definitions[plugin.get_id()] = {}
             for setting, handle in plugin.get_config().get_daytime_settings().items():
                 setting_id = plugin.get_id() + "." + setting
                 self._settings[setting_id] = handle
-                self._ptas[setting_id] = handle.get_pta_type().empty_array(1)
-                self._definitions[plugin.get_id()][setting] = handle.get_glsl_type()
-
+                self._ubo.register_pta(setting_id, handle.get_glsl_type())
+                
         self._generate_shader_config()
+        self._register_shader_inputs()
+
+    def _register_shader_inputs(self):
+        """ Registers the daytime pta's to the stage manager """
+        self._pipeline.get_stage_mgr().add_ubo(self._ubo)
 
     def _generate_shader_config(self):
         """ Generates the shader configuration """
+        content = self._ubo.generate_shader_code()
 
-        content = "#pragma once\n\n"
-
-        content += "uniform struct {\n";
-
-        for name, section in self._definitions.items():
-            content += " "*4 + "struct {\n";
-            for setting_id, glsl_type in section.items():
-                content += " "*8 + glsl_type + " " + setting_id + ";\n"
-            content += " "*4 + "} " + name + ";\n\n"
-
-        content += "} TimeOfDay;\n\n"
-
-        print(content)
+        # Try to write the temporary file
+        try:
+            with open("$$PipelineTemp/$$DayTimeConfig.inc.glsl", "w") as handle:
+                handle.write(content)
+        except IOError as msg:
+            self.error("Failed to write daytime autoconfig!", msg)

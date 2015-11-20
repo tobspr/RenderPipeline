@@ -13,7 +13,7 @@ class ScatteringStage(RenderStage):
     required_pipes = ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
                       "GBuffer2"]
     required_inputs = ["mainCam", "mainRender", "cameraPosition", "DefaultSkydome",
-                       "DefaultEnvmap"]
+                       "DefaultEnvmap", "TimeOfDay"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ScatteringStage", pipeline)

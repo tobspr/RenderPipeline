@@ -10,7 +10,6 @@ uniform sampler3D inscatterSampler;
 
 const float sunIntensity = 10.0;
 const vec3 sunVector = normalize(vec3(0.3, 0.3, 0.5));
-// const vec3 sunVector = normalize(vec3(0.3, 0.3, -0.07));
 
 
 vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)

@@ -151,9 +151,6 @@ class MountManager(DebugObject):
                 # Try removing the lockfile
                 self._try_remove(self._lock_file)
 
-                # Try removing the shader auto config
-                self._try_remove(join(self._write_path, "ShaderAutoConfig.include"))
-
                 # Check for further tempfiles in the write path
                 # We explicitely use os.listdir here instead of pandas listdir,
                 # to work with actual paths

@@ -3,7 +3,8 @@
 // #pragma optionNV (unroll all)
 
 
-#pragma include "$$PipelineTemp/ShaderAutoConfig.include"
+#pragma include "$$PipelineTemp/$$ShaderAutoConfig.inc.glsl"
+#pragma include "$$PipelineTemp/$$DayTimeConfig.inc.glsl"
 
 
 

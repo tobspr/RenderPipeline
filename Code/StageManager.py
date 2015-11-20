@@ -67,6 +67,10 @@ class StageManager(DebugObject):
         """ Registers a new shader input """
         self._inputs[key] = value
 
+    def add_ubo(self, handle):
+        """ Registers a new uniform buffer object """
+        self._ubos[handle.get_name()] = handle
+
     def define(self, key, value):
         """ Registers a new define for the shader auto config """
         self._defines[key] = value
@@ -134,9 +138,11 @@ class StageManager(DebugObject):
                 if input_binding in self._inputs:
                     stage.set_shader_input(input_binding,
                                            self._inputs[input_binding])
-                else:
+                elif input_binding in self._ubos:
                     ubo = self._ubos[input_binding]
                     ubo.bind_to(stage)
+                else:
+                    assert False
 
             # Register all the new pipes, inputs and defines
             for pipe_name, pipe_data in list(stage.get_produced_pipes().items()):
@@ -209,7 +215,7 @@ class StageManager(DebugObject):
 
         # Try to write the file
         try:
-            with open("$$PipelineTemp/ShaderAutoConfig.include", "w") as handle:
+            with open("$$PipelineTemp/$$ShaderAutoConfig.inc.glsl", "w") as handle:
                 handle.write(output)
         except Exception as msg:
             self.error("Error writing shader autoconfig:", msg)
