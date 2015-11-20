@@ -56,11 +56,7 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     float visibility = BRDFVisibilitySmithGGX(NxL, NxV, scaled_roughness);
     vec3 fresnel = BRDFSchlick( specularColor, VxH, scaled_roughness) * NxL * NxV / M_PI;
 
-    // Energy conservation
-    // float energy = 1.0 + pow(m.roughness * 1.0, 3.0);
-    float energy = 1.0;
-
-    shadingResult += (distribution * visibility * fresnel) / max(0.001, 4.0 * NxV * max(0.001, NxL) ) * energy * m.specular * specularColor;
+    shadingResult += (distribution * visibility * fresnel) * NxL  * NxV * lightColor / (9.0 * M_PI);
 
     // Special case for DSSDO
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)

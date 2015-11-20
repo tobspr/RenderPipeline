@@ -97,26 +97,27 @@ void main() {
             env_default_color = env_scattering_color;
 
             // Cheap irradiance
-            env_amb = textureLod(ScatteringCubemap, m.normal, 4).xyz;
+            env_amb = textureLod(ScatteringCubemap, m.normal, 4.5).xyz;
 
         #endif
 
         // Get prefiltered BRDF, use 1 - NxV since y is flipped
-        vec2 prefilter_brdf = textureLod(PrefilteredBRDF, vec2(m.roughness, NxV), 0).xy;
-        // vec3 prefilter_color = m.diffuse * (1-prefilter_brdf.x) * 1.0 + prefilter_brdf.y * 0;
-
-        // vec3 prefilter_color = pow(1-NxV, 5.0) + 0.01 * m.diffuse;
         vec3 prefilter_color = BRDFEnvironment(m.diffuse, m.roughness, 1-NxV);
  
         // Different terms for metallic and diffuse objects:
 
         // Metallic specular term: Just plain reflections
-        vec3 env_metallic = m.diffuse * prefilter_brdf.x + prefilter_brdf.y;
-        // vec3 env_metallic = m.diffuse;
-        // env_metallic = vec3(m.diffuse);
+
+        #if 1
+            // With fresnel term
+            vec3 env_metallic = m.diffuse + 3 *M_PI* prefilter_color;
+        #else
+            // Just plain reflections
+            vec3 env_metallic = m.diffuse * M_PI;
+        #endif
 
         // Diffuse specular term: Prefiltered BRDF
-        vec3 env_diffuse = prefilter_color;
+        vec3 env_diffuse = prefilter_color * 2;
 
         // Mix diffuse and metallic specular term based on material metallic,
         // and multiply it by the material specular
