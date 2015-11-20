@@ -50,7 +50,7 @@ void main() {
             TimeOfDay.Scattering.sun_azimuth,
             TimeOfDay.Scattering.sun_altitude);
         vec3 sun_color = TimeOfDay.Scattering.sun_color * 
-            TimeOfDay.Scattering.sun_intensity * 0.1;
+            TimeOfDay.Scattering.sun_intensity;
     #else
         vec3 sun_vector = normalize(pssm_sun_vector);
         vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
@@ -197,6 +197,7 @@ void main() {
     vec3 l = sun_vector;
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
 
+    // lighting_result = vec3(shadow_factor);
     // float factor = float(split) / GET_SETTING(PSSM, split_count);
     // lighting_result *= vec3(factor, 1 - factor, 0);
 

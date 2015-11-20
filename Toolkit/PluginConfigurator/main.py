@@ -54,9 +54,9 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._load_plugin_list()
 
         # Adjust column widths
-        self.table_plugin_settings.setColumnWidth(0, 120)
+        self.table_plugin_settings.setColumnWidth(0, 110)
         self.table_plugin_settings.setColumnWidth(1, 80)
-        self.table_plugin_settings.setColumnWidth(2, 150)
+        self.table_plugin_settings.setColumnWidth(2, 120)
 
         update_thread = Thread(target=self.update_thread, args=())
         update_thread.start()
@@ -173,7 +173,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             if handle.is_dynamic():
                 # label.setBackground(QtGui.QColor(200, 255, 200, 255))
-                label.setStyleSheet("background: rgba(200, 255, 200, 255);")
+                label.setStyleSheet("background: rgba(162, 204, 128, 255);")
             else:
                 label.setStyleSheet("background: rgba(230, 230, 230, 255);")
 

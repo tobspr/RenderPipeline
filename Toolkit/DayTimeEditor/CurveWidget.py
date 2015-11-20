@@ -274,9 +274,9 @@ class CurveWidget(QtGui.QWidget):
         pen.setStyle(QtCore.Qt.DashLine)
         painter.setPen(pen)
 
-        xoffs = self._legend_border + self._current_time * canvas_width
+        xoffs = self._legend_border + self._current_time * (canvas_width-1)
         painter.drawLine(xoffs, self._bar_h, xoffs, self._bar_h + canvas_height)
 
         # Draw usage hints
         painter.setPen(QtGui.QColor(100, 100, 100))
-        painter.drawText(self._legend_border - 2, self.height() - 2, "Click on the curve to add new control points, click and drag existing points to move them.")
+        painter.drawText(5, self.height() - 2, "Click on the curve to add new control points, click and drag existing points to move them.")

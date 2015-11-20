@@ -123,7 +123,7 @@ void main() {
         vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
 
         // Diffuse ambient term, weight it by 0 for metallics
-        vec3 diffuse_ambient = vec3(0.024) * m.diffuse * (1.0 - m.metallic);
+        vec3 diffuse_ambient = env_amb * vec3(0.1) * m.diffuse * (1.0 - m.metallic);
 
         // Specular ambeint term
         vec3 specular_ambient = env_factor * env_default_color;
@@ -132,7 +132,7 @@ void main() {
         ambient.xyz += diffuse_ambient + specular_ambient;
 
         // Add "fake" irradiance term
-        ambient.xyz += env_amb * 0.08 * m.diffuse * (1.0 - m.metallic);
+        // ambient.xyz += env_amb * 0.08 * m.diffuse * (1.0 - m.metallic);
 
 
         #if HAVE_PLUGIN(AO)

@@ -102,7 +102,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
     def setupUi(self):
         """ Setups the UI Components """
         Ui_MainWindow.setupUi(self, self)
-        self.settings_tree.setColumnWidth(0, 200)
+        self.settings_tree.setColumnWidth(0, 160)
         self.settings_tree.expandAll()
 
         self.edit_widget = CurveWidget(self)
@@ -145,8 +145,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             self._selected_setting_handle = selected._setting_handle
 
             self.lbl_current_setting.setText(self._selected_setting_handle.label)
-            self.lbl_plugin_src.setText("Plugin: " + self._selected_plugin)
-            self.lbl_setting_desc.setText("Description: " + self._selected_setting_handle.description)
+            self.lbl_setting_desc.setText(self._selected_setting_handle.description)
 
             self.edit_widget.set_curves(self._selected_setting_handle.curves)
             self.edit_widget.set_unit_processor(self._selected_setting_handle.format_nonlinear)

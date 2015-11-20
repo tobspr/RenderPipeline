@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
-    <height>800</height>
+    <width>1000</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,14 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>1200</width>
-    <height>800</height>
+    <width>1000</width>
+    <height>680</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1200</width>
-    <height>800</height>
+    <width>1000</width>
+    <height>680</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -43,33 +43,33 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>180</y>
+      <y>110</y>
       <width>251</width>
-      <height>521</height>
+      <height>481</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QListWidget::item {
 
-padding: 12px 6px;
-background: #333;
+padding: 10px 5px;
+background: #666;
 outline: 0 !important;
 margin-bottom: 4px;
-
+color: #eee;
 }
 
 QListWidget::item:hover {
-background: #3a3a3a;
+background: #6c6c6c;
 }
 
 QListWidget::item:selected {
-background: #9a3;
+background: #4f8027;
 }
 
 QListWidget {
-background: #1b1b1b;
 padding: 0;
 color: #eee;
+background: #cdcdcd;
 /*
 background: #222;
 padding: 5px 8px;
@@ -108,9 +108,9 @@ outline: 0;
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>120</y>
-      <width>911</width>
-      <height>671</height>
+      <y>65</y>
+      <width>711</width>
+      <height>611</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -161,9 +161,27 @@ outline: 0;
         <colorrole role="WindowText">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>0</red>
-           <green>170</green>
-           <blue>0</blue>
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
           </color>
          </brush>
         </colorrole>
@@ -172,9 +190,27 @@ outline: 0;
         <colorrole role="WindowText">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>0</red>
-           <green>170</green>
-           <blue>0</blue>
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
           </color>
          </brush>
         </colorrole>
@@ -183,9 +219,27 @@ outline: 0;
         <colorrole role="WindowText">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>120</red>
-           <green>120</green>
-           <blue>120</blue>
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>79</red>
+           <green>128</green>
+           <blue>39</blue>
           </color>
          </brush>
         </colorrole>
@@ -196,6 +250,9 @@ outline: 0;
       <font>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #4f8027;</string>
      </property>
      <property name="text">
       <string>lbl_plugin_version</string>
@@ -241,8 +298,8 @@ Plugin Desc Line 3</string>
       <rect>
        <x>30</x>
        <y>130</y>
-       <width>845</width>
-       <height>531</height>
+       <width>671</width>
+       <height>471</height>
       </rect>
      </property>
      <property name="font">
@@ -317,7 +374,7 @@ Plugin Desc Line 3</string>
       <bool>false</bool>
      </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>70</number>
+      <number>80</number>
      </attribute>
      <attribute name="verticalHeaderHighlightSections">
       <bool>false</bool>
@@ -401,7 +458,7 @@ Plugin Desc Line 3</string>
     <widget class="QPushButton" name="btn_reset_plugin_settings">
      <property name="geometry">
       <rect>
-       <x>714</x>
+       <x>540</x>
        <y>20</y>
        <width>161</width>
        <height>31</height>
@@ -417,8 +474,8 @@ Plugin Desc Line 3</string>
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1200</width>
-      <height>120</height>
+      <width>1000</width>
+      <height>65</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -435,8 +492,8 @@ border-width: 0 0 0px 0;</string>
    <widget class="QLabel" name="lbl_select_plugin">
     <property name="geometry">
      <rect>
-      <x>540</x>
-      <y>410</y>
+      <x>460</x>
+      <y>330</y>
       <width>391</width>
       <height>31</height>
      </rect>
@@ -457,16 +514,16 @@ border-width: 0 0 0px 0;</string>
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>120</y>
+      <y>60</y>
       <width>291</width>
-      <height>681</height>
+      <height>621</height>
      </rect>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">background: #1b1b1b;</string>
+     <string notr="true">background: #cdcdcd; border-right: 1px solid #aaa;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::StyledPanel</enum>
@@ -490,7 +547,7 @@ border-width: 0 0 0px 0;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: #ddd;border: 0;</string>
+      <string notr="true">color: #444;border: 0;</string>
      </property>
      <property name="text">
       <string>Installed Plugins</string>
@@ -503,7 +560,7 @@ border-width: 0 0 0px 0;</string>
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>600</y>
+       <y>550</y>
        <width>241</width>
        <height>61</height>
       </rect>
@@ -523,27 +580,27 @@ border-width: 0 0 0px 0;</string>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
@@ -561,27 +618,27 @@ border-width: 0 0 0px 0;</string>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
@@ -599,27 +656,27 @@ border-width: 0 0 0px 0;</string>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>27</red>
-           <green>27</green>
-           <blue>27</blue>
+           <red>205</red>
+           <green>205</green>
+           <blue>205</blue>
           </color>
          </brush>
         </colorrole>
@@ -634,8 +691,7 @@ border-width: 0 0 0px 0;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">background: #1b1b1b;
-border-top: 2px solid #444;
+      <string notr="true">border-top: 1px solid #aaa;
 border-right: 0px solid #9A3;</string>
      </property>
      <property name="text">
@@ -658,19 +714,22 @@ border-right: 0px solid #9A3;</string>
    <widget class="QLabel" name="lbl_restart_pipeline">
     <property name="geometry">
      <rect>
-      <x>688</x>
-      <y>80</y>
-      <width>475</width>
+      <x>500</x>
+      <y>18</y>
+      <width>391</width>
       <height>31</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>12</pointsize>
+      <pointsize>11</pointsize>
      </font>
     </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
     <property name="styleSheet">
-     <string notr="true">color: #F44;</string>
+     <string notr="true">color: #F44;background: #eee;padding: 5px; border-radius: 2px;</string>
     </property>
     <property name="text">
      <string>Pipeline needs to be restarted in order to see all changes!</string>

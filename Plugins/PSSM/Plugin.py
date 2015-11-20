@@ -77,8 +77,10 @@ class Plugin(BasePlugin):
             sun_vector = Vec3(0.3, 0.3, 0.5)
             sun_vector.normalize()
         else:
-            sun_altitude = self.get_daytime_setting("sun_altitude", plugin_name="Scattering")
-            sun_azimuth = self.get_daytime_setting("sun_azimuth", plugin_name="Scattering")
+            sun_altitude = self.get_daytime_setting(
+                "sun_altitude", plugin_id="Scattering")
+            sun_azimuth = self.get_daytime_setting(
+                "sun_azimuth", plugin_id="Scattering")
     
             theta = sun_altitude / 180.0 * pi
             phi = sun_azimuth / 180.0 * pi
