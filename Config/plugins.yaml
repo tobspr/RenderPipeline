@@ -43,7 +43,7 @@ overrides:
     PSSM.pcss_penumbra_size: 19.67
     PSSM.pcss_search_samples: 15
     PSSM.resolution: 2048
-    PSSM.slope_bias: 0.28999
+    PSSM.slope_bias: 3.22
     PSSM.split_count: 5
     PSSM.sun_distance: 100.0
     PSSM.use_pcss: True
