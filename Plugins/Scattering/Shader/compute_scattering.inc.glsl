@@ -3,6 +3,7 @@
 // Include local scattering code
 #define NO_COMPUTE_SHADER 1
 #pragma include "scattering_common.glsl"
+#pragma include "Includes/Noise3D.inc.glsl"
 
 uniform sampler3D inscatterSampler;
 
@@ -12,60 +13,65 @@ vec3 sunVector = sun_azimuth_to_angle(
         TimeOfDay.Scattering.sun_altitude);
 
 
-vec3 DoScattering(in vec3 surfacePos, in vec3 viewDir)
+vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 {
 
     // Move surface pos above ocean level
-    if (surfacePos.z < 0.0) {
-        vec3 v2s = surfacePos - cameraPosition;
-        float z_factor = abs(cameraPosition.z) / abs(v2s.z);
-        surfacePos = cameraPosition + v2s * z_factor;
-        viewDir = normalize(surfacePos - cameraPosition);
-    }
+    // if (surfacePos.z < 0.0) {
+    //     vec3 v2s = surfacePos - cameraPosition;
+    //     float z_factor = abs(cameraPosition.z) / abs(v2s.z);
+    //     surfacePos = cameraPosition + v2s * z_factor;
+    //     viewDir = normalize(surfacePos - cameraPosition);
+    // }
 
-    vec3 inscatteredLight = vec3(0.0f, 0.0f, 0.0f);
-    float groundH = Rg + 0.1;
+    vec3 inscatteredLight = vec3(0.0);
+    float groundH = Rg + 1.5;
     float pathLength = distance(cameraPosition, surfacePos);
     vec3 startPos = cameraPosition;
 
-    float startPosHeight = (cameraPosition.z) * 0.01 + groundH;
-    float surfacePosHeight = surfacePos.z * 0.01 + groundH;
+    float height_scale_factor = 0.01;
 
-    // Clamp start pos - this should usually not be required
-    // startPosHeight = min(startPosHeight, Rt - 1);
+    float startPosHeight = cameraPosition.z * height_scale_factor + groundH;
+    float surfacePosHeight = surfacePos.z * height_scale_factor + groundH;
 
     float muStartPos = viewDir.z;
-    float nuStartPos = dot(viewDir, sunVector);
+    float nuStartPos = max(0, dot(viewDir, sunVector));
     float musStartPos = sunVector.z;
 
     vec4 inscatter = max(texture4D(inscatterSampler, startPosHeight,
-        muStartPos, musStartPos, nuStartPos), 0.0f);
+        muStartPos, musStartPos, nuStartPos), 0.0);
+        
+    fog_factor = 1.0;
 
-    float musEndPos = sunVector.z;
+    // inscatter *= 0;
 
-    if(pathLength < 30000 || viewDir.z < -0.0001)
+    if(pathLength < 11500)
     {
-        // reduce total in-scattered light when surface hit
-        // attenuation = analyticTransmittance(surfacePosHeight, surfacePos.z / Rt, 1.0);
 
-        vec4 inscatterSurface = texture4D(inscatterSampler, surfacePosHeight, 
-            0.0, musEndPos, nuStartPos);
-        // inscatterSurface *= max(0, pow(1- (surfacePos.z+20.0) * 0.012, 7.0)) * 4.0;
-        inscatterSurface *= saturate( (pathLength-20.0) / 10700.0);
-        inscatter = inscatterSurface;
-    }
-    else
-    {
-        // retrieve extinction factor for inifinte ray
-        // attenuation = analyticTransmittance(startPosHeight, muStartPos, pathLength);
+        // Exponential height fog
+        // float height_factor = saturate( exp( - (surfacePos.z)  / 160.0) );
+        float height_factor = 1 - saturate( surfacePos.z / 560.0 );
+        float fog_end = TimeOfDay.Scattering.fog_end;
+
+        fog_factor = max(0, (1.0 - exp( -pathLength * viewDir.z / fog_end )) / viewDir.z);
+        fog_factor *= height_factor;
+
+        // Get atmospheric color
+        vec4 inscatter_surf = texture4D(inscatterSampler, surfacePosHeight, 
+            height_factor, musStartPos, nuStartPos);
+
+        vec4 fog_color = fog_factor * inscatter_surf * TimeOfDay.Scattering.fog_brightness;
+        fog_factor = saturate(fog_factor * 2.0);
+        fog_color.w = inscatter_surf.w;
+        inscatter = fog_color;
     }
 
     float phaseR = phaseFunctionR(nuStartPos);
     float phaseM = phaseFunctionM(nuStartPos);
-    inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) *
-        phaseM, 0.0f);
-    inscatteredLight *= sunIntensity;
+    inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
 
+    inscatteredLight *= sunIntensity;
+    // inscatteredLight = vec3(getMie(inscatter));
 
     return inscatteredLight;
 }

@@ -76,7 +76,7 @@ class DayTimeSettingSCALAR(DayTimeSetting):
     def load_additional_settings(self, yaml):
         self.min_value, self.max_value = yaml.pop("range")
         self.unit = yaml.pop("unit")
-        if self.unit not in ["degree", "percent"]:
+        if self.unit not in ["degree", "percent", "meter"]:
             raise BadSettingException("Unkown unit: ", self.unit)
 
     def set_default_value(self, val):
@@ -89,9 +89,11 @@ class DayTimeSettingSCALAR(DayTimeSetting):
         if self.unit is None:
             return val
         elif self.unit == "degree":
-            return unicode(round(val, 1)) + u"°"
+            return str(round(val, 1)) + u"°"
         elif self.unit == "percent":
-            return unicode(round(val,2 )) + u"%" 
+            return str(round(val, 2)) + u"%" 
+        elif self.unit == "meter":
+            return str(int(val)) + u"m" 
 
     def format_nonlinear(self, val):
         return self.format(self.from_linear_space(val))

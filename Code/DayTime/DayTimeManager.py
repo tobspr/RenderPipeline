@@ -17,7 +17,7 @@ class DayTimeManager(DebugObject):
         self._interface.set_base_dir(".")
         self._settings = {}
         self._ubo = ShaderUBO("TimeOfDay")
-        self._daytime = 0.4
+        self._daytime = 0.5
 
     def load_settings(self):
         """ Loads the daytime settings """

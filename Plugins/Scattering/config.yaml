@@ -38,12 +38,13 @@ settings: !!omap
 
     - mie_phase_factor:
         type: float
-        range: [0.1, 1.0]
+        range: [0.1, 0.9999]
         default: 0.8
         shader_runtime: true
         label: Mie Phase
         description: >
-            Mie phase factor
+            Mie phase factor, this controls the apperance of the sun highlight
+            in the sky, higher values produce a smaller (but brighter) sun-shape.
 
     - beta_mie_scattering:
         type: float
@@ -59,8 +60,8 @@ daytime_settings: !!omap
     - sun_intensity:
         type: scalar
         unit: percent
-        range: [0.0, 40.0]
-        default: 30.0
+        range: [0.0, 20.0]
+        default: 15.0
         label: Sun Intensity
         description: Controls the intensity of the sun
 
@@ -86,3 +87,18 @@ daytime_settings: !!omap
         label: Sun Altidude
         description: Vertical angle of the sun
 
+    - fog_end:
+        type: scalar
+        unit: meter
+        range: [0.5, 5000.0]
+        default: 2000
+        label: Fog-End
+        description: End of the fog in world space units
+
+    - fog_brightness:
+        type: scalar
+        unit: percent
+        range: [0.0, 15.0]
+        default: 1.0
+        label: Fog-Brightness
+        description: Brightness of the fog

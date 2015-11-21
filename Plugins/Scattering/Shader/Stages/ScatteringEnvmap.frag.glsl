@@ -28,8 +28,8 @@ void main() {
     vec3 direction = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
     float horizon = direction.z;
     direction.z = abs(direction.z);
-
-    vec3 inscattered_light = DoScattering(direction * 1e10, direction);
+    float fog_factor = 0.0;
+    vec3 inscattered_light = DoScattering(direction * 1e10, direction, fog_factor);
     vec3 sky_color = textureLod(DefaultSkydome, get_skydome_coord(direction), 0).xyz;
 
     // inscattered_light = 1.0 - exp(-0.2*inscattered_light);

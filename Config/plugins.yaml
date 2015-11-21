@@ -50,4 +50,6 @@ overrides:
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: False
     Scattering.ground_reflectance: 0.1
+    Scattering.mie_height_scale: 1.2
+    Scattering.mie_phase_factor: 0.2
 

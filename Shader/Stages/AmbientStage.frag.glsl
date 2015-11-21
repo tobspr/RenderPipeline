@@ -108,12 +108,12 @@ void main() {
 
         // Metallic specular term: Just plain reflections
 
-        #if 1
+        #if 0
             // With fresnel term
             vec3 env_metallic = m.diffuse + 3 *M_PI* prefilter_color;
         #else
             // Just plain reflections
-            vec3 env_metallic = m.diffuse * M_PI;
+            vec3 env_metallic = m.diffuse;
         #endif
 
         // Diffuse specular term: Prefiltered BRDF
@@ -124,7 +124,7 @@ void main() {
         vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
 
         // Diffuse ambient term, weight it by 0 for metallics
-        vec3 diffuse_ambient = env_amb * vec3(0.3) * m.diffuse * (1.0 - m.metallic);
+        vec3 diffuse_ambient = env_amb * vec3(0.1) * m.diffuse * (1.0 - m.metallic);
 
         // Specular ambeint term
         vec3 specular_ambient = env_factor * env_default_color;
@@ -134,7 +134,6 @@ void main() {
 
         // Add "fake" irradiance term
         // ambient.xyz += env_amb * 0.08 * m.diffuse * (1.0 - m.metallic);
-
 
         #if HAVE_PLUGIN(AO)
 
@@ -160,5 +159,7 @@ void main() {
         #endif
     #endif
 
-    result = texture(ShadedScene, texcoord) * 1 + ambient * 1;
+    vec4 scene_color = texture(ShadedScene, texcoord);
+
+    result = scene_color * 1 + ambient * 1 * (1-scene_color.w);
 }

@@ -69,8 +69,8 @@ class CurveWidget(QtGui.QWidget):
                 point_y = self._get_y_value_for(y) - self._bar_h
                 if abs(point_x - mouse_x) < self._cv_point_size + 6:
                     if (abs(point_y - mouse_y)) < self._cv_point_size + 6:
-                        drag_x_offset = point_x - mouse_x
-                        drag_y_offset = point_y - mouse_y
+                        drag_x_offset = mouse_x - point_x
+                        drag_y_offset = mouse_y - point_y
                         self._drag_point = (index, cv_index, (drag_x_offset, drag_y_offset))
                         self._selected_point = (index, cv_index)
 

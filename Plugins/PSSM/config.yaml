@@ -12,7 +12,7 @@ settings: !!omap
 
     - max_distance:
         type: float
-        range: [5.0, 100.0]
+        range: [2.0, 2000.0]
         default: 50.0
         runtime: true
         shader_runtime: true
@@ -37,7 +37,7 @@ settings: !!omap
     - split_count:
         type: int
         range: [2, 10]
-        default: 7
+        default: 8
         label: Amount of PSSM Splits / Cascades
         description: >
             This controls how many splits are used for the PSSM.
@@ -82,7 +82,7 @@ settings: !!omap
 
     - filter_radius:
         type: float
-        range: [5, 100]
+        range: [0.1, 200]
         default: 25
         shader_runtime: true
         label: Shadow filtering radius
@@ -151,7 +151,7 @@ settings: !!omap
     - pcss_penumbra_size:
         display_if: {use_pcss: true}
         type: float
-        range: [10, 300.0]
+        range: [0.1, 300.0]
         default: 100.0
         shader_runtime: true
         label: PCSS Penumbra scale
