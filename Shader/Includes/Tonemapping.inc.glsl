@@ -69,7 +69,6 @@ vec3 Tonemap_Reinhard(vec3 color)
 
         vec3 rgb = xyY_to_rgb(xyY);
 
-
     #else
 
         #error Unkown reinhard version!
@@ -116,15 +115,16 @@ vec3 Tonemap_Exponential(vec3 color) {
     return rgb_to_srgb(color);
 }
 
-// Uncharted 2 Tonemaping
-const float UC2_A = 0.22;     // Shoulder Strength
-const float UC2_B = 0.30;     // Linear Strength
-const float UC2_C = 0.10;     // Linear Angle
-const float UC2_D = 0.20;     // Toe Strength
-const float UC2_E = 0.01;     // Toe Numerator
-const float UC2_F = 0.30;     // Toe Denumerator
-const float UC2_WHITE = 11.2; // Reference White
 
+
+
+const float UC2_A       = GET_SETTING(ColorCorrection, uc2t_shoulder_strength);
+const float UC2_B       = GET_SETTING(ColorCorrection, uc2t_linear_strength);
+const float UC2_C       = GET_SETTING(ColorCorrection, uc2t_linear_angle);
+const float UC2_D       = GET_SETTING(ColorCorrection, uc2t_toe_strength); 
+const float UC2_E       = GET_SETTING(ColorCorrection, uc2t_toe_numerator);
+const float UC2_F       = GET_SETTING(ColorCorrection, uc2t_toe_denumerator);
+const float UC2_WHITE   = GET_SETTING(ColorCorrection, uc2t_reference_white);
 
 vec3 Uncharted2Tonemap(vec3 x)
 {

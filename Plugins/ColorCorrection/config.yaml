@@ -20,6 +20,8 @@ settings: !!omap
             just passes through the color. None and SRGB are just for reference,
             and should not be used.
 
+    # Reinhard Tonemapping settings
+
     - reinhard_version:
         display_if: {tonemap_operator: "reinhard"}
         type: enum
@@ -32,6 +34,8 @@ settings: !!omap
             the operator on the rgb value, luminance on the brightness of the color.
             white_preserve also uses the luma value, but tries to preserve the whites.
 
+    # Exponential Tonemapping settings
+
     - exponential_factor:
         display_if: {tonemap_operator: "exponential"}
         type: float
@@ -42,6 +46,89 @@ settings: !!omap
         description: >
             The factor for the exponential mapping. Assuming the factor is named
             f, then the output color is computed with 1 - exp(-f*color).
+
+
+    # Uncharted 2 Tonemapping settings
+
+    - uc2t_shoulder_strength:
+        display_if: {tonemap_operator: "uncharted2"}
+        type: float
+        range: [0.01, 1.0]
+        default: 0.22
+        shader_runtime: true
+        label: UC2 Shoulder Strength
+        description: >
+            Shoulder Strength, controls the appearance of the bright parts
+            of the image (the last part of the color curve).
+
+    - uc2t_linear_strength:
+        display_if: {tonemap_operator: "uncharted2"}
+        type: float
+        range: [0.01, 1.0]
+        default: 0.3
+        shader_runtime: true
+        label: UC2 Linear Strength
+        description: >
+            Linear factor, higher values produce a more grayish image, while
+            lower values produce a more saturated image.
+
+    - uc2t_linear_angle:
+        display_if: {tonemap_operator: "uncharted2"}
+        type: float
+        range: [0.01, 1.0]
+        default: 0.1
+        shader_runtime: true
+        label: UC2 Linear Angle
+        description: >
+            Linear Angle, higher values produce a brighter but more grayish image,
+            lower values produce a more saturated image.
+
+
+    - uc2t_toe_strength:
+        display_if: {tonemap_operator: "uncharted2"}
+        type: float
+        range: [0.01, 1.0]
+        default: 0.2
+        shader_runtime: true
+        label: UC2 Toe Strength
+        description: >
+            Toe Strength, controls the appearance of the dark parts of the image,
+            (the first part of the color curve). Higher values mean more dark
+            spots, while lower values will cut-off less dark values.
+
+    - uc2t_toe_numerator:
+        display_if: {tonemap_operator: "uncharted2"}
+        type: float
+        range: [0.0001, 0.1]
+        default: 0.01
+        shader_runtime: true
+        label: UC2 Toe Numerator
+        description: >
+            Toe Numerator, controls the appearance of the dark parts similar to
+            the toe strength. This is a bias, values below this setting are
+            completely dark.
+
+    - uc2t_toe_denumerator: 
+        display_if: {tonemap_operator: "uncharted2"}
+        type: float
+        range: [0.01, 1.0]
+        default: 0.3
+        shader_runtime: true
+        label: UC2 Toe Denumerator
+        description: >
+            Toe Denumerator, controls the appearance of the dark parts similar to
+            the toe strength, but instead of cutting of the dark values it
+            makes them brighter.
+
+    - uc2t_reference_white:
+        display_if: {tonemap_operator: "uncharted2"}
+        type: float
+        range: [0.1, 20.0]
+        default: 11.2
+        shader_runtime: true
+        label: UC2 Reference White
+        description: Reference White
+
 
     - vignette_strength:
         type: float

@@ -2,10 +2,12 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Tonemapping.inc.glsl"
+#pragma include "Includes/PositionReconstruction.inc.glsl"
 
 
 in vec2 texcoord;
 uniform sampler2D ShadedScene;
+uniform vec3 cameraPosition;
 
 out vec4 result;
 
@@ -15,8 +17,6 @@ void main() {
 
 
     // Select tonemapping operator
-
-    // Include the appropriate kernel
     #if ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, none)
         scene_color = Tonemap_None(scene_color);
     #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, srgb)
@@ -33,11 +33,23 @@ void main() {
         #error Unkown tonemapping operator
     #endif
 
+
     scene_color = saturate(scene_color);
 
-    // Vignette
-    scene_color *= 1.0 - smoothstep(0, 1, (length( (texcoord - vec2(0.5, 0.5)) * vec2(1.3, 1.0) * 1.1  ) - 0.2) ) * GET_SETTING(ColorCorrection, vignette_strength);
+    // Physically correct vignette, using the cos4 law:
 
+    // Get the angle between the camera direction and the view direction
+    vec3 material_dir = normalize(cameraPosition - calculateSurfacePos(1, texcoord));
+    vec3 cam_dir = normalize(cameraPosition - calculateSurfacePos(1, vec2(0.5)));
+
+    // According to the cos4 law, the brightness at angle alpha is cos^4(alpha).
+    // Since dot() returns the cosine, we can just pow it to get a physically
+    // correct vignette.    
+    float cos_angle = dot(cam_dir, material_dir);
+    float vignette = pow(cos_angle, 4.0);
+
+    // Apply the vignette based on the vignette strength
+    scene_color *= mix(1.0, vignette, GET_SETTING(ColorCorrection, vignette_strength));
 
 
 

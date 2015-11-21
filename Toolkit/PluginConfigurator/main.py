@@ -274,6 +274,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             box.setMinimum(setting.min_value)
             box.setMaximum(setting.max_value)
             box.setValue(setting.value)
+
+            box.setSingleStep( abs(setting.max_value - setting.min_value) / 100.0 )
             box.setAlignment(QtCore.Qt.AlignCenter)
 
             slider = QtGui.QSlider()

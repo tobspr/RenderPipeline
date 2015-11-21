@@ -4,7 +4,7 @@ from .. import *
 class ColorCorrectionStage(RenderStage):
 
     required_pipes = ["ShadedScene"]
-    required_inputs = ["TimeOfDay"]
+    required_inputs = ["TimeOfDay", "mainCam", "mainRender", "cameraPosition"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ColorCorrectionStage", pipeline)
