@@ -1,6 +1,7 @@
 
 from ..Util.DebugObject import DebugObject
 from .PluginInterface import PluginInterface
+from .PluginExceptions import PluginConfigError
 
 class PluginManager(DebugObject):
 
@@ -20,7 +21,10 @@ class PluginManager(DebugObject):
     def reload_settings(self):
         """ Reloads all plugin settings from the plugin config file """
         self.debug("Reloading plugin settings ...")
-        self._interface.load_plugin_config()
+        try:
+            self._interface.load_plugin_config()
+        except PluginConfigError as message:
+            self.error("Failed to reload config:", msg)
         self._interface.reload_overrides()
 
     def get_interface(self):

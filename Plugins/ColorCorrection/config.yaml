@@ -130,6 +130,7 @@ settings: !!omap
         description: Reference White
 
 
+
     - vignette_strength:
         type: float
         range: [0.0, 1.0]
@@ -137,10 +138,41 @@ settings: !!omap
         shader_runtime: true
         label: Vignette Strength
         description: >
-            Controls the strength of the vignette, whereas a strength of 0
-            means no vignette.
+            Controls the strength of the vignette, which darkens the corners
+            of the image. A strength of 0 means no vignette, a strength of 1
+            means a almost completely black vignette. 
 
+    - use_chromatic_aberration:
+        type: bool
+        default: true
+        shader_runtime: true
+        label: Enable Chromatic Aberration
+        description: >  
+            Enables chromatic aberration, a camera effect caused due to the 
+            different refraction of the wavelengths through a lens. 
 
+    - chromatic_aberration_strength:
+        display_if: {use_chromatic_aberration: true}
+        type: float
+        range: [0.1, 2.0]
+        default: 1.0
+        shader_runtime: true
+        label: Chromatic Aberration Strength
+        description: >
+            Strength of the chromatic abberation, you should not overdo this since
+            it can lead to very unrealistic results fast.
+
+    - chromatic_aberration_samples:
+        display_if: {use_chromatic_aberration: true}
+        type: int
+        range: [1, 5]
+        default: 2
+        shader_runtime: true
+        label: Chromatic Aberration Samples
+        description: >
+            Amount of samples to use for blurring the screen edges when using
+            chromatic abberation. A higher amount of samples produces a smoother
+            blur but also increases the performance cost by a lot.
 
 daytime_settings: !!omap
     

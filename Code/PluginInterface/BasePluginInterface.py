@@ -74,6 +74,9 @@ class BasePluginInterface(DebugObject):
 
         content = YAMLEasyLoad(plugin_cfg)
 
+        if content is None:
+            raise PluginConfigError("Plugin config is empty!")
+
         # Check if all required keys are in the yaml file
         if not "enabled" in content:
             raise PluginConfigError("Could not find key 'enabled' in plugin config")
