@@ -1,4 +1,6 @@
 
+from __future__ import print_function
+
 import shutil
 import os
 from panda3d.core import PNMImage, load_prc_file_data, Texture, NodePath
@@ -18,34 +20,34 @@ compute_shader = Shader.make_compute(Shader.SL_GLSL, """
 layout (local_size_x = 16, local_size_y = 16) in;
 uniform writeonly image2D DestTex;
 uniform samplerCube SourceCubemap;
-uniform int Size;
-uniform int BlurSize;
-uniform int EffectiveSize;
-uniform int FaceIndex;
+uniform int size;
+uniform int blurSize;
+uniform int effectiveSize;
+uniform int faceIndex;
 
 
-vec3 transformCubemapCoordinates(vec3 coord) {
+vec3 transform_cubemap_coordinates(vec3 coord) {
     return normalize(coord.xzy * vec3(1,-1,1));
 }
 
-vec3 getTransformedCoord(vec2 coord) {
+vec3 get_transformed_coord(vec2 coord) {
     float f = 1.0;
-    if (FaceIndex == 1) return vec3(-f, coord);
-    if (FaceIndex == 2) return vec3(coord, -f);
-    if (FaceIndex == 0) return vec3(f, -coord.x, coord.y);
-    if (FaceIndex == 3) return vec3(coord.xy * vec2(1,-1), f);
-    if (FaceIndex == 4) return vec3(coord.x, f, coord.y);
-    if (FaceIndex == 5) return vec3(-coord.x, -f, coord.y);
+    if (faceIndex == 1) return vec3(-f, coord);
+    if (faceIndex == 2) return vec3(coord, -f);
+    if (faceIndex == 0) return vec3(f, -coord.x, coord.y);
+    if (faceIndex == 3) return vec3(coord.xy * vec2(1,-1), f);
+    if (faceIndex == 4) return vec3(coord.x, f, coord.y);
+    if (faceIndex == 5) return vec3(-coord.x, -f, coord.y);
     return vec3(0);
 }
 
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 local_coord = coord - BlurSize;
-    vec2 local_texcoord = local_coord / float(Size) * 2.0 - 1.0;
+    ivec2 local_coord = coord - blurSize;
+    vec2 local_texcoord = local_coord / float(size) * 2.0 - 1.0;
 
-    vec3 direction = getTransformedCoord(local_texcoord);
-    direction = transformCubemapCoordinates(direction);
+    vec3 direction = get_transformed_coord(local_texcoord);
+    direction = transform_cubemap_coordinates(direction);
     vec3 sampled = texture(SourceCubemap, direction).xyz;
 
     imageStore(DestTex, coord, vec4(sampled, 1));
@@ -85,9 +87,9 @@ def filter_cubemap(orig_pth):
         node = NodePath("")
         node.set_shader(compute_shader)
         node.set_shader_input("SourceCubemap", cubemap)
-        node.set_shader_input("Size", size)
-        node.set_shader_input("BlurSize", blur_size)
-        node.set_shader_input("EffectiveSize", effective_size)
+        node.set_shader_input("size", size)
+        node.set_shader_input("blurSize", blur_size)
+        node.set_shader_input("effectiveSize", effective_size)
 
         final_img = PNMImage(size, size, 3)
 
@@ -99,7 +101,7 @@ def filter_cubemap(orig_pth):
                                  Texture.T_float, Texture.F_rgba16)
 
             # Execute compute shader
-            node.set_shader_input("FaceIndex", i)
+            node.set_shader_input("faceIndex", i)
             node.set_shader_input("DestTex", dst)
             attr = node.get_attrib(ShaderAttrib)
             base.graphicsEngine.dispatch_compute(( (effective_size+15) // 16,

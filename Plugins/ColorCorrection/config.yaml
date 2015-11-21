@@ -10,14 +10,38 @@ settings: !!omap
 
     - tonemap_operator:
         type: enum
-        values: [none, srgb, optimized, reinhard, uncharted2]
+        values: [optimized, reinhard, uncharted2, exponential, srgb, none]
         default: uncharted2
         label: Tonemap Operator
         shader_runtime: true
         description: >
             This specifies the tonemapping operator, all operators implement
             sRGB color correction as well, except for the none operator which
-            just passes through the color.
+            just passes through the color. None and SRGB are just for reference,
+            and should not be used.
+
+    - reinhard_version:
+        display_if: {tonemap_operator: "reinhard"}
+        type: enum
+        values: [rgb, luminance, white_preserve, luminosity]
+        default: rgb
+        shader_runtime: true
+        label: Reinhard Version
+        description: >
+            Choose between different versions of the Reinhard Operator. rgb performs
+            the operator on the rgb value, luminance on the brightness of the color.
+            white_preserve also uses the luma value, but tries to preserve the whites.
+
+    - exponential_factor:
+        display_if: {tonemap_operator: "exponential"}
+        type: float
+        range: [0.01, 5.0]
+        default: 0.5
+        shader_runtime: true
+        label: Exponential factor
+        description: >
+            The factor for the exponential mapping. Assuming the factor is named
+            f, then the output color is computed with 1 - exp(-f*color).
 
     - vignette_strength:
         type: float
@@ -28,6 +52,7 @@ settings: !!omap
         description: >
             Controls the strength of the vignette, whereas a strength of 0
             means no vignette.
+
 
 
 daytime_settings: !!omap

@@ -11,6 +11,7 @@ enabled:
     - Scattering
     - PSSM
     - AO
+    - ColorCorrection
 
 overrides: 
     AO.alchemy_max_distance: 8.06
@@ -35,8 +36,10 @@ overrides:
     AO.ue4ao_max_distance: 2.0
     AO.ue4ao_sample_count: 8
     AO.ue4ao_sample_radius: 120.0
-    ColorCorrection.tonemap_operator: uncharted2
-    ColorCorrection.vignette_strength: 0.33
+    ColorCorrection.exponential_factor: 0.5
+    ColorCorrection.reinhard_version: rgb
+    ColorCorrection.tonemap_operator: reinhard
+    ColorCorrection.vignette_strength: 0.64
     PSSM.filter_radius: 5.0
     PSSM.filter_sample_count: 32
     PSSM.fixed_bias: 0.07
@@ -53,5 +56,5 @@ overrides:
     SMAA.use_reprojection: False
     Scattering.ground_reflectance: 0.1
     Scattering.mie_height_scale: 1.2
-    Scattering.mie_phase_factor: 0.2
+    Scattering.mie_phase_factor: 0.6
 

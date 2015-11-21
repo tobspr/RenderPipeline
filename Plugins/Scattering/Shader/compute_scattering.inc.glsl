@@ -25,11 +25,11 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     // }
 
     vec3 inscatteredLight = vec3(0.0);
-    float groundH = Rg + 1.5;
+    float groundH = Rg + 0.1;
     float pathLength = distance(cameraPosition, surfacePos);
     vec3 startPos = cameraPosition;
 
-    float height_scale_factor = 0.01;
+    float height_scale_factor = 0.0;
 
     float startPosHeight = cameraPosition.z * height_scale_factor + groundH;
     float surfacePosHeight = surfacePos.z * height_scale_factor + groundH;
@@ -45,7 +45,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
     // inscatter *= 0;
 
-    if(pathLength < 11500)
+    if(pathLength < 20000)
     {
 
         // Exponential height fog

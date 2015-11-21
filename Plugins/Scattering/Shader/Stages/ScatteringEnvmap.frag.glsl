@@ -40,7 +40,7 @@ void main() {
 
     if (horizon > 0.0) {
         // inscattered_light += pow(sky_color, vec3(1.2)) * 0.8;
-        inscattered_light += pow(sky_color, vec3(1.2)) * 0.4 * 0.1 * sunIntensity;
+        // inscattered_light += pow(sky_color, vec3(1.2)) * 0.4 * 0.1 * sunIntensity;
     }
 
     if (horizon < 0.0) {
