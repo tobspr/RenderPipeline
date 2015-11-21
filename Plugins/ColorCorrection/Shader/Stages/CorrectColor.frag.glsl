@@ -3,6 +3,7 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Tonemapping.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
+#pragma include "Includes/Noise.inc.glsl"
 
 #pragma include "../ChromaticAberration.inc.glsl"
 
@@ -12,6 +13,8 @@ uniform sampler2D ShadedScene;
 uniform vec3 cameraPosition;
 
 out vec4 result;
+
+uniform float osg_FrameTime;
 
 void main() {
 
@@ -53,6 +56,14 @@ void main() {
         #error Unkown tonemapping operator
     #endif
 
+    // Compute film grain
+    float film_grain = grain(texcoord, osg_FrameTime * 2000.0);
+    vec3 blended_color = blend_soft_light(scene_color, vec3(film_grain));
+
+    // Blend film grain
+    float scene_lum = get_luminance(scene_color);
+    float grain_factor = GET_SETTING(ColorCorrection, film_grain_strength);
+    scene_color = mix(scene_color, blended_color, grain_factor);
 
 
     // Apply the vignette based on the vignette strength

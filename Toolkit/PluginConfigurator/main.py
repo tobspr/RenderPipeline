@@ -267,7 +267,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             if setting.type == "FLOAT":
                 box = QtGui.QDoubleSpinBox()
                 
-                if setting.max_value - setting.min_value < 1.0:
+                if setting.max_value - setting.min_value <= 2.0:
                     box.setDecimals(4)
             else:
                 box = QtGui.QSpinBox()

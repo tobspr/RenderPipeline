@@ -23,7 +23,7 @@ class PluginManager(DebugObject):
         self.debug("Reloading plugin settings ...")
         try:
             self._interface.load_plugin_config()
-        except PluginConfigError as message:
+        except PluginConfigError as msg:
             self.error("Failed to reload config:", msg)
         self._interface.reload_overrides()
 

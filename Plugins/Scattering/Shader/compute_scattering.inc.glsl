@@ -3,7 +3,6 @@
 // Include local scattering code
 #define NO_COMPUTE_SHADER 1
 #pragma include "scattering_common.glsl"
-#pragma include "Includes/Noise3D.inc.glsl"
 
 uniform sampler3D inscatterSampler;
 
@@ -42,8 +41,6 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         muStartPos, musStartPos, nuStartPos), 0.0);
         
     fog_factor = 1.0;
-
-    // inscatter *= 0;
 
     if(pathLength < 20000)
     {

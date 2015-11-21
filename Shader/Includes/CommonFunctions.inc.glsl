@@ -1,11 +1,9 @@
 
-
 #define saturate(v) clamp(v, 0, 1)
 
 #define M_PI 3.14159265359
 #define HALF_PI 1.57079632679
 #define TWO_PI 6.28318530718
-
 
 // Fixes the cubemap direction
 vec3 fix_cubemap_coord(vec3 coord) {
@@ -43,6 +41,7 @@ vec3 texcoord_to_cubemap(int cubemap_size, ivec2 coord, out ivec2 clamped_coord,
     return get_cubemap_coordinate(face, local_coord);
 }
 
+
 // Version of texcoord_to_cubemap without the out parameters
 vec3 texcoord_to_cubemap(int cubemap_size, ivec2 coord) {
     ivec2 clamped_coord; int face;
@@ -60,6 +59,7 @@ vec2 rotate(vec2 vector, float angle) {
     );
 }
 
+
 // Returns a coordinate which can be used for bilateral upscaling
 ivec2 get_bilateral_coord(ivec2 coord) {
     return (coord + 1) / 2 - 1;
@@ -69,6 +69,7 @@ ivec2 get_bilateral_coord(ivec2 coord) {
 bool out_of_screen(vec2 tcoord) {
     return tcoord.x < 0.0 || tcoord.y < 0.0 || tcoord.x > 1.0 || tcoord.y > 1.0;    
 }
+
 
 void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
     vec3 v0 = abs(normal.z) < 0.99 ? vec3(0, 0, 1) : vec3(0, 1, 0);
@@ -84,7 +85,6 @@ vec3 tangent_to_world(vec3 vec, vec3 tangent)
     vec3 tangent_y = cross( tangent, tangent_x );
     return tangent_x * vec.x + tangent_y * vec.y + tangent * vec.z;
 }
-
 
 
 // Returns the number of mipmaps of a cubemap
@@ -103,9 +103,20 @@ vec3 spherical_to_vector(float theta, float phi) {
     );
 }
 
+
 vec3 sun_azimuth_to_angle(float azimuth, float altitude) {
     float theta = altitude / 180.0 * M_PI;
     float phi = azimuth / 180.0 * M_PI;
     return spherical_to_vector(theta, phi);
 }
 
+
+// FROM: https://github.com/mattdesl/glsl-blend-soft-light/blob/master/index.glsl
+// Licensed under the MIT License, see the github repo for more details.
+vec3 blend_soft_light(vec3 base, vec3 blend) {
+    return mix(
+        sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend), 
+        2.0 * base * blend + base * base * (1.0 - 2.0 * blend), 
+        step(base, vec3(0.5))
+    );
+}

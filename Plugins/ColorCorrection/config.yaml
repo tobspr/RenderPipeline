@@ -142,6 +142,19 @@ settings: !!omap
             of the image. A strength of 0 means no vignette, a strength of 1
             means a almost completely black vignette. 
 
+    - film_grain_strength:
+        type: float
+        range: [0.0, 1.0]
+        default: 0.125
+        shader_runtime: true
+        label: Film Grain Strength
+        description: >
+            Controls the strength of the film grain, which simulates the inaccuracies
+            on a film. This is also useful to add some more details to textures, however
+            care to not overdo the effect.
+
+    # Chromatic aberration
+
     - use_chromatic_aberration:
         type: bool
         default: true
