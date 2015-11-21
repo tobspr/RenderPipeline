@@ -1,29 +1,29 @@
+# --- Ignored extensions ---
 *.pyd
 *.pyc
 *.ignore
-*.sublime-workspace
-*.sublime-project
+*.old
+*.bam
+*.egg
 *.psd
-Temp/
-Models/
 *.blend
 *.blend1
 *.blend2
+*.rpsg
+
+# --- Ignored folders ---
+Temp/
+Models/
 Data/NormalQuantization/*.png
-CodeConventions.txt
-*.old
-Documentation/
-*.bam
-*.egg
 Data/DefaultCubemap/Filtered/
-desktop.ini
-Data/install.flag
 Native/Windows
 Native/Linux
 Native/Source/Interrogate*
-Plugins/Scattering/Tex
-*.rpsg
-Native/compilation_log.txt
-Docs/Sphinx-1.3.1
-TODO.txt
 _DEV
+
+
+# --- Ignored files ---
+TODO.txt
+Native/compilation_log.txt
+desktop.ini
+Data/install.flag
