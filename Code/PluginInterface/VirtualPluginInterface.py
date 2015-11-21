@@ -1,9 +1,9 @@
 
 from os.path import join
 
-from ..BasePluginInterface import BasePluginInterface
+from .BasePluginInterface import BasePluginInterface
 from .VirtualPlugin import VirtualPlugin
-from ..PluginExceptions import BadPluginException, BadSettingException
+from .PluginExceptions import BadPluginException, BadSettingException
 
 class VirtualPluginInterface(BasePluginInterface):
     

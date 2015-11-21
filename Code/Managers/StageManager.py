@@ -4,12 +4,12 @@ import time
 from panda3d.core import Texture
 from direct.stdpy.file import open
 
-from .Globals import Globals
-from .GUI.PipeViewer import PipeViewer
-from .Util.DebugObject import DebugObject
-from .Util.Image import Image
+from ..Globals import Globals
+from ..GUI.PipeViewer import PipeViewer
+from ..Util.DebugObject import DebugObject
+from ..Util.Image import Image
 
-from .Stages.UpdatePreviousPipesStage import UpdatePreviousPipesStage
+from ..Stages.UpdatePreviousPipesStage import UpdatePreviousPipesStage
 
 class StageManager(DebugObject):
     """ This manager takes a list of RenderStages and puts them into an order,

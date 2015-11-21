@@ -8,22 +8,26 @@ from panda3d.core import RenderState, BitMask32
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
+from .CommonResources import CommonResources
+from .Globals import Globals
+from .RenderTarget import RenderTarget
+
 from .Util.DebugObject import DebugObject
 from .Util.SettingsLoader import SettingsLoader
 from .Util.NetworkUpdateListener import NetworkUpdateListener
 
-from .CommonResources import CommonResources
-from .MountManager import MountManager
-from .Globals import Globals
-from .StageManager import StageManager
-from .LightManager import LightManager
-from .Effects.EffectLoader import EffectLoader
-from .PluginInterface.PluginManager import PluginManager
-from .RenderTarget import RenderTarget
-from .TagStateManager import TagStateManager
 from .GUI.OnscreenDebugger import OnscreenDebugger
 from .GUI.PipelineLoadingScreen import PipelineLoadingScreen, EmptyLoadingScreen
+
+from .Effects.EffectLoader import EffectLoader
+
+from .PluginInterface.PluginManager import PluginManager
 from .DayTime.DayTimeManager import DayTimeManager
+
+from .Managers.MountManager import MountManager
+from .Managers.StageManager import StageManager
+from .Managers.LightManager import LightManager
+from .Managers.TagStateManager import TagStateManager
 
 class RenderPipeline(DebugObject):
 

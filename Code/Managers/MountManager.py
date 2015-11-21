@@ -7,7 +7,7 @@ from panda3d.core import Filename, VirtualFileSystem, get_model_path
 from panda3d.core import VirtualFileMountRamdisk
 from direct.stdpy.file import join, isdir, isfile
 
-from .Util.DebugObject import DebugObject
+from ..Util.DebugObject import DebugObject
 
 
 class MountManager(DebugObject):

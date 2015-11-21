@@ -1,9 +1,9 @@
 
 
 from os.path import join, isdir, isfile
-from ..PluginConfig import PluginConfig
-from ..PluginExceptions import BadPluginException
-from ...Util.DebugObject import DebugObject
+from .PluginConfig import PluginConfig
+from .PluginExceptions import BadPluginException
+from ..Util.DebugObject import DebugObject
 
 class VirtualPlugin(DebugObject):
 

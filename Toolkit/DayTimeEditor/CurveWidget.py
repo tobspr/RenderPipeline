@@ -6,8 +6,6 @@ import math
 import PyQt4.QtCore as QtCore 
 import PyQt4.QtGui as QtGui
 
-from Code.DayTime.Curve import Curve
-
 class CurveWidget(QtGui.QWidget):
 
     """ This is a resizeable Widget which shows an editable curve which can

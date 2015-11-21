@@ -2,15 +2,15 @@
 from random import random
 from panda3d.core import Vec3, CurveFitter
 
-class Curve:
+class SmoothConnectedCurve:
 
     """ Interface to a curve which also manages connecting the end of the
-    curve with the beginning.  """
+    curve with the beginning. """
 
     def __init__(self):
         self._curve = None
         self._modified = False
-
+        
         # Append some points to the border, to make sure the curve matches at
         # the edges
         self._border_points = 1

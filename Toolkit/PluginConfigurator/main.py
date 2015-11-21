@@ -27,7 +27,7 @@ except ImportError as msg:
 # Load the generated UI Layout
 from ui.main_window_generated import Ui_MainWindow
 
-from Code.PluginInterface.Virtual.VirtualPluginInterface import VirtualPluginInterface
+from Code.PluginInterface.VirtualPluginInterface import VirtualPluginInterface
 from Code.Util.UDPListenerService import UDPListenerService
 
 connect = QtCore.QObject.connect

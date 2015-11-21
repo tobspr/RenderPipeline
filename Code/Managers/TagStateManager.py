@@ -3,8 +3,8 @@
 from panda3d.core import NodePath, BitMask32, ColorWriteAttrib, CullFaceAttrib
 from panda3d.core import DepthOffsetAttrib
 
-from .Util.DebugObject import DebugObject
-from .Globals import Globals
+from ..Util.DebugObject import DebugObject
+from ..Globals import Globals
 
 class TagStateManager(DebugObject):
 

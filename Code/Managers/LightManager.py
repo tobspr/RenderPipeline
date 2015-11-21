@@ -3,22 +3,22 @@ import math
 
 from panda3d.core import LVecBase2i, Texture, PTAInt
 
-from .Util.DebugObject import DebugObject
-from .Util.Image import Image
+from ..Util.DebugObject import DebugObject
+from ..Util.Image import Image
 
-from .Globals import Globals
+from ..Globals import Globals
 
-from .Stages.FlagUsedCellsStage import FlagUsedCellsStage
-from .Stages.CollectUsedCellsStage import CollectUsedCellsStage
-from .Stages.CullLightsStage import CullLightsStage
-from .Stages.ApplyLightsStage import ApplyLightsStage
-from .Stages.AmbientStage import AmbientStage
-from .Stages.GBufferStage import GBufferStage
-from .Stages.FinalStage import FinalStage
-from .Stages.DownscaleZStage import DownscaleZStage
+from ..Stages.FlagUsedCellsStage import FlagUsedCellsStage
+from ..Stages.CollectUsedCellsStage import CollectUsedCellsStage
+from ..Stages.CullLightsStage import CullLightsStage
+from ..Stages.ApplyLightsStage import ApplyLightsStage
+from ..Stages.AmbientStage import AmbientStage
+from ..Stages.GBufferStage import GBufferStage
+from ..Stages.FinalStage import FinalStage
+from ..Stages.DownscaleZStage import DownscaleZStage
 
-from .GPUCommandQueue import GPUCommandQueue
-from .Native import GPUCommand, Light, LightStorage
+from ..GPUCommandQueue import GPUCommandQueue
+from ..Native import GPUCommand, Light, LightStorage
 
 
 class LightManager(DebugObject):

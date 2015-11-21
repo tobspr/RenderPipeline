@@ -5,7 +5,7 @@ import collections
 from direct.stdpy.file import listdir, join, isfile, open
 
 from ..Util.DebugObject import DebugObject
-from ..PluginInterface.Virtual.VirtualPluginInterface import VirtualPluginInterface
+from ..PluginInterface.VirtualPluginInterface import VirtualPluginInterface
 from ..External.PyYAML import YAMLEasyLoad
 
 class DayTimeInterface(DebugObject):

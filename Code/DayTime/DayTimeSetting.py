@@ -4,7 +4,7 @@ from panda3d.core import PTAFloat, PTAVecBase3f
 
 from ..Util.DebugObject import DebugObject
 from ..PluginInterface.PluginExceptions import BadSettingException
-from .Curve import Curve
+from ..Util.SmoothConnectedCurve import SmoothConnectedCurve
 
 class DayTimeSetting(DebugObject):
     
@@ -103,7 +103,7 @@ class DayTimeSettingSCALAR(DayTimeSetting):
         return float(max(0, min(1, val))) * (self.max_value - self.min_value) + self.min_value
 
     def init_curves(self):
-        curve = Curve()
+        curve = SmoothConnectedCurve()
         curve.set_single_value(self.to_linear_space(self.default))
         self.curves = [curve]
 
@@ -151,9 +151,9 @@ class DayTimeSettingCOLOR(DayTimeSetting):
             return str(round(val, 2))
 
     def init_curves(self):
-        curve_r = Curve()
-        curve_g = Curve()
-        curve_b = Curve()
+        curve_r = SmoothConnectedCurve()
+        curve_g = SmoothConnectedCurve()
+        curve_b = SmoothConnectedCurve()
 
         curve_r.set_color(255, 0, 0)
         curve_g.set_color(0, 255, 0)
