@@ -7,7 +7,12 @@ http://filmicgames.com/archives/75
 
 */
 
-const float exposure_adjustment = 2.0;
+const float exposure_adjustment = TimeOfDay.ColorCorrection.exposure_scale;
+
+vec3 Tonemap_None(vec3 color) {
+    color *= exposure_adjustment;
+    return color;
+}
 
 vec3 Tonemap_Linear(vec3 color)
 {

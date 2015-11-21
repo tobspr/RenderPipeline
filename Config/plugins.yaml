@@ -35,6 +35,8 @@ overrides:
     AO.ue4ao_max_distance: 2.0
     AO.ue4ao_sample_count: 8
     AO.ue4ao_sample_radius: 120.0
+    ColorCorrection.tonemap_operator: uncharted2
+    ColorCorrection.vignette_strength: 0.33
     PSSM.filter_radius: 5.0
     PSSM.filter_sample_count: 32
     PSSM.fixed_bias: 0.07

@@ -38,6 +38,19 @@ class RenderStage(DebugObject):
         if pipe_name not in cls.required_pipes:
             cls.required_pipes.append(pipe_name)
 
+    @classmethod
+    def disable_stage(cls):
+        """ Disables the stage, this will prevent the stage manager from creating
+        this stage. This is mostly useful to replace the stage by another stage """
+        cls.disabled = True
+
+    @classmethod
+    def is_enabled(cls):
+        """ Returns wheter the class is enabled or disabled """
+        if hasattr(cls, "disabled") and cls.disabled:
+            return False
+        return True
+
     def __init__(self, stage_id, pipeline):
         """ Creates a new render stage """
         DebugObject.__init__(self, stage_id)

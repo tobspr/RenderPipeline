@@ -1,7 +1,7 @@
 
 
 from ..Util.DebugObject import DebugObject
-
+from .PluginExceptions import BadSettingException
 
 class BasePluginSetting(DebugObject):
     

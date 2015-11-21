@@ -1,0 +1,42 @@
+
+name: Color Correction
+author: tobspr <tobias.springer1@gmail.com>
+version: 1.0
+description: >
+    This plugin adds support for color correction, vignetting and chromatic
+    abberation.
+
+settings: !!omap
+
+    - tonemap_operator:
+        type: enum
+        values: [none, srgb, optimized, reinhard, uncharted2]
+        default: uncharted2
+        label: Tonemap Operator
+        shader_runtime: true
+        description: >
+            This specifies the tonemapping operator, all operators implement
+            sRGB color correction as well, except for the none operator which
+            just passes through the color.
+
+    - vignette_strength:
+        type: float
+        range: [0.0, 1.0]
+        default: 0.5
+        shader_runtime: true
+        label: Vignette Strength
+        description: >
+            Controls the strength of the vignette, whereas a strength of 0
+            means no vignette.
+
+
+daytime_settings: !!omap
+    
+    - exposure_scale:
+        type: scalar
+        unit: percent
+        range: [0.01, 5]
+        default: 2.0
+        label: Exposure Scale
+        description: Scales the exposure by a fixed value.
+

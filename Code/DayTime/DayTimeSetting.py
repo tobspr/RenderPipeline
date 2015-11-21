@@ -91,7 +91,7 @@ class DayTimeSettingSCALAR(DayTimeSetting):
         elif self.unit == "degree":
             return str(round(val, 1)) + u"°"
         elif self.unit == "percent":
-            return str(round(val, 2)) + u"%" 
+            return str(int(val * 100.0)) + u"%" 
         elif self.unit == "meter":
             return str(int(val)) + u"m" 
 

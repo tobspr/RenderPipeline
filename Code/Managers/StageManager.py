@@ -32,6 +32,7 @@ class StageManager(DebugObject):
         "SSLRStage",
         "SMAAStage",
         "FinalStage",
+        "ColorCorrectionStage",
         "UpdatePreviousPipesStage"
     ]
 
@@ -59,6 +60,10 @@ class StageManager(DebugObject):
 
         if self._created:
             self.error("Cannot attach stage, stages are already created!")
+            return
+
+        if not stage.is_enabled():
+            self.debug("Skipping disabled stage",stage)
             return
 
         self._stages.append(stage)
@@ -91,6 +96,15 @@ class StageManager(DebugObject):
         self.debug("Setup stages ...")
 
         self._created = True
+
+        # Remove all disabled stages
+        to_remove = []
+        for stage in self._stages:
+            if not stage.is_enabled():
+                to_remove.append(stage)
+
+        for stage in to_remove:
+            self._stages.remove(stage)
 
         # Sort stages
         self._stages.sort(key=lambda stage: self._STAGE_ORDER.index(

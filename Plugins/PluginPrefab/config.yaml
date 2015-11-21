@@ -37,11 +37,12 @@ settings: !!omap
         label: Some boolean setting
         description: Description of the setting.
 
-daytime_settings:
+daytime_settings: !!omap
     
     - some_scalar:
         type: scalar
         unit: percent
+        range: [0, 1]
         default: 0.5
         label: Some Scalar
         description: Description of the scalar.

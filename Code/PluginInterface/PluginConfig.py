@@ -140,7 +140,7 @@ class PluginConfig(DebugObject):
             try:
                 setting = BasePluginSetting.load_from_yaml(setting_value)
             except BadSettingException as msg:
-                self.error("Could not parse setting", setting_id, msg)
+                self.error("Could not parse setting", setting_id,":", msg)
                 continue
             self._settings[setting_id] = setting
 
@@ -159,6 +159,6 @@ class PluginConfig(DebugObject):
             try:
                 setting = DayTimeSetting.load_from_yaml(setting_value)
             except BadSettingException as msg:
-                self.error("Could not parse daytime setting", setting_id, msg)
+                self.error("Could not parse daytime setting", setting_id, ":", msg)
                 continue
             self._daytime_settings[setting_id] = setting
