@@ -46,8 +46,6 @@ class TagStateManager(DebugObject):
 
         initial_state = NodePath("ShadowInitial")
         initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 100000)
-        # initial_state.set_attrib(CullFaceAttrib.make(CullFaceAttrib.M_cull_counter_clockwise), 100000)
-        # initial_state.set_attrib(DepthOffsetAttrib.make(-1), 100000)
         source.node().set_initial_state(initial_state.get_state())
         self._shadow_cameras.append(source)
 

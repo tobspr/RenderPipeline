@@ -18,7 +18,7 @@ class FastText(DebugObject):
     _SUPPORTED_GLYPHS = (string.ascii_letters + string.digits +
                          string.punctuation + " ")
 
-    def __init__(self, font="Data/Font/DebugFont.ttf", pixel_size=16, align="left",
+    def __init__(self, font="Data/Font/Roboto-Medium.ttf", pixel_size=16, align="left",
                  pos=Vec2(0), color=Vec3(1), outline=Vec4(0, 0, 0, 1), parent=None):
         """ Creates a new text instance with the given font and pixel size """
         DebugObject.__init__(self)

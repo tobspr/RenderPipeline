@@ -119,7 +119,7 @@ class OnscreenDebugger(DebugObject):
     def _create_debugger(self):
         """ Creates the debugger contents """
 
-        debugger_opacity = 0.9
+        debugger_opacity = 1.0
 
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_x(-self._debugger_width)
@@ -132,12 +132,12 @@ class OnscreenDebugger(DebugObject):
                                                frameSize=(self._debugger_width,
                                                           0, 0, -1),
                                                pos=(0, 0, 1),
-                                               frameColor=(0.09, 0.09, 0.09, 0*debugger_opacity))
+                                               frameColor=(0.09, 0.09, 0.09, 1*debugger_opacity))
         self._debugger_divider = DirectFrame(parent=self._debugger_node,
                                                frameSize=(self._debugger_width,
                                                           0, 0, -3),
                                                pos=(0, 0, -125),
-                                               frameColor=(0.15, 0.15, 0.15, 0*debugger_opacity))
+                                               frameColor=(0.09, 0.09, 0.09, 1*debugger_opacity))
 
         self._create_debugger_content()
 
@@ -263,7 +263,7 @@ class OnscreenDebugger(DebugObject):
                 Parallel(
                     self._debugger_node.posInterval(
                         0.12, Vec3(-self._debugger_width, 0, 0),
-                        Vec3(40, 0, 0), blendType="easeInOut"),
+                        Vec3(0, 0, 0), blendType="easeInOut"),
                     self._pipeline_logo_text.pos_interval(
                         0.16,
                         self._pipeline_logo_text.get_initial_pos() + Vec3(0, 0, 150),
@@ -284,7 +284,7 @@ class OnscreenDebugger(DebugObject):
                         self._pipeline_logo_text.get_initial_pos() + Vec3(0, 0, 150),
                         blendType="easeInOut"),
                     self._debugger_node.posInterval(
-                        0.12, Vec3(40, 0, 0), Vec3(-self._debugger_width, 0),
+                        0.12, Vec3(0, 0, 0), Vec3(-self._debugger_width, 0),
                         blendType="easeInOut"),
                     self._debugger_bg_bottom.scaleInterval(
                         0.12, Vec3(1, 1, 126), Vec3(1, 1, 1), blendType="easeInOut")

@@ -100,7 +100,7 @@ class ShaderUBO(DebugObject):
 
         # Add actual inputs
         if len(inputs) < 1:
-            self.warn("No UBO inputs")
+            self.warn("No UBO inputs present for", self._name)
         else:
 
             content += "uniform struct {\n"

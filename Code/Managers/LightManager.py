@@ -133,5 +133,5 @@ class LightManager(DebugObject):
         self._final_stage = FinalStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._final_stage)
 
-        self._downscale_z_stage = DownscaleZStage(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(self._downscale_z_stage)
+        # self._downscale_z_stage = DownscaleZStage(self._pipeline)
+        # self._pipeline.get_stage_mgr().add_stage(self._downscale_z_stage)

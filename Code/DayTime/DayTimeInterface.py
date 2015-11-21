@@ -62,13 +62,12 @@ class DayTimeInterface(DebugObject):
                 self.warn("Skipping invalid plugin with id", plugin_id)
                 continue
 
+            # Skip disabled plugins
             plugin_handle = self._interface.get_plugin_handle(plugin_id)
             if not plugin_handle:
-                self.warn("Could not get plugin handle for", plugin_id)
                 continue
 
             plugin_handle.get_config().apply_daytime_curves(cvs)
-
 
     def write_configuration(self):
         """ Writes the time of day configuration """
