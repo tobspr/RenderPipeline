@@ -52,14 +52,15 @@ overrides:
     PSSM.filter_radius: 11.21
     PSSM.filter_sample_count: 30
     PSSM.fixed_bias: 0.3111
-    PSSM.max_distance: 60.0
+    PSSM.logarithmic_factor: 2.73
+    PSSM.max_distance: 135.19999
     PSSM.normal_bias: 0.67
     PSSM.pcss_penumbra_size: 13.0
     PSSM.pcss_search_samples: 15
     PSSM.resolution: 2048
     PSSM.slope_bias: 1.44
     PSSM.split_count: 5
-    PSSM.sun_distance: 100.0
+    PSSM.sun_distance: 870.0
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: False

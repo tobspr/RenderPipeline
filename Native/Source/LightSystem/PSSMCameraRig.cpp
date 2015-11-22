@@ -12,6 +12,7 @@ PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
     _use_fixed_film_size = false;
     _find_tight_frustum = true;
     _use_stable_csm = true;
+    _logarithmic_factor = 1.0;
     _resolution = 512;
     _camera_mvps = PTA_LMatrix4f::empty_array(num_splits);
     _camera_rotations = PTA_float::empty_array(num_splits);
@@ -32,6 +33,11 @@ void PSSMCameraRig::set_pssm_distance(float distance) {
 void PSSMCameraRig::set_sun_distance(float distance) {
     nassertv(distance > 1.0 && distance < 100000.0);
     _sun_distance = distance;
+}
+
+void PSSMCameraRig::set_logarithmic_factor(float factor) {
+    nassertv(factor > 0.0);
+    _logarithmic_factor = factor;
 }
 
 void PSSMCameraRig::set_use_fixed_film_size(bool flag) {
@@ -66,7 +72,7 @@ void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
         Lens *lens = new OrthographicLens();
         lens->set_film_size(1, 1);
         lens->set_near_far(1, 1000);
-        PT(Camera) cam = new Camera("pssm-cam-" + to_string((int)i), lens);
+        PT(Camera) cam = new Camera("pssm-cam-" + to_string( ((long long)i) ), lens);
         _cam_nodes.push_back(NodePath(cam));
         _max_film_sizes[i].set(0, 0);
     }
@@ -93,13 +99,9 @@ LMatrix4f PSSMCameraRig::compute_mvp(int cam_index) {
 }
 
 
-float get_split_start(size_t split_index, size_t max_splits) {
-
-    // Use a pure logarithmic split scheme for now
-    float linear_factor = (float)split_index / (float)max_splits;
-
-    float log_mult = 64.0;
-    return log(1.0 + linear_factor * log_mult) / log(log_mult);
+float PSSMCameraRig::get_split_start(size_t split_index) {
+    float x = (float)split_index / (float)_cam_nodes.size();
+    return (exp(_logarithmic_factor*x)-1) / (exp(_logarithmic_factor)-1);
 }
 
 
@@ -209,13 +211,15 @@ LVecBase3f get_angle_vector(float progress) {
 void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_distance, const LVecBase3f& light_vector) {
     nassertv(!_parent.is_empty());
 
-    // PSSM Distance should be smaller than camera far plane.
+    // PSSM Distance should never be smaller than camera far plane.
     nassertv(max_distance <= 1.0);
+
+    const float filmsize_bias = 1.05;
 
     // Compute the positions of all cameras
     for (size_t i = 0; i < _cam_nodes.size(); ++i) {
-        float split_start = get_split_start(i, _cam_nodes.size()) * max_distance;
-        float split_end = get_split_start(i + 1, _cam_nodes.size()) * max_distance;
+        float split_start = get_split_start(i) * max_distance;
+        float split_end = get_split_start(i + 1) * max_distance;
 
         LVecBase3f start_points[4];
         LVecBase3f end_points[4];
@@ -306,12 +310,12 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
             if (_max_film_sizes[i].get_x() < film_size.get_x()) _max_film_sizes[i].set_x(film_size.get_x());
             if (_max_film_sizes[i].get_y() < film_size.get_y()) _max_film_sizes[i].set_y(film_size.get_y());
 
-            cam->get_lens()->set_film_size(_max_film_sizes[i]);
+            cam->get_lens()->set_film_size(_max_film_sizes[i] * filmsize_bias);
 
         } else {
             
             // Set actual film size
-            cam->get_lens()->set_film_size(film_size);
+            cam->get_lens()->set_film_size(film_size * filmsize_bias);
         }
 
         // Compute new film offset

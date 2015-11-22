@@ -37,6 +37,7 @@ class Plugin(BasePlugin):
         self._rig = PSSMCameraRig(self.get_setting("split_count"))
         self._rig.set_sun_distance(self.get_setting("sun_distance"))
         self._rig.set_pssm_distance(self.get_setting("max_distance"))
+        self._rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
         self._rig.set_use_stable_csm(True)
         self._rig.set_use_fixed_film_size(False)
         self._rig.set_use_tight_frustum(True)
@@ -104,6 +105,10 @@ class Plugin(BasePlugin):
     @SettingChanged("max_distance")
     def update_pssm_distance(self):
         self._rig.set_pssm_distance(self.get_setting("max_distance"))
+
+    @SettingChanged("logarithmic_factor")
+    def update_log_factor(self):
+        self._rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
 
     @SettingChanged("sun_distance")
     def update_sun_distance(self):

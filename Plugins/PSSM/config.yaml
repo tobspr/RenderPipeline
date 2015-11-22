@@ -22,11 +22,24 @@ settings: !!omap
             are rendered. A higher distance means further shadows,
             but also a worse shadow quality.
 
+    - logarithmic_factor:
+        type: float
+        range: [0.01, 3.0]
+        default: 1.0
+        runtime: true
+        shader_runtime: true
+        label: Logarithmic Factor
+        description: >
+            Controls the logarithmic factor of the splitting scheme. Lower
+            values mean a more linear distribution, while higher values will
+            move the splits closer to the camera.
+
     - sun_distance:
         type: float
         range: [100.0, 10000.0]
         default: 500.0
         label: Sun distance
+        runtime: true
         description: >
             This controls how far the sun is away from the scene, to avoid
             clipping objects outside of the frustum which still cast shadows.

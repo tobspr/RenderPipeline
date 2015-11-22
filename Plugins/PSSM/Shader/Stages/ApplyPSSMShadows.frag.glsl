@@ -70,19 +70,21 @@ void main() {
     float shadow_factor = 0.0;
     vec3 lighting_result = vec3(0);
 
-    // Compute split index
-    float depth = texelFetch(GBufferDepth, coord, 0).x;
-    float linear_depth = getLinearZFromZ(depth);
-    // int split = int( log(1 + linear_depth / GET_SETTING(PSSM, max_distance)) * GET_SETTING(PSSM, split_count));
-    float split_count = GET_SETTING(PSSM, split_count);
-    float split_linear = linear_depth / GET_SETTING(PSSM, max_distance);
+    // Find lowest split in range
+    const int split_count = GET_SETTING(PSSM, split_count);
+    int best_split = 999;
+    float border_bias = 1.0 - (1.0 / 1.05);
+    border_bias *= 0.5;
 
-    const float log_mult = 64.0;
-    float split_log = (exp(split_linear * log(log_mult)) - 1.0) / log_mult;
-    int split = int(split_log * split_count);
+    for (int i = 0; i < split_count; ++i) {
+        vec3 coord = project(pssm_mvps[i], m.position);
+        if (coord.x >= border_bias && coord.x <= 1-border_bias && coord.y >= border_bias && coord.y <= 1-border_bias && coord.z >= 0.0 && coord.z <= 1.0) {
+            best_split = i;
+            break;
+        }
+    }
 
-
-
+    int split = best_split;
 
     // Compute the shadowing factor
     // If we are out of the PSSM range:    
@@ -206,9 +208,8 @@ void main() {
     vec3 l = sun_vector;
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
 
-    // lighting_result = vec3(shadow_factor);
     // float factor = float(split) / GET_SETTING(PSSM, split_count);
-    // lighting_result *= vec3(factor, 1 - factor, 0);
+    // lighting_result = (lighting_result+0.01) * vec3(factor, 1 - factor, 0);
 
     result = scene_color + vec4(lighting_result, 0);
 }

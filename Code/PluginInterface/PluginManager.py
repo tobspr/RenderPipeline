@@ -41,6 +41,7 @@ class PluginManager(DebugObject):
 
         setting_name = setting_name.split(".")
         if len(setting_name) != 2:
+            self.warn("Invalid setting change:", setting_name)
             return
 
         plugin_id, setting_id = setting_name
