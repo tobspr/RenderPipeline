@@ -65,10 +65,8 @@ void main() {
     float grain_factor = GET_SETTING(ColorCorrection, film_grain_strength);
     scene_color = mix(scene_color, blended_color, grain_factor);
 
-
     // Apply the vignette based on the vignette strength
     scene_color *= mix(1.0, vignette, GET_SETTING(ColorCorrection, vignette_strength));
-
 
     scene_color = saturate(scene_color);
 

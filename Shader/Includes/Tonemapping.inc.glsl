@@ -80,26 +80,6 @@ vec3 Tonemap_Reinhard(vec3 color)
 }
 
 
-vec3 Tonemap_Reinhard_Luminance(vec3 color) 
-{
-    color *= exposure_adjustment;
-
-    // Reinhard operator in luminosity space
-
-    float white = 0.3;
-    vec3 xyY = rgb_to_xyY(color);
-    
-    // This doesn't work well, it saturates too much
-    // xyY.z = xyY.z / (1.0 + xyY.z);
-
-    // Instead use a white preserving approach
-    xyY.z = xyY.z * (1.0 + xyY.z * (white*white)) / (1.0 + xyY.z);
-
-    vec3 rgb = xyY_to_rgb(xyY);
-
-    return rgb_to_srgb(rgb);
-}
-
 // Optimized version of the Haarm-Peter Duiker’s curve
 vec3 Tonemap_Optimized(vec3 color)
 {
@@ -114,7 +94,6 @@ vec3 Tonemap_Exponential(vec3 color) {
     color = 1.0 - exp( -GET_SETTING(ColorCorrection, exponential_factor) * color);
     return rgb_to_srgb(color);
 }
-
 
 
 

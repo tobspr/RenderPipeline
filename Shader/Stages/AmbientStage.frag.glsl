@@ -154,7 +154,7 @@ void main() {
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
             float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
-            result = vec4(pow(occlusion, 1.5));
+            result = vec4(pow(occlusion, 3.0));
             return;
         #endif
     #endif

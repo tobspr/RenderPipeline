@@ -23,11 +23,13 @@ class MountManager(DebugObject):
         DebugObject.__init__(self)
         self._pipeline = pipeline
         self._write_path = None
-        self._base_path = "."
+        self._base_path = self._find_basepath()
         self._lock_file = "instance.pid"
         self._model_paths = []
         self._mounted = False
         self._do_cleanup = True
+
+        self.debug("Auto-Detected base path to", self._base_path)
 
         atexit.register(self._on_exit_cleanup)
 
@@ -95,6 +97,12 @@ class MountManager(DebugObject):
             # When there is no lockfile, just create it and continue
             self._write_lock()
             return True
+
+    def _find_basepath(self):
+        """ Attempts to find the pipeline base path by looking at the location
+        of this file """
+        pth = os.path.abspath(join(os.path.dirname(os.path.realpath(__file__)), "../.."))
+        return Filename.from_os_specific(pth).get_fullpath()
 
     def _is_pid_running(self, pid):
         """ Checks if a pid is still running """
@@ -211,11 +219,11 @@ class MountManager(DebugObject):
         # #pragma include "something" searches in current directory first,
         # and then on the model-path. Append the Shader directory to the
         # modelpath to ensure the shader includes can be found.
-        base_path = Filename(self._base_path)
-        self._model_paths.append(join(base_path.get_fullpath(), "Shader"))
+        self._model_paths.append(join(self._base_path, "Shader"))
 
         # Add the pipeline root directory to the model path as well
-        self._model_paths.append(base_path.get_fullpath())
+        self._model_paths.append(self._base_path)
+        self._model_paths.append(".")
 
         # Append the write path to the model directory to make pragma include
         # find the ShaderAutoConfig.include
@@ -223,11 +231,12 @@ class MountManager(DebugObject):
 
         # Add the plugins dir to the model path so plugins can include their 
         # own resources more easily
-        self._model_paths.append(join(base_path.get_fullpath(), "Plugins"))
+        self._model_paths.append(join(self._base_path, "Plugins"))
 
         # Write the model paths to the global model path
         for pth in self._model_paths:
             get_model_path().append_directory(pth)
+
 
     def unmount(self):
         """ Unmounts the VFS """

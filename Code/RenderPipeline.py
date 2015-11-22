@@ -4,7 +4,7 @@ import time
 
 from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
 from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f, Texture
-from panda3d.core import RenderState, BitMask32
+from panda3d.core import RenderState, BitMask32, load_prc_file
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -153,6 +153,9 @@ class RenderPipeline(DebugObject):
         # Check if the pipeline was properly installed
         if not isfile("Data/install.flag"):
             self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
+
+        # Load the default prc config
+        load_prc_file("Config/configuration.prc")
 
         # Construct the showbase and init global variables
         ShowBase.__init__(self._showbase)
