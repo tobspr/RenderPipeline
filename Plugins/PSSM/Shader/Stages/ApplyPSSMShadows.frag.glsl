@@ -73,7 +73,16 @@ void main() {
     // Compute split index
     float depth = texelFetch(GBufferDepth, coord, 0).x;
     float linear_depth = getLinearZFromZ(depth);
-    int split = int( log(1 + linear_depth / GET_SETTING(PSSM, max_distance)) * GET_SETTING(PSSM, split_count));
+    // int split = int( log(1 + linear_depth / GET_SETTING(PSSM, max_distance)) * GET_SETTING(PSSM, split_count));
+    float split_count = GET_SETTING(PSSM, split_count);
+    float split_linear = linear_depth / GET_SETTING(PSSM, max_distance);
+
+    const float log_mult = 64.0;
+    float split_log = (exp(split_linear * log(log_mult)) - 1.0) / log_mult;
+    int split = int(split_log * split_count);
+
+
+
 
     // Compute the shadowing factor
     // If we are out of the PSSM range:    

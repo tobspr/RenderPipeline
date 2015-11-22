@@ -20,8 +20,7 @@ settings: !!omap
         description: >
             This controls the maximum distance up to where shadows
             are rendered. A higher distance means further shadows,
-            but also a worse shadow quality. This setting is in logarithmic
-            world-space units. A value of 50 means a maximum distance of 50*(e-1).
+            but also a worse shadow quality.
 
     - sun_distance:
         type: float

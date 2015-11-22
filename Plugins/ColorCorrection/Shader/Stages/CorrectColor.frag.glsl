@@ -10,7 +10,9 @@
 
 in vec2 texcoord;
 uniform sampler2D ShadedScene;
+uniform samplerBuffer ExposureTex;
 uniform vec3 cameraPosition;
+
 
 out vec4 result;
 
@@ -37,6 +39,16 @@ void main() {
         vec3 scene_color = do_chromatic_aberration(ShadedScene, texcoord, 1-vignette);
     #else
         vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
+    #endif
+
+    // Automatic exposure
+    #if GET_SETTING(ColorCorrection, use_auto_exposure)
+        float avg_brightness = texelFetch(ExposureTex, 0).x;
+        float min_exp = GET_SETTING(ColorCorrection, min_exposure);
+        float max_exp = GET_SETTING(ColorCorrection, max_exposure);
+        float bias = GET_SETTING(ColorCorrection, exposure_bias);
+        scene_color *= max(min_exp, min(max_exp, 1.0 / avg_brightness + bias));
+        scene_color = saturate(scene_color);
     #endif
 
     // Select tonemapping operator

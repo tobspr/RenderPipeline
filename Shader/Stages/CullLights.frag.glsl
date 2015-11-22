@@ -91,14 +91,12 @@ void main() {
             visible = isPointLightInFrustum(lightPos, radius, frustum);
         }
 
-
         if (visible) {
             numRenderedLights ++;
             imageStore(perCellLightsBuffer, storageOffs + numRenderedLights, ivec4(i));
         }
-
-
     }
+
     imageStore(perCellLightsBuffer, storageOffs, ivec4(numRenderedLights));
     result = vec4(vec3(idx / 100.0 ), 1.0);
 }

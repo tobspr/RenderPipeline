@@ -17,3 +17,4 @@ class Plugin(BasePlugin):
         get_internal_stage_handle(FinalStage).disable_stage()
 
         self._stage = self.create_stage(ColorCorrectionStage)
+        self._stage.set_use_auto_exposure(self.get_setting("use_auto_exposure"))

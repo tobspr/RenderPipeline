@@ -1,6 +1,6 @@
 
 from panda3d.core import PTAVecBase3f, PTAMat4, Texture, TransformState, Mat4
-from panda3d.core import CSYupRight, CSZupRight
+from panda3d.core import CSYupRight, CSZupRight, PTAFloat
 
 from .Util.DebugObject import DebugObject
 from .Globals import Globals
@@ -39,8 +39,10 @@ class CommonResources(DebugObject):
         self._pta_last_view_proj_mat = PTAMat4.empty_array(1)
         self._pta_view_mat_zup = PTAMat4.empty_array(1)
         self._pta_proj_mat = PTAMat4.empty_array(1)
+        self._pta_frame_delta = PTAFloat.empty_array(1)
 
         stage_mgr = self._pipeline.get_stage_mgr()
+        stage_mgr.add_input("frameDelta", self._pta_frame_delta)
         stage_mgr.add_input("mainCam", self._showbase.cam)
         stage_mgr.add_input("mainRender", self._showbase.render)
         stage_mgr.add_input("cameraPosition", self._pta_camera_pos)
@@ -132,3 +134,5 @@ class CommonResources(DebugObject):
         proj_mat.set_cell(1, 0, 0.0)
         proj_mat.set_cell(1, 1, 0.0)
         self._pta_current_view_proj_mat_nojitter[0] = view_transform.get_mat() * proj_mat
+
+        self._pta_frame_delta[0] = Globals.clock.get_dt()

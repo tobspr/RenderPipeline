@@ -94,13 +94,12 @@ LMatrix4f PSSMCameraRig::compute_mvp(int cam_index) {
 
 
 float get_split_start(size_t split_index, size_t max_splits) {
+
     // Use a pure logarithmic split scheme for now
     float linear_factor = (float)split_index / (float)max_splits;
 
-    // Split is computed as: k = log(linear + 1.0);
-    // Assuming we have k, then we need exp(k) - 1.0
-
-    return exp(linear_factor) - 1.0;
+    float log_mult = 64.0;
+    return log(1.0 + linear_factor * log_mult) / log(log_mult);
 }
 
 

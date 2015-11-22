@@ -127,8 +127,9 @@ settings: !!omap
         default: 11.2
         shader_runtime: true
         label: UC2 Reference White
-        description: Reference White
-
+        description: >
+            Reference White, higher values will produce a darker image, and 
+            vice-versa. This basically just scales the color linear inverse.
 
 
     - vignette_strength:
@@ -186,6 +187,77 @@ settings: !!omap
             Amount of samples to use for blurring the screen edges when using
             chromatic abberation. A higher amount of samples produces a smoother
             blur but also increases the performance cost by a lot.
+
+
+    # Automatic exposure settings
+
+
+    - use_auto_exposure:
+        type: bool
+        default: true
+        label: Enable Automatic Exposure
+        description: >
+            Enables automatic exposure (Also called Retinex Effect), this downscales
+            the scene to get the average brightness, and adjusts the exposure
+            automaticall based on that.
+
+    - min_exposure:
+        display_if: {use_auto_exposure: true}
+        type: float
+        range: [0.001, 1.0]
+        default: 0.01
+        label: Minimum Exposure
+        shader_runtime: true
+        description: >
+            The minimum exposure, this prevents the automatic exposure from overfitting
+            on bright areas
+
+    - max_exposure:
+        display_if: {use_auto_exposure: true}
+        type: float
+        range: [0.2, 10.0]
+        default: 5.0
+        shader_runtime: true
+        label: Maximum Exposure
+        description: >
+            The maximum exposure, this prevents the automatic exposure from overfitting
+            on dark areas.
+
+    - exposure_bias:
+        display_if: {use_auto_exposure: true}
+        type: float
+        range: [-1.0, 1.0]
+        default: 0.0
+        label: Exposure Bias
+        shader_runtime: true
+        description: >
+            This is a fixed value which gets added to the average brightness of the
+            scene. A value greater 0 will decrease the scene brightness, while a value
+            smaller than 0 will increase it.
+
+    - brightness_adaption_rate:
+        display_if: {use_auto_exposure: true}
+        type: float
+        range: [0.01, 5.0]
+        default: 1.0
+        shader_runtime: true
+        label: Brightness Adaption Rate
+        description: >
+            Adaption rate when moving from dark to bright areas.
+            Usually faster (= higher) than the rate when moving from bright to dark areas.
+
+    - darkness_adaption_rate:
+        display_if: {use_auto_exposure: true}
+        type: float
+        range: [0.01, 5.0]
+        default: 0.5
+        shader_runtime: true
+        label: Darkness Adaption Rate
+        description: >
+            Adaption rate when moving from bright to dark areas.
+            Usually slower (= smaller) than the rate when moving from dark to bright areas.
+
+
 
 daytime_settings: !!omap
     
