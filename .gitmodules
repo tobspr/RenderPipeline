@@ -1,3 +1,6 @@
 [submodule "Code/RenderTarget"]
 	path = Code/RenderTarget
 	url = https://github.com/tobspr/RenderTarget
+[submodule "Shader/Includes/ColorSpaces"]
+	path = Shader/Includes/ColorSpaces
+	url = https://github.com/tobspr/GLSL-Color-Spaces
