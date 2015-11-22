@@ -30,7 +30,7 @@ for (int i = 0; i < num_angles; ++i) {
         // Get new texture coordinate
         vec2 texc = texcoord + 
             sample_dir * (k + 0.5 + 0.3 * noise_vec.y) / 
-                num_ray_steps * pixel_size * sample_radius * kernel_scale * 0.1;
+                num_ray_steps * pixel_size * sample_radius * kernel_scale * 0.5;
         
         // Fetch view pos at that position and compare it
         vec3 view_pos = get_view_pos_at(texc);

@@ -78,9 +78,5 @@ vec3 bent_normal = pixel_world_normal;
 // Normalize occlusion factor
 accum /= num_samples;
 
-// Sphere-Line integrals seem to suffer from under-occlusion, so account for that
-// here:
-accum = pow(accum, 3.8);
-
 result = vec4(bent_normal, saturate(accum));
 

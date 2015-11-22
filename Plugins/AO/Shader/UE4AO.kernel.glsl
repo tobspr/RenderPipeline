@@ -21,7 +21,7 @@ float accum_count = 0.0;
 for (int i = 0; i < num_samples; ++i) {
     
     vec2 offset = poisson_disk_2D_32[i] + noise_vec.xy * 0.3;
-    vec2 offcoord = offset * pixel_size * sample_radius * kernel_scale * 0.1;
+    vec2 offcoord = offset * pixel_size * sample_radius * kernel_scale * 0.5;
 
     // Get offset coordinates
     vec2 texc_a = texcoord + offcoord;

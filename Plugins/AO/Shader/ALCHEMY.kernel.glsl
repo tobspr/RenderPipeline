@@ -21,7 +21,7 @@ for (int i = 0; i < num_samples; ++i) {
 
     // Get random texcoord offset
     vec2 offset = poisson_disk_2D_32[i] + noise_vec.xy * 0.1;
-    vec2 offcoord = texcoord + offset * pixel_size * sample_radius * kernel_scale * 0.1;
+    vec2 offcoord = texcoord + offset * pixel_size * sample_radius * kernel_scale * 0.5;
 
     // Get view position at that offset
     vec3 off_pos = get_view_pos_at(offcoord);
