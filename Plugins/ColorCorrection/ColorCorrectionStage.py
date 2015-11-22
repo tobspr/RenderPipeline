@@ -2,7 +2,7 @@
 from __future__ import division
 
 from .. import *
-from panda3d.core import SamplerState, Texture
+from panda3d.core import SamplerState, Texture, Vec4
 
 class ColorCorrectionStage(RenderStage):
 
@@ -43,6 +43,9 @@ class ColorCorrectionStage(RenderStage):
 
             self._tex_exposure = Image.create_buffer("ExposureStorage", 1,
                 Texture.T_float, Texture.F_rgba16)
+
+            self._tex_exposure.set_clear_color(Vec4(0.5))
+            self._tex_exposure.clear_image()
 
             self._target_analyze = self._create_target("AnalyzeBrightness")
             self._target_analyze.set_size(1, 1)

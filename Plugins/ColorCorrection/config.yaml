@@ -204,7 +204,7 @@ settings: !!omap
     - min_exposure:
         display_if: {use_auto_exposure: true}
         type: float
-        range: [0.001, 1.0]
+        range: [0.00001, 1.0]
         default: 0.01
         label: Minimum Exposure
         shader_runtime: true
@@ -215,7 +215,7 @@ settings: !!omap
     - max_exposure:
         display_if: {use_auto_exposure: true}
         type: float
-        range: [0.2, 10.0]
+        range: [0.2, 40.0]
         default: 5.0
         shader_runtime: true
         label: Maximum Exposure
@@ -239,7 +239,7 @@ settings: !!omap
         display_if: {use_auto_exposure: true}
         type: float
         range: [0.01, 5.0]
-        default: 1.0
+        default: 2.0
         shader_runtime: true
         label: Brightness Adaption Rate
         description: >
@@ -250,7 +250,7 @@ settings: !!omap
         display_if: {use_auto_exposure: true}
         type: float
         range: [0.01, 5.0]
-        default: 0.5
+        default: 1.0
         shader_runtime: true
         label: Darkness Adaption Rate
         description: >

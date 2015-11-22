@@ -21,6 +21,7 @@ void main() {
     }
     avg_luminance /= float(texsize.x * texsize.y);
 
+
     // Transition between the last and current value smoothly
     float cur_luminance = imageLoad(ExposureStorage, 0).x;
     float adaption_rate = GET_SETTING(ColorCorrection, brightness_adaption_rate);
