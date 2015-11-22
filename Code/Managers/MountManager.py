@@ -202,8 +202,7 @@ class MountManager(DebugObject):
         # If no write path is specified, use a virtual ramdisk
         if self._write_path is None:
             self.debug("Mounting ramdisk as $$PipelineTemp/")
-            VirtualFileSystem.get_global_ptr().mount(
-                VirtualFileMountRamdisk(), "$$PipelineTemp/", 0)
+            vfs.mount(VirtualFileMountRamdisk(), "$$PipelineTemp/", 0)
         else:
             # In case an actual write path is specified:
             # Ensure the pipeline write path exists, and if not, create it

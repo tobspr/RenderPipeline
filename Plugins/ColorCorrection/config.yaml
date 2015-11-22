@@ -154,6 +154,18 @@ settings: !!omap
             on a film. This is also useful to add some more details to textures, however
             care to not overdo the effect.
 
+
+    # Color LUT
+
+    - color_lut:
+        type: image
+        default: ColorLUT.png    
+        label: Color LUT
+        description: >
+            Specifies a Color LUT (Look-Up-Table) to use. Have a look at the Render Pipeline
+            documentation for further information.
+
+
     # Chromatic aberration
 
     - use_chromatic_aberration:

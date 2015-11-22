@@ -158,3 +158,13 @@ class PluginSettingENUM(BasePluginSetting):
         self.value = val
 
 
+
+class PluginSettingIMAGE(BasePluginSetting):
+        
+    """ Setting which stores a path to an image """
+
+    def load_additional_settings(self, yaml):
+        pass
+
+    def set_value(self, val):
+        self.value = val

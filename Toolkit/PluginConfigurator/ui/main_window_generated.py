@@ -310,7 +310,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "RenderPipeline Plugin Configurator", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Plugin Configurator", None))
         __sortingEnabled = self.lst_plugins.isSortingEnabled()
         self.lst_plugins.setSortingEnabled(False)
         item = self.lst_plugins.item(0)

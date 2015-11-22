@@ -305,7 +305,29 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             layout.addWidget(box)
 
+        elif setting.type == "IMAGE":
+
+            label = QtGui.QLabel()
+            label.setText(setting.value)
+
+            button = QtGui.QPushButton()
+            button.setText("Choose File ...")
+            connect(button, QtCore.SIGNAL("clicked()"), partial(self._choose_image, setting))
+
+            layout.addWidget(label)
+            layout.addWidget(button)
+
         return widget
+
+
+    def _choose_image(self, setting_handle):
+        """ Shows a file chooser to show an image from """
+
+        dialog = QtGui.QFileDialog(self)
+        dialog.setFileMode(dialog.ExistingFile)
+        dialog.setNameFilter("Images (*.png)")
+        dialog.show()
+
 
     def _set_settings_visible(self, flag):
         """ Sets wheter the settings panel is visible or not """

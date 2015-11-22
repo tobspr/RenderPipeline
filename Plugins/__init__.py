@@ -14,9 +14,11 @@ sys.path.insert(0, "../")
 from Code.PluginInterface.BasePlugin import BasePlugin
 from Code.PluginInterface.PluginHook import PluginHook, SettingChanged
 from Code.Util.Image import Image
+from Code.Util.SliceLoader import SliceLoader
 from Code.RenderStage import RenderStage
 from Code.RenderTarget import RenderTarget
 from Code.Globals import Globals
+
 
 # Import all stages as a module, this is used for the get_internal_stage_handle
 from Code.Stages import *

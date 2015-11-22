@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>RenderPipeline Plugin Configurator</string>
+   <string>Plugin Configurator</string>
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
