@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 ####### FIXME: Use debug objects ########
 # from .DebugObject import DebugObject
@@ -110,7 +111,6 @@ class IESProfileLoader():
             print("Unhandled data at file-end left:", new_parts)
 
 
-
         print("Vertical angles range from", vertical_angles[0], "to", vertical_angles[-1])
         print("Horizontal angles range from", horizontal_angles[0], "to", horizontal_angles[-1])
 
@@ -119,20 +119,13 @@ class IESProfileLoader():
         dataset.set_horizontal_angles(self._list_to_pta(horizontal_angles))
         dataset.set_candela_values(self._list_to_pta(candela_values))
 
-
-
-        """
-
         dest = PNMImage(360, 720, 3)
         for horiz_angle in range(720):
             for vert_angle in range(360):
-                value = self._multi_sample_gradient(horizontal_angles, vertical_angles, vertical_values, vert_angle / 2.0, horiz_angle / 2.0)
-                value /= candela_scale
-                # value = math.log(1.0 + 511.0 * value) / math.log(512.0)
+                value = dataset.get_candela_value(vert_angle / 2.0, horiz_angle / 2.0)
                 dest.set_xel(int(vert_angle), int(horiz_angle), value, value, value)
 
         dest.write("IESRaw.png")
-
 
         dest = PNMImage(256, 256)
         for x in range(256):
@@ -146,12 +139,12 @@ class IESProfileLoader():
                 if horiz_angle > 360.0:
                     horiz_angle -= 360.0
                 radius = math.sqrt(local_x * local_x + local_y * local_y) * 2.0
-                value = self._multi_sample_gradient(horizontal_angles, vertical_angles, vertical_values, radius * 90.0, horiz_angle)
-                value /= candela_scale
+                value = dataset.get_candela_value(radius * 90.0, horiz_angle)
                 dest.set_xel(x, y, value, value, value)
+                # dest.set_xel(x, y, horiz_angle / 360.0, 0, 0)
 
         dest.write("IESRadius.png")
-        """
+
 
     def _list_to_pta(self, list_values):
         """ Converts a list to a PTAFloat """
@@ -159,61 +152,6 @@ class IESProfileLoader():
         for i, v in enumerate(list_values):
             pta[i] = v
         return pta
-        
-    def _sample_gradient(self, angles, candelas, angle):
-        """ Samples a dataset with a given angle """
-        # Bounds check
-        if angle < angles[0]:
-            # return candelas[0]
-            return 0.0
-        elif angle >= angles[-1]:
-            # return candelas[-1]
-            return 0.0
-
-        for index, sample_angle in enumerate(angles):
-            if sample_angle > angle:
-                # Found greater angle, smaller angle is the one before
-                prev_angle = angles[index - 1]
-                prev_candela = candelas[index - 1]
-
-                interpolated = (angle - prev_angle) / (sample_angle - prev_angle)
-                interpolated = 1-max(0.0, min(1.0, interpolated))
-
-                return candelas[index] * (1-interpolated) + prev_candela * interpolated
-                
-        return 0.0
-
-    def _multi_sample_gradient(self, horiz_angles, vert_angles, candelas, vert_angle, horiz_angle):
-        """ Samples a nested dataset with a given angle """
-        
-        # Special case for lamps with just 1 horizontal angle
-        if len(horiz_angles) == 1:
-            return self._sample_gradient(vert_angles, candelas[0], vert_angle)
-
-        # Bounds check
-        if horiz_angle < horiz_angles[0]:
-            return 0.0
-
-        horiz_angle = horiz_angle % (2 * horiz_angles[-1])
-
-        if horiz_angle > horiz_angles[-1]:
-            horiz_angle = 2*horiz_angles[-1] - horiz_angle
-
-
-        for index, sample_angle in enumerate(horiz_angles):
-            if sample_angle >= horiz_angle:
-                # Found greater angle, smaller angle is the one before
-                prev_angle = horiz_angles[index - 1]
-                prev_candela = self._sample_gradient(vert_angles, candelas[index - 1], vert_angle)
-                curr_candela = self._sample_gradient(vert_angles, candelas[index], vert_angle)
-
-                interpolated = (horiz_angle - prev_angle) / (sample_angle - prev_angle)
-                interpolated = 1-max(0.0, min(1.0, interpolated))
-
-                return curr_candela * (1-interpolated) + prev_candela * interpolated
-                
-        return 0.0
-
 
     def _check_version_header(self, first_line):
         """ Checks if the IES version header is correct and the specified IES
@@ -252,4 +190,4 @@ class IESProfileLoader():
 if __name__ == "__main__":
 
     loader = IESProfileLoader()
-    loader.load("../../Data/IESProfiles/ScatterLight.ies")
+    loader.load("../../Data/IESProfiles/MediumScatter.ies")

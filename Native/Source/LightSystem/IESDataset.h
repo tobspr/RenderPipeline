@@ -14,9 +14,13 @@ class IESDataset {
         void set_horizontal_angles(const PTA_float &horizontal_angles);
 		void set_candela_values(const PTA_float &candela_values);
 
+
+        float get_candela_value(float vertical_angle, float horizontal_angle);
+
     protected:
 
-		float get_candela_value(size_t vertical_angle_idx, size_t horizontal_angle_idx);
+		float get_candela_value_from_index(size_t vertical_angle_idx, size_t horizontal_angle_idx);
+        float get_vertical_candela_value(size_t horizontal_angle_idx, float vertical_angle);
 
         PTA_float _vertical_angles;
         PTA_float _horizontal_angles;
