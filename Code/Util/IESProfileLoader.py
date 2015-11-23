@@ -12,7 +12,7 @@ from Native import *
 import re
 import math
 
-from panda3d.core import PNMImage, PTAFloat
+from panda3d.core import PNMImage, PTAFloat, Texture
 from direct.stdpy.file import open, isfile
 
 class IESLoadException(Exception):
@@ -119,6 +119,7 @@ class IESProfileLoader():
         dataset.set_horizontal_angles(self._list_to_pta(horizontal_angles))
         dataset.set_candela_values(self._list_to_pta(candela_values))
 
+        """
         dest = PNMImage(360, 720, 3)
         for horiz_angle in range(720):
             for vert_angle in range(360):
@@ -144,7 +145,14 @@ class IESProfileLoader():
                 # dest.set_xel(x, y, horiz_angle / 360.0, 0, 0)
 
         dest.write("IESRadius.png")
+        """
 
+        tex = Texture("temp")
+        tex.setup_3d_texture(360, 720, 1, Texture.T_float, Texture.F_r16)
+
+        dataset.generate_dataset_texture_into(tex, 0, 360, 720)
+
+        tex.write("generated.png")
 
     def _list_to_pta(self, list_values):
         """ Converts a list to a PTAFloat """

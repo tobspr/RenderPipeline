@@ -3,6 +3,7 @@
 #include "pandabase.h"
 #include "pta_float.h"
 #include "pointerToArray.h"
+#include "texture.h"
 
 class IESDataset {
 
@@ -16,6 +17,8 @@ class IESDataset {
 
 
         float get_candela_value(float vertical_angle, float horizontal_angle);
+
+        void generate_dataset_texture_into(Texture* dest_tex, int z, int resolution_vertical, int resolution_horizontal);
 
     protected:
 
