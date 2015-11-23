@@ -2,10 +2,16 @@
 ####### FIXME: Use debug objects ########
 # from .DebugObject import DebugObject
 
+
+import sys
+sys.path.insert(0, "../")
+
+from Native import *
+
 import re
 import math
 
-from panda3d.core import PNMImage
+from panda3d.core import PNMImage, PTAFloat
 from direct.stdpy.file import open, isfile
 
 class IESLoadException(Exception):
@@ -89,13 +95,16 @@ class IESProfileLoader():
         vertical_angles = [read_float() for i in range(num_vertical_angles)]
         horizontal_angles = [read_float() for i in range(num_horizontal_angles)]
 
-        vertical_values = []
+        candela_values = []
         candela_scale = 0.0
 
         for i in range(num_horizontal_angles):
             vertical_data = [read_float() for i in range(num_vertical_angles)]  
             candela_scale = max(candela_scale, max(vertical_data))
-            vertical_values.append(vertical_data)
+            candela_values += vertical_data
+
+        # Rescale values
+        candela_values = [i / candela_scale for i in candela_values]
 
         if len(new_parts) != 0:
             print("Unhandled data at file-end left:", new_parts)
@@ -105,6 +114,14 @@ class IESProfileLoader():
         print("Vertical angles range from", vertical_angles[0], "to", vertical_angles[-1])
         print("Horizontal angles range from", horizontal_angles[0], "to", horizontal_angles[-1])
 
+        dataset = IESDataset()
+        dataset.set_vertical_angles(self._list_to_pta(vertical_angles))
+        dataset.set_horizontal_angles(self._list_to_pta(horizontal_angles))
+        dataset.set_candela_values(self._list_to_pta(candela_values))
+
+
+
+        """
 
         dest = PNMImage(360, 720, 3)
         for horiz_angle in range(720):
@@ -134,9 +151,15 @@ class IESProfileLoader():
                 dest.set_xel(x, y, value, value, value)
 
         dest.write("IESRadius.png")
+        """
 
-
-
+    def _list_to_pta(self, list_values):
+        """ Converts a list to a PTAFloat """
+        pta = PTAFloat.empty_array(len(list_values))
+        for i, v in enumerate(list_values):
+            pta[i] = v
+        return pta
+        
     def _sample_gradient(self, angles, candelas, angle):
         """ Samples a dataset with a given angle """
         # Bounds check
@@ -167,14 +190,9 @@ class IESProfileLoader():
         if len(horiz_angles) == 1:
             return self._sample_gradient(vert_angles, candelas[0], vert_angle)
 
-        # if horiz_angle >= 180:
-            # horiz_angle = 360.0 - horiz_angle
-
         # Bounds check
         if horiz_angle < horiz_angles[0]:
             return 0.0
-        # elif horiz_angle > horiz_angles[-1]:
-            # return 0.0
 
         horiz_angle = horiz_angle % (2 * horiz_angles[-1])
 

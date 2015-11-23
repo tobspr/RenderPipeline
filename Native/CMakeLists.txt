@@ -3,10 +3,10 @@
 cmake_minimum_required (VERSION 2.6)
 project (RSNative)
 set(CMAKE_BUILD_TYPE "Release")
+set(PYTHON_EXECUTABLE CACHE STRING "python")
 
 if (WIN32)
 
-  set(PYTHON_EXECUTABLE CACHE STRING "python")
   
   # Find panda path
   EXECUTE_PROCESS(
@@ -33,7 +33,7 @@ if (WIN32)
   set(EIGEN_INCLUDE_DIRS "${THIRDPARTY_DIR}/eigen/include")
 
   # Check if all supplied files exist
-  set(CHECK_PATHS ${PANDA_BIN} ${PANDA_LIBRARY_DIRS} ${PANDA_INCLUDE_DIR} ${PYTHON_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${THIRDPARTY_DIR})
+  set(CHECK_PATHS ${PANDA_BIN} ${PANDA_LIBRARY_DIRS} ${PANDA_INCLUDE_DIR} ${PYTHON_LIBRARIES} ${PYTHON_INCLUDE_DIRS})
   foreach(PATH ${CHECK_PATHS})
     if(NOT (EXISTS "${PATH}"))
         message(FATAL_ERROR "The supplied path '${PATH}' could not be found!")
@@ -111,9 +111,6 @@ set(SOURCES ${SOURCES_H} ${SOURCES})
 
 # Optimizations
 IF(MSVC)
-    # sse2 is faster
-    ADD_DEFINITIONS("/arch:SSE2")
-
     # ADD_DEFINITIONS("/Ox")
     ADD_DEFINITIONS("/Ot")
     ADD_DEFINITIONS("/fp:fast")

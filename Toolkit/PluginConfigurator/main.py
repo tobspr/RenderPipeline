@@ -319,15 +319,11 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         return widget
 
-
     def _choose_image(self, setting_handle):
         """ Shows a file chooser to show an image from """
 
-        dialog = QtGui.QFileDialog(self)
-        dialog.setFileMode(dialog.ExistingFile)
-        dialog.setNameFilter("Images (*.png)")
-        dialog.show()
-
+        filename = QtGui.QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.png)")
+        print("Filename =", filename)
 
     def _set_settings_visible(self, flag):
         """ Sets wheter the settings panel is visible or not """
