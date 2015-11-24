@@ -22,21 +22,16 @@ float computePointLightAttenuation(float r, float d) {
 } 
 
 // @TODO: Make this method faster
-vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, float shadow, vec4 directional_occlusion) {
+vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion) {
 
     // Debug: Fast rendering path
     // return max(0, dot(m.normal, l)) * lightColor * attenuation * m.diffuse;
 
-    float scaled_roughness = ConvertRoughness(m.roughness);
     vec3 shadingResult = vec3(0);
         
     // Skip shadows
     if (shadow < 0.001) 
         return shadingResult;
-
-    // vec3 specularColor = mix(vec3(0), m.diffuse, m.specular);
-    vec3 specularColor = mix(vec3(1), m.diffuse * 2.0, m.metallic) * lightColor;
-    vec3 diffuseColor = mix(m.diffuse, vec3(0), m.metallic);
 
     vec3 n = m.normal;
     vec3 h = normalize(l + v);
@@ -44,26 +39,29 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 lightColor, float attenuation, 
     // Precomputed dot products
     float NxL = max(0, dot(n, l));
     float LxH = max(0, dot(l, h));
-    float NxV = abs(dot(n, v)) + 1e-7;
+    float NxV = max(0, dot(n, v)) + 1e-7;
     float NxH = max(0, dot(n, h));
     float VxH = max(0, dot(v, h));
 
     // Diffuse contribution
-    shadingResult = BRDFDiffuseNormalized(NxV, NxL, LxH, scaled_roughness) * NxL * lightColor * diffuseColor / M_PI;
+    shadingResult = NxL * m.diffuse;
 
     // Specular contribution
-    float distribution = BRDFDistribution_GGX(NxH, scaled_roughness);
-    float visibility = BRDFVisibilitySmithGGX(NxL, NxV, scaled_roughness);
-    vec3 fresnel = BRDFSchlick( specularColor, VxH, scaled_roughness) * NxL * NxV / M_PI;
+    float distribution = BRDFDistribution_GGX(NxH, m.roughness);
+    float visibility = BRDFVisibilitySmithGGX(NxL, NxV, m.roughness);
+    float fresnel = saturate(pow(NxV, 5.0)); // Simplified schlick
 
-    shadingResult += (distribution * visibility * fresnel) * NxL  * NxV * lightColor / (9.0 * M_PI);
+    shadingResult += (distribution * visibility * fresnel) * m.specular;
 
-    // Special case for DSSDO
+    // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
+
+        // Compute lighting for bent normal
         float occlusion_factor = saturate(dot(vec4(l, 1), directional_occlusion));
         occlusion_factor = pow(occlusion_factor, 3.0);
         shadingResult *= occlusion_factor;
+    
     #endif
 
-    return shadingResult * attenuation * shadow;
+    return shadingResult * light_color * attenuation * shadow;
 }

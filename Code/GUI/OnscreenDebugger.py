@@ -166,8 +166,7 @@ class OnscreenDebugger(DebugObject):
 
         render_modes = [
             ("Default", ""),
-            ("Metallic", "METALLIC"),
-            ("BaseColor", "BASECOLOR"),
+            ("Diffuse", "DIFFUSE"),
             ("Roughness", "ROUGHNESS"),
             ("Specular", "SPECULAR"),
             ("Normal", "NORMAL"),

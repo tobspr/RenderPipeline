@@ -11,11 +11,6 @@ http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbit
 */
 
 
-float ConvertRoughness(float roughness) {
-    return saturate(pow(roughness, 2.0) + 0.003);
-}
-
-
 vec3 BRDFLambert(vec3 diffuse, float NxL) {
     return (diffuse * NxL) / M_PI;
 }
@@ -41,6 +36,17 @@ float BRDFDistribution_GGX(float NxH , float roughness)
     float r_sq = roughness * roughness;
     float f = (NxH * r_sq - NxH) * NxH + 1;
     return r_sq / (f * f);
+
+    /*
+
+    TODO: Evaluate if this is better / worse
+    float NoH = dot(n,h);
+    float alpha2 = alpha * alpha;
+    float NoH2 = NoH * NoH;
+    float den = NoH2 * alpha2 + (1 - NoH2);
+    return ( (NoH > 0.0 ? 1.0 : 0.0) * alpha2) / ( PI * den * den );
+
+    */
 }
 
 float BRDFGeometricVisibility_CookTorrance(float NxL, float NxV, float NxH, float VxH) {
@@ -52,18 +58,6 @@ float BRDFGeometricVisibility_CookTorrance(float NxL, float NxV, float NxH, floa
     return min(1.0, min(eq_nv, eq_nl));
 }
 
-
-
-float BRDFDiffuseNormalized(float NxV, float NxL, float LxH, float roughness )
-{
-    float energyBias = mix(0.0, 0.5, roughness);
-    float energyFactor = mix(1.0, 1.0 / 1.51, roughness);
-    float fd90 = energyBias + 2.0 * LxH * LxH * roughness;
-    vec3 f0 = vec3(1.0);
-    float lightScatter = BRDFSchlick(f0, fd90, NxL).x;
-    float viewScatter = BRDFSchlick(f0, fd90, NxV).x;
-    return lightScatter * viewScatter * energyFactor;
-}
 
 float BRDFVisibilitySmithGGX(float NxL, float NxV, float roughness) {
     float rough_sq = roughness * roughness;
@@ -80,19 +74,8 @@ float BRDFDistribution(float NxH, float roughness)
     return BRDFDistribution_GGX(NxH, roughness);
 }
 
-
-
-// No mathematical background, I just matched this to fit the mitsuba
-// pathtracing renderings
+// Schlick-Approximation
 vec3 BRDFEnvironment( vec3 specular_color, float roughness, float NxV )
 {
-    float r_sqrt = sqrt(roughness);
-
-    roughness = 0.1;
-    float fresnel_5 = (pow(NxV, 4.0 - 4.0 * r_sqrt ));
-
-    float constant_factor = 0.001;
-    float fresnel_factor = 0.25 * saturate(1 - 1.75 * r_sqrt);
-
-    return specular_color * fresnel_5 * fresnel_factor + constant_factor;
+    return mix(specular_color, vec3(1), pow(NxV, 5.0) * (1-roughness));
 }

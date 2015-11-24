@@ -3,11 +3,8 @@
 #pragma include "Includes/Configuration.inc.glsl"
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
-
 in vec4 p3d_Vertex;
-
 uniform isamplerBuffer CellListBuffer;
-
 
 void main() {
     int numTotalCells = texelFetch(CellListBuffer, 0).x;

@@ -9,21 +9,18 @@
 #pragma include "Includes/LightCulling.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/LightingPipeline.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 
 in vec2 texcoord;
 out vec4 result;
 
-uniform sampler2D GBufferDepth;
-
-uniform sampler2D GBuffer0;
-uniform sampler2D GBuffer1;
-uniform sampler2D GBuffer2;
+uniform GBufferData GBuffer;
 
 void main() {    
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    float depth = texelFetch(GBufferDepth, coord, 0).x;
+    float depth = get_gbuffer_depth(GBuffer, coord);
+
     ivec3 tile = getCellIndex(coord, depth);
 
     if (tile.z >= LC_TILE_SLICES) {
@@ -31,30 +28,27 @@ void main() {
         return;
     }
 
-    Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
-
+    Material m = unpack_material(GBuffer);
     result.xyz = shade_material_from_tile_buffer(m, tile);
     result.w = 1.0;
 
-    #if MODE_ACTIVE(METALLIC)
-        result.xyz = vec3(m.metallic);
-    #endif
+    /*
+    
+    Various debugging modes for previewing materials
+    
+    */
 
-
-    #if MODE_ACTIVE(BASECOLOR)
+    #if MODE_ACTIVE(DIFFUSE)
         result.xyz = vec3(m.diffuse);
     #endif
-
 
     #if MODE_ACTIVE(ROUGHNESS)
         result.xyz = vec3(m.roughness);
     #endif
 
-
     #if MODE_ACTIVE(SPECULAR)
         result.xyz = vec3(m.specular);
     #endif
-
 
     #if MODE_ACTIVE(NORMAL)
         result.xyz = vec3(m.normal * 0.5 + 0.5);

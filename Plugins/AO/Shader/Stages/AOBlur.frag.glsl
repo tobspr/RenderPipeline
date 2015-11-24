@@ -3,19 +3,18 @@
 #pragma optionNV (unroll all)
 
 #pragma include "Includes/Configuration.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 
 uniform ivec2 blur_direction;
 uniform sampler2D SourceTex;
-uniform sampler2D GBuffer1;
-uniform sampler2D GBufferDepth;
+uniform GBufferData GBuffer;
 
 out vec4 result;
 
 
 float get_lin_z(ivec2 ccoord) {
-    return getLinearZFromZ(texelFetch(GBufferDepth, ccoord, 0).x);
+    return getLinearZFromZ(get_gbuffer_depth(GBuffer, ccoord));
 }
 
 void do_blur(ivec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth, inout vec4 accum, inout float accum_w) {
@@ -25,7 +24,7 @@ void do_blur(ivec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth
     // contains new information
     ivec2 offcord = coord + i * blur_direction * 1;
     vec4 sampled = texelFetch(SourceTex, offcord, 0);
-    vec3 nrm = get_gbuffer_normal(GBuffer1, offcord);
+    vec3 nrm = get_gbuffer_normal(GBuffer, offcord);
     float d = get_lin_z(offcord);
 
     weight *= 1.0 - saturate(GET_SETTING(AO, blur_normal_factor) * distance(nrm, pixel_nrm));
@@ -58,7 +57,7 @@ void main() {
         0.003924
     );
 
-    vec3 pixel_nrm = get_gbuffer_normal(GBuffer1, coord);
+    vec3 pixel_nrm = get_gbuffer_normal(GBuffer, coord);
     float pixel_depth = get_lin_z(coord);
 
     for (int i = 0; i < blur_size; ++i) {

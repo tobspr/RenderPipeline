@@ -2,7 +2,7 @@
 from direct.stdpy.file import open
 
 from ..Util.DebugObject import DebugObject
-from ..Util.ShaderUBO import ShaderUBO
+from ..Util.ShaderUBO import PTABasedUBO
 from .DayTimeInterface import DayTimeInterface
 
 class DayTimeManager(DebugObject):
@@ -16,7 +16,7 @@ class DayTimeManager(DebugObject):
             self._pipeline.get_plugin_mgr().get_interface())
         self._interface.set_base_dir(".")
         self._settings = {}
-        self._ubo = ShaderUBO("TimeOfDay")
+        self._ubo = PTABasedUBO("TimeOfDay")
         self._daytime = 0.5
 
     def load_settings(self):

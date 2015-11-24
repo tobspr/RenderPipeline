@@ -4,25 +4,31 @@ from panda3d.core import DepthTestAttrib
 
 from ..RenderStage import RenderStage
 from ..Globals import Globals
-
+from ..Util.ShaderUBO import SimpleUBO
 
 class GBufferStage(RenderStage):
 
     """ This is the main pass stage, rendering the objects and creating the
     GBuffer which is used in later stages """
 
-    required_inputs = ["currentViewProjMat", "lastViewProjMatNoJitter", "cameraPosition", "currentViewProjMatNoJitter"]
+    required_inputs = ["currentViewProjMat", "lastViewProjMatNoJitter", 
+                       "cameraPosition", "currentViewProjMatNoJitter"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "GBufferStage", pipeline)
 
     def get_produced_pipes(self):
         return {
-            "GBufferDepth": self._target['depth'],
-            "GBuffer0": self._target['color'],
-            "GBuffer1": self._target['aux0'],
-            "GBuffer2": self._target['aux1'],
+            "GBuffer": self._make_gbuffer_ubo()
         }
+
+    def _make_gbuffer_ubo(self):
+        ubo = SimpleUBO("GBuffer")
+        ubo.add_input("Depth", self._target["depth"])
+        ubo.add_input("Data0", self._target["color"])
+        ubo.add_input("Data1", self._target["aux0"])
+        ubo.add_input("Data2", self._target["aux1"])
+        return ubo
 
     def create(self):
         early_z = False

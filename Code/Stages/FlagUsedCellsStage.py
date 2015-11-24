@@ -9,7 +9,7 @@ class FlagUsedCellsStage(RenderStage):
 
     """ This stage flags all used cells based on the depth buffer """
 
-    required_pipes = ["GBufferDepth"]
+    required_pipes = ["GBuffer"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "FlagUsedCellsStage", pipeline)

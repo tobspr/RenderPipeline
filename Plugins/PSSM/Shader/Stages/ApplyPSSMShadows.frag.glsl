@@ -4,17 +4,14 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 #pragma include "Includes/LightingPipeline.inc.glsl"
 #pragma include "Includes/PoissonDisk.inc.glsl"
 #pragma include "Includes/Shadows.inc.glsl"
 
 out vec4 result;
 
-uniform sampler2D GBufferDepth;
-uniform sampler2D GBuffer0;
-uniform sampler2D GBuffer1;
-uniform sampler2D GBuffer2;
+uniform GBufferData GBuffer;
 uniform sampler2D ShadedScene;
 
 #if GET_SETTING(PSSM, use_pcf)
@@ -50,7 +47,7 @@ void main() {
             TimeOfDay.Scattering.sun_azimuth,
             TimeOfDay.Scattering.sun_altitude);
         vec3 sun_color = TimeOfDay.Scattering.sun_color * 
-            TimeOfDay.Scattering.sun_intensity * 0.6;
+            TimeOfDay.Scattering.sun_intensity * 0.5;
     #else
         vec3 sun_vector = normalize(pssm_sun_vector);
         vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
@@ -64,7 +61,7 @@ void main() {
     vec2 noise_vec = poisson_disk_2D_32[coord.x%4 + (coord.y%4)*4];
 
     // Get the material data
-    Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
+    Material m = unpack_material(GBuffer);
 
     // Variables to accumulate the shadows
     float shadow_factor = 0.0;

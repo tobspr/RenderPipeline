@@ -1,7 +1,6 @@
 #version 430
 
 #pragma include "Includes/Configuration.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
 
 
 in vec2 texcoord;

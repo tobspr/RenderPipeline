@@ -4,7 +4,7 @@
 #pragma include "Includes/GBufferPacking.inc.glsl"
 
 
-uniform sampler2D GBuffer2;
+uniform GBufferData GBuffer;
 uniform sampler2D CurrentTex;
 uniform sampler2D LastTex;
 
@@ -16,11 +16,10 @@ void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    vec2 velocity = get_velocity(GBuffer2, coord);
+    vec2 velocity = get_gbuffer_velocity(GBuffer, coord);
     vec2 old_coord = texcoord - velocity;
     vec4 current_color = texture(CurrentTex, texcoord);
     vec4 last_color = texture(LastTex, old_coord);
-
 
 
     // Blend the pixels according to the calculated weight:

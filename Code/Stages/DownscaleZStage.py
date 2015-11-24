@@ -11,7 +11,7 @@ class DownscaleZStage(RenderStage):
 
     """ This stage downscales the z buffer """
 
-    required_pipes = ["GBufferDepth"] 
+    required_pipes = ["GBuffer"] 
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "DownscaleZStage", pipeline)

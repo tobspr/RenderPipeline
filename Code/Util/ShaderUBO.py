@@ -3,12 +3,45 @@ from panda3d.core import PTAFloat, PTALVecBase3f
 
 from .DebugObject import DebugObject
 
-class ShaderUBO(DebugObject):
 
-    """ Interface to shader uniform blocks """
+
+class BaseUBO(DebugObject):
+    """ Base class for UBO's """
+
+    def __init__(self):
+        DebugObject.__init__(self)
+
+
+class SimpleUBO(BaseUBO):
+
+    """ Simplest possible uniform buffer which just stores a set of values """
 
     def __init__(self, name):
-        DebugObject.__init__(self)
+        BaseUBO.__init__(self)
+        self._inputs = {}
+        self._name = name
+
+    def add_input(self, name, value):
+        """ Adds a new input to the UBO """
+        self._inputs[name] = value
+
+    def get_name(self):
+        """ Returns the name of the UBO """
+        return self._name
+
+    def bind_to(self, target):
+        """ Binds the UBO to a target """
+        for key, val in self._inputs.items():
+            target.set_shader_input(self._name + "." + key, val)
+
+
+class PTABasedUBO(BaseUBO):
+
+    """ Interface to shader uniform blocks, using PTA's to efficiently store
+    and update values. """
+
+    def __init__(self, name):
+        BaseUBO.__init__(self)
         self._ptas = {}
         self._name = name
 

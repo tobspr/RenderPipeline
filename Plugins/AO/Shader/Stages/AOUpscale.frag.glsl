@@ -4,13 +4,12 @@
 #pragma optionNV (unroll all)
 
 #pragma include "Includes/Configuration.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 
 out vec4 result;
 
 uniform sampler2D SourceTex;
-uniform sampler2D GBufferDepth;
-uniform sampler2D GBuffer1;
+uniform GBufferData GBuffer;
 
 void main() {
     
@@ -19,8 +18,8 @@ void main() {
     ivec2 bil_start_coord = get_bilateral_coord(coord);
     
     // Get current pixel data
-    float mid_depth = texelFetch(GBufferDepth, coord, 0).x;
-    vec3 mid_nrm = get_gbuffer_normal(GBuffer1, coord);
+    float mid_depth = get_gbuffer_depth(GBuffer, coord);
+    vec3 mid_nrm = get_gbuffer_normal(GBuffer, coord);
 
     const float max_depth_diff = 0.0006;
     const float max_nrm_diff = 0.002;
@@ -42,8 +41,8 @@ void main() {
             // those pixels share, and if it is enough, use that sample
             if (screen_coord != coord) {
 
-                float sample_depth = texelFetch(GBufferDepth, screen_coord, 0).x;
-                vec3 sample_nrm = get_gbuffer_normal(GBuffer1, screen_coord);
+                float sample_depth = get_gbuffer_depth(GBuffer, screen_coord);
+                vec3 sample_nrm = get_gbuffer_normal(GBuffer, screen_coord);
                 float depth_diff = abs(sample_depth - mid_depth) / max_depth_diff;
                 float nrm_diff = max(0, dot(sample_nrm, mid_nrm));
                 weight *= 1.0 - saturate(depth_diff);

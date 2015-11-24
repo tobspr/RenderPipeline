@@ -9,8 +9,8 @@
 enabled: 
     - Scattering
     - ColorCorrection
-    - PSSM
     - SMAA
+    - PSSM
     - AO
 
 overrides: 
@@ -40,18 +40,19 @@ overrides:
     ColorCorrection.chromatic_aberration_samples: 2
     ColorCorrection.chromatic_aberration_strength: 0.42
     ColorCorrection.darkness_adaption_rate: 0.9
-    ColorCorrection.exponential_factor: 0.5
+    ColorCorrection.exponential_factor: 0.3
     ColorCorrection.exposure_bias: 0.0
     ColorCorrection.film_grain_strength: 0.125
-    ColorCorrection.max_exposure: 40.0
-    ColorCorrection.min_exposure: 0.01
+    ColorCorrection.max_exposure: 2.0
+    ColorCorrection.min_exposure: 0.0778
     ColorCorrection.reinhard_version: rgb
-    ColorCorrection.tonemap_operator: exponential
+    ColorCorrection.tonemap_operator: uncharted2
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22
     ColorCorrection.uc2t_toe_denumerator: 0.3
     ColorCorrection.uc2t_toe_numerator: 0.01
     ColorCorrection.uc2t_toe_strength: 0.2
+    ColorCorrection.use_auto_exposure: False
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.vignette_strength: 0.2
     PSSM.filter_radius: 11.21

@@ -115,7 +115,7 @@ void IESDataset::generate_dataset_texture_into(Texture* dest_tex, int z, int res
 
     // Candla values are stored flippped - vertical angles in the x - Axis
     // and horizontal angles in the y - Axis
-    PNMImage dest = PNMImage(resolution_vertical, resolution_horizontal, 1, (2<<16) - 1);
+    PNMImage dest = PNMImage(resolution_vertical, resolution_horizontal, 1, 65535);
     
     for (size_t vert = 0; vert < resolution_vertical; ++vert) {
         for (size_t horiz = 0; horiz < resolution_horizontal; ++horiz) {

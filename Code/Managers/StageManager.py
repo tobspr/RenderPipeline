@@ -8,6 +8,7 @@ from ..Globals import Globals
 from ..GUI.PipeViewer import PipeViewer
 from ..Util.DebugObject import DebugObject
 from ..Util.Image import Image
+from ..Util.ShaderUBO import BaseUBO
 
 from ..Stages.UpdatePreviousPipesStage import UpdatePreviousPipesStage
 
@@ -117,6 +118,11 @@ class StageManager(DebugObject):
             # Check if all pipes are available, and set them
             for pipe in stage.get_input_pipes():
 
+
+                if pipe in self._ubos:
+                    self._ubos[pipe].bind_to(stage)
+                    continue
+
                 if pipe.startswith("PreviousFrame::"):
                     # Special case: Pipes from the previous frame. We assume those
                     # pipes have the same size as the window and a format of
@@ -153,13 +159,17 @@ class StageManager(DebugObject):
                     stage.set_shader_input(input_binding,
                                            self._inputs[input_binding])
                 elif input_binding in self._ubos:
-                    ubo = self._ubos[input_binding]
-                    ubo.bind_to(stage)
+                    self._ubos[input_binding].bind_to(stage)
                 else:
                     assert False
 
             # Register all the new pipes, inputs and defines
             for pipe_name, pipe_data in list(stage.get_produced_pipes().items()):
+                # Check for UBO's
+                if isinstance(pipe_data, BaseUBO):
+                    self._ubos[pipe_name] = pipe_data
+                    continue
+
                 self._pipes[pipe_name] = pipe_data
 
             for define_name, data in list(stage.get_produced_defines().items()):
@@ -170,6 +180,12 @@ class StageManager(DebugObject):
             for input_name, data in list(stage.get_produced_inputs().items()):
                 if input_name in self._inputs:
                     self.warn("Stage", stage, "overrides input", input_name)
+
+                # Check for UBO's
+                if isinstance(data, BaseUBO):
+                    self._ubos[input_name] = data
+                    continue
+
                 self._inputs[input_name] = data
 
         # Finally create the stage which stores all the current pipes in the 

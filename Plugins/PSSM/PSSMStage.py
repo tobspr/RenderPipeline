@@ -6,8 +6,7 @@ class PSSMStage(RenderStage):
     """ This stage uses the PSSM Shadow map to render the shadows """
 
     required_inputs = ["mainCam", "mainRender", "cameraPosition", "TimeOfDay"]
-    required_pipes = ["ShadedScene", "PSSMShadowAtlas", "GBufferDepth", 
-                      "GBuffer0", "GBuffer1", "GBuffer2", "PSSMShadowAtlasPCF"]
+    required_pipes = ["ShadedScene", "PSSMShadowAtlas", "GBuffer", "PSSMShadowAtlasPCF"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "PSSMStage", pipeline)

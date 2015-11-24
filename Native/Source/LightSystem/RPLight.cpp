@@ -1,7 +1,6 @@
 
 #include "RPLight.h"
 
-// TypeHandle RPLight::_type_handle;
 
 RPLight::RPLight(LightType light_type) {
     _light_type = light_type;
@@ -19,3 +18,7 @@ void RPLight::write_to_command(GPUCommand &cmd) {
     cmd.push_vec3(_color);
 }
 
+
+RPLight::~RPLight() {
+    // Default ctor, for now
+}

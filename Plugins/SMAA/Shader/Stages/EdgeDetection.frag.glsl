@@ -1,9 +1,11 @@
 #version 400
 
+#pragma include "Includes/Configuration.inc.glsl"
 
 #pragma include "../SMAAWrap.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 
-uniform sampler2D GBufferDepth;
+uniform GBufferData GBuffer;
 uniform sampler2D ShadedScene;
 uniform sampler2D SRGBSource;
 uniform sampler2D PredicationSource;
@@ -21,10 +23,10 @@ void main() {
     result = vec4(0);
 
     #if SMAA_PREDICATION
-        // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBufferDepth);
+        // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
         result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, SRGBSource, PredicationSource);
     #else
-        // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBufferDepth);
+        // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
         result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, SRGBSource);
     #endif
 

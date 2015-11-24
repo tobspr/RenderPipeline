@@ -25,7 +25,8 @@ class Plugin(BasePlugin):
         self._load_lut()
 
     def _load_lut(self):
-        lut_path = self.get_resource("ShiftedLUT.png")
+        # lut_path = self.get_resource("ShiftedLUT.png")
+        lut_path = self.get_resource("DefaultLUT.png")
         lut = SliceLoader.load_3d_texture(lut_path, 64)
         lut.set_wrap_u(Texture.WM_clamp)
         lut.set_wrap_v(Texture.WM_clamp)

@@ -13,7 +13,7 @@
 layout(location=0) in VertexOutput vOutput;
 
 // Late include of the gbuffer packing since it needs the vOutput
-#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 
 uniform sampler2D p3d_Texture0;
 uniform sampler2D p3d_Texture1;
@@ -21,6 +21,7 @@ uniform sampler2D p3d_Texture2;
 uniform sampler2D p3d_Texture3;
 
 %INOUT%
+
 
 void main() {
 
@@ -31,14 +32,14 @@ void main() {
 
     sampled_diffuse.xyz = pow(sampled_diffuse.xyz, vec3(2.2));
 
-    Material m;
-    m.diffuse = vOutput.material_color * sampled_diffuse.xyz;
+    MaterialShaderOutput m;
+    m.basecolor = vOutput.material_color * sampled_diffuse.xyz;
     m.normal = vOutput.normal;
     m.position = vOutput.position;
     m.metallic = vOutput.material_metallic;
     m.specular = vOutput.material_specular * sampled_specular.x;
     m.roughness = vOutput.material_roughness * sampled_roughness.x;
-    
+
     %MATERIAL%
 
     render_material(m);

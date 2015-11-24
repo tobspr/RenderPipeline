@@ -5,24 +5,23 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/PoissonDisk.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 
 in vec2 texcoord;
 out vec4 result;
 
 uniform vec3 cameraPosition;
-uniform sampler2D GBufferDepth;
-uniform sampler2D GBuffer1;
+uniform GBufferData GBuffer;
 uniform sampler2D Noise4x4;
 
 
 // Functions which can be used by the kernels
 float get_depth_at(vec2 coord) {
-    return textureLod(GBufferDepth, coord, 0).x;
+    return get_gbuffer_depth(GBuffer, coord);
 }
 
 float get_depth_at(ivec2 coord) {
-    return texelFetch(GBufferDepth, coord, 0).x;
+    return get_gbuffer_depth(GBuffer, coord);
 }
 
 vec3 get_view_pos_at(vec2 coord) {
@@ -77,7 +76,7 @@ void main() {
     vec3 pixel_view_pos = get_view_pos_at(coord);
     vec3 pixel_view_normal = get_view_normal(coord);
     vec3 pixel_world_pos = get_world_pos_at(coord);
-    vec3 pixel_world_normal = get_gbuffer_normal(GBuffer1, coord);
+    vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, coord);
 
     vec3 view_vector = normalize(pixel_world_pos - cameraPosition);
     float view_dist = distance(pixel_world_pos, cameraPosition);

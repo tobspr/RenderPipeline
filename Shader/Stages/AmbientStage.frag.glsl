@@ -1,17 +1,13 @@
 #version 400
 
 #pragma include "Includes/Configuration.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 #pragma include "Includes/BRDF.inc.glsl"
 #pragma include "Includes/Lights.inc.glsl"
 
 in vec2 texcoord;
 uniform sampler2D ShadedScene;
-uniform sampler2D GBufferDepth;
-uniform sampler2D GBuffer0;
-uniform sampler2D GBuffer1;
-uniform sampler2D GBuffer2;
-
+uniform GBufferData GBuffer;
 uniform sampler2D PrefilteredBRDF;
 
 uniform samplerCube DefaultEnvmap;
@@ -49,19 +45,18 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     // Get material properties
-    Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
+    Material m = unpack_material(GBuffer);
 
     // Get view vector
     vec3 view_vector = normalize(cameraPosition - m.position);
 
     // Store the accumulated ambient term in a variable
-    vec4 ambient = vec4(0);
+    vec3 ambient = vec3(0);
 
     #if !DEBUG_MODE
 
     // Skip skybox shading (TODO: Do this with stencil masking)
     if (!is_skybox(m, cameraPosition)) {
-
 
         // Get reflection directory
         vec3 reflected_dir = reflect(-view_vector, m.normal);
@@ -101,39 +96,15 @@ void main() {
 
         #endif
 
-        // Get prefiltered BRDF, use 1 - NxV since y is flipped
-        vec3 prefilter_color = BRDFEnvironment(m.diffuse, m.roughness, 1-NxV);
- 
-        // Different terms for metallic and diffuse objects:
+        // Get prefiltered BRDF to compute specular ambient term
+        vec3 prefilter_color = BRDFEnvironment(m.specular, m.roughness, 1.0 - NxV);
+        vec3 specular_ambient = prefilter_color * env_default_color;
 
-        // Metallic specular term: Just plain reflections
-
-        #if 0
-            // With fresnel term
-            vec3 env_metallic = m.diffuse + 3 *M_PI* prefilter_color;
-        #else
-            // Just plain reflections
-            vec3 env_metallic = m.diffuse;
-        #endif
-
-        // Diffuse specular term: Prefiltered BRDF
-        vec3 env_diffuse = prefilter_color * 2;
-
-        // Mix diffuse and metallic specular term based on material metallic,
-        // and multiply it by the material specular
-        vec3 env_factor = mix(env_diffuse, env_metallic, m.metallic) * m.specular;
-
-        // Diffuse ambient term, weight it by 0 for metallics
-        vec3 diffuse_ambient = env_amb * vec3(0.3) * m.diffuse * (1.0 - m.metallic);
-
-        // Specular ambeint term
-        vec3 specular_ambient = env_factor * env_default_color;
+        // Diffuse ambient term
+        vec3 diffuse_ambient = env_amb * vec3(0.3) * m.diffuse;
 
         // Add diffuse and specular ambient term
-        ambient.xyz += diffuse_ambient + specular_ambient;
-
-        // Add "fake" irradiance term
-        // ambient.xyz += env_amb * 0.08 * m.diffuse * (1.0 - m.metallic);
+        ambient = diffuse_ambient + specular_ambient;
 
         #if HAVE_PLUGIN(AO)
 
@@ -148,8 +119,6 @@ void main() {
 
     #endif
 
-    ambient.w = 0.0;
-
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
@@ -161,5 +130,12 @@ void main() {
 
     vec4 scene_color = texture(ShadedScene, texcoord);
 
-    result = scene_color * 1 + ambient * 1 * (1-scene_color.w);
+    #if HAVE_PLUGIN(Scattering)
+        // Scattering stores the fog factor in the w-component of the scene color.
+        // So reduce ambient in the fog
+        ambient *= (1.0 - scene_color.w);
+    #endif
+
+    result = scene_color * 1 + vec4(ambient, 1) * 1;
+
 }
