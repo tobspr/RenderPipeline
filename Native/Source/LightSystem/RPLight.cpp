@@ -4,16 +4,11 @@
 // TypeHandle RPLight::_type_handle;
 
 RPLight::RPLight(LightType light_type) {
-    // cout << "Construct light" << endl;
     _light_type = light_type;
     _dirty = false;
     _slot = -1;
     _position.set(0, 0, 0);
     _color.set(1, 1, 1);
-}
-
-RPLight::~RPLight() {
-    // cout << "Destruct light" << endl;
 }
 
 

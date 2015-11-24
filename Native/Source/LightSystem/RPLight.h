@@ -17,7 +17,7 @@ class RPLight : public ReferenceCount {
 
     public:
         RPLight(LightType light_type);
-        ~RPLight();
+        virtual ~RPLight();
 
     PUBLISHED:
 
@@ -47,22 +47,6 @@ class RPLight : public ReferenceCount {
         LVecBase3f _position;
         LVecBase3f _color;
         LightType _light_type;
-
-
-    // public:
-    //   static TypeHandle get_class_type() {
-    //     return _type_handle;
-    //   }
-    //   static void init_type() {
-    //     ReferenceCount::init_type();
-    //     register_type(_type_handle, "RPLight", ReferenceCount::get_class_type());
-    //   }
-    //   virtual TypeHandle get_type() const {
-    //     return get_class_type();
-    //   }
-
-    // private:
-    //   static TypeHandle _type_handle;
 
 };
 

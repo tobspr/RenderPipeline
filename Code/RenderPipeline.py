@@ -28,6 +28,7 @@ from .Managers.MountManager import MountManager
 from .Managers.StageManager import StageManager
 from .Managers.LightManager import LightManager
 from .Managers.TagStateManager import TagStateManager
+from .Managers.IESProfileManager import IESProfileManager
 
 class RenderPipeline(DebugObject):
 
@@ -114,6 +115,11 @@ class RenderPipeline(DebugObject):
         """ Returns a handle to the DayTime manager """
         return self._daytime_mgr
 
+    def load_ies_profile(self, filename):
+        """ Loads an IES profile from a given filename and returns a handle which
+        can be used to set an ies profile on a light """
+        return self._ies_profile_mgr.load(filename)
+
     def set_effect(self, object, effect_src, options = None, sort = 30):
         """ Sets an effect to the given object, using the specified options.
         Check out the effect documentation for more information about possible
@@ -176,6 +182,7 @@ class RenderPipeline(DebugObject):
         self._stage_mgr = StageManager(self)
         self._light_mgr = LightManager(self)
         self._daytime_mgr = DayTimeManager(self)
+        self._ies_profile_mgr = IESProfileManager(self)
 
         # Load plugins and daytime settings
         self._plugin_mgr.load_plugins()
