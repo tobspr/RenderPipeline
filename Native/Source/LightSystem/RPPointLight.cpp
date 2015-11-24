@@ -2,9 +2,6 @@
 #include "RPPointLight.h"
 
 
-// TypeHandle RPPointLight::_type_handle;
-
-
 
 RPPointLight::RPPointLight() : RPLight(RPLight::LT_point_light) {
     _radius = 10.0;

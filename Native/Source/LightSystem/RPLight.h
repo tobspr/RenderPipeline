@@ -39,11 +39,13 @@ class RPLight : public ReferenceCount {
         inline void assign_slot(int slot);
 
         inline int get_slot();
+        inline void set_ies_profile(int profile);
 
     protected:
         
         bool _dirty;
         int _slot;
+        int _ies_profile;
         LVecBase3f _position;
         LVecBase3f _color;
         LightType _light_type;

@@ -103,14 +103,14 @@ class MainApp(ShowBase):
         self.lights = []
 
         # Add some random lights
-        sqr = 0
+        sqr = 4
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()
-                pos_x, pos_y = (x-sqr//2) * 6.0, (x-sqr//2) * 6.0
+                pos_x, pos_y = (x-sqr//2) * 6.0, (y-sqr//2) * 6.0
                 light.set_pos( Vec3(pos_x, pos_y, 5.0) )
                 light.set_color(Vec3(random(), random(), random())* 1.0) 
-                light.set_radius(10)
+                light.set_radius(7)
                 self.lights.append(light)
                 self.render_pipeline.add_light(light)
         

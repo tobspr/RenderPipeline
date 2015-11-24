@@ -49,3 +49,7 @@ inline RPLight::LightType RPLight::get_light_type() {
 inline int RPLight::get_slot() {
     return _slot;
 }
+
+inline void RPLight::set_ies_profile(int profile) {
+    _ies_profile = profile;
+}

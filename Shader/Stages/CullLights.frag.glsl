@@ -3,7 +3,7 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/LightCulling.inc.glsl"
-#pragma include "Includes/LightTypes.inc.glsl"
+#pragma include "Includes/LightData.inc.glsl"
 #pragma include "Includes/Structures/Frustum.struct.glsl"
 
 out vec4 result;
@@ -72,22 +72,18 @@ void main() {
     // Cull all lights
     for (int i = 0; i < maxLightIndex + 1 && numRenderedLights < MAX_LIGHTS_PER_CELL; i++) {
         int dataOffs = i * 4;
-        vec4 data0 = texelFetch(AllLightsData, dataOffs + 0);
-        int lightType = int(data0.x);
+        LightData light_data = read_light_data(AllLightsData, dataOffs);
 
-        // No light
+        int lightType = get_light_type(light_data);
+
+        // Null-Light
         if (lightType < 1) continue;
 
-        vec4 data1 = texelFetch(AllLightsData, dataOffs + 1);
-        vec4 data2 = texelFetch(AllLightsData, dataOffs + 2);
-        vec4 data3 = texelFetch(AllLightsData, dataOffs + 3);
-
         bool visible = false;
-
-        vec3 lightPos = data0.yzw;
+        vec3 lightPos = get_light_position(light_data);
 
         if (lightType == LT_POINT_LIGHT) {
-            float radius = data1.w;
+            float radius = get_pointlight_radius(light_data);
             visible = isPointLightInFrustum(lightPos, radius, frustum);
         }
 

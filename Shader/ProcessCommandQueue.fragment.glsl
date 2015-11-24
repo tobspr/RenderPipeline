@@ -31,49 +31,44 @@ vec4 readVec4(inout int offset) {
 
 void main() {
 
-
-    int currentBufferOffs = 0;
+    int read_ptr = 0;
     result = commandCount == 0 ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);
 
     // Process each command
-    for (int commandIdx = 0; commandIdx < commandCount; commandIdx++) {
+    for (int command_index = 0; command_index < commandCount; command_index++) {
 
-        currentBufferOffs = commandIdx * 32;
+        read_ptr = command_index * 32;
 
-        int commandType = readInt(currentBufferOffs);
+        int command_type = readInt(read_ptr);
 
         // CMD_INVALID
-        if (commandType == CMD_INVALID) {
+        if (command_type == CMD_INVALID) {
             continue;
 
         // CMD_STORE_LIGHT
-        } else if (commandType == CMD_STORE_LIGHT) {
+        } else if (command_type == CMD_STORE_LIGHT) {
 
-            int slot = readInt(currentBufferOffs);
-
-            vec4 data0 = readVec4(currentBufferOffs);
-            vec4 data1 = readVec4(currentBufferOffs);
-            vec4 data2 = readVec4(currentBufferOffs);
-            vec4 data3 = readVec4(currentBufferOffs);
-
+            int slot = readInt(read_ptr);
             int offs = slot * 4;
-            imageStore(LightData, offs + 0, data0);
-            imageStore(LightData, offs + 1, data1);
-            imageStore(LightData, offs + 2, data2);
-            imageStore(LightData, offs + 3, data3);
+
+            for (int i = 0; i < 4; ++i) {
+                // Just copy the data over
+                imageStore(LightData, offs + i, readVec4(read_ptr));
+            }
 
         // CMD_REMOVE_LIGHT
-        } else if (commandType == CMD_REMOVE_LIGHT) {
+        } else if (command_type == CMD_REMOVE_LIGHT) {
 
-            int slot = readInt(currentBufferOffs);
+            int slot = readInt(read_ptr);
             int offs = slot * 4;
-            imageStore(LightData, offs + 0, vec4(0));
-            imageStore(LightData, offs + 1, vec4(0));
-            imageStore(LightData, offs + 2, vec4(0));
-            imageStore(LightData, offs + 3, vec4(0));
+
+            // Just set the data to all zeroes
+            for (int i = 0; i < 4; ++i) {
+                imageStore(LightData, offs + i, vec4(0));               
+            }
         }
 
+        // .. further commands will follow
 
     }
-
 }
