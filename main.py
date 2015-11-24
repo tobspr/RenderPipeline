@@ -58,52 +58,46 @@ class MainApp(ShowBase):
         self.render_pipeline.set_default_loading_screen()
 
         # Set the base path and mount the directories
-        self.render_pipeline.get_mount_manager().set_base_path(".")
         self.render_pipeline.get_mount_manager().set_write_path("Temp")
         self.render_pipeline.get_mount_manager().disable_cleanup()
         self.render_pipeline.get_mount_manager().mount()
 
         # Load the default prc file and settings
-        load_prc_file("Config/configuration.prc")
         self.render_pipeline.load_settings("Config/pipeline.yaml")
 
         # Create the pipeline
         self.render_pipeline.create()
 
-        render.set_shader_input("roughness", 0.5)
-        render.set_shader_input("metallic", 0.0)
-        render.set_shader_input("specular", 0.1)
-
 
         plane = loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
-        # plane.set_scale(0.1)
+        plane.set_scale(2.0)
         plane.reparent_to(render)
         
-        # Load some models
+        # Load some models, most of them are not included in the repository
         # model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        # model = loader.loadModel("Models/HDRTest/Scene.bam")
+        # model = loader.loadModel("Models/SimpleShapes/Scene.bam")
         # model = loader.loadModel("Models/Test.ignore/Statue.bam")
+        # model = loader.loadModel("Models/Test.ignore/Car0.bam")
+        # model = loader.loadModel("Models/DemoTerrain/Scene.bam")
         # model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
-        model = loader.loadModel("panda")
-        # model.set_scale(0.2)
-        # model.set_two_sided(True)
+        model = loader.loadModel("box")
         model.flatten_strong()
 
-
-
         if False:
+            render.set_shader_input("roughness", 1.0)
+            render.set_shader_input("metallic", 0.0)
+            render.set_shader_input("specular", 0.05)
+            
             for roughness in range(11):
                 for metallic in range(2):
                     placeholder = render.attach_new_node("placeholder")
                     placeholder.set_pos( (roughness-5) * 2.3, (metallic) * 5.3, 0)
                     placeholder.set_shader_input("roughness", roughness / 10.0)
                     placeholder.set_shader_input("metallic", metallic / 1.0)
-                    placeholder.set_shader_input("specular", 0.5)
                     model.instance_to(placeholder)
         else:
             model.reparent_to(render)
-            model.set_shader_input("metallic", 1.0)
-            model.set_shader_input("specular", 0.5)
-            model.set_shader_input("roughness", 0.1)
 
         self.render_pipeline.create_default_skybox()
         self.lights = []
@@ -113,10 +107,10 @@ class MainApp(ShowBase):
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()
-                light.set_pos( Vec3(x-sqr//2 + random(), y-sqr//2 + random(), 1.2 + random()) * 4)
-                light.set_color(Vec3(0.5) * (0.2 + random()) ) 
-                # light.set_color(random(), random(), random()) 
-                light.set_radius(15)
+                pos_x, pos_y = (x-sqr//2) * 6.0, (x-sqr//2) * 6.0
+                light.set_pos( Vec3(pos_x, pos_y, 5.0) )
+                light.set_color(Vec3(random(), random(), random())* 1.0) 
+                light.set_radius(10)
                 self.lights.append(light)
                 self.render_pipeline.add_light(light)
         
@@ -124,25 +118,5 @@ class MainApp(ShowBase):
         self.controller = MovementController(self)
         self.controller.set_initial_position(Vec3(10), Vec3(0))
         self.controller.setup()
-
-        self.addTask(self.update_task, "Main_UpdateTask")
-        self.dummy_light = None
-
-    def update_task(self, task=None):
-
-        if self.dummy_light:
-            self.render_pipeline.remove_light(self.dummy_light)
-
-        # self.dummy_light = PointLight()
-        # self.dummy_light.set_pos(random()*10, random()*10, 5)
-        # self.dummy_light.set_color( Vec3(0.2, 0.6, 1.0) * 3.0 )
-        # self.dummy_light.set_radius(30)
-        # self.render_pipeline.add_light(self.dummy_light)
-
-        # for light in self.lights:
-            # light.set_color(random(), random(), random())
-            # light.set_pos(Vec3(random(), random(), 1.0) * 30 - 15)
-        return task.cont
-
 
 MainApp().run()

@@ -21,7 +21,6 @@ https://www.shadertoy.com/view/lslGzl
 
 
 
-
 vec3 Tonemap_None(vec3 color) {
     color *= exposure_adjustment;
     return color;
@@ -119,4 +118,28 @@ vec3 Tonemap_Uncharted2(vec3 color)
     vec3 white_scale = 1.0 / Uncharted2Tonemap(vec3(UC2_WHITE));
     vec3 final_color = curr * white_scale;
     return rgb_to_srgb(final_color);
+}
+
+
+
+vec3 Tonemap(vec3 color) {
+    
+    // Select tonemapping operator
+    #if ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, none)
+        color = Tonemap_None(color);
+    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, srgb)
+        color = Tonemap_Linear(color);
+    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, optimized)
+        color = Tonemap_Optimized(color);
+    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, reinhard)
+        color = Tonemap_Reinhard(color);
+    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, uncharted2)
+        color = Tonemap_Uncharted2(color);
+    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, exponential)
+        color = Tonemap_Exponential(color);
+    #else
+        #error Unkown tonemapping operator
+    #endif
+
+    return color;
 }

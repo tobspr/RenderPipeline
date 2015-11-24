@@ -67,22 +67,8 @@ void main() {
         scene_color = saturate(scene_color);
     #endif
 
-    // Select tonemapping operator
-    #if ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, none)
-        scene_color = Tonemap_None(scene_color);
-    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, srgb)
-        scene_color = Tonemap_Linear(scene_color);
-    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, optimized)
-        scene_color = Tonemap_Optimized(scene_color);
-    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, reinhard)
-        scene_color = Tonemap_Reinhard(scene_color);
-    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, uncharted2)
-        scene_color = Tonemap_Uncharted2(scene_color);
-    #elif ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, exponential)
-        scene_color = Tonemap_Exponential(scene_color);
-    #else
-        #error Unkown tonemapping operator
-    #endif
+    // Apply tonemapping
+    scene_color = Tonemap(scene_color);
 
     // Compute film grain
     float film_grain = grain(texcoord, osg_FrameTime * 2000.0);
