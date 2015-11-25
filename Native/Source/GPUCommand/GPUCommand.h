@@ -2,7 +2,7 @@
 #ifndef RP_GPU_COMMAND_H
 #define RP_GPU_COMMAND_H
 
-#include "dtool_config.h"
+
 #include "pandabase.h"
 #include "luse.h"
 

@@ -52,7 +52,7 @@ class PSSMCameraRig {
         float get_split_start(size_t split_index);
         LMatrix4f compute_mvp(int cam_index);
         LPoint3f get_interpolated_point(CoordinateOrigin origin, float depth);
-        LPoint3f get_snap_offset(LMatrix4f mat, int resolution);
+        LPoint3f get_snap_offset(const LMatrix4f& mat, int resolution);
 
         vector<NodePath> _cam_nodes;
         vector<LVecBase2f> _max_film_sizes;

@@ -15,10 +15,18 @@ if (WIN32)
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
 
-  set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/../thirdparty/win-libs-vc10-x64")
-  if(NOT (EXISTS "${THIRDPARTY_DIR}"))
-    set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/thirdparty/win-libs-vc10-x64")
-  endif()
+  IF(CMAKE_CL_32)
+    set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/../thirdparty/win-libs-vc10")
+    IF(NOT (EXISTS "${THIRDPARTY_DIR}"))
+      set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/thirdparty/win-libs-vc10")
+    ENDIF()
+  ELSE()
+    set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/../thirdparty/win-libs-vc10-x64")
+    IF(NOT (EXISTS "${THIRDPARTY_DIR}"))
+      set(THIRDPARTY_DIR "${WIN_PANDA_PATH}/thirdparty/win-libs-vc10-x64")
+    ENDIF()
+  ENDIF()
+
 
   # These vars are based on the WIN_PANDA_PATH and usually are correct
   set(PANDA_BIN "${WIN_PANDA_PATH}/bin")
@@ -111,26 +119,37 @@ set(SOURCES ${SOURCES_H} ${SOURCES})
 
 # Optimizations
 IF(MSVC)
-    # ADD_DEFINITIONS("/Ox")
-    ADD_DEFINITIONS("/Ot")
-    ADD_DEFINITIONS("/fp:fast")
-    ADD_DEFINITIONS("/MD")
-    ADD_DEFINITIONS("/wd4275")
-    ADD_DEFINITIONS("/wd4018")
-    ADD_DEFINITIONS("/wd4267")
+
+    IF(CMAKE_CL_64)
+      ADD_DEFINITIONS("/favor:blend /DWIN64_VC /DWIN64")
+    ENDIF()
+
     ADD_DEFINITIONS("/wd4996")
+    ADD_DEFINITIONS("/wd4275")
+    ADD_DEFINITIONS("/wd4267")
     ADD_DEFINITIONS("/wd4101")
-    #ADD_DEFINITIONS("/DEBUG")
-    #ADD_DEFINITIONS("/Zi")
-    ADD_DEFINITIONS("/Oi")
-    ADD_DEFINITIONS("/GS-")
+    ADD_DEFINITIONS("/wd4018")
+    ADD_DEFINITIONS("/wd4273")
+
+    ADD_DEFINITIONS("/DWINVER=0x601")
+    
+    # not sure if required:
+    ADD_DEFINITIONS("/Zc:forScope-")
     ADD_DEFINITIONS("/GR-")
-    ADD_DEFINITIONS("/MP")
-    ADD_DEFINITIONS("/GL")
-    ADD_DEFINITIONS("/Gr")
+
+    ADD_DEFINITIONS("/DWINVER=0x501")
 
 
-    ADD_DEFINITIONS("/D WIN32 /D CRT_SECURE_NO_WARNINGS /D _WINDOWS /D _USRDLL")
+    ADD_DEFINITIONS("/MD /Zi /GS- /O2 /Ob2 /Oi /Ot /fp:fast")
+    ADD_DEFINITIONS("/Zm300 /DWIN32_VC /DWIN32")
+
+    IF(CMAKE_CL_32)
+      ADD_DEFINITIONS("/DWIN64_VC /DWIN64")
+      ADD_DEFINITIONS("/machine:x86")
+    ENDIF()
+
+    # ADD_DEFINITIONS("/D_USING_V110_SDK71_")
+    ADD_DEFINITIONS("/W3")
 
 ELSE()
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=native -march=native -std=c++11")

@@ -8,8 +8,12 @@ sys.dont_write_bytecode = True
 
 import platform
 from shutil import copyfile
-from os.path import isfile, join, dirname, realpath
+from os.path import isfile, join, dirname, realpath, isdir
 
+from panda3d.core import PandaSystem
+
+# Storage for the precompiled render pipeline binaries
+BINARY_STORAGE = "E:\Dropbox\Sonstiges\PrecompiledBuilds"
 
 if __name__ == "__main__":
 
@@ -40,6 +44,17 @@ if __name__ == "__main__":
 
         # Copy the generated DLL
         copyfile(source_file, join(dest_folder, target_file))
+
+
+        if isdir(BINARY_STORAGE):
+
+            # Copy DLL to the precompiled binary dir
+            target_filename = "RSNative_" + PandaSystem.getPlatform() + ".pyd"
+            target_filename = join(BINARY_STORAGE, target_filename)
+
+            copyfile(source_file, target_filename)
+
+
 
         # Copy the __init__ template
         copyfile(join(curr_dir, "../Source/init.py.template"), join(dest_folder, "__init__.py"))

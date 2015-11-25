@@ -7,9 +7,11 @@ import sys
 from os import system, chdir, remove
 from os.path import isfile, dirname, realpath, join
 
+from panda3d.core import PandaSystem
 
+IS_WIN_64 = PandaSystem.getPlatform() == "win_amd64"
 NATIVE_SRC = join(dirname(realpath(__file__)), "..")
-SOLUTION_PATH = join(NATIVE_SRC, "Windows/RSNative.sln")
+SOLUTION_PATH = join(NATIVE_SRC, "Windows_x" + ("64" if IS_WIN_64 else "32") + "/RSNative.sln")
 
 
 def hint_manually_msvc():

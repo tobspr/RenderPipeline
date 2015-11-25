@@ -16,7 +16,8 @@ Temp/
 Models/
 Data/NormalQuantization/*.png
 Data/DefaultCubemap/Filtered/
-Native/Windows
+Native/Windows_x64/
+Native/Windows_x32/
 Native/Linux
 Native/Source/Interrogate*
 _DEV

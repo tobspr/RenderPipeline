@@ -5,6 +5,8 @@ import sys
 import subprocess
 import platform
 
+from panda3d.core import PandaSystem
+
 devnull = open(os.path.devnull, "w")
 current_dir = os.getcwd()
 
@@ -14,8 +16,10 @@ def error(*args):
 
 output_path = ""
 
+
 if platform.system() == "Windows":
-    output_path = "../Windows/"
+    is_64_bit = PandaSystem.getPlatform() == "win_amd64"
+    output_path = "../Windows_x" + ("64" if is_64_bit else "32") + "/"
 elif platform.system() == "Linux":
     output_path = "../Linux/"
 else:
@@ -44,7 +48,7 @@ if platform.system() == "Windows":
 
     # Specify 64-bit compiler when using a 64 bit panda sdk build
     bit_suffix = ""
-    if platform.architecture()[0] == "64bit":
+    if PandaSystem.getPlatform() == "win_amd64":
         bit_suffix = " Win64"
 
     if "10.0" in versions:
@@ -65,7 +69,8 @@ if platform.system() == "Windows":
             cmake_args += ['-GVisual Studio ' + str(vc_int_version) + bit_suffix]
 
 try:
-    subprocess.check_output(["cmake", "../"] + cmake_args, stderr=sys.stderr)
+    output = subprocess.check_output(["cmake", "../"] + cmake_args, stderr=sys.stderr)
+    print(output)
 except subprocess.CalledProcessError as msg:
     error("Cmake Error:", msg.output)
 

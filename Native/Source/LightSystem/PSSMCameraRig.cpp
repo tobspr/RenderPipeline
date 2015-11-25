@@ -119,7 +119,7 @@ const PTA_float &PSSMCameraRig::get_rotation_array() {
 }
 
 
-LPoint3f PSSMCameraRig::get_snap_offset(LMatrix4f mat, int resolution) {
+LPoint3f PSSMCameraRig::get_snap_offset(const LMatrix4f& mat, int resolution) {
 
     // LPoint4f base_point = mat.get_row(3);
     LPoint4f base_point = mat.xform(LPoint4f(0, 0, 0, 1));
@@ -131,8 +131,9 @@ LPoint3f PSSMCameraRig::get_snap_offset(LMatrix4f mat, int resolution) {
     float offset_y =  fmod(base_point.get_y(), texel_size);
 
     // Reproject the offset back, for that we need the inverse MVP
-    mat.invert_in_place();
-    LPoint4f new_base_point = mat.xform(LPoint4f(
+    LMatrix4f inv_mat(mat);
+    inv_mat.invert_in_place();
+    LPoint4f new_base_point = inv_mat.xform(LPoint4f(
             (base_point.get_x() - offset_x) * 2.0 - 1.0,
             (base_point.get_y() - offset_y) * 2.0 - 1.0,
             base_point.get_z() * 2.0 - 1.0, 1));
