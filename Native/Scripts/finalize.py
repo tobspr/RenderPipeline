@@ -21,9 +21,12 @@ if __name__ == "__main__":
     curr_dir = dirname(realpath(__file__))
 
     if platform.system() == "Windows":
+
+        IS_64_BIT = PandaSystem.getPlatform() == "win_amd64"
+        BIT_SUFFIX = "64" if IS_64_BIT else "32"
+
         possible_files = [
-            "Windows/Release/RSNative.pyd",
-            "Windows/x64/Release/RSNative.pyd",
+            "Windows_x" + BIT_SUFFIX + "/Release/RSNative.pyd"
         ]
         target_file = "RSNative.pyd"
 
@@ -60,4 +63,4 @@ if __name__ == "__main__":
         copyfile(join(curr_dir, "../Source/init.py.template"), join(dest_folder, "__init__.py"))
 
     else:
-        print("Failed to find source file at", ' or '.join(possible_files), "!")
+        print("Failed to find source file at", ' or '.join(possible_files), "!", file=sys.stderr)
