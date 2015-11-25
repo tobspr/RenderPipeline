@@ -4,7 +4,7 @@ import time
 
 from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
 from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f, Texture
-from panda3d.core import RenderState, BitMask32, load_prc_file
+from panda3d.core import RenderState, BitMask32, load_prc_file, PandaSystem
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -40,7 +40,8 @@ class RenderPipeline(DebugObject):
         """ Creates a new pipeline with a given showbase instance. This should be
         done before intializing the ShowBase, the pipeline will take care of that. """
         DebugObject.__init__(self, "RenderPipeline")
-        self.debug("Starting pipeline, using Python", sys.version_info.major)
+        self.debug("Starting pipeline, using Python", sys.version_info.major,
+            "Architecture =", PandaSystem.getPlatform())
         self._showbase = showbase
         self._mount_manager = MountManager(self)
         self._settings = SettingsLoader(self, "Pipeline Settings")
