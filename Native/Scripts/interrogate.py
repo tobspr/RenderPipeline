@@ -50,19 +50,11 @@ def find_sources(base_dir):
 
     return sources
 
-def execute(command):    
-    if VERBOSE:
-        with subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=1, universal_newlines=True) as p:
-            for line in p.stdout:
-                print(line, end='', file=sys.stderr)
-            for line in p.stderr:
-                print("STDERR: ", line, end='', file=sys.stderr)
+def execute(command):   
+    if VERBOSE: 
+        system(' '.join(command))
     else:
-        try:
-            subprocess.check_output(command, stderr=sys.stderr)
-        except subprocess.CalledProcessError as msg:
-            print("Error executing interrogate command:", msg, msg.output, file=sys.stderr)
-            sys.exit(1)
+        cmd = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=1, universal_newlines=True)
 
 
 # Collect source files and convert them to a relative path
@@ -93,8 +85,8 @@ cmd += ["-library", MODULE_NAME]
 
 cmd += ["-nomangle"]
 
-if VERBOSE:
-    cmd += ["-v"]
+# if VERBOSE:
+#     cmd += ["-v"]
 
 # Defines required to parse the panda source
 defines = ["INTERROGATE", "CPPPARSER", "__STDC__=1", "__cplusplus=201103L"]
