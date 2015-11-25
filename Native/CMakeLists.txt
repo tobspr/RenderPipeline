@@ -133,8 +133,6 @@ IF(MSVC)
 
     ADD_DEFINITIONS("/DWINVER=0x601")
     
-    # not sure if required:
-    ADD_DEFINITIONS("/Zc:forScope-")
     ADD_DEFINITIONS("/GR-")
 
     ADD_DEFINITIONS("/DWINVER=0x501")
