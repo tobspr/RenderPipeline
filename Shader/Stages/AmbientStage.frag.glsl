@@ -97,8 +97,8 @@ void main() {
         #endif
 
         // Get prefiltered BRDF to compute specular ambient term
-        vec3 prefilter_color = BRDFEnvironment(m.specular, m.roughness, 1.0 - NxV);
-        vec3 specular_ambient = prefilter_color * env_default_color;
+        vec3 prefilter_color = BRDFEnvironment(vec3(1), m.roughness, 1.0 - NxV);
+        vec3 specular_ambient = prefilter_color * env_default_color * m.specular;
 
         // Diffuse ambient term
         vec3 diffuse_ambient = env_amb * vec3(0.3) * m.diffuse;
