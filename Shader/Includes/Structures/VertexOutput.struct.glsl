@@ -11,4 +11,5 @@ struct VertexOutput {
     float material_specular;
     float material_metallic;
     float material_roughness;
+    float bumpmap_factor;
 };
