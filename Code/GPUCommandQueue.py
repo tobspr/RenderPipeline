@@ -23,6 +23,7 @@ class GPUCommandQueue(DebugObject):
         self._create_data_storage()
         self._create_command_target()
         self._commands = []
+        self._register_defines()
 
     def clear_queue(self):
         """ Clears all commands currently being in the queue """
@@ -59,6 +60,15 @@ class GPUCommandQueue(DebugObject):
         """ Registers an new shader input to the command target """
         self._command_target.set_shader_input(key, val)
 
+    def _register_defines(self):
+        """ Registers all the command types as defines so they can be used
+        in a shader later on """
+
+        for attr in dir(GPUCommand):
+            if attr.startswith("CMD_"):
+                attr_val = getattr(GPUCommand, attr)
+                self._pipeline.get_stage_mgr().define(attr, attr_val)
+
     def _create_data_storage(self):
         """ Creates the buffer used to transfer commands """
         command_buffer_size = self._commands_per_frame * 32
@@ -74,3 +84,4 @@ class GPUCommandQueue(DebugObject):
         self._command_target.prepare_offscreen_buffer()
         self._command_target.set_shader_input("CommandQueue", self._data_texture.get_texture())
         self._command_target.set_shader_input("commandCount", self._pta_num_commands)
+

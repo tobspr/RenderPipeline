@@ -10,6 +10,8 @@
 *.blend1
 *.blend2
 *.rpsg
+*.pdb
+*.stackdump
 
 # --- Ignored folders ---
 Temp/

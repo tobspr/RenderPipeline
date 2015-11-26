@@ -8,11 +8,6 @@ uniform samplerBuffer CommandQueue;
 uniform layout(rgba32f) imageBuffer LightData;
 uniform int commandCount;
 
-// Command indices
-#define CMD_INVALID 0
-#define CMD_STORE_LIGHT 1
-#define CMD_REMOVE_LIGHT 2
-
 int readInt(inout int offset) {
     int val = int(texelFetch(CommandQueue, offset).x);
     offset += 1;
@@ -41,12 +36,12 @@ void main() {
 
         int command_type = readInt(read_ptr);
 
-        // CMD_INVALID
-        if (command_type == CMD_INVALID) {
+        // 0 - Invalid Command
+        if (command_type == CMD_invalid) {
             continue;
 
-        // CMD_STORE_LIGHT
-        } else if (command_type == CMD_STORE_LIGHT) {
+        // 1 - Store Light
+        } else if (command_type == CMD_store_light) {
 
             int slot = readInt(read_ptr);
             int offs = slot * 4;
@@ -56,8 +51,8 @@ void main() {
                 imageStore(LightData, offs + i, readVec4(read_ptr));
             }
 
-        // CMD_REMOVE_LIGHT
-        } else if (command_type == CMD_REMOVE_LIGHT) {
+        // 2 - Remove Light
+        } else if (command_type == CMD_remove_light) {
 
             int slot = readInt(read_ptr);
             int offs = slot * 4;
