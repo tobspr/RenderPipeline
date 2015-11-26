@@ -24,7 +24,7 @@ overrides:
     AO.hbao_ray_steps: 3
     AO.hbao_sample_radius: 123.0
     AO.hbao_tangent_bias: 0.1667
-    AO.occlusion_strength: 1.0
+    AO.occlusion_strength: 1.4
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 6.0
     AO.ssao_sample_count: 32
@@ -32,7 +32,7 @@ overrides:
     AO.ssvo_max_distance: 1.38
     AO.ssvo_sample_count: 32
     AO.ssvo_sphere_radius: 7.95
-    AO.technique: ALCHEMY
+    AO.technique: SSAO
     AO.ue4ao_max_distance: 3.4
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 119.11
@@ -40,13 +40,13 @@ overrides:
     ColorCorrection.chromatic_aberration_samples: 2
     ColorCorrection.chromatic_aberration_strength: 0.42
     ColorCorrection.darkness_adaption_rate: 0.9
-    ColorCorrection.exponential_factor: 0.3
+    ColorCorrection.exponential_factor: 0.73
     ColorCorrection.exposure_bias: 0.0
     ColorCorrection.film_grain_strength: 0.125
     ColorCorrection.max_exposure: 2.0
     ColorCorrection.min_exposure: 0.0778
     ColorCorrection.reinhard_version: rgb
-    ColorCorrection.tonemap_operator: uncharted2
+    ColorCorrection.tonemap_operator: reinhard
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22
     ColorCorrection.uc2t_toe_denumerator: 0.3
@@ -61,7 +61,7 @@ overrides:
     PSSM.logarithmic_factor: 2.73
     PSSM.max_distance: 135.19999
     PSSM.normal_bias: 2.06
-    PSSM.pcss_penumbra_size: 13.0
+    PSSM.pcss_penumbra_size: 126.72
     PSSM.pcss_search_samples: 15
     PSSM.resolution: 2048
     PSSM.slope_bias: 0.0
