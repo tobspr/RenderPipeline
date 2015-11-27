@@ -13,7 +13,7 @@ float get_ies_factor(vec3 light_vector, int profile) {
     float profile_coord = (profile+0.5) / MAX_IES_PROFILES;
     float data = textureLod(IESDatasetTex, vec3(horiz_angle, vert_angle, profile_coord), 0).x;
 
-    return data;
+    return data * 10.0;
 }
 
 
