@@ -133,7 +133,8 @@ class PTABasedUBO(BaseUBO):
 
         # Add actual inputs
         if len(inputs) < 1:
-            self.warn("No UBO inputs present for", self._name)
+            # self.warn("No UBO inputs present for", self._name)
+            pass
         else:
 
             content += "uniform struct {\n"

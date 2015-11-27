@@ -3,6 +3,7 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"
 #pragma include "Includes/BRDF.inc.glsl"
+#pragma include "Includes/IESLighting.inc.glsl"
 
 
 
@@ -22,7 +23,9 @@ float computePointLightAttenuation(float r, float d) {
 } 
 
 // @TODO: Make this method faster
-vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion) {
+vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion, int ies_profile) {
+
+    // l = vec3(0, 0, 1);
 
     // Debug: Fast rendering path
     // return max(0, dot(m.normal, l)) * lightColor * attenuation * m.diffuse;
@@ -44,7 +47,7 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
     float VxH = max(0, dot(v, h));
 
     // Diffuse contribution
-    shadingResult = NxL * m.diffuse;
+    shadingResult = NxL * m.diffuse / M_PI;
 
     // Specular contribution
     float distribution = BRDFDistribution_GGX(NxH, m.roughness);
@@ -52,6 +55,11 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
     float fresnel = saturate(pow(NxV, 5.0)); // Simplified schlick
 
     shadingResult += (distribution * visibility * fresnel) * m.specular;
+
+    // float horiz_angle = acos(l.z) / M_PI;
+
+
+    // shadingResult = vec3(horiz_angle);
 
     // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
@@ -62,6 +70,9 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
         shadingResult *= occlusion_factor;
     
     #endif
+
+    attenuation *= get_ies_factor(l, ies_profile);
+    // return vec3(attenuation);
 
     return shadingResult * light_color * attenuation * shadow;
 }

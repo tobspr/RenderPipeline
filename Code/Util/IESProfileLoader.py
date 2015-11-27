@@ -112,8 +112,8 @@ class IESProfileLoader(DebugObject):
             # have an END keyword, just ignore everything after the data was
             # read in.
 
-        self.debug("Vertical angles range from", vertical_angles[0], "to", vertical_angles[-1])
-        self.debug("Horizontal angles range from", horizontal_angles[0], "to", horizontal_angles[-1])
+        # self.debug("Vertical angles range from", vertical_angles[0], "to", vertical_angles[-1])
+        # self.debug("Horizontal angles range from", horizontal_angles[0], "to", horizontal_angles[-1])
 
         dataset = IESDataset()
         dataset.set_vertical_angles(self._list_to_pta(vertical_angles))
@@ -121,10 +121,10 @@ class IESProfileLoader(DebugObject):
         dataset.set_candela_values(self._list_to_pta(candela_values))
 
         # Temporary testing code
-        tex = Texture("temp")
-        tex.setup_3d_texture(360, 720, 1, Texture.T_float, Texture.F_r16)
-        dataset.generate_dataset_texture_into(tex, 0, 512, 512)
-        tex.write("generated.png")
+        # tex = Texture("temp")
+        # tex.setup_3d_texture(360, 720, 1, Texture.T_float, Texture.F_r16)
+        # dataset.generate_dataset_texture_into(tex, 0, 512, 512)
+        # tex.write("generated.png")
 
         return dataset
 

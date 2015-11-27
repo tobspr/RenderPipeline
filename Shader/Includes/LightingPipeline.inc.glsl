@@ -56,6 +56,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         // Fetch per light packed data
         LightData light_data = read_light_data(AllLightsData, light_offs);
         vec3 light_pos = get_light_position(light_data);
+        int ies_profile = get_ies_profile(light_data);
         float attenuation = 0;
         vec3 l = vec3(0);
 
@@ -68,7 +69,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
             l = normalize(light_pos - m.position);
         // }
 
-        shadingResult += applyLight(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion);
+        shadingResult += applyLight(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion, ies_profile);
 
 
     }

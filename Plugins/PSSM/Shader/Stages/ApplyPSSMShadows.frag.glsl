@@ -203,7 +203,7 @@ void main() {
     // Compute the sun lighting
     vec3 v = normalize(cameraPosition - m.position);
     vec3 l = sun_vector;
-    lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
+    lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0), -1);
 
     // float factor = float(split) / GET_SETTING(PSSM, split_count);
     // lighting_result = (lighting_result+0.01) * vec3(factor, 1 - factor, 0);

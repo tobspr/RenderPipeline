@@ -104,6 +104,14 @@ vec3 spherical_to_vector(float theta, float phi) {
 }
 
 
+void vector_to_spherical(vec3 v, out float theta, out float phi, out float radius) {
+    radius = sqrt(dot(v, v));
+    phi = acos(v.z / radius);
+    theta = atan(v.y, v.x) + M_PI; 
+}
+
+
+
 vec3 sun_azimuth_to_angle(float azimuth, float altitude) {
     float theta = altitude / 180.0 * M_PI;
     float phi = azimuth / 180.0 * M_PI;
