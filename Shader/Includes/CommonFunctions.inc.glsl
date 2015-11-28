@@ -128,3 +128,8 @@ vec3 blend_soft_light(vec3 base, vec3 blend) {
         step(base, vec3(0.5))
     );
 }
+
+// Normalizes v without taking the w component into account
+vec4 normalize_without_w(vec4 v) {
+    return v / length(v.xyz);
+}

@@ -13,7 +13,7 @@ class CullLightsStage(RenderStage):
     for each cell """
 
     required_pipes = ["CellListBuffer"]
-    required_inputs = ["AllLightsData", "maxLightIndex", "mainCam", "currentViewMatZup"]
+    required_inputs = ["AllLightsData", "maxLightIndex", "mainCam", "currentViewMatZup", "currentProjMat"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CullLightsStage", pipeline)
