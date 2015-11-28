@@ -18,7 +18,7 @@ from ..Stages.FinalStage import FinalStage
 from ..Stages.DownscaleZStage import DownscaleZStage
 
 from ..GPUCommandQueue import GPUCommandQueue
-from ..Native import GPUCommand, Light, LightStorage
+from ..Native import GPUCommand, LightStorage
 
 
 class LightManager(DebugObject):
@@ -124,6 +124,11 @@ class LightManager(DebugObject):
         self._apply_lights_stage = ApplyLightsStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._apply_lights_stage)
 
+
+
+        # TODO: This doesn't belong here, move it somewhere else
+
+
         self._ambient_stage = AmbientStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._ambient_stage)
 
@@ -135,3 +140,5 @@ class LightManager(DebugObject):
 
         # self._downscale_z_stage = DownscaleZStage(self._pipeline)
         # self._pipeline.get_stage_mgr().add_stage(self._downscale_z_stage)
+
+        
