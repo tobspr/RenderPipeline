@@ -43,8 +43,8 @@ overrides:
     ColorCorrection.exponential_factor: 0.73
     ColorCorrection.exposure_bias: 0.0
     ColorCorrection.film_grain_strength: 0.125
-    ColorCorrection.max_exposure: 5.0
-    ColorCorrection.min_exposure: 0.3333
+    ColorCorrection.max_exposure: 1.7
+    ColorCorrection.min_exposure: 0.01
     ColorCorrection.reinhard_version: rgb
     ColorCorrection.tonemap_operator: exponential
     ColorCorrection.uc2t_reference_white: 11.2
@@ -69,7 +69,7 @@ overrides:
     PSSM.sun_distance: 870.0
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
-    SMAA.use_reprojection: False
+    SMAA.use_reprojection: True
     Scattering.beta_mie_scattering: 4.0
     Scattering.ground_reflectance: 0.1
     Scattering.mie_height_scale: 1.2

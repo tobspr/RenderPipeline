@@ -44,7 +44,7 @@ for (int i = 0; i < num_samples; ++i) {
     float linz_b = getLinearZFromZ(sample_depth);
 
     // Compare both depths by distance to find the AO factor
-    float modifier = step(distance(linz_a, linz_b), max_range * kernel_scale * 0.2);
+    float modifier = step(distance(linz_a, linz_b), max_range * 0.2);
     range_accum += modifier * 0.5 + 0.5;
     modifier *= step(linz_b + bias, linz_a);
     accum += modifier;

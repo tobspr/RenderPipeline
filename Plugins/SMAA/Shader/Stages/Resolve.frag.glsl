@@ -1,7 +1,7 @@
 #version 400
 
 #pragma include "Includes/Configuration.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 
 
 uniform GBufferData GBuffer;

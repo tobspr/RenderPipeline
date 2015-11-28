@@ -101,7 +101,7 @@
     }
 
     vec2 get_gbuffer_velocity(GBufferData data, ivec2 coord) {
-        return texelFetch(data.Depth, coord, 0).xy / 255.0;
+        return texelFetch(data.Data2, coord, 0).xy / 255.0;
     }
 
 
