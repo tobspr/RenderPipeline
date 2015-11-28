@@ -81,11 +81,7 @@ void main() {
 
         bool visible = false;
 
-        /*
-            
-            Point Lights
-
-        */
+        // Point Lights
         if (light_type == LT_POINT_LIGHT) {
             float radius = get_pointlight_radius(light_data);
 
@@ -95,6 +91,14 @@ void main() {
             visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tr, min_distance, max_distance);
             visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_bl, min_distance, max_distance);
             visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_br, min_distance, max_distance);
+
+        // Spot Lights
+        } else if (light_type == LT_SPOT_LIGHT) {
+
+            visible = true;
+
+            // TODO: Implement me
+
         }
 
         // Write the light to the light buffer

@@ -6,8 +6,7 @@
 #pragma include "Includes/IESLighting.inc.glsl"
 
 
-
-float get_pointlight_attenuation(float radius, float dist) {
+float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profile) {
 
     // return step(d, r);
 
@@ -24,13 +23,27 @@ float get_pointlight_attenuation(float radius, float dist) {
 
     float linear = 1.0 - saturate(dist / radius);
 
-    return linear;
 
-    return max(0.0, attenuation * linear);
+    return max(0.0, attenuation * linear) * get_ies_factor(l, ies_profile);
 } 
 
+
+float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist, int ies_profile) {
+
+    // float lin_attenuation = get_pointlight_attenuation(l, radius, dist, -1);
+    float lin_attenuation = 1.0 - saturate(dist / radius);
+    float angle = acos(dot(l, -light_dir));
+    float angle_factor = 1 - saturate(angle / (0.5*fov) );
+
+    angle_factor *= angle_factor;
+
+    
+    return lin_attenuation * get_ies_factor(ies_profile, 0.5*angle, 0);
+}
+
+
 // @TODO: Make this method faster
-vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion, int ies_profile) {
+vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion) {
 
 
     // Debugging: Fast rendering path
@@ -38,8 +51,7 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
         // return max(0, dot(m.normal, l)) * lightColor * attenuation * m.diffuse;
     #endif
 
-    // Compute ies profile
-    attenuation *= get_ies_factor(l, ies_profile);
+
 
     // TODO: Check if skipping on low attenuation is faster than just shading
     // without any effect. Would look like this: if(attenuation < epsilon) return vec3(0);

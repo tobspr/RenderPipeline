@@ -8,6 +8,7 @@
 
 #define LT_EMPTY 0
 #define LT_POINT_LIGHT 1
+#define LT_SPOT_LIGHT 2
 
 /*
 
@@ -58,5 +59,24 @@ float get_pointlight_radius(LightData data) {
 
 float get_pointlight_inner_radius(LightData data) {
     return data.Data2.y;
+}
+
+
+/*
+
+Spot Light dataset
+
+*/
+
+float get_spotlight_radius(LightData data) {
+    return data.Data2.x;
+}
+
+float get_spotlight_fov(LightData data) {
+    return data.Data2.y;
+}
+
+vec3 get_spotlight_direction(LightData data) {
+    return vec3(data.Data2.zw, data.Data3.x);
 }
 

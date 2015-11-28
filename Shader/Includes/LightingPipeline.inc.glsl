@@ -64,19 +64,29 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
         // Fetch per light packed data
         LightData light_data = read_light_data(AllLightsData, light_offs);
+        int light_type = get_light_type(light_data);
         vec3 light_pos = get_light_position(light_data);
         int ies_profile = get_ies_profile(light_data);
         float attenuation = 0;
         vec3 l = vec3(0);
 
         // Special handling for different light types
-        // if (lightType == LT_POINT_LIGHT) {
+        if (light_type == LT_POINT_LIGHT) {
+            
             float radius = get_pointlight_radius(light_data);
-            attenuation = get_pointlight_attenuation(radius, distance(m.position, light_pos));
             l = normalize(light_pos - m.position);
-        // }
+            attenuation = get_pointlight_attenuation(l, radius, distance(m.position, light_pos), ies_profile);
 
-        shadingResult += applyLight(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion, ies_profile);
+        } else if (light_type == LT_SPOT_LIGHT) {
+            
+            float radius = get_spotlight_radius(light_data);
+            float fov = get_spotlight_fov(light_data);
+            vec3 direction = get_spotlight_direction(light_data);
+            l = normalize(light_pos - m.position);
+            attenuation = get_spotlight_attenuation(l, direction, fov, radius, distance(m.position, light_pos), ies_profile);
+        }
+
+        shadingResult += applyLight(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion);
 
 
     }

@@ -17,3 +17,10 @@ float get_ies_factor(vec3 light_vector, int profile) {
 }
 
 
+// Theta from 0 .. 1, phi from 0 .. 1
+float get_ies_factor(int profile, float theta, float phi) {
+    if (profile < 0) return 1.0;
+    float profile_coord = (profile+0.5) / MAX_IES_PROFILES;
+    float data = textureLod(IESDatasetTex, vec3(theta, phi, profile_coord), 0).x;
+    return data * 10.0;   
+}
