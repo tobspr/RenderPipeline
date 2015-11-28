@@ -38,6 +38,16 @@ class TagStateManager(DebugObject):
         for cam in self._shadow_cameras:
             cam.node().set_tag_state(state_name, initial_state.get_state())
 
+    def cleanup_states(self):
+        """ Cleans-Up all tag states, this should be called *before* a shader
+        reload, to make sure no old tag states are in the cache anymore """
+        if not hasattr(Globals.base.camNode, "clear_tag_states"):
+            self.warn("Please update your Panda3D Build!")
+            return
+        Globals.base.camNode.clear_tag_states()
+        for cam in self._shadow_cameras:
+            cam.node().clear_tag_states()        
+
     def register_shadow_source(self, source):
         """ Registers a new shadow camera, which is supposed to render shadows.
         The manager then setups all required tags and keeps track of updating them """ 

@@ -7,11 +7,11 @@
 
 
 enabled: 
-    - Scattering
     - ColorCorrection
-    - SMAA
-    - PSSM
     - AO
+    - PSSM
+    - SMAA
+    - Scattering
 
 overrides: 
     AO.alchemy_max_distance: 5.19
@@ -57,22 +57,22 @@ overrides:
     ColorCorrection.vignette_strength: 0.2
     PSSM.filter_radius: 11.21
     PSSM.filter_sample_count: 30
-    PSSM.fixed_bias: 0.1
+    PSSM.fixed_bias: 0.0222
     PSSM.logarithmic_factor: 2.73
     PSSM.max_distance: 135.19999
-    PSSM.normal_bias: 2.06
-    PSSM.pcss_penumbra_size: 126.72
+    PSSM.normal_bias: 2.61
+    PSSM.pcss_penumbra_size: 43.42
     PSSM.pcss_search_samples: 15
     PSSM.resolution: 2048
-    PSSM.slope_bias: 0.0
+    PSSM.slope_bias: 0.55
     PSSM.split_count: 5
     PSSM.sun_distance: 870.0
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: False
-    Scattering.beta_mie_scattering: 26.13
+    Scattering.beta_mie_scattering: 4.0
     Scattering.ground_reflectance: 0.1
     Scattering.mie_height_scale: 1.2
-    Scattering.mie_phase_factor: 0.64994
-    Scattering.rayleigh_height_scale: 9.33
+    Scattering.mie_phase_factor: 0.8
+    Scattering.rayleigh_height_scale: 8.0
 
