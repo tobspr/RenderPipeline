@@ -56,7 +56,7 @@ void main() {
     #endif
 
     #if MODE_ACTIVE(NORMAL)
-        result.xyz = vec3(m.normal * 0.5 + 0.5);
+        result.xyz = vec3(m.normal);
     #endif
 
 }

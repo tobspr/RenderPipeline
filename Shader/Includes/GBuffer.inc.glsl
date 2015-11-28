@@ -4,9 +4,8 @@
 #pragma include "Includes/Structures/Material.struct.glsl"
 
 
-#define USE_NORMAL_QUANTIZATION 0
-#pragma include "Includes/NormalPacking.inc.glsl"
 
+#pragma include "Includes/NormalPacking.inc.glsl"
 
 
 #if defined(IS_GBUFFER_SHADER)
@@ -39,7 +38,6 @@
         // Compute material properties
         vec3 normal = normalize(m.normal);
         vec2 packed_normal = pack_normal_octrahedron(normal);
-        
 
         vec3 diffuse_color = saturate(m.basecolor) * saturate(1 - m.metallic);
         vec3 specular_color = saturate(m.basecolor) * saturate(m.metallic) * saturate(m.specular);
@@ -47,8 +45,10 @@
         float roughness = saturate(m.roughness);
         vec2 velocity = compute_velocity();
 
+        float UNUSED = 0.0;
+
         gbuffer_out_0 = vec4(diffuse_color.r, diffuse_color.g, diffuse_color.b, roughness);
-        gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, 0, specular_color.r);
+        gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, UNUSED, specular_color.r);
         gbuffer_out_2 = vec4(velocity.x, velocity.y, specular_color.g, specular_color.b);
     }
 
@@ -61,7 +61,6 @@
     GBuffer - Unpacking
 
     */
-
 
     #pragma include "Includes/PositionReconstruction.inc.glsl"
     #pragma include "Includes/Structures/GBufferData.struct.glsl"
@@ -123,10 +122,13 @@
         // Unpack data
         m.diffuse = data0.xyz;
         m.roughness = max(0.001, data0.w);
-        m.normal = normal_unquantization(data1.xyz);
+        // m.normal = normal_unquantization(data1.xyz);
+        m.normal = unpack_normal_octrahedron(data1.xy);
         m.specular = vec3(data1.w, data2.zw);
 
-        // Velocity, not unpacked yet
+        float UNUSED = data1.z;
+
+        // Velocity, not unpacked here
         // vec2 velocity = data2.xy;
 
         return m;

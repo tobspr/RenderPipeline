@@ -60,11 +60,7 @@ void main() {
     // Automatic exposure
     #if GET_SETTING(ColorCorrection, use_auto_exposure)
         float avg_brightness = texelFetch(ExposureTex, 0).x;
-        float min_exp = GET_SETTING(ColorCorrection, min_exposure);
-        float max_exp = GET_SETTING(ColorCorrection, max_exposure);
-        float bias = GET_SETTING(ColorCorrection, exposure_bias) * 10.0;
-        scene_color *= max(min_exp, min(max_exp, 1.0 / avg_brightness + bias));
-        scene_color = saturate(scene_color);
+        scene_color *= avg_brightness;
     #endif
 
     // Apply tonemapping
