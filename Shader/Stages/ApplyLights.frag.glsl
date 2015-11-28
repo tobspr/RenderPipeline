@@ -14,6 +14,7 @@
 in vec2 texcoord;
 out vec4 result;
 
+
 uniform GBufferData GBuffer;
 
 void main() {    
@@ -21,14 +22,18 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     float depth = get_gbuffer_depth(GBuffer, coord);
 
-    ivec3 tile = getCellIndex(coord, depth);
+    // ivec3 tile = getCellIndex(coord, depth);
+
+
+    Material m = unpack_material(GBuffer);
+
+    ivec3 tile = getCellIndex(coord, distance(cameraPosition, m.position));
 
     if (tile.z >= LC_TILE_SLICES) {
         result = vec4(0);
         return;
     }
 
-    Material m = unpack_material(GBuffer);
     result.xyz = shade_material_from_tile_buffer(m, tile);
     result.w = 1.0;
 

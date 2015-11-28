@@ -38,8 +38,8 @@ void main() {
     int cellY = (packedCellData >> 10) & 0x3FF;
     int cellSlice = (packedCellData >> 20) & 0x3FF;
 
-    float linearDepthStart = getLinearDepthFromSlice(cellSlice);
-    float linearDepthEnd = getLinearDepthFromSlice(cellSlice + 1);
+    float min_distance = get_distance_from_slice(cellSlice);
+    float max_distance = get_distance_from_slice(cellSlice + 1);
 
     int storageOffs = (MAX_LIGHTS_PER_CELL+1) * idx;
     int numRenderedLights = 0;
@@ -65,8 +65,8 @@ void main() {
     frustum.top    = normalize_without_w(frustumOffset - frustumTL);
     frustum.bottom = normalize_without_w(frustumOffset + frustumTL);
 
-    frustum.nearPlane = vec4(0, 0, -1.0, -linearDepthStart);
-    frustum.farPlane = vec4(0, 0, 1.0, linearDepthEnd);
+    frustum.nearPlane = vec4(0, 0, -1.0, -min_distance);
+    frustum.farPlane = vec4(0, 0, 1.0, max_distance);
 
 
 
@@ -78,7 +78,7 @@ void main() {
     // since using this way we could miss some small parts of the sphere. With this
     // bias we should be fine, except for very small spheres, but those will be
     // out of the culling range then anyays
-    float cull_bias = 0.1;
+    float cull_bias = 0.2;
 
     // Compute corner ray directions
     vec3 ray_dir_tr = vec3( float(cellX+1+cull_bias) / precomputeSize.x, float(cellY+1+cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
@@ -122,14 +122,12 @@ void main() {
             #else
                 // Slower but more accurate intersection, traces a ray at the corners of
                 // each frustum.
-                visible =            viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tl, linearDepthStart, linearDepthEnd);
-                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tr, linearDepthStart, linearDepthEnd);
-                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_bl, linearDepthStart, linearDepthEnd);
-                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_br, linearDepthStart, linearDepthEnd);
+                visible =            viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tl, min_distance, max_distance);
+                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tr, min_distance, max_distance);
+                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_bl, min_distance, max_distance);
+                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_br, min_distance, max_distance);
             #endif
-
         }
-
 
         // Write the light to the light buffer
         // TODO: Might have a seperate list for different light types, gives better performance

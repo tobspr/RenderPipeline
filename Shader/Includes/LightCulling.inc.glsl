@@ -6,22 +6,21 @@
 
 
 #define LIGHT_CULLING_DIST LC_MAX_DISTANCE
-#define SLICE_POW_FACTOR 0.75
+#define SLICE_POW_FACTOR 1
 
 
-int getSliceFromLinearDepth(float linear_depth) {
+int get_slice_from_distance(float dist) {
     return int( 
-        pow(linear_depth / LIGHT_CULLING_DIST, SLICE_POW_FACTOR) * LC_TILE_SLICES);
+        pow(dist / LIGHT_CULLING_DIST, SLICE_POW_FACTOR) * LC_TILE_SLICES);
 }
 
-float getLinearDepthFromSlice(int slice) {
+float get_distance_from_slice(int slice) {
     return pow(slice / float(LC_TILE_SLICES), 1.0 / SLICE_POW_FACTOR) * LIGHT_CULLING_DIST;
 }
 
-ivec3 getCellIndex(ivec2 texcoord, float depth) {
-    float linear_depth = getLinearZFromZ(depth);
-    ivec2 tile = texcoord / ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
-    return ivec3(tile, getSliceFromLinearDepth(linear_depth));
+ivec3 getCellIndex(ivec2 coord, float surface_distance) {
+    ivec2 tile = coord / ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
+    return ivec3(tile, get_slice_from_distance(surface_distance));
 }
 
 
@@ -73,5 +72,5 @@ bool viewspace_ray_sphere_intersection(vec3 sphere_pos, float sphere_radius, vec
 bool viewspace_ray_sphere_distance_intersection(vec3 sphere_pos, float sphere_radius, vec3 ray_dir, float tile_start, float tile_end) {
     float r_min, r_max;
     bool visible = viewspace_ray_sphere_intersection(sphere_pos, sphere_radius, ray_dir, r_min, r_max);
-    return visible && /*r_max < tile_end &&*/ r_min > tile_start;
+    return visible && r_max < tile_end && r_min > tile_start;
 }

@@ -1,10 +1,9 @@
 #pragma once
 
 uniform mat4 trans_clip_of_mainCam_to_mainRender;
-uniform mat4 trans_view_of_mainCam_to_mainRender;
 uniform mat4 trans_mainRender_to_view_of_mainCam;
-uniform mat3 tpose_clip_of_mainCam_to_mainRender;
 uniform mat4 trans_mainRender_to_clip_of_mainCam;
+
 uniform mat4 currentProjMatInv;
 uniform mat4 currentProjMat;
 
@@ -26,6 +25,7 @@ float getZFromNdc(vec3 ndcPos, float near, float far) {
 }
 
 float getZFromLinearZ(float z) {
+  // TODO: simplify
   z /= ndcC;
   z = 1.0 / z;
   z -= ndcA;
@@ -36,11 +36,11 @@ float getZFromLinearZ(float z) {
 }
 
 float getLinearZFromZ(float z) {
-    return ndcC / (ndcA - (z * 2.0 - 1.0) * ndcD);
+    return ndcC / (ndcA - fma(z, 2.0, -1.0) * ndcD);
 }
 
 float getCustomLinearZFromZ(float z, float near, float far) {
-    float z_n = z * 2.0 - 1.0;
+    float z_n = fma(z, 2.0, -1.0);
     float z_e = 2.0 * near * far / (far + near - z_n * (far - near));
     return z_e;
 }
@@ -50,7 +50,7 @@ float normalizeZ(float z, float near, float far) {
 }
 
 vec3 calculateSurfacePos(float z, vec2 tcoord, mat4 clipToRender) {
-  vec3 ndcPos = vec3(tcoord.xy, z) * 2.0 - 1.0;    
+  vec3 ndcPos = fma(vec3(tcoord.xy, z), vec3(2.0), vec3(-1.0));    
   vec4 clipPos = vec4(getZFromNdc(ndcPos));
   clipPos.xyz = ndcPos * clipPos.w;
   return (clipToRender * clipPos).xyz;
@@ -61,20 +61,15 @@ vec3 calculateSurfacePos(float z, vec2 tcoord) {
 }
 
 vec3 calculateSurfacePos(float z, vec2 tcoord, float near, float far, mat4 clipToRender) {
-  vec3 ndcPos = vec3(tcoord.xy, z) * 2.0 - 1.0;    
+  vec3 ndcPos = fma(vec3(tcoord.xy, z), vec3(2.0), vec3(-1.0));    
   vec4 clipPos = vec4(getZFromNdc(ndcPos, near, far));
   clipPos.xyz = ndcPos * clipPos.w;
   return (clipToRender * clipPos).xyz;
 }
 
-
 vec3 calculateViewPos(float z, vec2 tcoord) {
-
-  //@TODO: Use fma
-  vec3 ndc = vec3(tcoord.xy * 2.0 - 1.0, z);
+  vec3 ndc = vec3( fma(tcoord.xy, vec2(2.0), vec2(-1.0)), z);
   vec4 sampleViewPos = inverse(currentProjMat) * vec4(ndc, 1.0);
-  // sampleViewPos.xyz = sampleViewPos.xzy;
-  // sampleViewPos.z = -sampleViewPos.z;
   return sampleViewPos.xyz / sampleViewPos.w;
 }
 
@@ -93,8 +88,6 @@ vec3 viewNormalToWorld(vec3 view_normal) {
   view_normal = view_normal.xzy * vec3(1, -1, 1);
   return normalize((vec4(view_normal.xyz, 0) * trans_mainRender_to_view_of_mainCam).xyz);
 }
-
-
 
 
 vec3 worldToScreen(vec3 world_pos) {

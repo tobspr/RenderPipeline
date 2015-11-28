@@ -28,7 +28,7 @@ settings:
         # distance, no lights are rendered anymore. If you choose a lower 
         # distance, this *can* positively impact performance, but you should not
         # set it too low, to avoid getting artifacts.
-        culling_max_distance: 300.0
+        culling_max_distance: 80.0
 
 
 

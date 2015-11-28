@@ -113,12 +113,9 @@ void main() {
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
-
-
     }
 
     #endif
-
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
