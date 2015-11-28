@@ -221,6 +221,7 @@ class RenderPipeline(DebugObject):
         self._showbase.graphicsEngine.render_frame()
         self._showbase.graphicsEngine.render_frame()
 
+        self._tag_mgr.cleanup_states()
         self._stage_mgr.set_shaders()
         self._light_mgr.reload_shaders()
 
@@ -251,7 +252,7 @@ class RenderPipeline(DebugObject):
     def _clear_state_cache(self, task=None):
         """ Task which repeatedly clears the state cache to avoid storing
         unused states. """
-        task.delayTime = 3.0
+        task.delayTime = 1.0
         TransformState.clear_cache()
         RenderState.clear_cache()
         return task.again
