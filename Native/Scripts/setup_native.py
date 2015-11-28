@@ -74,23 +74,26 @@ try:
 except subprocess.CalledProcessError as msg:
     error("Cmake Error:", msg.output)
 
-print("Compiling solution ..")
-os.chdir(current_dir)
 
-try:
-    subprocess.check_output([sys.executable, "-B", "compile.py"], stderr=sys.stderr)
-except subprocess.CalledProcessError as msg:
-    error("Compilation failed:", msg.output)
+if not "--cmake-only" in sys.argv:
 
-# Check if the generated binary exists
-if platform.system() == "Windows":
-    expected_bin = "RSNative.pyd"
-elif platform.system() == "Linux":
-    expected_bin = "RSNative.so"
+    print("Compiling solution ..")
+    os.chdir(current_dir)
+
+    try:
+        subprocess.check_output([sys.executable, "-B", "compile.py"], stderr=sys.stderr)
+    except subprocess.CalledProcessError as msg:
+        error("Compilation failed:", msg.output)
+
+    # Check if the generated binary exists
+    if platform.system() == "Windows":
+        expected_bin = "RSNative.pyd"
+    elif platform.system() == "Linux":
+        expected_bin = "RSNative.so"
 
 
-if not os.path.isfile("../../Code/Native/" + expected_bin):
-    error("Compilation finished but could not find binary (" + expected_bin + ")!")
+    if not os.path.isfile("../../Code/Native/" + expected_bin):
+        error("Compilation finished but could not find binary (" + expected_bin + ")!")
 
 print("Success!")
 sys.exit(0)
