@@ -79,3 +79,5 @@ vec3 BRDFEnvironment( vec3 specular_color, float roughness, float NxV )
 {
     return mix(specular_color, vec3(1), pow(NxV, 5.0) * (1-roughness));
 }
+
+

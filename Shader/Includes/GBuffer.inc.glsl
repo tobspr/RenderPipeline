@@ -5,7 +5,7 @@
 
 
 #define USE_NORMAL_QUANTIZATION 0
-#pragma include "Includes/NormalQuantization.inc.glsl"
+#pragma include "Includes/NormalPacking.inc.glsl"
 
 
 
@@ -38,6 +38,9 @@
         
         // Compute material properties
         vec3 normal = normalize(m.normal);
+        vec2 packed_normal = pack_normal_octrahedron(normal);
+        
+
         vec3 diffuse_color = saturate(m.basecolor) * saturate(1 - m.metallic);
         vec3 specular_color = saturate(m.basecolor) * saturate(m.metallic) * saturate(m.specular);
         specular_color += vec3(0.02) * saturate(1 - m.metallic);
@@ -45,7 +48,7 @@
         vec2 velocity = compute_velocity();
 
         gbuffer_out_0 = vec4(diffuse_color.r, diffuse_color.g, diffuse_color.b, roughness);
-        gbuffer_out_1 = vec4(m.normal.x, m.normal.y, m.normal.z, specular_color.r);
+        gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, 0, specular_color.r);
         gbuffer_out_2 = vec4(velocity.x, velocity.y, specular_color.g, specular_color.b);
     }
 
@@ -85,13 +88,17 @@
 
 
     vec3 get_gbuffer_normal(GBufferData data, vec2 float_coord) {
-        vec3 raw_normal = textureLod(data.Data1, float_coord, 0).xyz;
-        return normal_unquantization(raw_normal);
+        // vec3 raw_normal = textureLod(data.Data1, float_coord, 0).xyz;
+        // return normal_unquantization(raw_normal);
+        vec2 packed_normal = textureLod(data.Data1, float_coord, 0).xy;
+        return unpack_normal_octrahedron(packed_normal);
     }
 
     vec3 get_gbuffer_normal(GBufferData data, ivec2 coord) {
-        vec3 raw_normal = texelFetch(data.Data1, coord, 0).xyz;
-        return normal_unquantization(raw_normal); 
+        // vec3 raw_normal = texelFetch(data.Data1, coord, 0).xyz;
+        // return normal_unquantization(raw_normal); 
+        vec2 packed_normal = texelFetch(data.Data1, coord, 0).xy;
+        return unpack_normal_octrahedron(packed_normal);
     }
 
     vec2 get_gbuffer_velocity(GBufferData data, ivec2 coord) {

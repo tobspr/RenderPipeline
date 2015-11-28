@@ -72,9 +72,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         // Special handling for different light types
         // if (lightType == LT_POINT_LIGHT) {
             float radius = get_pointlight_radius(light_data);
-            // float innerRadius = data2.x;
-            // innerRadius = 2.0;
-            attenuation = computePointLightAttenuation(radius, distance(m.position, light_pos));
+            attenuation = get_pointlight_attenuation(radius, distance(m.position, light_pos));
             l = normalize(light_pos - m.position);
         // }
 

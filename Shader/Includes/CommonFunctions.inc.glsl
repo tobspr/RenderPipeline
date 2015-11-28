@@ -133,3 +133,4 @@ vec3 blend_soft_light(vec3 base, vec3 blend) {
 vec4 normalize_without_w(vec4 v) {
     return v / length(v.xyz);
 }
+
