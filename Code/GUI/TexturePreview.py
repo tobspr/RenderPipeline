@@ -1,10 +1,11 @@
 
 from panda3d.core import Vec3, Texture, Shader, LVecBase2i
+
 from .DraggableWindow import DraggableWindow
 from .BetterOnscreenImage import BetterOnscreenImage
 from .BetterOnscreenText import BetterOnscreenText
 from .BetterSlider import BetterSlider
-
+from ..Util.DisplayShaderBuilder import DisplayShaderBuilder
 
 class TexturePreview(DraggableWindow):
 
@@ -15,7 +16,6 @@ class TexturePreview(DraggableWindow):
         self._pipeline = pipeline
         self._current_tex = None
         self._create_components()
-        self._create_shaders()
 
     def present(self, tex):
         """ "Presents" a given texture and shows the window """
@@ -25,11 +25,19 @@ class TexturePreview(DraggableWindow):
         self._content_node.node().remove_all_children()
 
         w, h = tex.get_x_size(), tex.get_y_size()
-        scale_x = (self._width - 40.0) / w
-        scale_y = (self._height - 110.0) / h
-        scale_f = min(scale_x, scale_y)
+        if h > 1:
+          scale_x = (self._width - 40.0) / w
+          scale_y = (self._height - 110.0) / h
+          scale_f = min(scale_x, scale_y)
+          display_w = scale_f * w
+          display_h = scale_f * h
+
+        else:
+          display_w = self._width - 40
+          display_h = self._height - 110
+
         image = BetterOnscreenImage(image=tex, parent=self._content_node, x=20,
-                                    y=90, w=scale_f * w, h=scale_f * h,
+                                    y=90, w=display_w, h=display_h,
                                     any_filter=False, transparent=False)
         description = ""
 
@@ -71,14 +79,7 @@ class TexturePreview(DraggableWindow):
                                                 color=Vec3(0.6, 0.6, 0.6),
                                                 may_change=1)
 
-
-        # Assign shaders
-        if tex.get_z_size() <= 1:
-            if tex.get_texture_type() == Texture.TT_buffer_texture:
-                image.set_shader(self._display_buffer_tex_shader)
-            else:
-                image.set_shader(self._display_2d_tex_shader)
-        else:
+        if tex.get_z_size() > 1:
             # Create slice slider
             self._slice_slider = BetterSlider(parent=self._content_node,
                                               size=250, min_value=0,
@@ -91,16 +92,12 @@ class TexturePreview(DraggableWindow):
                                                   color=Vec3(0.6, 0.6, 0.6),
                                                   may_change=1)
 
-
-
-            if tex.get_texture_type() == Texture.TT_2d_texture_array:
-                image.set_shader(self._display_2d_tex_array_shader)
-            else:
-                image.set_shader(self._display_3d_tex_shader)
-        image.set_shader_input("viewSize",
-                               LVecBase2i(int(scale_x * w), int(scale_y * h)))
         image.set_shader_input("slice", 0)
         image.set_shader_input("mipmap", 0)
+
+        preview_shader = DisplayShaderBuilder.build(tex, display_w, display_h)
+        image.set_shader(preview_shader)
+
         self._preview_image = image
         self.show()
 
@@ -113,17 +110,6 @@ class TexturePreview(DraggableWindow):
         idx = int(self._mip_slider.get_value())
         self._preview_image.set_shader_input("mipmap", idx)
         self._mip_text.set_text("Mipmap: " + str(idx))
-
-    def _create_shaders(self):
-        """ Create the shaders to display the textures """
-        self._display_2d_tex_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/display2DTex.glsl")
-        self._display_3d_tex_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/analyze3DTex.glsl")
-        self._display_2d_tex_array_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/analyze2DTexArray.glsl")
-        self._display_buffer_tex_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/displayBufferTex.glsl")
 
     def _create_components(self):
         """ Internal method to init the components """

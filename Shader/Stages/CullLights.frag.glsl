@@ -4,20 +4,14 @@
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/LightCulling.inc.glsl"
 #pragma include "Includes/LightData.inc.glsl"
-#pragma include "Includes/Structures/Frustum.struct.glsl"
 
 out vec4 result;
 
 uniform isamplerBuffer CellListBuffer;
 uniform writeonly iimageBuffer perCellLightsBuffer;
 
-
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
-
-// #define PROJ_MAT trans_view_of_mainCam_to_clip_of_mainCam
-#define PROJ_MAT currentProjMat
-// uniform mat4 PROJ_MAT;
 uniform mat4 currentViewMatZup;
 
 void main() {
@@ -38,37 +32,16 @@ void main() {
     int cellY = (packedCellData >> 10) & 0x3FF;
     int cellSlice = (packedCellData >> 20) & 0x3FF;
 
-    float min_distance = get_distance_from_slice(cellSlice);
-    float max_distance = get_distance_from_slice(cellSlice + 1);
+    float distance_bias = 0.05;
+
+    float min_distance = get_distance_from_slice(cellSlice) - distance_bias;
+    float max_distance = get_distance_from_slice(cellSlice + 1) + distance_bias;
 
     int storageOffs = (MAX_LIGHTS_PER_CELL+1) * idx;
     int numRenderedLights = 0;
 
     // Per tile bounds
     ivec2 precomputeSize = ivec2(LC_TILE_AMOUNT_X, LC_TILE_AMOUNT_Y);
-    ivec2 patchSize = ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
-    ivec2 virtualScreenSize = precomputeSize * patchSize;
-    vec2 tileScale = vec2(virtualScreenSize) / vec2( 2.0 * patchSize);
-    vec2 tileBias = tileScale - vec2(cellX, cellY) - 0.5;
-
-    // Build frustum
-    // Based on http://gamedev.stackexchange.com/questions/67431/deferred-tiled-shading-tile-frusta-calculation-in-opengl
-    // (Which is based on DICE's presentation)
-    vec4 frustumRL = vec4(-PROJ_MAT[0][0] * tileScale.x, PROJ_MAT[0][1], tileBias.x, PROJ_MAT[0][3]);
-    vec4 frustumTL = vec4(PROJ_MAT[1][0], -PROJ_MAT[1][1] * tileScale.y, tileBias.y, PROJ_MAT[3][3]);
-    const vec4 frustumOffset = vec4(PROJ_MAT[3][0], PROJ_MAT[3][1], -1.0f, PROJ_MAT[3][3]);
-
-    // Calculate frustum planes
-    Frustum frustum;
-    frustum.right  = normalize_without_w(frustumOffset - frustumRL);
-    frustum.left   = normalize_without_w(frustumOffset + frustumRL);
-    frustum.top    = normalize_without_w(frustumOffset - frustumTL);
-    frustum.bottom = normalize_without_w(frustumOffset + frustumTL);
-
-    frustum.nearPlane = vec4(0, 0, -1.0, -min_distance);
-    frustum.farPlane = vec4(0, 0, 1.0, max_distance);
-
-
 
     // Compute aspect ratio
     float aspect = float(precomputeSize.y) / precomputeSize.x;
@@ -116,17 +89,12 @@ void main() {
         if (light_type == LT_POINT_LIGHT) {
             float radius = get_pointlight_radius(light_data);
 
-            #if 0
-                // Fast but inaccurate intersection, cull against frustum planes
-                visible = sphere_frustum_intersection(frustum, light_pos_view, radius);
-            #else
-                // Slower but more accurate intersection, traces a ray at the corners of
-                // each frustum.
-                visible =            viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tl, min_distance, max_distance);
-                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tr, min_distance, max_distance);
-                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_bl, min_distance, max_distance);
-                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_br, min_distance, max_distance);
-            #endif
+            // Slower but more accurate intersection, traces a ray at the corners of
+            // each frustum.
+            visible =            viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tl, min_distance, max_distance);
+            visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tr, min_distance, max_distance);
+            visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_bl, min_distance, max_distance);
+            visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_br, min_distance, max_distance);
         }
 
         // Write the light to the light buffer

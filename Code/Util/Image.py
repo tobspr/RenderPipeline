@@ -13,7 +13,7 @@ class Image(DebugObject):
 
     @classmethod
     def create_buffer(cls, name, size, comp_type, comp_format):
-        img = cls("Image2D-" + name)
+        img = cls("ImageBuffer-" + name)
         img.get_texture().setup_buffer_texture(size, comp_type, comp_format,
                                                GeomEnums.UH_static)
         img.register()
@@ -28,7 +28,7 @@ class Image(DebugObject):
 
     @classmethod
     def create_2d_array(cls, name, w, h, z, comp_type, comp_format):
-        img = cls("Image2D-" + name)
+        img = cls("Image2DArr-" + name)
         img.get_texture().setup_2d_texture_array(w, h, z, comp_type, comp_format)
         img.register()
         return img

@@ -18,7 +18,7 @@ class CullLightsStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CullLightsStage", pipeline)
         self._tile_amount = None
-        self._max_lights_per_cell = 512
+        self._max_lights_per_cell = 32
 
     def set_tile_amount(self, tile_amount):
         """ Sets the cell tile size """
@@ -42,12 +42,11 @@ class CullLightsStage(RenderStage):
         self._target.set_size(512, self._num_rows)
         self._target.prepare_offscreen_buffer()
         self._target.set_clear_color(color=Vec4(0.2, 0.6, 1.0, 1.0))
-
         self._per_cell_lights = Image.create_buffer("PerCellLights",
             max_cells * (self._max_lights_per_cell + 1), Texture.T_int,
             Texture.F_r32)
         self._per_cell_lights.set_clear_color(0)
-
+        self.debug("Culling with", self._num_rows,"threads")
         self._target.set_shader_input("perCellLightsBuffer",
             self._per_cell_lights.get_texture())
 

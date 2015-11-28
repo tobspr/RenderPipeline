@@ -5,6 +5,8 @@ from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectFrame import DirectFrame
 
 from ..Util.Generic import rgb_from_string
+from ..Util.DisplayShaderBuilder import DisplayShaderBuilder
+from ..Util.ShaderUBO import BaseUBO
 from .DraggableWindow import DraggableWindow
 from .BetterOnscreenText import BetterOnscreenText
 from .BetterOnscreenImage import BetterOnscreenImage
@@ -94,21 +96,27 @@ class PipeViewer(DraggableWindow):
                             frameColor=(r, g, b, 1),
                             pos=(0, 1, -95 - pipe_idx * pipe_height))
 
-
                 if type(pipe_tex) == list or type(pipe_tex) == tuple:
                     pipe_tex = pipe_tex[0]
 
-                if pipe_tex.get_z_size() > 1:
+                if isinstance(pipe_tex, BaseUBO):
+                    icon_file = "Data/GUI/OnscreenDebugger/IconUBO.png"
+                elif pipe_tex.get_z_size() > 1:
                     icon_file = "Data/GUI/OnscreenDebugger/IconTexture.png"
-
                 elif pipe_tex.get_texture_type() == Texture.TT_buffer_texture:
                     icon_file = "Data/GUI/OnscreenDebugger/IconBufferTexture.png"
                 else:
                     icon_file = None
-                    BetterOnscreenImage(image=pipe_tex, parent=node,
+                    preview = BetterOnscreenImage(image=pipe_tex, parent=node,
                                         x=0, y=50 + pipe_idx * pipe_height,
                                         w=w, h=h, any_filter=False,
                                         transparent=False)
+
+                    preview_shader = DisplayShaderBuilder.build(pipe_tex, int(w), int(h) )
+                    preview.set_shader(preview_shader)
+
+                    preview.set_shader_input("mipmap", 0)
+                    preview.set_shader_input("slice", 0)
 
                 if icon_file:
                     BetterOnscreenImage(image=icon_file, parent=node,
@@ -116,8 +124,12 @@ class PipeViewer(DraggableWindow):
                                         w=48, h=48, near_filter=False,
                                         transparent=True)
 
-                    tex_desc = pipe_tex.format_texture_type(pipe_tex.get_texture_type())
-                    tex_desc += " - " + pipe_tex.format_format(pipe_tex.get_format()).upper()
+                    if isinstance(pipe_tex, BaseUBO):
+                        tex_desc = "UBO"
+                    else:
+                        tex_desc = pipe_tex.format_texture_type(pipe_tex.get_texture_type())
+                        tex_desc += " - " + pipe_tex.format_format(pipe_tex.get_format()).upper()
+
 
                     BetterOnscreenText(text=tex_desc, parent=node,
                                         x=55 + 48/2, y=130 + pipe_idx * pipe_height, color=Vec3(0.2),

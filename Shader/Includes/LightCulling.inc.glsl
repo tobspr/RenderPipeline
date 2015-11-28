@@ -2,12 +2,10 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
-#pragma include "Includes/Structures/Frustum.struct.glsl"
 
 
 #define LIGHT_CULLING_DIST LC_MAX_DISTANCE
 #define SLICE_POW_FACTOR 1
-
 
 int get_slice_from_distance(float dist) {
     return int( 
@@ -22,20 +20,6 @@ ivec3 getCellIndex(ivec2 coord, float surface_distance) {
     ivec2 tile = coord / ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
     return ivec3(tile, get_slice_from_distance(surface_distance));
 }
-
-
-bool sphere_frustum_intersection(Frustum frustum, vec4 pos, float radius) {
-    bvec4 result;
-    bvec2 result2;
-    result.x = -radius <= dot(frustum.left, pos);
-    result.y = -radius <= dot(frustum.right, pos);
-    result.z = -radius <= dot(frustum.top, pos);
-    result.w = -radius <= dot(frustum.bottom, pos);
-    result2.x = -radius <= dot(frustum.nearPlane, pos);
-    result2.y = -radius <= dot(frustum.farPlane, pos);
-    return all(result) && all(result2);
-}
-
 
 bool ray_sphere_intersection(vec3 sphere_pos, float sphere_radius, vec3 ray_start, vec3 ray_dir, out float min_dist, out float max_dist) {
     // Assume ray_dir is normalized

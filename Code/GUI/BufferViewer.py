@@ -7,6 +7,7 @@ from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectGui import DGG
 
 from ..Util.Generic import rgb_from_string
+from ..Util.DisplayShaderBuilder import DisplayShaderBuilder
 from ..Globals import Globals
 from ..RenderTarget import RenderTarget
 from .TexturePreview import TexturePreview
@@ -41,7 +42,6 @@ class BufferViewer(DraggableWindow):
         self._scroll_height = 3000
         self._display_images = False
         self._stages = []
-        self._create_shaders()
         self._create_components()
         self._tex_preview = TexturePreview(self._pipeline, parent)
         self._tex_preview.hide()
@@ -55,19 +55,6 @@ class BufferViewer(DraggableWindow):
         else:
             self._perform_update()
             self.show()
-
-    def _create_shaders(self):
-        """ Create the shaders to display the textures """
-        self._display_2d_tex_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/display2DTex.glsl")
-        self._display_3d_tex_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/display3DTex.glsl")
-        self._display_2d_tex_array_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/display2DTexArray.glsl")
-        self._display_buffer_tex_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/displayBufferTex.glsl")
-        self._display_cubemap_shader = Shader.load(Shader.SL_GLSL,
-            "Shader/GUI/vertex.glsl", "Shader/GUI/displayCubemap.glsl")
 
     def _create_components(self):
         """ Creates the window components """
@@ -196,19 +183,8 @@ class BufferViewer(DraggableWindow):
                 any_filter=False, parent=node, x=10, y=40, transparent=False)
 
             preview.set_shader_input("mipmap", 0)
+            preview.set_shader_input("slice", 0)
 
-            if stage_tex.get_z_size() <= 1:
-                if stage_tex.get_texture_type() == Texture.TT_buffer_texture:
-                    preview.set_shader(self._display_buffer_tex_shader)
-                    preview.set_shader_input("viewSize", LVecBase2i(
-                        int(scale_factor * w),
-                        int(scale_factor * h)))
-                else:
-                    preview.set_shader(self._display_2d_tex_shader)
-            else:
-                if stage_tex.get_texture_type() == Texture.TT_2d_texture_array:
-                    preview.set_shader(self._display_2d_tex_array_shader)
-                elif stage_tex.get_texture_type() == Texture.TT_cube_map:
-                    preview.set_shader(self._display_cubemap_shader)
-                else:
-                    preview.set_shader(self._display_3d_tex_shader)
+            preview_shader = DisplayShaderBuilder.build(stage_tex, scale_factor*w, scale_factor*h)
+            preview.set_shader(preview_shader)
+
