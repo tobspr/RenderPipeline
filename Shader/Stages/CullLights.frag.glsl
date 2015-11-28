@@ -11,6 +11,7 @@ out vec4 result;
 uniform isamplerBuffer CellListBuffer;
 uniform writeonly iimageBuffer perCellLightsBuffer;
 
+
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
 
@@ -53,13 +54,8 @@ void main() {
     // Build frustum
     // Based on http://gamedev.stackexchange.com/questions/67431/deferred-tiled-shading-tile-frusta-calculation-in-opengl
     // (Which is based on DICE's presentation)
-    // vec4 frustumRL = vec4(-PROJ_MAT[0][0] * tileScale.x, 0.0f, tileBias.x, 0.0f);
     vec4 frustumRL = vec4(-PROJ_MAT[0][0] * tileScale.x, PROJ_MAT[0][1], tileBias.x, PROJ_MAT[0][3]);
-    // vec4 frustumTL = vec4(0.0f, -PROJ_MAT[2][1] * tileScale.y, tileBias.y, 0.0f);
     vec4 frustumTL = vec4(PROJ_MAT[1][0], -PROJ_MAT[1][1] * tileScale.y, tileBias.y, PROJ_MAT[3][3]);
-
-    // const vec4 frustumOffset = vec4(0.0f, 0.0f, -1.0f, 0.0f);
-    // const vec4 frustumOffset = vec4(PROJ_MAT[3][0], PROJ_MAT[3][1], -1.0f, PROJ_MAT[3][3]);
     const vec4 frustumOffset = vec4(PROJ_MAT[3][0], PROJ_MAT[3][1], -1.0f, PROJ_MAT[3][3]);
 
     // Calculate frustum planes
@@ -71,25 +67,72 @@ void main() {
 
     frustum.nearPlane = vec4(0, 0, -1.0, -linearDepthStart);
     frustum.farPlane = vec4(0, 0, 1.0, linearDepthEnd);
-    frustum.viewMat = currentViewMatZup;
+
+
+
+    // Compute aspect ratio
+    float aspect = float(precomputeSize.y) / precomputeSize.x;
+    vec3 aspect_mul = vec3(1, aspect, 1 );
+
+    // Increase the frustum size by a small bit, because we trace at the corners,
+    // since using this way we could miss some small parts of the sphere. With this
+    // bias we should be fine, except for very small spheres, but those will be
+    // out of the culling range then anyays
+    float cull_bias = 0.1;
+
+    // Compute corner ray directions
+    vec3 ray_dir_tr = vec3( float(cellX+1+cull_bias) / precomputeSize.x, float(cellY+1+cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
+    vec3 ray_dir_tl = vec3( float(cellX+0-cull_bias) / precomputeSize.x, float(cellY+1+cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
+    vec3 ray_dir_br = vec3( float(cellX+1+cull_bias) / precomputeSize.x, float(cellY+0-cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
+    vec3 ray_dir_bl = vec3( float(cellX+0-cull_bias) / precomputeSize.x, float(cellY+0-cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
+
+    // Normalize ray directions, and account for the aspect ratio
+    ray_dir_tr = normalize(ray_dir_tr * aspect_mul);
+    ray_dir_tl = normalize(ray_dir_tl * aspect_mul);
+    ray_dir_br = normalize(ray_dir_br * aspect_mul);
+    ray_dir_bl = normalize(ray_dir_bl * aspect_mul);
 
     // Cull all lights
     for (int i = 0; i < maxLightIndex + 1 && numRenderedLights < MAX_LIGHTS_PER_CELL; i++) {
-        int dataOffs = i * 4;
-        LightData light_data = read_light_data(AllLightsData, dataOffs);
-        int lightType = get_light_type(light_data);
 
-        // Null-Light
-        if (lightType < 1) continue;
+        // Fetch data of current light
+        LightData light_data = read_light_data(AllLightsData, i * 4);
+        int light_type = get_light_type(light_data);
+
+        // Skip Null-Lights
+        if (light_type < 1) continue;
+
+        // Get Light position and project it to view space
+        vec3 light_pos = get_light_position(light_data);
+        vec4 light_pos_view = currentViewMatZup * vec4(light_pos, 1);
 
         bool visible = false;
-        vec3 lightPos = get_light_position(light_data);
 
-        // if (lightType == LT_POINT_LIGHT) {
+        /*
+            
+            Point Lights
+
+        */
+        if (light_type == LT_POINT_LIGHT) {
             float radius = get_pointlight_radius(light_data);
-            visible = isPointLightInFrustum(lightPos, radius, frustum);
-        // }
 
+            #if 0
+                // Fast but inaccurate intersection, cull against frustum planes
+                visible = sphere_frustum_intersection(frustum, light_pos_view, radius);
+            #else
+                // Slower but more accurate intersection, traces a ray at the corners of
+                // each frustum.
+                visible =            viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tl, linearDepthStart, linearDepthEnd);
+                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tr, linearDepthStart, linearDepthEnd);
+                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_bl, linearDepthStart, linearDepthEnd);
+                visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_br, linearDepthStart, linearDepthEnd);
+            #endif
+
+        }
+
+
+        // Write the light to the light buffer
+        // TODO: Might have a seperate list for different light types, gives better performance
         if (visible) {
             numRenderedLights ++;
             imageStore(perCellLightsBuffer, storageOffs + numRenderedLights, ivec4(i));

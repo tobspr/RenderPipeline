@@ -10,5 +10,4 @@ struct Frustum {
     vec4 nearPlane;
     vec4 farPlane;
 
-    mat4 viewMat;
 };

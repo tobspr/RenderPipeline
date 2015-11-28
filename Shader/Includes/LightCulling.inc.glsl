@@ -6,7 +6,7 @@
 
 
 #define LIGHT_CULLING_DIST LC_MAX_DISTANCE
-#define SLICE_POW_FACTOR 0.5
+#define SLICE_POW_FACTOR 0.75
 
 
 int getSliceFromLinearDepth(float linear_depth) {
@@ -25,7 +25,7 @@ ivec3 getCellIndex(ivec2 texcoord, float depth) {
 }
 
 
-bool sphereInFrustum(Frustum frustum, vec4 pos, float radius) {
+bool sphere_frustum_intersection(Frustum frustum, vec4 pos, float radius) {
     bvec4 result;
     bvec2 result2;
     result.x = -radius <= dot(frustum.left, pos);
@@ -38,10 +38,40 @@ bool sphereInFrustum(Frustum frustum, vec4 pos, float radius) {
 }
 
 
-bool isPointLightInFrustum(vec3 lightPos, float lightRadius, Frustum frustum) {
-    vec4 projectedPos = frustum.viewMat * vec4(lightPos, 1);
-    if (sphereInFrustum(frustum, projectedPos, lightRadius)) {
-        return true;
-    }
-    return false;
+bool ray_sphere_intersection(vec3 sphere_pos, float sphere_radius, vec3 ray_start, vec3 ray_dir, out float min_dist, out float max_dist) {
+    // Assume ray_dir is normalized
+
+    // https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+    // c = sphere_pos
+    // r = sphere_radius
+    // o = ray_start
+    // l = ray_dir
+
+    // Get vector from ray to sphere
+    vec3 o_minus_c = ray_start - sphere_pos;
+
+    // Project that vector onto the ray
+    float l_dot_o_minus_c = dot(ray_dir, o_minus_c);
+
+    // Compute the distance
+    float root = l_dot_o_minus_c * l_dot_o_minus_c - dot(o_minus_c, o_minus_c) + sphere_radius * sphere_radius;
+    float sqr_root = sqrt(abs(root));
+
+    min_dist = -l_dot_o_minus_c + sqr_root;
+    max_dist = -l_dot_o_minus_c - sqr_root; 
+
+
+    return root > 0;
+}
+
+
+bool viewspace_ray_sphere_intersection(vec3 sphere_pos, float sphere_radius, vec3 ray_dir, out float min_dist, out float max_dist) {
+    return ray_sphere_intersection(sphere_pos, sphere_radius, vec3(0), ray_dir, min_dist, max_dist);
+}
+
+
+bool viewspace_ray_sphere_distance_intersection(vec3 sphere_pos, float sphere_radius, vec3 ray_dir, float tile_start, float tile_end) {
+    float r_min, r_max;
+    bool visible = viewspace_ray_sphere_intersection(sphere_pos, sphere_radius, ray_dir, r_min, r_max);
+    return visible && /*r_max < tile_end &&*/ r_min > tile_start;
 }
