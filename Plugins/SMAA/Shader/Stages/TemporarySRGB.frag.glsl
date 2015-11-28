@@ -1,7 +1,6 @@
 #version 400
 
 #pragma include "Includes/Configuration.inc.glsl"
-#pragma include "Includes/Tonemapping.inc.glsl"
 #pragma include "Includes/GBuffer.inc.glsl"
 
 
@@ -19,6 +18,7 @@ void main() {
     vec3 nrm = get_gbuffer_normal(GBuffer, coord);
 
     // Simple reinhard operator
+    scene_data.xyz *= 3.0;
     scene_data.xyz = scene_data.xyz / (1.0 + scene_data.xyz);
     
     scene_data.w = 1.0;
