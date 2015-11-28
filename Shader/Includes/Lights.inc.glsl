@@ -13,8 +13,10 @@ float get_pointlight_attenuation(float radius, float dist) {
 
     // https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
     // Inverse falloff
-    float attenuation = 1.0 / (1.0 + 2*dist/radius + (dist*dist)/(radius*radius)); 
+    // float attenuation = 1.0 / (1.0 + 2*dist/radius + (dist*dist)/(radius*radius)); 
 
+    float d_by_r = dist / radius + 1;
+    float attenuation = 1 / (d_by_r * d_by_r);
 
     // Cut light transition starting at 80% because the curve is exponential and never really gets 0
     // float cutoff = r * 0.7;
