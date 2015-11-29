@@ -85,7 +85,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         inscatter_sum *= 0.5;
 
         // Exponential height fog
-        // inscatter_sum *= exp(- surfacePos.z / GET_SETTING(Scattering, ground_fog_factor) );
+        inscatter_sum *= exp(- surfacePos.z / GET_SETTING(Scattering, ground_fog_factor) );
 
         // Scale fog color
         vec4 fog_color = inscatter_sum * TimeOfDay.Scattering.fog_brightness;
