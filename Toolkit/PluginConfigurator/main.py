@@ -71,7 +71,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         # Ask the user if he's really sure about it
         msg = "Are you sure you want to reset the settings of '" + self._current_plugin_instance.get_name() + "'?\n"
-        msg+= "This cannot be undone! They will be lost forever (a long time!)."
+        msg+= "This does not reset the Time of Day settings of this plugin.\n\n"
+        msg+= "!! This cannot be undone !! They will be lost forever (a long time!)."
         reply = QtGui.QMessageBox.question(self, "Warning", 
                          msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:

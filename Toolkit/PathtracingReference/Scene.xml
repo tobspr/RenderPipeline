@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<scene version="0.5.0">
+	<integrator type="path">
+		<integer name="maxDepth" value="2"/>
+	</integrator>
+
+	<shape type="sphere">
+		<float name="radius" value="1"/>
+
+		<bsdf type="roughconductor">
+			<string name="material" value="Cu"/>
+			<string name="distribution" value="ggx"/>
+			<float name="alpha" value="0.1"/>
+		</bsdf>
+	</shape>
+
+	<sensor type="perspective">
+		<float name="farClip" value="12.4142"/>
+		<float name="focusDistance" value="3.41421"/>
+		<float name="fov" value="34.5159"/>
+		<string name="fovAxis" value="x"/>
+		<float name="nearClip" value="0.0241421"/>
+		<transform name="toWorld">
+
+			<lookat target="0, 0, -2.41421" origin="0, 0, -3.41421" up="0, 1, 0"/>
+		</transform>
+
+		<sampler type="ldsampler">
+			<integer name="sampleCount" value="128"/>
+		</sampler>
+
+		<film type="hdrfilm">
+			<integer name="height" value="512"/>
+			<integer name="width" value="512"/>
+
+			<rfilter type="gaussian"/>
+		</film>
+	</sensor>
+</scene>

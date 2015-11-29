@@ -24,7 +24,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     // }
 
     vec3 inscatteredLight = vec3(0.0);
-    float groundH = Rg + 0.1;
+    float groundH = Rg + 0.5;
     float pathLength = distance(cameraPosition, surfacePos);
     vec3 startPos = cameraPosition;
 
@@ -65,10 +65,20 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
     float phaseR = phaseFunctionR(nuStartPos);
     float phaseM = phaseFunctionM(nuStartPos);
-    inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
+    inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM * 5.0, 0.0f);
 
-    inscatteredLight *= sunIntensity * 4.0;
+    inscatteredLight *= sunIntensity * 1.0;
+
+
+    // Sun disk
+    float disk_factor = step(0.9996, dot(viewDir, sunVector));
+    float upper_disk_factor = saturate( (viewDir.z - sunVector.z) * 0.3 + 0.01);
+
+    inscatteredLight += vec3(1,0.3,0.0) * disk_factor * upper_disk_factor * 300.0 * TimeOfDay.Scattering.sun_color;
+
     // inscatteredLight = vec3(getMie(inscatter));
+
+
 
     return inscatteredLight;
 }

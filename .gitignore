@@ -12,6 +12,7 @@
 *.rpsg
 *.pdb
 *.stackdump
+*.exr
 
 # --- Ignored folders ---
 Temp/
