@@ -68,20 +68,22 @@ class MainApp(ShowBase):
         # Create the pipeline
         self.render_pipeline.create()
 
+        profile = self.render_pipeline.load_ies_profile("Data/IESProfiles/Defined.ies")
 
         plane = loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
         plane.set_scale(2.0)
         plane.reparent_to(render)
         
         # Load some models, most of them are not included in the repository
-        # model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
         # model = loader.loadModel("Models/HDRTest/Scene.bam")
-        # model = loader.loadModel("Models/SimpleShapes/Scene.bam")
+        # model = loader.loadModel("Models/SimpleShapes/Sphere.bam")
+        # model = loader.loadModel("Models/SimpleShapes/Wall.bam")
         # model = loader.loadModel("Models/Test.ignore/Statue.bam")
         # model = loader.loadModel("Models/Test.ignore/Car0.bam")
         # model = loader.loadModel("Models/DemoTerrain/Scene.bam")
         # model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
-        model = loader.loadModel("box")
+        # model = loader.loadModel("box")
         model.flatten_strong()
 
         if False:
@@ -100,23 +102,35 @@ class MainApp(ShowBase):
             model.reparent_to(render)
 
         self.render_pipeline.create_default_skybox()
-        self.lights = []
 
         # Add some random lights
-        sqr = 4
+        sqr = 0
         for x in range(sqr):
             for y in range(sqr):
                 light = PointLight()
-                pos_x, pos_y = (x-sqr//2) * 6.0, (y-sqr//2) * 6.0
-                light.set_pos( Vec3(pos_x, pos_y, 5.0) )
-                light.set_color(Vec3(random(), random(), random())* 1.0) 
-                light.set_radius(7)
-                self.lights.append(light)
+                pos_x, pos_y = (x-sqr//2) * 6.0, (y-sqr//2) * 4.0
+                # pos_x, pos_y = 0, 0
+                light.set_pos( Vec3(pos_x, pos_y, 3.0) )
+                # light.set_color(Vec3(random(), random(), random())* 1.0) 
+                light.set_color( Vec3(3, 3, 3) ) 
+                light.set_radius(5)
+                light.set_ies_profile(profile)
                 self.render_pipeline.add_light(light)
-        
+
+        if False:
+            test_light = SpotLight()
+            test_light.set_pos(0, 9, 15)
+            test_light.set_radius(30)
+            test_light.set_color( Vec3(1.0, 1.0, 1.0) * 4.0 )
+            test_light.look_at(0, 0, 0)
+            test_light.set_fov(90)
+            test_light.set_ies_profile(0)
+            self.render_pipeline.add_light(test_light)
+
         # Init movement controller
         self.controller = MovementController(self)
         self.controller.set_initial_position(Vec3(10), Vec3(0))
+        # self.controller.set_initial_position(Vec3(0, 0, 100), Vec3(0))
         self.controller.setup()
 
 MainApp().run()

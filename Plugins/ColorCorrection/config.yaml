@@ -227,7 +227,7 @@ settings: !!omap
     - max_exposure:
         display_if: {use_auto_exposure: true}
         type: float
-        range: [0.2, 40.0]
+        range: [0.05, 7.0]
         default: 5.0
         shader_runtime: true
         label: Maximum Exposure

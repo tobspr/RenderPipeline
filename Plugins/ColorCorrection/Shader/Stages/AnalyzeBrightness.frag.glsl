@@ -9,6 +9,10 @@ uniform sampler2D DownscaledTex;
 
 uniform float frameDelta;
 
+float make_log(float x) {
+    return log(1 + 8*x) / log(9.0);
+}
+
 void main() {
 
     // Manually do the last downscale step
@@ -21,8 +25,8 @@ void main() {
     }
     avg_luminance /= float(texsize.x * texsize.y);
 
-    float min_exp = GET_SETTING(ColorCorrection, min_exposure);
-    float max_exp = GET_SETTING(ColorCorrection, max_exposure);
+    float min_exp = make_log(GET_SETTING(ColorCorrection, min_exposure));
+    float max_exp = make_log(GET_SETTING(ColorCorrection, max_exposure));
     float exp_bias = GET_SETTING(ColorCorrection, exposure_bias) * 10.0;
 
     avg_luminance = max(min_exp, min(max_exp, 1.0 / (avg_luminance) + exp_bias));

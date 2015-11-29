@@ -60,8 +60,8 @@ daytime_settings: !!omap
     - sun_intensity:
         type: scalar
         unit: percent
-        range: [0.0, 20.0]
-        default: 15.0
+        range: [0.0, 6.0]
+        default: 5.0
         label: Sun Intensity
         description: Controls the intensity of the sun
 

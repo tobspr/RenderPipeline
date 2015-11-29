@@ -9,6 +9,9 @@
 enabled: 
     - ColorCorrection
     - Scattering
+    - AO
+    - PSSM
+    - SMAA
 
 overrides: 
     AO.alchemy_max_distance: 5.19
@@ -25,7 +28,7 @@ overrides:
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 6.0
     AO.ssao_sample_count: 32
-    AO.ssao_sample_radius: 123.0
+    AO.ssao_sample_radius: 40.11
     AO.ssvo_max_distance: 1.38
     AO.ssvo_sample_count: 32
     AO.ssvo_sphere_radius: 7.95
@@ -33,17 +36,17 @@ overrides:
     AO.ue4ao_max_distance: 3.4
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 119.11
-    ColorCorrection.brightness_adaption_rate: 5.0
-    ColorCorrection.chromatic_aberration_samples: 2
+    ColorCorrection.brightness_adaption_rate: 2.25
+    ColorCorrection.chromatic_aberration_samples: 1
     ColorCorrection.chromatic_aberration_strength: 0.42
-    ColorCorrection.darkness_adaption_rate: 0.4
-    ColorCorrection.exponential_factor: 0.73
+    ColorCorrection.darkness_adaption_rate: 0.5
+    ColorCorrection.exponential_factor: 0.6
     ColorCorrection.exposure_bias: 0.0
     ColorCorrection.film_grain_strength: 0.125
-    ColorCorrection.max_exposure: 1.7
-    ColorCorrection.min_exposure: 0.01
+    ColorCorrection.max_exposure: 5.53
+    ColorCorrection.min_exposure: 0.3
     ColorCorrection.reinhard_version: rgb
-    ColorCorrection.tonemap_operator: optimized
+    ColorCorrection.tonemap_operator: reinhard
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22
     ColorCorrection.uc2t_toe_denumerator: 0.3
@@ -51,12 +54,12 @@ overrides:
     ColorCorrection.uc2t_toe_strength: 0.2
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
-    ColorCorrection.vignette_strength: 0.05
+    ColorCorrection.vignette_strength: 0.2444
     PSSM.filter_radius: 11.21
     PSSM.filter_sample_count: 30
     PSSM.fixed_bias: 0.0222
     PSSM.logarithmic_factor: 2.73
-    PSSM.max_distance: 135.19999
+    PSSM.max_distance: 21.98
     PSSM.normal_bias: 2.61
     PSSM.pcss_penumbra_size: 43.42
     PSSM.pcss_search_samples: 15
@@ -68,8 +71,8 @@ overrides:
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
     Scattering.beta_mie_scattering: 4.0
-    Scattering.ground_reflectance: 0.1
+    Scattering.ground_reflectance: 1.0
     Scattering.mie_height_scale: 1.2
-    Scattering.mie_phase_factor: 0.8
-    Scattering.rayleigh_height_scale: 2.66667
+    Scattering.mie_phase_factor: 0.9909
+    Scattering.rayleigh_height_scale: 10.33333
 
