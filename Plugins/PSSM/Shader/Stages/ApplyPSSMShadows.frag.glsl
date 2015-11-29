@@ -47,11 +47,13 @@ void main() {
             TimeOfDay.Scattering.sun_azimuth,
             TimeOfDay.Scattering.sun_altitude);
         vec3 sun_color = TimeOfDay.Scattering.sun_color * 
-            TimeOfDay.Scattering.sun_intensity * 30.0;
+            TimeOfDay.Scattering.sun_intensity * 5.0;
     #else
         vec3 sun_vector = normalize(pssm_sun_vector);
         vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
     #endif
+
+    if (sun_vector.z < 0.0) return;
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -204,6 +206,7 @@ void main() {
     vec3 v = normalize(cameraPosition - m.position);
     vec3 l = sun_vector;
     lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
+
 
     // float factor = float(split) / GET_SETTING(PSSM, split_count);
     // lighting_result = (lighting_result+0.01) * vec3(factor, 1 - factor, 0);

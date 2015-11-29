@@ -16,7 +16,7 @@ settings: !!omap
         shader_runtime: true
         label: Ground Reflectance
         description: >
-            Average ground reflectance
+            Average ground reflectance, controls how much light the earth reflects.
 
     - rayleigh_height_scale:
         type: float
@@ -25,7 +25,7 @@ settings: !!omap
         shader_runtime: true
         label: Rayleigh height scale
         description: >  
-            Rayleigh height scale
+            Rayleigh height scale, higher values cause a more bluish sky.
 
     - mie_height_scale:
         type: float
@@ -34,7 +34,7 @@ settings: !!omap
         shader_runtime: true
         label: Mie height scale
         description: >
-            Mie height scale
+            Mie height scale, higher values cause a more reddish sky.
 
     - mie_phase_factor:
         type: float
@@ -53,7 +53,17 @@ settings: !!omap
         shader_runtime: true
         label: Beta Mie Scattering
         description: >
-            Beta Mie Scattering
+            Beta Mie Scattering factor
+
+    - ground_fog_factor:
+        type: float
+        range: [10.0, 500.0]
+        default: 400.0
+        shader_runtime: true
+        label: Ground Fog Factor
+        description: >
+            Controls the strength of the ground fog, lower values will cause
+            high spots e.g. mountains to recieve less fog than low spots.
 
 daytime_settings: !!omap
     
@@ -64,6 +74,7 @@ daytime_settings: !!omap
         default: 5.0
         label: Sun Intensity
         description: Controls the intensity of the sun
+        logarithmic_factor: 2.0
 
     - sun_color:
         type: color
@@ -82,23 +93,35 @@ daytime_settings: !!omap
     - sun_altitude:
         type: scalar
         unit: degree
-        range: [0.0, 100.0]
-        default: 60
+        range: [-12.0, 38.0]
+        default: 30
         label: Sun Altidude
         description: Vertical angle of the sun
 
-    - fog_end:
+    - fog_ramp_size:
         type: scalar
         unit: meter
         range: [0.5, 5000.0]
         default: 2000
-        label: Fog-End
-        description: End of the fog in world space units
+        label: Fog-Ramp
+        description: >
+            Size of the transition from no fog to fog in world space units.
+            Higher values produce a smoother transition from no fog to fog,
+            while lower values will produce a more sharp transition.
+
+    - fog_start:
+        type: scalar
+        unit: meter
+        range: [0.0, 800.0]
+        default: 100.0
+        label: Fog-Start
+        description: >
+            Start of the fog in world space units.
 
     - fog_brightness:
         type: scalar
         unit: percent
-        range: [0.0, 15.0]
+        range: [0.0, 1.5]
         default: 1.0
         label: Fog-Brightness
         description: Brightness of the fog

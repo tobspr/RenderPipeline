@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 
+import math
 from panda3d.core import PTAFloat, PTAVecBase3f
 
 from ..Util.DebugObject import DebugObject
@@ -76,8 +77,14 @@ class DayTimeSettingSCALAR(DayTimeSetting):
     def load_additional_settings(self, yaml):
         self.min_value, self.max_value = yaml.pop("range")
         self.unit = yaml.pop("unit")
+        self.exp_factor = 1.0
         if self.unit not in ["degree", "percent", "meter"]:
             raise BadSettingException("Unkown unit: ", self.unit)
+
+        if "logarithmic_factor" in yaml:
+            self.exp_factor = yaml.pop("logarithmic_factor") * 0.2
+            if self.exp_factor < 0.001 or self.exp_factor > 1000.0:
+                raise BadSettingException("Exponential factor out of range!")
 
     def set_default_value(self, val):
         val = float(val)
@@ -86,14 +93,15 @@ class DayTimeSettingSCALAR(DayTimeSetting):
         self.default = float(val)
 
     def format(self, val):
+        val = self._scale_value(val)
         if self.unit is None:
             return val
         elif self.unit == "degree":
             return str(round(val, 1)) + u"°"
         elif self.unit == "percent":
-            return str(int(val * 100.0)) + u"%" 
+            return str(int(val * 100.0)) + u"%"
         elif self.unit == "meter":
-            return str(int(val)) + u"m" 
+            return str(int(val)) + u"m"
 
     def format_nonlinear(self, val):
         return self.format(self.from_linear_space(val))
@@ -113,7 +121,15 @@ class DayTimeSettingSCALAR(DayTimeSetting):
         return self.from_linear_space(self.curves[0].get_value(offset))
 
     def get_scaled_value(self, offset):
-        return self.get_value(offset)
+        raw_value = self.get_value(offset)
+        return self._scale_value(raw_value)
+
+    def _scale_value(self, raw_value):
+        if self.exp_factor != 1.0:
+            scaled_value = (math.exp(self.exp_factor * raw_value) - 1) / (math.exp(self.exp_factor * self.max_value) - 1)
+            scaled_value *= self.max_value
+            return scaled_value
+        return raw_value
 
     def get_pta_type(self):
         return PTAFloat

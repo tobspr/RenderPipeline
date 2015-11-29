@@ -83,7 +83,7 @@ class Plugin(BasePlugin):
             sun_azimuth = self.get_daytime_setting(
                 "sun_azimuth", plugin_id="Scattering")
     
-            theta = sun_altitude / 180.0 * pi
+            theta = (90 - sun_altitude) / 180.0 * pi
             phi = sun_azimuth / 180.0 * pi
                 
             sun_vector = Vec3(
