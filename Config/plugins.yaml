@@ -40,13 +40,13 @@ overrides:
     ColorCorrection.chromatic_aberration_samples: 1
     ColorCorrection.chromatic_aberration_strength: 0.42
     ColorCorrection.darkness_adaption_rate: 1.84
-    ColorCorrection.exponential_factor: 0.9
+    ColorCorrection.exponential_factor: 1.01
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.1111
+    ColorCorrection.film_grain_strength: 0.2111
     ColorCorrection.max_exposure: 0.99
     ColorCorrection.min_exposure: 0.1111
     ColorCorrection.reinhard_version: rgb
-    ColorCorrection.tonemap_operator: uncharted2
+    ColorCorrection.tonemap_operator: exponential
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22
     ColorCorrection.uc2t_toe_denumerator: 0.3
@@ -54,7 +54,7 @@ overrides:
     ColorCorrection.uc2t_toe_strength: 0.2
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
-    ColorCorrection.vignette_strength: 0.2222
+    ColorCorrection.vignette_strength: 0.2221
     PSSM.filter_radius: 11.21
     PSSM.filter_sample_count: 30
     PSSM.fixed_bias: 1.0667
