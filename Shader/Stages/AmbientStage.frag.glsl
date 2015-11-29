@@ -142,6 +142,6 @@ void main() {
         ambient *= (1.0 - scene_color.w);
     #endif
 
-    result = scene_color * 0 + vec4(ambient, 1) * 1;
+    result = scene_color * 1 + vec4(ambient, 1) * 1;
 
 }

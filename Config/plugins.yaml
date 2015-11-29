@@ -8,9 +8,6 @@
 
 enabled: 
     - ColorCorrection
-    - AO
-    - PSSM
-    - SMAA
     - Scattering
 
 overrides: 
@@ -46,7 +43,7 @@ overrides:
     ColorCorrection.max_exposure: 1.7
     ColorCorrection.min_exposure: 0.01
     ColorCorrection.reinhard_version: rgb
-    ColorCorrection.tonemap_operator: exponential
+    ColorCorrection.tonemap_operator: optimized
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22
     ColorCorrection.uc2t_toe_denumerator: 0.3
@@ -54,7 +51,7 @@ overrides:
     ColorCorrection.uc2t_toe_strength: 0.2
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
-    ColorCorrection.vignette_strength: 0.2
+    ColorCorrection.vignette_strength: 0.05
     PSSM.filter_radius: 11.21
     PSSM.filter_sample_count: 30
     PSSM.fixed_bias: 0.0222
@@ -74,5 +71,5 @@ overrides:
     Scattering.ground_reflectance: 0.1
     Scattering.mie_height_scale: 1.2
     Scattering.mie_phase_factor: 0.8
-    Scattering.rayleigh_height_scale: 8.0
+    Scattering.rayleigh_height_scale: 2.66667
 

@@ -23,6 +23,7 @@ Native/Windows_x32/
 Native/Linux
 Native/Source/Interrogate*
 _DEV
+Toolkit/PathtracingReference/
 
 
 # --- Ignored files ---
