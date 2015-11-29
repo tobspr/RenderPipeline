@@ -96,9 +96,17 @@ void main() {
 
         #endif
 
-        // Get prefiltered BRDF to compute specular ambient term
-        vec3 prefilter_color = BRDFEnvironment(vec3(1), m.roughness, 1.0 - NxV);
-        vec3 specular_ambient = prefilter_color * env_default_color * m.specular;
+        #if 0
+            // Analytical environment BRDF, seems to match the pre-integrated
+            // BRDF very closely, except for higher roughness values
+            vec3 prefilter_color = BRDFEnvironment(m.specular, m.roughness, 1.0 - NxV);
+        #else
+            // Pre-Integrated environment BRDF
+            vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
+            vec3 prefilter_color = env_brdf.y + m.specular * env_brdf.x;
+        #endif
+
+        vec3 specular_ambient = prefilter_color * env_default_color;
 
         // Diffuse ambient term
         vec3 diffuse_ambient = env_amb * vec3(0.3) * m.diffuse;
@@ -113,6 +121,7 @@ void main() {
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
+
     }
 
     #endif
@@ -133,6 +142,6 @@ void main() {
         ambient *= (1.0 - scene_color.w);
     #endif
 
-    result = scene_color * 1 + vec4(ambient, 1) * 1;
+    result = scene_color * 0 + vec4(ambient, 1) * 1;
 
 }

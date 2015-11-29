@@ -39,9 +39,12 @@
         vec3 normal = normalize(m.normal);
         vec2 packed_normal = pack_normal_octrahedron(normal);
 
-        vec3 diffuse_color = saturate(m.basecolor) * saturate(1 - m.metallic);
-        vec3 specular_color = saturate(m.basecolor) * saturate(m.metallic) * saturate(m.specular);
-        specular_color += vec3(0.02) * saturate(1 - m.metallic);
+        vec3 basecolor = saturate(m.basecolor);
+        float nonmetallic = saturate(1 - m.metallic);
+        float specular_factor = saturate(m.specular);
+
+        vec3 diffuse_color = basecolor * nonmetallic;
+        vec3 specular_color = mix(basecolor, vec3(0.02), nonmetallic) * specular_factor;
         float roughness = saturate(m.roughness);
         vec2 velocity = compute_velocity();
 

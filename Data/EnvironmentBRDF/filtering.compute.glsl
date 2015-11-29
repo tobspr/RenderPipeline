@@ -98,9 +98,9 @@ uniform writeonly image2D Dest;
 void main() {
     const int res = 256;
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-    vec2 local_coord = coord / vec2(res);
+    vec2 local_coord = (coord+0.5) / vec2(res);
 
     vec2 result = IntegrateBRDF(local_coord.y, local_coord.x);
-
+    result = saturate(result);
     imageStore(Dest, coord, vec4(result, 0, 1));
 }

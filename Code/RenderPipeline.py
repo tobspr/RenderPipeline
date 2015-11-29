@@ -41,7 +41,7 @@ class RenderPipeline(DebugObject):
         done before intializing the ShowBase, the pipeline will take care of that. """
         DebugObject.__init__(self, "RenderPipeline")
         self.debug("Starting pipeline, using Python", sys.version_info.major,
-            "Architecture =", PandaSystem.getPlatform())
+            "Architecture =", PandaSystem.get_platform())
         self._showbase = showbase
         self._mount_manager = MountManager(self)
         self._settings = SettingsLoader(self, "Pipeline Settings")

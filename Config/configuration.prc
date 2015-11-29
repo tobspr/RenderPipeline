@@ -18,8 +18,8 @@ gl-debug #t
 
 # ----------------- Misc Settings -----------------
 
-# No stack trace on assertion
-# TODO: Check if this is actually required
+# No stack trace on assertion, set this to true to make panda crash on assertions
+# (which will allow to debug it)
 # assert-abort #f
 
 # File system should be case sensitive
@@ -160,7 +160,7 @@ driver-generate-mipmaps #t
 #gl-ignore-mipmaps #t
 
 # Use immutable texture storage, it is *supposed* to be faster, but might not be
-gl-immutable-texture-storage #f
+gl-immutable-texture-storage #t
 
 auto-flip #f
 gl-debug-object-labels #t
