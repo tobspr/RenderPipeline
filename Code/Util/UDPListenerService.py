@@ -1,4 +1,4 @@
-
+#
 import socket
 from threading import Thread
 
@@ -18,7 +18,6 @@ class UDPListenerService(object):
         try:
             sock.sendto(message, ("127.0.0.1", port))
         finally:
-            sock.shutdown(1)
             sock.close()
 
     @staticmethod
@@ -29,13 +28,10 @@ class UDPListenerService(object):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             sock.bind(("127.0.0.1", port))
-
             while True:
                 data, addr = sock.recvfrom(1024)
                 callback(data)
-
         finally:
-            sock.shutdown(1)
             sock.close()
 
     @classmethod
