@@ -39,7 +39,7 @@
         vec3 normal = normalize(m.normal);
         vec2 packed_normal = pack_normal_octrahedron(normal);
 
-        vec3 basecolor = saturate(m.basecolor);
+        vec3 basecolor = (m.basecolor);
         float nonmetallic = saturate(1 - m.metallic);
         float specular_factor = saturate(m.specular);
 

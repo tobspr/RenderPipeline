@@ -89,7 +89,7 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
         const int num_steps = 6;
         float curr_h = cameraPosition.z;
 
-        curr_h *= 1.0 - saturate(path_length / 20000.0);
+        curr_h *= 1.0 - saturate(path_length / 30000.0);
 
         float h_step = (surface_pos.z - cameraPosition.z) / num_steps;
         vec3 accum = vec3(0);
@@ -104,10 +104,9 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
         float fog_start = TimeOfDay.Scattering.fog_start;
 
         fog_factor = smoothstep(0, 1, (path_length-fog_start) / fog_ramp);
-        // fog_factor = 1;
 
         // Exponential height fog
-        accum *= exp(- surface_pos.z / (2.0 * GET_SETTING(Scattering, ground_fog_factor) ));
+        accum *= exp(- surface_pos.z / (1.0 * GET_SETTING(Scattering, ground_fog_factor) ));
 
         accum *= TimeOfDay.Scattering.fog_brightness * 2.6;
 
@@ -115,6 +114,7 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 
         inscatter = accum;
 
+        fog_factor = saturate(2.0 * fog_factor);
     }
 
     // return get_scattering(surfacePos);
