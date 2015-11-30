@@ -25,6 +25,9 @@ Native/Linux
 Native/Source/Interrogate*
 _DEV
 Toolkit/PathtracingReference/Mitsuba/
+Plugins/Scattering/Resources/HosekWilkieScattering/Windows_x64/
+Plugins/Scattering/Resources/HosekWilkieScattering/Windows_x32/
+Plugins/Scattering/Resources/HosekWilkieScattering/ScatteringLUT.png
 
 
 # --- Ignored files ---
