@@ -8,9 +8,6 @@ from .ColorCorrectionStage import ColorCorrectionStage
 
 class Plugin(BasePlugin):
 
-    def __init__(self, pipeline):
-        BasePlugin.__init__(self, pipeline)
-
     @PluginHook("on_stage_setup")
     def setup_stages(self):
 
@@ -34,5 +31,5 @@ class Plugin(BasePlugin):
         lut.set_minfilter(Texture.FT_linear)
         lut.set_magfilter(Texture.FT_linear)
         lut.set_anisotropic_degree(0)
-
+        
         self._stage.set_shader_input("ColorLUT", lut)

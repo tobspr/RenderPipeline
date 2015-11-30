@@ -9,16 +9,14 @@ from .SMAAStage import SMAAStage
 # Create the main plugin
 class Plugin(BasePlugin):
 
-    def __init__(self, pipeline):
-        BasePlugin.__init__(self, pipeline)
+    @PluginHook("on_stage_setup")
+    def setup_stages(self):
+        self.debug("Setting up SMAA stages ..")
 
         if self.get_setting("use_reprojection"):
             self._jitter_index = 0
             self._compute_jitters()
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
-        self.debug("Setting up SMAA stages ..")
         self._smaa_stage = self.create_stage(SMAAStage)
         self._smaa_stage.set_use_reprojection(self.get_setting("use_reprojection"))
         self._load_textures()

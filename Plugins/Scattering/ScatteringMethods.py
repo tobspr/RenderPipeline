@@ -25,11 +25,30 @@ class ScatteringMethod(DebugObject):
 
 class ScatteringMethodHosekWilkie(ScatteringMethod):
 
+    """ Scattering as suggested by Hosek and Wilkie """
+
     def load(self):
-        self.debug("TODO: load()")
+
+        lut_src = self._handle.get_resource("HosekWilkieScattering/ScatteringLUT.png")
+
+        if not isfile(lut_src):
+            self.error("Could not find precompiled LUT for the Hosek Wilkie "
+                "Scattering! Make sure you compiled the algorithm code!")
+            return
+
+        lut_tex = SliceLoader.load_3d_texture(lut_src, 512, 128, 100)
+        lut_tex.set_wrap_u(Texture.WM_repeat)
+        lut_tex.set_wrap_v(Texture.WM_clamp)
+        lut_tex.set_wrap_w(Texture.WM_clamp)
+        lut_tex.set_minfilter(Texture.FT_linear)                
+        lut_tex.set_magfilter(Texture.FT_linear)                
+        lut_tex.set_format(Texture.F_rgb16)
+
+        self._handle._display_stage.set_shader_input("ScatteringLUT", lut_tex)
 
     def compute(self):
-        self.debug("TODO: compute()")
+        pass
+
 
 class ScatteringMethodEricBruneton(ScatteringMethod):
 

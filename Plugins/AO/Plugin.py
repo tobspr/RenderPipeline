@@ -6,9 +6,6 @@ from .AOStage import AOStage
 
 class Plugin(BasePlugin):
 
-    def __init__(self, pipeline):
-        BasePlugin.__init__(self, pipeline)
-
     @PluginHook("on_stage_setup")
     def setup_stages(self):
         self._stage = self.create_stage(AOStage)

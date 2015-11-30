@@ -11,14 +11,12 @@ from .PSSMStage import PSSMStage
 
 class Plugin(BasePlugin):
 
-    def __init__(self, pipeline):
-        BasePlugin.__init__(self, pipeline) 
+    @PluginHook("on_stage_setup")
+    def setup_stages(self):
         self._update_enabled = True
         self._pta_sun_vector = PTAVecBase3f.empty_array(1)
         self._last_cache_reset = 0
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
         self._shadow_stage = self.create_stage(PSSMShadowStage)
         self._pssm_stage = self.create_stage(PSSMStage)
 
@@ -66,10 +64,6 @@ class Plugin(BasePlugin):
         self._pssm_stage.set_shader_input("pssm_mvps", self._rig.get_mvp_array())
         self._pssm_stage.set_shader_input("pssm_rotations", self._rig.get_rotation_array())
         self._pssm_stage.set_shader_input("pssm_sun_vector", self._pta_sun_vector)
-
-    @PluginHook("on_shader_create")
-    def create_shaders(self):
-        pass
 
     @PluginHook("pre_render_update")
     def update(self):

@@ -10,8 +10,7 @@ using namespace std;
 #define TWO_PI 6.28318530718
 
 double srgb_clamp(double v) {
-	v = max(0, min(1, v / 255.0));
-	v = pow(v, 1.0 / 2.2);
+	v = max(0.0, min(1.0, v / 255.0));
 	return v;
 }
 
@@ -59,8 +58,8 @@ int main()
 
 				if (true) {
 					// write out raw angles
-					gamma = factor_x * 2.0 * M_PI;
-					theta = factor_y * 0.5 * M_PI;
+					gamma = factor_x * 2.0 * ONE_PI;
+					theta = factor_y * 0.5 * ONE_PI;
 				}
 				else {
 					// Write out transformed angles

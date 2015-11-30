@@ -89,6 +89,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         // Scale fog color
         vec4 fog_color = inscatter_sum * TimeOfDay.Scattering.fog_brightness;
 
+        fog_color *= fog_factor;
 
         // Scale the fog factor after tinting the color, this reduces the ambient term
         // even more, this is a purely artistic choice
@@ -106,18 +107,9 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     float phaseM = phaseFunctionM(nuStartPos);
     inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
 
-    // Sun disk
-    vec3 silhouette_col = vec3(TimeOfDay.Scattering.sun_intensity) * inscatteredLight * fog_factor * sun_factor;
-    float disk_factor = step(0.99995, dot(viewDir, sun_vector));
-    float outer_disk_factor = saturate(pow(max(0, dot(viewDir, sun_vector)), 39200.0)) * 1.3;
-    float upper_disk_factor = saturate( (viewDir.z - sun_vector.z) * 0.3 + 0.01);
-    outer_disk_factor = (exp(3.0 * outer_disk_factor) - 1) / (exp(4)-1);
-    inscatteredLight += vec3(1,0.3,0.1) * disk_factor * 
-        upper_disk_factor * 1e2 * 7.0 * silhouette_col;
-    inscatteredLight += silhouette_col * outer_disk_factor * vec3(1, 0.8, 0.5) * 100.0;
 
 
-    inscatteredLight *= 20.0;
+    inscatteredLight *= 60.0;
 
     inscatteredLight *= saturate( (sun_vector.z+0.1) * 40.0);
 
