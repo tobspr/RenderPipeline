@@ -73,6 +73,10 @@ def check_repo_complete():
         print("-" * 79)
         error("RenderTarget submodule missing")
 
+    # TODO: Should check if the color space submodule was loaded, too.
+    # But if the user used git submodule update, he most likely fetched the
+    # color spaces too.
+
 
 print("\nRender Pipeline Setup 1.0\n")
 print("-" * 79)

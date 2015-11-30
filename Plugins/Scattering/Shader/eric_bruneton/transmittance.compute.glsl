@@ -1,6 +1,6 @@
 #version 440
 
-#pragma include "scattering_common.glsl"
+#pragma include "./eric_bruneton/scattering_common.glsl"
 
 
 layout(local_size_x = 16, local_size_y = 16) in;

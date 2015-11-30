@@ -4,10 +4,9 @@
 #define NO_COMPUTE_SHADER 1
 #pragma include "scattering_common.glsl"
 
-uniform sampler3D inscatterSampler;
+uniform sampler3D InscatterSampler;
 
-float sunIntensity = TimeOfDay.Scattering.sun_intensity;
-vec3 sunVector = sun_azimuth_to_angle(
+vec3 sun_vector = sun_azimuth_to_angle(
         TimeOfDay.Scattering.sun_azimuth,
         TimeOfDay.Scattering.sun_altitude);
 
@@ -34,10 +33,10 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     float surfacePosHeight = surfacePos.z * height_scale_factor + groundH;
 
     float muStartPos = viewDir.z;
-    float nuStartPos = max(0, dot(viewDir, sunVector));
-    float musStartPos = sunVector.z;
+    float nuStartPos = max(0, dot(viewDir, sun_vector));
+    float musStartPos = sun_vector.z;
 
-    vec4 inscatter = max(texture4D(inscatterSampler, startPosHeight,
+    vec4 inscatter = max(texture4D(InscatterSampler, startPosHeight,
         muStartPos, musStartPos, nuStartPos), 0.0);
         
     fog_factor = 1.0;
@@ -73,7 +72,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         vec4 inscatter_sum = vec4(0);
         
         for (int i = 0; i < num_samples; ++i) {
-            inscatter_sum += texture4D(inscatterSampler, 
+            inscatter_sum += texture4D(InscatterSampler, 
                 current_height * height_scale_factor + groundH, 
                 current_height / 2400.0 + 0.001,
                 musStartPos, nuStartPos);
@@ -109,9 +108,9 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
     // Sun disk
     vec3 silhouette_col = vec3(TimeOfDay.Scattering.sun_intensity) * inscatteredLight * fog_factor * sun_factor;
-    float disk_factor = step(0.99995, dot(viewDir, sunVector));
-    float outer_disk_factor = saturate(pow(max(0, dot(viewDir, sunVector)), 39200.0)) * 1.3;
-    float upper_disk_factor = saturate( (viewDir.z - sunVector.z) * 0.3 + 0.01);
+    float disk_factor = step(0.99995, dot(viewDir, sun_vector));
+    float outer_disk_factor = saturate(pow(max(0, dot(viewDir, sun_vector)), 39200.0)) * 1.3;
+    float upper_disk_factor = saturate( (viewDir.z - sun_vector.z) * 0.3 + 0.01);
     outer_disk_factor = (exp(3.0 * outer_disk_factor) - 1) / (exp(4)-1);
     inscatteredLight += vec3(1,0.3,0.1) * disk_factor * 
         upper_disk_factor * 1e2 * 7.0 * silhouette_col;
@@ -120,7 +119,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
     inscatteredLight *= 20.0;
 
-    inscatteredLight *= saturate( (sunVector.z+0.1) * 40.0);
+    inscatteredLight *= saturate( (sun_vector.z+0.1) * 40.0);
 
     return inscatteredLight;
 }

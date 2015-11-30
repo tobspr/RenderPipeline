@@ -40,8 +40,8 @@ class RenderPipeline(DebugObject):
         """ Creates a new pipeline with a given showbase instance. This should be
         done before intializing the ShowBase, the pipeline will take care of that. """
         DebugObject.__init__(self, "RenderPipeline")
-        self.debug("Starting pipeline, using Python", sys.version_info.major,
-            "Architecture =", PandaSystem.get_platform())
+        self.debug("Using Python", sys.version_info.major,
+            "with architecture", PandaSystem.get_platform())
         self._showbase = showbase
         self._mount_manager = MountManager(self)
         self._settings = SettingsLoader(self, "Pipeline Settings")

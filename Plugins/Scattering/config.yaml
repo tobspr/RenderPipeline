@@ -9,7 +9,18 @@ description: >
 
 settings: !!omap
     
+    - scattering_method:
+        type: enum
+        values: ["eric_bruneton", "hosek_wilkie"]
+        default: "eric_bruneton"
+        label: Scattering Method
+        description: >
+            Chooses the scattering algorithm. eric_bruneton is the Precomputed
+            Atmospheric Scattering method proposed by Eric Bruneton. hosek_wilkie
+            denotes the sky model proposed by Lukas Hosek and Alexander Wilkie.
+
     - ground_reflectance:
+        display_if: {scattering_method: "eric_bruneton"}
         type: float
         range: [0.01, 1.0]
         default: 0.1
@@ -19,6 +30,7 @@ settings: !!omap
             Average ground reflectance, controls how much light the earth reflects.
 
     - rayleigh_height_scale:
+        display_if: {scattering_method: "eric_bruneton"}
         type: float
         range: [1.0, 16.0]
         default: 8.0
@@ -28,6 +40,7 @@ settings: !!omap
             Rayleigh height scale, higher values cause a more bluish sky.
 
     - mie_height_scale:
+        display_if: {scattering_method: "eric_bruneton"}
         type: float
         range: [0.5, 5.0]
         default: 1.2
@@ -37,6 +50,7 @@ settings: !!omap
             Mie height scale, higher values cause a more reddish sky.
 
     - mie_phase_factor:
+        display_if: {scattering_method: "eric_bruneton"}
         type: float
         range: [0.1, 0.9999]
         default: 0.8
@@ -47,6 +61,7 @@ settings: !!omap
             in the sky, higher values produce a smaller (but brighter) sun-shape.
 
     - beta_mie_scattering:
+        display_if: {scattering_method: "eric_bruneton"}
         type: float
         range: [1, 30]
         default: 4

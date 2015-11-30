@@ -14,6 +14,7 @@ sys.path.insert(0, "../")
 from Code.PluginInterface.BasePlugin import BasePlugin
 from Code.PluginInterface.PluginHook import PluginHook, SettingChanged
 from Code.Util.Image import Image
+from Code.Util.DebugObject import DebugObject
 from Code.Util.SliceLoader import SliceLoader
 from Code.RenderStage import RenderStage
 from Code.RenderTarget import RenderTarget
