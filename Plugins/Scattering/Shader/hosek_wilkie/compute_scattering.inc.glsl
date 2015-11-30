@@ -104,12 +104,14 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
         float fog_start = TimeOfDay.Scattering.fog_start;
 
         fog_factor = smoothstep(0, 1, (path_length-fog_start) / fog_ramp);
+        // fog_factor = 1;
 
         // Exponential height fog
-        accum *= exp(- surface_pos.z / GET_SETTING(Scattering, ground_fog_factor) );
+        accum *= exp(- surface_pos.z / (2.0 * GET_SETTING(Scattering, ground_fog_factor) ));
 
+        accum *= TimeOfDay.Scattering.fog_brightness * 2.6;
 
-        accum *= fog_factor;
+        // accum *= fog_factor;
 
         inscatter = accum;
 
