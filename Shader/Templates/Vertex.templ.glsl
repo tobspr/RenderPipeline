@@ -24,7 +24,7 @@ out layout(location=0) VertexOutput vOutput;
 
 uniform struct {
     vec4 diffuse;
-    vec4 specular;
+    vec3 specular;
     vec4 ambient;
 } p3d_Material;
 
@@ -45,7 +45,7 @@ void main() {
     vOutput.material_specular  = p3d_Material.specular.r;
     vOutput.material_metallic  = p3d_Material.specular.g;
     vOutput.material_roughness = p3d_Material.specular.b;
-    vOutput.bumpmap_factor = p3d_Material.specular.w;
+    vOutput.bumpmap_factor = p3d_Material.diffuse.w;
 
     %VERTEX%
 

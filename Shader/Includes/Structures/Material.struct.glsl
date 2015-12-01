@@ -12,12 +12,14 @@ struct MaterialShaderOutput {
 
 
 
-// Structure actually stored in the GBuffer
+// Structure actually stored in the GBuffer, this *may* differ but not necesasrily
+// has to:
 struct Material {
+    vec3 basecolor;
     vec3 normal;
-    vec3 diffuse;
-    vec3 specular;
-    float roughness;
     vec3 position;
+    float roughness;
+    float specular;
+    float metallic;
 };
 

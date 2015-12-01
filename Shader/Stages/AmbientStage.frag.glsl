@@ -30,12 +30,12 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
     // So current_mip is sample_roughness / 0.1
 
     int num_mipmaps = get_mipmap_count(map);
-    // float reflectivity = saturate(1.0 - roughness);
+    float reflectivity = saturate(1.0 - roughness);
 
     // Increase mipmap at extreme roughness, linear doesn't work well there
-    // reflectivity += saturate(reflectivity - 0.9) * 2.0;
-    return sqrt(roughness) * 7.0;
-    // return (num_mipmaps - reflectivity * 9.0);
+    reflectivity += saturate(reflectivity - 0.9) * 4.0;
+    // return sqrt(roughness) * 8.0;
+    return (num_mipmaps - sqrt(reflectivity) * 7.0);
 }
 
 
@@ -96,20 +96,28 @@ void main() {
 
         #endif
 
+        vec3 specular_nonmetallic = vec3(0);
+        vec3 specular_metallic = vec3(0);
+
+
         #if 0
             // Analytical environment BRDF, seems to match the pre-integrated
             // BRDF very closely, except for higher roughness values
-            vec3 prefilter_color = BRDFEnvironment(m.specular, m.roughness, 1.0 - NxV);
+            specular_nonmetallic = BRDFEnvironment(vec3(0.06), m.roughness, 1.0 - NxV);
         #else
             // Pre-Integrated environment BRDF
             vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
-            vec3 prefilter_color = env_brdf.y + m.specular * env_brdf.x;
+            specular_nonmetallic = vec3(env_brdf.y + m.specular * 0.06 * env_brdf.x);
         #endif
 
-        vec3 specular_ambient = prefilter_color * env_default_color;
+        // Metallic specular is pretty simple
+        specular_metallic = m.basecolor;
+
+
+        vec3 specular_ambient = mix(specular_nonmetallic, specular_metallic, m.metallic) * env_default_color;
 
         // Diffuse ambient term
-        vec3 diffuse_ambient = env_amb * vec3(0.3) * m.diffuse;
+        vec3 diffuse_ambient = env_amb * vec3(0.3) * m.basecolor * (1-m.metallic);
 
         // Add diffuse and specular ambient term
         ambient = diffuse_ambient + specular_ambient;

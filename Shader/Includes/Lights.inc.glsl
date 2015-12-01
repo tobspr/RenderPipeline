@@ -48,13 +48,12 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
 
     // Debugging: Fast rendering path
     #if 0
-        // return max(0, dot(m.normal, l)) * lightColor * attenuation * m.diffuse;
+        // return max(0, dot(m.normal, l)) * lightColor * attenuation * m.basecolor;
     #endif
-
-
 
     // TODO: Check if skipping on low attenuation is faster than just shading
     // without any effect. Would look like this: if(attenuation < epsilon) return vec3(0);
+
 
     // Skip shadows, shold be faster than evaluating the BRDF on most cards,
     // at least if the shadow distribution is coherent
@@ -69,7 +68,7 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
     float NxH = max(0, dot(m.normal, h));
 
     // Diffuse contribution
-    vec3 shading_result = NxL * m.diffuse / M_PI;
+    vec3 shading_result = NxL * m.basecolor * (1 - m.metallic) / M_PI;
 
     // Specular contribution
     float distribution = BRDFDistribution_GGX(NxH, m.roughness);
@@ -79,7 +78,7 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
 
     // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
-
+    
         // Compute lighting for bent normal
         float occlusion_factor = saturate(dot(vec4(l, 1), directional_occlusion));
         occlusion_factor = pow(occlusion_factor, 3.0);

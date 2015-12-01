@@ -39,20 +39,26 @@
         vec3 normal = normalize(m.normal);
         vec2 packed_normal = pack_normal_octrahedron(normal);
 
-        vec3 basecolor = (m.basecolor);
-        float nonmetallic = saturate(1 - m.metallic);
-        float specular_factor = saturate(m.specular);
+        // Clamp BaseColor, but only for negative values, we allow values > 1.0
+        vec3 basecolor = max(vec3(0), m.basecolor);
 
-        vec3 diffuse_color = basecolor * nonmetallic;
-        vec3 specular_color = mix(basecolor, vec3(0.02), nonmetallic) * specular_factor;
-        float roughness = saturate(m.roughness);
+        // Clamp properties like specular and metallic, which have to be in the
+        // 0 ... 1 range
+        float specular = saturate(m.specular);
+        float metallic = saturate(m.metallic);
+        float roughness = clamp(m.roughness, 0.001, 1.0);
+
+        // Optional: Use squared roughness as proposed by Disney
+        roughness *= roughness;
+
         vec2 velocity = compute_velocity();
 
-        float UNUSED = 0.0;
+        float UNUSED_0 = 0.0;
+        float UNUSED_1 = 0.0;
 
-        gbuffer_out_0 = vec4(diffuse_color.r, diffuse_color.g, diffuse_color.b, roughness);
-        gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, UNUSED, specular_color.r);
-        gbuffer_out_2 = vec4(velocity.x, velocity.y, specular_color.g, specular_color.b);
+        gbuffer_out_0 = vec4(basecolor.r, basecolor.g, basecolor.b, roughness);
+        gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, metallic, specular);
+        gbuffer_out_2 = vec4(velocity.x, velocity.y, UNUSED_0, UNUSED_1);
     }
 
 
@@ -107,7 +113,6 @@
         return texelFetch(data.Data2, coord, 0).xy / 255.0;
     }
 
-
     Material unpack_material(GBufferData data) {
 
         Material m;
@@ -122,17 +127,17 @@
         vec4 data1 = texelFetch(data.Data1, coord, 0);
         vec4 data2 = texelFetch(data.Data2, coord, 0);
 
-        // Unpack data
-        m.diffuse = data0.xyz;
-        m.roughness = max(0.001, data0.w);
-        // m.normal = normal_unquantization(data1.xyz);
+        m.basecolor = data0.xyz;
+        m.roughness = data0.w;
         m.normal = unpack_normal_octrahedron(data1.xy);
-        m.specular = vec3(data1.w, data2.zw);
+        m.metallic = data1.z;
+        m.specular = data1.w;
 
-        float UNUSED = data1.z;
+        float UNUSED_0 = data2.z;
+        float UNUSED_1 = data2.w;
 
         // Velocity, not unpacked here
-        // vec2 velocity = data2.xy;
+        vec2 velocity = data2.xy;
 
         return m;
     }
