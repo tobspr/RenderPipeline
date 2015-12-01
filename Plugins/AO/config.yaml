@@ -7,17 +7,6 @@ description: >
 
 settings: !!omap
 
-    - technique:
-        type: enum
-        values: ["SSAO", "HBAO", "SSVO", "ALCHEMY", "UE4AO"]
-        default: ALCHEMY
-        shader_runtime: true
-        label: Technique
-        description: >
-            The kernel to use for computing ambient occlusion. The settings below
-            depend on the kernel, so choose a kernel first!
-
-
     # General settings
     - blur_normal_factor:
         type: float
@@ -53,15 +42,28 @@ settings: !!omap
             noticeable. You most likely will have to adjust it differently for
             every technique.
 
+    - technique:
+        type: enum
+        values: ["SSAO", "HBAO", "SSVO", "ALCHEMY", "UE4AO"]
+        default: ALCHEMY
+        shader_runtime: true
+        label: Technique
+        description: >
+            The kernel to use for computing ambient occlusion. The settings below
+            depend on the kernel, so choose a kernel first!
+
+
+
+
     # Settings for SSAO
 
     - ssao_sample_radius:
-        display_if: {technique: ["SSAO"]}
+        display_if: {technique: "SSAO"}
         type: float
         range: [5, 400]
         default: 50
         shader_runtime: true
-        label: Sample Radius
+        label: SSAO Sample Radius
         description: >
             Size of the sampling radius in pixels, higher values might look better,
             but also perform worse due to less caching.
@@ -72,7 +74,7 @@ settings: !!omap
         range: [1, 32]
         default: 32
         shader_runtime: true
-        label: Sample Count
+        label: SSAO Sample Count
         description: >
             Amount of samples to use. A higher amount of samples provides a better
             quality but also a decrease in performance.
@@ -83,7 +85,7 @@ settings: !!omap
         range: [0.0, 1.0]
         default: 0.1
         shader_runtime: true
-        label: Depth Bias
+        label: SSAO Depth Bias
         description: >
             This is a small bias which prevents self-occlusion artifacts on
             curved objects.
@@ -94,7 +96,7 @@ settings: !!omap
         range: [0.0, 10.0]
         default: 3.0
         shader_runtime: true
-        label: Max distance
+        label: SSAO Max distance
         description: >
             Prevents halos by specifying the maximum distance between two
             pixels to account for ambient occlusion. The distance should be
@@ -103,12 +105,12 @@ settings: !!omap
     # Settings for HBAO
 
     - hbao_sample_radius:
-        display_if: {technique: ["HBAO"]}
+        display_if: {technique: "HBAO"}
         type: float
         range: [5, 400]
         default: 50
         shader_runtime: true
-        label: Sample Radius
+        label: HBAO Sample Radius
         description: >
             Size of the sampling radius in pixels, higher values might look better,
             but also perform worse due to less caching.
@@ -119,7 +121,7 @@ settings: !!omap
         range: [3, 32]
         default: 16
         shader_runtime: true
-        label: Ray count
+        label: HBAO Ray count
         description: >
             Amount of rays to march from the pixel position. 
 
@@ -129,7 +131,7 @@ settings: !!omap
         range: [1, 16]
         default: 3
         shader_runtime: true
-        label: Ray steps
+        label: HBAO Ray steps
         description: >
             Amount of steps to perform for each ray.
 
@@ -139,7 +141,7 @@ settings: !!omap
         range: [0.0, 1.0]
         default: 0.1
         shader_runtime: true
-        label: Tangent bias
+        label: HBAO Tangent bias
         description: >
             Used to prevent self-occlusion on curved objects, this increases the tangent angle
             by a fixed value.
@@ -150,7 +152,7 @@ settings: !!omap
         range: [0.01, 20.0]
         default: 7.0
         shader_runtime: true
-        label: Max sample distance
+        label: HBAO Max sample distance
         description: >
             Maximum distance of a sample to the pixel center in world space
 
@@ -162,7 +164,7 @@ settings: !!omap
         range: [1, 32]
         default: 16
         shader_runtime: true
-        label: Sample Count
+        label: SSVO Sample Count
         description: >
             Amount of samples to use. A higher amount of samples provides a better
             quality but also a decrease in performance.
@@ -173,7 +175,7 @@ settings: !!omap
         range: [0.1, 35.0]
         default: 1.0
         shader_runtime: true
-        label: Sphere sample radius
+        label: SSVO Sphere sample radius
         description: >
             Size of the sphere in view space to integrate. High values may produce
             artifacts.
@@ -184,7 +186,7 @@ settings: !!omap
         range: [0.05, 10.0]
         default: 3.0
         shader_runtime: true
-        label: Max distance
+        label: SSVO Max distance
         description: >
             Maximum distance until a sample gets rejected, in world space. This prevents halos arround objects.
 
@@ -193,12 +195,12 @@ settings: !!omap
 
 
     - alchemy_sample_radius:
-        display_if: {technique: ["ALCHEMY"]}
+        display_if: {technique: "ALCHEMY"}
         type: float
         range: [5, 400]
         default: 50
         shader_runtime: true
-        label: Sample Radius
+        label: ALCHEMY Sample Radius
         description: >
             Size of the sampling radius in pixels, higher values might look better,
             but also perform worse due to less caching.
@@ -209,7 +211,7 @@ settings: !!omap
         range: [4, 32]
         default: 16
         shader_runtime: true
-        label: Sample Count
+        label: ALCHEMY Sample Count
         description: >
             Amount of samples to use. A higher amount of samples provides a better
             quality but also a decrease in performance.
@@ -220,7 +222,7 @@ settings: !!omap
         range: [0.1, 20.0]
         default: 10.0
         shader_runtime: true
-        label: Maximum distance
+        label: ALCHEMY Maximum distance
         description: >
             Specifies the maximum distance between two samples until one sample
             is rejected. This prevents halos arround objects.
@@ -229,12 +231,12 @@ settings: !!omap
     # Settings for UE4AO
 
     - ue4ao_sample_radius:
-        display_if: {technique: ["UE4AO"]}
+        display_if: {technique: "UE4AO"}
         type: float
         range: [5, 400]
         default: 50
         shader_runtime: true
-        label: Sample Radius
+        label: UE4AO Sample Radius
         description: >
             Size of the sampling radius in pixels, higher values might look better,
             but also perform worse due to less caching.
@@ -245,7 +247,7 @@ settings: !!omap
         range: [4, 32]
         default: 16
         shader_runtime: true
-        label: Sample Count
+        label: UE4AO Sample Count
         description: >
             Amount of samples to use. A higher amount of samples provides a better
             quality but also a decrease in performance.
@@ -256,7 +258,7 @@ settings: !!omap
         range: [0.1, 20.0]
         default: 10.0
         shader_runtime: true
-        label: Maximum distance
+        label: UE4AO Maximum distance
         description: >
             Specifies the maximum distance between two samples until one sample
             is rejected. This prevents halos arround objects.
