@@ -72,7 +72,7 @@ settings: !!omap
 
     - ground_fog_factor:
         type: float
-        range: [10.0, 500.0]
+        range: [10.0, 3000.0]
         default: 400.0
         shader_runtime: true
         label: Ground Fog Factor
@@ -116,7 +116,7 @@ daytime_settings: !!omap
     - fog_ramp_size:
         type: scalar
         unit: meter
-        range: [0.5, 5000.0]
+        range: [0.5, 10000.0]
         default: 2000
         label: Fog-Ramp
         description: >
@@ -127,7 +127,7 @@ daytime_settings: !!omap
     - fog_start:
         type: scalar
         unit: meter
-        range: [0.0, 800.0]
+        range: [0.0, 1500.0]
         default: 100.0
         label: Fog-Start
         description: >
@@ -136,7 +136,7 @@ daytime_settings: !!omap
     - fog_brightness:
         type: scalar
         unit: percent
-        range: [0.0, 1.5]
+        range: [0.0, 2.5]
         default: 1.0
         label: Fog-Brightness
         description: Brightness of the fog
