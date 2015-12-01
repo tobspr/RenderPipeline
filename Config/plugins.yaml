@@ -54,13 +54,13 @@ overrides:
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.vignette_strength: 0.2221
-    PSSM.filter_radius: 2.0
+    PSSM.filter_radius: 10.76
     PSSM.filter_sample_count: 29
     PSSM.fixed_bias: 1.4667
     PSSM.logarithmic_factor: 2.27
-    PSSM.max_distance: 2000.0
+    PSSM.max_distance: 113.0
     PSSM.normal_bias: 5.0
-    PSSM.pcss_penumbra_size: 20.0
+    PSSM.pcss_penumbra_size: 60.08
     PSSM.pcss_search_samples: 14
     PSSM.resolution: 2048
     PSSM.slope_bias: 5.0
@@ -69,7 +69,7 @@ overrides:
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: False
-    Scattering.ground_fog_factor: 500.0
+    Scattering.ground_fog_factor: 3000.0
     Scattering.mie_phase_factor: 0.33
     Scattering.scattering_method: hosek_wilkie
 

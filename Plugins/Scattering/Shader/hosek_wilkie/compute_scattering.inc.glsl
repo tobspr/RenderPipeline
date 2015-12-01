@@ -39,12 +39,16 @@ vec3 get_scattering(vec3 surface_pos) {
 
     float gamma = acos(cos_gamma);
 
+    elevation *= 0.95;
+
     vec2 lut_coord = vec2(gamma / TWO_PI, 1 - (elevation / HALF_PI));
     vec3 value = textureLod(ScatteringLUT, vec3(lut_coord, slice_index), 0).xyz ;
 
 
     // value = pow(value, vec3(1.5));
+    value = value - 0.005;
     value *= 25.0;
+
     // value = value / (1 + value);
 
     value *= night_factor;
@@ -103,21 +107,23 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
         float fog_ramp = TimeOfDay.Scattering.fog_ramp_size;
         float fog_start = TimeOfDay.Scattering.fog_start;
 
-        fog_factor = smoothstep(0, 1, (path_length-fog_start) / fog_ramp);
+        // fog_factor = smoothstep(0, 1, (path_length-fog_start) / fog_ramp);
+        fog_factor = smoothstep(0, 1, 1-exp( -path_length / (0.5*fog_ramp) ) );
 
         // Exponential height fog
-        accum *= exp(- surface_pos.z / (1.0 * GET_SETTING(Scattering, ground_fog_factor) ));
+        fog_factor *= exp(- pow( max(0,surface_pos.z), 1.2) / (5.0 * GET_SETTING(Scattering, ground_fog_factor) ));
 
-        accum *= TimeOfDay.Scattering.fog_brightness * 2.6;
+        // accum *= mix(TimeOfDay.Scattering.fog_brightness * 1.6, 1.0, saturate(path_length / 20000.0));
 
-        // accum *= fog_factor;
+        accum *= fog_factor;
 
         inscatter = accum;
 
-        fog_factor = saturate(2.0 * fog_factor);
+        fog_factor = saturate(1.2 * fog_factor);
     }
 
     // return get_scattering(surfacePos);
+
 
     return inscatter;
 }
