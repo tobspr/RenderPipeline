@@ -17,7 +17,6 @@
 
     */
 
-
     uniform mat4 currentViewProjMatNoJitter;
 
     layout(location=0) out vec4 gbuffer_out_0;
@@ -128,7 +127,7 @@
         vec4 data2 = texelFetch(data.Data2, coord, 0);
 
         m.basecolor = data0.xyz;
-        m.roughness = data0.w;
+        m.roughness = max(0.002, data0.w);
         m.normal = unpack_normal_octrahedron(data1.xy);
         m.metallic = data1.z;
         m.specular = data1.w;

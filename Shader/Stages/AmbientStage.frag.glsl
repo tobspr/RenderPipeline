@@ -29,13 +29,15 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
     // float sample_roughness = current_mip * 0.1;
     // So current_mip is sample_roughness / 0.1
 
+    roughness = sqrt(roughness);
+
     int num_mipmaps = get_mipmap_count(map);
     float reflectivity = saturate(1.0 - roughness);
 
     // Increase mipmap at extreme roughness, linear doesn't work well there
-    reflectivity += saturate(reflectivity - 0.9) * 4.0;
+    // reflectivity += (0.1 - min(0.1, roughness) ) / 0.1 * 20.0;
     // return sqrt(roughness) * 8.0;
-    return (num_mipmaps - sqrt(reflectivity) * 7.0);
+    return (num_mipmaps - reflectivity * 9.0);
 }
 
 
@@ -96,28 +98,18 @@ void main() {
 
         #endif
 
-        vec3 specular_nonmetallic = vec3(0);
-        vec3 specular_metallic = vec3(0);
-
-
-        #if 0
-            // Analytical environment BRDF, seems to match the pre-integrated
-            // BRDF very closely, except for higher roughness values
-            specular_nonmetallic = BRDFEnvironment(vec3(0.06), m.roughness, 1.0 - NxV);
-        #else
-            // Pre-Integrated environment BRDF
-            vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
-            specular_nonmetallic = vec3(env_brdf.y + m.specular * 0.06 * env_brdf.x);
-        #endif
+    
+        // Pre-Integrated environment BRDF
+        vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
+        vec3 specular_nonmetallic = vec3(env_brdf.y + m.specular * 0.06 * env_brdf.x);
 
         // Metallic specular is pretty simple
-        specular_metallic = m.basecolor;
-
+        vec3 specular_metallic = m.basecolor;
 
         vec3 specular_ambient = mix(specular_nonmetallic, specular_metallic, m.metallic) * env_default_color;
 
         // Diffuse ambient term
-        vec3 diffuse_ambient = env_amb * vec3(0.3) * m.basecolor * (1-m.metallic);
+        vec3 diffuse_ambient = env_amb * m.basecolor * (1-m.metallic) / M_PI;
 
         // Add diffuse and specular ambient term
         ambient = diffuse_ambient + specular_ambient;
@@ -129,6 +121,10 @@ void main() {
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
+            
+    } else {
+
+        // ambient = textureLod(DefaultEnvmap,  fix_cubemap_coord(-view_vector), 0).xyz;
 
     }
 
