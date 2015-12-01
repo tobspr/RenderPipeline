@@ -23,7 +23,7 @@ float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profi
 
     float linear = 1.0 - saturate(dist / radius);
 
-
+    // return attenuation * linear;
     return max(0.0, attenuation * linear) * get_ies_factor(l, ies_profile);
 } 
 
@@ -37,7 +37,6 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 
     angle_factor *= angle_factor;
 
-    
     return lin_attenuation * get_ies_factor(ies_profile, 0.5*angle, 0);
 }
 

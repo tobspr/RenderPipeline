@@ -12,6 +12,7 @@ uniform sampler3D ScatteringLUT;
 vec3 get_scattering(vec3 surface_pos) {
 
     surface_pos = normalize(surface_pos);
+    // surface_pos.z = max(0.2, surface_pos.z);
     // if (surface_pos.z < 0) return vec3(0.1, 0, 0);
 
     float elevation, theta, radius;
@@ -108,13 +109,12 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
         float fog_start = TimeOfDay.Scattering.fog_start;
 
         // fog_factor = smoothstep(0, 1, (path_length-fog_start) / fog_ramp);
-        fog_factor = smoothstep(0, 1, 1-exp( -path_length / (0.5*fog_ramp) ) );
+        fog_factor = smoothstep(0, 1, 1-exp( -(path_length-fog_start) / (0.5*fog_ramp) ) );
 
         // Exponential height fog
         fog_factor *= exp(- pow( max(0,surface_pos.z), 1.2) / (5.0 * GET_SETTING(Scattering, ground_fog_factor) ));
 
         // accum *= mix(TimeOfDay.Scattering.fog_brightness * 1.6, 1.0, saturate(path_length / 20000.0));
-
         accum *= fog_factor;
 
         inscatter = accum;

@@ -53,11 +53,18 @@ void main() {
         vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
     #endif
 
-    if (sun_vector.z < 0.0) return;
+
+
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec4 scene_color = texelFetch(ShadedScene, coord, 0);
+
+
+    if (sun_vector.z < 0.0) {
+        result = scene_color;
+        return;
+    }
 
     // Get noise vector
     vec2 noise_vec = poisson_disk_2D_32[coord.x%4 + (coord.y%4)*4];

@@ -11,30 +11,31 @@ enabled:
     - ColorCorrection
     - SMAA
     - PSSM
+    - AO
 
 overrides: 
-    AO.alchemy_max_distance: 5.19
+    AO.alchemy_max_distance: 20.0
     AO.alchemy_num_samples: 32
-    AO.alchemy_sample_radius: 123.0
-    AO.blur_depth_factor: 1.17
-    AO.blur_normal_factor: 0.84
+    AO.alchemy_sample_radius: 242.0
+    AO.blur_depth_factor: 1.2
+    AO.blur_normal_factor: 1.53
     AO.hbao_max_distance: 18.22
     AO.hbao_ray_count: 12
     AO.hbao_ray_steps: 3
     AO.hbao_sample_radius: 123.0
     AO.hbao_tangent_bias: 0.1667
-    AO.occlusion_strength: 1.4
+    AO.occlusion_strength: 0.82
     AO.ssao_bias: 0.0
-    AO.ssao_max_distance: 6.0
+    AO.ssao_max_distance: 7.33
     AO.ssao_sample_count: 32
-    AO.ssao_sample_radius: 40.11
-    AO.ssvo_max_distance: 1.38
+    AO.ssao_sample_radius: 176.16667
+    AO.ssvo_max_distance: 5.58
     AO.ssvo_sample_count: 32
-    AO.ssvo_sphere_radius: 7.95
-    AO.technique: HBAO
+    AO.ssvo_sphere_radius: 26.08
+    AO.technique: SSAO
     AO.ue4ao_max_distance: 3.4
     AO.ue4ao_sample_count: 32
-    AO.ue4ao_sample_radius: 119.11
+    AO.ue4ao_sample_radius: 158.61
     ColorCorrection.brightness_adaption_rate: 2.25
     ColorCorrection.chromatic_aberration_samples: 1
     ColorCorrection.chromatic_aberration_strength: 0.42
@@ -54,16 +55,16 @@ overrides:
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.vignette_strength: 0.2221
-    PSSM.filter_radius: 10.76
+    PSSM.filter_radius: 62.29
     PSSM.filter_sample_count: 29
-    PSSM.fixed_bias: 1.4667
-    PSSM.logarithmic_factor: 2.27
+    PSSM.fixed_bias: 0.0511
+    PSSM.logarithmic_factor: 1.47
     PSSM.max_distance: 113.0
-    PSSM.normal_bias: 5.0
-    PSSM.pcss_penumbra_size: 60.08
-    PSSM.pcss_search_samples: 14
+    PSSM.normal_bias: 0.33
+    PSSM.pcss_penumbra_size: 0.1
+    PSSM.pcss_search_samples: 25
     PSSM.resolution: 2048
-    PSSM.slope_bias: 5.0
+    PSSM.slope_bias: 0.55556
     PSSM.split_count: 7
     PSSM.sun_distance: 2850.0
     PSSM.use_pcss: True
