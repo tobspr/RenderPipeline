@@ -15,14 +15,12 @@ from ..Globals import Globals
 
 class EmptyLoadingScreen(object):
 
-    """ This loading screen is used when no loading screen is specified in the 
+    """ This loading screen is used when no loading screen is specified in the
     pipeline """
 
     def __getattr__(self, *args, **kwargs):
+        """ Always return a lambda no matter which attribute is queried """
         return lambda *args, **kwargs: None
-
-
-
 
 class PipelineLoadingScreen(DebugObject):
 
@@ -44,22 +42,26 @@ class PipelineLoadingScreen(DebugObject):
         self._fullscreen_node.set_bin("fixed", 10)
         self._fullscreen_node.set_depth_test(False)
 
-        self._fullscreen_bg = BetterOnscreenImage(image="Data/GUI/LoadingScreen/Background.png",
+        self._fullscreen_bg = BetterOnscreenImage(
+            image="Data/GUI/LoadingScreen/Background.png",
             x=0, y=0, w=sw, h=sh, parent=self._fullscreen_node)
 
         # self._bottom_border = DirectFrame(pos=(0, 0, -sh+150),
         #     parent=self._fullscreen_node, frameColor=(0.78, 0.78, 0.78, 1.0),
         #     frameSize=(-5000, 5000, 0, -2))
 
-        self._logo = BetterOnscreenImage(image="Data/GUI/Generic/RPLogoText.png",
+        self._logo = BetterOnscreenImage(
+            image="Data/GUI/Generic/RPLogoText.png",
             parent=self._fullscreen_node)
-        lw, lh = self._logo.get_width(), self._logo.get_height()
-        self._logo.set_pos( (sw - lw) // 2, (sh - lh) // 2 )
 
-        self._loading_text = BetterOnscreenImage(image="Data/GUI/LoadingScreen/LoadingText.png",
+        lw, lh = self._logo.get_width(), self._logo.get_height()
+        self._logo.set_pos((sw - lw) // 2, (sh - lh) // 2)
+
+        self._loading_text = BetterOnscreenImage(
+            image="Data/GUI/LoadingScreen/LoadingText.png",
             parent=self._fullscreen_node)
         lw, lh = self._loading_text.get_width(), self._loading_text.get_height()
-        self._loading_text.set_pos( (sw - lw) // 2, sh - 80 )
+        self._loading_text.set_pos((sw - lw) // 2, sh - 80)
 
 
         for i in range(3):

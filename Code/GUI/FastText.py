@@ -108,7 +108,7 @@ class FastText(DebugObject):
         font_instance = DynamicTextFont(self._font)
         font_instance.set_fg(Vec4(1))
 
-        atlas_size = 1024 if self._size > 30 else 512 
+        atlas_size = 1024 if self._size > 30 else 512
         font_instance.set_page_size(atlas_size, atlas_size)
         font_instance.set_pixels_per_unit(int(self._size * 1.5))
         font_instance.set_texture_margin(int(self._size / 4.0 * 1.5))

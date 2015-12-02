@@ -4,6 +4,10 @@ Setup script to install everything required to run the pipeline.
 
 """
 
+# Disable the warning about the global statement, its fine since this is a simple
+# setup script
+# pylint: disable=W0603
+
 from __future__ import print_function
 
 # This setups the pipeline
@@ -15,12 +19,10 @@ import shutil
 
 sys.dont_write_bytecode = True
 
-
-devnull = open(os.path.devnull, "w")
-setup_dir = os.path.dirname(os.path.realpath(__file__))
-current_step = 0
-skip_native = len(sys.argv) > 1 and "--skip-native" in sys.argv
-
+DEVNULL = open(os.path.devnull, "w")
+SETUP_DIR = os.path.dirname(os.path.realpath(__file__))
+CURRENT_STEP = 0
+OPT_SKIP_NATIVE = "--skip-native" in sys.argv
 
 def error(msg):
     """ Prints an error message and then exists the program """
@@ -31,14 +33,14 @@ def error(msg):
 
 def print_step(title):
     """ Prints a new section """
-    global current_step
-    current_step += 1
-    print("\n\n[", str(current_step).zfill(2), "] ", title)
+    global CURRENT_STEP
+    CURRENT_STEP += 1
+    print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", title)
 
 
 def exec_python_file(pth):
     """ Executes a python file and checks the return value """
-    basedir = os.path.dirname(os.path.abspath(os.path.join(setup_dir, pth))) + "/"
+    basedir = os.path.dirname(os.path.abspath(os.path.join(SETUP_DIR, pth))) + "/"
     print("\tRunning script:", pth)
     pth = os.path.basename(pth)
     os.chdir(basedir)
@@ -47,7 +49,7 @@ def exec_python_file(pth):
     except subprocess.CalledProcessError as msg:
         print("Python script didn't return properly!")
         error("Failed to execute '" + pth + "'")
-    except Exception as msg:
+    except IOError as msg:
         print("Python script error:", msg)
         error("Error during script execution")
 
@@ -78,7 +80,7 @@ def hint_repo_not_complete(missing):
 
 def check_file_exists(fpath):
     """ Checks if the given file exists """
-    return os.path.isfile(os.path.join(setup_dir, fpath))
+    return os.path.isfile(os.path.join(SETUP_DIR, fpath))
 
 def check_repo_complete():
     """ Checks if the repository is complete """
@@ -100,7 +102,7 @@ if __name__ == "__main__":
     print_step("Checking if the repo is complete ..")
     check_repo_complete()
 
-    if not skip_native:
+    if not OPT_SKIP_NATIVE:
         print_step("Compiling the native code .. (This might take a while!)")
         exec_python_file("Native/Scripts/setup_native.py")
 
@@ -108,7 +110,7 @@ if __name__ == "__main__":
     exec_python_file("Data/NormalQuantization/generate.py")
 
     print_step("Extracting .gz files ...")
-    extract_gz_files(os.path.join(setup_dir, "Data/"))
+    extract_gz_files(os.path.join(SETUP_DIR, "Data/"))
 
     print_step("Filtering default cubemap ..")
     exec_python_file("Data/DefaultCubemap/filter.py")
@@ -116,7 +118,7 @@ if __name__ == "__main__":
     # Further setup code follows here
 
     # Write install flag
-    with open(os.path.join(setup_dir, "Data/install.flag"), "w") as handle:
+    with open(os.path.join(SETUP_DIR, "Data/install.flag"), "w") as handle:
         handle.write("1")
 
     print("\n\n-- Setup finished sucessfully! --")

@@ -1,5 +1,9 @@
 # -*- encoding: utf-8 -*-
 
+# Disable warning about variables not being initialized in the __init__ function,
+# this is the case in the load_additional_settings methods
+# pylint: disable=W0201
+
 import math
 from panda3d.core import PTAFloat, PTAVecBase3f
 
@@ -8,7 +12,7 @@ from ..PluginInterface.PluginExceptions import BadSettingException
 from ..Util.SmoothConnectedCurve import SmoothConnectedCurve
 
 class DayTimeSetting(DebugObject):
-    
+
     """ This is the base class for all daytime settings where each specialized
     daytime setting derives from """
 
@@ -26,9 +30,10 @@ class DayTimeSetting(DebugObject):
             if curve.was_modified():
                 return True
         return False
-    
+
     def serialize(self):
-        return ("[" + "{},"*len(self.curves) ).format(*[i.serialize() for i in self.curves]).rstrip(",") + "]"
+        curve_values = [i.serialize() for i in self.curves]
+        return ("[" + "{},"*len(self.curves)).format(*curve_values).rstrip(",") + "]"
 
     def set_cv_points(self, points):
         for i, point_data in enumerate(points):
@@ -46,7 +51,7 @@ class DayTimeSetting(DebugObject):
         # Get the setting type
         setting_type = yaml.pop("type").strip().upper()
         classname = "DayTimeSetting" + setting_type
-            
+
         if classname in globals():
             instance = globals()[classname]()
         else:
@@ -63,7 +68,7 @@ class DayTimeSetting(DebugObject):
         except Exception as msg:
             raise BadSettingException("Failed to init type:", msg)
 
-        instance.set_default_value(instance.default)        
+        instance.set_default_value(instance.default)
 
         if yaml:
             raise BadSettingException("Unrecognized settings-keys:", yaml.keys())
@@ -126,8 +131,9 @@ class DayTimeSettingSCALAR(DayTimeSetting):
 
     def _scale_value(self, raw_value):
         if self.exp_factor != 1.0:
-            scaled_value = (math.exp(self.exp_factor * raw_value) - 1) / (math.exp(self.exp_factor * self.max_value) - 1)
-            scaled_value *= self.max_value
+            exp_mult = math.exp(self.exp_factor * raw_value) - 1
+            exp_div = math.exp(self.exp_factor * self.max_value) - 1
+            scaled_value = exp_mult / exp_div * self.max_value
             return scaled_value
         return raw_value
 
@@ -136,7 +142,6 @@ class DayTimeSettingSCALAR(DayTimeSetting):
 
     def get_glsl_type(self):
         return "float"
-
 
 class DayTimeSettingCOLOR(DayTimeSetting):
 
@@ -150,7 +155,8 @@ class DayTimeSettingCOLOR(DayTimeSetting):
             raise BadSettingException("Defaults for colors should be a list")
 
         if len(val) != 3:
-            raise BadSettingException("Invalid component count for color, should be 3 but is", len(val))
+            raise BadSettingException(
+                "Invalid component count for color, should be 3 but is", len(val))
 
         for comp in val:
             if comp < 0 or comp > 255:
@@ -159,8 +165,7 @@ class DayTimeSettingCOLOR(DayTimeSetting):
         self.default = val
 
     def format(self, val):
-        s = "[{:3.0f} {:3.0f} {:3.0f}]".format(*val)
-        return s
+        return "[{:3.0f} {:3.0f} {:3.0f}]".format(*val)
 
     def format_nonlinear(self, val):
         if isinstance(val, list):

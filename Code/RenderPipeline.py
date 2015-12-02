@@ -2,9 +2,8 @@
 import sys
 import time
 
-from panda3d.core import LVecBase2i, PTAMat4, UnalignedLMatrix4f, TransformState
-from panda3d.core import Mat4, CSYupRight, CSZupRight, PTAVecBase3f, Texture
-from panda3d.core import RenderState, BitMask32, load_prc_file, PandaSystem
+from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
+from panda3d.core import PandaSystem
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -40,8 +39,8 @@ class RenderPipeline(DebugObject):
         """ Creates a new pipeline with a given showbase instance. This should be
         done before intializing the ShowBase, the pipeline will take care of that. """
         DebugObject.__init__(self, "RenderPipeline")
-        self.debug("Using Python", sys.version_info.major,
-            "with architecture", PandaSystem.get_platform())
+        self.debug("Using Python {} with architecture {}".format(
+            sys.version_info.major, PandaSystem.get_platform()))
         self._showbase = showbase
         self._mount_manager = MountManager(self)
         self._settings = SettingsLoader(self, "Pipeline Settings")
@@ -121,7 +120,7 @@ class RenderPipeline(DebugObject):
         can be used to set an ies profile on a light """
         return self._ies_profile_mgr.load(filename)
 
-    def set_effect(self, object, effect_src, options = None, sort = 30):
+    def set_effect(self, nodepath, effect_src, options = None, sort = 30):
         """ Sets an effect to the given object, using the specified options.
         Check out the effect documentation for more information about possible
         options and configurations. The object should be a nodepath, and the
@@ -135,18 +134,18 @@ class RenderPipeline(DebugObject):
 
         # Apply default stage shader
         if not effect.get_option("render_gbuffer"):
-            object.hide(TagStateManager.MASK_GBUFFER)
+            nodepath.hide(TagStateManager.MASK_GBUFFER)
         else:
-            object.set_shader(effect.get_shader_obj("GBuffer"), sort)
-            object.show(TagStateManager.MASK_GBUFFER)
+            nodepath.set_shader(effect.get_shader_obj("GBuffer"), sort)
+            nodepath.show(TagStateManager.MASK_GBUFFER)
         
         # Apply shadow stage shader
         if not effect.get_option("render_shadows"):
-            object.hide(TagStateManager.MASK_SHADOWS)
+            nodepath.hide(TagStateManager.MASK_SHADOWS)
         else:
             shader = effect.get_shader_obj("Shadows")
-            self._tag_mgr.apply_shadow_state(object, shader, str(effect.get_effect_id()), 25 + sort)
-            object.show(TagStateManager.MASK_SHADOWS)
+            self._tag_mgr.apply_shadow_state(nodepath, shader, str(effect.get_effect_id()), 25 + sort)
+            nodepath.show(TagStateManager.MASK_SHADOWS)
 
     def create(self):
         """ This creates the pipeline, and setups all buffers. It also constructs
@@ -216,7 +215,7 @@ class RenderPipeline(DebugObject):
     def reload_shaders(self):
         """ Reloads all shaders """
         self.debug("Reloading shaders ..")
-        self._debugger._error_msg_handler.clear_messages()
+        self._debugger.get_error_msg_handler().clear_messages()
         self._debugger.set_reload_hint_visible(True)
         self._showbase.graphicsEngine.render_frame()
         self._showbase.graphicsEngine.render_frame()
@@ -239,7 +238,8 @@ class RenderPipeline(DebugObject):
             self._showbase.win.get_y_size())
 
         # Connect the render target output function to the debug object
-        RenderTarget.RT_OUTPUT_FUNC = lambda *args: DebugObject.global_warn("RenderTarget", *args[1:])
+        RenderTarget.RT_OUTPUT_FUNC = lambda *args: DebugObject.global_warn(
+            "RenderTarget", *args[1:])
 
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
@@ -265,15 +265,6 @@ class RenderPipeline(DebugObject):
         self._listener = NetworkUpdateListener(self)
         self._listener.setup()
 
-    def _on_reload_trigger(self, msg):
-        """ Internal method which gets called when a message arrived to the 
-        listener """
-
-        # Dont process the message directly, instead do that in the main thread,
-        # after a short delay
-        time.sleep(0.1)
-        self._listener_update_queue.add(msg)
-
     def _manager_update_task(self, task):
         """ Update task which gets called before the rendering """
         self._listener.update()
@@ -283,7 +274,6 @@ class RenderPipeline(DebugObject):
         self._stage_mgr.update_stages()
         self._light_mgr.update()
         return task.cont
-
 
     def _plugin_pre_render_update(self, task):
         """ Update task which gets called before the rendering, and updates the

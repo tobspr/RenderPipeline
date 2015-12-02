@@ -1,10 +1,10 @@
 
 import direct.gui.DirectGuiGlobals as DGG
-
 from direct.gui.DirectSlider import DirectSlider
 
+from ..Util.DebugObject import DebugObject
 
-class BetterSlider:
+class BetterSlider(DebugObject):
 
     """ This is a simple wrapper around DirectSlider, providing a simpler
     interface """
@@ -12,6 +12,8 @@ class BetterSlider:
     def __init__(self, x=0, y=0, parent=None, size=100, min_value=0,
                  max_value=100, value=50, page_size=1, callback=None,
                  extra_args=None):
+        """ Inits the slider """
+        DebugObject.__init__(self)
         if extra_args is None:
             extra_args = []
 

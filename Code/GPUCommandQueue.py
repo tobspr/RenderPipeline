@@ -1,6 +1,4 @@
 
-import struct
-
 from panda3d.core import PTAInt, Texture, Shader
 
 from .Util.DebugObject import DebugObject
@@ -73,8 +71,8 @@ class GPUCommandQueue(DebugObject):
         """ Creates the buffer used to transfer commands """
         command_buffer_size = self._commands_per_frame * 32
         self.debug("Allocating command buffer of size", command_buffer_size)
-        self._data_texture = Image.create_buffer("CommandQueue",
-            command_buffer_size, Texture.T_float, Texture.F_r32)
+        self._data_texture = Image.create_buffer(
+            "CommandQueue", command_buffer_size, Texture.T_float, Texture.F_r32)
         self._data_texture.set_clear_color(0)
 
     def _create_command_target(self):

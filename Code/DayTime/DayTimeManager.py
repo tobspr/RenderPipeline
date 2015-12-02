@@ -29,7 +29,8 @@ class DayTimeManager(DebugObject):
                 setting_id = plugin.get_id() + "." + setting
                 self._settings[setting_id] = handle
                 self._ubo.register_pta(setting_id, handle.get_glsl_type())
-                
+
+
         self._generate_shader_config()
         self._register_shader_inputs()
 
@@ -38,13 +39,14 @@ class DayTimeManager(DebugObject):
         self.debug("Reloading daytime config ..")
         self._interface.load()
 
-    def set_time(self, t):
-        """ Sets the current time of day """
-        self._daytime = t
+    def set_time(self, daytime):
+        """ Sets the current time of day, should be a float from 0 to 1, whereas
+        0 denotes 0:00 and 1 denotes 24:00 """
+        self._daytime = daytime
 
     def update(self):
         """ Updates all the daytime inputs """
-        for setting_name, handle in self._settings.items():    
+        for setting_name, handle in self._settings.items():
             setting_value = handle.get_scaled_value(self._daytime)
             self._ubo.update_input(setting_name, setting_value)
 
@@ -52,7 +54,7 @@ class DayTimeManager(DebugObject):
         """ Returns the current value of a setting """
         key = plugin + "." + setting
         if key not in self._settings:
-            self.warn("Setting not found:", plugin,"->", setting)
+            self.warn("Setting not found:", plugin, "->", setting)
             return None
         return self._settings[key].get_value(self._daytime)
 

@@ -21,7 +21,7 @@ class CheckboxCollection(DebugObject):
                 "Can't add checkbox as it already belongs "
                 "to another collection!")
             return
-        chb._set_collection(self)
+        chb.set_collection(self)
         self._items.append(chb)
 
     def remove(self, chb):
@@ -31,12 +31,12 @@ class CheckboxCollection(DebugObject):
                 "Can't remove the checkbox from this collection as it is not "
                 "attached to this collection!")
             return
-        chb._set_collection(None)
+        chb.set_collection(None)
         self._items.remove(chb)
 
     def _changed(self, chb):
         """ Internal callback when a checkbox got changed """
         for item in self._items:
             if item is not chb:
-                item._set_checked(False)
+                item.set_checked(False)
                 item._node["state"] = DGG.NORMAL

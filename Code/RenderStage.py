@@ -1,4 +1,8 @@
 
+# Disable warning from pylint about the global attributes of the render stages,
+# which may or may not be specified by subclasses.
+# pylint: disable=E1101
+
 import os
 
 from panda3d.core import Shader
@@ -155,10 +159,11 @@ class RenderStage(DebugObject):
 
         # The __module__ contains something like Plugins.XXX.YYY
         # We want XXX so we take the second parameter
-        plugin_name = str(self.__class__.__module__).split(".")[1] 
+        plugin_name = str(self.__class__.__module__).split(".")[1]
 
         plugin_loc = "Plugins/" + plugin_name + "/Shader/Stages/"
-        path_args = [os.path.join(plugin_loc, i) if not "$$PipelineTemp" in i else i for i in args]
+        path_args = [os.path.join(plugin_loc, i) if "$$PipelineTemp" not in i else i for i in args]
+        path_args = [os.path.join(plugin_loc, i) if "$$PipelineTemp" not in i else i for i in args]
 
         # If only one shader is specified, assume its a postprocess fragment shader,
         # and use the default vertex shader

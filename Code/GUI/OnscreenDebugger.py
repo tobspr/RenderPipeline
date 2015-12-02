@@ -71,6 +71,10 @@ class OnscreenDebugger(DebugObject):
         self._update_stats()
         self._error_msg_handler.update()    
 
+    def get_error_msg_handler(self):
+        """ Returns the error message handler """
+        return self._error_msg_handler
+
     def _create_topbar(self):
         """ Creates the topbar """
         self._pipeline_logo = BetterOnscreenImage(

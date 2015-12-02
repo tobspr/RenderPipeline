@@ -30,10 +30,10 @@ class BetterCheckbox(DebugObject):
             tex.set_wrap_u(Texture.WM_clamp)
             tex.set_wrap_v(Texture.WM_clamp)
 
-        self._node = DirectCheckBox(parent=parent, pos=(
-            x + 11, 1, -y - 8), scale=(16 / 2.0, 1, 16 / 2.0),
+        self._node = DirectCheckBox(
+            parent=parent, pos=(x + 11, 1, -y - 8), scale=(16 / 2.0, 1, 16 / 2.0),
             checkedImage=checked_img, uncheckedImage=unchecked_img,
-            image=unchecked_img, extraArgs = extra_args, state=DGG.NORMAL,
+            image=unchecked_img, extraArgs=extra_args, state=DGG.NORMAL,
             relief=DGG.FLAT, command=self._update_status)
 
         self._node["frameColor"] = (0, 0, 0, 0)
@@ -47,18 +47,18 @@ class BetterCheckbox(DebugObject):
         self._collection = None
 
         if checked:
-            self._set_checked(True, False)
+            self.set_checked(True, False)
 
-    def _set_collection(self, coll):
+    def set_collection(self, coll):
         """ Internal method to add a checkbox to a checkbox collection, this
         is used for radio-buttons """
         self._collection = coll
 
-    def _on_node_enter(self, event=None):
+    def _on_node_enter(self, *args):
         """ Internal callback when the node gets hovered """
         self._node["frameColor"] = (0, 0, 0, 0.6)
 
-    def _on_node_leave(self, event=None):
+    def _on_node_leave(self, *args):
         """ Internal callback when the node gets no longer hovered """
         self._node["frameColor"] = (0, 0, 0, 0)
 
@@ -84,7 +84,7 @@ class BetterCheckbox(DebugObject):
         if self._callback is not None:
             self._callback(*([status] + self._extra_args))
 
-    def _set_checked(self, val, do_callback=True):
+    def set_checked(self, val, do_callback=True):
         """ Internal method to check/uncheck the checkbox """
         self._node["isChecked"] = val
 

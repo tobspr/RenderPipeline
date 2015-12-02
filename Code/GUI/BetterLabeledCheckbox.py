@@ -7,7 +7,7 @@ from .BetterOnscreenText import BetterOnscreenText
 
 class BetterLabeledCheckbox(DebugObject):
 
-    """ This is a checkbox, combined with a label. The arguments are 
+    """ This is a checkbox, combined with a label. The arguments are
     equal to the Checkbox and OnscreenText arguments. """
 
     def __init__(self, parent=None, x=0, y=0, chb_callback=None,
@@ -25,8 +25,8 @@ class BetterLabeledCheckbox(DebugObject):
             callback=chb_callback, extra_args=chb_args,
             checked=chb_checked, radio=radio, expand_width=expand_width)
         self._text = BetterOnscreenText(x=x + 30, y=y + 9 + text_size // 4,
-                                       text=text, align="left", parent=parent,
-                                       size=text_size, color=text_color)
+                                        text=text, align="left", parent=parent,
+                                        size=text_size, color=text_color)
 
     def get_checkbox(self):
         """ Returns a handle to the checkbox """

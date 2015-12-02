@@ -1,4 +1,6 @@
 
+from __future__ import print_function
+
 from panda3d.core import Notify, LineStream, Vec3
 
 from ..Globals import Globals
@@ -25,11 +27,13 @@ class ErrorMessageDisplay(DebugObject):
     def update(self):
         """ Updates the error display, fetching all new messages from the notify
         stream """
+
+        # Disabled for now
         return
-        
+
         if not self._notify_stream:
             self._init_notify()
-            
+
         while self._notify_stream.is_text_available():
             line = self._notify_stream.get_line().strip()
             print(line)
@@ -37,8 +41,8 @@ class ErrorMessageDisplay(DebugObject):
 
     def add_error(self, msg):
         """ Adds a new error message """
-        
-        text = BetterOnscreenText(
+
+        BetterOnscreenText(
             x=Globals.base.win.get_x_size() - 30,
             y=Globals.base.win.get_y_size() - 30 + self._num_errors * 30,
             align="right", text=msg, color=Vec3(1, 0.1, 0.1), size=15,

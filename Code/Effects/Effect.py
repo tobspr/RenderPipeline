@@ -23,7 +23,7 @@ class Effect(DebugObject):
     _EFFECT_ID = 0
 
     @classmethod
-    def _generate_hash(cls, filename, options):
+    def generate_hash(cls, filename, options):
         """ Generates an unique hash based on the effect path and options """
         constructed_dict = {}
         for key in sorted(Effect._DEFAULT_OPTIONS.keys()):

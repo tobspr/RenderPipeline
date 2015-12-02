@@ -13,7 +13,7 @@ class EffectLoader(DebugObject):
 
     def load_effect(self, filename, options):
         """ Loads an effect from a given filename with the specified options """
-        effect_hash = Effect._generate_hash(filename, options)
+        effect_hash = Effect.generate_hash(filename, options)
 
         # Check if the effect already exists in the cache
         if effect_hash in self._effect_cache:
