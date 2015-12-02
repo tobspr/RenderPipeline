@@ -23,10 +23,18 @@
 """
 
 
-
+from __future__ import print_function
 
 import sys
 import getpass
+
+
+
+from direct.showbase.ShowBase import ShowBase
+from panda3d.core import Vec3
+
+from __init__ import *
+from Code.Util.MovementController import MovementController
 
 
 # This check is required, because many people downloading the pipeline think this
@@ -38,21 +46,12 @@ if len(sys.argv) != 2 or sys.argv[1] != "dev":
         print("Please have a look at the samples located at Samples/")
         sys.exit(0)
 
-from random import random
-
-
-from direct.showbase.ShowBase import ShowBase
-from panda3d.core import load_prc_file, Vec3
-
-# sys.path.insert(0, "../")
-from __init__ import *
-from Code.Util.MovementController import MovementController
-
 
 class MainApp(ShowBase):
 
-    def __init__(self):
+    """ Main Testing Showbase """
 
+    def __init__(self):
 
         self.render_pipeline = RenderPipeline(self)
         self.render_pipeline.set_default_loading_screen()
@@ -70,12 +69,12 @@ class MainApp(ShowBase):
 
         profile = self.render_pipeline.load_ies_profile("Data/IESProfiles/Defined.ies")
 
-        plane = loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
+        plane = self.loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
         plane.set_scale(2.0)
         plane.reparent_to(render)
-        
+
         # Load some models, most of them are not included in the repository
-        model = loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        model = self.loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
         # model = loader.loadModel("Models/HDRTest/Scene.bam")
         # model = loader.loadModel("Models/SimpleShapes/Sphere.bam")
         # model = loader.loadModel("Models/SimpleShapes/Wall.bam")
@@ -90,11 +89,11 @@ class MainApp(ShowBase):
             render.set_shader_input("roughness", 1.0)
             render.set_shader_input("metallic", 0.0)
             render.set_shader_input("specular", 0.05)
-            
+
             for roughness in range(11):
                 for metallic in range(2):
                     placeholder = render.attach_new_node("placeholder")
-                    placeholder.set_pos( (roughness-5) * 2.3, (metallic) * 5.3, 0)
+                    placeholder.set_pos((roughness-5) * 2.3, (metallic) * 5.3, 0)
                     placeholder.set_shader_input("roughness", roughness / 10.0)
                     placeholder.set_shader_input("metallic", metallic / 1.0)
                     model.instance_to(placeholder)
@@ -110,9 +109,9 @@ class MainApp(ShowBase):
                 light = PointLight()
                 pos_x, pos_y = (x-sqr//2) * 6.0, (y-sqr//2) * 4.0
                 # pos_x, pos_y = 0, 0
-                light.set_pos( Vec3(pos_x, pos_y, 3.0) )
-                # light.set_color(Vec3(random(), random(), random())* 1.0) 
-                light.set_color( Vec3(3, 3, 3) ) 
+                light.set_pos(Vec3(pos_x, pos_y, 3.0))
+                # light.set_color(Vec3(random(), random(), random())* 1.0)
+                light.set_color(Vec3(3, 3, 3))
                 light.set_radius(5)
                 light.set_ies_profile(profile)
                 self.render_pipeline.add_light(light)
@@ -121,7 +120,7 @@ class MainApp(ShowBase):
             test_light = SpotLight()
             test_light.set_pos(0, 9, 15)
             test_light.set_radius(30)
-            test_light.set_color( Vec3(1.0, 1.0, 1.0) * 4.0 )
+            test_light.set_color(Vec3(1.0, 1.0, 1.0) * 4.0)
             test_light.look_at(0, 0, 0)
             test_light.set_fov(90)
             test_light.set_ies_profile(0)

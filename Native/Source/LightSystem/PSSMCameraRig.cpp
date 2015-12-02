@@ -321,7 +321,6 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
 
         // Compute new film offset
         cam->get_lens()->set_film_offset(film_offset);
-
         cam->get_lens()->set_near_far(10, best_max_extent.get_z());
 
 

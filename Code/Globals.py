@@ -1,5 +1,5 @@
 
-class Globals:
+class Globals(object):
 
     """ This class is a singleton to store globals because cython can't handle
     global variables. """
@@ -10,6 +10,9 @@ class Globals:
     clock = None
     font = None
     resolution = None
+
+    def __init__(self):
+        raise NotImplementedError("Class is a singleton")
 
     @classmethod
     def load(cls, showbase):
