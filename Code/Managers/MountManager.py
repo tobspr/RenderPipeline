@@ -80,7 +80,7 @@ class MountManager(DebugObject):
             try:
                 with open(self._lock_file, "r") as handle:
                     pid = int(handle.readline())
-            except Exception as msg:
+            except IOError as msg:
                 self.error("Failed to read lockfile:", msg)
                 return False
 
@@ -107,7 +107,7 @@ class MountManager(DebugObject):
     def _is_pid_running(self, pid):
         """ Checks if a pid is still running """
 
-        # Code snippet from ntrrgc
+        # Code snippet from:
         # http://stackoverflow.com/questions/568271/how-to-check-if-there-exists-a-process-with-a-given-pid
 
         if os.name == 'posix':
@@ -116,8 +116,8 @@ class MountManager(DebugObject):
                 return False
             try:
                 os.kill(pid, 0)
-            except OSError as e:
-                return e.errno == errno.EPERM
+            except OSError as err:
+                return err.errno == errno.EPERM
             else:
                 return True
         else:
@@ -144,7 +144,7 @@ class MountManager(DebugObject):
         try:
             os.remove(fname)
             return True
-        except:
+        except IOError:
             pass
         return False
 
@@ -162,19 +162,19 @@ class MountManager(DebugObject):
                 # Check for further tempfiles in the write path
                 # We explicitely use os.listdir here instead of pandas listdir,
                 # to work with actual paths
-                for f in os.listdir(self._write_path):
-                    pth = join(self._write_path, f)
+                for fname in os.listdir(self._write_path):
+                    pth = join(self._write_path, fname)
 
                     # Tempfiles from the pipeline start with "$$" to distinguish
                     # them from user created files
-                    if isfile(pth) and f.startswith("$$"):
+                    if isfile(pth) and fname.startswith("$$"):
                         self._try_remove(pth)
 
                 # Delete the write path if no files are left
                 if len(os.listdir(self._write_path)) < 1:
                     try:
                         os.removedirs(self._write_path)
-                    except:
+                    except IOError:
                         pass
 
     def mount(self):
@@ -188,7 +188,7 @@ class MountManager(DebugObject):
         dirs_to_mount = ["Data", "Config", "Effects", "Plugins", "Config", "Shader"]
         for directory in dirs_to_mount:
             vfs.mount_loop(join(self._base_path, directory), directory, 0)
-        
+
         if isdir(join(self._base_path, "Models")):
             vfs.mount_loop(join(self._base_path, 'Models'), 'Models', 0)
 
@@ -210,7 +210,7 @@ class MountManager(DebugObject):
                 self.debug("Creating temp path, it does not exist yet")
                 try:
                     os.makedirs(self._write_path)
-                except Exception as msg:
+                except IOError as msg:
                     self.fatal("Failed to create temp path:", msg)
             self.debug("Mounting", self._write_path, "as $$PipelineTemp/")
             vfs.mount_loop(self._write_path, '$$PipelineTemp/', 0)
@@ -228,7 +228,7 @@ class MountManager(DebugObject):
         # find the ShaderAutoConfig.include
         self._model_paths.append("$$PipelineTemp")
 
-        # Add the plugins dir to the model path so plugins can include their 
+        # Add the plugins dir to the model path so plugins can include their
         # own resources more easily
         self._model_paths.append(join(self._base_path, "Plugins"))
 

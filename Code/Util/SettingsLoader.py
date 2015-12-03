@@ -1,7 +1,5 @@
 
-
-from panda3d.core import Vec3
-from direct.stdpy.file import isfile, open
+from direct.stdpy.file import isfile
 
 from .DebugObject import DebugObject
 from ..External.PyYAML import YAMLEasyLoad
@@ -9,7 +7,7 @@ from ..External.PyYAML import YAMLEasyLoad
 class SettingsLoader(DebugObject):
 
     """ This class is a base class for loading settings from yaml files.
-    Settings can be accessed as attributes, saving is currently not supported. 
+    Settings can be accessed as attributes, saving is currently not supported.
     To load a yaml file, load_from_file has to be called.
     """
 
@@ -27,7 +25,7 @@ class SettingsLoader(DebugObject):
     def __getitem__(self, item_name):
         """ Returns a setting by name """
         if item_name not in self._settings:
-            self.error("Could not find setting",item_name)
+            self.error("Could not find setting", item_name)
             return False
         return self._settings[item_name]
 

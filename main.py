@@ -23,6 +23,10 @@
 """
 
 
+# Disable the "xxx has no yyy member" error, pylint seems to be unable to detect
+# the properties of a nodepath
+# pylint: disable=E1101
+
 from __future__ import print_function
 
 import sys
@@ -71,10 +75,10 @@ class MainApp(ShowBase):
 
         plane = self.loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
         plane.set_scale(2.0)
-        plane.reparent_to(render)
+        plane.reparent_to(self.render)
 
         # Load some models, most of them are not included in the repository
-        model = self.loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
+        # model = self.loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
         # model = loader.loadModel("Models/HDRTest/Scene.bam")
         # model = loader.loadModel("Models/SimpleShapes/Sphere.bam")
         # model = loader.loadModel("Models/SimpleShapes/Wall.bam")
@@ -82,23 +86,23 @@ class MainApp(ShowBase):
         # model = loader.loadModel("Models/Test.ignore/Car0.bam")
         # model = loader.loadModel("Models/DemoTerrain/Scene.bam")
         # model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
-        # model = loader.loadModel("box")
+        model = self.loader.loadModel("box")
         model.flatten_strong()
 
         if False:
-            render.set_shader_input("roughness", 1.0)
-            render.set_shader_input("metallic", 0.0)
-            render.set_shader_input("specular", 0.05)
+            self.render.set_shader_input("roughness", 1.0)
+            self.render.set_shader_input("metallic", 0.0)
+            self.render.set_shader_input("specular", 0.05)
 
             for roughness in range(11):
                 for metallic in range(2):
-                    placeholder = render.attach_new_node("placeholder")
+                    placeholder = self.render.attach_new_node("placeholder")
                     placeholder.set_pos((roughness-5) * 2.3, (metallic) * 5.3, 0)
                     placeholder.set_shader_input("roughness", roughness / 10.0)
                     placeholder.set_shader_input("metallic", metallic / 1.0)
                     model.instance_to(placeholder)
         else:
-            model.reparent_to(render)
+            model.reparent_to(self.render)
 
         self.render_pipeline.create_default_skybox()
 

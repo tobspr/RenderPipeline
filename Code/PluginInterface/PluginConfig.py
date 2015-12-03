@@ -1,8 +1,6 @@
 
 import collections
 
-from direct.stdpy.file import open
-
 from ..Util.DebugObject import DebugObject
 from ..External.PyYAML import YAMLEasyLoad
 from .PluginExceptions import BadSettingException
@@ -24,32 +22,32 @@ class PluginConfig(DebugObject):
 
     def get_name(self):
         """ Returns the name of the plugin """
-        assert(self._loaded)
+        assert self._loaded
         return self._properties["name"]
 
     def get_description(self):
         """ Returns the description of the plugin """
-        assert(self._loaded)
+        assert self._loaded
         return self._properties["description"]
 
     def get_version(self):
         """ Returns the version of the plugin """
-        assert(self._loaded)
+        assert self._loaded
         return self._properties["version"]
 
     def get_author(self):
         """ Returns the author of the plugin """
-        assert(self._loaded)
+        assert self._loaded
         return self._properties["author"]
 
     def get_settings(self):
         """ Returns a dictionary with all setting handles """
-        assert(self._loaded)
+        assert self._loaded
         return self._settings
 
     def get_daytime_settings(self):
         """ Returns a dictionary with all daytime setting handles """
-        assert(self._loaded)
+        assert self._loaded
         return self._daytime_settings
 
     def get_setting(self, setting):
@@ -58,18 +56,18 @@ class PluginConfig(DebugObject):
 
     def get_setting_handle(self, setting):
         """ Returns a setting handle by name """
-        assert(self._loaded)
+        assert self._loaded
         if setting not in self._settings:
             self.error("Could not find setting:", setting)
-            return False
+            return None
         return self._settings[setting]
 
     def apply_overrides(self, plugin_id, overrides):
-        """ Given a list of overrides, apply those to the settings given by 
+        """ Given a list of overrides, apply those to the settings given by
         this plugin. The overrides should be a dictionary, where the key
         is PluginID.setting_name, and the value is the new value. Settings from
         other plugins are ignored, unkown settings trigger an error """
-        assert(self._loaded)
+        assert self._loaded
 
         # need a copy to iterate
         for key in list(overrides.keys()):
@@ -81,7 +79,7 @@ class PluginConfig(DebugObject):
                     self.warn("Unrecognized override: " + key)
                     del overrides[key]
                     continue
-                    
+
                 self._settings[setting_name].set_value(setting_value)
 
     def apply_daytime_curves(self, curves):
@@ -140,7 +138,7 @@ class PluginConfig(DebugObject):
             try:
                 setting = BasePluginSetting.load_from_yaml(setting_value)
             except BadSettingException as msg:
-                self.error("Could not parse setting", setting_id,":", msg)
+                self.error("Could not parse setting", setting_id, "->", msg)
                 continue
             self._settings[setting_id] = setting
 

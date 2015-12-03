@@ -2,7 +2,7 @@
 
 import importlib
 
-from direct.stdpy.file import isdir, isfile, join
+from direct.stdpy.file import isfile, join
 
 from .BasePluginInterface import BasePluginInterface
 
@@ -28,8 +28,8 @@ class PluginInterface(BasePluginInterface):
                 # In case the plugin loaded, create a instance of it, register
                 # the settings and initializes it.
                 plugin_instance = plugin_class(self._pipeline)
-                plugin_instance.get_config().apply_overrides(plugin,
-                    self.get_overrides())
+                plugin_instance.get_config().apply_overrides(
+                    plugin, self.get_overrides())
                 self._plugin_instances.append(plugin_instance)
                 self.debug("Loaded", plugin_instance.get_config().get_name())
             else:
@@ -40,10 +40,10 @@ class PluginInterface(BasePluginInterface):
             self.disable_plugin(plugin)
 
     def reload_overrides(self):
-        """ Reloads the overrides """        
+        """ Reloads the overrides """
         for plugin in self._plugin_instances:
-            plugin.get_config().apply_overrides(plugin.get_id(),
-                self.get_overrides())
+            plugin.get_config().apply_overrides(
+                plugin.get_id(), self.get_overrides())
 
     def get_plugin_handle(self, plugin_id):
         """ Returns a handle to the plugin given its id, or None if the plugin
@@ -62,7 +62,7 @@ class PluginInterface(BasePluginInterface):
         plugin_path = join(self._base_dir, "Plugins", plugin_id)
         plugin_main = join(plugin_path, "__init__.py")
         if not isfile(plugin_main):
-            self.warn("Cannot load",plugin_id,"because __init__.py was not found")
+            self.warn("Cannot load", plugin_id, "because __init__.py was not found")
             return None
 
         module_path = "Plugins." + plugin_id + ".Plugin"
@@ -70,12 +70,12 @@ class PluginInterface(BasePluginInterface):
         try:
             module = importlib.import_module(module_path)
         except Exception as msg:
-            self.warn("Could not import",plugin_id,"because of an import error:")
+            self.warn("Could not import", plugin_id, "because of an import error:")
             self.warn(msg)
             return None
-            
+
         if not hasattr(module, "Plugin"):
-            self.warn("Plugin",plugin_id,"has no main Plugin class defined!")
+            self.warn("Plugin", plugin_id, "has no main Plugin class defined!")
             return None
 
         return module.Plugin

@@ -1,4 +1,9 @@
 
+# Disable the xxx has no yyy member warning, pylint seems to be
+# unable to figure out the Colorama properties, and throws an error
+# for each property.
+# pylint: disable=E1101
+
 from __future__ import print_function
 
 import sys
@@ -23,7 +28,7 @@ class DebugObject(object):
         """ Sets the output level, messages with a level below will not be
         printed. E.g. if you set the output level to "error", only error and
         fatal messages will be shown.  """
-        assert(level in cls._OUTPUT_LEVELS)
+        assert level in cls._OUTPUT_LEVELS
         cls._OUTPUT_LEVEL = cls._OUTPUT_LEVELS.index(level)
 
     @staticmethod
@@ -59,7 +64,7 @@ class DebugObject(object):
         """ Sets the color used to output debug messages """
         self._debug_color = getattr(Fore, color.upper())
         if style:
-            self._debug_color+= getattr(Style, style.upper())
+            self._debug_color += getattr(Style, style.upper())
 
     def get_name(self):
         """ Returns the name of the debug object """

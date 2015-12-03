@@ -13,7 +13,8 @@ class CullLightsStage(RenderStage):
     for each cell """
 
     required_pipes = ["CellListBuffer"]
-    required_inputs = ["AllLightsData", "maxLightIndex", "mainCam", "currentViewMatZup", "currentProjMat"]
+    required_inputs = ["AllLightsData", "maxLightIndex", "mainCam",
+                       "currentViewMatZup", "currentProjMat"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CullLightsStage", pipeline)
@@ -42,13 +43,13 @@ class CullLightsStage(RenderStage):
         self._target.set_size(512, self._num_rows)
         self._target.prepare_offscreen_buffer()
         self._target.set_clear_color(color=Vec4(0.2, 0.6, 1.0, 1.0))
-        self._per_cell_lights = Image.create_buffer("PerCellLights",
-            max_cells * (self._max_lights_per_cell + 1), Texture.T_int,
-            Texture.F_r32)
+        self._per_cell_lights = Image.create_buffer(
+            "PerCellLights", max_cells * (self._max_lights_per_cell + 1),
+            Texture.T_int, Texture.F_r32)
         self._per_cell_lights.set_clear_color(0)
-        self.debug("Culling with", self._num_rows,"threads")
-        self._target.set_shader_input("perCellLightsBuffer",
-            self._per_cell_lights.get_texture())
+        self.debug("Culling with", self._num_rows, "threads")
+        self._target.set_shader_input(
+            "PerCellLightsBuffer", self._per_cell_lights.get_texture())
 
     def set_shaders(self):
         self._target.set_shader(self._load_shader("Stages/CullLights.vert",

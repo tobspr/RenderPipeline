@@ -22,9 +22,13 @@ class PipeViewer(DraggableWindow):
 
     @classmethod
     def register_stage_mgr(cls, mgr):
+        """ Sets the stage manager, this is a workaround to prevent
+        circular imports, since the pipe viewer is already included
+        from the StageManager """
         cls._STAGE_MGR = mgr
 
     def __init__(self, pipeline, parent):
+        """ Constructs the pipe viewer """
         DraggableWindow.__init__(self, width=1300, height=900, parent=parent,
                                  title="Pipeline Visualizer")
         self._pipeline = pipeline
@@ -96,7 +100,7 @@ class PipeViewer(DraggableWindow):
                             frameColor=(r, g, b, 1),
                             pos=(0, 1, -95 - pipe_idx * pipe_height))
 
-                if type(pipe_tex) == list or type(pipe_tex) == tuple:
+                if isinstance(pipe_tex, list) or isinstance(pipe_tex, tuple):
                     pipe_tex = pipe_tex[0]
 
                 if isinstance(pipe_tex, BaseUBO):
@@ -107,12 +111,12 @@ class PipeViewer(DraggableWindow):
                     icon_file = "Data/GUI/OnscreenDebugger/IconBufferTexture.png"
                 else:
                     icon_file = None
-                    preview = BetterOnscreenImage(image=pipe_tex, parent=node,
-                                        x=0, y=50 + pipe_idx * pipe_height,
-                                        w=w, h=h, any_filter=False,
-                                        transparent=False)
+                    preview = BetterOnscreenImage(
+                        image=pipe_tex, parent=node, x=0,
+                        y=50 + pipe_idx * pipe_height, w=w, h=h, any_filter=False,
+                        transparent=False)
 
-                    preview_shader = DisplayShaderBuilder.build(pipe_tex, int(w), int(h) )
+                    preview_shader = DisplayShaderBuilder.build(pipe_tex, int(w), int(h))
                     preview.set_shader(preview_shader)
 
                     preview.set_shader_input("mipmap", 0)
@@ -131,9 +135,10 @@ class PipeViewer(DraggableWindow):
                         tex_desc += " - " + pipe_tex.format_format(pipe_tex.get_format()).upper()
 
 
-                    BetterOnscreenText(text=tex_desc, parent=node,
-                                        x=55 + 48/2, y=130 + pipe_idx * pipe_height, color=Vec3(0.2),
-                                        size=12, align="center")
+                    BetterOnscreenText(
+                        text=tex_desc, parent=node, x=55 + 48/2,
+                        y=130 + pipe_idx * pipe_height, color=Vec3(0.2),
+                        size=12, align="center")
 
             for input_pipe in stage.get_input_pipes():
                 idx = current_pipes.index(input_pipe)
@@ -147,7 +152,7 @@ class PipeViewer(DraggableWindow):
         self._pipe_descriptions.set_scale(1, 1, -1)
 
         DirectFrame(parent=self._pipe_descriptions, frameSize=(0, 190, 0, -5000),
-            frameColor=(0.1, 0.1, 0.1, 1.0))
+                    frameColor=(0.1, 0.1, 0.1, 1.0))
 
         # Generate the pipe descriptions
         for idx, pipe in enumerate(current_pipes):
@@ -158,9 +163,10 @@ class PipeViewer(DraggableWindow):
             BetterOnscreenText(parent=self._pipe_descriptions, text=pipe,
                                x=42, y=121 + idx * pipe_height, size=15,
                                color=Vec3(0.1))
-            BetterOnscreenImage(parent=self._pipe_descriptions,
-                image="Data/GUI/OnscreenDebugger/IconPipe.png", 
-                x=9, y=103 + idx * pipe_height, transparent=True, near_filter=False)
+            BetterOnscreenImage(
+                parent=self._pipe_descriptions, x=9, y=103 + idx * pipe_height,
+                image="Data/GUI/OnscreenDebugger/IconPipe.png",
+                transparent=True, near_filter=False)
 
     def _create_components(self):
         """ Internal method to create the window components """

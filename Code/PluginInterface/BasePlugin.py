@@ -4,7 +4,6 @@ from __future__ import division, print_function
 from math import ceil
 
 from panda3d.core import NodePath, ShaderAttrib
-from direct.stdpy.file import isfile
 
 from ..Globals import Globals
 from ..Util.DebugObject import DebugObject
@@ -21,7 +20,7 @@ class BasePlugin(DebugObject):
         # Find the plugin name:
         # The __module__ contains something like Plugins.XXX.YYY
         # We want XXX so we take the second parameter
-        self._id = str(self.__class__.__module__).split(".")[1] 
+        self._id = str(self.__class__.__module__).split(".")[1]
         DebugObject.__init__(self, "Plugin::" + self._id)
         self._pipeline = pipeline
         self._setting_change_handlers = {}
@@ -79,12 +78,15 @@ class BasePlugin(DebugObject):
                 if setting.type == "ENUM":
                     # define all enum values
                     for idx, value in enumerate(setting.values):
-                        self._pipeline.get_stage_mgr().define(self._id + "_ENUM_" + name + "_" + value, idx)
+                        self._pipeline.get_stage_mgr().define(
+                            self._id + "_ENUM_" + name + "_" + value, idx)
 
-                    self._pipeline.get_stage_mgr().define(self._id + "__" + name, setting.values.index(setting.value))
-                
+                    self._pipeline.get_stage_mgr().define(
+                        self._id + "__" + name, setting.values.index(setting.value))
+
                 else:
-                    self._pipeline.get_stage_mgr().define(self._id + "__" + name, setting.value)
+                    self._pipeline.get_stage_mgr().define(
+                        self._id + "__" + name, setting.value)
 
     def get_id(self):
         """ Returns the id of the plugin """
@@ -116,7 +118,7 @@ class BasePlugin(DebugObject):
 
     def is_plugin_loaded(self, plugin):
         """ Returns whether a plugin is currently loaded """
-        return self._pipeline.get_plugin_mgr().get_interface().has_plugin_handle(plugin) 
+        return self._pipeline.get_plugin_mgr().get_interface().has_plugin_handle(plugin)
 
     def create_stage(self, stage_type):
         """ Shortcut to create a new render stage from a given class type """
@@ -129,22 +131,22 @@ class BasePlugin(DebugObject):
         """ Adds a new define. This should be called in the on_stage_setup hook """
         self._pipeline.get_stage_mgr().define(key, value)
 
-    def exec_compute_shader(self, shader_obj, shader_inputs, exec_size, 
-            workgroup_size=(16, 16, 1)):
+    def exec_compute_shader(self, shader_obj, shader_inputs, exec_size,
+                            workgroup_size=(16, 16, 1)):
         """ Executes a compute shader. The shader object should be a shader
         loaded with Shader.load_compute, the shader inputs should be a dict where
-        the keys are the names of the shader inputs and the values are the 
-        inputs. The workgroup_size has to match the size defined in the 
+        the keys are the names of the shader inputs and the values are the
+        inputs. The workgroup_size has to match the size defined in the
         compute shader """
-        ntx = int(ceil( exec_size[0] / workgroup_size[0]))
-        nty = int(ceil( exec_size[1] / workgroup_size[1]))
-        ntz = int(ceil( exec_size[2] / workgroup_size[2]))
+        ntx = int(ceil(exec_size[0] / workgroup_size[0]))
+        nty = int(ceil(exec_size[1] / workgroup_size[1]))
+        ntz = int(ceil(exec_size[2] / workgroup_size[2]))
 
-        np = NodePath("shader")
-        np.set_shader(shader_obj)
+        nodepath = NodePath("shader")
+        nodepath.set_shader(shader_obj)
         for key, val in shader_inputs.items():
-            np.set_shader_input(key, val)
+            nodepath.set_shader_input(key, val)
 
-        attr = np.get_attrib(ShaderAttrib)
-        Globals.base.graphicsEngine.dispatch_compute((ntx, nty, ntz),
-            attr, Globals.base.win.get_gsg())
+        attr = nodepath.get_attrib(ShaderAttrib)
+        Globals.base.graphicsEngine.dispatch_compute(
+            (ntx, nty, ntz), attr, Globals.base.win.get_gsg())

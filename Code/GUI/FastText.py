@@ -160,9 +160,9 @@ class FastText(DebugObject):
 
     def _generate_card(self):
         """ Generates the card used for text rendering """
-        c = CardMaker("TextCard")
-        c.set_frame(0, 1, 0, 1)
-        self._card = NodePath(c.generate())
+        card = CardMaker("TextCard")
+        card.set_frame(0, 1, 0, 1)
+        self._card = NodePath(card.generate())
         self._card.set_shader_input("fontPageTex", self._font_data[1])
         self._card.set_shader_input("fontPageBlurredTex", self._font_data[3])
         self._card.set_shader_input("positionData", self._pta_position)

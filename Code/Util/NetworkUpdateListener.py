@@ -1,4 +1,4 @@
- 
+
 
 from .DebugObject import DebugObject
 from .UDPListenerService import UDPListenerService
@@ -17,10 +17,10 @@ class NetworkUpdateListener(DebugObject):
         """ Starts the listener threads """
         self._fix_showbase_shutdown()
 
-        UDPListenerService.listener_thread(UDPListenerService.CONFIG_PORT, 
-            self._on_config_msg)
-        UDPListenerService.listener_thread(UDPListenerService.DAYTIME_PORT, 
-            self._on_daytime_msg)
+        UDPListenerService.listener_thread(
+            UDPListenerService.CONFIG_PORT, self._on_config_msg)
+        UDPListenerService.listener_thread(
+            UDPListenerService.DAYTIME_PORT, self._on_daytime_msg)
 
     def _on_config_msg(self, msg):
         """ Internal handler when a config message arrived """
@@ -66,6 +66,6 @@ class NetworkUpdateListener(DebugObject):
             # everything down
             import os
             os._exit(0)
-        
+
         self._pipeline._showbase.run = new_run
         

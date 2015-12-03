@@ -4,7 +4,7 @@ from ..Util.DebugObject import DebugObject
 from .PluginExceptions import BadSettingException
 
 class BasePluginSetting(DebugObject):
-    
+
     """ This is the base plugin setting, which is used by the plugin config.
     It loads the basic properties from a YAML object """
 
@@ -32,7 +32,7 @@ class BasePluginSetting(DebugObject):
                 return False
             if isinstance(required_value, list) or isinstance(required_value, tuple):
                 if settings[setting_id].value not in required_value:
-                    return False 
+                    return False
             else:
                 if settings[setting_id].value != required_value:
                     return False
@@ -52,7 +52,7 @@ class BasePluginSetting(DebugObject):
         classname = "PluginSetting" + typename
 
         # Check if there is a typehandler for that type
-        if classname in globals():  
+        if classname in globals():
             instance = globals()[classname]()
         else:
             raise BadSettingException("Unkown type: " + typename)
@@ -95,7 +95,7 @@ class BasePluginSetting(DebugObject):
 # Specialized Plugin Settings
 
 class PluginSettingINT(BasePluginSetting):
-    
+
     """ Setting which stores a single integer """
 
     def load_additional_settings(self, yaml):
@@ -132,7 +132,7 @@ class PluginSettingFLOAT(BasePluginSetting):
         self.value = max(self.min_value, min(self.max_value, val))
 
 class PluginSettingBOOL(BasePluginSetting):
-        
+
     """ Setting which stores a single bool """
 
     def load_additional_settings(self, yaml):
@@ -142,7 +142,7 @@ class PluginSettingBOOL(BasePluginSetting):
         if not isinstance(val, int) and not isinstance(val, bool):
             raise BadSettingException("Unkown data value for bool: "  + str(val))
         self.value = True if val else False
-        
+
 class PluginSettingENUM(BasePluginSetting):
 
     """ Setting which stores an enumeration """
@@ -160,7 +160,7 @@ class PluginSettingENUM(BasePluginSetting):
 
 
 class PluginSettingIMAGE(BasePluginSetting):
-        
+
     """ Setting which stores a path to an image """
 
     def load_additional_settings(self, yaml):

@@ -64,7 +64,7 @@ class StageManager(DebugObject):
             return
 
         if not stage.is_enabled():
-            self.debug("Skipping disabled stage",stage)
+            self.debug("Skipping disabled stage", stage)
             return
 
         self._stages.append(stage)
@@ -89,8 +89,8 @@ class StageManager(DebugObject):
             if condition(define):
                 to_remove.append(define)
 
-        for rm in to_remove:
-            del self._defines[rm]
+        for define in to_remove:
+            del self._defines[define]
 
     def setup(self):
         """ Setups the stages """
@@ -130,9 +130,10 @@ class StageManager(DebugObject):
                     pipe_name = pipe.split("::")[-1]
                     if pipe_name not in self._previous_pipes:
                         self.debug("Storing previous frame pipe for " + pipe_name)
-                        pipe_tex = Image.create_2d("Prev-" + pipe_name, 
-                            Globals.base.win.get_x_size(),
-                            Globals.base.win.get_y_size(), Texture.T_float, Texture.F_rgba16)
+                        pipe_tex = Image.create_2d(
+                            "Prev-" + pipe_name, Globals.base.win.get_x_size(),
+                            Globals.base.win.get_y_size(), Texture.T_float,
+                            Texture.F_rgba16)
                         pipe_tex.get_texture().clear_image()
                         self._previous_pipes[pipe_name] = pipe_tex.get_texture()
                     stage.set_shader_input("Previous_" + pipe_name, self._previous_pipes[pipe_name])
@@ -188,7 +189,7 @@ class StageManager(DebugObject):
 
                 self._inputs[input_name] = data
 
-        # Finally create the stage which stores all the current pipes in the 
+        # Finally create the stage which stores all the current pipes in the
         # previous pipes textures:
         if self._previous_pipes:
             self._prev_stage = UpdatePreviousPipesStage(self._pipeline)
@@ -196,8 +197,8 @@ class StageManager(DebugObject):
             for prev_pipe, prev_tex in self._previous_pipes.items():
 
                 if prev_pipe not in self._pipes:
-                    self.error("Attempted to use previous frame data from pipe " + prev_pipe,
-                        "However, that pipe was never created!")
+                    self.error("Attempted to use previous frame data from pipe",
+                               prev_pipe, "- however, that pipe was never created!")
                     continue
 
                 # Tell the stage to transfer the data from the current pipe to
@@ -235,9 +236,8 @@ class StageManager(DebugObject):
         output += "// Do not edit! Your changes will be lost.\n\n"
 
         for key, value in sorted(self._defines.items()):
-
             # Cannot cast bools to string directly
-            if type(value) == bool:
+            if isinstance(value, bool):
                 value = 1 if value else 0
             output += "#define " + key + " " + str(value) + "\n"
 
@@ -247,5 +247,5 @@ class StageManager(DebugObject):
         try:
             with open("$$PipelineTemp/$$ShaderAutoConfig.inc.glsl", "w") as handle:
                 handle.write(output)
-        except Exception as msg:
+        except IOError as msg:
             self.error("Error writing shader autoconfig:", msg)

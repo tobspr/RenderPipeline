@@ -1,4 +1,8 @@
 
+# Disable import warnings from PyLint, it cannot find the modules since the
+# render pipeline attaches the base path to the system path, which pylint is
+# unable to detect.
+# pylint: disable=F0401
 
 # This file is just a container for all classes, so plugins can import this file
 # and get all other class definitions required for plugins
@@ -21,23 +25,23 @@ from Code.RenderTarget import RenderTarget
 from Code.Globals import Globals
 
 
-# Import all stages as a module, this is used for the get_internal_stage_handle
+# Import all stages as a module, this is used for the get_internal_stage
 from Code.Stages import *
 
 # The native module defines the includes in its own __init__ file, so this is okay
 from Code.Native import *
 
 
-def get_internal_stage_handle(module):
+def get_internal_stage(module_name):
     """ Returns a stage handle by a given module, e.g.:
-    
-    get_stage_handle(AmbientStage).method(). 
+
+    get_internal_stage("AmbientStage").method().
 
     This can be used to add additional input or pipe requirements to internal
     pipeline stages, in case custom code is inserted, for example:
 
-    get_stage_handle(AmbientStage).add_pipe_requirement("MyPipe") 
+    get_internal_stage("AmbientStage").add_pipe_requirement("MyPipe")
 
     """
-    clsname = module.__name__.split(".")[-1]
-    return getattr(module, clsname)
+    handle = globals()[module_name]
+    return getattr(handle, module_name)

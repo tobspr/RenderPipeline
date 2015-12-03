@@ -1,7 +1,7 @@
 
 from functools import partial
 
-from panda3d.core import Texture, Vec3, Shader, LVecBase2i
+from panda3d.core import Texture, Vec3
 from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectGui import DGG
@@ -78,9 +78,10 @@ class BufferViewer(DraggableWindow):
         self._content_node.set_scale(1, 1, -1)
         self._content_node.set_z(self._scroll_height)
 
-        self._chb_show_images = BetterLabeledCheckbox(parent=self._node,
-            x=20, y=60, chb_callback=self._set_show_images, chb_checked=False,
-            text="Display image resources", text_color=Vec3(0.5), expand_width=200)
+        self._chb_show_images = BetterLabeledCheckbox(
+            parent=self._node, x=20, y=60, chb_callback=self._set_show_images,
+            chb_checked=False, text="Display image resources",
+            text_color=Vec3(0.5), expand_width=200)
 
     def _set_show_images(self, arg):
         self._display_images = arg

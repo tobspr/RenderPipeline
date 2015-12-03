@@ -1,7 +1,7 @@
 from __future__ import division
 
 from .. import *
-from panda3d.core import NodePath, Camera, Vec4, SamplerState, Texture
+from panda3d.core import SamplerState, Texture
 
 class PSSMShadowStage(RenderStage):
 
@@ -26,7 +26,7 @@ class PSSMShadowStage(RenderStage):
         state.set_minfilter(Texture.FT_shadow)
         state.set_magfilter(Texture.FT_shadow)
         return state
-        
+
     def set_num_splits(self, splits):
         self._num_splits = splits
 
@@ -55,16 +55,15 @@ class PSSMShadowStage(RenderStage):
 
         # Prepare the display regions
         for i in range(self._num_splits):
-            dr = internal_buffer.make_display_region(
+            region = internal_buffer.make_display_region(
                 i / self._num_splits,
                 i / self._num_splits + 1 / self._num_splits, 0, 1)
-            dr.set_clear_depth(1)
-            dr.set_clear_color_active(False)
-            dr.set_clear_depth_active(True)
-            dr.set_sort(25 + i)
-            dr.set_active(True)
-
-            self._split_regions.append(dr)
+            region.set_clear_depth(1)
+            region.set_clear_color_active(False)
+            region.set_clear_depth_active(True)
+            region.set_sort(25 + i)
+            region.set_active(True)
+            self._split_regions.append(region)
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

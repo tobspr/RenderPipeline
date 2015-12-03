@@ -1,11 +1,11 @@
 
 from __future__ import print_function
 
-from .. import *
-
-from panda3d.core import Vec3, NodePath, Camera, Texture, PTAVecBase3f
 from math import cos, sin, pi
 
+from panda3d.core import Vec3, PTAVecBase3f
+
+from .. import *
 from .PSSMShadowStage import PSSMShadowStage
 from .PSSMStage import PSSMStage
 
@@ -32,7 +32,7 @@ class Plugin(BasePlugin):
         self._node.hide()
 
         # Construct the actual PSSM rig
-        self._rig = PSSMCameraRig(self.get_setting("split_count"))
+        self._rig = PSSMCameraRig(self.get_setting("split_count")) # pylint: disable=E0602
         self._rig.set_sun_distance(self.get_setting("sun_distance"))
         self._rig.set_pssm_distance(self.get_setting("max_distance"))
         self._rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
@@ -76,24 +76,24 @@ class Plugin(BasePlugin):
                 "sun_altitude", plugin_id="Scattering")
             sun_azimuth = self.get_daytime_setting(
                 "sun_azimuth", plugin_id="Scattering")
-    
+
             theta = (90 - sun_altitude) / 180.0 * pi
             phi = sun_azimuth / 180.0 * pi
-                
+
             sun_vector = Vec3(
                 sin(theta) * cos(phi),
                 sin(theta) * sin(phi),
                 cos(theta))
-        
+
         self._pta_sun_vector[0] = sun_vector
 
         if self._update_enabled:
             self._rig.fit_to_camera(Globals.base.camera, sun_vector)
 
             # Eventually reset cache
-            cache_diff = globalClock.get_frame_time() - self._last_cache_reset
+            cache_diff = Globals.clock.get_frame_time() - self._last_cache_reset
             if cache_diff > 1.0:
-                self._last_cache_reset = globalClock.get_frame_time()
+                self._last_cache_reset = Globals.clock.get_frame_time()
                 self._rig.reset_film_size_cache()
 
     @SettingChanged("max_distance")

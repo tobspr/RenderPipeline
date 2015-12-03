@@ -1,8 +1,7 @@
 
 import copy
 
-from panda3d.core import Shader
-from direct.stdpy.file import open
+from panda3d.core import Shader, Filename
 
 from ..External.PyYAML import YAMLEasyLoad
 from ..Util.DebugObject import DebugObject
@@ -32,7 +31,12 @@ class Effect(DebugObject):
             else:
                 val = Effect._DEFAULT_OPTIONS[key]
             constructed_dict[key] = val
-        return hash(frozenset(list(constructed_dict.items())))
+
+        # Hash filename, make sure it has the right format before tho
+        fname = Filename(filename)
+        fname.make_absolute()
+        fhash = str(hash(fname.to_os_generic()))
+        return fhash + "-" + str(hash(frozenset(list(constructed_dict.items()))))
 
     def __init__(self):
         """ Constructs a new empty effect """
@@ -108,7 +112,7 @@ class Effect(DebugObject):
         default_template = "Shader/Templates/" + shader_id + ".templ.glsl"
         shader_path = self._construct_shader_from_data(shader_id, default_template, data)
         self._shader_paths[shader_id] = shader_path
-        
+
     def _construct_shader_from_data(self, shader_id, default_template, data):
         """ Constructs a shader from a given dataset """
         injects = {}
@@ -125,7 +129,7 @@ class Effect(DebugObject):
         for key, val in list(self._options.items()):
             val_str = str(val)
             if isinstance(val, bool):
-                val_str = "1" if val else "0" 
+                val_str = "1" if val else "0"
             injects['defines'].append("#define OPT_" + key.upper() + " " + val_str)
 
         # Parse dependencies

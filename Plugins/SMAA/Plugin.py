@@ -1,5 +1,5 @@
 
-from panda3d.core import Texture, Vec2
+from panda3d.core import Texture
 
 # Load plugin api
 from .. import *
@@ -36,8 +36,8 @@ class Plugin(BasePlugin):
 
     def _compute_jitters(self):
         self._jitters = []
-        for x, y in ((-0.25,  0.25),(0.25, -0.25)):
-            
+        for x, y in ((-0.25, 0.25), (0.25, -0.25)):
+
             # The get_x_size() for both dimensions is not an error! Its due to
             # how the OrtographicLens works internally.
             jitter_x = x / float(Globals.base.win.get_x_size())

@@ -2,7 +2,7 @@ from __future__ import division
 
 from .. import *
 
-from panda3d.core import Texture, PTAInt
+from panda3d.core import PTAInt
 
 
 class SMAAStage(RenderStage):
@@ -38,8 +38,14 @@ class SMAAStage(RenderStage):
         self._resolve_target.set_shader_input("LastTex", self._neighbor_targets[1-idx]["color"])
 
     def get_produced_pipes(self):
-        return {"ShadedScene": 
-            self._resolve_target["color"] if self._reprojection else self._neighbor_targets[0]["color"]}
+
+        if self._reprojection:
+            out_target = self._resolve_target["color"]
+        else:
+            out_target = self._neighbor_targets[0]["color"]
+        return {
+            "ShadedScene": out_target
+        }
 
     def create(self):
 
@@ -83,7 +89,6 @@ class SMAAStage(RenderStage):
             target.set_shader_input("SRGBSource", self._srgb_target["color"])
             self._neighbor_targets.append(target)
 
-    
         # Resolving
         if self._reprojection:
             self._resolve_target = self._create_target("SMAAResolve")

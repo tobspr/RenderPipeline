@@ -18,7 +18,7 @@ from ..Stages.FinalStage import FinalStage
 from ..Stages.DownscaleZStage import DownscaleZStage
 
 from ..GPUCommandQueue import GPUCommandQueue
-from ..Native import GPUCommand, LightStorage
+from ..Native import LightStorage
 
 
 class LightManager(DebugObject):
@@ -52,7 +52,7 @@ class LightManager(DebugObject):
     def add_light(self, light):
         """ Adds a new light """
         self._light_storage.add_light(light)
-        self._pta_max_light_index[0] = self._light_storage.get_max_light_index();
+        self._pta_max_light_index[0] = self._light_storage.get_max_light_index()
 
     def remove_light(self, light):
         """ Removes a light """
@@ -90,8 +90,10 @@ class LightManager(DebugObject):
         self._pta_max_light_index[0] = 0
 
         # Register the buffer
-        self._pipeline.get_stage_mgr().add_input("AllLightsData", self._img_light_data.get_texture())
-        self._pipeline.get_stage_mgr().add_input("maxLightIndex", self._pta_max_light_index)
+        self._pipeline.get_stage_mgr().add_input(
+            "AllLightsData", self._img_light_data.get_texture())
+        self._pipeline.get_stage_mgr().add_input(
+            "maxLightIndex", self._pta_max_light_index)
 
     def _compute_tile_size(self):
         """ Computes how many tiles there are on screen """
@@ -124,10 +126,7 @@ class LightManager(DebugObject):
         self._apply_lights_stage = ApplyLightsStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._apply_lights_stage)
 
-
-
         # TODO: This doesn't belong here, move it somewhere else
-
 
         self._ambient_stage = AmbientStage(self._pipeline)
         self._pipeline.get_stage_mgr().add_stage(self._ambient_stage)
@@ -140,5 +139,3 @@ class LightManager(DebugObject):
 
         # self._downscale_z_stage = DownscaleZStage(self._pipeline)
         # self._pipeline.get_stage_mgr().add_stage(self._downscale_z_stage)
-
-        

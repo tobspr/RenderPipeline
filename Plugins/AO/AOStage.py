@@ -1,8 +1,9 @@
 
-from .. import RenderStage
+from random import random
 
 from panda3d.core import LVecBase2i, PNMImage, Texture
-from random import random
+
+from .. import RenderStage
 
 class AOStage(RenderStage):
 
@@ -16,8 +17,6 @@ class AOStage(RenderStage):
         return {"AmbientOcclusion": self._target_blur_h['color']}
 
     def create(self):
-        
-        # TODO: 8 bits should be enough I think
         self._target = self._create_target("AOSample")
         self._target.set_half_resolution()
         self._target.add_color_texture(bits=8)

@@ -32,7 +32,8 @@ class ScatteringStage(RenderStage):
 
         cubemap_size = 256
 
-        self._scatter_cubemap = Image.create_cube("ScatteringCubemap", cubemap_size, Texture.T_float, Texture.F_rgba16)
+        self._scatter_cubemap = Image.create_cube(
+            "ScatteringCubemap", cubemap_size, Texture.T_float, Texture.F_rgba16)
         self._scatter_cubemap.get_texture().set_minfilter(Texture.FT_linear_mipmap_linear)
         self._scatter_cubemap.get_texture().set_magfilter(Texture.FT_linear)
 
@@ -53,15 +54,17 @@ class ScatteringStage(RenderStage):
             target.set_size(mipsize * 6, mipsize)
             # target.add_color_texture()
             target.prepare_offscreen_buffer()
-            target.set_shader_input("SourceMipmap", self._scatter_cubemap.get_texture())
-            target.set_shader_input("DestMipmap", self._scatter_cubemap.get_texture(), False, True, -1, mip + 1, 0)
+            target.set_shader_input(
+                "SourceMipmap", self._scatter_cubemap.get_texture())
+            target.set_shader_input(
+                "DestMipmap", self._scatter_cubemap.get_texture(), False, True, -1, mip + 1, 0)
             target.set_shader_input("current_mip", mip)
             mip += 1
 
             self._mip_targets.append(target)
 
         # Make the ambient stage use our cubemap
-        get_internal_stage_handle(AmbientStage).add_pipe_requirement("ScatteringCubemap")
+        get_internal_stage("AmbientStage").add_pipe_requirement("ScatteringCubemap")
 
     def set_shaders(self):
         self._target.set_shader(
@@ -69,7 +72,7 @@ class ScatteringStage(RenderStage):
         self._target_cube.set_shader(
             self.load_plugin_shader("ScatteringEnvmap.frag.glsl"))
 
-        mip_shader = self.load_plugin_shader("DownsampleEnvmap.frag.glsl") 
+        mip_shader = self.load_plugin_shader("DownsampleEnvmap.frag.glsl")
         for target in self._mip_targets:
             target.set_shader(mip_shader)
 

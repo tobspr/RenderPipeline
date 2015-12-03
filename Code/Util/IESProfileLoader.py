@@ -1,12 +1,11 @@
 from __future__ import print_function
 
 import re
-import math
 
-from panda3d.core import PNMImage, PTAFloat, Texture
-from direct.stdpy.file import open, isfile
+from panda3d.core import PTAFloat
+from direct.stdpy.file import open
 
-from ..Native import *
+from ..Native import IESDataset
 from .DebugObject import DebugObject
 
 class IESLoaderException(Exception):
@@ -29,7 +28,7 @@ class IESProfileLoader(DebugObject):
     ]
 
     # Regexp for extracting keywords
-    KEYWORD_REGEX = re.compile("\[([A-Za-z0-8_-]+)\](.*)")
+    KEYWORD_REGEX = re.compile(r"\[([A-Za-z0-8_-]+)\](.*)")
 
     def __init__(self):
         DebugObject.__init__(self)
@@ -42,7 +41,7 @@ class IESProfileLoader(DebugObject):
             with open(pth, "r") as handle:
                 lines = handle.readlines()
         except IOError as msg:
-            self.error("Failed to open",pth,":", msg)
+            self.error("Failed to open", pth, ":", msg)
             return None
 
         lines = [i.strip() for i in lines]
@@ -98,7 +97,7 @@ class IESProfileLoader(DebugObject):
         candela_scale = 0.0
 
         for i in range(num_horizontal_angles):
-            vertical_data = [read_float() for i in range(num_vertical_angles)]  
+            vertical_data = [read_float() for i in range(num_vertical_angles)]
             candela_scale = max(candela_scale, max(vertical_data))
             candela_values += vertical_data
 
@@ -111,9 +110,6 @@ class IESProfileLoader(DebugObject):
             # Dont abort here, some formats like those from ERCO Leuchten GmbH
             # have an END keyword, just ignore everything after the data was
             # read in.
-
-        # self.debug("Vertical angles range from", vertical_angles[0], "to", vertical_angles[-1])
-        # self.debug("Horizontal angles range from", horizontal_angles[0], "to", horizontal_angles[-1])
 
         dataset = IESDataset()
         dataset.set_vertical_angles(self._list_to_pta(vertical_angles))
@@ -131,8 +127,8 @@ class IESProfileLoader(DebugObject):
     def _list_to_pta(self, list_values):
         """ Converts a list to a PTAFloat """
         pta = PTAFloat.empty_array(len(list_values))
-        for i, v in enumerate(list_values):
-            pta[i] = v
+        for i, val in enumerate(list_values):
+            pta[i] = val
         return pta
 
     def _check_version_header(self, first_line):
@@ -151,7 +147,7 @@ class IESProfileLoader(DebugObject):
 
                 # Special format used by some IES files, indicates end of properties
                 # By just checking for the tilt keyword instead of validating each line,
-                # we can read even malformed lines, like those from ERCO Leuchten GmbH 
+                # we can read even malformed lines, like those from ERCO Leuchten GmbH
                 if line != "TILT=NONE":
                     continue
 
@@ -169,9 +165,3 @@ class IESProfileLoader(DebugObject):
                     raise IESLoaderException("Invalid keyword line: " + line)
 
         return keywords
-
-if __name__ == "__main__":
-
-    loader = IESProfileLoader()
-    loader.load("../../Data/IESProfiles/AreaLight.ies")
-    

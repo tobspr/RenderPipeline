@@ -23,7 +23,6 @@ uniform sampler2D p3d_Texture3;
 
 %INOUT%
 
-
 void main() {
 
     vec4 sampled_diffuse   = texture(p3d_Texture0, vOutput.texcoord);
@@ -33,11 +32,8 @@ void main() {
 
     sampled_diffuse.xyz = pow(sampled_diffuse.xyz, vec3(2.2));
 
-
     vec3 detail_normal = fma(sampled_normal.xyz, vec3(2.0), vec3(-1.0));
     vec3 merged_normal = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor);
-    
-
 
     MaterialShaderOutput m;
     m.basecolor = vOutput.material_color * sampled_diffuse.xyz;

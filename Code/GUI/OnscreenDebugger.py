@@ -1,11 +1,9 @@
 
+from functools import partial
 
 from panda3d.core import Vec3, Vec2, RenderState, TransformState
 from direct.gui.DirectFrame import DirectFrame
-from direct.gui.DirectOptionMenu import DirectOptionMenu
-from direct.gui.DirectGuiBase import DGG
 from direct.interval.IntervalGlobal import Parallel, Sequence
-
 
 from .BetterOnscreenImage import BetterOnscreenImage
 from .BufferViewer import BufferViewer
@@ -18,8 +16,6 @@ from .ErrorMessageDisplay import ErrorMessageDisplay
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
-from functools import partial
-
 
 class OnscreenDebugger(DebugObject):
 
@@ -69,7 +65,7 @@ class OnscreenDebugger(DebugObject):
     def update(self):
         """ Updates the gui """
         self._update_stats()
-        self._error_msg_handler.update()    
+        self._error_msg_handler.update()
 
     def get_error_msg_handler(self):
         """ Returns the error message handler """
@@ -100,22 +96,25 @@ class OnscreenDebugger(DebugObject):
         self._debug_lines = []
 
         for i in range(2):
-            self._debug_lines.append(FastText(pos=Vec2(0, -i * 0.05),
-                parent=self._overlay_node, pixel_size=18, align="right"))
+            self._debug_lines.append(FastText(
+                pos=Vec2(0, -i * 0.05), parent=self._overlay_node, pixel_size=18,
+                align="right"))
 
     def _update_stats(self):
         """ Updates the stats overlay """
 
         clock = Globals.clock
-        self._debug_lines[0].set_text("{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format( 
+        self._debug_lines[0].set_text("{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format(
             clock.get_average_frame_rate(),
             1000.0 / max(0.001, clock.get_average_frame_rate()),
             clock.get_max_frame_duration() * 1000.0))
-        self._debug_lines[1].set_text(
-            "{:4d} render states  |  {:4d} transform states  |  {:4d} commands  |  {:6d} lights".format(
-                RenderState.get_num_states(), TransformState.get_num_states(),
-                self._pipeline._light_mgr._cmd_queue.get_num_queued_commands(),
-                self._pipeline._light_mgr._light_storage.get_num_stored_lights()))
+
+        text = "{:4d} render states  |  {:4d} transform states"
+        text += "  |  {:4d} commands  |  {:6d} lights"
+        self._debug_lines[1].set_text(text.format(
+            RenderState.get_num_states(), TransformState.get_num_states(),
+            self._pipeline._light_mgr._cmd_queue.get_num_queued_commands(),
+            self._pipeline._light_mgr._light_storage.get_num_stored_lights()))
 
         for line in self._debug_lines:
             line.update()
@@ -127,21 +126,15 @@ class OnscreenDebugger(DebugObject):
 
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_x(-self._debugger_width)
-        self._debugger_bg = DirectFrame(parent=self._debugger_node,
-                                        frameSize=(self._debugger_width, 0, -127,
-                                                   -1020),
-                                        pos=(0, 0, 0),
-                                        frameColor=(0.09, 0.09, 0.09, debugger_opacity))
-        self._debugger_bg_bottom = DirectFrame(parent=self._fullscreen_node,
-                                               frameSize=(self._debugger_width,
-                                                          0, 0, -1),
-                                               pos=(0, 0, 1),
-                                               frameColor=(0.09, 0.09, 0.09, 1*debugger_opacity))
-        self._debugger_divider = DirectFrame(parent=self._debugger_node,
-                                               frameSize=(self._debugger_width,
-                                                          0, 0, -3),
-                                               pos=(0, 0, -125),
-                                               frameColor=(0.09, 0.09, 0.09, 1*debugger_opacity))
+        self._debugger_bg = DirectFrame(
+            parent=self._debugger_node, frameSize=(self._debugger_width, 0, -127, -1020),
+            pos=(0, 0, 0), frameColor=(0.09, 0.09, 0.09, debugger_opacity))
+        self._debugger_bg_bottom = DirectFrame(
+            parent=self._fullscreen_node, frameSize=(self._debugger_width, 0, 0, -1),
+            pos=(0, 0, 1), frameColor=(0.09, 0.09, 0.09, 1*debugger_opacity))
+        self._debugger_divider = DirectFrame(
+            parent=self._debugger_node, frameSize=(self._debugger_width, 0, 0, -3),
+            pos=(0, 0, -125), frameColor=(0.09, 0.09, 0.09, 1*debugger_opacity))
 
         self._create_debugger_content()
 
@@ -165,8 +158,9 @@ class OnscreenDebugger(DebugObject):
         debugger_content.set_z(-190)
         debugger_content.set_x(40)
         heading_color = Vec3(0.7, 0.7, 0.24) * 1.2
-        BetterOnscreenText(parent=debugger_content, text="Render Mode:", x=0,
-            y=0, size=20, color=heading_color)
+        BetterOnscreenText(
+            parent=debugger_content, text="Render Mode:", x=0, y=0, size=20,
+            color=heading_color)
 
         render_modes = [
             ("Default", ""),
@@ -194,48 +188,18 @@ class OnscreenDebugger(DebugObject):
         for idx, (mode, mode_id) in enumerate(render_modes):
             offs_y = (idx // 2) * 37 + 40
             offs_x = (idx % 2) * row_width
-            box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
-                y=offs_y, text=mode, text_color=Vec3(0.9), radio=True,
-                chb_checked=(mode == "Default"), text_size=17, expand_width=160,
-                chb_callback=partial(self._set_render_mode, mode_id))
+            box = BetterLabeledCheckbox(
+                parent=debugger_content, x=offs_x, y=offs_y, text=mode,
+                text_color=Vec3(0.9), radio=True, chb_checked=(mode == "Default"),
+                chb_callback=partial(self._set_render_mode, mode_id),
+                text_size=17, expand_width=160)
             collection.add(box.get_checkbox())
-
-        """
-        offs_top = 150 + (len(render_modes) // 2) * 37
-        features = [
-            "Occlusion",
-            "Upscale Blur",
-            "Scattering",
-            "Global Illumination",
-            "Ambient",
-            "Motion Blur",
-            "Anti-Aliasing",
-            "Shadows",
-            "Correct color",
-            "PCSS",
-            "PCF",
-            "Env. Filtering",
-            "PB Shading",
-            "Bloom",
-            "Diffuse AA"
-        ]
-
-        BetterOnscreenText(parent=debugger_content, text="Feature selection:", x=0,
-            y=offs_top, size=20, color=heading_color)
-
-        for idx, feature in enumerate(features):
-            offs_y = (idx // 2) * 37 + 40 + offs_top
-            offs_x = (idx % 2) * row_width
-            box = BetterLabeledCheckbox(parent=debugger_content, x=offs_x,
-                y=offs_y, text=feature, text_color=Vec3(0.9), radio=False,
-                chb_checked=True, text_size=17, expand_width=160)
-        """
 
     def _set_render_mode(self, mode_id, value):
         """ Callback which gets called when a render mode got selected """
         if not value:
             return
-        
+
         # Clear old defines
         self._pipeline.get_stage_mgr().remove_define_if(lambda name: name.startswith("_RM__"))
 

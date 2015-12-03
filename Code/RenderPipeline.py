@@ -1,6 +1,5 @@
 
 import sys
-import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
 from panda3d.core import PandaSystem
@@ -55,7 +54,7 @@ class RenderPipeline(DebugObject):
     def set_loading_screen(self, loading_screen):
         """ Sets a loading screen to be used while loading the pipeline. When
         the pipeline gets constructed (and creates the showbase), create()
-        will be called on the object. During the loading progress, 
+        will be called on the object. During the loading progress,
         progress(msg) will be called. After the loading is finished,
         remove() will be called. If a custom loading screen is passed, those
         methods should be implemented. """
@@ -94,7 +93,7 @@ class RenderPipeline(DebugObject):
 
     def create_default_skybox(self, size=40000):
         """ Returns the default skybox, with a scale of <size>, and all
-        proper effects and shaders already applied. The skybox is already 
+        proper effects and shaders already applied. The skybox is already
         parented to render as well. """
         skybox = self._com_resources.load_default_skybox()
         skybox.set_scale(size)
@@ -120,7 +119,7 @@ class RenderPipeline(DebugObject):
         can be used to set an ies profile on a light """
         return self._ies_profile_mgr.load(filename)
 
-    def set_effect(self, nodepath, effect_src, options = None, sort = 30):
+    def set_effect(self, nodepath, effect_src, options=None, sort=30):
         """ Sets an effect to the given object, using the specified options.
         Check out the effect documentation for more information about possible
         options and configurations. The object should be a nodepath, and the
@@ -129,8 +128,8 @@ class RenderPipeline(DebugObject):
         sort parameter). """
 
         effect = self._effect_loader.load_effect(effect_src, options)
-        if not effect:
-            return self.error("Could not apply effect")           
+        if effect is None:
+            return self.error("Could not apply effect")
 
         # Apply default stage shader
         if not effect.get_option("render_gbuffer"):
@@ -138,13 +137,14 @@ class RenderPipeline(DebugObject):
         else:
             nodepath.set_shader(effect.get_shader_obj("GBuffer"), sort)
             nodepath.show(TagStateManager.MASK_GBUFFER)
-        
+
         # Apply shadow stage shader
         if not effect.get_option("render_shadows"):
             nodepath.hide(TagStateManager.MASK_SHADOWS)
         else:
             shader = effect.get_shader_obj("Shadows")
-            self._tag_mgr.apply_shadow_state(nodepath, shader, str(effect.get_effect_id()), 25 + sort)
+            self._tag_mgr.apply_shadow_state(
+                nodepath, shader, str(effect.get_effect_id()), 25 + sort)
             nodepath.show(TagStateManager.MASK_SHADOWS)
 
     def create(self):
@@ -166,7 +166,7 @@ class RenderPipeline(DebugObject):
         # Construct the showbase and init global variables
         ShowBase.__init__(self._showbase)
         self._init_globals()
-    
+
         # Create the loading screen
         self._loading_screen.create()
 
@@ -199,7 +199,7 @@ class RenderPipeline(DebugObject):
         self._stage_mgr.set_shaders()
         self._light_mgr.reload_shaders()
         self._init_bindings()
-        
+
         # Trigger the finish plugin hook
         self._plugin_mgr.trigger_hook("on_pipeline_created")
 

@@ -2,7 +2,7 @@
 from random import random
 from panda3d.core import Vec3, CurveFitter
 
-class SmoothConnectedCurve:
+class SmoothConnectedCurve(object):
 
     """ Interface to a curve which also manages connecting the end of the
     curve with the beginning. """
@@ -10,7 +10,7 @@ class SmoothConnectedCurve:
     def __init__(self):
         self._curve = None
         self._modified = False
-        
+
         # Append some points to the border, to make sure the curve matches at
         # the edges
         self._border_points = 1
@@ -77,10 +77,10 @@ class SmoothConnectedCurve:
 
         # Duplicate curve at the beginning
         for i in range(self._border_points):
-            end_point = self._cv_points[ (-i + self._border_points - 1) % len(self._cv_points) ]
+            end_point = self._cv_points[(-i + self._border_points - 1) % len(self._cv_points)]
             end_point = first_point
             fitter.add_xyz(0.0, Vec3(0, end_point[1], 0))
-            
+
         # Append the actual points
         for point in self._cv_points:
             # Clamp point x position to avoid artifacts at the beginning
@@ -108,7 +108,7 @@ class SmoothConnectedCurve:
         self._modified = True
         self.build_curve()
 
-    def get_value(self, offset): 
+    def get_value(self, offset):
         """ Returns the value on the curve ranging whereas the offset should be
         from 0 to 1 (0 denotes the start of the curve). The returned value will
         be a value from 0 to 1 as well. """
@@ -118,4 +118,5 @@ class SmoothConnectedCurve:
 
     def serialize(self):
         """ Returns the value of the curve as yaml list """
-        return "[" + ','.join([ "[{},{}]".format(round(a,5),round(b,5)) for a, b in self._cv_points]) + "]"
+        points = ["[{},{}]".format(round(a, 5), round(b, 5)) for a, b in self._cv_points]
+        return "[" + ','.join(points) + "]"

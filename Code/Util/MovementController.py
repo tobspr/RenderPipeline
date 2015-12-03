@@ -1,8 +1,14 @@
+
+
+# Disable the "exactly one space required after comma" message, for the input
+# bindings it looks nicer to insert some spaces (see the setup method)
+# pylint: disable=C0326
+
 from __future__ import print_function
 
 from panda3d.core import ModifierButtons, Vec3, PStatClient
 
-class MovementController:
+class MovementController(object):
 
     """ This is a helper class, used to controll the camera and enable various
     debugging features. It is not really part of the pipeline, but included to
@@ -47,7 +53,8 @@ class MovementController:
             self._showbase.camera.set_hpr(self._initial_hpr)
         else:
             self._showbase.camera.look_at(
-                self._initial_destination.x, self._initial_destination.y, self._initial_destination.z)
+                self._initial_destination.x, self._initial_destination.y,
+                self._initial_destination.z)
 
     def _set_movement(self, direction, amount):
         self._movement[direction] = amount
@@ -134,7 +141,8 @@ class MovementController:
         if self._showbase.mouseWatcherNode.has_mouse():
             x = self._showbase.mouseWatcherNode.get_mouse_x()
             y = self._showbase.mouseWatcherNode.get_mouse_y()
-            self._current_mouse_pos = [x * 90 * self._mouse_sensivity, y * 70 * self._mouse_sensivity]
+            self._current_mouse_pos = [x * 90 * self._mouse_sensivity,
+                                       y * 70 * self._mouse_sensivity]
 
             if self._mouse_enabled:
                 diffx = self._last_mouse_pos[0] - self._current_mouse_pos[0]
@@ -151,34 +159,35 @@ class MovementController:
             self._last_mouse_pos = self._current_mouse_pos[:]
 
         # Compute movement in render space
-        movementDirection = (Vec3(self._movement[1], self._movement[0], 0)
-                             * self._speed
-                             * self._showbase.taskMgr.globalClock.get_dt() * 100.0)
+        movement_direction = (Vec3(self._movement[1], self._movement[0], 0)
+                              * self._speed
+                              * self._showbase.taskMgr.globalClock.get_dt() * 100.0)
 
         # Transform by camera direction
-        cameraQuaternion = self._showbase.camera.get_quat(self._showbase.render)
-        translatedDirection = cameraQuaternion.xform(movementDirection)
-      
+        camera_quaternion = self._showbase.camera.get_quat(self._showbase.render)
+        translated_direction = camera_quaternion.xform(movement_direction)
+
 
         # zforce is independent of camera direction
-        translatedDirection.add_z(
+        translated_direction.add_z(
             self._movement[2] * self._showbase.taskMgr.globalClock.get_dt() * 40.0 * self._speed)
 
-        self._velocity += translatedDirection*0.15
+        self._velocity += translated_direction*0.15
 
         # apply new position
         self._showbase.camera.set_pos(
             self._showbase.camera.get_pos() + self._velocity)
-        
+
         self._velocity *= self._smoothness
 
         # transform rotation (keyboard keys)
-        rotationSpeed = self._keyboard_hpr_speed * 100.0 * self._showbase.taskMgr.globalClock.get_dt()
-        self._showbase.camera.set_hpr(self._showbase.camera.get_hpr() + Vec3(self._hpr_movement[0],self._hpr_movement[1],0) * rotationSpeed )
+        rotation_speed = self._keyboard_hpr_speed * 100.0
+        rotation_speed *= self._showbase.taskMgr.globalClock.get_dt()
+        self._showbase.camera.set_hpr(
+            self._showbase.camera.get_hpr() + Vec3(
+                self._hpr_movement[0], self._hpr_movement[1], 0) * rotation_speed)
 
         return task.cont
-
-
 
     def _show_debug_output(self):
         """ Lists the available debug options """
@@ -193,44 +202,46 @@ class MovementController:
         print("\t(5) Show scene graph")
         print()
 
-        selectedOption = input("Which do you want to choose?: ")
+        selected_option = input("Which do you want to choose?: ")
 
         try:
-            selectedOption = int(selectedOption)
+            selected_option = int(selected_option)
         except Exception as msg:
             print("Option has to be a valid number:", msg)
             return False
 
-        if selectedOption < 1 or selectedOption > 7:
+        if selected_option < 1 or selected_option > 7:
             print("Invalid option!")
             return False
 
         # pstats
-        if selectedOption == 1:
+        if selected_option == 1:
             print("Connecting to pstats ..")
             print("If you have no pstats running, this will take 5 seconds to timeout ..")
             PStatClient.connect()
 
         # frame rate meter
-        elif selectedOption == 2:
+        elif selected_option == 2:
             print("Toggling frame rate meter ..")
             self._showbase.setFrameRateMeter(not self._showbase.frameRateMeter)
 
         # initial position
-        elif selectedOption == 3:
+        elif selected_option == 3:
             print("Reseting camera position / hpr ..")
             self._reset_to_initial()
 
         # display camera pos
-        elif selectedOption == 4:
+        elif selected_option == 4:
             print("Debug information:")
             campos = self._showbase.cam.get_pos(self._showbase.render)
             camrot = self._showbase.cam.get_hpr(self._showbase.render)
-            print(("camPos = Vec3(" + str(round(campos.x, 2)) + "," + str(round(campos.y, 2)) + "," + str(round(campos.z, 2)) + ")"))
-            print(("camHpr = Vec3(" + str(round(camrot.x, 2)) + "," + str(round(camrot.y, 2)) + "," + str(round(camrot.z, 2)) + ")"))
+            print(("camPos = Vec3(" + str(round(campos.x, 2)) + "," +\
+                str(round(campos.y, 2)) + "," + str(round(campos.z, 2)) + ")"))
+            print(("camHpr = Vec3(" + str(round(camrot.x, 2)) + "," +\
+                str(round(camrot.y, 2)) + "," + str(round(camrot.z, 2)) + ")"))
 
         # show scene graph
-        elif selectedOption == 5:
+        elif selected_option == 5:
             print("SCENE GRAPH:")
             print(("-" * 50))
             self._showbase.render.ls()

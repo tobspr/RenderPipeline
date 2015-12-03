@@ -2,7 +2,7 @@
 from __future__ import division
 
 from .. import *
-from panda3d.core import SamplerState, Texture, Vec4
+from panda3d.core import Texture, Vec4
 
 class ColorCorrectionStage(RenderStage):
 
@@ -41,8 +41,8 @@ class ColorCorrectionStage(RenderStage):
                 self._mip_targets.append(mip_target)
                 last_tex = mip_target["color"]
 
-            self._tex_exposure = Image.create_buffer("ExposureStorage", 1,
-                Texture.T_float, Texture.F_rgba16)
+            self._tex_exposure = Image.create_buffer(
+                "ExposureStorage", 1, Texture.T_float, Texture.F_rgba16)
 
             self._tex_exposure.set_clear_color(Vec4(0.5))
             self._tex_exposure.clear_image()
@@ -52,9 +52,10 @@ class ColorCorrectionStage(RenderStage):
             self._target_analyze.add_color_texture()
             self._target_analyze.prepare_offscreen_buffer()
 
-            self._target_analyze.set_shader_input("ExposureStorage", self._tex_exposure.get_texture())
+            self._target_analyze.set_shader_input(
+                "ExposureStorage", self._tex_exposure.get_texture())
             self._target_analyze.set_shader_input("DownscaledTex", last_tex)
-        
+
         self._target = self._create_target("ColorCorrectionStage")
         self._target.prepare_offscreen_buffer()
         self._target.make_main_target()

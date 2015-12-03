@@ -27,16 +27,16 @@ class Image(DebugObject):
         return img
 
     @classmethod
-    def create_2d_array(cls, name, w, h, z, comp_type, comp_format):
+    def create_2d_array(cls, name, w, h, slices, comp_type, comp_format):
         img = cls("Image2DArr-" + name)
-        img.get_texture().setup_2d_texture_array(w, h, z, comp_type, comp_format)
+        img.get_texture().setup_2d_texture_array(w, h, slices, comp_type, comp_format)
         img.register()
         return img
 
     @classmethod
-    def create_3d(cls, name, w, h, z, comp_type, comp_format):
+    def create_3d(cls, name, w, h, slices, comp_type, comp_format):
         img = cls("Image3D-" + name)
-        img.get_texture().setup_3d_texture(w, h, z, comp_type, comp_format)
+        img.get_texture().setup_3d_texture(w, h, slices, comp_type, comp_format)
         img.register()
         return img
 

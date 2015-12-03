@@ -44,16 +44,30 @@ def do_compile():
             print("No installed Visual Studio version found!", file=sys.stderr)
             return hint_manually_msvc()
 
-        devenv_pth = join(str(vc_versions[vc_version]), "Common7/IDE/devenv.exe")
 
-        if not isfile(devenv_pth):
-            print("devenv.exe not found! Expected it at:", devenv_pth, file=sys.stderr)
+        vc_path = join(str(vc_versions[vc_version]), "Common7/IDE/")
+        cl_path = None
+
+        for cl_name in ["devenv.exe", "vcexpress.exe"]:
+            if isfile(join(vc_path, cl_name)):
+                cl_path = join(vc_path, cl_name)
+                break
+
+        if cl_path is None:
+            print("Could not find appropriate compiler! Expected either devenv.exe "
+                  "or vcexpress.exe at: " + vc_path, file=sys.stderr)
             return hint_manually_msvc()
 
         target_logfile = join(NATIVE_SRC, "compilation_log.txt")
 
+        # Remove old logfile content
         try:
-            output = subprocess.check_output([devenv_pth, SOLUTION_PATH, "/build", "Release", "/projectconfig", "Release", "/out", target_logfile], stderr=sys.stderr)
+            remove(target_logfile)
+        except IOError: 
+            pass
+
+        try:
+            output = subprocess.check_output([cl_path, SOLUTION_PATH, "/build", "Release", "/projectconfig", "Release", "/out", target_logfile], stderr=sys.stderr)
         except subprocess.CalledProcessError as msg:
 
             # Check if a compilation log was generated
@@ -64,24 +78,10 @@ def do_compile():
                     for line in handle.readlines():
                         print(line.strip(), file=sys.stderr)     
 
-                # Delete the logfile afterwards
-                try:
-                    remove(target_logfile)
-                except Exception as msg:
-                    pass
-
                 print("Compilation failed!", msg, msg.output, file=sys.stderr)
             else:
                 print("Unkown Compilation-Error:", msg, msg.output, file=sys.stderr)
             return hint_manually_msvc()
-
-
-        # Delete the logfile afterwards
-        try:
-            remove(target_logfile)
-        except Exception as msg:
-            pass
-
 
         print("Success!", file=sys.stderr)
         sys.exit(0)

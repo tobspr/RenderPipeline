@@ -17,6 +17,10 @@ class CommonResources(DebugObject):
         self._showbase = Globals.base
         self._ptas = {}
 
+        # Create a converter matrix to transform coordinates from Yup to Zup
+        self._coordinate_converter = TransformState.make_mat(
+            Mat4.convert_mat(CSYupRight, CSZupRight))
+
     def load(self):
         """ Loads and binds the commonly used resources """
         self._load_fonts()
@@ -52,10 +56,6 @@ class CommonResources(DebugObject):
         stage_mgr.add_input("currentViewMatZup", self._ptas["view_mat_zup"])
         stage_mgr.add_input("currentProjMat", self._ptas["proj_mat"])
         stage_mgr.add_input("currentViewProjMatNoJitter", self._ptas["curr_view_proj_mat_nojitter"])
-
-        # Create a converter matrix to transform coordinates from Yup to Zup
-        self._coordinate_converter = TransformState.make_mat(
-            Mat4.convert_mat(CSYupRight, CSZupRight))
 
     def _load_textures(self):
         """ Loads commonly used textures and makes them available via the

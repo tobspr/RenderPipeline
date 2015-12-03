@@ -8,7 +8,7 @@
 out vec4 result;
 
 uniform isamplerBuffer CellListBuffer;
-uniform writeonly iimageBuffer perCellLightsBuffer;
+uniform writeonly iimageBuffer PerCellLightsBuffer;
 
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
@@ -105,10 +105,10 @@ void main() {
         // TODO: Might have a seperate list for different light types, gives better performance
         if (visible) {
             numRenderedLights ++;
-            imageStore(perCellLightsBuffer, storageOffs + numRenderedLights, ivec4(i));
+            imageStore(PerCellLightsBuffer, storageOffs + numRenderedLights, ivec4(i));
         }
     }
 
-    imageStore(perCellLightsBuffer, storageOffs, ivec4(numRenderedLights));
+    imageStore(PerCellLightsBuffer, storageOffs, ivec4(numRenderedLights));
     result = vec4(vec3(idx / 100.0 ), 1.0);
 }

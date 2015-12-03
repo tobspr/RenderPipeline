@@ -1,5 +1,5 @@
 
-from panda3d.core import Shader, Camera, NodePath, DepthWriteAttrib
+from panda3d.core import Camera, NodePath, DepthWriteAttrib
 from panda3d.core import DepthTestAttrib
 
 from ..RenderStage import RenderStage
@@ -11,7 +11,7 @@ class GBufferStage(RenderStage):
     """ This is the main pass stage, rendering the objects and creating the
     GBuffer which is used in later stages """
 
-    required_inputs = ["currentViewProjMat", "lastViewProjMatNoJitter", 
+    required_inputs = ["currentViewProjMat", "lastViewProjMatNoJitter",
                        "cameraPosition", "currentViewProjMatNoJitter"]
 
     def __init__(self, pipeline):

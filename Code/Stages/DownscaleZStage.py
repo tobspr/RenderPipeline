@@ -11,7 +11,7 @@ class DownscaleZStage(RenderStage):
 
     """ This stage downscales the z buffer """
 
-    required_pipes = ["GBuffer"] 
+    required_pipes = ["GBuffer"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "DownscaleZStage", pipeline)
@@ -25,7 +25,8 @@ class DownscaleZStage(RenderStage):
         current_dim = max(res.x, res.y)
         current_res = res.x, res.y
 
-        self._depth_storage = Image.create_2d("DownscaledZ", res.x, res.y, Texture.T_float, Texture.F_rg32)
+        self._depth_storage = Image.create_2d(
+            "DownscaledZ", res.x, res.y, Texture.T_float, Texture.F_rg32)
         self._depth_storage.get_texture().set_minfilter(Texture.FT_nearest_mipmap_nearest)
         self._depth_storage.get_texture().set_magfilter(Texture.FT_nearest)
         self._depth_storage.get_texture().set_wrap_u(Texture.WM_clamp)
@@ -45,8 +46,10 @@ class DownscaleZStage(RenderStage):
             target = self._create_target("DownscaleZ-" + str(mip))
             target.set_size(*current_res)
             target.prepare_offscreen_buffer()
-            target.set_shader_input("SourceImage", self._depth_storage.get_texture(), True, False, -1, mip, 0)
-            target.set_shader_input("DestImage", self._depth_storage.get_texture(), False, True, -1, mip + 1, 0)
+            target.set_shader_input(
+                "SourceImage", self._depth_storage.get_texture(), True, False, -1, mip, 0)
+            target.set_shader_input(
+                "DestImage", self._depth_storage.get_texture(), False, True, -1, mip + 1, 0)
 
             mip += 1
             self._mip_targets.append(target)

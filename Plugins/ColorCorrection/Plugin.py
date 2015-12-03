@@ -1,10 +1,10 @@
-# Load the plugin api
-from .. import *
+
 
 from panda3d.core import Texture
 
+# Load the plugin api
+from .. import *
 from .ColorCorrectionStage import ColorCorrectionStage
-
 
 class Plugin(BasePlugin):
 
@@ -12,7 +12,7 @@ class Plugin(BasePlugin):
     def setup_stages(self):
 
         # Disable default display stage to use our own stage
-        get_internal_stage_handle(FinalStage).disable_stage()
+        get_internal_stage("FinalStage").disable_stage()
 
         self._stage = self.create_stage(ColorCorrectionStage)
         self._stage.set_use_auto_exposure(self.get_setting("use_auto_exposure"))
@@ -31,5 +31,5 @@ class Plugin(BasePlugin):
         lut.set_minfilter(Texture.FT_linear)
         lut.set_magfilter(Texture.FT_linear)
         lut.set_anisotropic_degree(0)
-        
+
         self._stage.set_shader_input("ColorLUT", lut)

@@ -56,20 +56,24 @@ class PTABasedUBO(BaseUBO):
 
     def _pta_to_glsl_type(self, pta_handle):
         """ Converts a PtaXXX to a glsl type """
-        if isinstance(pta_handle, PTAFloat):
-            return "float"
-        elif isinstance(pta_handle, PTALVecBase3f):
-            return "vec3"
-
-        self.warn("Unrecognized PTA type:" , handle)
-        return ""
+        mappings = {
+            PTAFloat: "float",
+            PTALVecBase3f: "vec3"
+        }
+        for mapping, glsl_type in mappings.items():
+            if isinstance(pta_handle, mapping):
+                return glsl_type
+        self.warn("Unrecognized PTA type:", pta_handle)
+        return "float"
 
     def _glsl_type_to_pta(self, glsl_type):
         """ Converts a glsl type to a PtaXXX type """
-        if glsl_type == "float":
-            return PTAFloat
-        elif glsl_type == "vec3":
-            return PTALVecBase3f
+        mappings = {
+            "float": PTAFloat,
+            "vec3": PTALVecBase3f
+        }
+        if glsl_type in mappings:
+            return mappings[glsl_type]
         self.warn("Unrecognized glsl type:", glsl_type)
         return None
 
@@ -110,13 +114,14 @@ class PTABasedUBO(BaseUBO):
                 actual_input_name = parts[1]
                 if struct_name in structs:
                     # Struct is already defined, add member definition
-                    structs[struct_name].append(self._pta_to_glsl_type(handle) + " " + actual_input_name + ";")
-
+                    structs[struct_name].append(
+                        self._pta_to_glsl_type(handle) + " " + actual_input_name + ";")
                 else:
-
                     # Construct a new struct and add it to the list of inputs
                     inputs.append(struct_name + "_UBOSTRUCT " + struct_name + ";")
-                    structs[struct_name] = [self._pta_to_glsl_type(handle) + " " + actual_input_name + ";"]
+                    structs[struct_name] = [
+                        self._pta_to_glsl_type(handle) + " " + actual_input_name + ";"
+                    ]
 
             # Nested input, like Scattering.some_setting.sun_color, not supported yet
             else:

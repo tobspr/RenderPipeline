@@ -1,17 +1,14 @@
 
-
-from panda3d.core import Shader
 from direct.stdpy.file import open
 
 from .DebugObject import DebugObject
-
 
 class ShaderTemplate(DebugObject):
 
     """ This class manages the loading of shader templates, including the
     replacement of template parameters. """
 
-    def __init__(self, template_file, template_name = "template"):
+    def __init__(self, template_file, template_name="template"):
         DebugObject.__init__(self)
         self._file_source = template_file
         self._template_values = {}
@@ -20,7 +17,7 @@ class ShaderTemplate(DebugObject):
     def register_template_value(self, key, val):
         """ Registers a new template value. The value may either be a list of
         strings or just a single string """
-        if type(val) != list:
+        if not isinstance(val, list):
             val = [val]
         key = key.lower()
 
@@ -68,9 +65,9 @@ class ShaderTemplate(DebugObject):
                     insertions = self._template_values[hook_name]
                     if len(insertions) > 0:
                         parsed_lines.append("/* Hook " + hook_name + " */")
-                    for nr, line_i in enumerate(insertions):
+                    for linenr, line_i in enumerate(insertions):
 
-                        if line_i == None:
+                        if line_i is None:
                             self.warn("Empty insertion '" + hook_name + "'")
                             continue
 
@@ -78,7 +75,7 @@ class ShaderTemplate(DebugObject):
                         if line_i.startswith("#"):
                             parsed_lines.append(line_i)
                         else:
-                            parsed_lines.append(prefix("E", nr) + indent + line_i)
+                            parsed_lines.append(prefix("E", linenr) + indent + line_i)
                     # Remove the value from the list so we can check which
                     # hooks were not found in the template
                     del self._template_values[hook_name]

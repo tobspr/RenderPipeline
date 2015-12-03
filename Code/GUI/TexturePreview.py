@@ -1,5 +1,5 @@
 
-from panda3d.core import Vec3, Texture, Shader, LVecBase2i
+from panda3d.core import Vec3, Texture
 
 from .DraggableWindow import DraggableWindow
 from .BetterOnscreenImage import BetterOnscreenImage
@@ -15,6 +15,11 @@ class TexturePreview(DraggableWindow):
                                  title="Texture Viewer")
         self._pipeline = pipeline
         self._current_tex = None
+        self._mip_slider = None
+        self._mip_text = None
+        self._slice_slider = None
+        self._slice_text = None
+        self._preview_image = None
         self._create_components()
 
     def present(self, tex):
@@ -26,15 +31,15 @@ class TexturePreview(DraggableWindow):
 
         w, h = tex.get_x_size(), tex.get_y_size()
         if h > 1:
-          scale_x = (self._width - 40.0) / w
-          scale_y = (self._height - 110.0) / h
-          scale_f = min(scale_x, scale_y)
-          display_w = scale_f * w
-          display_h = scale_f * h
+            scale_x = (self._width - 40.0) / w
+            scale_y = (self._height - 110.0) / h
+            scale_f = min(scale_x, scale_y)
+            display_w = scale_f * w
+            display_h = scale_f * h
 
         else:
-          display_w = self._width - 40
-          display_h = self._height - 110
+            display_w = self._width - 40
+            display_h = self._height - 110
 
         image = BetterOnscreenImage(image=tex, parent=self._content_node, x=20,
                                     y=90, w=display_w, h=display_h,

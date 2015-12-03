@@ -6,7 +6,7 @@ from .VirtualPlugin import VirtualPlugin
 from .PluginExceptions import BadPluginException, BadSettingException
 
 class VirtualPluginInterface(BasePluginInterface):
-    
+
     """ This is the virtual plugin interface, which extends the given plugin
     interface with methods to load virtual plugins """
 
@@ -46,7 +46,7 @@ class VirtualPluginInterface(BasePluginInterface):
             self._plugin_instances.append(plugin_instance)
 
     def get_plugin_handle(self, plugin_id):
-        """ Returns a plugin instance by a given id. This is only valid if 
+        """ Returns a plugin instance by a given id. This is only valid if
         load_virtual_plugins() was called before, and returns the handle to
         the VirtualPlugin instance. """
         for plugin in self._plugin_instances:

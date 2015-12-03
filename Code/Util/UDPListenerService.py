@@ -10,7 +10,7 @@ class UDPListenerService(object):
 
     CONFIG_PORT = 62324
     DAYTIME_PORT = 62325
-    
+
     @staticmethod
     def do_ping(port, message="PING"):
         """ Sends a given message to a given port and immediately returns """
@@ -37,11 +37,11 @@ class UDPListenerService(object):
     @classmethod
     def ping_thread(cls, port, message):
         """ Starts a new thread which sends a given message to a port """
-        t = Thread(target=cls.do_ping, args=(port, message))
-        t.start()
+        thread = Thread(target=cls.do_ping, args=(port, message))
+        thread.start()
 
     @classmethod
     def listener_thread(cls, port, callback):
         """ Starts a new thread listening to the given port """
-        t = Thread(target=cls.do_listen, args=(port, callback))
-        t.start()
+        thread = Thread(target=cls.do_listen, args=(port, callback))
+        thread.start()

@@ -5,7 +5,6 @@ from __future__ import print_function
 import sys
 sys.dont_write_bytecode = True
 
-
 import platform
 from shutil import copyfile
 from os.path import isfile, join, dirname, realpath, isdir
@@ -76,10 +75,6 @@ if __name__ == "__main__":
             target_filename = join(BINARY_STORAGE, target_filename)
 
             copyfile(source_file, target_filename)
-
-
-        # Copy the __init__ template
-        copyfile(join(curr_dir, "../Source/init.py.template"), join(dest_folder, "__init__.py"))
 
     else:
         print("Failed to find source file at", ' or '.join(possible_files), "!", file=sys.stderr)

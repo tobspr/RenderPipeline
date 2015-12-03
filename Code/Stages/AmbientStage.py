@@ -6,7 +6,8 @@ class AmbientStage(RenderStage):
 
     """ This stage computes the ambient term """
 
-    required_inputs = ["mainCam", "mainRender", "DefaultEnvmap", "cameraPosition", "PrefilteredBRDF"]
+    required_inputs = ["mainCam", "mainRender", "DefaultEnvmap",
+                       "cameraPosition", "PrefilteredBRDF"]
     required_pipes = ["ShadedScene", "GBuffer"]
 
     def __init__(self, pipeline):
