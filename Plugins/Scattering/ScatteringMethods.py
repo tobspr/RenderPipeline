@@ -1,7 +1,5 @@
 
-import os
-
-from direct.stdpy.file import listdir, isfile
+from direct.stdpy.file import listdir, isfile, join
 from panda3d.core import Texture, Shader
 
 from .. import *
@@ -110,7 +108,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         self._shaders = {}
         resource_path = self._handle.get_shader_resource("eric_bruneton")
         for fname in listdir(resource_path):
-            fpath = os.path.join(resource_path, fname)
+            fpath = join(resource_path, fname)
             if isfile(fpath) and fname.endswith(".compute.glsl"):
                 shader_name = fname.split(".")[0]
                 shader_obj = Shader.load_compute(Shader.SL_GLSL, fpath)
