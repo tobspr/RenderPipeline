@@ -103,8 +103,11 @@ if __name__ == "__main__":
     check_repo_complete()
 
     if not OPT_SKIP_NATIVE:
-        print_step("Compiling the native code .. (This might take a while!)")
-        exec_python_file("Native/Scripts/setup_native.py")
+        print_step("Downloading the module builder ...")
+        exec_python_file("Code/Native/update_module_builder.py")
+
+        print_step("Building the native code .. (This might take a while!)")
+        exec_python_file("Code/Native/build.py")
 
     print_step("Generating normal quantization textures ..")
     exec_python_file("Data/NormalQuantization/generate.py")
