@@ -2,9 +2,11 @@
 
 The samples are not included in this repo to avoid getting it too big.
 
+#### Automatic Download
+You can either `download_samples.py` to automatically download the samples.
 
-You can download the samples for the pipeline here:
-
+#### Manual Download
+You can manually download the samples for the pipeline here:
 <a href="https://github.com/tobspr/RenderPipeline-Samples
 ">https://github.com/tobspr/RenderPipeline-Samples</a>
 

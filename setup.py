@@ -94,15 +94,30 @@ def check_repo_complete():
         hint_repo_not_complete("GLSLColorSpaces")
 
 
+def ask_download_samples():
+    """ Asks the user if he wants to download the samples """
+    query = "\nDo you want to download the Render Pipeline samples? (y/n):"
+    
+    if sys.version_info.major > 2:
+        user_choice = str(input(query)).strip().lower()
+    else:
+        user_choice = str(raw_input(query)).strip().lower()
+        
+    if user_choice in ["y", "yes", "1"]:
+        print_step("Downloading samples ...")
+        exec_python_file("Samples/download_samples.py")
+
+
 if __name__ == "__main__":
 
-    print("\nRender Pipeline Setup 1.0\n")
+    print("\nRender Pipeline Setup 1.1\n")
     print("-" * 79)
 
     print_step("Checking if the repo is complete ..")
     check_repo_complete()
 
     if not OPT_SKIP_NATIVE:
+        print_step("Downloading the module builder ...")
         print_step("Downloading the module builder ...")
         exec_python_file("Code/Native/update_module_builder.py")
 
@@ -117,6 +132,8 @@ if __name__ == "__main__":
 
     print_step("Filtering default cubemap ..")
     exec_python_file("Data/DefaultCubemap/filter.py")
+
+    ask_download_samples()
 
     # Further setup code follows here
 
