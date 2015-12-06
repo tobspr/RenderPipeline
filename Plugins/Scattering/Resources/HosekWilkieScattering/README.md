@@ -19,9 +19,8 @@ After the program generated the LUT, copy it over so that
 
 ### Compilation
 
-You need to change the path to your Panda3D installation in the
-`CMakeLists.txt` before. After that, just run cmake over it, there is a
-bat file for compiling on windows. 
+Just run `python update_module_builder.py`, after that you should see a `build.py`,
+run it with `python build.py` to generate the module.
 
 
 ### License
