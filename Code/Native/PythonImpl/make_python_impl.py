@@ -35,9 +35,9 @@ from panda3d.core import Vec3, PNMImage
 
 class NotTemplatedError(Exception):
     def __init__(self, func_name):
-        Exception.__int__(self, "Function " + func_name + " is not templated in python yet! "
-                                "Please use the C++ Module to use this functionality.")
-
+        super(NotTemplatedError, self).__init__(
+            "Function " + func_name + " is not templated in python yet! "
+            "Please use the C++ Module to use this functionality.")
 \n\n
 """
 
