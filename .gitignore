@@ -32,10 +32,6 @@ Plugins/Scattering/Resources/HosekWilkieScattering/ScatteringLUT.png
 # --- Module builder ---
 Code/Native/Scripts/
 Code/Native/build.py
-Code/Native/win_amd64/
-Code/Native/win_i386/
-Code/Native/linux_amd64/
-Code/Native/linux_i386/
 Code/Native/Source/Interrogate*
 Code/Native/CMakeLists.txt
 
