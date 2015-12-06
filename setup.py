@@ -117,7 +117,7 @@ def check_repo_complete():
 
     # Check if the color space submodule exists
     if not check_file_exists("Shader/Includes/ColorSpaces/ColorSpaces.inc.glsl"):
-        hint_download_submodule("tobspr", "GLSLColorSpaces", "Shader/Includes/ColorSpaces/")
+        hint_download_submodule("tobspr", "GLSL-Color-Spaces", "Shader/Includes/ColorSpaces/")
 
 
 def ask_download_samples():
