@@ -54,15 +54,15 @@ class SubmoduleDownloader:
             print("ERROR: Invalid zip file checksums!", file=sys.stderr)
             sys.exit(1)
 
+        num_files, num_dirs = 0, 0
+
         for fname in zip_handle.namelist():
-            rel_name = fname.replace(prefix, "").strip()
-            rel_name = rel_name.replace("\\", "/").lstrip("/")
-            
+            rel_name = fname.replace(prefix, "").replace("\\", "/").lstrip("/")
             if not rel_name:
                 continue
 
             is_file = not rel_name.endswith("/")
-            rel_name = os.path.join(dest_path, rel_name.rstrip("/"))
+            rel_name = dest_path.rstrip("/\\") + "/" + rel_name
 
             # Files
             if is_file:
@@ -70,14 +70,14 @@ class SubmoduleDownloader:
                     if ignore in rel_name:
                         break
                 else:
-                    print("Writing", rel_name)
                     with zip_handle.open(fname, "r") as source, open(rel_name, "wb") as dest:
-                            shutil.copyfileobj(source, dest)
+                        shutil.copyfileobj(source, dest)
+                    num_files += 1
                             
             # Directories
             else:
                 if not os.path.isdir(rel_name):
-                    print("Creating", rel_name)
                     os.makedirs(rel_name)
+                num_dirs += 1
 
-        print("Done!")
+        print("Extracted", num_files, "files and", num_dirs, "directories")
