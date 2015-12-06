@@ -17,6 +17,8 @@ import subprocess
 import gzip
 import shutil
 
+
+sys.path.insert(0, ".")
 sys.dont_write_bytecode = True
 
 DEVNULL = open(os.path.devnull, "w")
@@ -24,9 +26,19 @@ SETUP_DIR = os.path.dirname(os.path.realpath(__file__))
 CURRENT_STEP = 0
 OPT_SKIP_NATIVE = "--skip-native" in sys.argv
 
+# Load and init colorama, used to color the output
+from Code.External.Colorama import init as init_colorama
+from Code.External.Colorama import Fore, Style
+init_colorama()
+
+
+def color(string, color):
+    return color + string + Style.RESET_ALL
+
+
 def error(msg):
     """ Prints an error message and then exists the program """
-    print("Setup failed: ", msg)
+    print(color("Setup failed: ", Fore.RED + Style.BRIGHT), msg)
     print("Please fix the errors and then rerun this file")
     sys.exit(0)
 
@@ -35,7 +47,7 @@ def print_step(title):
     """ Prints a new section """
     global CURRENT_STEP
     CURRENT_STEP += 1
-    print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", title)
+    print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", color(title, Fore.BLUE + Style.BRIGHT)) 
 
 
 def exec_python_file(pth):
@@ -47,7 +59,7 @@ def exec_python_file(pth):
     try:
         subprocess.check_output([sys.executable, "-B", pth], stderr=sys.stderr)
     except subprocess.CalledProcessError as msg:
-        print("Failed to execute '" + pth + "'")
+        print(color("Failed to execute '" + pth + "'", Fore.YELLOW + Style.BRIGHT))
         print("Output:", msg, "\n", msg.output)
         error("Python script didn't return properly!")
     except IOError as msg:
@@ -106,6 +118,7 @@ def ask_download_samples():
 def get_user_choice(query):
     """ Asks the user a boolean question """
     print("\n")
+    query = color(query, Fore.GREEN + Style.BRIGHT)
     if sys.version_info.major > 2:
         user_choice = str(input(query)).strip().lower()
     else:
@@ -118,6 +131,7 @@ def get_user_choice(query):
 
 if __name__ == "__main__":
 
+    print("-" * 79)
     print("\nRender Pipeline Setup 1.1\n")
     print("-" * 79)
 
@@ -159,4 +173,4 @@ if __name__ == "__main__":
     with open(os.path.join(SETUP_DIR, "Data/install.flag"), "w") as handle:
         handle.write("1")
 
-    print("\n\n-- Setup finished sucessfully! --")
+    print(color("\n\n-- Setup finished sucessfully! --", Fore.GREEN + Style.BRIGHT))
