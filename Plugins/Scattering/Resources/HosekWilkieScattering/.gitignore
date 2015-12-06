@@ -1,0 +1,14 @@
+*.pyd
+*.pyc
+*.so
+*.pdb
+win_amd64/
+win_i386/
+linux_amd64/
+linux_i386/
+Source/Interrogate*
+Scripts/
+Source/config_module.h
+Source/config_module.cpp
+build.py
+
