@@ -9,6 +9,9 @@ from __future__ import print_function
 import os
 import sys
 import re
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 sys.path.insert(0, "../../")
 
 from External.CPPHeaderParser import CppHeader, CppParseError
@@ -28,6 +31,13 @@ from __future__ import print_function
 
 # Common imports
 from panda3d.core import Vec3, PNMImage
+
+
+class NotTemplatedError(Exception):
+    def __init__(self, func_name):
+        Exception.__int__(self, "Function " + func_name + " is not templated in python yet! "
+                                "Please use the C++ Module to use this functionality.")
+
 \n\n
 """
 
@@ -226,7 +236,7 @@ def process_header(header, templates):
             
                 doc.append(str(method_names.count(method_name)) + " overloads for this function")
 
-            method_str += indent * 2 + "raise NotImplementedError('Method " + template_key + " is not templated in Python yet!')\n"
+            method_str += indent * 2 + "raise NotTemplatedError('" + template_key + "')\n"
             # Write dummy return statement
             return_type = resolve_return_type(method["rtnType"])
             doc += ["@return " + return_type]
