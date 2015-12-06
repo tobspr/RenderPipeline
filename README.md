@@ -25,7 +25,8 @@ There is also a page about getting started there: <a target="_blank" href="https
 
 ### Precompiled builds
 
-If you don't want to compile the pipeline, you can use a precompiled build from here:
+If you want to use the C++ modules, but don't want to compile the modules yourself,
+you can use a precompiled build from here:
 
 <a target="_blank" href="https://www.dropbox.com/sh/maxpc6gouqzm9s8/AAAbK05FKpVF8SvT2eBPMpd9a?dl=0
 ">Precompiled-Builds on Dropbox</a>

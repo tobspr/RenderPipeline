@@ -11,8 +11,6 @@ public:
     ShadowSource();
     ~ShadowSource();
 
-    
-
 };
 
 

@@ -96,17 +96,24 @@ def check_repo_complete():
 
 def ask_download_samples():
     """ Asks the user if he wants to download the samples """
-    query = "\nDo you want to download the Render Pipeline samples? (y/n):"
+    query = "\nDo you want to download the Render Pipeline samples? (y/n): "
     
+    if get_user_choice(query):
+        print_step("Downloading samples ...")
+        exec_python_file("Samples/download_samples.py")
+
+def get_user_choice(query):
+    """ Asks the user a boolean question """
+    print("\n")
     if sys.version_info.major > 2:
         user_choice = str(input(query)).strip().lower()
     else:
         user_choice = str(raw_input(query)).strip().lower()
         
     if user_choice in ["y", "yes", "1"]:
-        print_step("Downloading samples ...")
-        exec_python_file("Samples/download_samples.py")
+        return True
 
+    return False
 
 if __name__ == "__main__":
 
@@ -117,12 +124,22 @@ if __name__ == "__main__":
     check_repo_complete()
 
     if not OPT_SKIP_NATIVE:
-        print_step("Downloading the module builder ...")
-        print_step("Downloading the module builder ...")
-        exec_python_file("Code/Native/update_module_builder.py")
 
-        print_step("Building the native code .. (This might take a while!)")
-        exec_python_file("Code/Native/build.py")
+        query = ("The C++ modules of the pipeline are faster and produce better "
+                 "results, but we will have to compile them. As alternative, "
+                 "a Python fallback is used, which is slower and produces worse "
+                 "results. Do you want to use the C++ modules? (y/n): ")
+
+        if get_user_choice(query):
+            print_step("Downloading the module builder ...")
+            exec_python_file("Code/Native/update_module_builder.py")
+
+            print_step("Building the native code .. (This might take a while!)")
+            exec_python_file("Code/Native/build.py")
+
+        else:
+            print_step("Making python wrappers ...")
+            exec_python_file("Code/Native/PythonImpl/make_python_impl.py")
 
     print_step("Generating normal quantization textures ..")
     exec_python_file("Data/NormalQuantization/generate.py")
