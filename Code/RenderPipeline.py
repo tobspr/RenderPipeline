@@ -6,11 +6,18 @@ from panda3d.core import PandaSystem
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
+from .Util.DebugObject import DebugObject
+
+# Check if the pipeline was properly installed, before including anything else
+if not isfile("Data/install.flag"):
+    DebugObject.global_error("CORE", "You didn't setup the pipeline yet! Please run setup.py.")
+    sys.exit(1)
+
+
 from .CommonResources import CommonResources
 from .Globals import Globals
 from .RenderTarget import RenderTarget
 
-from .Util.DebugObject import DebugObject
 from .Util.SettingsLoader import SettingsLoader
 from .Util.NetworkUpdateListener import NetworkUpdateListener
 
@@ -155,10 +162,6 @@ class RenderPipeline(DebugObject):
 
         if not self._settings.is_file_loaded():
             return self.error("No settings file loaded! Please call load_settings.")
-
-        # Check if the pipeline was properly installed
-        if not isfile("Data/install.flag"):
-            self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
 
         # Load the default prc config
         load_prc_file("Config/configuration.prc")

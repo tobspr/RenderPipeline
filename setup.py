@@ -31,6 +31,8 @@ from Code.External.Colorama import init as init_colorama
 from Code.External.Colorama import Fore, Style
 init_colorama()
 
+# Load submodule downloader
+from Code.Util.SubmoduleDownloader import SubmoduleDownloader
 
 def color(string, color):
     return color + string + Style.RESET_ALL
@@ -83,28 +85,39 @@ def extract_gz_files(pth):
 
 def hint_repo_not_complete(missing):
     """ Shows a hint that the repository is not complete """
-    print("-" * 79)
-    print("  You didn't checkout the", missing, "submodule!")
-    print("  Please checkout the whole repository, and also make sure you ")
-    print("  did 'git submodule init' and 'git submodule update' if you use")
-    print("  a command line client!")
-    print("-" * 79)
+    print("Missing the", missing, "submodule!")
+    print("Please checkout the whole repository, and also make sure you")
+    print("did 'git submodule init' and 'git submodule update' if you use")
+    print("a command line client! Notice that the 'Download ZIP' on github")
+    print("does *NOT* include submodules. ")
     error(missing + " submodule missing")
 
 def check_file_exists(fpath):
     """ Checks if the given file exists """
     return os.path.isfile(os.path.join(SETUP_DIR, fpath))
 
+def hint_download_submodule(author, module, dest_pth):
+    """ Asks the user to download a submodule """
+
+    query = ("It appears the submodule '" + module + "' is missing! Most likely you "
+             "used the 'Download ZIP' button or did not use 'git submodule init'. Do "
+             "you want the setup to automatically download the submodule for you? (y/n):")
+
+    if get_user_choice(query):
+        SubmoduleDownloader.download_submodule(author, module, dest_pth, [])
+    else:
+        hint_repo_not_complete(module)
+
 def check_repo_complete():
     """ Checks if the repository is complete """
 
     # Check if the render target submodule exists
     if not check_file_exists("Code/RenderTarget/RenderTarget.py"):
-        hint_repo_not_complete("RenderTarget")
+        hint_download_submodule("tobspr", "RenderTarget", "Code/RenderTarget/")
 
     # Check if the color space submodule exists
     if not check_file_exists("Shader/Includes/ColorSpaces/ColorSpaces.inc.glsl"):
-        hint_repo_not_complete("GLSLColorSpaces")
+        hint_download_submodule("tobspr", "GLSLColorSpaces", "Shader/Includes/ColorSpaces/")
 
 
 def ask_download_samples():
@@ -179,10 +192,8 @@ if __name__ == "__main__":
 
     ask_download_samples()
 
-    # Further setup code follows here
+    # -- Further setup code follows here --
 
-    # Write install flag
-    with open(os.path.join(SETUP_DIR, "Data/install.flag"), "w") as handle:
-        handle.write("1")
+    write_flag("Data/install.flag", True)
 
     print(color("\n\n-- Setup finished sucessfully! --", Fore.GREEN + Style.BRIGHT))
