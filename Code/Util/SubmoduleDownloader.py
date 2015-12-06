@@ -13,7 +13,7 @@ except: from StringIO import StringIO
 
 class SubmoduleDownloader:
 
-    """ Util class to donwnload and extract (sub-)modules from github """
+    """ Util class to download and extract (sub-)modules from github """
 
     @staticmethod
     def download_submodule(author, module_name, dest_path, ignore_list):
