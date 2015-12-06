@@ -26,6 +26,8 @@ SETUP_DIR = os.path.dirname(os.path.realpath(__file__))
 CURRENT_STEP = 0
 OPT_SKIP_NATIVE = "--skip-native" in sys.argv
 
+os.chdir(SETUP_DIR)
+
 # Load and init colorama, used to color the output
 from Code.External.Colorama import init as init_colorama
 from Code.External.Colorama import Fore, Style
@@ -67,6 +69,7 @@ def exec_python_file(pth):
     except IOError as msg:
         print("Python script error:", msg)
         error("Error during script execution")
+    os.chdir(SETUP_DIR)
 
 def extract_gz_files(pth):
     """ Extract all gz files in the given path recursively """
@@ -144,11 +147,12 @@ def get_user_choice(query):
 
 def write_flag(flag_location, flag_value):
     """ Writes a binary flag """
+    flag_location = os.path.join(SETUP_DIR, flag_location)
     try:
         with open(flag_location, "w") as handle:
             handle.write("1" if flag_value else "0")
-    except IOError:
-        error("Failed to write flag to", flag_location)
+    except IOError as msg:
+        error("Failed to write flag to "+ flag_location + ", reason: " + str(msg))
 
 
 if __name__ == "__main__":
