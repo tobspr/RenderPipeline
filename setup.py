@@ -47,8 +47,9 @@ def exec_python_file(pth):
     try:
         subprocess.check_output([sys.executable, "-B", pth], stderr=sys.stderr)
     except subprocess.CalledProcessError as msg:
-        print("Python script didn't return properly!")
-        error("Failed to execute '" + pth + "'")
+        print("Failed to execute '" + pth + "'")
+        print("Output:", msg, "\n", msg.output)
+        error("Python script didn't return properly!")
     except IOError as msg:
         print("Python script error:", msg)
         error("Error during script execution")
