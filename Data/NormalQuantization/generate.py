@@ -10,7 +10,7 @@ Page 39 to 49
 It also generates the mipmaps. """
 
 
-TEXTURE_SIZE = 4096
+TEXTURE_SIZE = 1024
 
 import sys
 sys.path.insert(0, "../../")

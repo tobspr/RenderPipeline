@@ -129,6 +129,15 @@ def get_user_choice(query):
 
     return False
 
+def write_flag(flag_location, flag_value):
+    """ Writes a binary flag """
+    try:
+        with open(flag_location, "w") as handle:
+            handle.write("1" if flag_value else "0")
+    except IOError:
+        error("Failed to write flag to", flag_location)
+
+
 if __name__ == "__main__":
 
     print("-" * 79)
@@ -146,6 +155,8 @@ if __name__ == "__main__":
                  "results. Do you want to use the C++ modules? (y/n): ")
 
         if get_user_choice(query):
+            write_flag("Code/Native/use_cxx.flag", True)
+
             print_step("Downloading the module builder ...")
             exec_python_file("Code/Native/update_module_builder.py")
 
@@ -153,6 +164,7 @@ if __name__ == "__main__":
             exec_python_file("Code/Native/build.py")
 
         else:
+            write_flag("Code/Native/use_cxx.flag", False)
             print_step("Making python wrappers ...")
             exec_python_file("Code/Native/PythonImpl/make_python_impl.py")
 

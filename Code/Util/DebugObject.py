@@ -32,23 +32,36 @@ class DebugObject(object):
         cls._OUTPUT_LEVEL = cls._OUTPUT_LEVELS.index(level)
 
     @staticmethod
-    def global_warn(*args):
+    def global_debug(context, *args):
+        """ This method can be used from a static context to print a debug
+        message. The first argument should be the name of the object / context,
+        all other arguments should be the message. """
+        if DebugObject._OUTPUT_LEVEL > 0:
+            return
+        print(Fore.GREEN + "[>] " + \
+            context.ljust(25) + " " + Style.RESET_ALL + Fore.WHITE +\
+            ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL)
+
+    @staticmethod
+    def global_warn(context, *args):
         """ This method can be used from a static context to print a warning.
         The first argument should be the name of the object / context, all
         other arguments should be the message. """
         if DebugObject._OUTPUT_LEVEL > 1:
             return
-        print(Fore.YELLOW + Style.BRIGHT + "[!] " + (args[0]).ljust(25) + \
-            Fore.YELLOW + Style.BRIGHT + " " + ' '.join([str(i) for i in args[1:]]) + \
+        print(Fore.YELLOW + Style.BRIGHT + "[!] " + context.ljust(25) + \
+            Fore.YELLOW + Style.BRIGHT + " " + ' '.join([str(i) for i in args]) + \
             Fore.RESET + Style.RESET_ALL)
 
     @staticmethod
-    def global_error(*args):
+    def global_error(context, *args):
         """ This method can be used from a static context to print an error.
         The first argument should be the name of the object / context, all
         other arguments should be the message. """
+        if DebugObject._OUTPUT_LEVEL > 2:
+            return
         print(Fore.RED + Style.BRIGHT + "\n\n\n[!!!] " + \
-            (args[0]).ljust(23) + " " + ' '.join([str(i) for i in args[1:]]) + \
+            context.ljust(23) + " " + ' '.join([str(i) for i in args]) + \
             "\n\n\n" + Fore.RESET + Style.RESET_ALL)
 
     def __init__(self, name=None):
