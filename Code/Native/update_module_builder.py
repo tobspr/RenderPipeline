@@ -27,3 +27,7 @@ from Code.Util.SubmoduleDownloader import SubmoduleDownloader
 if __name__ == "__main__":
     curr_dir = os.path.dirname(os.path.realpath(__file__))
     SubmoduleDownloader.download_submodule("tobspr", "P3DModuleBuilder", curr_dir, IGNORE_FILES)
+
+    # Make the init file at the Scripts directory
+    with open(os.path.join(curr_dir, "Scripts/__init__.py"), "w") as handle:
+        pass
