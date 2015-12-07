@@ -72,5 +72,5 @@ overrides:
     SMAA.use_reprojection: False
     Scattering.ground_fog_factor: 3000.0
     Scattering.mie_phase_factor: 0.33
-    Scattering.scattering_method: hosek_wilkie
+    Scattering.scattering_method: eric_bruneton
 

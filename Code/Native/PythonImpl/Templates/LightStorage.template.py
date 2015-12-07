@@ -27,7 +27,7 @@ def add_light(self, light):
     self._num_stored_lights += 1
     self._max_light_index = max(self._max_light_index, slot)
 
-    self._lihgts[slot] = light
+    self._lights[slot] = light
     light.assign_slot(slot)
     light.unset_dirty_flag()
 

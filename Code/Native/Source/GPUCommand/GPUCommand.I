@@ -8,8 +8,7 @@ inline void GPUCommand::push_float(float v) {
         cerr << "GPUCommand out of bounds!" << endl;
         return;
     }
-    _data[_current_index] = v;
-    _current_index ++;
+    _data[_current_index++] = v;
 }
 
 inline void GPUCommand::push_vec3(const LVecBase3f &v) {

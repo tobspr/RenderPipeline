@@ -95,6 +95,9 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
     } else if (reason == 1) {
         // Render default object
 
+
+        #if 0
+
         // Make sure indirect draw is supported
         if (! ((GLGraphicsStateGuardian*)gsg)->get_supports_indirect_draw()) {
             cout << "ERROR: Driver does not support indirect draw. This is required for " 
@@ -136,6 +139,8 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
 
 		gsg->end_draw_primitives();
 
+
+        #endif
 
 	}
 }

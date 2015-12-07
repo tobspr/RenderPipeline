@@ -13,7 +13,7 @@ def write_commands_to(self, dest, limit=32):
     num_commands_written = 0
 
     while num_commands_written < limit and self._commands:
-        _commands.pop(0).write_to(dest, num_commands_written)
+        self._commands.pop(0).write_to(dest, num_commands_written)
         num_commands_written += 1
 
     return num_commands_written
