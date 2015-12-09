@@ -14,6 +14,15 @@ if you are looking for even older versions, checkout the `old_master` branch.
 - Time of Day System
 - Plugin System
 
+### Requirements
+
+- OpenGL 4.3 capable GPU
+- Panda3D Development Build ( https://github.com/panda3d/panda3d )
+- 1GB Graphics Memory recommended (Can run with less, too)
+
+**Notice**: It seems that the drivers for Intel HD Graphics on Linux are not
+capable of all 4.3 features, so the pipeline is not able to run there!
+
 ### Getting Started / Wiki
 
 You should definitely checkout the wiki if you want to find out more about the pipeline:

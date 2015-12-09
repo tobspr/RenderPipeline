@@ -2,7 +2,7 @@
 # ---------------  Window settings  --------------
 
 fullscreen #f
-win-size 1200 800
+win-size 1920 1080
 window-title Render Pipeline by tobspr 
 icon-filename Data/GUI/icon.ico
 
