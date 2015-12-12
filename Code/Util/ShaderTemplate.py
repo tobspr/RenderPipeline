@@ -62,7 +62,10 @@ class ShaderTemplate(DebugObject):
 
                 # Inject all registered template values into the hook
                 if hook_name in self._template_values:
-                    insertions = self._template_values[hook_name]
+                    
+                    # Directly remove the value from the list so we can check which
+                    # hooks were not found in the template
+                    insertions = self._template_values.pop(hook_name)
                     if len(insertions) > 0:
                         parsed_lines.append("/* Hook " + hook_name + " */")
                     for linenr, line_i in enumerate(insertions):
@@ -76,9 +79,6 @@ class ShaderTemplate(DebugObject):
                             parsed_lines.append(line_i)
                         else:
                             parsed_lines.append(prefix("E", linenr) + indent + line_i)
-                    # Remove the value from the list so we can check which
-                    # hooks were not found in the template
-                    del self._template_values[hook_name]
 
                 # parsed_lines.append(indent + "// End of hook '" + hook_name + "'");
             else:
