@@ -4,7 +4,7 @@ This is the second version of the Pipeline. If you are looking for the first
 version, change to the `master` branch! The master branch was cleaned up a while ago,
 if you are looking for even older versions, checkout the `old_master` branch.
 
-<img src="http://i.imgur.com/Sj9xV3U.png" />
+<img src="http://i.imgur.com/as5kVBv.png" />
 
 ### Core Features
 
