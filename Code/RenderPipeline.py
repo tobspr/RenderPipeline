@@ -160,8 +160,13 @@ class RenderPipeline(DebugObject):
         and also the base and write path should have been initialized properly
         (see MountManager). """
 
+        if not self._mount_manager.is_mounted():
+            self.debug("Mount manager was not mounted, mounting now ...")
+            self._mount_manager.mount()
+
         if not self._settings.is_file_loaded():
-            return self.error("No settings file loaded! Please call load_settings.")
+            self.debug("No settings loaded, loading from default location")
+            self._settings.load_from_file("Config/pipeline.yaml")
 
         # Load the default prc config
         load_prc_file("Config/configuration.prc")

@@ -177,6 +177,11 @@ class MountManager(DebugObject):
                     except IOError:
                         pass
 
+    def is_mounted(self):
+        """ Returns wheter the MountManager was already mounted by calling
+        mount() """
+        return self._mounted
+
     def mount(self):
         """ Inits the VFS Mounts """
 
