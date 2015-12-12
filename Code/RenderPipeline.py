@@ -8,12 +8,6 @@ from direct.stdpy.file import isfile
 
 from .Util.DebugObject import DebugObject
 
-# Check if the pipeline was properly installed, before including anything else
-if not isfile("Data/install.flag"):
-    DebugObject.global_error("CORE", "You didn't setup the pipeline yet! Please run setup.py.")
-    sys.exit(1)
-
-
 from .CommonResources import CommonResources
 from .Globals import Globals
 from .RenderTarget import RenderTarget
@@ -50,7 +44,11 @@ class RenderPipeline(DebugObject):
         self._showbase = showbase
         self._mount_manager = MountManager(self)
         self._settings = SettingsLoader(self, "Pipeline Settings")
-        self._loading_screen = EmptyLoadingScreen()
+        
+        # self._loading_screen = EmptyLoadingScreen()
+        
+        # Use the default loading screen instead of none
+        self.set_default_loading_screen()
 
     def get_mount_manager(self):
         """ Returns a handle to the mount manager. This can be used for setting
@@ -70,6 +68,10 @@ class RenderPipeline(DebugObject):
     def set_default_loading_screen(self):
         """ Tells the pipeline to use the default loading screen. """
         self._loading_screen = PipelineLoadingScreen(self)
+
+    def set_empty_loading_screen(self):
+        """ Tells the pipeline to use no loading screen """
+        self._loading_screen = EmptyLoadingScreen()
 
     def load_settings(self, path):
         """ Loads the pipeline configuration from a given filename. Usually this
@@ -167,6 +169,13 @@ class RenderPipeline(DebugObject):
         if not self._settings.is_file_loaded():
             self.debug("No settings loaded, loading from default location")
             self._settings.load_from_file("Config/pipeline.yaml")
+
+
+        # Check if the pipeline was properly installed, before including anything else
+        if not isfile("Data/install.flag"):
+            DebugObject.global_error("CORE", "You didn't setup the pipeline yet! Please run setup.py.")
+            sys.exit(1)
+
 
         # Load the default prc config
         load_prc_file("Config/configuration.prc")
