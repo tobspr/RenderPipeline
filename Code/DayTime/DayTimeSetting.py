@@ -131,8 +131,8 @@ class DayTimeSettingSCALAR(DayTimeSetting):
 
     def _scale_value(self, raw_value):
         if self.exp_factor != 1.0:
-            exp_mult = math.exp(self.exp_factor * raw_value) - 1
-            exp_div = math.exp(self.exp_factor * self.max_value) - 1
+            exp_mult = math.exp(self.exp_factor * raw_value / self.max_value * 4.0) - 1
+            exp_div = math.exp(self.exp_factor * 4.0) - 1
             scaled_value = exp_mult / exp_div * self.max_value
             return scaled_value
         return raw_value

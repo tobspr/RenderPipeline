@@ -162,7 +162,7 @@ settings: !!omap
         default: ColorLUT.png    
         label: Color LUT
         description: >
-            Specifies a Color LUT (Look-Up-Table) to use. Have a look at the Render Pipeline
+            !! THIS BUTTON DOES NOT WORK YET !! Specifies a Color LUT (Look-Up-Table) to use. Have a look at the Render Pipeline
             documentation for further information.
 
 

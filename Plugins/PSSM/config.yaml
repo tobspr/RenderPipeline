@@ -48,7 +48,7 @@ settings: !!omap
 
     - split_count:
         type: int
-        range: [2, 10]
+        range: [1, 10]
         default: 8
         label: Amount of PSSM Splits / Cascades
         description: >

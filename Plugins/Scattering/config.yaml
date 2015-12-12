@@ -119,6 +119,7 @@ daytime_settings: !!omap
         range: [0.5, 10000.0]
         default: 2000
         label: Fog-Ramp
+        logarithmic_factor: 1.5
         description: >
             Size of the transition from no fog to fog in world space units.
             Higher values produce a smoother transition from no fog to fog,
@@ -130,6 +131,7 @@ daytime_settings: !!omap
         range: [0.0, 1500.0]
         default: 100.0
         label: Fog-Start
+        logarithmic_factor: 1.5
         description: >
             Start of the fog in world space units.
 

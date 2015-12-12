@@ -101,7 +101,8 @@ void main() {
     
         // Pre-Integrated environment BRDF
         vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
-        vec3 specular_nonmetallic = vec3(env_brdf.y + m.specular * 0.06 * env_brdf.x);
+        vec3 specular_nonmetallic = vec3(env_brdf.y + 0.15 * env_brdf.x);
+        specular_nonmetallic *= m.specular;
 
         // Metallic specular is pretty simple
         vec3 specular_metallic = m.basecolor;

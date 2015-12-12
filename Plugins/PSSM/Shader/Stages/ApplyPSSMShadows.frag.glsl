@@ -217,6 +217,9 @@ void main() {
 
     // float factor = float(split) / GET_SETTING(PSSM, split_count);
     // lighting_result = (lighting_result+0.01) * vec3(factor, 1 - factor, 0);
+    #if DEBUG_MODE
+        lighting_result *= 0;
+    #endif
 
     result = scene_color + vec4(lighting_result, 0);
 }

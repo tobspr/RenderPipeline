@@ -62,6 +62,7 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
 
     // Precomputed dot products
     float NxL = max(0, dot(m.normal, l));
+    // float NxL = abs(dot(m.normal, l));
     float NxV = max(0, dot(m.normal, v)) + 1e-5;
     float NxH = max(0, dot(m.normal, h));
     float VxH = max(0, dot(v, h));
@@ -74,8 +75,8 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
     // Specular contribution
     float distribution = brdf_distribution(NxH, m.roughness);
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
-    vec3 fresnel = brdf_fresnel(vec3(m.specular), VxH, NxV, LxH, m.roughness);
-    shading_result += (distribution * visibility * fresnel) / M_PI; 
+    vec3 fresnel = brdf_fresnel(vec3(1), VxH, NxV, LxH, m.roughness);
+    shading_result += (distribution * visibility * fresnel) / M_PI * m.specular; 
 
     // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)

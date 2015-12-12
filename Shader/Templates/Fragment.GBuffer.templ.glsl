@@ -23,6 +23,7 @@ uniform sampler2D p3d_Texture3;
 
 %INOUT%
 
+uniform vec3 cameraPosition;
 void main() {
 
     vec4 sampled_diffuse   = texture(p3d_Texture0, vOutput.texcoord);
@@ -30,7 +31,13 @@ void main() {
     vec4 sampled_specular  = texture(p3d_Texture2, vOutput.texcoord);
     vec4 sampled_roughness = texture(p3d_Texture3, vOutput.texcoord);
 
-    sampled_diffuse.xyz = pow(sampled_diffuse.xyz, vec3(2.2));
+    sampled_diffuse.xyz = pow(sampled_diffuse.xyz, vec3(1.9));
+
+    float dist_to_camera = distance(cameraPosition, vOutput.position);
+
+    float alpha_factor = mix(0.9, 0.1, saturate(dist_to_camera / 40.0) );
+
+    if (sampled_diffuse.w < alpha_factor) discard;
 
     vec3 detail_normal = fma(sampled_normal.xyz, vec3(2.0), vec3(-1.0));
     vec3 merged_normal = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor);

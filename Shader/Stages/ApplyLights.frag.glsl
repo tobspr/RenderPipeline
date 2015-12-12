@@ -44,7 +44,7 @@ void main() {
     */
 
     #if MODE_ACTIVE(DIFFUSE)
-        result.xyz = vec3(m.diffuse);
+        result.xyz = vec3(m.basecolor);
     #endif
 
     #if MODE_ACTIVE(ROUGHNESS)

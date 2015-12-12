@@ -64,7 +64,9 @@ void main() {
     #endif
 
     // Apply tonemapping
-    scene_color = Tonemap(scene_color);
+    #if !DEBUG_MODE
+        scene_color = Tonemap(scene_color);
+    #endif
 
     // Compute film grain
     float film_grain = grain(texcoord, osg_FrameTime * 2000.0);
