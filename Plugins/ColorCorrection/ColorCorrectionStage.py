@@ -12,9 +12,13 @@ class ColorCorrectionStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ColorCorrectionStage", pipeline)
         self._use_auto_exposure = True
+        self._use_sharpen = False
 
     def set_use_auto_exposure(self, flag):
         self._use_auto_exposure = flag
+
+    def set_use_sharpen(self, flag):
+        self._use_sharpen = flag
 
     def create(self):
 
@@ -47,6 +51,7 @@ class ColorCorrectionStage(RenderStage):
             self._tex_exposure.set_clear_color(Vec4(0.5))
             self._tex_exposure.clear_image()
 
+            # Create the target which extracts the exposure from the average brightness
             self._target_analyze = self._create_target("AnalyzeBrightness")
             self._target_analyze.set_size(1, 1)
             self._target_analyze.add_color_texture()
@@ -57,8 +62,28 @@ class ColorCorrectionStage(RenderStage):
             self._target_analyze.set_shader_input("DownscaledTex", last_tex)
 
         self._target = self._create_target("ColorCorrectionStage")
-        self._target.prepare_offscreen_buffer()
-        self._target.make_main_target()
+
+        if self._use_sharpen:
+
+            # When using a sharpen filter, the main target needs a color texture
+            self._target.add_color_texture(bits=8)
+            self._target.prepare_offscreen_buffer()
+
+            self._target_sharpen = self._create_target("SharpenFilter")
+            self._target_sharpen.prepare_offscreen_buffer()
+            self._target_sharpen.make_main_target()
+
+            # Use a linear filter for the color texture, this is required for the sharpen
+            # filter to work properly.
+            self._target["color"].set_minfilter(Texture.FT_linear)
+            self._target["color"].set_magfilter(Texture.FT_linear)
+
+            self._target_sharpen.set_shader_input("SourceTex", self._target["color"])
+
+        else:
+            # Make the main target the only target
+            self._target.prepare_offscreen_buffer()
+            self._target.make_main_target()
 
         if self._use_auto_exposure:
             self._target.set_shader_input("ExposureTex", self._tex_exposure.get_texture())
@@ -69,9 +94,13 @@ class ColorCorrectionStage(RenderStage):
         if self._use_auto_exposure:
             self._target_lum.set_shader(self.load_plugin_shader("GenerateLuminance.frag.glsl"))
             self._target_analyze.set_shader(self.load_plugin_shader("AnalyzeBrightness.frag.glsl"))
+
             mip_shader = self.load_plugin_shader("DownscaleLuminance.frag.glsl")
             for target in self._mip_targets:
                 target.set_shader(mip_shader)
+
+        if self._use_sharpen:
+            self._target_sharpen.set_shader(self.load_plugin_shader("Sharpen.frag.glsl"))
 
     def resize(self):
         RenderStage.resize(self)

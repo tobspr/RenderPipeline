@@ -269,6 +269,23 @@ settings: !!omap
             Adaption rate when moving from bright to dark areas.
             Usually slower (= smaller) than the rate when moving from dark to bright areas.
 
+    # Sharpen filter
+    - use_sharpen:
+        type: bool
+        default: true
+        label: Sharpen Filter
+        description: > 
+            Enables a sharpen filter, which tries to increase texture detail.
+
+    - sharpen_strength:
+        display_if: {use_sharpen: true}
+        type: float
+        range: [0, 1]
+        default: 0.5
+        shader_runtime: true
+        label: Sharpen Strength
+        description: >
+            Controls the strength of the sharpen filter.
 
 
 daytime_settings: !!omap

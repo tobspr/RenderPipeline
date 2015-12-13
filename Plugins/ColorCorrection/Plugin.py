@@ -16,6 +16,7 @@ class Plugin(BasePlugin):
 
         self._stage = self.create_stage(ColorCorrectionStage)
         self._stage.set_use_auto_exposure(self.get_setting("use_auto_exposure"))
+        self._stage.set_use_sharpen(self.get_setting("use_sharpen"))
 
     @PluginHook("on_pipeline_created")
     def pipeline_created(self):
