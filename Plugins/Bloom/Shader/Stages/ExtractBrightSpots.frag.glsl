@@ -16,10 +16,10 @@ void main() {
     vec3 bloom_color = vec3(0);
 
     // todo: make the bias a setting
-    if (luma > 7.0) {
+    if (luma > GET_SETTING(Bloom, minimum_luminance)) {
         // do reinhard tonemapping to avoid too bright spots
         bloom_color = scene_color / (1 + scene_color);
-        bloom_color *= 6;
+        bloom_color *= GET_SETTING(Bloom, bloom_strength);
         // bloom_color = scene_color;
     }   
 

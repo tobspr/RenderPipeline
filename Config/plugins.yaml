@@ -37,6 +37,8 @@ overrides:
     AO.ue4ao_max_distance: 3.4
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 158.61
+    Bloom.bloom_strength: 5.0
+    Bloom.minimum_luminance: 16.75
     ColorCorrection.brightness_adaption_rate: 2.25
     ColorCorrection.chromatic_aberration_samples: 1
     ColorCorrection.chromatic_aberration_strength: 0.3744

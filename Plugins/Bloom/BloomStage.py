@@ -8,9 +8,13 @@ class BloomStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "BloomStage", pipeline)
+        self._num_mips = 8
 
     def get_produced_pipes(self):
         return {"ShadedScene": self._upsample_targets[-1]["color"]}
+
+    def set_num_mips(self, mip_count):
+        self._num_mips = mip_count
 
     def create(self):
         self._target_extract = self._create_target("ExtractBrightSpots")
@@ -21,10 +25,9 @@ class BloomStage(RenderStage):
         self._downsample_targets = []
         self._upsample_targets = []
 
-        num_mips = 8
 
         # todo: make the amount of passes configurable
-        for i in range(num_mips):
+        for i in range(self._num_mips):
             scale_multiplier = 2 ** (1 + i)
             target = self._create_target("BloomDownsample-" + str(i))
             target.set_size(-scale_multiplier, -scale_multiplier)
@@ -34,8 +37,8 @@ class BloomStage(RenderStage):
             current_target = target["color"]
             self._downsample_targets.append(target)
 
-        for i in range(num_mips):
-            scale_multiplier = 2 ** (num_mips - i - 1)
+        for i in range(self._num_mips):
+            scale_multiplier = 2 ** (self._num_mips - i - 1)
             target = self._create_target("BloomUpsample-" + str(i))
             target.set_size(-scale_multiplier, -scale_multiplier)
             target.add_color_texture(bits=16)
@@ -46,7 +49,7 @@ class BloomStage(RenderStage):
             else:
                 target.set_shader_input("FirstUpsamplePass", False)
 
-            if i == num_mips - 1:
+            if i == self._num_mips - 1:
                 target.set_shader_input("LastUpsamplePass", True)
             else:
                 target.set_shader_input("LastUpsamplePass", False)

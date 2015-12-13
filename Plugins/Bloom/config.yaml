@@ -8,41 +8,34 @@ description: >
 
 settings: !!omap
 
-    - some_int_setting:
+    - num_mipmaps:
         type: int
-        range: [0, 10]
-        default: 5
-        label: Some integer setting
-        description: Description of the setting.
+        range: [2, 10]
+        default: 8
+        label: Mipmap count
+        description: >
+            Amount of mipmaps to use for downsampling the scene. A higher
+            amount of mipmaps will allow capturing wider blur radii.
 
-    - some_float_setting:
+    - minimum_luminance:
         type: float
-        range: [-5.3, 2.9]
-        default: 2.5
-        label: Some float setting
-        description: Description of the setting.
-        runtime: true
+        range: [0.5, 50.0]
+        default: 7.0
+        shader_runtime: true
+        label: Minimum Luminance
+        description: >
+            Minimum lumiance required so that a pixel is identified as "bright".
+            Only pixels marked as "bright" cause bloom.
 
-    - some_enum:
-        type: enum
-        values: [value1, value2, value3]
-        default: value2
-        label: Some enum setting
-        description: Description of the setting.
+    - bloom_strength:
+        type: float
+        range: [0.2, 10.0]
+        default: 4.0
+        shader_runtime: true
+        label: Bloom Strength
+        description: >
+            Strength of the bloom, higher values will cause more bloom. Make sure
+            to not overuse this.
 
-    - some_bool:
-        type: bool
-        default: false
-        label: Some boolean setting
-        description: Description of the setting.
 
-daytime_settings: !!omap
-    
-    - some_scalar:
-        type: scalar
-        unit: percent
-        range: [0, 1]
-        default: 0.5
-        label: Some Scalar
-        description: Description of the scalar.
-
+daytime_settings: 
