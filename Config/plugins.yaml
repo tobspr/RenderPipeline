@@ -22,27 +22,27 @@ overrides:
     AO.hbao_max_distance: 18.22
     AO.hbao_ray_count: 12
     AO.hbao_ray_steps: 3
-    AO.hbao_sample_radius: 123.0
+    AO.hbao_sample_radius: 97.17
     AO.hbao_tangent_bias: 0.1667
     AO.occlusion_strength: 1.67
     AO.ssao_bias: 0.0
-    AO.ssao_max_distance: 7.33
-    AO.ssao_sample_count: 32
-    AO.ssao_sample_radius: 176.16667
-    AO.ssvo_max_distance: 5.58
+    AO.ssao_max_distance: 3.78
+    AO.ssao_sample_count: 16
+    AO.ssao_sample_radius: 206.88889
+    AO.ssvo_max_distance: 7.35
     AO.ssvo_sample_count: 32
-    AO.ssvo_sphere_radius: 26.08
+    AO.ssvo_sphere_radius: 9.02
     AO.technique: SSAO
     AO.ue4ao_max_distance: 3.4
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 158.61
     ColorCorrection.brightness_adaption_rate: 2.25
     ColorCorrection.chromatic_aberration_samples: 1
-    ColorCorrection.chromatic_aberration_strength: 0.42
+    ColorCorrection.chromatic_aberration_strength: 0.3744
     ColorCorrection.darkness_adaption_rate: 1.84
     ColorCorrection.exponential_factor: 1.01
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.2222
+    ColorCorrection.film_grain_strength: 0.2444
     ColorCorrection.max_exposure: 0.99
     ColorCorrection.min_exposure: 0.1111
     ColorCorrection.reinhard_version: rgb
@@ -54,23 +54,23 @@ overrides:
     ColorCorrection.uc2t_toe_strength: 0.2
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
-    ColorCorrection.vignette_strength: 0.3002
-    PSSM.filter_radius: 62.29
+    ColorCorrection.vignette_strength: 0.1333
+    PSSM.filter_radius: 28.97
     PSSM.filter_sample_count: 29
-    PSSM.fixed_bias: 0.0511
+    PSSM.fixed_bias: 0.0
     PSSM.logarithmic_factor: 1.47
-    PSSM.max_distance: 113.0
-    PSSM.normal_bias: 0.0
-    PSSM.pcss_penumbra_size: 0.1
+    PSSM.max_distance: 70.0
+    PSSM.normal_bias: 1.06
+    PSSM.pcss_penumbra_size: 56.75
     PSSM.pcss_search_samples: 25
     PSSM.resolution: 2048
-    PSSM.slope_bias: 0.0
-    PSSM.split_count: 4
+    PSSM.slope_bias: 0.11
+    PSSM.split_count: 2
     PSSM.sun_distance: 850.0
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
-    Scattering.ground_fog_factor: 15.0
+    Scattering.ground_fog_factor: 12.22
     Scattering.mie_phase_factor: 0.33
     Scattering.scattering_method: eric_bruneton
 
