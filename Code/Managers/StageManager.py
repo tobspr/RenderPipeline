@@ -32,6 +32,7 @@ class StageManager(DebugObject):
         "AmbientStage",
         "SSLRStage",
         "SMAAStage",
+        "BloomStage",
         "FinalStage",
         "ColorCorrectionStage",
         "UpdatePreviousPipesStage"
@@ -56,7 +57,7 @@ class StageManager(DebugObject):
         """ Adds a new stage """
         if stage.get_stage_id() not in self._STAGE_ORDER:
             self.error("They stage type", stage.get_name(),
-                       "is not registered yet!")
+                       "is not registered yet! Please add it to the StageManager!")
             return
 
         if self._created:

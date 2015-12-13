@@ -22,18 +22,18 @@ void main() {
 
     // 2 samples
     #if 0
-        // blur_sum += texture(SourceTex, texcoord + pixel_size / 3.0).xyz;
-        // blur_sum += texture(SourceTex, texcoord - pixel_size / 3.0).xyz;
+        // blur_sum += textureLod(SourceTex, texcoord + pixel_size / 3.0, 0).xyz;
+        // blur_sum += textureLod(SourceTex, texcoord - pixel_size / 3.0, 0).xyz;
         sharpen_luma_strength *= 1.5;
         blur_sum *= 1.0 / 2.0;
     #endif
 
     // 4 samples
     #if 1
-        blur_sum += texture(SourceTex, texcoord + vec2(  0.4, -1.2 ) * pixel_size).rgb;
-        blur_sum += texture(SourceTex, texcoord + vec2( -1.2, -0.4 ) * pixel_size).rgb;
-        blur_sum += texture(SourceTex, texcoord + vec2(  1.2, 0.4  ) * pixel_size).rgb;
-        blur_sum += texture(SourceTex, texcoord + vec2( -0.4, 1.2  ) * pixel_size).rgb;
+        blur_sum += textureLod(SourceTex, texcoord + vec2(  0.4, -1.2 ) * pixel_size, 0).rgb;
+        blur_sum += textureLod(SourceTex, texcoord + vec2( -1.2, -0.4 ) * pixel_size, 0).rgb;
+        blur_sum += textureLod(SourceTex, texcoord + vec2(  1.2, 0.4  ) * pixel_size, 0).rgb;
+        blur_sum += textureLod(SourceTex, texcoord + vec2( -0.4, 1.2  ) * pixel_size, 0).rgb;
         blur_sum *= 1.0 / 4.0;
     #endif
 

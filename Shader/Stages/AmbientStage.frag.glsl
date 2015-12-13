@@ -122,7 +122,7 @@ void main() {
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
-            
+
     } else {
 
         // ambient = textureLod(DefaultEnvmap,  fix_cubemap_coord(-view_vector), 0).xyz;

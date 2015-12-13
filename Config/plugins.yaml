@@ -12,6 +12,7 @@ enabled:
     - SMAA
     - PSSM
     - AO
+    - Bloom
 
 overrides: 
     AO.alchemy_max_distance: 20.0
@@ -24,10 +25,10 @@ overrides:
     AO.hbao_ray_steps: 3
     AO.hbao_sample_radius: 97.17
     AO.hbao_tangent_bias: 0.1667
-    AO.occlusion_strength: 1.67
+    AO.occlusion_strength: 1.08
     AO.ssao_bias: 0.0
-    AO.ssao_max_distance: 3.78
-    AO.ssao_sample_count: 16
+    AO.ssao_max_distance: 10.0
+    AO.ssao_sample_count: 32
     AO.ssao_sample_radius: 206.88889
     AO.ssvo_max_distance: 7.35
     AO.ssvo_sample_count: 32
@@ -42,7 +43,7 @@ overrides:
     ColorCorrection.darkness_adaption_rate: 1.84
     ColorCorrection.exponential_factor: 1.01
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.2444
+    ColorCorrection.film_grain_strength: 0.2
     ColorCorrection.max_exposure: 0.99
     ColorCorrection.min_exposure: 0.1111
     ColorCorrection.reinhard_version: rgb
