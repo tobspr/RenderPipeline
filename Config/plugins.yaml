@@ -45,7 +45,7 @@ overrides:
     ColorCorrection.darkness_adaption_rate: 1.84
     ColorCorrection.exponential_factor: 1.01
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.2
+    ColorCorrection.film_grain_strength: 0.15
     ColorCorrection.max_exposure: 0.99
     ColorCorrection.min_exposure: 0.1111
     ColorCorrection.reinhard_version: rgb

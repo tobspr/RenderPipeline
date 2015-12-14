@@ -90,7 +90,7 @@
     vec3 get_gbuffer_position(GBufferData data, ivec2 coord) {
         vec2 float_coord = (coord+0.5) /  SCREEN_SIZE;
         float depth = get_gbuffer_depth(data, coord);
-        return calculateSurfacePos(depth, float_coord);
+        return calculate_surface_pos(depth, float_coord);
     }
 
 

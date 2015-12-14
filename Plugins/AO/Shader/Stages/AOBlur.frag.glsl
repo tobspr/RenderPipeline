@@ -14,7 +14,7 @@ out vec4 result;
 
 
 float get_lin_z(ivec2 ccoord) {
-    return getLinearZFromZ(get_gbuffer_depth(GBuffer, ccoord));
+    return get_linear_z_from_z(get_gbuffer_depth(GBuffer, ccoord));
 }
 
 void do_blur(ivec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth, inout vec4 accum, inout float accum_w) {

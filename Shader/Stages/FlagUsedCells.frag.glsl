@@ -16,7 +16,7 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     float depth = get_gbuffer_depth(GBuffer, coord);
 
-    vec3 surf_pos = calculateSurfacePos(depth, vec2(coord) / SCREEN_SIZE);
+    vec3 surf_pos = calculate_surface_pos(depth, vec2(coord) / SCREEN_SIZE);
     float surf_dist = distance(cameraPosition, surf_pos);
 
     ivec3 tile = getCellIndex(coord, surf_dist);

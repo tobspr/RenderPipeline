@@ -25,7 +25,7 @@ float get_depth_at(ivec2 coord) {
 }
 
 vec3 get_view_pos_at(vec2 coord) {
-    return calculateViewPos(get_depth_at(coord), coord);
+    return calculate_view_pos(get_depth_at(coord), coord);
 }
 
 vec3 get_view_pos_at(ivec2 coord) {
@@ -34,12 +34,12 @@ vec3 get_view_pos_at(ivec2 coord) {
 }
 
 vec3 get_world_pos_at(vec2 coord) {
-    return calculateSurfacePos(get_depth_at(coord), coord);
+    return calculate_surface_pos(get_depth_at(coord), coord);
 }
 
 vec3 get_world_pos_at(ivec2 coord) {
     vec2 tcoord = (coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-    return calculateSurfacePos(get_depth_at(tcoord), tcoord);
+    return calculate_surface_pos(get_depth_at(tcoord), tcoord);
 }
 
 
@@ -88,7 +88,7 @@ void main() {
         return;
     }
 
-    // float kernel_scale = 10.0 / getLinearZFromZ(pixel_depth);
+    // float kernel_scale = 10.0 / get_linear_z_from_z(pixel_depth);
     float kernel_scale = 10.0 / view_dist;
 
 
@@ -122,9 +122,8 @@ void main() {
 
     result.w = pow(result.w, GET_SETTING(AO, occlusion_strength));
 
-    // Pack normal
-    result.xyz = result.xyz * 0.5 + 0.5;
-
+    // Pack bent normal
+    result.xyz = fma(result.xyz, 0.5, 0.5);
 }
 
 

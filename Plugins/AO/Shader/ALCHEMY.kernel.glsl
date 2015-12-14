@@ -45,7 +45,7 @@ for (int i = 0; i < num_samples; ++i) {
 
 // Normalize
 bent_normal /= max(1.0, length(bent_normal));
-// bent_normal = viewNormalToWorld(bent_normal);
+// bent_normal = view_normal_to_world(bent_normal);
 
 // TODO: Bent normal is buggy right now. Using world space normal instead
 bent_normal = pixel_world_normal;

@@ -226,7 +226,7 @@ void main() {
 
             // Reconstruct intersection position
             mat4 inverse_mvp = inverse(mvp);
-            vec3 intersection_pos = calculateSurfacePosOrtho(shadow_sample, projected_skin.xy, split_near_far.x, split_near_far.y, inverse_mvp);
+            vec3 intersection_pos = calculate_surface_pos_ortho(shadow_sample, projected_skin.xy, split_near_far.x, split_near_far.y, inverse_mvp);
 
             // Get the distance the light traveled through the medium
             float distance_through_medium = distance(m.position, intersection_pos.xyz);

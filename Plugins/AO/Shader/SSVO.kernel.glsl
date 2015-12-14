@@ -15,7 +15,7 @@ vec2 sphere_radius = GET_SETTING(AO, ssvo_sphere_radius) * pixel_size;
 float max_depth_diff = GET_SETTING(AO, ssvo_max_distance);
 
 float accum = 0.0;
-float pixel_linz = getLinearZFromZ(pixel_depth);
+float pixel_linz = get_linear_z_from_z(pixel_depth);
 
 for (int i = 0; i < num_samples; ++i) {
 
@@ -36,8 +36,8 @@ for (int i = 0; i < num_samples; ++i) {
     float depth_b = get_depth_at(offcoord_b);
 
     // Make the depth linear, this enables us to compare them better
-    float depth_linz_a = getLinearZFromZ(depth_a);
-    float depth_linz_b = getLinearZFromZ(depth_b);
+    float depth_linz_a = get_linear_z_from_z(depth_a);
+    float depth_linz_b = get_linear_z_from_z(depth_b);
 
     // Clamp both differences to the maximum depth difference
     float diff_a = (pixel_linz - depth_linz_a) / max_depth_diff;

@@ -67,6 +67,6 @@ accum /= num_angles;
 
 // Normalize bent normal
 bent_normal /= max(1.0, length(bent_normal));
-bent_normal = viewNormalToWorld(bent_normal);
+bent_normal = view_normal_to_world(bent_normal);
 
 result = vec4(bent_normal, 1 - 1.0*accum);

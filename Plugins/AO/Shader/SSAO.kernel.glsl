@@ -34,14 +34,14 @@ for (int i = 0; i < num_samples; ++i) {
     vec3 offset_pos = pixel_view_pos + offset * sample_offset * 20.0;
 
     // Project offset position to screen space
-    vec3 projected = viewToScreen(offset_pos);
+    vec3 projected = view_to_screen(offset_pos);
 
     // Fetch the expected depth
     float sample_depth = get_depth_at(projected.xy);
 
     // Linearize both depths
-    float linz_a = getLinearZFromZ(projected.z);
-    float linz_b = getLinearZFromZ(sample_depth);
+    float linz_a = get_linear_z_from_z(projected.z);
+    float linz_b = get_linear_z_from_z(sample_depth);
 
     // Compare both depths by distance to find the AO factor
     float modifier = step(distance(linz_a, linz_b), max_range * 0.2);
@@ -55,7 +55,7 @@ for (int i = 0; i < num_samples; ++i) {
 }
 
 bent_normal /= max(1.0, length(bent_normal));
-bent_normal = viewNormalToWorld(bent_normal);
+bent_normal = view_normal_to_world(bent_normal);
 
 // normalize samples
 accum /= max(0.1, range_accum);
