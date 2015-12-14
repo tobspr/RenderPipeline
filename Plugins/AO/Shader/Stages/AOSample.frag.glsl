@@ -123,7 +123,7 @@ void main() {
     result.w = pow(result.w, GET_SETTING(AO, occlusion_strength));
 
     // Pack bent normal
-    result.xyz = fma(result.xyz, 0.5, 0.5);
+    result.xyz = fma(result.xyz, vec3(0.5), vec3(0.5));
 }
 
 

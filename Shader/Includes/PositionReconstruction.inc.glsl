@@ -94,7 +94,7 @@ vec3 view_normal_to_world(vec3 view_normal) {
   // We need to transform coordinate system, should't be required,
   // seems to be some panda bug?
   view_normal = view_normal.xzy * vec3(1, -1, 1);
-  return normalize((vec4(view_normal.xyz, 0) * trans_mainRender_to_view_of_mainCam).xyz);
+  return normalize((vec4(view_normal, 0) * trans_mainRender_to_view_of_mainCam).xyz);
 }
 
 // Converts a world space position to screen space position (NDC)

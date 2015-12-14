@@ -97,7 +97,6 @@ void main() {
             env_amb = textureLod(ScatteringCubemap, m.normal, 4.5).xyz;
 
         #endif
-
     
         // Pre-Integrated environment BRDF
         vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
@@ -107,11 +106,11 @@ void main() {
         // Metallic specular is pretty simple
         vec3 specular_metallic = m.basecolor;
 
+        // Weight specular metallic and non-metallic terms
         vec3 specular_ambient = mix(specular_nonmetallic, specular_metallic, m.metallic) * env_default_color;
 
         // Diffuse ambient term
         vec3 diffuse_ambient = env_amb * m.basecolor * (1-m.metallic) / M_PI;
-
 
         // Add diffuse and specular ambient term
         ambient = diffuse_ambient + specular_ambient;
@@ -131,6 +130,7 @@ void main() {
 
     } else {
 
+        // Optionally just display the environment texture
         // ambient = textureLod(DefaultEnvmap,  fix_cubemap_coord(-view_vector), 0).xyz;
 
     }

@@ -49,7 +49,7 @@ overrides:
     ColorCorrection.max_exposure: 0.99
     ColorCorrection.min_exposure: 0.1111
     ColorCorrection.reinhard_version: rgb
-    ColorCorrection.sharpen_strength: 0.6
+    ColorCorrection.sharpen_strength: 0.3
     ColorCorrection.tonemap_operator: uncharted2
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22
