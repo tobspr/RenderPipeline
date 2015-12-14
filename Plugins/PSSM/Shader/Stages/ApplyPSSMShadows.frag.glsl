@@ -8,6 +8,7 @@
 #pragma include "Includes/LightingPipeline.inc.glsl"
 #pragma include "Includes/PoissonDisk.inc.glsl"
 #pragma include "Includes/Shadows.inc.glsl"
+#pragma include "Includes/SkinShading.inc.glsl"
 
 out vec4 result;
 
@@ -21,7 +22,7 @@ uniform sampler2D ShadedScene;
 uniform sampler2D PSSMShadowAtlas;
 
 uniform mat4 pssm_mvps[GET_SETTING(PSSM, split_count)];
-uniform float pssm_rotations[GET_SETTING(PSSM, split_count)];
+uniform vec2 pssm_nearfar[GET_SETTING(PSSM, split_count)];
 uniform vec3 pssm_sun_vector;
 
 
@@ -75,6 +76,7 @@ void main() {
     // Variables to accumulate the shadows
     float shadow_factor = 0.0;
     vec3 lighting_result = vec3(0);
+    vec3 transmittance = vec3(1);
 
     // Find lowest split in range
     const int split_count = GET_SETTING(PSSM, split_count);
@@ -111,10 +113,6 @@ void main() {
         // Get the MVP for the current split        
         mat4 mvp = pssm_mvps[split];
 
-        // Rotation is from 0 .. 1 whereas 0 means 0 degree and 1 means 90 degree
-        // So 90 degree is half pi:
-        float rotation = pssm_rotations[split] * HALF_PI;
-
         // Get the plugin settings
         const float slope_bias = GET_SETTING(PSSM, slope_bias) * 0.05;
         const float normal_bias = GET_SETTING(PSSM, normal_bias) * 0.005;
@@ -136,7 +134,7 @@ void main() {
         float ref_depth = projected.z - fixed_bias;
 
         // Find filter size
-        vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius, rotation);
+        vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);
 
 
         #if GET_SETTING(PSSM, use_pcss)
@@ -206,20 +204,54 @@ void main() {
 
         shadow_factor = saturate(shadow_factor);
 
+
+
+
+        // skin shading, use a single tap
+        BRANCH_TRANSLUCENCY(m)
+
+            // Get the current split near and far planes
+            vec2 split_near_far = pssm_nearfar[split];
+
+            // Bias to move the position "into" the object, prevents artifacts
+            float skin_border_factor = 0.02;
+
+            // Project the biased position to light space
+            vec3 projected_skin = project(mvp, m.position - m.normal * skin_border_factor);
+            vec2 projected_skin_coord = get_split_coord(projected_skin.xy, split);
+            float skin_ref_depth = projected_skin.z;
+
+            // Get the shadow sample
+            float shadow_sample = texture(PSSMShadowAtlas, projected_skin_coord).x;
+
+            // Reconstruct intersection position
+            mat4 inverse_mvp = inverse(mvp);
+            vec3 intersection_pos = calculateSurfacePosOrtho(shadow_sample, projected_skin.xy, split_near_far.x, split_near_far.y, inverse_mvp);
+
+            // Get the distance the light traveled through the medium
+            float distance_through_medium = distance(m.position, intersection_pos.xyz);
+
+            // TODO: Maybe we can remove this branch
+            if (skin_ref_depth < shadow_sample) distance_through_medium = 0.0;
+        
+            // Fetch the skin transmittance
+            transmittance = SkinTransmittance(distance_through_medium);
+
+        END_BRANCH_TRANSLUCENCY()
     }
 
 
     // Compute the sun lighting
     vec3 v = normalize(cameraPosition - m.position);
     vec3 l = sun_vector;
-    lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0));
-
+    lighting_result = applyLight(m, v, l, sun_color, 1.0, shadow_factor, vec4(0), transmittance);
 
     // float factor = float(split) / GET_SETTING(PSSM, split_count);
     // lighting_result = (lighting_result+0.01) * vec3(factor, 1 - factor, 0);
     #if DEBUG_MODE
         lighting_result *= 0;
     #endif
+
 
     result = scene_color + vec4(lighting_result, 0);
 }

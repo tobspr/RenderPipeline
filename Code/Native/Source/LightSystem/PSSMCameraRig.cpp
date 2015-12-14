@@ -15,7 +15,7 @@ PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
     _logarithmic_factor = 1.0;
     _resolution = 512;
     _camera_mvps = PTA_LMatrix4f::empty_array(num_splits);
-    _camera_rotations = PTA_float::empty_array(num_splits);
+    _camera_nearfar = PTA_LVecBase2f::empty_array(num_splits);
     init_cam_nodes(num_splits);
 }
 
@@ -114,8 +114,8 @@ const PTA_LMatrix4f &PSSMCameraRig::get_mvp_array() {
     return _camera_mvps;
 }
 
-const PTA_float &PSSMCameraRig::get_rotation_array() {
-    return _camera_rotations;
+const PTA_LVecBase2f &PSSMCameraRig::get_nearfar_array() {
+    return _camera_nearfar;
 }
 
 
@@ -245,10 +245,6 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         _cam_nodes[i].set_pos(cam_start);
         _cam_nodes[i].look_at(split_mid);
 
-        // Reset rotation
-        _camera_rotations[i] = 0.0;
-
-
         // Collect all points which define the frustum
         LVecBase3f proj_points[8];
         merge_points_interleaved(proj_points, start_points, end_points);
@@ -295,7 +291,7 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
                 }
             }
             _cam_nodes[i].look_at(split_mid, get_angle_vector(best_angle));
-            _camera_rotations[i] = best_angle;
+
         } else {
             // Find minimum and maximum extents of the points
             LMatrix4f merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
@@ -322,7 +318,7 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         // Compute new film offset
         cam->get_lens()->set_film_offset(film_offset);
         cam->get_lens()->set_near_far(10, best_max_extent.get_z());
-
+        _camera_nearfar[i] = LVecBase2f(10, best_max_extent.get_z());
 
         // Compute the camera MVP
         LMatrix4f mvp = compute_mvp(i);

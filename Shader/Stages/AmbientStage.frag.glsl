@@ -112,8 +112,14 @@ void main() {
         // Diffuse ambient term
         vec3 diffuse_ambient = env_amb * m.basecolor * (1-m.metallic) / M_PI;
 
+
         // Add diffuse and specular ambient term
         ambient = diffuse_ambient + specular_ambient;
+
+        // Reduce ambient for translucent materials
+        BRANCH_TRANSLUCENCY(m)
+            ambient *= saturate(1.5 - m.translucency);
+        END_BRANCH_TRANSLUCENCY()
 
         #if HAVE_PLUGIN(AO)
 
@@ -147,6 +153,6 @@ void main() {
         ambient *= (1.0 - scene_color.w);
     #endif
 
-    result = scene_color * 1 + vec4(ambient, 1) * 1;
+    result = scene_color * 1 + vec4(ambient, 1);
 
 }

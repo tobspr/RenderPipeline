@@ -46,18 +46,18 @@
         float specular = saturate(m.specular);
         float metallic = saturate(m.metallic);
         float roughness = clamp(m.roughness, 0.001, 1.0);
+        float translucency = saturate(m.translucency);
 
         // Optional: Use squared roughness as proposed by Disney
         roughness *= roughness;
 
         vec2 velocity = compute_velocity();
 
-        float UNUSED_0 = 0.0;
         float UNUSED_1 = 0.0;
 
         gbuffer_out_0 = vec4(basecolor.r, basecolor.g, basecolor.b, roughness);
         gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, metallic, specular);
-        gbuffer_out_2 = vec4(velocity.x, velocity.y, UNUSED_0, UNUSED_1);
+        gbuffer_out_2 = vec4(velocity.x, velocity.y, translucency, UNUSED_1);
     }
 
 
@@ -131,8 +131,8 @@
         m.normal = unpack_normal_octrahedron(data1.xy);
         m.metallic = data1.z;
         m.specular = data1.w;
+        m.translucency = data2.z;
 
-        float UNUSED_0 = data2.z;
         float UNUSED_1 = data2.w;
 
         // Velocity, not unpacked here

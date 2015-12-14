@@ -24,5 +24,19 @@
 #define MODE_ACTIVE(MODE_ID) ( DEBUG_MODE && ( _RM__ ## MODE_ID ) )
 
 
+// Branch modes for translucency.
+// This serves for the purpose to be enabled or disabled easily.
+// Right now, it seems its faster not to branch. It heavily depends on
+// the scene.
+#if 0
+#define BRANCH_TRANSLUCENCY(m) if (m.translucency > 0.01) {
+#define END_BRANCH_TRANSLUCENCY() }
+#else
+#define BRANCH_TRANSLUCENCY(m)
+#define END_BRANCH_TRANSLUCENCY()
+#endif
+
+
+
 #pragma include "CommonFunctions.inc.glsl"
 

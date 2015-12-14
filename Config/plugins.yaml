@@ -37,8 +37,8 @@ overrides:
     AO.ue4ao_max_distance: 3.4
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 158.61
-    Bloom.bloom_strength: 5.0
-    Bloom.minimum_luminance: 16.75
+    Bloom.bloom_strength: 3.9
+    Bloom.minimum_luminance: 25.25
     ColorCorrection.brightness_adaption_rate: 2.25
     ColorCorrection.chromatic_aberration_samples: 1
     ColorCorrection.chromatic_aberration_strength: 0.3744
@@ -59,19 +59,19 @@ overrides:
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.vignette_strength: 0.1333
-    PSSM.filter_radius: 28.97
+    PSSM.filter_radius: 1.32
     PSSM.filter_sample_count: 29
     PSSM.fixed_bias: 0.0
     PSSM.logarithmic_factor: 1.47
-    PSSM.max_distance: 70.0
-    PSSM.normal_bias: 1.06
-    PSSM.pcss_penumbra_size: 56.75
+    PSSM.max_distance: 20.0
+    PSSM.normal_bias: 0.17
+    PSSM.pcss_penumbra_size: 13.43
     PSSM.pcss_search_samples: 25
     PSSM.resolution: 2048
     PSSM.slope_bias: 0.11
-    PSSM.split_count: 2
-    PSSM.sun_distance: 850.0
-    PSSM.use_pcss: True
+    PSSM.split_count: 4
+    PSSM.sun_distance: 150.0
+    PSSM.use_pcss: False
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
     Scattering.ground_fog_factor: 12.22

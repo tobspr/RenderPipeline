@@ -33,7 +33,7 @@ class PSSMCameraRig {
 
         void reparent_to(NodePath &parent);
         const PTA_LMatrix4f &get_mvp_array();
-        const PTA_float &get_rotation_array();
+        const PTA_LVecBase2f &get_nearfar_array();
 
     public:
 
@@ -71,7 +71,7 @@ class PSSMCameraRig {
         NodePath _parent;
 
         PTA_LMatrix4f _camera_mvps;
-        PTA_float _camera_rotations;
+        PTA_LVecBase2f _camera_nearfar;
 
 };
 

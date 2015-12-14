@@ -70,6 +70,9 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         float attenuation = 0;
         vec3 l = vec3(0);
 
+        // not implemented yet
+        vec3 transmittance = vec3(1);
+
         // Special handling for different light types
         if (light_type == LT_POINT_LIGHT) {
             
@@ -86,7 +89,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
             attenuation = get_spotlight_attenuation(l, direction, fov, radius, distance(m.position, light_pos), ies_profile);
         }
 
-        shadingResult += applyLight(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion);
+        shadingResult += applyLight(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion, transmittance);
 
 
     }

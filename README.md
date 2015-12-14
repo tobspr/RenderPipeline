@@ -31,22 +31,6 @@ You should definitely checkout the wiki if you want to find out more about the p
 There is also a page about getting started there: <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Getting%20Started">Getting Started</a>
 
 
-
-### Precompiled builds
-
-If you want to use the C++ modules, but don't want to compile the modules yourself,
-you can use a precompiled build from here:
-
-<a target="_blank" href="https://www.dropbox.com/sh/maxpc6gouqzm9s8/AAAbK05FKpVF8SvT2eBPMpd9a?dl=0
-">Precompiled-Builds on Dropbox</a>
-
-Just copy it over to `Code/Native/RSNative.pyd`, you can run the
-setup with `python setup.py --skip-native` then.
-Those builds are getting uploaded whenever I build the pipeline on my machine, 
-so they should be updated most of the time (*At least 64bit, if you need a fresh
-32bit build, let me know*).
-
-
 ### Reporting Bugs / Contributing
 
 If you find bugs, or find information missing in the wiki, or want to contribute,

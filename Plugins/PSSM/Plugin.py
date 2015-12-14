@@ -62,7 +62,7 @@ class Plugin(BasePlugin):
         # Set inputs
         self._pssm_stage.set_shader_input("pssm_split_count", self.get_setting("split_count"))
         self._pssm_stage.set_shader_input("pssm_mvps", self._rig.get_mvp_array())
-        self._pssm_stage.set_shader_input("pssm_rotations", self._rig.get_rotation_array())
+        self._pssm_stage.set_shader_input("pssm_nearfar", self._rig.get_nearfar_array())
         self._pssm_stage.set_shader_input("pssm_sun_vector", self._pta_sun_vector)
 
     @PluginHook("pre_render_update")

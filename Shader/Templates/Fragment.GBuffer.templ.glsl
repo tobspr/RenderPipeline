@@ -24,6 +24,7 @@ uniform sampler2D p3d_Texture3;
 %INOUT%
 
 uniform vec3 cameraPosition;
+
 void main() {
 
     vec4 sampled_diffuse   = texture(p3d_Texture0, vOutput.texcoord);
@@ -49,6 +50,7 @@ void main() {
     m.metallic = vOutput.material_metallic;
     m.specular = vOutput.material_specular * sampled_specular.x;
     m.roughness = vOutput.material_roughness * sampled_roughness.x;
+    m.translucency = 0.0;
 
     %MATERIAL%
 

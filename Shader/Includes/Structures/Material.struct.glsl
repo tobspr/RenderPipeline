@@ -8,12 +8,12 @@ struct MaterialShaderOutput {
     float roughness;
     float specular;
     float metallic;
+    float translucency;
 };
 
 
 
-// Structure actually stored in the GBuffer, this *may* differ but not necesasrily
-// has to:
+// Structure actually stored in the GBuffer, this *may* differ but not necessarily has to:
 struct Material {
     vec3 basecolor;
     vec3 normal;
@@ -21,5 +21,6 @@ struct Material {
     float roughness;
     float specular;
     float metallic;
+    float translucency;
 };
 

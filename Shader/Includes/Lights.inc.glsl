@@ -42,7 +42,7 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 
 
 // @TODO: Make this method faster
-vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion) {
+vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion, vec3 transmittance) {
 
 
     // Debugging: Fast rendering path
@@ -53,16 +53,24 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
     // TODO: Check if skipping on low attenuation is faster than just shading
     // without any effect. Would look like this: if(attenuation < epsilon) return vec3(0);
 
-    // Skip shadows, shold be faster than evaluating the BRDF on most cards,
+    // Skip shadows, should be faster than evaluating the BRDF on most cards,
     // at least if the shadow distribution is coherent
-    if (shadow < 0.001) 
-        return vec3(0);
+    // HOWEVER: If we are using translucency, we have to also consider shadowed
+    // areas. So for now, this is disabled. If we reenable it, we probably should
+    // also check if translucency is greater than a given epsilon.
+    // if (shadow < 0.001) 
+        // return vec3(0);
 
+
+    // Weight transmittance by the translucency factor
+    transmittance = mix(vec3(1), transmittance, m.translucency);
+
+    // Translucent objects don't recieve shadows, this just makes them look weird.
+    shadow = mix(shadow, 1, saturate(m.translucency));
+
+    // Compute the dot product, for translucent materials we also add a bias
     vec3 h = normalize(l + v);
-
-    // Precomputed dot products
-    float NxL = max(0, dot(m.normal, l));
-    // float NxL = abs(dot(m.normal, l));
+    float NxL = saturate(10.0 * m.translucency + dot(m.normal, l));
     float NxV = max(0, dot(m.normal, v)) + 1e-5;
     float NxH = max(0, dot(m.normal, h));
     float VxH = max(0, dot(v, h));
@@ -89,5 +97,5 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
     #endif  
 
 
-    return (shading_result * light_color) * (attenuation * shadow);
+    return (shading_result * light_color) * (attenuation * shadow) * transmittance;
 }

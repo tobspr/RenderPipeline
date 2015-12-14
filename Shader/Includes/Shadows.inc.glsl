@@ -9,7 +9,7 @@ vec3 project(mat4 mvp, vec3 pos) {
 
 
 
-vec2 find_filter_size(mat4 projection, vec3 light, float sample_radius, float rotation) {
+vec2 find_filter_size(mat4 projection, vec3 light, float sample_radius) {
 
     // Scale y component by the slope
     // light = normalize(light);
