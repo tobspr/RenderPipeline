@@ -45,6 +45,10 @@ class PluginConfig(DebugObject):
         assert self._loaded
         return self._settings
 
+    def get_requires_native(self):
+        """ Returns wheter the plugin requires the native modules """
+        return "requires_native" in self._properties and self._properties["requires_native"]
+
     def get_daytime_settings(self):
         """ Returns a dictionary with all daytime setting handles """
         assert self._loaded
@@ -98,7 +102,8 @@ class PluginConfig(DebugObject):
         parsed_yaml = YAMLEasyLoad(filename)
 
         # Make sure all required properties are set
-        for prop in ["name", "author", "version", "description", "settings", "daytime_settings"]:
+        for prop in ["name", "author", "version", "description", "settings",
+                     "daytime_settings"]:
             if prop not in parsed_yaml:
                 self.error("Missing key in plugin config:", prop)
                 return False

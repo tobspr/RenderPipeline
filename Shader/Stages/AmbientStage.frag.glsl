@@ -117,7 +117,7 @@ void main() {
 
         // Reduce ambient for translucent materials
         BRANCH_TRANSLUCENCY(m)
-            ambient *= saturate(1.5 - m.translucency);
+            ambient *= saturate(1.2 - m.translucency);
         END_BRANCH_TRANSLUCENCY()
 
         #if HAVE_PLUGIN(AO)

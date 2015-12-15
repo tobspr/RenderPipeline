@@ -5,6 +5,7 @@ import importlib
 from direct.stdpy.file import isfile, join
 
 from .BasePluginInterface import BasePluginInterface
+from ..Native import NATIVE_CXX_LOADED
 
 class PluginInterface(BasePluginInterface):
 
@@ -28,6 +29,15 @@ class PluginInterface(BasePluginInterface):
                 # In case the plugin loaded, create a instance of it, register
                 # the settings and initializes it.
                 plugin_instance = plugin_class(self._pipeline)
+
+                # Check if the plugin instance requires the native modules
+                if not NATIVE_CXX_LOADED and plugin_instance.get_config().get_requires_native():
+                    self.error("Disabling plugin " + plugin_instance.get_id() + ", since it "
+                               "requires the C++ modules which are not enabled!")
+                    del plugin_instance
+                    continue
+
+                plugin_instance.init()
                 plugin_instance.get_config().apply_overrides(
                     plugin, self.get_overrides())
                 self._plugin_instances.append(plugin_instance)

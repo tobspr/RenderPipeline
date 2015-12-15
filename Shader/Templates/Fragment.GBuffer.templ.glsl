@@ -32,11 +32,9 @@ void main() {
     vec4 sampled_specular  = texture(p3d_Texture2, vOutput.texcoord);
     vec4 sampled_roughness = texture(p3d_Texture3, vOutput.texcoord);
 
-    sampled_diffuse.xyz = pow(sampled_diffuse.xyz, vec3(1.9));
-
     float dist_to_camera = distance(cameraPosition, vOutput.position);
 
-    float alpha_factor = mix(0.9, 0.1, saturate(dist_to_camera / 40.0) );
+    float alpha_factor = mix(0.99, 0.1, saturate(dist_to_camera / 20.0) );
 
     if (sampled_diffuse.w < alpha_factor) discard;
 

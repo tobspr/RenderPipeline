@@ -214,7 +214,7 @@ void main() {
             vec2 split_near_far = pssm_nearfar[split];
 
             // Bias to move the position "into" the object, prevents artifacts
-            float skin_border_factor = 0.02;
+            float skin_border_factor = 0.005;
 
             // Project the biased position to light space
             vec3 projected_skin = project(mvp, m.position - m.normal * skin_border_factor);

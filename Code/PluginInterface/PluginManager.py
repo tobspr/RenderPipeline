@@ -69,6 +69,13 @@ class PluginManager(DebugObject):
         else:
             self._hooks[hook_name] = [handler]
 
+    def remove_hook_binding(self, hook_name, handler):
+        """ Removes a handler from a hook """
+        if hook_name not in self._hooks:
+            self.error("Attempted to remove hook handler from", hook_name, "but hook is not present!")
+            return
+        self._hooks[hook_name].remove(handler)
+
     def trigger_hook(self, hook_name):
         """ Triggers a hook, executing all handlers attached to that hook """
         if hook_name in self._hooks:

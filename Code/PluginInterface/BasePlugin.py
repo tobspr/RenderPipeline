@@ -30,8 +30,11 @@ class BasePlugin(DebugObject):
 
         # Set a special output color for plugins
         self._set_debug_color("magenta", "bright")
-        self._init_bindings()
         self._load_config()
+
+    def init(self):
+        """ Inits the plugin """
+        self._init_bindings()
 
     def _init_bindings(self):
         """ Binds all hooks marked with @PluginHook """

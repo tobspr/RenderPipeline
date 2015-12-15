@@ -31,8 +31,7 @@ from __future__ import print_function
 
 import sys
 import getpass
-
-
+from random import random, randint
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import Vec3
@@ -73,21 +72,24 @@ class MainApp(ShowBase):
 
         profile = self.render_pipeline.load_ies_profile("Data/IESProfiles/Defined.ies")
 
-        plane = self.loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
-        plane.set_scale(2.0)
-        plane.reparent_to(self.render)
+        # plane = self.loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
+        # plane.set_scale(2.0)
+        # plane.reparent_to(self.render)
 
         # Load some models, most of them are not included in the repository
         # model = self.loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
         # model = loader.loadModel("Models/HDRTest/Scene.bam")
+        # model = loader.loadModel("Models/Head/Scene.bam")
+        # model = loader.loadModel("Models/Head/Hand.bam")
         # model = loader.loadModel("Models/SimpleShapes/Sphere.bam")
         # model = loader.loadModel("Models/SimpleShapes/Wall.bam")
         # model = loader.loadModel("Models/Test.ignore/Statue.bam")
         # model = loader.loadModel("Models/Test.ignore/Car0.bam")
         # model = loader.loadModel("Models/DemoTerrain/Scene.bam")
-        # model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
-        model = self.loader.loadModel("box")
-        model.flatten_strong()
+        # model = loader.loadModel("Models/DemoScene/Scene.bam")
+        model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
+        # model = self.loader.loadModel("panda")
+        # model.flatten_strong()
 
         if False:
             self.render.set_shader_input("roughness", 1.0)
@@ -107,17 +109,22 @@ class MainApp(ShowBase):
         self.render_pipeline.create_default_skybox()
 
         # Add some random lights
-        sqr = 0
+        sqr = 6
         for x in range(sqr):
             for y in range(sqr):
-                light = PointLight()
-                pos_x, pos_y = (x-sqr//2) * 6.0, (y-sqr//2) * 4.0
-                # pos_x, pos_y = 0, 0
-                light.set_pos(Vec3(pos_x, pos_y, 3.0))
-                # light.set_color(Vec3(random(), random(), random())* 1.0)
-                light.set_color(Vec3(3, 3, 3))
-                light.set_radius(5)
-                light.set_ies_profile(profile)
+
+                if randint(0, 1) == 0:
+                    light = PointLight()
+                    continue
+                else:
+                    light = SpotLight()
+                    light.set_direction(0, 0, -1)
+                    light.set_fov(90)
+
+                pos_x, pos_y = (x-sqr//2) * 10.0, (y-sqr//2) * 10.0
+                light.set_pos(Vec3(pos_x, pos_y, 5.0))
+                light.set_color(Vec3(random(), random(), random()) * 2)
+                light.set_radius(12)
                 self.render_pipeline.add_light(light)
 
         if False:
@@ -129,6 +136,18 @@ class MainApp(ShowBase):
             test_light.set_fov(90)
             test_light.set_ies_profile(0)
             self.render_pipeline.add_light(test_light)
+
+        # lights = model.find_all_matches("**/Light*")
+
+        # for light_prefab in lights:
+        #     light = SpotLight()
+        #     light.set_pos(light_prefab.get_pos())
+        #     light.set_radius(17)
+        #     light.set_color(Vec3(1.0, 1.0, 1.3) * 2.0)
+        #     light.set_direction(0, 0, -1)
+        #     light.set_fov(90)
+        #     light.set_ies_profile(profile)
+        #     self.render_pipeline.add_light(light)
 
         # Init movement controller
         self.controller = MovementController(self)

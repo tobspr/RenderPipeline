@@ -39,7 +39,7 @@
         vec2 packed_normal = pack_normal_octrahedron(normal);
 
         // Clamp BaseColor, but only for negative values, we allow values > 1.0
-        vec3 basecolor = max(vec3(0), m.basecolor);
+        vec3 basecolor = pow(max(vec3(0), m.basecolor), vec3(2.2));
 
         // Clamp properties like specular and metallic, which have to be in the
         // 0 ... 1 range

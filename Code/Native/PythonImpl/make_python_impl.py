@@ -32,6 +32,7 @@ from __future__ import print_function
 # Common imports
 import struct
 from panda3d.core import Vec3, PNMImage
+import math
 
 
 class NotTemplatedError(Exception):
