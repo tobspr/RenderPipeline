@@ -2,68 +2,79 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 
-out vec4 result;
-
 uniform samplerBuffer CommandQueue;
 uniform layout(rgba32f) imageBuffer LightData;
 uniform int commandCount;
 
-int readInt(inout int offset) {
-    int val = int(texelFetch(CommandQueue, offset).x);
-    offset += 1;
-    return val;
+// Reads a single float from the data stack
+float read_float(inout int stack_ptr) {
+    return texelFetch(CommandQueue, stack_ptr++).x;
 }
 
-vec4 readVec4(inout int offset) {
-    vec4 val = vec4(
-        texelFetch(CommandQueue, offset).x,
-        texelFetch(CommandQueue, offset+1).x,
-        texelFetch(CommandQueue, offset+2).x,
-        texelFetch(CommandQueue, offset+3).x);
-    offset += 4;
-    return val;
+// Reads a single int from the data stack
+int read_int(inout int stack_ptr) {
+    return int(read_float(stack_ptr));
+}
+
+// Reads a 4-component vector from the data stack
+vec4 read_vec4(inout int stack_ptr) {
+    stack_ptr += 4;
+    return vec4(
+            texelFetch(CommandQueue, stack_ptr - 4).x,
+            texelFetch(CommandQueue, stack_ptr - 3).x,
+            texelFetch(CommandQueue, stack_ptr - 2).x,
+            texelFetch(CommandQueue, stack_ptr - 1).x
+        );
 }
 
 void main() {
 
-    int read_ptr = 0;
-    result = commandCount == 0 ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);
+    // Store a pointer to the current stack index, its passed as a handle to all
+    // read functions
+    int stack_ptr = 0;
 
     // Process each command
-    for (int command_index = 0; command_index < commandCount; command_index++) {
+    for (int command_index = 0; command_index < commandCount; ++command_index) {
+        stack_ptr = command_index * 32;
+        int command_type = read_int(stack_ptr);
 
-        read_ptr = command_index * 32;
+        switch(command_type) {
 
-        int command_type = readInt(read_ptr);
+            // Invalid Command Code
+            case CMD_invalid: break;
 
-        // 0 - Invalid Command
-        if (command_type == CMD_invalid) {
-            continue;
 
-        // 1 - Store Light
-        } else if (command_type == CMD_store_light) {
+            // Store Light
+            case CMD_store_light: {
 
-            int slot = readInt(read_ptr);
-            int offs = slot * 4;
+                // Read the destination slot of the light
+                int slot = read_int(stack_ptr);
+                int offs = slot * 4;
 
-            for (int i = 0; i < 4; ++i) {
                 // Just copy the data over
-                imageStore(LightData, offs + i, readVec4(read_ptr));
+                for (int i = 0; i < 4; ++i) {
+                    imageStore(LightData, offs + i, read_vec4(stack_ptr));
+                }
+                break;
             }
 
-        // 2 - Remove Light
-        } else if (command_type == CMD_remove_light) {
+            // Remove Light
+            case CMD_remove_light: {
 
-            int slot = readInt(read_ptr);
-            int offs = slot * 4;
+                // Read the lights slot position
+                int slot = read_int(stack_ptr);
+                int offs = slot * 4;
 
-            // Just set the data to all zeroes
-            for (int i = 0; i < 4; ++i) {
-                imageStore(LightData, offs + i, vec4(0));               
+                // Just set the data to all zeroes, this indicates a null light
+                for (int i = 0; i < 4; ++i) {
+                    imageStore(LightData, offs + i, vec4(0));               
+                }
+                break;
             }
+            
+            // .. further commands will follow here
         }
 
-        // .. further commands will follow
 
     }
 }
