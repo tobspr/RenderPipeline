@@ -4,7 +4,8 @@ This is the second version of the Pipeline. If you are looking for the first
 version, change to the `master` branch! The master branch was cleaned up a while ago,
 if you are looking for even older versions, checkout the `old_master` branch.
 
-<img src="https://img3.picload.org/image/pwrgpdc/289.png" />
+<img src="http://fs5.directupload.net/images/151218/4c6xflje.png" />
+
 
 ### Core Features
 
@@ -23,13 +24,19 @@ if you are looking for even older versions, checkout the `old_master` branch.
 **Notice**: It seems that the drivers for Intel HD Graphics on Linux are not
 capable of all 4.3 features, so the pipeline is not able to run there!
 
+### Screenshots
+
+<img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
+<img src="http://fs5.directupload.net/images/151122/28c2itvj.png" />
+<img src="http://i.imgur.com/Yn28cUM.png" />
+<img src="https://img3.picload.org/image/pwrgpdc/289.png" />
+
 ### Getting Started / Wiki
 
 You should definitely checkout the wiki if you want to find out more about the pipeline:
 <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki">Render Pipeline WIKI</a>
 
 There is also a page about getting started there: <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Getting%20Started">Getting Started</a>
-
 
 ### Reporting Bugs / Contributing
 
