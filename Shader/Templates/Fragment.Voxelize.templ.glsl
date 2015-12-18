@@ -7,13 +7,8 @@
 #pragma include "Includes/Configuration.inc.glsl"
 
 %INCLUDES%
-
-
 %INOUT%
 
 void main() {
-
     // TODO
-
 }
-

@@ -140,3 +140,8 @@ vec3 blend_soft_light(vec3 base, vec3 blend) {
 vec4 normalize_without_w(vec4 v) {
     return v / length(v.xyz);
 }
+
+// Unpacks a normal from 0 .. 1 range to the -1 .. 1 range
+vec3 unpack_texture_normal(vec3 n) {
+    return fma(n, vec3(2.0), vec3(-1.0));
+}

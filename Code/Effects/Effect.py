@@ -14,7 +14,9 @@ class Effect(DebugObject):
 
     _DEFAULT_OPTIONS = {
         "render_gbuffer": True,
-        "render_shadows": True
+        "render_shadows": True,
+        "alpha_testing": True,
+        "normal_mapping": True
     }
 
     _PASSES = ["GBuffer", "Shadows", "Voxelize"]
