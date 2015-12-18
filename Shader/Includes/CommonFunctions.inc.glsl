@@ -11,6 +11,7 @@ vec3 fix_cubemap_coord(vec3 coord) {
 }
 
 
+// Converts a texture coodinate and face index to a direction vector
 vec3 get_cubemap_coordinate(int face_index, vec2 coord) {
     vec3 baseDir = vec3(0);
     if (face_index == 0) baseDir = vec3(1.0, -coord.y, -coord.x);
@@ -22,7 +23,7 @@ vec3 get_cubemap_coordinate(int face_index, vec2 coord) {
     return normalize(baseDir);
 }
 
-
+// Computes the skydome texcoord based on the pixels view direction
 vec2 get_skydome_coord(vec3 view_dir) {
     float angle = (atan(view_dir.x, view_dir.y) + M_PI) / (2.0 * M_PI);
     return vec2(angle, view_dir.z);
@@ -65,19 +66,19 @@ ivec2 get_bilateral_coord(ivec2 coord) {
     return (coord + 1) / 2 - 1;
 }
 
-
+// Checks if a coordinate exceeds the [0, 1] range
 bool out_of_screen(vec2 tcoord) {
     return tcoord.x < 0.0 || tcoord.y < 0.0 || tcoord.x > 1.0 || tcoord.y > 1.0;    
 }
 
-
+// Finds a tangent and bitangent vector based on a given normal
 void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
     vec3 v0 = abs(normal.z) < 0.99 ? vec3(0, 0, 1) : vec3(0, 1, 0);
     tangent = normalize(cross(v0, normal));
     bitangent = normalize(cross(tangent, normal));
 }
 
-
+// Transforms a given vector to tangent space
 vec3 tangent_to_world(vec3 vec, vec3 tangent)
 {
     vec3 v0 = abs(tangent.z) < 0.99 ? vec3(0, 0, 1) : vec3(1, 0, 0);
@@ -93,7 +94,13 @@ int get_mipmap_count(samplerCube cubemap) {
     return int(1 + floor(log2(cubemap_size)));
 }
 
+// Returns the number of mipmaps of a 2D Texture
+int get_mipmap_count(sampler2D tex) {
+    int tex_size = textureSize(tex, 0).x;
+    return int(1 + floor(log2(tex_size)));
+}
 
+// Converts a normalized spherical coordinate (r = 1) to cartesian coordinates 
 vec3 spherical_to_vector(float theta, float phi) {
     float sin_theta = sin(theta);
     return vec3(
@@ -103,15 +110,14 @@ vec3 spherical_to_vector(float theta, float phi) {
     );
 }
 
-
+// Converts a cartesian coordinate to spherical coordinates
 void vector_to_spherical(vec3 v, out float theta, out float phi, out float radius) {
     radius = sqrt(dot(v, v));
     phi = acos(v.z / radius);
     theta = atan(v.y, v.x) + M_PI; 
 }
 
-
-
+// Converts a given sun azimuth and altitude to a direction vector
 vec3 sun_azimuth_to_angle(float azimuth, float altitude) {
     float theta = (90-altitude) / 180.0 * M_PI;
     float phi = azimuth / 180.0 * M_PI;
@@ -121,6 +127,7 @@ vec3 sun_azimuth_to_angle(float azimuth, float altitude) {
 
 // FROM: https://github.com/mattdesl/glsl-blend-soft-light/blob/master/index.glsl
 // Licensed under the MIT License, see the github repo for more details.
+// Blends a given color soft with the base color
 vec3 blend_soft_light(vec3 base, vec3 blend) {
     return mix(
         sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend), 
@@ -133,4 +140,3 @@ vec3 blend_soft_light(vec3 base, vec3 blend) {
 vec4 normalize_without_w(vec4 v) {
     return v / length(v.xyz);
 }
-

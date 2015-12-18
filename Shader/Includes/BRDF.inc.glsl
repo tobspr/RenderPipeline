@@ -5,35 +5,33 @@
 
 /*
 
-BRDFs from:
-http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
+ BRDFs from:
+ http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
 
-Some also from:
-http://www.trentreed.net/blog/physically-based-shading-and-image-based-lighting/
+ Some also from:
+ http://www.trentreed.net/blog/physically-based-shading-and-image-based-lighting/
 
 */
 
 
+// Lambert BRDF 
 float brdf_lambert(float NxL) {
     return NxL / M_PI;
 }
 
-
 // Proposed by Schlick 94
 vec3 brdf_schlick_fresnel(vec3 f0, float f90, float u)
 {
-    // need to to a max(), produces artifacts otherwise
+    // need to to a max(), produces artifacts otherwise for certain values
     return f0 + ( f90 - f0 ) * pow( max(0, 1.0 - u), 5.0);
 }
 
 
 // BRDF Proposed by Burley
 float brdf_disney_diffuse(float NxV, float NxL, float LxH, float roughness) {
-    
-    // float lin_roughness = roughness;
+
     // In case of squared roughness:
     float lin_roughness = sqrt(roughness);
-
     float energy_bias = mix(0.0, 0.5, lin_roughness);
     float energy_factor = mix(1.0, 1.0 / 1.51, lin_roughness);
     float fd90 = energy_bias + 2.0 * LxH * LxH * lin_roughness;
@@ -42,7 +40,6 @@ float brdf_disney_diffuse(float NxV, float NxL, float LxH, float roughness) {
     float view_scatter = brdf_schlick_fresnel(f0, fd90, NxV).x;
     return light_scatter * view_scatter * energy_factor * NxL / M_PI;
 }
-
 
 float brdf_distribution_blinn(float NxH, float roughness) {
     float r_sq = roughness * roughness;
@@ -55,7 +52,6 @@ float brdf_distribution_beckmann(float NxH, float roughness) {
     float NxH_sq = NxH * NxH;
     return exp( (NxH_sq - 1.0) / (r_cub * NxH_sq) ) / (M_PI * r_cub * NxH_sq * NxH_sq );
 }
-
 
 float brdf_distribution_ggx(float NxH , float roughness)
 {
@@ -70,9 +66,7 @@ float brdf_distribution_ggx(float NxH , float roughness)
         float den = NxH2 * r_sq + (1 - NxH2);
         return ( (NxH > 0.0 ? 1.0 : 0.0) * r_sq) / ( M_PI * den * den );
     #endif
-
 }
-
 
 float brdf_visibility_implicit(float NxL, float NxV) {
     return NxL * NxV;
