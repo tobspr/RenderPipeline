@@ -142,6 +142,62 @@
     }
 
 
+    #ifdef USE_GBUFFER_EXTENSIONS
 
+        uniform GBufferData GBuffer;
+        
+        #pragma include "Includes/PositionReconstruction.inc.glsl"
+
+        float get_depth_at(vec2 coord) {
+            return get_gbuffer_depth(GBuffer, coord);
+        }
+
+        float get_depth_at(ivec2 coord) {
+            return get_gbuffer_depth(GBuffer, coord);
+        }
+
+        vec3 get_view_pos_at(vec2 coord) {
+            return calculate_view_pos(get_depth_at(coord), coord);
+        }
+
+        vec3 get_view_pos_at(ivec2 coord) {
+            vec2 tcoord = (coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+            return get_view_pos_at(tcoord);
+        }
+
+        vec3 get_world_pos_at(vec2 coord) {
+            return calculate_surface_pos(get_depth_at(coord), coord);
+        }
+
+        vec3 get_world_pos_at(ivec2 coord) {
+            vec2 tcoord = (coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
+            return calculate_surface_pos(get_depth_at(tcoord), tcoord);
+        }
+
+        vec3 get_view_normal(ivec2 coord) {
+            vec3 view_pos = get_view_pos_at(coord);
+
+            // Do some work to find a good view normal
+            vec3 dx_px = view_pos - get_view_pos_at(coord + ivec2(1, 0));
+            vec3 dx_py = view_pos - get_view_pos_at(coord + ivec2(0, 1));
+
+            vec3 dx_nx = get_view_pos_at(coord + ivec2(-1, 0)) - view_pos;
+            vec3 dx_ny = get_view_pos_at(coord + ivec2(0, -1)) - view_pos;
+
+            // Find the closest distance in depth
+            vec3 dx_x = abs(dx_px.z) < abs(dx_nx.z) ? vec3(dx_px) : vec3(dx_nx);
+            vec3 dx_y = abs(dx_py.z) < abs(dx_ny.z) ? vec3(dx_py) : vec3(dx_ny);
+
+            return normalize(cross(normalize(dx_x), normalize(dx_y)));
+        }
+
+        vec3 get_view_normal_approx(ivec2 coord) {
+            vec3 view_pos = get_view_pos_at(coord);
+            vec3 dx_x = view_pos - get_view_pos_at(coord + ivec2(1, 0));
+            vec3 dx_y = view_pos - get_view_pos_at(coord + ivec2(0, 1));
+            return normalize(cross(normalize(dx_x), normalize(dx_y)));
+        }
+
+    #endif
 
 #endif // IS_GBUFFER_SHADER

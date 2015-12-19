@@ -20,27 +20,30 @@ uniform sampler2D AmbientOcclusion;
 #endif
 
 
-
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
-
-    #if 0
-        // Show tiles
-        #if IS_SCREEN_SPACE
-            if (int(gl_FragCoord.x) % 16 == 0 || int(gl_FragCoord.y) % 16 == 0) {
-                return vec3(0.005);
-            }
-        #endif
-    #endif
-            
 
     #if DEBUG_MODE
         return vec3(0);
     #endif
 
+    vec3 shadingResult = vec3(0);
+
     // Find per tile lights
     int cellIndex = texelFetch(CellIndices, tile, 0).x;
     int dataOffs = cellIndex * (MAX_LIGHTS_PER_CELL+1);
     int numLights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, dataOffs).x);
+
+    // Debug mode
+    #if 0
+        // Show tiles
+        #if IS_SCREEN_SPACE
+            if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 || int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
+                shadingResult += 0.01;
+            }
+            float light_factor = numLights / float(MAX_LIGHTS_PER_CELL);
+            shadingResult += light_factor;
+        #endif
+    #endif
 
     // Get directional occlusion
     vec4 directional_occlusion = vec4(0);
@@ -50,7 +53,6 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         directional_occlusion = normalize(texelFetch(AmbientOcclusion, coord, 0) * 2.0 - 1.0);
     #endif
 
-    vec3 shadingResult = vec3(0);
 
     // Compute view vector
     vec3 v = normalize(cameraPosition - m.position);

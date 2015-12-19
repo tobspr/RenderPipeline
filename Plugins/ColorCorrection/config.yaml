@@ -10,7 +10,7 @@ settings: !!omap
 
     - tonemap_operator:
         type: enum
-        values: [optimized, reinhard, uncharted2, exponential, srgb, none]
+        values: [optimized, reinhard, uncharted2, exponential, exponential2, srgb, none]
         default: uncharted2
         label: Tonemap Operator
         shader_runtime: true

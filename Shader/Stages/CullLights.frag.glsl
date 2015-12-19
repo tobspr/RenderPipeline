@@ -44,7 +44,7 @@ void main() {
     ivec2 precomputeSize = ivec2(LC_TILE_AMOUNT_X, LC_TILE_AMOUNT_Y);
 
     // Compute aspect ratio
-    float aspect = float(precomputeSize.y) / precomputeSize.x;
+    float aspect = float(WINDOW_HEIGHT) / WINDOW_WIDTH;
     vec3 aspect_mul = vec3(1, aspect, 1 );
 
     // Increase the frustum size by a small bit, because we trace at the corners,
@@ -95,9 +95,16 @@ void main() {
         // Spot Lights
         } else if (light_type == LT_SPOT_LIGHT) {
 
-            visible = true;
+            float radius = get_spotlight_radius(light_data);
+            vec3 direction = get_spotlight_direction(light_data);
+            vec3 direction_view = world_normal_to_view(direction);
+            float fov = get_spotlight_fov(light_data);
 
-            // TODO: Implement me
+            visible =            viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction_view, radius, fov, ray_dir_tl, min_distance, max_distance);
+            visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction, radius, fov, ray_dir_tr, min_distance, max_distance);
+            visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction, radius, fov, ray_dir_bl, min_distance, max_distance);
+            visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction, radius, fov, ray_dir_br, min_distance, max_distance);
+
 
         }
 

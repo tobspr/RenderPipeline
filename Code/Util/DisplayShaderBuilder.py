@@ -97,11 +97,13 @@ class DisplayShaderBuilder(object):
         # Buffer Textures
         elif texture_type == Texture.TT_buffer_texture:
 
+            range_check = lambda s: "if (int_index < textureSize(p3d_Texture0)) {" + s + "} else { result = vec3(1.0, 0.6, 0.2);};"
+
             if comp_type in float_types:
-                return "result = texelFetch(p3d_Texture0, int_index).xyz;", "samplerBuffer"
+                return range_check("result = texelFetch(p3d_Texture0, int_index).xyz;"), "samplerBuffer"
 
             elif comp_type in int_types:
-                return "result = texelFetch(p3d_Texture0, int_index).xyz / 10.0;", "isamplerBuffer"
+                return range_check("result = texelFetch(p3d_Texture0, int_index).xyz / 10.0;"), "isamplerBuffer"
 
         # 3D Textures
         elif texture_type == Texture.TT_3d_texture:

@@ -107,7 +107,11 @@ class RenderPipeline(DebugObject):
         skybox = self._com_resources.load_default_skybox()
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
-        self.set_effect(skybox, "Effects/Skybox.yaml", {"render_shadows": False}, 100)
+        self.set_effect(skybox, "Effects/Skybox.yaml", {
+            "render_shadows": False,
+            "alpha_testing": False,
+            "normal_mapping": False,
+        }, 1000)
         return skybox
 
     def get_plugin_mgr(self):

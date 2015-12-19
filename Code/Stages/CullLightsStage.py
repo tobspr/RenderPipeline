@@ -14,7 +14,7 @@ class CullLightsStage(RenderStage):
 
     required_pipes = ["CellListBuffer"]
     required_inputs = ["AllLightsData", "maxLightIndex", "mainCam",
-                       "currentViewMatZup", "currentProjMat"]
+                       "currentViewMatZup", "currentProjMat", "mainRender"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CullLightsStage", pipeline)

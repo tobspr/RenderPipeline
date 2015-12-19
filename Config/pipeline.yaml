@@ -15,7 +15,7 @@ settings:
         # that tile are accumulated. You can adjust the tile size here (in pixels),
         # optimal is a tile size which is not too big (to avoid unecessary shading),
         # but also not too small (to avoid excessive culling).
-        culling_grid_size_x: 16
+        culling_grid_size_x: 32
         culling_grid_size_y: 16
 
         # The view frustum is additionally divived into slices, to be able to do
@@ -28,7 +28,7 @@ settings:
         # distance, no lights are rendered anymore. If you choose a lower 
         # distance, this *can* positively impact performance, but you should not
         # set it too low, to avoid getting artifacts.
-        culling_max_distance: 80.0
+        culling_max_distance: 140.0
 
 
 

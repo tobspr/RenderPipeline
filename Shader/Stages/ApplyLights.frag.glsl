@@ -21,13 +21,8 @@ void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
     float depth = get_gbuffer_depth(GBuffer, coord);
-
-    // ivec3 tile = getCellIndex(coord, depth);
-
-
     Material m = unpack_material(GBuffer);
-
-    ivec3 tile = getCellIndex(coord, distance(cameraPosition, m.position));
+    ivec3 tile = get_lc_cell_index(coord, distance(cameraPosition, m.position));
 
     if (tile.z >= LC_TILE_SLICES) {
         result = vec4(0);

@@ -2,25 +2,28 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/LightCulling.inc.glsl"
-#pragma include "Includes/GBuffer.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 
-out vec4 result;
+#define USE_GBUFFER_EXTENSIONS 1
+#pragma include "Includes/GBuffer.inc.glsl"
 
-uniform GBufferData GBuffer;
-uniform writeonly image2DArray cellGridFlags;
-
+uniform layout(r8) image2DArray cellGridFlags;
 uniform vec3 cameraPosition;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    float depth = get_gbuffer_depth(GBuffer, coord);
 
-    vec3 surf_pos = calculate_surface_pos(depth, vec2(coord) / SCREEN_SIZE);
+    // Get the distance to the camera
+    vec3 surf_pos = get_world_pos_at(coord);
     float surf_dist = distance(cameraPosition, surf_pos);
 
-    ivec3 tile = getCellIndex(coord, surf_dist);
-    imageStore(cellGridFlags, tile, vec4(1));
-    result.xyz = vec3(tile / vec3(LC_TILE_AMOUNT_X, LC_TILE_AMOUNT_Y, LC_TILE_SLICES));
-    result.w = 1.0;
+    // Find the affected cell
+    ivec3 tile = get_lc_cell_index(coord, surf_dist);
+
+    // Skip cells which are out of bounds
+    if (tile.z < LC_TILE_SLICES) {
+
+        // Mark the cell as used
+        imageStore(cellGridFlags, tile, vec4(1));
+    }
 }

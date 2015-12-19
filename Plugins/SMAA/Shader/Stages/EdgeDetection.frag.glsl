@@ -29,5 +29,4 @@ void main() {
         // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
         result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, SRGBSource);
     #endif
-
 }

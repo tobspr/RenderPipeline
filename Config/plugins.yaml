@@ -45,12 +45,12 @@ overrides:
     ColorCorrection.darkness_adaption_rate: 1.84
     ColorCorrection.exponential_factor: 1.01
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.15
+    ColorCorrection.film_grain_strength: 0.25
     ColorCorrection.max_exposure: 0.99
     ColorCorrection.min_exposure: 0.1111
     ColorCorrection.reinhard_version: rgb
-    ColorCorrection.sharpen_strength: 0.3
-    ColorCorrection.tonemap_operator: uncharted2
+    ColorCorrection.sharpen_strength: 0.3111
+    ColorCorrection.tonemap_operator: exponential
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22
     ColorCorrection.uc2t_toe_denumerator: 0.3
@@ -58,17 +58,18 @@ overrides:
     ColorCorrection.uc2t_toe_strength: 0.2
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
+    ColorCorrection.use_sharpen: True
     ColorCorrection.vignette_strength: 0.1333
     PSSM.filter_radius: 1.32
     PSSM.filter_sample_count: 29
-    PSSM.fixed_bias: 0.0
+    PSSM.fixed_bias: 0.3556
     PSSM.logarithmic_factor: 1.47
-    PSSM.max_distance: 20.0
-    PSSM.normal_bias: 0.17
+    PSSM.max_distance: 157.4
+    PSSM.normal_bias: 0.11
     PSSM.pcss_penumbra_size: 13.43
     PSSM.pcss_search_samples: 25
     PSSM.resolution: 2048
-    PSSM.slope_bias: 0.11
+    PSSM.slope_bias: 0.67
     PSSM.split_count: 4
     PSSM.sun_distance: 150.0
     PSSM.use_pcss: False

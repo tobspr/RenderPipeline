@@ -18,6 +18,7 @@ Fragment.GBuffer:
             m.specular = 0.0;
             m.metallic = 0.0;
             m.roughness = 1.0;
+            m.translucency = 0.0;
             m.normal = vOutput.normal;
 
 Fragment.Shadows:

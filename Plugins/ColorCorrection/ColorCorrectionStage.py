@@ -7,7 +7,8 @@ from panda3d.core import Texture, Vec4
 class ColorCorrectionStage(RenderStage):
 
     required_pipes = ["ShadedScene"]
-    required_inputs = ["TimeOfDay", "mainCam", "mainRender", "cameraPosition", "frameDelta"]
+    required_inputs = ["TimeOfDay", "mainCam", "mainRender", "cameraPosition", "frameDelta",
+                       "PrecomputedGrain"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ColorCorrectionStage", pipeline)
@@ -70,6 +71,8 @@ class ColorCorrectionStage(RenderStage):
             self._target.prepare_offscreen_buffer()
 
             self._target_sharpen = self._create_target("SharpenFilter")
+            # We don't have a color attachment, but still want to write color
+            self._target_sharpen.set_color_write(True)
             self._target_sharpen.prepare_offscreen_buffer()
             self._target_sharpen.make_main_target()
 
@@ -82,6 +85,7 @@ class ColorCorrectionStage(RenderStage):
 
         else:
             # Make the main target the only target
+            self._target.set_color_write(True)
             self._target.prepare_offscreen_buffer()
             self._target.make_main_target()
 

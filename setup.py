@@ -194,6 +194,9 @@ if __name__ == "__main__":
     print_step("Filtering default cubemap ..")
     exec_python_file("Data/DefaultCubemap/filter.py")
 
+    print_step("Precomputing film grain .. ")
+    exec_python_file("Data/PrecomputedGrain/generate.py")
+
     ask_download_samples()
 
     # -- Further setup code follows here --

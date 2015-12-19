@@ -14,8 +14,12 @@ class FinalStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("FinalStage")
+
+        # We don't have a color attachment, but still want to write color
+        self._target.set_color_write(True)
         self._target.prepare_offscreen_buffer()
         self._target.make_main_target()
+
 
     def set_shaders(self):
         self._target.set_shader(self._load_shader("Stages/FinalStage.frag"))

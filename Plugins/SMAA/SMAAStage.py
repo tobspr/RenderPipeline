@@ -10,7 +10,8 @@ class SMAAStage(RenderStage):
     """ This stage does the actual SMAA """
 
     required_pipes = ["ShadedScene", "GBuffer"]
-    required_inputs = ["mainCam", "mainRender", "cameraPosition", "TimeOfDay"]
+    required_inputs = ["mainCam", "mainRender", "cameraPosition", "TimeOfDay",
+                        "currentProjMat"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "SMAAStage", pipeline)

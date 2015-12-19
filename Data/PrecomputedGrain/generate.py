@@ -1,15 +1,20 @@
 
 
+grain_v_shader = """
+#version 400
 
-/*
+in vec4 p3d_Vertex;
+out vec2 texcoord;
 
-Noise Functions from:
-https://github.com/hughsk/glsl-noise
+void main() {
+    gl_Position = vec4(p3d_Vertex.x, p3d_Vertex.y, 0, 1);
+    texcoord = fma(p3d_Vertex.xy, vec2(0.5), vec2(0.5));
+}
+"""
 
-Check out the repository for a copy of the license:
-https://github.com/hughsk/glsl-noise/blob/master/LICENSE
+grain_f_shader = """
+#version 400
 
-*/
 
 vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
@@ -185,17 +190,51 @@ float rand(vec2 co){
 }
 
 
+float grain(vec2 texCoord, float frame) {
 
-uniform sampler2D PrecomputedGrain;
+  vec2 resolution = vec2(1920, 1080);
 
-float grain(vec2 coord, float frame) {
-
-  vec2 scaled_coord = coord * SCREEN_SIZE / 1024.0;
-  float frame_factor = mod(frame, 3.5);
-  vec4 f0 = textureLod(PrecomputedGrain, scaled_coord + vec2(12.0*frame_factor, 0), 0);
-  vec4 f1 = textureLod(PrecomputedGrain, scaled_coord + vec2(0, 5.0*frame_factor), 0);
-  vec4 f2 = mix(f0, f1, mod(frame*12.0, 1.0));
-  float mod_factor = mod(frame * 42.0, 1.0);
-  return mix(f2.x, f2.y, mod_factor) - 0.25;
+    vec2 mult = texCoord * resolution;
+    float initial_offset = rand(texCoord);
+    float offset = snoise3D(vec3(texCoord.yx * resolution + texCoord.x * 1112.0 + texCoord.y * 1891.0 + initial_offset * 2000.0, mod(frame,300.0) ))*0.5 + 0.5;
+    float n1 = offset;
+    return n1 * 0.5 + 0.5;
 }
 
+in vec2 texcoord;
+out vec4 result;
+
+void main() {
+    result.x = grain(texcoord, 50.0);
+    result.y = grain(texcoord, 100.0);
+    result.z = grain(texcoord, 150.0);
+    result.w = grain(texcoord, 200.0);
+
+}
+"""
+
+
+import sys
+sys.path.insert(0, "../../")
+
+
+from panda3d.core import *
+loadPrcFileData("", "textures-power-2 none")
+loadPrcFileData("", "window-type offscreen")
+loadPrcFileData("", "win-size 100 100")
+
+import direct.directbase.DirectStart
+from Code.Globals import Globals
+from Code.RenderTarget import RenderTarget
+Globals.load(base)
+
+
+target = RenderTarget()
+target.set_size(1024, 1024)
+target.add_color_texture(bits=8)
+target.prepare_offscreen_buffer()
+target.set_shader(Shader.make(Shader.SL_GLSL, grain_v_shader, grain_f_shader))
+base.graphicsEngine.render_frame()
+
+base.graphicsEngine.extractTextureData(target["color"], base.win.get_gsg())
+target["color"].write("grain.png")

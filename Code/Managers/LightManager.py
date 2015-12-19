@@ -42,8 +42,8 @@ class LightManager(DebugObject):
         """ Inits the common defines """
         define = self._pipeline.get_stage_mgr().define
 
-        define("LC_TILE_SIZE_X", self._pipeline.get_setting("lighting.culling_grid_size_x"))
-        define("LC_TILE_SIZE_Y", self._pipeline.get_setting("lighting.culling_grid_size_y"))
+        define("LC_TILE_SIZE_X", self._tile_size.x)
+        define("LC_TILE_SIZE_Y", self._tile_size.y)
         define("LC_TILE_AMOUNT_X", self._num_tiles.x)
         define("LC_TILE_AMOUNT_Y", self._num_tiles.y)
         define("LC_TILE_SLICES", self._pipeline.get_setting("lighting.culling_grid_slices"))
@@ -100,7 +100,7 @@ class LightManager(DebugObject):
 
         self._tile_size = LVecBase2i(
             self._pipeline.get_setting("lighting.culling_grid_size_x"),
-            self._pipeline.get_setting("lighting.culling_grid_size_x"))
+            self._pipeline.get_setting("lighting.culling_grid_size_y"))
         num_tiles_x = int(math.ceil(Globals.resolution.x /
                                     float(self._tile_size.x)))
         num_tiles_y = int(math.ceil(Globals.resolution.y /

@@ -28,6 +28,8 @@
 
 // Optionally enable smaa predication
 #define SMAA_PREDICATION 1
+#define SMAA_PREDICATION_SCALE 3.0
+#define SMAA_PREDICATION_THRESHOLD 0.00001
 
 // SMAA defines its own saturate, make sure we don't run into conflicts
 #ifdef saturate
