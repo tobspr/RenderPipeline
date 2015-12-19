@@ -5,7 +5,10 @@
 
 
 #define LIGHT_CULLING_DIST LC_MAX_DISTANCE
-#define SLICE_POW_FACTOR 1
+
+// Controls the exponential factor, values > 1 produce a distribution closer to
+// the camera, values < 1 produce a ditsribution which is further away from the camera.
+#define SLICE_POW_FACTOR 1.0
 
 int get_slice_from_distance(float dist) {
     return int(pow(dist / LIGHT_CULLING_DIST, SLICE_POW_FACTOR) * LC_TILE_SLICES);
@@ -20,7 +23,6 @@ ivec3 get_lc_cell_index(ivec2 coord, float surface_distance) {
     ivec2 tile = coord / ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
     return ivec3(tile, get_slice_from_distance(surface_distance));
 }
-
 
 // Interesects a sphere with a ray
 // https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
@@ -41,12 +43,10 @@ bool ray_sphere_intersection(vec3 sphere_pos, float sphere_radius, vec3 ray_star
     return root > 0; // Can be >= 0 to include tangents as well.
 }
 
-
 // Intersect a sphere with a ray
 bool viewspace_ray_sphere_intersection(vec3 sphere_pos, float sphere_radius, vec3 ray_dir, out float min_dist, out float max_dist) {
     return ray_sphere_intersection(sphere_pos, sphere_radius, vec3(0), ray_dir, min_dist, max_dist);
 }
-
 
 // Intersect a sphere with a ray, given a minimum and maximum ray distance
 bool viewspace_ray_sphere_distance_intersection(vec3 sphere_pos, float sphere_radius, vec3 ray_dir, float tile_start, float tile_end) {

@@ -11,6 +11,7 @@ class RPLight : public ReferenceCount {
     PUBLISHED:
 
         enum LightType {
+            LT_empty = 0,
             LT_point_light = 1,
             LT_spot_light = 2,
         };

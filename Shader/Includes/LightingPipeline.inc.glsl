@@ -91,7 +91,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
             attenuation = get_spotlight_attenuation(l, direction, fov, radius, distance(m.position, light_pos), ies_profile);
         }
 
-        shadingResult += applyLight(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion, transmittance);
+        shadingResult += apply_light(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion, transmittance);
 
 
     }

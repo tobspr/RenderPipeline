@@ -18,7 +18,7 @@ from ..Stages.FinalStage import FinalStage
 from ..Stages.DownscaleZStage import DownscaleZStage
 
 from ..GPUCommandQueue import GPUCommandQueue
-from ..Native import LightStorage
+from ..Native import LightStorage, PointLight
 
 
 class LightManager(DebugObject):
@@ -48,6 +48,12 @@ class LightManager(DebugObject):
         define("LC_TILE_AMOUNT_Y", self._num_tiles.y)
         define("LC_TILE_SLICES", self._pipeline.get_setting("lighting.culling_grid_slices"))
         define("LC_MAX_DISTANCE", self._pipeline.get_setting("lighting.culling_max_distance"))
+
+        # Register all light types as defines
+        for attr in dir(PointLight):
+            if attr.startswith("LT_"):
+                attr_value = getattr(PointLight, attr)
+                define(attr.upper(), attr_value)
 
     def add_light(self, light):
         """ Adds a new light """

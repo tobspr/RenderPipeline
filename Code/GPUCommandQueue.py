@@ -61,7 +61,6 @@ class GPUCommandQueue(DebugObject):
     def _register_defines(self):
         """ Registers all the command types as defines so they can be used
         in a shader later on """
-
         for attr in dir(GPUCommand):
             if attr.startswith("CMD_"):
                 attr_val = getattr(GPUCommand, attr)

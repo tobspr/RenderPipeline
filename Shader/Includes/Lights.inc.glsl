@@ -5,49 +5,37 @@
 #pragma include "Includes/BRDF.inc.glsl"
 #pragma include "Includes/IESLighting.inc.glsl"
 
-
-float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profile) {
-
-    // return step(d, r);
-
-    // https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
-    // Inverse falloff
-    // float attenuation = 1.0 / (1.0 + 2*dist/radius + (dist*dist)/(radius*radius)); 
-
+// Computes the quadratic attenuation curve
+float attenuation_curve(float dist, float radius) {
+    float lin_att = 1.0 - saturate(dist / radius);
     float d_by_r = dist / radius + 1;
-    float attenuation = 1 / (d_by_r * d_by_r);
+    return lin_att / max(0.001, d_by_r * d_by_r) * M_PI;
+}
 
-    // Cut light transition starting at 80% because the curve is exponential and never really gets 0
-    // float cutoff = r * 0.7;
-    // attenuation *= 1.0 - saturate((d / cutoff) - 1.0) * (0.7 / 0.3);
-
-    float linear = 1.0 - saturate(dist / radius);
-
-    // return attenuation * linear;
-    return max(0.0, attenuation * linear) * get_ies_factor(l, ies_profile);
+// Computes the attenuation for a point light
+float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profile) {
+    float attenuation = attenuation_curve(dist, radius);
+    return attenuation * get_ies_factor(l, ies_profile);
 } 
 
-
+// Computes the attenuation for a spot light
 float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist, int ies_profile) {
-
-    // float lin_attenuation = get_pointlight_attenuation(l, radius, dist, -1);
-    float lin_attenuation = 1.0 - saturate(dist / radius);
+    float dist_attenuation = attenuation_curve(dist, radius);
     float angle = acos(dot(l, -light_dir));
-    float angle_factor = 1 - saturate(angle / (0.5*fov) );
-
-    angle_factor *= angle_factor;
-
-    return lin_attenuation * get_ies_factor(ies_profile, 0.5*angle, 0);
+    float angle_factor = attenuation_curve(angle, fov);
+    float ies_factor =  get_ies_factor(ies_profile, 0.5*angle, 0);
+    return angle_factor * dist_attenuation * ies_factor;
 }
 
 
+// Computes a lights influence
 // @TODO: Make this method faster
-vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion, vec3 transmittance) {
+vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion, vec3 transmittance) {
 
 
     // Debugging: Fast rendering path
     #if 0
-        // return max(0, dot(m.normal, l)) * lightColor * attenuation * m.basecolor;
+        return max(0, dot(m.normal, l)) * light_color * attenuation * m.basecolor;
     #endif
 
     // TODO: Check if skipping on low attenuation is faster than just shading
@@ -60,7 +48,6 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
     // also check if translucency is greater than a given epsilon.
     // if (shadow < 0.001) 
         // return vec3(0);
-
 
     // Weight transmittance by the translucency factor
     transmittance = mix(vec3(1), transmittance, m.translucency);
@@ -90,12 +77,11 @@ vec3 applyLight(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
 
         // Compute lighting for bent normal
-        float occlusion_factor = saturate(dot(vec4(l, 1), directional_occlusion));
+        float occlusion_factor = saturate(dot(vec4(l, 1.0), directional_occlusion));
         occlusion_factor = pow(occlusion_factor, 3.0);
         shading_result *= occlusion_factor;
     
     #endif  
-
 
     return (shading_result * light_color) * (attenuation * shadow) * transmittance;
 }
