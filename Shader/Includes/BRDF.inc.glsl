@@ -55,17 +55,9 @@ float brdf_distribution_beckmann(float NxH, float roughness) {
 
 float brdf_distribution_ggx(float NxH , float roughness)
 {
-    #if 1
-        float r_sq = roughness * roughness;
-        float f = (NxH * r_sq - NxH) * NxH + 1;
-        return r_sq / (f * f);
-    #else
-        // TODO: Evaluate if this is better / worse
-        float r_sq = roughness * roughness;
-        float NxH2 = NxH * HxH;
-        float den = NxH2 * r_sq + (1 - NxH2);
-        return ( (NxH > 0.0 ? 1.0 : 0.0) * r_sq) / ( M_PI * den * den );
-    #endif
+    float r_sq = roughness * roughness;
+    float f = (NxH * r_sq - NxH) * NxH + 1;
+    return r_sq / (f * f);
 }
 
 float brdf_visibility_implicit(float NxL, float NxV) {

@@ -15,54 +15,54 @@ uniform samplerBuffer AllLightsData;
 
 uniform vec3 cameraPosition;
 
+// Use ambient occlusion data, but only if we work in scren space, and only if
+// the plugin is enabled
 #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
-uniform sampler2D AmbientOcclusion;
+    uniform sampler2D AmbientOcclusion;
 #endif
 
-
+// Shades the material from the per cell light buffer
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     #if DEBUG_MODE
         return vec3(0);
     #endif
 
-    vec3 shadingResult = vec3(0);
+    vec3 shading_result = vec3(0);
 
     // Find per tile lights
-    int cellIndex = texelFetch(CellIndices, tile, 0).x;
-    int dataOffs = cellIndex * (MAX_LIGHTS_PER_CELL+1);
-    int numLights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, dataOffs).x);
+    int cell_index = texelFetch(CellIndices, tile, 0).x;
+    int data_offs = cell_index * (MAX_LIGHTS_PER_CELL+1);
+    int num_lights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, data_offs).x);
 
-    // Debug mode
-    #if 0
+    // Debug mode, show tile bounds
+    #if 1
         // Show tiles
         #if IS_SCREEN_SPACE
             if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 || int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
-                shadingResult += 0.01;
+                shading_result += 0.01;
             }
-            float light_factor = numLights / float(MAX_LIGHTS_PER_CELL);
-            shadingResult += light_factor;
+            float light_factor = num_lights / float(MAX_LIGHTS_PER_CELL);
+            shading_result += ( (tile.z + 1) % 2) * 0.01;
+            // shading_result += light_factor;
         #endif
     #endif
 
     // Get directional occlusion
     vec4 directional_occlusion = vec4(0);
-
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
         ivec2 coord = ivec2(gl_FragCoord.xy);
         directional_occlusion = normalize(texelFetch(AmbientOcclusion, coord, 0) * 2.0 - 1.0);
     #endif
 
-
     // Compute view vector
     vec3 v = normalize(cameraPosition - m.position);
-
         
     // Iterate over all lights
-    for (int i = 0; i < numLights; i++) {
+    for (int i = 0; i < num_lights; i++) {
 
         // Fetch light ID
-        int light_offs = texelFetch(PerCellLights, dataOffs + i + 1).x * 4;
+        int light_offs = texelFetch(PerCellLights, data_offs + i + 1).x * 4;
 
         // Fetch per light packed data
         LightData light_data = read_light_data(AllLightsData, light_offs);
@@ -76,25 +76,28 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         vec3 transmittance = vec3(1);
 
         // Special handling for different light types
-        if (light_type == LT_POINT_LIGHT) {
-            
-            float radius = get_pointlight_radius(light_data);
-            l = normalize(light_pos - m.position);
-            attenuation = get_pointlight_attenuation(l, radius, distance(m.position, light_pos), ies_profile);
+        // TODO: Remove branches, by using seperate lists. Should be way faster
+        switch(light_type) {
 
-        } else if (light_type == LT_SPOT_LIGHT) {
-            
-            float radius = get_spotlight_radius(light_data);
-            float fov = get_spotlight_fov(light_data);
-            vec3 direction = get_spotlight_direction(light_data);
-            l = normalize(light_pos - m.position);
-            attenuation = get_spotlight_attenuation(l, direction, fov, radius, distance(m.position, light_pos), ies_profile);
+            case LT_POINT_LIGHT: {
+                float radius = get_pointlight_radius(light_data);
+                l = normalize(light_pos - m.position);
+                attenuation = get_pointlight_attenuation(l, radius, distance(m.position, light_pos), ies_profile);
+                break;
+            } 
+            case LT_SPOT_LIGHT: {
+                
+                float radius = get_spotlight_radius(light_data);
+                float fov = get_spotlight_fov(light_data);
+                vec3 direction = get_spotlight_direction(light_data);
+                l = normalize(light_pos - m.position);
+                attenuation = get_spotlight_attenuation(l, direction, fov, radius, distance(m.position, light_pos), ies_profile);
+                break;
+            }
         }
 
-        shadingResult += apply_light(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion, transmittance);
-
-
+        shading_result += apply_light(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion, transmittance);
     }
     
-    return shadingResult;
+    return shading_result;
 }

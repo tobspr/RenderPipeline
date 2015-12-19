@@ -4,18 +4,21 @@
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 
 
-#define LIGHT_CULLING_DIST LC_MAX_DISTANCE
-
-// Controls the exponential factor, values > 1 produce a distribution closer to
-// the camera, values < 1 produce a ditsribution which is further away from the camera.
-#define SLICE_POW_FACTOR 1.0
+// Controls the exponential factor, values < 1 produce a distribution closer to
+// the camera, values > 1 produce a ditsribution which is further away from the camera.
+#define SLICE_EXP_FACTOR 3.0
 
 int get_slice_from_distance(float dist) {
-    return int(pow(dist / LIGHT_CULLING_DIST, SLICE_POW_FACTOR) * LC_TILE_SLICES);
+    float flt_dist = dist / LC_MAX_DISTANCE;
+    return int(log(flt_dist * SLICE_EXP_FACTOR + 1.0) / log(1.0 + SLICE_EXP_FACTOR) * LC_TILE_SLICES);
+    // return int(pow(dist / LC_MAX_DISTANCE, SLICE_POW_FACTOR) * LC_TILE_SLICES);
 }
 
 float get_distance_from_slice(int slice) {
-    return pow(slice / float(LC_TILE_SLICES), 1.0 / SLICE_POW_FACTOR) * LIGHT_CULLING_DIST;
+    float flt_dist = slice / float(LC_TILE_SLICES) * log(1.0 + SLICE_EXP_FACTOR);
+    float flt_exp = (exp(flt_dist) - 1.0) / SLICE_EXP_FACTOR;
+    return flt_exp * LC_MAX_DISTANCE;
+    // return pow(slice / float(LC_TILE_SLICES), 1.0 / SLICE_EXP_FACTOR) * LC_MAX_DISTANCE;
 }
 
 // Converts a coordinate and distance to the appropriate cell index
