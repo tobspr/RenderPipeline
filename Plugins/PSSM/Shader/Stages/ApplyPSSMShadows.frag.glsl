@@ -235,7 +235,7 @@ void main() {
             if (skin_ref_depth < shadow_sample) distance_through_medium = 0.0;
         
             // Fetch the skin transmittance
-            transmittance = SkinTransmittance(distance_through_medium);
+            transmittance = skin_transmittance(distance_through_medium);
 
         END_BRANCH_TRANSLUCENCY()
     }

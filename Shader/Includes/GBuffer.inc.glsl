@@ -31,7 +31,7 @@
         
         // Compute material properties
         vec3 normal = normalize(m.normal);
-        vec2 packed_normal = pack_normal_octrahedron(normal);
+        vec2 packed_normal = pack_normal_octahedron(normal);
         vec2 velocity = compute_velocity();
 
         // Clamp BaseColor, but only for negative values, we allow values > 1.0
@@ -96,7 +96,7 @@
         // vec3 raw_normal = textureLod(data.Data1, float_coord, 0).xyz;
         // return normal_unquantization(raw_normal);
         vec2 packed_normal = textureLod(data.Data1, float_coord, 0).xy;
-        return unpack_normal_octrahedron(packed_normal);
+        return unpack_normal_octahedron(packed_normal);
     }
 
     // Returns the world space normal at a given texcoord
@@ -104,7 +104,7 @@
         // vec3 raw_normal = texelFetch(data.Data1, coord, 0).xyz;
         // return normal_unquantization(raw_normal); 
         vec2 packed_normal = texelFetch(data.Data1, coord, 0).xy;
-        return unpack_normal_octrahedron(packed_normal);
+        return unpack_normal_octahedron(packed_normal);
     }
 
     // Returns the velocity at a given coordinate
@@ -125,7 +125,7 @@
         m.position  = get_gbuffer_position(data, coord);
         m.basecolor = data0.xyz;
         m.roughness = max(0.002, data0.w);
-        m.normal    = unpack_normal_octrahedron(data1.xy);
+        m.normal    = unpack_normal_octahedron(data1.xy);
         m.metallic  = data1.z;
         m.specular  = data1.w;
         m.translucency = data2.z;

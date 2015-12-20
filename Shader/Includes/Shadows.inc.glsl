@@ -1,14 +1,12 @@
 #pragma once
 
-
-vec3 project(mat4 mvp, vec3 pos) {
-    vec4 projected = mvp * vec4(pos, 1);
+// Projects a point using the given mvp
+vec3 project(mat4 mvp, vec3 p) {
+    vec4 projected = mvp * vec4(p, 1);
     return fma(projected.xyz / projected.w, vec3(0.5), vec3(0.5));
 }
 
-
-
-
+// Given a shadow mvp matrix and the light vector, finds an appropriate filter size
 vec2 find_filter_size(mat4 projection, vec3 light, float sample_radius) {
 
     // Scale y component by the slope
@@ -37,9 +35,6 @@ vec2 find_filter_size(mat4 projection, vec3 light, float sample_radius) {
 
 }
 
-
-
-
 // http://the-witness.net/news/2013/09/shadow-mapping-summary-part-1/
 // Returns the normal and light dependent bias
 vec2 get_shadow_bias(vec3 n, vec3 l) {
@@ -49,7 +44,7 @@ vec2 get_shadow_bias(vec3 n, vec3 l) {
     return vec2(offset_scale_n, min(2, offset_scale_l));
 }
 
-
+// Offsets a position based on slope and normal
 vec3 get_biased_position(vec3 pos, float slope_bias, float normal_bias, vec3 normal, vec3 light) {
     vec2 offsets = get_shadow_bias(normal, light);
     pos += normal * offsets.x * normal_bias;

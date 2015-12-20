@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"
 #pragma include "Includes/LightCulling.inc.glsl"
@@ -36,7 +34,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     int num_lights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, data_offs).x);
 
     // Debug mode, show tile bounds
-    #if 1
+    #if 0
         // Show tiles
         #if IS_SCREEN_SPACE
             if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 || int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
@@ -77,6 +75,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
         // Special handling for different light types
         // TODO: Remove branches, by using seperate lists. Should be way faster
+        // since we avoid branching.
         switch(light_type) {
 
             case LT_POINT_LIGHT: {
@@ -85,8 +84,8 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
                 attenuation = get_pointlight_attenuation(l, radius, distance(m.position, light_pos), ies_profile);
                 break;
             } 
-            case LT_SPOT_LIGHT: {
-                
+
+            case LT_SPOT_LIGHT: {    
                 float radius = get_spotlight_radius(light_data);
                 float fov = get_spotlight_fov(light_data);
                 vec3 direction = get_spotlight_direction(light_data);

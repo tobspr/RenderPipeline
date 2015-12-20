@@ -138,7 +138,7 @@ vec3 brdf_fresnel(vec3 specular, float VxH, float NxV, float LxH, float roughnes
 
     // Choose one:
     return brdf_schlick_fresnel(specular, f90, VxH);
-    return brdf_fresnel_cook_torrance(specular, VxH);
+    // return brdf_fresnel_cook_torrance(specular, VxH);
 }
 
 

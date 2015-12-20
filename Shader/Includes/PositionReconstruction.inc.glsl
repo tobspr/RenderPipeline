@@ -64,7 +64,6 @@ vec3 calculate_surface_pos(float z, vec2 tcoord) {
   return calculate_surface_pos(z, tcoord, trans_clip_of_mainCam_to_mainRender);
 }
 
-
 // Computes the surface position based on a given Z and a texcoord, aswell as a
 // custom near and far plane, and the inverse MVP. This is for orthographic projections
 vec3 calculate_surface_pos_ortho(float z, vec2 tcoord, float near, float far, mat4 inverse_mvp) {
@@ -91,7 +90,7 @@ vec3 view_to_screen(vec3 view_pos) {
 
 // Converts a view space normal to world space
 vec3 view_normal_to_world(vec3 view_normal) {
-  // We need to transform coordinate system, should't be required,
+  // We need to transform the coordinate system, should not be required,
   // seems to be some panda bug?
   view_normal = view_normal.xzy * vec3(1, -1, 1);
   return normalize((vec4(view_normal, 0) * trans_mainRender_to_view_of_mainCam).xyz);

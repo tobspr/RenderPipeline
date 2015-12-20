@@ -1,3 +1,4 @@
+#pragma once
 
 #define saturate(v) clamp(v, 0, 1)
 

@@ -1,5 +1,4 @@
-
-
+#pragma once
 
 /*
 
@@ -188,14 +187,14 @@ float rand(vec2 co){
 
 uniform sampler2D PrecomputedGrain;
 
-float grain(vec2 coord, float frame) {
-
+// Computes the film grain using the precomputed grain
+float grain(vec2 coord, float frame_time) {
   vec2 scaled_coord = coord * SCREEN_SIZE / 1024.0;
-  float frame_factor = mod(frame, 3.5);
+  float frame_factor = mod(frame_time, 3.5);
   vec4 f0 = textureLod(PrecomputedGrain, scaled_coord + vec2(12.0*frame_factor, 0), 0);
   vec4 f1 = textureLod(PrecomputedGrain, scaled_coord + vec2(0, 5.0*frame_factor), 0);
-  vec4 f2 = mix(f0, f1, mod(frame*12.0, 1.0));
-  float mod_factor = mod(frame * 42.0, 1.0);
+  vec4 f2 = mix(f0, f1, mod(frame_time*12.0, 1.0));
+  float mod_factor = mod(frame_time * 42.0, 1.0);
   return mix(f2.x, f2.y, mod_factor) - 0.25;
 }
 
