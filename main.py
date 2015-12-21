@@ -111,7 +111,7 @@ class MainApp(ShowBase):
         self.render_pipeline.create_default_skybox()
 
         # Add some random lights
-        sqr = 6
+        sqr = 0
         seed(3)
         for x in range(sqr):
             for y in range(sqr):
@@ -131,14 +131,15 @@ class MainApp(ShowBase):
                 light.set_radius(15.0)
                 self.render_pipeline.add_light(light)
 
-        if False:
+        if True:
             test_light = SpotLight()
             test_light.set_pos(0, 9, 15)
             test_light.set_radius(50)
-            test_light.set_color(Vec3(1.0, 1.0, 1.0) * 4.0)
+            test_light.set_color(Vec3(0, 1.0, 0) * 0.6)
             test_light.look_at(0, 0, 0)
             test_light.set_fov(90)
             test_light.set_ies_profile(0)
+            test_light.set_casts_shadows(True)
             self.render_pipeline.add_light(test_light)
 
         # lights = model.find_all_matches("**/Light*")

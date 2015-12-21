@@ -53,3 +53,24 @@ inline int RPLight::get_slot() {
 inline void RPLight::set_ies_profile(int profile) {
     _ies_profile = profile;
 }
+
+inline void RPLight::set_casts_shadows(bool flag) {
+    if (has_slot()) {
+        cerr << "Light is already attached, can not call set_casts_shadows!" << endl;
+        return;
+    }
+    _casts_shadows = flag;
+}
+
+inline bool RPLight::get_casts_shadows() {
+    return _casts_shadows;
+}
+
+inline int RPLight::get_num_shadow_sources() {
+    return _shadow_sources.size();
+}
+
+inline ShadowSource* RPLight::get_shadow_source(int index) {
+    nassertr(index < _shadow_sources.size(), NULL);
+    return _shadow_sources[index];
+}

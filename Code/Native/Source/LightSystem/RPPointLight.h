@@ -16,8 +16,11 @@ class RPPointLight : public RPLight {
         inline void set_radius(float radius);
         inline void set_inner_radius(float inner_radius);
 
+    public:
         virtual void write_to_command(GPUCommand &cmd);
-
+        virtual void update_shadow_sources();
+        virtual void init_shadow_sources();
+        
     protected:
 
         float _radius;

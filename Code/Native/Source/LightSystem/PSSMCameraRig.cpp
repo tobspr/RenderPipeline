@@ -262,7 +262,7 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
             for (float progress = 0.0; progress < 1.0; progress += 1.0 / (float)num_iterations) {
 
                 // Apply the angle to the camera rotation
-                _cam_nodes[i].look_at(split_mid, get_angle_vector(progress));
+                _cam_nodes[i].look_at(split_mid, get_angle_vector(progress * 0.5));
 
                 // Find minimum and maximum extents of the points
                 LVecBase3f min_extent, max_extent;

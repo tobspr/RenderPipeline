@@ -17,3 +17,11 @@ void RPPointLight::write_to_command(GPUCommand &cmd) {
     cmd.push_float(_radius);
     cmd.push_float(_inner_radius);    
 }
+
+void RPPointLight::init_shadow_sources() {
+    nassertv(_shadow_sources.size() == 0);
+}
+
+void RPPointLight::update_shadow_sources() {
+
+}

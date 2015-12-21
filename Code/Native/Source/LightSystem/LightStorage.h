@@ -3,9 +3,11 @@
 #define RP_LIGHT_STORAGE_H
 
 #include "RPLight.h"
+#include "ShadowSource.h"
 #include "GPUCommandList.h"
 
 #define MAX_LIGHT_COUNT 65000
+#define MAX_SHADOW_SOURCES 1000
 
 class LightStorage {
 
@@ -23,13 +25,21 @@ class LightStorage {
 
     protected:
         
+        void setup_shadows(RPLight* light);
+        inline int find_light_slot();
+        inline void update_max_light_index();
+
         RPLight* _lights[MAX_LIGHT_COUNT];
+        ShadowSource* _shadow_sources[MAX_SHADOW_SOURCES];
         int _max_light_index;
         int _num_stored_lights;
-        GPUCommandList* _cmd_list;
 
+        int _max_source_index;
+        int _num_stored_sources;
+
+        GPUCommandList* _cmd_list;
 };
 
-
+#include "LightStorage.I"
 
 #endif // RP_LIGHT_STORAGE_H

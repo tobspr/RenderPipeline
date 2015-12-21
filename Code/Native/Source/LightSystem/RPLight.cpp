@@ -5,6 +5,7 @@
 RPLight::RPLight(LightType light_type) {
     _light_type = light_type;
     _dirty = false;
+    _casts_shadows = false;
     _slot = -1;
     _position.set(0, 0, 0);
     _color.set(1, 1, 1);
@@ -24,5 +25,5 @@ void RPLight::write_to_command(GPUCommand &cmd) {
 
 
 RPLight::~RPLight() {
-    // Default ctor, for now
+    // Default dtor, for now
 }

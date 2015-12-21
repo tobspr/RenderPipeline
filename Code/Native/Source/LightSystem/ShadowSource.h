@@ -11,6 +11,10 @@ public:
     ShadowSource();
     ~ShadowSource();
 
+private:
+
+    int _last_time_rendered;
+
 };
 
 

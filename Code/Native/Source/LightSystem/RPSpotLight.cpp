@@ -22,3 +22,15 @@ void RPSpotLight::write_to_command(GPUCommand &cmd) {
     cmd.push_float(_fov / 180.0 * M_PI);
     cmd.push_vec3(_direction);
 }
+
+
+void RPSpotLight::init_shadow_sources() {
+    nassertv(_shadow_sources.size() == 0);
+    ShadowSource* main_source = new ShadowSource();
+    _shadow_sources.push_back(main_source);
+}
+
+void RPSpotLight::update_shadow_sources() {
+
+}
+
