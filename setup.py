@@ -17,8 +17,6 @@ import subprocess
 import gzip
 import shutil
 
-
-sys.path.insert(0, ".")
 sys.dont_write_bytecode = True
 
 DEVNULL = open(os.path.devnull, "w")
@@ -27,6 +25,7 @@ CURRENT_STEP = 0
 OPT_SKIP_NATIVE = "--skip-native" in sys.argv
 
 os.chdir(SETUP_DIR)
+sys.path.insert(0, ".")
 
 # Load and init colorama, used to color the output
 from Code.External.Colorama import init as init_colorama
