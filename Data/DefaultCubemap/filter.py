@@ -1,10 +1,11 @@
 
 from __future__ import print_function
 
-import shutil
-import os
 from panda3d.core import PNMImage, load_prc_file_data, Texture, NodePath
 from panda3d.core import Shader, ShaderAttrib
+
+import shutil
+import os
 
 load_prc_file_data("", "textures-power-2 none")
 # load_prc_file_data("", "window-type offscreen")
