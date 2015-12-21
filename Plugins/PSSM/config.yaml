@@ -98,7 +98,7 @@ settings: !!omap
         range: [0.1, 200]
         default: 25
         shader_runtime: true
-        label: Shadow filtering radius
+        label: Filtering radius
         description: >
             This setting controls the filter size, higher values mean a more
             smooth penumbra. Too high values might (and will) produce artifacts.

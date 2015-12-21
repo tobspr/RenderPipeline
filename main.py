@@ -69,10 +69,10 @@ class MainApp(ShowBase):
         # Create the pipeline
         self.render_pipeline.create()
 
-        profile = self.render_pipeline.load_ies_profile("Data/IESProfiles/Defined.ies")
+        # profile = self.render_pipeline.load_ies_profile("Data/IESProfiles/Defined.ies")
 
         plane = self.loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
-        plane.set_scale(5.0)
+        plane.set_scale(6.0)
         plane.reparent_to(self.render)
 
         # Load some models, most of them are not included in the repository
@@ -80,7 +80,7 @@ class MainApp(ShowBase):
         # model = loader.loadModel("Models/HDRTest/Scene.bam")
         # model = loader.loadModel("Models/Head/Scene.bam")
         # model = loader.loadModel("Models/Head/Hand.bam")
-        model = loader.loadModel("Models/SimpleShapes/Sphere.bam")
+        # model = loader.loadModel("Models/SimpleShapes/Sphere.bam")
         # model = loader.loadModel("Models/UVTest/Scene.bam")
         # model = loader.loadModel("Models/SimpleShapes/Wall.bam")
         # model = loader.loadModel("Models/Test.ignore/Statue.bam")
@@ -88,10 +88,8 @@ class MainApp(ShowBase):
         # model = loader.loadModel("Models/DemoTerrain/Scene.bam")
         # model = loader.loadModel("Models/DemoScene/Scene.bam")
         # model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
-        # model = self.loader.loadModel("panda")
+        model = self.loader.loadModel("box")
         # model.flatten_strong()
-
-
 
         if False:
             self.render.set_shader_input("roughness", 1.0)
@@ -111,7 +109,7 @@ class MainApp(ShowBase):
         self.render_pipeline.create_default_skybox()
 
         # Add some random lights
-        sqr = 0
+        sqr = 4
         seed(3)
         for x in range(sqr):
             for y in range(sqr):
@@ -133,12 +131,12 @@ class MainApp(ShowBase):
 
         if True:
             test_light = SpotLight()
-            test_light.set_pos(0, 9, 15)
-            test_light.set_radius(50)
-            test_light.set_color(Vec3(0, 1.0, 0) * 0.6)
-            test_light.look_at(0, 0, 0)
-            test_light.set_fov(90)
-            test_light.set_ies_profile(0)
+            test_light.set_pos(0, -20, 6)
+            test_light.set_radius(40)
+            test_light.set_color(Vec3(171, 238, 255) / 255.0 * 2.0)
+            test_light.look_at(0, 0, 6)
+            test_light.set_fov(30)
+            # test_light.set_ies_profile(0)
             test_light.set_casts_shadows(True)
             self.render_pipeline.add_light(test_light)
 

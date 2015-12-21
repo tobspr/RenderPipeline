@@ -57,4 +57,11 @@ void main() {
         result.xyz = vec3(m.normal);
     #endif
 
+    #if MODE_ACTIVE(METALLIC)
+        result.xyz = vec3(m.metallic);
+    #endif
+
+    #if MODE_ACTIVE(TRANSLUCENCY)
+        result.xyz = vec3(m.translucency);
+    #endif
 }

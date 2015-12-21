@@ -124,9 +124,9 @@
         Material m;
         m.position  = get_gbuffer_position(data, coord);
         m.basecolor = data0.xyz;
-        m.roughness = max(0.002, data0.w);
+        m.roughness = clamp(data0.w, 0.002, 1.0);
         m.normal    = unpack_normal_octahedron(data1.xy);
-        m.metallic  = data1.z;
+        m.metallic  = data1.z * 1.001 - 0.0005;
         m.specular  = data1.w;
         m.translucency = data2.z;
 

@@ -7,9 +7,10 @@
 
 // Computes the quadratic attenuation curve
 float attenuation_curve(float dist, float radius) {
+    // return step(dist, radius);
     float lin_att = 1.0 - saturate(dist / radius);
     float d_by_r = dist / radius + 1;
-    return lin_att / max(0.001, d_by_r * d_by_r) * M_PI;
+    return lin_att / max(0.001, d_by_r * d_by_r) * TWO_PI;
 }
 
 // Computes the attenuation for a point light
@@ -21,7 +22,7 @@ float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profi
 // Computes the attenuation for a spot light
 float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist, int ies_profile) {
     float dist_attenuation = attenuation_curve(dist, radius);
-    float angle = acos(dot(l, -light_dir));
+    float angle = acos(-1e-6 + dot(l, -light_dir));
     float angle_factor = attenuation_curve(angle, fov);
     float ies_factor =  get_ies_factor(ies_profile, 0.5*angle, 0);
     return angle_factor * dist_attenuation * ies_factor;
@@ -71,7 +72,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     float distribution = brdf_distribution(NxH, m.roughness);
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = brdf_fresnel(vec3(1), VxH, NxV, LxH, m.roughness);
-    shading_result += (distribution * visibility * fresnel) / M_PI * m.specular; 
+    shading_result += (distribution * visibility * fresnel) / TWO_PI * m.specular; 
 
     // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
@@ -82,6 +83,5 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
         shading_result *= occlusion_factor;
     
     #endif  
-
     return (shading_result * light_color) * (attenuation * shadow) * transmittance;
 }

@@ -168,10 +168,10 @@ class OnscreenDebugger(BaseManager):
             ("Roughness", "ROUGHNESS"),
             ("Specular", "SPECULAR"),
             ("Normal", "NORMAL"),
+            ("Metallic", "METALLIC"),
+            ("Translucency", "TRANSLUCENCY"),
             # ("Velocity", "VELOCITY")
-            # ("Occlusion",
             # "Lighting",
-            # "Raw-Lighting",
             # "Scattering",
             # "GI-Diffuse",
             # "GI-Specular",

@@ -11,9 +11,9 @@ enabled:
     - SMAA
     - AO
     - Bloom
-    - Scattering
     - PSSM
-
+    - Scattering
+    
 overrides: 
     AO.alchemy_max_distance: 4.08
     AO.alchemy_num_samples: 32
@@ -37,8 +37,8 @@ overrides:
     AO.ue4ao_max_distance: 4.3
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 145.44
-    Bloom.bloom_strength: 3.9
-    Bloom.minimum_luminance: 25.25
+    Bloom.bloom_strength: 4.01
+    Bloom.minimum_luminance: 17.55
     ColorCorrection.brightness_adaption_rate: 2.25
     ColorCorrection.chromatic_aberration_samples: 1
     ColorCorrection.chromatic_aberration_strength: 0.3744
@@ -60,19 +60,19 @@ overrides:
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.use_sharpen: True
     ColorCorrection.vignette_strength: 0.1333
-    PSSM.filter_radius: 1.32
+    PSSM.filter_radius: 4.54222
     PSSM.filter_sample_count: 29
     PSSM.fixed_bias: 0.3556
     PSSM.logarithmic_factor: 1.47
     PSSM.max_distance: 157.4
     PSSM.normal_bias: 0.11
-    PSSM.pcss_penumbra_size: 13.43
-    PSSM.pcss_search_samples: 25
+    PSSM.pcss_penumbra_size: 23.43
+    PSSM.pcss_search_samples: 6
     PSSM.resolution: 2048
-    PSSM.slope_bias: 0.67
+    PSSM.slope_bias: 0.17
     PSSM.split_count: 4
     PSSM.sun_distance: 150.0
-    PSSM.use_pcss: False
+    PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
     Scattering.ground_fog_factor: 12.22

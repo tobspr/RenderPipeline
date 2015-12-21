@@ -106,8 +106,8 @@ vec3 brdf_fresnel_cook_torrance(vec3 specular, float VxH) {
 float brdf_diffuse(float NxL, float NxV, float LxH, float roughness) {
    
     // Choose one:
-    // return brdf_lambert(NxL);
-    return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
+    return brdf_lambert(NxL);
+    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
 }
 
 // Distribution
@@ -126,9 +126,9 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
     
     // Choose one:
     // return brdf_visibility_neumann(NxV, NxL);
-    // return brdf_visibility_schlick(NxV, NxL, roughness);
+    return brdf_visibility_schlick(NxV, NxL, roughness);
     // return brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
-    return brdf_visibility_smith_ggx(NxL, NxV, roughness);
+    // return brdf_visibility_smith_ggx(NxL, NxV, roughness);
 }
 
 
