@@ -127,7 +127,7 @@ class OnscreenDebugger(DebugObject):
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_x(-self._debugger_width)
         self._debugger_bg = DirectFrame(
-            parent=self._debugger_node, frameSize=(self._debugger_width, 0, -127, -1020),
+            parent=self._debugger_node, frameSize=(self._debugger_width, 0, -127, -2000),
             pos=(0, 0, 0), frameColor=(0.09, 0.09, 0.09, debugger_opacity))
         self._debugger_bg_bottom = DirectFrame(
             parent=self._fullscreen_node, frameSize=(self._debugger_width, 0, 0, -1),
