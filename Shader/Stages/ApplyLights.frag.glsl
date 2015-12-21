@@ -14,23 +14,26 @@
 in vec2 texcoord;
 out vec4 result;
 
-
 uniform GBufferData GBuffer;
 
 void main() {    
 
+    // Extract material properties
     ivec2 coord = ivec2(gl_FragCoord.xy);
     float depth = get_gbuffer_depth(GBuffer, coord);
     Material m = unpack_material(GBuffer);
     ivec3 tile = get_lc_cell_index(coord, distance(cameraPosition, m.position));
 
+    // Don't shade pixels out of the shading range
     if (tile.z >= LC_TILE_SLICES) {
         result = vec4(0);
         return;
     }
 
+    // Apply all lights
     result.xyz = shade_material_from_tile_buffer(m, tile);
     result.w = 1.0;
+
 
     /*
     

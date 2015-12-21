@@ -31,4 +31,7 @@ settings:
         culling_max_distance: 140.0
 
 
-
+        # Controls the size of a slice in culling. Lower values might produce
+        # better performance for less amount of lights, but higher values should
+        # be used when using many lights, e.g. > 1024, to get better coherency.
+        culling_slice_width: 256

@@ -9,7 +9,6 @@ uniform writeonly iimage2DArray cellListIndices;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    float sumFlags = 0.0;
 
     // Iterate over all slices
     for (int i = 0; i < LC_TILE_SLICES; i++) {
@@ -23,7 +22,6 @@ void main() {
             int cellData = coord.x | coord.y << 10 | i << 20;
             imageStore(cellListBuffer, flagIndex, ivec4(cellData));
             imageStore(cellListIndices, ivec3(coord, i), ivec4(flagIndex));
-            sumFlags += float(flagIndex * 0.001) + 0.001;
         }
     }
 }

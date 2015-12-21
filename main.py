@@ -31,7 +31,7 @@ from __future__ import print_function
 
 import sys
 import getpass
-from random import random, randint
+from random import random, randint, seed
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import Vec3
@@ -72,24 +72,27 @@ class MainApp(ShowBase):
 
         profile = self.render_pipeline.load_ies_profile("Data/IESProfiles/Defined.ies")
 
-        # plane = self.loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
-        # plane.set_scale(2.0)
-        # plane.reparent_to(self.render)
+        plane = self.loader.loadModel("Data/BuiltinModels/Plane/Plane.bam")
+        plane.set_scale(5.0)
+        plane.reparent_to(self.render)
 
         # Load some models, most of them are not included in the repository
         # model = self.loader.loadModel("Models/MaterialTester.ignore/Scene.bam")
         # model = loader.loadModel("Models/HDRTest/Scene.bam")
         # model = loader.loadModel("Models/Head/Scene.bam")
         # model = loader.loadModel("Models/Head/Hand.bam")
-        # model = loader.loadModel("Models/SimpleShapes/Sphere.bam")
+        model = loader.loadModel("Models/SimpleShapes/Sphere.bam")
+        # model = loader.loadModel("Models/UVTest/Scene.bam")
         # model = loader.loadModel("Models/SimpleShapes/Wall.bam")
         # model = loader.loadModel("Models/Test.ignore/Statue.bam")
         # model = loader.loadModel("Models/Test.ignore/Car0.bam")
         # model = loader.loadModel("Models/DemoTerrain/Scene.bam")
         # model = loader.loadModel("Models/DemoScene/Scene.bam")
-        model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
+        # model = loader.loadModel("Models/Sponza.ignore/Scene.bam")
         # model = self.loader.loadModel("panda")
         # model.flatten_strong()
+
+
 
         if False:
             self.render.set_shader_input("roughness", 1.0)
@@ -110,27 +113,29 @@ class MainApp(ShowBase):
 
         # Add some random lights
         sqr = 6
+        seed(3)
         for x in range(sqr):
             for y in range(sqr):
 
                 if randint(0, 1) == 0:
                     light = PointLight()
-                    continue
+                    light.set_color(0, 1, 0)
                 else:
                     light = SpotLight()
                     light.set_direction(0, 0, -1)
                     light.set_fov(90)
+                    light.set_color(1, 0, 0)
 
                 pos_x, pos_y = (x-sqr//2) * 10.0, (y-sqr//2) * 10.0
-                light.set_pos(Vec3(pos_x, pos_y, 5.0))
-                light.set_color(Vec3(random(), random(), random()) * 2)
-                light.set_radius(12)
+                light.set_pos(Vec3(pos_x, pos_y, 7.0))
+                # light.set_color(Vec3(random(), random(), random()) * 2)
+                light.set_radius(15.0)
                 self.render_pipeline.add_light(light)
 
         if False:
             test_light = SpotLight()
             test_light.set_pos(0, 9, 15)
-            test_light.set_radius(30)
+            test_light.set_radius(50)
             test_light.set_color(Vec3(1.0, 1.0, 1.0) * 4.0)
             test_light.look_at(0, 0, 0)
             test_light.set_fov(90)

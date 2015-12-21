@@ -20,6 +20,7 @@ class CullLightsStage(RenderStage):
         RenderStage.__init__(self, "CullLightsStage", pipeline)
         self._tile_amount = None
         self._max_lights_per_cell = 32
+        self._slice_width = pipeline.get_setting("lighting.culling_slice_width")
 
     def set_tile_amount(self, tile_amount):
         """ Sets the cell tile size """
@@ -38,16 +39,21 @@ class CullLightsStage(RenderStage):
         max_cells = self._tile_amount.x * self._tile_amount.y * \
             self._pipeline.get_setting("lighting.culling_grid_slices")
 
-        self._num_rows = int(math.ceil(max_cells / 512.0))
+        self._num_rows = int(math.ceil(max_cells / float(self._slice_width)))
         self._target = self._create_target("CullLights")
-        self._target.set_size(512, self._num_rows)
+
+        # Don't use an oversized triangle for the target, since this leads to
+        # overshading
+        self._target.USE_OVERSIZED_TRIANGLE = False
+        self._target.set_size(self._slice_width, self._num_rows)
         self._target.prepare_offscreen_buffer()
         self._target.set_clear_color(color=Vec4(0.2, 0.6, 1.0, 1.0))
+        
         self._per_cell_lights = Image.create_buffer(
             "PerCellLights", max_cells * (self._max_lights_per_cell + 1),
             Texture.T_int, Texture.F_r32)
         self._per_cell_lights.set_clear_color(0)
-        self.debug("Culling with", self._num_rows, "threads")
+        self.debug("Using", self._num_rows, "culling lines")
         self._target.set_shader_input(
             "PerCellLightsBuffer", self._per_cell_lights.get_texture())
 

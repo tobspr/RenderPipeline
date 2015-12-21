@@ -5,8 +5,6 @@
 #pragma include "Includes/LightCulling.inc.glsl"
 #pragma include "Includes/LightData.inc.glsl"
 
-out vec4 result;
-
 uniform isamplerBuffer CellListBuffer;
 uniform writeonly iimageBuffer PerCellLightsBuffer;
 
@@ -16,57 +14,70 @@ uniform mat4 currentViewMatZup;
 
 void main() {
 
-    int sliceWidth = 512;
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    int idx = coord.x + coord.y * sliceWidth + 1;
-    int numTotalCells = texelFetch(CellListBuffer, 0).x;
 
-    if (idx > numTotalCells) {
-        result = vec4(0.2, 0, 0, 1);
-        return;
+    // Find the index of the cell we are about to process
+    int idx = coord.x + coord.y * LC_CULLING_SLICE_WIDTH + 1;
+    int num_total_cells = texelFetch(CellListBuffer, 0).x;
+    ivec2 precompute_size = ivec2(LC_TILE_AMOUNT_X, LC_TILE_AMOUNT_Y);
+
+    // If we found no remaining cell, we are done, so just return and hope for
+    // good coherency.
+    if (idx > num_total_cells) {
+        // Could use return here. Not sure whats faster. Have to test it.
+        discard;
     }
 
-    int packedCellData = texelFetch(CellListBuffer, idx).x;
+    // Fetch the cell data, this contains the cells position
+    int packed_cell_data = texelFetch(CellListBuffer, idx).x;
+    int cell_x = packed_cell_data & 0x3FF;
+    int cell_y = (packed_cell_data >> 10) & 0x3FF;
+    int cell_slice = (packed_cell_data >> 20) & 0x3FF;
 
-    int cellX = packedCellData & 0x3FF;
-    int cellY = (packedCellData >> 10) & 0x3FF;
-    int cellSlice = (packedCellData >> 20) & 0x3FF;
+    // Amount to increment the minimum and maximum distance of the slice. This
+    // avoids false negatives in culling.
+    float distance_bias = 0.01;
 
-    float distance_bias = 0.05;
+    // Find the tiles minimum and maximum distance
+    float min_distance = get_distance_from_slice(cell_slice) - distance_bias;
+    float max_distance = get_distance_from_slice(cell_slice + 1) + distance_bias;
 
-    float min_distance = get_distance_from_slice(cellSlice) - distance_bias;
-    float max_distance = get_distance_from_slice(cellSlice + 1) + distance_bias;
+    // Get the offset in the per-cell light list
+    int storage_offs = (MAX_LIGHTS_PER_CELL+1) * idx;
+    int num_rendered_lights = 0;
 
-    int storageOffs = (MAX_LIGHTS_PER_CELL+1) * idx;
-    int numRenderedLights = 0;
-
-    // Per tile bounds
-    ivec2 precomputeSize = ivec2(LC_TILE_AMOUNT_X, LC_TILE_AMOUNT_Y);
-
-    // Compute aspect ratio
+    // Compute the aspect ratio, this is required for proper culling.
     float aspect = float(WINDOW_HEIGHT) / WINDOW_WIDTH;
-    vec3 aspect_mul = vec3(1, aspect, 1 );
+    vec3 aspect_mul = vec3(1, aspect, 1);
 
     // Increase the frustum size by a small bit, because we trace at the corners,
     // since using this way we could miss some small parts of the sphere. With this
     // bias we should be fine, except for very small spheres, but those will be
     // out of the culling range then anyays
-    float cull_bias = 0.2;
+    float cull_bias = 1 + 0.01;
 
-    // Compute corner ray directions
-    vec3 ray_dir_tr = vec3( float(cellX+1+cull_bias) / precomputeSize.x, float(cellY+1+cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
-    vec3 ray_dir_tl = vec3( float(cellX+0-cull_bias) / precomputeSize.x, float(cellY+1+cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
-    vec3 ray_dir_br = vec3( float(cellX+1+cull_bias) / precomputeSize.x, float(cellY+0-cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
-    vec3 ray_dir_bl = vec3( float(cellX+0-cull_bias) / precomputeSize.x, float(cellY+0-cull_bias) / precomputeSize.y, 0.0) * 2 - 1;
+    // Compute sample directions
+    const int num_raydirs = 5;
+    vec3 ray_dirs[num_raydirs] = vec3[](
+        // Center
+        vec3( 0, 0, -1),
+        
+        // Corners
+        vec3(  1.0,  1.0, -1) * cull_bias,
+        vec3( -1.0,  1.0, -1) * cull_bias,
+        vec3(  1.0, -1.0, -1) * cull_bias,
+        vec3( -1.0, -1.0, -1) * cull_bias
+    );
 
-    // Normalize ray directions, and account for the aspect ratio
-    ray_dir_tr = normalize(ray_dir_tr * aspect_mul);
-    ray_dir_tl = normalize(ray_dir_tl * aspect_mul);
-    ray_dir_br = normalize(ray_dir_br * aspect_mul);
-    ray_dir_bl = normalize(ray_dir_bl * aspect_mul);
+    // Generate ray directions
+    for (int i = 0; i < num_raydirs; ++i) {
+        ray_dirs[i] = normalize( 
+            fma( (vec3(cell_x, cell_y, 0) + fma(ray_dirs[i], vec3(0.5), vec3(0.5)) ) 
+                    / vec3(precompute_size, 1), vec3(2.0), vec3(-1.0)) * aspect_mul);
+    }
 
     // Cull all lights
-    for (int i = 0; i < maxLightIndex + 1 && numRenderedLights < MAX_LIGHTS_PER_CELL; i++) {
+    for (int i = 0; i < maxLightIndex + 1 && num_rendered_lights < MAX_LIGHTS_PER_CELL; i++) {
 
         // Fetch data of current light
         LightData light_data = read_light_data(AllLightsData, i * 4);
@@ -82,40 +93,35 @@ void main() {
         bool visible = false;
 
         // Point Lights
-        if (light_type == LT_POINT_LIGHT) {
-            float radius = get_pointlight_radius(light_data);
+        switch(light_type) {
 
-            // Slower but more accurate intersection, traces a ray at the corners of
-            // each frustum.
-            visible =            viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tl, min_distance, max_distance);
-            visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_tr, min_distance, max_distance);
-            visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_bl, min_distance, max_distance);
-            visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dir_br, min_distance, max_distance);
+            case LT_POINT_LIGHT: {
+                float radius = get_pointlight_radius(light_data);
+                for (int k = 0; k < num_raydirs; ++k) {
+                    visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dirs[k], min_distance, max_distance);
+                }
+                break;
+            } 
 
-        // Spot Lights
-        } else if (light_type == LT_SPOT_LIGHT) {
-
-            float radius = get_spotlight_radius(light_data);
-            vec3 direction = get_spotlight_direction(light_data);
-            vec3 direction_view = world_normal_to_view(direction);
-            float fov = get_spotlight_fov(light_data);
-
-            visible =            viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction_view, radius, fov, ray_dir_tl, min_distance, max_distance);
-            visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction, radius, fov, ray_dir_tr, min_distance, max_distance);
-            visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction, radius, fov, ray_dir_bl, min_distance, max_distance);
-            visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction, radius, fov, ray_dir_br, min_distance, max_distance);
-
-
+            case LT_SPOT_LIGHT: {
+                float radius = get_spotlight_radius(light_data);
+                vec3 direction = get_spotlight_direction(light_data);
+                vec3 direction_view = world_normal_to_view(direction);
+                float fov = get_spotlight_fov(light_data);
+                for (int k = 0; k < num_raydirs; ++k) {
+                    visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction_view, radius, fov, ray_dirs[k], min_distance, max_distance);
+                }
+                break;
+            }
         }
 
         // Write the light to the light buffer
         // TODO: Might have a seperate list for different light types, gives better performance
         if (visible) {
-            numRenderedLights ++;
-            imageStore(PerCellLightsBuffer, storageOffs + numRenderedLights, ivec4(i));
+            num_rendered_lights ++;
+            imageStore(PerCellLightsBuffer, storage_offs + num_rendered_lights, ivec4(i));
         }
     }
 
-    imageStore(PerCellLightsBuffer, storageOffs, ivec4(numRenderedLights));
-    result = vec4(vec3(idx / 100.0 ), 1.0);
+    imageStore(PerCellLightsBuffer, storage_offs, ivec4(num_rendered_lights));
 }
