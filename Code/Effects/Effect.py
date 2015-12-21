@@ -38,7 +38,12 @@ class Effect(DebugObject):
         fname = Filename(filename)
         fname.make_absolute()
         fhash = str(hash(fname.to_os_generic()))
-        return fhash + "-" + str(hash(frozenset(list(constructed_dict.items()))))
+
+        # Hash the options
+        to_str = lambda v: "1" if v else "0"
+        opt_hash = ''.join([to_str(options[k]) if k in options else to_str(cls._DEFAULT_OPTIONS[k]) for k in sorted(cls._DEFAULT_OPTIONS)])
+
+        return fhash + "-" + opt_hash
 
     def __init__(self):
         """ Constructs a new empty effect """
@@ -69,6 +74,7 @@ class Effect(DebugObject):
         self._source = filename
         self._effect_name = self._convert_filename_to_name(filename)
         self._shader_paths = {}
+        self._effect_hash = self.generate_hash(filename, self._options)
         self._shader_objs = {}
 
         # Load the YAML file
@@ -169,7 +175,7 @@ class Effect(DebugObject):
             if key not in ["dependencies", "inout", "inject", "template"]:
                 self.warn("Unrecognized key:", key)
 
-        shader = ShaderTemplate(template_src, self._effect_name + "@" + shader_id)
+        shader = ShaderTemplate(template_src, self._effect_name + "@" + shader_id + "@" + self._effect_hash)
 
         for key, val in list(injects.items()):
             shader.register_template_value(key, val)
