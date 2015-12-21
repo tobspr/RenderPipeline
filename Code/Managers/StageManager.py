@@ -13,7 +13,7 @@ from ..Util.ShaderUBO import BaseUBO
 from ..Stages.UpdatePreviousPipesStage import UpdatePreviousPipesStage
 from ..BaseManager import BaseManager
 
-class StageManager(DebugObject):
+class StageManager(BaseManager):
     """ This manager takes a list of RenderStages and puts them into an order,
     and also connects the different pipes """
 
@@ -41,7 +41,7 @@ class StageManager(DebugObject):
 
     def __init__(self, pipeline):
         """ Constructs the stage manager """
-        DebugObject.__init__(self)
+        BaseManager.__init__(self)
         self._stages = []
         self._inputs = {}
         self._pipes = {}

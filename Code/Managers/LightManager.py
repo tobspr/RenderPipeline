@@ -68,7 +68,7 @@ class LightManager(BaseManager):
 
         self._light_storage.remove_light(light)
 
-    def update(self):
+    def do_update(self):
         """ Main update method to process the gpu commands """
         self._light_storage.update()
         self._cmd_queue.process_queue()
