@@ -18,8 +18,8 @@ void main() {
 
     vec2 velocity = get_gbuffer_velocity(GBuffer, coord);
     vec2 old_coord = texcoord - velocity;
-    vec4 current_color = texture(CurrentTex, texcoord);
-    vec4 last_color = texture(LastTex, old_coord);
+    vec4 current_color = textureLod(CurrentTex, texcoord, 0);
+    vec4 last_color = textureLod(LastTex, old_coord, 0);
 
 
     // Blend the pixels according to the calculated weight:

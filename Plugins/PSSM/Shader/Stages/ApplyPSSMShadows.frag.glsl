@@ -33,9 +33,9 @@ vec2 get_split_coord(vec2 local_coord, int split_index) {
 
 float get_shadow(vec2 coord, float refz) {
     #if GET_SETTING(PSSM, use_pcf)
-        return texture(PSSMShadowAtlasPCF, vec3(coord, refz));
+        return textureLod(PSSMShadowAtlasPCF, vec3(coord, refz), 0);
     #else
-        float depth_sample = texture(PSSMShadowAtlas, coord, 0).x;
+        float depth_sample = textureLod(PSSMShadowAtlas, coord, 0).x;
         return step(refz, depth_sample);
     #endif
 }
@@ -160,8 +160,8 @@ void main() {
                 vec2 offset = poisson_disk_2D_32[i];
 
                 // Find depth at sample location
-                float sampled_depth = texture(PSSMShadowAtlas,
-                    projected_coord + offset * filter_size).x;
+                float sampled_depth = textureLod(PSSMShadowAtlas,
+                    projected_coord + offset * filter_size, 0).x;
 
                 // Compare the depth with the pixel depth, in case its smaller,
                 // we found a blocker
@@ -222,7 +222,7 @@ void main() {
             float skin_ref_depth = projected_skin.z;
 
             // Get the shadow sample
-            float shadow_sample = texture(PSSMShadowAtlas, projected_skin_coord).x;
+            float shadow_sample = textureLod(PSSMShadowAtlas, projected_skin_coord, 0).x;
 
             // Reconstruct intersection position
             mat4 inverse_mvp = inverse(mvp);

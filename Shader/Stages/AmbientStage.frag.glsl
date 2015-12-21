@@ -145,7 +145,7 @@ void main() {
         #endif
     #endif
 
-    vec4 scene_color = texture(ShadedScene, texcoord);
+    vec4 scene_color = textureLod(ShadedScene, texcoord, 0);
 
     #if HAVE_PLUGIN(Scattering)
         // Scattering stores the fog factor in the w-component of the scene color.
@@ -153,6 +153,6 @@ void main() {
         ambient *= (1.0 - scene_color.w);
     #endif
 
-    result = scene_color * 1 + vec4(ambient, 1);
+    result = scene_color * 1 + vec4(ambient, 1) * 1;
 
 }

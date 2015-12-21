@@ -230,7 +230,7 @@ vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
     // vec3 intersection = trace_ray_fast(ro, rd);
     if(length(intersection) > 0.0001 && distance(intersection.xy, texcoord) > 0.00001) {
 
-        vec3 intersected_color = texture(ShadedScene, intersection.xy).xyz;
+        vec3 intersected_color = textureLod(ShadedScene, intersection.xy, 0).xyz;
         vec3 intersected_normal = get_gbuffer_normal(GBuffer1, intersection.xy);
 
         float dprod = dot(intersected_normal, m.normal);
@@ -313,7 +313,7 @@ void main() {
         // vec3 intersection_coord = trace_ray(ray_origin, ray_direction);
         // intersection_coord.z = 0.0;
         // if (length(intersection_coord) > 0.001) {
-        // sslr_result = texture(ShadedScene, intersection_coord.xy).xyz;
+        // sslr_result = textureLod(ShadedScene, intersection_coord.xy, 0).xyz;
         // }
         // sslr_result = intersection_coord;
 
@@ -321,6 +321,6 @@ void main() {
 
 
 
-    result = texture(ShadedScene, texcoord);
+    result = textureLod(ShadedScene, texcoord, 0);
     result.xyz += sslr_result;
 }

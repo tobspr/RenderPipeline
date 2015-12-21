@@ -46,7 +46,7 @@ void main() {
     vec3 pass_result = summed + source_sample;
 
     if (LastUpsamplePass) {
-        result = vec4(texture(ShadedScene, texcoord, 0).xyz + pass_result, 1);
+        result = vec4(textureLod(ShadedScene, texcoord, 0).xyz + pass_result, 1);
     } else {
         result = vec4(pass_result, 1);
     }

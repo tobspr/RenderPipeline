@@ -24,7 +24,7 @@ class Plugin(BasePlugin):
         self._shadow_stage.set_split_resolution(self.get_setting("resolution"))
 
     @PluginHook("on_pipeline_created")
-    def init(self):
+    def pipeline_created(self):
         self.debug("Init pssm ..")
 
         # Construct a dummy node to parent the rig to

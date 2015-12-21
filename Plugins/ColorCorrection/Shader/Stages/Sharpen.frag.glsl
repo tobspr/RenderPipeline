@@ -8,7 +8,7 @@ in vec2 texcoord;
 uniform sampler2D SourceTex;
 
 void main() {
-    vec3 scene_color = texture(SourceTex, texcoord).xyz;
+    vec3 scene_color = textureLod(SourceTex, texcoord, 0).xyz;
 
     // Compute the sharpen strength for each individual channel
     float sharpen_strength = GET_SETTING(ColorCorrection, sharpen_strength);

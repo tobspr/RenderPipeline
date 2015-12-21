@@ -45,7 +45,8 @@ void main() {
     
 
     // Mix with scene color
-    result = texture(ShadedScene, texcoord);
+    result = textureLod(ShadedScene, texcoord, 0);
+    
     #if !DEBUG_MODE
         result.xyz = mix(result.xyz, inscattered_light, fog_factor);
         result.w = fog_factor;

@@ -198,8 +198,8 @@ vec4 texture4D(sampler3D table, float r, float mu, float muS, float nu)
     float lerp = (nu + 1.0) / 2.0 * (float(RES_NU) - 1.0);
     float uNu = floor(lerp);
     lerp = lerp - uNu;
-    return texture(table, vec3((uNu + uMuS) / float(RES_NU), uMu, uR)) * (1.0 - lerp) +
-           texture(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR)) * lerp;
+    return textureLod(table, vec3((uNu + uMuS) / float(RES_NU), uMu, uR), 0) * (1.0 - lerp) +
+           textureLod(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR), 0) * lerp;
 }
 
 void getMuMuSNu(float r, vec4 dhdH, out float mu, out float muS, out float nu) {
@@ -252,7 +252,7 @@ float limit(float r, float mu) {
 // (mu=cos(view zenith angle)), intersections with ground ignored
 vec3 transmittance(float r, float mu) {
     vec2 uv = getTransmittanceUV(r, mu);
-    return texture(transmittanceSampler, uv).rgb;
+    return textureLod(transmittanceSampler, uv, 0).rgb;
 }
 
 // transmittance(=transparency) of atmosphere for infinite ray (r,mu)
@@ -313,7 +313,7 @@ vec3 transmittance(float r, float mu, float d) {
 
 vec3 irradiance(sampler2D sampler, float r, float muS) {
     vec2 uv = getIrradianceUV(r, muS);
-    return texture(sampler, uv).rgb;
+    return textureLod(sampler, uv, 0).rgb;
 }
 
 // Rayleigh phase function
