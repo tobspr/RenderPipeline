@@ -17,20 +17,20 @@ class AOStage(RenderStage):
         return {"AmbientOcclusion": self._target_blur_h['color']}
 
     def create(self):
-        self._target = self._create_target("AOSample")
+        self._target = self._create_target("AO:Sample")
         self._target.set_half_resolution()
         self._target.add_color_texture(bits=8)
         self._target.prepare_offscreen_buffer()
 
-        self._target_upscale = self._create_target("AOUpscale")
+        self._target_upscale = self._create_target("AO:Upscale")
         self._target_upscale.add_color_texture(bits=8)
         self._target_upscale.prepare_offscreen_buffer()
 
-        self._target_blur_v = self._create_target("AOBlurV")
+        self._target_blur_v = self._create_target("AO:BlurV")
         self._target_blur_v.add_color_texture(bits=8)
         self._target_blur_v.prepare_offscreen_buffer()
 
-        self._target_blur_h = self._create_target("AOBlurH")
+        self._target_blur_h = self._create_target("AO:BlurH")
         self._target_blur_h.add_color_texture(bits=8)
         self._target_blur_h.prepare_offscreen_buffer()
 

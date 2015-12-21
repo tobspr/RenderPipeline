@@ -17,7 +17,7 @@ class BloomStage(RenderStage):
         self._num_mips = mip_count
 
     def create(self):
-        self._target_extract = self._create_target("ExtractBrightSpots")
+        self._target_extract = self._create_target("Bloom:ExtractBrightSpots")
         self._target_extract.add_color_texture(bits=16)
         self._target_extract.prepare_offscreen_buffer()
 
@@ -29,7 +29,7 @@ class BloomStage(RenderStage):
         # todo: make the amount of passes configurable
         for i in range(self._num_mips):
             scale_multiplier = 2 ** (1 + i)
-            target = self._create_target("BloomDownsample-" + str(i))
+            target = self._create_target("Bloom:Downsample:Step-" + str(i))
             target.set_size(-scale_multiplier, -scale_multiplier)
             target.add_color_texture(bits=16)
             target.prepare_offscreen_buffer()
@@ -39,7 +39,7 @@ class BloomStage(RenderStage):
 
         for i in range(self._num_mips):
             scale_multiplier = 2 ** (self._num_mips - i - 1)
-            target = self._create_target("BloomUpsample-" + str(i))
+            target = self._create_target("Bloom:Upsample:Step-" + str(i))
             target.set_size(-scale_multiplier, -scale_multiplier)
             target.add_color_texture(bits=16)
             target.prepare_offscreen_buffer()

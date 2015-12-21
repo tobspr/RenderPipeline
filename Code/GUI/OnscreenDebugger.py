@@ -16,13 +16,14 @@ from .ErrorMessageDisplay import ErrorMessageDisplay
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
+from ..BaseManager import BaseManager
 
-class OnscreenDebugger(DebugObject):
+class OnscreenDebugger(BaseManager):
 
     """ This class manages the onscreen gui """
 
     def __init__(self, pipeline):
-        DebugObject.__init__(self)
+        BaseManager.__init__(self)
         self.debug("Creating debugger")
         self._pipeline = pipeline
 
@@ -38,7 +39,6 @@ class OnscreenDebugger(DebugObject):
         # When using small resolutions, scale the GUI so its still useable,
         # otherwise the sub-windows are bigger than the main window
         scale_factor = min(1.0, Globals.base.win.get_x_size() / 1800.0)
-        # scale_factor = 1.0
         self._fullscreen_node.set_scale(scale_factor)
 
         # Component values
@@ -62,7 +62,7 @@ class OnscreenDebugger(DebugObject):
         it """
         self._error_msg_handler = ErrorMessageDisplay()
 
-    def update(self):
+    def do_update(self):
         """ Updates the gui """
         self._update_stats()
         self._error_msg_handler.update()

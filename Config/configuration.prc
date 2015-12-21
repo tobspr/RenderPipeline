@@ -13,7 +13,8 @@ icon-filename Data/GUI/icon.ico
 # notify-level-gobj debug
 notify-level-glgsg error
 pstats-gpu-timing #t
-gl-debug #t
+# gl-debug #t
+gl-debug #f
 
 
 # ----------------- Misc Settings -----------------

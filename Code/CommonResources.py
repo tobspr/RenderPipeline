@@ -4,15 +4,15 @@ from panda3d.core import CSYupRight, CSZupRight, PTAFloat
 
 from .Util.DebugObject import DebugObject
 from .Globals import Globals
+from .BaseManager import BaseManager
 
-
-class CommonResources(DebugObject):
+class CommonResources(BaseManager):
 
     """ This class manages the loading and binding of commonly used resources,
     such as textures, models, but also shader inputs """
 
     def __init__(self, pipeline):
-        DebugObject.__init__(self)
+        BaseManager.__init__(self)
         self._pipeline = pipeline
         self._showbase = Globals.base
         self._ptas = {}
@@ -130,7 +130,7 @@ class CommonResources(DebugObject):
         skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox/Skybox.bam")
         return skybox
 
-    def update(self):
+    def do_update(self):
         """ Updates the commonly used resources, mostly the shader inputs """
         view_transform = Globals.render.get_transform(self._showbase.cam)
         self._ptas["view_mat_zup"][0] = (

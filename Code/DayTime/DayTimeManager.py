@@ -4,13 +4,15 @@ from direct.stdpy.file import open
 from ..Util.DebugObject import DebugObject
 from ..Util.ShaderUBO import PTABasedUBO
 from .DayTimeInterface import DayTimeInterface
+from ..BaseManager import BaseManager
 
-class DayTimeManager(DebugObject):
+
+class DayTimeManager(BaseManager):
 
     """ This is a wrapper arround the day time interface used by the pipeline """
 
     def __init__(self, pipeline):
-        DebugObject.__init__(self)
+        BaseManager.__init__(self)
         self._pipeline = pipeline
         self._interface = DayTimeInterface(
             self._pipeline.get_plugin_mgr().get_interface())
@@ -44,7 +46,7 @@ class DayTimeManager(DebugObject):
         0 denotes 0:00 and 1 denotes 24:00 """
         self._daytime = daytime
 
-    def update(self):
+    def do_update(self):
         """ Updates all the daytime inputs """
         for setting_name, handle in self._settings.items():
             setting_value = handle.get_scaled_value(self._daytime)

@@ -2,13 +2,14 @@
 
 from .DebugObject import DebugObject
 from .UDPListenerService import UDPListenerService
+from ..BaseManager import BaseManager
 
-class NetworkUpdateListener(DebugObject):
+class NetworkUpdateListener(BaseManager):
 
     """ Listener which listens on several ports for incoming updates """
 
     def __init__(self, pipeline):
-        DebugObject.__init__(self)
+        BaseManager.__init__(self)
         self._pipeline = pipeline
         self._config_updates = set()
         self._daytime_updates = set()
@@ -30,7 +31,7 @@ class NetworkUpdateListener(DebugObject):
         """ Internal handler when a dytime message arrived """
         self._daytime_updates.add(msg)
 
-    def update(self):
+    def do_update(self):
         """ Update task which gets called every frame and executes the changes"""
 
         # Config updates

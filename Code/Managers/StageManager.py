@@ -11,6 +11,7 @@ from ..Util.Image import Image
 from ..Util.ShaderUBO import BaseUBO
 
 from ..Stages.UpdatePreviousPipesStage import UpdatePreviousPipesStage
+from ..BaseManager import BaseManager
 
 class StageManager(DebugObject):
     """ This manager takes a list of RenderStages and puts them into an order,
@@ -220,7 +221,7 @@ class StageManager(DebugObject):
         for stage in self._stages:
             stage.set_shaders()
 
-    def update_stages(self):
+    def do_update(self):
         """ Calls the update method for each stage """
         for stage in self._stages:
             stage.update()

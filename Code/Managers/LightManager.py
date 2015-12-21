@@ -19,9 +19,9 @@ from ..Stages.DownscaleZStage import DownscaleZStage
 
 from ..GPUCommandQueue import GPUCommandQueue
 from ..Native import LightStorage, PointLight
+from ..BaseManager import BaseManager
 
-
-class LightManager(DebugObject):
+class LightManager(BaseManager):
 
     """ This class manages all the lights """
 
@@ -29,7 +29,7 @@ class LightManager(DebugObject):
 
     def __init__(self, pipeline):
         """ Constructs the light manager """
-        DebugObject.__init__(self, "LightManager")
+        BaseManager.__init__(self)
         self._pipeline = pipeline
         self._light_storage = LightStorage()
 

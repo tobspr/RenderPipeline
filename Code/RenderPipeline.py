@@ -44,10 +44,6 @@ class RenderPipeline(DebugObject):
         self._showbase = showbase
         self._mount_manager = MountManager(self)
         self._settings = SettingsLoader(self, "Pipeline Settings")
-        
-        # self._loading_screen = EmptyLoadingScreen()
-        
-        # Use the default loading screen instead of none
         self.set_default_loading_screen()
 
     def get_mount_manager(self):
@@ -174,12 +170,10 @@ class RenderPipeline(DebugObject):
             self.debug("No settings loaded, loading from default location")
             self._settings.load_from_file("Config/pipeline.yaml")
 
-
         # Check if the pipeline was properly installed, before including anything else
         if not isfile("Data/install.flag"):
             DebugObject.global_error("CORE", "You didn't setup the pipeline yet! Please run setup.py.")
             sys.exit(1)
-
 
         # Load the default prc config
         load_prc_file("Config/configuration.prc")
@@ -198,12 +192,20 @@ class RenderPipeline(DebugObject):
         self._com_resources = CommonResources(self)
         self._tag_mgr = TagStateManager(self)
         self._plugin_mgr = PluginManager(self)
-        self._debugger = OnscreenDebugger(self)
         self._effect_loader = EffectLoader()
         self._stage_mgr = StageManager(self)
         self._light_mgr = LightManager(self)
         self._daytime_mgr = DayTimeManager(self)
         self._ies_profile_mgr = IESProfileManager(self)
+
+        if self.get_setting("pipeline.display_debugger"):
+            self._debugger = OnscreenDebugger(self)
+        else:
+            # Use a fake onscreen debugger in case the debugger is not enabled
+            class FakeDebugger:
+                def __getattr__(self, *args, **kwargs):
+                    return lambda *args, **kwargs: None
+            self._debugger = FakeDebugger()
 
         # Load plugins and daytime settings
         self._plugin_mgr.load_plugins()
@@ -282,7 +284,6 @@ class RenderPipeline(DebugObject):
         """ Starts a listener thread which listens for incoming connections to
         trigger a shader reload. This is used by the Plugin Configurator to dynamically
         update settings. """
-
         self._listener = NetworkUpdateListener(self)
         self._listener.setup()
 
@@ -292,7 +293,7 @@ class RenderPipeline(DebugObject):
         self._debugger.update()
         self._daytime_mgr.update()
         self._com_resources.update()
-        self._stage_mgr.update_stages()
+        self._stage_mgr.update()
         self._light_mgr.update()
         return task.cont
 

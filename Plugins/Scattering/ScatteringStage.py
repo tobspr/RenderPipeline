@@ -25,8 +25,7 @@ class ScatteringStage(RenderStage):
 
     def create(self):
 
-
-        self._target = self._create_target("ScatteringStage")
+        self._target = self._create_target("Scattering:SkyboxScattering")
         self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 
@@ -37,7 +36,7 @@ class ScatteringStage(RenderStage):
         self._scatter_cubemap.get_texture().set_minfilter(Texture.FT_linear_mipmap_linear)
         self._scatter_cubemap.get_texture().set_magfilter(Texture.FT_linear)
 
-        self._target_cube = self._create_target("ScatteringCubemap")
+        self._target_cube = self._create_target("Scattering:EnvironmentCubemap")
         # self._target_cube.add_color_texture()
         self._target_cube.set_size(cubemap_size * 6, cubemap_size)
         self._target_cube.prepare_offscreen_buffer()
@@ -50,7 +49,7 @@ class ScatteringStage(RenderStage):
         self._mip_targets = []
         while mipsize >= 2:
             mipsize = mipsize // 2
-            target = self._create_target("DownscaleScatterCubemap-" + str(mipsize))
+            target = self._create_target("Scattering:DownscaleCubemap:Mip-" + str(mipsize))
             target.set_size(mipsize * 6, mipsize)
             # target.add_color_texture()
             target.prepare_offscreen_buffer()
