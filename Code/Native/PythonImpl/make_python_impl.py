@@ -61,6 +61,8 @@ REGEXP_METHODDEF = re.compile(r"def ([a-zA-Z0-9_]+)\(([^\)]+)\)")
 # Whether to write a docstring above each method
 WRITE_DOCSTRING = False
 
+PROCESSED_HEADERS = set()
+
 def load_templates(fname, prefix):
     """ Loads the function templates from a file """
     with open(fname, "r") as handle:
@@ -120,7 +122,7 @@ def resolve_return_type(rtype):
 
 def process_header(header, templates):
     """ Processes a header file """
-    global OUTPUT
+    global OUTPUT, PROCESSED_HEADERS
 
     with open(header, "r") as handle:
         content = handle.read()
@@ -146,6 +148,11 @@ def process_header(header, templates):
         return
 
     current_cls = parsed.classes_order[0]
+
+    if current_cls["name"] in PROCESSED_HEADERS:
+        return
+
+    PROCESSED_HEADERS.add(current_cls["name"])
 
     # Parse inheritance
     inherits = current_cls["inherits"]
@@ -266,9 +273,10 @@ if __name__ == "__main__":
         templates.update(load_templates("Templates/" + fname, template_name))
 
     # Collect headers
-    headers = []
+    headers = ["../Source/LightSystem/RPLight.h"]
     for pth, attr, files in os.walk(SOURCE_DIR):
         headers += [os.path.join(pth, i) for i in files if i.endswith(".h")]
+    print(headers)
 
     for header in headers:
         process_header(header, templates)
