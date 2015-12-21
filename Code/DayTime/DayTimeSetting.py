@@ -25,7 +25,7 @@ class DayTimeSetting(DebugObject):
         self.curves = []
 
     def was_modified(self):
-        """ Returns wheter any of the curves were modified """
+        """ Returns whether any of the curves were modified """
         for curve in self.curves:
             if curve.was_modified():
                 return True

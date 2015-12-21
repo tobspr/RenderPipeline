@@ -178,7 +178,7 @@ class MountManager(DebugObject):
                         pass
 
     def is_mounted(self):
-        """ Returns wheter the MountManager was already mounted by calling
+        """ Returns whether the MountManager was already mounted by calling
         mount() """
         return self._mounted
 

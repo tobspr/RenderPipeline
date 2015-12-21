@@ -20,11 +20,11 @@ class BasePluginSetting(DebugObject):
         self.display_conditions = {}
 
     def is_dynamic(self):
-        """ Returns wheter the setting is dynamic """
+        """ Returns whether the setting is dynamic """
         return self.runtime or self.shader_runtime
 
     def evaluate_display_conditions(self, settings):
-        """ Checks wheter the setting should be visible for a given set of
+        """ Checks whether the setting should be visible for a given set of
         settings """
         for setting_id, required_value in self.display_conditions.items():
             if setting_id not in settings:

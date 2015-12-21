@@ -327,7 +327,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         print("Filename =", filename)
 
     def _set_settings_visible(self, flag):
-        """ Sets wheter the settings panel is visible or not """
+        """ Sets whether the settings panel is visible or not """
         if flag:
             self.lbl_select_plugin.hide()
             self.frame_details.show()

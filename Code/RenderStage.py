@@ -50,7 +50,7 @@ class RenderStage(DebugObject):
 
     @classmethod
     def is_enabled(cls):
-        """ Returns wheter the class is enabled or disabled """
+        """ Returns whether the class is enabled or disabled """
         if hasattr(cls, "disabled") and cls.disabled:
             return False
         return True

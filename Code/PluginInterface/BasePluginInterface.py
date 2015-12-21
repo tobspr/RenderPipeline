@@ -34,7 +34,7 @@ class BasePluginInterface(DebugObject):
         raise NotImplementedError()
 
     def has_plugin_handle(self, plugin):
-        """ Checks wheter a handle for the given plugin exists """
+        """ Checks whether a handle for the given plugin exists """
         return self.get_plugin_handle(plugin) is not None
 
     def set_base_dir(self, pth):
@@ -111,7 +111,7 @@ class BasePluginInterface(DebugObject):
         return self._enabled_plugins
 
     def set_plugin_state(self, plugin_id, state):
-        """ Sets wheter a plugin is enabled or not. This has no effect until
+        """ Sets whether a plugin is enabled or not. This has no effect until
         write_configuration() is called """
         if not state and plugin_id in self._enabled_plugins:
             self._enabled_plugins.remove(plugin_id)

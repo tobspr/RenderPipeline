@@ -69,7 +69,7 @@
     #pragma include "Includes/PositionReconstruction.inc.glsl"
     #pragma include "Includes/Structures/GBufferData.struct.glsl"
 
-    // Checks wheter the given material is the skybox
+    // Checks whether the given material is the skybox
     bool is_skybox(Material m, vec3 camera_pos) {
         return distance(m.position, camera_pos) > 20000.0;
     }

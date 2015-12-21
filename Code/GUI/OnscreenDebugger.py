@@ -145,7 +145,7 @@ class OnscreenDebugger(DebugObject):
         self.set_reload_hint_visible(False)
 
     def set_reload_hint_visible(self, flag):
-        """ Sets wheter the shader reload hint is visible """
+        """ Sets whether the shader reload hint is visible """
         if flag:
             self._hint_reloading.show()
         else:

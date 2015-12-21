@@ -30,7 +30,7 @@ class SmoothConnectedCurve(object):
         self.build_curve()
 
     def was_modified(self):
-        """ Returns wheter the curve was modified since the creation """
+        """ Returns whether the curve was modified since the creation """
         return self._modified
 
     def get_cv_points(self):

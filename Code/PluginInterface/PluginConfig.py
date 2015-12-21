@@ -46,7 +46,7 @@ class PluginConfig(DebugObject):
         return self._settings
 
     def get_requires_native(self):
-        """ Returns wheter the plugin requires the native modules """
+        """ Returns whether the plugin requires the native modules """
         return "requires_native" in self._properties and self._properties["requires_native"]
 
     def get_daytime_settings(self):
