@@ -26,6 +26,8 @@ else:
     with open(join(curr_path, "use_cxx.flag"), "r") as handle:
         NATIVE_CXX_LOADED = handle.read().strip() == "1"
 
+# The native module should only be imported once, and that by the internal pipeline code
+# assert __package__ == "Code.Native", "You have included the pipeline in the wrong way!"
 
 # Classes which should get imported
 classes_to_import = [

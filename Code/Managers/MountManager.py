@@ -197,11 +197,14 @@ class MountManager(DebugObject):
         if isdir(join(self._base_path, "Models")):
             vfs.mount_loop(join(self._base_path, 'Models'), 'Models', 0)
 
+        # Convert the base path to something the os can work with
+        sys_base_path = Filename(self._base_path).to_os_specific()
+
         # Add plugin folder to the include path
-        sys.path.insert(0, join(self._base_path, 'Plugins'))
+        sys.path.insert(0, join(sys_base_path, 'Plugins'))
 
         # Add current folder to the include path
-        sys.path.insert(0, self._base_path)
+        sys.path.insert(0, sys_base_path)
 
         # Mount the pipeline temp path:
         # If no write path is specified, use a virtual ramdisk

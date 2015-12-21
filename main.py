@@ -57,7 +57,6 @@ class MainApp(ShowBase):
     def __init__(self):
 
         self.render_pipeline = RenderPipeline(self)
-        self.render_pipeline.set_default_loading_screen()
 
         # Set the base path and mount the directories
         self.render_pipeline.get_mount_manager().set_write_path("Temp")
