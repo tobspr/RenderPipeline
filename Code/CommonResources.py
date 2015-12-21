@@ -117,7 +117,6 @@ class CommonResources(BaseManager):
         grain_tex.set_wrap_u(Texture.WM_repeat)
         grain_tex.set_wrap_v(Texture.WM_repeat)
         grain_tex.set_anisotropic_degree(0)
-        grain_tex.set_format(Texture.F_rgba8)
         self._pipeline.get_stage_mgr().add_input("PrecomputedGrain", grain_tex)  
 
     def _load_skydome(self):
