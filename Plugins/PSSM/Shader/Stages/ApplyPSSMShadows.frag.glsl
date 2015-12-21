@@ -102,12 +102,8 @@ void main() {
         if (is_skybox(m, cameraPosition)) {
             result = scene_color;
             return;
-
-        // Otherwise assume no shadows
-        } else {
-            shadow_factor = 1.0;
         }
-
+        
     } else {
 
         // Get the MVP for the current split        

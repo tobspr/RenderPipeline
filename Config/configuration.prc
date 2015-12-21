@@ -11,10 +11,9 @@ icon-filename Data/GUI/icon.ico
 # gl-dump-compiled-shaders #t
 # notify-level-glgsg debug
 # notify-level-gobj debug
-notify-level-glgsg error
+notify-level-glgsg warning
 pstats-gpu-timing #t
-# gl-debug #t
-gl-debug #f
+gl-debug #t
 
 
 # ----------------- Misc Settings -----------------
@@ -60,7 +59,6 @@ text-dynamic-merge 1
 # Threading, really buggy!
 #threading-model App/Cull/Draw
 
-# Disable stencil, its not used in the pipeline
 support-stencil #f
 framebuffer-stencil #f
 
@@ -115,7 +113,7 @@ gl-force-fbo-color false
 # ----------- OpenGL / Performance Settings ------------
 
 # Set the minimum openGL version
-# gl-version 3 2
+gl-version 3 2
 
 # Animations on the gpu. The default shader has to get adjusted to support this
 # feature before this option can be turned on.

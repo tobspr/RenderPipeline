@@ -55,13 +55,13 @@ class SMAAStage(RenderStage):
         self._srgb_target.add_color_texture(bits=8)
         self._srgb_target.add_aux_texture(bits=8)
         self._srgb_target.prepare_offscreen_buffer()
-        self._srgb_target.set_clear_color()
+        self._srgb_target.set_clear_color(color=Vec4(0))
 
         # Edge detection
         self._edge_target = self._create_target("SMAA:EdgeDetection")
         self._edge_target.add_color_texture(bits=16)
         self._edge_target.prepare_offscreen_buffer()
-        self._edge_target.set_clear_color()
+        self._edge_target.set_clear_color(color=Vec4(0))
 
 
         self._edge_target.set_shader_input("SRGBSource", self._srgb_target["color"])
@@ -71,7 +71,7 @@ class SMAAStage(RenderStage):
         self._blend_target = self._create_target("SMAA:BlendWeights")
         self._blend_target.add_color_texture(bits=16)
         self._blend_target.prepare_offscreen_buffer()
-        self._blend_target.set_clear_color()
+        self._blend_target.set_clear_color(color=Vec4(0))
 
         self._blend_target.set_shader_input("EdgeTex", self._edge_target["color"])
         self._blend_target.set_shader_input("AreaTex", self._area_tex)

@@ -136,8 +136,15 @@ class BufferViewer(DraggableWindow):
         entry_width = 235
         entry_height = (entry_width - 20) * aspect + 55
 
+        # Store already processed images
+        processed = set()
+        index = -1
         # Iterate over all stages
-        for index, stage_tex in enumerate(self._stages):
+        for stage_tex in self._stages:
+            if stage_tex in processed:
+                continue
+            processed.add(stage_tex)
+            index += 1
             stage_name = stage_tex.get_name()
 
             xoffs = index % entries_per_row

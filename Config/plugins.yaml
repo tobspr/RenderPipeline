@@ -11,8 +11,8 @@ enabled:
     - SMAA
     - AO
     - Bloom
-    - PSSM
     - Scattering
+    - PSSM
 
 overrides: 
     AO.alchemy_max_distance: 20.0

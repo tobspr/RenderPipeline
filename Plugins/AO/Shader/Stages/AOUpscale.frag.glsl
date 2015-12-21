@@ -1,6 +1,5 @@
 #version 400
 
-
 #pragma optionNV (unroll all)
 
 #pragma include "Includes/Configuration.inc.glsl"
@@ -33,21 +32,15 @@ void main() {
             ivec2 source_coord = bil_start_coord + ivec2(x, y);
             ivec2 screen_coord = 2 * source_coord;
             vec4 source_sample = texelFetch(SourceTex, source_coord, 0);
-            float weight = 1.0;
 
-            // Compute weighting
-
-            // In case the pixel is not the same pixel, check how much information
-            // those pixels share, and if it is enough, use that sample
-            if (screen_coord != coord) {
-
-                float sample_depth = get_gbuffer_depth(GBuffer, screen_coord);
-                vec3 sample_nrm = get_gbuffer_normal(GBuffer, screen_coord);
-                float depth_diff = abs(sample_depth - mid_depth) / max_depth_diff;
-                float nrm_diff = max(0, dot(sample_nrm, mid_nrm));
-                weight *= 1.0 - saturate(depth_diff);
-                weight *= pow(nrm_diff, 1.0 / max_nrm_diff);
-            }
+            // Check how much information those pixels share, and if it is
+            // enough, use that sample
+            float sample_depth = get_gbuffer_depth(GBuffer, screen_coord);
+            vec3 sample_nrm = get_gbuffer_normal(GBuffer, screen_coord);
+            float depth_diff = abs(sample_depth - mid_depth) / max_depth_diff;
+            float nrm_diff = max(0, dot(sample_nrm, mid_nrm));
+            float weight = 1.0 - saturate(depth_diff);
+            weight *= pow(nrm_diff, 1.0 / max_nrm_diff);
 
             weight = max(0.1, weight);
 
@@ -58,8 +51,5 @@ void main() {
     }
 
     accum /= max(0.01, weights);
-    // accum = vec4(weights / 4.0);
-
-
     result = vec4(accum);
 }
