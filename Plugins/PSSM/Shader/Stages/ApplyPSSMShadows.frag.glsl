@@ -221,6 +221,7 @@ void main() {
             float shadow_sample = textureLod(PSSMShadowAtlas, projected_skin_coord, 0).x;
 
             // Reconstruct intersection position
+            // TODO: This is totally slow! Pass it as input
             mat4 inverse_mvp = inverse(mvp);
             vec3 intersection_pos = calculate_surface_pos_ortho(shadow_sample, projected_skin.xy, split_near_far.x, split_near_far.y, inverse_mvp);
 

@@ -37,8 +37,8 @@ class Plugin(BasePlugin):
         self._rig.set_pssm_distance(self.get_setting("max_distance"))
         self._rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
         self._rig.set_use_stable_csm(True)
-        self._rig.set_use_fixed_film_size(False)
-        self._rig.set_use_tight_frustum(True)
+        self._rig.set_use_fixed_film_size(True)
+        self._rig.set_use_tight_frustum(False)
         self._rig.set_resolution(self.get_setting("resolution"))
 
         self._rig.reparent_to(self._node)

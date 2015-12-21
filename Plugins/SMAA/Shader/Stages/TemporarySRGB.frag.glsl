@@ -16,9 +16,7 @@ out vec4 result_predication;
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec3 scene_data = texelFetch(ShadedScene, coord, 0).xyz;
-    // vec3 nrm = get_view_normal(coord);
     vec3 nrm = get_view_normal_approx(coord);
-
     // Simple reinhard operator
     scene_data *= 3.0;
     scene_data = scene_data / (1.0 + scene_data);

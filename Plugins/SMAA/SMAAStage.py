@@ -2,7 +2,7 @@ from __future__ import division
 
 from .. import *
 
-from panda3d.core import PTAInt
+from panda3d.core import PTAInt, Vec4
 
 
 class SMAAStage(RenderStage):
@@ -11,7 +11,7 @@ class SMAAStage(RenderStage):
 
     required_pipes = ["ShadedScene", "GBuffer"]
     required_inputs = ["mainCam", "mainRender", "cameraPosition", "TimeOfDay",
-                        "currentProjMat"]
+                        "currentProjMat", "currentProjMatInv"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "SMAAStage", pipeline)

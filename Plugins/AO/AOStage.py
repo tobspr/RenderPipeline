@@ -8,7 +8,8 @@ from .. import RenderStage
 class AOStage(RenderStage):
 
     required_pipes = ["GBuffer"]
-    required_inputs = ["mainCam", "mainRender", "currentProjMat", "cameraPosition"]
+    required_inputs = ["mainCam", "mainRender", "currentProjMat", "cameraPosition",
+                       "currentProjMatInv"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "AOStage", pipeline)

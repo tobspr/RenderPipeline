@@ -5,7 +5,7 @@ const float sample_radius = GET_SETTING(AO, hbao_sample_radius);
 const int num_angles = GET_SETTING(AO, hbao_ray_count);
 const int num_ray_steps = GET_SETTING(AO, hbao_ray_steps);
 const float tangent_bias = GET_SETTING(AO, hbao_tangent_bias);
-const float max_sample_distance = GET_SETTING(AO, hbao_max_distance) * 0.1;
+const float max_sample_distance = GET_SETTING(AO, hbao_max_distance) * 0.3;
 
 float accum = 0.0;
 vec3 bent_normal = vec3(pixel_view_normal * 3.0);

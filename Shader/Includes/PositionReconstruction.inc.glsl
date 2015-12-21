@@ -75,7 +75,7 @@ vec3 calculate_surface_pos_ortho(float z, vec2 tcoord, float near, float far, ma
 
 // Computes the view position from a given Z value and texcoord
 vec3 calculate_view_pos(float z, vec2 tcoord) {
-  vec4 view_pos = inverse(currentProjMat) *
+  vec4 view_pos = currentProjMatInv *
     vec4(fma(tcoord.xy, vec2(2.0), vec2(-1.0)), z, 1.0);
   return view_pos.xyz / view_pos.w;
 }

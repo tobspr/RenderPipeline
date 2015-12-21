@@ -25,6 +25,8 @@ void main() {
         vec4 subsampleIndices = vec4(0);
     #endif
 
+    if (textureLod(EdgeTex, texcoord, 0).w < 0.5) discard;
+
     // Actual Fragment shader
     result = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, EdgeTex, AreaTex, SearchTex, subsampleIndices);
     

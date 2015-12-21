@@ -44,6 +44,7 @@ class CommonResources(BaseManager):
         self._ptas["last_view_proj_mat"] = PTAMat4.empty_array(1)
         self._ptas["view_mat_zup"] = PTAMat4.empty_array(1)
         self._ptas["proj_mat"] = PTAMat4.empty_array(1)
+        self._ptas["inv_proj_mat"] = PTAMat4.empty_array(1)
         self._ptas["frame_delta"] = PTAFloat.empty_array(1)
 
         stage_mgr = self._pipeline.get_stage_mgr()
@@ -55,6 +56,7 @@ class CommonResources(BaseManager):
         stage_mgr.add_input("lastViewProjMatNoJitter", self._ptas["last_view_proj_mat"])
         stage_mgr.add_input("currentViewMatZup", self._ptas["view_mat_zup"])
         stage_mgr.add_input("currentProjMat", self._ptas["proj_mat"])
+        stage_mgr.add_input("currentProjMatInv", self._ptas["inv_proj_mat"])
         stage_mgr.add_input("currentViewProjMatNoJitter", self._ptas["curr_view_proj_mat_nojitter"])
 
     def _load_textures(self):
@@ -142,6 +144,9 @@ class CommonResources(BaseManager):
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
         self._ptas["curr_view_proj_mat"][0] = view_transform.get_mat() * proj_mat
         self._ptas["proj_mat"][0] = Mat4.convert_mat(CSYupRight, CSZupRight) * proj_mat
+        inv_proj_mat = Mat4(self._ptas["proj_mat"][0])
+        inv_proj_mat.invertInPlace()
+        self._ptas["inv_proj_mat"][0] = inv_proj_mat
 
         # Remove jitter
         proj_mat.set_cell(1, 0, 0.0)

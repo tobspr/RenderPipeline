@@ -34,4 +34,13 @@
 #define END_BRANCH_TRANSLUCENCY()
 #endif
 
+// Disable translucency?
+#if 1
+#undef BRANCH_TRANSLUCENCY
+#undef END_BRANCH_TRANSLUCENCY
+#define BRANCH_TRANSLUCENCY(m) if (false) {
+#define END_BRANCH_TRANSLUCENCY() }
+#endif
+
+
 #pragma include "CommonFunctions.inc.glsl"
