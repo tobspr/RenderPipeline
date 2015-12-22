@@ -71,11 +71,14 @@ void LightStorage::setup_shadows(RPLight* light) {
         if (slot < 0) {
             cerr << "Could not attach shadow source, out of slots!" << endl;
             return;
-        }
+        }   
 
+        // Assign the slot
         _shadow_sources[slot] = source;
+        source->set_slot(slot);
 
-
+        // Update maximum source index
+        _max_source_index = max(_max_source_index, slot);
     }
 }
 
@@ -101,6 +104,8 @@ void LightStorage::remove_light(PT(RPLight) light) {
 
     light->remove_slot();
 
+    // TODO: Cleanup shadow sources
+
     // Since we referenced the light when we stored it, we
     // have to decrease the reference aswell
     light->unref();
@@ -109,6 +114,11 @@ void LightStorage::remove_light(PT(RPLight) light) {
 
 
 void LightStorage::update() {
+
+    // Find all dirty shadow sources and update them
+    for (int k = 0; k <0 _max_source_index; k++) {
+        
+    }
 
     // Find all dirty lights and update them
     for (int k = 0; k <= _max_light_index; k++) {

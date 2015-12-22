@@ -49,3 +49,5 @@ def get_slot(self):
 def set_ies_profile(self, profile):
     self._ies_profile = profile
 
+def set_casts_shadows(self, flag=True):
+    print("set_casts_shadows: TODO")

@@ -6,7 +6,7 @@
 
 
 PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
-    nassertv(num_splits > 0 && num_splits <= MAX_PSSM_SPLITS);
+    nassertv(num_splits > 0);
     _pssm_distance = 100.0;
     _sun_distance = 500.0;
     _use_fixed_film_size = false;
@@ -20,9 +20,7 @@ PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
 }
 
 PSSMCameraRig::~PSSMCameraRig() {
-
 }
-
 
 void PSSMCameraRig::set_pssm_distance(float distance) {
     nassertv(distance > 1.0 && distance < 100000.0);
@@ -61,8 +59,6 @@ void PSSMCameraRig::reset_film_size_cache() {
         _max_film_sizes[i].set(0, 0);
     }
 }
-
-
 
 void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
     _cam_nodes.reserve(num_splits);

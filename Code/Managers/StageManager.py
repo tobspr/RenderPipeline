@@ -21,8 +21,8 @@ class StageManager(BaseManager):
     _STAGE_ORDER = [
         "GBufferStage",
         "PSSMShadowStage",
+        "ShadowStage",
         "DownscaleZStage",
-        "ReprojectStage",
         "FlagUsedCellsStage",
         "CollectUsedCellsStage",
         "CullLightsStage",

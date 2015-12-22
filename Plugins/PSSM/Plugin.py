@@ -40,7 +40,6 @@ class Plugin(BasePlugin):
         self._rig.set_use_fixed_film_size(True)
         self._rig.set_use_tight_frustum(False)
         self._rig.set_resolution(self.get_setting("resolution"))
-
         self._rig.reparent_to(self._node)
 
         # Attach the cameras to the shadow stage
@@ -54,7 +53,7 @@ class Plugin(BasePlugin):
 
             # Make sure the pipeline knows about our camera, so it can apply
             # the correct bitmasks
-            self._pipeline.get_tag_mgr().register_shadow_source(camera_np)
+            self._pipeline.get_tag_mgr().register_shadow_camera(camera_np.node())
 
         # Accept a shortcut to enable / disable the update of PSSM
         Globals.base.accept("u", self._toggle_update_enabled)

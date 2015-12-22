@@ -26,8 +26,9 @@ from .DayTime.DayTimeManager import DayTimeManager
 from .Managers.MountManager import MountManager
 from .Managers.StageManager import StageManager
 from .Managers.LightManager import LightManager
-from .Managers.TagStateManager import TagStateManager
 from .Managers.IESProfileManager import IESProfileManager
+
+from .Native import TagStateManager
 
 class RenderPipeline(DebugObject):
 
@@ -142,19 +143,19 @@ class RenderPipeline(DebugObject):
 
         # Apply default stage shader
         if not effect.get_option("render_gbuffer"):
-            nodepath.hide(TagStateManager.MASK_GBUFFER)
+            nodepath.hide(self._tag_mgr.get_gbuffer_mask())
         else:
             nodepath.set_shader(effect.get_shader_obj("GBuffer"), sort)
-            nodepath.show(TagStateManager.MASK_GBUFFER)
+            nodepath.show(self._tag_mgr.get_gbuffer_mask())
 
         # Apply shadow stage shader
         if not effect.get_option("render_shadows"):
-            nodepath.hide(TagStateManager.MASK_SHADOWS)
+            nodepath.hide(self._tag_mgr.get_shadow_mask())
         else:
             shader = effect.get_shader_obj("Shadows")
             self._tag_mgr.apply_shadow_state(
                 nodepath, shader, str(effect.get_effect_id()), 25 + sort)
-            nodepath.show(TagStateManager.MASK_SHADOWS)
+            nodepath.show(self._tag_mgr.get_shadow_mask())
 
     def create(self):
         """ This creates the pipeline, and setups all buffers. It also constructs
@@ -190,7 +191,7 @@ class RenderPipeline(DebugObject):
 
         # Create the various managers and instances
         self._com_resources = CommonResources(self)
-        self._tag_mgr = TagStateManager(self)
+        self._tag_mgr = TagStateManager(Globals.base.cam)
         self._plugin_mgr = PluginManager(self)
         self._effect_loader = EffectLoader()
         self._stage_mgr = StageManager(self)

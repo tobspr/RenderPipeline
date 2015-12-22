@@ -35,7 +35,8 @@ classes_to_import = [
     "GPUCommandList",
     "LightStorage",
     "PSSMCameraRig",
-    "IESDataset"
+    "IESDataset",
+    "TagStateManager",
 ]
 
 # Classes which should get imported and renamed

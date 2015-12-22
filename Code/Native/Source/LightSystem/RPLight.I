@@ -19,6 +19,7 @@ inline void RPLight::set_pos(const LVecBase3f &pos) {
 inline void RPLight::set_pos(float x, float y, float z) {
     _position.set(x, y, z);
     mark_dirty();
+    invalidate_shadows();
 }
 
 inline void RPLight::set_color(const LVecBase3f &color) {

@@ -2,6 +2,7 @@
 inline void RPPointLight::set_radius(float radius) {
     _radius = radius;
     mark_dirty();
+    invalidate_shadows();
 }
 
 inline void RPPointLight::set_inner_radius(float inner_radius) {

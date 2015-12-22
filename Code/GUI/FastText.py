@@ -39,7 +39,7 @@ class FastText(DebugObject):
         if self._cache_key in self._FONT_PAGE_POOL:
             self._font_data = self._FONT_PAGE_POOL[self._cache_key]
         else:
-            self.debug("Creating new font cache entry")
+            self.debug("Creating new font cache entry for", font)
             self._extract_font_data()
         self._generate_card()
 

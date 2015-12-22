@@ -16,6 +16,7 @@ from ..Stages.AmbientStage import AmbientStage
 from ..Stages.GBufferStage import GBufferStage
 from ..Stages.FinalStage import FinalStage
 from ..Stages.DownscaleZStage import DownscaleZStage
+from ..Stages.ShadowStage import ShadowStage
 
 from ..GPUCommandQueue import GPUCommandQueue
 from ..Native import LightStorage, PointLight

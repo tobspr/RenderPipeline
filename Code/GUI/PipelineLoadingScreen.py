@@ -22,7 +22,6 @@ class PipelineLoadingScreen(DebugObject):
     def __init__(self, pipeline):
         """ Inits the loading screen """
         DebugObject.__init__(self)
-        self.debug("Creating loading screen ..")
         self._pipeline = pipeline
 
     def create(self):

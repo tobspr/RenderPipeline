@@ -31,10 +31,13 @@ from __future__ import print_function
 
 # Common imports
 import struct
-from panda3d.core import Vec3, PNMImage
 import math
 
+# Panda3D Imports
+from panda3d.core import Vec3, PNMImage, BitMask32, RenderState, ColorWriteAttrib
+from panda3d.core import ShaderAttrib
 
+# Error which is raised when a method is not templated yet
 class NotTemplatedError(Exception):
     def __init__(self, func_name):
         super(NotTemplatedError, self).__init__(
@@ -152,6 +155,7 @@ def process_header(header, templates):
     if current_cls["name"] in PROCESSED_HEADERS:
         return
 
+    print("Processing class", current_cls["name"])
     PROCESSED_HEADERS.add(current_cls["name"])
 
     # Parse inheritance
@@ -210,15 +214,15 @@ def process_header(header, templates):
         params = ["self"]
         method_str = ""
 
-        if method["static"]:
-            print("Skipping static method", method_name)
-            continue
+        # if method["static"]:
+        #     print("Skipping static method", method_name)
+        #     continue
 
         # Check for a predefined template
         template_key = current_cls["name"] + "::" + method_name
 
         if template_key in templates:
-            print("Found template:", template_key)
+            # print("Found template:", template_key)
 
             template = templates[template_key]
             method_str = indent * 1 + "def " + template["name"] + "(" + template["args"] + "):\n"
@@ -276,7 +280,6 @@ if __name__ == "__main__":
     headers = ["../Source/LightSystem/RPLight.h"]
     for pth, attr, files in os.walk(SOURCE_DIR):
         headers += [os.path.join(pth, i) for i in files if i.endswith(".h")]
-    print(headers)
 
     for header in headers:
         process_header(header, templates)

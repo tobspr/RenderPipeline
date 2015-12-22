@@ -11,7 +11,7 @@ icon-filename Data/GUI/icon.ico
 # gl-dump-compiled-shaders #t
 # notify-level-glgsg debug
 # notify-level-gobj debug
-notify-level-glgsg warning
+notify-level-glgsg error
 pstats-gpu-timing #t
 gl-debug #t
 
@@ -27,12 +27,11 @@ gl-debug #t
 # wrong cased directory paths
 vfs-case-sensitive #f
 
-# Disable transform cache, it just seems to slow stuff down with no
-# actual benefit
-transform-cache #f
+
 
 # Enable state cache, this seems to actually help the performance by a lot
 state-cache #t
+transform-cache #t
 
 # Frame rate meter style
 show-frame-rate-meter #f
@@ -120,11 +119,9 @@ gl-version 3 2
 # hardware-animated-vertices #t
 
 # Try this options for performance
-# uniquify-matrix #f
-uniquify-transforms #t
-uniquify-states #t
+# uniquify-transforms #t
+# uniquify-states #t
 # uniquify-attribs #f
-# prefer-single-buffer #t
 
 # Enable garbarge collection
 garbage-collect-states #t
@@ -133,11 +130,8 @@ garbage-collect-states #t
 # Compress textures on the drivers?
 # driver-compress-textures #t
 
-# Better performance for vertices? (Have to test)
-# display-lists #t
-
 # Faster animations? (Have to test)
-# matrix-palette #tc
+# matrix-palette #t
 # display-list-animation #t
 
 # Better GL performance by not using gl-finish and so on
@@ -148,7 +142,7 @@ gl-force-no-flush #t
 gl-force-no-scissor #t
 
 # Eventually disable memory barriers, have to check if this is faster
-# gl-enable-memory-barriers #f
+gl-enable-memory-barriers #f
 
 # Disable threading
 lock-to-one-cpu #t

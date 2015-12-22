@@ -8,8 +8,6 @@
 #include <vector>
 
 
-#define MAX_PSSM_SPLITS 10
-
 class PSSMCameraRig {
 
     PUBLISHED:
@@ -25,11 +23,9 @@ class PSSMCameraRig {
         void set_logarithmic_factor(float factor);
 
         void fit_to_camera(NodePath &cam_node, const LVecBase3f &light_vector);
-
         void reset_film_size_cache();
 
         NodePath get_camera(int index);
-
 
         void reparent_to(NodePath &parent);
         const PTA_LMatrix4f &get_mvp_array();

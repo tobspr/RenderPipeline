@@ -16,3 +16,12 @@ inline int ShadowSource::get_slot() const {
 inline void ShadowSource::set_slot(int slot) {
     _slot = slot;
 }
+
+inline void ShadowSource::set_pos_dir(LVecBase3f pos, LVecBase3f direction) {
+    LQuaternion q;
+    look_at(q, direction);
+    LVecBase3f scale(1);
+    LVecBase3f shear(0);
+    compose_matrix(_transform, scale, shear, q.get_hpr(), pos);
+    invalidate();
+}

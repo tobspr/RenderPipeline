@@ -59,7 +59,7 @@ class ExposureWidget(DebugObject):
         stage_mgr = self._pipeline.get_stage_mgr()
 
         if not stage_mgr.has_pipe("Exposure"):
-            self.warn("Disabling exposure widget, could not find the exposure texture.")
+            self.debug("Disabling exposure widget, could not find the exposure data.")
             self._node.remove_node()
             return
 
