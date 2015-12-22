@@ -8,7 +8,7 @@ inline void RPLight::unset_dirty_flag() {
     _dirty = false;
 }
 
-inline bool RPLight::is_dirty() {
+inline bool RPLight::is_dirty() const {
     return _dirty;
 }
 
@@ -30,7 +30,7 @@ inline void RPLight::set_color(float r, float g, float b) {
     mark_dirty();
 }
 
-inline bool RPLight::has_slot() {
+inline bool RPLight::has_slot() const {
     return _slot >= 0;
 }
 
@@ -42,11 +42,11 @@ inline void RPLight::assign_slot(int slot) {
     _slot = slot;
 }
 
-inline RPLight::LightType RPLight::get_light_type() {
+inline RPLight::LightType RPLight::get_light_type() const {
     return _light_type;
 }
 
-inline int RPLight::get_slot() {
+inline int RPLight::get_slot() const {
     return _slot;
 }
 
@@ -62,15 +62,22 @@ inline void RPLight::set_casts_shadows(bool flag) {
     _casts_shadows = flag;
 }
 
-inline bool RPLight::get_casts_shadows() {
+inline bool RPLight::get_casts_shadows() const {
     return _casts_shadows;
 }
 
-inline int RPLight::get_num_shadow_sources() {
+inline int RPLight::get_num_shadow_sources() const {
     return _shadow_sources.size();
 }
 
-inline ShadowSource* RPLight::get_shadow_source(int index) {
+inline ShadowSource* RPLight::get_shadow_source(int index) const {
     nassertr(index < _shadow_sources.size(), NULL);
     return _shadow_sources[index];
 }
+
+inline void RPLight::invalidate_shadows() {
+    for (size_t i = 0; i < _shadow_sources.size(); ++i) {
+        _shadow_sources[i]->invalidate();
+    }
+}
+

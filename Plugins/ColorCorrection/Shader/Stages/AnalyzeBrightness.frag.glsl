@@ -2,14 +2,10 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 
-out vec4 result;
-
 uniform layout(rgba16f) imageBuffer ExposureStorage;
 uniform sampler2D DownscaledTex;
 
 uniform float frameDelta;
-
-
 
 void main() {
 
@@ -42,7 +38,5 @@ void main() {
 
     float adjustment = saturate(frameDelta * adaption_rate);
     float new_luminance = mix(cur_luminance, avg_luminance, adjustment);
-
     imageStore(ExposureStorage, 0, vec4(new_luminance));
-    result = vec4(new_luminance, 0, 0, 1);
 }

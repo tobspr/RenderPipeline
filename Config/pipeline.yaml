@@ -44,3 +44,10 @@ settings:
         # better performance for less amount of lights, but higher values should
         # be used when using many lights, e.g. > 1024, to get better coherency.
         culling_slice_width: 256
+
+
+    shadows:
+
+        # The size of the global shadow atlas, used for point and spot light
+        # shadows. This should be a power of 2.
+        atlas_size: 4096

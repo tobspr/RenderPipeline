@@ -150,10 +150,10 @@ vec3 unpack_texture_normal(vec3 n) {
 // Converts a value from linear to logarithmic distribution, using a given factor
 float make_logarithmic(float x, float factor) {
     // return (exp(factor * x)-1) / (exp(factor)-1);
-    return log(factor * x + 1.0) / log(1.0 + factor);
+    return log(factor * x + 1.0 + 1e-6) / log(1.0 + factor);
 }
 
 // Makes a 3 component vector logarithmic
 vec3 make_logarithmic(vec3 v, float factor) {
-    return log(factor * v + 1.0) / log(1.0 + factor);
+    return log(factor * v + 1.0 + 1e-6) / log(1.0 + factor);
 }

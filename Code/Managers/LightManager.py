@@ -32,7 +32,6 @@ class LightManager(BaseManager):
         BaseManager.__init__(self)
         self._pipeline = pipeline
         self._light_storage = LightStorage()
-
         self._compute_tile_size()
         self._init_light_storage()
         self._init_command_queue()
@@ -49,6 +48,8 @@ class LightManager(BaseManager):
         define("LC_TILE_SLICES", self._pipeline.get_setting("lighting.culling_grid_slices"))
         define("LC_MAX_DISTANCE", self._pipeline.get_setting("lighting.culling_max_distance"))
         define("LC_CULLING_SLICE_WIDTH", self._pipeline.get_setting("lighting.culling_slice_width"))
+
+        define("SHADOW_ATLAS_SIZE", self._pipeline.get_setting("shadows.atlas_size"))
 
         # Register all light types as defines
         for attr in dir(PointLight):

@@ -18,13 +18,11 @@ void main() {
     vec4 border_color = vec4(0.9, 0.9, 0.9, 1.0);
 
     // Border
-    const int border_size = 2;
+    const int border_size = 1;
     if (coord.x < border_size || coord.x >= widget_size.x - border_size ||
         coord.y < border_size || coord.y >= widget_size.y - border_size) {
         color += border_color * (1 - color.w);
     }
-
-
 
     // Fetch exposure settings
     const float factor = 12.0;

@@ -60,7 +60,7 @@ class ColorCorrectionStage(RenderStage):
             # Create the target which extracts the exposure from the average brightness
             self._target_analyze = self._create_target("AnalyzeBrightness")
             self._target_analyze.set_size(1, 1)
-            self._target_analyze.add_color_texture()
+            # self._target_analyze.add_color_texture()
             self._target_analyze.prepare_offscreen_buffer()
 
             self._target_analyze.set_shader_input(

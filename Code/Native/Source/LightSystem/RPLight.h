@@ -24,16 +24,17 @@ class RPLight : public ReferenceCount {
         virtual void update_shadow_sources() = 0;
         virtual void write_to_command(GPUCommand &cmd);
         
-        inline int get_num_shadow_sources();
-        inline ShadowSource* get_shadow_source(int index);
-
+        inline int get_num_shadow_sources() const;
+        inline ShadowSource* get_shadow_source(int index) const;
 
         inline void mark_dirty();
         inline void unset_dirty_flag();
-        inline bool is_dirty();
-        inline bool has_slot();
+        inline bool is_dirty() const;
+        inline bool has_slot() const;
         inline void remove_slot();
         inline void assign_slot(int slot);
+
+        inline void invalidate_shadows();
 
     PUBLISHED:
 
@@ -43,12 +44,12 @@ class RPLight : public ReferenceCount {
         inline void set_color(const LVecBase3f &color);
         inline void set_color(float r, float g, float b);
 
-        inline LightType get_light_type();
+        inline LightType get_light_type() const;
 
         inline void set_casts_shadows(bool flag = true);
-        inline bool get_casts_shadows();
+        inline bool get_casts_shadows() const;
 
-        inline int get_slot();
+        inline int get_slot() const;
         inline void set_ies_profile(int profile);
 
     protected:

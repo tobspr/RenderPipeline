@@ -25,9 +25,6 @@ void LightStorage::set_command_list(GPUCommandList *cmd_list) {
     _cmd_list = cmd_list;
 }
 
-int LightStorage::get_max_light_index() {
-    return _max_light_index;
-}
 
 void LightStorage::add_light(PT(RPLight) light) {
     if (light->has_slot()) {
@@ -68,11 +65,19 @@ void LightStorage::setup_shadows(RPLight* light) {
     light->init_shadow_sources();
 
     for (int i = 0; i < light->get_num_shadow_sources(); ++i) {
-        cout << "Source: " << i << "->" << light->get_shadow_source(i) << endl;
+        ShadowSource* source = light->get_shadow_source(i);
+        
+        int slot = find_shadow_slot();
+        if (slot < 0) {
+            cerr << "Could not attach shadow source, out of slots!" << endl;
+            return;
+        }
+
+        _shadow_sources[slot] = source;
+
+
     }
-
 }
-
 
 
 void LightStorage::remove_light(PT(RPLight) light) {
@@ -101,9 +106,7 @@ void LightStorage::remove_light(PT(RPLight) light) {
     light->unref();
 }
 
-int LightStorage::get_num_stored_lights() {
-    return _num_stored_lights;
-}
+
 
 void LightStorage::update() {
 

@@ -27,3 +27,4 @@ void RPLight::write_to_command(GPUCommand &cmd) {
 RPLight::~RPLight() {
     // Default dtor, for now
 }
+
