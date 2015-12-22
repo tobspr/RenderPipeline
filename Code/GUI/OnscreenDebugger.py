@@ -164,7 +164,7 @@ class OnscreenDebugger(BaseManager):
         debugger_content.set_x(40)
         heading_color = Vec3(0.7, 0.7, 0.24) * 1.2
         BetterOnscreenText(
-            parent=debugger_content, text="Render Mode:", x=0, y=0, size=20,
+            parent=debugger_content, text="Render Mode:".upper(), x=0, y=0, size=20,
             color=heading_color)
 
         render_modes = [
@@ -194,10 +194,10 @@ class OnscreenDebugger(BaseManager):
             offs_y = (idx // 2) * 37 + 40
             offs_x = (idx % 2) * row_width
             box = BetterLabeledCheckbox(
-                parent=debugger_content, x=offs_x, y=offs_y, text=mode,
+                parent=debugger_content, x=offs_x, y=offs_y, text=mode.upper(),
                 text_color=Vec3(0.9), radio=True, chb_checked=(mode == "Default"),
                 chb_callback=partial(self._set_render_mode, mode_id),
-                text_size=17, expand_width=160)
+                text_size=16, expand_width=160)
             collection.add(box.get_checkbox())
 
     def _set_render_mode(self, mode_id, value):

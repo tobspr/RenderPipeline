@@ -52,8 +52,7 @@ void main() {
 
         // Chromatic abberation
         #if GET_SETTING(ColorCorrection, use_chromatic_aberration)
-            // vec3 scene_color = do_chromatic_aberration(ShadedScene, texcoord, 1-vignette);
-            vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
+            vec3 scene_color = do_chromatic_aberration(ShadedScene, texcoord, 1-vignette);
         #else
             vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
         #endif
