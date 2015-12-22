@@ -35,7 +35,7 @@ class DisplayShaderBuilder(object):
             with open(cache_key, "w") as handle:
                 handle.write(fragment_shader)
 
-        return Shader.load(Shader.SL_GLSL, "Shader/DefaultGUIShader.vertex.glsl", cache_key)
+        return Shader.load(Shader.SL_GLSL, "Shader/GUI/DefaultGUIShader.vertex.glsl", cache_key)
 
     @classmethod
     def _build_fragment_shader(cls, texture, view_width, view_height):

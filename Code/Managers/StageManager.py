@@ -94,6 +94,14 @@ class StageManager(BaseManager):
         for define in to_remove:
             del self._defines[define]
 
+    def get_pipe(self, pipe_name):
+        """ Returns a handle to an existing pipe """
+        return self._pipes[pipe_name]
+
+    def has_pipe(self, pipe_name):
+        """ Returns whether a certain pipe exists """
+        return pipe_name in self._pipes
+
     def setup(self):
         """ Setups the stages """
         self.debug("Setup stages ...")

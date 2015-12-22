@@ -21,6 +21,11 @@ class ColorCorrectionStage(RenderStage):
     def set_use_sharpen(self, flag):
         self._use_sharpen = flag
 
+    def get_produced_pipes(self):
+        if self._use_auto_exposure:
+            return {"Exposure": self._tex_exposure.get_texture()}
+        return {}
+
     def create(self):
 
         if self._use_auto_exposure:

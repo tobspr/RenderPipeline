@@ -198,6 +198,9 @@ class RenderPipeline(DebugObject):
         self._daytime_mgr = DayTimeManager(self)
         self._ies_profile_mgr = IESProfileManager(self)
 
+        # Load commonly used resources
+        self._com_resources.load()
+
         if self.get_setting("pipeline.display_debugger"):
             self._debugger = OnscreenDebugger(self)
         else:
@@ -212,7 +215,7 @@ class RenderPipeline(DebugObject):
         self._daytime_mgr.load_settings()
 
         # Load common inputs and defines
-        self._com_resources.load()
+        
         self._create_common_defines()
 
         self._plugin_mgr.trigger_hook("on_stage_setup")

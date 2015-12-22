@@ -9,8 +9,7 @@ out vec4 result;
 
 float get_log_luminance(vec3 color) {
     float lum = get_luminance(color);
-    // return max(0, log(1+ 16.0 * lum) / log(17.0));
-    return max(0.0, 0.2*lum);
+    return max(0.0, GET_SETTING(ColorCorrection, brightness_scale) * lum);
 }
 
 void main() {

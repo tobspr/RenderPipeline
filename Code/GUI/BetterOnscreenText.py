@@ -28,6 +28,8 @@ class BetterOnscreenText(DebugObject):
 
         if font is None:
             font = Globals.font
+            # Should always have a global font. Never use the default panda font!
+            assert font
 
         self._initial_pos = Vec2(x, -y)
         self._node = OnscreenText(

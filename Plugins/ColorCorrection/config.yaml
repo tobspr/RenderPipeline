@@ -247,6 +247,18 @@ settings: !!omap
             scene. A value greater 0 will decrease the scene brightness, while a value
             smaller than 0 will increase it.
 
+    - brightness_scale:
+        display_if: {use_auto_exposure: true}
+        type: float
+        range: [0.01, 5.0]
+        default: 0.45
+        label: Brightness Scale
+        shader_runtime: true
+        description: >
+            This controls how bright spots are percieved. If this value is higher,
+            bright spots will be percieved brighter, thus the image will get darker,
+            if this value is lower, the image will get brighter. 
+
     - brightness_adaption_rate:
         display_if: {use_auto_exposure: true}
         type: float

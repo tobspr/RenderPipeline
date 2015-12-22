@@ -13,6 +13,7 @@ from .BetterLabeledCheckbox import BetterLabeledCheckbox
 from .CheckboxCollection import CheckboxCollection
 from .FastText import FastText
 from .ErrorMessageDisplay import ErrorMessageDisplay
+from .ExposureWidget import ExposureWidget
 
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
@@ -56,6 +57,10 @@ class OnscreenDebugger(BaseManager):
         self._create_stats()
         self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
         self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
+
+        self._exposure_node = self._fullscreen_node.attach_new_node("ExposureWidget")
+        self._exposure_node.set_pos(Globals.base.win.get_x_size() - 200, 1, -Globals.base.win.get_y_size() + 120)
+        self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
 
     def _init_notify(self):
         """ Inits the notify stream which gets all output from panda and parses
@@ -218,7 +223,19 @@ class OnscreenDebugger(BaseManager):
         Globals.base.accept("g", self._toggle_debugger)
         Globals.base.accept("v", self._buffer_viewer.toggle)
         Globals.base.accept("c", self._pipe_viewer.toggle)
+        Globals.base.accept("f5", self._toggle_gui_visible)
 
+    def _toggle_gui_visible(self):
+        """ Shows / Hides the gui """
+        if not Globals.base.pixel2d.is_hidden():
+            Globals.base.pixel2d.hide()
+            Globals.base.aspect2d.hide()
+            Globals.base.render2d.hide()
+        else:
+            Globals.base.pixel2d.show()
+            Globals.base.aspect2d.show()
+            Globals.base.render2d.show()
+        
     def _toggle_debugger(self):
         """ Internal method to hide or show the debugger """
         if self._debugger_interval is not None:
