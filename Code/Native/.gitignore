@@ -1,4 +1,9 @@
-win_amd64
-win_i386
-linux_amd64
-linux_i386
+*.pyd
+*.pyc
+*.so
+*.pdb
+
+# Various output names
+win_*/
+linux_*/
+Source/Interrogate*

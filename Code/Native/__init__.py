@@ -56,7 +56,7 @@ else:
     _native_module = importlib.import_module(".PythonImpl", __package__)
 
 # Import all classes
-for v in classes_to_import + classes_to_import_and_rename.keys():
+for v in classes_to_import + list(classes_to_import_and_rename.keys()):
     if hasattr(_native_module, v):
         v_name = classes_to_import_and_rename[v] if v in classes_to_import_and_rename else v 
         globals()[v_name] = getattr(_native_module, v)
@@ -64,4 +64,4 @@ for v in classes_to_import + classes_to_import_and_rename.keys():
         print("Warning: could not find property", v)
 
 # Don't export all variables, only the required ones
-__all__ = classes_to_import + classes_to_import_and_rename.values() + ["NATIVE_CXX_LOADED"]
+__all__ = classes_to_import + list(classes_to_import_and_rename.values()) + ["NATIVE_CXX_LOADED"]

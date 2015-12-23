@@ -2,7 +2,7 @@
 This script downloads and updates the module builder.
 """
 
-ignore = ("__init__.py .gitignore LICENSE README.md config.ini Source/config_module.cpp "
+ignore = ("__init__.py LICENSE README.md config.ini Source/config_module.cpp "
     "Source/config_module.h Source/ExampleClass.cpp Source/ExampleClass.h Source/ExampleClass.I").split()
 
 import os
