@@ -33,8 +33,8 @@ class LightStorage {
         inline void update_max_light_index();
         inline void update_max_source_index();
 
-        RPLight* _lights[MAX_LIGHT_COUNT];
-        ShadowSource* _shadow_sources[MAX_SHADOW_SOURCES];
+        RPLight** _lights;
+        ShadowSource** _shadow_sources;
 
         int _max_light_index;
         int _num_stored_lights;

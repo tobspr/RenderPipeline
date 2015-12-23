@@ -6,9 +6,10 @@ ShadowSource::ShadowSource() {
     _needs_update = true;
     _slot = -1;
     _transform = NULL;
+    _resolution = 512;
+    _region.set(-1, -1);
 }
 
 ShadowSource::~ShadowSource() {
 
 }
-

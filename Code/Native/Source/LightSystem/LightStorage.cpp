@@ -5,6 +5,10 @@
 
 LightStorage::LightStorage() {
 
+    // Allocate containers
+    _lights = new RPLight*[MAX_LIGHT_COUNT];
+    _shadow_sources = new ShadowSource*[MAX_SHADOW_SOURCES];
+    
     // Reset containers
     for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
         _lights[i] = NULL;
@@ -19,6 +23,8 @@ LightStorage::LightStorage() {
 }
 
 LightStorage::~LightStorage() {
+    delete [] _lights;
+    delete [] _shadow_sources;
 }
 
 void LightStorage::set_command_list(GPUCommandList *cmd_list) {
@@ -115,18 +121,33 @@ void LightStorage::remove_light(PT(RPLight) light) {
 
 void LightStorage::update() {
 
-    // Find all dirty shadow sources and update them
-    for (int k = 0; k <0 _max_source_index; k++) {
-        
-    }
-
     // Find all dirty lights and update them
-    for (int k = 0; k <= _max_light_index; k++) {
+    for (int k = 0; k <= _max_light_index; ++k) {
         if (_lights[k] && _lights[k]->is_dirty()) {
+
+            // Update shadow sources in case the light is dirty
+            _lights[k]->update_shadow_sources();
             GPUCommand cmd_update(GPUCommand::CMD_store_light);
             _lights[k]->write_to_command(cmd_update);
             _lights[k]->unset_dirty_flag();
             _cmd_list->add_command(cmd_update);
         }
     }
+
+    vector<ShadowSource*> _sources_to_update;
+    _sources_to_update.reserve(_max_source_index);
+
+    // Find all dirty shadow sources and make a list of them
+    for (int k = 0; k <= _max_source_index; ++k) {
+        if (_shadow_sources[k] && _shadow_sources[k]->needs_update()) {
+            _sources_to_update.push_back(_shadow_sources[k]);
+
+            // Since we will update the source, we will also find a new spot for it,
+            // so unregister the old spot
+            if (_shadow_sources[k]->has_region()) {
+                cerr << "TODO: Free old region of shadow source in atlas" << endl;
+            }
+        }
+    }
+
 }

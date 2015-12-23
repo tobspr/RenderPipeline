@@ -1,6 +1,5 @@
 
 
-
 inline void ShadowSource::invalidate() {
     _needs_update = true;
 }
@@ -25,3 +24,12 @@ inline void ShadowSource::set_pos_dir(LVecBase3f pos, LVecBase3f direction) {
     compose_matrix(_transform, scale, shear, q.get_hpr(), pos);
     invalidate();
 }
+
+inline void ShadowSource::on_update_done() {
+    _needs_update = false;
+}
+
+inline bool ShadowSource::has_region() {
+    return _region.get_x() >= 0 && _region.get_y() >= 0;
+}
+

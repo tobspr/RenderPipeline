@@ -28,10 +28,10 @@ void RPSpotLight::init_shadow_sources() {
     nassertv(_shadow_sources.size() == 0);
     ShadowSource* main_source = new ShadowSource();
     _shadow_sources.push_back(main_source);
-    update_shadow_sources();
 }
 
 void RPSpotLight::update_shadow_sources() {
+    cout << "updating shadow sources .." << endl;
     _shadow_sources[0]->set_pos_dir(_position, _direction);
 }
 

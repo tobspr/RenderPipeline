@@ -22,7 +22,7 @@ void TagStateManager::apply_shadow_state(NodePath np, Shader* shader, const stri
     // Construct the new state
     CPT(RenderState) state = RenderState::make_empty();
     state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
-    state = state->set_attrib(ShaderAttrib::make(shader), sort);
+    state = state->set_attrib(ShaderAttrib::make(shader, sort), sort);
 
     // Store the state
     if (_tag_states.count(name)) {
@@ -50,6 +50,8 @@ void TagStateManager::cleanup_states() {
     for (CameraList::iterator iter = _shadow_cameras.begin(); iter != _shadow_cameras.end(); ++iter) {
         (*iter)->clear_tag_states();
     }
+
+    _tag_states.clear();
 }
 
 void TagStateManager::register_shadow_camera(Camera* source) {

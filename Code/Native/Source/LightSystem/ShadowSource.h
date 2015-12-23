@@ -21,12 +21,19 @@ public:
 
     inline void set_pos_dir(LVecBase3f pos, LVecBase3f direction);
 
+    inline void on_update_done();
+
+    inline bool has_region();
+
 private:
 
     LMatrix4f _transform;
     int _last_time_rendered;
     int _slot;
     bool _needs_update;
+
+    int _resolution;
+    LVecBase2i _region;
 };
 
 

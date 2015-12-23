@@ -87,7 +87,6 @@ class CommonResources(BaseManager):
     def _load_environment_cubemap(self):
         """ Loads the default cubemap used for the environment, which is used
         when no other environment data is available """
-        self.debug("Loading environment cubemap")
         envmap = Globals.loader.loadCubeMap(
             "Data/DefaultCubemap/Filtered/#-#.png", readMipmaps=True)
         envmap.set_minfilter(Texture.FT_linear_mipmap_linear)
@@ -121,7 +120,6 @@ class CommonResources(BaseManager):
 
     def _load_skydome(self):
         """ Loads the skydome """
-        self.debug("Loading skydome ..")
         skydome = Globals.loader.loadTexture("Data/BuiltinModels/Skybox/Skybox2.jpg")
         skydome.set_wrap_u(Texture.WM_clamp)
         skydome.set_wrap_v(Texture.WM_clamp)
