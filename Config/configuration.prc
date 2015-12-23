@@ -163,3 +163,5 @@ gl-debug-object-labels #t
 color-bits 0
 
 framebuffer-depth #f
+
+gl-fixed-vertex-attrib-locations #t

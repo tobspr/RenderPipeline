@@ -1,0 +1,4 @@
+package: CppHeaderParser
+version: 2.7.2
+downloaded: 12-23-2015
+url: https://pypi.python.org/pypi/CppHeaderParser/

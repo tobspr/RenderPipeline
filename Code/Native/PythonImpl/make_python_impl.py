@@ -62,7 +62,7 @@ PTA_REGEXP = re.compile(r"PT\(([^\)]+)\)")
 REGEXP_METHODDEF = re.compile(r"def ([a-zA-Z0-9_]+)\(([^\)]+)\)")
 
 # Whether to write a docstring above each method
-WRITE_DOCSTRING = False
+WRITE_DOCSTRING = True
 
 PROCESSED_HEADERS = set()
 

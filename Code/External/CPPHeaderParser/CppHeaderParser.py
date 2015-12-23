@@ -48,7 +48,7 @@
 representing the class
 """
 
-import ply.lex as lex
+from .ply import lex
 import os
 import sys
 import re
@@ -59,7 +59,7 @@ def lineno():
     """Returns the current line number in our program."""
     return inspect.currentframe().f_back.f_lineno
 
-version = __version__ = "2.7.1"
+version = __version__ = "2.7.2"
 
 tokens = [
     'NUMBER',
@@ -1541,13 +1541,13 @@ class Resolver(object):
             try:
                 if macro.lower().startswith("#define"):
                     trace_print("Adding #define %s"%macro)
-                    self.defines.append(macro.split(" ", 1)[1].strip())
+                    self.defines.append(re.split("[\t ]+", macro, 1)[1].strip())
                 elif macro.lower().startswith("#pragma"):
                     trace_print("Adding #pragma %s"%macro)
-                    self.pragmas.append(macro.split(" ", 1)[1].strip())
+                    self.pragmas.append(re.split("[\t ]+", macro, 1)[1].strip())
                 elif macro.lower().startswith("#include"):
                     trace_print("Adding #include %s"%macro)
-                    self.includes.append(macro.split(" ", 1)[1].strip())
+                    self.includes.append(re.split("[\t ]+", macro, 1)[1].strip())
                 else:
                     debug_print("Cant detect what to do with precomp macro '%s'"%macro)
             except: pass
@@ -2468,7 +2468,8 @@ class CppHeader( _CppHeader ):
             type_to_rename["name"] = self.nameStack[0]
             #Now re install it in its new location
             self.classes[new_name] = type_to_rename
-            del self.classes[type_name_to_rename] 
+            if new_name != type_name_to_rename:
+                del self.classes[type_name_to_rename] 
         elif is_property_namestack(self.nameStack) and self.stack[-1] == ';':
             debug_print( "trace" )
             if self.nameStack[0] in ('class', 'struct') and len(self.stack) == 3: self.evalute_forward_decl()
