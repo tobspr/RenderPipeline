@@ -13,6 +13,7 @@
 *.pdb
 *.stackdump
 *.exr
+*.trace
 
 # --- Ignored folders ---
 Temp/

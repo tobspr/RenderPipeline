@@ -7,9 +7,23 @@ import urllib
 import zipfile
 import shutil
 
-# Include cStringIO in case its available, since its faster
-try: from cStringIO import StringIO
-except: from StringIO import StringIO
+try: 
+    # Include cStringIO in case its available, since its faster
+    from cStringIO import StringIO
+except: 
+    try:
+        # Python 2.7
+        from StringIO import StringIO
+    except:
+        try:
+            # Python 3.4
+            import io
+
+            # Use bytes IO, since we get a bytes object, too
+            StringIO = io.BytesIO
+        except:
+            assert False, "Could not import StringIO module."
+
 
 class SubmoduleDownloader:
 
@@ -32,9 +46,17 @@ class SubmoduleDownloader:
         prefix = module_name + "-master"
         print("Fetching:", source_url)
 
+        try:
+            # Python 2.7
+            urlopen = urllib.urlopen
+        except:
+            # Python 3.4
+            import urllib.request
+            urlopen = urllib.request.urlopen
+
         # Download the zip
         try:
-            usock = urllib.urlopen(source_url)
+            usock = urlopen(source_url)
             zip_data = usock.read()
             usock.close()
         except Exception as msg:
