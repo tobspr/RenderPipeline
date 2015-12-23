@@ -50,7 +50,7 @@ def print_step(title):
     """ Prints a new section """
     global CURRENT_STEP
     CURRENT_STEP += 1
-    print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", color(title, Fore.BLUE + Style.BRIGHT)) 
+    print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", color(title, Fore.CYAN + Style.BRIGHT)) 
 
 
 def exec_python_file(pth):
