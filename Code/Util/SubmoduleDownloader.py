@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import os
 import sys
-import urllib
+
 import zipfile
 import shutil
 
@@ -48,8 +48,11 @@ class SubmoduleDownloader:
 
         try:
             # Python 2.7
+            import urllib
             urlopen = urllib.urlopen
+
         except:
+            
             # Python 3.4
             import urllib.request
             urlopen = urllib.request.urlopen
