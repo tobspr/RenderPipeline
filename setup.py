@@ -168,7 +168,8 @@ if __name__ == "__main__":
         query = ("The C++ modules of the pipeline are faster and produce better "
                  "results, but we will have to compile them. As alternative, "
                  "a Python fallback is used, which is slower and produces worse "
-                 "results. Do you want to use the C++ modules? (y/n): ")
+                 "results. Also not all plugins work with the python fallback "
+                 "(e.g. PSSM). Do you want to use the C++ modules? (y/n): ")
 
         if get_user_choice(query):
             write_flag("Code/Native/use_cxx.flag", True)
