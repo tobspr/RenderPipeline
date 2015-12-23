@@ -11,8 +11,6 @@ uniform GBufferData GBuffer;
 in vec2 texcoord;
 out vec4 result;
 
-uniform vec3 cameraPosition;
-
 #pragma include "../ScatteringMethod.inc.glsl"
 
 
@@ -20,14 +18,14 @@ void main() {
 
     // Get material data
     Material m = unpack_material(GBuffer);
-    vec3 view_vector = normalize(m.position - cameraPosition);
+    vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
 
     // Fetch scattering
     float fog_factor = 0.0;
     vec3 inscattered_light = DoScattering(m.position, view_vector, fog_factor);
 
     // Cloud color
-    if (is_skybox(m, cameraPosition) && view_vector.z > - cameraPosition.z * 0.0 - 0.025) {
+    if (is_skybox(m, MainSceneData.camera_pos) && view_vector.z > - MainSceneData.camera_pos.z * 0.0 - 0.025) {
         vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
         // inscattered_light += pow(cloud_color.y, 2.5) * TimeOfDay.Scattering.sun_intensity * 0.5;
 

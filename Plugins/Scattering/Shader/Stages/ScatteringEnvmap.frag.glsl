@@ -5,8 +5,6 @@
 in vec2 texcoord;
 out vec4 result;
 
-uniform vec3 cameraPosition;
-
 uniform writeonly imageCube DestCubemap;
 uniform sampler2D DefaultSkydome;
 

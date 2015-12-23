@@ -23,8 +23,6 @@ uniform sampler2D p3d_Texture3;
 
 %INOUT%
 
-uniform vec3 cameraPosition;
-
 void main() {
 
     // Fetch texture data
@@ -37,7 +35,7 @@ void main() {
         // viewed from a high distance.
         // TODO: Might want to make the alpha testing distance configurable
         vec4 sampled_diffuse = texture(p3d_Texture0, vOutput.texcoord);
-        float dist_to_camera = distance(cameraPosition, vOutput.position);
+        float dist_to_camera = distance(MainSceneData.camera_pos, vOutput.position);
         float alpha_factor = mix(0.99, 0.1, saturate(dist_to_camera / 20.0) );
         if (sampled_diffuse.w < alpha_factor) discard;
     #else

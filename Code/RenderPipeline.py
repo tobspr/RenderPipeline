@@ -214,9 +214,9 @@ class RenderPipeline(DebugObject):
         # Load plugins and daytime settings
         self._plugin_mgr.load_plugins()
         self._daytime_mgr.load_settings()
+        self._com_resources.write_config()
 
-        # Load common inputs and defines
-        
+        # Setup common defines
         self._create_common_defines()
 
         self._plugin_mgr.trigger_hook("on_stage_setup")

@@ -61,7 +61,7 @@ vec3 get_scattering(vec3 surface_pos) {
 
 vec3 get_scattering_at_surface(vec3 surface_pos) {
 
-    vec3 vec_to_cam = vec3(surface_pos - cameraPosition);
+    vec3 vec_to_cam = vec3(surface_pos - MainSceneData.camera_pos);
 
     surface_pos.xy = vec2(vec_to_cam.xy * 0.6);
     // surface_pos.xy /= surface_pos.z * 0.01;
@@ -74,14 +74,14 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
     
     // Move surface pos above ocean level
     if (surface_pos.z < -0.01) {
-        vec3 v2s = surface_pos - cameraPosition;
-        float z_factor = abs(cameraPosition.z) / abs(v2s.z);
-        surface_pos = cameraPosition + v2s * z_factor;
-        view_dir = normalize(surface_pos - cameraPosition);
+        vec3 v2s = surface_pos - MainSceneData.camera_pos;
+        float z_factor = abs(MainSceneData.camera_pos.z) / abs(v2s.z);
+        surface_pos = MainSceneData.camera_pos + v2s * z_factor;
+        view_dir = normalize(surface_pos - MainSceneData.camera_pos);
     }
 
 
-    float path_length = distance(surface_pos, cameraPosition);
+    float path_length = distance(surface_pos, MainSceneData.camera_pos);
 
     vec3 inscatter = get_scattering(surface_pos);
 
@@ -92,11 +92,11 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 
         // integrate scattering
         const int num_steps = 6;
-        float curr_h = cameraPosition.z;
+        float curr_h = MainSceneData.camera_pos.z;
 
         curr_h *= 1.0 - saturate(path_length / 30000.0);
 
-        float h_step = (surface_pos.z - cameraPosition.z) / num_steps;
+        float h_step = (surface_pos.z - MainSceneData.camera_pos.z) / num_steps;
         vec3 accum = vec3(0);
         for (int i = 0; i < num_steps; ++i) {
             curr_h += h_step;

@@ -22,7 +22,7 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     float depth = get_gbuffer_depth(GBuffer, coord);
     Material m = unpack_material(GBuffer);
-    ivec3 tile = get_lc_cell_index(coord, distance(cameraPosition, m.position));
+    ivec3 tile = get_lc_cell_index(coord, distance(MainSceneData.camera_pos, m.position));
 
     // Don't shade pixels out of the shading range
     if (tile.z >= LC_TILE_SLICES) {

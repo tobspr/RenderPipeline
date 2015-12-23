@@ -7,8 +7,7 @@ from panda3d.core import Texture, Vec4
 class ColorCorrectionStage(RenderStage):
 
     required_pipes = ["ShadedScene"]
-    required_inputs = ["TimeOfDay", "mainCam", "mainRender", "cameraPosition", "frameDelta",
-                       "PrecomputedGrain"]
+    required_inputs = ["TimeOfDay", "PrecomputedGrain"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ColorCorrectionStage", pipeline)

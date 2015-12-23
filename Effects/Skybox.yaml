@@ -2,12 +2,9 @@
 Vertex:
     template: default
 
-    inout:
-        - uniform vec3 cameraPosition;
-
     inject:
         vertex:
-            vOutput.position.xy += cameraPosition.xy;
+            vOutput.position.xy += MainSceneData.camera_pos.xy;
 
 Fragment.GBuffer:
     template: default

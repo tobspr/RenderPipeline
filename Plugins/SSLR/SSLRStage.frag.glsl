@@ -14,9 +14,6 @@ uniform sampler2D GBuffer2;
 
 uniform sampler2D DownscaledDepth;
 
-uniform vec3 cameraPosition;
-
-uniform mat4 currentViewProjMat;
 in vec2 texcoord;
 out vec4 result;
 
@@ -251,10 +248,10 @@ vec3 get_ray_direction(vec3 position, vec3 normal, vec3 view_dir, vec3 ro) {
     vec3 reflected_dir = reflect(view_dir, normal );
 
     float scale_factor = 0.1 + 
-        saturate(distance(position, cameraPosition) / 1000.0) * 0.0;
+        saturate(distance(position, MainSceneData.camera_pos) / 1000.0) * 0.0;
 
     vec3 target_pos = position + reflected_dir * scale_factor;
-    vec4 transformed_pos = currentViewProjMat * vec4(target_pos, 1);
+    vec4 transformed_pos = MainSceneData.view_proj_mat_no_jitter * vec4(target_pos, 1);
     transformed_pos.xyz /= transformed_pos.w;
     transformed_pos.xyz = transformed_pos.xyz * 0.5 + 0.5;
 
@@ -269,11 +266,11 @@ void main() {
     vec3 sslr_result = vec3(0);
 
     Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
-    vec3 view_dir = normalize(m.position - cameraPosition);
+    vec3 view_dir = normalize(m.position - MainSceneData.camera_pos);
 
     float pixel_depth = textureLod(DownscaledDepth, texcoord, 0).x;
 
-    if (distance(m.position, cameraPosition) > 10000) {
+    if (distance(m.position, MainSceneData.camera_pos) > 10000) {
 
     } else {
 

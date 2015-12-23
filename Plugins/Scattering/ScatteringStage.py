@@ -11,8 +11,7 @@ class ScatteringStage(RenderStage):
     """ This stage uses the precomputed data to display the scattering """
 
     required_pipes = ["ShadedScene", "GBuffer"]
-    required_inputs = ["mainCam", "mainRender", "cameraPosition", "DefaultSkydome",
-                       "DefaultEnvmap", "TimeOfDay"]
+    required_inputs = ["DefaultSkydome", "DefaultEnvmap", "TimeOfDay"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ScatteringStage", pipeline)

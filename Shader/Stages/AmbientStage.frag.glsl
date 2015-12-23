@@ -11,7 +11,6 @@ uniform GBufferData GBuffer;
 uniform sampler2D PrefilteredBRDF;
 
 uniform samplerCube DefaultEnvmap;
-uniform vec3 cameraPosition;
 
 #if HAVE_PLUGIN(Scattering)
     uniform samplerCube ScatteringCubemap;
@@ -50,7 +49,7 @@ void main() {
     Material m = unpack_material(GBuffer);
 
     // Get view vector
-    vec3 view_vector = normalize(cameraPosition - m.position);
+    vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
 
     // Store the accumulated ambient term in a variable
     vec3 ambient = vec3(0);
@@ -58,7 +57,7 @@ void main() {
     #if !DEBUG_MODE
 
     // Skip skybox shading (TODO: Do this with stencil masking)
-    if (!is_skybox(m, cameraPosition)) {
+    if (!is_skybox(m, MainSceneData.camera_pos)) {
 
         // Get reflection directory
         vec3 reflected_dir = reflect(-view_vector, m.normal);

@@ -5,8 +5,6 @@
 uniform layout(rgba16f) imageBuffer ExposureStorage;
 uniform sampler2D DownscaledTex;
 
-uniform float frameDelta;
-
 void main() {
 
     // Manually do the last downscale step
@@ -36,7 +34,7 @@ void main() {
         adaption_rate = GET_SETTING(ColorCorrection, darkness_adaption_rate);
     }
 
-    float adjustment = saturate(frameDelta * adaption_rate);
+    float adjustment = saturate(MainSceneData.frame_delta * adaption_rate);
     float new_luminance = mix(cur_luminance, avg_luminance, adjustment);
     imageStore(ExposureStorage, 0, vec4(new_luminance));
 }

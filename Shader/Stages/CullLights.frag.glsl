@@ -10,7 +10,6 @@ uniform writeonly iimageBuffer PerCellLightsBuffer;
 
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
-uniform mat4 currentViewMatZup;
 
 void main() {
 
@@ -88,7 +87,7 @@ void main() {
 
         // Get Light position and project it to view space
         vec3 light_pos = get_light_position(light_data);
-        vec4 light_pos_view = currentViewMatZup * vec4(light_pos, 1);
+        vec4 light_pos_view = MainSceneData.view_mat_z_up * vec4(light_pos, 1);
 
         bool visible = false;
 

@@ -7,6 +7,7 @@
 
 #pragma include "$$PipelineTemp/$$ShaderAutoConfig.inc.glsl"
 #pragma include "$$PipelineTemp/$$DayTimeConfig.inc.glsl"
+#pragma include "$$PipelineTemp/$$MainSceneData.inc.glsl"
 
 // Screen size macro
 #define SCREEN_SIZE vec2(WINDOW_WIDTH, WINDOW_HEIGHT)

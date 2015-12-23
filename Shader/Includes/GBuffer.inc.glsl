@@ -12,8 +12,6 @@
 
     */
 
-    uniform mat4 currentViewProjMatNoJitter;
-
     layout(location=0) out vec4 gbuffer_out_0;
     layout(location=1) out vec4 gbuffer_out_1;
     layout(location=2) out vec4 gbuffer_out_2;
@@ -22,7 +20,7 @@
         // Compute velocity based on this and last frames mvp matrix
         vec4 last_proj_pos = vOutput.last_proj_position;
         vec2 last_texcoord = fma(last_proj_pos.xy / last_proj_pos.w, vec2(0.5), vec2(0.5));
-        vec4 curr_proj_pos = currentViewProjMatNoJitter * vec4(vOutput.position, 1);
+        vec4 curr_proj_pos = MainSceneData.view_proj_mat_no_jitter * vec4(vOutput.position, 1);
         vec2 curr_texcoord = fma(curr_proj_pos.xy / curr_proj_pos.w, vec2(0.5), vec2(0.5));
         return (curr_texcoord - last_texcoord) * 255.0;
     }

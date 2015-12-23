@@ -7,7 +7,6 @@
 #pragma include "Includes/GBuffer.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform vec3 cameraPosition;
 
 in vec2 texcoord;
 out vec4 result;

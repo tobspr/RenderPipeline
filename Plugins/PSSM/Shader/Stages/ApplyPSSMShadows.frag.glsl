@@ -96,7 +96,7 @@ void main() {
     if (split >= GET_SETTING(PSSM, split_count)) {
 
         // If we have the skybox, just stop
-        if (is_skybox(m, cameraPosition)) {
+        if (is_skybox(m, MainSceneData.camera_pos)) {
             result = scene_color;
             return;
         }
@@ -236,7 +236,7 @@ void main() {
 
 
     // Compute the sun lighting
-    vec3 v = normalize(cameraPosition - m.position);
+    vec3 v = normalize(MainSceneData.camera_pos - m.position);
     vec3 l = sun_vector;
     lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, vec4(0), transmittance);
 

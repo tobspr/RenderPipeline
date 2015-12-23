@@ -1,10 +1,13 @@
 
 from panda3d.core import PTAVecBase3f, PTAMat4, Texture, TransformState, Mat4
-from panda3d.core import CSYupRight, CSZupRight, PTAFloat
+from panda3d.core import CSYupRight, CSZupRight, PTAFloat, invert
+from direct.stdpy.file import open
 
 from .Util.DebugObject import DebugObject
 from .Globals import Globals
 from .BaseManager import BaseManager
+
+from .Util.ShaderUBO import PTABasedUBO
 
 class CommonResources(BaseManager):
 
@@ -16,10 +19,6 @@ class CommonResources(BaseManager):
         self._pipeline = pipeline
         self._showbase = Globals.base
         self._ptas = {}
-
-        # Create a converter matrix to transform coordinates from Yup to Zup
-        self._coordinate_converter = TransformState.make_mat(
-            Mat4.convert_mat(CSYupRight, CSZupRight))
 
     def load(self):
         """ Loads and binds the commonly used resources """
@@ -38,26 +37,31 @@ class CommonResources(BaseManager):
     def _setup_inputs(self):
         """ Creates commonly used shader inputs such as the current mvp and
         registers them to the stage manager so they can be used for rendering """
-        self._ptas["camera_pos"] = PTAVecBase3f.empty_array(1)
-        self._ptas["curr_view_proj_mat"] = PTAMat4.empty_array(1)
-        self._ptas["curr_view_proj_mat_nojitter"] = PTAMat4.empty_array(1)
-        self._ptas["last_view_proj_mat"] = PTAMat4.empty_array(1)
-        self._ptas["view_mat_zup"] = PTAMat4.empty_array(1)
-        self._ptas["proj_mat"] = PTAMat4.empty_array(1)
-        self._ptas["inv_proj_mat"] = PTAMat4.empty_array(1)
-        self._ptas["frame_delta"] = PTAFloat.empty_array(1)
 
-        stage_mgr = self._pipeline.get_stage_mgr()
-        stage_mgr.add_input("frameDelta", self._ptas["frame_delta"])
-        stage_mgr.add_input("mainCam", self._showbase.cam)
-        stage_mgr.add_input("mainRender", self._showbase.render)
-        stage_mgr.add_input("cameraPosition", self._ptas["camera_pos"])
-        stage_mgr.add_input("currentViewProjMat", self._ptas["curr_view_proj_mat"])
-        stage_mgr.add_input("lastViewProjMatNoJitter", self._ptas["last_view_proj_mat"])
-        stage_mgr.add_input("currentViewMatZup", self._ptas["view_mat_zup"])
-        stage_mgr.add_input("currentProjMat", self._ptas["proj_mat"])
-        stage_mgr.add_input("currentProjMatInv", self._ptas["inv_proj_mat"])
-        stage_mgr.add_input("currentViewProjMatNoJitter", self._ptas["curr_view_proj_mat_nojitter"])
+        self._input_ubo = PTABasedUBO("MainSceneData")
+        self._input_ubo.register_pta("camera_pos", "vec3")
+        self._input_ubo.register_pta("view_proj_mat_no_jitter", "mat4")
+        self._input_ubo.register_pta("last_view_proj_mat_no_jitter", "mat4")
+        self._input_ubo.register_pta("view_mat_z_up", "mat4")
+        self._input_ubo.register_pta("proj_mat", "mat4")
+        self._input_ubo.register_pta("inv_proj_mat", "mat4")
+        self._input_ubo.register_pta("frame_delta", "float")
+        self._pipeline.get_stage_mgr().add_ubo(self._input_ubo)
+
+        # Main camera and main render have to be regular inputs, since they are
+        # used in the shaders by that name.
+        self._pipeline.get_stage_mgr().add_input("mainCam", self._showbase.cam)
+        self._pipeline.get_stage_mgr().add_input("mainRender", self._showbase.render)
+
+    def write_config(self):
+        """ Generates the shader configuration for the common inputs """
+        content = self._input_ubo.generate_shader_code()
+        try:
+            # Try to write the temporary file
+            with open("$$PipelineTemp/$$MainSceneData.inc.glsl", "w") as handle:
+                handle.write(content)
+        except IOError as msg:
+            self.error("Failed to write common resources shader configuration!", msg)
 
     def _load_textures(self):
         """ Loads commonly used textures and makes them available via the
@@ -131,23 +135,29 @@ class CommonResources(BaseManager):
 
     def do_update(self):
         """ Updates the commonly used resources, mostly the shader inputs """
-        view_transform = Globals.render.get_transform(self._showbase.cam)
-        self._ptas["view_mat_zup"][0] = (
-            self._coordinate_converter.invert_compose(view_transform).get_mat())
-        self._ptas["camera_pos"][0] = self._showbase.camera.get_pos(Globals.render)
-        self._ptas["last_view_proj_mat"][0] = self._ptas["curr_view_proj_mat_nojitter"][0]
+        update = self._input_ubo.update_input
 
-        # Compute view projection matrices
+        # Get the current transform matrix of the camera
+        view_mat = Globals.render.get_transform(self._showbase.cam).get_mat()
+
+        # Compute the view matrix, but with a z-up coordinate system 
+        update("view_mat_z_up", view_mat * Mat4.convert_mat(CSZupRight, CSYupRight))
+        update("camera_pos", self._showbase.camera.get_pos(Globals.render))
+        update("last_view_proj_mat_no_jitter", self._input_ubo.get_input("view_proj_mat_no_jitter"))
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
-        self._ptas["curr_view_proj_mat"][0] = view_transform.get_mat() * proj_mat
-        self._ptas["proj_mat"][0] = Mat4.convert_mat(CSYupRight, CSZupRight) * proj_mat
-        inv_proj_mat = Mat4(self._ptas["proj_mat"][0])
-        inv_proj_mat.invertInPlace()
-        self._ptas["inv_proj_mat"][0] = inv_proj_mat
 
-        # Remove jitter
+        # Set the projection matrix as an input, but convert it to the correct
+        # coordinate system before.
+        proj_mat_zup = Mat4.convert_mat(CSYupRight, CSZupRight) * proj_mat
+        update("proj_mat", proj_mat_zup)
+
+        # Set the inverse projection matrix
+        update("inv_proj_mat", invert(proj_mat_zup))    
+
+        # Remove jitter and set the new view projection mat
         proj_mat.set_cell(1, 0, 0.0)
         proj_mat.set_cell(1, 1, 0.0)
-        self._ptas["curr_view_proj_mat_nojitter"][0] = view_transform.get_mat() * proj_mat
+        update("view_proj_mat_no_jitter", view_mat  * proj_mat)
 
-        self._ptas["frame_delta"][0] = Globals.clock.get_dt()
+        # Store the frame delta
+        update("frame_delta", Globals.clock.get_dt())

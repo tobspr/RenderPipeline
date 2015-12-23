@@ -11,8 +11,7 @@ class GBufferStage(RenderStage):
     """ This is the main pass stage, rendering the objects and creating the
     GBuffer which is used in later stages """
 
-    required_inputs = ["currentViewProjMat", "lastViewProjMatNoJitter",
-                       "cameraPosition", "currentViewProjMatNoJitter"]
+    required_inputs = []
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "GBufferStage", pipeline)

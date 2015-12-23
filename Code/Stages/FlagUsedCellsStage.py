@@ -10,7 +10,7 @@ class FlagUsedCellsStage(RenderStage):
     """ This stage flags all used cells based on the depth buffer """
 
     required_pipes = ["GBuffer"]
-    required_inputs = ["mainCam", "mainRender", "cameraPosition"]
+    required_inputs = []
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "FlagUsedCellsStage", pipeline)

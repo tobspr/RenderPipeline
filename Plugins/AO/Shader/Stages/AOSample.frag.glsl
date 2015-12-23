@@ -9,7 +9,6 @@
 in vec2 texcoord;
 out vec4 result;
 
-uniform vec3 cameraPosition;
 uniform sampler2D Noise4x4;
 
 // use the extended gbuffer api
@@ -33,8 +32,8 @@ void main() {
     vec3 pixel_world_pos = get_world_pos_at(coord);
     vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, coord);
 
-    vec3 view_vector = normalize(pixel_world_pos - cameraPosition);
-    float view_dist = distance(pixel_world_pos, cameraPosition);
+    vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
+    float view_dist = distance(pixel_world_pos, MainSceneData.camera_pos);
 
     vec3 noise_vec = texelFetch(Noise4x4, ivec2(gl_FragCoord.xy) % 4, 0).xyz * 2.0 - 1.0;
 

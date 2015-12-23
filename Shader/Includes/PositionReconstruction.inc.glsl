@@ -4,9 +4,6 @@ uniform mat4 trans_clip_of_mainCam_to_mainRender;
 uniform mat4 trans_mainRender_to_view_of_mainCam;
 uniform mat4 trans_mainRender_to_clip_of_mainCam;
 
-uniform mat4 currentProjMatInv;
-uniform mat4 currentProjMat;
-
 // Constant values based on main camera near and far plane
 const float NDC_NEAR = CAMERA_NEAR;
 const float NDC_FAR = CAMERA_FAR;
@@ -75,14 +72,14 @@ vec3 calculate_surface_pos_ortho(float z, vec2 tcoord, float near, float far, ma
 
 // Computes the view position from a given Z value and texcoord
 vec3 calculate_view_pos(float z, vec2 tcoord) {
-  vec4 view_pos = currentProjMatInv *
+  vec4 view_pos = MainSceneData.inv_proj_mat *
     vec4(fma(tcoord.xy, vec2(2.0), vec2(-1.0)), z, 1.0);
   return view_pos.xyz / view_pos.w;
 }
 
 // Computes the NDC position from a given view position
 vec3 view_to_screen(vec3 view_pos) {
-  vec4 projected = currentProjMat * vec4(view_pos, 1);
+  vec4 projected = MainSceneData.proj_mat * vec4(view_pos, 1);
   projected.xyz /= projected.w;
   projected.xy = fma(projected.xy, vec2(0.5), vec2(0.5));
   return projected.xyz;

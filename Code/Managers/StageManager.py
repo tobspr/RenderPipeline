@@ -121,6 +121,9 @@ class StageManager(BaseManager):
         self._stages.sort(key=lambda stage: self._STAGE_ORDER.index(
             stage.get_stage_id()))
 
+        # Common inputs available to each stage by default
+        common_inputs = ["mainCam", "mainRender", "MainSceneData"]
+
         # Process each stage
         for stage in self._stages:
             stage.create()
@@ -160,7 +163,7 @@ class StageManager(BaseManager):
                     stage.set_shader_input(pipe, pipe_value)
 
             # Check if all inputs are available, and set them
-            for input_binding in stage.get_required_inputs():
+            for input_binding in stage.get_required_inputs() + common_inputs:
                 if input_binding not in self._inputs and \
                    input_binding not in self._ubos:
                     self.error("Input", input_binding, "is missing for", stage)

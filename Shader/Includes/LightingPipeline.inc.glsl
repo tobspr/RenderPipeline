@@ -11,8 +11,6 @@ uniform isampler2DArray CellIndices;
 uniform isamplerBuffer PerCellLights;
 uniform samplerBuffer AllLightsData;
 
-uniform vec3 cameraPosition;
-
 // Use ambient occlusion data, but only if we work in scren space, and only if
 // the plugin is enabled
 #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
@@ -54,7 +52,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     #endif
 
     // Compute view vector
-    vec3 v = normalize(cameraPosition - m.position);
+    vec3 v = normalize(MainSceneData.camera_pos - m.position);
         
     // Iterate over all lights
     for (int i = 0; i < num_lights; i++) {

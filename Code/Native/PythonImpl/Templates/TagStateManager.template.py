@@ -30,7 +30,7 @@ def apply_shadow_state(self, np, shader, name, sort):
         cam.set_tag_state(name, state)
 
 def cleanup_states(self):
-    self._main_cam_node.clear_tag_states()
+    self._main_cam_node.node().clear_tag_states()
     for cam in self._shadow_cameras:
         cam.clear_tag_states()
 

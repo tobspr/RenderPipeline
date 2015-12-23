@@ -17,7 +17,6 @@ uniform layout(r32i) iimageBuffer IndirectTex;
 uniform writeonly iimageBuffer DynamicStripsTex;
 uniform sampler2D DatasetTex;
 
-
 uniform vec3 cameraPosition;
 
 

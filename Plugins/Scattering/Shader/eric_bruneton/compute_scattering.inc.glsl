@@ -16,20 +16,20 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
     // Move surface pos above ocean level
     if (surfacePos.z < -0.01) {
-        // vec3 v2s = surfacePos - cameraPosition;
-        // float z_factor = abs(cameraPosition.z) / abs(v2s.z);
-        // surfacePos = cameraPosition + v2s * z_factor;
-        // viewDir = normalize(surfacePos - cameraPosition);
+        // vec3 v2s = surfacePos - MainSceneData.camera_pos;
+        // float z_factor = abs(MainSceneData.camera_pos.z) / abs(v2s.z);
+        // surfacePos = MainSceneData.camera_pos + v2s * z_factor;
+        // viewDir = normalize(surfacePos - MainSceneData.camera_pos);
     }
 
     vec3 inscatteredLight = vec3(0.0);
     float groundH = Rg + 2.0;
-    float pathLength = distance(cameraPosition, surfacePos);
-    vec3 startPos = cameraPosition; 
+    float pathLength = distance(MainSceneData.camera_pos, surfacePos);
+    vec3 startPos = MainSceneData.camera_pos; 
 
     float height_scale_factor = 0.01;
 
-    float startPosHeight = cameraPosition.z * height_scale_factor + groundH;
+    float startPosHeight = MainSceneData.camera_pos.z * height_scale_factor + groundH;
     float surfacePosHeight = surfacePos.z * height_scale_factor + groundH;
 
     float muStartPos = viewDir.z;
@@ -61,7 +61,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         // Get atmospheric color, 3 samples should be enough
         const int num_samples = 3;
 
-        float current_height = max(surfacePos.z, cameraPosition.z);
+        float current_height = max(surfacePos.z, MainSceneData.camera_pos.z);
 
         current_height *= 1.0 - saturate(pathLength / 25000.0);
 

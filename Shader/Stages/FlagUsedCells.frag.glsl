@@ -8,14 +8,13 @@
 #pragma include "Includes/GBuffer.inc.glsl"
 
 uniform layout(r8) image2DArray cellGridFlags;
-uniform vec3 cameraPosition;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     // Get the distance to the camera
     vec3 surf_pos = get_world_pos_at(coord);
-    float surf_dist = distance(cameraPosition, surf_pos);
+    float surf_dist = distance(MainSceneData.camera_pos, surf_pos);
 
     // Find the affected cell
     ivec3 tile = get_lc_cell_index(coord, surf_dist);

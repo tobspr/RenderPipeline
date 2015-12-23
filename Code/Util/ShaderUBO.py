@@ -1,9 +1,8 @@
 
-from panda3d.core import PTAFloat, PTALVecBase3f
+from panda3d.core import PTAFloat, PTALVecBase3f, PTALMatrix4f, PTALVecBase2f
+from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt
 
 from .DebugObject import DebugObject
-
-
 
 class BaseUBO(DebugObject):
     """ Base class for UBO's """
@@ -57,8 +56,13 @@ class PTABasedUBO(BaseUBO):
     def _pta_to_glsl_type(self, pta_handle):
         """ Converts a PtaXXX to a glsl type """
         mappings = {
+            PTAInt: "int",
             PTAFloat: "float",
-            PTALVecBase3f: "vec3"
+            PTALVecBase2f: "vec2",
+            PTALVecBase3f: "vec3",
+            PTALVecBase4f: "vec4",
+            PTALMatrix3f: "mat3",
+            PTALMatrix4f: "mat4",
         }
         for mapping, glsl_type in mappings.items():
             if isinstance(pta_handle, mapping):
@@ -69,8 +73,13 @@ class PTABasedUBO(BaseUBO):
     def _glsl_type_to_pta(self, glsl_type):
         """ Converts a glsl type to a PtaXXX type """
         mappings = {
+            "int": PTAInt,
             "float": PTAFloat,
-            "vec3": PTALVecBase3f
+            "vec2": PTALVecBase2f,
+            "vec3": PTALVecBase3f,
+            "vec4": PTALVecBase4f,
+            "mat3": PTALMatrix3f,
+            "mat4": PTALMatrix4f,
         }
         if glsl_type in mappings:
             return mappings[glsl_type]
@@ -89,6 +98,10 @@ class PTABasedUBO(BaseUBO):
         if not isinstance(value, tuple) and not isinstance(value, list):
             value = [value]
         self._ptas[name][0] = type(self._ptas[name][0])(*value)
+
+    def get_input(self, name):
+        """ Returns the value of an existing input """
+        return self._ptas[name][0]
 
     def generate_shader_code(self):
         """ Generates the GLSL shader code to use the UBO """
@@ -147,7 +160,7 @@ class PTABasedUBO(BaseUBO):
             for ipt in inputs:
                 content += " " * 4 + ipt + "\n"
 
-            content += "} TimeOfDay;\n"
+            content += "} " + self._name + ";\n"
 
         content += "\n"
         return content

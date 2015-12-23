@@ -8,8 +8,7 @@ class SSLRStage(RenderStage):
 
     required_inputs = ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
                        "GBuffer2", "DownscaledDepth"]
-    required_pipes = ["mainCam", "mainRender", "cameraPosition",
-                      "currentViewProjMat"]
+    required_pipes = []
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "SSLRStage", pipeline)
