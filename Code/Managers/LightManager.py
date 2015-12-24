@@ -120,31 +120,37 @@ class LightManager(BaseManager):
 
     def _init_stages(self):
         """ Inits all required stages """
+
+        add_stage = self._pipeline.get_stage_mgr().add_stage
+
         self._flag_cells_stage = FlagUsedCellsStage(self._pipeline)
         self._flag_cells_stage.set_tile_amount(self._num_tiles)
-        self._pipeline.get_stage_mgr().add_stage(self._flag_cells_stage)
+        add_stage(self._flag_cells_stage)
 
         self._collect_cells_stage = CollectUsedCellsStage(self._pipeline)
         self._collect_cells_stage.set_tile_amount(self._num_tiles)
-        self._pipeline.get_stage_mgr().add_stage(self._collect_cells_stage)
+        add_stage(self._collect_cells_stage)
 
         self._cull_lights_stage = CullLightsStage(self._pipeline)
         self._cull_lights_stage.set_tile_amount(self._num_tiles)
-        self._pipeline.get_stage_mgr().add_stage(self._cull_lights_stage)
+        add_stage(self._cull_lights_stage)
 
         self._apply_lights_stage = ApplyLightsStage(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(self._apply_lights_stage)
+        add_stage(self._apply_lights_stage)
+
+        self._shadow_stage = ShadowStage(self._pipeline)
+        add_stage(self._shadow_stage)
 
         # TODO: This doesn't belong here, move it somewhere else
 
         self._ambient_stage = AmbientStage(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(self._ambient_stage)
+        add_stage(self._ambient_stage)
 
         self._gbuffer_stage = GBufferStage(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(self._gbuffer_stage)
+        add_stage(self._gbuffer_stage)
 
         self._final_stage = FinalStage(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(self._final_stage)
+        add_stage(self._final_stage)
 
         # self._downscale_z_stage = DownscaleZStage(self._pipeline)
         # self._pipeline.get_stage_mgr().add_stage(self._downscale_z_stage)

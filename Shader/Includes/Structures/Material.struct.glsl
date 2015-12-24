@@ -4,7 +4,6 @@
 struct MaterialShaderOutput {
     vec3 basecolor;
     vec3 normal;
-    vec3 position;
     float roughness;
     float specular;
     float metallic;

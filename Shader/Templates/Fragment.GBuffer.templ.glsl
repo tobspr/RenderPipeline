@@ -60,7 +60,6 @@ void main() {
     MaterialShaderOutput m;
     m.basecolor = vOutput.material_color * sampled_diffuse.xyz;
     m.normal = merged_normal;
-    m.position = vOutput.position;
     m.metallic = vOutput.material_metallic;
     m.specular = vOutput.material_specular * sampled_specular;
     m.roughness = vOutput.material_roughness * sampled_roughness;

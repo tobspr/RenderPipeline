@@ -37,19 +37,19 @@ overrides:
     AO.ue4ao_max_distance: 4.3
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 145.44
-    Bloom.bloom_strength: 0.52667
-    Bloom.minimum_luminance: 3.25
+    Bloom.bloom_strength: 2.04999
+    Bloom.minimum_luminance: 18.64999
     Bloom.num_mipmaps: 9
     ColorCorrection.brightness_adaption_rate: 3.0
-    ColorCorrection.brightness_scale: 0.25
+    ColorCorrection.brightness_scale: 0.61989
     ColorCorrection.chromatic_aberration_samples: 1
     ColorCorrection.chromatic_aberration_strength: 0.3744
     ColorCorrection.darkness_adaption_rate: 1.0
     ColorCorrection.exponential_factor: 1.01
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.25
+    ColorCorrection.film_grain_strength: 0.3222
     ColorCorrection.max_exposure: 7.0
-    ColorCorrection.min_exposure: 0.0445
+    ColorCorrection.min_exposure: 0.001
     ColorCorrection.reinhard_version: rgb
     ColorCorrection.sharpen_strength: 0.3111
     ColorCorrection.tonemap_operator: exponential
@@ -65,15 +65,15 @@ overrides:
     PSSM.border_bias: 0.35
     PSSM.filter_radius: 3.73
     PSSM.filter_sample_count: 32
-    PSSM.fixed_bias: 0.0444
+    PSSM.fixed_bias: 0.2667
     PSSM.logarithmic_factor: 1.07311
     PSSM.max_distance: 90.8
     PSSM.normal_bias: 0.28
     PSSM.pcss_penumbra_size: 23.43
     PSSM.pcss_search_samples: 6
-    PSSM.split_count: 4
     PSSM.resolution: 512
-    PSSM.slope_bias: 2.83333
+    PSSM.slope_bias: 5.0
+    PSSM.split_count: 2
     PSSM.sun_distance: 150.0
     PSSM.use_pcf: True
     PSSM.use_pcss: False

@@ -12,7 +12,7 @@ class ShadowStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ShadowStage", pipeline)
-        self._size = 512
+        self._size = 4096
 
     def set_size(self, size):
         self._size = size
@@ -24,6 +24,7 @@ class ShadowStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("ShadowAtlas")
+        self._target.set_source(source_cam=NodePath(Camera("dummy_shadow_cam")), source_win=Globals.base.win)
         self._target.set_size(self._size, self._size)
         self._target.add_depth_texture(bits=32)
         self._target.prepare_scene_render()

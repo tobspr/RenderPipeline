@@ -1,14 +1,5 @@
-#pragma once
+#version 420
 
-/*
-
-Noise Functions from:
-https://github.com/hughsk/glsl-noise
-
-Check out the repository for a copy of the license:
-https://github.com/hughsk/glsl-noise/blob/master/LICENSE
-
-*/
 
 vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
@@ -179,22 +170,28 @@ float pnoise3D(vec3 P, vec3 rep)
 }
 
 
-float rand(vec2 co){
+float rand_(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
 
+float grain(vec2 texCoord, float frame) {
 
-uniform sampler2D PrecomputedGrain;
+  vec2 resolution = vec2(1920, 1080);
 
-// Computes the film grain using the precomputed grain
-float grain(vec2 coord, float frame_time) {
-  vec2 scaled_coord = coord * SCREEN_SIZE / 1024.0;
-  float frame_factor = mod(frame_time, 3.5);
-  vec4 f0 = textureLod(PrecomputedGrain, scaled_coord + vec2(12.0*frame_factor, 0), 0);
-  vec4 f1 = textureLod(PrecomputedGrain, scaled_coord + vec2(0, 5.0*frame_factor), 0);
-  vec4 f2 = mix(f0, f1, mod(frame_time*182.0, 1.0));
-  float mod_factor = mod(frame_time * 142.0, 1.0);
-  return mix(f2.x, f2.y, mod_factor) - 0.25;
+    vec2 mult = texCoord * resolution;
+    float initial_offset = rand_(texCoord);
+    float offset = snoise3D(vec3(texCoord.yx * resolution + texCoord.x * 1112.0 + texCoord.y * 1891.0 + initial_offset * 2000.0, mod(frame,300.0) ))*0.5 + 0.5;
+    float n1 = offset;
+    return n1 * 0.5 + 0.5;
 }
 
+in vec2 texcoord;
+out vec4 result;
+
+void main() {
+  result.x = grain(texcoord, 50.0);
+  result.y = grain(texcoord, 100.0);
+  result.z = grain(texcoord, 150.0);
+  result.w = grain(texcoord, 200.0);
+}

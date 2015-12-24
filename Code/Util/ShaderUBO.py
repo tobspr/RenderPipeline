@@ -43,16 +43,20 @@ class PTABasedUBO(BaseUBO):
 
     @classmethod
     def ubos_supported(cls):
+        """ Checks whether the panda3d build currently used supports UBOs """
         return bool(TypeRegistry.ptr().find_type("GLUniformBufferContext"))
 
     def __init__(self, name):
+        """ Constructs the UBO with a given name """
         BaseUBO.__init__(self)
         self._ptas = {}
         self._name = name
         self._use_ubo = self.ubos_supported()
-        self._use_ubo = True # Disable them for now
+
+        # Acquire a unique index for each UBO to store its binding
         self._bind_id = PTABasedUBO._UBO_BINDING_INDEX
         PTABasedUBO._UBO_BINDING_INDEX += 1
+
         self.debug("Native UBO support =", self._use_ubo)
 
     def register_pta(self, name, type):
@@ -136,7 +140,6 @@ class PTABasedUBO(BaseUBO):
 
             # Nested input, like Scattering.sun_color
             elif len(parts) == 2:
-
                 struct_name = parts[0]
                 actual_input_name = parts[1]
                 if struct_name in structs:
