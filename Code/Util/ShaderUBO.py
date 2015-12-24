@@ -1,6 +1,6 @@
 
 from panda3d.core import PTAFloat, PTALVecBase3f, PTALMatrix4f, PTALVecBase2f
-from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt
+from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt, TypeRegistry
 
 from .DebugObject import DebugObject
 
@@ -39,10 +39,21 @@ class PTABasedUBO(BaseUBO):
     """ Interface to shader uniform blocks, using PTA's to efficiently store
     and update values. """
 
+    _UBO_BINDING_INDEX = 0
+
+    @classmethod
+    def ubos_supported(cls):
+        return bool(TypeRegistry.ptr().find_type("GLUniformBufferContext"))
+
     def __init__(self, name):
         BaseUBO.__init__(self)
         self._ptas = {}
         self._name = name
+        self._use_ubo = self.ubos_supported()
+        self._use_ubo = True # Disable them for now
+        self._bind_id = PTABasedUBO._UBO_BINDING_INDEX
+        PTABasedUBO._UBO_BINDING_INDEX += 1
+        self.debug("Native UBO support =", self._use_ubo)
 
     def register_pta(self, name, type):
         """ Registers a new input, type should be a glsl type """
@@ -91,7 +102,10 @@ class PTABasedUBO(BaseUBO):
         either a RenderTarget or a NodePath """
 
         for pta_name, pta_handle in self._ptas.items():
-            target.set_shader_input(self._name + "." + pta_name, pta_handle)
+            if self._use_ubo:
+                target.set_shader_input(self._name + "_UBO." + pta_name, pta_handle)
+            else:
+                target.set_shader_input(self._name + "." + pta_name, pta_handle)
 
     def update_input(self, name, value):
         """ Updates an existing input """
@@ -143,24 +157,24 @@ class PTABasedUBO(BaseUBO):
         # Add structures
         for struct_name, members in structs.items():
             content += "struct " + struct_name + "_UBOSTRUCT {\n"
-
             for member in members:
                 content += " " * 4 + member + "\n"
-
             content += "};\n\n"
 
         # Add actual inputs
         if len(inputs) < 1:
-            # self.warn("No UBO inputs present for", self._name)
-            pass
+            self.warn("No UBO inputs present for", self._name)
         else:
-
-            content += "uniform struct {\n"
-
-            for ipt in inputs:
-                content += " " * 4 + ipt + "\n"
-
-            content += "} " + self._name + ";\n"
+            if self._use_ubo:
+                content += "layout(shared, binding=" + str(self._bind_id) + ") uniform " + self._name + "_UBO {\n"
+                for ipt in inputs:
+                     content += " " * 4 + ipt + "\n"
+                content += "} " + self._name + ";\n" 
+            else:
+                content += "uniform struct {\n"
+                for ipt in inputs:
+                     content += " " * 4 + ipt + "\n"
+                content += "} " + self._name + ";\n"
 
         content += "\n"
         return content

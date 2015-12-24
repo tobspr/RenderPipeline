@@ -4,6 +4,7 @@
 
 #define IS_GBUFFER_SHADER 1
 
+#define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/VertexOutput.struct.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"

@@ -122,7 +122,7 @@ class StageManager(BaseManager):
             stage.get_stage_id()))
 
         # Common inputs available to each stage by default
-        common_inputs = ["mainCam", "mainRender", "MainSceneData"]
+        common_inputs = ["mainCam", "mainRender", "MainSceneData", "TimeOfDay"]
 
         # Process each stage
         for stage in self._stages:

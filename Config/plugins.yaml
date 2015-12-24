@@ -79,7 +79,7 @@ overrides:
     PSSM.use_pcss: False
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
-    Scattering.ground_fog_factor: 12.22
+    Scattering.ground_fog_factor: 1073.10999
     Scattering.mie_phase_factor: 0.33
     Scattering.scattering_method: eric_bruneton
 

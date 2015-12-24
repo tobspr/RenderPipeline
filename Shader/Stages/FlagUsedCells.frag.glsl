@@ -1,5 +1,6 @@
 #version 430
 
+#define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/LightCulling.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"

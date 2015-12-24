@@ -1,7 +1,9 @@
-#version 400
+#version 420
 
 #pragma optionNV (unroll all)
 
+#define USE_MAIN_SCENE_DATA
+#define USE_TIME_OF_DAY
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/GBuffer.inc.glsl"
@@ -71,7 +73,7 @@ void main() {
     Material m = unpack_material(GBuffer);
 
     // Variables to accumulate the shadows
-    float shadow_factor = 0.0;
+    float shadow_factor = 1.0;
     vec3 lighting_result = vec3(0);
     vec3 transmittance = vec3(1);
 

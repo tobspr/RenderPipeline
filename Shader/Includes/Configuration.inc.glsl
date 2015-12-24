@@ -6,8 +6,15 @@
 // #pragma optionNV (unroll all)
 
 #pragma include "$$PipelineTemp/$$ShaderAutoConfig.inc.glsl"
-#pragma include "$$PipelineTemp/$$DayTimeConfig.inc.glsl"
+
+// Only include the UBO's if required
+#ifdef USE_MAIN_SCENE_DATA
 #pragma include "$$PipelineTemp/$$MainSceneData.inc.glsl"
+#endif
+
+#ifdef USE_TIME_OF_DAY
+#pragma include "$$PipelineTemp/$$DayTimeConfig.inc.glsl"
+#endif
 
 // Screen size macro
 #define SCREEN_SIZE vec2(WINDOW_WIDTH, WINDOW_HEIGHT)

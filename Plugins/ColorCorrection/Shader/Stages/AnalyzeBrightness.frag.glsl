@@ -1,5 +1,7 @@
 #version 440
 
+#define USE_MAIN_SCENE_DATA
+#define USE_TIME_OF_DAY
 #pragma include "Includes/Configuration.inc.glsl"
 
 uniform layout(rgba16f) imageBuffer ExposureStorage;

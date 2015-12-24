@@ -2,6 +2,7 @@
 
 %DEFINES%
 
+#define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/VertexOutput.struct.glsl"
 

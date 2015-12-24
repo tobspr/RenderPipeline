@@ -19,7 +19,7 @@ class MovementController(object):
         self._movement = [0, 0, 0]
         self._velocity = Vec3(0.0)
         self._hpr_movement = [0, 0]
-        self._speed = 2.0
+        self._speed = 0.7
         self._initial_position = Vec3(0)
         self._initial_destination = Vec3(0)
         self._initial_hpr = Vec3(0)
@@ -28,7 +28,7 @@ class MovementController(object):
         self._mouse_sensivity = 0.7
         self._keyboard_hpr_speed = 0.8
         self._use_hpr = False
-        self._smoothness = 0.84
+        self._smoothness = 6.0
         self._bobbing_amount = 1.0
 
     def set_initial_position(self, pos, target):
@@ -188,13 +188,15 @@ class MovementController(object):
 
         rotation_duration = 0.7
 
-        rotation = (globalClock.getFrameTime() % rotation_duration) / rotation_duration
+        rotation = (self._showbase.taskMgr.globalClock.get_frame_time() % rotation_duration) / rotation_duration
         rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
         rotation *= self._bobbing_amount
         rotation *= self._velocity.length() * 2.0
         self._showbase.camera.set_r( rotation )
 
-        self._velocity *= self._smoothness
+        # self._velocity *= self._smoothness
+        self._velocity = self._velocity * max(0.0, 
+            1.0 - self._showbase.taskMgr.globalClock.get_dt() * 60.0 / max(0.01, self._smoothness))
         return task.cont
 
     def _show_debug_output(self):

@@ -1,5 +1,6 @@
-#version 400
+#version 420
 
+#define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
 
 // Tell the lighting pipeline we are doing this in screen space, so gl_FragCoord
