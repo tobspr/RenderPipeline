@@ -14,6 +14,7 @@ PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
     _use_stable_csm = true;
     _logarithmic_factor = 1.0;
     _resolution = 512;
+    _border_bias = 0.1;
     _camera_mvps = PTA_LMatrix4f::empty_array(num_splits);
     _camera_nearfar = PTA_LVecBase2f::empty_array(num_splits);
     init_cam_nodes(num_splits);
@@ -52,6 +53,10 @@ void PSSMCameraRig::set_resolution(int resolution) {
 
 void PSSMCameraRig::set_use_stable_csm(bool flag) {
     _use_stable_csm = flag;
+}
+
+void PSSMCameraRig::set_border_bias(float bias) {
+    _border_bias = bias;
 }
 
 void PSSMCameraRig::reset_film_size_cache() {
@@ -211,7 +216,7 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
     // PSSM Distance should never be smaller than camera far plane.
     nassertv(max_distance <= 1.0);
 
-    const float filmsize_bias = 1.05;
+    float filmsize_bias = 1.0 + _border_bias;
 
     // Compute the positions of all cameras
     for (size_t i = 0; i < _cam_nodes.size(); ++i) {

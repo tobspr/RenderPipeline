@@ -35,7 +35,7 @@ void TagStateManager::apply_shadow_state(NodePath np, Shader* shader, const stri
 
     // Apply the state on all cameras attached so far
     for (CameraList::iterator iter = _shadow_cameras.begin(); iter != _shadow_cameras.end(); ++iter) {
-        cout << "Applied tag state " << name << " on camera " << *(*iter) << endl;
+        // cout << "Applied tag state " << name << " on camera " << *(*iter) << endl;
         (*iter)->set_tag_state(name, state);
     }
 }
@@ -58,11 +58,11 @@ void TagStateManager::register_shadow_camera(Camera* source) {
     source->set_tag_state_key(get_shadow_tag());
     source->set_camera_mask(get_shadow_mask());
     _shadow_cameras.push_back(source);
-    cout << "TagStateManager: registered shadow camera:" << *source << endl;
+    // cout << "TagStateManager: registered shadow camera:" << *source << endl;
 }
 
 void TagStateManager::unregister_shadow_camera(Camera* source) {
-    cout << "TagStateManager: unregistered shadow camera: " << *source << endl;
+    // cout << "TagStateManager: unregistered shadow camera: " << *source << endl;
     _shadow_cameras.erase(
         std::remove(_shadow_cameras.begin(), _shadow_cameras.end(), source), _shadow_cameras.end()); 
 }

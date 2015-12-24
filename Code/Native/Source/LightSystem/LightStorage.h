@@ -4,6 +4,7 @@
 
 #include "RPLight.h"
 #include "ShadowSource.h"
+#include "ShadowAtlas.h"
 #include "GPUCommandList.h"
 
 #define MAX_LIGHT_COUNT 65000
@@ -43,6 +44,7 @@ class LightStorage {
         int _num_stored_sources;
 
         GPUCommandList* _cmd_list;
+        ShadowAtlas* _shadow_atlas;
 };
 
 #include "LightStorage.I"

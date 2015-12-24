@@ -78,12 +78,15 @@ void main() {
     // Find lowest split in range
     const int split_count = GET_SETTING(PSSM, split_count);
     int best_split = 999;
-    float border_bias = 1.0 - (1.0 / 1.05);
+    float border_bias = 1 - (1.0 / (1.0 + GET_SETTING(PSSM, border_bias)));
     border_bias *= 0.5;
 
+    // Find the first matching split
     for (int i = 0; i < split_count; ++i) {
         vec3 coord = project(pssm_mvps[i], m.position);
-        if (coord.x >= border_bias && coord.x <= 1-border_bias && coord.y >= border_bias && coord.y <= 1-border_bias && coord.z >= 0.0 && coord.z <= 1.0) {
+        if (coord.x >= border_bias && coord.x <= 1-border_bias &&
+            coord.y >= border_bias && coord.y <= 1-border_bias &&
+            coord.z >= 0.0 && coord.z <= 1.0) {
             best_split = i;
             break;
         }
@@ -240,11 +243,15 @@ void main() {
     vec3 l = sun_vector;
     lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, vec4(0), transmittance);
 
-    // float factor = float(split) / GET_SETTING(PSSM, split_count);
-    // lighting_result = (lighting_result+0.01) * vec3(factor, 1 - factor, 0);
     #if DEBUG_MODE
         lighting_result *= 0;
     #endif
+
+    #if MODE_ACTIVE(PSSM_SPLITS)
+        float factor = float(split) / GET_SETTING(PSSM, split_count);
+        lighting_result = saturate(shadow_factor+0.5) * vec3(factor, 1 - factor, 0);
+    #endif
+
 
 
     result = scene_color + vec4(lighting_result, 0);

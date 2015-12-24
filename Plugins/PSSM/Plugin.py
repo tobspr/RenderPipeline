@@ -36,8 +36,9 @@ class Plugin(BasePlugin):
         self._rig.set_sun_distance(self.get_setting("sun_distance"))
         self._rig.set_pssm_distance(self.get_setting("max_distance"))
         self._rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
+        self._rig.set_border_bias(self.get_setting("border_bias"))
         self._rig.set_use_stable_csm(True)
-        self._rig.set_use_fixed_film_size(True)
+        self._rig.set_use_fixed_film_size(False)
         self._rig.set_use_tight_frustum(False)
         self._rig.set_resolution(self.get_setting("resolution"))
         self._rig.reparent_to(self._node)
@@ -102,6 +103,10 @@ class Plugin(BasePlugin):
     @SettingChanged("logarithmic_factor")
     def update_log_factor(self):
         self._rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
+
+    @SettingChanged("border_bias")
+    def update_border_bias(self):
+        self._rig.set_border_bias(self.get_setting("border_bias"))
 
     @SettingChanged("sun_distance")
     def update_sun_distance(self):

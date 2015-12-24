@@ -31,7 +31,8 @@ vec2 find_filter_size(mat4 projection, vec3 light, float sample_radius) {
     // vec2 proj_binormal = (project(projection, binormal).xy - proj_origin);
 
 
-    return vec2(proj_tangent * sample_radius) * 20.0;
+    return vec2(proj_tangent * sample_radius) * 10.0;
+    // return vec2(1.0 / 512.0);
 
 }
 

@@ -19,7 +19,7 @@ class MovementController(object):
         self._movement = [0, 0, 0]
         self._velocity = Vec3(0.0)
         self._hpr_movement = [0, 0]
-        self._speed = 1.0
+        self._speed = 2.0
         self._initial_position = Vec3(0)
         self._initial_destination = Vec3(0)
         self._initial_hpr = Vec3(0)
@@ -28,8 +28,8 @@ class MovementController(object):
         self._mouse_sensivity = 0.7
         self._keyboard_hpr_speed = 0.8
         self._use_hpr = False
-        self._smoothness = 0.8
-        self._smoothness = 0.0
+        self._smoothness = 0.84
+        self._bobbing_amount = 1.0
 
     def set_initial_position(self, pos, target):
         """ Sets the initial camera position """
@@ -178,7 +178,6 @@ class MovementController(object):
         self._showbase.camera.set_pos(
             self._showbase.camera.get_pos() + self._velocity)
 
-        self._velocity *= self._smoothness
 
         # transform rotation (keyboard keys)
         rotation_speed = self._keyboard_hpr_speed * 100.0
@@ -187,6 +186,15 @@ class MovementController(object):
             self._showbase.camera.get_hpr() + Vec3(
                 self._hpr_movement[0], self._hpr_movement[1], 0) * rotation_speed)
 
+        rotation_duration = 0.7
+
+        rotation = (globalClock.getFrameTime() % rotation_duration) / rotation_duration
+        rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
+        rotation *= self._bobbing_amount
+        rotation *= self._velocity.length() * 2.0
+        self._showbase.camera.set_r( rotation )
+
+        self._velocity *= self._smoothness
         return task.cont
 
     def _show_debug_output(self):

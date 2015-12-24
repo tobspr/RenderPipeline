@@ -21,6 +21,8 @@ class PSSMCameraRig {
         void set_resolution(int resolution);
         void set_use_stable_csm(bool flag);
         void set_logarithmic_factor(float factor);
+        
+        void set_border_bias(float bias);
 
         void fit_to_camera(NodePath &cam_node, const LVecBase3f &light_vector);
         void reset_film_size_cache();
@@ -60,6 +62,7 @@ class PSSMCameraRig {
         float _pssm_distance;
         float _sun_distance;
         float _logarithmic_factor;
+        float _border_bias;
         bool _use_fixed_film_size;
         bool _find_tight_frustum;
         bool _use_stable_csm;

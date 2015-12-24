@@ -180,6 +180,7 @@ class OnscreenDebugger(BaseManager):
             # "Scattering",
             # "GI-Diffuse",
             # "GI-Specular",
+            ("PSSM Splits", "PSSM_SPLITS"),
             ("Ambient Occlusion", "OCCLUSION"),
             # "PSSM-Splits",
             # "Shadowing",

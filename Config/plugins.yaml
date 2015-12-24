@@ -7,12 +7,12 @@
 
 
 enabled: 
-    - ColorCorrection
-    - SMAA
     - AO
+    - Scattering
+    - ColorCorrection
     - Bloom
     - PSSM
-    - Scattering
+    - SMAA
 
 overrides: 
     AO.alchemy_max_distance: 4.08
@@ -44,7 +44,7 @@ overrides:
     ColorCorrection.brightness_scale: 0.25
     ColorCorrection.chromatic_aberration_samples: 1
     ColorCorrection.chromatic_aberration_strength: 0.3744
-    ColorCorrection.darkness_adaption_rate: 0.4
+    ColorCorrection.darkness_adaption_rate: 1.0
     ColorCorrection.exponential_factor: 1.01
     ColorCorrection.exposure_bias: 0.0
     ColorCorrection.film_grain_strength: 0.25
@@ -62,19 +62,21 @@ overrides:
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.use_sharpen: True
     ColorCorrection.vignette_strength: 0.1333
-    PSSM.filter_radius: 4.54222
-    PSSM.filter_sample_count: 29
-    PSSM.fixed_bias: 0.3556
-    PSSM.logarithmic_factor: 1.47
-    PSSM.max_distance: 157.4
-    PSSM.normal_bias: 0.11
+    PSSM.border_bias: 0.35
+    PSSM.filter_radius: 3.73
+    PSSM.filter_sample_count: 32
+    PSSM.fixed_bias: 0.0444
+    PSSM.logarithmic_factor: 1.07311
+    PSSM.max_distance: 90.8
+    PSSM.normal_bias: 0.28
     PSSM.pcss_penumbra_size: 23.43
     PSSM.pcss_search_samples: 6
-    PSSM.resolution: 2048
-    PSSM.slope_bias: 0.17
     PSSM.split_count: 4
+    PSSM.resolution: 512
+    PSSM.slope_bias: 2.83333
     PSSM.sun_distance: 150.0
-    PSSM.use_pcss: True
+    PSSM.use_pcf: True
+    PSSM.use_pcss: False
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
     Scattering.ground_fog_factor: 12.22

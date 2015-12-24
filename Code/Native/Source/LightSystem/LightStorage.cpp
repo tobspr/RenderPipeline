@@ -20,6 +20,7 @@ LightStorage::LightStorage() {
     _max_source_index = 0;
     _num_stored_sources = 0;
     _cmd_list = NULL;
+    _shadow_atlas = new ShadowAtlas(4096);
 }
 
 LightStorage::~LightStorage() {
@@ -53,16 +54,16 @@ void LightStorage::add_light(PT(RPLight) light) {
 
     _lights[slot] = light;
     light->assign_slot(slot);
-    light->unset_dirty_flag();
+    // light->unset_dirty_flag();
 
     // Light casts shadows
     if (light->get_casts_shadows()) {
         setup_shadows(light);
     }
 
-    GPUCommand cmd_add(GPUCommand::CMD_store_light);
-    light->write_to_command(cmd_add);
-    _cmd_list->add_command(cmd_add);
+    // GPUCommand cmd_add(GPUCommand::CMD_store_light);
+    // light->write_to_command(cmd_add);
+    // _cmd_list->add_command(cmd_add);
 }
 
 
@@ -122,14 +123,14 @@ void LightStorage::remove_light(PT(RPLight) light) {
 void LightStorage::update() {
 
     // Find all dirty lights and update them
-    for (int k = 0; k <= _max_light_index; ++k) {
-        if (_lights[k] && _lights[k]->is_dirty()) {
+    for (size_t i = 0; i <= _max_light_index; ++i) {
+        if (_lights[i] && _lights[i]->is_dirty()) {
 
             // Update shadow sources in case the light is dirty
-            _lights[k]->update_shadow_sources();
+            _lights[i]->update_shadow_sources();
             GPUCommand cmd_update(GPUCommand::CMD_store_light);
-            _lights[k]->write_to_command(cmd_update);
-            _lights[k]->unset_dirty_flag();
+            _lights[i]->write_to_command(cmd_update);
+            _lights[i]->unset_dirty_flag();
             _cmd_list->add_command(cmd_update);
         }
     }
@@ -138,16 +139,33 @@ void LightStorage::update() {
     _sources_to_update.reserve(_max_source_index);
 
     // Find all dirty shadow sources and make a list of them
-    for (int k = 0; k <= _max_source_index; ++k) {
-        if (_shadow_sources[k] && _shadow_sources[k]->needs_update()) {
-            _sources_to_update.push_back(_shadow_sources[k]);
+    for (size_t i = 0; i <= _max_source_index; ++i) {
+        if (_shadow_sources[i] && _shadow_sources[i]->needs_update()) {
+            _sources_to_update.push_back(_shadow_sources[i]);
 
             // Since we will update the source, we will also find a new spot for it,
             // so unregister the old spot
-            if (_shadow_sources[k]->has_region()) {
-                cerr << "TODO: Free old region of shadow source in atlas" << endl;
+            if (_shadow_sources[i]->has_region()) {
+                _shadow_atlas->free_region(_shadow_sources[i]->get_region());
             }
         }
     }
+
+    // TODO: Sort the list of sources to update by their resolution, so that
+    // big sources come first.
+
+    // Now find an atlas spot for all regions
+    for (size_t i = 0; i < _sources_to_update.size(); ++i) {
+        ShadowSource *source = _sources_to_update[i];
+        size_t num_tiles = _shadow_atlas->get_required_tiles(source->get_resolution());
+        LVecBase4i new_region = _shadow_atlas->find_and_reserve_region(num_tiles, num_tiles);
+        source->set_region(new_region);
+
+        // TODO: Reserve a display region from the atlas, get the source mvp, and
+        // do something fancy with it
+        // mvp = source->get_mvp();
+        // atlas->add_source(mvp, new_region)
+    }
+
 
 }

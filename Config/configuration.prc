@@ -112,7 +112,7 @@ gl-force-fbo-color false
 # ----------- OpenGL / Performance Settings ------------
 
 # Set the minimum openGL version
-gl-version 3 2
+gl-version 4 0
 
 # Animations on the gpu. The default shader has to get adjusted to support this
 # feature before this option can be turned on.

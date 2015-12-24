@@ -72,6 +72,18 @@ settings: !!omap
             of 5120 * 512 for the shadow map. Be careful when choosing high
             defaults, the shadow map will soon take a huge amount of VRam.
 
+    - border_bias:
+        type: float
+        range: [0.0, 0.35]
+        default: 0.1
+        label: Border Padding
+        runtime: true
+        shader_runtime: true
+        description: >
+            Increases the shadow map size of each cascade by a small factor, to
+            ensure seamless filtering between cascades. If you encounter artifacts
+            between cascades, increase this value.
+
     - use_pcf:
         type: bool
         default: true
@@ -95,7 +107,7 @@ settings: !!omap
 
     - filter_radius:
         type: float
-        range: [0.1, 200]
+        range: [0.1, 10.0]
         default: 25
         shader_runtime: true
         label: Filtering radius
