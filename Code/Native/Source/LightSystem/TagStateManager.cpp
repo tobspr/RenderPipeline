@@ -58,7 +58,7 @@ void TagStateManager::register_shadow_camera(Camera* source) {
     source->set_tag_state_key(get_shadow_tag());
     source->set_camera_mask(get_shadow_mask());
     _shadow_cameras.push_back(source);
-    cout << "TagStateManager: registered shadow camera:" << *source << endl;
+    // cout << "TagStateManager: registered shadow camera:" << *source << endl;
 }
 
 void TagStateManager::unregister_shadow_camera(Camera* source) {

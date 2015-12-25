@@ -61,7 +61,6 @@ void InternalLightManager::add_light(PT(RPLight) light) {
 
 
 void InternalLightManager::setup_shadows(RPLight* light) {
-    cout << "setting up shadows for light" << endl;
     light->init_shadow_sources();
 
     // TODO: Find consecutive slots for lights with more than one shadow source,
