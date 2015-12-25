@@ -156,7 +156,7 @@ class BufferViewer(DraggableWindow):
             if stage_name.startswith("Image"):
                 r, g, b = 0.4, 0.4, 0.4
             else:
-                r, g, b = rgb_from_string(''.join(stage_name.split("-")[:-1]))
+                r, g, b = rgb_from_string(stage_name)
 
             DirectFrame(
                 parent=node, frameSize=(7, entry_width - 17, -7, -entry_height + 17),

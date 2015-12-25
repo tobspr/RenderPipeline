@@ -1,6 +1,5 @@
 
-from panda3d.core import Camera, NodePath, DepthWriteAttrib
-from panda3d.core import DepthTestAttrib
+from panda3d.core import Camera, NodePath
 
 from ..RenderStage import RenderStage
 from ..Globals import Globals
@@ -28,6 +27,12 @@ class ShadowStage(RenderStage):
         self._target.set_size(self._size, self._size)
         self._target.add_depth_texture(bits=32)
         self._target.prepare_scene_render()
+
+        # Disable all clears
+        self._target.get_internal_region().disable_clears()
+        self._target.get_internal_buffer().disable_clears()
+
+        self._target.set_clear_depth(False)
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

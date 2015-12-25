@@ -195,6 +195,6 @@ float grain(vec2 coord, float frame_time) {
   vec4 f1 = textureLod(PrecomputedGrain, scaled_coord + vec2(0, 5.0*frame_factor), 0);
   vec4 f2 = mix(f0, f1, mod(frame_time*182.0, 1.0));
   float mod_factor = mod(frame_time * 142.0, 1.0);
-  return mix(f2.x, f2.y, mod_factor) - 0.25;
+  return (mix(f2.x, f2.y, mod_factor) - 0.55) * 3.0;
 }
 
