@@ -26,8 +26,8 @@ capable of all 4.3 features, so the pipeline is not able to run there!
 
 ### Screenshots
 
+<img src="http://i.imgur.com/EE5U4UR.png" />
 <img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
-<img src="http://i.imgur.com/we0S49R.png" />
 <img src="https://img3.picload.org/image/pwrgpdc/289.png" />
 <img src="http://fs5.directupload.net/images/151122/28c2itvj.png" />
 <img src="http://i.imgur.com/Yn28cUM.png" />
