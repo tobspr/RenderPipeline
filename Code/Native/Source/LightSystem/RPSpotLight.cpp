@@ -31,6 +31,7 @@ void RPSpotLight::init_shadow_sources() {
 }
 
 void RPSpotLight::update_shadow_sources() {
+    _shadow_sources[0]->set_resolution(get_shadow_map_resolution());
     _shadow_sources[0]->set_perspective_lens(_fov, 2.0, _radius, _position, _direction);
 }
 

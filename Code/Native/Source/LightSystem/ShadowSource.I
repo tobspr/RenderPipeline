@@ -65,3 +65,8 @@ inline void ShadowSource::write_to_command(GPUCommand &cmd) {
     cmd.push_mat4(_mvp);
     cmd.push_vec4(_region_uv);
 }
+
+inline void ShadowSource::set_resolution(size_t resolution) {
+    _resolution = resolution;
+    invalidate();
+}

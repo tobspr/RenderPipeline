@@ -188,7 +188,7 @@ class MovementController(object):
         rotation = (self._showbase.taskMgr.globalClock.get_frame_time() % self._bobbing_speed) / self._bobbing_speed
         rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
         rotation *= self._bobbing_amount
-        rotation *= self._velocity.length() * 2.0
+        rotation *= self._velocity.length() / self._speed * 0.5
         self._showbase.camera.set_r(rotation)
 
         # fade out velocity

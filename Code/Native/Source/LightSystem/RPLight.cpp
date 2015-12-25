@@ -10,6 +10,7 @@ RPLight::RPLight(LightType light_type) {
     _position.set(0, 0, 0);
     _color.set(1, 1, 1);
     _ies_profile = -1;
+    _source_resolution = 512;
 }
 
 

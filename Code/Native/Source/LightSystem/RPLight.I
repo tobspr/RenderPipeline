@@ -82,3 +82,12 @@ inline void RPLight::invalidate_shadows() {
     }
 }
 
+inline void RPLight::set_shadow_map_resolution(int resolution) {
+    nassertv(resolution >= 32 && resolution <= 16384);
+    _source_resolution = resolution;
+    invalidate_shadows();
+}
+
+inline int RPLight::get_shadow_map_resolution() const {
+    return _source_resolution;
+}

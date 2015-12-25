@@ -19,7 +19,7 @@ inline bool ShadowAtlas::region_is_free(size_t x, size_t y, size_t w, size_t h) 
 
     // Check if we are out of bounds, this should be disabled for performance
     // reasons at some point.
-    nassertr(x >= 0 && y >= 0 && x + w < _num_tiles && y + h < _num_tiles, false);
+    nassertr(x >= 0 && y >= 0 && x + w <= _num_tiles && y + h <= _num_tiles, false);
 
     // Iterate over every tile in that region and check if it is still free.
     for (size_t cx = 0; cx < w; ++cx) {

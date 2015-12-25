@@ -24,9 +24,9 @@ uniform sampler2DShadow ShadowAtlasPCF;
 // Shades the material from the per cell light buffer
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
-    // #if DEBUG_MODE
-    //     return vec3(0);
-    // #endif
+    #if DEBUG_MODE
+        return vec3(0);
+    #endif
 
     vec3 shading_result = vec3(0);
 

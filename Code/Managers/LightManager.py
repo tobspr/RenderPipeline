@@ -104,7 +104,7 @@ class LightManager(BaseManager):
 
         # TODO: Make this configurable
         self._shadow_manager.set_max_updates(10)
-        self._shadow_manager.set_atlas_size(4096)
+        self._shadow_manager.set_atlas_size(8192)
 
         self._shadow_manager.set_scene(Globals.base.render)
         self._shadow_manager.set_tag_state_manager(self._pipeline.get_tag_mgr())

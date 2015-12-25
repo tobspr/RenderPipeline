@@ -38,6 +38,9 @@ class RPLight : public ReferenceCount {
 
     PUBLISHED:
 
+        inline void set_shadow_map_resolution(int resolution);
+        inline int get_shadow_map_resolution() const;
+
         inline void set_pos(const LVecBase3f &pos);
         inline void set_pos(float x, float y, float z);
 
@@ -58,6 +61,7 @@ class RPLight : public ReferenceCount {
         bool _casts_shadows;
         int _slot;
         int _ies_profile;
+        int _source_resolution;
         LVecBase3f _position;
         LVecBase3f _color;
         LightType _light_type;

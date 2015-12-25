@@ -24,6 +24,7 @@ public:
 
     inline void set_slot(int slot);
     inline void set_region(LVecBase4i region, LVecBase4f region_uv);
+    inline void set_resolution(size_t resolution);
     inline void set_perspective_lens(float fov, float near_plane, float far_plane, LVecBase3f pos, LVecBase3f direction);
 
     inline bool has_region() const;
