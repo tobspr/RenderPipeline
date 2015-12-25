@@ -33,8 +33,15 @@ class GPUCommandQueue(DebugObject):
 
     def get_num_queued_commands(self):
         """ Returns the amount of queued commands, which are waiting to get
-        executed on the gpu """
+        executed on the gpu. This might be zero a lot of the time, because the
+        GPUCommandList clears the queue after executing, so you have to call
+        this after work was submitted. """
         return self._command_list.get_num_commands()
+
+    def get_num_processed_commands(self):
+        """ Returns the amount of commands processed the last time when the
+        command queue was updated """
+        return self._pta_num_commands[0]
 
     def process_queue(self):
         """ Processes the n first commands of the queue """

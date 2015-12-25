@@ -111,7 +111,6 @@ class OnscreenDebugger(BaseManager):
 
     def _update_stats(self):
         """ Updates the stats overlay """
-
         clock = Globals.clock
         self._debug_lines[0].set_text("{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format(
             clock.get_average_frame_rate(),
@@ -122,7 +121,7 @@ class OnscreenDebugger(BaseManager):
         text += "  |  {:4d} commands  |  {:6d} lights"
         self._debug_lines[1].set_text(text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
-            self._pipeline.get_light_mgr().get_cmd_queue().get_num_queued_commands(),
+            self._pipeline.get_light_mgr().get_cmd_queue().get_num_processed_commands(),
             self._pipeline.get_light_mgr().get_num_lights()))
 
         for line in self._debug_lines:
