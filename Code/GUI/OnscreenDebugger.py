@@ -1,4 +1,6 @@
 
+from __future__ import division
+
 from functools import partial
 
 from panda3d.core import Vec3, Vec2, RenderState, TransformState
@@ -56,6 +58,7 @@ class OnscreenDebugger(BaseManager):
         self._create_topbar()
         self._create_stats()
         self._create_hints()
+
         self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
         self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
 
@@ -97,14 +100,14 @@ class OnscreenDebugger(BaseManager):
         """ Creates the hints like keybindings and when reloading shaders """
         self._hint_reloading = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/ShaderReloadHint.png",
-            x=80, y=Globals.base.win.get_y_size() - 100,
+            x= (Globals.base.win.get_x_size() - 258) // 2, y=Globals.base.win.get_y_size() - 100,
             parent=Globals.base.pixel2d)
         self.set_reload_hint_visible(False)
 
         # Keybinding hints
         self._keybinding_instructions = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30, y=Globals.base.win.get_y_size() - 510,
-            parent=Globals.base.pixel2d, any_filter=False)
+            parent=self._fullscreen_node, any_filter=False)
 
     def _update_stats(self):
         """ Updates the stats overlay """

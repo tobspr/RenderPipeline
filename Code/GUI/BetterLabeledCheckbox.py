@@ -36,14 +36,10 @@ class BetterLabeledCheckbox(DebugObject):
 
     def _on_node_enter(self, *args):
         """ Internal callback when the node gets hovered """
-        print("node enter")
-        # self._checkbox._node["frameColor"] = (0, 0, 0, 1)
         self._text._node["fg"] = (0.5, 0.5, 0.5, 1.0)
 
     def _on_node_leave(self, *args):
         """ Internal callback when the node gets no longer hovered """
-        print("node leave")
-        # self._checkbox._node["frameColor"] = (0, 0, 0, 1)
         self._text._node["fg"] = (0.4, 0.4, 0.4, 1.0)
 
     def get_checkbox(self):
