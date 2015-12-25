@@ -1,4 +1,3 @@
-
 #include "config_rsnative.h"
 
 #include "RPLight.h"

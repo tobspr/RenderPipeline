@@ -6,9 +6,6 @@
 #include "configVariableString.h"
 #include "configVariableInt.h"
 
-
-
 NotifyCategoryDecl(rsnative, EXPORT_CLASS, EXPORT_TEMPL);
 
 extern void init_librsnative();
-

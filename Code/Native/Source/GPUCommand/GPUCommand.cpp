@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-NotifyCategoryDef(gpucommand, "RP");
+NotifyCategoryDef(gpucommand, "");
 
 /**
  * @brief Constructs a new GPUCommand with the given command type.

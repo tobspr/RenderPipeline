@@ -22,7 +22,7 @@
 #include "glgsg.h"
 
 
-#include "../common.h"
+#include "common.h"
 
 TypeHandle SGRenderNode::_type_handle;
 
