@@ -5,11 +5,15 @@
 #pragma include "Includes/LightCulling.inc.glsl"
 #pragma include "Includes/Lights.inc.glsl"
 #pragma include "Includes/LightData.inc.glsl"
-#pragma include "Includes/BRDF.inc.glsl"
+#pragma include "Includes/Shadows.inc.glsl"
 
 uniform isampler2DArray CellIndices;
 uniform isamplerBuffer PerCellLights;
 uniform samplerBuffer AllLightsData;
+uniform samplerBuffer ShadowSourceData;
+
+uniform sampler2D ShadowAtlas;
+uniform sampler2DShadow ShadowAtlasPCF;
 
 // Use ambient occlusion data, but only if we work in scren space, and only if
 // the plugin is enabled
@@ -20,9 +24,9 @@ uniform samplerBuffer AllLightsData;
 // Shades the material from the per cell light buffer
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
-    #if DEBUG_MODE
-        return vec3(0);
-    #endif
+    // #if DEBUG_MODE
+    //     return vec3(0);
+    // #endif
 
     vec3 shading_result = vec3(0);
 
@@ -67,9 +71,10 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         int ies_profile = get_ies_profile(light_data);
         float attenuation = 0;
         vec3 l = vec3(0);
-
         // not implemented yet
         vec3 transmittance = vec3(1);
+        int shadow_source_index = get_shadow_source_index(light_data);
+
 
         // Special handling for different light types
         // TODO: Remove branches, by using seperate lists. Should be way faster
@@ -93,7 +98,29 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
             }
         }
 
-        shading_result += apply_light(m, v, l, get_light_color(light_data), attenuation, 1.0, directional_occlusion, transmittance);
+        // Fetch the shadow source data
+        float shadow = 1.0;
+
+        if (shadow_source_index >= 0) {
+    
+            SourceData source_data = read_source_data(ShadowSourceData, shadow_source_index * 5);
+            mat4 mvp = get_source_mvp(source_data);
+            vec4 uv = get_source_uv(source_data);
+
+            // TODO: use biased position
+            vec3 projected = project(mvp, m.position);
+            vec2 projected_coord = projected.xy * uv.zw + uv.xy;
+
+            // float depth_sample = textureLod(ShadowAtlas, projected_coord.xy, 0).x;
+
+            // shadow = step(projected.z - 0.0001, depth_sample);
+
+            shadow = textureLod(ShadowAtlasPCF, vec3(projected_coord.xy, projected.z - 0.0005), 0).x;
+
+        }
+
+        // shading_result += vec3(shadow);
+        shading_result += apply_light(m, v, l, get_light_color(light_data), attenuation, shadow, directional_occlusion, transmittance);
     }
     
     return shading_result;

@@ -19,6 +19,18 @@ void RPLight::write_to_command(GPUCommand &cmd) {
     // Start of light data
     cmd.push_int(_light_type);
     cmd.push_int(_ies_profile);
+
+    if (_casts_shadows) {
+        // If we casts shadows, write the index of the first source, we expect
+        // them to be consecutive
+        nassertv(_shadow_sources.size() >= 0);
+        nassertv(_shadow_sources[0]->has_slot());
+        cmd.push_int(_shadow_sources[0]->get_slot());
+    } else {
+        // If we cast no shadows, just push a negative number
+        cmd.push_int(-1);
+    }
+
     cmd.push_vec3(_position);
     cmd.push_vec3(_color);
 }

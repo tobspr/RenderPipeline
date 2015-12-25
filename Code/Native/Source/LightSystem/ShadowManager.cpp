@@ -78,7 +78,7 @@ void ShadowManager::update() {
         
         // Set the mvp and uv
         DCAST(MatrixLens, _camera_slots[i]->get_lens())->set_user_mat(update.mvp);
-        _camera_slots[i]->show_frustum();
+        // _camera_slots[i]->show_frustum();
 
         _display_regions[i]->set_dimensions(
             update.uv.get_x(),                         // left
@@ -104,7 +104,7 @@ bool ShadowManager::add_update(const LMatrix4f& mvp, const LVecBase4i& region) {
     }
 
     LVecBase4f uv = _atlas->region_to_uv(region);
-    cout << "ShadowManager: Adding update: " << mvp << " to region " << region << "(uv = " << uv << ")" << endl;
+    // cout << "ShadowManager: Adding update: " << mvp << " to region " << region << "(uv = " << uv << ")" << endl;
     
     _queued_updates.push_back(ShadowUpdate(mvp, uv));
 

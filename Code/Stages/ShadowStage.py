@@ -1,5 +1,5 @@
 
-from panda3d.core import Camera, NodePath
+from panda3d.core import Camera, NodePath, SamplerState, Texture
 
 from ..RenderStage import RenderStage
 from ..Globals import Globals
@@ -18,8 +18,15 @@ class ShadowStage(RenderStage):
 
     def get_produced_pipes(self):
         return {
-            "ShadowAtlas": self._target["depth"]
+            "ShadowAtlas": self._target["depth"],
+            "ShadowAtlasPCF": (self._target['depth'], self.make_pcf_state()),
         }
+
+    def make_pcf_state(self):
+        state = SamplerState()
+        state.set_minfilter(Texture.FT_shadow)
+        state.set_magfilter(Texture.FT_shadow)
+        return state
 
     def create(self):
         self._target = self._create_target("ShadowAtlas")

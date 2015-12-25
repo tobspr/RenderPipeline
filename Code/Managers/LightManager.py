@@ -24,6 +24,7 @@ class LightManager(BaseManager):
     additional functionality like setting up all required stages and defines."""
 
     _MAX_LIGHTS = 2 ** 16
+    _MAX_SOURCES = 2048
 
     def __init__(self, pipeline):
         """ Constructs the light manager """
@@ -91,6 +92,8 @@ class LightManager(BaseManager):
         self._cmd_queue = GPUCommandQueue(self._pipeline)
         self._cmd_queue.register_input(
             "LightData", self._img_light_data.get_texture())
+        self._cmd_queue.register_input(
+            "SourceData", self._img_source_data.get_texture())
 
         # Register the command list
         self._internal_mgr.set_command_list(self._cmd_queue.get_cmd_list())
@@ -122,6 +125,7 @@ class LightManager(BaseManager):
         """ Creates the light storage manager and the buffer to store the light data """
         self._internal_mgr = InternalLightManager()
 
+        # Storage for the Lights
         per_light_vec4s = 4
         self._img_light_data = Image.create_buffer(
             "LightData", self._MAX_LIGHTS * per_light_vec4s, Texture.T_float,
@@ -132,11 +136,22 @@ class LightManager(BaseManager):
         self._pta_max_light_index = PTAInt.empty_array(1)
         self._pta_max_light_index[0] = 0
 
+        # Storage for the shadow sources
+        per_source_vec4s = 5
+        self._img_source_data = Image.create_buffer(
+            "ShadowSourceData", self._MAX_SOURCES * per_source_vec4s, Texture.T_float,
+            Texture.F_rgba32)
+        self._img_light_data.set_clear_color(0)
+        self._img_light_data.clear_image()
+
         # Register the buffer
         self._pipeline.get_stage_mgr().add_input(
             "AllLightsData", self._img_light_data.get_texture())
         self._pipeline.get_stage_mgr().add_input(
+            "ShadowSourceData", self._img_source_data.get_texture())
+        self._pipeline.get_stage_mgr().add_input(
             "maxLightIndex", self._pta_max_light_index)
+
 
     def _compute_tile_size(self):
         """ Computes how many tiles there are on screen """

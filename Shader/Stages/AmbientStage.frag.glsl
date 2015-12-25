@@ -104,7 +104,7 @@ void main() {
         specular_nonmetallic *= m.specular;
 
         // Metallic specular is pretty simple
-        vec3 specular_metallic = m.basecolor;
+        vec3 specular_metallic = env_brdf.y * 0.3 + env_brdf.x * m.basecolor;
 
         // Weight specular metallic and non-metallic terms
         vec3 specular_ambient = mix(specular_nonmetallic, specular_metallic, m.metallic) * env_default_color;

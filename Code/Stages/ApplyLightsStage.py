@@ -6,8 +6,9 @@ class ApplyLightsStage(RenderStage):
 
     """ This stage applies the lights to the scene using the gbuffer """
 
-    required_pipes = ["GBuffer", "CellIndices", "PerCellLights"]
-    required_inputs = ["AllLightsData", "IESDatasetTex"]
+    required_pipes = ["GBuffer", "CellIndices", "PerCellLights", "ShadowAtlas",
+                      "ShadowAtlasPCF"]
+    required_inputs = ["AllLightsData", "IESDatasetTex", "ShadowSourceData"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ApplyLightsStage", pipeline)

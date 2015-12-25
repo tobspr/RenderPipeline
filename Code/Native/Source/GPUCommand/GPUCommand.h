@@ -13,7 +13,9 @@ class GPUCommand {
         enum CommandType {
             CMD_invalid = 0,
             CMD_store_light = 1,
-            CMD_remove_light = 2
+            CMD_remove_light = 2,
+            CMD_store_source = 3,
+            CMD_remove_source = 4,
         };
 
         GPUCommand(CommandType command_type);
@@ -30,6 +32,9 @@ class GPUCommand {
         void print_data();
 
     private:
+
+        inline float convert_int_to_float(int v) const;
+
         CommandType _command_type;
         int _current_index;
         float _data[32];

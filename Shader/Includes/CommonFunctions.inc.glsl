@@ -157,3 +157,12 @@ float make_logarithmic(float x, float factor) {
 vec3 make_logarithmic(vec3 v, float factor) {
     return log(factor * v + 1.0 + 1e-6) / log(1.0 + factor);
 }
+
+// Unpacks an integer from a float, packed by the GPUCommandQueue.
+int gpu_cq_unpack_int_from_float(float v) {
+    #if GPU_CMD_INT_AS_FLOAT
+        return floatBitsToInt(v);
+    #else
+        return int(v);
+    #endif
+}

@@ -52,22 +52,20 @@ void InternalLightManager::add_light(PT(RPLight) light) {
 
     _lights[slot] = light;
     light->assign_slot(slot);
-    // light->unset_dirty_flag();
 
     // Light casts shadows
     if (light->get_casts_shadows()) {
         setup_shadows(light);
     }
-
-    // GPUCommand cmd_add(GPUCommand::CMD_store_light);
-    // light->write_to_command(cmd_add);
-    // _cmd_list->add_command(cmd_add);
 }
 
 
 void InternalLightManager::setup_shadows(RPLight* light) {
     cout << "setting up shadows for light" << endl;
     light->init_shadow_sources();
+
+    // TODO: Find consecutive slots for lights with more than one shadow source,
+    // so we can only store the index of the first source
 
     for (int i = 0; i < light->get_num_shadow_sources(); ++i) {
         ShadowSource* source = light->get_shadow_source(i);
@@ -162,10 +160,20 @@ void InternalLightManager::update() {
         ShadowSource *source = _sources_to_update[i];
         size_t num_tiles = _shadow_manager->get_atlas()->get_required_tiles(source->get_resolution());
         LVecBase4i new_region = _shadow_manager->get_atlas()->find_and_reserve_region(num_tiles, num_tiles);
-        source->set_region(new_region);
+        LVecBase4f new_region_uv = _shadow_manager->get_atlas()->region_to_uv(new_region);
+
+        source->set_region(new_region, new_region_uv);
 
         if(_shadow_manager->add_update(source->get_mvp(), source->get_region())) {
+
+            // Update performed
             source->on_update_done();
+
+            // Also update the sources data on the GPU
+            GPUCommand cmd_update_src(GPUCommand::CMD_store_source);
+            source->write_to_command(cmd_update_src);
+            _cmd_list->add_command(cmd_update_src);
+
         } else {
             // Out of update slots. We can just abort the loop here.
             cout << "Aborting update, because out of update slots" << endl;

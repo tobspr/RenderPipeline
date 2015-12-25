@@ -4,6 +4,7 @@
 
 uniform samplerBuffer CommandQueue;
 uniform layout(rgba32f) imageBuffer LightData;
+uniform layout(rgba32f) imageBuffer SourceData;
 uniform int commandCount;
 
 // Reads a single float from the data stack
@@ -13,7 +14,7 @@ float read_float(inout int stack_ptr) {
 
 // Reads a single int from the data stack
 int read_int(inout int stack_ptr) {
-    return int(read_float(stack_ptr));
+    return gpu_cq_unpack_int_from_float(read_float(stack_ptr));
 }
 
 // Reads a 4-component vector from the data stack
@@ -51,7 +52,7 @@ void main() {
                 int slot = read_int(stack_ptr);
                 int offs = slot * 4;
 
-                // Just copy the data over
+                // Copy the data over
                 for (int i = 0; i < 4; ++i) {
                     imageStore(LightData, offs + i, read_vec4(stack_ptr));
                 }
@@ -65,14 +66,42 @@ void main() {
                 int slot = read_int(stack_ptr);
                 int offs = slot * 4;
 
-                // Just set the data to all zeroes, this indicates a null light
+                // Set the data to all zeroes, this indicates a null light
                 for (int i = 0; i < 4; ++i) {
                     imageStore(LightData, offs + i, vec4(0));               
                 }
                 break;
             }
-            
+
+            // Store Source
+            case CMD_store_source: {
+                
+                int slot = read_int(stack_ptr);
+                int offs = slot * 5;
+
+                // Copy the data over
+                for (int i = 0; i < 5; ++i) {
+                    imageStore(SourceData, offs + i, read_vec4(stack_ptr));
+                }
+
+                break;
+            }
+
+            // Remove source
+            case CMD_remove_source: {
+
+                int slot = read_int(stack_ptr);
+                int offs = slot * 5;
+
+                // Set the data to all zeroes, this indicates a unused source
+                for (int i = 0; i < 5; ++i) {
+                    imageStore(SourceData, offs + i, vec4(0));
+                }
+                break;
+            }
+
             // .. further commands will follow here
+            
         }
 
 

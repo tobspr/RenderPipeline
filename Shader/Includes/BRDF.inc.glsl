@@ -139,7 +139,7 @@ vec3 brdf_fresnel(vec3 specular, float VxH, float NxV, float LxH, float roughnes
     // Choose one:
 
     // Simple fresnel
-    return specular * pow(NxV, 5.0);
+    return specular * (0.5 + 0.5 * pow(NxV, 5.0));
     // return brdf_fresnel_cook_torrance(specular, NxV);
 }
 

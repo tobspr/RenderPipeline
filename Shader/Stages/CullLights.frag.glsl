@@ -98,7 +98,8 @@ void main() {
             case LT_POINT_LIGHT: {
                 float radius = get_pointlight_radius(light_data);
                 for (int k = 0; k < num_raydirs; ++k) {
-                    visible = visible || viewspace_ray_sphere_distance_intersection(light_pos_view.xyz, radius, ray_dirs[k], min_distance, max_distance);
+                    visible = visible || viewspace_ray_sphere_distance_intersection(
+                        light_pos_view.xyz, radius, ray_dirs[k], min_distance, max_distance);
                 }
                 break;
             } 
@@ -109,7 +110,8 @@ void main() {
                 vec3 direction_view = world_normal_to_view(direction);
                 float fov = get_spotlight_fov(light_data);
                 for (int k = 0; k < num_raydirs; ++k) {
-                    visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz, direction_view, radius, fov, ray_dirs[k], min_distance, max_distance);
+                    visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz,
+                        direction_view, radius, fov, ray_dirs[k], min_distance, max_distance);
                 }
                 break;
             }

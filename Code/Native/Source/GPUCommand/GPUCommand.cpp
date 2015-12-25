@@ -9,11 +9,13 @@
 
 GPUCommand::GPUCommand(CommandType command_type) {
     _command_type = command_type;
-    for (int i = 1; i < 32; i++) {
+    for (int i = 0; i < 32; i++) {
         _data[i] = 0.0;
     }
-    _current_index = 1;
-    _data[0] = (float)command_type;
+    _current_index = 0;
+
+    // Store the command type as the very first entry
+    push_int(command_type);
 }
 
 GPUCommand::~GPUCommand() {

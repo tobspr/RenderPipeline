@@ -56,7 +56,6 @@ void main() {
         vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
     #endif
 
-
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec4 scene_color = texelFetch(ShadedScene, coord, 0);
@@ -134,7 +133,6 @@ void main() {
         // Find filter size
         vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);
 
-
         #if GET_SETTING(PSSM, use_pcss)
 
             {
@@ -204,8 +202,6 @@ void main() {
         shadow_factor = saturate(shadow_factor);
 
 
-
-
         // skin shading, use a single tap
         BRANCH_TRANSLUCENCY(m)
 
@@ -254,8 +250,6 @@ void main() {
         float factor = float(split) / GET_SETTING(PSSM, split_count);
         lighting_result = saturate(shadow_factor+0.5) * vec3(factor, 1 - factor, 0);
     #endif
-
-
 
     result = scene_color + vec4(lighting_result, 0);
 }

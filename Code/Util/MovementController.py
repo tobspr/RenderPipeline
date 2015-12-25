@@ -29,8 +29,8 @@ class MovementController(object):
         self._keyboard_hpr_speed = 0.8
         self._use_hpr = False
         self._smoothness = 6.0
-        self._bobbing_amount = 1.0
-        self._bobbing_speed = 0.7
+        self._bobbing_amount = 2.5
+        self._bobbing_speed = 0.5
 
     def set_initial_position(self, pos, target):
         """ Sets the initial camera position """

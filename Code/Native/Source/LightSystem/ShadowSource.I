@@ -12,6 +12,10 @@ inline int ShadowSource::get_slot() const {
     return _slot;
 }
 
+inline bool ShadowSource::has_slot() const {
+    return _slot >= 0;
+}
+
 inline void ShadowSource::set_slot(int slot) {
     _slot = slot;
 }
@@ -45,11 +49,19 @@ inline const LVecBase4i& ShadowSource::get_region() const {
     return _region;
 }
 
-inline void ShadowSource::set_region(LVecBase4i region) {
+inline void ShadowSource::set_region(LVecBase4i region, LVecBase4f region_uv) {
     _region = region;
+    _region_uv = region_uv;
 }
-
 
 inline const LMatrix4f& ShadowSource::get_mvp() const {
     return _mvp;
+}
+
+inline void ShadowSource::write_to_command(GPUCommand &cmd) {
+    // When storing on the gpu, we should already have a valid slot
+    nassertv(_slot >= 0);
+    cmd.push_int(_slot);
+    cmd.push_mat4(_mvp);
+    cmd.push_vec4(_region_uv);
 }
