@@ -47,7 +47,7 @@ inline float GPUCommand::convert_int_to_float(int v) const {
  */
 inline void GPUCommand::push_float(float v) {
     if (_current_index >= GPU_COMMAND_ENTRIES) {
-        GPUCommand_cat.error() << "Out of bounds! Exceeded command size of " << GPU_COMMAND_ENTRIES << endl;
+        gpucommand_cat.error() << "Out of bounds! Exceeded command size of " << GPU_COMMAND_ENTRIES << endl;
         return;
     }
     _data[_current_index++] = v;

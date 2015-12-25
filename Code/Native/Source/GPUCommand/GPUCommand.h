@@ -4,7 +4,7 @@
 #include "pandabase.h"
 #include "luse.h"
 
-NotifyCategoryDecl(GPUCommand, EXPORT_CLASS, EXPORT_TEMPL);
+NotifyCategoryDecl(gpucommand, EXPORT_CLASS, EXPORT_TEMPL);
 
 #define GPU_COMMAND_ENTRIES 32
 
@@ -50,7 +50,7 @@ class GPUCommand {
         inline float convert_int_to_float(int v) const;
 
         CommandType _command_type;
-        int _current_index;
+        size_t _current_index;
         float _data[GPU_COMMAND_ENTRIES];
 };
 

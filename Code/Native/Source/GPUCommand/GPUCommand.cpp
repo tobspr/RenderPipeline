@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-NotifyCategoryDef(GPUCommand, "RP");
+NotifyCategoryDef(gpucommand, "RP");
 
 /**
  * @brief Constructs a new GPUCommand with the given command type.
@@ -33,7 +33,7 @@ GPUCommand::GPUCommand(CommandType command_type) {
 void GPUCommand::print_data() {
     cout << "GPUCommand(type=" << _command_type << ", size=" << _current_index << ")" << endl;
     cout << "Data = { ";
-    for (int k = 0; k < GPU_COMMAND_ENTRIES; ++k) {
+    for (size_t k = 0; k < GPU_COMMAND_ENTRIES; ++k) {
         cout << _data[k] << " ";
     }
     cout << "}" << endl;
