@@ -37,11 +37,15 @@ class UDPListenerService(object):
     @classmethod
     def ping_thread(cls, port, message):
         """ Starts a new thread which sends a given message to a port """
-        thread = Thread(target=cls.do_ping, args=(port, message))
+        thread = Thread(target=cls.do_ping, args=(port, message), name="UDPPingThread")
+        thread.setDaemon(True)
         thread.start()
+        return thread
 
     @classmethod
     def listener_thread(cls, port, callback):
         """ Starts a new thread listening to the given port """
-        thread = Thread(target=cls.do_listen, args=(port, callback))
+        thread = Thread(target=cls.do_listen, args=(port, callback), name="UDPListenerThread")
+        thread.setDaemon(True)
         thread.start()
+        return thread

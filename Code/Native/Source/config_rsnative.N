@@ -1,3 +1,4 @@
 forcetype GPUCommandList
 forcetype GPUCommand
 forcetype RPLight
+forcetype ShadowManager

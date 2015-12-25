@@ -118,8 +118,8 @@ class OnscreenDebugger(BaseManager):
         text += "  |  {:4d} commands  |  {:6d} lights"
         self._debug_lines[1].set_text(text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
-            self._pipeline._light_mgr._cmd_queue.get_num_queued_commands(),
-            self._pipeline._light_mgr._light_storage.get_num_stored_lights()))
+            self._pipeline.get_light_mgr().get_cmd_queue().get_num_queued_commands(),
+            self._pipeline.get_light_mgr().get_num_lights()))
 
         for line in self._debug_lines:
             line.update()
@@ -187,7 +187,6 @@ class OnscreenDebugger(BaseManager):
             # "Bloom"
         ]
 
-
         row_width = 200
         collection = CheckboxCollection()
 
@@ -209,7 +208,6 @@ class OnscreenDebugger(BaseManager):
         # Clear old defines
         self._pipeline.get_stage_mgr().remove_define_if(lambda name: name.startswith("_RM__"))
 
-        # print("Setting render mode: ", mode_id)
         if mode_id == "":
             self._pipeline.get_stage_mgr().define("ANY_DEBUG_MODE", 0)
         else:

@@ -1,29 +1,33 @@
 
-#ifndef RP_LIGHT_STORAGE_H
-#define RP_LIGHT_STORAGE_H
+#ifndef RP_INTERNAL_LIGHT_MANAGER_H
+#define RP_INTERNAL_LIGHT_MANAGER_H
 
 #include "RPLight.h"
 #include "ShadowSource.h"
 #include "ShadowAtlas.h"
 #include "GPUCommandList.h"
+#include "ShadowManager.h"
+#include "referenceCount.h"
 
 #define MAX_LIGHT_COUNT 65000
 #define MAX_SHADOW_SOURCES 1000
 
-class LightStorage {
+class InternalLightManager : public ReferenceCount {
 
     PUBLISHED:
-        LightStorage();
-        ~LightStorage();
+        InternalLightManager();
+        ~InternalLightManager();
 
         void add_light(PT(RPLight) light);
         void remove_light(PT(RPLight) light);
-        void set_command_list(GPUCommandList *cmd_list);
 
         void update();
         
         inline int get_max_light_index() const;
         inline int get_num_stored_lights() const;
+
+        inline void set_command_list(GPUCommandList *cmd_list);
+        inline void set_shadow_manager(ShadowManager* mgr);
 
     protected:
         
@@ -44,9 +48,9 @@ class LightStorage {
         int _num_stored_sources;
 
         GPUCommandList* _cmd_list;
-        ShadowAtlas* _shadow_atlas;
+        ShadowManager* _shadow_manager;
 };
 
-#include "LightStorage.I"
+#include "InternalLightManager.I"
 
-#endif // RP_LIGHT_STORAGE_H
+#endif // RP_INTERNAL_LIGHT_MANAGER_H

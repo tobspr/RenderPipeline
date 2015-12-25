@@ -9,6 +9,7 @@ from direct.stdpy.file import isfile
 from .Util.DebugObject import DebugObject
 
 from .CommonResources import CommonResources
+from .CommonStages import CommonStages
 from .Globals import Globals
 from .RenderTarget import RenderTarget
 
@@ -116,6 +117,11 @@ class RenderPipeline(DebugObject):
         hooks """
         return self._plugin_mgr
 
+    def get_light_mgr(self):
+        """ Returns a handle to the light manager, this usually should not be used
+        by the user """
+        return self._light_mgr
+
     def get_tag_mgr(self):
         """ Returns a handle to the tag state manager """
         return self._tag_mgr
@@ -190,7 +196,6 @@ class RenderPipeline(DebugObject):
         self._adjust_camera_settings()
 
         # Create the various managers and instances
-        self._com_resources = CommonResources(self)
         self._tag_mgr = TagStateManager(Globals.base.cam)
         self._plugin_mgr = PluginManager(self)
         self._effect_loader = EffectLoader()
@@ -200,16 +205,13 @@ class RenderPipeline(DebugObject):
         self._ies_profile_mgr = IESProfileManager(self)
 
         # Load commonly used resources
-        self._com_resources.load()
+        self._com_resources = CommonResources(self)
 
-        if self.get_setting("pipeline.display_debugger"):
-            self._debugger = OnscreenDebugger(self)
-        else:
-            # Use a fake onscreen debugger in case the debugger is not enabled
-            class FakeDebugger:
-                def __getattr__(self, *args, **kwargs):
-                    return lambda *args, **kwargs: None
-            self._debugger = FakeDebugger()
+        # Load commonly used stages
+        self._com_stages = CommonStages(self)
+
+        # Init the onscreen debugger
+        self._init_debugger()
 
         # Load plugins and daytime settings
         self._plugin_mgr.load_plugins()
@@ -219,6 +221,7 @@ class RenderPipeline(DebugObject):
         # Setup common defines
         self._create_common_defines()
 
+        # Let the plugins setup their stages
         self._plugin_mgr.trigger_hook("on_stage_setup")
 
         # Setup the managers
@@ -238,6 +241,17 @@ class RenderPipeline(DebugObject):
 
         self._start_listener()
         self.debug("Finished initialization.")
+
+    def _init_debugger(self):
+        """ Internal method to initialize the GUI-based debugger """
+        if self.get_setting("pipeline.display_debugger"):
+            self._debugger = OnscreenDebugger(self)
+        else:
+            # Use an empty onscreen debugger in case the debugger is not enabled
+            class _empty_class(object):
+                def __getattr__(self, *args, **kwargs):
+                    return lambda *args, **kwargs: None
+            self._debugger = _empty_class()
 
     def reload_shaders(self):
         """ Reloads all shaders """
@@ -270,7 +284,11 @@ class RenderPipeline(DebugObject):
 
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
-        self._showbase.accept("r", self.reload_shaders)
+            
+        # Add a hotkey to reload the shaders, but only if the debugger is enabled
+        if self.get_setting("pipeline.display_debugger"):
+            self._showbase.accept("r", self.reload_shaders)
+        
         self._showbase.addTask(self._manager_update_task, "RP_UpdateManagers", sort=10)
         self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
         self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=1000)

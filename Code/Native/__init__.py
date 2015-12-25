@@ -33,7 +33,8 @@ else:
 classes_to_import = [
     "GPUCommand",
     "GPUCommandList",
-    "LightStorage",
+    "ShadowManager",
+    "InternalLightManager",
     "PSSMCameraRig",
     "IESDataset",
     "TagStateManager",

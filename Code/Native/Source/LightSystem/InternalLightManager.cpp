@@ -1,9 +1,9 @@
 
 
-#include "LightStorage.h"
+#include "InternalLightManager.h"
 
 
-LightStorage::LightStorage() {
+InternalLightManager::InternalLightManager() {
 
     // Allocate containers
     _lights = new RPLight*[MAX_LIGHT_COUNT];
@@ -20,22 +20,20 @@ LightStorage::LightStorage() {
     _max_source_index = 0;
     _num_stored_sources = 0;
     _cmd_list = NULL;
-    _shadow_atlas = new ShadowAtlas(4096);
+    _shadow_manager = NULL;
 }
 
-LightStorage::~LightStorage() {
+InternalLightManager::~InternalLightManager() {
     delete [] _lights;
     delete [] _shadow_sources;
 }
 
-void LightStorage::set_command_list(GPUCommandList *cmd_list) {
-    _cmd_list = cmd_list;
-}
 
+void InternalLightManager::add_light(PT(RPLight) light) {
+    nassertv(_shadow_manager != NULL);
 
-void LightStorage::add_light(PT(RPLight) light) {
     if (light->has_slot()) {
-        cerr << "LightStorage: cannot add light since it already has a slot!" << endl;
+        cerr << "InternalLightManager: cannot add light since it already has a slot!" << endl;
         return;
     }
 
@@ -45,7 +43,7 @@ void LightStorage::add_light(PT(RPLight) light) {
 
     // In case we found no slot, emit an error
     if (slot < 0) {
-        cerr << "LightStorage: All light slots used!" << endl;
+        cerr << "InternalLightManager: All light slots used!" << endl;
         return;
     }
 
@@ -67,7 +65,7 @@ void LightStorage::add_light(PT(RPLight) light) {
 }
 
 
-void LightStorage::setup_shadows(RPLight* light) {
+void InternalLightManager::setup_shadows(RPLight* light) {
     cout << "setting up shadows for light" << endl;
     light->init_shadow_sources();
 
@@ -90,7 +88,9 @@ void LightStorage::setup_shadows(RPLight* light) {
 }
 
 
-void LightStorage::remove_light(PT(RPLight) light) {
+void InternalLightManager::remove_light(PT(RPLight) light) {
+    nassertv(_shadow_manager != NULL);
+    
     if (!light->has_slot()) {
         cerr << "Cannot detach light, light has no slot!" << endl;
         return;
@@ -120,7 +120,10 @@ void LightStorage::remove_light(PT(RPLight) light) {
 
 
 
-void LightStorage::update() {
+void InternalLightManager::update() {
+
+    // Make sure we have a manager
+    nassertv(_shadow_manager != NULL);
 
     // Find all dirty lights and update them
     for (size_t i = 0; i <= _max_light_index; ++i) {
@@ -146,7 +149,7 @@ void LightStorage::update() {
             // Since we will update the source, we will also find a new spot for it,
             // so unregister the old spot
             if (_shadow_sources[i]->has_region()) {
-                _shadow_atlas->free_region(_shadow_sources[i]->get_region());
+                _shadow_manager->get_atlas()->free_region(_shadow_sources[i]->get_region());
             }
         }
     }
@@ -157,8 +160,8 @@ void LightStorage::update() {
     // Now find an atlas spot for all regions
     for (size_t i = 0; i < _sources_to_update.size(); ++i) {
         ShadowSource *source = _sources_to_update[i];
-        size_t num_tiles = _shadow_atlas->get_required_tiles(source->get_resolution());
-        LVecBase4i new_region = _shadow_atlas->find_and_reserve_region(num_tiles, num_tiles);
+        size_t num_tiles = _shadow_manager->get_atlas()->get_required_tiles(source->get_resolution());
+        LVecBase4i new_region = _shadow_manager->get_atlas()->find_and_reserve_region(num_tiles, num_tiles);
         source->set_region(new_region);
 
         // TODO: Reserve a display region from the atlas, get the source mvp, and

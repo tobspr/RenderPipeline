@@ -16,11 +16,9 @@ class NetworkUpdateListener(BaseManager):
 
     def setup(self):
         """ Starts the listener threads """
-        self._fix_showbase_shutdown()
-
-        UDPListenerService.listener_thread(
+        self._config_thread = UDPListenerService.listener_thread(
             UDPListenerService.CONFIG_PORT, self._on_config_msg)
-        UDPListenerService.listener_thread(
+        self._daytime_thread = UDPListenerService.listener_thread(
             UDPListenerService.DAYTIME_PORT, self._on_daytime_msg)
 
     def _on_config_msg(self, msg):
@@ -52,21 +50,3 @@ class NetworkUpdateListener(BaseManager):
             self._pipeline.get_daytime_mgr().reload_config()
         else:
             self.warn("Recieved unkown daytime command:", cmd)
-
-    def _fix_showbase_shutdown(self):
-        """ Fixes the showbase run method to properly stop all threads
-        after the showbase got closed """
-        old_run = self._pipeline._showbase.run
-        def new_run(*args):
-            try:
-                old_run(*args)
-            except SystemExit as msg:
-                pass
-
-            # Todo: maybe just stop the thread instead of shutting
-            # everything down
-            import os
-            os._exit(0)
-
-        self._pipeline._showbase.run = new_run
-        

@@ -12,19 +12,16 @@ from ..Stages.FlagUsedCellsStage import FlagUsedCellsStage
 from ..Stages.CollectUsedCellsStage import CollectUsedCellsStage
 from ..Stages.CullLightsStage import CullLightsStage
 from ..Stages.ApplyLightsStage import ApplyLightsStage
-from ..Stages.AmbientStage import AmbientStage
-from ..Stages.GBufferStage import GBufferStage
-from ..Stages.FinalStage import FinalStage
-from ..Stages.DownscaleZStage import DownscaleZStage
 from ..Stages.ShadowStage import ShadowStage
 
 from ..GPUCommandQueue import GPUCommandQueue
-from ..Native import LightStorage, PointLight
+from ..Native import InternalLightManager, PointLight, ShadowManager
 from ..BaseManager import BaseManager
 
 class LightManager(BaseManager):
 
-    """ This class manages all the lights """
+    """ This class is a wrapper around the InternalLightManager, and provides
+    additional functionality like setting up all required stages and defines."""
 
     _MAX_LIGHTS = 2 ** 16
 
@@ -32,10 +29,10 @@ class LightManager(BaseManager):
         """ Constructs the light manager """
         BaseManager.__init__(self)
         self._pipeline = pipeline
-        self._light_storage = LightStorage()
         self._compute_tile_size()
-        self._init_light_storage()
+        self._init_internal_mgr()
         self._init_command_queue()
+        self._init_shadow_manager()
         self._init_stages()
 
     def init_defines(self):
@@ -60,19 +57,28 @@ class LightManager(BaseManager):
 
     def add_light(self, light):
         """ Adds a new light """
-        self._light_storage.add_light(light)
-        self._pta_max_light_index[0] = self._light_storage.get_max_light_index()
+        self._internal_mgr.add_light(light)
+        self._pta_max_light_index[0] = self._internal_mgr.get_max_light_index()
 
     def remove_light(self, light):
         """ Removes a light """
         if not light.has_slot():
             return self.error("Tried to detach light which is not attached!")
 
-        self._light_storage.remove_light(light)
+        self._internal_mgr.remove_light(light)
+        self._pta_max_light_index[0] = self._internal_mgr.get_max_light_index()
+
+    def get_num_lights(self):
+        """ Returns the amount of stored lights """
+        return self._internal_mgr.get_num_stored_lights()
+
+    def get_cmd_queue(self):
+        """ Returns a handle to the GPU Command Queue """
+        return self._cmd_queue
 
     def do_update(self):
-        """ Main update method to process the gpu commands """
-        self._light_storage.update()
+        """ Main update method to process the GPU commands """
+        self._internal_mgr.update()
         self._cmd_queue.process_queue()
 
     def reload_shaders(self):
@@ -80,13 +86,30 @@ class LightManager(BaseManager):
         self._cmd_queue.reload_shaders()
 
     def _init_command_queue(self):
+        """ Inits the command queue """
         self._cmd_queue = GPUCommandQueue(self._pipeline)
         self._cmd_queue.register_input(
             "LightData", self._img_light_data.get_texture())
-        self._light_storage.set_command_list(self._cmd_queue.get_cmd_list())
 
-    def _init_light_storage(self):
-        """ Creates the buffer to store the light data """
+        # Register the command list
+        self._internal_mgr.set_command_list(self._cmd_queue.get_cmd_list())
+
+    def _init_shadow_manager(self):
+        """ Inits the shadow manager """
+        self._shadow_manager = ShadowManager()
+
+        # TODO: Make this configurable
+        self._shadow_manager.set_max_updates(10)
+        self._shadow_manager.set_atlas_size(4096)
+
+        self._shadow_manager.init()
+
+        # Register the shadow manager
+        self._internal_mgr.set_shadow_manager(self._shadow_manager)
+
+    def _init_internal_mgr(self):
+        """ Creates the light storage manager and the buffer to store the light data """
+        self._internal_mgr = InternalLightManager()
 
         per_light_vec4s = 4
         self._img_light_data = Image.create_buffer(
@@ -119,7 +142,7 @@ class LightManager(BaseManager):
         self._num_tiles = LVecBase2i(num_tiles_x, num_tiles_y)
 
     def _init_stages(self):
-        """ Inits all required stages """
+        """ Inits all required stages for the lighting """
 
         add_stage = self._pipeline.get_stage_mgr().add_stage
 
@@ -140,17 +163,3 @@ class LightManager(BaseManager):
 
         self._shadow_stage = ShadowStage(self._pipeline)
         add_stage(self._shadow_stage)
-
-        # TODO: This doesn't belong here, move it somewhere else
-
-        self._ambient_stage = AmbientStage(self._pipeline)
-        add_stage(self._ambient_stage)
-
-        self._gbuffer_stage = GBufferStage(self._pipeline)
-        add_stage(self._gbuffer_stage)
-
-        self._final_stage = FinalStage(self._pipeline)
-        add_stage(self._final_stage)
-
-        # self._downscale_z_stage = DownscaleZStage(self._pipeline)
-        # self._pipeline.get_stage_mgr().add_stage(self._downscale_z_stage)

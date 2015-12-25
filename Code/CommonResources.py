@@ -19,9 +19,6 @@ class CommonResources(BaseManager):
         self._pipeline = pipeline
         self._showbase = Globals.base
         self._ptas = {}
-
-    def load(self):
-        """ Loads and binds the commonly used resources """
         self._load_fonts()
         self._load_textures()
         self._setup_inputs()
