@@ -55,6 +55,9 @@ class RPLight : public ReferenceCount {
         inline int get_slot() const;
         inline void set_ies_profile(int profile);
 
+        inline void set_near_plane(float near_plane);
+        inline float get_near_plane() const;
+
     protected:
         
         bool _dirty;
@@ -65,6 +68,7 @@ class RPLight : public ReferenceCount {
         LVecBase3f _position;
         LVecBase3f _color;
         LightType _light_type;
+        float _near_plane;
 
         vector<ShadowSource*> _shadow_sources;
 };

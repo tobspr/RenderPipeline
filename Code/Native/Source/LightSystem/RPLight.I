@@ -91,3 +91,13 @@ inline void RPLight::set_shadow_map_resolution(int resolution) {
 inline int RPLight::get_shadow_map_resolution() const {
     return _source_resolution;
 }
+
+
+inline void RPLight::set_near_plane(float near_plane) {
+    nassertv(near_plane > 0.00001);
+    _near_plane = near_plane;
+}
+
+inline float RPLight::get_near_plane() const {
+    return _near_plane;
+}

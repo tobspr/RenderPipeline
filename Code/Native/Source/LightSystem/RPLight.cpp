@@ -11,6 +11,7 @@ RPLight::RPLight(LightType light_type) {
     _color.set(1, 1, 1);
     _ies_profile = -1;
     _source_resolution = 512;
+    _near_plane = 0.1;
 }
 
 
