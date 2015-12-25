@@ -66,7 +66,6 @@ class ExposureWidget(DebugObject):
         self._node.show()
 
         exposure_tex = stage_mgr.get_pipe("Exposure")
-
         self._cshader = Shader.load_compute(Shader.SL_GLSL, "Shader/GUI/VisualizeExposure.compute.glsl")
         self._cshader_np.set_shader(self._cshader)
         self._cshader_np.set_shader_input("DestTex", self._storage_tex.get_texture())

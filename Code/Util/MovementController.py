@@ -30,6 +30,7 @@ class MovementController(object):
         self._use_hpr = False
         self._smoothness = 6.0
         self._bobbing_amount = 1.0
+        self._bobbing_speed = 0.7
 
     def set_initial_position(self, pos, target):
         """ Sets the initial camera position """
@@ -75,21 +76,20 @@ class MovementController(object):
         """ Unbinds the movement controler and restores the previous state """
         raise NotImplementedError()
 
-
     def setup(self):
         """ Attaches the movement controller and inits the keybindings """
 
         # x
-        self._showbase.accept("w",       self._set_movement, [0, 1])
-        self._showbase.accept("w-up",    self._set_movement, [0, 0])
-        self._showbase.accept("s",       self._set_movement, [0, -1])
-        self._showbase.accept("s-up",    self._set_movement, [0, 0])
+        self._showbase.accept("raw-w",       self._set_movement, [0, 1])
+        self._showbase.accept("raw-w-up",    self._set_movement, [0, 0])
+        self._showbase.accept("raw-s",       self._set_movement, [0, -1])
+        self._showbase.accept("raw-s-up",    self._set_movement, [0, 0])
 
         # y
-        self._showbase.accept("a",       self._set_movement, [1, -1])
-        self._showbase.accept("a-up",    self._set_movement, [1, 0])
-        self._showbase.accept("d",       self._set_movement, [1, 1])
-        self._showbase.accept("d-up",    self._set_movement, [1, 0])
+        self._showbase.accept("raw-a",       self._set_movement, [1, -1])
+        self._showbase.accept("raw-a-up",    self._set_movement, [1, 0])
+        self._showbase.accept("raw-d",       self._set_movement, [1, 1])
+        self._showbase.accept("raw-d-up",    self._set_movement, [1, 0])
 
         # z
         self._showbase.accept("space",   self._set_movement, [2, 1])
@@ -99,7 +99,6 @@ class MovementController(object):
 
         # wireframe + debug + buffer viewer
         self._showbase.accept("f3", self._showbase.toggleWireframe)
-        self._showbase.accept("p",  self._show_debug_output)
 
         # mouse
         self._showbase.accept("mouse1",    self._set_mouse_enabled, [True])
@@ -131,6 +130,7 @@ class MovementController(object):
         # the rendering
         self._showbase.addTask(self._update, "RP_UpdateMovementController", priority=-1000)
 
+        # Hotkeys to connect to pstats and reset the initial position
         self._showbase.accept("1", PStatClient.connect)
         self._showbase.accept("3", self._reset_to_initial)
 
@@ -148,7 +148,7 @@ class MovementController(object):
                 diffx = self._last_mouse_pos[0] - self._current_mouse_pos[0]
                 diffy = self._last_mouse_pos[1] - self._current_mouse_pos[1]
 
-                # no move on the beginning
+                # Don't move in the very beginning
                 if self._last_mouse_pos[0] == 0 and self._last_mouse_pos[1] == 0:
                     diffx = 0
                     diffy = 0
@@ -163,21 +163,18 @@ class MovementController(object):
                               * self._speed
                               * self._showbase.taskMgr.globalClock.get_dt() * 100.0)
 
-        # Transform by camera direction
+        # transform by the camera direction
         camera_quaternion = self._showbase.camera.get_quat(self._showbase.render)
         translated_direction = camera_quaternion.xform(movement_direction)
 
-
-        # zforce is independent of camera direction
+        # z-force is independent of camera direction
         translated_direction.add_z(
             self._movement[2] * self._showbase.taskMgr.globalClock.get_dt() * 40.0 * self._speed)
 
         self._velocity += translated_direction*0.15
 
-        # apply new position
-        self._showbase.camera.set_pos(
-            self._showbase.camera.get_pos() + self._velocity)
-
+        # apply the new position
+        self._showbase.camera.set_pos(self._showbase.camera.get_pos() + self._velocity)
 
         # transform rotation (keyboard keys)
         rotation_speed = self._keyboard_hpr_speed * 100.0
@@ -186,78 +183,15 @@ class MovementController(object):
             self._showbase.camera.get_hpr() + Vec3(
                 self._hpr_movement[0], self._hpr_movement[1], 0) * rotation_speed)
 
-        rotation_duration = 0.7
 
-        rotation = (self._showbase.taskMgr.globalClock.get_frame_time() % rotation_duration) / rotation_duration
+        # bobbing
+        rotation = (self._showbase.taskMgr.globalClock.get_frame_time() % self._bobbing_speed) / self._bobbing_speed
         rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
         rotation *= self._bobbing_amount
         rotation *= self._velocity.length() * 2.0
-        self._showbase.camera.set_r( rotation )
+        self._showbase.camera.set_r(rotation)
 
-        # self._velocity *= self._smoothness
+        # fade out velocity
         self._velocity = self._velocity * max(0.0, 
             1.0 - self._showbase.taskMgr.globalClock.get_dt() * 60.0 / max(0.01, self._smoothness))
         return task.cont
-
-    def _show_debug_output(self):
-        """ Lists the available debug options """
-        print(("\n" * 5))
-        print("DEBUG MENU")
-        print(("-" * 50))
-        print("Select an option:")
-        print("\t(1) Connect to pstats")
-        print("\t(2) Toggle frame rate meter")
-        print("\t(3) Reset to initial position")
-        print("\t(4) Display camera position")
-        print("\t(5) Show scene graph")
-        print()
-
-        selected_option = input("Which do you want to choose?: ")
-
-        try:
-            selected_option = int(selected_option)
-        except Exception as msg:
-            print("Option has to be a valid number:", msg)
-            return False
-
-        if selected_option < 1 or selected_option > 7:
-            print("Invalid option!")
-            return False
-
-        # pstats
-        if selected_option == 1:
-            print("Connecting to pstats ..")
-            print("If you have no pstats running, this will take 5 seconds to timeout ..")
-            PStatClient.connect()
-
-        # frame rate meter
-        elif selected_option == 2:
-            print("Toggling frame rate meter ..")
-            self._showbase.setFrameRateMeter(not self._showbase.frameRateMeter)
-
-        # initial position
-        elif selected_option == 3:
-            print("Reseting camera position / hpr ..")
-            self._reset_to_initial()
-
-        # display camera pos
-        elif selected_option == 4:
-            print("Debug information:")
-            campos = self._showbase.cam.get_pos(self._showbase.render)
-            camrot = self._showbase.cam.get_hpr(self._showbase.render)
-            print(("camPos = Vec3(" + str(round(campos.x, 2)) + "," +\
-                str(round(campos.y, 2)) + "," + str(round(campos.z, 2)) + ")"))
-            print(("camHpr = Vec3(" + str(round(camrot.x, 2)) + "," +\
-                str(round(camrot.y, 2)) + "," + str(round(camrot.z, 2)) + ")"))
-
-        # show scene graph
-        elif selected_option == 5:
-            print("SCENE GRAPH:")
-            print(("-" * 50))
-            self._showbase.render.ls()
-            print(("-" * 50))
-            print()
-            print("ANALYZED:")
-            print(("-" * 50))
-            self._showbase.render.analyze()
-            print(("-" * 50))

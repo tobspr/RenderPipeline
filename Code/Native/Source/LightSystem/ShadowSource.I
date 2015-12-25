@@ -16,12 +16,9 @@ inline void ShadowSource::set_slot(int slot) {
     _slot = slot;
 }
 
-inline void ShadowSource::set_perspective_lens(float fov, float near_plane, float far_plane, LVecBase3f pos, LVecBase3f direction) {
-   
+inline void ShadowSource::set_perspective_lens(float fov, float near_plane, float far_plane, LVecBase3f pos, LVecBase3f direction) {  
     // Construct the transformation matrix
     LMatrix4f transform_mat = LMatrix4f::translate_mat(-pos);
-
-    cout << "transformation matrix is now " << transform_mat << endl;
 
     // Construct a temporary lens to generate the lens matrix
     PerspectiveLens temp_lens = PerspectiveLens(2 * fov, 2 * fov);

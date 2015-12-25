@@ -39,7 +39,7 @@ void main() {
 
     if (coord.x > slider_pos_int - slider_w && coord.x < slider_pos_int + slider_w) {
         // Don't draw the slider over the border
-        color += vec4(0.2, 0.6, 1.0, 1.0) * (1 - color.w);
+        color += vec4(27, 78, 129, 255.0) / 255.0 * (1 - color.w);
     }
 
     imageStore(DestTex, coord, color);

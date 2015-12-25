@@ -55,6 +55,7 @@ class OnscreenDebugger(BaseManager):
         self._create_debugger()
         self._create_topbar()
         self._create_stats()
+        self._create_hints()
         self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
         self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
 
@@ -79,31 +80,31 @@ class OnscreenDebugger(BaseManager):
     def _create_topbar(self):
         """ Creates the topbar """
         self._pipeline_logo = BetterOnscreenImage(
-            image="Data/GUI/OnscreenDebugger/PipelineLogo.png", x=30, y=30,
+            image="Data/GUI/OnscreenDebugger/PipelineLogoText.png", x=30, y=30,
             parent=self._fullscreen_node)
-        self._pipeline_logo_text = BetterOnscreenImage(
-            image="Data/GUI/OnscreenDebugger/PipelineLogoText.png", x=124,
-            y=55, parent=self._fullscreen_node)
-        self._topbar = DirectFrame(parent=self._fullscreen_node,
-                                   frameSize=(5000, 0, 0, -22),
-                                   pos=(0, 0, 0),
-                                   frameColor=(0.058, 0.058, 0.058, 1))
-        # Hide the logo text in the beginning
-        self._pipeline_logo_text.set_pos(150, -150)
-        self._topbar.hide()
 
     def _create_stats(self):
         """ Creates the stats overlay """
-
         self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
         self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.07, 1, 1.0 - 0.07)
-
         self._debug_lines = []
-
         for i in range(2):
             self._debug_lines.append(FastText(
                 pos=Vec2(0, -i * 0.05), parent=self._overlay_node, pixel_size=18,
                 align="right"))
+
+    def _create_hints(self):
+        """ Creates the hints like keybindings and when reloading shaders """
+        self._hint_reloading = BetterOnscreenImage(
+            image="Data/GUI/OnscreenDebugger/ShaderReloadHint.png",
+            x=80, y=Globals.base.win.get_y_size() - 100,
+            parent=Globals.base.pixel2d)
+        self.set_reload_hint_visible(False)
+
+        # Keybinding hints
+        self._keybinding_instructions = BetterOnscreenImage(
+            image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30, y=Globals.base.win.get_y_size() - 510,
+            parent=Globals.base.pixel2d, any_filter=False)
 
     def _update_stats(self):
         """ Updates the stats overlay """
@@ -130,24 +131,13 @@ class OnscreenDebugger(BaseManager):
         debugger_opacity = 1.0
 
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
-        self._debugger_node.set_x(-self._debugger_width)
-        self._debugger_bg = DirectFrame(
-            parent=self._debugger_node, frameSize=(self._debugger_width, 0, -127, -2000),
-            pos=(0, 0, 0), frameColor=(0.09, 0.09, 0.09, debugger_opacity))
-        self._debugger_bg_bottom = DirectFrame(
-            parent=self._fullscreen_node, frameSize=(self._debugger_width, 0, 0, -1),
-            pos=(0, 0, 1), frameColor=(0.09, 0.09, 0.09, 1*debugger_opacity))
-        self._debugger_divider = DirectFrame(
-            parent=self._debugger_node, frameSize=(self._debugger_width, 0, 0, -3),
-            pos=(0, 0, -125), frameColor=(0.09, 0.09, 0.09, 1*debugger_opacity))
+        self._debugger_node.set_pos(30, 0, -Globals.base.win.get_y_size() + 820)
+        self._debugger_bg_img = BetterOnscreenImage(
+            image="Data/GUI/OnscreenDebugger/DebuggerBackground.png", x=0, y=0,
+            parent=self._debugger_node, any_filter=False
+        )
 
         self._create_debugger_content()
-
-        self._hint_reloading = BetterOnscreenImage(
-            image="Data/GUI/OnscreenDebugger/ShaderReloadHint.png",
-            x=80, y=Globals.base.win.get_y_size() - 100,
-            parent=Globals.base.pixel2d)
-        self.set_reload_hint_visible(False)
 
     def set_reload_hint_visible(self, flag):
         """ Sets whether the shader reload hint is visible """
@@ -160,12 +150,9 @@ class OnscreenDebugger(BaseManager):
         """ Internal method to create the content of the debugger """
 
         debugger_content = self._debugger_node.attach_new_node("DebuggerContent")
-        debugger_content.set_z(-190)
-        debugger_content.set_x(40)
+        debugger_content.set_z(-20)
+        debugger_content.set_x(20)
         heading_color = Vec3(0.7, 0.7, 0.24) * 1.2
-        BetterOnscreenText(
-            parent=debugger_content, text="Render Mode:".upper(), x=0, y=0, size=20,
-            color=heading_color)
 
         render_modes = [
             ("Default", ""),
@@ -175,29 +162,22 @@ class OnscreenDebugger(BaseManager):
             ("Normal", "NORMAL"),
             ("Metallic", "METALLIC"),
             ("Translucency", "TRANSLUCENCY"),
-            # ("Velocity", "VELOCITY")
-            # "Lighting",
-            # "Scattering",
-            # "GI-Diffuse",
-            # "GI-Specular",
             ("PSSM Splits", "PSSM_SPLITS"),
-            ("Ambient Occlusion", "OCCLUSION"),
-            # "PSSM-Splits",
-            # "Shadowing",
-            # "Bloom"
+            ("Ambient Occlusion", "OCCLUSION")
         ]
 
         row_width = 200
         collection = CheckboxCollection()
 
         for idx, (mode, mode_id) in enumerate(render_modes):
-            offs_y = (idx // 2) * 37 + 40
-            offs_x = (idx % 2) * row_width
+            offs_y = idx * 24 + 45
+            offs_x = 0
+            # offs_x = (idx % 2) * row_width
             box = BetterLabeledCheckbox(
                 parent=debugger_content, x=offs_x, y=offs_y, text=mode.upper(),
-                text_color=Vec3(0.9), radio=True, chb_checked=(mode == "Default"),
+                text_color=Vec3(0.4), radio=True, chb_checked=(mode == "Default"),
                 chb_callback=partial(self._set_render_mode, mode_id),
-                text_size=16, expand_width=160)
+                text_size=14, expand_width=230)
             collection.add(box.get_checkbox())
 
     def _set_render_mode(self, mode_id, value):
@@ -237,40 +217,5 @@ class OnscreenDebugger(BaseManager):
         
     def _toggle_debugger(self):
         """ Internal method to hide or show the debugger """
-        if self._debugger_interval is not None:
-            self._debugger_interval.finish()
-
-        if self._debugger_visible:
-            # Hide Debugger
-            self._debugger_interval = Sequence(
-                Parallel(
-                    self._debugger_node.posInterval(
-                        0.12, Vec3(-self._debugger_width, 0, 0),
-                        Vec3(0, 0, 0), blendType="easeInOut"),
-                    self._pipeline_logo_text.pos_interval(
-                        0.16,
-                        self._pipeline_logo_text.get_initial_pos() + Vec3(0, 0, 150),
-                        self._pipeline_logo_text.get_initial_pos, blendType="easeInOut"),
-                    self._pipeline_logo.hpr_interval(
-                        0.12, Vec3(0, 0, 0), Vec3(0, 0, 90), blendType="easeInOut"),
-                    self._debugger_bg_bottom.scaleInterval(
-                        0.12, Vec3(1, 1, 1), Vec3(1, 1, 126), blendType="easeInOut")
-                ))
-        else:
-            # Show debugger
-            self._debugger_interval = Sequence(
-                Parallel(
-                    self._pipeline_logo.hpr_interval(
-                        0.12, Vec3(0, 0, 90), Vec3(0, 0, 0), blendType="easeInOut"),
-                    self._pipeline_logo_text.pos_interval(
-                        0.12, self._pipeline_logo_text.get_initial_pos(),
-                        self._pipeline_logo_text.get_initial_pos() + Vec3(0, 0, 150),
-                        blendType="easeInOut"),
-                    self._debugger_node.posInterval(
-                        0.12, Vec3(0, 0, 0), Vec3(-self._debugger_width, 0),
-                        blendType="easeInOut"),
-                    self._debugger_bg_bottom.scaleInterval(
-                        0.12, Vec3(1, 1, 126), Vec3(1, 1, 1), blendType="easeInOut")
-                ))
-        self._debugger_interval.start()
-        self._debugger_visible = not self._debugger_visible
+        # TODO
+        return
