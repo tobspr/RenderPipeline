@@ -1,15 +1,15 @@
-#pragma once
-
+#ifndef RP_PSSM_HELPER_H
+#define RP_PSSM_HELPER_H
 
 #include "pandabase.h"
 #include "luse.h"
 
-/*
-
+/**
+ * @brief Class to generate projection matrices.
+ */
 class PSSMHelper {
 
     PUBLISHED:
-
         static LMatrix4f find_projection_mat(
             const LVector4f &near_ul,
             const LVector4f &near_ur,
@@ -23,5 +23,4 @@ class PSSMHelper {
 
 };
 
-
-*/
+#endif // RP_PSSM_HELPER_H
