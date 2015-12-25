@@ -79,6 +79,7 @@ class LightManager(BaseManager):
     def do_update(self):
         """ Main update method to process the GPU commands """
         self._internal_mgr.update()
+        self._shadow_manager.update()
         self._cmd_queue.process_queue()
 
     def reload_shaders(self):
@@ -102,10 +103,20 @@ class LightManager(BaseManager):
         self._shadow_manager.set_max_updates(10)
         self._shadow_manager.set_atlas_size(4096)
 
-        self._shadow_manager.init()
+        self._shadow_manager.set_scene(Globals.base.render)
+        self._shadow_manager.set_tag_state_manager(self._pipeline.get_tag_mgr())
+
+        # self._shadow_manager.init()
 
         # Register the shadow manager
         self._internal_mgr.set_shadow_manager(self._shadow_manager)
+
+    def init_shadows(self):
+        """ Inits the shadows, this needs to get called after the stages were
+        created, because we need the GraphicsOutput of the shadow atlas, which
+        is not available earlier """
+        self._shadow_manager.set_atlas_graphics_output(self._shadow_stage._target.get_internal_buffer())
+        self._shadow_manager.init()
 
     def _init_internal_mgr(self):
         """ Creates the light storage manager and the buffer to store the light data """

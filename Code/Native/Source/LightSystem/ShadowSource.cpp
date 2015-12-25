@@ -12,7 +12,3 @@ ShadowSource::ShadowSource() {
 ShadowSource::~ShadowSource() {
 
 }
-
-inline const LMatrix4f& get_mvp() {
-    // return _transform * 
-}

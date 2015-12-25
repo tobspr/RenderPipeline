@@ -164,11 +164,12 @@ void InternalLightManager::update() {
         LVecBase4i new_region = _shadow_manager->get_atlas()->find_and_reserve_region(num_tiles, num_tiles);
         source->set_region(new_region);
 
-        // TODO: Reserve a display region from the atlas, get the source mvp, and
-        // do something fancy with it
-        // mvp = source->get_mvp();
-        // atlas->add_source(mvp, new_region)
+        if(_shadow_manager->add_update(source->get_mvp(), source->get_region())) {
+            source->on_update_done();
+        } else {
+            // Out of update slots. We can just abort the loop here.
+            cout << "Aborting update, because out of update slots" << endl;
+            break;
+        }
     }
-
-
 }

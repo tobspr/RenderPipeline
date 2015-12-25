@@ -20,6 +20,8 @@ public:
     inline int get_tile_size() const;
     inline int get_required_tiles(size_t resolution) const;
 
+    inline LVecBase4f region_to_uv(const LVecBase4i& region);
+
 protected:
 
     inline void set_tile(size_t x, size_t y, bool flag);

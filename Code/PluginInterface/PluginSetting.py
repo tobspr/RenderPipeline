@@ -63,6 +63,8 @@ class BasePluginSetting(DebugObject):
         instance.label = yaml.pop("label").strip()
         instance.description = yaml.pop("description").strip()
 
+        instance._rename("PSetting['" + instance.label + "']")
+
         # Check if the setting is changeable at runtime
         if "runtime" in yaml:
             instance.runtime = True if yaml.pop("runtime") else False

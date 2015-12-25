@@ -126,9 +126,9 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
     
     // Choose one:
     // return brdf_visibility_neumann(NxV, NxL);
-    return brdf_visibility_schlick(NxV, NxL, roughness);
+    // return brdf_visibility_schlick(NxV, NxL, roughness);
     // return brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
-    // return brdf_visibility_smith_ggx(NxL, NxV, roughness);
+    return brdf_visibility_smith_ggx(NxL, NxV, roughness);
 }
 
 
@@ -137,8 +137,10 @@ vec3 brdf_fresnel(vec3 specular, float VxH, float NxV, float LxH, float roughnes
     float f90 = 0.5 + LxH * LxH * roughness;
 
     // Choose one:
-    return brdf_schlick_fresnel(specular, f90, VxH);
-    // return brdf_fresnel_cook_torrance(specular, VxH);
+
+    // Simple fresnel
+    return specular * pow(NxV, 5.0);
+    // return brdf_fresnel_cook_torrance(specular, NxV);
 }
 
 

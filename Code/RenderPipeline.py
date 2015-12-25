@@ -230,6 +230,8 @@ class RenderPipeline(DebugObject):
         self._light_mgr.reload_shaders()
         self._init_bindings()
 
+        self._light_mgr.init_shadows()
+
         # Trigger the finish plugin hook
         self._plugin_mgr.trigger_hook("on_pipeline_created")
 

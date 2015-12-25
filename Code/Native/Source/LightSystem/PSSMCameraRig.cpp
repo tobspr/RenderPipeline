@@ -96,7 +96,7 @@ void PSSMCameraRig::reparent_to(NodePath &parent) {
 LMatrix4f PSSMCameraRig::compute_mvp(int cam_index) {
     Camera* cam = DCAST(Camera, _cam_nodes[cam_index].node());
     LMatrix4f transform = _parent.get_transform(_cam_nodes[cam_index])->get_mat();
-    return transform * cam->get_lens()->get_view_mat() * cam->get_lens()->get_projection_mat();
+    return transform * cam->get_lens()->get_projection_mat();
 }
 
 

@@ -17,28 +17,18 @@ inline void ShadowSource::set_slot(int slot) {
 }
 
 inline void ShadowSource::set_perspective_lens(float fov, float near_plane, float far_plane, LVecBase3f pos, LVecBase3f direction) {
-    // Compute the hpr from the direction
-    LQuaternion q;
-    look_at(q, direction);
-    LVecBase3f scale(1);
-    LVecBase3f shear(0);
-    
+   
     // Construct the transformation matrix
-    LMatrix4f transform;
-    compose_matrix(transform, scale, shear, q.get_hpr(), pos);
+    LMatrix4f transform_mat = LMatrix4f::translate_mat(-pos);
 
-    cout << "transformation matrix is now " << transform << endl;
+    cout << "transformation matrix is now " << transform_mat << endl;
 
     // Construct a temporary lens to generate the lens matrix
-    PerspectiveLens temp_lens = PerspectiveLens(fov, fov);
+    PerspectiveLens temp_lens = PerspectiveLens(2 * fov, 2 * fov);
     temp_lens.set_film_offset(0, 0);
     temp_lens.set_near_far(near_plane, far_plane);
-
-    _mvp = transform * temp_lens.get_view_mat() * temp_lens.get_projection_mat();
-
-    cout << "MVP is now " << _mvp << endl;
-
-
+    temp_lens.set_view_vector(direction, LVector3::up());
+    _mvp = transform_mat * temp_lens.get_projection_mat();
     invalidate();
 }
 

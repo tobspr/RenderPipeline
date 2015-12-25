@@ -1,6 +1,6 @@
 
 from panda3d.core import PTAVecBase3f, PTAMat4, Texture, TransformState, Mat4
-from panda3d.core import CSYupRight, CSZupRight, PTAFloat, invert
+from panda3d.core import CS_yup_right, CS_zup_right, PTAFloat, invert
 from direct.stdpy.file import open
 
 from .Util.DebugObject import DebugObject
@@ -138,14 +138,14 @@ class CommonResources(BaseManager):
         view_mat = Globals.render.get_transform(self._showbase.cam).get_mat()
 
         # Compute the view matrix, but with a z-up coordinate system 
-        update("view_mat_z_up", view_mat * Mat4.convert_mat(CSZupRight, CSYupRight))
+        update("view_mat_z_up", view_mat * Mat4.convert_mat(CS_zup_right, CS_yup_right))
         update("camera_pos", self._showbase.camera.get_pos(Globals.render))
         update("last_view_proj_mat_no_jitter", self._input_ubo.get_input("view_proj_mat_no_jitter"))
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
 
         # Set the projection matrix as an input, but convert it to the correct
         # coordinate system before.
-        proj_mat_zup = Mat4.convert_mat(CSYupRight, CSZupRight) * proj_mat
+        proj_mat_zup = Mat4.convert_mat(CS_yup_right, CS_zup_right) * proj_mat
         update("proj_mat", proj_mat_zup)
 
         # Set the inverse projection matrix

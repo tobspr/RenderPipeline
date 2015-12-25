@@ -19,3 +19,21 @@ inline ShadowAtlas* ShadowManager::get_atlas() {
     return _atlas;
 }
 
+
+
+inline void ShadowManager::set_scene(NodePath scene_parent) {
+    nassertv(!scene_parent.is_empty());
+    _scene_parent = scene_parent;
+}
+
+
+inline void ShadowManager::set_tag_state_manager(TagStateManager* tag_mgr) {
+    nassertv(tag_mgr != NULL);
+    _tag_state_mgr = tag_mgr; 
+}
+
+
+inline void ShadowManager::set_atlas_graphics_output(GraphicsOutput* graphics_output) {
+    nassertv(graphics_output != NULL);
+    _atlas_graphics_output = graphics_output;
+}
