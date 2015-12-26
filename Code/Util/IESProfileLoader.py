@@ -116,11 +116,13 @@ class IESProfileLoader(DebugObject):
         dataset.set_horizontal_angles(self._list_to_pta(horizontal_angles))
         dataset.set_candela_values(self._list_to_pta(candela_values))
 
-        # Temporary testing code
-        # tex = Texture("temp")
-        # tex.setup_3d_texture(360, 720, 1, Texture.T_float, Texture.F_r16)
-        # dataset.generate_dataset_texture_into(tex, 0, 512, 512)
-        # tex.write("generated.png")
+        # Testing code to write out the LUT
+        if False:
+            # from panda3d.core import Texture
+            # tex = Texture("temp")
+            # tex.setup_3d_texture(512, 512, 1, Texture.T_float, Texture.F_r16)
+            # dataset.generate_dataset_texture_into(tex, 0)
+            # tex.write("generated.png")
 
         return dataset
 

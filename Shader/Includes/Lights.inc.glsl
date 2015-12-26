@@ -10,7 +10,7 @@ float attenuation_curve(float dist, float radius) {
     // return step(dist, radius);
     float lin_att = 1.0 - saturate(dist / radius);
     float d_by_r = dist / radius + 1;
-    return lin_att / max(0.001, d_by_r * d_by_r) * TWO_PI;
+    return lin_att / max(0.001, d_by_r * d_by_r);
 }
 
 // Computes the attenuation for a point light
@@ -22,10 +22,14 @@ float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profi
 // Computes the attenuation for a spot light
 float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist, int ies_profile) {
     float dist_attenuation = attenuation_curve(dist, radius);
-    float angle = acos(-1e-6 + dot(l, -light_dir)); // TODO: optimize. acos is bad. maybe store it linear.
-    float angle_factor = attenuation_curve(angle, fov * 0.5);
-    float ies_factor = get_ies_factor(ies_profile, angle, 0);
-    return angle_factor * dist_attenuation * ies_factor;
+    float cos_angle = dot(l, -light_dir);
+
+    // Rescale angle to fit the full range. We only do this for spot lights,
+    // for point lights we use the actual angle
+    float linear_angle = (cos_angle - fov) / (1 - fov);
+    float angle_att = attenuation_curve(1 - linear_angle, 1.0);
+    float ies_factor = get_ies_factor(ies_profile, linear_angle, 0);
+    return ies_factor * angle_att * dist_attenuation;
 }
 
 

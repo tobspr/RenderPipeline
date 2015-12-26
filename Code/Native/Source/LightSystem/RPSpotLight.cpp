@@ -18,8 +18,8 @@ void RPSpotLight::write_to_command(GPUCommand &cmd) {
     RPLight::write_to_command(cmd);
     cmd.push_float(_radius);
 
-    // Convert FOV to 0 .. PI
-    cmd.push_float(_fov / 180.0 * M_PI);
+    // Encode FOV as cos(fov)
+    cmd.push_float(cos(_fov / 360.0 * M_PI));
     cmd.push_vec3(_direction);
 }
 

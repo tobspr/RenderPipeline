@@ -59,7 +59,7 @@ class IESProfileManager(DebugObject):
             return -1
 
         # Dataset was loaded successfully, now copy it
-        dataset.generate_dataset_texture_into(self._storage_tex, len(self._entries), 512, 512)
+        dataset.generate_dataset_texture_into(self._storage_tex, len(self._entries))
         self._entries.append(fname)
 
         return len(self._entries) - 1

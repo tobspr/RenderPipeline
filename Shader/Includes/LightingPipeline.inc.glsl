@@ -119,7 +119,6 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
         }
 
-        // shading_result += vec3(shadow);
         shading_result += apply_light(m, v, l, get_light_color(light_data), attenuation, shadow, directional_occlusion, transmittance);
     }
     
