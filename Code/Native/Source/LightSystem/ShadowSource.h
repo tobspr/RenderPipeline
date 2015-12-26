@@ -40,6 +40,8 @@ public:
     inline size_t get_resolution() const;
     inline const LMatrix4f& get_mvp() const;
     inline const LVecBase4i& get_region() const;
+    inline const LVecBase4f& get_uv_region() const;
+
 
 private:
     int _slot;

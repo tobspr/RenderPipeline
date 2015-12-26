@@ -103,56 +103,29 @@ void ShadowManager::update() {
 
     // Iterate over all queued updates
     for (size_t i = 0; i < _queued_updates.size(); ++i) {
-        ShadowUpdate& update = _queued_updates[i];
+        const ShadowSource* source = _queued_updates[i];
         
         // Enable the camera and display region, so they perform a render
         _cameras[i]->set_active(true);
         _display_regions[i]->set_active(true);
         
         // Set the view projection matrix
-        DCAST(MatrixLens, _cameras[i]->get_lens())->set_user_mat(update.mvp);
+        DCAST(MatrixLens, _cameras[i]->get_lens())->set_user_mat(source->get_mvp());
         
         // Optional: Show the camera frustum for debugging
         // _cameras[i]->show_frustum();
 
         // Set the correct dimensions on the display region
+        const LVecBase4f& uv = source->get_uv_region();
         _display_regions[i]->set_dimensions(
-            update.uv.get_x(),                      // left
-            update.uv.get_x() + update.uv.get_z(),  // right
-            update.uv.get_y(),                      // bottom
-            update.uv.get_y() + update.uv.get_w()   // top
+            uv.get_x(),              // left
+            uv.get_x() + uv.get_z(), // right
+            uv.get_y(),              // bottom
+            uv.get_y() + uv.get_w()  // top
         );
     }
 
     // Clear the update list
     _queued_updates.clear();
     _queued_updates.reserve(_max_updates);
-}
-
-/**
- * @brief Adds a new shadow update 
- * @details This adds a new update to the update queue. When the queue is already
- *   full, this method returns false, otherwise it returns true. The next time
- *   the manager is updated, the shadow source will recieve an update of its
- *   shadow map.
- * 
- * @param mvp View-Projection matrix of the source (usually ShadowSource::get_mvp)
- * @param region Atlas-space region of the source (usually ShadowSource::get_region)
- * 
- * @return Whether the udpate was sucessfully queued.
- */
-bool ShadowManager::add_update(const LMatrix4f& mvp, const LVecBase4i& region) {
-    nassertr(_atlas != NULL, false); // ShadowManager::init not called yet.
-
-    if (_queued_updates.size() >= _max_updates) {
-        shadowmanager_cat.warning() << "cannot update source, out of update slots" << endl;
-        return false;
-    }
-
-    // Convert the region to uv-space from tile-space
-    LVecBase4f uv = _atlas->region_to_uv(region);
-
-    // Add the update to the queue
-    _queued_updates.push_back(ShadowUpdate(mvp, uv));
-    return true;
 }

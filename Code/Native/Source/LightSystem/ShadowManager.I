@@ -125,3 +125,29 @@ inline void ShadowManager::set_atlas_graphics_output(GraphicsOutput* graphics_ou
     nassertv(_atlas == NULL);  // ShadowManager was already initialized
     _atlas_graphics_output = graphics_output;
 }
+
+
+/**
+ * @brief Adds a new shadow update 
+ * @details This adds a new update to the update queue. When the queue is already
+ *   full, this method returns false, otherwise it returns true. The next time
+ *   the manager is updated, the shadow source will recieve an update of its
+ *   shadow map.
+ * 
+ * @param source The shadow source to update
+ * 
+ * @return Whether the shadow source udpate was sucessfully queued.
+ */
+inline bool ShadowManager::add_update(const ShadowSource* source) {
+    nassertr(_atlas != NULL, false); // ShadowManager::init not called yet.
+    nassertr(source != NULL, false); // NULL-Pointer passed
+
+    if (_queued_updates.size() >= _max_updates) {
+        shadowmanager_cat.warning() << "cannot update source, out of update slots" << endl;
+        return false;
+    }
+
+    // Add the update to the queue
+    _queued_updates.push_back(source);
+    return true;
+}

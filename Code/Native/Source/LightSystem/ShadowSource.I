@@ -135,6 +135,19 @@ inline const LVecBase4i& ShadowSource::get_region() const {
 }
 
 /**
+ * @brief Returns the assigned region of the source in UV space.
+ * @details This returns the region of the source, in UV space. This is the
+ *    region set by ShadowSource::set_region. If no region was set yet, returns
+ *    a 4-component integer vector with all components set to -1. To check this,
+ *    you should call ShadowSource::has_region() first.
+ *    
+ * @return [description]
+ */
+inline const LVecBase4f& ShadowSource::get_uv_region() const {
+    return _region_uv;
+}
+
+/**
  * @brief Sets the assigned region of the source in atlas and uv space.
  * @details This sets the assigned region of the ShadowSource. The region in
  *   atlas space should be the region returned from the

@@ -164,7 +164,7 @@ void InternalLightManager::update() {
 
         source->set_region(new_region, new_region_uv);
 
-        if(_shadow_manager->add_update(source->get_mvp(), source->get_region())) {
+        if(_shadow_manager->add_update(source)) {
 
             // Update performed
             source->set_needs_update(false);

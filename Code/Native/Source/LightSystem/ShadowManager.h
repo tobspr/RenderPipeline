@@ -11,6 +11,7 @@
 #include "TagStateManager.h"
 #include "displayRegion.h"
 #include "graphicsOutput.h"
+#include "ShadowSource.h"
 
 NotifyCategoryDecl(shadowmanager, EXPORT_CLASS, EXPORT_TEMPL);
 
@@ -34,7 +35,7 @@ class ShadowManager : public ReferenceCount {
 
     public:
         inline ShadowAtlas* get_atlas() const;
-        bool add_update(const LMatrix4f& mvp, const LVecBase4i& region);
+        inline bool add_update(const ShadowSource* source);
 
     private:
         size_t _max_updates;
@@ -49,13 +50,8 @@ class ShadowManager : public ReferenceCount {
         TagStateManager* _tag_state_mgr;
         GraphicsOutput* _atlas_graphics_output;
 
-        struct ShadowUpdate {
-            LMatrix4f mvp;
-            LVecBase4f uv;
-            ShadowUpdate(const LMatrix4f& mvp_, const LVecBase4f& uv_) : mvp(mvp_), uv(uv_) {};
-        };
-
-        typedef pvector<ShadowUpdate> UpdateQueue;
+ 
+        typedef pvector<const ShadowSource*> UpdateQueue;
         UpdateQueue _queued_updates;
 };
 
