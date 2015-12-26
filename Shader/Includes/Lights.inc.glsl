@@ -23,7 +23,7 @@ float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profi
 float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist, int ies_profile) {
     float dist_attenuation = attenuation_curve(dist, radius);
     float angle = acos(-1e-6 + dot(l, -light_dir)); // TODO: optimize. acos is bad. maybe store it linear.
-    float angle_factor = attenuation_curve(angle, fov);
+    float angle_factor = attenuation_curve(angle, fov * 0.5);
     float ies_factor = get_ies_factor(ies_profile, angle, 0);
     return angle_factor * dist_attenuation * ies_factor;
 }

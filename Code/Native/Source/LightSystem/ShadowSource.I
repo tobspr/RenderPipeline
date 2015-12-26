@@ -51,10 +51,9 @@ inline void ShadowSource::set_slot(int slot) {
 /**
  * @brief Setups a perspective lens for the source.
  * @details This makes the shadow source behave like a perspective lens. The
- *   parameters are similar to the ones of a PerspectiveLens, except for the
- *   FoV, which is twice as big as on a regular PerspectiveLens. 
+ *   parameters are similar to the ones of a PerspectiveLens.
  * 
- * @param fov FoV of the lens, twice as much as on a PerspectiveLens
+ * @param fov FoV of the lens
  * @param near_plane The near plane of the lens, to avoid artifacts at low distance
  * @param far_plane The far plane of the lens
  * @param pos Position of the lens, in world space
@@ -67,7 +66,7 @@ inline void ShadowSource::set_perspective_lens(float fov, float near_plane,
     LMatrix4f transform_mat = LMatrix4f::translate_mat(-pos);
 
     // Construct a temporary lens to generate the lens matrix
-    PerspectiveLens temp_lens = PerspectiveLens(fov * 2.0, fov * 2.0);
+    PerspectiveLens temp_lens = PerspectiveLens(fov, fov);
     temp_lens.set_film_offset(0, 0);
     temp_lens.set_near_far(near_plane, far_plane);
     temp_lens.set_view_vector(direction, LVector3::up());

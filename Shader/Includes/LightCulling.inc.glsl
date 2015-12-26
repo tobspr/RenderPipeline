@@ -66,8 +66,8 @@ bool viewspace_ray_cone_distance_intersection(vec3 cone_pos, vec3 cone_direction
         // See: http://fs5.directupload.net/images/151219/xp2knkre.png
         float half_cone_radius = cone_radius * 0.5;
         vec3 sphere_center = cone_pos + cone_direction * half_cone_radius;
-        float hypotenuse = cone_radius / cos(cone_fov);
-        float opposite_side = sin(cone_fov) * hypotenuse;
+        float hypotenuse = cone_radius / cos(cone_fov * 0.5);
+        float opposite_side = sin(cone_fov * 0.5) * hypotenuse;
         float sphere_radius = sqrt(opposite_side * opposite_side + half_cone_radius * half_cone_radius);
 
         return viewspace_ray_sphere_distance_intersection(sphere_center, sphere_radius, ray_dir, tile_start, tile_end);
