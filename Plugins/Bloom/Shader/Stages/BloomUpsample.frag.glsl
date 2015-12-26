@@ -21,8 +21,6 @@ void main() {
     }
 
     // upsample texture
-
-
     vec2 source_size = vec2(textureSize(SourceTex, 0).xy);
     ivec2 coord = ivec2(gl_FragCoord.xy);
 

@@ -108,7 +108,7 @@ class LightManager(BaseManager):
 
         self._shadow_manager.set_scene(Globals.base.render)
         self._shadow_manager.set_tag_state_manager(self._pipeline.get_tag_mgr())
-
+        
         # self._shadow_manager.init()
 
         # Register the shadow manager
@@ -188,4 +188,5 @@ class LightManager(BaseManager):
         add_stage(self._apply_lights_stage)
 
         self._shadow_stage = ShadowStage(self._pipeline)
+        self._shadow_stage.set_size(self._shadow_manager.get_atlas_size())
         add_stage(self._shadow_stage)

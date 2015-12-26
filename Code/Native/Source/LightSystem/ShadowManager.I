@@ -1,39 +1,127 @@
 
-
-
+/**
+ * @brief Sets the maximum amount of updates per frame.
+ * @details This controls the maximum amount of updated ShadowSources per frame.
+ *   The ShadowManager will take the first <max_updates> ShadowSources, and
+ *   generate shadow maps for them every frame. If there are more ShadowSources
+ *   waiting to get updated than available updates, the sources are sorted by
+ *   priority, and the update of the less important sources is delayed to the
+ *   next frame. 
+ *   
+ *   If the update count is set too low, and there are a lot of ShadowSources
+ *   waiting to get updated, artifacts will occur, and there might be ShadowSources
+ *   which never get updated, due to low priority.
+ *   
+ *   If an update count of 0 is passed, no updates will happen. This also means
+ *   that there are no shadows. This is not recommended.
+ *   
+ *   If an update count < 0 is passed, undefined behaviour occurs.
+ *   
+ *   This method has to get called before ShadowManager::init, otherwise an
+ *   assertion will get triggered.
+ * 
+ * @param max_updates Maximum amoumt of updates
+ */
 inline void ShadowManager::set_max_updates(size_t max_updates) {
     nassertv(max_updates >= 0);
+    nassertv(_atlas == NULL);  // ShadowManager was already initialized
     if (max_updates == 0) {
-        cout << "ShadowManager: Warning: max_updates set to 0, no shadows will be updated." << endl;
+        shadowmanager_cat.warning() << "max_updates set to 0, no shadows will be updated." << endl;
     }
     _max_updates = max_updates;
 }
 
+/**
+ * @brief Sets the shadow atlas size
+ * @details This sets the desired shadow atlas size. It should be big enough
+ *   to store all important shadow sources, with some buffer, because the shadow
+ *   maps usually won't be fitted perfectly, so gaps can occur.
+ *   
+ *   This has to get called before calling ShadowManager::init. When calling this
+ *   method after initialization, an assertion will get triggered.
+ * 
+ * @param atlas_size Size of the shadow atlas in pixels
+ */
 inline void ShadowManager::set_atlas_size(size_t atlas_size) {
-    nassertv(atlas_size >= 128 && atlas_size <= 16384);
+    nassertv(atlas_size >= 16 && atlas_size <= 16384);
+    nassertv(_atlas == NULL);  // ShadowManager was already initialized
     _atlas_size = atlas_size;
 }
 
-inline ShadowAtlas* ShadowManager::get_atlas() {
+/**
+ * @brief Returns the shadow atlas size.
+ * @details This returns the shadow atlas size previously set with
+ *   ShadowManager::set_atlas_size.
+ * @return Shadow atlas size in pixels
+ */
+inline size_t ShadowManager::get_atlas_size() const {
+    return _atlas_size;
+}
+
+
+/**
+ * @brief Returns a handle to the shadow atlas.
+ * @details This returns a handle to the internal shadow atlas instance. This
+ *   is only valid after calling ShadowManager::init. Calling this earlier will
+ *   trigger an assertion and undefined behaviour.
+ * @return The internal ShadowAtlas instance
+ */
+inline ShadowAtlas* ShadowManager::get_atlas() const {
     nassertr(_atlas != NULL, NULL); // Can't hurt to check
     return _atlas;
 }
 
-
-
+/**
+ * @brief Sets the target scene
+ * @details This sets the target scene for rendering shadows. All shadow cameras
+ *   will be parented to this scene to render shadows.
+ *   
+ *   Usually the scene will be ShowBase.render. If the scene is an empty or
+ *   invalid NodePath, an assertion will be triggered.
+ *   
+ *   This method has to get called before calling ShadowManager::init, or an
+ *   assertion will get triggered.
+ * 
+ * @param scene_parent The target scene
+ */
 inline void ShadowManager::set_scene(NodePath scene_parent) {
     nassertv(!scene_parent.is_empty());
+    nassertv(_atlas == NULL);  // ShadowManager was already initialized
     _scene_parent = scene_parent;
 }
 
-
+/**
+ * @brief Sets the handle to the TagStageManager.
+ * @details This sets the handle to the TagStateManager used by the pipeline.
+ *   Usually this is RenderPipeline.get_tag_mgr(). 
+ *   
+ *   This has to get called before ShadowManager::init, otherwise an assertion
+ *   will get triggered.
+ * 
+ * @param tag_mgr [description]
+ */
 inline void ShadowManager::set_tag_state_manager(TagStateManager* tag_mgr) {
     nassertv(tag_mgr != NULL);
+    nassertv(_atlas == NULL);  // ShadowManager was already initialized
     _tag_state_mgr = tag_mgr; 
 }
 
-
+/**
+ * @brief Sets the handle to the Shadow targets output
+ * @details This sets the handle to the GraphicsOutput of the shadow atlas.
+ *   Usually this is RenderTarget.get_internal_buffer(), whereas the RenderTarget
+ *   is the target of the ShadowStage. 
+ *   
+ *   This is used for creating display regions and attaching cameras to them,
+ *   for performing shadow updates.
+ *   
+ *   This has to get called before ShadowManager::init, otherwise an assertion
+ *   will be triggered.
+ * 
+ * @param graphics_output [description]
+ */
 inline void ShadowManager::set_atlas_graphics_output(GraphicsOutput* graphics_output) {
     nassertv(graphics_output != NULL);
+    nassertv(_atlas == NULL);  // ShadowManager was already initialized
     _atlas_graphics_output = graphics_output;
 }

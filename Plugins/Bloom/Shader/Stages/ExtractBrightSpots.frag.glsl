@@ -21,5 +21,9 @@ void main() {
         bloom_color *= GET_SETTING(Bloom, bloom_strength);
     }   
 
+    #if DEBUG_MODE
+        bloom_color *= 0;
+    #endif
+
     result = vec4(bloom_color, 1.0);
 }
