@@ -45,7 +45,7 @@ void InternalLightManager::add_light(PT(RPLight) light) {
 
 void InternalLightManager::setup_shadows(RPLight* light) {
     light->init_shadow_sources();
-
+    light->update_shadow_sources();
     size_t num_sources = light->get_num_shadow_sources();
     size_t base_slot;
     if (!_shadow_sources.find_consecutive_slots(base_slot, num_sources)) {
