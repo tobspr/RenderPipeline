@@ -129,6 +129,7 @@ void InternalLightManager::update() {
             // Update shadow sources in case the light is dirty
             _lights[i]->update_shadow_sources();
             GPUCommand cmd_update(GPUCommand::CMD_store_light);
+            cmd_update.push_int(_lights[i]->get_slot());
             _lights[i]->write_to_command(cmd_update);
             _lights[i]->unset_dirty_flag();
             _cmd_list->add_command(cmd_update);
@@ -140,7 +141,7 @@ void InternalLightManager::update() {
 
     // Find all dirty shadow sources and make a list of them
     for (size_t i = 0; i <= _max_source_index; ++i) {
-        if (_shadow_sources[i] && _shadow_sources[i]->needs_update()) {
+        if (_shadow_sources[i] && _shadow_sources[i]->get_needs_update()) {
             _sources_to_update.push_back(_shadow_sources[i]);
 
             // Since we will update the source, we will also find a new spot for it,
@@ -166,10 +167,11 @@ void InternalLightManager::update() {
         if(_shadow_manager->add_update(source->get_mvp(), source->get_region())) {
 
             // Update performed
-            source->on_update_done();
+            source->set_needs_update(false);
 
             // Also update the sources data on the GPU
             GPUCommand cmd_update_src(GPUCommand::CMD_store_source);
+            cmd_update_src.push_int(source->get_slot());
             source->write_to_command(cmd_update_src);
             _cmd_list->add_command(cmd_update_src);
 

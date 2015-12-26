@@ -16,9 +16,7 @@ RPLight::RPLight(LightType light_type) {
 
 
 void RPLight::write_to_command(GPUCommand &cmd) {
-    cmd.push_int(_slot);
 
-    // Start of light data
     cmd.push_int(_light_type);
     cmd.push_int(_ies_profile);
 

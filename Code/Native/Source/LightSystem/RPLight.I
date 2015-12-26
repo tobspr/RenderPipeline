@@ -78,7 +78,7 @@ inline ShadowSource* RPLight::get_shadow_source(int index) const {
 
 inline void RPLight::invalidate_shadows() {
     for (size_t i = 0; i < _shadow_sources.size(); ++i) {
-        _shadow_sources[i]->invalidate();
+        _shadow_sources[i]->set_needs_update(true);
     }
 }
 
