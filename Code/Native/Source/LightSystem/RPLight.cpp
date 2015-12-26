@@ -16,7 +16,6 @@ RPLight::RPLight(LightType light_type) {
 
 
 void RPLight::write_to_command(GPUCommand &cmd) {
-
     cmd.push_int(_light_type);
     cmd.push_int(_ies_profile);
 
@@ -37,9 +36,6 @@ void RPLight::write_to_command(GPUCommand &cmd) {
 
 
 RPLight::~RPLight() {
-    // Free shadow sources
-    for (size_t i = 0; i < _shadow_sources.size(); ++i) {
-        delete _shadow_sources[i];
-    }
+    clear_shadow_sources();
 }
 

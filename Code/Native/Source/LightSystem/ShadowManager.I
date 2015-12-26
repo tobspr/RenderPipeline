@@ -143,11 +143,24 @@ inline bool ShadowManager::add_update(const ShadowSource* source) {
     nassertr(source != NULL, false); // NULL-Pointer passed
 
     if (_queued_updates.size() >= _max_updates) {
-        shadowmanager_cat.warning() << "cannot update source, out of update slots" << endl;
+        if (shadowmanager_cat.is_debug()) {
+            shadowmanager_cat.debug() << "cannot update source, out of update slots" << endl;
+        }
         return false;
     }
 
     // Add the update to the queue
     _queued_updates.push_back(source);
     return true;
+}
+
+/**
+ * @brief Returns how many update slots are left.
+ * @details This returns how many update slots are left. You can assume the
+ *   next n calls to add_update will succeed, whereas n is the value returned
+ *   by this function.
+ * @return Number of update slots left.
+ */
+inline size_t ShadowManager::get_num_update_slots_left() const {
+    return _max_updates - _queued_updates.size();
 }

@@ -26,6 +26,7 @@ class RPLight : public ReferenceCount {
         
         inline int get_num_shadow_sources() const;
         inline ShadowSource* get_shadow_source(int index) const;
+        inline void clear_shadow_sources();
 
         inline void mark_dirty();
         inline void unset_dirty_flag();

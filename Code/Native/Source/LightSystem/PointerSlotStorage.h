@@ -44,9 +44,11 @@ public:
      * @details This returns the greatest index of any element which is not zero.
      *   This can be useful for iterating the container, since all elements
      *   coming after the returned index are guaranteed to be a nullptr.
+     *   
+     *   If no elements are in this container, -1 is returned.
      * @return Maximum index of the container
      */
-    size_t get_max_index() const {
+    int get_max_index() const {
         return _max_index;
     }
 
@@ -131,7 +133,7 @@ public:
 
         // Update maximum index
         if (slot == _max_index) {
-            while (!_data[_max_index--]);
+            while (_max_index >= 0 && !_data[_max_index--]);
         }
     }
 
@@ -163,7 +165,7 @@ public:
         nassertv(slot >= 0 && slot < SIZE);
         nassertv(_data[slot] == NULL); // Slot already taken!
         nassertv(ptr != NULL); // nullptr passed as argument!
-        _max_index = max(_max_index, slot);
+        _max_index = max(_max_index, (int)slot);
         _data[slot] = ptr;
         _num_entries++;
     }
@@ -190,7 +192,7 @@ public:
     }
 
 private:
-    size_t _max_index;
+    int _max_index;
     size_t _num_entries;
     InternalContainer _data;
 };

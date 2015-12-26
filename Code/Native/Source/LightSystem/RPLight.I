@@ -101,3 +101,10 @@ inline void RPLight::set_near_plane(float near_plane) {
 inline float RPLight::get_near_plane() const {
     return _near_plane;
 }
+
+inline void RPLight::clear_shadow_sources() {
+    for (size_t i = 0; i < _shadow_sources.size(); ++i) {
+        delete _shadow_sources[i];
+    }
+    _shadow_sources.clear();
+}

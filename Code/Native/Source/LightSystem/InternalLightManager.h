@@ -36,6 +36,11 @@ class InternalLightManager : public ReferenceCount {
 
         void gpu_update_light(RPLight* light);
         void gpu_update_source(ShadowSource* source);
+        void gpu_remove_light(RPLight* light);
+        void gpu_remove_consecutive_sources(ShadowSource *first_source, size_t num_sources);
+
+        void update_lights();
+        void update_shadow_sources();
 
         GPUCommandList* _cmd_list;
         ShadowManager* _shadow_manager;

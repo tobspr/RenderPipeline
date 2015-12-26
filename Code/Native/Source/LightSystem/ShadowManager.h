@@ -29,6 +29,7 @@ class ShadowManager : public ReferenceCount {
         inline void set_atlas_graphics_output(GraphicsOutput* graphics_output);
 
         inline size_t get_atlas_size() const;
+        inline size_t get_num_update_slots_left() const;
 
         void init();
         void update();
@@ -49,7 +50,6 @@ class ShadowManager : public ReferenceCount {
         ShadowAtlas* _atlas;
         TagStateManager* _tag_state_mgr;
         GraphicsOutput* _atlas_graphics_output;
-
  
         typedef pvector<const ShadowSource*> UpdateQueue;
         UpdateQueue _queued_updates;

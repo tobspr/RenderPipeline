@@ -63,9 +63,6 @@ class LightManager(BaseManager):
 
     def remove_light(self, light):
         """ Removes a light """
-        if not light.has_slot():
-            return self.error("Tried to detach light which is not attached!")
-
         self._internal_mgr.remove_light(light)
         self._pta_max_light_index[0] = self._internal_mgr.get_max_light_index()
 
