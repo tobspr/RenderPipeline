@@ -5,7 +5,7 @@
 
 
 // Controls the exponential factor, values < 1 produce a distribution closer to
-// the camera, values > 1 produce a ditsribution which is further away from the camera.
+// the camera, values > 1 produce a distribution which is further away from the camera.
 #define SLICE_EXP_FACTOR 3.0
 
 int get_slice_from_distance(float dist) {

@@ -118,11 +118,11 @@ class IESProfileLoader(DebugObject):
 
         # Testing code to write out the LUT
         if False:
-            # from panda3d.core import Texture
-            # tex = Texture("temp")
-            # tex.setup_3d_texture(512, 512, 1, Texture.T_float, Texture.F_r16)
-            # dataset.generate_dataset_texture_into(tex, 0)
-            # tex.write("generated.png")
+            from panda3d.core import Texture
+            tex = Texture("temp")
+            tex.setup_3d_texture(512, 512, 1, Texture.T_float, Texture.F_r16)
+            dataset.generate_dataset_texture_into(tex, 0)
+            tex.write("generated.png")
 
         return dataset
 
