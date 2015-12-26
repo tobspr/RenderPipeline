@@ -114,7 +114,6 @@ void InternalLightManager::update() {
     }
 
     vector<ShadowSource*> _sources_to_update;
-    _sources_to_update.reserve(_max_source_index);
 
     // Find all dirty shadow sources and make a list of them
      for (auto iter = _shadow_sources.begin(); iter != _shadow_sources.end(); ++iter) {
