@@ -54,8 +54,6 @@ LMatrix4f PSSMHelper::find_projection_mat(
             const LVector4f &far_ll,
             const LVector4f &far_lr) {
 
-
-
     // We have 8*4 = 32 equations, which require 16 coefficients each
     Eigen::MatrixXf equation_system(32, 16);
     Eigen::VectorXf equation_results(32);
@@ -78,8 +76,8 @@ LMatrix4f PSSMHelper::find_projection_mat(
 
     // Construct result matrix and return it. We also need to transpose the matrix.
     LMatrix4f result(
-            solved_system(0), solved_system(4), solved_system(8), solved_system(12), 
-            solved_system(1), solved_system(5), solved_system(9), solved_system(13), 
+            solved_system(0), solved_system(4), solved_system(8),  solved_system(12), 
+            solved_system(1), solved_system(5), solved_system(9),  solved_system(13), 
             solved_system(2), solved_system(6), solved_system(10), solved_system(14), 
             solved_system(3), solved_system(7), solved_system(11), solved_system(15)
         );

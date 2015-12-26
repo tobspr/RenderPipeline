@@ -1,68 +1,159 @@
 
 #include "TagStateManager.h"
 
+
+NotifyCategoryDef(tagstatemgr, "");
+
+/**
+ * @brief Constructs a new TagStateManager
+ * @details This constructs a new TagStateManager. The #main_cam_node should
+ *   refer to the main scene camera, and will most likely be base.cam.
+ *   It is necessary to pass the camera because the C++ code does not have
+ *   access to the showbase.
+ *   
+ * @param main_cam_node The main scene camera
+ */
 TagStateManager::TagStateManager(NodePath main_cam_node) {
     nassertv(!main_cam_node.is_empty());
     nassertv(DCAST(Camera, main_cam_node.node()) != NULL);
     _main_cam_node = main_cam_node;
 
-
-    // Set default mask
+    // Set default camera mask
     DCAST(Camera, _main_cam_node.node())->set_camera_mask(get_gbuffer_mask());
+
+    // Set container properties
+    _shadow_container.tag_name = "Shadows";
+    _shadow_container.mask = get_shadow_mask();
+    _voxelize_container.tag_name = "Voxelize";
+    _voxelize_container.mask = get_voxelize_mask();
 }
 
+/**
+ * @brief Destructs the TagStateManager
+ * @details This destructs the TagStateManager, and cleans up all resources used.
+ */
 TagStateManager::~TagStateManager() {
     cleanup_states();
-    _tag_states.clear();
 }
 
-void TagStateManager::apply_shadow_state(NodePath np, Shader* shader, const string &name, int sort) {
-    cout << "TagStateManager: Constructing new state: " << name << endl;
+/**
+ * @brief Applies a given state to a NodePath
+ * @details This applies a shader to the given NodePath which is used when the
+ *   NodePath is rendered by any registered camera of the container.
+ *  
+ * @param container The container which is used to store the state
+ * @param np The nodepath to apply the shader to
+ * @param shader A handle to the shader to apply
+ * @param name Name of the state, should be a unique identifier
+ * @param sort Changes the sort with which the shader will be applied.
+ */
+void TagStateManager::apply_state(StateContainer& container, NodePath np, Shader* shader,
+                                  const string &name, int sort) {
+    if (tagstatemgr_cat.is_spam()) {
+        tagstatemgr_cat.spam() << "Constructing new state " << name 
+                               << " with shader " << shader << endl;
+    }
 
-    // Construct the new state
+    // Construct the render state
     CPT(RenderState) state = RenderState::make_empty();
     state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
     state = state->set_attrib(ShaderAttrib::make(shader, sort), sort);
 
-    // Store the state
-    if (_tag_states.count(name)) {
-        cout << "TagStateManager: Warning: Overriding existing state " << name << endl;
+    // Emit a warning if we override an existing state
+    if (container.tag_states.count(name) != 0) {
+        tagstatemgr_cat.warning() << "Overriding existing state " << name << endl;
     }
-    _tag_states[name] = state;
+
+    // Store the state, this is required whenever we attach a new camera, so
+    // it can also track the existing states
+    container.tag_states[name] = state;
 
     // Save the tag on the node path
-    np.set_tag(get_shadow_tag(), name);
+    np.set_tag(container.tag_name, name);
 
-    // Apply the state on all cameras attached so far
-    for (CameraList::iterator iter = _shadow_cameras.begin(); iter != _shadow_cameras.end(); ++iter) {
-        // cout << "Applied tag state " << name << " on camera " << *(*iter) << endl;
-        (*iter)->set_tag_state(name, state);
+    // Apply the state on all cameras which are attached so far
+    for (size_t i = 0; i < container.cameras.size(); ++i) {
+        container.cameras[i]->set_tag_state(name, state);
     }
 }
 
+/**
+ * @brief Cleans up all registered states.
+ * @details This cleans up all states which were registered to the TagStateManager.
+ *   It also calls Camera::clear_tag_states() on the main_cam_node and all attached
+ *   cameras.
+ */
 void TagStateManager::cleanup_states() {
-    cout << "TagStateManager: cleaning up states" << endl;
+    if (tagstatemgr_cat.is_info()) {
+        tagstatemgr_cat.info() << "cleaning up states" << endl;
+    }
 
     // Clear all tag states of the main camera
     DCAST(Camera, _main_cam_node.node())->clear_tag_states();
 
-    // Clear all tag states of the shadow cameras
-    for (CameraList::iterator iter = _shadow_cameras.begin(); iter != _shadow_cameras.end(); ++iter) {
-        (*iter)->clear_tag_states();
+    // Clear the containers
+    cleanup_states(_shadow_container);
+    cleanup_states(_voxelize_container);
+}
+
+/**
+ * @brief Cleans up the states of a given container
+ * @details This cleans all tag states of the given container,
+ *   and also calls Camera::clear_tag_states on every assigned camera.
+ * 
+ * @param container Container to clear
+ */
+void TagStateManager::cleanup_states(StateContainer& container) {
+    for (size_t i = 0; i < container.cameras.size(); ++i) {
+        container.cameras[i]->clear_tag_states();
+    }
+    container.tag_states.clear();
+}
+
+/**
+ * @brief Registers a new camera to a given container
+ * @details This registers a new camera to a container, and sets its initial
+ *   state as well as the camera mask.
+ * 
+ * @param container The container to add the camera to
+ * @param source The camera to add
+ */
+void TagStateManager::register_camera(StateContainer& container, Camera* source) {
+    source->set_tag_state_key(container.tag_name);
+    source->set_camera_mask(container.mask);
+
+    // Construct an initial state which also disables color write, additionally
+    // to the ColorWriteAttrib on each unique state.
+    CPT(RenderState) state = RenderState::make_empty();
+    state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
+    source->set_initial_state(state);
+
+    // Store the camera so we can keep track of it
+    container.cameras.push_back(source);
+}
+
+/**
+ * @brief Unregisters a camera from a container
+ * @details This unregisters a camera from the list of cameras of a given
+ *   container. It also resets all tag states of the camera, and also its initial
+ *   state.
+ * 
+ * @param source Camera to unregister
+ */
+void TagStateManager::unregister_camera(StateContainer& container, Camera* source) {
+    CameraList& cameras = container.cameras;
+
+    // Make sure the camera was attached so far
+    if (std::find(cameras.begin(), cameras.end(), source) == cameras.end()) {
+        tagstatemgr_cat.error() 
+            << "Called unregister_camera but camera was never registered!" << endl;
+        return;
     }
 
-    _tag_states.clear();
-}
+    // Remove the camera from the list of attached cameras
+    cameras.erase(std::remove(cameras.begin(), cameras.end(), source), cameras.end()); 
 
-void TagStateManager::register_shadow_camera(Camera* source) {
-    source->set_tag_state_key(get_shadow_tag());
-    source->set_camera_mask(get_shadow_mask());
-    _shadow_cameras.push_back(source);
-    // cout << "TagStateManager: registered shadow camera:" << *source << endl;
-}
-
-void TagStateManager::unregister_shadow_camera(Camera* source) {
-    // cout << "TagStateManager: unregistered shadow camera: " << *source << endl;
-    _shadow_cameras.erase(
-        std::remove(_shadow_cameras.begin(), _shadow_cameras.end(), source), _shadow_cameras.end()); 
+    // Reset the camera
+    source->clear_tag_states();
+    source->set_initial_state(RenderState::make_empty());
 }
