@@ -1,6 +1,6 @@
 
-#ifndef SHADOW_SOURCE_H
-#define SHADOW_SOURCE_H
+#ifndef RP_SHADOW_SOURCE_H
+#define RP_SHADOW_SOURCE_H
 
 #include "pandabase.h"
 #include "luse.h"
@@ -52,4 +52,4 @@ private:
 
 #include "ShadowSource.I"
 
-#endif // SHADOW_SOURCE_H
+#endif // RP_SHADOW_SOURCE_H
