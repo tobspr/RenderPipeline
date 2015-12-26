@@ -1,6 +1,16 @@
 #ifndef RP_POINTER_SLOT_STORAGE
 #define RP_POINTER_SLOT_STORAGE
 
+
+#ifdef INTERROGATE
+
+// Fake implementation for interrogate
+template < typename T, int SIZE >
+class PointerSlotStorage {};
+
+#else
+
+
 #include "pandabase.h"
 #include <array>
 
@@ -26,6 +36,7 @@ public:
     PointerSlotStorage() {
         _data.fill(NULL);
         _max_index = 0;
+        _num_entries = 0;
     }
 
     /**
@@ -37,6 +48,16 @@ public:
      */
     size_t get_max_index() const {
         return _max_index;
+    }
+
+    /**
+     * @brief Returns the amount of elements of the container
+     * @details This returns the amount of elements in the container which are
+     *   no nullptr.
+     * @return Amount of elements
+     */
+    size_t get_num_entries() const {
+        return _num_entries;
     }
 
     /**
@@ -76,6 +97,12 @@ public:
      * @return true if consecutive slots were found, otherwise false. 
      */
     bool find_consecutive_slots(size_t &slot, size_t num_consecutive) const {
+        nassertr(num_consecutive > 0, false);
+
+        // Fall back to default search algorithm in case the parameters are equal
+        if (num_consecutive == 1) {
+            return find_slot(slot);
+        }
         for (size_t i = 0; i < SIZE; ++i) {
             bool any_taken = false;
             for (size_t k = 0; !any_taken && k < num_consecutive; ++i) {
@@ -91,8 +118,8 @@ public:
 
     /**
      * @brief Frees an allocated slot
-     * @details This frees an allocated slot. If the slot was already freed before,
-     *   this method throws an assertion.
+     * @details This frees an allocated slot. If the slot was already freed
+     *   before, this method throws an assertion.
      * 
      * @param slot Slot to free
      */
@@ -100,6 +127,12 @@ public:
         nassertv(slot >= 0 && slot < SIZE);
         nassertv(_data[slot] != NULL); // Slot was already empty!
         _data[slot] = NULL;
+        _num_entries--;
+
+        // Update maximum index
+        if (slot == _max_index) {
+            while (!_data[_max_index--]);
+        }
     }
 
     /**
@@ -130,7 +163,9 @@ public:
         nassertv(slot >= 0 && slot < SIZE);
         nassertv(_data[slot] == NULL); // Slot already taken!
         nassertv(ptr != NULL); // nullptr passed as argument!
+        _max_index = max(_max_index, slot);
         _data[slot] = ptr;
+        _num_entries++;
     }
 
     typedef array<T, SIZE> InternalContainer;
@@ -140,7 +175,7 @@ public:
      * @details This returns an iterator to the beginning of the container 
      * @return Begin-Iterator
      */
-    InternalContainer::iterator begin() {
+    typename InternalContainer::iterator begin() {
         return _data.begin();
     }
 
@@ -150,13 +185,16 @@ public:
      *   iterates to PointerSlotStorage::get_max_index()
      * @return [description]
      */
-    InternalContainer::iterator end() {
-        return std::advance(_data.begin(), _max_index);
+    typename InternalContainer::iterator end() {
+        return _data.begin() + _max_index + 1;
     }
 
 private:
     size_t _max_index;
+    size_t _num_entries;
     InternalContainer _data;
 };
+
+#endif // INTERROGATE
 
 #endif // RP_POINTER_SLOT_STORAGE

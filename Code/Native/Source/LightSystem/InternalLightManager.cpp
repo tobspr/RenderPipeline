@@ -1,59 +1,37 @@
 
-
 #include "InternalLightManager.h"
+
+NotifyCategoryDef(lightmgr, "");
 
 
 InternalLightManager::InternalLightManager() {
-
-    // Allocate containers
-    _lights = new RPLight*[MAX_LIGHT_COUNT];
-    _shadow_sources = new ShadowSource*[MAX_SHADOW_SOURCES];
-    
-    // Reset containers
-    for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
-        _lights[i] = NULL;
-    for (int i = 0; i < MAX_SHADOW_SOURCES; ++i)
-        _shadow_sources[i] = NULL;
-
-    _num_stored_lights = 0;
-    _max_light_index = 0;
-    _max_source_index = 0;
-    _num_stored_sources = 0;
     _cmd_list = NULL;
     _shadow_manager = NULL;
 }
-
-InternalLightManager::~InternalLightManager() {
-    delete [] _lights;
-    delete [] _shadow_sources;
-}
-
 
 void InternalLightManager::add_light(PT(RPLight) light) {
     nassertv(_shadow_manager != NULL);
 
     if (light->has_slot()) {
-        cerr << "InternalLightManager: cannot add light since it already has a slot!" << endl;
+        lightmgr_cat.error() << "InternalLightManager: cannot add light " 
+                             << "since it already has a slot!" << endl;
         return;
     }
 
-    // Reference the light, since we store it
+    // Reference the light because we store it
     light->ref();
-    int slot = find_light_slot();
 
-    // In case we found no slot, emit an error
-    if (slot < 0) {
-        cerr << "InternalLightManager: All light slots used!" << endl;
-        return;
+    // Find a free slot
+    size_t slot;
+    if (!_lights.find_slot(slot)) {
+        lightmgr_cat.error() << "All light slots used!" << endl;
     }
 
-    _num_stored_lights ++;
-    _max_light_index = max(_max_light_index, slot);
-
-    _lights[slot] = light;
+    // Reserve the slot
     light->assign_slot(slot);
+    _lights.reserve_slot(slot, light);
 
-    // Light casts shadows
+    // Setup the shadows in case the light uses them
     if (light->get_casts_shadows()) {
         setup_shadows(light);
     }
@@ -63,24 +41,20 @@ void InternalLightManager::add_light(PT(RPLight) light) {
 void InternalLightManager::setup_shadows(RPLight* light) {
     light->init_shadow_sources();
 
-    // TODO: Find consecutive slots for lights with more than one shadow source,
-    // so we can only store the index of the first source
+    size_t num_sources = light->get_num_shadow_sources();
+    size_t base_slot;
+    if (!_shadow_sources.find_consecutive_slots(base_slot, num_sources)) {
+        lightmgr_cat.error() << "Failed to find slot for shadow sources!" << endl;
+        return;
+    }
 
-    for (int i = 0; i < light->get_num_shadow_sources(); ++i) {
-        ShadowSource* source = light->get_shadow_source(i);
-        
-        int slot = find_shadow_slot();
-        if (slot < 0) {
-            cerr << "Could not attach shadow source, out of slots!" << endl;
-            return;
-        }   
+    for (int i = 0; i < num_sources; ++i) {
+        ShadowSource* source = light->get_shadow_source(i);        
+        size_t slot = base_slot + i;
 
         // Assign the slot
-        _shadow_sources[slot] = source;
+        _shadow_sources.reserve_slot(slot, source);
         source->set_slot(slot);
-
-        // Update maximum source index
-        _max_source_index = max(_max_source_index, slot);
     }
 }
 
@@ -89,32 +63,34 @@ void InternalLightManager::remove_light(PT(RPLight) light) {
     nassertv(_shadow_manager != NULL);
     
     if (!light->has_slot()) {
-        cerr << "Cannot detach light, light has no slot!" << endl;
+        lightmgr_cat.error() << "Cannot detach light, light has no slot!" << endl;
         return;
     }
 
-    _lights[light->get_slot()] = NULL;
+    _lights.free_slot(light->get_slot());
 
     GPUCommand cmd_remove(GPUCommand::CMD_remove_light);
     cmd_remove.push_int(light->get_slot());
     _cmd_list->add_command(cmd_remove);
 
-    _num_stored_lights --;
-
-    // Correct max light index
-    if (light->get_slot() == _max_light_index) {
-        update_max_light_index();
-    }
-
     light->remove_slot();
 
-    // TODO: Cleanup shadow sources
+    for (size_t i = 0; i < light->get_num_shadow_sources(); ++i) {
+        ShadowSource* source = light->get_shadow_source(i);
+        if (source->has_slot()) {
+            _shadow_sources.free_slot(source->get_slot());
+        }
+    }
+
+    // TODO: Cleanup shadow sources - emit cmd_remove
+    // GPUCommand cmd_remove_sources(GPUCommand::CMD_remove_sources);
+    // cmmd_remove_sources.push_int(light->get_shadow_source(0)->get_slot());
+    // cmmd_remove_sources.push_int(light->get_num_shadow_sources());
 
     // Since we referenced the light when we stored it, we
-    // have to decrease the reference aswell
+    // have to decrease the reference as well
     light->unref();
 }
-
 
 
 void InternalLightManager::update() {
@@ -123,15 +99,16 @@ void InternalLightManager::update() {
     nassertv(_shadow_manager != NULL);
 
     // Find all dirty lights and update them
-    for (size_t i = 0; i <= _max_light_index; ++i) {
-        if (_lights[i] && _lights[i]->is_dirty()) {
+    for (auto iter = _lights.begin(); iter != _lights.end(); ++iter) {
+        RPLight* light = *iter;
+        if (light && light->is_dirty()) {
 
             // Update shadow sources in case the light is dirty
-            _lights[i]->update_shadow_sources();
+            light->update_shadow_sources();
             GPUCommand cmd_update(GPUCommand::CMD_store_light);
-            cmd_update.push_int(_lights[i]->get_slot());
-            _lights[i]->write_to_command(cmd_update);
-            _lights[i]->unset_dirty_flag();
+            cmd_update.push_int(light->get_slot());
+            light->write_to_command(cmd_update);
+            light->unset_dirty_flag();
             _cmd_list->add_command(cmd_update);
         }
     }
@@ -140,14 +117,15 @@ void InternalLightManager::update() {
     _sources_to_update.reserve(_max_source_index);
 
     // Find all dirty shadow sources and make a list of them
-    for (size_t i = 0; i <= _max_source_index; ++i) {
-        if (_shadow_sources[i] && _shadow_sources[i]->get_needs_update()) {
-            _sources_to_update.push_back(_shadow_sources[i]);
+     for (auto iter = _shadow_sources.begin(); iter != _shadow_sources.end(); ++iter) {
+        ShadowSource* source = *iter;
+        if (source && source->get_needs_update()) {
+            _sources_to_update.push_back(source);
 
             // Since we will update the source, we will also find a new spot for it,
             // so unregister the old spot
-            if (_shadow_sources[i]->has_region()) {
-                _shadow_manager->get_atlas()->free_region(_shadow_sources[i]->get_region());
+            if (source->has_region()) {
+                _shadow_manager->get_atlas()->free_region(source->get_region());
             }
         }
     }
@@ -177,7 +155,7 @@ void InternalLightManager::update() {
 
         } else {
             // Out of update slots. We can just abort the loop here.
-            cout << "Aborting update, because out of update slots" << endl;
+            lightmgr_cat.warning() << "Aborting update, because out of update slots" << endl;
             break;
         }
     }

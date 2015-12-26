@@ -87,18 +87,23 @@ void main() {
                 break;
             }
 
-            // Remove source
-            case CMD_remove_source: {
+            // Remove consecutive sources
+            case CMD_remove_sources: {
+                int base_slot = read_int(stack_ptr);
+                int num_slots = read_int(stack_ptr);
 
-                int slot = read_int(stack_ptr);
-                int offs = slot * 5;
-
-                // Set the data to all zeroes, this indicates a unused source
-                for (int i = 0; i < 5; ++i) {
-                    imageStore(SourceData, offs + i, vec4(0));
+                for (int slot = base_slot; slot < base_slot + num_slots; ++slot) {
+                    int offs = slot * 5;
+                    
+                    // Set the data to all zeroes, this indicates an unused source
+                    for (int i = 0; i < 5; ++i) {
+                        imageStore(SourceData, offs + i, vec4(0));
+                    }
                 }
                 break;
             }
+
+
 
             // .. further commands will follow here
             

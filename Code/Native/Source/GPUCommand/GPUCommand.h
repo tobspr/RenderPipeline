@@ -28,7 +28,7 @@ class GPUCommand {
             CMD_store_light = 1,
             CMD_remove_light = 2,
             CMD_store_source = 3,
-            CMD_remove_source = 4,
+            CMD_remove_sources = 4,
         };
 
         GPUCommand(CommandType command_type);
