@@ -50,10 +50,6 @@ class GPUCommandQueue(DebugObject):
             pointer, self._commands_per_frame)
         self._pta_num_commands[0] = num_commands_exec
 
-    def add_command(self, command):
-        """ Adds a new command """
-        self._command_list.add_command(command)
-
     def reload_shaders(self):
         """ Reloads the command shader """
         shader = Shader.load(Shader.SL_GLSL,
@@ -88,4 +84,3 @@ class GPUCommandQueue(DebugObject):
         self._command_target.prepare_offscreen_buffer()
         self._command_target.set_shader_input("CommandQueue", self._data_texture.get_texture())
         self._command_target.set_shader_input("commandCount", self._pta_num_commands)
-

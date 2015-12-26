@@ -1,6 +1,7 @@
 #include "GPUCommand.h"
 
 #include <iostream>
+#include <iomanip>
 #include <stdlib.h>
 
 
@@ -30,13 +31,13 @@ GPUCommand::GPUCommand(CommandType command_type) {
  *   in mind that integers might be shown in their binary float representation,
  *   depending on the setting in the GPUCommand::convert_int_to_float method.
  */
-void GPUCommand::print_data() {
-    cout << "GPUCommand(type=" << _command_type << ", size=" << _current_index << ")" << endl;
-    cout << "Data = { ";
+void GPUCommand::write(ostream &out) const {
+    out << "GPUCommand(type=" << _command_type << ", size=" << _current_index << ", data = {" << endl;
     for (size_t k = 0; k < GPU_COMMAND_ENTRIES; ++k) {
-        cout << _data[k] << " ";
+        out << std::setw(12) << std::fixed << std::setprecision(5) << _data[k] << " ";
+        if (k % 6 == 5 || k == GPU_COMMAND_ENTRIES - 1) out << endl;
     }
-    cout << "}" << endl;
+    out << "})" << endl;
 }
 
 /**

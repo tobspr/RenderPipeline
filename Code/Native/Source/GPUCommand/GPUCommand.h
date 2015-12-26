@@ -43,7 +43,7 @@ class GPUCommand {
         inline void push_mat4(const LMatrix4f &v);
 
         void write_to(const PTA_uchar &dest, size_t command_index);
-        void print_data();
+        void write(ostream &out) const;
 
     private:
 
