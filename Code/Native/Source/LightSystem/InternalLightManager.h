@@ -34,10 +34,8 @@ class InternalLightManager : public ReferenceCount {
         
         void setup_shadows(RPLight* light);
 
-        inline int find_light_slot() const;
-        inline int find_shadow_slot() const;
-        inline void update_max_light_index();
-        inline void update_max_source_index();
+        void gpu_update_light(RPLight* light);
+        void gpu_update_source(ShadowSource* source);
 
         GPUCommandList* _cmd_list;
         ShadowManager* _shadow_manager;

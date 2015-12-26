@@ -92,6 +92,24 @@ void InternalLightManager::remove_light(PT(RPLight) light) {
     light->unref();
 }
 
+void InternalLightManager::gpu_update_light(RPLight* light) {
+    nassertv(_cmd_list != NULL);
+    GPUCommand cmd_update(GPUCommand::CMD_store_light);
+    cmd_update.push_int(light->get_slot());
+    light->write_to_command(cmd_update);
+    light->unset_dirty_flag();
+    _cmd_list->add_command(cmd_update);
+}
+
+
+void InternalLightManager::gpu_update_source(ShadowSource* source) {
+    nassertv(_cmd_list != NULL);
+    GPUCommand cmd_update(GPUCommand::CMD_store_source);
+    cmd_update.push_int(source->get_slot());
+    source->write_to_command(cmd_update);
+    _cmd_list->add_command(cmd_update);
+}
+
 
 void InternalLightManager::update() {
 
@@ -102,18 +120,15 @@ void InternalLightManager::update() {
     for (auto iter = _lights.begin(); iter != _lights.end(); ++iter) {
         RPLight* light = *iter;
         if (light && light->is_dirty()) {
-
-            // Update shadow sources in case the light is dirty
             light->update_shadow_sources();
-            GPUCommand cmd_update(GPUCommand::CMD_store_light);
-            cmd_update.push_int(light->get_slot());
-            light->write_to_command(cmd_update);
-            light->unset_dirty_flag();
-            _cmd_list->add_command(cmd_update);
+            gpu_update_light(light);
         }
     }
 
     vector<ShadowSource*> _sources_to_update;
+
+    // Get a handle to the atlas, will be frequently used
+    ShadowAtlas *atlas = _shadow_manager->get_atlas();
 
     // Find all dirty shadow sources and make a list of them
      for (auto iter = _shadow_sources.begin(); iter != _shadow_sources.end(); ++iter) {
@@ -124,7 +139,7 @@ void InternalLightManager::update() {
             // Since we will update the source, we will also find a new spot for it,
             // so unregister the old spot
             if (source->has_region()) {
-                _shadow_manager->get_atlas()->free_region(source->get_region());
+                atlas->free_region(source->get_region());
             }
         }
     }
@@ -135,23 +150,15 @@ void InternalLightManager::update() {
     // Now find an atlas spot for all regions
     for (size_t i = 0; i < _sources_to_update.size(); ++i) {
         ShadowSource *source = _sources_to_update[i];
-        size_t num_tiles = _shadow_manager->get_atlas()->get_required_tiles(source->get_resolution());
-        LVecBase4i new_region = _shadow_manager->get_atlas()->find_and_reserve_region(num_tiles, num_tiles);
-        LVecBase4f new_region_uv = _shadow_manager->get_atlas()->region_to_uv(new_region);
+        size_t num_tiles = atlas->get_required_tiles(source->get_resolution());
+        LVecBase4i new_region = atlas->find_and_reserve_region(num_tiles, num_tiles);
+        LVecBase4f new_region_uv = atlas->region_to_uv(new_region);
 
         source->set_region(new_region, new_region_uv);
 
         if(_shadow_manager->add_update(source)) {
-
-            // Update performed
             source->set_needs_update(false);
-
-            // Also update the sources data on the GPU
-            GPUCommand cmd_update_src(GPUCommand::CMD_store_source);
-            cmd_update_src.push_int(source->get_slot());
-            source->write_to_command(cmd_update_src);
-            _cmd_list->add_command(cmd_update_src);
-
+            gpu_update_source(source);
         } else {
             // Out of update slots. We can just abort the loop here.
             lightmgr_cat.warning() << "Aborting update, because out of update slots" << endl;

@@ -1,3 +1,5 @@
+
+
 inline int InternalLightManager::get_max_light_index() const {
     return _lights.get_max_index();
 }

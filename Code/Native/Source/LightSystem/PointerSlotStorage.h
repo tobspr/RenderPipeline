@@ -2,13 +2,13 @@
 #define RP_POINTER_SLOT_STORAGE
 
 
-#ifdef INTERROGATE
+#ifdef CPPPARSER
 
-// Fake implementation for interrogate
+// Dummy implementation for interrogate
 template < typename T, int SIZE >
 class PointerSlotStorage {};
 
-#else
+#else // CPPPARSER
 
 
 #include "pandabase.h"
@@ -195,6 +195,6 @@ private:
     InternalContainer _data;
 };
 
-#endif // INTERROGATE
+#endif // CPPPARSER
 
 #endif // RP_POINTER_SLOT_STORAGE
