@@ -23,7 +23,7 @@ class LightManager(BaseManager):
     """ This class is a wrapper around the InternalLightManager, and provides
     additional functionality like setting up all required stages and defines."""
 
-    _MAX_LIGHTS = 2 ** 16
+    _MAX_LIGHTS = 65535
     _MAX_SOURCES = 2048
 
     def __init__(self, pipeline):

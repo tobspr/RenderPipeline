@@ -9,8 +9,8 @@
 #include "ShadowManager.h"
 #include "referenceCount.h"
 
-#define MAX_LIGHT_COUNT 65000
-#define MAX_SHADOW_SOURCES 1000
+#define MAX_LIGHT_COUNT 65535
+#define MAX_SHADOW_SOURCES 2048
 
 class InternalLightManager : public ReferenceCount {
 

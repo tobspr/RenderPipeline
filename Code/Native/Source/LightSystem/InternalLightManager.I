@@ -47,4 +47,3 @@ inline void InternalLightManager::set_shadow_manager(ShadowManager* mgr) {
 inline void InternalLightManager::set_command_list(GPUCommandList *cmd_list) {
     _cmd_list = cmd_list;
 }
-

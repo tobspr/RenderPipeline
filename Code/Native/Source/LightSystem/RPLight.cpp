@@ -37,6 +37,9 @@ void RPLight::write_to_command(GPUCommand &cmd) {
 
 
 RPLight::~RPLight() {
-    // Default dtor, for now
+    // Free shadow sources
+    for (size_t i = 0; i < _shadow_sources.size(); ++i) {
+        delete _shadow_sources[i];
+    }
 }
 

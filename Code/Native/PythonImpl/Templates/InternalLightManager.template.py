@@ -1,6 +1,6 @@
 
 def __init__(self):
-    self._max_lights = 65000
+    self._max_lights = 65535
     self._lights = [None] * self._max_lights
     self._max_light_index = 0
     self._num_stored_lights = 0
