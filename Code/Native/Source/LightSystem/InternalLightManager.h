@@ -1,20 +1,27 @@
 #ifndef RP_INTERNAL_LIGHT_MANAGER_H
 #define RP_INTERNAL_LIGHT_MANAGER_H
 
+#include "referenceCount.h"
 #include "RPLight.h"
 #include "ShadowSource.h"
 #include "ShadowAtlas.h"
-#include "GPUCommandList.h"
 #include "ShadowManager.h"
-#include "referenceCount.h"
 #include "PointerSlotStorage.h"
+#include "GPUCommandList.h"
 
 #define MAX_LIGHT_COUNT 65535
 #define MAX_SHADOW_SOURCES 2048
 
 NotifyCategoryDecl(lightmgr, EXPORT_CLASS, EXPORT_TEMPL);
 
-class InternalLightManager : public ReferenceCount {
+/**
+ * @brief Internal class used for handling lights and shadows.
+ * @details This is the internal class used by the pipeline to handle all
+ *   lights and shadows. It stores references to the lights, manages handling
+ *   the light and shadow slots, and also communicates with the GPU with the
+ *   GPUCommandQueue to store light and shadow source data.
+ */
+class InternalLightManager {
 
     PUBLISHED:
         InternalLightManager();
@@ -25,7 +32,7 @@ class InternalLightManager : public ReferenceCount {
         void update();
         
         inline int get_max_light_index() const;
-        inline int get_num_stored_lights() const;
+        inline size_t get_num_stored_lights() const;
 
         inline void set_command_list(GPUCommandList *cmd_list);
         inline void set_shadow_manager(ShadowManager* mgr);

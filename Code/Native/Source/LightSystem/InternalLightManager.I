@@ -1,17 +1,71 @@
 
-
+/**
+ * @brief Returns the maximum light index
+ * @details This returns the maximum light index (also called slot). Any lights
+ *   after that slot are guaranteed to be zero-lights. This is useful when
+ *   iterating over the list of lights, because iteration can be stopped when
+ *   the maximum light index is reached.
+ *   
+ *   The maximum light index points to the last slot which is used. If no lights
+ *   are attached, -1 is returned. If one light is attached at slot 0, the index
+ *   is 0, if two are attached at the slots 0 and 1, the index is 1, and so on.
+ *   
+ *   If, for example, two lights are attached at the slots 2 and 5, then the
+ *   index will be 5. Keep in mind that the max-index is not an indicator for
+ *   how many lights are attached. Also, zero lights still may occur when iterating
+ *   over the light lists 
+ *   
+ * @return Maximum light index
+ */
 inline int InternalLightManager::get_max_light_index() const {
     return _lights.get_max_index();
 }
 
-inline int InternalLightManager::get_num_stored_lights() const {
+/**
+ * @brief Returns the amount of stored lights.
+ * @details This returns the amount of stored lights. This behaves unlike 
+ *   InternalLightManager::get_max_light_index, and instead returns the true
+ *   amount of lights, which is completely unrelated to the amount of used slots.
+ *
+ * @return Amount of stored lights
+ */
+inline size_t InternalLightManager::get_num_stored_lights() const {
     return _lights.get_num_entries();
 }
 
+/**
+ * @brief Sets the handle to the shadow manager
+ * @details This sets the handle to the global shadow manager. It is usually
+ *   constructed on the python side, so we need to get a handle to it.
+ *   
+ *   The manager should be a handle to a ShadowManager instance, and will be
+ *   stored somewhere on the python side most likely. The light manager does not
+ *   keep a reference to it, so the python side should make sure to keep one.
+ *   
+ *   Be sure to call this before the InternalLightManager::update() method is
+ *   called, otherwise an assertion will get triggered.
+ * 
+ * @param mgr The ShadowManager instance
+ */
 inline void InternalLightManager::set_shadow_manager(ShadowManager* mgr) {
     _shadow_manager = mgr;
 }
 
+/**
+ * @brief Sets a handle to the command list
+ * @details This sets a handle to the global GPUCommandList. This is required to
+ *   emit GPUCommands, which are used for attaching and detaching lights, as well
+ *   as shadow source updates.
+ *   
+ *   The cmd_list should be a handle to a GPUCommandList handle, and will be
+ *   stored somewhere on the python side most likely. The light manager does not
+ *   keep a reference to it, so the python side should make sure to keep one.
+ * 
+ *   Be sure to call this before the InternalLightManager::update() method is
+ *   called, otherwise an assertion will get triggered.
+ *   
+ * @param cmd_list The GPUCommandList instance
+ */
 inline void InternalLightManager::set_command_list(GPUCommandList *cmd_list) {
     _cmd_list = cmd_list;
 }
