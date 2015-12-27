@@ -127,6 +127,9 @@ vec3 tonemap_uncharted2(vec3 color)
 // Tonemapping selector
 vec3 do_tonemapping(vec3 color) {
     
+    // Clamp extreme values of the color
+    color = clamp(color, 0.0, 1000.0);
+
     // Select tonemapping operator
     #if ENUM_V_ACTIVE(ColorCorrection, tonemap_operator, none)
         color = tonemap_none(color);

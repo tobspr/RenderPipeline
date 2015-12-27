@@ -32,20 +32,19 @@ class Plugin(BasePlugin):
         self._node.hide()
 
         # Construct the actual PSSM rig
-        self._rig = PSSMCameraRig(self.get_setting("split_count")) # pylint: disable=E0602
-        self._rig.set_sun_distance(self.get_setting("sun_distance"))
-        self._rig.set_pssm_distance(self.get_setting("max_distance"))
-        self._rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
-        self._rig.set_border_bias(self.get_setting("border_bias"))
-        self._rig.set_use_stable_csm(True)
-        self._rig.set_use_fixed_film_size(False)
-        self._rig.set_use_tight_frustum(False)
-        self._rig.set_resolution(self.get_setting("resolution"))
-        self._rig.reparent_to(self._node)
+        self._camera_rig = PSSMCameraRig(self.get_setting("split_count")) # pylint: disable=E0602
+        self._camera_rig.set_sun_distance(self.get_setting("sun_distance"))
+        self._camera_rig.set_pssm_distance(self.get_setting("max_distance"))
+        self._camera_rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
+        self._camera_rig.set_border_bias(self.get_setting("border_bias"))
+        self._camera_rig.set_use_stable_csm(True)
+        self._camera_rig.set_use_fixed_film_size(True)
+        self._camera_rig.set_resolution(self.get_setting("resolution"))
+        self._camera_rig.reparent_to(self._node)
 
         # Attach the cameras to the shadow stage
         for i in range(self.get_setting("split_count")):
-            camera_np = self._rig.get_camera(i)
+            camera_np = self._camera_rig.get_camera(i)
             camera_np.node().set_scene(Globals.base.render)
             region = self._shadow_stage.get_split_region(i)
             region.set_camera(camera_np)
@@ -61,8 +60,8 @@ class Plugin(BasePlugin):
 
         # Set inputs
         self._pssm_stage.set_shader_input("pssm_split_count", self.get_setting("split_count"))
-        self._pssm_stage.set_shader_input("pssm_mvps", self._rig.get_mvp_array())
-        self._pssm_stage.set_shader_input("pssm_nearfar", self._rig.get_nearfar_array())
+        self._pssm_stage.set_shader_input("pssm_mvps", self._camera_rig.get_mvp_array())
+        self._pssm_stage.set_shader_input("pssm_nearfar", self._camera_rig.get_nearfar_array())
         self._pssm_stage.set_shader_input("pssm_sun_vector", self._pta_sun_vector)
 
     @PluginHook("pre_render_update")
@@ -88,29 +87,29 @@ class Plugin(BasePlugin):
         self._pta_sun_vector[0] = sun_vector
 
         if self._update_enabled:
-            self._rig.fit_to_camera(Globals.base.camera, sun_vector)
+            self._camera_rig.update(Globals.base.camera, sun_vector)
 
             # Eventually reset cache
             cache_diff = Globals.clock.get_frame_time() - self._last_cache_reset
-            if cache_diff > 1.0:
-                self._last_cache_reset = Globals.clock.get_frame_time()
-                self._rig.reset_film_size_cache()
+            # if cache_diff > 5.0:
+                # self._last_cache_reset = Globals.clock.get_frame_time()
+                # self._camera_rig.reset_film_size_cache()
 
     @SettingChanged("max_distance")
     def update_pssm_distance(self):
-        self._rig.set_pssm_distance(self.get_setting("max_distance"))
+        self._camera_rig.set_pssm_distance(self.get_setting("max_distance"))
 
     @SettingChanged("logarithmic_factor")
     def update_log_factor(self):
-        self._rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
+        self._camera_rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
 
     @SettingChanged("border_bias")
     def update_border_bias(self):
-        self._rig.set_border_bias(self.get_setting("border_bias"))
+        self._camera_rig.set_border_bias(self.get_setting("border_bias"))
 
     @SettingChanged("sun_distance")
     def update_sun_distance(self):
-        self._rig.set_sun_distance(self.get_setting("sun_distance"))
+        self._camera_rig.set_sun_distance(self.get_setting("sun_distance"))
 
     def _toggle_update_enabled(self):
         self._update_enabled = not self._update_enabled

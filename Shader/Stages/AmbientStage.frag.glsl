@@ -100,14 +100,14 @@ void main() {
     
         // Pre-Integrated environment BRDF
         vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
-        vec3 specular_nonmetallic = vec3(env_brdf.y + 0.09 * env_brdf.x);
+        vec3 specular_nonmetallic = vec3(env_brdf.y + m.basecolor * env_brdf.x) * m.specular;
         specular_nonmetallic *= m.specular;
 
         // Metallic specular is pretty simple
-        vec3 specular_metallic = env_brdf.y * 0.3 + env_brdf.x * m.basecolor;
+        vec3 specular_metallic = m.basecolor;
 
         // Weight specular metallic and non-metallic terms
-        vec3 specular_ambient = mix(specular_nonmetallic, specular_metallic, m.metallic) * env_default_color;
+        vec3 specular_ambient = mix(specular_nonmetallic, specular_metallic, m.metallic) * env_default_color / M_PI;
 
         // Diffuse ambient term
         vec3 diffuse_ambient = env_amb * m.basecolor * (1-m.metallic) / M_PI;
@@ -132,7 +132,7 @@ void main() {
 
         // Optionally just display the environment texture
         // ambient = textureLod(DefaultEnvmap,  fix_cubemap_coord(-view_vector), 0).xyz;
-
+        // ambient = pow(ambient, vec3(2.2));
     }
 
     #endif
@@ -154,5 +154,4 @@ void main() {
     #endif
 
     result = scene_color * 1 + vec4(ambient, 1) * 1;
-
 }

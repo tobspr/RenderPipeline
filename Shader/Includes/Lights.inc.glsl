@@ -63,20 +63,20 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // Compute the dot product, for translucent materials we also add a bias
     vec3 h = normalize(l + v);
     float NxL = saturate(10.0 * m.translucency + dot(m.normal, l));
-    float NxV = max(0, dot(m.normal, v)) + 1e-5;
+    float NxV = max(1e-5, dot(m.normal, v));
     float NxH = max(0, dot(m.normal, h));
-    float VxH = max(0, dot(v, h));
+    float VxH = max(1e-5, dot(v, h));
     float LxH = max(0, dot(l, h));
 
     // Diffuse contribution
-    vec3 shading_result = brdf_diffuse(NxL, NxV, LxH, m.roughness) * 
-        m.basecolor * (1 - m.metallic);
+    vec3 shading_result = brdf_diffuse(NxV, LxH, m.roughness) * m.basecolor * (1 - m.metallic);
 
     // Specular contribution
+    vec3 specular_color = mix(vec3(1), m.basecolor, m.metallic) * m.specular;
     float distribution = brdf_distribution(NxH, m.roughness);
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
-    vec3 fresnel = brdf_fresnel(vec3(1), VxH, NxV, LxH, m.roughness);
-    shading_result += (distribution * visibility * fresnel) / TWO_PI * m.specular; 
+    vec3 fresnel = brdf_schlick_fresnel(specular_color, m.specular, VxH);
+    shading_result += (distribution * visibility * fresnel) * mix(0.16, 1.0, m.metallic);
 
     // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
@@ -87,5 +87,6 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
         shading_result *= occlusion_factor;
     
     #endif  
-    return (shading_result * light_color) * (attenuation * shadow) * transmittance;
+
+    return (shading_result * light_color) * (attenuation * shadow * NxL) * transmittance;
 }

@@ -15,16 +15,21 @@
 
 
 // Lambert BRDF 
-float brdf_lambert(float NxL) {
-    return NxL / M_PI;
+float brdf_lambert() {
+    return 1.0 / M_PI;
 }
 
-// Proposed by Schlick 94
-vec3 brdf_schlick_fresnel(vec3 f0, float f90, float u)
+// Schlicks approximation to fresnel
+vec3 brdf_schlick_fresnel(vec3 specular, float f90, float VxH)
 {
-    // need to to a max(), produces artifacts otherwise for certain values
-    return f0 + ( f90 - f0 ) * pow( max(0, 1.0 - u), 5.0);
+    return mix(specular, vec3(f90), pow( 1.0 - VxH, 5.0));
 }
+
+vec3 brdf_schlick_fresnel(vec3 specular, float VxH)
+{
+    return brdf_schlick_fresnel(specular, 1.0, VxH);
+}
+
 
 
 // BRDF Proposed by Burley
@@ -43,20 +48,19 @@ float brdf_disney_diffuse(float NxV, float NxL, float LxH, float roughness) {
 
 float brdf_distribution_blinn(float NxH, float roughness) {
     float r_sq = roughness * roughness;
-    float n = 2.0 / r_sq - 2.0;
-    return (n+2.0) / TWO_PI * pow(NxH, n);
+    float inv_r = 1.0 / r_sq;
+    return inv_r / M_PI * pow(NxH, fma(inv_r, 2.0, -2.0) );
 }
 
 float brdf_distribution_beckmann(float NxH, float roughness) {
-    float r_cub = roughness * roughness;
+    float r_sq = roughness * roughness;
     float NxH_sq = NxH * NxH;
-    return exp( (NxH_sq - 1.0) / (r_cub * NxH_sq) ) / (M_PI * r_cub * NxH_sq * NxH_sq );
+    return exp((NxH_sq - 1.0) / (r_sq * NxH_sq)) / (r_sq * NxH_sq * NxH_sq * M_PI);
 }
 
-float brdf_distribution_ggx(float NxH , float roughness)
-{
+float brdf_distribution_ggx(float NxH , float roughness) {
     float r_sq = roughness * roughness;
-    float f = (NxH * r_sq - NxH) * NxH + 1;
+    float f = fma(NxH * r_sq - NxH, NxH, 1.0);
     return r_sq / (f * f);
 }
 
@@ -76,10 +80,10 @@ float brdf_visibility_cook_torrance(float NxL, float NxV, float NxH, float VxH) 
 }
 
 float brdf_visibility_smith_ggx(float NxL, float NxV, float roughness) {
-    float rough_sq = roughness * roughness;
-    float lambda_GGXV = NxL * sqrt((-NxV * rough_sq + NxV ) * NxV + rough_sq);
-    float lambda_GGXL = NxV * sqrt((-NxL * rough_sq + NxV ) * NxL + rough_sq);
-    return ( 0.5 / (lambda_GGXV + lambda_GGXL) ) * NxV * NxL;
+    float r_sq = roughness * roughness;
+    float lambda_GGXV = NxL * sqrt((-NxV * r_sq + NxV ) * NxV + r_sq);
+    float lambda_GGXL = NxV * sqrt((-NxL * r_sq + NxV ) * NxL + r_sq);
+    return 0.5 / (lambda_GGXV + lambda_GGXL) * NxV * NxL;
 }
 
 
@@ -103,10 +107,10 @@ vec3 brdf_fresnel_cook_torrance(vec3 specular, float VxH) {
 
 
 // Diffuse BRDF
-float brdf_diffuse(float NxL, float NxV, float LxH, float roughness) {
+float brdf_diffuse(float NxV, float LxH, float roughness) {
    
     // Choose one:
-    return brdf_lambert(NxL);
+    return brdf_lambert();
     // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
 }
 
@@ -125,22 +129,9 @@ float brdf_distribution(float NxH, float roughness)
 float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughness) {
     
     // Choose one:
-    // return brdf_visibility_neumann(NxV, NxL);
+    return brdf_visibility_neumann(NxV, NxL);
     // return brdf_visibility_schlick(NxV, NxL, roughness);
     // return brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
     return brdf_visibility_smith_ggx(NxL, NxV, roughness);
 }
-
-
-// Fresnel
-vec3 brdf_fresnel(vec3 specular, float VxH, float NxV, float LxH, float roughness) {
-    float f90 = 0.5 + LxH * LxH * roughness;
-
-    // Choose one:
-
-    // Simple fresnel
-    return specular * (0.5 + 0.5 * pow(NxV, 5.0));
-    // return brdf_fresnel_cook_torrance(specular, NxV);
-}
-
 

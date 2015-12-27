@@ -1,164 +1,169 @@
 
 #include "PSSMCameraRig.h"
 
-#include <cmath>
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include "orthographicLens.h"
 
 
+PStatCollector PSSMCameraRig::_update_collector("App:Show code:RP_PSSM_update");
+
+/**
+ * @brief Constructs a new PSSM camera rig
+ * @details This constructs a new camera rig, with a given amount of splits.
+ *   The splits can not be changed later on. Splits are also called Cascades.
+ *   
+ *   An assertion will be triggered if the splits are below zero.
+ * 
+ * @param num_splits Amount of PSSM splits
+ */
 PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
     nassertv(num_splits > 0);
+    _num_splits = num_splits;
     _pssm_distance = 100.0;
     _sun_distance = 500.0;
     _use_fixed_film_size = false;
-    _find_tight_frustum = true;
     _use_stable_csm = true;
     _logarithmic_factor = 1.0;
     _resolution = 512;
     _border_bias = 0.1;
     _camera_mvps = PTA_LMatrix4f::empty_array(num_splits);
     _camera_nearfar = PTA_LVecBase2f::empty_array(num_splits);
-    init_cam_nodes(num_splits);
+    init_cam_nodes();
 }
 
+/**
+ * @brief Destructs the camera rig
+ * @details This destructs the camera rig, cleaning up all used resources.
+ */
 PSSMCameraRig::~PSSMCameraRig() {
+    // TODO: Detach all cameras and call remove_node. Most likely this is not
+    // an issue tho, because the camera rig will never get destructed.
 }
 
-void PSSMCameraRig::set_pssm_distance(float distance) {
-    nassertv(distance > 1.0 && distance < 100000.0);
-    _pssm_distance = distance;
-}
-
-
-void PSSMCameraRig::set_sun_distance(float distance) {
-    nassertv(distance > 1.0 && distance < 100000.0);
-    _sun_distance = distance;
-}
-
-void PSSMCameraRig::set_logarithmic_factor(float factor) {
-    nassertv(factor > 0.0);
-    _logarithmic_factor = factor;
-}
-
-void PSSMCameraRig::set_use_fixed_film_size(bool flag) {
-    _use_fixed_film_size = flag;
-}
-
-void PSSMCameraRig::set_use_tight_frustum(bool flag) {
-    _find_tight_frustum = flag;
-}
-
-void PSSMCameraRig::set_resolution(int resolution) {
-    _resolution = resolution;
-}
-
-void PSSMCameraRig::set_use_stable_csm(bool flag) {
-    _use_stable_csm = flag;
-}
-
-void PSSMCameraRig::set_border_bias(float bias) {
-    _border_bias = bias;
-}
-
-void PSSMCameraRig::reset_film_size_cache() {
-    for (size_t i = 0; i < _max_film_sizes.size(); ++i) {
-        _max_film_sizes[i].set(0, 0);
-    }
-}
-
-void PSSMCameraRig::init_cam_nodes(size_t num_splits) {
-    _cam_nodes.reserve(num_splits);
-    _max_film_sizes.resize(num_splits);
-    for (size_t i = 0; i < num_splits; ++i)
+/**
+ * @brief Internal method to init the cameras
+ * @details This method constructs all cameras and their required lens nodes
+ *   for all splits. It also resets the film size array.
+ */
+void PSSMCameraRig::init_cam_nodes() {
+    _cam_nodes.reserve(_num_splits);
+    _max_film_sizes.resize(_num_splits);
+    _cameras.resize(_num_splits);
+    for (size_t i = 0; i < _num_splits; ++i)
     {
+        // Construct a new lens
         Lens *lens = new OrthographicLens();
         lens->set_film_size(1, 1);
         lens->set_near_far(1, 1000);
-        PT(Camera) cam = new Camera("pssm-cam-" + to_string( ((long long)i) ), lens);
-        _cam_nodes.push_back(NodePath(cam));
+
+        // Construct a new camera
+        _cameras[i] = new Camera("pssm-cam-" + to_string(((long long)i)), lens);
+        _cam_nodes.push_back(NodePath(_cameras[i]));
         _max_film_sizes[i].set(0, 0);
     }
 }
 
-NodePath PSSMCameraRig::get_camera(int index) {
-    nassertr(index >= 0 && index < _cam_nodes.size(), NodePath());
-    return _cam_nodes[index];
-}
-
-void PSSMCameraRig::reparent_to(NodePath &parent) {
-    nassertv(_cam_nodes.size() > 0);
-    for (size_t i = 0; i < _cam_nodes.size(); ++i) {
+/**
+ * @brief Reparents the camera rig
+ * @details This reparents all cameras to the given parent. Usually the parent
+ *   will be ShowBase.render. The parent should be the same node where the
+ *   main camera is located in, too.
+ *   
+ *   If an empty parrent is passed, an assertion will get triggered.
+ * 
+ * @param parent Parent node path
+ */
+void PSSMCameraRig::reparent_to(NodePath parent) {
+    nassertv(!parent.is_empty());
+    for (size_t i = 0; i < _num_splits; ++i) {
         _cam_nodes[i].reparent_to(parent);
     }
     _parent = parent;
 }
 
-
-LMatrix4f PSSMCameraRig::compute_mvp(int cam_index) {
-    Camera* cam = DCAST(Camera, _cam_nodes[cam_index].node());
-    LMatrix4f transform = _parent.get_transform(_cam_nodes[cam_index])->get_mat();
-    return transform * cam->get_lens()->get_projection_mat();
+/**
+ * @brief Internal method to compute the view-projection matrix of a camera
+ * @details This returns the view-projection matrix of the given split. No bounds
+ *   checking is done. If an invalid index is passed, undefined behaviour occurs.  
+ * 
+ * @param split_index Index of the split
+ * @return view-projection matrix of the split
+ */
+LMatrix4f PSSMCameraRig::compute_mvp(size_t split_index) {
+    LMatrix4f transform = _parent.get_transform(_cam_nodes[split_index])->get_mat();
+    return transform * _cameras[split_index]->get_lens()->get_projection_mat();
 }
 
+/**
+ * @brief Internal method used for stable CSM
+ * @details This method is used when stable CSM is enabled. It ensures that each
+ *   source only moves in texel-steps, thus preventing flickering. This works by
+ *   projecting the point (0, 0, 0) to NDC space, making sure that it gets projected
+ *   to a texel center, and then projecting that texel back.
+ *   
+ *   This only works if the camera does not rotate, change its film size, or change
+ *   its angle.
+ * 
+ * @param mat view-projection matrix of the camera
+ * @param resolution resolution of the split
+ * 
+ * @return Offset to add to the camera position to achieve stable snapping
+ */
+LVecBase3f PSSMCameraRig::get_snap_offset(const LMatrix4f& mat, size_t resolution) {
+    // Transform origin to camera space
+    LPoint4f base_point = mat.get_row(3) * 0.5 + 0.5;
 
-float PSSMCameraRig::get_split_start(size_t split_index) {
-    float x = (float)split_index / (float)_cam_nodes.size();
-    return (exp(_logarithmic_factor*x)-1) / (exp(_logarithmic_factor)-1);
-}
-
-
-LPoint3f PSSMCameraRig::get_interpolated_point(CoordinateOrigin origin, float depth) {
-    nassertr(depth >= 0.0 && depth <= 1.0, LPoint3f());  
-    return _curr_near_points[origin] * (1.0 - depth) + _curr_far_points[origin] * depth;   
-}
-
-const PTA_LMatrix4f &PSSMCameraRig::get_mvp_array() {
-    return _camera_mvps;
-}
-
-const PTA_LVecBase2f &PSSMCameraRig::get_nearfar_array() {
-    return _camera_nearfar;
-}
-
-
-LPoint3f PSSMCameraRig::get_snap_offset(const LMatrix4f& mat, int resolution) {
-
-    // LPoint4f base_point = mat.get_row(3);
-    LPoint4f base_point = mat.xform(LPoint4f(0, 0, 0, 1));
-    base_point *= 0.5; base_point += 0.5;
-
+    // Compute the snap offset
     float texel_size = 1.0 / (float)(resolution);
-
-    float offset_x =  fmod(base_point.get_x(), texel_size);
-    float offset_y =  fmod(base_point.get_y(), texel_size);
+    float offset_x = fmod(base_point.get_x(), texel_size);
+    float offset_y = fmod(base_point.get_y(), texel_size);
 
     // Reproject the offset back, for that we need the inverse MVP
     LMatrix4f inv_mat(mat);
     inv_mat.invert_in_place();
-    LPoint4f new_base_point = inv_mat.xform(LPoint4f(
+    LVecBase3f new_base_point = inv_mat.xform_point(LVecBase3f(
             (base_point.get_x() - offset_x) * 2.0 - 1.0,
             (base_point.get_y() - offset_y) * 2.0 - 1.0,
-            base_point.get_z() * 2.0 - 1.0, 1));
-
-    return LPoint3f(
-        -new_base_point.get_x(),
-        -new_base_point.get_y(),
-        -new_base_point.get_z());
+            base_point.get_z() * 2.0 - 1.0
+        ));
+    return -new_base_point;
 }
 
-
-LPoint3f get_average_of_points(LVecBase3f const (&starts)[4], LVecBase3f const ( &ends)[4]) {
+/**
+ * @brief Computes the average of a list of points
+ * @details This computes the average over a given set of points in 3D space.
+ *   It returns the average of those points, namely sum_of_points / num_points.
+ * 
+ *   It is designed to work with a frustum, which is why it takes two arrays
+ *   with a dimension of 4. Usually the first array are the camera near points,
+ *   and the second array are the camera far points.
+ * 
+ * @param starts First array of points
+ * @param ends Second array of points
+ * @return Average of points
+ */
+LPoint3f get_average_of_points(LVecBase3f const (&starts)[4], LVecBase3f const (&ends)[4]) {
     LPoint3f mid_point(0, 0, 0);
-
-    // Sum all points and get the average
     for (size_t k = 0; k < 4; ++k) {
         mid_point += starts[k];
         mid_point += ends[k];
     }
-
     return mid_point / 8.0;
 }
 
-
+/**
+ * @brief Finds the minimum and maximum extends of the given projection
+ * @details This projects each point of the given array of points using the
+ *   cameras view-projection matrix, and computes the minimum and maximum
+ *   of the projected points.
+ * 
+ * @param min_extent Will store the minimum extent of the projected points in NDC space
+ * @param max_extent Will store the maximum extent of the projected points in NDC space
+ * @param transform The transformation matrix of the camera
+ * @param proj_points The array of points to project
+ * @param cam The camera to be used to project the points
+ */
 void find_min_max_extents(LVecBase3f &min_extent, LVecBase3f &max_extent, const LMatrix4f &transform, LVecBase3f const (&proj_points)[8], Camera *cam) {
 
     min_extent.set(1e10, 1e10, 1e10);
@@ -186,7 +191,17 @@ void find_min_max_extents(LVecBase3f &min_extent, LVecBase3f &max_extent, const 
     }
 }
 
-void get_film_properties(LVecBase2f &film_size, LVecBase2f &film_offset, const LVecBase3f &min_extent, const LVecBase3f &max_extent) {
+/**
+ * @brief Computes a film size from a given minimum and maximum extend
+ * @details This takes a minimum and maximum extent in NDC space and computes
+ *   the film size and film offset needed to cover that extent.
+ * 
+ * @param film_size Output film size, can be used for Lens::set_film_size
+ * @param film_offset Output film offset, can be used for Lens::set_film_offset
+ * @param min_extent Minimum extent
+ * @param max_extent Maximum extent
+ */
+inline void get_film_properties(LVecBase2f &film_size, LVecBase2f &film_offset, const LVecBase3f &min_extent, const LVecBase3f &max_extent) {
     float x_center = (min_extent.get_x() + max_extent.get_x()) * 0.5;
     float y_center = (min_extent.get_y() + max_extent.get_y()) * 0.5;
     float x_size = max_extent.get_x() - x_center;
@@ -195,7 +210,14 @@ void get_film_properties(LVecBase2f &film_size, LVecBase2f &film_offset, const L
     film_offset.set(x_center * 0.5, y_center * 0.5);
 }
 
-void merge_points_interleaved(LVecBase3f (&dest)[8], LVecBase3f const (&array1)[4], LVecBase3f const (&array2)[4]) {
+/**
+ * @brief Merges two arrays
+ * @details This takes two arrays which each 4 members and produces an array
+ *   with both arrays contained.
+ * 
+ * @param dest Destination array
+ */
+inline void merge_points_interleaved(LVecBase3f (&dest)[8], LVecBase3f const (&array1)[4], LVecBase3f const (&array2)[4]) {
     for (size_t k = 0; k < 4; ++k) {
         dest[k] = array1[k];
         dest[k+4] = array2[k];
@@ -203,13 +225,16 @@ void merge_points_interleaved(LVecBase3f (&dest)[8], LVecBase3f const (&array1)[
 }
 
 
-LVecBase3f get_angle_vector(float progress) {
-    LVecBase3f result(0, 1.0 - progress, progress);
-    // LVecBase3f result(1 - progress, 0, progress);
-	result.normalize();
-    return result;
-}
-
+/**
+ * @brief Internal method to compute the splits
+ * @details This is the internal update method to update the PSSM splits.
+ *   It distributes the camera splits over the frustum, and updates the
+ *   MVP array aswell as the nearfar array.
+ * 
+ * @param transform Main camera transform
+ * @param max_distance Maximum pssm distance, relative to the camera far plane
+ * @param light_vector Sun-Vector
+ */
 void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_distance, const LVecBase3f& light_vector) {
     nassertv(!_parent.is_empty());
 
@@ -232,7 +257,7 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
             end_points[k] = get_interpolated_point((CoordinateOrigin)k, split_end);
         }
 
-        // Compute approximate split mid point: 
+        // Compute approximate split mid point
         LPoint3f split_mid = get_average_of_points(start_points, end_points);
         LPoint3f cam_start = split_mid + light_vector * _sun_distance; 
 
@@ -251,54 +276,11 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         merge_points_interleaved(proj_points, start_points, end_points);
         LVecBase3f best_min_extent, best_max_extent;
 
-        // Disable angle-finding in case we don't use a tight frustun
-        if (_find_tight_frustum) {
+        // Find minimum and maximum extents of the points
+        LMatrix4f merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
+        find_min_max_extents(best_min_extent, best_max_extent, merged_transform, proj_points, cam);
 
-            // Try out all angles
-            const int num_iterations = 90;
-            float best_angle = 0.0;
-            float best_angle_score = 1e20;
-            float normal_angle_score = 0;
-
-            for (float progress = 0.0; progress < 1.0; progress += 1.0 / (float)num_iterations) {
-
-                // Apply the angle to the camera rotation
-                _cam_nodes[i].look_at(split_mid, get_angle_vector(progress * 0.5));
-
-                // Find minimum and maximum extents of the points
-                LVecBase3f min_extent, max_extent;
-                LMatrix4f merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
-                find_min_max_extents(min_extent, max_extent, merged_transform, proj_points, cam);
-
-                // Get the minimum film size required to cover all points
-                LVecBase2f film_size, film_offset;
-                get_film_properties(film_size, film_offset, min_extent, max_extent);
-
-                // The "score" is the area of the film, smaller values are better,
-                // since we render less objects then
-                float score = film_size.get_x() * film_size.get_y();
-
-                // cout << "\tAngle " << progress << " has a score of " << score << " with a vec of " << get_angle_vector(progress) << endl;
-
-                if (score < best_angle_score) {
-                    best_angle = progress;
-                    best_angle_score = score;
-                    best_min_extent = min_extent;
-                    best_max_extent = max_extent;
-                }
-
-                if (progress == 0.0) {
-                    normal_angle_score = score;
-                }
-            }
-            _cam_nodes[i].look_at(split_mid, get_angle_vector(best_angle));
-
-        } else {
-            // Find minimum and maximum extents of the points
-            LMatrix4f merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
-            find_min_max_extents(best_min_extent, best_max_extent, merged_transform, proj_points, cam);
-        }
-
+        // Find the film size to cover all points
         LVecBase2f film_size, film_offset;
         get_film_properties(film_size, film_offset, best_min_extent, best_max_extent);
 
@@ -309,10 +291,9 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
             if (_max_film_sizes[i].get_y() < film_size.get_y()) _max_film_sizes[i].set_y(film_size.get_y());
 
             cam->get_lens()->set_film_size(_max_film_sizes[i] * filmsize_bias);
-
         } else {
-            
-            // Set actual film size
+            // If we don't use a fixed film size, we can just set the film size
+            // on the lens.
             cam->get_lens()->set_film_size(film_size * filmsize_bias);
         }
 
@@ -338,14 +319,22 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
 }
 
 
-void PSSMCameraRig::fit_to_camera(NodePath &cam_node, const LVecBase3f &light_vector) {
+/**
+ * @brief Updates the PSSM camera rig
+ * @details This updates the rig with an updated camera position, and a given
+ *   light vector. This should be called on a per-frame basis. It will reposition
+ *   all camera sources to fit the frustum based on the pssm distribution.
+ *   
+ *   The light vector should be the vector from the light source, not the
+ *   vector to the light source.
+ * 
+ * @param cam_node Target camera node
+ * @param light_vector The vector from the light to any point
+ */
+void PSSMCameraRig::update(NodePath cam_node, const LVecBase3f &light_vector) {
     nassertv(!cam_node.is_empty());
 
-    // Check if a configuration error occured
-    if (_use_fixed_film_size && _find_tight_frustum) {
-        // If we use a fixed film size, we cannot use a tight frustum
-        cout << "Warning: If you use a fixed film size, you cannot use the tight frustum option" << endl;
-    }
+    _update_collector.start();
 
     // Get camera node transform
     const LMatrix4f &transform = cam_node.get_transform()->get_mat();
@@ -385,5 +374,7 @@ void PSSMCameraRig::fit_to_camera(NodePath &cam_node, const LVecBase3f &light_ve
 
     // Do the actual PSSM
     compute_pssm_splits( transform, _pssm_distance / lens->get_far(), light_vector );
+
+    _update_collector.stop();
 }
 
