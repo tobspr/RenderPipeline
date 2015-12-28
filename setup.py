@@ -124,7 +124,7 @@ def check_repo_complete():
 
 def ask_download_samples():
     """ Asks the user if he wants to download the samples """
-    query = "\nDo you want to download the Render Pipeline samples? (y/n): "
+    query = "\nDo you want to download the Render Pipeline samples? (y/n):"
     
     if get_user_choice(query):
         print_step("Downloading samples ...")
@@ -133,7 +133,7 @@ def ask_download_samples():
 def get_user_choice(query):
     """ Asks the user a boolean question """
     print("\n")
-    query = color(query, Fore.GREEN + Style.BRIGHT)
+    query = color(query, Fore.GREEN + Style.BRIGHT) + " "
 
     while True:
         if sys.version_info.major > 2:
@@ -174,7 +174,7 @@ if __name__ == "__main__":
                  "results, but we will have to compile them. As alternative, "
                  "a Python fallback is used, which is slower and produces worse "
                  "results. Also not all plugins work with the python fallback "
-                 "(e.g. PSSM). Do you want to use the C++ modules? (y/n): ")
+                 "(e.g. PSSM). Do you want to use the C++ modules? (y/n):")
 
         if get_user_choice(query):
             write_flag("Code/Native/use_cxx.flag", True)
