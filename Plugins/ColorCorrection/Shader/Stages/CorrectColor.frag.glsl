@@ -54,6 +54,12 @@ void main() {
             vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
         #endif
 
+        // Downscale the color in case we don't use automatic exposure, to simulate
+        // the dynamic range.
+        #if !GET_SETTING(ColorCorrection, use_auto_exposure)
+            scene_color *= 0.1;
+        #endif
+
         // Apply tonemapping
         scene_color = do_tonemapping(scene_color);
 
