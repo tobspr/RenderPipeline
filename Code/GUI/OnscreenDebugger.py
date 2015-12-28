@@ -3,7 +3,7 @@ from __future__ import division
 
 from functools import partial
 
-from panda3d.core import Vec3, Vec2, RenderState, TransformState
+from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
 from direct.gui.DirectFrame import DirectFrame
 from direct.interval.IntervalGlobal import Parallel, Sequence
 
@@ -20,6 +20,8 @@ from .ExposureWidget import ExposureWidget
 from ..Util.DebugObject import DebugObject
 from ..Globals import Globals
 from ..BaseManager import BaseManager
+
+from ..Native import NATIVE_CXX_LOADED
 
 class OnscreenDebugger(BaseManager):
 
@@ -104,6 +106,18 @@ class OnscreenDebugger(BaseManager):
             parent=Globals.base.pixel2d)
         self.set_reload_hint_visible(False)
 
+        if not NATIVE_CXX_LOADED:
+            # Warning when using the python version
+            python_warning = BetterOnscreenImage(
+                image="Data/GUI/OnscreenDebugger/PythonWarning.png",
+                x=(Globals.base.win.get_x_size() - 1054) // 2,
+                y=Globals.base.win.get_y_size() - 118 - 40, parent=self._fullscreen_node)
+
+            Sequence(
+                python_warning.color_scale_interval(1.0, Vec4(1, 1, 1, 0.8), Vec4(1, 1, 1, 1), blendType="easeInOut"),
+                python_warning.color_scale_interval(1.0, Vec4(1, 1, 1, 1.0), Vec4(1, 1, 1, 0.8), blendType="easeInOut"),
+            ).loop()
+
         # Keybinding hints
         self._keybinding_instructions = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30, y=Globals.base.win.get_y_size() - 510,
@@ -138,7 +152,6 @@ class OnscreenDebugger(BaseManager):
             image="Data/GUI/OnscreenDebugger/DebuggerBackground.png", x=0, y=0,
             parent=self._debugger_node, any_filter=False
         )
-
         self._create_debugger_content()
 
     def set_reload_hint_visible(self, flag):

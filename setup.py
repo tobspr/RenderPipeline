@@ -134,15 +134,20 @@ def get_user_choice(query):
     """ Asks the user a boolean question """
     print("\n")
     query = color(query, Fore.GREEN + Style.BRIGHT)
-    if sys.version_info.major > 2:
-        user_choice = str(input(query)).strip().lower()
-    else:
-        user_choice = str(raw_input(query)).strip().lower()
-        
-    if user_choice in ["y", "yes", "1"]:
-        return True
 
-    return False
+    while True:
+        if sys.version_info.major > 2:
+            user_choice = str(input(query)).strip().lower()
+        else:
+            user_choice = str(raw_input(query)).strip().lower()
+            
+        if user_choice in ["y", "yes", "1"]:
+            return True
+
+        if user_choice in ["n", "no", "0"]:
+            return False
+
+        print(color("Invalid input: '" + user_choice + "'", Fore.RED + Style.BRIGHT))
 
 def write_flag(flag_location, flag_value):
     """ Writes a binary flag """

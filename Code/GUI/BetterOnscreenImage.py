@@ -72,6 +72,11 @@ class BetterOnscreenImage(DebugObject):
         NodePath.hprInterval """
         return self._node.hprInterval(*args, **kwargs)
 
+    def color_scale_interval(self, *args, **kwargs):
+        """ Returns a color scale interval, this is a wrapper around
+        NodePath.colorScaleInterval """
+        return self._node.colorScaleInterval(*args, **kwargs)
+
     def set_image(self, img):
         """ Sets the current image """
         self._node.set_image(img)
