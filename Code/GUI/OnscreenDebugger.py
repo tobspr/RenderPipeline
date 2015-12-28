@@ -170,29 +170,36 @@ class OnscreenDebugger(BaseManager):
         heading_color = Vec3(0.7, 0.7, 0.24) * 1.2
 
         render_modes = [
-            ("Default", ""),
-            ("Diffuse", "DIFFUSE"),
-            ("Roughness", "ROUGHNESS"),
-            ("Specular", "SPECULAR"),
-            ("Normal", "NORMAL"),
-            ("Metallic", "METALLIC"),
-            ("Translucency", "TRANSLUCENCY"),
-            ("PSSM Splits", "PSSM_SPLITS"),
-            ("Ambient Occlusion", "OCCLUSION")
+            ("Default", "",                     False, ""),
+            ("Diffuse", "DIFFUSE",              False, ""),
+            ("Roughness", "ROUGHNESS",          False, ""),
+            ("Specular", "SPECULAR",            False, ""),
+            ("Normal", "NORMAL",                False, ""),
+            ("Metallic", "METALLIC",            False, ""),
+            ("Translucency", "TRANSLUCENCY",    False, ""),
+            ("PSSM Splits", "PSSM_SPLITS",      True , "PSSM"),
+            ("Ambient Occlusion", "OCCLUSION",  False, "AO")
         ]
 
         row_width = 200
         collection = CheckboxCollection()
 
-        for idx, (mode, mode_id) in enumerate(render_modes):
+        for idx, (mode, mode_id, requires_cxx, requires_plugin) in enumerate(render_modes):
             offs_y = idx * 24 + 45
             offs_x = 0
-            # offs_x = (idx % 2) * row_width
+            enabled = True
+            if requires_cxx and not NATIVE_CXX_LOADED:
+                enabled = False
+
+            if requires_plugin:
+                if not self._pipeline.get_plugin_mgr().get_interface().is_plugin_enabled(requires_plugin):
+                    enabled = False
+
             box = BetterLabeledCheckbox(
                 parent=debugger_content, x=offs_x, y=offs_y, text=mode.upper(),
                 text_color=Vec3(0.4), radio=True, chb_checked=(mode == "Default"),
                 chb_callback=partial(self._set_render_mode, mode_id),
-                text_size=14, expand_width=230)
+                text_size=14, expand_width=230, enabled=enabled)
             collection.add(box.get_checkbox())
 
     def _set_render_mode(self, mode_id, value):

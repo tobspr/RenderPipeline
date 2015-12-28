@@ -2,7 +2,7 @@
 import sys
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem
+from panda3d.core import PandaSystem, load_prc_file_data
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 

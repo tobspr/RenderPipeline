@@ -33,6 +33,7 @@ class StageManager(BaseManager):
         "AmbientStage",
         "SSLRStage",
         "SMAAStage",
+        "AutoExposureStage",
         "BloomStage",
         "FinalStage",
         "ColorCorrectionStage",

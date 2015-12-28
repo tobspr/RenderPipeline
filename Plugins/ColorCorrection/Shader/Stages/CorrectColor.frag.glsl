@@ -12,7 +12,6 @@
 
 in vec2 texcoord;
 uniform sampler2D ShadedScene;
-uniform samplerBuffer ExposureTex;
 uniform sampler3D ColorLUT;
 
 out vec4 result;
@@ -48,18 +47,11 @@ void main() {
         float cos_angle = dot(cam_dir, material_dir);
         float vignette = pow(cos_angle, 4.0);
 
-
         // Chromatic abberation
         #if GET_SETTING(ColorCorrection, use_chromatic_aberration)
             vec3 scene_color = do_chromatic_aberration(ShadedScene, texcoord, 1-vignette);
         #else
             vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
-        #endif
-
-        // Automatic exposure
-        #if GET_SETTING(ColorCorrection, use_auto_exposure)
-            float avg_brightness = texelFetch(ExposureTex, 0).x;
-            scene_color *= avg_brightness;
         #endif
 
         // Apply tonemapping
@@ -79,7 +71,6 @@ void main() {
 
         // Apply the vignette based on the vignette strength
         scene_color *= mix(1.0, vignette, GET_SETTING(ColorCorrection, vignette_strength));
-    
 
     #else
         vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;

@@ -107,7 +107,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     float phaseM = phaseFunctionM(nuStartPos);
     inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
 
-    inscatteredLight *= 20.0;
+    inscatteredLight *= 40.0;
 
     inscatteredLight *= saturate( (sun_vector.z+0.1) * 40.0);
 

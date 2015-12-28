@@ -13,14 +13,20 @@ class BetterCheckbox(DebugObject):
     and better visuals """
 
     def __init__(self, parent=None, x=0, y=0, callback=None, extra_args=None,
-                 radio=False, expand_width=100, checked=False):
+                 radio=False, expand_width=100, checked=False, enabled=True):
         DebugObject.__init__(self)
 
         prefix = "Checkbox" if not radio else "Radiobox"
-        checked_img = Globals.loader.loadTexture(
-            "Data/GUI/OnscreenDebugger/" + prefix + "Checked.png")
-        unchecked_img = Globals.loader.loadTexture(
-            "Data/GUI/OnscreenDebugger/" + prefix + "Default.png")
+
+        if enabled:
+            checked_img = Globals.loader.loadTexture(
+                "Data/GUI/OnscreenDebugger/" + prefix + "Checked.png")
+            unchecked_img = Globals.loader.loadTexture(
+                "Data/GUI/OnscreenDebugger/" + prefix + "Default.png")
+        else:
+            checked_img = Globals.loader.loadTexture(
+                "Data/GUI/OnscreenDebugger/" + prefix + "Disabled.png")
+            unchecked_img = checked_img
 
         # Set near filter, otherwise textures look like crap
         for tex in [checked_img, unchecked_img]:
