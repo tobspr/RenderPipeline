@@ -22,7 +22,12 @@ float brdf_lambert() {
 // Schlicks approximation to fresnel
 vec3 brdf_schlick_fresnel(vec3 specular, float f90, float VxH)
 {
-    return mix(specular, vec3(f90), pow( 1.0 - VxH, 5.0));
+    // Fast pow, proposed in
+    // http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+    return mix(specular, vec3(f90), pow(2, (-5.55473*VxH-6.98316)*VxH));
+    
+    // Regular pow
+    // return mix(specular, vec3(f90), pow( 1.0 - VxH, 5.0));
 }
 
 vec3 brdf_schlick_fresnel(vec3 specular, float VxH)
