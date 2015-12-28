@@ -64,3 +64,6 @@ def update(self):
             self._lights[k].write_to_command(cmd_update)
             self._lights[k].unset_dirty_flag()
             self._cmd_list.add_command(cmd_update)
+
+def set_shadow_manager(self, shadow_manager):
+    pass

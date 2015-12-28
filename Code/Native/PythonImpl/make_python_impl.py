@@ -146,13 +146,28 @@ def process_header(header, templates):
 
     # Each .h file should exactly define 1 class, if not, most likely something 
     # went wrong
-    if len(parsed.classes) != 1:
-        # print("Invalid amount of classes:",header," (Found", len(parsed.classes), "-> expected 1)")
+    # if len(parsed.classes) != 1:
+    #     for cls in parsed.classes_order:
+    #         print(cls["name"])
+    #     print("Invalid amount of classes:",header," (Found", len(parsed.classes), "-> expected 1)")
+    #     return
+
+    if len(parsed.classes) < 1:
+        print("Could not find a class in", header)
         return
 
-    current_cls = parsed.classes_order[0]
+    expected_classname = os.path.splitext(os.path.basename(header))[0]
+
+    if expected_classname not in parsed.classes:
+        print("Could not find expected class", expected_classname, "in", header)
+        return
+
+    current_cls = parsed.classes[expected_classname]
+
+    # current_cls = parsed.classes_order[0]
 
     if current_cls["name"] in PROCESSED_HEADERS:
+        print("Skipping already processed class:", current_cls["name"])
         return
 
     print("Processing class", current_cls["name"])

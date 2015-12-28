@@ -48,13 +48,17 @@ def get_vertical_candela_value(self, horizontal_angle_idx, vertical_angle):
     return 0.0
 
 
-def generate_dataset_texture_into(self, dest_tex, z, resolution_vertical, resolution_horizontal):
+def generate_dataset_texture_into(self, dest_tex, z):
+
+    resolution_vertical = dest_tex.get_y_size()
+    resolution_horizontal = dest_tex.get_x_size()
 
     dest = PNMImage(resolution_vertical, resolution_horizontal, 1, 65535)
 
     for vert in range(resolution_vertical):
         for horiz in range(resolution_horizontal):
-            vert_angle = vert / (resolution_vertical-1.0) * 180.0
+            vert_angle = vert / (resolution_vertical-1.0)
+            vert_angle = math.cos(vert_angle * math.pi) * 90.0 + 90.0            
             horiz_angle = horiz / (resolution_horizontal-1.0) * 360.0
             candela = self.get_candela_value(vert_angle, horiz_angle)
             dest.set_xel(vert, horiz, candela)

@@ -24,7 +24,7 @@ def apply_shadow_state(self, np, shader, name, sort):
     self._tag_states[name] = state
 
     # Save the tag on the node path
-    np.set_tag(self.get_shadow_tag(), name)
+    np.set_tag("Shadows", name)
 
     for cam in self._shadow_cameras:
         cam.set_tag_state(name, state)
@@ -35,16 +35,9 @@ def cleanup_states(self):
         cam.clear_tag_states()
 
 def register_shadow_camera(source):
-    source.set_tag_state_key(self.get_shadow_tag())
+    source.set_tag_state_key("Shadows")
     source.set_camera_mask(self.get_shadow_mask())
     self._shadow_cameras.add(source)
 
 def unregister_shadow_camera(source):
     self._shadow_cameras.remove(source)
-
-def get_shadow_tag(self):
-    return "Shadows"
-
-def get_voxelize_tag(self):
-    return "Voxelize"
-
