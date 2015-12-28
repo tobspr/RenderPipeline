@@ -18,7 +18,7 @@ class CullLightsStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CullLightsStage", pipeline)
         self._tile_amount = None
-        self._max_lights_per_cell = 32
+        self._max_lights_per_cell = 64
         self._slice_width = pipeline.get_setting("lighting.culling_slice_width")
 
     def set_tile_amount(self, tile_amount):

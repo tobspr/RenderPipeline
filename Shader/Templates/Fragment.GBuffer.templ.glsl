@@ -50,7 +50,7 @@ void main() {
         // Perform normal mapping if enabled
         vec3 sampled_normal = texture(p3d_Texture1, vOutput.texcoord).xyz;
         vec3 detail_normal = unpack_texture_normal(sampled_normal);
-        vec3 merged_normal = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor * 0);
+        vec3 merged_normal = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor);
     #else
         // Otherwise just use the per-vertex normal
         vec3 merged_normal = vOutput.normal;

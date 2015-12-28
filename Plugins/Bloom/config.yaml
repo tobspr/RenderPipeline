@@ -19,8 +19,8 @@ settings: !!omap
 
     - minimum_luminance:
         type: float
-        range: [0.5, 50.0]
-        default: 7.0
+        range: [0.01, 15.0]
+        default: 4.0
         shader_runtime: true
         label: Minimum Luminance
         description: >
@@ -29,7 +29,7 @@ settings: !!omap
 
     - bloom_strength:
         type: float
-        range: [0.2, 10.0]
+        range: [0.01, 10.0]
         default: 4.0
         shader_runtime: true
         label: Bloom Strength
@@ -37,5 +37,14 @@ settings: !!omap
             Strength of the bloom, higher values will cause more bloom. Make sure
             to not overuse this.
 
+    - remove_fireflies:
+        type: bool
+        default: true
+        shader_runtime: true
+        label: Remove fireflies
+        description: >
+            Attempts to reduce flickering by darkening very small bright spots.
+            This uses the Karis average to reduce often called "fireflies", which are very
+            bright pixels, by weighting them by their brightness.
 
 daytime_settings: 

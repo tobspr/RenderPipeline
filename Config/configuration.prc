@@ -1,10 +1,4 @@
 
-# ---------------  Window settings  --------------
-
-fullscreen #f
-win-size 1920 1080
-window-title Render Pipeline by tobspr 
-icon-filename Data/GUI/icon.ico
 
 # --------------  Debugging options  --------------
 
@@ -164,4 +158,4 @@ color-bits 0
 
 framebuffer-depth #f
 
-gl-fixed-vertex-attrib-locations #t
+#gl-fixed-vertex-attrib-locations #t

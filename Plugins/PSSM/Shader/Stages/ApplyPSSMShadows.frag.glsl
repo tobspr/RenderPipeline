@@ -50,7 +50,7 @@ void main() {
             TimeOfDay.Scattering.sun_azimuth,
             TimeOfDay.Scattering.sun_altitude);
         vec3 sun_color = TimeOfDay.Scattering.sun_color * 
-            TimeOfDay.Scattering.sun_intensity * 90.0;
+            TimeOfDay.Scattering.sun_intensity * 15.0;
     #else
         vec3 sun_vector = normalize(pssm_sun_vector);
         vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;

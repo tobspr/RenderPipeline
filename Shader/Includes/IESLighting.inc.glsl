@@ -5,7 +5,7 @@
 uniform sampler3D IESDatasetTex;
 
 // Scale all ies values, since they look way too dark otherwise.
-const float IES_SCALE = 10.0;
+const float IES_SCALE = 1.0;
 
 // Computes the IES factor from a given light vector and profile.
 // A profile < 0 means no light profile.

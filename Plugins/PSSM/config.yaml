@@ -108,7 +108,7 @@ settings: !!omap
     - filter_radius:
         type: float
         range: [0.1, 10.0]
-        default: 25
+        default: 5.0
         shader_runtime: true
         label: Filtering radius
         description: >

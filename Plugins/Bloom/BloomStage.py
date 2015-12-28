@@ -21,7 +21,13 @@ class BloomStage(RenderStage):
         self._target_extract.add_color_texture(bits=16)
         self._target_extract.prepare_offscreen_buffer()
 
-        current_target = self._target_extract["color"]
+        self._target_firefly = self._create_target("Bloom:RemoveFireflies")
+        self._target_firefly.add_color_texture(bits=16)
+        self._target_firefly.prepare_offscreen_buffer()
+
+        self._target_firefly.set_shader_input("SourceTex", self._target_extract["color"])
+
+        current_target = self._target_firefly["color"]
         self._downsample_targets = []
         self._upsample_targets = []
 
@@ -63,6 +69,7 @@ class BloomStage(RenderStage):
 
     def set_shaders(self):
         self._target_extract.set_shader(self.load_plugin_shader("ExtractBrightSpots.frag.glsl"))
+        self._target_firefly.set_shader(self.load_plugin_shader("RemoveFireflies.frag.glsl"))
 
         downsample_shader = self.load_plugin_shader("BloomDownsample.frag.glsl")
         upsample_shader = self.load_plugin_shader("BloomUpsample.frag.glsl")

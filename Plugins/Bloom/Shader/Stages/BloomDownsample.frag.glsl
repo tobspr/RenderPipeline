@@ -40,7 +40,6 @@ void main() {
     vec3 sample_bl = textureLod(SourceTex, flt_coord + vec2( -2,-2 ) * texel_size, 0).xyz;
     vec3 sample_br = textureLod(SourceTex, flt_coord + vec2(  2,-2 ) * texel_size, 0).xyz;
 
-
     vec3 kernel_sum_red    = sample_r_tl + sample_r_tr + sample_r_bl + sample_r_br;
     vec3 kernel_sum_yellow = sample_tl + sample_t + sample_l + center_sample;
     vec3 kernel_sum_green  = sample_tr + sample_t + sample_r + center_sample;

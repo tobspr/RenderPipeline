@@ -250,7 +250,7 @@ settings: !!omap
     - brightness_scale:
         display_if: {use_auto_exposure: true}
         type: float
-        range: [0.01, 5.0]
+        range: [0.01, 15.0]
         default: 0.45
         label: Brightness Scale
         shader_runtime: true
