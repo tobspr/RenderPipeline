@@ -77,11 +77,11 @@ void main() {
         float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
         
         // Sample default environment map
-        vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz;
+        vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz * 0.2;
 
         // Get cheap irradiance by sampling low levels of the environment map
         int env_amb_mip = get_mipmap_count(DefaultEnvmap) - 5;
-        vec3 env_amb = textureLod(DefaultEnvmap, m.normal, env_amb_mip).xyz;
+        vec3 env_amb = textureLod(DefaultEnvmap, m.normal, env_amb_mip).xyz * 0.2;
 
         // Scattering specific code
         #if HAVE_PLUGIN(Scattering)
@@ -100,7 +100,8 @@ void main() {
     
         // Pre-Integrated environment BRDF
         vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
-        vec3 specular_nonmetallic = vec3(env_brdf.y + m.basecolor * env_brdf.x) * m.specular / M_PI;
+        vec3 specular_nonmetallic = vec3(env_brdf.y + m.basecolor * 0.04 * m.specular * env_brdf.x) / M_PI;
+
 
         // Metallic specular is pretty simple
         vec3 specular_metallic = 0.5 * m.basecolor * env_brdf.x;

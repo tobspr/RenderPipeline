@@ -7,10 +7,24 @@
 
 // Computes the quadratic attenuation curve
 float attenuation_curve(float dist, float radius) {
-    // return step(dist, radius);
+    #if 0
+        return step(dist, radius);
+    #endif
+
+    #if 0
     float lin_att = 1.0 - saturate(dist / radius);
     float d_by_r = dist / radius + 1;
     return lin_att / max(0.001, d_by_r * d_by_r);
+    #endif
+
+    #if 1
+    // As described in:
+    // http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+    // Page 12
+    float att = saturate(1.0 - pow(dist / radius, 4.0));
+    return (att * att) / (dist * dist + 1.0);
+
+    #endif
 }
 
 // Computes the attenuation for a point light
