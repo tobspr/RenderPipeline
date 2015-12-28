@@ -5,7 +5,7 @@
 #include "luse.h"
 #include "camera.h"
 #include "nodePath.h"
-#include "pstatCollector.h"
+#include "pStatCollector.h"
 
 #include <vector>
 
