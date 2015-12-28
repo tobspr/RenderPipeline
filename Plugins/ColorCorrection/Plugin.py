@@ -16,7 +16,6 @@ class Plugin(BasePlugin):
         get_internal_stage("FinalStage").disable_stage()
 
         self._stage = self.create_stage(ColorCorrectionStage)
-        self._stage.set_use_auto_exposure(self.get_setting("use_auto_exposure"))
         self._stage.set_use_sharpen(self.get_setting("use_sharpen"))
 
         if self.get_setting("use_auto_exposure"):

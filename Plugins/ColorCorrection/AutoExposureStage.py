@@ -17,17 +17,20 @@ class AutoExposureStage(RenderStage):
                 "Exposure": self._tex_exposure.get_texture()}
 
     def create(self):
+
+        # Create the target which converts the scene color to a luminance
         self._target_lum = self._create_target("GenerateLuminance")
         self._target_lum.set_quarter_resolution()
         self._target_lum.add_color_texture(bits=16)
         self._target_lum.prepare_offscreen_buffer()
 
+        # Get the current quarter-window size
         wsize_x = (Globals.base.win.get_x_size() + 3) // 4
         wsize_y = (Globals.base.win.get_y_size() + 3) // 4
 
+        # Create the targets which downscale the luminance mipmaps
         self._mip_targets = []
         last_tex = self._target_lum["color"]
-
         while wsize_x >= 4 or wsize_y >= 4:
             wsize_x = (wsize_x+3) // 4
             wsize_y = (wsize_y+3) // 4
@@ -40,9 +43,10 @@ class AutoExposureStage(RenderStage):
             self._mip_targets.append(mip_target)
             last_tex = mip_target["color"]
 
+        # Create the storage for the exposure, this stores the current and last
+        # frames exposure
         self._tex_exposure = Image.create_buffer(
             "ExposureStorage", 1, Texture.T_float, Texture.F_rgba16)
-
         self._tex_exposure.set_clear_color(Vec4(0.5))
         self._tex_exposure.clear_image()
 
@@ -55,10 +59,10 @@ class AutoExposureStage(RenderStage):
             "ExposureStorage", self._tex_exposure.get_texture())
         self._target_analyze.set_shader_input("DownscaledTex", last_tex)
 
+        # Create the target which applies the generated exposure to the scene
         self._target_apply = self._create_target("ApplyExposure")
         self._target_apply.add_color_texture(bits=16)
         self._target_apply.prepare_offscreen_buffer()
-
         self._target_apply.set_shader_input("Exposure", self._tex_exposure.get_texture())
 
     def set_shaders(self):

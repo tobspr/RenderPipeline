@@ -20,7 +20,7 @@ void main() {
         float weights = 0.0;
         vec3 accum = vec3(0);
 
-        const int filter_size = 1;
+        const int filter_size = 3;
 
         // Find all surrounding pixels and weight them
         for (int x = -filter_size; x <= filter_size; ++x) {

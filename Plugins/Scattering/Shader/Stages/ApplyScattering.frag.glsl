@@ -39,7 +39,7 @@ void main() {
         float upper_disk_factor = saturate( (view_vector.z - sun_vector.z) * 0.3 + 0.01);
         outer_disk_factor = (exp(3.0 * outer_disk_factor) - 1) / (exp(4)-1);
         inscattered_light += vec3(1,0.3,0.1) * disk_factor * 
-            upper_disk_factor * 7.0 * silhouette_col * 2.0 * 1e4;
+            upper_disk_factor * 7.0 * silhouette_col * 0.4 * 1e4;
         // inscattered_light += silhouette_col * outer_disk_factor * vec3(1, 0.8, 0.5) * 5.0 * 1e4;
         
     }

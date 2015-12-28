@@ -11,11 +11,7 @@ class ColorCorrectionStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ColorCorrectionStage", pipeline)
-        self._use_auto_exposure = True
         self._use_sharpen = False
-
-    def set_use_auto_exposure(self, flag):
-        self._use_auto_exposure = flag
 
     def set_use_sharpen(self, flag):
         self._use_sharpen = flag
@@ -23,6 +19,7 @@ class ColorCorrectionStage(RenderStage):
     def create(self):
         self._target = self._create_target("ColorCorrectionStage")
 
+        # Create the sharpen target
         if self._use_sharpen:
 
             # When using a sharpen filter, the main target needs a color texture
