@@ -11,6 +11,9 @@ class Image(DebugObject):
     """ This is a wrapper arround the Texture class from Panda3D, which keeps
     track of all images """
 
+    # Total amount of images
+    _NUM_IMAGES = 0
+
     @classmethod
     def create_buffer(cls, name, size, comp_type, comp_format):
         img = cls("ImageBuffer-" + name)
@@ -50,6 +53,7 @@ class Image(DebugObject):
     def __init__(self, name):
         """ Internal method to create a new image """
         DebugObject.__init__(self, name)
+        Image._NUM_IMAGES += 1
         self._tex = Texture(name)
 
     def destroy(self):

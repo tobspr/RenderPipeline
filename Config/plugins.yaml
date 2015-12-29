@@ -37,7 +37,7 @@ overrides:
     AO.ue4ao_max_distance: 4.3
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 145.44
-    Bloom.bloom_strength: 10.0
+    Bloom.bloom_strength: 2.79
     Bloom.minimum_luminance: 14.9995
     Bloom.num_mipmaps: 9
     Bloom.remove_fireflies: True
@@ -62,7 +62,7 @@ overrides:
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.use_sharpen: True
-    ColorCorrection.vignette_strength: 0.2444
+    ColorCorrection.vignette_strength: 0.2778
     PSSM.border_bias: 0.1867
     PSSM.filter_radius: 2.63
     PSSM.filter_sample_count: 32
@@ -80,7 +80,7 @@ overrides:
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
-    Scattering.ground_fog_factor: 76.44
+    Scattering.ground_fog_factor: 40.0
     Scattering.mie_phase_factor: 0.33
     Scattering.scattering_method: eric_bruneton
 

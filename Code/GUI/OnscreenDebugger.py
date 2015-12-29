@@ -22,6 +22,8 @@ from ..Globals import Globals
 from ..BaseManager import BaseManager
 
 from ..Native import NATIVE_CXX_LOADED
+from ..RenderTarget import RenderTarget
+from ..Util.Image import Image
 
 class OnscreenDebugger(BaseManager):
 
@@ -93,10 +95,10 @@ class OnscreenDebugger(BaseManager):
         self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
         self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.07, 1, 1.0 - 0.07)
         self._debug_lines = []
-        for i in range(2):
+        for i in range(4):
             self._debug_lines.append(FastText(
-                pos=Vec2(0, -i * 0.05), parent=self._overlay_node, pixel_size=18,
-                align="right"))
+                pos=Vec2(0, -i * 0.05), parent=self._overlay_node,
+                pixel_size=18, align="right"))
 
     def _create_hints(self):
         """ Creates the hints like keybindings and when reloading shaders """
@@ -138,14 +140,30 @@ class OnscreenDebugger(BaseManager):
             self._pipeline.get_light_mgr().get_cmd_queue().get_num_processed_commands(),
             self._pipeline.get_light_mgr().get_num_lights()))
 
+        text = "{:3.0f} MiB VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
+        text += "{:5d} render targets  |  {:3d} plugins"
+        tex_info = self._buffer_viewer.get_stage_information()
+        self._debug_lines[2].set_text(text.format(
+                tex_info["memory"] / (1024**2) ,
+                Image._NUM_IMAGES,
+                tex_info["count"],
+                RenderTarget._NUM_BUFFERS_ALLOCATED,
+                self._pipeline.get_plugin_mgr().get_interface().get_active_plugin_count()
+            ))
+
+        text = "{} ({:1.3f})  |  {:3d} active constraints"
+        self._debug_lines[3].set_text(text.format(
+                self._pipeline.get_daytime_mgr().get_time_str(),
+                self._pipeline.get_daytime_mgr().get_time(),
+                self._pipeline.get_daytime_mgr().get_num_constraints()
+            ))
+
         for line in self._debug_lines:
             line.update()
 
     def _create_debugger(self):
         """ Creates the debugger contents """
-
         debugger_opacity = 1.0
-
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_pos(30, 0, -Globals.base.win.get_y_size() + 820)
         self._debugger_bg_img = BetterOnscreenImage(

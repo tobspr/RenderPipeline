@@ -56,6 +56,27 @@ class BufferViewer(DraggableWindow):
             self._perform_update()
             self.show()
 
+    def get_stage_information(self):
+        """ Returns the amount of attached stages, and also the memory consumed
+        in MiB."""
+        count = 0
+        memory = 0.0
+        for entry in BufferViewer._REGISTERED_ENTRIES:
+            if isinstance(entry, Texture):
+                count += 1
+                memory += entry.estimate_texture_memory()
+            elif entry.__class__.__name__ == "RenderTarget":
+                for target in entry.get_all_targets():
+                    count += 1
+                    memory += entry[target].estimate_texture_memory()
+            elif entry.__class__.__name__ == "Image":
+                count += 1
+                memory += entry.get_texture().estimate_texture_memory()
+            else:
+                self.warn("Unkown type:", entry.__class__.__name)
+        return {"count": count, "memory": memory}
+
+
     def _create_components(self):
         """ Creates the window components """
         DraggableWindow._create_components(self)
@@ -98,7 +119,7 @@ class BufferViewer(DraggableWindow):
 
         # Collect texture stages
         self._stages = []
-        for entry in self._REGISTERED_ENTRIES:
+        for entry in BufferViewer._REGISTERED_ENTRIES:
             if isinstance(entry, Texture):
                 self._stages.append(entry)
             # Cant use isinstance or we get circular references
@@ -130,10 +151,10 @@ class BufferViewer(DraggableWindow):
         """ Renders the stages to the window """
 
         self._remove_components()
-        entries_per_row = 6
+        entries_per_row = 12
         aspect = Globals.base.win.get_y_size() /\
             float(Globals.base.win.get_x_size())
-        entry_width = 235
+        entry_width = 125
         entry_height = (entry_width - 20) * aspect + 55
 
         # Store already processed images

@@ -67,6 +67,10 @@ class PluginInterface(BasePluginInterface):
         """ Returns a list of plugin instances """
         return self._plugin_instances
 
+    def get_active_plugin_count(self):
+        """ Returns the amount of active plugins """
+        return len(self._plugin_instances)
+
     def _try_load_plugin(self, plugin_id):
         """ Attempts to load a plugin with a given name """
         plugin_path = join(self._base_dir, "Plugins", plugin_id)
