@@ -1,11 +1,4 @@
-## Deferred Render Pipeline *Version 2.0*
-
-This is the second version of the Pipeline. If you are looking for the first
-version, change to the `master` branch! The master branch was cleaned up a while ago,
-if you are looking for even older versions, checkout the `old_master` branch.
-
-<img src="http://fs5.directupload.net/images/151218/4c6xflje.png" />
-
+<img src="http://i.imgur.com/0MZy5BO.png" />
 
 ### Core Features
 
@@ -24,13 +17,6 @@ if you are looking for even older versions, checkout the `old_master` branch.
 **Notice**: It seems that the drivers for Intel HD Graphics on Linux are not
 capable of all 4.3 features, so the pipeline is not able to run there!
 
-### Screenshots
-
-<img src="http://i.imgur.com/EE5U4UR.png" />
-<img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
-<img src="https://img3.picload.org/image/pwrgpdc/289.png" />
-<img src="http://fs5.directupload.net/images/151122/28c2itvj.png" />
-<img src="http://i.imgur.com/Yn28cUM.png" />
 
 ### Getting Started / Wiki
 
@@ -38,6 +24,27 @@ You should definitely checkout the wiki if you want to find out more about the p
 <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki">Render Pipeline WIKI</a>
 
 There is also a page about getting started there: <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Getting%20Started">Getting Started</a>
+
+
+### Screenshots
+
+**Material showcase:**
+<img src="http://i.imgur.com/gxyIQ7A.png" />
+
+**Snowy terrain using the Pipeline and P3DFramework:**
+<img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
+
+**Some trees combined with atmospheric scattering:**
+<img src="http://i.imgur.com/EE5U4UR.png" />
+
+**Same trees, but at a different time of day:**
+<img src="https://img3.picload.org/image/pwrgpdc/289.png" />
+
+**Plugin and Time of Day editor:**
+<img src="http://fs5.directupload.net/images/151122/28c2itvj.png" />
+
+You can find further screenshots (mostly of experimental features) at my <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa" target="_blank">dropbox</a>.
+
 
 ### Reporting Bugs / Contributing
 
