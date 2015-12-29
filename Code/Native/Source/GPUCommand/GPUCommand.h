@@ -7,6 +7,7 @@
 NotifyCategoryDecl(gpucommand, EXPORT_CLASS, EXPORT_TEMPL);
 
 #define GPU_COMMAND_ENTRIES 32
+#define PACK_INT_AS_FLOAT 1
 
 /**
  * @brief Class for storing data to be transferred to the GPU.
@@ -41,6 +42,8 @@ class GPUCommand {
         inline void push_vec4(const LVecBase4i &v);
         inline void push_mat3(const LMatrix3f &v);
         inline void push_mat4(const LMatrix4f &v);
+
+        inline static bool get_uses_integer_packing();
 
         void write_to(const PTA_uchar &dest, size_t command_index);
         void write(ostream &out) const;

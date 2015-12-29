@@ -187,9 +187,7 @@ if __name__ == "__main__":
 
         else:
             write_flag("Code/Native/use_cxx.flag", False)
-            print_step("Making python wrappers ...")
-            exec_python_file("Code/Native/PythonImpl/make_python_impl.py")
-
+            
     print_step("Generating normal quantization textures ..")
     exec_python_file("Data/NormalQuantization/generate.py")
 

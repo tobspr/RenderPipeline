@@ -15,22 +15,19 @@ inline void GPUCommand::push_int(int v) {
  * @brief Internal method to convert an integer to float
  * @details This methods gets called by the GPUCommand::push_int, and manages
  *   storing an integer in a floating point variable. There are two options, 
- *   which are documented inside of the method. Just be sure to adjust the
- *   flag in the main shader configuration, too (see below.)
+ *   which are documented inside of the method.
  * 
  * @param v Integer to convert
  * @return Float-representation of that integer, either casted or binary converted.s
  */
 inline float GPUCommand::convert_int_to_float(int v) const {
 
-    #if 0
+    #if !PACK_INT_AS_FLOAT
         // Just round to float, can cause rounding issues tho
-        // If you use this, set GPU_CMD_INT_AS_FLOAT to 0 in Shader/Includes/Configuration.inc.glsl
         return (float)v;
         
     #else
         // Store the int bits as float, and unpack it later in the shader
-        // If you use this, set GPU_CMD_INT_AS_FLOAT to 1 in Shader/Includes/Configuration.inc.glsl
         union { int _int; float _float; } converter = { v };
         return converter._float;
     #endif
@@ -142,4 +139,17 @@ inline void GPUCommand::push_mat4(const LMatrix4f &v) {
             push_float(v.get_cell(i, j));
         }
     }
+}
+
+/**
+ * @brief Returns whether integers are packed as floats.
+ * @details This returns how integer are packed into the data stream. If the
+ *   returned value is true, then integers are packed using their binary
+ *   representation converted to floating point format. If the returned value
+ *   is false, then integers are packed by simply casting them to float,
+ *   e.g. val = (float)i;
+ * @return The integer representation flag
+ */
+inline bool GPUCommand::get_uses_integer_packing() {
+    return PACK_INT_AS_FLOAT;
 }

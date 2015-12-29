@@ -1,4 +1,3 @@
-
 #ifndef RP_LIGHT_H
 #define RP_LIGHT_H
 
@@ -7,9 +6,19 @@
 #include "GPUCommand.h"
 #include "ShadowSource.h"
 
+/**
+ * @brief Base class for Lights
+ * @details This is the base class for all lights in the render pipeline. It
+ *   stores common properties, and provides methods to modify these.
+ *   It also defines some interface functions which subclasses have to implement. 
+ */
 class RPLight : public ReferenceCount {
 
     PUBLISHED:
+
+        /**
+         * Different types of light.
+         */
         enum LightType {
             LT_empty = 0,
             LT_point_light = 1,
@@ -25,13 +34,14 @@ class RPLight : public ReferenceCount {
         virtual void write_to_command(GPUCommand &cmd);
         
         inline int get_num_shadow_sources() const;
-        inline ShadowSource* get_shadow_source(int index) const;
+        inline ShadowSource* get_shadow_source(size_t index) const;
         inline void clear_shadow_sources();
 
-        inline void mark_dirty();
-        inline void unset_dirty_flag();
-        inline bool is_dirty() const;
+        inline void set_needs_update(bool flag);
+        inline bool get_needs_update() const;
+
         inline bool has_slot() const;
+        inline int get_slot() const;
         inline void remove_slot();
         inline void assign_slot(int slot);
 
@@ -39,35 +49,52 @@ class RPLight : public ReferenceCount {
 
     PUBLISHED:
 
-        inline void set_shadow_map_resolution(int resolution);
-        inline int get_shadow_map_resolution() const;
-
         inline void set_pos(const LVecBase3f &pos);
         inline void set_pos(float x, float y, float z);
+        inline const LVecBase3f& get_pos() const;
+        MAKE_PROPERTY(pos, get_pos, set_pos);
 
         inline void set_color(const LVecBase3f &color);
         inline void set_color(float r, float g, float b);
+        inline const LVecBase3f& get_color() const;
+        MAKE_PROPERTY(color, get_color, set_color);
+
+        inline void set_lumens(float lumens);
+        inline float get_lumens() const;
+        MAKE_PROPERTY(lumens, get_lumens, set_lumens);
 
         inline LightType get_light_type() const;
+        MAKE_PROPERTY(light_type, get_light_type);
 
         inline void set_casts_shadows(bool flag = true);
         inline bool get_casts_shadows() const;
+        MAKE_PROPERTY(casts_shadows, get_casts_shadows, set_casts_shadows);
 
-        inline int get_slot() const;
+        inline void set_shadow_map_resolution(size_t resolution);
+        inline size_t get_shadow_map_resolution() const;
+        MAKE_PROPERTY(shadow_map_resolution, get_shadow_map_resolution, set_shadow_map_resolution);
+
         inline void set_ies_profile(int profile);
+        inline int get_ies_profile() const;
+        inline bool has_ies_profile() const;
+        inline void clear_ies_profile();
+        MAKE_PROPERTY2(ies_profile, has_ies_profile, get_ies_profile,
+                                    set_ies_profile, clear_ies_profile);
 
         inline void set_near_plane(float near_plane);
         inline float get_near_plane() const;
+        MAKE_PROPERTY(near_plane, get_near_plane, set_near_plane);
 
     protected:
         
-        bool _dirty;
-        bool _casts_shadows;
         int _slot;
         int _ies_profile;
-        int _source_resolution;
+        size_t _source_resolution;
+        bool _needs_update;
+        bool _casts_shadows;
         LVecBase3f _position;
         LVecBase3f _color;
+        float _lumens;
         LightType _light_type;
         float _near_plane;
 

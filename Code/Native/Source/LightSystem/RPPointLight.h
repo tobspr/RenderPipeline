@@ -1,12 +1,15 @@
-
 #ifndef RP_POINT_LIGHT_H
 #define RP_POINT_LIGHT_H
-
 
 #include "pandabase.h"
 #include "RPLight.h"
 
-
+/**
+ * @brief PointLight class
+ * @details This represents a point light, a light which has a position and
+ *   radius. Checkout the RenderPipeline documentation for more information
+ *   about this type of light.
+ */
 class RPPointLight : public RPLight {
 
     PUBLISHED:
@@ -14,7 +17,12 @@ class RPPointLight : public RPLight {
         ~RPPointLight();
 
         inline void set_radius(float radius);
+        inline float get_radius() const;
+        MAKE_PROPERTY(radius, get_radius, set_radius);
+
         inline void set_inner_radius(float inner_radius);
+        inline float get_inner_radius() const;
+        MAKE_PROPERTY(inner_radius, get_inner_radius, set_inner_radius);
 
     public:
         virtual void write_to_command(GPUCommand &cmd);

@@ -50,9 +50,4 @@
 #define END_BRANCH_TRANSLUCENCY() }
 #endif
 
-// This has to match the convert_int_to_float in GPUCommand. See the GPUCommand
-// source for further details.
-#define GPU_CMD_INT_AS_FLOAT 1
-
-
 #pragma include "CommonFunctions.inc.glsl"

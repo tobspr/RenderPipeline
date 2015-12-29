@@ -247,7 +247,7 @@ void InternalLightManager::gpu_update_light(RPLight* light) {
     GPUCommand cmd_update(GPUCommand::CMD_store_light);
     cmd_update.push_int(light->get_slot());
     light->write_to_command(cmd_update);
-    light->unset_dirty_flag();
+    light->set_needs_update(false);
     _cmd_list->add_command(cmd_update);
 }
 
@@ -279,7 +279,7 @@ void InternalLightManager::gpu_update_source(ShadowSource* source) {
 void InternalLightManager::update_lights() {
     for (auto iter = _lights.begin(); iter != _lights.end(); ++iter) {
         RPLight* light = *iter;
-        if (light && light->is_dirty()) {
+        if (light && light->get_needs_update()) {
             light->update_shadow_sources();
             gpu_update_light(light);
         }
@@ -296,35 +296,35 @@ void InternalLightManager::update_lights() {
 void InternalLightManager::update_shadow_sources() {
 
     // Find all dirty shadow sources and make a list of them
-    vector<ShadowSource*> _sources_to_update;
+    vector<ShadowSource*> sources_to_update;
      for (auto iter = _shadow_sources.begin(); iter != _shadow_sources.end(); ++iter) {
         ShadowSource* source = *iter;
         if (source && source->get_needs_update()) {
-            _sources_to_update.push_back(source);
+            sources_to_update.push_back(source);
         }
     }
 
     // Sort the sources based on their resolution, so that sources with a bigger
     // resolution come first. This helps to get a better packing on the shadow atlas.
     auto cmp_source = [](ShadowSource* a, ShadowSource* b){ return a->get_resolution() > b->get_resolution(); };
-    std::sort(_sources_to_update.begin(), _sources_to_update.end(), cmp_source);
+    std::sort(sources_to_update.begin(), sources_to_update.end(), cmp_source);
 
     // Get a handle to the atlas, will be frequently used
     ShadowAtlas *atlas = _shadow_manager->get_atlas();
 
     // Free the regions of all sources which will get updated. We have to take into
     // account that only a limited amount of sources can get updated per frame.
-    size_t update_slots = min(_sources_to_update.size(),
+    size_t update_slots = min(sources_to_update.size(),
                               _shadow_manager->get_num_update_slots_left());
     for(size_t i = 0; i < update_slots; ++i) {
-        if (_sources_to_update[i]->has_region()) {
-           atlas->free_region(_sources_to_update[i]->get_region());
+        if (sources_to_update[i]->has_region()) {
+           atlas->free_region(sources_to_update[i]->get_region());
         }
     }
 
     // Find an atlas spot for all regions which are supposed to get an update
     for (size_t i = 0; i < update_slots; ++i) {
-        ShadowSource *source = _sources_to_update[i];
+        ShadowSource *source = sources_to_update[i];
 
         if(!_shadow_manager->add_update(source)) {
             // In case the ShadowManager lied about the number of updates left
