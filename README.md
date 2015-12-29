@@ -25,7 +25,7 @@ You should definitely checkout the wiki if you want to find out more about the p
 
 There is also a page about getting started there: <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Getting%20Started">Getting Started</a>
 
-You can find the documentation about the C++ modules here: <a target="_blank" href="tobspr.me/renderpipeline/docs/">RenderPipeline C++ Documentation</a>
+You can find the documentation about the C++ modules here: <a target="_blank" href="http://tobspr.me/renderpipeline/docs/">RenderPipeline C++ Documentation</a>
 
 ### Screenshots
 
