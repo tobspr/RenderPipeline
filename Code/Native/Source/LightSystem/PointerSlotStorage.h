@@ -67,7 +67,7 @@ public:
      * @details This finds the first slot which is a nullptr and returns it.
      *   This is most likely useful in combination with reserve_slot.
      *   
-     *   When no slot found was found, #slot will be undefined, and false will
+     *   When no slot found was found, slot will be undefined, and false will
      *   be returned.
      *   
      * @param slot Output-Variable, slot will be stored there
@@ -88,7 +88,7 @@ public:
      * @details This behaves like find_slot, but it tries to find a slot
      *   after which <num_consecutive-1> free slots follow as well.
      *   
-     *   When no slot found was found, #slot will be undefined, and false will
+     *   When no slot found was found, slot will be undefined, and false will
      *   be returned.
      * 
      * @param slot Output-Variable, index of the first slot of the consecutive

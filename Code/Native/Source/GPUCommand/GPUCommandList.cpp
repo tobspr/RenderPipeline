@@ -6,7 +6,8 @@
  * @details This constructs a new GPUCommandList. By default, there are no commands
  *   in the list.
  */
-GPUCommandList::GPUCommandList() {}
+GPUCommandList::GPUCommandList() {
+}
 
 /**
  * @brief Pushes a GPUCommand to the command list. 

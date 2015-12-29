@@ -216,6 +216,8 @@ inline void get_film_properties(LVecBase2f &film_size, LVecBase2f &film_offset, 
  *   with both arrays contained.
  * 
  * @param dest Destination array
+ * @param array1 First array
+ * @param array2 Second array
  */
 inline void merge_points_interleaved(LVecBase3f (&dest)[8], LVecBase3f const (&array1)[4], LVecBase3f const (&array2)[4]) {
     for (size_t k = 0; k < 4; ++k) {

@@ -1,4 +1,7 @@
 
+
+## Static geometry handlers
+
 ### Important Notice
 
 This classes belong to an experiment about submitting batches of vertices

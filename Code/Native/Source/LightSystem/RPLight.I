@@ -142,7 +142,8 @@ inline void RPLight::set_pos(const LVecBase3f &pos) {
 }
 
 /**
- * @copydoc RPLight::set_pos(const LVecBase3f &pos)
+ * @brief Sets the position of the light
+ * @details @copydetails RPLight::set_pos(const LVecBase3f &pos)
  * 
  * @param x X-component of the position
  * @param y Y-component of the position
@@ -183,7 +184,8 @@ inline void RPLight::set_color(const LVecBase3f &color) {
 }
 
 /**
- * @copydoc RPLight::set_color(const LVecBase3f &color)
+ * @brief Sets the lights color
+ * @details @copydetails RPLight::set_color(const LVecBase3f &color)
  * 
  * @param r Red-component of the color
  * @param g Green-component of the color
