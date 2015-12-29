@@ -90,7 +90,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     float distribution = brdf_distribution(NxH, m.roughness);
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = brdf_schlick_fresnel(specular_color, 0.5, VxH);
-    shading_result += (distribution * visibility * fresnel);
+    shading_result += (distribution * visibility / M_PI) * fresnel;
 
     // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)

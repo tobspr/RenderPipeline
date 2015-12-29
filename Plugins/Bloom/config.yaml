@@ -19,7 +19,7 @@ settings: !!omap
 
     - minimum_luminance:
         type: float
-        range: [0.01, 15.0]
+        range: [0.01, 55.0]
         default: 4.0
         shader_runtime: true
         label: Minimum Luminance

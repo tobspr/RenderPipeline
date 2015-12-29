@@ -37,7 +37,7 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
     // Increase mipmap at extreme roughness, linear doesn't work well there
     // reflectivity += (0.1 - min(0.1, roughness) ) / 0.1 * 20.0;
     // return sqrt(roughness) * 8.0;
-    return (num_mipmaps - reflectivity * 10.0);
+    return (num_mipmaps - reflectivity * 9.5);
 }
 
 
@@ -100,17 +100,17 @@ void main() {
     
         // Pre-Integrated environment BRDF
         vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
-        vec3 specular_nonmetallic = vec3(env_brdf.y + m.basecolor * 0.04 * m.specular * env_brdf.x) / M_PI;
+        vec3 specular_nonmetallic = env_brdf.y + m.basecolor * 0.08 * m.specular * env_brdf.x;
 
 
         // Metallic specular is pretty simple
-        vec3 specular_metallic = 0.5 * m.basecolor * env_brdf.x;
+        vec3 specular_metallic = m.basecolor * env_brdf.x + env_brdf.y;
 
         // Weight specular metallic and non-metallic terms
         vec3 specular_ambient = mix(specular_nonmetallic, specular_metallic, m.metallic) * env_default_color;
 
         // Diffuse ambient term
-        vec3 diffuse_ambient = env_amb * m.basecolor * (1-m.metallic) / M_PI;
+        vec3 diffuse_ambient = env_amb * m.basecolor * (1-m.metallic);
 
         // Add diffuse and specular ambient term
         ambient = diffuse_ambient + specular_ambient;

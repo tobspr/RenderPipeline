@@ -102,7 +102,7 @@ class OnscreenDebugger(BaseManager):
         """ Creates the hints like keybindings and when reloading shaders """
         self._hint_reloading = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/ShaderReloadHint.png",
-            x= (Globals.base.win.get_x_size() - 258) // 2, y=Globals.base.win.get_y_size() - 100,
+            x= (Globals.base.win.get_x_size() - 465) // 2, y=220,
             parent=Globals.base.pixel2d)
         self.set_reload_hint_visible(False)
 

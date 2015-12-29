@@ -25,7 +25,7 @@ overrides:
     AO.hbao_ray_steps: 3
     AO.hbao_sample_radius: 97.17
     AO.hbao_tangent_bias: 0.6889
-    AO.occlusion_strength: 1.28
+    AO.occlusion_strength: 1.21
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 6.22
     AO.ssao_sample_count: 32
@@ -37,8 +37,8 @@ overrides:
     AO.ue4ao_max_distance: 4.3
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 145.44
-    Bloom.bloom_strength: 1.45
-    Bloom.minimum_luminance: 15.0
+    Bloom.bloom_strength: 10.0
+    Bloom.minimum_luminance: 14.9995
     Bloom.num_mipmaps: 9
     Bloom.remove_fireflies: True
     ColorCorrection.brightness_adaption_rate: 3.0
@@ -70,14 +70,14 @@ overrides:
     PSSM.logarithmic_factor: 0.94
     PSSM.max_distance: 90.8
     PSSM.normal_bias: 0.28
-    PSSM.pcss_penumbra_size: 20.09
+    PSSM.pcss_penumbra_size: 170.04
     PSSM.pcss_search_samples: 6
     PSSM.resolution: 2048
     PSSM.slope_bias: 1.61
     PSSM.split_count: 4
     PSSM.sun_distance: 210.0
     PSSM.use_pcf: True
-    PSSM.use_pcss: False
+    PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
     Scattering.ground_fog_factor: 76.44

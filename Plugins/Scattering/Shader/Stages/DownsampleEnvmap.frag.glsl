@@ -75,7 +75,7 @@ void main() {
             for (int y = -filter_size; y <= filter_size; ++y) {
 
                 ivec2 offcoord = clamped_coord + ivec2(x, y) * 2;
-                vec2 local_coord = ((offcoord+0.5) / float(texsize)) * 2.0 - 1.0;
+                vec2 local_coord = ((offcoord + 0.5) / float(texsize)) * 2.0 - 1.0;
                 vec3 sample_dir = get_cubemap_coordinate(face, local_coord);
 
                 accum += textureLod(SourceMipmap, sample_dir, current_mip).xyz;
