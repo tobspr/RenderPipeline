@@ -9,7 +9,6 @@ from .SSLRStage import SSLRStage
 class Plugin(BasePlugin):
 
     @PluginHook("on_stage_setup")
-    def create_stages(self):
+    def setup_stages(self):
         self.debug("Setting up SSLR stage ..")
-        self._sslr_stage = self.make_stage(SSLRStage)
-        self.register_stage(self._sslr_stage)
+        self._sslr_stage = self.create_stage(SSLRStage)

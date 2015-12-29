@@ -2,21 +2,17 @@
 #version 400
 
 // #pragma optionNV (unroll all)
-
+#define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
-#pragma include "Includes/GBufferPacking.inc.glsl"
+
+#define USE_GBUFFER_EXTENSIONS
+#pragma include "Includes/GBuffer.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform sampler2D GBufferDepth;
-uniform sampler2D GBuffer0;
-uniform sampler2D GBuffer1;
-uniform sampler2D GBuffer2;
-
 uniform sampler2D DownscaledDepth;
 
 in vec2 texcoord;
 out vec4 result;
-
 
 vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
 {   
@@ -27,13 +23,13 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
     }
 
     // Raytracing constants
-    const int loop_max = 128;
-    const float ray_epsilon = 1.0005;
-    const float hit_bias = 0.001;
+    const int loop_max = 256;
+    const float ray_epsilon = 1.02;
+    const float hit_bias = 0.01;
 
-    // Limit the maximum amount of mipmaps. This important, choosing a too
+    // Limit the maximum amount of mipmaps. This is important, choosing a too
     // high value will introduce artifacts.
-    const int max_mips = 2;
+    const int max_mips = 12;
 
     // Iteration parameters
     int mipmap = 0;
@@ -43,7 +39,7 @@ vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
     vec3 pos = ray_start;
 
     // Move pos by a small bias to avoid self intersection
-    pos += ray_dir * 0.005;
+    pos += ray_dir * 0.02;
 
 
     while (mipmap > -1 && max_iter --> 0)
@@ -228,17 +224,15 @@ vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
     if(length(intersection) > 0.0001 && distance(intersection.xy, texcoord) > 0.00001) {
 
         vec3 intersected_color = textureLod(ShadedScene, intersection.xy, 0).xyz;
-        vec3 intersected_normal = get_gbuffer_normal(GBuffer1, intersection.xy);
+        vec3 intersected_normal = get_gbuffer_normal(GBuffer, intersection.xy);
 
         float dprod = dot(intersected_normal, m.normal);
         float fade_factor = 1.0 - saturate( (dprod) * 3.5);
-        // fade_factor = step(dprod, 0.02);
-        // fade_factor = 1.0;
-
-        return intersected_color * fade_factor;
+        fade_factor *= pow(saturate(55.0 * rd.z), 1.0);
+        return mix(vec3(1.0), intersected_color, fade_factor);
     }
 
-    return vec3(0, 0, 0);
+    return vec3(1);
 
 
 }
@@ -265,13 +259,13 @@ void main() {
     
     vec3 sslr_result = vec3(0);
 
-    Material m = unpack_material(GBufferDepth, GBuffer0, GBuffer1, GBuffer2);
+    Material m = unpack_material(GBuffer);
     vec3 view_dir = normalize(m.position - MainSceneData.camera_pos);
 
     float pixel_depth = textureLod(DownscaledDepth, texcoord, 0).x;
 
     if (distance(m.position, MainSceneData.camera_pos) > 10000) {
-
+        sslr_result = vec3(1);
     } else {
 
 
@@ -289,17 +283,17 @@ void main() {
             vec3(-0.819, 0.037, -0.388)
         );
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 8; i++) {
 
             vec3 jo = vec3( mod(gl_FragCoord.x, 2.0), mod(gl_FragCoord.y, 2.0), 0.0 );
 
-            vec3 ray_direction = get_ray_direction(m.position, normalize(m.normal + (offs[i] +jo) * 0.00), view_dir, ray_origin);
+            vec3 ray_direction = get_ray_direction(m.position, normalize(m.normal + (offs[i] +jo) * 0.03), view_dir, ray_origin);
 
             sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
             // sslr_result += ray_direction;
         }
 
-        sslr_result /= 1.0;
+        sslr_result /= 8.0;
 
 
 
@@ -319,5 +313,5 @@ void main() {
 
 
     result = textureLod(ShadedScene, texcoord, 0);
-    result.xyz += sslr_result;
+    result.xyz *= sslr_result;
 }

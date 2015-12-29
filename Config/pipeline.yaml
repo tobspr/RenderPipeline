@@ -51,3 +51,11 @@ settings:
         # The size of the global shadow atlas, used for point and spot light
         # shadows. This should be a power of 2.
         atlas_size: 4096
+
+        # Maximum of shadow updates which may occur at one time. All updates
+        # which are beyond that count will get delayed to the next frame.
+        # If you set this too low, artifacts may occur because of shadows not
+        # getting updated fast enough. However, this also affects the performance
+        # quite a bit, since for every shadow map a part of the scene has
+        # to get re-rendered.
+        max_updates: 10

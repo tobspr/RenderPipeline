@@ -67,9 +67,5 @@ void main() {
 
     %MATERIAL%
 
-    m.specular = 1.0;
-    // m.metallic = 0;
-    // m.specular = 0.5;
-    // m.roughness = 0.05;
     render_material(m);
 }

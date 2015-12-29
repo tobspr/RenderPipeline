@@ -38,3 +38,4 @@
 
 // Include the actual smaa header
 #pragma include "SMAA.inc.glsl"
+

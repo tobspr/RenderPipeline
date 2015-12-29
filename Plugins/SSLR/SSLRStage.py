@@ -6,9 +6,8 @@ class SSLRStage(RenderStage):
 
     """ This stage does the SSLR pass """
 
-    required_inputs = ["ShadedScene", "GBufferDepth", "GBuffer0", "GBuffer1",
-                       "GBuffer2", "DownscaledDepth"]
-    required_pipes = []
+    required_inputs = []
+    required_pipes = ["ShadedScene", "GBuffer", "DownscaledDepth"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "SSLRStage", pipeline)
@@ -22,8 +21,7 @@ class SSLRStage(RenderStage):
         self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(
-            self._load_plugin_shader("SSLR", "SSLRStage.frag.glsl"))
+        self._target.set_shader(self.load_plugin_shader("SSLRStage.frag.glsl"))
 
     def resize(self):
         RenderStage.resize(self)
