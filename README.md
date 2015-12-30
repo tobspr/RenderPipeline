@@ -34,7 +34,7 @@ You can find the documentation about the C++ modules here: <a target="_blank" hr
 ### Screenshots
 
 **Material showcase:**
-<img src="http://i.imgur.com/gxyIQ7A.png" />
+<img src="http://i.imgur.com/LgNAbQr.png" />
 
 **Snowy terrain using the Pipeline and P3DFramework:**
 <img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
