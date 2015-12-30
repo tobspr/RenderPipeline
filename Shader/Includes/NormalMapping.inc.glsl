@@ -24,13 +24,49 @@ void reconstruct_tangent(out vec3 tangent, out vec3 binormal) {
 
 // Aplies a normal map with a given base normal and displace normal, weighted by
 // the bump factor
-vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor) {
-    vec3 tangent, binormal;
-    reconstruct_tangent(tangent, binormal);
+vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor, vec3 tangent, vec3 binormal) {
     displace_normal = mix(vec3(0, 0, 1), normalize(displace_normal), saturate(bump_factor));
     return vec3(
         tangent * displace_normal.x +
         binormal * displace_normal.y +
         base_normal * displace_normal.z
     );
+}
+
+
+vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor) {
+    vec3 tangent, binormal;
+    reconstruct_tangent(tangent, binormal);
+    return apply_normal_map(base_normal, displace_normal, bump_factor, tangent, binormal);
+}
+
+// Parallax Mapping
+vec2 get_parallax_texcoord(sampler2D displacement_map) {
+    float raymarch_distance = 0.05;
+    const int num_steps = 32;
+
+    vec3 tangent, binormal;
+    reconstruct_tangent(tangent, binormal);
+
+    vec3 view_vector = normalize(MainSceneData.camera_pos - vOutput.position);
+
+    // Project view vector to tangent space
+    vec2 tex_offs = vec2(dot(-tangent, view_vector), dot(binormal, view_vector));
+
+    // Get the ray start and direction
+    vec3 current_pos = vec3(vOutput.texcoord, 1);
+    raymarch_distance *= 0.5 / clamp(dot(vOutput.normal, view_vector), 0.3, 1.0);
+    vec3 offs_step = vec3(tex_offs * raymarch_distance, -1.0) / float(num_steps);
+
+    // Raymarch
+    vec3 last_hit = current_pos;
+    for (int i = 0; i < num_steps; ++i) {
+        float sample_h = texture(displacement_map, current_pos.xy).x;
+        current_pos += offs_step;
+        if (sample_h <= current_pos.z) {
+            last_hit = current_pos;
+        }
+    } 
+
+    return last_hit.xy;
 }

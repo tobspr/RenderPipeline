@@ -182,6 +182,12 @@
         // a good fit normal, but thus is quite expensive.
         // It does not include normal mapping, since it uses the depth buffer as source.
         vec3 get_view_normal(ivec2 coord) {
+
+            // OPTIONAL: Just recover it from the world space normal.
+            // This has the advantage that it does include normal mapping.
+            vec3 world_normal = get_gbuffer_normal(GBuffer, coord);
+            return world_normal_to_view(world_normal);
+            
             vec3 view_pos = get_view_pos_at(coord);
 
             // Do some work to find a good view normal

@@ -16,11 +16,11 @@ class Effect(DebugObject):
         "render_gbuffer": True,
         "render_shadows": True,
         "alpha_testing": True,
-        "normal_mapping": True
+        "normal_mapping": True,
+        "parallax_mapping": False,
     }
 
     _PASSES = ["GBuffer", "Shadows", "Voxelize"]
-
     _EFFECT_ID = 0
 
     @classmethod
