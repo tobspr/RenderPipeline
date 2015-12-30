@@ -37,8 +37,8 @@ overrides:
     AO.ue4ao_max_distance: 4.3
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 145.44
-    Bloom.bloom_strength: 2.79
-    Bloom.minimum_luminance: 14.9995
+    Bloom.bloom_strength: 0.56
+    Bloom.minimum_luminance: 15.0
     Bloom.num_mipmaps: 9
     Bloom.remove_fireflies: True
     ColorCorrection.brightness_adaption_rate: 3.0

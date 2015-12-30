@@ -29,8 +29,19 @@ inline int InternalLightManager::get_max_light_index() const {
  *
  * @return Amount of stored lights
  */
-inline size_t InternalLightManager::get_num_stored_lights() const {
+inline size_t InternalLightManager::get_num_lights() const {
     return _lights.get_num_entries();
+}
+
+/**
+ * @brief Returns the amount of shadow sources.
+ * @details This returns the total amount of stored shadow sources. This does
+ *   not denote the amount of updated sources, but instead takes into account
+ *   all sources, even those out of frustum.
+ * @return Amount of shadow sources.
+ */
+inline size_t InternalLightManager::get_num_shadow_sources() const {
+    return _shadow_sources.get_num_entries();
 }
 
 /**

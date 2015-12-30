@@ -151,10 +151,10 @@ class BufferViewer(DraggableWindow):
         """ Renders the stages to the window """
 
         self._remove_components()
-        entries_per_row = 12
+        entries_per_row = 8
         aspect = Globals.base.win.get_y_size() /\
             float(Globals.base.win.get_x_size())
-        entry_width = 125
+        entry_width = 180
         entry_height = (entry_width - 20) * aspect + 55
 
         # Store already processed images
@@ -194,7 +194,7 @@ class BufferViewer(DraggableWindow):
                 DGG.B1PRESS, partial(self._on_texture_clicked, stage_tex))
 
             BetterOnscreenText(text=stage_name, x=15, y=29, parent=node,
-                               size=15, color=Vec3(0.2))
+                               size=12, color=Vec3(0.2))
 
             # Scale image so it always fits
             w, h = stage_tex.get_x_size(), stage_tex.get_y_size()

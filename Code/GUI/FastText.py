@@ -17,6 +17,7 @@ class FastText(DebugObject):
     _FONT_PAGE_POOL = {}
     _SUPPORTED_GLYPHS = (string.ascii_letters + string.digits +
                          string.punctuation + " ")
+    _MAX_CHARS = 120
 
     def __init__(self, font="Data/Font/Roboto-Medium.ttf", pixel_size=16, align="left",
                  pos=Vec2(0), color=Vec3(1), outline=Vec4(0, 0, 0, 1), parent=None):
@@ -28,9 +29,9 @@ class FastText(DebugObject):
         self._position = Vec2(pos)
         self._cache_key = self._font + "##" + str(self._size)
         self._parent = Globals.base.aspect2d if parent is None else parent
-        self._pta_position = PTALVecBase4.empty_array(100)
+        self._pta_position = PTALVecBase4.empty_array(self._MAX_CHARS)
         self._pta_offset = PTAFloat.empty_array(1)
-        self._pta_uv = PTALVecBase4.empty_array(100)
+        self._pta_uv = PTALVecBase4.empty_array(self._MAX_CHARS)
         self._pta_color = PTALVecBase4.empty_array(2)
         self._pta_color[0] = Vec4(color.x, color.y, color.z, 1.0)
         self._pta_color[1] = Vec4(outline)
@@ -59,8 +60,8 @@ class FastText(DebugObject):
         self._position = Vec2(x, y)
 
     def set_text(self, text):
-        """ Sets the text, up to a number of 100 chars """
-        self._text = text[:100]
+        """ Sets the text, up to a number of _MAX_CHARS chars """
+        self._text = text[:self._MAX_CHARS]
 
     def update(self):
         """ Updates the text """
@@ -181,8 +182,8 @@ class FastText(DebugObject):
             uniform mat4 p3d_ModelViewProjectionMatrix;
             in vec4 p3d_Vertex;
             in vec2 p3d_MultiTexCoord0;
-            uniform vec4 positionData[100];
-            uniform vec4 uvData[100];
+            uniform vec4 positionData[""" + str(self._MAX_CHARS) + """];
+            uniform vec4 uvData[""" + str(self._MAX_CHARS) + """];
             uniform float offset;
             out vec2 texcoord;
             out float glyphidx;

@@ -25,8 +25,8 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     vec2 flt_coord = vec2(coord) / (2.0 * source_size);
-    vec2 texel_size = 0.5 / source_size; 
-
+    vec2 texel_size = 0.5 / source_size;
+    
     vec3 source_sample = textureLod(SourceTex, flt_coord, 0).xyz * 4;
 
     source_sample += textureLod(SourceTex, flt_coord + vec2(  0,  1) * texel_size, 0).xyz * 2;
@@ -38,7 +38,7 @@ void main() {
     source_sample += textureLod(SourceTex, flt_coord + vec2(  1, -1) * texel_size, 0).xyz * 1;
     source_sample += textureLod(SourceTex, flt_coord + vec2( -1,  1) * texel_size, 0).xyz * 1;
     source_sample += textureLod(SourceTex, flt_coord + vec2(  1,  1) * texel_size, 0).xyz * 1;
-        
+
     source_sample /= 16.0;
 
     vec3 pass_result = summed + source_sample;

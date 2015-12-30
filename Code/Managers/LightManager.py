@@ -68,7 +68,11 @@ class LightManager(BaseManager):
 
     def get_num_lights(self):
         """ Returns the amount of stored lights """
-        return self._internal_mgr.get_num_stored_lights()
+        return self._internal_mgr.get_num_lights()
+
+    def get_num_shadow_sources(self):
+        """ Returns the amount of stored shadow sources """
+        return self._internal_mgr.get_num_shadow_sources()
 
     def get_cmd_queue(self):
         """ Returns a handle to the GPU Command Queue """

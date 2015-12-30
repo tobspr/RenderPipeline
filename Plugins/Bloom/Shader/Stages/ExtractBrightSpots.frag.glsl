@@ -3,12 +3,12 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/ColorSpaces/ColorSpaces.inc.glsl"
 
-uniform sampler2D ShadedScene;
+uniform sampler2D SourceTex;
 out vec4 result;
 in vec2 texcoord;
 
 void main() {
-    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
+    vec3 scene_color = textureLod(SourceTex, texcoord, 0).xyz;
     float luma = get_luminance(scene_color);
     vec3 bloom_color = vec3(0);
     if (luma > GET_SETTING(Bloom, minimum_luminance)) {

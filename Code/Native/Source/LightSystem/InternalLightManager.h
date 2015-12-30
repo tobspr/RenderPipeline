@@ -32,7 +32,8 @@ class InternalLightManager {
         void update();
         
         inline int get_max_light_index() const;
-        inline size_t get_num_stored_lights() const;
+        inline size_t get_num_lights() const;
+        inline size_t get_num_shadow_sources() const;
 
         inline void set_command_list(GPUCommandList *cmd_list);
         inline void set_shadow_manager(ShadowManager* mgr);

@@ -35,7 +35,7 @@ class AutoExposureStage(RenderStage):
             wsize_x = (wsize_x+3) // 4
             wsize_y = (wsize_y+3) // 4
 
-            mip_target = self._create_target("DownscaleLuminance:Step-" + str(wsize_x))
+            mip_target = self._create_target("DScaleLum:S" + str(wsize_x))
             mip_target.add_color_texture(bits=16)
             mip_target.set_size(wsize_x, wsize_y)
             mip_target.prepare_offscreen_buffer()

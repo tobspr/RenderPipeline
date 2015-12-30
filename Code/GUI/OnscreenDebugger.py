@@ -133,12 +133,14 @@ class OnscreenDebugger(BaseManager):
             1000.0 / max(0.001, clock.get_average_frame_rate()),
             clock.get_max_frame_duration() * 1000.0))
 
-        text = "{:4d} render states  |  {:4d} transform states"
-        text += "  |  {:4d} commands  |  {:6d} lights"
+        text = "{:4d} render states  |  {:4d} transforms"
+        text += "  |  {:4d} commands  |  {:6d} lights  |  {:5d} shadow sources"
         self._debug_lines[1].set_text(text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
             self._pipeline.get_light_mgr().get_cmd_queue().get_num_processed_commands(),
-            self._pipeline.get_light_mgr().get_num_lights()))
+            self._pipeline.get_light_mgr().get_num_lights(),
+            self._pipeline.get_light_mgr().get_num_shadow_sources(),
+            ))
 
         text = "{:3.0f} MiB VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins"
