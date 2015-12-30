@@ -6,6 +6,7 @@
 #pragma include "Includes/Lights.inc.glsl"
 #pragma include "Includes/LightData.inc.glsl"
 #pragma include "Includes/Shadows.inc.glsl"
+#pragma include "Includes/LightClassification.inc.glsl"
 
 uniform isampler2DArray CellIndices;
 uniform isamplerBuffer PerCellLights;
@@ -21,6 +22,44 @@ uniform sampler2DShadow ShadowAtlasPCF;
     uniform sampler2D AmbientOcclusion;
 #endif
 
+// Processes a spot light
+vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, vec4 directional_occlusion, float shadow_factor) {
+    const vec3 transmittance = vec3(1);
+    int ies_profile = get_ies_profile(light_data);
+    vec3 light_pos = get_light_position(light_data);
+    float radius = get_spotlight_radius(light_data);
+    float fov = get_spotlight_fov(light_data);
+    vec3 direction = get_spotlight_direction(light_data);
+    vec3 l = normalize(light_pos - m.position);
+    float attenuation = get_spotlight_attenuation(l, direction, fov, radius, distance(m.position, light_pos), ies_profile);
+    return apply_light(m, view_vector, l, get_light_color(light_data), attenuation, shadow_factor, directional_occlusion, transmittance);
+}
+
+// Processes a point light
+vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, vec4 directional_occlusion, float shadow_factor) {
+    const vec3 transmittance = vec3(1);
+    float radius = get_pointlight_radius(light_data);
+    vec3 light_pos = get_light_position(light_data);
+    int ies_profile = get_ies_profile(light_data);
+    vec3 l = normalize(light_pos - m.position);
+    float attenuation = get_pointlight_attenuation(l, radius, distance(m.position, light_pos), ies_profile);
+    return apply_light(m, view_vector, l, get_light_color(light_data), attenuation, shadow_factor, directional_occlusion, transmittance);
+}
+
+// Filters a shadow map
+float filter_shadowmap(Material m, SourceData source) {
+    mat4 mvp = get_source_mvp(source);
+    vec4 uv = get_source_uv(source);
+
+    // TODO: use biased position
+    // TODO: use filtering
+    vec3 projected = project(mvp, m.position);
+    vec2 projected_coord = projected.xy * uv.zw + uv.xy;
+    return textureLod(ShadowAtlasPCF, vec3(projected_coord.xy, projected.z - 0.0005), 0).x;
+}
+
+
+
 // Shades the material from the per cell light buffer
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
@@ -32,8 +71,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     // Find per tile lights
     int cell_index = texelFetch(CellIndices, tile, 0).x;
-    int data_offs = cell_index * (MAX_LIGHTS_PER_CELL+1);
-    int num_lights = min(MAX_LIGHTS_PER_CELL, texelFetch(PerCellLights, data_offs).x);
+    int data_offs = cell_index * (MAX_LIGHTS_PER_CELL+LIGHT_CLS_COUNT);
 
     // Debug mode, show tile bounds
     #if 0
@@ -57,70 +95,52 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     // Compute view vector
     vec3 v = normalize(MainSceneData.camera_pos - m.position);
-        
-    // Iterate over all lights
-    for (int i = 0; i < num_lights; i++) {
+    
+    int curr_offs = data_offs + LIGHT_CLS_COUNT;
 
-        // Fetch light ID
-        int light_offs = texelFetch(PerCellLights, data_offs + i + 1).x * 4;
+    // Get the light counts
+    int num_spot_noshadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_SPOT_NOSHADOW).x;
+    int num_spot_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_SPOT_SHADOW).x;
+    int num_point_noshadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_NOSHADOW).x;
+    int num_point_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_SHADOW).x;
 
-        // Fetch per light packed data
+    // Spotlights without shadow
+    for (int i = 0; i < num_spot_noshadow; ++i) {
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
         LightData light_data = read_light_data(AllLightsData, light_offs);
-        int light_type = get_light_type(light_data);
-        vec3 light_pos = get_light_position(light_data);
-        int ies_profile = get_ies_profile(light_data);
-        float attenuation = 0;
-        vec3 l = vec3(0);
-        // not implemented yet
-        vec3 transmittance = vec3(1);
-        int shadow_source_index = get_shadow_source_index(light_data);
-
-
-        // Special handling for different light types
-        // TODO: Remove branches, by using seperate lists. Should be way faster
-        // since we avoid branching.
-        switch(light_type) {
-
-            case LT_POINT_LIGHT: {
-                float radius = get_pointlight_radius(light_data);
-                l = normalize(light_pos - m.position);
-                attenuation = get_pointlight_attenuation(l, radius, distance(m.position, light_pos), ies_profile);
-                break;
-            } 
-
-            case LT_SPOT_LIGHT: {    
-                float radius = get_spotlight_radius(light_data);
-                float fov = get_spotlight_fov(light_data);
-                vec3 direction = get_spotlight_direction(light_data);
-                l = normalize(light_pos - m.position);
-                attenuation = get_spotlight_attenuation(l, direction, fov, radius, distance(m.position, light_pos), ies_profile);
-                break;
-            }
-        }
-
-        // Fetch the shadow source data
-        float shadow = 1.0;
-
-        if (shadow_source_index >= 0) {
-    
-            SourceData source_data = read_source_data(ShadowSourceData, shadow_source_index * 5);
-            mat4 mvp = get_source_mvp(source_data);
-            vec4 uv = get_source_uv(source_data);
-
-            // TODO: use biased position
-            vec3 projected = project(mvp, m.position);
-            vec2 projected_coord = projected.xy * uv.zw + uv.xy;
-
-            // float depth_sample = textureLod(ShadowAtlas, projected_coord.xy, 0).x;
-
-            // shadow = step(projected.z - 0.0001, depth_sample);
-
-            shadow = textureLod(ShadowAtlasPCF, vec3(projected_coord.xy, projected.z - 0.0005), 0).x;
-
-        }
-
-        shading_result += apply_light(m, v, l, get_light_color(light_data), attenuation, shadow, directional_occlusion, transmittance);
+        shading_result += process_spotlight(m, light_data, v, directional_occlusion, 1.0);
     }
-    
+
+    // Spotlights with shadow
+    for (int i = 0; i < num_spot_shadow; ++i) {
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
+        LightData light_data = read_light_data(AllLightsData, light_offs);
+
+        // Get shadow factor
+        int source_index = get_shadow_source_index(light_data);
+        SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
+        float shadow_factor = filter_shadowmap(m, source_data);
+        shading_result += process_spotlight(m, light_data, v, directional_occlusion, shadow_factor);
+    }
+
+    // Pointlights without shadow
+    for (int i = 0; i < num_point_noshadow; ++i) {
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
+        LightData light_data = read_light_data(AllLightsData, light_offs);
+        shading_result += process_pointlight(m, light_data, v, directional_occlusion, 1.0);
+    }
+
+    // Pointlights with shadow
+    for (int i = 0; i < num_point_shadow; ++i) {
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
+        LightData light_data = read_light_data(AllLightsData, light_offs);
+
+        // Get shadow factor
+        int source_index = get_shadow_source_index(light_data);
+        SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
+        float shadow_factor = filter_shadowmap(m, source_data);
+        shading_result += process_pointlight(m, light_data, v, directional_occlusion, shadow_factor);
+    }
+
     return shading_result;
 }

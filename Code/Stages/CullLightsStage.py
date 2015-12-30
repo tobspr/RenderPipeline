@@ -35,6 +35,10 @@ class CullLightsStage(RenderStage):
         }
 
     def create(self):
+
+        # Amount of light classes. Has to match the ones in LightClassification.inc.glsl
+        num_light_classes = 4
+
         max_cells = self._tile_amount.x * self._tile_amount.y * \
             self._pipeline.get_setting("lighting.culling_grid_slices")
 
@@ -49,7 +53,7 @@ class CullLightsStage(RenderStage):
         self._target.set_clear_color(color=Vec4(0.2, 0.6, 1.0, 1.0))
         
         self._per_cell_lights = Image.create_buffer(
-            "PerCellLights", max_cells * (self._max_lights_per_cell + 1),
+            "PerCellLights", max_cells * (self._max_lights_per_cell + num_light_classes),
             Texture.T_int, Texture.F_r32)
         self._per_cell_lights.set_clear_color(0)
         self.debug("Using", self._num_rows, "culling lines")

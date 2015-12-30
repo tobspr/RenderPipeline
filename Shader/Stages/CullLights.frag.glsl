@@ -5,6 +5,7 @@
 #pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/LightCulling.inc.glsl"
 #pragma include "Includes/LightData.inc.glsl"
+#pragma include "Includes/LightClassification.inc.glsl"
 
 uniform isamplerBuffer CellListBuffer;
 uniform writeonly iimageBuffer PerCellLightsBuffer;
@@ -43,7 +44,7 @@ void main() {
     float max_distance = get_distance_from_slice(cell_slice + 1) + distance_bias;
 
     // Get the offset in the per-cell light list
-    int storage_offs = (MAX_LIGHTS_PER_CELL+1) * idx;
+    int storage_offs = (MAX_LIGHTS_PER_CELL+LIGHT_CLS_COUNT) * idx;
     int num_rendered_lights = 0;
 
     // Compute the aspect ratio, this is required for proper culling.
@@ -76,6 +77,15 @@ void main() {
                     / vec3(precompute_size, 1), vec3(2.0), vec3(-1.0)) * aspect_mul);
     }
 
+
+    // Create storage for all lights
+    int light_counts[LIGHT_CLS_COUNT];
+    int light_indices[LIGHT_CLS_COUNT][MAX_LIGHTS_PER_CELL];
+    for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
+        light_counts[i] = 0;
+    }
+
+
     // Cull all lights
     for (int i = 0; i < maxLightIndex + 1 && num_rendered_lights < MAX_LIGHTS_PER_CELL; i++) {
 
@@ -92,6 +102,9 @@ void main() {
 
         bool visible = false;
 
+        // Base type of the light
+        int light_classification = LIGHT_CLS_INVALID;
+
         // Point Lights
         switch(light_type) {
 
@@ -101,6 +114,7 @@ void main() {
                     visible = visible || viewspace_ray_sphere_distance_intersection(
                         light_pos_view.xyz, radius, ray_dirs[k], min_distance, max_distance);
                 }
+                light_classification = get_casts_shadows(light_data) ? LIGHT_CLS_POINT_SHADOW : LIGHT_CLS_POINT_NOSHADOW;
                 break;
             } 
 
@@ -113,17 +127,30 @@ void main() {
                     visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz,
                         direction_view, radius, fov, ray_dirs[k], min_distance, max_distance);
                 }
+                light_classification = get_casts_shadows(light_data) ? LIGHT_CLS_SPOT_SHADOW : LIGHT_CLS_SPOT_NOSHADOW;
                 break;
             }
         }
 
         // Write the light to the light buffer
-        // TODO: Might have a seperate list for different light types, gives better performance
         if (visible) {
-            num_rendered_lights ++;
-            imageStore(PerCellLightsBuffer, storage_offs + num_rendered_lights, ivec4(i));
+            int current_count = light_counts[light_classification];
+            light_indices[light_classification][current_count] = i;
+            light_counts[light_classification] = current_count + 1;
         }
     }
 
-    imageStore(PerCellLightsBuffer, storage_offs, ivec4(num_rendered_lights));
+    int offset = storage_offs;
+    
+    // Write the light counts
+    for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
+        imageStore(PerCellLightsBuffer, offset++, ivec4(light_counts[i]));
+    }
+
+    // Write the light indices
+    for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
+        for (int k = 0; k < light_counts[i]; ++k) {
+            imageStore(PerCellLightsBuffer, offset++, ivec4(light_indices[i][k]));
+        }
+    }
 }
