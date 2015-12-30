@@ -115,7 +115,7 @@ inline void GPUCommand::push_vec4(const LVecBase4i &v) {
  *   pushing all components in row-order to the command. This occupies a space of
  *   9 floats.
  * 
- * @param v [description]
+ * @param v Matrix to append
  */
 inline void GPUCommand::push_mat3(const LMatrix3f &v) {
     for (size_t i = 0; i < 3; ++i) {
@@ -131,7 +131,7 @@ inline void GPUCommand::push_mat3(const LMatrix3f &v) {
  *   pushing all components in row-order to the command. This occupies a space of
  *   16 floats.
  * 
- * @param v [description]
+ * @param v Matrix to append
  */
 inline void GPUCommand::push_mat4(const LMatrix4f &v) {
     for (size_t i = 0; i < 4; ++i) {
