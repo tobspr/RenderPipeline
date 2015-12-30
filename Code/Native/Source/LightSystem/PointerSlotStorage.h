@@ -105,10 +105,12 @@ public:
         if (num_consecutive == 1) {
             return find_slot(slot);
         }
+
+        // Try to find consecutive slots otherwise
         for (size_t i = 0; i < SIZE; ++i) {
             bool any_taken = false;
-            for (size_t k = 0; !any_taken && k < num_consecutive; ++i) {
-                any_taken = _data[i + k] == NULL;
+            for (size_t k = 0; !any_taken && k < num_consecutive; ++k) {
+                any_taken = _data[i + k] != NULL;
             }
             if (!any_taken) {
                 slot = i;

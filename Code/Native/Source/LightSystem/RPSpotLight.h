@@ -14,7 +14,6 @@ class RPSpotLight : public RPLight {
 
     PUBLISHED:
         RPSpotLight();
-        ~RPSpotLight();
 
         inline void set_radius(float radius);
         inline float get_radius() const;

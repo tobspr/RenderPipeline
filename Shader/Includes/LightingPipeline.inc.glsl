@@ -22,40 +22,69 @@ uniform sampler2DShadow ShadowAtlasPCF;
     uniform sampler2D AmbientOcclusion;
 #endif
 
+int get_pointlight_source_offs(vec3 direction) {
+    vec3 abs_dir = abs(direction);
+    float max_comp = max(abs_dir.x, max(abs_dir.y, abs_dir.z));
+    if (abs_dir.x >= max_comp) return direction.x >= 0.0 ? 0 : 1;
+    if (abs_dir.y >= max_comp) return direction.y >= 0.0 ? 2 : 3;
+    return direction.z >= 0.0 ? 4 : 5;
+}
+
 // Processes a spot light
 vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, vec4 directional_occlusion, float shadow_factor) {
-    const vec3 transmittance = vec3(1);
+    const vec3 transmittance = vec3(1); // <-- TODO
+
+    // Get the lights data
     int ies_profile = get_ies_profile(light_data);
-    vec3 light_pos = get_light_position(light_data);
-    float radius = get_spotlight_radius(light_data);
-    float fov = get_spotlight_fov(light_data);
-    vec3 direction = get_spotlight_direction(light_data);
-    vec3 l = normalize(light_pos - m.position);
-    float attenuation = get_spotlight_attenuation(l, direction, fov, radius, distance(m.position, light_pos), ies_profile);
-    return apply_light(m, view_vector, l, get_light_color(light_data), attenuation, shadow_factor, directional_occlusion, transmittance);
+    vec3 position   = get_light_position(light_data);
+    float radius    = get_spotlight_radius(light_data);
+    float fov       = get_spotlight_fov(light_data);
+    vec3 direction  = get_spotlight_direction(light_data);
+    vec3 l          = normalize(position - m.position);
+
+    // Compute the spot lights attenuation
+    float attenuation = get_spotlight_attenuation(l, direction, fov, radius,
+                                                  distance(m.position, position), ies_profile);
+
+    // Compute the lights influence
+    return apply_light(m, view_vector, l, get_light_color(light_data), attenuation,
+                       shadow_factor, directional_occlusion, transmittance);
 }
 
 // Processes a point light
 vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, vec4 directional_occlusion, float shadow_factor) {
-    const vec3 transmittance = vec3(1);
-    float radius = get_pointlight_radius(light_data);
-    vec3 light_pos = get_light_position(light_data);
+    const vec3 transmittance = vec3(1); // <-- TODO
+
+    // Get the lights data
+    float radius    = get_pointlight_radius(light_data);
+    vec3 light_pos  = get_light_position(light_data);
     int ies_profile = get_ies_profile(light_data);
-    vec3 l = normalize(light_pos - m.position);
-    float attenuation = get_pointlight_attenuation(l, radius, distance(m.position, light_pos), ies_profile);
-    return apply_light(m, view_vector, l, get_light_color(light_data), attenuation, shadow_factor, directional_occlusion, transmittance);
+    vec3 l          = normalize(light_pos - m.position);
+
+    // Get the point light attenuation
+    float attenuation = get_pointlight_attenuation(l, radius,
+                                                   distance(m.position, light_pos), ies_profile);
+
+    // Compute the lights influence
+    return apply_light(m, view_vector, l, get_light_color(light_data),
+                       attenuation, shadow_factor, directional_occlusion, transmittance);
 }
 
 // Filters a shadow map
-float filter_shadowmap(Material m, SourceData source) {
+float filter_shadowmap(Material m, SourceData source, vec3 l) {
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);
 
-    // TODO: use biased position
+    // TODO: make this configurable
+    const float slope_bias = 0.1;
+    const float normal_bias = 0.1;
+    const float const_bias = 0.0001;
+    vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
+
     // TODO: use filtering
-    vec3 projected = project(mvp, m.position);
+    vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
-    return textureLod(ShadowAtlasPCF, vec3(projected_coord.xy, projected.z - 0.0005), 0).x;
+    return textureLod(ShadowAtlasPCF, vec3(projected_coord.xy, projected.z - const_bias), 0).x;
 }
 
 
@@ -117,9 +146,10 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         LightData light_data = read_light_data(AllLightsData, light_offs);
 
         // Get shadow factor
+        vec3 v2l = normalize(m.position - get_light_position(light_data));
         int source_index = get_shadow_source_index(light_data);
         SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
-        float shadow_factor = filter_shadowmap(m, source_data);
+        float shadow_factor = filter_shadowmap(m, source_data, v2l);
         shading_result += process_spotlight(m, light_data, v, directional_occlusion, shadow_factor);
     }
 
@@ -137,8 +167,11 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
         // Get shadow factor
         int source_index = get_shadow_source_index(light_data);
+        vec3 v2l = normalize(m.position - get_light_position(light_data));
+        source_index += get_pointlight_source_offs(v2l);
+
         SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
-        float shadow_factor = filter_shadowmap(m, source_data);
+        float shadow_factor = filter_shadowmap(m, source_data, v2l);
         shading_result += process_pointlight(m, light_data, v, directional_occlusion, shadow_factor);
     }
 

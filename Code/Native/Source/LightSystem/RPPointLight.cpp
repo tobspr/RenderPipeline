@@ -33,7 +33,10 @@ void RPPointLight::write_to_command(GPUCommand &cmd) {
  */
 void RPPointLight::init_shadow_sources() {
     nassertv(_shadow_sources.size() == 0);
-    // TODO
+    // Create 6 shadow sources, one for each direction
+    for(size_t i = 0; i < 6; ++i) {
+        _shadow_sources.push_back(new ShadowSource());
+    }
 }
 
 /**
@@ -42,5 +45,20 @@ void RPPointLight::init_shadow_sources() {
  * @see RPLight::update_shadow_sources
  */
 void RPPointLight::update_shadow_sources() {
-    // TODO
+    LVecBase3f directions[6] = {
+        LVecBase3f( 1,  0,  0),
+        LVecBase3f(-1,  0,  0),
+        LVecBase3f( 0,  1,  0),
+        LVecBase3f( 0, -1,  0),
+        LVecBase3f( 0,  0,  1),
+        LVecBase3f( 0,  0, -1)
+    };
+
+    // Increase fov to prevent artifacts at the shadow map transitions
+    const float fov = 90.0f + 3.0f;
+    for (size_t i = 0; i < _shadow_sources.size(); ++i) {
+        _shadow_sources[i]->set_resolution(get_shadow_map_resolution());
+        _shadow_sources[i]->set_perspective_lens(fov, _near_plane, _radius,
+                                                _position, directions[i]);
+    }
 }
