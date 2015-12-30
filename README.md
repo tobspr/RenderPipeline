@@ -8,6 +8,10 @@
 - Time of Day System
 - Plugin System
 
+See the <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Features">Feature List</a>
+for a comprehensive list of features.
+
+
 ### Requirements
 
 - OpenGL 4.3 capable GPU
