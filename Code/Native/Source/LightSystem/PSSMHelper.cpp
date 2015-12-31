@@ -24,6 +24,8 @@
  *
  */
 
+// Only include the pssm helper if actually required
+#ifdef RP_REQ_PSSM_HELPER
 
 #include "PSSMHelper.h"
 
@@ -109,3 +111,6 @@ LMatrix4f PSSMHelper::find_projection_mat(
         );
     return result;
 }
+
+
+#endif // RP_REQ_PSSM_HELPER

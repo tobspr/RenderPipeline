@@ -27,6 +27,9 @@
 #ifndef RP_PSSM_HELPER_H
 #define RP_PSSM_HELPER_H
 
+// Only include the pssm helper if actually required
+#ifdef RP_REQ_PSSM_HELPER
+
 #include "pandabase.h"
 #include "luse.h"
 
@@ -48,5 +51,7 @@ class PSSMHelper {
             const LVector4f &far_lr);
 
 };
+
+#endif // RP_REQ_PSSM_HELPER
 
 #endif // RP_PSSM_HELPER_H
