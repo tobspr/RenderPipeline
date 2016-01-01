@@ -86,7 +86,7 @@ void PSSMCameraRig::init_cam_nodes() {
         // Construct a new camera
         _cameras[i] = new Camera("pssm-cam-" + to_string(((long long)i)), lens);
         _cam_nodes.push_back(NodePath(_cameras[i]));
-        _max_film_sizes[i].set(0, 0);
+        _max_film_sizes[i].fill(0);
     }
 }
 
@@ -192,8 +192,8 @@ LPoint3f get_average_of_points(LVecBase3f const (&starts)[4], LVecBase3f const (
  */
 void find_min_max_extents(LVecBase3f &min_extent, LVecBase3f &max_extent, const LMatrix4f &transform, LVecBase3f const (&proj_points)[8], Camera *cam) {
 
-    min_extent.set(1e10, 1e10, 1e10);
-    max_extent.set(-1e10, -1e10, -1e10);
+    min_extent.fill(1e10);
+    max_extent.fill(-1e10);
     LPoint2f screen_points[8];
 
     // Now project all points to the screen space of the current camera and also

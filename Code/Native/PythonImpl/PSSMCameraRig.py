@@ -1,0 +1,5 @@
+
+
+class PSSMCameraRig(object):
+    pass
+    

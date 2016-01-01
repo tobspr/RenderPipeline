@@ -389,6 +389,7 @@ inline void RPLight::clear_ies_profile() {
 inline void RPLight::set_near_plane(float near_plane) {
     nassertv(near_plane > 0.00001);
     _near_plane = near_plane;
+    invalidate_shadows();
 }
 
 /**

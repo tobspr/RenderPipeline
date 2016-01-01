@@ -155,7 +155,7 @@ inline void PSSMCameraRig::set_border_bias(float bias) {
  */
 inline void PSSMCameraRig::reset_film_size_cache() {
     for (size_t i = 0; i < _max_film_sizes.size(); ++i) {
-        _max_film_sizes[i].set(0, 0);
+        _max_film_sizes[i].fill(0);
     }
 }
 

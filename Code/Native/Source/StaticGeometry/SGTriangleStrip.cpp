@@ -33,9 +33,9 @@
 
 SGTriangleStrip::SGTriangleStrip() {
     _index = -1;
-    _bb_min.set(0, 0, 0);
-    _bb_max.set(0, 0, 0);
-    _common_vector.set(0, 0, 0);
+    _bb_min.fill(0);
+    _bb_max.fill(0);
+    _common_vector.fill(0);
     _angle_difference = 0.0;
 }
 

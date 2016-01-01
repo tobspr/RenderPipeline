@@ -13,7 +13,7 @@ from .PipeViewer import PipeViewer
 from .BetterOnscreenText import BetterOnscreenText
 from .BetterLabeledCheckbox import BetterLabeledCheckbox
 from .CheckboxCollection import CheckboxCollection
-from .FastText import FastText
+from .FastTextNode import FastTextNode
 from .ErrorMessageDisplay import ErrorMessageDisplay
 from .ExposureWidget import ExposureWidget
 
@@ -96,9 +96,9 @@ class OnscreenDebugger(BaseManager):
         self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.07, 1, 1.0 - 0.07)
         self._debug_lines = []
         for i in range(4):
-            self._debug_lines.append(FastText(
-                pos=Vec2(0, -i * 0.05), parent=self._overlay_node,
-                pixel_size=18, align="right"))
+            self._debug_lines.append(FastTextNode(
+                pos=Vec2(0, -i * 0.046), parent=self._overlay_node,
+                pixel_size=16, align="right", color=Vec3(1)))
 
     def _create_hints(self):
         """ Creates the hints like keybindings and when reloading shaders """
@@ -159,9 +159,6 @@ class OnscreenDebugger(BaseManager):
                 self._pipeline.get_daytime_mgr().get_time(),
                 self._pipeline.get_daytime_mgr().get_num_constraints()
             ))
-
-        for line in self._debug_lines:
-            line.update()
 
     def _create_debugger(self):
         """ Creates the debugger contents """

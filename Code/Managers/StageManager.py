@@ -32,6 +32,7 @@ class StageManager(BaseManager):
         "ScatteringStage",
         "AmbientStage",
         "SSLRStage",
+        "CloudStage",
         "SMAAStage",
         "AutoExposureStage",
         "BloomStage",

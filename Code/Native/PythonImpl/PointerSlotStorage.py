@@ -16,9 +16,9 @@ class PointerSlotStorage(object):
         # Notice: returns None in case of no free slot, and the slot otherwise, this
         # is different to the C++ Module
         for i, v in enumerate(self._data):
-            if v:
+            if not v:
                 return i
-        return None
+        return -1
 
     def find_consecutive_slots(self, num_consecutive):
         if num_consecutive == 1:
@@ -33,7 +33,7 @@ class PointerSlotStorage(object):
             if not any_taken:
                 return i
 
-        return None
+        return -1
 
     def free_slot(self, slot):
         self._data[slot] = None

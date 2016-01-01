@@ -48,7 +48,7 @@ class IESDataset {
     
         void set_vertical_angles(const PTA_float &vertical_angles);
         void set_horizontal_angles(const PTA_float &horizontal_angles);
-		void set_candela_values(const PTA_float &candela_values);
+        void set_candela_values(const PTA_float &candela_values);
 		
         void generate_dataset_texture_into(Texture* dest_tex, size_t z) const;
 

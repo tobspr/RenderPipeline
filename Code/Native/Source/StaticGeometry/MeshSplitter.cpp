@@ -399,7 +399,7 @@ void MeshSplitter::find_common_vector(const TriangleList &triangles, LVecBase3f 
     const float PI = 3.14159265359;
 
     // First, average all vectors to get a common vector
-    cvector.set(0, 0, 0);
+    cvector.fill(0);
 
     for(TriangleList::const_iterator iter = triangles.cbegin(); iter != triangles.cend(); ++iter) {
         cvector += (*iter)->face_normal;

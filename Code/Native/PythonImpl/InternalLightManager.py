@@ -18,8 +18,11 @@ class InternalLightManager(object):
     def get_max_light_index(self):
         return self._lights.get_max_index()
 
-    def get_num_stored_lights(self):
+    def get_num_lights(self):
         return self._lights.get_num_entries()
+
+    def get_num_shadow_sources(self):
+        return self._shadow_sources.get_num_entries()
 
     def set_shadow_manager(self, shadow_manager):
         self._shadow_manager = shadow_manager
@@ -33,11 +36,9 @@ class InternalLightManager(object):
             return
 
         slot = self._lights.find_slot()
-        if not slot:
+        if slot < 0:
             print("ERROR: Could not find a free slot for a new light!")
             return
-
-        light.ref()
 
         light.assign_slot(slot)
         self._lights.reserve_slot(slot, light)
@@ -86,8 +87,6 @@ class InternalLightManager(object):
                 light.get_shadow_source(0), light.get_num_shadow_sources())
 
             light.clear_shadow_sources()
-
-        light.unref()
 
     def gpu_remove_consecutive_sources(self, first_source, num_sources):
         cmd_remove = GPUCommand(GPUCommand.CMD_remove_sources)

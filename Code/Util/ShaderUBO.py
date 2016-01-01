@@ -113,9 +113,7 @@ class PTABasedUBO(BaseUBO):
 
     def update_input(self, name, value):
         """ Updates an existing input """
-        if not isinstance(value, tuple) and not isinstance(value, list):
-            value = [value]
-        self._ptas[name][0] = type(self._ptas[name][0])(*value)
+        self._ptas[name][0] = value
 
     def get_input(self, name):
         """ Returns the value of an existing input """

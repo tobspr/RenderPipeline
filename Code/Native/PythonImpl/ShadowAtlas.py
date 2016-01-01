@@ -1,0 +1,3 @@
+
+class ShadowAtlas(object):
+    pass
