@@ -14,7 +14,6 @@ enabled:
     - Scattering
     - PSSM
 
-
 overrides: 
     AO.alchemy_max_distance: 4.08
     AO.alchemy_num_samples: 32
@@ -81,7 +80,7 @@ overrides:
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: False
-    Scattering.ground_fog_factor: 275.77999
+    Scattering.ground_fog_factor: 76.44
     Scattering.mie_phase_factor: 0.33
     Scattering.scattering_method: eric_bruneton
 

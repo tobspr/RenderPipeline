@@ -106,7 +106,7 @@ class OnscreenDebugger(BaseManager):
         """ Creates the hints like keybindings and when reloading shaders """
         self._hint_reloading = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/ShaderReloadHint.png",
-            x=float((Globals.base.win.get_x_size() - 465) // 2) / self._gui_scale, y=220,
+            x=float((Globals.base.win.get_x_size()) // 2) / self._gui_scale - 465 // 2, y=220,
             parent=self._fullscreen_node)
         self.set_reload_hint_visible(False)
 
@@ -124,7 +124,7 @@ class OnscreenDebugger(BaseManager):
 
         # Keybinding hints
         self._keybinding_instructions = BetterOnscreenImage(
-            image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30, y=530,
+            image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30, y=570,
             parent=self._fullscreen_node, any_filter=False)
 
     def _update_stats(self):
@@ -166,7 +166,7 @@ class OnscreenDebugger(BaseManager):
         """ Creates the debugger contents """
         debugger_opacity = 1.0
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
-        self._debugger_node.set_pos(30, 0, -220)
+        self._debugger_node.set_pos(30, 0, -250)
         self._debugger_bg_img = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/DebuggerBackground.png", x=0, y=0,
             parent=self._debugger_node, any_filter=False
