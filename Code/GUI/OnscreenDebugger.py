@@ -45,8 +45,9 @@ class OnscreenDebugger(BaseManager):
 
         # When using small resolutions, scale the GUI so its still useable,
         # otherwise the sub-windows are bigger than the main window
-        scale_factor = min(1.0, Globals.base.win.get_x_size() / 1800.0)
+        scale_factor = min(1.0, Globals.base.win.get_x_size() / 1920.0)
         self._fullscreen_node.set_scale(scale_factor)
+        self._gui_scale = scale_factor
 
         # Component values
         self._debugger_width = 460
@@ -67,7 +68,8 @@ class OnscreenDebugger(BaseManager):
         self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
 
         self._exposure_node = self._fullscreen_node.attach_new_node("ExposureWidget")
-        self._exposure_node.set_pos(Globals.base.win.get_x_size() - 200, 1, -Globals.base.win.get_y_size() + 120)
+        self._exposure_node.set_pos((Globals.base.win.get_x_size()) / self._gui_scale - 200, 
+            1, -Globals.base.win.get_y_size() + 120)
         self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
 
     def _init_notify(self):
@@ -104,8 +106,8 @@ class OnscreenDebugger(BaseManager):
         """ Creates the hints like keybindings and when reloading shaders """
         self._hint_reloading = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/ShaderReloadHint.png",
-            x= (Globals.base.win.get_x_size() - 465) // 2, y=220,
-            parent=Globals.base.pixel2d)
+            x=float((Globals.base.win.get_x_size() - 465) // 2) / self._gui_scale, y=220,
+            parent=self._fullscreen_node)
         self.set_reload_hint_visible(False)
 
         if not NATIVE_CXX_LOADED:
@@ -122,7 +124,7 @@ class OnscreenDebugger(BaseManager):
 
         # Keybinding hints
         self._keybinding_instructions = BetterOnscreenImage(
-            image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30, y=Globals.base.win.get_y_size() - 510,
+            image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30, y=530,
             parent=self._fullscreen_node, any_filter=False)
 
     def _update_stats(self):
@@ -164,7 +166,7 @@ class OnscreenDebugger(BaseManager):
         """ Creates the debugger contents """
         debugger_opacity = 1.0
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
-        self._debugger_node.set_pos(30, 0, -Globals.base.win.get_y_size() + 820)
+        self._debugger_node.set_pos(30, 0, -220)
         self._debugger_bg_img = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/DebuggerBackground.png", x=0, y=0,
             parent=self._debugger_node, any_filter=False
