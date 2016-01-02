@@ -148,7 +148,7 @@ class RenderStage(DebugObject):
         # If only one shader is specified, assume its a postprocess fragment shader,
         # and use the default vertex shader
         if len(args) == 1:
-            args = ["Shader/DefaultPostProcess.vertex.glsl"] + args
+            args = ["Shader/DefaultPostProcess.vert.glsl"] + args
 
         return Shader.load(Shader.SLGLSL, *args)
 
@@ -168,6 +168,6 @@ class RenderStage(DebugObject):
         # If only one shader is specified, assume its a postprocess fragment shader,
         # and use the default vertex shader
         if len(args) == 1:
-            path_args = ["Shader/DefaultPostProcess.vertex.glsl"] + path_args
+            path_args = ["Shader/DefaultPostProcess.vert.glsl"] + path_args
 
         return Shader.load(Shader.SLGLSL, *path_args)

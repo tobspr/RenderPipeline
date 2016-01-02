@@ -17,7 +17,7 @@ loadPrcFileData("", "win-size 100 100")
 
 grain_shader = Shader.load(
   Shader.SL_GLSL,
-  "../../Shader/DefaultPostProcess.vertex.glsl",
+  "../../Shader/DefaultPostProcess.vert.glsl",
   "GrainShader.fragment.glsl")
 
 import direct.directbase.DirectStart

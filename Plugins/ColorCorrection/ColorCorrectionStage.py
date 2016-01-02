@@ -17,7 +17,7 @@ class ColorCorrectionStage(RenderStage):
         self._use_sharpen = flag
 
     def create(self):
-        self._target = self._create_target("ColorCorrectionStage")
+        self._target = self._create_target("ColorCorrection:MainTonemap")
 
         # Create the sharpen target
         if self._use_sharpen:
@@ -26,7 +26,7 @@ class ColorCorrectionStage(RenderStage):
             self._target.add_color_texture(bits=8)
             self._target.prepare_offscreen_buffer()
 
-            self._target_sharpen = self._create_target("SharpenFilter")
+            self._target_sharpen = self._create_target("ColorCorrection:Sharpen")
             # We don't have a color attachment, but still want to write color
             self._target_sharpen.set_color_write(True)
             self._target_sharpen.prepare_offscreen_buffer()

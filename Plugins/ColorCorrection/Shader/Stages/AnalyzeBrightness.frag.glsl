@@ -19,14 +19,16 @@ void main() {
     }
 
     avg_luminance /= float(texsize.x * texsize.y);
-    avg_luminance /= 0.2;
+    avg_luminance = avg_luminance / (1 - avg_luminance);
+    avg_luminance *= GET_SETTING(ColorCorrection, brightness_scale);
+
 
     const float factor = 12.0;
     float min_exp = make_logarithmic(GET_SETTING(ColorCorrection, min_exposure), factor);
     float max_exp = make_logarithmic(GET_SETTING(ColorCorrection, max_exposure), factor);
     float exp_bias = GET_SETTING(ColorCorrection, exposure_bias) * 10.0;
 
-    avg_luminance = max(min_exp, min(max_exp, 1.0 / (avg_luminance) + exp_bias));
+    avg_luminance = max(min_exp, min(max_exp, 0.2 / (avg_luminance) + exp_bias));
 
     // Transition between the last and current value smoothly
     float cur_luminance = imageLoad(ExposureStorage, 0).x;

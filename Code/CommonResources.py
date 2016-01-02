@@ -1,6 +1,6 @@
 
 from panda3d.core import PTAVecBase3f, PTAMat4, Texture, TransformState, Mat4
-from panda3d.core import CS_yup_right, CS_zup_right, PTAFloat, invert
+from panda3d.core import CS_yup_right, CS_zup_right, PTAFloat, invert, Vec3
 from direct.stdpy.file import open
 
 from .Util.DebugObject import DebugObject
@@ -42,7 +42,9 @@ class CommonResources(BaseManager):
         self._input_ubo.register_pta("view_mat_z_up", "mat4")
         self._input_ubo.register_pta("proj_mat", "mat4")
         self._input_ubo.register_pta("inv_proj_mat", "mat4")
+        self._input_ubo.register_pta("view_mat_billboard", "mat4")
         self._input_ubo.register_pta("frame_delta", "float")
+        self._input_ubo.register_pta("frame_time", "float")
         self._pipeline.get_stage_mgr().add_ubo(self._input_ubo)
 
         # Main camera and main render have to be regular inputs, since they are
@@ -139,6 +141,14 @@ class CommonResources(BaseManager):
 
         # Compute the view matrix, but with a z-up coordinate system 
         update("view_mat_z_up", view_mat * Mat4.convert_mat(CS_zup_right, CS_yup_right))
+
+        # Compute the view matrix without the camera rotation
+        view_mat_billboard = Mat4(view_mat)
+        view_mat_billboard.set_row(0, Vec3(1, 0, 0))
+        view_mat_billboard.set_row(1, Vec3(0, 1, 0))
+        view_mat_billboard.set_row(2, Vec3(0, 0, 1))
+        update("view_mat_billboard", view_mat_billboard)
+
         update("camera_pos", self._showbase.camera.get_pos(Globals.render))
         update("last_view_proj_mat_no_jitter", self._input_ubo.get_input("view_proj_mat_no_jitter"))
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
@@ -158,3 +168,4 @@ class CommonResources(BaseManager):
 
         # Store the frame delta
         update("frame_delta", Globals.clock.get_dt())
+        update("frame_time", Globals.clock.get_frame_time())

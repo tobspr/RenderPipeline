@@ -14,6 +14,7 @@ enabled:
     - Scattering
     - PSSM
 
+
 overrides: 
     AO.alchemy_max_distance: 4.08
     AO.alchemy_num_samples: 32
@@ -42,7 +43,7 @@ overrides:
     Bloom.num_mipmaps: 9
     Bloom.remove_fireflies: True
     ColorCorrection.brightness_adaption_rate: 3.0
-    ColorCorrection.brightness_scale: 2.34
+    ColorCorrection.brightness_scale: 1.0
     ColorCorrection.chromatic_aberration_samples: 2
     ColorCorrection.chromatic_aberration_strength: 0.3744
     ColorCorrection.darkness_adaption_rate: 1.0
@@ -62,7 +63,7 @@ overrides:
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.use_sharpen: True
-    ColorCorrection.vignette_strength: 0.4111
+    ColorCorrection.vignette_strength: 0.1444
     PSSM.border_bias: 0.1867
     PSSM.filter_radius: 2.63
     PSSM.filter_sample_count: 32
@@ -79,8 +80,8 @@ overrides:
     PSSM.use_pcf: True
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
-    SMAA.use_reprojection: True
-    Scattering.ground_fog_factor: 106.34
+    SMAA.use_reprojection: False
+    Scattering.ground_fog_factor: 275.77999
     Scattering.mie_phase_factor: 0.33
     Scattering.scattering_method: eric_bruneton
 

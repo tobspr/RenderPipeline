@@ -53,7 +53,7 @@ class GPUCommandQueue(DebugObject):
     def reload_shaders(self):
         """ Reloads the command shader """
         shader = Shader.load(Shader.SL_GLSL,
-                             "Shader/DefaultPostProcess.vertex.glsl",
+                             "Shader/DefaultPostProcess.vert.glsl",
                              "Shader/ProcessCommandQueue.fragment.glsl")
         self._command_target.set_shader(shader)
 

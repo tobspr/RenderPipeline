@@ -198,3 +198,15 @@ float grain(vec2 coord, float frame_time) {
   return (mix(f2.x, f2.y, mod_factor) - 0.55) * 3.0;
 }
 
+
+float fbm(vec3 x) {
+    float v = 0.0;
+    float a = 0.5;
+    float shift = 0.2;
+    for (int i = 0; i < 5; ++i) {
+        v += a * snoise3D(x);
+        x = x * 3.0 + shift;
+        a *= 0.5;
+    }
+    return v;
+}

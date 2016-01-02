@@ -23,7 +23,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     }
 
     vec3 inscatteredLight = vec3(0.0);
-    float groundH = Rg + 2.0;
+    float groundH = Rg + 0.05;
     float pathLength = distance(MainSceneData.camera_pos, surfacePos);
     vec3 startPos = MainSceneData.camera_pos; 
 
@@ -68,7 +68,6 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         float dest_height = surfacePos.z;
         float height_step = (dest_height - current_height) / num_samples;
 
-
         vec4 inscatter_sum = vec4(0);
         
         for (int i = 0; i < num_samples; ++i) {
@@ -107,7 +106,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     float phaseM = phaseFunctionM(nuStartPos);
     inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
 
-    inscatteredLight *= 60.0;
+    inscatteredLight *= 40.0;
 
     inscatteredLight *= saturate( (sun_vector.z+0.1) * 40.0);
 

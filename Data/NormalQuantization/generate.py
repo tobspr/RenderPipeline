@@ -40,7 +40,7 @@ while TEXTURE_SIZE >= 2:
     target_stitch.add_color_texture(bits=16)
     target_stitch.prepare_offscreen_buffer()
 
-    with open("../../Shader/DefaultPostProcess.vertex.glsl", "r") as handle:
+    with open("../../Shader/DefaultPostProcess.vert.glsl", "r") as handle:
         vertex_shader = handle.read()
 
     fragment_shader = """

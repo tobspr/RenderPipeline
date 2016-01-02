@@ -68,9 +68,14 @@
     #pragma include "Includes/Structures/GBufferData.struct.glsl"
 
     // Checks whether the given material is the skybox
-    bool is_skybox(Material m, vec3 camera_pos) {
-        return distance(m.position, camera_pos) > 20000.0;
+    bool is_skybox(vec3 pos, vec3 camera_pos) {
+        return distance(pos, camera_pos) > 20000.0;
     }
+    
+    bool is_skybox(Material m, vec3 camera_pos) {
+        return is_skybox(m.position, camera_pos);
+    }
+
 
     // Returns the depth at a given texcoord
     float get_gbuffer_depth(GBufferData data, ivec2 coord) {

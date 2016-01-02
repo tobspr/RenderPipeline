@@ -35,7 +35,7 @@ class DisplayShaderBuilder(object):
             with open(cache_key, "w") as handle:
                 handle.write(fragment_shader)
 
-        return Shader.load(Shader.SL_GLSL, "Shader/GUI/DefaultGUIShader.vertex.glsl", cache_key)
+        return Shader.load(Shader.SL_GLSL, "Shader/GUI/DefaultGUIShader.vert.glsl", cache_key)
 
     @classmethod
     def _build_fragment_shader(cls, texture, view_width, view_height):
@@ -129,5 +129,8 @@ class DisplayShaderBuilder(object):
             code = "vec3 sample_dir = get_cubemap_coordinate(slice, texcoord);\n"
             code += "result = textureLod(p3d_Texture0, sample_dir, mipmap).xyz;"
             return code, "samplerCube"
+
+        else:
+            print("WARNING: Unhandled texture type", texture_type, "in display shader builder")
 
         return "result = vec3(1, 0, 1);", "sampler2D"

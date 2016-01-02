@@ -104,11 +104,11 @@ int get_mipmap_count(sampler2D tex) {
 // Converts a normalized spherical coordinate (r = 1) to cartesian coordinates 
 vec3 spherical_to_vector(float theta, float phi) {
     float sin_theta = sin(theta);
-    return vec3(
+    return normalize(vec3(
         sin_theta * cos(phi),
         sin_theta * sin(phi),
         cos(theta)
-    );
+    ));
 }
 
 // Converts a cartesian coordinate to spherical coordinates

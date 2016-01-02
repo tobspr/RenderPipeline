@@ -19,7 +19,7 @@ class AutoExposureStage(RenderStage):
     def create(self):
 
         # Create the target which converts the scene color to a luminance
-        self._target_lum = self._create_target("GenerateLuminance")
+        self._target_lum = self._create_target("ColorCorrection:GetLuminance")
         self._target_lum.set_quarter_resolution()
         self._target_lum.add_color_texture(bits=16)
         self._target_lum.prepare_offscreen_buffer()
@@ -35,7 +35,7 @@ class AutoExposureStage(RenderStage):
             wsize_x = (wsize_x+3) // 4
             wsize_y = (wsize_y+3) // 4
 
-            mip_target = self._create_target("DScaleLum:S" + str(wsize_x))
+            mip_target = self._create_target("ColorCorrection:DScaleLum:S" + str(wsize_x))
             mip_target.add_color_texture(bits=16)
             mip_target.set_size(wsize_x, wsize_y)
             mip_target.prepare_offscreen_buffer()
@@ -51,7 +51,7 @@ class AutoExposureStage(RenderStage):
         self._tex_exposure.clear_image()
 
         # Create the target which extracts the exposure from the average brightness
-        self._target_analyze = self._create_target("AnalyzeBrightness")
+        self._target_analyze = self._create_target("ColorCorrection:AnalyzeBrightness")
         self._target_analyze.set_size(1, 1)
         self._target_analyze.prepare_offscreen_buffer()
 
@@ -60,7 +60,7 @@ class AutoExposureStage(RenderStage):
         self._target_analyze.set_shader_input("DownscaledTex", last_tex)
 
         # Create the target which applies the generated exposure to the scene
-        self._target_apply = self._create_target("ApplyExposure")
+        self._target_apply = self._create_target("ColorCorrection:ApplyExposure")
         self._target_apply.add_color_texture(bits=16)
         self._target_apply.prepare_offscreen_buffer()
         self._target_apply.set_shader_input("Exposure", self._tex_exposure.get_texture())
