@@ -69,7 +69,7 @@ class OnscreenDebugger(BaseManager):
 
         self._exposure_node = self._fullscreen_node.attach_new_node("ExposureWidget")
         self._exposure_node.set_pos((Globals.base.win.get_x_size()) / self._gui_scale - 200, 
-            1, -Globals.base.win.get_y_size() + 120)
+            1, -(Globals.base.win.get_y_size()) / self._gui_scale + 120)
         self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
 
     def _init_notify(self):
@@ -114,8 +114,8 @@ class OnscreenDebugger(BaseManager):
             # Warning when using the python version
             python_warning = BetterOnscreenImage(
                 image="Data/GUI/OnscreenDebugger/PythonWarning.png",
-                x=(Globals.base.win.get_x_size() - 1054) // 2,
-                y=Globals.base.win.get_y_size() - 118 - 40, parent=self._fullscreen_node)
+                x=((Globals.base.win.get_x_size()/self._gui_scale) - 1054) // 2,
+                y=(Globals.base.win.get_y_size()/self._gui_scale) - 118 - 40, parent=self._fullscreen_node)
 
             Sequence(
                 python_warning.color_scale_interval(1.0, Vec4(1, 1, 1, 0.8), Vec4(1, 1, 1, 1), blendType="easeInOut"),
@@ -124,7 +124,8 @@ class OnscreenDebugger(BaseManager):
 
         # Keybinding hints
         self._keybinding_instructions = BetterOnscreenImage(
-            image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30, y=570,
+            image="Data/GUI/OnscreenDebugger/KeyBindings.png", x=30,
+            y=Globals.base.win.get_y_size()//self._gui_scale - 510.0,
             parent=self._fullscreen_node, any_filter=False)
 
     def _update_stats(self):
@@ -166,7 +167,7 @@ class OnscreenDebugger(BaseManager):
         """ Creates the debugger contents """
         debugger_opacity = 1.0
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
-        self._debugger_node.set_pos(30, 0, -250)
+        self._debugger_node.set_pos(30, 0, -Globals.base.win.get_y_size()//self._gui_scale + 820.0)
         self._debugger_bg_img = BetterOnscreenImage(
             image="Data/GUI/OnscreenDebugger/DebuggerBackground.png", x=0, y=0,
             parent=self._debugger_node, any_filter=False

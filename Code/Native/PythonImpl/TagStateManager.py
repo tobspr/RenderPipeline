@@ -37,10 +37,10 @@ class TagStateManager(object):
         for cam in self._shadow_cameras:
             cam.clear_tag_states()
 
-    def register_shadow_camera(source):
+    def register_shadow_camera(self, source):
         source.set_tag_state_key("Shadows")
         source.set_camera_mask(self.get_shadow_mask())
         self._shadow_cameras.add(source)
 
-    def unregister_shadow_camera(source):
+    def unregister_shadow_camera(self, source):
         self._shadow_cameras.remove(source)

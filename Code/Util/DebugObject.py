@@ -60,9 +60,9 @@ class DebugObject(object):
         other arguments should be the message. """
         if DebugObject._OUTPUT_LEVEL > 2:
             return
-        print(Fore.RED + Style.BRIGHT + "\n\n\n[!!!] " + \
+        print(Fore.RED + Style.BRIGHT + "\n[!!!] " + \
             context.ljust(23) + " " + ' '.join([str(i) for i in args]) + \
-            "\n\n\n" + Fore.RESET + Style.RESET_ALL)
+            "\n" + Fore.RESET + Style.RESET_ALL)
 
     def __init__(self, name=None):
         """ Initiates the DebugObject with a given name. The name should be

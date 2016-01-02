@@ -48,7 +48,9 @@ class BetterOnscreenImage(DebugObject):
 
         tex = self._node.get_texture()
 
-        if near_filter and any_filter:
+        # Apply a near filter, but only if the parent has no scale, otherwise
+        # it will look weird
+        if near_filter and any_filter and parent.get_sx() == 1.0:
             tex.set_minfilter(Texture.FT_nearest)
             tex.set_magfilter(Texture.FT_nearest)
 

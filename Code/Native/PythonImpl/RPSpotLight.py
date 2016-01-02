@@ -2,9 +2,10 @@
 import math
 from panda3d.core import Vec3
 
-from ShadowSource import ShadowSource
+from .ShadowSource import ShadowSource
+from .RPLight import RPLight
 
-class RPSpotLight(object):
+class RPSpotLight(RPLight):
 
     def __init__(self):
         RPLight.__init__(self, RPLight.LT_spot_light)

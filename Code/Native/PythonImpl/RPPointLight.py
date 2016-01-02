@@ -1,8 +1,8 @@
 
 from panda3d.core import Vec3
 
-from RPLight import RPLight
-from ShadowSource import ShadowSource
+from .RPLight import RPLight
+from .ShadowSource import ShadowSource
 
 class RPPointLight(RPLight):
 
