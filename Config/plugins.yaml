@@ -28,7 +28,7 @@ overrides:
     AO.hbao_tangent_bias: 0.6889
     AO.occlusion_strength: 1.21
     AO.ssao_bias: 0.0
-    AO.ssao_max_distance: 0.56
+    AO.ssao_max_distance: 6.56
     AO.ssao_sample_count: 32
     AO.ssao_sample_radius: 119.11
     AO.ssvo_max_distance: 1.49
