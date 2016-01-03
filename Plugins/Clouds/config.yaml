@@ -49,13 +49,24 @@ settings: !!omap
 
 daytime_settings: !!omap
     
+    - cloud_brightness:
+        type: scalar
+        unit: percent
+        range: [0, 2]
+        default: 1.0
+        label: Cloud brightness
+        description: >
+            Brightness of all cloud layers, controlls how bright the clouds are.
+            A value of zero causes no clouds.
+
     - cloud_intensity:
         type: scalar
         unit: percent
         range: [0, 2]
         default: 1.0
         label: Cloud intensity
-        description: Intensity of all cloud layers
+        description: >
+            Intensity of all cloud layers, controls the amount of clouds
 
     - cumulus_amount:
         type: scalar

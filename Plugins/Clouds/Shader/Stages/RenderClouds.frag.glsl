@@ -92,12 +92,12 @@ void main() {
     accum_color = accum_color / (1 - accum_color);
     accum_color /= 15.0;
 
-    accum_color *= 36.0;
+    accum_color *= 56.0;
+    accum_color *= TimeOfDay.Clouds.cloud_brightness;
     accum_color *= 1 + sun_color * saturate(1.0 - 1.0 * pow(accum_weight, 0.8) );
-    accum_weight *= accum_weight;
 
     // Darken clouds in the distance
-    // accum_color *= 1.0 - saturate(1.0-5.0*ray_dir.z) * 0.8;
+    accum_color *= 1.0 - saturate(1.0-4.0*ray_dir.z) * 0.7;
 
     // Don't render clouds at obligue angles
     float horizon = saturate(sqrt(ray_dir.z * 1.0));

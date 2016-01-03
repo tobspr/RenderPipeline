@@ -70,15 +70,6 @@ settings: !!omap
         description: >
             Beta Mie Scattering factor
 
-    - ground_fog_factor:
-        type: float
-        range: [10.0, 3000.0]
-        default: 400.0
-        shader_runtime: true
-        label: Ground Fog Factor
-        description: >
-            Controls the strength of the ground fog, lower values will cause
-            high spots e.g. mountains to recieve less fog than low spots.
 
 daytime_settings: !!omap
     
@@ -142,3 +133,13 @@ daytime_settings: !!omap
         default: 1.0
         label: Fog-Brightness
         description: Brightness of the fog
+
+    - ground_fog_factor:
+        type: scalar
+        unit: meter
+        range: [10.0, 3000.0]
+        default: 400.0
+        label: Ground Fog Factor
+        description: >
+            Controls the strength of the ground fog, lower values will cause
+            high spots e.g. mountains to recieve less fog than low spots.
