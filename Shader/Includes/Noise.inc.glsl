@@ -199,14 +199,94 @@ float grain(vec2 coord, float frame_time) {
 }
 
 
-float fbm(vec3 x) {
+float fbm(vec3 x, float scale) {
     float v = 0.0;
     float a = 0.5;
-    float shift = 0.2;
+    float shift = 0.0;
+    x *= scale;
     for (int i = 0; i < 5; ++i) {
-        v += a * snoise3D(x);
-        x = x * 3.0 + shift;
+        v += a * (pnoise3D(x, vec3(scale))*0.5+0.5);
+        x = x * 2.0 + shift;
         a *= 0.5;
     }
     return v;
+}
+
+
+// Returns the point in a given cell
+vec2 worley_cell_point(ivec2 cell, int num_cells, float drop_rate) {
+  cell = cell % num_cells;
+  vec2 cell_base = vec2(cell) / num_cells;
+  float noise_x = rand(cell_base);
+  float noise_y = rand(cell_base.yx);
+  float drop_point = step(rand(cell) + 1e-7, drop_rate);
+  return cell_base + (0.5 + 1.0 * vec2(noise_x, noise_y)) / num_cells + drop_point * vec2(1e9);
+}
+
+
+// Distance accross borders
+float distance_border(vec2 a, vec2 b) {
+  float dx = min( abs(a.x - b.x), min(abs( a.x - 1.0 - b.x), abs(a.x + 1.0 - b.x)));
+  float dy = min( abs(a.y - b.y), min(abs( a.y - 1.0 - b.y), abs(a.y + 1.0 - b.y)));
+  return length(vec2(dx, dy));
+}
+
+// Performs worley noise by checking all adjacent cells
+// and comparing the distance to their points
+float worley_noise(vec2 coord, int num_cells, float drop_rate) {
+    coord = fract(coord);
+    ivec2 cell = ivec2(coord * num_cells);
+    float dist = 1.0;
+    
+    // Search in the surrounding 5x5 cell block
+    for (int x = 0; x < 5; x++) { 
+        for (int y = 0; y < 5; y++) {
+          vec2 cell_point = worley_cell_point(cell + ivec2(x-2, y-2), num_cells, drop_rate);
+          dist = min(dist, distance_border(cell_point, coord));
+        }
+    }
+    dist /= length(vec2(1.0 / num_cells));
+    dist = 1.0 - dist;
+    return dist;
+}
+
+// Returns the point in a given cell
+vec3 worley_cell_point(ivec3 cell, int num_cells, float drop_rate) {
+  cell = cell % num_cells;
+  vec3 cell_base = vec3(cell) / num_cells;
+  float noise_x = rand(cell_base.xy);
+  float noise_y = rand(cell_base.yx);
+  float noise_z = rand(cell_base.zx + cell_base.yy);
+  float drop_point = step(rand(cell.xy + cell.zz) + 1e-7, drop_rate);
+  return cell_base + (0.5 + 1.0 * vec3(noise_x, noise_y, noise_z)) / num_cells + drop_point * vec3(1e9);
+}
+
+
+// Distance accross borders
+float distance_border(vec3 a, vec3 b) {
+  float dx = min( abs(a.x - b.x), min(abs( a.x - 1.0 - b.x), abs(a.x + 1.0 - b.x)));
+  float dy = min( abs(a.y - b.y), min(abs( a.y - 1.0 - b.y), abs(a.y + 1.0 - b.y)));
+  float dz = min( abs(a.z - b.z), min(abs( a.z - 1.0 - b.z), abs(a.z + 1.0 - b.z)));
+  return length(vec3(dx, dy, dz));
+}
+
+// Performs worley noise by checking all adjacent cells
+// and comparing the distance to their points
+float worley_noise(vec3 coord, int num_cells, float drop_rate) {
+    coord = fract(coord);
+    ivec3 cell = ivec3(coord * num_cells);
+    float dist = 1.0;
+    
+    // Search in the surrounding 5x5 cell block
+    for (int x = 0; x < 5; x++) { 
+        for (int y = 0; y < 5; y++) {
+          for (int z = 0; z < 5; z++) {
+            vec3 cell_point = worley_cell_point(cell + ivec3(x-2, y-2, z-2), num_cells, drop_rate);
+            dist = min(dist, distance_border(cell_point, coord));
+          }
+        }
+    }
+    dist /= length(vec3(1.0 / num_cells));
+    dist = 1.0 - dist;
+    return dist;
 }

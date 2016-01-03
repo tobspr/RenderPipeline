@@ -13,6 +13,7 @@ enabled:
     - ColorCorrection
     - Scattering
     - PSSM
+    - Clouds
 
 overrides: 
     AO.alchemy_max_distance: 4.08
@@ -48,12 +49,12 @@ overrides:
     ColorCorrection.darkness_adaption_rate: 1.0
     ColorCorrection.exponential_factor: 1.17
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.1189
+    ColorCorrection.film_grain_strength: 0.06
     ColorCorrection.max_exposure: 7.0
     ColorCorrection.min_exposure: 0.001
     ColorCorrection.reinhard_version: rgb
     ColorCorrection.sharpen_strength: 1.0
-    ColorCorrection.tonemap_operator: uncharted2
+    ColorCorrection.tonemap_operator: exponential2
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22
     ColorCorrection.uc2t_toe_denumerator: 0.3

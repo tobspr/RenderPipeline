@@ -345,6 +345,12 @@ class RenderPipeline(DebugObject):
         define("CAMERA_NEAR", round(Globals.base.camLens.get_near(), 5))
         define("CAMERA_FAR", round(Globals.base.camLens.get_far(), 5))
 
+        # Work arround buggy nvidia driver, which expects arrays to be const
+        if "NVIDIA 361.43" in self._showbase.win.get_gsg().driver_version:
+            define("CONST_ARRAY", "const")
+        else:
+            define("CONST_ARRAY", "")
+
         self._light_mgr.init_defines()
         self._plugin_mgr.init_defines()
 

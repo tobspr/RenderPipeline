@@ -13,13 +13,9 @@ class CloudStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CloudStage", pipeline)
-        self._voxel_res_xy = 512
-        self._voxel_res_z = 32
-        self._sprite_tex = None
-
-    def set_sprites(self, sprite_tex):
-        self._sprite_tex = sprite_tex
-
+        self._voxel_res_xy = 256
+        self._voxel_res_z = 16
+        
     def get_produced_pipes(self):
         return {"ShadedScene": self._target_apply_clouds["color"]}
 
@@ -83,7 +79,6 @@ class CloudStage(RenderStage):
         card_node.set_bounds(OmniBoundingVolume())
         card_node.set_final(True)
         self._particle_np = self._particle_scene.attach_new_node(card_node)
-        self._particle_np.set_shader_input("SpriteTex", self._sprite_tex)
         self._particle_np.set_shader_input("CloudVoxels", self._cloud_voxels.get_texture())
         self._particle_np.set_instance_count(self._voxel_res_xy * self._voxel_res_xy * self._voxel_res_z)
         self._particle_np.set_transparency(TransparencyAttrib.M_multisample, 1000000)

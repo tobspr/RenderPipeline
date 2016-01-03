@@ -46,7 +46,7 @@ void main() {
 
     // Get the weights array
     const int blur_size = 5;
-    const float weights[blur_size] = gaussian_weights_5; // <-- this is based on the blur size
+    CONST_ARRAY float weights[blur_size] = gaussian_weights_5; // <-- this is based on the blur size
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_gbuffer_normal(GBuffer, coord * 2);
