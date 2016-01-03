@@ -14,9 +14,8 @@ class Plugin(BasePlugin):
     def setup_inputs(self):
         sprite_tex = Globals.loader.loadTexture(self.get_resource("CloudSprites.png"))
         noise_tex = Globals.loader.loadTexture(self.get_resource("Noise.png"))
-        cnoise_tex = Globals.loader.loadTexture(self.get_resource("CloudNoise.png"))
 
-        for tex in [sprite_tex, noise_tex, cnoise_tex]:
+        for tex in [sprite_tex, noise_tex]:
             tex.set_wrap_u(SamplerState.WM_repeat)
             tex.set_wrap_v(SamplerState.WM_repeat)
             tex.set_anisotropic_degree(16)
@@ -25,4 +24,3 @@ class Plugin(BasePlugin):
 
         self._stage.set_shader_input("SpriteTex",  sprite_tex)
         self._stage.set_shader_input("NoiseTex", noise_tex)
-        self._stage.set_shader_input("CloudNoiseTex", cnoise_tex)
