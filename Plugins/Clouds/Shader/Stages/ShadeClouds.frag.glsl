@@ -30,7 +30,7 @@ void main() {
         // Find cloud normal    
         vec3 nrm = vec3(0);
         vec3 pixel_size = 1.0 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
-        for (int i = 1; i <= 2; i+=1) {
+        for (int i = 1; i <= 6; i+=1) {
             nrm += textureLod(CloudVoxels, fcoord + i * pixel_size * vec3( 0, 0, 1), 0).w * vec3( 0, 0,-1);
             nrm += textureLod(CloudVoxels, fcoord + i * pixel_size * vec3( 0, 0,-1), 0).w * vec3( 0, 0, 1);
             nrm += textureLod(CloudVoxels, fcoord + i * pixel_size * vec3( 0, 1, 0), 0).w * vec3( 0,-1, 0);

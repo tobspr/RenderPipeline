@@ -42,6 +42,10 @@ overrides:
     Bloom.minimum_luminance: 15.0
     Bloom.num_mipmaps: 9
     Bloom.remove_fireflies: True
+    Clouds.cloud_decay: 5.78
+    Clouds.cloud_end: 6.4
+    Clouds.cloud_start: 4.4
+    Clouds.raymarch_steps: 64
     ColorCorrection.brightness_adaption_rate: 3.0
     ColorCorrection.brightness_scale: 1.0
     ColorCorrection.chromatic_aberration_samples: 2
@@ -53,7 +57,7 @@ overrides:
     ColorCorrection.max_exposure: 7.0
     ColorCorrection.min_exposure: 0.001
     ColorCorrection.reinhard_version: rgb
-    ColorCorrection.sharpen_strength: 1.0
+    ColorCorrection.sharpen_strength: 0.4444
     ColorCorrection.tonemap_operator: exponential2
     ColorCorrection.uc2t_reference_white: 11.2
     ColorCorrection.uc2t_shoulder_strength: 0.22

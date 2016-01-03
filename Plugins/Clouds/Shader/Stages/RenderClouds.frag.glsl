@@ -18,8 +18,8 @@ const float METER = 1.0;
 
 const float earth_radius = 6371.0 * KM;
 const vec3 earth_mid = vec3(0, 0, -earth_radius);
-const float cloud_start = earth_radius + 4.4 * KM;
-const float cloud_end = earth_radius + 6.4 * KM;
+const float cloud_start = earth_radius + GET_SETTING(Clouds, cloud_start) * KM;
+const float cloud_end = earth_radius + GET_SETTING(Clouds, cloud_end) * KM;
 
 vec2 get_cloud_coord(vec3 pos) {
     vec2 xy_coord = pos.xy / (cloud_end - cloud_start) * float(CLOUD_RES_Z) / float(CLOUD_RES_XY);
@@ -28,10 +28,8 @@ vec2 get_cloud_coord(vec3 pos) {
     return xy_coord;
 }
 
-
-
 void main() {
-    const int trace_steps = 64;
+    const int trace_steps = GET_SETTING(Clouds, raymarch_steps);
 
     vec3 pos = get_gbuffer_position(GBuffer, ivec2(gl_FragCoord.xy) * 2);
     vec3 ray_start = MainSceneData.camera_pos;
@@ -65,9 +63,9 @@ void main() {
     vec3 noise = texture(NoiseTex, trace_start.xy * 6.0).xyz;
     // trace_start.xy += (noise*2.0-1.0) * 0.007 / trace_steps;
 
-    trace_start.xyz += (noise*2.0-1.0) * 0.001;
+    trace_start.xyz += (noise*2.0-1.0) * 0.003;
     vec3 trace_step = (trace_end - trace_start) / trace_steps;
-    trace_step.xyz += (noise*2.0-1.0) * 0.005 / trace_steps;
+    trace_step.xyz += (noise*2.0-1.0) * 0.008 / trace_steps;
 
     // Get sun vector
     vec3 sun_vector = sun_azimuth_to_angle(

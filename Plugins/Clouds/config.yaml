@@ -8,41 +8,75 @@ description: >
 
 settings: !!omap
 
-    - some_int_setting:
-        type: int
-        range: [0, 10]
-        default: 5
-        label: Some integer setting
-        description: Description of the setting.
-
-    - some_float_setting:
+    - cloud_decay:
         type: float
-        range: [-5.3, 2.9]
-        default: 2.5
-        label: Some float setting
-        description: Description of the setting.
-        runtime: true
+        range: [0.0, 10.0]
+        default: 3.0
+        label: Cloud Decay
+        description: >
+            Controls how the cloud intensity decays to the top.
+        shader_runtime: true
 
-    - some_enum:
-        type: enum
-        values: [value1, value2, value3]
-        default: value2
-        label: Some enum setting
-        description: Description of the setting.
+    - raymarch_steps:
+        type: int
+        range: [16, 256]
+        default: 64
+        label: Raymarch Steps
+        shader_runtime: true
+        description: >
+            Controls how many steps should be taken through the cloud voxel grid
+            to integrate the cloud density. Higher values produce more accurate
+            result but also require more performance.
 
-    - some_bool:
-        type: bool
-        default: false
-        label: Some boolean setting
-        description: Description of the setting.
+    - cloud_start:
+        type: float
+        range: [0.1, 10.0]
+        default: 4.4
+        label: Cloud layer start
+        shader_runtime: true
+        description: >
+            Start of the cloud layer in kilometers
+            
+    - cloud_end:
+        type: float
+        range: [0.2, 15.0]
+        default: 6.4
+        label: Cloud layer end
+        shader_runtime: true
+        description: >
+            End of the cloud layer in kilometers. Should be higher than the cloud
+            start layer height.
 
 daytime_settings: !!omap
     
-    - some_scalar:
+    - cloud_intensity:
+        type: scalar
+        unit: percent
+        range: [0, 2]
+        default: 1.0
+        label: Cloud intensity
+        description: Intensity of all cloud layers
+
+    - cumulus_amount:
         type: scalar
         unit: percent
         range: [0, 1]
-        default: 0.5
-        label: Some Scalar
-        description: Description of the scalar.
-
+        default: 1.0
+        label: Cumulus Clouds
+        description: Amount of cumulus clouds
+    
+    - stratus_amount:
+        type: scalar
+        unit: percent
+        range: [0, 1]
+        default: 1.0
+        label: Stratus Clouds
+        description: Amount of stratus clouds
+    
+    - soft_amount:
+        type: scalar
+        unit: percent
+        range: [0, 1]
+        default: 1.0
+        label: Soft Clouds
+        description: Amount of softened clouds
