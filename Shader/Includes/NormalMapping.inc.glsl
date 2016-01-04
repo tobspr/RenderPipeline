@@ -42,8 +42,8 @@ vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor)
 
 // Parallax Mapping
 vec2 get_parallax_texcoord(sampler2D displacement_map) {
-    float raymarch_distance = 0.1;
-    const int num_steps = 32;
+    float raymarch_distance = 0.09;
+    const int num_steps = 22;
 
     vec3 tangent, binormal;
     reconstruct_tangent(tangent, binormal);

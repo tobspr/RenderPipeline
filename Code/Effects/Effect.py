@@ -17,7 +17,7 @@ class Effect(DebugObject):
         "render_shadows": True,
         "alpha_testing": True,
         "normal_mapping": True,
-        "parallax_mapping": False,
+        "parallax_mapping": True,
     }
 
     _PASSES = ["GBuffer", "Shadows", "Voxelize"]
