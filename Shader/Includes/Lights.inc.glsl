@@ -12,18 +12,14 @@ float attenuation_curve(float dist, float radius) {
     #endif
 
     #if 1
-    float lin_att = 1.0 - saturate(dist / radius);
-    float d_by_r = dist / radius + 1;
-    return lin_att / max(0.001, d_by_r * d_by_r);
-    #endif
-
-    #if 0
-    // As described in:
-    // http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-    // Page 12
-    float att = saturate(1.0 - pow(dist / radius, 4.0));
-    return (att * att) / (dist * dist + 1.0);
-
+        // We do a inverse square falloff, however we weight it by a
+        // linear attenuation to make it go to zero at the lights radius.
+        // This is because the culling needs a fixed radius. I like the linear
+        // attenuation weight more than using an additional fallof starting at
+        // 80% or so.
+        float lin_att = 1.0 - saturate(dist / radius);
+        float d_by_r = dist / radius;
+        return lin_att / max(0.001, d_by_r * d_by_r + 1);
     #endif
 }
 
@@ -86,11 +82,14 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     vec3 shading_result = brdf_diffuse(NxV, LxH, m.roughness) * m.basecolor * (1 - m.metallic);
 
     // Specular contribution
-    vec3 specular_color = mix(vec3(0.08) * m.specular, m.basecolor, m.metallic);
     float distribution = brdf_distribution(NxH, m.roughness);
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
-    vec3 fresnel = brdf_schlick_fresnel(specular_color, 0.5, VxH);
-    shading_result += (distribution * visibility / M_PI) * fresnel;
+    float fresnel = brdf_fresnel(1-LxH, m.roughness);
+
+    // The division by 4 * NxV * NxL is done in the geometric (visibility) term
+    // already, so to evaluate the complete brdf we just do a multiply 
+    vec3 specular_color = mix(vec3(0.08) * m.specular, m.basecolor, m.metallic);
+    shading_result += (distribution * visibility * fresnel) * specular_color;
 
     // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)

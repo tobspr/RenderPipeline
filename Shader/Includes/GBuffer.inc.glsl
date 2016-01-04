@@ -39,7 +39,7 @@
         // 0 ... 1 range
         float specular = saturate(m.specular);
         float metallic = saturate(m.metallic);
-        float roughness = clamp(m.roughness, 0.001, 1.0);
+        float roughness = clamp(m.roughness, 0.005, 1.0);
         float translucency = saturate(m.translucency);
 
         // Optional: Use squared roughness as proposed by Disney

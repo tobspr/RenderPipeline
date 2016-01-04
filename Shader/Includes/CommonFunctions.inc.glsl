@@ -2,9 +2,10 @@
 
 #define saturate(v) clamp(v, 0, 1)
 
-#define M_PI 3.14159265359
-#define HALF_PI 1.57079632679
-#define TWO_PI 6.28318530718
+#define M_PI 3.1415926535897932384626433
+#define HALF_PI 1.5707963267948966192313216
+#define TWO_PI 6.2831853071795864769252867
+#define ONE_BY_PI 0.3183098861837906715377675
 
 // Fixes the cubemap direction
 vec3 fix_cubemap_coord(vec3 coord) {

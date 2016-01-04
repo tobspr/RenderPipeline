@@ -31,7 +31,7 @@ class ScatteringStage(RenderStage):
         cubemap_size = 256
 
         self._scatter_cubemap = Image.create_cube(
-            "ScatteringCubemap", cubemap_size, Texture.T_float, Texture.F_rgba16)
+            "ScatteringCubemap", cubemap_size, Texture.T_float, Texture.F_r11_g11_b10)
         self._scatter_cubemap.get_texture().set_minfilter(Texture.FT_linear_mipmap_linear)
         self._scatter_cubemap.get_texture().set_magfilter(Texture.FT_linear)
 
@@ -53,7 +53,7 @@ class ScatteringStage(RenderStage):
             # target.add_color_texture()
             target.prepare_offscreen_buffer()
             target.set_shader_input(
-                "SourceMipmap", self._scatter_cubemap.get_texture())
+                "SourceTex", self._scatter_cubemap.get_texture())
             target.set_shader_input(
                 "DestMipmap", self._scatter_cubemap.get_texture(), False, True, -1, mip + 1, 0)
             target.set_shader_input("current_mip", mip)

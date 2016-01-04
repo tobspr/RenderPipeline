@@ -79,8 +79,9 @@ def filter_cubemap(orig_pth):
         size = first_img.get_x_size() // 2
         if size < 1:
             break
-        blur_size = max(1, int(size * 0.006))
-        blur_size += mip
+        blur_size = size * 0.002
+        blur_size += mip * 0.85
+        blur_size = int(blur_size)
         effective_size = size + 2 * blur_size
         faces = [load_nth_face(pth, i) for i in range(6)]
 
@@ -95,7 +96,6 @@ def filter_cubemap(orig_pth):
         final_img = PNMImage(size, size, 3)
 
         for i in range(6):
-            print("\tFiltering face", i)
             face_dest = dst_pth.replace("#", str(i))
             dst = Texture("Face-" + str(i))
             dst.setup_2d_texture(effective_size, effective_size,
