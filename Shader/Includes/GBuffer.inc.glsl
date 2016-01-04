@@ -33,7 +33,8 @@
         vec2 velocity = compute_velocity();
 
         // Clamp BaseColor, but only for negative values, we allow values > 1.0
-        vec3 basecolor = pow(max(vec3(0), m.basecolor), vec3(2.2));
+        // vec3 basecolor = pow(max(vec3(0), m.basecolor), vec3(2.2));
+        vec3 basecolor = max(vec3(0), m.basecolor);
 
         // Clamp properties like specular and metallic, which have to be in the
         // 0 ... 1 range
@@ -45,13 +46,13 @@
         // Optional: Use squared roughness as proposed by Disney
         roughness *= roughness;
 
-        // Unused parameter
-        float UNUSED_1 = 0.0;
+        // Pack diffuse antialiasing factor
+        float diffuse_aa = length(m.normal);
 
         // Pack all values to the gbuffer
         gbuffer_out_0 = vec4(basecolor.r, basecolor.g, basecolor.b, roughness);
         gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, metallic, specular);
-        gbuffer_out_2 = vec4(velocity.x, velocity.y, translucency, UNUSED_1);
+        gbuffer_out_2 = vec4(velocity.x, velocity.y, translucency, diffuse_aa);
     }
 
 
@@ -132,10 +133,9 @@
         m.metallic  = data1.z * 1.001 - 0.0005;
         m.specular  = data1.w;
         m.translucency = data2.z;
+        m.diffuse_aa = data2.w;
 
-        float UNUSED_1 = data2.w;
-
-        // Velocity, not stored in the material properties tho
+        // Velocity, not stored in the Material struct but stored in the G-Buffer
         // vec2 velocity = data2.xy;
         return m;
     }

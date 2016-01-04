@@ -33,7 +33,7 @@ overrides:
     AO.ssvo_max_distance: 1.49
     AO.ssvo_sample_count: 32
     AO.ssvo_sphere_radius: 11.34556
-    AO.technique: UE4AO
+    AO.technique: SSAO
     AO.ue4ao_max_distance: 4.3
     AO.ue4ao_sample_count: 32
     AO.ue4ao_sample_radius: 145.44
@@ -52,7 +52,7 @@ overrides:
     ColorCorrection.darkness_adaption_rate: 1.0
     ColorCorrection.exponential_factor: 1.17
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.06
+    ColorCorrection.film_grain_strength: 0.0889
     ColorCorrection.max_exposure: 7.0
     ColorCorrection.min_exposure: 0.001
     ColorCorrection.reinhard_version: rgb
@@ -66,7 +66,7 @@ overrides:
     ColorCorrection.use_auto_exposure: True
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.use_sharpen: True
-    ColorCorrection.vignette_strength: 0.1444
+    ColorCorrection.vignette_strength: 0.5333
     PSSM.border_bias: 0.1867
     PSSM.filter_radius: 2.63
     PSSM.filter_sample_count: 32
@@ -83,7 +83,7 @@ overrides:
     PSSM.use_pcf: True
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
-    SMAA.use_reprojection: False
+    SMAA.use_reprojection: True
     Scattering.beta_mie_scattering: 4.0
     Scattering.mie_height_scale: 1.45
     Scattering.mie_phase_factor: 0.19

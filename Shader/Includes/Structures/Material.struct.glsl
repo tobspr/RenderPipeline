@@ -21,5 +21,6 @@ struct Material {
     float specular;
     float metallic;
     float translucency;
+    float diffuse_aa;
 };
 

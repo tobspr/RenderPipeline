@@ -167,3 +167,13 @@ int gpu_cq_unpack_int_from_float(float v) {
         return int(v);
     #endif
 }
+
+// Computes the diffuse antialiasing factor
+// From: http://blog.selfshadow.com/sandbox/diffuse_aa.html
+float get_diffuse_aa(float w, float NxL) {
+    float x  = sqrt(1.0 - w);
+    float x0 = 0.373837*NxL;
+    float x1 = 0.66874*x;
+    float n  = x0 + x1;
+    return w*((abs(x0) <= x1) ? n*n/x : saturate(NxL));
+}

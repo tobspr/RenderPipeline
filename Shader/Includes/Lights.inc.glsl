@@ -73,6 +73,8 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // Compute the dot product, for translucent materials we also add a bias
     vec3 h = normalize(l + v);
     float NxL = saturate(10.0 * m.translucency + dot(m.normal, l));
+    // float NxL = get_diffuse_aa(m.diffuse_aa, dot(m.normal, l));
+
     float NxV = max(1e-5, dot(m.normal, v));
     float NxH = max(0, dot(m.normal, h));
     float VxH = clamp(dot(v, h), 1e-5, 1.0);

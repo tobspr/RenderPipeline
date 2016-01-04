@@ -76,9 +76,9 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     vec4 uv = get_source_uv(source);
 
     // TODO: make this configurable
-    const float slope_bias = 0.1;
-    const float normal_bias = 0.1;
-    const float const_bias = 0.0001;
+    const float slope_bias = 0.001;
+    const float normal_bias = 0.01;
+    const float const_bias = 0.0002;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
 
     // TODO: use filtering
