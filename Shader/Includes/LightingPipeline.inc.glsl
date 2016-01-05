@@ -7,6 +7,7 @@
 #pragma include "Includes/LightData.inc.glsl"
 #pragma include "Includes/Shadows.inc.glsl"
 #pragma include "Includes/LightClassification.inc.glsl"
+#pragma include "Includes/PoissonDisk.inc.glsl"
 
 uniform isampler2DArray CellIndices;
 uniform isamplerBuffer PerCellLights;
@@ -80,11 +81,24 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     const float normal_bias = 0.01;
     const float const_bias = 0.0002;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
-
-    // TODO: use filtering
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
-    return textureLod(ShadowAtlasPCF, vec3(projected_coord.xy, projected.z - const_bias), 0).x;
+
+    // TODO: use filtering
+    const int num_samples = 12;
+    const float filter_size = 2.0 / SHADOW_ATLAS_SIZE; // TODO: Use shadow atlas size
+
+    float accum = 0.0;
+
+    for (int i = 0; i < num_samples; ++i) {
+        accum += textureLod(ShadowAtlasPCF, vec3(projected_coord.xy + poisson_disk_2D_12[i] * filter_size, projected.z - const_bias), 0).x;
+    }
+
+    return accum / num_samples;
+    
+    // return textureLod(ShadowAtlasPCF, vec3(projected_coord.xy, projected.z - const_bias), 0).x;
+
+
 }
 
 

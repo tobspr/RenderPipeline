@@ -85,6 +85,8 @@ class RPLight : public ReferenceCount {
         inline const LVecBase3f& get_color() const;
         MAKE_PROPERTY(color, get_color, set_color);
 
+        void set_color_from_temperature(float temperature);
+
         inline void set_lumens(float lumens);
         inline float get_lumens() const;
         MAKE_PROPERTY(lumens, get_lumens, set_lumens);

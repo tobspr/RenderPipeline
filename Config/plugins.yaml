@@ -68,24 +68,24 @@ overrides:
     ColorCorrection.use_sharpen: True
     ColorCorrection.vignette_strength: 0.5333
     PSSM.border_bias: 0.1867
-    PSSM.filter_radius: 2.63
+    PSSM.filter_radius: 7.58
     PSSM.filter_sample_count: 32
-    PSSM.fixed_bias: 0.2222
+    PSSM.fixed_bias: 1.2222
     PSSM.logarithmic_factor: 0.94
-    PSSM.max_distance: 90.8
-    PSSM.normal_bias: 0.28
-    PSSM.pcss_penumbra_size: 170.04
-    PSSM.pcss_search_samples: 6
+    PSSM.max_distance: 823.4
+    PSSM.normal_bias: 0.56
+    PSSM.pcss_penumbra_size: 253.35
+    PSSM.pcss_search_samples: 5
     PSSM.resolution: 2048
-    PSSM.slope_bias: 1.61
+    PSSM.slope_bias: 3.61
     PSSM.split_count: 4
-    PSSM.sun_distance: 210.0
+    PSSM.sun_distance: 1310.0
     PSSM.use_pcf: True
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
     SMAA.use_reprojection: True
     Scattering.beta_mie_scattering: 4.0
     Scattering.mie_height_scale: 1.45
-    Scattering.mie_phase_factor: 0.19
+    Scattering.mie_phase_factor: 0.21
     Scattering.scattering_method: eric_bruneton
 

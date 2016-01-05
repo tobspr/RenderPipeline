@@ -42,8 +42,12 @@ vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor)
 
 // Parallax Mapping
 vec2 get_parallax_texcoord(sampler2D displacement_map) {
-    float raymarch_distance = 0.09;
-    const int num_steps = 22;
+    float raymarch_distance = 0.1;
+    const int num_steps = 32;
+
+    // Early out for materials without parallax mapping
+    float initial_height = texture(displacement_map, vOutput.texcoord).x;
+    if (initial_height > 0.999) return vOutput.texcoord;
 
     vec3 tangent, binormal;
     reconstruct_tangent(tangent, binormal);

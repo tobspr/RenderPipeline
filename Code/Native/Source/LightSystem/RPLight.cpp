@@ -90,3 +90,47 @@ RPLight::~RPLight() {
     nassertv(!has_slot()); // Light still attached - should never happen
     clear_shadow_sources();
 }
+
+/**
+ * @brief Sets the lights color from a given color temperature
+ * @details This sets the lights color, given a temperature. This is more
+ *   physically based than setting a user defined color. The color will be
+ *   computed from the given temperature.
+ * 
+ * @param temperature Light temperature
+ */
+void RPLight::set_color_from_temperature(float temperature) {
+
+    // Thanks to rdb for this conversion script
+    float mm = 1000.0 / temperature;
+    float mm2 = mm * mm;
+    float mm3 = mm2 * mm;
+    float x, y;
+
+    if (temperature < 4000) {
+        x = -0.2661239 * mm3 - 0.2343580 * mm2 + 0.8776956 * mm + 0.179910;
+    } else {
+        x = -3.0258469 * mm3 + 2.1070379 * mm2 + 0.2226347 * mm + 0.240390;
+    }
+
+    float x2 = x * x;
+    float x3 = x2 * x;
+    if (temperature < 2222) {
+        y = -1.1063814 * x3 - 1.34811020 * x2 + 2.18555832 * x - 0.20219683;
+    } else if (temperature < 4000) {
+        y = -0.9549476 * x3 - 1.37418593 * x2 + 2.09137015 * x - 0.16748867;
+    } else {
+        y =  3.0817580 * x3 - 5.87338670 * x2 + 3.75112997 * x - 0.37001483;
+    }
+
+    // xyY to XYZ, assuming Y=1.
+    LVecBase3 xyz(x / y, 1, (1 - x - y) / y);
+
+    // Convert XYZ to linearized sRGB.
+    const static LMatrix3 xyz_to_rgb(
+     3.2406, -0.9689,  0.0557,
+    -1.5372,  1.8758, -0.2050,
+    -0.4986,  0.0415,  1.0570);
+
+    set_color(xyz_to_rgb.xform(xyz));
+}

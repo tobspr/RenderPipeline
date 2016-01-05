@@ -33,13 +33,13 @@ void main() {
         float stratus = fbm(cloud_coord + 0.7 + wind_offset * 0.7, 3.0) - 0.5;
         stratus = max(0, stratus);
         stratus *= worley_noise(flt_coord + wind_offset.xy * 1.0, 32, 0.0);
-        stratus *= 1 - min(1.0, 2.5 * cloud_coord.z);
+        stratus *= 1 - min(1.0, 3.5 * cloud_coord.z);
         stratus *= 6.0;
         cloud_factor += max(0, stratus) * TimeOfDay.Clouds.stratus_amount;
 
         // Cumulus
-        float cumulus = worley_noise(flt_coord + wind_offset.xy * 0.7, 4, 0.7);
-        cumulus *= fbm(cloud_coord + wind_offset * 0.6, 5.0) - 0.5;
+        float cumulus = worley_noise(flt_coord + wind_offset.xy * 0.7, 4, 0.8);
+        cumulus *= fbm(cloud_coord + wind_offset * 0.6, 5.0) - 0.8;
         cumulus *= 1.0 - min(1.0, 0.3*(1-cloud_coord.z) );
         cumulus *= 12.0;
         cloud_factor += max(0, cumulus) * TimeOfDay.Clouds.cumulus_amount;

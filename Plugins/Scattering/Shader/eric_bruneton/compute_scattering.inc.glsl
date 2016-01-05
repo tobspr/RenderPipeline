@@ -42,6 +42,9 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     fog_factor = 1.0;
     float sun_factor = 1.0; 
 
+    float phaseR = phaseFunctionR(nuStartPos);
+    float phaseM = phaseFunctionM(nuStartPos);
+
     if(pathLength < 20000)
     {
 
@@ -59,7 +62,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
 
         // Get atmospheric color, 3 samples should be enough
-        const int num_samples = 3;
+        const int num_samples = 2;
 
         float current_height = max(surfacePos.z, MainSceneData.camera_pos.z);
 
@@ -73,7 +76,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         for (int i = 0; i < num_samples; ++i) {
             inscatter_sum += texture4D(InscatterSampler, 
                 current_height * height_scale_factor + groundH, 
-                current_height / 2400.0 + 0.001,
+                current_height / 400.0 + 0.001,
                 musStartPos, nuStartPos);
 
             current_height += height_step;
@@ -82,13 +85,15 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         inscatter_sum /= float(num_samples);
         inscatter_sum *= 0.5;
 
+
         // Exponential height fog
-        inscatter_sum *= exp(- surfacePos.z / TimeOfDay.Scattering.ground_fog_factor);
+        fog_factor *= exp(- surfacePos.z / TimeOfDay.Scattering.ground_fog_factor);
 
         // Scale fog color
         vec4 fog_color = inscatter_sum * TimeOfDay.Scattering.fog_brightness;
 
-        fog_color *= fog_factor;
+        fog_color *= fog_factor * 3.0;
+        fog_color += 0.0018;
 
         // Scale the fog factor after tinting the color, this reduces the ambient term
         // even more, this is a purely artistic choice
@@ -102,12 +107,8 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
 
     // Apply inscattered light
-    float phaseR = phaseFunctionR(nuStartPos);
-    float phaseM = phaseFunctionM(nuStartPos);
     inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
-
     inscatteredLight *= 70.0;
-
     inscatteredLight *= saturate( (sun_vector.z+0.1) * 40.0);
 
     return inscatteredLight;
