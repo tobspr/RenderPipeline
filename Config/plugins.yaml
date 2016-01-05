@@ -70,16 +70,16 @@ overrides:
     PSSM.border_bias: 0.1867
     PSSM.filter_radius: 7.58
     PSSM.filter_sample_count: 32
-    PSSM.fixed_bias: 1.2222
+    PSSM.fixed_bias: 0.06669
     PSSM.logarithmic_factor: 0.94
-    PSSM.max_distance: 823.4
-    PSSM.normal_bias: 0.56
-    PSSM.pcss_penumbra_size: 253.35
+    PSSM.max_distance: 113.0
+    PSSM.normal_bias: 0.44
+    PSSM.pcss_penumbra_size: 30.09
     PSSM.pcss_search_samples: 5
     PSSM.resolution: 2048
-    PSSM.slope_bias: 3.61
+    PSSM.slope_bias: 5.0
     PSSM.split_count: 4
-    PSSM.sun_distance: 1310.0
+    PSSM.sun_distance: 140.0
     PSSM.use_pcf: True
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra
