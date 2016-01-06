@@ -26,6 +26,9 @@ OPT_SKIP_NATIVE = "--skip-native" in sys.argv
 
 os.chdir(SETUP_DIR)
 sys.path.insert(0, ".")
+sys.path.insert(0, "Code/External/six")
+
+
 
 # Load and init colorama, used to color the output
 from Code.External.Colorama import init as init_colorama
