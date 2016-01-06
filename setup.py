@@ -164,7 +164,7 @@ def write_flag(flag_location, flag_value):
 def check_cmake():
     """ Checks if cmake is installed """
     try:
-        subprocess.call(["cmak2e", "--version"], stdout=subprocess.PIPE)
+        subprocess.call(["cmake", "--version"], stdout=subprocess.PIPE)
     except Exception as msg:
         print("")
         print(color("Could not find cmake!", Fore.RED + Style.BRIGHT))
