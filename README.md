@@ -18,9 +18,11 @@ for a comprehensive list of features.
 - Panda3D Development Build ( https://github.com/panda3d/panda3d )
 - 1GB Graphics Memory recommended (Can run with less, too)
 
+If you want to use the C++ Modules, checkout <a href="https://github.com/tobspr/RenderPipeline/wiki/Building%20the%20CPP%20Modules" target="_blank">
+Building the C++ Modules</a> to get a list of requirements for them.
+
 **Notice**: It seems that the drivers for Intel HD Graphics on Linux are not
 capable of all 4.3 features, so the pipeline is not able to run there!
-
 
 ### Getting Started / Wiki
 
