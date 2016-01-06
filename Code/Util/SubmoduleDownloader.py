@@ -1,29 +1,12 @@
 
 from __future__ import print_function
+from six import BytesIO
 
 import os
 import sys
 
 import zipfile
 import shutil
-
-try: 
-    # Include cStringIO in case its available, since its faster
-    from cStringIO import StringIO
-except: 
-    try:
-        # Python 2.7
-        from StringIO import StringIO
-    except:
-        try:
-            # Python 3.4
-            import io
-
-            # Use bytes IO, since we get a bytes object, too
-            StringIO = io.BytesIO
-        except:
-            assert False, "Could not import StringIO module."
-
 
 class SubmoduleDownloader:
 
@@ -67,7 +50,7 @@ class SubmoduleDownloader:
             sys.exit(2)
 
         # Extract the zip
-        zip_ptr = StringIO(zip_data)
+        zip_ptr = BytesIO(zip_data)
 
         try:
             zip_handle = zipfile.ZipFile(zip_ptr)

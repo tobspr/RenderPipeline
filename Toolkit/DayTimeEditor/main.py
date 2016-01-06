@@ -6,6 +6,8 @@ This tool offers an interface to configure the time of day settings
 """
 
 from __future__ import print_function
+from six import iteritems
+
 import sys
 import time
 from functools import partial
@@ -187,7 +189,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             plugin_head.setFlags(QtCore.Qt.ItemIsEnabled)
 
             # Display all settings
-            for setting, setting_handle in daytime_settings.items():
+            for setting, setting_handle in iteritems(daytime_settings):
                 setting_item = QtGui.QTreeWidgetItem(plugin_head)
                 setting_item.setText(0, setting_handle.label)
                 setting_item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)

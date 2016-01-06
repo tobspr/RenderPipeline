@@ -1,3 +1,4 @@
+from six import iteritems
 
 import collections
 
@@ -90,7 +91,7 @@ class PluginConfig(DebugObject):
         """ Applies all daytime curves from the daytime configuration file
         to the current settings """
 
-        for setting_id, curve in curves.items():
+        for setting_id, curve in iteritems(curves):
             if setting_id not in self._daytime_settings:
                 self.warn("Unrecognized daytime override: " + setting_id)
                 continue
@@ -113,7 +114,7 @@ class PluginConfig(DebugObject):
         daytime_settings = parsed_yaml.pop("daytime_settings")
 
         # Strip line breaks and spaces from all string properties
-        for key, value in parsed_yaml.items():
+        for key, value in iteritems(parsed_yaml):
             if hasattr(value, "strip"):
                 parsed_yaml[key] = value.strip("\r\n\t ")
 

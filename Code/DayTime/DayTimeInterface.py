@@ -1,4 +1,6 @@
 
+from six import iteritems
+
 from direct.stdpy.file import join, isfile, open
 
 from ..Util.DebugObject import DebugObject
@@ -51,7 +53,7 @@ class DayTimeInterface(DebugObject):
 
         available_plugins = self._interface.get_available_plugins()
 
-        for plugin_id, cvs in control_points.items():
+        for plugin_id, cvs in iteritems(control_points):
 
             # Skip invalid plugin ids
             if plugin_id not in available_plugins:
@@ -79,7 +81,7 @@ class DayTimeInterface(DebugObject):
 
         for plugin in self._interface.get_plugin_instances():
             mod_str = ""
-            for setting_id, handle in plugin.get_config().get_daytime_settings().items():
+            for setting_id, handle in iteritems(plugin.get_config().get_daytime_settings()):
                 if handle.was_modified():
                     mod_str += "        " + setting_id + ": " + handle.serialize() + "\n"
 

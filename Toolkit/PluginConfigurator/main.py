@@ -6,6 +6,8 @@ This tool offers an interface to configure the pipeline
 """
 
 from __future__ import print_function
+from six import iteritems
+
 import sys
 import time
 from threading import Thread
@@ -156,7 +158,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         desc_font.setPointSize(8)
         desc_font.setFamily("Segoe UI")
 
-        for index, (name, handle) in enumerate(settings.items()):
+        for index, (name, handle) in enumerate(iteritems(settings)):
 
             # Dont show hidden settings
             if not handle.evaluate_display_conditions(settings):

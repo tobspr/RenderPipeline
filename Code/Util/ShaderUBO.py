@@ -1,3 +1,4 @@
+from six import iteritems
 
 from panda3d.core import PTAFloat, PTALVecBase3f, PTALMatrix4f, PTALVecBase2f
 from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt, TypeRegistry
@@ -30,7 +31,7 @@ class SimpleUBO(BaseUBO):
 
     def bind_to(self, target):
         """ Binds the UBO to a target """
-        for key, val in self._inputs.items():
+        for key, val in iteritems(self._inputs):
             target.set_shader_input(self._name + "." + key, val)
 
 
@@ -79,7 +80,7 @@ class PTABasedUBO(BaseUBO):
             PTALMatrix3f: "mat3",
             PTALMatrix4f: "mat4",
         }
-        for mapping, glsl_type in mappings.items():
+        for mapping, glsl_type in iteritems(mappings):
             if isinstance(pta_handle, mapping):
                 return glsl_type
         self.warn("Unrecognized PTA type:", pta_handle)
@@ -105,7 +106,7 @@ class PTABasedUBO(BaseUBO):
         """ Binds all inputs of this UBO to the given target, which may be
         either a RenderTarget or a NodePath """
 
-        for pta_name, pta_handle in self._ptas.items():
+        for pta_name, pta_handle in iteritems(self._ptas):
             if self._use_ubo:
                 target.set_shader_input(self._name + "_UBO." + pta_name, pta_handle)
             else:
@@ -129,7 +130,7 @@ class PTABasedUBO(BaseUBO):
         structs = {}
         inputs = []
 
-        for input_name, handle in self._ptas.items():
+        for input_name, handle in iteritems(self._ptas):
             parts = input_name.split(".")
 
             # Single input, simply add it to the input list
@@ -156,7 +157,7 @@ class PTABasedUBO(BaseUBO):
                 self.warn("Structure definition too nested, not supported (yet):", input_name)
 
         # Add structures
-        for struct_name, members in structs.items():
+        for struct_name, members in iteritems(structs):
             content += "struct " + struct_name + "_UBOSTRUCT {\n"
             for member in members:
                 content += " " * 4 + member + "\n"

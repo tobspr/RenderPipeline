@@ -1,3 +1,4 @@
+from six import iteritems
 
 from panda3d.core import Texture, Vec3
 
@@ -77,7 +78,7 @@ class PipeViewer(DraggableWindow):
             BetterOnscreenText(text=str(stage.get_name().replace("Stage", "")),
                                parent=node, x=20, y=25, size=15)
 
-            for output_pipe, pipe_tex in list(stage.get_produced_pipes().items()):
+            for output_pipe, pipe_tex in iteritems(stage.get_produced_pipes()):
                 pipe_idx = 0
                 r, g, b = rgb_from_string(output_pipe)
                 if output_pipe in current_pipes:

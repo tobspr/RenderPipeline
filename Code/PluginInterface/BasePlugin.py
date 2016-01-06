@@ -1,5 +1,6 @@
 
 from __future__ import division, print_function
+from six import iteritems
 
 from math import ceil
 
@@ -76,7 +77,7 @@ class BasePlugin(DebugObject):
         This ignores settings which are marked as runtime changeable (but includes
         shader runtime settings). """
 
-        for name, setting in self._config.get_settings().items():
+        for name, setting in iteritems(self._config.get_settings()):
             if not setting.runtime or setting.shader_runtime:
                 if setting.type == "ENUM":
                     # define all enum values
@@ -147,7 +148,7 @@ class BasePlugin(DebugObject):
 
         nodepath = NodePath("shader")
         nodepath.set_shader(shader_obj)
-        for key, val in shader_inputs.items():
+        for key, val in iteritems(shader_inputs):
             nodepath.set_shader_input(key, val)
 
         attr = nodepath.get_attrib(ShaderAttrib)

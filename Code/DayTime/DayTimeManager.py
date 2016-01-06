@@ -1,5 +1,6 @@
 
 from __future__ import division
+from six import iteritems
 
 from direct.stdpy.file import open
 
@@ -29,7 +30,7 @@ class DayTimeManager(BaseManager):
         self._interface.load()
 
         for plugin in self._pipeline.get_plugin_mgr().get_interface().get_plugin_instances():
-            for setting, handle in plugin.get_config().get_daytime_settings().items():
+            for setting, handle in iteritems(plugin.get_config().get_daytime_settings()):
                 setting_id = plugin.get_id() + "." + setting
                 self._settings[setting_id] = handle
                 self._ubo.register_pta(setting_id, handle.get_glsl_type())
@@ -65,7 +66,7 @@ class DayTimeManager(BaseManager):
 
     def do_update(self):
         """ Updates all the daytime inputs """
-        for setting_name, handle in self._settings.items():
+        for setting_name, handle in iteritems(self._settings):
             setting_value = handle.get_scaled_value(self._daytime)
             self._ubo.update_input(setting_name, setting_value)
 

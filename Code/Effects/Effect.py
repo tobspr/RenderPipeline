@@ -1,4 +1,6 @@
 
+from six import iteritems
+
 import copy
 
 from panda3d.core import Shader, Filename
@@ -63,7 +65,7 @@ class Effect(DebugObject):
 
     def set_options(self, options):
         """ Sets the effect options, overriding the default options """
-        for key, val in list(options.items()):
+        for key, val in iteritems(options):
             if key not in self._options:
                 self.error("Unkown option:", key)
                 continue
@@ -103,7 +105,7 @@ class Effect(DebugObject):
 
     def _parse_content(self, parsed_yaml):
         """ Internal method to construct the effect from a yaml object """
-        for key, val in list(parsed_yaml.items()):
+        for key, val in iteritems(parsed_yaml):
             self._parse_shader_template(key, val)
 
         # Create missing programs using the default options
@@ -134,7 +136,7 @@ class Effect(DebugObject):
 
         # Add defines to the injects
         injects['defines'] = []
-        for key, val in list(self._options.items()):
+        for key, val in iteritems(self._options):
             val_str = str(val)
             if isinstance(val, bool):
                 val_str = "1" if val else "0"
@@ -154,7 +156,7 @@ class Effect(DebugObject):
         # Append aditional injects
         if "inject" in data:
             data_injects = data["inject"]
-            for key, val in list(data_injects.items()):
+            for key, val in iteritems(data_injects):
                 if val is None:
                     self.warn("Empty insertion: '" + key + "'")
                     continue
@@ -177,7 +179,7 @@ class Effect(DebugObject):
 
         shader = ShaderTemplate(template_src, self._effect_name + "@" + shader_id + "@" + self._effect_hash)
 
-        for key, val in list(injects.items()):
+        for key, val in iteritems(injects):
             shader.register_template_value(key, val)
 
         return shader.create()

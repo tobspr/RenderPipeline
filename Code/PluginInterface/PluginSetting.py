@@ -1,4 +1,4 @@
-
+from six import iteritems
 
 from ..Util.DebugObject import DebugObject
 from .PluginExceptions import BadSettingException
@@ -26,7 +26,7 @@ class BasePluginSetting(DebugObject):
     def evaluate_display_conditions(self, settings):
         """ Checks whether the setting should be visible for a given set of
         settings """
-        for setting_id, required_value in self.display_conditions.items():
+        for setting_id, required_value in iteritems(self.display_conditions):
             if setting_id not in settings:
                 self.warn("Unkown display dependency setting:", setting_id)
                 return False

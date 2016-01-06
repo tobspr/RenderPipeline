@@ -1,3 +1,4 @@
+from six import iteritems
 
 from direct.stdpy.file import isfile
 
@@ -54,7 +55,7 @@ class SettingsLoader(DebugObject):
 
         # Flatten the recursive structure into a single dictionary
         def flatten_and_insert(root, prefix):
-            for key, val in root.items():
+            for key, val in iteritems(root):
                 if isinstance(val, dict):
                     flatten_and_insert(val, prefix + key + ".")
                 else:
