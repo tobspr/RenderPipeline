@@ -62,7 +62,6 @@ class ShadowManager(object):
         self._atlas = ShadowAtlas(self._atlas_size)
 
     def update(self):
-        
         for i in range(len(self._queued_updates), self._max_updates):
             self._cameras[i].set_active(False)
             self._display_regions[i].set_active(False)

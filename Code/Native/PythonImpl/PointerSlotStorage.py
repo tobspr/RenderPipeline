@@ -32,7 +32,6 @@ class PointerSlotStorage(object):
                     break
             if not any_taken:
                 return i
-
         return -1
 
     def free_slot(self, slot):

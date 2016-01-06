@@ -54,7 +54,7 @@ class InternalLightManager(object):
 
         num_sources = light.get_num_shadow_sources()
         base_slot = self._shadow_sources.find_consecutive_slots(num_sources)
-        if not base_slot:
+        if base_slot < 0:
             print("ERROR: Failed to find slot for shadow sources!")
             return
 
@@ -125,7 +125,7 @@ class InternalLightManager(object):
             if source and source.get_needs_update():
                 sources_to_update.append(source)
 
-        sources_to_update.sort(lambda source: source.get_resolution())
+        sources_to_update.sort(lambda a, b: b.get_resolution() - a.get_resolution())
 
         atlas = self._shadow_manager.get_atlas()
         update_slots = min(len(sources_to_update), self._shadow_manager.get_num_update_slots_left())

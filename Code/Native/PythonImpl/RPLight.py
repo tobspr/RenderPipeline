@@ -148,7 +148,7 @@ class RPLight(object):
 
     def set_ies_profile(self, profile):
         self._ies_profile = profile
-        set_needs_update(True)
+        self.set_needs_update(True)
 
     def get_ies_profile(self):
         return self._ies_profile
