@@ -1,4 +1,5 @@
 
+from six.moves import range
 
 from panda3d.core import Camera, MatrixLens
 

@@ -1,5 +1,7 @@
 
 from __future__ import print_function, division
+from six.moves import range
+
 from panda3d.core import LVecBase4i, LVecBase4
 
 class ShadowAtlas(object):

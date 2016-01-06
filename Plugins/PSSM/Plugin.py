@@ -1,5 +1,6 @@
 
 from __future__ import print_function
+from six.moves import range
 
 from math import cos, sin, pi
 

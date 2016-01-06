@@ -1,4 +1,6 @@
 
+from six.moves import range
+
 from random import random, seed
 
 from panda3d.core import LVecBase2i, PNMImage, Texture

@@ -1,4 +1,6 @@
 
+from six.moves import range
+
 import time
 
 from panda3d.core import PNMImage, VirtualFileSystem, VirtualFileMountRamdisk

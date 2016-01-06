@@ -1,4 +1,5 @@
 from __future__ import print_function
+from six.moves import range
 
 from .PointerSlotStorage import PointerSlotStorage
 from .GPUCommand import GPUCommand

@@ -1,4 +1,6 @@
 
+from six.moves import range
+
 class PointerSlotStorage(object):
 
     def __init__(self, max_size):

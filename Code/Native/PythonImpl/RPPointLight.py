@@ -1,4 +1,6 @@
 
+from six.moves import range
+
 from panda3d.core import Vec3
 
 from .RPLight import RPLight

@@ -1,4 +1,6 @@
 
+from six.moves import range
+
 from panda3d.core import LVecBase2i
 from .. import *
 

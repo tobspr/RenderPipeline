@@ -1,5 +1,6 @@
 
 from __future__ import division
+from six.moves import range
 
 from functools import partial
 

@@ -1,4 +1,5 @@
 from __future__ import division
+from six.moves import range
 
 from .. import *
 from panda3d.core import SamplerState, Texture
