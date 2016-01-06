@@ -161,6 +161,19 @@ def write_flag(flag_location, flag_value):
     except IOError as msg:
         error("Failed to write flag to "+ flag_location + ", reason: " + str(msg))
 
+def check_cmake():
+    """ Checks if cmake is installed """
+    try:
+        subprocess.call(["cmak2e", "--version"], stdout=subprocess.PIPE)
+    except Exception as msg:
+        print("")
+        print(color("Could not find cmake!", Fore.RED + Style.BRIGHT))
+        print("It seems that cmake is not installed on this system, or not on")
+        print("your path. Please install cmake and make sure it is on your path.")
+        print("You can ensure this by running 'cmake --version' in a command line.")
+        print("Full error message:")
+        print(msg)
+        error("cmake missing")
 
 if __name__ == "__main__":
 
@@ -180,6 +193,8 @@ if __name__ == "__main__":
                  "(e.g. PSSM). Do you want to use the C++ modules? (y/n):")
 
         if get_user_choice(query):
+            check_cmake()
+
             write_flag("Code/Native/use_cxx.flag", True)
 
             print_step("Downloading the module builder ...")
