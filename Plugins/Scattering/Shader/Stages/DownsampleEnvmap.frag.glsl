@@ -43,7 +43,7 @@ void main() {
         vec3 h = normalize(Xi.x * tangent + Xi.y * binormal + 1.0 * n);
         
         // Reconstruct light vector
-        vec3 l = -reflect(n, -h);
+        vec3 l = -reflect(n, h);
 
         // Get lighting brdf
         float NxH = max(0, dot(n, h));
@@ -52,7 +52,8 @@ void main() {
 
         // Visibility has to get multiplied later on
         float distribution = brdf_distribution(NxH, sample_roughness);
-        float fresnel = brdf_fresnel(LxH, sample_roughness);
+        // float fresnel = brdf_fresnel(LxH, sample_roughness);
+        float fresnel = 1.0; // No noticeable difference, runs faster tho
         float weight = distribution * fresnel;
 
         vec3 fval = textureLod(SourceTex, l, current_mip).xyz;
@@ -60,6 +61,7 @@ void main() {
         accum_weights += weight;
     }
 
+    // Energy conservation
     accum /= max(0.01, accum_weights);
     
     result.xyz = accum;
