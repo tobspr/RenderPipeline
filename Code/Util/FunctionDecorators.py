@@ -14,7 +14,7 @@ def profile(func):
 
     # Insert the collector to a custom dictionary attached to the base
     if hasattr(global_showbase, 'custom_collectors'):
-        if collector_name in list(global_showbase.custom_collectors.keys()):
+        if collector_name in global_showbase.custom_collectors.keys():
             pstat = global_showbase.custom_collectors[collector_name]
         else:
             global_showbase.custom_collectors[collector_name] = \

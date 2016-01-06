@@ -101,7 +101,7 @@ class PipeViewer(DraggableWindow):
                             frameColor=(r, g, b, 1),
                             pos=(0, 1, -95 - pipe_idx * pipe_height))
 
-                if isinstance(pipe_tex, list) or isinstance(pipe_tex, tuple):
+                if isinstance(pipe_tex, (list, tuple)):
                     pipe_tex = pipe_tex[0]
 
                 if isinstance(pipe_tex, BaseUBO):

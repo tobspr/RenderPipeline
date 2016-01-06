@@ -30,7 +30,7 @@ class BasePluginSetting(DebugObject):
             if setting_id not in settings:
                 self.warn("Unkown display dependency setting:", setting_id)
                 return False
-            if isinstance(required_value, list) or isinstance(required_value, tuple):
+            if isinstance(required_value, (list, tuple)):
                 if settings[setting_id].value not in required_value:
                     return False
             else:
@@ -141,7 +141,7 @@ class PluginSettingBOOL(BasePluginSetting):
         pass
 
     def set_value(self, val):
-        if not isinstance(val, int) and not isinstance(val, bool):
+        if not isinstance(val, (int, bool)):
             raise BadSettingException("Unkown data value for bool: "  + str(val))
         self.value = True if val else False
 
@@ -151,7 +151,7 @@ class PluginSettingENUM(BasePluginSetting):
 
     def load_additional_settings(self, yaml):
         self.values = yaml.pop("values")
-        if not isinstance(self.values, list) and not isinstance(self.values, tuple):
+        if not isinstance(self.values, (list, tuple)):
             raise BadSettingException("Value enumeration is not a list")
 
     def set_value(self, val):

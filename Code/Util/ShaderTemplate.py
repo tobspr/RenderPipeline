@@ -17,7 +17,7 @@ class ShaderTemplate(DebugObject):
     def register_template_value(self, key, val):
         """ Registers a new template value. The value may either be a list of
         strings or just a single string """
-        if not isinstance(val, list):
+        if not isinstance(val, (list, tuple)):
             val = [val]
         key = key.lower()
 

@@ -97,8 +97,7 @@ class BasePluginInterface(DebugObject):
     def reset_plugin_settings(self, plugin_id):
         """ Resets all settings of a given plugin, this has no effect until
         write_configuration() was called. """
-        # Need a copy to iterate
-        for key in list(self._overrides.keys()):
+        for key in list(self._overrides.keys()): # Need a copy to iterate
             if key.startswith(plugin_id + "."):
                 del self._overrides[key]
 

@@ -1,5 +1,5 @@
 
-from six import iteritems
+from six import iteritems, iterkeys
 
 import copy
 
@@ -29,7 +29,7 @@ class Effect(DebugObject):
     def generate_hash(cls, filename, options):
         """ Generates an unique hash based on the effect path and options """
         constructed_dict = {}
-        for key in sorted(Effect._DEFAULT_OPTIONS.keys()):
+        for key in sorted(iterkeys(Effect._DEFAULT_OPTIONS)):
             if key in options:
                 val = options[key]
             else:
@@ -161,7 +161,7 @@ class Effect(DebugObject):
                     self.warn("Empty insertion: '" + key + "'")
                     continue
 
-                if isinstance(val, list) or isinstance(val, tuple):
+                if isinstance(val, (list, tuple)):
                     self.warn("Invalid syntax, you used a list but you should have used a string:")
                     self.warn(val)
                     continue

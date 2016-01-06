@@ -151,7 +151,7 @@ class DayTimeSettingCOLOR(DayTimeSetting):
         pass
 
     def set_default_value(self, val):
-        if not isinstance(val, list) and not isinstance(val, tuple):
+        if not isinstance(val, (list, tuple)):
             raise BadSettingException("Defaults for colors should be a list")
 
         if len(val) != 3:
@@ -168,7 +168,7 @@ class DayTimeSettingCOLOR(DayTimeSetting):
         return "[{:3.0f} {:3.0f} {:3.0f}]".format(*val)
 
     def format_nonlinear(self, val):
-        if isinstance(val, list):
+        if isinstance(val, (list, tuple)):
             return self.format(val)
         else:
             return str(round(val, 2))
