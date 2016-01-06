@@ -23,7 +23,7 @@ class FastTextNode(DebugObject):
         self._nodepath.set_scale(pixel_size * 2.0 / float(Globals.base.win.get_y_size()))
         self._nodepath.set_pos(pos.x, 0, pos.y)
 
-        font = Globals.loader.load_font(font)
+        font = Globals.loader.loadFont(font)
         font.set_outline(Vec4(0, 0, 0, 0.78), 1.6, 0.37)
         font.set_scale_factor(1.0)
         font.set_texture_margin(int(pixel_size / 4.0 * 2.0))

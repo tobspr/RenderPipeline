@@ -1,6 +1,42 @@
 from __future__ import print_function
 
-from panda3d.core import Vec3
+from panda3d.core import Vec3, Mat3
+
+
+def color_from_temperature(temperature):
+    # Thanks to rdb for this conversion script
+    mm = 1000.0 / temperature
+    mm2 = mm**2
+    mm3 = mm2 * mm
+    x, y = 0, 0
+
+    if temperature < 4000:
+        x = -0.2661239 * mm3 - 0.2343580 * mm2 + 0.8776956 * mm + 0.179910
+    else:
+        x = -3.0258469 * mm3 + 2.1070379 * mm2 + 0.2226347 * mm + 0.240390
+
+    x2 = x**2
+    x3 = x2 * x
+    if temperature < 2222:
+        y = -1.1063814 * x3 - 1.34811020 * x2 + 2.18555832 * x - 0.20219683
+    elif temperature < 4000:
+        y = -0.9549476 * x3 - 1.37418593 * x2 + 2.09137015 * x - 0.16748867
+    else:
+        y =  3.0817580 * x3 - 5.87338670 * x2 + 3.75112997 * x - 0.37001483
+
+    # xyY to XYZ, assuming Y=1.
+    xyz = Vec3(x / y, 1, (1 - x - y) / y)
+
+    # Convert XYZ to linearized sRGB.
+    xyz_to_rgb = Mat3(
+     3.2406, -0.9689,  0.0557,
+    -1.5372,  1.8758, -0.2050,
+    -0.4986,  0.0415,  1.0570)
+
+    return xyz_to_rgb.xform(xyz)
+
+
+__all__ = ["RPLight"]
 
 class RPLight(object):
 
@@ -68,6 +104,9 @@ class RPLight(object):
                         0.7152 * self._color.y +
                         0.0722 * self._color.z)
         self.set_needs_update(True)
+
+    def set_color_from_temperature(self, temperature):
+        self.set_color(color_from_temperature(temperature))
 
     def get_color(self):
         return self._color
