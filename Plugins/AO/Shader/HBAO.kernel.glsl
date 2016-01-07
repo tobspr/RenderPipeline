@@ -63,8 +63,6 @@ for (int i = 0; i < num_angles; ++i) {
 // Normalize samples
 accum /= num_angles;
 
-accum *= 3.0;
-
 // Normalize bent normal
 bent_normal /= max(1.0, length(bent_normal));
 bent_normal = view_normal_to_world(bent_normal);

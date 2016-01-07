@@ -13,7 +13,7 @@ const int num_samples = GET_SETTING(AO, ssao_sample_count) / 4;
 const float bias = GET_SETTING(AO, ssao_bias) * 0.5;
 const float max_range = GET_SETTING(AO, ssao_max_distance);
 
-float sample_offset = sample_radius * pixel_size.x * 20.0;
+float sample_offset = sample_radius * pixel_size.x * 30.0;
 float range_accum = 0.0;
 float accum = 0.0;
 
@@ -21,8 +21,10 @@ vec3 bent_normal = vec3(0.0001);
 
 for (int i = 0; i < num_samples; ++i) {
 
-    vec3 offset = poisson_disk_3D_32[i] * 0.6;
+    vec3 offset = poisson_disk_3D_32[i];
+    offset = mix(offset, noise_vec, 0.5);
     offset.xz = rotate(offset.xz, disk_rotate);
+    offset *= 0.5;
 
     // Flip offset in case it faces away from the normal
     offset = faceforward(offset, offset, -pixel_view_normal);

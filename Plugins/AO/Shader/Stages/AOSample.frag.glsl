@@ -27,7 +27,7 @@ void main() {
 
     int ox = instance % 2;
     int oy = instance / 2;
-    float disk_rotate = (instance / 4.0) * 180.0 / M_PI;
+    float disk_rotate = (instance / 4.0) * TWO_PI;
 
     ivec2 coord = ivec2(gl_FragCoord.xy) * 2 - ivec2(ox, oy) * SCREEN_SIZE_INT;
 
@@ -42,7 +42,7 @@ void main() {
     vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = distance(pixel_world_pos, MainSceneData.camera_pos);
 
-    vec3 noise_vec = texelFetch(Noise4x4, ivec2(ox, oy), 0).xyz * 2.0 - 1.0;
+    vec3 noise_vec = texelFetch(Noise4x4, ivec2(gl_FragCoord.xy) % 4, 0).xyz * 2.0 - 1.0;
 
     if (view_dist > 10000.0) {
         result = vec4(1);
@@ -51,7 +51,6 @@ void main() {
 
     // float kernel_scale = 10.0 / get_linear_z_from_z(pixel_depth);
     float kernel_scale = 10.0 / view_dist;
-
 
     // Include the appropriate kernel
     #if ENUM_V_ACTIVE(AO, technique, SSAO)

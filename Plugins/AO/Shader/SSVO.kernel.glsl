@@ -10,7 +10,7 @@ of the spheres volume is then used to compute AO.
 */
 
 
-const int num_samples = GET_SETTING(AO, ssvo_sample_count);
+const int num_samples = GET_SETTING(AO, ssvo_sample_count) / 4;
 vec2 sphere_radius = GET_SETTING(AO, ssvo_sphere_radius) * pixel_size;
 float max_depth_diff = GET_SETTING(AO, ssvo_max_distance);
 
@@ -21,7 +21,9 @@ for (int i = 0; i < num_samples; ++i) {
 
     // Get random offset in screen space
     vec2 offset = poisson_disk_2D_32[i];
-    offset += noise_vec.xy * 0.5;
+    offset = mix(offset, noise_vec.xy, 0.3);
+    offset = rotate(offset, disk_rotate);
+
     vec2 offc = offset * sphere_radius * 6.0 * kernel_scale;
 
     // Use paired samples, this enables us to hide depth buffer discontinuities

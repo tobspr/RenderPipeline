@@ -10,18 +10,22 @@ to approximate AO.
 
 
 const float sample_radius = GET_SETTING(AO, alchemy_sample_radius);
-const int num_samples = GET_SETTING(AO, alchemy_num_samples);
+const int num_samples = GET_SETTING(AO, alchemy_num_samples) / 4;
 float max_dist = GET_SETTING(AO, alchemy_max_distance);
 float accum = 0.0;
 float accum_count = 0;
 
 vec3 bent_normal = vec3(0);
 
+vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.7;
+
 for (int i = 0; i < num_samples; ++i) {
 
     // Get random texcoord offset
-    vec2 offset = poisson_disk_2D_32[i] + noise_vec.xy * 0.1;
-    vec2 offcoord = texcoord + offset * pixel_size * sample_radius * kernel_scale * 0.5;
+    vec2 offset = poisson_disk_2D_32[i] + noise_vec.xy * 0.2;
+    offset = rotate(offset, disk_rotate);
+
+    vec2 offcoord = texcoord + offset * offset_scale;
 
     // Get view position at that offset
     vec3 off_pos = get_view_pos_at(offcoord);
@@ -52,8 +56,6 @@ bent_normal = pixel_world_normal;
 
 // Normalize values
 accum /= max(1.0, accum_count);
-
-// Seems to be overoccluded by a lot, normalize it
-// accum *= 0.1;
+accum *= 1.5;
 
 result = vec4(bent_normal, 1 - saturate(accum));

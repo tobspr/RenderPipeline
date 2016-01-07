@@ -11,17 +11,19 @@ unocluded vector.
 */
 
 const float sample_radius = GET_SETTING(AO, ue4ao_sample_radius);
-const int num_samples = GET_SETTING(AO, ue4ao_sample_count);
+const int num_samples = GET_SETTING(AO, ue4ao_sample_count) / 4;
 const float max_distance = GET_SETTING(AO, ue4ao_max_distance);
 
 float accum = 0.0;
 float accum_count = 0.0;
 
+vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.5;
 
 for (int i = 0; i < num_samples; ++i) {
     
     vec2 offset = poisson_disk_2D_32[i] + noise_vec.xy * 0.3;
-    vec2 offcoord = offset * pixel_size * sample_radius * kernel_scale * 0.5;
+    offset = rotate(offset, disk_rotate);
+    vec2 offcoord = offset * offset_scale;
 
     // Get offset coordinates
     vec2 texc_a = texcoord + offcoord;
@@ -63,11 +65,10 @@ for (int i = 0; i < num_samples; ++i) {
         accum_count += 0.5;
 
     }
-
-
 }
-// accum /= num_samples;
+
 accum /= max(1.0, accum_count);
+accum *= 1.5;
 
 // Bent normal not supported yet
 vec3 bent_normal = pixel_world_normal;
