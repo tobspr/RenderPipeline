@@ -119,8 +119,8 @@ class DraggableWindow(DebugObject):
     def _get_mouse_pos(self):
         """ Internal helper function to get the mouse position, scaled by
         the context scale """
-        mouse_x, mouse_y = (Globals.base.win.get_pointer(0).get_x(),
-                            Globals.base.win.get_pointer(0).get_y())
+        mouse_x, mouse_y = (Globals.base.win.get_pointer(0).x,
+                            Globals.base.win.get_pointer(0).y)
         return Vec2(mouse_x, mouse_y) * self._context_scale
 
     def _set_pos(self, pos):

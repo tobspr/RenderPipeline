@@ -29,9 +29,9 @@ class GPUCommand(object):
         self._current_index += 1
 
     def push_vec3(self, v):
-        self.push_float(v.get_x())
-        self.push_float(v.get_y())
-        self.push_float(v.get_z())
+        self.push_float(v.x)
+        self.push_float(v.y)
+        self.push_float(v.z)
 
     def push_vec4(self, v):
         self.push_vec3(v)
