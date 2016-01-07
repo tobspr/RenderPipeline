@@ -24,7 +24,7 @@ void do_blur(ivec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth
     // Notice: We can advance 2 pixels at once, since
     // we did a bilateral upscale. So only every second pixel
     // contains new information
-    ivec2 offcord = coord + i * blur_direction;
+    ivec2 offcord = coord + i * blur_direction * 2;
     vec4 sampled = texelFetch(SourceTex, offcord, 0);
     vec3 nrm = get_gbuffer_normal(GBuffer, offcord * 2);
     float d = get_lin_z(offcord * 2);

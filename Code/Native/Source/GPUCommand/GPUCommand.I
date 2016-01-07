@@ -24,6 +24,7 @@
  *
  */
 
+#include "stdint.h"
 
 /**
  * @brief Appends an integer to the GPUCommand.
@@ -53,8 +54,11 @@ inline float GPUCommand::convert_int_to_float(int v) const {
         return (float)v;
         
     #else
-        // Store the int bits as float, and unpack it later in the shader
-        union { int _int; float _float; } converter = { v };
+        assert(sizeof(float) == 4); // We really need this for packing! Better
+                                    // throw an error if the compiler uses more
+                                    // than 4 bytes.
+        // Simple binary conversion, assuming sizeof(int) == sizeof(float)
+        union { int32_t _int; float _float; } converter = { (int32_t)v };
         return converter._float;
     #endif
 }

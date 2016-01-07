@@ -33,7 +33,11 @@
 NotifyCategoryDecl(gpucommand, EXPORT_CLASS, EXPORT_TEMPL);
 
 #define GPU_COMMAND_ENTRIES 32
-#define PACK_INT_AS_FLOAT 1
+
+// Packs integers by storing their binary representation in floats
+// This only works if the command and light buffer is 32bit floating point.
+#define PACK_INT_AS_FLOAT 0
+
 
 /**
  * @brief Class for storing data to be transferred to the GPU.
