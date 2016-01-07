@@ -21,7 +21,7 @@ class AutoExposureStage(RenderStage):
         # Create the target which converts the scene color to a luminance
         self._target_lum = self._create_target("ColorCorrection:GetLuminance")
         self._target_lum.set_quarter_resolution()
-        self._target_lum.add_color_texture(bits=16)
+        self._target_lum.add_color_texture(bits=8)
         self._target_lum.prepare_offscreen_buffer()
 
         # Get the current quarter-window size
@@ -36,7 +36,7 @@ class AutoExposureStage(RenderStage):
             wsize_y = (wsize_y+3) // 4
 
             mip_target = self._create_target("ColorCorrection:DScaleLum:S" + str(wsize_x))
-            mip_target.add_color_texture(bits=16)
+            mip_target.add_color_texture(bits=8)
             mip_target.set_size(wsize_x, wsize_y)
             mip_target.prepare_offscreen_buffer()
             mip_target.set_shader_input("SourceTex", last_tex)

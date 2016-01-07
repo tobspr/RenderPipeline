@@ -1,7 +1,7 @@
 
 from six.moves import range
 
-from panda3d.core import LVecBase2i
+from panda3d.core import LVecBase2i, Texture, SamplerState, Vec4
 from .. import *
 
 class BloomStage(RenderStage):
@@ -11,7 +11,7 @@ class BloomStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "BloomStage", pipeline)
-        self._num_mips = 8
+        self._num_mips = 6
 
     def get_produced_pipes(self):
         return {"ShadedScene": self._upsample_targets[-1]["color"]}
@@ -29,9 +29,19 @@ class BloomStage(RenderStage):
         self._target_firefly_y.add_color_texture(bits=16)
         self._target_firefly_y.prepare_offscreen_buffer()
 
+        self._scene_target_img = Image.create_2d(
+            "BloomDownsample", Globals.base.win.get_x_size(),
+            Globals.base.win.get_y_size(), Texture.T_float, Texture.F_r11_g11_b10)
+        scene_target = self._scene_target_img.get_texture()
+
+        scene_target.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        scene_target.set_magfilter(SamplerState.FT_linear)
+        scene_target.set_wrap_u(SamplerState.WM_clamp)
+        scene_target.set_wrap_v(SamplerState.WM_clamp)
+
         self._target_extract = self._create_target("Bloom:ExtractBrightSpots")
-        self._target_extract.add_color_texture(bits=16)
         self._target_extract.prepare_offscreen_buffer()
+        self._target_extract.set_shader_input("DestTex", scene_target, False, True, -1, 0)
 
         self._target_firefly_x.set_shader_input("direction", LVecBase2i(1, 0))
         self._target_firefly_y.set_shader_input("direction", LVecBase2i(0, 1))
@@ -39,7 +49,6 @@ class BloomStage(RenderStage):
         self._target_firefly_y.set_shader_input("SourceTex", self._target_firefly_x["color"])
         self._target_extract.set_shader_input("SourceTex", self._target_firefly_y["color"])
 
-        current_target = self._target_extract["color"]
         self._downsample_targets = []
         self._upsample_targets = []
 
@@ -48,10 +57,10 @@ class BloomStage(RenderStage):
             scale_multiplier = 2 ** (1 + i)
             target = self._create_target("Bloom:Downsample:Step-" + str(i))
             target.set_size(-scale_multiplier, -scale_multiplier)
-            target.add_color_texture(bits=16)
             target.prepare_offscreen_buffer()
-            target.set_shader_input("SourceTex", current_target)
-            current_target = target["color"]
+            target.set_shader_input("SourceMip", i)
+            target.set_shader_input("SourceTex", scene_target)
+            target.set_shader_input("DestTex", scene_target, False, True, -1, i + 1)
             self._downsample_targets.append(target)
 
         # Upsample passes
@@ -59,22 +68,17 @@ class BloomStage(RenderStage):
             scale_multiplier = 2 ** (self._num_mips - i - 1)
             target = self._create_target("Bloom:Upsample:Step-" + str(i))
             target.set_size(-scale_multiplier, -scale_multiplier)
-            target.add_color_texture(bits=16)
-            target.prepare_offscreen_buffer()
-
-            if i == 0:
-                target.set_shader_input("FirstUpsamplePass", True)
-            else:
-                target.set_shader_input("FirstUpsamplePass", False)
 
             if i == self._num_mips - 1:
-                target.set_shader_input("LastUpsamplePass", True)
-            else:
-                target.set_shader_input("LastUpsamplePass", False)
+                target.add_color_texture(bits=16)
 
-            target.set_shader_input("SumTex", current_target)
-            target.set_shader_input("SourceTex", self._downsample_targets[-i - 1]["color"])
-            current_target = target["color"]
+            target.prepare_offscreen_buffer()
+            target.set_shader_input("FirstUpsamplePass", i == 0)
+            target.set_shader_input("LastUpsamplePass", i == self._num_mips - 1)
+
+            target.set_shader_input("SourceMip", self._num_mips - i)
+            target.set_shader_input("SourceTex", scene_target)
+            target.set_shader_input("DestTex", scene_target, False, True, -1, self._num_mips - i - 1)
             self._upsample_targets.append(target)
 
     def set_shaders(self):
