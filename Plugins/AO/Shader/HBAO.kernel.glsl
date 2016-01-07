@@ -2,7 +2,7 @@
 
 
 const float sample_radius = GET_SETTING(AO, hbao_sample_radius);     
-const int num_angles = GET_SETTING(AO, hbao_ray_count);
+const int num_angles = GET_SETTING(AO, hbao_ray_count) / 4;
 const int num_ray_steps = GET_SETTING(AO, hbao_ray_steps);
 const float tangent_bias = GET_SETTING(AO, hbao_tangent_bias);
 const float max_sample_distance = GET_SETTING(AO, hbao_max_distance) * 0.3;
@@ -11,7 +11,8 @@ float accum = 0.0;
 vec3 bent_normal = vec3(pixel_view_normal * 3.0);
 
 for (int i = 0; i < num_angles; ++i) {
-    float angle = (i + 0.5 * noise_vec.x) / float(num_angles) * TWO_PI;
+    float angle = (i + 0.5 * noise_vec.x) / float(num_angles * 4) * TWO_PI;
+    angle += disk_rotate;
 
     vec2 sample_dir = vec2(cos(angle), sin(angle));
 
@@ -57,13 +58,12 @@ for (int i = 0; i < num_angles; ++i) {
     if (dot(abs(last_diff), vec3(1)) > 0.5) {
         bent_normal += (occlusion) * normalize(-last_diff);
     }
-    // bent_normal += (last_diff);
-    // bent_normal += normalize(last_diff);
-
 }
 
 // Normalize samples
 accum /= num_angles;
+
+accum *= 3.0;
 
 // Normalize bent normal
 bent_normal /= max(1.0, length(bent_normal));

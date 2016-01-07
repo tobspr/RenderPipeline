@@ -119,8 +119,8 @@ class OnscreenDebugger(BaseManager):
                 y=(Globals.base.win.get_y_size()/self._gui_scale) - 118 - 40, parent=self._fullscreen_node)
 
             Sequence(
-                python_warning.color_scale_interval(1.0, Vec4(1, 1, 1, 0.8), Vec4(1, 1, 1, 1), blendType="easeInOut"),
-                python_warning.color_scale_interval(1.0, Vec4(1, 1, 1, 1.0), Vec4(1, 1, 1, 0.8), blendType="easeInOut"),
+                python_warning.color_scale_interval(0.7, Vec4(0.3, 1, 1, 0.7), blendType="easeOut"),
+                python_warning.color_scale_interval(0.7, Vec4(1, 1, 1, 1.0), blendType="easeOut"),
             ).loop()
 
         # Keybinding hints

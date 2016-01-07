@@ -6,7 +6,6 @@ This tool offers an interface to configure the time of day settings
 """
 
 from __future__ import print_function
-from six import iteritems
 
 import sys
 import time
@@ -15,6 +14,9 @@ from threading import Thread
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
+sys.path.insert(0, "../../Code/External/six")
+
+from six import iteritems
 
 # Load all PyQt classes
 try:
