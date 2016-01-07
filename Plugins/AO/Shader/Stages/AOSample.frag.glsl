@@ -38,7 +38,6 @@ void main() {
     vec3 pixel_world_pos = get_world_pos_at(coord);
     vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, coord);
 
-
     vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = distance(pixel_world_pos, MainSceneData.camera_pos);
 

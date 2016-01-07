@@ -20,15 +20,13 @@ float accum = 0.0;
 vec3 bent_normal = vec3(0.0001);
 
 for (int i = 0; i < num_samples; ++i) {
-
     vec3 offset = poisson_disk_3D_32[i];
-    offset = mix(offset, noise_vec, 0.5);
+    offset = mix(offset, noise_vec, 0.1);
     offset.xz = rotate(offset.xz, disk_rotate);
-    offset *= 0.5;
+    offset *= 0.6;
 
     // Flip offset in case it faces away from the normal
     offset = faceforward(offset, offset, -pixel_view_normal);
-    
 
     // Compute offset position in view space
     vec3 offset_pos = pixel_view_pos + offset * sample_offset;

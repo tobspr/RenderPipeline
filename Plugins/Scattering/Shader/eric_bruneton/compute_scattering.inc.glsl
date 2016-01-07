@@ -15,12 +15,12 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 {
 
     // Move surface pos above ocean level
-    if (surfacePos.z < -0.01) {
+    // if (surfacePos.z < -0.01) {
         // vec3 v2s = surfacePos - MainSceneData.camera_pos;
         // float z_factor = abs(MainSceneData.camera_pos.z) / abs(v2s.z);
         // surfacePos = MainSceneData.camera_pos + v2s * z_factor;
         // viewDir = normalize(surfacePos - MainSceneData.camera_pos);
-    }
+    // }
 
     vec3 inscatteredLight = vec3(0.0);
     float groundH = Rg + 0.05;
@@ -57,26 +57,24 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
         // Looks better IMO
         fog_factor = smoothstep(0, 1, (pathLength-fog_start) / fog_ramp);
+
         // Produces a smoother transition, but the borders look weird then    
         // fog_factor = pow(fog_factor, 1.0 / 2.2);
 
-
-        // Get atmospheric color, 3 samples should be enough
+        // Get atmospheric color, 2 or 3 samples should be enough
         const int num_samples = 2;
+        const float height_decay = 400.0;
 
         float current_height = max(surfacePos.z, MainSceneData.camera_pos.z);
-
         current_height *= 1.0 - saturate(pathLength / 25000.0);
-
         float dest_height = surfacePos.z;
         float height_step = (dest_height - current_height) / num_samples;
 
         vec4 inscatter_sum = vec4(0);
-        
         for (int i = 0; i < num_samples; ++i) {
             inscatter_sum += texture4D(InscatterSampler, 
                 current_height * height_scale_factor + groundH, 
-                current_height / 400.0 + 0.001,
+                current_height / height_decay + 0.001,
                 musStartPos, nuStartPos);
 
             current_height += height_step;
@@ -85,13 +83,13 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         inscatter_sum /= float(num_samples);
         inscatter_sum *= 0.5;
 
-
         // Exponential height fog
         fog_factor *= exp(- surfacePos.z / TimeOfDay.Scattering.ground_fog_factor);
 
         // Scale fog color
         vec4 fog_color = inscatter_sum * TimeOfDay.Scattering.fog_brightness;
 
+        // Tint fog color a bit, and also desaturate it
         fog_color *= fog_factor * 3.0;
         fog_color += 0.0018;
 
@@ -105,10 +103,11 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
         sun_factor = 0;
     }
 
-
     // Apply inscattered light
     inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
     inscatteredLight *= 70.0;
+
+    // Don't show sun below horizon, and also don't show scattering below horizon
     inscatteredLight *= saturate( (sun_vector.z+0.1) * 40.0);
 
     return inscatteredLight;

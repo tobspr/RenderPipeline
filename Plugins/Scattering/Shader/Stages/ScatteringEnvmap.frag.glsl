@@ -30,7 +30,6 @@ void main() {
     // Get inscattered light
     vec3 inscattered_light = DoScattering(direction * 1e10, direction, fog_factor);
 
-
     if (horizon > 0.0) {
         // Clouds
         vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(direction), 0).xyz;
