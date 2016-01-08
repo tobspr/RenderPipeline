@@ -3,7 +3,7 @@
 #pragma include "Includes/Configuration.inc.glsl"
 
 uniform layout(rg32f) image2D SourceImage;
-uniform writeonly image2D DestImage;
+uniform restrict writeonly image2D DestImage;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);

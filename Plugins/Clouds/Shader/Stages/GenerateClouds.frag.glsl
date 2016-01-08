@@ -5,7 +5,7 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Noise.inc.glsl"
 
-uniform writeonly image3D CloudVoxels;
+uniform restrict writeonly image3D CloudVoxels;
 uniform sampler2D NoiseTex;
 uniform sampler2D CloudNoiseTex;
 

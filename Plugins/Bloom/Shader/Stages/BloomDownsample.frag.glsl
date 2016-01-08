@@ -4,7 +4,7 @@
 
 uniform int SourceMip;
 uniform sampler2D SourceTex;
-uniform writeonly image2D DestTex;
+uniform restrict writeonly image2D DestTex;
 
 // out vec4 result;
 in vec2 texcoord;

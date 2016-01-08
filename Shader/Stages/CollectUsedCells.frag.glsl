@@ -6,7 +6,7 @@
 
 uniform sampler2DArray FlaggedCells;
 uniform layout(r32i) iimageBuffer cellListBuffer;
-uniform writeonly iimage2DArray cellListIndices;
+uniform restrict writeonly iimage2DArray cellListIndices;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -15,9 +15,8 @@ void main() {
     for (int i = 0; i < LC_TILE_SLICES; i++) {
 
         // Check if the cell is flagged
-        float flag = texelFetch(FlaggedCells, ivec3(coord, i), 0).x;
-        if (flag > 0.5) {
-
+        bool visible = texelFetch(FlaggedCells, ivec3(coord, i), 0).x > 0.5;
+        if (visible) {
             // Append the cell and mark it
             int flagIndex = imageAtomicAdd(cellListBuffer, 0, 1) + 1;
             int cellData = coord.x | coord.y << 10 | i << 20;

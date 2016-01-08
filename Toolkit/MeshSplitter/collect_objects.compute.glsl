@@ -14,7 +14,7 @@ uniform sampler2D DrawnObjectsTex;
 
 uniform isampler2D MappingTex;
 uniform layout(r32i) iimageBuffer IndirectTex;
-uniform writeonly iimageBuffer DynamicStripsTex;
+uniform restrict writeonly iimageBuffer DynamicStripsTex;
 uniform sampler2D DatasetTex;
 
 uniform vec3 cameraPosition;

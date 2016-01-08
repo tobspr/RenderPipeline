@@ -8,7 +8,7 @@
 #define USE_GBUFFER_EXTENSIONS 1
 #pragma include "Includes/GBuffer.inc.glsl"
 
-uniform writeonly image2DArray cellGridFlags;
+uniform restrict writeonly image2DArray cellGridFlags;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -20,10 +20,6 @@ void main() {
     // Find the affected cell
     ivec3 tile = get_lc_cell_index(coord, surf_dist);
 
-    // Skip cells which are out of bounds
-    if (tile.z < LC_TILE_SLICES) {
-
-        // Mark the cell as used
-        imageStore(cellGridFlags, tile, vec4(1));
-    }
+    // Mark the cell as used
+    imageStore(cellGridFlags, tile, vec4(1));
 }

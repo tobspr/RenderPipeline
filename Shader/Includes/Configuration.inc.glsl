@@ -5,6 +5,16 @@
 // his loops or not.
 // #pragma optionNV (unroll all)
 
+// nvidia specific options
+#pragma optionNV (fastmath on)
+// #pragma optionNV (fastprecision on)
+#pragma optionNV (ifcvt none)
+#pragma optionNV (inline all)
+#pragma optionNV (strict on)
+
+// Show extended shader warnings (works only on nvidia GPUS I believe) 
+
+
 #pragma include "$$PipelineTemp/$$ShaderAutoConfig.inc.glsl"
 
 // Only include the UBO's if required
@@ -49,5 +59,13 @@
 #define BRANCH_TRANSLUCENCY(m) if (false) {
 #define END_BRANCH_TRANSLUCENCY() }
 #endif
+
+// Precision qualifiers, don't apply to newer GL, but can't hurt too
+precision lowp float;
+precision lowp int;
+precision lowp sampler2D;
+precision lowp sampler3D;
+precision lowp samplerCube;
+
 
 #pragma include "CommonFunctions.inc.glsl"
