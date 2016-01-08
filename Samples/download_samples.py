@@ -31,6 +31,7 @@ Script to download the Render Pipeline samples
 
 import sys
 sys.path.insert(0, "../")
+sys.path.insert(0, "../Code/External/six")
 
 from Code.Util.SubmoduleDownloader import SubmoduleDownloader
 
