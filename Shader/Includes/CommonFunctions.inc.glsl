@@ -177,3 +177,11 @@ float get_diffuse_aa(float w, float NxL) {
     float n  = x0 + x1;
     return w*((abs(x0) <= x1) ? n*n/x : saturate(NxL));
 }
+
+
+float blend_material(float material_factor, float detailmap) {
+    material_factor = max(0, material_factor);
+    // return material_factor;
+    return saturate(
+        mix( pow( max(0, detailmap+0.5) , 10.0), 1.0, material_factor) * material_factor);
+}

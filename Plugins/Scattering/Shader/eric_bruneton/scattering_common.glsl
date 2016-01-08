@@ -2,6 +2,10 @@
 
 // This file includes defines and functions used for the scattering
 
+
+// Don't use fast precision, leads to compilation issues for compute shaders
+#define NO_FAST_PRECISION
+
 #pragma include "Includes/Configuration.inc.glsl"
 
 

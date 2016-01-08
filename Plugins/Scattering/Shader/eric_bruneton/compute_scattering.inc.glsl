@@ -23,7 +23,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     // }
 
     vec3 inscatteredLight = vec3(0.0);
-    float groundH = Rg + 0.05;
+    float groundH = Rg + 2.0;
     float pathLength = distance(MainSceneData.camera_pos, surfacePos);
     vec3 startPos = MainSceneData.camera_pos; 
 

@@ -17,14 +17,18 @@ layout(location=0) in VertexOutput vOutput;
 #pragma include "Includes/NormalMapping.inc.glsl"
 #pragma include "Includes/GBuffer.inc.glsl"
 
-uniform sampler2D p3d_Texture0;
-uniform sampler2D p3d_Texture1;
-uniform sampler2D p3d_Texture2;
-uniform sampler2D p3d_Texture3;
 
-// Only use the displacement texture if we actually need it.
-#if OPT_PARALLAX_MAPPING
-    uniform sampler2D p3d_Texture4;
+#ifndef DONT_FETCH_DEFAULT_TEXTURES
+    uniform sampler2D p3d_Texture0;
+    uniform sampler2D p3d_Texture1;
+    uniform sampler2D p3d_Texture2;
+    uniform sampler2D p3d_Texture3;
+
+    // Only use the displacement texture if we actually need it.
+    #if OPT_PARALLAX_MAPPING
+        uniform sampler2D p3d_Texture4;
+    #endif
+
 #endif
 
 %INOUT%
@@ -42,8 +46,13 @@ void main() {
     %TEXCOORD%
 
     // Fetch texture data
-    float sampled_specular  = texture(p3d_Texture2, texcoord).x;
-    float sampled_roughness = texture(p3d_Texture3, texcoord).x;
+    #ifndef DONT_FETCH_DEFAULT_TEXTURES
+        float sampled_specular  = texture(p3d_Texture2, texcoord).x;
+        float sampled_roughness = texture(p3d_Texture3, texcoord).x;
+    #else
+        float sampled_specular = 0.0;
+        float sampled_roughness = 0.0;
+    #endif
 
     #if OPT_ALPHA_TESTING
         // Do binary alpha testing, but weight it based on the distance to the
@@ -58,7 +67,11 @@ void main() {
         // In case we don't do alpha testing, we don't need the w-component, so
         // don't fetch it. In practice, most GPU's will still load the w component
         // and discard it, but it surely can't hurt.
-        vec3 sampled_diffuse = texture(p3d_Texture0, texcoord).xyz;
+        #ifndef DONT_FETCH_DEFAULT_TEXTURES
+            vec3 sampled_diffuse = texture(p3d_Texture0, texcoord).xyz;
+        #else
+            vec3 sampled_diffuse = vec3(0);
+        #endif
     #endif
 
     #ifdef OPT_NORMAL_MAPPING

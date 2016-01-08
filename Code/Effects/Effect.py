@@ -165,8 +165,8 @@ class Effect(DebugObject):
                     self.warn("Invalid syntax, you used a list but you should have used a string:")
                     self.warn(val)
                     continue
-
-                val = [i.strip() + ";" for i in val.strip(";").split(";")]
+                val = [i for i in val.split("\n")]
+                
                 if key in injects:
                     injects[key] += val
                 else:

@@ -66,12 +66,17 @@ class ShaderTemplate(DebugObject):
                     # Directly remove the value from the list so we can check which
                     # hooks were not found in the template
                     insertions = self._template_values.pop(hook_name)
+
                     if len(insertions) > 0:
                         parsed_lines.append("/* Hook " + hook_name + " */")
                     for linenr, line_i in enumerate(insertions):
 
                         if line_i is None:
                             self.warn("Empty insertion '" + hook_name + "'")
+                            continue
+
+                        if not isinstance(line_i, str):
+                            self.warn("Invalid line type: ", line_i)
                             continue
 
                         # Dont indent defines and pragmas

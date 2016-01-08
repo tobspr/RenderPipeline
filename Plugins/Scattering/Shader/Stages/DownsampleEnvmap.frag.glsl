@@ -40,20 +40,20 @@ void main() {
         find_arbitrary_tangent(n, tangent, binormal);
 
         // Compute halfway vector
-        vec3 h = normalize(Xi.x * tangent + Xi.y * binormal + 1.0 * n);
+        vec3 h = normalize(Xi.x * tangent + Xi.y * binormal + n);
         
         // Reconstruct light vector
         vec3 l = -reflect(n, h);
 
         // Get lighting brdf
         float NxH = max(0, dot(n, h));
-        float NxL = max(0, dot(n, l));
-        float LxH = max(0, dot(h, l));
+        // float NxL = max(0, dot(n, l));
+        // float LxH = max(0, dot(h, l));
 
         // Visibility has to get multiplied later on
         float distribution = brdf_distribution(NxH, sample_roughness);
         // float fresnel = brdf_fresnel(LxH, sample_roughness);
-        float fresnel = 1.0; // No noticeable difference, runs faster tho
+        const float fresnel = 1.0; // No noticeable difference, runs faster tho
         float weight = distribution * fresnel;
 
         vec3 fval = textureLod(SourceTex, l, current_mip).xyz;

@@ -7,13 +7,14 @@
 
 // nvidia specific options
 #pragma optionNV (fastmath on)
-// #pragma optionNV (fastprecision on)
 #pragma optionNV (ifcvt none)
 #pragma optionNV (inline all)
 #pragma optionNV (strict on)
 
-// Show extended shader warnings (works only on nvidia GPUS I believe) 
-
+// Leads to some compilation issues
+#ifndef NO_FAST_PRECISION
+#pragma optionNV (fastprecision on)
+#endif
 
 #pragma include "$$PipelineTemp/$$ShaderAutoConfig.inc.glsl"
 
