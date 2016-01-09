@@ -90,8 +90,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 
     // The division by 4 * NxV * NxL is done in the geometric (visibility) term
     // already, so to evaluate the complete brdf we just do a multiply 
-    vec3 specular_color = mix(vec3(0.08) * m.specular, m.basecolor, m.metallic);
-    shading_result += (distribution * visibility * fresnel) * specular_color;
+    shading_result += (distribution * visibility * fresnel) * get_material_f0(m);
 
     // Special case for directional occlusion and bent normals
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)

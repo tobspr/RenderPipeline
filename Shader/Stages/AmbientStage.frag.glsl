@@ -98,12 +98,12 @@ void main() {
         #endif
     
         // Pre-Integrated environment BRDF
+        // X-Component denotes the fresnel term
+        // Y-Component denotes f0 factor
         vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
-        vec3 specular_nonmetallic = (env_brdf.y + m.basecolor * env_brdf.x) * 0.08 * m.specular;
-        vec3 specular_metallic = m.basecolor;
 
-        // Weight specular metallic and non-metallic terms
-        vec3 specular_ambient = mix(specular_nonmetallic, specular_metallic, m.metallic) * env_default_color;
+        vec3 material_f0 = get_material_f0(m);
+        vec3 specular_ambient = (material_f0 * env_brdf.x + env_brdf.y) * env_default_color;
 
         // Diffuse ambient term
         // TODO: lambertian brdf doesn't look well?

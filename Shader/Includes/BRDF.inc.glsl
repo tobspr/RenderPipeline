@@ -1,6 +1,7 @@
 #pragma once
 
 #pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/Structures/Material.struct.glsl"
 
 
 /*
@@ -185,4 +186,11 @@ float brdf_fresnel(float LxH, float roughness) {
 
     return brdf_fresnel_schlick(LxH, roughness, ior);
     // return brdf_fresnel_cook_torrance(LxH, roughness, ior);
+}
+
+
+/* Material Functions */
+
+vec3 get_material_f0(Material m) {
+    return mix(vec3(0.08) * m.specular, m.basecolor, m.metallic);
 }
