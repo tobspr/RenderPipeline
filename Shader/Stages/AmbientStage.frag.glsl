@@ -93,7 +93,7 @@ void main() {
             env_default_color = env_scattering_color;
 
             // Cheap irradiance
-            env_amb = textureLod(ScatteringCubemap, m.normal, 4.5).xyz;
+            env_amb = textureLod(ScatteringCubemap, m.normal, 6).xyz;
 
         #endif
     

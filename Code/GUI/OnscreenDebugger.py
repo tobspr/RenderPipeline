@@ -166,9 +166,9 @@ class OnscreenDebugger(BaseManager):
         text += "  |  {:4d} commands  |  {:6d} lights  |  {:5d} shadow sources"
         self._debug_lines[1].set_text(text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
-            self._pipeline.get_light_mgr().get_cmd_queue().get_num_processed_commands(),
-            self._pipeline.get_light_mgr().get_num_lights(),
-            self._pipeline.get_light_mgr().get_num_shadow_sources(),
+            self._pipeline.light_mgr.get_cmd_queue().get_num_processed_commands(),
+            self._pipeline.light_mgr.get_num_lights(),
+            self._pipeline.light_mgr.get_num_shadow_sources(),
             ))
 
         text = "{:3.0f} MiB VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
@@ -179,14 +179,14 @@ class OnscreenDebugger(BaseManager):
                 Image._NUM_IMAGES,
                 tex_info["count"],
                 RenderTarget._NUM_BUFFERS_ALLOCATED,
-                self._pipeline.get_plugin_mgr().get_interface().get_active_plugin_count()
+                self._pipeline.plugin_mgr.get_interface().get_active_plugin_count()
             ))
 
         text = "{} ({:1.3f})  |  {:3d} active constraints"
         self._debug_lines[3].set_text(text.format(
-                self._pipeline.get_daytime_mgr().get_time_str(),
-                self._pipeline.get_daytime_mgr().get_time(),
-                self._pipeline.get_daytime_mgr().get_num_constraints()
+                self._pipeline.daytime_mgr.get_time_str(),
+                self._pipeline.daytime_mgr.get_time(),
+                self._pipeline.daytime_mgr.get_num_constraints()
             ))
 
     def _create_debugger(self):
@@ -238,7 +238,7 @@ class OnscreenDebugger(BaseManager):
                 enabled = False
 
             if requires_plugin:
-                if not self._pipeline.get_plugin_mgr().get_interface().is_plugin_enabled(requires_plugin):
+                if not self._pipeline.plugin_mgr.get_interface().is_plugin_enabled(requires_plugin):
                     enabled = False
 
             box = BetterLabeledCheckbox(
@@ -254,13 +254,13 @@ class OnscreenDebugger(BaseManager):
             return
 
         # Clear old defines
-        self._pipeline.get_stage_mgr().remove_define_if(lambda name: name.startswith("_RM__"))
+        self._pipeline.stage_mgr.remove_define_if(lambda name: name.startswith("_RM__"))
 
         if mode_id == "":
-            self._pipeline.get_stage_mgr().define("ANY_DEBUG_MODE", 0)
+            self._pipeline.stage_mgr.define("ANY_DEBUG_MODE", 0)
         else:
-            self._pipeline.get_stage_mgr().define("ANY_DEBUG_MODE", 1)
-            self._pipeline.get_stage_mgr().define("_RM__" + mode_id, 1)
+            self._pipeline.stage_mgr.define("ANY_DEBUG_MODE", 1)
+            self._pipeline.stage_mgr.define("_RM__" + mode_id, 1)
 
         # Reload all shaders
         self._pipeline.reload_shaders()

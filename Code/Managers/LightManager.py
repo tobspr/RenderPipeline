@@ -63,7 +63,7 @@ class LightManager(BaseManager):
 
     def init_defines(self):
         """ Inits the common defines """
-        define = self._pipeline.get_stage_mgr().define
+        define = self._pipeline.stage_mgr.define
 
         define("LC_TILE_SIZE_X", self._tile_size.x)
         define("LC_TILE_SIZE_Y", self._tile_size.y)
@@ -130,7 +130,7 @@ class LightManager(BaseManager):
         self._shadow_manager.set_max_updates(self._pipeline.get_setting("shadows.max_updates"))
         self._shadow_manager.set_atlas_size(self._pipeline.get_setting("shadows.atlas_size"))
         self._shadow_manager.set_scene(Globals.base.render)
-        self._shadow_manager.set_tag_state_manager(self._pipeline.get_tag_mgr())
+        self._shadow_manager.set_tag_state_manager(self._pipeline.tag_mgr)
 
         # Register the shadow manager
         self._internal_mgr.set_shadow_manager(self._shadow_manager)
@@ -166,7 +166,7 @@ class LightManager(BaseManager):
         self._img_light_data.clear_image()
 
         # Register the buffer
-        add_input = self._pipeline.get_stage_mgr().add_input
+        add_input = self._pipeline.stage_mgr.add_input
         add_input("AllLightsData", self._img_light_data.get_texture())
         add_input("ShadowSourceData", self._img_source_data.get_texture())
         add_input("maxLightIndex", self._pta_max_light_index)
@@ -187,7 +187,7 @@ class LightManager(BaseManager):
     def _init_stages(self):
         """ Inits all required stages for the lighting """
 
-        add_stage = self._pipeline.get_stage_mgr().add_stage
+        add_stage = self._pipeline.stage_mgr.add_stage
 
         self._flag_cells_stage = FlagUsedCellsStage(self._pipeline)
         self._flag_cells_stage.set_tile_amount(self._num_tiles)

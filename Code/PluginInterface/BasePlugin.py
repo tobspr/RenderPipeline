@@ -89,7 +89,7 @@ class BasePlugin(DebugObject):
     def _bind_to_hook(self, hook_name, handler):
         """ Binds the handler to a given hook_name. When the hook is executed
         in the pipeline code, the handler gets called """
-        self._pipeline.get_plugin_mgr().add_hook_binding(hook_name, handler)
+        self._pipeline.plugin_mgr.add_hook_binding(hook_name, handler)
         self._hooks[hook_name] = handler
 
     def trigger_hook_explicit(self, hook_name):
@@ -107,14 +107,14 @@ class BasePlugin(DebugObject):
                 if setting.type == "ENUM":
                     # define all enum values
                     for idx, value in enumerate(setting.values):
-                        self._pipeline.get_stage_mgr().define(
+                        self._pipeline.stage_mgr.define(
                             self._id + "_ENUM_" + name + "_" + value, idx)
 
-                    self._pipeline.get_stage_mgr().define(
+                    self._pipeline.stage_mgr.define(
                         self._id + "__" + name, setting.values.index(setting.value))
 
                 else:
-                    self._pipeline.get_stage_mgr().define(
+                    self._pipeline.stage_mgr.define(
                         self._id + "__" + name, setting.value)
 
     def get_id(self):
@@ -133,7 +133,7 @@ class BasePlugin(DebugObject):
         """ Returns the daytime setting """
         if plugin_id is None:
             plugin_id = self.get_id()
-        return self._pipeline.get_daytime_mgr().get_setting_value(plugin_id, setting_name)
+        return self._pipeline.daytime_mgr.get_setting_value(plugin_id, setting_name)
 
     def get_resource(self, pth):
         """ Converts a local path from the plugins Resource/ directory into
@@ -147,18 +147,18 @@ class BasePlugin(DebugObject):
 
     def is_plugin_loaded(self, plugin):
         """ Returns whether a plugin is currently loaded """
-        return self._pipeline.get_plugin_mgr().get_interface().has_plugin_handle(plugin)
+        return self._pipeline.plugin_mgr.get_interface().has_plugin_handle(plugin)
 
     def create_stage(self, stage_type):
         """ Shortcut to create a new render stage from a given class type """
         stage_handle = stage_type(self._pipeline)
-        self._pipeline.get_stage_mgr().add_stage(stage_handle)
+        self._pipeline.stage_mgr.add_stage(stage_handle)
         self._assigned_stages.append(stage_handle)
         return stage_handle
 
     def add_define(self, key, value):
         """ Adds a new define. This should be called in the on_stage_setup hook """
-        self._pipeline.get_stage_mgr().define(key, value)
+        self._pipeline.stage_mgr.define(key, value)
 
     def exec_compute_shader(self, shader_obj, shader_inputs, exec_size,
                             workgroup_size=(16, 16, 1)):

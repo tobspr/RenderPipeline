@@ -53,7 +53,7 @@ class MountManager(DebugObject):
         self._model_paths = []
         self._mounted = False
         self._do_cleanup = True
-
+        self._config_dir = None
         self.debug("Auto-Detected base path to", self._base_path)
 
         atexit.register(self._on_exit_cleanup)
@@ -82,6 +82,23 @@ class MountManager(DebugObject):
         is usually the root of the rendering pipeline folder """
         self.debug("Set base path to '" + pth + "'")
         self._base_path = Filename.from_os_specific(pth).get_fullpath()
+
+    def set_config_dir(self, pth):
+        """ Sets the path to the config directory. Usually this is the Config/
+        directory located in the pipeline root directory. However, if you want
+        to load your own configuration files, you can specify a custom config
+        directory here. Your configuration directory should contain the
+        pipeline.yaml, plugins.yaml, daytime.yaml and configuration.prc.
+
+        It is highly recommended you use the pipeline provided config files, modify
+        them to your needs, and as soon as you think they are in a final version,
+        copy them over. Please also notice that you should keep your config files
+        up-to-date, e.g. when new configuration variables are added. 
+
+        Also, specifying a custom configuration dir disables the functionality
+        of the PluginConfigurator and DayTime editor, since they operate on the
+        pipelines config files. """
+        self._config_dir =  Filename.from_os_specific(pth).get_fullpath()
 
     def disable_cleanup(self):
         """ Disables the cleanup of the tempfolder after the application stopped.
@@ -215,12 +232,20 @@ class MountManager(DebugObject):
         vfs = VirtualFileSystem.get_global_ptr()
 
         # Mount data and models
-        dirs_to_mount = ["Data", "Config", "Effects", "Plugins", "Config", "Shader"]
+        dirs_to_mount = ["Data", "Effects", "Plugins", "Shader"]
         for directory in dirs_to_mount:
             vfs.mount_loop(join(self._base_path, directory), directory, 0)
 
         if isdir(join(self._base_path, "Models")):
             vfs.mount_loop(join(self._base_path, 'Models'), 'Models', 0)
+
+        # Mount config dir
+        if self._config_dir is None:
+            vfs.mount_loop(join(self._base_path, "Config/"), "$$Config/", 0)
+        else:
+            vfs.mount_loop(self._config_dir, "$$Config/", 0)
+            self.debug("Config dir:", self._config_dir)
+
 
         # Convert the base path to something the os can work with
         sys_base_path = Filename(self._base_path).to_os_specific()

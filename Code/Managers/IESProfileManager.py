@@ -53,8 +53,8 @@ class IESProfileManager(DebugObject):
         self._storage_tex.set_wrap_v(Texture.WM_repeat)
         self._storage_tex.set_wrap_w(Texture.WM_clamp)
 
-        self._pipeline.get_stage_mgr().add_input("IESDatasetTex", self._storage_tex)
-        self._pipeline.get_stage_mgr().define("MAX_IES_PROFILES", self._max_entries)
+        self._pipeline.stage_mgr.add_input("IESDatasetTex", self._storage_tex)
+        self._pipeline.stage_mgr.define("MAX_IES_PROFILES", self._max_entries)
 
     def load(self, filename):
         """ Loads a profile from a given filename """

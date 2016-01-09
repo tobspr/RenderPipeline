@@ -43,7 +43,7 @@ class DayTimeManager(BaseManager):
         BaseManager.__init__(self)
         self._pipeline = pipeline
         self._interface = DayTimeInterface(
-            self._pipeline.get_plugin_mgr().get_interface())
+            self._pipeline.plugin_mgr.get_interface())
         self._interface.set_base_dir(".")
         self._settings = {}
         self._ubo = PTABasedUBO("TimeOfDay")
@@ -54,7 +54,7 @@ class DayTimeManager(BaseManager):
         self.debug("Loading Time of Day settings ..")
         self._interface.load()
 
-        for plugin in self._pipeline.get_plugin_mgr().get_interface().get_plugin_instances():
+        for plugin in self._pipeline.plugin_mgr.get_interface().get_plugin_instances():
             for setting, handle in iteritems(plugin.get_config().get_daytime_settings()):
                 setting_id = plugin.get_id() + "." + setting
                 self._settings[setting_id] = handle
@@ -105,7 +105,7 @@ class DayTimeManager(BaseManager):
 
     def _register_shader_inputs(self):
         """ Registers the daytime pta's to the stage manager """
-        self._pipeline.get_stage_mgr().add_ubo(self._ubo)
+        self._pipeline.stage_mgr.add_ubo(self._ubo)
 
     def _generate_shader_config(self):
         """ Generates the shader configuration """

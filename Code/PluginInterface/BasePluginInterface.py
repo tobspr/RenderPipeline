@@ -91,7 +91,7 @@ class BasePluginInterface(DebugObject):
     def load_plugin_config(self):
         """ Loads the plugin configuration from the pipeline Config directory,
         and gets the list of enabled plugins and settings from that. """
-        plugin_cfg = join(self._base_dir, "Config/plugins.yaml")
+        plugin_cfg = "$$Config/plugins.yaml"
 
         if not isfile(plugin_cfg):
             raise PluginConfigError("Could not find plugin config at " + plugin_cfg)
@@ -167,7 +167,7 @@ class BasePluginInterface(DebugObject):
             yaml += "    " + override + ": " + str(new_value) + "\n"
         yaml += "\n"
 
-        plugin_dest = join(self._base_dir, "Config/plugins.yaml")
+        plugin_dest = "$$Config/plugins.yaml"
 
         with open(plugin_dest, "w") as handle:
             handle.write(yaml)

@@ -28,10 +28,18 @@ THE SOFTWARE.
 
 from __future__ import print_function
 
+import os
 import sys
 import time
 from threading import Thread
 from functools import partial
+
+
+# Change to the current directory
+os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__))))
+
+# Append the current directory to the path
+sys.path.insert(0, os.getcwd())
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
@@ -53,6 +61,7 @@ from ui.main_window_generated import Ui_MainWindow
 
 from Code.PluginInterface.VirtualPluginInterface import VirtualPluginInterface
 from Code.Util.UDPListenerService import UDPListenerService
+from Code.Managers.MountManager import MountManager
 
 connect = QtCore.QObject.connect
 
@@ -61,6 +70,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
     """ Interface to change the plugin settings """
 
     def __init__(self):
+        # Init mounts
+        self._mount_mgr = MountManager(None)
+        self._mount_mgr.mount()
+
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)

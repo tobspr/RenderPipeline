@@ -79,7 +79,7 @@ class Plugin(BasePlugin):
 
             # Make sure the pipeline knows about our camera, so it can apply
             # the correct bitmasks
-            self._pipeline.get_tag_mgr().register_shadow_camera(camera_np.node())
+            self._pipeline.tag_mgr.register_shadow_camera(camera_np.node())
 
         # Accept a shortcut to enable / disable the update of PSSM
         Globals.base.accept("u", self._toggle_update_enabled)

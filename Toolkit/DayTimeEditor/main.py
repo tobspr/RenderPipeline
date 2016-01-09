@@ -29,10 +29,17 @@ THE SOFTWARE.
 
 from __future__ import print_function
 
+import os
 import sys
 import time
 from functools import partial
 from threading import Thread
+
+# Change to the current directory
+os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__))))
+
+# Append the current directory to the path
+sys.path.insert(0, os.getcwd())
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
@@ -54,6 +61,7 @@ from CurveWidget import CurveWidget
 from Code.DayTime.DayTimeInterface import DayTimeInterface
 from Code.PluginInterface.VirtualPluginInterface import VirtualPluginInterface
 from Code.Util.UDPListenerService import UDPListenerService
+from Code.Managers.MountManager import MountManager
 
 connect = QtCore.QObject.connect
 
@@ -62,6 +70,11 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
     """ This is the main editor class which handles the user interface """
 
     def __init__(self):
+
+        # Init mounts
+        self._mount_mgr = MountManager(None)
+        self._mount_mgr.mount()
+
         QtGui.QMainWindow.__init__(self)
         self.setupUi()
         self._tree_widgets = []

@@ -81,7 +81,7 @@ class ExposureWidget(DebugObject):
         """ Gets called after the pipeline initialized, this extracts the
         exposure texture from the stage manager """
 
-        stage_mgr = self._pipeline.get_stage_mgr()
+        stage_mgr = self._pipeline.stage_mgr
 
         if not stage_mgr.has_pipe("Exposure"):
             self.debug("Disabling exposure widget, could not find the exposure data.")

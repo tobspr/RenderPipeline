@@ -92,9 +92,9 @@ class CloudStage(RenderStage):
 
         # Create a new scene root
         self._particle_scene = Globals.base.render.attach_new_node("CloudParticles")
-        self._particle_scene.hide(self._pipeline.get_tag_mgr().get_gbuffer_mask())
-        self._particle_scene.hide(self._pipeline.get_tag_mgr().get_shadow_mask())
-        self._particle_scene.hide(self._pipeline.get_tag_mgr().get_voxelize_mask())
+        self._particle_scene.hide(self._pipeline.tag_mgr.get_gbuffer_mask())
+        self._particle_scene.hide(self._pipeline.tag_mgr.get_shadow_mask())
+        self._particle_scene.hide(self._pipeline.tag_mgr.get_voxelize_mask())
 
         cm = CardMaker("")
         cm.set_frame(-1.0, 1.0, -1.0, 1.0)

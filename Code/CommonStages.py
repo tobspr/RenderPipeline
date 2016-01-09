@@ -44,7 +44,7 @@ class CommonStages(DebugObject):
     def _init_stages(self):
         """ Performs the stage setup """
 
-        add_stage = self._pipeline.get_stage_mgr().add_stage
+        add_stage = self._pipeline.stage_mgr.add_stage
 
         self._ambient_stage = AmbientStage(self._pipeline)
         add_stage(self._ambient_stage)
@@ -56,4 +56,4 @@ class CommonStages(DebugObject):
         add_stage(self._final_stage)
 
         # self._downscale_z_stage = DownscaleZStage(self._pipeline)
-        # self._pipeline.get_stage_mgr().add_stage(self._downscale_z_stage)
+        # self._pipeline.stage_mgr.add_stage(self._downscale_z_stage)

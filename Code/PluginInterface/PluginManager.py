@@ -81,7 +81,7 @@ class PluginManager(DebugObject):
 
             # Define new plugin settings and write it to the autoconfig
             plugin.define_static_plugin_settings()
-            self._pipeline.get_stage_mgr().write_autoconfig()
+            self._pipeline.stage_mgr.write_autoconfig()
 
             # Update the plugin shaders a,d trigger an expplicit reload hook
             plugin.reload_stage_shaders()
@@ -111,7 +111,7 @@ class PluginManager(DebugObject):
         """ Creates various plugin defines which can be used in shaders """
         self.debug("Initializing defines ..")
         for plugin in self._interface.get_enabled_plugins():
-            self._pipeline.get_stage_mgr().define("HAVE_PLUGIN_" + plugin, 1)
+            self._pipeline.stage_mgr.define("HAVE_PLUGIN_" + plugin, 1)
 
         for instance in self._interface.get_plugin_instances():
             instance.define_static_plugin_settings()

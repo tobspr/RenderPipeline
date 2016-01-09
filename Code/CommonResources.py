@@ -70,12 +70,12 @@ class CommonResources(BaseManager):
         self._input_ubo.register_pta("view_mat_billboard", "mat4")
         self._input_ubo.register_pta("frame_delta", "float")
         self._input_ubo.register_pta("frame_time", "float")
-        self._pipeline.get_stage_mgr().add_ubo(self._input_ubo)
+        self._pipeline.stage_mgr.add_ubo(self._input_ubo)
 
         # Main camera and main render have to be regular inputs, since they are
         # used in the shaders by that name.
-        self._pipeline.get_stage_mgr().add_input("mainCam", self._showbase.cam)
-        self._pipeline.get_stage_mgr().add_input("mainRender", self._showbase.render)
+        self._pipeline.stage_mgr.add_input("mainCam", self._showbase.cam)
+        self._pipeline.stage_mgr.add_input("mainRender", self._showbase.render)
 
     def write_config(self):
         """ Generates the shader configuration for the common inputs """
@@ -122,7 +122,7 @@ class CommonResources(BaseManager):
         envmap.set_wrap_u(Texture.WM_repeat)
         envmap.set_wrap_v(Texture.WM_repeat)
         envmap.set_wrap_w(Texture.WM_repeat)
-        self._pipeline.get_stage_mgr().add_input("DefaultEnvmap", envmap)
+        self._pipeline.stage_mgr.add_input("DefaultEnvmap", envmap)
 
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
@@ -134,7 +134,7 @@ class CommonResources(BaseManager):
         brdf_tex.set_wrap_v(Texture.WM_clamp)
         brdf_tex.set_anisotropic_degree(0)
         brdf_tex.set_format(Texture.F_rgba16)
-        self._pipeline.get_stage_mgr().add_input("PrefilteredBRDF", brdf_tex)
+        self._pipeline.stage_mgr.add_input("PrefilteredBRDF", brdf_tex)
 
     def _load_precomputed_grain(self):
         grain_tex = Globals.loader.loadTexture(
@@ -144,14 +144,14 @@ class CommonResources(BaseManager):
         grain_tex.set_wrap_u(Texture.WM_repeat)
         grain_tex.set_wrap_v(Texture.WM_repeat)
         grain_tex.set_anisotropic_degree(0)
-        self._pipeline.get_stage_mgr().add_input("PrecomputedGrain", grain_tex)  
+        self._pipeline.stage_mgr.add_input("PrecomputedGrain", grain_tex)  
 
     def _load_skydome(self):
         """ Loads the skydome """
         skydome = Globals.loader.loadTexture("Data/BuiltinModels/Skybox/Skybox2.jpg")
         skydome.set_wrap_u(Texture.WM_clamp)
         skydome.set_wrap_v(Texture.WM_clamp)
-        self._pipeline.get_stage_mgr().add_input("DefaultSkydome", skydome)
+        self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)
 
     def load_default_skybox(self):
         skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox/Skybox.bam")

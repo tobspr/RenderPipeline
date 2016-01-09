@@ -57,7 +57,7 @@ class DayTimeInterface(DebugObject):
 
     def _load_overrides(self):
         """ Loads the overrides from the daytime config file """
-        cfg_file = join(self._base_dir, "Config/daytime.yaml")
+        cfg_file = "$$Config/daytime.yaml"
 
         if not isfile(cfg_file):
             self.error("Could not load daytime overrides, file not found: ", cfg_file)
@@ -116,7 +116,7 @@ class DayTimeInterface(DebugObject):
 
         yaml += "\n\n"
 
-        cfg_file = join(self._base_dir, "Config/daytime.yaml")
+        cfg_file = "$$Config/daytime.yaml"
 
         try:
             with open(cfg_file, "w") as handle:
