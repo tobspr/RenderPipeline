@@ -11,7 +11,7 @@ void main() {
     vec3 scene_color = textureLod(SourceTex, texcoord, 0).xyz;
     float luma = get_luminance(scene_color);
     vec3 bloom_color = vec3(0);
-    if (luma > GET_SETTING(Bloom, minimum_luminance) * 2.0) {
+    if (luma > GET_SETTING(Bloom, minimum_luminance) * 5.0) {
 
         // do reinhard tonemapping to avoid too bright spots
         // bloom_color = scene_color * 1.0 / (1.0 + get_luminance(scene_color));

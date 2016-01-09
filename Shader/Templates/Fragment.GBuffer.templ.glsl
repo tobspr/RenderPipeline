@@ -93,7 +93,7 @@ void main() {
     MaterialShaderOutput m;
 
     #ifndef DONT_SET_MATERIAL_PROPERTIES
-        m.basecolor = vOutput.material_color * sampled_diffuse.xyz * 0.4;
+        m.basecolor = vOutput.material_color * sampled_diffuse.xyz;
         m.normal = material_nrm;
         m.metallic = vOutput.material_metallic;
         m.specular = vOutput.material_specular * sampled_specular;

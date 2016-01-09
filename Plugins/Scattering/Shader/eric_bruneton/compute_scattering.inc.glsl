@@ -16,10 +16,10 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
 
     // Move surface pos above ocean level
     // if (surfacePos.z < -0.01) {
-        // vec3 v2s = surfacePos - MainSceneData.camera_pos;
-        // float z_factor = abs(MainSceneData.camera_pos.z) / abs(v2s.z);
-        // surfacePos = MainSceneData.camera_pos + v2s * z_factor;
-        // viewDir = normalize(surfacePos - MainSceneData.camera_pos);
+    //     vec3 v2s = surfacePos - MainSceneData.camera_pos;
+    //     float z_factor = abs(MainSceneData.camera_pos.z) / abs(v2s.z);
+    //     surfacePos = MainSceneData.camera_pos + v2s * z_factor;
+    //     viewDir = normalize(surfacePos - MainSceneData.camera_pos);
     // }
 
     vec3 inscatteredLight = vec3(0.0);
@@ -45,7 +45,7 @@ vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
     float phaseR = phaseFunctionR(nuStartPos);
     float phaseM = phaseFunctionM(nuStartPos);
 
-    if(pathLength < 20000)
+    if(pathLength < 20000 || viewDir.z < 0.0)
     {
 
         // Exponential height fog
