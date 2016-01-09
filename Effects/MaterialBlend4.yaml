@@ -36,7 +36,8 @@ Fragment.GBuffer:
 
     inject:
         defines: |
-            #define DONT_FETCH_DEFAULT_TEXTURES 1
+            #define DONT_FETCH_DEFAULT_TEXTURES 
+            #define DONT_SET_MATERIAL_PROPERTIES 
 
         material: |
 
@@ -84,6 +85,8 @@ Fragment.GBuffer:
 
 Fragment.Shadows:
     template: default
+
+    
 
 Fragment.Voxelize:
     template: default

@@ -69,15 +69,9 @@ class RenderPipeline(DebugObject):
         self.debug("Using Python {} with architecture {}".format(
             sys.version_info.major, PandaSystem.get_platform()))
         self._showbase = showbase
-        self._mount_manager = MountManager(self)
+        self._mount_mgr = MountManager(self)
         self._settings = SettingsLoader(self, "Pipeline Settings")
         self.set_default_loading_screen()
-
-    def get_mount_manager(self):
-        """ Returns a handle to the mount manager. This can be used for setting
-        the base path and also modifying the temp path. See the MountManager
-        documentation for further information. """
-        return self._mount_manager
 
     def set_loading_screen(self, loading_screen):
         """ Sets a loading screen to be used while loading the pipeline. When
@@ -101,6 +95,17 @@ class RenderPipeline(DebugObject):
         is the 'Config/pipeline.ini' file. If you call this more than once,
         only the settings of the last file will be used. """
         self._settings.load_from_file(path)
+
+    def get_mount_manager(self):
+        """ DEPRECATED. See get_mount_mgr(). Will get removed in future versions """
+        raise DeprecationWarning("get_mount_mgr is deprecated, use get_mount_mgr")
+        return self.get_mount_mgr()
+
+    def get_mount_mgr(self):
+        """ Returns a handle to the mount manager. This can be used for setting
+        the base path and also modifying the temp path. See the MountManager
+        documentation for further information. """
+        return self._mount_mgr
 
     def get_stage_mgr(self):
         """ Returns a handle to the stage manager object, this function is only
@@ -194,9 +199,9 @@ class RenderPipeline(DebugObject):
         and also the base and write path should have been initialized properly
         (see MountManager). """
 
-        if not self._mount_manager.is_mounted():
+        if not self._mount_mgr.is_mounted():
             self.debug("Mount manager was not mounted, mounting now ...")
-            self._mount_manager.mount()
+            self._mount_mgr.mount()
 
         if not self._settings.is_file_loaded():
             self.debug("No settings loaded, loading from default location")

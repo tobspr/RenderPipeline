@@ -55,14 +55,16 @@ void main() {
     #endif
 
     #if OPT_ALPHA_TESTING
+        #ifndef DONT_FETCH_DEFAULT_TEXTURES
         // Do binary alpha testing, but weight it based on the distance to the
         // camera. This prevents alpha tested objects getting too thin when
         // viewed from a high distance.
         // TODO: Might want to make the alpha testing distance configurable
-        vec4 sampled_diffuse = texture(p3d_Texture0, texcoord);
-        float dist_to_camera = distance(MainSceneData.camera_pos, vOutput.position);
-        float alpha_factor = mix(0.99, 0.1, saturate(dist_to_camera / 20.0) );
-        if (sampled_diffuse.w < alpha_factor) discard;
+            vec4 sampled_diffuse = texture(p3d_Texture0, texcoord);
+            float dist_to_camera = distance(MainSceneData.camera_pos, vOutput.position);
+            float alpha_factor = mix(0.99, 0.1, saturate(dist_to_camera / 20.0) );
+            if (sampled_diffuse.w < alpha_factor) discard;
+        #endif
     #else
         // In case we don't do alpha testing, we don't need the w-component, so
         // don't fetch it. In practice, most GPU's will still load the w component
@@ -74,24 +76,30 @@ void main() {
         #endif
     #endif
 
+    vec3 material_nrm = vOutput.normal;
+
     #ifdef OPT_NORMAL_MAPPING
-        // Perform normal mapping if enabled
-        vec3 sampled_normal = texture(p3d_Texture1, texcoord).xyz;
-        vec3 detail_normal = unpack_texture_normal(sampled_normal);
-        vec3 merged_normal = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor);
-    #else
-        // Otherwise just use the per-vertex normal
-        vec3 merged_normal = vOutput.normal;
+        #ifndef DONT_FETCH_DEFAULT_TEXTURES
+            {
+            // Perform normal mapping if enabled
+            vec3 sampled_normal = texture(p3d_Texture1, texcoord).xyz;
+            vec3 detail_normal = unpack_texture_normal(sampled_normal);
+            material_nrm = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor);
+            }
+        #endif
     #endif
 
     // Generate the material output
     MaterialShaderOutput m;
-    m.basecolor = vOutput.material_color * sampled_diffuse.xyz;
-    m.normal = merged_normal;
-    m.metallic = vOutput.material_metallic;
-    m.specular = vOutput.material_specular * sampled_specular;
-    m.roughness = vOutput.material_roughness * sampled_roughness;
-    m.translucency = 0.0;
+
+    #ifndef DONT_SET_MATERIAL_PROPERTIES
+        m.basecolor = vOutput.material_color * sampled_diffuse.xyz * 0.4;
+        m.normal = material_nrm;
+        m.metallic = vOutput.material_metallic;
+        m.specular = vOutput.material_specular * sampled_specular;
+        m.roughness = vOutput.material_roughness * sampled_roughness;
+        m.translucency = 0.0;
+    #endif
 
     %MATERIAL%
 
