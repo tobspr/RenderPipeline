@@ -40,6 +40,9 @@ You can find the documentation about the C++ modules here: <a target="_blank" hr
 **Material showcase:**
 <img src="http://i.imgur.com/UzKyWwg.png" />
 
+**quboid Demo**
+<img src="http://i.imgur.com/o7xtp35.png" />
+
 **Snowy terrain using the Pipeline and P3DFramework:**
 <img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
 

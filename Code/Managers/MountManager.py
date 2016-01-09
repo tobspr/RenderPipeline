@@ -169,7 +169,7 @@ class MountManager(DebugObject):
         try:
             os.remove(fname)
             return True
-        except IOError:
+        except:
             pass
         return False
 
