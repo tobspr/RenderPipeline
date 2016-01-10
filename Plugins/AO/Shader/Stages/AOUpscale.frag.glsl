@@ -15,8 +15,9 @@ void main() {
     
     // Get sample coordinates
     ivec2 coord = ivec2(gl_FragCoord.xy);
+
     ivec2 bil_start_coord = get_bilateral_coord(coord);
-    
+
     vec2 bilateral_coord = vec2(bil_start_coord + 0.5) / ivec2(SCREEN_SIZE / 2);
     vec2 main_texcoord = vec2(bil_start_coord * 2 + 0.5) / vec2(SCREEN_SIZE);
 
@@ -29,7 +30,7 @@ void main() {
     vec3 mid_nrm = get_gbuffer_normal(GBuffer, texcoord);
 
     const float max_depth_diff = 0.001;
-    const float max_nrm_diff = 0.001;
+    const float max_nrm_diff = 0.01;
 
     float weights = 0.0;
     vec4 accum = vec4(0);

@@ -190,7 +190,7 @@ float grain(vec2 texCoord, float frame) {
 out vec4 result;
 
 void main() {
-  vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / 512.0;
+  vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / 1024.0;
 
   result.x = grain(texcoord, 50.0);
   result.y = grain(texcoord, 100.0);

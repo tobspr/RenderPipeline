@@ -18,7 +18,7 @@ float get_lin_z(vec2 ccoord) {
     return get_linear_z_from_z(get_gbuffer_depth(GBuffer, ccoord));
 }
 
-const vec2 pixel_size = 4.0 / SCREEN_SIZE;
+const vec2 pixel_size = 2.0 / SCREEN_SIZE;
 
 void do_blur(vec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth, inout vec4 accum, inout float accum_w) {
 
@@ -37,9 +37,7 @@ void do_blur(vec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth,
 
 void main() {
 
-    ivec2 coord = ivec2(gl_FragCoord.xy);
-    ivec2 screen_coord = coord * 2;
-    vec2 texcoord = (screen_coord + 0.5) / SCREEN_SIZE;
+    vec2 texcoord = get_half_native_texcoord();
 
     // Store accumulated color
     vec4 accum = vec4(0);

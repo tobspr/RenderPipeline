@@ -188,6 +188,12 @@ float blend_material(float material_factor, float detailmap, float add_factor, f
 
 // We need to define them as macros instead of functions, since gl_FragCoord is
 // not available in compute shaders
+
+// Regular texcoord
 #define get_texcoord() vec2( (ivec2(gl_FragCoord.xy) + 0.5) / SCREEN_SIZE )
+
+// Texcoord for half-res targets sampling full-res targets
 #define get_half_texcoord() vec2( (ivec2(gl_FragCoord.xy) * 2 + 0.5) / SCREEN_SIZE )
 
+// Texcoord for half-res targets sampling half-res targets
+#define get_half_native_texcoord() vec2( (ivec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE/2) )
