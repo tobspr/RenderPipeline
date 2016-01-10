@@ -2,6 +2,8 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 
+in vec2 texcoord;
+
 uniform int SourceMip;
 uniform sampler2D SourceTex;
 uniform restrict writeonly image2D DestTex;
@@ -52,7 +54,11 @@ void main() {
     // since every sub-kernel has 4 samples, normalize that
     summed_kernel /= 4.0;
 
+    // FIX: AMD drivers optimize out texcoord if we don't use it. So just assign
+    // it to a non-meaningful variable
+    float AMD_DRIVER_FIX = texcoord.x * 1e-28;
+
     // result = vec4(summed_kernel, 1.0);
-    imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(summed_kernel, 0.0));
+    imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(summed_kernel, AMD_DRIVER_FIX));
 }
 
