@@ -4,13 +4,13 @@
 #define USE_TIME_OF_DAY
 #pragma include "Includes/Configuration.inc.glsl"
 
-in vec2 texcoord;
-out vec4 result;
 
 uniform writeonly imageCube RESTRICT DestCubemap;
 uniform sampler2D DefaultSkydome;
 
 #pragma include "../ScatteringMethod.inc.glsl"
+
+out vec4 result;
 
 void main() {
 

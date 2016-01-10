@@ -8,7 +8,6 @@
 #pragma include "Includes/PoissonDisk.inc.glsl"
 
 flat in int instance;
-in vec2 texcoord;
 out vec4 result;
 
 uniform sampler2D Noise4x4;
@@ -30,13 +29,14 @@ void main() {
     float disk_rotate = (instance / 4.0) * TWO_PI;
 
     ivec2 coord = ivec2(gl_FragCoord.xy) * 2 - ivec2(ox, oy) * SCREEN_SIZE_INT;
+    vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
     // Shader variables
-    float pixel_depth = get_depth_at(coord);
-    vec3 pixel_view_pos = get_view_pos_at(coord);
-    vec3 pixel_view_normal = get_view_normal(coord);
-    vec3 pixel_world_pos = get_world_pos_at(coord);
-    vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, coord);
+    float pixel_depth = get_depth_at(texcoord);
+    vec3 pixel_view_pos = get_view_pos_at(texcoord);
+    vec3 pixel_view_normal = get_view_normal(texcoord);
+    vec3 pixel_world_pos = get_world_pos_at(texcoord);
+    vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, texcoord);
 
     vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = distance(pixel_world_pos, MainSceneData.camera_pos);

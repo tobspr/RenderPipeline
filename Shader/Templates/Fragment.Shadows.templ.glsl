@@ -23,7 +23,6 @@ void main() {
         // only doing this for the objects which really need it (like trees)
         float sampled_alpha = texture(p3d_Texture0, vOutput.texcoord).w;
         if (sampled_alpha < 0.1) discard;
-
     #endif
 
     %ALPHA_TEST%

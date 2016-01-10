@@ -9,34 +9,32 @@
 
 #pragma include "../ChromaticAberration.inc.glsl"
 
-
-in vec2 texcoord;
 uniform sampler2D ShadedScene;
 uniform sampler3D ColorLUT;
+uniform float osg_FrameTime;
 
 out vec4 result;
 
-uniform float osg_FrameTime;
-
+// Color LUT
 vec3 apply_lut(vec3 color) {
-
-    // Apply the Color LUT
     vec3 lut_coord = color;
 
     // We have a gradient from 0.5 / lut_size to 1 - 0.5 / lut_size
     // need to transform from 0 .. 1 to that gradient:
     float lut_start = 0.5 / 64.0;
     float lut_end = 1.0 - lut_start;
-    lut_coord = (lut_coord + lut_start) * (lut_end - lut_start);
+    lut_coord = lut_coord * (lut_end - lut_start) + lut_start;
     return textureLod(ColorLUT, lut_coord, 0).xyz;
 }
 
+
 void main() {
+
+    vec2 texcoord = get_texcoord();
 
     #if !DEBUG_MODE
 
-        // Physically correct vignette, using the cos4 law:
-
+        // Physically correct vignette, using the cos4 law.
         // Get the angle between the camera direction and the view direction
         vec3 material_dir = normalize(MainSceneData.camera_pos - calculate_surface_pos(1, texcoord));
         vec3 cam_dir = normalize(MainSceneData.camera_pos - calculate_surface_pos(1, vec2(0.5)));

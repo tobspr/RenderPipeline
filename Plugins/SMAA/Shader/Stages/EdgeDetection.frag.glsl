@@ -10,11 +10,11 @@ uniform GBufferData GBuffer;
 uniform sampler2D ShadedScene;
 uniform sampler2D SRGBSource;
 uniform sampler2D PredicationSource;
-
-in vec2 texcoord;
 out vec4 result;
 
 void main() {
+
+    vec2 texcoord = get_texcoord();
 
     // "Vertex shader"
     vec4 offset[3];

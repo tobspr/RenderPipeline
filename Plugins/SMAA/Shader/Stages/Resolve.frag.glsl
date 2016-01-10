@@ -4,27 +4,21 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/GBuffer.inc.glsl"
 
-
 uniform GBufferData GBuffer;
 uniform sampler2D CurrentTex;
 uniform sampler2D LastTex;
 
-in vec2 texcoord;
 out vec4 result;
-
 
 void main() {
 
+    vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    vec2 velocity = get_gbuffer_velocity(GBuffer, coord);
+    vec2 velocity = get_gbuffer_velocity(GBuffer, texcoord);
     vec2 old_coord = texcoord - velocity;
     vec4 current_color = textureLod(CurrentTex, texcoord, 0);
     vec4 last_color = textureLod(LastTex, old_coord, 0);
-
-
-    // Blend the pixels according to the calculated weight:
-    // return lerp(current, previous, weight);
 
     float weight = 0.5;
 
@@ -37,13 +31,5 @@ void main() {
     const float max_velocity = 15.0 / WINDOW_HEIGHT; 
     weight *= 1.0 - saturate(length(velocity) / max(0.000001, max_velocity));
 
-    // weight = 1.0;
-    // weight = 0.5;
-
-
-
     result = mix(current_color, last_color, weight);
-    // result = vec4(length(velocity) * 4000.0);
-    // result = vec4(weight);
 }
-

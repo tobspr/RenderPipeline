@@ -10,12 +10,13 @@ uniform sampler2D DefaultSkydome;
 
 uniform GBufferData GBuffer;
 
-in vec2 texcoord;
 out vec4 result;
 
 #pragma include "../ScatteringMethod.inc.glsl"
 
 void main() {
+
+    vec2 texcoord = get_texcoord();
 
     // Get material data
     Material m = unpack_material(GBuffer);

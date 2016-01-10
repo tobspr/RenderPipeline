@@ -47,7 +47,6 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 // @TODO: Make this method faster
 vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion, vec3 transmittance) {
 
-
     // Debugging: Fast rendering path
     #if 0
         return max(0, dot(m.normal, l)) * light_color * attenuation * m.basecolor * shadow;
@@ -96,7 +95,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
 
         // Compute lighting for bent normal
-        float occlusion_factor = saturate(dot(vec4(l, 1.0), directional_occlusion));
+        float occlusion_factor = saturate(dot(vec4(l, 1.5), directional_occlusion));
         occlusion_factor = pow(occlusion_factor, 3.0);
         shading_result *= occlusion_factor;
     

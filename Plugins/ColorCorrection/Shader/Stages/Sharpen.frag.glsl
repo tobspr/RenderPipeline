@@ -3,11 +3,13 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/ColorSpaces/ColorSpaces.inc.glsl"
 
-out vec4 result;
-in vec2 texcoord;
 uniform sampler2D SourceTex;
+out vec4 result;
 
 void main() {
+
+    vec2 texcoord = get_texcoord();
+
     vec3 scene_color = textureLod(SourceTex, texcoord, 0).xyz;
 
     // Compute the sharpen strength for each individual channel
@@ -37,12 +39,11 @@ void main() {
         blur_sum *= 1.0 / 4.0;
     #endif
 
-
     vec3 pixel_diff = scene_color - blur_sum;
 
     // Make sure we don't sharpen too much
     float luma_sharpen = dot(pixel_diff, sharpen_luma_strength);
-    float max_sharpen = 0.1;
+    // float max_sharpen = 0.1;
     // luma_sharpen = clamp(luma_sharpen, -max_sharpen, max_sharpen);
 
     // Apply the sharpening

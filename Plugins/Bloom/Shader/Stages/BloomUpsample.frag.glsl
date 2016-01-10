@@ -4,19 +4,19 @@
 
 uniform int SourceMip;
 uniform sampler2D SourceTex;
-uniform writeonly image2D DestTex;
+uniform writeonly image2D RESTRICT DestTex;
 
 uniform sampler2D ShadedScene;
 uniform sampler2D SumTex;
 
-in vec2 texcoord;
 out vec4 result;
 
 uniform bool FirstUpsamplePass;
 uniform bool LastUpsamplePass;
 
 void main() {
-
+    vec2 source_size = vec2(textureSize(SourceTex, SourceMip).xy);
+    vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / (2.0 * source_size);
     vec3 summed = textureLod(SourceTex, texcoord, SourceMip + 1).xyz;
 
     if (FirstUpsamplePass) {
@@ -24,7 +24,6 @@ void main() {
     }
 
     // upsample texture
-    vec2 source_size = vec2(textureSize(SourceTex, SourceMip).xy);
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     vec2 flt_coord = vec2(coord) / (2.0 * source_size);
@@ -46,11 +45,10 @@ void main() {
 
     vec3 pass_result = summed + source_sample;
 
-    if (LastUpsamplePass) {
-        result = vec4(textureLod(ShadedScene, texcoord, 0).xyz + pass_result, 1);
-    } else {
-    }
-
     vec4 old_data = texelFetch(SourceTex, coord, SourceMip - 1);
     imageStore(DestTex, coord, old_data + vec4(pass_result, 0));
+
+    if (LastUpsamplePass) {
+        result = vec4(textureLod(ShadedScene, texcoord, 0).xyz + pass_result, 1);
+    }
 }

@@ -6,7 +6,6 @@
 #pragma include "Includes/BRDF.inc.glsl"
 #pragma include "Includes/Lights.inc.glsl"
 
-in vec2 texcoord;
 uniform sampler2D ShadedScene;
 uniform GBufferData GBuffer;
 uniform sampler2D PrefilteredBRDF;
@@ -43,7 +42,7 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
 
 void main() {
 
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec2 texcoord = get_texcoord();
 
     // Get material properties
     Material m = unpack_material(GBuffer);
@@ -120,7 +119,7 @@ void main() {
         #if HAVE_PLUGIN(AO)
 
             // Sample precomputed occlusion and multiply the ambient term with it
-            float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
+            float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
@@ -136,7 +135,7 @@ void main() {
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
-            float occlusion = texelFetch(AmbientOcclusion, coord, 0).w;
+            float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
             result = vec4(pow(occlusion, 3.0));
             return;
         #endif

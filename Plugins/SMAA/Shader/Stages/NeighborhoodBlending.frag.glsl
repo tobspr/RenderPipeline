@@ -1,15 +1,15 @@
 #version 400
 
-
+#pragma include "Includes/Configuration.inc.glsl"
 #pragma include "../SMAAWrap.inc.glsl"
 
 uniform sampler2D BlendTex;
 uniform sampler2D ShadedScene;
 
-in vec2 texcoord;
 out vec4 result;
 
 void main() {
+    vec2 texcoord = get_texcoord();
 
     // "Vertex shader"
     vec4 offset;

@@ -31,7 +31,10 @@ vec2 get_cloud_coord(vec3 pos) {
 void main() {
     const int trace_steps = GET_SETTING(Clouds, raymarch_steps);
 
-    vec3 pos = get_gbuffer_position(GBuffer, ivec2(gl_FragCoord.xy) * 2);
+    vec2 texcoord = get_half_texcoord();
+    
+
+    vec3 pos = get_gbuffer_position(GBuffer, texcoord);
     vec3 ray_start = MainSceneData.camera_pos;
     vec3 ray_dir = normalize(pos - ray_start);
 

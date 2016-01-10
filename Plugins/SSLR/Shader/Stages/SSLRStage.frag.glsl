@@ -11,7 +11,6 @@
 uniform sampler2D ShadedScene;
 uniform sampler2D DownscaledDepth;
 
-in vec2 texcoord;
 out vec4 result;
 
 vec3 trace_ray(vec3 ray_start, vec3 ray_dir)
@@ -216,7 +215,7 @@ vec3 trace_ray_fast(vec3 ro, vec3 ray_dir) {
 
 
 
-vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd)
+vec3 trace_ray_smart(Material m, vec3 ro, vec3 rd, vec2 texcoord)
 {
 
     vec3 intersection = trace_ray(ro, rd);
@@ -258,6 +257,7 @@ void main() {
 
     
     vec3 sslr_result = vec3(0);
+    vec2 texcoord = get_texcoord();
 
     Material m = unpack_material(GBuffer);
     vec3 view_dir = normalize(m.position - MainSceneData.camera_pos);
@@ -289,7 +289,7 @@ void main() {
 
             vec3 ray_direction = get_ray_direction(m.position, normalize(m.normal + (offs[i] +jo) * 0.03), view_dir, ray_origin);
 
-            sslr_result += trace_ray_smart(m, ray_origin, ray_direction);
+            sslr_result += trace_ray_smart(m, ray_origin, ray_direction, texcoord);
             // sslr_result += ray_direction;
         }
 

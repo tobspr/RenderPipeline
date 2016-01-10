@@ -76,57 +76,40 @@
     bool is_skybox(Material m, vec3 camera_pos) {
         return is_skybox(m.position, camera_pos);
     }
-
-
-    // Returns the depth at a given texcoord
-    float get_gbuffer_depth(GBufferData data, ivec2 coord) {
-        return texelFetch(data.Depth, coord, 0).x;
-    }
-    
+   
     // Returns the depth at a given texcoord
     float get_gbuffer_depth(GBufferData data, vec2 coord) {
         return textureLod(data.Depth, coord, 0).x;
     }
 
     // Returns the world space position at a given texcoord
-    vec3 get_gbuffer_position(GBufferData data, ivec2 coord) {
-        vec2 float_coord = (coord+0.5) /  SCREEN_SIZE;
+    vec3 get_gbuffer_position(GBufferData data, vec2 coord) {
         float depth = get_gbuffer_depth(data, coord);
-        return calculate_surface_pos(depth, float_coord);
+        return calculate_surface_pos(depth, coord);
     }
 
     // Returns the world space normal at a given texcoord
-    vec3 get_gbuffer_normal(GBufferData data, vec2 float_coord) {
-        // vec3 raw_normal = textureLod(data.Data1, float_coord, 0).xyz;
-        // return normal_unquantization(raw_normal);
-        vec2 packed_normal = textureLod(data.Data1, float_coord, 0).xy;
+    vec3 get_gbuffer_normal(GBufferData data, vec2 coord) {
+        vec2 packed_normal = textureLod(data.Data1, coord, 0).xy;
         return unpack_normal_octahedron(packed_normal);
     }
-
-    // Returns the world space normal at a given texcoord
-    vec3 get_gbuffer_normal(GBufferData data, ivec2 coord) {
-        // vec3 raw_normal = texelFetch(data.Data1, coord, 0).xyz;
-        // return normal_unquantization(raw_normal); 
-        vec2 packed_normal = texelFetch(data.Data1, coord, 0).xy;
-        return unpack_normal_octahedron(packed_normal);
-    }
-
+    
     // Returns the velocity at a given coordinate
-    vec2 get_gbuffer_velocity(GBufferData data, ivec2 coord) {
-        return texelFetch(data.Data2, coord, 0).xy / 255.0;
+    vec2 get_gbuffer_velocity(GBufferData data, vec2 coord) {
+        return textureLod(data.Data2, coord, 0).xy / 255.0;
     }
 
     // Unpacks a material from the gbuffer
     Material unpack_material(GBufferData data) {
-        ivec2 coord = ivec2(gl_FragCoord.xy);
+        vec2 fcoord = get_texcoord();
 
         // Fetch data from data-textures
-        vec4 data0 = texelFetch(data.Data0, coord, 0);
-        vec4 data1 = texelFetch(data.Data1, coord, 0);
-        vec4 data2 = texelFetch(data.Data2, coord, 0);
+        vec4 data0 = textureLod(data.Data0, fcoord, 0);
+        vec4 data1 = textureLod(data.Data1, fcoord, 0);
+        vec4 data2 = textureLod(data.Data2, fcoord, 0);
 
         Material m;
-        m.position  = get_gbuffer_position(data, coord);
+        m.position  = get_gbuffer_position(data, fcoord);
         m.basecolor = data0.xyz;
         m.roughness = clamp(data0.w, 0.002, 1.0);
         m.normal    = unpack_normal_octahedron(data1.xy);
@@ -156,20 +139,9 @@
             return get_gbuffer_depth(GBuffer, coord);
         }
 
-        // Returns the depth at a given texcoord
-        float get_depth_at(ivec2 coord) {
-            return get_gbuffer_depth(GBuffer, coord);
-        }
-
         // Returns the view space position at a given texcoord
         vec3 get_view_pos_at(vec2 coord) {
             return calculate_view_pos(get_depth_at(coord), coord);
-        }
-
-        // Returns the view space position at a given texcoord
-        vec3 get_view_pos_at(ivec2 coord) {
-            vec2 tcoord = (coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-            return get_view_pos_at(tcoord);
         }
 
         // Returns the world space position at a given texcoord
@@ -177,30 +149,25 @@
             return calculate_surface_pos(get_depth_at(coord), coord);
         }
 
-        // Returns the world space position at a given texcoord
-        vec3 get_world_pos_at(ivec2 coord) {
-            vec2 tcoord = (coord + 0.5) / vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-            return calculate_surface_pos(get_depth_at(tcoord), tcoord);
-        }
-
         // Returns the view space normal at a given texcoord. This tries to find
         // a good fit normal, but thus is quite expensive.
         // It does not include normal mapping, since it uses the depth buffer as source.
-        vec3 get_view_normal(ivec2 coord) {
+        vec3 get_view_normal(vec2 coord) {
 
             // OPTIONAL: Just recover it from the world space normal.
             // This has the advantage that it does include normal mapping.
             vec3 world_normal = get_gbuffer_normal(GBuffer, coord);
             return world_normal_to_view(world_normal);
             
+            vec2 pixel_size = 1.0 / SCREEN_SIZE;
             vec3 view_pos = get_view_pos_at(coord);
 
             // Do some work to find a good view normal
-            vec3 dx_px = view_pos - get_view_pos_at(coord + ivec2(1, 0));
-            vec3 dx_py = view_pos - get_view_pos_at(coord + ivec2(0, 1));
+            vec3 dx_px = view_pos - get_view_pos_at(coord + pixel_size * vec2(1, 0));
+            vec3 dx_py = view_pos - get_view_pos_at(coord + pixel_size * vec2(0, 1));
 
-            vec3 dx_nx = get_view_pos_at(coord + ivec2(-1, 0)) - view_pos;
-            vec3 dx_ny = get_view_pos_at(coord + ivec2(0, -1)) - view_pos;
+            vec3 dx_nx = get_view_pos_at(coord + pixel_size * vec2(-1, 0)) - view_pos;
+            vec3 dx_ny = get_view_pos_at(coord + pixel_size * vec2(0, -1)) - view_pos;
 
             // Find the closest distance in depth
             vec3 dx_x = abs(dx_px.z) < abs(dx_nx.z) ? vec3(dx_px) : vec3(dx_nx);
@@ -214,10 +181,11 @@
         // smaller artifacts at edges. However you should prefer this method
         // wherever possible. It does not include normal mapping, since it uses
         // the depth buffer as source.
-        vec3 get_view_normal_approx(ivec2 coord) {
+        vec3 get_view_normal_approx(vec2 coord) {
             vec3 view_pos = get_view_pos_at(coord);
-            vec3 dx_x = view_pos - get_view_pos_at(coord + ivec2(1, 0));
-            vec3 dx_y = view_pos - get_view_pos_at(coord + ivec2(0, 1));
+            vec2 pixel_size = 1.0 / SCREEN_SIZE;
+            vec3 dx_x = view_pos - get_view_pos_at(coord + pixel_size * vec2(1, 0));
+            vec3 dx_y = view_pos - get_view_pos_at(coord + pixel_size * vec2(0, 1));
             return normalize(cross(dx_x, dx_y));
         }
 

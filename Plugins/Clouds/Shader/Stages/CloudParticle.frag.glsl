@@ -1,5 +1,7 @@
 #version 400
 
+#pragma include "Includes/Configuration.inc.glsl"
+
 in vec2 texcoord;
 in vec4 cloudcolor;
 out vec4 result;

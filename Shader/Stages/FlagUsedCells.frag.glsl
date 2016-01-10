@@ -11,14 +11,14 @@
 uniform writeonly image2DArray RESTRICT cellGridFlags;
 
 void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec2 texcoord = get_texcoord();
 
     // Get the distance to the camera
-    vec3 surf_pos = get_world_pos_at(coord);
+    vec3 surf_pos = get_world_pos_at(texcoord);
     float surf_dist = distance(MainSceneData.camera_pos, surf_pos);
 
     // Find the affected cell
-    ivec3 tile = get_lc_cell_index(coord, surf_dist);
+    ivec3 tile = get_lc_cell_index(ivec2(gl_FragCoord.xy), surf_dist);
 
     // Mark the cell as used
     imageStore(cellGridFlags, tile, vec4(1));

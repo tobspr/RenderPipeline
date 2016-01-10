@@ -7,13 +7,12 @@
 
 #pragma optionNV (unroll all)
 
-in vec2 texcoord;
-out vec4 result;
 
 uniform int current_mip;
 uniform samplerCube SourceTex;
 uniform writeonly imageCube RESTRICT DestMipmap;
 
+out vec4 result;
 
 void main() {
 

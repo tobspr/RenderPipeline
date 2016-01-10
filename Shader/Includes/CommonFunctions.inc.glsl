@@ -184,3 +184,10 @@ float blend_material(float material_factor, float detailmap, float add_factor, f
     return saturate(
         mix( pow( max(0, detailmap + add_factor), pow_factor), 1.0, material_factor) * material_factor);
 }
+
+
+// We need to define them as macros instead of functions, since gl_FragCoord is
+// not available in compute shaders
+#define get_texcoord() vec2( (ivec2(gl_FragCoord.xy) + 0.5) / SCREEN_SIZE )
+#define get_half_texcoord() vec2( (ivec2(gl_FragCoord.xy) * 2 + 0.5) / SCREEN_SIZE )
+

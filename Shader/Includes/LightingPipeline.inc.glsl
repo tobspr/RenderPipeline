@@ -77,9 +77,9 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     vec4 uv = get_source_uv(source);
 
     // TODO: make this configurable
-    const float slope_bias = 0.001;
-    const float normal_bias = 0.01;
-    const float const_bias = 0.0002;
+    const float slope_bias = 0.01;
+    const float normal_bias = 0.1;
+    const float const_bias = 0.002;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
@@ -95,10 +95,6 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     }
 
     return accum / num_samples;
-    
-    // return textureLod(ShadowAtlasPCF, vec3(projected_coord.xy, projected.z - const_bias), 0).x;
-
-
 }
 
 
@@ -116,24 +112,12 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     int cell_index = texelFetch(CellIndices, tile, 0).x;
     int data_offs = cell_index * (MAX_LIGHTS_PER_CELL+LIGHT_CLS_COUNT);
 
-    // Debug mode, show tile bounds
-    #if 0
-        // Show tiles
-        #if IS_SCREEN_SPACE
-            if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 || int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
-                shading_result += 0.01;
-            }
-            float light_factor = num_lights / float(MAX_LIGHTS_PER_CELL);
-            shading_result += ( (tile.z + 1) % 2) * 0.01;
-            // shading_result += light_factor;
-        #endif
-    #endif
-
     // Get directional occlusion
     vec4 directional_occlusion = vec4(0);
     #if IS_SCREEN_SPACE && HAVE_PLUGIN(AO)
         ivec2 coord = ivec2(gl_FragCoord.xy);
         directional_occlusion = normalize(texelFetch(AmbientOcclusion, coord, 0) * 2.0 - 1.0);
+        // directional_occlusion.xyz = m.normal;
     #endif
 
     // Compute view vector
@@ -146,6 +130,21 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     int num_spot_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_SPOT_SHADOW).x;
     int num_point_noshadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_NOSHADOW).x;
     int num_point_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_SHADOW).x;
+
+    // Debug mode, show tile bounds
+    #if 0
+        // Show tiles
+        #if IS_SCREEN_SPACE
+            if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 || int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
+                shading_result += 0.01;
+            }
+            int num_lights = num_spot_noshadow + num_spot_shadow + num_point_noshadow + num_point_shadow;
+            // float light_factor = num_lights / float(MAX_LIGHTS_PER_CELL);
+            float light_factor = num_lights / 5.0;
+            // shading_result += ( (tile.z + 1) % 2) * 0.01;
+            shading_result += light_factor;
+        #endif
+    #endif
 
     // Spotlights without shadow
     for (int i = 0; i < num_spot_noshadow; ++i) {

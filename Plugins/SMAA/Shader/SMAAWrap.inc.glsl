@@ -2,8 +2,6 @@
 
 // This file just sets a few defines and then includes the SMAA header
 
-#pragma include "Includes/Configuration.inc.glsl"
-
 #define SMAA_GLSL_4
 #define SMAA_RT_METRICS vec4(1.0 / WINDOW_WIDTH, 1.0 / WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT)
 
