@@ -179,9 +179,8 @@ float get_diffuse_aa(float w, float NxL) {
 }
 
 
-float blend_material(float material_factor, float detailmap) {
+float blend_material(float material_factor, float detailmap, float add_factor, float pow_factor) {
     material_factor = max(0, material_factor);
-    // return material_factor;
     return saturate(
-        mix( pow( max(0, detailmap+0.5) , 10.0), 1.0, material_factor) * material_factor);
+        mix( pow( max(0, detailmap + add_factor), pow_factor), 1.0, material_factor) * material_factor);
 }

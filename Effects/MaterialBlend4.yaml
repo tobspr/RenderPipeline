@@ -36,21 +36,34 @@ Fragment.GBuffer:
 
     inject:
         defines: |
-            #define DONT_FETCH_DEFAULT_TEXTURES 
-            #define DONT_SET_MATERIAL_PROPERTIES 
+            #define DONT_FETCH_DEFAULT_TEXTURES 1
+            #define DONT_SET_MATERIAL_PROPERTIES 1
 
         material: |
 
             // Scale of the detail maps
             const float detail_scale_factor = 4.0;
 
+            // Detailmap blending factors.
+            // Blending is calculated as  (detailmap + <add>) ^ <pow>
+            // The base map has no blending, since it is used as a filling material,
+            // and blending the base map would cause spots with no material at all.
+            const float material_0_pow = 10.0;
+            const float material_0_add = 0.5;
+
+            const float material_1_pow = 10.0;
+            const float material_1_add = 0.5;
+
+            const float material_2_pow = 10.0;
+            const float material_2_add = 0.5;
+
             vec2 detail_coord = texcoord * detail_scale_factor;
             vec4 layers = texture(p3d_Texture0, texcoord);
             layers.xyz *= layers.w;
 
-            layers.x = blend_material(layers.x, texture(p3d_Texture4,  detail_coord).x);
-            layers.y = blend_material(layers.y, texture(p3d_Texture8,  detail_coord).x);
-            layers.z = blend_material(layers.z, texture(p3d_Texture12, detail_coord).x);
+            layers.x = blend_material(layers.x, texture(p3d_Texture4,  detail_coord).x, material_0_add, material_0_pow);
+            layers.y = blend_material(layers.y, texture(p3d_Texture8,  detail_coord).x, material_1_add, material_1_pow);
+            layers.z = blend_material(layers.z, texture(p3d_Texture12, detail_coord).x, material_2_add, material_2_pow);
             layers.w = saturate(1 - dot(layers.xyz, vec3(1))); // More inituitive
 
             // Diffuse

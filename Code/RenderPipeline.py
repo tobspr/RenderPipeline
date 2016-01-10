@@ -108,7 +108,7 @@ class RenderPipeline(DebugObject, RPExtensions):
 
         start_time = time.time()
 
-        if not self._mount_mgr.is_mounted():
+        if not self._mount_mgr.is_mounted:
             self.debug("Mount manager was not mounted, mounting now ...")
             self._mount_mgr.mount()
 

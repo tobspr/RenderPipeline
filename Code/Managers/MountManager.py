@@ -58,7 +58,7 @@ class MountManager(DebugObject):
 
         atexit.register(self._on_exit_cleanup)
 
-    def set_write_path(self, pth):
+    def _set_write_path(self, pth):
         """ Set a writable directory for generated files. This can be a string
         path name or a multifile with openReadWrite(). If no pathname is set
         then the root directory is used.
@@ -68,22 +68,35 @@ class MountManager(DebugObject):
         If you don't need this, you can use set_virtual_write_path(), which
         will create the temporary path in the VirtualFileSystem, thus not
         writing any files to disk. """
-        self._write_path = Filename.from_os_specific(pth).get_fullpath()
-        self._lock_file = join(self._write_path, "instance.pid")
+        if pth is None:
+            self._write_path = None
+            self._lock_file = "instance.pid"
+        else:
+            self._write_path = Filename.from_os_specific(pth).get_fullpath()
+            self._lock_file = join(self._write_path, "instance.pid")
 
-    def set_virtual_write_path(self):
-        """ This method sets the write directory to a virtual directory,
-        so that no files are actually written to disk. This is the default
-        setting. Also see set_write_path. """
-        self._write_path = None
+    def _get_write_path(self):
+        """ Returns the write path previously set with set_write_path, or None
+        if no write path has been set yet. """
+        return self._write_path
 
-    def set_base_path(self, pth):
+    write_path = property(_get_write_path, _set_write_path)
+
+    def _set_base_path(self, pth):
         """ Sets the path where the base shaders and models on are contained. This
         is usually the root of the rendering pipeline folder """
         self.debug("Set base path to '" + pth + "'")
         self._base_path = Filename.from_os_specific(pth).get_fullpath()
 
-    def set_config_dir(self, pth):
+    def _get_base_path(self):
+        """ Returns the base path of the pipeline. This returns the path previously
+        set with set_base_path, or the auto detected base path if no path was
+        set yet """
+        return self._base_path
+
+    base_path = property(_get_base_path, _set_base_path)
+
+    def _set_config_dir(self, pth):
         """ Sets the path to the config directory. Usually this is the Config/
         directory located in the pipeline root directory. However, if you want
         to load your own configuration files, you can specify a custom config
@@ -97,18 +110,29 @@ class MountManager(DebugObject):
 
         Also, specifying a custom configuration dir disables the functionality
         of the PluginConfigurator and DayTime editor, since they operate on the
-        pipelines config files. """
+        pipelines config files. 
+
+        Set the directory to None to use the default directory. """
         self._config_dir =  Filename.from_os_specific(pth).get_fullpath()
 
-    def disable_cleanup(self):
-        """ Disables the cleanup of the tempfolder after the application stopped.
+    def _get_config_dir(self):
+        """ Returns the config directory previously set with set_config_dir, or
+        None if no directory was set yet """
+
+    config_dir = property(_get_config_dir, _set_config_dir)
+
+    def _set_do_cleanup(self, cleanup):
+        """ Sets whether to cleanup the tempfolder after the application stopped.
         This is mostly useful for debugging, to analyze the generated tempfiles
         even after the pipeline stopped running """
-        self._do_cleanup = False
+        self._do_cleanup = cleanup
 
-    def get_base_path(self):
-        """ Returns the base path previously set with set_base_path """
-        return self._base_path
+    def _get_do_cleanup(self):
+        """ Returns whether the mount manager will attempt to cleanup the
+        generated files after the application stopped running """
+        return self._do_cleanup
+
+    do_cleanup = property(_get_do_cleanup, _set_do_cleanup)
 
     def get_lock(self):
         """ Checks if we are the only instance running. If there is no instance
@@ -219,10 +243,12 @@ class MountManager(DebugObject):
                     except IOError:
                         pass
 
-    def is_mounted(self):
+    def _get_is_mounted(self):
         """ Returns whether the MountManager was already mounted by calling
         mount() """
         return self._mounted
+
+    is_mounted = property(_get_is_mounted)
 
     def mount(self):
         """ Inits the VFS Mounts """
