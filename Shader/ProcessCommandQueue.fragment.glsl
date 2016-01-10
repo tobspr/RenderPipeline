@@ -3,8 +3,8 @@
 #pragma include "Includes/Configuration.inc.glsl"
 
 uniform samplerBuffer CommandQueue;
-uniform restrict writeonly imageBuffer LightData;
-uniform restrict writeonly imageBuffer SourceData;
+uniform writeonly imageBuffer RESTRICT LightData;
+uniform writeonly imageBuffer RESTRICT SourceData;
 uniform int commandCount;
 
 // Reads a single float from the data stack

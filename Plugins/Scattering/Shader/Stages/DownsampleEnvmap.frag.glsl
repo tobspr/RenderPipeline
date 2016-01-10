@@ -12,7 +12,7 @@ out vec4 result;
 
 uniform int current_mip;
 uniform samplerCube SourceTex;
-uniform restrict writeonly imageCube DestMipmap;
+uniform writeonly imageCube RESTRICT DestMipmap;
 
 
 void main() {

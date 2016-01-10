@@ -33,7 +33,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
 from .Globals import Globals
-from .RPExtensions import RPExtensions
+from .PipelineExtensions import PipelineExtensions
 from .CommonResources import CommonResources
 from .CommonStages import CommonStages
 from .Native import TagStateManager
@@ -52,7 +52,7 @@ from .Managers.StageManager import StageManager
 from .Managers.LightManager import LightManager
 from .Managers.IESProfileManager import IESProfileManager
 
-class RenderPipeline(DebugObject, RPExtensions):
+class RenderPipeline(PipelineExtensions, DebugObject):
 
     """ This is the main pipeline logic, it combines all components of the pipeline
     to form a working system. It does not do much work itself, but instead setups
@@ -271,6 +271,15 @@ class RenderPipeline(DebugObject, RPExtensions):
             define("CONST_ARRAY", "const")
         else:
             define("CONST_ARRAY", "")
+
+        # Provide driver vendor as a default
+        vendor = self._showbase.win.get_gsg().get_driver_vendor().lower()
+        if "nvidia" in vendor:
+            define("IS_NVIDIA", 1)
+        if "ati" in vendor:
+            define("IS_AMD", 1)
+        if "intel" in vendor:
+            define("IS_INTEL", 1)
 
         self._light_mgr.init_defines()
         self._plugin_mgr.init_defines()

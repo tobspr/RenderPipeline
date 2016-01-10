@@ -6,7 +6,7 @@ in vec2 texcoord;
 
 uniform int SourceMip;
 uniform sampler2D SourceTex;
-uniform restrict writeonly image2D DestTex;
+uniform writeonly image2D RESTRICT DestTex;
 
 void main() {
     ivec2 int_coord = ivec2(gl_FragCoord.xy);
@@ -58,7 +58,6 @@ void main() {
     // it to a non-meaningful variable
     float AMD_DRIVER_FIX = texcoord.x * 1e-28;
 
-    // result = vec4(summed_kernel, 1.0);
     imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(summed_kernel, AMD_DRIVER_FIX));
 }
 

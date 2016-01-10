@@ -7,7 +7,7 @@
 
 uniform sampler3D CloudVoxels;
 uniform samplerCube ScatteringCubemap;
-uniform restrict writeonly image3D CloudVoxelsDest;
+uniform writeonly image3D RESTRICT CloudVoxelsDest;
 uniform sampler2D NoiseTex;
 
 void main() {

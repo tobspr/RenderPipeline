@@ -8,7 +8,7 @@
 #pragma include "Includes/LightClassification.inc.glsl"
 
 uniform isamplerBuffer CellListBuffer;
-uniform restrict writeonly iimageBuffer PerCellLightsBuffer;
+uniform writeonly iimageBuffer RESTRICT PerCellLightsBuffer;
 
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;

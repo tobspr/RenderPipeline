@@ -7,7 +7,7 @@
 in vec2 texcoord;
 out vec4 result;
 
-uniform restrict writeonly imageCube DestCubemap;
+uniform writeonly imageCube RESTRICT DestCubemap;
 uniform sampler2D DefaultSkydome;
 
 #pragma include "../ScatteringMethod.inc.glsl"

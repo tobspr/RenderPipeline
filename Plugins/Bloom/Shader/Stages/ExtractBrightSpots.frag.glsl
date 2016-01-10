@@ -4,7 +4,7 @@
 #pragma include "Includes/ColorSpaces/ColorSpaces.inc.glsl"
 
 uniform sampler2D SourceTex;
-uniform restrict writeonly image2D DestTex;
+uniform writeonly image2D RESTRICT DestTex;
 in vec2 texcoord;
 
 void main() {

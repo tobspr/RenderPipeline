@@ -6,7 +6,7 @@
 
 uniform sampler2DArray FlaggedCells;
 uniform layout(r32i) iimageBuffer cellListBuffer;
-uniform restrict writeonly iimage2DArray cellListIndices;
+uniform writeonly iimage2DArray RESTRICT cellListIndices;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);

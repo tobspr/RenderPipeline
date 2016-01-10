@@ -6,7 +6,7 @@
 
 uniform GBufferData GBuffer;
 
-uniform restrict writeonly image2D DestTexture;
+uniform writeonly image2D RESTRICT DestTexture;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);

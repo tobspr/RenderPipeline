@@ -8,7 +8,7 @@
 #define USE_GBUFFER_EXTENSIONS 1
 #pragma include "Includes/GBuffer.inc.glsl"
 
-uniform restrict writeonly image2DArray cellGridFlags;
+uniform writeonly image2DArray RESTRICT cellGridFlags;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);

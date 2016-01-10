@@ -29,7 +29,7 @@ from .Globals import *
 from .GUI.PipelineLoadingScreen import PipelineLoadingScreen, EmptyLoadingScreen
 
 
-class RPExtensions(object):
+class PipelineExtensions(object):
 
     """ This class provides utility functions like generating a skybox, setting
     the loading screen, and much more. The render pipeline derives from this
