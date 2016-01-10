@@ -6,9 +6,6 @@ uniform int SourceMip;
 uniform sampler2D SourceTex;
 uniform restrict writeonly image2D DestTex;
 
-// out vec4 result;
-in vec2 texcoord;
-
 void main() {
     ivec2 int_coord = ivec2(gl_FragCoord.xy);
     vec2 parent_tex_size = vec2(textureSize(SourceTex, SourceMip).xy);
@@ -54,7 +51,6 @@ void main() {
 
     // since every sub-kernel has 4 samples, normalize that
     summed_kernel /= 4.0;
-
 
     // result = vec4(summed_kernel, 1.0);
     imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(summed_kernel, 0.0));
