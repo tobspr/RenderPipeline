@@ -151,7 +151,7 @@ class InternalLightManager(object):
             if source and source.get_needs_update():
                 sources_to_update.append(source)
 
-        sources_to_update.sort(lambda a, b: b.get_resolution() - a.get_resolution())
+        sorted_sources = sorted(sources_to_update, key = lambda a: -a.get_resolution())
 
         atlas = self._shadow_manager.get_atlas()
         update_slots = min(len(sources_to_update), self._shadow_manager.get_num_update_slots_left())
