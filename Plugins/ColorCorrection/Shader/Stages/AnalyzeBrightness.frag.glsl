@@ -4,7 +4,7 @@
 #define USE_TIME_OF_DAY
 #pragma include "Includes/Configuration.inc.glsl"
 
-uniform layout(rgba16f) imageBuffer ExposureStorage;
+uniform layout(rgba16f) imageBuffer RESTRICT ExposureStorage;
 uniform sampler2D DownscaledTex;
 
 void main() {

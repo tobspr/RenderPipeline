@@ -5,7 +5,7 @@
 
 layout(local_size_x = 16, local_size_y = 16) in;
 
-uniform writeonly image2D dest;
+uniform writeonly image2D RESTRICT dest;
 
 float opticalDepth(float H, float r, float mu) {
     float result = 0.0;
@@ -24,11 +24,9 @@ float opticalDepth(float H, float r, float mu) {
 
 
 void main() {
-
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
     float r, muS;
     getTransmittanceRMu(r, muS);
     vec3 depth = betaR * opticalDepth(HR, r, muS) + betaMEx * opticalDepth(HM, r, muS);
     imageStore(dest, coord, vec4(exp(-depth), SCAT_DEBUG_ALPHA));
-
 }

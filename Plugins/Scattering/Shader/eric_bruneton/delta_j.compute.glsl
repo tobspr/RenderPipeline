@@ -9,11 +9,10 @@ uniform sampler3D deltaSRSampler;
 uniform sampler3D deltaSMSampler;
 uniform bool first;
 
-uniform writeonly image3D dest;
+uniform writeonly image3D RESTRICT dest;
 
 const float dphi = M_PI / float(INSCATTER_SPHERICAL_INTEGRAL_SAMPLES);
 const float dtheta = M_PI / float(INSCATTER_SPHERICAL_INTEGRAL_SAMPLES);
-
 
 void inscatter(float r, float mu, float muS, float nu, out vec3 raymie) {
     r = clamp(r, Rg, Rt);

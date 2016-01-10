@@ -4,10 +4,8 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
-
 uniform sampler3D deltaJSampler;
-uniform writeonly image3D dest;
-
+uniform writeonly image3D RESTRICT dest;
 
 vec3 integrand(float r, float mu, float muS, float nu, float t) {
     float ri = sqrt(r * r + t * t + 2.0 * r * mu * t);
@@ -30,7 +28,6 @@ vec3 inscatter(float r, float mu, float muS, float nu) {
     }
     return raymie;
 }
-
 
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);

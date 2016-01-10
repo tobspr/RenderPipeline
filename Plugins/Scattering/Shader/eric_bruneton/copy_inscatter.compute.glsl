@@ -1,15 +1,12 @@
 #version 440
 
-
 #pragma include "scattering_common.glsl"
-
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 uniform sampler3D deltaSRSampler;
 uniform sampler3D deltaSMSampler;
-uniform layout(rgba32f) image3D dest;
-
+uniform layout(rgba32f) image3D RESTRICT dest;
 
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);

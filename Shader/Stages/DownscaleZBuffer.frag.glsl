@@ -2,7 +2,7 @@
 
 #pragma include "Includes/Configuration.inc.glsl"
 
-uniform layout(rg32f) image2D SourceImage;
+uniform layout(rg32f) image2D RESTRICT SourceImage;
 uniform writeonly image2D RESTRICT DestImage;
 
 void main() {

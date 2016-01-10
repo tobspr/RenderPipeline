@@ -4,11 +4,8 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
-
-uniform writeonly image3D destDeltaSR;
-uniform writeonly image3D destDeltaSM;
-
-
+uniform writeonly image3D RESTRICT destDeltaSR;
+uniform writeonly image3D RESTRICT destDeltaSM;
 
 void integrand(float r, float mu, float muS, float nu, float t, out vec3 ray, out vec3 mie) {
     ray = vec3(0.0);

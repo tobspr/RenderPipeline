@@ -8,7 +8,7 @@ uniform sampler3D deltaSRSampler;
 uniform sampler3D deltaSMSampler;
 uniform bool first;
 
-uniform writeonly image2D dest;
+uniform writeonly image2D RESTRICT dest;
 
 const float dphi = M_PI / float(IRRADIANCE_INTEGRAL_SAMPLES);
 const float dtheta = M_PI / float(IRRADIANCE_INTEGRAL_SAMPLES);
@@ -42,7 +42,5 @@ void main() {
             }
         }
     }
-
     imageStore(dest, coord, vec4(result, SCAT_DEBUG_ALPHA));
-
 }
