@@ -72,9 +72,10 @@ class DownscaleZStage(RenderStage):
             target.set_size(*current_res)
             target.prepare_offscreen_buffer()
             target.set_shader_input(
-                "SourceImage", self._depth_storage.get_texture(), True, False, -1, mip, 0)
+                "SourceImage", self._depth_storage.get_texture())
             target.set_shader_input(
                 "DestImage", self._depth_storage.get_texture(), False, True, -1, mip + 1, 0)
+            target.set_shader_input("CurrentLod", mip)
 
             mip += 1
             self._mip_targets.append(target)

@@ -9,7 +9,7 @@ uniform GBufferData GBuffer;
 uniform writeonly image2D RESTRICT DestTexture;
 
 void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec2 coord = get_texcoord();
     float source_depth = get_gbuffer_depth(GBuffer, coord);
-    imageStore(DestTexture, coord, vec4(source_depth));
+    imageStore(DestTexture, ivec2(gl_FragCoord.xy), vec4(source_depth));
 }

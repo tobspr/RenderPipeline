@@ -97,7 +97,7 @@ vec3 view_normal_to_world(vec3 view_normal) {
 vec3 world_to_screen(vec3 world_pos) {
   vec4 proj = trans_mainRender_to_clip_of_mainCam * vec4(world_pos, 1);
   proj.xyz /= proj.w;
-  proj.xy = fma(proj.xy, vec2(0.5), vec2(0.5));
+  proj.xyz = fma(proj.xyz, vec3(0.5), vec3(0.5));
   return proj.xyz;
 }
 
