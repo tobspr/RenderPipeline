@@ -71,12 +71,14 @@ vec2 get_parallax_texcoord(sampler2D displacement_map) {
     // To disable parallax mapping:
     // return vOutput.texcoord;
 
-    float raymarch_distance = 0.1;
-    const int num_steps = 24;
 
     // Early out for materials without parallax mapping
     float initial_height = texture(displacement_map, vOutput.texcoord).x;
-    if (initial_height > 0.999) return vOutput.texcoord;
+    float pixel_dist = distance(MainSceneData.camera_pos, vOutput.position);
+    if (initial_height > 0.999 || pixel_dist > 100.0) return vOutput.texcoord;
+
+    float raymarch_distance = 0.1;
+    int num_steps = 18;
 
     vec3 tangent, binormal;
     reconstruct_tangent(tangent, binormal);

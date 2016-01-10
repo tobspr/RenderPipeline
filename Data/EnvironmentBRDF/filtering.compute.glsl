@@ -8,8 +8,13 @@ https://de45xmedrsdbp.cloudfront.net/Resources/files/2013SiggraphPresentationsNo
 
 */
 
-#define saturate(a) clamp(a, 0, 1)
-#define M_PI 3.14159265359
+
+#define saturate(v) clamp(v, 0, 1)
+
+#define M_PI 3.1415926535897932384626433
+#define HALF_PI 1.5707963267948966192313216
+#define TWO_PI 6.2831853071795864769252867
+#define ONE_BY_PI 0.3183098861837906715377675
 
 vec2 Hammersley(uint i, uint N)
 {
@@ -19,9 +24,9 @@ vec2 Hammersley(uint i, uint N)
   );
 }
 
-vec4 ImportanceSampleGGX( vec2 E, float Roughness )
+vec3 ImportanceSampleGGX( vec2 E, float roughness )
 {
-    float m = Roughness * Roughness;
+    float m = roughness * roughness;
     float m2 = m * m;
 
     float Phi = 2 * M_PI * E.x;
@@ -33,62 +38,51 @@ vec4 ImportanceSampleGGX( vec2 E, float Roughness )
     H.y = SinTheta * sin( Phi );
     H.z = CosTheta;
     
-    float d = ( CosTheta * m2 - CosTheta ) * CosTheta + 1;
-    float D = m2 / ( M_PI*d*d );
-    float PDF = D * CosTheta;
 
-    return vec4( H, PDF );
+    return vec3( H );
 }
 
-
-float Vis_SmithJointApprox( float Roughness, float NoV, float NoL )
+float brdf_visibility_smith(float roughness, float NxV, float NxL)
 {
-    float a = Roughness * Roughness;
-    float Vis_SmithV = NoL * ( NoV * ( 1 - a ) + a );
-    float Vis_SmithL = NoV * ( NoL * ( 1 - a ) + a );
-    return 0.5 / ( Vis_SmithV + Vis_SmithL );
+    float r_sq = roughness * roughness;
+    float vis_v = NxL * ( NxV * ( 1 - r_sq ) + r_sq );
+    float vis_l = NxV * ( NxL * ( 1 - r_sq ) + r_sq );
+    return 0.5 / (vis_v + vis_l);
 }
 
-vec2 IntegrateBRDF( float Roughness, float NoV )
+vec2 IntegrateBRDF( float roughness, float NxV )
 {
-    vec3 V;
-    V.x = sqrt( 1.0f - NoV * NoV ); // sin
-    V.y = 0;
-    V.z = NoV; // cos
+    vec3 view_dir;
+    view_dir.x = sqrt( 1.0f - NxV * NxV ); // sin
+    view_dir.y = 0;
+    view_dir.z = NxV; // cos
     float A = 0;
     float B = 0;
-    const uint NumSamples = 1024;
-    for( uint i = 0; i < NumSamples; i++ )
+    const int sample_count = 8192 * 2;
+    for( int i = 0; i < sample_count; i++ )
     {
-        vec2 Xi = Hammersley( i, NumSamples );
+        vec2 Xi = Hammersley( i, sample_count );
         {
-            vec3 H = ImportanceSampleGGX( Xi, Roughness ).xyz;
-            vec3 L = 2 * dot( V, H ) * H - V;
+            vec3 H = ImportanceSampleGGX( Xi, roughness );
+            vec3 L = -reflect(view_dir, H);
 
-            float NoL = saturate( L.z );
-            float NoH = saturate( H.z );
-            float VoH = saturate( dot( V, H ) );
+            float NxL = saturate( L.z );
+            float NxH = clamp(H.z, 0.0001, 1.0);
+            float VxH = saturate( dot( view_dir, H ) );
 
-            if( NoL > 0 )
+            if( NxL > 0 )
             {
-                float Vis = Vis_SmithJointApprox( Roughness, NoV, NoL );
-
-                float a = Roughness * Roughness;
-                float a2 = a*a;
-                float Vis_SmithV = NoL * sqrt( NoV * (NoV - NoV * a2) + a2 );
-                float Vis_SmithL = NoV * sqrt( NoL * (NoL - NoL * a2) + a2 );
-                float NoL_Vis_PDF = NoL * Vis * (4 * VoH / NoH);
-
-                float Fc = pow( 1 - VoH, 5 );
-                A += (1 - Fc) * NoL_Vis_PDF;
-                B += Fc * NoL_Vis_PDF;
+                float vis = brdf_visibility_smith( roughness, NxV, NxL );
+                float factor = NxL * vis * (4.0 * VxH / NxH);
+                float fresnel = pow(1.0 - VxH, 5.0);
+                A += (1 - fresnel) * factor;
+                B += fresnel * factor;
             }
         }
-
-
     }
 
-    return vec2( A, B ) / NumSamples;
+    return vec2( A, B ) / sample_count;
+
 }
 
 layout(local_size_x=16, local_size_y=16) in;

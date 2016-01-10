@@ -24,6 +24,8 @@ THE SOFTWARE.
  	 	    	 	
 """
 
+from __future__ import division, print_function
+
 """ This file pre-integrates the environment BRDF.
 
 SOURCE:
@@ -31,7 +33,6 @@ SOURCE:
 https://de45xmedrsdbp.cloudfront.net/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
 """
 
-from __future__ import division, print_function
 
 from panda3d.core import *
 
