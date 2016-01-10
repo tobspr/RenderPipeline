@@ -24,7 +24,7 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-from panda3d.core import Filename, Texture
+from panda3d.core import Filename, Texture, VirtualFileSystem, get_model_path
 
 from ..Util.DebugObject import DebugObject
 from ..Util.IESProfileLoader import IESProfileLoader, IESLoaderException
@@ -60,8 +60,11 @@ class IESProfileManager(DebugObject):
         """ Loads a profile from a given filename """
 
         # Make filename unique
+
         fname = Filename.from_os_specific(filename)
-        fname.make_absolute()
+        if not VirtualFileSystem.get_global_ptr().resolve_filename(fname, get_model_path().value, "ies"):
+            self.error("Could not resolve", filename)
+            return -1
         fname = fname.get_fullpath()
 
         # Check for cache entries

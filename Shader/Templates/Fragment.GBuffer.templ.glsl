@@ -55,11 +55,11 @@ void main() {
 
     // Fetch texture data
     #if DONT_FETCH_DEFAULT_TEXTURES
-        float sampled_specular  = texture(p3d_Texture2, texcoord).x;
-        float sampled_roughness = texture(p3d_Texture3, texcoord).x;
-    #else
         float sampled_specular = 0.0;
         float sampled_roughness = 0.0;
+    #else
+        float sampled_specular  = texture(p3d_Texture2, texcoord).x;
+        float sampled_roughness = texture(p3d_Texture3, texcoord).x;
     #endif
 
     #if OPT_ALPHA_TESTING
@@ -96,7 +96,7 @@ void main() {
             // Perform normal mapping if enabled
             vec3 sampled_normal = texture(p3d_Texture1, texcoord).xyz;
             vec3 detail_normal = unpack_texture_normal(sampled_normal);
-            vec3 material_nrm = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor);
+            material_nrm = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor);
             }
         #endif
     #endif
