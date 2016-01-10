@@ -11,7 +11,7 @@ void reconstruct_tangent(out vec3 tangent, out vec3 binormal) {
     // Fix issues when the texture coordinate is wrong, this happens when
     // two adjacent vertices have the same texture coordinate, as the gradient
     // is 0 then. We just assume some hard-coded tangent and binormal then
-    if (abs(tcoord_dx) < 0.00001 && abs(tcoord_dy) < 0.00001) {
+    if (abs(tcoord_dx) < 1e-24 && abs(tcoord_dy) < 1e-24) {
         vec3 base = abs(vOutput.normal.z) < 0.999 ? vec3(0, 0, 1) : vec3(0, 1, 0); 
         tangent = normalize(cross(vOutput.normal, base));
     } else {

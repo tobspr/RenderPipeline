@@ -64,9 +64,5 @@
 // Precision qualifiers, don't apply to newer GL, but can't hurt too
 precision lowp float;
 precision lowp int;
-precision lowp sampler2D;
-precision lowp sampler3D;
-precision lowp samplerCube;
-
 
 #pragma include "CommonFunctions.inc.glsl"
