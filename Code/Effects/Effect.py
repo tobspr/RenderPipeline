@@ -44,7 +44,7 @@ class Effect(DebugObject):
         "render_shadows": True,
         "alpha_testing": True,
         "normal_mapping": True,
-        "parallax_mapping": True,
+        "parallax_mapping": False,
     }
 
     _PASSES = ["GBuffer", "Shadows", "Voxelize"]
@@ -191,7 +191,7 @@ class Effect(DebugObject):
                     self.warn(val)
                     continue
                 val = [i for i in val.split("\n")]
-                
+
                 if key in injects:
                     injects[key] += val
                 else:

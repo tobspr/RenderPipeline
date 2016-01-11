@@ -5,6 +5,8 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/VertexOutput.struct.glsl"
+#pragma include "Includes/Structures/MaterialOutput.struct.glsl"
+#pragma include "Includes/BRDF.inc.glsl"
 
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
@@ -15,11 +17,14 @@ uniform mat4 trans_model_to_world;
 uniform mat3 tpose_world_to_model;
 
 out layout(location=0) VertexOutput vOutput;
+out layout(location=4) flat MaterialOutput mOutput;
 
 uniform struct {
-    vec4 diffuse;
-    vec3 specular;
-    vec4 ambient;
+    vec4 baseColor;
+    vec4 emission;
+    float roughness;
+    float metallic;
+    float refractiveIndex;
 } p3d_Material;
 
 %INCLUDES%
@@ -30,15 +35,20 @@ void main() {
     vOutput.normal = normalize(tpose_world_to_model * p3d_Normal).xyz;
     vOutput.position = (trans_model_to_world * p3d_Vertex).xyz;
 
-    // @TODO: Use last frame model matrix.
+    // @TODO: Use last frame model matrix. Need to somehow set it as a shader
+    // input, to be able to use it here. We also somehow have to account for
+    // skinning, we can maybe use hardware skinning for this.
     vOutput.last_proj_position = MainSceneData.last_view_proj_mat_no_jitter * (trans_model_to_world * p3d_Vertex);
 
     // Get material properties
-    vOutput.material_color     = p3d_Material.diffuse.xyz;
-    vOutput.material_specular  = p3d_Material.specular.r;
-    vOutput.material_metallic  = p3d_Material.specular.g;
-    vOutput.material_roughness = p3d_Material.specular.b;
-    vOutput.bumpmap_factor     = p3d_Material.diffuse.w;
+    mOutput.color          = p3d_Material.baseColor.xyz;
+    mOutput.specular       = ior_to_specular(p3d_Material.refractiveIndex) / 0.04;
+    mOutput.metallic       = p3d_Material.metallic;
+    mOutput.roughness      = p3d_Material.roughness;
+    mOutput.normalfactor   = p3d_Material.emission.r;
+    mOutput.translucency   = p3d_Material.emission.b;
+    mOutput.transparency   = p3d_Material.baseColor.w;
+    mOutput.emissive       = p3d_Material.emission.w;
 
     %VERTEX%
 

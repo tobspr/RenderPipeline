@@ -13,11 +13,13 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/VertexOutput.struct.glsl"
+#pragma include "Includes/Structures/MaterialOutput.struct.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"
 
 %INCLUDES%
 
 layout(location=0) in VertexOutput vOutput;
+layout(location=4) flat in MaterialOutput mOutput;
 
 // Late include of the gbuffer packing since it needs the vOutput
 #pragma include "Includes/NormalMapping.inc.glsl"
@@ -43,12 +45,11 @@ layout(location=0) in VertexOutput vOutput;
 
 void main() {
 
+    vec2 texcoord = vOutput.texcoord;
+
     // Get texture coordinate
     #if OPT_PARALLAX_MAPPING
-        // TODO: Make parallax effect controllable
-        vec2 texcoord = get_parallax_texcoord(p3d_Texture4);
-    #else
-        vec2 texcoord = vOutput.texcoord;
+        texcoord = get_parallax_texcoord(p3d_Texture4);
     #endif
 
     %TEXCOORD%
@@ -96,7 +97,7 @@ void main() {
             // Perform normal mapping if enabled
             vec3 sampled_normal = texture(p3d_Texture1, texcoord).xyz;
             vec3 detail_normal = unpack_texture_normal(sampled_normal);
-            material_nrm = apply_normal_map(vOutput.normal, detail_normal, vOutput.bumpmap_factor);
+            material_nrm = apply_normal_map(vOutput.normal, detail_normal, mOutput.normalfactor);
             }
         #endif
     #endif
@@ -108,12 +109,12 @@ void main() {
         // Leave material properties unitialized, and hope the user knows
         // what hes doing
     #else
-        m.basecolor = vOutput.material_color * sampled_diffuse.xyz;
+        m.basecolor = mOutput.color * sampled_diffuse.xyz;
         m.normal = material_nrm;
-        m.metallic = vOutput.material_metallic;
-        m.specular = vOutput.material_specular * sampled_specular;
-        m.roughness = vOutput.material_roughness * sampled_roughness;
-        m.translucency = 0.0;
+        m.metallic = mOutput.metallic;
+        m.specular = mOutput.specular * sampled_specular;
+        m.roughness = mOutput.roughness * sampled_roughness;
+        m.translucency = mOutput.translucency;
     #endif
 
     %MATERIAL%

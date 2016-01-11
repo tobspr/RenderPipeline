@@ -156,6 +156,11 @@ float brdf_visibility_schlick(float NxV, float NxL, float roughness) {
 
 /* Fresnel functions */
 
+float ior_to_specular(float ior) {
+    float f0 = (ior - 1) / (ior + 1);
+    return f0 * f0;
+}
+
 float brdf_fresnel_cook_torrance(float LxH, float roughness, float ior) {
     float g = sqrt(max(0, ior * ior + LxH * LxH - 1.0));
     float gpc = g + LxH;
@@ -163,9 +168,13 @@ float brdf_fresnel_cook_torrance(float LxH, float roughness, float ior) {
     return 0.5 * pow(gmc,2) / pow(gpc,2) * (1 + pow(LxH*(gpc)-1,2) / pow(LxH*(gmc)+1,2));
 }
 
-float brdf_fresnel_schlick(float LxH, float roughness, float ior) {
-    float f0 = pow((ior - 1.0) / (ior + 1.0), 2.0);
+float brdf_fresnel_schlick_f0(float LxH, float roughness, float f0) {
     return f0 + (1 - f0) * pow(2, (-5.55473*LxH-6.98316)*LxH);
+}
+
+float brdf_fresnel_schlick(float LxH, float roughness, float ior) {
+    float f0 = ior_to_specular(ior);
+    return brdf_fresnel_schlick_f0(LxH, roughness, f0);
 }
 
 // Diffuse BRDF
@@ -218,5 +227,6 @@ float brdf_fresnel(float LxH, float roughness) {
 /* Material Functions */
 
 vec3 get_material_f0(Material m) {
-    return mix(vec3(0.08) * m.specular, m.basecolor, m.metallic);
+    // Material specular is already in the 0 .. 0.08 range
+    return mix(vec3(m.specular), m.basecolor, m.metallic);
 }

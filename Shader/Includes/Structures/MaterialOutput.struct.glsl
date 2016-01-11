@@ -26,9 +26,13 @@
 
 #pragma once
 
-struct VertexOutput {
-    vec4 last_proj_position;
-    vec3 normal;
-    vec2 texcoord;
-    vec3 position;
+struct MaterialOutput {
+    vec3  color;
+    float specular;
+    float metallic;
+    float roughness;
+    float normalfactor;
+    float emissive;
+    float translucency;
+    float transparency;
 };

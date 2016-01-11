@@ -64,7 +64,7 @@
 
         // Clamp properties like specular and metallic, which have to be in the
         // 0 ... 1 range
-        float specular = saturate(m.specular);
+        float specular = saturate(m.specular * 0.04);
         float metallic = saturate(m.metallic);
         float roughness = clamp(m.roughness, 0.005, 1.0);
         float translucency = saturate(m.translucency);
