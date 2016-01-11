@@ -267,7 +267,9 @@ class MountManager(DebugObject):
 
         # Mount config dir
         if self._config_dir is None:
-            vfs.mount_loop(join(self._base_path, "Config/"), "$$Config/", 0)
+            config_dir = join(self._base_path, "Config/")
+            vfs.mount_loop(config_dir, "$$Config/", 0)
+            self.debug("Auto-Detected config dir:", config_dir)
         else:
             vfs.mount_loop(self._config_dir, "$$Config/", 0)
             self.debug("Config dir:", self._config_dir)

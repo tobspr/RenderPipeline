@@ -6,7 +6,7 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/VertexOutput.struct.glsl"
 #pragma include "Includes/Structures/MaterialOutput.struct.glsl"
-#pragma include "Includes/BRDF.inc.glsl"
+
 
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
@@ -42,7 +42,7 @@ void main() {
 
     // Get material properties
     mOutput.color          = p3d_Material.baseColor.xyz;
-    mOutput.specular       = ior_to_specular(p3d_Material.refractiveIndex) / 0.04;
+    mOutput.specular_ior   = p3d_Material.refractiveIndex;
     mOutput.metallic       = p3d_Material.metallic;
     mOutput.roughness      = p3d_Material.roughness;
     mOutput.normalfactor   = p3d_Material.emission.r;

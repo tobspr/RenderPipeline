@@ -28,7 +28,7 @@
 
 struct MaterialOutput {
     vec3  color;
-    float specular;
+    float specular_ior;
     float metallic;
     float roughness;
     float normalfactor;

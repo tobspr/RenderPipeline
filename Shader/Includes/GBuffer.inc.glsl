@@ -29,6 +29,7 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"
 #pragma include "Includes/NormalPacking.inc.glsl"
+#pragma include "Includes/BRDF.inc.glsl"
 
 #if defined(IS_GBUFFER_SHADER)
 
@@ -64,10 +65,11 @@
 
         // Clamp properties like specular and metallic, which have to be in the
         // 0 ... 1 range
-        float specular = saturate(m.specular * 0.04);
+        float specular = ior_to_specular(max(0.0, m.specular_ior));
         float metallic = saturate(m.metallic);
         float roughness = clamp(m.roughness, 0.005, 1.0);
         float translucency = saturate(m.translucency);
+
 
         // Optional: Use squared roughness as proposed by Disney
         roughness *= roughness;

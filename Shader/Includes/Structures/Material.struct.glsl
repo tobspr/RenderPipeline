@@ -31,7 +31,7 @@ struct MaterialShaderOutput {
     vec3 basecolor;
     vec3 normal;
     float roughness;
-    float specular;
+    float specular_ior;
     float metallic;
     float translucency;
 };

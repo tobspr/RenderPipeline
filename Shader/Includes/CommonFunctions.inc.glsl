@@ -205,12 +205,17 @@ float get_diffuse_aa(float w, float NxL) {
 }
 
 
+// Blends a material
 float blend_material(float material_factor, float detailmap, float add_factor, float pow_factor) {
     material_factor = max(0, material_factor);
     return saturate(
         mix( pow( max(0, detailmap + add_factor), pow_factor), 1.0, material_factor) * material_factor);
 }
 
+// Blends a specular IOR to make sure it never drops below 1.0
+float blend_ior(float material_specular, float sampled_specular) {
+    return 1.0 + max(0, material_specular - 1.0) * 2.0 * sampled_specular;
+}
 
 // We need to define them as macros instead of functions, since gl_FragCoord is
 // not available in compute shaders

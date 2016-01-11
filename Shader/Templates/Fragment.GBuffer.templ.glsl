@@ -56,10 +56,10 @@ void main() {
 
     // Fetch texture data
     #if DONT_FETCH_DEFAULT_TEXTURES
-        float sampled_specular = 0.0;
+        float sampled_ior = 0.0;
         float sampled_roughness = 0.0;
     #else
-        float sampled_specular  = texture(p3d_Texture2, texcoord).x;
+        float sampled_ior  = texture(p3d_Texture2, texcoord).x;
         float sampled_roughness = texture(p3d_Texture3, texcoord).x;
     #endif
 
@@ -112,7 +112,7 @@ void main() {
         m.basecolor = mOutput.color * sampled_diffuse.xyz;
         m.normal = material_nrm;
         m.metallic = mOutput.metallic;
-        m.specular = mOutput.specular * sampled_specular;
+        m.specular_ior = blend_ior(mOutput.specular_ior, sampled_ior);
         m.roughness = mOutput.roughness * sampled_roughness;
         m.translucency = mOutput.translucency;
     #endif

@@ -30,7 +30,7 @@ import time
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
 from panda3d.core import PandaSystem
 from direct.showbase.ShowBase import ShowBase
-from direct.stdpy.file import isfile
+from direct.stdpy.file import isfile, open
 
 from .Globals import Globals
 from .PipelineExtensions import PipelineExtensions

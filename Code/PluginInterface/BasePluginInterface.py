@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import re
 
-from direct.stdpy.file import listdir, isfile, isdir, join
+from direct.stdpy.file import listdir, isfile, isdir, join, open
 
 from ..Util.DebugObject import DebugObject
 from .PluginExceptions import PluginConfigError

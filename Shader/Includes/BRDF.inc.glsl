@@ -225,7 +225,6 @@ float brdf_fresnel(float LxH, float roughness) {
 
 
 /* Material Functions */
-
 vec3 get_material_f0(Material m) {
     // Material specular is already in the 0 .. 0.08 range
     return mix(vec3(m.specular), m.basecolor, m.metallic);

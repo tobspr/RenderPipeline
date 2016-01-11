@@ -12,7 +12,7 @@ Fragment.GBuffer:
     inject:
         material:
             m.basecolor = vec3(1, 0, 1);
-            m.specular = 0.0;
+            m.specular_ior = 1.5;
             m.metallic = 0.0;
             m.roughness = 1.0;
             m.translucency = 0.0;

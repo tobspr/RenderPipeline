@@ -85,15 +85,13 @@ Fragment.GBuffer:
             // Material properties
             m.basecolor = m_base;
             m.normal = apply_normal_map(vOutput.normal, m_nrm, mOutput.normalfactor);
-            m.specular = spec * mOutput.specular;
+            m.specular_ior = blend_ior(spec, mOutput.specular_ior);
             m.roughness = mOutput.roughness;
             m.metallic = mOutput.metallic;
             m.translucency = mOutput.translucency;
 
 Fragment.Shadows:
     template: default
-
-    
 
 Fragment.Voxelize:
     template: default
