@@ -62,7 +62,7 @@ class IESProfileManager(DebugObject):
         # Make filename unique
 
         fname = Filename.from_os_specific(filename)
-        if not VirtualFileSystem.get_global_ptr().resolve_filename(fname, get_model_path().value, "ies"):
+        if not VirtualFileSystem.get_global_ptr().resolve_filename(fname, get_model_path().get_value(), "ies"):
             self.error("Could not resolve", filename)
             return -1
         fname = fname.get_fullpath()
