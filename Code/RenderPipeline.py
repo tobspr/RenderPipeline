@@ -21,7 +21,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- 	 	    	 	
+                    
 """
 
 import sys
@@ -54,16 +54,17 @@ from .Managers.IESProfileManager import IESProfileManager
 
 class RenderPipeline(PipelineExtensions, DebugObject):
 
-    """ This is the main pipeline logic, it combines all components of the pipeline
-    to form a working system. It does not do much work itself, but instead setups
-    all the managers and systems to be able to do their work.
+    """ This is the main pipeline logic, it combines all components of the
+    pipeline to form a working system. It does not do much work itself, but
+    instead setups all the managers and systems to be able to do their work.
 
-    It also derives from RPExtensions to provide some useful functions like creating
-    a default skybox or loading effect files. """
+    It also derives from RPExtensions to provide some useful functions like
+    creating a default skybox or loading effect files. """
 
     def __init__(self, showbase):
-        """ Creates a new pipeline with a given showbase instance. This should be
-        done before intializing the ShowBase, the pipeline will take care of that. """
+        """ Creates a new pipeline with a given showbase instance. This should
+        be done before intializing the ShowBase, the pipeline will take care of
+        that. """
         DebugObject.__init__(self, "RenderPipeline")
         self.debug("Using Python {} with architecture {}".format(
             sys.version_info.major, PandaSystem.get_platform()))
@@ -73,8 +74,8 @@ class RenderPipeline(PipelineExtensions, DebugObject):
         self.set_default_loading_screen()
 
     def load_settings(self, path):
-        """ Loads the pipeline configuration from a given filename. Usually this
-        is the 'Config/pipeline.ini' file. If you call this more than once,
+        """ Loads the pipeline configuration from a given filename. Usually
+        this is the 'Config/pipeline.ini' file. If you call this more than once,
         only the settings of the last file will be used. """
         self._settings.load_from_file(path)
 
@@ -101,10 +102,10 @@ class RenderPipeline(PipelineExtensions, DebugObject):
         self._debugger.set_reload_hint_visible(False)
 
     def create(self):
-        """ This creates the pipeline, and setups all buffers. It also constructs
-        the showbase. The settings should have been loaded before calling this,
-        and also the base and write path should have been initialized properly
-        (see MountManager). """
+        """ This creates the pipeline, and setups all buffers. It also
+        constructs the showbase. The settings should have been loaded before
+        calling this, and also the base and write path should have been
+        initialized properly (see MountManager). """
 
         start_time = time.time()
 
@@ -188,7 +189,8 @@ class RenderPipeline(PipelineExtensions, DebugObject):
         if self.get_setting("pipeline.display_debugger"):
             self._debugger = OnscreenDebugger(self)
         else:
-            # Use an empty onscreen debugger in case the debugger is not enabled
+            # Use an empty onscreen debugger in case the debugger is not
+            # enabled, which defines all member functions as empty lambdas
             class _empty_class(object):
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
@@ -296,19 +298,19 @@ class RenderPipeline(PipelineExtensions, DebugObject):
         return self._mount_mgr
 
     def _get_stage_mgr(self):
-        """ Returns a handle to the stage manager object, this function is only
-        internally used, but public so other classes can access this. Not indented
-        for use by the user! """
+        """ Returns a handle to the stage manager object. The stage manager
+        manages all RenderStages, shader inputs and defines, and also writing
+        of the shader auto config."""
         return self._stage_mgr
 
     def _get_plugin_mgr(self):
         """ Returns a handle to the plugin manager, this can be used to trigger
-        hooks """
+        hooks. It also stores information about the loaded plugins. """
         return self._plugin_mgr
 
     def _get_light_mgr(self):
         """ Returns a handle to the light manager, this usually should not be used
-        by the user """
+        by the user, instead use add_light and remove_light. """
         return self._light_mgr
 
     def _get_tag_mgr(self):
