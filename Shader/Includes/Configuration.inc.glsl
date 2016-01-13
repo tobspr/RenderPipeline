@@ -29,17 +29,18 @@
 // Main configuration file, included by all shaders, provides generic defines
 // and functions.
 
-
 // Optionally unroll *all* loops, this might be faster, but might also be
 // slower. Right now, every shader specifies on his own if he wants to unroll
 // his loops or not.
 // #pragma optionNV (unroll all)
 
-// nvidia specific options
+// Nvidia specific optimizations
+#ifdef IS_NVIDIA
 #pragma optionNV (fastmath on)
 #pragma optionNV (ifcvt none)
 #pragma optionNV (inline all)
 #pragma optionNV (strict on)
+#endif
 
 // Leads to some compilation issues
 #ifndef NO_FAST_PRECISION
@@ -95,7 +96,6 @@
 precision lowp float;
 precision lowp int;
 
-
 // Restrict qualifier, only on AMD cards, Nvidia can't handle it. See: 
 // https://devtalk.nvidia.com/default/topic/546817/restrict-keyword-crashes-glsl-compiler/
 #if IS_NVIDIA
@@ -105,4 +105,3 @@ precision lowp int;
 #endif 
 
 #pragma include "CommonFunctions.inc.glsl"
-
