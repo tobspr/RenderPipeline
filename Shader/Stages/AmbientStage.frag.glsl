@@ -110,8 +110,8 @@ void main() {
         vec3 ibl_specular = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz * 0.2;
 
         // Get cheap irradiance by sampling low levels of the environment map
-        int env_amb_mip = get_mipmap_count(DefaultEnvmap) - 5;
-        vec3 env_amb = textureLod(DefaultEnvmap, m.normal, env_amb_mip).xyz * 0.2;
+        int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
+        vec3 ibl_diffuse = textureLod(DefaultEnvmap, m.normal, ibl_diffuse_mip).xyz * 0.2;
 
         // Scattering specific code
         #if HAVE_PLUGIN(Scattering)
@@ -123,7 +123,7 @@ void main() {
             ibl_specular = textureLod(ScatteringCubemap, reflected_dir, scat_mipmap).xyz;
 
             // Cheap irradiance
-            env_amb = textureLod(ScatteringCubemap, m.normal, 6).xyz;
+            ibl_diffuse = textureLod(ScatteringCubemap, m.normal, 6).xyz;
         #endif
     
         // Pre-Integrated environment BRDF
@@ -136,7 +136,7 @@ void main() {
 
         // Diffuse ambient term
         // TODO: lambertian brdf doesn't look well?
-        vec3 diffuse_ambient = env_amb * m.basecolor * (1-m.metallic) /* * brdf_lambert() */;
+        vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic) /* * brdf_lambert() */;
 
         // Add diffuse and specular ambient term
         ambient = diffuse_ambient + specular_ambient;

@@ -91,11 +91,11 @@ class AOStage(RenderStage):
         self._target.set_shader_input("Noise4x4", tex)
 
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("AOSample.vert.glsl", "AOSample.frag.glsl"))
-        self._target_upscale.set_shader(self.load_plugin_shader("AOUpscale.frag.glsl"))
-        self._target_merge.set_shader(self.load_plugin_shader("AOMerge.frag.glsl"))
+        self._target.set_shader(self._load_plugin_shader("AOSample.vert.glsl", "AOSample.frag.glsl"))
+        self._target_upscale.set_shader(self._load_plugin_shader("AOUpscale.frag.glsl"))
+        self._target_merge.set_shader(self._load_plugin_shader("AOMerge.frag.glsl"))
 
-        blur_shader = self.load_plugin_shader("AOBlur.frag.glsl")
+        blur_shader = self._load_plugin_shader("AOBlur.frag.glsl")
         self._target_blur_v.set_shader(blur_shader)
         self._target_blur_h.set_shader(blur_shader)
 

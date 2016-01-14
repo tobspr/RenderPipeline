@@ -71,9 +71,9 @@ class ColorCorrectionStage(RenderStage):
             self._target.make_main_target()
 
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("CorrectColor.frag.glsl"))
+        self._target.set_shader(self._load_plugin_shader("CorrectColor.frag.glsl"))
         if self._use_sharpen:
-            self._target_sharpen.set_shader(self.load_plugin_shader("Sharpen.frag.glsl"))
+            self._target_sharpen.set_shader(self._load_plugin_shader("Sharpen.frag.glsl"))
 
     def resize(self):
         RenderStage.resize(self)
