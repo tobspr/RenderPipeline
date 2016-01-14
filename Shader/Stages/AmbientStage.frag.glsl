@@ -87,7 +87,13 @@ void main() {
         // Get reflection directory
         vec3 reflected_dir = reflect(-view_vector, m.normal);
 
-        // Get environment coordinate, cubemaps have a different coordinate system
+        // Bend normal depending on roughness
+        float bend = m.roughness;
+        reflected_dir = mix(m.normal, reflected_dir, 
+            (1 - bend) * (bend + sqrt(1 - bend)));
+
+        // Get environment coordinate, cubemaps have a different coordinate
+        // system
         vec3 env_coord = fix_cubemap_coord(reflected_dir);
 
         // Compute angle between normal and view vector
@@ -101,7 +107,7 @@ void main() {
         float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
         
         // Sample default environment map
-        vec3 env_default_color = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz * 0.2;
+        vec3 ibl_specular = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz * 0.2;
 
         // Get cheap irradiance by sampling low levels of the environment map
         int env_amb_mip = get_mipmap_count(DefaultEnvmap) - 5;
@@ -114,12 +120,10 @@ void main() {
             float scat_mipmap = get_mipmap_for_roughness(ScatteringCubemap, m.roughness) + mipmap_bias;
 
             // Sample prefiltered scattering cubemap
-            vec3 env_scattering_color = textureLod(ScatteringCubemap, reflected_dir, scat_mipmap).xyz;
-            env_default_color = env_scattering_color;
+            ibl_specular = textureLod(ScatteringCubemap, reflected_dir, scat_mipmap).xyz;
 
             // Cheap irradiance
             env_amb = textureLod(ScatteringCubemap, m.normal, 6).xyz;
-
         #endif
     
         // Pre-Integrated environment BRDF
@@ -128,7 +132,7 @@ void main() {
         vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
 
         vec3 material_f0 = get_material_f0(m);
-        vec3 specular_ambient = (material_f0 * env_brdf.x + env_brdf.y) * env_default_color;
+        vec3 specular_ambient = (material_f0 * env_brdf.x + env_brdf.y) * ibl_specular;
 
         // Diffuse ambient term
         // TODO: lambertian brdf doesn't look well?
@@ -151,7 +155,6 @@ void main() {
         #endif
 
     } else {
-
         // Optionally just display the environment texture
         // ambient = textureLod(DefaultEnvmap,  fix_cubemap_coord(-view_vector), 0).xyz;
         // ambient = pow(ambient, vec3(2.2));
