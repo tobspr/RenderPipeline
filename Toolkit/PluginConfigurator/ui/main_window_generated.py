@@ -358,4 +358,4 @@ class Ui_MainWindow(object):
         self.lbl_hint_restart.setText(_translate("MainWindow", "Settings with a green background are changeable while the pipeline is running, all other settings require a pipeline restart.", None))
         self.lbl_restart_pipeline.setText(_translate("MainWindow", "Pipeline needs to be restarted in order to see all changes!", None))
 
-import resources_rc
+from . import resources_rc
