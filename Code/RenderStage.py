@@ -177,7 +177,7 @@ class RenderStage(DebugObject):
 
         return Shader.load(Shader.SLGLSL, *args)
 
-    def load_plugin_shader(self, *args):
+    def _load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful
         for RenderStages created by plugins. For a description of the arguments,
         see the _load_shader function. """

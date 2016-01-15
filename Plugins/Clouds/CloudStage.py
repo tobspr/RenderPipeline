@@ -131,13 +131,13 @@ class CloudStage(RenderStage):
     #         Globals.base.camera.get_transform(Globals.base.render))
 
     def set_shaders(self):
-        self._grid_target.set_shader(self.load_plugin_shader("GenerateClouds.frag.glsl"))
-        self._target_apply_clouds.set_shader(self.load_plugin_shader("ApplyClouds.frag.glsl"))
-        self._shade_target.set_shader(self.load_plugin_shader("ShadeClouds.frag.glsl"))
+        self._grid_target.set_shader(self._load_plugin_shader("GenerateClouds.frag.glsl"))
+        self._target_apply_clouds.set_shader(self._load_plugin_shader("ApplyClouds.frag.glsl"))
+        self._shade_target.set_shader(self._load_plugin_shader("ShadeClouds.frag.glsl"))
 
 
-        self._particle_target.set_shader(self.load_plugin_shader("RenderClouds.frag.glsl"))
-        # self._particle_np.set_shader(self.load_plugin_shader("CloudParticle.vert.glsl", "CloudParticle.frag.glsl"))
+        self._particle_target.set_shader(self._load_plugin_shader("RenderClouds.frag.glsl"))
+        # self._particle_np.set_shader(self._load_plugin_shader("CloudParticle.vert.glsl", "CloudParticle.frag.glsl"))
 
     def resize(self):
         RenderStage.resize(self)

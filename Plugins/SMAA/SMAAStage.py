@@ -122,14 +122,14 @@ class SMAAStage(RenderStage):
             self._resolve_target.set_shader_input("JitterIndex", self._jitter_index)
 
     def set_shaders(self):
-        self._srgb_target.set_shader(self.load_plugin_shader("TemporarySRGB.frag.glsl"))
-        self._edge_target.set_shader(self.load_plugin_shader("EdgeDetection.frag.glsl"))
-        self._blend_target.set_shader(self.load_plugin_shader("BlendingWeights.frag.glsl"))
+        self._srgb_target.set_shader(self._load_plugin_shader("TemporarySRGB.frag.glsl"))
+        self._edge_target.set_shader(self._load_plugin_shader("EdgeDetection.frag.glsl"))
+        self._blend_target.set_shader(self._load_plugin_shader("BlendingWeights.frag.glsl"))
         for target in self._neighbor_targets:
-            target.set_shader(self.load_plugin_shader("NeighborhoodBlending.frag.glsl"))
+            target.set_shader(self._load_plugin_shader("NeighborhoodBlending.frag.glsl"))
 
         if self._reprojection:
-            self._resolve_target.set_shader(self.load_plugin_shader("Resolve.frag.glsl"))
+            self._resolve_target.set_shader(self._load_plugin_shader("Resolve.frag.glsl"))
 
     def resize(self):
         RenderStage.resize(self)
