@@ -107,12 +107,11 @@ void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
 }
 
 // Transforms a given vector to tangent space
-vec3 tangent_to_world(vec3 vec, vec3 tangent)
+vec3 tangent_to_world(vec3 normal, vec3 vector)
 {
-    vec3 v0 = abs(tangent.z) < 0.99 ? vec3(0, 0, 1) : vec3(1, 0, 0);
-    vec3 tangent_x = normalize( cross( v0, tangent ) );
-    vec3 tangent_y = cross( tangent, tangent_x );
-    return tangent_x * vec.x + tangent_y * vec.y + tangent * vec.z;
+    vec3 tangent, binormal;
+    find_arbitrary_tangent(normal, tangent, binormal);
+    return vector.x * tangent + vector.y * binormal + vector.z * normal;
 }
 
 
@@ -228,3 +227,8 @@ float blend_ior(float material_specular, float sampled_specular) {
 
 // Texcoord for half-res targets sampling half-res targets
 #define get_half_native_texcoord() vec2( (ivec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE/2) )
+
+
+// float roughness_to_mip(float roughness)  {
+//      return roughness 
+// }

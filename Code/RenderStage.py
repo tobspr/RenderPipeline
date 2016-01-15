@@ -33,6 +33,7 @@ import os
 from panda3d.core import Shader
 
 from .Util.DebugObject import DebugObject
+from .Util.CubemapFilter import CubemapFilter
 from .RenderTarget import RenderTarget
 
 
@@ -150,8 +151,13 @@ class RenderStage(DebugObject):
             target.set_shader_input(*args)
 
     def update(self):
-        """ This method gets called every frame """
+        """ This method gets called every frame, and can be overridden by render
+        stages to perform custom updates """
         pass
+
+    def _make_cubemap_filter(self, *args):
+        """ Creates a new CubemapFilter with the given args and returns it """
+        return CubemapFilter(self, *args)
 
     def _create_target(self, name):
         """ Creates a new render target with the given name and attachs it to the

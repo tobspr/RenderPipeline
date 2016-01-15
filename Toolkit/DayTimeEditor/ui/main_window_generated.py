@@ -185,4 +185,4 @@ class Ui_MainWindow(object):
         self.time_label.setText(_translate("MainWindow", "11:15", None))
         self.lbl_select_setting.setText(_translate("MainWindow", "Select a setting on the left to modify its value", None))
 
-import resources_rc
+from . import resources_rc

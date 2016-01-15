@@ -42,8 +42,7 @@ vec2 importance_sample_ggx(vec2 xi, float roughness)
 vec2 hammersley(uint i, uint N)
 {
   return vec2(float(i) / float(N), float(bitfieldReverse(i)) * 2.3283064365386963e-10);
-}
-
+} 
 
 // From:
 // http://www.gamedev.net/topic/655431-ibl-problem-with-consistency-using-ggx-anisotropy/
@@ -55,6 +54,23 @@ vec3 ImportanceSampleGGX(vec2 Xi, float roughness, vec3 n)
   float sin_theta = sqrt(1 - cos_theta * cos_theta);
 
   vec3 h = vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
+  vec3 up_vector = abs(n.z) < 0.999 ? vec3(0, 0, 1) : vec3(1, 0, 0);
+  vec3 tangent = normalize(cross(up_vector, n));
+  vec3 bitangent = normalize(cross(n, tangent));
+
+  // Tangent to world space
+  return normalize(tangent * h.x + bitangent * h.y + n * h.z);
+}
+
+vec3 ImportanceSampleLambert(vec2 xi, vec3 n)
+{
+  float phi = TWO_PI * xi.x;
+  float cos_theta = sqrt(1 - xi.y);
+  float sin_theta = sqrt(1 - cos_theta * cos_theta);
+
+  vec3 h = vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
+
+  // Find arbitrary tangent
   vec3 up_vector = abs(n.z) < 0.999 ? vec3(0, 0, 1) : vec3(1, 0, 0);
   vec3 tangent = normalize(cross(up_vector, n));
   vec3 bitangent = normalize(cross(n, tangent));

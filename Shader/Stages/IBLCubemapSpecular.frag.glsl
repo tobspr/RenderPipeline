@@ -1,29 +1,3 @@
-/**
- * 
- * RenderPipeline
- * 
- * Copyright (c) 2014-2015 tobspr <tobias.springer1@gmail.com>
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- */
-
 #version 430
 
 #pragma include "Includes/Configuration.inc.glsl"
@@ -33,8 +7,7 @@
 
 #pragma optionNV (unroll all)
 
-
-uniform int current_mip;
+uniform int currentMip;
 uniform samplerCube SourceTex;
 uniform writeonly imageCube RESTRICT DestMipmap;
 
@@ -49,7 +22,7 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    float sample_roughness = 0.03 + pow(current_mip, 1.4) * 0.04;
+    float sample_roughness = 0.03 + currentMip * 0.09;
 
     vec3 accum = vec3(0);
 
@@ -61,12 +34,19 @@ void main() {
     for (int i = 0; i < num_samples; ++i) {
         vec2 Xi = poisson_disk_2D_64[i] * sample_roughness;
 
+        #if 1
         vec3 tangent, binormal;
         find_arbitrary_tangent(n, tangent, binormal);
 
         // Compute halfway vector
         vec3 h = normalize(Xi.x * tangent + Xi.y * binormal + n);
-        
+       
+        #else
+
+        vec3 h = ImportanceSampleGGX(Xi, sample_roughness, n);
+
+        #endif
+
         // Reconstruct light vector
         vec3 l = -reflect(n, h);
 
@@ -81,7 +61,7 @@ void main() {
         const float fresnel = 1.0; // No noticeable difference, runs faster tho
         float weight = distribution * fresnel;
 
-        vec3 fval = textureLod(SourceTex, l, current_mip).xyz;
+        vec3 fval = textureLod(SourceTex, l, currentMip).xyz;
         accum += fval * weight;
         accum_weights += weight;
     }

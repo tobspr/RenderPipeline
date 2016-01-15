@@ -39,7 +39,8 @@ uniform sampler2D PrefilteredBRDF;
 uniform samplerCube DefaultEnvmap;
 
 #if HAVE_PLUGIN(Scattering)
-    uniform samplerCube ScatteringCubemap;
+    uniform samplerCube ScatteringIBLDiffuse;
+    uniform samplerCube ScatteringIBLSpecular;
 #endif
 
 #if HAVE_PLUGIN(AO)
@@ -51,17 +52,14 @@ out vec4 result;
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
 
     // We compute roughness in the shader as:    
-    // float sample_roughness = current_mip * 0.1;
-    // So current_mip is sample_roughness / 0.1
+    // roughness = 0.03 + current_mip * 0.07
+    // So current_mip is (roughness - 0.03) / 0.07
 
-    roughness = pow(roughness, 1 / 2.0);
-
-    int num_mipmaps = get_mipmap_count(map);
+    // int num_mipmaps = get_mipmap_count(map);
 
     // Increase mipmap at extreme roughness, linear doesn't work well there
     // reflectivity += (0.1 - min(0.1, roughness) ) / 0.1 * 20.0;
-    // return sqrt(roughness) * 8.0;
-    return roughness * 7.0;
+    return (roughness - 0.03) / 0.09;
 }
 
 
@@ -117,13 +115,13 @@ void main() {
         #if HAVE_PLUGIN(Scattering)
 
             // Get scattering mipmap
-            float scat_mipmap = get_mipmap_for_roughness(ScatteringCubemap, m.roughness) + mipmap_bias;
+            float scat_mipmap = get_mipmap_for_roughness(ScatteringIBLSpecular, m.roughness) + mipmap_bias;
 
             // Sample prefiltered scattering cubemap
-            ibl_specular = textureLod(ScatteringCubemap, reflected_dir, scat_mipmap).xyz;
+            ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz;
 
-            // Cheap irradiance
-            ibl_diffuse = textureLod(ScatteringCubemap, m.normal, 6).xyz;
+            // Diffuse IBL
+            ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
         #endif
     
         // Pre-Integrated environment BRDF
@@ -136,7 +134,7 @@ void main() {
 
         // Diffuse ambient term
         // TODO: lambertian brdf doesn't look well?
-        vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic) /* * brdf_lambert() */;
+        vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic);
 
         // Add diffuse and specular ambient term
         ambient = diffuse_ambient + specular_ambient;
@@ -150,7 +148,7 @@ void main() {
 
             // Sample precomputed occlusion and multiply the ambient term with it
             float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
-            ambient *= saturate(pow(occlusion, 3.0));
+            // ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
 
@@ -178,5 +176,5 @@ void main() {
         ambient *= (1.0 - scene_color.w);
     #endif
 
-    result = scene_color * 1 + vec4(ambient, 1) * 1;
+    result = scene_color * 0 + vec4(ambient, 1) * 1;
 }

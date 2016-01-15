@@ -109,3 +109,5 @@ class Image(DebugObject):
     def get_texture(self):
         """ Returns a handle to the texture """
         return self._tex
+
+    texture = property(get_texture)
