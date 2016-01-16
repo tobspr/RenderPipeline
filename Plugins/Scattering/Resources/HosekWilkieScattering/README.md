@@ -14,13 +14,13 @@ In case you want to generate the lookup texture yourself, you need to first
 compile the code (see below), and then run the program.
 The program will ask you for a turbidity and ground albedo, using
 `turbidity=3.0` and `groundAlbedo=0.1` is a good starting point.
-After the program generated the LUT, copy it over so that
-`Plugins/Scattering/Resources/HosekWilkieScattering/ScatteringLUT.png` exists.
 
 ### Compilation
 
 Just run `python update_module_builder.py`, after that you should see a `build.py`,
-run it with `python build.py` to generate the module.
+run it with `python build.py` to generate the module. When the compilation succeeded,
+run `python generate_table.py` to generate the LUT. After that you can use the
+scattering method in the pipeline.
 
 
 ### License

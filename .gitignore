@@ -36,7 +36,6 @@ Code/Native/build.py
 Code/Native/Source/Interrogate*
 Code/Native/CMakeLists.txt
 
-
 # --- Ignored files ---
 TODO.txt
 desktop.ini
