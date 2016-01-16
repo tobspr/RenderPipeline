@@ -71,11 +71,3 @@ class ShadowStage(RenderStage):
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

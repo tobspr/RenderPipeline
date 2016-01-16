@@ -124,11 +124,3 @@ class BloomStage(RenderStage):
         # Special case for the first firefly remove target
         if name == "ShadedScene":
             self._target_firefly_x.set_shader_input("SourceTex", handle)
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

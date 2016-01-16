@@ -98,11 +98,3 @@ class AutoExposureStage(RenderStage):
         mip_shader = self._load_plugin_shader("DownscaleLuminance.frag.glsl")
         for target in self._mip_targets:
             target.set_shader(mip_shader)
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

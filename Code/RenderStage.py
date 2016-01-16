@@ -128,16 +128,6 @@ class RenderStage(DebugObject):
         """ This method should setup the stage and create the pipes """
         raise NotImplementedError()
 
-    def resize(self):
-        """ This method gets called when the window resizes and should upate the
-        pipes """
-        raise NotImplementedError()
-
-    def cleanup(self):
-        """ This method should completely cleanup the stage and delete all used
-        textures and render passes """
-        raise NotImplementedError()
-
     def set_shaders(self):
         """ This method should set all required shaders, there should be no
         shaders set in the create method, because the shader auto config is not

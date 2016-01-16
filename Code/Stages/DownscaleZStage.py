@@ -85,11 +85,3 @@ class DownscaleZStage(RenderStage):
         for target in self._mip_targets:
             target.set_shader(mip_shader)
         self._target_copy.set_shader(self._load_shader("Stages/CopyZBuffer.frag"))
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")
