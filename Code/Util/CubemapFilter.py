@@ -152,7 +152,6 @@ class CubemapFilter(DebugObject):
         self._diffuse_target = self._stage._create_target(self._name + "DiffuseIBL")
         self._diffuse_target.set_size(CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
             CubemapFilter.PREFILTER_CUBEMAP_SIZE)
-        self._diffuse_target.add_color_texture()
         self._diffuse_target.prepare_offscreen_buffer()
 
         self._diffuse_target.set_shader_input("SourceCubemap", self._specular_map.texture)
@@ -164,7 +163,6 @@ class CubemapFilter(DebugObject):
         self._diff_filter_target = self._stage._create_target(self._name + "DiffPrefIBL")
         self._diff_filter_target.set_size(CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
-        self._diff_filter_target.add_color_texture()
         self._diff_filter_target.prepare_offscreen_buffer()
 
         self._diff_filter_target.set_shader_input("SourceCubemap", self._prefilter_map.texture)

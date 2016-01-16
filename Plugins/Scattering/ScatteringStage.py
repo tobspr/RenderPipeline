@@ -72,11 +72,8 @@ class ScatteringStage(RenderStage):
             self._load_plugin_shader("ApplyScattering.frag.glsl"))
         self._target_cube.set_shader(
             self._load_plugin_shader("ScatteringEnvmap.frag.glsl"))
-
         self._filter.set_shaders()
-        # mip_shader = self._load_plugin_shader("DownsampleEnvmap.frag.glsl")
-        # for target in self._mip_targets:
-        #     target.set_shader(mip_shader)
+
 
     def resize(self):
         RenderStage.resize(self)

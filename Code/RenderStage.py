@@ -155,6 +155,11 @@ class RenderStage(DebugObject):
         stages to perform custom updates """
         pass
 
+    def set_active(self, active):
+        """ Enables or disables all targets bound to this stage """
+        for target in self._targets.values():
+            target.set_active(active)
+
     def _make_cubemap_filter(self, *args):
         """ Creates a new CubemapFilter with the given args and returns it """
         return CubemapFilter(self, *args)

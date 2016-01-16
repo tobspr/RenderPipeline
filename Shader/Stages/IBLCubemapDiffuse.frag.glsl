@@ -36,8 +36,6 @@ uniform samplerCube SourceCubemap;
 uniform writeonly imageCube RESTRICT DestCubemap;
 uniform int cubeSize;
 
-out vec4 result;
-
 void main() {
     const int sample_count = 64;
 
@@ -78,5 +76,4 @@ void main() {
     accum /= weights;
 
     imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(accum, 1) );
-    result = vec4(accum, 1);
 }
