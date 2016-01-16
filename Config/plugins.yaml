@@ -8,29 +8,34 @@
 
 enabled: 
     - Scattering
+    - AO
+    - Bloom
+    - ColorCorrection
+    - PSSM
+    - SMAA
 
 overrides: 
     AO.alchemy_max_distance: 4.08
-    AO.alchemy_num_samples: 32
+    AO.alchemy_num_samples: 8
     AO.alchemy_sample_radius: 92.78
     AO.blur_depth_factor: 1.2
     AO.blur_normal_factor: 1.53
     AO.hbao_max_distance: 8.23
-    AO.hbao_ray_count: 12
+    AO.hbao_ray_count: 8
     AO.hbao_ray_steps: 3
     AO.hbao_sample_radius: 97.17
     AO.hbao_tangent_bias: 0.6889
     AO.occlusion_strength: 1.21
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 6.56
-    AO.ssao_sample_count: 32
+    AO.ssao_sample_count: 8
     AO.ssao_sample_radius: 119.11
     AO.ssvo_max_distance: 1.49
-    AO.ssvo_sample_count: 32
+    AO.ssvo_sample_count: 8
     AO.ssvo_sphere_radius: 11.34556
-    AO.technique: SSAO
+    AO.technique: SSVO
     AO.ue4ao_max_distance: 4.3
-    AO.ue4ao_sample_count: 32
+    AO.ue4ao_sample_count: 8
     AO.ue4ao_sample_radius: 145.44
     Bloom.bloom_strength: 2.34
     Bloom.minimum_luminance: 15.0

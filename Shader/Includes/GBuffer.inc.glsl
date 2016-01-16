@@ -184,9 +184,11 @@
 
             // OPTIONAL: Just recover it from the world space normal.
             // This has the advantage that it does include normal mapping.
-            vec3 world_normal = get_gbuffer_normal(GBuffer, coord);
-            return world_normal_to_view(world_normal);
-            
+            #if 1
+                vec3 world_normal = get_gbuffer_normal(GBuffer, coord);
+                return world_normal_to_view(world_normal);
+            #endif
+
             vec2 pixel_size = 1.0 / SCREEN_SIZE;
             vec3 view_pos = get_view_pos_at(coord);
 

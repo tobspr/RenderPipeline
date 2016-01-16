@@ -51,6 +51,8 @@ class TexturePreview(DraggableWindow):
         """ "Presents" a given texture and shows the window """
         self._current_tex = tex
 
+        self.set_title(tex.get_name())
+
         # Remove old content
         self._content_node.node().remove_all_children()
 

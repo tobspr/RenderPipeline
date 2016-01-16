@@ -55,11 +55,12 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
     // roughness = 0.03 + current_mip * 0.07
     // So current_mip is (roughness - 0.03) / 0.07
 
+    roughness = sqrt(roughness);
     // int num_mipmaps = get_mipmap_count(map);
 
     // Increase mipmap at extreme roughness, linear doesn't work well there
     // reflectivity += (0.1 - min(0.1, roughness) ) / 0.1 * 20.0;
-    return (roughness - 0.03) / 0.09;
+    return roughness / 0.1;
 }
 
 
@@ -98,8 +99,8 @@ void main() {
         float NxV = max(1e-5, dot(m.normal, view_vector));
 
         // OPTIONAL: Increase mipmap level at grazing angles to decrease aliasing
-        float mipmap_bias = saturate(pow(1.0 - NxV, 5.0)) * 3.0;
-        mipmap_bias = 0.0;
+        // float mipmap_bias = saturate(pow(1.0 - NxV, 5.0)) * 3.0;
+        float mipmap_bias = 0.0;
 
         // Get mipmap offset for the material roughness
         float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
@@ -148,11 +149,11 @@ void main() {
 
             // Sample precomputed occlusion and multiply the ambient term with it
             float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
-            // ambient *= saturate(pow(occlusion, 3.0));
+            ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
 
-        ambient = ibl_diffuse;
+        // ambient = ibl_specular;
 
     } else {
         // Optionally just display the environment texture
@@ -178,5 +179,5 @@ void main() {
         ambient *= (1.0 - scene_color.w);
     #endif
 
-    result = scene_color * 0 + vec4(ambient, 1) * 1;
+    result = scene_color * 1 + vec4(ambient, 1) * 1;
 }

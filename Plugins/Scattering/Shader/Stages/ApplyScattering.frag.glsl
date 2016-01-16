@@ -54,7 +54,7 @@ void main() {
 
     // Cloud color
     if (is_skybox(m, MainSceneData.camera_pos) && view_vector.z > - MainSceneData.camera_pos.z * 0.0 - 0.025) {
-        vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
+        // vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
         // inscattered_light += pow(cloud_color.y, 1.5) * TimeOfDay.Scattering.sun_intensity *
                                 // TimeOfDay.Scattering.sun_color * 2.0;
 

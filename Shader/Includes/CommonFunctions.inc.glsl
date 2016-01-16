@@ -78,16 +78,20 @@ vec3 texcoord_to_cubemap(int cubemap_size, ivec2 coord) {
 }
 
 
-// Rotate a vector by an angle
-vec2 rotate(vec2 vector, float angle) {
-    float cos_alpha = cos(angle);
-    float sin_alpha = sin(angle);
+// Rotate a vector by a given sinus and cosinus of an angle
+vec2 rotate(vec2 vector, float cos_alpha, float sin_alpha) {
     return vec2(
         vector.x * cos_alpha - vector.y * sin_alpha,
         vector.x * sin_alpha + vector.y * cos_alpha 
     );
 }
 
+// Rotate a vector by an angle
+vec2 rotate(vec2 vector, float angle) {
+    float cos_alpha = cos(angle);
+    float sin_alpha = sin(angle);
+    return rotate(vector, cos_alpha, sin_alpha);
+}
 
 // Returns a coordinate which can be used for bilateral upscaling
 ivec2 get_bilateral_coord(ivec2 coord) {
@@ -101,7 +105,7 @@ bool out_of_screen(vec2 tcoord) {
 
 // Finds a tangent and bitangent vector based on a given normal
 void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
-    vec3 v0 = abs(normal.z) < 0.99 ? vec3(0, 0, 1) : vec3(0, 1, 0);
+    vec3 v0 = abs(normal.z) < (1-1e-9) ? vec3(0, 0, 1) : vec3(0, 1, 0);
     tangent = normalize(cross(v0, normal));
     bitangent = normalize(cross(tangent, normal));
 }
@@ -143,6 +147,14 @@ void vector_to_spherical(vec3 v, out float theta, out float phi, out float radiu
     phi = acos(v.z / radius);
     theta = atan(v.y, v.x) + M_PI; 
 }
+
+// Convertsa normalized vector to spherical coordinates
+void vector_to_spherical(vec3 v, out float theta, out float phi) {
+    phi = acos(v.z);
+    theta = atan(v.y, v.x) + M_PI;
+}
+
+
 
 // Converts a given sun azimuth and altitude to a direction vector
 vec3 sun_azimuth_to_angle(float azimuth, float altitude) {
@@ -229,6 +241,10 @@ float blend_ior(float material_specular, float sampled_specular) {
 #define get_half_native_texcoord() vec2( (ivec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE/2) )
 
 
-// float roughness_to_mip(float roughness)  {
-//      return roughness 
-// }
+float degree_to_radians(float degree) {
+    return degree / 180.0 * M_PI;
+}
+
+float radians_to_degree(float radians) {
+    return radians / M_PI * 180.0;
+}

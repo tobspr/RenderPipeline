@@ -179,11 +179,12 @@ void getIrradianceRMuS(out float r, out float muS) {
 
 vec4 texture4D(sampler3D table, float r, float mu, float muS, float nu)
 {
-    float H = sqrt(Rt * Rt - Rg * Rg);
-    float rho = sqrt(r * r - Rg * Rg);
+    float Rg_sq = Rg * Rg;
+    float H = sqrt(Rt * Rt - Rg_sq);
+    float rho = sqrt(r * r - Rg_sq);
 #ifdef INSCATTER_NON_LINEAR
     float rmu = r * mu;
-    float delta = rmu * rmu - r * r + Rg * Rg;
+    float delta = rmu * rmu - r * r + Rg_sq;
     vec4 cst = rmu < 0.0 && delta > 0.0 ? vec4(1.0, 0.0, 0.0, 0.5 - 0.5 / float(RES_MU)) : vec4(-1.0, H * H, H, 0.5 + 0.5 / float(RES_MU));
     float uR = 0.5 / float(RES_R) + rho / H * (1.0 - 1.0 / float(RES_R));
     float uMu = cst.w + (rmu * cst.x + sqrt(delta + cst.y)) / (rho + cst.z) * (0.5 - 1.0 / float(RES_MU));

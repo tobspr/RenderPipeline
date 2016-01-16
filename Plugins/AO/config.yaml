@@ -71,8 +71,8 @@ settings: !!omap
     - ssao_sample_count:
         display_if: {technique: "SSAO"}
         type: int
-        range: [1, 32]
-        default: 32
+        range: [1, 8]
+        default: 8
         shader_runtime: true
         label: SSAO Sample Count
         description: >
@@ -118,8 +118,8 @@ settings: !!omap
     - hbao_ray_count:
         display_if: {technique: "HBAO"}
         type: int
-        range: [3, 32]
-        default: 16
+        range: [1, 8]
+        default: 4
         shader_runtime: true
         label: HBAO Ray count
         description: >
@@ -161,8 +161,8 @@ settings: !!omap
     - ssvo_sample_count:
         display_if: {technique: "SSVO"}
         type: int
-        range: [1, 32]
-        default: 16
+        range: [1, 8]
+        default: 4
         shader_runtime: true
         label: SSVO Sample Count
         description: >
@@ -208,8 +208,8 @@ settings: !!omap
     - alchemy_num_samples:
         display_if: {technique: "ALCHEMY"}
         type: int
-        range: [4, 32]
-        default: 16
+        range: [2, 8]
+        default: 4
         shader_runtime: true
         label: ALCHEMY Sample Count
         description: >
@@ -244,8 +244,8 @@ settings: !!omap
     - ue4ao_sample_count:
         display_if: {technique: "UE4AO"}
         type: int
-        range: [4, 32]
-        default: 16
+        range: [4, 8]
+        default: 4
         shader_runtime: true
         label: UE4AO Sample Count
         description: >

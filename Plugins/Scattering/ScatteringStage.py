@@ -48,11 +48,11 @@ class ScatteringStage(RenderStage):
         }
 
     def create(self):
-        self._target = self._create_target("Scattering:SkyboxScattering")
+        self._target = self._create_target("Scattering:ApplyScattering")
         self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 
-        self._filter = self._make_cubemap_filter("ScatteringEnv")
+        self._filter = self._make_cubemap_filter("Scattering:CM")
 
         self._target_cube = self._create_target("Scattering:EnvironmentCubemap")
         # self._target_cube.add_color_texture()

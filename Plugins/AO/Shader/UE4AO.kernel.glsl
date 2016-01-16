@@ -37,13 +37,13 @@ unocluded vector.
 */
 
 const float sample_radius = GET_SETTING(AO, ue4ao_sample_radius);
-const int num_samples = GET_SETTING(AO, ue4ao_sample_count) / 4;
+const int num_samples = GET_SETTING(AO, ue4ao_sample_count);
 const float max_distance = GET_SETTING(AO, ue4ao_max_distance);
 
 float accum = 0.0;
 float accum_count = 0.0;
 
-vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.5;
+vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.4;
 
 for (int i = 0; i < num_samples; ++i) {
     

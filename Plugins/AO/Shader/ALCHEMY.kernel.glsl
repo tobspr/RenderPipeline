@@ -36,14 +36,14 @@ to approximate AO.
 
 
 const float sample_radius = GET_SETTING(AO, alchemy_sample_radius);
-const int num_samples = GET_SETTING(AO, alchemy_num_samples) / 4;
+const int num_samples = GET_SETTING(AO, alchemy_num_samples);
 float max_dist = GET_SETTING(AO, alchemy_max_distance);
 float accum = 0.0;
 float accum_count = 0;
 
 vec3 bent_normal = vec3(0);
 
-vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.7;
+vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.5;
 
 for (int i = 0; i < num_samples; ++i) {
 

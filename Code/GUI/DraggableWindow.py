@@ -100,7 +100,7 @@ class DraggableWindow(DebugObject):
                                       parent=self._node, state=DGG.NORMAL)
         self._window_title = BetterOnscreenText(parent=self._node, x=12, y=29,
                                                 text=self._title, size=19,
-                                                color=Vec3(0.7))
+                                                color=Vec3(0.7), may_change=True)
         self._btn_close = DirectButton(relief=DGG.FLAT, pressEffect=1,
                                        pos=(self._width - 22, 1, -22),
                                        frameColor=(0, 0, 0, 0),
