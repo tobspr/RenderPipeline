@@ -15,10 +15,11 @@
 *.exr
 *.trace
 
-# --- Ignored folders ---
+# --- Ignored folders and patterns ---
 Temp/
 Models/
 Data/NormalQuantization/*.png
+Data/PrecomputedGrain/*.png
 Data/DefaultCubemap/Filtered/
 Native/Windows_x64/
 Native/Windows_x32/
@@ -26,20 +27,9 @@ Native/Linux
 Native/Source/Interrogate*
 _DEV
 Toolkit/PathtracingReference/Mitsuba/
-Plugins/Scattering/Resources/HosekWilkieScattering/Windows_x64/
-Plugins/Scattering/Resources/HosekWilkieScattering/Windows_x32/
-Plugins/Scattering/Resources/HosekWilkieScattering/ScatteringLUT.png
-
-# --- Module builder ---
-Code/Native/Scripts/
-Code/Native/build.py
-Code/Native/Source/Interrogate*
-Code/Native/CMakeLists.txt
 
 # --- Ignored files ---
 TODO.txt
+*.flag
 desktop.ini
-Data/install.flag
-Code/Native/PythonImpl/RSNativePython.py
-Code/Native/use_cxx.flag
-Data/PrecomputedGrain/grain.png
+ScatteringLUT.png
