@@ -1,3 +1,5 @@
+[![Code Climate](https://codeclimate.com/github/tobspr/RenderPipeline/badges/gpa.svg)](https://codeclimate.com/github/tobspr/RenderPipeline)
+
 <img src="http://i.imgur.com/0MZy5BO.png" />
 
 ### Core Features
