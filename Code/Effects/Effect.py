@@ -42,6 +42,7 @@ class Effect(DebugObject):
     _DEFAULT_OPTIONS = {
         "render_gbuffer": True,
         "render_shadows": True,
+        "render_voxel": True,
         "alpha_testing": True,
         "normal_mapping": True,
         "parallax_mapping": False,

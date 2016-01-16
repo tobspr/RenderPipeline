@@ -118,3 +118,12 @@ class PipelineExtensions(object):
             self._tag_mgr.apply_shadow_state(
                 nodepath, shader, str(effect.get_effect_id()), 25 + sort)
             nodepath.show(self._tag_mgr.get_shadow_mask())
+
+        # Apply voxelization stage shader
+        if not effect.get_option("render_voxel"):
+            nodepath.hide(self._tag_mgr.get_voxelize_mask())
+        else:
+            shader = effect.get_shader_obj("Voxelize")
+            self._tag_mgr.apply_voxelize_state(
+                nodepath, shader, str(effect.get_effect_id()), 35 + sort)
+            nodepath.show(self._tag_mgr.get_voxelize_mask())

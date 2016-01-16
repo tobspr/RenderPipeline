@@ -7,6 +7,7 @@
 
 
 enabled: 
+    - VXGI
     - Scattering
     - AO
     - Bloom

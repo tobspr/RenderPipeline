@@ -49,7 +49,6 @@ from Code.RenderStage import RenderStage
 from Code.RenderTarget import RenderTarget
 from Code.Globals import Globals
 
-
 # Import all stages as a module, this is used for the get_internal_stage
 from Code.Stages import *
 

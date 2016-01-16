@@ -99,7 +99,7 @@ class RenderStage(DebugObject):
             return self.required_inputs
         return []
 
-    def get_input_pipes(self):
+    def get_required_pipes(self):
         """ This method should return which pipes are required for this stage.
         The key specifies the name under they will be available in the shader,
         while the value specifies the name of the pipe """

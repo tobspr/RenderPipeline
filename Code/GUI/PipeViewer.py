@@ -166,7 +166,7 @@ class PipeViewer(DraggableWindow):
                         y=130 + pipe_idx * pipe_height, color=Vec3(0.2),
                         size=12, align="center")
 
-            for input_pipe in stage.get_input_pipes():
+            for input_pipe in stage.get_required_pipes():
                 idx = current_pipes.index(input_pipe)
                 r, g, b = rgb_from_string(input_pipe)
                 DirectFrame(parent=node, frameSize=(0, 10, 40, -40),
