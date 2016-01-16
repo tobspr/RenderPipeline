@@ -31,7 +31,7 @@ overrides:
     AO.ssao_sample_count: 8
     AO.ssao_sample_radius: 119.11
     AO.ssvo_max_distance: 1.49
-    AO.ssvo_sample_count: 8
+    AO.ssvo_sample_count: 4
     AO.ssvo_sphere_radius: 11.34556
     AO.technique: SSVO
     AO.ue4ao_max_distance: 4.3

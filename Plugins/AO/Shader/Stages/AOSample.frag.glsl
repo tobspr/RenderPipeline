@@ -50,11 +50,11 @@ void main() {
     vec2 screen_size = vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     vec2 pixel_size = vec2(1.0) / screen_size;
 
-    int ox = instance % 2;
-    int oy = instance / 2;
+    int quad_x = instance % 2;
+    int quad_y = instance / 2;
     float disk_rotate = (instance / 4.0) * TWO_PI;
 
-    ivec2 coord = ivec2(gl_FragCoord.xy) * 2 - ivec2(ox, oy) * SCREEN_SIZE_INT;
+    ivec2 coord = ivec2(gl_FragCoord.xy) * 2 - ivec2(quad_x, quad_y) * SCREEN_SIZE_INT;
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
     // Shader variables
@@ -67,7 +67,7 @@ void main() {
     vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = distance(pixel_world_pos, MainSceneData.camera_pos);
 
-    vec3 noise_vec = texelFetch(Noise4x4, ivec2(gl_FragCoord.xy) % 4, 0).xyz * 2.0 - 1.0;
+    vec3 noise_vec = fma(texelFetch(Noise4x4, ivec2(gl_FragCoord.xy) % 4, 0).xyz, vec3(2), vec3(-1));
 
     if (view_dist > 10000.0) {
         result = vec4(1);
@@ -79,29 +79,17 @@ void main() {
 
     // Include the appropriate kernel
     #if ENUM_V_ACTIVE(AO, technique, SSAO)
-
         #pragma include "../SSAO.kernel.glsl"
-
     #elif ENUM_V_ACTIVE(AO, technique, HBAO)
-
         #pragma include "../HBAO.kernel.glsl"
-
     #elif ENUM_V_ACTIVE(AO, technique, SSVO)
-
         #pragma include "../SSVO.kernel.glsl"
-
     #elif ENUM_V_ACTIVE(AO, technique, ALCHEMY)
-
         #pragma include "../ALCHEMY.kernel.glsl"
-
     #elif ENUM_V_ACTIVE(AO, technique, UE4AO)
-
         #pragma include "../UE4AO.kernel.glsl"
-
     #else
-
         #error Unkown AO technique!
-
     #endif
 
     result.w = pow(result.w, GET_SETTING(AO, occlusion_strength));

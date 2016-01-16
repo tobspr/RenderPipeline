@@ -56,5 +56,5 @@ void main() {
 
     // Actual Fragment shader
     result = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, EdgeTex, AreaTex, SearchTex, subsampleIndices);
-    
+   
 }

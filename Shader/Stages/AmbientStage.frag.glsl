@@ -50,20 +50,8 @@ uniform samplerCube DefaultEnvmap;
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
-
-    // We compute roughness in the shader as:    
-    // roughness = 0.03 + current_mip * 0.07
-    // So current_mip is (roughness - 0.03) / 0.07
-
-    roughness = sqrt(roughness);
-    // int num_mipmaps = get_mipmap_count(map);
-
-    // Increase mipmap at extreme roughness, linear doesn't work well there
-    // reflectivity += (0.1 - min(0.1, roughness) ) / 0.1 * 20.0;
-    return roughness / 0.1;
+    return roughness / 0.1 + 1;
 }
-
-
 
 void main() {
 
@@ -87,9 +75,8 @@ void main() {
         vec3 reflected_dir = reflect(-view_vector, m.normal);
 
         // Bend normal depending on roughness
-        float bend = m.roughness;
         reflected_dir = mix(m.normal, reflected_dir, 
-            (1 - bend) * (bend + sqrt(1 - bend)));
+            (1 - m.roughness) * (m.roughness + sqrt(1 - m.roughness)));
 
         // Get environment coordinate, cubemaps have a different coordinate
         // system
@@ -152,15 +139,7 @@ void main() {
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
-
-        // ambient = ibl_specular;
-
-    } else {
-        // Optionally just display the environment texture
-        // ambient = textureLod(DefaultEnvmap,  fix_cubemap_coord(-view_vector), 0).xyz;
-        // ambient = pow(ambient, vec3(2.2));
     }
-
     #endif
 
     #if DEBUG_MODE

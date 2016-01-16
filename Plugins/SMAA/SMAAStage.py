@@ -83,7 +83,7 @@ class SMAAStage(RenderStage):
 
         # Edge detection
         self._edge_target = self._create_target("SMAA:EdgeDetection")
-        self._edge_target.add_color_texture(bits=16)
+        self._edge_target.add_color_texture()
         self._edge_target.prepare_offscreen_buffer()
         self._edge_target.set_clear_color(color=Vec4(0))
 
@@ -93,7 +93,7 @@ class SMAAStage(RenderStage):
 
         # Weight blending
         self._blend_target = self._create_target("SMAA:BlendWeights")
-        self._blend_target.add_color_texture(bits=16)
+        self._blend_target.add_color_texture(bits=8)
         self._blend_target.prepare_offscreen_buffer()
         self._blend_target.set_clear_color(color=Vec4(0))
 
