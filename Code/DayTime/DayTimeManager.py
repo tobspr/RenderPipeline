@@ -30,7 +30,7 @@ from six import iteritems
 from direct.stdpy.file import open
 
 from ..Util.DebugObject import DebugObject
-from ..Util.ShaderUBO import PTABasedUBO
+from ..Util.ShaderUBO import ShaderUBO
 from .DayTimeInterface import DayTimeInterface
 from ..BaseManager import BaseManager
 
@@ -46,7 +46,7 @@ class DayTimeManager(BaseManager):
             self._pipeline.plugin_mgr.get_interface())
         self._interface.set_base_dir(".")
         self._settings = {}
-        self._ubo = PTABasedUBO("TimeOfDay")
+        self._ubo = ShaderUBO("TimeOfDay")
         self._daytime = 0.5
 
     def load_settings(self):

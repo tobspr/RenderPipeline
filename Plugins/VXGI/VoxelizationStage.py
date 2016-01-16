@@ -3,6 +3,7 @@ from .. import *
 
 from panda3d.core import Camera, OrthographicLens, NodePath, CullFaceAttrib
 from panda3d.core import DepthTestAttrib, Vec4, PTALVecBase3, Vec3, Texture
+from panda3d.core import PTAInt, PTAFloat, ColorWriteAttrib
 
 class VoxelizationStage(RenderStage):
 
@@ -11,11 +12,33 @@ class VoxelizationStage(RenderStage):
     required_inputs = []
     required_pipes = []
 
+    # The different states of voxelization
+    S_disabled = 0
+    S_voxelize_x = 1
+    S_voxelize_y = 2
+    S_voxelize_z = 3
+    S_gen_mipmaps = 4
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, "VoxelizationStage", pipeline)
         self._voxel_res = 256
         self._voxel_ws = 50.0
+        self._next_grid_position = Vec3(0)
+        self._state = self.S_disabled
+        self._create_ptas()
+
+    def set_state(self, state):
+        self._state = state
+
+    def set_grid_position(self, pos):
+        self._next_grid_position = pos
+
+    def _create_ptas(self):
         self._pta_grid_pos = PTALVecBase3.empty_array(1)
+        self._pta_grid_size = PTAFloat.empty_array(1)
+        self._pta_grid_res = PTAInt.empty_array(1)
+        self._pta_grid_size[0] = self._voxel_ws
+        self._pta_grid_res[0] = self._voxel_res
 
     def get_produced_inputs(self):
         return {"VoxelGridPosition": self._pta_grid_pos}
@@ -52,28 +75,52 @@ class VoxelizationStage(RenderStage):
         self._voxel_target.set_source(source_cam=self._voxel_cam_np, source_win=Globals.base.win)
         self._voxel_target.set_size(self._voxel_res, self._voxel_res)
         self._voxel_target.set_create_overlay_quad(False)
-        self._voxel_target.add_color_texture()
         self._voxel_target.prepare_scene_render()
 
         # Create the initial state used for rendering voxels
         initial_state = NodePath("VXInitialState")
         initial_state.set_attrib(CullFaceAttrib.make(CullFaceAttrib.M_cull_none), 100000)
         initial_state.set_attrib(DepthTestAttrib.make(DepthTestAttrib.M_none), 100000)
-        # initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off, 100000))
+        initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 100000)
         self._voxel_cam.set_initial_state(initial_state.get_state())
 
         Globals.base.render.set_shader_input("voxelGridPosition", self._pta_grid_pos)
+        Globals.base.render.set_shader_input("voxelGridRes", self._pta_grid_res)
+        Globals.base.render.set_shader_input("voxelGridSize", self._pta_grid_size)
         Globals.base.render.set_shader_input("VoxelGridDest", self._voxel_grid.texture)
 
-
     def update(self):
-        # Position voxelization camera
-        grid_position = Vec3(0, 40, 0)
-        self._voxel_cam_np.set_pos(grid_position)
-        self._voxel_cam_np.look_at(0, 0, 0)
-        self._pta_grid_pos[0] = grid_position
+        self._voxel_cam_np.show()
+        self._voxel_target.set_active(True)
 
-      
+        # Voxelization disable
+        if self._state == self.S_disabled:
+            self._voxel_cam_np.hide()
+            self._voxel_target.set_active(False)
+
+        # Voxelization from X-Axis
+        elif self._state == self.S_voxelize_x:
+            self._voxel_cam_np.set_pos(self._next_grid_position + Vec3(self._voxel_ws, 0, 0))
+            self._voxel_cam_np.look_at(self._next_grid_position)
+
+        # Voxelization from Y-Axis
+        elif self._state == self.S_voxelize_y:
+            self._voxel_cam_np.set_pos(self._next_grid_position + Vec3(0, self._voxel_ws, 0))
+            self._voxel_cam_np.look_at(self._next_grid_position)
+
+        # Voxelization from Z-Axis
+        elif self._state == self.S_voxelize_z:
+            self._voxel_cam_np.set_pos(self._next_grid_position + Vec3(0, 0, self._voxel_ws))
+            self._voxel_cam_np.look_at(self._next_grid_position)
+
+        # Generate mipmaps
+        elif self._state == self.S_gen_mipmaps:
+            self._voxel_target.set_active(False)
+            self._voxel_cam_np.hide()
+            
+            # As soon as we generate the mipmaps, we need to update the grid position
+            # as well
+            self._pta_grid_pos[0] = self._next_grid_position
 
     def set_shaders(self):
         pass

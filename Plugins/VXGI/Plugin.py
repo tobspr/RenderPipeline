@@ -34,7 +34,20 @@ class Plugin(BasePlugin):
     def setup_stages(self):
         self._voxel_stage = self.create_stage(VoxelizationStage)
 
+    @PluginHook("pre_render_update")
+    def update(self):
+        self._queue.exec_next_task()
+
     @PluginHook("on_pipeline_created")
     def on_created(self):
-        pass
+        self._queue = RepeatedTaskQueue()
+        self._queue.add(self._voxelize_x, self._voxelize_y, self._voxelize_z)
 
+    def _voxelize_x(self):
+        self._voxel_stage.set_state(VoxelizationStage.S_voxelize_x)
+
+    def _voxelize_y(self):
+        self._voxel_stage.set_state(VoxelizationStage.S_voxelize_y)
+
+    def _voxelize_z(self):
+        self._voxel_stage.set_state(VoxelizationStage.S_voxelize_z)

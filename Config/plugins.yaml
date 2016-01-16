@@ -89,4 +89,5 @@ overrides:
     Scattering.mie_height_scale: 1.45
     Scattering.mie_phase_factor: 0.21
     Scattering.scattering_method: eric_bruneton
+    VXGI.some_float_setting: 2.9
 

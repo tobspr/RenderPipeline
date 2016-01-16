@@ -45,6 +45,8 @@ from Code.PluginInterface.PluginHook import PluginHook, SettingChanged
 from Code.Util.Image import Image
 from Code.Util.DebugObject import DebugObject
 from Code.Util.SliceLoader import SliceLoader
+from Code.Util.ShaderUBO import ShaderUBO
+from Code.Util.RepeatedTaskQueue import RepeatedTaskQueue
 from Code.RenderStage import RenderStage
 from Code.RenderTarget import RenderTarget
 from Code.Globals import Globals

@@ -32,7 +32,7 @@ from .Util.DebugObject import DebugObject
 from .Globals import Globals
 from .BaseManager import BaseManager
 
-from .Util.ShaderUBO import PTABasedUBO
+from .Util.ShaderUBO import ShaderUBO
 
 class CommonResources(BaseManager):
 
@@ -60,7 +60,7 @@ class CommonResources(BaseManager):
         """ Creates commonly used shader inputs such as the current mvp and
         registers them to the stage manager so they can be used for rendering """
 
-        self._input_ubo = PTABasedUBO("MainSceneData")
+        self._input_ubo = ShaderUBO("MainSceneData")
         self._input_ubo.register_pta("camera_pos", "vec3")
         self._input_ubo.register_pta("view_proj_mat_no_jitter", "mat4")
         self._input_ubo.register_pta("last_view_proj_mat_no_jitter", "mat4")
