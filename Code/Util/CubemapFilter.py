@@ -12,7 +12,8 @@ class CubemapFilter(DebugObject):
     a specular and diffuse IBL cubemap. """
 
     # Fixed size for the diffuse cubemap, since it does not contain much detail
-    DIFFUSE_CUBEMAP_SIZE = 32
+    DIFFUSE_CUBEMAP_SIZE = 64
+    PREFILTER_CUBEMAP_SIZE = 10
 
     def __init__(self, parent_stage, name="Cubemap", size=256):
         """ Inits the filter from a given stage """
@@ -53,19 +54,22 @@ class CubemapFilter(DebugObject):
         """ Creates the filter. The input cubemap should be mipmapped, and will
         get reused for the specular cubemap. """
         self._make_specular_targets()
-        self._make_diffuse_target()
+        self._make_prefilter_target()
 
     def _make_maps(self):
         """ Internal method to create the cubemap storage """
         # Create the cubemaps for the diffuse and specular components
-        self._diffuse_map = Image.create_cube(self._name + "IBLDiff",
+        self._prefilter_map = Image.create_cube(self._name + "IBLPrefDiff",
                                               CubemapFilter.DIFFUSE_CUBEMAP_SIZE,
+                                              Texture.T_float, Texture.F_r11_g11_b10)
+        self._diffuse_map = Image.create_cube(self._name + "IBLDiff",
+                                              8,
                                               Texture.T_float, Texture.F_r11_g11_b10)
         self._specular_map = Image.create_cube(self._name + "IBLSpec", self._size,
                                                Texture.T_float, Texture.F_r11_g11_b10)
 
         # Set the correct filtering modes
-        for tex in [self._diffuse_map, self._specular_map]:
+        for tex in [self._diffuse_map, self._specular_map, self._prefilter_map]:
             tex.get_texture().set_minfilter(Texture.FT_linear)
             tex.get_texture().set_magfilter(Texture.FT_linear)
 
@@ -95,22 +99,34 @@ class CubemapFilter(DebugObject):
             mip += 1
             self._targets_spec.append(target)
 
-    def _make_diffuse_target(self):
+    def _make_prefilter_target(self):
         """ Internal method to create the diffuse cubemap """
-        self._diffuse_target = self._stage._create_target(self._name + "DiffuseIBL")
-        self._diffuse_target.set_size(CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
+        self._prefilter_target = self._stage._create_target(self._name + "DiffPrefIBL")
+        self._prefilter_target.set_size(CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
+        self._prefilter_target.add_color_texture()
+        self._prefilter_target.prepare_offscreen_buffer()
+
+        self._prefilter_target.set_shader_input("SourceCubemap", self._specular_map.texture)
+        self._prefilter_target.set_shader_input("DestCubemap", self._prefilter_map.texture)
+
+        self._diffuse_target = self._stage._create_target(self._name + "DiffuseIBL")
+        self._diffuse_target.set_size(CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
+            CubemapFilter.PREFILTER_CUBEMAP_SIZE)
         self._diffuse_target.add_color_texture()
         self._diffuse_target.prepare_offscreen_buffer()
 
-        self._diffuse_target.set_shader_input("SourceCubemap", self._specular_map.texture)
+        self._diffuse_target.set_shader_input("SourceCubemap", self._prefilter_map.texture)
         self._diffuse_target.set_shader_input("DestCubemap", self._diffuse_map.texture)
 
     def set_shaders(self):
         """ Sets all required shaders on the filter. """
-        self._diffuse_target.set_shader(
+        self._prefilter_target.set_shader(
             self._stage._load_shader("Stages/IBLCubemapDiffuse.frag"))
+        self._diffuse_target.set_shader(
+            self._stage._load_shader("Stages/IBLCubemapPrefilter.frag"))
 
         mip_shader = self._stage._load_shader("Stages/IBLCubemapSpecular.frag")
         for target in self._targets_spec:
             target.set_shader(mip_shader)
+

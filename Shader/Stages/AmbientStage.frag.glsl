@@ -152,6 +152,8 @@ void main() {
 
         #endif
 
+        ambient = ibl_diffuse;
+
     } else {
         // Optionally just display the environment texture
         // ambient = textureLod(DefaultEnvmap,  fix_cubemap_coord(-view_vector), 0).xyz;

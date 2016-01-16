@@ -7,12 +7,7 @@
 
 
 enabled: 
-    - AO
     - Scattering
-    - PSSM
-    - ColorCorrection
-    - Bloom
-    - SMAA
 
 overrides: 
     AO.alchemy_max_distance: 4.08
