@@ -45,11 +45,11 @@ You can find the documentation about the C++ modules here: <a target="_blank" hr
 **quboid Demo** (<a href="https://www.youtube.com/watch?v=9vXH9JaWsT4" target="_blank">Video</a>)
 <img src="http://i.imgur.com/o7xtp35.png" />
 
+** Terrain and volumetric clouds:**
+<img src="http://i.imgur.com/sob7MAP.png" />
+
 **Snowy terrain using the Pipeline and P3DFramework:**
 <img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
-
-**Some trees combined with atmospheric scattering:**
-<img src="http://i.imgur.com/EE5U4UR.png" />
 
 **Same trees, but at a different time of day:**
 <img src="https://img3.picload.org/image/pwrgpdc/289.png" />
