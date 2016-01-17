@@ -61,7 +61,7 @@ settings: !!omap
         display_if: {technique: "SSAO"}
         type: float
         range: [5, 400]
-        default: 50
+        default: 100
         shader_runtime: true
         label: SSAO Sample Radius
         description: >
@@ -108,7 +108,7 @@ settings: !!omap
         display_if: {technique: "HBAO"}
         type: float
         range: [5, 400]
-        default: 50
+        default: 100
         shader_runtime: true
         label: HBAO Sample Radius
         description: >
@@ -198,7 +198,7 @@ settings: !!omap
         display_if: {technique: "ALCHEMY"}
         type: float
         range: [5, 400]
-        default: 50
+        default: 100
         shader_runtime: true
         label: ALCHEMY Sample Radius
         description: >
@@ -234,7 +234,7 @@ settings: !!omap
         display_if: {technique: "UE4AO"}
         type: float
         range: [5, 400]
-        default: 50
+        default: 100
         shader_runtime: true
         label: UE4AO Sample Radius
         description: >

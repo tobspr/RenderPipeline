@@ -35,11 +35,9 @@ vec3 sun_vector = sun_azimuth_to_angle(
 uniform sampler3D ScatteringLUT;
 
 
+// Fetches the scattering value from the LUT
 vec3 get_scattering(vec3 surface_pos) {
-
     surface_pos = normalize(surface_pos);
-    // surface_pos.z = max(0.2, surface_pos.z);
-    // if (surface_pos.z < 0) return vec3(0.1, 0, 0);
 
     float elevation, theta, radius;
     vector_to_spherical(surface_pos, theta, elevation, radius);
@@ -53,7 +51,6 @@ vec3 get_scattering(vec3 surface_pos) {
     float elevation_factor = sun_elevation / max_angle_factor;
 
     float slice_index = 0.5 / 100.0 + elevation_factor; 
-
 
     float factor_x = theta;
     float factor_y = elevation;
@@ -70,28 +67,16 @@ vec3 get_scattering(vec3 surface_pos) {
 
     vec2 lut_coord = vec2(gamma / TWO_PI, 1 - (elevation / HALF_PI));
     vec3 value = textureLod(ScatteringLUT, vec3(lut_coord, slice_index), 0).xyz ;
-
-
-    // value = pow(value, vec3(1.5));
-    value = value - 0.005;
     value *= 25.0;
-
-    // value = value / (1 + value);
-
     value *= night_factor;
-
     return vec3(value);
 
 }
 
-
+// Fetches the scattering value at a given surface position
 vec3 get_scattering_at_surface(vec3 surface_pos) {
-
     vec3 vec_to_cam = vec3(surface_pos - MainSceneData.camera_pos);
-
     surface_pos.xy = vec2(vec_to_cam.xy * 0.6);
-    // surface_pos.xy /= surface_pos.z * 0.01;
-    // vec3 v = normalize(surface_pos);
     return get_scattering(surface_pos);
 }
 
@@ -106,17 +91,14 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
         view_dir = normalize(surface_pos - MainSceneData.camera_pos);
     }
 
-
     float path_length = distance(surface_pos, MainSceneData.camera_pos);
-
     vec3 inscatter = get_scattering(surface_pos);
-
     fog_factor = 1.0;
 
-    // surface
+    // Check if the ray is finite
     if (path_length < 20000.0) {
 
-        // integrate scattering
+        // Integrate scattering
         const int num_steps = 6;
         float curr_h = MainSceneData.camera_pos.z;
 
@@ -131,21 +113,14 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 
         accum /= float(num_steps);
 
+        // Exponential fog
         float fog_ramp = TimeOfDay.Scattering.fog_ramp_size;
-        float fog_start = TimeOfDay.Scattering.fog_start;
-
-        // fog_factor = smoothstep(0, 1, (path_length-fog_start) / fog_ramp);
-        fog_factor = smoothstep(0, 1, 1-exp( -(path_length-fog_start) / (0.5*fog_ramp) ) );
+        fog_factor = saturate(1.0 - exp( -path_length / (0.6*fog_ramp) ));
 
         // Exponential height fog
-        fog_factor *= exp(- pow( max(0,surface_pos.z), 1.2) / (5.0 * GET_SETTING(Scattering, ground_fog_factor) ));
-
-        // accum *= mix(TimeOfDay.Scattering.fog_brightness * 1.6, 1.0, saturate(path_length / 20000.0));
-        accum *= fog_factor;
-
-        inscatter = accum;
-
-        fog_factor = saturate(1.2 * fog_factor);
+        fog_factor *= exp(- pow( max(0,surface_pos.z), 1.2) / (5.0 * 4000.0));
+        inscatter = accum * 0.8;
+        fog_factor = saturate(1.1*fog_factor);
     }
 
     // return get_scattering(surfacePos);
@@ -153,4 +128,3 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 
     return inscatter;
 }
-
