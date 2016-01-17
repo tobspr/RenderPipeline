@@ -121,6 +121,11 @@ class SMAAStage(RenderStage):
             self._resolve_target.prepare_offscreen_buffer()
             self._resolve_target.set_shader_input("JitterIndex", self._jitter_index)
 
+            # Set initial textures
+            self._resolve_target.set_shader_input("CurrentTex", self._neighbor_targets[0]["color"])
+            self._resolve_target.set_shader_input("LastTex", self._neighbor_targets[1]["color"])
+
+
     def set_shaders(self):
         self._srgb_target.set_shader(self._load_plugin_shader("TemporarySRGB.frag.glsl"))
         self._edge_target.set_shader(self._load_plugin_shader("EdgeDetection.frag.glsl"))
