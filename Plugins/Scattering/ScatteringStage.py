@@ -73,12 +73,3 @@ class ScatteringStage(RenderStage):
         self._target_cube.set_shader(
             self._load_plugin_shader("ScatteringEnvmap.frag.glsl"))
         self._filter.set_shaders()
-
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

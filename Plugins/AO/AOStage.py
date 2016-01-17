@@ -98,11 +98,3 @@ class AOStage(RenderStage):
         blur_shader = self._load_plugin_shader("AOBlur.frag.glsl")
         self._target_blur_v.set_shader(blur_shader)
         self._target_blur_h.set_shader(blur_shader)
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

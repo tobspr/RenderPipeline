@@ -74,11 +74,3 @@ class ColorCorrectionStage(RenderStage):
         self._target.set_shader(self._load_plugin_shader("CorrectColor.frag.glsl"))
         if self._use_sharpen:
             self._target_sharpen.set_shader(self._load_plugin_shader("Sharpen.frag.glsl"))
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

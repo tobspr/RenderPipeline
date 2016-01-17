@@ -46,11 +46,3 @@ class PSSMStage(RenderStage):
 
     def set_shaders(self):
         self._target.set_shader(self._load_plugin_shader("ApplyPSSMShadows.frag.glsl"))
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

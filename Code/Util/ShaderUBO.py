@@ -30,6 +30,8 @@ from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt, TypeRegistry
 
 from .DebugObject import DebugObject
 
+__all__ = ["BaseUBO", "SimpleUBO", "ShaderUBO"]
+
 class BaseUBO(DebugObject):
     """ Base class for UBO's """
 
@@ -60,7 +62,7 @@ class SimpleUBO(BaseUBO):
             target.set_shader_input(self._name + "." + key, val)
 
 
-class PTABasedUBO(BaseUBO):
+class ShaderUBO(BaseUBO):
 
     """ Interface to shader uniform blocks, using PTA's to efficiently store
     and update values. """
@@ -80,8 +82,8 @@ class PTABasedUBO(BaseUBO):
         self._use_ubo = self.ubos_supported()
 
         # Acquire a unique index for each UBO to store its binding
-        self._bind_id = PTABasedUBO._UBO_BINDING_INDEX
-        PTABasedUBO._UBO_BINDING_INDEX += 1
+        self._bind_id = ShaderUBO._UBO_BINDING_INDEX
+        ShaderUBO._UBO_BINDING_INDEX += 1
 
         self.debug("Native UBO support =", self._use_ubo)
 

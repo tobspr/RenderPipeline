@@ -34,7 +34,7 @@ class CloudStage(RenderStage):
 
     """ This stage handles the volumetric cloud rendering """
 
-    required_pipes = ["ShadedScene", "GBuffer", "ScatteringCubemap"]
+    required_pipes = ["ShadedScene", "GBuffer", "ScatteringIBLDiffuse"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CloudStage", pipeline)
@@ -138,11 +138,3 @@ class CloudStage(RenderStage):
 
         self._particle_target.set_shader(self._load_plugin_shader("RenderClouds.frag.glsl"))
         # self._particle_np.set_shader(self._load_plugin_shader("CloudParticle.vert.glsl", "CloudParticle.frag.glsl"))
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

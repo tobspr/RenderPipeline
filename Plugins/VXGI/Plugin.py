@@ -23,28 +23,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  	 	    	 	
 """
+# Load the plugin api
+from .. import *
 
-from ..RenderStage import RenderStage
+from .VoxelizationStage import VoxelizationStage
 
+class Plugin(BasePlugin):
 
-class ApplyLightsStage(RenderStage):
+    @PluginHook("on_stage_setup")
+    def setup_stages(self):
+        self._voxel_stage = self.create_stage(VoxelizationStage)
 
-    """ This stage applies the lights to the scene using the gbuffer """
+    @PluginHook("pre_render_update")
+    def update(self):
+        self._queue.exec_next_task()
 
-    required_pipes = ["GBuffer", "CellIndices", "PerCellLights", "ShadowAtlas",
-                      "ShadowAtlasPCF"]
-    required_inputs = ["AllLightsData", "IESDatasetTex", "ShadowSourceData"]
+    @PluginHook("on_pipeline_created")
+    def on_created(self):
+        self._queue = RepeatedTaskQueue()
+        self._queue.add(self._voxelize_x, self._voxelize_y, self._voxelize_z)
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "ApplyLightsStage", pipeline)
+    def _voxelize_x(self):
+        self._voxel_stage.set_state(VoxelizationStage.S_voxelize_x)
 
-    def get_produced_pipes(self):
-        return {"ShadedScene": self._target['color']}
+    def _voxelize_y(self):
+        self._voxel_stage.set_state(VoxelizationStage.S_voxelize_y)
 
-    def create(self):
-        self._target = self._create_target("ApplyLights")
-        self._target.add_color_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
-
-    def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/ApplyLights.frag"))
+    def _voxelize_z(self):
+        self._voxel_stage.set_state(VoxelizationStage.S_voxelize_z)

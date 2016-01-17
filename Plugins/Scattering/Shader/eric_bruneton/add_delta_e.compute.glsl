@@ -31,7 +31,7 @@
 layout(local_size_x = 16, local_size_y = 16) in;
 
 uniform sampler2D deltaESampler;
-uniform layout(rgba32f) image2D RESTRICT dest;
+uniform layout(rgba16f) image2D RESTRICT dest;
 
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);

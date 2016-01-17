@@ -130,11 +130,3 @@ class UpdatePreviousPipesStage(RenderStage):
         texture """
         # TODO: Add more stores based on texture type
         return "imageStore(" + sampler_name + ", " + coord_var + ", vec4(" + data_var + "));"
-
-    def resize(self):
-        RenderStage.resize(self)
-        self.debug("Resizing pass")
-
-    def cleanup(self):
-        RenderStage.cleanup(self)
-        self.debug("Cleanup pass")

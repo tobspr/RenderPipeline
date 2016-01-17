@@ -92,7 +92,7 @@ void main() {
     vec3 noise = texture(NoiseTex, trace_start.xy * 6.0).xyz;
     // trace_start.xy += (noise*2.0-1.0) * 0.007 / trace_steps;
 
-    trace_start.xyz += (noise*2.0-1.0) * 0.003;
+    trace_start.xyz += (noise*2.0-1.0) * 0.002;
     vec3 trace_step = (trace_end - trace_start) / trace_steps;
     trace_step.xyz += (noise*2.0-1.0) * 0.008 / trace_steps;
 
@@ -100,8 +100,8 @@ void main() {
     vec3 sun_vector = sun_azimuth_to_angle(
     TimeOfDay.Scattering.sun_azimuth,
     TimeOfDay.Scattering.sun_altitude);
-    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 35.0) + 0.0;
-    vec3 sun_color = sun_influence * 190.0 * TimeOfDay.Scattering.sun_color;
+    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 55.0) + 0.0;
+    vec3 sun_color = sun_influence * 30.0 * vec3(1);
 
     vec3 curr_pos = trace_start + 0.5 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
     float accum_weight = 0.0;
@@ -120,18 +120,24 @@ void main() {
     // Unpack packed color
     accum_color = accum_color / (1 - accum_color);
     accum_color /= 15.0;
+    // accum_weight *= 1 * length(accum_color);
+    accum_weight *= 0.4;
+    accum_weight = saturate(accum_weight);
+
+    accum_color *= TimeOfDay.Clouds.cloud_brightness;
 
     accum_color *= 66.0;
-    accum_color *= TimeOfDay.Clouds.cloud_brightness;
-    accum_color *= 1 + sun_color * saturate(1.0 - 1.0 * pow(accum_weight, 0.8) );
+    accum_color *= 1.0 + sun_color * saturate(1.0 - 1.0 * accum_weight );
 
+    
     // Darken clouds in the distance
-    accum_color *= 1.0 - saturate(1.0-4.0*ray_dir.z) * 0.7;
+    // accum_color *= 1.0 - saturate(1.0-4.0*ray_dir.z) * 0.7;
 
     // Don't render clouds at obligue angles
-    float horizon = saturate(sqrt(ray_dir.z * 1.0));
+    float horizon = saturate(ray_dir.z * 1.0);
+    // accum_color *= accum_weight;
     // accum_color *= horizon;
-    accum_weight *= horizon;
+    // accum_weight *= horizon;
 
 
 

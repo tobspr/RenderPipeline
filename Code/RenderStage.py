@@ -99,7 +99,7 @@ class RenderStage(DebugObject):
             return self.required_inputs
         return []
 
-    def get_input_pipes(self):
+    def get_required_pipes(self):
         """ This method should return which pipes are required for this stage.
         The key specifies the name under they will be available in the shader,
         while the value specifies the name of the pipe """
@@ -126,16 +126,6 @@ class RenderStage(DebugObject):
 
     def create(self):
         """ This method should setup the stage and create the pipes """
-        raise NotImplementedError()
-
-    def resize(self):
-        """ This method gets called when the window resizes and should upate the
-        pipes """
-        raise NotImplementedError()
-
-    def cleanup(self):
-        """ This method should completely cleanup the stage and delete all used
-        textures and render passes """
         raise NotImplementedError()
 
     def set_shaders(self):

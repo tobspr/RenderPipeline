@@ -78,5 +78,8 @@ void main() {
     // since every sub-kernel has 4 samples, normalize that
     summed_kernel /= 4.0;
 
+    // Decay
+    summed_kernel *= 0.92;
+
     imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(summed_kernel, 0));
 }

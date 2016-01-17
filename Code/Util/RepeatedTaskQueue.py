@@ -24,27 +24,33 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-from ..RenderStage import RenderStage
+import collections
 
+from .DebugObject import DebugObject
 
-class ApplyLightsStage(RenderStage):
+class RepeatedTaskQueue(DebugObject):
 
-    """ This stage applies the lights to the scene using the gbuffer """
+    """ This class manages a set of tasks. Each time .get_next_task() is called,
+    the next task in the queue is returned. When no task is left, the queue
+    starts from the beginning again """
 
-    required_pipes = ["GBuffer", "CellIndices", "PerCellLights", "ShadowAtlas",
-                      "ShadowAtlasPCF"]
-    required_inputs = ["AllLightsData", "IESDatasetTex", "ShadowSourceData"]
+    def __init__(self):
+        """ Constructs a new empty task queue """
+        DebugObject.__init__(self)
+        self._tasks = collections.deque()
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "ApplyLightsStage", pipeline)
+    def add(self, *args):
+        """ Adds a new task to the task queue. task can either be an object,
+        or a list of objects """
+        self._tasks.extend(args)
 
-    def get_produced_pipes(self):
-        return {"ShadedScene": self._target['color']}
+    def get_next_task(self):
+        """ Returns the next task in the queue """
+        task = self._tasks[0]
+        self._tasks.rotate(-1)
+        return task
 
-    def create(self):
-        self._target = self._create_target("ApplyLights")
-        self._target.add_color_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
-
-    def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/ApplyLights.frag"))
+    def exec_next_task(self):
+        """ Takes the next task in the queue and executes it. This expects the
+        task object to be a valid callable, either function or lambda """
+        self.get_next_task()()

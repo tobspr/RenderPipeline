@@ -96,31 +96,31 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         self._textures = {
             "transmittance": Image.create_2d(
                 "scattering-transmittance", self._trans_w, self._trans_h,
-                Texture.T_float, Texture.F_rgba32),
+                Texture.T_float, Texture.F_rgba16),
 
             "irradiance": Image.create_2d(
                 "scattering-irradiance", self._sky_w, self._sky_h, Texture.T_float,
-                Texture.F_rgba32),
+                Texture.F_rgba16),
 
             "inscatter": Image.create_3d(
                 "scattering-inscatter", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, Texture.F_rgba32),
+                Texture.T_float, Texture.F_rgba16),
 
             "delta_e": Image.create_2d(
                 "scattering-dx-e", self._sky_w, self._sky_h, Texture.T_float,
-                Texture.F_rgba32),
+                Texture.F_rgba16),
 
             "delta_sr": Image.create_3d(
                 "scattering-dx-sr", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, Texture.F_rgba32),
+                Texture.T_float, Texture.F_rgba16),
 
             "delta_sm": Image.create_3d(
                 "scattering-dx-sm", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, Texture.F_rgba32),
+                Texture.T_float, Texture.F_rgba16),
 
             "delta_j": Image.create_3d(
                 "scattering-dx-j", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, Texture.F_rgba32),
+                Texture.T_float, Texture.F_rgba16),
         }
 
         for img in self._textures.values():
@@ -235,6 +235,6 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         self._handle._display_stage.set_shader_input(
             "InscatterSampler", self._textures["inscatter"].get_texture())
         self._handle._display_stage.set_shader_input(
-            "TransmittanceSampler", self._textures["transmittance"].get_texture())
+            "transmittanceSampler", self._textures["transmittance"].get_texture())
         self._handle._display_stage.set_shader_input(
             "IrradianceSampler", self._textures["irradiance"].get_texture())

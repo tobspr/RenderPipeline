@@ -45,6 +45,7 @@ class StageManager(BaseManager):
 
     # This defines the order of all stages, in case they are attached
     _STAGE_ORDER = [
+        "VoxelizationStage",
         "GBufferStage",
         "PSSMShadowStage",
         "ShadowStage",
@@ -157,8 +158,7 @@ class StageManager(BaseManager):
             stage.create()
 
             # Check if all pipes are available, and set them
-            for pipe in stage.get_input_pipes():
-
+            for pipe in stage.get_required_pipes():
 
                 if pipe in self._ubos:
                     self._ubos[pipe].bind_to(stage)

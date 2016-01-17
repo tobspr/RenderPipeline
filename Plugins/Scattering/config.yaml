@@ -115,31 +115,3 @@ daytime_settings: !!omap
             Size of the transition from no fog to fog in world space units.
             Higher values produce a smoother transition from no fog to fog,
             while lower values will produce a more sharp transition.
-
-    - fog_start:
-        type: scalar
-        unit: meter
-        range: [0.0, 1500.0]
-        default: 100.0
-        label: Fog-Start
-        logarithmic_factor: 2.5
-        description: >
-            Start of the fog in world space units.
-
-    - fog_brightness:
-        type: scalar
-        unit: percent
-        range: [0.0, 2.5]
-        default: 1.0
-        label: Fog-Brightness
-        description: Brightness of the fog
-
-    - ground_fog_factor:
-        type: scalar
-        unit: meter
-        range: [10.0, 3000.0]
-        default: 400.0
-        label: Ground Fog Factor
-        description: >
-            Controls the strength of the ground fog, lower values will cause
-            high spots e.g. mountains to recieve less fog than low spots.
