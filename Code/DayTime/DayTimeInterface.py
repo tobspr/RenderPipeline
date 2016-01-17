@@ -69,15 +69,17 @@ class DayTimeInterface(DebugObject):
             self.error("Root entry 'control_points' not found in daytime settings!")
             return False
 
-        control_points = yaml["control_points"]
+        self._load_control_points(yaml["control_points"])
+
+    def _load_control_points(self, control_points):
+        """ Loads a given set of control points into the curves """
+        available_plugins = self._interface.get_available_plugins()
 
         # When there are no points, the object will be just none instead of an
         # empty dict
         if control_points is None:
             return
-
-        available_plugins = self._interface.get_available_plugins()
-
+        
         for plugin_id, cvs in iteritems(control_points):
 
             # Skip invalid plugin ids
