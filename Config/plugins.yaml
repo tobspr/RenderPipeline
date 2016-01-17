@@ -68,19 +68,19 @@ overrides:
     ColorCorrection.use_chromatic_aberration: True
     ColorCorrection.use_sharpen: True
     ColorCorrection.vignette_strength: 0.2444
-    PSSM.border_bias: 0.1867
-    PSSM.filter_radius: 10.0
+    PSSM.border_bias: 0.1167
+    PSSM.filter_radius: 1.2
     PSSM.filter_sample_count: 32
-    PSSM.fixed_bias: 1.2667
+    PSSM.fixed_bias: 0.2
     PSSM.logarithmic_factor: 0.94
-    PSSM.max_distance: 1644.8
+    PSSM.max_distance: 81.92
     PSSM.normal_bias: 0.44
-    PSSM.pcss_penumbra_size: 300.0
-    PSSM.pcss_search_samples: 18
+    PSSM.pcss_penumbra_size: 6.76
+    PSSM.pcss_search_samples: 8
     PSSM.resolution: 2048
     PSSM.slope_bias: 5.0
     PSSM.split_count: 4
-    PSSM.sun_distance: 4390.0
+    PSSM.sun_distance: 100.0
     PSSM.use_pcf: True
     PSSM.use_pcss: True
     SMAA.smaa_quality: ultra

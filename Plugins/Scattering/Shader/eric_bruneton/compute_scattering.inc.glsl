@@ -165,33 +165,37 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             // avoids imprecision problems near horizon by interpolating between
             // two points above and below horizon
             // fíx described in chapter 5.1.2
-            float muHorizon = -sqrt(1.0 - (Rg / start_pos_height) * (Rg / start_pos_height));
-            if (abs(mustart_pos - muHorizon) < EPSILON_INSCATTER)
-            {
-                float mu = muHorizon - EPSILON_INSCATTER;
-                float samplePosHeight = sqrt(start_pos_height*start_pos_height
-                    +path_length*path_length+2.0f*start_pos_height*
-                    path_length*mu);
-                float muSamplePos = (start_pos_height * mu + path_length) / samplePosHeight;
-                vec4 inScatter0 = texture4D(InscatterSampler, start_pos_height, mu,
-                    musstart_pos, nustart_pos);
-                vec4 inScatter1 = texture4D(InscatterSampler, samplePosHeight,
-                    muSamplePos, musEndPos, nustart_pos);
-                vec4 inScatterA = max(inScatter0-attenuation.rgbr*inScatter1,0.0);
-                mu = muHorizon + EPSILON_INSCATTER;
-                samplePosHeight = sqrt(start_pos_height*start_pos_height
-                    +path_length*path_length+2.0f*
-                    start_pos_height*path_length*mu);
-                muSamplePos = (start_pos_height * mu + path_length) / samplePosHeight;
-                inScatter0 = texture4D(InscatterSampler, start_pos_height, mu,
-                    musstart_pos, nustart_pos);
-                inScatter1 = texture4D(InscatterSampler, samplePosHeight, muSamplePos,
-                    musEndPos, nustart_pos);
-                vec4 inScatterB = max(inScatter0 - attenuation.rgbr * inScatter1,
-                    0.0f);
-                float t = ((mustart_pos - muHorizon) + EPSILON_INSCATTER) / (2.0 * EPSILON_INSCATTER);
-                inscatter = mix(inScatterA, inScatterB, t);
-            }
+
+            #if 0
+                float muHorizon = -sqrt(1.0 - (Rg / start_pos_height) * (Rg / start_pos_height));
+                if (abs(mustart_pos - muHorizon) < EPSILON_INSCATTER)
+                {
+                    float mu = muHorizon - EPSILON_INSCATTER;
+                    float samplePosHeight = sqrt(start_pos_height*start_pos_height
+                        +path_length*path_length+2.0f*start_pos_height*
+                        path_length*mu);
+                    float muSamplePos = (start_pos_height * mu + path_length) / samplePosHeight;
+                    vec4 inScatter0 = texture4D(InscatterSampler, start_pos_height, mu,
+                        musstart_pos, nustart_pos);
+                    vec4 inScatter1 = texture4D(InscatterSampler, samplePosHeight,
+                        muSamplePos, musEndPos, nustart_pos);
+                    vec4 inScatterA = max(inScatter0-attenuation.rgbr*inScatter1,0.0);
+                    mu = muHorizon + EPSILON_INSCATTER;
+                    samplePosHeight = sqrt(start_pos_height*start_pos_height
+                        +path_length*path_length+2.0f*
+                        start_pos_height*path_length*mu);
+                    muSamplePos = (start_pos_height * mu + path_length) / samplePosHeight;
+                    inScatter0 = texture4D(InscatterSampler, start_pos_height, mu,
+                        musstart_pos, nustart_pos);
+                    inScatter1 = texture4D(InscatterSampler, samplePosHeight, muSamplePos,
+                        musEndPos, nustart_pos);
+                    vec4 inScatterB = max(inScatter0 - attenuation.rgbr * inScatter1,
+                        0.0f);
+                    float t = ((mustart_pos - muHorizon) + EPSILON_INSCATTER) / (2.0 * EPSILON_INSCATTER);
+                    inscatter = mix(inScatterA, inScatterB, t);
+                }
+            #endif
+
             // avoids imprecision problems in Mie scattering when sun is below
              //horizon
             // fíx described in chapter 5.1.3
@@ -199,7 +203,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             float phaseR = phaseFunctionR(nustart_pos);
             float phaseM = phaseFunctionM(nustart_pos);
             inscattered_light = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
-            inscattered_light *= 120.0;
+            inscattered_light *= 220.0;
         }
     }
     return inscattered_light;
@@ -217,17 +221,13 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 
     // Exponential height fog
     float ground_fog_factor = 50000.0;
-    // fog_factor *= saturate(exp(- surface_pos.z / ground_fog_factor));
-    fog_factor *= 1.0 - saturate(surface_pos.z / ground_fog_factor);
+    fog_factor *= 1.0 - saturate( max(0, surface_pos.z) / ground_fog_factor);
 
     if (is_skybox(surface_pos, MainSceneData.camera_pos)) {
         fog_factor = 1;
     }
 
     vec3 scattering = get_inscattered_light(surface_pos, view_dir, attenuation, irradiance_factor);
-
-    
-    // fog_factor = 1.0;
 
     return scattering;
 }
