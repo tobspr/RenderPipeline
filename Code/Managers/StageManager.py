@@ -131,11 +131,9 @@ class StageManager(BaseManager):
         """ Returns whether a certain pipe exists """
         return pipe_name in self._pipes
 
-    def setup(self):
-        """ Setups the stages """
-        self.debug("Setup stages ...")
-
-        self._created = True
+    def _prepare_stages(self):
+        """ Prepares all stages by removing disabled stages and sorting stages
+        by order """
 
         # Remove all disabled stages
         to_remove = []
@@ -150,86 +148,91 @@ class StageManager(BaseManager):
         self._stages.sort(key=lambda stage: self._STAGE_ORDER.index(
             stage.get_stage_id()))
 
-        # Common inputs available to each stage by default
+    def _bind_pipes_to_stage(self, stage):
+        """ Sets all required pipes on a stage """
+        for pipe in stage.get_required_pipes():
+            if pipe in self._ubos:
+                self._ubos[pipe].bind_to(stage)
+                continue
+
+            if pipe.startswith("PreviousFrame::"):
+                # Special case: Pipes from the previous frame. We assume those
+                # pipes have the same size as the window and a format of
+                # F_rgba16. Could be subject to change.
+                pipe_name = pipe.split("::")[-1]
+                if pipe_name not in self._previous_pipes:
+                    self.debug("Storing previous frame pipe for " + pipe_name)
+                    pipe_tex = Image.create_2d(
+                        "Prev-" + pipe_name, Globals.base.win.get_x_size(),
+                        Globals.base.win.get_y_size(), Texture.T_float,
+                        Texture.F_rgba16)
+                    pipe_tex.get_texture().clear_image()
+                    self._previous_pipes[pipe_name] = pipe_tex.get_texture()
+                stage.set_shader_input("Previous_" + pipe_name, self._previous_pipes[pipe_name])
+                continue
+
+            if pipe not in self._pipes:
+                self.error("Pipe '" + pipe + "' is missing for", stage)
+                return False
+
+            pipe_value = self._pipes[pipe]
+            if isinstance(pipe_value, list) or isinstance(pipe_value, tuple):
+                stage.set_shader_input(pipe, *pipe_value)
+            else:
+                stage.set_shader_input(pipe, pipe_value)
+        return True
+
+    def _bind_inputs_to_stage(self, stage):
+        """ Binds all inputs including common inputs to the given stage """
         common_inputs = ["mainCam", "mainRender", "MainSceneData", "TimeOfDay"]
+      
+        # Check if all inputs are available, and set them
+        for input_binding in stage.get_required_inputs() + common_inputs:
+            if input_binding not in self._inputs and \
+               input_binding not in self._ubos:
+                self.error("Input", input_binding, "is missing for", stage)
+                continue
 
-        # Process each stage
-        for stage in self._stages:
-            stage.create()
+            if input_binding in self._inputs:
+                stage.set_shader_input(input_binding,
+                                       self._inputs[input_binding])
+            elif input_binding in self._ubos:
+                self._ubos[input_binding].bind_to(stage)
+            else:
+                assert False
+        return True
 
-            # Check if all pipes are available, and set them
-            for pipe in stage.get_required_pipes():
+    def _register_stage_outcome(self, stage):
+        """ Registers all produced pipes, inputs and defines from the given
+        stage, so they can be used by later stages. """
 
-                if pipe in self._ubos:
-                    self._ubos[pipe].bind_to(stage)
-                    continue
+        # Register all the new pipes, inputs and defines
+        for pipe_name, pipe_data in iteritems(stage.get_produced_pipes()):
+            # Check for UBO's
+            if isinstance(pipe_data, BaseUBO):
+                self._ubos[pipe_name] = pipe_data
+                continue
 
-                if pipe.startswith("PreviousFrame::"):
-                    # Special case: Pipes from the previous frame. We assume those
-                    # pipes have the same size as the window and a format of
-                    # F_rgba16. Could be subject to change.
-                    pipe_name = pipe.split("::")[-1]
-                    if pipe_name not in self._previous_pipes:
-                        self.debug("Storing previous frame pipe for " + pipe_name)
-                        pipe_tex = Image.create_2d(
-                            "Prev-" + pipe_name, Globals.base.win.get_x_size(),
-                            Globals.base.win.get_y_size(), Texture.T_float,
-                            Texture.F_rgba16)
-                        pipe_tex.get_texture().clear_image()
-                        self._previous_pipes[pipe_name] = pipe_tex.get_texture()
-                    stage.set_shader_input("Previous_" + pipe_name, self._previous_pipes[pipe_name])
-                    continue
+            self._pipes[pipe_name] = pipe_data
 
-                if pipe not in self._pipes:
-                    self.error("Pipe '" + pipe + "' is missing for", stage)
-                    continue
+        for define_name, data in iteritems(stage.get_produced_defines()):
+            if define_name in self._defines:
+                self.warn("Stage", stage, "overrides define", define_name)
+            self._defines[define_name] = data
 
-                pipe_value = self._pipes[pipe]
-                if isinstance(pipe_value, list) or isinstance(pipe_value, tuple):
-                    stage.set_shader_input(pipe, *pipe_value)
-                else:
-                    stage.set_shader_input(pipe, pipe_value)
+        for input_name, data in iteritems(stage.get_produced_inputs()):
+            if input_name in self._inputs:
+                self.warn("Stage", stage, "overrides input", input_name)
 
-            # Check if all inputs are available, and set them
-            for input_binding in stage.get_required_inputs() + common_inputs:
-                if input_binding not in self._inputs and \
-                   input_binding not in self._ubos:
-                    self.error("Input", input_binding, "is missing for", stage)
-                    continue
+            # Check for UBO's
+            if isinstance(data, BaseUBO):
+                self._ubos[input_name] = data
+                continue
 
-                if input_binding in self._inputs:
-                    stage.set_shader_input(input_binding,
-                                           self._inputs[input_binding])
-                elif input_binding in self._ubos:
-                    self._ubos[input_binding].bind_to(stage)
-                else:
-                    assert False
+            self._inputs[input_name] = data
 
-            # Register all the new pipes, inputs and defines
-            for pipe_name, pipe_data in iteritems(stage.get_produced_pipes()):
-                # Check for UBO's
-                if isinstance(pipe_data, BaseUBO):
-                    self._ubos[pipe_name] = pipe_data
-                    continue
-
-                self._pipes[pipe_name] = pipe_data
-
-            for define_name, data in iteritems(stage.get_produced_defines()):
-                if define_name in self._defines:
-                    self.warn("Stage", stage, "overrides define", define_name)
-                self._defines[define_name] = data
-
-            for input_name, data in iteritems(stage.get_produced_inputs()):
-                if input_name in self._inputs:
-                    self.warn("Stage", stage, "overrides input", input_name)
-
-                # Check for UBO's
-                if isinstance(data, BaseUBO):
-                    self._ubos[input_name] = data
-                    continue
-
-                self._inputs[input_name] = data
-
+    def _create_previous_pipes(self):
+        """ Creates a target for each last-frame's pipe """
         # Finally create the stage which stores all the current pipes in the
         # previous pipes textures:
         if self._previous_pipes:
@@ -240,7 +243,7 @@ class StageManager(BaseManager):
                 if prev_pipe not in self._pipes:
                     self.error("Attempted to use previous frame data from pipe",
                                prev_pipe, "- however, that pipe was never created!")
-                    continue
+                    return False
 
                 # Tell the stage to transfer the data from the current pipe to
                 # the current texture
@@ -249,9 +252,30 @@ class StageManager(BaseManager):
             self._prev_stage.create()
             self._stages.append(self._prev_stage)
 
+    def setup(self):
+        """ Setups the stages """
+        self.debug("Setup stages ...")
+
+        self._created = True
+        self._prepare_stages()
+
+        # Process each stage
+        for stage in self._stages:
+            stage.create()
+
+            # Rely on the methods to print an appropriate error message
+            if not self._bind_pipes_to_stage(stage):
+                continue
+            if not self._bind_inputs_to_stage(stage):
+                continue
+
+            self._register_stage_outcome(stage)
+
+        self._create_previous_pipes()
+
     def set_shaders(self):
         """ This pass sets the shaders to all passes and also generates the
-        shader auto config"""
+        shader configuration """
 
         # First genereate the auto config
         self.write_autoconfig()
@@ -261,9 +285,17 @@ class StageManager(BaseManager):
             stage.set_shaders()
 
     def do_update(self):
-        """ Calls the update method for each stage """
+        """ Calls the update method for each registered stage """
         for stage in self._stages:
             stage.update()
+
+    def _make_glsl_define(self, key, value):
+        """ Given a define name and value, returns a glsl string which can be
+        used to set that define in glsl """
+        if isinstance(value, bool):
+            # Cannot cast bools to string directly
+            value = 1 if value else 0
+        return "#define " + key + " " + str(value) + "\n"
 
     def write_autoconfig(self):
         """ Writes the shader auto config, based on the defines specified by the
@@ -277,11 +309,9 @@ class StageManager(BaseManager):
         output += "// Do not edit! Your changes will be lost.\n\n"
 
         for key, value in sorted(iteritems(self._defines)):
-            # Cannot cast bools to string directly
-            if isinstance(value, bool):
-                value = 1 if value else 0
-            output += "#define " + key + " " + str(value) + "\n"
+            output += self._make_glsl_define(key, value)
 
+        # Write a random timestamp, to make sure no caching occurs
         output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"
 
         # Try to write the file
