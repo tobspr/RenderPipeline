@@ -37,8 +37,7 @@ float accum = 0.0;
 vec3 bent_normal = vec3(pixel_view_normal * 3.0);
 
 for (int i = 0; i < num_angles; ++i) {
-    float angle = (i + 0.5 * noise_vec.x) / float(num_angles * 4) * TWO_PI;
-    angle += disk_rotate;
+    float angle = (i + noise_vec.x) / float(num_angles) * TWO_PI;
 
     vec2 sample_dir = vec2(cos(angle), sin(angle));
 
@@ -56,8 +55,8 @@ for (int i = 0; i < num_angles; ++i) {
         
         // Get new texture coordinate
         vec2 texc = texcoord + 
-            sample_dir * (k + 0.5 + 0.3 * noise_vec.y) / 
-                num_ray_steps * pixel_size * sample_radius * kernel_scale * 0.5;
+            sample_dir * (k + 1.0 + 0.5 * noise_vec.y) / 
+                num_ray_steps * pixel_size * sample_radius * kernel_scale * 0.3;
         
         // Fetch view pos at that position and compare it
         vec3 view_pos = get_view_pos_at(texc);
@@ -88,6 +87,7 @@ for (int i = 0; i < num_angles; ++i) {
 
 // Normalize samples
 accum /= num_angles;
+accum *= 2.0;
 
 // Normalize bent normal
 bent_normal /= max(1.0, length(bent_normal));

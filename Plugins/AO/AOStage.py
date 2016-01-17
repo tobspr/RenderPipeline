@@ -45,6 +45,7 @@ class AOStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("AO:Sample")
+        self._target.set_half_resolution()
         self._target.add_color_texture(bits=8)
         self._target.prepare_offscreen_buffer()
         self._target.get_quad().set_instance_count(4)

@@ -37,7 +37,7 @@ unocluded vector.
 */
 
 const float sample_radius = GET_SETTING(AO, ue4ao_sample_radius);
-const int num_samples = GET_SETTING(AO, ue4ao_sample_count);
+const int num_samples = GET_SETTING(AO, ue4ao_sample_count) * 4;
 const float max_distance = GET_SETTING(AO, ue4ao_max_distance);
 
 float accum = 0.0;
@@ -47,8 +47,8 @@ vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.4;
 
 for (int i = 0; i < num_samples; ++i) {
     
-    vec2 offset = poisson_disk_2D_32[i] + noise_vec.xy * 0.3;
-    offset = rotate(offset, disk_rotate);
+    vec2 offset = poisson_disk_2D_32[i];
+    offset = mix(offset, noise_vec.xy, 0.3);
     vec2 offcoord = offset * offset_scale;
 
     // Get offset coordinates
@@ -74,6 +74,7 @@ for (int i = 0; i < num_samples; ++i) {
     float angle_a = max(0, dot(sample_vec_a, pixel_view_normal));
     float angle_b = max(0, dot(sample_vec_b, pixel_view_normal));
 
+    // TODO: Avoid branching by every means
     if (valid_a != valid_b) {
         angle_a = mix(-angle_b, angle_a, valid_a);
         angle_b = mix(angle_a, -angle_b, valid_b);
@@ -83,10 +84,8 @@ for (int i = 0; i < num_samples; ++i) {
 
     // In case any sample is valid
     if (valid_a > 0.5 || valid_b > 0.5) {
-
         accum += (angle_a+angle_b) * 0.25 * (2 - (dist_a+dist_b));
         accum_count += 1.0;
-
     } else {
         accum_count += 0.5;
 
@@ -94,7 +93,7 @@ for (int i = 0; i < num_samples; ++i) {
 }
 
 accum /= max(1.0, accum_count);
-accum *= 1.5;
+accum *= 1.2;
 
 // Bent normal not supported yet
 vec3 bent_normal = pixel_world_normal;

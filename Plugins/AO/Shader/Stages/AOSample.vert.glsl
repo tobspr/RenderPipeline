@@ -39,7 +39,7 @@ void main() {
     CONST_ARRAY float rotations[4] = float[4](180, 270, 90, 0);
 
     // Rotate the vertices because we use oversized triangles
-    float rotation = rotations[gl_InstanceID] / 180.0 * M_PI;
+    float rotation = degree_to_radians(rotations[gl_InstanceID]);
 
     vec2 pcoord = rotate(p3d_Vertex.xz, rotation);
     texcoord = fma(pcoord, vec2(0.5), vec2(0.5));

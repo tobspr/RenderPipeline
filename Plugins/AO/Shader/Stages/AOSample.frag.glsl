@@ -52,9 +52,10 @@ void main() {
 
     int quad_x = instance % 2;
     int quad_y = instance / 2;
-    float disk_rotate = (instance / 4.0) * TWO_PI;
 
-    ivec2 coord = ivec2(gl_FragCoord.xy) * 2 - ivec2(quad_x, quad_y) * SCREEN_SIZE_INT;
+    ivec2 coord = (ivec2(gl_FragCoord.xy) * 4) % SCREEN_SIZE_INT;
+    coord += ivec2(quad_x, quad_y) * 2;
+
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
     // Shader variables
@@ -67,7 +68,7 @@ void main() {
     vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = distance(pixel_world_pos, MainSceneData.camera_pos);
 
-    vec3 noise_vec = fma(texelFetch(Noise4x4, ivec2(gl_FragCoord.xy) % 4, 0).xyz, vec3(2), vec3(-1));
+    vec3 noise_vec = fma(texelFetch(Noise4x4, 1 + ivec2(quad_x, quad_y), 0).xyz, vec3(2), vec3(-1));
 
     if (view_dist > 10000.0) {
         result = vec4(1);
@@ -96,6 +97,7 @@ void main() {
 
     // Pack bent normal
     result.xyz = fma(result.xyz, vec3(0.5), vec3(0.5));
+    result.xyz = pow(result.www, vec3(4.0));
 }
 
 

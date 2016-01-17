@@ -35,7 +35,7 @@ AO.
 */
 
 const float sample_radius = GET_SETTING(AO, ssao_sample_radius);     
-const int num_samples = GET_SETTING(AO, ssao_sample_count);
+const int num_samples = GET_SETTING(AO, ssao_sample_count) * 4;
 const float bias = GET_SETTING(AO, ssao_bias) * 0.5;
 const float max_range = GET_SETTING(AO, ssao_max_distance);
 
@@ -47,8 +47,8 @@ vec3 bent_normal = vec3(0.0001);
 
 for (int i = 0; i < num_samples; ++i) {
     vec3 offset = poisson_disk_3D_32[i];
-    offset = mix(offset, noise_vec, 0.1);
-    offset.xz = rotate(offset.xz, disk_rotate);
+    offset = mix(offset, noise_vec, 0.3);
+    // offset.xz = rotate(offset.xz, disk_rotate);
     offset *= 0.6;
 
     // Flip offset in case it faces away from the normal
@@ -84,6 +84,6 @@ bent_normal = view_normal_to_world(bent_normal);
 accum /= max(0.1, range_accum);
 
 // Renormalize to match with the other techniques
-accum *= 0.3;
+accum *= 0.4;
 
 result = vec4(bent_normal, 1 - saturate(accum));

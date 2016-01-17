@@ -18,26 +18,26 @@ enabled:
 overrides: 
     AO.alchemy_max_distance: 4.08
     AO.alchemy_num_samples: 8
-    AO.alchemy_sample_radius: 92.78
+    AO.alchemy_sample_radius: 100.0
     AO.blur_depth_factor: 1.2
     AO.blur_normal_factor: 1.53
     AO.hbao_max_distance: 8.23
     AO.hbao_ray_count: 8
     AO.hbao_ray_steps: 3
-    AO.hbao_sample_radius: 97.17
+    AO.hbao_sample_radius: 100.0
     AO.hbao_tangent_bias: 0.6889
     AO.occlusion_strength: 1.21
     AO.ssao_bias: 0.0
     AO.ssao_max_distance: 6.56
     AO.ssao_sample_count: 8
-    AO.ssao_sample_radius: 119.11
+    AO.ssao_sample_radius: 100.0
     AO.ssvo_max_distance: 1.49
     AO.ssvo_sample_count: 4
     AO.ssvo_sphere_radius: 11.34556
     AO.technique: SSVO
     AO.ue4ao_max_distance: 4.3
     AO.ue4ao_sample_count: 8
-    AO.ue4ao_sample_radius: 145.44
+    AO.ue4ao_sample_radius: 100.0
     Bloom.bloom_strength: 0.7
     Bloom.minimum_luminance: 15.0
     Bloom.num_mipmaps: 9
@@ -53,7 +53,7 @@ overrides:
     ColorCorrection.darkness_adaption_rate: 1.0
     ColorCorrection.exponential_factor: 2.5
     ColorCorrection.exposure_bias: 0.0
-    ColorCorrection.film_grain_strength: 0.2
+    ColorCorrection.film_grain_strength: 0.12
     ColorCorrection.max_exposure: 7.0
     ColorCorrection.min_exposure: 0.001
     ColorCorrection.reinhard_version: rgb
