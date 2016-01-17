@@ -45,7 +45,7 @@ You can find the documentation about the C++ modules here: <a target="_blank" hr
 **quboid Demo** (<a href="https://www.youtube.com/watch?v=9vXH9JaWsT4" target="_blank">Video</a>)
 <img src="http://i.imgur.com/o7xtp35.png" />
 
-** Terrain and volumetric clouds:**
+**Terrain and volumetric clouds:**
 <img src="http://i.imgur.com/sob7MAP.png" />
 
 **Snowy terrain using the Pipeline and P3DFramework:**
