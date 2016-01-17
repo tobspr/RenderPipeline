@@ -29,113 +29,206 @@
 // Include local scattering code
 #define NO_COMPUTE_SHADER 1
 #pragma include "scattering_common.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
 
-uniform sampler3D InscatterSampler;
+ uniform sampler3D InscatterSampler;
+ uniform sampler2D IrradianceSampler;
 
-vec3 sun_vector = sun_azimuth_to_angle(
-        TimeOfDay.Scattering.sun_azimuth,
-        TimeOfDay.Scattering.sun_altitude);
+ vec3 sun_vector = sun_azimuth_to_angle(
+    TimeOfDay.Scattering.sun_azimuth,
+    TimeOfDay.Scattering.sun_altitude);
+
+/*
 
 
-vec3 DoScattering(vec3 surfacePos, vec3 viewDir, out float fog_factor)
+Some parts of this code are taken from the master thesis of Stefan Sperlhofer,
+which unfortunately does not seem to be online anymore, so I can't link to it.
+
+
+*/
+
+const float EPSILON_ATMOSPHERE = 0.002f;
+const float EPSILON_INSCATTER = 0.01f;
+
+
+// input - d: view ray in world space
+// output - offset: distance to atmosphere or 0 if within atmosphere
+// output - max_path_length: distance traversed within atmosphere
+// output - return value: intersection occurred true/false
+bool intersect_atmosphere(vec3 cam_pos, vec3 d, out float offset, out float max_path_length)
 {
+    offset = 0.0f;
+    max_path_length = 0.0f;
 
-    // Move surface pos above ocean level
-    // if (surfacePos.z < -0.01) {
-    //     vec3 v2s = surfacePos - MainSceneData.camera_pos;
-    //     float z_factor = abs(MainSceneData.camera_pos.z) / abs(v2s.z);
-    //     surfacePos = MainSceneData.camera_pos + v2s * z_factor;
-    //     viewDir = normalize(surfacePos - MainSceneData.camera_pos);
-    // }
+    // vector from ray origin to center of the sphere
+    vec3 l = -cam_pos;
+    float l2 = dot(l,l);
+    float s = dot(l,d);
 
-    vec3 inscatteredLight = vec3(0.0);
-    float groundH = Rg + 2.0;
-    float pathLength = distance(MainSceneData.camera_pos, surfacePos);
-    vec3 startPos = MainSceneData.camera_pos; 
-
-    float height_scale_factor = 0.01;
-
-    float startPosHeight = MainSceneData.camera_pos.z * height_scale_factor + groundH;
-    float surfacePosHeight = surfacePos.z * height_scale_factor + groundH;
-
-    float muStartPos = viewDir.z;
-    float nuStartPos = max(0, dot(viewDir, sun_vector));
-    float musStartPos = sun_vector.z;
-
-    vec4 inscatter = max(texture4D(InscatterSampler, startPosHeight,
-        muStartPos, musStartPos, nuStartPos), 0.0);
-        
-    fog_factor = 1.0;
-    float sun_factor = 1.0; 
-
-    float phaseR = phaseFunctionR(nuStartPos);
-    float phaseM = phaseFunctionM(nuStartPos);
-
-    if(pathLength < 20000 || viewDir.z < 0.0)
+    // adjust top atmosphere boundary by small epsilon to prevent artifacts
+    float r = Rt - EPSILON_ATMOSPHERE;
+    float r2 = r*r;
+    if(l2 <= r2)
     {
-
-        // Exponential height fog
-        float fog_ramp = TimeOfDay.Scattering.fog_ramp_size;
-        float fog_start = TimeOfDay.Scattering.fog_start;
-
-        // Exponential, I do not like the look
-        // fog_factor = saturate((1.0 - exp( -pathLength * viewDir.z / fog_ramp )) / viewDir.z);
-
-        // Looks better IMO
-        fog_factor = smoothstep(0, 1, (pathLength-fog_start) / fog_ramp);
-
-        // Produces a smoother transition, but the borders look weird then    
-        // fog_factor = pow(fog_factor, 1.0 / 2.2);
-
-        // Get atmospheric color, 2 or 3 samples should be enough
-        const int num_samples = 2;
-        const float height_decay = 400.0;
-
-        float current_height = max(surfacePos.z, MainSceneData.camera_pos.z);
-        current_height *= 1.0 - saturate(pathLength / 25000.0);
-        float dest_height = surfacePos.z;
-        float height_step = (dest_height - current_height) / num_samples;
-
-        vec4 inscatter_sum = vec4(0);
-        for (int i = 0; i < num_samples; ++i) {
-            inscatter_sum += texture4D(InscatterSampler, 
-                current_height * height_scale_factor + groundH, 
-                current_height / height_decay + 0.001,
-                musStartPos, nuStartPos);
-
-            current_height += height_step;
+        // ray origin inside sphere, hit is ensured
+        float m2 = l2 - (s * s);
+        float q = sqrt(r2 - m2);
+        max_path_length = s + q;
+        return true;
+    }
+    else if(s >= 0)
+    {
+        // ray starts outside in front of sphere, hit is possible
+        float m2 = l2 - (s * s);
+        if(m2 <= r2)
+        {
+            // ray hits atmosphere definitely
+            float q = sqrt(r2 - m2);
+            offset = s - q;
+            max_path_length = (s + q) - offset;
+            return true;
         }
+    }
+    return false;
+}
 
-        inscatter_sum /= float(num_samples);
-        inscatter_sum *= 0.5;
 
-        // Exponential height fog
-        fog_factor *= exp(- surfacePos.z / TimeOfDay.Scattering.ground_fog_factor);
+// Transforms a point from world-space to atmospheric-space.
+// This is required because we use different coordinate systems for normal
+// rendering and atmospheric scattering.
+vec3 worldspace_to_atmosphere(vec3 pos) {
+    pos *= 0.01;
+    pos.z = max(0, pos.z);
+    pos.z += Rg + 0.1;
+    return pos;
+}
 
-        // Scale fog color
-        vec4 fog_color = inscatter_sum * TimeOfDay.Scattering.fog_brightness;
+vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuation, inout float irradiance_factor)
+{
+    vec3 inscattered_light = vec3(0);
+    float offset;
+    float max_path_length;
 
-        // Tint fog color a bit, and also desaturate it
-        fog_color *= fog_factor * 3.0;
-        fog_color += 0.0018;
+    vec3 cam_pos = MainSceneData.camera_pos;
+    // cam_pos.z = max(cam_pos.z, surface_pos.z);
+    cam_pos = worldspace_to_atmosphere(cam_pos);
 
-        // Scale the fog factor after tinting the color, this reduces the ambient term
-        // even more, this is a purely artistic choice
-        // fog_factor = saturate(fog_factor * 1.6);
-
-        // Reduce sun factor, we don't want to have a sun disk shown trough objects
-        float mix_factor = smoothstep(0, 1, (pathLength-10000.0) / 10000.0);
-        inscatter = mix(fog_color, inscatter, mix_factor);
-        sun_factor = 0;
+    if (is_skybox(surface_pos, MainSceneData.camera_pos)) {
+        surface_pos = worldspace_to_atmosphere(surface_pos * 1e3);
+    } else {
+        surface_pos = worldspace_to_atmosphere(surface_pos);
     }
 
-    // Apply inscattered light
-    inscatteredLight = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
-    inscatteredLight *= 70.0;
 
-    // Don't show sun below horizon, and also don't show scattering below horizon
-    inscatteredLight *= saturate( (sun_vector.z+0.1) * 40.0);
+    if (intersect_atmosphere(cam_pos, view_dir, offset, max_path_length)) {
+        float path_length = distance(cam_pos, surface_pos);
 
-    return inscatteredLight;
+        // check if object occludes atmosphere
+        if (path_length > offset) {
+
+            // offsetting camera
+            vec3 start_pos = cam_pos + offset * view_dir;
+            float start_pos_height = length(start_pos);
+            path_length -= offset;
+
+            // starting position of path is now ensured to be inside atmosphere
+            // was either originally there or has been moved to top boundary
+            float mustart_pos = dot(start_pos, view_dir) / start_pos_height;
+            float nustart_pos = dot(view_dir, sun_vector);
+            float musstart_pos = dot(start_pos, sun_vector) / start_pos_height;
+
+            // in-scattering for infinite ray (light in-scattered when
+            // no surface hit or object behind atmosphere)
+            vec4 inscatter = max(texture4D(InscatterSampler, start_pos_height,
+               mustart_pos, musstart_pos, nustart_pos), 0.0f);
+            float surface_pos_height = length(surface_pos);
+            float musEndPos = dot(surface_pos, sun_vector) / surface_pos_height;
+
+            // check if object hit is inside atmosphere
+            if (path_length < max_path_length) {
+
+             // reduce total in-scattered light when surface hit
+             // within atmosphere
+             // fíx described in chapter 5.1.1
+                attenuation = analyticTransmittance(start_pos_height, mustart_pos, path_length);
+                float muEndPos = dot(surface_pos, view_dir) / surface_pos_height;
+                vec4 inscatterSurface = texture4D(InscatterSampler, surface_pos_height,
+                    muEndPos, musEndPos, nustart_pos);
+                inscatter = max(inscatter-attenuation.rgbr*inscatterSurface, 0.0f);
+                irradiance_factor = 1.0f;
+            } else {
+                // retrieve extinction factor for infinite ray
+                // fíx described in chapter 5.1.1
+                attenuation = analyticTransmittance(start_pos_height, mustart_pos, path_length);
+            }
+
+            // avoids imprecision problems near horizon by interpolating between
+            // two points above and below horizon
+            // fíx described in chapter 5.1.2
+            float muHorizon = -sqrt(1.0 - (Rg / start_pos_height) * (Rg / start_pos_height));
+            if (abs(mustart_pos - muHorizon) < EPSILON_INSCATTER)
+            {
+                float mu = muHorizon - EPSILON_INSCATTER;
+                float samplePosHeight = sqrt(start_pos_height*start_pos_height
+                    +path_length*path_length+2.0f*start_pos_height*
+                    path_length*mu);
+                float muSamplePos = (start_pos_height * mu + path_length) / samplePosHeight;
+                vec4 inScatter0 = texture4D(InscatterSampler, start_pos_height, mu,
+                    musstart_pos, nustart_pos);
+                vec4 inScatter1 = texture4D(InscatterSampler, samplePosHeight,
+                    muSamplePos, musEndPos, nustart_pos);
+                vec4 inScatterA = max(inScatter0-attenuation.rgbr*inScatter1,0.0);
+                mu = muHorizon + EPSILON_INSCATTER;
+                samplePosHeight = sqrt(start_pos_height*start_pos_height
+                    +path_length*path_length+2.0f*
+                    start_pos_height*path_length*mu);
+                muSamplePos = (start_pos_height * mu + path_length) / samplePosHeight;
+                inScatter0 = texture4D(InscatterSampler, start_pos_height, mu,
+                    musstart_pos, nustart_pos);
+                inScatter1 = texture4D(InscatterSampler, samplePosHeight, muSamplePos,
+                    musEndPos, nustart_pos);
+                vec4 inScatterB = max(inScatter0 - attenuation.rgbr * inScatter1,
+                    0.0f);
+                float t = ((mustart_pos - muHorizon) + EPSILON_INSCATTER) / (2.0 * EPSILON_INSCATTER);
+                inscatter = mix(inScatterA, inScatterB, t);
+            }
+            // avoids imprecision problems in Mie scattering when sun is below
+             //horizon
+            // fíx described in chapter 5.1.3
+            inscatter.w *= smoothstep(0.00, 0.02, musstart_pos);
+            float phaseR = phaseFunctionR(nustart_pos);
+            float phaseM = phaseFunctionM(nustart_pos);
+            inscattered_light = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
+            inscattered_light *= 120.0;
+        }
+    }
+    return inscattered_light;
+}
+
+
+
+vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
+{
+    vec3 attenuation = vec3(0);
+    float irradiance_factor = 0.0;
+
+    float fog_ramp = TimeOfDay.Scattering.fog_ramp_size / 3.0;
+    fog_factor = saturate(1.0 - exp( -distance(surface_pos, MainSceneData.camera_pos) / fog_ramp ));
+
+    // Exponential height fog
+    float ground_fog_factor = 50000.0;
+    // fog_factor *= saturate(exp(- surface_pos.z / ground_fog_factor));
+    fog_factor *= 1.0 - saturate(surface_pos.z / ground_fog_factor);
+
+    if (is_skybox(surface_pos, MainSceneData.camera_pos)) {
+        fog_factor = 1;
+    }
+
+    vec3 scattering = get_inscattered_light(surface_pos, view_dir, attenuation, irradiance_factor);
+
+    
+    // fog_factor = 1.0;
+
+    return scattering;
 }
 

@@ -32,7 +32,7 @@
 #pragma include "Includes/Noise.inc.glsl"
 
 uniform sampler3D CloudVoxels;
-uniform samplerCube ScatteringCubemap;
+uniform samplerCube ScatteringIBLDiffuse;
 uniform writeonly image3D RESTRICT CloudVoxelsDest;
 uniform sampler2D NoiseTex;
 
@@ -69,7 +69,7 @@ void main() {
         vec3 noise = textureLod(NoiseTex, fcoord.xy * 16.0, 0).xyz * 2.0 - 1.0;
         // nrm = normalize(nrm + 0.1*noise);
 
-        vec3 scattering_color = textureLod(ScatteringCubemap, nrm, 6).xyz;
+        vec3 scattering_color = texture(ScatteringIBLDiffuse, nrm).xyz;
 
         float cloud_brightness = 0.5 + 0.05 * dot(nrm, -sun_vector);
 

@@ -31,7 +31,7 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 uniform sampler3D deltaSSampler;
-uniform layout(rgba32f) image3D RESTRICT dest;
+uniform layout(rgba16f) image3D RESTRICT dest;
 
 void main() {
 

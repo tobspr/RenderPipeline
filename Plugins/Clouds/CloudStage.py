@@ -34,7 +34,7 @@ class CloudStage(RenderStage):
 
     """ This stage handles the volumetric cloud rendering """
 
-    required_pipes = ["ShadedScene", "GBuffer", "ScatteringCubemap"]
+    required_pipes = ["ShadedScene", "GBuffer", "ScatteringIBLDiffuse"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CloudStage", pipeline)
