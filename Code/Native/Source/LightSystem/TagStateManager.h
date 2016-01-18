@@ -81,7 +81,7 @@ class TagStateManager {
 
         void apply_state(StateContainer& container, NodePath np, Shader* shader,
                          const string& name, int sort);
-        void cleanup_states(StateContainer& container);
+        void cleanup_container_states(StateContainer& container);
         void register_camera(StateContainer &container, Camera* source);
         void unregister_camera(StateContainer &container, Camera* source);
 

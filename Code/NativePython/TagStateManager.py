@@ -24,14 +24,23 @@ THE SOFTWARE.
  	 	    	 	
 """
 
+from __future__ import print_function
 from panda3d.core import RenderState, ColorWriteAttrib, ShaderAttrib, BitMask32
 
 class TagStateManager(object):
 
+    class StateContainer(object):
+        def __init__(self, tag_name, mask):
+            self.cameras = []
+            self.tag_states = {}
+            self.tag_name = tag_name
+            self.mask = mask
+
     def __init__(self, main_cam_node):
         self._main_cam_node = main_cam_node
-        self._shadow_cameras = set()
-        self._tag_states = {}
+        self._main_cam_node.node().set_camera_mask(self.get_gbuffer_mask())
+        self._shadow_container = self.StateContainer("Shadows", self.get_shadow_mask())
+        self._voxelize_container = self.StateContainer("Voxelize", self.get_voxelize_mask())
 
     def get_gbuffer_mask(self):
         return BitMask32.bit(1)
@@ -43,29 +52,58 @@ class TagStateManager(object):
         return BitMask32.bit(3)
 
     def apply_shadow_state(self, np, shader, name, sort):
-        state = RenderState.make_empty()
-        state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
-        state = state.set_attrib(ShaderAttrib.make(shader), sort)
+        self.apply_state(self._shadow_container, np, shader, name, sort)
 
-        if name in self._tag_states:
-            print("TagStateManager: Warning: Overiding existing state", name)
-        self._tag_states[name] = state
-
-        # Save the tag on the node path
-        np.set_tag("Shadows", name)
-
-        for cam in self._shadow_cameras:
-            cam.set_tag_state(name, state)
-
-    def cleanup_states(self):
-        self._main_cam_node.node().clear_tag_states()
-        for cam in self._shadow_cameras:
-            cam.clear_tag_states()
+    def apply_voxelize_state(self, np, shader, name, sort):
+        self.apply_state(self._voxelize_container, np, shader, name, sort)
 
     def register_shadow_camera(self, source):
-        source.set_tag_state_key("Shadows")
-        source.set_camera_mask(self.get_shadow_mask())
-        self._shadow_cameras.add(source)
+        self.register_camera(self._shadow_container, source)
 
     def unregister_shadow_camera(self, source):
-        self._shadow_cameras.remove(source)
+        self.unregister_camera(self._shadow_container, source)
+
+    def register_voxelize_camera(self, source):
+        self.register_camera(self._voxelize_container, source)
+
+    def unregister_voxelize_camera(self, source):
+        self.unregister_camera(self._voxelize_container, source)
+
+    def apply_state(self, container, np, shader, name, sort):
+        state = RenderState.make_empty()
+        state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
+        state = state.set_attrib(ShaderAttrib.make(shader, sort), sort)
+
+        container.tag_states[name] = state
+        np.set_tag(container.tag_name, name)
+
+        for camera in container.cameras:
+            camera.set_tag_state(name, state)
+
+    def cleanup_states(self):
+        self._main_cam_node.clear_tag_states()
+        self.cleanup_container_states(self._shadow_container)
+        self.cleanup_container_states(self._voxelize_container)
+
+    def cleanup_container_states(self, container):
+        for camera in container.cameras:
+            camera.clear_tag_states()
+        container.tag_states = {}
+
+    def register_camera(self, container, source):
+        source.set_tag_state_key(container.tag_name)
+        source.set_camera_mask(container.mask)
+        state = RenderState.make_empty()
+        state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
+        source.set_initial_state(state)
+        container.cameras.append(source)
+
+    def unregister_camera(self, container, source):
+        if source not in container.cameras:
+            print("Could not remove source, was never attached!")
+            return
+
+        container.cameras.remove(source)
+        source.clear_tag_states()
+        source.set_initial_state(RenderState.make_empty())
+

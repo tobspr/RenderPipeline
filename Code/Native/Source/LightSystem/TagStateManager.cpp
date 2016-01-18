@@ -118,8 +118,8 @@ void TagStateManager::cleanup_states() {
     DCAST(Camera, _main_cam_node.node())->clear_tag_states();
 
     // Clear the containers
-    cleanup_states(_shadow_container);
-    cleanup_states(_voxelize_container);
+    cleanup_container_states(_shadow_container);
+    cleanup_container_states(_voxelize_container);
 }
 
 /**
@@ -129,7 +129,7 @@ void TagStateManager::cleanup_states() {
  * 
  * @param container Container to clear
  */
-void TagStateManager::cleanup_states(StateContainer& container) {
+void TagStateManager::cleanup_container_states(StateContainer& container) {
     for (size_t i = 0; i < container.cameras.size(); ++i) {
         container.cameras[i]->clear_tag_states();
     }
