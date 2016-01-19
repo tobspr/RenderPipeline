@@ -79,7 +79,7 @@ void ShadowManager::init() {
     for(size_t i = 0; i < _max_updates; ++i) {
     
         // Create the camera
-        PT(Camera) camera = new Camera("ShadowCam-" + to_string(i));
+        PT(Camera) camera = new Camera("ShadowCam-" + to_string((long long)i));
         camera->set_lens(new MatrixLens());
         camera->set_active(false);
         camera->set_scene(_scene_parent);
