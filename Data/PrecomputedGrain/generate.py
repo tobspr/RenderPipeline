@@ -50,7 +50,7 @@ import direct.directbase.DirectStart
 from Code.RenderTarget import RenderTarget
 
 target = RenderTarget()
-target.set_size(1024, 1024)
+target.size = 1024, 1024
 target.add_color_texture(bits=8)
 target.prepare_offscreen_buffer()
 target.set_shader(grain_shader)

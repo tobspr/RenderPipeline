@@ -63,13 +63,13 @@ class CloudStage(RenderStage):
 
         # Construct the target which populates the voxel texture
         self._grid_target = self._create_target("Clouds:CreateGrid")
-        self._grid_target.set_size(self._voxel_res_xy, self._voxel_res_xy)
+        self._grid_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._grid_target.prepare_offscreen_buffer()
         self._grid_target.set_shader_input("CloudVoxels", self._cloud_voxels)
 
         # Construct the target which shades the voxels
         self._shade_target = self._create_target("Clouds:ShadeVoxels")
-        self._shade_target.set_size(self._voxel_res_xy, self._voxel_res_xy)
+        self._shade_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._shade_target.prepare_offscreen_buffer()
         self._shade_target.set_shader_input("CloudVoxels", self._cloud_voxels)
         self._shade_target.set_shader_input("CloudVoxelsDest", self._cloud_voxels)
@@ -121,7 +121,7 @@ class CloudStage(RenderStage):
         self._particle_target = self._create_target("Clouds:RenderParticles")
         self._particle_target.add_color_texture(bits=16)
         self._particle_target.set_source(self._particle_cam_np, Globals.base.win)
-        self._particle_target.set_enable_transparency(True)
+        self._particle_target.enable_transparency = True
         self._particle_target.prepare_scene_render()
         self._particle_target.set_clear_color(True, color=Vec4(0, 0, 0, 0))
 

@@ -68,10 +68,10 @@ class PSSMShadowStage(RenderStage):
     def create(self):
         self._target = self._create_target("PSSMShadowMap")
         self._target.set_source(None, Globals.base.win)
-        self._target.set_size(self._split_resolution * self._num_splits, self._split_resolution)
+        self._target.size = (self._split_resolution * self._num_splits, self._split_resolution)
         self._target.add_depth_texture(bits=32)
-        self._target.set_create_overlay_quad(False)
-        self._target.set_color_write(False)
+        self._target.create_overlay_quad = False
+        self._target.color_write = False
         self._target.prepare_scene_render()
 
         # Remove all unused display regions

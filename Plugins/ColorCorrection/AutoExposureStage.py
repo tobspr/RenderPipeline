@@ -62,7 +62,7 @@ class AutoExposureStage(RenderStage):
 
             mip_target = self._create_target("ColorCorrection:DScaleLum:S" + str(wsize_x))
             mip_target.add_color_texture(bits=8)
-            mip_target.set_size(wsize_x, wsize_y)
+            mip_target.size = wsize_x, wsize_y
             mip_target.prepare_offscreen_buffer()
             mip_target.set_shader_input("SourceTex", last_tex)
             self._mip_targets.append(mip_target)
@@ -77,7 +77,7 @@ class AutoExposureStage(RenderStage):
 
         # Create the target which extracts the exposure from the average brightness
         self._target_analyze = self._create_target("ColorCorrection:AnalyzeBrightness")
-        self._target_analyze.set_size(1, 1)
+        self._target_analyze.size = 1, 1
         self._target_analyze.prepare_offscreen_buffer()
 
         self._target_analyze.set_shader_input(

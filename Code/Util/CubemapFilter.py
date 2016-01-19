@@ -118,7 +118,7 @@ class CubemapFilter(DebugObject):
             # Create the target which downsamples the mipmap
             target = self._stage._create_target(
                 self._name + "SpecIBL-" + str(mipsize))
-            target.set_size(mipsize * 6, mipsize)
+            target.size = mipsize * 6, mipsize
             target.prepare_offscreen_buffer()
 
             if mip == 0:
@@ -135,7 +135,7 @@ class CubemapFilter(DebugObject):
             # Create the target which filters the mipmap and removes the noise
             target_filter = self._stage._create_target(
                 self._name + "SpecIBLFilter-" + str(mipsize))
-            target_filter.set_size(mipsize * 6, mipsize)
+            target_filter.size = mipsize * 6, mipsize
             target_filter.prepare_offscreen_buffer()
             target_filter.set_shader_input("currentMip", mip)
             target_filter.set_shader_input("SourceTex", self._spec_pref_map)
@@ -150,7 +150,7 @@ class CubemapFilter(DebugObject):
 
         # Create the target which integrates the lambert brdf
         self._diffuse_target = self._stage._create_target(self._name + "DiffuseIBL")
-        self._diffuse_target.set_size(CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
+        self._diffuse_target.size = (CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
             CubemapFilter.PREFILTER_CUBEMAP_SIZE)
         self._diffuse_target.prepare_offscreen_buffer()
 
@@ -161,7 +161,7 @@ class CubemapFilter(DebugObject):
         # Create the target which removes the noise from the previous target,
         # which is introduced with importance sampling
         self._diff_filter_target = self._stage._create_target(self._name + "DiffPrefIBL")
-        self._diff_filter_target.set_size(CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
+        self._diff_filter_target.size = (CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
         self._diff_filter_target.prepare_offscreen_buffer()
 

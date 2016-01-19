@@ -41,7 +41,7 @@ class FinalStage(RenderStage):
         self._target = self._create_target("FinalStage")
 
         # We don't have a color attachment, but still want to write color
-        self._target.set_color_write(True)
+        self._target.color_write = True
         self._target.prepare_offscreen_buffer()
         self._target.make_main_target()
 

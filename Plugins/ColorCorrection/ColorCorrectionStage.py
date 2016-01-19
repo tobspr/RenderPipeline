@@ -53,7 +53,7 @@ class ColorCorrectionStage(RenderStage):
 
             self._target_sharpen = self._create_target("ColorCorrection:Sharpen")
             # We don't have a color attachment, but still want to write color
-            self._target_sharpen.set_color_write(True)
+            self._target_sharpen.color_write = True
             self._target_sharpen.prepare_offscreen_buffer()
             self._target_sharpen.make_main_target()
 
@@ -66,7 +66,7 @@ class ColorCorrectionStage(RenderStage):
 
         else:
             # Make the main target the only target
-            self._target.set_color_write(True)
+            self._target.color_write = True
             self._target.prepare_offscreen_buffer()
             self._target.make_main_target()
 

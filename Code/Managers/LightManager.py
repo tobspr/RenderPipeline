@@ -203,5 +203,5 @@ class LightManager(BaseManager):
         add_stage(self._apply_lights_stage)
 
         self._shadow_stage = ShadowStage(self._pipeline)
-        self._shadow_stage.set_size(self._shadow_manager.get_atlas_size())
+        self._shadow_stage.size = self._shadow_manager.get_atlas_size()
         add_stage(self._shadow_stage)

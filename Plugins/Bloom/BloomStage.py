@@ -80,7 +80,7 @@ class BloomStage(RenderStage):
         for i in range(self._num_mips):
             scale_multiplier = 2 ** (1 + i)
             target = self._create_target("Bloom:Downsample:Step-" + str(i))
-            target.set_size(-scale_multiplier, -scale_multiplier)
+            target.size = -scale_multiplier, -scale_multiplier
             target.prepare_offscreen_buffer()
             target.set_shader_input("SourceMip", i)
             target.set_shader_input("SourceTex", self._scene_target_img)
@@ -91,7 +91,7 @@ class BloomStage(RenderStage):
         for i in range(self._num_mips):
             scale_multiplier = 2 ** (self._num_mips - i - 1)
             target = self._create_target("Bloom:Upsample:Step-" + str(i))
-            target.set_size(-scale_multiplier, -scale_multiplier)
+            target.size = -scale_multiplier, -scale_multiplier
 
             if i == self._num_mips - 1:
                 target.add_color_texture(bits=16)

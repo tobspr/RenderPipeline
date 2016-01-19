@@ -56,12 +56,12 @@ mip = 0
 
 while TEXTURE_SIZE >= 2:
     target = RenderTarget()
-    target.set_size(TEXTURE_SIZE)
+    target.size = TEXTURE_SIZE
     target.add_color_texture(bits=16)
     target.prepare_offscreen_buffer()
 
     target_stitch = RenderTarget()
-    target_stitch.set_size(TEXTURE_SIZE)
+    target_stitch.size = TEXTURE_SIZE
     target_stitch.add_color_texture(bits=16)
     target_stitch.prepare_offscreen_buffer()
 

@@ -69,7 +69,7 @@ class DownscaleZStage(RenderStage):
             current_res = (current_res[0] + 1) // 2, (current_res[1] + 1) // 2
 
             target = self._create_target("DownscaleZ-" + str(mip))
-            target.set_size(*current_res)
+            target.size = current_res
             target.prepare_offscreen_buffer()
             target.set_shader_input(
                 "SourceImage", self._depth_storage)

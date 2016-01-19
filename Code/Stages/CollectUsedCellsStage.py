@@ -53,7 +53,7 @@ class CollectUsedCellsStage(RenderStage):
 
     def create(self):
         self._target = self._create_target("CollectUsedCells")
-        self._target.set_size(self._tile_amount.x, self._tile_amount.y)
+        self._target.size = self._tile_amount.x, self._tile_amount.y
         self._target.prepare_offscreen_buffer()
 
         num_slices = self._pipeline.get_setting("lighting.culling_grid_slices")

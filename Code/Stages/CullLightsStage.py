@@ -73,7 +73,7 @@ class CullLightsStage(RenderStage):
         # Don't use an oversized triangle for the target, since this leads to
         # overshading
         self._target.USE_OVERSIZED_TRIANGLE = False
-        self._target.set_size(self._slice_width, self._num_rows)
+        self._target.size = self._slice_width, self._num_rows
         self._target.prepare_offscreen_buffer()
         self._target.set_clear_color(color=Vec4(0.2, 0.6, 1.0, 1.0))
         
