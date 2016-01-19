@@ -39,7 +39,7 @@ class AutoExposureStage(RenderStage):
 
     def get_produced_pipes(self):
         return {"ShadedScene": self._target_apply["color"],
-                "Exposure": self._tex_exposure.get_texture()}
+                "Exposure": self._tex_exposure}
 
     def create(self):
 
@@ -81,14 +81,14 @@ class AutoExposureStage(RenderStage):
         self._target_analyze.prepare_offscreen_buffer()
 
         self._target_analyze.set_shader_input(
-            "ExposureStorage", self._tex_exposure.get_texture())
+            "ExposureStorage", self._tex_exposure)
         self._target_analyze.set_shader_input("DownscaledTex", last_tex)
 
         # Create the target which applies the generated exposure to the scene
         self._target_apply = self._create_target("ColorCorrection:ApplyExposure")
         self._target_apply.add_color_texture(bits=16)
         self._target_apply.prepare_offscreen_buffer()
-        self._target_apply.set_shader_input("Exposure", self._tex_exposure.get_texture())
+        self._target_apply.set_shader_input("Exposure", self._tex_exposure)
 
     def set_shaders(self):
         self._target_lum.set_shader(self._load_plugin_shader("GenerateLuminance.frag.glsl"))

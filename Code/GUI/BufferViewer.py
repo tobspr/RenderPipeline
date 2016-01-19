@@ -96,7 +96,7 @@ class BufferViewer(DraggableWindow):
                     memory += entry[target].estimate_texture_memory()
             elif entry.__class__.__name__ == "Image":
                 count += 1
-                memory += entry.get_texture().estimate_texture_memory()
+                memory += entry.estimate_texture_memory()
             else:
                 self.warn("Unkown type:", entry.__class__.__name)
         return {"count": count, "memory": memory}
@@ -154,7 +154,7 @@ class BufferViewer(DraggableWindow):
             # Cant use isinstance or we get circular references
             elif entry.__class__.__name__ == "Image":
                 if self._display_images:
-                    self._stages.append(entry.get_texture())
+                    self._stages.append(entry)
             else:
                 self.warn("Unrecognized instance!", entry.__class__)
 

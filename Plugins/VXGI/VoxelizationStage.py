@@ -112,7 +112,7 @@ class VoxelizationStage(RenderStage):
         Globals.base.render.set_shader_input("voxelGridPosition", self._pta_grid_pos)
         Globals.base.render.set_shader_input("voxelGridRes", self._pta_grid_res)
         Globals.base.render.set_shader_input("voxelGridSize", self._pta_grid_size)
-        Globals.base.render.set_shader_input("VoxelGridDest", self._voxel_grid.texture)
+        Globals.base.render.set_shader_input("VoxelGridDest", self._voxel_grid)
 
     def update(self):
         self._voxel_cam_np.show()

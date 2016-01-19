@@ -57,16 +57,15 @@ class BloomStage(RenderStage):
         self._scene_target_img = Image.create_2d(
             "BloomDownsample", Globals.base.win.get_x_size(),
             Globals.base.win.get_y_size(), Texture.T_float, Texture.F_r11_g11_b10)
-        scene_target = self._scene_target_img.get_texture()
 
-        scene_target.set_minfilter(SamplerState.FT_linear_mipmap_linear)
-        scene_target.set_magfilter(SamplerState.FT_linear)
-        scene_target.set_wrap_u(SamplerState.WM_clamp)
-        scene_target.set_wrap_v(SamplerState.WM_clamp)
+        self._scene_target_img.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        self._scene_target_img.set_magfilter(SamplerState.FT_linear)
+        self._scene_target_img.set_wrap_u(SamplerState.WM_clamp)
+        self._scene_target_img.set_wrap_v(SamplerState.WM_clamp)
 
         self._target_extract = self._create_target("Bloom:ExtractBrightSpots")
         self._target_extract.prepare_offscreen_buffer()
-        self._target_extract.set_shader_input("DestTex", scene_target, False, True, -1, 0)
+        self._target_extract.set_shader_input("DestTex", self._scene_target_img, False, True, -1, 0)
 
         self._target_firefly_x.set_shader_input("direction", LVecBase2i(1, 0))
         self._target_firefly_y.set_shader_input("direction", LVecBase2i(0, 1))
@@ -84,8 +83,8 @@ class BloomStage(RenderStage):
             target.set_size(-scale_multiplier, -scale_multiplier)
             target.prepare_offscreen_buffer()
             target.set_shader_input("SourceMip", i)
-            target.set_shader_input("SourceTex", scene_target)
-            target.set_shader_input("DestTex", scene_target, False, True, -1, i + 1)
+            target.set_shader_input("SourceTex", self._scene_target_img)
+            target.set_shader_input("DestTex", self._scene_target_img, False, True, -1, i + 1)
             self._downsample_targets.append(target)
 
         # Upsample passes
@@ -102,8 +101,8 @@ class BloomStage(RenderStage):
             target.set_shader_input("LastUpsamplePass", i == self._num_mips - 1)
 
             target.set_shader_input("SourceMip", self._num_mips - i)
-            target.set_shader_input("SourceTex", scene_target)
-            target.set_shader_input("DestTex", scene_target, False, True, -1, self._num_mips - i - 1)
+            target.set_shader_input("SourceTex", self._scene_target_img)
+            target.set_shader_input("DestTex", self._scene_target_img, False, True, -1, self._num_mips - i - 1)
             self._upsample_targets.append(target)
 
     def set_shaders(self):

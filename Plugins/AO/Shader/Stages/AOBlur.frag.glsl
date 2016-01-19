@@ -90,5 +90,6 @@ void main() {
     }
 
     accum /= max(0.01, accum_w);
+    // accum = texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0);
     result = accum;
 }

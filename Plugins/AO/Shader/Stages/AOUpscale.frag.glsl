@@ -55,8 +55,8 @@ void main() {
     float mid_depth = get_gbuffer_depth(GBuffer, texcoord);
     vec3 mid_nrm = get_gbuffer_normal(GBuffer, texcoord);
 
-    const float max_depth_diff = 0.001;
-    const float max_nrm_diff = 0.01;
+    const float max_depth_diff = 0.002;
+    const float max_nrm_diff = 0.02;
 
     float weights = 0.0;
     vec4 accum = vec4(0);

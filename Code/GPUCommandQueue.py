@@ -70,7 +70,7 @@ class GPUCommandQueue(DebugObject):
 
     def process_queue(self):
         """ Processes the n first commands of the queue """
-        pointer = self._data_texture.get_texture().modify_ram_image()
+        pointer = self._data_texture.modify_ram_image()
         num_commands_exec = self._command_list.write_commands_to(
             pointer, self._commands_per_frame)
         self._pta_num_commands[0] = num_commands_exec
@@ -109,5 +109,5 @@ class GPUCommandQueue(DebugObject):
         self._command_target = RenderTarget("CommandTarget")
         self._command_target.set_size(1, 1)
         self._command_target.prepare_offscreen_buffer()
-        self._command_target.set_shader_input("CommandQueue", self._data_texture.get_texture())
+        self._command_target.set_shader_input("CommandQueue", self._data_texture)
         self._command_target.set_shader_input("commandCount", self._pta_num_commands)

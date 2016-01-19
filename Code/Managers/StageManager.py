@@ -166,8 +166,8 @@ class StageManager(BaseManager):
                         "Prev-" + pipe_name, Globals.base.win.get_x_size(),
                         Globals.base.win.get_y_size(), Texture.T_float,
                         Texture.F_rgba16)
-                    pipe_tex.get_texture().clear_image()
-                    self._previous_pipes[pipe_name] = pipe_tex.get_texture()
+                    pipe_tex.clear_image()
+                    self._previous_pipes[pipe_name] = pipe_tex
                 stage.set_shader_input("Previous_" + pipe_name, self._previous_pipes[pipe_name])
                 continue
 

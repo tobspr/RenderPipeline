@@ -46,7 +46,7 @@ class FlagUsedCellsStage(RenderStage):
         self._tile_amount = tile_amount
 
     def get_produced_pipes(self):
-        return {"FlaggedCells": self._cell_grid_flags.get_texture()}
+        return {"FlaggedCells": self._cell_grid_flags}
 
     def create(self):
         self._target = self._create_target("FlagUsedCells")
@@ -58,7 +58,7 @@ class FlagUsedCellsStage(RenderStage):
             Texture.T_unsigned_byte, Texture.F_red)
         self._cell_grid_flags.set_clear_color(0)
 
-        self._target.set_shader_input("cellGridFlags", self._cell_grid_flags.get_texture())
+        self._target.set_shader_input("cellGridFlags", self._cell_grid_flags)
 
     def update(self):
         self._cell_grid_flags.clear_image()

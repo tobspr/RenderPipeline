@@ -51,8 +51,8 @@ class CullLightsStage(RenderStage):
         self._tile_amount = tile_amount
 
     def get_produced_pipes(self):
-        return {"PerCellLights": self._per_cell_lights.get_texture()}
-
+        return {"PerCellLights": self._per_cell_lights}
+        
     def get_produced_defines(self):
         return {
             "LC_SHADE_SLICES": self._num_rows,
@@ -82,8 +82,7 @@ class CullLightsStage(RenderStage):
             Texture.T_int, Texture.F_r32)
         self._per_cell_lights.set_clear_color(0)
         self.debug("Using", self._num_rows, "culling lines")
-        self._target.set_shader_input(
-            "PerCellLightsBuffer", self._per_cell_lights.get_texture())
+        self._target.set_shader_input("PerCellLightsBuffer", self._per_cell_lights)
 
     def set_shaders(self):
         self._target.set_shader(self._load_shader("Stages/CullLights.vert",
