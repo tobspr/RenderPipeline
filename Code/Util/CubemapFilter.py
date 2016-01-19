@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import Texture
+from panda3d.core import Texture, SamplerState
 
 from .DebugObject import DebugObject
 from .Image import Image
@@ -98,12 +98,12 @@ class CubemapFilter(DebugObject):
 
         # Set the correct filtering modes
         for tex in [self._diffuse_map, self._specular_map, self._prefilter_map]:
-            tex.set_minfilter(Texture.FT_linear)
-            tex.set_magfilter(Texture.FT_linear)
+            tex.set_minfilter(SamplerState.FT_linear)
+            tex.set_magfilter(SamplerState.FT_linear)
 
         # Use mipmaps for the specular cubemap
-        self._spec_pref_map.set_minfilter(Texture.FT_linear_mipmap_linear)
-        self._specular_map.set_minfilter(Texture.FT_linear_mipmap_linear)
+        self._spec_pref_map.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        self._specular_map.set_minfilter(SamplerState.FT_linear_mipmap_linear)
 
     def _make_specular_targets(self):
         """ Internal method to create the specular mip chain """

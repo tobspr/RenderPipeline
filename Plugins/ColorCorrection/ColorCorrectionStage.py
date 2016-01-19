@@ -27,7 +27,7 @@ THE SOFTWARE.
 from __future__ import division
 
 from .. import *
-from panda3d.core import Texture, Vec4
+from panda3d.core import SamplerState, Vec4
 
 class ColorCorrectionStage(RenderStage):
 
@@ -59,8 +59,8 @@ class ColorCorrectionStage(RenderStage):
 
             # Use a linear filter for the color texture, this is required for the sharpen
             # filter to work properly.
-            self._target["color"].set_minfilter(Texture.FT_linear)
-            self._target["color"].set_magfilter(Texture.FT_linear)
+            self._target["color"].set_minfilter(SamplerState.FT_linear)
+            self._target["color"].set_magfilter(SamplerState.FT_linear)
 
             self._target_sharpen.set_shader_input("SourceTex", self._target["color"])
 

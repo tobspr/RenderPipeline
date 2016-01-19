@@ -26,7 +26,7 @@ THE SOFTWARE.
 # Load the plugin api
 from .. import *
 
-from panda3d.core import Texture, SamplerState 
+from panda3d.core import SamplerState 
 from CloudStage import CloudStage
 
 class Plugin(BasePlugin):
@@ -44,8 +44,8 @@ class Plugin(BasePlugin):
             tex.set_wrap_u(SamplerState.WM_repeat)
             tex.set_wrap_v(SamplerState.WM_repeat)
             tex.set_anisotropic_degree(16)
-            tex.set_minfilter(Texture.FT_linear)
-            tex.set_magfilter(Texture.FT_linear)
+            tex.set_minfilter(SamplerState.FT_linear)
+            tex.set_magfilter(SamplerState.FT_linear)
 
         self._stage.set_shader_input("SpriteTex",  sprite_tex)
         self._stage.set_shader_input("NoiseTex", noise_tex)

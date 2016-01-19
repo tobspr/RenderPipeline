@@ -24,6 +24,8 @@ THE SOFTWARE.
  	 	    	 	
 """
 
+
+from __future__ import division
 from functools import partial
 
 from panda3d.core import Texture, Vec3
@@ -177,8 +179,7 @@ class BufferViewer(DraggableWindow):
 
         self._remove_components()
         entries_per_row = 8
-        aspect = Globals.base.win.get_y_size() /\
-            float(Globals.base.win.get_x_size())
+        aspect = Globals.base.win.y_size / Globals.base.win.x_size
         entry_width = 180
         entry_height = (entry_width - 20) * aspect + 55
 
@@ -223,8 +224,8 @@ class BufferViewer(DraggableWindow):
 
             # Scale image so it always fits
             w, h = stage_tex.get_x_size(), stage_tex.get_y_size()
-            scale_x = float(entry_width - 30) / max(1, w)
-            scale_y = float(entry_height - 60) / max(1, h)
+            scale_x = (entry_width - 30) / max(1, w)
+            scale_y = (entry_height - 60) / max(1, h)
             scale_factor = min(scale_x, scale_y)
 
             if stage_tex.get_texture_type() == Texture.TT_buffer_texture:

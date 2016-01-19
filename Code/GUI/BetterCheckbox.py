@@ -24,7 +24,7 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-from panda3d.core import Texture, TransparencyAttrib
+from panda3d.core import Texture, TransparencyAttrib, SamplerState
 from direct.gui.DirectCheckBox import DirectCheckBox
 import direct.gui.DirectGuiGlobals as DGG
 
@@ -55,11 +55,11 @@ class BetterCheckbox(DebugObject):
 
         # Set near filter, otherwise textures look like crap
         for tex in [checked_img, unchecked_img]:
-            tex.set_minfilter(Texture.FT_linear)
-            tex.set_magfilter(Texture.FT_linear)
+            tex.set_minfilter(SamplerState.FT_linear)
+            tex.set_magfilter(SamplerState.FT_linear)
+            tex.set_wrap_u(SamplerState.WM_clamp)
+            tex.set_wrap_v(SamplerState.WM_clamp)
             tex.set_anisotropic_degree(0)
-            tex.set_wrap_u(Texture.WM_clamp)
-            tex.set_wrap_v(Texture.WM_clamp)
 
         self._node = DirectCheckBox(
             parent=parent, pos=(x + 11, 1, -y - 8), scale=(10 / 2.0, 1, 10 / 2.0),

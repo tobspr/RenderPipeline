@@ -52,10 +52,10 @@ class DownscaleZStage(RenderStage):
 
         self._depth_storage = Image.create_2d(
             "DownscaledZ", res.x, res.y, Texture.T_float, Texture.F_rg32)
-        self._depth_storage.set_minfilter(Texture.FT_nearest_mipmap_nearest)
-        self._depth_storage.set_magfilter(Texture.FT_nearest)
-        self._depth_storage.set_wrap_u(Texture.WM_clamp)
-        self._depth_storage.set_wrap_v(Texture.WM_clamp)
+        self._depth_storage.set_minfilter(SamplerState.FT_nearest_mipmap_nearest)
+        self._depth_storage.set_magfilter(SamplerState.FT_nearest)
+        self._depth_storage.set_wrap_u(SamplerState.WM_clamp)
+        self._depth_storage.set_wrap_v(SamplerState.WM_clamp)
 
         self._target_copy = self._create_target("CopyZBuffer")
         self._target_copy.prepare_offscreen_buffer()

@@ -25,6 +25,7 @@ THE SOFTWARE.
 """
 
 from panda3d.core import Filename, Texture, VirtualFileSystem, get_model_path
+from panda3d.core import SamplerState
 
 from ..Util.DebugObject import DebugObject
 from ..Util.IESProfileLoader import IESProfileLoader, IESLoaderException
@@ -47,11 +48,11 @@ class IESProfileManager(DebugObject):
         self._storage_tex = Texture("IESDatasets")
         self._storage_tex.setup_3d_texture(
             512, 512, self._max_entries, Texture.T_float, Texture.F_r16)
-        self._storage_tex.set_minfilter(Texture.FT_linear)
-        self._storage_tex.set_magfilter(Texture.FT_linear)
-        self._storage_tex.set_wrap_u(Texture.WM_clamp)
-        self._storage_tex.set_wrap_v(Texture.WM_repeat)
-        self._storage_tex.set_wrap_w(Texture.WM_clamp)
+        self._storage_tex.set_minfilter(SamplerState.FT_linear)
+        self._storage_tex.set_magfilter(SamplerState.FT_linear)
+        self._storage_tex.set_wrap_u(SamplerState.WM_clamp)
+        self._storage_tex.set_wrap_v(SamplerState.WM_repeat)
+        self._storage_tex.set_wrap_w(SamplerState.WM_clamp)
 
         self._pipeline.stage_mgr.add_input("IESDatasetTex", self._storage_tex)
         self._pipeline.stage_mgr.define("MAX_IES_PROFILES", self._max_entries)

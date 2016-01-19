@@ -27,7 +27,7 @@ from __future__ import division
 from six.moves import range
 
 from .. import *
-from panda3d.core import SamplerState, Texture
+from panda3d.core import SamplerState
 
 class PSSMShadowStage(RenderStage):
 
@@ -49,8 +49,8 @@ class PSSMShadowStage(RenderStage):
 
     def make_pcf_state(self):
         state = SamplerState()
-        state.set_minfilter(Texture.FT_shadow)
-        state.set_magfilter(Texture.FT_shadow)
+        state.set_minfilter(SamplerState.FT_shadow)
+        state.set_magfilter(SamplerState.FT_shadow)
         return state
 
     def set_num_splits(self, splits):

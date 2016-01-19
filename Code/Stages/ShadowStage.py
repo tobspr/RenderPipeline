@@ -24,7 +24,7 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-from panda3d.core import Camera, NodePath, SamplerState, Texture
+from panda3d.core import Camera, NodePath, SamplerState
 
 from ..RenderStage import RenderStage
 from ..Globals import Globals
@@ -49,8 +49,8 @@ class ShadowStage(RenderStage):
 
     def make_pcf_state(self):
         state = SamplerState()
-        state.set_minfilter(Texture.FT_shadow)
-        state.set_magfilter(Texture.FT_shadow)
+        state.set_minfilter(SamplerState.FT_shadow)
+        state.set_magfilter(SamplerState.FT_shadow)
         return state
 
     def create(self):

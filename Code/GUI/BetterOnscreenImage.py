@@ -24,7 +24,7 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-from panda3d.core import TransparencyAttrib, Vec3, Texture
+from panda3d.core import TransparencyAttrib, Vec3, Texture, SamplerState
 from direct.gui.OnscreenImage import OnscreenImage
 
 from ..Util.DebugObject import DebugObject
@@ -76,13 +76,13 @@ class BetterOnscreenImage(DebugObject):
         # Apply a near filter, but only if the parent has no scale, otherwise
         # it will look weird
         if near_filter and any_filter and parent.get_sx() == 1.0:
-            tex.set_minfilter(Texture.FT_nearest)
-            tex.set_magfilter(Texture.FT_nearest)
+            tex.set_minfilter(SamplerState.FT_nearest)
+            tex.set_magfilter(SamplerState.FT_nearest)
 
         if any_filter:
             tex.set_anisotropic_degree(8)
-            tex.set_wrap_u(Texture.WM_clamp)
-            tex.set_wrap_v(Texture.WM_clamp)
+            tex.set_wrap_u(SamplerState.WM_clamp)
+            tex.set_wrap_v(SamplerState.WM_clamp)
 
     def get_initial_pos(self):
         """ Returns the initial position of the image. This can be used for

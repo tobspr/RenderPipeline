@@ -167,10 +167,10 @@ while TEXTURE_SIZE >= 2:
 
     """ 
 
-    target['color'].set_minfilter(Texture.FT_nearest)
-    target['color'].set_magfilter(Texture.FT_nearest)
-    target['color'].set_wrap_u(Texture.WM_border_color)
-    target['color'].set_wrap_v(Texture.WM_border_color)
+    target['color'].set_minfilter(SamplerState.FT_nearest)
+    target['color'].set_magfilter(SamplerState.FT_nearest)
+    target['color'].set_wrap_u(SamplerState.WM_border_color)
+    target['color'].set_wrap_v(SamplerState.WM_border_color)
     target['color'].set_border_color(Vec4(1,0, 0, 1))
 
     target.set_shader(Shader.make(Shader.SLGLSL, vertex_shader, fragment_shader))

@@ -27,7 +27,7 @@ THE SOFTWARE.
 from six.moves import range
 
 from direct.stdpy.file import listdir, isfile, join
-from panda3d.core import Texture, Shader
+from panda3d.core import Texture, SamplerState, Shader
 
 from .. import *
 
@@ -62,11 +62,11 @@ class ScatteringMethodHosekWilkie(ScatteringMethod):
             return
 
         lut_tex = SliceLoader.load_3d_texture(lut_src, 512, 128, 100)
-        lut_tex.set_wrap_u(Texture.WM_repeat)
-        lut_tex.set_wrap_v(Texture.WM_clamp)
-        lut_tex.set_wrap_w(Texture.WM_clamp)
-        lut_tex.set_minfilter(Texture.FT_linear)
-        lut_tex.set_magfilter(Texture.FT_linear)
+        lut_tex.set_wrap_u(SamplerState.WM_repeat)
+        lut_tex.set_wrap_v(SamplerState.WM_clamp)
+        lut_tex.set_wrap_w(SamplerState.WM_clamp)
+        lut_tex.set_minfilter(SamplerState.FT_linear)
+        lut_tex.set_magfilter(SamplerState.FT_linear)
         lut_tex.set_format(Texture.F_rgb16)
 
         self._handle._display_stage.set_shader_input("ScatteringLUT", lut_tex)
@@ -124,11 +124,11 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         }
 
         for img in self._textures.values():
-            img.set_minfilter(Texture.FT_linear)
-            img.set_magfilter(Texture.FT_linear)
-            img.set_wrap_u(Texture.WM_clamp)
-            img.set_wrap_v(Texture.WM_clamp)
-            img.set_wrap_w(Texture.WM_clamp)
+            img.set_minfilter(SamplerState.FT_linear)
+            img.set_magfilter(SamplerState.FT_linear)
+            img.set_wrap_u(SamplerState.WM_clamp)
+            img.set_wrap_v(SamplerState.WM_clamp)
+            img.set_wrap_w(SamplerState.WM_clamp)
 
     def _create_shaders(self):
         """ Creates all the shaders used for precomputing """
