@@ -62,7 +62,7 @@ class ExposureWidget(DebugObject):
                                      frameSize=(200, 0, -10, -85), pos=(0, 0, 0))
 
         self._display_img = BetterOnscreenImage(
-            image=self._storage_tex.get_texture(), parent=self._node, w=140, h=20, x=20, y=50)
+            image=self._storage_tex, parent=self._node, w=140, h=20, x=20, y=50)
 
         self._display_txt = BetterOnscreenText(
             text="Current Exposure".upper(), parent=self._node, x=160, y=40, size=13,
@@ -93,5 +93,5 @@ class ExposureWidget(DebugObject):
         exposure_tex = stage_mgr.get_pipe("Exposure")
         self._cshader = Shader.load_compute(Shader.SL_GLSL, "Shader/GUI/VisualizeExposure.compute.glsl")
         self._cshader_np.set_shader(self._cshader)
-        self._cshader_np.set_shader_input("DestTex", self._storage_tex.get_texture())
+        self._cshader_np.set_shader_input("DestTex", self._storage_tex)
         self._cshader_np.set_shader_input("ExposureTex", exposure_tex)

@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import Texture
+from panda3d.core import Texture, SamplerState
 
 from .DebugObject import DebugObject
 from .Image import Image
@@ -50,21 +50,21 @@ class CubemapFilter(DebugObject):
     def get_specular_cubemap(self):
         """ Returns the generated specular cubemap. The specular cubemap is
         mipmapped and provides the specular IBL components of the input cubemap. """
-        return self._specular_map.texture
+        return self._specular_map
 
     specular_cubemap = property(get_specular_cubemap)
 
     def get_diffuse_cubemap(self):
         """ Returns the generated diffuse cubemap. The diffuse cubemap has no
         mipmaps and contains the filtered diffuse component of the input cubemap. """
-        return self._diffuse_map.texture
+        return self._diffuse_map
 
     diffuse_cubemap = property(get_diffuse_cubemap)
 
     def get_target_cubemap(self):
         """ Returns the target where the caller should write the initial cubemap
         data to """
-        return self._specular_map.texture
+        return self._specular_map
 
     target_cubemap = property(get_target_cubemap)
 
@@ -98,12 +98,12 @@ class CubemapFilter(DebugObject):
 
         # Set the correct filtering modes
         for tex in [self._diffuse_map, self._specular_map, self._prefilter_map]:
-            tex.texture.set_minfilter(Texture.FT_linear)
-            tex.texture.set_magfilter(Texture.FT_linear)
+            tex.set_minfilter(SamplerState.FT_linear)
+            tex.set_magfilter(SamplerState.FT_linear)
 
         # Use mipmaps for the specular cubemap
-        self._spec_pref_map.texture.set_minfilter(Texture.FT_linear_mipmap_linear)
-        self._specular_map.texture.set_minfilter(Texture.FT_linear_mipmap_linear)
+        self._spec_pref_map.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        self._specular_map.set_minfilter(SamplerState.FT_linear_mipmap_linear)
 
     def _make_specular_targets(self):
         """ Internal method to create the specular mip chain """
@@ -118,15 +118,15 @@ class CubemapFilter(DebugObject):
             # Create the target which downsamples the mipmap
             target = self._stage._create_target(
                 self._name + "SpecIBL-" + str(mipsize))
-            target.set_size(mipsize * 6, mipsize)
+            target.size = mipsize * 6, mipsize
             target.prepare_offscreen_buffer()
 
             if mip == 0:
-                target.set_shader_input("SourceTex", self._specular_map.texture)
+                target.set_shader_input("SourceTex", self._specular_map)
             else:
-                target.set_shader_input("SourceTex", self._spec_pref_map.texture)
+                target.set_shader_input("SourceTex", self._spec_pref_map)
             target.set_shader_input(
-                "DestMipmap", self._spec_pref_map.texture, False, True, -1,
+                "DestMipmap", self._spec_pref_map, False, True, -1,
                 mip + 1, 0)
             target.set_shader_input("currentMip", mip)
 
@@ -135,12 +135,12 @@ class CubemapFilter(DebugObject):
             # Create the target which filters the mipmap and removes the noise
             target_filter = self._stage._create_target(
                 self._name + "SpecIBLFilter-" + str(mipsize))
-            target_filter.set_size(mipsize * 6, mipsize)
+            target_filter.size = mipsize * 6, mipsize
             target_filter.prepare_offscreen_buffer()
             target_filter.set_shader_input("currentMip", mip)
-            target_filter.set_shader_input("SourceTex", self._spec_pref_map.texture)
+            target_filter.set_shader_input("SourceTex", self._spec_pref_map)
             target_filter.set_shader_input(
-                "DestMipmap", self._specular_map.texture, False, True, -1, mip, 0)
+                "DestMipmap", self._specular_map, False, True, -1, mip, 0)
             
             self._targets_spec.append(target)
             self._targets_spec_filter.append(target_filter)
@@ -150,23 +150,23 @@ class CubemapFilter(DebugObject):
 
         # Create the target which integrates the lambert brdf
         self._diffuse_target = self._stage._create_target(self._name + "DiffuseIBL")
-        self._diffuse_target.set_size(CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
+        self._diffuse_target.size = (CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
             CubemapFilter.PREFILTER_CUBEMAP_SIZE)
         self._diffuse_target.prepare_offscreen_buffer()
 
-        self._diffuse_target.set_shader_input("SourceCubemap", self._specular_map.texture)
-        self._diffuse_target.set_shader_input("DestCubemap", self._prefilter_map.texture)
+        self._diffuse_target.set_shader_input("SourceCubemap", self._specular_map)
+        self._diffuse_target.set_shader_input("DestCubemap", self._prefilter_map)
         self._diffuse_target.set_shader_input("cubeSize", CubemapFilter.PREFILTER_CUBEMAP_SIZE)
 
         # Create the target which removes the noise from the previous target,
         # which is introduced with importance sampling
         self._diff_filter_target = self._stage._create_target(self._name + "DiffPrefIBL")
-        self._diff_filter_target.set_size(CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
+        self._diff_filter_target.size = (CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
         self._diff_filter_target.prepare_offscreen_buffer()
 
-        self._diff_filter_target.set_shader_input("SourceCubemap", self._prefilter_map.texture)
-        self._diff_filter_target.set_shader_input("DestCubemap", self._diffuse_map.texture)
+        self._diff_filter_target.set_shader_input("SourceCubemap", self._prefilter_map)
+        self._diff_filter_target.set_shader_input("DestCubemap", self._diffuse_map)
         self._diff_filter_target.set_shader_input("cubeSize", CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
 
     def set_shaders(self):

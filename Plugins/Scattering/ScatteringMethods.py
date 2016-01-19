@@ -27,7 +27,7 @@ THE SOFTWARE.
 from six.moves import range
 
 from direct.stdpy.file import listdir, isfile, join
-from panda3d.core import Texture, Shader
+from panda3d.core import Texture, SamplerState, Shader
 
 from .. import *
 
@@ -62,11 +62,11 @@ class ScatteringMethodHosekWilkie(ScatteringMethod):
             return
 
         lut_tex = SliceLoader.load_3d_texture(lut_src, 512, 128, 100)
-        lut_tex.set_wrap_u(Texture.WM_repeat)
-        lut_tex.set_wrap_v(Texture.WM_clamp)
-        lut_tex.set_wrap_w(Texture.WM_clamp)
-        lut_tex.set_minfilter(Texture.FT_linear)
-        lut_tex.set_magfilter(Texture.FT_linear)
+        lut_tex.set_wrap_u(SamplerState.WM_repeat)
+        lut_tex.set_wrap_v(SamplerState.WM_clamp)
+        lut_tex.set_wrap_w(SamplerState.WM_clamp)
+        lut_tex.set_minfilter(SamplerState.FT_linear)
+        lut_tex.set_magfilter(SamplerState.FT_linear)
         lut_tex.set_format(Texture.F_rgb16)
 
         self._handle._display_stage.set_shader_input("ScatteringLUT", lut_tex)
@@ -124,11 +124,11 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         }
 
         for img in self._textures.values():
-            img.get_texture().set_minfilter(Texture.FT_linear)
-            img.get_texture().set_magfilter(Texture.FT_linear)
-            img.get_texture().set_wrap_u(Texture.WM_clamp)
-            img.get_texture().set_wrap_v(Texture.WM_clamp)
-            img.get_texture().set_wrap_w(Texture.WM_clamp)
+            img.set_minfilter(SamplerState.FT_linear)
+            img.set_magfilter(SamplerState.FT_linear)
+            img.set_wrap_u(SamplerState.WM_clamp)
+            img.set_wrap_v(SamplerState.WM_clamp)
+            img.set_wrap_w(SamplerState.WM_clamp)
 
     def _create_shaders(self):
         """ Creates all the shaders used for precomputing """
@@ -150,38 +150,38 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         # Transmittance
         exec_cshader(
             self._shaders["transmittance"], {
-                "dest": self._textures["transmittance"].get_texture()
+                "dest": self._textures["transmittance"]
             }, (self._trans_w, self._trans_h, 1))
 
         # Delta E
         exec_cshader(
             self._shaders["delta_e"], {
-                "transmittanceSampler": self._textures["transmittance"].get_texture(),
-                "dest": self._textures["delta_e"].get_texture()
+                "transmittanceSampler": self._textures["transmittance"],
+                "dest": self._textures["delta_e"]
             }, (self._sky_w, self._sky_h, 1))
 
         # Delta S
         exec_cshader(
             self._shaders["delta_sm_sr"], {
-                "transmittanceSampler": self._textures["transmittance"].get_texture(),
-                "destDeltaSR": self._textures["delta_sr"].get_texture(),
-                "destDeltaSM": self._textures["delta_sm"].get_texture()
+                "transmittanceSampler": self._textures["transmittance"],
+                "destDeltaSR": self._textures["delta_sr"],
+                "destDeltaSM": self._textures["delta_sm"]
             }, (self._res_mu_s_nu, self._res_mu, self._res_r), (8, 8, 8))
 
         # Copy deltaE to irradiance texture
         exec_cshader(
             self._shaders["copy_irradiance"], {
                 "k": 0.0,
-                "deltaESampler": self._textures["delta_e"].get_texture(),
-                "dest": self._textures["irradiance"].get_texture()
+                "deltaESampler": self._textures["delta_e"],
+                "dest": self._textures["irradiance"]
             }, (self._sky_w, self._sky_h, 1))
 
         # Copy delta s into inscatter texture
         exec_cshader(
             self._shaders["copy_inscatter"], {
-                "deltaSRSampler": self._textures["delta_sr"].get_texture(),
-                "deltaSMSampler": self._textures["delta_sm"].get_texture(),
-                "dest": self._textures["inscatter"].get_texture()
+                "deltaSRSampler": self._textures["delta_sr"],
+                "deltaSMSampler": self._textures["delta_sm"],
+                "dest": self._textures["inscatter"]
             }, (self._res_mu_s_nu, self._res_mu, self._res_r), (8, 8, 8))
 
         for order in range(2, 5):
@@ -190,51 +190,51 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
             # Delta J
             exec_cshader(
                 self._shaders["delta_j"], {
-                    "transmittanceSampler": self._textures["transmittance"].get_texture(),
-                    "deltaSRSampler": self._textures["delta_sr"].get_texture(),
-                    "deltaSMSampler": self._textures["delta_sm"].get_texture(),
-                    "deltaESampler": self._textures["delta_e"].get_texture(),
-                    "dest": self._textures["delta_j"].get_texture(),
+                    "transmittanceSampler": self._textures["transmittance"],
+                    "deltaSRSampler": self._textures["delta_sr"],
+                    "deltaSMSampler": self._textures["delta_sm"],
+                    "deltaESampler": self._textures["delta_e"],
+                    "dest": self._textures["delta_j"],
                     "first": first
                 }, (self._res_mu_s_nu, self._res_mu, self._res_r), (8, 8, 8))
 
             # Delta E
             exec_cshader(
                 self._shaders["irradiance_n"], {
-                    "transmittanceSampler": self._textures["transmittance"].get_texture(),
-                    "deltaSRSampler": self._textures["delta_sr"].get_texture(),
-                    "deltaSMSampler": self._textures["delta_sm"].get_texture(),
-                    "dest": self._textures["delta_e"].get_texture(),
+                    "transmittanceSampler": self._textures["transmittance"],
+                    "deltaSRSampler": self._textures["delta_sr"],
+                    "deltaSMSampler": self._textures["delta_sm"],
+                    "dest": self._textures["delta_e"],
                     "first": first
                 }, (self._sky_w, self._sky_h, 1))
 
             # Delta Sr
             exec_cshader(
                 self._shaders["delta_sr"], {
-                    "transmittanceSampler": self._textures["transmittance"].get_texture(),
-                    "deltaJSampler": self._textures["delta_j"].get_texture(),
-                    "dest": self._textures["delta_sr"].get_texture(),
+                    "transmittanceSampler": self._textures["transmittance"],
+                    "deltaJSampler": self._textures["delta_j"],
+                    "dest": self._textures["delta_sr"],
                     "first": first
                 }, (self._res_mu_s_nu, self._res_mu, self._res_r), (8, 8, 8))
 
             # Add delta E to irradiance
             exec_cshader(
                 self._shaders["add_delta_e"], {
-                    "deltaESampler": self._textures["delta_e"].get_texture(),
-                    "dest": self._textures["irradiance"].get_texture(),
+                    "deltaESampler": self._textures["delta_e"],
+                    "dest": self._textures["irradiance"],
                 }, (self._sky_w, self._sky_h, 1))
 
             # Add deltaSr to inscatter texture
             exec_cshader(
                 self._shaders["add_delta_sr"], {
-                    "deltaSSampler": self._textures["delta_sr"].get_texture(),
-                    "dest": self._textures["inscatter"].get_texture()
+                    "deltaSSampler": self._textures["delta_sr"],
+                    "dest": self._textures["inscatter"]
                 }, (self._res_mu_s_nu, self._res_mu, self._res_r), (8, 8, 8))
 
         # Make stages available
         self._handle._display_stage.set_shader_input(
-            "InscatterSampler", self._textures["inscatter"].get_texture())
+            "InscatterSampler", self._textures["inscatter"])
         self._handle._display_stage.set_shader_input(
-            "transmittanceSampler", self._textures["transmittance"].get_texture())
+            "transmittanceSampler", self._textures["transmittance"])
         self._handle._display_stage.set_shader_input(
-            "IrradianceSampler", self._textures["irradiance"].get_texture())
+            "IrradianceSampler", self._textures["irradiance"])

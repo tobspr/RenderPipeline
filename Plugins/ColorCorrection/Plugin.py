@@ -24,8 +24,7 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-
-from panda3d.core import Texture
+from panda3d.core import SamplerState
 
 # Load the plugin api
 from .. import *
@@ -53,10 +52,10 @@ class Plugin(BasePlugin):
     def _load_lut(self):
         lut_path = self.get_resource("DefaultLUT.png")
         lut = SliceLoader.load_3d_texture(lut_path, 64)
-        lut.set_wrap_u(Texture.WM_clamp)
-        lut.set_wrap_v(Texture.WM_clamp)
-        lut.set_wrap_w(Texture.WM_clamp)
-        lut.set_minfilter(Texture.FT_linear)
-        lut.set_magfilter(Texture.FT_linear)
+        lut.set_wrap_u(SamplerState.WM_clamp)
+        lut.set_wrap_v(SamplerState.WM_clamp)
+        lut.set_wrap_w(SamplerState.WM_clamp)
+        lut.set_minfilter(SamplerState.FT_linear)
+        lut.set_magfilter(SamplerState.FT_linear)
         lut.set_anisotropic_degree(0)
         self._stage.set_shader_input("ColorLUT", lut)

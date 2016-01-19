@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import PTAVecBase3f, PTAMat4, Texture, TransformState, Mat4
 from panda3d.core import CS_yup_right, CS_zup_right, PTAFloat, invert, Vec3
+from panda3d.core import SamplerState
 from direct.stdpy.file import open
 
 from .Util.DebugObject import DebugObject
@@ -104,10 +105,10 @@ class CommonResources(BaseManager):
             readMipmaps=True)
         # quant_tex = Globals.loader.loadTexture(
             # "Data/NormalQuantization/Reference.png")
-        quant_tex.set_minfilter(Texture.FT_linear_mipmap_linear)
-        quant_tex.set_magfilter(Texture.FT_linear)
-        quant_tex.set_wrap_u(Texture.WM_mirror)
-        quant_tex.set_wrap_v(Texture.WM_mirror)
+        quant_tex.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        quant_tex.set_magfilter(SamplerState.FT_linear)
+        quant_tex.set_wrap_u(SamplerState.WM_mirror)
+        quant_tex.set_wrap_v(SamplerState.WM_mirror)
         quant_tex.set_anisotropic_degree(0)
         quant_tex.set_format(Texture.F_r16)
         self._showbase.render.set_shader_input("NormalQuantizationTex", quant_tex)
@@ -117,21 +118,21 @@ class CommonResources(BaseManager):
         when no other environment data is available """
         envmap = Globals.loader.loadCubeMap(
             "Data/DefaultCubemap/Filtered/#-#.png", readMipmaps=True)
-        envmap.set_minfilter(Texture.FT_linear_mipmap_linear)
-        envmap.set_magfilter(Texture.FT_linear)
-        envmap.set_wrap_u(Texture.WM_repeat)
-        envmap.set_wrap_v(Texture.WM_repeat)
-        envmap.set_wrap_w(Texture.WM_repeat)
+        envmap.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        envmap.set_magfilter(SamplerState.FT_linear)
+        envmap.set_wrap_u(SamplerState.WM_repeat)
+        envmap.set_wrap_v(SamplerState.WM_repeat)
+        envmap.set_wrap_w(SamplerState.WM_repeat)
         self._pipeline.stage_mgr.add_input("DefaultEnvmap", envmap)
 
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
         brdf_tex = Globals.loader.loadTexture(
             "Data/EnvironmentBRDF/PrefilteredEnvBRDF.png")
-        brdf_tex.set_minfilter(Texture.FT_linear)
-        brdf_tex.set_magfilter(Texture.FT_linear)
-        brdf_tex.set_wrap_u(Texture.WM_clamp)
-        brdf_tex.set_wrap_v(Texture.WM_clamp)
+        brdf_tex.set_minfilter(SamplerState.FT_linear)
+        brdf_tex.set_magfilter(SamplerState.FT_linear)
+        brdf_tex.set_wrap_u(SamplerState.WM_clamp)
+        brdf_tex.set_wrap_v(SamplerState.WM_clamp)
         brdf_tex.set_anisotropic_degree(0)
         brdf_tex.set_format(Texture.F_rgba16)
         self._pipeline.stage_mgr.add_input("PrefilteredBRDF", brdf_tex)
@@ -139,18 +140,18 @@ class CommonResources(BaseManager):
     def _load_precomputed_grain(self):
         grain_tex = Globals.loader.loadTexture(
             "Data/PrecomputedGrain/grain.png")
-        grain_tex.set_minfilter(Texture.FT_linear)
-        grain_tex.set_magfilter(Texture.FT_linear)
-        grain_tex.set_wrap_u(Texture.WM_repeat)
-        grain_tex.set_wrap_v(Texture.WM_repeat)
+        grain_tex.set_minfilter(SamplerState.FT_linear)
+        grain_tex.set_magfilter(SamplerState.FT_linear)
+        grain_tex.set_wrap_u(SamplerState.WM_repeat)
+        grain_tex.set_wrap_v(SamplerState.WM_repeat)
         grain_tex.set_anisotropic_degree(0)
         self._pipeline.stage_mgr.add_input("PrecomputedGrain", grain_tex)  
 
     def _load_skydome(self):
         """ Loads the skydome """
         skydome = Globals.loader.loadTexture("Data/BuiltinModels/Skybox/Skybox2.jpg")
-        skydome.set_wrap_u(Texture.WM_clamp)
-        skydome.set_wrap_v(Texture.WM_clamp)
+        skydome.set_wrap_u(SamplerState.WM_clamp)
+        skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)
 
     def load_default_skybox(self):

@@ -56,7 +56,7 @@ class ScatteringStage(RenderStage):
 
         self._target_cube = self._create_target("Scattering:EnvironmentCubemap")
         # self._target_cube.add_color_texture()
-        self._target_cube.set_size(self._filter.size * 6, self._filter.size)
+        self._target_cube.size = self._filter.size * 6, self._filter.size
         self._target_cube.prepare_offscreen_buffer()
         self._target_cube.set_shader_input("DestCubemap", self._filter.target_cubemap)
 

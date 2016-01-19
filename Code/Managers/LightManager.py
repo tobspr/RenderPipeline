@@ -116,10 +116,8 @@ class LightManager(BaseManager):
     def _init_command_queue(self):
         """ Inits the command queue """
         self._cmd_queue = GPUCommandQueue(self._pipeline)
-        self._cmd_queue.register_input(
-            "LightData", self._img_light_data.get_texture())
-        self._cmd_queue.register_input(
-            "SourceData", self._img_source_data.get_texture())
+        self._cmd_queue.register_input("LightData", self._img_light_data)
+        self._cmd_queue.register_input("SourceData", self._img_source_data)
 
         # Register the command list
         self._internal_mgr.set_command_list(self._cmd_queue.get_cmd_list())
@@ -167,8 +165,8 @@ class LightManager(BaseManager):
 
         # Register the buffer
         add_input = self._pipeline.stage_mgr.add_input
-        add_input("AllLightsData", self._img_light_data.get_texture())
-        add_input("ShadowSourceData", self._img_source_data.get_texture())
+        add_input("AllLightsData", self._img_light_data)
+        add_input("ShadowSourceData", self._img_source_data)
         add_input("maxLightIndex", self._pta_max_light_index)
 
     def _compute_tile_size(self):
@@ -205,5 +203,5 @@ class LightManager(BaseManager):
         add_stage(self._apply_lights_stage)
 
         self._shadow_stage = ShadowStage(self._pipeline)
-        self._shadow_stage.set_size(self._shadow_manager.get_atlas_size())
+        self._shadow_stage.size = self._shadow_manager.get_atlas_size()
         add_stage(self._shadow_stage)

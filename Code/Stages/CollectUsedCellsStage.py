@@ -47,13 +47,13 @@ class CollectUsedCellsStage(RenderStage):
 
     def get_produced_pipes(self):
         return {
-            "CellListBuffer": self._cell_list_buffer.get_texture(),
-            "CellIndices": self._cell_index_buffer.get_texture(),
+            "CellListBuffer": self._cell_list_buffer,
+            "CellIndices": self._cell_index_buffer,
         }
 
     def create(self):
         self._target = self._create_target("CollectUsedCells")
-        self._target.set_size(self._tile_amount.x, self._tile_amount.y)
+        self._target.size = self._tile_amount.x, self._tile_amount.y
         self._target.prepare_offscreen_buffer()
 
         num_slices = self._pipeline.get_setting("lighting.culling_grid_slices")
@@ -68,10 +68,8 @@ class CollectUsedCellsStage(RenderStage):
             num_slices, Texture.T_int, Texture.F_r32i)
         self._cell_index_buffer.set_clear_color(0)
 
-        self._target.set_shader_input(
-            "cellListBuffer", self._cell_list_buffer.get_texture())
-        self._target.set_shader_input(
-            "cellListIndices", self._cell_index_buffer.get_texture())
+        self._target.set_shader_input("cellListBuffer", self._cell_list_buffer)
+        self._target.set_shader_input("cellListIndices", self._cell_index_buffer)
 
     def update(self):
         self._cell_list_buffer.clear_image()

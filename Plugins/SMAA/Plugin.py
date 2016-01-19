@@ -24,7 +24,7 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-from panda3d.core import Texture
+from panda3d.core import SamplerState
 
 # Load plugin api
 from .. import *
@@ -75,10 +75,10 @@ class Plugin(BasePlugin):
         self._area_tex = Globals.loader.loadTexture(self.get_resource("AreaTex.png"))
 
         for tex in [self._search_tex, self._area_tex]:
-            tex.set_minfilter(Texture.FT_linear)
-            tex.set_magfilter(Texture.FT_linear)
-            tex.set_wrap_u(Texture.WM_clamp)
-            tex.set_wrap_v(Texture.WM_clamp)
+            tex.set_minfilter(SamplerState.FT_linear)
+            tex.set_magfilter(SamplerState.FT_linear)
+            tex.set_wrap_u(SamplerState.WM_clamp)
+            tex.set_wrap_v(SamplerState.WM_clamp)
 
         self._smaa_stage.set_area_tex(self._area_tex)
         self._smaa_stage.set_search_tex(self._search_tex)

@@ -73,6 +73,11 @@ class RenderPipeline(PipelineExtensions, DebugObject):
         self._settings = SettingsLoader(self, "Pipeline Settings")
         self.set_default_loading_screen()
 
+        # Check for the right Panda3D version
+        if not self._check_version():
+            self.fatal("Your Panda3D version is too old! Please update to a newer "
+                       " version! (You need a development version of panda).")
+
     def load_settings(self, path):
         """ Loads the pipeline configuration from a given filename. Usually
         this is the 'Config/pipeline.ini' file. If you call this more than once,

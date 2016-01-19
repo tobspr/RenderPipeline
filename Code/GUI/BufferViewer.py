@@ -24,6 +24,8 @@ THE SOFTWARE.
  	 	    	 	
 """
 
+
+from __future__ import division
 from functools import partial
 
 from panda3d.core import Texture, Vec3
@@ -96,7 +98,7 @@ class BufferViewer(DraggableWindow):
                     memory += entry[target].estimate_texture_memory()
             elif entry.__class__.__name__ == "Image":
                 count += 1
-                memory += entry.get_texture().estimate_texture_memory()
+                memory += entry.estimate_texture_memory()
             else:
                 self.warn("Unkown type:", entry.__class__.__name)
         return {"count": count, "memory": memory}
@@ -154,7 +156,7 @@ class BufferViewer(DraggableWindow):
             # Cant use isinstance or we get circular references
             elif entry.__class__.__name__ == "Image":
                 if self._display_images:
-                    self._stages.append(entry.get_texture())
+                    self._stages.append(entry)
             else:
                 self.warn("Unrecognized instance!", entry.__class__)
 
@@ -177,8 +179,7 @@ class BufferViewer(DraggableWindow):
 
         self._remove_components()
         entries_per_row = 8
-        aspect = Globals.base.win.get_y_size() /\
-            float(Globals.base.win.get_x_size())
+        aspect = Globals.base.win.y_size / Globals.base.win.x_size
         entry_width = 180
         entry_height = (entry_width - 20) * aspect + 55
 
@@ -223,8 +224,8 @@ class BufferViewer(DraggableWindow):
 
             # Scale image so it always fits
             w, h = stage_tex.get_x_size(), stage_tex.get_y_size()
-            scale_x = float(entry_width - 30) / max(1, w)
-            scale_y = float(entry_height - 60) / max(1, h)
+            scale_x = (entry_width - 30) / max(1, w)
+            scale_y = (entry_height - 60) / max(1, h)
             scale_factor = min(scale_x, scale_y)
 
             if stage_tex.get_texture_type() == Texture.TT_buffer_texture:

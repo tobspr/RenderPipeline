@@ -98,8 +98,8 @@ class VoxelizationStage(RenderStage):
         # Create the voxelization target
         self._voxel_target = self._create_target("VoxelizeScene")
         self._voxel_target.set_source(source_cam=self._voxel_cam_np, source_win=Globals.base.win)
-        self._voxel_target.set_size(self._voxel_res, self._voxel_res)
-        self._voxel_target.set_create_overlay_quad(False)
+        self._voxel_target.size = self._voxel_res, self._voxel_res
+        self._voxel_target.create_overlay_quad = False
         self._voxel_target.prepare_scene_render()
 
         # Create the initial state used for rendering voxels
@@ -112,7 +112,7 @@ class VoxelizationStage(RenderStage):
         Globals.base.render.set_shader_input("voxelGridPosition", self._pta_grid_pos)
         Globals.base.render.set_shader_input("voxelGridRes", self._pta_grid_res)
         Globals.base.render.set_shader_input("voxelGridSize", self._pta_grid_size)
-        Globals.base.render.set_shader_input("VoxelGridDest", self._voxel_grid.texture)
+        Globals.base.render.set_shader_input("VoxelGridDest", self._voxel_grid)
 
     def update(self):
         self._voxel_cam_np.show()

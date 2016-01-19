@@ -27,7 +27,7 @@ THE SOFTWARE.
 from __future__ import division
 
 from .. import *
-from panda3d.core import Texture, Vec4
+from panda3d.core import SamplerState, Vec4
 
 class ColorCorrectionStage(RenderStage):
 
@@ -53,20 +53,20 @@ class ColorCorrectionStage(RenderStage):
 
             self._target_sharpen = self._create_target("ColorCorrection:Sharpen")
             # We don't have a color attachment, but still want to write color
-            self._target_sharpen.set_color_write(True)
+            self._target_sharpen.color_write = True
             self._target_sharpen.prepare_offscreen_buffer()
             self._target_sharpen.make_main_target()
 
             # Use a linear filter for the color texture, this is required for the sharpen
             # filter to work properly.
-            self._target["color"].set_minfilter(Texture.FT_linear)
-            self._target["color"].set_magfilter(Texture.FT_linear)
+            self._target["color"].set_minfilter(SamplerState.FT_linear)
+            self._target["color"].set_magfilter(SamplerState.FT_linear)
 
             self._target_sharpen.set_shader_input("SourceTex", self._target["color"])
 
         else:
             # Make the main target the only target
-            self._target.set_color_write(True)
+            self._target.color_write = True
             self._target.prepare_offscreen_buffer()
             self._target.make_main_target()
 
