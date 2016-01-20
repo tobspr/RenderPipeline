@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import Texture
+from panda3d.core import Texture, SamplerState
 
 from ..RenderStage import RenderStage
 from ..Globals import Globals

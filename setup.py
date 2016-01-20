@@ -53,6 +53,7 @@ os.chdir(SETUP_DIR)
 sys.path.insert(0, ".")
 sys.path.insert(0, "Code/External/six")
 
+from six.moves import input
 
 # Load and init colorama, used to color the output
 from Code.External.Colorama import init as init_colorama
@@ -62,9 +63,9 @@ init_colorama()
 # Load submodule downloader
 from Code.Util.SubmoduleDownloader import SubmoduleDownloader
 
-def color(string, color):
-    return color + string + Style.RESET_ALL
-
+def color(string, col):
+    """ Colors a string """
+    return col + string + Style.RESET_ALL
 
 def error(msg):
     """ Prints an error message and then exists the program """
@@ -72,13 +73,11 @@ def error(msg):
     print("Please fix the errors and then rerun this file")
     sys.exit(0)
 
-
 def print_step(title):
     """ Prints a new section """
     global CURRENT_STEP
     CURRENT_STEP += 1
-    print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", color(title, Fore.CYAN + Style.BRIGHT)) 
-
+    print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", color(title, Fore.CYAN + Style.BRIGHT))
 
 def exec_python_file(pth):
     """ Executes a python file and checks the return value """
@@ -152,7 +151,7 @@ def check_repo_complete():
 def ask_download_samples():
     """ Asks the user if he wants to download the samples """
     query = "\nDo you want to download the Render Pipeline samples? (y/n):"
-    
+
     if get_user_choice(query):
         print_step("Downloading samples (Might take a while, depending on your internet) ...")
         exec_python_file("Samples/download_samples.py")
@@ -163,11 +162,8 @@ def get_user_choice(query):
     query = color(query, Fore.GREEN + Style.BRIGHT) + " "
 
     while True:
-        if sys.version_info.major > 2:
-            user_choice = str(input(query)).strip().lower()
-        else:
-            user_choice = str(raw_input(query)).strip().lower()
-            
+        user_choice = str(raw_input(query)).strip().lower()
+
         if user_choice in ["y", "yes", "1"]:
             return True
 

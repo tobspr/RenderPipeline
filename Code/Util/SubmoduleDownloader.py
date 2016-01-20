@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from __future__ import print_function
 from six import BytesIO
+from six.moves import urllib
 
 import os
 import sys
@@ -54,20 +55,9 @@ class SubmoduleDownloader:
         prefix = module_name + "-master"
         print("Fetching:", source_url)
 
-        try:
-            # Python 2.7
-            import urllib
-            urlopen = urllib.urlopen
-
-        except:
-            
-            # Python 3.4
-            import urllib.request
-            urlopen = urllib.request.urlopen
-
         # Download the zip
         try:
-            usock = urlopen(source_url)
+            usock = urllib.request.urlopen(source_url)
             zip_data = usock.read()
             usock.close()
         except Exception as msg:
@@ -106,7 +96,7 @@ class SubmoduleDownloader:
                     with zip_handle.open(fname, "r") as source, open(rel_name, "wb") as dest:
                         shutil.copyfileobj(source, dest)
                     num_files += 1
-                            
+
             # Directories
             else:
                 if not os.path.isdir(rel_name):

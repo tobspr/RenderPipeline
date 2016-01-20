@@ -24,6 +24,10 @@ THE SOFTWARE.
  	 	    	 	
 """
 
+# Disable the member not found errors, since we are just extending the render
+# pipeline class, so pylint cannot find those members.
+# pylint: disable=E1101
+
 from panda3d.core import Texture
 
 from .Globals import *

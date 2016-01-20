@@ -50,7 +50,7 @@ uniform samplerCube DefaultEnvmap;
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
-    return sqrt(roughness) / 0.15;
+    return pow(roughness, 1.0 / 2.5) / 0.15;
 }
 
 void main() {
@@ -75,7 +75,7 @@ void main() {
         vec3 reflected_dir = reflect(-view_vector, m.normal);
 
         // Bend normal depending on roughness
-        reflected_dir = mix(m.normal, reflected_dir, 
+        reflected_dir = mix(m.normal, reflected_dir,
             (1 - m.roughness) * (m.roughness + sqrt(1 - m.roughness)));
 
         // Get environment coordinate, cubemaps have a different coordinate
@@ -91,7 +91,7 @@ void main() {
 
         // Get mipmap offset for the material roughness
         float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
-        
+
         // Sample default environment map
         vec3 ibl_specular = textureLod(DefaultEnvmap, env_coord, env_mipmap).xyz * 0.2;
 
@@ -111,7 +111,7 @@ void main() {
             // Diffuse IBL
             ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
         #endif
-    
+
         // Pre-Integrated environment BRDF
         // X-Component denotes the fresnel term
         // Y-Component denotes f0 factor

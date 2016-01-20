@@ -124,7 +124,8 @@ class RenderPipeline(PipelineExtensions, DebugObject):
 
         # Check if the pipeline was properly installed, before including anything else
         if not isfile("Data/install.flag"):
-            DebugObject.global_error("CORE", "You didn't setup the pipeline yet! Please run setup.py.")
+            DebugObject.global_error(
+                "CORE", "You didn't setup the pipeline yet! Please run setup.py.")
             sys.exit(1)
 
         # Load the default prc config
@@ -196,10 +197,11 @@ class RenderPipeline(PipelineExtensions, DebugObject):
         else:
             # Use an empty onscreen debugger in case the debugger is not
             # enabled, which defines all member functions as empty lambdas
-            class _empty_class(object):
+            class EmptyDebugger(object):
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
-            self._debugger = _empty_class()
+            self._debugger = EmptyDebugger()
+            del EmptyDebugger
 
     def _init_globals(self):
         """ Inits all global bindings """

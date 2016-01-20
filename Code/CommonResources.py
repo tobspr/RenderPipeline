@@ -145,7 +145,7 @@ class CommonResources(BaseManager):
         grain_tex.set_wrap_u(SamplerState.WM_repeat)
         grain_tex.set_wrap_v(SamplerState.WM_repeat)
         grain_tex.set_anisotropic_degree(0)
-        self._pipeline.stage_mgr.add_input("PrecomputedGrain", grain_tex)  
+        self._pipeline.stage_mgr.add_input("PrecomputedGrain", grain_tex)
 
     def _load_skydome(self):
         """ Loads the skydome """
@@ -165,7 +165,7 @@ class CommonResources(BaseManager):
         # Get the current transform matrix of the camera
         view_mat = Globals.render.get_transform(self._showbase.cam).get_mat()
 
-        # Compute the view matrix, but with a z-up coordinate system 
+        # Compute the view matrix, but with a z-up coordinate system
         update("view_mat_z_up", view_mat * Mat4.convert_mat(CS_zup_right, CS_yup_right))
 
         # Compute the view matrix without the camera rotation
@@ -185,7 +185,7 @@ class CommonResources(BaseManager):
         update("proj_mat", proj_mat_zup)
 
         # Set the inverse projection matrix
-        update("inv_proj_mat", invert(proj_mat_zup))    
+        update("inv_proj_mat", invert(proj_mat_zup))
 
         # Remove jitter and set the new view projection mat
         proj_mat.set_cell(1, 0, 0.0)

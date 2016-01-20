@@ -93,8 +93,8 @@ class GPUCommandQueue(DebugObject):
             if attr.startswith("CMD_"):
                 attr_val = getattr(GPUCommand, attr)
                 self._pipeline.stage_mgr.define(attr, attr_val)
-        self._pipeline.stage_mgr.define("GPU_CMD_INT_AS_FLOAT",
-            GPUCommand.get_uses_integer_packing())
+        self._pipeline.stage_mgr.define(
+            "GPU_CMD_INT_AS_FLOAT", GPUCommand.get_uses_integer_packing())
 
     def _create_data_storage(self):
         """ Creates the buffer used to transfer commands """

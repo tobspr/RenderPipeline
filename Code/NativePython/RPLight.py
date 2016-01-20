@@ -111,7 +111,7 @@ class RPLight(object):
 
     def invalidate_shadows(self):
         for source in self._shadow_sources:
-            source.set_needs_update(true)
+            source.set_needs_update(True)
 
     def set_pos(self, *args):
         self._position = Vec3(*args)
