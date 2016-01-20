@@ -5,6 +5,9 @@ python:
   - "2.7"
   - "3.4"
 before_install:
+  - deb mirror://mirrors.ubuntu.com/mirrors.txt trusty main restricted universe multiverse
+  - deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-updates main restricted universe multiverse
+  - deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-security main restricted universe multiverse
   - echo "deb http://archive.panda3d.org/ubuntu/ trusty-dev main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install -y panda3d1.10
