@@ -47,11 +47,11 @@ DEVNULL = open(os.path.devnull, "w")
 SETUP_DIR = os.path.dirname(os.path.realpath(__file__))
 CURRENT_STEP = 0
 OPT_SKIP_NATIVE = "--skip-native" in sys.argv
+OPT_AUTO_INSTALL = "--auto-install" in sys.argv
 
 os.chdir(SETUP_DIR)
 sys.path.insert(0, ".")
 sys.path.insert(0, "Code/External/six")
-
 
 
 # Load and init colorama, used to color the output
@@ -216,7 +216,8 @@ if __name__ == "__main__":
                  "results. Also not all plugins work with the python fallback "
                  "(e.g. PSSM). Do you want to use the C++ modules? (y/n):")
 
-        if get_user_choice(query):
+        # Dont install the c++ modules when using travis
+        if not OPT_AUTO_INSTALL and get_user_choice(query):
             check_cmake()
 
             write_flag("Code/Native/use_cxx.flag", True)
@@ -229,20 +230,21 @@ if __name__ == "__main__":
 
         else:
             write_flag("Code/Native/use_cxx.flag", False)
-            
-    print_step("Generating normal quantization textures ..")
-    exec_python_file("Data/NormalQuantization/generate.py")
 
-    print_step("Extracting .gz files ...")
-    extract_gz_files(os.path.join(SETUP_DIR, "Data/"))
+    if not OPT_AUTO_INSTALL:
+        print_step("Generating normal quantization textures ..")
+        exec_python_file("Data/NormalQuantization/generate.py")
 
-    print_step("Filtering default cubemap ..")
-    exec_python_file("Data/DefaultCubemap/filter.py")
+        print_step("Extracting .gz files ...")
+        extract_gz_files(os.path.join(SETUP_DIR, "Data/"))
 
-    print_step("Precomputing film grain .. ")
-    exec_python_file("Data/PrecomputedGrain/generate.py")
+        print_step("Filtering default cubemap ..")
+        exec_python_file("Data/DefaultCubemap/filter.py")
 
-    ask_download_samples()
+        print_step("Precomputing film grain .. ")
+        exec_python_file("Data/PrecomputedGrain/generate.py")
+
+        ask_download_samples()
 
     # -- Further setup code follows here --
 
