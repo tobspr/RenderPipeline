@@ -97,7 +97,6 @@ void main() {
 
     // Pack bent normal
     result.xyz = fma(result.xyz, vec3(0.5), vec3(0.5));
-    result.xyz = pow(result.www, vec3(4.0));
 }
 
 

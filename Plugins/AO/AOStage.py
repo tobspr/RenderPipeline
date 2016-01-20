@@ -47,26 +47,31 @@ class AOStage(RenderStage):
         self._target = self._create_target("AO:Sample")
         self._target.set_half_resolution()
         self._target.add_color_texture(bits=8)
+        self._target.has_color_alpha = True
         self._target.prepare_offscreen_buffer()
         self._target.get_quad().set_instance_count(4)
 
         self._target_merge = self._create_target("AO:Merge")
         self._target_merge.set_half_resolution()
         self._target_merge.add_color_texture(bits=8)
+        self._target_merge.has_color_alpha = True
         self._target_merge.prepare_offscreen_buffer()
 
         self._target_blur_v = self._create_target("AO:BlurV")
         self._target_blur_v.set_half_resolution()
         self._target_blur_v.add_color_texture(bits=8)
+        self._target_blur_v.has_color_alpha = True
         self._target_blur_v.prepare_offscreen_buffer()
 
         self._target_blur_h = self._create_target("AO:BlurH")
         self._target_blur_h.set_half_resolution()
         self._target_blur_h.add_color_texture(bits=8)
+        self._target_blur_h.has_color_alpha = True
         self._target_blur_h.prepare_offscreen_buffer()
 
         self._target_upscale = self._create_target("AO:Upscale")
         self._target_upscale.add_color_texture(bits=8)
+        self._target_upscale.has_color_alpha = True
         self._target_upscale.prepare_offscreen_buffer()
 
         self._target_upscale.set_shader_input("SourceTex", self._target_blur_h["color"])

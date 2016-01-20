@@ -16,8 +16,6 @@
 layout(location=0) in VertexOutput vOutput;
 layout(location=4) flat in MaterialOutput mOutput;
 
-layout(location=0) out vec4 color0;
-
 // Voxel data
 uniform vec3 voxelGridPosition;
 uniform int voxelGridRes;
@@ -33,10 +31,10 @@ void main() {
 
     // Get destination voxel
     vec3 vs_coord = (vOutput.position - voxelGridPosition + voxelGridSize) / (2.0 * voxelGridSize);
-    ivec3 vs_icoord = ivec3(vs_coord * voxelGridRes);
+    ivec3 vs_icoord = ivec3(vs_coord * voxelGridRes + 1e-5);
 
+    // shading_result = vec3(1.0, 0.6, 0.2);
     // Write voxel
     imageStore(VoxelGridDest, vs_icoord, vec4(shading_result, 1));
-    color0 = vec4(vs_coord, 1.0);
 }
 

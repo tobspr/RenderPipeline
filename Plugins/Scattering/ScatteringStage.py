@@ -50,6 +50,7 @@ class ScatteringStage(RenderStage):
     def create(self):
         self._target = self._create_target("Scattering:ApplyScattering")
         self._target.add_color_texture(bits=16)
+        self._target.has_color_alpha = True
         self._target.prepare_offscreen_buffer()
 
         self._filter = self._make_cubemap_filter("Scattering:CM")

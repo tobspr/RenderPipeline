@@ -44,7 +44,13 @@ class Plugin(BasePlugin):
         self._queue.add(self._voxelize_x, self._voxelize_y, self._voxelize_z)
         self._queue.add(self._generate_mipmaps)
 
+    def _set_grid_pos(self):
+        """ Finds the new grid position """
+        grid_pos = Globals.base.camera.get_pos(Globals.base.render)
+        self._voxel_stage.set_grid_position(grid_pos)
+
     def _voxelize_x(self):
+        self._set_grid_pos()
         self._voxel_stage.set_state(VoxelizationStage.S_voxelize_x)
 
     def _voxelize_y(self):

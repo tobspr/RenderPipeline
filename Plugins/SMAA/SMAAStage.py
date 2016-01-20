@@ -76,8 +76,8 @@ class SMAAStage(RenderStage):
 
         # Scene conversion
         self._srgb_target = self._create_target("SMAA:TemporarySRGB")
-        self._srgb_target.add_color_texture(bits=8)
-        self._srgb_target.add_aux_texture(bits=8)
+        self._srgb_target.add_color_texture()
+        self._srgb_target.add_aux_texture()
         self._srgb_target.prepare_offscreen_buffer()
         self._srgb_target.set_clear_color(color=Vec4(0))
 
@@ -93,7 +93,8 @@ class SMAAStage(RenderStage):
 
         # Weight blending
         self._blend_target = self._create_target("SMAA:BlendWeights")
-        self._blend_target.add_color_texture(bits=8)
+        self._blend_target.add_color_texture()
+        self._blend_target.has_color_alpha = True
         self._blend_target.prepare_offscreen_buffer()
         self._blend_target.set_clear_color(color=Vec4(0))
 
@@ -101,7 +102,6 @@ class SMAAStage(RenderStage):
         self._blend_target.set_shader_input("AreaTex", self._area_tex)
         self._blend_target.set_shader_input("SearchTex", self._search_tex)
         self._blend_target.set_shader_input("JitterIndex", self._jitter_index)
-
 
         # Neighbor blending
         self._neighbor_targets = []
