@@ -167,4 +167,4 @@ class VoxelizationStage(RenderStage):
             self._pta_grid_pos[0] = self._next_grid_position
 
     def set_shaders(self):
-        self._copy_target.set_shader(self._load_plugin_shader("CopyVoxels.frag.glsl"))
+        self._copy_target.set_shader(self._load_plugin_shader("CopyVoxels.frag"))

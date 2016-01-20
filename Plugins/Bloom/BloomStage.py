@@ -106,12 +106,12 @@ class BloomStage(RenderStage):
             self._upsample_targets.append(target)
 
     def set_shaders(self):
-        self._target_extract.set_shader(self._load_plugin_shader("ExtractBrightSpots.frag.glsl"))
-        self._target_firefly_x.set_shader(self._load_plugin_shader("RemoveFireflies.frag.glsl"))
-        self._target_firefly_y.set_shader(self._load_plugin_shader("RemoveFireflies.frag.glsl"))
+        self._target_extract.set_shader(self._load_plugin_shader("ExtractBrightSpots.frag"))
+        self._target_firefly_x.set_shader(self._load_plugin_shader("RemoveFireflies.frag"))
+        self._target_firefly_y.set_shader(self._load_plugin_shader("RemoveFireflies.frag"))
 
-        downsample_shader = self._load_plugin_shader("BloomDownsample.frag.glsl")
-        upsample_shader = self._load_plugin_shader("BloomUpsample.frag.glsl")
+        downsample_shader = self._load_plugin_shader("BloomDownsample.frag")
+        upsample_shader = self._load_plugin_shader("BloomUpsample.frag")
         for target in self._downsample_targets:
             target.set_shader(downsample_shader)  
         for target in self._upsample_targets:

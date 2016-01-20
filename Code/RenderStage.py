@@ -169,7 +169,7 @@ class RenderStage(DebugObject):
         argument should be the fragment shader. If three arguments are passed,
         the order should be vertex, fragment, geometry """
         assert len(args) > 0 and len(args) <= 3
-        args = ["Shader/" + i + ".glsl" if "$$PipelineTemp" not in i else i for i in args]
+        args = ["Shader/{0}.glsl".format(i) if "$$PipelineTemp" not in i else i for i in args]
 
         # If only one shader is specified, assume its a postprocess fragment shader,
         # and use the default vertex shader
@@ -188,8 +188,8 @@ class RenderStage(DebugObject):
         plugin_name = str(self.__class__.__module__).split(".")[1]
 
         plugin_loc = "Plugins/" + plugin_name + "/Shader/Stages/"
-        path_args = [os.path.join(plugin_loc, i) if "$$PipelineTemp" not in i else i for i in args]
-        path_args = [os.path.join(plugin_loc, i) if "$$PipelineTemp" not in i else i for i in args]
+        path_args = [os.path.join(plugin_loc, i + ".glsl")\
+            if "$$PipelineTemp" not in i else i for i in args]
 
         # If only one shader is specified, assume its a postprocess fragment shader,
         # and use the default vertex shader

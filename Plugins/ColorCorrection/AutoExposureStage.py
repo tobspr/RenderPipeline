@@ -91,10 +91,10 @@ class AutoExposureStage(RenderStage):
         self._target_apply.set_shader_input("Exposure", self._tex_exposure)
 
     def set_shaders(self):
-        self._target_lum.set_shader(self._load_plugin_shader("GenerateLuminance.frag.glsl"))
-        self._target_analyze.set_shader(self._load_plugin_shader("AnalyzeBrightness.frag.glsl"))
-        self._target_apply.set_shader(self._load_plugin_shader("ApplyExposure.frag.glsl"))
+        self._target_lum.set_shader(self._load_plugin_shader("GenerateLuminance.frag"))
+        self._target_analyze.set_shader(self._load_plugin_shader("AnalyzeBrightness.frag"))
+        self._target_apply.set_shader(self._load_plugin_shader("ApplyExposure.frag"))
 
-        mip_shader = self._load_plugin_shader("DownscaleLuminance.frag.glsl")
+        mip_shader = self._load_plugin_shader("DownscaleLuminance.frag")
         for target in self._mip_targets:
             target.set_shader(mip_shader)

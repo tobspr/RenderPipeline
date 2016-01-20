@@ -127,11 +127,11 @@ class SMAAStage(RenderStage):
 
 
     def set_shaders(self):
-        self._srgb_target.set_shader(self._load_plugin_shader("TemporarySRGB.frag.glsl"))
-        self._edge_target.set_shader(self._load_plugin_shader("EdgeDetection.frag.glsl"))
-        self._blend_target.set_shader(self._load_plugin_shader("BlendingWeights.frag.glsl"))
+        self._srgb_target.set_shader(self._load_plugin_shader("TemporarySRGB.frag"))
+        self._edge_target.set_shader(self._load_plugin_shader("EdgeDetection.frag"))
+        self._blend_target.set_shader(self._load_plugin_shader("BlendingWeights.frag"))
         for target in self._neighbor_targets:
-            target.set_shader(self._load_plugin_shader("NeighborhoodBlending.frag.glsl"))
+            target.set_shader(self._load_plugin_shader("NeighborhoodBlending.frag"))
 
         if self._reprojection:
-            self._resolve_target.set_shader(self._load_plugin_shader("Resolve.frag.glsl"))
+            self._resolve_target.set_shader(self._load_plugin_shader("Resolve.frag"))

@@ -46,4 +46,4 @@ class SSLRStage(RenderStage):
         self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(self._load_plugin_shader("SSLRStage.frag.glsl"))
+        self._target.set_shader(self._load_plugin_shader("SSLRStage.frag"))

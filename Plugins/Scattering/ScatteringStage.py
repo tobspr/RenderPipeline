@@ -68,8 +68,6 @@ class ScatteringStage(RenderStage):
         ambient_stage.add_pipe_requirement("ScatteringIBLSpecular")
 
     def set_shaders(self):
-        self._target.set_shader(
-            self._load_plugin_shader("ApplyScattering.frag.glsl"))
-        self._target_cube.set_shader(
-            self._load_plugin_shader("ScatteringEnvmap.frag.glsl"))
+        self._target.set_shader(self._load_plugin_shader("ApplyScattering.frag"))
+        self._target_cube.set_shader(self._load_plugin_shader("ScatteringEnvmap.frag"))
         self._filter.set_shaders()
