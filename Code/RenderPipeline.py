@@ -214,11 +214,11 @@ class RenderPipeline(PipelineExtensions, DebugObject):
 
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
-            
+
         # Add a hotkey to reload the shaders, but only if the debugger is enabled
         if self.get_setting("pipeline.display_debugger"):
             self._showbase.accept("r", self.reload_shaders)
-        
+
         self._showbase.addTask(self._manager_update_task, "RP_UpdateManagers", sort=10)
         self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
         self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=1000)
