@@ -179,7 +179,7 @@ class BufferViewer(DraggableWindow):
 
         self._remove_components()
         entries_per_row = 8
-        aspect = Globals.base.win.y_size / Globals.base.win.x_size
+        aspect = Globals.base.win.get_y_size() / Globals.base.win.get_x_size()
         entry_width = 180
         entry_height = (entry_width - 20) * aspect + 55
 
