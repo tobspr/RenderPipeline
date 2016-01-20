@@ -5,7 +5,7 @@ python:
   - "2.7"
   - "3.4"
 before_install:
-  - sudo echo "deb http://archive.panda3d.org/ubuntu trusty-dev main" >> /etc/apt/sources.list
-  - sudo apt-get update
+  - echo "deb http://archive.panda3d.org/ubuntu/ trusty-dev main" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update -qq
   - sudo apt-get install -y panda3d1.10
 script: setup.py --auto-install
