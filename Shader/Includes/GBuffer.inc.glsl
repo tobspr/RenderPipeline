@@ -70,7 +70,6 @@
         float roughness = clamp(m.roughness, 0.005, 1.0);
         float translucency = saturate(m.translucency);
 
-
         // Optional: Use squared roughness as proposed by Disney
         roughness *= roughness;
 

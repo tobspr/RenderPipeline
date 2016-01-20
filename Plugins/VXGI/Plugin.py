@@ -42,6 +42,7 @@ class Plugin(BasePlugin):
     def on_created(self):
         self._queue = RepeatedTaskQueue()
         self._queue.add(self._voxelize_x, self._voxelize_y, self._voxelize_z)
+        self._queue.add(self._generate_mipmaps)
 
     def _voxelize_x(self):
         self._voxel_stage.set_state(VoxelizationStage.S_voxelize_x)
@@ -51,3 +52,6 @@ class Plugin(BasePlugin):
 
     def _voxelize_z(self):
         self._voxel_stage.set_state(VoxelizationStage.S_voxelize_z)
+
+    def _generate_mipmaps(self):
+        self._voxel_stage.set_state(VoxelizationStage.S_gen_mipmaps)

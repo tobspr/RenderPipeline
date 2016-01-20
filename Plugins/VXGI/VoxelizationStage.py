@@ -28,7 +28,7 @@ from .. import *
 
 from panda3d.core import Camera, OrthographicLens, NodePath, CullFaceAttrib
 from panda3d.core import DepthTestAttrib, Vec4, PTALVecBase3, Vec3, Texture
-from panda3d.core import PTAInt, PTAFloat, ColorWriteAttrib
+from panda3d.core import PTAInt, PTAFloat, ColorWriteAttrib, SamplerState
 
 class VoxelizationStage(RenderStage):
 
@@ -78,12 +78,20 @@ class VoxelizationStage(RenderStage):
         }
 
     def create(self):
-        # Create the voxel grid used to store the voxels
+
+        # Create the voxel grid used to generate the voxels
+        self._voxel_temp_grid = Image.create_3d(
+            "VoxelsTemp", self._voxel_res, self._voxel_res, self._voxel_res,
+            Texture.T_float, Texture.F_r11_g11_b10)
+        self._voxel_temp_grid.set_clear_color(Vec4(0))
+        # self._voxel_temp_grid.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+
+        # Create the voxel grid which is a copy of the temporary grid, but stable
         self._voxel_grid = Image.create_3d(
             "Voxels", self._voxel_res, self._voxel_res, self._voxel_res,
             Texture.T_float, Texture.F_r11_g11_b10)
         self._voxel_grid.set_clear_color(Vec4(0))
-
+        # self._voxel_grid.set_minfilter(SamplerState.FT_linear_mipmap_linear)
 
         # Create the camera for voxelization
         self._voxel_cam = Camera("VoxelizeCam")
@@ -102,8 +110,15 @@ class VoxelizationStage(RenderStage):
         self._voxel_target.create_overlay_quad = False
         self._voxel_target.prepare_scene_render()
 
+        # Create the target which copies the voxel grid
+        self._copy_target = self._create_target("CopyVoxels")
+        self._copy_target.size = self._voxel_res, self._voxel_res
+        self._copy_target.prepare_offscreen_buffer()
+        self._copy_target.set_shader_input("SourceTex", self._voxel_temp_grid)
+        self._copy_target.set_shader_input("DestTex", self._voxel_grid)
+
         # Create the initial state used for rendering voxels
-        initial_state = NodePath("VXInitialState")
+        initial_state = NodePath("VXGIInitialState")
         initial_state.set_attrib(CullFaceAttrib.make(CullFaceAttrib.M_cull_none), 100000)
         initial_state.set_attrib(DepthTestAttrib.make(DepthTestAttrib.M_none), 100000)
         initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 100000)
@@ -112,11 +127,12 @@ class VoxelizationStage(RenderStage):
         Globals.base.render.set_shader_input("voxelGridPosition", self._pta_grid_pos)
         Globals.base.render.set_shader_input("voxelGridRes", self._pta_grid_res)
         Globals.base.render.set_shader_input("voxelGridSize", self._pta_grid_size)
-        Globals.base.render.set_shader_input("VoxelGridDest", self._voxel_grid)
+        Globals.base.render.set_shader_input("VoxelGridDest", self._voxel_temp_grid)
 
     def update(self):
         self._voxel_cam_np.show()
         self._voxel_target.set_active(True)
+        self._copy_target.set_active(False)
 
         # Voxelization disable
         if self._state == self.S_disabled:
@@ -125,6 +141,8 @@ class VoxelizationStage(RenderStage):
 
         # Voxelization from X-Axis
         elif self._state == self.S_voxelize_x:
+            # Clear voxel grid
+            self._voxel_temp_grid.clear_image()
             self._voxel_cam_np.set_pos(self._next_grid_position + Vec3(self._voxel_ws, 0, 0))
             self._voxel_cam_np.look_at(self._next_grid_position)
 
@@ -141,6 +159,7 @@ class VoxelizationStage(RenderStage):
         # Generate mipmaps
         elif self._state == self.S_gen_mipmaps:
             self._voxel_target.set_active(False)
+            self._copy_target.set_active(True)
             self._voxel_cam_np.hide()
             
             # As soon as we generate the mipmaps, we need to update the grid position
@@ -148,4 +167,4 @@ class VoxelizationStage(RenderStage):
             self._pta_grid_pos[0] = self._next_grid_position
 
     def set_shaders(self):
-        pass
+        self._copy_target.set_shader(self._load_plugin_shader("CopyVoxels.frag.glsl"))

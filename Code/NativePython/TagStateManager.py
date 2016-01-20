@@ -81,7 +81,7 @@ class TagStateManager(object):
             camera.set_tag_state(name, state)
 
     def cleanup_states(self):
-        self._main_cam_node.clear_tag_states()
+        self._main_cam_node.node().clear_tag_states()
         self.cleanup_container_states(self._shadow_container)
         self.cleanup_container_states(self._voxelize_container)
 
