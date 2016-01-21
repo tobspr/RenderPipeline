@@ -129,8 +129,15 @@ class BufferViewer(DraggableWindow):
             text_color=Vec3(0.5), expand_width=200)
 
     def _set_show_images(self, arg):
+        """ Sets whether images and textures will be shown """
         self._display_images = arg
         self._perform_update()
+
+    def _set_scroll_height(self, height):
+        """ Sets the maximum scroll height in the content frame """
+        self._scroll_height = height
+        self._content_frame["canvasSize"] = (0, self._width - 80, 0, self._scroll_height)
+        self._content_node.set_z(self._scroll_height)
 
     def _remove_components(self):
         """ Removes all components of the buffer viewer """
@@ -172,9 +179,9 @@ class BufferViewer(DraggableWindow):
         """ Renders the stages to the window """
 
         self._remove_components()
-        entries_per_row = 8
+        entries_per_row = 6
         aspect = Globals.base.win.get_y_size() / Globals.base.win.get_x_size()
-        entry_width = 180
+        entry_width = 235
         entry_height = (entry_width - 20) * aspect + 55
 
         # Store already processed images
@@ -236,4 +243,9 @@ class BufferViewer(DraggableWindow):
 
             preview_shader = DisplayShaderBuilder.build(stage_tex, scale_factor*w, scale_factor*h)
             preview.set_shader(preview_shader)
+
+        num_rows = (index + entries_per_row - 1) // entries_per_row
+
+        self._set_scroll_height(50 + (entry_height-14) * num_rows)
+
 

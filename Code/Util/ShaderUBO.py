@@ -192,7 +192,7 @@ class ShaderUBO(BaseUBO):
 
         # Add actual inputs
         if len(inputs) < 1:
-            self.warn("No UBO inputs present for", self._name)
+            self.debug("No UBO inputs present for", self._name)
         else:
             if self._use_ubo:
                 content += "layout(shared, binding=" + str(self._bind_id) + ") uniform " + self._name + "_UBO {\n"
