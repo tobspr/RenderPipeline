@@ -118,6 +118,6 @@ void main() {
     #endif
 
     %MATERIAL%
-
+    m.roughness = 0;
     render_material(m);
 }

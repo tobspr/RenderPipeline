@@ -36,15 +36,14 @@ class GBufferStage(RenderStage):
     """ This is the main pass stage, rendering the objects and creating the
     GBuffer which is used in later stages """
 
-    required_inputs = []
+    required_inputs = ["DefaultEnvmap"]
+    required_pipes = []
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "GBufferStage", pipeline)
 
     def get_produced_pipes(self):
-        return {
-            "GBuffer": self._make_gbuffer_ubo()
-        }
+        return {"GBuffer": self._make_gbuffer_ubo()}
 
     def _make_gbuffer_ubo(self):
         ubo = SimpleUBO("GBuffer")

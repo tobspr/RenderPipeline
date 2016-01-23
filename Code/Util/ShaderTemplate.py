@@ -73,9 +73,14 @@ class ShaderTemplate(DebugObject):
         parsed_lines.append(" */")
 
         prefix = lambda src, lnr: "/* " + src + " " + str(lnr).zfill(4) + " */ "
+        in_main = False
 
         for src_index, line in enumerate(shader_lines):
             stripped_line = line.strip().lower()
+
+            # Check if we are already in the main function
+            if "void main()" in stripped_line:
+                in_main = True
 
             # Check if the current line is a hook
             if stripped_line.startswith("%") and stripped_line.endswith("%"):
@@ -87,28 +92,36 @@ class ShaderTemplate(DebugObject):
 
                 # Inject all registered template values into the hook
                 if hook_name in self._template_values:
-                    
+
                     # Directly remove the value from the list so we can check which
                     # hooks were not found in the template
                     insertions = self._template_values.pop(hook_name)
 
                     if len(insertions) > 0:
-                        parsed_lines.append("/* Hook " + hook_name + " */")
-                    for linenr, line_i in enumerate(insertions):
 
-                        if line_i is None:
-                            self.warn("Empty insertion '" + hook_name + "'")
-                            continue
+                        # When we are in the main function, we have to make sure we
+                        # use a seperate scope, so there are no conflicts with variable
+                        # declarations
+                        parsed_lines.append("/* Hook " + hook_name + " */" + " {" if in_main else "")
 
-                        if not isinstance(line_i, str):
-                            self.warn("Invalid line type: ", line_i)
-                            continue
+                        for linenr, line_i in enumerate(insertions):
 
-                        # Dont indent defines and pragmas
-                        if line_i.startswith("#"):
-                            parsed_lines.append(line_i)
-                        else:
-                            parsed_lines.append(prefix("E", linenr) + indent + line_i)
+                            if line_i is None:
+                                self.warn("Empty insertion '" + hook_name + "'")
+                                continue
+
+                            if not isinstance(line_i, str):
+                                self.warn("Invalid line type: ", line_i)
+                                continue
+
+                            # Dont indent defines and pragmas
+                            if line_i.startswith("#"):
+                                parsed_lines.append(line_i)
+                            else:
+                                parsed_lines.append(prefix("E", linenr) + indent + line_i)
+
+                        if in_main:
+                            parsed_lines.append("}")
 
                 # parsed_lines.append(indent + "// End of hook '" + hook_name + "'");
             else:

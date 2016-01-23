@@ -22,18 +22,33 @@ uniform int voxelGridRes;
 uniform float voxelGridSize;
 uniform writeonly image3D RESTRICT VoxelGridDest;
 
+uniform samplerCube ScatteringIBLDiffuse;
+uniform samplerCube ScatteringIBLSpecular;
+
 uniform sampler2D p3d_Texture0;
 
 void main() {
-    vec3 diffuse = texture(p3d_Texture0, vOutput.texcoord).xyz;
-    diffuse *= mOutput.color;
-    vec3 shading_result = diffuse;
+    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).xyz;
+    // basecolor = pow(basecolor, vec3(2.2));
+    basecolor *= mOutput.color;
+
+
+    // Fake ambient term
+    vec3 ambient_diff = texture(ScatteringIBLDiffuse, vOutput.normal).xyz;
+    vec3 ambient_spec = textureLod(ScatteringIBLSpecular, vOutput.normal, 4).xyz * 0.5;
+
+    vec3 ambient = ambient_diff * basecolor * (1 - mOutput.metallic);
+    ambient += ambient_spec * basecolor * mOutput.metallic;
+
+    vec3 shading_result = ambient;
+
+    // Tonemapping to pack color
+    shading_result = shading_result / (1.0 + shading_result);
 
     // Get destination voxel
     vec3 vs_coord = (vOutput.position - voxelGridPosition + voxelGridSize) / (2.0 * voxelGridSize);
     ivec3 vs_icoord = ivec3(vs_coord * voxelGridRes + 1e-5);
 
-    // shading_result = vec3(1.0, 0.6, 0.2);
     // Write voxel
     imageStore(VoxelGridDest, vs_icoord, vec4(shading_result, 1));
 }

@@ -3,14 +3,14 @@ Vertex:
     template: default
 
     inject:
-        vertex:
+        vertex: |
             vOutput.position.xy += MainSceneData.camera_pos.xy;
 
 Fragment.GBuffer:
     template: default
 
     inject:
-        material:
+        material: |
             m.basecolor = vec3(1, 0, 1);
             m.specular_ior = 1.5;
             m.metallic = 0.0;

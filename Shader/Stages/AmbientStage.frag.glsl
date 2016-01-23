@@ -47,6 +47,10 @@ uniform samplerCube DefaultEnvmap;
     uniform sampler2D AmbientOcclusion;
 #endif
 
+#if HAVE_PLUGIN(VXGI)
+    uniform sampler2D VXGISpecular;
+#endif
+
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
@@ -110,6 +114,12 @@ void main() {
 
             // Diffuse IBL
             ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
+        #endif
+
+        #if HAVE_PLUGIN(VXGI)
+
+            ibl_specular = texture(VXGISpecular, texcoord).xyz;
+
         #endif
 
         // Pre-Integrated environment BRDF

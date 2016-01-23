@@ -93,7 +93,6 @@ for (int i = 0; i < num_samples; ++i) {
 }
 
 accum /= max(1.0, accum_count);
-accum *= 1.2;
 
 // Bent normal not supported yet
 vec3 bent_normal = pixel_world_normal;

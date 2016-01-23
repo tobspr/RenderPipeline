@@ -53,7 +53,7 @@
     }
 
     void render_material(MaterialShaderOutput m) {
-        
+
         // Compute material properties
         vec3 normal = normalize(m.normal);
         vec2 packed_normal = pack_normal_octahedron(normal);
@@ -99,11 +99,11 @@
     bool is_skybox(vec3 pos, vec3 camera_pos) {
         return distance(pos, camera_pos) > 20000.0;
     }
-    
+
     bool is_skybox(Material m, vec3 camera_pos) {
         return is_skybox(m.position, camera_pos);
     }
-   
+
     // Returns the depth at a given texcoord
     float get_gbuffer_depth(GBufferData data, vec2 coord) {
         return textureLod(data.Depth, coord, 0).x;
@@ -120,7 +120,7 @@
         vec2 packed_normal = textureLod(data.Data1, coord, 0).xy;
         return unpack_normal_octahedron(packed_normal);
     }
-    
+
     // Returns the velocity at a given coordinate
     vec2 get_gbuffer_velocity(GBufferData data, vec2 coord) {
         return textureLod(data.Data2, coord, 0).xy / 255.0;
@@ -153,7 +153,7 @@
     #ifdef USE_GBUFFER_EXTENSIONS
 
         /*
-        
+
         GBuffer extensions for reading gbuffer values without having to specify
         the gbuffer.
 

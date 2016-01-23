@@ -30,19 +30,23 @@ from panda3d.core import SamplerState
 
 class VXGIStage(RenderStage):
 
-    required_inputs = []
-    required_pipes = ["ShadedScene"]
+    required_inputs = ["voxelGridPosition", "voxelGridSize", "voxelGridResolution"]
+    required_pipes = ["ShadedScene", "SceneVoxels", "GBuffer", "ScatteringIBLSpecular", "ScatteringIBLDiffuse"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "VXGIStage", pipeline)
 
+    def get_produced_pipes(self):
+        return {"VXGISpecular": self._target["color"]}
+
     def create(self):
         self._target = self._create_target("VXGI:ApplyGI")
         self._target.add_color_texture(bits=16)
-        
+        self._target.prepare_offscreen_buffer()
+
+        # Make the ambient stage use the GI result
+        ambient_stage = get_internal_stage("AmbientStage")
+        ambient_stage.add_pipe_requirement("VXGISpecular")
 
     def set_shaders(self):
-        pass
-        # self._target.set_shader(self._load_plugin_shader("CorrectColor.frag"))
-        # if self._use_sharpen:
-        #     self._target_sharpen.set_shader(self._load_plugin_shader("Sharpen.frag"))
+        self._target.set_shader(self._load_plugin_shader("VXGIStage.frag"))

@@ -27,6 +27,7 @@ THE SOFTWARE.
 from .. import *
 
 from .ScatteringStage import ScatteringStage
+from .ScatteringEnvmapStage import ScatteringEnvmapStage
 
 # Create the main plugin
 class Plugin(BasePlugin):
@@ -40,6 +41,7 @@ class Plugin(BasePlugin):
     def on_setup(self):
         self.debug("Setting up scattering stage ..")
         self._display_stage = self.create_stage(ScatteringStage)
+        self._envmap_stage = self.create_stage(ScatteringEnvmapStage)
 
         # Load scattering method
         method = self.get_setting("scattering_method")

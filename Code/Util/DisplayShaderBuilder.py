@@ -70,8 +70,8 @@ class DisplayShaderBuilder(object):
 
         # Build actual shader
         built = """
-            #version 400     
-            #pragma include "Includes/Configuration.inc.glsl"   
+            #version 400
+            #pragma include "Includes/Configuration.inc.glsl"
             in vec2 texcoord;
             out vec3 result;
             uniform int mipmap;
@@ -107,6 +107,9 @@ class DisplayShaderBuilder(object):
         float_types = [Texture.T_float, Texture.T_unsigned_byte]
         int_types = [Texture.T_int, Texture.T_unsigned_short, Texture.T_unsigned_int_24_8]
 
+        if comp_type not in float_types + int_types:
+            DebugObject.global_warn("DisplayShaderBuilder", "Unkown texture component type:", comp_type)
+
         # 2D Textures
         if texture_type == Texture.TT_2d_texture:
 
@@ -115,9 +118,6 @@ class DisplayShaderBuilder(object):
 
             elif comp_type in int_types:
                 return int_coord + "result = texelFetch(p3d_Texture0, int_coord, mipmap).xyz / 10.0;", "isampler2D"
-
-            else:
-                DebugObject.global_warn("DisplayShaderBuilder", "Unkown texture component type:", comp_type)
 
         # Buffer Textures
         elif texture_type == Texture.TT_buffer_texture:

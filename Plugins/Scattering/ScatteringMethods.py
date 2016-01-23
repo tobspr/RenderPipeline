@@ -70,6 +70,7 @@ class ScatteringMethodHosekWilkie(ScatteringMethod):
         lut_tex.set_format(Texture.F_rgb16)
 
         self._handle._display_stage.set_shader_input("ScatteringLUT", lut_tex)
+        self._handle._envmap_stage.set_shader_input("ScatteringLUT", lut_tex)
 
     def compute(self):
         """ Computes the scattering method, not required since we use a precomputed
@@ -232,9 +233,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
                 }, (self._res_mu_s_nu, self._res_mu, self._res_r), (8, 8, 8))
 
         # Make stages available
-        self._handle._display_stage.set_shader_input(
-            "InscatterSampler", self._textures["inscatter"])
-        self._handle._display_stage.set_shader_input(
-            "transmittanceSampler", self._textures["transmittance"])
-        self._handle._display_stage.set_shader_input(
-            "IrradianceSampler", self._textures["irradiance"])
+        for stage in [self._handle._display_stage, self._handle._envmap_stage]:
+            stage.set_shader_input("InscatterSampler", self._textures["inscatter"])
+            stage.set_shader_input("transmittanceSampler", self._textures["transmittance"])
+            stage.set_shader_input("IrradianceSampler", self._textures["irradiance"])

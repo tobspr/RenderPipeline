@@ -27,12 +27,14 @@ THE SOFTWARE.
 from .. import *
 
 from .VoxelizationStage import VoxelizationStage
+from .VXGIStage import VXGIStage
 
 class Plugin(BasePlugin):
 
     @PluginHook("on_stage_setup")
     def setup_stages(self):
         self._voxel_stage = self.create_stage(VoxelizationStage)
+        self._vxgi_stage = self.create_stage(VXGIStage)
 
     @PluginHook("pre_render_update")
     def update(self):

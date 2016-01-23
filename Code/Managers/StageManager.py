@@ -46,6 +46,7 @@ class StageManager(BaseManager):
     # This defines the order of all stages, in case they are attached
     _STAGE_ORDER = [
         "VoxelizationStage",
+        "ScatteringEnvmapStage",
         "GBufferStage",
         "PSSMShadowStage",
         "ShadowStage",
@@ -57,6 +58,7 @@ class StageManager(BaseManager):
         "ApplyLightsStage",
         "PSSMStage",
         "ScatteringStage",
+        "VXGIStage",
         "AmbientStage",
         "SSLRStage",
         "CloudStage",

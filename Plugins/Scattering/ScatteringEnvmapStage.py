@@ -21,7 +21,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- 	 	    	 	
+                    
 """
 
 from __future__ import division
@@ -30,26 +30,42 @@ from .. import *
 
 from panda3d.core import Texture
 
-class ScatteringStage(RenderStage):
+class ScatteringEnvmapStage(RenderStage):
 
-    """ This stage uses the precomputed data to display the scattering """
+    """ This stage uses the precomputed data to make a cubemap containing the
+    scattering """
 
-    required_pipes = ["ShadedScene", "GBuffer"]
+    required_pipes = []
     required_inputs = ["DefaultSkydome"]
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "ScatteringStage", pipeline)
+        RenderStage.__init__(self, "ScatteringEnvmapStage", pipeline)
 
     def get_produced_pipes(self):
         return {
-            "ShadedScene": self._target['color'],
+            "ScatteringIBLDiffuse": self._filter.diffuse_cubemap,
+            "ScatteringIBLSpecular": self._filter.specular_cubemap,
         }
 
     def create(self):
-        self._target = self._create_target("Scattering:ApplyScattering")
-        self._target.add_color_texture(bits=16)
-        self._target.has_color_alpha = True
-        self._target.prepare_offscreen_buffer()
+        self._filter = self._make_cubemap_filter("ScatteringEnvmap:Filter")
+
+        self._target_cube = self._create_target("ScatteringEnvmap:Compute")
+        self._target_cube.size = self._filter.size * 6, self._filter.size
+        self._target_cube.prepare_offscreen_buffer()
+        self._target_cube.set_shader_input("DestCubemap", self._filter.target_cubemap)
+        self._filter.create()
+
+        # Make the stages use our cubemap
+        ambient_stage = get_internal_stage("AmbientStage")
+        ambient_stage.add_pipe_requirement("ScatteringIBLDiffuse")
+        ambient_stage.add_pipe_requirement("ScatteringIBLSpecular")
+
+        gbuffer_stage = get_internal_stage("GBufferStage")
+        gbuffer_stage.add_pipe_requirement("ScatteringIBLDiffuse")
+        gbuffer_stage.add_pipe_requirement("ScatteringIBLSpecular")
+
 
     def set_shaders(self):
-        self._target.set_shader(self._load_plugin_shader("ApplyScattering.frag"))
+        self._target_cube.set_shader(self._load_plugin_shader("ScatteringEnvmap.frag"))
+        self._filter.set_shaders()

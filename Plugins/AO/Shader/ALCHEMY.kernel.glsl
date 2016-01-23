@@ -82,6 +82,5 @@ bent_normal = pixel_world_normal;
 
 // Normalize values
 accum /= max(1.0, accum_count);
-accum *= 1.2;
 
 result = vec4(bent_normal, 1 - saturate(accum));
