@@ -49,6 +49,7 @@ uniform samplerCube DefaultEnvmap;
 
 #if HAVE_PLUGIN(VXGI)
     uniform sampler2D VXGISpecular;
+    uniform sampler2D VXGIDiffuse;
 #endif
 
 out vec4 result;
@@ -117,9 +118,8 @@ void main() {
         #endif
 
         #if HAVE_PLUGIN(VXGI)
-
             ibl_specular = texture(VXGISpecular, texcoord).xyz;
-
+            ibl_diffuse = texture(VXGIDiffuse, texcoord).xyz;
         #endif
 
         // Pre-Integrated environment BRDF
@@ -149,6 +149,8 @@ void main() {
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
+
+
 
     }
     #endif

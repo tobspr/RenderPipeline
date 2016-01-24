@@ -58,7 +58,7 @@ class Plugin(BasePlugin):
 
         # Snap the voxel grid
         voxel_size = 2.0 * self.get_setting("grid_ws_size") / self.get_setting("grid_resolution")
-        snap_size = voxel_size * 2**2
+        snap_size = voxel_size * 2**4
 
         for dimension in range(3):
             cell_val = grid_pos.get_cell(dimension)

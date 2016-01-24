@@ -126,7 +126,7 @@ class BufferViewer(DraggableWindow):
         self._chb_show_images = BetterLabeledCheckbox(
             parent=self._node, x=20, y=60, chb_callback=self._set_show_images,
             chb_checked=False, text="Display image resources",
-            text_color=Vec3(0.5), expand_width=200)
+            text_color=Vec3(0.5), expand_width=330)
 
     def _set_show_images(self, arg):
         """ Sets whether images and textures will be shown """

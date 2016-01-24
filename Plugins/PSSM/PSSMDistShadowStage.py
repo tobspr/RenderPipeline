@@ -24,35 +24,38 @@ THE SOFTWARE.
  	 	    	 	
 """
 from __future__ import division
+from six.moves import range
 
 from .. import *
 from panda3d.core import SamplerState
 
-class VXGIStage(RenderStage):
+class PSSMDistShadowStage(RenderStage):
 
-    required_inputs = ["voxelGridPosition"]
-    required_pipes = ["ShadedScene", "SceneVoxels", "GBuffer", "ScatteringIBLSpecular",
-                      "ScatteringIBLDiffuse"]
+    """ This stage generates a depth map using Variance Shadow Maps for very
+    distant objects. """
+
+    required_inputs = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "VXGIStage", pipeline)
+        RenderStage.__init__(self, "PSSMDistShadowStage", pipeline)
+        self._resolution = 4096
 
     def get_produced_pipes(self):
         return {
-            "VXGISpecular": self._target["color"],
-            "VXGIDiffuse": self._target["aux0"]
+            "PSSMVSMShadowMap": self._target['depth'],
         }
 
+    def set_resolution(self, res):
+        self._resolution = res
+
     def create(self):
-        self._target = self._create_target("VXGI:ApplyGI")
-        self._target.add_color_texture(bits=16)
-        self._target.add_aux_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
+        self._target = self._create_target("PSSMDistShadowMap")
+        self._target.set_source(None, Globals.base.win)
+        self._target.size = self._resolution
+        self._target.add_depth_texture(bits=32)
+        self._target.create_overlay_quad = False
+        self._target.color_write = False
+        self._target.prepare_scene_render()
 
-        # Make the ambient stage use the GI result
-        ambient_stage = get_internal_stage("AmbientStage")
-        ambient_stage.add_pipe_requirement("VXGISpecular")
-        ambient_stage.add_pipe_requirement("VXGIDiffuse")
-
-    def set_shaders(self):
-        self._target.set_shader(self._load_plugin_shader("VXGIStage.frag"))
+    def set_shader_input(self, *args):
+        Globals.render.set_shader_input(*args)

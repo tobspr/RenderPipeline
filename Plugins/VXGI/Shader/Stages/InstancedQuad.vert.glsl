@@ -24,16 +24,11 @@
  *
  */
 
-#version 430
-
-#pragma include "Includes/Configuration.inc.glsl"
-
-uniform sampler3D SourceTex;
-uniform writeonly image3D RESTRICT DestTex;
-
-flat in int instance_id;
+#version 400
+in vec4 p3d_Vertex;
+flat out int instance_id;
 
 void main() {
-    ivec3 coord = ivec3(gl_FragCoord.xy, instance_id);
-    imageStore(DestTex, coord, texelFetch(SourceTex, coord, 0));
+    gl_Position = vec4(p3d_Vertex.xz, 0, 1);
+    instance_id = gl_InstanceID;
 }

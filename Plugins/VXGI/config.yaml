@@ -22,7 +22,7 @@ settings: !!omap
     - grid_ws_size:
         type: float
         range: [5.0, 150.0]
-        default: 40.0
+        default: 120.0
         label: Worlspace Grid Size
         description: >
             This controls the dimensions of the voxel grid. The voxel grid is

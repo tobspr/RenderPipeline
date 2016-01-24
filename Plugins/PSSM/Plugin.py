@@ -33,6 +33,7 @@ from panda3d.core import Vec3, PTAVecBase3f
 
 from .. import *
 from .PSSMShadowStage import PSSMShadowStage
+from .PSSMDistShadowStage import PSSMDistShadowStage
 from .PSSMStage import PSSMStage
 
 class Plugin(BasePlugin):
@@ -48,6 +49,10 @@ class Plugin(BasePlugin):
 
         self._shadow_stage.set_num_splits(self.get_setting("split_count"))
         self._shadow_stage.set_split_resolution(self.get_setting("resolution"))
+
+        # Experimental, not fully working yet
+        # self._dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
+        # self._dist_shadow_stage.set_resolution(self.get_setting("vsm_resolution"))
 
     @PluginHook("on_pipeline_created")
     def pipeline_created(self):
@@ -117,9 +122,9 @@ class Plugin(BasePlugin):
 
             # Eventually reset cache
             cache_diff = Globals.clock.get_frame_time() - self._last_cache_reset
-            # if cache_diff > 5.0:
-                # self._last_cache_reset = Globals.clock.get_frame_time()
-                # self._camera_rig.reset_film_size_cache()
+            if cache_diff > 5.0:
+                self._last_cache_reset = Globals.clock.get_frame_time()
+                self._camera_rig.reset_film_size_cache()
 
     @SettingChanged("max_distance")
     def update_pssm_distance(self):

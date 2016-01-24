@@ -102,7 +102,7 @@ class DisplayShaderBuilder(object):
 
         # Useful snippets
         int_coord = "ivec2 int_coord = ivec2(texcoord * textureSize(p3d_Texture0, mipmap).xy);"
-        slice_count = "int slice_count = textureSize(p3d_Texture0, mipmap).z;"
+        slice_count = "int slice_count = textureSize(p3d_Texture0, 0).z;"
 
         float_types = [Texture.T_float, Texture.T_unsigned_byte]
         int_types = [Texture.T_int, Texture.T_unsigned_short, Texture.T_unsigned_int_24_8]

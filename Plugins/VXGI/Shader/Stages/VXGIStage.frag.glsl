@@ -29,6 +29,7 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/GBuffer.inc.glsl"
+#pragma include "Includes/PoissonDisk.inc.glsl"
 
 uniform vec3 voxelGridPosition;
 uniform float voxelGridSize;
@@ -38,11 +39,42 @@ uniform sampler3D SceneVoxels;
 uniform sampler2D ShadedScene;
 
 uniform samplerCube ScatteringIBLSpecular;
+uniform samplerCube ScatteringIBLDiffuse;
 
 uniform GBufferData GBuffer;
-out vec4 result;
+
+layout(location=0) out vec4 specular_result;
+layout(location=1) out vec4 diffuse_result;
 
 
+
+vec4 trace_cone(vec3 start_pos, vec3 direction, bool is_specular, float cone_grow_factor) {
+
+    const int max_steps = 20;
+    float cone_radius = (1.0 + 10.0 * cone_grow_factor) / GET_SETTING(VXGI, grid_resolution);
+    start_pos += direction * cone_radius * 0.5;
+    vec3 current_pos = start_pos;
+    vec4 accum = vec4(0);
+    float mipmap = 0.0;
+    for (int i = 0; i < max_steps; ++i) {
+        mipmap = log2(cone_radius * GET_SETTING(VXGI, grid_resolution));
+        vec4 sampled = textureLod(SceneVoxels, current_pos, mipmap);
+        accum += sampled * (1.0 - accum.w);
+        current_pos += direction * cone_radius / 1.7;
+        cone_radius *= 1.0 + cone_grow_factor;
+    }
+
+    accum.xyz = accum.xyz / (1 - accum.xyz);
+    accum.xyz *= 1.5;
+
+    if (is_specular) {
+        accum.xyz += textureLod(ScatteringIBLSpecular, direction, mipmap).xyz * (1-accum.w);
+    } else {
+        accum.xyz += texture(ScatteringIBLDiffuse, direction).xyz * (1-accum.w);
+    }
+
+    return accum;
+}
 
 void main() {
 
@@ -60,32 +92,29 @@ void main() {
     if (voxel_coord.x < 0.0 || voxel_coord.y < 0.0 || voxel_coord.z < 0.0 ||
         voxel_coord.x > 1.0 || voxel_coord.y > 1.0 || voxel_coord.z > 1.0)
     {
-        result = texture(ScatteringIBLSpecular, reflected_dir);
+        specular_result = textureLod(ScatteringIBLSpecular, reflected_dir, 7) * 0.3;
+        diffuse_result = texture(ScatteringIBLDiffuse, m.normal);
         return;
     }
 
-    vec3 specular_gi = vec3(0);
-
-
     // Trace specular cone
-    vec3 start_pos = voxel_coord;
-    vec3 end_pos = start_pos + reflected_dir * 0.5;
-    vec3 current_pos = start_pos + reflected_dir * 2.0 / GET_SETTING(VXGI, grid_resolution);
+    vec4 specular_cone = trace_cone(voxel_coord, reflected_dir, true, m.roughness * 0.2);
 
-    const int num_steps = 256;
-    vec3 trace_step = (end_pos - start_pos) / num_steps;
-    vec4 accum = vec4(0.0);
-    for (int i = 0; i < num_steps; ++i) {
-        vec4 sampled = textureLod(SceneVoxels, current_pos, 0);
-        accum += sampled * (1.0 - accum.w);
-        current_pos += trace_step;
+    specular_result = vec4(specular_cone.xyz, 1.0);
+
+    // Trace diffuse cones
+    vec4 diffuse_accum = vec4(0);
+
+    for (int i = 0; i < 16; ++i) {
+        vec3 direction = poisson_disk_3D_16[i];
+        direction = faceforward(direction, direction, -m.normal);
+        float weight = dot(m.normal, direction); // Guaranteed to be > 0
+        vec4 cone = trace_cone(voxel_coord, direction, false, 0.2);
+        diffuse_accum.xyz += cone.xyz * weight;
+        diffuse_accum.w += weight;
     }
 
-    accum.xyz = accum.xyz / (1 - accum.xyz);
-    // accum.xyz *= 0.1;
-
-    accum.xyz += texture(ScatteringIBLSpecular, reflected_dir).xyz * (1-accum.w);
-
-    result = vec4(accum.xyz, 1.0);
-
+    diffuse_accum /= diffuse_accum.w;
+    diffuse_result = diffuse_accum;
 }
+

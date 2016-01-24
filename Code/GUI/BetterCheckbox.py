@@ -68,7 +68,7 @@ class BetterCheckbox(DebugObject):
             relief=DGG.FLAT, command=self._update_status)
 
         self._node["frameColor"] = (0, 0, 0, 0)
-        self._node["frameSize"] = (-2.6, 2 + expand_width / 7.5, -2.35, 2.35)
+        self._node["frameSize"] = (-2.6, 2 + expand_width / 7.5, -2.35, 2.5)
         self._node.set_transparency(TransparencyAttrib.M_alpha)
 
         self._callback = callback

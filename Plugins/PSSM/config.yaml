@@ -186,7 +186,14 @@ settings: !!omap
             smaller penumbra, while higher settings produce a bigger one. Too
             high values might cause artifacts in the filtering.
 
-
+    - vsm_resolution:
+        type: int
+        range: [128, 8192]
+        default: 4096
+        label: VSM Resolution
+        description: >
+            Controls the size of the last cascade, which is used for rendering
+            distant shadows.
 
 daytime_settings:
 
