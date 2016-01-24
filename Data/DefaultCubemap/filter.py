@@ -141,7 +141,7 @@ def filter_cubemap(orig_pth):
             final_img.copy_sub_image(img, 0, 0, blur_size, blur_size, size, size)
             final_img.write(face_dest)
 
-  
+
 
 
 if __name__ == "__main__":

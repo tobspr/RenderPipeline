@@ -217,6 +217,6 @@ class MovementController(object):
         self._showbase.camera.set_r(rotation)
 
         # fade out velocity
-        self._velocity = self._velocity * max(0.0, 
+        self._velocity = self._velocity * max(0.0,
             1.0 - self._showbase.taskMgr.globalClock.get_dt() * 60.0 / max(0.01, self._smoothness))
         return task.cont

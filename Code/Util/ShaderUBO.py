@@ -198,7 +198,7 @@ class ShaderUBO(BaseUBO):
                 content += "layout(shared, binding=" + str(self._bind_id) + ") uniform " + self._name + "_UBO {\n"
                 for ipt in inputs:
                      content += " " * 4 + ipt + "\n"
-                content += "} " + self._name + ";\n" 
+                content += "} " + self._name + ";\n"
             else:
                 content += "uniform struct {\n"
                 for ipt in inputs:

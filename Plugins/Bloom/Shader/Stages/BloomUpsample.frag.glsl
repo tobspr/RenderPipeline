@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -54,7 +54,7 @@ void main() {
 
     vec2 flt_coord = vec2(coord) / (2.0 * source_size);
     vec2 texel_size = 1.0 / source_size;
-    
+
     vec3 source_sample = textureLod(SourceTex, flt_coord, SourceMip).xyz * 4;
 
     source_sample += textureLod(SourceTex, flt_coord + vec2(  0,  1) * texel_size, SourceMip).xyz * 2;

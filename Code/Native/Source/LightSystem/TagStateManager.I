@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -61,7 +61,7 @@ inline BitMask32 TagStateManager::get_voxelize_mask() {
  *   applies all registered states onto the camera with Camera::set_tag_state.
  *   It also applies the shadow camera mask (TagStateManager::get_shadow_mask)
  *   to the camera, and sets an initial state to disable color write.
- * 
+ *
  * @param source Camera which will be used to render shadows
  */
 inline void TagStateManager::register_shadow_camera(Camera* source) {
@@ -73,7 +73,7 @@ inline void TagStateManager::register_shadow_camera(Camera* source) {
  * @brief Unregisters a camera from the list of shadow cameras
  * @details This unregisters a camera from the list of shadows cameras. It also
  *   resets all tag states of the camera, and also its initial state.
- * 
+ *
  * @param source Camera to unregister
  */
 inline void TagStateManager::unregister_shadow_camera(Camera* source) {
@@ -87,7 +87,7 @@ inline void TagStateManager::unregister_shadow_camera(Camera* source) {
  *   applies all registered states onto the camera with Camera::set_tag_state.
  *   It also applies the voxelize camera mask (TagStateManager::get_voxelize_mask)
  *   to the camera, and sets an initial state to disable color write.
- * 
+ *
  * @param source Camera which will be used to render shadows
  */
 inline void TagStateManager::register_voxelize_camera(Camera* source) {
@@ -99,7 +99,7 @@ inline void TagStateManager::register_voxelize_camera(Camera* source) {
  * @brief Unregisters a camera from the list of voxelization cameras
  * @details This unregisters a camera from the list of voxelization cameras. It also
  *   resets all tag states of the camera, and also its initial state.
- * 
+ *
  * @param source Camera to unregister
  */
 inline void TagStateManager::unregister_voxelize_camera(Camera* source) {
@@ -112,7 +112,7 @@ inline void TagStateManager::unregister_voxelize_camera(Camera* source) {
  * @details This applies a shader to the given NodePath which is used when the
  *   NodePath is rendered by any registered shadow camera to render shadows.
  *   It also disables color write (since its not required for shadows).
- *  
+ *
  * @param np The nodepath to apply the shader to
  * @param shader A handle to the shader to apply
  * @param name Name of the state, should be a unique identifier
@@ -128,7 +128,7 @@ inline void TagStateManager::apply_shadow_state(NodePath np, Shader* shader,
  * @details This applies a shader to the given NodePath which is used when the
  *   NodePath is rendered by any registered voxelization camera to voxelize the
  *   scene. It also disables color write (since its not required for voxelization).
- *  
+ *
  * @param np The nodepath to apply the shader to
  * @param shader A handle to the shader to apply
  * @param name Name of the state, should be a unique identifier

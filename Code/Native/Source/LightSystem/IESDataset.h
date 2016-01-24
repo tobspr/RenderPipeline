@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,11 +45,11 @@ class IESDataset {
 
     PUBLISHED:
         IESDataset();
-    
+
         void set_vertical_angles(const PTA_float &vertical_angles);
         void set_horizontal_angles(const PTA_float &horizontal_angles);
         void set_candela_values(const PTA_float &candela_values);
-		
+
         void generate_dataset_texture_into(Texture* dest_tex, size_t z) const;
 
     public:
@@ -61,5 +61,5 @@ class IESDataset {
     private:
         PTA_float _vertical_angles;
         PTA_float _horizontal_angles;
-        PTA_float _candela_values; 
+        PTA_float _candela_values;
 };

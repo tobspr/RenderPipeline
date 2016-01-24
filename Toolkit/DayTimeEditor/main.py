@@ -49,7 +49,7 @@ from six import iteritems
 
 # Load all PyQt classes
 try:
-    import PyQt4.QtCore as QtCore 
+    import PyQt4.QtCore as QtCore
     import PyQt4.QtGui as QtGui
 except ImportError as msg:
     print("Failed to import PyQt4:", msg)
@@ -214,14 +214,14 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
             if not self._interface.is_plugin_enabled(plugin.get_id()):
                 continue
-                
+
             daytime_settings = plugin.get_config().get_daytime_settings()
-            
+
             if not daytime_settings:
                 # Skip plugins with empty settings
                 continue
 
-            plugin_head = QtGui.QTreeWidgetItem(self.settings_tree)                
+            plugin_head = QtGui.QTreeWidgetItem(self.settings_tree)
             plugin_head.setText(0, plugin.get_name())
             plugin_head.setFlags(QtCore.Qt.ItemIsEnabled)
 

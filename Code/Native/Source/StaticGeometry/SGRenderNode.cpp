@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -70,7 +70,7 @@ SGRenderNode::SGRenderNode(StaticGeometryHandler *handler, PT(Shader) collector_
     CPT(RenderAttrib) collect_attrib = sattrib;
     collect_attrib = DCAST(ShaderAttrib, collect_attrib)->set_shader(collector_shader, 100000);
     collect_attrib = DCAST(ShaderAttrib, collect_attrib)->set_shader_input("IndirectTex", handler->get_indirect_tex());
-  
+
     _collect_render_state = RenderState::make(collect_attrib);
 
 }
@@ -88,7 +88,7 @@ void SGRenderNode::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
 
 
     // Execute the collector shader
-    CullableObject *collect_obj = new CullableObject(NULL, 
+    CullableObject *collect_obj = new CullableObject(NULL,
         data._state->compose(_collect_render_state), TransformState::make_identity());
     collect_obj->set_draw_callback(new SGRenderCallback(this, 0));
     trav->get_cull_handler()->record_object(collect_obj, trav);
@@ -97,7 +97,7 @@ void SGRenderNode::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     // Finally render the triangle strip
     CPT(TransformState) internal_transform = data.get_internal_transform(trav);
     CPT(RenderState) state = _base_render_state->compose(data._state);
-    CullableObject *object = 
+    CullableObject *object =
       new CullableObject(_geom_strip, state, internal_transform);
     object->set_draw_callback(new SGRenderCallback(this, 1));
     trav->get_cull_handler()->record_object(object, trav);
@@ -111,12 +111,12 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
     GeomDrawCallbackData *data = (GeomDrawCallbackData *)cbdata;
     CullableObject *obj = data->get_object();
     GraphicsStateGuardianBase *gsg = data->get_gsg();
-	
+
     if (reason == 0) {
-    
+
         // Execute collector shader
         gsg->dispatch_compute(1, 1, 1);
-    
+
 
     } else if (reason == 1) {
         // Render default object
@@ -126,14 +126,14 @@ void SGRenderNode::do_draw_callback(CallbackData* cbdata, int reason) {
 
         // Make sure indirect draw is supported
         if (! ((GLGraphicsStateGuardian*)gsg)->get_supports_indirect_draw()) {
-            cout << "ERROR: Driver does not support indirect draw. This is required for " 
+            cout << "ERROR: Driver does not support indirect draw. This is required for "
                  << "static geometry rendering!" << endl;
             return;
         }
 
 
 		Thread *current_thread = Thread::get_current_thread();
-		
+
 		const GeomPipelineReader geom_reader(obj->_geom, current_thread);
 
 		CPT(GeomVertexData) vertex_data = geom_reader.get_vertex_data();
@@ -188,7 +188,7 @@ void SGRenderNode::create_default_geom() {
 
     PT(GeomTriangles) triangles = new GeomTriangles(Geom::UH_static);
     triangles->add_next_vertices(SG_TRI_GROUP_SIZE * 3);
-    
+
     _geom_strip = new Geom(vdata);
     _geom_strip->add_primitive(triangles);
 }

@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,13 +45,13 @@ class PointerSlotStorage {};
  * @details This class stores a fixed size list of pointers, whereas pointers
  *   may be a nullptr as well. It provides functionality to find free slots,
  *   and also to find free consecutive slots, as well as taking care of reserving slots.
- * 
+ *
  * @tparam T* Pointer-Type
  * @tparam SIZE Size of the storage
  */
 template < typename T, int SIZE >
 class PointerSlotStorage {
-    
+
 public:
 
     /**
@@ -70,7 +70,7 @@ public:
      * @details This returns the greatest index of any element which is not zero.
      *   This can be useful for iterating the container, since all elements
      *   coming after the returned index are guaranteed to be a nullptr.
-     *   
+     *
      *   If no elements are in this container, -1 is returned.
      * @return Maximum index of the container
      */
@@ -92,10 +92,10 @@ public:
      * @brief Finds a free slot
      * @details This finds the first slot which is a nullptr and returns it.
      *   This is most likely useful in combination with reserve_slot.
-     *   
+     *
      *   When no slot found was found, slot will be undefined, and false will
      *   be returned.
-     *   
+     *
      * @param slot Output-Variable, slot will be stored there
      * @return true if a slot was found, otherwise false
      */
@@ -113,16 +113,16 @@ public:
      * @brief Finds free consecutive slots
      * @details This behaves like find_slot, but it tries to find a slot
      *   after which <num_consecutive-1> free slots follow as well.
-     *   
+     *
      *   When no slot found was found, slot will be undefined, and false will
      *   be returned.
-     * 
+     *
      * @param slot Output-Variable, index of the first slot of the consecutive
      *   slots will be stored there.
      * @param num_consecutive Amount of consecutive slots to find, including the
      *   first slot.
-     * 
-     * @return true if consecutive slots were found, otherwise false. 
+     *
+     * @return true if consecutive slots were found, otherwise false.
      */
     bool find_consecutive_slots(size_t &slot, size_t num_consecutive) const {
         nassertr(num_consecutive > 0, false);
@@ -150,7 +150,7 @@ public:
      * @brief Frees an allocated slot
      * @details This frees an allocated slot. If the slot was already freed
      *   before, this method throws an assertion.
-     * 
+     *
      * @param slot Slot to free
      */
     void free_slot(size_t slot) {
@@ -168,8 +168,8 @@ public:
     /**
      * @brief Frees consecutive allocated slots
      * @details This behaves like PointerSlotStorage::free_slot, but deletes
-     *   consecutive slots. 
-     * 
+     *   consecutive slots.
+     *
      * @param slot Start of the consecutive slots to free
      * @param num_consecutive Number of consecutive slots
      */
@@ -185,7 +185,7 @@ public:
      *   was already taken, throws an assertion.
      *   If the ptr is a nullptr, also throws an assertion.
      *   If the slot was out of bounds, also throws an assertion.
-     * 
+     *
      * @param slot Slot to reserve
      * @param ptr Pointer to store
      */
@@ -202,7 +202,7 @@ public:
 
     /**
      * @brief Returns an iterator to the begin of the container
-     * @details This returns an iterator to the beginning of the container 
+     * @details This returns an iterator to the beginning of the container
      * @return Begin-Iterator
      */
     typename InternalContainer::iterator begin() {

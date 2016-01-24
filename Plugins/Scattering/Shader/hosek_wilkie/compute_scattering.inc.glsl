@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -50,7 +50,7 @@ vec3 get_scattering(vec3 surface_pos) {
     float max_angle_factor = 40.0 / 180.0 * M_PI;
     float elevation_factor = sun_elevation / max_angle_factor;
 
-    float slice_index = 0.5 / 100.0 + elevation_factor; 
+    float slice_index = 0.5 / 100.0 + elevation_factor;
 
     float factor_x = theta;
     float factor_y = elevation;
@@ -82,7 +82,7 @@ vec3 get_scattering_at_surface(vec3 surface_pos) {
 
 vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 {
-    
+
     // Move surface pos above ocean level
     if (surface_pos.z < -0.01) {
         vec3 v2s = surface_pos - MainSceneData.camera_pos;

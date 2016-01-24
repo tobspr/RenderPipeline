@@ -30,7 +30,7 @@ from six.moves import range
 from panda3d.core import LVecBase4i, LVecBase4
 
 class ShadowAtlas(object):
-    
+
     def __init__(self, size, tile_size = 32):
         self._size = size
         self._tile_size = tile_size

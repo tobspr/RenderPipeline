@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 class GPUCommandList(object):
-    
+
     def __init__(self):
         self._commands = []
 

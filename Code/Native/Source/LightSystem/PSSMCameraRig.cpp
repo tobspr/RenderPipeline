@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -38,9 +38,9 @@ PStatCollector PSSMCameraRig::_update_collector("App:Show code:RP_PSSM_update");
  * @brief Constructs a new PSSM camera rig
  * @details This constructs a new camera rig, with a given amount of splits.
  *   The splits can not be changed later on. Splits are also called Cascades.
- *   
+ *
  *   An assertion will be triggered if the splits are below zero.
- * 
+ *
  * @param num_splits Amount of PSSM splits
  */
 PSSMCameraRig::PSSMCameraRig(size_t num_splits) {
@@ -95,9 +95,9 @@ void PSSMCameraRig::init_cam_nodes() {
  * @details This reparents all cameras to the given parent. Usually the parent
  *   will be ShowBase.render. The parent should be the same node where the
  *   main camera is located in, too.
- *   
+ *
  *   If an empty parrent is passed, an assertion will get triggered.
- * 
+ *
  * @param parent Parent node path
  */
 void PSSMCameraRig::reparent_to(NodePath parent) {
@@ -111,8 +111,8 @@ void PSSMCameraRig::reparent_to(NodePath parent) {
 /**
  * @brief Internal method to compute the view-projection matrix of a camera
  * @details This returns the view-projection matrix of the given split. No bounds
- *   checking is done. If an invalid index is passed, undefined behaviour occurs.  
- * 
+ *   checking is done. If an invalid index is passed, undefined behaviour occurs.
+ *
  * @param split_index Index of the split
  * @return view-projection matrix of the split
  */
@@ -127,13 +127,13 @@ LMatrix4f PSSMCameraRig::compute_mvp(size_t split_index) {
  *   source only moves in texel-steps, thus preventing flickering. This works by
  *   projecting the point (0, 0, 0) to NDC space, making sure that it gets projected
  *   to a texel center, and then projecting that texel back.
- *   
+ *
  *   This only works if the camera does not rotate, change its film size, or change
  *   its angle.
- * 
+ *
  * @param mat view-projection matrix of the camera
  * @param resolution resolution of the split
- * 
+ *
  * @return Offset to add to the camera position to achieve stable snapping
  */
 LVecBase3f PSSMCameraRig::get_snap_offset(const LMatrix4f& mat, size_t resolution) {
@@ -160,11 +160,11 @@ LVecBase3f PSSMCameraRig::get_snap_offset(const LMatrix4f& mat, size_t resolutio
  * @brief Computes the average of a list of points
  * @details This computes the average over a given set of points in 3D space.
  *   It returns the average of those points, namely sum_of_points / num_points.
- * 
+ *
  *   It is designed to work with a frustum, which is why it takes two arrays
  *   with a dimension of 4. Usually the first array are the camera near points,
  *   and the second array are the camera far points.
- * 
+ *
  * @param starts First array of points
  * @param ends Second array of points
  * @return Average of points
@@ -183,7 +183,7 @@ LPoint3f get_average_of_points(LVecBase3f const (&starts)[4], LVecBase3f const (
  * @details This projects each point of the given array of points using the
  *   cameras view-projection matrix, and computes the minimum and maximum
  *   of the projected points.
- * 
+ *
  * @param min_extent Will store the minimum extent of the projected points in NDC space
  * @param max_extent Will store the maximum extent of the projected points in NDC space
  * @param transform The transformation matrix of the camera
@@ -207,7 +207,7 @@ void find_min_max_extents(LVecBase3f &min_extent, LVecBase3f &max_extent, const 
         // Find min / max extents
         if (screen_points[k].get_x() > max_extent.get_x()) max_extent.set_x(screen_points[k].get_x());
         if (screen_points[k].get_y() > max_extent.get_y()) max_extent.set_y(screen_points[k].get_y());
-        
+
         if (screen_points[k].get_x() < min_extent.get_x()) min_extent.set_x(screen_points[k].get_x());
         if (screen_points[k].get_y() < min_extent.get_y()) min_extent.set_y(screen_points[k].get_y());
 
@@ -221,7 +221,7 @@ void find_min_max_extents(LVecBase3f &min_extent, LVecBase3f &max_extent, const 
  * @brief Computes a film size from a given minimum and maximum extend
  * @details This takes a minimum and maximum extent in NDC space and computes
  *   the film size and film offset needed to cover that extent.
- * 
+ *
  * @param film_size Output film size, can be used for Lens::set_film_size
  * @param film_offset Output film offset, can be used for Lens::set_film_offset
  * @param min_extent Minimum extent
@@ -240,7 +240,7 @@ inline void get_film_properties(LVecBase2f &film_size, LVecBase2f &film_offset, 
  * @brief Merges two arrays
  * @details This takes two arrays which each 4 members and produces an array
  *   with both arrays contained.
- * 
+ *
  * @param dest Destination array
  * @param array1 First array
  * @param array2 Second array
@@ -258,7 +258,7 @@ inline void merge_points_interleaved(LVecBase3f (&dest)[8], LVecBase3f const (&a
  * @details This is the internal update method to update the PSSM splits.
  *   It distributes the camera splits over the frustum, and updates the
  *   MVP array aswell as the nearfar array.
- * 
+ *
  * @param transform Main camera transform
  * @param max_distance Maximum pssm distance, relative to the camera far plane
  * @param light_vector Sun-Vector
@@ -287,7 +287,7 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
 
         // Compute approximate split mid point
         LPoint3f split_mid = get_average_of_points(start_points, end_points);
-        LPoint3f cam_start = split_mid + light_vector * _sun_distance; 
+        LPoint3f cam_start = split_mid + light_vector * _sun_distance;
 
         // Reset the film size, offset and far-plane
         Camera* cam = DCAST(Camera, _cam_nodes[i].node());
@@ -352,10 +352,10 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
  * @details This updates the rig with an updated camera position, and a given
  *   light vector. This should be called on a per-frame basis. It will reposition
  *   all camera sources to fit the frustum based on the pssm distribution.
- *   
+ *
  *   The light vector should be the vector from the light source, not the
  *   vector to the light source.
- * 
+ *
  * @param cam_node Target camera node
  * @param light_vector The vector from the light to any point
  */

@@ -50,7 +50,7 @@ class ExposureWidget(DebugObject):
 
     def _create_components(self):
         """ Internal method to init the widgets components """
-        
+
         self._node.hide()
 
         # Create the texture where the gui component is rendered inside

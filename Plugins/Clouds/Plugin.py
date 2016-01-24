@@ -26,7 +26,7 @@ THE SOFTWARE.
 # Load the plugin api
 from .. import *
 
-from panda3d.core import SamplerState 
+from panda3d.core import SamplerState
 from CloudStage import CloudStage
 
 class Plugin(BasePlugin):

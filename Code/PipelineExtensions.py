@@ -135,7 +135,7 @@ class PipelineExtensions(object):
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns
         True if the version is new enough, and false if the version is outdated. """
-        
+
         # Not a public change yet, uncomment in later versions
         # if not hasattr(Texture(""), "x_size"):
         #     return False

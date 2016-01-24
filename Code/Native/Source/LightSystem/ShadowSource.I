@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -55,7 +55,7 @@ inline int ShadowSource::get_slot() const {
  * @details This returns whether the ShadowSource currently has an assigned slot.
  *   If the source has a slot assigned, this returns true, otherwise false. Cases
  *   where the source has no slot might be when the source just got attached, but
- *   never got rendered yet. 
+ *   never got rendered yet.
  * @return [description]
  */
 inline bool ShadowSource::has_slot() const {
@@ -67,7 +67,7 @@ inline bool ShadowSource::has_slot() const {
  * @details This assigns a slot to the ShadowSource. This is called from the
  *   ShadowManager, when the source gets attached first time. This should not
  *   get called by the user.
- * 
+ *
  * @param slot Slot of the source, or -1 to indicate no slot.
  */
 inline void ShadowSource::set_slot(int slot) {
@@ -78,7 +78,7 @@ inline void ShadowSource::set_slot(int slot) {
  * @brief Setups a perspective lens for the source.
  * @details This makes the shadow source behave like a perspective lens. The
  *   parameters are similar to the ones of a PerspectiveLens.
- * 
+ *
  * @param fov FoV of the lens
  * @param near_plane The near plane of the lens, to avoid artifacts at low distance
  * @param far_plane The far plane of the lens
@@ -87,7 +87,7 @@ inline void ShadowSource::set_slot(int slot) {
  */
 inline void ShadowSource::set_perspective_lens(float fov, float near_plane,
                                                float far_plane, LVecBase3f pos,
-                                               LVecBase3f direction) {  
+                                               LVecBase3f direction) {
     // Construct the transformation matrix
     LMatrix4f transform_mat = LMatrix4f::translate_mat(-pos);
 
@@ -104,8 +104,8 @@ inline void ShadowSource::set_perspective_lens(float fov, float near_plane,
  * @details This tells the source to use a custom matrix for rendering, just like
  *   the matrix lens. The matrix should include all transformations, rotations and
  *   scales. No other matrices will be used for rendering this shadow source (not
- *   even a coordinate system conversion). 
- * 
+ *   even a coordinate system conversion).
+ *
  * @param mvp Custom View-Projection matrix
  */
 inline void ShadowSource::set_matrix_lens(const LMatrix4f& mvp) {
@@ -116,10 +116,10 @@ inline void ShadowSource::set_matrix_lens(const LMatrix4f& mvp) {
 /**
  * @brief Sets the update flag of the source.
  * @details Sets whether the source is still valid, or needs to get regenerated.
- *   Usually you only want to flag the shadow source as invalid, by passing 
+ *   Usually you only want to flag the shadow source as invalid, by passing
  *   true as the flag. However, the ShadowManager will set the flag to false
  *   after updating the source.
- * 
+ *
  * @param flag The update flag
  */
 inline void ShadowSource::set_needs_update(bool flag) {
@@ -153,7 +153,7 @@ inline size_t ShadowSource::get_resolution() const {
  *    region set by ShadowSource::set_region. If no region was set yet, returns
  *    a 4-component integer vector with all components set to -1. To check this,
  *    you should call ShadowSource::has_region() first.
- *    
+ *
  * @return [description]
  */
 inline const LVecBase4i& ShadowSource::get_region() const {
@@ -166,7 +166,7 @@ inline const LVecBase4i& ShadowSource::get_region() const {
  *    region set by ShadowSource::set_region. If no region was set yet, returns
  *    a 4-component integer vector with all components set to -1. To check this,
  *    you should call ShadowSource::has_region() first.
- *    
+ *
  * @return [description]
  */
 inline const LVecBase4f& ShadowSource::get_uv_region() const {
@@ -181,7 +181,7 @@ inline const LVecBase4f& ShadowSource::get_uv_region() const {
  *   but in the 0 .. 1 range (can be converted with ShadowAtlas::region_to_uv).
  *   This is required for the shaders, because they expect coordinates in the
  *   0 .. 1 range for sampling.
- *   
+ *
  * @param region Atlas-Space region
  * @param region_uv UV-Space region
  */
@@ -191,20 +191,20 @@ inline void ShadowSource::set_region(const LVecBase4i& region, const LVecBase4f&
 }
 
 /**
- * @brief Returns the View-Projection matrix of the source. 
+ * @brief Returns the View-Projection matrix of the source.
  * @details This returns the current view-projection matrix of the ShadowSource.
  *   If no matrix was set yet, returns a matrix with all components zero.
  *   If a matrix was set with ShadowSource::set_matrix_lens, returns the matrix
  *   set by that function call.
- *   
+ *
  *   If a matrix was set with ShadowSource::set_perspective_lens, returns a
  *   perspective view-projection matrix setup by those parameters.
- *   
+ *
  *   The matrix returned is the matrix used for rendering the shadow map, and
  *   includes the camera transform as well as the projection matrix.
- *   
+ *
  * @return View-Projection matrix.
- */ 
+ */
 inline const LMatrix4f& ShadowSource::get_mvp() const {
     return _mvp;
 }
@@ -213,7 +213,7 @@ inline const LMatrix4f& ShadowSource::get_mvp() const {
  * @brief Writes the source to a GPUCommand.
  * @details This writes the ShadowSource to a GPUCommand. This stores the
  *   mvp and the uv-region in the command.
- * 
+ *
  * @param cmd GPUCommand to write to.
  */
 inline void ShadowSource::write_to_command(GPUCommand &cmd) const {
@@ -227,7 +227,7 @@ inline void ShadowSource::write_to_command(GPUCommand &cmd) const {
  * @brief Sets the resolution of the source.
  * @details This sets the resolution of the ShadowSource, in pixels. It should be
  *   a multiple of the tile size of the ShadowAtlas, and greater than zero.
- * 
+ *
  * @param resolution [description]
  */
 inline void ShadowSource::set_resolution(size_t resolution) {

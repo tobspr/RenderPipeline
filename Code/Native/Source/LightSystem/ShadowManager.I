@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,20 +32,20 @@
  *   generate shadow maps for them every frame. If there are more ShadowSources
  *   waiting to get updated than available updates, the sources are sorted by
  *   priority, and the update of the less important sources is delayed to the
- *   next frame. 
- *   
+ *   next frame.
+ *
  *   If the update count is set too low, and there are a lot of ShadowSources
  *   waiting to get updated, artifacts will occur, and there might be ShadowSources
  *   which never get updated, due to low priority.
- *   
+ *
  *   If an update count of 0 is passed, no updates will happen. This also means
  *   that there are no shadows. This is not recommended.
- *   
+ *
  *   If an update count < 0 is passed, undefined behaviour occurs.
- *   
+ *
  *   This method has to get called before ShadowManager::init, otherwise an
  *   assertion will get triggered.
- * 
+ *
  * @param max_updates Maximum amoumt of updates
  */
 inline void ShadowManager::set_max_updates(size_t max_updates) {
@@ -62,10 +62,10 @@ inline void ShadowManager::set_max_updates(size_t max_updates) {
  * @details This sets the desired shadow atlas size. It should be big enough
  *   to store all important shadow sources, with some buffer, because the shadow
  *   maps usually won't be fitted perfectly, so gaps can occur.
- *   
+ *
  *   This has to get called before calling ShadowManager::init. When calling this
  *   method after initialization, an assertion will get triggered.
- * 
+ *
  * @param atlas_size Size of the shadow atlas in pixels
  */
 inline void ShadowManager::set_atlas_size(size_t atlas_size) {
@@ -101,13 +101,13 @@ inline ShadowAtlas* ShadowManager::get_atlas() const {
  * @brief Sets the target scene
  * @details This sets the target scene for rendering shadows. All shadow cameras
  *   will be parented to this scene to render shadows.
- *   
+ *
  *   Usually the scene will be ShowBase.render. If the scene is an empty or
  *   invalid NodePath, an assertion will be triggered.
- *   
+ *
  *   This method has to get called before calling ShadowManager::init, or an
  *   assertion will get triggered.
- * 
+ *
  * @param scene_parent The target scene
  */
 inline void ShadowManager::set_scene(NodePath scene_parent) {
@@ -119,31 +119,31 @@ inline void ShadowManager::set_scene(NodePath scene_parent) {
 /**
  * @brief Sets the handle to the TagStageManager.
  * @details This sets the handle to the TagStateManager used by the pipeline.
- *   Usually this is RenderPipeline.get_tag_mgr(). 
- *   
+ *   Usually this is RenderPipeline.get_tag_mgr().
+ *
  *   This has to get called before ShadowManager::init, otherwise an assertion
  *   will get triggered.
- * 
+ *
  * @param tag_mgr [description]
  */
 inline void ShadowManager::set_tag_state_manager(TagStateManager* tag_mgr) {
     nassertv(tag_mgr != NULL);
     nassertv(_atlas == NULL);  // ShadowManager was already initialized
-    _tag_state_mgr = tag_mgr; 
+    _tag_state_mgr = tag_mgr;
 }
 
 /**
  * @brief Sets the handle to the Shadow targets output
  * @details This sets the handle to the GraphicsOutput of the shadow atlas.
  *   Usually this is RenderTarget.get_internal_buffer(), whereas the RenderTarget
- *   is the target of the ShadowStage. 
- *   
+ *   is the target of the ShadowStage.
+ *
  *   This is used for creating display regions and attaching cameras to them,
  *   for performing shadow updates.
- *   
+ *
  *   This has to get called before ShadowManager::init, otherwise an assertion
  *   will be triggered.
- * 
+ *
  * @param graphics_output [description]
  */
 inline void ShadowManager::set_atlas_graphics_output(GraphicsOutput* graphics_output) {
@@ -154,14 +154,14 @@ inline void ShadowManager::set_atlas_graphics_output(GraphicsOutput* graphics_ou
 
 
 /**
- * @brief Adds a new shadow update 
+ * @brief Adds a new shadow update
  * @details This adds a new update to the update queue. When the queue is already
  *   full, this method returns false, otherwise it returns true. The next time
  *   the manager is updated, the shadow source will recieve an update of its
  *   shadow map.
- * 
+ *
  * @param source The shadow source to update
- * 
+ *
  * @return Whether the shadow source udpate was sucessfully queued.
  */
 inline bool ShadowManager::add_update(const ShadowSource* source) {

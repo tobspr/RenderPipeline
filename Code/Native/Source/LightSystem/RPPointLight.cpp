@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +32,7 @@
  * @brief Constructs a new point light
  * @details This contructs a new point light with default settings. By default
  *   the light is set to be an infinitely small point light source. You can
- *   change this with RPPointLight::set_inner_radius.   
+ *   change this with RPPointLight::set_inner_radius.
  */
 RPPointLight::RPPointLight() : RPLight(RPLight::LT_point_light) {
     _radius = 10.0;
@@ -43,13 +43,13 @@ RPPointLight::RPPointLight() : RPLight(RPLight::LT_point_light) {
  * @brief Writes the light to a GPUCommand
  * @details This writes the point light data to a GPUCommand.
  * @see RPLight::write_to_command
- * 
+ *
  * @param cmd The target GPUCommand
  */
 void RPPointLight::write_to_command(GPUCommand &cmd) {
     RPLight::write_to_command(cmd);
     cmd.push_float(_radius);
-    cmd.push_float(_inner_radius);    
+    cmd.push_float(_inner_radius);
 }
 
 /**

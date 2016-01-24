@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,20 +47,20 @@ InternalLightManager::InternalLightManager() {
  * @brief Adds a new light.
  * @details This adds a new light to the list of lights. This will throw an
  *   error and return if the light is already attached. You may only call
- *   this after the ShadowManager was already set. 
- * 
+ *   this after the ShadowManager was already set.
+ *
  *   While the light is attached, the light manager keeps a reference to it, so
  *   the light does not get destructed.
- *   
+ *
  *   This also setups the shadows on the light, in case shadows are enabled.
  *   While a light is attached, you can not change whether it casts shadows or not.
  *   To do so, detach the light, change the setting, and re-add the light.
- *   
+ *
  *   In case no free light slot is available, an error will be printed and no
  *   action will be performed.
- *   
+ *
  *   If no shadow manager was set, an assertion will be triggered.
- * 
+ *
  * @param light The light to add.
  */
 void InternalLightManager::add_light(PT(RPLight) light) {
@@ -105,7 +105,7 @@ void InternalLightManager::add_light(PT(RPLight) light) {
  * @brief Internal method to setup shadows for a light
  * @details This method gets called by the InternalLightManager::add_light method
  *   to setup a lights shadow sources, in case shadows are enabled on that light.
- *   
+ *
  *   It finds a slot for all shadow sources of the ilhgt, and inits the shadow
  *   sources as well. If no slot could be found, an error is printed an nothing
  *   happens.
@@ -134,7 +134,7 @@ void InternalLightManager::setup_shadows(RPLight* light) {
     // Init all sources
     for (int i = 0; i < num_sources; ++i) {
         ShadowSource* source = light->get_shadow_source(i);
-        
+
         // Set the source as dirty, so it gets updated in the beginning
         source->set_needs_update(true);
 
@@ -151,23 +151,23 @@ void InternalLightManager::setup_shadows(RPLight* light) {
  * @details This detaches a light. This prevents it from being rendered, and also
  *   cleans up all resources used by that light. If no reference is kept on the
  *   python side, the light will also get destructed.
- *   
+ *
  *   If the light was not previously attached with InternalLightManager::add_light,
  *   an error will be triggered and nothing happens.
- *   
+ *
  *   In case the light was set to cast shadows, all shadow sources are cleaned
  *   up, and their regions in the shadow atlas are freed.
- *    
+ *
  *   All resources used by the light in the light and shadow storage are also
  *   cleaned up, by emitting cleanup GPUCommands.
- *   
+ *
  *   If no shadow manager was set, an assertion will be triggered.
- * 
+ *
  * @param light [description]
  */
 void InternalLightManager::remove_light(PT(RPLight) light) {
     nassertv(_shadow_manager != NULL);
-    
+
     if (!light->has_slot()) {
         lightmgr_cat.error() << "Could not detach light, light was not attached!" << endl;
         return;
@@ -221,10 +221,10 @@ void InternalLightManager::remove_light(PT(RPLight) light) {
  *   shadow sources took. Its not really required, because as long as the light
  *   is not used, there is no reference to the sources. However, it can't hurt to
  *   cleanup the memory.
- *   
+ *
  *   All sources starting at first_source->get_slot() until
- *   first_source->get_slot() + num_sources will get cleaned up. 
- * 
+ *   first_source->get_slot() + num_sources will get cleaned up.
+ *
  * @param first_source First source of the light
  * @param num_sources Amount of consecutive sources to clear
  */
@@ -242,10 +242,10 @@ void InternalLightManager::gpu_remove_consecutive_sources(ShadowSource *first_so
  * @brief Internal method to remove a light from the GPU.
  * @details This emits a GPUCommand to clear a lights data. This sets the data
  *   to all zeros, marking that no light is stored anymore.
- * 
+ *
  *   This throws an assertion in case the light is not currently attached. Be
  *   sure to call this before detaching the light.
- * 
+ *
  * @param light The light to remove, must be attached.
  */
 void InternalLightManager::gpu_remove_light(RPLight* light) {
@@ -261,10 +261,10 @@ void InternalLightManager::gpu_remove_light(RPLight* light) {
  * @details This method emits a GPUCommand to update a lights data. This can
  *   be used to initially store the lights data, or to update the data whenever
  *   the light changed.
- *  
+ *
  *   This throws an assertion in case the light is not currently attached. Be
  *   sure to call this after attaching the light.
- * 
+ *
  * @param light The light to update
  */
 void InternalLightManager::gpu_update_light(RPLight* light) {
@@ -282,9 +282,9 @@ void InternalLightManager::gpu_update_light(RPLight* light) {
  * @details This emits a GPUCommand to update a given shadow source, storing all
  *   data of the source on the GPU. This can also be used to initially store a
  *   ShadowSource, since all data will be overridden.
- *   
+ *
  *   This throws an assertion if the source has no slot yet.
- * 
+ *
  * @param source The source to update
  */
 void InternalLightManager::gpu_update_source(ShadowSource* source) {
@@ -366,7 +366,7 @@ void InternalLightManager::update_shadow_sources() {
         LVecBase4i new_region = atlas->find_and_reserve_region(region_size, region_size);
         LVecBase4f new_uv_region = atlas->region_to_uv(new_region);
         source->set_region(new_region, new_uv_region);
-        
+
         // Mark the source as updated
         source->set_needs_update(false);
         gpu_update_source(source);
@@ -378,7 +378,7 @@ void InternalLightManager::update_shadow_sources() {
  * @details This is the main update method of the InternalLightManager. It
  *   processes all lights and shadow sources, updates them, and notifies the
  *   GPU about it. This should be called on a per-frame basis.
- *      
+ *
  *   If the InternalLightManager was not initialized yet, an assertion is thrown.
  */
 void InternalLightManager::update() {

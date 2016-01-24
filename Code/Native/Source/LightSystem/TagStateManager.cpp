@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,7 +36,7 @@ NotifyCategoryDef(tagstatemgr, "");
  *   refer to the main scene camera, and will most likely be base.cam.
  *   It is necessary to pass the camera because the C++ code does not have
  *   access to the showbase.
- *   
+ *
  * @param main_cam_node The main scene camera
  */
 TagStateManager::TagStateManager(NodePath main_cam_node) {
@@ -66,7 +66,7 @@ TagStateManager::~TagStateManager() {
  * @brief Applies a given state to a NodePath
  * @details This applies a shader to the given NodePath which is used when the
  *   NodePath is rendered by any registered camera of the container.
- *  
+ *
  * @param container The container which is used to store the state
  * @param np The nodepath to apply the shader to
  * @param shader A handle to the shader to apply
@@ -76,7 +76,7 @@ TagStateManager::~TagStateManager() {
 void TagStateManager::apply_state(StateContainer& container, NodePath np, Shader* shader,
                                   const string &name, int sort) {
     if (tagstatemgr_cat.is_spam()) {
-        tagstatemgr_cat.spam() << "Constructing new state " << name 
+        tagstatemgr_cat.spam() << "Constructing new state " << name
                                << " with shader " << shader << endl;
     }
 
@@ -126,7 +126,7 @@ void TagStateManager::cleanup_states() {
  * @brief Cleans up the states of a given container
  * @details This cleans all tag states of the given container,
  *   and also calls Camera::clear_tag_states on every assigned camera.
- * 
+ *
  * @param container Container to clear
  */
 void TagStateManager::cleanup_container_states(StateContainer& container) {
@@ -140,7 +140,7 @@ void TagStateManager::cleanup_container_states(StateContainer& container) {
  * @brief Registers a new camera to a given container
  * @details This registers a new camera to a container, and sets its initial
  *   state as well as the camera mask.
- * 
+ *
  * @param container The container to add the camera to
  * @param source The camera to add
  */
@@ -163,7 +163,7 @@ void TagStateManager::register_camera(StateContainer& container, Camera* source)
  * @details This unregisters a camera from the list of cameras of a given
  *   container. It also resets all tag states of the camera, and also its initial
  *   state.
- * 
+ *
  * @param source Camera to unregister
  */
 void TagStateManager::unregister_camera(StateContainer& container, Camera* source) {
@@ -171,13 +171,13 @@ void TagStateManager::unregister_camera(StateContainer& container, Camera* sourc
 
     // Make sure the camera was attached so far
     if (std::find(cameras.begin(), cameras.end(), source) == cameras.end()) {
-        tagstatemgr_cat.error() 
+        tagstatemgr_cat.error()
             << "Called unregister_camera but camera was never registered!" << endl;
         return;
     }
 
     // Remove the camera from the list of attached cameras
-    cameras.erase(std::remove(cameras.begin(), cameras.end(), source), cameras.end()); 
+    cameras.erase(std::remove(cameras.begin(), cameras.end(), source), cameras.end());
 
     // Reset the camera
     source->clear_tag_states();

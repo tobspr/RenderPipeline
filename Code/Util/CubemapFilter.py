@@ -32,7 +32,7 @@ from .DebugObject import DebugObject
 from .Image import Image
 
 class CubemapFilter(DebugObject):
-    
+
     """ Util class for filtering cubemaps, provides funcionality to generate
     a specular and diffuse IBL cubemap. """
 
@@ -141,7 +141,7 @@ class CubemapFilter(DebugObject):
             target_filter.set_shader_input("SourceTex", self._spec_pref_map)
             target_filter.set_shader_input(
                 "DestMipmap", self._specular_map, False, True, -1, mip, 0)
-            
+
             self._targets_spec.append(target)
             self._targets_spec_filter.append(target_filter)
 

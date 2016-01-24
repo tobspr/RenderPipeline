@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -61,7 +61,7 @@ ShadowManager::~ShadowManager() {
  * @brief Initializes the ShadowManager.
  * @details This initializes the ShadowManager. All properties should have
  *   been set before calling this, otherwise assertions will get triggered.
- *   
+ *
  *   This setups everything required for rendering shadows, including the
  *   shadow atlas and the various shadow cameras. After calling this method,
  *   no properties can be changed anymore.
@@ -77,7 +77,7 @@ void ShadowManager::init() {
 
     // Create the cameras and regions
     for(size_t i = 0; i < _max_updates; ++i) {
-    
+
         // Create the camera
         PT(Camera) camera = new Camera("ShadowCam-" + to_string((long long)i));
         camera->set_lens(new MatrixLens());
@@ -86,7 +86,7 @@ void ShadowManager::init() {
         _tag_state_mgr->register_shadow_camera(camera);
         _camera_nps.push_back(_scene_parent.attach_new_node(camera));
         _cameras[i] = camera;
-        
+
         // Create the display region
         PT(DisplayRegion) region = _atlas_graphics_output->make_display_region();
         region->set_sort(1000);
@@ -109,16 +109,16 @@ void ShadowManager::init() {
 /**
  * @brief Updates the ShadowManager
  * @details This updates the ShadowManager, processing all shadow sources which
- *   need to get updated. 
- *   
+ *   need to get updated.
+ *
  *   This first collects all sources which require an update, sorts them by priority,
  *   and then processes the first <max_updates> ShadowSources.
- *   
+ *
  *   This may not get called before ShadowManager::init, or an assertion will be
  *   thrown.
  */
 void ShadowManager::update() {
-    nassertv(_atlas != NULL);                         // ShadowManager::init not called yet 
+    nassertv(_atlas != NULL);                         // ShadowManager::init not called yet
     nassertv(_queued_updates.size() <= _max_updates); // Internal error, should not happen
 
     // Disable all cameras and regions which will not be used
@@ -130,14 +130,14 @@ void ShadowManager::update() {
     // Iterate over all queued updates
     for (size_t i = 0; i < _queued_updates.size(); ++i) {
         const ShadowSource* source = _queued_updates[i];
-        
+
         // Enable the camera and display region, so they perform a render
         _cameras[i]->set_active(true);
         _display_regions[i]->set_active(true);
-        
+
         // Set the view projection matrix
         DCAST(MatrixLens, _cameras[i]->get_lens())->set_user_mat(source->get_mvp());
-        
+
         // Optional: Show the camera frustum for debugging
         // _cameras[i]->show_frustum();
 

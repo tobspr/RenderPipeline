@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,7 +43,7 @@ NotifyCategoryDecl(tagstatemgr, EXPORT_CLASS, EXPORT_TEMPL);
  * @details The TagStateManager stores a list of RenderStates assigned to different
  *   steps in the pipeline. For example, there are a list of shadow states, which
  *   are applied whenever objects are rendered from a shadow camera.
- *   
+ *
  *   The Manager also stores a list of all cameras used in the different stages,
  *   to keep track of the states used and to be able to attach new states.
  */
@@ -60,7 +60,7 @@ class TagStateManager {
         inline void apply_shadow_state(NodePath np, Shader* shader, const string &name, int sort);
         inline void apply_voxelize_state(NodePath np, Shader* shader, const string &name, int sort);
         void cleanup_states();
-        
+
         inline void register_shadow_camera(Camera* source);
         inline void unregister_shadow_camera(Camera* source);
 
@@ -68,7 +68,7 @@ class TagStateManager {
         inline void unregister_voxelize_camera(Camera* source);
 
     private:
-        
+
         typedef vector<Camera*> CameraList;
         typedef pmap<string, CPT(RenderState)> TagStateList;
 

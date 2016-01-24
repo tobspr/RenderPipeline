@@ -30,7 +30,7 @@ from __future__ import print_function
 
 
 This tool takes a .egg or .bam file as input, and converts it to
-a RPSG file, which can be loaded in the pipeline later on, and 
+a RPSG file, which can be loaded in the pipeline later on, and
 should be way more performant than rendering a regular model.
 
 
@@ -45,7 +45,7 @@ from Native.RSNative import MeshSplitterWriter
 from panda3d.core import Loader, NodePath
 
 # TODO: Make input- and output-file command line parameters, something like:
-# convert.py -o output.rpsg input.bam 
+# convert.py -o output.rpsg input.bam
 
 
 INPUT_FILE = "Scene.bam"

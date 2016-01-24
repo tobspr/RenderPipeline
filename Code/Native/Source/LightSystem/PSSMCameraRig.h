@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,20 +39,20 @@
  * @brief Main class used for handling PSSM
  * @details This is the main class for supporting PSSM, it is used by the PSSM
  *   plugin to compute the position of the splits.
- *   
+ *
  *   It supports handling a varying amount of cameras, and fitting those cameras
  *   into the main camera frustum, to render distant shadows. It also supports
  *   various optimizations for fitting the frustum, e.g. rotating the sources
  *   to get a better coverage.
- *   
+ *
  *   It also provides methods to get arrays of data about the used cameras
  *   view-projection matrices and their near and far plane, which is required for
  *   processing the data in the shadow sampling shader.
- *   
+ *
  *   In this class, there is often referred to "Splits" or also called "Cascades".
  *   These denote the different cameras which are used to split the frustum,
- *   and are a common term related to the PSSM algorithm. 
- *   
+ *   and are a common term related to the PSSM algorithm.
+ *
  *   To understand the functionality of this class, a detailed knowledge of the
  *   PSSM algorithm is helpful.
  */

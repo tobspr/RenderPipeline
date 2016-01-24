@@ -106,11 +106,11 @@ class MountManager(DebugObject):
         It is highly recommended you use the pipeline provided config files, modify
         them to your needs, and as soon as you think they are in a final version,
         copy them over. Please also notice that you should keep your config files
-        up-to-date, e.g. when new configuration variables are added. 
+        up-to-date, e.g. when new configuration variables are added.
 
         Also, specifying a custom configuration dir disables the functionality
         of the PluginConfigurator and DayTime editor, since they operate on the
-        pipelines config files. 
+        pipelines config files.
 
         Set the directory to None to use the default directory. """
         self._config_dir =  Filename.from_os_specific(pth).get_fullpath()

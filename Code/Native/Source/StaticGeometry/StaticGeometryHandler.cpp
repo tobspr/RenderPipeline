@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -121,8 +121,8 @@ DatasetReference StaticGeometryHandler::load_dataset(const Filename &src) {
             << " a size of "<< SG_TRI_GROUP_SIZE << endl;
         cout << "Please regenerate the file!" << endl;
         delete [] data;
-        return -1;    
-    } 
+        return -1;
+    }
 
     size_t num_strips = dgi.get_uint32();
 
@@ -167,7 +167,7 @@ DatasetReference StaticGeometryHandler::load_dataset(const Filename &src) {
 SGDataset* StaticGeometryHandler::get_dataset(DatasetReference dataset) {
     if (dataset < 0 || dataset >= _datasets.size()) {
         cout << "ERROR: Could not find dataset with id " << dataset << endl;
-        return NULL;        
+        return NULL;
     }
     return _datasets.at(dataset);
 }
@@ -177,7 +177,7 @@ void StaticGeometryHandler::add_for_draw(DatasetReference dataset, const LMatrix
 
     PTA_uchar handle = _drawn_objects_tex->modify_ram_image();
     float* f_handle = reinterpret_cast<float*>(handle.p());
-    
+
     // Store the new amount of rendered objects
     f_handle[0] = _num_rendered_objects + 1;
     f_handle[1] = 0;

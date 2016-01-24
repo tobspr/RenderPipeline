@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -79,7 +79,7 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
                 if (has_uv) {
                     vtx_uv = uv_reader.get_data2f();
                 }
-                
+
                 // TODO: The vertex position might be in model space. Convert it to
                 // world space first
                 tri->vertices[offs] = Vertex(vtx_pos, vtx_nrm, vtx_uv);
@@ -99,7 +99,7 @@ void MeshSplitter::read_triangles(CPT(Geom) geom, TriangleList &result) {
             tri->face_normal = fv_dot >= 0.0 ? face_normal : -face_normal;
             result.push_back(tri);
         }
-    } 
+    }
 }
 
 
@@ -165,19 +165,19 @@ void MeshSplitter::optimize_results(TriangleResultList &results, const LVecBase3
                 // Find all intersecting chunks where this chunk could be merged with
                 TriangleResultList intersecting;
                 find_intersecting_chunks(results, intersecting, search_min, search_max, SG_TRI_GROUP_SIZE - current_chunk->triangles.size());
-                
+
                 // Remove our current chunk from the list of surrounding chunks
                 intersecting.remove(current_chunk);
 
                 if (intersecting.size() < 1) {
                     // Bad ... no neighbours, can't optimize it
                     continue;
-                } 
+                }
 
                 // Find chunk with the smallest size from the neighbours
                 //Chunk* closest = *max_element(intersecting.begin(), intersecting.end(), current_chunk->compare_common_vec);
 
-                
+
                 // Find chunk with the best fitting angle
                 // LVecBase3f chunk_mid = (current_chunk->bb_min + current_chunk->bb_max) * 0.5;
                 Chunk *closest = NULL;
@@ -211,11 +211,11 @@ void MeshSplitter::optimize_results(TriangleResultList &results, const LVecBase3
 
 
 void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVecBase3f bb_start, const LVecBase3f bb_end, TriangleResultList &results, int depth_left) {
-    
+
     if (depth_left < 0) {
         // cout << "Max depth reached! Could not split mesh further" << endl;
         return;
-    } 
+    }
 
     // Create a vector to store all triangles which match
     TriangleList matching_triangle_list;
@@ -260,10 +260,10 @@ void MeshSplitter::traverse_recursive(TriangleList &parent_triangles, const LVec
     // If we have a "flat" octree in one dimension, we treat it as a quadtree.
     for (int x = 0; x < 2; ++x) {
         if (x != 0 && half_size.get_x() < 0.0001) continue;
-        
+
         for (int y = 0; y < 2; ++y) {
             if (y != 0 && half_size.get_y() < 0.0001) continue;
-        
+
             for (int z = 0; z < 2; ++z) {
                 if (z != 0 && half_size.get_z() < 0.0001) continue;
 
@@ -353,7 +353,7 @@ bool MeshSplitter::triangle_intersects(const LVecBase3f &bb_min, const LVecBase3
         tri->vertices[2].pos - tri->vertices[0].pos,
     };
 
-    for (int i = 0; i < 3; ++i) {        
+    for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
             LVecBase3f axis = tri_edges[i].cross(get_box_normal(j));
             project_box(bb_min, bb_max, axis, box_min, box_max);
@@ -410,7 +410,7 @@ void MeshSplitter::find_common_vector(const TriangleList &triangles, LVecBase3f 
     max_angle_diff = -1000000.0;
 
     // Now, for each normal, check the angle between the face and the common vector,
-    // and find the maximum 
+    // and find the maximum
 
     for(TriangleList::const_iterator iter = triangles.cbegin(); iter != triangles.cend(); ++iter) {
         float angle = acos((*iter)->face_normal.dot(cvector));
@@ -484,9 +484,9 @@ void MeshSplitterWriter::process(const Filename &dest) {
         cout << "Optimized version has " << results.size() << " Strips! This is an effective count of "
              << results.size() * SG_TRI_GROUP_SIZE << " triangles" << endl;
     }
-    
+
     cout << "Writing out model file .." << endl;
-    
+
     write_results(dest, results, bb_start, bb_end);
 
 }
@@ -550,7 +550,7 @@ void MeshSplitterWriter::write_results(const Filename &dest, const MeshSplitter:
                 dg.add_float32(tri->vertices[i].normal.get_x());
                 dg.add_float32(tri->vertices[i].normal.get_y());
                 dg.add_float32(tri->vertices[i].normal.get_z());
-                
+
                 dg.add_float32(tri->vertices[i].uv.get_x());
                 dg.add_float32(tri->vertices[i].uv.get_y());
             }

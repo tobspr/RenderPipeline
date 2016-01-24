@@ -27,4 +27,4 @@ THE SOFTWARE.
 
 class PSSMCameraRig(object):
     pass
-    
+

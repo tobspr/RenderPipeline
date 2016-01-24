@@ -165,7 +165,7 @@ while TEXTURE_SIZE >= 2:
         result = vec4(samp, 1.0);
     }
 
-    """ 
+    """
 
     target['color'].set_minfilter(SamplerState.FT_nearest)
     target['color'].set_magfilter(SamplerState.FT_nearest)

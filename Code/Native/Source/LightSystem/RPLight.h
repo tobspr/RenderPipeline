@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,7 +36,7 @@
  * @brief Base class for Lights
  * @details This is the base class for all lights in the render pipeline. It
  *   stores common properties, and provides methods to modify these.
- *   It also defines some interface functions which subclasses have to implement. 
+ *   It also defines some interface functions which subclasses have to implement.
  */
 class RPLight : public ReferenceCount {
 
@@ -58,7 +58,7 @@ class RPLight : public ReferenceCount {
         virtual void init_shadow_sources() = 0;
         virtual void update_shadow_sources() = 0;
         virtual void write_to_command(GPUCommand &cmd);
-        
+
         inline int get_num_shadow_sources() const;
         inline ShadowSource* get_shadow_source(size_t index) const;
         inline void clear_shadow_sources();
@@ -114,7 +114,7 @@ class RPLight : public ReferenceCount {
         MAKE_PROPERTY(near_plane, get_near_plane, set_near_plane);
 
     protected:
-        
+
         int _slot;
         int _ies_profile;
         size_t _source_resolution;

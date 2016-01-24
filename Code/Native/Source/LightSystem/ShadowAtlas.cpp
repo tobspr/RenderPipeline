@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,19 +33,19 @@ NotifyCategoryDef(shadowatlas, "");
 /**
  * @brief Constructs a new shadow atlas.
  * @details This constructs a new shadow atlas with the given size and tile size.
- *   
+ *
  *   The size determines the total size of the atlas in pixels. It should be a
  *   power-of-two to favour the GPU.
- *   
+ *
  *   The tile_size determines the smallest unit of tiles the atlas can store.
  *   If, for example, a tile_size of 32 is used, then every entry stored must
  *   have a resolution of 32 or greater, and the resolution must be a multiple
  *   of 32. This is to optimize the search in the atlas, so the atlas does not
  *   have to check every pixel, and instead can just check whole tiles.
- *   
+ *
  *   If you want to disable the use of tiles, set the tile_size to 1, which
  *   will make the shadow atlas use pixels instead of tiles.
- * 
+ *
  * @param size Atlas-size in pixels
  * @param tile_size tile-size in pixels, or 1 to use no tiles.
  */
@@ -82,7 +82,7 @@ void ShadowAtlas::init_tiles() {
  *   It sets all flags in that region to true, indicating that those are used.
  *   When an invalid region is passed, an assertion is triggered. If assertions
  *   are optimized out, undefined behaviour occurs.
- *   
+ *
  * @param x x- start positition of the region
  * @param y y- start position of the region
  * @param w width of the region
@@ -106,22 +106,22 @@ void ShadowAtlas::reserve_region(size_t x, size_t y, size_t w, size_t h) {
  * @details This methods searches for a space to store a region of the given
  *   size in the atlas. tile_width and tile_height should be already in tile
  *   space. They can be converted using ShadowAtlas::get_required_tiles.
- *   
+ *
  *   If no region is found, or an invalid size is passed, an integer vector with
  *   all components set to -1 is returned.
- *  
+ *
  *    If a region is found, an integer vector with the given layout is returned:
  *     x: x- Start of the region
  *     y: y- Start of the region
  *     z: width of the region
  *     w: height of the region
- *     
+ *
  *   The layout is in tile space, and can get converted to uv space using
- *   ShadowAtlas::region_to_uv. 
- *   
+ *   ShadowAtlas::region_to_uv.
+ *
  * @param tile_width Width of the region in tile space
  * @param tile_height Height of the region in tile space
- * 
+ *
  * @return Region, see description, or -1 when no region is found.
  */
 LVecBase4i ShadowAtlas::find_and_reserve_region(size_t tile_width, size_t tile_height) {
@@ -160,11 +160,11 @@ LVecBase4i ShadowAtlas::find_and_reserve_region(size_t tile_width, size_t tile_h
  * @brief Frees a given region
  * @details This frees a given region, marking it as free so that other shadow
  *   maps can use the space again. The region should be the same as returned
- *   by ShadowAtlas::find_and_reserve_region. 
- *   
+ *   by ShadowAtlas::find_and_reserve_region.
+ *
  *   If an invalid region is passed, an assertion is triggered. If assertions
  *   are compiled out, undefined behaviour will occur.
- * 
+ *
  * @param region Region to free
  */
 void ShadowAtlas::free_region(const LVecBase4i& region) {

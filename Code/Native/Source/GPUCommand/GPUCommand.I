@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,8 +30,8 @@
  * @brief Appends an integer to the GPUCommand.
  * @details This adds an integer to the back of the GPUCommand. Depending on the
  *   setting in convert_int_to_float, this will either just convert the int to a
- *   float by casting it, or just do a bitwise copy. 
- * 
+ *   float by casting it, or just do a bitwise copy.
+ *
  * @param v The integer to append.
  */
 inline void GPUCommand::push_int(int v) {
@@ -41,9 +41,9 @@ inline void GPUCommand::push_int(int v) {
 /**
  * @brief Internal method to convert an integer to float
  * @details This methods gets called by the GPUCommand::push_int, and manages
- *   storing an integer in a floating point variable. There are two options, 
+ *   storing an integer in a floating point variable. There are two options,
  *   which are documented inside of the method.
- * 
+ *
  * @param v Integer to convert
  * @return Float-representation of that integer, either casted or binary converted.s
  */
@@ -52,7 +52,7 @@ inline float GPUCommand::convert_int_to_float(int v) const {
     #if !PACK_INT_AS_FLOAT
         // Just round to float, can cause rounding issues tho
         return (float)v;
-        
+
     #else
         assert(sizeof(float) == 4); // We really need this for packing! Better
                                     // throw an error if the compiler uses more
@@ -69,7 +69,7 @@ inline float GPUCommand::convert_int_to_float(int v) const {
  *   other push_xxx methods, and simply stores the value, then increments the write
  *   pointer. When the amount of floats exceeds the capacity of the GPUCommand,
  *   an error will be printed, and the method returns without doing anything else.
- * 
+ *
  * @param v The float to append.
  */
 inline void GPUCommand::push_float(float v) {
@@ -84,8 +84,8 @@ inline void GPUCommand::push_float(float v) {
  * @brief Appends a 3-component floating point vector to the GPUCommand.
  * @details This appends a 3-component floating point vector to the command.
  *   It basically just calls push_float() for every component, in the order
- *   x, y, z, which causes the vector to occupy the space of 3 floats. 
- * 
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
  * @param v Int-Vector to append.
  */
 inline void GPUCommand::push_vec3(const LVecBase3f &v) {
@@ -99,8 +99,8 @@ inline void GPUCommand::push_vec3(const LVecBase3f &v) {
  * @brief Appends a 3-component integer vector to the GPUCommand.
  * @details This appends a 3-component integer vector to the command.
  *   It basically just calls push_int() for every component, in the order
- *   x, y, z, which causes the vector to occupy the space of 3 floats. 
- * 
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
  * @param v Int-Vector to append.
  */
 inline void GPUCommand::push_vec3(const LVecBase3i &v) {
@@ -113,8 +113,8 @@ inline void GPUCommand::push_vec3(const LVecBase3i &v) {
  * @brief Appends a 4-component floating point vector to the GPUCommand.
  * @details This appends a 4-component floating point vector to the command.
  *   It basically just calls push_float() for every component, in the order
- *   x, y, z, which causes the vector to occupy the space of 3 floats. 
- * 
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
  * @param v Int-Vector to append.
  */
 inline void GPUCommand::push_vec4(const LVecBase4f &v) {
@@ -128,8 +128,8 @@ inline void GPUCommand::push_vec4(const LVecBase4f &v) {
  * @brief Appends a 4-component integer vector to the GPUCommand.
  * @details This appends a 4-component integer vector to the command.
  *   It basically just calls push_int() for every component, in the order
- *   x, y, z, w, which causes the vector to occupy the space of 4 floats. 
- * 
+ *   x, y, z, w, which causes the vector to occupy the space of 4 floats.
+ *
  * @param v Int-Vector to append.
  */
 inline void GPUCommand::push_vec4(const LVecBase4i &v) {
@@ -144,7 +144,7 @@ inline void GPUCommand::push_vec4(const LVecBase4i &v) {
  * @details This appends a floating point 3x3 matrix to the GPUCommand, by
  *   pushing all components in row-order to the command. This occupies a space of
  *   9 floats.
- * 
+ *
  * @param v Matrix to append
  */
 inline void GPUCommand::push_mat3(const LMatrix3f &v) {
@@ -160,7 +160,7 @@ inline void GPUCommand::push_mat3(const LMatrix3f &v) {
  * @details This appends a floating point 4x4 matrix to the GPUCommand, by
  *   pushing all components in row-order to the command. This occupies a space of
  *   16 floats.
- * 
+ *
  * @param v Matrix to append
  */
 inline void GPUCommand::push_mat4(const LMatrix4f &v) {

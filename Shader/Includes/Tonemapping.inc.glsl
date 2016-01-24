@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -56,7 +56,7 @@ vec3 tonemap_none(vec3 color) {
 // Linear tonemapping
 vec3 tonemap_linear(vec3 color)
 {
-   color *= exposure_adjustment; 
+   color *= exposure_adjustment;
    return rgb_to_srgb(color);
 }
 
@@ -87,7 +87,7 @@ vec3 tonemap_reinhard(vec3 color)
 
         // Reinhard operator in the CIE-Yxy color space
         vec3 xyY = rgb_to_xyY(color);
-        
+
         // This saturates too much?
         xyY.z = xyY.z / (1.0 + xyY.z);
 
@@ -118,7 +118,7 @@ vec3 tonemap_exponential(vec3 color) {
     return rgb_to_srgb(color);
 }
 
-// Alternative exponential tonemapping 
+// Alternative exponential tonemapping
 vec3 tonemap_exponential_2(vec3 color) {
     color *= exposure_adjustment;
     color = exp( -1.0 / ( 2.72 * color + 0.15 ) );
@@ -133,7 +133,7 @@ vec3 uncharted_2_tonemap_formula(vec3 x)
     const float A     = GET_SETTING(ColorCorrection, uc2t_shoulder_strength);
     const float B     = GET_SETTING(ColorCorrection, uc2t_linear_strength);
     const float C     = GET_SETTING(ColorCorrection, uc2t_linear_angle);
-    const float D     = GET_SETTING(ColorCorrection, uc2t_toe_strength); 
+    const float D     = GET_SETTING(ColorCorrection, uc2t_toe_strength);
     const float E     = GET_SETTING(ColorCorrection, uc2t_toe_numerator);
     const float F     = GET_SETTING(ColorCorrection, uc2t_toe_denumerator);
     return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
@@ -152,7 +152,7 @@ vec3 tonemap_uncharted2(vec3 color)
 
 // Tonemapping selector
 vec3 do_tonemapping(vec3 color) {
-    
+
     // Clamp extreme values of the color
     color = clamp(color, 0.0, 1000.0);
 

@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,13 +39,13 @@
     uniform sampler2D NormalQuantizationTex;
 
     vec3 normal_quantization(vec3 normal)
-    {        
+    {
         normal = normalize(normal);
         vec3 normal_abs = abs(normal.xyz);
         float max_comp = max(normal_abs.x, max(normal_abs.y, normal_abs.z));
         vec2 cube_coord = normal_abs.z < max_comp ?
             (normal_abs.y < max_comp ? normal.yz : normal.xz) : normal.xy;
-        cube_coord /= max_comp;    
+        cube_coord /= max_comp;
         ivec2 face_offs = ivec2( (cube_coord + 1.0));
         cube_coord = cube_coord + 1;
 
@@ -62,11 +62,11 @@
 
     vec3 normal_quantization(vec3 normal) {
         return normalize(normal);
-    } 
+    }
 
     vec3 normal_unquantization(vec3 normal) {
         return normalize(normal);
-    } 
+    }
 
 #endif
 
@@ -105,7 +105,7 @@ vec2 pack_normal_octahedron(vec3 v) {
     #else
         // Faster version using newer GLSL capatibilities
         v.xy /= dot(abs(v), vec3(1));
-        
+
         #if 0
             // Version with branches
             if (v.z <= 0) v.xy = (1.0 - abs(v.yx)) * sign_not_zero(v.xy);
@@ -134,7 +134,7 @@ vec3 unpack_normal_octahedron(vec2 packed_nrm) {
 
         return normalize(v);
     #else
-        // Version as proposed in the paper. 
+        // Version as proposed in the paper.
         vec3 v = vec3(packed_nrm, 1.0 - dot(vec2(1), abs(packed_nrm)));
         if (v.z < 0)
             v.xy = (vec2(1) - abs(v.yx)) * sign_not_zero(v.xy);

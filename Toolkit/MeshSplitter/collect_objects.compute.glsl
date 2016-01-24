@@ -5,7 +5,7 @@
 
 layout(local_size_x=256, local_size_y=1, local_size_z=1) in;
 
-// This shader takes the list of rendered objects with their transforms, 
+// This shader takes the list of rendered objects with their transforms,
 // and spawns a strip for each rendered object
 
 // uniform samplerBuffer DrawnObjectsTex;
@@ -61,7 +61,7 @@ void main() {
         vec4 mt1 = texelFetch(DrawnObjectsTex, ivec2(read_offs + 2, 0), 0).bgra;
         vec4 mt2 = texelFetch(DrawnObjectsTex, ivec2(read_offs + 3, 0), 0).bgra;
         vec4 mt3 = texelFetch(DrawnObjectsTex, ivec2(read_offs + 4, 0), 0).bgra;
-    
+
 
         mat4 obj_transform = mat4(mt0, mt1, mt2, mt3);
 
@@ -94,7 +94,7 @@ void main() {
 
             if (angle_diff > max_angle + HALF_PI )  {
                 continue;
-            } 
+            }
 
 
             int offset = imageAtomicAdd(IndirectTex, 1, 1) + 0;

@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,9 +36,9 @@ GPUCommandList::GPUCommandList() {
 }
 
 /**
- * @brief Pushes a GPUCommand to the command list. 
+ * @brief Pushes a GPUCommand to the command list.
  * @details This adds a new GPUCommand to the list of commands to be processed.
- * 
+ *
  * @param cmd The command to add
  */
 void GPUCommandList::add_command(const GPUCommand& cmd) {
@@ -62,10 +62,10 @@ size_t GPUCommandList::get_num_commands() {
  *   further information about #dest. The limit controls after how much
  *   commands the processing will be stopped. All commands which got processed
  *   will get removed from the list.
- * 
+ *
  * @param dest Destination to write to, see GPUCommand::write_to
  * @param limit Maximum amount of commands to process
- * 
+ *
  * @return Amount of commands processed, between 0 and #limit.
  */
 size_t GPUCommandList::write_commands_to(const PTA_uchar &dest, size_t limit) {

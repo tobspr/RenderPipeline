@@ -172,7 +172,7 @@ vec2 getIrradianceUV(float r, float muS) {
 }
 
 void getIrradianceRMuS(out float r, out float muS) {
-    // POSSIBLE PROBLEMS int(coord) does not match gl_FragCoord ? 
+    // POSSIBLE PROBLEMS int(coord) does not match gl_FragCoord ?
     r = Rg + int(PIXEL_Y) / (float(SKY_H) - 1.0) * (Rt - Rg);
     muS = -0.2 + int(PIXEL_X) / (float(SKY_W) - 1.0) * (1.0 + 0.2);
 }

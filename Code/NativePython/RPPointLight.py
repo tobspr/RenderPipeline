@@ -65,7 +65,7 @@ class RPPointLight(RPLight):
     def init_shadow_sources(self):
         for i in range(6):
             self._shadow_sources.append(ShadowSource())
-        
+
     def update_shadow_Sources(self):
         directions = [
             Vec3( 1,  0,  0),

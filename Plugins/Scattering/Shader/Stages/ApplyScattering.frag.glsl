@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -63,13 +63,13 @@ void main() {
         float disk_factor = pow(max(0, dot(view_vector, sun_vector)), 40000.0);
         float upper_disk_factor = saturate( (view_vector.z - sun_vector.z) * 0.3 + 0.01);
         upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.01) * 30.0);
-        inscattered_light += vec3(1,0.3,0.1) * disk_factor * 
+        inscattered_light += vec3(1,0.3,0.1) * disk_factor *
             upper_disk_factor * 7.0 * silhouette_col * 0.4 * 1e4;
     }
-    
+
     // Mix with scene color
     result = textureLod(ShadedScene, texcoord, 0);
-    
+
     #if !DEBUG_MODE
         result.xyz = mix(result.xyz, inscattered_light, fog_factor);
         result.w = fog_factor;

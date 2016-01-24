@@ -15,7 +15,7 @@ out vec4 col;
 
 
 void main() {
-    
+
     int strip_offs = gl_InstanceID;
     int vtx_idx = gl_VertexID;
 
@@ -32,12 +32,12 @@ void main() {
     vec4 mt2 = texelFetch(DrawnObjectsTex, ivec2(dobj_offs + 3, 0), 0).bgra;
     vec4 mt3 = texelFetch(DrawnObjectsTex, ivec2(dobj_offs + 4, 0), 0).bgra;
 
-    mat4 transform = mat4(mt0, mt1, mt2, mt3); 
+    mat4 transform = mat4(mt0, mt1, mt2, mt3);
 
     // 2 for bounds, 1 for visibility
     int data_offs = 3 + vtx_idx * 2;
 
-    vec4 data0 = texelFetch(DatasetTex, ivec2(data_offs, strip_id), 0).bgra;  
+    vec4 data0 = texelFetch(DatasetTex, ivec2(data_offs, strip_id), 0).bgra;
     vec4 data1 = texelFetch(DatasetTex, ivec2(data_offs + 1, strip_id), 0).bgra;
 
     vec4 vtx_pos = transform * vec4(data0.xyz, 1);
@@ -47,6 +47,6 @@ void main() {
     vec3 nrm = normalize(vec3(data0.w, data1.xy));
     col.xyz = nrm;
 
-    gl_Position = p3d_ModelViewProjectionMatrix * vtx_pos;    
+    gl_Position = p3d_ModelViewProjectionMatrix * vtx_pos;
 
 }

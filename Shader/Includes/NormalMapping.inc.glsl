@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,19 +26,19 @@
 
 #pragma once
 
-// Reconstructs the tangent with the deltas of 
+// Reconstructs the tangent with the deltas of
 // the position and texcoord
 void reconstruct_tangent(out vec3 tangent, out vec3 binormal) {
     vec3 pos_dx = dFdx(vOutput.position);
     vec3 pos_dy = dFdy(vOutput.position);
     float tcoord_dx = dFdx(vOutput.texcoord.y);
     float tcoord_dy = dFdy(vOutput.texcoord.y);
- 
+
     // Fix issues when the texture coordinate is wrong, this happens when
     // two adjacent vertices have the same texture coordinate, as the gradient
     // is 0 then. We just assume some hard-coded tangent and binormal then
     if (abs(tcoord_dx) < 1e-24 && abs(tcoord_dy) < 1e-24) {
-        vec3 base = abs(vOutput.normal.z) < 0.999 ? vec3(0, 0, 1) : vec3(0, 1, 0); 
+        vec3 base = abs(vOutput.normal.z) < 0.999 ? vec3(0, 0, 1) : vec3(0, 1, 0);
         tangent = normalize(cross(vOutput.normal, base));
     } else {
         tangent = normalize(pos_dx * tcoord_dy - pos_dy * tcoord_dx);
@@ -101,7 +101,7 @@ vec2 get_parallax_texcoord(sampler2D displacement_map) {
         if (sample_h <= current_pos.z) {
             last_hit = current_pos;
         }
-    } 
+    }
 
     return last_hit.xy;
 }

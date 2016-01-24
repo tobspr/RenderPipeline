@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +27,7 @@
 
 
 
-const float sample_radius = GET_SETTING(AO, hbao_sample_radius);     
+const float sample_radius = GET_SETTING(AO, hbao_sample_radius);
 const int num_angles = GET_SETTING(AO, hbao_ray_count);
 const int num_ray_steps = GET_SETTING(AO, hbao_ray_steps);
 const float tangent_bias = GET_SETTING(AO, hbao_tangent_bias);
@@ -52,12 +52,12 @@ for (int i = 0; i < num_angles; ++i) {
 
     // Raymarch in the sample direction
     for (int k = 0; k < num_ray_steps; ++k) {
-        
+
         // Get new texture coordinate
-        vec2 texc = texcoord + 
-            sample_dir * (k + 1.0 + 0.5 * noise_vec.y) / 
+        vec2 texc = texcoord +
+            sample_dir * (k + 1.0 + 0.5 * noise_vec.y) /
                 num_ray_steps * pixel_size * sample_radius * kernel_scale * 0.3;
-        
+
         // Fetch view pos at that position and compare it
         vec3 view_pos = get_view_pos_at(texc);
         vec3 diff = view_pos - pixel_view_pos;

@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,8 +29,8 @@
  * @brief Returns the amount of shadow sources
  * @details This returns the amount of shadow sources attached to this light.
  *   In case the light has no shadows enabled, or the light was not attached
- *   yet, this returns 0. 
- *   
+ *   yet, this returns 0.
+ *
  * @return Amount of shadow sources
  */
 inline int RPLight::get_num_shadow_sources() const {
@@ -42,7 +42,7 @@ inline int RPLight::get_num_shadow_sources() const {
  * @details This returns the n-th attached shadow source. This ranges from
  *   0 .. RPLight::get_num_shadow_sources(). If an invalid index is passed,
  *   an assertion is thrown.
- * 
+ *
  * @param index Index of the source
  * @return Handle to the shadow source
  */
@@ -70,11 +70,11 @@ inline void RPLight::clear_shadow_sources() {
  *   case when a property of the light changed, e.g. position or color. It does
  *   not affect the shadows (For that use RPLight::invalidate_shadows()).
  *   When this flag is set to true, the light will get resubmitted to the GPU
- *   in the next update cycle. 
- *   
+ *   in the next update cycle.
+ *
  *   You should usually never set the flag to false manually. The
  *   InternalLightManager will do this when the data got sucessfully updated.
- * 
+ *
  * @param flag Update-Flag
  */
 inline void RPLight::set_needs_update(bool flag) {
@@ -88,7 +88,7 @@ inline void RPLight::set_needs_update(bool flag) {
  *   It does not affect the shadows, you have to query the update flag of each
  *   individual source for that.
  *   The return value is the value previously set with RPLight::set_needs_update.
- *   
+ *
  * @return Update-flag
  */
 inline bool RPLight::get_needs_update() const {
@@ -100,7 +100,7 @@ inline bool RPLight::get_needs_update() const {
  * @details This returns wheter the light currently is attached, and thus has
  *   a slot in the InternalLightManagers light list. When the light is attached,
  *   this returns true, otherwise it will return false.
- *   
+ *
  * @return true if the light has a slot, false otherwise
  */
 inline bool RPLight::has_slot() const {
@@ -112,7 +112,7 @@ inline bool RPLight::has_slot() const {
  * @details This returns the slot of the light. This is the space on the GPU
  *   where the light is stored. If the light is not attached yet, this will
  *   return -1, otherwise the index of the light.
- *   
+ *
  * @return Light-Slot
  */
 inline int RPLight::get_slot() const {
@@ -134,7 +134,7 @@ inline void RPLight::remove_slot() {
  * @details This assigns a slot to the light, marking it as attached. The slot
  *   relates to the index in the GPU's storage of lights. This is an internal
  *   method called by the InternalLightManager when the light got attached.
- * 
+ *
  * @param slot Slot of the light
  */
 inline void RPLight::assign_slot(int slot) {
@@ -160,7 +160,7 @@ inline void RPLight::invalidate_shadows() {
  * @brief Sets the position of the light
  * @details This sets the position of the light in world space. It will cause
  *   the light to get invalidated, and resubmitted to the GPU.
- * 
+ *
  * @param pos Position in world space
  */
 inline void RPLight::set_pos(const LVecBase3f &pos) {
@@ -170,7 +170,7 @@ inline void RPLight::set_pos(const LVecBase3f &pos) {
 /**
  * @brief Sets the position of the light
  * @details @copydetails RPLight::set_pos(const LVecBase3f &pos)
- * 
+ *
  * @param x X-component of the position
  * @param y Y-component of the position
  * @param z Z-component of the position
@@ -196,11 +196,11 @@ inline const LVecBase3f& RPLight::get_pos() const {
  * @details This sets the lights color. The color should not include the brightness
  *   of the light, you should control that with the lumens. The color specifies
  *   the lights "tint" and will get multiplied with its specular and diffuse
- *   contribution. 
- *   
+ *   contribution.
+ *
  *   The color will be normalized by dividing by the colors luminance. Setting
  *   higher values than 1.0 will have no effect.
- * 
+ *
  * @param color Light color
  */
 inline void RPLight::set_color(const LVecBase3f &color) {
@@ -212,13 +212,13 @@ inline void RPLight::set_color(const LVecBase3f &color) {
 /**
  * @brief Sets the lights color
  * @details @copydetails RPLight::set_color(const LVecBase3f &color)
- * 
+ *
  * @param r Red-component of the color
  * @param g Green-component of the color
  * @param b Blue-component of the color
  */
 inline void RPLight::set_color(float r, float g, float b) {
-    set_color(LVecBase3f(r, g, b));    
+    set_color(LVecBase3f(r, g, b));
 }
 
 /**
@@ -237,7 +237,7 @@ inline const LVecBase3f& RPLight::get_color() const {
  * @brief Sets the lumens of the light
  * @details This sets the lumens of the light, which can be seen as the brightness
  *   of the light. It will get multiplied with the normalized color.
- * 
+ *
  * @param lumens Lumens of the light
  */
 inline void RPLight::set_lumens(float lumens) {
@@ -273,7 +273,7 @@ inline RPLight::LightType RPLight::get_light_type() const {
  *   while the light is attached. When flag is set to true, the light will be
  *   setup to cast shadows, spawning shadow sources based on the lights type.
  *   If the flag is set to false, the light will be inddicated to cast no shadows.
- * 
+ *
  * @param flag Whether the light casts shadows
  */
 inline void RPLight::set_casts_shadows(bool flag) {
@@ -288,7 +288,7 @@ inline void RPLight::set_casts_shadows(bool flag) {
  * @brief Returns whether the light casts shadows
  * @details This returns whether the light casts shadows, the returned value
  *   is the one previously set with RPLight::set_casts_shadows.
- *   
+ *
  * @return true if the light casts shadows, false otherwise
  */
 inline bool RPLight::get_casts_shadows() const {
@@ -299,12 +299,12 @@ inline bool RPLight::get_casts_shadows() const {
  * @brief Sets the lights shadow map resolution
  * @details This sets the lights shadow map resolution. This has no effect
  *   when the light is not told to cast shadows (Use RPLight::set_casts_shadows).
- *   
+ *
  *   When calling this on a light with multiple shadow sources (e.g. PointLight),
  *   this controls the resolution of each source. If the light has 6 shadow sources,
  *   and you use a resolution of 512x512, the lights shadow map will occur a
  *   space of 6 * 512x512 maps in the shadow atlas.
- * 
+ *
  * @param resolution Resolution of the shadow map in pixels
  */
 inline void RPLight::set_shadow_map_resolution(size_t resolution) {
@@ -318,7 +318,7 @@ inline void RPLight::set_shadow_map_resolution(size_t resolution) {
  * @details This returns the shadow map resolution of each source of the light.
  *   If the light is not setup to cast shadows, this value is meaningless.
  *   The returned value is the one previously set with RPLight::set_shadow_map_resolution.
- *   
+ *
  * @return Shadow map resolution in pixels
  */
 inline size_t RPLight::get_shadow_map_resolution() const {
@@ -330,11 +330,11 @@ inline size_t RPLight::get_shadow_map_resolution() const {
  * @details This sets the ies profile of the light. The parameter should be a
  *   handle previously returned by RenderPipeline.load_ies_profile. Using a
  *   value of -1 indicates no ies profile.
- * 
+ *
  *   Notice that for ies profiles which cover a whole range, you should use
  *   PointLights, whereas for ies profiles which only cover the lower hemisphere
- *   you should use SpotLights for the best performance. 
- * 
+ *   you should use SpotLights for the best performance.
+ *
  * @param profile IES Profile handle
  */
 inline void RPLight::set_ies_profile(int profile) {
@@ -346,7 +346,7 @@ inline void RPLight::set_ies_profile(int profile) {
  * @brief Returns the lights ies profile
  * @details This returns the ies profile of a light, previously set with
  *   RPLight::set_ies_profile. In case no ies profile was set, returns -1.
- *   
+ *
  * @return IES Profile handle
  */
 inline int RPLight::get_ies_profile() const {
@@ -357,7 +357,7 @@ inline int RPLight::get_ies_profile() const {
  * @brief Returns whether the light has an ies profile assigned
  * @details This returns whether the light has an ies profile assigned,
  *   previously done with RPLight::set_ies_profile.
- *   
+ *
  * @return true if the light has an ies profile assigned, false otherwise
  */
 inline bool RPLight::has_ies_profile() const {
@@ -378,12 +378,12 @@ inline void RPLight::clear_ies_profile() {
  * @details This sets the near plane of all shadow sources of the light. It has
  *   no effects if the light does not cast shadows. This prevents artifacts from
  *   objects near to the light. It behaves like Lens::set_near_plane.
- *   
+ *
  *   It can also help increasing shadow map precision, low near planes will
  *   cause the precision to suffer. Try setting the near plane as big as possible.
- *   
+ *
  *   If a negative or zero near plane is passed, an assertion is thrown.
- * 
+ *
  * @param near_plane Near-plane
  */
 inline void RPLight::set_near_plane(float near_plane) {
@@ -397,7 +397,7 @@ inline void RPLight::set_near_plane(float near_plane) {
  * @details This returns the lights near plane, previously set with
  *   RPLight::set_near_plane. If the light does not cast shadows, this value
  *   is meaningless.
- *   
+ *
  * @return Near-plane
  */
 inline float RPLight::get_near_plane() const {

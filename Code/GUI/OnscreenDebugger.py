@@ -94,7 +94,7 @@ class OnscreenDebugger(BaseManager):
         self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
 
         self._exposure_node = self._fullscreen_node.attach_new_node("ExposureWidget")
-        self._exposure_node.set_pos((Globals.base.win.get_x_size()) / self._gui_scale - 200, 
+        self._exposure_node.set_pos((Globals.base.win.get_x_size()) / self._gui_scale - 200,
             1, -(Globals.base.win.get_y_size()) / self._gui_scale + 120)
         self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
 
@@ -282,7 +282,7 @@ class OnscreenDebugger(BaseManager):
             Globals.base.pixel2d.show()
             Globals.base.aspect2d.show()
             Globals.base.render2d.show()
-        
+
     def _toggle_debugger(self):
         """ Internal method to hide or show the debugger """
         # TODO

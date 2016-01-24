@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,7 +37,7 @@ void main() {
     vec2 parent_tex_size = vec2(textureSize(SourceTex, SourceMip).xy);
     vec2 texel_size = 1.0 / parent_tex_size;
 
-    // Compute the floating point coordinate pointing to the exact center of the 
+    // Compute the floating point coordinate pointing to the exact center of the
     // parent texel center
     vec2 flt_coord = vec2(int_coord + 0.5) / parent_tex_size * 2.0;
 
@@ -69,8 +69,8 @@ void main() {
     vec3 kernel_sum_purple = sample_bl + sample_b + sample_l + center_sample;
     vec3 kernel_sum_blue   = sample_br + sample_b + sample_r + center_sample;
 
-    vec3 summed_kernel = kernel_sum_red * 0.5 + 
-                         kernel_sum_yellow * 0.125 + 
+    vec3 summed_kernel = kernel_sum_red * 0.5 +
+                         kernel_sum_yellow * 0.125 +
                          kernel_sum_green  * 0.125 +
                          kernel_sum_purple * 0.125 +
                          kernel_sum_blue   * 0.125;

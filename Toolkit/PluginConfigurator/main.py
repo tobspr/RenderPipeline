@@ -49,7 +49,7 @@ from six import iteritems
 
 # Load all PyQt classes
 try:
-    import PyQt4.QtCore as QtCore 
+    import PyQt4.QtCore as QtCore
     import PyQt4.QtGui as QtGui
 except ImportError as msg:
     print("Failed to import PyQt4:", msg)
@@ -110,10 +110,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         msg = "Are you sure you want to reset the settings of '" + self._current_plugin_instance.get_name() + "'?\n"
         msg+= "This does not reset the Time of Day settings of this plugin.\n\n"
         msg+= "!! This cannot be undone !! They will be lost forever (a long time!)."
-        reply = QtGui.QMessageBox.question(self, "Warning", 
+        reply = QtGui.QMessageBox.question(self, "Warning",
                          msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
-            
+
             QtGui.QMessageBox.information(self, "Success", "Settings have been reset! You may have to restart the pipeline.")
             self._interface.reset_plugin_settings(self._current_plugin)
 
@@ -162,7 +162,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._interface.write_configuration()
 
     def _render_current_plugin(self):
-        """ Displays the currently selected plugin """        
+        """ Displays the currently selected plugin """
         self.lbl_plugin_name.setText(self._current_plugin_instance.get_name())
 
         version_str = "Version " + self._current_plugin_instance.get_config().get_version()
@@ -230,21 +230,21 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             label_desc = QtGui.QLabel()
             label_desc.setText(handle.description)
             label_desc.setWordWrap(True)
-            label_desc.setFont(desc_font)            
+            label_desc.setFont(desc_font)
             label_desc.setStyleSheet("color: #555;padding: 5px;")
 
             self.table_plugin_settings.setCellWidget(row_index, 3, label_desc)
 
     def _do_update_setting(self, setting_id, value):
 
-        # Check whether the setting is a runtime setting 
+        # Check whether the setting is a runtime setting
         setting_handle = self._current_plugin_instance.get_config().get_setting_handle(setting_id)
 
         # Skip the setting in case the value is equal
         if setting_handle.value == value:
             # print("Skipping setting")
             return
-            
+
         # Otherwise set the new value
         setting_handle.set_value(value)
 
@@ -296,7 +296,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         if setting.type == "BOOL":
             box = QtGui.QCheckBox()
             box.setChecked(QtCore.Qt.Checked if setting.value else QtCore.Qt.Unchecked)
-            connect(box, QtCore.SIGNAL("stateChanged(int)"), 
+            connect(box, QtCore.SIGNAL("stateChanged(int)"),
                 partial(self._on_setting_bool_changed, setting_id))
             layout.addWidget(box)
 
@@ -304,7 +304,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             if setting.type == "FLOAT":
                 box = QtGui.QDoubleSpinBox()
-                
+
                 if setting.max_value - setting.min_value <= 2.0:
                     box.setDecimals(4)
             else:
@@ -320,24 +320,24 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             slider.setOrientation(QtCore.Qt.Horizontal)
             slider.setMinimum(setting.min_value * 100000.0)
             slider.setMaximum(setting.max_value * 100000.0)
-            slider.setValue(setting.value * 100000.0) 
+            slider.setValue(setting.value * 100000.0)
 
             layout.addWidget(box)
             layout.addWidget(slider)
 
-            connect(slider, QtCore.SIGNAL("valueChanged(int)"), 
+            connect(slider, QtCore.SIGNAL("valueChanged(int)"),
                 partial(self._on_setting_slider_changed, setting_id, [box]))
 
             value_type = "int" if setting.type == "INT" else "double"
 
-            connect(box, QtCore.SIGNAL("valueChanged(" + value_type + ")"), 
+            connect(box, QtCore.SIGNAL("valueChanged(" + value_type + ")"),
                 partial(self._on_setting_spinbox_changed, setting_id, [slider]))
 
         elif setting.type == "ENUM":
             box = QtGui.QComboBox()
             for value in setting.values:
                 box.addItem(value)
-            connect(box, QtCore.SIGNAL("currentIndexChanged(QString)"), 
+            connect(box, QtCore.SIGNAL("currentIndexChanged(QString)"),
                 partial(self._on_setting_enum_changed, setting_id))
             box.setCurrentIndex(setting.values.index(setting.value))
 

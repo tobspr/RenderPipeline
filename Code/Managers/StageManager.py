@@ -187,7 +187,7 @@ class StageManager(BaseManager):
     def _bind_inputs_to_stage(self, stage):
         """ Binds all inputs including common inputs to the given stage """
         common_inputs = ["mainCam", "mainRender", "MainSceneData", "TimeOfDay"]
-      
+
         # Check if all inputs are available, and set them
         for input_binding in stage.get_required_inputs() + common_inputs:
             if input_binding not in self._inputs and \

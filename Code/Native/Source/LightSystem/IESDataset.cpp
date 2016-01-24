@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,7 +42,7 @@ IESDataset::IESDataset() {
 /**
  * @brief Sets the vertical angles of the dataset.
  * @details This sets the list of vertical angles of the dataset.
- * 
+ *
  * @param vertical_angles Vector of all vertical angles.
  */
 void IESDataset::set_vertical_angles(const PTA_float &vertical_angles) {
@@ -53,7 +53,7 @@ void IESDataset::set_vertical_angles(const PTA_float &vertical_angles) {
 /**
  * @brief Sets the horizontal angles of the dataset.
  * @details This sets the list of horizontal angles of the dataset.
- * 
+ *
  * @param horizontal_angles Vector of all horizontal angles.
  */
 void IESDataset::set_horizontal_angles(const PTA_float &horizontal_angles) {
@@ -78,10 +78,10 @@ void IESDataset::set_candela_values(const PTA_float &candela_values) {
  * @details This lookups a candela value in the candela values. It converts a
  *   two dimensional index to a onedimensional index and then returns the candela
  *   value at that position.
- * 
+ *
  * @param vertical_angle_idx Index of the vertical angle
  * @param horizontal_angle_idx Index of the horizontal angle
- * 
+ *
  * @return Candela value between 0 .. 1
  */
 float IESDataset::get_candela_value_from_index(size_t vertical_angle_idx, size_t horizontal_angle_idx) const {
@@ -95,10 +95,10 @@ float IESDataset::get_candela_value_from_index(size_t vertical_angle_idx, size_t
  * @details This looks up a value in the dataset, by specifying a horizontal and
  *   vertical angle. This is used for generating the LUT. The vertical and horizontal
  *   angle should be inside of the bounds of the vertical and horizontal angle arrays.
- * 
+ *
  * @param vertical_angle Vertical angle, from 0 .. 90 or 0 .. 180 depending on the dataset
  * @param horizontal_angle Horizontal angle, from 0 .. 180 or 0 .. 360 depending on the dataset.
- * 
+ *
  * @return Candela value between 0 .. 1
  */
 float IESDataset::get_candela_value(float vertical_angle, float horizontal_angle) const {
@@ -136,7 +136,7 @@ float IESDataset::get_candela_value(float vertical_angle, float horizontal_angle
 
             // Should never occur, but to be safe:
             if (lerp < 0.0 || lerp > 1.0) {
-                iesdataset_cat.error() << "Invalid horizontal lerp: " << lerp 
+                iesdataset_cat.error() << "Invalid horizontal lerp: " << lerp
                                        << ", requested angle was " << horizontal_angle
                                        << ", prev = " << prev_angle << ", cur = " << curr_angle
                                        << endl;
@@ -153,12 +153,12 @@ float IESDataset::get_candela_value(float vertical_angle, float horizontal_angle
  * @brief Fetches a vertical candela value
  * @details Fetches a vertical candela value, using a given horizontal position.
  *   This does an 1D interpolation in the candela values array.
- * 
+ *
  * @param horizontal_angle_idx The index of the horizontal angle in the horizontal
  *   angle array.
  * @param vertical_angle The vertical angle. Interpolation will be done if the
  *   vertical angle is not in the vertical angles array.
- * 
+ *
  * @return Candela value between 0 .. 1
  */
 float IESDataset::get_vertical_candela_value(size_t horizontal_angle_idx, float vertical_angle) const {
@@ -173,7 +173,7 @@ float IESDataset::get_vertical_candela_value(size_t horizontal_angle_idx, float 
     // Find lowest enclosing angle
     for (size_t vertical_index = 1; vertical_index < _vertical_angles.size(); ++vertical_index) {
         float curr_angle = _vertical_angles[vertical_index];
-        
+
         // Found value
         if (curr_angle > vertical_angle) {
 
@@ -202,9 +202,9 @@ float IESDataset::get_vertical_candela_value(size_t horizontal_angle_idx, float 
 /**
  * @brief Generates the IES LUT
  * @details This generates the LUT into a given dataset texture. The x-axis
- *   referes to the vertical_angle, whereas the y-axis refers to the 
+ *   referes to the vertical_angle, whereas the y-axis refers to the
  *   horizontal angle.
- * 
+ *
  * @param dest_tex Texture to write the LUT into
  * @param z Layer to write the LUT into, in case the texture is a 3D Texture or
  *   2D Texture Array.
@@ -217,7 +217,7 @@ void IESDataset::generate_dataset_texture_into(Texture* dest_tex, size_t z) cons
     // Candla values are stored flippped - vertical angles in the x - Axis
     // and horizontal angles in the y - Axis
     PNMImage dest = PNMImage(resolution_vertical, resolution_horizontal, 1, 65535);
-    
+
     for (size_t vert = 0; vert < resolution_vertical; ++vert) {
         for (size_t horiz = 0; horiz < resolution_horizontal; ++horiz) {
             float vert_angle = (float)vert / (float)(resolution_vertical-1);

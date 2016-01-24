@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +32,7 @@ UE4AO - Unreal Engine 4 AO
 
 This is an ambient occlusion technique proposed by Unreal Engine. It is very
 similar to Alchemy AO, but uses paired samples to approximate the average
-unocluded vector. 
+unocluded vector.
 
 */
 
@@ -46,7 +46,7 @@ float accum_count = 0.0;
 vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.4;
 
 for (int i = 0; i < num_samples; ++i) {
-    
+
     vec2 offset = poisson_disk_2D_32[i];
     offset = mix(offset, noise_vec.xy, 0.3);
     vec2 offcoord = offset * offset_scale;
@@ -68,8 +68,8 @@ for (int i = 0; i < num_samples; ++i) {
     float dist_b = distance(off_pos_b, pixel_view_pos) / max_distance;
 
     // Check if the samples are valid
-    float valid_a = step(dist_a - 1, 0.0); 
-    float valid_b = step(dist_b - 1, 0.0); 
+    float valid_a = step(dist_a - 1, 0.0);
+    float valid_b = step(dist_b - 1, 0.0);
 
     float angle_a = max(0, dot(sample_vec_a, pixel_view_normal));
     float angle_b = max(0, dot(sample_vec_b, pixel_view_normal));

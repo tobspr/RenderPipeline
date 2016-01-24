@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -61,7 +61,7 @@ vec2 get_skydome_coord(vec3 view_dir) {
 // Converts a coordinate like "gl_FragCoord" to a cubemap direction, with a given
 // cubemap size. Assumes the render target has a size of (6 * cubemap_size, cubemap_size).
 // clamped_coord will contain a coordinate from (0 .. cubemap_size), this can be
-// used for further processing or writing the result. 
+// used for further processing or writing the result.
 // face will contain the selected cubemap face.
 vec3 texcoord_to_cubemap(int cubemap_size, ivec2 coord, out ivec2 clamped_coord, out int face) {
     face = coord.x / cubemap_size;
@@ -82,7 +82,7 @@ vec3 texcoord_to_cubemap(int cubemap_size, ivec2 coord) {
 vec2 rotate(vec2 vector, float cos_alpha, float sin_alpha) {
     return vec2(
         vector.x * cos_alpha - vector.y * sin_alpha,
-        vector.x * sin_alpha + vector.y * cos_alpha 
+        vector.x * sin_alpha + vector.y * cos_alpha
     );
 }
 
@@ -100,7 +100,7 @@ ivec2 get_bilateral_coord(ivec2 coord) {
 
 // Checks if a coordinate exceeds the [0, 1] range
 bool out_of_screen(vec2 tcoord) {
-    return tcoord.x < 0.0 || tcoord.y < 0.0 || tcoord.x > 1.0 || tcoord.y > 1.0;    
+    return tcoord.x < 0.0 || tcoord.y < 0.0 || tcoord.x > 1.0 || tcoord.y > 1.0;
 }
 
 // Finds a tangent and bitangent vector based on a given normal
@@ -131,7 +131,7 @@ int get_mipmap_count(sampler2D tex) {
     return int(1 + floor(log2(tex_size)));
 }
 
-// Converts a normalized spherical coordinate (r = 1) to cartesian coordinates 
+// Converts a normalized spherical coordinate (r = 1) to cartesian coordinates
 vec3 spherical_to_vector(float theta, float phi) {
     float sin_theta = sin(theta);
     return normalize(vec3(
@@ -145,7 +145,7 @@ vec3 spherical_to_vector(float theta, float phi) {
 void vector_to_spherical(vec3 v, out float theta, out float phi, out float radius) {
     radius = sqrt(dot(v, v));
     phi = acos(v.z / radius);
-    theta = atan(v.y, v.x) + M_PI; 
+    theta = atan(v.y, v.x) + M_PI;
 }
 
 // Convertsa normalized vector to spherical coordinates
@@ -169,8 +169,8 @@ vec3 sun_azimuth_to_angle(float azimuth, float altitude) {
 // Blends a given color soft with the base color
 vec3 blend_soft_light(vec3 base, vec3 blend) {
     return mix(
-        sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend), 
-        2.0 * base * blend + base * base * (1.0 - 2.0 * blend), 
+        sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend),
+        2.0 * base * blend + base * base * (1.0 - 2.0 * blend),
         step(base, vec3(0.5))
     );
 }

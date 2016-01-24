@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -38,7 +38,7 @@ void main() {
     // TODO: Might make this an input
     const ivec2 widget_size = ivec2(140, 20);
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-        
+
     // Store the current pixels color
     vec4 color = vec4(0, 0, 0, 0);
     vec4 border_color = vec4(0.9, 0.9, 0.9, 1.0);
@@ -54,7 +54,7 @@ void main() {
     const float factor = 12.0;
     float min_exp = make_logarithmic(GET_SETTING(ColorCorrection, min_exposure), factor);
     float max_exp = make_logarithmic(GET_SETTING(ColorCorrection, max_exposure), factor);
-    
+
     // Fetch current exposure
     float curr_exposure = texelFetch(ExposureTex, 0).x;
 

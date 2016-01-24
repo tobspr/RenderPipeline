@@ -1,19 +1,19 @@
 /**
- * 
+ *
  * RenderPipeline
- * 
+ *
  * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +32,7 @@
  * @brief Constructs a new light with the given type
  * @details This constructs a new base light with the given light type.
  *   Sub-Classes should call this to initialize all properties.
- * 
+ *
  * @param light_type Type of the light
  */
 RPLight::RPLight(LightType light_type) {
@@ -54,7 +54,7 @@ RPLight::RPLight(LightType light_type) {
  *   Subclasses should first call this method, and then append their own
  *   data. This makes sure that for unpacking a light, no information about
  *   the type of the light is required.
- * 
+ *
  * @param cmd The GPUCommand to write to
  */
 void RPLight::write_to_command(GPUCommand &cmd) {
@@ -84,7 +84,7 @@ void RPLight::write_to_command(GPUCommand &cmd) {
  * @details This destructs the light, cleaning up all resourced used. The light
  *   should be detached at this point, because while the Light is attached,
  *   the InternalLightManager holds a reference to prevent it from being
- *   destructed. 
+ *   destructed.
  */
 RPLight::~RPLight() {
     nassertv(!has_slot()); // Light still attached - should never happen
@@ -96,7 +96,7 @@ RPLight::~RPLight() {
  * @details This sets the lights color, given a temperature. This is more
  *   physically based than setting a user defined color. The color will be
  *   computed from the given temperature.
- * 
+ *
  * @param temperature Light temperature
  */
 void RPLight::set_color_from_temperature(float temperature) {
