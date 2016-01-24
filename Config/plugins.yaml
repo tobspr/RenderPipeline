@@ -13,7 +13,6 @@ enabled:
     - ColorCorrection
     - PSSM
     - SMAA
-    - VXGI
 
 overrides:
     AO.alchemy_max_distance: 4.08
