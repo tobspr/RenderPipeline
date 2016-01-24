@@ -118,7 +118,7 @@ class CloudStage(RenderStage):
 
         cloud_particle_mask = BitMask32.bit(16)
         self._particle_cam.set_camera_mask(cloud_particle_mask)
-        render.hide(cloud_particle_mask)
+        Globals.base.render.hide(cloud_particle_mask)
         self._particle_scene.show_through(cloud_particle_mask)
 
         self._particle_target = self._create_target("Clouds:RenderParticles")
@@ -130,8 +130,8 @@ class CloudStage(RenderStage):
 
     def update(self):
         pass
-    #     self._particle_cam_np.set_transform(
-    #         Globals.base.camera.get_transform(Globals.base.render))
+        # self._particle_cam_np.set_transform(
+        # Globals.base.camera.get_transform(Globals.base.render))
 
     def set_shaders(self):
         self._grid_target.set_shader(self._load_plugin_shader("InstancedQuad.vert", "GenerateClouds.frag"))

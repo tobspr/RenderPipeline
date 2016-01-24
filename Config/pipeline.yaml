@@ -15,7 +15,7 @@ settings:
         display_debugger: true
 
     # This are the settings affecting the lighting part of the pipeline,
-    # including builtin shadows and lights. 
+    # including builtin shadows and lights.
     lighting:
 
 
@@ -34,7 +34,7 @@ settings:
         culling_grid_slices: 32
 
         # This controls the maximum culling distance in world space. After this
-        # distance, no lights are rendered anymore. If you choose a lower 
+        # distance, no lights are rendered anymore. If you choose a lower
         # distance, this *can* positively impact performance, but you should not
         # set it too low, to avoid getting artifacts.
         culling_max_distance: 140.0
@@ -58,4 +58,4 @@ settings:
         # getting updated fast enough. However, this also affects the performance
         # quite a bit, since for every shadow map a part of the scene has
         # to get re-rendered.
-        max_updates: 10
+        max_updates: 5

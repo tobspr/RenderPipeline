@@ -143,7 +143,7 @@ class InternalLightManager(object):
             if light and light.get_needs_update():
                 if light.casts_shadows:
                     light.update_shadow_sources()
-                self.gpu_update_light(light)
+            self.gpu_update_light(light)
 
     def update_shadow_sources(self):
         sources_to_update = []
@@ -152,7 +152,10 @@ class InternalLightManager(object):
             if source and source.get_needs_update():
                 sources_to_update.append(source)
 
-        sorted_sources = sorted(sources_to_update, key = lambda a: -a.get_resolution())
+        def _get_source_score(source):
+            return -source.get_resolution() - (10**10 if source.has_slot() else 0)
+
+        sorted_sources = sorted(sources_to_update, key = lambda a: _get_source_score(a))
 
         atlas = self._shadow_manager.get_atlas()
         update_slots = min(len(sources_to_update), self._shadow_manager.get_num_update_slots_left())

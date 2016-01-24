@@ -315,6 +315,24 @@ void InternalLightManager::update_lights() {
 }
 
 /**
+ * @brief Compares shadow sources by their priority
+ * @details Returns if a has a greater priority than b. This depends on the
+ *   resolution of the source, and also if the source has a region or not.
+ *   This method can be passed to std::sort.
+ *
+ * @param a First source
+ * @param b Second source
+ *
+ * @return true if a is more important than b, else false
+ */
+bool compare_shadow_sources(const ShadowSource* a, const ShadowSource* b){
+    if (a->has_region() != b->has_region()) {
+        return b->has_region();
+    }
+    return a->get_resolution() > b->get_resolution();
+}
+
+/**
  * @brief Internal method to update all shadow sources
  * @details This updates all shadow sources which are marked dirty. It will sort
  *   the list of all dirty shadow sources by their resolution, take the first
@@ -334,8 +352,9 @@ void InternalLightManager::update_shadow_sources() {
 
     // Sort the sources based on their resolution, so that sources with a bigger
     // resolution come first. This helps to get a better packing on the shadow atlas.
-    auto cmp_source = [](ShadowSource* a, ShadowSource* b){ return a->get_resolution() > b->get_resolution(); };
-    std::sort(sources_to_update.begin(), sources_to_update.end(), cmp_source);
+    // However, we also need to prioritize sources which have no current region,
+    // because no shadows are worse than outdated-shadows.
+    std::sort(sources_to_update.begin(), sources_to_update.end(), compare_shadow_sources);
 
     // Get a handle to the atlas, will be frequently used
     ShadowAtlas *atlas = _shadow_manager->get_atlas();
