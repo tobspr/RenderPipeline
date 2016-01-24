@@ -53,12 +53,12 @@ vec3 trace_ray_fast(vec3 ro, vec3 ray_dir) {
     const float hit_bias = 0.00001;
     const int max_iter = 32;
 
-    ray_dir = ray_dir * 0.5; 
+    ray_dir = ray_dir * 0.5;
 
     vec3 position = ro + normalize(ray_dir) * 0.001;
     vec3 ray_step = ray_dir / float(max_iter);
 
-    for(int i = 0; i < max_iter; ++i)
+    for (int i = 0; i < max_iter; ++i)
     {
         position += ray_step;
         float pix_depth = get_gbuffer_depth(GBuffer, position.xy);
@@ -95,7 +95,7 @@ vec3 trace_ray(Material m, vec3 ro, vec3 rd, vec2 texcoord)
 vec3 get_ray_direction(vec3 position, vec3 normal, vec3 view_dir, vec3 ro) {
     vec3 reflected_dir = reflect(view_dir, normal);
 
-    float scale_factor = 0.1 + 
+    float scale_factor = 0.1 +
         saturate(distance(position, MainSceneData.camera_pos) / 1000.0) * 0.5;
 
     vec3 target_pos = position + reflected_dir * scale_factor;
@@ -105,9 +105,8 @@ vec3 get_ray_direction(vec3 position, vec3 normal, vec3 view_dir, vec3 ro) {
 
 }
 
-void main() { 
+void main() {
 
-    
     vec3 sslr_result = vec3(0);
     vec2 texcoord = get_texcoord();
 
@@ -160,8 +159,6 @@ void main() {
         // sslr_result = intersection_coord;
 
     }
-
-
 
     result = textureLod(ShadedScene, texcoord, 0);
     result.xyz *= sslr_result;

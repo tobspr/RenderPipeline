@@ -141,7 +141,8 @@ class InternalLightManager(object):
     def update_lights(self):
         for light in self._lights.begin():
             if light and light.get_needs_update():
-                light.update_shadow_sources()
+                if light.casts_shadows:
+                    light.update_shadow_sources()
                 self.gpu_update_light(light)
 
     def update_shadow_sources(self):

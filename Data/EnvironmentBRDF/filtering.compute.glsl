@@ -37,7 +37,6 @@ vec3 ImportanceSampleGGX( vec2 E, float roughness )
     H.x = SinTheta * cos( Phi );
     H.y = SinTheta * sin( Phi );
     H.z = CosTheta;
-    
 
     return vec3( H );
 }
@@ -59,7 +58,7 @@ vec2 IntegrateBRDF( float roughness, float NxV )
     float A = 0;
     float B = 0;
     const int sample_count = 8192 * 2;
-    for( int i = 0; i < sample_count; i++ )
+    for ( int i = 0; i < sample_count; i++ )
     {
         vec2 Xi = Hammersley( i, sample_count );
         {
