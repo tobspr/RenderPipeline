@@ -53,7 +53,7 @@ float attenuation_curve(float dist, float radius) {
 float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profile) {
     float attenuation = attenuation_curve(dist, radius);
     return attenuation * get_ies_factor(l, ies_profile);
-} 
+}
 
 // Computes the attenuation for a spot light
 float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist, int ies_profile) {
@@ -86,7 +86,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // HOWEVER: If we are using translucency, we have to also consider shadowed
     // areas. So for now, this is disabled. If we reenable it, we probably should
     // also check if translucency is greater than a given epsilon.
-    // if (shadow < 0.001) 
+    // if (shadow < 0.001)
         // return vec3(0);
 
     // Weight transmittance by the translucency factor
@@ -114,7 +114,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     float fresnel = brdf_fresnel(1-LxH, m.roughness);
 
     // The division by 4 * NxV * NxL is done in the geometric (visibility) term
-    // already, so to evaluate the complete brdf we just do a multiply 
+    // already, so to evaluate the complete brdf we just do a multiply
     shading_result += (distribution * visibility * fresnel) * get_material_f0(m);
 
     // Special case for directional occlusion and bent normals
@@ -124,8 +124,8 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
         float occlusion_factor = saturate(dot(vec4(l, 1.5), directional_occlusion));
         occlusion_factor = pow(occlusion_factor, 3.0);
         shading_result *= occlusion_factor;
-    
-    #endif  
+
+    #endif
 
     return (shading_result * light_color) * (attenuation * shadow * NxL) * transmittance;
 }

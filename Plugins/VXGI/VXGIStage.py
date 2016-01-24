@@ -30,8 +30,9 @@ from panda3d.core import SamplerState
 
 class VXGIStage(RenderStage):
 
-    required_inputs = ["voxelGridPosition", "voxelGridSize", "voxelGridResolution"]
-    required_pipes = ["ShadedScene", "SceneVoxels", "GBuffer", "ScatteringIBLSpecular", "ScatteringIBLDiffuse"]
+    required_inputs = ["voxelGridPosition"]
+    required_pipes = ["ShadedScene", "SceneVoxels", "GBuffer", "ScatteringIBLSpecular",
+                      "ScatteringIBLDiffuse"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "VXGIStage", pipeline)

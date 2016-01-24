@@ -52,7 +52,7 @@ class CullLightsStage(RenderStage):
 
     def get_produced_pipes(self):
         return {"PerCellLights": self._per_cell_lights}
-        
+
     def get_produced_defines(self):
         return {
             "LC_SHADE_SLICES": self._num_rows,
@@ -76,7 +76,7 @@ class CullLightsStage(RenderStage):
         self._target.size = self._slice_width, self._num_rows
         self._target.prepare_offscreen_buffer()
         self._target.set_clear_color(color=Vec4(0.2, 0.6, 1.0, 1.0))
-        
+
         self._per_cell_lights = Image.create_buffer(
             "PerCellLights", max_cells * (self._max_lights_per_cell + num_light_classes),
             Texture.T_int, Texture.F_r32)

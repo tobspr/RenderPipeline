@@ -49,7 +49,7 @@ class AOStage(RenderStage):
         self._target.add_color_texture(bits=8)
         self._target.has_color_alpha = True
         self._target.prepare_offscreen_buffer()
-        self._target.get_quad().set_instance_count(4)
+        self._target.quad.set_instance_count(4)
 
         self._target_merge = self._create_target("AO:Merge")
         self._target_merge.set_half_resolution()

@@ -160,7 +160,7 @@
         */
 
         uniform GBufferData GBuffer;
-            
+
         // Returns the depth at a given texcoord
         float get_depth_at(vec2 coord) {
             return get_gbuffer_depth(GBuffer, coord);

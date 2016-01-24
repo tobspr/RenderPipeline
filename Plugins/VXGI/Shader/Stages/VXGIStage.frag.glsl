@@ -23,7 +23,7 @@ void main() {
     Material m = unpack_material(GBuffer);
 
     // Get voxel space coordinate
-    vec3 voxel_coord = (m.position - voxelGridPosition) / voxelGridSize;
+    vec3 voxel_coord = (m.position - voxelGridPosition) / GET_SETTING(VXGI, grid_ws_size);
     voxel_coord = fma(voxel_coord, vec3(0.5), vec3(0.5));
 
     // Get view vector
@@ -44,7 +44,7 @@ void main() {
     // Trace specular cone
     vec3 start_pos = voxel_coord;
     vec3 end_pos = start_pos + reflected_dir * 0.5;
-    vec3 current_pos = start_pos + reflected_dir * 2 / voxelGridResolution;
+    vec3 current_pos = start_pos + reflected_dir * 2.0 / GET_SETTING(VXGI, grid_resolution);
 
     const int num_steps = 256;
     vec3 trace_step = (end_pos - start_pos) / num_steps;

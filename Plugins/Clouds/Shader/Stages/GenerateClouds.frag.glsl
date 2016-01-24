@@ -31,6 +31,8 @@
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Noise.inc.glsl"
 
+flat in int instance_id;
+
 uniform writeonly image3D RESTRICT CloudVoxels;
 uniform sampler2D NoiseTex;
 uniform sampler2D CloudNoiseTex;
@@ -38,49 +40,46 @@ uniform sampler2D CloudNoiseTex;
 float cloud_weight(float height) {
     // Clouds get less at higher distances. Also decrease them at the bottom
     const int border_pow = 1 * 2 + 1;
-    const float decay = GET_SETTING(Clouds, cloud_decay) * 3.0; 
+    const float decay = GET_SETTING(Clouds, cloud_decay) * 3.0;
     // Analytical formula, see wolframalpha: "-(2^15) * abs(x-0.5)^15 + 1 - 0.8*(x^2) from 0 to 1"
     return max(0, -pow(2, border_pow) * pow(abs(height - 0.5), border_pow) + 1.0 - decay * pow(height, 4.0));
 }
 
 void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xy);
-    vec2 flt_coord = vec2(coord) / CLOUD_RES_XY; 
+    ivec3 coord = ivec3(gl_FragCoord.xy, instance_id);
+    vec3 cloud_coord = vec3(coord) / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
+    cloud_coord.z *= 0.2;
 
     float time_offs = MainSceneData.frame_time * 0.02;
     vec3 wind_dir = vec3(0.8, 0.6, 0.01);
     vec3 wind_offset = time_offs * wind_dir * 1.0;
 
-    for (int z = 0; z < CLOUD_RES_Z; ++z) {
-        vec3 cloud_coord = vec3(flt_coord, float(z) / CLOUD_RES_Z);
-        cloud_coord.z *= 0.2;
+    float cloud_factor = 0.0;
 
-        float cloud_factor = 0.0;
+    // Stratus
+    float stratus = fbm(cloud_coord + 0.7 + wind_offset * 0.7, 3.0) - 0.7;
+    stratus = max(0, stratus);
+    // stratus *= worley_noise(cloud_coord + wind_offset.xy * 1.0, 32, 0.0);
+    stratus *= 1 - min(1.0, 3.5 * cloud_coord.z);
+    stratus *= 4.0;
+    cloud_factor += max(0, stratus) * TimeOfDay.Clouds.stratus_amount;
 
-        // Stratus
-        float stratus = fbm(cloud_coord + 0.7 + wind_offset * 0.7, 3.0) - 0.7;
-        stratus = max(0, stratus);
-        // stratus *= worley_noise(flt_coord + wind_offset.xy * 1.0, 32, 0.0);
-        stratus *= 1 - min(1.0, 3.5 * cloud_coord.z);
-        stratus *= 4.0;
-        cloud_factor += max(0, stratus) * TimeOfDay.Clouds.stratus_amount;
+    // Cumulus
+    float cumulus = worley_noise(cloud_coord.xy + wind_offset.xy * 0.7, 4, 0.8);
+    cumulus *= fbm(cloud_coord + wind_offset * 0.6, 5.0) - 0.5;
+    cumulus *= 1.0 - min(1.0, 0.3*(1-cloud_coord.z) );
+    cumulus *= 2.0;
+    cloud_factor += max(0, cumulus) * TimeOfDay.Clouds.cumulus_amount;
 
-        // Cumulus
-        float cumulus = worley_noise(flt_coord + wind_offset.xy * 0.7, 4, 0.8);
-        cumulus *= fbm(cloud_coord + wind_offset * 0.6, 5.0) - 0.5;
-        cumulus *= 1.0 - min(1.0, 0.3*(1-cloud_coord.z) );
-        cumulus *= 2.0;
-        cloud_factor += max(0, cumulus) * TimeOfDay.Clouds.cumulus_amount;
+    // Soft
+    float soft = fbm(cloud_coord + wind_offset * 0.5, 6.0) - 0.55;
+    soft *= 2.0 * distance(cloud_coord.z, 0.5);
+    cloud_factor += max(0, soft) * TimeOfDay.Clouds.soft_amount;
 
-        // Soft
-        float soft = fbm(cloud_coord + wind_offset * 0.5, 6.0) - 0.55;
-        soft *= 2.0 * distance(cloud_coord.z, 0.5);
-        cloud_factor += max(0, soft) * TimeOfDay.Clouds.soft_amount;
-
-        cloud_factor *= cloud_weight(cloud_coord.z);
-        cloud_factor *= 2.0;
-        cloud_factor *= TimeOfDay.Clouds.cloud_intensity;
-        cloud_factor = saturate(cloud_factor);
-        imageStore(CloudVoxels, ivec3(coord, z), vec4(cloud_factor));
-    }
+    cloud_factor *= cloud_weight(cloud_coord.z);
+    cloud_factor *= 2.0;
+    cloud_factor *= TimeOfDay.Clouds.cloud_intensity;
+    cloud_factor = saturate(cloud_factor);
+    imageStore(CloudVoxels, coord, vec4(cloud_factor));
 }
+

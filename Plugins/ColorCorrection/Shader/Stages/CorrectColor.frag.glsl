@@ -67,7 +67,7 @@ void main() {
 
         // According to the cos4 law, the brightness at angle alpha is cos^4(alpha).
         // Since dot() returns the cosine, we can just pow it to get a physically
-        // correct vignette.    
+        // correct vignette.
         float cos_angle = dot(cam_dir, material_dir);
         float vignette = pow(cos_angle, 4.0);
 
@@ -96,8 +96,7 @@ void main() {
         scene_color = mix(scene_color, blended_color, grain_factor);
 
         // Apply the LUT
-        scene_color = apply_lut(scene_color);
-        
+        // scene_color = apply_lut(scene_color);
 
         // Apply the vignette based on the vignette strength
         scene_color *= mix(1.0, vignette, GET_SETTING(ColorCorrection, vignette_strength));

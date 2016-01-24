@@ -33,7 +33,7 @@ uniform writeonly image3D RESTRICT DestTex;
 
 void main() {
     ivec2 coord_2d = ivec2(gl_FragCoord.xy);
-    for (int z = 0; z < VOXEL_GRID_RES; ++z) {
+    for (int z = 0; z < GET_SETTING(VXGI, grid_resolution); ++z) {
         ivec3 coord = ivec3(coord_2d, z); 
         imageStore(DestTex, coord, texelFetch(SourceTex, coord, 0));
     }

@@ -75,7 +75,7 @@ void main() {
         vec3 sun_vector = sun_azimuth_to_angle(
             TimeOfDay.Scattering.sun_azimuth,
             TimeOfDay.Scattering.sun_altitude);
-        vec3 sun_color = TimeOfDay.Scattering.sun_color * 
+        vec3 sun_color = TimeOfDay.Scattering.sun_color *
             TimeOfDay.Scattering.sun_intensity * 45.0;
     #else
         vec3 sun_vector = normalize(pssm_sun_vector);
@@ -122,7 +122,7 @@ void main() {
     int split = best_split;
 
     // Compute the shadowing factor
-    // If we are out of the PSSM range:    
+    // If we are out of the PSSM range:
     if (split >= GET_SETTING(PSSM, split_count)) {
 
         // If we have the skybox, just stop
@@ -130,10 +130,10 @@ void main() {
             result = scene_color;
             return;
         }
-        
+
     } else {
 
-        // Get the MVP for the current split        
+        // Get the MVP for the current split
         mat4 mvp = pssm_mvps[split];
 
         // Get the plugin settings
@@ -146,7 +146,7 @@ void main() {
 
         // Compute the biased position based on the normal and slope scaled
         // bias.
-        vec3 biased_pos = get_biased_position(m.position, 
+        vec3 biased_pos = get_biased_position(m.position,
             slope_bias, normal_bias, m.normal, sun_vector);
 
         // Project the current pixel to the view of the light
@@ -163,7 +163,7 @@ void main() {
 
             {
             /*
-                
+
                 PCSS Kernel
 
                 Scan the region of the pixel for blockers, penumbra size is
@@ -196,7 +196,7 @@ void main() {
             float avg_blocker_depth = sum_blockers / num_blockers;
 
             // Penumbra size also takes average blocker depth into account
-            float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) / 
+            float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) /
                 ref_depth * GET_SETTING(PSSM, pcss_penumbra_size);
 
             // Apply penumbra size
@@ -255,7 +255,7 @@ void main() {
 
             // TODO: Maybe we can remove this branch
             if (skin_ref_depth < shadow_sample) distance_through_medium = 0.0;
-        
+
             // Fetch the skin transmittance
             transmittance = skin_transmittance(distance_through_medium);
 

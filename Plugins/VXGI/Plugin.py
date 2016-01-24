@@ -23,6 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  	 	    	 	
 """
+
+from __future__ import division
+
 # Load the plugin api
 from .. import *
 
@@ -35,6 +38,9 @@ class Plugin(BasePlugin):
     def setup_stages(self):
         self._voxel_stage = self.create_stage(VoxelizationStage)
         self._vxgi_stage = self.create_stage(VXGIStage)
+
+        self._voxel_stage.set_voxel_resolution(self.get_setting("grid_resolution"))
+        self._voxel_stage.set_voxel_grid_size(self.get_setting("grid_ws_size"))
 
     @PluginHook("pre_render_update")
     def update(self):
@@ -49,6 +55,15 @@ class Plugin(BasePlugin):
     def _set_grid_pos(self):
         """ Finds the new grid position """
         grid_pos = Globals.base.camera.get_pos(Globals.base.render)
+
+        # Snap the voxel grid
+        voxel_size = 2.0 * self.get_setting("grid_ws_size") / self.get_setting("grid_resolution")
+        snap_size = voxel_size * 2**2
+
+        for dimension in range(3):
+            cell_val = grid_pos.get_cell(dimension)
+            grid_pos.set_cell(dimension, cell_val - cell_val % snap_size)
+
         self._voxel_stage.set_grid_position(grid_pos)
 
     def _voxelize_x(self):

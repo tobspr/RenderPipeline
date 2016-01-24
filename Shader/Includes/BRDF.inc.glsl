@@ -44,7 +44,7 @@
 */
 
 
-// Lambert BRDF 
+// Lambert BRDF
 float brdf_lambert() {
     return ONE_BY_PI;
 }
@@ -55,7 +55,7 @@ vec3 brdf_schlick_fresnel(vec3 specular, float f90, float VxH)
     // Fast pow, proposed in
     // http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
     return mix(specular, vec3(f90), pow(2, (-5.55473*VxH-6.98316)*VxH));
-    
+
     // Regular pow
     // return mix(specular, vec3(f90), pow( 1.0 - VxH, 5.0));
 }
@@ -179,7 +179,7 @@ float brdf_fresnel_schlick(float LxH, float roughness, float ior) {
 
 // Diffuse BRDF
 float brdf_diffuse(float NxV, float LxH, float roughness) {
-   
+
     // Choose one:
     return brdf_lambert();
     // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
@@ -190,7 +190,7 @@ float brdf_diffuse(float NxV, float LxH, float roughness) {
 float brdf_distribution(float NxH, float roughness)
 {
     NxH = max(0.0001, NxH);
-    
+
     // Choose one:
     // return brdf_distribution_blinn_phong(NxH, roughness);
     // return brdf_distribution_beckmann(NxH, roughness);
@@ -202,7 +202,7 @@ float brdf_distribution(float NxH, float roughness)
 
 // Geometric Visibility
 float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughness) {
-    
+
     // Choose one:
     float vis = brdf_visibility_neumann(NxV, NxL);
     // float vis = brdf_visibility_schlick(NxV, NxL, roughness);

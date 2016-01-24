@@ -40,7 +40,7 @@ class CloudStage(RenderStage):
         RenderStage.__init__(self, "CloudStage", pipeline)
         self._voxel_res_xy = 256
         self._voxel_res_z = 16
-        
+
     def get_produced_pipes(self):
         return {"ShadedScene": self._target_apply_clouds["color"]}
 
@@ -65,17 +65,20 @@ class CloudStage(RenderStage):
         self._grid_target = self._create_target("Clouds:CreateGrid")
         self._grid_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._grid_target.prepare_offscreen_buffer()
+        self._grid_target.quad.set_instance_count(self._voxel_res_z)
         self._grid_target.set_shader_input("CloudVoxels", self._cloud_voxels)
 
         # Construct the target which shades the voxels
         self._shade_target = self._create_target("Clouds:ShadeVoxels")
         self._shade_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._shade_target.prepare_offscreen_buffer()
+        self._shade_target.quad.set_instance_count(self._voxel_res_z)
         self._shade_target.set_shader_input("CloudVoxels", self._cloud_voxels)
         self._shade_target.set_shader_input("CloudVoxelsDest", self._cloud_voxels)
 
         self._particle_target = self._create_target("Clouds:RenderClouds")
         self._particle_target.set_half_resolution()
+        self._particle_target.has_color_alpha = True
         self._particle_target.add_color_texture(bits=16)
         self._particle_target.prepare_offscreen_buffer()
         self._particle_target.set_shader_input("CloudVoxels", self._cloud_voxels)
@@ -131,10 +134,8 @@ class CloudStage(RenderStage):
     #         Globals.base.camera.get_transform(Globals.base.render))
 
     def set_shaders(self):
-        self._grid_target.set_shader(self._load_plugin_shader("GenerateClouds.frag"))
+        self._grid_target.set_shader(self._load_plugin_shader("InstancedQuad.vert", "GenerateClouds.frag"))
         self._target_apply_clouds.set_shader(self._load_plugin_shader("ApplyClouds.frag"))
-        self._shade_target.set_shader(self._load_plugin_shader("ShadeClouds.frag"))
-
-
+        self._shade_target.set_shader(self._load_plugin_shader("InstancedQuad.vert", "ShadeClouds.frag"))
         self._particle_target.set_shader(self._load_plugin_shader("RenderClouds.frag"))
         # self._particle_np.set_shader(self._load_plugin_shader("CloudParticle.vert.glsl", "CloudParticle.frag.glsl"))

@@ -88,7 +88,7 @@ void main() {
     vec3 ray_dirs[num_raydirs] = vec3[](
         // Center
         vec3( 0, 0, -1),
-        
+
         // Corners
         vec3(  1.0,  1.0, -1) * cull_bias,
         vec3( -1.0,  1.0, -1) * cull_bias,
@@ -98,8 +98,8 @@ void main() {
 
     // Generate ray directions
     for (int i = 0; i < num_raydirs; ++i) {
-        ray_dirs[i] = normalize( 
-            fma( (vec3(cell_x, cell_y, 0) + fma(ray_dirs[i], vec3(0.5), vec3(0.5)) ) 
+        ray_dirs[i] = normalize(
+            fma( (vec3(cell_x, cell_y, 0) + fma(ray_dirs[i], vec3(0.5), vec3(0.5)) )
                     / vec3(precompute_size, 1), vec3(2.0), vec3(-1.0)) * aspect_mul);
     }
 
@@ -142,7 +142,7 @@ void main() {
                 }
                 light_classification = get_casts_shadows(light_data) ? LIGHT_CLS_POINT_SHADOW : LIGHT_CLS_POINT_NOSHADOW;
                 break;
-            } 
+            }
 
             case LT_SPOT_LIGHT: {
                 float radius = get_spotlight_radius(light_data);
@@ -167,7 +167,7 @@ void main() {
     }
 
     int offset = storage_offs;
-    
+
     // Write the light counts
     for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
         imageStore(PerCellLightsBuffer, offset++, ivec4(light_counts[i]));

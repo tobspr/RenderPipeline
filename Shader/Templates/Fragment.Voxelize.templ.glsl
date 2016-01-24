@@ -18,8 +18,6 @@ layout(location=4) flat in MaterialOutput mOutput;
 
 // Voxel data
 uniform vec3 voxelGridPosition;
-uniform int voxelGridRes;
-uniform float voxelGridSize;
 uniform writeonly image3D RESTRICT VoxelGridDest;
 
 uniform samplerCube ScatteringIBLDiffuse;
@@ -46,8 +44,9 @@ void main() {
     shading_result = shading_result / (1.0 + shading_result);
 
     // Get destination voxel
-    vec3 vs_coord = (vOutput.position - voxelGridPosition + voxelGridSize) / (2.0 * voxelGridSize);
-    ivec3 vs_icoord = ivec3(vs_coord * voxelGridRes + 1e-5);
+    const float ws_size = GET_SETTING(VXGI, grid_ws_size);
+    vec3 vs_coord = (vOutput.position - voxelGridPosition + ws_size) / (2.0 * ws_size);
+    ivec3 vs_icoord = ivec3(vs_coord * GET_SETTING(VXGI, grid_resolution) + 1e-5);
 
     // Write voxel
     imageStore(VoxelGridDest, vs_icoord, vec4(shading_result, 1));

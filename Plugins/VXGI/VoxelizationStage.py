@@ -51,6 +51,12 @@ class VoxelizationStage(RenderStage):
         self._state = self.S_disabled
         self._create_ptas()
 
+    def set_voxel_resolution(self, res):
+        self._voxel_res = res
+
+    def set_voxel_grid_size(self, size):
+        self._voxel_ws = size
+
     def set_state(self, state):
         self._state = state
 
@@ -60,29 +66,14 @@ class VoxelizationStage(RenderStage):
     def _create_ptas(self):
         self._pta_next_grid_pos = PTALVecBase3.empty_array(1)
         self._pta_grid_pos = PTALVecBase3.empty_array(1)
-        self._pta_grid_size = PTAFloat.empty_array(1)
-        self._pta_grid_res = PTAInt.empty_array(1)
-        self._pta_grid_size[0] = self._voxel_ws
-        self._pta_grid_res[0] = self._voxel_res
 
     def get_produced_inputs(self):
-        return {
-            "voxelGridPosition": self._pta_grid_pos,
-            "voxelGridSize": self._pta_grid_size,
-            "voxelGridResolution": self._pta_grid_res,
-        }
+        return {"voxelGridPosition": self._pta_grid_pos}
 
     def get_produced_pipes(self):
         return {"SceneVoxels": self._voxel_grid}
 
-    def get_produced_defines(self):
-        return {
-            "VOXEL_GRID_RES": self._voxel_res,
-            "VOXEL_GRID_WS_SIZE": self._voxel_ws,
-        }
-
     def create(self):
-
         # Create the voxel grid used to generate the voxels
         self._voxel_temp_grid = Image.create_3d(
             "VoxelsTemp", self._voxel_res, self._voxel_res, self._voxel_res,
@@ -102,7 +93,7 @@ class VoxelizationStage(RenderStage):
         self._voxel_cam.set_camera_mask(self._pipeline.tag_mgr.get_voxelize_mask())
         self._voxel_cam_lens = OrthographicLens()
         self._voxel_cam_lens.set_film_size(-2.0 * self._voxel_ws, 2.0 * self._voxel_ws)
-        self._voxel_cam_lens.set_near_far(1e-8, 2.0 * self._voxel_ws)
+        self._voxel_cam_lens.set_near_far(0.0, 2.0 * self._voxel_ws)
         self._voxel_cam.set_lens(self._voxel_cam_lens)
         self._voxel_cam_np = Globals.base.render.attach_new_node(self._voxel_cam)
         self._pipeline.tag_mgr.register_voxelize_camera(self._voxel_cam)
@@ -129,8 +120,6 @@ class VoxelizationStage(RenderStage):
         self._voxel_cam.set_initial_state(initial_state.get_state())
 
         Globals.base.render.set_shader_input("voxelGridPosition", self._pta_next_grid_pos)
-        Globals.base.render.set_shader_input("voxelGridRes", self._pta_grid_res)
-        Globals.base.render.set_shader_input("voxelGridSize", self._pta_grid_size)
         Globals.base.render.set_shader_input("VoxelGridDest", self._voxel_temp_grid)
 
     def update(self):

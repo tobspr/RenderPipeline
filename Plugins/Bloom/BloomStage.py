@@ -113,12 +113,12 @@ class BloomStage(RenderStage):
         downsample_shader = self._load_plugin_shader("BloomDownsample.frag")
         upsample_shader = self._load_plugin_shader("BloomUpsample.frag")
         for target in self._downsample_targets:
-            target.set_shader(downsample_shader)  
+            target.set_shader(downsample_shader)
         for target in self._upsample_targets:
             target.set_shader(upsample_shader)
 
     def set_shader_input(self, name, handle, *args):
-        RenderStage.set_shader_input(self, name, handle, *args) 
+        RenderStage.set_shader_input(self, name, handle, *args)
 
         # Special case for the first firefly remove target
         if name == "ShadedScene":
