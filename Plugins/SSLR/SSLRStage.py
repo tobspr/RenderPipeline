@@ -41,9 +41,9 @@ class SSLRStage(RenderStage):
         return {"ShadedScene": self._target['color']}
 
     def create(self):
-        self._target = self._create_target("SSLRStage")
+        self._target = self.make_target("SSLRStage")
         self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(self._load_plugin_shader("SSLRStage.frag"))
+        self._target.set_shader(self.load_plugin_shader("SSLRStage.frag"))

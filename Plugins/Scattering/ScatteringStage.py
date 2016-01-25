@@ -46,10 +46,10 @@ class ScatteringStage(RenderStage):
         }
 
     def create(self):
-        self._target = self._create_target("Scattering:ApplyScattering")
+        self._target = self.make_target("Scattering:ApplyScattering")
         self._target.add_color_texture(bits=16)
         self._target.has_color_alpha = True
         self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(self._load_plugin_shader("ApplyScattering.frag"))
+        self._target.set_shader(self.load_plugin_shader("ApplyScattering.frag"))

@@ -54,7 +54,7 @@ class ShadowStage(RenderStage):
         return state
 
     def create(self):
-        self._target = self._create_target("ShadowAtlas")
+        self._target = self.make_target("ShadowAtlas")
         self._target.set_source(source_cam=NodePath(Camera("dummy_shadow_cam")), source_win=Globals.base.win)
         self._target.size = self._size, self._size
         self._target.create_overlay_quad = False

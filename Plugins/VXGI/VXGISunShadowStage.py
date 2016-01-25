@@ -79,7 +79,7 @@ class VXGISunShadowStage(RenderStage):
         self._camera.set_lens(self._cam_lens)
         self._cam_node = Globals.base.render.attach_new_node(self._camera)
 
-        self._target = self._create_target("PSSMDistShadowMap")
+        self._target = self.make_target("PSSMDistShadowMap")
         self._target.set_source(self._cam_node, Globals.base.win)
         self._target.size = self._resolution
         self._target.add_depth_texture(bits=32)

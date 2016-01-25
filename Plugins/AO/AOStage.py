@@ -44,32 +44,32 @@ class AOStage(RenderStage):
         return {"AmbientOcclusion": self._target_upscale['color']}
 
     def create(self):
-        self._target = self._create_target("AO:Sample")
+        self._target = self.make_target("AO:Sample")
         self._target.set_half_resolution()
         self._target.add_color_texture(bits=8)
         self._target.has_color_alpha = True
         self._target.prepare_offscreen_buffer()
         self._target.quad.set_instance_count(4)
 
-        self._target_merge = self._create_target("AO:Merge")
+        self._target_merge = self.make_target("AO:Merge")
         self._target_merge.set_half_resolution()
         self._target_merge.add_color_texture(bits=8)
         self._target_merge.has_color_alpha = True
         self._target_merge.prepare_offscreen_buffer()
 
-        self._target_blur_v = self._create_target("AO:BlurV")
+        self._target_blur_v = self.make_target("AO:BlurV")
         self._target_blur_v.set_half_resolution()
         self._target_blur_v.add_color_texture(bits=8)
         self._target_blur_v.has_color_alpha = True
         self._target_blur_v.prepare_offscreen_buffer()
 
-        self._target_blur_h = self._create_target("AO:BlurH")
+        self._target_blur_h = self.make_target("AO:BlurH")
         self._target_blur_h.set_half_resolution()
         self._target_blur_h.add_color_texture(bits=8)
         self._target_blur_h.has_color_alpha = True
         self._target_blur_h.prepare_offscreen_buffer()
 
-        self._target_upscale = self._create_target("AO:Upscale")
+        self._target_upscale = self.make_target("AO:Upscale")
         self._target_upscale.add_color_texture(bits=8)
         self._target_upscale.has_color_alpha = True
         self._target_upscale.prepare_offscreen_buffer()
@@ -85,12 +85,12 @@ class AOStage(RenderStage):
 
     def set_shaders(self):
         self._target.set_shader(
-            self._load_plugin_shader("Shader/SampleHalfresInterleaved.vert", "AOSample.frag"))
+            self.load_plugin_shader("Shader/SampleHalfresInterleaved.vert", "AOSample.frag"))
         self._target_upscale.set_shader(
-            self._load_plugin_shader("Shader/BilateralUpscale.frag"))
+            self.load_plugin_shader("Shader/BilateralUpscale.frag"))
         self._target_merge.set_shader(
-            self._load_plugin_shader("Shader/MergeInterleavedTarget.frag"))
+            self.load_plugin_shader("Shader/MergeInterleavedTarget.frag"))
 
-        blur_shader = self._load_plugin_shader("AOBlur.frag")
+        blur_shader = self.load_plugin_shader("AOBlur.frag")
         self._target_blur_v.set_shader(blur_shader)
         self._target_blur_h.set_shader(blur_shader)

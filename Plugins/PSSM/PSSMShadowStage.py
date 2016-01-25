@@ -66,7 +66,7 @@ class PSSMShadowStage(RenderStage):
         return self._target["depth"]
 
     def create(self):
-        self._target = self._create_target("PSSMShadowMap")
+        self._target = self.make_target("PSSMShadowMap")
         self._target.set_source(None, Globals.base.win)
         self._target.size = (self._split_resolution * self._num_splits, self._split_resolution)
         self._target.add_depth_texture(bits=32)

@@ -49,7 +49,7 @@ class PSSMDistShadowStage(RenderStage):
         self._resolution = res
 
     def create(self):
-        self._target = self._create_target("PSSMDistShadowMap")
+        self._target = self.make_target("PSSMDistShadowMap")
         self._target.set_source(None, Globals.base.win)
         self._target.size = self._resolution
         self._target.add_depth_texture(bits=32)

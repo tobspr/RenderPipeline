@@ -38,7 +38,7 @@ class FinalStage(RenderStage):
         RenderStage.__init__(self, "FinalStage", pipeline)
 
     def create(self):
-        self._target = self._create_target("FinalStage")
+        self._target = self.make_target("FinalStage")
 
         # We don't have a color attachment, but still want to write color
         self._target.color_write = True
@@ -47,4 +47,4 @@ class FinalStage(RenderStage):
 
 
     def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/FinalStage.frag"))
+        self._target.set_shader(self.load_shader("Stages/FinalStage.frag"))

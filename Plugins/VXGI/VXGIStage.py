@@ -46,26 +46,26 @@ class VXGIStage(RenderStage):
     def create(self):
 
         # Create a target for the specular GI
-        self._target_spec = self._create_target("VXGI:SpecularGI")
+        self._target_spec = self.make_target("VXGI:SpecularGI")
         self._target_spec.add_color_texture(bits=16)
         self._target_spec.prepare_offscreen_buffer()
 
         # Create a target for the diffuse GI
-        self._target_diff = self._create_target("VXGI:DiffuseGI")
+        self._target_diff = self.make_target("VXGI:DiffuseGI")
         self._target_diff.set_half_resolution()
         self._target_diff.add_color_texture(bits=16)
         self._target_diff.prepare_offscreen_buffer()
         self._target_diff.quad.set_instance_count(4)
 
         # Create the target which de-interleaves the diffuse target
-        self._target_merge_diff = self._create_target("VXGI:MergeDiffuseGI")
+        self._target_merge_diff = self.make_target("VXGI:MergeDiffuseGI")
         self._target_merge_diff.set_half_resolution()
         self._target_merge_diff.add_color_texture(bits=16)
         self._target_merge_diff.prepare_offscreen_buffer()
         self._target_merge_diff.set_shader_input("SourceTex", self._target_diff["color"])
 
        # Create the target which bilateral upsamples the diffuse target
-        self._target_upscale_diff = self._create_target("VXGI:UpscaleDiffuse")
+        self._target_upscale_diff = self.make_target("VXGI:UpscaleDiffuse")
         self._target_upscale_diff.add_color_texture(bits=16)
         self._target_upscale_diff.prepare_offscreen_buffer()
         self._target_upscale_diff.set_shader_input("SourceTex", self._target_merge_diff["color"])
@@ -77,10 +77,10 @@ class VXGIStage(RenderStage):
 
     def set_shaders(self):
         self._target_spec.set_shader(
-            self._load_plugin_shader("VXGISpecular.frag"))
+            self.load_plugin_shader("VXGISpecular.frag"))
         self._target_diff.set_shader(
-            self._load_plugin_shader("Shader/SampleHalfresInterleaved.vert", "VXGIDiffuse.frag"))
+            self.load_plugin_shader("Shader/SampleHalfresInterleaved.vert", "VXGIDiffuse.frag"))
         self._target_merge_diff.set_shader(
-            self._load_plugin_shader("Shader/MergeInterleavedTarget.frag"))
+            self.load_plugin_shader("Shader/MergeInterleavedTarget.frag"))
         self._target_upscale_diff.set_shader(
-            self._load_plugin_shader("Shader/BilateralUpscale.frag"))
+            self.load_plugin_shader("Shader/BilateralUpscale.frag"))

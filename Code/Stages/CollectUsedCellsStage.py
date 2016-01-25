@@ -52,7 +52,7 @@ class CollectUsedCellsStage(RenderStage):
         }
 
     def create(self):
-        self._target = self._create_target("CollectUsedCells")
+        self._target = self.make_target("CollectUsedCells")
         self._target.size = self._tile_amount.x, self._tile_amount.y
         self._target.prepare_offscreen_buffer()
 
@@ -77,4 +77,4 @@ class CollectUsedCellsStage(RenderStage):
 
     def set_shaders(self):
         self._target.set_shader(
-            self._load_shader("Stages/CollectUsedCells.frag"))
+            self.load_shader("Stages/CollectUsedCells.frag"))

@@ -100,14 +100,14 @@ class VoxelizationStage(RenderStage):
         self._pipeline.tag_mgr.register_voxelize_camera(self._voxel_cam)
 
         # Create the voxelization target
-        self._voxel_target = self._create_target("VXGI:VoxelizeScene")
+        self._voxel_target = self.make_target("VXGI:VoxelizeScene")
         self._voxel_target.set_source(source_cam=self._voxel_cam_np, source_win=Globals.base.win)
         self._voxel_target.size = self._voxel_res, self._voxel_res
         self._voxel_target.create_overlay_quad = False
         self._voxel_target.prepare_scene_render()
 
         # Create the target which copies the voxel grid
-        self._copy_target = self._create_target("VXGI:CopyVoxels")
+        self._copy_target = self.make_target("VXGI:CopyVoxels")
         self._copy_target.size = self._voxel_res, self._voxel_res
         self._copy_target.prepare_offscreen_buffer()
         self._copy_target.quad.set_instance_count(self._voxel_res)
@@ -119,7 +119,7 @@ class VoxelizationStage(RenderStage):
         mip_size, mip = self._voxel_res, 0
         while mip_size > 1:
             mip_size, mip = mip_size // 2, mip + 1
-            mip_target = self._create_target("VXGI:GenMipmaps:" + str(mip))
+            mip_target = self.make_target("VXGI:GenMipmaps:" + str(mip))
             mip_target.size = mip_size
             mip_target.prepare_offscreen_buffer()
             mip_target.quad.set_instance_count(mip_size)
@@ -183,9 +183,9 @@ class VoxelizationStage(RenderStage):
 
     def set_shaders(self):
         self._copy_target.set_shader(
-            self._load_plugin_shader("Shader/DefaultPostProcessInstanced.vert",
+            self.load_plugin_shader("Shader/DefaultPostProcessInstanced.vert",
                                      "CopyVoxels.frag"))
-        mip_shader = self._load_plugin_shader(
+        mip_shader = self.load_plugin_shader(
             "Shader/DefaultPostProcessInstanced.vert", "GenerateMipmaps.frag")
         for target in self._mip_targets:
             target.set_shader(mip_shader)

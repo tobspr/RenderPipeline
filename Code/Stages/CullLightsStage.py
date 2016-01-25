@@ -68,7 +68,7 @@ class CullLightsStage(RenderStage):
             self._pipeline.get_setting("lighting.culling_grid_slices")
 
         self._num_rows = int(math.ceil(max_cells / float(self._slice_width)))
-        self._target = self._create_target("CullLights")
+        self._target = self.make_target("CullLights")
 
         # Don't use an oversized triangle for the target, since this leads to
         # overshading
@@ -85,5 +85,5 @@ class CullLightsStage(RenderStage):
         self._target.set_shader_input("PerCellLightsBuffer", self._per_cell_lights)
 
     def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/CullLights.vert",
+        self._target.set_shader(self.load_shader("Stages/CullLights.vert",
                                                   "Stages/CullLights.frag"))

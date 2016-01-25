@@ -62,21 +62,21 @@ class CloudStage(RenderStage):
         # self._cloud_voxels.set_border_color(Vec4(1, 0, 0, 1))
 
         # Construct the target which populates the voxel texture
-        self._grid_target = self._create_target("Clouds:CreateGrid")
+        self._grid_target = self.make_target("Clouds:CreateGrid")
         self._grid_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._grid_target.prepare_offscreen_buffer()
         self._grid_target.quad.set_instance_count(self._voxel_res_z)
         self._grid_target.set_shader_input("CloudVoxels", self._cloud_voxels)
 
         # Construct the target which shades the voxels
-        self._shade_target = self._create_target("Clouds:ShadeVoxels")
+        self._shade_target = self.make_target("Clouds:ShadeVoxels")
         self._shade_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._shade_target.prepare_offscreen_buffer()
         self._shade_target.quad.set_instance_count(self._voxel_res_z)
         self._shade_target.set_shader_input("CloudVoxels", self._cloud_voxels)
         self._shade_target.set_shader_input("CloudVoxelsDest", self._cloud_voxels)
 
-        self._particle_target = self._create_target("Clouds:RenderClouds")
+        self._particle_target = self.make_target("Clouds:RenderClouds")
         self._particle_target.set_half_resolution()
         self._particle_target.has_color_alpha = True
         self._particle_target.add_color_texture(bits=16)
@@ -85,7 +85,7 @@ class CloudStage(RenderStage):
 
         # self._make_particle_scene()
 
-        self._target_apply_clouds = self._create_target("Clouds:ApplyClouds")
+        self._target_apply_clouds = self.make_target("Clouds:ApplyClouds")
         self._target_apply_clouds.add_color_texture(bits=16)
         self._target_apply_clouds.prepare_offscreen_buffer()
 
@@ -121,7 +121,7 @@ class CloudStage(RenderStage):
         Globals.base.render.hide(cloud_particle_mask)
         self._particle_scene.show_through(cloud_particle_mask)
 
-        self._particle_target = self._create_target("Clouds:RenderParticles")
+        self._particle_target = self.make_target("Clouds:RenderParticles")
         self._particle_target.add_color_texture(bits=16)
         self._particle_target.set_source(self._particle_cam_np, Globals.base.win)
         self._particle_target.enable_transparency = True
@@ -135,12 +135,12 @@ class CloudStage(RenderStage):
 
     def set_shaders(self):
         self._grid_target.set_shader(
-            self._load_plugin_shader("Shader/DefaultPostProcessInstanced.vert", "GenerateClouds.frag"))
+            self.load_plugin_shader("Shader/DefaultPostProcessInstanced.vert", "GenerateClouds.frag"))
         self._target_apply_clouds.set_shader(
-            self._load_plugin_shader("ApplyClouds.frag"))
+            self.load_plugin_shader("ApplyClouds.frag"))
         self._shade_target.set_shader(
-            self._load_plugin_shader("Shader/DefaultPostProcessInstanced.vert", "ShadeClouds.frag"))
+            self.load_plugin_shader("Shader/DefaultPostProcessInstanced.vert", "ShadeClouds.frag"))
         self._particle_target.set_shader(
-            self._load_plugin_shader("RenderClouds.frag"))
+            self.load_plugin_shader("RenderClouds.frag"))
         # self._particle_np.set_shader(
-            # self._load_plugin_shader("CloudParticle.vert.glsl", "CloudParticle.frag.glsl"))
+            # self.load_plugin_shader("CloudParticle.vert.glsl", "CloudParticle.frag.glsl"))

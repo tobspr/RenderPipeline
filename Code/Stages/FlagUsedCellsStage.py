@@ -49,7 +49,7 @@ class FlagUsedCellsStage(RenderStage):
         return {"FlaggedCells": self._cell_grid_flags}
 
     def create(self):
-        self._target = self._create_target("FlagUsedCells")
+        self._target = self.make_target("FlagUsedCells")
         self._target.prepare_offscreen_buffer()
 
         self._cell_grid_flags = Image.create_2d_array(
@@ -64,4 +64,4 @@ class FlagUsedCellsStage(RenderStage):
         self._cell_grid_flags.clear_image()
 
     def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/FlagUsedCells.frag"))
+        self._target.set_shader(self.load_shader("Stages/FlagUsedCells.frag"))

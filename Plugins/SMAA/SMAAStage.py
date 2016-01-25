@@ -75,14 +75,14 @@ class SMAAStage(RenderStage):
     def create(self):
 
         # Scene conversion
-        self._srgb_target = self._create_target("SMAA:TemporarySRGB")
+        self._srgb_target = self.make_target("SMAA:TemporarySRGB")
         self._srgb_target.add_color_texture()
         self._srgb_target.add_aux_texture()
         self._srgb_target.prepare_offscreen_buffer()
         self._srgb_target.set_clear_color(color=Vec4(0))
 
         # Edge detection
-        self._edge_target = self._create_target("SMAA:EdgeDetection")
+        self._edge_target = self.make_target("SMAA:EdgeDetection")
         self._edge_target.add_color_texture()
         self._edge_target.prepare_offscreen_buffer()
         self._edge_target.set_clear_color(color=Vec4(0))
@@ -92,7 +92,7 @@ class SMAAStage(RenderStage):
         self._edge_target.set_shader_input("PredicationSource", self._srgb_target["aux0"])
 
         # Weight blending
-        self._blend_target = self._create_target("SMAA:BlendWeights")
+        self._blend_target = self.make_target("SMAA:BlendWeights")
         self._blend_target.add_color_texture()
         self._blend_target.has_color_alpha = True
         self._blend_target.prepare_offscreen_buffer()
@@ -107,7 +107,7 @@ class SMAAStage(RenderStage):
         self._neighbor_targets = []
         for i in range(2 if self._reprojection else 1):
 
-            target = self._create_target("SMAA:Neighbor-" + str(i))
+            target = self.make_target("SMAA:Neighbor-" + str(i))
             target.add_color_texture(bits=16)
             target.prepare_offscreen_buffer()
             target.set_shader_input("BlendTex", self._blend_target["color"])
@@ -116,7 +116,7 @@ class SMAAStage(RenderStage):
 
         # Resolving
         if self._reprojection:
-            self._resolve_target = self._create_target("SMAA:Resolve")
+            self._resolve_target = self.make_target("SMAA:Resolve")
             self._resolve_target.add_color_texture(bits=16)
             self._resolve_target.prepare_offscreen_buffer()
             self._resolve_target.set_shader_input("JitterIndex", self._jitter_index)
@@ -127,11 +127,11 @@ class SMAAStage(RenderStage):
 
 
     def set_shaders(self):
-        self._srgb_target.set_shader(self._load_plugin_shader("TemporarySRGB.frag"))
-        self._edge_target.set_shader(self._load_plugin_shader("EdgeDetection.frag"))
-        self._blend_target.set_shader(self._load_plugin_shader("BlendingWeights.frag"))
+        self._srgb_target.set_shader(self.load_plugin_shader("TemporarySRGB.frag"))
+        self._edge_target.set_shader(self.load_plugin_shader("EdgeDetection.frag"))
+        self._blend_target.set_shader(self.load_plugin_shader("BlendingWeights.frag"))
         for target in self._neighbor_targets:
-            target.set_shader(self._load_plugin_shader("NeighborhoodBlending.frag"))
+            target.set_shader(self.load_plugin_shader("NeighborhoodBlending.frag"))
 
         if self._reprojection:
-            self._resolve_target.set_shader(self._load_plugin_shader("Resolve.frag"))
+            self._resolve_target.set_shader(self.load_plugin_shader("Resolve.frag"))

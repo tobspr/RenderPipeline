@@ -150,11 +150,11 @@ class RenderStage(DebugObject):
         for target in self._targets.values():
             target.set_active(active)
 
-    def _make_cubemap_filter(self, *args):
+    def make_cubemap_filter(self, *args):
         """ Creates a new CubemapFilter with the given args and returns it """
         return CubemapFilter(self, *args)
 
-    def _create_target(self, name):
+    def make_target(self, name):
         """ Creates a new render target with the given name and attachs it to the
         list of targets """
         if name in self._targets:
@@ -183,7 +183,7 @@ class RenderStage(DebugObject):
 
         return Shader.load(Shader.SLGLSL, *path_args)
 
-    def _load_shader(self, *args):
+    def load_shader(self, *args):
         """ Loads a shader from the given args. If only one argument is passed,
         the default template for the stage is loaded. If two arguments are
         passed, the first argument should be the vertex shader and the second
@@ -191,10 +191,10 @@ class RenderStage(DebugObject):
         the order should be vertex, fragment, geometry """
         return self._get_shader_handle("Shader/{0}.glsl", *args)
 
-    def _load_plugin_shader(self, *args):
+    def load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful
         for RenderStages created by plugins. For a description of the arguments,
-        see the _load_shader function. """
+        see the load_shader function. """
 
         # The __module__ contains something like Plugins.XXX.YYY
         # We want XXX so we take the second parameter

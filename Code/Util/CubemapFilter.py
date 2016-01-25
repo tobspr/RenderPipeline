@@ -116,7 +116,7 @@ class CubemapFilter(DebugObject):
             mipsize = mipsize // 2
 
             # Create the target which downsamples the mipmap
-            target = self._stage._create_target(
+            target = self._stage.make_target(
                 self._name + "SpecIBL-" + str(mipsize))
             target.size = mipsize * 6, mipsize
             target.prepare_offscreen_buffer()
@@ -133,7 +133,7 @@ class CubemapFilter(DebugObject):
             mip += 1
 
             # Create the target which filters the mipmap and removes the noise
-            target_filter = self._stage._create_target(
+            target_filter = self._stage.make_target(
                 self._name + "SpecIBLFilter-" + str(mipsize))
             target_filter.size = mipsize * 6, mipsize
             target_filter.prepare_offscreen_buffer()
@@ -149,7 +149,7 @@ class CubemapFilter(DebugObject):
         """ Internal method to create the diffuse cubemap """
 
         # Create the target which integrates the lambert brdf
-        self._diffuse_target = self._stage._create_target(self._name + "DiffuseIBL")
+        self._diffuse_target = self._stage.make_target(self._name + "DiffuseIBL")
         self._diffuse_target.size = (CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
             CubemapFilter.PREFILTER_CUBEMAP_SIZE)
         self._diffuse_target.prepare_offscreen_buffer()
@@ -160,7 +160,7 @@ class CubemapFilter(DebugObject):
 
         # Create the target which removes the noise from the previous target,
         # which is introduced with importance sampling
-        self._diff_filter_target = self._stage._create_target(self._name + "DiffPrefIBL")
+        self._diff_filter_target = self._stage.make_target(self._name + "DiffPrefIBL")
         self._diff_filter_target.size = (CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
         self._diff_filter_target.prepare_offscreen_buffer()
@@ -172,14 +172,14 @@ class CubemapFilter(DebugObject):
     def set_shaders(self):
         """ Sets all required shaders on the filter. """
         self._diffuse_target.set_shader(
-            self._stage._load_shader("Stages/IBLCubemapDiffuse.frag"))
+            self._stage.load_shader("Stages/IBLCubemapDiffuse.frag"))
         self._diff_filter_target.set_shader(
-            self._stage._load_shader("Stages/IBLCubemapDiffFilter.frag"))
+            self._stage.load_shader("Stages/IBLCubemapDiffFilter.frag"))
 
-        mip_shader = self._stage._load_shader("Stages/IBLCubemapSpecular.frag")
+        mip_shader = self._stage.load_shader("Stages/IBLCubemapSpecular.frag")
         for target in self._targets_spec:
             target.set_shader(mip_shader)
 
-        mip_filter_shader = self._stage._load_shader("Stages/IBLCubemapSpecularFilter.frag")
+        mip_filter_shader = self._stage.load_shader("Stages/IBLCubemapSpecularFilter.frag")
         for target in self._targets_spec_filter:
             target.set_shader(mip_filter_shader)

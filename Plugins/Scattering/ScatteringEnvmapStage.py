@@ -47,9 +47,9 @@ class ScatteringEnvmapStage(RenderStage):
         }
 
     def create(self):
-        self._filter = self._make_cubemap_filter("ScatteringEnvmap:Filter")
+        self._filter = self.make_cubemap_filter("ScatteringEnvmap:Filter")
 
-        self._target_cube = self._create_target("ScatteringEnvmap:Compute")
+        self._target_cube = self.make_target("ScatteringEnvmap:Compute")
         self._target_cube.size = self._filter.size * 6, self._filter.size
         self._target_cube.prepare_offscreen_buffer()
         self._target_cube.set_shader_input("DestCubemap", self._filter.target_cubemap)
@@ -66,5 +66,5 @@ class ScatteringEnvmapStage(RenderStage):
 
 
     def set_shaders(self):
-        self._target_cube.set_shader(self._load_plugin_shader("ScatteringEnvmap.frag"))
+        self._target_cube.set_shader(self.load_plugin_shader("ScatteringEnvmap.frag"))
         self._filter.set_shaders()

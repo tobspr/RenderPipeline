@@ -145,4 +145,3 @@ class Plugin(BasePlugin):
     def _toggle_update_enabled(self):
         self._update_enabled = not self._update_enabled
         self.debug("Update enabled:", self._update_enabled)
-

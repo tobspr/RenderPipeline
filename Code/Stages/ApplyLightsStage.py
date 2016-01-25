@@ -42,9 +42,9 @@ class ApplyLightsStage(RenderStage):
         return {"ShadedScene": self._target['color']}
 
     def create(self):
-        self._target = self._create_target("ApplyLights")
+        self._target = self.make_target("ApplyLights")
         self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(self._load_shader("Stages/ApplyLights.frag"))
+        self._target.set_shader(self.load_shader("Stages/ApplyLights.frag"))

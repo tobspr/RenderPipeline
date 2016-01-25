@@ -58,7 +58,7 @@ class UpdatePreviousPipesStage(RenderStage):
 
     def create(self):
         self.debug("Creating previous pipes stage ..")
-        self._target = self._create_target("StorePreviousPipes")
+        self._target = self.make_target("StorePreviousPipes")
         # self._target.add_color_texture()
         self._target.prepare_offscreen_buffer()
 
@@ -107,7 +107,7 @@ class UpdatePreviousPipesStage(RenderStage):
             handle.write(fragment)
 
         # Load it back again
-        shader = self._load_shader(shader_dest)
+        shader = self.load_shader(shader_dest)
         self._target.set_shader(shader)
 
     def get_sampler_type(self, tex, can_write=False):

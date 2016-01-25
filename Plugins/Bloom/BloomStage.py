@@ -46,11 +46,11 @@ class BloomStage(RenderStage):
 
     def create(self):
 
-        self._target_firefly_x = self._create_target("Bloom:RemoveFireflies-X")
+        self._target_firefly_x = self.make_target("Bloom:RemoveFireflies-X")
         self._target_firefly_x.add_color_texture(bits=16)
         self._target_firefly_x.prepare_offscreen_buffer()
 
-        self._target_firefly_y = self._create_target("Bloom:RemoveFireflies-Y")
+        self._target_firefly_y = self.make_target("Bloom:RemoveFireflies-Y")
         self._target_firefly_y.add_color_texture(bits=16)
         self._target_firefly_y.prepare_offscreen_buffer()
 
@@ -63,7 +63,7 @@ class BloomStage(RenderStage):
         self._scene_target_img.set_wrap_u(SamplerState.WM_clamp)
         self._scene_target_img.set_wrap_v(SamplerState.WM_clamp)
 
-        self._target_extract = self._create_target("Bloom:ExtractBrightSpots")
+        self._target_extract = self.make_target("Bloom:ExtractBrightSpots")
         self._target_extract.prepare_offscreen_buffer()
         self._target_extract.set_shader_input("DestTex", self._scene_target_img, False, True, -1, 0)
 
@@ -79,7 +79,7 @@ class BloomStage(RenderStage):
         # Downsample passes
         for i in range(self._num_mips):
             scale_multiplier = 2 ** (1 + i)
-            target = self._create_target("Bloom:Downsample:Step-" + str(i))
+            target = self.make_target("Bloom:Downsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
             target.prepare_offscreen_buffer()
             target.set_shader_input("SourceMip", i)
@@ -90,7 +90,7 @@ class BloomStage(RenderStage):
         # Upsample passes
         for i in range(self._num_mips):
             scale_multiplier = 2 ** (self._num_mips - i - 1)
-            target = self._create_target("Bloom:Upsample:Step-" + str(i))
+            target = self.make_target("Bloom:Upsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
 
             if i == self._num_mips - 1:
@@ -106,12 +106,12 @@ class BloomStage(RenderStage):
             self._upsample_targets.append(target)
 
     def set_shaders(self):
-        self._target_extract.set_shader(self._load_plugin_shader("ExtractBrightSpots.frag"))
-        self._target_firefly_x.set_shader(self._load_plugin_shader("RemoveFireflies.frag"))
-        self._target_firefly_y.set_shader(self._load_plugin_shader("RemoveFireflies.frag"))
+        self._target_extract.set_shader(self.load_plugin_shader("ExtractBrightSpots.frag"))
+        self._target_firefly_x.set_shader(self.load_plugin_shader("RemoveFireflies.frag"))
+        self._target_firefly_y.set_shader(self.load_plugin_shader("RemoveFireflies.frag"))
 
-        downsample_shader = self._load_plugin_shader("BloomDownsample.frag")
-        upsample_shader = self._load_plugin_shader("BloomUpsample.frag")
+        downsample_shader = self.load_plugin_shader("BloomDownsample.frag")
+        upsample_shader = self.load_plugin_shader("BloomUpsample.frag")
         for target in self._downsample_targets:
             target.set_shader(downsample_shader)
         for target in self._upsample_targets:
