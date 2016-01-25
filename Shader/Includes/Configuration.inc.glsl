@@ -26,6 +26,10 @@
 
 #pragma once
 
+// Additional include guards, panda sometimes gets confused with the paths
+#ifndef MAIN_CONFIGURATION_H
+#define MAIN_CONFIGURATION_H
+
 // Main configuration file, included by all shaders, provides generic defines
 // and functions.
 
@@ -105,3 +109,5 @@ precision lowp int;
 #endif
 
 #pragma include "CommonFunctions.inc.glsl"
+
+#endif

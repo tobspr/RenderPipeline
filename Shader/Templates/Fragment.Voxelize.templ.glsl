@@ -42,7 +42,7 @@ void main() {
 
     vec3 ambient = ambient_diff * basecolor * (1 - mOutput.metallic);
     ambient += ambient_spec * basecolor * mOutput.metallic;
-    ambient *= 0.05;
+    ambient *= 0.1;
 
     vec3 shading_result = ambient;
 
@@ -53,12 +53,23 @@ void main() {
             TimeOfDay.Scattering.sun_azimuth,
             TimeOfDay.Scattering.sun_altitude);
 
+        vec3 sun_color = TimeOfDay.Scattering.sun_color *
+            TimeOfDay.Scattering.sun_intensity * 45.0;
+
         // Get sun shadow term
-        vec3 biased_position = vOutput.position + vOutput.normal * 0.01;
+        vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
+
+        const float slope_bias = 1.0 * 0.05;
+        const float normal_bias =1.0 * 0.005;
+        const float fixed_bias = 0.1 * 0.001;
+        vec3 biased_pos = get_biased_position(
+            vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
+
         vec3 projected = project(VXGISunShadowMVP, biased_position);
-        projected.z -= 0.001;
+        projected.z -= fixed_bias;
         float shadow_term = texture(VXGISunShadowMap, projected).x;
-        shading_result += saturate(dot(sun_vector, vOutput.normal)) * vec3(9) * shadow_term * basecolor;
+        shading_result += saturate(dot(sun_vector, vOutput.normal)) * sun_color * shadow_term * basecolor;
+
 
     #endif
 

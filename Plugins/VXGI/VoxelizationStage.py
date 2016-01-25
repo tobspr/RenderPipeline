@@ -81,6 +81,10 @@ class VoxelizationStage(RenderStage):
             "VoxelsTemp", self._voxel_res, self._voxel_res, self._voxel_res,
             Texture.T_float, Texture.F_rgba8)
         self._voxel_temp_grid.set_clear_color(Vec4(0))
+        self._voxel_temp_nrm_grid = Image.create_3d(
+            "VoxelsTemp", self._voxel_res, self._voxel_res, self._voxel_res,
+            Texture.T_float, Texture.F_r11_g11_b10)
+        self._voxel_temp_nrm_grid.set_clear_color(Vec4(0))
 
         # Create the voxel grid which is a copy of the temporary grid, but stable
         self._voxel_grid = Image.create_3d(

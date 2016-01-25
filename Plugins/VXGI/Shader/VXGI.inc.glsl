@@ -43,7 +43,7 @@ vec3 worldspace_to_voxelspace(vec3 worldspace) {
 }
 
 float get_mipmap_from_cone_radius(float cone_radius) {
-    return log2(cone_radius * GET_SETTING(VXGI, grid_resolution));
+    return log2(cone_radius * GET_SETTING(VXGI, grid_resolution)) * 1.3 - 1;
 }
 
 vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps, bool is_specular, float cone_grow_factor) {
@@ -63,8 +63,9 @@ vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps, bool is
     for (int i = 0; i < max_steps; ++i) {
         mipmap = get_mipmap_from_cone_radius(cone_radius);
         vec4 sampled = textureLod(SceneVoxels, current_pos, mipmap);
+        sampled.w *= 2.0;
         accum += sampled * (1.0 - accum.w);
-        current_pos += direction * cone_radius / 1.5;
+        current_pos += direction * cone_radius / 2.25;
         cone_radius *= 1.01 + cone_grow_factor;
     }
 
@@ -75,7 +76,7 @@ vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps, bool is
     if (is_specular) {
         accum.xyz += textureLod(ScatteringIBLSpecular, direction, mipmap).xyz * (1-accum.w);
     } else {
-        accum.xyz += texture(ScatteringIBLDiffuse, direction).xyz * (1-accum.w) * 0.2;
+        accum.xyz += texture(ScatteringIBLDiffuse, direction).xyz * (1-accum.w);
     }
 
     return accum;

@@ -70,16 +70,22 @@ void main() {
 
     for (int i = 0; i < 16; ++i) {
         vec3 direction = poisson_disk_3D_16[i];
-        direction = mix(direction, noise_vec, 0.4);
+        direction = mix(direction, noise_vec, 0.3);
         direction = normalize(direction);
         direction = faceforward(direction, direction, -m.normal);
 
         float weight = dot(m.normal, direction); // Guaranteed to be > 0
-        vec4 cone = trace_cone(voxel_coord, m.normal, direction, 30, false, 0.1);
+        // weight = 1.0;
+        vec4 cone = trace_cone(
+            voxel_coord,
+            m.normal,
+            direction,
+            GET_SETTING(VXGI, diffuse_cone_steps),
+            false,
+            0.1);
         accum.xyz += cone.xyz * weight;
         accum.w += weight;
     }
     accum /= accum.w;
     result = accum;
 }
-

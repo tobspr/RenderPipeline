@@ -30,4 +30,25 @@ settings: !!omap
             This setting controls the size of the grid in world space. A size of
             40.0 for example makes the grid 80x80x80 world-space units big.
 
+    - diffuse_cone_steps:
+        type: int
+        range: [2, 32]
+        default: 15
+        shader_runtime: true
+        label: Diffuse Cone Steps
+        description: >
+            Amount of steps to trace for each diffuse cone. A higher amount will
+            lead to more color bleeding, however it also affects performance.
+
+    - specular_cone_steps:
+        type: int
+        range: [2, 150]
+        default: 70
+        shader_runtime: true
+        label: Specular Cone Steps
+        description: >
+            Amount of steps to trace for the specular cone. A higher amount will
+            cause reflections to range further, however it also affects performance.
+
+
 daytime_settings:

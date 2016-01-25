@@ -14,6 +14,7 @@ enabled:
     - PSSM
     - SMAA
 
+
 overrides:
     AO.alchemy_max_distance: 4.08
     AO.alchemy_num_samples: 8
@@ -88,4 +89,6 @@ overrides:
     Scattering.mie_height_scale: 1.45
     Scattering.mie_phase_factor: 0.21
     Scattering.scattering_method: eric_bruneton
+    VXGI.diffuse_cone_steps: 13
+    VXGI.specular_cone_steps: 150
 

@@ -87,5 +87,8 @@ class VXGISunShadowStage(RenderStage):
         self._target.color_write = False
         self._target.prepare_scene_render()
 
+        # Register shadow camera
+        self._pipeline.tag_mgr.register_shadow_camera(self._camera)
+
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

@@ -48,7 +48,7 @@ void main() {
 
     if (out_of_unit_box(voxel_coord))
     {
-        result = textureLod(ScatteringIBLSpecular, reflected_dir, 7) * 0.3;
+        result = textureLod(ScatteringIBLSpecular, reflected_dir, 7) * 0.5;
         return;
     }
 
@@ -57,11 +57,9 @@ void main() {
         voxel_coord,
         m.normal,
         reflected_dir,
-        50,
+        GET_SETTING(VXGI, specular_cone_steps),
         true,
-        m.roughness * 0.1);
+        m.roughness * 0.17);
 
-    specular *= 0.5;
     result = vec4(specular.xyz, 1.0);
 }
-

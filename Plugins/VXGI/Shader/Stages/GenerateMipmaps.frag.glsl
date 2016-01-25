@@ -50,6 +50,5 @@ void main() {
     accum += texelFetch(SourceTex, parent_coord + ivec3(0, 1, 1), sourceMip);
     accum += texelFetch(SourceTex, parent_coord + ivec3(1, 1, 1), sourceMip);
     accum /= 8.0;
-    accum.w = saturate(accum.w);
     imageStore(DestTex, coord, accum);
 }

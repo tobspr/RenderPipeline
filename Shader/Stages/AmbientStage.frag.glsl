@@ -146,9 +146,17 @@ void main() {
 
             // Sample precomputed occlusion and multiply the ambient term with it
             float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
-            ambient *= saturate(pow(occlusion, 3.0));
+
+            #if HAVE_PLUGIN(VXGI)
+                // When using VXGI *and* AO, reduce ao term because VXGI already
+                // has an ao term
+                ambient *= saturate(pow(occlusion, 1.5));
+            #else
+                ambient *= saturate(pow(occlusion, 3.0));
+            #endif
 
         #endif
+
     }
     #endif
 
