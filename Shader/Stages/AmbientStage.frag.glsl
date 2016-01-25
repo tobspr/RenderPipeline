@@ -149,9 +149,6 @@ void main() {
             ambient *= saturate(pow(occlusion, 3.0));
 
         #endif
-
-
-
     }
     #endif
 

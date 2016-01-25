@@ -162,21 +162,34 @@ class RenderStage(DebugObject):
         self._targets[name] = RenderTarget(name)
         return self._targets[name]
 
+    def _get_shader_handle(self, path, *args):
+        """ Returns a handle to a Shader object, containing all sources passed
+        as arguments. The path argument will be used to locate shaders if no
+        absolute path is given """
+        assert len(args) > 0 and len(args) <= 3
+        path_args = []
+
+        for source in args:
+            if "$$PipelineTemp" not in source and "Shader/" not in source:
+                path_args.append(path.format(source))
+                # path_args.append(os.path.join(plugin_loc, source + ".glsl"))
+            else:
+                path_args.append(source + ".glsl")
+
+        # If only one shader is specified, assume its a postprocess fragment shader,
+        # and use the default vertex shader
+        if len(args) == 1:
+            path_args = ["Shader/DefaultPostProcess.vert.glsl"] + path_args
+
+        return Shader.load(Shader.SLGLSL, *path_args)
+
     def _load_shader(self, *args):
         """ Loads a shader from the given args. If only one argument is passed,
         the default template for the stage is loaded. If two arguments are
         passed, the first argument should be the vertex shader and the second
         argument should be the fragment shader. If three arguments are passed,
         the order should be vertex, fragment, geometry """
-        assert len(args) > 0 and len(args) <= 3
-        args = ["Shader/{0}.glsl".format(i) if "$$PipelineTemp" not in i else i for i in args]
-
-        # If only one shader is specified, assume its a postprocess fragment shader,
-        # and use the default vertex shader
-        if len(args) == 1:
-            args = ["Shader/DefaultPostProcess.vert.glsl"] + args
-
-        return Shader.load(Shader.SLGLSL, *args)
+        return self._get_shader_handle("Shader/{0}.glsl", *args)
 
     def _load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful
@@ -187,13 +200,5 @@ class RenderStage(DebugObject):
         # We want XXX so we take the second parameter
         plugin_name = str(self.__class__.__module__).split(".")[1]
 
-        plugin_loc = "Plugins/" + plugin_name + "/Shader/Stages/"
-        path_args = [os.path.join(plugin_loc, i + ".glsl")\
-            if "$$PipelineTemp" not in i else i for i in args]
-
-        # If only one shader is specified, assume its a postprocess fragment shader,
-        # and use the default vertex shader
-        if len(args) == 1:
-            path_args = ["Shader/DefaultPostProcess.vert.glsl"] + path_args
-
-        return Shader.load(Shader.SLGLSL, *path_args)
+        shader_path = "Plugins/" + plugin_name + "/Shader/Stages/{0}.glsl"
+        return self._get_shader_handle(shader_path, *args)

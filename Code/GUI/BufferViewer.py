@@ -244,7 +244,7 @@ class BufferViewer(DraggableWindow):
             preview_shader = DisplayShaderBuilder.build(stage_tex, scale_factor*w, scale_factor*h)
             preview.set_shader(preview_shader)
 
-        num_rows = (index + entries_per_row - 1) // entries_per_row
+        num_rows = (index + entries_per_row) // entries_per_row
 
         self._set_scroll_height(50 + (entry_height-14) * num_rows)
 

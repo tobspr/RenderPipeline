@@ -29,7 +29,11 @@ from __future__ import division
 # Load the plugin api
 from .. import *
 
+from math import sin, cos, pi
+from panda3d.core import Vec3
+
 from .VoxelizationStage import VoxelizationStage
+from .VXGISunShadowStage import VXGISunShadowStage
 from .VXGIStage import VXGIStage
 
 class Plugin(BasePlugin):
@@ -42,6 +46,13 @@ class Plugin(BasePlugin):
         self._voxel_stage.set_voxel_resolution(self.get_setting("grid_resolution"))
         self._voxel_stage.set_voxel_grid_size(self.get_setting("grid_ws_size"))
 
+        if self.is_plugin_loaded("Scattering"):
+            self._shadow_stage = self.create_stage(VXGISunShadowStage)
+
+            # Add shadow map as requirement
+            self._voxel_stage.add_input_requirement("VXGISunShadowMVP")
+            self._voxel_stage.add_pipe_requirement("VXGISunShadowMap")
+
     @PluginHook("pre_render_update")
     def update(self):
         self._queue.exec_next_task()
@@ -53,6 +64,7 @@ class Plugin(BasePlugin):
         self._queue.add(self._generate_mipmaps)
 
     def _set_grid_pos(self):
+
         """ Finds the new grid position """
         grid_pos = Globals.base.camera.get_pos(Globals.base.render)
 
@@ -66,8 +78,27 @@ class Plugin(BasePlugin):
 
         self._voxel_stage.set_grid_position(grid_pos)
 
+    def _update_shadow_pos(self):
+        """ Updates the sun shadow map """
+        if self.is_plugin_loaded("Scattering"):
+
+            # Get sun vector
+            sun_altitude = self.get_daytime_setting(
+                "sun_altitude", plugin_id="Scattering")
+            sun_azimuth = self.get_daytime_setting(
+                "sun_azimuth", plugin_id="Scattering")
+            theta = (90 - sun_altitude) / 180.0 * pi
+            phi = sun_azimuth / 180.0 * pi
+            sun_vector = Vec3(
+                sin(theta) * cos(phi),
+                sin(theta) * sin(phi),
+                cos(theta))
+
+            self._shadow_stage.set_sun_vector(sun_vector)
+
     def _voxelize_x(self):
         self._set_grid_pos()
+        self._update_shadow_pos()
         self._voxel_stage.set_state(VoxelizationStage.S_voxelize_x)
 
     def _voxelize_y(self):

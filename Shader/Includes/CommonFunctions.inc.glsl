@@ -99,14 +99,20 @@ ivec2 get_bilateral_coord(ivec2 coord) {
     return (coord + 1) / 2 - 1;
 }
 
-// Checks if a coordinate exceeds the [0, 1] range
+// Checks if a 2D-coordinate exceeds the [0, 1] range
 bool out_of_screen(vec2 tcoord) {
     return tcoord.x < 0.0 || tcoord.y < 0.0 || tcoord.x > 1.0 || tcoord.y > 1.0;
 }
 
+// Checks if a 3D-coordinate exceeds the [0, 1] range
+bool out_of_unit_box(vec3 coord) {
+    return coord.x < 0.0 || coord.y < 0.0 || coord.z < 0.0 || coord.x > 1.0 || coord.y > 1.0 || coord.z > 1.0;
+}
+
+
 // Finds a tangent and bitangent vector based on a given normal
 void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
-    vec3 v0 = abs(normal.z) < (1-1e-9) ? vec3(0, 0, 1) : vec3(0, 1, 0);
+    vec3 v0 = abs(normal.z) < (0.99) ? vec3(0, 0, 1) : vec3(0, 1, 0);
     tangent = normalize(cross(v0, normal));
     bitangent = normalize(cross(tangent, normal));
 }

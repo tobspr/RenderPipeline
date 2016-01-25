@@ -87,11 +87,11 @@ settings: !!omap
     - use_pcf:
         type: bool
         default: true
-        label: Use hardware filtering (PCF)        
+        label: Use hardware filtering (PCF)
         description: >
             This setting turns Percentage Closer Filtering on or off (A simple
             2x2 bilinear filter provided by the GPU).
-            It provides a better shadow quality, and theoretically a better 
+            It provides a better shadow quality, and theoretically a better
             performance. However, not all GPU's seem to support it.
 
     - filter_sample_count:
@@ -122,7 +122,7 @@ settings: !!omap
         default: 0.3
         shader_runtime: true
         label: Depth Bias
-        description: > 
+        description: >
             Depth-Based bias. This avoids self-shadowing issues (also known)
             as Shadow-Acne. Too high values will produce gaps in the shadows,
             so try to find the lowest possible value.
@@ -171,7 +171,7 @@ settings: !!omap
         label: PCSS Penumbra samples
         description: >
             Amount of samples to take for finding the penumbra size. Higher values
-            might produce better results at the cost of performance. 
+            might produce better results at the cost of performance.
 
     - pcss_penumbra_size:
         display_if: {use_pcss: true}

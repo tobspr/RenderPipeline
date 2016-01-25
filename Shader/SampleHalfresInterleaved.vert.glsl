@@ -25,10 +25,26 @@
  */
 
 #version 400
+
+#pragma include "Includes/Configuration.inc.glsl"
+
 in vec4 p3d_Vertex;
-flat out int instance_id;
+out vec2 texcoord;
+flat out int instance;
 
 void main() {
-    gl_Position = vec4(p3d_Vertex.xz, 0, 1);
-    instance_id = gl_InstanceID;
+    int x = gl_InstanceID % 2;
+    int y = gl_InstanceID / 2;
+
+    CONST_ARRAY float rotations[4] = float[4](180, 270, 90, 0);
+
+    // Rotate the vertices because we use oversized triangles
+    float rotation = degree_to_radians(rotations[gl_InstanceID]);
+
+    vec2 vtx_pos = rotate(p3d_Vertex.xz, rotation);
+    texcoord = fma(vtx_pos, vec2(0.5), vec2(0.5));
+    vtx_pos.xy = fma(vtx_pos.xy, vec2(0.5), vec2(-0.5)) + vec2(x, y);
+
+    instance = gl_InstanceID;
+    gl_Position = vec4(vtx_pos, 0, 1);
 }

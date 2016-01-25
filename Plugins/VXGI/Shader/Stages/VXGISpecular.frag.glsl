@@ -26,25 +26,42 @@
 
 #version 400
 
-#pragma include "Includes/Configuration.inc.glsl"
 
-in vec4 p3d_Vertex;
-out vec2 texcoord;
-flat out int instance;
+#define USE_MAIN_SCENE_DATA
+#pragma include "Includes/Configuration.inc.glsl"
+#pragma include "Includes/GBuffer.inc.glsl"
+#pragma include "Includes/PoissonDisk.inc.glsl"
+#pragma include "../VXGI.inc.glsl"
+
+uniform sampler2D ShadedScene;
+uniform GBufferData GBuffer;
+out vec4 result;
 
 void main() {
-    int x = gl_InstanceID % 2;
-    int y = gl_InstanceID / 2;
 
-    CONST_ARRAY float rotations[4] = float[4](180, 270, 90, 0);
+    Material m = unpack_material(GBuffer);
+    vec3 voxel_coord = worldspace_to_voxelspace(m.position);
 
-    // Rotate the vertices because we use oversized triangles
-    float rotation = degree_to_radians(rotations[gl_InstanceID]);
+    // Get view vector
+    vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
+    vec3 reflected_dir = reflect(-view_vector, m.normal);
 
-    vec2 pcoord = rotate(p3d_Vertex.xz, rotation);
-    texcoord = fma(pcoord, vec2(0.5), vec2(0.5));
-    pcoord.xy = pcoord.xy * 0.5 - 0.5 + 1.0 * vec2(x, y);
+    if (out_of_unit_box(voxel_coord))
+    {
+        result = textureLod(ScatteringIBLSpecular, reflected_dir, 7) * 0.3;
+        return;
+    }
 
-    instance = gl_InstanceID;
-    gl_Position = vec4(pcoord, 0, 1);
+    // Trace specular cone
+    vec4 specular = trace_cone(
+        voxel_coord,
+        m.normal,
+        reflected_dir,
+        50,
+        true,
+        m.roughness * 0.1);
+
+    specular *= 0.5;
+    result = vec4(specular.xyz, 1.0);
 }
+

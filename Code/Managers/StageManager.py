@@ -47,6 +47,7 @@ class StageManager(BaseManager):
     _STAGE_ORDER = [
         "PSSMShadowStage",
         "PSSMDistShadowStage",
+        "VXGISunShadowStage",
         "VoxelizationStage",
         "ScatteringEnvmapStage",
         "GBufferStage",

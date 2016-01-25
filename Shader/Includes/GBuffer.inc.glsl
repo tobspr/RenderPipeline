@@ -127,8 +127,7 @@
     }
 
     // Unpacks a material from the gbuffer
-    Material unpack_material(GBufferData data) {
-        vec2 fcoord = get_texcoord();
+    Material unpack_material(GBufferData data, vec2 fcoord) {
 
         // Fetch data from data-textures
         vec4 data0 = textureLod(data.Data0, fcoord, 0);
@@ -148,6 +147,12 @@
         // Velocity, not stored in the Material struct but stored in the G-Buffer
         // vec2 velocity = data2.xy;
         return m;
+    }
+
+    // Unpacks a material from the gbuffer
+    Material unpack_material(GBufferData data) {
+        vec2 fcoord = get_texcoord();
+        return unpack_material(data, fcoord);
     }
 
     #ifdef USE_GBUFFER_EXTENSIONS

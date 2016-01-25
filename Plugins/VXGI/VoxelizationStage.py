@@ -182,7 +182,13 @@ class VoxelizationStage(RenderStage):
             self._pta_grid_pos[0] = self._pta_next_grid_pos[0]
 
     def set_shaders(self):
-        self._copy_target.set_shader(self._load_plugin_shader("InstancedQuad.vert", "CopyVoxels.frag"))
-        mip_shader = self._load_plugin_shader("InstancedQuad.vert", "GenerateMipmaps.frag")
+        self._copy_target.set_shader(
+            self._load_plugin_shader("Shader/DefaultPostProcessInstanced.vert",
+                                     "CopyVoxels.frag"))
+        mip_shader = self._load_plugin_shader(
+            "Shader/DefaultPostProcessInstanced.vert", "GenerateMipmaps.frag")
         for target in self._mip_targets:
             target.set_shader(mip_shader)
+
+    def set_shader_input(self, *args):
+        Globals.render.set_shader_input(*args)

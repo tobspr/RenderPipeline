@@ -55,7 +55,6 @@ void main() {
 
     ivec2 coord = (ivec2(gl_FragCoord.xy) * 4) % SCREEN_SIZE_INT;
     coord += ivec2(quad_x, quad_y) * 2;
-
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
     // Shader variables

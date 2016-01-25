@@ -24,9 +24,13 @@ THE SOFTWARE.
  	 	    	 	
 """
 
+from __future__ import division
+
+import random
+
 from panda3d.core import PTAVecBase3f, PTAMat4, Texture, TransformState, Mat4
 from panda3d.core import CS_yup_right, CS_zup_right, PTAFloat, invert, Vec3
-from panda3d.core import SamplerState
+from panda3d.core import SamplerState, PNMImage
 from direct.stdpy.file import open
 
 from .Util.DebugObject import DebugObject
@@ -96,6 +100,7 @@ class CommonResources(BaseManager):
         self._load_precomputed_grain()
         self._load_prefilter_brdf()
         self._load_skydome()
+        self._load_noise_tex()
 
     def _load_normal_quantization(self):
         """ Loads the normal quantization tex, used to compress normals to
@@ -153,6 +158,16 @@ class CommonResources(BaseManager):
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)
+
+    def _load_noise_tex(self):
+        """ Loads the default 4x4 noise tex """
+        random.seed(42)
+        img = PNMImage(4, 4, 3)
+        for x in range(16):
+            img.set_xel(x%4, x//4, random.random(), random.random(), random.random())
+        tex = Texture("Random4x4")
+        tex.load(img)
+        self._pipeline.stage_mgr.add_input("Noise4x4", tex)
 
     def load_default_skybox(self):
         skybox = Globals.loader.loadModel("Data/BuiltinModels/Skybox/Skybox.bam")

@@ -134,8 +134,13 @@ class CloudStage(RenderStage):
         # Globals.base.camera.get_transform(Globals.base.render))
 
     def set_shaders(self):
-        self._grid_target.set_shader(self._load_plugin_shader("InstancedQuad.vert", "GenerateClouds.frag"))
-        self._target_apply_clouds.set_shader(self._load_plugin_shader("ApplyClouds.frag"))
-        self._shade_target.set_shader(self._load_plugin_shader("InstancedQuad.vert", "ShadeClouds.frag"))
-        self._particle_target.set_shader(self._load_plugin_shader("RenderClouds.frag"))
-        # self._particle_np.set_shader(self._load_plugin_shader("CloudParticle.vert.glsl", "CloudParticle.frag.glsl"))
+        self._grid_target.set_shader(
+            self._load_plugin_shader("Shader/DefaultPostProcessInstanced.vert", "GenerateClouds.frag"))
+        self._target_apply_clouds.set_shader(
+            self._load_plugin_shader("ApplyClouds.frag"))
+        self._shade_target.set_shader(
+            self._load_plugin_shader("Shader/DefaultPostProcessInstanced.vert", "ShadeClouds.frag"))
+        self._particle_target.set_shader(
+            self._load_plugin_shader("RenderClouds.frag"))
+        # self._particle_np.set_shader(
+            # self._load_plugin_shader("CloudParticle.vert.glsl", "CloudParticle.frag.glsl"))

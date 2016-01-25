@@ -35,7 +35,7 @@ from .. import RenderStage
 class AOStage(RenderStage):
 
     required_pipes = ["GBuffer"]
-    required_inputs = []
+    required_inputs = ["Noise4x4"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "AOStage", pipeline)
@@ -83,23 +83,13 @@ class AOStage(RenderStage):
 
         self._target_merge.set_shader_input("SourceTex", self._target["color"])
 
-        self.create_noise_textures()
-
-    def create_noise_textures(self):
-        # Always generate the same random textures
-        seed(42)
-        img = PNMImage(4, 4, 3)
-        for x in range(4):
-            for y in range(4):
-                img.set_xel(x, y, random(), random(), random())
-        tex = Texture("Rand4x4")
-        tex.load(img)
-        self._target.set_shader_input("Noise4x4", tex)
-
     def set_shaders(self):
-        self._target.set_shader(self._load_plugin_shader("AOSample.vert", "AOSample.frag"))
-        self._target_upscale.set_shader(self._load_plugin_shader("AOUpscale.frag"))
-        self._target_merge.set_shader(self._load_plugin_shader("AOMerge.frag"))
+        self._target.set_shader(
+            self._load_plugin_shader("Shader/SampleHalfresInterleaved.vert", "AOSample.frag"))
+        self._target_upscale.set_shader(
+            self._load_plugin_shader("Shader/BilateralUpscale.frag"))
+        self._target_merge.set_shader(
+            self._load_plugin_shader("Shader/MergeInterleavedTarget.frag"))
 
         blur_shader = self._load_plugin_shader("AOBlur.frag")
         self._target_blur_v.set_shader(blur_shader)
