@@ -52,6 +52,7 @@ uniform sampler2DShadow ShadowAtlasPCF;
 int get_pointlight_source_offs(vec3 direction) {
     vec3 abs_dir = abs(direction);
     float max_comp = max(abs_dir.x, max(abs_dir.y, abs_dir.z));
+    // TODO: Use step(x, 0) + 1 instead of y > 0 ? 0 : 1
     if (abs_dir.x >= max_comp) return direction.x >= 0.0 ? 0 : 1;
     if (abs_dir.y >= max_comp) return direction.y >= 0.0 ? 2 : 3;
     return direction.z >= 0.0 ? 4 : 5;
@@ -99,6 +100,10 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, vec4
 
 // Filters a shadow map
 float filter_shadowmap(Material m, SourceData source, vec3 l) {
+
+    // TODO: Examine if this is faster
+    if (dot(m.normal, -l) < 0) return 0.0;
+
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);
 

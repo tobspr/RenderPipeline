@@ -86,7 +86,12 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec4 scene_color = texelFetch(ShadedScene, coord, 0);
 
-    if (sun_vector.z < 0.0) {
+    // Early out, different optimizations
+    bool early_out = is_skybox(m, MainSceneData.camera_pos);
+    early_out = early_out || sun_vector.z < 0.0;
+    early_out = early_out || dot(m.normal, sun_vector) < 0.0;
+
+    if (early_out) {
         result = scene_color;
         return;
     }
@@ -104,7 +109,7 @@ void main() {
 
     // Find lowest split in range
     const int split_count = GET_SETTING(PSSM, split_count);
-    int best_split = 999;
+    int split = 999;
     float border_bias = 1 - (1.0 / (1.0 + GET_SETTING(PSSM, border_bias)));
     border_bias *= 0.5;
 
@@ -114,24 +119,13 @@ void main() {
         if (coord.x >= border_bias && coord.x <= 1-border_bias &&
             coord.y >= border_bias && coord.y <= 1-border_bias &&
             coord.z >= 0.0 && coord.z <= 1.0) {
-            best_split = i;
+            split = i;
             break;
         }
     }
 
-    int split = best_split;
-
     // Compute the shadowing factor
-    // If we are out of the PSSM range:
-    if (split >= GET_SETTING(PSSM, split_count)) {
-
-        // If we have the skybox, just stop
-        if (is_skybox(m, MainSceneData.camera_pos)) {
-            result = scene_color;
-            return;
-        }
-
-    } else {
+    if (split < GET_SETTING(PSSM, split_count)) {
 
         // Get the MVP for the current split
         mat4 mvp = pssm_mvps[split];
