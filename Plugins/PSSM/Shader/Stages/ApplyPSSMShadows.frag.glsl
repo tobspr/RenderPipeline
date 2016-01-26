@@ -86,6 +86,9 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec4 scene_color = texelFetch(ShadedScene, coord, 0);
 
+    // Get the material data
+    Material m = unpack_material(GBuffer);
+
     // Early out, different optimizations
     bool early_out = is_skybox(m, MainSceneData.camera_pos);
     early_out = early_out || sun_vector.z < 0.0;
@@ -96,12 +99,6 @@ void main() {
         return;
     }
 
-    // Get noise vector
-    vec2 noise_vec = poisson_disk_2D_32[coord.x%4 + (coord.y%4)*4];
-
-    // Get the material data
-    Material m = unpack_material(GBuffer);
-
     // Variables to accumulate the shadows
     float shadow_factor = 1.0;
     vec3 lighting_result = vec3(0);
@@ -109,7 +106,7 @@ void main() {
 
     // Find lowest split in range
     const int split_count = GET_SETTING(PSSM, split_count);
-    int split = 999;
+    int split = 99;
     float border_bias = 1 - (1.0 / (1.0 + GET_SETTING(PSSM, border_bias)));
     border_bias *= 0.5;
 
