@@ -27,7 +27,7 @@ THE SOFTWARE.
 # This script downloads and updates the module builder.
 
 ignore = ("__init__.py LICENSE README.md config.ini "
-    "Source/ExampleClass.cpp Source/ExampleClass.h Source/ExampleClass.I").split()
+    "Source/ExampleClass.cpp Source/ExampleClass.h Source/ExampleClass.I config_module").split()
 import os
 import sys
 curr_dir = os.path.dirname(os.path.realpath(__file__)); os.chdir(curr_dir);
