@@ -91,6 +91,6 @@ class AOStage(RenderStage):
         self._target_merge.set_shader(
             self.load_plugin_shader("Shader/MergeInterleavedTarget.frag"))
 
-        blur_shader = self.load_plugin_shader("AOBlur.frag")
+        blur_shader = self.load_plugin_shader("Shader/BilateralHalfresBlur.frag")
         self._target_blur_v.set_shader(blur_shader)
         self._target_blur_h.set_shader(blur_shader)

@@ -49,7 +49,10 @@ void main() {
     coord += ivec2(quad_x, quad_y) * 2;
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
-    vec3 noise_vec = fma(texelFetch(Noise4x4, ivec2(quad_x, quad_y), 0).xyz, vec3(2), vec3(-1));
+    // vec3 noise_vec = fma(texelFetch(Noise4x4, ivec2(quad_x, quad_y), 0).xyz, vec3(2), vec3(-1));
+    vec3 noise_vec = fma(texelFetch(Noise4x4, (coord/2 + ivec2(quad_x, quad_y)) % 4, 0).xyz, vec3(2), vec3(-1));
+    // vec3 noise_vec = vec3(0, 0, 0);
+
 
     // Get material data
     Material m = unpack_material(GBuffer, texcoord);
@@ -68,14 +71,14 @@ void main() {
     // Trace diffuse cones
     vec4 accum = vec4(0);
 
-    for (int i = 0; i < 16; ++i) {
-        vec3 direction = poisson_disk_3D_16[i];
+    for (int i = 0; i < 32; ++i) {
+        vec3 direction = poisson_disk_3D_32[i];
         direction = mix(direction, noise_vec, 0.3);
         direction = normalize(direction);
         direction = faceforward(direction, direction, -m.normal);
 
         float weight = dot(m.normal, direction); // Guaranteed to be > 0
-        // weight = 1.0;
+        weight = 1.0;
         vec4 cone = trace_cone(
             voxel_coord,
             m.normal,

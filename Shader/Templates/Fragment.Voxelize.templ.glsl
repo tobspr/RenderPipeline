@@ -59,9 +59,9 @@ void main() {
         // Get sun shadow term
         vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
 
-        const float slope_bias = 1.0 * 0.05;
-        const float normal_bias =1.0 * 0.005;
-        const float fixed_bias = 0.1 * 0.001;
+        const float slope_bias =  1.0 * 0.02;
+        const float normal_bias = 1.0 * 0.005;
+        const float fixed_bias =  0.05 * 0.001;
         vec3 biased_pos = get_biased_position(
             vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
 

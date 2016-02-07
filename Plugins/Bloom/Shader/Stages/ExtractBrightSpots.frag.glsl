@@ -38,9 +38,10 @@ void main() {
     vec3 scene_color = texelFetch(SourceTex, coord, 0).xyz;
     float luma = get_luminance(scene_color);
     vec3 bloom_color = vec3(0);
-    if (luma > GET_SETTING(Bloom, minimum_luminance) * 2.0) {
+    if (luma > GET_SETTING(Bloom, minimum_luminance)) {
         bloom_color = scene_color;
         bloom_color *= GET_SETTING(Bloom, bloom_strength) * 0.008;
+        bloom_color *= 10.0;
     }
 
     #if DEBUG_MODE

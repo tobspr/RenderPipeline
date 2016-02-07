@@ -26,7 +26,7 @@ THE SOFTWARE.
 from __future__ import division
 
 from .. import *
-from panda3d.core import SamplerState
+from panda3d.core import SamplerState, LVecBase2i
 
 class VXGIStage(RenderStage):
 
@@ -64,11 +64,31 @@ class VXGIStage(RenderStage):
         self._target_merge_diff.prepare_offscreen_buffer()
         self._target_merge_diff.set_shader_input("SourceTex", self._target_diff["color"])
 
+        # Create the target which blurs the diffuse result
+        self._target_blur_v = self.make_target("VXGI:BlurV")
+        self._target_blur_v.set_half_resolution()
+        self._target_blur_v.add_color_texture(bits=16)
+        self._target_blur_v.has_color_alpha = True
+        self._target_blur_v.prepare_offscreen_buffer()
+        self._target_blur_v.set_shader_input("SourceTex", self._target_merge_diff["color"])
+
+        self._target_blur_h = self.make_target("VXGI:BlurH")
+        self._target_blur_h.set_half_resolution()
+        self._target_blur_h.add_color_texture(bits=16)
+        self._target_blur_h.has_color_alpha = True
+        self._target_blur_h.prepare_offscreen_buffer()
+        self._target_blur_h.set_shader_input("SourceTex", self._target_blur_v["color"])
+
        # Create the target which bilateral upsamples the diffuse target
         self._target_upscale_diff = self.make_target("VXGI:UpscaleDiffuse")
         self._target_upscale_diff.add_color_texture(bits=16)
         self._target_upscale_diff.prepare_offscreen_buffer()
-        self._target_upscale_diff.set_shader_input("SourceTex", self._target_merge_diff["color"])
+        self._target_upscale_diff.set_shader_input("SourceTex", self._target_blur_h["color"])
+
+        # Set blur parameters
+        self._target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
+        self._target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
+
 
         # Make the ambient stage use the GI result
         ambient_stage = get_internal_stage("AmbientStage")
@@ -84,3 +104,7 @@ class VXGIStage(RenderStage):
             self.load_plugin_shader("Shader/MergeInterleavedTarget.frag"))
         self._target_upscale_diff.set_shader(
             self.load_plugin_shader("Shader/BilateralUpscale.frag"))
+
+        blur_shader = self.load_plugin_shader("Shader/BilateralHalfresBlur.frag")
+        self._target_blur_v.set_shader(blur_shader)
+        self._target_blur_h.set_shader(blur_shader)
