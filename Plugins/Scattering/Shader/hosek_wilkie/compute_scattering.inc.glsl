@@ -26,7 +26,6 @@
 
 #pragma once
 
-#pragma include "Includes/Configuration.inc.glsl"
 
 vec3 sun_vector = sun_azimuth_to_angle(
         TimeOfDay.Scattering.sun_azimuth,

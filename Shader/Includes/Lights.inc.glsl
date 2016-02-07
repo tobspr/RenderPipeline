@@ -26,7 +26,6 @@
 
 #pragma once
 
-#pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/Structures/Material.struct.glsl"
 #pragma include "Includes/BRDF.inc.glsl"
 #pragma include "Includes/IESLighting.inc.glsl"

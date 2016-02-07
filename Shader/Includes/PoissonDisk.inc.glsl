@@ -26,8 +26,6 @@
 
 #pragma once
 
-#pragma include "Includes/Configuration.inc.glsl"
-
 /*
 
 2D Poisson Disks

@@ -26,8 +26,6 @@
 
 #pragma once
 
-#pragma include "Includes/Configuration.inc.glsl"
-
 // From:
 // http://www.trentreed.net/blog/physically-based-shading-and-image-based-lighting/
 vec2 hammersley(uint i, uint N)

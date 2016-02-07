@@ -26,7 +26,6 @@
 
 #pragma once
 
-#pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/ColorSpaces/ColorSpaces.inc.glsl"
 
 /*

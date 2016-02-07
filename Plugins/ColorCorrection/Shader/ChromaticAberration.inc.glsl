@@ -28,9 +28,6 @@
 
 #pragma optionNV (unroll all)
 
-#pragma include "Includes/Configuration.inc.glsl"
-
-
 vec3 do_chromatic_aberration(sampler2D colortex, vec2 texcoord, float factor) {
 
     vec2 mid_coord = texcoord * 2.0 - 1.0;

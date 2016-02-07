@@ -26,8 +26,6 @@
 
 #pragma once
 
-#pragma include "Includes/Configuration.inc.glsl"
-
 // This file just includes the scattering kernel based on the selected scattering
 // method
 

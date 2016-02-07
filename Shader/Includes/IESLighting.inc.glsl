@@ -26,8 +26,6 @@
 
 #pragma once
 
-#pragma include "Includes/Configuration.inc.glsl"
-
 uniform sampler3D IESDatasetTex;
 
 // Scale all ies values, since they look way too dark otherwise.
