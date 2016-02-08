@@ -31,7 +31,6 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "Includes/Configuration.inc.glsl"
 #pragma include "Includes/GBuffer.inc.glsl"
-#pragma include "Includes/PositionReconstruction.inc.glsl"
 #pragma include "Includes/GaussianWeights.inc.glsl"
 
 uniform ivec2 blur_direction;
