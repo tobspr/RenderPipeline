@@ -51,11 +51,11 @@ You can find the documentation about the C++ modules here: <a target="_blank" hr
 **Snowy terrain using the Pipeline and P3DFramework:**
 <img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
 
-**Same trees, but at a different time of day:**
+**Different time of day:**
 <img src="https://img3.picload.org/image/pwrgpdc/289.png" />
 
 **Plugin and Time of Day editor:**
-<img src="http://fs5.directupload.net/images/151122/28c2itvj.png" />
+<img src="http://i.imgur.com/lTrpAYy.png" />
 
 You can find further screenshots (mostly of experimental features) at my <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa" target="_blank">dropbox</a>.
 
