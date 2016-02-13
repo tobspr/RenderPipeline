@@ -106,15 +106,6 @@ def extract_gz_files(pth):
         elif os.path.isdir(fullpath):
             extract_gz_files(fullpath)
 
-def hint_repo_not_complete(missing):
-    """ Shows a hint that the repository is not complete """
-    print("Missing the", missing, "submodule!")
-    print("Please checkout the whole repository, and also make sure you")
-    print("did 'git submodule init' and 'git submodule update' if you use")
-    print("a command line client! Notice that the 'Download ZIP' on github")
-    print("does *NOT* include submodules. ")
-    error(missing + " submodule missing")
-
 def check_file_exists(fpath):
     """ Checks if the given file exists """
     return os.path.isfile(os.path.join(SETUP_DIR, fpath))
