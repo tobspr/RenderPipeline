@@ -37,7 +37,8 @@ class VXGIStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "VXGIStage", pipeline)
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {
             "VXGISpecular": self._target_spec["color"],
             "VXGIDiffuse": self._target_upscale_diff["color"]

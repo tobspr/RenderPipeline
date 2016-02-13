@@ -164,7 +164,7 @@ class CommonResources(BaseManager):
         random.seed(42)
         img = PNMImage(4, 4, 3)
         for x in range(16):
-            img.set_xel(x%4, x//4, random.random(), random.random(), random.random())
+            img.set_xel(x % 4, x // 4, random.random(), random.random(), random.random())
         tex = Texture("Random4x4")
         tex.load(img)
         self._pipeline.stage_mgr.add_input("Noise4x4", tex)

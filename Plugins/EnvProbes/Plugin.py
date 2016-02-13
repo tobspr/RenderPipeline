@@ -23,40 +23,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  	 	    	 	
 """
-from __future__ import division
-from six.moves import range
-
+# Load the plugin api
 from .. import *
-from panda3d.core import SamplerState
 
-class PSSMDistShadowStage(RenderStage):
+# Load your additional plugin classes here, if required
 
-    """ This stage generates a depth map using Variance Shadow Maps for very
-    distant objects. """
+class Plugin(BasePlugin):
 
-    required_inputs = []
+    @PluginHook("on_stage_setup")
+    def setup_stages(self):
+        pass
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "PSSMDistShadowStage", pipeline)
-        self._resolution = 4096
+    @PluginHook("on_pipeline_created")
+    def on_created(self):
+        pass
 
-    @property
-    def produced_pipes(self):
-        return {
-            "PSSMVSMShadowMap": self._target['depth'],
-        }
-
-    def set_resolution(self, res):
-        self._resolution = res
-
-    def create(self):
-        self._target = self.make_target("PSSMDistShadowMap")
-        self._target.set_source(None, Globals.base.win)
-        self._target.size = self._resolution
-        self._target.add_depth_texture(bits=32)
-        self._target.create_overlay_quad = False
-        self._target.color_write = False
-        self._target.prepare_scene_render()
-
-    def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)

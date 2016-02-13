@@ -36,7 +36,8 @@ class PSSMStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "PSSMStage", pipeline)
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {"ShadedScene": self._target['color']}
 
     def create(self):

@@ -41,7 +41,8 @@ class ShadowStage(RenderStage):
     def set_size(self, size):
         self._size = size
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {
             "ShadowAtlas": self._target["depth"],
             "ShadowAtlasPCF": (self._target['depth'], self.make_pcf_state()),

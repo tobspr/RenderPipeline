@@ -82,7 +82,12 @@ void TagStateManager::apply_state(StateContainer& container, NodePath np, Shader
 
     // Construct the render state
     CPT(RenderState) state = RenderState::make_empty();
-    state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
+
+    // Disable color write for all stages except the environment container
+    // TODO: Could write an operator== instead of comparing like this
+    if (&container != &_envmap_container) {
+        state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
+    }
     state = state->set_attrib(ShaderAttrib::make(shader, sort), sort);
 
     // Emit a warning if we override an existing state

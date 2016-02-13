@@ -89,6 +89,51 @@ class RenderPipeline(PipelineExtensions, DebugObject):
         object if no settings have been loaded so far. """
         return self._settings[setting_name]
 
+    def get_settings(self):
+        """ Returns a handle to the settings instance, which can be used to
+        query settings """
+        settings = property(get_settings)
+
+    settings = property(get_settings)
+
+    @property
+    def mount_mgr(self):
+        """ Returns a handle to the mount manager. This can be used for setting
+        the base path and also modifying the temp path. See the MountManager
+        documentation for further information. """
+        return self._mount_mgr
+
+    @property
+    def stage_mgr(self):
+        """ Returns a handle to the stage manager object. The stage manager
+        manages all RenderStages, shader inputs and defines, and also writing
+        of the shader auto config."""
+        return self._stage_mgr
+
+    @property
+    def plugin_mgr(self):
+        """ Returns a handle to the plugin manager, this can be used to trigger
+        hooks. It also stores information about the loaded plugins. """
+        return self._plugin_mgr
+
+    @property
+    def light_mgr(self):
+        """ Returns a handle to the light manager, this usually should not be used
+        by the user, instead use add_light and remove_light. """
+        return self._light_mgr
+
+    @property
+    def tag_mgr(self):
+        """ Returns a handle to the tag-state manager, which can be used to register
+        new cameras """
+        return self._tag_mgr
+
+    @property
+    def daytime_mgr(self):
+        """ Returns a handle to the DayTime manager, which can be used to control
+        the time of day """
+        return self._daytime_mgr
+
     def reload_shaders(self):
         """ Reloads all shaders """
         self.debug("Reloading shaders ..")
@@ -297,41 +342,3 @@ class RenderPipeline(PipelineExtensions, DebugObject):
         """ Sets the default camera settings """
         self._showbase.camLens.set_near_far(0.1, 70000)
         self._showbase.camLens.set_fov(90)
-
-    def _get_mount_mgr(self):
-        """ Returns a handle to the mount manager. This can be used for setting
-        the base path and also modifying the temp path. See the MountManager
-        documentation for further information. """
-        return self._mount_mgr
-
-    def _get_stage_mgr(self):
-        """ Returns a handle to the stage manager object. The stage manager
-        manages all RenderStages, shader inputs and defines, and also writing
-        of the shader auto config."""
-        return self._stage_mgr
-
-    def _get_plugin_mgr(self):
-        """ Returns a handle to the plugin manager, this can be used to trigger
-        hooks. It also stores information about the loaded plugins. """
-        return self._plugin_mgr
-
-    def _get_light_mgr(self):
-        """ Returns a handle to the light manager, this usually should not be used
-        by the user, instead use add_light and remove_light. """
-        return self._light_mgr
-
-    def _get_tag_mgr(self):
-        """ Returns a handle to the tag state manager """
-        return self._tag_mgr
-
-    def _get_daytime_mgr(self):
-        """ Returns a handle to the DayTime manager """
-        return self._daytime_mgr
-
-    # Manager properties
-    mount_mgr = property(_get_mount_mgr)
-    stage_mgr = property(_get_stage_mgr)
-    plugin_mgr = property(_get_plugin_mgr)
-    light_mgr = property(_get_light_mgr)
-    tag_mgr = property(_get_tag_mgr)
-    daytime_mgr = property(_get_daytime_mgr)

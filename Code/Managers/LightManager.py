@@ -120,7 +120,7 @@ class LightManager(BaseManager):
         self._cmd_queue.register_input("SourceData", self._img_source_data)
 
         # Register the command list
-        self._internal_mgr.set_command_list(self._cmd_queue.get_cmd_list())
+        self._internal_mgr.set_command_list(self._cmd_queue.command_list)
 
     def _init_shadow_manager(self):
         """ Inits the shadow manager """

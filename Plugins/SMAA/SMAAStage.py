@@ -62,8 +62,8 @@ class SMAAStage(RenderStage):
         self._resolve_target.set_shader_input("CurrentTex", self._neighbor_targets[idx]["color"])
         self._resolve_target.set_shader_input("LastTex", self._neighbor_targets[1-idx]["color"])
 
-    def get_produced_pipes(self):
-
+    @property
+    def produced_pipes(self):
         if self._reprojection:
             out_target = self._resolve_target["color"]
         else:

@@ -39,12 +39,14 @@ class CloudStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "CloudStage", pipeline)
         self._voxel_res_xy = 256
-        self._voxel_res_z = 16
+        self._voxel_res_z = 32
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {"ShadedScene": self._target_apply_clouds["color"]}
 
-    def get_produced_defines(self):
+    @property
+    def produced_defines(self):
         return {
             "CLOUD_RES_XY": self._voxel_res_xy,
             "CLOUD_RES_Z": self._voxel_res_z

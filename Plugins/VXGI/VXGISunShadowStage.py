@@ -43,10 +43,12 @@ class VXGISunShadowStage(RenderStage):
         self._sun_vector = Vec3(0, 0, 1)
         self._pta_mvp = PTAMat4.empty_array(1)
 
-    def get_produced_inputs(self):
+    @property
+    def produced_inputs(self):
         return {"VXGISunShadowMVP": self._pta_mvp}
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {"VXGISunShadowMap": (self._target['depth'], self.make_pcf_state()) }
 
     def make_pcf_state(self):

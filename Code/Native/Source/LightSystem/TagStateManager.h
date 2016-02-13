@@ -56,9 +56,11 @@ class TagStateManager {
         inline static BitMask32 get_gbuffer_mask();
         inline static BitMask32 get_voxelize_mask();
         inline static BitMask32 get_shadow_mask();
+        inline static BitMask32 get_envmap_mask();
 
         inline void apply_shadow_state(NodePath np, Shader* shader, const string &name, int sort);
         inline void apply_voxelize_state(NodePath np, Shader* shader, const string &name, int sort);
+        inline void apply_envmap_state(NodePath np, Shader* shader, const string &name, int sort);
         void cleanup_states();
 
         inline void register_shadow_camera(Camera* source);
@@ -66,6 +68,9 @@ class TagStateManager {
 
         inline void register_voxelize_camera(Camera* source);
         inline void unregister_voxelize_camera(Camera* source);
+
+        inline void register_envmap_camera(Camera* source);
+        inline void unregister_envmap_camera(Camera* source);
 
     private:
 
@@ -87,6 +92,7 @@ class TagStateManager {
 
         StateContainer _shadow_container;
         StateContainer _voxelize_container;
+        StateContainer _envmap_container;
 
         NodePath _main_cam_node;
 };

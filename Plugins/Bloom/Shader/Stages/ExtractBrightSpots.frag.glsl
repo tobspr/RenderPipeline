@@ -41,7 +41,7 @@ void main() {
     if (luma > GET_SETTING(Bloom, minimum_luminance)) {
         bloom_color = scene_color;
         bloom_color *= GET_SETTING(Bloom, bloom_strength) * 0.008;
-        bloom_color *= 10.0;
+        bloom_color *= 2.0;
     }
 
     #if DEBUG_MODE

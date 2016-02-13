@@ -55,6 +55,16 @@ inline BitMask32 TagStateManager::get_voxelize_mask() {
 }
 
 /**
+ * @brief Returns the bitmask used for environment maps.
+ * @details This returns the bitmask which will be used when rendering environment
+ *   cubemaps.
+ * @return Environment bitmask
+ */
+inline BitMask32 TagStateManager::get_envmap_mask() {
+    return BitMask32::bit(4);
+}
+
+/**
  * @brief Registers a new camera which renders shadows
  * @details This registers a new camera which will be used to render shadows
  *   somewhere else. The TagStateManager will keep track of the camera and
@@ -106,6 +116,30 @@ inline void TagStateManager::unregister_voxelize_camera(Camera* source) {
     unregister_camera(_voxelize_container, source);
 }
 
+/**
+ * @brief Registers a new camera for environment map
+ * @details This registers a new camera which will be used when rendering environment
+ *   map. The TagStateManager will keep track of the camera and applies all registered
+ *   tates onto the camera with Camera::set_tag_state.
+ *   It also applies the envmap camera mask (TagStateManager::get_envmap_mask)
+ *   to the camera.
+ *
+ * @param source Camera which will be used to render shadows
+ */
+inline void TagStateManager::register_envmap_camera(Camera* source) {
+    register_camera(_envmap_container, source);
+}
+
+/**
+ * @brief Unregisters a camera from the list of environment map cameras
+ * @details This unregisters a camera from the list of environment map cameras. It also
+ *   resets all tag states of the camera, and also its initial state.
+ *
+ * @param source Camera to unregister
+ */
+inline void TagStateManager::unregister_envmap_camera(Camera* source) {
+    unregister_camera(_envmap_container, source);
+}
 
 /**
  * @brief Applies a given shadow state to a NodePath
@@ -137,4 +171,20 @@ inline void TagStateManager::apply_shadow_state(NodePath np, Shader* shader,
 inline void TagStateManager::apply_voxelize_state(NodePath np, Shader* shader,
                                                   const string &name, int sort) {
     apply_state(_voxelize_container, np, shader, name, sort);
+}
+
+/**
+ * @brief Applies a given environment state to a NodePath
+ * @details This applies a shader to the given NodePath which is used when the
+ *   NodePath is rendered by any registered environment camera to render an
+ *   environment map.
+ *
+ * @param np The nodepath to apply the shader to
+ * @param shader A handle to the shader to apply
+ * @param name Name of the state, should be a unique identifier
+ * @param sort Determines the sort with which the shader will be applied.
+ */
+inline void TagStateManager::apply_envmap_state(NodePath np, Shader* shader,
+                                                  const string &name, int sort) {
+    apply_state(_envmap_container, np, shader, name, sort);
 }

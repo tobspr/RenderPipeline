@@ -73,7 +73,7 @@ class DayTimeInterface(DebugObject):
 
     def _load_control_points(self, control_points):
         """ Loads a given set of control points into the curves """
-        available_plugins = self._interface.get_available_plugins()
+        available_plugins = self._interface.available_plugins
 
         # When there are no points, the object will be just none instead of an
         # empty dict

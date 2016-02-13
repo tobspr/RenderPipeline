@@ -103,7 +103,7 @@ class PipeViewer(DraggableWindow):
             BetterOnscreenText(text=str(stage.get_name().replace("Stage", "")),
                                parent=node, x=20, y=25, size=15)
 
-            for output_pipe, pipe_tex in iteritems(stage.get_produced_pipes()):
+            for output_pipe, pipe_tex in iteritems(stage.produced_pipes):
                 pipe_idx = 0
                 r, g, b = rgb_from_string(output_pipe)
                 if output_pipe in current_pipes:
@@ -166,7 +166,7 @@ class PipeViewer(DraggableWindow):
                         y=130 + pipe_idx * pipe_height, color=Vec3(0.2),
                         size=12, align="center")
 
-            for input_pipe in stage.get_required_pipes():
+            for input_pipe in stage.required_pipes:
                 idx = current_pipes.index(input_pipe)
                 r, g, b = rgb_from_string(input_pipe)
                 DirectFrame(parent=node, frameSize=(0, 10, 40, -40),

@@ -45,7 +45,8 @@ class CollectUsedCellsStage(RenderStage):
         """ Sets the cell tile size """
         self._tile_amount = tile_amount
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {
             "CellListBuffer": self._cell_list_buffer,
             "CellIndices": self._cell_index_buffer,

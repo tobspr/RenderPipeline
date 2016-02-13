@@ -69,10 +69,12 @@ class VoxelizationStage(RenderStage):
         self._pta_next_grid_pos = PTALVecBase3.empty_array(1)
         self._pta_grid_pos = PTALVecBase3.empty_array(1)
 
-    def get_produced_inputs(self):
+    @property
+    def produced_inputs(self):
         return {"voxelGridPosition": self._pta_grid_pos}
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {"SceneVoxels": self._voxel_grid}
 
     def create(self):

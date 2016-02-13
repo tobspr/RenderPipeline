@@ -50,10 +50,12 @@ class CullLightsStage(RenderStage):
         """ Sets the cell tile size """
         self._tile_amount = tile_amount
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {"PerCellLights": self._per_cell_lights}
 
-    def get_produced_defines(self):
+    @property
+    def produced_defines(self):
         return {
             "LC_SHADE_SLICES": self._num_rows,
             "MAX_LIGHTS_PER_CELL": self._max_lights_per_cell

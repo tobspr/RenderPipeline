@@ -166,7 +166,7 @@ class OnscreenDebugger(BaseManager):
         text += "  |  {:4d} commands  |  {:6d} lights  |  {:5d} shadow sources"
         self._debug_lines[1].set_text(text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
-            self._pipeline.light_mgr.get_cmd_queue().get_num_processed_commands(),
+            self._pipeline.light_mgr.get_cmd_queue().num_processed_commands,
             self._pipeline.light_mgr.get_num_lights(),
             self._pipeline.light_mgr.get_num_shadow_sources(),
             ))

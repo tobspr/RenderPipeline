@@ -32,7 +32,8 @@ class GPUCommandList(object):
     def add_command(self, cmd):
         self._commands.append(cmd)
 
-    def get_num_commands(self):
+    @property
+    def num_commands(self):
         return len(self._commands)
 
     def write_commands_to(self, dest, limit=32):

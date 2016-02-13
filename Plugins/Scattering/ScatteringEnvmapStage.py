@@ -40,7 +40,8 @@ class ScatteringEnvmapStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ScatteringEnvmapStage", pipeline)
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {
             "ScatteringIBLDiffuse": self._filter.diffuse_cubemap,
             "ScatteringIBLSpecular": self._filter.specular_cubemap,

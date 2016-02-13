@@ -41,7 +41,8 @@ class DownscaleZStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "DownscaleZStage", pipeline)
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {"DownscaledDepth": self._depth_storage}
 
     def create(self):

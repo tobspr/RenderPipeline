@@ -89,7 +89,7 @@ class StageManager(BaseManager):
 
     def add_stage(self, stage):
         """ Adds a new stage """
-        if stage.get_stage_id() not in self._STAGE_ORDER:
+        if stage.stage_id not in self._STAGE_ORDER:
             self.error("They stage type", stage.get_name(),
                        "is not registered yet! Please add it to the StageManager!")
             return
@@ -148,13 +148,11 @@ class StageManager(BaseManager):
         for stage in to_remove:
             self._stages.remove(stage)
 
-        # Sort stages
-        self._stages.sort(key=lambda stage: self._STAGE_ORDER.index(
-            stage.get_stage_id()))
+        self._stages.sort(key=lambda stage: self._STAGE_ORDER.index(stage.stage_id))
 
     def _bind_pipes_to_stage(self, stage):
         """ Sets all required pipes on a stage """
-        for pipe in stage.get_required_pipes():
+        for pipe in stage.required_pipes:
             if pipe in self._ubos:
                 self._ubos[pipe].bind_to(stage)
                 continue
@@ -191,7 +189,7 @@ class StageManager(BaseManager):
         common_inputs = ["mainCam", "mainRender", "MainSceneData", "TimeOfDay"]
 
         # Check if all inputs are available, and set them
-        for input_binding in stage.get_required_inputs() + common_inputs:
+        for input_binding in stage.required_inputs + common_inputs:
             if input_binding not in self._inputs and \
                input_binding not in self._ubos:
                 self.error("Input", input_binding, "is missing for", stage)
@@ -211,20 +209,19 @@ class StageManager(BaseManager):
         stage, so they can be used by later stages. """
 
         # Register all the new pipes, inputs and defines
-        for pipe_name, pipe_data in iteritems(stage.get_produced_pipes()):
-            # Check for UBO's
+        for pipe_name, pipe_data in iteritems(stage.produced_pipes):
             if isinstance(pipe_data, BaseUBO):
                 self._ubos[pipe_name] = pipe_data
                 continue
 
             self._pipes[pipe_name] = pipe_data
 
-        for define_name, data in iteritems(stage.get_produced_defines()):
+        for define_name, data in iteritems(stage.produced_defines):
             if define_name in self._defines:
                 self.warn("Stage", stage, "overrides define", define_name)
             self._defines[define_name] = data
 
-        for input_name, data in iteritems(stage.get_produced_inputs()):
+        for input_name, data in iteritems(stage.produced_inputs):
             if input_name in self._inputs:
                 self.warn("Stage", stage, "overrides input", input_name)
 

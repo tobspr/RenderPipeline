@@ -40,7 +40,7 @@ class VirtualPluginInterface(BasePluginInterface):
         used to access plugin data outside of the pipeline """
         self.load_plugin_config()
 
-        plugin_ids = self.get_available_plugins()
+        plugin_ids = self.available_plugins
 
         for plugin in plugin_ids:
 

@@ -46,8 +46,9 @@ class GPUCommandList {
         size_t get_num_commands();
         size_t write_commands_to(const PTA_uchar &dest, size_t limit = 32);
 
-    protected:
+        MAKE_PROPERTY(num_commands, get_num_commands);
 
+    protected:
         queue<GPUCommand> _commands;
 };
 

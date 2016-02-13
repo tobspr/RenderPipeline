@@ -78,6 +78,8 @@ class BasePluginInterface(DebugObject):
                 plugins.append(fname)
         return plugins
 
+    available_plugins = property(get_available_plugins)
+
     def get_overrides(self):
         """ Returns a handle to the dictionary of overrides, which store the
         setting-values of the plugins """

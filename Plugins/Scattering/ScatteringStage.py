@@ -40,7 +40,8 @@ class ScatteringStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ScatteringStage", pipeline)
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {
             "ShadedScene": self._target['color'],
         }

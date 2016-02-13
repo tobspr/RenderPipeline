@@ -24,18 +24,11 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-# Disable warning from pylint about the global attributes of the render stages,
-# which may or may not be specified by subclasses.
-# pylint: disable=E1101
-
-import os
-
 from panda3d.core import Shader
 
 from .Util.DebugObject import DebugObject
 from .Util.CubemapFilter import CubemapFilter
 from .RenderTarget import RenderTarget
-
 
 class RenderStage(DebugObject):
 
@@ -48,23 +41,22 @@ class RenderStage(DebugObject):
     Using a pipe system ensures that new techniques can be inserted easily,
     without the other techniques even being aware of them """
 
+    required_inputs = []
+    required_pipes = []
+
+    produced_inputs = {}
+    produced_pipes = {}
+    produced_defines = {}
+
     @classmethod
     def add_input_requirement(cls, input_name):
         """ Adds a new input to the list of required inputs for this stage """
-        if not hasattr(cls, "required_inputs"):
-            DebugObject.global_warn("RenderStage", "The stage " + str(cls) +\
-                " has no static input list! Can not call add_input_requirement.")
-            return
         if input_name not in cls.required_inputs:
             cls.required_inputs.append(input_name)
 
     @classmethod
     def add_pipe_requirement(cls, pipe_name):
         """ Adds a new pipe to the list of required pipes for this stage """
-        if not hasattr(cls, "required_pipes"):
-            DebugObject.global_warn("RenderStage", "The stage " + str(cls) +\
-                " has no static input pipe list! Can not call add_pipe_requirement.")
-            return
         if pipe_name not in cls.required_pipes:
             cls.required_pipes.append(pipe_name)
 
@@ -76,7 +68,8 @@ class RenderStage(DebugObject):
 
     @classmethod
     def is_enabled(cls):
-        """ Returns whether the class is enabled or disabled """
+        """ Returns whether the stage is enabled or disabled. This affects every
+        instance of the stage. """
         if hasattr(cls, "disabled") and cls.disabled:
             return False
         return True
@@ -88,41 +81,10 @@ class RenderStage(DebugObject):
         self._pipeline = pipeline
         self._targets = {}
 
-    def get_stage_id(self):
+    @property
+    def stage_id(self):
         """ Returns the id of the stage """
         return self._stage_id
-
-    def get_required_inputs(self):
-        """ This method should return a list of shader inputs which are required
-        for this stage """
-        if hasattr(self, "required_inputs"):
-            return self.required_inputs
-        return []
-
-    def get_required_pipes(self):
-        """ This method should return which pipes are required for this stage.
-        The key specifies the name under they will be available in the shader,
-        while the value specifies the name of the pipe """
-        if hasattr(self, "required_pipes"):
-            return self.required_pipes
-        return []
-
-    def get_produced_pipes(self):
-        """ This method should return which pipes this pass produces, the key
-        specifies the name of the pipe, the value should be a handle to a
-        Texture() """
-        return {}
-
-    def get_produced_inputs(self):
-        """ This method should return all shader inputs which the pass returns
-        as a dictionary, while the key specifies the name of the shader input
-        and the value contains the input """
-        return {}
-
-    def get_produced_defines(self):
-        """ This method should return a dictionary of all the defines which the
-        pass produces """
-        return {}
 
     def create(self):
         """ This method should setup the stage and create the pipes """
@@ -156,23 +118,23 @@ class RenderStage(DebugObject):
 
     def make_target(self, name):
         """ Creates a new render target with the given name and attachs it to the
-        list of targets """
+        list of targets, then returns it """
         if name in self._targets:
             self.warn("Overriding existing target: " + name)
         self._targets[name] = RenderTarget(name)
         return self._targets[name]
 
-    def _get_shader_handle(self, path, *args):
+    def __get_shader_handle(self, path, *args):
         """ Returns a handle to a Shader object, containing all sources passed
         as arguments. The path argument will be used to locate shaders if no
-        absolute path is given """
+        absolute path is given. This is the internal method used in load_shader
+        and load_plugin_shader. """
         assert len(args) > 0 and len(args) <= 3
         path_args = []
 
         for source in args:
             if "$$PipelineTemp" not in source and "Shader/" not in source:
                 path_args.append(path.format(source))
-                # path_args.append(os.path.join(plugin_loc, source + ".glsl"))
             else:
                 path_args.append(source + ".glsl")
 
@@ -181,7 +143,7 @@ class RenderStage(DebugObject):
         if len(args) == 1:
             path_args = ["Shader/DefaultPostProcess.vert.glsl"] + path_args
 
-        return Shader.load(Shader.SLGLSL, *path_args)
+        return Shader.load(Shader.SL_GLSL, *path_args)
 
     def load_shader(self, *args):
         """ Loads a shader from the given args. If only one argument is passed,
@@ -189,16 +151,13 @@ class RenderStage(DebugObject):
         passed, the first argument should be the vertex shader and the second
         argument should be the fragment shader. If three arguments are passed,
         the order should be vertex, fragment, geometry """
-        return self._get_shader_handle("Shader/{0}.glsl", *args)
+        return self.__get_shader_handle("Shader/{0}.glsl", *args)
 
     def load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful
         for RenderStages created by plugins. For a description of the arguments,
         see the load_shader function. """
-
         # The __module__ contains something like Plugins.XXX.YYY
-        # We want XXX so we take the second parameter
         plugin_name = str(self.__class__.__module__).split(".")[1]
-
         shader_path = "Plugins/" + plugin_name + "/Shader/Stages/{0}.glsl"
-        return self._get_shader_handle(shader_path, *args)
+        return self.__get_shader_handle(shader_path, *args)

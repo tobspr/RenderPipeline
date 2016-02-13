@@ -41,7 +41,8 @@ class PSSMShadowStage(RenderStage):
         self._split_resolution = 512
         self._split_regions = []
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {
             "PSSMShadowAtlas": self._target['depth'],
             "PSSMShadowAtlasPCF": (self._target['depth'], self.make_pcf_state()),

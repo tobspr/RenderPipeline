@@ -38,7 +38,8 @@ class BloomStage(RenderStage):
         RenderStage.__init__(self, "BloomStage", pipeline)
         self._num_mips = 6
 
-    def get_produced_pipes(self):
+    @property
+    def produced_pipes(self):
         return {"ShadedScene": self._upsample_targets[-1]["color"]}
 
     def set_num_mips(self, mip_count):

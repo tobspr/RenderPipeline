@@ -52,18 +52,21 @@ class GPUCommandQueue(DebugObject):
         """ Clears all commands currently being in the queue """
         raise NotImplementedError()
 
-    def get_cmd_list(self):
+    @property
+    def command_list(self):
         """ Returns a handle to the command list """
         return self._command_list
 
-    def get_num_queued_commands(self):
+    @property
+    def num_queued_commands(self):
         """ Returns the amount of queued commands, which are waiting to get
         executed on the gpu. This might be zero a lot of the time, because the
         GPUCommandList clears the queue after executing, so you have to call
         this after work was submitted. """
-        return self._command_list.get_num_commands()
+        return self._command_list.num_commands
 
-    def get_num_processed_commands(self):
+    @property
+    def num_processed_commands(self):
         """ Returns the amount of commands processed the last time when the
         command queue was updated """
         return self._pta_num_commands[0]
