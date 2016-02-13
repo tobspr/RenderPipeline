@@ -1,0 +1,14 @@
+
+# Default effect file, used for all objects if not overridden
+
+vertex:
+    template: default
+
+gbuffer:
+    template: default
+
+shadows:
+    template: default
+
+voxelize:
+    template: default

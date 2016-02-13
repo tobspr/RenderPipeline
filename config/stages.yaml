@@ -1,0 +1,31 @@
+
+# This file controls the order of all render stages.
+# Usually you do not have to modify this, except if you are adding new plugins.
+# If you move stages, you should know what you do.
+
+global_stage_order:
+  - PSSMShadowStage
+  - PSSMDistShadowStage
+  - VXGISunShadowStage
+  - VoxelizationStage
+  - ScatteringEnvmapStage
+  - GBufferStage
+  - ShadowStage
+  - DownscaleZStage
+  - FlagUsedCellsStage
+  - CollectUsedCellsStage
+  - CullLightsStage
+  - AOStage
+  - ApplyLightsStage
+  - PSSMStage
+  - ScatteringStage
+  - VXGIStage
+  - AmbientStage
+  - SSLRStage
+  - CloudStage
+  - SMAAStage
+  - AutoExposureStage
+  - BloomStage
+  - FinalStage
+  - ColorCorrectionStage
+  - UpdatePreviousPipesStage
