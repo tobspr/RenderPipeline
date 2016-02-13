@@ -39,8 +39,8 @@ uniform sampler2D CloudNoiseTex;
 
 float cloud_weight(float height) {
     // Clouds get less at higher distances. Also decrease them at the bottom
-    const int border_pow = 1 * 2 + 1;
-    const float decay = GET_SETTING(Clouds, cloud_decay) * 3.0;
+    const int border_pow = 1 * 1 + 1;
+    const float decay = GET_SETTING(Clouds, cloud_decay) * 7.0;
     // Analytical formula, see wolframalpha: "-(2^15) * abs(x-0.5)^15 + 1 - 0.8*(x^2) from 0 to 1"
     return max(0, -pow(2, border_pow) * pow(abs(height - 0.5), border_pow) + 1.0 - decay * pow(height, 4.0));
 }
@@ -57,27 +57,28 @@ void main() {
     float cloud_factor = 0.0;
 
     // Stratus
-    float stratus = fbm(cloud_coord + 0.7 + wind_offset * 0.7, 3.0) - 0.7;
+    float stratus = fbm(cloud_coord + 0.7 + wind_offset * 0.7, 2.0) - 0.3;
     stratus = max(0, stratus);
     // stratus *= worley_noise(cloud_coord + wind_offset.xy * 1.0, 32, 0.0);
-    stratus *= 1 - min(1.0, 3.5 * cloud_coord.z);
-    stratus *= 4.0;
+    // stratus *= 1 - min(1.0, 3.5 * cloud_coord.z);
+    stratus *= 1.0;
     cloud_factor += max(0, stratus) * TimeOfDay.Clouds.stratus_amount;
 
     // Cumulus
-    float cumulus = worley_noise(cloud_coord.xy + wind_offset.xy * 0.7, 4, 0.8);
-    cumulus *= fbm(cloud_coord + wind_offset * 0.6, 5.0) - 0.5;
-    cumulus *= 1.0 - min(1.0, 0.3*(1-cloud_coord.z) );
-    cumulus *= 2.0;
+    float cumulus = worley_noise(cloud_coord.xy + 0.5 + wind_offset.xy * 0.7, 16, 0.5);
+    cumulus *= fbm(cloud_coord + wind_offset * 0.6, 4.0) - 0.35;
+    // cumulus *= 1.0 - min(1.0, 0.3*(1-cloud_coord.z) );
+    // cumulus *= pow(cloud_coord.z, 2.r0);
+    cumulus *= 1.0;
     cloud_factor += max(0, cumulus) * TimeOfDay.Clouds.cumulus_amount;
 
     // Soft
-    float soft = fbm(cloud_coord + wind_offset * 0.5, 6.0) - 0.55;
-    soft *= 2.0 * distance(cloud_coord.z, 0.5);
+    float soft = fbm(cloud_coord + wind_offset * 0.5, 6.0) - 0.2;
+    soft *= 4.0 * pow(distance(cloud_coord.z, 0.5), 3.0);
     cloud_factor += max(0, soft) * TimeOfDay.Clouds.soft_amount;
 
     cloud_factor *= cloud_weight(cloud_coord.z);
-    cloud_factor *= 2.0;
+    cloud_factor *= 0.9;
     cloud_factor *= TimeOfDay.Clouds.cloud_intensity;
     cloud_factor = saturate(cloud_factor);
     imageStore(CloudVoxels, coord, vec4(cloud_factor));

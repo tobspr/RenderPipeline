@@ -49,7 +49,7 @@ const float cloud_end = earth_radius + GET_SETTING(Clouds, cloud_end) * KM;
 
 vec2 get_cloud_coord(vec3 pos) {
     vec2 xy_coord = pos.xy / (cloud_end - cloud_start) * float(CLOUD_RES_Z) / float(CLOUD_RES_XY);
-    xy_coord /= max(1.0, 0.5 + 0.5 * length(xy_coord));
+    xy_coord /= max(1.0, 0.5 + 0.25 * length(xy_coord));
     xy_coord += 0.5;
     return xy_coord;
 }
@@ -91,6 +91,7 @@ void main() {
     // Cloud noise
     vec3 noise = texture(NoiseTex, trace_start.xy * 6.0).xyz;
     // trace_start.xy += (noise*2.0-1.0) * 0.007 / trace_steps;
+    // noise = vec3(0.5);
 
     trace_start.xyz += (noise*2.0-1.0) * 0.002;
     vec3 trace_step = (trace_end - trace_start) / trace_steps;
@@ -100,18 +101,17 @@ void main() {
     vec3 sun_vector = sun_azimuth_to_angle(
     TimeOfDay.Scattering.sun_azimuth,
     TimeOfDay.Scattering.sun_altitude);
-    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 55.0) + 0.0;
+    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 15.0) + 0.0;
     vec3 sun_color = sun_influence * 30.0 * vec3(1);
 
     vec3 curr_pos = trace_start + 0.5 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
     float accum_weight = 0.0;
     vec3 accum_color = vec3(0);
 
-
     // Raymarch over the voxel texture
     for (int i = 0; i < trace_steps; ++i) {
         vec4 cloud_sample = texture(CloudVoxels, curr_pos);
-        float weight = cloud_sample.w * (1.0 - accum_weight);
+        float weight = cloud_sample.w * saturate(1.0 - accum_weight);
         accum_color += cloud_sample.xyz * weight;
         accum_weight += weight;
         curr_pos += trace_step;
@@ -121,25 +121,26 @@ void main() {
     accum_color = accum_color / (1 - accum_color);
     accum_color /= 15.0;
     // accum_weight *= 1 * length(accum_color);
-    accum_weight *= 0.4;
-    accum_weight = saturate(accum_weight);
+    // accum_weight *= 0.4;
+    accum_weight = saturate(pow(accum_weight, 10.0));
 
     accum_color *= TimeOfDay.Clouds.cloud_brightness;
 
-    accum_color *= 66.0;
-    accum_color *= 1.0 + sun_color * saturate(1.0 - 1.0 * accum_weight );
+    accum_color *= 160.0;
+    // accum_color *= 1.0 + sun_color * saturate(1.0 - 1.0 * accum_weight );
 
 
     // Darken clouds in the distance
     // accum_color *= 1.0 - saturate(1.0-4.0*ray_dir.z) * 0.7;
 
     // Don't render clouds at obligue angles
-    float horizon = saturate(ray_dir.z * 1.0);
+    float horizon = saturate(ray_dir.z * 16.0);
     // accum_color *= accum_weight;
-    // accum_color *= horizon;
-    // accum_weight *= horizon;
+    accum_color *= horizon;
+    accum_weight *= horizon;
 
 
 
     result = vec4(accum_color, accum_weight);
+    // result.xyz = vec3(accum_weight);
 }
