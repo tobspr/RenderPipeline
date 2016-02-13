@@ -41,7 +41,7 @@ class BetterCheckbox(RPObject):
                  radio=False, expand_width=100, checked=False, enabled=True):
         RPObject.__init__(self)
 
-        prefix = "Checkbox" if not radio else "Radiobox"
+        prefix = "checkbox" if not radio else "radiobox"
 
         if enabled:
             checked_img = Globals.loader.loadTexture(
