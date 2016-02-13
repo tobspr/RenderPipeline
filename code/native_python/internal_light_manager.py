@@ -92,6 +92,7 @@ class InternalLightManager(object):
             source.set_slot(slot)
 
     def remove_light(self, light):
+        assert light is not None
         if not light.has_slot():
             print("ERROR: Could not detach light, light was not attached!")
             return
@@ -140,7 +141,7 @@ class InternalLightManager(object):
 
     def update_lights(self):
         for light in self._lights.begin():
-            if light and light.get_needs_update():
+            if light.get_needs_update():
                 if light.casts_shadows:
                     light.update_shadow_sources()
             self.gpu_update_light(light)

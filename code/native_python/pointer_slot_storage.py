@@ -79,7 +79,8 @@ class PointerSlotStorage(object):
 
     def begin(self):
         for i in range(self._max_index + 1):
-            yield self._data[i]
+            if self._data[i]:
+                yield self._data[i]
 
     def end(self):
         raise NotImplementedError("Use .begin() as iterator when using the python side!")

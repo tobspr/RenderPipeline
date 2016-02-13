@@ -6,10 +6,10 @@
 # The last material is the base material and thus has no blending. It will
 # be wherever no other material is.
 
-Vertex:
+vertex:
     template: default
 
-Fragment.GBuffer:
+gbuffer:
     template: default
     inout: |
         uniform sampler2D p3d_Texture0;        // Alpha -  Map
@@ -67,14 +67,14 @@ Fragment.GBuffer:
             m_base += texture(p3d_Texture5,  detail_coord).xyz * layers.y;
             m_base += texture(p3d_Texture9,  detail_coord).xyz * layers.z;
             m_base += texture(p3d_Texture13, detail_coord).xyz * layers.w;
-        
+
             // Normal
             vec3 m_nrm = vec3(0);
             m_nrm += unpack_texture_normal(texture(p3d_Texture2,  detail_coord).xyz) * layers.x;
             m_nrm += unpack_texture_normal(texture(p3d_Texture6,  detail_coord).xyz) * layers.y;
             m_nrm += unpack_texture_normal(texture(p3d_Texture10, detail_coord).xyz) * layers.z;
             m_nrm += unpack_texture_normal(texture(p3d_Texture14, detail_coord).xyz) * layers.w;
-            
+
             // Specular
             float spec = 0.0;
             spec  = texture(p3d_Texture3,  detail_coord).x * layers.x;
@@ -90,8 +90,8 @@ Fragment.GBuffer:
             m.metallic = mOutput.metallic;
             m.translucency = mOutput.translucency;
 
-Fragment.Shadows:
+shadows:
     template: default
 
-Fragment.Voxelize:
+voxelize:
     template: default

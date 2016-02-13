@@ -24,13 +24,13 @@ THE SOFTWARE.
  	 	    	 	
 """
 
-from .GPUCommand import GPUCommand
-from .GPUCommandList import GPUCommandList
-from .IESDataset import IESDataset
-from .InternalLightManager import InternalLightManager
-from .RPLight import RPLight
-from .RPSpotLight import RPSpotLight
-from .RPPointLight import RPPointLight
-from .ShadowManager import ShadowManager
-from .TagStateManager import TagStateManager
-from .PSSMCameraRig import PSSMCameraRig
+from .gpu_command import GPUCommand
+from .gpu_command_list import GPUCommandList
+from .ies_dataset import IESDataset
+from .internal_light_manager import InternalLightManager
+from .rp_light import RPLight
+from .rp_spot_light import RPSpotLight
+from .rp_point_light import RPPointLight
+from .shadow_manager import ShadowManager
+from .tag_state_manager import TagStateManager
+from .pssm_camera_rig import PSSMCameraRig
