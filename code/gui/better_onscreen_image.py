@@ -46,7 +46,7 @@ class BetterOnscreenImage(RPObject):
         all. This enables you to display existing textures, otherwise the
         texture would get a near filter in the 3D View, too. """
 
-        RPObject.__init__(self, "BetterOnscreenImage")
+        RPObject.__init__(self)
 
         if not isinstance(image, Texture):
             if not isinstance(image, str):

@@ -64,7 +64,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         """ Creates a new pipeline with a given showbase instance. This should
         be done before intializing the ShowBase, the pipeline will take care of
         that. """
-        RPObject.__init__(self, "RenderPipeline")
+        RPObject.__init__(self)
         self.debug("Using Python {} with architecture {}".format(
             sys.version_info.major, PandaSystem.get_platform()))
         self._showbase = showbase

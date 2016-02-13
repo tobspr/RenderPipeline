@@ -48,10 +48,11 @@ class DayTimeSetting(RPObject):
         self.default = None
         self.curves = []
 
-    def was_modified(self):
+    @property
+    def modified(self):
         """ Returns whether any of the curves were modified """
         for curve in self.curves:
-            if curve.was_modified():
+            if curve.modified:
                 return True
         return False
 

@@ -38,7 +38,7 @@ class GPUCommandQueue(RPObject):
     pushed to a queue which then get executed on the gpu """
 
     def __init__(self, pipeline):
-        RPObject.__init__(self, "GPUCommandQueue")
+        RPObject.__init__(self)
         self._pipeline = pipeline
         self._commands_per_frame = 512
         self._command_list = GPUCommandList()

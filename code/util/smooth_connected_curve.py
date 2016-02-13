@@ -56,7 +56,8 @@ class SmoothConnectedCurve(object):
         # Build the curve
         self.build_curve()
 
-    def was_modified(self):
+    @property
+    def modified(self):
         """ Returns whether the curve was modified since the creation """
         return self._modified
 

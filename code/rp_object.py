@@ -95,6 +95,8 @@ class RPObject(object):
         is used """
         if name is None:
             name = self.__class__.__name__
+        else:
+            print("Warning: object overrided name: ", name)
         self.name = name
         self._debug_color = Fore.GREEN
 

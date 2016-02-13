@@ -42,12 +42,6 @@ class DayTimeInterface(RPObject):
         BasePluginInterface or any derived class of that """
         RPObject.__init__(self)
         self._interface = interface
-        self._base_dir = "."
-
-    def set_base_dir(self, directory):
-        """ Sets the base directory of the pipeline, in case its not the current
-        working directory """
-        self._base_dir = directory
 
     def load(self):
         """ Loads all daytime settings and overrides """
@@ -108,7 +102,7 @@ class DayTimeInterface(RPObject):
         for plugin in self._interface.get_plugin_instances():
             mod_str = ""
             for setting_id, handle in iteritems(plugin.get_config().get_daytime_settings()):
-                if handle.was_modified():
+                if handle.modified:
                     mod_str += "        " + setting_id + ": " + handle.serialize() + "\n"
 
             if mod_str:
