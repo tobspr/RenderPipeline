@@ -10,11 +10,10 @@
 # Various output names
 win_*/
 linux_*/
-Source/Interrogate*
+source/interrogate*
 
 # Source and script files
-Source/
-Scripts/
+scripts/
 CMakeLists.txt
 build.py
 LICENSE

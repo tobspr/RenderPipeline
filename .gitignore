@@ -26,4 +26,4 @@ toolkit/pathtracing_reference/mitsuba/
 TODO.txt
 *.flag
 desktop.ini
-ScatteringLUT.png
+scattering_lut.png
