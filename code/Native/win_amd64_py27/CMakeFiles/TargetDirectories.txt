@@ -1,3 +1,0 @@
-E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/CMakeFiles/ALL_BUILD.dir
-E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/CMakeFiles/ZERO_CHECK.dir
-E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/CMakeFiles/RSNative.dir
