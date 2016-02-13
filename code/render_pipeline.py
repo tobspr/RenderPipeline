@@ -82,17 +82,11 @@ class RenderPipeline(PipelineExtensions, RPObject):
         only the settings of the last file will be used. """
         self._settings.load_from_file(path)
 
-    def get_setting(self, setting_name):
-        """ Returns a handle to the settings, returns an empty PipelineSettings
-        object if no settings have been loaded so far. """
-        return self._settings[setting_name]
-
-    def get_settings(self):
+    @property
+    def settings(self):
         """ Returns a handle to the settings instance, which can be used to
         query settings """
-        settings = property(get_settings)
-
-    settings = property(get_settings)
+        return self._settings
 
     @property
     def mount_mgr(self):
@@ -232,7 +226,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
     def _init_debugger(self):
         """ Internal method to initialize the GUI-based debugger """
-        if self.get_setting("pipeline.display_debugger"):
+        if self.settings["pipeline.display_debugger"]:
             self._debugger = Debugger(self)
         else:
             # Use an empty onscreen debugger in case the debugger is not
@@ -258,7 +252,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         """ Inits the tasks and keybindings """
 
         # Add a hotkey to reload the shaders, but only if the debugger is enabled
-        if self.get_setting("pipeline.display_debugger"):
+        if self.settings["pipeline.display_debugger"]:
             self._showbase.accept("r", self.reload_shaders)
 
         self._showbase.addTask(self._manager_update_task, "RP_UpdateManagers", sort=10)

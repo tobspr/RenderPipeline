@@ -69,11 +69,11 @@ class LightManager(BaseManager):
         define("LC_TILE_SIZE_Y", self._tile_size.y)
         define("LC_TILE_AMOUNT_X", self._num_tiles.x)
         define("LC_TILE_AMOUNT_Y", self._num_tiles.y)
-        define("LC_TILE_SLICES", self._pipeline.get_setting("lighting.culling_grid_slices"))
-        define("LC_MAX_DISTANCE", self._pipeline.get_setting("lighting.culling_max_distance"))
-        define("LC_CULLING_SLICE_WIDTH", self._pipeline.get_setting("lighting.culling_slice_width"))
+        define("LC_TILE_SLICES", self._pipeline.settings["lighting.culling_grid_slices"])
+        define("LC_MAX_DISTANCE", self._pipeline.settings["lighting.culling_max_distance"])
+        define("LC_CULLING_SLICE_WIDTH", self._pipeline.settings["lighting.culling_slice_width"])
 
-        define("SHADOW_ATLAS_SIZE", self._pipeline.get_setting("shadows.atlas_size"))
+        define("SHADOW_ATLAS_SIZE", self._pipeline.settings["shadows.atlas_size"])
 
         # Register all light types as defines
         for attr in dir(PointLight):
@@ -125,8 +125,8 @@ class LightManager(BaseManager):
     def _init_shadow_manager(self):
         """ Inits the shadow manager """
         self._shadow_manager = ShadowManager()
-        self._shadow_manager.set_max_updates(self._pipeline.get_setting("shadows.max_updates"))
-        self._shadow_manager.set_atlas_size(self._pipeline.get_setting("shadows.atlas_size"))
+        self._shadow_manager.set_max_updates(self._pipeline.settings["shadows.max_updates"])
+        self._shadow_manager.set_atlas_size(self._pipeline.settings["shadows.atlas_size"])
         self._shadow_manager.set_scene(Globals.base.render)
         self._shadow_manager.set_tag_state_manager(self._pipeline.tag_mgr)
 
@@ -172,8 +172,8 @@ class LightManager(BaseManager):
     def _compute_tile_size(self):
         """ Computes how many tiles there are on screen """
         self._tile_size = LVecBase2i(
-            self._pipeline.get_setting("lighting.culling_grid_size_x"),
-            self._pipeline.get_setting("lighting.culling_grid_size_y"))
+            self._pipeline.settings["lighting.culling_grid_size_x"],
+            self._pipeline.settings["lighting.culling_grid_size_y"])
         num_tiles_x = int(math.ceil(Globals.resolution.x /
                                     float(self._tile_size.x)))
         num_tiles_y = int(math.ceil(Globals.resolution.y /

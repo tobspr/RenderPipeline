@@ -64,7 +64,7 @@ class Effect(RPObject):
         effect = cls()
         effect.set_options(options)
         if not effect.__load(filename):
-            self.error("Could not load effect!")
+            RPObject.global_error("Effect", "Could not load effect!")
             return None
         return effect
 
@@ -94,10 +94,6 @@ class Effect(RPObject):
             for k in sorted(cls._DEFAULT_OPTIONS)])
 
         return fhash + "-" + opt_hash
-
-    def __init__(self):
-        RPObject.__init__(self)
-        self._effect_cache = {}
 
     def __init__(self):
         """ Constructs a new empty effect """
