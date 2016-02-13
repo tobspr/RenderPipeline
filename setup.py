@@ -51,17 +51,17 @@ OPT_AUTO_INSTALL = "--auto-install" in sys.argv
 
 os.chdir(SETUP_DIR)
 sys.path.insert(0, ".")
-sys.path.insert(0, "Code/External/six")
+sys.path.insert(0, "code/external/six")
 
 from six.moves import input
 
 # Load and init colorama, used to color the output
-from Code.External.Colorama import init as init_colorama
-from Code.External.Colorama import Fore, Style
+from code.External.Colorama import init as init_colorama
+from code.External.Colorama import Fore, Style
 init_colorama()
 
 # Load submodule downloader
-from Code.Util.SubmoduleDownloader import SubmoduleDownloader
+from code.Util.SubmoduleDownloader import SubmoduleDownloader
 
 def color(string, col):
     """ Colors a string """
@@ -140,12 +140,12 @@ def check_repo_complete():
     """ Checks if the repository is complete """
 
     # Check if the render target submodule exists
-    if not check_file_exists("Code/RenderTarget/RenderTarget.py"):
-        hint_download_submodule("tobspr", "RenderTarget", "Code/RenderTarget/")
+    if not check_file_exists("code/render_target/RenderTarget.py"):
+        hint_download_submodule("tobspr", "RenderTarget", "code/render_target/")
 
     # Check if the color space submodule exists
-    if not check_file_exists("Shader/Includes/ColorSpaces/ColorSpaces.inc.glsl"):
-        hint_download_submodule("tobspr", "GLSL-Color-Spaces", "Shader/Includes/ColorSpaces/")
+    if not check_file_exists("shader/uncludes/color_spaces/color_spaces.inc.glsl"):
+        hint_download_submodule("tobspr", "GLSL-Color-Spaces", "shader/includes/color_spaces/")
 
 
 def ask_download_samples():
@@ -154,7 +154,7 @@ def ask_download_samples():
 
     if get_user_choice(query):
         print_step("Downloading samples (Might take a while, depending on your internet) ...")
-        exec_python_file("Samples/download_samples.py")
+        exec_python_file("samples/download_samples.py")
 
 def get_user_choice(query):
     """ Asks the user a boolean question """
@@ -216,34 +216,32 @@ if __name__ == "__main__":
         if not OPT_AUTO_INSTALL and get_user_choice(query):
             check_cmake()
 
-            write_flag("Code/Native/use_cxx.flag", True)
+            write_flag("code/native/use_cxx.flag", True)
 
             print_step("Downloading the module builder ...")
-            exec_python_file("Code/Native/update_module_builder.py")
+            exec_python_file("code/native/update_module_builder.py")
 
             print_step("Building the native code .. (This might take a while!)")
-            exec_python_file("Code/Native/build.py")
+            exec_python_file("code/native/build.py")
 
         else:
-            write_flag("Code/Native/use_cxx.flag", False)
+            write_flag("code/native/use_cxx.flag", False)
 
     if not OPT_AUTO_INSTALL:
-        print_step("Generating normal quantization textures ..")
-        exec_python_file("Data/NormalQuantization/generate.py")
 
         print_step("Extracting .gz files ...")
-        extract_gz_files(os.path.join(SETUP_DIR, "Data/"))
+        extract_gz_files(os.path.join(SETUP_DIR, "data/"))
 
         print_step("Filtering default cubemap ..")
-        exec_python_file("Data/DefaultCubemap/filter.py")
+        exec_python_file("data/default_cubemap/filter.py")
 
         print_step("Precomputing film grain .. ")
-        exec_python_file("Data/PrecomputedGrain/generate.py")
+        exec_python_file("data/precomputed_grain/generate.py")
 
         ask_download_samples()
 
     # -- Further setup code follows here --
 
-    write_flag("Data/install.flag", True)
+    write_flag("data/install.flag", True)
 
     print(color("\n\n-- Setup finished sucessfully! --", Fore.GREEN + Style.BRIGHT))

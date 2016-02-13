@@ -40,22 +40,22 @@ import sys
 sys.path.insert(0, "../")
 
 # Include a subset of the pipeline classes and the plugin api
-from Code.PluginInterface.BasePlugin import BasePlugin
-from Code.PluginInterface.PluginHook import PluginHook, SettingChanged
-from Code.Util.Image import Image
-from Code.Util.DebugObject import DebugObject
-from Code.Util.SliceLoader import SliceLoader
-from Code.Util.ShaderUBO import ShaderUBO
-from Code.Util.RepeatedTaskQueue import RepeatedTaskQueue
-from Code.RenderStage import RenderStage
-from Code.RenderTarget import RenderTarget
-from Code.Globals import Globals
+from code.PluginInterface.BasePlugin import BasePlugin
+from code.PluginInterface.PluginHook import PluginHook, SettingChanged
+from code.Util.Image import Image
+from code.Util.DebugObject import DebugObject
+from code.Util.SliceLoader import SliceLoader
+from code.Util.ShaderUBO import ShaderUBO
+from code.Util.RepeatedTaskQueue import RepeatedTaskQueue
+from code.RenderStage import RenderStage
+from code.RenderTarget import RenderTarget
+from code.Globals import Globals
 
 # Import all stages as a module, this is used for the get_internal_stage
-from Code.Stages import *
+from code.Stages import *
 
 # The native module defines the includes in its own __init__ file, so this is okay
-from Code.Native import *
+from code.Native import *
 
 
 def get_internal_stage(module_name):

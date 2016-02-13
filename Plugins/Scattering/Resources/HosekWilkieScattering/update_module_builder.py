@@ -9,7 +9,7 @@ import sys
 curr_dir = os.path.dirname(os.path.realpath(__file__));
 os.chdir(curr_dir);
 sys.path.insert(0, "../" * 4); sys.path.insert(0, "../" * 4 + "Code/External/six")
-from Code.Util.SubmoduleDownloader import SubmoduleDownloader
+from code.Util.SubmoduleDownloader import SubmoduleDownloader
 SubmoduleDownloader.download_submodule("tobspr", "P3DModuleBuilder", curr_dir, ignore)
 with open("Scripts/__init__.py", "w") as handle: pass
 try: os.remove(".gitignore")

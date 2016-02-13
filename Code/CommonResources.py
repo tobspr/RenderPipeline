@@ -95,28 +95,11 @@ class CommonResources(BaseManager):
     def _load_textures(self):
         """ Loads commonly used textures and makes them available via the
         stage manager """
-        self._load_normal_quantization()
         self._load_environment_cubemap()
         self._load_precomputed_grain()
         self._load_prefilter_brdf()
         self._load_skydome()
         self._load_noise_tex()
-
-    def _load_normal_quantization(self):
-        """ Loads the normal quantization tex, used to compress normals to
-        8 bit in the GBuffer, based on a method suggested by the cryengine. """
-        quant_tex = Globals.loader.loadTexture(
-            "Data/NormalQuantization/NormalQuantizationTex-#.png",
-            readMipmaps=True)
-        # quant_tex = Globals.loader.loadTexture(
-            # "Data/NormalQuantization/Reference.png")
-        quant_tex.set_minfilter(SamplerState.FT_linear_mipmap_linear)
-        quant_tex.set_magfilter(SamplerState.FT_linear)
-        quant_tex.set_wrap_u(SamplerState.WM_mirror)
-        quant_tex.set_wrap_v(SamplerState.WM_mirror)
-        quant_tex.set_anisotropic_degree(0)
-        quant_tex.set_format(Texture.F_r16)
-        self._showbase.render.set_shader_input("NormalQuantizationTex", quant_tex)
 
     def _load_environment_cubemap(self):
         """ Loads the default cubemap used for the environment, which is used

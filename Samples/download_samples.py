@@ -33,7 +33,7 @@ import sys
 sys.path.insert(0, "../")
 sys.path.insert(0, "../Code/External/six")
 
-from Code.Util.SubmoduleDownloader import SubmoduleDownloader
+from code.Util.SubmoduleDownloader import SubmoduleDownloader
 
 
 if __name__ == "__main__":

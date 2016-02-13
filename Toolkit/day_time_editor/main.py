@@ -58,10 +58,10 @@ except ImportError as msg:
 
 from ui.main_window_generated import Ui_MainWindow
 from CurveWidget import CurveWidget
-from Code.DayTime.DayTimeInterface import DayTimeInterface
-from Code.PluginInterface.VirtualPluginInterface import VirtualPluginInterface
-from Code.Util.UDPListenerService import UDPListenerService
-from Code.Managers.MountManager import MountManager
+from code.DayTime.DayTimeInterface import DayTimeInterface
+from code.PluginInterface.VirtualPluginInterface import VirtualPluginInterface
+from code.Util.UDPListenerService import UDPListenerService
+from code.Managers.MountManager import MountManager
 
 connect = QtCore.QObject.connect
 

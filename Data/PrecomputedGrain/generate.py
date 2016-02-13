@@ -47,7 +47,7 @@ grain_shader = Shader.load(
 
 import direct.directbase.DirectStart
 
-from Code.RenderTarget import RenderTarget
+from code.RenderTarget import RenderTarget
 
 target = RenderTarget()
 target.size = 1024, 1024
