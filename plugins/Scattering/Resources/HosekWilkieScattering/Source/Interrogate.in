@@ -1,0 +1,16 @@
+1452943618
+3 1
+14 HSWKScattering 4 be4N 14 HSWKScattering 
+1
+2 14 generate_table 0 1 0 14 generate_table 0 1 1 0
+32
+inline int generate_table(void);
+
+1
+1 0 0 6 1 3 0 0 0 0 
+1
+3 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+0
+0
+0

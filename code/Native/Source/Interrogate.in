@@ -1,0 +1,2359 @@
+1455352308
+3 1
+8 RSNative 4 g05Y 8 RSNative 
+119
+125 10 GPUCommand 0 4 244 22 GPUCommand::GPUCommand 0 1 1 0
+61
+GPUCommand::GPUCommand(GPUCommand::CommandType command_type);
+
+126 8 push_int 0 4 244 20 GPUCommand::push_int 0 1 2 308
+/**
+ * @brief Appends an integer to the GPUCommand.
+ * @details This adds an integer to the back of the GPUCommand. Depending on the
+ *   setting in convert_int_to_float, this will either just convert the int to a
+ *   float by casting it, or just do a bitwise copy.
+ *
+ * @param v The integer to append.
+ */
+40
+inline void GPUCommand::push_int(int v);
+
+127 10 push_float 0 4 244 22 GPUCommand::push_float 0 1 3 415
+/**
+ * @brief Appends a float to the GPUCommand.
+ * @details This adds an integer to the back of the GPUCommand. Its used by all
+ *   other push_xxx methods, and simply stores the value, then increments the write
+ *   pointer. When the amount of floats exceeds the capacity of the GPUCommand,
+ *   an error will be printed, and the method returns without doing anything else.
+ *
+ * @param v The float to append.
+ */
+44
+inline void GPUCommand::push_float(float v);
+
+128 9 push_vec3 0 4 244 21 GPUCommand::push_vec3 0 2 4 5 668
+/**
+ * @brief Appends a 3-component floating point vector to the GPUCommand.
+ * @details This appends a 3-component floating point vector to the command.
+ *   It basically just calls push_float() for every component, in the order
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
+ * @param v Int-Vector to append.
+ */
+
+/**
+ * @brief Appends a 3-component integer vector to the GPUCommand.
+ * @details This appends a 3-component integer vector to the command.
+ *   It basically just calls push_int() for every component, in the order
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
+ * @param v Int-Vector to append.
+ */
+111
+inline void GPUCommand::push_vec3(LVecBase3f const &v);
+inline void GPUCommand::push_vec3(LVecBase3i const &v);
+
+129 9 push_vec4 0 4 244 21 GPUCommand::push_vec4 0 2 6 7 671
+/**
+ * @brief Appends a 4-component floating point vector to the GPUCommand.
+ * @details This appends a 4-component floating point vector to the command.
+ *   It basically just calls push_float() for every component, in the order
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
+ * @param v Int-Vector to append.
+ */
+
+/**
+ * @brief Appends a 4-component integer vector to the GPUCommand.
+ * @details This appends a 4-component integer vector to the command.
+ *   It basically just calls push_int() for every component, in the order
+ *   x, y, z, w, which causes the vector to occupy the space of 4 floats.
+ *
+ * @param v Int-Vector to append.
+ */
+111
+inline void GPUCommand::push_vec4(LVecBase4f const &v);
+inline void GPUCommand::push_vec4(LVecBase4i const &v);
+
+130 9 push_mat3 0 4 244 21 GPUCommand::push_mat3 0 1 8 276
+/**
+ * @brief Appends a floating point 3x3 matrix to the GPUCommand.
+ * @details This appends a floating point 3x3 matrix to the GPUCommand, by
+ *   pushing all components in row-order to the command. This occupies a space of
+ *   9 floats.
+ *
+ * @param v Matrix to append
+ */
+54
+inline void GPUCommand::push_mat3(LMatrix3f const &v);
+
+131 9 push_mat4 0 4 244 21 GPUCommand::push_mat4 0 1 9 277
+/**
+ * @brief Appends a floating point 4x4 matrix to the GPUCommand.
+ * @details This appends a floating point 4x4 matrix to the GPUCommand, by
+ *   pushing all components in row-order to the command. This occupies a space of
+ *   16 floats.
+ *
+ * @param v Matrix to append
+ */
+54
+inline void GPUCommand::push_mat4(LMatrix4f const &v);
+
+132 24 get_uses_integer_packing 0 4 244 36 GPUCommand::get_uses_integer_packing 0 1 10 434
+/**
+ * @brief Returns whether integers are packed as floats.
+ * @details This returns how integer are packed into the data stream. If the
+ *   returned value is true, then integers are packed using their binary
+ *   representation converted to floating point format. If the returned value
+ *   is false, then integers are packed by simply casting them to float,
+ *   e.g. val = (float)i;
+ * @return The integer representation flag
+ */
+62
+static inline bool GPUCommand::get_uses_integer_packing(void);
+
+133 8 write_to 0 4 244 20 GPUCommand::write_to 0 1 11 0
+76
+void GPUCommand::write_to(PTA_uchar const &dest, std::size_t command_index);
+
+134 5 write 0 4 244 17 GPUCommand::write 0 1 12 0
+43
+void GPUCommand::write(ostream &out) const;
+
+135 11 ~GPUCommand 0 4 244 23 GPUCommand::~GPUCommand 0 0 0
+30
+GPUCommand::~GPUCommand(void);
+
+136 14 GPUCommandList 0 4 246 30 GPUCommandList::GPUCommandList 0 2 13 14 0
+110
+GPUCommandList::GPUCommandList(void);
+inline GPUCommandList::GPUCommandList(GPUCommandList const &) = default;
+
+137 11 add_command 0 4 246 27 GPUCommandList::add_command 0 1 15 0
+56
+void GPUCommandList::add_command(GPUCommand const &cmd);
+
+138 16 get_num_commands 0 4 246 32 GPUCommandList::get_num_commands 0 1 16 0
+51
+std::size_t GPUCommandList::get_num_commands(void);
+
+139 17 write_commands_to 0 4 246 33 GPUCommandList::write_commands_to 0 1 17 0
+93
+std::size_t GPUCommandList::write_commands_to(PTA_uchar const &dest, std::size_t limit = 32);
+
+140 15 ~GPUCommandList 0 4 246 31 GPUCommandList::~GPUCommandList 0 0 0
+38
+GPUCommandList::~GPUCommandList(void);
+
+141 7 set_pos 0 4 249 16 RPLight::set_pos 0 2 18 19 468
+/**
+ * @brief Sets the position of the light
+ * @details This sets the position of the light in world space. It will cause
+ *   the light to get invalidated, and resubmitted to the GPU.
+ *
+ * @param pos Position in world space
+ */
+
+/**
+ * @brief Sets the position of the light
+ * @details @copydetails RPLight::set_pos(const LVecBase3f &pos)
+ *
+ * @param x X-component of the position
+ * @param y Y-component of the position
+ * @param z Z-component of the position
+ */
+109
+inline void RPLight::set_pos(LVecBase3f const &pos);
+inline void RPLight::set_pos(float x, float y, float z);
+
+142 7 get_pos 0 4 249 16 RPLight::get_pos 0 1 20 214
+/**
+ * @brief Returns the position of the light
+ * @details This returns the position of the light previously set with
+ *   RPLight::set_pos(). The returned position is in world space.
+ * @return Light-position
+ */
+54
+inline LVecBase3f const &RPLight::get_pos(void) const;
+
+143 9 set_color 0 4 249 18 RPLight::set_color 0 2 21 22 694
+/**
+ * @brief Sets the lights color
+ * @details This sets the lights color. The color should not include the brightness
+ *   of the light, you should control that with the lumens. The color specifies
+ *   the lights "tint" and will get multiplied with its specular and diffuse
+ *   contribution.
+ *
+ *   The color will be normalized by dividing by the colors luminance. Setting
+ *   higher values than 1.0 will have no effect.
+ *
+ * @param color Light color
+ */
+
+/**
+ * @brief Sets the lights color
+ * @details @copydetails RPLight::set_color(const LVecBase3f &color)
+ *
+ * @param r Red-component of the color
+ * @param g Green-component of the color
+ * @param b Blue-component of the color
+ */
+115
+inline void RPLight::set_color(LVecBase3f const &color);
+inline void RPLight::set_color(float r, float g, float b);
+
+144 9 get_color 0 4 249 18 RPLight::get_color 0 1 23 324
+/**
+ * @brief Returns the lights color
+ * @details This returns the light color, previously set with RPLight::set_color.
+ *   This does not include the lumens of the light. It might differ from what
+ *   was set with set_color, because the color is normalized by dividing it
+ *   by its luminance.
+ * @return Light-color
+ */
+56
+inline LVecBase3f const &RPLight::get_color(void) const;
+
+145 26 set_color_from_temperature 0 4 249 35 RPLight::set_color_from_temperature 0 1 24 0
+60
+void RPLight::set_color_from_temperature(float temperature);
+
+146 10 set_lumens 0 4 249 19 RPLight::set_lumens 0 1 25 238
+/**
+ * @brief Sets the lumens of the light
+ * @details This sets the lumens of the light, which can be seen as the brightness
+ *   of the light. It will get multiplied with the normalized color.
+ *
+ * @param lumens Lumens of the light
+ */
+46
+inline void RPLight::set_lumens(float lumens);
+
+147 10 get_lumens 0 4 249 19 RPLight::get_lumens 0 1 26 179
+/**
+ * @brief Returns the lumens of the light
+ * @details This returns the lumens of the light, previously set with
+ *   RPLight::set_lumens.
+ *
+ * @return Lumens of the light
+ */
+45
+inline float RPLight::get_lumens(void) const;
+
+148 14 get_light_type 0 4 249 23 RPLight::get_light_type 0 1 27 243
+/**
+ * @brief Returns the type of the light
+ * @details This returns the internal type of the light, which was specified
+ *   in the lights constructor. This can be used to distinguish between light
+ *   types.
+ * @return Type of the light
+ */
+62
+inline RPLight::LightType RPLight::get_light_type(void) const;
+
+149 17 set_casts_shadows 0 4 249 26 RPLight::set_casts_shadows 0 1 28 426
+/**
+ * @brief Controls whether the light casts shadows
+ * @details This sets whether the light casts shadows. You can not change this
+ *   while the light is attached. When flag is set to true, the light will be
+ *   setup to cast shadows, spawning shadow sources based on the lights type.
+ *   If the flag is set to false, the light will be inddicated to cast no shadows.
+ *
+ * @param flag Whether the light casts shadows
+ */
+57
+inline void RPLight::set_casts_shadows(bool flag = true);
+
+150 17 get_casts_shadows 0 4 249 26 RPLight::get_casts_shadows 0 1 29 261
+/**
+ * @brief Returns whether the light casts shadows
+ * @details This returns whether the light casts shadows, the returned value
+ *   is the one previously set with RPLight::set_casts_shadows.
+ *
+ * @return true if the light casts shadows, false otherwise
+ */
+51
+inline bool RPLight::get_casts_shadows(void) const;
+
+151 25 set_shadow_map_resolution 0 4 249 34 RPLight::set_shadow_map_resolution 0 1 30 574
+/**
+ * @brief Sets the lights shadow map resolution
+ * @details This sets the lights shadow map resolution. This has no effect
+ *   when the light is not told to cast shadows (Use RPLight::set_casts_shadows).
+ *
+ *   When calling this on a light with multiple shadow sources (e.g. PointLight),
+ *   this controls the resolution of each source. If the light has 6 shadow sources,
+ *   and you use a resolution of 512x512, the lights shadow map will occur a
+ *   space of 6 * 512x512 maps in the shadow atlas.
+ *
+ * @param resolution Resolution of the shadow map in pixels
+ */
+71
+inline void RPLight::set_shadow_map_resolution(std::size_t resolution);
+
+152 25 get_shadow_map_resolution 0 4 249 34 RPLight::get_shadow_map_resolution 0 1 31 343
+/**
+ * @brief Returns the shadow map resolution
+ * @details This returns the shadow map resolution of each source of the light.
+ *   If the light is not setup to cast shadows, this value is meaningless.
+ *   The returned value is the one previously set with RPLight::set_shadow_map_resolution.
+ *
+ * @return Shadow map resolution in pixels
+ */
+66
+inline std::size_t RPLight::get_shadow_map_resolution(void) const;
+
+153 15 set_ies_profile 0 4 249 24 RPLight::set_ies_profile 0 1 32 492
+/**
+ * @brief Sets the ies profile
+ * @details This sets the ies profile of the light. The parameter should be a
+ *   handle previously returned by RenderPipeline.load_ies_profile. Using a
+ *   value of -1 indicates no ies profile.
+ *
+ *   Notice that for ies profiles which cover a whole range, you should use
+ *   PointLights, whereas for ies profiles which only cover the lower hemisphere
+ *   you should use SpotLights for the best performance.
+ *
+ * @param profile IES Profile handle
+ */
+50
+inline void RPLight::set_ies_profile(int profile);
+
+154 15 get_ies_profile 0 4 249 24 RPLight::get_ies_profile 0 1 33 229
+/**
+ * @brief Returns the lights ies profile
+ * @details This returns the ies profile of a light, previously set with
+ *   RPLight::set_ies_profile. In case no ies profile was set, returns -1.
+ *
+ * @return IES Profile handle
+ */
+48
+inline int RPLight::get_ies_profile(void) const;
+
+155 15 has_ies_profile 0 4 249 24 RPLight::has_ies_profile 0 1 34 272
+/**
+ * @brief Returns whether the light has an ies profile assigned
+ * @details This returns whether the light has an ies profile assigned,
+ *   previously done with RPLight::set_ies_profile.
+ *
+ * @return true if the light has an ies profile assigned, false otherwise
+ */
+49
+inline bool RPLight::has_ies_profile(void) const;
+
+156 17 clear_ies_profile 0 4 249 26 RPLight::clear_ies_profile 0 1 35 184
+/**
+ * @brief Clears the ies profile
+ * @details This clears the ies profile of the light, telling it to no longer
+ *   use an ies profile, and instead use the default attenuation.
+ */
+45
+inline void RPLight::clear_ies_profile(void);
+
+157 14 set_near_plane 0 4 249 23 RPLight::set_near_plane 0 1 36 554
+/**
+ * @brief Sets the near plane of the light
+ * @details This sets the near plane of all shadow sources of the light. It has
+ *   no effects if the light does not cast shadows. This prevents artifacts from
+ *   objects near to the light. It behaves like Lens::set_near_plane.
+ *
+ *   It can also help increasing shadow map precision, low near planes will
+ *   cause the precision to suffer. Try setting the near plane as big as possible.
+ *
+ *   If a negative or zero near plane is passed, an assertion is thrown.
+ *
+ * @param near_plane Near-plane
+ */
+54
+inline void RPLight::set_near_plane(float near_plane);
+
+158 14 get_near_plane 0 4 249 23 RPLight::get_near_plane 0 1 37 244
+/**
+ * @brief Returns the near plane of the light
+ * @details This returns the lights near plane, previously set with
+ *   RPLight::set_near_plane. If the light does not cast shadows, this value
+ *   is meaningless.
+ *
+ * @return Near-plane
+ */
+49
+inline float RPLight::get_near_plane(void) const;
+
+159 13 ShadowManager 0 4 255 28 ShadowManager::ShadowManager 0 2 38 39 0
+105
+ShadowManager::ShadowManager(void);
+inline ShadowManager::ShadowManager(ShadowManager const &) = default;
+
+160 15 set_max_updates 0 4 255 30 ShadowManager::set_max_updates 0 1 40 1064
+/**
+ * @brief Sets the maximum amount of updates per frame.
+ * @details This controls the maximum amount of updated ShadowSources per frame.
+ *   The ShadowManager will take the first <max_updates> ShadowSources, and
+ *   generate shadow maps for them every frame. If there are more ShadowSources
+ *   waiting to get updated than available updates, the sources are sorted by
+ *   priority, and the update of the less important sources is delayed to the
+ *   next frame.
+ *
+ *   If the update count is set too low, and there are a lot of ShadowSources
+ *   waiting to get updated, artifacts will occur, and there might be ShadowSources
+ *   which never get updated, due to low priority.
+ *
+ *   If an update count of 0 is passed, no updates will happen. This also means
+ *   that there are no shadows. This is not recommended.
+ *
+ *   If an update count < 0 is passed, undefined behaviour occurs.
+ *
+ *   This method has to get called before ShadowManager::init, otherwise an
+ *   assertion will get triggered.
+ *
+ * @param max_updates Maximum amoumt of updates
+ */
+68
+inline void ShadowManager::set_max_updates(std::size_t max_updates);
+
+161 14 set_atlas_size 0 4 255 29 ShadowManager::set_atlas_size 0 1 41 477
+/**
+ * @brief Sets the shadow atlas size
+ * @details This sets the desired shadow atlas size. It should be big enough
+ *   to store all important shadow sources, with some buffer, because the shadow
+ *   maps usually won't be fitted perfectly, so gaps can occur.
+ *
+ *   This has to get called before calling ShadowManager::init. When calling this
+ *   method after initialization, an assertion will get triggered.
+ *
+ * @param atlas_size Size of the shadow atlas in pixels
+ */
+66
+inline void ShadowManager::set_atlas_size(std::size_t atlas_size);
+
+162 9 set_scene 0 4 255 24 ShadowManager::set_scene 0 1 42 467
+/**
+ * @brief Sets the target scene
+ * @details This sets the target scene for rendering shadows. All shadow cameras
+ *   will be parented to this scene to render shadows.
+ *
+ *   Usually the scene will be ShowBase.render. If the scene is an empty or
+ *   invalid NodePath, an assertion will be triggered.
+ *
+ *   This method has to get called before calling ShadowManager::init, or an
+ *   assertion will get triggered.
+ *
+ * @param scene_parent The target scene
+ */
+60
+inline void ShadowManager::set_scene(NodePath scene_parent);
+
+163 21 set_tag_state_manager 0 4 255 36 ShadowManager::set_tag_state_manager 0 1 43 328
+/**
+ * @brief Sets the handle to the TagStageManager.
+ * @details This sets the handle to the TagStateManager used by the pipeline.
+ *   Usually this is RenderPipeline.get_tag_mgr().
+ *
+ *   This has to get called before ShadowManager::init, otherwise an assertion
+ *   will get triggered.
+ *
+ * @param tag_mgr [description]
+ */
+75
+inline void ShadowManager::set_tag_state_manager(TagStateManager *tag_mgr);
+
+164 25 set_atlas_graphics_output 0 4 255 40 ShadowManager::set_atlas_graphics_output 0 1 44 525
+/**
+ * @brief Sets the handle to the Shadow targets output
+ * @details This sets the handle to the GraphicsOutput of the shadow atlas.
+ *   Usually this is RenderTarget.get_internal_buffer(), whereas the RenderTarget
+ *   is the target of the ShadowStage.
+ *
+ *   This is used for creating display regions and attaching cameras to them,
+ *   for performing shadow updates.
+ *
+ *   This has to get called before ShadowManager::init, otherwise an assertion
+ *   will be triggered.
+ *
+ * @param graphics_output [description]
+ */
+86
+inline void ShadowManager::set_atlas_graphics_output(GraphicsOutput *graphics_output);
+
+165 14 get_atlas_size 0 4 255 29 ShadowManager::get_atlas_size 0 1 45 190
+/**
+ * @brief Returns the shadow atlas size.
+ * @details This returns the shadow atlas size previously set with
+ *   ShadowManager::set_atlas_size.
+ * @return Shadow atlas size in pixels
+ */
+61
+inline std::size_t ShadowManager::get_atlas_size(void) const;
+
+166 25 get_num_update_slots_left 0 4 255 40 ShadowManager::get_num_update_slots_left 0 1 46 274
+/**
+ * @brief Returns how many update slots are left.
+ * @details This returns how many update slots are left. You can assume the
+ *   next n calls to add_update will succeed, whereas n is the value returned
+ *   by this function.
+ * @return Number of update slots left.
+ */
+72
+inline std::size_t ShadowManager::get_num_update_slots_left(void) const;
+
+167 4 init 0 4 255 19 ShadowManager::init 0 1 47 0
+31
+void ShadowManager::init(void);
+
+168 6 update 0 4 255 21 ShadowManager::update 0 1 48 0
+33
+void ShadowManager::update(void);
+
+169 15 TagStateManager 0 4 256 32 TagStateManager::TagStateManager 0 2 49 50 0
+133
+TagStateManager::TagStateManager(NodePath main_cam_node);
+inline TagStateManager::TagStateManager(TagStateManager const &) = default;
+
+170 16 ~TagStateManager 0 4 256 33 TagStateManager::~TagStateManager 0 0 0
+40
+TagStateManager::~TagStateManager(void);
+
+171 16 get_gbuffer_mask 0 4 256 33 TagStateManager::get_gbuffer_mask 0 1 51 189
+/**
+ * @brief Returns the bitmask used for rendering the default scene geometry.
+ * @details This returns the bitmask which will be used for normal rendering.
+ * @return Default bitmask
+ */
+64
+static inline BitMask32 TagStateManager::get_gbuffer_mask(void);
+
+172 17 get_voxelize_mask 0 4 256 34 TagStateManager::get_voxelize_mask 0 1 52 230
+/**
+ * @brief Returns the bitmask used for voxelization.
+ * @details This returns the bitmask which will be used when voxelizing the scene.
+ *   This is for example used for the Global Illumination.
+ * @return Voxelize bitmask
+ */
+65
+static inline BitMask32 TagStateManager::get_voxelize_mask(void);
+
+173 15 get_shadow_mask 0 4 256 32 TagStateManager::get_shadow_mask 0 1 53 219
+/**
+ * @brief Returns the bitmask used for rendering shadows.
+ * @details This returns the bitmask which will be used whenever rendering
+ *   shadows, e.g. PSSM or regular shadow rendering.
+ * @return Shadow bitmask
+ */
+63
+static inline BitMask32 TagStateManager::get_shadow_mask(void);
+
+174 15 get_envmap_mask 0 4 256 32 TagStateManager::get_envmap_mask 0 1 54 193
+/**
+ * @brief Returns the bitmask used for environment maps.
+ * @details This returns the bitmask which will be used when rendering environment
+ *   cubemaps.
+ * @return Environment bitmask
+ */
+63
+static inline BitMask32 TagStateManager::get_envmap_mask(void);
+
+175 18 apply_shadow_state 0 4 256 35 TagStateManager::apply_shadow_state 0 1 55 527
+/**
+ * @brief Applies a given shadow state to a NodePath
+ * @details This applies a shader to the given NodePath which is used when the
+ *   NodePath is rendered by any registered shadow camera to render shadows.
+ *   It also disables color write (since its not required for shadows).
+ *
+ * @param np The nodepath to apply the shader to
+ * @param shader A handle to the shader to apply
+ * @param name Name of the state, should be a unique identifier
+ * @param sort Determines the sort with which the shader will be applied.
+ */
+112
+inline void TagStateManager::apply_shadow_state(NodePath np, Shader *shader, std::string const &name, int sort);
+
+176 20 apply_voxelize_state 0 4 256 37 TagStateManager::apply_voxelize_state 0 1 56 544
+/**
+ * @brief Applies a given voxelize state to a NodePath
+ * @details This applies a shader to the given NodePath which is used when the
+ *   NodePath is rendered by any registered voxelization camera to voxelize the
+ *   scene. It also disables color write (since its not required for voxelization).
+ *
+ * @param np The nodepath to apply the shader to
+ * @param shader A handle to the shader to apply
+ * @param name Name of the state, should be a unique identifier
+ * @param sort Determines the sort with which the shader will be applied.
+ */
+114
+inline void TagStateManager::apply_voxelize_state(NodePath np, Shader *shader, std::string const &name, int sort);
+
+177 18 apply_envmap_state 0 4 256 35 TagStateManager::apply_envmap_state 0 1 57 481
+/**
+ * @brief Applies a given environment state to a NodePath
+ * @details This applies a shader to the given NodePath which is used when the
+ *   NodePath is rendered by any registered environment camera to render an
+ *   environment map.
+ *
+ * @param np The nodepath to apply the shader to
+ * @param shader A handle to the shader to apply
+ * @param name Name of the state, should be a unique identifier
+ * @param sort Determines the sort with which the shader will be applied.
+ */
+112
+inline void TagStateManager::apply_envmap_state(NodePath np, Shader *shader, std::string const &name, int sort);
+
+178 14 cleanup_states 0 4 256 31 TagStateManager::cleanup_states 0 1 58 0
+43
+void TagStateManager::cleanup_states(void);
+
+179 22 register_shadow_camera 0 4 256 39 TagStateManager::register_shadow_camera 0 1 59 506
+/**
+ * @brief Registers a new camera which renders shadows
+ * @details This registers a new camera which will be used to render shadows
+ *   somewhere else. The TagStateManager will keep track of the camera and
+ *   applies all registered states onto the camera with Camera::set_tag_state.
+ *   It also applies the shadow camera mask (TagStateManager::get_shadow_mask)
+ *   to the camera, and sets an initial state to disable color write.
+ *
+ * @param source Camera which will be used to render shadows
+ */
+68
+inline void TagStateManager::register_shadow_camera(Camera *source);
+
+180 24 unregister_shadow_camera 0 4 256 41 TagStateManager::unregister_shadow_camera 0 1 60 261
+/**
+ * @brief Unregisters a camera from the list of shadow cameras
+ * @details This unregisters a camera from the list of shadows cameras. It also
+ *   resets all tag states of the camera, and also its initial state.
+ *
+ * @param source Camera to unregister
+ */
+70
+inline void TagStateManager::unregister_shadow_camera(Camera *source);
+
+181 24 register_voxelize_camera 0 4 256 41 TagStateManager::register_voxelize_camera 0 1 61 509
+/**
+ * @brief Registers a new camera for voxelization
+ * @details This registers a new camera which will be used to voxelize the scene
+ *   somewhere else. The TagStateManager will keep track of the camera and
+ *   applies all registered states onto the camera with Camera::set_tag_state.
+ *   It also applies the voxelize camera mask (TagStateManager::get_voxelize_mask)
+ *   to the camera, and sets an initial state to disable color write.
+ *
+ * @param source Camera which will be used to render shadows
+ */
+70
+inline void TagStateManager::register_voxelize_camera(Camera *source);
+
+182 26 unregister_voxelize_camera 0 4 256 43 TagStateManager::unregister_voxelize_camera 0 1 62 272
+/**
+ * @brief Unregisters a camera from the list of voxelization cameras
+ * @details This unregisters a camera from the list of voxelization cameras. It also
+ *   resets all tag states of the camera, and also its initial state.
+ *
+ * @param source Camera to unregister
+ */
+72
+inline void TagStateManager::unregister_voxelize_camera(Camera *source);
+
+183 22 register_envmap_camera 0 4 256 39 TagStateManager::register_envmap_camera 0 1 63 451
+/**
+ * @brief Registers a new camera for environment map
+ * @details This registers a new camera which will be used when rendering environment
+ *   map. The TagStateManager will keep track of the camera and applies all registered
+ *   tates onto the camera with Camera::set_tag_state.
+ *   It also applies the envmap camera mask (TagStateManager::get_envmap_mask)
+ *   to the camera.
+ *
+ * @param source Camera which will be used to render shadows
+ */
+68
+inline void TagStateManager::register_envmap_camera(Camera *source);
+
+184 24 unregister_envmap_camera 0 4 256 41 TagStateManager::unregister_envmap_camera 0 1 64 278
+/**
+ * @brief Unregisters a camera from the list of environment map cameras
+ * @details This unregisters a camera from the list of environment map cameras. It also
+ *   resets all tag states of the camera, and also its initial state.
+ *
+ * @param source Camera to unregister
+ */
+70
+inline void TagStateManager::unregister_envmap_camera(Camera *source);
+
+185 10 IESDataset 0 4 257 22 IESDataset::IESDataset 0 2 65 66 0
+90
+IESDataset::IESDataset(void);
+inline IESDataset::IESDataset(IESDataset const &) = default;
+
+186 19 set_vertical_angles 0 4 257 31 IESDataset::set_vertical_angles 0 1 67 0
+71
+void IESDataset::set_vertical_angles(PTA_float const &vertical_angles);
+
+187 21 set_horizontal_angles 0 4 257 33 IESDataset::set_horizontal_angles 0 1 68 0
+75
+void IESDataset::set_horizontal_angles(PTA_float const &horizontal_angles);
+
+188 18 set_candela_values 0 4 257 30 IESDataset::set_candela_values 0 1 69 0
+69
+void IESDataset::set_candela_values(PTA_float const &candela_values);
+
+189 29 generate_dataset_texture_into 0 4 257 41 IESDataset::generate_dataset_texture_into 0 1 70 0
+87
+void IESDataset::generate_dataset_texture_into(Texture *dest_tex, std::size_t z) const;
+
+190 11 ~IESDataset 0 4 257 23 IESDataset::~IESDataset 0 0 0
+30
+IESDataset::~IESDataset(void);
+
+191 11 ShadowAtlas 0 4 258 24 ShadowAtlas::ShadowAtlas 0 2 71 72 0
+135
+ShadowAtlas::ShadowAtlas(std::size_t size, std::size_t tile_size = 32);
+inline ShadowAtlas::ShadowAtlas(ShadowAtlas const &) = default;
+
+192 12 ~ShadowAtlas 0 4 258 25 ShadowAtlas::~ShadowAtlas 0 0 0
+32
+ShadowAtlas::~ShadowAtlas(void);
+
+193 20 InternalLightManager 0 4 259 42 InternalLightManager::InternalLightManager 0 2 73 74 0
+140
+InternalLightManager::InternalLightManager(void);
+inline InternalLightManager::InternalLightManager(InternalLightManager const &) = default;
+
+194 9 add_light 0 4 259 31 InternalLightManager::add_light 0 1 75 0
+65
+void InternalLightManager::add_light(PointerTo< RPLight > light);
+
+195 12 remove_light 0 4 259 34 InternalLightManager::remove_light 0 1 76 0
+68
+void InternalLightManager::remove_light(PointerTo< RPLight > light);
+
+196 6 update 0 4 259 28 InternalLightManager::update 0 1 77 0
+40
+void InternalLightManager::update(void);
+
+197 19 get_max_light_index 0 4 259 41 InternalLightManager::get_max_light_index 0 1 78 870
+/**
+ * @brief Returns the maximum light index
+ * @details This returns the maximum light index (also called slot). Any lights
+ *   after that slot are guaranteed to be zero-lights. This is useful when
+ *   iterating over the list of lights, because iteration can be stopped when
+ *   the maximum light index is reached.
+ *
+ *   The maximum light index points to the last slot which is used. If no lights
+ *   are attached, -1 is returned. If one light is attached at slot 0, the index
+ *   is 0, if two are attached at the slots 0 and 1, the index is 1, and so on.
+ *
+ *   If, for example, two lights are attached at the slots 2 and 5, then the
+ *   index will be 5. Keep in mind that the max-index is not an indicator for
+ *   how many lights are attached. Also, zero lights still may occur when iterating
+ *   over the light lists
+ *
+ * @return Maximum light index
+ */
+65
+inline int InternalLightManager::get_max_light_index(void) const;
+
+198 14 get_num_lights 0 4 259 36 InternalLightManager::get_num_lights 0 1 79 325
+/**
+ * @brief Returns the amount of stored lights.
+ * @details This returns the amount of stored lights. This behaves unlike
+ *   InternalLightManager::get_max_light_index, and instead returns the true
+ *   amount of lights, which is completely unrelated to the amount of used slots.
+ *
+ * @return Amount of stored lights
+ */
+68
+inline std::size_t InternalLightManager::get_num_lights(void) const;
+
+199 22 get_num_shadow_sources 0 4 259 44 InternalLightManager::get_num_shadow_sources 0 1 80 293
+/**
+ * @brief Returns the amount of shadow sources.
+ * @details This returns the total amount of stored shadow sources. This does
+ *   not denote the amount of updated sources, but instead takes into account
+ *   all sources, even those out of frustum.
+ * @return Amount of shadow sources.
+ */
+76
+inline std::size_t InternalLightManager::get_num_shadow_sources(void) const;
+
+200 16 set_command_list 0 4 259 38 InternalLightManager::set_command_list 0 1 81 671
+/**
+ * @brief Sets a handle to the command list
+ * @details This sets a handle to the global GPUCommandList. This is required to
+ *   emit GPUCommands, which are used for attaching and detaching lights, as well
+ *   as shadow source updates.
+ *
+ *   The cmd_list should be a handle to a GPUCommandList handle, and will be
+ *   stored somewhere on the python side most likely. The light manager does not
+ *   keep a reference to it, so the python side should make sure to keep one.
+ *
+ *   Be sure to call this before the InternalLightManager::update() method is
+ *   called, otherwise an assertion will get triggered.
+ *
+ * @param cmd_list The GPUCommandList instance
+ */
+77
+inline void InternalLightManager::set_command_list(GPUCommandList *cmd_list);
+
+201 18 set_shadow_manager 0 4 259 40 InternalLightManager::set_shadow_manager 0 1 82 623
+/**
+ * @brief Sets the handle to the shadow manager
+ * @details This sets the handle to the global shadow manager. It is usually
+ *   constructed on the python side, so we need to get a handle to it.
+ *
+ *   The manager should be a handle to a ShadowManager instance, and will be
+ *   stored somewhere on the python side most likely. The light manager does not
+ *   keep a reference to it, so the python side should make sure to keep one.
+ *
+ *   Be sure to call this before the InternalLightManager::update() method is
+ *   called, otherwise an assertion will get triggered.
+ *
+ * @param mgr The ShadowManager instance
+ */
+73
+inline void InternalLightManager::set_shadow_manager(ShadowManager *mgr);
+
+202 21 ~InternalLightManager 0 4 259 43 InternalLightManager::~InternalLightManager 0 0 0
+50
+InternalLightManager::~InternalLightManager(void);
+
+203 13 PSSMCameraRig 0 4 260 28 PSSMCameraRig::PSSMCameraRig 0 1 83 0
+53
+PSSMCameraRig::PSSMCameraRig(std::size_t num_splits);
+
+204 14 ~PSSMCameraRig 0 4 260 29 PSSMCameraRig::~PSSMCameraRig 0 0 0
+36
+PSSMCameraRig::~PSSMCameraRig(void);
+
+205 17 set_pssm_distance 0 4 260 32 PSSMCameraRig::set_pssm_distance 0 1 84 316
+/**
+ * @brief Sets the maximum pssm distance.
+ * @details This sets the maximum distance in world space until which shadows
+ *   are rendered. After this distance, no shadows will be rendered.
+ *
+ *   If the distance is below zero, an assertion is triggered.
+ *
+ * @param distance Maximum distance in world space
+ */
+61
+inline void PSSMCameraRig::set_pssm_distance(float distance);
+
+206 16 set_sun_distance 0 4 260 31 PSSMCameraRig::set_sun_distance 0 1 85 664
+/**
+ * @brief Sets the suns distance
+ * @details This sets the distance the cameras will have from the cameras frustum.
+ *   This prevents far objects from having no shadows, which can occur when these
+ *   objects are between the cameras frustum and the sun, but not inside of the
+ *   cameras frustum. Setting the sun distance high enough will move the cameras
+ *   away from the camera frustum, being able to cover those distant objects too.
+ *
+ *   If the sun distance is set too high, artifacts will occur due to the reduced
+ *   range of depth. If a value below zero is passed, an assertion will get
+ *   triggered.
+ *
+ * @param distance The sun distance
+ */
+60
+inline void PSSMCameraRig::set_sun_distance(float distance);
+
+207 23 set_use_fixed_film_size 0 4 260 38 PSSMCameraRig::set_use_fixed_film_size 0 1 86 566
+/**
+ * @brief Sets whether to use a fixed film size
+ * @details This controls if a fixed film size should be used. This will cause
+ *   the camera rig to cache the current film size, and only change it in case
+ *   it gets too small. This provides less flickering when moving, because the
+ *   film size will stay roughly constant. However, to prevent the cached film
+ *   size getting too big, one should call PSSMCameraRig::reset_film_size
+ *   once in a while, otherwise there might be a lot of wasted space.
+ *
+ * @param flag Whether to use a fixed film size
+ */
+62
+inline void PSSMCameraRig::set_use_fixed_film_size(bool flag);
+
+208 14 set_resolution 0 4 260 29 PSSMCameraRig::set_resolution 0 1 87 432
+/**
+ * @brief Sets the resolution of each split
+ * @details This sets the resolution of each split. Currently it is equal for
+ *   each split. This is required when using PSSMCameraRig::set_use_stable_csm,
+ *   to compute how bix a texel is.
+ *
+ *   It has to match the y-resolution of the pssm shadow map. If an invalid
+ *   resolution is triggered, an assertion is thrown.
+ *
+ * @param resolution The resolution of each split.
+ */
+66
+inline void PSSMCameraRig::set_resolution(std::size_t resolution);
+
+209 18 set_use_stable_csm 0 4 260 33 PSSMCameraRig::set_use_stable_csm 0 1 88 403
+/**
+ * @brief Sets whether to use stable CSM snapping.
+ * @details This option controls if stable CSM snapping should be used. When the
+ *   option is enabled, all splits will snap to their texels, so that when moving,
+ *   no flickering will occur. However, this only works when the splits do not
+ *   change their film size, rotation and angle.
+ *
+ * @param flag Whether to use stable CSM snapping
+ */
+57
+inline void PSSMCameraRig::set_use_stable_csm(bool flag);
+
+210 22 set_logarithmic_factor 0 4 260 37 PSSMCameraRig::set_logarithmic_factor 0 1 89 775
+/**
+ * @brief Sets the logarithmic factor
+ * @details This sets the logarithmic factor, which is the core of the algorithm.
+ *   PSSM splits the camera frustum based on a linear and a logarithmic factor.
+ *   While a linear factor provides a good distribution, it often is not applicable
+ *   for wider distances. A logarithmic distribution provides a better distribution
+ *   at distance, but suffers from splitting in the near areas.
+ *
+ *   The logarithmic factor mixes the logarithmic and linear split distribution,
+ *   to get the best of both. A greater factor will make the distribution more
+ *   logarithmic, while a smaller factor will make it more linear.
+ *
+ *   If the factor is below zero, an ssertion is triggered.
+ *
+ * @param factor The logarithmic factor
+ */
+64
+inline void PSSMCameraRig::set_logarithmic_factor(float factor);
+
+211 15 set_border_bias 0 4 260 30 PSSMCameraRig::set_border_bias 0 1 90 482
+/**
+ * @brief Sets the border bias for each split
+ * @details This sets the border bias for every split. This increases each
+ *   splits frustum by multiplying it by (1 + bias), and helps reducing artifacts
+ *   at the borders of the splits. Artifacts can occur when the bias is too low,
+ *   because then the filtering will go over the bounds of the split, producing
+ *   invalid results.
+ *
+ *   If the bias is below zero, an assertion is thrown.
+ *
+ * @param bias Border bias
+ */
+55
+inline void PSSMCameraRig::set_border_bias(float bias);
+
+212 6 update 0 4 260 21 PSSMCameraRig::update 0 1 91 0
+78
+void PSSMCameraRig::update(NodePath cam_node, LVecBase3f const &light_vector);
+
+213 21 reset_film_size_cache 0 4 260 36 PSSMCameraRig::reset_film_size_cache 0 1 92 719
+/**
+ * @brief Resets the film size cache
+ * @details In case PSSMCameraRig::set_use_fixed_film_size is used, this resets
+ *   the film size cache. This might lead to a small "jump" in the shadows,
+ *   because the film size changes, however it leads to a better shadow distribution.
+ *
+ *   This is the case because when using a fixed film size, the cache will get
+ *   bigger and bigger, whenever the camera moves to a grazing angle. However,
+ *   when moving back to a normal angle, the film size cache still stores this
+ *   big angle, and thus the splits will have a much bigger film size than actualy
+ *   required. To prevent this, call this method once in a while, so an optimal
+ *   distribution is ensured.
+ */
+55
+inline void PSSMCameraRig::reset_film_size_cache(void);
+
+214 10 get_camera 0 4 260 25 PSSMCameraRig::get_camera 0 1 93 593
+/**
+ * @brief Returns the n-th camera
+ * @details This returns the n-th camera of the camera rig, which can be used
+ *   for various stuff like showing its frustum, passing it as a shader input,
+ *   and so on.
+ *
+ *   The first camera is the camera which is the camera of the first split,
+ *   which is the split closest to the camera. All cameras follow in descending
+ *   order until to the last camera, which is the split furthest away from the
+ *   camera.
+ *
+ *   If an invalid index is passed, an assertion is thrown.
+ *
+ * @param index Index of the camera.
+ * @return [description]
+ */
+61
+inline NodePath PSSMCameraRig::get_camera(std::size_t index);
+
+215 11 reparent_to 0 4 260 26 PSSMCameraRig::reparent_to 0 1 94 0
+49
+void PSSMCameraRig::reparent_to(NodePath parent);
+
+216 13 get_mvp_array 0 4 260 28 PSSMCameraRig::get_mvp_array 0 1 95 316
+/**
+ * @brief Returns a handle to the MVP array
+ * @details This returns a handle to the array of view-projection matrices
+ *   of the different splits. This can be used for computing shadows. The array
+ *   is a PTALMatrix4f and thus can be directly bound to a shader.
+ *
+ * @return view-projection matrix array
+ */
+63
+inline PTA_LMatrix4f const &PSSMCameraRig::get_mvp_array(void);
+
+217 17 get_nearfar_array 0 4 260 32 PSSMCameraRig::get_nearfar_array 0 1 96 508
+/**
+ * @brief Returns a handle to the near and far planes array
+ * @details This returns a handle to the near and far plane array. Each split
+ *   has an entry in the array, whereas the x component of the vecto denotes the
+ *   near plane, and the y component denotes the far plane of the split.
+ *
+ *   This is required because the near and far planes of the splits change
+ *   constantly. To access them in a shader, the shader needs access to the
+ *   array.
+ *
+ * @return Array of near and far planes
+ */
+68
+inline PTA_LVecBase2f const &PSSMCameraRig::get_nearfar_array(void);
+
+218 12 RPPointLight 0 4 261 26 RPPointLight::RPPointLight 0 1 97 0
+33
+RPPointLight::RPPointLight(void);
+
+219 10 set_radius 0 4 261 24 RPPointLight::set_radius 0 1 98 257
+/**
+ * @brief Sets the radius of the light
+ * @details This sets the radius of the light. It controls the lights
+ *   influence. After a distance greater than this radius, the light influence
+ *   is zero.
+ *
+ * @param radius Light radius in world space
+ */
+51
+inline void RPPointLight::set_radius(float radius);
+
+220 10 get_radius 0 4 261 24 RPPointLight::get_radius 0 1 99 175
+/**
+ * @brief Returns the lights radius
+ * @details This returns the lights radius previously set with
+ *   RPPointLight::set_radius
+ * @return Light radius in world space
+ */
+50
+inline float RPPointLight::get_radius(void) const;
+
+221 16 set_inner_radius 0 4 261 30 RPPointLight::set_inner_radius 0 1 100 725
+/**
+ * @brief Sets the inner radius of the light
+ * @details This sets the inner radius of the light. Anything greater than
+ *   zero causes the light to get an area light. This has influence on the
+ *   specular highlights of the light aswell as the shadows.
+ *
+ *   The inner radius controls the size of the lights sphere size in world
+ *   space units. A radius of 0 means the light has no inner radius, and the
+ *   light will be have like an infinite small point light source.
+ *   A radius greater than zero will cause the light to behave like it would be
+ *   an emissive sphere with the given inner radius emitting light. This is
+ *   more physically correct.
+ *
+ * @param inner_radius Inner-radius in world space
+ */
+63
+inline void RPPointLight::set_inner_radius(float inner_radius);
+
+222 16 get_inner_radius 0 4 261 30 RPPointLight::get_inner_radius 0 1 101 193
+/**
+ * @brief Returns the inner radius of the light
+ * @details This returns the inner radius of the light, previously set with
+ *   RPPointLight::get_inner_radius.
+ * @return [description]
+ */
+56
+inline float RPPointLight::get_inner_radius(void) const;
+
+223 13 ~RPPointLight 0 4 261 27 RPPointLight::~RPPointLight 0 0 0
+34
+RPPointLight::~RPPointLight(void);
+
+224 11 RPSpotLight 0 4 262 24 RPSpotLight::RPSpotLight 0 1 102 0
+31
+RPSpotLight::RPSpotLight(void);
+
+225 10 set_radius 0 4 262 23 RPSpotLight::set_radius 0 1 103 0
+50
+inline void RPSpotLight::set_radius(float radius);
+
+226 10 get_radius 0 4 262 23 RPSpotLight::get_radius 0 1 104 0
+49
+inline float RPSpotLight::get_radius(void) const;
+
+227 7 set_fov 0 4 262 20 RPSpotLight::set_fov 0 1 105 0
+44
+inline void RPSpotLight::set_fov(float fov);
+
+228 7 get_fov 0 4 262 20 RPSpotLight::get_fov 0 1 106 0
+46
+inline float RPSpotLight::get_fov(void) const;
+
+229 13 set_direction 0 4 262 26 RPSpotLight::set_direction 0 2 107 108 0
+131
+inline void RPSpotLight::set_direction(LVecBase3f direction);
+inline void RPSpotLight::set_direction(float dx, float dy, float dz);
+
+230 13 get_direction 0 4 262 26 RPSpotLight::get_direction 0 1 109 0
+64
+inline LVecBase3f const &RPSpotLight::get_direction(void) const;
+
+231 7 look_at 0 4 262 20 RPSpotLight::look_at 0 2 110 111 0
+112
+inline void RPSpotLight::look_at(LVecBase3f point);
+inline void RPSpotLight::look_at(float x, float y, float z);
+
+232 12 ~RPSpotLight 0 4 262 25 RPSpotLight::~RPSpotLight 0 0 0
+32
+RPSpotLight::~RPSpotLight(void);
+
+233 18 MeshSplitterWriter 0 4 263 38 MeshSplitterWriter::MeshSplitterWriter 0 2 112 113 0
+130
+MeshSplitterWriter::MeshSplitterWriter(void);
+inline MeshSplitterWriter::MeshSplitterWriter(MeshSplitterWriter const &) = default;
+
+234 19 ~MeshSplitterWriter 0 4 263 39 MeshSplitterWriter::~MeshSplitterWriter 0 0 0
+46
+MeshSplitterWriter::~MeshSplitterWriter(void);
+
+235 8 add_geom 0 4 263 28 MeshSplitterWriter::add_geom 0 1 114 0
+59
+void MeshSplitterWriter::add_geom(ConstPointerTo< Geom > );
+
+236 7 process 0 4 263 27 MeshSplitterWriter::process 0 1 115 0
+55
+void MeshSplitterWriter::process(Filename const &dest);
+
+237 6 SGNode 0 4 264 14 SGNode::SGNode 0 2 116 117 0
+144
+SGNode::SGNode(std::string const &name, StaticGeometryHandler *handler, int dataset_reference);
+inline SGNode::SGNode(SGNode const &) = default;
+
+238 14 get_class_type 0 4 264 22 SGNode::get_class_type 0 1 118 0
+47
+static TypeHandle SGNode::get_class_type(void);
+
+239 12 SGRenderNode 0 4 266 26 SGRenderNode::SGRenderNode 0 2 119 120 0
+164
+SGRenderNode::SGRenderNode(StaticGeometryHandler *handler, PointerTo< Shader > collector_shader);
+inline SGRenderNode::SGRenderNode(SGRenderNode const &) = default;
+
+240 14 get_class_type 0 4 266 28 SGRenderNode::get_class_type 0 1 121 0
+53
+static TypeHandle SGRenderNode::get_class_type(void);
+
+241 21 StaticGeometryHandler 0 4 267 44 StaticGeometryHandler::StaticGeometryHandler 0 2 122 123 0
+145
+StaticGeometryHandler::StaticGeometryHandler(void);
+inline StaticGeometryHandler::StaticGeometryHandler(StaticGeometryHandler const &) = default;
+
+242 22 ~StaticGeometryHandler 0 4 267 45 StaticGeometryHandler::~StaticGeometryHandler 0 0 0
+52
+StaticGeometryHandler::~StaticGeometryHandler(void);
+
+243 12 load_dataset 0 4 267 35 StaticGeometryHandler::load_dataset 0 1 124 0
+74
+DatasetReference StaticGeometryHandler::load_dataset(Filename const &src);
+
+124
+1 0 0 7 3 268 135 0 0 1 12 command_type 1 245  
+2 0 0 4 4 269 0 0 308 /**
+ * @brief Appends an integer to the GPUCommand.
+ * @details This adds an integer to the back of the GPUCommand. Depending on the
+ *   setting in convert_int_to_float, this will either just convert the int to a
+ *   float by casting it, or just do a bitwise copy.
+ *
+ * @param v The integer to append.
+ */ 2 4 this 3 268  1 v 1 254  
+3 0 0 4 5 269 0 0 415 /**
+ * @brief Appends a float to the GPUCommand.
+ * @details This adds an integer to the back of the GPUCommand. Its used by all
+ *   other push_xxx methods, and simply stores the value, then increments the write
+ *   pointer. When the amount of floats exceeds the capacity of the GPUCommand,
+ *   an error will be printed, and the method returns without doing anything else.
+ *
+ * @param v The float to append.
+ */ 2 4 this 3 268  1 v 1 252  
+4 0 0 4 6 269 0 0 341 /**
+ * @brief Appends a 3-component floating point vector to the GPUCommand.
+ * @details This appends a 3-component floating point vector to the command.
+ *   It basically just calls push_float() for every component, in the order
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
+ * @param v Int-Vector to append.
+ */ 2 4 this 3 268  1 v 1 270  
+5 0 0 4 6 269 0 0 325 /**
+ * @brief Appends a 3-component integer vector to the GPUCommand.
+ * @details This appends a 3-component integer vector to the command.
+ *   It basically just calls push_int() for every component, in the order
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
+ * @param v Int-Vector to append.
+ */ 2 4 this 3 268  1 v 1 273  
+6 0 0 4 7 269 0 0 341 /**
+ * @brief Appends a 4-component floating point vector to the GPUCommand.
+ * @details This appends a 4-component floating point vector to the command.
+ *   It basically just calls push_float() for every component, in the order
+ *   x, y, z, which causes the vector to occupy the space of 3 floats.
+ *
+ * @param v Int-Vector to append.
+ */ 2 4 this 3 268  1 v 1 276  
+7 0 0 4 7 269 0 0 328 /**
+ * @brief Appends a 4-component integer vector to the GPUCommand.
+ * @details This appends a 4-component integer vector to the command.
+ *   It basically just calls push_int() for every component, in the order
+ *   x, y, z, w, which causes the vector to occupy the space of 4 floats.
+ *
+ * @param v Int-Vector to append.
+ */ 2 4 this 3 268  1 v 1 279  
+8 0 0 4 8 269 0 0 276 /**
+ * @brief Appends a floating point 3x3 matrix to the GPUCommand.
+ * @details This appends a floating point 3x3 matrix to the GPUCommand, by
+ *   pushing all components in row-order to the command. This occupies a space of
+ *   9 floats.
+ *
+ * @param v Matrix to append
+ */ 2 4 this 3 268  1 v 1 282  
+9 0 0 4 9 269 0 0 277 /**
+ * @brief Appends a floating point 4x4 matrix to the GPUCommand.
+ * @details This appends a floating point 4x4 matrix to the GPUCommand, by
+ *   pushing all components in row-order to the command. This occupies a space of
+ *   16 floats.
+ *
+ * @param v Matrix to append
+ */ 2 4 this 3 268  1 v 1 285  
+10 0 0 6 10 253 0 0 434 /**
+ * @brief Returns whether integers are packed as floats.
+ * @details This returns how integer are packed into the data stream. If the
+ *   returned value is true, then integers are packed using their binary
+ *   representation converted to floating point format. If the returned value
+ *   is false, then integers are packed by simply casting them to float,
+ *   e.g. val = (float)i;
+ * @return The integer representation flag
+ */ 0 
+11 0 0 4 11 269 0 0 0 3 4 this 3 268  4 dest 1 288  13 command_index 1 247  
+12 0 0 4 12 269 0 0 0 2 4 this 3 292  3 out 1 294  
+13 0 0 7 15 296 140 0 0 0 
+14 0 0 7 15 296 140 0 0 1 6 param0 0 297  
+15 0 0 4 16 269 0 0 0 2 4 this 3 296  3 cmd 1 292  
+16 0 0 6 17 247 0 0 0 1 4 this 3 296  
+17 0 0 6 18 247 0 0 0 3 4 this 3 296  4 dest 1 288  5 limit 1 247  
+18 0 0 4 26 269 0 0 230 /**
+ * @brief Sets the position of the light
+ * @details This sets the position of the light in world space. It will cause
+ *   the light to get invalidated, and resubmitted to the GPU.
+ *
+ * @param pos Position in world space
+ */ 2 4 this 3 299  3 pos 1 270  
+19 0 0 4 26 269 0 0 236 /**
+ * @brief Sets the position of the light
+ * @details @copydetails RPLight::set_pos(const LVecBase3f &pos)
+ *
+ * @param x X-component of the position
+ * @param y Y-component of the position
+ * @param z Z-component of the position
+ */ 4 4 this 3 299  1 x 1 252  1 y 1 252  1 z 1 252  
+20 0 0 6 27 270 0 0 214 /**
+ * @brief Returns the position of the light
+ * @details This returns the position of the light previously set with
+ *   RPLight::set_pos(). The returned position is in world space.
+ * @return Light-position
+ */ 1 4 this 3 300  
+21 0 0 4 30 269 0 0 461 /**
+ * @brief Sets the lights color
+ * @details This sets the lights color. The color should not include the brightness
+ *   of the light, you should control that with the lumens. The color specifies
+ *   the lights "tint" and will get multiplied with its specular and diffuse
+ *   contribution.
+ *
+ *   The color will be normalized by dividing by the colors luminance. Setting
+ *   higher values than 1.0 will have no effect.
+ *
+ * @param color Light color
+ */ 2 4 this 3 299  5 color 1 270  
+22 0 0 4 30 269 0 0 231 /**
+ * @brief Sets the lights color
+ * @details @copydetails RPLight::set_color(const LVecBase3f &color)
+ *
+ * @param r Red-component of the color
+ * @param g Green-component of the color
+ * @param b Blue-component of the color
+ */ 4 4 this 3 299  1 r 1 252  1 g 1 252  1 b 1 252  
+23 0 0 6 31 270 0 0 324 /**
+ * @brief Returns the lights color
+ * @details This returns the light color, previously set with RPLight::set_color.
+ *   This does not include the lumens of the light. It might differ from what
+ *   was set with set_color, because the color is normalized by dividing it
+ *   by its luminance.
+ * @return Light-color
+ */ 1 4 this 3 300  
+24 0 0 4 33 269 0 0 0 2 4 this 3 299  11 temperature 1 252  
+25 0 0 4 34 269 0 0 238 /**
+ * @brief Sets the lumens of the light
+ * @details This sets the lumens of the light, which can be seen as the brightness
+ *   of the light. It will get multiplied with the normalized color.
+ *
+ * @param lumens Lumens of the light
+ */ 2 4 this 3 299  6 lumens 1 252  
+26 0 0 6 35 252 0 0 179 /**
+ * @brief Returns the lumens of the light
+ * @details This returns the lumens of the light, previously set with
+ *   RPLight::set_lumens.
+ *
+ * @return Lumens of the light
+ */ 1 4 this 3 300  
+27 0 0 6 38 251 0 0 243 /**
+ * @brief Returns the type of the light
+ * @details This returns the internal type of the light, which was specified
+ *   in the lights constructor. This can be used to distinguish between light
+ *   types.
+ * @return Type of the light
+ */ 1 4 this 3 300  
+28 0 0 4 40 269 0 0 426 /**
+ * @brief Controls whether the light casts shadows
+ * @details This sets whether the light casts shadows. You can not change this
+ *   while the light is attached. When flag is set to true, the light will be
+ *   setup to cast shadows, spawning shadow sources based on the lights type.
+ *   If the flag is set to false, the light will be inddicated to cast no shadows.
+ *
+ * @param flag Whether the light casts shadows
+ */ 2 4 this 3 299  4 flag 1 253  
+29 0 0 6 41 253 0 0 261 /**
+ * @brief Returns whether the light casts shadows
+ * @details This returns whether the light casts shadows, the returned value
+ *   is the one previously set with RPLight::set_casts_shadows.
+ *
+ * @return true if the light casts shadows, false otherwise
+ */ 1 4 this 3 300  
+30 0 0 4 44 269 0 0 574 /**
+ * @brief Sets the lights shadow map resolution
+ * @details This sets the lights shadow map resolution. This has no effect
+ *   when the light is not told to cast shadows (Use RPLight::set_casts_shadows).
+ *
+ *   When calling this on a light with multiple shadow sources (e.g. PointLight),
+ *   this controls the resolution of each source. If the light has 6 shadow sources,
+ *   and you use a resolution of 512x512, the lights shadow map will occur a
+ *   space of 6 * 512x512 maps in the shadow atlas.
+ *
+ * @param resolution Resolution of the shadow map in pixels
+ */ 2 4 this 3 299  10 resolution 1 247  
+31 0 0 6 45 247 0 0 343 /**
+ * @brief Returns the shadow map resolution
+ * @details This returns the shadow map resolution of each source of the light.
+ *   If the light is not setup to cast shadows, this value is meaningless.
+ *   The returned value is the one previously set with RPLight::set_shadow_map_resolution.
+ *
+ * @return Shadow map resolution in pixels
+ */ 1 4 this 3 300  
+32 0 0 4 47 269 0 0 492 /**
+ * @brief Sets the ies profile
+ * @details This sets the ies profile of the light. The parameter should be a
+ *   handle previously returned by RenderPipeline.load_ies_profile. Using a
+ *   value of -1 indicates no ies profile.
+ *
+ *   Notice that for ies profiles which cover a whole range, you should use
+ *   PointLights, whereas for ies profiles which only cover the lower hemisphere
+ *   you should use SpotLights for the best performance.
+ *
+ * @param profile IES Profile handle
+ */ 2 4 this 3 299  7 profile 1 254  
+33 0 0 6 48 254 0 0 229 /**
+ * @brief Returns the lights ies profile
+ * @details This returns the ies profile of a light, previously set with
+ *   RPLight::set_ies_profile. In case no ies profile was set, returns -1.
+ *
+ * @return IES Profile handle
+ */ 1 4 this 3 300  
+34 0 0 6 49 253 0 0 272 /**
+ * @brief Returns whether the light has an ies profile assigned
+ * @details This returns whether the light has an ies profile assigned,
+ *   previously done with RPLight::set_ies_profile.
+ *
+ * @return true if the light has an ies profile assigned, false otherwise
+ */ 1 4 this 3 300  
+35 0 0 4 50 269 0 0 184 /**
+ * @brief Clears the ies profile
+ * @details This clears the ies profile of the light, telling it to no longer
+ *   use an ies profile, and instead use the default attenuation.
+ */ 1 4 this 3 299  
+36 0 0 4 53 269 0 0 554 /**
+ * @brief Sets the near plane of the light
+ * @details This sets the near plane of all shadow sources of the light. It has
+ *   no effects if the light does not cast shadows. This prevents artifacts from
+ *   objects near to the light. It behaves like Lens::set_near_plane.
+ *
+ *   It can also help increasing shadow map precision, low near planes will
+ *   cause the precision to suffer. Try setting the near plane as big as possible.
+ *
+ *   If a negative or zero near plane is passed, an assertion is thrown.
+ *
+ * @param near_plane Near-plane
+ */ 2 4 this 3 299  10 near_plane 1 252  
+37 0 0 6 54 252 0 0 244 /**
+ * @brief Returns the near plane of the light
+ * @details This returns the lights near plane, previously set with
+ *   RPLight::set_near_plane. If the light does not cast shadows, this value
+ *   is meaningless.
+ *
+ * @return Near-plane
+ */ 1 4 this 3 300  
+38 0 0 7 57 302 0 0 0 0 
+39 0 0 7 57 302 0 0 0 1 6 param0 0 303  
+40 0 0 4 58 269 0 0 1064 /**
+ * @brief Sets the maximum amount of updates per frame.
+ * @details This controls the maximum amount of updated ShadowSources per frame.
+ *   The ShadowManager will take the first <max_updates> ShadowSources, and
+ *   generate shadow maps for them every frame. If there are more ShadowSources
+ *   waiting to get updated than available updates, the sources are sorted by
+ *   priority, and the update of the less important sources is delayed to the
+ *   next frame.
+ *
+ *   If the update count is set too low, and there are a lot of ShadowSources
+ *   waiting to get updated, artifacts will occur, and there might be ShadowSources
+ *   which never get updated, due to low priority.
+ *
+ *   If an update count of 0 is passed, no updates will happen. This also means
+ *   that there are no shadows. This is not recommended.
+ *
+ *   If an update count < 0 is passed, undefined behaviour occurs.
+ *
+ *   This method has to get called before ShadowManager::init, otherwise an
+ *   assertion will get triggered.
+ *
+ * @param max_updates Maximum amoumt of updates
+ */ 2 4 this 3 302  11 max_updates 1 247  
+41 0 0 4 59 269 0 0 477 /**
+ * @brief Sets the shadow atlas size
+ * @details This sets the desired shadow atlas size. It should be big enough
+ *   to store all important shadow sources, with some buffer, because the shadow
+ *   maps usually won't be fitted perfectly, so gaps can occur.
+ *
+ *   This has to get called before calling ShadowManager::init. When calling this
+ *   method after initialization, an assertion will get triggered.
+ *
+ * @param atlas_size Size of the shadow atlas in pixels
+ */ 2 4 this 3 302  10 atlas_size 1 247  
+42 0 0 4 60 269 0 0 467 /**
+ * @brief Sets the target scene
+ * @details This sets the target scene for rendering shadows. All shadow cameras
+ *   will be parented to this scene to render shadows.
+ *
+ *   Usually the scene will be ShowBase.render. If the scene is an empty or
+ *   invalid NodePath, an assertion will be triggered.
+ *
+ *   This method has to get called before calling ShadowManager::init, or an
+ *   assertion will get triggered.
+ *
+ * @param scene_parent The target scene
+ */ 2 4 this 3 302  12 scene_parent 1 305  
+43 0 0 4 61 269 0 0 328 /**
+ * @brief Sets the handle to the TagStageManager.
+ * @details This sets the handle to the TagStateManager used by the pipeline.
+ *   Usually this is RenderPipeline.get_tag_mgr().
+ *
+ *   This has to get called before ShadowManager::init, otherwise an assertion
+ *   will get triggered.
+ *
+ * @param tag_mgr [description]
+ */ 2 4 this 3 302  7 tag_mgr 1 307  
+44 0 0 4 62 269 0 0 525 /**
+ * @brief Sets the handle to the Shadow targets output
+ * @details This sets the handle to the GraphicsOutput of the shadow atlas.
+ *   Usually this is RenderTarget.get_internal_buffer(), whereas the RenderTarget
+ *   is the target of the ShadowStage.
+ *
+ *   This is used for creating display regions and attaching cameras to them,
+ *   for performing shadow updates.
+ *
+ *   This has to get called before ShadowManager::init, otherwise an assertion
+ *   will be triggered.
+ *
+ * @param graphics_output [description]
+ */ 2 4 this 3 302  15 graphics_output 1 308  
+45 0 0 6 63 247 0 0 190 /**
+ * @brief Returns the shadow atlas size.
+ * @details This returns the shadow atlas size previously set with
+ *   ShadowManager::set_atlas_size.
+ * @return Shadow atlas size in pixels
+ */ 1 4 this 3 303  
+46 0 0 6 64 247 0 0 274 /**
+ * @brief Returns how many update slots are left.
+ * @details This returns how many update slots are left. You can assume the
+ *   next n calls to add_update will succeed, whereas n is the value returned
+ *   by this function.
+ * @return Number of update slots left.
+ */ 1 4 this 3 303  
+47 0 0 4 65 269 0 0 0 1 4 this 3 302  
+48 0 0 4 66 269 0 0 0 1 4 this 3 302  
+49 0 0 7 68 307 170 0 0 1 13 main_cam_node 1 305  
+50 0 0 7 68 307 170 0 0 1 6 param0 0 310  
+51 0 0 7 70 314 0 0 189 /**
+ * @brief Returns the bitmask used for rendering the default scene geometry.
+ * @details This returns the bitmask which will be used for normal rendering.
+ * @return Default bitmask
+ */ 0 
+52 0 0 7 71 314 0 0 230 /**
+ * @brief Returns the bitmask used for voxelization.
+ * @details This returns the bitmask which will be used when voxelizing the scene.
+ *   This is for example used for the Global Illumination.
+ * @return Voxelize bitmask
+ */ 0 
+53 0 0 7 72 314 0 0 219 /**
+ * @brief Returns the bitmask used for rendering shadows.
+ * @details This returns the bitmask which will be used whenever rendering
+ *   shadows, e.g. PSSM or regular shadow rendering.
+ * @return Shadow bitmask
+ */ 0 
+54 0 0 7 73 314 0 0 193 /**
+ * @brief Returns the bitmask used for environment maps.
+ * @details This returns the bitmask which will be used when rendering environment
+ *   cubemaps.
+ * @return Environment bitmask
+ */ 0 
+55 0 0 4 74 269 0 0 527 /**
+ * @brief Applies a given shadow state to a NodePath
+ * @details This applies a shader to the given NodePath which is used when the
+ *   NodePath is rendered by any registered shadow camera to render shadows.
+ *   It also disables color write (since its not required for shadows).
+ *
+ * @param np The nodepath to apply the shader to
+ * @param shader A handle to the shader to apply
+ * @param name Name of the state, should be a unique identifier
+ * @param sort Determines the sort with which the shader will be applied.
+ */ 5 4 this 3 307  2 np 1 305  6 shader 1 315  4 name 1 317  4 sort 1 254  
+56 0 0 4 75 269 0 0 544 /**
+ * @brief Applies a given voxelize state to a NodePath
+ * @details This applies a shader to the given NodePath which is used when the
+ *   NodePath is rendered by any registered voxelization camera to voxelize the
+ *   scene. It also disables color write (since its not required for voxelization).
+ *
+ * @param np The nodepath to apply the shader to
+ * @param shader A handle to the shader to apply
+ * @param name Name of the state, should be a unique identifier
+ * @param sort Determines the sort with which the shader will be applied.
+ */ 5 4 this 3 307  2 np 1 305  6 shader 1 315  4 name 1 317  4 sort 1 254  
+57 0 0 4 76 269 0 0 481 /**
+ * @brief Applies a given environment state to a NodePath
+ * @details This applies a shader to the given NodePath which is used when the
+ *   NodePath is rendered by any registered environment camera to render an
+ *   environment map.
+ *
+ * @param np The nodepath to apply the shader to
+ * @param shader A handle to the shader to apply
+ * @param name Name of the state, should be a unique identifier
+ * @param sort Determines the sort with which the shader will be applied.
+ */ 5 4 this 3 307  2 np 1 305  6 shader 1 315  4 name 1 317  4 sort 1 254  
+58 0 0 4 77 269 0 0 0 1 4 this 3 307  
+59 0 0 4 78 269 0 0 506 /**
+ * @brief Registers a new camera which renders shadows
+ * @details This registers a new camera which will be used to render shadows
+ *   somewhere else. The TagStateManager will keep track of the camera and
+ *   applies all registered states onto the camera with Camera::set_tag_state.
+ *   It also applies the shadow camera mask (TagStateManager::get_shadow_mask)
+ *   to the camera, and sets an initial state to disable color write.
+ *
+ * @param source Camera which will be used to render shadows
+ */ 2 4 this 3 307  6 source 1 318  
+60 0 0 4 79 269 0 0 261 /**
+ * @brief Unregisters a camera from the list of shadow cameras
+ * @details This unregisters a camera from the list of shadows cameras. It also
+ *   resets all tag states of the camera, and also its initial state.
+ *
+ * @param source Camera to unregister
+ */ 2 4 this 3 307  6 source 1 318  
+61 0 0 4 80 269 0 0 509 /**
+ * @brief Registers a new camera for voxelization
+ * @details This registers a new camera which will be used to voxelize the scene
+ *   somewhere else. The TagStateManager will keep track of the camera and
+ *   applies all registered states onto the camera with Camera::set_tag_state.
+ *   It also applies the voxelize camera mask (TagStateManager::get_voxelize_mask)
+ *   to the camera, and sets an initial state to disable color write.
+ *
+ * @param source Camera which will be used to render shadows
+ */ 2 4 this 3 307  6 source 1 318  
+62 0 0 4 81 269 0 0 272 /**
+ * @brief Unregisters a camera from the list of voxelization cameras
+ * @details This unregisters a camera from the list of voxelization cameras. It also
+ *   resets all tag states of the camera, and also its initial state.
+ *
+ * @param source Camera to unregister
+ */ 2 4 this 3 307  6 source 1 318  
+63 0 0 4 82 269 0 0 451 /**
+ * @brief Registers a new camera for environment map
+ * @details This registers a new camera which will be used when rendering environment
+ *   map. The TagStateManager will keep track of the camera and applies all registered
+ *   tates onto the camera with Camera::set_tag_state.
+ *   It also applies the envmap camera mask (TagStateManager::get_envmap_mask)
+ *   to the camera.
+ *
+ * @param source Camera which will be used to render shadows
+ */ 2 4 this 3 307  6 source 1 318  
+64 0 0 4 83 269 0 0 278 /**
+ * @brief Unregisters a camera from the list of environment map cameras
+ * @details This unregisters a camera from the list of environment map cameras. It also
+ *   resets all tag states of the camera, and also its initial state.
+ *
+ * @param source Camera to unregister
+ */ 2 4 this 3 307  6 source 1 318  
+65 0 0 7 85 320 190 0 0 0 
+66 0 0 7 85 320 190 0 0 1 6 param0 0 321  
+67 0 0 4 86 269 0 0 0 2 4 this 3 320  15 vertical_angles 1 323  
+68 0 0 4 87 269 0 0 0 2 4 this 3 320  17 horizontal_angles 1 323  
+69 0 0 4 88 269 0 0 0 2 4 this 3 320  14 candela_values 1 323  
+70 0 0 4 89 269 0 0 0 3 4 this 3 321  8 dest_tex 1 327  1 z 1 247  
+71 0 0 7 92 331 192 0 0 1 6 param0 0 329  
+72 0 0 7 92 331 192 0 0 2 4 size 1 247  9 tile_size 1 247  
+73 0 0 7 95 332 202 0 0 0 
+74 0 0 7 95 332 202 0 0 1 6 param0 0 333  
+75 0 0 4 96 269 0 0 0 2 4 this 3 332  5 light 1 299  
+76 0 0 4 97 269 0 0 0 2 4 this 3 332  5 light 1 299  
+77 0 0 4 98 269 0 0 0 1 4 this 3 332  
+78 0 0 6 99 254 0 0 870 /**
+ * @brief Returns the maximum light index
+ * @details This returns the maximum light index (also called slot). Any lights
+ *   after that slot are guaranteed to be zero-lights. This is useful when
+ *   iterating over the list of lights, because iteration can be stopped when
+ *   the maximum light index is reached.
+ *
+ *   The maximum light index points to the last slot which is used. If no lights
+ *   are attached, -1 is returned. If one light is attached at slot 0, the index
+ *   is 0, if two are attached at the slots 0 and 1, the index is 1, and so on.
+ *
+ *   If, for example, two lights are attached at the slots 2 and 5, then the
+ *   index will be 5. Keep in mind that the max-index is not an indicator for
+ *   how many lights are attached. Also, zero lights still may occur when iterating
+ *   over the light lists
+ *
+ * @return Maximum light index
+ */ 1 4 this 3 333  
+79 0 0 6 100 247 0 0 325 /**
+ * @brief Returns the amount of stored lights.
+ * @details This returns the amount of stored lights. This behaves unlike
+ *   InternalLightManager::get_max_light_index, and instead returns the true
+ *   amount of lights, which is completely unrelated to the amount of used slots.
+ *
+ * @return Amount of stored lights
+ */ 1 4 this 3 333  
+80 0 0 6 101 247 0 0 293 /**
+ * @brief Returns the amount of shadow sources.
+ * @details This returns the total amount of stored shadow sources. This does
+ *   not denote the amount of updated sources, but instead takes into account
+ *   all sources, even those out of frustum.
+ * @return Amount of shadow sources.
+ */ 1 4 this 3 333  
+81 0 0 4 102 269 0 0 671 /**
+ * @brief Sets a handle to the command list
+ * @details This sets a handle to the global GPUCommandList. This is required to
+ *   emit GPUCommands, which are used for attaching and detaching lights, as well
+ *   as shadow source updates.
+ *
+ *   The cmd_list should be a handle to a GPUCommandList handle, and will be
+ *   stored somewhere on the python side most likely. The light manager does not
+ *   keep a reference to it, so the python side should make sure to keep one.
+ *
+ *   Be sure to call this before the InternalLightManager::update() method is
+ *   called, otherwise an assertion will get triggered.
+ *
+ * @param cmd_list The GPUCommandList instance
+ */ 2 4 this 3 332  8 cmd_list 1 296  
+82 0 0 4 103 269 0 0 623 /**
+ * @brief Sets the handle to the shadow manager
+ * @details This sets the handle to the global shadow manager. It is usually
+ *   constructed on the python side, so we need to get a handle to it.
+ *
+ *   The manager should be a handle to a ShadowManager instance, and will be
+ *   stored somewhere on the python side most likely. The light manager does not
+ *   keep a reference to it, so the python side should make sure to keep one.
+ *
+ *   Be sure to call this before the InternalLightManager::update() method is
+ *   called, otherwise an assertion will get triggered.
+ *
+ * @param mgr The ShadowManager instance
+ */ 2 4 this 3 332  3 mgr 1 302  
+83 0 0 7 106 335 204 0 0 1 10 num_splits 1 247  
+84 0 0 4 108 269 0 0 316 /**
+ * @brief Sets the maximum pssm distance.
+ * @details This sets the maximum distance in world space until which shadows
+ *   are rendered. After this distance, no shadows will be rendered.
+ *
+ *   If the distance is below zero, an assertion is triggered.
+ *
+ * @param distance Maximum distance in world space
+ */ 2 4 this 3 335  8 distance 1 252  
+85 0 0 4 109 269 0 0 664 /**
+ * @brief Sets the suns distance
+ * @details This sets the distance the cameras will have from the cameras frustum.
+ *   This prevents far objects from having no shadows, which can occur when these
+ *   objects are between the cameras frustum and the sun, but not inside of the
+ *   cameras frustum. Setting the sun distance high enough will move the cameras
+ *   away from the camera frustum, being able to cover those distant objects too.
+ *
+ *   If the sun distance is set too high, artifacts will occur due to the reduced
+ *   range of depth. If a value below zero is passed, an assertion will get
+ *   triggered.
+ *
+ * @param distance The sun distance
+ */ 2 4 this 3 335  8 distance 1 252  
+86 0 0 4 110 269 0 0 566 /**
+ * @brief Sets whether to use a fixed film size
+ * @details This controls if a fixed film size should be used. This will cause
+ *   the camera rig to cache the current film size, and only change it in case
+ *   it gets too small. This provides less flickering when moving, because the
+ *   film size will stay roughly constant. However, to prevent the cached film
+ *   size getting too big, one should call PSSMCameraRig::reset_film_size
+ *   once in a while, otherwise there might be a lot of wasted space.
+ *
+ * @param flag Whether to use a fixed film size
+ */ 2 4 this 3 335  4 flag 1 253  
+87 0 0 4 111 269 0 0 432 /**
+ * @brief Sets the resolution of each split
+ * @details This sets the resolution of each split. Currently it is equal for
+ *   each split. This is required when using PSSMCameraRig::set_use_stable_csm,
+ *   to compute how bix a texel is.
+ *
+ *   It has to match the y-resolution of the pssm shadow map. If an invalid
+ *   resolution is triggered, an assertion is thrown.
+ *
+ * @param resolution The resolution of each split.
+ */ 2 4 this 3 335  10 resolution 1 247  
+88 0 0 4 112 269 0 0 403 /**
+ * @brief Sets whether to use stable CSM snapping.
+ * @details This option controls if stable CSM snapping should be used. When the
+ *   option is enabled, all splits will snap to their texels, so that when moving,
+ *   no flickering will occur. However, this only works when the splits do not
+ *   change their film size, rotation and angle.
+ *
+ * @param flag Whether to use stable CSM snapping
+ */ 2 4 this 3 335  4 flag 1 253  
+89 0 0 4 113 269 0 0 775 /**
+ * @brief Sets the logarithmic factor
+ * @details This sets the logarithmic factor, which is the core of the algorithm.
+ *   PSSM splits the camera frustum based on a linear and a logarithmic factor.
+ *   While a linear factor provides a good distribution, it often is not applicable
+ *   for wider distances. A logarithmic distribution provides a better distribution
+ *   at distance, but suffers from splitting in the near areas.
+ *
+ *   The logarithmic factor mixes the logarithmic and linear split distribution,
+ *   to get the best of both. A greater factor will make the distribution more
+ *   logarithmic, while a smaller factor will make it more linear.
+ *
+ *   If the factor is below zero, an ssertion is triggered.
+ *
+ * @param factor The logarithmic factor
+ */ 2 4 this 3 335  6 factor 1 252  
+90 0 0 4 114 269 0 0 482 /**
+ * @brief Sets the border bias for each split
+ * @details This sets the border bias for every split. This increases each
+ *   splits frustum by multiplying it by (1 + bias), and helps reducing artifacts
+ *   at the borders of the splits. Artifacts can occur when the bias is too low,
+ *   because then the filtering will go over the bounds of the split, producing
+ *   invalid results.
+ *
+ *   If the bias is below zero, an assertion is thrown.
+ *
+ * @param bias Border bias
+ */ 2 4 this 3 335  4 bias 1 252  
+91 0 0 4 115 269 0 0 0 3 4 this 3 335  8 cam_node 1 305  12 light_vector 1 270  
+92 0 0 4 116 269 0 0 719 /**
+ * @brief Resets the film size cache
+ * @details In case PSSMCameraRig::set_use_fixed_film_size is used, this resets
+ *   the film size cache. This might lead to a small "jump" in the shadows,
+ *   because the film size changes, however it leads to a better shadow distribution.
+ *
+ *   This is the case because when using a fixed film size, the cache will get
+ *   bigger and bigger, whenever the camera moves to a grazing angle. However,
+ *   when moving back to a normal angle, the film size cache still stores this
+ *   big angle, and thus the splits will have a much bigger film size than actualy
+ *   required. To prevent this, call this method once in a while, so an optimal
+ *   distribution is ensured.
+ */ 1 4 this 3 335  
+93 0 0 7 117 305 0 0 593 /**
+ * @brief Returns the n-th camera
+ * @details This returns the n-th camera of the camera rig, which can be used
+ *   for various stuff like showing its frustum, passing it as a shader input,
+ *   and so on.
+ *
+ *   The first camera is the camera which is the camera of the first split,
+ *   which is the split closest to the camera. All cameras follow in descending
+ *   order until to the last camera, which is the split furthest away from the
+ *   camera.
+ *
+ *   If an invalid index is passed, an assertion is thrown.
+ *
+ * @param index Index of the camera.
+ * @return [description]
+ */ 2 4 this 3 335  5 index 1 247  
+94 0 0 4 118 269 0 0 0 2 4 this 3 335  6 parent 1 305  
+95 0 0 6 119 336 0 0 316 /**
+ * @brief Returns a handle to the MVP array
+ * @details This returns a handle to the array of view-projection matrices
+ *   of the different splits. This can be used for computing shadows. The array
+ *   is a PTALMatrix4f and thus can be directly bound to a shader.
+ *
+ * @return view-projection matrix array
+ */ 1 4 this 3 335  
+96 0 0 6 120 340 0 0 508 /**
+ * @brief Returns a handle to the near and far planes array
+ * @details This returns a handle to the near and far plane array. Each split
+ *   has an entry in the array, whereas the x component of the vecto denotes the
+ *   near plane, and the y component denotes the far plane of the split.
+ *
+ *   This is required because the near and far planes of the splits change
+ *   constantly. To access them in a shader, the shader needs access to the
+ *   array.
+ *
+ * @return Array of near and far planes
+ */ 1 4 this 3 335  
+97 0 0 7 122 344 223 0 0 0 
+98 0 0 4 123 269 0 0 257 /**
+ * @brief Sets the radius of the light
+ * @details This sets the radius of the light. It controls the lights
+ *   influence. After a distance greater than this radius, the light influence
+ *   is zero.
+ *
+ * @param radius Light radius in world space
+ */ 2 4 this 3 344  6 radius 1 252  
+99 0 0 6 124 252 0 0 175 /**
+ * @brief Returns the lights radius
+ * @details This returns the lights radius previously set with
+ *   RPPointLight::set_radius
+ * @return Light radius in world space
+ */ 1 4 this 3 345  
+100 0 0 4 126 269 0 0 725 /**
+ * @brief Sets the inner radius of the light
+ * @details This sets the inner radius of the light. Anything greater than
+ *   zero causes the light to get an area light. This has influence on the
+ *   specular highlights of the light aswell as the shadows.
+ *
+ *   The inner radius controls the size of the lights sphere size in world
+ *   space units. A radius of 0 means the light has no inner radius, and the
+ *   light will be have like an infinite small point light source.
+ *   A radius greater than zero will cause the light to behave like it would be
+ *   an emissive sphere with the given inner radius emitting light. This is
+ *   more physically correct.
+ *
+ * @param inner_radius Inner-radius in world space
+ */ 2 4 this 3 344  12 inner_radius 1 252  
+101 0 0 6 127 252 0 0 193 /**
+ * @brief Returns the inner radius of the light
+ * @details This returns the inner radius of the light, previously set with
+ *   RPPointLight::get_inner_radius.
+ * @return [description]
+ */ 1 4 this 3 345  
+102 0 0 7 131 347 232 0 0 0 
+103 0 0 4 132 269 0 0 0 2 4 this 3 347  6 radius 1 252  
+104 0 0 6 133 252 0 0 0 1 4 this 3 348  
+105 0 0 4 135 269 0 0 0 2 4 this 3 347  3 fov 1 252  
+106 0 0 6 136 252 0 0 0 1 4 this 3 348  
+107 0 0 4 138 269 0 0 0 2 4 this 3 347  9 direction 1 350  
+108 0 0 4 138 269 0 0 0 4 4 this 3 347  2 dx 1 252  2 dy 1 252  2 dz 1 252  
+109 0 0 6 139 270 0 0 0 1 4 this 3 348  
+110 0 0 4 140 269 0 0 0 2 4 this 3 347  5 point 1 350  
+111 0 0 4 140 269 0 0 0 4 4 this 3 347  1 x 1 252  1 y 1 252  1 z 1 252  
+112 0 0 7 144 351 234 0 0 0 
+113 0 0 7 144 351 234 0 0 1 6 param0 0 352  
+114 0 0 4 146 269 0 0 0 2 4 this 3 351  6 param0 0 354  
+115 0 0 4 147 269 0 0 0 2 4 this 3 351  4 dest 1 357  
+116 0 0 7 150 362 0 0 0 1 6 param0 0 360  
+117 0 0 7 150 362 0 0 0 3 4 name 1 317  7 handler 1 363  17 dataset_reference 1 254  
+118 0 0 7 151 365 0 0 0 0 
+119 0 0 7 153 368 0 0 0 1 6 param0 0 366  
+120 0 0 7 153 368 0 0 0 2 7 handler 1 363  16 collector_shader 1 315  
+121 0 0 7 154 365 0 0 0 0 
+122 0 0 7 156 363 242 0 0 0 
+123 0 0 7 156 363 242 0 0 1 6 param0 0 369  
+124 0 0 6 158 371 0 0 0 2 4 this 3 363  3 src 1 357  
+128
+244 10 GPUCommand 0 141313 10 GPUCommand 10 GPUCommand 0 0 0 1 125 135 0 9 126 127 128 129 130 131 132 133 134 0 0 0 0 1 245 303
+/**
+ * @brief Class for storing data to be transferred to the GPU.
+ * @details This class can be seen like a packet, to be transferred to the GPU.
+ *   It has a command type, which tells the GPU what to do once it recieved this
+ *   "packet". It stores a limited amount of floating point components.
+ */
+
+245 11 CommandType 0 794624 23 GPUCommand::CommandType 23 GPUCommand::CommandType 244 0 0 0 0 0 0 0 0 0 5 11 CMD_invalid 23 GPUCommand::CMD_invalid 0
+0 15 CMD_store_light 27 GPUCommand::CMD_store_light 0
+1 16 CMD_remove_light 28 GPUCommand::CMD_remove_light 0
+2 16 CMD_store_source 28 GPUCommand::CMD_store_source 0
+3 18 CMD_remove_sources 30 GPUCommand::CMD_remove_sources 0
+4 0 221
+/**
+         * The different types of GPUCommands. Each type has a special case in
+         * the command queue processor. When adding new types, those need to
+         * be handled in the command target, too.
+         */
+
+246 14 GPUCommandList 0 141313 14 GPUCommandList 14 GPUCommandList 0 0 0 1 136 140 1 372 3 137 138 139 0 0 0 0 0 203
+/**
+ * @brief Class to store a list of commands.
+ * @details This is a class to store a list of GPUCommands. It provides
+ *   functionality to only provide the a given amount of commands at one time.
+ */
+
+247 6 size_t 0 2105344 11 std::size_t 11 std::size_t 0 0 248 0 0 0 0 0 0 0 0 0 0
+
+248 22 unsigned long long int 0 8230 22 unsigned long long int 22 unsigned long long int 0 8 0 0 0 0 0 0 0 0 0 0 0
+
+249 7 RPLight 0 75777 7 RPLight 7 RPLight 0 0 0 0 0 8 373 374 375 376 377 378 379 380 18 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 0 0 1 0 250 0 0 0 1 251 267
+/**
+ * @brief Base class for Lights
+ * @details This is the base class for all lights in the render pipeline. It
+ *   stores common properties, and provides methods to modify these.
+ *   It also defines some interface functions which subclasses have to implement.
+ */
+
+250 14 ReferenceCount 0 2049 14 ReferenceCount 14 ReferenceCount 0 0 0 0 0 0 0 0 0 0 0 0 425
+////////////////////////////////////////////////////////////////////
+//       Class : ReferenceCount
+// Description : A base class for all things that want to be
+//               reference-counted.  ReferenceCount works in
+//               conjunction with PointerTo to automatically delete
+//               objects when the last pointer to them goes away.
+////////////////////////////////////////////////////////////////////
+
+251 9 LightType 0 794624 18 RPLight::LightType 18 RPLight::LightType 249 0 0 0 0 0 0 0 0 0 3 8 LT_empty 17 RPLight::LT_empty 0
+0 14 LT_point_light 23 RPLight::LT_point_light 0
+1 13 LT_spot_light 22 RPLight::LT_spot_light 0
+2 0 52
+/**
+         * Different types of light.
+         */
+
+252 5 float 0 8194 5 float 5 float 0 2 0 0 0 0 0 0 0 0 0 0 0
+
+253 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+254 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+255 13 ShadowManager 0 75777 13 ShadowManager 13 ShadowManager 0 0 0 1 159 0 0 9 160 161 162 163 164 165 166 167 168 0 0 1 0 250 0 0 0 0 0
+
+256 15 TagStateManager 0 26625 15 TagStateManager 15 TagStateManager 0 0 0 1 169 170 0 14 171 172 173 174 175 176 177 178 179 180 181 182 183 184 0 0 0 0 0 455
+/**
+ * @brief This class handles all different tag states
+ * @details The TagStateManager stores a list of RenderStates assigned to different
+ *   steps in the pipeline. For example, there are a list of shadow states, which
+ *   are applied whenever objects are rendered from a shadow camera.
+ *
+ *   The Manager also stores a list of all cameras used in the different stages,
+ *   to keep track of the states used and to be able to attach new states.
+ */
+
+257 10 IESDataset 0 141313 10 IESDataset 10 IESDataset 0 0 0 1 185 190 0 4 186 187 188 189 0 0 0 0 0 347
+/**
+ * @brief This class generates a LUT from IES data.
+ * @details This class is used by the IESLoader to generate a LUT texture which
+ *   is used in the shaders to perform IES lighting. It takes a set of vertical
+ *   and horizontal angles, as well as a set of candela values, which then are
+ *   lineary interpolated onto a 2D LUT Texture.
+ */
+
+258 11 ShadowAtlas 0 26625 11 ShadowAtlas 11 ShadowAtlas 0 0 0 1 191 192 0 0 0 0 0 0 0 189
+/**
+ * @brief Class which manages distributing shadow maps in an atlas.
+ * @details This class manages the shadow atlas. It handles finding and reserving
+ *   space for new shadow maps.
+ */
+
+259 20 InternalLightManager 0 141313 20 InternalLightManager 20 InternalLightManager 0 0 0 1 193 202 0 8 194 195 196 197 198 199 200 201 0 0 0 0 0 359
+/**
+ * @brief Internal class used for handling lights and shadows.
+ * @details This is the internal class used by the pipeline to handle all
+ *   lights and shadows. It stores references to the lights, manages handling
+ *   the light and shadow slots, and also communicates with the GPU with the
+ *   GPUCommandQueue to store light and shadow source data.
+ */
+
+260 13 PSSMCameraRig 0 26625 13 PSSMCameraRig 13 PSSMCameraRig 0 0 0 1 203 204 0 13 205 206 207 208 209 210 211 212 213 214 215 216 217 0 0 0 0 0 1005
+/**
+ * @brief Main class used for handling PSSM
+ * @details This is the main class for supporting PSSM, it is used by the PSSM
+ *   plugin to compute the position of the splits.
+ *
+ *   It supports handling a varying amount of cameras, and fitting those cameras
+ *   into the main camera frustum, to render distant shadows. It also supports
+ *   various optimizations for fitting the frustum, e.g. rotating the sources
+ *   to get a better coverage.
+ *
+ *   It also provides methods to get arrays of data about the used cameras
+ *   view-projection matrices and their near and far plane, which is required for
+ *   processing the data in the shadow sampling shader.
+ *
+ *   In this class, there is often referred to "Splits" or also called "Cascades".
+ *   These denote the different cameras which are used to split the frustum,
+ *   and are a common term related to the PSSM algorithm.
+ *
+ *   To understand the functionality of this class, a detailed knowledge of the
+ *   PSSM algorithm is helpful.
+ */
+
+261 12 RPPointLight 0 141313 12 RPPointLight 12 RPPointLight 0 0 0 1 218 223 2 381 382 4 219 220 221 222 0 0 1 0 249 0 0 0 0 217
+/**
+ * @brief PointLight class
+ * @details This represents a point light, a light which has a position and
+ *   radius. Checkout the RenderPipeline documentation for more information
+ *   about this type of light.
+ */
+
+262 11 RPSpotLight 0 141313 11 RPSpotLight 11 RPSpotLight 0 0 0 1 224 232 3 383 384 385 7 225 226 227 228 229 230 231 0 0 1 0 249 0 0 0 0 231
+/**
+ * @brief SpotLight class
+ * @details This represents a spot light, a light which has a position, radius,
+ *   direction and FoV. Checkout the RenderPipeline documentation for more
+ *   information about this type of light.
+ */
+
+263 18 MeshSplitterWriter 0 26625 18 MeshSplitterWriter 18 MeshSplitterWriter 0 0 0 1 233 234 0 2 235 236 0 0 0 0 0 125
+// This small class just wraps arround mesh splitter and handles the combining of geoms
+// and the writing of the .rpsg files
+
+264 6 SGNode 0 75777 6 SGNode 6 SGNode 0 0 0 1 237 0 0 1 238 0 0 1 0 265 0 0 0 0 252
+// This class extends from pandanode and can be attached to the scene graph
+// to be manipulated like a usual panda node, however, when rendering it it
+// only attaches its triangle dataset to a list of rendered datasets instead
+// of emitting geometry
+
+265 9 PandaNode 0 2049 9 PandaNode 9 PandaNode 0 0 0 0 0 0 0 0 0 0 0 0 374
+////////////////////////////////////////////////////////////////////
+//       Class : PandaNode
+// Description : A basic node of the scene graph or data graph.  This
+//               is the base class of all specialized nodes, and also
+//               serves as a generic node with no special properties.
+////////////////////////////////////////////////////////////////////
+
+266 12 SGRenderNode 0 75777 12 SGRenderNode 12 SGRenderNode 0 0 0 1 239 0 0 1 240 0 0 1 0 265 0 0 0 0 106
+// This node is attached to the scene graph and called last, it renders all
+// static geometry to a buffer
+
+267 21 StaticGeometryHandler 0 26625 21 StaticGeometryHandler 21 StaticGeometryHandler 0 0 0 1 241 242 0 1 243 0 0 0 0 0 0
+
+268 12 GPUCommand * 0 8576 12 GPUCommand * 12 GPUCommand * 0 0 244 0 0 0 0 0 0 0 0 0 0
+
+269 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+270 18 LVecBase3f const * 0 8576 18 LVecBase3f const * 18 LVecBase3f const * 0 0 271 0 0 0 0 0 0 0 0 0 0
+
+271 16 LVecBase3f const 0 8832 16 LVecBase3f const 16 LVecBase3f const 0 0 272 0 0 0 0 0 0 0 0 0 0
+
+272 10 LVecBase3f 0 2048 10 LVecBase3f 10 LVecBase3f 0 0 0 0 0 0 0 0 0 0 0 0 265
+////////////////////////////////////////////////////////////////////
+//       Class : LVecBase3
+// Description : This is the base class for all three-component
+//               vectors and points.
+////////////////////////////////////////////////////////////////////
+
+273 18 LVecBase3i const * 0 8576 18 LVecBase3i const * 18 LVecBase3i const * 0 0 274 0 0 0 0 0 0 0 0 0 0
+
+274 16 LVecBase3i const 0 8832 16 LVecBase3i const 16 LVecBase3i const 0 0 275 0 0 0 0 0 0 0 0 0 0
+
+275 10 LVecBase3i 0 2048 10 LVecBase3i 10 LVecBase3i 0 0 0 0 0 0 0 0 0 0 0 0 265
+////////////////////////////////////////////////////////////////////
+//       Class : LVecBase3
+// Description : This is the base class for all three-component
+//               vectors and points.
+////////////////////////////////////////////////////////////////////
+
+276 18 LVecBase4f const * 0 8576 18 LVecBase4f const * 18 LVecBase4f const * 0 0 277 0 0 0 0 0 0 0 0 0 0
+
+277 16 LVecBase4f const 0 8832 16 LVecBase4f const 16 LVecBase4f const 0 0 278 0 0 0 0 0 0 0 0 0 0
+
+278 10 LVecBase4f 0 2048 10 LVecBase4f 10 LVecBase4f 0 0 0 0 0 0 0 0 0 0 0 0 265
+////////////////////////////////////////////////////////////////////
+//       Class : LVecBase4
+// Description : This is the base class for all three-component
+//               vectors and points.
+////////////////////////////////////////////////////////////////////
+
+279 18 LVecBase4i const * 0 8576 18 LVecBase4i const * 18 LVecBase4i const * 0 0 280 0 0 0 0 0 0 0 0 0 0
+
+280 16 LVecBase4i const 0 8832 16 LVecBase4i const 16 LVecBase4i const 0 0 281 0 0 0 0 0 0 0 0 0 0
+
+281 10 LVecBase4i 0 2048 10 LVecBase4i 10 LVecBase4i 0 0 0 0 0 0 0 0 0 0 0 0 265
+////////////////////////////////////////////////////////////////////
+//       Class : LVecBase4
+// Description : This is the base class for all three-component
+//               vectors and points.
+////////////////////////////////////////////////////////////////////
+
+282 17 LMatrix3f const * 0 8576 17 LMatrix3f const * 17 LMatrix3f const * 0 0 283 0 0 0 0 0 0 0 0 0 0
+
+283 15 LMatrix3f const 0 8832 15 LMatrix3f const 15 LMatrix3f const 0 0 284 0 0 0 0 0 0 0 0 0 0
+
+284 9 LMatrix3f 0 2048 9 LMatrix3f 9 LMatrix3f 0 0 0 0 0 0 0 0 0 0 0 0 462
+////////////////////////////////////////////////////////////////////
+//       Class : LMatrix3
+// Description : This is a 3-by-3 transform matrix.  It typically will
+//               represent either a rotation-and-scale (no
+//               translation) matrix in 3-d, or a full affine matrix
+//               (rotation, scale, translation) in 2-d, e.g. for a
+//               texture matrix.
+////////////////////////////////////////////////////////////////////
+
+285 17 LMatrix4f const * 0 8576 17 LMatrix4f const * 17 LMatrix4f const * 0 0 286 0 0 0 0 0 0 0 0 0 0
+
+286 15 LMatrix4f const 0 8832 15 LMatrix4f const 15 LMatrix4f const 0 0 287 0 0 0 0 0 0 0 0 0 0
+
+287 9 LMatrix4f 0 2048 9 LMatrix4f 9 LMatrix4f 0 0 0 0 0 0 0 0 0 0 0 0 215
+////////////////////////////////////////////////////////////////////
+//       Class : LMatrix4
+// Description : This is a 4-by-4 transform matrix.
+////////////////////////////////////////////////////////////////////
+
+288 17 PTA_uchar const * 0 8576 17 PTA_uchar const * 17 PTA_uchar const * 0 0 289 0 0 0 0 0 0 0 0 0 0
+
+289 15 PTA_uchar const 0 8832 15 PTA_uchar const 15 PTA_uchar const 0 0 290 0 0 0 0 0 0 0 0 0 0
+
+290 9 PTA_uchar 0 2105344 9 PTA_uchar 9 PTA_uchar 0 0 291 0 0 0 0 0 0 0 0 0 0
+
+291 31 PointerToArray< unsigned char > 0 2048 31 PointerToArray< unsigned char > 31 PointerToArray< unsigned char > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+292 18 GPUCommand const * 0 8576 18 GPUCommand const * 18 GPUCommand const * 0 0 293 0 0 0 0 0 0 0 0 0 0
+
+293 16 GPUCommand const 0 8832 16 GPUCommand const 16 GPUCommand const 0 0 244 0 0 0 0 0 0 0 0 0 0
+
+294 9 ostream * 0 8576 9 ostream * 9 ostream * 0 0 295 0 0 0 0 0 0 0 0 0 0
+
+295 7 ostream 0 2048 7 ostream 7 ostream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+296 16 GPUCommandList * 0 8576 16 GPUCommandList * 16 GPUCommandList * 0 0 246 0 0 0 0 0 0 0 0 0 0
+
+297 22 GPUCommandList const * 0 8576 22 GPUCommandList const * 22 GPUCommandList const * 0 0 298 0 0 0 0 0 0 0 0 0 0
+
+298 20 GPUCommandList const 0 8832 20 GPUCommandList const 20 GPUCommandList const 0 0 246 0 0 0 0 0 0 0 0 0 0
+
+299 9 RPLight * 0 8576 9 RPLight * 9 RPLight * 0 0 249 0 0 0 0 0 0 0 0 0 0
+
+300 15 RPLight const * 0 8576 15 RPLight const * 15 RPLight const * 0 0 301 0 0 0 0 0 0 0 0 0 0
+
+301 13 RPLight const 0 8832 13 RPLight const 13 RPLight const 0 0 249 0 0 0 0 0 0 0 0 0 0
+
+302 15 ShadowManager * 0 8576 15 ShadowManager * 15 ShadowManager * 0 0 255 0 0 0 0 0 0 0 0 0 0
+
+303 21 ShadowManager const * 0 8576 21 ShadowManager const * 21 ShadowManager const * 0 0 304 0 0 0 0 0 0 0 0 0 0
+
+304 19 ShadowManager const 0 8832 19 ShadowManager const 19 ShadowManager const 0 0 255 0 0 0 0 0 0 0 0 0 0
+
+305 10 NodePath * 0 8576 10 NodePath * 10 NodePath * 0 0 306 0 0 0 0 0 0 0 0 0 0
+
+306 8 NodePath 0 2048 8 NodePath 8 NodePath 0 0 0 0 0 0 0 0 0 0 0 0 642
+//               NodePaths themselves are lightweight objects that may
+//               easily be copied and passed by value.  Their data is
+//               stored as a series of NodePathComponents that are
+//               stored on the nodes.  Holding a NodePath will keep a
+//               reference count to all the nodes in the path.
+//               However, if any node in the path is removed or
+//               reparented (perhaps through a different NodePath),
+//               the NodePath will automatically be updated to reflect
+//               the changes.
+////////////////////////////////////////////////////////////////////
+
+307 17 TagStateManager * 0 8576 17 TagStateManager * 17 TagStateManager * 0 0 256 0 0 0 0 0 0 0 0 0 0
+
+308 16 GraphicsOutput * 0 8576 16 GraphicsOutput * 16 GraphicsOutput * 0 0 309 0 0 0 0 0 0 0 0 0 0
+
+309 14 GraphicsOutput 0 2048 14 GraphicsOutput 14 GraphicsOutput 0 0 0 0 0 0 0 0 0 0 0 0 366
+//               GraphicsOutputs are not actually writable to bam
+//               files, of course, but they may be passed as event
+//               parameters, so they inherit from
+//               TypedWritableReferenceCount instead of
+//               TypedReferenceCount for that convenience.
+////////////////////////////////////////////////////////////////////
+
+310 23 TagStateManager const * 0 8576 23 TagStateManager const * 23 TagStateManager const * 0 0 311 0 0 0 0 0 0 0 0 0 0
+
+311 21 TagStateManager const 0 8832 21 TagStateManager const 21 TagStateManager const 0 0 256 0 0 0 0 0 0 0 0 0 0
+
+312 9 BitMask32 0 2105344 9 BitMask32 9 BitMask32 0 0 313 0 0 0 0 0 0 0 0 0 0
+
+313 24 BitMask< PN_uint32, 32 > 0 2048 24 BitMask< PN_uint32, 32 > 24 BitMask< PN_uint32, 32 > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+314 11 BitMask32 * 0 8576 11 BitMask32 * 11 BitMask32 * 0 0 312 0 0 0 0 0 0 0 0 0 0
+
+315 8 Shader * 0 8576 8 Shader * 8 Shader * 0 0 316 0 0 0 0 0 0 0 0 0 0
+
+316 6 Shader 0 2048 6 Shader 6 Shader 0 0 0 0 0 0 0 0 0 0 0 0 418
+////////////////////////////////////////////////////////////////////
+//       Class : Shader
+//      Summary: The Shader class is meant to select the Shader Language,
+//               select the available profile, compile the shader, and
+//               finally compile and store the shader parameters
+//               in the appropriate structure.
+////////////////////////////////////////////////////////////////////
+
+317 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+318 8 Camera * 0 8576 8 Camera * 8 Camera * 0 0 319 0 0 0 0 0 0 0 0 0 0
+
+319 6 Camera 0 2048 6 Camera 6 Camera 0 0 0 0 0 0 0 0 0 0 0 0 320
+////////////////////////////////////////////////////////////////////
+//       Class : Camera
+// Description : A node that can be positioned around in the scene
+//               graph to represent a point of view for rendering a
+//               scene.
+////////////////////////////////////////////////////////////////////
+
+320 12 IESDataset * 0 8576 12 IESDataset * 12 IESDataset * 0 0 257 0 0 0 0 0 0 0 0 0 0
+
+321 18 IESDataset const * 0 8576 18 IESDataset const * 18 IESDataset const * 0 0 322 0 0 0 0 0 0 0 0 0 0
+
+322 16 IESDataset const 0 8832 16 IESDataset const 16 IESDataset const 0 0 257 0 0 0 0 0 0 0 0 0 0
+
+323 17 PTA_float const * 0 8576 17 PTA_float const * 17 PTA_float const * 0 0 324 0 0 0 0 0 0 0 0 0 0
+
+324 15 PTA_float const 0 8832 15 PTA_float const 15 PTA_float const 0 0 325 0 0 0 0 0 0 0 0 0 0
+
+325 9 PTA_float 0 2105344 9 PTA_float 9 PTA_float 0 0 326 0 0 0 0 0 0 0 0 0 0
+
+326 23 PointerToArray< float > 0 2048 23 PointerToArray< float > 23 PointerToArray< float > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+327 9 Texture * 0 8576 9 Texture * 9 Texture * 0 0 328 0 0 0 0 0 0 0 0 0 0
+
+328 7 Texture 0 2048 7 Texture 7 Texture 0 0 0 0 0 0 0 0 0 0 0 0 724
+//               A texture's image data might be stored in system RAM
+//               (see get_ram_image()) or its image may be represented
+//               in texture memory on one or more
+//               GraphicsStateGuardians (see prepare()), or both.  The
+//               typical usage pattern is that a texture is loaded
+//               from an image file on disk, which copies its image
+//               data into system RAM; then the first time the texture
+//               is rendered its image data is copied to texture
+//               memory (actually, to the graphics API), and the
+//               system RAM image is automatically freed.
+////////////////////////////////////////////////////////////////////
+
+329 19 ShadowAtlas const * 0 8576 19 ShadowAtlas const * 19 ShadowAtlas const * 0 0 330 0 0 0 0 0 0 0 0 0 0
+
+330 17 ShadowAtlas const 0 8832 17 ShadowAtlas const 17 ShadowAtlas const 0 0 258 0 0 0 0 0 0 0 0 0 0
+
+331 13 ShadowAtlas * 0 8576 13 ShadowAtlas * 13 ShadowAtlas * 0 0 258 0 0 0 0 0 0 0 0 0 0
+
+332 22 InternalLightManager * 0 8576 22 InternalLightManager * 22 InternalLightManager * 0 0 259 0 0 0 0 0 0 0 0 0 0
+
+333 28 InternalLightManager const * 0 8576 28 InternalLightManager const * 28 InternalLightManager const * 0 0 334 0 0 0 0 0 0 0 0 0 0
+
+334 26 InternalLightManager const 0 8832 26 InternalLightManager const 26 InternalLightManager const 0 0 259 0 0 0 0 0 0 0 0 0 0
+
+335 15 PSSMCameraRig * 0 8576 15 PSSMCameraRig * 15 PSSMCameraRig * 0 0 260 0 0 0 0 0 0 0 0 0 0
+
+336 21 PTA_LMatrix4f const * 0 8576 21 PTA_LMatrix4f const * 21 PTA_LMatrix4f const * 0 0 337 0 0 0 0 0 0 0 0 0 0
+
+337 19 PTA_LMatrix4f const 0 8832 19 PTA_LMatrix4f const 19 PTA_LMatrix4f const 0 0 338 0 0 0 0 0 0 0 0 0 0
+
+338 13 PTA_LMatrix4f 0 2105344 13 PTA_LMatrix4f 13 PTA_LMatrix4f 0 0 339 0 0 0 0 0 0 0 0 0 0
+
+339 36 PointerToArray< UnalignedLMatrix4f > 0 2048 36 PointerToArray< UnalignedLMatrix4f > 36 PointerToArray< UnalignedLMatrix4f > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+340 22 PTA_LVecBase2f const * 0 8576 22 PTA_LVecBase2f const * 22 PTA_LVecBase2f const * 0 0 341 0 0 0 0 0 0 0 0 0 0
+
+341 20 PTA_LVecBase2f const 0 8832 20 PTA_LVecBase2f const 20 PTA_LVecBase2f const 0 0 342 0 0 0 0 0 0 0 0 0 0
+
+342 14 PTA_LVecBase2f 0 2105344 14 PTA_LVecBase2f 14 PTA_LVecBase2f 0 0 343 0 0 0 0 0 0 0 0 0 0
+
+343 28 PointerToArray< LVecBase2f > 0 2048 28 PointerToArray< LVecBase2f > 28 PointerToArray< LVecBase2f > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+344 14 RPPointLight * 0 8576 14 RPPointLight * 14 RPPointLight * 0 0 261 0 0 0 0 0 0 0 0 0 0
+
+345 20 RPPointLight const * 0 8576 20 RPPointLight const * 20 RPPointLight const * 0 0 346 0 0 0 0 0 0 0 0 0 0
+
+346 18 RPPointLight const 0 8832 18 RPPointLight const 18 RPPointLight const 0 0 261 0 0 0 0 0 0 0 0 0 0
+
+347 13 RPSpotLight * 0 8576 13 RPSpotLight * 13 RPSpotLight * 0 0 262 0 0 0 0 0 0 0 0 0 0
+
+348 19 RPSpotLight const * 0 8576 19 RPSpotLight const * 19 RPSpotLight const * 0 0 349 0 0 0 0 0 0 0 0 0 0
+
+349 17 RPSpotLight const 0 8832 17 RPSpotLight const 17 RPSpotLight const 0 0 262 0 0 0 0 0 0 0 0 0 0
+
+350 12 LVecBase3f * 0 8576 12 LVecBase3f * 12 LVecBase3f * 0 0 272 0 0 0 0 0 0 0 0 0 0
+
+351 20 MeshSplitterWriter * 0 8576 20 MeshSplitterWriter * 20 MeshSplitterWriter * 0 0 263 0 0 0 0 0 0 0 0 0 0
+
+352 26 MeshSplitterWriter const * 0 8576 26 MeshSplitterWriter const * 26 MeshSplitterWriter const * 0 0 353 0 0 0 0 0 0 0 0 0 0
+
+353 24 MeshSplitterWriter const 0 8832 24 MeshSplitterWriter const 24 MeshSplitterWriter const 0 0 263 0 0 0 0 0 0 0 0 0 0
+
+354 12 Geom const * 0 8576 12 Geom const * 12 Geom const * 0 0 355 0 0 0 0 0 0 0 0 0 0
+
+355 10 Geom const 0 8832 10 Geom const 10 Geom const 0 0 356 0 0 0 0 0 0 0 0 0 0
+
+356 4 Geom 0 2048 4 Geom 4 Geom 0 0 0 0 0 0 0 0 0 0 0 0 687
+////////////////////////////////////////////////////////////////////
+//       Class : Geom
+// Description : A container for geometry primitives.  This class
+//               associates one or more GeomPrimitive objects with a
+//               table of vertices defined by a GeomVertexData object.
+//               All of the primitives stored in a particular Geom are
+//               drawn from the same set of vertices (each primitive
+//               uses a subset of all of the vertices in the table),
+//               and all of them must be rendered at the same time, in
+//               the same graphics state.
+////////////////////////////////////////////////////////////////////
+
+357 16 Filename const * 0 8576 16 Filename const * 16 Filename const * 0 0 358 0 0 0 0 0 0 0 0 0 0
+
+358 14 Filename const 0 8832 14 Filename const 14 Filename const 0 0 359 0 0 0 0 0 0 0 0 0 0
+
+359 8 Filename 0 2048 8 Filename 8 Filename 0 0 0 0 0 0 0 0 0 0 0 0 515
+//               A Filename is also aware of the mapping between the
+//               Unix-like filename convention we use internally, and
+//               the local OS's specific filename convention, and it
+//               knows how to perform basic OS-specific I/O, like
+//               testing for file existence and searching a
+//               searchpath, as well as the best way to open an
+//               fstream for reading or writing.
+////////////////////////////////////////////////////////////////////
+
+360 14 SGNode const * 0 8576 14 SGNode const * 14 SGNode const * 0 0 361 0 0 0 0 0 0 0 0 0 0
+
+361 12 SGNode const 0 8832 12 SGNode const 12 SGNode const 0 0 264 0 0 0 0 0 0 0 0 0 0
+
+362 8 SGNode * 0 8576 8 SGNode * 8 SGNode * 0 0 264 0 0 0 0 0 0 0 0 0 0
+
+363 23 StaticGeometryHandler * 0 8576 23 StaticGeometryHandler * 23 StaticGeometryHandler * 0 0 267 0 0 0 0 0 0 0 0 0 0
+
+364 10 TypeHandle 0 2048 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 409
+//               At its essence, a TypeHandle is simply a unique
+//               identifier that is assigned by the TypeRegistry.  The
+//               TypeRegistry stores a tree of TypeHandles, so that
+//               ancestry of a particular type may be queried, and the
+//               type name may be retrieved for run-time display.
+////////////////////////////////////////////////////////////////////
+
+365 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 364 0 0 0 0 0 0 0 0 0 0
+
+366 20 SGRenderNode const * 0 8576 20 SGRenderNode const * 20 SGRenderNode const * 0 0 367 0 0 0 0 0 0 0 0 0 0
+
+367 18 SGRenderNode const 0 8832 18 SGRenderNode const 18 SGRenderNode const 0 0 266 0 0 0 0 0 0 0 0 0 0
+
+368 14 SGRenderNode * 0 8576 14 SGRenderNode * 14 SGRenderNode * 0 0 266 0 0 0 0 0 0 0 0 0 0
+
+369 29 StaticGeometryHandler const * 0 8576 29 StaticGeometryHandler const * 29 StaticGeometryHandler const * 0 0 370 0 0 0 0 0 0 0 0 0 0
+
+370 27 StaticGeometryHandler const 0 8832 27 StaticGeometryHandler const 27 StaticGeometryHandler const 0 0 267 0 0 0 0 0 0 0 0 0 0
+
+371 16 DatasetReference 0 2105344 16 DatasetReference 16 DatasetReference 0 0 254 0 0 0 0 0 0 0 0 0 0
+
+0
+14
+372 12 num_commands 0 2 247 138 0 0 0 28 GPUCommandList::num_commands 0
+
+373 3 pos 0 6 0 142 141 0 0 12 RPLight::pos 0
+
+374 5 color 0 6 0 144 143 0 0 14 RPLight::color 0
+
+375 6 lumens 0 6 252 147 146 0 0 15 RPLight::lumens 0
+
+376 10 light_type 0 2 251 148 0 0 0 19 RPLight::light_type 0
+
+377 13 casts_shadows 0 6 253 150 149 0 0 22 RPLight::casts_shadows 0
+
+378 21 shadow_map_resolution 0 6 247 152 151 0 0 30 RPLight::shadow_map_resolution 0
+
+379 11 ies_profile 0 30 254 154 153 49 50 20 RPLight::ies_profile 0
+
+380 10 near_plane 0 6 252 158 157 0 0 19 RPLight::near_plane 0
+
+381 6 radius 0 6 252 220 219 0 0 20 RPPointLight::radius 0
+
+382 12 inner_radius 0 6 252 222 221 0 0 26 RPPointLight::inner_radius 0
+
+383 6 radius 0 6 252 226 225 0 0 19 RPSpotLight::radius 0
+
+384 3 fov 0 6 252 228 227 0 0 16 RPSpotLight::fov 0
+
+385 9 direction 0 6 0 230 229 0 0 22 RPSpotLight::direction 0
+
+0

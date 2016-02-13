@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="res">
-    <file>res/daytime_editor_logo.png</file>
-    <file>res/icon.png</file>
-  </qresource>
-</RCC>

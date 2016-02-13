@@ -1,0 +1,432 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{DCFFF025-201A-3DAB-8790-4D825CF1526A}</ProjectGUID>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>RSNative</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+    <PropertyGroup>
+      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\Debug\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">RSNative.dir\Debug\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">RSNative</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.dll</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\Release\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">RSNative.dir\Release\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">RSNative</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.dll</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\MinSizeRel\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">RSNative.dir\MinSizeRel\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">RSNative</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.dll</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\RelWithDebInfo\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">RSNative.dir\RelWithDebInfo\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">RSNative</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.dll</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+    </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalOptions> /favor:blend /bigobj /Zm300 /GM- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4275;4267;4101;4273</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;WIN64_VC;WIN64;WIN32_VC;WIN32;_HAS_EXCEPTIONS=0;PB_MODULE=RSNative;PB_CFG_MODULE=RSNative;CMAKE_INTDIR="Debug";RSNative_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;WIN64_VC;WIN64;WIN32_VC;WIN32;_HAS_EXCEPTIONS=0;PB_MODULE=RSNative;PB_CFG_MODULE=RSNative;CMAKE_INTDIR=\"Debug\";RSNative_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+cd "E:\Projects\Brainz stuff\RenderPipeline\Code\Native"
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+D:\P3D\1.9GIT\built_x64_buffered\python\ppython.exe -B "E:/Projects/Brainz stuff/RenderPipeline/Code/Native/Scripts/finalize.py" RSNative
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalOptions> /machine:x64 /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D:\P3D\1.9GIT\built_x64_buffered\python\libs\python27.lib;libp3framework.lib;libpanda.lib;libpandaexpress.lib;libp3dtool.lib;libp3dtoolconfig.lib;libp3direct.lib;libp3interrogatedb.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:/P3D/1.9GIT/built_x64_buffered/lib;D:/P3D/1.9GIT/built_x64_buffered/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/Debug/RSNative.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/Debug/RSNative.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalOptions> /favor:blend /bigobj /Zm300 /GM- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4275;4267;4101;4273</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WIN64_VC;WIN64;WIN32_VC;WIN32;_HAS_EXCEPTIONS=0;PB_MODULE=RSNative;PB_CFG_MODULE=RSNative;CMAKE_INTDIR="Release";RSNative_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WIN64_VC;WIN64;WIN32_VC;WIN32;_HAS_EXCEPTIONS=0;PB_MODULE=RSNative;PB_CFG_MODULE=RSNative;CMAKE_INTDIR=\"Release\";RSNative_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+cd "E:\Projects\Brainz stuff\RenderPipeline\Code\Native"
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+D:\P3D\1.9GIT\built_x64_buffered\python\ppython.exe -B "E:/Projects/Brainz stuff/RenderPipeline/Code/Native/Scripts/finalize.py" RSNative
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalOptions> /machine:x64 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D:\P3D\1.9GIT\built_x64_buffered\python\libs\python27.lib;libp3framework.lib;libpanda.lib;libpandaexpress.lib;libp3dtool.lib;libp3dtoolconfig.lib;libp3direct.lib;libp3interrogatedb.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:/P3D/1.9GIT/built_x64_buffered/lib;D:/P3D/1.9GIT/built_x64_buffered/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/Release/RSNative.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/Release/RSNative.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalOptions> /favor:blend /bigobj /Zm300 /GM- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4275;4267;4101;4273</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WIN64_VC;WIN64;WIN32_VC;WIN32;_HAS_EXCEPTIONS=0;PB_MODULE=RSNative;PB_CFG_MODULE=RSNative;CMAKE_INTDIR="MinSizeRel";RSNative_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WIN64_VC;WIN64;WIN32_VC;WIN32;_HAS_EXCEPTIONS=0;PB_MODULE=RSNative;PB_CFG_MODULE=RSNative;CMAKE_INTDIR=\"MinSizeRel\";RSNative_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+cd "E:\Projects\Brainz stuff\RenderPipeline\Code\Native"
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+D:\P3D\1.9GIT\built_x64_buffered\python\ppython.exe -B "E:/Projects/Brainz stuff/RenderPipeline/Code/Native/Scripts/finalize.py" RSNative
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalOptions> /machine:x64 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D:\P3D\1.9GIT\built_x64_buffered\python\libs\python27.lib;libp3framework.lib;libpanda.lib;libpandaexpress.lib;libp3dtool.lib;libp3dtoolconfig.lib;libp3direct.lib;libp3interrogatedb.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:/P3D/1.9GIT/built_x64_buffered/lib;D:/P3D/1.9GIT/built_x64_buffered/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/MinSizeRel/RSNative.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/MinSizeRel/RSNative.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalOptions> /favor:blend /bigobj /Zm300 /GM- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4275;4267;4101;4273</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WIN64_VC;WIN64;WIN32_VC;WIN32;_HAS_EXCEPTIONS=0;PB_MODULE=RSNative;PB_CFG_MODULE=RSNative;CMAKE_INTDIR="RelWithDebInfo";RSNative_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WIN64_VC;WIN64;WIN32_VC;WIN32;_HAS_EXCEPTIONS=0;PB_MODULE=RSNative;PB_CFG_MODULE=RSNative;CMAKE_INTDIR=\"RelWithDebInfo\";RSNative_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\P3D\1.9GIT\built_x64_buffered\..\thirdparty\win-libs-vc10-x64\eigen\include;D:\P3D\1.9GIT\built_x64_buffered\include;D:\P3D\1.9GIT\built_x64_buffered\python\include;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\GPUCommand;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\LightSystem;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\Source\StaticGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+cd "E:\Projects\Brainz stuff\RenderPipeline\Code\Native"
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+D:\P3D\1.9GIT\built_x64_buffered\python\ppython.exe -B "E:/Projects/Brainz stuff/RenderPipeline/Code/Native/Scripts/finalize.py" RSNative
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalOptions> /machine:x64 /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D:\P3D\1.9GIT\built_x64_buffered\python\libs\python27.lib;libp3framework.lib;libpanda.lib;libpandaexpress.lib;libp3dtool.lib;libp3dtoolconfig.lib;libp3direct.lib;libp3interrogatedb.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:/P3D/1.9GIT/built_x64_buffered/lib;D:/P3D/1.9GIT/built_x64_buffered/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/RelWithDebInfo/RSNative.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/RelWithDebInfo/RSNative.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/Projects/Brainz stuff/RenderPipeline/Code/Native/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HE:/Projects/Brainz stuff/RenderPipeline/Code/Native" "-BE:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27" --check-stamp-file "E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Projects/Brainz stuff/RenderPipeline/Code/Native/CMakeLists.txt;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\CMakeLists.txt;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeSystem.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeSystemSpecificInitialize.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeCCompiler.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeCXXCompiler.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeGenericSystem.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\WindowsPaths.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeRCCompiler.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeRCInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCXXInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCommonLanguageInclude.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\generate.stamp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/Projects/Brainz stuff/RenderPipeline/Code/Native/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HE:/Projects/Brainz stuff/RenderPipeline/Code/Native" "-BE:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27" --check-stamp-file "E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Projects/Brainz stuff/RenderPipeline/Code/Native/CMakeLists.txt;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\CMakeLists.txt;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeSystem.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeSystemSpecificInitialize.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeCCompiler.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeCXXCompiler.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeGenericSystem.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\WindowsPaths.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeRCCompiler.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeRCInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCXXInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCommonLanguageInclude.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\generate.stamp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule E:/Projects/Brainz stuff/RenderPipeline/Code/Native/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HE:/Projects/Brainz stuff/RenderPipeline/Code/Native" "-BE:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27" --check-stamp-file "E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Projects/Brainz stuff/RenderPipeline/Code/Native/CMakeLists.txt;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\CMakeLists.txt;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeSystem.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeSystemSpecificInitialize.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeCCompiler.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeCXXCompiler.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeGenericSystem.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\WindowsPaths.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeRCCompiler.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeRCInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCXXInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCommonLanguageInclude.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\generate.stamp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule E:/Projects/Brainz stuff/RenderPipeline/Code/Native/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-HE:/Projects/Brainz stuff/RenderPipeline/Code/Native" "-BE:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27" --check-stamp-file "E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Projects/Brainz stuff/RenderPipeline/Code/Native/CMakeLists.txt;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\CMakeLists.txt;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeSystem.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeSystemSpecificInitialize.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeCCompiler.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeCXXCompiler.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeGenericSystem.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\WindowsPaths.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\3.4.0-rc1\CMakeRCCompiler.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeRCInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCXXInformation.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\Platform\Windows-MSVC.cmake;C:\Program Files (x86)\CMake\share\cmake-3.4\Modules\CMakeCommonLanguageInclude.cmake;E:\Projects\Brainz stuff\RenderPipeline\Code\Native\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Projects\Brainz stuff\RenderPipeline\Code\Native\win_amd64_py27\CMakeFiles\generate.stamp</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Source\config_rsnative.cpp"  />
+    <ClCompile Include="..\Source\GPUCommand\GPUCommand.cpp"  />
+    <ClCompile Include="..\Source\GPUCommand\GPUCommandList.cpp"  />
+    <ClCompile Include="..\Source\InterrogateModule.cpp"  />
+    <ClCompile Include="..\Source\InterrogateWrapper.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\IESDataset.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\InternalLightManager.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\PSSMCameraRig.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\PSSMHelper.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\RPLight.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\RPPointLight.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\RPSpotLight.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\ShadowAtlas.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\ShadowManager.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\ShadowSource.cpp"  />
+    <ClCompile Include="..\Source\LightSystem\TagStateManager.cpp"  />
+    <ClCompile Include="..\Source\StaticGeometry\MeshSplitter.cpp"  />
+    <ClCompile Include="..\Source\StaticGeometry\SGDataset.cpp"  />
+    <ClCompile Include="..\Source\StaticGeometry\SGNode.cpp"  />
+    <ClCompile Include="..\Source\StaticGeometry\SGRenderCallback.cpp"  />
+    <ClCompile Include="..\Source\StaticGeometry\SGRenderNode.cpp"  />
+    <ClCompile Include="..\Source\StaticGeometry\SGTriangleStrip.cpp"  />
+    <ClCompile Include="..\Source\StaticGeometry\StaticGeometryHandler.cpp"  />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="E:/Projects/Brainz stuff/RenderPipeline/Code/Native/win_amd64_py27/ZERO_CHECK.vcxproj">
+      <Project>84EC0D68-A82A-3C79-842F-97A10DFFD3E6</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
