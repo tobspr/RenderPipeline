@@ -1,0 +1,117 @@
+
+name: Atmospheric Sun Scattering
+author: tobspr <tobias.springer1@gmail.com>
+version: 1.0
+description: >
+    This plugin adds support for Atmospheric Scattering, and a single sun,
+    based on the work from Eric Bruneton (http://evasion.inrialpes.fr/~Eric.Bruneton/).
+    It also adds support for atmospheric fog.
+
+settings: !!omap
+    
+    - scattering_method:
+        type: enum
+        values: ["eric_bruneton", "hosek_wilkie"]
+        default: "eric_bruneton"
+        label: Scattering Method
+        description: >
+            Chooses the scattering algorithm. eric_bruneton is the Precomputed
+            Atmospheric Scattering method proposed by Eric Bruneton. hosek_wilkie
+            denotes the sky model proposed by Lukas Hosek and Alexander Wilkie.
+
+    - ground_reflectance:
+        display_if: {scattering_method: "eric_bruneton"}
+        type: float
+        range: [0.01, 1.0]
+        default: 0.1
+        shader_runtime: true
+        label: Ground Reflectance
+        description: >
+            Average ground reflectance, controls how much light the earth reflects.
+
+    - rayleigh_height_scale:
+        display_if: {scattering_method: "eric_bruneton"}
+        type: float
+        range: [1.0, 16.0]
+        default: 8.0
+        shader_runtime: true
+        label: Rayleigh height scale
+        description: >  
+            Rayleigh height scale, higher values cause a more bluish sky.
+
+    - mie_height_scale:
+        display_if: {scattering_method: "eric_bruneton"}
+        type: float
+        range: [0.5, 5.0]
+        default: 1.2
+        shader_runtime: true
+        label: Mie height scale
+        description: >
+            Mie height scale, higher values cause a more reddish sky.
+
+    - mie_phase_factor:
+        display_if: {scattering_method: "eric_bruneton"}
+        type: float
+        range: [0.1, 0.9999]
+        default: 0.8
+        shader_runtime: true
+        label: Mie Phase
+        description: >
+            Mie phase factor, this controls the apperance of the sun highlight
+            in the sky, higher values produce a smaller (but brighter) sun-shape.
+
+    - beta_mie_scattering:
+        display_if: {scattering_method: "eric_bruneton"}
+        type: float
+        range: [1, 30]
+        default: 4
+        shader_runtime: true
+        label: Beta Mie Scattering
+        description: >
+            Beta Mie Scattering factor
+
+
+daytime_settings: !!omap
+    
+    - sun_intensity:
+        type: scalar
+        unit: percent
+        range: [0.0, 6.0]
+        default: 5.0
+        label: Sun Intensity
+        description: Controls the intensity of the sun
+        logarithmic_factor: 2.0
+
+    - sun_color:
+        type: color
+        default: [126, 255, 100]
+        label: Sun Color
+        description: Sun Color
+
+    - sun_azimuth:
+        type: scalar
+        unit: degree
+        range: [0.0, 360.0]
+        default: 180
+        label: Sun Azimuth
+        description: Horizontal angle of the sun
+
+    - sun_altitude:
+        type: scalar
+        unit: degree
+        range: [-12.0, 38.0]
+        default: 30
+        label: Sun Altidude
+        description: Vertical angle of the sun
+
+    - fog_ramp_size:
+        type: scalar
+        unit: meter
+        range: [0.5, 10000.0]
+        default: 2000
+        label: Fog-Ramp
+        logarithmic_factor: 6.0
+        description: >
+            Size of the transition from no fog to fog in world space units.
+            Higher values produce a smoother transition from no fog to fog,
+            while lower values will produce a more sharp transition.
