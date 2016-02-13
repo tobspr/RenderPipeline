@@ -88,7 +88,7 @@ class PipelineExtensions(object):
         skybox = self._com_resources.load_default_skybox()
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
-        self.set_effect(skybox, "effects/Skybox.yaml", {
+        self.set_effect(skybox, "effects/skybox.yaml", {
             "render_shadows": False,
             "alpha_testing": False,
             "normal_mapping": False,

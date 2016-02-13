@@ -39,7 +39,7 @@ class BetterOnscreenText(RPObject):
                  color=None, may_change=False, font=None):
         """ Constructs a new text. The parameters are almost equal to the
         parameters of OnscreenText """
-        RPObject.__init__(self, "BetterOnscreenText")
+        RPObject.__init__(self)
 
         if color is None:
             color = Vec3(1)
