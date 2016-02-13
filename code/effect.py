@@ -30,9 +30,9 @@ from six import iteritems, iterkeys
 
 from panda3d.core import Shader, Filename
 
-from ..external.yaml import load_yaml_file
-from ..rp_object import RPObject
-from ..util.shader_template import ShaderTemplate
+from .rp_object import RPObject
+from .external.yaml import load_yaml_file
+from .util.shader_template import ShaderTemplate
 
 class Effect(RPObject):
 
@@ -49,11 +49,31 @@ class Effect(RPObject):
     }
 
     _PASSES = ("gbuffer", "shadows", "voxelize")
+    _GLOBAL_CACHE = {}
     _EFFECT_ID = 0
 
     @classmethod
-    def generate_hash(cls, filename, options):
-        """ Generates an unique hash based on the effect path and options """
+    def load(cls, filename, options):
+        """ Loads an effect from a given filename with the specified options.
+        This lookups in the global effect cache, and checks if a similar effect
+        (i.e. with the same hash) was already loaded, and in that case returns it.
+        Otherwise a new effect with the given options is created. """
+        effect_hash = cls.__generate_hash(filename, options)
+        if effect_hash in cls._GLOBAL_CACHE:
+            return cls._GLOBAL_CACHE[effect_hash]
+        effect = cls()
+        effect.set_options(options)
+        if not effect.__load(filename):
+            self.error("Could not load effect!")
+            return None
+        return effect
+
+    @classmethod
+    def __generate_hash(cls, filename, options):
+        """ Generates an unique hash based on the effect path and options. The
+        effect hash is based on the filename and the configured options, and
+        is ensured to make the effect unique. This is important to make sure
+        the caching works as intended. """
         constructed_dict = {}
         for key in sorted(iterkeys(Effect._DEFAULT_OPTIONS)):
             if key in options:
@@ -69,9 +89,15 @@ class Effect(RPObject):
 
         # Hash the options
         to_str = lambda v: "1" if v else "0"
-        opt_hash = ''.join([to_str(options[k]) if k in options else to_str(cls._DEFAULT_OPTIONS[k]) for k in sorted(cls._DEFAULT_OPTIONS)])
+        opt_hash = ''.join([
+            to_str(options[k]) if k in options else to_str(cls._DEFAULT_OPTIONS[k])
+            for k in sorted(cls._DEFAULT_OPTIONS)])
 
         return fhash + "-" + opt_hash
+
+    def __init__(self):
+        RPObject.__init__(self)
+        self._effect_cache = {}
 
     def __init__(self):
         """ Constructs a new empty effect """
@@ -81,7 +107,8 @@ class Effect(RPObject):
         self._options = copy.deepcopy(self._DEFAULT_OPTIONS)
         self._source = ""
 
-    def get_effect_id(self):
+    @property
+    def id(self):
         """ Returns a unique id for the effect """
         return self._effect_id
 
@@ -97,12 +124,12 @@ class Effect(RPObject):
                 continue
             self._options[key] = val
 
-    def load(self, filename):
+    def __load(self, filename):
         """ Loads the effect from the given filename """
         self._source = filename
         self._effect_name = self._convert_filename_to_name(filename)
         self._shader_paths = {}
-        self._effect_hash = self.generate_hash(filename, self._options)
+        self._effect_hash = self.__generate_hash(filename, self._options)
         self._shader_objs = {}
 
         # Load the YAML file

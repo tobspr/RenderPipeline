@@ -20,7 +20,7 @@ gl-debug #t
 # File system should be case sensitive
 # NOTICE: Set this to #f if you are using tempfile, since it returns
 # wrong cased directory paths
-vfs-case-sensitive #f
+vfs-case-sensitive #t
 
 
 

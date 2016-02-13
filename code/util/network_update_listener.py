@@ -69,7 +69,7 @@ class NetworkUpdateListener(BaseManager):
         """ Handles a daytime command """
         if cmd.startswith("settime "):
             daytime = float(cmd.split()[1])
-            self._pipeline.daytime_mgr.set_time(daytime)
+            self._pipeline.daytime_mgr.time = daytime
         elif cmd.startswith("loadconf"):
             self._pipeline.plugin_mgr.reload_settings()
             self._pipeline.daytime_mgr.reload_config()

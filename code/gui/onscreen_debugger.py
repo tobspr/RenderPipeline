@@ -183,9 +183,9 @@ class OnscreenDebugger(BaseManager):
 
         text = "{} ({:1.3f})  |  {:3d} active constraints"
         self._debug_lines[3].set_text(text.format(
-                self._pipeline.daytime_mgr.get_time_str(),
-                self._pipeline.daytime_mgr.get_time(),
-                self._pipeline.daytime_mgr.get_num_constraints()
+                self._pipeline.daytime_mgr.time_str,
+                self._pipeline.daytime_mgr.time,
+                self._pipeline.daytime_mgr.num_constraints
             ))
 
     def _create_debugger(self):

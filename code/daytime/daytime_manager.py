@@ -67,24 +67,28 @@ class DayTimeManager(BaseManager):
         self.debug("Reloading daytime config ..")
         self._interface.load()
 
-    def set_time(self, daytime):
+    @property
+    def time(self):
+        """ Returns the current time as float from 0 .. 1 """
+        return self._daytime
+
+    @time.setter
+    def time(self, daytime):
         """ Sets the current time of day, should be a float from 0 to 1, whereas
         0 denotes 0:00 and 1 denotes 24:00 """
         self._daytime = daytime
 
-    def get_time_str(self):
-        """ Returns the current time as string """
+    @property
+    def time_str(self):
+        """ Returns the current time as string, e.g. 12:34 """
         total_minutes = int(self._daytime * 24 * 60)
         hour = total_minutes // 60
         minute =  total_minutes % 60
         return "{:02d}:{:02d}".format(hour, minute)
 
-    def get_time(self):
-        """ Returns the current time as float from 0 .. 1 """
-        return self._daytime
-
-    def get_num_constraints(self):
-        """ Returns teh amount of constraints """
+    @property
+    def num_constraints(self):
+        """ Returns the amount of constraints """
         return len(self._settings)
 
     def do_update(self):

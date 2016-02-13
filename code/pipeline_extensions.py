@@ -30,7 +30,8 @@ THE SOFTWARE.
 
 from panda3d.core import Texture
 
-from .globals import *
+from .globals import Globals
+from .effect import Effect
 from .gui.pipeline_loading_screen import PipelineLoadingScreen, EmptyLoadingScreen
 
 from .stages.ambient_stage import AmbientStage
@@ -108,7 +109,7 @@ class PipelineExtensions(object):
         current effect sort is less than the new effect sort (passed by the
         sort parameter). """
 
-        effect = self._effect_loader.load_effect(effect_src, options)
+        effect = Effect.load(effect_src, options)
         if effect is None:
             return self.error("Could not apply effect")
 
@@ -125,7 +126,7 @@ class PipelineExtensions(object):
         else:
             shader = effect.get_shader_obj("shadows")
             self._tag_mgr.apply_shadow_state(
-                nodepath, shader, str(effect.get_effect_id()), 25 + sort)
+                nodepath, shader, str(effect.id), 25 + sort)
             nodepath.show(self._tag_mgr.get_shadow_mask())
 
         # Apply voxelization stage shader
@@ -134,7 +135,7 @@ class PipelineExtensions(object):
         else:
             shader = effect.get_shader_obj("voxelize")
             self._tag_mgr.apply_voxelize_state(
-                nodepath, shader, str(effect.get_effect_id()), 35 + sort)
+                nodepath, shader, str(effect.id), 35 + sort)
             nodepath.show(self._tag_mgr.get_voxelize_mask())
 
     def _check_version(self):

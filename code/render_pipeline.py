@@ -42,7 +42,6 @@ from .rp_object import RPObject
 from .util.settings_loader import SettingsLoader
 from .util.network_update_listener import NetworkUpdateListener
 from .gui.onscreen_debugger import OnscreenDebugger
-from .effects.effect_loader import EffectLoader
 from .plugin_interface.plugin_manager import PluginManager
 from .daytime.daytime_manager import DayTimeManager
 
@@ -69,7 +68,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
             sys.version_info.major, PandaSystem.get_platform()))
         self._showbase = showbase
         self._mount_mgr = MountManager(self)
-        self._settings = SettingsLoader(self, "Pipeline Settings")
+        self._settings = SettingsLoader(self, "PipelineSettings")
         self.set_default_loading_screen()
 
         # Check for the right Panda3D version
@@ -214,7 +213,6 @@ class RenderPipeline(PipelineExtensions, RPObject):
         """ Internal method to create all managers and instances"""
         self._tag_mgr = TagStateManager(Globals.base.cam)
         self._plugin_mgr = PluginManager(self)
-        self._effect_loader = EffectLoader()
         self._stage_mgr = StageManager(self)
         self._light_mgr = LightManager(self)
         self._daytime_mgr = DayTimeManager(self)
