@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="icon">
+    <file>res/icon.png</file>
+  </qresource>
+  <qresource prefix="res">
+    <file>res/plugin_configurator_logo.png</file>
+  </qresource>
+</RCC>
