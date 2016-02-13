@@ -87,19 +87,19 @@ def load_nth_face(pth, i):
 
 def filter_cubemap(orig_pth):
 
-    if not os.path.isdir("Filtered/"):
-        os.makedirs("Filtered/")
+    if not os.path.isdir("filtered/"):
+        os.makedirs("filtered/")
 
     # Copy original cubemap
     for i in range(6):
-       shutil.copyfile(orig_pth.replace("#", str(i)), "Filtered/0-" + str(i) + ".png")
+       shutil.copyfile(orig_pth.replace("#", str(i)), "filtered/0-" + str(i) + ".png")
 
     mip = 0
     while True:
         print("Filtering mipmap", mip)
         mip += 1
-        pth = "Filtered/" + str(mip - 1) + "-#.png"
-        dst_pth = "Filtered/" + str(mip) + "-#.png"
+        pth = "filtered/" + str(mip - 1) + "-#.png"
+        dst_pth = "filtered/" + str(mip) + "-#.png"
         first_img = load_nth_face(pth, 0)
         size = first_img.get_x_size() // 2
         if size < 1:

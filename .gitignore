@@ -16,17 +16,13 @@
 *.trace
 
 # --- Ignored folders and patterns ---
-Temp/
-Models/
-Data/NormalQuantization/*.png
-Data/PrecomputedGrain/*.png
-Data/DefaultCubemap/Filtered/
-Native/Windows_x64/
-Native/Windows_x32/
-Native/Linux
-Native/Source/Interrogate*
+temp/
+models/
+data/normal_quantization/*.png
+data/precomputed_grain/*.png
+data/default_cubemap/filtered/
 _DEV
-Toolkit/PathtracingReference/Mitsuba/
+toolkit/pathtracing_reference/mitsuba/
 
 # --- Ignored files ---
 TODO.txt
