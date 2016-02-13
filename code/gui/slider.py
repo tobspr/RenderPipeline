@@ -29,7 +29,7 @@ from direct.gui.DirectSlider import DirectSlider
 
 from ..rp_object import RPObject
 
-class BetterSlider(RPObject):
+class Slider(RPObject):
 
     """ This is a simple wrapper around DirectSlider, providing a simpler
     interface """

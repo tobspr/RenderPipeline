@@ -31,7 +31,7 @@ from ..globals import Globals
 from ..rp_object import RPObject
 
 
-class BetterOnscreenText(RPObject):
+class Text(RPObject):
 
     """ Simple wrapper around OnscreenText, providing a simpler interface """
 

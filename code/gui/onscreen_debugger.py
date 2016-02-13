@@ -32,11 +32,11 @@ from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
 from direct.gui.DirectFrame import DirectFrame
 from direct.interval.IntervalGlobal import Parallel, Sequence
 
-from .better_onscreen_image import BetterOnscreenImage
+from .sprite import Sprite
 from .buffer_viewer import BufferViewer
 from .pipe_viewer import PipeViewer
-from .better_onscreen_text import BetterOnscreenText
-from .better_labeled_checkbox import BetterLabeledCheckbox
+from .text import Text
+from .labeled_checkbox import LabeledCheckbox
 from .checkbox_collection import CheckboxCollection
 from .fast_text_node import FastTextNode
 from .error_message_display import ErrorMessageDisplay
@@ -113,7 +113,7 @@ class OnscreenDebugger(BaseManager):
 
     def _create_topbar(self):
         """ Creates the topbar """
-        self._pipeline_logo = BetterOnscreenImage(
+        self._pipeline_logo = Sprite(
             image="data/gui/pipeline_logo_text.png", x=30, y=30,
             parent=self._fullscreen_node)
 
@@ -129,7 +129,7 @@ class OnscreenDebugger(BaseManager):
 
     def _create_hints(self):
         """ Creates the hints like keybindings and when reloading shaders """
-        self._hint_reloading = BetterOnscreenImage(
+        self._hint_reloading = Sprite(
             image="data/gui/shader_reload_hint.png",
             x=float((Globals.base.win.get_x_size()) // 2) / self._gui_scale - 465 // 2, y=220,
             parent=self._fullscreen_node)
@@ -137,7 +137,7 @@ class OnscreenDebugger(BaseManager):
 
         if not NATIVE_CXX_LOADED:
             # Warning when using the python version
-            python_warning = BetterOnscreenImage(
+            python_warning = Sprite(
                 image="data/gui/python_warning.png",
                 x=((Globals.base.win.get_x_size()/self._gui_scale) - 1054) // 2,
                 y=(Globals.base.win.get_y_size()/self._gui_scale) - 118 - 40, parent=self._fullscreen_node)
@@ -148,7 +148,7 @@ class OnscreenDebugger(BaseManager):
             ).loop()
 
         # Keybinding hints
-        self._keybinding_instructions = BetterOnscreenImage(
+        self._keybinding_instructions = Sprite(
             image="data/gui/keybindings.png", x=30,
             y=Globals.base.win.get_y_size()//self._gui_scale - 510.0,
             parent=self._fullscreen_node, any_filter=False)
@@ -193,7 +193,7 @@ class OnscreenDebugger(BaseManager):
         debugger_opacity = 1.0
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_pos(30, 0, -Globals.base.win.get_y_size()//self._gui_scale + 820.0)
-        self._debugger_bg_img = BetterOnscreenImage(
+        self._debugger_bg_img = Sprite(
             image="data/gui/debugger_background.png", x=0, y=0,
             parent=self._debugger_node, any_filter=False
         )
@@ -240,7 +240,7 @@ class OnscreenDebugger(BaseManager):
                 if not self._pipeline.plugin_mgr.get_interface().is_plugin_enabled(requires_plugin):
                     enabled = False
 
-            box = BetterLabeledCheckbox(
+            box = LabeledCheckbox(
                 parent=debugger_content, x=offs_x, y=offs_y, text=mode.upper(),
                 text_color=Vec3(0.4), radio=True, chb_checked=(mode == "Default"),
                 chb_callback=partial(self._set_render_mode, mode_id),

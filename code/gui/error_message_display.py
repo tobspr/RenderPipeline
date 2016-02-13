@@ -31,7 +31,7 @@ from panda3d.core import Notify, LineStream, Vec3
 from ..globals import Globals
 from ..rp_object import RPObject
 
-from .better_onscreen_text import BetterOnscreenText
+from .text import Text
 
 class ErrorMessageDisplay(RPObject):
 
@@ -80,7 +80,7 @@ class ErrorMessageDisplay(RPObject):
     def add_text(self, text, color):
         """ Internal method to add a new text to the output """
 
-        BetterOnscreenText(
+        Text(
             x=Globals.base.win.get_x_size() - 30, y=self._num_errors * 23,
             align="right", text=text, size=12, parent=self._error_node, color=color)
 

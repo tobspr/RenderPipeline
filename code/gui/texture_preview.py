@@ -27,9 +27,9 @@ THE SOFTWARE.
 from panda3d.core import Vec3, Texture
 
 from .draggable_window import DraggableWindow
-from .better_onscreen_image import BetterOnscreenImage
-from .better_onscreen_text import BetterOnscreenText
-from .better_slider import BetterSlider
+from .sprite import Sprite
+from .text import Text
+from .slider import Slider
 
 from ..util.display_shader_builder import DisplayShaderBuilder
 
@@ -69,7 +69,7 @@ class TexturePreview(DraggableWindow):
             display_w = self._width - 40
             display_h = self._height - 110
 
-        image = BetterOnscreenImage(image=tex, parent=self._content_node, x=20,
+        image = Sprite(image=tex, parent=self._content_node, x=20,
                                     y=90, w=display_w, h=display_h,
                                     any_filter=False, transparent=False)
         description = ""
@@ -84,7 +84,7 @@ class TexturePreview(DraggableWindow):
             Texture.format_format(tex.get_format()).upper(),
             Texture.format_component_type(tex.get_component_type()).upper())
 
-        BetterOnscreenText(text=description,
+        Text(text=description,
                            parent=self._content_node,
                            x=20, y=70, size=18,
                            color=Vec3(0.6, 0.6, 0.6))
@@ -93,7 +93,7 @@ class TexturePreview(DraggableWindow):
         size_desc = "Estimated memory: {:2.2f} MB".format(
             estimated_bytes / (1024.0 ** 2))
 
-        BetterOnscreenText(text=size_desc, parent=self._content_node,
+        Text(text=size_desc, parent=self._content_node,
                            x=self._width - 20.0, y=70, size=18,
                            color=Vec3(0.34, 0.564, 0.192),
                            align="right")
@@ -101,12 +101,12 @@ class TexturePreview(DraggableWindow):
         if tex.uses_mipmaps():
             # Create mip slider
             max_mips = tex.get_expected_num_mipmap_levels() - 1
-            self._mip_slider = BetterSlider(parent=self._content_node,
+            self._mip_slider = Slider(parent=self._content_node,
                                             size=200, min_value=0,
                                             max_value=max_mips,
                                             callback=self._set_mip, x=850,
                                             y=63, value=0)
-            self._mip_text = BetterOnscreenText(text="Mipmap: 5",
+            self._mip_text = Text(text="Mipmap: 5",
                                                 parent=self._content_node,
                                                 x=1080, y=70, size=18,
                                                 color=Vec3(0.6, 0.6, 0.6),
@@ -114,12 +114,12 @@ class TexturePreview(DraggableWindow):
 
         if tex.get_z_size() > 1:
             # Create slice slider
-            self._slice_slider = BetterSlider(parent=self._content_node,
+            self._slice_slider = Slider(parent=self._content_node,
                                               size=250, min_value=0,
                                               max_value=tex.get_z_size() - 1,
                                               callback=self._set_slice, x=450,
                                               y=63, value=0)
-            self._slice_text = BetterOnscreenText(text="Slice: 5",
+            self._slice_text = Text(text="Slice: 5",
                                                   parent=self._content_node,
                                                   x=710, y=70, size=18,
                                                   color=Vec3(0.6, 0.6, 0.6),

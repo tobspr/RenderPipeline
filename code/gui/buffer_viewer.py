@@ -38,9 +38,9 @@ from ..util.display_shader_builder import DisplayShaderBuilder
 from ..globals import Globals
 from ..render_target import RenderTarget
 from .texture_preview import TexturePreview
-from .better_onscreen_image import BetterOnscreenImage
-from .better_labeled_checkbox import BetterLabeledCheckbox
-from .better_onscreen_text import BetterOnscreenText
+from .sprite import Sprite
+from .labeled_checkbox import LabeledCheckbox
+from .text import Text
 from .draggable_window import DraggableWindow
 
 class BufferViewer(DraggableWindow):
@@ -123,7 +123,7 @@ class BufferViewer(DraggableWindow):
         self._content_node.set_scale(1, 1, -1)
         self._content_node.set_z(self._scroll_height)
 
-        self._chb_show_images = BetterLabeledCheckbox(
+        self._chb_show_images = LabeledCheckbox(
             parent=self._node, x=20, y=60, chb_callback=self._set_show_images,
             chb_checked=False, text="Display image resources",
             text_color=Vec3(0.5), expand_width=330)
@@ -220,7 +220,7 @@ class BufferViewer(DraggableWindow):
             frame_hover.bind(
                 DGG.B1PRESS, partial(self._on_texture_clicked, stage_tex))
 
-            BetterOnscreenText(text=stage_name, x=15, y=29, parent=node,
+            Text(text=stage_name, x=15, y=29, parent=node,
                                size=12, color=Vec3(0.2))
 
             # Scale image so it always fits
@@ -234,7 +234,7 @@ class BufferViewer(DraggableWindow):
                 w = entry_width - 30
                 h = entry_height - 60
 
-            preview = BetterOnscreenImage(
+            preview = Sprite(
                 image=stage_tex, w=scale_factor * w, h=scale_factor * h,
                 any_filter=False, parent=node, x=10, y=40, transparent=False)
 

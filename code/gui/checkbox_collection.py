@@ -30,7 +30,7 @@ import direct.gui.DirectGuiGlobals as DGG
 
 class CheckboxCollection(RPObject):
 
-    """ This is a container for multiple BetterCheckboxes, controlling that
+    """ This is a container for multiple Checkboxes, controlling that
     only one checkbox of this collection is checked at one time
     (like a radio-button) """
 
@@ -39,7 +39,7 @@ class CheckboxCollection(RPObject):
         self._items = []
 
     def add(self, chb):
-        """ Adds a BetterCheckbox to this collection """
+        """ Adds a Checkbox to this collection """
         if chb.get_collection() is not None:
             self.error(
                 "Can't add checkbox as it already belongs "

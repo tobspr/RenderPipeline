@@ -32,7 +32,7 @@ from ..rp_object import RPObject
 from ..globals import Globals
 
 
-class BetterCheckbox(RPObject):
+class Checkbox(RPObject):
 
     """ This is a wrapper around DirectCheckBox, providing a simpler interface
     and better visuals """

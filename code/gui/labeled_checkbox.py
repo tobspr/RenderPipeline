@@ -28,10 +28,10 @@ from panda3d.core import Vec3
 import direct.gui.DirectGuiGlobals as DGG
 
 from ..rp_object import RPObject
-from .better_checkbox import BetterCheckbox
-from .better_onscreen_text import BetterOnscreenText
+from .checkbox import Checkbox
+from .text import Text
 
-class BetterLabeledCheckbox(RPObject):
+class LabeledCheckbox(RPObject):
 
     """ This is a checkbox, combined with a label. The arguments are
     equal to the Checkbox and OnscreenText arguments. """
@@ -49,11 +49,11 @@ class BetterLabeledCheckbox(RPObject):
         if not enabled:
             text_color = Vec3(1.0, 0, 0.28)
 
-        self._checkbox = BetterCheckbox(
+        self._checkbox = Checkbox(
             parent=parent, x=x, y=y, enabled=enabled,
             callback=chb_callback, extra_args=chb_args,
             checked=chb_checked, radio=radio, expand_width=expand_width)
-        self._text = BetterOnscreenText(x=x + 26, y=y + 10 + text_size // 4,
+        self._text = Text(x=x + 26, y=y + 10 + text_size // 4,
                                         text=text, align="left", parent=parent,
                                         size=text_size, color=text_color, may_change=True)
 

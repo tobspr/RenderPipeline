@@ -31,7 +31,7 @@ from ..rp_object import RPObject
 from ..globals import Globals
 
 
-class BetterOnscreenImage(RPObject):
+class Sprite(RPObject):
 
     """ Simple wrapper arround OnscreenImage, providing a simpler interface """
 

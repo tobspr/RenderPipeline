@@ -36,8 +36,8 @@ from ..util.display_shader_builder import DisplayShaderBuilder
 from ..util.shader_ubo import BaseUBO
 
 from .draggable_window import DraggableWindow
-from .better_onscreen_text import BetterOnscreenText
-from .better_onscreen_image import BetterOnscreenImage
+from .text import Text
+from .sprite import Sprite
 
 class PipeViewer(DraggableWindow):
 
@@ -99,7 +99,7 @@ class PipeViewer(DraggableWindow):
             node.set_scale(1, 1, -1)
             DirectFrame(parent=node, frameSize=(10, 150, 0, -3600),
                         frameColor=(0.2, 0.2, 0.2, 1))
-            BetterOnscreenText(text=str(stage.get_name().replace("Stage", "")),
+            Text(text=str(stage.get_name().replace("Stage", "")),
                                parent=node, x=20, y=25, size=15)
 
             for output_pipe, pipe_tex in iteritems(stage.produced_pipes):
@@ -136,7 +136,7 @@ class PipeViewer(DraggableWindow):
                     icon_file = "data/gui/icon_buffer_texture.png"
                 else:
                     icon_file = None
-                    preview = BetterOnscreenImage(
+                    preview = Sprite(
                         image=pipe_tex, parent=node, x=0,
                         y=50 + pipe_idx * pipe_height, w=w, h=h, any_filter=False,
                         transparent=False)
@@ -148,7 +148,7 @@ class PipeViewer(DraggableWindow):
                     preview.set_shader_input("slice", 0)
 
                 if icon_file:
-                    BetterOnscreenImage(image=icon_file, parent=node,
+                    Sprite(image=icon_file, parent=node,
                                         x=55, y=65 + pipe_idx * pipe_height,
                                         w=48, h=48, near_filter=False,
                                         transparent=True)
@@ -160,7 +160,7 @@ class PipeViewer(DraggableWindow):
                         tex_desc += " - " + pipe_tex.format_format(pipe_tex.get_format()).upper()
 
 
-                    BetterOnscreenText(
+                    Text(
                         text=tex_desc, parent=node, x=55 + 48/2,
                         y=130 + pipe_idx * pipe_height, color=Vec3(0.2),
                         size=12, align="center")
@@ -185,10 +185,10 @@ class PipeViewer(DraggableWindow):
             DirectFrame(parent=self._pipe_descriptions,
                         frameSize=(0, 180, -95, -135),
                         frameColor=(r, g, b, 1.0), pos=(0, 1, -idx * pipe_height))
-            BetterOnscreenText(parent=self._pipe_descriptions, text=pipe,
+            Text(parent=self._pipe_descriptions, text=pipe,
                                x=42, y=121 + idx * pipe_height, size=15,
                                color=Vec3(0.1))
-            BetterOnscreenImage(
+            Sprite(
                 parent=self._pipe_descriptions, x=9, y=103 + idx * pipe_height,
                 image="data/gui/icon_pipe.png",
                 transparent=True, near_filter=False)

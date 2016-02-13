@@ -31,7 +31,7 @@ from direct.gui.DirectGui import DGG
 
 from ..rp_object import RPObject
 from ..globals import Globals
-from .better_onscreen_text import BetterOnscreenText
+from .text import Text
 
 class DraggableWindow(RPObject):
 
@@ -96,7 +96,7 @@ class DraggableWindow(RPObject):
                                       frameSize=(0, self._width, 0, -45),
                                       frameColor=(0.058, 0.058, 0.058, 1),
                                       parent=self._node, state=DGG.NORMAL)
-        self._window_title = BetterOnscreenText(parent=self._node, x=12, y=29,
+        self._window_title = Text(parent=self._node, x=12, y=29,
                                                 text=self._title, size=19,
                                                 color=Vec3(0.7), may_change=True)
         self._btn_close = DirectButton(relief=DGG.FLAT, pressEffect=1,

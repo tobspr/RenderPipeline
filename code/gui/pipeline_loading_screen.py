@@ -26,7 +26,7 @@ THE SOFTWARE.
 from __future__ import division
 from six.moves import range
 
-from .better_onscreen_image import BetterOnscreenImage
+from .sprite import Sprite
 
 from ..rp_object import RPObject
 from ..globals import Globals
@@ -60,18 +60,18 @@ class PipelineLoadingScreen(RPObject):
         self._fullscreen_node.set_bin("fixed", 10)
         self._fullscreen_node.set_depth_test(False)
 
-        self._fullscreen_bg = BetterOnscreenImage(
+        self._fullscreen_bg = Sprite(
             image="data/gui/loading_screen_bg.png",
             x=0, y=0, w=screen_w, h=screen_h, parent=self._fullscreen_node)
 
-        self._logo = BetterOnscreenImage(
+        self._logo = Sprite(
             image="data/gui/rp_logo_text.png",
             parent=self._fullscreen_node)
 
         logo_w, logo_h = self._logo.get_width(), self._logo.get_height()
         self._logo.set_pos((screen_w - logo_w) // 2, (screen_h - logo_h) // 2)
 
-        self._loading_text = BetterOnscreenImage(
+        self._loading_text = Sprite(
             image="data/gui/loading_screen_text.png",
             parent=self._fullscreen_node)
         loading_text_w = self._loading_text.get_width()

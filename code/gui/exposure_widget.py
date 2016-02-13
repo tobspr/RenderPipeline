@@ -32,8 +32,8 @@ from ..rp_object import RPObject
 from ..util.image import Image
 from ..globals import Globals
 
-from .better_onscreen_image import BetterOnscreenImage
-from .better_onscreen_text import BetterOnscreenText
+from .sprite import Sprite
+from .text import Text
 
 class ExposureWidget(RPObject):
 
@@ -61,10 +61,10 @@ class ExposureWidget(RPObject):
         self._bg_frame = DirectFrame(parent=self._node, frameColor=(0.1, 0.1, 0.1, 1.0),
                                      frameSize=(200, 0, -10, -85), pos=(0, 0, 0))
 
-        self._display_img = BetterOnscreenImage(
+        self._display_img = Sprite(
             image=self._storage_tex, parent=self._node, w=140, h=20, x=20, y=50)
 
-        self._display_txt = BetterOnscreenText(
+        self._display_txt = Text(
             text="Current Exposure".upper(), parent=self._node, x=160, y=40, size=13,
             color=Vec3(0.8), align="right")
 
