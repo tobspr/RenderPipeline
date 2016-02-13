@@ -11,7 +11,7 @@ os.chdir(curr_dir);
 sys.path.insert(0, "../" * 4); sys.path.insert(0, "../" * 4 + "Code/External/six")
 from code.Util.SubmoduleDownloader import SubmoduleDownloader
 SubmoduleDownloader.download_submodule("tobspr", "P3DModuleBuilder", curr_dir, ignore)
-with open("Scripts/__init__.py", "w") as handle: pass
+with open("scripts/__init__.py", "w") as handle: pass
 try: os.remove(".gitignore")
 except: pass
 os.rename("prefab.gitignore", ".gitignore")

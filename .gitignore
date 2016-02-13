@@ -6,10 +6,8 @@
 *.bam
 *.egg
 *.psd
-*.blend
 *.blend1
 *.blend2
-*.rpsg
 *.pdb
 *.stackdump
 *.exr
