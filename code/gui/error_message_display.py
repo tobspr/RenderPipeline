@@ -54,6 +54,8 @@ class ErrorMessageDisplay(RPObject):
         """ Updates the error display, fetching all new messages from the notify
         stream """
 
+        # Disabled for now, since it seems to skip some important error messages
+        # TODO: Investigate
         return
 
         if not self._notify_stream:

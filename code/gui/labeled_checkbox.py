@@ -39,6 +39,8 @@ class LabeledCheckbox(RPObject):
     def __init__(self, parent=None, x=0, y=0, chb_callback=None,
                  chb_args=None, chb_checked=True, text="", text_size=18,
                  radio=False, text_color=None, expand_width=100, enabled=True):
+        """ Constructs a new checkbox, forwarding most of the elements to the
+        underlying Checkbox and Text. """
         RPObject.__init__(self)
         if chb_args is None:
             chb_args = []
@@ -50,12 +52,12 @@ class LabeledCheckbox(RPObject):
             text_color = Vec3(1.0, 0, 0.28)
 
         self._checkbox = Checkbox(
-            parent=parent, x=x, y=y, enabled=enabled,
-            callback=chb_callback, extra_args=chb_args,
-            checked=chb_checked, radio=radio, expand_width=expand_width)
-        self._text = Text(x=x + 26, y=y + 10 + text_size // 4,
-                                        text=text, align="left", parent=parent,
-                                        size=text_size, color=text_color, may_change=True)
+            parent=parent, x=x, y=y, enabled=enabled, callback=chb_callback,
+            extra_args=chb_args, checked=chb_checked, radio=radio,
+            expand_width=expand_width)
+        self._text = Text(
+            x=x + 26, y=y + 10 + text_size // 4, text=text, align="left",
+            parent=parent, size=text_size, color=text_color, may_change=True)
 
         if enabled:
             self._checkbox._node.bind(DGG.WITHIN, self._on_node_enter)
@@ -69,10 +71,12 @@ class LabeledCheckbox(RPObject):
         """ Internal callback when the node gets no longer hovered """
         self._text._node["fg"] = (0.4, 0.4, 0.4, 1.0)
 
-    def get_checkbox(self):
+    @property
+    def checkbox(self):
         """ Returns a handle to the checkbox """
         return self._checkbox
 
-    def get_label(self):
+    @property
+    def label(self):
         """ Returns a handle to the label """
         return self._text

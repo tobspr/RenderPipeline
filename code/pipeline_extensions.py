@@ -32,7 +32,7 @@ from panda3d.core import Texture
 
 from .globals import Globals
 from .effect import Effect
-from .gui.pipeline_loading_screen import PipelineLoadingScreen, EmptyLoadingScreen
+from .gui.loading_screen import LoadingScreen, EmptyLoadingScreen
 
 from .stages.ambient_stage import AmbientStage
 from .stages.gbuffer_stage import GBufferStage
@@ -56,7 +56,7 @@ class PipelineExtensions(object):
 
     def set_default_loading_screen(self):
         """ Tells the pipeline to use the default loading screen. """
-        self._loading_screen = PipelineLoadingScreen(self)
+        self._loading_screen = LoadingScreen(self)
 
     def set_empty_loading_screen(self):
         """ Tells the pipeline to use no loading screen """

@@ -78,15 +78,17 @@ class Checkbox(RPObject):
         if checked:
             self.set_checked(True, False)
 
-    def set_collection(self, coll):
-        """ Internal method to add a checkbox to a checkbox collection, this
-        is used for radio-buttons """
-        self._collection = coll
-
-    def get_collection(self):
+    @property
+    def collection(self):
         """ Returns a handle to the assigned checkbox collection, or None
         if no collection was assigned """
         return self._collection
+
+    @collection.setter
+    def collection(self, coll):
+        """ Internal method to add a checkbox to a checkbox collection, this
+        is used for radio-buttons """
+        self._collection = coll
 
     def _update_status(self, status, *args):
         """ Internal method when another checkbox in the same radio group

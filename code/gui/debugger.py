@@ -38,7 +38,7 @@ from .pipe_viewer import PipeViewer
 from .text import Text
 from .labeled_checkbox import LabeledCheckbox
 from .checkbox_collection import CheckboxCollection
-from .fast_text_node import FastTextNode
+from .text_node import TextNode
 from .error_message_display import ErrorMessageDisplay
 from .exposure_widget import ExposureWidget
 
@@ -50,9 +50,9 @@ from ..native import NATIVE_CXX_LOADED
 from ..render_target import RenderTarget
 from ..util.image import Image
 
-class OnscreenDebugger(BaseManager):
+class Debugger(BaseManager):
 
-    """ This class manages the onscreen gui """
+    """ This class manages the onscreen gui and """
 
     def __init__(self, pipeline):
         BaseManager.__init__(self)
@@ -123,7 +123,7 @@ class OnscreenDebugger(BaseManager):
         self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.07, 1, 1.0 - 0.07)
         self._debug_lines = []
         for i in range(4):
-            self._debug_lines.append(FastTextNode(
+            self._debug_lines.append(TextNode(
                 pos=Vec2(0, -i * 0.046), parent=self._overlay_node,
                 pixel_size=16, align="right", color=Vec3(1)))
 
@@ -156,37 +156,34 @@ class OnscreenDebugger(BaseManager):
     def _update_stats(self):
         """ Updates the stats overlay """
         clock = Globals.clock
-        self._debug_lines[0].set_text("{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format(
+        self._debug_lines[0].text = "{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format(
             clock.get_average_frame_rate(),
             1000.0 / max(0.001, clock.get_average_frame_rate()),
-            clock.get_max_frame_duration() * 1000.0))
+            clock.get_max_frame_duration() * 1000.0)
 
         text = "{:4d} render states  |  {:4d} transforms"
         text += "  |  {:4d} commands  |  {:6d} lights  |  {:5d} shadow sources"
-        self._debug_lines[1].set_text(text.format(
+        self._debug_lines[1].text = text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
             self._pipeline.light_mgr.get_cmd_queue().num_processed_commands,
             self._pipeline.light_mgr.get_num_lights(),
-            self._pipeline.light_mgr.get_num_shadow_sources(),
-            ))
+            self._pipeline.light_mgr.get_num_shadow_sources())
 
         text = "{:3.0f} MiB VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins"
-        tex_info = self._buffer_viewer.get_stage_information()
-        self._debug_lines[2].set_text(text.format(
+        tex_info = self._buffer_viewer.stage_information
+        self._debug_lines[2].text = text.format(
                 tex_info["memory"] / (1024**2) ,
                 Image._NUM_IMAGES,
                 tex_info["count"],
                 RenderTarget._NUM_BUFFERS_ALLOCATED,
-                self._pipeline.plugin_mgr.get_interface().get_active_plugin_count()
-            ))
+                self._pipeline.plugin_mgr.get_interface().get_active_plugin_count())
 
         text = "{} ({:1.3f})  |  {:3d} active constraints"
-        self._debug_lines[3].set_text(text.format(
+        self._debug_lines[3].text = text.format(
                 self._pipeline.daytime_mgr.time_str,
                 self._pipeline.daytime_mgr.time,
-                self._pipeline.daytime_mgr.num_constraints
-            ))
+                self._pipeline.daytime_mgr.num_constraints)
 
     def _create_debugger(self):
         """ Creates the debugger contents """
@@ -245,7 +242,7 @@ class OnscreenDebugger(BaseManager):
                 text_color=Vec3(0.4), radio=True, chb_checked=(mode == "Default"),
                 chb_callback=partial(self._set_render_mode, mode_id),
                 text_size=14, expand_width=230, enabled=enabled)
-            collection.add(box.get_checkbox())
+            collection.add(box.checkbox)
 
     def _set_render_mode(self, mode_id, value):
         """ Callback which gets called when a render mode got selected """

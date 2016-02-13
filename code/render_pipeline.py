@@ -41,7 +41,7 @@ from .render_target import RenderTarget
 from .rp_object import RPObject
 from .util.settings_loader import SettingsLoader
 from .util.network_update_listener import NetworkUpdateListener
-from .gui.onscreen_debugger import OnscreenDebugger
+from .gui.debugger import Debugger
 from .plugin_interface.plugin_manager import PluginManager
 from .daytime.daytime_manager import DayTimeManager
 
@@ -233,7 +233,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
     def _init_debugger(self):
         """ Internal method to initialize the GUI-based debugger """
         if self.get_setting("pipeline.display_debugger"):
-            self._debugger = OnscreenDebugger(self)
+            self._debugger = Debugger(self)
         else:
             # Use an empty onscreen debugger in case the debugger is not
             # enabled, which defines all member functions as empty lambdas

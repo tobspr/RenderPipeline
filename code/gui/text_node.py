@@ -21,24 +21,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- 	 	    	 	
+                    
 """
 
 
-from panda3d.core import Vec2, Vec3, Vec4, TextNode
+from panda3d.core import Vec2, Vec3, Vec4
+from panda3d.core import TextNode as TextNodeImpl
 
 from ..globals import Globals
 from ..rp_object import RPObject
 
-class FastTextNode(RPObject):
+class TextNode(RPObject):
 
     """ Interface for the Panda3D TextNode. """
 
     def __init__(self, font="data/font/roboto-bold.ttf", pixel_size=16, align="left",
                  pos=Vec2(0), color=Vec3(1), parent=None):
-        self._node = TextNode('FTN')
+        self._node = TextNodeImpl('FTN')
         self._node.set_text("Text")
-        self._node.set_align(getattr(TextNode, "A_" + align))
+        self._node.set_align(getattr(TextNodeImpl, "A_" + align))
         self._node.set_text_color(color.x, color.y, color.z, 1)
 
         if parent is None:
@@ -56,5 +57,12 @@ class FastTextNode(RPObject):
 
         self._node.set_font(font)
 
-    def set_text(self, text):
+    @property
+    def text(self):
+        """ Returns the current text """
+        return self._node.get_text()
+
+    @text.setter
+    def text(self, text):
+        """ Sets the current text """
         self._node.set_text(text)

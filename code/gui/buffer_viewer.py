@@ -83,9 +83,10 @@ class BufferViewer(DraggableWindow):
             self._perform_update()
             self.show()
 
-    def get_stage_information(self):
+    @property
+    def stage_information(self):
         """ Returns the amount of attached stages, and also the memory consumed
-        in MiB."""
+        in MiB in a dictionary. """
         count = 0
         memory = 0.0
         for entry in BufferViewer._REGISTERED_ENTRIES:
@@ -99,7 +100,6 @@ class BufferViewer(DraggableWindow):
             else:
                 self.warn("Unkown type:", entry.__class__.__name)
         return {"count": count, "memory": memory}
-
 
     def _create_components(self):
         """ Creates the window components """
@@ -122,7 +122,6 @@ class BufferViewer(DraggableWindow):
             "BufferComponents")
         self._content_node.set_scale(1, 1, -1)
         self._content_node.set_z(self._scroll_height)
-
         self._chb_show_images = LabeledCheckbox(
             parent=self._node, x=20, y=60, chb_callback=self._set_show_images,
             chb_checked=False, text="Display image resources",
@@ -247,5 +246,3 @@ class BufferViewer(DraggableWindow):
         num_rows = (index + entries_per_row) // entries_per_row
 
         self._set_scroll_height(50 + (entry_height-14) * num_rows)
-
-

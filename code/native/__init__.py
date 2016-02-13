@@ -76,7 +76,7 @@ if NATIVE_CXX_LOADED:
     _native_module = importlib.import_module(".native_", __package__)
 else:
     RPObject.global_debug("CORE", "Using simulated python-wrapper module")
-    _native_module = importlib.import_module("..native_python", __package__)
+    _native_module = importlib.import_module("..pynative", __package__)
 
 # Import all classes
 for v in classes_to_import + list(classes_to_import_and_rename.keys()):

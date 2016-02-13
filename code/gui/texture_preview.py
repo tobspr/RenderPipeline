@@ -69,61 +69,48 @@ class TexturePreview(DraggableWindow):
             display_w = self._width - 40
             display_h = self._height - 110
 
-        image = Sprite(image=tex, parent=self._content_node, x=20,
-                                    y=90, w=display_w, h=display_h,
-                                    any_filter=False, transparent=False)
+        image = Sprite(
+            image=tex, parent=self._content_node, x=20, y=90, w=display_w,
+            h=display_h, any_filter=False, transparent=False)
         description = ""
 
         # Image size
-        description += "{:d} x {:d} x {:d}".format(tex.get_x_size(),
-                                                   tex.get_y_size(),
-                                                   tex.get_z_size())
+        description += "{:d} x {:d} x {:d}".format(
+            tex.get_x_size(), tex.get_y_size(), tex.get_z_size())
 
         # Image type
         description += ", {:s}, {:s}".format(
             Texture.format_format(tex.get_format()).upper(),
             Texture.format_component_type(tex.get_component_type()).upper())
 
-        Text(text=description,
-                           parent=self._content_node,
-                           x=20, y=70, size=18,
-                           color=Vec3(0.6, 0.6, 0.6))
+        Text(text=description, parent=self._content_node, x=20, y=70,
+             size=18, color=Vec3(0.6, 0.6, 0.6))
 
         estimated_bytes = tex.estimate_texture_memory()
         size_desc = "Estimated memory: {:2.2f} MB".format(
             estimated_bytes / (1024.0 ** 2))
 
-        Text(text=size_desc, parent=self._content_node,
-                           x=self._width - 20.0, y=70, size=18,
-                           color=Vec3(0.34, 0.564, 0.192),
-                           align="right")
+        Text(text=size_desc, parent=self._content_node, x=self._width - 20.0,
+             y=70, size=18, color=Vec3(0.34, 0.564, 0.192), align="right")
 
         if tex.uses_mipmaps():
             # Create mip slider
             max_mips = tex.get_expected_num_mipmap_levels() - 1
-            self._mip_slider = Slider(parent=self._content_node,
-                                            size=200, min_value=0,
-                                            max_value=max_mips,
-                                            callback=self._set_mip, x=850,
-                                            y=63, value=0)
-            self._mip_text = Text(text="Mipmap: 5",
-                                                parent=self._content_node,
-                                                x=1080, y=70, size=18,
-                                                color=Vec3(0.6, 0.6, 0.6),
-                                                may_change=1)
+            self._mip_slider = Slider(
+                parent=self._content_node, size=200, min_value=0, max_value=max_mips,
+                callback=self._set_mip, x=850, y=63, value=0)
+            self._mip_text = Text(
+                text="Mipmap: 5", parent=self._content_node, x=1080, y=70, size=18,
+                color=Vec3(0.6, 0.6, 0.6), may_change=1)
 
         if tex.get_z_size() > 1:
-            # Create slice slider
-            self._slice_slider = Slider(parent=self._content_node,
-                                              size=250, min_value=0,
-                                              max_value=tex.get_z_size() - 1,
-                                              callback=self._set_slice, x=450,
-                                              y=63, value=0)
-            self._slice_text = Text(text="Slice: 5",
-                                                  parent=self._content_node,
-                                                  x=710, y=70, size=18,
-                                                  color=Vec3(0.6, 0.6, 0.6),
-                                                  may_change=1)
+            self._slice_slider = Slider(
+                parent=self._content_node, size=250, min_value=0,
+                max_value=tex.get_z_size() - 1, callback=self._set_slice, x=450,
+                y=63, value=0)
+            self._slice_text = Text(
+                text="Slice: 5", parent=self._content_node, x=710, y=70, size=18,
+                color=Vec3(0.6, 0.6, 0.6), may_change=1)
 
         image.set_shader_input("slice", 0)
         image.set_shader_input("mipmap", 0)
@@ -135,12 +122,12 @@ class TexturePreview(DraggableWindow):
         self.show()
 
     def _set_slice(self):
-        idx = int(self._slice_slider.get_value())
+        idx = int(self._slice_slider.value)
         self._preview_image.set_shader_input("slice", idx)
         self._slice_text.set_text("Slice: " + str(idx))
 
     def _set_mip(self):
-        idx = int(self._mip_slider.get_value())
+        idx = int(self._mip_slider.value)
         self._preview_image.set_shader_input("mipmap", idx)
         self._mip_text.set_text("Mipmap: " + str(idx))
 

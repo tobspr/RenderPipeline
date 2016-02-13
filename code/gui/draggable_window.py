@@ -38,6 +38,7 @@ class DraggableWindow(RPObject):
     """ This is a simple draggable but not resizeable window """
 
     def __init__(self, width=800, height=500, title="Window", parent=None):
+        """ Constructs a new window with the given dimensions and title """
         RPObject.__init__(self, "Window-" + title)
         self._width = width
         self._height = height
@@ -79,31 +80,23 @@ class DraggableWindow(RPObject):
         self._node = self._parent.attach_new_node("Window")
         self._node.set_pos(self._pos.x, 1, -self._pos.y)
         border_px = 1
-        self._border_frame = DirectFrame(pos=(0, 1, 0),
-                                         frameSize=(-border_px,
-                                                    self._width + border_px,
-                                                    border_px,
-                                                    -self._height - border_px),
-                                         frameColor=(0.0, 0.0, 0.0, 1),
-                                         parent=self._node, state=DGG.NORMAL)
-        # self._border_frame.hide()
-        self._background = DirectFrame(pos=(0, 1, 0),
-                                       frameSize=(0, self._width,
-                                                  0, -self._height),
-                                       frameColor=(0.098, 0.098, 0.098, 1),
-                                       parent=self._node)
-        self._title_bar = DirectFrame(pos=(0, 1, 0),
-                                      frameSize=(0, self._width, 0, -45),
-                                      frameColor=(0.058, 0.058, 0.058, 1),
-                                      parent=self._node, state=DGG.NORMAL)
-        self._window_title = Text(parent=self._node, x=12, y=29,
-                                                text=self._title, size=19,
-                                                color=Vec3(0.7), may_change=True)
-        self._btn_close = DirectButton(relief=DGG.FLAT, pressEffect=1,
-                                       pos=(self._width - 22, 1, -22),
-                                       frameColor=(0, 0, 0, 0),
-                                       scale=(20, 1, 20), parent=self._node,
-                                       image="data/gui/close_window.png")
+        self._border_frame = DirectFrame(
+            pos=(0, 1, 0), frameSize=(-border_px, self._width + border_px,
+            border_px, -self._height - border_px), frameColor=(0.0, 0.0, 0.0, 1),
+            parent=self._node, state=DGG.NORMAL)
+        self._background = DirectFrame(
+            pos=(0, 1, 0), frameSize=(0, self._width, 0, -self._height),
+            frameColor=(0.098, 0.098, 0.098, 1), parent=self._node)
+        self._title_bar = DirectFrame(
+            pos=(0, 1, 0), frameSize=(0, self._width, 0, -45),
+            frameColor=(0.058, 0.058, 0.058, 1), parent=self._node, state=DGG.NORMAL)
+        self._window_title = Text(
+            parent=self._node, x=12, y=29, text=self._title, size=19,
+            color=Vec3(0.7), may_change=True)
+        self._btn_close = DirectButton(
+            relief=DGG.FLAT, pressEffect=1, pos=(self._width - 22, 1, -22),
+            frameColor=(0, 0, 0, 0), scale=(20, 1, 20), parent=self._node,
+            image="data/gui/close_window.png")
 
         # Init bindings
         self._btn_close.set_transparency(TransparencyAttrib.M_alpha)

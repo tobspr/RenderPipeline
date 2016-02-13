@@ -36,12 +36,13 @@ class EmptyLoadingScreen(object):
     """ This loading screen is used when no loading screen is specified in the
     pipeline """
 
-    def __getattr__(self, *args, **kwargs):
-        """ Always return a lambda no matter which attribute is queried """
-        return lambda *args, **kwargs: None
+    def create(self):
+        pass
 
+    def remove(self):
+        pass
 
-class PipelineLoadingScreen(RPObject):
+class LoadingScreen(RPObject):
 
     """ This is the default loading screen used by the pipeline"""
 

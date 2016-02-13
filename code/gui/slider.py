@@ -53,6 +53,12 @@ class Slider(RPObject):
                                   thumb_frameSize=(-2.5, 2.5, -5.0, 5.0),
                                   thumb_relief=DGG.FLAT, relief=DGG.FLAT)
 
-    def get_value(self):
+    @property
+    def value(self):
         """ Returns the currently assigned value """
         return self._node["value"]
+
+    @value.setter
+    def value(self, value):
+      """ Sets the value of the slider """
+      self._node["value"] = value

@@ -28,12 +28,12 @@ from __future__ import division
 from panda3d.core import ComputeNode, Shader, Vec4, Texture, Vec3
 from direct.gui.DirectFrame import DirectFrame
 
+from .sprite import Sprite
+from .text import Text
+
 from ..rp_object import RPObject
 from ..util.image import Image
 from ..globals import Globals
-
-from .sprite import Sprite
-from .text import Text
 
 class ExposureWidget(RPObject):
 
@@ -46,7 +46,6 @@ class ExposureWidget(RPObject):
         self._parent = parent
         self._node = self._parent.attach_new_node("ExposureWidgetNode")
         self._create_components()
-
 
     def _create_components(self):
         """ Internal method to init the widgets components """

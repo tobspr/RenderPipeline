@@ -40,22 +40,22 @@ class CheckboxCollection(RPObject):
 
     def add(self, chb):
         """ Adds a Checkbox to this collection """
-        if chb.get_collection() is not None:
+        if chb.collection is not None:
             self.error(
                 "Can't add checkbox as it already belongs "
                 "to another collection!")
             return
-        chb.set_collection(self)
+        chb.collection = self
         self._items.append(chb)
 
     def remove(self, chb):
         """ Removes a checkbox from this collection """
-        if chb.get_collection() is not self:
+        if chb.collection is not self:
             self.error(
                 "Can't remove the checkbox from this collection as it is not "
                 "attached to this collection!")
             return
-        chb.set_collection(None)
+        chb.collection = None
         self._items.remove(chb)
 
     def _changed(self, chb):
