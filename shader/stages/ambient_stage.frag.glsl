@@ -157,6 +157,10 @@ void main() {
 
         #endif
 
+        // Mix emissive factor - note that we do *not* clamp the emissive factor,
+        // since it can contain values much greater than 1.0
+        ambient *= max(0.0, 1 - m.emissive);
+        ambient += m.emissive * m.basecolor * 3000.0;
     }
     #endif
 

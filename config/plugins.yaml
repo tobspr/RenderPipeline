@@ -39,7 +39,7 @@ overrides:
     ao.ue4ao_sample_radius: 100.0
     bloom.bloom_strength: 0.7
     bloom.minimum_luminance: 15.0
-    bloom.num_mipmaps: 9
+    bloom.num_mipmaps: 8
     bloom.remove_fireflies: True
     clouds.cloud_decay: 5.78
     clouds.cloud_end: 10.4

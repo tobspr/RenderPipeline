@@ -34,6 +34,7 @@ struct MaterialShaderOutput {
     float specular_ior;
     float metallic;
     float translucency;
+    float emissive;
 };
 
 
@@ -47,6 +48,6 @@ struct Material {
     float specular;
     float metallic;
     float translucency;
-    float diffuse_aa;
+    float emissive;
 };
 

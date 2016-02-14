@@ -115,6 +115,7 @@ void main() {
         m.specular_ior = blend_ior(mOutput.specular_ior, sampled_ior);
         m.roughness = mOutput.roughness * sampled_roughness;
         m.translucency = mOutput.translucency;
+        m.emissive = mOutput.emissive;
     #endif
 
     %MATERIAL%

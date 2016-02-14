@@ -72,13 +72,10 @@
         // Optional: Use squared roughness as proposed by Disney
         roughness *= roughness;
 
-        // Pack diffuse antialiasing factor
-        float diffuse_aa = length(m.normal);
-
         // Pack all values to the gbuffer
         gbuffer_out_0 = vec4(basecolor.r, basecolor.g, basecolor.b, roughness);
         gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, metallic, specular);
-        gbuffer_out_2 = vec4(velocity.x, velocity.y, translucency, diffuse_aa);
+        gbuffer_out_2 = vec4(velocity.x, velocity.y, translucency, m.emissive);
     }
 
 
@@ -141,7 +138,7 @@
         m.metallic  = data1.z * 1.001 - 0.0005;
         m.specular  = data1.w;
         m.translucency = data2.z;
-        m.diffuse_aa = data2.w;
+        m.emissive = data2.w;
 
         // Velocity, not stored in the Material struct but stored in the G-Buffer
         // vec2 velocity = data2.xy;

@@ -52,6 +52,6 @@ void main() {
     %VERTEX%
 
     gl_Position = p3d_ViewProjectionMatrix * vec4(vOutput.position, 1);
-    
+
     %TRANSFORMATION%
 }

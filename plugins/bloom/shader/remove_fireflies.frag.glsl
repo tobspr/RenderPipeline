@@ -26,7 +26,7 @@
 
 #version 430
 
-#pragma optionNV (unroll all)r
+#pragma optionNV (unroll all)
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gaussian_weights.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
