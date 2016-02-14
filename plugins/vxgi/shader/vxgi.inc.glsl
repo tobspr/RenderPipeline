@@ -38,21 +38,21 @@ uniform int voxelGridResolution;
 
 
 vec3 worldspace_to_voxelspace(vec3 worldspace) {
-    vec3 voxel_coord = (worldspace - voxelGridPosition) / GET_SETTING(VXGI, grid_ws_size);
+    vec3 voxel_coord = (worldspace - voxelGridPosition) / GET_SETTING(vxgi, grid_ws_size);
     return fma(voxel_coord, vec3(0.5), vec3(0.5));
 }
 
 float get_mipmap_from_cone_radius(float cone_radius) {
-    return log2(cone_radius * GET_SETTING(VXGI, grid_resolution) * 1.1) - 1;
+    return log2(cone_radius * GET_SETTING(vxgi, grid_resolution) * 1.1) - 1;
 }
 
 vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps, bool is_specular, float cone_grow_factor) {
 
     // Find initial cone radius
-    float cone_radius = (1.0 + 5.0 * cone_grow_factor) / GET_SETTING(VXGI, grid_resolution);
+    float cone_radius = (1.0 + 5.0 * cone_grow_factor) / GET_SETTING(vxgi, grid_resolution);
 
     // Offset start position to avoid self intersection
-    start_pos += nrm * 4.0 / GET_SETTING(VXGI, grid_resolution);
+    start_pos += nrm * 4.0 / GET_SETTING(vxgi, grid_resolution);
 
     // Cone parameters
     vec3 current_pos = start_pos;

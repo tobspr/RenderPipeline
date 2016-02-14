@@ -36,6 +36,7 @@ class VXGISunShadowStage(RenderStage):
     to provide sun shadows for the GI """
 
     required_inputs = []
+    required_pipes = []
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "VXGISunShadowStage", pipeline)
@@ -49,7 +50,7 @@ class VXGISunShadowStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"VXGISunShadowMap": (self._target['depth'], self.make_pcf_state()) }
+        return {"VXGISunShadowMapPCF": (self._target['depth'], self.make_pcf_state()) }
 
     def make_pcf_state(self):
         state = SamplerState()

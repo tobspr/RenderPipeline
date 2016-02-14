@@ -47,7 +47,7 @@ uniform samplerCube DefaultEnvmap;
     uniform sampler2D AmbientOcclusion;
 #endif
 
-#if HAVE_PLUGIN(VXGI)
+#if HAVE_PLUGIN(vxgi)
     uniform sampler2D VXGISpecular;
     uniform sampler2D VXGIDiffuse;
 #endif
@@ -117,7 +117,7 @@ void main() {
             ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
         #endif
 
-        #if HAVE_PLUGIN(VXGI)
+        #if HAVE_PLUGIN(vxgi)
             ibl_specular = texture(VXGISpecular, texcoord).xyz;
             ibl_diffuse = texture(VXGIDiffuse, texcoord).xyz;
         #endif
@@ -147,7 +147,7 @@ void main() {
             // Sample precomputed occlusion and multiply the ambient term with it
             float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
 
-            #if HAVE_PLUGIN(VXGI)
+            #if HAVE_PLUGIN(vxgi)
                 // When using VXGI *and* AO, reduce ao term because VXGI already
                 // has an ao term
                 ambient *= saturate(pow(occlusion, 1.5));

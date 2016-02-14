@@ -98,14 +98,14 @@ class Plugin(BasePlugin):
     @PluginHook("pre_render_update")
     def update(self):
 
-        if not self.is_plugin_loaded("Scattering"):
+        if not self.is_plugin_loaded("scattering"):
             sun_vector = Vec3(0.3, 0.3, 0.5)
             sun_vector.normalize()
         else:
             sun_altitude = self.get_daytime_setting(
-                "sun_altitude", plugin_id="Scattering")
+                "sun_altitude", plugin_id="scattering")
             sun_azimuth = self.get_daytime_setting(
-                "sun_azimuth", plugin_id="Scattering")
+                "sun_azimuth", plugin_id="scattering")
 
             theta = (90 - sun_altitude) / 180.0 * pi
             phi = sun_azimuth / 180.0 * pi

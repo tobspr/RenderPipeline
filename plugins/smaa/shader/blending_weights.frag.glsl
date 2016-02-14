@@ -46,7 +46,7 @@ void main() {
     vec2 pixcoord;
     SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
 
-    #if GET_SETTING(SMAA, use_reprojection)
+    #if GET_SETTING(smaa, use_reprojection)
         vec4 subsampleIndices = JitterIndex == 0 ? vec4(1, 1, 1, 0) : vec4(2, 2, 2, 0);
     #else
         vec4 subsampleIndices = vec4(0);

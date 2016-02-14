@@ -66,6 +66,9 @@ class RenderPipeline(PipelineExtensions, RPObject):
         RPObject.__init__(self)
         self.debug("Using Python {} with architecture {}".format(
             sys.version_info.major, PandaSystem.get_platform()))
+        self.debug("Using Panda3D {} built on {} using commit {}".format(
+            PandaSystem.get_version_string(), PandaSystem.get_build_date(),
+            PandaSystem.get_git_commit()))
         self._showbase = showbase
         self._mount_mgr = MountManager(self)
         self._settings = SettingsLoader(self, "PipelineSettings")

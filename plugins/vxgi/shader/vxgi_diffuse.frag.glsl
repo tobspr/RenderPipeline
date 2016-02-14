@@ -30,7 +30,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
-#pragma include "../vxgi.inc.glsl"
+#pragma include "vxgi.inc.glsl"
 
 flat in int instance;
 
@@ -83,7 +83,7 @@ void main() {
             voxel_coord,
             m.normal,
             direction,
-            GET_SETTING(VXGI, diffuse_cone_steps),
+            GET_SETTING(vxgi, diffuse_cone_steps),
             false,
             0.1);
         accum.xyz += cone.xyz * weight;

@@ -164,7 +164,7 @@ class ShaderUBO(BaseUBO):
             if len(parts) == 1:
                 inputs.append(self._pta_to_glsl_type(handle) + " " + input_name + ";")
 
-            # Nested input, like Scattering.sun_color
+            # Nested input, like scattering.sun_color
             elif len(parts) == 2:
                 struct_name = parts[0]
                 actual_input_name = parts[1]
@@ -179,7 +179,7 @@ class ShaderUBO(BaseUBO):
                         self._pta_to_glsl_type(handle) + " " + actual_input_name + ";"
                     ]
 
-            # Nested input, like Scattering.some_setting.sun_color, not supported yet
+            # Nested input, like scattering.some_setting.sun_color, not supported yet
             else:
                 self.warn("Structure definition too nested, not supported (yet):", input_name)
 

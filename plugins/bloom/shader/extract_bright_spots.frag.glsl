@@ -40,7 +40,7 @@ void main() {
     vec3 bloom_color = vec3(0);
     if (luma > GET_SETTING(bloom, minimum_luminance)) {
         bloom_color = scene_color;
-        bloom_color *= GET_SETTING(bloom, bloom_strength) * 0.016;
+        bloom_color *= GET_SETTING(bloom, bloom_strength) * 0.0009;
     }
 
     #if DEBUG_MODE

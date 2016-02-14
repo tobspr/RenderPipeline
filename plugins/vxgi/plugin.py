@@ -32,9 +32,9 @@ from .. import *
 from math import sin, cos, pi
 from panda3d.core import Vec3
 
-from .VoxelizationStage import VoxelizationStage
-from .VXGISunShadowStage import VXGISunShadowStage
-from .VXGIStage import VXGIStage
+from .voxelization_stage import VoxelizationStage
+from .vxgi_sun_shadow_stage import VXGISunShadowStage
+from .vxgi_stage import VXGIStage
 
 class Plugin(BasePlugin):
 
@@ -46,12 +46,12 @@ class Plugin(BasePlugin):
         self._voxel_stage.set_voxel_resolution(self.get_setting("grid_resolution"))
         self._voxel_stage.set_voxel_grid_size(self.get_setting("grid_ws_size"))
 
-        if self.is_plugin_loaded("Scattering"):
+        if self.is_plugin_loaded("scattering"):
             self._shadow_stage = self.create_stage(VXGISunShadowStage)
 
             # Add shadow map as requirement
             self._voxel_stage.add_input_requirement("VXGISunShadowMVP")
-            self._voxel_stage.add_pipe_requirement("VXGISunShadowMap")
+            self._voxel_stage.add_pipe_requirement("VXGISunShadowMapPCF")
 
     @PluginHook("pre_render_update")
     def update(self):
@@ -80,13 +80,13 @@ class Plugin(BasePlugin):
 
     def _update_shadow_pos(self):
         """ Updates the sun shadow map """
-        if self.is_plugin_loaded("Scattering"):
+        if self.is_plugin_loaded("scattering"):
 
             # Get sun vector
             sun_altitude = self.get_daytime_setting(
-                "sun_altitude", plugin_id="Scattering")
+                "sun_altitude", plugin_id="scattering")
             sun_azimuth = self.get_daytime_setting(
-                "sun_azimuth", plugin_id="Scattering")
+                "sun_azimuth", plugin_id="scattering")
             theta = (90 - sun_altitude) / 180.0 * pi
             phi = sun_azimuth / 180.0 * pi
             sun_vector = Vec3(

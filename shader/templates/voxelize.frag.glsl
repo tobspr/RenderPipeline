@@ -28,7 +28,7 @@ uniform samplerCube ScatteringIBLSpecular;
 uniform sampler2D p3d_Texture0;
 
 #if HAVE_PLUGIN(scattering)
-    uniform sampler2DShadow VXGISunShadowMap;
+    uniform sampler2DShadow VXGISunShadowMapPCF;
     uniform mat4 VXGISunShadowMVP;
 #endif
 
@@ -67,7 +67,7 @@ void main() {
 
         vec3 projected = project(VXGISunShadowMVP, biased_position);
         projected.z -= fixed_bias;
-        float shadow_term = texture(VXGISunShadowMap, projected).x;
+        float shadow_term = texture(VXGISunShadowMapPCF, projected).x;
         shading_result += saturate(dot(sun_vector, vOutput.normal)) * sun_color * shadow_term * basecolor;
 
 
@@ -77,8 +77,8 @@ void main() {
     shading_result = shading_result / (1.0 + shading_result);
 
     // Get destination voxel
-    const int resolution = GET_SETTING(VXGI, grid_resolution);
-    const float ws_size = GET_SETTING(VXGI, grid_ws_size);
+    const int resolution = GET_SETTING(vxgi, grid_resolution);
+    const float ws_size = GET_SETTING(vxgi, grid_ws_size);
     vec3 vs_coord = (vOutput.position + vOutput.normal * 0.0 - voxelGridPosition + ws_size) / (2.0 * ws_size);
     ivec3 vs_icoord = ivec3(vs_coord * resolution + 1e-5);
 

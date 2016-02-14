@@ -92,20 +92,20 @@ class VXGIStage(RenderStage):
 
 
         # Make the ambient stage use the GI result
-        ambient_stage = get_internal_stage("AmbientStage")
+        ambient_stage = get_internal_stage("ambient_stage", "AmbientStage")
         ambient_stage.add_pipe_requirement("VXGISpecular")
         ambient_stage.add_pipe_requirement("VXGIDiffuse")
 
     def set_shaders(self):
         self._target_spec.set_shader(
-            self.load_plugin_shader("VXGISpecular.frag"))
+            self.load_plugin_shader("vxgi_specular.frag.glsl"))
         self._target_diff.set_shader(
-            self.load_plugin_shader("shader/SampleHalfresInterleaved.vert", "VXGIDiffuse.frag"))
+            self.load_plugin_shader("shader/sample_halfres_interleaved.vert.glsl","vxgi_diffuse.frag.glsl"))
         self._target_merge_diff.set_shader(
-            self.load_plugin_shader("shader/MergeInterleavedTarget.frag"))
+            self.load_plugin_shader("shader/merge_interleaved_target.frag.glsl"))
         self._target_upscale_diff.set_shader(
-            self.load_plugin_shader("shader/BilateralUpscale.frag"))
+            self.load_plugin_shader("shader/bilateral_upscale.frag.glsl"))
 
-        blur_shader = self.load_plugin_shader("shader/BilateralHalfresBlur.frag")
+        blur_shader = self.load_plugin_shader("shader/bilateral_halfres_blur.frag.glsl")
         self._target_blur_v.set_shader(blur_shader)
         self._target_blur_h.set_shader(blur_shader)

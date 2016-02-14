@@ -31,7 +31,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
-#pragma include "../vxgi.inc.glsl"
+#pragma include "vxgi.inc.glsl"
 
 uniform sampler2D ShadedScene;
 uniform GBufferData GBuffer;
@@ -57,7 +57,7 @@ void main() {
         voxel_coord,
         m.normal,
         reflected_dir,
-        GET_SETTING(VXGI, specular_cone_steps),
+        GET_SETTING(vxgi, specular_cone_steps),
         true,
         m.roughness * 0.17);
 
