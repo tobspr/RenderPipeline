@@ -37,7 +37,7 @@ class BaseManager(RPObject):
         """ Inits the manager """
         RPObject.__init__(self)
         self._update_collector = PStatCollector(
-            "App:Show code:RP_UpdateManagers:" + self.name)
+            "App:Show code:RP_UpdateManagers:" + self.debug_name)
 
     def update(self):
         """ Updates the manager, this just calls the do_update() method and

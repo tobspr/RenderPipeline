@@ -26,14 +26,16 @@ THE SOFTWARE.
 
 from panda3d.core import SamplerState
 
-# Load plugin api
 from ...pluginbase.base_plugin import BasePlugin
-
 from .smaa_stage import SMAAStage
 
-# Create the main plugin
 class Plugin(BasePlugin):
 
+    name = "SMAA (Antialiasing)"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This plugin adds support for SMAA, a post process "
+                   "antialiasing technique.")
+    version = "1.1"
 
     def on_stage_setup(self):
         self.debug("Setting up SMAA stages ..")

@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 # Load the plugin api
-from .. import *
+from ...pluginbase.base_plugin import BasePlugin
 
 # Load your additional plugin classes here, if required
 

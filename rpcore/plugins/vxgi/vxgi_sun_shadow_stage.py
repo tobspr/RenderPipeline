@@ -26,7 +26,7 @@ THE SOFTWARE.
 from __future__ import division
 from six.moves import range
 
-from .. import *
+from ...render_stage import RenderStage
 
 from panda3d.core import Vec3, Camera, OrthographicLens, PTAMat4, SamplerState
 

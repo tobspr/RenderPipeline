@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-# Load the plugin api
-from .. import *
+
+from ...pluginbase.base_plugin import BasePlugin
 
 from .bloom_stage import BloomStage
 

@@ -47,7 +47,7 @@ grain_shader = Shader.load(
 
 import direct.directbase.DirectStart
 
-from code.render_target import RenderTarget
+from rpcore.render_target import RenderTarget
 
 target = RenderTarget()
 target.size = 1024, 1024

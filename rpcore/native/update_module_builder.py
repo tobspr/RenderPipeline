@@ -40,11 +40,11 @@ if __name__ == "__main__":
     os.chdir(current_dir)
 
     # Import thirdparty packages
-    sys.path.insert(0, "../../")
+    sys.path.insert(0, "../../rpcore/util")
     sys.path.insert(0, "../../rpcore/external/six/")
 
     # Download the module
-    from code.util.submodule_downloader import download_submodule
+    from submodule_downloader import download_submodule
     download_submodule("tobspr", "P3DModuleBuilder", current_dir, files_to_ignore)
 
     # Make an init script so we can import the code

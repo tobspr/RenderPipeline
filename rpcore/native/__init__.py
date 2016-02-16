@@ -49,7 +49,7 @@ else:
         NATIVE_CXX_LOADED = handle.read().strip() == "1"
 
 # The native module should only be imported once, and that by the internal pipeline code
-# assert __package__ == "code.native", "You have included the pipeline in the wrong way!"
+assert __package__ == "rpcore.native", "You have included the pipeline in the wrong way!"
 
 # Classes which should get imported
 classes_to_import = [

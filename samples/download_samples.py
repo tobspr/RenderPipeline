@@ -34,12 +34,12 @@ import sys
 sys.path.insert(0, "../")
 sys.path.insert(0, "../rpcore/external/six")
 
-from code.util.submodule_downloader import download_submodule
+from rpcore.util.submodule_downloader import download_submodule
 
 if __name__ == "__main__":
 
     # Make sure we are in the right directory
-    main_dir = os.path.dirname(os.path.realpath(__file))
+    main_dir = os.path.dirname(os.path.realpath(__file__))
     os.chdir(main_dir)
 
     # Now extract the samples

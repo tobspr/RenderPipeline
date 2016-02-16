@@ -26,8 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-# Load the plugin api
-from .. import *
+from ...pluginbase.base_plugin import BasePlugin
 
 from math import sin, cos, pi
 from panda3d.core import Vec3
@@ -38,8 +37,13 @@ from .vxgi_stage import VXGIStage
 
 class Plugin(BasePlugin):
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
+    name = "Voxel Global Illumination"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("Provides Global Illumination using Voxel Cone Tracing. This "
+                   "technique is still very unoptimized and experimental!")
+    version = "1.1"
+
+    def on_stage_setup(self):
         self._voxel_stage = self.create_stage(VoxelizationStage)
         self._vxgi_stage = self.create_stage(VXGIStage)
 
@@ -53,12 +57,10 @@ class Plugin(BasePlugin):
             self._voxel_stage.required_inputs.append("VXGISunShadowMVP")
             self._voxel_stage.required_pipes.append("VXGISunShadowMapPCF")
 
-    @PluginHook("pre_render_update")
-    def update(self):
+    def on_pre_render_update(self):
         self._queue.exec_next_task()
 
-    @PluginHook("on_pipeline_created")
-    def on_created(self):
+    def on_pipeline_created(self):
         self._queue = RepeatedTaskQueue()
         self._queue.add(self._voxelize_x, self._voxelize_y, self._voxelize_z)
         self._queue.add(self._generate_mipmaps)

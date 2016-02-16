@@ -1,10 +1,4 @@
 
-name: Voxel Global Illumination
-author: tobspr <tobias.springer1@gmail.com>
-version: 1.0
-description: >
-    Provides Global Illumination using Voxel Cone Tracing.
-
 settings: !!omap
 
     - grid_resolution:

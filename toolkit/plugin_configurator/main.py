@@ -383,20 +383,20 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         # Plugins are all plugins in the plugins directory
         self._plugin_mgr.unload()
         self._plugin_mgr.load()
-        plugins = self._plugin_mgr.settings.keys()
+        plugins = self._plugin_mgr.plugin_instances
 
         self.lst_plugins.clear()
 
-        for plugin in plugins:
+        for plugin_id, instance in iteritems(plugins):
             item = QtGui.QListWidgetItem()
-            item.setText(" " + plugin)
+            item.setText(" " + instance.name)
 
-            if self._plugin_mgr.is_plugin_enabled(plugin):
+            if self._plugin_mgr.is_plugin_enabled(plugin_id):
                 item.setCheckState(QtCore.Qt.Checked)
             else:
                 item.setCheckState(QtCore.Qt.Unchecked)
 
-            item._plugin_id = plugin
+            item._plugin_id = plugin_id
             self.lst_plugins.addItem(item)
 
 # Start application

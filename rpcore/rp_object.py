@@ -95,7 +95,7 @@ class RPObject(object):
         is used """
         if name is None:
             name = self.__class__.__name__
-        self.name = name
+        self._debug_name = name
         self._debug_color = Fore.GREEN
 
     def _set_debug_color(self, color, style=None):
@@ -105,12 +105,12 @@ class RPObject(object):
             self._debug_color += getattr(Style, style.upper())
 
     @property
-    def name(self):
+    def debug_name(self):
         """ Returns the name of the debug object """
         return self._debug_name
 
-    @name.setter
-    def name(self, name):
+    @debug_name.setter
+    def debug_name(self, name):
         """ Renames this object """
         self._debug_name = name
 

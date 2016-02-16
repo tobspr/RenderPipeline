@@ -58,10 +58,10 @@ except ImportError as msg:
 
 from ui.main_window_generated import Ui_MainWindow
 from curve_widget import CurveWidget
-from code.daytime.daytime_interface import DayTimeInterface
-from code.plugbase.virtual_plugbase import VirtualPluginInterface
-from code.util.udp_listener_service import UDPListenerService
-from code.mount_manager import MountManager
+from rpcore.daytime.daytime_interface import DayTimeInterface
+from rpcore.plugbase.virtual_plugbase import VirtualPluginInterface
+from rpcore.util.udp_listener_service import UDPListenerService
+from rpcore.mount_manager import MountManager
 
 connect = QtCore.QObject.connect
 
