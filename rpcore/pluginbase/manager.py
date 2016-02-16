@@ -78,7 +78,7 @@ class PluginManager(RPObject):
             [(k, make_setting_from_data(v)) for k, v in config["settings"]])
         self._settings[plugin_id] = settings
 
-        # TODO: Daytime settings
+        # daysettings = collections.OrderedDict()
 
     def _load_setting_overrides(self, override_path):
         """ Loads an override file for the settings, which contains values to

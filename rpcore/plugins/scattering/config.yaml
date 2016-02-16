@@ -8,7 +8,7 @@ description: >
     It also adds support for atmospheric fog.
 
 settings: !!omap
-    
+
     - scattering_method:
         type: enum
         values: ["eric_bruneton", "hosek_wilkie"]
@@ -36,7 +36,7 @@ settings: !!omap
         default: 8.0
         shader_runtime: true
         label: Rayleigh height scale
-        description: >  
+        description: >
             Rayleigh height scale, higher values cause a more bluish sky.
 
     - mie_height_scale:
@@ -72,7 +72,7 @@ settings: !!omap
 
 
 daytime_settings: !!omap
-    
+
     - sun_intensity:
         type: scalar
         unit: percent
