@@ -90,7 +90,7 @@ class CurveWidget(QtGui.QWidget):
         for index, curve in enumerate(self._curves):
 
             # Check for clicks on control points
-            for cv_index, (x, y) in enumerate(curve.get_cv_points()):
+            for cv_index, (x, y) in enumerate(curve.control_points):
                 point_x = self._get_x_value_for(x)
                 point_y = self._get_y_value_for(y) - self._bar_h
                 if abs(point_x - mouse_x) < self._cv_point_size + 6:
@@ -248,7 +248,7 @@ class CurveWidget(QtGui.QWidget):
             # Draw the CV points of the curve
             painter.setBrush(QtGui.QColor(240, 240, 240))
 
-            for cv_index, (x, y) in enumerate(curve.get_cv_points()):
+            for cv_index, (x, y) in enumerate(curve.control_points):
                 offs_x = x * canvas_width + self._legend_border
                 offs_y = (1-y) * canvas_height + self._bar_h
 

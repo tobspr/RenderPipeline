@@ -32,6 +32,7 @@ from direct.stdpy.file import listdir, isdir, join
 from ..rp_object import RPObject
 from ..external.yaml import load_yaml_file
 from .setting_types import make_setting_from_data
+from .day_setting_types import make_daysetting_from_data
 
 
 class PluginManager(RPObject):
@@ -46,6 +47,7 @@ class PluginManager(RPObject):
         self._pipeline = pipeline
         self._instances = {}
         self._settings = {}
+        self._day_settings = {}
         self._enabled_plugins = []
 
     def load(self):
@@ -74,18 +76,21 @@ class PluginManager(RPObject):
         # When you don't specify anything in the settings, instead of
         # returning an empty dictionary, pyyaml returns None
         config["settings"] = config["settings"] or {}
+        config["daytime_settings"] = config["daytime_settings"] or {}
         settings = collections.OrderedDict(
             [(k, make_setting_from_data(v)) for k, v in config["settings"]])
         self._settings[plugin_id] = settings
 
-        # daysettings = collections.OrderedDict()
+        day_settings = collections.OrderedDict(
+            [(k, make_daysetting_from_data(v)) for k, v in config["daytime_settings"]])
+        self._day_settings[plugin_id] = day_settings
 
     def _load_setting_overrides(self, override_path):
         """ Loads an override file for the settings, which contains values to
         override the settings with """
         overrides = load_yaml_file(override_path)
-        self._enabled_plugins = overrides["enabled"]
-        for key, val in iteritems(overrides["overrides"]):
+        self._enabled_plugins = overrides["enabled"] or []
+        for key, val in iteritems(overrides["overrides"] or {}):
             plugin_id, setting_id = key.split(".")
             if setting_id not in self._settings[plugin_id]:
                 self.warn("Unkown override:", plugin_id, ":", setting_id)
@@ -95,7 +100,13 @@ class PluginManager(RPObject):
     def _load_daytime_overrides(self, override_path):
         """ Loads an override file for the daytime settings, which contains
         values to override the settings with """
-        pass
+        overrides = load_yaml_file(override_path)
+        for plugin_id, settings in iteritems(overrides["control_points"] or {}):
+            for setting_id, control_points in iteritems(settings):
+                if setting_id not in self._day_settings[plugin_id]:
+                    self.warn("Unkown daytime override:", plugin_id, ":", setting_id)
+                    continue
+                self._day_settings[plugin_id][setting_id].set_control_points(control_points)
 
     def trigger_hook(self, hook_name):
         """ Triggers a given hook on all plugins, effectively calling all

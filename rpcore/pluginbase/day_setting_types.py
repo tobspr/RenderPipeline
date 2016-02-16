@@ -63,11 +63,16 @@ class BaseType(RPObject):
 
     def get_value_at(self, offset):
         """ Returns the unscaled value at the given day time offset """
-        return (curve.get_value(offset) for curve in self.curves)
+        return tuple(curve.get_value(offset) for curve in self.curves)
 
     def get_scaled_value(self, value):
         """ Returns the scaled value from a given normalized value """
         raise NotImplementedError()
+
+    def set_control_points(self, control_points):
+        """ Sets the control points on the curves. """
+        for curve_index, points in enumerate(control_points):
+            self.curves[curve_index].control_points = points
 
 class ScalarType(BaseType):
     """ Setting type storing a single scalar """
@@ -76,12 +81,18 @@ class ScalarType(BaseType):
     pta_type = PTAFloat
 
     def __init__(self, data):
-        self.unit = yaml.pop("unit")
-        self.minvalue, self.maxvalue = yaml.pop("range")
-        self.default = yaml.pop("default")
+        BaseType.__init__(self, data)
+        self.unit = data.pop("unit")
+        self.minvalue, self.maxvalue = data.pop("range")
+        self.default = self.get_linear_value(data.pop("default"))
 
         if self.unit not in ("degree", "meter", "percent"):
             raise Exception("Invalid unit type: {}".format(self.unit))
+
+        self.logarithmic_factor = data.pop("logarithmic_factor", 1.0) # TODO
+
+        self.curves.append(SmoothConnectedCurve())
+        self.curves[0].set_single_value(self.default)
 
     def format(self, value):
         """ Formats a given value, attaching the appropriate metric unit """
@@ -104,15 +115,21 @@ class ColorType(BaseType):
     glsl_type = "vec3"
     pta_type = PTALVecBase3f
 
-    def __init__(self):
-        pass
+    def __init__(self, data):
+        BaseType.__init__(self, data)
+        self.default = self.get_linear_value(data.pop("default"))
+        colors = ((255, 0, 0), (0, 255, 0), (0, 0, 255))
+        for i in range(3):
+            curve = SmoothConnectedCurve()
+            curve.set_single_value(self.default[i])
+            curve.color = colors[i]
+            self.curves.append(curve)
 
     def format(self, value):
         return "{:3}, {:3}, {:3}".format(*value)
 
     def get_scaled_value(self, value):
-        return (i * 255 for i in value)
+        return tuple(i * 255.0 for i in value)
 
     def get_linear_value(self, scaled_value):
-        return (i / 255 for i in scaled_value)
-
+        return tuple(i / 255.0 for i in scaled_value)

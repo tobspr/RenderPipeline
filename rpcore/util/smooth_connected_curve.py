@@ -37,23 +37,9 @@ class SmoothConnectedCurve(object):
     def __init__(self):
         self._curve = None
         self._modified = False
-
-        # Append some points to the border, to make sure the curve matches at
-        # the edges
         self._border_points = 1
-
-        # Curve color, used for displaying the curve
         self._color = (0, 0, 0)
-
-        # Control points, those are some demo values
-        self._cv_points = [
-            [0.1, 0.5 + 0.4 * random()],
-            [0.3, 0.2 + 0.2 * random()],
-            [0.5, 0.4 + 0.3 * random()],
-            [0.75, 0 + 0.3 * random()]
-        ]
-
-        # Build the curve
+        self._cv_points = [(0, 0), (0.5, 0), (1.0, 0)]
         self.build_curve()
 
     @property
@@ -61,23 +47,31 @@ class SmoothConnectedCurve(object):
         """ Returns whether the curve was modified since the creation """
         return self._modified
 
-    def get_cv_points(self):
+    @property
+    def control_points(self):
         """ Returns a list of all controll points """
         return self._cv_points
 
-    def set_color(self, r, g, b):
-        """ Sets the display color of the curve """
-        self._color = (r, g, b)
+    @control_points.setter
+    def control_points(self, points):
+        """ Sets the cv points to the given list of points """
+        self._cv_points = points
+        self._modified = True
+        self.build_curve()
 
-    def get_color(self):
+    @property
+    def color(self):
         """ Returns the display color of the curve """
         return self._color
 
+    @color.setter
+    def color(self, rgb):
+        """ Sets the display color of the curve """
+        self._color = rgb
+
     def set_single_value(self, val):
         """ Sets the curve to be linear, and only use a single value """
-        self._cv_points = [
-            [0.5, val],
-        ]
+        self._cv_points = [[0.5, val]]
         self._modified = False
         self.build_curve()
 
@@ -98,7 +92,6 @@ class SmoothConnectedCurve(object):
 
     def build_curve(self):
         """ Rebuilds the curve based on the controll point values """
-
         sorted_points = sorted(self._cv_points, key=lambda v: v[0])
         first_point = sorted_points[0]
         fitter = CurveFitter()
@@ -129,12 +122,6 @@ class SmoothConnectedCurve(object):
         """ Updates the cv point at the given index """
         self._cv_points[index] = [x_value, y_value]
         self._modified = True
-
-    def set_cv_points(self, points):
-        """ Sets the cv points to the given list of points """
-        self._cv_points = points
-        self._modified = True
-        self.build_curve()
 
     def get_value(self, offset):
         """ Returns the value on the curve ranging whereas the offset should be

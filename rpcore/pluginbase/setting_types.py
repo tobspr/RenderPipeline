@@ -119,14 +119,16 @@ class EnumType(BaseType):
     def __init__(self, data):
         BaseType.__init__(self, data)
         self.values = tuple(data.pop("values"))
-        self.default = self.values.index(data.pop("default"))
+        self.default = data.pop("default")
+        if self.default not in self.values:
+            raise Exception("Enum default not in enum values: {}".format(self.default))
         self.value = self.default
 
     def set_value(self, value):
-        if value < 0 or value >= len(self.values):
+        if value not in self.values:
             self.error("Value not in enum values!")
             return
-        self.value = int(value)
+        self.value = value
 
     def write_defines(self, plugin_id, setting_id, definer):
         BaseType.write_defines(self, plugin_id, setting_id, definer)
