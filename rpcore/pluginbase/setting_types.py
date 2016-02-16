@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from ..rp_object import RPObject
 
-__all__ = ["construct_setting"]
+__all__ = ["make_setting_from_data"]
 
 def make_setting_from_data(data):
     """ Constructs a new setting from a given dataset. This method will automatically
