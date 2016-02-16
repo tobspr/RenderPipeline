@@ -27,15 +27,19 @@ THE SOFTWARE.
 from panda3d.core import SamplerState
 
 # Load the plugin api
-from .. import *
+from ...pluginbase.base_plugin import BasePlugin
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage
 
 class Plugin(BasePlugin):
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
+    name = "Color Correction"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This plugin adds support for color correction, vignetting, "
+                   "chromatic abberation and tonemapping.")
+    version = "1.1"
 
+    def on_stage_setup(self):
         # Disable default display stage to use our own stage
         get_internal_stage("final_stage", "FinalStage").disable_stage()
 
@@ -45,8 +49,7 @@ class Plugin(BasePlugin):
         if self.get_setting("use_auto_exposure"):
             self._exposure_stage = self.create_stage(AutoExposureStage)
 
-    @PluginHook("on_pipeline_created")
-    def pipeline_created(self):
+    def on_pipeline_created(self):
         self._load_lut()
 
     def _load_lut(self):

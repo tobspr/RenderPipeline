@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from .. import *
+from ...render_stage import RenderStage
 from panda3d.core import Texture, Vec4
 
 class AutoExposureStage(RenderStage):

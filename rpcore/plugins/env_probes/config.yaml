@@ -1,12 +1,4 @@
 
-name: Environment Probes
-author: tobspr <tobias.springer1@gmail.com>
-version: 1.0
-description: >
-    This plugin adds support for environment probes, containing diffuse and
-    specular information. This enables accurate reflections, and can also
-    be used to simulate GI.
-
 settings: !!omap
 
     - some_int_setting:
@@ -46,4 +38,3 @@ daytime_settings: !!omap
         default: 0.5
         label: Some Scalar
         description: Description of the scalar.
-

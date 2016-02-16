@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 """
 
+from six import iteritems
 from ..rp_object import RPObject
 
 __all__ = ["make_setting_from_data"]
@@ -68,6 +69,14 @@ class BaseType(RPObject):
     def write_defines(self, plugin_id, setting_id, definer):
         """ Makes the value of this plugin available as a define """
         definer("{}__{}".format(plugin_id, setting_id), self.value)
+
+    def should_be_visible(self, settings):
+        """ Evaluates whether the plugin should be visible, taking all display
+        conditions into account """
+        for key, val in iteritems(self.display_conditions):
+            if settings[key].value != val:
+                return False
+        return True
 
 class TemplatedType(BaseType):
 

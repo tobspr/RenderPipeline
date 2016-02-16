@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from .. import *
+from ...render_stage import RenderStage
 
 class ScatteringEnvmapStage(RenderStage):
 

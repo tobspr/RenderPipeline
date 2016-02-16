@@ -31,15 +31,22 @@ from math import cos, sin, pi
 
 from panda3d.core import Vec3, PTAVecBase3f
 
-from .. import *
+from ...pluginbase.base_plugin import BasePlugin
 from .pssm_shadow_stage import PSSMShadowStage
 from .pssm_dist_shadow_stage import PSSMDistShadowStage
 from .pssm_stage import PSSMStage
 
 class Plugin(BasePlugin):
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
+    name = "PSSM Shadows"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This plugin adds support for Parallel Split Shadow Maps "
+                   "(PSSM), and also sun lighting.")
+    version = "1.1"
+    native_only = True
+    rqeuired_plugins = ("scattering",)
+
+    def on_stage_setup(self):
         self._update_enabled = True
         self._pta_sun_vector = PTAVecBase3f.empty_array(1)
         self._last_cache_reset = 0
@@ -54,8 +61,7 @@ class Plugin(BasePlugin):
         # self._dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
         # self._dist_shadow_stage.set_resolution(self.get_setting("vsm_resolution"))
 
-    @PluginHook("on_pipeline_created")
-    def pipeline_created(self):
+    def on_pipeline_created(self):
         self.debug("Init pssm ..")
 
         # Construct a dummy node to parent the rig to
@@ -95,8 +101,7 @@ class Plugin(BasePlugin):
         self._pssm_stage.set_shader_input("pssm_nearfar", self._camera_rig.get_nearfar_array())
         self._pssm_stage.set_shader_input("pssm_sun_vector", self._pta_sun_vector)
 
-    @PluginHook("pre_render_update")
-    def update(self):
+    def on_pre_render_update(self):
 
         if not self.is_plugin_loaded("scattering"):
             sun_vector = Vec3(0.3, 0.3, 0.5)
@@ -126,19 +131,15 @@ class Plugin(BasePlugin):
                 self._last_cache_reset = Globals.clock.get_frame_time()
                 self._camera_rig.reset_film_size_cache()
 
-    @SettingChanged("max_distance")
-    def update_pssm_distance(self):
+    def update_max_distance(self):
         self._camera_rig.set_pssm_distance(self.get_setting("max_distance"))
 
-    @SettingChanged("logarithmic_factor")
-    def update_log_factor(self):
+    def update_logarithmic_factor(self):
         self._camera_rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
 
-    @SettingChanged("border_bias")
     def update_border_bias(self):
         self._camera_rig.set_border_bias(self.get_setting("border_bias"))
 
-    @SettingChanged("sun_distance")
     def update_sun_distance(self):
         self._camera_rig.set_sun_distance(self.get_setting("sun_distance"))
 

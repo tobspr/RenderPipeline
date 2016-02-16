@@ -27,15 +27,15 @@ THE SOFTWARE.
 from panda3d.core import SamplerState
 
 # Load plugin api
-from .. import *
+from ...pluginbase.base_plugin import BasePlugin
 
 from .smaa_stage import SMAAStage
 
 # Create the main plugin
 class Plugin(BasePlugin):
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
+
+    def on_stage_setup(self):
         self.debug("Setting up SMAA stages ..")
 
         if self.get_setting("use_reprojection"):
@@ -46,8 +46,7 @@ class Plugin(BasePlugin):
         self._smaa_stage.set_use_reprojection(self.get_setting("use_reprojection"))
         self._load_textures()
 
-    @PluginHook("pre_render_update")
-    def update(self):
+    def on_pre_render_update(self):
 
         # Apply jitter for temporal aa
         if self.get_setting("use_reprojection"):

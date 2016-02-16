@@ -23,20 +23,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-# Load the plugin api
-from .. import *
+
+from ...pluginbase.base_plugin import BasePlugin
+from ...globals import Globals
 
 from panda3d.core import SamplerState
 from .cloud_stage import CloudStage
 
 class Plugin(BasePlugin):
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
+    name = "Volumetric Clouds"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This Plugin adds support or volumetric, raytraced clouds. "
+                   "Right now this is pretty unoptimized and may consum a lot "
+                   "of performance.")
+    version = "1.1"
+    required_plugins = ("scattering",)
+
+    def on_stage_setup(self):
         self._stage = self.create_stage(CloudStage)
 
-    @PluginHook("on_pipeline_created")
-    def setup_inputs(self):
+    def on_pipeline_created(self):
         sprite_tex = Globals.loader.loadTexture(self.get_resource("cloud_sprites.png"))
         noise_tex = Globals.loader.loadTexture(self.get_resource("noise.png"))
 

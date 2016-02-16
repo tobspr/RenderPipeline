@@ -36,7 +36,7 @@ settings: !!omap
         shader_runtime: true
         description: >
             Start of the cloud layer in kilometers
-            
+
     - cloud_end:
         type: float
         range: [0.2, 15.0]
@@ -48,7 +48,7 @@ settings: !!omap
             start layer height.
 
 daytime_settings: !!omap
-    
+
     - cloud_brightness:
         type: scalar
         unit: percent
@@ -75,7 +75,7 @@ daytime_settings: !!omap
         default: 1.0
         label: Cumulus Clouds
         description: Amount of cumulus clouds
-    
+
     - stratus_amount:
         type: scalar
         unit: percent
@@ -83,7 +83,7 @@ daytime_settings: !!omap
         default: 1.0
         label: Stratus Clouds
         description: Amount of stratus clouds
-    
+
     - soft_amount:
         type: scalar
         unit: percent

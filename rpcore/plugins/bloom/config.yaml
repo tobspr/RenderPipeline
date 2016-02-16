@@ -1,11 +1,4 @@
 
-name: Bloom
-author: tobspr <tobias.springer1@gmail.com>
-version: 1.0
-description: >
-    This adds support for the Bloom effect (also know as Veil effect), which
-    blurs the bright spots on the screen, to increase the perciveness of the brightness.
-
 settings: !!omap
 
     - num_mipmaps:
@@ -47,4 +40,4 @@ settings: !!omap
             This uses the Karis average to reduce often called "fireflies", which are very
             bright pixels, by weighting them by their brightness.
 
-daytime_settings: 
+daytime_settings:

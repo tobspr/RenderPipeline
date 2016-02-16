@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from .. import *
+from ...pluginbase.base_plugin import BasePlugin
 
 from .scattering_stage import ScatteringStage
 from .scattering_envmap_stage import ScatteringEnvmapStage
@@ -32,13 +32,18 @@ from .scattering_envmap_stage import ScatteringEnvmapStage
 # Create the main plugin
 class Plugin(BasePlugin):
 
-    @PluginHook("on_pipeline_created")
-    def on_create(self):
+    name = "Atmospheric Scattering"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This plugin adds support for Atmospheric Scattering, and a "
+                   "single sun, based on the work from Eric Bruneton. It also "
+                   "adds support for atmospheric fog.")
+    version = "1.1"
+
+    def on_pipeline_created(self):
         self._method.load()
         self._method.compute()
 
-    @PluginHook("on_stage_setup")
-    def on_setup(self):
+    def on_stage_setup(self):
         self.debug("Setting up scattering stage ..")
         self._display_stage = self.create_stage(ScatteringStage)
         self._envmap_stage = self.create_stage(ScatteringEnvmapStage)
@@ -57,6 +62,5 @@ class Plugin(BasePlugin):
         else:
             self.error("Unrecognized scattering method!")
 
-    @PluginHook("on_shader_reload")
     def on_shader_reload(self):
         self._method.compute()

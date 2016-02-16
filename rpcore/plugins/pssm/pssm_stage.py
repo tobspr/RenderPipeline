@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from .. import *
+from ...render_stage import RenderStage
 
 class PSSMStage(RenderStage):
 

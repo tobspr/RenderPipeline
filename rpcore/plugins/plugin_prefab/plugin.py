@@ -23,24 +23,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-# Load the plugin api
-from .. import *
+# Load the base plugin class
+from ...pluginbase.base_plugin import BasePlugin
 
 # Load your additional plugin classes here, if required
 
 class Plugin(BasePlugin):
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
+    name = "Plugin Prefab"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This is the most basic structure of a plugin. You can copy "
+                   "it to produce your own plugins")
+    version = "1.1"
+
+    def on_stage_setup(self):
         """ This method gets called when the pipeline setups the render
         stages. You should create your custom stages here """
 
-    @PluginHook("on_pipeline_created")
-    def on_created(self):
+    def on_pipeline_created(self):
         """ This method gets called after the pipeline finished the setup,
         and is about to start rendering """
 
-    @SettingChanged("some_setting")
     def update_some_setting(self):
         """ This method gets called when the setting "some_setting"
         of your plugin gets called. You should do all work to update required

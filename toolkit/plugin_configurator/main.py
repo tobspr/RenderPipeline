@@ -34,7 +34,6 @@ import time
 from threading import Thread
 from functools import partial
 
-
 # Change to the current directory
 os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__))))
 
@@ -43,7 +42,7 @@ sys.path.insert(0, os.getcwd())
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
-sys.path.insert(0, "../../rpcore/External/six")
+sys.path.insert(0, "../../rpcore/external/six")
 
 from six import iteritems
 
@@ -59,9 +58,9 @@ except ImportError as msg:
 # Load the generated UI Layout
 from ui.main_window_generated import Ui_MainWindow
 
-from code.plugbase.virtual_plugbase import VirtualPluginInterface
-from code.util.udp_listener_service import UDPListenerService
-from code.mount_manager import MountManager
+from rpcore.pluginbase.manager import PluginManager
+from rpcore.util.udp_listener_service import UDPListenerService
+from rpcore.mount_manager import MountManager
 
 connect = QtCore.QObject.connect
 
@@ -74,19 +73,25 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._mount_mgr = MountManager(None)
         self._mount_mgr.mount()
 
+        self._plugin_mgr = PluginManager(None)
+        self._plugin_mgr.load()
+
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
-        self._interface = VirtualPluginInterface()
+
         self._current_plugin = None
         self._current_plugin_instance = None
         self.lbl_restart_pipeline.hide()
         self._set_settings_visible(False)
         self._update_queue = set()
 
-        connect(self.lst_plugins, QtCore.SIGNAL("itemSelectionChanged()"), self.on_plugin_selected)
-        connect(self.lst_plugins, QtCore.SIGNAL("itemChanged(QListWidgetItem*)"), self.on_plugin_state_changed)
-        connect(self.btn_reset_plugin_settings, QtCore.SIGNAL("clicked()"), self.on_reset_plugin_settings)
+        connect(self.lst_plugins, QtCore.SIGNAL("itemSelectionChanged()"),
+            self.on_plugin_selected)
+        connect(self.lst_plugins, QtCore.SIGNAL("itemChanged(QListWidgetItem*)"),
+            self.on_plugin_state_changed)
+        connect(self.btn_reset_plugin_settings, QtCore.SIGNAL("clicked()"),
+            self.on_reset_plugin_settings)
 
         self._load_plugin_list()
 
@@ -107,7 +112,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         """ Gets called when the user wants to reset settings of a plugin """
 
         # Ask the user if he's really sure about it
-        msg = "Are you sure you want to reset the settings of '" + self._current_plugin_instance.get_name() + "'?\n"
+        msg = "Are you sure you want to reset the settings of '" + self._current_plugin_instance.name + "'?\n"
         msg+= "This does not reset the Time of Day settings of this plugin.\n\n"
         msg+= "!! This cannot be undone !! They will be lost forever (a long time!)."
         reply = QtGui.QMessageBox.question(self, "Warning",
@@ -115,10 +120,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         if reply == QtGui.QMessageBox.Yes:
 
             QtGui.QMessageBox.information(self, "Success", "Settings have been reset! You may have to restart the pipeline.")
-            self._interface.reset_plugin_settings(self._current_plugin)
+            self._plugin_mgr.reset_plugin_settings(self._current_plugin)
 
             # Save config
-            self._interface.write_configuration()
+            self._plugin_mgr.save_overrides("$$config/plugins.yaml")
 
             # Always show the restart hint, even if its not always required
             self._show_restart_hint()
@@ -129,7 +134,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
     def on_plugin_state_changed(self, item):
         plugin_id = item._plugin_id
         state = item.checkState() == QtCore.Qt.Checked
-        self._interface.set_plugin_state(plugin_id, state)
+        self._plugin_mgr.set_plugin_enabled(plugin_id, state)
         self._rewrite_plugin_config()
         self._show_restart_hint()
 
@@ -141,10 +146,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             self._current_plugin_instance = None
             self._set_settings_visible(False)
             return
-        assert(len(selected_item) == 1)
+        assert len(selected_item) == 1
         selected_item = selected_item[0]
         self._current_plugin = selected_item._plugin_id
-        self._current_plugin_instance = self._interface.get_plugin_handle(self._current_plugin)
+        self._current_plugin_instance = self._plugin_mgr.get_plugin_handle(self._current_plugin)
         assert(self._current_plugin_instance is not None)
         self._render_current_plugin()
         self._set_settings_visible(True)
@@ -156,20 +161,19 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
                 UDPListenerService.ping_thread(UDPListenerService.CONFIG_PORT, item)
             time.sleep(0.3)
 
-
     def _rewrite_plugin_config(self):
         """ Rewrites the plugin configuration """
-        self._interface.write_configuration()
+        self._plugin_mgr.save_overrides("$$config/plugins.yaml")
 
     def _render_current_plugin(self):
         """ Displays the currently selected plugin """
-        self.lbl_plugin_name.setText(self._current_plugin_instance.get_name())
+        self.lbl_plugin_name.setText(self._current_plugin_instance.name)
 
-        version_str = "Version " + self._current_plugin_instance.get_config().get_version()
-        version_str += " by " + self._current_plugin_instance.get_config().get_author()
+        version_str = "Version " + self._current_plugin_instance.version
+        version_str += " by " + self._current_plugin_instance.author
 
         self.lbl_plugin_version.setText(version_str)
-        self.lbl_plugin_desc.setText(self._current_plugin_instance.get_config().get_description())
+        self.lbl_plugin_desc.setText(self._current_plugin_instance.description)
 
         self._render_current_settings()
 
@@ -179,7 +183,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
     def _render_current_settings(self):
         """ Renders the current plugin settings """
-        settings = self._current_plugin_instance.get_config().get_settings()
+        settings = self._plugin_mgr.settings[self._current_plugin]
 
         # remove all rows
         while self.table_plugin_settings.rowCount() > 0:
@@ -194,9 +198,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         desc_font.setFamily("Segoe UI")
 
         for index, (name, handle) in enumerate(iteritems(settings)):
-
-            # Dont show hidden settings
-            if not handle.evaluate_display_conditions(settings):
+            if not handle.should_be_visible(settings):
                 continue
 
             row_index = self.table_plugin_settings.rowCount()
@@ -209,7 +211,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             label.setWordWrap(True)
             label.setFont(label_font)
 
-            if handle.is_dynamic():
+            if handle.shader_runtime or handle.runtime:
                 # label.setBackground(QtGui.QColor(200, 255, 200, 255))
                 label.setStyleSheet("background: rgba(162, 204, 128, 255);")
             else:
@@ -238,20 +240,17 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
     def _do_update_setting(self, setting_id, value):
 
         # Check whether the setting is a runtime setting
-        setting_handle = self._current_plugin_instance.get_config().get_setting_handle(setting_id)
+        setting_handle = self._plugin_mgr.get_setting_handle(setting_id)
 
         # Skip the setting in case the value is equal
         if setting_handle.value == value:
-            # print("Skipping setting")
             return
 
         # Otherwise set the new value
         setting_handle.set_value(value)
+        self._rewrite_plugin_config()
 
-        self._interface.update_setting(self._current_plugin, setting_id, value)
-        self._interface.write_configuration()
-
-        if not setting_handle.is_dynamic():
+        if not setting_handle.runtime and not setting_handle.shader_runtime:
             self._show_restart_hint()
         else:
             # In case the setting is dynamic, notice the pipeline about it:
@@ -359,8 +358,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
     def _choose_image(self, setting_handle):
         """ Shows a file chooser to show an image from """
-
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.png)")
+        filename = QtGui.QFileDialog.getOpenFileName(
+            self, "Open Image", "", "Image Files (*.png)")
         print("Filename =", filename)
 
     def _set_settings_visible(self, flag):
@@ -379,26 +378,25 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         # Reset selection
         self._current_plugin = None
         self._current_plugin_instance = None
-
         self._set_settings_visible(False)
 
         # Plugins are all plugins in the plugins directory
-        self._interface.unload_plugins()
-        self._interface.load_plugins()
-        plugins = self._interface.get_plugin_instances()
+        self._plugin_mgr.unload()
+        self._plugin_mgr.load()
+        plugins = self._plugin_mgr.settings.keys()
 
         self.lst_plugins.clear()
 
         for plugin in plugins:
             item = QtGui.QListWidgetItem()
-            item.setText(" " + plugin.get_name())
+            item.setText(" " + plugin)
 
-            if self._interface.is_plugin_enabled(plugin.get_id()):
+            if self._plugin_mgr.is_plugin_enabled(plugin):
                 item.setCheckState(QtCore.Qt.Checked)
             else:
                 item.setCheckState(QtCore.Qt.Unchecked)
 
-            item._plugin_id = plugin.get_id()
+            item._plugin_id = plugin
             self.lst_plugins.addItem(item)
 
 # Start application

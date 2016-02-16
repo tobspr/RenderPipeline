@@ -30,7 +30,12 @@ from .bloom_stage import BloomStage
 
 class Plugin(BasePlugin):
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
+    name = "Bloom"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This plugin adds support for a technique called Bloom, which "
+                   "makes very bright objects like the sun have a halo.")
+    version = "1.1"
+
+    def on_stage_setup(self):
         self._bloom_stage = self.create_stage(BloomStage)
         self._bloom_stage.set_num_mips(self.get_setting("num_mipmaps"))

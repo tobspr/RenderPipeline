@@ -27,7 +27,7 @@ THE SOFTWARE.
 from six.moves import range
 
 from panda3d.core import LVecBase2i, Texture, SamplerState, Vec4
-from .. import *
+from ...render_stage import RenderStage
 
 class BloomStage(RenderStage):
 

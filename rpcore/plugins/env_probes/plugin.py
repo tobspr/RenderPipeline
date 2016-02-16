@@ -30,11 +30,17 @@ from .. import *
 
 class Plugin(BasePlugin):
 
-    @PluginHook("on_stage_setup")
-    def setup_stages(self):
+    name = "Environment Probes"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This plugin adds support for environment probes, containing "
+                   "diffuse and specular information. This enables accurate "
+                   "reflections, and can also be used to simulate GI.")
+    version = "1.1"
+
+
+    def on_stage_setup(self):
         pass
 
-    @PluginHook("on_pipeline_created")
-    def on_created(self):
+    def on_pipeline_created(self):
         pass
 

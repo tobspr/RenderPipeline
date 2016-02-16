@@ -13,10 +13,10 @@ settings: !!omap
         label: Use temporal antialiasing (SMAA T2)
         description: >
             This setting enables temporal antialiasing, which increases the
-            antialiasing quality a lot. Basically the scene gets rendered a 
+            antialiasing quality a lot. Basically the scene gets rendered a
             little different every frame, and the results of the current and
             the last frame get merged. This way, flickering is reduced by a lot,
-            and the image becomes more smooth. 
+            and the image becomes more smooth.
 
     - smaa_quality:
         type: enum

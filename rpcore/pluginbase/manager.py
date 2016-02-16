@@ -57,8 +57,15 @@ class PluginManager(RPObject):
         self._load_setting_overrides("$$config/plugins.yaml")
         self._load_daytime_overrides("$$config/daytime.yaml")
 
-        for plugin_id in self._enabled_plugins:
+        for plugin_id in self._settings:
             self._instances[plugin_id] = self._load_plugin(plugin_id)
+
+    def unload(self):
+        """ Unloads all plugins """
+        self._instances = {}
+        self._settings = {}
+        self._day_settings = {}
+        self._enabled_plugins = []
 
     def _load_base_settings(self, plugin_dir):
         """ Loads the base settings of all plugins, even of disabled plugins.
@@ -112,19 +119,24 @@ class PluginManager(RPObject):
         """ Triggers a given hook on all plugins, effectively calling all
         bound callbacks """
         hook_method = "on_{}".format(hook_name)
-        for plugin_handle in self._instances.values():
+        for plugin_id in self._enabled_plugins:
+            plugin_handle = self._instances[plugin_id]
             if hasattr(plugin_handle, hook_method):
                 getattr(plugin_handle, hook_method)()
 
     def is_plugin_enabled(self, plugin_id):
         """ Returns whether a plugin is currently enabled and loaded """
-        return plugin_id in self._instances
+        return plugin_id in self._enabled_plugins
 
     def get_plugin_handle(self, plugin_id):
         """ Returns a handle to a plugin given its plugin id. Throws an exception
         if plugin is not loaded, use is_plugin_enabled to check the plugins
         status first """
         return self._instances[plugin_id]
+
+    def get_setting_handle(self, plugin_id, setting_id):
+        """ Returns the handle to a setting """
+        return self._settings[plugin_id][setting_id]
 
     @property
     def enabled_plugins(self):
@@ -135,6 +147,11 @@ class PluginManager(RPObject):
     def plugin_instances(self):
         """ Returns a dictionary with all plugin ids and their instances """
         return self._instances
+
+    @property
+    def settings(self):
+        """ Returns all settings as a dictionary """
+        return self._settings
 
     def init_defines(self):
         """ Initializes all plugin settings as a define, so they can be queried
@@ -154,3 +171,5 @@ class PluginManager(RPObject):
         plugin_class = "..plugins.{}.plugin".format(plugin_id)
         module = importlib.import_module(plugin_class, package=__package__)
         return module.Plugin(self._pipeline)
+
+

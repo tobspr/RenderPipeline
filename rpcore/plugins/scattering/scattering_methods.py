@@ -29,7 +29,7 @@ from six.moves import range
 from direct.stdpy.file import listdir, isfile, join
 from panda3d.core import Texture, SamplerState, Shader
 
-from .. import *
+from ...render_stage import RenderStage
 
 class ScatteringMethod(RPObject):
 
