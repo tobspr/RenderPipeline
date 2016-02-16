@@ -1,4 +1,0 @@
-package: colorama
-version: 0.3.6
-downloaded: 02-13-2016
-url: https://pypi.python.org/pypi/colorama
