@@ -21,7 +21,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- 	 	    	 	
+
 """
 
 # This tool offers an interface to configure the time of day settings
@@ -43,7 +43,7 @@ sys.path.insert(0, os.getcwd())
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
-sys.path.insert(0, "../../code/external/six")
+sys.path.insert(0, "../../rpcore/external/six")
 
 from six import iteritems
 
@@ -59,7 +59,7 @@ except ImportError as msg:
 from ui.main_window_generated import Ui_MainWindow
 from curve_widget import CurveWidget
 from code.daytime.daytime_interface import DayTimeInterface
-from code.plugin_interface.virtual_plugin_interface import VirtualPluginInterface
+from code.plugbase.virtual_plugbase import VirtualPluginInterface
 from code.util.udp_listener_service import UDPListenerService
 from code.mount_manager import MountManager
 

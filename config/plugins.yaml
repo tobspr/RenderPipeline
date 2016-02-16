@@ -8,11 +8,11 @@
 
 enabled:
     - ao
-    - smaa
-    - scattering
-    - color_correction
-    - pssm
-    - bloom
+    # - smaa
+    # - scattering
+    # - color_correction
+    # - pssm
+    # - bloom
 
 overrides:
     ao.alchemy_max_distance: 4.08

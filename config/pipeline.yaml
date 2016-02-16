@@ -18,7 +18,6 @@ settings:
     # including builtin shadows and lights.
     lighting:
 
-
         # The pipeline uses clustered deferred shading, this means that the
         # screen gets divided into tiles, and for each tile, the lights affecting
         # that tile are accumulated. You can adjust the tile size here (in pixels),
@@ -39,12 +38,10 @@ settings:
         # set it too low, to avoid getting artifacts.
         culling_max_distance: 140.0
 
-
         # Controls the size of a slice in culling. Lower values might produce
         # better performance for less amount of lights, but higher values should
         # be used when using many lights, e.g. > 1024, to get better coherency.
         culling_slice_width: 256
-
 
     shadows:
 

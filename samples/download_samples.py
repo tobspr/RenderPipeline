@@ -21,7 +21,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- 	 	    	 	
+
 """
 """
 
@@ -29,11 +29,18 @@ Script to download the Render Pipeline samples
 
 """
 
+import os
 import sys
 sys.path.insert(0, "../")
-sys.path.insert(0, "../code/external/six")
+sys.path.insert(0, "../rpcore/external/six")
 
-from code.util.submodule_downloader import SubmoduleDownloader
+from code.util.submodule_downloader import download_submodule
 
 if __name__ == "__main__":
-    SubmoduleDownloader.download_submodule("tobspr", "RenderPipeline-Samples", ".", ["README.md"])
+
+    # Make sure we are in the right directory
+    main_dir = os.path.dirname(os.path.realpath(__file))
+    os.chdir(main_dir)
+
+    # Now extract the samples
+    download_submodule("tobspr", "RenderPipeline-Samples", ".", ["README.md"])

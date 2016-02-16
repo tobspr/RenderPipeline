@@ -1,0 +1,88 @@
+"""
+
+RenderPipeline
+
+Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+"""
+
+from direct.stdpy.file import isfile, open, join
+
+from ..external.yaml import load_yaml_file
+from ..rp_object import RPObject
+
+class BasePlugin(RPObject):
+
+    """ This is the base class for all plugins. All plugin classes derive from
+    this class. Additionally there are a lot of helpful functions provided,
+    such as creating render stages. """
+
+    def __init__(self, pipeline):
+        """ Inits the plugin """
+        self._pipeline = pipeline
+        self._assigned_stages = []
+        self._plugin_id = str(self.__class__.__module__).split(".")[-2]
+        RPObject.__init__(self, "plugin:" + self._plugin_id)
+        self._set_debug_color("magenta", "bright")
+        self._load_config()
+
+    @property
+    def plugin_id(self):
+        """ Returns the unique id of the plugin """
+        return self._plugin_id
+
+    @property
+    def base_path(self):
+        """ Returns the path to the root directory of the plugin """
+        return "$$plugins/{}/".format(self._plugin_id)
+
+    @property
+    def settings(self):
+        """ Returns the list of settings """
+        return self._config["settings"]
+
+    def _load_config(self):
+        """ Loads all configuration files of the plugin """
+        config_file = join(self.base_path, "config.yaml")
+        if not isfile(config_file):
+            self.error("Plugin has no config.yaml file!")
+            return False
+
+        self._config = load_yaml_file(config_file)
+
+    def get_resource(self, pth):
+        """ Converts a local path from the plugins resource/ directory into
+        an absolute path """
+        return join(self.base_path, "resources", pth)
+
+    def get_shader_resource(self, pth):
+        """ Converts a local path from the plugins shader/ directory into
+        an absolute path """
+        return join(self.base_path, "shader", pth)
+
+    def create_stage(self, stage_type):
+        """ Shortcut to create a new render stage from a given class type. It
+        also registers the stage to the stage manager, and links the stage
+        to the current plugin instance. """
+        stage_handle = stage_type(self._pipeline)
+        self._pipeline.stage_mgr.add_stage(stage_handle)
+        self._assigned_stages.append(stage_handle)
+        return stage_handle

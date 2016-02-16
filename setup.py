@@ -21,7 +21,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- 	 	    	 	
+
 """
 
 
@@ -33,7 +33,11 @@ THE SOFTWARE.
 # pylint: disable=W0603
 
 from __future__ import print_function
-import os, sys, subprocess, gzip, shutil
+import os
+import sys
+import subprocess
+import gzip
+import shutil
 
 sys.dont_write_bytecode = True
 
@@ -46,7 +50,7 @@ OPT_AUTO_INSTALL = "--auto-install" in sys.argv
 
 os.chdir(SETUP_DIR)
 sys.path.insert(0, ".")
-sys.path.insert(0, "code/external/six")
+sys.path.insert(0, "rpcore/external/six")
 
 from six.moves import input
 
@@ -54,9 +58,6 @@ from six.moves import input
 from code.external.colorama import init as init_colorama
 from code.external.colorama import Fore, Style
 init_colorama()
-
-# Load submodule downloader
-from code.util.submodule_downloader import SubmoduleDownloader
 
 def color(string, col):
     """ Colors a string """
@@ -97,7 +98,7 @@ def extract_gz_files(pth):
     for fname in files:
         fullpath = os.path.join(pth, fname)
         if os.path.isfile(fullpath) and fname.endswith(".gz"):
-            print("\tExtracting .gz file:", fname)
+            print("\tExtracting", fname)
             try:
                 with open(fullpath[:-3], 'wb') as dest, gzip.open(fullpath, 'rb') as src:
                     shutil.copyfileobj(src, dest)
@@ -124,7 +125,7 @@ def get_user_choice(query):
     query = color(query, Fore.GREEN + Style.BRIGHT) + " "
 
     while True:
-        user_choice = str(raw_input(query)).strip().lower()
+        user_choice = input(query).strip().lower()
 
         if user_choice in ["y", "yes", "1"]:
             return True
@@ -157,14 +158,14 @@ def check_cmake():
         print(msg)
         error("cmake missing")
 
-if __name__ == "__main__":
+def setup():
+    """ Main setup routine """
 
     print("-" * 79)
     print("\nRender Pipeline Setup 1.1\n")
     print("-" * 79)
 
     if not OPT_SKIP_NATIVE:
-
         query = ("The C++ modules of the pipeline are faster and produce better "
                  "results, but we will have to compile them. As alternative, "
                  "a Python fallback is used, which is slower and produces worse "
@@ -175,16 +176,16 @@ if __name__ == "__main__":
         if not OPT_AUTO_INSTALL and get_user_choice(query):
             check_cmake()
 
-            write_flag("code/native/use_cxx.flag", True)
+            write_flag("rpcore/native/use_cxx.flag", True)
 
             print_step("Downloading the module builder ...")
-            exec_python_file("code/native/update_module_builder.py")
+            exec_python_file("rpcore/native/update_module_builder.py")
 
             print_step("Building the native code .. (This might take a while!)")
-            exec_python_file("code/native/build.py")
+            exec_python_file("rpcore/native/build.py")
 
         else:
-            write_flag("code/native/use_cxx.flag", False)
+            write_flag("rpcore/native/use_cxx.flag", False)
 
     if not OPT_AUTO_INSTALL:
 
@@ -204,3 +205,7 @@ if __name__ == "__main__":
     write_flag("data/install.flag", True)
 
     print(color("\n\n-- Setup finished sucessfully! --", Fore.GREEN + Style.BRIGHT))
+
+
+if __name__ == "__main__":
+    setup()

@@ -59,7 +59,7 @@ vec3 fade(vec3 t) {
 
 
 float snoise3D(vec3 v)
-  { 
+  {
   const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
   const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
 
@@ -82,10 +82,10 @@ float snoise3D(vec3 v)
   vec3 x3 = x0 - D.yyy;      // -1.0+3.0*C.x = -0.5 = -D.y
 
   // Permutations
-  i = mod289(i); 
-  vec4 p = permute( permute( permute( 
+  i = mod289(i);
+  vec4 p = permute( permute( permute(
              i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-           + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
+           + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
            + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
 
   // Gradients: 7x7 points over a square, mapped onto an octahedron.
@@ -129,7 +129,7 @@ float snoise3D(vec3 v)
   // Mix final noise value
   vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
   m = m * m;
-  return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), 
+  return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
                                 dot(p2,x2), dot(p3,x3) ) );
 }
 
@@ -263,9 +263,9 @@ float worley_noise(vec2 coord, int num_cells, float drop_rate) {
     coord = fract(coord);
     ivec2 cell = ivec2(coord * num_cells);
     float dist = 1.0;
-    
+
     // Search in the surrounding 5x5 cell block
-    for (int x = 0; x < 5; x++) { 
+    for (int x = 0; x < 5; x++) {
         for (int y = 0; y < 5; y++) {
           vec2 cell_point = worley_cell_point(cell + ivec2(x-2, y-2), num_cells, drop_rate);
           dist = min(dist, distance_border(cell_point, coord));
@@ -302,9 +302,9 @@ float worley_noise(vec3 coord, int num_cells, float drop_rate) {
     coord = fract(coord);
     ivec3 cell = ivec3(coord * num_cells);
     float dist = 1.0;
-    
+
     // Search in the surrounding 5x5 cell block
-    for (int x = 0; x < 5; x++) { 
+    for (int x = 0; x < 5; x++) {
         for (int y = 0; y < 5; y++) {
           for (int z = 0; z < 5; z++) {
             vec3 cell_point = worley_cell_point(cell + ivec3(x-2, y-2, z-2), num_cells, drop_rate);
