@@ -81,8 +81,8 @@ class GPUCommandQueue(RPObject):
     def reload_shaders(self):
         """ Reloads the command shader """
         shader = Shader.load(Shader.SL_GLSL,
-                             "shader/default_post_process.vert.glsl",
-                             "shader/process_command_queue.frag.glsl")
+                             "$$shader/default_post_process.vert.glsl",
+                             "$$shader/process_command_queue.frag.glsl")
         self._command_target.set_shader(shader)
 
     def register_input(self, key, val):

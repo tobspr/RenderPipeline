@@ -168,7 +168,7 @@ class Effect(RPObject):
     def _parse_shader_template(self, shader_id, data):
         """ Parses a fragment template """
         shader_ext = "vert" if shader_id == "vertex" else "frag"
-        default_template = "shader/templates/{}.{}.glsl".format(shader_id, shader_ext)
+        default_template = "$$shader/templates/{}.{}.glsl".format(shader_id, shader_ext)
         shader_path = self._construct_shader_from_data(shader_id, default_template, data)
         self._shader_paths[shader_id] = shader_path
 

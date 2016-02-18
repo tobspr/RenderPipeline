@@ -257,12 +257,9 @@ class MountManager(RPObject):
         vfs = VirtualFileSystem.get_global_ptr()
 
         # Mount data and models
-        dirs_to_mount = ("data", "effects", "shader", "rpcore")
+        dirs_to_mount = ("data", "effects", "rpcore")
         for directory in dirs_to_mount:
             vfs.mount_loop(join(self._base_path, directory), directory, 0)
-
-        if isdir(join(self._base_path, "models")):
-            vfs.mount_loop(join(self._base_path, 'models'), 'models', 0)
 
         # Mount config dir
         if self._config_dir is None:
@@ -275,6 +272,7 @@ class MountManager(RPObject):
 
         # Mount plugins
         vfs.mount_loop(join(self._base_path, "rpcore/plugins"), "$$plugins", 0)
+        vfs.mount_loop(join(self._base_path, "shader"), "$$shader", 0)
 
         # Convert the base path to something the os can work with
         sys_base_path = Filename(self._base_path).to_os_specific()
@@ -311,10 +309,6 @@ class MountManager(RPObject):
         # Append the write path to the model directory to make pragma include
         # find the pipeline shader config
         self._model_paths.append("$$pipeline_temp")
-
-        # Add the plugins dir to the model path so plugins can include their
-        # own resources more easily
-        self._model_paths.append(join(self._base_path, "plugins"))
 
         # Write the model paths to the global model path
         for pth in self._model_paths:

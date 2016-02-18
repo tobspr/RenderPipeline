@@ -4,7 +4,7 @@
 enabled:
    # - sslr
    # - clouds
-    - pssm
+   # - pssm
    # - color_correction
    # - scattering
     - ao

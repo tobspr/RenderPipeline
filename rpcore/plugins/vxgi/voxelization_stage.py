@@ -189,9 +189,9 @@ class VoxelizationStage(RenderStage):
 
     def set_shaders(self):
         self._copy_target.set_shader(self.load_plugin_shader(
-                "shader/default_post_process_instanced.vert.glsl", "copy_voxels.frag.glsl"))
+                "$$shader/default_post_process_instanced.vert.glsl", "copy_voxels.frag.glsl"))
         mip_shader = self.load_plugin_shader(
-            "shader/default_post_process_instanced.vert.glsl", "generate_mipmaps.frag.glsl")
+            "$$shader/default_post_process_instanced.vert.glsl", "generate_mipmaps.frag.glsl")
         for target in self._mip_targets:
             target.set_shader(mip_shader)
 
