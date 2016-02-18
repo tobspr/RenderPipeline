@@ -132,6 +132,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             self._load_plugin_list()
 
     def on_plugin_state_changed(self, item):
+        """ Handler when a plugin got activated/deactivated """
         plugin_id = item._plugin_id
         state = item.checkState() == QtCore.Qt.Checked
         self._plugin_mgr.set_plugin_enabled(plugin_id, state)
@@ -155,6 +156,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._set_settings_visible(True)
 
     def update_thread(self):
+        """ Internal update thread """
         while True:
             if len(self._update_queue) > 0:
                 item = self._update_queue.pop()
@@ -238,9 +240,11 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             self.table_plugin_settings.setCellWidget(row_index, 3, label_desc)
 
     def _do_update_setting(self, setting_id, value):
+        """ Updates a setting of the current plugin """
 
         # Check whether the setting is a runtime setting
-        setting_handle = self._plugin_mgr.get_setting_handle(setting_id)
+        setting_handle = self._plugin_mgr.get_setting_handle(
+            self._current_plugin, setting_id)
 
         # Skip the setting in case the value is equal
         if setting_handle.value == value:
@@ -292,33 +296,33 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         layout.setAlignment(QtCore.Qt.AlignCenter)
         widget.setLayout(layout)
 
-        if setting.type == "BOOL":
+        if setting.type == "bool":
             box = QtGui.QCheckBox()
             box.setChecked(QtCore.Qt.Checked if setting.value else QtCore.Qt.Unchecked)
             connect(box, QtCore.SIGNAL("stateChanged(int)"),
                 partial(self._on_setting_bool_changed, setting_id))
             layout.addWidget(box)
 
-        elif setting.type == "FLOAT" or setting.type == "INT":
+        elif setting.type == "float" or setting.type == "int":
 
-            if setting.type == "FLOAT":
+            if setting.type == "float":
                 box = QtGui.QDoubleSpinBox()
 
-                if setting.max_value - setting.min_value <= 2.0:
+                if setting.maxval - setting.minval <= 2.0:
                     box.setDecimals(4)
             else:
                 box = QtGui.QSpinBox()
-            box.setMinimum(setting.min_value)
-            box.setMaximum(setting.max_value)
+            box.setMinimum(setting.minval)
+            box.setMaximum(setting.maxval)
             box.setValue(setting.value)
 
-            box.setSingleStep( abs(setting.max_value - setting.min_value) / 100.0 )
+            box.setSingleStep( abs(setting.maxval - setting.minval) / 100.0 )
             box.setAlignment(QtCore.Qt.AlignCenter)
 
             slider = QtGui.QSlider()
             slider.setOrientation(QtCore.Qt.Horizontal)
-            slider.setMinimum(setting.min_value * 100000.0)
-            slider.setMaximum(setting.max_value * 100000.0)
+            slider.setMinimum(setting.minval * 100000.0)
+            slider.setMaximum(setting.maxval * 100000.0)
             slider.setValue(setting.value * 100000.0)
 
             layout.addWidget(box)
@@ -327,12 +331,12 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             connect(slider, QtCore.SIGNAL("valueChanged(int)"),
                 partial(self._on_setting_slider_changed, setting_id, [box]))
 
-            value_type = "int" if setting.type == "INT" else "double"
+            value_type = "int" if setting.type == "int" else "double"
 
             connect(box, QtCore.SIGNAL("valueChanged(" + value_type + ")"),
                 partial(self._on_setting_spinbox_changed, setting_id, [slider]))
 
-        elif setting.type == "ENUM":
+        elif setting.type == "enum":
             box = QtGui.QComboBox()
             for value in setting.values:
                 box.addItem(value)
@@ -342,25 +346,28 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             layout.addWidget(box)
 
-        elif setting.type == "IMAGE":
+        elif setting.type == "path":
 
             label = QtGui.QLabel()
             label.setText(setting.value)
 
             button = QtGui.QPushButton()
             button.setText("Choose File ...")
-            connect(button, QtCore.SIGNAL("clicked()"), partial(self._choose_image, setting))
+            connect(button, QtCore.SIGNAL("clicked()"), partial(self._choose_path, setting))
 
             layout.addWidget(label)
             layout.addWidget(button)
 
+        else:
+            print("ERROR: Unkown setting type:", setting.type)
+
         return widget
 
-    def _choose_image(self, setting_handle):
-        """ Shows a file chooser to show an image from """
+    def _choose_path(self, setting_handle):
+        """ Shows a file chooser to show an path from """
         filename = QtGui.QFileDialog.getOpenFileName(
-            self, "Open Image", "", "Image Files (*.png)")
-        print("Filename =", filename)
+            self, "Open path", "", "All Files (*.*)")
+        print("Filename =", filename, "(TODO)")
 
     def _set_settings_visible(self, flag):
         """ Sets whether the settings panel is visible or not """

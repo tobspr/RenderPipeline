@@ -114,11 +114,4 @@ class PluginManager(RPObject):
 
         for instance in self._interface.get_plugin_instances():
             instance.define_static_plugin_settings()
-
-    def reset_plugin_settings(self, plugin_id):
-        """ Resets all settings of a given plugin """
-        pass
-
-    def save_overrides(self, override_file):
-        """ Saves all overrides to a given override file """
-
+x
