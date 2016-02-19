@@ -45,15 +45,17 @@
 #endif
 
 
+
 // Include both Pixel and Vertex shader, because we do the vertex shader logic
 // in the pixel shader.
 #define SMAA_INCLUDE_VS 1
 #define SMAA_INCLUDE_PS 1
 
 // Optionally enable smaa predication
-#define SMAA_PREDICATION 1
-#define SMAA_PREDICATION_SCALE 3.0
-#define SMAA_PREDICATION_THRESHOLD 0.00001
+// #define SMAA_PREDICATION 1
+// #define SMAA_PREDICATION_SCALE 3.0
+// #define SMAA_PREDICATION_THRESHOLD 0.00001
+
 
 // SMAA defines its own saturate, make sure we don't run into conflicts
 #ifdef saturate

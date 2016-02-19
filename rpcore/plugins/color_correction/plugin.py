@@ -28,11 +28,11 @@ from panda3d.core import SamplerState
 
 # Load the plugin api
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.stages.final_stage import FinalStage
 from rpcore.util.slice_loader import SliceLoader
+
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage
-
+from .sharpen_stage import SharpenStage
 
 class Plugin(BasePlugin):
 
@@ -43,11 +43,10 @@ class Plugin(BasePlugin):
     version = "1.1"
 
     def on_stage_setup(self):
-        # Disable the default display stage to use our own stage
-        FinalStage.disable_stage()
-
         self._stage = self.create_stage(ColorCorrectionStage)
-        self._stage.use_sharpen = self.get_setting("use_sharpen")
+
+        if self.get_setting("use_sharpen"):
+            self._sharpen_stage = self.create_stage(SharpenStage)
 
         if self.get_setting("use_auto_exposure"):
             self._exposure_stage = self.create_stage(AutoExposureStage)

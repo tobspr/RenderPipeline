@@ -103,7 +103,6 @@ class MovementController(object):
 
     def setup(self):
         """ Attaches the movement controller and inits the keybindings """
-
         # x
         self._showbase.accept("raw-w",       self._set_movement, [0, 1])
         self._showbase.accept("raw-w-up",    self._set_movement, [0, 0])
@@ -124,6 +123,7 @@ class MovementController(object):
 
         # wireframe + debug + buffer viewer
         self._showbase.accept("f3", self._showbase.toggleWireframe)
+        self._showbase.accept("f11", self._showbase.win.saveScreenshot)
 
         # mouse
         self._showbase.accept("mouse1",    self._set_mouse_enabled, [True])

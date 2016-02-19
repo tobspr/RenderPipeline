@@ -371,7 +371,7 @@ class RenderTarget(object):
         if target_type in self._targets:
             self.RT_OUTPUT_FUNC("You cannot add another type of", target_type)
             return False
-        self._targets[target_type] = Texture((self._name.replace(":", "") +
+        self._targets[target_type] = Texture((self._name +
                                               target_type[0].upper() +
                                               target_type[1:]).replace(" ", ""))
         if target_type == RenderTargetType.COLOR:

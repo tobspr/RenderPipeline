@@ -11,6 +11,7 @@ enabled:
     # - smaa
     # - env_probes
     # - vxgi
+    - fxaa
     # - bloom
 
 
@@ -46,7 +47,7 @@ overrides:
     color_correction.uc2t_toe_denumerator: 0.3
     color_correction.uc2t_reference_white: 11.2
     color_correction.vignette_strength: 0.0
-    color_correction.film_grain_strength: 0.22221
+    color_correction.film_grain_strength: 0.13
     color_correction.color_lut: color_lut.png
     color_correction.use_chromatic_aberration: True
     color_correction.chromatic_aberration_strength: 0.15
@@ -59,7 +60,7 @@ overrides:
     color_correction.brightness_adaption_rate: 3.0
     color_correction.darkness_adaption_rate: 1.0
     color_correction.use_sharpen: True
-    color_correction.sharpen_strength: 1.0
+    color_correction.sharpen_strength: 0.5
     scattering.scattering_method: eric_bruneton
     scattering.ground_reflectance: 0.1
     scattering.rayleigh_height_scale: 8.0
@@ -98,6 +99,10 @@ overrides:
     vxgi.grid_ws_size: 140.0
     vxgi.diffuse_cone_steps: 13
     vxgi.specular_cone_steps: 150
+    fxaa.quality: ultra
+    fxaa.subpixel_quality: 0.5
+    fxaa.edge_threshold: 0.075
+    fxaa.min_threshold: 0.7114
     bloom.num_mipmaps: 8
     bloom.minimum_luminance: 15.0
     bloom.bloom_strength: 0.7

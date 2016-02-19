@@ -26,7 +26,9 @@ THE SOFTWARE.
 
 from panda3d.core import SamplerState
 
+from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
+
 from .smaa_stage import SMAAStage
 
 class Plugin(BasePlugin):
@@ -38,18 +40,15 @@ class Plugin(BasePlugin):
     version = "1.1"
 
     def on_stage_setup(self):
-        self.debug("Setting up SMAA stages ..")
-
         if self.get_setting("use_reprojection"):
             self._jitter_index = 0
             self._compute_jitters()
 
         self._smaa_stage = self.create_stage(SMAAStage)
-        self._smaa_stage.set_use_reprojection(self.get_setting("use_reprojection"))
+        self._smaa_stage.use_reprojection = self.get_setting("use_reprojection")
         self._load_textures()
 
     def on_pre_render_update(self):
-
         # Apply jitter for temporal aa
         if self.get_setting("use_reprojection"):
             jitter = self._jitters[self._jitter_index]
@@ -59,11 +58,10 @@ class Plugin(BasePlugin):
             # Sawp jitter index
             self._jitter_index = 1 - self._jitter_index
 
-
     def _compute_jitters(self):
+        """ Internal method to compute the SMAA sub-pixel frame offsets """
         self._jitters = []
         for x, y in ((-0.25, 0.25), (0.25, -0.25)):
-
             # The get_x_size() for both dimensions is not an error! Its due to
             # how the OrtographicLens works internally.
             jitter_x = x / float(Globals.base.win.get_x_size())
@@ -71,15 +69,15 @@ class Plugin(BasePlugin):
             self._jitters.append((jitter_x, jitter_y))
 
     def _load_textures(self):
-        self.debug("Loading SMAA textures ..")
-        self._search_tex = Globals.loader.loadTexture(self.get_resource("search_tex.png"))
-        self._area_tex = Globals.loader.loadTexture(self.get_resource("area_tex.png"))
+        """ Loads all required textures """
+        search_tex = Globals.loader.loadTexture(self.get_resource("search_tex.png"))
+        area_tex = Globals.loader.loadTexture(self.get_resource("area_tex.png"))
 
-        for tex in [self._search_tex, self._area_tex]:
+        for tex in [search_tex, area_tex]:
             tex.set_minfilter(SamplerState.FT_linear)
             tex.set_magfilter(SamplerState.FT_linear)
             tex.set_wrap_u(SamplerState.WM_clamp)
             tex.set_wrap_v(SamplerState.WM_clamp)
 
-        self._smaa_stage.set_area_tex(self._area_tex)
-        self._smaa_stage.set_search_tex(self._search_tex)
+        self._smaa_stage.area_tex = area_tex
+        self._smaa_stage.search_tex = search_tex

@@ -38,7 +38,7 @@ void main() {
     // Fetch the current's scene color
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
 
-    #if !DEBUG_MODE
+    #if !DEBUG_MODE && !HAVE_PLUGIN(color_correction)
         // Do a simple sRGB correction
         scene_color = sqrt(scene_color);
     #endif

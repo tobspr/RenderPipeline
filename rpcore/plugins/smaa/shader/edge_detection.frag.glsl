@@ -34,8 +34,6 @@
 
 uniform GBufferData GBuffer;
 uniform sampler2D ShadedScene;
-uniform sampler2D SRGBSource;
-uniform sampler2D PredicationSource;
 out vec4 result;
 
 void main() {
@@ -51,10 +49,10 @@ void main() {
 
     #if SMAA_PREDICATION
         // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
-        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, SRGBSource, PredicationSource);
+        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, ShadedScene, PredicationSource);
     #else
         // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
-        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, SRGBSource);
+        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, ShadedScene);
     #endif
 
     result.w = 1.0;

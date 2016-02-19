@@ -92,6 +92,10 @@ class BasePlugin(RPObject):
         is set, returns the setting of the given plugin """
         return self._pipeline.plugin_mgr.settings[plugin_id or self.plugin_id][setting_id].value
 
+    def is_plugin_enabled(self, plugin_id):
+        """ Returns whether a plugin is enabled and loaded, given is plugin id """
+        return self._pipeline.plugin_mgr.is_plugin_enabled(plugin_id)
+
     def reload_shaders(self):
         """ Reloads all shaders of the plugin """
         for stage in self._assigned_stages:
