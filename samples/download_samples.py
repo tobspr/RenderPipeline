@@ -32,9 +32,9 @@ Script to download the Render Pipeline samples
 import os
 import sys
 sys.path.insert(0, "../")
-sys.path.insert(0, "../rpcore/external/six")
+sys.path.insert(0, "../rpcore/util")
 
-from rpcore.util.submodule_downloader import download_submodule
+from submodule_downloader import download_submodule
 
 if __name__ == "__main__":
 

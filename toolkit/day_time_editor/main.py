@@ -43,9 +43,8 @@ sys.path.insert(0, os.getcwd())
 
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
-sys.path.insert(0, "../../rpcore/external/six")
 
-from six import iteritems
+from rplibs.six import iteritems
 
 # Load all PyQt classes
 try:

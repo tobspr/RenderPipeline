@@ -48,14 +48,13 @@ OPT_SKIP_NATIVE = "--skip-native" in sys.argv
 OPT_AUTO_INSTALL = "--auto-install" in sys.argv
 
 os.chdir(SETUP_DIR)
-sys.path.insert(0, "rpcore/")
-sys.path.insert(0, "rpcore/external/six")
+sys.path.insert(0, ".")
 
-from six.moves import input
+from rplibs.six.moves import input
 
 # Load and init colorama, used to color the output
-from external.colorama import init as init_colorama
-from external.colorama import Fore, Style
+from rplibs.colorama import init as init_colorama
+from rplibs.colorama import Fore, Style
 init_colorama()
 
 def color(string, col):

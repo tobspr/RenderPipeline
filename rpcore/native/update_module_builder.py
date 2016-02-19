@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # Import thirdparty packages
     sys.path.insert(0, "../../rpcore/util")
-    sys.path.insert(0, "../../rpcore/external/six/")
+    sys.path.insert(0, "../../")
 
     # Download the module
     from submodule_downloader import download_submodule

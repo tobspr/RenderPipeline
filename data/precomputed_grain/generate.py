@@ -35,10 +35,10 @@ import sys
 sys.path.insert(0, "../../")
 
 from panda3d.core import *
-loadPrcFile("../../config/configuration.prc")
-loadPrcFileData("", "textures-power-2 none")
-loadPrcFileData("", "window-type offscreen")
-loadPrcFileData("", "win-size 100 100")
+load_prc_file("../../config/configuration.prc")
+load_prc_file_data("", "textures-power-2 none")
+load_prc_file_data("", "window-type offscreen")
+load_prc_file_data("", "win-size 100 100")
 
 grain_shader = Shader.load(
   Shader.SL_GLSL,
@@ -46,16 +46,14 @@ grain_shader = Shader.load(
   "grain.frag.glsl")
 
 import direct.directbase.DirectStart
-
 from rpcore.render_target import RenderTarget
 
 target = RenderTarget()
 target.size = 1024, 1024
 target.add_color_texture(bits=8)
 target.prepare_offscreen_buffer()
-target.set_shader(grain_shader)
+target.shader = grain_shader
 
 base.graphicsEngine.render_frame()
-
 base.graphicsEngine.extract_texture_data(target["color"], base.win.get_gsg())
 target["color"].write("grain.png")

@@ -31,7 +31,7 @@ from six.moves import range
 from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
 from direct.interval.IntervalGlobal import Sequence
 
-from..external.yaml import load_yaml_file
+from rplibs.yaml import load_yaml_file
 
 from .sprite import Sprite
 from .buffer_viewer import BufferViewer

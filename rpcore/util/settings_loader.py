@@ -28,7 +28,7 @@ from six import iteritems
 from direct.stdpy.file import isfile
 
 from ..rp_object import RPObject
-from ..external.yaml import load_yaml_file
+from rplibs.yaml import load_yaml_file
 
 class SettingsLoader(RPObject):
 

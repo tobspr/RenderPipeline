@@ -34,7 +34,7 @@ from .globals import Globals
 from .gui.pipe_viewer import PipeViewer
 from .util.image import Image
 from .util.shader_ubo import BaseUBO
-from .external.yaml import load_yaml_file
+from rplibs.yaml import load_yaml_file
 
 from .stages.update_previous_pipes_stage import UpdatePreviousPipesStage
 from .base_manager import BaseManager

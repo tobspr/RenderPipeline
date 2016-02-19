@@ -73,10 +73,10 @@ native_module = None
 # If the module was built, use it, otherwise use the python wrappers
 if NATIVE_CXX_LOADED:
     RPObject.global_debug("CORE", "Using native core module")
-    _native_module = importlib.import_module(".native_", __package__)
+    from rpcore.native import native_ as _native_module
 else:
+    from rpcore import pynative as _native_module
     RPObject.global_debug("CORE", "Using simulated python-wrapper module")
-    _native_module = importlib.import_module("..pynative", __package__)
 
 # Import all classes
 for v in classes_to_import + list(classes_to_import_and_rename.keys()):

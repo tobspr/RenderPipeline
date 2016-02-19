@@ -34,8 +34,8 @@ from __future__ import print_function
 import sys
 
 # Load and init colorama, used to color the output
-from .external.colorama import init as init_colorama
-from .external.colorama import Fore, Style
+from rplibs.colorama import init as init_colorama
+from rplibs.colorama import Fore, Style
 init_colorama()
 
 class RPObject(object):

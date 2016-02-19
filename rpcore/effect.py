@@ -31,7 +31,7 @@ from six import iteritems, iterkeys
 from panda3d.core import Shader, Filename
 
 from .rp_object import RPObject
-from .external.yaml import load_yaml_file
+from rplibs.yaml import load_yaml_file
 from .util.shader_template import ShaderTemplate
 
 class Effect(RPObject):

@@ -40,8 +40,8 @@ if __name__ == "__main__":
     os.chdir(current_dir)
 
     # Import thirdparty packages
-    sys.path.insert(0, "../" * 4 + "rpcore/external")
-    sys.path.insert(0, "../" * 4 + "rpcore/external/six")
+    sys.path.insert(0, "../" * 4 + "rpcore/util")
+    sys.path.insert(0, "../" * 4)
 
     # Download the module
     from submodule_downloader import download_submodule

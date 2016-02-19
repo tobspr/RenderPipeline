@@ -29,8 +29,8 @@ import collections
 from six import iteritems, itervalues
 from direct.stdpy.file import listdir, isdir, join, open
 
+from rplibs.yaml import load_yaml_file
 from ..base_manager import BaseManager
-from ..external.yaml import load_yaml_file
 from .setting_types import make_setting_from_data
 from .day_setting_types import make_daysetting_from_data
 
