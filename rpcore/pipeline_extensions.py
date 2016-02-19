@@ -64,11 +64,10 @@ class PipelineExtensions(object):
         """ Tells the pipeline to load an image loading screen """
         raise NotImplementedError("TODO")
 
-    def get_loading_screen(self):
+    @property
+    def loading_screen(self):
         """ Returns the current loading screen """
         return self._loading_screen
-
-    loading_screen = property(get_loading_screen)
 
     def add_light(self, light):
         """ Adds a new light to the rendered lights, check out the LightManager

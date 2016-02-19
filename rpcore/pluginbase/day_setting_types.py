@@ -50,8 +50,6 @@ def make_daysetting_from_data(data):
 
 class BaseType(RPObject):
     """ Base setting type for all setting types """
-    glsl_type = None
-    pta_type = None
 
     def __init__(self, data):
         self.type = data.pop("type")
@@ -63,7 +61,13 @@ class BaseType(RPObject):
 
     def get_value_at(self, offset):
         """ Returns the unscaled value at the given day time offset """
+        if len(self.curves) == 1:
+            return self.curves[0].get_value(offset)
         return tuple(curve.get_value(offset) for curve in self.curves)
+
+    def get_scaled_value_at(self, offset):
+        """ Returns the scaled value at a given day time offset """
+        return self.get_scaled_value(self.get_value_at(offset))
 
     def get_scaled_value(self, value):
         """ Returns the scaled value from a given normalized value """

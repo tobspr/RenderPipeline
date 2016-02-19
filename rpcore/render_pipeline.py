@@ -32,19 +32,18 @@ from panda3d.core import PandaSystem
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
-
 from .globals import Globals
 from .pipeline_extensions import PipelineExtensions
 from .common_resources import CommonResources
 from .native import TagStateManager
 from .render_target import RenderTarget
 from .pluginbase.manager import PluginManager
+from .pluginbase.day_manager import DayTimeManager
 
 from .rp_object import RPObject
 from .util.settings_loader import SettingsLoader
 from .util.network_update_listener import NetworkUpdateListener
 from .gui.debugger import Debugger
-from .daytime.daytime_manager import DayTimeManager
 
 from .mount_manager import MountManager
 from .stage_manager import StageManager

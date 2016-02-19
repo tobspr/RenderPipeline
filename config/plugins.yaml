@@ -2,17 +2,16 @@
 # Any formatting and comments will be lost
 
 enabled:
-   # - sslr
-   # - clouds
-   # - pssm
-   # - color_correction
-   # - scattering
+    # - sslr
+    # - clouds
+    # - pssm
+    - color_correction
+    # - scattering
     - ao
-   # - smaa
-   # - env_probes
-   # - vxgi
-   # - bloom
-   # - plugin_prefab
+    # - smaa
+    # - env_probes
+    # - vxgi
+    # - bloom
 
 
 overrides:
@@ -46,8 +45,8 @@ overrides:
     color_correction.uc2t_toe_numerator: 0.01
     color_correction.uc2t_toe_denumerator: 0.3
     color_correction.uc2t_reference_white: 11.2
-    color_correction.vignette_strength: 0.2889
-    color_correction.film_grain_strength: 0.1
+    color_correction.vignette_strength: 0.0
+    color_correction.film_grain_strength: 0.22221
     color_correction.color_lut: color_lut.png
     color_correction.use_chromatic_aberration: True
     color_correction.chromatic_aberration_strength: 0.15
@@ -55,7 +54,7 @@ overrides:
     color_correction.use_auto_exposure: True
     color_correction.min_exposure: 0.001
     color_correction.max_exposure: 7.0
-    color_correction.exposure_bias: 0.0
+    color_correction.exposure_bias: -0.04
     color_correction.brightness_scale: 2.0
     color_correction.brightness_adaption_rate: 3.0
     color_correction.darkness_adaption_rate: 1.0
@@ -103,7 +102,3 @@ overrides:
     bloom.minimum_luminance: 15.0
     bloom.bloom_strength: 0.7
     bloom.remove_fireflies: True
-    plugin_prefab.some_int_setting: 5
-    plugin_prefab.some_float_setting: 2.5
-    plugin_prefab.some_enum: value2
-    plugin_prefab.some_bool: False

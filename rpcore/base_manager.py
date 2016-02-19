@@ -30,8 +30,8 @@ from .rp_object import RPObject
 
 class BaseManager(RPObject):
 
-    """ Base class for all managers, provides utility functions like timing
-    the update duration """
+    """ Base class for all managers, providing utility functions like timing
+    the update duration."""
 
     def __init__(self):
         """ Inits the manager """

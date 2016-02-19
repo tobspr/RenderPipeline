@@ -28,8 +28,11 @@ from panda3d.core import SamplerState
 
 # Load the plugin api
 from ...pluginbase.base_plugin import BasePlugin
+from ...stages.final_stage import FinalStage
+from ...util.slice_loader import SliceLoader
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage
+
 
 class Plugin(BasePlugin):
 
@@ -40,11 +43,11 @@ class Plugin(BasePlugin):
     version = "1.1"
 
     def on_stage_setup(self):
-        # Disable default display stage to use our own stage
-        get_internal_stage("final_stage", "FinalStage").disable_stage()
+        # Disable the default display stage to use our own stage
+        FinalStage.disable_stage()
 
         self._stage = self.create_stage(ColorCorrectionStage)
-        self._stage.set_use_sharpen(self.get_setting("use_sharpen"))
+        self._stage.use_sharpen = self.get_setting("use_sharpen")
 
         if self.get_setting("use_auto_exposure"):
             self._exposure_stage = self.create_stage(AutoExposureStage)
@@ -53,6 +56,7 @@ class Plugin(BasePlugin):
         self._load_lut()
 
     def _load_lut(self):
+        """ Loads the color correction lookup table (LUT) """
         lut_path = self.get_resource("default_lut.png")
         lut = SliceLoader.load_3d_texture(lut_path, 64)
         lut.set_wrap_u(SamplerState.WM_clamp)

@@ -57,8 +57,8 @@ class NetworkUpdateListener(BaseManager):
 
         # Config updates
         if self._config_updates:
-            update = self._config_updates.pop()
-            self._pipeline.plugin_mgr.on_setting_change(update)
+            cmd = self._config_updates.pop()
+            self._handle_config_command(cmd)
         elif self._daytime_updates:
             cmd = self._daytime_updates.pop()
             self._handle_daytime_command(cmd)
@@ -73,3 +73,10 @@ class NetworkUpdateListener(BaseManager):
             self._pipeline.daytime_mgr.reload_config()
         else:
             self.warn("Recieved unkown daytime command:", cmd)
+
+    def _handle_config_command(self, cmd):
+        if cmd.startswith("setval "):
+            parts = cmd.split()
+            setting_parts = parts[1].split(".")
+            self._pipeline.plugin_mgr.on_setting_changed(
+                setting_parts[0], setting_parts[1], parts[2])

@@ -86,3 +86,13 @@ class BasePlugin(RPObject):
         self._pipeline.stage_mgr.add_stage(stage_handle)
         self._assigned_stages.append(stage_handle)
         return stage_handle
+
+    def get_setting(self, setting_id, plugin_id=None):
+        """ Returns the value of a setting given by its setting id. If plugin_id
+        is set, returns the setting of the given plugin """
+        return self._pipeline.plugin_mgr.settings[plugin_id or self.plugin_id][setting_id].value
+
+    def reload_shaders(self):
+        """ Reloads all shaders of the plugin """
+        for stage in self._assigned_stages:
+            stage.set_shaders()

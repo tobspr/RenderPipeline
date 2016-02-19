@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import importlib
 import collections
-from six import iteritems
+from six import iteritems, itervalues
 from direct.stdpy.file import listdir, isdir, join, open
 
 from ..base_manager import BaseManager
@@ -54,6 +54,7 @@ class PluginManager(BaseManager):
     def load(self):
         """ Loads all plugins and their settings, and also constructs instances
         of the main plugin classes for all enabled plugins """
+        self.debug("Loading plugins")
         self._load_base_settings("$$plugins")
         self._load_setting_overrides("$$config/plugins.yaml")
         self._load_daytime_overrides("$$config/daytime.yaml")
@@ -63,12 +64,13 @@ class PluginManager(BaseManager):
 
     def unload(self):
         """ Unloads all plugins """
+        self.debug("Unloading all plugins")
         self._instances = {}
         self._settings = {}
         self._day_settings = {}
         self._enabled_plugins = set()
 
-    def update(self):
+    def do_update(self):
         """ Main update method """
         pass
 
@@ -161,6 +163,16 @@ class PluginManager(BaseManager):
         """ Returns all settings as a dictionary """
         return self._settings
 
+    @property
+    def day_settings(self):
+        """ Returns all time of day settings as a dictionary """
+        return self._day_settings
+
+    @property
+    def num_day_settings(self):
+        """ Returns the amount of day time settings """
+        return sum((len(i) for i in itervalues(self._day_settings)))
+
     def init_defines(self):
         """ Initializes all plugin settings as a define, so they can be queried
         in a shader """
@@ -187,8 +199,8 @@ class PluginManager(BaseManager):
 
         output += "enabled:\n"
         for plugin_id in self._settings:
-            output += "   {} - {}\n".format(
-                "#" if plugin_id not in self._enabled_plugins else "", plugin_id)
+            output += "   {}- {}\n".format(
+                " # " if plugin_id not in self._enabled_plugins else " ", plugin_id)
 
         output += "\n\n"
         output += "overrides:\n"
@@ -199,7 +211,6 @@ class PluginManager(BaseManager):
 
         with open(override_file, "w") as handle:
             handle.write(output)
-
 
     def set_plugin_enabled(self, plugin_id, enabled=True):
         """ Sets whether a plugin is enabled or not, thus should be loaded when
@@ -214,3 +225,26 @@ class PluginManager(BaseManager):
         for setting in self._settings[plugin_id].values():
             setting.value = setting.default
 
+    def on_setting_changed(self, plugin_id, setting_id, value):
+        """ Callback when a setting got changed. This will update the setting,
+        and also call the callback for that setting, in case the plugin defined
+        one. """
+        if plugin_id not in self._settings or setting_id not in self._settings[plugin_id]:
+            self.warn("Got invalid setting change:", plugin_id, "/", setting_id)
+            return
+
+        setting = self._settings[plugin_id][setting_id]
+        setting.set_value(value)
+
+        if plugin_id not in self._enabled_plugins:
+            return
+
+        if setting.runtime or setting.shader_runtime:
+            update_method = self._instances[plugin_id], "update_" + setting_id
+            if hasattr(*update_method):
+                getattr(*update_method)()
+
+        if setting.shader_runtime:
+            self.init_defines()
+            self._pipeline.stage_mgr.write_autoconfig()
+            self._instances[plugin_id].reload_shaders()

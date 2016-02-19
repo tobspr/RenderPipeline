@@ -26,5 +26,11 @@ THE SOFTWARE.
 
 # This file includes all classes from the pipeline which are exposed
 
+import os
+import sys
+
+# Include dependencies
+sys.path.insert(0, os.path.join(os.path.realpath(os.path.dirname(__file__)), "external/six"))
+
 from .render_pipeline import RenderPipeline
 from .native import SpotLight, PointLight

@@ -48,33 +48,29 @@ class CubemapFilter(RPObject):
         self._size = size
         self._make_maps()
 
-    def get_specular_cubemap(self):
+    @property
+    def specular_cubemap(self):
         """ Returns the generated specular cubemap. The specular cubemap is
         mipmapped and provides the specular IBL components of the input cubemap. """
         return self._specular_map
 
-    specular_cubemap = property(get_specular_cubemap)
-
-    def get_diffuse_cubemap(self):
+    @property
+    def diffuse_cubemap(self):
         """ Returns the generated diffuse cubemap. The diffuse cubemap has no
         mipmaps and contains the filtered diffuse component of the input cubemap. """
         return self._diffuse_map
 
-    diffuse_cubemap = property(get_diffuse_cubemap)
-
-    def get_target_cubemap(self):
+    @property
+    def target_cubemap(self):
         """ Returns the target where the caller should write the initial cubemap
         data to """
         return self._specular_map
 
-    target_cubemap = property(get_target_cubemap)
-
-    def get_size(self):
+    @property
+    def size(self):
         """ Returns the size of the created cubemap, previously passed to the
         constructor of the filter """
         return self._size
-
-    size = property(get_size)
 
     def create(self):
         """ Creates the filter. The input cubemap should be mipmapped, and will

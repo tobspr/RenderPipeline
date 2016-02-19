@@ -185,11 +185,11 @@ class Debugger(BaseManager):
             RenderTarget.get_num_buffers(),
             len(self._pipeline.plugin_mgr.enabled_plugins))
 
-        text = "{} ({:1.3f})  |  {:3d} active constraints"
+        text = "{} ({:1.3f})  |  {:3d} daytime settings"
         self._debug_lines[3].text = text.format(
-            self._pipeline.daytime_mgr.time_str,
+            self._pipeline.daytime_mgr.formatted_time,
             self._pipeline.daytime_mgr.time,
-            self._pipeline.daytime_mgr.num_constraints)
+            self._pipeline.plugin_mgr.num_day_settings)
 
     def _create_debugger(self):
         """ Creates the debugger contents """

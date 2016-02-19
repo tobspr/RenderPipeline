@@ -74,7 +74,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._mount_mgr.mount()
 
         self._plugin_mgr = PluginManager(None)
-        self._plugin_mgr.load()
 
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -84,7 +83,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._current_plugin_instance = None
         self.lbl_restart_pipeline.hide()
         self._set_settings_visible(False)
-        self._update_queue = set()
+        self._update_queue = list()
 
         connect(self.lst_plugins, QtCore.SIGNAL("itemSelectionChanged()"),
             self.on_plugin_selected)
@@ -159,9 +158,15 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         """ Internal update thread """
         while True:
             if len(self._update_queue) > 0:
-                item = self._update_queue.pop()
+                item = self._update_queue.pop(-1)
                 UDPListenerService.ping_thread(UDPListenerService.CONFIG_PORT, item)
-            time.sleep(0.3)
+
+                if item.startswith("setval "):
+                    setting_id = item.split()[1]
+                    for entry in list(self._update_queue):
+                        if entry.split()[1] == setting_id:
+                            self._update_queue.remove(entry)
+            time.sleep(0.2)
 
     def _rewrite_plugin_config(self):
         """ Rewrites the plugin configuration """
@@ -259,7 +264,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         else:
             # In case the setting is dynamic, notice the pipeline about it:
             # print("Sending reload packet ...")
-            self._update_queue.add(self._current_plugin + "." + setting_id)
+            self._update_queue.append("setval {}.{} {}".format(
+                self._current_plugin, setting_id, value))
 
         # Update GUI, but only in case of enum and bool values, since they can trigger
         # display conditions:
@@ -394,7 +400,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         self.lst_plugins.clear()
 
-        for plugin_id, instance in iteritems(plugins):
+        for plugin_id, instance in sorted(iteritems(plugins)):
             item = QtGui.QListWidgetItem()
             item.setText(" " + instance.name)
 

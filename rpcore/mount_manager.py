@@ -57,7 +57,14 @@ class MountManager(RPObject):
 
         atexit.register(self._on_exit_cleanup)
 
-    def _set_write_path(self, pth):
+    @property
+    def write_path(self):
+        """ Returns the write path previously set with set_write_path, or None
+        if no write path has been set yet. """
+        return self._write_path
+
+    @write_path.setter
+    def write_path(self, pth):
         """ Set a writable directory for generated files. This can be a string
         path name or a multifile with openReadWrite(). If no pathname is set
         then the root directory is used.
@@ -74,28 +81,27 @@ class MountManager(RPObject):
             self._write_path = Filename.from_os_specific(pth).get_fullpath()
             self._lock_file = join(self._write_path, "instance.pid")
 
-    def _get_write_path(self):
-        """ Returns the write path previously set with set_write_path, or None
-        if no write path has been set yet. """
-        return self._write_path
-
-    write_path = property(_get_write_path, _set_write_path)
-
-    def _set_base_path(self, pth):
-        """ Sets the path where the base shaders and models on are contained. This
-        is usually the root of the rendering pipeline folder """
-        self.debug("Set base path to '" + pth + "'")
-        self._base_path = Filename.from_os_specific(pth).get_fullpath()
-
-    def _get_base_path(self):
+    @property
+    def base_path(self):
         """ Returns the base path of the pipeline. This returns the path previously
         set with set_base_path, or the auto detected base path if no path was
         set yet """
         return self._base_path
 
-    base_path = property(_get_base_path, _set_base_path)
+    @base_path.setter
+    def base_path(self, pth):
+        """ Sets the path where the base shaders and models on are contained. This
+        is usually the root of the rendering pipeline folder """
+        self.debug("Set base path to '" + pth + "'")
+        self._base_path = Filename.from_os_specific(pth).get_fullpath()
 
-    def _set_config_dir(self, pth):
+    @property
+    def config_dir(self):
+        """ Returns the config directory previously set with set_config_dir, or
+        None if no directory was set yet """
+
+    @config_dir.setter
+    def config_dir(self, pth):
         """ Sets the path to the config directory. Usually this is the config/
         directory located in the pipeline root directory. However, if you want
         to load your own configuration files, you can specify a custom config
@@ -107,31 +113,25 @@ class MountManager(RPObject):
         copy them over. Please also notice that you should keep your config files
         up-to-date, e.g. when new configuration variables are added.
 
-        Also, specifying a custom configuration dir disables the functionality
+        Also, specifying a custom configuration_dir disables the functionality
         of the PluginConfigurator and DayTime editor, since they operate on the
-        pipelines config files.
+        pipelines default config files.
 
         Set the directory to None to use the default directory. """
         self._config_dir = Filename.from_os_specific(pth).get_fullpath()
 
-    def _get_config_dir(self):
-        """ Returns the config directory previously set with set_config_dir, or
-        None if no directory was set yet """
-
-    config_dir = property(_get_config_dir, _set_config_dir)
-
-    def _set_do_cleanup(self, cleanup):
-        """ Sets whether to cleanup the tempfolder after the application stopped.
-        This is mostly useful for debugging, to analyze the generated tempfiles
-        even after the pipeline stopped running """
-        self._do_cleanup = cleanup
-
-    def _get_do_cleanup(self):
+    @property
+    def do_cleanup(self):
         """ Returns whether the mount manager will attempt to cleanup the
         generated files after the application stopped running """
         return self._do_cleanup
 
-    do_cleanup = property(_get_do_cleanup, _set_do_cleanup)
+    @do_cleanup.setter
+    def do_cleanup(self, cleanup):
+        """ Sets whether to cleanup the tempfolder after the application stopped.
+        This is mostly useful for debugging, to analyze the generated tempfiles
+        even after the pipeline stopped running """
+        self._do_cleanup = cleanup
 
     def get_lock(self):
         """ Checks if we are the only instance running. If there is no instance
@@ -242,12 +242,11 @@ class MountManager(RPObject):
                     except IOError:
                         pass
 
-    def _get_is_mounted(self):
+    @property
+    def is_mounted(self):
         """ Returns whether the MountManager was already mounted by calling
         mount() """
         return self._mounted
-
-    is_mounted = property(_get_is_mounted)
 
     def mount(self):
         """ Inits the VFS Mounts """
@@ -300,11 +299,10 @@ class MountManager(RPObject):
         # #pragma include "something" searches in current directory first,
         # and then on the model-path. Append the Shader directory to the
         # modelpath to ensure the shader includes can be found.
-        self._model_paths.append(join(self._base_path, "shader"))
+        self._model_paths.append("$$shader")
 
         # Add the pipeline root directory to the model path as well
         self._model_paths.append(self._base_path)
-        self._model_paths.append(".")
 
         # Append the write path to the model directory to make pragma include
         # find the pipeline shader config

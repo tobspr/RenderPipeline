@@ -36,29 +36,26 @@ class ColorCorrectionStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ColorCorrectionStage", pipeline)
-        self._use_sharpen = False
-
-    def set_use_sharpen(self, flag):
-        self._use_sharpen = flag
+        self.use_sharpen = False
 
     def create(self):
         self._target = self.make_target("MainTonemap")
 
         # Create the sharpen target
-        if self._use_sharpen:
+        if self.use_sharpen:
 
             # When using a sharpen filter, the main target needs a color texture
             self._target.add_color_texture(bits=8)
             self._target.prepare_offscreen_buffer()
-
             self._target_sharpen = self.make_target("Sharpen")
+
             # We don't have a color attachment, but still want to write color
             self._target_sharpen.color_write = True
             self._target_sharpen.prepare_offscreen_buffer()
             self._target_sharpen.make_main_target()
 
-            # Use a linear filter for the color texture, this is required for the sharpen
-            # filter to work properly.
+            # Use a linear filter for the color texture, this is required for
+            # the sharpen filter to work properly.
             self._target["color"].set_minfilter(SamplerState.FT_linear)
             self._target["color"].set_magfilter(SamplerState.FT_linear)
 
@@ -72,5 +69,6 @@ class ColorCorrectionStage(RenderStage):
 
     def set_shaders(self):
         self._target.set_shader(self.load_plugin_shader("correct_color.frag.glsl"))
-        if self._use_sharpen:
-            self._target_sharpen.set_shader(self.load_plugin_shader("sharpen.frag.glsl"))
+        if self.use_sharpen:
+            self._target_sharpen.set_shader(
+                self.load_plugin_shader("sharpen.frag.glsl"))
