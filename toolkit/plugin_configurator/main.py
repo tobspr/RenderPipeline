@@ -181,6 +181,12 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self.lbl_plugin_version.setText(version_str)
         self.lbl_plugin_desc.setText(self._current_plugin_instance.description)
 
+        if "(!)" in version_str:
+            self.lbl_plugin_version.setStyleSheet("background: #C10000; color: #eee; padding-left: 5px;")
+        else:
+            self.lbl_plugin_version.setStyleSheet("color: #4f8027;")
+
+
         self._render_current_settings()
 
     def _show_restart_hint(self):
@@ -268,7 +274,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         # Update GUI, but only in case of enum and bool values, since they can trigger
         # display conditions:
-        if setting_handle.type == "ENUM" or setting_handle.type == "BOOL":
+        if setting_handle.type == "enum" or setting_handle.type == "bool":
             self._render_current_settings()
 
     def _on_setting_bool_changed(self, setting_id, value):

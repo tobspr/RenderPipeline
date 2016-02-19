@@ -78,6 +78,11 @@ class BaseType(RPObject):
         for curve_index, points in enumerate(control_points):
             self.curves[curve_index].control_points = points
 
+    def serialize(self):
+        """ Serializes the setting to a yaml string """
+        values = ','.join(i.serialize() for i in self.curves)
+        return "[{}]".format(values)
+
 class ScalarType(BaseType):
     """ Setting type storing a single scalar """
 
@@ -105,7 +110,9 @@ class ScalarType(BaseType):
             "percent": u'%',
             "meter": u'm'
         }[self.unit]
-        return "{:3.0f}{}".format(self.value, metric)
+        if self.unit == "percent":
+            value *= 100.0
+        return u"{:3.1f}{}".format(value, metric)
 
     def get_scaled_value(self, value):
         return value * (self.maxvalue - self.minvalue) + self.minvalue
@@ -130,7 +137,7 @@ class ColorType(BaseType):
             self.curves.append(curve)
 
     def format(self, value):
-        return "{:3}, {:3}, {:3}".format(*value)
+        return "{:3d}, {:3d}, {:3d}".format(*(int(i) for i in value))
 
     def get_scaled_value(self, value):
         return tuple(i * 255.0 for i in value)

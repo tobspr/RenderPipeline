@@ -23,15 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-
 from __future__ import print_function
-from rplibs.six.moves import range
 
 from math import cos, sin, pi
-
+from rplibs.six.moves import range
 from panda3d.core import Vec3, PTAVecBase3f
 
+from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
+
 from .pssm_shadow_stage import PSSMShadowStage
 from .pssm_dist_shadow_stage import PSSMDistShadowStage
 from .pssm_stage import PSSMStage
@@ -42,9 +42,9 @@ class Plugin(BasePlugin):
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for Parallel Split Shadow Maps "
                    "(PSSM), and also sun lighting.")
-    version = "1.1"
+    version = "1.2"
     native_only = True
-    rqeuired_plugins = ("scattering",)
+    required_plugins = ("scattering",)
 
     def on_stage_setup(self):
         self._update_enabled = True
@@ -62,7 +62,7 @@ class Plugin(BasePlugin):
         # self._dist_shadow_stage.set_resolution(self.get_setting("vsm_resolution"))
 
     def on_pipeline_created(self):
-        self.debug("Init pssm ..")
+        self.debug("Initializing pssm ..")
 
         # Construct a dummy node to parent the rig to
         self._node = Globals.base.render.attach_new_node("PSSMCameraRig")
@@ -85,7 +85,6 @@ class Plugin(BasePlugin):
             camera_np.node().set_scene(Globals.base.render)
             region = self._shadow_stage.get_split_region(i)
             region.set_camera(camera_np)
-
             # camera_np.node().show_frustum()
 
             # Make sure the pipeline knows about our camera, so it can apply
@@ -102,25 +101,7 @@ class Plugin(BasePlugin):
         self._pssm_stage.set_shader_input("pssm_sun_vector", self._pta_sun_vector)
 
     def on_pre_render_update(self):
-
-        if not self.is_plugin_loaded("scattering"):
-            sun_vector = Vec3(0.3, 0.3, 0.5)
-            sun_vector.normalize()
-        else:
-            sun_altitude = self.get_daytime_setting(
-                "sun_altitude", plugin_id="scattering")
-            sun_azimuth = self.get_daytime_setting(
-                "sun_azimuth", plugin_id="scattering")
-
-            theta = (90 - sun_altitude) / 180.0 * pi
-            phi = sun_azimuth / 180.0 * pi
-
-            sun_vector = Vec3(
-                sin(theta) * cos(phi),
-                sin(theta) * sin(phi),
-                cos(theta))
-
-        self._pta_sun_vector[0] = sun_vector
+        sun_vector = self.get_plugin_instance("scattering").sun_vector
 
         if self._update_enabled:
             self._camera_rig.update(Globals.base.camera, sun_vector)

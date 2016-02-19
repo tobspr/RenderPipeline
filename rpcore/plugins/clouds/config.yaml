@@ -1,11 +1,4 @@
 
-name: Volumetric Clouds
-author: tobspr <tobias.springer1@gmail.com>
-version: 1.0
-description: >
-    This Plugin adds support or volumetric, raytraced clouds. You should have
-    Scattering enabled, otherwise the clouds will have no real effect.
-
 settings: !!omap
 
     - cloud_decay:

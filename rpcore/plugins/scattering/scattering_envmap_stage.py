@@ -26,6 +26,10 @@ THE SOFTWARE.
 from __future__ import division
 
 from rpcore.render_stage import RenderStage
+from rpcore.util.cubemap_filter import CubemapFilter
+
+from rpcore.stages.ambient_stage import AmbientStage
+from rpcore.stages.gbuffer_stage import GBufferStage
 
 class ScatteringEnvmapStage(RenderStage):
 
@@ -46,23 +50,19 @@ class ScatteringEnvmapStage(RenderStage):
         }
 
     def create(self):
-        self._filter = self.make_cubemap_filter("Filter")
-
+        self._filter = CubemapFilter(self, "ScatEnvCub")
         self._target_cube = self.make_target("Compute")
         self._target_cube.size = self._filter.size * 6, self._filter.size
         self._target_cube.prepare_offscreen_buffer()
         self._target_cube.set_shader_input("DestCubemap", self._filter.target_cubemap)
         self._filter.create()
 
-        # Make the stages use our cubemap
-        ambient_stage = get_internal_stage("ambient_stage", "AmbientStage")
-        ambient_stage.required_pipes.append("ScatteringIBLDiffuse")
-        ambient_stage.required_pipes.append("ScatteringIBLSpecular")
-
-        gbuffer_stage = get_internal_stage("gbuffer_stage", "GBufferStage")
-        gbuffer_stage.required_pipes.append("ScatteringIBLDiffuse")
-        gbuffer_stage.required_pipes.append("ScatteringIBLSpecular")
+        # Make the stages use our cubemap textures
+        for stage in (AmbientStage, GBufferStage):
+            stage.required_pipes.append("ScatteringIBLDiffuse")
+            stage.required_pipes.append("ScatteringIBLSpecular")
 
     def set_shaders(self):
-        self._target_cube.set_shader(self.load_plugin_shader("scattering_envmap.frag.glsl"))
+        self._target_cube.set_shader(
+            self.load_plugin_shader("scattering_envmap.frag.glsl"))
         self._filter.set_shaders()

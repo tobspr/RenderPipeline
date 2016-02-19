@@ -34,11 +34,11 @@ global_stage_order:
   - SSLRStage
   - CloudStage
   - AutoExposureStage
+  - BloomStage
   - ColorCorrectionStage
   - SharpenStage
   - SMAAStage
   - FXAAStage
-  - BloomStage
 
   # Finishing stages, do not insert anything below
   - FinalStage

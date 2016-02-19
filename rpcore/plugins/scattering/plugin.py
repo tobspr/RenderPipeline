@@ -37,14 +37,13 @@ class Plugin(BasePlugin):
     description = ("This plugin adds support for Atmospheric Scattering, and a "
                    "single sun, based on the work from Eric Bruneton. It also "
                    "adds support for atmospheric fog.")
-    version = "1.1"
+    version = "1.2"
 
     def on_pipeline_created(self):
         self._method.load()
         self._method.compute()
 
     def on_stage_setup(self):
-        self.debug("Setting up scattering stage ..")
         self._display_stage = self.create_stage(ScatteringStage)
         self._envmap_stage = self.create_stage(ScatteringEnvmapStage)
 
@@ -61,6 +60,19 @@ class Plugin(BasePlugin):
             self._method = ScatteringMethodHosekWilkie(self)
         else:
             self.error("Unrecognized scattering method!")
+
+    @property
+    def sun_vector(self):
+        """ Returns the sun vector """
+        sun_altitude = self.get_daytime_setting("sun_altitude")
+        sun_azimuth = self.get_daytime_setting("sun_azimuth")
+        theta = (90 - sun_altitude) / 180.0 * math.pi
+        phi = sun_azimuth / 180.0 * math.pi
+        sun_vector = Vec3(
+            math.sin(theta) * math.cos(phi),
+            math.sin(theta) * math.sin(phi),
+            math.cos(theta))
+        return sun_vector
 
     def on_shader_reload(self):
         self._method.compute()

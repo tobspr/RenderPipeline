@@ -27,7 +27,9 @@ THE SOFTWARE.
 from panda3d.core import SamplerState, Texture, CardMaker, TransparencyAttrib
 from panda3d.core import Camera, NodePath, OmniBoundingVolume, BitMask32, Vec4
 
+from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
+from rpcore.util.image import Image
 
 class CloudStage(RenderStage):
 
@@ -52,18 +54,17 @@ class CloudStage(RenderStage):
         }
 
     def create(self):
-
         # Construct the voxel texture
-        self._cloud_voxels = Image.create_3d("CloudVoxels", self._voxel_res_xy, self._voxel_res_xy, self._voxel_res_z,
+        self._cloud_voxels = Image.create_3d(
+            "CloudVoxels", self._voxel_res_xy, self._voxel_res_xy, self._voxel_res_z,
             Texture.T_unsigned_byte, Texture.F_rgba8)
         self._cloud_voxels.set_wrap_u(SamplerState.WM_repeat)
         self._cloud_voxels.set_wrap_v(SamplerState.WM_repeat)
         self._cloud_voxels.set_wrap_w(SamplerState.WM_border_color)
         self._cloud_voxels.set_border_color(Vec4(0, 0, 0, 0))
-        # self._cloud_voxels.set_border_color(Vec4(1, 0, 0, 1))
 
         # Construct the target which populates the voxel texture
-        self._grid_target = self.make_target("CreateGrid")
+        self._grid_target = self.make_target("CreateVoxels")
         self._grid_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._grid_target.prepare_offscreen_buffer()
         self._grid_target.quad.set_instance_count(self._voxel_res_z)
@@ -77,62 +78,19 @@ class CloudStage(RenderStage):
         self._shade_target.set_shader_input("CloudVoxels", self._cloud_voxels)
         self._shade_target.set_shader_input("CloudVoxelsDest", self._cloud_voxels)
 
-        self._particle_target = self.make_target("RenderClouds")
-        self._particle_target.set_half_resolution()
-        self._particle_target.has_color_alpha = True
-        self._particle_target.add_color_texture(bits=16)
-        self._particle_target.prepare_offscreen_buffer()
-        self._particle_target.set_shader_input("CloudVoxels", self._cloud_voxels)
+        self._render_target = self.make_target("RaymarchVoxels")
+        self._render_target.set_half_resolution()
+        self._render_target.has_color_alpha = True
+        self._render_target.add_color_texture(bits=16)
+        self._render_target.prepare_offscreen_buffer()
+        self._render_target.set_shader_input("CloudVoxels", self._cloud_voxels)
 
-        # self._make_particle_scene()
-
-        self._target_apply_clouds = self.make_target("ApplyClouds")
+        self._target_apply_clouds = self.make_target("MergeWithScene")
         self._target_apply_clouds.add_color_texture(bits=16)
         self._target_apply_clouds.prepare_offscreen_buffer()
 
-        self._target_apply_clouds.set_shader_input("CloudsTex", self._particle_target["color"])
-
-    def _make_particle_scene(self):
-
-        # Create a new scene root
-        self._particle_scene = Globals.base.render.attach_new_node("CloudParticles")
-        self._particle_scene.hide(self._pipeline.tag_mgr.get_gbuffer_mask())
-        self._particle_scene.hide(self._pipeline.tag_mgr.get_shadow_mask())
-        self._particle_scene.hide(self._pipeline.tag_mgr.get_voxelize_mask())
-
-        cm = CardMaker("")
-        cm.set_frame(-1.0, 1.0, -1.0, 1.0)
-        cm.set_has_normals(False)
-        cm.set_has_uvs(False)
-        card_node = cm.generate()
-        card_node.set_bounds(OmniBoundingVolume())
-        card_node.set_final(True)
-        self._particle_np = self._particle_scene.attach_new_node(card_node)
-        self._particle_np.set_shader_input("CloudVoxels", self._cloud_voxels)
-        self._particle_np.set_instance_count(self._voxel_res_xy * self._voxel_res_xy * self._voxel_res_z)
-        self._particle_np.set_transparency(TransparencyAttrib.M_multisample, 1000000)
-        self._particle_scene.set_transparency(TransparencyAttrib.M_multisample, 1000000)
-
-        self._particle_cam = Camera("CloudParticleCam")
-        self._particle_cam.set_lens(Globals.base.camLens)
-        self._particle_cam_np = self._particle_scene.attach_new_node(self._particle_cam)
-
-        cloud_particle_mask = BitMask32.bit(16)
-        self._particle_cam.set_camera_mask(cloud_particle_mask)
-        Globals.base.render.hide(cloud_particle_mask)
-        self._particle_scene.show_through(cloud_particle_mask)
-
-        self._particle_target = self.make_target("RenderParticles")
-        self._particle_target.add_color_texture(bits=16)
-        self._particle_target.set_source(self._particle_cam_np, Globals.base.win)
-        self._particle_target.enable_transparency = True
-        self._particle_target.prepare_scene_render()
-        self._particle_target.set_clear_color(True, color=Vec4(0, 0, 0, 0))
-
-    def update(self):
-        # self._particle_cam_np.set_transform(
-        #   Globals.base.camera.get_transform(Globals.base.render))
-        pass
+        self._target_apply_clouds.set_shader_input("CloudsTex",
+            self._render_target["color"])
 
     def set_shaders(self):
         self._grid_target.set_shader(
@@ -145,8 +103,5 @@ class CloudStage(RenderStage):
             self.load_plugin_shader(
                 "$$shader/default_post_process_instanced.vert.glsl",
                 "shade_clouds.frag.glsl"))
-        self._particle_target.set_shader(
+        self._render_target.set_shader(
             self.load_plugin_shader("render_clouds.frag.glsl"))
-        # self._particle_np.set_shader(
-        #   self.load_plugin_shader("cloud_particle.vert.glsl",
-        #   "cloud_particle.frag.glsl"))

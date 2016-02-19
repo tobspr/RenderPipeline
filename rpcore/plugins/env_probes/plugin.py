@@ -35,7 +35,7 @@ class Plugin(BasePlugin):
     description = ("This plugin adds support for environment probes, containing "
                    "diffuse and specular information. This enables accurate "
                    "reflections, and can also be used to simulate GI.")
-    version = "1.1"
+    version = "unfinished (!)"
 
 
     def on_stage_setup(self):

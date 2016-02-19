@@ -24,10 +24,11 @@ THE SOFTWARE.
 
 """
 
-from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.globals import Globals
-
 from panda3d.core import SamplerState
+
+from rpcore.globals import Globals
+from rpcore.pluginbase.base_plugin import BasePlugin
+
 from .cloud_stage import CloudStage
 
 class Plugin(BasePlugin):
@@ -37,22 +38,18 @@ class Plugin(BasePlugin):
     description = ("This Plugin adds support or volumetric, raytraced clouds. "
                    "Right now this is pretty unoptimized and may consum a lot "
                    "of performance.")
-    version = "1.1"
+    version = "alpha (!)"
     required_plugins = ("scattering",)
 
     def on_stage_setup(self):
         self._stage = self.create_stage(CloudStage)
 
     def on_pipeline_created(self):
-        sprite_tex = Globals.loader.loadTexture(self.get_resource("cloud_sprites.png"))
+        # Load noise texture
         noise_tex = Globals.loader.loadTexture(self.get_resource("noise.png"))
-
-        for tex in [sprite_tex, noise_tex]:
-            tex.set_wrap_u(SamplerState.WM_repeat)
-            tex.set_wrap_v(SamplerState.WM_repeat)
-            tex.set_anisotropic_degree(16)
-            tex.set_minfilter(SamplerState.FT_linear)
-            tex.set_magfilter(SamplerState.FT_linear)
-
-        self._stage.set_shader_input("SpriteTex",  sprite_tex)
+        noise_tex.set_wrap_u(SamplerState.WM_repeat)
+        noise_tex.set_wrap_v(SamplerState.WM_repeat)
+        noise_tex.set_anisotropic_degree(4)
+        noise_tex.set_minfilter(SamplerState.FT_linear)
+        noise_tex.set_magfilter(SamplerState.FT_linear)
         self._stage.set_shader_input("NoiseTex", noise_tex)

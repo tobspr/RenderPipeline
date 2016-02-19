@@ -105,7 +105,5 @@ void main() {
         vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
     #endif // !DEBUG_MODE
 
-    scene_color = saturate(scene_color);
-
     result = vec4(scene_color, 1);
 }

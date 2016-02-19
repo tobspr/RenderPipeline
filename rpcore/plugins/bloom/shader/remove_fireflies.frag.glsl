@@ -31,15 +31,13 @@
 #pragma include "includes/gaussian_weights.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
-uniform sampler2D SourceTex;
+uniform sampler2D ShadedScene;
 out vec3 result;
 
 // Karis average
 float get_weight(vec3 color, float weight) {
     return weight / (1.0 + get_luminance(color));
 }
-
-uniform ivec2 direction;
 
 void main() {
 
@@ -50,19 +48,21 @@ void main() {
         vec3 accum = vec3(0);
         const int filter_size = 1;
 
-        vec2 texel_offs = direction / SCREEN_SIZE;
+        vec2 texel_offs = vec2(1.0) / SCREEN_SIZE;
 
         // Find all surrounding pixels and weight them
         for (int i = -filter_size; i <= filter_size; ++i) {
-            vec3 color_sample = textureLod(SourceTex, texcoord + i * texel_offs, 0).xyz;
-            float weight = get_weight(color_sample, gaussian_weights_2[abs(i)]);
-            accum += color_sample * weight;
-            weights += weight;
+            for (int j = -filter_size; j <= filter_size; ++j) {
+                vec3 color_sample = textureLod(ShadedScene, texcoord + vec2(i, j) * texel_offs, 0).xyz;
+                float weight = get_weight(color_sample, gaussian_weights_2[abs(i)] * gaussian_weights_2[abs(j)]);
+                accum += color_sample * weight;
+                weights += weight;
+            }
         }
 
         accum /= max(0.01, weights);
         result = accum;
     #else
-        result = textureLod(SourceTex, texcoord, 0).xyz;
+        result = textureLod(ShadedScene, texcoord, 0).xyz;
     #endif
 }

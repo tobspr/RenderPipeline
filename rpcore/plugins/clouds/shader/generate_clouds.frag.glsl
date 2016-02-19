@@ -34,8 +34,6 @@
 flat in int instance_id;
 
 uniform writeonly image3D RESTRICT CloudVoxels;
-uniform sampler2D NoiseTex;
-uniform sampler2D CloudNoiseTex;
 
 float cloud_weight(float height) {
     // Clouds get less at higher distances. Also decrease them at the bottom

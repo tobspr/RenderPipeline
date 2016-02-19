@@ -1,5 +1,4 @@
 
-
 settings: !!omap
 
     - max_distance:

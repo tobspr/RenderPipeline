@@ -41,7 +41,7 @@ class Plugin(BasePlugin):
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("Provides Global Illumination using Voxel Cone Tracing. This "
                    "technique is still very unoptimized and experimental!")
-    version = "1.1"
+    version = "alpha (!)"
 
     def on_stage_setup(self):
         self._voxel_stage = self.create_stage(VoxelizationStage)

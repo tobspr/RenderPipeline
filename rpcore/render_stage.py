@@ -100,10 +100,6 @@ class RenderStage(RPObject):
         for target in self._targets.values():
             target.set_active(active)
 
-    def make_cubemap_filter(self, *args):
-        """ Creates a new CubemapFilter with the given args and returns it """
-        return CubemapFilter(self, *args)
-
     def make_target(self, name):
         """ Creates a new render target with the given name and attachs it to the
         list of targets, then returns it """

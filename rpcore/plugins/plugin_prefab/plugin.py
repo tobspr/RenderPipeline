@@ -34,7 +34,7 @@ class Plugin(BasePlugin):
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This is the most basic structure of a plugin. You can copy "
                    "it to produce your own plugins")
-    version = "1.1"
+    version = "1.0"
 
     def on_stage_setup(self):
         """ This method gets called when the pipeline setups the render

@@ -33,7 +33,6 @@
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
-#pragma include "includes/noise.inc.glsl"
 
 uniform sampler3D CloudVoxels;
 uniform sampler2D NoiseTex;

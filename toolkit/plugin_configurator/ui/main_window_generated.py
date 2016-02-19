@@ -97,7 +97,7 @@ class Ui_MainWindow(object):
         self.lbl_plugin_name.setTextFormat(QtCore.Qt.PlainText)
         self.lbl_plugin_name.setObjectName(_fromUtf8("lbl_plugin_name"))
         self.lbl_plugin_version = QtGui.QLabel(self.frame_details)
-        self.lbl_plugin_version.setGeometry(QtCore.QRect(30, 50, 591, 16))
+        self.lbl_plugin_version.setGeometry(QtCore.QRect(30, 50, 481, 21))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(79, 128, 39))
         brush.setStyle(QtCore.Qt.SolidPattern)

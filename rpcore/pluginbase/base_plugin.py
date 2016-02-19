@@ -35,6 +35,13 @@ class BasePlugin(RPObject):
     this class. Additionally there are a lot of helpful functions provided,
     such as creating render stages. """
 
+    # Plugins can set this to indicate they have some C++ code, so they cannot
+    # be used with the python version.
+    native_only = False
+
+    # Plugins can set this to require other plugins
+    required_plugins = tuple()
+
     def __init__(self, pipeline):
         """ Inits the plugin """
         self._pipeline = pipeline
@@ -91,6 +98,18 @@ class BasePlugin(RPObject):
         """ Returns the value of a setting given by its setting id. If plugin_id
         is set, returns the setting of the given plugin """
         return self._pipeline.plugin_mgr.settings[plugin_id or self.plugin_id][setting_id].value
+
+    def get_daytime_setting(self, setting_id, plugin_id=None):
+        """ Returns the value of a time of day setting given by its setting
+        id. If plugin_id is set, returns the setting of a gien plugin """
+        handle = self._pipeline.plugin_mgr.day_settings[plugin_id or self.plugin_id][setting_id]
+        return handle.get_scaled_value_at(self._pipeline.daytime_mgr.time)
+
+    def get_plugin_instance(self, plugin_id):
+        """ Returns the instance of a different plugin, given by its id.
+        This should be only used to access plugins which are also in the
+        current plugins requirements """
+        return self._pipeline.plugin_mgr.plugin_instances[plugin_id]
 
     def is_plugin_enabled(self, plugin_id):
         """ Returns whether a plugin is enabled and loaded, given is plugin id """

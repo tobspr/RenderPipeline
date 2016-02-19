@@ -24,12 +24,19 @@ THE SOFTWARE.
 
 """
 
+import math
+
 from rplibs.six.moves import range
+from rplibs.six import iteritems
 
 from direct.stdpy.file import listdir, isfile, join
-from panda3d.core import Texture, SamplerState, Shader
+from panda3d.core import Texture, SamplerState, Shader, ShaderAttrib, NodePath
 
+from rpcore.globals import Globals
+from rpcore.rp_object import RPObject
 from rpcore.render_stage import RenderStage
+from rpcore.util.slice_loader import SliceLoader
+from rpcore.util.image import Image
 
 class ScatteringMethod(RPObject):
 
@@ -47,14 +54,14 @@ class ScatteringMethod(RPObject):
         """ Should compute the model here if necessary """
         raise NotImplementedError()
 
-
 class ScatteringMethodHosekWilkie(ScatteringMethod):
 
     """ Scattering as suggested by Hosek and Wilkie """
 
     def load(self):
         """ Loads the scattering method """
-        lut_src = self._handle.get_resource("HosekWilkieScattering/ScatteringLUT.png")
+        lut_src = self._handle.get_resource(
+            "HosekWilkieScattering/scattering_luit.png")
 
         if not isfile(lut_src):
             self.error("Could not find precompiled LUT for the Hosek Wilkie "
@@ -142,11 +149,32 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
                 shader_obj = Shader.load_compute(Shader.SL_GLSL, fpath)
                 self._shaders[shader_name] = shader_obj
 
+
+    def _exec_compute_shader(self, shader_obj, shader_inputs, exec_size,
+                            workgroup_size=(16, 16, 1)):
+        """ Executes a compute shader. The shader object should be a shader
+        loaded with Shader.load_compute, the shader inputs should be a dict where
+        the keys are the names of the shader inputs and the values are the
+        inputs. The workgroup_size has to match the size defined in the
+        compute shader """
+        ntx = int(math.ceil(exec_size[0] / workgroup_size[0]))
+        nty = int(math.ceil(exec_size[1] / workgroup_size[1]))
+        ntz = int(math.ceil(exec_size[2] / workgroup_size[2]))
+
+        nodepath = NodePath("shader")
+        nodepath.set_shader(shader_obj)
+        for key, val in iteritems(shader_inputs):
+            nodepath.set_shader_input(key, val)
+
+        attr = nodepath.get_attrib(ShaderAttrib)
+        Globals.base.graphicsEngine.dispatch_compute(
+            (ntx, nty, ntz), attr, Globals.base.win.get_gsg())
+
     def compute(self):
         """ Precomputes the scattering """
 
         self.debug("Precomputing ...")
-        exec_cshader = self._handle.exec_compute_shader
+        exec_cshader = self._exec_compute_shader
 
         # Transmittance
         exec_cshader(

@@ -71,16 +71,11 @@ float get_shadow(vec2 coord, float refz) {
 
 void main() {
 
-    #if HAVE_PLUGIN(scattering)
-        vec3 sun_vector = sun_azimuth_to_angle(
-            TimeOfDay.scattering.sun_azimuth,
-            TimeOfDay.scattering.sun_altitude);
-        vec3 sun_color = TimeOfDay.scattering.sun_color *
-            TimeOfDay.scattering.sun_intensity * 85.0;
-    #else
-        vec3 sun_vector = normalize(pssm_sun_vector);
-        vec3 sun_color = vec3(4.3, 4.25, 4.1) * 1.5;
-    #endif
+    vec3 sun_vector = sun_azimuth_to_angle(
+        TimeOfDay.scattering.sun_azimuth,
+        TimeOfDay.scattering.sun_altitude);
+    vec3 sun_color = TimeOfDay.scattering.sun_color *
+        TimeOfDay.scattering.sun_intensity * 85.0;
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);

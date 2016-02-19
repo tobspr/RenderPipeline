@@ -69,8 +69,8 @@ class NetworkUpdateListener(BaseManager):
             daytime = float(cmd.split()[1])
             self._pipeline.daytime_mgr.time = daytime
         elif cmd.startswith("loadconf"):
-            self._pipeline.plugin_mgr.reload_settings()
-            self._pipeline.daytime_mgr.reload_config()
+            self._pipeline.plugin_mgr._load_daytime_overrides(
+                "$$config/daytime.yaml")
         else:
             self.warn("Recieved unkown daytime command:", cmd)
 

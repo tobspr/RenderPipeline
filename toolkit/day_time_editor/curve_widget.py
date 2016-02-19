@@ -230,10 +230,9 @@ class CurveWidget(QtGui.QWidget):
             time_string = str(int(float(i) / num_vert_lines * 24)).zfill(2) + ":00"
             painter.drawText(line_pos + offpos_x, canvas_height + self._bar_h + 18, time_string)
 
-
         # Draw curve
         for index, curve in enumerate(self._curves):
-            painter.setPen(QtGui.QColor(*curve.get_color()))
+            painter.setPen(QtGui.QColor(*curve.color))
             last_value = 0
             for i in range(canvas_width):
                 rel_offset = i / (canvas_width - 1.0)

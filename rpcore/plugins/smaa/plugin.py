@@ -37,7 +37,7 @@ class Plugin(BasePlugin):
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for SMAA, a post process "
                    "antialiasing technique.")
-    version = "1.1"
+    version = "1.5"
 
     def on_stage_setup(self):
         if self.get_setting("use_reprojection"):

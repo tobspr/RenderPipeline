@@ -54,7 +54,7 @@ void main() {
     float max_exp = make_logarithmic(GET_SETTING(color_correction, max_exposure), factor);
     float exp_bias = GET_SETTING(color_correction, exposure_bias) * 10.0;
 
-    avg_luminance = max(min_exp, min(max_exp, 0.2 / (avg_luminance) + exp_bias));
+    avg_luminance = max(min_exp, min(max_exp, 0.5 / (avg_luminance) + exp_bias));
 
     // Transition between the last and current value smoothly
     float cur_luminance = imageLoad(ExposureStorage, 0).x;

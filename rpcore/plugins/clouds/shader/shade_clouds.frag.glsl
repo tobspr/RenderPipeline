@@ -38,7 +38,6 @@ flat in int instance_id;
 uniform sampler3D CloudVoxels;
 uniform samplerCube ScatteringIBLDiffuse;
 uniform writeonly image3D RESTRICT CloudVoxelsDest;
-uniform sampler2D NoiseTex;
 
 void main() {
 
@@ -65,9 +64,6 @@ void main() {
         nrm += textureLod(CloudVoxels, fcoord + i * pixel_size * vec3(-1, 0, 0), 0).w * vec3( 1, 0, 0);
     }
     nrm /= max(0.05, length(nrm));
-
-    vec3 noise = textureLod(NoiseTex, fcoord.xy * 16.0, 0).xyz * 2.0 - 1.0;
-    // nrm = normalize(nrm + 0.1*noise);
 
     vec3 scattering_color = texture(ScatteringIBLDiffuse, nrm).xyz;
 

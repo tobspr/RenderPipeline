@@ -27,7 +27,10 @@ THE SOFTWARE.
 from rplibs.six.moves import range
 
 from panda3d.core import LVecBase2i, Texture, SamplerState, Vec4
+
+from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
+from rpcore.util.image import Image
 
 class BloomStage(RenderStage):
 
@@ -36,24 +39,16 @@ class BloomStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "BloomStage", pipeline)
-        self._num_mips = 6
+        self.num_mips = 6
 
     @property
     def produced_pipes(self):
         return {"ShadedScene": self._upsample_targets[-1]["color"]}
 
-    def set_num_mips(self, mip_count):
-        self._num_mips = mip_count
-
     def create(self):
-
-        self._target_firefly_x = self.make_target("RemoveFireflies-X")
-        self._target_firefly_x.add_color_texture(bits=16)
-        self._target_firefly_x.prepare_offscreen_buffer()
-
-        self._target_firefly_y = self.make_target("RemoveFireflies-Y")
-        self._target_firefly_y.add_color_texture(bits=16)
-        self._target_firefly_y.prepare_offscreen_buffer()
+        self._target_firefly = self.make_target("RemoveFireflies")
+        self._target_firefly.add_color_texture(bits=16)
+        self._target_firefly.prepare_offscreen_buffer()
 
         self._scene_target_img = Image.create_2d(
             "BloomDownsample", Globals.base.win.get_x_size(),
@@ -68,17 +63,13 @@ class BloomStage(RenderStage):
         self._target_extract.prepare_offscreen_buffer()
         self._target_extract.set_shader_input("DestTex", self._scene_target_img, False, True, -1, 0)
 
-        self._target_firefly_x.set_shader_input("direction", LVecBase2i(1, 0))
-        self._target_firefly_y.set_shader_input("direction", LVecBase2i(0, 1))
-
-        self._target_firefly_y.set_shader_input("SourceTex", self._target_firefly_x["color"])
-        self._target_extract.set_shader_input("SourceTex", self._target_firefly_y["color"])
+        self._target_extract.set_shader_input("SourceTex", self._target_firefly["color"])
 
         self._downsample_targets = []
         self._upsample_targets = []
 
         # Downsample passes
-        for i in range(self._num_mips):
+        for i in range(self.num_mips):
             scale_multiplier = 2 ** (1 + i)
             target = self.make_target("Downsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
@@ -89,27 +80,26 @@ class BloomStage(RenderStage):
             self._downsample_targets.append(target)
 
         # Upsample passes
-        for i in range(self._num_mips):
-            scale_multiplier = 2 ** (self._num_mips - i - 1)
+        for i in range(self.num_mips):
+            scale_multiplier = 2 ** (self.num_mips - i - 1)
             target = self.make_target("Upsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
 
-            if i == self._num_mips - 1:
+            if i == self.num_mips - 1:
                 target.add_color_texture(bits=16)
 
             target.prepare_offscreen_buffer()
             target.set_shader_input("FirstUpsamplePass", i == 0)
-            target.set_shader_input("LastUpsamplePass", i == self._num_mips - 1)
+            target.set_shader_input("LastUpsamplePass", i == self.num_mips - 1)
 
-            target.set_shader_input("SourceMip", self._num_mips - i)
+            target.set_shader_input("SourceMip", self.num_mips - i)
             target.set_shader_input("SourceTex", self._scene_target_img)
-            target.set_shader_input("DestTex", self._scene_target_img, False, True, -1, self._num_mips - i - 1)
+            target.set_shader_input("DestTex", self._scene_target_img, False, True, -1, self.num_mips - i - 1)
             self._upsample_targets.append(target)
 
     def set_shaders(self):
         self._target_extract.set_shader(self.load_plugin_shader("extract_bright_spots.frag.glsl"))
-        self._target_firefly_x.set_shader(self.load_plugin_shader("remove_fireflies.frag.glsl"))
-        self._target_firefly_y.set_shader(self.load_plugin_shader("remove_fireflies.frag.glsl"))
+        self._target_firefly.set_shader(self.load_plugin_shader("remove_fireflies.frag.glsl"))
 
         downsample_shader = self.load_plugin_shader("bloom_downsample.frag.glsl")
         upsample_shader = self.load_plugin_shader("bloom_upsample.frag.glsl")
@@ -120,7 +110,3 @@ class BloomStage(RenderStage):
 
     def set_shader_input(self, name, handle, *args):
         RenderStage.set_shader_input(self, name, handle, *args)
-
-        # Special case for the first firefly remove target
-        if name == "ShadedScene":
-            self._target_firefly_x.set_shader_input("SourceTex", handle)

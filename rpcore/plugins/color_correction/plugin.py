@@ -40,7 +40,7 @@ class Plugin(BasePlugin):
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for color correction, vignetting, "
                    "chromatic abberation and tonemapping.")
-    version = "1.1"
+    version = "1.4"
 
     def on_stage_setup(self):
         self._stage = self.create_stage(ColorCorrectionStage)

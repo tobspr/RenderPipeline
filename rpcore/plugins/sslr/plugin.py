@@ -34,7 +34,7 @@ class Plugin(BasePlugin):
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for screen space local reflections "
                    "and is still very experimental!")
-    version = "1.1"
+    version = "alpha (!)"
 
     def on_stage_setup(self):
         self.debug("Setting up SSLR stage ..")
