@@ -25,13 +25,13 @@ THE SOFTWARE.
 """
 
 from __future__ import print_function
-from six.moves import range
+from rplibs.six.moves import range
 
 from math import cos, sin, pi
 
 from panda3d.core import Vec3, PTAVecBase3f
 
-from ...pluginbase.base_plugin import BasePlugin
+from rpcore.pluginbase.base_plugin import BasePlugin
 from .pssm_shadow_stage import PSSMShadowStage
 from .pssm_dist_shadow_stage import PSSMDistShadowStage
 from .pssm_stage import PSSMStage

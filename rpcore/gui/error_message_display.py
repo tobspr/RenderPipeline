@@ -28,10 +28,10 @@ from __future__ import print_function
 
 from panda3d.core import Notify, LineStream, Vec3
 
-from ..globals import Globals
-from ..rp_object import RPObject
+from rpcore.globals import Globals
+from rpcore.rp_object import RPObject
 
-from .text import Text
+from rpcore.gui.text import Text
 
 class ErrorMessageDisplay(RPObject):
 

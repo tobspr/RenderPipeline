@@ -2,7 +2,7 @@
 import sys
 import collections
 from direct.stdpy.file import open
-from ...rp_object import RPObject
+from rpcore.rp_object import RPObject
 
 # Import different PyYaml versions depending on the used python version
 if sys.version_info < (3, 0):

@@ -26,12 +26,12 @@ THE SOFTWARE.
 
 from panda3d.core import Vec3, Texture
 
-from .draggable_window import DraggableWindow
-from .sprite import Sprite
-from .text import Text
-from .slider import Slider
+from rpcore.gui.draggable_window import DraggableWindow
+from rpcore.gui.sprite import Sprite
+from rpcore.gui.text import Text
+from rpcore.gui.slider import Slider
 
-from ..util.display_shader_builder import DisplayShaderBuilder
+from rpcore.util.display_shader_builder import DisplayShaderBuilder
 
 class TexturePreview(DraggableWindow):
 

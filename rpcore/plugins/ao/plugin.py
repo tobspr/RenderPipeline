@@ -24,9 +24,9 @@ THE SOFTWARE.
 
 """
 
-from ...pluginbase.base_plugin import BasePlugin
-from ...stages.ambient_stage import AmbientStage
-from ...stages.apply_lights_stage import ApplyLightsStage
+from rpcore.pluginbase.base_plugin import BasePlugin
+from rpcore.stages.ambient_stage import AmbientStage
+from rpcore.stages.apply_lights_stage import ApplyLightsStage
 
 from .ao_stage import AOStage
 

@@ -28,8 +28,8 @@ THE SOFTWARE.
 from panda3d.core import Vec2, Vec3, Vec4
 from panda3d.core import TextNode as TextNodeImpl
 
-from ..globals import Globals
-from ..rp_object import RPObject
+from rpcore.globals import Globals
+from rpcore.rp_object import RPObject
 
 class TextNode(RPObject):
 

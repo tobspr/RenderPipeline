@@ -25,8 +25,8 @@ THE SOFTWARE.
 """
 
 from __future__ import print_function
-from six import BytesIO
-from six.moves import urllib
+from rplibs.six import BytesIO
+from rplibs.six.moves import urllib
 
 import os
 import sys

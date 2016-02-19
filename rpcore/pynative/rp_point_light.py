@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 """
 
-from six.moves import range
+from rplibs.six.moves import range
 
 from panda3d.core import Vec3
 
-from .rp_light import RPLight
-from .shadow_source import ShadowSource
+from rpcore.pynative.rp_light import RPLight
+from rpcore.pynative.shadow_source import ShadowSource
 
 class RPPointLight(RPLight):
 

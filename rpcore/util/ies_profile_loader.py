@@ -29,14 +29,14 @@ THE SOFTWARE.
 # pylint: disable=W0612
 
 from __future__ import print_function
-from six.moves import range
+from rplibs.six.moves import range
 import re
 
 from panda3d.core import PTAFloat
 from direct.stdpy.file import open
 
-from ..native import IESDataset
-from ..rp_object import RPObject
+from rpcore.native import IESDataset
+from rpcore.rp_object import RPObject
 
 class IESLoaderException(Exception):
     """ Exception which is thrown when an error occurs during loading an IES

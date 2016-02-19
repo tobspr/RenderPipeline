@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 from panda3d.core import LVecBase2i
-from ...render_stage import RenderStage
+from rpcore.render_stage import RenderStage
 
 class AOStage(RenderStage):
 

@@ -416,4 +416,3 @@ app = QtGui.QApplication(sys.argv)
 configurator = PluginConfigurator()
 configurator.show()
 app.exec_()
-

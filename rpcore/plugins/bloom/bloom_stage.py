@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 """
 
-from six.moves import range
+from rplibs.six.moves import range
 
 from panda3d.core import LVecBase2i, Texture, SamplerState, Vec4
-from ...render_stage import RenderStage
+from rpcore.render_stage import RenderStage
 
 class BloomStage(RenderStage):
 

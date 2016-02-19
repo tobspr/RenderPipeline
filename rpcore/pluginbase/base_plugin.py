@@ -27,7 +27,7 @@ THE SOFTWARE.
 from direct.stdpy.file import isfile, open, join
 
 from rplibs.yaml import load_yaml_file
-from ..rp_object import RPObject
+from rpcore.rp_object import RPObject
 
 class BasePlugin(RPObject):
 

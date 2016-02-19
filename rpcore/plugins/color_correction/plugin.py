@@ -27,9 +27,9 @@ THE SOFTWARE.
 from panda3d.core import SamplerState
 
 # Load the plugin api
-from ...pluginbase.base_plugin import BasePlugin
-from ...stages.final_stage import FinalStage
-from ...util.slice_loader import SliceLoader
+from rpcore.pluginbase.base_plugin import BasePlugin
+from rpcore.stages.final_stage import FinalStage
+from rpcore.util.slice_loader import SliceLoader
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage
 

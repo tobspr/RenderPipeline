@@ -24,11 +24,11 @@ THE SOFTWARE.
 
 """
 
-from six.moves import range
+from rplibs.six.moves import range
 
 from panda3d.core import Camera, MatrixLens
 
-from .shadow_atlas import ShadowAtlas
+from rpcore.pynative.shadow_atlas import ShadowAtlas
 
 class ShadowManager(object):
 

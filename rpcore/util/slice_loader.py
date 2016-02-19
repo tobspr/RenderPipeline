@@ -24,13 +24,13 @@ THE SOFTWARE.
 
 """
 
-from six.moves import range
+from rplibs.six.moves import range
 
 import time
 
 from panda3d.core import PNMImage, VirtualFileSystem, VirtualFileMountRamdisk
 
-from ..globals import Globals
+from rpcore.globals import Globals
 
 class SliceLoader(object):
 

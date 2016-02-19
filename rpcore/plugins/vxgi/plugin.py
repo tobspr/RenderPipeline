@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from ...pluginbase.base_plugin import BasePlugin
+from rpcore.pluginbase.base_plugin import BasePlugin
 
 from math import sin, cos, pi
 from panda3d.core import Vec3

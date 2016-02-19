@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from ..rp_object import RPObject
+from rpcore.rp_object import RPObject
 
 import direct.gui.DirectGuiGlobals as DGG
 

@@ -24,11 +24,11 @@ THE SOFTWARE.
 
 """
 
-from .rp_object import RPObject
+from rpcore.rp_object import RPObject
 
-from .stages.ambient_stage import AmbientStage
-from .stages.gbuffer_stage import GBufferStage
-from .stages.final_stage import FinalStage
+from rpcore.stages.ambient_stage import AmbientStage
+from rpcore.stages.gbuffer_stage import GBufferStage
+from rpcore.stages.final_stage import FinalStage
 # from .stages.downscale_z_stage import DownscaleZStage
 
 class CommonStages(RPObject):

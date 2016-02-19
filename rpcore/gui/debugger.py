@@ -26,28 +26,28 @@ THE SOFTWARE.
 
 from __future__ import division
 from functools import partial
-from six.moves import range
+from rplibs.six.moves import range
 
 from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
 from direct.interval.IntervalGlobal import Sequence
 
 from rplibs.yaml import load_yaml_file
 
-from .sprite import Sprite
-from .buffer_viewer import BufferViewer
-from .pipe_viewer import PipeViewer
-from .labeled_checkbox import LabeledCheckbox
-from .checkbox_collection import CheckboxCollection
-from .text_node import TextNode
-from .error_message_display import ErrorMessageDisplay
-from .exposure_widget import ExposureWidget
+from rpcore.gui.sprite import Sprite
+from rpcore.gui.buffer_viewer import BufferViewer
+from rpcore.gui.pipe_viewer import PipeViewer
+from rpcore.gui.labeled_checkbox import LabeledCheckbox
+from rpcore.gui.checkbox_collection import CheckboxCollection
+from rpcore.gui.text_node import TextNode
+from rpcore.gui.error_message_display import ErrorMessageDisplay
+from rpcore.gui.exposure_widget import ExposureWidget
 
-from ..globals import Globals
-from ..base_manager import BaseManager
+from rpcore.globals import Globals
+from rpcore.base_manager import BaseManager
 
-from ..native import NATIVE_CXX_LOADED
-from ..render_target import RenderTarget
-from ..util.image import Image
+from rpcore.native import NATIVE_CXX_LOADED
+from rpcore.render_target import RenderTarget
+from rpcore.util.image import Image
 
 class Debugger(BaseManager):
 

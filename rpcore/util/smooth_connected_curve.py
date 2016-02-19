@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from six.moves import range
+from rplibs.six.moves import range
 
 from random import random
 from panda3d.core import Vec3, CurveFitter

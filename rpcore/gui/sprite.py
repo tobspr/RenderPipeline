@@ -27,8 +27,8 @@ THE SOFTWARE.
 from panda3d.core import TransparencyAttrib, Vec3, Texture, SamplerState
 from direct.gui.OnscreenImage import OnscreenImage
 
-from ..rp_object import RPObject
-from ..globals import Globals
+from rpcore.rp_object import RPObject
+from rpcore.globals import Globals
 
 
 class Sprite(RPObject):

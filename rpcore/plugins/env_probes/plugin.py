@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 # Load the plugin api
-from ...pluginbase.base_plugin import BasePlugin
+from rpcore.pluginbase.base_plugin import BasePlugin
 
 # Load your additional plugin classes here, if required
 
@@ -43,4 +43,3 @@ class Plugin(BasePlugin):
 
     def on_pipeline_created(self):
         pass
-

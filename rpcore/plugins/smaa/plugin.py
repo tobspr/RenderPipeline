@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import SamplerState
 
-from ...pluginbase.base_plugin import BasePlugin
+from rpcore.pluginbase.base_plugin import BasePlugin
 from .smaa_stage import SMAAStage
 
 class Plugin(BasePlugin):

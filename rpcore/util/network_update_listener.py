@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 """
 
-from .udp_listener_service import UDPListenerService
-from ..base_manager import BaseManager
+from rpcore.util.udp_listener_service import UDPListenerService
+from rpcore.base_manager import BaseManager
 
 class NetworkUpdateListener(BaseManager):
 

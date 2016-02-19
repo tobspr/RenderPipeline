@@ -27,9 +27,9 @@ THE SOFTWARE.
 from panda3d.core import Camera, NodePath, DepthWriteAttrib
 from panda3d.core import DepthTestAttrib
 
-from ..render_stage import RenderStage
-from ..globals import Globals
-from ..util.shader_ubo import SimpleUBO
+from rpcore.render_stage import RenderStage
+from rpcore.globals import Globals
+from rpcore.util.shader_ubo import SimpleUBO
 
 class GBufferStage(RenderStage):
 

@@ -26,13 +26,13 @@ THE SOFTWARE.
 
 import importlib
 import collections
-from six import iteritems, itervalues
+from rplibs.six import iteritems, itervalues
 from direct.stdpy.file import listdir, isdir, join, open
 
 from rplibs.yaml import load_yaml_file
-from ..base_manager import BaseManager
-from .setting_types import make_setting_from_data
-from .day_setting_types import make_daysetting_from_data
+from rpcore.base_manager import BaseManager
+from rpcore.pluginbase.setting_types import make_setting_from_data
+from rpcore.pluginbase.day_setting_types import make_daysetting_from_data
 
 
 class PluginManager(BaseManager):

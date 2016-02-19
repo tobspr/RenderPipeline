@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 """
 
-from six.moves import range
+from rplibs.six.moves import range
 
 from direct.stdpy.file import listdir, isfile, join
 from panda3d.core import Texture, SamplerState, Shader
 
-from ...render_stage import RenderStage
+from rpcore.render_stage import RenderStage
 
 class ScatteringMethod(RPObject):
 

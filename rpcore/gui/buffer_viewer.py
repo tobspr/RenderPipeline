@@ -33,15 +33,15 @@ from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectGui import DGG
 
-from ..util.generic import rgb_from_string
-from ..util.display_shader_builder import DisplayShaderBuilder
-from ..globals import Globals
-from ..render_target import RenderTarget
-from .texture_preview import TexturePreview
-from .sprite import Sprite
-from .labeled_checkbox import LabeledCheckbox
-from .text import Text
-from .draggable_window import DraggableWindow
+from rpcore.util.generic import rgb_from_string
+from rpcore.util.display_shader_builder import DisplayShaderBuilder
+from rpcore.globals import Globals
+from rpcore.render_target import RenderTarget
+from rpcore.gui.texture_preview import TexturePreview
+from rpcore.gui.sprite import Sprite
+from rpcore.gui.labeled_checkbox import LabeledCheckbox
+from rpcore.gui.text import Text
+from rpcore.gui.draggable_window import DraggableWindow
 
 class BufferViewer(DraggableWindow):
 

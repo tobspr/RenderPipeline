@@ -28,8 +28,8 @@ from __future__ import division
 
 from panda3d.core import Texture, SamplerState
 
-from ..rp_object import RPObject
-from .image import Image
+from rpcore.rp_object import RPObject
+from rpcore.util.image import Image
 
 class CubemapFilter(RPObject):
 

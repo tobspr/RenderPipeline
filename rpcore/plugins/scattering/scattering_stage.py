@@ -27,7 +27,7 @@ THE SOFTWARE.
 from __future__ import division
 from panda3d.core import Texture
 
-from ...render_stage import RenderStage
+from rpcore.render_stage import RenderStage
 
 class ScatteringStage(RenderStage):
 

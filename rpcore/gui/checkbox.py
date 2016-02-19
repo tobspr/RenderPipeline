@@ -28,8 +28,8 @@ from panda3d.core import TransparencyAttrib, SamplerState
 from direct.gui.DirectCheckBox import DirectCheckBox
 import direct.gui.DirectGuiGlobals as DGG
 
-from ..rp_object import RPObject
-from ..globals import Globals
+from rpcore.rp_object import RPObject
+from rpcore.globals import Globals
 
 
 class Checkbox(RPObject):

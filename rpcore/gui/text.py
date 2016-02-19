@@ -27,8 +27,8 @@ THE SOFTWARE.
 from panda3d.core import Vec2, Vec3, TextNode, Vec4
 from direct.gui.OnscreenText import OnscreenText
 
-from ..globals import Globals
-from ..rp_object import RPObject
+from rpcore.globals import Globals
+from rpcore.rp_object import RPObject
 
 
 class Text(RPObject):

@@ -26,13 +26,13 @@ THE SOFTWARE.
 
 import copy
 
-from six import iteritems, iterkeys
+from rplibs.six import iteritems, iterkeys
 
 from panda3d.core import Shader, Filename
 
-from .rp_object import RPObject
+from rpcore.rp_object import RPObject
 from rplibs.yaml import load_yaml_file
-from .util.shader_template import ShaderTemplate
+from rpcore.util.shader_template import ShaderTemplate
 
 class Effect(RPObject):
 

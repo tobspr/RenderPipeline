@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from ...pluginbase.base_plugin import BasePlugin
+from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .bloom_stage import BloomStage
 

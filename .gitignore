@@ -16,7 +16,6 @@
 # --- Ignored folders and patterns ---
 temp/
 models/
-data/normal_quantization/*.png
 data/precomputed_grain/*.png
 data/default_cubemap/filtered/
 _DEV
@@ -27,5 +26,3 @@ TODO.txt
 *.flag
 desktop.ini
 scattering_lut.png
-
-_transform_imports.py

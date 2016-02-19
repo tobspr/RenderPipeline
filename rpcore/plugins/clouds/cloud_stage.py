@@ -27,7 +27,7 @@ THE SOFTWARE.
 from panda3d.core import SamplerState, Texture, CardMaker, TransparencyAttrib
 from panda3d.core import Camera, NodePath, OmniBoundingVolume, BitMask32, Vec4
 
-from ...render_stage import RenderStage
+from rpcore.render_stage import RenderStage
 
 class CloudStage(RenderStage):
 

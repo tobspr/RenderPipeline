@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 
-from ...pluginbase.base_plugin import BasePlugin
+from rpcore.pluginbase.base_plugin import BasePlugin
 from .sslr_stage import SSLRStage
 
 class Plugin(BasePlugin):

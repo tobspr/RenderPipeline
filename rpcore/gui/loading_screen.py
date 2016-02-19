@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 """
 from __future__ import division
-from six.moves import range
+from rplibs.six.moves import range
 
-from .sprite import Sprite
+from rpcore.gui.sprite import Sprite
 
-from ..rp_object import RPObject
-from ..globals import Globals
+from rpcore.rp_object import RPObject
+from rpcore.globals import Globals
 
 class EmptyLoadingScreen(object):
 

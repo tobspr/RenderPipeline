@@ -25,5 +25,5 @@ THE SOFTWARE.
 """
 
 # This file includes all classes from the pipeline which are exposed
-from .render_pipeline import RenderPipeline
-from .native import SpotLight, PointLight
+from rpcore.render_pipeline import RenderPipeline
+from rpcore.native import SpotLight, PointLight

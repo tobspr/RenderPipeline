@@ -28,14 +28,14 @@ THE SOFTWARE.
 # pipeline class, so pylint cannot find those members.
 # pylint: disable=E1101
 
-from .globals import Globals
-from .effect import Effect
-from .gui.loading_screen import LoadingScreen, EmptyLoadingScreen
+from rpcore.globals import Globals
+from rpcore.effect import Effect
+from rpcore.gui.loading_screen import LoadingScreen, EmptyLoadingScreen
 
-from .stages.ambient_stage import AmbientStage
-from .stages.gbuffer_stage import GBufferStage
-from .stages.final_stage import FinalStage
-from .stages.downscale_z_stage import DownscaleZStage
+from rpcore.stages.ambient_stage import AmbientStage
+from rpcore.stages.gbuffer_stage import GBufferStage
+from rpcore.stages.final_stage import FinalStage
+from rpcore.stages.downscale_z_stage import DownscaleZStage
 
 class PipelineExtensions(object):
 

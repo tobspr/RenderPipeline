@@ -28,12 +28,12 @@ from __future__ import division
 from panda3d.core import ComputeNode, Shader, Vec4, Texture, Vec3
 from direct.gui.DirectFrame import DirectFrame
 
-from .sprite import Sprite
-from .text import Text
+from rpcore.gui.sprite import Sprite
+from rpcore.gui.text import Text
 
-from ..rp_object import RPObject
-from ..util.image import Image
-from ..globals import Globals
+from rpcore.rp_object import RPObject
+from rpcore.util.image import Image
+from rpcore.globals import Globals
 
 class ExposureWidget(RPObject):
 

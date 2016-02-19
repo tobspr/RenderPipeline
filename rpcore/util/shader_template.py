@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from direct.stdpy.file import open
 
-from ..rp_object import RPObject
+from rpcore.rp_object import RPObject
 
 class ShaderTemplate(RPObject):
 

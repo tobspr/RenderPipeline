@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 """
 from __future__ import print_function
-from six.moves import range
+from rplibs.six.moves import range
 
-from .pointer_slot_storage import PointerSlotStorage
-from .gpu_command import GPUCommand
+from rpcore.pynative.pointer_slot_storage import PointerSlotStorage
+from rpcore.pynative.gpu_command import GPUCommand
 
 MAX_LIGHT_COUNT = 65535
 MAX_SHADOW_SOURCES = 2048
@@ -183,4 +183,3 @@ class InternalLightManager(object):
     def update(self):
         self.update_lights()
         self.update_shadow_sources()
-

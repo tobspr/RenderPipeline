@@ -106,4 +106,3 @@ class TagStateManager(object):
         container.cameras.remove(source)
         source.clear_tag_states()
         source.set_initial_state(RenderState.make_empty())
-

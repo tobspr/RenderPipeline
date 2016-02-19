@@ -28,4 +28,3 @@ THE SOFTWARE.
 class PSSMCameraRig(object):
     """ PSSM is not supported in python, so this is a stub """
     pass
-

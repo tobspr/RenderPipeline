@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 from __future__ import print_function, division
-from six.moves import range
+from rplibs.six.moves import range
 
 from panda3d.core import LVecBase4i, LVecBase4
 
@@ -79,4 +79,3 @@ class ShadowAtlas(object):
     def region_to_uv(self, region):
         flt = LVecBase4(region.x, region.y, region.z, region.w)
         return flt * (self._tile_size / self._size)
-

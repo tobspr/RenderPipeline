@@ -23,21 +23,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-from six import iteritems
+from rplibs.six import iteritems
 
 from panda3d.core import Texture, Vec3
 
 from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectFrame import DirectFrame
 
-from ..globals import Globals
-from ..util.generic import rgb_from_string
-from ..util.display_shader_builder import DisplayShaderBuilder
-from ..util.shader_ubo import BaseUBO
+from rpcore.globals import Globals
+from rpcore.util.generic import rgb_from_string
+from rpcore.util.display_shader_builder import DisplayShaderBuilder
+from rpcore.util.shader_ubo import BaseUBO
 
-from .draggable_window import DraggableWindow
-from .text import Text
-from .sprite import Sprite
+from rpcore.gui.draggable_window import DraggableWindow
+from rpcore.gui.text import Text
+from rpcore.gui.sprite import Sprite
 
 class PipeViewer(DraggableWindow):
 

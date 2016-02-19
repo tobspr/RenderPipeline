@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 from __future__ import print_function
-from six.moves import range
+from rplibs.six.moves import range
 
 import math
 

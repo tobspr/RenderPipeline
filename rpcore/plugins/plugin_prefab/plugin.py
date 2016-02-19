@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 # Load the base plugin class
-from ...pluginbase.base_plugin import BasePlugin
+from rpcore.pluginbase.base_plugin import BasePlugin
 
 # Load your additional plugin classes here, if required
 

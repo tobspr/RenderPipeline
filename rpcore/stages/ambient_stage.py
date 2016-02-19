@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from ..render_stage import RenderStage
+from rpcore.render_stage import RenderStage
 
 class AmbientStage(RenderStage):
 

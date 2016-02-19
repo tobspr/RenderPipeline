@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from ...render_stage import RenderStage
+from rpcore.render_stage import RenderStage
 
 from panda3d.core import Camera, OrthographicLens, NodePath, CullFaceAttrib
 from panda3d.core import DepthTestAttrib, Vec4, PTALVecBase3, Vec3, Texture

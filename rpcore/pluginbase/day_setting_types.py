@@ -27,8 +27,8 @@ THE SOFTWARE.
 from __future__ import division
 from panda3d.core import PTAFloat, PTALVecBase3f
 
-from ..rp_object import RPObject
-from ..util.smooth_connected_curve import SmoothConnectedCurve
+from rpcore.rp_object import RPObject
+from rpcore.util.smooth_connected_curve import SmoothConnectedCurve
 
 __all__ = ["make_daysetting_from_data"]
 

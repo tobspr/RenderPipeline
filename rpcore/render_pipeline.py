@@ -32,23 +32,23 @@ from panda3d.core import PandaSystem
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
-from .globals import Globals
-from .pipeline_extensions import PipelineExtensions
-from .common_resources import CommonResources
-from .native import TagStateManager
-from .render_target import RenderTarget
-from .pluginbase.manager import PluginManager
-from .pluginbase.day_manager import DayTimeManager
+from rpcore.globals import Globals
+from rpcore.pipeline_extensions import PipelineExtensions
+from rpcore.common_resources import CommonResources
+from rpcore.native import TagStateManager
+from rpcore.render_target import RenderTarget
+from rpcore.pluginbase.manager import PluginManager
+from rpcore.pluginbase.day_manager import DayTimeManager
 
-from .rp_object import RPObject
-from .util.settings_loader import SettingsLoader
-from .util.network_update_listener import NetworkUpdateListener
-from .gui.debugger import Debugger
+from rpcore.rp_object import RPObject
+from rpcore.util.settings_loader import SettingsLoader
+from rpcore.util.network_update_listener import NetworkUpdateListener
+from rpcore.gui.debugger import Debugger
 
-from .mount_manager import MountManager
-from .stage_manager import StageManager
-from .light_manager import LightManager
-from .ies_profile_manager import IESProfileManager
+from rpcore.mount_manager import MountManager
+from rpcore.stage_manager import StageManager
+from rpcore.light_manager import LightManager
+from rpcore.ies_profile_manager import IESProfileManager
 
 
 class RenderPipeline(PipelineExtensions, RPObject):

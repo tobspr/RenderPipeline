@@ -31,7 +31,7 @@ THE SOFTWARE.
 from panda3d.core import Shader, Texture
 from direct.stdpy.file import isfile, open
 
-from ..rp_object import RPObject
+from rpcore.rp_object import RPObject
 
 class DisplayShaderBuilder(object):
 

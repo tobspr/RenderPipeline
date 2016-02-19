@@ -29,9 +29,9 @@ from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectButton import DirectButton
 from direct.gui.DirectGui import DGG
 
-from ..rp_object import RPObject
-from ..globals import Globals
-from .text import Text
+from rpcore.rp_object import RPObject
+from rpcore.globals import Globals
+from rpcore.gui.text import Text
 
 class DraggableWindow(RPObject):
 

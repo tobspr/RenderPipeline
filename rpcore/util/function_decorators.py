@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 
 from panda3d.core import PStatCollector
-from ..globals import Globals
+from rpcore.globals import Globals
 
 __all__ = ["profile"]
 

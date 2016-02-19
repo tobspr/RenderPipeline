@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import PStatCollector
 
-from .rp_object import RPObject
+from rpcore.rp_object import RPObject
 
 class BaseManager(RPObject):
 

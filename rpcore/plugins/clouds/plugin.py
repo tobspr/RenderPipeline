@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 """
 
-from ...pluginbase.base_plugin import BasePlugin
-from ...globals import Globals
+from rpcore.pluginbase.base_plugin import BasePlugin
+from rpcore.globals import Globals
 
 from panda3d.core import SamplerState
 from .cloud_stage import CloudStage

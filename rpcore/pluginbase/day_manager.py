@@ -26,11 +26,11 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from six import iteritems
+from rplibs.six import iteritems
 from direct.stdpy.file import open
 
-from ..base_manager import BaseManager
-from ..util.shader_ubo import ShaderUBO
+from rpcore.base_manager import BaseManager
+from rpcore.util.shader_ubo import ShaderUBO
 
 class DayTimeManager(BaseManager):
 

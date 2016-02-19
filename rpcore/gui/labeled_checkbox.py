@@ -27,9 +27,9 @@ THE SOFTWARE.
 from panda3d.core import Vec3
 import direct.gui.DirectGuiGlobals as DGG
 
-from ..rp_object import RPObject
-from .checkbox import Checkbox
-from .text import Text
+from rpcore.rp_object import RPObject
+from rpcore.gui.checkbox import Checkbox
+from rpcore.gui.text import Text
 
 class LabeledCheckbox(RPObject):
 

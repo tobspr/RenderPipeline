@@ -32,10 +32,10 @@ from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Texture, Mat4
 from panda3d.core import SamplerState, PNMImage
 from direct.stdpy.file import open
 
-from .globals import Globals
-from .base_manager import BaseManager
+from rpcore.globals import Globals
+from rpcore.base_manager import BaseManager
 
-from .util.shader_ubo import ShaderUBO
+from rpcore.util.shader_ubo import ShaderUBO
 
 class CommonResources(BaseManager):
 

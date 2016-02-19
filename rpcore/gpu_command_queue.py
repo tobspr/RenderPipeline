@@ -26,11 +26,11 @@ THE SOFTWARE.
 
 from panda3d.core import PTAInt, Texture, Shader
 
-from .rp_object import RPObject
-from .util.image import Image
-from .render_target import RenderTarget
+from rpcore.rp_object import RPObject
+from rpcore.util.image import Image
+from rpcore.render_target import RenderTarget
 
-from .native import GPUCommand, GPUCommandList
+from rpcore.native import GPUCommand, GPUCommandList
 
 class GPUCommandQueue(RPObject):
 

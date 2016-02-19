@@ -28,18 +28,18 @@ import math
 
 from panda3d.core import LVecBase2i, Texture, PTAInt
 
-from .util.image import Image
-from .globals import Globals
+from rpcore.util.image import Image
+from rpcore.globals import Globals
 
-from .stages.flag_used_cells_stage import FlagUsedCellsStage
-from .stages.collect_used_cells_stage import CollectUsedCellsStage
-from .stages.cull_lights_stage import CullLightsStage
-from .stages.apply_lights_stage import ApplyLightsStage
-from .stages.shadow_stage import ShadowStage
+from rpcore.stages.flag_used_cells_stage import FlagUsedCellsStage
+from rpcore.stages.collect_used_cells_stage import CollectUsedCellsStage
+from rpcore.stages.cull_lights_stage import CullLightsStage
+from rpcore.stages.apply_lights_stage import ApplyLightsStage
+from rpcore.stages.shadow_stage import ShadowStage
 
-from .gpu_command_queue import GPUCommandQueue
-from .native import InternalLightManager, PointLight, ShadowManager
-from .base_manager import BaseManager
+from rpcore.gpu_command_queue import GPUCommandQueue
+from rpcore.native import InternalLightManager, PointLight, ShadowManager
+from rpcore.base_manager import BaseManager
 
 class LightManager(BaseManager):
 
