@@ -7,12 +7,13 @@
 
 global_stage_order:
 
-  # Shadows and Voxelization
+  # Shadows, Environment and Voxelization
   - PSSMShadowStage
   - PSSMDistShadowStage
   - VXGISunShadowStage
   - VoxelizationStage
   - ScatteringEnvmapStage
+  - EnvironmentCaptureStage
 
   # Main scene
   - GBufferStage
@@ -29,6 +30,7 @@ global_stage_order:
   - ApplyLightsStage
   - PSSMStage
   - ScatteringStage
+  - ApplyCubemapsStage
   - VXGIStage
   - AmbientStage
   - SSLRStage

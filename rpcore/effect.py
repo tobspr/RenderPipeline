@@ -27,11 +27,11 @@ THE SOFTWARE.
 import copy
 
 from rplibs.six import iteritems, iterkeys
+from rplibs.yaml import load_yaml_file
 
 from panda3d.core import Shader, Filename
 
 from rpcore.rp_object import RPObject
-from rplibs.yaml import load_yaml_file
 from rpcore.util.shader_template import ShaderTemplate
 
 class Effect(RPObject):
@@ -43,12 +43,13 @@ class Effect(RPObject):
         "render_gbuffer": True,
         "render_shadows": True,
         "render_voxel": True,
+        "render_envmap": True,
         "alpha_testing": True,
         "normal_mapping": True,
         "parallax_mapping": False,
     }
 
-    _PASSES = ("gbuffer", "shadows", "voxelize")
+    _PASSES = ("gbuffer", "shadows", "voxelize", "envmap")
     _GLOBAL_CACHE = {}
     _EFFECT_ID = 0
 
@@ -63,7 +64,7 @@ class Effect(RPObject):
             return cls._GLOBAL_CACHE[effect_hash]
         effect = cls()
         effect.set_options(options)
-        if not effect._load(filename):
+        if not effect.do_load(filename):
             RPObject.global_error("Effect", "Could not load effect!")
             return None
         return effect
@@ -120,8 +121,9 @@ class Effect(RPObject):
                 continue
             self._options[key] = val
 
-    def _load(self, filename):
-        """ Loads the effect from the given filename """
+    def do_load(self, filename):
+        """ Internal method to load the effect from the given filename, do
+        not use this directly, instead use load(). """
         self._source = filename
         self._effect_name = self._convert_filename_to_name(filename)
         self._shader_paths = {}

@@ -47,7 +47,7 @@ from rpcore.base_manager import BaseManager
 
 from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.render_target import RenderTarget
-from rpcore.util.image import Image
+from rpcore.image import Image
 
 class Debugger(BaseManager):
 
@@ -179,7 +179,7 @@ class Debugger(BaseManager):
         text += "{:5d} render targets  |  {:3d} plugins"
         tex_info = self._buffer_viewer.stage_information
         self._debug_lines[2].text = text.format(
-            tex_info["memory"] / (1024**2) ,
+            tex_info["memory"] / (1024**2),
             Image.get_image_count(),
             tex_info["count"],
             RenderTarget.get_num_buffers(),

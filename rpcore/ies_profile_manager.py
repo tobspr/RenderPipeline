@@ -27,6 +27,7 @@ THE SOFTWARE.
 from panda3d.core import Filename, Texture, VirtualFileSystem, get_model_path
 from panda3d.core import SamplerState
 
+from rpcore.image import Image
 from rpcore.rp_object import RPObject
 from rpcore.util.ies_profile_loader import IESProfileLoader, IESLoaderException
 
@@ -45,7 +46,7 @@ class IESProfileManager(RPObject):
 
     def _create_storage(self):
         """ Internal method to create the storage for the profile dataset textures """
-        self._storage_tex = Texture("IESDatasets")
+        self._storage_tex = Image("IESDatasets")
         self._storage_tex.setup_3d_texture(
             512, 512, self._max_entries, Texture.T_float, Texture.F_r16)
         self._storage_tex.set_minfilter(SamplerState.FT_linear)

@@ -27,7 +27,7 @@ THE SOFTWARE.
 from __future__ import division
 
 from rpcore.render_stage import RenderStage
-from panda3d.core import SamplerState, Texture, Vec4
+from panda3d.core import SamplerState, Texture
 
 class SharpenStage(RenderStage):
 
@@ -39,7 +39,7 @@ class SharpenStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return { "ShadedScene": self._target2["color"] }
+        return {"ShadedScene": self._target2["color"]}
 
     def create(self):
         self._target = self.make_target("Sharpen")

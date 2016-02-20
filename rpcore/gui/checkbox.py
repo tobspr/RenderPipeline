@@ -95,7 +95,7 @@ class Checkbox(RPObject):
         """ Returns a handle to the internally used node """
         return self._node
 
-    def _update_status(self, status, *args):
+    def _update_status(self, status):
         """ Internal method when another checkbox in the same radio group
         changed it's value """
 
@@ -105,7 +105,7 @@ class Checkbox(RPObject):
 
         if self._collection:
             if status:
-                self._collection._changed(self)
+                self._collection.on_checkbox_changed(self)
                 # A radio box can't be unchecked
                 # self._node["state"] = DGG.DISABLED
 

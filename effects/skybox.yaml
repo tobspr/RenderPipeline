@@ -24,3 +24,6 @@ shadows:
 
 voxelize:
     template: default
+
+envmap:
+    template: default

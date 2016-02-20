@@ -25,25 +25,31 @@ THE SOFTWARE.
 """
 
 from rpcore.render_stage import RenderStage
+from rpcore.stages.ambient_stage import AmbientStage
 
-class PSSMStage(RenderStage):
 
-    """ This stage uses the PSSM Shadow map to render the shadows """
+class ApplyCubemapsStage(RenderStage):
+
+    """ This stage renders the scene to a cubemap """
 
     required_inputs = []
-    required_pipes = ["ShadedScene", "PSSMShadowAtlas", "GBuffer", "PSSMShadowAtlasPCF"]
+    required_pipes = ["GBuffer"]
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "PSSMStage", pipeline)
+        RenderStage.__init__(self, "ApplyCubemapsStage", pipeline)
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target['color']}
+        return {"EnvmapAmbient": self._target["color"]}
 
     def create(self):
-        self._target = self.make_target("ApplyPSSM")
+        self._target = self.make_target("ApplyEnvmap")
         self._target.add_color_texture(bits=16)
+        self._target.has_color_alpha = True
         self._target.prepare_offscreen_buffer()
 
+        AmbientStage.required_pipes.append("EnvmapAmbient")
+
+
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("apply_pssm_shadows.frag.glsl"))
+        self._target.set_shader(self.load_plugin_shader("apply_cubemaps.frag.glsl"))

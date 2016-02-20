@@ -42,8 +42,8 @@ class PointerSlotStorage(object):
     def find_slot(self):
         # Notice: returns None in case of no free slot, and the slot otherwise, this
         # is different to the C++ Module
-        for i, v in enumerate(self._data):
-            if not v:
+        for i, value in enumerate(self._data):
+            if not value:
                 return i
         return -1
 

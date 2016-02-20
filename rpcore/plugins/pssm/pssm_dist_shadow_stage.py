@@ -24,10 +24,9 @@ THE SOFTWARE.
 
 """
 from __future__ import division
-from rplibs.six.moves import range
 
+from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
-from panda3d.core import SamplerState
 
 class PSSMDistShadowStage(RenderStage):
 
@@ -38,7 +37,7 @@ class PSSMDistShadowStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "PSSMDistShadowStage", pipeline)
-        self._resolution = 4096
+        self.resolution = 4096
 
     @property
     def produced_pipes(self):
@@ -46,13 +45,11 @@ class PSSMDistShadowStage(RenderStage):
             "PSSMVSMShadowMap": self._target['depth'],
         }
 
-    def set_resolution(self, res):
-        self._resolution = res
 
     def create(self):
         self._target = self.make_target("ShadowMap")
         self._target.set_source(None, Globals.base.win)
-        self._target.size = self._resolution
+        self._target.size = self.resolution
         self._target.add_depth_texture(bits=32)
         self._target.create_overlay_quad = False
         self._target.color_write = False

@@ -52,6 +52,10 @@ uniform samplerCube DefaultEnvmap;
     uniform sampler2D VXGIDiffuse;
 #endif
 
+#if HAVE_PLUGIN(env_probes)
+    uniform sampler2D EnvmapAmbient;
+#endif
+
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
@@ -120,6 +124,13 @@ void main() {
         #if HAVE_PLUGIN(vxgi)
             ibl_specular = texture(VXGISpecular, texcoord).xyz;
             ibl_diffuse = texture(VXGIDiffuse, texcoord).xyz;
+        #endif
+
+
+        #if HAVE_PLUGIN(env_probes)
+            vec4 probe_ambient = texture(EnvmapAmbient, texcoord);
+            ibl_specular = mix(ibl_specular, probe_ambient.xyz, probe_ambient.w);
+            ibl_diffuse = mix(ibl_diffuse, probe_ambient.xyz, probe_ambient.w);
         #endif
 
         // Pre-Integrated environment BRDF

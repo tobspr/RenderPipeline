@@ -156,10 +156,11 @@ class InternalLightManager(object):
         def get_source_score(source):
             return -source.get_resolution() - (10**10 if source.has_slot() else 0)
 
-        sorted_sources = sorted(sources_to_update, key = get_source_score)
+        sorted_sources = sorted(sources_to_update, key=get_source_score)
 
         atlas = self._shadow_manager.get_atlas()
-        update_slots = min(len(sorted_sources),
+        update_slots = min(
+            len(sorted_sources),
             self._shadow_manager.get_num_update_slots_left())
 
         for i in range(update_slots):

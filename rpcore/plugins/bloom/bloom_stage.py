@@ -26,11 +26,11 @@ THE SOFTWARE.
 
 from rplibs.six.moves import range
 
-from panda3d.core import LVecBase2i, Texture, SamplerState, Vec4
+from panda3d.core import Texture, SamplerState, Vec4
 
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
-from rpcore.util.image import Image
+from rpcore.image import Image
 
 class BloomStage(RenderStage):
 
@@ -96,7 +96,9 @@ class BloomStage(RenderStage):
 
             target.set_shader_input("SourceMip", self.num_mips - i)
             target.set_shader_input("SourceTex", self._scene_target_img)
-            target.set_shader_input("DestTex", self._scene_target_img, False, True, -1, self.num_mips - i - 1)
+            target.set_shader_input(
+                "DestTex", self._scene_target_img,
+                False, True, -1, self.num_mips - i - 1)
             self._upsample_targets.append(target)
 
     def set_shaders(self):

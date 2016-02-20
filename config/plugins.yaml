@@ -49,7 +49,7 @@ overrides:
     color_correction.film_grain_strength: 0.13
     color_correction.color_lut: color_lut.png
     color_correction.use_chromatic_aberration: True
-    color_correction.chromatic_aberration_strength: 0.15
+    color_correction.chromatic_aberration_strength: 0.009
     color_correction.chromatic_aberration_samples: 1
     color_correction.use_auto_exposure: True
     color_correction.min_exposure: 0.001

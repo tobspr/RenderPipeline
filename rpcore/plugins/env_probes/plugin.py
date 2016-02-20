@@ -23,10 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-# Load the plugin api
+
+from panda3d.core import Vec3
+
 from rpcore.pluginbase.base_plugin import BasePlugin
 
-# Load your additional plugin classes here, if required
+from .probes import EnvironmentProbe, ProbeManager
+from .capture_stage import EnvironmentCaptureStage
+from .apply_cubemaps_stage import ApplyCubemapsStage
 
 class Plugin(BasePlugin):
 
@@ -35,11 +39,23 @@ class Plugin(BasePlugin):
     description = ("This plugin adds support for environment probes, containing "
                    "diffuse and specular information. This enables accurate "
                    "reflections, and can also be used to simulate GI.")
-    version = "unfinished (!)"
+    version = "alpha (!)"
 
 
     def on_stage_setup(self):
-        pass
+        self.probe_mgr = ProbeManager(256)
+        self.probe_mgr.add_probe(EnvironmentProbe(Vec3(0, 0, 2), 50))
+
+        self.capture_stage = self.create_stage(EnvironmentCaptureStage)
+        self.capture_stage.resolution = self.probe_mgr.resolution
+
+        self.apply_stage = self.create_stage(ApplyCubemapsStage)
 
     def on_pipeline_created(self):
-        pass
+        self.capture_stage.set_storage_texture(self.probe_mgr.storage_tex)
+        self.apply_stage.set_shader_input("CubemapStorage", self.probe_mgr.storage_tex)
+
+    def on_pre_render_update(self):
+        probe = self.probe_mgr.find_probe_to_update()
+        self.capture_stage.render_probe(probe)
+

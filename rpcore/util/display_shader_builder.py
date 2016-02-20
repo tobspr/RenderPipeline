@@ -151,9 +151,16 @@ class DisplayShaderBuilder(object):
         # Cubemap
         elif texture_type == Texture.TT_cube_map:
 
-            code = "vec3 sample_dir = get_cubemap_coordinate(slice, texcoord);\n"
+            code = "vec3 sample_dir = get_cubemap_coordinate(slice, texcoord*2-1);\n"
             code += "result = textureLod(p3d_Texture0, sample_dir, mipmap).xyz;"
             return code, "samplerCube"
+
+        # Cubemap array
+        elif texture_type == Texture.TT_cube_map_array:
+            code = "vec3 sample_dir = get_cubemap_coordinate(slice % 6, texcoord*2-1);\n"
+            code += "result = textureLod(p3d_Texture0, vec4(sample_dir, slice / 6), mipmap).xyz;"
+            return code, "samplerCubeArray"
+
 
         else:
             print("WARNING: Unhandled texture type", texture_type, "in display shader builder")

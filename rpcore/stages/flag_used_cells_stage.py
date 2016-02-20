@@ -27,7 +27,7 @@ THE SOFTWARE.
 from panda3d.core import Texture
 
 from rpcore.render_stage import RenderStage
-from rpcore.util.image import Image
+from rpcore.image import Image
 
 class FlagUsedCellsStage(RenderStage):
 

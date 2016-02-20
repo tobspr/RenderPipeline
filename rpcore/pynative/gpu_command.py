@@ -43,29 +43,29 @@ class GPUCommand(object):
         self._data = [0.0] * 32
         self.push_int(command_type)
 
-    def push_int(self, v):
-        self.push_float(float(v))
+    def push_int(self, value):
+        self.push_float(float(value))
 
-    def push_float(self, v):
+    def push_float(self, value):
         if self._current_index >= 32:
             print("GPUCommand: out of bounds!")
             return
-        self._data[self._current_index] = float(v)
+        self._data[self._current_index] = float(value)
         self._current_index += 1
 
-    def push_vec3(self, v):
-        self.push_float(v.x)
-        self.push_float(v.y)
-        self.push_float(v.z)
+    def push_vec3(self, value):
+        self.push_float(value.x)
+        self.push_float(value.y)
+        self.push_float(value.z)
 
-    def push_vec4(self, v):
-        self.push_vec3(v)
-        self.push_float(v.get_w())
+    def push_vec4(self, value):
+        self.push_vec3(value)
+        self.push_float(value.get_w())
 
-    def push_mat4(self, v):
+    def push_mat4(self, value):
         for i in range(4):
             for j in range(4):
-                self.push_float(v.get_cell(i, j))
+                self.push_float(value.get_cell(i, j))
 
     @staticmethod
     def get_uses_integer_packing():
@@ -77,5 +77,5 @@ class GPUCommand(object):
         dest.set_subdata(offset, 32 * 4, data)
 
     def write(self, out=None):
-        print("GPUCommand(type=", self._command_type, "size=", self._current_index,")")
+        print("GPUCommand(type=", self._command_type, "size=", self._current_index, ")")
         print("Data:", ', '.join([str(i) for i in self._data]))

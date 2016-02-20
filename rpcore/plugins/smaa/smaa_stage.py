@@ -54,10 +54,9 @@ class SMAAStage(RenderStage):
     @property
     def produced_pipes(self):
         if self.use_reprojection:
-            out_target = self._resolve_target
+            return {"ShadedScene": self._resolve_target["color"]}
         else:
-            out_target = self._neighbor_targets[0]
-        return { "ShadedScene": out_target["color"] }
+            return {"ShadedScene": self._neighbor_targets[0]["color"]}
 
     def create(self):
         # Edge detection

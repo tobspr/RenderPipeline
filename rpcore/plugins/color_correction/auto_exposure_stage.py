@@ -28,7 +28,7 @@ from __future__ import division
 
 from rpcore.render_stage import RenderStage
 from rpcore.globals import Globals
-from rpcore.util.image import Image
+from rpcore.image import Image
 from panda3d.core import Texture, Vec4
 
 class AutoExposureStage(RenderStage):

@@ -41,6 +41,7 @@ class TagStateManager(object):
         self._main_cam_node.node().set_camera_mask(self.get_gbuffer_mask())
         self._shadow_container = self.StateContainer("Shadows", self.get_shadow_mask())
         self._voxelize_container = self.StateContainer("Voxelize", self.get_voxelize_mask())
+        self._envmap_container = self.StateContainer("Envmap", self.get_envmap_mask())
 
     def get_gbuffer_mask(self):
         return BitMask32.bit(1)
@@ -51,11 +52,17 @@ class TagStateManager(object):
     def get_voxelize_mask(self):
         return BitMask32.bit(3)
 
+    def get_envmap_mask(self):
+        return BitMask32.bit(4)
+
     def apply_shadow_state(self, np, shader, name, sort):
         self.apply_state(self._shadow_container, np, shader, name, sort)
 
     def apply_voxelize_state(self, np, shader, name, sort):
         self.apply_state(self._voxelize_container, np, shader, name, sort)
+
+    def apply_envmap_state(self, np, shader, name, sort):
+        self.apply_state(self._envmap_container, np, shader, name, sort)
 
     def register_shadow_camera(self, source):
         self.register_camera(self._shadow_container, source)
@@ -69,9 +76,17 @@ class TagStateManager(object):
     def unregister_voxelize_camera(self, source):
         self.unregister_camera(self._voxelize_container, source)
 
+    def register_envmap_camera(self, source):
+        self.register_camera(self._envmap_container, source)
+
+    def unregister_envmap_camera(self, source):
+        self.unregister_camera(self._envmap_container, source)
+
     def apply_state(self, container, np, shader, name, sort):
         state = RenderState.make_empty()
-        state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
+
+        if container != self._envmap_container:
+            state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
         state = state.set_attrib(ShaderAttrib.make(shader, sort), sort)
 
         container.tag_states[name] = state
@@ -84,6 +99,7 @@ class TagStateManager(object):
         self._main_cam_node.node().clear_tag_states()
         self.cleanup_container_states(self._shadow_container)
         self.cleanup_container_states(self._voxelize_container)
+        self.cleanup_container_states(self._envmap_container)
 
     def cleanup_container_states(self, container):
         for camera in container.cameras:
@@ -94,7 +110,8 @@ class TagStateManager(object):
         source.set_tag_state_key(container.tag_name)
         source.set_camera_mask(container.mask)
         state = RenderState.make_empty()
-        state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
+        if container != self._envmap_container:
+            state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
         source.set_initial_state(state)
         container.cameras.append(source)
 

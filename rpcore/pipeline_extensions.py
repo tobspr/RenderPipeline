@@ -60,10 +60,6 @@ class PipelineExtensions(object):
         """ Tells the pipeline to use no loading screen """
         self._loading_screen = EmptyLoadingScreen()
 
-    def set_image_loading_screen(self, image_pth):
-        """ Tells the pipeline to load an image loading screen """
-        raise NotImplementedError("TODO")
-
     @property
     def loading_screen(self):
         """ Returns the current loading screen """
@@ -88,8 +84,11 @@ class PipelineExtensions(object):
         skybox.reparent_to(Globals.render)
         self.set_effect(skybox, "effects/skybox.yaml", {
             "render_shadows": False,
+            "render_envmap": False,
+            "render_voxel": False,
             "alpha_testing": False,
             "normal_mapping": False,
+            "parallax_mapping": False
         }, 1000)
         return skybox
 
@@ -134,6 +133,15 @@ class PipelineExtensions(object):
             self._tag_mgr.apply_voxelize_state(
                 nodepath, shader, str(effect.effect_id), 35 + sort)
             nodepath.show(self._tag_mgr.get_voxelize_mask())
+
+        # Apply envmap stage shader
+        if not effect.get_option("render_envmap"):
+            nodepath.hide(self._tag_mgr.get_envmap_mask())
+        else:
+            shader = effect.get_shader_obj("envmap")
+            self._tag_mgr.apply_envmap_state(
+                nodepath, shader, str(effect.effect_id), 45 + sort)
+            nodepath.show(self._tag_mgr.get_envmap_mask())
 
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns

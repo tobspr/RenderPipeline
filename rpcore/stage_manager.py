@@ -25,19 +25,19 @@ THE SOFTWARE.
 """
 
 import time
+
 from rplibs.six import iteritems
+from rplibs.yaml import load_yaml_file
 
 from panda3d.core import Texture
 from direct.stdpy.file import open
 
 from rpcore.globals import Globals
 from rpcore.gui.pipe_viewer import PipeViewer
-from rpcore.util.image import Image
+from rpcore.image import Image
 from rpcore.util.shader_ubo import BaseUBO
-from rplibs.yaml import load_yaml_file
-
-from rpcore.stages.update_previous_pipes_stage import UpdatePreviousPipesStage
 from rpcore.base_manager import BaseManager
+from rpcore.stages.update_previous_pipes_stage import UpdatePreviousPipesStage
 
 class StageManager(BaseManager):
 

@@ -27,7 +27,6 @@ THE SOFTWARE.
 from __future__ import division
 
 from rpcore.render_stage import RenderStage
-from panda3d.core import SamplerState, Vec4
 
 class ColorCorrectionStage(RenderStage):
 
@@ -39,7 +38,7 @@ class ColorCorrectionStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return { "ShadedScene": self._target["color"] }
+        return {"ShadedScene": self._target["color"]}
 
     def create(self):
         self._target = self.make_target("MainTonemap")

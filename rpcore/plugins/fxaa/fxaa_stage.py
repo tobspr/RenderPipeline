@@ -38,7 +38,7 @@ class FXAAStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return { "ShadedScene": self._target["color"] }
+        return {"ShadedScene": self._target["color"]}
 
     def create(self):
 

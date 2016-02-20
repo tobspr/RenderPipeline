@@ -53,6 +53,7 @@ class BaseType(RPObject):
 
     def __init__(self, data):
         """ Fills in all settings from the given setting data """
+        self.value = None
         self.type = data.pop("type")
         self.label = data.pop("label").strip()
         self.description = data.pop("description").strip()

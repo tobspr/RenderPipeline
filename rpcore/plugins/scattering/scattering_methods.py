@@ -34,9 +34,8 @@ from panda3d.core import Texture, SamplerState, Shader, ShaderAttrib, NodePath
 
 from rpcore.globals import Globals
 from rpcore.rp_object import RPObject
-from rpcore.render_stage import RenderStage
 from rpcore.util.slice_loader import SliceLoader
-from rpcore.util.image import Image
+from rpcore.image import Image
 
 class ScatteringMethod(RPObject):
 
@@ -151,7 +150,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
 
 
     def _exec_compute_shader(self, shader_obj, shader_inputs, exec_size,
-                            workgroup_size=(16, 16, 1)):
+                             workgroup_size=(16, 16, 1)):
         """ Executes a compute shader. The shader object should be a shader
         loaded with Shader.load_compute, the shader inputs should be a dict where
         the keys are the names of the shader inputs and the values are the

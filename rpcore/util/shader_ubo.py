@@ -196,7 +196,7 @@ class ShaderUBO(BaseUBO):
         else:
             if self._use_ubo:
 
-                content += "layout(shared, binding={}) uniform {}_UBO {\n".format(
+                content += "layout(shared, binding={}) uniform {}_UBO {{\n".format(
                     self._bind_id, self._name)
                 for ipt in inputs:
                     content += " " * 4 + ipt + "\n"

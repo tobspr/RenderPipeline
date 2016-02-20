@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import SamplerState, LVecBase2i
+from panda3d.core import LVecBase2i
 
 from rpcore.render_stage import RenderStage
 from rpcore.stages.ambient_stage import AmbientStage

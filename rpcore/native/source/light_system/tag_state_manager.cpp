@@ -52,6 +52,8 @@ TagStateManager::TagStateManager(NodePath main_cam_node) {
     _shadow_container.mask = get_shadow_mask();
     _voxelize_container.tag_name = "Voxelize";
     _voxelize_container.mask = get_voxelize_mask();
+    _envmap_container.tag_name = "Envmap";
+    _envmap_container.mask = get_envmap_mask();
 }
 
 /**
@@ -125,6 +127,7 @@ void TagStateManager::cleanup_states() {
     // Clear the containers
     cleanup_container_states(_shadow_container);
     cleanup_container_states(_voxelize_container);
+    cleanup_container_states(_envmap_container);
 }
 
 /**
@@ -156,7 +159,10 @@ void TagStateManager::register_camera(StateContainer& container, Camera* source)
     // Construct an initial state which also disables color write, additionally
     // to the ColorWriteAttrib on each unique state.
     CPT(RenderState) state = RenderState::make_empty();
-    state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
+
+    if (&container != &_envmap_container) {
+        state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
+    }
     source->set_initial_state(state);
 
     // Store the camera so we can keep track of it

@@ -30,9 +30,6 @@ from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
 from rpcore.util.repeated_task_queue import RepeatedTaskQueue
 
-from math import sin, cos, pi
-from panda3d.core import Vec3
-
 from .voxelization_stage import VoxelizationStage
 from .vxgi_sun_shadow_stage import VXGISunShadowStage
 from .vxgi_stage import VXGIStage

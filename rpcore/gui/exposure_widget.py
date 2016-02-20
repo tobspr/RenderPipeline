@@ -32,7 +32,7 @@ from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text
 
 from rpcore.rp_object import RPObject
-from rpcore.util.image import Image
+from rpcore.image import Image
 from rpcore.globals import Globals
 
 class ExposureWidget(RPObject):

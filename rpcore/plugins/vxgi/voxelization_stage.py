@@ -27,12 +27,12 @@ THE SOFTWARE.
 from __future__ import division
 
 from rpcore.globals import Globals
-from rpcore.util.image import Image
+from rpcore.image import Image
 from rpcore.render_stage import RenderStage
 
 from panda3d.core import Camera, OrthographicLens, NodePath, CullFaceAttrib
 from panda3d.core import DepthTestAttrib, Vec4, PTALVecBase3, Vec3, Texture
-from panda3d.core import PTAInt, PTAFloat, ColorWriteAttrib, SamplerState
+from panda3d.core import ColorWriteAttrib, SamplerState
 
 class VoxelizationStage(RenderStage):
 
@@ -92,7 +92,8 @@ class VoxelizationStage(RenderStage):
         self._voxel_cam = Camera("VoxelizeCam")
         self._voxel_cam.set_camera_mask(self._pipeline.tag_mgr.get_voxelize_mask())
         self._voxel_cam_lens = OrthographicLens()
-        self._voxel_cam_lens.set_film_size(-2.0 * self.voxel_world_size, 2.0 * self.voxel_world_size)
+        self._voxel_cam_lens.set_film_size(
+            -2.0 * self.voxel_world_size, 2.0 * self.voxel_world_size)
         self._voxel_cam_lens.set_near_far(0.0, 2.0 * self.voxel_world_size)
         self._voxel_cam.set_lens(self._voxel_cam_lens)
         self._voxel_cam_np = Globals.base.render.attach_new_node(self._voxel_cam)
@@ -100,7 +101,8 @@ class VoxelizationStage(RenderStage):
 
         # Create the voxelization target
         self._voxel_target = self.make_target("VoxelizeScene")
-        self._voxel_target.set_source(source_cam=self._voxel_cam_np, source_win=Globals.base.win)
+        self._voxel_target.set_source(
+            source_cam=self._voxel_cam_np, source_win=Globals.base.win)
         self._voxel_target.size = self.voxel_resolution, self.voxel_resolution
         self._voxel_target.create_overlay_quad = False
         self._voxel_target.prepare_scene_render()
@@ -154,17 +156,20 @@ class VoxelizationStage(RenderStage):
         elif self.state == self.S_voxelize_x:
             # Clear voxel grid
             self._voxel_temp_grid.clear_image()
-            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(self.voxel_world_size, 0, 0))
+            self._voxel_cam_np.set_pos(
+                self._pta_next_grid_pos[0] + Vec3(self.voxel_world_size, 0, 0))
             self._voxel_cam_np.look_at(self._pta_next_grid_pos[0])
 
         # Voxelization from Y-Axis
         elif self.state == self.S_voxelize_y:
-            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(0, self.voxel_world_size, 0))
+            self._voxel_cam_np.set_pos(
+                self._pta_next_grid_pos[0] + Vec3(0, self.voxel_world_size, 0))
             self._voxel_cam_np.look_at(self._pta_next_grid_pos[0])
 
         # Voxelization from Z-Axis
         elif self.state == self.S_voxelize_z:
-            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(0, 0, self.voxel_world_size))
+            self._voxel_cam_np.set_pos(
+                self._pta_next_grid_pos[0] + Vec3(0, 0, self.voxel_world_size))
             self._voxel_cam_np.look_at(self._pta_next_grid_pos[0])
 
         # Generate mipmaps
@@ -182,7 +187,7 @@ class VoxelizationStage(RenderStage):
 
     def set_shaders(self):
         self._copy_target.set_shader(self.load_plugin_shader(
-                "$$shader/default_post_process_instanced.vert.glsl", "copy_voxels.frag.glsl"))
+            "$$shader/default_post_process_instanced.vert.glsl", "copy_voxels.frag.glsl"))
         mip_shader = self.load_plugin_shader(
             "$$shader/default_post_process_instanced.vert.glsl", "generate_mipmaps.frag.glsl")
         for target in self._mip_targets:

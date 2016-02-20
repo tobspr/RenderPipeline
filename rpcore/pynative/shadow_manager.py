@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+from __future__ import print_function
+
 from rplibs.six.moves import range
 
 from panda3d.core import Camera, MatrixLens

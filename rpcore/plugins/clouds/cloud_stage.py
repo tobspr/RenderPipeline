@@ -24,12 +24,10 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import SamplerState, Texture, CardMaker, TransparencyAttrib
-from panda3d.core import Camera, NodePath, OmniBoundingVolume, BitMask32, Vec4
+from panda3d.core import SamplerState, Texture, Vec4
 
-from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
-from rpcore.util.image import Image
+from rpcore.image import Image
 
 class CloudStage(RenderStage):
 
@@ -89,8 +87,8 @@ class CloudStage(RenderStage):
         self._target_apply_clouds.add_color_texture(bits=16)
         self._target_apply_clouds.prepare_offscreen_buffer()
 
-        self._target_apply_clouds.set_shader_input("CloudsTex",
-            self._render_target["color"])
+        self._target_apply_clouds.set_shader_input(
+            "CloudsTex", self._render_target["color"])
 
     def set_shaders(self):
         self._grid_target.set_shader(

@@ -25,17 +25,16 @@ THE SOFTWARE.
 """
 from __future__ import print_function
 
-from math import cos, sin, pi
 from rplibs.six.moves import range
-from panda3d.core import Vec3, PTAVecBase3f
+from panda3d.core import PTAVecBase3f
 
 from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
 from rpcore.native import PSSMCameraRig
 
-from .pssm_shadow_stage import PSSMShadowStage
-from .pssm_dist_shadow_stage import PSSMDistShadowStage
 from .pssm_stage import PSSMStage
+from .pssm_shadow_stage import PSSMShadowStage
+# from .pssm_dist_shadow_stage import PSSMDistShadowStage
 
 class Plugin(BasePlugin):
 
@@ -55,12 +54,12 @@ class Plugin(BasePlugin):
         self._shadow_stage = self.create_stage(PSSMShadowStage)
         self._pssm_stage = self.create_stage(PSSMStage)
 
-        self._shadow_stage.set_num_splits(self.get_setting("split_count"))
-        self._shadow_stage.set_split_resolution(self.get_setting("resolution"))
+        self._shadow_stage.num_splits = self.get_setting("split_count")
+        self._shadow_stage.split_resolution = self.get_setting("resolution")
 
         # Experimental, not fully working yet
         # self._dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
-        # self._dist_shadow_stage.set_resolution(self.get_setting("vsm_resolution"))
+        # self._dist_shadow_stage.resolution = self.get_setting("vsm_resolution")
 
     def on_pipeline_created(self):
         self.debug("Initializing pssm ..")

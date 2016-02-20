@@ -31,20 +31,20 @@ from panda3d.core import LVecBase4i, LVecBase4
 
 class ShadowAtlas(object):
 
-    def __init__(self, size, tile_size = 32):
+    def __init__(self, size, tile_size=32):
         self._size = size
         self._tile_size = tile_size
         self.init_tiles()
 
     def init_tiles(self):
         self._num_tiles = self._size // self._tile_size
-        self._flags = [ [False for j in range(self._num_tiles)] \
+        self._flags = [[False for j in range(self._num_tiles)] \
             for i in range(self._num_tiles)]
 
     def reserve_region(self, x, y, w, h):
-        for cx in range(w):
-            for cy in range(h):
-                self._flags[cx + x][cy + y] = True
+        for x_offset in range(w):
+            for y_offset in range(h):
+                self._flags[x + x_offset][y + y_offset] = True
 
     def find_and_reserve_region(self, tile_width, tile_height):
         for x in range(self._num_tiles - tile_height + 1):
@@ -64,9 +64,9 @@ class ShadowAtlas(object):
         return self._tile_size
 
     def region_is_free(self, x, y, w, h):
-        for cx in range(w):
-            for cy in range(h):
-                if self._flags[cx + x][cy + y]:
+        for x_offset in range(w):
+            for y_offset in range(h):
+                if self._flags[x + x_offset][y + y_offset]:
                     return False
         return True
 

@@ -162,6 +162,8 @@ class MovementController(object):
     def _update(self, task):
         """ Internal update method """
 
+        delta = self._showbase.taskMgr.globalClock.get_dt()
+
         # Update mouse first
         if self._showbase.mouseWatcherNode.has_mouse():
             x = self._showbase.mouseWatcherNode.get_mouse_x()
@@ -186,7 +188,7 @@ class MovementController(object):
         # Compute movement in render space
         movement_direction = (Vec3(self._movement[1], self._movement[0], 0)
                               * self._speed
-                              * self._showbase.taskMgr.globalClock.get_dt() * 100.0)
+                              * delta * 100.0)
 
         # transform by the camera direction
         camera_quaternion = self._showbase.camera.get_quat(self._showbase.render)
@@ -194,7 +196,7 @@ class MovementController(object):
 
         # z-force is independent of camera direction
         translated_direction.add_z(
-            self._movement[2] * self._showbase.taskMgr.globalClock.get_dt() * 40.0 * self._speed)
+            self._movement[2] * delta * 40.0 * self._speed)
 
         self._velocity += translated_direction*0.15
 
@@ -203,20 +205,20 @@ class MovementController(object):
 
         # transform rotation (keyboard keys)
         rotation_speed = self._keyboard_hpr_speed * 100.0
-        rotation_speed *= self._showbase.taskMgr.globalClock.get_dt()
+        rotation_speed *= delta
         self._showbase.camera.set_hpr(
             self._showbase.camera.get_hpr() + Vec3(
                 self._hpr_movement[0], self._hpr_movement[1], 0) * rotation_speed)
 
-
         # bobbing
-        rotation = (self._showbase.taskMgr.globalClock.get_frame_time() % self._bobbing_speed) / self._bobbing_speed
+        ftime = self._showbase.taskMgr.globalClock.get_frame_time()
+        rotation = (ftime % self._bobbing_speed) / self._bobbing_speed
         rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
         rotation *= self._bobbing_amount
         rotation *= self._velocity.length() / self._speed * 0.5
         self._showbase.camera.set_r(rotation)
 
         # fade out velocity
-        self._velocity = self._velocity * max(0.0,
-            1.0 - self._showbase.taskMgr.globalClock.get_dt() * 60.0 / max(0.01, self._smoothness))
+        self._velocity = self._velocity * max(
+            0.0, 1.0 - delta * 60.0 / max(0.01, self._smoothness))
         return task.cont

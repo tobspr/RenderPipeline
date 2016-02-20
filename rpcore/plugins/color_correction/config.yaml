@@ -180,7 +180,7 @@ settings: !!omap
     - chromatic_aberration_strength:
         display_if: {use_chromatic_aberration: true}
         type: float
-        range: [0.1, 2.0]
+        range: [0.009, 2.0]
         default: 1.0
         shader_runtime: true
         label: Chromatic Aberration Strength

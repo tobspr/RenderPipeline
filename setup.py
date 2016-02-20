@@ -24,13 +24,14 @@ THE SOFTWARE.
 
 """
 
-
 # Setup script to install everything required to run the pipeline.
-
 
 # Disable the warning about the global statement, its fine since this is a simple
 # setup script
 # pylint: disable=W0603
+
+# Disable the warning about relative imports
+# pylint: disable=W0403
 
 from __future__ import print_function
 import os
@@ -146,7 +147,7 @@ def check_cmake():
     """ Checks if cmake is installed """
     try:
         subprocess.call(["cmake", "--version"], stdout=subprocess.PIPE)
-    except Exception as msg:
+    except subprocess.CalledProcessError as msg:
         print("")
         print(color("Could not find cmake!", Fore.RED + Style.BRIGHT))
         print("It seems that cmake is not installed on this system, or not on")

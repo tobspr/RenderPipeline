@@ -27,7 +27,7 @@ THE SOFTWARE.
 from panda3d.core import PTAInt, Texture, Shader
 
 from rpcore.rp_object import RPObject
-from rpcore.util.image import Image
+from rpcore.image import Image
 from rpcore.render_target import RenderTarget
 
 from rpcore.native import GPUCommand, GPUCommandList

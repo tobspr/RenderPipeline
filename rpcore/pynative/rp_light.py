@@ -46,16 +46,13 @@ def color_from_temperature(temperature):
     elif temperature < 4000:
         y = -0.9549476 * x3 - 1.37418593 * x2 + 2.09137015 * x - 0.16748867
     else:
-        y =  3.0817580 * x3 - 5.87338670 * x2 + 3.75112997 * x - 0.37001483
+        y = 3.0817580 * x3 - 5.87338670 * x2 + 3.75112997 * x - 0.37001483
 
     # xyY to XYZ, assuming Y=1.
     xyz = Vec3(x / y, 1, (1 - x - y) / y)
 
     # Convert XYZ to linearized sRGB.
-    xyz_to_rgb = Mat3(
-     3.2406, -0.9689,  0.0557,
-    -1.5372,  1.8758, -0.2050,
-    -0.4986,  0.0415,  1.0570)
+    xyz_to_rgb = Mat3(3.2406, -0.9689, 0.0557, -1.5372, 1.8758, -0.2050, -0.4986, 0.0415, 1.0570)
 
     return xyz_to_rgb.xform(xyz)
 

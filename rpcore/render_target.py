@@ -853,12 +853,7 @@ class RenderTarget(object):
 
             if not self._use_stencil:
                 buffer_props.set_depth_bits(self._depth_bits)
-                buffer_props.set_float_depth(True)
-
-                if self._depth_bits != 32:
-                    self.RT_OUTPUT_FUNC("You cannot request a non-32bit float depth buffer!"
-                                        " Requesting a non-float depth buffer instead!")
-                    buffer_props.set_float_depth(False)
+                buffer_props.set_float_depth(self._depth_bits == 32)
             else:
                 if self._depth_bits != 32:
                     self.RT_OUTPUT_FUNC("You should use 32 bit depth when using stencil ("

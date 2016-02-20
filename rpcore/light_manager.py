@@ -28,7 +28,7 @@ import math
 
 from panda3d.core import LVecBase2i, Texture, PTAInt
 
-from rpcore.util.image import Image
+from rpcore.image import Image
 from rpcore.globals import Globals
 
 from rpcore.stages.flag_used_cells_stage import FlagUsedCellsStage

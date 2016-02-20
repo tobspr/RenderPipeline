@@ -34,7 +34,8 @@ class Image(RPObject, Texture):
 
     """ This is a wrapper arround the Texture class from Panda3D, which keeps
     track of all images and registers / unregisters them aswell as counting
-    the memory used. """
+    the memory used. This is used by all classes instead of pandas builtin
+    Texture. """
 
     # Total amount of images
     _NUM_IMAGES = 0

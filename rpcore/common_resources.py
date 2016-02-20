@@ -32,6 +32,7 @@ from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Texture, Mat4
 from panda3d.core import SamplerState, PNMImage
 from direct.stdpy.file import open
 
+from rpcore.image import Image
 from rpcore.globals import Globals
 from rpcore.base_manager import BaseManager
 
@@ -146,7 +147,7 @@ class CommonResources(BaseManager):
         img = PNMImage(4, 4, 3)
         for x in range(16):
             img.set_xel(x % 4, x // 4, random.random(), random.random(), random.random())
-        tex = Texture("Random4x4")
+        tex = Image("Random4x4")
         tex.load(img)
         self._pipeline.stage_mgr.add_input("Noise4x4", tex)
 

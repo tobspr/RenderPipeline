@@ -58,7 +58,7 @@ class CheckboxCollection(RPObject):
         chb.collection = None
         self._items.remove(chb)
 
-    def _changed(self, chb):
+    def on_checkbox_changed(self, chb):
         """ Internal callback when a checkbox got changed """
         for item in self._items:
             if item is not chb:

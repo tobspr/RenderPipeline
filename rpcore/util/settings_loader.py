@@ -23,12 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-from rplibs.six import iteritems
 
 from direct.stdpy.file import isfile
 
-from rpcore.rp_object import RPObject
+from rplibs.six import iteritems
 from rplibs.yaml import load_yaml_file
+
+from rpcore.rp_object import RPObject
 
 class SettingsLoader(RPObject):
 

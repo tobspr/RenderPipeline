@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 """
 from __future__ import division
-from rplibs.six.moves import range
 
 from panda3d.core import Vec3, Camera, OrthographicLens, PTAMat4, SamplerState
 
@@ -51,7 +50,7 @@ class VXGISunShadowStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"VXGISunShadowMapPCF": (self._target['depth'], self.make_pcf_state()) }
+        return {"VXGISunShadowMapPCF": (self._target['depth'], self.make_pcf_state())}
 
     def make_pcf_state(self):
         state = SamplerState()

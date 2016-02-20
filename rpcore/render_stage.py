@@ -27,7 +27,6 @@ THE SOFTWARE.
 from panda3d.core import Shader
 
 from rpcore.rp_object import RPObject
-from rpcore.util.cubemap_filter import CubemapFilter
 from rpcore.render_target import RenderTarget
 
 class RenderStage(RPObject):

@@ -29,7 +29,7 @@ import math
 from panda3d.core import Texture, Vec4
 
 from rpcore.render_stage import RenderStage
-from rpcore.util.image import Image
+from rpcore.image import Image
 
 
 class CullLightsStage(RenderStage):

@@ -45,7 +45,7 @@ class IESDataset(object):
     def set_candela_values(self, candela_values):
         self._candela_values = candela_values
 
-    def generate_dataset_texture_into(self, dest_tex, z):
+    def generate_dataset_texture_into(self, dest_tex, layer_index):
         resolution_vertical = dest_tex.get_y_size()
         resolution_horizontal = dest_tex.get_x_size()
 
@@ -59,7 +59,7 @@ class IESDataset(object):
                 candela = self.get_candela_value(vert_angle, horiz_angle)
                 dest.set_xel(vert, horiz, candela)
 
-        dest_tex.load(dest, z, 0)
+        dest_tex.load(dest, layer_index, 0)
 
     def get_candela_value(self, vertical_angle, horizontal_angle):
         # NOTICE: Since python is slower, we always only assume a dataset without
@@ -75,7 +75,7 @@ class IESDataset(object):
         if vertical_angle < 0.0:
             return 0.0
 
-        if vertical_angle > self._vertical_angles[ len(self._vertical_angles) - 1]:
+        if vertical_angle > self._vertical_angles[len(self._vertical_angles) - 1]:
             return 0.0
 
         for vertical_index in range(1, len(self._vertical_angles)):
@@ -83,8 +83,10 @@ class IESDataset(object):
 
             if curr_angle > vertical_angle:
                 prev_angle = self._vertical_angles[vertical_index - 1]
-                prev_value = self.get_candela_value_from_index(vertical_index - 1, horizontal_angle_idx)
-                curr_value = self.get_candela_value_from_index(vertical_index, horizontal_angle_idx)
+                prev_value = self.get_candela_value_from_index(
+                    vertical_index - 1, horizontal_angle_idx)
+                curr_value = self.get_candela_value_from_index(
+                    vertical_index, horizontal_angle_idx)
                 lerp = (vertical_angle - prev_angle) / (curr_angle - prev_angle)
                 assert lerp >= 0.0 and lerp <= 1.0
                 return curr_value * lerp + prev_value * (1.0 - lerp)

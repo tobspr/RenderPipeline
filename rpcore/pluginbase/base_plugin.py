@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from direct.stdpy.file import isfile, open, join
+from direct.stdpy.file import isfile, join
 
 from rplibs.yaml import load_yaml_file
 from rpcore.rp_object import RPObject

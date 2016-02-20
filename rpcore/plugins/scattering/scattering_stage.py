@@ -25,7 +25,6 @@ THE SOFTWARE.
 """
 
 from __future__ import division
-from panda3d.core import Texture
 
 from rpcore.render_stage import RenderStage
 
@@ -41,7 +40,7 @@ class ScatteringStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return { "ShadedScene": self._target['color'] }
+        return {"ShadedScene": self._target['color']}
 
     def create(self):
         self._target = self.make_target("ApplyScattering")

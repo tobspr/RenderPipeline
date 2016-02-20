@@ -58,7 +58,6 @@ vec2 get_skydome_coord(vec3 view_dir) {
     return vec2(angle, view_dir.z);
 }
 
-
 // Converts a coordinate like "gl_FragCoord" to a cubemap direction, with a given
 // cubemap size. Assumes the render target has a size of (6 * cubemap_size, cubemap_size).
 // clamped_coord will contain a coordinate from (0 .. cubemap_size), this can be

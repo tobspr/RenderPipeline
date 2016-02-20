@@ -29,7 +29,7 @@ from __future__ import division
 from panda3d.core import Texture, SamplerState
 
 from rpcore.rp_object import RPObject
-from rpcore.util.image import Image
+from rpcore.image import Image
 
 class CubemapFilter(RPObject):
 
@@ -145,7 +145,8 @@ class CubemapFilter(RPObject):
 
         # Create the target which integrates the lambert brdf
         self._diffuse_target = self._stage.make_target("CF:DiffuseIBL")
-        self._diffuse_target.size = (CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
+        self._diffuse_target.size = (
+            CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
             CubemapFilter.PREFILTER_CUBEMAP_SIZE)
         self._diffuse_target.prepare_offscreen_buffer()
 
@@ -156,7 +157,8 @@ class CubemapFilter(RPObject):
         # Create the target which removes the noise from the previous target,
         # which is introduced with importance sampling
         self._diff_filter_target = self._stage.make_target("CF:DiffPrefIBL")
-        self._diff_filter_target.size = (CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
+        self._diff_filter_target.size = (
+            CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
         self._diff_filter_target.prepare_offscreen_buffer()
 

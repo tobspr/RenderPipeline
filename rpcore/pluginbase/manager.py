@@ -26,15 +26,16 @@ THE SOFTWARE.
 
 import importlib
 import collections
+
 from rplibs.six import iteritems, itervalues
+from rplibs.yaml import load_yaml_file
+
 from direct.stdpy.file import listdir, isdir, join, open
 
-from rplibs.yaml import load_yaml_file
 from rpcore.base_manager import BaseManager
 from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.pluginbase.setting_types import make_setting_from_data
 from rpcore.pluginbase.day_setting_types import make_daysetting_from_data
-
 
 class PluginManager(BaseManager):
 
@@ -57,8 +58,8 @@ class PluginManager(BaseManager):
         of the main plugin classes for all enabled plugins """
         self.debug("Loading plugins")
         self._load_base_settings("$$plugins")
-        self._load_setting_overrides("$$config/plugins.yaml")
-        self._load_daytime_overrides("$$config/daytime.yaml")
+        self.load_setting_overrides("$$config/plugins.yaml")
+        self.load_daytime_overrides("$$config/daytime.yaml")
 
         for plugin_id in self._settings:
             handle = self._load_plugin(plugin_id)
@@ -114,7 +115,7 @@ class PluginManager(BaseManager):
             [(k, make_daysetting_from_data(v)) for k, v in config["daytime_settings"]])
         self._day_settings[plugin_id] = day_settings
 
-    def _load_setting_overrides(self, override_path):
+    def load_setting_overrides(self, override_path):
         """ Loads an override file for the settings, which contains values to
         override the settings with """
         overrides = load_yaml_file(override_path)
@@ -129,7 +130,7 @@ class PluginManager(BaseManager):
                 continue
             self._settings[plugin_id][setting_id].set_value(val)
 
-    def _load_daytime_overrides(self, override_path):
+    def load_daytime_overrides(self, override_path):
         """ Loads an override file for the daytime settings, which contains
         values to override the settings with """
         overrides = load_yaml_file(override_path)
@@ -207,12 +208,11 @@ class PluginManager(BaseManager):
         module = importlib.import_module(plugin_class, package=__package__)
         instance = module.Plugin(self._pipeline)
         if instance.native_only and not NATIVE_CXX_LOADED:
-            self.warn("Cannot load", plugin_id,"since it requires the C++ modules.")
-            return None
+            self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
         for required_plugin in instance.required_plugins:
             if required_plugin not in self._enabled_plugins:
-                self.warn("Cannot load", plugin_id,"since it requires", required_plugin)
-                return None
+                self.warn("Cannot load", plugin_id, "since it requires", required_plugin)
+                break
         return instance
 
     def save_overrides(self, override_file):

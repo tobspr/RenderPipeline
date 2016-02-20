@@ -24,14 +24,17 @@ THE SOFTWARE.
 
 """
 
+# Disable the invalid constant name warning
+# pylint: disable=C0103
+
 # This file includes all modules from the native module.
 
 from __future__ import print_function
 import sys
 import importlib
+from os.path import dirname, realpath
 
 from direct.stdpy.file import join, isfile
-from os.path import dirname, realpath
 from rpcore.rp_object import RPObject
 
 # Store a global flag, indicating whether the C++ modules were loaded or the python
@@ -39,13 +42,13 @@ from rpcore.rp_object import RPObject
 NATIVE_CXX_LOADED = False
 
 # Read the configuration from the flag-file
-curr_path = dirname(realpath(__file__))
-flag_path = join(curr_path, "use_cxx.flag")
-if not isfile(flag_path):
+current_path = dirname(realpath(__file__))
+cxx_flag_path = join(current_path, "use_cxx.flag")
+if not isfile(cxx_flag_path):
     RPObject.global_error("CORE", "Could not find cxx flag, please run the setup.py!")
     sys.exit(1)
 else:
-    with open(join(curr_path, "use_cxx.flag"), "r") as handle:
+    with open(join(current_path, "use_cxx.flag"), "r") as handle:
         NATIVE_CXX_LOADED = handle.read().strip() == "1"
 
 # The native module should only be imported once, and that by the internal pipeline code
