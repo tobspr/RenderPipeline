@@ -83,7 +83,7 @@ class Plugin(BasePlugin):
         for i in range(self.get_setting("split_count")):
             camera_np = self._camera_rig.get_camera(i)
             camera_np.node().set_scene(Globals.base.render)
-            region = self._shadow_stage.get_split_region(i)
+            region = self._shadow_stage.split_regions[i]
             region.set_camera(camera_np)
             # camera_np.node().show_frustum()
 
