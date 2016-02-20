@@ -31,6 +31,7 @@ from panda3d.core import Vec3, PTAVecBase3f
 
 from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
+from rpcore.native import PSSMCameraRig
 
 from .pssm_shadow_stage import PSSMShadowStage
 from .pssm_dist_shadow_stage import PSSMDistShadowStage

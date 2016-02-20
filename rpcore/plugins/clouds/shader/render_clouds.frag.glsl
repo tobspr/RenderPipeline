@@ -100,8 +100,8 @@ void main() {
     vec3 sun_vector = sun_azimuth_to_angle(
     TimeOfDay.scattering.sun_azimuth,
     TimeOfDay.scattering.sun_altitude);
-    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 15.0) + 0.0;
-    vec3 sun_color = sun_influence * 30.0 * vec3(1);
+    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 25.0) + 0.0;
+    vec3 sun_color = sun_influence * 10.0 * vec3(1);
 
     vec3 curr_pos = trace_start + 0.5 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
     float accum_weight = 0.0;
@@ -124,13 +124,15 @@ void main() {
     accum_color /= 15.0;
     // accum_weight *= 1 * length(accum_color);
     // accum_weight *= 0.4;
-    accum_weight = saturate(pow(accum_weight, 32.0));
+    accum_weight = saturate(pow(accum_weight, 32.0) * 1.1);
 
     accum_color *= TimeOfDay.clouds.cloud_brightness;
+    accum_color *= TimeOfDay.scattering.sun_color / 255.0 *
+        TimeOfDay.scattering.sun_intensity * 1.9;
 
-    accum_color *= 160.0;
+    accum_color *= 180.0;
     accum_color *= vec3(1.2, 1.1, 1);
-    // accum_color *= 1.0 + sun_color * saturate(1.0 - 1 * accum_weight );
+    accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 
 
     // Darken clouds in the distance
@@ -140,7 +142,7 @@ void main() {
     float horizon = saturate(ray_dir.z * 4.0);
     // accum_color *= accum_weight;
     // accum_color *= horizon;
-    accum_weight *= pow(horizon, 2.0);
+    accum_weight *= pow(horizon, 1.0);
 
     // accum_weight = 0;
 

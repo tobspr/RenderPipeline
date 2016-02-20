@@ -286,18 +286,19 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
     def _on_setting_enum_changed(self, setting_id, value):
         self._do_update_setting(setting_id, value)
 
-    def _on_setting_slider_changed(self, setting_id, bound_objs, value):
-        value /= 100000.0 # was stored packed
+    def _on_setting_slider_changed(self, setting_id, setting_type, bound_objs, value):
+        if setting_type == "float":
+            value /= 100000.0
         self._do_update_setting(setting_id, value)
 
         for obj in bound_objs:
             obj.setValue(value)
 
-    def _on_setting_spinbox_changed(self, setting_id, bound_objs, value):
+    def _on_setting_spinbox_changed(self, setting_id, setting_type, bound_objs, value):
         self._do_update_setting(setting_id, value)
         # Assume objects are sliders, so we need to rescale the value
         for obj in bound_objs:
-            obj.setValue(value * 100000.0)
+            obj.setValue(value * 100000.0 if setting_type == "float" else value)
 
     def _get_widget_for_setting(self, setting_id, setting):
         """ Returns an appropriate widget to control the given setting """
@@ -327,25 +328,32 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             box.setMaximum(setting.maxval)
             box.setValue(setting.value)
 
-            box.setSingleStep( abs(setting.maxval - setting.minval) / 100.0 )
             box.setAlignment(QtCore.Qt.AlignCenter)
 
             slider = QtGui.QSlider()
             slider.setOrientation(QtCore.Qt.Horizontal)
-            slider.setMinimum(setting.minval * 100000.0)
-            slider.setMaximum(setting.maxval * 100000.0)
-            slider.setValue(setting.value * 100000.0)
+
+            if setting.type == "float":
+                box.setSingleStep( abs(setting.maxval - setting.minval) / 100.0 )
+                slider.setMinimum(setting.minval * 100000.0)
+                slider.setMaximum(setting.maxval * 100000.0)
+                slider.setValue(setting.value * 100000.0)
+            elif setting.type == "int":
+                box.setSingleStep( max(1, (setting.maxval - setting.minval) / 32 ))
+                slider.setMinimum(setting.minval)
+                slider.setMaximum(setting.maxval)
+                slider.setValue(setting.value)
 
             layout.addWidget(box)
             layout.addWidget(slider)
 
             connect(slider, QtCore.SIGNAL("valueChanged(int)"),
-                partial(self._on_setting_slider_changed, setting_id, [box]))
+                partial(self._on_setting_slider_changed, setting_id, setting.type, [box]))
 
             value_type = "int" if setting.type == "int" else "double"
 
             connect(box, QtCore.SIGNAL("valueChanged(" + value_type + ")"),
-                partial(self._on_setting_spinbox_changed, setting_id, [slider]))
+                partial(self._on_setting_spinbox_changed, setting_id, setting.type, [slider]))
 
         elif setting.type == "enum":
             box = QtGui.QComboBox()

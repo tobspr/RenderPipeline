@@ -55,7 +55,7 @@ void main() {
     // Find cloud normal
     vec3 nrm = vec3(0);
     vec3 pixel_size = 1.0 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
-    for (int i = 1; i <= 5; i+=1) {
+    for (int i = 1; i <= 15; i+=2) {
         nrm += textureLod(CloudVoxels, fcoord + i * pixel_size * vec3( 0, 0, 1), 0).w * vec3( 0, 0,-1);
         nrm += textureLod(CloudVoxels, fcoord + i * pixel_size * vec3( 0, 0,-1), 0).w * vec3( 0, 0, 1);
         nrm += textureLod(CloudVoxels, fcoord + i * pixel_size * vec3( 0, 1, 0), 0).w * vec3( 0,-1, 0);
@@ -67,12 +67,14 @@ void main() {
 
     vec3 scattering_color = texture(ScatteringIBLDiffuse, nrm).xyz;
 
-    float cloud_brightness = 0.5 + 0.05 * dot(nrm, -sun_vector);
+    // float cloud_brightness = 0.2 + 0.5 * max(0, dot(nrm, -sun_vector));
+    float cloud_brightness = 0.5;
 
     // Decrease cloud color at the bottom
-    cloud_brightness *= 0.03 + pow(height, 3.0) * 0.9;
+    cloud_brightness *= 0.03 + pow(height, 4.0) * 0.9;
     vec3 cloud_color = vec3(scattering_color) * cloud_brightness;
 
+    cloud_color *= 5.0;
     cloud_color *= 15.0;
     cloud_color = cloud_color / (1.0 + cloud_color);
 

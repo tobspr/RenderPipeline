@@ -65,4 +65,6 @@ void main() {
     #else
         result = textureLod(ShadedScene, texcoord, 0).xyz;
     #endif
+
+    result = textureLod(ShadedScene, texcoord, 0).xyz;
 }

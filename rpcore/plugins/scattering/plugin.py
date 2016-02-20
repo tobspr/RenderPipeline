@@ -24,6 +24,10 @@ THE SOFTWARE.
 
 """
 
+import math
+
+from panda3d.core import Vec3
+
 from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .scattering_stage import ScatteringStage

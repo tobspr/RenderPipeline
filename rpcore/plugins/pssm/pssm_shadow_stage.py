@@ -26,8 +26,10 @@ THE SOFTWARE.
 from __future__ import division
 from rplibs.six.moves import range
 
-from rpcore.render_stage import RenderStage
 from panda3d.core import SamplerState
+
+from rpcore.globals import Globals
+from rpcore.render_stage import RenderStage
 
 class PSSMShadowStage(RenderStage):
 

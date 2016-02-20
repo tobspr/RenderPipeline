@@ -74,8 +74,8 @@ void main() {
     vec3 sun_vector = sun_azimuth_to_angle(
         TimeOfDay.scattering.sun_azimuth,
         TimeOfDay.scattering.sun_altitude);
-    vec3 sun_color = TimeOfDay.scattering.sun_color *
-        TimeOfDay.scattering.sun_intensity * 85.0;
+    vec3 sun_color = TimeOfDay.scattering.sun_color / 255.0 *
+        TimeOfDay.scattering.sun_intensity * 75.0;
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -169,7 +169,7 @@ void main() {
 
                 // Find depth at sample location
                 float sampled_depth = textureLod(PSSMShadowAtlas,
-                    projected_coord + offset * filter_size, 0).x;
+                    projected_coord + offset * filter_size * 10.0, 0).x;
 
                 // Compare the depth with the pixel depth, in case its smaller,
                 // we found a blocker

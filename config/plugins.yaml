@@ -4,15 +4,15 @@
 enabled:
     # - sslr
     - clouds
-    # - pssm
+    - pssm
     - color_correction
     - scattering
-    # - ao
-    # - smaa
+    - ao
+    - smaa
     # - env_probes
     # - vxgi
-    # - fxaa
-    # - bloom
+    - fxaa
+    - bloom
 
 
 overrides:
@@ -22,17 +22,17 @@ overrides:
     clouds.cloud_end: 10.4
     pssm.max_distance: 81.92
     pssm.logarithmic_factor: 0.94
-    pssm.sun_distance: 100.0
+    pssm.sun_distance: 650.0
     pssm.split_count: 4
     pssm.resolution: 2048
     pssm.border_bias: 0.1167
     pssm.use_pcf: True
     pssm.filter_sample_count: 32
-    pssm.filter_radius: 4.38999
+    pssm.filter_radius: 3.29
     pssm.fixed_bias: 0.2
     pssm.slope_bias: 0.66667
     pssm.normal_bias: 0.44
-    pssm.use_pcss: False
+    pssm.use_pcss: True
     pssm.pcss_search_samples: 32
     pssm.pcss_penumbra_size: 300.0
     pssm.vsm_resolution: 4096
@@ -55,7 +55,7 @@ overrides:
     color_correction.use_auto_exposure: True
     color_correction.min_exposure: 0.001
     color_correction.max_exposure: 7.0
-    color_correction.exposure_bias: -0.04
+    color_correction.exposure_bias: 0.0
     color_correction.brightness_scale: 2.0
     color_correction.brightness_adaption_rate: 3.0
     color_correction.darkness_adaption_rate: 1.0
@@ -104,6 +104,5 @@ overrides:
     fxaa.edge_threshold: 0.075
     fxaa.min_threshold: 0.7114
     bloom.num_mipmaps: 8
-    bloom.minimum_luminance: 15.0
     bloom.bloom_strength: 0.7
     bloom.remove_fireflies: True

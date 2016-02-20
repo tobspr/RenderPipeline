@@ -66,5 +66,6 @@ void main() {
 
     float adjustment = saturate(MainSceneData.frame_delta * adaption_rate);
     float new_luminance = mix(cur_luminance, avg_luminance, adjustment);
+    // new_luminance = 0.1;
     imageStore(ExposureStorage, 0, vec4(new_luminance));
 }

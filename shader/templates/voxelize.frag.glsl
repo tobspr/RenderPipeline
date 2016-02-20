@@ -53,7 +53,7 @@ void main() {
             TimeOfDay.scattering.sun_azimuth,
             TimeOfDay.scattering.sun_altitude);
 
-        vec3 sun_color = TimeOfDay.scattering.sun_color *
+        vec3 sun_color = TimeOfDay.scattering.sun_color / 255.0 *
             TimeOfDay.scattering.sun_intensity * 45.0;
 
         // Get sun shadow term
