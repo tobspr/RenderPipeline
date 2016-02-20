@@ -195,8 +195,9 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._setup_managers()
         self._plugin_mgr.trigger_hook("pipeline_created")
 
-        # Set the default effect on render
+        # Set the default effect on render, and load the "skybox"
         self.set_effect(Globals.render, "effects/default.yaml", {}, -10)
+        self._create_default_skybox()
 
         # Hide the loading screen
         self._loading_screen.remove()

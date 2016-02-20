@@ -25,8 +25,10 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from rpcore.render_stage import RenderStage
 from panda3d.core import SamplerState, LVecBase2i
+
+from rpcore.render_stage import RenderStage
+from rpcore.stages.ambient_stage import AmbientStage
 
 class VXGIStage(RenderStage):
 
@@ -45,7 +47,6 @@ class VXGIStage(RenderStage):
         }
 
     def create(self):
-
         # Create a target for the specular GI
         self._target_spec = self.make_target("SpecularGI")
         self._target_spec.add_color_texture(bits=16)
@@ -90,11 +91,8 @@ class VXGIStage(RenderStage):
         self._target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
         self._target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
 
-
         # Make the ambient stage use the GI result
-        ambient_stage = get_internal_stage("ambient_stage", "AmbientStage")
-        ambient_stage.required_pipes.append("VXGISpecular")
-        ambient_stage.required_pipes.append("VXGIDiffuse")
+        AmbientStage.required_pipes += ["VXGISpecular", "VXGIDiffuse"]
 
     def set_shaders(self):
         self._target_spec.set_shader(
@@ -105,7 +103,6 @@ class VXGIStage(RenderStage):
             self.load_plugin_shader("$$shader/merge_interleaved_target.frag.glsl"))
         self._target_upscale_diff.set_shader(
             self.load_plugin_shader("$$shader/bilateral_upscale.frag.glsl"))
-
         blur_shader = self.load_plugin_shader("$$shader/bilateral_halfres_blur.frag.glsl")
         self._target_blur_v.set_shader(blur_shader)
         self._target_blur_h.set_shader(blur_shader)

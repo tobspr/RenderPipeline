@@ -79,7 +79,7 @@ class PipelineExtensions(object):
         remove_light documentation for further information. """
         self.light_mgr.remove_light(light)
 
-    def create_default_skybox(self, size=40000):
+    def _create_default_skybox(self, size=40000):
         """ Returns the default skybox, with a scale of <size>, and all
         proper effects and shaders already applied. The skybox is already
         parented to render as well. """

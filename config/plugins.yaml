@@ -3,17 +3,16 @@
 
 enabled:
     # - sslr
-    - clouds
     - pssm
     - color_correction
     - scattering
+    # - clouds
     - ao
     - smaa
     # - env_probes
     # - vxgi
     - fxaa
     - bloom
-
 
 overrides:
     clouds.cloud_decay: 5.78

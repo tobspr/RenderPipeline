@@ -64,7 +64,18 @@ class PluginManager(BaseManager):
             handle = self._load_plugin(plugin_id)
             if handle:
                 self._instances[plugin_id] = handle
+            else:
+                self.disable_plugin(plugin_id)
 
+    def disable_plugin(self, plugin_id):
+        """ Disables a plugin, given its plugin_id. This will remove it from
+        the list of enabled plugins, if it ever was there """
+        if plugin_id in self._enabled_plugins:
+            self.warn("Disabling", plugin_id)
+            self._enabled_plugins.remove(plugin_id)
+            for instance in itervalues(self._instances):
+                if plugin_id in instance.required_plugins:
+                    self.disable_plugin(instance.plugin_id)
 
     def unload(self):
         """ Unloads all plugins """
@@ -196,11 +207,11 @@ class PluginManager(BaseManager):
         module = importlib.import_module(plugin_class, package=__package__)
         instance = module.Plugin(self._pipeline)
         if instance.native_only and not NATIVE_CXX_LOADED:
-            self.warn("Disabling", plugin_id,"since it requires the C++ modules.")
+            self.warn("Cannot load", plugin_id,"since it requires the C++ modules.")
             return None
         for required_plugin in instance.required_plugins:
             if required_plugin not in self._enabled_plugins:
-                self.warn("Disabling", plugin_id,"since it requires", required_plugin)
+                self.warn("Cannot load", plugin_id,"since it requires", required_plugin)
                 return None
         return instance
 

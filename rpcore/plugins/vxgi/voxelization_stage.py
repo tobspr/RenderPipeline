@@ -26,6 +26,8 @@ THE SOFTWARE.
 
 from __future__ import division
 
+from rpcore.globals import Globals
+from rpcore.util.image import Image
 from rpcore.render_stage import RenderStage
 
 from panda3d.core import Camera, OrthographicLens, NodePath, CullFaceAttrib
@@ -48,19 +50,10 @@ class VoxelizationStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "VoxelizationStage", pipeline)
-        self._voxel_res = 256
-        self._voxel_ws = 20.0
-        self._state = self.S_disabled
+        self.voxel_resolution = 256
+        self.voxel_world_size = 20.0
+        self.state = self.S_disabled
         self._create_ptas()
-
-    def set_voxel_resolution(self, res):
-        self._voxel_res = res
-
-    def set_voxel_grid_size(self, size):
-        self._voxel_ws = size
-
-    def set_state(self, state):
-        self._state = state
 
     def set_grid_position(self, pos):
         self._pta_next_grid_pos[0] = pos
@@ -80,17 +73,17 @@ class VoxelizationStage(RenderStage):
     def create(self):
         # Create the voxel grid used to generate the voxels
         self._voxel_temp_grid = Image.create_3d(
-            "VoxelsTemp", self._voxel_res, self._voxel_res, self._voxel_res,
+            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
             Texture.T_float, Texture.F_rgba8)
         self._voxel_temp_grid.set_clear_color(Vec4(0))
         self._voxel_temp_nrm_grid = Image.create_3d(
-            "VoxelsTemp", self._voxel_res, self._voxel_res, self._voxel_res,
+            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
             Texture.T_float, Texture.F_r11_g11_b10)
         self._voxel_temp_nrm_grid.set_clear_color(Vec4(0))
 
         # Create the voxel grid which is a copy of the temporary grid, but stable
         self._voxel_grid = Image.create_3d(
-            "Voxels", self._voxel_res, self._voxel_res, self._voxel_res,
+            "Voxels", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
             Texture.T_float, Texture.F_rgba8)
         self._voxel_grid.set_clear_color(Vec4(0))
         self._voxel_grid.set_minfilter(SamplerState.FT_linear_mipmap_linear)
@@ -99,8 +92,8 @@ class VoxelizationStage(RenderStage):
         self._voxel_cam = Camera("VoxelizeCam")
         self._voxel_cam.set_camera_mask(self._pipeline.tag_mgr.get_voxelize_mask())
         self._voxel_cam_lens = OrthographicLens()
-        self._voxel_cam_lens.set_film_size(-2.0 * self._voxel_ws, 2.0 * self._voxel_ws)
-        self._voxel_cam_lens.set_near_far(0.0, 2.0 * self._voxel_ws)
+        self._voxel_cam_lens.set_film_size(-2.0 * self.voxel_world_size, 2.0 * self.voxel_world_size)
+        self._voxel_cam_lens.set_near_far(0.0, 2.0 * self.voxel_world_size)
         self._voxel_cam.set_lens(self._voxel_cam_lens)
         self._voxel_cam_np = Globals.base.render.attach_new_node(self._voxel_cam)
         self._pipeline.tag_mgr.register_voxelize_camera(self._voxel_cam)
@@ -108,21 +101,21 @@ class VoxelizationStage(RenderStage):
         # Create the voxelization target
         self._voxel_target = self.make_target("VoxelizeScene")
         self._voxel_target.set_source(source_cam=self._voxel_cam_np, source_win=Globals.base.win)
-        self._voxel_target.size = self._voxel_res, self._voxel_res
+        self._voxel_target.size = self.voxel_resolution, self.voxel_resolution
         self._voxel_target.create_overlay_quad = False
         self._voxel_target.prepare_scene_render()
 
         # Create the target which copies the voxel grid
         self._copy_target = self.make_target("CopyVoxels")
-        self._copy_target.size = self._voxel_res, self._voxel_res
+        self._copy_target.size = self.voxel_resolution, self.voxel_resolution
         self._copy_target.prepare_offscreen_buffer()
-        self._copy_target.quad.set_instance_count(self._voxel_res)
+        self._copy_target.quad.set_instance_count(self.voxel_resolution)
         self._copy_target.set_shader_input("SourceTex", self._voxel_temp_grid)
         self._copy_target.set_shader_input("DestTex", self._voxel_grid)
 
         # Create the target which generates the mipmaps
         self._mip_targets = []
-        mip_size, mip = self._voxel_res, 0
+        mip_size, mip = self.voxel_resolution, 0
         while mip_size > 1:
             mip_size, mip = mip_size // 2, mip + 1
             mip_target = self.make_target("GenMipmaps:" + str(mip))
@@ -153,29 +146,29 @@ class VoxelizationStage(RenderStage):
             target.set_active(False)
 
         # Voxelization disable
-        if self._state == self.S_disabled:
+        if self.state == self.S_disabled:
             self._voxel_cam_np.hide()
             self._voxel_target.set_active(False)
 
         # Voxelization from X-Axis
-        elif self._state == self.S_voxelize_x:
+        elif self.state == self.S_voxelize_x:
             # Clear voxel grid
             self._voxel_temp_grid.clear_image()
-            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(self._voxel_ws, 0, 0))
+            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(self.voxel_world_size, 0, 0))
             self._voxel_cam_np.look_at(self._pta_next_grid_pos[0])
 
         # Voxelization from Y-Axis
-        elif self._state == self.S_voxelize_y:
-            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(0, self._voxel_ws, 0))
+        elif self.state == self.S_voxelize_y:
+            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(0, self.voxel_world_size, 0))
             self._voxel_cam_np.look_at(self._pta_next_grid_pos[0])
 
         # Voxelization from Z-Axis
-        elif self._state == self.S_voxelize_z:
-            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(0, 0, self._voxel_ws))
+        elif self.state == self.S_voxelize_z:
+            self._voxel_cam_np.set_pos(self._pta_next_grid_pos[0] + Vec3(0, 0, self.voxel_world_size))
             self._voxel_cam_np.look_at(self._pta_next_grid_pos[0])
 
         # Generate mipmaps
-        elif self._state == self.S_gen_mipmaps:
+        elif self.state == self.S_gen_mipmaps:
             self._voxel_target.set_active(False)
             self._copy_target.set_active(True)
             self._voxel_cam_np.hide()

@@ -26,9 +26,10 @@ THE SOFTWARE.
 from __future__ import division
 from rplibs.six.moves import range
 
-from rpcore.render_stage import RenderStage
-
 from panda3d.core import Vec3, Camera, OrthographicLens, PTAMat4, SamplerState
+
+from rpcore.globals import Globals
+from rpcore.render_stage import RenderStage
 
 class VXGISunShadowStage(RenderStage):
 
@@ -40,7 +41,7 @@ class VXGISunShadowStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "VXGISunShadowStage", pipeline)
-        self._resolution = 2048
+        self.resolution = 2048
         self._sun_vector = Vec3(0, 0, 1)
         self._pta_mvp = PTAMat4.empty_array(1)
 
@@ -58,10 +59,12 @@ class VXGISunShadowStage(RenderStage):
         state.set_magfilter(SamplerState.FT_shadow)
         return state
 
-    def set_resolution(self, res):
-        self._resolution = res
+    @property
+    def sun_vector(self):
+        return self._sun_vector
 
-    def set_sun_vector(self, direction):
+    @sun_vector.setter
+    def sun_vector(self, direction):
         self._sun_vector = direction
 
         distance = 400.0
@@ -84,7 +87,7 @@ class VXGISunShadowStage(RenderStage):
 
         self._target = self.make_target("PSSMDistShadowMap")
         self._target.set_source(self._cam_node, Globals.base.win)
-        self._target.size = self._resolution
+        self._target.size = self.resolution
         self._target.add_depth_texture(bits=32)
         self._target.create_overlay_quad = False
         self._target.color_write = False

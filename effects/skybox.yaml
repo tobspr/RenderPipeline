@@ -17,6 +17,7 @@ gbuffer:
             m.roughness = 1.0;
             m.translucency = 0.0;
             m.normal = vOutput.normal;
+            m.emissive = 0.0;
 
 shadows:
     template: default

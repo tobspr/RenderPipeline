@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 """
 
-
 from rpcore.pluginbase.base_plugin import BasePlugin
+
 from .sslr_stage import SSLRStage
 
 class Plugin(BasePlugin):
@@ -37,5 +37,4 @@ class Plugin(BasePlugin):
     version = "alpha (!)"
 
     def on_stage_setup(self):
-        self.debug("Setting up SSLR stage ..")
         self._sslr_stage = self.create_stage(SSLRStage)

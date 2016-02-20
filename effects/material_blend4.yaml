@@ -89,6 +89,7 @@ gbuffer:
             m.roughness = mOutput.roughness;
             m.metallic = mOutput.metallic;
             m.translucency = mOutput.translucency;
+            m.emissive = 0.0;
 
 shadows:
     template: default
