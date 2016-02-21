@@ -95,7 +95,7 @@ class PluginManager(BaseManager):
         This is required to verify all overrides. """
         for entry in listdir(plugin_dir):
             abspath = join(plugin_dir, entry)
-            if isdir(abspath) and entry != "plugin_prefab":
+            if isdir(abspath) and entry not in ("__pycache__", "plugin_prefab"):
                 self._load_plugin_settings(entry, abspath)
 
     def _load_plugin_settings(self, plugin_id, plugin_pth):
