@@ -44,13 +44,21 @@ class Plugin(BasePlugin):
 
     def on_stage_setup(self):
         self.probe_mgr = ProbeManager(512)
-        self.probe_mgr.add_probe(EnvironmentProbe(Vec3(0, 0, 2.0), 30))
+        self.probe_mgr.add_probe(EnvironmentProbe(Vec3(0, 1, 2.0), 25))
 
         self.capture_stage = self.create_stage(EnvironmentCaptureStage)
         self.capture_stage.resolution = self.probe_mgr.resolution
         self.capture_stage.storage_tex = self.probe_mgr.storage_tex
 
         self.apply_stage = self.create_stage(ApplyCubemapsStage)
+
+        if self.is_plugin_enabled("scattering"):
+            self.capture_stage.required_pipes += [
+            "ScatteringIBLSpecular", "ScatteringIBLDiffuse"]
+
+        if self.is_plugin_enabled("pssm"):
+            self.capture_stage.required_pipes.append("PSSMSceneSunShadowMapPCF")
+            self.capture_stage.required_inputs.append("PSSMSceneSunShadowMVP")
 
     def on_pipeline_created(self):
         self.apply_stage.set_shader_input("CubemapStorage", self.probe_mgr.storage_tex)

@@ -31,7 +31,6 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 from rpcore.util.repeated_task_queue import RepeatedTaskQueue
 
 from .voxelization_stage import VoxelizationStage
-from .vxgi_sun_shadow_stage import VXGISunShadowStage
 from .vxgi_stage import VXGIStage
 
 class Plugin(BasePlugin):
@@ -49,12 +48,10 @@ class Plugin(BasePlugin):
         self._voxel_stage.voxel_resolution = self.get_setting("grid_resolution")
         self._voxel_stage.voxel_grid_size = self.get_setting("grid_ws_size")
 
-        if self.is_plugin_enabled("scattering"):
-            self._shadow_stage = self.create_stage(VXGISunShadowStage)
-
+        if self.is_plugin_enabled("pssm"):
             # Add shadow map as requirement
-            self._voxel_stage.required_inputs.append("VXGISunShadowMVP")
-            self._voxel_stage.required_pipes.append("VXGISunShadowMapPCF")
+            self._voxel_stage.required_inputs.append("PSSMSceneSunShadowMVP")
+            self._voxel_stage.required_pipes.append("PSSMSunShadowMapPCF")
 
     def on_pre_render_update(self):
         self._queue.exec_next_task()
@@ -78,15 +75,9 @@ class Plugin(BasePlugin):
 
         self._voxel_stage.set_grid_position(grid_pos)
 
-    def _update_shadow_pos(self):
-        """ Updates the sun shadow map """
-        if self.is_plugin_enabled("scattering"):
-            self._shadow_stage.sun_vector = self.get_plugin_instance("scattering").sun_vector
-
     def _voxelize_x(self):
         """ Voxelizes the scene from the x axis """
         self._set_grid_pos()
-        self._update_shadow_pos()
         self._voxel_stage.state = VoxelizationStage.S_voxelize_x
 
     def _voxelize_y(self):

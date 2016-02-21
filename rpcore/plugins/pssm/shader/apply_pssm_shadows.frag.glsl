@@ -75,7 +75,7 @@ void main() {
         TimeOfDay.scattering.sun_azimuth,
         TimeOfDay.scattering.sun_altitude);
     vec3 sun_color = TimeOfDay.scattering.sun_color / 255.0 *
-        TimeOfDay.scattering.sun_intensity * 75.0;
+        TimeOfDay.scattering.sun_intensity * 20.0;
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);

@@ -10,7 +10,7 @@ global_stage_order:
   # Shadows, Environment and Voxelization
   - PSSMShadowStage
   - PSSMDistShadowStage
-  - VXGISunShadowStage
+  - PSSMSceneShadowStage
   - VoxelizationStage
   - ScatteringEnvmapStage
   - EnvironmentCaptureStage

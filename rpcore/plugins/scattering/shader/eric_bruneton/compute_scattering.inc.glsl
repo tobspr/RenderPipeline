@@ -203,7 +203,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             float phaseR = phaseFunctionR(nustart_pos);
             float phaseM = phaseFunctionM(nustart_pos);
             inscattered_light = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
-            inscattered_light *= 100.0;
+            inscattered_light *= 30.0;
         }
     }
 

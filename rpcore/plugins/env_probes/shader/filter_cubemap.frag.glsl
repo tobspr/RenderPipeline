@@ -43,7 +43,6 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-
     const uint num_samples = 64;
 
     // Get tangent and binormal

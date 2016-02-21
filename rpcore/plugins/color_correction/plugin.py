@@ -58,7 +58,7 @@ class Plugin(BasePlugin):
 
     def _load_lut(self):
         """ Loads the color correction lookup table (LUT) """
-        lut_path = self.get_resource("default_lut.png")
+        lut_path = self.get_resource("saturation_lut.png")
         lut = SliceLoader.load_3d_texture(lut_path, 64)
         lut.set_wrap_u(SamplerState.WM_clamp)
         lut.set_wrap_v(SamplerState.WM_clamp)

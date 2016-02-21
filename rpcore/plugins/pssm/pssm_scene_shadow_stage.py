@@ -30,27 +30,28 @@ from panda3d.core import Vec3, Camera, OrthographicLens, PTAMat4, SamplerState
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 
-class VXGISunShadowStage(RenderStage):
+class PSSMSceneShadowStage(RenderStage):
 
-    """ This stage creates the shadow map which covers the whole voxel grid,
-    to provide sun shadows for the GI """
+    """ This stage creates the shadow map which covers the whole important part
+    of the scene. This is required because the shadow cascades only cover the
+    view frustum, but many plugins (VXGI, EnvMaps) require a shadow map. """
 
     required_inputs = []
     required_pipes = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "VXGISunShadowStage", pipeline)
+        RenderStage.__init__(self, "PSSMSceneShadowStage", pipeline)
         self.resolution = 2048
         self._sun_vector = Vec3(0, 0, 1)
         self._pta_mvp = PTAMat4.empty_array(1)
 
     @property
     def produced_inputs(self):
-        return {"VXGISunShadowMVP": self._pta_mvp}
+        return {"PSSMSceneSunShadowMVP": self._pta_mvp}
 
     @property
     def produced_pipes(self):
-        return {"VXGISunShadowMapPCF": (self._target['depth'], self.make_pcf_state())}
+        return {"PSSMSceneSunShadowMapPCF": (self._target['depth'], self.make_pcf_state())}
 
     def make_pcf_state(self):
         state = SamplerState()
@@ -77,14 +78,14 @@ class VXGISunShadowStage(RenderStage):
 
     def create(self):
 
-        self._camera = Camera("VXGISunShadowCam")
+        self._camera = Camera("PSSMSceneSunShadowCam")
         self._cam_lens = OrthographicLens()
         self._cam_lens.set_film_size(400, 400)
         self._cam_lens.set_near_far(0.0, 800.0)
         self._camera.set_lens(self._cam_lens)
         self._cam_node = Globals.base.render.attach_new_node(self._camera)
 
-        self._target = self.make_target("PSSMDistShadowMap")
+        self._target = self.make_target("ShadowMap")
         self._target.set_source(self._cam_node, Globals.base.win)
         self._target.size = self.resolution
         self._target.add_depth_texture(bits=32)

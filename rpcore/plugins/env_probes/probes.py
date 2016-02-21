@@ -53,14 +53,14 @@ class ProbeManager(RPObject):
     def _create_storage(self):
         """ Creates the cubemap storage """
         self.storage_tex = Image("EnvmapStorage")
-        self.storage_tex.setup_cube_map_array(self.resolution, 32, Texture.T_float, Texture.F_rgba16)
+        self.storage_tex.setup_cube_map_array(self.resolution, 4, Texture.T_float, Texture.F_rgba16)
         self.storage_tex.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.storage_tex.set_magfilter(SamplerState.FT_linear)
         self.storage_tex.set_clear_color(Vec4(0.0, 0.0, 0.1, 1.0))
         self.storage_tex.clear_image()
 
         self.cubemap_storage = Image("EnvmapData")
-        self.cubemap_storage.setup_buffer_texture(32, Texture.T_float, Texture.F_rgba32, GeomEnums.UH_dynamic)
+        self.cubemap_storage.setup_buffer_texture(4, Texture.T_float, Texture.F_rgba32, GeomEnums.UH_dynamic)
         self.cubemap_storage.set_clear_color(Vec4(0))
         self.cubemap_storage.clear_image()
 

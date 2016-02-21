@@ -274,6 +274,7 @@ class MountManager(RPObject):
         # Mount plugins
         vfs.mount_loop(join(self._base_path, "rpcore/plugins"), "$$plugins", 0)
         vfs.mount_loop(join(self._base_path, "shader"), "$$shader", 0)
+        self.debug("Mounting", join(self._base_path, "shader/"))
 
         # Convert the base path to something the os can work with
         sys_base_path = Filename(self._base_path).to_os_specific()

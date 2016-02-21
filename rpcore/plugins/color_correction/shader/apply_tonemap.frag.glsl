@@ -66,7 +66,7 @@ void main() {
         scene_color = do_tonemapping(scene_color);
 
         // Apply the LUT
-        // scene_color = apply_lut(scene_color);
+        scene_color = apply_lut(scene_color);
 
     #else
         vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;

@@ -37,6 +37,7 @@ void main() {
     basecolor *= mOutput.color;
 
     // Simplified ambient term
+
     vec3 ambient_diff = texture(ScatteringIBLDiffuse, vOutput.normal).xyz;
     vec3 ambient_spec = textureLod(ScatteringIBLSpecular, vOutput.normal, 6).xyz;
 

@@ -34,6 +34,7 @@ from rpcore.native import PSSMCameraRig
 
 from .pssm_stage import PSSMStage
 from .pssm_shadow_stage import PSSMShadowStage
+from .pssm_scene_shadow_stage import PSSMSceneShadowStage
 # from .pssm_dist_shadow_stage import PSSMDistShadowStage
 
 class Plugin(BasePlugin):
@@ -56,6 +57,8 @@ class Plugin(BasePlugin):
 
         self._shadow_stage.num_splits = self.get_setting("split_count")
         self._shadow_stage.split_resolution = self.get_setting("resolution")
+
+        self._scene_stage = self.create_stage(PSSMSceneShadowStage)
 
         # Experimental, not fully working yet
         # self._dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
@@ -111,6 +114,8 @@ class Plugin(BasePlugin):
             if cache_diff > 5.0:
                 self._last_cache_reset = Globals.clock.get_frame_time()
                 self._camera_rig.reset_film_size_cache()
+
+            self._scene_stage.sun_vector = sun_vector
 
     def update_max_distance(self):
         self._camera_rig.set_pssm_distance(self.get_setting("max_distance"))

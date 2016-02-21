@@ -115,7 +115,7 @@ class EnvironmentCaptureStage(RenderStage):
             mip += 1
             target = self.make_target("FilterCubemap:{}".format(mip))
             target.set_size(size * 6, size)
-            target.add_color_texture()
+            # target.add_color_texture()
             target.prepare_offscreen_buffer()
             target.set_shader_input("currentIndex", self.pta_index)
             target.set_shader_input("currentMip", mip)

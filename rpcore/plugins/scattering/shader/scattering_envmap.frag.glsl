@@ -58,17 +58,17 @@ void main() {
 
     if (horizon > 0.0) {
         // Clouds
-        vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(direction), 0).rgb;
-         // inscattered_light += pow(cloud_color.y, 4.5) * TimeOfDay.scattering.sun_intensity * 0.5;
-         inscattered_light += pow(cloud_color, vec3(4.5)) * TimeOfDay.scattering.sun_intensity * 0.5;
+        vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(direction), 0).xyz;
+        // if (view_vector.z < 0.0) cloud_color = vec3(0);
+        inscattered_light *= pow(cloud_color, vec3(2.0) ) * TimeOfDay.scattering.sun_intensity *
+                                TimeOfDay.scattering.sun_color * 0.01;
+
     } else {
         // Ground reflectance
-        inscattered_light *= saturate(1+0.9*horizon) * 0.3;
+        // inscattered_light *= saturate(1+0.9*horizon) * 0.3;
         inscattered_light += pow(vec3(102, 82, 50) * (1.0 / 255.0), vec3(1.0 / 1.2))
-                             * saturate(-horizon + 0.4) * 0.2 * TimeOfDay.scattering.sun_intensity;
+                             * saturate(-horizon + 0.4) * 0.4 * TimeOfDay.scattering.sun_intensity;
     }
-
-    inscattered_light *= 0.2;
 
     imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0) );
     result.xyz = inscattered_light;

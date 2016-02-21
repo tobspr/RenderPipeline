@@ -9,7 +9,7 @@ enabled:
     # - clouds
     - ao
     - smaa
-    # - env_probes
+    - env_probes
     # - vxgi
     - fxaa
     - bloom
@@ -56,8 +56,8 @@ overrides:
     color_correction.max_exposure: 7.0
     color_correction.exposure_bias: 0.0
     color_correction.brightness_scale: 2.0
-    color_correction.brightness_adaption_rate: 3.0
-    color_correction.darkness_adaption_rate: 1.0
+    color_correction.brightness_adaption_rate: 2.0
+    color_correction.darkness_adaption_rate: 0.6
     color_correction.use_sharpen: True
     color_correction.sharpen_strength: 1.0
     scattering.scattering_method: eric_bruneton

@@ -130,7 +130,7 @@ void main() {
     accum_color *= TimeOfDay.scattering.sun_color / 255.0 *
         TimeOfDay.scattering.sun_intensity * 1.9;
 
-    accum_color *= 180.0;
+    accum_color *= 110.0;
     accum_color *= vec3(1.2, 1.1, 1);
     accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 

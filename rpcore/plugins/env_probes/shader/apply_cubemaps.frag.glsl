@@ -37,7 +37,7 @@ layout(location=0) out vec4 result_spec;
 layout(location=1) out vec4 result_diff;
 
 // https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-vec3 correct_parallax(vec3 cubemap_pos, float cubemap_size, Material m, out float rmul) {
+vec3 correct_parallax(vec3 cubemap_pos, float cubemap_size, Material m, out float roughness_mult) {
     vec3 bbmin = cubemap_pos - cubemap_size;
     vec3 bbmax = cubemap_pos + cubemap_size;
     vec3 direction = m.position - MainSceneData.camera_pos;
@@ -48,14 +48,16 @@ vec3 correct_parallax(vec3 cubemap_pos, float cubemap_size, Material m, out floa
     vec3 furthest = max(intersect0, intersect1);
     float dist = min(min(furthest.x, furthest.y), furthest.z);
     vec3 intersect_pos = m.position + reflected_dir * dist;
-    rmul = 0.5 * clamp(dist, 0.0, 4.0);
+    roughness_mult = 0.5 * clamp(dist, 0.4, 4.0);
+    roughness_mult = 1;
     return intersect_pos - cubemap_pos;
 }
 
 float get_cubemap_factor(vec3 cubemap_pos, float cubemap_size, Material m) {
     vec3 v = abs(cubemap_pos - m.position);
     float maxdist = max(v.x, max(v.y, v.z));
-    return 1 - saturate(pow(maxdist / cubemap_size, 1.0));
+    // return step(maxdist, cubemap_size);
+    return 1 - saturate(pow(maxdist / cubemap_size, 32.0));
 }
 
 void main() {
@@ -70,35 +72,30 @@ void main() {
     }
 
     int num_mips = get_mipmap_count(CubemapStorage);
-    float mipmap = sqrt(m.roughness) * 6.0;
+    float mipmap = sqrt(m.roughness) * 5.0;
     float diff_mip = num_mips - 2;
-    mipmap = 0;
 
     vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
 
     // TODO: Do for every cubemap
-    vec3 cubemap_pos = vec3(0, 0, 2.0);
-    float cubemap_size = 20.0;
+    vec3 cubemap_pos = vec3(0, 1, 2);
+    float cubemap_size = 20;
     int cubemap_index = 0;
-    vec3 cube_to_obj = normalize(m.position - cubemap_pos) * 0.5;
-    float mip_mult;
+    float mip_mult = 0;
     vec3 parallax = correct_parallax(cubemap_pos, cubemap_size, m, mip_mult);
     float factor = get_cubemap_factor(cubemap_pos, cubemap_size, m);
+    // parallax = m.normal;
     result_spec = textureLod(
-        CubemapStorage, vec4(parallax, cubemap_index), clamp(mipmap * mip_mult, 0.0, num_mips - 3.0) );
+        CubemapStorage, vec4(parallax, cubemap_index),
+        clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
     result_diff = textureLod(
         CubemapStorage, vec4(m.normal, cubemap_index), diff_mip);
 
-    factor = 1;
-    // result_spec.xyz = parallax;
+    // Renormalize
+    result_spec.xyz /= max(1e-7, result_spec.w);
+    result_diff.xyz /= max(1e-7, result_diff.w);
 
     // Apply factors
-    result_spec.w = 1.0;
     result_spec.w *= factor;
     result_diff.w *= factor;
-
-
-    // Renormalize
-    result_spec.xyz /= max(0.001, result_spec.w);
-    result_diff.xyz /= max(0.001, result_diff.w);
 }
