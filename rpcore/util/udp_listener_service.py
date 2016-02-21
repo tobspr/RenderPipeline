@@ -42,7 +42,7 @@ class UDPListenerService(object):
         """ Sends a given message to a given port and immediately returns """
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            sock.sendto(message, ("127.0.0.1", port))
+            sock.sendto(message.encode("utf-8"), ("127.0.0.1", port))
         finally:
             sock.close()
 
@@ -56,7 +56,7 @@ class UDPListenerService(object):
             sock.bind(("127.0.0.1", port))
             while True:
                 data, addr = sock.recvfrom(1024)
-                callback(data)
+                callback(data.decode("utf-8"))
         finally:
             sock.close()
 
