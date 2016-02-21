@@ -71,7 +71,6 @@ vec2 get_parallax_texcoord(sampler2D displacement_map) {
     // To disable parallax mapping:
     // return vOutput.texcoord;
 
-
     // Early out for materials without parallax mapping
     float initial_height = texture(displacement_map, vOutput.texcoord).x;
     float pixel_dist = distance(MainSceneData.camera_pos, vOutput.position);

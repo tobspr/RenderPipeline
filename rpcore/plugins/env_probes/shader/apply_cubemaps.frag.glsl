@@ -48,7 +48,7 @@ vec3 correct_parallax(vec3 cubemap_pos, float cubemap_size, Material m, out floa
     vec3 furthest = max(intersect0, intersect1);
     float dist = min(min(furthest.x, furthest.y), furthest.z);
     vec3 intersect_pos = m.position + reflected_dir * dist;
-    roughness_mult = 0.5 * clamp(dist, 0.4, 4.0);
+    roughness_mult = 0.5 * clamp(dist, 1.0, 4.0);
     roughness_mult = 1;
     return intersect_pos - cubemap_pos;
 }
@@ -57,7 +57,9 @@ float get_cubemap_factor(vec3 cubemap_pos, float cubemap_size, Material m) {
     vec3 v = abs(cubemap_pos - m.position);
     float maxdist = max(v.x, max(v.y, v.z));
     // return step(maxdist, cubemap_size);
-    return 1 - saturate(pow(maxdist / cubemap_size, 32.0));
+    // return 1;
+    return saturate(maxdist / cubemap_size);
+    // return 1 - saturate(pow(maxdist / cubemap_size, 2.0));
 }
 
 void main() {
@@ -72,8 +74,8 @@ void main() {
     }
 
     int num_mips = get_mipmap_count(CubemapStorage);
-    float mipmap = sqrt(m.roughness) * 5.0;
-    float diff_mip = num_mips - 2;
+    float mipmap = sqrt(m.roughness) * 12.0;
+    float diff_mip = num_mips - 1;
 
     vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
 
@@ -84,10 +86,12 @@ void main() {
     float mip_mult = 0;
     vec3 parallax = correct_parallax(cubemap_pos, cubemap_size, m, mip_mult);
     float factor = get_cubemap_factor(cubemap_pos, cubemap_size, m);
-    // parallax = m.normal;
+    mipmap *= mix(1 - factor, 1.0, saturate(dot(m.normal, view_vector)));
     result_spec = textureLod(
         CubemapStorage, vec4(parallax, cubemap_index),
         clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
+
+    // Correct diffuse vector, instead of using just the normal
     result_diff = textureLod(
         CubemapStorage, vec4(m.normal, cubemap_index), diff_mip);
 
@@ -95,7 +99,9 @@ void main() {
     result_spec.xyz /= max(1e-7, result_spec.w);
     result_diff.xyz /= max(1e-7, result_diff.w);
 
-    // Apply factors
-    result_spec.w *= factor;
-    result_diff.w *= factor;
+    // Apply clip factors
+    float clip_factor = 1.0 - pow(factor, 32.0);
+    result_spec *= clip_factor;
+    result_diff *= clip_factor;
+
 }

@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import Vec3
 
+from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .probes import EnvironmentProbe, ProbeManager
@@ -44,7 +45,11 @@ class Plugin(BasePlugin):
 
     def on_stage_setup(self):
         self.probe_mgr = ProbeManager(512)
-        self.probe_mgr.add_probe(EnvironmentProbe(Vec3(0, 1, 2.0), 25))
+        self.probe_mgr.add_probe(EnvironmentProbe(Vec3(0, 1, 2.0), 20))
+
+        # visualizer = Globals.loader.loadModel("data/builtin_models/visualizer/cubemap.bam")
+        # visualizer.reparent_to(render)
+        # visualizer.set_pos(0, 1, 2.0)
 
         self.capture_stage = self.create_stage(EnvironmentCaptureStage)
         self.capture_stage.resolution = self.probe_mgr.resolution

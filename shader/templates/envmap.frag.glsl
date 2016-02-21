@@ -67,7 +67,7 @@ void main() {
 
     #endif
 
-    shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env * 2;
+    shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env;
     shading_result += (1 - mOutput.metallic) * diff_env * basecolor;
 
 

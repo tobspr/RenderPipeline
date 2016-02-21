@@ -176,7 +176,6 @@ void main() {
         ambient *= max(0.0, 1 - m.emissive);
         ambient += m.emissive * m.basecolor * 1000.0;
 
-
     }
     #endif
 
