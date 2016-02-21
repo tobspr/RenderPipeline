@@ -40,16 +40,19 @@ class ApplyCubemapsStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"EnvmapAmbient": self._target["color"]}
+        return {
+            "EnvmapAmbientSpec": self._target["color"],
+            "EnvmapAmbientDiff": self._target["aux0"]
+        }
 
     def create(self):
         self._target = self.make_target("ApplyEnvmap")
         self._target.add_color_texture(bits=16)
+        self._target.add_aux_texture(bits=16)
         self._target.has_color_alpha = True
         self._target.prepare_offscreen_buffer()
 
-        AmbientStage.required_pipes.append("EnvmapAmbient")
-
+        AmbientStage.required_pipes += ["EnvmapAmbientSpec", "EnvmapAmbientDiff"]
 
     def set_shaders(self):
         self._target.set_shader(self.load_plugin_shader("apply_cubemaps.frag.glsl"))

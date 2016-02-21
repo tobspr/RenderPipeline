@@ -53,13 +53,15 @@ uniform samplerCube DefaultEnvmap;
 #endif
 
 #if HAVE_PLUGIN(env_probes)
-    uniform sampler2D EnvmapAmbient;
+    uniform sampler2D EnvmapAmbientDiff;
+    uniform sampler2D EnvmapAmbientSpec;
 #endif
 
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
-    return pow(roughness, 1.0 / 2.5) / 0.15;
+    // return pow(roughness, 1.0 / 2.5) / 0.15;
+    return sqrt(roughness) * 7.0;
 }
 
 void main() {
@@ -89,7 +91,7 @@ void main() {
 
         // Get environment coordinate, cubemaps have a different coordinate
         // system
-        vec3 env_coord = fix_cubemap_coord(reflected_dir);
+        vec3 env_coord = reflected_dir;
 
         // Compute angle between normal and view vector
         float NxV = max(1e-5, dot(m.normal, view_vector));
@@ -128,9 +130,10 @@ void main() {
 
 
         #if HAVE_PLUGIN(env_probes)
-            vec4 probe_ambient = texture(EnvmapAmbient, texcoord);
-            ibl_specular = mix(ibl_specular, probe_ambient.xyz, probe_ambient.w);
-            ibl_diffuse = mix(ibl_diffuse, probe_ambient.xyz, probe_ambient.w);
+            vec4 probe_spec = textureLod(EnvmapAmbientSpec, texcoord, 0);
+            vec4 probe_diff = textureLod(EnvmapAmbientDiff, texcoord, 0);
+            ibl_specular = mix(ibl_specular, probe_spec.xyz, probe_spec.w);
+            ibl_diffuse = mix(ibl_diffuse, probe_diff.xyz, probe_diff.w);
         #endif
 
         // Pre-Integrated environment BRDF
@@ -172,6 +175,8 @@ void main() {
         // since it can contain values much greater than 1.0
         ambient *= max(0.0, 1 - m.emissive);
         ambient += m.emissive * m.basecolor * 1000.0;
+
+
     }
     #endif
 

@@ -28,6 +28,7 @@ from __future__ import division
 from rplibs.six.moves import range
 
 from panda3d.core import Camera, PerspectiveLens, Vec4, NodePath, Vec3
+from panda3d.core import PTALVecBase3, PTAInt
 
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
@@ -36,7 +37,7 @@ class EnvironmentCaptureStage(RenderStage):
 
     """ This stage renders the scene to a cubemap """
 
-    required_inputs = []
+    required_inputs = ["DefaultEnvmap"]
     required_pipes = []
 
     def __init__(self, pipeline):
@@ -45,16 +46,16 @@ class EnvironmentCaptureStage(RenderStage):
         self.regions = []
         self.cameras = []
         self.rig_node = Globals.render.attach_new_node("EnvmapCamRig")
-
-    def set_storage_texture(self, tex):
-        self._target_store.set_shader_input("DestTex", tex)
+        self.pta_position = PTALVecBase3.empty_array(1)
+        self.pta_index = PTAInt.empty_array(1)
+        self.storage_tex = None
 
     def create(self):
         self._target = self.make_target("CaptureScene")
         self._target.set_source(None, Globals.base.win)
         self._target.size = (self.resolution * 6, self.resolution)
-        # self._target.add_depth_texture(bits=16)
         self._target.add_color_texture(bits=16)
+        self._target.has_color_alpha = True
         self._target.create_overlay_quad = False
         self._target.prepare_scene_render()
 
@@ -73,7 +74,7 @@ class EnvironmentCaptureStage(RenderStage):
             region.set_clear_depth(1)
             region.set_clear_color_active(True)
             region.set_clear_depth_active(True)
-            region.set_clear_color(Vec4(0.0, 0.0, 0.0, 1.0))
+            region.set_clear_color(Vec4(0.0, 0.0, 0.0, 0.0))
             region.set_sort(25 + i)
             region.set_active(True)
 
@@ -90,6 +91,7 @@ class EnvironmentCaptureStage(RenderStage):
         self.cameras[0].set_r(90)
         self.cameras[1].set_r(-90)
         self.cameras[3].set_r(180)
+        self.cameras[5].set_r(180)
 
         # Register cameras
         for camera_np in self.cameras:
@@ -99,7 +101,27 @@ class EnvironmentCaptureStage(RenderStage):
         self._target_store.size = (self.resolution * 6, self.resolution)
         self._target_store.prepare_offscreen_buffer()
         self._target_store.set_shader_input("SourceTex", self._target["color"])
+        self._target_store.set_shader_input("DestTex", self.storage_tex)
+        self._target_store.set_shader_input("currentIndex", self.pta_index)
 
+        self.set_shader_input("envmapProbePosition", self.pta_position)
+
+        # Generate the targets which filter the cubemap
+        self.filter_targets = []
+        mip = 0
+        size = self.resolution
+        while size > 1:
+            size = size // 2
+            mip += 1
+            target = self.make_target("FilterCubemap:{}".format(mip))
+            target.set_size(size * 6, size)
+            target.add_color_texture()
+            target.prepare_offscreen_buffer()
+            target.set_shader_input("currentIndex", self.pta_index)
+            target.set_shader_input("currentMip", mip)
+            target.set_shader_input("SourceTex", self.storage_tex)
+            target.set_shader_input("DestTex", self.storage_tex, False, True, -1, mip, 0)
+            self.filter_targets.append(target)
 
     def render_probe(self, probe):
         if probe is None:
@@ -108,9 +130,15 @@ class EnvironmentCaptureStage(RenderStage):
             self.rig_node.set_pos(probe.position)
             for camera in self.cameras:
                 camera.node().get_lens().set_far(probe.size)
+        self.pta_position[0] = probe.position
+        self.pta_index[0] = 0 # probe.storage_offset
+
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
 
     def set_shaders(self):
         self._target_store.set_shader(self.load_plugin_shader("store_cubemap.frag.glsl"))
+        filter_shader = self.load_plugin_shader("filter_cubemap.frag.glsl")
+        for target in self.filter_targets:
+            target.set_shader(filter_shader)

@@ -43,16 +43,16 @@ class Plugin(BasePlugin):
 
 
     def on_stage_setup(self):
-        self.probe_mgr = ProbeManager(256)
-        self.probe_mgr.add_probe(EnvironmentProbe(Vec3(0, 0, 2), 50))
+        self.probe_mgr = ProbeManager(512)
+        self.probe_mgr.add_probe(EnvironmentProbe(Vec3(0, 0, 2.0), 30))
 
         self.capture_stage = self.create_stage(EnvironmentCaptureStage)
         self.capture_stage.resolution = self.probe_mgr.resolution
+        self.capture_stage.storage_tex = self.probe_mgr.storage_tex
 
         self.apply_stage = self.create_stage(ApplyCubemapsStage)
 
     def on_pipeline_created(self):
-        self.capture_stage.set_storage_texture(self.probe_mgr.storage_tex)
         self.apply_stage.set_shader_input("CubemapStorage", self.probe_mgr.storage_tex)
 
     def on_pre_render_update(self):

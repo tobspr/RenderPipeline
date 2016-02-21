@@ -24,137 +24,172 @@ THE SOFTWARE.
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
-from panda3d.core import PNMImage, load_prc_file_data, Texture, NodePath
-from panda3d.core import Shader, ShaderAttrib
-
-import shutil
 import os
-
-load_prc_file_data("", "textures-power-2 none")
-# load_prc_file_data("", "window-type offscreen")
-load_prc_file_data("", "win-size 100 100")
-load_prc_file_data("", "notify-level-display error")
-
-import direct.directbase.DirectStart
+from panda3d.core import *
+from direct.showbase.ShowBase import ShowBase
 
 
-compute_shader = Shader.make_compute(Shader.SL_GLSL, """
+cshader = Shader.make_compute(Shader.SL_GLSL, """
 #version 430
 
-layout (local_size_x = 16, local_size_y = 16) in;
-uniform writeonly image2D DestTex;
-uniform samplerCube SourceCubemap;
-uniform int size;
-uniform int blurSize;
-uniform int effectiveSize;
-uniform int faceIndex;
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 6) in;
 
 
-vec3 transform_cubemap_coordinates(vec3 coord) {
-    return normalize(coord.xzy * vec3(1,-1,1));
-}
+#define M_PI 3.1415926535897932384626433
 
-vec3 get_transformed_coord(vec2 coord) {
+vec3 get_transformed_coord(vec2 coord, uint face) {
     float f = 1.0;
-    if (faceIndex == 1) return vec3(-f, coord);
-    if (faceIndex == 2) return vec3(coord, -f);
-    if (faceIndex == 0) return vec3(f, -coord.x, coord.y);
-    if (faceIndex == 3) return vec3(coord.xy * vec2(1,-1), f);
-    if (faceIndex == 4) return vec3(coord.x, f, coord.y);
-    if (faceIndex == 5) return vec3(-coord.x, -f, coord.y);
+    switch (face) {
+        case 1: return vec3(-f, coord);
+        case 2: return vec3(coord, -f);
+        case 0: return vec3(f, -coord.x, coord.y);
+        case 3: return vec3(coord.xy * vec2(1,-1), f);
+        case 4: return vec3(coord.x, f, coord.y);
+        case 5: return vec3(-coord.x, -f, coord.y);
+    }
     return vec3(0);
 }
 
+// From:
+// http://www.trentreed.net/blog/physically-based-shading-and-image-based-lighting/
+vec2 hammersley(uint i, uint N)
+{
+  return vec2(float(i) / float(N), float(bitfieldReverse(i)) * 2.3283064365386963e-10);
+}
+
+// From:
+// http://www.gamedev.net/topic/655431-ibl-problem-with-consistency-using-ggx-anisotropy/
+vec3 importance_sample_ggx(vec2 xi, float roughness)
+{
+  float r_square = roughness * roughness;
+  float phi = 2 * M_PI * xi.x;
+  float cos_theta = sqrt((1 - xi.y) / (1 + (r_square*r_square - 1) * xi.y));
+  float sin_theta = sqrt(1 - cos_theta * cos_theta);
+
+  vec3 h = vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
+  return h;
+}
+
+
+// Converts a normalized spherical coordinate (r = 1) to cartesian coordinates
+vec3 spherical_to_vector(float theta, float phi) {
+    float sin_theta = sin(theta);
+    return normalize(vec3(
+        sin_theta * cos(phi),
+        sin_theta * sin(phi),
+        cos(theta)
+    ));
+}
+
+float brdf_distribution_ggx(float NxH, float roughness) {
+    float nxh_sq = NxH * NxH;
+    float tan_sq = (1 - nxh_sq) / nxh_sq;
+    float f = roughness / (nxh_sq * (roughness * roughness + tan_sq) );
+    return f * f / M_PI;
+}
+
+
+// Finds a tangent and bitangent vector based on a given normal
+void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
+    vec3 v0 = abs(normal.z) < (0.99) ? vec3(0, 0, 1) : vec3(0, 1, 0);
+    tangent = normalize(cross(v0, normal));
+    bitangent = normalize(cross(tangent, normal));
+}
+
+
+vec3 transform_cubemap_coordinates(vec3 coord) {
+    //return normalize(coord.xzy * vec3(1,-1,1));
+    return normalize(coord.xyz * vec3(1,-1,1));
+}
+
+uniform samplerCube SourceTex;
+uniform int currentSize;
+uniform int currentMip;
+uniform layout(rgba16f) imageCube DestTex;
+
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 local_coord = coord - blurSize;
-    vec2 local_texcoord = local_coord / float(size) * 2.0 - 1.0;
+    int face = int(gl_GlobalInvocationID.z);
 
-    vec3 direction = get_transformed_coord(local_texcoord);
-    direction = transform_cubemap_coordinates(direction);
-    vec3 sampled = texture(SourceCubemap, direction).xyz;
+    vec2 texcoord = vec2(coord + 0.5) / float(currentSize);
+    texcoord = texcoord * 2.0 - 1.0;
 
-    imageStore(DestTex, coord, vec4(sampled, 1));
+    vec3 n = get_transformed_coord(texcoord, face);
+    n = normalize(n);
+    n = transform_cubemap_coordinates(n);
+    float roughness = clamp(currentMip / 7.0, 0.001, 1.0);
+    roughness *= roughness;
+
+    vec3 tangent, binormal;
+    find_arbitrary_tangent(n, tangent, binormal);
+
+    vec4 accum = vec4(0);
+    const uint num_samples = 4096;
+    for (uint i = 0; i < num_samples; ++i) {
+        vec2 xi = hammersley(i, num_samples);
+        vec3 r = importance_sample_ggx(xi, roughness);
+        vec3 h = normalize(r.x * tangent + r.y * binormal + r.z * n);
+        vec3 l = 2.0 * dot(n, h) * h - n;
+
+        float NxL = clamp(dot(n, l), 0.0, 1.0);
+        float NxH = clamp(dot(n, h), 0.0, 1.0);
+
+        vec3 sampled = texture(SourceTex, l).rgb;
+
+        // GGX
+        float weight = brdf_distribution_ggx(NxH, roughness);
+        weight *= NxL;
+        weight = clamp(weight, 0.0, 1.0);
+        accum += vec4(sampled, 1) * weight;
+    }
+
+    accum /= max(0.1, accum.w);
+
+
+    imageStore(DestTex, ivec3(coord, face), vec4(accum.xyz, 1.0));
 }
+
 """)
 
+class Application(ShowBase):
+    def __init__(self):
+        load_prc_file_data("", """
+            textures-power-2 none
+            window-type offscreen
+            win-size 100 100
+            gl-coordinate-system default
+            notify-level-display error
+        """)
 
-def load_nth_face(pth, i):
-    return PNMImage(pth.replace("#", str(i)))
+        ShowBase.__init__(self)
 
+        if not os.path.isdir("filtered/"):
+            os.makedirs("filtered/")
 
-def filter_cubemap(orig_pth):
+        cubemap = self.loader.loadCubeMap("#.jpg")
+        mipmap, size = -1, cubemap.get_y_size() * 2
 
-    if not os.path.isdir("filtered/"):
-        os.makedirs("filtered/")
+        while size > 1:
+            size = size // 2
+            mipmap += 1
+            print("Filtering mipmap", mipmap)
 
-    # Copy original cubemap
-    for i in range(6):
-       shutil.copyfile(orig_pth.replace("#", str(i)), "filtered/0-" + str(i) + ".png")
+            dest_cubemap = Texture("Dest")
+            dest_cubemap.setup_cube_map(size, Texture.T_float, Texture.F_rgba16)
 
-    mip = 0
-    while True:
-        print("Filtering mipmap", mip)
-        mip += 1
-        pth = "filtered/" + str(mip - 1) + "-#.png"
-        dst_pth = "filtered/" + str(mip) + "-#.png"
-        first_img = load_nth_face(pth, 0)
-        size = first_img.get_x_size() // 2
-        if size < 1:
-            break
-        blur_size = size * 0.002
-        blur_size += mip * 0.85
-        blur_size = int(blur_size)
-        effective_size = size + 2 * blur_size
-        faces = [load_nth_face(pth, i) for i in range(6)]
-
-        cubemap = loader.loadCubeMap(pth)
-        node = NodePath("")
-        node.set_shader(compute_shader)
-        node.set_shader_input("SourceCubemap", cubemap)
-        node.set_shader_input("size", size)
-        node.set_shader_input("blurSize", blur_size)
-        node.set_shader_input("effectiveSize", effective_size)
-
-        final_img = PNMImage(size, size, 3)
-
-        for i in range(6):
-            face_dest = dst_pth.replace("#", str(i))
-            dst = Texture("Face-" + str(i))
-            dst.setup_2d_texture(effective_size, effective_size,
-                                 Texture.T_float, Texture.F_rgba16)
-
-            # Execute compute shader
-            node.set_shader_input("faceIndex", i)
-            node.set_shader_input("DestTex", dst)
+            node = NodePath("")
+            node.set_shader(cshader)
+            node.set_shader_input("SourceTex", cubemap)
+            node.set_shader_input("DestTex", dest_cubemap)
+            node.set_shader_input("currentSize", size)
+            node.set_shader_input("currentMip", mipmap)
             attr = node.get_attrib(ShaderAttrib)
-            base.graphicsEngine.dispatch_compute(( (effective_size+15) // 16,
-                                                   (effective_size+15) // 16, 1),
-                                                 attr, base.win.get_gsg())
+            self.graphicsEngine.dispatch_compute(
+                ( (size + 7) // 8, (size+7) // 8, 1), attr, self.win.get_gsg())
 
-            base.graphicsEngine.extract_texture_data(dst, base.win.get_gsg())
-            img = PNMImage(effective_size, effective_size, 3)
-            dst.store(img)
-            img.gaussian_filter(blur_size)
-            final_img.copy_sub_image(img, 0, 0, blur_size, blur_size, size, size)
-            final_img.write(face_dest)
+            self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.get_gsg())
+            dest_cubemap.write("filtered/{}-#.png".format(mipmap), 0, 0, True, False)
 
-
-
-
-if __name__ == "__main__":
-
-    # Find out the extension
-    files = os.listdir(".")
-    num_pngs = 0
-    num_jpgs = 0
-    for f in files:
-        if f.endswith(".png"):
-            num_pngs += 1
-        elif f.endswith(".jpg"):
-            num_jpgs += 1
-    extension = "png" if num_pngs >= num_jpgs else "jpg"
-
-    filter_cubemap("#." + extension)
+Application()

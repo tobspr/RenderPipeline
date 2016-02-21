@@ -137,6 +137,12 @@ int get_mipmap_count(sampler2D tex) {
     return int(1 + floor(log2(tex_size)));
 }
 
+// Returns the number of mipmaps of a cubemap arry
+int get_mipmap_count(samplerCubeArray cubemap) {
+    int cubemap_size = textureSize(cubemap, 0).x;
+    return int(1 + floor(log2(cubemap_size)));
+}
+
 // Converts a normalized spherical coordinate (r = 1) to cartesian coordinates
 vec3 spherical_to_vector(float theta, float phi) {
     float sin_theta = sin(theta);

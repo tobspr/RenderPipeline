@@ -27,13 +27,33 @@ uniform sampler2D p3d_Texture0;
 //     uniform mat4 VXGISunShadowMVP;
 // #endif
 
+uniform vec3 envmapProbePosition;
+uniform samplerCube DefaultEnvmap;
+
 out vec4 result;
 
 void main() {
     vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).xyz;
     basecolor *= mOutput.color;
 
-    vec3 shading_result = basecolor;
+
+    // vec3 shading_result = mix(basecolor, vec3(0), mOutput.metallic);
+    vec3 shading_result = vec3(0);
+
+    // Ambient
+    vec3 view_vector = normalize(envmapProbePosition - vOutput.position);
+    vec3 reflected = reflect(view_vector, vOutput.normal);
+
+    // Specular ambient
+    float spec_mip = mOutput.roughness * 7.0;
+    vec3 spec_env = textureLod(DefaultEnvmap, reflected, spec_mip).rgb;
+    shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env * 0.5;
+
+    // Diffuse ambient
+    int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
+    vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb;
+    shading_result += (1 - mOutput.metallic) * diff_env * basecolor;
+
 
     // Tonemapping to pack color
     shading_result = shading_result / (1.0 + shading_result);

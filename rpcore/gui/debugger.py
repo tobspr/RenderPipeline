@@ -185,11 +185,14 @@ class Debugger(BaseManager):
             RenderTarget.get_num_buffers(),
             len(self._pipeline.plugin_mgr.enabled_plugins))
 
-        text = "{} ({:1.3f})  |  {:3d} daytime settings"
+        text = "{} ({:1.3f})  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
         self._debug_lines[3].text = text.format(
             self._pipeline.daytime_mgr.formatted_time,
             self._pipeline.daytime_mgr.time,
-            self._pipeline.plugin_mgr.num_day_settings)
+            self._pipeline.plugin_mgr.num_day_settings,
+            Globals.base.camera.get_x(Globals.base.render),
+            Globals.base.camera.get_y(Globals.base.render),
+            Globals.base.camera.get_z(Globals.base.render),)
 
     def _create_debugger(self):
         """ Creates the debugger contents """
