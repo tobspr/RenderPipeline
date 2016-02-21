@@ -24,45 +24,24 @@ THE SOFTWARE.
 
 """
 
-from __future__ import division
-
 from rpcore.render_stage import RenderStage
-from panda3d.core import SamplerState, Texture
 
-class SharpenStage(RenderStage):
+class TonemappingStage(RenderStage):
 
-    required_inputs = ["PrecomputedGrain"]
+    required_inputs = []
     required_pipes = ["ShadedScene"]
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "SharpenStage", pipeline)
+        RenderStage.__init__(self, "TonemappingStage", pipeline)
 
     @property
     def produced_pipes(self):
-        # return {"ShadedScene": self._target2["color"]}
         return {"ShadedScene": self._target["color"]}
 
     def create(self):
-        self._target = self.make_target("Sharpen")
+        self._target = self.make_target("Tonemap")
         self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 
-        # self._target2 = self.make_target("Sharpen2")
-        # self._target2.add_color_texture(bits=16)
-        # self._target2.prepare_offscreen_buffer()
-        # self._target2.set_shader_input("ShadedScene", self._target["color"])
-
-    def set_shader_input(self, name, *args):
-        if name == "ShadedScene":
-            # Make sure we sample the color texture with a linear filter
-            linear_state = SamplerState()
-            linear_state.set_minfilter(Texture.FT_linear)
-            linear_state.set_magfilter(Texture.FT_linear)
-            args = list(args) + [linear_state]
-            self._target.set_shader_input(name, *args)
-        else:
-            RenderStage.set_shader_input(self, name, *args)
-
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("sharpen.frag.glsl"))
-        # self._target2.set_shader(self.load_plugin_shader("sharpen.frag.glsl"))
+        self._target.set_shader(self.load_plugin_shader("apply_tonemap.frag.glsl"))

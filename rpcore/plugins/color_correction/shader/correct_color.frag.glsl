@@ -29,29 +29,15 @@
 #define USE_MAIN_SCENE_DATA
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/tonemapping.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 
 #pragma include "chromatic_aberration.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform sampler3D ColorLUT;
 uniform float osg_FrameTime;
 
 out vec4 result;
-
-// Color LUT
-vec3 apply_lut(vec3 color) {
-    vec3 lut_coord = color;
-
-    // We have a gradient from 0.5 / lut_size to 1 - 0.5 / lut_size
-    // need to transform from 0 .. 1 to that gradient:
-    float lut_start = 0.5 / 64.0;
-    float lut_end = 1.0 - lut_start;
-    lut_coord = lut_coord * (lut_end - lut_start) + lut_start;
-    return textureLod(ColorLUT, lut_coord, 0).xyz;
-}
 
 
 void main() {
@@ -84,9 +70,6 @@ void main() {
             scene_color *= 0.1;
         #endif
 
-        // Apply tonemapping
-        scene_color = do_tonemapping(scene_color);
-
         // Compute film grain
         float film_grain = grain(texcoord, osg_FrameTime);
         vec3 blended_color = blend_soft_light(scene_color, vec3(film_grain));
@@ -94,9 +77,6 @@ void main() {
         // Blend film grain
         float grain_factor = GET_SETTING(color_correction, film_grain_strength);
         scene_color = mix(scene_color, blended_color, grain_factor);
-
-        // Apply the LUT
-        // scene_color = apply_lut(scene_color);
 
         // Apply the vignette based on the vignette strength
         scene_color *= mix(1.0, vignette, GET_SETTING(color_correction, vignette_strength));

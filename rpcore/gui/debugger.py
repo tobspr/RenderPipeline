@@ -41,6 +41,7 @@ from rpcore.gui.checkbox_collection import CheckboxCollection
 from rpcore.gui.text_node import TextNode
 from rpcore.gui.error_message_display import ErrorMessageDisplay
 from rpcore.gui.exposure_widget import ExposureWidget
+from rpcore.gui.pixel_inspector import PixelInspector
 
 from rpcore.globals import Globals
 from rpcore.base_manager import BaseManager
@@ -101,6 +102,7 @@ class Debugger(BaseManager):
             Globals.base.win.get_x_size() / self._gui_scale - 200,
             1, -Globals.base.win.get_y_size() / self._gui_scale + 120)
         self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
+        self._pixel_widget = PixelInspector(self._pipeline)
 
     def _init_notify(self):
         """ Inits the notify stream which gets all output from panda and parses
@@ -111,6 +113,8 @@ class Debugger(BaseManager):
         """ Updates the gui """
         self._update_stats()
         self._error_msg_handler.update()
+        self._pixel_widget.update()
+
 
     def get_error_msg_handler(self):
         """ Returns the error message handler """

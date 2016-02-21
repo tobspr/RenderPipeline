@@ -24,33 +24,53 @@
  *
  */
 
-#version 400
+#version 420
 
-#define USE_GBUFFER_EXTENSIONS
 #define USE_MAIN_SCENE_DATA
+#define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "smaa_wrapper.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/tonemapping.inc.glsl"
 
-uniform sampler2D BlendTex;
 uniform sampler2D ShadedScene;
+uniform sampler3D ColorLUT;
 
 out vec4 result;
 
-void main() {
-    vec2 texcoord = get_texcoord();
+// Color LUT
+vec3 apply_lut(vec3 color) {
+    vec3 lut_coord = color;
 
-    // "Vertex shader"
-    vec4 offset;
-    SMAANeighborhoodBlendingVS(texcoord, offset);
-
-    // Actual Fragment shader
-    #if SMAA_REPROJECTION
-        result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex, GBuffer.Data2);
-    #else
-        result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex);
-    #endif
-
-    // result = texture(ShadedScene, texcoord);
+    // We have a gradient from 0.5 / lut_size to 1 - 0.5 / lut_size
+    // need to transform from 0 .. 1 to that gradient:
+    float lut_start = 0.5 / 64.0;
+    float lut_end = 1.0 - lut_start;
+    lut_coord = lut_coord * (lut_end - lut_start) + lut_start;
+    return textureLod(ColorLUT, lut_coord, 0).xyz;
 }
 
+void main() {
+
+    vec2 texcoord = get_texcoord();
+
+    #if !DEBUG_MODE
+
+        vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
+
+        // Downscale the color in case we don't use automatic exposure, to simulate
+        // the dynamic range.
+        #if !GET_SETTING(color_correction, use_auto_exposure)
+            scene_color *= 0.1;
+        #endif
+
+        // Apply tonemapping
+        scene_color = do_tonemapping(scene_color);
+
+        // Apply the LUT
+        // scene_color = apply_lut(scene_color);
+
+    #else
+        vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
+    #endif // !DEBUG_MODE
+
+    result = vec4(scene_color, 1);
+}

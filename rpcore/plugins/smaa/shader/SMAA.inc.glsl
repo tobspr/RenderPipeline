@@ -1272,7 +1272,7 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
         float2 velocity = SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, texcoord));
 
         // Pack velocity into the alpha channel:
-        color.a = sqrt(5.0 * length(velocity));
+        color.a = length(velocity);
         #endif
 
         return color;
@@ -1300,7 +1300,7 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
         velocity += blendingWeight.y * SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, blendingCoord.zw));
 
         // Pack velocity into the alpha channel:
-        color.a = sqrt(5.0 * length(velocity));
+        color.a = length(velocity);
         #endif
 
         return color;

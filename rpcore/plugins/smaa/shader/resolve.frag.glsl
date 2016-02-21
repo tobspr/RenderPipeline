@@ -44,18 +44,45 @@ void main() {
     vec2 velocity = get_gbuffer_velocity(GBuffer, texcoord);
     vec2 old_coord = texcoord - velocity;
     vec4 current_color = textureLod(CurrentTex, texcoord, 0);
-    vec4 last_color = textureLod(LastTex, old_coord, 0);
 
-    float weight = 0.5;
+    vec4 last_color = textureLod(LastTex, old_coord, 0);
 
     // Out of screen
     if (old_coord.x < 0.0 || old_coord.x > 1.0 || old_coord.y < 0.0 || old_coord.y > 1.0) {
-        weight = 0.0;
+        result = current_color;
+        return;
     }
 
-    // Fade out when velocity gets too big
-    const float max_velocity = 15.0 / WINDOW_HEIGHT;
-    weight *= 1.0 - saturate(length(velocity) / max(0.000001, max_velocity));
+    // Get last frame bounding box
+    const int radius = 2;
+    vec4 color_min = vec4(1e10);
+    vec4 color_max = vec4(0);
+    ivec2 last_coord = ivec2( 0.5 + texcoord * SCREEN_SIZE );
+    for (int i = -radius; i <= radius; ++i) {
+        for (int j = -radius; j <= radius; ++j) {
+            vec4 sample_color = texelFetch(LastTex, last_coord + ivec2(i, j), 0);
+            color_min = min(color_min, sample_color);
+            color_max = max(color_max, sample_color);
+        }
+    }
+
+    // Compute  weight
+    float weight = 0.0;
+
+    float bias = 6.0 / 255.0;
+    color_min -= bias;
+    color_max += bias;
+    if (current_color.r >= color_min.r && current_color.g >= color_min.g && current_color.b >= color_min.b) {
+        if (current_color.r <= color_max.r && current_color.g <= color_max.g && current_color.b <= color_max.b) {
+            weight = 0.5;
+        }
+    }
+
+    // Fade out when velocity gets too different
+    const float max_velocity_diff = 5.0 / WINDOW_HEIGHT;
+    float current_diff = abs(current_color.w - last_color.w);
+    weight *= 0.5 - 0.5 * saturate(current_diff / max_velocity_diff);
 
     result = mix(current_color, last_color, weight);
+    // result.xyz = vec3(weight);
 }

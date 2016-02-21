@@ -141,9 +141,10 @@ class EnumType(BaseType):
         self.value = value
 
     def write_defines(self, plugin_id, setting_id, definer):
-        BaseType.write_defines(self, plugin_id, setting_id, definer)
+        definer("{}__{}".format(plugin_id, setting_id), 1000 + self.values.index(self.value))
+
         for i, val in enumerate(self.values):
-            definer("{}_ENUM_{}_{}".format(plugin_id, setting_id, val), i)
+            definer("{}_ENUM_{}_{}".format(plugin_id, setting_id, val), 1000 + i)
 
 class PathType(BaseType):
     """ Path type to specify paths to files """

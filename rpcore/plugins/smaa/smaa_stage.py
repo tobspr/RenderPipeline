@@ -83,6 +83,7 @@ class SMAAStage(RenderStage):
 
             target = self.make_target("Neighbor-" + str(i))
             target.add_color_texture(bits=16)
+            target.has_color_alpha = True
             target.prepare_offscreen_buffer()
             target.set_shader_input("BlendTex", self._blend_target["color"])
             self._neighbor_targets.append(target)

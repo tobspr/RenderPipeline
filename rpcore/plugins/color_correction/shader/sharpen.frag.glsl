@@ -67,6 +67,5 @@ void main() {
 
     // Apply the sharpening
     scene_color += dot(pixel_diff, sharpen_luma_strength);
-
     result = vec4(scene_color, 1.0);
 }

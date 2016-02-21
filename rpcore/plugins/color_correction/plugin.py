@@ -33,6 +33,7 @@ from rpcore.util.slice_loader import SliceLoader
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage
 from .sharpen_stage import SharpenStage
+from .tonemapping_stage import TonemappingStage
 
 class Plugin(BasePlugin):
 
@@ -44,6 +45,7 @@ class Plugin(BasePlugin):
 
     def on_stage_setup(self):
         self._stage = self.create_stage(ColorCorrectionStage)
+        self._tonemapping_stage = self.create_stage(TonemappingStage)
 
         if self.get_setting("use_sharpen"):
             self._sharpen_stage = self.create_stage(SharpenStage)
@@ -64,4 +66,4 @@ class Plugin(BasePlugin):
         lut.set_minfilter(SamplerState.FT_linear)
         lut.set_magfilter(SamplerState.FT_linear)
         lut.set_anisotropic_degree(0)
-        self._stage.set_shader_input("ColorLUT", lut)
+        self._tonemapping_stage.set_shader_input("ColorLUT", lut)

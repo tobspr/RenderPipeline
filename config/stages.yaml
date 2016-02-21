@@ -20,7 +20,7 @@ global_stage_order:
   - ShadowStage
   - DownscaleZStage
 
-  # Light[culling]
+  # Light(-culling)
   - FlagUsedCellsStage
   - CollectUsedCellsStage
   - CullLightsStage
@@ -37,10 +37,13 @@ global_stage_order:
   - CloudStage
   - AutoExposureStage
   - BloomStage
-  - ColorCorrectionStage
-  - SharpenStage
+
+  # Post AA & Effects
+  - TonemappingStage
   - SMAAStage
   - FXAAStage
+  - SharpenStage
+  - ColorCorrectionStage
 
   # Finishing stages, do not insert anything below
   - FinalStage

@@ -24,8 +24,6 @@ THE SOFTWARE.
 
 """
 
-from __future__ import division
-
 from rpcore.render_stage import RenderStage
 
 class ColorCorrectionStage(RenderStage):
@@ -41,7 +39,7 @@ class ColorCorrectionStage(RenderStage):
         return {"ShadedScene": self._target["color"]}
 
     def create(self):
-        self._target = self.make_target("MainTonemap")
+        self._target = self.make_target("PostFX")
         self._target.add_color_texture(bits=16)
         self._target.prepare_offscreen_buffer()
 

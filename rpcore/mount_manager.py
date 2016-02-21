@@ -46,10 +46,10 @@ class MountManager(RPObject):
         """ Creates a new mount manager """
         RPObject.__init__(self)
         self._pipeline = pipeline
-        self._write_path = None
         self._base_path = self._find_basepath()
         self._lock_file = "instance.pid"
         self._model_paths = []
+        self._write_path = None
         self._mounted = False
         self._do_cleanup = True
         self._config_dir = None
@@ -210,6 +210,8 @@ class MountManager(RPObject):
             os.remove(fname)
             return True
         except IOError:
+            pass
+        except WindowsError:
             pass
         return False
 

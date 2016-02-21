@@ -31,6 +31,7 @@
 #define SMAA_GLSL_4
 #define SMAA_RT_METRICS vec4(1.0 / WINDOW_WIDTH, 1.0 / WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT)
 
+
 // Get seleted SMAA quality
 #if ENUM_V_ACTIVE(smaa, smaa_quality, low)
     #define SMAA_PRESET_LOW
@@ -45,11 +46,12 @@
 #endif
 
 
-
 // Include both Pixel and Vertex shader, because we do the vertex shader logic
 // in the pixel shader.
 #define SMAA_INCLUDE_VS 1
 #define SMAA_INCLUDE_PS 1
+// #define SMAA_REPROJECTION 1
+#define SMAA_DECODE_VELOCITY(sample) sample.rg
 
 // Optionally enable smaa predication
 // #define SMAA_PREDICATION 1

@@ -64,8 +64,8 @@ class Plugin(BasePlugin):
         for x, y in ((-0.25, 0.25), (0.25, -0.25)):
             # The get_x_size() for both dimensions is not an error! Its due to
             # how the OrtographicLens works internally.
-            jitter_x = x / float(Globals.base.win.get_x_size())
-            jitter_y = y / float(Globals.base.win.get_x_size())
+            jitter_x = x / float(Globals.base.win.get_x_size()) * 0.5
+            jitter_y = y / float(Globals.base.win.get_x_size()) * 0.5
             self._jitters.append((jitter_x, jitter_y))
 
     def _load_textures(self):
