@@ -49,7 +49,7 @@ void main() {
 
     // Get texture coordinate
     #if OPT_PARALLAX_MAPPING
-        texcoord = get_parallax_texcoord(p3d_Texture4);
+        texcoord = get_parallax_texcoord(p3d_Texture4, mOutput.normalfactor);
     #endif
 
     %TEXCOORD%

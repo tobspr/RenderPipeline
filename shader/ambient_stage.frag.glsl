@@ -132,8 +132,8 @@ void main() {
         #if HAVE_PLUGIN(env_probes)
             vec4 probe_spec = textureLod(EnvmapAmbientSpec, texcoord, 0);
             vec4 probe_diff = textureLod(EnvmapAmbientDiff, texcoord, 0);
-            ibl_specular = mix(ibl_specular, probe_spec.xyz, probe_spec.w);
-            ibl_diffuse = mix(ibl_diffuse, probe_diff.xyz, probe_diff.w);
+            ibl_specular = ibl_specular * (1 - probe_spec.w) + probe_spec.xyz;
+            ibl_diffuse = ibl_diffuse * (1 - probe_diff.w) + probe_diff.xyz;
         #endif
 
         // Pre-Integrated environment BRDF

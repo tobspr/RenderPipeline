@@ -54,6 +54,7 @@ class EnvironmentCaptureStage(RenderStage):
         self._target.set_source(None, Globals.base.win)
         self._target.size = (self.resolution * 6, self.resolution)
         self._target.add_color_texture(bits=16)
+        # self._target.add_depth_texture(bits=32)
         self._target.has_color_alpha = True
         self._target.create_overlay_quad = False
         self._target.prepare_scene_render()
@@ -63,6 +64,11 @@ class EnvironmentCaptureStage(RenderStage):
         internal_buffer.remove_all_display_regions()
         internal_buffer.get_display_region(0).set_active(False)
 
+        internal_buffer.set_clear_color_active(True)
+        internal_buffer.set_clear_depth_active(True)
+        internal_buffer.set_clear_color(Vec4(0))
+        internal_buffer.set_clear_depth(1.0)
+
         directions = (Vec3(1, 0, 0), Vec3(-1, 0, 0), Vec3(0, 1, 0),
                       Vec3(0, -1, 0), Vec3(0, 0, 1), Vec3(0, 0, -1))
 
@@ -70,10 +76,9 @@ class EnvironmentCaptureStage(RenderStage):
         for i in range(6):
             region = internal_buffer.make_display_region(
                 i / 6, i / 6 + 1 / 6, 0, 1)
-            region.set_clear_depth(1)
-            region.set_clear_color_active(True)
-            region.set_clear_depth_active(True)
-            region.set_clear_color(Vec4(0.0, 0.0, 0.0, 0.0))
+            # region.set_clear_depth(1)
+            region.set_clear_color_active(False)
+            region.set_clear_depth_active(False)
             region.set_sort(25 + i)
             region.set_active(True)
 
@@ -112,7 +117,6 @@ class EnvironmentCaptureStage(RenderStage):
             mip += 1
             target = self.make_target("FilterCubemap:{}".format(mip))
             target.set_size(size * 6, size)
-            # target.add_color_texture()
             target.prepare_offscreen_buffer()
             target.set_shader_input("currentIndex", self.pta_index)
             target.set_shader_input("currentMip", mip)

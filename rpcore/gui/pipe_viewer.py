@@ -99,7 +99,7 @@ class PipeViewer(DraggableWindow):
             node.set_scale(1, 1, -1)
             DirectFrame(parent=node, frameSize=(10, 150, 0, -3600),
                         frameColor=(0.2, 0.2, 0.2, 1))
-            Text(text=str(stage.get_name().replace("Stage", "")),
+            Text(text=str(stage.debug_name.replace("Stage", "")),
                  parent=node, x=20, y=25, size=15)
 
             for output_pipe, pipe_tex in iteritems(stage.produced_pipes):

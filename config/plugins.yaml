@@ -38,7 +38,7 @@ overrides:
     pssm.vsm_resolution: 4096
     color_correction.tonemap_operator: exponential
     color_correction.reinhard_version: rgb
-    color_correction.exponential_factor: 1.17
+    color_correction.exponential_factor: 1.06
     color_correction.uc2t_shoulder_strength: 0.22
     color_correction.uc2t_linear_strength: 0.3
     color_correction.uc2t_linear_angle: 0.1
@@ -47,7 +47,7 @@ overrides:
     color_correction.uc2t_toe_denumerator: 0.3
     color_correction.uc2t_reference_white: 11.2
     color_correction.vignette_strength: 0.0889
-    color_correction.film_grain_strength: 0.1444
+    color_correction.film_grain_strength: 0.07
     color_correction.color_lut: color_lut.png
     color_correction.use_chromatic_aberration: True
     color_correction.chromatic_aberration_strength: 0.0311

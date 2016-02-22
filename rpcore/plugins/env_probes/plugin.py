@@ -29,7 +29,8 @@ from panda3d.core import Vec3
 from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
 
-from .probes import EnvironmentProbe, ProbeManager
+from .probe_manager import ProbeManager
+from .environment_probe import EnvironmentProbe
 from .capture_stage import EnvironmentCaptureStage
 from .apply_cubemaps_stage import ApplyCubemapsStage
 
@@ -44,15 +45,11 @@ class Plugin(BasePlugin):
 
 
     def on_stage_setup(self):
-        self.probe_mgr = ProbeManager(512)
-        probe = EnvironmentProbe()
-        probe.set_pos(0, 0, 2)
-        probe.set_scale(20)
-        self.probe_mgr.add_probe(probe)
+        self.probe_mgr = ProbeManager(128)
 
         probe = EnvironmentProbe()
-        probe.set_pos(15, 0, 2)
-        probe.set_scale(20)
+        probe.set_pos(0, 0, 3)
+        probe.set_scale(20, 20, 5)
         self.probe_mgr.add_probe(probe)
 
         # TODO:

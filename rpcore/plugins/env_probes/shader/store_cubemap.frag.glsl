@@ -31,7 +31,6 @@
 uniform sampler2D SourceTex;
 uniform writeonly imageCubeArray RESTRICT DestTex;
 uniform int currentIndex;
-out vec4 result;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -44,5 +43,4 @@ void main() {
 
     // Store color in cubemap array
     imageStore(DestTex, ivec3(coord.x, coord.y, currentIndex * 6 + offset), source_data);
-    result = source_data;
 }

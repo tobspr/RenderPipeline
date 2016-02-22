@@ -67,7 +67,7 @@ vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor)
 }
 
 // Parallax Mapping
-vec2 get_parallax_texcoord(sampler2D displacement_map) {
+vec2 get_parallax_texcoord(sampler2D displacement_map, float strength) {
     // To disable parallax mapping:
     // return vOutput.texcoord;
 
@@ -76,7 +76,7 @@ vec2 get_parallax_texcoord(sampler2D displacement_map) {
     float pixel_dist = distance(MainSceneData.camera_pos, vOutput.position);
     if (initial_height > 0.999 || pixel_dist > 100.0) return vOutput.texcoord;
 
-    float raymarch_distance = 0.1;
+    float raymarch_distance = 0.2 * strength;
     int num_steps = 18;
 
     vec3 tangent, binormal;

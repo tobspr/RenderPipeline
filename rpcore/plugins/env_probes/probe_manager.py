@@ -24,62 +24,19 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec3, BoundingBox, Texture, Vec4, GeomEnums
-from panda3d.core import Mat4, SamplerState, TransformState
-
-import struct
+from panda3d.core import Texture, Vec4, GeomEnums, Mat4, SamplerState
 
 from rpcore.rp_object import RPObject
 from rpcore.image import Image
-
-class EnvironmentProbe(object):
-    """ Simple class, representing an environment probe """
-
-    def __init__(self, priority=0):
-        """ Inits a new environment probe, position specifies the world space
-        position, size specifies the dimensions of the probe and priority controls
-        how important the probe is (default is 0, higher values mean more important) """
-        self.priority = priority
-        self.index = -1
-        self.last_update = -1
-        self.transform = TransformState.make_identity()
-
-    def set_pos(self, *args):
-        """ Sets the probe position """
-        self.transform = self.transform.set_pos(Vec3(*args))
-
-    def set_hpr(self, *args):
-        """ Sets the probe rotation """
-        self.transform = self.transform.set_hpr(Vec3(*args))
-
-    def set_scale(self, *args):
-        """ Sets the probe scale """
-        self.transform = self.transform.set_scale(Vec3(*args))
-
-    @property
-    def matrix(self):
-        """ Returns the matrix of the probe """
-        return self.transform.get_mat()
-
-    def write_to_buffer(self, buffer_ptr):
-        """ Writes the probe to a given byte buffer """
-        data, mat = [], Mat4(self.matrix)
-        mat.invert_in_place()
-        for i in range(4):
-            for j in range(4):
-                data.append(mat.get_cell(i, j))
-        byte_data = struct.pack("f" * 16, *data)
-        # 1) 4 = sizeof float, 2) 16 = floats per cubemap
-        bytes_per_probe = 4 * 16
-        buffer_ptr.set_subdata(
-            self.index * bytes_per_probe, bytes_per_probe, byte_data)
 
 class ProbeManager(RPObject):
     """ Manages all environment probes """
 
     def __init__(self, resolution):
+        """ Initializes a new probe manager """
+        RPObject.__init__(self)
         self.probes = []
-        self.max_probes = 2
+        self.max_probes = 64
         self.resolution = resolution
         self._create_storage()
 
@@ -90,7 +47,7 @@ class ProbeManager(RPObject):
             self.resolution, self.max_probes, Texture.T_float, Texture.F_rgba16)
         self.cubemap_storage.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.cubemap_storage.set_magfilter(SamplerState.FT_linear)
-        self.cubemap_storage.set_clear_color(Vec4(0.0, 0.0, 0.1, 1.0))
+        self.cubemap_storage.set_clear_color(Vec4(1.0, 0.0, 0.1, 1.0))
         self.cubemap_storage.clear_image()
 
         self.dataset_storage = Image("EnvmapData")
@@ -101,8 +58,12 @@ class ProbeManager(RPObject):
 
     def add_probe(self, probe):
         """ Adds a new probe """
+        if len(self.probes) >= self.max_probes:
+            self.error("Cannot attach probe, out of slots!")
+            return False
         probe.index = len(self.probes)
         self.probes.append(probe)
+        return True
 
     def update(self):
         """ Updates the manager, updating all probes """

@@ -55,7 +55,8 @@ Cubemap get_cubemap(int index) {
 }
 
 // https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-vec3 get_cubemap_vector(Cubemap map, Material m, out float factor) {
+vec3 get_cubemap_vector(Cubemap map, Material m, out float factor, out float dist) {
+
     vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
     vec3 reflected = reflect(view_vector, m.normal);
 
@@ -72,7 +73,7 @@ vec3 get_cubemap_vector(Cubemap map, Material m, out float factor) {
     vec3 first_plane  = (1.0 - position_ls) / ray_ls;
     vec3 second_plane = (-1.0 - position_ls) / ray_ls;
     vec3 furthest_plane = max(first_plane, second_plane);
-    float dist = min(furthest_plane.x, min(furthest_plane.y, furthest_plane.z));
+    dist = min(furthest_plane.x, min(furthest_plane.y, furthest_plane.z));
 
     // Use distance in world space directly to recover intersection
     vec3 intersection_pos = m.position + reflected * dist;
@@ -83,24 +84,32 @@ float apply_cubemap(int index, Material m, out vec4 diffuse, out vec4 specular) 
 
     float factor = 0.0;
     float mip_mult = 1.0;
-    float mipmap = 0.0;
-    // float mipmap = sqrt(m.roughness) * 12.0;
+    // float mipmap = 0.0;
+    float mipmap = sqrt(m.roughness) * 10.0;
+    float mipmap_multiplier = 1.0;
     int num_mips = get_mipmap_count(CubemapTextures);
     float diff_mip = num_mips - 1;
 
     Cubemap map = get_cubemap(index);
-    vec3 direction = get_cubemap_vector(map, m, factor);
+    vec3 direction = get_cubemap_vector(map, m, factor, mipmap_multiplier);
+
+    float clip_factor = saturate( (1 - factor) / 0.15);
+
+    // Early out?
+    // if (clip_factor == 0.0) {
+    //     specular = vec4(0);
+    //     diffuse = vec4(0);
+    //     return 0.0;
+    // }
+
+
+    // mipmap *= 0.2 * mipmap_multiplier;
+
     specular = textureLod(CubemapTextures, vec4(direction, index),
         clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
     diffuse = textureLod(CubemapTextures, vec4(m.normal, index), diff_mip);
 
-    // Renormalize
-    specular.xyz /= max(1e-7, specular.w);
-    diffuse.xyz /= max(1e-7, diffuse.w);
-
     // Apply clip factors
-    float clip_factor = saturate( (1 - factor) / 1.0);
-
     specular *= clip_factor;
     diffuse *= clip_factor;
 
@@ -123,18 +132,17 @@ void main() {
     vec4 total_specular = vec4(0);
     float total_weight = 0.0;
 
-    // [TODO] for (every cubemap) {
     for (int i = 0; i < probeCount; ++i) {
+    // for (int i = 0; i < 1; ++i) {
         vec4 diff, spec;
         total_weight += apply_cubemap(i, m, diff, spec);
         total_diffuse += diff;
         total_specular += spec;
     }
 
-    total_weight = max(1e-3, total_weight);
-    result_spec = total_specular / total_weight;
-    result_diff = total_diffuse / total_weight;
+    result_spec = total_specular / max(1, total_weight);
+    result_diff = total_diffuse / max(1, total_weight);
 
-    // result_spec.xyz = vec3(total_weight * 0.5);
+    // result_spec.xyz = vec3(result_spec.xyz * result_spec.w * 0.5);
     // result_spec.w = 1;
 }
