@@ -45,15 +45,24 @@ class Plugin(BasePlugin):
 
     def on_stage_setup(self):
         self.probe_mgr = ProbeManager(512)
-        self.probe_mgr.add_probe(EnvironmentProbe(Vec3(0, 1, 2.0), 20))
+        probe = EnvironmentProbe()
+        probe.set_pos(0, 0, 2)
+        probe.set_scale(20)
+        self.probe_mgr.add_probe(probe)
 
+        probe = EnvironmentProbe()
+        probe.set_pos(15, 0, 2)
+        probe.set_scale(20)
+        self.probe_mgr.add_probe(probe)
+
+        # TODO:
         # visualizer = Globals.loader.loadModel("data/builtin_models/visualizer/cubemap.bam")
         # visualizer.reparent_to(render)
         # visualizer.set_pos(0, 1, 2.0)
 
         self.capture_stage = self.create_stage(EnvironmentCaptureStage)
         self.capture_stage.resolution = self.probe_mgr.resolution
-        self.capture_stage.storage_tex = self.probe_mgr.storage_tex
+        self.capture_stage.storage_tex = self.probe_mgr.cubemap_storage
 
         self.apply_stage = self.create_stage(ApplyCubemapsStage)
 
@@ -66,9 +75,12 @@ class Plugin(BasePlugin):
             self.capture_stage.required_inputs.append("PSSMSceneSunShadowMVP")
 
     def on_pipeline_created(self):
-        self.apply_stage.set_shader_input("CubemapStorage", self.probe_mgr.storage_tex)
+        self.apply_stage.set_shader_input("CubemapTextures", self.probe_mgr.cubemap_storage)
+        self.apply_stage.set_shader_input("CubemapDataset", self.probe_mgr.dataset_storage)
 
     def on_pre_render_update(self):
+        self.probe_mgr.update()
         probe = self.probe_mgr.find_probe_to_update()
         self.capture_stage.render_probe(probe)
-
+        self.apply_stage.set_num_probes(len(self.probe_mgr.probes))
+        probe.last_update = Globals.clock.get_frame_count()

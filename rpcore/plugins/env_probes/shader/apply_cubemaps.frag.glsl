@@ -31,36 +31,82 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 
-uniform samplerCubeArray CubemapStorage;
+uniform samplerCubeArray CubemapTextures;
+uniform samplerBuffer CubemapDataset;
+uniform int probeCount;
 
 layout(location=0) out vec4 result_spec;
 layout(location=1) out vec4 result_diff;
 
+struct Cubemap {
+    mat4 transform;
+    // int index;
+};
+
+Cubemap get_cubemap(int index) {
+    Cubemap result;
+    int offs = index * 4;
+    vec4 data0 = texelFetch(CubemapDataset, offs);
+    vec4 data1 = texelFetch(CubemapDataset, offs + 1);
+    vec4 data2 = texelFetch(CubemapDataset, offs + 2);
+    vec4 data3 = texelFetch(CubemapDataset, offs + 3);
+    result.transform = mat4(data0, data1, data2, data3);
+    return result;
+}
+
 // https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-vec3 correct_parallax(vec3 cubemap_pos, float cubemap_size, Material m, out float roughness_mult) {
-    vec3 bbmin = cubemap_pos - cubemap_size;
-    vec3 bbmax = cubemap_pos + cubemap_size;
-    vec3 direction = m.position - MainSceneData.camera_pos;
-    vec3 reflected_dir = reflect(direction, m.normal);
-    vec3 intersect0 = (bbmin - m.position) / reflected_dir;
-    vec3 intersect1 = (bbmax - m.position) / reflected_dir;
+vec3 get_cubemap_vector(Cubemap map, Material m, out float factor) {
+    vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
+    vec3 reflected = reflect(view_vector, m.normal);
 
-    vec3 furthest = max(intersect0, intersect1);
-    float dist = min(min(furthest.x, furthest.y), furthest.z);
-    vec3 intersect_pos = m.position + reflected_dir * dist;
-    roughness_mult = 0.5 * clamp(dist, 1.0, 4.0);
-    roughness_mult = 1;
-    return intersect_pos - cubemap_pos;
+    // Intersection with OBB, convert to unit box space
+    // Transform in local unit parallax cube space (scaled and rotated)
+    vec3 ray_ls = (map.transform * vec4(reflected, 0)).xyz;
+    vec3 position_ls = (map.transform * vec4(m.position, 1)).xyz;
+
+    // Get fading factor
+    vec3 local_v = abs(position_ls);
+    factor = max(local_v.x, max(local_v.y, local_v.z));
+
+    // Intersect with unit box
+    vec3 first_plane  = (1.0 - position_ls) / ray_ls;
+    vec3 second_plane = (-1.0 - position_ls) / ray_ls;
+    vec3 furthest_plane = max(first_plane, second_plane);
+    float dist = min(furthest_plane.x, min(furthest_plane.y, furthest_plane.z));
+
+    // Use distance in world space directly to recover intersection
+    vec3 intersection_pos = m.position + reflected * dist;
+    return (map.transform * vec4(intersection_pos, 1)).xyz;
 }
 
-float get_cubemap_factor(vec3 cubemap_pos, float cubemap_size, Material m) {
-    vec3 v = abs(cubemap_pos - m.position);
-    float maxdist = max(v.x, max(v.y, v.z));
-    // return step(maxdist, cubemap_size);
-    // return 1;
-    return saturate(maxdist / cubemap_size);
-    // return 1 - saturate(pow(maxdist / cubemap_size, 2.0));
+float apply_cubemap(int index, Material m, out vec4 diffuse, out vec4 specular) {
+
+    float factor = 0.0;
+    float mip_mult = 1.0;
+    float mipmap = 0.0;
+    // float mipmap = sqrt(m.roughness) * 12.0;
+    int num_mips = get_mipmap_count(CubemapTextures);
+    float diff_mip = num_mips - 1;
+
+    Cubemap map = get_cubemap(index);
+    vec3 direction = get_cubemap_vector(map, m, factor);
+    specular = textureLod(CubemapTextures, vec4(direction, index),
+        clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
+    diffuse = textureLod(CubemapTextures, vec4(m.normal, index), diff_mip);
+
+    // Renormalize
+    specular.xyz /= max(1e-7, specular.w);
+    diffuse.xyz /= max(1e-7, diffuse.w);
+
+    // Apply clip factors
+    float clip_factor = saturate( (1 - factor) / 1.0);
+
+    specular *= clip_factor;
+    diffuse *= clip_factor;
+
+    return clip_factor;
 }
+
 
 void main() {
 
@@ -73,35 +119,22 @@ void main() {
         return;
     }
 
-    int num_mips = get_mipmap_count(CubemapStorage);
-    float mipmap = sqrt(m.roughness) * 12.0;
-    float diff_mip = num_mips - 1;
+    vec4 total_diffuse = vec4(0);
+    vec4 total_specular = vec4(0);
+    float total_weight = 0.0;
 
-    vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
+    // [TODO] for (every cubemap) {
+    for (int i = 0; i < probeCount; ++i) {
+        vec4 diff, spec;
+        total_weight += apply_cubemap(i, m, diff, spec);
+        total_diffuse += diff;
+        total_specular += spec;
+    }
 
-    // TODO: Do for every cubemap
-    vec3 cubemap_pos = vec3(0, 1, 2);
-    float cubemap_size = 20;
-    int cubemap_index = 0;
-    float mip_mult = 0;
-    vec3 parallax = correct_parallax(cubemap_pos, cubemap_size, m, mip_mult);
-    float factor = get_cubemap_factor(cubemap_pos, cubemap_size, m);
-    mipmap *= mix(1 - factor, 1.0, saturate(dot(m.normal, view_vector)));
-    result_spec = textureLod(
-        CubemapStorage, vec4(parallax, cubemap_index),
-        clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
+    total_weight = max(1e-3, total_weight);
+    result_spec = total_specular / total_weight;
+    result_diff = total_diffuse / total_weight;
 
-    // Correct diffuse vector, instead of using just the normal
-    result_diff = textureLod(
-        CubemapStorage, vec4(m.normal, cubemap_index), diff_mip);
-
-    // Renormalize
-    result_spec.xyz /= max(1e-7, result_spec.w);
-    result_diff.xyz /= max(1e-7, result_diff.w);
-
-    // Apply clip factors
-    float clip_factor = 1.0 - pow(factor, 32.0);
-    result_spec *= clip_factor;
-    result_diff *= clip_factor;
-
+    // result_spec.xyz = vec3(total_weight * 0.5);
+    // result_spec.w = 1;
 }

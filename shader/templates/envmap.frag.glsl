@@ -26,12 +26,11 @@ layout(location=4) flat in MaterialOutput mOutput;
 
 uniform sampler2D p3d_Texture0;
 
-#if HAVE_PLUGIN(scattering)
+#if HAVE_PLUGIN(pssm)
     uniform sampler2DShadow PSSMSceneSunShadowMapPCF;
     uniform mat4 PSSMSceneSunShadowMVP;
 #endif
 
-uniform vec3 envmapProbePosition;
 uniform samplerCube DefaultEnvmap;
 
 out vec4 result;
@@ -45,8 +44,7 @@ void main() {
     vec3 shading_result = vec3(0);
 
     // Ambient
-    vec3 view_vector = normalize(envmapProbePosition - vOutput.position);
-    vec3 reflected = reflect(-view_vector, vOutput.normal);
+    vec3 reflected = vOutput.normal;
 
     #if HAVE_PLUGIN(scattering)
         // Specular ambient
@@ -82,25 +80,29 @@ void main() {
             TimeOfDay.scattering.sun_intensity * 20.0;
 
         // Get sun shadow term
-        vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
+        #if HAVE_PLUGIN(pssm)
+            vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
 
-        const float slope_bias =  1.0 * 0.02;
-        const float normal_bias = 1.0 * 0.005;
-        const float fixed_bias =  0.05 * 0.001;
-        vec3 biased_pos = get_biased_position(
-            vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
+            const float slope_bias =  1.0 * 0.02;
+            const float normal_bias = 1.0 * 0.005;
+            const float fixed_bias =  0.05 * 0.001;
+            vec3 biased_pos = get_biased_position(
+                vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
 
-        vec3 projected = project(PSSMSceneSunShadowMVP, biased_position);
-        projected.z -= fixed_bias;
+            vec3 projected = project(PSSMSceneSunShadowMVP, biased_position);
+            projected.z -= fixed_bias;
 
-        // Fast shadow filtering
-        float filter_radius = 2.0 / textureSize(PSSMSceneSunShadowMapPCF, 0).x;
-        float shadow_term = 0;
-        for(uint i = 0; i < 8; ++i) {
-            vec3 offset = vec3(poisson_disk_2D_12[i] * filter_radius, 0);
-            shadow_term += texture(PSSMSceneSunShadowMapPCF, projected + offset).x;
-        }
-        shadow_term /= 8.0;
+            // Fast shadow filtering
+            float filter_radius = 2.0 / textureSize(PSSMSceneSunShadowMapPCF, 0).x;
+            float shadow_term = 0;
+            for(uint i = 0; i < 8; ++i) {
+                vec3 offset = vec3(poisson_disk_2D_12[i] * filter_radius, 0);
+                shadow_term += texture(PSSMSceneSunShadowMapPCF, projected + offset).x;
+            }
+            shadow_term /= 8.0;
+        #else
+            const float shadow_term = 1.0;
+        #endif
 
         if (sun_vector.z > 0) {
             shading_result += max(0.0, dot(sun_vector, vOutput.normal))

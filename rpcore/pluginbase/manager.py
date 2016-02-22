@@ -208,10 +208,12 @@ class PluginManager(BaseManager):
         module = importlib.import_module(plugin_class, package=__package__)
         instance = module.Plugin(self._pipeline)
         if instance.native_only and not NATIVE_CXX_LOADED:
-            self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
+            if plugin_id in self._enabled_plugins:
+                self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
         for required_plugin in instance.required_plugins:
             if required_plugin not in self._enabled_plugins:
-                self.warn("Cannot load", plugin_id, "since it requires", required_plugin)
+                if plugin_id in self._enabled_plugins:
+                    self.warn("Cannot load", plugin_id, "since it requires", required_plugin)
                 break
         return instance
 

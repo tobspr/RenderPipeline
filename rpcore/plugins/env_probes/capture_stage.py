@@ -28,7 +28,7 @@ from __future__ import division
 from rplibs.six.moves import range
 
 from panda3d.core import Camera, PerspectiveLens, Vec4, NodePath, Vec3
-from panda3d.core import PTALVecBase3, PTAInt
+from panda3d.core import PTAInt
 
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
@@ -46,7 +46,6 @@ class EnvironmentCaptureStage(RenderStage):
         self.regions = []
         self.cameras = []
         self.rig_node = Globals.render.attach_new_node("EnvmapCamRig")
-        self.pta_position = PTALVecBase3.empty_array(1)
         self.pta_index = PTAInt.empty_array(1)
         self.storage_tex = None
 
@@ -80,7 +79,7 @@ class EnvironmentCaptureStage(RenderStage):
 
             lens = PerspectiveLens()
             lens.set_fov(90)
-            lens.set_near_far(0.1, 10.0)
+            lens.set_near_far(0.001, 1.0)
             camera = Camera("EnvmapCam-" + str(i), lens)
             camera_np = self.rig_node.attach_new_node(camera)
             camera_np.look_at(camera_np, directions[i])
@@ -104,8 +103,6 @@ class EnvironmentCaptureStage(RenderStage):
         self._target_store.set_shader_input("DestTex", self.storage_tex)
         self._target_store.set_shader_input("currentIndex", self.pta_index)
 
-        self.set_shader_input("envmapProbePosition", self.pta_position)
-
         # Generate the targets which filter the cubemap
         self.filter_targets = []
         mip = 0
@@ -127,12 +124,8 @@ class EnvironmentCaptureStage(RenderStage):
         if probe is None:
             self.warn("TODO: Disable all regions")
         else:
-            self.rig_node.set_pos(probe.position)
-            for camera in self.cameras:
-                camera.node().get_lens().set_far(probe.size)
-        self.pta_position[0] = probe.position
-        self.pta_index[0] = 0 # probe.storage_offset
-
+            self.rig_node.set_mat(probe.matrix)
+        self.pta_index[0] = probe.index
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

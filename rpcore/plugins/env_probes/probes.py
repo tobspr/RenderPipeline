@@ -24,52 +24,95 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec3, BoundingBox, Texture, Vec4, GeomEnums, SamplerState
+from panda3d.core import Vec3, BoundingBox, Texture, Vec4, GeomEnums
+from panda3d.core import Mat4, SamplerState, TransformState
+
+import struct
+
 from rpcore.rp_object import RPObject
 from rpcore.image import Image
 
 class EnvironmentProbe(object):
     """ Simple class, representing an environment probe """
 
-    def __init__(self, position, size, priority=0):
+    def __init__(self, priority=0):
         """ Inits a new environment probe, position specifies the world space
         position, size specifies the dimensions of the probe and priority controls
         how important the probe is (default is 0, higher values mean more important) """
-        self.position = position
         self.priority = priority
-        self.size = size
-        self.storage_tex_index = -1
+        self.index = -1
         self.last_update = -1
-        self.bounds = BoundingBox(position - size, position + size)
+        self.transform = TransformState.make_identity()
+
+    def set_pos(self, *args):
+        """ Sets the probe position """
+        self.transform = self.transform.set_pos(Vec3(*args))
+
+    def set_hpr(self, *args):
+        """ Sets the probe rotation """
+        self.transform = self.transform.set_hpr(Vec3(*args))
+
+    def set_scale(self, *args):
+        """ Sets the probe scale """
+        self.transform = self.transform.set_scale(Vec3(*args))
+
+    @property
+    def matrix(self):
+        """ Returns the matrix of the probe """
+        return self.transform.get_mat()
+
+    def write_to_buffer(self, buffer_ptr):
+        """ Writes the probe to a given byte buffer """
+        data, mat = [], Mat4(self.matrix)
+        mat.invert_in_place()
+        for i in range(4):
+            for j in range(4):
+                data.append(mat.get_cell(i, j))
+        byte_data = struct.pack("f" * 16, *data)
+        # 1) 4 = sizeof float, 2) 16 = floats per cubemap
+        bytes_per_probe = 4 * 16
+        buffer_ptr.set_subdata(
+            self.index * bytes_per_probe, bytes_per_probe, byte_data)
 
 class ProbeManager(RPObject):
     """ Manages all environment probes """
 
     def __init__(self, resolution):
         self.probes = []
+        self.max_probes = 2
         self.resolution = resolution
         self._create_storage()
 
     def _create_storage(self):
         """ Creates the cubemap storage """
-        self.storage_tex = Image("EnvmapStorage")
-        self.storage_tex.setup_cube_map_array(self.resolution, 4, Texture.T_float, Texture.F_rgba16)
-        self.storage_tex.set_minfilter(SamplerState.FT_linear_mipmap_linear)
-        self.storage_tex.set_magfilter(SamplerState.FT_linear)
-        self.storage_tex.set_clear_color(Vec4(0.0, 0.0, 0.1, 1.0))
-        self.storage_tex.clear_image()
-
-        self.cubemap_storage = Image("EnvmapData")
-        self.cubemap_storage.setup_buffer_texture(4, Texture.T_float, Texture.F_rgba32, GeomEnums.UH_dynamic)
-        self.cubemap_storage.set_clear_color(Vec4(0))
+        self.cubemap_storage = Image("EnvmapStorage")
+        self.cubemap_storage.setup_cube_map_array(
+            self.resolution, self.max_probes, Texture.T_float, Texture.F_rgba16)
+        self.cubemap_storage.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        self.cubemap_storage.set_magfilter(SamplerState.FT_linear)
+        self.cubemap_storage.set_clear_color(Vec4(0.0, 0.0, 0.1, 1.0))
         self.cubemap_storage.clear_image()
+
+        self.dataset_storage = Image("EnvmapData")
+        self.dataset_storage.setup_buffer_texture(
+            self.max_probes * 4, Texture.T_float,Texture.F_rgba32, GeomEnums.UH_dynamic)
+        self.dataset_storage.set_clear_color(Vec4(0))
+        self.dataset_storage.clear_image()
 
     def add_probe(self, probe):
         """ Adds a new probe """
+        probe.index = len(self.probes)
         self.probes.append(probe)
+
+    def update(self):
+        """ Updates the manager, updating all probes """
+        ptr = self.dataset_storage.modify_ram_image()
+        for probe in self.probes:
+            probe.write_to_buffer(ptr)
 
     def find_probe_to_update(self):
         """ Finds the next probe which requires an update, or returns None """
         if not self.probes:
             return None
-        return self.probes[0]
+        rating = lambda probe: probe.last_update
+        return min(self.probes, key=rating)

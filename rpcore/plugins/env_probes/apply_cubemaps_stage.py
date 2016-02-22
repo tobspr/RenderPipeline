@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+from panda3d.core import PTAInt
+
 from rpcore.render_stage import RenderStage
 from rpcore.stages.ambient_stage import AmbientStage
 
@@ -37,6 +39,7 @@ class ApplyCubemapsStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, "ApplyCubemapsStage", pipeline)
+        self.pta_probecount = PTAInt.empty_array(1)
 
     @property
     def produced_pipes(self):
@@ -45,13 +48,16 @@ class ApplyCubemapsStage(RenderStage):
             "EnvmapAmbientDiff": self._target["aux0"]
         }
 
+    def set_num_probes(self, count):
+        self.pta_probecount[0] = count
+
     def create(self):
         self._target = self.make_target("ApplyEnvmap")
         self._target.add_color_texture(bits=16)
         self._target.add_aux_texture(bits=16)
         self._target.has_color_alpha = True
         self._target.prepare_offscreen_buffer()
-
+        self._target.set_shader_input("probeCount", self.pta_probecount)
         AmbientStage.required_pipes += ["EnvmapAmbientSpec", "EnvmapAmbientDiff"]
 
     def set_shaders(self):
