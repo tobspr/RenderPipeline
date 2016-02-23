@@ -62,7 +62,7 @@ void main() {
     vec3 ray_start = MainSceneData.camera_pos;
     vec3 ray_dir = normalize(pos - ray_start);
 
-    if (!is_skybox(pos, MainSceneData.camera_pos) || ray_dir.z < 0.0) {
+    if (!is_skybox(pos) || ray_dir.z < 0.0) {
         result = vec4(0);
         return;
     }

@@ -53,7 +53,7 @@ void main() {
     vec3 inscattered_light = DoScattering(m.position, view_vector, fog_factor);
 
     // Cloud color
-    if (is_skybox(m, MainSceneData.camera_pos)) {
+    if (is_skybox(m)) {
         vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
         inscattered_light *= pow(cloud_color, vec3(2.0) ) * TimeOfDay.scattering.sun_intensity *
                                 TimeOfDay.scattering.sun_color * 0.01;

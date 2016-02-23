@@ -129,7 +129,7 @@ class Debugger(BaseManager):
     def _create_stats(self):
         """ Creates the stats overlay """
         self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
-        self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.07, 1, 1.0 - 0.07)
+        self._overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
         self._debug_lines = []
         for i in range(4):
             self._debug_lines.append(TextNode(

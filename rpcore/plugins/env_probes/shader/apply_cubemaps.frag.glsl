@@ -132,7 +132,7 @@ void main() {
     vec2 texcoord = get_texcoord();
     Material m = unpack_material(GBuffer, texcoord);
 
-    if (is_skybox(m, MainSceneData.camera_pos)) {
+    if (is_skybox(m)) {
         result_spec = vec4(0);
         result_diff = vec4(0);
         return;

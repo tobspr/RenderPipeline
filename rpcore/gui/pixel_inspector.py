@@ -70,7 +70,7 @@ class PixelInspector(RPObject):
         self._zoomer.set_shader_input("SceneTex", scene_tex)
 
     def update(self):
-        mouse = Globals.base.win.getPointer(0)
+        mouse = Globals.base.win.get_pointer(0)
         if mouse.get_in_window():
             pos = mouse.get_x(), 1, -mouse.get_y()
             self._node.set_pos(pos)

@@ -79,8 +79,8 @@ void main() {
 
     #if !DEBUG_MODE
 
-    // Skip skybox shading (TODO: Do this with stencil masking)
-    if (!is_skybox(m, MainSceneData.camera_pos)) {
+    // Skip skybox shading
+    if (!is_skybox(m)) {
 
         // Get reflection directory
         vec3 reflected_dir = reflect(-view_vector, m.normal);

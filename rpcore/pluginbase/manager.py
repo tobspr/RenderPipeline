@@ -77,6 +77,8 @@ class PluginManager(BaseManager):
             for instance in itervalues(self._instances):
                 if plugin_id in instance.required_plugins:
                     self.disable_plugin(instance.plugin_id)
+        if plugin_id in self._instances:
+            del self._instances[plugin_id]
 
     def unload(self):
         """ Unloads all plugins """
@@ -210,10 +212,12 @@ class PluginManager(BaseManager):
         if instance.native_only and not NATIVE_CXX_LOADED:
             if plugin_id in self._enabled_plugins:
                 self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
+                self._enabled_plugins.remove(plugin_id)
         for required_plugin in instance.required_plugins:
             if required_plugin not in self._enabled_plugins:
                 if plugin_id in self._enabled_plugins:
                     self.warn("Cannot load", plugin_id, "since it requires", required_plugin)
+                self._enabled_plugins.remove(plugin_id)
                 break
         return instance
 
