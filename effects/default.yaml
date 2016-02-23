@@ -1,17 +1,3 @@
 
-# Default effect file, used for all objects if not overridden
-
-vertex:
-    template: default
-
-gbuffer:
-    template: default
-
-shadows:
-    template: default
-
-voxelize:
-    template: default
-
-envmap:
-    template: default
+# Default effect file, used for all objects if not overridden.
+# This file actually contains no content, since no templates are overriden.

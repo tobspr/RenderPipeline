@@ -131,7 +131,7 @@ class Effect(RPObject):
         self._shader_objs = {}
 
         # Load the YAML file
-        parsed_yaml = load_yaml_file(filename)
+        parsed_yaml = load_yaml_file(filename) or {}
         self._parse_content(parsed_yaml)
 
         # Construct a shader for each pass

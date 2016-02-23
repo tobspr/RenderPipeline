@@ -107,7 +107,7 @@ void main() {
 
     #if DONT_SET_MATERIAL_PROPERTIES
         // Leave material properties unitialized, and hope the user knows
-        // what hes doing
+        // what he's doing.
     #else
         m.basecolor = mOutput.color * sampled_diffuse.xyz;
         m.normal = material_nrm;

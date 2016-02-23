@@ -103,8 +103,10 @@ precision lowp int;
 
 // Restrict qualifier, only on AMD cards, Nvidia can't handle it. See:
 // https://devtalk.nvidia.com/default/topic/546817/restrict-keyword-crashes-glsl-compiler/
+// (Leads to "fatal error C9999: *** exception during compilation ***")
 #if IS_NVIDIA
     #define RESTRICT
+    // #define RESTRICT restrict
 #else
     #define RESTRICT restrict
 #endif

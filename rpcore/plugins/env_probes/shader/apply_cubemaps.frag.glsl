@@ -38,9 +38,13 @@ uniform int probeCount;
 layout(location=0) out vec4 result_spec;
 layout(location=1) out vec4 result_diff;
 
+
+#define CM_FLAG_PARALLAX 0x1
+
 struct Cubemap {
     mat4 transform;
-    // int index;
+    uint flags;
+    uint index;
 };
 
 Cubemap get_cubemap(int index) {
@@ -51,6 +55,8 @@ Cubemap get_cubemap(int index) {
     vec4 data2 = texelFetch(CubemapDataset, offs + 2);
     vec4 data3 = texelFetch(CubemapDataset, offs + 3);
     result.transform = mat4(data0, data1, data2, data3);
+    result.flags = CM_FLAG_PARALLAX;
+    result.index = 0x70D0; // TODO
     return result;
 }
 
@@ -60,20 +66,24 @@ vec3 get_cubemap_vector(Cubemap map, Material m, out float factor, out float dis
     vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
     vec3 reflected = reflect(view_vector, m.normal);
 
-    // Intersection with OBB, convert to unit box space
-    // Transform in local unit parallax cube space (scaled and rotated)
-    vec3 ray_ls = (map.transform * vec4(reflected, 0)).xyz;
-    vec3 position_ls = (map.transform * vec4(m.position, 1)).xyz;
+    if ( (map.flags & CM_FLAG_PARALLAX) != 0) {
+        // Intersection with OBB, convert to unit box space
+        // Transform in local unit parallax cube space (scaled and rotated)
+        vec3 ray_ls = (map.transform * vec4(reflected, 0)).xyz;
+        vec3 position_ls = (map.transform * vec4(m.position, 1)).xyz;
 
-    // Get fading factor
-    vec3 local_v = abs(position_ls);
-    factor = max(local_v.x, max(local_v.y, local_v.z));
+        // Get fading factor
+        vec3 local_v = abs(position_ls);
+        factor = max(local_v.x, max(local_v.y, local_v.z));
 
-    // Intersect with unit box
-    vec3 first_plane  = (1.0 - position_ls) / ray_ls;
-    vec3 second_plane = (-1.0 - position_ls) / ray_ls;
-    vec3 furthest_plane = max(first_plane, second_plane);
-    dist = min(furthest_plane.x, min(furthest_plane.y, furthest_plane.z));
+        // Intersect with unit box
+        vec3 first_plane  = (1.0 - position_ls) / ray_ls;
+        vec3 second_plane = (-1.0 - position_ls) / ray_ls;
+        vec3 furthest_plane = max(first_plane, second_plane);
+        dist = min(furthest_plane.x, min(furthest_plane.y, furthest_plane.z));
+    } else {
+        dist = 0.0;
+    }
 
     // Use distance in world space directly to recover intersection
     vec3 intersection_pos = m.position + reflected * dist;
@@ -85,7 +95,7 @@ float apply_cubemap(int index, Material m, out vec4 diffuse, out vec4 specular) 
     float factor = 0.0;
     float mip_mult = 1.0;
     // float mipmap = 0.0;
-    float mipmap = sqrt(m.roughness) * 10.0;
+    float mipmap = sqrt(m.roughness) * 8.0;
     float mipmap_multiplier = 1.0;
     int num_mips = get_mipmap_count(CubemapTextures);
     float diff_mip = num_mips - 1;

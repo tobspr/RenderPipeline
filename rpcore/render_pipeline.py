@@ -179,13 +179,13 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._adjust_camera_settings()
         self._create_managers()
 
-        # Init the onscreen debugger
-        self._init_debugger()
-
         # Load plugins and daytime settings
         self._plugin_mgr.load()
         self._daytime_mgr.load_settings()
         self._com_resources.write_config()
+
+        # Init the onscreen debugger
+        self._init_debugger()
 
         # Setup common defines
         self._create_common_defines()

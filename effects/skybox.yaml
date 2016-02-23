@@ -1,15 +1,19 @@
 
+# Skybox effect
+
 vertex:
     template: default
-
     inject:
         vertex: |
             vOutput.position.xy += MainSceneData.camera_pos.xy;
 
 gbuffer:
     template: default
-
     inject:
+        defines: |
+            #define DONT_FETCH_DEFAULT_TEXTURES 1
+            #define DONT_SET_MATERIAL_PROPERTIES 1
+
         material: |
             m.basecolor = vec3(1, 0, 1);
             m.specular_ior = 1.5;
@@ -18,12 +22,3 @@ gbuffer:
             m.translucency = 0.0;
             m.normal = vOutput.normal;
             m.emissive = 0.0;
-
-shadows:
-    template: default
-
-voxelize:
-    template: default
-
-envmap:
-    template: default
