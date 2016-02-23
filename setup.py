@@ -195,7 +195,7 @@ def setup():
         exec_python_file("data/default_cubemap/filter.py")
 
         print_step("Precomputing film grain .. ")
-        exec_python_file("data/precomputed_grain/generate.py")
+        exec_python_file("data/film_grain/generate.py")
 
         ask_download_samples()
 

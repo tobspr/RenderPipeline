@@ -40,7 +40,7 @@ class GPUCommandQueue(RPObject):
     def __init__(self, pipeline):
         RPObject.__init__(self)
         self._pipeline = pipeline
-        self._commands_per_frame = 512
+        self._commands_per_frame = 128
         self._command_list = GPUCommandList()
         self._pta_num_commands = PTAInt.empty_array(1)
         self._create_data_storage()

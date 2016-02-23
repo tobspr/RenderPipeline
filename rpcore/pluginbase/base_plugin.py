@@ -76,12 +76,12 @@ class BasePlugin(RPObject):
         self._config = load_yaml_file(config_file)
 
     def get_resource(self, pth):
-        """ Converts a local path from the plugins resource/ directory into
+        """ Converts a local path from the plugins resource directory into
         an absolute path """
         return join(self.base_path, "resources", pth)
 
     def get_shader_resource(self, pth):
-        """ Converts a local path from the plugins shader/ directory into
+        """ Converts a local path from the plugins shader directory into
         an absolute path """
         return join(self.base_path, "shader", pth)
 

@@ -119,7 +119,7 @@ class RenderStage(RPObject):
         path_args = []
 
         for source in args:
-            if "$$pipeline_temp" not in source and "shader/" not in source:
+            if "$$pipeline_temp" not in source and "$$shader/" not in source:
                 path_args.append(path.format(source))
             else:
                 path_args.append(source)

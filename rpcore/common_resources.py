@@ -126,7 +126,7 @@ class CommonResources(BaseManager):
 
     def _load_precomputed_grain(self):
         grain_tex = Globals.loader.loadTexture(
-            "data/precomputed_grain/grain.png")
+            "data/film_grain/grain.png")
         grain_tex.set_minfilter(SamplerState.FT_linear)
         grain_tex.set_magfilter(SamplerState.FT_linear)
         grain_tex.set_wrap_u(SamplerState.WM_repeat)

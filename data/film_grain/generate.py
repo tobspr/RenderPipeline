@@ -24,11 +24,19 @@ THE SOFTWARE.
 
 """
 
-from __future__ import print_function, division
+# This script precomputes the noise for the film grain to improve performance
 
 import os
-from panda3d.core import *
+curr_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(curr_dir)
+
+import sys
+sys.path.insert(0, "../../rpcore")
+
+from panda3d.core import load_prc_file_data, NodePath, Shader, Texture, ShaderAttrib
+
 from direct.showbase.ShowBase import ShowBase
+from render_target import RenderTarget
 
 class Application(ShowBase):
     def __init__(self):
@@ -43,39 +51,19 @@ class Application(ShowBase):
 
         ShowBase.__init__(self)
 
-        if not os.path.isdir("filtered/"):
-            os.makedirs("filtered/")
+        dest_tex = Texture()
+        dest_tex.setup_2d_texture(1024, 1024, Texture.T_unsigned_byte, Texture.F_rgba8)
+        dest_tex.set_minfilter(Texture.FT_nearest)
 
-        cubemap = self.loader.loadCubeMap("#.jpg")
-        mipmap, size = -1, cubemap.get_y_size() * 2
+        cshader = Shader.load_compute(Shader.SL_GLSL, "grain.compute.glsl")
+        node = NodePath("")
+        node.set_shader(cshader)
+        node.set_shader_input("DestTex", dest_tex)
+        attr = node.get_attrib(ShaderAttrib)
+        self.graphicsEngine.dispatch_compute(
+            (1024 // 16, 1024 // 16, 1), attr, self.win.get_gsg())
 
-        cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
-
-        while size > 1:
-            size = size // 2
-            mipmap += 1
-            print("Filtering mipmap", mipmap)
-
-            dest_cubemap = Texture("Dest")
-            dest_cubemap.setup_cube_map(size, Texture.T_float, Texture.F_rgba16)
-            node = NodePath("")
-
-            for i in range(6):
-                node.set_shader(cshader)
-                node.set_shader_input("SourceTex", cubemap)
-                node.set_shader_input("DestTex", dest_cubemap)
-                node.set_shader_input("currentSize", size)
-                node.set_shader_input("currentMip", mipmap)
-                node.set_shader_input("currentFace", i)
-                attr = node.get_attrib(ShaderAttrib)
-                self.graphicsEngine.dispatch_compute(
-                    ( (size + 15) // 16, (size+15) // 16, 1), attr, self.win.get_gsg())
-
-            print(" Extracting data ..")
-
-            self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.get_gsg())
-
-            print(" Writing data ..")
-            dest_cubemap.write("filtered/{}-#.png".format(mipmap), 0, 0, True, False)
+        base.graphicsEngine.extract_texture_data(dest_tex, base.win.get_gsg())
+        dest_tex.write("grain.png")
 
 Application()

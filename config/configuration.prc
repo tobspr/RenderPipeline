@@ -89,7 +89,7 @@ notify-level-pnmimage error
 # Disable the buffer viewer, we have our own
 show-buffers #f
 
-# Use the default coordinate system, this makes our matrix transformations 
+# Use the default coordinate system, this makes our matrix transformations
 # faster because we don't have have to transform them to a different coordinate
 # system before
 gl-coordinate-system default
@@ -159,3 +159,5 @@ gl-fixed-vertex-attrib-locations #t
 
 # Disable the fragment shader performance warning
 gl-validate-shaders false
+
+gl-skip-shader-recompilation-warnings #t
