@@ -59,7 +59,7 @@ void main() {
         #if !HAVE_PLUGIN(clouds)
             vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
             inscattered_light *= pow(cloud_color, vec3(2.0) );
-            inscattered_light *= 7.0;
+            inscattered_light *= 1.0;
         #endif
 
         // Sun disk
@@ -70,7 +70,7 @@ void main() {
         inscattered_light += vec3(1,0.3,0.1) * disk_factor *
             upper_disk_factor * 7.0 * silhouette_col * 1.5 * 1e5;
     } else {
-        inscattered_light *= 11.0;
+        inscattered_light *= 8.0;
     }
 
     // Mix with scene color

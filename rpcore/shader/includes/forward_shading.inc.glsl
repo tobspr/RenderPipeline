@@ -113,7 +113,7 @@ vec3 get_sun_shading(vec3 basecolor) {
             const float shadow_term = 1.0;
         #endif
 
-        if (sun_vector.z > 0) {
+        if (sun_vector.z >= -0.2) {
             shading_result += max(0.0, dot(sun_vector, vOutput.normal))
                               * sun_color * shadow_term * basecolor * (1 - mOutput.metallic);
         }

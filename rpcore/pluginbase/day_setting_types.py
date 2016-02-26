@@ -27,6 +27,8 @@ THE SOFTWARE.
 from __future__ import division
 from panda3d.core import PTAFloat, PTALVecBase3f
 
+from math import exp
+
 from rpcore.rp_object import RPObject
 from rpcore.util.smooth_connected_curve import SmoothConnectedCurve
 
@@ -98,7 +100,7 @@ class ScalarType(BaseType):
         if self.unit not in ("degree", "meter", "percent"):
             raise Exception("Invalid unit type: {}".format(self.unit))
 
-        self.logarithmic_factor = data.pop("logarithmic_factor", 1.0) # TODO
+        self.logarithmic_factor = data.pop("logarithmic_factor", 1.0)
 
         self.curves.append(SmoothConnectedCurve())
         self.curves[0].set_single_value(self.default)
@@ -115,7 +117,13 @@ class ScalarType(BaseType):
         return u"{:3.1f}{}".format(value, metric)
 
     def get_scaled_value(self, value):
-        return value * (self.maxvalue - self.minvalue) + self.minvalue
+        """ Scales a linear value """
+        if self.logarithmic_factor != 1.0:
+            exp_mult = exp(self.logarithmic_factor * value * 4.0) - 1
+            exp_div = exp(self.logarithmic_factor * 4.0) - 1
+            return exp_mult / exp_div * (self.maxvalue - self.minvalue) + self.minvalue
+        else:
+            return value * (self.maxvalue - self.minvalue) + self.minvalue
 
     def get_linear_value(self, scaled_value):
         return (scaled_value - self.minvalue) / (self.maxvalue - self.minvalue)

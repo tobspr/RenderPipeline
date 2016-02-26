@@ -72,7 +72,7 @@ daytime_settings: !!omap
         default: 5.0
         label: Sun Intensity
         description: Controls the intensity of the sun
-        logarithmic_factor: 2.0
+        logarithmic_factor: 2.7
 
     - sun_color:
         type: color
@@ -91,7 +91,7 @@ daytime_settings: !!omap
     - sun_altitude:
         type: scalar
         unit: degree
-        range: [-12.0, 38.0]
+        range: [-12.0, 60.0]
         default: 30
         label: Sun Altidude
         description: Vertical angle of the sun
@@ -102,7 +102,7 @@ daytime_settings: !!omap
         range: [0.5, 10000.0]
         default: 2000
         label: Fog-Ramp
-        logarithmic_factor: 6.0
+        logarithmic_factor: 2.0
         description: >
             Size of the transition from no fog to fog in world space units.
             Higher values produce a smoother transition from no fog to fog,

@@ -27,7 +27,7 @@ THE SOFTWARE.
 # This tool offers an interface to configure the time of day settings
 
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import os
 import sys
@@ -54,12 +54,27 @@ except ImportError as msg:
 
 from curve_widget import CurveWidget
 
-from ui.main_window_generated import Ui_MainWindow
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.mount_manager import MountManager
 from rpcore.util.udp_listener_service import UDPListenerService
 
+from ui.main_window_generated import Ui_MainWindow
+from ui.point_insert_dialog_generated import Ui_Dialog as Ui_PointDialog
+
 connect = QtCore.QObject.connect
+
+
+class PointDialog(QtGui.QDialog, Ui_PointDialog):
+
+    def __init__(self, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.setupUi(self)
+        connect(self.btn_insert, QtCore.SIGNAL("clicked()"), lambda: self.done(1))
+
+    def get_value(self):
+        time = self.ipt_time.time()
+        val = self.ipt_value.value()
+        return time, val
 
 class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
@@ -134,6 +149,23 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
         connect(self.time_slider,QtCore.SIGNAL("valueChanged(int)"), self._on_time_changed)
         connect(self.settings_tree, QtCore.SIGNAL("itemSelectionChanged()"), self._on_setting_selected)
+        connect(self.btn_insert_point, QtCore.SIGNAL("clicked()"), self._insert_point)
+
+    def _insert_point(self):
+        """ Asks the user to insert a new point """
+        dialog = PointDialog(self)
+        if dialog.exec_():
+            time, val = dialog.get_value()
+            minutes = (time.hour() * 60 + time.minute()) / (24 * 60)
+
+            if val < self._selected_setting_handle.minvalue or val > self._selected_setting_handle.maxvalue:
+                QtGui.QMessageBox.information(self, "Invalid Value", "Value is out of setting range!", QtGui.QMessageBox.Ok)
+                return
+
+            val_linear = self._selected_setting_handle.get_linear_value(val)
+            print(val_linear)
+            self._selected_setting_handle.curves[0].append_cv(minutes, val_linear)
+
 
     def _update_tree_widgets(self):
         """ Updates the tree widgets """
@@ -173,8 +205,10 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
             if self._selected_setting_handle.type == "color":
                 self.edit_widget.set_unit_processor(lambda x: str(int(x * 255)))
+                self.btn_insert_point.hide()
             else:
                 self.edit_widget.set_unit_processor(lambda x:self._selected_setting_handle.format(self._selected_setting_handle.get_scaled_value(x)))
+                self.btn_insert_point.show()
 
             self.set_settings_visible(True)
             self._update_tree_widgets()
@@ -197,6 +231,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self.settings_tree.clear()
         self._tree_widgets = []
 
+
         for plugin_id, plugin in iteritems(self._plugin_mgr.plugin_instances):
 
             if not self._plugin_mgr.is_plugin_enabled(plugin_id):
@@ -211,6 +246,9 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             plugin_head = QtGui.QTreeWidgetItem(self.settings_tree)
             plugin_head.setText(0, plugin.name)
             plugin_head.setFlags(QtCore.Qt.ItemIsEnabled)
+            font = QtGui.QFont()
+            font.setBold(True)
+            plugin_head.setFont(0, font)
 
             # Display all settings
             for setting, setting_handle in iteritems(daytime_settings):

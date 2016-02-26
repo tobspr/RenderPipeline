@@ -54,6 +54,7 @@ class CurveWidget(QtGui.QWidget):
         # Currently dragged control point, format is:
         # (CurveIndex, PointIndex, Drag-Offset (x,y))
         self._drag_point = None
+        self._drag_time = 0.0
 
         # Currently selected control point, format is:
         # (CurveIndex, PointIndex)
@@ -97,7 +98,9 @@ class CurveWidget(QtGui.QWidget):
                     if (abs(point_y - mouse_y)) < self._cv_point_size + 6:
                         drag_x_offset = mouse_x - point_x
                         drag_y_offset = mouse_y - point_y
+                        mpos_relx = float(mouse_x) / (self.width()-self._legend_border)
                         self._drag_point = (index, cv_index, (drag_x_offset, drag_y_offset))
+                        self._drag_time = mpos_relx
                         self._selected_point = (index, cv_index)
 
             # If still no intersection, check if we clicked a curve
@@ -113,12 +116,15 @@ class CurveWidget(QtGui.QWidget):
 
                         self._selected_point = (index, cv_index)
                         self._drag_point = (index, cv_index, (0, 0))
+                        self._drag_time = mpos_relx
                         self._change_handler()
         self.update()
 
     def mouseReleaseEvent(self, event):
         """ Internal mouse-release handler """
         self._drag_point = None
+        self._drag_time = -1
+        self.update()
 
     def mouseMoveEvent(self, event):
         """ Internal mouse-move handler """
@@ -132,6 +138,8 @@ class CurveWidget(QtGui.QWidget):
             # Convert to local coordinate
             local_x = max(0, min(1, mouse_x / float(self.width() - self._legend_border)))
             local_y = 1 - max(0, min(1, mouse_y / float(self.height() - self._legend_border - self._bar_h)))
+
+            self._drag_time = local_x
 
             # Set new point data
             self._curves[self._drag_point[0]].set_cv_value(self._drag_point[1], local_x, local_y)
@@ -290,6 +298,21 @@ class CurveWidget(QtGui.QWidget):
                 b = max(0, min(255, int(bar_curve[2].get_value(relv) * 255.0)))
                 painter.setPen(QtGui.QColor(r, g, b))
             painter.drawLine(xpos, bar_top_pos, xpos, bar_top_pos + 2 * bar_half_height)
+
+        # Draw selected time
+        if self._drag_point:
+            painter.setBrush(QtGui.QColor(200, 200, 200))
+            painter.setPen(QtGui.QColor(90, 90, 90))
+            offs_x = max(0, min(canvas_width + 10, self._drag_time * canvas_width + self._legend_border - 19))
+            offs_y = self.height() - self._legend_border
+            minutes = int(self._drag_time * 24 * 60)
+            hours = minutes / 60
+            minutes = minutes % 60
+            painter.drawRect(offs_x, self.height() - self._legend_border + 5, 40, 20)
+            painter.drawText(offs_x + 7, offs_y + 20, "{:02}:{:02}".format(hours, minutes))
+
+            painter.setPen(QtGui.QColor(150, 150, 150))
+            painter.drawLine(offs_x + 19, bar_top_pos + 15, offs_x + 19, self.height() - self._legend_border + 5)
 
         # Display current time
         pen = QtGui.QPen()

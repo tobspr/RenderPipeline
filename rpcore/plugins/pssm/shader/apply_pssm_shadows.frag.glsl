@@ -87,7 +87,7 @@ void main() {
 
     // Early out, different optimizations
     bool early_out = is_skybox(m);
-    early_out = early_out || sun_vector.z < 0.0;
+    early_out = early_out || sun_vector.z < -0.2;
     early_out = early_out || dot(m.normal, sun_vector) < 0.0;
 
     if (early_out) {

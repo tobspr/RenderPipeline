@@ -202,7 +202,7 @@
       <string>Occlusion Strength</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="btn_reset">
      <property name="geometry">
       <rect>
        <x>500</x>
@@ -270,6 +270,19 @@ background: #ddd;border: 1px solid #aaa;
      </property>
      <property name="text">
       <string>Description: Some Desc</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_insert_point">
+     <property name="geometry">
+      <rect>
+       <x>360</x>
+       <y>20</y>
+       <width>131</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Insert point from data</string>
      </property>
     </widget>
    </widget>
