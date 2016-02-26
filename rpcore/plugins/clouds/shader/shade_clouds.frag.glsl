@@ -47,10 +47,7 @@ void main() {
     float cloud_factor = texelFetch(CloudVoxels, coord, 0).w;
     float height = fcoord.z;
 
-
-     vec3 sun_vector = -sun_azimuth_to_angle(
-        TimeOfDay.scattering.sun_azimuth,
-        TimeOfDay.scattering.sun_altitude);
+    vec3 sun_vector = -get_sun_vector();
 
     // Find cloud normal
     vec3 nrm = vec3(0);
@@ -74,7 +71,6 @@ void main() {
     cloud_brightness *= 0.03 + pow(height, 4.0) * 0.9;
     vec3 cloud_color = vec3(scattering_color) * cloud_brightness;
 
-    cloud_color *= 5.0;
     cloud_color *= 15.0;
     cloud_color = cloud_color / (1.0 + cloud_color);
 

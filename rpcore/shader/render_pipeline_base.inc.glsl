@@ -26,10 +26,6 @@
 
 #pragma once
 
-// Additional include guards, panda sometimes gets confused with the paths
-#ifndef MAIN_CONFIGURATION_H
-#define MAIN_CONFIGURATION_H
-
 // Main configuration file, included by all shaders, provides generic defines
 // and functions.
 
@@ -65,6 +61,7 @@
 // Screen size macro
 #define SCREEN_SIZE vec2(WINDOW_WIDTH, WINDOW_HEIGHT)
 #define SCREEN_SIZE_INT ivec2(WINDOW_WIDTH, WINDOW_HEIGHT)
+#define ASPECT_RATIO float(float(WINDOW_HEIGHT) / float(WINDOW_WIDTH))
 
 // Plugin functions
 #define HAVE_PLUGIN(PLUGIN_NAME) ( HAVE_PLUGIN_ ## PLUGIN_NAME )
@@ -112,5 +109,3 @@ precision lowp int;
 #endif
 
 #pragma include "includes/common_functions.inc.glsl"
-
-#endif

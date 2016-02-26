@@ -47,7 +47,7 @@ void main() {
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
     // Determine target roughenss
-    float sample_roughness = 1e-6 + currentMip * 0.1;
+    float sample_roughness = 1e-10 + currentMip / 8.0;
 
     vec3 tangent, binormal;
     find_arbitrary_tangent(n, tangent, binormal);

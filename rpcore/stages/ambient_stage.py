@@ -33,18 +33,14 @@ class AmbientStage(RenderStage):
     required_inputs = ["DefaultEnvmap", "PrefilteredBRDF"]
     required_pipes = ["ShadedScene", "GBuffer"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "AmbientStage", pipeline)
-
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target['color']}
+        return {"ShadedScene": self._target.color_tex}
 
     def create(self):
-        self._target = self.make_target("AmbientStage")
-        self._target.add_color_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
+        self._target = self.make_target2("AmbientStage")
+        self._target.add_color_attachment(bits=16)
+        self._target.prepare_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(
-            self.load_shader("ambient_stage.frag.glsl"))
+        self._target.shader = self.load_shader("ambient_stage.frag.glsl")

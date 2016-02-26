@@ -62,7 +62,7 @@ void main() {
     vec3 ray_start = MainSceneData.camera_pos;
     vec3 ray_dir = normalize(pos - ray_start);
 
-    if (!is_skybox(pos, MainSceneData.camera_pos) || ray_dir.z < 0.0) {
+    if (!is_skybox(pos) || ray_dir.z < 0.0) {
         result = vec4(0);
         return;
     }
@@ -96,10 +96,7 @@ void main() {
     vec3 trace_step = (trace_end - trace_start) / trace_steps;
     trace_step.xyz += (noise*2.0-1.0) * 0.008 / trace_steps;
 
-    // Get sun vector
-    vec3 sun_vector = sun_azimuth_to_angle(
-    TimeOfDay.scattering.sun_azimuth,
-    TimeOfDay.scattering.sun_altitude);
+    vec3 sun_vector = get_sun_vector();
     float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 25.0) + 0.0;
     vec3 sun_color = sun_influence * 10.0 * vec3(1);
 
@@ -127,10 +124,9 @@ void main() {
     accum_weight = saturate(pow(accum_weight, 32.0) * 1.1);
 
     accum_color *= TimeOfDay.clouds.cloud_brightness;
-    accum_color *= TimeOfDay.scattering.sun_color / 255.0 *
-        TimeOfDay.scattering.sun_intensity * 1.9;
+    accum_color *= get_sun_color();
 
-    accum_color *= 110.0;
+    accum_color *= 2.5;
     accum_color *= vec3(1.2, 1.1, 1);
     accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 

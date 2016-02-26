@@ -1,3 +1,29 @@
+/**
+ *
+ * RenderPipeline
+ *
+ * Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #version 430
 
 // Shader used for the environment map
@@ -16,101 +42,29 @@
 %INCLUDES%
 %INOUT%
 
+uniform sampler2D p3d_Texture0;
+
 layout(location=0) in VertexOutput vOutput;
 layout(location=4) flat in MaterialOutput mOutput;
 
-#if HAVE_PLUGIN(scattering)
-    uniform samplerCube ScatteringIBLDiffuse;
-    uniform samplerCube ScatteringIBLSpecular;
-#endif
+#pragma include "includes/forward_shading.inc.glsl"
 
-uniform sampler2D p3d_Texture0;
-
-#if HAVE_PLUGIN(pssm)
-    uniform sampler2DShadow PSSMSceneSunShadowMapPCF;
-    uniform mat4 PSSMSceneSunShadowMVP;
-#endif
-
-uniform samplerCube DefaultEnvmap;
-
-out vec4 result;
+layout(location=0) out vec4 result_specular;
+layout(location=1) out vec4 result_diffuse;
 
 void main() {
-    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).xyz;
-    basecolor *= mOutput.color;
 
+    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * mOutput.color;
+    // basecolor = pow(basecolor, vec3(2.2));
 
-    // vec3 shading_result = mix(basecolor, vec3(0), mOutput.metallic);
-    vec3 shading_result = vec3(0);
+    %MATERIAL%
 
-    // Ambient
-    vec3 reflected = vOutput.normal;
+    vec3 ambient = get_forward_ambient(basecolor, mOutput.roughness);
+    vec3 lighting = get_sun_shading(basecolor);
 
-    #if HAVE_PLUGIN(scattering)
-        // Specular ambient
-        float spec_mip = max(1, mOutput.roughness * 5.0);
-        vec3 spec_env = textureLod(ScatteringIBLSpecular, reflected, spec_mip).rgb;
+    // TODO: Forward shading for lights
 
-        // Diffuse ambient
-        vec3 diff_env = textureLod(ScatteringIBLDiffuse, vOutput.normal, 0).rgb;
-
-    #else
-        // Specular ambient
-        float spec_mip = max(3, mOutput.roughness * 7.0);
-        vec3 spec_env = textureLod(DefaultEnvmap, reflected, spec_mip).rgb;
-
-        // Diffuse ambient
-        int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
-        vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb;
-
-    #endif
-
-    shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env;
-    shading_result += (1 - mOutput.metallic) * diff_env * basecolor;
-
-
-    // Sun shading
-    #if HAVE_PLUGIN(scattering)
-
-        vec3 sun_vector = sun_azimuth_to_angle(
-            TimeOfDay.scattering.sun_azimuth,
-            TimeOfDay.scattering.sun_altitude);
-
-        vec3 sun_color = TimeOfDay.scattering.sun_color / 255.0 *
-            TimeOfDay.scattering.sun_intensity * 20.0;
-
-        // Get sun shadow term
-        #if HAVE_PLUGIN(pssm)
-            vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
-
-            const float slope_bias =  1.0 * 0.02;
-            const float normal_bias = 1.0 * 0.005;
-            const float fixed_bias =  0.05 * 0.001;
-            vec3 biased_pos = get_biased_position(
-                vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
-
-            vec3 projected = project(PSSMSceneSunShadowMVP, biased_position);
-            projected.z -= fixed_bias;
-
-            // Fast shadow filtering
-            float filter_radius = 2.0 / textureSize(PSSMSceneSunShadowMapPCF, 0).x;
-            float shadow_term = 0;
-            for(uint i = 0; i < 8; ++i) {
-                vec3 offset = vec3(poisson_disk_2D_12[i] * filter_radius, 0);
-                shadow_term += texture(PSSMSceneSunShadowMapPCF, projected + offset).x;
-            }
-            shadow_term /= 8.0;
-        #else
-            const float shadow_term = 1.0;
-        #endif
-
-        if (sun_vector.z > 0) {
-            shading_result += max(0.0, dot(sun_vector, vOutput.normal))
-                              * sun_color * shadow_term * basecolor * (1 - mOutput.metallic);
-        }
-
-    #endif
-
-    result = vec4(shading_result, 1);
+    result_specular = vec4(ambient + lighting, 1);
+    result_diffuse = vec4(lighting, 1);
+    // result_diffuse = vec4(0,0 ,0, 1);
 }
-

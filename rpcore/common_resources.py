@@ -106,6 +106,7 @@ class CommonResources(BaseManager):
         envmap = Globals.loader.loadCubeMap(
             "data/default_cubemap/filtered/#-#.png", readMipmaps=True)
         envmap.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        envmap.set_format(Texture.F_rgba16)
         envmap.set_magfilter(SamplerState.FT_linear)
         envmap.set_wrap_u(SamplerState.WM_repeat)
         envmap.set_wrap_v(SamplerState.WM_repeat)

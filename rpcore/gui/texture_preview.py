@@ -54,6 +54,8 @@ class TexturePreview(DraggableWindow):
 
         self.set_title(tex.get_name())
 
+        # tex.write(tex.get_name() + ".png")
+
         # Remove old content
         self._content_node.node().remove_all_children()
 

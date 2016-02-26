@@ -24,8 +24,10 @@ global_stage_order:
   - FlagUsedCellsStage
   - CollectUsedCellsStage
   - CullLightsStage
+  - CullProbesStage
 
  # Plugins
+  - CloudVoxelStage
   - AOStage
   - ApplyLightsStage
   - PSSMStage
@@ -34,7 +36,7 @@ global_stage_order:
   - VXGIStage
   - AmbientStage
   - SSLRStage
-  - CloudStage
+  - ApplyCloudsStage
   - AutoExposureStage
   - BloomStage
 

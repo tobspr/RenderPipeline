@@ -24,15 +24,18 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec3
+from panda3d.core import Vec3, PTAInt
 
 from rpcore.globals import Globals
+from rpcore.util.shader_ubo import SimpleUBO
 from rpcore.pluginbase.base_plugin import BasePlugin
+from rpcore.stages.cull_lights_stage import CullLightsStage
 
 from .probe_manager import ProbeManager
 from .environment_probe import EnvironmentProbe
-from .capture_stage import EnvironmentCaptureStage
+from .environment_capture_stage import EnvironmentCaptureStage
 from .apply_cubemaps_stage import ApplyCubemapsStage
+from .cull_probes_stage import CullProbesStage
 
 class Plugin(BasePlugin):
 
@@ -41,43 +44,54 @@ class Plugin(BasePlugin):
     description = ("This plugin adds support for environment probes, containing "
                    "diffuse and specular information. This enables accurate "
                    "reflections, and can also be used to simulate GI.")
-    version = "alpha (!)"
-
+    version = "beta (!)"
 
     def on_stage_setup(self):
         self.probe_mgr = ProbeManager(128)
+        self._setup_stages()
 
-        probe = EnvironmentProbe()
-        probe.set_pos(0, 0, 3)
-        probe.set_scale(20, 20, 5)
-        self.probe_mgr.add_probe(probe)
-
-        # TODO:
-        # visualizer = Globals.loader.loadModel("data/builtin_models/visualizer/cubemap.bam")
-        # visualizer.reparent_to(render)
-        # visualizer.set_pos(0, 1, 2.0)
-
+    def _setup_stages(self):
+        """ Setups all stages """
+        # Create the stage to generate and update the cubemaps
         self.capture_stage = self.create_stage(EnvironmentCaptureStage)
         self.capture_stage.resolution = self.probe_mgr.resolution
         self.capture_stage.storage_tex = self.probe_mgr.cubemap_storage
+        self.capture_stage.storage_tex_diffuse = self.probe_mgr.diffuse_storage
 
+        # Create the stage to cull the cubemaps
+        self.cull_stage = self.create_stage(CullProbesStage)
+
+        # Create the stage to apply the cubemaps
         self.apply_stage = self.create_stage(ApplyCubemapsStage)
 
         if self.is_plugin_enabled("scattering"):
-            self.capture_stage.required_pipes += [
-            "ScatteringIBLSpecular", "ScatteringIBLDiffuse"]
+            self.capture_stage.required_pipes += ["ScatteringIBLSpecular", "ScatteringIBLDiffuse"]
 
         if self.is_plugin_enabled("pssm"):
-            self.capture_stage.required_pipes.append("PSSMSceneSunShadowMapPCF")
-            self.capture_stage.required_inputs.append("PSSMSceneSunShadowMVP")
+            self.capture_stage.required_pipes += ["PSSMSceneSunShadowMapPCF"]
+            self.capture_stage.required_inputs += ["PSSMSceneSunShadowMVP"]
 
-    def on_pipeline_created(self):
-        self.apply_stage.set_shader_input("CubemapTextures", self.probe_mgr.cubemap_storage)
-        self.apply_stage.set_shader_input("CubemapDataset", self.probe_mgr.dataset_storage)
+        self._setup_inputs()
+
+    def _setup_inputs(self):
+        """ Sets all required inputs """
+        self.pta_probes = PTAInt.empty_array(1)
+
+        # Construct the UBO which stores all environment probe data
+        self.data_ubo = SimpleUBO("EnvProbes")
+        self.data_ubo.add_input("num_probes", self.pta_probes)
+        self.data_ubo.add_input("cubemaps", self.probe_mgr.cubemap_storage)
+        self.data_ubo.add_input("diffuse_cubemaps", self.probe_mgr.diffuse_storage)
+        self.data_ubo.add_input("dataset", self.probe_mgr.dataset_storage)
+        self._pipeline.stage_mgr.add_ubo(self.data_ubo)
+
+        # Use the UBO in light culling
+        CullLightsStage.required_inputs.append("EnvProbes")
 
     def on_pre_render_update(self):
         self.probe_mgr.update()
         probe = self.probe_mgr.find_probe_to_update()
+        if probe:
+            probe.last_update = Globals.clock.get_frame_count()
         self.capture_stage.render_probe(probe)
-        self.apply_stage.set_num_probes(len(self.probe_mgr.probes))
-        probe.last_update = Globals.clock.get_frame_count()
+        self.pta_probes[0] = self.probe_mgr.num_probes

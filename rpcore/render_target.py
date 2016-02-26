@@ -110,7 +110,7 @@ class RenderTarget(object):
     # Whether to automatically use the GL_R11_G11_B10 format for targets with
     # 16 bit color and no color alpha. This results in a tiny bit of lost precision,
     # however it has a much smaller memory footprint (about half size).
-    USE_R11_G11_B10 = False
+    USE_R11_G11_B10 = True
 
     # Internal variable to store the number of allocated buffers to give them a
     # unique sort index.
@@ -610,6 +610,8 @@ class RenderTarget(object):
         self._internal_buffer.set_clear_depth_active(clear)
         if clear:
             self._internal_buffer.set_clear_depth(1.0)
+            if not self.has_depth_texture():
+                self.RT_OUTPUT_FUNC("Warning: clear=True set on target without depth attachment!")
         if force:
             self.get_internal_region().set_clear_depth(clear)
 
@@ -624,6 +626,9 @@ class RenderTarget(object):
                 color = Vec4(1, 0, 1, 1)
             # self._internal_buffer.set_clear_color(color)
             self.get_internal_region().set_clear_color(color)
+
+            if not self.has_color_texture():
+                self.RT_OUTPUT_FUNC("Warning: clear=True set on target without color attachment!")
 
     @require_created
     def set_clear_stencil(self, clear=True, stencil=0x00):

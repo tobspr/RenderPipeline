@@ -12,6 +12,7 @@
 *.stackdump
 *.exr
 *.trace
+*.autogen*
 
 # --- Ignored folders and patterns ---
 temp/

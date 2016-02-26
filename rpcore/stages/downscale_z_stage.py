@@ -38,8 +38,8 @@ class DownscaleZStage(RenderStage):
 
     required_pipes = ["GBuffer"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "DownscaleZStage", pipeline)
+    # Disable by default, and let plugins enable this stage
+    disabled = True
 
     @property
     def produced_pipes(self):

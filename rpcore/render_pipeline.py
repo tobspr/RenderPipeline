@@ -168,7 +168,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
             self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
 
         # Load the default prc config
-        load_prc_file("$$config/configuration.prc")
+        load_prc_file("$$config/panda3d-config.prc")
 
         # Construct the showbase and init global variables
         ShowBase.__init__(self._showbase)
@@ -187,17 +187,18 @@ class RenderPipeline(PipelineExtensions, RPObject):
         # Init the onscreen debugger
         self._init_debugger()
 
-        # Setup common defines
-        self._create_common_defines()
-
         # Let the plugins setup their stages
         self._plugin_mgr.trigger_hook("stage_setup")
+
+        # Setup common defines
+        self._create_common_defines()
         self._setup_managers()
-        self._plugin_mgr.trigger_hook("pipeline_created")
 
         # Set the default effect on render, and load the "skybox"
         self.set_effect(Globals.render, "effects/default.yaml", {}, -10)
         self._create_default_skybox()
+
+        self._plugin_mgr.trigger_hook("pipeline_created")
 
         # Hide the loading screen
         self._loading_screen.remove()

@@ -7,11 +7,11 @@ enabled:
     - pssm
     - color_correction
     - scattering
-    - ao
-    - smaa
+    # - ao
+    # - smaa
     - env_probes
     # - vxgi
-    - fxaa
+    # - fxaa
     - bloom
 
 
@@ -20,7 +20,7 @@ overrides:
     clouds.raymarch_steps: 64
     clouds.cloud_start: 6.04
     clouds.cloud_end: 10.4
-    pssm.max_distance: 81.92
+    pssm.max_distance: 100.0
     pssm.logarithmic_factor: 0.94
     pssm.sun_distance: 650.0
     pssm.split_count: 4

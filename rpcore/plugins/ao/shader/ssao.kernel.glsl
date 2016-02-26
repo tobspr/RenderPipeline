@@ -52,7 +52,7 @@ for (int i = 0; i < num_samples; ++i) {
     offset *= 0.6;
 
     // Flip offset in case it faces away from the normal
-    offset = faceforward(offset, offset, -pixel_view_normal);
+    offset = face_forward(offset, pixel_view_normal);
 
     // Compute offset position in view space
     vec3 offset_pos = pixel_view_pos + offset * sample_offset;

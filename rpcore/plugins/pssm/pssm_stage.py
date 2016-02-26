@@ -33,9 +33,6 @@ class PSSMStage(RenderStage):
     required_inputs = []
     required_pipes = ["ShadedScene", "PSSMShadowAtlas", "GBuffer", "PSSMShadowAtlasPCF"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "PSSMStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {"ShadedScene": self._target['color']}

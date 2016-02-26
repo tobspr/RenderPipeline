@@ -46,7 +46,7 @@ void main() {
     #if GET_SETTING(bloom, remove_fireflies)
         float weights = 0.0;
         vec3 accum = vec3(0);
-        const int filter_size = 1;
+        const int filter_size = 3;
 
         vec2 texel_offs = vec2(1.0) / SCREEN_SIZE;
 
@@ -54,7 +54,7 @@ void main() {
         for (int i = -filter_size; i <= filter_size; ++i) {
             for (int j = -filter_size; j <= filter_size; ++j) {
                 vec3 color_sample = textureLod(ShadedScene, texcoord + vec2(i, j) * texel_offs, 0).xyz;
-                float weight = get_weight(color_sample, gaussian_weights_2[abs(i)] * gaussian_weights_2[abs(j)]);
+                float weight = get_weight(color_sample, gaussian_weights_4[abs(i)] * gaussian_weights_2[abs(j)]);
                 accum += color_sample * weight;
                 weights += weight;
             }

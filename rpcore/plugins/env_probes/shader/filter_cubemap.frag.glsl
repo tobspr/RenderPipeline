@@ -24,10 +24,13 @@
  *
  */
 
-#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/importance_sampling.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/brdf.inc.glsl"
+
+// #pragma optionNV (unroll all)
 
 uniform samplerCubeArray SourceTex;
 uniform writeonly imageCubeArray RESTRICT DestTex;
@@ -36,6 +39,7 @@ uniform int currentIndex;
 out vec4 result;
 
 void main() {
+    const uint num_samples = SHADER_NUM_SAMPLES * 5;
 
     // Get cubemap coordinate
     int texsize = textureSize(SourceTex, currentMip).x;
@@ -43,22 +47,27 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    const uint num_samples = 64;
+    // Determine target roughenss
+    float sample_roughness = 1e-8 + currentMip / 8.0;
 
     // Get tangent and binormal
     vec3 tangent, binormal;
     find_arbitrary_tangent(n, tangent, binormal);
 
-    const float filter_radius = 0.00 + currentMip * 0.03;
     vec4 accum = vec4(0.0);
+    float accum_weights = 0.0;
     for (uint i = 0; i < num_samples; ++i) {
-        vec2 offset = poisson_disk_2D_64[i];
-        vec3 sample_vec = normalize(n +
-            filter_radius * offset.x * tangent +
-            filter_radius * offset.y * binormal);
-        accum += textureLod(SourceTex, vec4(sample_vec, currentIndex), 0);
+        vec2 Xi = hammersley(i, num_samples);
+        vec3 h = importance_sample_ggx(Xi, sample_roughness);
+        h = normalize(h.x * tangent + h.y * binormal + h.z * n);
+
+        // Reconstruct light vector
+        vec3 l = -reflect(n, h);
+        float weight = max(0, dot(n, l));
+        accum += textureLod(SourceTex, vec4(l, currentIndex), currentMip - 1) * weight;
+        accum_weights += weight;
     }
-    accum /= float(num_samples);
+    accum /= max(0.01, accum_weights);
     imageStore(DestTex, ivec3(clamped_coord, currentIndex * 6 + face), accum);
     result = accum;
 }

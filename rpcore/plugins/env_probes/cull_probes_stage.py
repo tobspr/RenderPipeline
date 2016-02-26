@@ -31,52 +31,47 @@ from panda3d.core import Texture, Vec4
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 
-class CullLightsStage(RenderStage):
+class CullProbesStage(RenderStage):
 
-    """ This stage takes the list of used cells and creates a list of lights
-    for each cell """
+    """ This stage takes the list of used cells and creates a list of environment
+    probes for each cell """
 
+    required_inputs = ["EnvProbes"]
     required_pipes = ["CellListBuffer"]
-    required_inputs = ["AllLightsData", "maxLightIndex"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
-        self.max_lights_per_cell = pipeline.settings["lighting.max_lights_per_cell"]
+        self.max_probes_per_cell = 4
         self.slice_width = pipeline.settings["lighting.culling_slice_width"]
-
-        # Amount of light classes. Has to match the ones in LightClassification.inc.glsl
-        self.num_light_classes = 4
 
     @property
     def produced_pipes(self):
-        return {"PerCellLights": self._per_cell_lights}
+        return {"PerCellProbes": self.per_cell_probes}
 
     @property
     def produced_defines(self):
-        return {
-            "LC_SHADE_SLICES": self._num_rows,
-            "LC_LIGHT_CLASS_COUNT": self.num_light_classes
-        }
+        return {"MAX_PROBES_PER_CELL": self.max_probes_per_cell}
 
     def create(self):
         max_cells = self._pipeline.light_mgr.total_tiles
-        self._num_rows = int(math.ceil(max_cells / float(self.slice_width)))
-        self._target = self.make_target("CullLights")
+
+        self.num_rows = int(math.ceil(max_cells / float(self.slice_width)))
+        self.target = self.make_target("CullProbes")
 
         # Don't use an oversized triangle for the target, since this leads to
         # overshading
-        self._target.USE_OVERSIZED_TRIANGLE = False
-        self._target.size = self.slice_width, self._num_rows
-        self._target.prepare_offscreen_buffer()
+        self.target.USE_OVERSIZED_TRIANGLE = False
+        self.target.size = self.slice_width, self.num_rows
+        self.target.add_color_texture()
+        self.target.prepare_offscreen_buffer()
 
-        self._per_cell_lights = Image.create_buffer(
-            "PerCellLights", max_cells * (self.max_lights_per_cell + self.num_light_classes),
-            Texture.T_int, Texture.F_r32)
-        self._per_cell_lights.set_clear_color(0)
-        self._target.set_shader_input("PerCellLightsBuffer", self._per_cell_lights)
-
-        self.debug("Using", self._num_rows, "culling lines")
+        self.per_cell_probes = Image.create_buffer(
+            "PerCellProbes", max_cells * self.max_probes_per_cell,
+            Texture.T_int, Texture.F_r32i)
+        self.per_cell_probes.set_clear_color(0)
+        self.per_cell_probes.clear_image()
+        self.target.set_shader_input("PerCellProbes", self.per_cell_probes)
 
     def set_shaders(self):
-        self._target.set_shader(self.load_shader(
-            "tiled_culling.vert.glsl", "cull_lights.frag.glsl"))
+        self.target.set_shader(self.load_plugin_shader(
+            "$$shader/tiled_culling.vert.glsl", "cull_probes.frag.glsl"))

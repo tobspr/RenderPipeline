@@ -26,8 +26,11 @@ THE SOFTWARE.
 
 from panda3d.core import Shader
 
+from rplibs.six import itervalues
+
 from rpcore.rp_object import RPObject
 from rpcore.render_target import RenderTarget
+from rpcore.render_target2 import RenderTarget2
 
 class RenderStage(RPObject):
 
@@ -61,10 +64,10 @@ class RenderStage(RPObject):
             return False
         return True
 
-    def __init__(self, stage_id, pipeline):
+    def __init__(self, pipeline):
         """ Creates a new render stage """
-        RPObject.__init__(self, stage_id)
-        self._stage_id = stage_id
+        RPObject.__init__(self)
+        self._stage_id = self.__class__.__name__
         self._pipeline = pipeline
         self._targets = {}
 
@@ -86,7 +89,7 @@ class RenderStage(RPObject):
     def set_shader_input(self, *args):
         """ This method sets a shader input on all stages, which is mainly used
         by the stage manager """
-        for target in self._targets.values():
+        for target in itervalues(self._targets):
             target.set_shader_input(*args)
 
     def update(self):
@@ -96,8 +99,8 @@ class RenderStage(RPObject):
 
     def set_active(self, active):
         """ Enables or disables all targets bound to this stage """
-        for target in self._targets.values():
-            target.set_active(active)
+        for target in itervalues(self._targets):
+            target.active = active
 
     def make_target(self, name):
         """ Creates a new render target with the given name and attachs it to the
@@ -108,6 +111,16 @@ class RenderStage(RPObject):
         # found in pstats
         name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
         self._targets[name] = RenderTarget(name)
+        return self._targets[name]
+
+    def make_target2(self, name):
+        # EXPERIMENTAL
+        if name in self._targets:
+            self.warn("Overriding existing target: " + name)
+        # Format the name like Plugin:Stage:Name, so it can be easily
+        # found in pstats
+        name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
+        self._targets[name] = RenderTarget2(name)
         return self._targets[name]
 
     def _get_shader_handle(self, path, *args):

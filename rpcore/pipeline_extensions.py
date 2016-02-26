@@ -143,6 +143,23 @@ class PipelineExtensions(object):
                 nodepath, shader, str(effect.effect_id), 45 + sort)
             nodepath.show(self._tag_mgr.get_envmap_mask())
 
+    def add_environment_probe(self):
+        """ Constructs a new environment probe and returns the handle, so that
+        the probe can be modified """
+
+        if not self.plugin_mgr.is_plugin_enabled("env_probes"):
+            self.warn("Environment probes are disabled, cant add environment probe")
+            class _dummy_probe(object):
+                def __getattr__(self, *args, **kwargs):
+                    return lambda *args, **kwargs: None
+            return _dummy_probe()
+
+        # TODO: This is super hacky
+        from rpcore.plugins.env_probes.environment_probe import EnvironmentProbe
+        probe = EnvironmentProbe()
+        self.plugin_mgr.get_plugin_handle("env_probes").probe_mgr.add_probe(probe)
+        return probe
+
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns
         True if the version is new enough, and false if the version is outdated. """

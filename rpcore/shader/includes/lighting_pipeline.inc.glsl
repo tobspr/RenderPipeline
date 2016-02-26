@@ -75,7 +75,7 @@ vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, vec4 
 
     // Compute the lights influence
     return apply_light(m, view_vector, l, get_light_color(light_data), attenuation,
-                       shadow_factor, directional_occlusion, transmittance);
+                       shadow_factor, directional_occlusion, transmittance, 0);
 }
 
 // Processes a point light
@@ -94,7 +94,7 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, vec4
 
     // Compute the lights influence
     return apply_light(m, view_vector, l, get_light_color(light_data),
-                       attenuation, shadow_factor, directional_occlusion, transmittance);
+                       attenuation, shadow_factor, directional_occlusion, transmittance, 0);
 }
 
 // Filters a shadow map
@@ -140,7 +140,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     // Find per tile lights
     int cell_index = texelFetch(CellIndices, tile, 0).x;
-    int data_offs = cell_index * (MAX_LIGHTS_PER_CELL+LIGHT_CLS_COUNT);
+    int data_offs = cell_index * (LC_MAX_LIGHTS_PER_CELL + LIGHT_CLS_COUNT);
 
     // Get directional occlusion
     vec4 directional_occlusion = vec4(0);
@@ -169,7 +169,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
                 shading_result += 0.01;
             }
             int num_lights = num_spot_noshadow + num_spot_shadow + num_point_noshadow + num_point_shadow;
-            // float light_factor = num_lights / float(MAX_LIGHTS_PER_CELL);
+            // float light_factor = num_lights / float(LC_MAX_LIGHTS_PER_CELL);
             float light_factor = num_lights / 5.0;
             // shading_result += ( (tile.z + 1) % 2) * 0.01;
             shading_result += light_factor;

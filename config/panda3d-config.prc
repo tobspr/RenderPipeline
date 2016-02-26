@@ -1,34 +1,35 @@
 
 
+# This is the config file used to configure basic settings for Panda3D.
+# The pipeline loads it at startup to ensure the environment is setup properly.
+
 # --------------  Debugging options  --------------
 
 # gl-dump-compiled-shaders #t
 # notify-level-glgsg debug
+notify-level-glgsg error
 # notify-level-gobj debug
 pstats-gpu-timing #t
 pstats-max-rate 60
 gl-debug #t
-
+gl-debug-object-labels #t
 
 # ----------------- Misc Settings -----------------
 
 # No stack trace on assertion, set this to true to make panda crash on assertions
 # (which will allow to debug it)
-# assert-abort #f
+assert-abort #t
 
 # File system should be case sensitive
 # NOTICE: Set this to #f if you are using tempfile, since it returns
 # wrong cased directory paths
 vfs-case-sensitive #t
 
-
-
 # Enable state cache, this seems to actually help the performance by a lot
 state-cache #t
 transform-cache #t
 
 # Frame rate meter style
-show-frame-rate-meter #f
 frame-rate-meter-milliseconds #t
 frame-rate-meter-update-interval 1.0
 frame-rate-meter-text-pattern %0.2f fps
@@ -36,6 +37,7 @@ frame-rate-meter-ms-text-pattern %0.3f ms
 frame-rate-meter-layer-sort 1000
 frame-rate-meter-scale 0.036
 frame-rate-meter-side-margins 0.4
+show-frame-rate-meter #f
 
 # Set text settings
 text-minfilter linear
@@ -72,9 +74,10 @@ textures-power-2 none
 win-fixed-size #t
 
 # Set default texture filters
-texture-anisotropic-degree 0
+texture-anisotropic-degree 8
 texture-magfilter linear
 texture-minfilter linear
+texture-quality-level fastest
 
 # Enable seamless cubemap filtering, thats important for environment filtering
 gl-cube-map-seamless #t
@@ -96,12 +99,11 @@ gl-coordinate-system default
 
 # This makes animations smoother, especially if they were exported at 30 FPS
 # and are played at 60 FPS
-interpolate-frames 1
+interpolate-frames #t
 
 # Disable workarround in panda which causes our shadow atlas to take twice
 # the amount of vram it should, due to an intel driver bug.
-gl-force-fbo-color false
-
+gl-force-fbo-color #f
 
 # ----------- OpenGL / Performance Settings ------------
 
@@ -110,6 +112,7 @@ gl-force-fbo-color false
 # hardware-animated-vertices #t
 
 # Try this options for performance
+# uniquify-matrix #t
 # uniquify-transforms #t
 # uniquify-states #t
 # uniquify-attribs #f
@@ -147,7 +150,6 @@ driver-generate-mipmaps #t
 gl-immutable-texture-storage #t
 
 auto-flip #f
-gl-debug-object-labels #t
 
 # Default window settings
 # depth-bits 0
@@ -158,6 +160,11 @@ framebuffer-depth #f
 gl-fixed-vertex-attrib-locations #t
 
 # Disable the fragment shader performance warning
-gl-validate-shaders false
-
+gl-validate-shaders #f
 gl-skip-shader-recompilation-warnings #t
+
+alpha-scale-via-texture #f
+bounds-type best # best/fastest/sphere/box
+pstats-name Render Pipeline Stats
+rescale-normals #f
+screenshot-extension png

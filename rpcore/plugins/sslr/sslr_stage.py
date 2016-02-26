@@ -33,9 +33,6 @@ class SSLRStage(RenderStage):
     required_inputs = []
     required_pipes = ["ShadedScene", "GBuffer", "DownscaledDepth"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "SSLRStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {"ShadedScene": self._target['color']}

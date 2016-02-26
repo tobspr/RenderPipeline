@@ -24,21 +24,40 @@ THE SOFTWARE.
 
 """
 
+from panda3d.core import SamplerState, Texture, Vec4
+
 from rpcore.render_stage import RenderStage
+from rpcore.image import Image
 
-class TonemappingStage(RenderStage):
+class ApplyCloudsStage(RenderStage):
 
-    required_inputs = []
-    required_pipes = ["ShadedScene"]
+    """ This stage raymarchs the cloud voxel grid """
+
+    required_pipes = ["ShadedScene", "GBuffer", "CloudVoxels"]
+
+    def __init__(self, pipeline):
+        RenderStage.__init__(self, pipeline)
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target["color"]}
+        return {"ShadedScene": self._target_apply_clouds["color"]}
 
     def create(self):
-        self._target = self.make_target("Tonemap")
-        self._target.add_color_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
+        self._render_target = self.make_target("RaymarchVoxels")
+        self._render_target.set_half_resolution()
+        self._render_target.has_color_alpha = True
+        self._render_target.add_color_texture(bits=16)
+        self._render_target.prepare_offscreen_buffer()
+
+        self._target_apply_clouds = self.make_target("MergeWithScene")
+        self._target_apply_clouds.add_color_texture(bits=16)
+        self._target_apply_clouds.prepare_offscreen_buffer()
+
+        self._target_apply_clouds.set_shader_input(
+            "CloudsTex", self._render_target["color"])
 
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("apply_tonemap.frag.glsl"))
+        self._target_apply_clouds.set_shader(
+            self.load_plugin_shader("apply_clouds.frag.glsl"))
+        self._render_target.set_shader(
+            self.load_plugin_shader("render_clouds.frag.glsl"))

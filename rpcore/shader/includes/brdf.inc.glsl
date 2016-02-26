@@ -158,7 +158,8 @@ float brdf_visibility_schlick(float NxV, float NxL, float roughness) {
 
 float ior_to_specular(float ior) {
     float f0 = (ior - 1) / (ior + 1);
-    return f0 * f0;
+    // Clamp between ior of 1 and 2.5
+    return clamp(f0 * f0, 0.0, 0.18);
 }
 
 float brdf_fresnel_cook_torrance(float LxH, float roughness, float ior) {
@@ -228,4 +229,27 @@ float brdf_fresnel(float LxH, float roughness) {
 vec3 get_material_f0(Material m) {
     // Material specular is already in the 0 .. 0.08 range
     return mix(vec3(m.specular), m.basecolor, m.metallic);
+}
+
+
+// Returns a reflection vector, bent into the normal direction
+vec3 get_reflection_vector(Material m, vec3 view_vector) {
+    vec3 reflected_dir = reflect(view_vector, m.normal);
+    return mix(m.normal, reflected_dir,
+        (1 - m.roughness) * (m.roughness + sqrt(1 - m.roughness)));
+
+}
+
+
+// Returns an approximated mipmap level based on the materials roughness
+// level to approximate importance sampled references
+float get_specular_mipmap(float roughness) {
+    // Approximation to match importance sampled reference, tuned for a
+    // resolution of 128.
+    // see https://www.wolframalpha.com/input/?i=(x%5E0.9+*+9)+-+4.5+*+(x%5E3)+%2B+(1.5+*+x%5E9)+from+0+to+1
+    return pow(roughness, 0.9) * 9.0 - 4.5 * pow(roughness, 3.0) + 1.5 * pow(roughness, 9.0);
+}
+
+float get_specular_mipmap(Material m) {
+    return get_specular_mipmap(m.roughness);
 }

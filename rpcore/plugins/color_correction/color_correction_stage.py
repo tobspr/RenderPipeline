@@ -31,9 +31,6 @@ class ColorCorrectionStage(RenderStage):
     required_inputs = ["PrecomputedGrain"]
     required_pipes = ["ShadedScene"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "ColorCorrectionStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {"ShadedScene": self._target["color"]}

@@ -29,20 +29,20 @@ from panda3d.core import SamplerState, Texture, Vec4
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 
-class CloudStage(RenderStage):
+class CloudVoxelStage(RenderStage):
 
-    """ This stage handles the volumetric cloud rendering """
+    """ This stage generates the volumetric cloud voxel grid """
 
-    required_pipes = ["ShadedScene", "GBuffer", "ScatteringIBLDiffuse"]
+    required_pipes = ["ScatteringIBLDiffuse"]
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "CloudStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self._voxel_res_xy = 256
         self._voxel_res_z = 32
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target_apply_clouds["color"]}
+        return {"CloudVoxels": self._cloud_voxels}
 
     @property
     def produced_defines(self):
@@ -76,30 +76,12 @@ class CloudStage(RenderStage):
         self._shade_target.set_shader_input("CloudVoxels", self._cloud_voxels)
         self._shade_target.set_shader_input("CloudVoxelsDest", self._cloud_voxels)
 
-        self._render_target = self.make_target("RaymarchVoxels")
-        self._render_target.set_half_resolution()
-        self._render_target.has_color_alpha = True
-        self._render_target.add_color_texture(bits=16)
-        self._render_target.prepare_offscreen_buffer()
-        self._render_target.set_shader_input("CloudVoxels", self._cloud_voxels)
-
-        self._target_apply_clouds = self.make_target("MergeWithScene")
-        self._target_apply_clouds.add_color_texture(bits=16)
-        self._target_apply_clouds.prepare_offscreen_buffer()
-
-        self._target_apply_clouds.set_shader_input(
-            "CloudsTex", self._render_target["color"])
-
     def set_shaders(self):
         self._grid_target.set_shader(
             self.load_plugin_shader(
                 "$$shader/default_post_process_instanced.vert.glsl",
                 "generate_clouds.frag.glsl"))
-        self._target_apply_clouds.set_shader(
-            self.load_plugin_shader("apply_clouds.frag.glsl"))
         self._shade_target.set_shader(
             self.load_plugin_shader(
                 "$$shader/default_post_process_instanced.vert.glsl",
                 "shade_clouds.frag.glsl"))
-        self._render_target.set_shader(
-            self.load_plugin_shader("render_clouds.frag.glsl"))

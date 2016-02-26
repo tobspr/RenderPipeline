@@ -197,6 +197,9 @@ def setup():
         print_step("Precomputing film grain .. ")
         exec_python_file("data/film_grain/generate.py")
 
+        print_step("Running shader scripts .. ")
+        exec_python_file("rpcore/plugins/env_probes/shader/generate_mip_shaders.py")
+
         ask_download_samples()
 
     # -- Further setup code follows here --

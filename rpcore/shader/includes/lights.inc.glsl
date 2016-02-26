@@ -70,7 +70,7 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 
 // Computes a lights influence
 // @TODO: Make this method faster
-vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion, vec3 transmittance) {
+vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec4 directional_occlusion, vec3 transmittance, float disk_size) {
 
     // Debugging: Fast rendering path
     #if 0
@@ -98,9 +98,10 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     vec3 h = normalize(l + v);
     float NxL = saturate(10.0 * m.translucency + dot(m.normal, l));
     float NxV = max(1e-5, dot(m.normal, v));
-    float NxH = max(0, dot(m.normal, h));
+    float NxH = saturate(dot(m.normal, h) + disk_size);
     float VxH = clamp(dot(v, h), 1e-5, 1.0);
     float LxH = max(0, dot(l, h));
+
 
     // Diffuse contribution
     vec3 shading_result = brdf_diffuse(NxV, LxH, m.roughness) * m.basecolor * (1 - m.metallic);

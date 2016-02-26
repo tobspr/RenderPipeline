@@ -33,6 +33,12 @@
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/light_classification.inc.glsl"
 
+// #pragma optionNV (unroll all)
+
+#if HAVE_PLUGIN(env_probes)
+    #pragma include "includes/envprobes.inc.glsl"
+#endif
+
 uniform isamplerBuffer CellListBuffer;
 uniform writeonly iimageBuffer RESTRICT PerCellLightsBuffer;
 
@@ -44,7 +50,7 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     // Find the index of the cell we are about to process
-    int idx = coord.x + coord.y * LC_CULLING_SLICE_WIDTH + 1;
+    int idx = 1 + coord.x + coord.y * LC_CULLING_SLICE_WIDTH;
     int num_total_cells = texelFetch(CellListBuffer, 0).x;
     ivec2 precompute_size = ivec2(LC_TILE_AMOUNT_X, LC_TILE_AMOUNT_Y);
 
@@ -57,9 +63,8 @@ void main() {
 
     // Fetch the cell data, this contains the cells position
     int packed_cell_data = texelFetch(CellListBuffer, idx).x;
-    int cell_x = packed_cell_data & 0x3FF;
-    int cell_y = (packed_cell_data >> 10) & 0x3FF;
-    int cell_slice = (packed_cell_data >> 20) & 0x3FF;
+    int cell_x, cell_y, cell_slice;
+    unpack_cell_data(packed_cell_data, cell_x, cell_y, cell_slice);
 
     // Amount to increment the minimum and maximum distance of the slice. This
     // avoids false negatives in culling.
@@ -70,50 +75,27 @@ void main() {
     float max_distance = get_distance_from_slice(cell_slice + 1) + distance_bias;
 
     // Get the offset in the per-cell light list
-    int storage_offs = (MAX_LIGHTS_PER_CELL+LIGHT_CLS_COUNT) * idx;
+    int storage_offs = (LC_MAX_LIGHTS_PER_CELL + LIGHT_CLS_COUNT) * idx;
     int num_rendered_lights = 0;
 
-    // Compute the aspect ratio, this is required for proper culling.
-    float aspect = float(WINDOW_HEIGHT) / WINDOW_WIDTH;
-    vec3 aspect_mul = vec3(1, aspect, 1);
-
-    // Increase the frustum size by a small bit, because we trace at the corners,
-    // since using this way we could miss some small parts of the sphere. With this
-    // bias we should be fine, except for very small spheres, but those will be
-    // out of the culling range then anyays
-    float cull_bias = 1 + 0.01;
-
     // Compute sample directions
-    const int num_raydirs = 5;
-    vec3 ray_dirs[num_raydirs] = vec3[](
-        // Center
-        vec3( 0, 0, -1),
-
-        // Corners
-        vec3(  1.0,  1.0, -1) * cull_bias,
-        vec3( -1.0,  1.0, -1) * cull_bias,
-        vec3(  1.0, -1.0, -1) * cull_bias,
-        vec3( -1.0, -1.0, -1) * cull_bias
-    );
+    vec3 local_ray_dirs[num_raydirs] = ray_dirs;
 
     // Generate ray directions
     for (int i = 0; i < num_raydirs; ++i) {
-        ray_dirs[i] = normalize(
-            fma( (vec3(cell_x, cell_y, 0) + fma(ray_dirs[i], vec3(0.5), vec3(0.5)) )
-                    / vec3(precompute_size, 1), vec3(2.0), vec3(-1.0)) * aspect_mul);
+        ray_dirs[i] = transform_raydir(ray_dirs[i] * cull_bias, cell_x, cell_y, precompute_size);
     }
-
 
     // Create storage for all lights
     int light_counts[LIGHT_CLS_COUNT];
-    int light_indices[LIGHT_CLS_COUNT][MAX_LIGHTS_PER_CELL];
+    int light_indices[LIGHT_CLS_COUNT][LC_MAX_LIGHTS_PER_CELL];
     for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
         light_counts[i] = 0;
     }
 
 
     // Cull all lights
-    for (int i = 0; i < maxLightIndex + 1 && num_rendered_lights < MAX_LIGHTS_PER_CELL; i++) {
+    for (int i = 0; i < maxLightIndex + 1 && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL; i++) {
 
         // Fetch data of current light
         LightData light_data = read_light_data(AllLightsData, i * 4);

@@ -38,7 +38,7 @@ class BloomStage(RenderStage):
     required_inputs = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "BloomStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self.num_mips = 6
 
     @property

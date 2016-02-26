@@ -33,6 +33,26 @@
 // the camera, values > 1 produce a distribution which is further away from the camera.
 #define SLICE_EXP_FACTOR 3.0
 
+
+// Cell ray directions
+const int num_raydirs = 5;
+
+
+// Increase the frustum size by a small bit, because we trace at the corners,
+// since using this way we could miss some small parts of the sphere. With this
+// bias we should be fine, except for very small spheres, but those will be
+// out of the culling range then anyays
+const vec3 cull_bias = vec3(vec2(1 + 0.01), 1);
+const vec3 aspect_mul = vec3(1, ASPECT_RATIO, 1);
+CONST_ARRAY vec3 ray_dirs[num_raydirs] = vec3[](
+    vec3( 0, 0, -1),
+    vec3(  1.0,  1.0, -1) * cull_bias,
+    vec3( -1.0,  1.0, -1) * cull_bias,
+    vec3(  1.0, -1.0, -1) * cull_bias,
+    vec3( -1.0, -1.0, -1) * cull_bias
+);
+
+
 int get_slice_from_distance(float dist) {
     float flt_dist = dist / LC_MAX_DISTANCE;
     return int(log(flt_dist * SLICE_EXP_FACTOR + 1.0) / log(1.0 + SLICE_EXP_FACTOR) * LC_TILE_SLICES);
@@ -50,6 +70,17 @@ float get_distance_from_slice(int slice) {
 ivec3 get_lc_cell_index(ivec2 coord, float surface_distance) {
     ivec2 tile = coord / ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
     return ivec3(tile, get_slice_from_distance(surface_distance));
+}
+
+void unpack_cell_data(int packed_data, out int cell_x, out int cell_y, out int cell_slice) {
+    cell_x = packed_data & 0x3FF;
+    cell_y = (packed_data >> 10) & 0x3FF;
+    cell_slice = (packed_data >> 20) & 0x3FF;
+}
+
+vec3 transform_raydir(vec3 dir, int cell_x, int cell_y, ivec2 precompute_size) {
+    return normalize(fma((vec3(cell_x, cell_y, 0) + fma(dir, vec3(0.5), vec3(0.5)))
+                    / vec3(precompute_size, 1), vec3(2.0), vec3(-1.0)) * aspect_mul);
 }
 
 // Interesects a sphere with a ray

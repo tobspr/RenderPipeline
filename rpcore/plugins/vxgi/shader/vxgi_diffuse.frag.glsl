@@ -75,7 +75,7 @@ void main() {
         vec3 direction = poisson_disk_3D_32[i];
         direction = mix(direction, noise_vec, 0.3);
         direction = normalize(direction);
-        direction = faceforward(direction, direction, -m.normal);
+        direction = face_forward(direction, m.normal);
 
         float weight = dot(m.normal, direction); // Guaranteed to be > 0
         weight = 1.0;

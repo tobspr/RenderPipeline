@@ -33,9 +33,6 @@ class FinalStage(RenderStage):
 
     required_pipes = ["ShadedScene"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "FinalStage", pipeline)
-
     def create(self):
         self._target = self.make_target("FinalStage")
 
@@ -43,7 +40,6 @@ class FinalStage(RenderStage):
         self._target.color_write = True
         self._target.prepare_offscreen_buffer()
         self._target.make_main_target()
-
 
     def set_shaders(self):
         self._target.set_shader(self.load_shader("final_stage.frag.glsl"))

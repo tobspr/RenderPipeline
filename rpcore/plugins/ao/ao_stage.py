@@ -32,9 +32,6 @@ class AOStage(RenderStage):
     required_pipes = ["GBuffer"]
     required_inputs = ["Noise4x4"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "AOStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {"AmbientOcclusion": self._target_upscale['color']}

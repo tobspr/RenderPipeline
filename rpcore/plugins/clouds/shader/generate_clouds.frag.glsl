@@ -46,7 +46,7 @@ float cloud_weight(float height) {
 void main() {
     ivec3 coord = ivec3(gl_FragCoord.xy, instance_id);
     vec3 cloud_coord = vec3(coord) / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
-    cloud_coord.z *= 0.2;
+    cloud_coord.z *= 0.15;
 
     float time_offs = MainSceneData.frame_time * 0.02;
     vec3 wind_dir = vec3(0.8, 0.6, 0.01);
@@ -63,19 +63,19 @@ void main() {
     // cloud_factor += max(0, stratus) * TimeOfDay.clouds.stratus_amount;
 
     // Cumulus
-    float cumulus = worley_noise(cloud_coord.xy + 0.5 + wind_offset.xy * 0.7, 8, 0.8);
+    float cumulus = max(0, worley_noise(cloud_coord.xy + 0.5 + wind_offset.xy * 0.7, 8, 0.7));
     // cumulus *= fbm(cloud_coord + wind_offset * 0.6, 32.0) + 0.1;
-    cumulus *= fbm(cloud_coord + wind_offset * 0.74, 12.0) - 0.3;
+    cumulus *= fbm(cloud_coord + wind_offset * 0.74, 12.0) - 0.4;
     // cumulus *= 1.0 - min(1.0, 0.3*(1-cloud_coord.z) );
     // cumulus *= pow(cloud_coord.z, 2.r0);
-    cumulus *= 1.6;
-    // cloud_factor += saturate(cumulus) * TimeOfDay.clouds.cumulus_amount;
+    cumulus *= 1.0;
+    cloud_factor += saturate(cumulus);
 
     // Soft
-    float soft = fbm(cloud_coord + wind_offset * 0.5, 4.0) - 0.45;
+    float soft = fbm(cloud_coord + wind_offset * 0.5, 4.0) - 0.55;
 
     // soft *= 0.2 * pow(distance(cloud_coord.z, 0.5), 1.0);
-    cloud_factor += saturate(soft) * TimeOfDay.clouds.soft_amount;
+    // cloud_factor += saturate(soft) * TimeOfDay.clouds.soft_amount;
 
     cloud_factor *= cloud_weight(cloud_coord.z);
     cloud_factor *= TimeOfDay.clouds.cloud_intensity;

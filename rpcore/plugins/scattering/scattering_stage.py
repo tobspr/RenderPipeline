@@ -35,9 +35,6 @@ class ScatteringStage(RenderStage):
     required_pipes = ["ShadedScene", "GBuffer"]
     required_inputs = ["DefaultSkydome"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "ScatteringStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {"ShadedScene": self._target['color']}

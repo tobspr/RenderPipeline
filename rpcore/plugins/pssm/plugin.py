@@ -30,7 +30,7 @@ from panda3d.core import PTAVecBase3f
 
 from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.native import PSSMCameraRig
+from rpcore.native import PSSMCameraRig, NATIVE_CXX_LOADED
 
 from .pssm_stage import PSSMStage
 from .pssm_shadow_stage import PSSMShadowStage
@@ -44,10 +44,14 @@ class Plugin(BasePlugin):
     description = ("This plugin adds support for Parallel Split Shadow Maps "
                    "(PSSM), and also sun lighting.")
     version = "1.2"
-    native_only = True
     required_plugins = ("scattering",)
 
     def on_stage_setup(self):
+
+        if not NATIVE_CXX_LOADED:
+            self.debug("Setting max splits to 1 since python is used")
+            self._pipeline.plugin_mgr.settings["pssm"]["split_count"].set_value(1)
+
         self._update_enabled = True
         self._pta_sun_vector = PTAVecBase3f.empty_array(1)
         self._last_cache_reset = 0
@@ -64,9 +68,11 @@ class Plugin(BasePlugin):
         # self._dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
         # self._dist_shadow_stage.resolution = self.get_setting("vsm_resolution")
 
+        if self.is_plugin_enabled("clouds"):
+            self._pssm_stage.required_pipes.append("CloudVoxels")
+
     def on_pipeline_created(self):
         self.debug("Initializing pssm ..")
-
         # Construct a dummy node to parent the rig to
         self._node = Globals.base.render.attach_new_node("PSSMCameraRig")
         self._node.hide()

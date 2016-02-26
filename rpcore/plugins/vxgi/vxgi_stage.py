@@ -36,9 +36,6 @@ class VXGIStage(RenderStage):
     required_pipes = ["ShadedScene", "SceneVoxels", "GBuffer", "ScatteringIBLSpecular",
                       "ScatteringIBLDiffuse"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "VXGIStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {

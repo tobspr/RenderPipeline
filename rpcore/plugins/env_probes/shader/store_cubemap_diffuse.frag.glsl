@@ -26,32 +26,20 @@
 
 #version 430
 
-#pragma optionNV (unroll all)
-
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/light_culling.inc.glsl"
 
-uniform sampler2DArray FlaggedCells;
-uniform layout(r32i) iimageBuffer CellListBuffer;
-uniform writeonly iimage2DArray RESTRICT CellListIndices;
+uniform sampler2D SourceTex;
+uniform writeonly imageCube RESTRICT DestTex;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
+    int size = textureSize(SourceTex, 0).y;
+    vec4 source_data = texelFetch(SourceTex, coord, 0);
 
-    // Iterate over all slices
-    for (int i = 0; i < LC_TILE_SLICES; i++) {
+    // Convert to local cubemap coordinate
+    int offset = coord.x / size;
+    coord.x = coord.x % size;
 
-        // Check if the cell is flagged
-        bool visible = texelFetch(FlaggedCells, ivec3(coord, i), 0).x > 0.5;
-        if (visible) {
-            // Append the cell and mark it
-            // Notice: We add 1 since the first index stores the amount
-            // of collected cells.
-            int flag_index = imageAtomicAdd(CellListBuffer, 0, 1) + 1;
-            int cell_data = coord.x | coord.y << 10 | i << 20;
-            imageStore(CellListBuffer, flag_index, ivec4(cell_data));
-            imageStore(CellListIndices, ivec3(coord, i), ivec4(flag_index));
-        }
-    }
+    // Store color in diffuse cubemap array
+    imageStore(DestTex, ivec3(coord.x, coord.y, offset), source_data);
 }

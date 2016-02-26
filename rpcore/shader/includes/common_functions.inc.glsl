@@ -170,15 +170,14 @@ void vector_to_spherical(vec3 v, out float theta, out float phi) {
 
 // Converts a given sun azimuth and altitude to a direction vector
 vec3 sun_azimuth_to_angle(float azimuth, float altitude) {
-    float theta = (90-altitude) / 180.0 * M_PI;
+    float theta = (90 - altitude) / 180.0 * M_PI;
     float phi = azimuth / 180.0 * M_PI;
     return spherical_to_vector(theta, phi);
 }
 
 
-// FROM: https://github.com/mattdesl/glsl-blend-soft-light/blob/master/index.glsl
-// Licensed under the MIT License, see the github repo for more details.
 // Blends a given color soft with the base color
+// From: https://github.com/mattdesl/glsl-blend-soft-light/blob/master/index.glsl
 vec3 blend_soft_light(vec3 base, vec3 blend) {
     return mix(
         sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend),
@@ -227,7 +226,6 @@ float get_diffuse_aa(float w, float NxL) {
     return w*((abs(x0) <= x1) ? n*n/x : saturate(NxL));
 }
 
-
 // Blends a material
 float blend_material(float material_factor, float detailmap, float add_factor, float pow_factor) {
     material_factor = max(0, material_factor);
@@ -252,7 +250,6 @@ float blend_ior(float material_specular, float sampled_specular) {
 // Texcoord for half-res targets sampling half-res targets
 #define get_half_native_texcoord() vec2( (ivec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE/2) )
 
-
 float degree_to_radians(float degree) {
     return degree / 180.0 * M_PI;
 }
@@ -260,3 +257,9 @@ float degree_to_radians(float degree) {
 float radians_to_degree(float radians) {
     return radians / M_PI * 180.0;
 }
+
+// Convenience function
+#define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
+#define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity * 20.0)
+
+#define face_forward(v, n) faceforward(v, v, -n)

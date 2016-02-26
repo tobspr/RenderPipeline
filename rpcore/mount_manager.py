@@ -258,8 +258,7 @@ class MountManager(RPObject):
         vfs = VirtualFileSystem.get_global_ptr()
 
         # Mount data and models
-        dirs_to_mount = ("data", "effects", "rpcore")
-        for directory in dirs_to_mount:
+        for directory in ("data", "effects", "rpcore"):
             vfs.mount_loop(join(self._base_path, directory), directory, 0)
 
         # Mount config dir
@@ -272,9 +271,8 @@ class MountManager(RPObject):
             self.debug("Config dir:", self._config_dir)
 
         # Mount plugins
-        vfs.mount_loop(join(self._base_path, "rpcore/plugins"), "$$plugins", 0)
-        vfs.mount_loop(join(self._base_path, "rpcore/shader"), "$$shader", 0)
-        self.debug("Mounting", join(self._base_path, "shader/"))
+        vfs.mount_loop(join(self._base_path, "rpcore/plugins/"), "$$plugins", 0)
+        vfs.mount_loop(join(self._base_path, "rpcore/shader/"), "$$shader", 0)
 
         # Convert the base path to something the os can work with
         sys_base_path = Filename(self._base_path).to_os_specific()

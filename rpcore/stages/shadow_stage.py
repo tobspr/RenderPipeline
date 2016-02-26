@@ -35,11 +35,8 @@ class ShadowStage(RenderStage):
     required_inputs = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "ShadowStage", pipeline)
-        self._size = 4096
-
-    def set_size(self, size):
-        self._size = size
+        RenderStage.__init__(self, pipeline)
+        self.size = 4096
 
     @property
     def produced_pipes(self):
@@ -62,7 +59,7 @@ class ShadowStage(RenderStage):
         self._target = self.make_target("ShadowAtlas")
         self._target.set_source(
             source_cam=NodePath(Camera("dummy_shadow_cam")), source_win=Globals.base.win)
-        self._target.size = self._size, self._size
+        self._target.size = self.size, self.size
         self._target.create_overlay_quad = False
         self._target.add_depth_texture(bits=32)
         self._target.prepare_scene_render()
@@ -72,8 +69,6 @@ class ShadowStage(RenderStage):
         self._target.get_internal_buffer().disable_clears()
 
         self._target.set_clear_depth(False)
-
-
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

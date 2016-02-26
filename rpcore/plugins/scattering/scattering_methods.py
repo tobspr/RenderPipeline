@@ -27,7 +27,7 @@ THE SOFTWARE.
 import math
 
 from rplibs.six.moves import range
-from rplibs.six import iteritems
+from rplibs.six import iteritems, itervalues
 
 from direct.stdpy.file import listdir, isfile, join
 from panda3d.core import Texture, SamplerState, Shader, ShaderAttrib, NodePath
@@ -130,7 +130,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
                 Texture.T_float, Texture.F_rgba16),
         }
 
-        for img in self._textures.values():
+        for img in itervalues(self._textures):
             img.set_minfilter(SamplerState.FT_linear)
             img.set_magfilter(SamplerState.FT_linear)
             img.set_wrap_u(SamplerState.WM_clamp)

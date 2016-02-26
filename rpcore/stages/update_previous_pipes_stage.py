@@ -40,7 +40,7 @@ class UpdatePreviousPipesStage(RenderStage):
     """
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "UpdatePreviousPipesStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self._transfers = []
 
     def add_transfer(self, from_tex, to_tex):
@@ -58,7 +58,6 @@ class UpdatePreviousPipesStage(RenderStage):
     def create(self):
         self.debug("Creating previous pipes stage ..")
         self._target = self.make_target("StorePreviousPipes")
-        # self._target.add_color_texture()
         self._target.prepare_offscreen_buffer()
 
         # Set inputs

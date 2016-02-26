@@ -210,6 +210,11 @@ float rand(vec2 co){
 }
 
 
+vec3 rand_rgb(vec2 co)
+{
+  return fract(sin(dot(co.xy, vec2(34.4835, 89.6372))) * vec3(29156.4765, 38273.56393, 47843.75468));
+}
+
 
 uniform sampler2D PrecomputedGrain;
 

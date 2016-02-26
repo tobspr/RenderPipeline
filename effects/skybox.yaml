@@ -5,7 +5,7 @@ vertex:
     template: default
     inject:
         vertex: |
-            vOutput.position.xy += MainSceneData.camera_pos.xy;
+            // vOutput.position.xy += MainSceneData.camera_pos.xy;
 
 gbuffer:
     template: default

@@ -43,6 +43,12 @@ settings:
         # be used when using many lights, e.g. > 1024, to get better coherency.
         culling_slice_width: 256
 
+        # Controls the maximum amount of lights for each cell. If this value
+        # is set too low, you might get artifacts when having many lights.
+        # In general, try to set this value as low as possible without getting
+        # artifacts
+        max_lights_per_cell: 32
+
     shadows:
 
         # The size of the global shadow atlas, used for point and spot light

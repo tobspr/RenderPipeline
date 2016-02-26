@@ -70,6 +70,7 @@ class LightManager(BaseManager):
         define("LC_TILE_SLICES", self._pipeline.settings["lighting.culling_grid_slices"])
         define("LC_MAX_DISTANCE", self._pipeline.settings["lighting.culling_max_distance"])
         define("LC_CULLING_SLICE_WIDTH", self._pipeline.settings["lighting.culling_slice_width"])
+        define("LC_MAX_LIGHTS_PER_CELL", self._pipeline.settings["lighting.max_lights_per_cell"])
 
         define("SHADOW_ATLAS_SIZE", self._pipeline.settings["shadows.atlas_size"])
 
@@ -78,6 +79,17 @@ class LightManager(BaseManager):
             if attr.startswith("LT_"):
                 attr_value = getattr(PointLight, attr)
                 define(attr.upper(), attr_value)
+
+    @property
+    def num_tiles(self):
+        """ Returns the amount of horizontal and vertical tiles"""
+        return self._num_tiles
+
+    @property
+    def total_tiles(self):
+        """ Returns the total amount of tiles """
+        return self._num_tiles.x * self._num_tiles.y * \
+            self._pipeline.settings["lighting.culling_grid_slices"]
 
     def add_light(self, light):
         """ Adds a new light """
@@ -89,15 +101,18 @@ class LightManager(BaseManager):
         self._internal_mgr.remove_light(light)
         self._pta_max_light_index[0] = self._internal_mgr.get_max_light_index()
 
-    def get_num_lights(self):
+    @property
+    def num_lights(self):
         """ Returns the amount of stored lights """
         return self._internal_mgr.get_num_lights()
 
-    def get_num_shadow_sources(self):
+    @property
+    def num_shadow_sources(self):
         """ Returns the amount of stored shadow sources """
         return self._internal_mgr.get_num_shadow_sources()
 
-    def get_cmd_queue(self):
+    @property
+    def cmd_queue(self):
         """ Returns a handle to the GPU Command Queue """
         return self._cmd_queue
 
@@ -186,15 +201,12 @@ class LightManager(BaseManager):
         add_stage = self._pipeline.stage_mgr.add_stage
 
         self._flag_cells_stage = FlagUsedCellsStage(self._pipeline)
-        self._flag_cells_stage.set_tile_amount(self._num_tiles)
         add_stage(self._flag_cells_stage)
 
         self._collect_cells_stage = CollectUsedCellsStage(self._pipeline)
-        self._collect_cells_stage.set_tile_amount(self._num_tiles)
         add_stage(self._collect_cells_stage)
 
         self._cull_lights_stage = CullLightsStage(self._pipeline)
-        self._cull_lights_stage.set_tile_amount(self._num_tiles)
         add_stage(self._cull_lights_stage)
 
         self._apply_lights_stage = ApplyLightsStage(self._pipeline)

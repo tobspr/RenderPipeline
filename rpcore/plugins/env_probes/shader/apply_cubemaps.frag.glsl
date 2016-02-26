@@ -30,122 +30,45 @@
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/light_culling.inc.glsl"
+#pragma include "includes/envprobes.inc.glsl"
 
-uniform samplerCubeArray CubemapTextures;
-uniform samplerBuffer CubemapDataset;
-uniform int probeCount;
 
 layout(location=0) out vec4 result_spec;
 layout(location=1) out vec4 result_diff;
 
 
-#define CM_FLAG_PARALLAX 0x1
-
-struct Cubemap {
-    mat4 transform;
-    uint flags;
-    uint index;
-};
-
-Cubemap get_cubemap(int index) {
-    Cubemap result;
-    int offs = index * 4;
-    vec4 data0 = texelFetch(CubemapDataset, offs);
-    vec4 data1 = texelFetch(CubemapDataset, offs + 1);
-    vec4 data2 = texelFetch(CubemapDataset, offs + 2);
-    vec4 data3 = texelFetch(CubemapDataset, offs + 3);
-    result.transform = mat4(data0, data1, data2, data3);
-    result.flags = CM_FLAG_PARALLAX;
-    result.index = 0x70D0; // TODO
-    return result;
-}
-
-// https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-vec3 get_cubemap_vector(Cubemap map, Material m, out float factor, out float dist) {
-
-    vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
-    vec3 reflected = reflect(view_vector, m.normal);
-
-    if ( (map.flags & CM_FLAG_PARALLAX) != 0) {
-        // Intersection with OBB, convert to unit box space
-        // Transform in local unit parallax cube space (scaled and rotated)
-        vec3 ray_ls = (map.transform * vec4(reflected, 0)).xyz;
-        vec3 position_ls = (map.transform * vec4(m.position, 1)).xyz;
-
-        // Get fading factor
-        vec3 local_v = abs(position_ls);
-        factor = max(local_v.x, max(local_v.y, local_v.z));
-
-        // Intersect with unit box
-        vec3 first_plane  = (1.0 - position_ls) / ray_ls;
-        vec3 second_plane = (-1.0 - position_ls) / ray_ls;
-        vec3 furthest_plane = max(first_plane, second_plane);
-        dist = min(furthest_plane.x, min(furthest_plane.y, furthest_plane.z));
-    } else {
-        dist = 0.0;
-    }
-
-    // Use distance in world space directly to recover intersection
-    vec3 intersection_pos = m.position + reflected * dist;
-    return (map.transform * vec4(intersection_pos, 1)).xyz;
-}
-
-float apply_cubemap(int index, Material m, out vec4 diffuse, out vec4 specular) {
-
-    float factor = 0.0;
-    float mip_mult = 1.0;
-    // float mipmap = 0.0;
-    float mipmap = sqrt(m.roughness) * 8.0;
-    float mipmap_multiplier = 1.0;
-    int num_mips = get_mipmap_count(CubemapTextures);
-    float diff_mip = num_mips - 1;
-
-    Cubemap map = get_cubemap(index);
-    vec3 direction = get_cubemap_vector(map, m, factor, mipmap_multiplier);
-
-    float clip_factor = saturate( (1 - factor) / 0.15);
-
-    // Early out?
-    // if (clip_factor == 0.0) {
-    //     specular = vec4(0);
-    //     diffuse = vec4(0);
-    //     return 0.0;
-    // }
-
-
-    // mipmap *= 0.2 * mipmap_multiplier;
-
-    specular = textureLod(CubemapTextures, vec4(direction, index),
-        clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
-    diffuse = textureLod(CubemapTextures, vec4(m.normal, index), diff_mip);
-
-    // Apply clip factors
-    specular *= clip_factor;
-    diffuse *= clip_factor;
-
-    return clip_factor;
-}
-
+uniform isampler2DArray CellIndices;
+uniform isamplerBuffer PerCellProbes;
 
 void main() {
-
     vec2 texcoord = get_texcoord();
     Material m = unpack_material(GBuffer, texcoord);
+    ivec3 tile = get_lc_cell_index(
+        ivec2(gl_FragCoord.xy),
+        distance(MainSceneData.camera_pos, m.position));
 
-    if (is_skybox(m, MainSceneData.camera_pos)) {
+    // Don't shade pixels out of the shading range
+    if (tile.z >= LC_TILE_SLICES) {
         result_spec = vec4(0);
         result_diff = vec4(0);
         return;
     }
 
+    int cell_index = texelFetch(CellIndices, tile, 0).x;
+    int data_offs = cell_index * MAX_PROBES_PER_CELL;
+
     vec4 total_diffuse = vec4(0);
     vec4 total_specular = vec4(0);
     float total_weight = 0.0;
 
-    for (int i = 0; i < probeCount; ++i) {
-    // for (int i = 0; i < 1; ++i) {
+    int processed_probes = 0;
+    for (int i = 0; i < MAX_PROBES_PER_CELL; ++i) {
+        int cubemap_index = texelFetch(PerCellProbes, data_offs + i).x - 1;
+        if (cubemap_index < 0) break;
         vec4 diff, spec;
-        total_weight += apply_cubemap(i, m, diff, spec);
+        ++processed_probes;
+        total_weight += apply_cubemap(cubemap_index, m, diff, spec);
         total_diffuse += diff;
         total_specular += spec;
     }
@@ -153,6 +76,7 @@ void main() {
     result_spec = total_specular / max(1, total_weight);
     result_diff = total_diffuse / max(1, total_weight);
 
-    // result_spec.xyz = vec3(result_spec.xyz * result_spec.w * 0.5);
-    // result_spec.w = 1;
+    // Visualize probe count
+    // float probe_factor = processed_probes / MAX_PROBES_PER_CELL;
+    // result_spec = vec4(1 - probe_factor, probe_factor, 0, 1);
 }

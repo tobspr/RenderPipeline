@@ -67,7 +67,7 @@ void main() {
         vec2 xi = rotate(hammersley(i, sample_count), cos_r, sin_r);
         vec3 offset = importance_sample_lambert(xi, n);
         offset = normalize(tangent * offset.x + binormal * offset.y + n * offset.z);
-        offset = faceforward(offset, offset, -n);
+        offset = face_forward(offset, n);
         float weight = saturate(dot(offset, n));
         accum += textureLod(SourceCubemap, offset, 0).xyz * weight;
         weights += weight;

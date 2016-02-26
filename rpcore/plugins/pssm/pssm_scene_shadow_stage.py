@@ -40,7 +40,7 @@ class PSSMSceneShadowStage(RenderStage):
     required_pipes = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "PSSMSceneShadowStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self.resolution = 2048
         self._sun_vector = Vec3(0, 0, 1)
         self._pta_mvp = PTAMat4.empty_array(1)

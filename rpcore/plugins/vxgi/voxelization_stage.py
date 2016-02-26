@@ -49,7 +49,7 @@ class VoxelizationStage(RenderStage):
     S_gen_mipmaps = 4
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "VoxelizationStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self.voxel_resolution = 256
         self.voxel_world_size = 20.0
         self.state = self.S_disabled

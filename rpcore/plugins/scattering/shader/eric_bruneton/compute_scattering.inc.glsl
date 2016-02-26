@@ -31,13 +31,10 @@
 #pragma include "scattering_common.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 
- uniform sampler3D InscatterSampler;
- uniform sampler2D IrradianceSampler;
+uniform sampler3D InscatterSampler;
+uniform sampler2D IrradianceSampler;
 
- vec3 sun_vector = sun_azimuth_to_angle(
-    TimeOfDay.scattering.sun_azimuth,
-    TimeOfDay.scattering.sun_altitude);
-
+vec3 sun_vector = get_sun_vector();
 /*
 
 
@@ -113,7 +110,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
     // cam_pos.z = max(cam_pos.z, surface_pos.z);
     cam_pos = worldspace_to_atmosphere(cam_pos);
 
-    if (is_skybox(surface_pos, MainSceneData.camera_pos)) {
+    if (is_skybox(surface_pos)) {
         surface_pos = worldspace_to_atmosphere(surface_pos * 1e3);
     } else {
         surface_pos = worldspace_to_atmosphere(surface_pos);
@@ -228,10 +225,10 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
     fog_factor = saturate(1.0 - exp( -distance(surface_pos, MainSceneData.camera_pos) / fog_ramp ));
 
     // Exponential height fog
-    float ground_fog_factor = 50000.0;
+    float ground_fog_factor = 5000.0;
     fog_factor *= 1.0 - saturate( max(0, surface_pos.z) / ground_fog_factor);
 
-    if (is_skybox(surface_pos, MainSceneData.camera_pos)) {
+    if (is_skybox(surface_pos)) {
         fog_factor = 1;
     }
 

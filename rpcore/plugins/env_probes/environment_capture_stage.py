@@ -26,11 +26,13 @@ THE SOFTWARE.
 
 from __future__ import division
 from rplibs.six.moves import range
+from rplibs.six import itervalues
 
 from panda3d.core import Camera, PerspectiveLens, Vec4, NodePath, Vec3
-from panda3d.core import PTAInt
+from panda3d.core import PTAInt, Texture, GraphicsOutput
 
 from rpcore.globals import Globals
+from rpcore.image import Image
 from rpcore.render_stage import RenderStage
 
 class EnvironmentCaptureStage(RenderStage):
@@ -41,40 +43,48 @@ class EnvironmentCaptureStage(RenderStage):
     required_pipes = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "EnvironmentCaptureStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self.resolution = 512
         self.regions = []
         self.cameras = []
         self.rig_node = Globals.render.attach_new_node("EnvmapCamRig")
         self.pta_index = PTAInt.empty_array(1)
         self.storage_tex = None
+        self.storage_tex_diffuse = None
 
     def create(self):
-        self._target = self.make_target("CaptureScene")
-        self._target.set_source(None, Globals.base.win)
-        self._target.size = (self.resolution * 6, self.resolution)
-        self._target.add_color_texture(bits=16)
-        # self._target.add_depth_texture(bits=32)
-        self._target.has_color_alpha = True
-        self._target.create_overlay_quad = False
-        self._target.prepare_scene_render()
+        self.target = self.make_target("CaptureScene")
+        self.target.set_source(None, Globals.base.win)
+        self.target.size = (self.resolution * 6, self.resolution)
+        self.target.add_color_texture(bits=16)
+        self.target.add_aux_texture(bits=16)
+        # self.target.add_depth_texture(bits=32)
+        self.target.has_color_alpha = True
+        self.target.create_overlay_quad = False
+        self.target.prepare_scene_render()
 
         # Remove all unused display regions
-        internal_buffer = self._target.get_internal_buffer()
+        internal_buffer = self.target.get_internal_buffer()
         internal_buffer.remove_all_display_regions()
         internal_buffer.get_display_region(0).set_active(False)
 
-        internal_buffer.set_clear_color_active(True)
-        internal_buffer.set_clear_depth_active(True)
-        internal_buffer.set_clear_color(Vec4(0))
+        for i in range(GraphicsOutput.RTPCOUNT):
+            internal_buffer.set_clear_active(i, True)
+            internal_buffer.set_clear_value(i, Vec4(0))
         internal_buffer.set_clear_depth(1.0)
 
+        self._setup_camera_rig()
+        self._create_store_targets()
+        self._create_filter_targets()
+
+    def _setup_camera_rig(self):
+        """ Setups the cameras to render a cubemap """
         directions = (Vec3(1, 0, 0), Vec3(-1, 0, 0), Vec3(0, 1, 0),
                       Vec3(0, -1, 0), Vec3(0, 0, 1), Vec3(0, 0, -1))
 
         # Prepare the display regions
         for i in range(6):
-            region = internal_buffer.make_display_region(
+            region = self.target.get_internal_buffer().make_display_region(
                 i / 6, i / 6 + 1 / 6, 0, 1)
             # region.set_clear_depth(1)
             region.set_clear_color_active(False)
@@ -101,22 +111,33 @@ class EnvironmentCaptureStage(RenderStage):
         for camera_np in self.cameras:
             self._pipeline.tag_mgr.register_envmap_camera(camera_np.node())
 
-        self._target_store = self.make_target("StoreCubemap")
-        self._target_store.size = (self.resolution * 6, self.resolution)
-        self._target_store.prepare_offscreen_buffer()
-        self._target_store.set_shader_input("SourceTex", self._target["color"])
-        self._target_store.set_shader_input("DestTex", self.storage_tex)
-        self._target_store.set_shader_input("currentIndex", self.pta_index)
+    def _create_store_targets(self):
+        """ Creates the targets which copy the result texture into the actual storage """
+        self.target_store = self.make_target("StoreCubemap")
+        self.target_store.size = (self.resolution * 6, self.resolution)
+        self.target_store.prepare_offscreen_buffer()
+        self.target_store.set_shader_input("SourceTex", self.target["color"])
+        self.target_store.set_shader_input("DestTex", self.storage_tex)
+        self.target_store.set_shader_input("currentIndex", self.pta_index)
 
-        # Generate the targets which filter the cubemap
+        self.temporary_diffuse_map = Image.create_cube("DiffuseTemp", self.resolution, Texture.T_float, Texture.F_rgba16)
+        self.target_store_diff = self.make_target("StoreCubemapDiffuse")
+        self.target_store_diff.size = (self.resolution * 6, self.resolution)
+        self.target_store_diff.prepare_offscreen_buffer()
+        self.target_store_diff.set_shader_input("SourceTex", self.target["aux0"])
+        self.target_store_diff.set_shader_input("DestTex", self.temporary_diffuse_map)
+        self.target_store_diff.set_shader_input("currentIndex", self.pta_index)
+
+    def _create_filter_targets(self):
+        """ Generates the targets which filter the specular cubemap """
         self.filter_targets = []
         mip = 0
         size = self.resolution
         while size > 1:
             size = size // 2
             mip += 1
-            target = self.make_target("FilterCubemap:{}".format(mip))
-            target.set_size(size * 6, size)
+            target = self.make_target("FilterCubemap:{0}-{1}x{1}".format(mip, size))
+            target.size = size * 6, size
             target.prepare_offscreen_buffer()
             target.set_shader_input("currentIndex", self.pta_index)
             target.set_shader_input("currentMip", mip)
@@ -124,18 +145,32 @@ class EnvironmentCaptureStage(RenderStage):
             target.set_shader_input("DestTex", self.storage_tex, False, True, -1, mip, 0)
             self.filter_targets.append(target)
 
+        # Target to filter the diffuse cubemap
+        self.filter_diffuse_target = self.make_target("FilterCubemapDiffuse")
+        self.filter_diffuse_target.size = 4 * 6, 4
+        self.filter_diffuse_target.prepare_offscreen_buffer()
+        self.filter_diffuse_target.set_shader_input("SourceTex", self.temporary_diffuse_map)
+        self.filter_diffuse_target.set_shader_input("DestTex", self.storage_tex_diffuse)
+        self.filter_diffuse_target.set_shader_input("currentIndex", self.pta_index)
+
     def render_probe(self, probe):
-        if probe is None:
-            self.warn("TODO: Disable all regions")
-        else:
+        self.set_active(probe is not None)
+
+        if probe:
             self.rig_node.set_mat(probe.matrix)
-        self.pta_index[0] = probe.index
+            self.pta_index[0] = probe.index
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
 
     def set_shaders(self):
-        self._target_store.set_shader(self.load_plugin_shader("store_cubemap.frag.glsl"))
-        filter_shader = self.load_plugin_shader("filter_cubemap.frag.glsl")
-        for target in self.filter_targets:
+        self.target_store.set_shader(
+            self.load_plugin_shader("store_cubemap.frag.glsl"))
+        self.target_store_diff.set_shader(
+            self.load_plugin_shader("store_cubemap_diffuse.frag.glsl"))
+        self.filter_diffuse_target.set_shader(
+            self.load_plugin_shader("filter_cubemap_diffuse.frag.glsl"))
+
+        for i, target in enumerate(self.filter_targets):
+            filter_shader = self.load_plugin_shader("mips/{}.autogen.glsl".format(i))
             target.set_shader(filter_shader)

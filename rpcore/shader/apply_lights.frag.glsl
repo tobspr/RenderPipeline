@@ -46,7 +46,6 @@ void main() {
 
     // Extract material properties
     vec2 texcoord = get_texcoord();
-    float depth = get_gbuffer_depth(GBuffer, texcoord);
     Material m = unpack_material(GBuffer);
     ivec3 tile = get_lc_cell_index(
         ivec2(gl_FragCoord.xy),

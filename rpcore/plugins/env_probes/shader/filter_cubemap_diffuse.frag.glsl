@@ -26,32 +26,47 @@
 
 #version 430
 
-#pragma optionNV (unroll all)
-
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/light_culling.inc.glsl"
+#pragma include "includes/poisson_disk.inc.glsl"
 
-uniform sampler2DArray FlaggedCells;
-uniform layout(r32i) iimageBuffer CellListBuffer;
-uniform writeonly iimage2DArray RESTRICT CellListIndices;
+// #pragma optionNV (unroll all)
+
+uniform samplerCube SourceTex;
+uniform writeonly imageCubeArray RESTRICT DestTex;
+uniform int currentIndex;
+out vec4 result;
+
+vec4 get_sample(vec3 dir, vec3 n, inout float accum_weight) {
+    vec3 v = face_forward(dir, n);
+    vec4 data = textureLod(SourceTex, v, 0);
+    float weight = max(0, dot(v, n));
+    accum_weight += weight;
+    return data * weight;
+}
 
 void main() {
+    // Get cubemap coordinate
+    const int texsize = 4;
     ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 clamped_coord; int face;
+    vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    // Iterate over all slices
-    for (int i = 0; i < LC_TILE_SLICES; i++) {
+    const uint num_samples = 64;
 
-        // Check if the cell is flagged
-        bool visible = texelFetch(FlaggedCells, ivec3(coord, i), 0).x > 0.5;
-        if (visible) {
-            // Append the cell and mark it
-            // Notice: We add 1 since the first index stores the amount
-            // of collected cells.
-            int flag_index = imageAtomicAdd(CellListBuffer, 0, 1) + 1;
-            int cell_data = coord.x | coord.y << 10 | i << 20;
-            imageStore(CellListBuffer, flag_index, ivec4(cell_data));
-            imageStore(CellListIndices, ivec3(coord, i), ivec4(flag_index));
-        }
+    const float filter_radius = 1.0;
+    vec4 accum = vec4(0.0);
+    float accum_weight = 0.0;
+    for (uint i = 0; i < num_samples; ++i) {
+        vec3 offset = poisson_disk_3D_64[i];
+        accum += get_sample(offset.xyz, n, accum_weight);
+        accum += get_sample(offset.xzy, n, accum_weight);
+        accum += get_sample(offset.yxz, n, accum_weight);
+        accum += get_sample(offset.yzx, n, accum_weight);
+        accum += get_sample(offset.zxy, n, accum_weight);
+        accum += get_sample(offset.zyx, n, accum_weight);
     }
+    accum /= accum_weight;
+    imageStore(DestTex, ivec3(clamped_coord, currentIndex * 6 + face), accum);
+    result = accum;
 }
+

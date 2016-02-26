@@ -37,7 +37,7 @@ class SMAAStage(RenderStage):
     required_inputs = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "SMAAStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self.area_tex = None
         self.search_tex = None
         self.use_reprojection = True

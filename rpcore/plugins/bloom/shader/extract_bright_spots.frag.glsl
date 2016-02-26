@@ -39,7 +39,7 @@ void main() {
     float luma = get_luminance(scene_color);
     vec3 bloom_color = vec3(0);
         bloom_color = scene_color;
-        bloom_color *= GET_SETTING(bloom, bloom_strength) * 0.0003;
+        bloom_color *= GET_SETTING(bloom, bloom_strength) * 0.0009;
 
     #if DEBUG_MODE
         bloom_color *= 0;

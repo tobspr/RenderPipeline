@@ -39,9 +39,6 @@ class GBufferStage(RenderStage):
     required_inputs = ["DefaultEnvmap"]
     required_pipes = []
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "GBufferStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {"GBuffer": self._make_gbuffer_ubo()}

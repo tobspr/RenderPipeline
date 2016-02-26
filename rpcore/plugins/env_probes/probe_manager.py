@@ -36,7 +36,7 @@ class ProbeManager(RPObject):
         """ Initializes a new probe manager """
         RPObject.__init__(self)
         self.probes = []
-        self.max_probes = 64
+        self.max_probes = 3
         self.resolution = resolution
         self._create_storage()
 
@@ -50,9 +50,15 @@ class ProbeManager(RPObject):
         self.cubemap_storage.set_clear_color(Vec4(1.0, 0.0, 0.1, 1.0))
         self.cubemap_storage.clear_image()
 
+        self.diffuse_storage = Image("EnvmapDiffuseStorage")
+        self.diffuse_storage.setup_cube_map_array(
+            4, self.max_probes, Texture.T_float, Texture.F_rgba16)
+        self.diffuse_storage.set_clear_color(Vec4(1, 0, 0.2, 1.0))
+        self.diffuse_storage.clear_image()
+
         self.dataset_storage = Image("EnvmapData")
         self.dataset_storage.setup_buffer_texture(
-            self.max_probes * 4, Texture.T_float,Texture.F_rgba32, GeomEnums.UH_dynamic)
+            self.max_probes * 5, Texture.T_float,Texture.F_rgba32, GeomEnums.UH_dynamic)
         self.dataset_storage.set_clear_color(Vec4(0))
         self.dataset_storage.clear_image()
 
@@ -61,6 +67,7 @@ class ProbeManager(RPObject):
         if len(self.probes) >= self.max_probes:
             self.error("Cannot attach probe, out of slots!")
             return False
+        probe.last_update = -1
         probe.index = len(self.probes)
         self.probes.append(probe)
         return True
@@ -69,11 +76,20 @@ class ProbeManager(RPObject):
         """ Updates the manager, updating all probes """
         ptr = self.dataset_storage.modify_ram_image()
         for probe in self.probes:
-            probe.write_to_buffer(ptr)
+            if probe.modified:
+                probe.write_to_buffer(ptr)
+
+    @property
+    def num_probes(self):
+        return len(self.probes)
 
     def find_probe_to_update(self):
         """ Finds the next probe which requires an update, or returns None """
         if not self.probes:
             return None
+
         rating = lambda probe: probe.last_update
-        return min(self.probes, key=rating)
+        for candidate in sorted(self.probes, key=rating):
+            # TODO: Check if out of screen, using candidate.bounds
+            return candidate
+        return None

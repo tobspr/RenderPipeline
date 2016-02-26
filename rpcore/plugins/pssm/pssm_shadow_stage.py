@@ -38,7 +38,7 @@ class PSSMShadowStage(RenderStage):
     required_inputs = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "PSSMShadowStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self.num_splits = 3
         self.split_resolution = 512
         self.split_regions = []

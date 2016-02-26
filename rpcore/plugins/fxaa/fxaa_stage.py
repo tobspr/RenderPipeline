@@ -33,9 +33,6 @@ class FXAAStage(RenderStage):
     required_pipes = ["ShadedScene", "GBuffer"]
     required_inputs = []
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "FXAAStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {"ShadedScene": self._target["color"]}

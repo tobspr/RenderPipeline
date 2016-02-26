@@ -27,9 +27,7 @@
 #pragma once
 
 
-vec3 sun_vector = sun_azimuth_to_angle(
-        TimeOfDay.scattering.sun_azimuth,
-        TimeOfDay.scattering.sun_altitude);
+vec3 sun_vector = get_sun_vector();
 
 uniform sampler3D ScatteringLUT;
 

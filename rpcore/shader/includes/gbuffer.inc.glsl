@@ -59,7 +59,7 @@
         vec2 velocity = compute_velocity();
 
         // Clamp BaseColor, but only for negative values, we allow values > 1.0
-        // vec3 basecolor = pow(max(vec3(0), m.basecolor), vec3(2.2));
+        // vec3 basecolor = pow(max(vec3(0), m.basecolor), vec3(2.2)) * 1.0;
         vec3 basecolor = max(vec3(0), m.basecolor);
 
         // Clamp properties like specular and metallic, which have to be in the
@@ -99,6 +99,11 @@
     bool is_skybox(Material m, vec3 camera_pos) {
         return is_skybox(m.position, camera_pos);
     }
+
+    #ifdef USE_MAIN_SCENE_DATA
+        bool is_skybox(Material m) { return is_skybox(m, MainSceneData.camera_pos); }
+        bool is_skybox(vec3 pos) { return is_skybox(pos, MainSceneData.camera_pos); }
+    #endif
 
     // Returns the depth at a given texcoord
     float get_gbuffer_depth(GBufferData data, vec2 coord) {

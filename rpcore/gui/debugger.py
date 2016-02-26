@@ -129,7 +129,7 @@ class Debugger(BaseManager):
     def _create_stats(self):
         """ Creates the stats overlay """
         self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
-        self._overlay_node.set_pos(Globals.base.getAspectRatio() - 0.07, 1, 1.0 - 0.07)
+        self._overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
         self._debug_lines = []
         for i in range(4):
             self._debug_lines.append(TextNode(
@@ -175,9 +175,9 @@ class Debugger(BaseManager):
         text += "  |  {:4d} commands  |  {:6d} lights  |  {:5d} shadow sources"
         self._debug_lines[1].text = text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
-            self._pipeline.light_mgr.get_cmd_queue().num_processed_commands,
-            self._pipeline.light_mgr.get_num_lights(),
-            self._pipeline.light_mgr.get_num_shadow_sources())
+            self._pipeline.light_mgr.cmd_queue.num_processed_commands,
+            self._pipeline.light_mgr.num_lights,
+            self._pipeline.light_mgr.num_shadow_sources)
 
         text = "{:3.0f} MiB VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins"

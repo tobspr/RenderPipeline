@@ -36,9 +36,6 @@ class AutoExposureStage(RenderStage):
     required_pipes = ["ShadedScene"]
     required_inputs = []
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "AutoExposureStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {"ShadedScene": self._target_apply["color"],

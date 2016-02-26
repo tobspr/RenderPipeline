@@ -27,8 +27,13 @@ THE SOFTWARE.
 from __future__ import print_function, division
 
 import os
+import shutil
+from os.path import dirname, realpath
+from direct.stdpy.file import isdir, isfile, join
 from panda3d.core import *
 from direct.showbase.ShowBase import ShowBase
+
+
 
 class Application(ShowBase):
     def __init__(self):
@@ -43,10 +48,14 @@ class Application(ShowBase):
 
         ShowBase.__init__(self)
 
-        if not os.path.isdir("filtered/"):
-            os.makedirs("filtered/")
+        base_path = realpath(dirname(__file__))
+        os.chdir(base_path)
+        filter_dir = join(base_path, "filtered/")
+        if isdir(filter_dir):
+            shutil.rmtree(filter_dir)
+        os.makedirs(filter_dir)
 
-        cubemap = self.loader.loadCubeMap("#.jpg")
+        cubemap = self.loader.loadCubeMap(Filename.from_os_specific(join(base_path, "source/#.jpg")))
         mipmap, size = -1, cubemap.get_y_size() * 2
 
         cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
@@ -76,6 +85,6 @@ class Application(ShowBase):
             self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.get_gsg())
 
             print(" Writing data ..")
-            dest_cubemap.write("filtered/{}-#.png".format(mipmap), 0, 0, True, False)
+            dest_cubemap.write(join(filter_dir, "{}-#.png".format(mipmap)), 0, 0, True, False)
 
 Application()

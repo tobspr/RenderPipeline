@@ -36,7 +36,7 @@ class PSSMDistShadowStage(RenderStage):
     required_inputs = []
 
     def __init__(self, pipeline):
-        RenderStage.__init__(self, "PSSMDistShadowStage", pipeline)
+        RenderStage.__init__(self, pipeline)
         self.resolution = 4096
 
     @property

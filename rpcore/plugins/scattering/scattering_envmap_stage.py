@@ -39,9 +39,6 @@ class ScatteringEnvmapStage(RenderStage):
     required_pipes = []
     required_inputs = ["DefaultSkydome"]
 
-    def __init__(self, pipeline):
-        RenderStage.__init__(self, "ScatteringEnvmapStage", pipeline)
-
     @property
     def produced_pipes(self):
         return {

@@ -128,7 +128,7 @@ class SmoothConnectedCurve(object):
         be a value from 0 to 1 as well. """
         point = Vec3(0)
         self._curve.evaluate_xyz(offset, point)
-        return point.y
+        return max(0.0, min(1.0, point.y))
 
     def serialize(self):
         """ Returns the value of the curve as yaml list """

@@ -29,7 +29,8 @@ from panda3d.core import SamplerState
 from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
 
-from .cloud_stage import CloudStage
+from .cloud_voxel_stage import CloudVoxelStage
+from .apply_clouds_stage import ApplyCloudsStage
 
 class Plugin(BasePlugin):
 
@@ -42,7 +43,9 @@ class Plugin(BasePlugin):
     required_plugins = ("scattering",)
 
     def on_stage_setup(self):
-        self._stage = self.create_stage(CloudStage)
+        self._generation_stage = self.create_stage(CloudVoxelStage)
+        self._apply_stage = self.create_stage(ApplyCloudsStage)
+
 
     def on_pipeline_created(self):
         # Load noise texture
@@ -52,4 +55,5 @@ class Plugin(BasePlugin):
         noise_tex.set_anisotropic_degree(4)
         noise_tex.set_minfilter(SamplerState.FT_linear)
         noise_tex.set_magfilter(SamplerState.FT_linear)
-        self._stage.set_shader_input("NoiseTex", noise_tex)
+        self._generation_stage.set_shader_input("NoiseTex", noise_tex)
+        self._apply_stage.set_shader_input("NoiseTex", noise_tex)

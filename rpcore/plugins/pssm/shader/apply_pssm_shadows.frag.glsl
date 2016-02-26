@@ -53,6 +53,10 @@ uniform mat4 pssm_mvps[GET_SETTING(pssm, split_count)];
 uniform vec2 pssm_nearfar[GET_SETTING(pssm, split_count)];
 uniform vec3 pssm_sun_vector;
 
+#if HAVE_PLUGIN(clouds)
+uniform sampler3D CloudVoxels;
+#endif
+
 
 vec2 get_split_coord(vec2 local_coord, int split_index) {
     local_coord.x = (local_coord.x + split_index) / float(GET_SETTING(pssm, split_count));
@@ -71,11 +75,8 @@ float get_shadow(vec2 coord, float refz) {
 
 void main() {
 
-    vec3 sun_vector = sun_azimuth_to_angle(
-        TimeOfDay.scattering.sun_azimuth,
-        TimeOfDay.scattering.sun_altitude);
-    vec3 sun_color = TimeOfDay.scattering.sun_color / 255.0 *
-        TimeOfDay.scattering.sun_intensity * 20.0;
+    vec3 sun_vector = get_sun_vector();
+    vec3 sun_color = get_sun_color();
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -85,7 +86,7 @@ void main() {
     Material m = unpack_material(GBuffer);
 
     // Early out, different optimizations
-    bool early_out = is_skybox(m, MainSceneData.camera_pos);
+    bool early_out = is_skybox(m);
     early_out = early_out || sun_vector.z < 0.0;
     early_out = early_out || dot(m.normal, sun_vector) < 0.0;
 
@@ -248,11 +249,31 @@ void main() {
         END_BRANCH_TRANSLUCENCY()
     }
 
+    // Raymarch clouds
+    // CloudVoxels
+    #if HAVE_PLUGIN(clouds)
+        {
+        vec3 start_coord = vec3(m.position.xy / 800.0, 0);
+        vec3 end_coord = start_coord + vec3(0, 0, 1);
+        const int num_steps = 32;
+        vec3 step_dir = (end_coord - start_coord) / num_steps;
+        float cloud_factor = 0.0;
+        for (int i = 0; i < num_steps; ++i) {
+            float cloud_sample = texture(CloudVoxels, start_coord).w;
+            cloud_factor += cloud_sample;
+            start_coord += step_dir;
+        }
+        cloud_factor /= num_steps;
+        cloud_factor *= 10.0;
+        shadow_factor *= saturate(1.0 - cloud_factor);
+
+        }
+    #endif
 
     // Compute the sun lighting
     vec3 v = normalize(MainSceneData.camera_pos - m.position);
     vec3 l = sun_vector;
-    lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, vec4(0), transmittance);
+    lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, vec4(0), transmittance, 0.0005);
 
     #if DEBUG_MODE
         lighting_result *= 0;
