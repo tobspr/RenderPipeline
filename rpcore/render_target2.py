@@ -210,8 +210,8 @@ class RenderTarget2(RPObject):
         buffer_region.disable_clears()
 
         self._node.flatten_strong()
-        self._node.ls()
-        self._node.analyze()
+        # self._node.ls()
+        # self._node.analyze()
 
         self._active = True
 
