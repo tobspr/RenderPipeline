@@ -44,7 +44,8 @@ class EnvironmentCaptureStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
-        self.resolution = 512
+        self.resolution = 128
+        self.diffuse_resolution = 4
         self.regions = []
         self.cameras = []
         self.rig_node = Globals.render.attach_new_node("EnvmapCamRig")
@@ -146,7 +147,7 @@ class EnvironmentCaptureStage(RenderStage):
 
         # Target to filter the diffuse cubemap
         self.filter_diffuse_target = self.make_target("FilterCubemapDiffuse")
-        self.filter_diffuse_target.size = 4 * 6, 4
+        self.filter_diffuse_target.size = self.diffuse_resolution * 6, self.diffuse_resolution
         self.filter_diffuse_target.prepare_offscreen_buffer()
         self.filter_diffuse_target.set_shader_input("SourceTex", self.temporary_diffuse_map)
         self.filter_diffuse_target.set_shader_input("DestTex", self.storage_tex_diffuse)

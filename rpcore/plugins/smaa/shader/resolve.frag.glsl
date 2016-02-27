@@ -53,36 +53,32 @@ void main() {
         return;
     }
 
+
     // Get last frame bounding box
-    const int radius = 2;
+    const int radius = 1;
     vec4 color_min = vec4(1e10);
     vec4 color_max = vec4(0);
+    vec4 color_avg = vec4(0);
     ivec2 last_coord = ivec2( 0.5 + texcoord * SCREEN_SIZE );
     for (int i = -radius; i <= radius; ++i) {
         for (int j = -radius; j <= radius; ++j) {
-            vec4 sample_color = texelFetch(LastTex, last_coord + ivec2(i, j), 0);
+            vec4 sample_color = texelFetch(CurrentTex, coord + ivec2(i, j), 0);
             color_min = min(color_min, sample_color);
             color_max = max(color_max, sample_color);
+            color_avg += sample_color;
         }
     }
 
-    // Compute  weight
-    float weight = 0.0;
+    color_avg /= (1 + 2 * radius) * (1 + 2 * radius);
 
-    float bias = 6.0 / 255.0;
-    color_min -= bias;
-    color_max += bias;
-    if (current_color.r >= color_min.r && current_color.g >= color_min.g && current_color.b >= color_min.b) {
-        if (current_color.r <= color_max.r && current_color.g <= color_max.g && current_color.b <= color_max.b) {
-            weight = 0.5;
-        }
-    }
+    const float blur_factor = 0.2;
 
-    // Fade out when velocity gets too different
-    const float max_velocity_diff = 5.0 / WINDOW_HEIGHT;
-    float current_diff = abs(current_color.w - last_color.w);
-    weight *= 0.5 - 0.5 * saturate(current_diff / max_velocity_diff);
+    // Blur factor
+    current_color = mix(current_color, color_avg, blur_factor);
+
+    // Clamp to bounding box
+    last_color = clamp(last_color, color_min, color_max);
+    vec4 weight = abs(color_avg - current_color);
 
     result = mix(current_color, last_color, weight);
-    // result.xyz = vec3(weight);
 }

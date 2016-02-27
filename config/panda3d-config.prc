@@ -168,3 +168,6 @@ bounds-type best # best/fastest/sphere/box
 pstats-name Render Pipeline Stats
 rescale-normals #f
 screenshot-extension png
+
+# Required for correct velocity
+always-store-prev-transform #t

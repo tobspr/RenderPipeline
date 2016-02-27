@@ -46,7 +46,7 @@ vec4 get_sample(vec3 dir, vec3 n, inout float accum_weight) {
 
 void main() {
     // Get cubemap coordinate
-    const int texsize = 4;
+    const int texsize = GET_SETTING(env_probes, diffuse_probe_resolution);
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);

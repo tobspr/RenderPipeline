@@ -30,6 +30,8 @@
 #pragma include "includes/normal_packing.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
 
+uniform mat4 p3d_ProjectionMatrix;
+
 #if defined(IS_GBUFFER_SHADER)
 
     /*
@@ -44,10 +46,11 @@
 
     vec2 compute_velocity() {
         // Compute velocity based on this and last frames mvp matrix
-        vec4 last_proj_pos = vOutput.last_proj_position;
+        vec4 last_proj_pos = p3d_ProjectionMatrix * vOutput.last_proj_position;
         vec2 last_texcoord = fma(last_proj_pos.xy / last_proj_pos.w, vec2(0.5), vec2(0.5));
-        vec4 curr_proj_pos = MainSceneData.view_proj_mat_no_jitter * vec4(vOutput.position, 1);
-        vec2 curr_texcoord = fma(curr_proj_pos.xy / curr_proj_pos.w, vec2(0.5), vec2(0.5));
+        // vec4 curr_proj_pos = MainSceneData.view_proj_mat_no_jitter * vec4(vOutput.position, 1);
+        // vec2 curr_texcoord = fma(curr_proj_pos.xy / curr_proj_pos.w, vec2(0.5), vec2(0.5));
+        vec2 curr_texcoord = gl_FragCoord.xy / SCREEN_SIZE;
         return (curr_texcoord - last_texcoord) * 255.0;
     }
 
@@ -127,6 +130,11 @@
         return textureLod(data.Data2, coord, 0).xy / 255.0;
     }
 
+    // Returns the velocity at a given coordinate
+    vec2 get_gbuffer_velocity(GBufferData data, ivec2 coord) {
+        return texelFetch(data.Data2, coord, 0).xy / 255.0;
+    }
+
     // Unpacks a material from the gbuffer
     Material unpack_material(GBufferData data, vec2 fcoord) {
 
@@ -180,6 +188,11 @@
         // Returns the world space position at a given texcoord
         vec3 get_world_pos_at(vec2 coord) {
             return calculate_surface_pos(get_depth_at(coord), coord);
+        }
+
+        // Returns the velocity given texcoord
+        vec2 get_velocity_at(vec2 coord) {
+            return get_gbuffer_velocity(GBuffer, coord);
         }
 
         // Returns the view space normal at a given texcoord. This tries to find

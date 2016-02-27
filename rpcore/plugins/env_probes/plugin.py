@@ -47,7 +47,11 @@ class Plugin(BasePlugin):
     version = "beta (!)"
 
     def on_stage_setup(self):
-        self.probe_mgr = ProbeManager(128)
+        self.probe_mgr = ProbeManager()
+        self.probe_mgr.resolution = self.get_setting("probe_resolution")
+        self.probe_mgr.diffuse_resolution = self.get_setting("diffuse_probe_resolution")
+        self.probe_mgr.max_probes = self.get_setting("max_probes")
+        self.probe_mgr.init()
         self._setup_stages()
 
     def _setup_stages(self):
@@ -55,6 +59,7 @@ class Plugin(BasePlugin):
         # Create the stage to generate and update the cubemaps
         self.capture_stage = self.create_stage(EnvironmentCaptureStage)
         self.capture_stage.resolution = self.probe_mgr.resolution
+        self.capture_stage.diffuse_resolution = self.probe_mgr.diffuse_resolution
         self.capture_stage.storage_tex = self.probe_mgr.cubemap_storage
         self.capture_stage.storage_tex_diffuse = self.probe_mgr.diffuse_storage
 

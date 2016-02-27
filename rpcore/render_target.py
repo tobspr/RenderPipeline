@@ -110,7 +110,7 @@ class RenderTarget(object):
     # Whether to automatically use the GL_R11_G11_B10 format for targets with
     # 16 bit color and no color alpha. This results in a tiny bit of lost precision,
     # however it has a much smaller memory footprint (about half size).
-    USE_R11_G11_B10 = True
+    USE_R11_G11_B10 = False
 
     # Internal variable to store the number of allocated buffers to give them a
     # unique sort index.

@@ -24,24 +24,27 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Texture, Vec4, GeomEnums, Mat4, SamplerState
+from panda3d.core import Texture, Vec4, GeomEnums, Mat4, SamplerState, BoundingVolume
 
+from rpcore.globals import Globals
 from rpcore.rp_object import RPObject
 from rpcore.image import Image
 
 class ProbeManager(RPObject):
     """ Manages all environment probes """
 
-    def __init__(self, resolution):
+    def __init__(self):
         """ Initializes a new probe manager """
         RPObject.__init__(self)
         self.probes = []
         self.max_probes = 3
-        self.resolution = resolution
-        self._create_storage()
+        self.resolution = 128
+        self.diffuse_resolution = 4
 
-    def _create_storage(self):
+    def init(self):
         """ Creates the cubemap storage """
+
+        # Storage for the specular components (with mipmaps)
         self.cubemap_storage = Image("EnvmapStorage")
         self.cubemap_storage.setup_cube_map_array(
             self.resolution, self.max_probes, Texture.T_float, Texture.F_rgba16)
@@ -50,12 +53,14 @@ class ProbeManager(RPObject):
         self.cubemap_storage.set_clear_color(Vec4(1.0, 0.0, 0.1, 1.0))
         self.cubemap_storage.clear_image()
 
+        # Storage for the diffuse component
         self.diffuse_storage = Image("EnvmapDiffuseStorage")
         self.diffuse_storage.setup_cube_map_array(
             4, self.max_probes, Texture.T_float, Texture.F_rgba16)
         self.diffuse_storage.set_clear_color(Vec4(1, 0, 0.2, 1.0))
         self.diffuse_storage.clear_image()
 
+        # Data-storage to store all cubemap properties
         self.dataset_storage = Image("EnvmapData")
         self.dataset_storage.setup_buffer_texture(
             self.max_probes * 5, Texture.T_float,Texture.F_rgba32, GeomEnums.UH_dynamic)
@@ -88,8 +93,12 @@ class ProbeManager(RPObject):
         if not self.probes:
             return None
 
+        view_frustum = Globals.base.camLens.make_bounds()
+        view_frustum.xform(Globals.base.cam.get_transform(Globals.base.render).get_mat())
+
         rating = lambda probe: probe.last_update
         for candidate in sorted(self.probes, key=rating):
-            # TODO: Check if out of screen, using candidate.bounds
+            if view_frustum.contains(candidate.bounds) == BoundingVolume.IF_no_intersection:
+                continue
             return candidate
         return None

@@ -33,6 +33,8 @@ from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectGui import DGG
 
+from rplibs.six import itervalues
+
 from rpcore.util.generic import rgb_from_string
 from rpcore.util.display_shader_builder import DisplayShaderBuilder
 from rpcore.globals import Globals
@@ -97,6 +99,10 @@ class BufferViewer(DraggableWindow):
                 for target in entry.get_all_targets():
                     count += 1
                     memory += entry[target].estimate_texture_memory()
+            elif entry.__class__.__name__ == "RenderTarget2":
+                for target in itervalues(entry.targets):
+                    count += 1
+                    memory += target.estimate_texture_memory()
             else:
                 self.warn("Unkown type:", entry.__class__.__name__)
         return {"count": count, "memory": memory}
@@ -157,6 +163,9 @@ class BufferViewer(DraggableWindow):
             elif entry.__class__.__name__ == "RenderTarget":
                 for target in entry.get_all_targets():
                     self._stages.append(entry[target])
+            elif entry.__class__.__name__ == "RenderTarget2":
+                for target in itervalues(entry.targets):
+                    self._stages.append(target)
             else:
                 self.warn("Unrecognized instance!", entry.__class__)
 

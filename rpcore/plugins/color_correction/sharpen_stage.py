@@ -38,7 +38,7 @@ class SharpenStage(RenderStage):
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
-        self.sharpen_twice = False
+        self.sharpen_twice = True
 
     @property
     def produced_pipes(self):

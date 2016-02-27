@@ -38,6 +38,7 @@ in vec3 p3d_Normal;
 in vec2 p3d_MultiTexCoord0;
 
 uniform mat4 p3d_ViewProjectionMatrix;
+uniform mat4 p3d_PrevModelViewMatrix;
 uniform mat4 trans_model_to_world;
 uniform mat3 tpose_world_to_model;
 
@@ -60,10 +61,8 @@ void main() {
     vOutput.normal = normalize(tpose_world_to_model * p3d_Normal).xyz;
     vOutput.position = (trans_model_to_world * p3d_Vertex).xyz;
 
-    // @TODO: Use last frame model matrix. Need to somehow set it as a shader
-    // input, to be able to use it here. We also somehow have to account for
-    // skinning, we can maybe use hardware skinning for this.
-    vOutput.last_proj_position = MainSceneData.last_view_proj_mat_no_jitter * (trans_model_to_world * p3d_Vertex);
+    // TODO: We have to account for skinning, we can maybe use hardware skinning for this.
+    vOutput.last_proj_position = p3d_PrevModelViewMatrix * p3d_Vertex;
 
     // Get material properties
     mOutput.color          = p3d_Material.baseColor.xyz;

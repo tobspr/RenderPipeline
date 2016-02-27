@@ -42,16 +42,16 @@ class Ui_MainWindow(object):
         self.lst_plugins = QtGui.QListWidget(self.centralwidget)
         self.lst_plugins.setGeometry(QtCore.QRect(20, 110, 251, 481))
         self.lst_plugins.setStyleSheet(_fromUtf8("QListWidget::item {\n"
-"\n"
-"padding: 10px 5px;\n"
-"background: #666;\n"
+"padding: 7px 3px;\n"
+"background: #555;\n"
 "outline: 0 !important;\n"
-"margin-bottom: 4px;\n"
+"margin-bottom: 3px;\n"
+"margin-right: 10px;\n"
 "color: #eee;\n"
 "}\n"
 "\n"
 "QListWidget::item:hover {\n"
-"background: #6c6c6c;\n"
+"background: #5c5c5c;\n"
 "}\n"
 "\n"
 "QListWidget::item:selected {\n"
@@ -76,6 +76,30 @@ class Ui_MainWindow(object):
         self.lst_plugins.setFrameShape(QtGui.QFrame.NoFrame)
         self.lst_plugins.setLineWidth(0)
         self.lst_plugins.setObjectName(_fromUtf8("lst_plugins"))
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.lst_plugins.addItem(item)
         item = QtGui.QListWidgetItem()
         self.lst_plugins.addItem(item)
         item = QtGui.QListWidgetItem()
@@ -316,8 +340,32 @@ class Ui_MainWindow(object):
         item = self.lst_plugins.item(0)
         item.setText(_translate("MainWindow", "  Item 1", None))
         item = self.lst_plugins.item(1)
-        item.setText(_translate("MainWindow", "  Item 2", None))
+        item.setText(_translate("MainWindow", "  Item", None))
         item = self.lst_plugins.item(2)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(3)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(4)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(5)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(6)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(7)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(8)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(9)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(10)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(11)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(12)
+        item.setText(_translate("MainWindow", "  Item", None))
+        item = self.lst_plugins.item(13)
+        item.setText(_translate("MainWindow", "  Item 2", None))
+        item = self.lst_plugins.item(14)
         item.setText(_translate("MainWindow", "  Item 3", None))
         self.lst_plugins.setSortingEnabled(__sortingEnabled)
         self.lbl_plugin_name.setText(_translate("MainWindow", "lbl_plugin_name", None))

@@ -50,16 +50,16 @@
     </property>
     <property name="styleSheet">
      <string notr="true">QListWidget::item {
-
-padding: 10px 5px;
-background: #666;
+padding: 7px 3px;
+background: #555;
 outline: 0 !important;
-margin-bottom: 4px;
+margin-bottom: 3px;
+margin-right: 10px;
 color: #eee;
 }
 
 QListWidget::item:hover {
-background: #6c6c6c;
+background: #5c5c5c;
 }
 
 QListWidget::item:selected {
@@ -91,6 +91,66 @@ outline: 0;
     <item>
      <property name="text">
       <string>  Item 1</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>  Item</string>
      </property>
     </item>
     <item>

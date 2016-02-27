@@ -153,7 +153,7 @@ class MovementController(object):
 
         # add ourself as an update task which gets executed very early before
         # the rendering
-        self._showbase.addTask(self._update, "RP_UpdateMovementController", priority=-1000)
+        self._showbase.addTask(self._update, "RP_UpdateMovementController", sort=-50)
 
         # Hotkeys to connect to pstats and reset the initial position
         self._showbase.accept("1", PStatClient.connect)

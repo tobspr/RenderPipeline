@@ -102,7 +102,7 @@ vec3 get_sun_shading(vec3 basecolor) {
             projected.z -= fixed_bias;
 
             // Fast shadow filtering
-            float filter_radius = 2.0 / textureSize(PSSMSceneSunShadowMapPCF, 0).x;
+            float filter_radius = 1.0 / textureSize(PSSMSceneSunShadowMapPCF, 0).y;
             float shadow_term = 0;
             for(uint i = 0; i < 8; ++i) {
                 vec3 offset = vec3(poisson_disk_2D_12[i] * filter_radius, 0);

@@ -69,7 +69,6 @@ void main() {
         ray_dirs[i] = transform_raydir(ray_dirs[i] * cull_bias, cell_x, cell_y, precompute_size);
     }
 
-
     int storage_offset = idx * MAX_PROBES_PER_CELL;
     int probes_written = 0;
 
@@ -86,14 +85,18 @@ void main() {
         }
 
         if (visible) {
-            imageStore(PerCellProbes, storage_offset + i, ivec4(1 + i));
+            imageStore(PerCellProbes, storage_offset + probes_written, ivec4(1 + i));
             ++probes_written;
         }
     }
 
     // Append zero byte
-    if (probes_written < MAX_PROBES_PER_CELL) {
-        imageStore(PerCellProbes, storage_offset + probes_written, ivec4(0));
+    // if (probes_written < MAX_PROBES_PER_CELL) {
+    //     imageStore(PerCellProbes, storage_offset + probes_written, ivec4(0));
+    // }
+
+    for (int i = probes_written; i < MAX_PROBES_PER_CELL; ++i) {
+        imageStore(PerCellProbes, storage_offset + i, ivec4(0));
     }
 
     result = vec4(cell_x % 2, 0.6, 1.0, 1.0);

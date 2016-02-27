@@ -124,6 +124,9 @@ class Plugin(BasePlugin):
 
             self._scene_stage.sun_vector = sun_vector
 
+        if sun_vector.z < -0.1:
+            print("TODO: Disable shadow map updates")
+
     def update_max_distance(self):
         self._camera_rig.set_pssm_distance(self.get_setting("max_distance"))
 

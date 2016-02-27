@@ -1,40 +1,40 @@
 
 settings: !!omap
 
-    - some_int_setting:
+    - probe_resolution:
         type: int
-        range: [0, 10]
+        range: [16, 512]
+        default: 128
+        label: Specular cubemap resolution
+        description: >
+            Resolution of the specular cubemaps in pixels. This heavily impacts
+            the VRAM usage, so you shouldn't set it too high.
+
+    - diffuse_probe_resolution:
+        type: int
+        range: [1, 32]
+        default: 4
+        label: Diffuse cubemap resolution
+        description: >
+            Resolution of the diffuse cubemap in pixels, this can usually be quite low.
+
+    - max_probes:
+        type: int
+        range: [1, 341]
+        default: 16
+        label: Maximum probe count
+        description: >
+            Maximum amount of enviroment probes, try to set this as low
+            as possible, since it affects VRAM usage by a lot. The maximum
+            limit of this setting is caused by hardware.
+
+    - max_probes_per_cell:
+        type: int
+        range: [1, 16]
         default: 5
-        label: Some integer setting
-        description: Description of the setting.
+        label: Max overlapping probes
+        description: >
+            Controlls how many probes can overlay at a given location.
+            If you get artifacts at probe transitions, try increasing this.
 
-    - some_float_setting:
-        type: float
-        range: [-5.3, 2.9]
-        default: 2.5
-        label: Some float setting
-        description: Description of the setting.
-        runtime: true
-
-    - some_enum:
-        type: enum
-        values: [value1, value2, value3]
-        default: value2
-        label: Some enum setting
-        description: Description of the setting.
-
-    - some_bool:
-        type: bool
-        default: false
-        label: Some boolean setting
-        description: Description of the setting.
-
-daytime_settings: !!omap
-
-    - some_scalar:
-        type: scalar
-        unit: percent
-        range: [0, 1]
-        default: 0.5
-        label: Some Scalar
-        description: Description of the scalar.
+daytime_settings:

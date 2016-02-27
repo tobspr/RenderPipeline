@@ -62,7 +62,7 @@ Cubemap get_cubemap(int index) {
             data1.z, data1.w, data2.x, 0,
             data2.y, data2.z, data2.w, 1
     );
-    result.index = uint(data3.x);
+    result.index = uint(data3.x + 0.5);
     result.use_parallax = data3.y > 0.5;
     result.border_smoothness = data3.z;
     result.bounding_sphere_center = data4.xyz;
@@ -132,6 +132,9 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
         clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
 
     diffuse = textureLod(EnvProbes.diffuse_cubemaps, vec4(diffuse_direction, map.index), 0);
+
+    // diffuse = vec4(0.2, 0.6, 1.0, 1.0);
+    // specular = vec4(0.2, 0.6, 1.0, 1.0);
 
     // Apply clip factors
     specular *= clip_factor;

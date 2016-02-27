@@ -38,8 +38,7 @@ from rplibs.six.moves import range
 from rplibs.six import iterkeys, itervalues, iteritems
 
 from rpcore.render_target import RenderTarget
-
-from rpcore.image import Image
+from rpcore.gui.buffer_viewer import BufferViewer
 from rpcore.globals import Globals
 from rpcore.rp_object import RPObject
 
@@ -91,11 +90,11 @@ class RenderTarget2(RPObject):
 
     def add_color_attachment(self, bits=8, alpha=False):
         self._color_bits = ((bits, bits, bits, (bits if alpha else 0)))
-        self._targets["color"] = Image(self.debug_name + "_color")
+        self._targets["color"] = Texture(self.debug_name + "_color")
 
     def add_depth_attachment(self, bits=32):
         self._depth_bits = 32
-        self._targets["depth"] = Image(self.debug_name + "_depth")
+        self._targets["depth"] = Texture(self.debug_name + "_depth")
 
     def add_aux_attachment(self, bits=8):
         self._aux_bits = bits
@@ -106,7 +105,7 @@ class RenderTarget2(RPObject):
         self._aux_count += count
 
     @setter
-    def size(self, args):
+    def size(self, *args):
         self._size = LVecBase2i(*args)
 
     def set_source(self, source_cam, source_win, region=None):
@@ -330,7 +329,7 @@ class RenderTarget2(RPObject):
     def _setup_textures(self):
         """ Preparse all bound textures """
         for i in range(self._aux_count):
-            self._targets["aux_{}".format(i)] = Image(
+            self._targets["aux_{}".format(i)] = Texture(
                 self.debug_name + "_aux{}".format(i))
         for name, tex in iteritems(self._targets):
             tex.set_wrap_u(SamplerState.WM_clamp)
@@ -415,5 +414,7 @@ class RenderTarget2(RPObject):
         self._internal_buffer.set_sort(sort)
         self._internal_buffer.disable_clears()
         self._internal_buffer.get_display_region(0).disable_clears()
+
+        BufferViewer.register_entry(self)
 
         return True

@@ -78,5 +78,6 @@ void main() {
 
     // Visualize probe count
     // float probe_factor = processed_probes / MAX_PROBES_PER_CELL;
+    // float probe_factor = processed_probes / 1.0;
     // result_spec = vec4(1 - probe_factor, probe_factor, 0, 1);
 }

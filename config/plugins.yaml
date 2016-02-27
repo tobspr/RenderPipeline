@@ -13,6 +13,7 @@ enabled:
     # - vxgi
     - fxaa
     - bloom
+    - motion_blur
 
 
 overrides:
@@ -92,10 +93,10 @@ overrides:
     ao.ue4ao_max_distance: 4.3
     smaa.use_reprojection: True
     smaa.smaa_quality: ultra
-    env_probes.some_int_setting: 5
-    env_probes.some_float_setting: 2.5
-    env_probes.some_enum: value2
-    env_probes.some_bool: False
+    env_probes.probe_resolution: 128
+    env_probes.diffuse_probe_resolution: 4
+    env_probes.max_probes: 16
+    env_probes.max_probes_per_cell: 5
     vxgi.grid_resolution: 256
     vxgi.grid_ws_size: 140.0
     vxgi.diffuse_cone_steps: 13
@@ -107,3 +108,7 @@ overrides:
     bloom.num_mipmaps: 8
     bloom.bloom_strength: 0.7
     bloom.remove_fireflies: True
+    motion_blur.some_int_setting: 5
+    motion_blur.some_float_setting: 2.5
+    motion_blur.some_enum: value2
+    motion_blur.some_bool: False
