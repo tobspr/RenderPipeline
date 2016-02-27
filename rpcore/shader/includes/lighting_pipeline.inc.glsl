@@ -40,7 +40,11 @@ uniform samplerBuffer AllLightsData;
 uniform samplerBuffer ShadowSourceData;
 
 uniform sampler2D ShadowAtlas;
+
+#if SUPPORT_PCF
 uniform sampler2DShadow ShadowAtlasPCF;
+#endif
+
 
 // Use ambient occlusion data, but only if we work in scren space, and only if
 // the plugin is enabled
@@ -121,7 +125,11 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     float accum = 0.0;
 
     for (int i = 0; i < num_samples; ++i) {
+        #if SUPPORT_PCF
         accum += textureLod(ShadowAtlasPCF, vec3(projected_coord.xy + poisson_disk_2D_12[i] * filter_size, projected.z - const_bias), 0).x;
+        #else
+        accum += step(textureProj(ShadowAtlas, vec3(projected_coord.xy + poisson_disk_2D_12[i] * filter_size, projected.z - const_bias), 0).x, projected.z - const_bias);
+        #endif
     }
 
     return accum / num_samples;

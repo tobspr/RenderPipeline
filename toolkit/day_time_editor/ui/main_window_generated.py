@@ -117,6 +117,8 @@ class Ui_MainWindow(object):
         self.label_2.setFont(font)
         self.label_2.setStyleSheet(_fromUtf8("color: #444; border: 0;"))
         self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.label_2.raise_()
+        self.settings_tree.raise_()
         self.frame_4 = QtGui.QFrame(self.centralwidget)
         self.frame_4.setGeometry(QtCore.QRect(370, 90, 601, 41))
         self.frame_4.setStyleSheet(_fromUtf8("QFrame {background: #fff;border: 1px solid #ccc;}\n"

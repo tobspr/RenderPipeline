@@ -150,6 +150,14 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         connect(self.time_slider,QtCore.SIGNAL("valueChanged(int)"), self._on_time_changed)
         connect(self.settings_tree, QtCore.SIGNAL("itemSelectionChanged()"), self._on_setting_selected)
         connect(self.btn_insert_point, QtCore.SIGNAL("clicked()"), self._insert_point)
+        connect(self.btn_reset, QtCore.SIGNAL("clicked()"), self._reset_settings)
+
+    def _reset_settings(self):
+        """ Resets the current plugins settings """
+        QtGui.QMessageBox.warning(self, "Houston, we have a problem!",
+            "This functionality is not yet implemented! Blame tobspr if you need it.\n\n"
+            "On a more serious note, you can still hand-edit config/daytime.yaml.",
+            QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
 
     def _insert_point(self):
         """ Asks the user to insert a new point """
@@ -215,8 +223,8 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
     def _on_time_changed(self, val):
         """ Handler when the time slider got moved """
-        hour = val / (60 * 60 * 60)
-        minute = (val / (60 * 60)) % 60
+        hour = val // (60 * 60 * 60)
+        minute = (val // (60 * 60)) % 60
         ftime = float(val) / (24 * 60 * 60 * 60)
 
         self.time_label.setText(str(hour).zfill(2) + ":" + str(minute).zfill(2))
@@ -234,8 +242,6 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
         for plugin_id, plugin in iteritems(self._plugin_mgr.plugin_instances):
 
-            if not self._plugin_mgr.is_plugin_enabled(plugin_id):
-                continue
 
             daytime_settings = self._plugin_mgr.day_settings[plugin_id]
 
@@ -248,6 +254,9 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             plugin_head.setFlags(QtCore.Qt.ItemIsEnabled)
             font = QtGui.QFont()
             font.setBold(True)
+            if not self._plugin_mgr.is_plugin_enabled(plugin_id):
+                plugin_head.setTextColor(0, QtGui.QColor(150, 0, 0))
+                plugin_head.setText(0, plugin.name + " (disabled)")
             plugin_head.setFont(0, font)
 
             # Display all settings

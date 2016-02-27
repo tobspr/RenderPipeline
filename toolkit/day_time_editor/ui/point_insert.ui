@@ -104,11 +104,19 @@ Did you know: If you dont want to enter concrete values, just click and drag any
      <height>23</height>
     </rect>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::TabFocus</enum>
+   </property>
    <property name="text">
     <string>Insert</string>
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>ipt_time</tabstop>
+  <tabstop>ipt_value</tabstop>
+  <tabstop>btn_insert</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

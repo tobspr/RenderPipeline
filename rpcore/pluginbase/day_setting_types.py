@@ -27,7 +27,7 @@ THE SOFTWARE.
 from __future__ import division
 from panda3d.core import PTAFloat, PTALVecBase3f
 
-from math import exp
+from math import exp, log
 
 from rpcore.rp_object import RPObject
 from rpcore.util.smooth_connected_curve import SmoothConnectedCurve
@@ -95,12 +95,11 @@ class ScalarType(BaseType):
         BaseType.__init__(self, data)
         self.unit = data.pop("unit")
         self.minvalue, self.maxvalue = data.pop("range")
-        self.default = self.get_linear_value(data.pop("default"))
-
+        self.logarithmic_factor = data.pop("logarithmic_factor", 1.0)
         if self.unit not in ("degree", "meter", "percent"):
             raise Exception("Invalid unit type: {}".format(self.unit))
 
-        self.logarithmic_factor = data.pop("logarithmic_factor", 1.0)
+        self.default = self.get_linear_value(data.pop("default"))
 
         self.curves.append(SmoothConnectedCurve())
         self.curves[0].set_single_value(self.default)
@@ -126,7 +125,12 @@ class ScalarType(BaseType):
             return value * (self.maxvalue - self.minvalue) + self.minvalue
 
     def get_linear_value(self, scaled_value):
-        return (scaled_value - self.minvalue) / (self.maxvalue - self.minvalue)
+        """ Linearizes a scaled value """
+        result = (scaled_value - self.minvalue) / (self.maxvalue - self.minvalue)
+        if self.logarithmic_factor != 1.0:
+            result *= exp(self.logarithmic_factor * 4.0) - 1
+            result = log(result - 1.0) / (4.0 * self.logarithmic_factor)
+        return result
 
 class ColorType(BaseType):
     """ Setting type storing a RGB color triple """
