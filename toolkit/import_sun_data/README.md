@@ -9,3 +9,6 @@ The script will then download the sun data for different times of the day
 and configure the render pipeline to match those locations.
 
 
+### Requirements
+
+- Internet connection

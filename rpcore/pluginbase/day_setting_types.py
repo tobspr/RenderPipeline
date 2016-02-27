@@ -129,7 +129,7 @@ class ScalarType(BaseType):
         result = (scaled_value - self.minvalue) / (self.maxvalue - self.minvalue)
         if self.logarithmic_factor != 1.0:
             result *= exp(self.logarithmic_factor * 4.0) - 1
-            result = log(result - 1.0) / (4.0 * self.logarithmic_factor)
+            result = log(result + 1.0) / (4.0 * self.logarithmic_factor)
         return result
 
 class ColorType(BaseType):

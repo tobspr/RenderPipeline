@@ -72,7 +72,7 @@ daytime_settings: !!omap
         default: 5.0
         label: Sun Intensity
         description: Controls the intensity of the sun
-        logarithmic_factor: 2.7
+        logarithmic_factor: 2.0
 
     - sun_color:
         type: color

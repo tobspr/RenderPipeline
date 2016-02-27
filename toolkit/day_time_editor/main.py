@@ -154,10 +154,23 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
     def _reset_settings(self):
         """ Resets the current plugins settings """
-        QtGui.QMessageBox.warning(self, "Houston, we have a problem!",
-            "This functionality is not yet implemented! Blame tobspr if you need it.\n\n"
-            "On a more serious note, you can still hand-edit config/daytime.yaml.",
-            QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+        # QtGui.QMessageBox.warning(self, "Houston, we have a problem!",
+        #     "This functionality is not yet implemented! Blame tobspr if you need it.\n\n"
+        #     "On a more serious note, you can still hand-edit config/daytime.yaml.",
+        #     QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+
+        # Ask the user if he's really sure about it
+        msg = "Are you sure you want to reset the control points of '" + self._selected_setting_handle.label + "'?\n"
+        msg+= "!! This cannot be undone !! They will be lost forever (a long time!)."
+        reply = QtGui.QMessageBox.question(self, "Warning",
+                         msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+
+            QtGui.QMessageBox.information(self, "Success", "Settings have been reset!")
+            default = self._selected_setting_handle.default
+            self._selected_setting_handle.curves[0].set_single_value(default)
+            self._update_settings_list()
+            self._cmd_queue.add("write_settings")
 
     def _insert_point(self):
         """ Asks the user to insert a new point """
@@ -171,9 +184,8 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
                 return
 
             val_linear = self._selected_setting_handle.get_linear_value(val)
-            print(val_linear)
             self._selected_setting_handle.curves[0].append_cv(minutes, val_linear)
-
+            self._cmd_queue.add("write_settings")
 
     def _update_tree_widgets(self):
         """ Updates the tree widgets """

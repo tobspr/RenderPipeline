@@ -108,4 +108,8 @@ precision lowp int;
     #define RESTRICT restrict
 #endif
 
+
+// TODO:
+#define SUPPORT_PCF 1
+
 #pragma include "includes/common_functions.inc.glsl"

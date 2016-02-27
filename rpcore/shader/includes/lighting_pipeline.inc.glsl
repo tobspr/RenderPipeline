@@ -79,7 +79,7 @@ vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, vec4 
 
     // Compute the lights influence
     return apply_light(m, view_vector, l, get_light_color(light_data), attenuation,
-                       shadow_factor, directional_occlusion, transmittance, 0);
+                       shadow_factor, directional_occlusion, transmittance);
 }
 
 // Processes a point light
@@ -98,7 +98,7 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, vec4
 
     // Compute the lights influence
     return apply_light(m, view_vector, l, get_light_color(light_data),
-                       attenuation, shadow_factor, directional_occlusion, transmittance, 0);
+                       attenuation, shadow_factor, directional_occlusion, transmittance);
 }
 
 // Filters a shadow map

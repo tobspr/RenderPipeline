@@ -7,12 +7,12 @@
 
 # gl-dump-compiled-shaders #t
 # notify-level-glgsg debug
-notify-level-glgsg error
+# notify-level-glgsg warning
 # notify-level-gobj debug
 pstats-gpu-timing #t
 pstats-max-rate 60
-gl-debug #t
-gl-debug-object-labels #t
+gl-debug #f
+gl-debug-object-labels #f
 
 # ----------------- Misc Settings -----------------
 

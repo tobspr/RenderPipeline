@@ -185,6 +185,15 @@ settings: !!omap
             Controls the size of the last cascade, which is used for rendering
             distant shadows.
 
+    - scene_shadow_resolution:
+        type: int
+        range: [128, 8192]
+        default: 1024
+        label: Scene shadow Resolution
+        description: >
+            Controls the size of the shadow map which covers the whole scene,
+            and is used by the environment probes and voxelization
+
 daytime_settings:
 
 

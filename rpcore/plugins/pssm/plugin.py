@@ -63,6 +63,7 @@ class Plugin(BasePlugin):
         self._shadow_stage.split_resolution = self.get_setting("resolution")
 
         self._scene_stage = self.create_stage(PSSMSceneShadowStage)
+        self._scene_stage.resolution = self.get_setting("scene_shadow_resolution")
 
         # Experimental, not fully working yet
         # self._dist_shadow_stage = self.create_stage(PSSMDistShadowStage)

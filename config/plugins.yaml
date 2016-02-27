@@ -7,11 +7,11 @@ enabled:
     - pssm
     - color_correction
     - scattering
-    # - ao
-    # - smaa
+    - ao
+    - smaa
     - env_probes
     # - vxgi
-    # - fxaa
+    - fxaa
     - bloom
 
 
@@ -23,19 +23,20 @@ overrides:
     pssm.max_distance: 100.0
     pssm.logarithmic_factor: 0.94
     pssm.sun_distance: 650.0
-    pssm.split_count: 4
-    pssm.resolution: 2048
+    pssm.split_count: 5
+    pssm.resolution: 1024
     pssm.border_bias: 0.1167
     pssm.use_pcf: True
-    pssm.filter_sample_count: 32
-    pssm.filter_radius: 5.38
+    pssm.filter_sample_count: 8
+    pssm.filter_radius: 2.74
     pssm.fixed_bias: 0.2
     pssm.slope_bias: 0.66667
     pssm.normal_bias: 0.44
-    pssm.use_pcss: True
+    pssm.use_pcss: False
     pssm.pcss_search_samples: 32
     pssm.pcss_penumbra_size: 300.0
     pssm.vsm_resolution: 4096
+    pssm.scene_shadow_resolution: 1024
     color_correction.tonemap_operator: exponential
     color_correction.reinhard_version: rgb
     color_correction.exponential_factor: 1.06

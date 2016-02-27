@@ -113,7 +113,7 @@ class CubemapFilter(RPObject):
             mipsize = mipsize // 2
 
             # Create the target which downsamples the mipmap
-            target = self._stage.make_target("CF:SpecIBL-" + str(mipsize))
+            target = self._stage.make_target("CF:SpecIBL-PreFilter-" + str(mipsize))
             target.size = mipsize * 6, mipsize
             target.prepare_offscreen_buffer()
 
@@ -129,7 +129,7 @@ class CubemapFilter(RPObject):
             mip += 1
 
             # Create the target which filters the mipmap and removes the noise
-            target_filter = self._stage.make_target("CF:SpecIBLFilter-" + str(mipsize))
+            target_filter = self._stage.make_target("CF:SpecIBL-PostFilter-" + str(mipsize))
             target_filter.size = mipsize * 6, mipsize
             target_filter.prepare_offscreen_buffer()
             target_filter.set_shader_input("currentMip", mip)

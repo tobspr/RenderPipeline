@@ -132,5 +132,5 @@ class SmoothConnectedCurve(object):
 
     def serialize(self):
         """ Returns the value of the curve as yaml list """
-        points = ["[{},{}]".format(round(a, 5), round(b, 5)) for a, b in self._cv_points]
+        points = ["[{:5.10f},{:5.10f}]".format(float(a), float(b)) for a, b in self._cv_points]
         return "[" + ','.join(points) + "]"

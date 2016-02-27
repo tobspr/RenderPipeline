@@ -58,7 +58,6 @@ class EnvironmentCaptureStage(RenderStage):
         self.target.size = (self.resolution * 6, self.resolution)
         self.target.add_color_texture(bits=16)
         self.target.add_aux_texture(bits=16)
-        # self.target.add_depth_texture(bits=32)
         self.target.has_color_alpha = True
         self.target.create_overlay_quad = False
         self.target.prepare_scene_render()

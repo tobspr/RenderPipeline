@@ -47,7 +47,7 @@ void main() {
     // Apply dithering to prevent banding, since we are converting from 16 bit
     // precision to 8 bit precision here
     vec3 dither = rand_rgb(texcoord) + rand_rgb(texcoord + 0.5787) - 0.6;
-    scene_color += dither / 255.0;
+    scene_color += dither / 127.0;
 
     result = vec4(scene_color, 1);
 }

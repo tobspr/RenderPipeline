@@ -170,7 +170,7 @@ void main() {
 
                 // Find depth at sample location
                 float sampled_depth = textureLod(PSSMShadowAtlas,
-                    projected_coord + offset * filter_size * 10.0, 0).x;
+                    projected_coord + offset * filter_size * 1.0, 0).x;
 
                 // Compare the depth with the pixel depth, in case its smaller,
                 // we found a blocker
@@ -270,10 +270,20 @@ void main() {
         }
     #endif
 
+
     // Compute the sun lighting
+
     vec3 v = normalize(MainSceneData.camera_pos - m.position);
-    vec3 l = sun_vector;
-    lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, vec4(0), transmittance, 0.0005);
+    vec3 r = reflect(-v, m.normal);
+
+    // Spherical sun disk
+    float sun_radius = 696000.0;
+    vec3 L = sun_vector * 14960000.0;
+    vec3 center_to_ray = dot(L, r) * r - L;
+    vec3 closest_point = L + center_to_ray * saturate(sun_radius / length(center_to_ray));
+    vec3 l = normalize(closest_point);
+
+    lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, vec4(0), transmittance);
 
     #if DEBUG_MODE
         lighting_result *= 0;

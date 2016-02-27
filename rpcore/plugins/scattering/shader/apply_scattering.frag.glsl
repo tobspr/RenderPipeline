@@ -64,11 +64,12 @@ void main() {
 
         // Sun disk
         vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) * inscattered_light * fog_factor;
-        float disk_factor = pow(max(0, dot(view_vector, sun_vector)), 3.0 * 1e4);
+        silhouette_col *= 1.0;
+        float disk_factor = pow(saturate(dot(view_vector, sun_vector) + 0.001), 30.0 * 1e4);
         float upper_disk_factor = saturate( (view_vector.z - sun_vector.z) * 0.3 + 0.01);
         upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.01) * 30.0);
         inscattered_light += vec3(1,0.3,0.1) * disk_factor *
-            upper_disk_factor * 7.0 * silhouette_col * 1.5 * 1e5;
+            upper_disk_factor * 2.0 * silhouette_col * 1.0 * 1e4;
     } else {
         inscattered_light *= 8.0;
     }

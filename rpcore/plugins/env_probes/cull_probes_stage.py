@@ -62,7 +62,6 @@ class CullProbesStage(RenderStage):
         # overshading
         self.target.USE_OVERSIZED_TRIANGLE = False
         self.target.size = self.slice_width, self.num_rows
-        self.target.add_color_texture()
         self.target.prepare_offscreen_buffer()
 
         self.per_cell_probes = Image.create_buffer(
