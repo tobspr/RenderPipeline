@@ -566,14 +566,14 @@ class RenderTarget(object):
         self._register_buffer()
 
     @require_created
-    def set_active(self, active):
+    def set_active(self, active, include_overlay=False):
         """ You can enable / disable the buffer with this. When disabled,
         shaders on this buffer aren't executed """
-        if self._active is not active:
-            for region in self._internal_buffer.get_display_regions():
-                if region != self._internal_buffer.get_overlay_display_region():
-                    region.set_active(active)
-            self._active = active
+        # if self._active is not active:
+        for region in self._internal_buffer.get_display_regions():
+            if include_overlay or region != self._internal_buffer.get_overlay_display_region():
+                region.set_active(active)
+        self._active = active
 
     @require_created
     def get_quad(self):

@@ -32,9 +32,9 @@
 
 #pragma optionNV (unroll all)
 
-uniform GBufferData GBuffer;
 uniform sampler2D CurrentTex;
 uniform sampler2D LastTex;
+uniform GBufferData GBuffer;
 
 out vec3 result;
 
@@ -68,48 +68,58 @@ void main() {
     vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    vec2 velocity = get_gbuffer_velocity(GBuffer, texcoord) / SCREEN_SIZE;
-    vec2 old_coord = texcoord - velocity;
-    vec3 current_color = textureLod(CurrentTex, texcoord, 0).xyz;
-    vec3 last_color = textureLod(LastTex, old_coord, 0).xyz;
+    vec2 velocity = get_gbuffer_velocity(GBuffer, texcoord);
+    vec2 last_coord = texcoord - velocity;
+
+    vec2 one_pixel = 1.0 / SCREEN_SIZE;
+    vec3 curr_m  = texture(CurrentTex, texcoord).xyz;
 
     // Out of screen, can early out
-    if (old_coord.x < 0.0 || old_coord.x >= 1.0 || old_coord.y < 0.0 || old_coord.y >= 1.0) {
-        result = current_color;
+    if (last_coord.x < 0.0 || last_coord.x >= 1.0 || last_coord.y < 0.0 || last_coord.y >= 1.0) {
+        result = curr_m;
         return;
     }
 
-    // Get last frame color AABB
-    const int radius = 1;
-    vec3 color_min = vec3(1e10);
-    vec3 color_max = vec3(0);
-    for (int i = -radius; i <= radius; ++i) {
-        for (int j = -radius; j <= radius; ++j) {
-            vec3 sample_color = texelFetch(CurrentTex, coord + ivec2(i, j), 0).xyz;
-            color_min = min(color_min, sample_color);
-            color_max = max(color_max, sample_color);
-        }
-    }
+    // Bounding box size
+    const float bbs = 1.0;
 
-    // Compute weight of the last frames pixel color
-    float sample_weight = clamp_color_to_aabb(last_color, current_color, color_min, color_max);
-    ivec2 last_coord = ivec2( 0.5 + texcoord * SCREEN_SIZE );
-    float neighbor_diff = 0.0;
-    for (int i = -radius; i <= radius; ++i) {
-        for (int j = -radius; j <= radius; ++j) {
-            vec3 sample_color = texelFetch(LastTex, last_coord + ivec2(i, j), 0).xyz;
-            neighbor_diff += distance(clamp(sample_color, color_min, color_max), sample_color);
-        }
-    }
+    // Get current frame neighbor texels
+    vec3 curr_tl = texture(CurrentTex, texcoord + vec2(-bbs, -bbs) * one_pixel).xyz;
+    vec3 curr_tr = texture(CurrentTex, texcoord + vec2( bbs, -bbs) * one_pixel).xyz;
+    vec3 curr_bl = texture(CurrentTex, texcoord + vec2(-bbs,  bbs) * one_pixel).xyz;
+    vec3 curr_br = texture(CurrentTex, texcoord + vec2( bbs,  bbs) * one_pixel).xyz;
 
-    // Evaluate if we can pickup the sample or not
-    if (neighbor_diff < 0.02) sample_weight = 0.0;
-    float blend_amount = saturate(distance(last_color, current_color) * 10.0);
+    // Get current frame neighbor AABB
+    vec3 curr_min = min(curr_m, min(curr_tl, min(curr_tr, min(curr_bl, curr_br))));
+    vec3 curr_max = max(curr_m, max(curr_tl, max(curr_tr, max(curr_bl, curr_br))));
+
+    // Get last frame texels
+    float clip_length = 1.0;
+    vec3 hist_m  = texture(LastTex, last_coord).xyz;
+    vec3 hist_tl = texture(LastTex, last_coord + vec2(-bbs, -bbs) * one_pixel).xyz;
+    vec3 hist_tr = texture(LastTex, last_coord + vec2( bbs, -bbs) * one_pixel).xyz;
+    vec3 hist_bl = texture(LastTex, last_coord + vec2(-bbs,  bbs) * one_pixel).xyz;
+    vec3 hist_br = texture(LastTex, last_coord + vec2( bbs,  bbs) * one_pixel).xyz;
+
+    float neighbor_diff = length(clamp(hist_tl, curr_min, curr_max) - hist_tl)
+                        + length(clamp(hist_tr, curr_min, curr_max) - hist_tr)
+                        + length(clamp(hist_bl, curr_min, curr_max) - hist_bl)
+                        + length(clamp(hist_br, curr_min, curr_max) - hist_br);
+
+    const float max_difference = 0.2; // TODO: Make this a setting
+    if (neighbor_diff < max_difference)
+        clip_length = 0.0;
+
+    float blend_amount = saturate(distance(hist_m, curr_m) * 0.2);
 
     // Merge the sample with the current color, in case we can't pick it
-    last_color = mix(last_color, current_color, sample_weight);
+    hist_m = mix(hist_m, curr_m, clip_length);
 
     // Compute weight and blend pixels
-    float weight = saturate(1.0 / (mix(2.25, 4.5, blend_amount)));
-    result = mix(last_color, current_color, weight);
+    // float weight = 1 - saturate(1.0 / (mix(0.5, 3.0, blend_amount)));
+    float weight = 0.5 - 0.5 * blend_amount;
+    // weight = 0.5;
+    result = mix(curr_m, hist_m, weight);
+
+    // result = vec3(blend_amount);
 }

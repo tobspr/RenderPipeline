@@ -54,7 +54,7 @@ class LoadingScreen(RPObject):
     def create(self):
         """ Creates the gui components """
 
-        screen_w, screen_h = Globals.base.win.get_x_size(), Globals.base.win.get_y_size()
+        screen_w, screen_h = Globals.base.win.get_x_size() + 4, Globals.base.win.get_y_size() + 4
 
         self._fullscreen_node = Globals.base.pixel2dp.attach_new_node(
             "PipelineDebugger")

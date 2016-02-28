@@ -46,8 +46,8 @@ class SMAAStage(RenderStage):
     def set_jitter_index(self, idx):
         """ Sets the current jitter index """
         self._jitter_index[0] = idx
-        self._neighbor_targets[0].set_active(idx == 0)
-        self._neighbor_targets[1].set_active(idx == 1)
+        self._neighbor_targets[idx].set_active(True, include_overlay=True)
+        self._neighbor_targets[1-idx].set_active(False, include_overlay=True)
         self._resolve_target.set_shader_input("CurrentTex", self._neighbor_targets[idx]["color"])
         self._resolve_target.set_shader_input("LastTex", self._neighbor_targets[1-idx]["color"])
 

@@ -55,7 +55,7 @@ void main() {
     float mid_depth = get_gbuffer_depth(GBuffer, texcoord);
     vec3 mid_nrm = get_gbuffer_normal(GBuffer, texcoord);
 
-    const float max_depth_diff = 0.00001;
+    const float max_depth_diff = 0.0001;
     const float max_nrm_diff = 0.001;
 
     float weights = 0.0;
@@ -81,7 +81,7 @@ void main() {
             // Make sure we don't have a null-weight, but instead only a very
             // small weight, so that in case no pixel matches, we still have
             // data to work with.
-            weight = max(0.01, weight);
+            weight = max(1e-3, weight);
 
             accum += source_sample * weight;
             weights += weight;

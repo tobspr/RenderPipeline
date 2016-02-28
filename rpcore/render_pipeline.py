@@ -24,11 +24,13 @@ THE SOFTWARE.
 
 """
 
+from __future__ import division
+
 import sys
 import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem
+from panda3d.core import PandaSystem, WindowProperties
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -172,6 +174,24 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
         # Construct the showbase and init global variables
         ShowBase.__init__(self._showbase)
+
+        # Check if we meet the window size requirements (multiple of 4)
+        w, h = self._showbase.win.get_x_size(), self._showbase.win.get_y_size()
+        if w % 4 != 0 or h % 4 != 0:
+            self.warn("Window size is not a multiple of 4! Requesting new size ..")
+            new_w, new_h = (w // 4) * 4, (h // 4) * 4
+            props = WindowProperties.size(new_w, new_h)
+            self._showbase.win.request_properties(props)
+
+            resolution = LVecBase2i(
+                self._showbase.win.get_x_size(),
+                self._showbase.win.get_y_size())
+
+            self._showbase.graphicsEngine.render_frame()
+
+            assert self._showbase.win.get_x_size() == new_w
+            assert self._showbase.win.get_y_size() == new_h
+
         self._init_globals()
 
         # Create the loading screen
@@ -329,6 +349,20 @@ class RenderPipeline(PipelineExtensions, RPObject):
             define("IS_AMD", 1)
         if "intel" in vendor:
             define("IS_INTEL", 1)
+
+        # Only activate this experimental feature if the patch was applied,
+        # since it is a local change in my Panda3D build which is not yet
+        # reviewed by rdb. Once it is in public Panda3D Dev-Builds this will
+        # be the default.
+        if (not isfile("data/panda3d-patches/prev-model-view-matrix.diff") or
+            isfile("D:/__dev__")):
+
+            # You can find the required patch in
+            # data/panda3d-patches/prev-model-view-matrix.diff.
+            # Delete it after you applied it, so the render pipeline knows the
+            # patch is available.
+            self.warn("Experimental feature activated, no guarantee it works!")
+            define("EXPERIMENTAL_PREV_TRANSFORM", 1)
 
         self._light_mgr.init_defines()
         self._plugin_mgr.init_defines()

@@ -92,4 +92,6 @@ void main() {
 
   result = vec4(accum, initial_weight) / weight_accum;
 
+  // To disable motion blur:
+  // result = texelFetch(ShadedScene, coord, 0);
 }

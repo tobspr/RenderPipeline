@@ -11,7 +11,7 @@ enabled:
     - smaa
     - env_probes
     # - vxgi
-    - fxaa
+    # - fxaa
     - bloom
     - motion_blur
 
