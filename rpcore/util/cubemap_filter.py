@@ -40,7 +40,7 @@ class CubemapFilter(RPObject):
     DIFFUSE_CUBEMAP_SIZE = 10
     PREFILTER_CUBEMAP_SIZE = 32
 
-    def __init__(self, parent_stage, name="Cubemap", size=256):
+    def __init__(self, parent_stage, name="Cubemap", size=128):
         """ Inits the filter from a given stage """
         RPObject.__init__(self)
         self._stage = parent_stage
@@ -168,14 +168,28 @@ class CubemapFilter(RPObject):
 
     def set_shaders(self):
         """ Sets all required shaders on the filter. """
+
+        # Set diffuse filter shaders
         self._diffuse_target.set_shader(
-            self._stage.load_shader("ibl_cubemap_diffuse.frag.glsl"))
+            self._stage.load_shader("ibl/cubemap_diffuse.frag.glsl"))
         self._diff_filter_target.set_shader(
-            self._stage.load_shader("ibl_cubemap_diffuse_filter.frag.glsl"))
-        mip_shader = self._stage.load_shader("ibl_cubemap_specular.frag.glsl")
+            self._stage.load_shader("ibl/cubemap_diffuse_filter.frag.glsl"))
+
+        # Set specular prefilter shaders
+        mip_shader = self._stage.load_shader("ibl/cubemap_specular_prefilter.frag.glsl")
         for target in self._targets_spec:
             target.set_shader(mip_shader)
+
+        # Special shader for the first prefilter target
+        self._targets_spec[0].set_shader(self._stage.load_shader(
+            "ibl/cubemap_specular_prefilter_first.frag.glsl"))
+
+        # Set specular filter sampling shaders
         mip_filter_shader = self._stage.load_shader(
-            "ibl_cubemap_specular_filter.frag.glsl")
+            "ibl/cubemap_specular_filter.frag.glsl")
         for target in self._targets_spec_filter:
             target.set_shader(mip_filter_shader)
+
+        # Special shader for the first filter target
+        self._targets_spec_filter[0].set_shader(self._stage.load_shader(
+            "ibl/cubemap_specular_filter_first.frag.glsl"))

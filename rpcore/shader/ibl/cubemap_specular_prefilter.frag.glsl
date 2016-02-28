@@ -27,38 +27,49 @@
 #version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/importance_sampling.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/brdf.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
 #pragma optionNV (unroll all)
 
+uniform int currentMip;
 uniform samplerCube SourceTex;
 uniform writeonly imageCube RESTRICT DestMipmap;
-uniform int currentMip;
 
 void main() {
-
     const int num_samples = 64;
 
     // Get cubemap coordinate
-    int texsize = textureSize(SourceTex, currentMip).x;
+    int texsize = imageSize(DestMipmap).x;
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    // Get tangent and binormal
+    // Determine target roughenss
+    float sample_roughness = 1e-10 + (currentMip + 1) / 7.0 - 0.04;
+
     vec3 tangent, binormal;
     find_arbitrary_tangent(n, tangent, binormal);
 
-    const float filter_radius = 0.00 + currentMip * 0.05;
-    vec3 accum = vec3(0.0);
+    vec3 accum = vec3(0);
+    float accum_weights = 0.0;
+
+    // Importance sampling
     for (int i = 0; i < num_samples; ++i) {
-        vec2 offset = poisson_disk_2D_64[i];
-        vec3 sample_vec = normalize(n +
-            filter_radius * offset.x * tangent +
-            filter_radius * offset.y * binormal);
-        accum += textureLod(SourceTex, sample_vec, currentMip).xyz;
+        vec2 Xi = hammersley(i, num_samples);
+        vec3 h = importance_sample_ggx(Xi, sample_roughness);
+        h = normalize(h.x * tangent + h.y * binormal + h.z * n);
+
+        // Reconstruct light vector
+        vec3 l = -reflect(n, h);
+        float weight = max(0, dot(n, l));
+        accum += textureLod(SourceTex, l, 1).xyz * weight;
+        accum_weights += weight;
     }
 
-    accum /= num_samples;
+    // Energy conservation
+    accum /= max(0.01, accum_weights);
     imageStore(DestMipmap, ivec3(clamped_coord, face), vec4(accum, 1.0));
 }

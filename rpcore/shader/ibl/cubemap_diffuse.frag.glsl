@@ -24,50 +24,56 @@
  *
  */
 
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/importance_sampling.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
-#pragma include "includes/brdf.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
-// #pragma optionNV (unroll all)
+#pragma optionNV (unroll all)
 
-uniform samplerCubeArray SourceTex;
-uniform writeonly imageCubeArray RESTRICT DestTex;
-uniform int currentMip;
-uniform int currentIndex;
-out vec4 result;
+uniform samplerCube SourceCubemap;
+uniform writeonly imageCube RESTRICT DestCubemap;
+uniform int cubeSize;
 
 void main() {
-    const uint num_samples = SHADER_NUM_SAMPLES;
+    const int sample_count = 16;
 
     // Get cubemap coordinate
-    int texsize = textureSize(SourceTex, currentMip).x;
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 clamped_coord; int face;
-    vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
+    vec3 n = texcoord_to_cubemap(cubeSize, coord, clamped_coord, face);
 
-    // Determine target roughenss
-    float sample_roughness = 1e-10 + (currentMip + 1) / 12.0 - 0.04;
+    // Convert normal to spherical coordinates
+    float theta, phi;
+    vector_to_spherical(n, theta, phi);
 
     // Get tangent and binormal
     vec3 tangent, binormal;
     find_arbitrary_tangent(n, tangent, binormal);
 
-    vec4 accum = vec4(0.0);
-    float accum_weights = 0.0;
-    for (uint i = 0; i < num_samples; ++i) {
-        vec2 Xi = hammersley(i, num_samples);
-        vec3 h = importance_sample_ggx(Xi, sample_roughness);
-        h = normalize(h.x * tangent + h.y * binormal + h.z * n);
+    // Add noise by rotating the tangent and bitangent
+    const int noise_size = 4;
+    float rotation = rand(coord).x * TWO_PI;
+    float sin_r = sin(rotation);
+    float cos_r = cos(rotation);
 
-        // Reconstruct light vector
-        vec3 l = -reflect(n, h);
-        float weight = max(0, dot(n, l));
-        accum += textureLod(SourceTex, vec4(l, currentIndex), currentMip - 1) * weight;
-        accum_weights += weight;
+
+    vec3 accum = vec3(0);
+    float weights = 1e-5;
+    for (int i = 0; i < sample_count; ++i)
+    {
+        vec2 xi = rotate(hammersley(i, sample_count), cos_r, sin_r);
+        vec3 offset = importance_sample_lambert(xi, n);
+        offset = normalize(tangent * offset.x + binormal * offset.y + n * offset.z);
+        offset = face_forward(offset, n);
+        float weight = saturate(dot(offset, n));
+        accum += textureLod(SourceCubemap, offset, 0).xyz * weight;
+        weights += weight;
     }
-    accum /= max(0.01, accum_weights);
-    imageStore(DestTex, ivec3(clamped_coord, currentIndex * 6 + face), accum);
-    result = accum;
+
+    accum /= weights;
+
+    imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(accum, 1) );
 }

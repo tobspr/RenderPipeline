@@ -60,7 +60,7 @@ uniform samplerCube DefaultEnvmap;
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
-    return sqrt(roughness) * 7.0;
+    return roughness * 7.0;
 }
 
 void main() {

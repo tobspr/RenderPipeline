@@ -88,13 +88,16 @@ void main() {
     n = normalize(n);
     n = transform_cubemap_coordinates(n);
     float roughness = clamp(currentMip / 7.0, 0.001, 1.0);
-    roughness *= roughness;
+    // roughness *= roughness;
 
     vec3 tangent, binormal;
     find_arbitrary_tangent(n, tangent, binormal);
 
     vec4 accum = vec4(0);
-    const uint num_samples = 1024;
+    const uint num_samples = 512;
+
+    // Ultra high quality, might cause TDR on low-end systems
+    // const uint num_samples = 4096;
     for (uint i = 0; i < num_samples; ++i) {
         vec2 xi = hammersley(i, num_samples);
         vec3 r = importance_sample_ggx(xi, roughness);

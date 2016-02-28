@@ -113,6 +113,19 @@ class Plugin(BasePlugin):
     def on_pre_render_update(self):
         sun_vector = self.get_plugin_instance("scattering").sun_vector
 
+        if sun_vector.z < -0.1:
+            self._shadow_stage.set_active(False)
+            self._scene_stage.set_active(False)
+            self._pssm_stage.set_render_shadows(False)
+            self._pssm_stage.set_render_shadows(False)
+
+            # Return, no need to update the pssm splits
+            return
+        else:
+            self._shadow_stage.set_active(True)
+            self._scene_stage.set_active(True)
+            self._pssm_stage.set_render_shadows(True)
+
         if self._update_enabled:
             self._camera_rig.update(Globals.base.camera, sun_vector)
 
@@ -124,8 +137,6 @@ class Plugin(BasePlugin):
 
             self._scene_stage.sun_vector = sun_vector
 
-        if sun_vector.z < -0.1:
-            print("TODO: Disable shadow map updates")
 
     def update_max_distance(self):
         self._camera_rig.set_pssm_distance(self.get_setting("max_distance"))

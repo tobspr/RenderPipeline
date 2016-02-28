@@ -26,21 +26,14 @@
 
 #version 430
 
-#pragma include "render_pipeline_base.inc.glsl"
-
 uniform sampler2D ShadedScene;
-uniform samplerBuffer Exposure;
+uniform sampler2D SourcePSSMTex;
+uniform int usePssmTex;
 
 out vec3 result;
 
+// Shader which is used when the sun is below the horizon, so we don't have any lighting
+
 void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xy);
-    vec3 scene_color = texelFetch(ShadedScene, coord, 0).xyz;
-
-    #if !DEBUG_MODE
-        float avg_brightness = texelFetch(Exposure, 0).x;
-        scene_color *= avg_brightness;
-    #endif
-
-    result = scene_color;
+  result = texelFetch(usePssmTex > 0 ? SourcePSSMTex : ShadedScene, ivec2(gl_FragCoord.xy), 0).xyz;
 }

@@ -292,12 +292,21 @@ settings: !!omap
     - sharpen_strength:
         display_if: {use_sharpen: true}
         type: float
-        range: [0, 1]
+        range: [0.0, 5.0]
         default: 0.5
         shader_runtime: true
         label: Sharpen Strength
         description: >
             Controls the strength of the sharpen filter.
+
+    - sharpen_twice:
+        display_if: {use_sharpen: true}
+        type: bool
+        default: true
+        label: Double-Sharpen
+        description: >
+            If this setting is true, the sharpen filter will be executed twice,
+            for an even stronger sharpen effect.
 
 
 daytime_settings: !!omap

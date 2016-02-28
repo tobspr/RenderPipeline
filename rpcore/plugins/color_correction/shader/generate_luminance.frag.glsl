@@ -30,25 +30,24 @@
 
 
 uniform sampler2D ShadedScene;
-out vec4 result;
-
+out float result;
 
 float get_log_luminance(vec3 color) {
     float lum = get_luminance(color);
-    lum = lum / (1 + lum);
-    return max(0.0, lum);
+    return saturate(lum / (1 + lum));
 }
 
 void main() {
-
     ivec2 coord_screen = ivec2(gl_FragCoord.xy) * 4;
-    vec2 local_coord = (coord_screen+1.0) / SCREEN_SIZE;
-    vec2 pixel_offset = 2.0 / SCREEN_SIZE;
+    vec2 local_coord = (coord_screen + 1.0) / SCREEN_SIZE;
+    const vec2 pixel_offset = 2.0 / SCREEN_SIZE;
 
-    float lum0 = get_log_luminance(textureLod(ShadedScene, local_coord, 0).xyz);
-    float lum1 = get_log_luminance(textureLod(ShadedScene, local_coord + vec2(pixel_offset.x, 0), 0).xyz);
-    float lum2 = get_log_luminance(textureLod(ShadedScene, local_coord + vec2(0, pixel_offset.y), 0).xyz);
-    float lum3 = get_log_luminance(textureLod(ShadedScene, local_coord + pixel_offset.xy, 0).xyz);
+    vec4 luminances = vec4(
+        get_log_luminance(textureLod(ShadedScene, local_coord, 0).xyz),
+        get_log_luminance(textureLod(ShadedScene, local_coord + vec2(pixel_offset.x, 0), 0).xyz),
+        get_log_luminance(textureLod(ShadedScene, local_coord + vec2(0, pixel_offset.y), 0).xyz),
+        get_log_luminance(textureLod(ShadedScene, local_coord + pixel_offset.xy, 0).xyz)
+    );
 
-    result = vec4( (lum0 + lum1 + lum2 + lum3) * 0.25 );
+    result = dot(luminances, vec4(0.25));
 }

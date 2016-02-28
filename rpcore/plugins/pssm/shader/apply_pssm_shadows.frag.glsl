@@ -76,12 +76,11 @@ float get_shadow(vec2 coord, float refz) {
 void main() {
 
     vec3 sun_vector = get_sun_vector();
-    vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
-
 
     // Get current scene color
+    vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    vec4 scene_color = texelFetch(ShadedScene, coord, 0);
+    vec4 scene_color = texture(ShadedScene, texcoord);
 
     // Get the material data
     Material m = unpack_material(GBuffer);
@@ -89,12 +88,14 @@ void main() {
     // Early out, different optimizations
     bool early_out = is_skybox(m);
     early_out = early_out || sun_vector.z < -0.02;
-    early_out = early_out || dot(m.normal, sun_vector) < 0.0;
+    early_out = early_out || dot(m.normal, sun_vector) <= 1e-7;
 
     if (early_out) {
         result = scene_color;
         return;
     }
+
+    vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
 
     // Variables to accumulate the shadows
     float shadow_factor = 1.0;

@@ -30,7 +30,7 @@
 #pragma include "includes/color_spaces.inc.glsl"
 
 uniform sampler2D ShadedScene;
-out vec4 result;
+out vec3 result;
 
 void main() {
 
@@ -38,34 +38,20 @@ void main() {
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
 
     // Compute the sharpen strength for each individual channel
-    float sharpen_strength = GET_SETTING(color_correction, sharpen_strength);
-    vec3 sharpen_luma_strength = LUMA_COEFFS * sharpen_strength;
+    const float sharpen_strength = GET_SETTING(color_correction, sharpen_strength);
 
     vec2 pixel_size = 1.0 / SCREEN_SIZE;
 
     // Blur arround the current pixel
     vec3 blur_sum = vec3(0);
+    blur_sum += textureLod(ShadedScene, texcoord + vec2(  0.8, -0.8 ) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2( -0.8, -0.8 ) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2(  0.8, 0.8  ) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2( -0.8, 0.8  ) * pixel_size, 0).rgb;
 
-    // 2 samples
-    #if 0
-        blur_sum += textureLod(ShadedScene, texcoord + pixel_size / 3.0, 0).xyz;
-        blur_sum += textureLod(ShadedScene, texcoord - pixel_size / 3.0, 0).xyz;
-        sharpen_luma_strength *= 1.5;
-        blur_sum *= 1.0 / 2.0;
-    #endif
-
-    // 4 samples
-    #if 1
-        blur_sum += textureLod(ShadedScene, texcoord + vec2(  0.5, -0.5 ) * pixel_size, 0).rgb;
-        blur_sum += textureLod(ShadedScene, texcoord + vec2( -0.5, -0.5 ) * pixel_size, 0).rgb;
-        blur_sum += textureLod(ShadedScene, texcoord + vec2(  0.5, 0.5  ) * pixel_size, 0).rgb;
-        blur_sum += textureLod(ShadedScene, texcoord + vec2( -0.5, 0.5  ) * pixel_size, 0).rgb;
-        blur_sum *= 1.0 / 4.0;
-    #endif
-
-    vec3 pixel_diff = scene_color - blur_sum;
+    vec3 pixel_diff = scene_color - blur_sum * 0.25;
 
     // Apply the sharpening
-    scene_color += dot(pixel_diff, sharpen_luma_strength);
-    result = vec4(scene_color, 1.0);
+    scene_color += dot(pixel_diff, LUMA_COEFFS * sharpen_strength);
+    result = scene_color;
 }

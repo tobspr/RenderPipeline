@@ -38,37 +38,13 @@ uniform samplerCube SourceTex;
 uniform writeonly imageCube RESTRICT DestMipmap;
 
 void main() {
-    const int num_samples = 32;
+    const int num_samples = 0;
 
     // Get cubemap coordinate
     int texsize = imageSize(DestMipmap).x;
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
-
-    // Determine target roughenss
-    float sample_roughness = 1e-10 + currentMip / 8.0;
-
-    vec3 tangent, binormal;
-    find_arbitrary_tangent(n, tangent, binormal);
-
-    vec3 accum = vec3(0);
-    float accum_weights = 0.0;
-
-    // Importance sampling
-    for (int i = 0; i < num_samples; ++i) {
-        vec2 Xi = hammersley(i, num_samples);
-        vec3 h = importance_sample_ggx(Xi, sample_roughness);
-        h = normalize(h.x * tangent + h.y * binormal + h.z * n);
-
-        // Reconstruct light vector
-        vec3 l = -reflect(n, h);
-        float weight = max(0, dot(n, l));
-        accum += textureLod(SourceTex, l, currentMip).xyz * weight;
-        accum_weights += weight;
-    }
-
-    // Energy conservation
-    accum /= max(0.01, accum_weights);
+    vec3 accum = textureLod(SourceTex, n, 0).xyz;
     imageStore(DestMipmap, ivec3(clamped_coord, face), vec4(accum, 1.0));
 }

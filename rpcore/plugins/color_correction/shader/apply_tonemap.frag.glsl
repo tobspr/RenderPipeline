@@ -41,7 +41,7 @@ vec3 apply_lut(vec3 color) {
     vec3 lut_coord = color;
 
     // We have a gradient from 0.5 / lut_size to 1 - 0.5 / lut_size
-    // need to transform from 0 .. 1 to that gradient:
+    // so we need to transform from 0 .. 1 to that gradient (hardcoded lut size for now)
     float lut_start = 0.5 / 64.0;
     float lut_end = 1.0 - lut_start;
     lut_coord = lut_coord * (lut_end - lut_start) + lut_start;

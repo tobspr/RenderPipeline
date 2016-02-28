@@ -49,6 +49,7 @@ class Plugin(BasePlugin):
 
         if self.get_setting("use_sharpen"):
             self._sharpen_stage = self.create_stage(SharpenStage)
+            self._sharpen_stage.sharpen_twice = self.get_setting("sharpen_twice")
 
         if self.get_setting("use_auto_exposure"):
             self._exposure_stage = self.create_stage(AutoExposureStage)

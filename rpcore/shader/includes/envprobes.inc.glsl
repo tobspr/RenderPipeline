@@ -115,12 +115,10 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
 
     float factor = 0.0;
     float mip_mult = 1.0;
-    float mipmap = get_specular_mipmap(m);
+    float mipmap = m.roughness * 12.0 - pow(m.roughness, 6.0) * 1.5;
     float mipmap_multiplier = 1.0;
 
-
-    // int num_mips = get_mipmap_count(EnvProbes.cubemaps);
-    const int num_mips = 9;
+    const int num_mips = 8;
 
     Cubemap map = get_cubemap(id);
     vec3 direction = get_reflection_vector(map, m, factor, mipmap_multiplier);

@@ -85,7 +85,7 @@ void main() {
     vec4 cmp_batch = batch_cmp(len_xy, max(vec2(1e-6), vec2(vy.x, vx.x)));
     float w = dot(cmp_softz, cmp_batch.xy) + (cmp_batch.z * cmp_batch.w) * 2.0;
 
-    accum += texture(ShadedScene, tc).xyz * w;
+    accum += saturate(texture(ShadedScene, tc).xyz) * w;
     weight_accum += w;
 
   }

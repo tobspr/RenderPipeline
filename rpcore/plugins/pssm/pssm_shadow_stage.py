@@ -46,8 +46,8 @@ class PSSMShadowStage(RenderStage):
     @property
     def produced_pipes(self):
         return {
-            "PSSMShadowAtlas": self._target['depth'],
-            "PSSMShadowAtlasPCF": (self._target['depth'], self.make_pcf_state()),
+            "PSSMShadowAtlas": self.target['depth'],
+            "PSSMShadowAtlasPCF": (self.target['depth'], self.make_pcf_state()),
         }
 
     def make_pcf_state(self):
@@ -57,19 +57,19 @@ class PSSMShadowStage(RenderStage):
         return state
 
     def get_shadow_tex(self):
-        return self._target["depth"]
+        return self.target["depth"]
 
     def create(self):
-        self._target = self.make_target("ShadowMap")
-        self._target.set_source(None, Globals.base.win)
-        self._target.size = (self.split_resolution * self.num_splits, self.split_resolution)
-        self._target.add_depth_texture(bits=32)
-        self._target.create_overlay_quad = False
-        self._target.color_write = False
-        self._target.prepare_scene_render()
+        self.target = self.make_target("ShadowMap")
+        self.target.set_source(None, Globals.base.win)
+        self.target.size = (self.split_resolution * self.num_splits, self.split_resolution)
+        self.target.add_depth_texture(bits=32)
+        self.target.create_overlay_quad = False
+        self.target.color_write = False
+        self.target.prepare_scene_render()
 
         # Remove all unused display regions
-        internal_buffer = self._target.get_internal_buffer()
+        internal_buffer = self.target.get_internal_buffer()
         internal_buffer.remove_all_display_regions()
         internal_buffer.get_display_region(0).set_active(False)
 

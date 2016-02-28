@@ -62,7 +62,8 @@ overrides:
     color_correction.brightness_adaption_rate: 2.0
     color_correction.darkness_adaption_rate: 0.6
     color_correction.use_sharpen: True
-    color_correction.sharpen_strength: 1.0
+    color_correction.sharpen_strength: 0.6667
+    color_correction.sharpen_twice: True
     scattering.scattering_method: eric_bruneton
     scattering.ground_reflectance: 0.1
     scattering.rayleigh_height_scale: 8.0
@@ -72,10 +73,10 @@ overrides:
     scattering.enable_godrays: False
     ao.blur_normal_factor: 1.53
     ao.blur_depth_factor: 1.2
-    ao.occlusion_strength: 1.8
+    ao.occlusion_strength: 1.21
     ao.technique: SSAO
     ao.ssao_sample_radius: 100.0
-    ao.ssao_sample_count: 8
+    ao.ssao_sample_count: 2
     ao.ssao_bias: 0.0
     ao.ssao_max_distance: 6.78
     ao.hbao_sample_radius: 100.0
@@ -86,7 +87,7 @@ overrides:
     ao.ssvo_sample_count: 4
     ao.ssvo_sphere_radius: 11.34556
     ao.ssvo_max_distance: 1.49
-    ao.alchemy_sample_radius: 100.0
+    ao.alchemy_sample_radius: 62.06
     ao.alchemy_num_samples: 8
     ao.alchemy_max_distance: 4.08
     ao.ue4ao_sample_radius: 100.0

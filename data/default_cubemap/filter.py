@@ -56,7 +56,7 @@ class Application(ShowBase):
         os.makedirs(filter_dir)
 
         cubemap = self.loader.loadCubeMap(Filename.from_os_specific(join(base_path, "source/#.jpg")))
-        mipmap, size = -1, cubemap.get_y_size() * 2
+        mipmap, size = -1, 1024 * 2
 
         cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
 

@@ -237,7 +237,6 @@ vec3 get_reflection_vector(Material m, vec3 view_vector) {
     vec3 reflected_dir = reflect(view_vector, m.normal);
     return mix(m.normal, reflected_dir,
         (1 - m.roughness) * (m.roughness + sqrt(1 - m.roughness)));
-
 }
 
 
@@ -246,8 +245,7 @@ vec3 get_reflection_vector(Material m, vec3 view_vector) {
 float get_specular_mipmap(float roughness) {
     // Approximation to match importance sampled reference, tuned for a
     // resolution of 128.
-    // see https://www.wolframalpha.com/input/?i=(x%5E0.9+*+9)+-+4.5+*+(x%5E3)+%2B+(1.5+*+x%5E9)+from+0+to+1
-    return pow(roughness, 0.9) * 9.0 - 4.5 * pow(roughness, 3.0) + 1.5 * pow(roughness, 9.0);
+    return roughness * 7.0 - pow(roughness, 6.0) * 1.5;
 }
 
 float get_specular_mipmap(Material m) {

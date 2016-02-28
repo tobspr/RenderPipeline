@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 """
 
+from panda3d.core import PTAInt
 from rpcore.render_stage import RenderStage
 
 class PSSMStage(RenderStage):
@@ -35,12 +36,30 @@ class PSSMStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target['color']}
+        return {"ShadedScene": self.void_target.color_tex}
 
     def create(self):
-        self._target = self.make_target("ApplyPSSM")
-        self._target.add_color_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
+
+        # Store whether the target is active
+        self.pta_active = PTAInt.empty_array(1)
+
+        self.target = self.make_target2("ApplyPSSM")
+        self.target.add_color_attachment(bits=16)
+        self.target.prepare_buffer()
+
+        self.void_target = self.make_target2("PSSMVoidShader")
+        self.void_target.add_color_attachment(bits=16)
+        self.void_target.prepare_buffer()
+        self.void_target.activ = False
+        self.void_target.set_shader_input("SourcePSSMTex", self.target.color_tex)
+        self.void_target.set_shader_input("usePssmTex", self.pta_active)
+
+    def set_render_shadows(self, render_shadows):
+        """ Toggle whether to render shadows or whether to just pass through
+        the scene color """
+        self.pta_active[0] = int(render_shadows)
+        self.target.active = render_shadows
 
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("apply_pssm_shadows.frag.glsl"))
+        self.target.shader = self.load_plugin_shader("apply_pssm_shadows.frag.glsl")
+        self.void_target.shader = self.load_plugin_shader("pass_through_shader.frag.glsl")

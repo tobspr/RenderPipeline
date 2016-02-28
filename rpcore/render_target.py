@@ -110,7 +110,7 @@ class RenderTarget(object):
     # Whether to automatically use the GL_R11_G11_B10 format for targets with
     # 16 bit color and no color alpha. This results in a tiny bit of lost precision,
     # however it has a much smaller memory footprint (about half size).
-    USE_R11_G11_B10 = False
+    USE_R11_G11_B10 = True
 
     # Internal variable to store the number of allocated buffers to give them a
     # unique sort index.
@@ -570,9 +570,9 @@ class RenderTarget(object):
         """ You can enable / disable the buffer with this. When disabled,
         shaders on this buffer aren't executed """
         if self._active is not active:
-            self._internal_buffer.get_display_region(
-                0).set_active(active)
-            # self._region.set_active(active)
+            for region in self._internal_buffer.get_display_regions():
+                if region != self._internal_buffer.get_overlay_display_region():
+                    region.set_active(active)
             self._active = active
 
     @require_created
@@ -953,6 +953,9 @@ class RenderTarget(object):
                 getattr(Texture, "F_depth_component" + str(self._depth_bits)))
 
         self._created = True
+
+        self._internal_buffer.get_overlay_display_region().disable_clears()
+        self._internal_buffer.get_overlay_display_region().set_active(False)
 
         return True
 

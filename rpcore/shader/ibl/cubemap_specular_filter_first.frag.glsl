@@ -27,20 +27,40 @@
 #version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
-uniform sampler2D ShadedScene;
-uniform samplerBuffer Exposure;
+#pragma optionNV (unroll all)
 
-out vec3 result;
+uniform samplerCube SourceTex;
+uniform writeonly imageCube RESTRICT DestMipmap;
+uniform int currentMip;
 
 void main() {
+
+    const int num_samples = 12;
+
+    // Get cubemap coordinate
+    int texsize = textureSize(SourceTex, currentMip).x;
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    vec3 scene_color = texelFetch(ShadedScene, coord, 0).xyz;
+    ivec2 clamped_coord; int face;
+    vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    #if !DEBUG_MODE
-        float avg_brightness = texelFetch(Exposure, 0).x;
-        scene_color *= avg_brightness;
-    #endif
+    // Get tangent and binormal
+    vec3 tangent, binormal;
+    find_arbitrary_tangent(n, tangent, binormal);
 
-    result = scene_color;
+    const float filter_radius = 0.05;
+    vec3 accum = vec3(0.0);
+    for (int i = 0; i < num_samples; ++i) {
+        vec2 offset = poisson_disk_2D_12[i];
+        vec3 sample_vec = normalize(n +
+            filter_radius * offset.x * tangent +
+            filter_radius * offset.y * binormal +
+            (rand(vec2(coord + 23 * i))-0.5) * 0.01);
+        accum += textureLod(SourceTex, sample_vec, currentMip).xyz;
+    }
+
+    accum /= num_samples;
+    imageStore(DestMipmap, ivec3(clamped_coord, face), vec4(accum, 1.0));
 }

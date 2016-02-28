@@ -27,53 +27,39 @@
 #version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/importance_sampling.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 
 #pragma optionNV (unroll all)
 
-uniform samplerCube SourceCubemap;
-uniform writeonly imageCube RESTRICT DestCubemap;
-uniform int cubeSize;
+uniform samplerCube SourceTex;
+uniform writeonly imageCube RESTRICT DestMipmap;
+uniform int currentMip;
 
 void main() {
-    const int sample_count = 64;
+
+    const int num_samples = 12;
 
     // Get cubemap coordinate
+    int texsize = textureSize(SourceTex, currentMip).x;
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 clamped_coord; int face;
-    vec3 n = texcoord_to_cubemap(cubeSize, coord, clamped_coord, face);
-
-    // Convert normal to spherical coordinates
-    float theta, phi;
-    vector_to_spherical(n, theta, phi);
+    vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
     // Get tangent and binormal
     vec3 tangent, binormal;
     find_arbitrary_tangent(n, tangent, binormal);
 
-    // Add noise by rotating the tangent and bitangent
-    const int noise_size = 4;
-    int noise_id = int(coord.x) % noise_size + (int(coord.y) % noise_size) * noise_size;
-    float rotation = noise_id / float(noise_size * noise_size) * TWO_PI;
-    float sin_r = sin(rotation);
-    float cos_r = cos(rotation);
+    const float filter_radius = 0.00 + currentMip * 0.06;
 
-
-    vec3 accum = vec3(0);
-    float weights = 1e-5;
-    for (int i = 0; i < sample_count; ++i)
-    {
-        vec2 xi = rotate(hammersley(i, sample_count), cos_r, sin_r);
-        vec3 offset = importance_sample_lambert(xi, n);
-        offset = normalize(tangent * offset.x + binormal * offset.y + n * offset.z);
-        offset = face_forward(offset, n);
-        float weight = saturate(dot(offset, n));
-        accum += textureLod(SourceCubemap, offset, 0).xyz * weight;
-        weights += weight;
+    vec3 accum = vec3(0.0);
+    for (int i = 0; i < num_samples; ++i) {
+        vec2 offset = poisson_disk_2D_12[i];
+        vec3 sample_vec = normalize(n +
+            filter_radius * offset.x * tangent +
+            filter_radius * offset.y * binormal);
+        accum += textureLod(SourceTex, sample_vec, currentMip).xyz;
     }
 
-    accum /= weights;
-
-    imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(accum, 1) );
+    accum /= num_samples;
+    imageStore(DestMipmap, ivec3(clamped_coord, face), vec4(accum, 1.0));
 }

@@ -60,7 +60,7 @@ class RenderTarget2(RPObject):
     _NUM_BUFFERS_ALLOCATED = 0
 
     def __init__(self, name="target"):
-        RPObject.__init__(self, "RT-" + name)
+        RPObject.__init__(self, name)
         self._targets = {}
         self._color_bits = (0, 0, 0, 0)
         self._aux_bits = 8
@@ -125,11 +125,12 @@ class RenderTarget2(RPObject):
         return self._active
 
     @active.setter
-    def active(self, val):
-        if self._active is not active:
-            self._internal_buffer.get_display_region(0).set_active(active)
-            self._active = active
-            # self._region.set_active(active)
+    def active(self, flag):
+        if self._active is not flag:
+            for region in self._internal_buffer.get_display_regions():
+                if region != self._internal_buffer.get_overlay_display_region():
+                    region.set_active(active)
+            self._active = flag
 
     @property
     def color_tex(self):
@@ -413,7 +414,13 @@ class RenderTarget2(RPObject):
         RenderTarget._NUM_BUFFERS_ALLOCATED += 1
         self._internal_buffer.set_sort(sort)
         self._internal_buffer.disable_clears()
-        self._internal_buffer.get_display_region(0).disable_clears()
+
+        for region in self._internal_buffer.get_display_regions():
+            region.disable_clears()
+
+        self._internal_buffer.get_overlay_display_region().disable_clears()
+        self._internal_buffer.get_overlay_display_region().set_active(False)
+
 
         BufferViewer.register_entry(self)
 

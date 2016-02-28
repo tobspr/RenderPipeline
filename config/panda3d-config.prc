@@ -10,7 +10,7 @@
 # notify-level-glgsg warning
 # notify-level-gobj debug
 pstats-gpu-timing #t
-pstats-max-rate 60
+pstats-max-rate 1000
 gl-debug #f
 gl-debug-object-labels #f
 

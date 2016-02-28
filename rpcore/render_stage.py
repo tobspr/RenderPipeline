@@ -100,7 +100,7 @@ class RenderStage(RPObject):
     def set_active(self, active):
         """ Enables or disables all targets bound to this stage """
         for target in itervalues(self._targets):
-            target.active = active
+            target.set_active(active)
 
     def make_target(self, name):
         """ Creates a new render target with the given name and attachs it to the
