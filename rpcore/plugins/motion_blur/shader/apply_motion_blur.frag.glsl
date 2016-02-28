@@ -32,6 +32,8 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 
+#pragma include "motion_blur.inc.glsl"
+
 uniform sampler2D ShadedScene;
 uniform sampler2D PackedSceneData;
 uniform sampler2D NeighborMinMax;
@@ -39,17 +41,7 @@ uniform sampler2D NeighborMinMax;
 out vec4 result;
 
 const int num_samples = GET_SETTING(motion_blur, num_samples);
-const int tile_size = GET_SETTING(motion_blur, tile_size);
 
-vec2 soft_depth_cmp(vec2 z0, vec2 z1, vec2 soft_depth_factor)
-{
-  return saturate(fma(z0, soft_depth_factor, vec2(1.0)) - z1 * soft_depth_factor);
-}
-
-vec4 batch_cmp(float len_xy_sq, vec2 velocities)
-{
-  return saturate(vec4((1 - len_xy_sq / (velocities.xyxy)) + vec4(0.0, 0.0, 0.95, 0.95)));
-}
 
 void main() {
 
@@ -89,7 +81,7 @@ void main() {
     vec2 vy = texture(PackedSceneData, tc).xy;
     float len_xy = abs(min_len_xy + len_xy_step * (i + jitter));
 
-    vec2 cmp_softz = soft_depth_cmp(vec2(vx.y, vy.y), vec2(vy.y, vx.y), vec2(10.0));
+    vec2 cmp_softz = soft_depth_cmp(vec2(vx.y, vy.y), vec2(vy.y, vx.y));
     vec4 cmp_batch = batch_cmp(len_xy, max(vec2(1e-6), vec2(vy.x, vx.x)));
     float w = dot(cmp_softz, cmp_batch.xy) + (cmp_batch.z * cmp_batch.w) * 2.0;
 

@@ -37,6 +37,7 @@ global_stage_order:
   - AmbientStage
   - SSLRStage
   - ApplyCloudsStage
+  - GodrayStage
   - AutoExposureStage
   - BloomStage
 

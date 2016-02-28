@@ -24,49 +24,53 @@
  *
  */
 
-#version 430
+#version 420
 
 #define USE_MAIN_SCENE_DATA
+#define USE_TIME_OF_DAY
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
-#pragma include "motion_blur.inc.glsl"
+#pragma include "includes/color_spaces.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
-uniform sampler2D TileMinMax;
-out vec2 result;
+uniform sampler2D ShadedScene;
+out vec3 result;
 
-// Based on:
-// http://graphics.cs.williams.edu/papers/MotionBlurI3D12/
 
 void main() {
+    vec2 texcoord = get_texcoord();
+    Material m = unpack_material(GBuffer);
 
-  ivec2 tile = ivec2(gl_FragCoord.xy);
-  ivec2 screen_coord = tile * tile_size;
-  ivec2 max_tiles = textureSize(TileMinMax, 0) - 1;
-
-  vec2 max_velocity = vec2(0.0);
-  float largest_magnitude = -1.0;
-
-  const int filter_size = 2;
-
-  for (int x = -filter_size; x <= filter_size; ++x) {
-    for (int y = -filter_size; y <= filter_size; ++y) {
-      ivec2 neighbor_coord = clamp(tile + ivec2(x, y), ivec2(0), ivec2(max_tiles));
-      vec2 vmax_neighbor = texelFetch(TileMinMax, neighbor_coord, 0).xy;
-
-      float magnitude_neighbor = dot(vmax_neighbor, vmax_neighbor);
-
-      if (magnitude_neighbor > largest_magnitude) {
-        vec2 direction_of_velocity = vmax_neighbor;
-        int displacement = abs(x) + abs(y);
-        ivec2 point = ivec2(sign(vec2(x, y) * direction_of_velocity));
-        float dist = point.x + point.y;
-        if (abs(dist) == displacement) {
-          max_velocity = vmax_neighbor;
-          largest_magnitude = magnitude_neighbor;
-        }
-      }
+    // compute sun position on screen
+    // TODO: could move to vertex shader
+    vec3 sun_vector = get_sun_vector();
+    vec3 sun_pos = sun_vector * 1e5;
+    vec4 sun_proj = MainSceneData.view_proj_mat_no_jitter * vec4(sun_pos, 1);
+    sun_proj.xyz /= sun_proj.w;
+    if (sun_proj.w < 0.0) {
+        result = texture(ShadedScene, texcoord).xyz;
+        return;
     }
-  }
+    sun_proj.xy = sun_proj.xy * 0.5 + 0.5;
 
-  result = max_velocity;
+    // raymarch to sun and collect .. whatever
+    float jitter = rand(texcoord) * 1.0;
+
+    const int num_samples = 128;
+    vec3 accum = vec3(0);
+    for (int i = 0; i < num_samples; ++i) {
+        float t = (i + jitter) / float(num_samples - 1);
+
+        vec2 sample_coord = mix(texcoord, sun_proj.xy, pow(t, 1.0));
+        vec3 sample_data = texture(ShadedScene, sample_coord).xyz;
+
+        accum += sample_data * step(1.0, get_luminance(sample_data)) * saturate(5 * (1 - t)) * 1;
+    }
+
+    accum /= num_samples;
+    accum *= 0.0005;
+    accum += texture(ShadedScene, texcoord).xyz;
+    result = vec3(accum);
+
 }

@@ -174,8 +174,8 @@ void main() {
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
-            float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
-            result = vec4(pow(occlusion, 3.0));
+            float raw_occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
+            result = vec4(pow(raw_occlusion, 3.0));
             return;
         #endif
     #endif

@@ -62,6 +62,13 @@ settings: !!omap
         description: >
             Beta Mie Scattering factor
 
+    - enable_godrays:
+        type: bool
+        default: true
+        label: Enable Godrays (experimental!)
+        description: >
+            This enables the experimental support for godrays.
+
 
 daytime_settings: !!omap
 

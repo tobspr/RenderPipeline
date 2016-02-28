@@ -32,6 +32,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .scattering_stage import ScatteringStage
 from .scattering_envmap_stage import ScatteringEnvmapStage
+from .godray_stage import GodrayStage
 
 # Create the main plugin
 class Plugin(BasePlugin):
@@ -50,6 +51,9 @@ class Plugin(BasePlugin):
     def on_stage_setup(self):
         self._display_stage = self.create_stage(ScatteringStage)
         self._envmap_stage = self.create_stage(ScatteringEnvmapStage)
+
+        if self.get_setting("enable_godrays"):
+            self._godray_stage = self.create_stage(GodrayStage)
 
         # Load scattering method
         method = self.get_setting("scattering_method")

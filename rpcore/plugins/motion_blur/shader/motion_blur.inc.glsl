@@ -24,22 +24,31 @@
  *
  */
 
-#version 430
+#pragma once
 
-#define USE_MAIN_SCENE_DATA
-#define USE_GBUFFER_EXTENSIONS
-#pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
-#pragma include "motion_blur.inc.glsl"
+const int tile_size = GET_SETTING(motion_blur, tile_size);
+const float blur_factor = GET_SETTING(motion_blur, blur_factor);
+const float max_velocity_len = GET_SETTING(motion_blur, max_blur_radius) * tile_size / WINDOW_WIDTH;
+const vec2 soft_depth_factor = vec2(10.0);
 
-out vec2 result;
+vec2 adjust_velocity(vec2 velocity) {
+  velocity *= blur_factor;
 
-// Packs the velocity length and scene depth into a RG16 target
+  // Make sure the velocity does not exceed the maximum length
+  float vel_len = length(velocity);
+  if (vel_len > max_velocity_len) {
+    velocity *= max_velocity_len / vel_len;
+  }
+  return velocity;
+}
 
-void main() {
-  vec2 texcoord = get_texcoord();
-  float depth = get_depth_at(texcoord);
-  vec2 velocity = get_velocity_at(texcoord);
-  velocity = adjust_velocity(velocity);
-  result = vec2(length(velocity), depth);
+
+vec2 soft_depth_cmp(vec2 z0, vec2 z1)
+{
+  return saturate(fma(z0, soft_depth_factor, vec2(1.0)) - z1 * soft_depth_factor);
+}
+
+vec4 batch_cmp(float len_xy_sq, vec2 velocities)
+{
+  return saturate(vec4((1 - len_xy_sq / (velocities.xyxy)) + vec4(0.0, 0.0, 0.95, 0.95)));
 }

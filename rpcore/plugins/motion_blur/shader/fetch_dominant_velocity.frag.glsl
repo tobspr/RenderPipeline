@@ -30,15 +30,11 @@
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
+#pragma include "motion_blur.inc.glsl"
 
 out vec2 result;
 
 void main() {
-
-  const int tile_size = GET_SETTING(motion_blur, tile_size);
-  const float blur_factor = GET_SETTING(motion_blur, blur_factor);
-  const float maxlen = GET_SETTING(motion_blur, max_blur_radius) * tile_size / WINDOW_WIDTH;
-
 
   ivec2 coord = ivec2(gl_FragCoord.xy);
   ivec2 screen_coord = coord * tile_size;
@@ -63,13 +59,5 @@ void main() {
     }
   }
 
-  max_velocity *= blur_factor;
-
-  // Make sure the velocity does not exceed the maximum length
-  float vel_len = length(max_velocity);
-  if (vel_len > maxlen) {
-    max_velocity *= maxlen / vel_len;
-  }
-
-  result = max_velocity;
+  result = adjust_velocity(max_velocity);
 }

@@ -53,11 +53,9 @@ class setter(object):
 
 class RenderTarget2(RPObject):
 
-    """ This is a high level interface for creating buffers
-    and render-to-textures. It internally wraps around Panda3Ds
-    buffer interface but also takes care of sorting and clearing,
-    and especially setting up the scene rendering when using
-    render-to-texture. """
+    """ Second version of the RenderTarget, IN DEVELOPMENT! The pipeline is
+    slowly updated to use this version of the render target, when the process
+    is done this will replace the first version. """
 
     _NUM_BUFFERS_ALLOCATED = 0
 
@@ -157,7 +155,6 @@ class RenderTarget2(RPObject):
 
     @setter
     def shader(self, shader_obj):
-        self.debug("setting shader", shader_obj)
         self._node.set_shader(shader_obj)
 
     @property

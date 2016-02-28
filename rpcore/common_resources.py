@@ -137,7 +137,8 @@ class CommonResources(BaseManager):
 
     def _load_skydome(self):
         """ Loads the skydome """
-        skydome = Globals.loader.loadTexture("data/builtin_models/skybox/skybox.jpg")
+        # skydome = Globals.loader.loadTexture("data/builtin_models/skybox/skybox.jpg")
+        skydome = Globals.loader.loadTexture("data/builtin_models/skybox/skybox2.jpg")
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)

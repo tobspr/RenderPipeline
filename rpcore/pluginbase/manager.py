@@ -121,6 +121,9 @@ class PluginManager(BaseManager):
         """ Loads an override file for the settings, which contains values to
         override the settings with """
         overrides = load_yaml_file(override_path)
+        if not overrides:
+            self.warn("Failed to load overrides")
+            return
         self._enabled_plugins = set(overrides["enabled"] or [])
         for key, val in iteritems(overrides["overrides"] or {}):
             plugin_id, setting_id = key.split(".")
@@ -136,6 +139,9 @@ class PluginManager(BaseManager):
         """ Loads an override file for the daytime settings, which contains
         values to override the settings with """
         overrides = load_yaml_file(override_path)
+        if not overrides:
+            self.warn("Failed to load daytime overrides")
+            return
         for plugin_id, settings in iteritems(overrides["control_points"] or {}):
             for setting_id, control_points in iteritems(settings):
                 if setting_id not in self._day_settings[plugin_id]:

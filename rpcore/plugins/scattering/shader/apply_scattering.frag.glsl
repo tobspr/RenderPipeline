@@ -58,24 +58,23 @@ void main() {
     if (is_skybox(m)) {
         #if !HAVE_PLUGIN(clouds)
             vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-            inscattered_light *= pow(cloud_color, vec3(2.0) );
-            inscattered_light *= 1.0;
+            inscattered_light *= 0.0 + 0.5 * (0.4 + cloud_color);
         #endif
 
         // Sun disk
         vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) * inscattered_light * fog_factor;
-        silhouette_col *= 1.0;
+        silhouette_col *= 2.0;
         float disk_factor = pow(saturate(dot(view_vector, sun_vector) + 0.001), 30.0 * 1e4);
-        float upper_disk_factor = saturate( (view_vector.z - sun_vector.z) * 0.3 + 0.01);
-        upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.01) * 5.0);
+        float upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.045) * 1.0);
         inscattered_light += vec3(1,0.3,0.1) * disk_factor *
             upper_disk_factor * 2.0 * silhouette_col * 1.0 * 1e4;
     } else {
-        inscattered_light *= 8.0;
+        inscattered_light *= 4.0;
     }
 
     // Mix with scene color
     result = textureLod(ShadedScene, texcoord, 0);
+
 
     #if !DEBUG_MODE
         result.xyz = mix(result.xyz, inscattered_light, fog_factor);

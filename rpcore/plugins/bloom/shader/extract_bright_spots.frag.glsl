@@ -33,16 +33,16 @@ uniform sampler2D SourceTex;
 uniform writeonly image2D RESTRICT DestTex;
 
 void main() {
+    vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    vec3 scene_color = texelFetch(SourceTex, coord, 0).xyz;
+    vec3 scene_color = textureLod(SourceTex, texcoord, 0).xyz;
     float luma = get_luminance(scene_color);
 
     // We don't use a threshold for blur, instead we perform the bloom everything,
     // which is physically more correct
-    vec3 bloom_color = vec3(0);
-        bloom_color = scene_color;
-        bloom_color *= GET_SETTING(bloom, bloom_strength) * 0.0009;
+    vec3 bloom_color = scene_color;
+    bloom_color *= GET_SETTING(bloom, bloom_strength) * 0.0009;
 
     #if DEBUG_MODE
         bloom_color *= 0;

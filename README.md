@@ -43,28 +43,24 @@ If I shouldn't be there, feel free to contact me per E-Mail: `tobias.springer1@g
 
 ### Screenshots
 
+**Terrain:**
+<img src="http://i.imgur.com/9e7Upz6.png" />
+<img src="http://i.imgur.com/nY5nBs3.png" />
+
 **Car showcase:**
 <img src="http://i.imgur.com/QUcFVQj.png" />
 
-**Terrain and volumetric clouds:**
-<img src="http://i.imgur.com/sob7MAP.png" />
+**Plugin and Time of Day editor:**
+<img src="http://i.imgur.com/lTrpAYy.png" />
 
 **quboid Demo** (<a href="https://www.youtube.com/watch?v=9vXH9JaWsT4" target="_blank">Video</a>)
 <img src="http://i.imgur.com/o7xtp35.png" />
 
-**Reflection showcase:**
-<img src="http://i.imgur.com/GXxjC8T.png" />
-
-**Material showcase:**
-<img src="http://i.imgur.com/iZRAaoo.png" />
-
-**Snowy terrain using the Pipeline and P3DFramework:**
+**Snowy terrain:**
 <img src="http://fs5.directupload.net/images/151201/3j6jtygc.png" />
 
-**Different time of day:**
+**Some forest:**
 <img src="https://img3.picload.org/image/pwrgpdc/289.png" />
 
-**Plugin and Time of Day editor:**
-<img src="http://i.imgur.com/lTrpAYy.png" />
 
 You can find further screenshots (mostly of experimental features) at my <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa" target="_blank">dropbox</a>.

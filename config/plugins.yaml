@@ -69,14 +69,15 @@ overrides:
     scattering.mie_height_scale: 1.45
     scattering.mie_phase_factor: 0.21
     scattering.beta_mie_scattering: 4.0
+    scattering.enable_godrays: False
     ao.blur_normal_factor: 1.53
     ao.blur_depth_factor: 1.2
-    ao.occlusion_strength: 1.21
+    ao.occlusion_strength: 1.8
     ao.technique: SSAO
     ao.ssao_sample_radius: 100.0
     ao.ssao_sample_count: 8
     ao.ssao_bias: 0.0
-    ao.ssao_max_distance: 6.56
+    ao.ssao_max_distance: 6.78
     ao.hbao_sample_radius: 100.0
     ao.hbao_ray_count: 8
     ao.hbao_ray_steps: 3

@@ -232,7 +232,9 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
         fog_factor = 1;
     }
 
+
     vec3 scattering = get_inscattered_light(surface_pos, view_dir, attenuation, irradiance_factor);
+    scattering /= max(1e-5, fog_factor);
 
     return scattering;
 }
