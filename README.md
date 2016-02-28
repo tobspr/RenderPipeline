@@ -10,8 +10,15 @@
 - Plugin System
 
 See the <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Features">Feature List</a>
-for a comprehensive list of features.
+for a list of features, and list of techniques I intend to implement.
 
+
+### Getting Started / Wiki
+
+You should checkout the wiki if you want to find out more about the pipeline:
+<a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki">Render Pipeline WIKI</a>
+
+There is also a page about getting started there: <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Getting%20Started">Getting Started</a>
 
 ### Requirements
 
@@ -25,21 +32,12 @@ capable of all 4.3 features, so the pipeline is not able to run there!
 If you want to use the C++ Modules, checkout <a href="https://github.com/tobspr/RenderPipeline/wiki/Building%20the%20CPP%20Modules" target="_blank">
 Building the C++ Modules</a> to get a list of requirements for them.
 
-### Getting Started / Wiki
-
-You should definitely checkout the wiki if you want to find out more about the pipeline:
-<a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki">Render Pipeline WIKI</a>
-
-There is also a page about getting started there: <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Getting%20Started">Getting Started</a>
-
-
 ### Reporting Bugs / Contributing
 
 If you find bugs, or find information missing in the wiki, or want to contribute,
 you can find me most of the time in the `#panda3d` channel on freenode.
 
 If I shouldn't be there, feel free to contact me per E-Mail: `tobias.springer1@googlemail.com`
-
 
 ### Screenshots
 
@@ -62,5 +60,4 @@ If I shouldn't be there, feel free to contact me per E-Mail: `tobias.springer1@g
 **Some forest:**
 <img src="https://img3.picload.org/image/pwrgpdc/289.png" />
 
-
-You can find further screenshots (mostly of experimental features) at my <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa" target="_blank">dropbox</a>.
+You can find further screenshots at my <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa" target="_blank">dropbox</a>.
