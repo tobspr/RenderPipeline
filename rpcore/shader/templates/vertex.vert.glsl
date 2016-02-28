@@ -38,7 +38,10 @@ in vec3 p3d_Normal;
 in vec2 p3d_MultiTexCoord0;
 
 uniform mat4 p3d_ViewProjectionMatrix;
+
+#if EXPERIMENTAL_PREV_TRANSFORM
 uniform mat4 p3d_PrevModelViewMatrix;
+#endif
 uniform mat4 trans_model_to_world;
 uniform mat3 tpose_world_to_model;
 
@@ -62,7 +65,11 @@ void main() {
     vOutput.position = (trans_model_to_world * p3d_Vertex).xyz;
 
     // TODO: We have to account for skinning, we can maybe use hardware skinning for this.
-    vOutput.last_proj_position = p3d_PrevModelViewMatrix * p3d_Vertex;
+    #if EXPERIMENTAL_PREV_TRANSFORM
+        vOutput.last_proj_position = p3d_PrevModelViewMatrix * p3d_Vertex;
+    #else
+        vOutput.last_proj_position = MainSceneData.last_view_proj_mat_no_jitter * (trans_model_to_world * p3d_Vertex);
+    #endif
 
     // Get material properties
     mOutput.color          = p3d_Material.baseColor.xyz;
