@@ -26,26 +26,26 @@
 
 #version 430
 
-#pragma option NV (unroll all)
-
 #define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "motion_blur.inc.glsl"
 
+uniform sampler2D SourceTex;
 out vec2 result;
 
 void main() {
   ivec2 coord = ivec2(gl_FragCoord.xy);
-  ivec2 screen_coord = ivec2(coord.x, coord.y * tile_size);
+  ivec2 source_coord = ivec2(coord.x * tile_size, coord.y);
 
   vec2 max_velocity = vec2(0);
   float max_velocity_len_sq = 0.0;
 
   // Find the longest vector in the tile
-  for (int y = 0; y <= tile_size; y += 4) {
-    vec2 velocity = get_gbuffer_velocity(GBuffer, ivec2(coord.x, screen_coord.y + y));
+  for (int x = 0; x <= tile_size; x += 4) {
+    int x_coord = clamp(source_coord.x + x, 0, WINDOW_WIDTH - 1);
+    vec2 velocity = texelFetch(SourceTex, ivec2(x_coord, source_coord.y), 0).xy;
     float len_sq = dot(velocity, velocity);
 
     // Check if the vector is longer than the current longest vector
@@ -55,5 +55,5 @@ void main() {
     }
   }
 
-  result = adjust_velocity(max_velocity);
+  result = max_velocity;
 }

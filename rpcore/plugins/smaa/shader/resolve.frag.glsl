@@ -116,10 +116,6 @@ void main() {
     hist_m = mix(hist_m, curr_m, clip_length);
 
     // Compute weight and blend pixels
-    // float weight = 1 - saturate(1.0 / (mix(0.5, 3.0, blend_amount)));
     float weight = 0.5 - 0.5 * blend_amount;
-    // weight = 0.5;
     result = mix(curr_m, hist_m, weight);
-
-    // result = vec3(blend_amount);
 }

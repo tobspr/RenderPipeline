@@ -42,20 +42,25 @@ class MotionBlurStage(RenderStage):
 
     def create(self):
         self.tile_size = 32
-        self.tile_target = self.make_target2("FetchDominantVelocity")
-        self.tile_target.size = -self.tile_size
+        self.tile_target = self.make_target2("FetchVertDominantVelocity")
+        self.tile_target.size = -1, -self.tile_size
         self.tile_target.add_color_attachment(bits=(16, 16, 0))
         self.tile_target.prepare_buffer()
-        self.tile_target.color_tex.set_magfilter(SamplerState.FT_nearest)
+
+        self.tile_target_horiz = self.make_target2("FetchHorizDominantVelocity")
+        self.tile_target_horiz.size = -self.tile_size
+        self.tile_target_horiz.add_color_attachment(bits=(16, 16, 0))
+        self.tile_target_horiz.prepare_buffer()
+        self.tile_target_horiz.set_shader_input("SourceTex", self.tile_target.color_tex)
+
 
         self.minmax_target = self.make_target2("NeighborMinMax")
         self.minmax_target.size = -self.tile_size
         self.minmax_target.add_color_attachment(bits=(16, 16, 0))
         self.minmax_target.prepare_buffer()
-        self.minmax_target.set_shader_input("TileMinMax", self.tile_target.color_tex)
-        self.minmax_target.color_tex.set_magfilter(SamplerState.FT_nearest)
+        self.minmax_target.set_shader_input("TileMinMax", self.tile_target_horiz.color_tex)
 
-        self.pack_target = self.make_target2("PackSceneData")
+        self.pack_target = self.make_target2("PackBlurData")
         self.pack_target.add_color_attachment(bits=(16, 16, 0))
         self.pack_target.prepare_buffer()
 
@@ -67,6 +72,7 @@ class MotionBlurStage(RenderStage):
 
     def set_shaders(self):
         self.tile_target.shader = self.load_plugin_shader("fetch_dominant_velocity.frag.glsl")
+        self.tile_target_horiz.shader = self.load_plugin_shader("fetch_dominant_velocity_horiz.frag.glsl")
         self.minmax_target.shader = self.load_plugin_shader("neighbor_minmax.frag.glsl")
         self.pack_target.shader = self.load_plugin_shader("pack_blur_data.frag.glsl")
         self.target.shader = self.load_plugin_shader("apply_motion_blur.frag.glsl")

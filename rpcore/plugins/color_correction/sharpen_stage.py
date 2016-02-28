@@ -43,22 +43,22 @@ class SharpenStage(RenderStage):
     @property
     def produced_pipes(self):
         if self.sharpen_twice:
-            return {"ShadedScene": self.target2["color"]}
+            return {"ShadedScene": self.target2.color_tex}
         else:
-            return {"ShadedScene": self.target["color"]}
+            return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self.target = self.make_target("Sharpen")
-        self.target.add_color_texture(bits=16)
-        self.target.prepare_offscreen_buffer()
+        self.target = self.make_target2("Sharpen")
+        self.target.add_color_attachment(bits=16, alpha=True)
+        self.target.prepare_buffer()
 
         if self.sharpen_twice:
-            self.target2 = self.make_target("Sharpen2")
-            self.target2.add_color_texture(bits=16)
-            self.target2.prepare_offscreen_buffer()
-            self.target2.set_shader_input("ShadedScene", self.target["color"])
+            self.target2 = self.make_target2("Sharpen2")
+            self.target2.add_color_attachment(bits=16, alpha=True)
+            self.target2.prepare_buffer()
+            self.target2.set_shader_input("ShadedScene", self.target.color_tex)
 
     def set_shaders(self):
         sharpen_shader = self.load_plugin_shader("sharpen.frag.glsl")
         for target in itervalues(self._targets):
-            target.set_shader(sharpen_shader)
+            target.shader = sharpen_shader
