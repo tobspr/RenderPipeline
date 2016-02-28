@@ -48,10 +48,8 @@ uniform mat4 p3d_ProjectionMatrix;
         // Compute velocity based on this and last frames mvp matrix
         vec4 last_proj_pos = p3d_ProjectionMatrix * vOutput.last_proj_position;
         vec2 last_texcoord = fma(last_proj_pos.xy / last_proj_pos.w, vec2(0.5), vec2(0.5));
-        // vec4 curr_proj_pos = MainSceneData.view_proj_mat_no_jitter * vec4(vOutput.position, 1);
-        // vec2 curr_texcoord = fma(curr_proj_pos.xy / curr_proj_pos.w, vec2(0.5), vec2(0.5));
         vec2 curr_texcoord = gl_FragCoord.xy / SCREEN_SIZE;
-        return (curr_texcoord - last_texcoord) * 255.0;
+        return (curr_texcoord - last_texcoord);
     }
 
     void render_material(MaterialShaderOutput m) {
@@ -113,6 +111,11 @@ uniform mat4 p3d_ProjectionMatrix;
         return textureLod(data.Depth, coord, 0).x;
     }
 
+    // Returns the depth at a given texcoord
+    float get_gbuffer_depth(GBufferData data, ivec2 coord) {
+        return texelFetch(data.Depth, coord, 0).x;
+    }
+
     // Returns the world space position at a given texcoord
     vec3 get_gbuffer_position(GBufferData data, vec2 coord) {
         float depth = get_gbuffer_depth(data, coord);
@@ -127,12 +130,12 @@ uniform mat4 p3d_ProjectionMatrix;
 
     // Returns the velocity at a given coordinate
     vec2 get_gbuffer_velocity(GBufferData data, vec2 coord) {
-        return textureLod(data.Data2, coord, 0).xy / 255.0;
+        return textureLod(data.Data2, coord, 0).xy;
     }
 
     // Returns the velocity at a given coordinate
     vec2 get_gbuffer_velocity(GBufferData data, ivec2 coord) {
-        return texelFetch(data.Data2, coord, 0).xy / 255.0;
+        return texelFetch(data.Data2, coord, 0).xy;
     }
 
     // Unpacks a material from the gbuffer
@@ -179,6 +182,10 @@ uniform mat4 p3d_ProjectionMatrix;
         float get_depth_at(vec2 coord) {
             return get_gbuffer_depth(GBuffer, coord);
         }
+        // Returns the depth at a given texcoord
+        float get_depth_at(ivec2 coord) {
+            return get_gbuffer_depth(GBuffer, coord);
+        }
 
         // Returns the view space position at a given texcoord
         vec3 get_view_pos_at(vec2 coord) {
@@ -192,6 +199,10 @@ uniform mat4 p3d_ProjectionMatrix;
 
         // Returns the velocity given texcoord
         vec2 get_velocity_at(vec2 coord) {
+            return get_gbuffer_velocity(GBuffer, coord);
+        }
+        // Returns the velocity given texcoord
+        vec2 get_velocity_at(ivec2 coord) {
             return get_gbuffer_velocity(GBuffer, coord);
         }
 

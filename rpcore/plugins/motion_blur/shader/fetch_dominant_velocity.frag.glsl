@@ -31,17 +31,20 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 
-out vec3 result;
+out vec2 result;
 
 void main() {
-  const int tile_size = 32;
+
+  const int tile_size = GET_SETTING(motion_blur, tile_size);
+  const float blur_factor = GET_SETTING(motion_blur, blur_factor);
+  const float maxlen = GET_SETTING(motion_blur, max_blur_radius) * tile_size / WINDOW_WIDTH;
+
 
   ivec2 coord = ivec2(gl_FragCoord.xy);
   ivec2 screen_coord = coord * tile_size;
 
   vec2 max_velocity = vec2(0);
   float max_velocity_len_sq = 0.0;
-  float min_len_sq = 1e6;
 
   // TODO: Seperate this pass in x- and y- directions
 
@@ -51,7 +54,6 @@ void main() {
       ivec2 coord = clamp(screen_coord + ivec2(x, y), ivec2(0), SCREEN_SIZE_INT - 1);
       vec2 velocity = get_gbuffer_velocity(GBuffer, coord);
       float len_sq = dot(velocity, velocity);
-      min_len_sq = min(min_len_sq, len_sq);
 
       // Check if the vector is longer than the current longest vector
       if (len_sq > max_velocity_len_sq) {
@@ -61,5 +63,13 @@ void main() {
     }
   }
 
-  result = vec3(max_velocity, sqrt(min_len_sq)) * 10.0;
+  max_velocity *= blur_factor;
+
+  // Make sure the velocity does not exceed the maximum length
+  float vel_len = length(max_velocity);
+  if (vel_len > maxlen) {
+    max_velocity *= maxlen / vel_len;
+  }
+
+  result = max_velocity;
 }

@@ -30,55 +30,86 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 
+#pragma optionNV (unroll all)
+
 uniform GBufferData GBuffer;
 uniform sampler2D CurrentTex;
 uniform sampler2D LastTex;
 
-out vec4 result;
+out vec3 result;
+
+/*
+
+Uses the reprojection suggested in:
+http://www.crytek.com/download/Sousa_Graphics_Gems_CryENGINE3.pdf
+
+*/
+
+// Ray-AABB intersection
+float intersect_aabb(vec3 ray_dir, vec3 ray_pos, vec3 box_size)
+{
+    if (dot(ray_dir, ray_dir) < 1e-10) return 1.0;
+    vec3 t1 = (-box_size - ray_pos) / ray_dir;
+    vec3 t2 = ( box_size - ray_pos) / ray_dir;
+    return max(max(min(t2.x, t1.x), min(t2.y, t1.y)), min(t2.z, t1.z));
+}
+
+// Clamps a color to an aabb, returns the weight
+float clamp_color_to_aabb(vec3 last_color, vec3 current_color, vec3 min_color, vec3 max_color)
+{
+    vec3 box_center = 0.5 * (max_color + min_color);
+    vec3 box_size = max_color - box_center;
+    vec3 ray_dir = current_color - last_color;
+    vec3 ray_pos = last_color - box_center;
+    return saturate(intersect_aabb(ray_dir, ray_pos, box_size));
+}
 
 void main() {
-
     vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    vec2 velocity = get_gbuffer_velocity(GBuffer, texcoord);
+    vec2 velocity = get_gbuffer_velocity(GBuffer, texcoord) / SCREEN_SIZE;
     vec2 old_coord = texcoord - velocity;
-    vec4 current_color = textureLod(CurrentTex, texcoord, 0);
+    vec3 current_color = textureLod(CurrentTex, texcoord, 0).xyz;
+    vec3 last_color = textureLod(LastTex, old_coord, 0).xyz;
 
-    vec4 last_color = textureLod(LastTex, old_coord, 0);
-
-    // Out of screen
-    if (old_coord.x < 0.0 || old_coord.x > 1.0 || old_coord.y < 0.0 || old_coord.y > 1.0) {
+    // Out of screen, can early out
+    if (old_coord.x < 0.0 || old_coord.x >= 1.0 || old_coord.y < 0.0 || old_coord.y >= 1.0) {
         result = current_color;
         return;
     }
 
-
-    // Get last frame bounding box
+    // Get last frame color AABB
     const int radius = 1;
-    vec4 color_min = vec4(1e10);
-    vec4 color_max = vec4(0);
-    vec4 color_avg = vec4(0);
-    ivec2 last_coord = ivec2( 0.5 + texcoord * SCREEN_SIZE );
+    vec3 color_min = vec3(1e10);
+    vec3 color_max = vec3(0);
     for (int i = -radius; i <= radius; ++i) {
         for (int j = -radius; j <= radius; ++j) {
-            vec4 sample_color = texelFetch(CurrentTex, coord + ivec2(i, j), 0);
+            vec3 sample_color = texelFetch(CurrentTex, coord + ivec2(i, j), 0).xyz;
             color_min = min(color_min, sample_color);
             color_max = max(color_max, sample_color);
-            color_avg += sample_color;
         }
     }
 
-    color_avg /= (1 + 2 * radius) * (1 + 2 * radius);
+    // Compute weight of the last frames pixel color
+    float sample_weight = clamp_color_to_aabb(last_color, current_color, color_min, color_max);
+    ivec2 last_coord = ivec2( 0.5 + texcoord * SCREEN_SIZE );
+    float neighbor_diff = 0.0;
+    for (int i = -radius; i <= radius; ++i) {
+        for (int j = -radius; j <= radius; ++j) {
+            vec3 sample_color = texelFetch(LastTex, last_coord + ivec2(i, j), 0).xyz;
+            neighbor_diff += distance(clamp(sample_color, color_min, color_max), sample_color);
+        }
+    }
 
-    const float blur_factor = 0.2;
+    // Evaluate if we can pickup the sample or not
+    if (neighbor_diff < 0.02) sample_weight = 0.0;
+    float blend_amount = saturate(distance(last_color, current_color) * 10.0);
 
-    // Blur factor
-    current_color = mix(current_color, color_avg, blur_factor);
+    // Merge the sample with the current color, in case we can't pick it
+    last_color = mix(last_color, current_color, sample_weight);
 
-    // Clamp to bounding box
-    last_color = clamp(last_color, color_min, color_max);
-    vec4 weight = abs(color_avg - current_color);
-
-    result = mix(current_color, last_color, weight);
+    // Compute weight and blend pixels
+    float weight = saturate(1.0 / (mix(2.25, 4.5, blend_amount)));
+    result = mix(last_color, current_color, weight);
 }

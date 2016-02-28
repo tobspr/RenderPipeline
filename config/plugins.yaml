@@ -108,7 +108,8 @@ overrides:
     bloom.num_mipmaps: 8
     bloom.bloom_strength: 0.7
     bloom.remove_fireflies: True
-    motion_blur.some_int_setting: 5
-    motion_blur.some_float_setting: 2.5
-    motion_blur.some_enum: value2
-    motion_blur.some_bool: False
+    bloom.lens_dirt_factor: 0.8111
+    motion_blur.tile_size: 32
+    motion_blur.blur_factor: 0.5
+    motion_blur.max_blur_radius: 10.0
+    motion_blur.num_samples: 24

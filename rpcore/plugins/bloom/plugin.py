@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 """
 
+from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .bloom_stage import BloomStage
@@ -39,3 +40,7 @@ class Plugin(BasePlugin):
     def on_stage_setup(self):
         self._bloom_stage = self.create_stage(BloomStage)
         self._bloom_stage.num_mips = self.get_setting("num_mipmaps")
+
+    def on_pipeline_created(self):
+        dirt_tex = Globals.loader.loadTexture(self.get_resource("lens_dirt.png"))
+        self._bloom_stage.set_shader_input("LensDirtTex", dirt_tex)

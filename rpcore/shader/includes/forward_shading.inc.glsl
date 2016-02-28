@@ -86,7 +86,8 @@ vec3 get_sun_shading(vec3 basecolor) {
         vec3 shading_result = vec3(0);
 
         vec3 sun_vector = get_sun_vector();
-        vec3 sun_color = get_sun_color();
+        vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
+
 
         // Get sun shadow term
         #if HAVE_PLUGIN(pssm)

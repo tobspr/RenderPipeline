@@ -31,38 +31,42 @@
 #pragma include "includes/gbuffer.inc.glsl"
 
 uniform sampler2D TileMinMax;
-out vec3 result;
+out vec2 result;
 
 // Based on:
 // http://graphics.cs.williams.edu/papers/MotionBlurI3D12/
 
 void main() {
-  const int tile_size = 32;
+  const int tile_size = GET_SETTING(motion_blur, tile_size);
 
-  ivec2 coord = ivec2(gl_FragCoord.xy);
-  ivec2 screen_coord = coord * tile_size;
+  ivec2 tile = ivec2(gl_FragCoord.xy);
+  ivec2 screen_coord = tile * tile_size;
+  ivec2 max_tiles = textureSize(TileMinMax, 0) - 1;
 
-  // vec2 max_velocity = vec2(0);
-  // float max_velocity_len_sq = 0.0;
-  // float min_len_sq = 1e6;
+  vec2 max_velocity = vec2(0.0);
+  float largest_magnitude = -1.0;
 
-  // // TODO: Seperate this pass in x- and y- directions
+  const int filter_size = 2;
 
-  // // Find the longest vector in the tile
-  // for (int x = 0; x < tile_size; x += 4) {
-  //   for (int y = 0; y < tile_size; y += 4) {
-  //     ivec2 coord = clamp(screen_coord + ivec2(x, y), ivec2(0), SCREEN_SIZE_INT - 1);
-  //     vec2 velocity = get_gbuffer_velocity(GBuffer, coord);
-  //     float len_sq = dot(velocity, velocity);
-  //     min_len_sq = min(min_len_sq, len_sq);
+  for (int x = -filter_size; x <= filter_size; ++x) {
+    for (int y = -filter_size; y <= filter_size; ++y) {
+      ivec2 neighbor_coord = clamp(tile + ivec2(x, y), ivec2(0), ivec2(max_tiles));
+      vec2 vmax_neighbor = texelFetch(TileMinMax, neighbor_coord, 0).xy;
 
-  //     // Check if the vector is longer than the current longest vector
-  //     if (len_sq > max_velocity_len_sq) {
-  //       max_velocity_len_sq = len_sq;
-  //       max_velocity = velocity;
-  //     }
-  //   }
-  // }
+      float magnitude_neighbor = dot(vmax_neighbor, vmax_neighbor);
 
-  // result = vec3(max_velocity, sqrt(min_len_sq)) * 10.0;
+      if (magnitude_neighbor > largest_magnitude) {
+        vec2 direction_of_velocity = vmax_neighbor;
+        int displacement = abs(x) + abs(y);
+        ivec2 point = ivec2(sign(vec2(x, y) * direction_of_velocity));
+        float dist = point.x + point.y;
+        if (abs(dist) == displacement) {
+          max_velocity = vmax_neighbor;
+          largest_magnitude = magnitude_neighbor;
+        }
+      }
+    }
+  }
+
+  result = max_velocity;
 }

@@ -1,41 +1,45 @@
 
 settings: !!omap
 
-    - some_int_setting:
+    - tile_size:
         type: int
-        range: [0, 10]
-        default: 5
-        label: Some integer setting
-        description: Description of the setting.
+        range: [8, 64]
+        default: 32
+        label: Tile Size
+        description: >
+            Size of the blur tiles, this also has influence on the maximum
+            blur radius. Setting this too high will cause artifacts when objects
+            with different motion vectors overlap.
 
-    - some_float_setting:
+    - blur_factor:
         type: float
-        range: [-5.3, 2.9]
-        default: 2.5
-        label: Some float setting
-        description: Description of the setting.
-        runtime: true
-
-    - some_enum:
-        type: enum
-        values: [value1, value2, value3]
-        default: value2
-        label: Some enum setting
-        description: Description of the setting.
-
-    - some_bool:
-        type: bool
-        default: false
-        label: Some boolean setting
-        description: Description of the setting.
-
-daytime_settings: !!omap
-
-    - some_scalar:
-        type: scalar
-        unit: percent
-        range: [0, 1]
+        range: [0.0, 1.0]
         default: 0.5
-        label: Some Scalar
-        description: Description of the scalar.
+        label: Blur factor
+        shader_runtime: true
+        description: >
+            Controls the blur factor, a factor of 1 means the full blur is applied,
+            a factor of 0 means no blur at all. You should adjust this so the
+            blur is not too strong, otherwise motion sickness can happen.
 
+    - max_blur_radius:
+        type: float
+        range: [1.0, 64.0]
+        default: 10.0
+        label: Blur limit
+        shader_runtime: true
+        description: >
+            Controls the maximum possible blur size. Try to set this as low as
+            possible without getting artifacts.
+
+    - num_samples:
+        type: int
+        range: [2, 64]
+        default: 24
+        label: Blur sample count
+        shader_runtime: true
+        description: >
+            Controls the amount of samples, more samples mean a smoother blur
+            but also require more performance.
+
+daytime_settings:

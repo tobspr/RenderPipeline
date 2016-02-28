@@ -76,7 +76,8 @@ float get_shadow(vec2 coord, float refz) {
 void main() {
 
     vec3 sun_vector = get_sun_vector();
-    vec3 sun_color = get_sun_color();
+    vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
+
 
     // Get current scene color
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -87,7 +88,7 @@ void main() {
 
     // Early out, different optimizations
     bool early_out = is_skybox(m);
-    early_out = early_out || sun_vector.z < -0.2;
+    early_out = early_out || sun_vector.z < -0.02;
     early_out = early_out || dot(m.normal, sun_vector) < 0.0;
 
     if (early_out) {

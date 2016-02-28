@@ -133,9 +133,6 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
 
     diffuse = textureLod(EnvProbes.diffuse_cubemaps, vec4(diffuse_direction, map.index), 0);
 
-    // diffuse = vec4(0.2, 0.6, 1.0, 1.0);
-    // specular = vec4(0.2, 0.6, 1.0, 1.0);
-
     // Apply clip factors
     specular *= clip_factor;
     diffuse *= clip_factor;

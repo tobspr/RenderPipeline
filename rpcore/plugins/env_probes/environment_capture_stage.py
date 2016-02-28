@@ -66,7 +66,7 @@ class EnvironmentCaptureStage(RenderStage):
         # Remove all unused display regions
         internal_buffer = self.target.get_internal_buffer()
         internal_buffer.remove_all_display_regions()
-        internal_buffer.get_display_region(0).set_active(False)
+        # internal_buffer.get_display_region(0).set_active(False)
 
         for i in range(GraphicsOutput.RTPCOUNT):
             internal_buffer.set_clear_active(i, True)

@@ -30,4 +30,14 @@ settings: !!omap
             This uses the Karis average to reduce often called "fireflies", which are very
             bright pixels, by weighting them by their brightness.
 
+    - lens_dirt_factor:
+        type: float
+        range: [0, 1]
+        default: 0.5
+        shader_runtime: true
+        label: Lens dirt factor
+        description: >
+            Amount of lens dirt to blend the bloom with. A value of 0 means
+            no lens dirt, whereas a value of 1 means very intense lens dirt.
+
 daytime_settings:

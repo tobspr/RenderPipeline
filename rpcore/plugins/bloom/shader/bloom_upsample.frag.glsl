@@ -35,8 +35,6 @@ uniform writeonly image2D RESTRICT DestTex;
 uniform sampler2D ShadedScene;
 uniform sampler2D SumTex;
 
-out vec4 result;
-
 uniform bool FirstUpsamplePass;
 uniform bool LastUpsamplePass;
 
@@ -73,8 +71,4 @@ void main() {
 
     vec4 old_data = texelFetch(SourceTex, coord, SourceMip - 1);
     imageStore(DestTex, coord, old_data + vec4(pass_result, 0));
-
-    if (LastUpsamplePass) {
-        result = vec4(textureLod(ShadedScene, texcoord, 0).xyz + pass_result, 1);
-    }
 }

@@ -24,44 +24,30 @@
  *
  */
 
-#pragma once
+#version 430
 
-// This file just sets a few defines and then includes the SMAA header
+#pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/color_spaces.inc.glsl"
 
-#define SMAA_GLSL_4
-#define SMAA_RT_METRICS vec4(1.0 / WINDOW_WIDTH, 1.0 / WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT)
+uniform sampler2D ShadedScene;
+uniform sampler2D BloomTex;
+uniform sampler2D LensDirtTex;
 
+out vec3 result;
 
-// Get seleted SMAA quality
-#if ENUM_V_ACTIVE(smaa, smaa_quality, low)
-    #define SMAA_PRESET_LOW
-#elif ENUM_V_ACTIVE(smaa, smaa_quality, medium)
-    #define SMAA_PRESET_MEDIUM
-#elif ENUM_V_ACTIVE(smaa, smaa_quality, high)
-    #define SMAA_PRESET_HIGH
-#elif ENUM_V_ACTIVE(smaa, smaa_quality, ultra)
-    #define SMAA_PRESET_ULTRA
-#else
-    #error Unkown smaa quality value!
-#endif
+void main() {
+    vec2 texcoord = get_texcoord();
 
+    vec3 scene_result = textureLod(ShadedScene, texcoord, 0).xyz;
+    vec3 bloom_result = textureLod(BloomTex, texcoord, 0).xyz;
 
-// Include both Pixel and Vertex shader, because we do the vertex shader logic
-// in the pixel shader.
-#define SMAA_INCLUDE_VS 1
-#define SMAA_INCLUDE_PS 1
-#define SMAA_DECODE_VELOCITY(sample) error, custom resolve pass
+    // Apply dirt
+    vec3 lens_dirt = textureLod(LensDirtTex, texcoord, 0).xyz;
+    float base_dirt_factor = GET_SETTING(bloom, lens_dirt_factor);
+    float dirt_factor = saturate(2.0 * get_luminance(bloom_result) - 0.05) * 4.0;
+    dirt_factor *= base_dirt_factor;
+    bloom_result *= 0.5 + 0.5 * (1 - base_dirt_factor) + dirt_factor * pow(lens_dirt, vec3(2.0));
 
-// Optionally enable smaa predication
-// #define SMAA_PREDICATION 1
-// #define SMAA_PREDICATION_SCALE 3.0
-// #define SMAA_PREDICATION_THRESHOLD 0.00001
-
-// SMAA defines its own saturate, make sure we don't run into conflicts
-#ifdef saturate
-    #undef saturate
-#endif
-
-// Include the actual smaa header
-#pragma include "SMAA.inc.glsl"
-
+    // Blend scene color and bloom color
+    result = scene_result + bloom_result;
+}

@@ -33,8 +33,9 @@ class Plugin(BasePlugin):
     name = "Motion blur"
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for motion blur.")
-    version = "alpha (!)"
+    version = "1.0"
 
     def on_stage_setup(self):
         self.stage = self.create_stage(MotionBlurStage)
+        self.stage.tile_size = self.get_setting("tile_size")
 

@@ -24,44 +24,22 @@
  *
  */
 
-#pragma once
+#version 430
 
-// This file just sets a few defines and then includes the SMAA header
+#define USE_MAIN_SCENE_DATA
+#define USE_GBUFFER_EXTENSIONS
+#pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/gbuffer.inc.glsl"
 
-#define SMAA_GLSL_4
-#define SMAA_RT_METRICS vec4(1.0 / WINDOW_WIDTH, 1.0 / WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT)
+out vec2 result;
 
+const int tile_size = GET_SETTING(motion_blur, tile_size);
+const float blur_factor = GET_SETTING(motion_blur, blur_factor);
+const float maxlen = GET_SETTING(motion_blur, max_blur_radius) * tile_size / WINDOW_WIDTH;
 
-// Get seleted SMAA quality
-#if ENUM_V_ACTIVE(smaa, smaa_quality, low)
-    #define SMAA_PRESET_LOW
-#elif ENUM_V_ACTIVE(smaa, smaa_quality, medium)
-    #define SMAA_PRESET_MEDIUM
-#elif ENUM_V_ACTIVE(smaa, smaa_quality, high)
-    #define SMAA_PRESET_HIGH
-#elif ENUM_V_ACTIVE(smaa, smaa_quality, ultra)
-    #define SMAA_PRESET_ULTRA
-#else
-    #error Unkown smaa quality value!
-#endif
-
-
-// Include both Pixel and Vertex shader, because we do the vertex shader logic
-// in the pixel shader.
-#define SMAA_INCLUDE_VS 1
-#define SMAA_INCLUDE_PS 1
-#define SMAA_DECODE_VELOCITY(sample) error, custom resolve pass
-
-// Optionally enable smaa predication
-// #define SMAA_PREDICATION 1
-// #define SMAA_PREDICATION_SCALE 3.0
-// #define SMAA_PREDICATION_THRESHOLD 0.00001
-
-// SMAA defines its own saturate, make sure we don't run into conflicts
-#ifdef saturate
-    #undef saturate
-#endif
-
-// Include the actual smaa header
-#pragma include "SMAA.inc.glsl"
-
+void main() {
+  vec2 texcoord = get_texcoord();
+  float depth = get_depth_at(texcoord);
+  vec2 velocity = get_velocity_at(texcoord);
+  result = vec2(min(maxlen, length(velocity) * blur_factor), depth);
+}

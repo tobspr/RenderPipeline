@@ -89,7 +89,10 @@ class RenderTarget2(RPObject):
     #
 
     def add_color_attachment(self, bits=8, alpha=False):
-        self._color_bits = ((bits, bits, bits, (bits if alpha else 0)))
+        if isinstance(bits, (list, tuple)):
+            self._color_bits = (bits[0], bits[1], bits[2], bits[3] if len(bits) == 4 else 0)
+        else:
+            self._color_bits = ((bits, bits, bits, (bits if alpha else 0)))
         self._targets["color"] = Texture(self.debug_name + "_color")
 
     def add_depth_attachment(self, bits=32):
