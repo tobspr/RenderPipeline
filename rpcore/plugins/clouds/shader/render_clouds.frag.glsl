@@ -34,8 +34,10 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
 
-uniform sampler3D CloudVoxels;
-uniform sampler2D NoiseTex;
+uniform sampler2D Noise2D;
+uniform sampler3D Noise3D_128;
+uniform sampler3D Noise3D_32;
+
 out vec4 result;
 
 const float KM = 1000.0;
@@ -88,9 +90,10 @@ void main() {
     vec3 trace_end = vec3(get_cloud_coord(ray_start + t_high * ray_dir), h_high);
 
     // Cloud noise
-    vec3 noise = texture(NoiseTex, trace_start.xy * 6.0).xyz;
+    // vec3 noise = texture(NoiseTex, trace_start.xy * 6.0).xyz;
     // trace_start.xy += (noise*2.0-1.0) * 0.007 / trace_steps;
     // noise = vec3(0.5);
+    vec3 noise = vec3(0.5);
 
     trace_start.xyz += (noise*2.0-1.0) * 0.002;
     vec3 trace_step = (trace_end - trace_start) / trace_steps;

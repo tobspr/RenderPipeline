@@ -42,17 +42,19 @@ class ScatteringEnvmapStage(RenderStage):
     @property
     def produced_pipes(self):
         return {
-            "ScatteringIBLDiffuse": self._filter.diffuse_cubemap,
-            "ScatteringIBLSpecular": self._filter.specular_cubemap,
+            "ScatteringIBLDiffuse": self.cubemap_filter.diffuse_cubemap,
+            "ScatteringIBLSpecular": self.cubemap_filter.specular_cubemap,
         }
 
     def create(self):
-        self._filter = CubemapFilter(self, "ScatEnvCub")
-        self._target_cube = self.make_target("Compute")
-        self._target_cube.size = self._filter.size * 6, self._filter.size
-        self._target_cube.prepare_offscreen_buffer()
-        self._target_cube.set_shader_input("DestCubemap", self._filter.target_cubemap)
-        self._filter.create()
+        self.cubemap_filter = CubemapFilter(self, "ScatEnvCub")
+
+        self.target_cube = self.make_target2("ComputeScattering")
+        self.target_cube.size = self.cubemap_filter.size * 6, self.cubemap_filter.size
+        self.target_cube.prepare_buffer()
+        self.target_cube.set_shader_input("DestCubemap", self.cubemap_filter.target_cubemap)
+
+        self.cubemap_filter.create()
 
         # Make the stages use our cubemap textures
         for stage in (AmbientStage, GBufferStage):
@@ -60,6 +62,5 @@ class ScatteringEnvmapStage(RenderStage):
             stage.required_pipes.append("ScatteringIBLSpecular")
 
     def set_shaders(self):
-        self._target_cube.set_shader(
-            self.load_plugin_shader("scattering_envmap.frag.glsl"))
-        self._filter.set_shaders()
+        self.target_cube.shader = self.load_plugin_shader("scattering_envmap.frag.glsl")
+        self.cubemap_filter.set_shaders()

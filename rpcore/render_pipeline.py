@@ -354,11 +354,11 @@ class RenderPipeline(PipelineExtensions, RPObject):
         # since it is a local change in my Panda3D build which is not yet
         # reviewed by rdb. Once it is in public Panda3D Dev-Builds this will
         # be the default.
-        if (not isfile("data/panda3d-patches/prev-model-view-matrix.diff") or
+        if (not isfile("data/panda3d_patches/prev-model-view-matrix.diff") or
             isfile("D:/__dev__")):
 
             # You can find the required patch in
-            # data/panda3d-patches/prev-model-view-matrix.diff.
+            # data/panda3d_patches/prev-model-view-matrix.diff.
             # Delete it after you applied it, so the render pipeline knows the
             # patch is available.
             self.warn("Experimental feature activated, no guarantee it works!")

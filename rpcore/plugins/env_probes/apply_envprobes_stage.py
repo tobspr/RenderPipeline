@@ -28,9 +28,9 @@ from rpcore.render_stage import RenderStage
 from rpcore.stages.ambient_stage import AmbientStage
 
 
-class ApplyCubemapsStage(RenderStage):
+class ApplyEnvprobesStage(RenderStage):
 
-    """ This stage renders the scene to a cubemap """
+    """ This stage takes the per-cell environment probes and samples them """
 
     required_inputs = ["EnvProbes"]
     required_pipes = ["GBuffer", "PerCellProbes", "CellIndices"]
@@ -38,17 +38,16 @@ class ApplyCubemapsStage(RenderStage):
     @property
     def produced_pipes(self):
         return {
-            "EnvmapAmbientSpec": self._target["color"],
-            "EnvmapAmbientDiff": self._target["aux0"]
+            "EnvmapAmbientSpec": self.target.color_tex,
+            "EnvmapAmbientDiff": self.target.aux_tex[0]
         }
 
     def create(self):
-        self._target = self.make_target("ApplyEnvmap")
-        self._target.add_color_texture(bits=16)
-        self._target.add_aux_texture(bits=16)
-        self._target.has_color_alpha = True
-        self._target.prepare_offscreen_buffer()
+        self.target = self.make_target2("ApplyEnvmap")
+        self.target.add_color_attachment(bits=16, alpha=True)
+        self.target.add_aux_attachment(bits=16)
+        self.target.prepare_buffer()
         AmbientStage.required_pipes += ["EnvmapAmbientSpec", "EnvmapAmbientDiff"]
 
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("apply_cubemaps.frag.glsl"))
+        self.target.shader = self.load_plugin_shader("apply_envprobes.frag.glsl")

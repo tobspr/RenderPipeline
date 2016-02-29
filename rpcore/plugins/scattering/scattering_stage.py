@@ -37,13 +37,12 @@ class ScatteringStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target['color']}
+        return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self._target = self.make_target("ApplyScattering")
-        self._target.add_color_texture(bits=16)
-        self._target.has_color_alpha = True
-        self._target.prepare_offscreen_buffer()
+        self.target = self.make_target2("ApplyScattering")
+        self.target.add_color_attachment(bits=16, alpha=True)
+        self.target.prepare_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("apply_scattering.frag.glsl"))
+        self.target.shader = self.load_plugin_shader("apply_scattering.frag.glsl")

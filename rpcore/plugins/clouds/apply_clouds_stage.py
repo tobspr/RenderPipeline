@@ -28,36 +28,34 @@ from panda3d.core import SamplerState, Texture, Vec4
 
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
+from rpcore.util.slice_loader import load_sliced_3d_texture
 
 class ApplyCloudsStage(RenderStage):
 
     """ This stage raymarchs the cloud voxel grid """
 
-    required_pipes = ["ShadedScene", "GBuffer", "CloudVoxels"]
+    required_pipes = ["ShadedScene", "GBuffer"]
 
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target_apply_clouds["color"]}
+        return {"ShadedScene": self._target_apply_clouds.color_tex}
 
     def create(self):
-        self._render_target = self.make_target("RaymarchVoxels")
-        self._render_target.set_half_resolution()
-        self._render_target.has_color_alpha = True
-        self._render_target.add_color_texture(bits=16)
-        self._render_target.prepare_offscreen_buffer()
+        self._render_target = self.make_target2("RaymarchVoxels")
+        self._render_target.size = -2
+        self._render_target.add_color_attachment(bits=16, alpha=True)
+        self._render_target.prepare_buffer()
 
-        self._target_apply_clouds = self.make_target("MergeWithScene")
-        self._target_apply_clouds.add_color_texture(bits=16)
-        self._target_apply_clouds.prepare_offscreen_buffer()
+        self._target_apply_clouds = self.make_target2("MergeWithScene")
+        self._target_apply_clouds.add_color_attachment(bits=16)
+        self._target_apply_clouds.prepare_buffer()
 
         self._target_apply_clouds.set_shader_input(
-            "CloudsTex", self._render_target["color"])
+            "CloudsTex", self._render_target.color_tex)
 
     def set_shaders(self):
-        self._target_apply_clouds.set_shader(
-            self.load_plugin_shader("apply_clouds.frag.glsl"))
-        self._render_target.set_shader(
-            self.load_plugin_shader("render_clouds.frag.glsl"))
+        self._target_apply_clouds.shader = self.load_plugin_shader("apply_clouds.frag.glsl")
+        self._render_target.shader = self.load_plugin_shader("render_clouds.frag.glsl")

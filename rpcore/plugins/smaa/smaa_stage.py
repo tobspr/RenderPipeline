@@ -46,64 +46,63 @@ class SMAAStage(RenderStage):
     def set_jitter_index(self, idx):
         """ Sets the current jitter index """
         self._jitter_index[0] = idx
-        self._neighbor_targets[idx].set_active(True, include_overlay=True)
-        self._neighbor_targets[1-idx].set_active(False, include_overlay=True)
-        self._resolve_target.set_shader_input("CurrentTex", self._neighbor_targets[idx]["color"])
-        self._resolve_target.set_shader_input("LastTex", self._neighbor_targets[1-idx]["color"])
+        self._neighbor_targets[idx].active = True
+        self._neighbor_targets[1-idx].active = False
+        self.resolve_target.set_shader_input("CurrentTex", self._neighbor_targets[idx].color_tex)
+        self.resolve_target.set_shader_input("LastTex", self._neighbor_targets[1-idx].color_tex)
 
     @property
     def produced_pipes(self):
         if self.use_reprojection:
-            return {"ShadedScene": self._resolve_target["color"]}
+            return {"ShadedScene": self.resolve_target.color_tex}
         else:
-            return {"ShadedScene": self._neighbor_targets[0]["color"]}
+            return {"ShadedScene": self._neighbor_targets[0].color_tex}
 
     def create(self):
         # Edge detection
-        self._edge_target = self.make_target("EdgeDetection")
-        self._edge_target.add_color_texture()
-        self._edge_target.prepare_offscreen_buffer()
-        self._edge_target.set_clear_color(color=Vec4(0))
+        self.edge_target = self.make_target2("EdgeDetection")
+        self.edge_target.add_color_attachment()
+        self.edge_target.prepare_buffer()
+        self.edge_target.set_clear_color(0)
 
         # Weight blending
-        self._blend_target = self.make_target("BlendWeights")
-        self._blend_target.add_color_texture()
-        self._blend_target.has_color_alpha = True
-        self._blend_target.prepare_offscreen_buffer()
-        self._blend_target.set_clear_color(color=Vec4(0))
+        self.blend_target = self.make_target2("BlendWeights")
+        self.blend_target.add_color_attachment(alpha=True)
+        self.blend_target.prepare_buffer()
+        self.blend_target.set_clear_color(0)
 
-        self._blend_target.set_shader_input("EdgeTex", self._edge_target["color"])
-        self._blend_target.set_shader_input("AreaTex", self.area_tex)
-        self._blend_target.set_shader_input("SearchTex", self.search_tex)
-        self._blend_target.set_shader_input("JitterIndex", self._jitter_index)
+        self.blend_target.set_shader_input("EdgeTex", self.edge_target.color_tex)
+        self.blend_target.set_shader_input("AreaTex", self.area_tex)
+        self.blend_target.set_shader_input("SearchTex", self.search_tex)
+        self.blend_target.set_shader_input("jitterIndex", self._jitter_index)
 
         # Neighbor blending
         self._neighbor_targets = []
         for i in range(2 if self.use_reprojection else 1):
-
-            target = self.make_target("Neighbor-" + str(i))
-            target.add_color_texture(bits=16)
-            target.has_color_alpha = True
-            target.prepare_offscreen_buffer()
-            target.set_shader_input("BlendTex", self._blend_target["color"])
+            target = self.make_target2("Neighbor-" + str(i))
+            target.add_color_attachment()
+            target.prepare_buffer()
+            target.set_shader_input("BlendTex", self.blend_target.color_tex)
             self._neighbor_targets.append(target)
 
         # Resolving
         if self.use_reprojection:
-            self._resolve_target = self.make_target("Resolve")
-            self._resolve_target.add_color_texture(bits=16)
-            self._resolve_target.prepare_offscreen_buffer()
-            self._resolve_target.set_shader_input("JitterIndex", self._jitter_index)
+            self.resolve_target = self.make_target2("Resolve")
+            self.resolve_target.add_color_attachment()
+            self.resolve_target.prepare_buffer()
+            self.resolve_target.set_shader_input("jitterIndex", self._jitter_index)
 
             # Set initial textures
-            self._resolve_target.set_shader_input("CurrentTex", self._neighbor_targets[0]["color"])
-            self._resolve_target.set_shader_input("LastTex", self._neighbor_targets[1]["color"])
+            self.resolve_target.set_shader_input("CurrentTex", self._neighbor_targets[0].color_tex)
+            self.resolve_target.set_shader_input("LastTex", self._neighbor_targets[1].color_tex)
 
     def set_shaders(self):
-        self._edge_target.set_shader(self.load_plugin_shader("edge_detection.frag.glsl"))
-        self._blend_target.set_shader(self.load_plugin_shader("blending_weights.frag.glsl"))
+        self.edge_target.shader = self.load_plugin_shader("edge_detection.frag.glsl")
+        self.blend_target.shader = self.load_plugin_shader("blending_weights.frag.glsl")
+
+        neighbor_shader = self.load_plugin_shader("neighborhood_blending.frag.glsl")
         for target in self._neighbor_targets:
-            target.set_shader(self.load_plugin_shader("neighborhood_blending.frag.glsl"))
+            target.shader = neighbor_shader
 
         if self.use_reprojection:
-            self._resolve_target.set_shader(self.load_plugin_shader("resolve.frag.glsl"))
+            self.resolve_target.shader = self.load_plugin_shader("resolve.frag.glsl")

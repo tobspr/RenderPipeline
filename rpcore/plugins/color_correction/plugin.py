@@ -28,7 +28,7 @@ from panda3d.core import SamplerState
 
 # Load the plugin api
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.util.slice_loader import SliceLoader
+from rpcore.util.slice_loader import load_sliced_3d_texture
 
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage
@@ -60,7 +60,7 @@ class Plugin(BasePlugin):
     def _load_lut(self):
         """ Loads the color correction lookup table (LUT) """
         lut_path = self.get_resource("saturation_lut.png")
-        lut = SliceLoader.load_3d_texture(lut_path, 64)
+        lut = load_sliced_3d_texture(lut_path, 64)
         lut.set_wrap_u(SamplerState.WM_clamp)
         lut.set_wrap_v(SamplerState.WM_clamp)
         lut.set_wrap_w(SamplerState.WM_clamp)

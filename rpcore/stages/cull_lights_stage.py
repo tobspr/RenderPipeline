@@ -49,34 +49,33 @@ class CullLightsStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"PerCellLights": self._per_cell_lights}
+        return {"PerCellLights": self.per_cell_lights}
 
     @property
     def produced_defines(self):
         return {
-            "LC_SHADE_SLICES": self._num_rows,
+            "LC_SHADE_SLICES": self.num_rows,
             "LC_LIGHT_CLASS_COUNT": self.num_light_classes
         }
 
     def create(self):
         max_cells = self._pipeline.light_mgr.total_tiles
-        self._num_rows = int(math.ceil(max_cells / float(self.slice_width)))
-        self._target = self.make_target("CullLights")
+        self.num_rows = int(math.ceil(max_cells / float(self.slice_width)))
+        self.target = self.make_target2("CullLights")
 
         # Don't use an oversized triangle for the target, since this leads to
         # overshading
-        self._target.USE_OVERSIZED_TRIANGLE = False
-        self._target.size = self.slice_width, self._num_rows
-        self._target.prepare_offscreen_buffer()
+        self.target.use_oversized_triangle = False
+        self.target.size = self.slice_width, self.num_rows
+        self.target.prepare_buffer()
 
-        self._per_cell_lights = Image.create_buffer(
+        self.per_cell_lights = Image.create_buffer(
             "PerCellLights", max_cells * (self.max_lights_per_cell + self.num_light_classes),
             Texture.T_int, Texture.F_r32)
-        self._per_cell_lights.set_clear_color(0)
-        self._target.set_shader_input("PerCellLightsBuffer", self._per_cell_lights)
+        self.per_cell_lights.set_clear_color(0)
+        self.target.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
 
-        self.debug("Using", self._num_rows, "culling lines")
+        self.debug("Using", self.num_rows, "culling lines")
 
     def set_shaders(self):
-        self._target.set_shader(self.load_shader(
-            "tiled_culling.vert.glsl", "cull_lights.frag.glsl"))
+        self.target.shader = self.load_shader("tiled_culling.vert.glsl", "cull_lights.frag.glsl")

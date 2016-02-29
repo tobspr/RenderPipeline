@@ -113,9 +113,9 @@ class CubemapFilter(RPObject):
             mipsize = mipsize // 2
 
             # Create the target which downsamples the mipmap
-            target = self._stage.make_target("CF:SpecIBL-PreFilter-" + str(mipsize))
+            target = self._stage.make_target2("CF:SpecIBL-PreFilter-" + str(mipsize))
             target.size = mipsize * 6, mipsize
-            target.prepare_offscreen_buffer()
+            target.prepare_buffer()
 
             if mip == 0:
                 target.set_shader_input("SourceTex", self._specular_map)
@@ -129,9 +129,9 @@ class CubemapFilter(RPObject):
             mip += 1
 
             # Create the target which filters the mipmap and removes the noise
-            target_filter = self._stage.make_target("CF:SpecIBL-PostFilter-" + str(mipsize))
+            target_filter = self._stage.make_target2("CF:SpecIBL-PostFilter-" + str(mipsize))
             target_filter.size = mipsize * 6, mipsize
-            target_filter.prepare_offscreen_buffer()
+            target_filter.prepare_buffer()
             target_filter.set_shader_input("currentMip", mip)
             target_filter.set_shader_input("SourceTex", self._spec_pref_map)
             target_filter.set_shader_input(
@@ -144,11 +144,11 @@ class CubemapFilter(RPObject):
         """ Internal method to create the diffuse cubemap """
 
         # Create the target which integrates the lambert brdf
-        self._diffuse_target = self._stage.make_target("CF:DiffuseIBL")
+        self._diffuse_target = self._stage.make_target2("CF:DiffuseIBL")
         self._diffuse_target.size = (
             CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
             CubemapFilter.PREFILTER_CUBEMAP_SIZE)
-        self._diffuse_target.prepare_offscreen_buffer()
+        self._diffuse_target.prepare_buffer()
 
         self._diffuse_target.set_shader_input("SourceCubemap", self._specular_map)
         self._diffuse_target.set_shader_input("DestCubemap", self._prefilter_map)
@@ -156,11 +156,11 @@ class CubemapFilter(RPObject):
 
         # Create the target which removes the noise from the previous target,
         # which is introduced with importance sampling
-        self._diff_filter_target = self._stage.make_target("CF:DiffPrefIBL")
+        self._diff_filter_target = self._stage.make_target2("CF:DiffPrefIBL")
         self._diff_filter_target.size = (
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
-        self._diff_filter_target.prepare_offscreen_buffer()
+        self._diff_filter_target.prepare_buffer()
 
         self._diff_filter_target.set_shader_input("SourceCubemap", self._prefilter_map)
         self._diff_filter_target.set_shader_input("DestCubemap", self._diffuse_map)
@@ -170,26 +170,23 @@ class CubemapFilter(RPObject):
         """ Sets all required shaders on the filter. """
 
         # Set diffuse filter shaders
-        self._diffuse_target.set_shader(
-            self._stage.load_shader("ibl/cubemap_diffuse.frag.glsl"))
-        self._diff_filter_target.set_shader(
-            self._stage.load_shader("ibl/cubemap_diffuse_filter.frag.glsl"))
+        self._diffuse_target.shader = self._stage.load_shader("ibl/cubemap_diffuse.frag.glsl")
+        self._diff_filter_target.shader = self._stage.load_shader("ibl/cubemap_diffuse_filter.frag.glsl")
 
         # Set specular prefilter shaders
         mip_shader = self._stage.load_shader("ibl/cubemap_specular_prefilter.frag.glsl")
         for target in self._targets_spec:
-            target.set_shader(mip_shader)
+            target.shader = mip_shader
 
         # Special shader for the first prefilter target
-        self._targets_spec[0].set_shader(self._stage.load_shader(
-            "ibl/cubemap_specular_prefilter_first.frag.glsl"))
+        self._targets_spec[0].shader = self._stage.load_shader(
+            "ibl/cubemap_specular_prefilter_first.frag.glsl")
 
         # Set specular filter sampling shaders
-        mip_filter_shader = self._stage.load_shader(
-            "ibl/cubemap_specular_filter.frag.glsl")
+        mip_filter_shader = self._stage.load_shader("ibl/cubemap_specular_filter.frag.glsl")
         for target in self._targets_spec_filter:
-            target.set_shader(mip_filter_shader)
+            target.shader = mip_filter_shader
 
         # Special shader for the first filter target
-        self._targets_spec_filter[0].set_shader(self._stage.load_shader(
-            "ibl/cubemap_specular_filter_first.frag.glsl"))
+        self._targets_spec_filter[0].shader = self._stage.load_shader(
+            "ibl/cubemap_specular_filter_first.frag.glsl")

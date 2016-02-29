@@ -34,7 +34,7 @@ from panda3d.core import Texture, SamplerState, Shader, ShaderAttrib, NodePath
 
 from rpcore.globals import Globals
 from rpcore.rp_object import RPObject
-from rpcore.util.slice_loader import SliceLoader
+from rpcore.util.slice_loader import load_sliced_3d_texture
 from rpcore.image import Image
 
 class ScatteringMethod(RPObject):
@@ -67,7 +67,7 @@ class ScatteringMethodHosekWilkie(ScatteringMethod):
                        "Scattering! Make sure you compiled the algorithm code!")
             return
 
-        lut_tex = SliceLoader.load_3d_texture(lut_src, 512, 128, 100)
+        lut_tex = load_sliced_3d_texture(lut_src, 512, 128, 100)
         lut_tex.set_wrap_u(SamplerState.WM_repeat)
         lut_tex.set_wrap_v(SamplerState.WM_clamp)
         lut_tex.set_wrap_w(SamplerState.WM_clamp)

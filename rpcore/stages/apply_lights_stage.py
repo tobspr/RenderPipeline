@@ -36,12 +36,12 @@ class ApplyLightsStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target['color']}
+        return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self._target = self.make_target("ApplyLights")
-        self._target.add_color_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
+        self.target = self.make_target2("ApplyLights")
+        self.target.add_color_attachment(bits=16)
+        self.target.prepare_buffer()
 
     def set_shaders(self):
-        self._target.set_shader(self.load_shader("apply_lights.frag.glsl"))
+        self.target.shader = self.load_shader("apply_lights.frag.glsl")

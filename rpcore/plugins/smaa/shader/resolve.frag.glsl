@@ -95,27 +95,27 @@ void main() {
 
     // Get last frame texels
     float clip_length = 1.0;
-    vec3 hist_m  = texture(LastTex, last_coord).xyz;
-    vec3 hist_tl = texture(LastTex, last_coord + vec2(-bbs, -bbs) * one_pixel).xyz;
-    vec3 hist_tr = texture(LastTex, last_coord + vec2( bbs, -bbs) * one_pixel).xyz;
-    vec3 hist_bl = texture(LastTex, last_coord + vec2(-bbs,  bbs) * one_pixel).xyz;
-    vec3 hist_br = texture(LastTex, last_coord + vec2( bbs,  bbs) * one_pixel).xyz;
+    vec3 last_m  = texture(LastTex, last_coord).xyz;
+    vec3 last_tl = texture(LastTex, last_coord + vec2(-bbs, -bbs) * one_pixel).xyz;
+    vec3 last_tr = texture(LastTex, last_coord + vec2( bbs, -bbs) * one_pixel).xyz;
+    vec3 last_bl = texture(LastTex, last_coord + vec2(-bbs,  bbs) * one_pixel).xyz;
+    vec3 last_br = texture(LastTex, last_coord + vec2( bbs,  bbs) * one_pixel).xyz;
 
-    float neighbor_diff = length(clamp(hist_tl, curr_min, curr_max) - hist_tl)
-                        + length(clamp(hist_tr, curr_min, curr_max) - hist_tr)
-                        + length(clamp(hist_bl, curr_min, curr_max) - hist_bl)
-                        + length(clamp(hist_br, curr_min, curr_max) - hist_br);
+    float neighbor_diff = length(clamp(last_tl, curr_min, curr_max) - last_tl)
+                        + length(clamp(last_tr, curr_min, curr_max) - last_tr)
+                        + length(clamp(last_bl, curr_min, curr_max) - last_bl)
+                        + length(clamp(last_br, curr_min, curr_max) - last_br);
 
     const float max_difference = 0.2; // TODO: Make this a setting
     if (neighbor_diff < max_difference)
         clip_length = 0.0;
 
-    float blend_amount = saturate(distance(hist_m, curr_m) * 0.2);
+    float blend_amount = saturate(distance(last_m, curr_m) * 0.2);
 
     // Merge the sample with the current color, in case we can't pick it
-    hist_m = mix(hist_m, curr_m, clip_length);
+    last_m = mix(last_m, curr_m, clip_length);
 
     // Compute weight and blend pixels
     float weight = 0.5 - 0.5 * blend_amount;
-    result = mix(curr_m, hist_m, weight);
+    result = mix(curr_m, last_m, weight);
 }
