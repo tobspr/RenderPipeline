@@ -1,49 +1,80 @@
+"""
 
-import noise
-from panda3d.core import PNMImage
+RenderPipeline
 
-SEED = 123.0
+Copyright (c) 2014-2016 tobspr <tobias.springer1@gmail.com>
 
-img = PNMImage(128, 128, 3)
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-print("Computing 2d noise ..")
-scale = 7.0
-for x in range(128):
-    for y in range(128):
-        colors = []
-        for c in range(3):
-            colors.append(noise.snoise2(x / 128.0 * scale, y / 128.0 * scale, octaves=2,
-                repeatx=scale, repeaty=scale, base=SEED + 362.9241 * c))
-        img.set_xel(x, y, *(i*0.5+0.5 for i in colors))
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-img.write("tex_2d_1.png")
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
+"""
 
-img = PNMImage(32 * 8, 32 * 4, 3)
-scale = 4
+from __future__ import print_function, division
 
-print("Computing 3d noise .. # 1")
-for z in range(32):
-    x_offs = (z % 8) * 32
-    y_offs = (z / 8) * 32
-    for x in range(32):
-        for y in range(32):
-            result = noise.pnoise3(x / 32.0 * scale, y / 32.0 * scale , z / 32.0 * scale, octaves=6, repeatx=scale, repeaty=scale, repeatz=scale, base=1353 + int(SEED))
-            img.set_xel(x_offs + x, y_offs + y, result * 0.5 + 0.5)
-
-img.write("tex_3d_2.png")
+import os
+import shutil
+from os.path import dirname, realpath
+from direct.stdpy.file import isdir, isfile, join
+from panda3d.core import *
+from direct.showbase.ShowBase import ShowBase
 
 
-img = PNMImage(128 * 16, 128 * 8, 3)
-scale = 4
-print("Computing 3d noise .. # 2")
 
-for z in range(128):
-    x_offs = (z % 16) * 128
-    y_offs = (z / 16) * 128
-    for x in range(128):
-        for y in range(128):
-            result = noise.pnoise3(x / 128.0 * scale, y / 128.0 * scale , z / 128.0 * scale, octaves=5, repeatx=scale, repeaty=scale, repeatz=scale, base=2 + int(SEED / 10.0))
-            img.set_xel(x_offs + x, y_offs + y, result * 0.5 + 0.5)
+class Application(ShowBase):
+    def __init__(self):
+        load_prc_file_data("", """
+            textures-power-2 none
+            window-type offscreen
+            win-size 100 100
+            gl-coordinate-system default
+            notify-level-display error
+            print-pipe-types #f
+        """)
 
-img.write("tex_3d_1.png")
+        ShowBase.__init__(self)
+
+        base_path = realpath(dirname(__file__))
+        os.chdir(base_path)
+        slice_dir = join(base_path, "slices/")
+        if isdir(slice_dir):
+            shutil.rmtree(slice_dir)
+        os.makedirs(slice_dir)
+
+        node = NodePath("")
+
+        w, h, d = 512, 512, 128
+
+        self.voxel_grid = Texture("voxels")
+        self.voxel_grid.setup_3d_texture(w, h, d, Texture.T_unsigned_byte, Texture.F_rgba8)
+
+
+        # Generate grid
+        cshader = Shader.load_compute(Shader.SL_GLSL, "generate_grid.compute.glsl")
+        node.set_shader(cshader)
+        node.set_shader_input("DestTex", self.voxel_grid)
+        attr = node.get_attrib(ShaderAttrib)
+
+        self.graphicsEngine.dispatch_compute(
+            ((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.get_gsg())
+
+        self.graphicsEngine.extract_texture_data(self.voxel_grid, self.win.get_gsg())
+
+        print("Writing data ..")
+        self.voxel_grid.write(Filename.from_os_specific(join(slice_dir, "#.png")), 0, 0, True, False)
+
+Application()

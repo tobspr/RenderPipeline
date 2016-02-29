@@ -32,8 +32,7 @@ from panda3d.core import PNMImage, VirtualFileSystem, VirtualFileMountRamdisk
 
 from rpcore.globals import Globals
 
-@classmethod
-def load_sliced_3d_texture(cls, fname, tile_size_x, tile_size_y=None, num_tiles=None):
+def load_sliced_3d_texture(fname, tile_size_x, tile_size_y=None, num_tiles=None):
     """ Loads a texture from the given filename and dimensions. If only
     one dimensions is specified, the other dimensions are assumed to be
     equal. This internally loads the texture into ram, splits it into smaller

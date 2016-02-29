@@ -34,11 +34,12 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
 
-uniform sampler2D Noise2D;
-uniform sampler3D Noise3D_128;
-uniform sampler3D Noise3D_32;
+uniform sampler3D CloudVoxels;
 
 out vec4 result;
+
+#define CLOUD_RES_Z 128
+#define CLOUD_RES_Z 512
 
 const float KM = 1000.0;
 const float METER = 1.0;
@@ -110,7 +111,7 @@ void main() {
     // Raymarch over the voxel texture
     for (int i = 0; i < trace_steps; ++i) {
         vec4 cloud_sample = texture(CloudVoxels, curr_pos);
-        float weight = cloud_sample.w * saturate(1.0 - accum_weight);
+        float weight = cloud_sample.x * saturate(1.0 - accum_weight);
         accum_color += cloud_sample.xyz * weight;
         accum_weight += weight;
         curr_pos += trace_step;
