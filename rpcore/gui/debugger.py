@@ -179,7 +179,7 @@ class Debugger(BaseManager):
             self._pipeline.light_mgr.num_lights,
             self._pipeline.light_mgr.num_shadow_sources)
 
-        text = "{:3.0f} MiB VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
+        text = "{:3.0f} MiB pipeline VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins"
         tex_info = self._buffer_viewer.stage_information
         self._debug_lines[2].text = text.format(

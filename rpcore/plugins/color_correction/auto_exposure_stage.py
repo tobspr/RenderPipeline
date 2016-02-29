@@ -38,63 +38,63 @@ class AutoExposureStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target_apply["color"],
-                "Exposure": self._tex_exposure}
+        return {"ShadedScene": self.target_apply.color_tex,
+                "Exposure": self.tex_exposure}
 
     def create(self):
 
         # Create the target which converts the scene color to a luminance
-        self._target_lum = self.make_target("GetLuminance")
-        self._target_lum.set_quarter_resolution()
-        self._target_lum.add_color_texture(bits=(16, 0, 0, 0))
-        self._target_lum.prepare_offscreen_buffer()
+        self.target_lum = self.make_target2("GetLuminance")
+        self.target_lum.size = -4
+        self.target_lum.add_color_attachment(bits=(16, 0, 0, 0))
+        self.target_lum.prepare_buffer()
 
         # Get the current quarter-window size
         wsize_x = (Globals.base.win.get_x_size() + 3) // 4
         wsize_y = (Globals.base.win.get_y_size() + 3) // 4
 
         # Create the targets which downscale the luminance mipmaps
-        self._mip_targets = []
-        last_tex = self._target_lum["color"]
+        self.mip_targets = []
+        last_tex = self.target_lum.color_tex
         while wsize_x >= 4 or wsize_y >= 4:
             wsize_x = (wsize_x+3) // 4
             wsize_y = (wsize_y+3) // 4
 
-            mip_target = self.make_target("DScaleLum:S" + str(wsize_x))
-            mip_target.add_color_texture(bits=(16, 0, 0, 0))
+            mip_target = self.make_target2("DScaleLum:S" + str(wsize_x))
+            mip_target.add_color_attachment(bits=(16, 0, 0, 0))
             mip_target.size = wsize_x, wsize_y
-            mip_target.prepare_offscreen_buffer()
+            mip_target.prepare_buffer()
             mip_target.set_shader_input("SourceTex", last_tex)
-            self._mip_targets.append(mip_target)
-            last_tex = mip_target["color"]
+            self.mip_targets.append(mip_target)
+            last_tex = mip_target.color_tex
 
         # Create the storage for the exposure, this stores the current and last
         # frames exposure
-        self._tex_exposure = Image.create_buffer(
+        self.tex_exposure = Image.create_buffer(
             "ExposureStorage", 1, Texture.T_float, Texture.F_rgba16)
-        self._tex_exposure.set_clear_color(Vec4(0.5))
-        self._tex_exposure.clear_image()
+        self.tex_exposure.set_clear_color(Vec4(0.5))
+        self.tex_exposure.clear_image()
 
         # Create the target which extracts the exposure from the average brightness
-        self._target_analyze = self.make_target("AnalyzeBrightness")
-        self._target_analyze.size = 1, 1
-        self._target_analyze.prepare_offscreen_buffer()
+        self.target_analyze = self.make_target2("AnalyzeBrightness")
+        self.target_analyze.size = 1, 1
+        self.target_analyze.prepare_buffer()
 
-        self._target_analyze.set_shader_input(
-            "ExposureStorage", self._tex_exposure)
-        self._target_analyze.set_shader_input("DownscaledTex", last_tex)
+        self.target_analyze.set_shader_input(
+            "ExposureStorage", self.tex_exposure)
+        self.target_analyze.set_shader_input("DownscaledTex", last_tex)
 
         # Create the target which applies the generated exposure to the scene
-        self._target_apply = self.make_target("ApplyExposure")
-        self._target_apply.add_color_texture(bits=16)
-        self._target_apply.prepare_offscreen_buffer()
-        self._target_apply.set_shader_input("Exposure", self._tex_exposure)
+        self.target_apply = self.make_target2("ApplyExposure")
+        self.target_apply.add_color_attachment(bits=16)
+        self.target_apply.prepare_buffer()
+        self.target_apply.set_shader_input("Exposure", self.tex_exposure)
 
     def set_shaders(self):
-        self._target_lum.set_shader(self.load_plugin_shader("generate_luminance.frag.glsl"))
-        self._target_analyze.set_shader(self.load_plugin_shader("analyze_brightness.frag.glsl"))
-        self._target_apply.set_shader(self.load_plugin_shader("apply_exposure.frag.glsl"))
+        self.target_lum.shader = self.load_plugin_shader("generate_luminance.frag.glsl")
+        self.target_analyze.shader = self.load_plugin_shader("analyze_brightness.frag.glsl")
+        self.target_apply.shader = self.load_plugin_shader("apply_exposure.frag.glsl")
 
         mip_shader = self.load_plugin_shader("downscale_luminance.frag.glsl")
-        for target in self._mip_targets:
-            target.set_shader(mip_shader)
+        for target in self.mip_targets:
+            target.shader = mip_shader

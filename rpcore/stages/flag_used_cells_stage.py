@@ -38,24 +38,24 @@ class FlagUsedCellsStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"FlaggedCells": self._cell_grid_flags}
+        return {"FlaggedCells": self.cell_grid_flags}
 
     def create(self):
-        self._target = self.make_target("FlagUsedCells")
-        self._target.prepare_offscreen_buffer()
+        self.target = self.make_target2("FlagUsedCells")
+        self.target.prepare_buffer()
 
         tile_amount = self._pipeline.light_mgr.num_tiles
 
-        self._cell_grid_flags = Image.create_2d_array(
+        self.cell_grid_flags = Image.create_2d_array(
             "CellGridFlags", tile_amount.x, tile_amount.y,
             self._pipeline.settings["lighting.culling_grid_slices"],
             Texture.T_unsigned_byte, Texture.F_red)
-        self._cell_grid_flags.set_clear_color(0)
+        self.cell_grid_flags.set_clear_color(0)
 
-        self._target.set_shader_input("cellGridFlags", self._cell_grid_flags)
+        self.target.set_shader_input("cellGridFlags", self.cell_grid_flags)
 
     def update(self):
-        self._cell_grid_flags.clear_image()
+        self.cell_grid_flags.clear_image()
 
     def set_shaders(self):
-        self._target.set_shader(self.load_shader("flag_used_cells.frag.glsl"))
+        self.target.shader = self.load_shader("flag_used_cells.frag.glsl")

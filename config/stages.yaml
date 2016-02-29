@@ -32,7 +32,7 @@ global_stage_order:
   - ApplyLightsStage
   - PSSMStage
   - ScatteringStage
-  - ApplyCubemapsStage
+  - ApplyEnvprobesStage
   - VXGIStage
   - AmbientStage
   - SSLRStage

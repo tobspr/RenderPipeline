@@ -100,7 +100,11 @@ class RenderStage(RPObject):
     def set_active(self, active):
         """ Enables or disables all targets bound to this stage """
         for target in itervalues(self._targets):
-            target.set_active(active)
+            # TODO: Hacky, remove when new render target is there
+            if target.__class__.__name__ == "RenderTarget":
+                target.set_active(active)
+            else:
+                target.active = active
 
     def make_target(self, name):
         """ Creates a new render target with the given name and attachs it to the
@@ -110,6 +114,7 @@ class RenderStage(RPObject):
         # Format the name like Plugin:Stage:Name, so it can be easily
         # found in pstats
         name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
+        self.warn("TODO: Use 2nd target on", name)
         self._targets[name] = RenderTarget(name)
         return self._targets[name]
 

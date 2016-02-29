@@ -26,7 +26,7 @@
 
 #version 430
 
-#pragma option NV (unroll all)
+#pragma optionNV (unroll all)
 
 #define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS

@@ -43,17 +43,25 @@ class Plugin(BasePlugin):
     required_plugins = ("scattering",)
 
     def on_stage_setup(self):
-        self._generation_stage = self.create_stage(CloudVoxelStage)
-        self._apply_stage = self.create_stage(ApplyCloudsStage)
+        # self.generation_stage = self.create_stage(CloudVoxelStage)
+        self.apply_stage = self.create_stage(ApplyCloudsStage)
 
 
     def on_pipeline_created(self):
         # Load noise texture
-        noise_tex = Globals.loader.loadTexture(self.get_resource("noise.png"))
-        noise_tex.set_wrap_u(SamplerState.WM_repeat)
-        noise_tex.set_wrap_v(SamplerState.WM_repeat)
-        noise_tex.set_anisotropic_degree(4)
-        noise_tex.set_minfilter(SamplerState.FT_linear)
-        noise_tex.set_magfilter(SamplerState.FT_linear)
-        self._generation_stage.set_shader_input("NoiseTex", noise_tex)
-        self._apply_stage.set_shader_input("NoiseTex", noise_tex)
+
+        tex_2d = Globals.loader.loadTexture(self.get_resource("tex_2d_1.png"))
+        tex_3d_1 = load_sliced_3d_texture(self.get_resource("tex_3d_1.png", 128))
+        tex_3d_2 = load_sliced_3d_texture(self.get_resource("tex_3d_2.png", 32))
+
+        for tex in (tex_2d, tex_3d_1, tex_3d_2):
+            tex.set_wrap_u(SamplerState.WM_repeat)
+            tex.set_wrap_v(SamplerState.WM_repeat)
+            tex.set_anisotropic_degree(0)
+            tex.set_minfilter(SamplerState.FT_linear)
+            tex.set_magfilter(SamplerState.FT_linear)
+
+        self.apply_stage.set_shader_input("Noise2D", tex_2d)
+        self.apply_stage.set_shader_input("Noise3D_128", tex_3d_1)
+        self.apply_stage.set_shader_input("Noise3D_32", tex_3d_2)
+

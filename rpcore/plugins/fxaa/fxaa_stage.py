@@ -35,20 +35,20 @@ class FXAAStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target["color"]}
+        return {"ShadedScene": self.target.color_tex}
 
     def create(self):
 
-        self._luma_target = self.make_target("FXAAWriteLuma")
-        self._luma_target.add_color_texture(bits=16)
-        self._luma_target.has_color_alpha = True
-        self._luma_target.prepare_offscreen_buffer()
+        self.luma_target = self.make_target2("FXAAWriteLuma")
+        self.luma_target.add_color_attachment(alpha=True)
+        self.luma_target.prepare_buffer()
 
-        self._target = self.make_target("FXAA")
-        self._target.add_color_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
-        self._target.set_shader_input("SourceTex", self._luma_target["color"])
+        self.target = self.make_target2("FXAA")
+        self.target.add_color_attachment()
+        self.target.prepare_buffer()
+
+        self.target.set_shader_input("SourceTex", self.luma_target.color_tex)
 
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("fxaa_stage.frag.glsl"))
-        self._luma_target.set_shader(self.load_plugin_shader("write_luma.frag.glsl"))
+        self.target.shader = self.load_plugin_shader("fxaa_stage.frag.glsl")
+        self.luma_target.shader = self.load_plugin_shader("write_luma.frag.glsl")

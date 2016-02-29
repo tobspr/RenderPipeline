@@ -128,8 +128,8 @@ class RenderTarget2(RPObject):
     def active(self, flag):
         if self._active is not flag:
             for region in self._internal_buffer.get_display_regions():
-                if region != self._internal_buffer.get_overlay_display_region():
-                    region.set_active(active)
+                # if region != self._internal_buffer.get_overlay_display_region():
+                region.set_active(flag)
             self._active = flag
 
     @property
@@ -142,7 +142,7 @@ class RenderTarget2(RPObject):
 
     @property
     def aux_tex(self):
-        (i for i in sorted(iterkeys(self._targets)) if i.startswith("aux"))
+        return [self._targets[i] for i in sorted(iterkeys(self._targets)) if i.startswith("aux_")]
 
     @property
     def node(self):
@@ -239,9 +239,19 @@ class RenderTarget2(RPObject):
         self.engine.remove_window(self._internal_buffer)
         self._internal_buffer.clear_render_textures()
 
+        if self._targets:
+            self.warn("make_main_target() with attachments called!")
+
         for i, region in enumerate(self._source_window.get_display_regions()):
             if i not in [1, 2, 4]:
                 region.set_active(False)
+
+        self.quad.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_all), 10000)
+
+    def set_clear_color(self, *args):
+        """ Sets the  clear color """
+        self._internal_buffer.set_clear_color_active(True)
+        self._internal_buffer.set_clear_color(Vec4(*args))
 
 
     #
@@ -414,13 +424,13 @@ class RenderTarget2(RPObject):
         RenderTarget._NUM_BUFFERS_ALLOCATED += 1
         self._internal_buffer.set_sort(sort)
         self._internal_buffer.disable_clears()
+        self._internal_buffer.get_display_region(0).disable_clears()
 
         for region in self._internal_buffer.get_display_regions():
             region.disable_clears()
 
         self._internal_buffer.get_overlay_display_region().disable_clears()
         self._internal_buffer.get_overlay_display_region().set_active(False)
-
 
         BufferViewer.register_entry(self)
 

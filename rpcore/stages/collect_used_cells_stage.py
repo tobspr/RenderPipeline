@@ -46,9 +46,9 @@ class CollectUsedCellsStage(RenderStage):
     def create(self):
         tile_amount = self._pipeline.light_mgr.num_tiles
 
-        self._target = self.make_target("CollectUsedCells")
-        self._target.size = tile_amount.x, tile_amount.y
-        self._target.prepare_offscreen_buffer()
+        self.target = self.make_target2("CollectUsedCells")
+        self.target.size = tile_amount.x, tile_amount.y
+        self.target.prepare_buffer()
 
         num_slices = self._pipeline.settings["lighting.culling_grid_slices"]
         max_cells = tile_amount.x * tile_amount.y * num_slices
@@ -62,12 +62,12 @@ class CollectUsedCellsStage(RenderStage):
             num_slices, Texture.T_int, Texture.F_r32i)
         self._cell_index_buffer.set_clear_color(0)
 
-        self._target.set_shader_input("CellListBuffer", self._cell_list_buffer)
-        self._target.set_shader_input("CellListIndices", self._cell_index_buffer)
+        self.target.set_shader_input("CellListBuffer", self._cell_list_buffer)
+        self.target.set_shader_input("CellListIndices", self._cell_index_buffer)
 
     def update(self):
         self._cell_list_buffer.clear_image()
         self._cell_index_buffer.clear_image()
 
     def set_shaders(self):
-        self._target.set_shader(self.load_shader("collect_used_cells.frag.glsl"))
+        self.target.shader = self.load_shader("collect_used_cells.frag.glsl")

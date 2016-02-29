@@ -34,7 +34,7 @@ from rpcore.stages.cull_lights_stage import CullLightsStage
 from .probe_manager import ProbeManager
 from .environment_probe import EnvironmentProbe
 from .environment_capture_stage import EnvironmentCaptureStage
-from .apply_cubemaps_stage import ApplyCubemapsStage
+from .apply_envprobes_stage import ApplyEnvprobesStage
 from .cull_probes_stage import CullProbesStage
 
 class Plugin(BasePlugin):
@@ -67,7 +67,7 @@ class Plugin(BasePlugin):
         self.cull_stage = self.create_stage(CullProbesStage)
 
         # Create the stage to apply the cubemaps
-        self.apply_stage = self.create_stage(ApplyCubemapsStage)
+        self.apply_stage = self.create_stage(ApplyEnvprobesStage)
 
         if self.is_plugin_enabled("scattering"):
             self.capture_stage.required_pipes += ["ScatteringIBLSpecular", "ScatteringIBLDiffuse"]

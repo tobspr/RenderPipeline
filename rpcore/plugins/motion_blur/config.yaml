@@ -35,7 +35,7 @@ settings: !!omap
     - num_samples:
         type: int
         range: [2, 64]
-        default: 24
+        default: 14
         label: Blur sample count
         shader_runtime: true
         description: >

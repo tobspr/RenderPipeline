@@ -56,13 +56,13 @@ class CullProbesStage(RenderStage):
         max_cells = self._pipeline.light_mgr.total_tiles
 
         self.num_rows = int(math.ceil(max_cells / float(self.slice_width)))
-        self.target = self.make_target("CullProbes")
+        self.target = self.make_target2("CullProbes")
 
         # Don't use an oversized triangle for the target, since this leads to
         # overshading
-        self.target.USE_OVERSIZED_TRIANGLE = False
+        self.target.use_oversized_triangle = False
         self.target.size = self.slice_width, self.num_rows
-        self.target.prepare_offscreen_buffer()
+        self.target.prepare_buffer()
 
         self.per_cell_probes = Image.create_buffer(
             "PerCellProbes", max_cells * self.max_probes_per_cell,
@@ -72,5 +72,5 @@ class CullProbesStage(RenderStage):
         self.target.set_shader_input("PerCellProbes", self.per_cell_probes)
 
     def set_shaders(self):
-        self.target.set_shader(self.load_plugin_shader(
-            "$$shader/tiled_culling.vert.glsl", "cull_probes.frag.glsl"))
+        self.target.shader = self.load_plugin_shader(
+            "$$shader/tiled_culling.vert.glsl", "cull_probes.frag.glsl")
