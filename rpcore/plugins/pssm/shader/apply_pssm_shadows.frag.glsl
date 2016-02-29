@@ -54,7 +54,7 @@ uniform vec2 pssm_nearfar[GET_SETTING(pssm, split_count)];
 uniform vec3 pssm_sun_vector;
 
 #if HAVE_PLUGIN(clouds)
-uniform sampler3D CloudVoxels;
+// uniform sampler3D CloudVoxels;
 #endif
 
 
@@ -255,20 +255,19 @@ void main() {
     // CloudVoxels
     #if HAVE_PLUGIN(clouds)
         {
-        vec3 start_coord = vec3(m.position.xy / 800.0, 0);
-        vec3 end_coord = start_coord + vec3(0, 0, 1);
-        const int num_steps = 32;
-        vec3 step_dir = (end_coord - start_coord) / num_steps;
-        float cloud_factor = 0.0;
-        for (int i = 0; i < num_steps; ++i) {
-            float cloud_sample = texture(CloudVoxels, start_coord).w;
-            cloud_factor += cloud_sample;
-            start_coord += step_dir;
-        }
-        cloud_factor /= num_steps;
-        cloud_factor *= 10.0;
-        shadow_factor *= saturate(1.0 - cloud_factor);
-
+        // vec3 start_coord = vec3(m.position.xy / 800.0, 0);
+        // vec3 end_coord = start_coord + vec3(0, 0, 1);
+        // const int num_steps = 32;
+        // vec3 step_dir = (end_coord - start_coord) / num_steps;
+        // float cloud_factor = 0.0;
+        // for (int i = 0; i < num_steps; ++i) {
+        //     float cloud_sample = texture(CloudVoxels, start_coord).w;
+        //     cloud_factor += cloud_sample;
+        //     start_coord += step_dir;
+        // }
+        // cloud_factor /= num_steps;
+        // cloud_factor *= 10.0;
+        // shadow_factor *= saturate(1.0 - cloud_factor);
         }
     #endif
 

@@ -36,6 +36,6 @@ void main() {
     vec2 texcoord = get_texcoord();
     vec4 scene_color = textureLod(ShadedScene, texcoord, 0);
     vec4 cloud_color = textureLod(CloudsTex, texcoord, 0);
-    result = mix(scene_color, cloud_color, cloud_color.w);
+    result = scene_color * (1 - cloud_color.w) + cloud_color;
     result.w = scene_color.w;
 }

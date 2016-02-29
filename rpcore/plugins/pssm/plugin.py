@@ -69,9 +69,6 @@ class Plugin(BasePlugin):
         # self._dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
         # self._dist_shadow_stage.resolution = self.get_setting("vsm_resolution")
 
-        if self.is_plugin_enabled("clouds"):
-            self._pssm_stage.required_pipes.append("CloudVoxels")
-
     def on_pipeline_created(self):
         self.debug("Initializing pssm ..")
         # Construct a dummy node to parent the rig to

@@ -200,6 +200,9 @@ def setup():
         print_step("Running shader scripts .. ")
         exec_python_file("rpcore/plugins/env_probes/shader/generate_mip_shaders.py")
 
+        print_step("Precomputing clouds ..")
+        exec_python_file("rpcore/plugins/clouds/resources/precompute.py")
+
         ask_download_samples()
 
     # -- Further setup code follows here --

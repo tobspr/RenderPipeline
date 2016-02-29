@@ -13,7 +13,7 @@ enabled:
     - smaa
     - env_probes
     # - vxgi
-    # - fxaa
+    - fxaa
     - bloom
     - motion_blur
 
@@ -52,8 +52,6 @@ overrides:
     clouds:
         cloud_decay: 5.78
         raymarch_steps: 64
-        cloud_start: 6.04
-        cloud_end: 10.4
 
     color_correction:
         tonemap_operator: exponential

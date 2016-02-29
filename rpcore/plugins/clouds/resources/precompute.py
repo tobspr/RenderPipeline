@@ -57,7 +57,7 @@ class Application(ShowBase):
 
         node = NodePath("")
 
-        w, h, d = 512, 512, 128
+        w, h, d = 512, 512, 64
 
         self.voxel_grid = Texture("voxels")
         self.voxel_grid.setup_3d_texture(w, h, d, Texture.T_unsigned_byte, Texture.F_rgba8)

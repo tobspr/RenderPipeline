@@ -48,5 +48,10 @@ class Plugin(BasePlugin):
 
 
     def on_pipeline_created(self):
-        cloud_voxels = Globals.loader.load3dTexture(self.get_resource("slices/#.png"))
+        cloud_voxels = Globals.loader.load3DTexture(self.get_resource("slices/#.png"))
+        cloud_voxels.set_wrap_w(SamplerState.WM_clamp)
         self.apply_stage.set_shader_input("CloudVoxels", cloud_voxels)
+
+        noise_tex = Globals.loader.loadTexture(self.get_resource("noise.png"))
+        noise_tex.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        self.apply_stage.set_shader_input("NoiseTex", noise_tex)

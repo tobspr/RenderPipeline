@@ -21,25 +21,6 @@ settings: !!omap
             to integrate the cloud density. Higher values produce more accurate
             result but also require more performance.
 
-    - cloud_start:
-        type: float
-        range: [0.1, 10.0]
-        default: 4.4
-        label: Cloud layer start
-        shader_runtime: true
-        description: >
-            Start of the cloud layer in kilometers
-
-    - cloud_end:
-        type: float
-        range: [0.2, 15.0]
-        default: 6.4
-        label: Cloud layer end
-        shader_runtime: true
-        description: >
-            End of the cloud layer in kilometers. Should be higher than the cloud
-            start layer height.
-
 daytime_settings: !!omap
 
     - cloud_brightness:
