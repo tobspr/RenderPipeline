@@ -256,20 +256,24 @@ background: #ddd;border: 1px solid #aaa;
       <rect>
        <x>0</x>
        <y>30</y>
-       <width>311</width>
+       <width>351</width>
        <height>21</height>
       </rect>
      </property>
      <property name="font">
       <font>
-       <pointsize>9</pointsize>
+       <pointsize>8</pointsize>
       </font>
      </property>
      <property name="styleSheet">
       <string notr="true">color: #888;</string>
      </property>
      <property name="text">
-      <string>Description: Some Desc</string>
+      <string>Description: Some Desc bla bla bla bal bsdas asdas asdaas 
+sadfsafsadfasdfsdfasf</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QPushButton" name="btn_insert_point">
@@ -326,8 +330,6 @@ background: #ddd;border: 1px solid #aaa;
       <string>Settings</string>
      </property>
     </widget>
-    <zorder>label_2</zorder>
-    <zorder>settings_tree</zorder>
    </widget>
    <widget class="QFrame" name="frame_4">
     <property name="geometry">

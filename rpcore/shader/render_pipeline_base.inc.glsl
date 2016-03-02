@@ -47,15 +47,15 @@
 #pragma optionNV (fastprecision on)
 #endif
 
-#pragma include "$$pipeline_temp/$$pipeline_shader_config.inc.glsl"
+#pragma include "/$$rptemp/$$pipeline_shader_config.inc.glsl"
 
 // Only include the UBO's if required
 #ifdef USE_MAIN_SCENE_DATA
-#pragma include "$$pipeline_temp/$$main_scene_data.inc.glsl"
+#pragma include "/$$rptemp/$$main_scene_data.inc.glsl"
 #endif
 
 #ifdef USE_TIME_OF_DAY
-#pragma include "$$pipeline_temp/$$daytime_config.inc.glsl"
+#pragma include "/$$rptemp/$$daytime_config.inc.glsl"
 #endif
 
 // Screen size macro

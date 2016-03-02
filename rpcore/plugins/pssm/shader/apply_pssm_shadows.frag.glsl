@@ -36,6 +36,7 @@
 #pragma include "includes/lighting_pipeline.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 #pragma include "includes/skin_shading.inc.glsl"
 
 out vec4 result;
@@ -122,12 +123,14 @@ void main() {
     // Compute the shadowing factor
     if (split < GET_SETTING(pssm, split_count)) {
 
+        vec3 noise = rand_rgb(m.position.xy + m.position.z);
+
         // Get the MVP for the current split
         mat4 mvp = pssm_mvps[split];
 
         // Get the plugin settings
-        const float slope_bias = GET_SETTING(pssm, slope_bias) * 0.05;
-        const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.005;
+        const float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1;
+        const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
         const float fixed_bias = GET_SETTING(pssm, fixed_bias) * 0.001;
         const int num_samples = GET_SETTING(pssm, filter_sample_count);
         const float filter_radius = GET_SETTING(pssm, filter_radius) / GET_SETTING(pssm, resolution);
@@ -142,11 +145,14 @@ void main() {
         vec3 projected = project(mvp, biased_pos);
         vec2 projected_coord = get_split_coord(projected.xy, split);
 
+        projected_coord.xy += (noise.xy*2-1) / GET_SETTING(pssm, resolution) * 0.05;
+
         // Compute the fixed bias
         float ref_depth = projected.z - fixed_bias;
 
         // Find filter size
-        vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);
+        // vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);
+        vec2 filter_size = vec2(0.1 * filter_radius);
 
         #if GET_SETTING(pssm, use_pcss)
 

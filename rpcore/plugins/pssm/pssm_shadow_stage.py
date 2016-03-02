@@ -46,8 +46,8 @@ class PSSMShadowStage(RenderStage):
     @property
     def produced_pipes(self):
         return {
-            "PSSMShadowAtlas": self.target['depth'],
-            "PSSMShadowAtlasPCF": (self.target['depth'], self.make_pcf_state()),
+            "PSSMShadowAtlas": self.target.depth_tex,
+            "PSSMShadowAtlasPCF": (self.target.depth_tex, self.make_pcf_state()),
         }
 
     def make_pcf_state(self):
@@ -60,28 +60,28 @@ class PSSMShadowStage(RenderStage):
         return self.target["depth"]
 
     def create(self):
-        self.target = self.make_target("ShadowMap")
-        self.target.set_source(None, Globals.base.win)
-        self.target.size = (self.split_resolution * self.num_splits, self.split_resolution)
-        self.target.add_depth_texture(bits=32)
-        self.target.create_overlay_quad = False
-        self.target.color_write = False
-        self.target.prepare_scene_render()
+        self.target = self.make_target2("ShadowMap")
+        self.target.size = self.split_resolution * self.num_splits, self.split_resolution
+        self.target.add_depth_attachment(bits=32)
+        self.target.prepare_render(None)
 
         # Remove all unused display regions
-        internal_buffer = self.target.get_internal_buffer()
+        internal_buffer = self.target.internal_buffer
         internal_buffer.remove_all_display_regions()
         internal_buffer.get_display_region(0).set_active(False)
+        internal_buffer.disable_clears()
+
+        # Set a clear on the buffer instead on all regions
+        internal_buffer.set_clear_depth(1)
+        internal_buffer.set_clear_depth_active(True)
 
         # Prepare the display regions
         for i in range(self.num_splits):
             region = internal_buffer.make_display_region(
                 i / self.num_splits,
                 i / self.num_splits + 1 / self.num_splits, 0, 1)
-            region.set_clear_depth(1)
-            region.set_clear_color_active(False)
-            region.set_clear_depth_active(True)
             region.set_sort(25 + i)
+            region.disable_clears()
             region.set_active(True)
             self.split_regions.append(region)
 

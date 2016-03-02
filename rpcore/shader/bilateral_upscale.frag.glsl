@@ -34,6 +34,9 @@
 
 out vec4 result;
 
+// x: Max Depth, y: Max Nrm
+uniform vec2 upscaleWeights;
+
 uniform sampler2D SourceTex;
 uniform GBufferData GBuffer;
 
@@ -55,8 +58,8 @@ void main() {
     float mid_depth = get_gbuffer_depth(GBuffer, texcoord);
     vec3 mid_nrm = get_gbuffer_normal(GBuffer, texcoord);
 
-    const float max_depth_diff = 0.0001;
-    const float max_nrm_diff = 0.001;
+    const float max_depth_diff = upscaleWeights.x; // 0.0001
+    const float max_nrm_diff = upscaleWeights.y; // 0.001
 
     float weights = 0.0;
     vec4 accum = vec4(0);

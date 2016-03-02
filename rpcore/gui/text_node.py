@@ -29,13 +29,13 @@ from panda3d.core import Vec2, Vec3, Vec4
 from panda3d.core import TextNode as TextNodeImpl
 
 from rpcore.globals import Globals
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class TextNode(RPObject):
 
     """ Interface for the Panda3D TextNode. """
 
-    def __init__(self, font="data/font/roboto-bold.ttf", pixel_size=16, align="left",
+    def __init__(self, font="/$$rp/data/font/roboto-bold.ttf", pixel_size=16, align="left",
                  pos=Vec2(0), color=Vec3(1), parent=None):
         """ Constructs a new text node, forwaring the parameters to the internal
         panda3d implementation """

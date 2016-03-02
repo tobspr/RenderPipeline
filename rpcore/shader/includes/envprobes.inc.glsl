@@ -94,8 +94,9 @@ float correct_parallax(Cubemap map, Material m, vec3 vector, out float factor) {
 vec3 get_cubemap_vector(Cubemap map, Material m, vec3 vector, out float factor, out float dist) {
     dist = correct_parallax(map, m, vector, factor);
 
-    // Use distance in world space directly to recover intersection
-    vec3 intersection_pos = m.position + vector * dist;
+    // Use distance in world space directly to recover intersection.
+    // Mix parallax corrected and original vector based on roughness
+    vec3 intersection_pos = mix(m.position + vector * dist, map.transform[3].xyz + vector, m.roughness);
     return (map.transform * vec4(intersection_pos, 1)).xyz;
 }
 
@@ -106,8 +107,15 @@ vec3 get_reflection_vector(Cubemap map, Material m, out float factor, out float 
 }
 
 vec3 get_diffuse_vector(Cubemap map, Material m) {
-    vec3 intersection_pos = m.position + m.normal * 1e20;
-    return (map.transform * vec4(intersection_pos, 1)).xyz;
+    mat3 tpose_inverse = transpose(inverse(mat3(map.transform))); // ugh .. very expensive, have to think of a better solution
+
+    vec3 local_vec = map.transform[3].xyz - m.position;
+
+    return tpose_inverse * (m.normal * 1 + 10.0 * local_vec);
+
+    // vec3 local_vec = map.transform[3].xyz - m.position;
+    // vec3 intersection_pos = map.transform[3].xyz + m.normal * 0.0 + local_vec * 1000.1;
+    // return (map.transform * vec4(intersection_pos, 1)).xyz;
 }
 
 
@@ -126,10 +134,15 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
     vec3 diffuse_direction = get_diffuse_vector(map, m);
     float clip_factor = saturate( (1 - factor) / max(1e-3, map.border_smoothness));
 
+    mipmap += 0.05 * mipmap_multiplier;
+
     specular = textureLod(EnvProbes.cubemaps, vec4(direction, map.index),
         clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
 
     diffuse = textureLod(EnvProbes.diffuse_cubemaps, vec4(diffuse_direction, map.index), 0);
+
+    // Correct specular based on diffuse color intensity
+    // specular.xyz = mix(specular.xyz, specular.xyz * diffuse.xyz, diffuse.w);
 
     // Apply clip factors
     specular *= clip_factor;

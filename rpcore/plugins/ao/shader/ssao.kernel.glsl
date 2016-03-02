@@ -46,9 +46,8 @@ float accum = 0.0;
 vec3 bent_normal = vec3(0.0001);
 
 for (int i = 0; i < num_samples; ++i) {
-    vec3 offset = poisson_disk_3D_32[i];
+    vec3 offset = poisson_disk_3D_32[i * int(32 / num_samples)];
     offset = mix(offset, noise_vec, 0.3);
-    // offset.xz = rotate(offset.xz, disk_rotate);
     offset *= 0.6;
 
     // Flip offset in case it faces away from the normal

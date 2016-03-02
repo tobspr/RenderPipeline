@@ -33,6 +33,13 @@ from panda3d.core import ColorWriteAttrib, DepthWriteAttrib, GeomVertexData
 from panda3d.core import WindowProperties, FrameBufferProperties, GraphicsPipe
 from panda3d.core import GeomVertexFormat, GeomNode, GeomVertexWriter
 from panda3d.core import GeomTriangles, SamplerState, LVecBase2i, DepthTestAttrib
+from panda3d.core import ShaderInput
+
+try:
+    from panda3d.core import PostProcessRegion
+except ImportError:
+    # Handled already by the render pipeline
+    pass
 
 from rplibs.six.moves import range
 from rplibs.six import iterkeys, itervalues, iteritems
@@ -40,7 +47,7 @@ from rplibs.six import iterkeys, itervalues, iteritems
 from rpcore.render_target import RenderTarget
 from rpcore.gui.buffer_viewer import BufferViewer
 from rpcore.globals import Globals
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class setter(object):
     """ Setter only property """
@@ -67,159 +74,176 @@ class RenderTarget2(RPObject):
         self._aux_count = 0
         self._depth_bits = 0
         self._size = LVecBase2i(-1, -1)
-        self._source_camera = Globals.base.cam
         self._source_window = Globals.base.win
-        self._source_region = self._find_main_region()
+        self._source_region = None
         self._active = False
         self._internal_buffer = None
-        self._camera = None
-        self._node = None
-        self._quad = None
 
         # Public attributes
         self.engine = Globals.base.graphicsEngine
         self.support_transparency = False
         self.use_oversized_triangle = True
-        self.create_overlay_quad = True
+        self.create_default_region = True
+
+        # Disable all global clears, since they are not required
+        for region in Globals.base.win.get_display_regions():
+            region.disable_clears()
 
     #
     # METHODS TO SETUP
     #
 
     def add_color_attachment(self, bits=8, alpha=False):
+        """ Adds a new color attachment with the given amount of bits, bits can
+        be either a single int or a tuple determining the bits. If bits is a
+        single int, alpha determines whether alpha bits are requested """
+        self._targets["color"] = Texture(self.debug_name + "_color")
         if isinstance(bits, (list, tuple)):
             self._color_bits = (bits[0], bits[1], bits[2], bits[3] if len(bits) == 4 else 0)
         else:
             self._color_bits = ((bits, bits, bits, (bits if alpha else 0)))
-        self._targets["color"] = Texture(self.debug_name + "_color")
 
     def add_depth_attachment(self, bits=32):
-        self._depth_bits = 32
+        """ Adds a depth attachment wit the given amount of bits """
         self._targets["depth"] = Texture(self.debug_name + "_depth")
+        self._depth_bits = 32
 
     def add_aux_attachment(self, bits=8):
+        """ Adds a new aux attachment with the given amount of bits. The amount
+        of bits passed overrides all previous bits set, since all aux textures
+        have to have the same amount of bits. """
         self._aux_bits = bits
         self._aux_count += 1
 
     def add_aux_attachments(self, bits=8, count=1):
+        """ Adds n new aux attachments, with the given amount of bits. All
+        previously set aux bits are overriden, since all aux textures have to
+        have the same amount of bits """
         self._aux_bits = bits
         self._aux_count += count
 
     @setter
     def size(self, *args):
+        """ Sets the render target size. This can be either a single integer,
+        in which case it applies to both dimensions. Negative integers cause
+        the render target to be proportional to the screen size, i.e. a value
+        of -4 produces a quarter resolution target, a value of -2 a half
+        resolution target, and a value of -1 a full resolution target
+        (the default). """
         self._size = LVecBase2i(*args)
-
-    def set_source(self, source_cam, source_win, region=None):
-        self._source_camera = source_cam
-        self._source_window = source_win
-        self._source_region = region
-
 
     #
     # METHODS TO QUERY AFTER SETUP
     #
 
-
     @property
     def active(self):
+        """ Returns whether the target is currently active """
         return self._active
 
     @active.setter
     def active(self, flag):
+        """ Sets whether the target is active, this just propagates the active
+        flag to all display regions """
         if self._active is not flag:
             for region in self._internal_buffer.get_display_regions():
-                # if region != self._internal_buffer.get_overlay_display_region():
                 region.set_active(flag)
             self._active = flag
 
     @property
     def color_tex(self):
+        """ Returns the color attachment if present """
         return self._targets["color"]
 
     @property
     def depth_tex(self):
+        """ Returns the depth attachment if present """
         return self._targets["depth"]
 
     @property
     def aux_tex(self):
+        """ Returns a list of aux textures, can be used like target.aux_tex[2],
+        notice the indices start at zero, so the first target has the index 0. """
         return [self._targets[i] for i in sorted(iterkeys(self._targets)) if i.startswith("aux_")]
 
-    @property
-    def node(self):
-        return self._node
-
     def set_shader_input(self, *args):
-        self._node.set_shader_input(*args)
-
-    def set_attrib(self, *args):
-        self._node.set_attrib(*args)
+        """ Sets a shader input available to the target """
+        if self.create_default_region:
+            self._source_region.set_shader_input(ShaderInput(*args))
 
     @setter
     def shader(self, shader_obj):
-        self._node.set_shader(shader_obj)
+        """ Sets a shader on the target """
+        if not shader_obj:
+            self.warn("shader must not be None!")
+            return
+        self._source_region.set_shader(shader_obj)
 
     @property
     def internal_buffer(self):
+        """ Returns a handle to the internal GraphicsBuffer object """
         return self._internal_buffer
 
     @property
     def targets(self):
+        """ Returns the dictionary of attachments, whereas the key is the name
+        of the attachment and the value is the Texture handle of the attachment """
         return self._targets
 
     @property
     def region(self):
+        """ Returns the internally used PostProcessRegion """
         return self._source_region
 
-    @property
-    def quad(self):
-        return self._quad
-
-    @property
-    def camera(self):
-        return self._camera
-
-    def prepare_scene_render(self):
+    def prepare_render(self, camera_np):
+        """ Prepares to render a scene """
+        self.create_default_region = False
         self._create_buffer()
+        self._source_region = self._internal_buffer.get_display_region(0)
 
-    def prepare_buffer(self):
-        self._create_buffer()
+        if camera_np:
+            initial_state = NodePath("rtis")
+            initial_state.set_state(camera_np.node().get_initial_state())
 
-        self._node = NodePath("RTRoot")
-        self._quad = self._make_fullscreen_quad()
-        self._quad.reparent_to(self._node)
+            if self._aux_count:
+                initial_state.set_attrib(AuxBitplaneAttrib.make(self._aux_bits), 20)
+            initial_state.set_attrib(TransparencyAttrib.make(TransparencyAttrib.M_none), 20)
 
-        # Prepare fullscreen camera
-        buffer_cam = self._make_fullscreen_cam()
-        self._camera = self._node.attach_new_node(buffer_cam)
+            if self._color_bits.count(0) == 4:
+                initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 20)
 
-        # Prepare initial state
-        initial_state = NodePath("state")
-        if self._color_bits.count(0) == 4:
-            initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 1000)
-        initial_state.set_attrib(
-            DepthWriteAttrib.make(DepthWriteAttrib.M_none), 1000)
-        initial_state.set_attrib(
-            DepthTestAttrib.make(DepthTestAttrib.M_none), 1000)
+            # Disable existing regions of the camera
+            for region in camera_np.node().get_display_regions():
+                region.set_active(False)
 
-        buffer_cam.set_initial_state(initial_state.get_state())
+            # Remove the existing display region of the camera
+            for region in self._source_window.get_display_regions():
+                if region.get_camera() == camera_np:
+                    self._source_window.remove_display_region(region)
 
-        # Assign camera
-        buffer_region = self._internal_buffer.get_display_region(0)
-        buffer_region.set_camera(self._camera)
-        buffer_region.set_active(True)
-        buffer_region.disable_clears()
+            camera_np.node().set_initial_state(initial_state.get_state())
+            self._source_region.set_camera(camera_np)
 
-        self._node.flatten_strong()
-        # self._node.ls()
-        # self._node.analyze()
+        self._internal_buffer.disable_clears()
+        self._source_region.disable_clears()
+        self._source_region.set_active(True)
+        self._source_region.set_sort(20)
 
+        # Reenable depth-clear, usually desireable
+        self._source_region.set_clear_depth_active(True)
+        self._source_region.set_clear_depth(1.0)
         self._active = True
 
-    def remove_quad(self):
-        """ Removes the fullscren quad after creation, this might be required
-        when rendering to a scene which is not the main scene """
-        self._quad.remove_node()
-        self._quad = None
+    def prepare_buffer(self):
+        """ Prepares the target to render to an offscreen buffer """
+        self._create_buffer()
+        self._active = True
+
+    def present_on_screen(self):
+        """ Prepares the target to render on the main window, to present the
+        final rendered image """
+        self._source_region = PostProcessRegion.make(self._source_window)
+        self._source_region.set_sort(5)
 
     def cleanup(self):
         """ Deletes this buffer, restoring the previous state """
@@ -227,101 +251,21 @@ class RenderTarget2(RPObject):
         self.engine.remove_window(self._internal_buffer)
         self._active = False
 
-        if self._quad:
-            self._quad.remove_node()
-
         for target in itervalues(self._targets):
             target.release_all()
-
-    def make_main_target(self):
-        """ Makes this target the main target which is show on screen """
-        self._source_window.get_display_region(1).set_camera(self._camera)
-        self.engine.remove_window(self._internal_buffer)
-        self._internal_buffer.clear_render_textures()
-
-        if self._targets:
-            self.warn("make_main_target() with attachments called!")
-
-        for i, region in enumerate(self._source_window.get_display_regions()):
-            if i not in [1, 2, 4]:
-                region.set_active(False)
-
-        self.quad.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_all), 10000)
 
     def set_clear_color(self, *args):
         """ Sets the  clear color """
         self._internal_buffer.set_clear_color_active(True)
         self._internal_buffer.set_clear_color(Vec4(*args))
 
-
     #
     # INTERNAL METHODS
     #
 
 
-    def _find_main_region(self):
-        """ Finds the assigned region of the main camera """
-        for region in self._source_window.get_display_regions():
-            if region.get_camera() == self._source_camera:
-                return region
-        return None
-
-    def _create_buffer(self):
-        pass
-
-    def _make_fullscreen_quad(self):
-        """ Create a quad which fills the whole screen """
-
-        if self.use_oversized_triangle:
-            vformat = GeomVertexFormat.get_v3()
-            vdata = GeomVertexData("vertices", vformat, Geom.UH_static)
-            vdata.set_num_rows(3)
-            vwriter = GeomVertexWriter(vdata, "vertex")
-            vwriter.add_data3f(-1, 0, -1)
-            vwriter.add_data3f(3, 0, -1)
-            vwriter.add_data3f(-1, 0, 3)
-            gtris = GeomTriangles(Geom.UH_static)
-            gtris.add_next_vertices(3)
-            geom = Geom(vdata)
-            geom.add_primitive(gtris)
-            geom_node = GeomNode("gn")
-            geom_node.add_geom(geom)
-            quad = NodePath(geom_node)
-
-        else:
-            card = CardMaker("BufferQuad")
-            card.set_frame_fullscreen_quad()
-            quad = NodePath(card.generate())
-
-        quad.set_depth_test(False)
-        quad.set_depth_write(False)
-        quad.set_attrib(TransparencyAttrib.make(TransparencyAttrib.M_none), 1000)
-        quad.set_color(Vec4(1, 1, 1, 1))
-
-        # Disable culling
-        quad.node().set_final(True)
-        quad.node().set_bounds(OmniBoundingVolume())
-        quad.set_bin("unsorted", 10)
-        return quad
-
-    def _make_fullscreen_cam(self):
-        """ Creates an orthographic camera for this buffer """
-        buffer_cam = Camera("BufferCamera")
-        lens = OrthographicLens()
-        lens.set_film_size(2, 2)
-        lens.set_film_offset(0, 0)
-        lens.set_near_far(-1000, 1000)
-        buffer_cam.set_lens(lens)
-        buffer_cam.set_cull_bounds(OmniBoundingVolume())
-        return buffer_cam
-
     def _create_buffer(self):
         """ Internal method to create the buffer object """
-        # If the render target has a "normal" size, don't compute anything.
-        # If the render target has a width / height of -1, use the
-        # window width / height. If the render target has a width / height of < -1
-        # use the window width / height divided by the absolute value of that
-        # factor. E.g. a quarter-res buffer would have the size -4 / -4.
         win = self._source_window
 
         if self._size.x < 0:
@@ -334,8 +278,8 @@ class RenderTarget2(RPObject):
             self.error("Failed to create buffer!")
             return False
 
-        if self._source_region is None:
-            self._source_region = self._internal_buffer.make_display_region()
+        if self.create_default_region:
+            self._source_region = PostProcessRegion.make(self._internal_buffer)
 
     def _setup_textures(self):
         """ Preparse all bound textures """
@@ -357,6 +301,10 @@ class RenderTarget2(RPObject):
         buffer_props = FrameBufferProperties()
 
         if self._color_bits == (16, 16, 16, 0):
+            # Optional: Always use R11G11B10
+            # buffer_props.set_rgba_bits(11, 11, 10, 0)
+            buffer_props.set_rgba_bits(16, 16, 16, 0)
+        elif self._color_bits == (8, 8, 8, 0):
             buffer_props.set_rgba_bits(11, 11, 10, 0)
         else:
             buffer_props.set_rgba_bits(*self._color_bits)
@@ -425,13 +373,8 @@ class RenderTarget2(RPObject):
         self._internal_buffer.set_sort(sort)
         self._internal_buffer.disable_clears()
         self._internal_buffer.get_display_region(0).disable_clears()
-
-        for region in self._internal_buffer.get_display_regions():
-            region.disable_clears()
-
         self._internal_buffer.get_overlay_display_region().disable_clears()
         self._internal_buffer.get_overlay_display_region().set_active(False)
 
         BufferViewer.register_entry(self)
-
         return True

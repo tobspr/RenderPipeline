@@ -35,7 +35,7 @@ import importlib
 from os.path import dirname, realpath
 
 from direct.stdpy.file import join, isfile
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 # Store a global flag, indicating whether the C++ modules were loaded or the python
 # implemetation of them

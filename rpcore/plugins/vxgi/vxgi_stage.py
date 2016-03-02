@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import LVecBase2i
+from panda3d.core import LVecBase2i, Vec2
 
 from rpcore.render_stage import RenderStage
 from rpcore.stages.ambient_stage import AmbientStage
@@ -83,6 +83,7 @@ class VXGIStage(RenderStage):
         self._target_upscale_diff.add_color_texture(bits=16)
         self._target_upscale_diff.prepare_offscreen_buffer()
         self._target_upscale_diff.set_shader_input("SourceTex", self._target_blur_h["color"])
+        self._target_upscale_diff.set_shader_input("upscaleWeights", Vec2(0.0001, 0001))
 
         # Set blur parameters
         self._target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
@@ -95,11 +96,11 @@ class VXGIStage(RenderStage):
         self._target_spec.set_shader(
             self.load_plugin_shader("vxgi_specular.frag.glsl"))
         self._target_diff.set_shader(
-            self.load_plugin_shader("$$shader/sample_halfres_interleaved.vert.glsl","vxgi_diffuse.frag.glsl"))
+            self.load_plugin_shader("/$$rp/shader/sample_halfres_interleaved.vert.glsl","vxgi_diffuse.frag.glsl"))
         self._target_merge_diff.set_shader(
-            self.load_plugin_shader("$$shader/merge_interleaved_target.frag.glsl"))
+            self.load_plugin_shader("/$$rp/shader/merge_interleaved_target.frag.glsl"))
         self._target_upscale_diff.set_shader(
-            self.load_plugin_shader("$$shader/bilateral_upscale.frag.glsl"))
-        blur_shader = self.load_plugin_shader("$$shader/bilateral_halfres_blur.frag.glsl")
+            self.load_plugin_shader("/$$rp/shader/bilateral_upscale.frag.glsl"))
+        blur_shader = self.load_plugin_shader("/$$rp/shader/bilateral_halfres_blur.frag.glsl")
         self._target_blur_v.set_shader(blur_shader)
         self._target_blur_h.set_shader(blur_shader)

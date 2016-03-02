@@ -69,7 +69,7 @@ class StageManager(BaseManager):
     def _load_stage_order(self):
         """ Loads the order of all stages from the stages.yaml configuration
         file """
-        orders = load_yaml_file("$$config/stages.yaml")
+        orders = load_yaml_file("/$$rpconfig/stages.yaml")
         if "global_stage_order" not in orders:
             self.error("Could not load stage order, root key does not exist!")
             return
@@ -305,7 +305,7 @@ class StageManager(BaseManager):
 
         # Try to write the file
         try:
-            with open("$$pipeline_temp/$$pipeline_shader_config.inc.glsl", "w") as handle:
+            with open("/$$rptemp/$$pipeline_shader_config.inc.glsl", "w") as handle:
                 handle.write(output)
         except IOError as msg:
             self.error("Error writing shader autoconfig:", msg)

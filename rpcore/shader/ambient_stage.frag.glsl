@@ -63,6 +63,18 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
     return roughness * 7.0;
 }
 
+float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
+ return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
+}
+
+// From: http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
+vec3 compute_bloom_luminance(vec3 bloom_color, float bloom_ec, float current_ev) {
+    // currentEV is the value calculated at the previous frame
+    float bloom_ev = current_ev + bloom_ec;
+    // convert to luminance
+    return bloom_color * pow(2, bloom_ev - 3);
+}
+
 void main() {
 
     vec2 texcoord = get_texcoord();
@@ -141,8 +153,19 @@ void main() {
     // TODO: lambertian brdf doesn't look well?
     vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic);
 
+
+    #if HAVE_PLUGIN(ao)
+        // Sample precomputed occlusion and multiply the ambient term with it
+        float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
+        float specular_occlusion = compute_specular_occlusion(NxV, occlusion, m.roughness);
+    #else
+        const float occlusion = 1.0;
+        const float specular_occlusion = 1.0;
+    #endif
+
+
     // Add diffuse and specular ambient term
-    ambient = diffuse_ambient + specular_ambient;
+    ambient = diffuse_ambient * occlusion + specular_ambient * specular_occlusion;
 
     #endif
 
@@ -151,31 +174,18 @@ void main() {
         ambient *= saturate(1.2 - m.translucency);
     END_BRANCH_TRANSLUCENCY()
 
-    #if HAVE_PLUGIN(ao)
-
-        // Sample precomputed occlusion and multiply the ambient term with it
-        float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
-
-        #if HAVE_PLUGIN(vxgi)
-            // When using VXGI *and* AO, reduce ao term because VXGI already
-            // has an ao term
-            ambient *= saturate(pow(occlusion, 1.5));
-        #else
-            ambient *= saturate(pow(occlusion, 3.0));
-        #endif
-
-    #endif
-
     // Mix emissive factor - note that we do *not* clamp the emissive factor,
     // since it can contain values much greater than 1.0
     ambient *= max(0.0, 1 - m.emissive);
     ambient += m.emissive * m.basecolor * 1000.0;
 
+    // TODO:
+    // For emissive, use: compute_bloom_luminance()
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
             float raw_occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
-            result = vec4(pow(raw_occlusion, 3.0));
+            result = vec4(raw_occlusion);
             return;
         #endif
     #endif

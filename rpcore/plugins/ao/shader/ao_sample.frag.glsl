@@ -31,9 +31,9 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 
-flat in int instance;
 out vec4 result;
 
 uniform sampler2D Noise4x4;
@@ -50,11 +50,8 @@ void main() {
     vec2 screen_size = vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     vec2 pixel_size = vec2(1.0) / screen_size;
 
-    int quad_x = instance % 2;
-    int quad_y = instance / 2;
 
-    ivec2 coord = (ivec2(gl_FragCoord.xy) * 4) % SCREEN_SIZE_INT;
-    coord += ivec2(quad_x, quad_y) * 2;
+    ivec2 coord = ivec2(gl_FragCoord.xy) * 2;
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
     // Shader variables
@@ -63,7 +60,8 @@ void main() {
     vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = distance(pixel_world_pos, MainSceneData.camera_pos);
 
-    vec3 noise_vec = fma(texelFetch(Noise4x4, 1 + ivec2(quad_x, quad_y), 0).xyz, vec3(2), vec3(-1));
+    vec3 noise_vec = fma(rand_rgb(coord % 3), vec3(2), vec3(-1));
+    // noise_vec *= 0.;
 
     if (is_skybox(pixel_world_pos)) {
         result = vec4(1);
@@ -75,9 +73,8 @@ void main() {
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
     vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, texcoord);
 
-
     // float kernel_scale = 10.0 / get_linear_z_from_z(pixel_depth);
-    float kernel_scale = 10.0 / view_dist;
+    float kernel_scale = min(5.0, 10.0 / view_dist);
 
     // Include the appropriate kernel
     #if ENUM_V_ACTIVE(ao, technique, SSAO)
@@ -95,6 +92,10 @@ void main() {
     #endif
 
     result.w = pow(result.w, GET_SETTING(ao, occlusion_strength));
+    result.w = pow(result.w, 3.0);
+
+    // Smooth the normal a bit to prevent artifacts
+    result.xyz = mix(result.xyz, pixel_world_normal, 0.5);
 
     // Pack bent normal
     result.xyz = fma(result.xyz, vec3(0.5), vec3(0.5));

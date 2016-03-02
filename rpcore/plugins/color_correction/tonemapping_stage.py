@@ -37,7 +37,7 @@ class TonemappingStage(RenderStage):
 
     def create(self):
         self.target = self.make_target2("Tonemap")
-        self.target.add_color_attachment()
+        self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 
     def set_shaders(self):

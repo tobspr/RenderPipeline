@@ -60,7 +60,7 @@ void main() {
     %MATERIAL%
 
     vec3 ambient = get_forward_ambient(basecolor, mOutput.roughness);
-    vec3 lighting = get_sun_shading(basecolor);
+    vec3 lighting = get_sun_shading(basecolor) + get_forward_light_shading(basecolor);
 
     // TODO: Forward shading for lights
 

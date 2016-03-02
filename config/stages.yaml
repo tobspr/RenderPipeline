@@ -39,6 +39,7 @@ global_stage_order:
   - ApplyCloudsStage
   - GodrayStage
   - AutoExposureStage
+  - ManualExposureStage
   - BloomStage
 
   # Post AA & Effects

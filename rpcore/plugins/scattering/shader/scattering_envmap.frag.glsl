@@ -61,8 +61,9 @@ void main() {
     if (horizon > 0.0) {
         // Clouds
         vec3 view_vector = direction;
-        vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-        inscattered_light *= 0.0 + 0.5 * (0.4 + cloud_color);
+            vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
+            cloud_color = cloud_color * vec3(1.0, 1, 0.9) * vec3(0.8, 0.7, 0.8524);
+            inscattered_light *= 0.0 + 1.2 * (0.3 + 0.6 * cloud_color);
 
     } else {
         // Ground reflectance

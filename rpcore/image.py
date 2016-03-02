@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import Texture, GeomEnums
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.gui.buffer_viewer import BufferViewer
 

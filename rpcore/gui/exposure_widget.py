@@ -31,7 +31,7 @@ from direct.gui.DirectFrame import DirectFrame
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.image import Image
 from rpcore.globals import Globals
 
@@ -93,7 +93,7 @@ class ExposureWidget(RPObject):
 
         exposure_tex = stage_mgr.get_pipe("Exposure")
         self._cshader = Shader.load_compute(
-            Shader.SL_GLSL, "$$shader/visualize_exposure.compute.glsl")
+            Shader.SL_GLSL, "/$$rp/shader/visualize_exposure.compute.glsl")
         self._cshader_np.set_shader(self._cshader)
         self._cshader_np.set_shader_input("DestTex", self._storage_tex)
         self._cshader_np.set_shader_input("ExposureTex", exposure_tex)

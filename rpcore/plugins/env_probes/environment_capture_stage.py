@@ -29,7 +29,7 @@ from rplibs.six.moves import range
 from rplibs.six import itervalues
 
 from panda3d.core import Camera, PerspectiveLens, Vec4, NodePath, Vec3
-from panda3d.core import PTAInt, Texture, GraphicsOutput
+from panda3d.core import PTAInt, Texture, GraphicsOutput, LVecBase2i
 
 from rpcore.globals import Globals
 from rpcore.image import Image
@@ -39,7 +39,7 @@ class EnvironmentCaptureStage(RenderStage):
 
     """ This stage renders the scene to a cubemap """
 
-    required_inputs = ["DefaultEnvmap"]
+    required_inputs = ["DefaultEnvmap", "AllLightsData", "maxLightIndex"]
     required_pipes = []
 
     def __init__(self, pipeline):
@@ -66,11 +66,12 @@ class EnvironmentCaptureStage(RenderStage):
         # Remove all unused display regions
         internal_buffer = self.target.get_internal_buffer()
         internal_buffer.remove_all_display_regions()
-
-        for i in range(GraphicsOutput.RTPCOUNT):
-            internal_buffer.set_clear_active(i, True)
-            internal_buffer.set_clear_value(i, Vec4(0))
+        internal_buffer.disable_clears()
+        internal_buffer.get_overlay_display_region().disable_clears()
         internal_buffer.set_clear_depth(1.0)
+        internal_buffer.set_clear_color(Vec4(0))
+        internal_buffer.set_clear_depth_active(True)
+        internal_buffer.set_clear_color_active(True)
 
         self._setup_camera_rig()
         self._create_store_targets()
@@ -85,10 +86,9 @@ class EnvironmentCaptureStage(RenderStage):
         for i in range(6):
             region = self.target.get_internal_buffer().make_display_region(
                 i / 6, i / 6 + 1 / 6, 0, 1)
-            region.set_clear_color_active(False)
-            region.set_clear_depth_active(False)
             region.set_sort(25 + i)
             region.set_active(True)
+            region.disable_clears()
 
             lens = PerspectiveLens()
             lens.set_fov(90)

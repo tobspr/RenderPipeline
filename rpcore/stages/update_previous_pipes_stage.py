@@ -100,7 +100,7 @@ class UpdatePreviousPipesStage(RenderStage):
         fragment += "}\n"
 
         # Write the shader
-        shader_dest = "$$pipeline_temp/$$UpdatePreviousPipes.frag.glsl"
+        shader_dest = "/$$rptemp/$$UpdatePreviousPipes.frag.glsl"
         with open(shader_dest, "w") as handle:
             handle.write(fragment)
 

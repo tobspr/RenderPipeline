@@ -121,7 +121,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             self._plugin_mgr.reset_plugin_settings(self._current_plugin)
 
             # Save config
-            self._plugin_mgr.save_overrides("$$config/plugins.yaml")
+            self._plugin_mgr.save_overrides("/$$rpconfig/plugins.yaml")
 
             # Always show the restart hint, even if its not always required
             self._show_restart_hint()
@@ -169,7 +169,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
     def _rewrite_plugin_config(self):
         """ Rewrites the plugin configuration """
-        self._plugin_mgr.save_overrides("$$config/plugins.yaml")
+        self._plugin_mgr.save_overrides("/$$rpconfig/plugins.yaml")
 
     def _render_current_plugin(self):
         """ Displays the currently selected plugin """

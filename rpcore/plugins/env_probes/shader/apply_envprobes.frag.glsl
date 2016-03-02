@@ -76,6 +76,7 @@ void main() {
     result_spec = total_specular / max(1, total_weight);
     result_diff = total_diffuse / max(1, total_weight);
 
+
     // Visualize probe count
     // float probe_factor = processed_probes / MAX_PROBES_PER_CELL;
     // float probe_factor = processed_probes / 1.0;

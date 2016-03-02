@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 from rpcore.stages.ambient_stage import AmbientStage
 from rpcore.stages.gbuffer_stage import GBufferStage

@@ -28,7 +28,7 @@ from __future__ import division
 
 from panda3d.core import Texture, SamplerState
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.image import Image
 
 class CubemapFilter(RPObject):

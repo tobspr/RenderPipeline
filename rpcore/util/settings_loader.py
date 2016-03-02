@@ -29,7 +29,7 @@ from direct.stdpy.file import isfile
 from rplibs.six import iteritems
 from rplibs.yaml import load_yaml_file
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class SettingsLoader(RPObject):
 

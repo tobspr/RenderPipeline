@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import SamplerState, Texture, Vec4
+from panda3d.core import SamplerState, Texture, Vec4, Vec2
 
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
@@ -41,21 +41,28 @@ class ApplyCloudsStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target_apply_clouds.color_tex}
+        return {"ShadedScene": self.target_apply_clouds.color_tex}
 
     def create(self):
-        self._render_target = self.make_target2("RaymarchVoxels")
-        self._render_target.size = -2
-        self._render_target.add_color_attachment(bits=16, alpha=True)
-        self._render_target.prepare_buffer()
+        self.render_target = self.make_target2("RaymarchVoxels")
+        self.render_target.size = -2
+        self.render_target.add_color_attachment(bits=16, alpha=True)
+        self.render_target.prepare_buffer()
 
-        self._target_apply_clouds = self.make_target2("MergeWithScene")
-        self._target_apply_clouds.add_color_attachment(bits=16)
-        self._target_apply_clouds.prepare_buffer()
+        self.upscale_target = self.make_target2("UpscaleTarget")
+        self.upscale_target.add_color_attachment(bits=16, alpha=True)
+        self.upscale_target.prepare_buffer()
+        self.upscale_target.set_shader_input("upscaleWeights", Vec2(0.05, 0.2))
+        self.upscale_target.set_shader_input("SourceTex", self.render_target.color_tex)
 
-        self._target_apply_clouds.set_shader_input(
-            "CloudsTex", self._render_target.color_tex)
+        self.target_apply_clouds = self.make_target2("MergeWithScene")
+        self.target_apply_clouds.add_color_attachment(bits=16)
+        self.target_apply_clouds.prepare_buffer()
+
+        self.target_apply_clouds.set_shader_input(
+            "CloudsTex", self.upscale_target.color_tex)
 
     def set_shaders(self):
-        self._target_apply_clouds.shader = self.load_plugin_shader("apply_clouds.frag.glsl")
-        self._render_target.shader = self.load_plugin_shader("render_clouds.frag.glsl")
+        self.target_apply_clouds.shader = self.load_plugin_shader("apply_clouds.frag.glsl")
+        self.render_target.shader = self.load_plugin_shader("render_clouds.frag.glsl")
+        self.upscale_target.shader = self.load_plugin_shader("/$$rp/shader/bilateral_upscale.frag.glsl")

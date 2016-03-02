@@ -38,12 +38,8 @@ https://www.shadertoy.com/view/lslGzl
 
 */
 
-#if HAVE_PLUGIN(color_correction)
-    float exposure_adjustment = TimeOfDay.color_correction.exposure_scale;
-#else
-    // Use fixed exposure in case color correction is not enabled
-    const float exposure_adjustment = 2.0;
-#endif
+
+const float exposure_adjustment = 2.0;
 
 
 // No tonemapping
@@ -52,14 +48,7 @@ vec3 tonemap_none(vec3 color) {
     return color;
 }
 
-// Linear tonemapping
-vec3 tonemap_linear(vec3 color)
-{
-   color *= exposure_adjustment;
-   return rgb_to_srgb(color);
-}
-
-// Different versions of the reinhard tonemap operator
+// Different versions of the reinhard tonemap operators
 vec3 tonemap_reinhard(vec3 color)
 {
     color *= exposure_adjustment;
@@ -98,7 +87,7 @@ vec3 tonemap_reinhard(vec3 color)
         #error Unkown reinhard operator version!
     #endif
 
-    return rgb_to_srgb(rgb);
+    return rgb;
 }
 
 
@@ -114,14 +103,14 @@ vec3 tonemap_optimized(vec3 color)
 vec3 tonemap_exponential(vec3 color) {
     color *= exposure_adjustment;
     color = 1.0 - exp( -GET_SETTING(color_correction, exponential_factor) * color);
-    return rgb_to_srgb(color);
+    return color;
 }
 
 // Alternative exponential tonemapping
 vec3 tonemap_exponential_2(vec3 color) {
     color *= exposure_adjustment;
     color = exp( -1.0 / ( 2.72 * color + 0.15 ) );
-    return rgb_to_srgb(color);
+    return color;
 }
 
 
@@ -146,7 +135,7 @@ vec3 tonemap_uncharted2(vec3 color)
     const float exposure_bias = 2.0;
     vec3 curr = uncharted_2_tonemap_formula(exposure_bias * color);
     vec3 white = uncharted_2_tonemap_formula(vec3(white_base));
-    return rgb_to_srgb(curr / white);
+    return curr / white;
 }
 
 // Tonemapping selector
@@ -158,8 +147,6 @@ vec3 do_tonemapping(vec3 color) {
     // Select tonemapping operator
     #if ENUM_V_ACTIVE(color_correction, tonemap_operator, none)
         color = tonemap_none(color);
-    #elif ENUM_V_ACTIVE(color_correction, tonemap_operator, srgb)
-        color = tonemap_linear(color);
     #elif ENUM_V_ACTIVE(color_correction, tonemap_operator, optimized)
         color = tonemap_optimized(color);
     #elif ENUM_V_ACTIVE(color_correction, tonemap_operator, reinhard)
@@ -174,6 +161,39 @@ vec3 do_tonemapping(vec3 color) {
         #error Unkown tonemapping operator!
     #endif
 
+    return rgb_to_srgb(color);
+}
 
-    return color;
+
+// From:
+// http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
+
+float computeEV100(float aperture, float shutter_time, float ISO) {
+    // EV number is defined as:
+    // 2^ EV_s = N^2 / t and EV_s = EV_100 + log2 (S /100)
+    // This gives
+    // EV_s = log2 (N^2 / t)
+    // EV_100 + log2 (S /100) = log2 (N^2 / t)
+    // EV_100 = log2 (N^2 / t) - log2 (S /100)
+    // EV_100 = log2 (N^2 / t . 100 / S)
+    return log2((aperture * aperture) / shutter_time * 100 / ISO);
+}
+
+float computeEV100FromAvgLuminance(float avg_luminance) {
+    // We later use the middle gray at 12.7% in order to have
+    // a middle gray at 18% with a sqrt (2) room for specular highlights
+    // But here we deal with the spot meter measuring the middle gray
+    // which is fixed at 12.5 for matching standard camera
+    // constructor settings (i.e. calibration constant K = 12.5)
+    return log2(avg_luminance * 100.0 / 12.5) ;
+}
+
+float convertEV100ToExposure(float EV100) {
+    // Compute the maximum luminance possible with H_sbs sensitivity
+    // maxLum = 78 / ( S * q ) * N^2 / t
+    // = 78 / ( S * q ) * 2^ EV_100
+    // = 78 / (100 * 0.65) * 2^ EV_100
+    // = 1.2 * 2^ EV
+    float max_luminance = 1.2 * pow(2.0, EV100);
+    return 1.0 / max_luminance;
 }

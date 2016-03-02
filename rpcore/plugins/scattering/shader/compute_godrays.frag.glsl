@@ -65,11 +65,16 @@ void main() {
         vec2 sample_coord = mix(texcoord, sun_proj.xy, pow(t, 1.0));
         vec3 sample_data = texture(ShadedScene, sample_coord).xyz;
 
-        accum += sample_data * step(1.0, get_luminance(sample_data)) * saturate(5 * (1 - t)) * 1;
+        // float weight = step(get_luminance(sample_data), 1.0);
+        float weight = step(1.0, get_luminance(sample_data));
+        // float weight = 1.0;
+        accum += sample_data * weight * saturate(5 * (1 - t)) * 1;
+        // accum += sample_data * weight;
     }
 
     accum /= num_samples;
-    accum *= 0.0005;
+    accum *= 0.005;
+    // accum *= 05;
     accum += texture(ShadedScene, texcoord).xyz;
     result = vec3(accum);
 

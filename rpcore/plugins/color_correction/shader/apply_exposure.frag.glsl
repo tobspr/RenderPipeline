@@ -38,8 +38,8 @@ void main() {
     vec3 scene_color = texelFetch(ShadedScene, coord, 0).xyz;
 
     #if !DEBUG_MODE
-        float avg_brightness = texelFetch(Exposure, 0).x;
-        scene_color *= avg_brightness;
+        float exposure = texelFetch(Exposure, 0).x;
+        scene_color *= exposure;
     #endif
 
     result = scene_color;

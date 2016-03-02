@@ -27,7 +27,7 @@ THE SOFTWARE.
 import struct
 from panda3d.core import TransformState, Vec3, Mat4, BoundingSphere
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class EnvironmentProbe(RPObject):
     """ Simple class, representing an environment probe """

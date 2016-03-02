@@ -27,7 +27,7 @@ THE SOFTWARE.
 from panda3d.core import Texture, Vec4, GeomEnums, Mat4, SamplerState, BoundingVolume
 
 from rpcore.globals import Globals
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.image import Image
 
 class ProbeManager(RPObject):

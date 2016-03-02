@@ -65,7 +65,7 @@ class MotionBlurStage(RenderStage):
         self.pack_target.prepare_buffer()
 
         self.target = self.make_target2("MotionBlur")
-        self.target.add_color_attachment()
+        self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
         self.target.set_shader_input("NeighborMinMax", self.minmax_target.color_tex)
         self.target.set_shader_input("PackedSceneData", self.pack_target.color_tex)

@@ -41,8 +41,8 @@ class ShadowStage(RenderStage):
     @property
     def produced_pipes(self):
         return {
-            "ShadowAtlas": self._target["depth"],
-            "ShadowAtlasPCF": (self._target['depth'], self.make_pcf_state()),
+            "ShadowAtlas": self.target.depth_tex,
+            "ShadowAtlasPCF": (self.target.depth_tex, self.make_pcf_state()),
         }
 
     def make_pcf_state(self):
@@ -53,22 +53,22 @@ class ShadowStage(RenderStage):
 
     @property
     def atlas_buffer(self):
-        return self._target.get_internal_buffer()
+        return self.target.internal_buffer
 
     def create(self):
-        self._target = self.make_target("ShadowAtlas")
-        self._target.set_source(
-            source_cam=NodePath(Camera("dummy_shadow_cam")), source_win=Globals.base.win)
-        self._target.size = self.size, self.size
-        self._target.create_overlay_quad = False
-        self._target.add_depth_texture(bits=32)
-        self._target.prepare_scene_render()
+        self.target = self.make_target2("ShadowAtlas")
+        self.target.size = self.size
+        self.target.add_depth_attachment(bits=32)
+        self.target.prepare_render(None)
 
-        # Disable all clears
-        self._target.get_internal_region().disable_clears()
-        self._target.get_internal_buffer().disable_clears()
+        # Remove all current display regions
+        self.target.internal_buffer.remove_all_display_regions()
+        self.target.internal_buffer.get_display_region(0).set_active(False)
 
-        self._target.set_clear_depth(False)
+        # Disable the target, and also disable depth clear
+        self.target.active = False
+        self.target.internal_buffer.set_clear_depth_active(False)
+        self.target.region.set_clear_depth_active(False)
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

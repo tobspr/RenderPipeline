@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from __future__ import division
+from __future__ import division, print_function
 
 import sys
 import time
@@ -42,7 +42,7 @@ from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.util.settings_loader import SettingsLoader
 from rpcore.util.network_update_listener import NetworkUpdateListener
 from rpcore.gui.debugger import Debugger
@@ -163,14 +163,14 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
         if not self._settings.is_file_loaded():
             self.debug("No settings loaded, loading from default location")
-            self._settings.load_from_file("$$config/pipeline.yaml")
+            self._settings.load_from_file("/$$rpconfig/pipeline.yaml")
 
         # Check if the pipeline was properly installed, before including anything else
-        if not isfile("data/install.flag"):
+        if not isfile("/$$rp/data/install.flag"):
             self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
 
         # Load the default prc config
-        load_prc_file("$$config/panda3d-config.prc")
+        load_prc_file("/$$rpconfig/panda3d-config.prc")
 
         # Construct the showbase and init global variables
         ShowBase.__init__(self._showbase)
@@ -226,8 +226,8 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._start_listener()
 
         # Measure how long it took to initialize everything
-        init_duration = int((time.time() - start_time) * 1000.0)
-        self.debug("Finished initialization in {} ms".format(init_duration))
+        init_duration = (time.time() - start_time)
+        self.debug("Finished initialization in {:3.3f} s".format(init_duration))
 
     def _create_managers(self):
         """ Internal method to create all managers and instances"""

@@ -24,21 +24,26 @@ THE SOFTWARE.
 
 """
 
+from __future__ import division
+
 from rpcore.render_stage import RenderStage
+from rpcore.globals import Globals
+from rpcore.image import Image
+from panda3d.core import Texture, Vec4
 
-class ColorCorrectionStage(RenderStage):
+class ManualExposureStage(RenderStage):
 
-    required_inputs = ["PrecomputedGrain"]
     required_pipes = ["ShadedScene"]
+    required_inputs = []
 
     @property
     def produced_pipes(self):
         return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self.target = self.make_target2("PostFX")
+        self.target = self.make_target2("ManualExposure")
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 
     def set_shaders(self):
-        self.target.shader = self.load_plugin_shader("post_fx.frag.glsl")
+        self.target.shader = self.load_plugin_shader("manual_exposure.frag.glsl")

@@ -42,6 +42,8 @@ layout(location=0) in VertexOutput vOutput;
 uniform sampler2D p3d_Texture0;
 #endif
 
+out vec3 color;
+
 void main() {
     #if OPT_ALPHA_TESTING
 
@@ -52,4 +54,6 @@ void main() {
     #endif
 
     %ALPHA_TEST%
+
+    color = vec3(1, 0.2, 0.2);
 }

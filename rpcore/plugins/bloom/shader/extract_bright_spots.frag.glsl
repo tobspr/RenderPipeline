@@ -48,5 +48,7 @@ void main() {
         bloom_color *= 0;
     #endif
 
+    // bloom_color = vec3(1.0, 0.6, 0.2);
+
     imageStore(DestTex, coord, vec4(bloom_color, 0));
 }

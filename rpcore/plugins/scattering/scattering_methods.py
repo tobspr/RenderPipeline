@@ -33,7 +33,7 @@ from direct.stdpy.file import listdir, isfile, join
 from panda3d.core import Texture, SamplerState, Shader, ShaderAttrib, NodePath
 
 from rpcore.globals import Globals
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.util.slice_loader import load_sliced_3d_texture
 from rpcore.image import Image
 

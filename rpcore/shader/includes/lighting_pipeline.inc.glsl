@@ -71,11 +71,12 @@ vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, vec4 
     float radius    = get_spotlight_radius(light_data);
     float fov       = get_spotlight_fov(light_data);
     vec3 direction  = get_spotlight_direction(light_data);
-    vec3 l          = normalize(position - m.position);
+    vec3 l          = position - m.position;
+    vec3 l_norm     = normalize(l);
 
     // Compute the spot lights attenuation
-    float attenuation = get_spotlight_attenuation(l, direction, fov, radius,
-                                                  distance(m.position, position), ies_profile);
+    float attenuation = get_spotlight_attenuation(l_norm, direction, fov, radius,
+                                                  dot(l, l), ies_profile);
 
     // Compute the lights influence
     return apply_light(m, view_vector, l, get_light_color(light_data), attenuation,
@@ -88,13 +89,14 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, vec4
 
     // Get the lights data
     float radius    = get_pointlight_radius(light_data);
-    vec3 light_pos  = get_light_position(light_data);
+    vec3 position   = get_light_position(light_data);
     int ies_profile = get_ies_profile(light_data);
-    vec3 l          = normalize(light_pos - m.position);
+    vec3 l          = position - m.position;
+    vec3 l_norm     = normalize(l);
 
     // Get the point light attenuation
-    float attenuation = get_pointlight_attenuation(l, radius,
-                                                   distance(m.position, light_pos), ies_profile);
+    // float attenuation = get_pointlight_attenuation(l_norm, radius, dot(l, l), ies_profile);
+    float attenuation = get_pointlight_attenuation(l_norm, radius, dot(l, l), ies_profile);
 
     // Compute the lights influence
     return apply_light(m, view_vector, l, get_light_color(light_data),
@@ -111,9 +113,9 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     vec4 uv = get_source_uv(source);
 
     // TODO: make this configurable
-    const float slope_bias = 0.01;
-    const float normal_bias = 0.1;
-    const float const_bias = 0.0001;
+    const float slope_bias = 0.00;
+    const float normal_bias = 0.03;
+    const float const_bias = 0.001;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;

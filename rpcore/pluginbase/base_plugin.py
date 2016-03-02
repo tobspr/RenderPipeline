@@ -27,7 +27,7 @@ THE SOFTWARE.
 from direct.stdpy.file import isfile, join
 
 from rplibs.yaml import load_yaml_file
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class BasePlugin(RPObject):
 
@@ -59,7 +59,7 @@ class BasePlugin(RPObject):
     @property
     def base_path(self):
         """ Returns the path to the root directory of the plugin """
-        return "$$plugins/{}/".format(self._plugin_id)
+        return "/$$rp/rpcore/plugins/{}/".format(self._plugin_id)
 
     @property
     def settings(self):

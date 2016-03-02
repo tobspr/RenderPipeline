@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import collections
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class RepeatedTaskQueue(RPObject):
 

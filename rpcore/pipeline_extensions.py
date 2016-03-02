@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 from rpcore.globals import Globals
 from rpcore.effect import Effect
+from rpcore.native import PointLight
 from rpcore.gui.loading_screen import LoadingScreen, EmptyLoadingScreen
 
 from rpcore.stages.ambient_stage import AmbientStage
@@ -160,13 +161,30 @@ class PipelineExtensions(object):
         self.plugin_mgr.get_plugin_handle("env_probes").probe_mgr.add_probe(probe)
         return probe
 
+    def prepare_scene(self, scene):
+        """ Prepares a given scene, by converting panda lights to render pipeline
+        lights """
+        for light in scene.find_all_matches("**/+Light"):
+            light_node = light.node()
+
+            rp_light = PointLight()
+            rp_light.pos = light.get_pos()
+            rp_light.radius = 30.0
+            rp_light.lumens = 10.0
+            rp_light.color = light_node.get_color().xyz
+            rp_light.casts_shadows = True
+            rp_light.shadow_map_resolution = 512
+            self.add_light(rp_light)
+
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns
-        True if the version is new enough, and false if the version is outdated. """
+        True if the version is new enough, and False if the version is outdated. """
 
-        # Not a public change yet, uncomment in later versions
-        # if not hasattr(Texture(""), "x_size"):
-        #     return False
+        try:
+            from panda3d.core import PostProcessRegion
+        except ImportError:
+            self.debug("Could not import PostProcessRegion")
+            return False
 
         return True
 

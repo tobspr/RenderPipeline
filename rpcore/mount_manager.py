@@ -29,10 +29,10 @@ import sys
 import atexit
 
 from panda3d.core import Filename, VirtualFileSystem, get_model_path
-from panda3d.core import VirtualFileMountRamdisk
+from panda3d.core import VirtualFileMountRamdisk, VirtualFileMountSystem
 from direct.stdpy.file import join, isdir, isfile
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class MountManager(RPObject):
 
@@ -251,67 +251,72 @@ class MountManager(RPObject):
         return self._mounted
 
     def mount(self):
-        """ Inits the VFS Mounts """
+        """ Inits the VFS Mounts. This creates the following virtual directory
+        structure, from which all files can be located:
 
-        self.debug("Setting up virtual filesystem.")
+        /$$rp/  (Mounted from the render pipeline base directory)
+           + rpcore/
+           + shader/
+           + ...
+
+        /$rpconfig/ (Mounted from config/, may be set by user)
+           + pipeline.yaml
+           + ...
+
+        /$$rptemp/ (Either ramdisk or user specified)
+            + day_time_config
+            + shader_auto_config
+            + ...
+
+        /$$rpshader/ (Link to /$$rp/rpcore/shader)
+
+         """
+        self.debug("Setting up virtual filesystem")
         self._mounted = True
+
+        convert_path = lambda pth: Filename.from_os_specific(pth).get_fullpath()
         vfs = VirtualFileSystem.get_global_ptr()
 
-        # Mount data and models
-        for directory in ("data", "effects", "rpcore"):
-            vfs.mount_loop(join(self._base_path, directory), directory, 0)
-
-        # Mount config dir
+        # Mount config dir as $$rpconf
         if self._config_dir is None:
-            config_dir = join(self._base_path, "config/")
-            vfs.mount_loop(config_dir, "$$config/", 0)
-            self.debug("Auto-Detected config dir:", config_dir)
+            config_dir = convert_path(join(self._base_path, "config/"))
+            self.debug("Mounting auto-detected config dir:", config_dir)
+            vfs.mount(config_dir, "/$$rpconfig", 0)
         else:
-            vfs.mount_loop(self._config_dir, "$$config/", 0)
-            self.debug("Config dir:", self._config_dir)
+            self.debug("Mounting custom config dir:", self._config_dir)
+            vfs.mount(convert_path(self._config_dir), "/$$rpconfig", 0)
 
-        # Mount plugins
-        vfs.mount_loop(join(self._base_path, "rpcore/plugins/"), "$$plugins", 0)
-        vfs.mount_loop(join(self._base_path, "rpcore/shader/"), "$$shader", 0)
+        # Mount directory structure
+        vfs.mount(convert_path(self._base_path), "/$$rp", 0)
+        vfs.mount(convert_path(join(self._base_path, "rpcore/shader")), "/$$rp/shader", 0)
+        vfs.mount(convert_path(join(self._base_path, "effects")), "effects", 0)
 
         # Convert the base path to something the os can work with
         sys_base_path = Filename(self._base_path).to_os_specific()
 
         # Add current folder to the include path
-        sys.path.insert(0, sys_base_path)
+        # sys.path.insert(0, sys_base_path)
 
         # Mount the pipeline temp path:
         # If no write path is specified, use a virtual ramdisk
         if self._write_path is None:
-            self.debug("Mounting ramdisk as $$pipeline_temp/")
-            vfs.mount(VirtualFileMountRamdisk(), "$$pipeline_temp/", 0)
+            self.debug("Mounting ramdisk as /$$rptemp/")
+            vfs.mount(VirtualFileMountRamdisk(), "/$$rptemp/", 0)
         else:
             # In case an actual write path is specified:
             # Ensure the pipeline write path exists, and if not, create it
             if not isdir(self._write_path):
-                self.debug("Creating temp path, since it does not exist yet")
+                self.debug("Creating temporary path, since it does not exist yet")
                 try:
                     os.makedirs(self._write_path)
                 except IOError as msg:
-                    self.fatal("Failed to create temp path:", msg)
-            self.debug("Mounting", self._write_path, "as $$pipeline_temp/")
-            vfs.mount_loop(self._write_path, '$$pipeline_temp/', 0)
+                    self.fatal("Failed to create temporary path:", msg)
+            self.debug("Mounting", self._write_path, "as $$rptemp/")
+            vfs.mount(convert_path(self._write_path), '/$$rptemp', 0)
 
-        # #pragma include "something" searches in current directory first,
-        # and then on the model-path. Append the Shader directory to the
-        # modelpath to ensure the shader includes can be found.
-        self._model_paths.append("$$shader")
+        get_model_path().prepend_directory("/$$rp")
+        get_model_path().prepend_directory("/$$rp/shader")
 
-        # Add the pipeline root directory to the model path as well
-        self._model_paths.append(self._base_path)
-
-        # Append the write path to the model directory to make pragma include
-        # find the pipeline shader config
-        self._model_paths.append("$$pipeline_temp")
-
-        # Write the model paths to the global model path
-        for pth in self._model_paths:
-            get_model_path().append_directory(pth)
 
     def unmount(self):
         """ Unmounts the VFS """

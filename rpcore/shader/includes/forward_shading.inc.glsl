@@ -29,9 +29,12 @@
 #pragma include "includes/material_output.struct.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
-
+#pragma include "includes/lights.inc.glsl"
+#pragma include "includes/light_data.inc.glsl"
 
 uniform samplerCube DefaultEnvmap;
+uniform samplerBuffer AllLightsData;
+uniform int maxLightIndex;
 
 // Samplers for the specular cubemaps
 #if HAVE_PLUGIN(scattering)
@@ -69,8 +72,9 @@ vec3 get_forward_ambient(vec3 basecolor, float roughness) {
 
     #endif
 
-    shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env;
-    shading_result += (1 - mOutput.metallic) * diff_env * basecolor / M_PI;
+    // shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env;
+    // shading_result += (1 - mOutput.metallic) * diff_env * basecolor / M_PI;
+    // shading_result += diff_env * basecolor / M_PI;
 
     // Emission
     shading_result *= max(0, 1 - mOutput.emissive);
@@ -93,9 +97,9 @@ vec3 get_sun_shading(vec3 basecolor) {
         #if HAVE_PLUGIN(pssm)
             vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
 
-            const float slope_bias =  1.0 * 0.02;
-            const float normal_bias = 1.0 * 0.005;
-            const float fixed_bias =  0.05 * 0.001;
+            const float slope_bias =  0.0 * 0.02;
+            const float normal_bias = 0.0 * 0.005;
+            const float fixed_bias =  0.01 * 0.001;
             vec3 biased_pos = get_biased_position(
                 vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
 
@@ -105,14 +109,15 @@ vec3 get_sun_shading(vec3 basecolor) {
             // Fast shadow filtering
             float filter_radius = 1.0 / textureSize(PSSMSceneSunShadowMapPCF, 0).y;
             float shadow_term = 0;
-            for(uint i = 0; i < 8; ++i) {
+            for(uint i = 0; i < 12; ++i) {
                 vec3 offset = vec3(poisson_disk_2D_12[i] * filter_radius, 0);
                 shadow_term += texture(PSSMSceneSunShadowMapPCF, projected + offset).x;
             }
-            shadow_term /= 8.0;
+            shadow_term /= 12.0;
         #else
             const float shadow_term = 1.0;
         #endif
+
 
         if (sun_vector.z >= -0.2) {
             shading_result += max(0.0, dot(sun_vector, vOutput.normal))
@@ -124,4 +129,41 @@ vec3 get_sun_shading(vec3 basecolor) {
     #else
         return vec3(0);
     #endif
+}
+
+vec3 get_forward_light_shading(vec3 basecolor) {
+
+    vec3 shading_result = vec3(0);
+
+    for (int i = 0; i <= maxLightIndex; ++i) {
+        LightData light_data = read_light_data(AllLightsData, i);
+        int light_type = get_light_type(light_data);
+
+        // Skip Null-Lights
+        if (light_type < 1) continue;
+
+        vec3 light_pos = get_light_position(light_data);
+        vec3 v_to_l = light_pos - vOutput.position;
+        float v_to_l_len = length(v_to_l);
+        vec3 light_color = get_light_color(light_data);
+
+        // Shade depending on light type
+        switch(light_type) {
+            case LT_POINT_LIGHT: {
+                float radius = get_pointlight_radius(light_data);
+
+                // Approximate attenuation using a linear term
+                // float att = saturate(dot(v_to_l, v_to_l) / (radius * radius));
+                float att = attenuation_curve(dot(v_to_l, v_to_l), radius);
+                float NxL = saturate(dot(vOutput.normal, v_to_l) / v_to_l_len);
+                shading_result += (1.0 - att) * NxL * basecolor * light_color / M_PI;
+
+                break;
+            }
+        }
+
+    }
+
+    return shading_result;
+
 }

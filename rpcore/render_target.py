@@ -23,13 +23,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
+from __future__ import print_function
 
 # Disable the warning from pylint about not finding the "base" builtin provided
 # from Panda3D
 # pylint: disable=E0602
 
+"""
 
-from __future__ import print_function
+
+NOTICE:
+
+This is DEPRECATED code. It will be soon replaced with the new render target
+version.
+
+
+"""
+
+
 
 from panda3d.core import GraphicsOutput, CardMaker, OmniBoundingVolume, Texture
 from panda3d.core import AuxBitplaneAttrib, NodePath, OrthographicLens, Geom
@@ -496,7 +507,7 @@ class RenderTarget(object):
 
         # Set clears
         buffer_region = self._internal_buffer.get_display_region(0)
-        self._correct_clears()
+        buffer_region.disable_clears()
 
         buffer_region.set_clear_stencil_active(False)
 
@@ -532,6 +543,8 @@ class RenderTarget(object):
     def prepare_offscreen_buffer(self):
         """ Creates an offscreen buffer for this target """
 
+        assert False, "Outdated, use make_target2!"
+
         # Init buffer object
         self._create_buffer()
 
@@ -559,7 +572,6 @@ class RenderTarget(object):
         buffer_region = self._internal_buffer.get_display_region(0)
         buffer_region.set_camera(self._camera)
         buffer_region.set_active(1)
-        buffer_region.set_clear_stencil_active(False)
         self._set_size_shader_input()
 
         self._active = True
@@ -618,6 +630,7 @@ class RenderTarget(object):
     @require_created
     def set_clear_color(self, clear=True, color=None):
         """ Adds a color clear """
+        assert False, "deprecated"
         self.get_internal_region().set_clear_color_active(clear)
         self._internal_buffer.set_clear_color_active(clear)
 
@@ -629,16 +642,6 @@ class RenderTarget(object):
 
             if not self.has_color_texture():
                 self.RT_OUTPUT_FUNC("Warning: clear=True set on target without color attachment!")
-
-    @require_created
-    def set_clear_stencil(self, clear=True, stencil=0x00):
-        """ Sets whether to clear the stencil buffer """
-        self.get_internal_region().set_clear_stencil_active(clear)
-        self._internal_buffer.set_clear_stencil_active(clear)
-
-        if clear:
-            # self._internal_buffer.set_clear_stencil(stencil)
-            self.get_internal_region().set_clear_stencil(stencil)
 
     @require_created
     def remove_quad(self):
@@ -727,25 +730,6 @@ class RenderTarget(object):
             if drcam == self._source_cam:
                 return region
         return None
-
-    def _correct_clears(self):
-        """ Setups the clear values correctly for the buffer region """
-        region = self._internal_buffer.get_display_region(0)
-
-        clears = []
-
-        for i in range(GraphicsOutput.RTPCOUNT):
-            active, value = self._source_window.get_clear_active(
-                i), self._source_window.get_clear_value(i)
-
-            if not active:
-                active, value = self._region.get_clear_active(
-                    i), self._region.get_clear_value(i)
-
-            region.set_clear_active(i, active)
-            region.set_clear_value(i, value)
-
-        return clears
 
     def _set_size_shader_input(self):
         """ Makes the buffer size available as shader input in the shader """

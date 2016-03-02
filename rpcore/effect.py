@@ -31,7 +31,7 @@ from rplibs.yaml import load_yaml_file
 
 from panda3d.core import Shader, Filename
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.util.shader_template import ShaderTemplate
 
 class Effect(RPObject):
@@ -170,7 +170,7 @@ class Effect(RPObject):
     def _parse_shader_template(self, shader_id, data):
         """ Parses a fragment template """
         shader_ext = "vert" if shader_id == "vertex" else "frag"
-        default_template = "$$shader/templates/{}.{}.glsl".format(shader_id, shader_ext)
+        default_template = "/$$rp/shader/templates/{}.{}.glsl".format(shader_id, shader_ext)
         shader_path = self._construct_shader_from_data(shader_id, default_template, data)
         self._shader_paths[shader_id] = shader_path
 

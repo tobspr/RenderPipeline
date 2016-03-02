@@ -28,7 +28,7 @@ from panda3d.core import Shader
 
 from rplibs.six import itervalues
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
 from rpcore.render_target2 import RenderTarget2
 
@@ -137,7 +137,7 @@ class RenderStage(RPObject):
         path_args = []
 
         for source in args:
-            if "$$pipeline_temp" not in source and "$$shader/" not in source:
+            if "/$$rpconfig/" not in source and "/$$rp/shader/" not in source:
                 path_args.append(path.format(source))
             else:
                 path_args.append(source)
@@ -145,7 +145,7 @@ class RenderStage(RPObject):
         # If only one shader is specified, assume its a postprocess fragment shader,
         # and use the default vertex shader
         if len(args) == 1:
-            path_args = ["$$shader/default_post_process.vert.glsl"] + path_args
+            path_args = ["/$$rp/shader/default_post_process.vert.glsl"] + path_args
 
         return Shader.load(Shader.SL_GLSL, *path_args)
 
@@ -160,7 +160,7 @@ class RenderStage(RPObject):
         passed, the first argument should be the vertex shader and the second
         argument should be the fragment shader. If three arguments are passed,
         the order should be vertex, fragment, geometry """
-        return self._get_shader_handle("$$shader/{0}", *args)
+        return self._get_shader_handle("/$$rp/shader/{0}", *args)
 
     def load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful

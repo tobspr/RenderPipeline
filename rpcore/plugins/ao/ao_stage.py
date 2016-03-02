@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import LVecBase2i
+from panda3d.core import LVecBase2i, Vec2
 from rpcore.render_stage import RenderStage
 
 class AOStage(RenderStage):
@@ -41,12 +41,6 @@ class AOStage(RenderStage):
         self.target.size = -2
         self.target.add_color_attachment(alpha=True)
         self.target.prepare_buffer()
-        self.target.quad.set_instance_count(4)
-
-        self.target_merge = self.make_target2("Merge")
-        self.target_merge.size = -2
-        self.target_merge.add_color_attachment(alpha=True)
-        self.target_merge.prepare_buffer()
 
         self.target_blur_v = self.make_target2("BlurV")
         self.target_blur_v.size = -2
@@ -63,23 +57,20 @@ class AOStage(RenderStage):
         self.target_upscale.prepare_buffer()
 
         self.target_upscale.set_shader_input("SourceTex", self.target_blur_h.color_tex)
-        self.target_blur_v.set_shader_input("SourceTex", self.target_merge.color_tex)
+        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.0001, 0001))
+
+        self.target_blur_v.set_shader_input("SourceTex", self.target.color_tex)
         self.target_blur_h.set_shader_input("SourceTex", self.target_blur_v.color_tex)
 
         self.target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
         self.target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
 
-        self.target_merge.set_shader_input("SourceTex", self.target.color_tex)
 
     def set_shaders(self):
-        self.target.shader = self.load_plugin_shader(
-            "$$shader/sample_halfres_interleaved.vert.glsl", "ao_sample.frag.glsl")
+        self.target.shader = self.load_plugin_shader("ao_sample.frag.glsl")
         self.target_upscale.shader = self.load_plugin_shader(
-            "$$shader/bilateral_upscale.frag.glsl")
-        self.target_merge.shader = self.load_plugin_shader(
-            "$$shader/merge_interleaved_target.frag.glsl")
-
+            "/$$rp/shader/bilateral_upscale.frag.glsl")
         blur_shader = self.load_plugin_shader(
-            "$$shader/bilateral_halfres_blur.frag.glsl")
+            "/$$rp/shader/bilateral_halfres_blur.frag.glsl")
         self.target_blur_v.shader = blur_shader
         self.target_blur_h.shader = blur_shader

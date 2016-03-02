@@ -55,7 +55,7 @@ class CommonResources(BaseManager):
     def _load_fonts(self):
         """ Loads the default font used for rendering and assigns it to
         Globals.font for further usage """
-        Globals.font = Globals.loader.loadFont("data/font/roboto-medium.ttf")
+        Globals.font = Globals.loader.loadFont("/$$rp/data/font/roboto-medium.ttf")
         Globals.font.set_pixels_per_unit(35)
         Globals.font.set_poly_margin(0.0)
         Globals.font.set_texture_margin(1)
@@ -86,7 +86,7 @@ class CommonResources(BaseManager):
         content = self._input_ubo.generate_shader_code()
         try:
             # Try to write the temporary file
-            with open("$$pipeline_temp/$$main_scene_data.inc.glsl", "w") as handle:
+            with open("/$$rptemp/$$main_scene_data.inc.glsl", "w") as handle:
                 handle.write(content)
         except IOError as msg:
             self.error("Failed to write common resources shader configuration!", msg)
@@ -104,7 +104,7 @@ class CommonResources(BaseManager):
         """ Loads the default cubemap used for the environment, which is used
         when no other environment data is available """
         envmap = Globals.loader.loadCubeMap(
-            "data/default_cubemap/filtered/#-#.png", readMipmaps=True)
+            "/$$rp/data/default_cubemap/filtered/#-#.png", readMipmaps=True)
         envmap.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         envmap.set_format(Texture.F_rgba16)
         envmap.set_magfilter(SamplerState.FT_linear)
@@ -116,7 +116,7 @@ class CommonResources(BaseManager):
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
         brdf_tex = Globals.loader.loadTexture(
-            "data/environment_brdf/prefiltered_environment_brdf.png")
+            "/$$rp/data/environment_brdf/prefiltered_environment_brdf.png")
         brdf_tex.set_minfilter(SamplerState.FT_linear)
         brdf_tex.set_magfilter(SamplerState.FT_linear)
         brdf_tex.set_wrap_u(SamplerState.WM_clamp)
@@ -127,7 +127,7 @@ class CommonResources(BaseManager):
 
     def _load_precomputed_grain(self):
         grain_tex = Globals.loader.loadTexture(
-            "data/film_grain/grain.png")
+            "/$$rp/data/film_grain/grain.png")
         grain_tex.set_minfilter(SamplerState.FT_linear)
         grain_tex.set_magfilter(SamplerState.FT_linear)
         grain_tex.set_wrap_u(SamplerState.WM_repeat)
@@ -137,8 +137,8 @@ class CommonResources(BaseManager):
 
     def _load_skydome(self):
         """ Loads the skydome """
-        # skydome = Globals.loader.loadTexture("data/builtin_models/skybox/skybox.jpg")
-        skydome = Globals.loader.loadTexture("data/builtin_models/skybox/skybox2.jpg")
+        # skydome = Globals.loader.loadTexture("/$$rp/data/builtin_models/skybox/skybox.jpg")
+        skydome = Globals.loader.loadTexture("/$$rp/data/builtin_models/skybox/skybox2.jpg")
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)
@@ -154,7 +154,7 @@ class CommonResources(BaseManager):
         self._pipeline.stage_mgr.add_input("Noise4x4", tex)
 
     def load_default_skybox(self):
-        skybox = Globals.loader.loadModel("data/builtin_models/skybox/skybox.bam")
+        skybox = Globals.loader.loadModel("/$$rp/data/builtin_models/skybox/skybox.bam")
         return skybox
 
     def do_update(self):

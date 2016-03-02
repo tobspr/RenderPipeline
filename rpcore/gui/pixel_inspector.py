@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import CardMaker, NodePath, Shader, Vec2
 from rpcore.gui.text import Text
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 
 class PixelInspector(RPObject):
@@ -65,8 +65,8 @@ class PixelInspector(RPObject):
         scene_tex = self._pipeline.stage_mgr.get_pipe("ShadedScene")
         self._zoomer.set_shader(Shader.load(
             Shader.SL_GLSL,
-            "$$shader/default_gui_shader.vert.glsl",
-            "$$shader/pixel_inspector.frag.glsl"))
+            "/$$rp/shader/default_gui_shader.vert.glsl",
+            "/$$rp/shader/pixel_inspector.frag.glsl"))
         self._zoomer.set_shader_input("SceneTex", scene_tex)
 
     def update(self):

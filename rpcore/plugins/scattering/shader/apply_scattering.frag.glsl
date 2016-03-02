@@ -51,14 +51,17 @@ void main() {
     // Fetch scattering
     float fog_factor = 0.0;
     vec3 inscattered_light = DoScattering(m.position, view_vector, fog_factor);
-    inscattered_light *= TimeOfDay.scattering.sun_intensity *
-                            TimeOfDay.scattering.sun_color * 0.01;
+    inscattered_light *= TimeOfDay.scattering.sun_intensity
+                            /* * TimeOfDay.scattering.sun_color * 0.01*/;
+
+
 
     // Cloud color
     if (is_skybox(m)) {
         #if !HAVE_PLUGIN(clouds)
             vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-            inscattered_light *= 0.0 + 0.5 * (0.4 + cloud_color);
+            cloud_color = cloud_color * vec3(1.0, 1, 0.9) * vec3(0.8, 0.7, 0.8524);
+            inscattered_light *= 0.0 + 1.2 * (0.3 + 0.6 * cloud_color);
         #endif
 
         // Sun disk
@@ -67,9 +70,9 @@ void main() {
         float disk_factor = pow(saturate(dot(view_vector, sun_vector) + 0.001), 30.0 * 1e4);
         float upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.045) * 1.0);
         inscattered_light += vec3(1,0.3,0.1) * disk_factor *
-            upper_disk_factor * 2.0 * silhouette_col * 1.0 * 1e4;
+            upper_disk_factor * 2.0 * silhouette_col * 3.0 * 1e5;
     } else {
-        inscattered_light *= 4.0;
+        inscattered_light *= 3.5;
     }
 
     // Mix with scene color
@@ -77,7 +80,8 @@ void main() {
 
 
     #if !DEBUG_MODE
-        result.xyz = mix(result.xyz, inscattered_light, fog_factor);
+        result.xyz *= 1 - fog_factor;
+        result.xyz += inscattered_light * fog_factor;
         result.w = fog_factor;
     #endif
 }

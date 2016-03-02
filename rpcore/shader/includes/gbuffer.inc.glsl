@@ -56,6 +56,20 @@ uniform mat4 p3d_ProjectionMatrix;
         return (curr_texcoord - last_texcoord);
     }
 
+    // Lean mapping
+    float adjust_roughness(float roughness, float avg_normal_length) {
+        // Based on The Order : 1886 SIGGRAPH course notes implementation
+        if (avg_normal_length < 1.0)
+        {
+            float avg_len_sq = avg_normal_length * avg_normal_length;
+            float kappa = (3 * avg_normal_length - avg_normal_length * avg_len_sq ) / (1 - avg_len_sq);
+            float variance = 1.0 / (2.0 * kappa) ;
+            return sqrt(roughness * roughness + variance);
+        }
+        return roughness;
+    }
+
+
     void render_material(MaterialShaderOutput m) {
 
         // Compute material properties
@@ -74,8 +88,11 @@ uniform mat4 p3d_ProjectionMatrix;
         float roughness = clamp(m.roughness, 0.005, 1.0);
         float translucency = saturate(m.translucency);
 
+        roughness = adjust_roughness(roughness, length(m.normal));
+
         // Optional: Use squared roughness as proposed by Disney
         roughness *= roughness;
+
 
         // Pack all values to the gbuffer
         gbuffer_out_0 = vec4(basecolor.r, basecolor.g, basecolor.b, roughness);

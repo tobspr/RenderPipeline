@@ -31,32 +31,25 @@
 #pragma include "includes/ies_lighting.inc.glsl"
 
 // Computes the quadratic attenuation curve
-float attenuation_curve(float dist, float radius) {
+float attenuation_curve(float dist_sq, float radius) {
     #if 0
         return step(dist, radius);
     #endif
 
     #if 1
-        // We do a inverse square falloff, however we weight it by a
-        // linear attenuation to make it go to zero at the lights radius.
-        // This is because the culling needs a fixed radius. I like the linear
-        // attenuation weight more than using an additional fallof starting at
-        // 80% or so.
-        float lin_att = 1.0 - saturate(dist / radius);
-        float d_by_r = dist / radius;
-        return lin_att / max(0.001, d_by_r * d_by_r + 1);
+        float f = saturate(1.0 - (dist_sq * dist_sq) / pow(radius * radius, 2.0));
+        return f * f / max(0.01, dist_sq);
     #endif
 }
 
 // Computes the attenuation for a point light
-float get_pointlight_attenuation(vec3 l, float radius, float dist, int ies_profile) {
-    float attenuation = attenuation_curve(dist, radius);
-    return attenuation * get_ies_factor(l, ies_profile);
+float get_pointlight_attenuation(vec3 l, float radius, float dist_sq, int ies_profile) {
+    return attenuation_curve(dist_sq, radius) * get_ies_factor(l, ies_profile);
 }
 
 // Computes the attenuation for a spot light
-float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist, int ies_profile) {
-    float dist_attenuation = attenuation_curve(dist, radius);
+float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist_sq, int ies_profile) {
+    float dist_attenuation = attenuation_curve(dist_sq, radius);
     float cos_angle = dot(l, -light_dir);
 
     // Rescale angle to fit the full range. We only do this for spot lights,

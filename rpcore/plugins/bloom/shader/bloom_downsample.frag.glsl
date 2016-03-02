@@ -32,6 +32,8 @@ uniform int SourceMip;
 uniform sampler2D SourceTex;
 uniform writeonly image2D RESTRICT DestTex;
 
+out vec3 color;
+
 void main() {
     ivec2 int_coord = ivec2(gl_FragCoord.xy);
     vec2 parent_tex_size = vec2(textureSize(SourceTex, SourceMip).xy);
@@ -81,5 +83,7 @@ void main() {
     // Decay
     summed_kernel *= 0.92;
 
+    // summed_kernel = vec3(1, 0, 0);
     imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(summed_kernel, 0));
+    color = vec3(summed_kernel);
 }

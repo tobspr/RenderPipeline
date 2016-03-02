@@ -68,7 +68,7 @@ class Debugger(BaseManager):
 
     def _load_config(self):
         """ Loads the gui configuration from config/debugging.yaml """
-        self._config = load_yaml_file("$$config/debugging.yaml")
+        self._config = load_yaml_file("/$$rpconfig/debugging.yaml")
 
     def _create_components(self):
         """ Creates the gui components """
@@ -123,7 +123,7 @@ class Debugger(BaseManager):
     def _create_topbar(self):
         """ Creates the topbar """
         self._pipeline_logo = Sprite(
-            image="data/gui/pipeline_logo_text.png", x=30, y=30,
+            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
             parent=self._fullscreen_node)
 
     def _create_stats(self):
@@ -139,7 +139,7 @@ class Debugger(BaseManager):
     def _create_hints(self):
         """ Creates the hints like keybindings and when reloading shaders """
         self._hint_reloading = Sprite(
-            image="data/gui/shader_reload_hint.png",
+            image="/$$rp/data/gui/shader_reload_hint.png",
             x=float((Globals.base.win.get_x_size()) // 2) / self._gui_scale - 465 // 2, y=220,
             parent=self._fullscreen_node)
         self.set_reload_hint_visible(False)
@@ -147,7 +147,7 @@ class Debugger(BaseManager):
         if not NATIVE_CXX_LOADED:
             # Warning when using the python version
             python_warning = Sprite(
-                image="data/gui/python_warning.png",
+                image="/$$rp/data/gui/python_warning.png",
                 x=((Globals.base.win.get_x_size()/self._gui_scale) - 1054) // 2,
                 y=(Globals.base.win.get_y_size()/self._gui_scale) - 118 - 40,
                 parent=self._fullscreen_node)
@@ -159,7 +159,7 @@ class Debugger(BaseManager):
 
         # Keybinding hints
         self._keybinding_instructions = Sprite(
-            image="data/gui/keybindings.png", x=30,
+            image="/$$rp/data/gui/keybindings.png", x=30,
             y=Globals.base.win.get_y_size()//self._gui_scale - 510.0,
             parent=self._fullscreen_node, any_filter=False)
 
@@ -203,7 +203,7 @@ class Debugger(BaseManager):
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_pos(30, 0, -Globals.base.win.get_y_size()//self._gui_scale + 820.0)
         self._debugger_bg_img = Sprite(
-            image="data/gui/debugger_background.png", x=0, y=0,
+            image="/$$rp/data/gui/debugger_background.png", x=0, y=0,
             parent=self._debugger_node, any_filter=False)
         self._create_debugger_content()
 

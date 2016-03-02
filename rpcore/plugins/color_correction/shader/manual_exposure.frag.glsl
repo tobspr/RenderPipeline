@@ -24,37 +24,26 @@
  *
  */
 
-#version 420
+#version 440
 
-#define USE_MAIN_SCENE_DATA
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/tonemapping.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform sampler3D ColorLUT;
 
-out vec4 result;
+out vec3 result;
 
-vec3 apply_lut(vec3 color) {
-    // We have a gradient from 0.5 / lut_size to 1 - 0.5 / lut_size
-    // so we need to transform from 0 .. 1 to that gradient (hardcoded lut size for now)
-    const float lut_start = 0.5 / 64.0;
-    const float lut_end = 1.0 - lut_start;
-    color = color * (lut_end - lut_start) + lut_start;
-    return textureLod(ColorLUT, color, 0).xyz;
-}
+// Applies manual camera parameters
 
 void main() {
     vec2 texcoord = get_texcoord();
 
-    #if !DEBUG_MODE
-        vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
-        scene_color = do_tonemapping(scene_color);
-        scene_color = apply_lut(scene_color);
-    #else
-        vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
-    #endif // !DEBUG_MODE
+    float exposure_val = computeEV100(
+        TimeOfDay.color_correction.camera_aperture,
+        TimeOfDay.color_correction.camera_shutter,
+        TimeOfDay.color_correction.camera_iso);
 
-    result = vec4(scene_color, 1);
+    float exposure = convertEV100ToExposure(exposure_val);
+    result = texture(ShadedScene, texcoord).xyz * exposure;
 }
