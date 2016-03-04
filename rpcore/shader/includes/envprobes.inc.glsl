@@ -84,6 +84,7 @@ float correct_parallax(Cubemap map, Material m, vec3 vector, out float factor) {
     if (!map.use_parallax) {
         return 1e10;
     }
+
     // Intersect with unit box
     vec3 first_plane  = (1.0 - position_ls) / ray_ls;
     vec3 second_plane = (-1.0 - position_ls) / ray_ls;
@@ -111,7 +112,7 @@ vec3 get_diffuse_vector(Cubemap map, Material m) {
 
     vec3 local_vec = map.transform[3].xyz - m.position;
 
-    return tpose_inverse * (m.normal * 1 + 10.0 * local_vec);
+    return tpose_inverse * (m.normal * 1 + 0.0 * local_vec);
 
     // vec3 local_vec = map.transform[3].xyz - m.position;
     // vec3 intersection_pos = map.transform[3].xyz + m.normal * 0.0 + local_vec * 1000.1;
@@ -134,12 +135,14 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
     vec3 diffuse_direction = get_diffuse_vector(map, m);
     float clip_factor = saturate( (1 - factor) / max(1e-3, map.border_smoothness));
 
-    mipmap += 0.05 * mipmap_multiplier;
+    mipmap += 0.05 * mipmap_multiplier * saturate(10.0 * m.roughness);
 
     specular = textureLod(EnvProbes.cubemaps, vec4(direction, map.index),
         clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
 
     diffuse = textureLod(EnvProbes.diffuse_cubemaps, vec4(diffuse_direction, map.index), 0);
+
+    // diffuse.xyz *= 0.3;
 
     // Correct specular based on diffuse color intensity
     // specular.xyz = mix(specular.xyz, specular.xyz * diffuse.xyz, diffuse.w);

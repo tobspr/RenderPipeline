@@ -181,12 +181,12 @@ class Debugger(BaseManager):
 
         text = "{:3.0f} MiB pipeline VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins"
-        tex_info = self._buffer_viewer.stage_information
+        tex_memory, tex_count = self._buffer_viewer.stage_information
         self._debug_lines[2].text = text.format(
-            tex_info["memory"] / (1024**2),
+            tex_memory / (1024**2),
             Image.get_image_count(),
-            tex_info["count"],
-            RenderTarget.get_num_buffers(),
+            tex_count,
+            RenderTarget.NUM_ALLOCATED_BUFFERS,
             len(self._pipeline.plugin_mgr.enabled_plugins))
 
         text = "{} ({:1.3f})  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"

@@ -59,7 +59,7 @@ class DownscaleZStage(RenderStage):
         self._depth_storage.set_wrap_v(SamplerState.WM_clamp)
 
         self._target_copy = self.make_target("CopyZBuffer")
-        self._target_copy.prepare_offscreen_buffer()
+        self._target_copy.prepare_buffer()
         self._target_copy.set_shader_input("DestTexture", self._depth_storage)
 
         self._mip_targets = []
@@ -71,7 +71,7 @@ class DownscaleZStage(RenderStage):
 
             target = self.make_target("DownscaleZ-" + str(mip))
             target.size = current_res
-            target.prepare_offscreen_buffer()
+            target.prepare_buffer()
             target.set_shader_input(
                 "SourceImage", self._depth_storage)
             target.set_shader_input(
@@ -84,5 +84,5 @@ class DownscaleZStage(RenderStage):
     def set_shaders(self):
         mip_shader = self.load_shader("downscale_z_buffer.frag.glsl")
         for target in self._mip_targets:
-            target.set_shader(mip_shader)
-        self._target_copy.set_shader(self.load_shader("copy_z_buffer.frag.glsl"))
+            target.shader = mip_shader
+        self._target_copy.shader = self.load_shader("copy_z_buffer.frag.glsl")

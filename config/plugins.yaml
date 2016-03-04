@@ -4,26 +4,26 @@
 # Any formatting and comments will be lost
 
 enabled:
-    # - sslr
+    - sslr
     # - clouds
-    - pssm
+    # - pssm
     - color_correction
     - scattering
-    - ao
-    - smaa
-    - env_probes
+    # - ao
+    # - smaa
+    # - env_probes
     # - vxgi
-    - fxaa
-    - bloom
-    - motion_blur
+    # - fxaa
+    # - bloom
+    # - motion_blur
 
 
 overrides:
     ao:
         blur_normal_factor: 1.53
         blur_depth_factor: 1.2
-        occlusion_strength: 1.54
-        technique: SSAO
+        occlusion_strength: 1.28
+        technique: ALCHEMY
         ssao_sample_radius: 136.66999
         ssao_sample_count: 5
         ssao_bias: 0.0
@@ -31,14 +31,14 @@ overrides:
         hbao_sample_radius: 100.0
         hbao_ray_count: 8
         hbao_ray_steps: 3
-        hbao_tangent_bias: 0.6889
-        hbao_max_distance: 8.23
+        hbao_tangent_bias: 0.3333
+        hbao_max_distance: 5.78
         ssvo_sample_count: 4
-        ssvo_sphere_radius: 11.34556
-        ssvo_max_distance: 1.49
+        ssvo_sphere_radius: 8.63
+        ssvo_max_distance: 2.04
         alchemy_sample_radius: 62.06
-        alchemy_num_samples: 8
-        alchemy_max_distance: 4.08
+        alchemy_num_samples: 7
+        alchemy_max_distance: 6.51
         ue4ao_sample_radius: 100.0
         ue4ao_sample_count: 8
         ue4ao_max_distance: 4.3
@@ -100,21 +100,21 @@ overrides:
 
     pssm:
         max_distance: 100.0
-        logarithmic_factor: 0.8
-        sun_distance: 2520.0
+        logarithmic_factor: 1.57144
+        sun_distance: 760.0
         split_count: 5
         resolution: 1024
         border_bias: 0.1167
         use_pcf: True
         filter_sample_count: 18
-        filter_radius: 2.52
+        filter_radius: 4.94
         fixed_bias: 0.0
         slope_bias: 2.27999
         normal_bias: 0.28
         use_pcss: False
         pcss_search_samples: 32
         pcss_penumbra_size: 300.0
-        vsm_resolution: 4096
+        vsm_resolution: 2048
         scene_shadow_resolution: 1024
 
     scattering:

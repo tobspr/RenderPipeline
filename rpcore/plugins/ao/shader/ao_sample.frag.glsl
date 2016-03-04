@@ -95,7 +95,7 @@ void main() {
     result.w = pow(result.w, 3.0);
 
     // Smooth the normal a bit to prevent artifacts
-    result.xyz = mix(result.xyz, pixel_world_normal, 0.5);
+    result.xyz = mix(result.xyz, pixel_world_normal, 0.4);
 
     // Pack bent normal
     result.xyz = fma(result.xyz, vec3(0.5), vec3(0.5));

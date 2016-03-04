@@ -46,11 +46,7 @@ uniform mat4 p3d_ProjectionMatrix;
 
     vec2 compute_velocity() {
         // Compute velocity based on this and last frames mvp matrix
-        #if EXPERIMENTAL_PREV_TRANSFORM
-            vec4 last_proj_pos = p3d_ProjectionMatrix * vOutput.last_proj_position;
-        #else
-            vec4 last_proj_pos = vOutput.last_proj_position;
-        #endif
+        vec4 last_proj_pos = vOutput.last_proj_position;
         vec2 last_texcoord = fma(last_proj_pos.xy / last_proj_pos.w, vec2(0.5), vec2(0.5));
         vec2 curr_texcoord = gl_FragCoord.xy / SCREEN_SIZE;
         return (curr_texcoord - last_texcoord);

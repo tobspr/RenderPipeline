@@ -73,13 +73,18 @@ class CommonResources(BaseManager):
         self._input_ubo.register_pta("inv_proj_mat", "mat4")
         self._input_ubo.register_pta("view_mat_billboard", "mat4")
         self._input_ubo.register_pta("frame_delta", "float")
+        self._input_ubo.register_pta("smooth_frame_delta", "float")
         self._input_ubo.register_pta("frame_time", "float")
+        self._input_ubo.register_pta("current_film_offset", "vec2")
         self._pipeline.stage_mgr.add_ubo(self._input_ubo)
 
         # Main camera and main render have to be regular inputs, since they are
         # used in the shaders by that name.
         self._pipeline.stage_mgr.add_input("mainCam", self._showbase.cam)
         self._pipeline.stage_mgr.add_input("mainRender", self._showbase.render)
+
+        # Set the correct frame rate interval
+        Globals.clock.set_average_frame_rate_interval(3.0)
 
     def write_config(self):
         """ Generates the shader configuration for the common inputs """
@@ -193,4 +198,10 @@ class CommonResources(BaseManager):
 
         # Store the frame delta
         update("frame_delta", Globals.clock.get_dt())
+        update("smooth_frame_delta", 1.0 / Globals.clock.get_average_frame_rate())
         update("frame_time", Globals.clock.get_frame_time())
+
+        # Store the current film offset, we use this to compute the pixel-perfect
+        # velocity, which is otherwise not possible. Usually this is always 0
+        # except when SMAA and reprojection is enabled
+        update("current_film_offset", self._showbase.camLens.get_film_offset())

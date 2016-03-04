@@ -40,7 +40,7 @@ class GodrayStage(RenderStage):
         return {"ShadedScene": self._target.color_tex}
 
     def create(self):
-        self._target = self.make_target2("ComputeGodrays")
+        self._target = self.make_target("ComputeGodrays")
         self._target.add_color_attachment(bits=16, alpha=True)
         self._target.prepare_buffer()
 

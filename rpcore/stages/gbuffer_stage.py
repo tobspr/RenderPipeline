@@ -52,7 +52,7 @@ class GBufferStage(RenderStage):
         return ubo
 
     def create(self):
-        self.target = self.make_target2("GBuffer")
+        self.target = self.make_target("GBuffer")
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.add_depth_attachment(bits=32)
         self.target.add_aux_attachments(bits=16, count=2)

@@ -25,22 +25,25 @@ THE SOFTWARE.
 """
 
 from rpcore.render_stage import RenderStage
+from rpcore.stages.ambient_stage import AmbientStage
 
 class SSLRStage(RenderStage):
 
     """ This stage does the SSLR pass """
 
     required_inputs = []
-    required_pipes = ["ShadedScene", "GBuffer", "DownscaledDepth"]
+    required_pipes = ["ShadedScene", "GBuffer", "DownscaledDepth", "PreviousFrame::PostAmbientScene"]
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target['color']}
+        return {"SSLRSpecular": self._target.color_tex}
 
     def create(self):
         self._target = self.make_target("ComputeSSLR")
-        self._target.add_color_texture(bits=16)
-        self._target.prepare_offscreen_buffer()
+        self._target.add_color_attachment(bits=16)
+        self._target.prepare_buffer()
+
+        AmbientStage.required_pipes.append("SSLRSpecular")
 
     def set_shaders(self):
-        self._target.set_shader(self.load_plugin_shader("sslr_stage.frag.glsl"))
+        self._target.shader = self.load_plugin_shader("sslr_stage.frag.glsl")

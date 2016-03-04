@@ -74,7 +74,8 @@ vec3 get_forward_ambient(vec3 basecolor, float roughness) {
 
     // shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env;
     // shading_result += (1 - mOutput.metallic) * diff_env * basecolor / M_PI;
-    // shading_result += diff_env * basecolor / M_PI;
+    // shading_result += diff_env * basecolor / M_PI * 0.02;
+    shading_result += diff_env * basecolor / M_PI;
 
     // Emission
     shading_result *= max(0, 1 - mOutput.emissive);
@@ -143,23 +144,32 @@ vec3 get_forward_light_shading(vec3 basecolor) {
         if (light_type < 1) continue;
 
         vec3 light_pos = get_light_position(light_data);
-        vec3 v_to_l = light_pos - vOutput.position;
-        float v_to_l_len = length(v_to_l);
+        vec3 l = light_pos - vOutput.position;
+        float l_len = length(l);
         vec3 light_color = get_light_color(light_data);
 
         // Shade depending on light type
         switch(light_type) {
             case LT_POINT_LIGHT: {
                 float radius = get_pointlight_radius(light_data);
-
-                // Approximate attenuation using a linear term
-                // float att = saturate(dot(v_to_l, v_to_l) / (radius * radius));
-                float att = attenuation_curve(dot(v_to_l, v_to_l), radius);
-                float NxL = saturate(dot(vOutput.normal, v_to_l) / v_to_l_len);
-                shading_result += (1.0 - att) * NxL * basecolor * light_color / M_PI;
-
+                float att = attenuation_curve(dot(l, l), radius);
+                float NxL = saturate(dot(vOutput.normal, l) / l_len);
+                shading_result += saturate(att) * NxL * ONE_BY_PI * (basecolor * light_color);
                 break;
             }
+
+            case LT_SPOT_LIGHT: {
+                float radius = get_spotlight_radius(light_data);
+                float fov       = get_spotlight_fov(light_data);
+                vec3 direction  = get_spotlight_direction(light_data);
+
+                float att = get_spotlight_attenuation(l / l_len, direction,
+                    fov, radius, dot(l, l), -1);
+                float NxL = saturate(dot(vOutput.normal, l) / l_len);
+                shading_result += saturate(att) * NxL * ONE_BY_PI * (basecolor * light_color);
+                break;
+            }
+
         }
 
     }

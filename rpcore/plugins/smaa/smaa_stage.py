@@ -60,13 +60,13 @@ class SMAAStage(RenderStage):
 
     def create(self):
         # Edge detection
-        self.edge_target = self.make_target2("EdgeDetection")
+        self.edge_target = self.make_target("EdgeDetection")
         self.edge_target.add_color_attachment()
         self.edge_target.prepare_buffer()
         self.edge_target.set_clear_color(0)
 
         # Weight blending
-        self.blend_target = self.make_target2("BlendWeights")
+        self.blend_target = self.make_target("BlendWeights")
         self.blend_target.add_color_attachment(alpha=True)
         self.blend_target.prepare_buffer()
         self.blend_target.set_clear_color(0)
@@ -79,7 +79,7 @@ class SMAAStage(RenderStage):
         # Neighbor blending
         self._neighbor_targets = []
         for i in range(2 if self.use_reprojection else 1):
-            target = self.make_target2("Neighbor-" + str(i))
+            target = self.make_target("Neighbor-" + str(i))
             target.add_color_attachment(bits=16)
             target.prepare_buffer()
             target.set_shader_input("BlendTex", self.blend_target.color_tex)
@@ -87,7 +87,7 @@ class SMAAStage(RenderStage):
 
         # Resolving
         if self.use_reprojection:
-            self.resolve_target = self.make_target2("Resolve")
+            self.resolve_target = self.make_target("Resolve")
             self.resolve_target.add_color_attachment(bits=16)
             self.resolve_target.prepare_buffer()
             self.resolve_target.set_shader_input("jitterIndex", self._jitter_index)

@@ -62,14 +62,14 @@ class CloudVoxelStage(RenderStage):
         self._cloud_voxels.set_border_color(Vec4(0, 0, 0, 0))
 
         # Construct the target which populates the voxel texture
-        self._grid_target = self.make_target2("CreateVoxels")
+        self._grid_target = self.make_target("CreateVoxels")
         self._grid_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._grid_target.prepare_buffer()
         self._grid_target.quad.set_instance_count(self._voxel_res_z)
         self._grid_target.set_shader_input("CloudVoxels", self._cloud_voxels)
 
         # Construct the target which shades the voxels
-        self._shade_target = self.make_target2("ShadeVoxels")
+        self._shade_target = self.make_target("ShadeVoxels")
         self._shade_target.size = self._voxel_res_xy, self._voxel_res_xy
         self._shade_target.prepare_buffer()
         self._shade_target.quad.set_instance_count(self._voxel_res_z)

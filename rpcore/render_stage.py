@@ -30,7 +30,6 @@ from rplibs.six import itervalues
 
 from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
-from rpcore.render_target2 import RenderTarget2
 
 class RenderStage(RPObject):
 
@@ -50,19 +49,7 @@ class RenderStage(RPObject):
     produced_pipes = {}
     produced_defines = {}
 
-    @classmethod
-    def disable_stage(cls):
-        """ Disables the stage, this will prevent the stage manager from creating
-        this stage. This is mostly useful to replace the stage by another stage """
-        cls.disabled = True
-
-    @classmethod
-    def is_enabled(cls):
-        """ Returns whether the stage is enabled or disabled. This affects every
-        instance of the stage. """
-        if hasattr(cls, "disabled") and cls.disabled:
-            return False
-        return True
+    disabled = False
 
     def __init__(self, pipeline):
         """ Creates a new render stage """
@@ -100,32 +87,17 @@ class RenderStage(RPObject):
     def set_active(self, active):
         """ Enables or disables all targets bound to this stage """
         for target in itervalues(self._targets):
-            # TODO: Hacky, remove when new render target is there
-            if target.__class__.__name__ == "RenderTarget":
-                target.set_active(active)
-            else:
-                target.active = active
+            target.active = active
 
     def make_target(self, name):
-        """ Creates a new render target with the given name and attachs it to the
-        list of targets, then returns it """
+        """ Creates a new render target and binds it to this stage """
         if name in self._targets:
             self.warn("Overriding existing target: " + name)
-        # Format the name like Plugin:Stage:Name, so it can be easily
-        # found in pstats
-        name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
-        self.warn("TODO: Use 2nd target on", name)
-        self._targets[name] = RenderTarget(name)
-        return self._targets[name]
 
-    def make_target2(self, name):
-        # EXPERIMENTAL
-        if name in self._targets:
-            self.warn("Overriding existing target: " + name)
         # Format the name like Plugin:Stage:Name, so it can be easily
-        # found in pstats
+        # found in pstats below the plugin cagetory
         name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
-        self._targets[name] = RenderTarget2(name)
+        self._targets[name] = RenderTarget(name)
         return self._targets[name]
 
     def _get_shader_handle(self, path, *args):
@@ -137,10 +109,12 @@ class RenderStage(RPObject):
         path_args = []
 
         for source in args:
-            if "/$$rpconfig/" not in source and "/$$rp/shader/" not in source:
-                path_args.append(path.format(source))
+            for prefix in ("/$$rpconfig", "/$$rp/shader", "/$$rptemp"):
+                if prefix in source:
+                    path_args.append(source)
+                    break
             else:
-                path_args.append(source)
+                path_args.append(path.format(source))
 
         # If only one shader is specified, assume its a postprocess fragment shader,
         # and use the default vertex shader

@@ -58,7 +58,8 @@ class UpdatePreviousPipesStage(RenderStage):
     def create(self):
         self.debug("Creating previous pipes stage ..")
         self._target = self.make_target("StorePreviousPipes")
-        self._target.prepare_offscreen_buffer()
+        self._target.add_color_attachment()
+        self._target.prepare_buffer()
 
         # Set inputs
         for i, (from_tex, to_tex) in enumerate(self._transfers):
@@ -77,11 +78,9 @@ class UpdatePreviousPipesStage(RenderStage):
             uniforms.append(self.get_sampler_type(from_tex) + " SrcTex" + index)
             uniforms.append(self.get_sampler_type(to_tex, True) + " DestTex" + index)
 
-            copy_lines.append("\n\t// Copying " + from_tex.get_name() + " to " + to_tex.get_name())
-            copy_lines.append("\t"+\
-                self.get_sampler_lookup(from_tex, "data" + index, "SrcTex" + index, "coord_2d_int"))
-            copy_lines.append("\t"+\
-                self.get_store_code(to_tex, "DestTex" + index, "coord_2d_int", "data" + index))
+            copy_lines.append("\n  // Copying " + from_tex.get_name() + " to " + to_tex.get_name())
+            copy_lines.append(self.get_sampler_lookup(from_tex, "data" + index, "SrcTex" + index, "coord_2d_int"))
+            copy_lines.append(self.get_store_code(to_tex, "DestTex" + index, "coord_2d_int", "data" + index))
             copy_lines.append("\n")
 
         # Actually create the shader
@@ -93,20 +92,19 @@ class UpdatePreviousPipesStage(RenderStage):
 
         fragment += "out vec4 result_color;\n"
         fragment += "\nvoid main() {\n"
-        fragment += "\tivec2 coord_2d_int = ivec2(gl_FragCoord.xy);\n"
+        fragment += "  ivec2 coord_2d_int = ivec2(gl_FragCoord.xy);\n"
         for line in copy_lines:
-            fragment += line + "\n"
-        fragment += "result_color = vec4(0.2, 0.6, 1.0, 1.0);\n"
+            fragment += "  " + line + "\n"
+        fragment += "  result_color = vec4(0.2, 0.6, 1.0, 1.0);\n"
         fragment += "}\n"
 
         # Write the shader
-        shader_dest = "/$$rptemp/$$UpdatePreviousPipes.frag.glsl"
+        shader_dest = "/$$rptemp/$$update_previous_pipes.frag.glsl"
         with open(shader_dest, "w") as handle:
             handle.write(fragment)
 
         # Load it back again
-        shader = self.load_shader(shader_dest)
-        self._target.set_shader(shader)
+        self._target.shader = self.load_shader(shader_dest)
 
     def get_sampler_type(self, tex, can_write=False):
         """ Returns the matching GLSL sampler type for a Texture, or image type

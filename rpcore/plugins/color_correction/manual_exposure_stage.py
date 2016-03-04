@@ -41,7 +41,7 @@ class ManualExposureStage(RenderStage):
         return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self.target = self.make_target2("ManualExposure")
+        self.target = self.make_target("ManualExposure")
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 

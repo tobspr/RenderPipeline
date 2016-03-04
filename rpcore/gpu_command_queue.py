@@ -28,7 +28,7 @@ from panda3d.core import PTAInt, Texture, Shader
 
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
-from rpcore.render_target2 import RenderTarget2
+from rpcore.render_target import RenderTarget
 
 from rpcore.native import GPUCommand, GPUCommandList
 
@@ -109,7 +109,7 @@ class GPUCommandQueue(RPObject):
 
     def _create_command_target(self):
         """ Creates the target which processes the commands """
-        self._command_target = RenderTarget2("CommandTarget")
+        self._command_target = RenderTarget("CommandTarget")
         self._command_target.size = 1, 1
         self._command_target.prepare_buffer()
         self._command_target.set_shader_input("CommandQueue", self._data_texture)

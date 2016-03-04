@@ -291,17 +291,11 @@ class MountManager(RPObject):
         vfs.mount(convert_path(join(self._base_path, "rpcore/shader")), "/$$rp/shader", 0)
         vfs.mount(convert_path(join(self._base_path, "effects")), "effects", 0)
 
-        # Convert the base path to something the os can work with
-        sys_base_path = Filename(self._base_path).to_os_specific()
-
-        # Add current folder to the include path
-        # sys.path.insert(0, sys_base_path)
-
         # Mount the pipeline temp path:
         # If no write path is specified, use a virtual ramdisk
         if self._write_path is None:
-            self.debug("Mounting ramdisk as /$$rptemp/")
-            vfs.mount(VirtualFileMountRamdisk(), "/$$rptemp/", 0)
+            self.debug("Mounting ramdisk as /$$rptemp")
+            vfs.mount(VirtualFileMountRamdisk(), "/$$rptemp", 0)
         else:
             # In case an actual write path is specified:
             # Ensure the pipeline write path exists, and if not, create it
@@ -311,11 +305,12 @@ class MountManager(RPObject):
                     os.makedirs(self._write_path)
                 except IOError as msg:
                     self.fatal("Failed to create temporary path:", msg)
-            self.debug("Mounting", self._write_path, "as $$rptemp/")
+            self.debug("Mounting", self._write_path, "as /$$rptemp")
             vfs.mount(convert_path(self._write_path), '/$$rptemp', 0)
 
         get_model_path().prepend_directory("/$$rp")
         get_model_path().prepend_directory("/$$rp/shader")
+        get_model_path().prepend_directory("/$$rptemp")
 
 
     def unmount(self):

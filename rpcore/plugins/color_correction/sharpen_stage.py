@@ -48,12 +48,12 @@ class SharpenStage(RenderStage):
             return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self.target = self.make_target2("Sharpen")
+        self.target = self.make_target("Sharpen")
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 
         if self.sharpen_twice:
-            self.target2 = self.make_target2("Sharpen2")
+            self.target2 = self.make_target("Sharpen2")
             self.target2.add_color_attachment(bits=16)
             self.target2.prepare_buffer()
             self.target2.set_shader_input("ShadedScene", self.target.color_tex)

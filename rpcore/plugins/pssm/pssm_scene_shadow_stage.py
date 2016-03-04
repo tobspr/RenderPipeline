@@ -103,11 +103,11 @@ class PSSMSceneShadowStage(RenderStage):
         self.camera.set_lens(self.cam_lens)
         self.cam_node = Globals.base.render.attach_new_node(self.camera)
 
-        self.target = self.make_target2("ShadowMap")
+        self.target = self.make_target("ShadowMap")
         self.target.size = self.resolution
         self.target.add_depth_attachment(bits=32)
         self.target.prepare_render(self.cam_node)
-        
+
 
         # Register shadow camera
         self._pipeline.tag_mgr.register_shadow_camera(self.camera)

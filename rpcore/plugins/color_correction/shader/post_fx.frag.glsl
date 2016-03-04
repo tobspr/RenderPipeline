@@ -35,7 +35,6 @@
 #pragma include "chromatic_aberration.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform float osg_FrameTime;
 
 out vec4 result;
 
@@ -65,7 +64,7 @@ void main() {
         #endif
 
         // Compute film grain
-        float film_grain = grain(texcoord, osg_FrameTime);
+        float film_grain = grain(texcoord, MainSceneData.frame_time);
         vec3 blended_color = blend_soft_light(scene_color, vec3(film_grain));
 
         // Blend film grain

@@ -86,10 +86,6 @@ class StageManager(BaseManager):
             self.error("Cannot attach stage, stages are already created!")
             return
 
-        if not stage.is_enabled():
-            self.debug("Skipping disabled stage", stage)
-            return
-
         self._stages.append(stage)
 
     def add_input(self, key, value):
@@ -126,11 +122,12 @@ class StageManager(BaseManager):
     def _prepare_stages(self):
         """ Prepares all stages by removing disabled stages and sorting stages
         by order """
+        self.debug("Preparing stages ..")
 
         # Remove all disabled stages
         to_remove = []
         for stage in self._stages:
-            if not stage.is_enabled():
+            if stage.disabled:
                 to_remove.append(stage)
 
         for stage in to_remove:
@@ -162,7 +159,7 @@ class StageManager(BaseManager):
                 continue
 
             if pipe not in self._pipes:
-                self.error("Pipe '" + pipe + "' is missing for", stage)
+                self.fatal("Pipe '" + pipe + "' is missing for", stage)
                 return False
 
             pipe_value = self._pipes[pipe]
@@ -299,9 +296,6 @@ class StageManager(BaseManager):
 
         for key, value in sorted(iteritems(self._defines)):
             output += self._make_glsl_define(key, value)
-
-        # Write a random timestamp, to make sure no caching occurs
-        output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"
 
         # Try to write the file
         try:

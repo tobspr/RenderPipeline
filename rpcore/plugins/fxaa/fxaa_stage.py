@@ -39,11 +39,11 @@ class FXAAStage(RenderStage):
 
     def create(self):
 
-        self.luma_target = self.make_target2("FXAAWriteLuma")
+        self.luma_target = self.make_target("FXAAWriteLuma")
         self.luma_target.add_color_attachment(bits=16, alpha=True)
         self.luma_target.prepare_buffer()
 
-        self.target = self.make_target2("FXAA")
+        self.target = self.make_target("FXAA")
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 

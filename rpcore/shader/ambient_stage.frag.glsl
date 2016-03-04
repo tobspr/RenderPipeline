@@ -57,6 +57,10 @@ uniform samplerCube DefaultEnvmap;
     uniform sampler2D EnvmapAmbientSpec;
 #endif
 
+#if HAVE_PLUGIN(sslr)
+    uniform sampler2D SSLRSpecular;
+#endif
+
 out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness) {
@@ -141,6 +145,11 @@ void main() {
         ibl_diffuse = ibl_diffuse * (1 - probe_diff.w) + probe_diff.xyz;
     #endif
 
+    #if HAVE_PLUGIN(sslr)
+        vec4 sslr_spec = textureLod(SSLRSpecular, texcoord, 0);
+        ibl_specular = ibl_specular * (1 - sslr_spec.w) + sslr_spec.xyz;
+    #endif
+
     // Pre-Integrated environment BRDF
     // X-Component denotes the fresnel term
     // Y-Component denotes f0 factor
@@ -148,6 +157,7 @@ void main() {
 
     vec3 material_f0 = get_material_f0(m);
     vec3 specular_ambient = (material_f0 * env_brdf.x + env_brdf.y) * ibl_specular;
+    specular_ambient = ibl_specular;
 
     // Diffuse ambient term
     // TODO: lambertian brdf doesn't look well?

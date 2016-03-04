@@ -19,8 +19,7 @@ settings: !!omap
         shader_runtime: true
         description: >
             Controls the blur factor, a factor of 1 means the full blur is applied,
-            a factor of 0 means no blur at all. You should adjust this so the
-            blur is not too strong, otherwise motion sickness can happen.
+            a factor of 0 means no blur at all.
 
     - max_blur_radius:
         type: float
@@ -41,5 +40,27 @@ settings: !!omap
         description: >
             Controls the amount of samples, more samples mean a smoother blur
             but also require more performance.
+
+    - num_camera_samples:
+        type: int
+        range: [2, 16]
+        default: 6
+        label: Camera Blur sample count
+        shader_runtime: true
+        description: >
+            Controls the amount of samples for camera motion blur, more samples
+            mean a smoother blur but also require more performance.
+
+    - camera_blur_factor:
+        type: float
+        range: [0.0, 2.0]
+        default: 0.8
+        label: Camera Blur factor
+        shader_runtime: true
+        description: >
+            Controls the camera blur factor, a factor of 1 means the full blur
+            is applied, a factor of 0 means no blur at all. You should adjust
+            this so the blur is not too strong, otherwise motion sickness can happen.
+
 
 daytime_settings:

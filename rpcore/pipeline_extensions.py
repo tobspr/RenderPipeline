@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 from rpcore.globals import Globals
 from rpcore.effect import Effect
-from rpcore.native import PointLight
+from rpcore.native import PointLight, SpotLight
 from rpcore.gui.loading_screen import LoadingScreen, EmptyLoadingScreen
 
 from rpcore.stages.ambient_stage import AmbientStage
@@ -148,6 +148,7 @@ class PipelineExtensions(object):
         """ Constructs a new environment probe and returns the handle, so that
         the probe can be modified """
 
+        # TODO: This method is super hacky
         if not self.plugin_mgr.is_plugin_enabled("env_probes"):
             self.warn("Environment probes are disabled, cant add environment probe")
             class _dummy_probe(object):
@@ -155,7 +156,6 @@ class PipelineExtensions(object):
                     return lambda *args, **kwargs: None
             return _dummy_probe()
 
-        # TODO: This is super hacky
         from rpcore.plugins.env_probes.environment_probe import EnvironmentProbe
         probe = EnvironmentProbe()
         self.plugin_mgr.get_plugin_handle("env_probes").probe_mgr.add_probe(probe)
@@ -164,17 +164,27 @@ class PipelineExtensions(object):
     def prepare_scene(self, scene):
         """ Prepares a given scene, by converting panda lights to render pipeline
         lights """
-        for light in scene.find_all_matches("**/+Light"):
+
+        # Load some fancy ies profile
+        # ies_profile = self.load_ies_profile("data/ies_profiles/soft_arrow.ies")
+
+        for light in scene.find_all_matches("**/+PointLight"):
             light_node = light.node()
 
             rp_light = PointLight()
+            # rp_light = SpotLight()
             rp_light.pos = light.get_pos()
-            rp_light.radius = 30.0
+            rp_light.radius = light_node.max_distance
             rp_light.lumens = 10.0
+            # rp_light.look_at(0, 0, 0)
+            # rp_light.fov = 120.0
             rp_light.color = light_node.get_color().xyz
             rp_light.casts_shadows = True
             rp_light.shadow_map_resolution = 512
+            # rp_light.ies_profile = ies_profile
             self.add_light(rp_light)
+
+            light.remove_node()
 
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns

@@ -37,7 +37,6 @@
 
 uniform sampler2D NoiseTex;
 uniform sampler3D CloudVoxels;
-uniform float osg_FrameTime;
 
 out vec4 result;
 
@@ -65,7 +64,7 @@ void main() {
 
     vec2 texcoord = get_half_texcoord();
 
-    vec3 wind_offs = vec3(0.2, 0.3,0) * 0.01 * osg_FrameTime;
+    vec3 wind_offs = vec3(0.2, 0.3,0) * 0.01 * MainSceneData.frame_time;
 
     vec3 pos = get_gbuffer_position(GBuffer, texcoord);
     vec3 ray_start = MainSceneData.camera_pos;

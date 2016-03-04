@@ -80,7 +80,7 @@ void main() {
         adaption_rate = GET_SETTING(color_correction, darkness_adaption_rate);
     }
 
-    float adjustment = saturate(MainSceneData.frame_delta * adaption_rate);
+    float adjustment = saturate(MainSceneData.smooth_frame_delta * adaption_rate);
     float new_luminance = mix(curr_exposure, exposure, adjustment);
     new_luminance = clamp(new_luminance, 0.0, 1000.0);
     imageStore(ExposureStorage, 0, vec4(new_luminance));

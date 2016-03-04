@@ -44,7 +44,7 @@ float attenuation_curve(float dist_sq, float radius) {
 
 // Computes the attenuation for a point light
 float get_pointlight_attenuation(vec3 l, float radius, float dist_sq, int ies_profile) {
-    return attenuation_curve(dist_sq, radius) * get_ies_factor(l, ies_profile);
+    return attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
 }
 
 // Computes the attenuation for a spot light

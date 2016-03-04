@@ -38,37 +38,44 @@ class MotionBlurStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self.target.color_tex}
+        return {"ShadedScene": self.target_cb.color_tex}
 
     def create(self):
         self.tile_size = 32
-        self.tile_target = self.make_target2("FetchVertDominantVelocity")
+        self.tile_target = self.make_target("FetchVertDominantVelocity")
         self.tile_target.size = -1, -self.tile_size
         self.tile_target.add_color_attachment(bits=(16, 16, 0))
         self.tile_target.prepare_buffer()
 
-        self.tile_target_horiz = self.make_target2("FetchHorizDominantVelocity")
+        self.tile_target_horiz = self.make_target("FetchHorizDominantVelocity")
         self.tile_target_horiz.size = -self.tile_size
         self.tile_target_horiz.add_color_attachment(bits=(16, 16, 0))
         self.tile_target_horiz.prepare_buffer()
         self.tile_target_horiz.set_shader_input("SourceTex", self.tile_target.color_tex)
 
-
-        self.minmax_target = self.make_target2("NeighborMinMax")
+        self.minmax_target = self.make_target("NeighborMinMax")
         self.minmax_target.size = -self.tile_size
         self.minmax_target.add_color_attachment(bits=(16, 16, 0))
         self.minmax_target.prepare_buffer()
         self.minmax_target.set_shader_input("TileMinMax", self.tile_target_horiz.color_tex)
 
-        self.pack_target = self.make_target2("PackBlurData")
+        self.pack_target = self.make_target("PackBlurData")
         self.pack_target.add_color_attachment(bits=(16, 16, 0))
         self.pack_target.prepare_buffer()
 
-        self.target = self.make_target2("MotionBlur")
+        self.target = self.make_target("ObjectMotionBlur")
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
         self.target.set_shader_input("NeighborMinMax", self.minmax_target.color_tex)
         self.target.set_shader_input("PackedSceneData", self.pack_target.color_tex)
+
+        self.target.color_tex.set_wrap_u(SamplerState.WM_clamp)
+        self.target.color_tex.set_wrap_v(SamplerState.WM_clamp)
+
+        self.target_cb = self.make_target("CameraMotionBlur")
+        self.target_cb.add_color_attachment(bits=16)
+        self.target_cb.prepare_buffer()
+        self.target_cb.set_shader_input("SourceTex", self.target.color_tex)
 
     def set_shaders(self):
         self.tile_target.shader = self.load_plugin_shader("fetch_dominant_velocity.frag.glsl")
@@ -76,3 +83,4 @@ class MotionBlurStage(RenderStage):
         self.minmax_target.shader = self.load_plugin_shader("neighbor_minmax.frag.glsl")
         self.pack_target.shader = self.load_plugin_shader("pack_blur_data.frag.glsl")
         self.target.shader = self.load_plugin_shader("apply_motion_blur.frag.glsl")
+        self.target_cb.shader = self.load_plugin_shader("camera_motion_blur.frag.glsl")

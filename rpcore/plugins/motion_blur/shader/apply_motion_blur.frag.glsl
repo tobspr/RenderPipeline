@@ -38,7 +38,7 @@ uniform sampler2D ShadedScene;
 uniform sampler2D PackedSceneData;
 uniform sampler2D NeighborMinMax;
 
-out vec4 result;
+out vec3 result;
 
 const int num_samples = GET_SETTING(motion_blur, num_samples);
 
@@ -55,7 +55,7 @@ void main() {
 
   // Early out
   if (length(tile_velocity) < 0.5 / WINDOW_WIDTH) {
-    result = vec4(center_color, 1);
+    result = saturate(center_color);
     return;
   }
 
@@ -90,8 +90,5 @@ void main() {
 
   }
 
-  result = vec4(accum, initial_weight) / weight_accum;
-
-  // To disable motion blur:
-  // result = texelFetch(ShadedScene, coord, 0);
+  result = saturate(accum / max(0.001, weight_accum));
 }

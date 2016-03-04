@@ -56,7 +56,7 @@ class ShadowStage(RenderStage):
         return self.target.internal_buffer
 
     def create(self):
-        self.target = self.make_target2("ShadowAtlas")
+        self.target = self.make_target("ShadowAtlas")
         self.target.size = self.size
         self.target.add_depth_attachment(bits=32)
         self.target.prepare_render(None)

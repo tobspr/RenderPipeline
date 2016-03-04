@@ -41,19 +41,13 @@ class PSSMDistShadowStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {
-            "PSSMVSMShadowMap": self._target['depth'],
-        }
-
+        return {"PSSMVSMShadowMap": self._target['depth'],}
 
     def create(self):
         self._target = self.make_target("ShadowMap")
-        self._target.set_source(None, Globals.base.win)
         self._target.size = self.resolution
-        self._target.add_depth_texture(bits=32)
-        self._target.create_overlay_quad = False
-        self._target.color_write = False
-        self._target.prepare_scene_render()
+        self._target.add_depth_attachment(bits=32)
+        self._target.prepare_scene_render(None)
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

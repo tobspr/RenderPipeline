@@ -37,22 +37,22 @@ class AOStage(RenderStage):
         return {"AmbientOcclusion": self.target_upscale.color_tex}
 
     def create(self):
-        self.target = self.make_target2("Sample")
+        self.target = self.make_target("Sample")
         self.target.size = -2
         self.target.add_color_attachment(alpha=True)
         self.target.prepare_buffer()
 
-        self.target_blur_v = self.make_target2("BlurV")
+        self.target_blur_v = self.make_target("BlurV")
         self.target_blur_v.size = -2
         self.target_blur_v.add_color_attachment(alpha=True)
         self.target_blur_v.prepare_buffer()
 
-        self.target_blur_h = self.make_target2("BlurH")
+        self.target_blur_h = self.make_target("BlurH")
         self.target_blur_h.size = -2
         self.target_blur_h.add_color_attachment(alpha=True)
         self.target_blur_h.prepare_buffer()
 
-        self.target_upscale = self.make_target2("Upscale")
+        self.target_upscale = self.make_target("Upscale")
         self.target_upscale.add_color_attachment(alpha=True)
         self.target_upscale.prepare_buffer()
 

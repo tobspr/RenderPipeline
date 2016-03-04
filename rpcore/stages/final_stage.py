@@ -34,7 +34,7 @@ class FinalStage(RenderStage):
     required_pipes = ["ShadedScene"]
 
     def create(self):
-        self.target = self.make_target2("FinalStage")
+        self.target = self.make_target("FinalStage")
         self.target.present_on_screen()
 
     def set_shaders(self):
