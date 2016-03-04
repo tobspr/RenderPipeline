@@ -83,7 +83,6 @@ class RenderTarget(RPObject):
         # Public attributes
         self.engine = Globals.base.graphicsEngine
         self.support_transparency = False
-        self.use_oversized_triangle = True
         self.create_default_region = True
 
         # Disable all global clears, since they are not required
@@ -372,5 +371,7 @@ class RenderTarget(RPObject):
         if RenderTarget.CREATION_HANDLER:
             RenderTarget.CREATION_HANDLER(self)
         else:
-            self.warn("Could not register target")
+            self.debug("Late initializing target, buffer viewer not ready yet")
+            Globals.base.taskMgr.doMethodLater(0.5,
+                lambda task: RenderTarget.CREATION_HANDLER(self), "register-target-" + self.debug_name)
         return True

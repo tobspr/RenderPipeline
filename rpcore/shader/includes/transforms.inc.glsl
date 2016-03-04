@@ -133,3 +133,4 @@ vec3 world_normal_to_view(vec3 world_normal) {
   proj.xyz *= vec3(1, -1, 1);
   return normalize(proj.xzy);
 }
+

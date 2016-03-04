@@ -144,6 +144,11 @@ void main() {
         m.emissive = mOutput.emissive;
     #endif
 
+        // m.normal =vOutput.normal;
+        m.roughness = 0.5;
+        // m.specular_ior = 2.0;
+        // m.metallic = 0;
+
     %MATERIAL%
 
     render_material(m);

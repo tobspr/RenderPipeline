@@ -33,7 +33,7 @@ class SMAAStage(RenderStage):
 
     """ This stage does the actual SMAA """
 
-    required_pipes = ["ShadedScene", "GBuffer"]
+    required_pipes = ["ShadedScene", "GBuffer", "CombinedVelocity"]
     required_inputs = []
 
     def __init__(self, pipeline):

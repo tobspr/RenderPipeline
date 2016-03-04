@@ -39,6 +39,5 @@ class Plugin(BasePlugin):
     version = "alpha (!)"
 
     def on_stage_setup(self):
-        print("Enabling downscaled depth stage")
         DownscaleZStage.disabled = False
         self._sslr_stage = self.create_stage(SSLRStage)

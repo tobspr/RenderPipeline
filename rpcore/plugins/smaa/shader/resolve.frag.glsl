@@ -34,6 +34,7 @@
 
 uniform sampler2D CurrentTex;
 uniform sampler2D LastTex;
+uniform sampler2D CombinedVelocity;
 uniform GBufferData GBuffer;
 
 out vec3 result;
@@ -68,7 +69,7 @@ void main() {
     vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    vec2 velocity = get_gbuffer_velocity(GBuffer, texcoord);
+    vec2 velocity = texture(CombinedVelocity, texcoord).xy;
     vec2 last_coord = texcoord - velocity;
 
     vec2 one_pixel = 1.0 / SCREEN_SIZE;

@@ -32,18 +32,19 @@ class SSLRStage(RenderStage):
     """ This stage does the SSLR pass """
 
     required_inputs = []
-    required_pipes = ["ShadedScene", "GBuffer", "DownscaledDepth", "PreviousFrame::PostAmbientScene"]
+    required_pipes = ["ShadedScene", "CombinedVelocity", "GBuffer",
+                      "DownscaledDepth", "PreviousFrame::PostAmbientScene"]
 
     @property
     def produced_pipes(self):
-        return {"SSLRSpecular": self._target.color_tex}
+        return {"SSLRSpecular": self.target.color_tex}
 
     def create(self):
-        self._target = self.make_target("ComputeSSLR")
-        self._target.add_color_attachment(bits=16)
-        self._target.prepare_buffer()
+        self.target = self.make_target("ComputeSSLR")
+        self.target.add_color_attachment(bits=16, alpha=True)
+        self.target.prepare_buffer()
 
         AmbientStage.required_pipes.append("SSLRSpecular")
 
     def set_shaders(self):
-        self._target.shader = self.load_plugin_shader("sslr_stage.frag.glsl")
+        self.target.shader = self.load_plugin_shader("sslr_stage.frag.glsl")

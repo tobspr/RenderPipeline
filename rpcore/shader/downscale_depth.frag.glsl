@@ -27,15 +27,22 @@
 #version 420
 
 #define USE_MAIN_SCENE_DATA
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/transforms.inc.glsl"
 
-uniform GBufferData GBuffer;
-
-uniform writeonly image2D RESTRICT DestTexture;
+out float result;
 
 void main() {
-    vec2 coord = get_texcoord();
-    float source_depth = get_gbuffer_depth(GBuffer, coord);
-    imageStore(DestTexture, ivec2(gl_FragCoord.xy), vec4(source_depth));
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 base_coord = coord * 2;
+
+    // Fetch the 4 pixels from the higher mipmap
+    float v0 = get_linear_z_from_z(get_depth_at(base_coord + ivec2(0, 0)));
+    float v1 = get_linear_z_from_z(get_depth_at(base_coord + ivec2(1, 0)));
+    float v2 = get_linear_z_from_z(get_depth_at(base_coord + ivec2(0, 1)));
+    float v3 = get_linear_z_from_z(get_depth_at(base_coord + ivec2(1, 1)));
+
+    result = (v0 + v1 + v2 + v3) * 0.25;
 }

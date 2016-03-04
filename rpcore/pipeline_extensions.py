@@ -37,6 +37,7 @@ from rpcore.stages.ambient_stage import AmbientStage
 from rpcore.stages.gbuffer_stage import GBufferStage
 from rpcore.stages.final_stage import FinalStage
 from rpcore.stages.downscale_z_stage import DownscaleZStage
+from rpcore.stages.combine_velocity_stage import CombineVelocityStage
 
 class PipelineExtensions(object):
 
@@ -150,7 +151,7 @@ class PipelineExtensions(object):
 
         # TODO: This method is super hacky
         if not self.plugin_mgr.is_plugin_enabled("env_probes"):
-            self.warn("Environment probes are disabled, cant add environment probe")
+            self.warn("EnvProbe plugin is not loaded, can not add environment probe")
             class _dummy_probe(object):
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
@@ -214,3 +215,6 @@ class PipelineExtensions(object):
 
         self._downscale_stage = DownscaleZStage(self)
         add_stage(self._downscale_stage)
+
+        self._combine_velocity_stage = CombineVelocityStage(self)
+        add_stage(self._combine_velocity_stage)

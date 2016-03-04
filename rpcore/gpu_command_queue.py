@@ -109,7 +109,7 @@ class GPUCommandQueue(RPObject):
 
     def _create_command_target(self):
         """ Creates the target which processes the commands """
-        self._command_target = RenderTarget("CommandTarget")
+        self._command_target = RenderTarget("ExecCommandTarget")
         self._command_target.size = 1, 1
         self._command_target.prepare_buffer()
         self._command_target.set_shader_input("CommandQueue", self._data_texture)

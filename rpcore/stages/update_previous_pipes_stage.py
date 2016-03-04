@@ -58,7 +58,6 @@ class UpdatePreviousPipesStage(RenderStage):
     def create(self):
         self.debug("Creating previous pipes stage ..")
         self._target = self.make_target("StorePreviousPipes")
-        self._target.add_color_attachment()
         self._target.prepare_buffer()
 
         # Set inputs

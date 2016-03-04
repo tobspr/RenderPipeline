@@ -19,6 +19,7 @@ global_stage_order:
   - GBufferStage
   - ShadowStage
   - DownscaleZStage
+  - CombineVelocityStage
 
   # Light(-culling)
   - FlagUsedCellsStage

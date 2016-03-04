@@ -45,7 +45,7 @@ void main() {
 
   // Find the longest vector in the tile
   for (int y = 0; y <= tile_size; y += 4) {
-    vec2 velocity = get_gbuffer_velocity(GBuffer, ivec2(coord.x, screen_coord.y + y));
+    vec2 velocity = get_gbuffer_object_velocity(GBuffer, ivec2(coord.x, screen_coord.y + y));
     float len_sq = dot(velocity, velocity);
 
     // Check if the vector is longer than the current longest vector

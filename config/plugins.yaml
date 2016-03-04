@@ -6,16 +6,16 @@
 enabled:
     - sslr
     # - clouds
-    # - pssm
+    - pssm
     - color_correction
     - scattering
-    # - ao
-    # - smaa
-    # - env_probes
+    - ao
+    - smaa
+    - env_probes
     # - vxgi
     # - fxaa
-    # - bloom
-    # - motion_blur
+    - bloom
+    - motion_blur
 
 
 overrides:

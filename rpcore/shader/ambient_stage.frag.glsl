@@ -68,7 +68,7 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
 }
 
 float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
- return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
+    return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
 }
 
 // From: http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
@@ -157,7 +157,6 @@ void main() {
 
     vec3 material_f0 = get_material_f0(m);
     vec3 specular_ambient = (material_f0 * env_brdf.x + env_brdf.y) * ibl_specular;
-    specular_ambient = ibl_specular;
 
     // Diffuse ambient term
     // TODO: lambertian brdf doesn't look well?

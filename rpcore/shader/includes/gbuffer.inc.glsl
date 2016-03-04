@@ -146,12 +146,12 @@ uniform mat4 p3d_ProjectionMatrix;
     }
 
     // Returns the velocity at a given coordinate
-    vec2 get_gbuffer_velocity(GBufferData data, vec2 coord) {
+    vec2 get_gbuffer_object_velocity(GBufferData data, vec2 coord) {
         return textureLod(data.Data2, coord, 0).xy;
     }
 
     // Returns the velocity at a given coordinate
-    vec2 get_gbuffer_velocity(GBufferData data, ivec2 coord) {
+    vec2 get_gbuffer_object_velocity(GBufferData data, ivec2 coord) {
         return texelFetch(data.Data2, coord, 0).xy;
     }
 
@@ -215,12 +215,12 @@ uniform mat4 p3d_ProjectionMatrix;
         }
 
         // Returns the velocity given texcoord
-        vec2 get_velocity_at(vec2 coord) {
-            return get_gbuffer_velocity(GBuffer, coord);
+        vec2 get_object_velocity_at(vec2 coord) {
+            return get_gbuffer_object_velocity(GBuffer, coord);
         }
         // Returns the velocity given texcoord
-        vec2 get_velocity_at(ivec2 coord) {
-            return get_gbuffer_velocity(GBuffer, coord);
+        vec2 get_object_velocity_at(ivec2 coord) {
+            return get_gbuffer_object_velocity(GBuffer, coord);
         }
 
         // Returns the view space normal at a given texcoord. This tries to find
@@ -264,6 +264,19 @@ uniform mat4 p3d_ProjectionMatrix;
             vec3 dx_y = view_pos - get_view_pos_at(coord + pixel_size * vec2(0, 1));
             return normalize(cross(dx_x, dx_y));
         }
+
+
+        // Returns the cameras velocity
+        vec2 get_camera_velocity(vec2 texcoord) {
+
+          // Reconstruct last frame texcoord
+          vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0,1.0 / ASPECT_RATIO);
+          vec3 pos = get_world_pos_at(texcoord + film_offset_bias);
+          vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
+          vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
+          return last_coord - texcoord;
+        }
+
 
     #endif
 
