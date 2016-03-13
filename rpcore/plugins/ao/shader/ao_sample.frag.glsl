@@ -1,3 +1,4 @@
+
 /**
  *
  * RenderPipeline
@@ -34,41 +35,44 @@
 #pragma include "includes/noise.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 
-out vec4 result;
+out float result;
 
 uniform sampler2D Noise4x4;
+uniform sampler2D DownscaledDepth;
 
 // use the extended gbuffer api
 #define USE_GBUFFER_EXTENSIONS 1
 #pragma include "includes/gbuffer.inc.glsl"
 
-void main() {
+float get_linear_depth_at(vec2 coord) {
+    return textureLod(DownscaledDepth, coord, 0).x;
+    // return get_linear_z_from_z(textureLod(GBuffer.Depth, coord, 0).x);
+}
 
-    result = vec4(1, 0, 0, 1);
+void main() {
 
     // Provide some variables to the kernel
     vec2 screen_size = vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     vec2 pixel_size = vec2(1.0) / screen_size;
 
-
     ivec2 coord = ivec2(gl_FragCoord.xy) * 2;
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
     // Shader variables
-    vec3 pixel_world_pos = get_world_pos_at(texcoord);
+    float pixel_depth = get_depth_at(texcoord);
+    float pixel_distance = get_linear_z_from_z(pixel_depth);
 
-    vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
-    float view_dist = distance(pixel_world_pos, MainSceneData.camera_pos);
-
-    vec3 noise_vec = fma(rand_rgb(coord % 3), vec3(2), vec3(-1));
-    // noise_vec *= 0.;
-
-    if (is_skybox(pixel_world_pos)) {
-        result = vec4(1);
+    if (pixel_distance > 1000.0) {
+        result = 1.0;
         return;
     }
 
-    float pixel_depth = get_depth_at(texcoord);
+    // vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
+    float view_dist = pixel_distance;
+
+    vec3 noise_vec = fma(rand_rgb(coord % 5 + 0.1 * MainSceneData.temporal_index), vec3(2), vec3(-1));
+    noise_vec *= 0.35;
+
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
     vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, texcoord);
@@ -91,14 +95,10 @@ void main() {
         #error Unkown AO technique!
     #endif
 
-    result.w = pow(result.w, GET_SETTING(ao, occlusion_strength));
-    result.w = pow(result.w, 3.0);
-
-    // Smooth the normal a bit to prevent artifacts
-    result.xyz = mix(result.xyz, pixel_world_normal, 0.4);
-
-    // Pack bent normal
-    result.xyz = fma(result.xyz, vec3(0.5), vec3(0.5));
+    result = pow(saturate(result), GET_SETTING(ao, occlusion_strength));
+    result = pow(result, 3.0);
 }
+
+
 
 

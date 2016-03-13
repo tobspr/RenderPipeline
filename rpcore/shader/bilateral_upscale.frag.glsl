@@ -36,61 +36,73 @@ out vec4 result;
 
 // x: Max Depth, y: Max Nrm
 uniform vec2 upscaleWeights;
+uniform bool useZAsWeight;
 
 uniform sampler2D SourceTex;
 uniform GBufferData GBuffer;
 
 void main() {
-
     // Get sample coordinates
     ivec2 coord = ivec2(gl_FragCoord.xy);
-
     ivec2 bil_start_coord = get_bilateral_coord(coord);
 
-    vec2 bilateral_coord = vec2(bil_start_coord + 0.5) / ivec2(SCREEN_SIZE / 2);
-    vec2 main_texcoord = vec2(bil_start_coord * 2 + 0.5) / vec2(SCREEN_SIZE);
-
-    vec2 pixel_size_bil = vec2(1.0) / ivec2(SCREEN_SIZE / 2);
-    vec2 pixel_size = 1.0 / SCREEN_SIZE;
-
     // Get current pixel data
-    vec2 texcoord = get_texcoord();
-    float mid_depth = get_gbuffer_depth(GBuffer, texcoord);
-    vec3 mid_nrm = get_gbuffer_normal(GBuffer, texcoord);
+    float mid_depth = get_gbuffer_depth(GBuffer, coord);
+    vec3 mid_nrm = get_gbuffer_normal(GBuffer, coord);
 
-    const float max_depth_diff = upscaleWeights.x; // 0.0001
-    const float max_nrm_diff = upscaleWeights.y; // 0.001
+    // const float max_depth_diff = upscaleWeights.x; // 0.001
+    // const float max_nrm_diff = upscaleWeights.y; // 0.001
+
+    const float max_depth_diff = 0.0001;
+    const float max_nrm_diff = 0.001;
+
 
     float weights = 0.0;
     vec4 accum = vec4(0);
 
-    // Accumulate all samples
-    for (int x = 0; x < 2; ++x) {
-        for (int y = 0; y < 2; ++y) {
+    // Controls how many other pixels should be taken into account, besides
+    // of the 4 direct neighbors.
+    const int search_radius = 0;
 
-            vec2 source_coord = bilateral_coord + vec2(x, y) * 1.0 * pixel_size_bil;
-            vec2 screen_coord = main_texcoord + vec2(x, y) * 2.0 * pixel_size;
-            vec4 source_sample = textureLod(SourceTex, source_coord, 0);
+    // Accumulate all samples
+    for (int x = -search_radius; x < 2 + search_radius; ++x) {
+        for (int y = -search_radius; y < 2 + search_radius; ++y) {
+
+            ivec2 source_coord = bil_start_coord + ivec2(x, y);
+            vec4 source_sample = texelFetch(SourceTex, source_coord, 0);
 
             // Check how much information those pixels share, and if it is
             // enough, use that sample
-            float sample_depth = get_gbuffer_depth(GBuffer, screen_coord);
-            vec3 sample_nrm = get_gbuffer_normal(GBuffer, screen_coord);
+            float sample_depth = get_gbuffer_depth(GBuffer, source_coord * 2);
+            vec3 sample_nrm = get_gbuffer_normal(GBuffer, source_coord * 2);
             float depth_diff = abs(sample_depth - mid_depth) / max_depth_diff;
             float nrm_diff = max(0, dot(sample_nrm, mid_nrm));
             float weight = 1.0 - saturate(depth_diff);
             weight *= pow(nrm_diff, 1.0 / max_nrm_diff);
 
+            // if (useZAsWeight) {
+            //     weight *= source_sample.w;
+            // }
+
             // Make sure we don't have a null-weight, but instead only a very
             // small weight, so that in case no pixel matches, we still have
             // data to work with.
-            weight = max(1e-3, weight);
+            // weight = max(1e-5, weight);
 
             accum += source_sample * weight;
             weights += weight;
         }
     }
 
-    accum /= max(0.001, weights);
-    result = vec4(accum);
+    if (weights < 1e-5) {
+        // When no sample was valid, take the center sample - this is still
+        // better than invalid pixels
+        result = texelFetch(SourceTex, coord / 2, 0);
+        // result = vec4(1, 0, 0, 1);
+    } else {
+        result = accum / weights;
+    }
+
+    // result = texelFetch(SourceTex, coord / 2, 0);
+
 }

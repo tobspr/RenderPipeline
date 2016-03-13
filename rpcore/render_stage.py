@@ -57,6 +57,7 @@ class RenderStage(RPObject):
         self._stage_id = self.__class__.__name__
         self._pipeline = pipeline
         self._targets = {}
+        self._future_mappings = {}
 
     @property
     def stage_id(self):
@@ -79,24 +80,31 @@ class RenderStage(RPObject):
         for target in itervalues(self._targets):
             target.set_shader_input(*args)
 
+        if args[0] in self._future_mappings:
+            target, name = self._future_mappings[args[0]]
+            target.set_shader_input(name, *args[1:])
+
     def update(self):
         """ This method gets called every frame, and can be overridden by render
         stages to perform custom updates """
         pass
+
+    def bind_future_input_pipe(self, target, source, dest):
+        """ Binds a future shader input named source to dest on the given target """
+        self._future_mappings[source] = (target, dest)
 
     def set_active(self, active):
         """ Enables or disables all targets bound to this stage """
         for target in itervalues(self._targets):
             target.active = active
 
-    def make_target(self, name):
+    def create_target(self, name):
         """ Creates a new render target and binds it to this stage """
-        if name in self._targets:
-            self.warn("Overriding existing target: " + name)
-
         # Format the name like Plugin:Stage:Name, so it can be easily
         # found in pstats below the plugin cagetory
         name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
+        if name in self._targets:
+            self.error("Overriding existing target: " + name)
         self._targets[name] = RenderTarget(name)
         return self._targets[name]
 
@@ -126,6 +134,8 @@ class RenderStage(RPObject):
     def _get_plugin_id(self):
         """ Returns the id of the plugin which created this stage. This is done
         by extracting the name of the plugin from the module name """
+        if "rpcore.stages" in self.__class__.__module__:
+            return "render_pipeline_internal"
         return str(self.__class__.__module__).split(".")[-2]
 
     def load_shader(self, *args):

@@ -46,13 +46,6 @@ uniform sampler2D ShadowAtlas;
 uniform sampler2DShadow ShadowAtlasPCF;
 #endif
 
-
-// Use ambient occlusion data, but only if we work in scren space, and only if
-// the plugin is enabled
-#if IS_SCREEN_SPACE && HAVE_PLUGIN(ao)
-    uniform sampler2D AmbientOcclusion;
-#endif
-
 int get_pointlight_source_offs(vec3 direction) {
     vec3 abs_dir = abs(direction);
     float max_comp = max(abs_dir.x, max(abs_dir.y, abs_dir.z));
@@ -63,7 +56,7 @@ int get_pointlight_source_offs(vec3 direction) {
 }
 
 // Processes a spot light
-vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, vec4 directional_occlusion, float shadow_factor) {
+vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, float shadow_factor) {
     const vec3 transmittance = vec3(1); // <-- TODO
 
     // Get the lights data
@@ -80,12 +73,12 @@ vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, vec4 
                                                   dot(l, l), ies_profile);
 
     // Compute the lights influence
-    return apply_light(m, view_vector, l, get_light_color(light_data), attenuation,
-                       shadow_factor, directional_occlusion, transmittance);
+    return apply_light(m, view_vector, l_norm, get_light_color(light_data), attenuation,
+                       shadow_factor, transmittance);
 }
 
 // Processes a point light
-vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, vec4 directional_occlusion, float shadow_factor) {
+vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, float shadow_factor) {
     const vec3 transmittance = vec3(1); // <-- TODO
 
     // Get the lights data
@@ -100,8 +93,8 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, vec4
     float attenuation = get_pointlight_attenuation(l_norm, radius, dot(l, l), ies_profile);
 
     // Compute the lights influence
-    return apply_light(m, view_vector, l, get_light_color(light_data),
-                       attenuation, shadow_factor, directional_occlusion, transmittance);
+    return apply_light(m, view_vector, l_norm, get_light_color(light_data),
+                       attenuation, shadow_factor, transmittance);
 }
 
 // Filters a shadow map
@@ -115,13 +108,13 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: make this configurable
     const float slope_bias = 0.00;
-    const float normal_bias = 0.03;
-    const float const_bias = 0.001;
+    const float normal_bias = 0.001;
+    const float const_bias = 0.0005;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
-    const int num_samples = 12;
+    const int num_samples = 4;
     const float filter_size = 2.0 / SHADOW_ATLAS_SIZE; // TODO: Use shadow atlas size
 
     float accum = 0.0;
@@ -130,7 +123,8 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     rand_offs *= 0.15;
 
     for (int i = 0; i < num_samples; ++i) {
-        vec2 offs = projected_coord.xy + poisson_disk_2D_12[i] * filter_size + rand_offs.xy * filter_size;
+        vec2 offs = projected_coord.xy + poisson_disk_2D_12[i * 3] * filter_size + rand_offs.xy * filter_size;
+        // vec2 offs = projected_coord.xy;
         #if SUPPORT_PCF
         accum += textureLod(ShadowAtlasPCF, vec3(offs, projected.z - const_bias), 0).x;
         #else
@@ -155,14 +149,6 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     // Find per tile lights
     int cell_index = texelFetch(CellIndices, tile, 0).x;
     int data_offs = cell_index * (LC_MAX_LIGHTS_PER_CELL + LIGHT_CLS_COUNT);
-
-    // Get directional occlusion
-    vec4 directional_occlusion = vec4(0);
-    #if IS_SCREEN_SPACE && HAVE_PLUGIN(ao)
-        ivec2 coord = ivec2(gl_FragCoord.xy);
-        directional_occlusion = normalize(texelFetch(AmbientOcclusion, coord, 0) * 2.0 - 1.0);
-        // directional_occlusion.xyz = m.normal;
-    #endif
 
     // Compute view vector
     vec3 v = normalize(MainSceneData.camera_pos - m.position);
@@ -194,7 +180,15 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     for (int i = 0; i < num_spot_noshadow; ++i) {
         int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
         LightData light_data = read_light_data(AllLightsData, light_offs);
-        shading_result += process_spotlight(m, light_data, v, directional_occlusion, 1.0);
+        shading_result += process_spotlight(m, light_data, v, 1.0);
+    }
+
+
+    // Pointlights without shadow
+    for (int i = 0; i < num_point_noshadow; ++i) {
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
+        LightData light_data = read_light_data(AllLightsData, light_offs);
+        shading_result += process_pointlight(m, light_data, v, 1.0);
     }
 
     // Spotlights with shadow
@@ -207,14 +201,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         int source_index = get_shadow_source_index(light_data);
         SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
-        shading_result += process_spotlight(m, light_data, v, directional_occlusion, shadow_factor);
-    }
-
-    // Pointlights without shadow
-    for (int i = 0; i < num_point_noshadow; ++i) {
-        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
-        LightData light_data = read_light_data(AllLightsData, light_offs);
-        shading_result += process_pointlight(m, light_data, v, directional_occlusion, 1.0);
+        shading_result += process_spotlight(m, light_data, v, shadow_factor);
     }
 
     // Pointlights with shadow
@@ -229,7 +216,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
         SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
-        shading_result += process_pointlight(m, light_data, v, directional_occlusion, shadow_factor);
+        shading_result += process_pointlight(m, light_data, v, shadow_factor);
     }
 
     return shading_result;

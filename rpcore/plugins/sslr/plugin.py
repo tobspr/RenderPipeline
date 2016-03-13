@@ -25,7 +25,6 @@ THE SOFTWARE.
 """
 
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.stages.downscale_z_stage import DownscaleZStage
 
 from .sslr_stage import SSLRStage
 
@@ -39,5 +38,4 @@ class Plugin(BasePlugin):
     version = "alpha (!)"
 
     def on_stage_setup(self):
-        DownscaleZStage.disabled = False
         self._sslr_stage = self.create_stage(SSLRStage)

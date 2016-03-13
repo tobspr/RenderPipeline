@@ -51,8 +51,8 @@ void do_blur(vec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth,
     vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
     float d = get_lin_z(offcoord);
 
-    weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) * 0.5);
-    weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(d - pixel_depth));
+    weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) * 5);
+    weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(d - pixel_depth) * 10);
 
     accum += sampled * weight;
     accum_w += weight;

@@ -38,16 +38,13 @@ class DownscaleZStage(RenderStage):
 
     required_pipes = ["GBuffer"]
 
-    # Disable by default, and let plugins enable this stage
-    disabled = True
 
     @property
     def produced_pipes(self):
         return {"DownscaledDepth": self.target.color_tex}
 
     def create(self):
-        self.target = self.make_target("DownscaleDepth")
-        self.target.size = -2
+        self.target = self.create_target("DownscaleDepth")
         self.target.add_color_attachment(bits=(16, 0, 0, 0))
         self.target.prepare_buffer()
 

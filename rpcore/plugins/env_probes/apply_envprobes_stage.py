@@ -43,7 +43,7 @@ class ApplyEnvprobesStage(RenderStage):
         }
 
     def create(self):
-        self.target = self.make_target("ApplyEnvmap")
+        self.target = self.create_target("ApplyEnvmap")
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.add_aux_attachment(bits=16)
         self.target.prepare_buffer()

@@ -15,10 +15,10 @@ gbuffer:
             #define DONT_SET_MATERIAL_PROPERTIES 1
 
         material: |
-            m.basecolor = vec3(1, 0, 1);
-            m.specular_ior = 1.5;
+            m.basecolor = vec3(0);
+            m.shading_model = SHADING_MODEL_EMISSIVE;
+            m.specular_ior = 1.0;
             m.metallic = 0.0;
             m.roughness = 1.0;
-            m.translucency = 0.0;
+            m.shading_model_param0 = 0.0;
             m.normal = vOutput.normal;
-            m.emissive = 0.0;

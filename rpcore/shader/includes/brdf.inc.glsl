@@ -97,7 +97,7 @@ float brdf_distribution_beckmann(float NxH, float roughness) {
 float brdf_distribution_ggx(float NxH , float roughness) {
     float nxh_sq = NxH * NxH;
     float tan_sq = (1 - nxh_sq) / nxh_sq;
-    float f = roughness / (nxh_sq * (roughness * roughness + tan_sq) );
+    float f = roughness / max(1e-4, nxh_sq * (roughness * roughness + tan_sq) );
     return ONE_BY_PI * f * f;
 }
 
@@ -190,7 +190,7 @@ float brdf_diffuse(float NxV, float LxH, float roughness) {
 // Distribution
 float brdf_distribution(float NxH, float roughness)
 {
-    NxH = max(0.0001, NxH);
+    NxH = max(1e-6, NxH);
 
     // Choose one:
     // return brdf_distribution_blinn_phong(NxH, roughness);
@@ -235,6 +235,7 @@ vec3 get_material_f0(Material m) {
 // Returns a reflection vector, bent into the normal direction
 vec3 get_reflection_vector(Material m, vec3 view_vector) {
     vec3 reflected_dir = reflect(view_vector, m.normal);
+    // return reflected_dir;
     return mix(m.normal, reflected_dir,
         (1 - m.roughness) * (m.roughness + sqrt(1 - m.roughness)));
 }

@@ -62,6 +62,7 @@
 #define SCREEN_SIZE vec2(WINDOW_WIDTH, WINDOW_HEIGHT)
 #define SCREEN_SIZE_INT ivec2(WINDOW_WIDTH, WINDOW_HEIGHT)
 #define ASPECT_RATIO float(float(WINDOW_HEIGHT) / float(WINDOW_WIDTH))
+#define NATIVE_SCREEN_SIZE vec2(NATIVE_WINDOW_WIDTH, NATIVE_WINDOW_HEIGHT)
 
 // Plugin functions
 #define HAVE_PLUGIN(PLUGIN_NAME) ( HAVE_PLUGIN_ ## PLUGIN_NAME )
@@ -111,5 +112,9 @@ precision lowp int;
 
 // TODO:
 #define SUPPORT_PCF 1
+
+// Controls the roughness of the clearcoat layer
+#define CLEARCOAT_ROUGHNESS 0.002
+#define CLEARCOAT_SPECULAR 0.16
 
 #pragma include "includes/common_functions.inc.glsl"

@@ -39,7 +39,7 @@ class AmbientStage(RenderStage):
                 "PostAmbientScene": self._target.color_tex}
 
     def create(self):
-        self._target = self.make_target("AmbientStage")
+        self._target = self.create_target("AmbientStage")
         self._target.add_color_attachment(bits=16)
         self._target.prepare_buffer()
 

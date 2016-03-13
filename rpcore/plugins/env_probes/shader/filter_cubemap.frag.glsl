@@ -29,6 +29,7 @@
 #pragma include "includes/importance_sampling.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
 // #pragma optionNV (unroll all)
 
@@ -67,7 +68,14 @@ void main() {
         accum += textureLod(SourceTex, vec4(l, currentIndex), currentMip - 1) * weight;
         accum_weights += weight;
     }
-    accum /= max(0.01, accum_weights);
+
+    accum /= max(1e-5, accum_weights);
+
+    // XXX: It seems we are having some precision issues here. To make sure that
+    // no sky-cubemap leaks in, increase the weight by a small amount.
+    accum *= 1 + 1e-7;
+    accum.w = saturate(accum.w);
+
     imageStore(DestTex, ivec3(clamped_coord, currentIndex * 6 + face), accum);
     result = accum;
 }

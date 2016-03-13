@@ -24,38 +24,26 @@ THE SOFTWARE.
 
 """
 
-
-from panda3d.core import PStatCollector
 from rpcore.globals import Globals
+from rpcore.render_stage import RenderStage
 
-__all__ = ["profile"]
+class UpscaleStage(RenderStage):
 
-def profile(func):
-    """ Handy decorator which can be used to profile a function with pstats """
-    collector_name = "Debug:%s" % func.__name__
+    """ This stage upscales the scene to native resolution, using a bicubic filter """
 
-    global_showbase = Globals.base
+    required_inputs = []
+    required_pipes = ["ShadedScene"]
 
-    # Insert the collector to a custom dictionary attached to the base
-    if hasattr(global_showbase, 'custom_collectors'):
-        if collector_name in global_showbase.custom_collectors.keys():
-            pstat = global_showbase.custom_collectors[collector_name]
-        else:
-            global_showbase.custom_collectors[collector_name] = \
-                PStatCollector(collector_name)
-            pstat = global_showbase.custom_collectors[collector_name]
-    else:
-        pstat = PStatCollector(collector_name)
-        global_showbase.custom_collectors = {}
-        global_showbase.custom_collectors[collector_name] = pstat
+    @property
+    def produced_pipes(self):
+        return {"ShadedScene": self._target.color_tex}
 
-    def do_pstat(*args, **kargs):
-        pstat.start()
-        returned = func(*args, **kargs)
-        pstat.stop()
-        return returned
+    def create(self):
+        native_size = Globals.base.win.get_x_size(), Globals.base.win.get_y_size()
+        self._target = self.create_target("Upscale")
+        self._target.size = native_size
+        self._target.add_color_attachment(bits=16)
+        self._target.prepare_buffer()
 
-    do_pstat.__name__ = func.__name__
-    do_pstat.__dict__ = func.__dict__
-    do_pstat.__doc__ = func.__doc__
-    return do_pstat
+    def set_shaders(self):
+        self._target.shader = self.load_shader("upscale_stage.frag.glsl")

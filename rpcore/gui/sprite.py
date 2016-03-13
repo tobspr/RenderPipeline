@@ -52,7 +52,7 @@ class Sprite(RPObject):
             if not isinstance(image, str):
                 self.warn("Invalid argument to image parameter:", image)
                 return
-            image = Globals.loader.loadTexture(image)
+            image = Globals.loader.load_texture(image)
 
             if w is None or h is None:
                 w, h = image.get_x_size(), image.get_y_size()

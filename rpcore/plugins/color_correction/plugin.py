@@ -28,7 +28,7 @@ from panda3d.core import SamplerState
 
 # Load the plugin api
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.util.slice_loader import load_sliced_3d_texture
+from rpcore.util.generic import load_sliced_3d_texture
 
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage

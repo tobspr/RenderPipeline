@@ -38,7 +38,7 @@ class CombineVelocityStage(RenderStage):
         return {"CombinedVelocity": self._target.color_tex}
 
     def create(self):
-        self._target = self.make_target("CombineVelocity")
+        self._target = self.create_target("CombineVelocity")
         self._target.add_color_attachment(bits=(16, 16, 0, 0))
         self._target.prepare_buffer()
 

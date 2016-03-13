@@ -83,10 +83,10 @@ gbuffer:
             spec += texture(p3d_Texture15, detail_coord).x * layers.w;
 
             // Material properties
+            m.shading_model = mInput.shading_model;
             m.basecolor = m_base;
-            m.normal = apply_normal_map(vOutput.normal, m_nrm, mOutput.normalfactor);
-            m.specular_ior = blend_ior(spec, mOutput.specular_ior);
-            m.roughness = mOutput.roughness;
-            m.metallic = mOutput.metallic;
-            m.translucency = mOutput.translucency;
-            m.emissive = 0.0;
+            m.normal = apply_normal_map(vOutput.normal, m_nrm, mInput.normalfactor);
+            m.specular_ior = blend_ior(spec, mInput.specular_ior);
+            m.roughness = mInput.roughness;
+            m.metallic = mInput.metallic;
+            m.shading_model_param0 = mInput.arbitrary0;

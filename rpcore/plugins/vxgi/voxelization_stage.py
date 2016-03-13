@@ -100,12 +100,12 @@ class VoxelizationStage(RenderStage):
         self.pipeline.tag_mgr.register_voxelize_camera(self.voxel_cam)
 
         # Create the voxelization target
-        self.voxel_target = self.make_target("VoxelizeScene")
+        self.voxel_target = self.create_target("VoxelizeScene")
         self.voxel_target.size = self.voxel_resolution
         self.voxel_target.prepare_render(self.voxel_cam_np)
 
         # Create the target which copies the voxel grid
-        self.copy_target = self.make_target("CopyVoxels")
+        self.copy_target = self.create_target("CopyVoxels")
         self.copy_target.size = self.voxel_resolution
         self.copy_target.prepare_buffer()
 
@@ -120,7 +120,7 @@ class VoxelizationStage(RenderStage):
         mip_size, mip = self.voxel_resolution, 0
         while mip_size > 1:
             mip_size, mip = mip_size // 2, mip + 1
-            mip_target = self.make_target("GenMipmaps:" + str(mip))
+            mip_target = self.create_target("GenMipmaps:" + str(mip))
             mip_target.size = mip_size
             mip_target.prepare_buffer()
             mip_target.set_instance_count(mip_size)

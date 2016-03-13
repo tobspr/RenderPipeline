@@ -242,13 +242,13 @@ float blend_ior(float material_specular, float sampled_specular) {
 // not available in compute shaders
 
 // Regular texcoord
-#define get_texcoord() vec2( (ivec2(gl_FragCoord.xy) + 0.5) / SCREEN_SIZE )
+#define get_texcoord() (gl_FragCoord.xy / SCREEN_SIZE)
 
 // Texcoord for half-res targets sampling full-res targets
 #define get_half_texcoord() vec2( (ivec2(gl_FragCoord.xy) * 2 + 0.5) / SCREEN_SIZE )
 
 // Texcoord for half-res targets sampling half-res targets
-#define get_half_native_texcoord() vec2( (ivec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE/2) )
+#define get_half_native_texcoord() ((vec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE/2))
 
 float degree_to_radians(float degree) {
     return degree / 180.0 * M_PI;
@@ -260,7 +260,7 @@ float radians_to_degree(float radians) {
 
 // Convenience functions
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
-#define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity * 35.0)
+#define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity * 50.0)
 #define get_sun_color_scale(_v) saturate((_v.z - 0.02) * 30.0)
 
 #define face_forward(v, n) faceforward(v, v, -n)

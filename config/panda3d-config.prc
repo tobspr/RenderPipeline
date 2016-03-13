@@ -10,9 +10,10 @@
 # notify-level-glgsg warning
 # notify-level-gobj debug
 pstats-gpu-timing #t
-pstats-max-rate 1000
-gl-debug #f
-gl-debug-object-labels #f
+pstats-max-rate 200
+gl-debug #t
+gl-debug-object-labels #t
+sync-video #t
 
 # ----------------- Misc Settings -----------------
 
@@ -63,9 +64,6 @@ framebuffer-srgb #f
 # Don't use multisamples
 framebuffer-multisample #f
 multisamples 0
-
-# Disable V-Sync
-sync-video #f
 
 # Don't rescale textures which are no power-of-2
 textures-power-2 none
@@ -149,7 +147,7 @@ driver-generate-mipmaps #t
 # Use immutable texture storage, it is *supposed* to be faster, but might not be
 gl-immutable-texture-storage #t
 
-auto-flip #f
+# auto-flip #f
 
 # Default window settings
 # depth-bits 0

@@ -82,18 +82,16 @@ uniform mat4 p3d_ProjectionMatrix;
         float specular = ior_to_specular(max(0.0, m.specular_ior));
         float metallic = saturate(m.metallic);
         float roughness = clamp(m.roughness, 0.005, 1.0);
-        float translucency = saturate(m.translucency);
 
         roughness = adjust_roughness(roughness, length(m.normal));
 
         // Optional: Use squared roughness as proposed by Disney
         roughness *= roughness;
 
-
         // Pack all values to the gbuffer
         gbuffer_out_0 = vec4(basecolor.r, basecolor.g, basecolor.b, roughness);
         gbuffer_out_1 = vec4(packed_normal.x, packed_normal.y, metallic, specular);
-        gbuffer_out_2 = vec4(velocity.x, velocity.y, translucency, m.emissive);
+        gbuffer_out_2 = vec4(velocity.x, velocity.y, m.shading_model, m.shading_model_param0);
     }
 
 
@@ -107,7 +105,14 @@ uniform mat4 p3d_ProjectionMatrix;
     */
 
     #pragma include "includes/transforms.inc.glsl"
-    #pragma include "includes/gbuffer_data.struct.glsl"
+
+    // Common gbuffer data
+    struct GBufferData {
+        sampler2D Depth;
+        sampler2D Data0;
+        sampler2D Data1;
+        sampler2D Data2;
+    };
 
     // Checks whether the given material is the skybox
     bool is_skybox(vec3 pos, vec3 camera_pos) {
@@ -144,6 +149,11 @@ uniform mat4 p3d_ProjectionMatrix;
         vec2 packed_normal = textureLod(data.Data1, coord, 0).xy;
         return unpack_normal_octahedron(packed_normal);
     }
+    // Returns the world space normal at a given texcoord
+    vec3 get_gbuffer_normal(GBufferData data, ivec2 coord) {
+        vec2 packed_normal = texelFetch(data.Data1, coord, 0).xy;
+        return unpack_normal_octahedron(packed_normal);
+    }
 
     // Returns the velocity at a given coordinate
     vec2 get_gbuffer_object_velocity(GBufferData data, vec2 coord) {
@@ -153,6 +163,10 @@ uniform mat4 p3d_ProjectionMatrix;
     // Returns the velocity at a given coordinate
     vec2 get_gbuffer_object_velocity(GBufferData data, ivec2 coord) {
         return texelFetch(data.Data2, coord, 0).xy;
+    }
+
+    int get_gbuffer_shading_model(GBufferData data, vec2 coord) {
+        return int(textureLod(data.Data2, coord, 0).z);
     }
 
     // Unpacks a material from the gbuffer
@@ -170,8 +184,8 @@ uniform mat4 p3d_ProjectionMatrix;
         m.normal    = unpack_normal_octahedron(data1.xy);
         m.metallic  = data1.z * 1.001 - 0.0005;
         m.specular  = data1.w;
-        m.translucency = data2.z;
-        m.emissive = data2.w;
+        m.shading_model = int(data2.z);
+        m.shading_model_param0 = data2.w;
 
         // Velocity, not stored in the Material struct but stored in the G-Buffer
         // vec2 velocity = data2.xy;
@@ -271,9 +285,12 @@ uniform mat4 p3d_ProjectionMatrix;
 
           // Reconstruct last frame texcoord
           vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0,1.0 / ASPECT_RATIO);
-          vec3 pos = get_world_pos_at(texcoord + film_offset_bias);
+          vec3 pos = get_world_pos_at(texcoord - film_offset_bias);
           vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
           vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
+          // return vec2(0.0);
+          // texcoord -= 0.5 / SCREEN_SIZE;
+
           return last_coord - texcoord;
         }
 

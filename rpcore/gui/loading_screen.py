@@ -54,29 +54,34 @@ class LoadingScreen(RPObject):
     def create(self):
         """ Creates the gui components """
 
-        screen_w, screen_h = Globals.base.win.get_x_size() + 4, Globals.base.win.get_y_size() + 4
+        screen_w, screen_h = Globals.base.win.get_x_size(), Globals.base.win.get_y_size()
 
         self._fullscreen_node = Globals.base.pixel2dp.attach_new_node(
             "PipelineDebugger")
         self._fullscreen_node.set_bin("fixed", 10)
         self._fullscreen_node.set_depth_test(False)
 
+        scale_w = screen_w / 1920.0
+        scale_h = screen_h / 1080.0
+        scale = max(scale_w, scale_h)
+
         self._fullscreen_bg = Sprite(
             image="/$$rp/data/gui/loading_screen_bg.png",
-            x=0, y=0, w=screen_w, h=screen_h, parent=self._fullscreen_node)
+            x=(screen_w-1920.0*scale)//2, y=(screen_h-1080.0*scale)//2, w=int(1920 * scale), h=int(1080 * scale),
+            parent=self._fullscreen_node, near_filter=False)
 
-        self._logo = Sprite(
-            image="/$$rp/data/gui/rp_logo_text.png",
-            parent=self._fullscreen_node)
+        # self._logo = Sprite(
+        #     image="/$$rp/data/gui/rp_logo_text.png",
+        #     parent=self._fullscreen_node)
 
-        logo_w, logo_h = self._logo.get_width(), self._logo.get_height()
-        self._logo.set_pos((screen_w - logo_w) // 2, (screen_h - logo_h) // 2)
+        # logo_w, logo_h = self._logo.get_width(), self._logo.get_height()
+        # self._logo.set_pos((screen_w - logo_w) // 2, (screen_h - logo_h) // 2)
 
-        self._loading_text = Sprite(
-            image="/$$rp/data/gui/loading_screen_text.png",
-            parent=self._fullscreen_node)
-        loading_text_w = self._loading_text.get_width()
-        self._loading_text.set_pos((screen_w - loading_text_w) // 2, screen_h - 80)
+        # self._loading_text = Sprite(
+        #     image="/$$rp/data/gui/loading_screen_text.png",
+        #     parent=self._fullscreen_node)
+        # loading_text_w = self._loading_text.get_width()
+        # self._loading_text.set_pos((screen_w - loading_text_w) // 2, screen_h - 80)
 
         for _ in range(3):
             Globals.base.graphicsEngine.render_frame()
@@ -84,3 +89,8 @@ class LoadingScreen(RPObject):
     def remove(self):
         """ Removes the loading screen """
         self._fullscreen_node.remove_node()
+
+        # Free the used resources
+        self._fullscreen_bg._node["image"].get_texture().release_all()
+        # self._logo._node["image"].get_texture().release_all()
+        # self._loading_text._node["image"].get_texture().release_all()

@@ -92,7 +92,8 @@ class PSSMSceneShadowStage(RenderStage):
 
     @property
     def mvp(self):
-        return Globals.base.render.get_transform(self.cam_node).get_mat() * self.cam_lens.get_projection_mat()
+        return Globals.base.render.get_transform(self.cam_node).get_mat() * \
+            self.cam_lens.get_projection_mat()
 
     def create(self):
 
@@ -103,7 +104,7 @@ class PSSMSceneShadowStage(RenderStage):
         self.camera.set_lens(self.cam_lens)
         self.cam_node = Globals.base.render.attach_new_node(self.camera)
 
-        self.target = self.make_target("ShadowMap")
+        self.target = self.create_target("ShadowMap")
         self.target.size = self.resolution
         self.target.add_depth_attachment(bits=32)
         self.target.prepare_render(self.cam_node)

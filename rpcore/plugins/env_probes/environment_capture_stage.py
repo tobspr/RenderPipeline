@@ -54,7 +54,7 @@ class EnvironmentCaptureStage(RenderStage):
         self.storage_tex_diffuse = None
 
     def create(self):
-        self.target = self.make_target("CaptureScene")
+        self.target = self.create_target("CaptureScene")
         self.target.size = self.resolution * 6, self.resolution
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.add_aux_attachment(bits=16)
@@ -65,10 +65,14 @@ class EnvironmentCaptureStage(RenderStage):
         internal_buffer.remove_all_display_regions()
         internal_buffer.disable_clears()
         internal_buffer.get_overlay_display_region().disable_clears()
+
+        # Set the correct clears
         internal_buffer.set_clear_depth(1.0)
         internal_buffer.set_clear_color(Vec4(0))
         internal_buffer.set_clear_depth_active(True)
         internal_buffer.set_clear_color_active(True)
+        internal_buffer.set_clear_active(GraphicsOutput.RTP_aux_hrgba_0, True)
+        internal_buffer.set_clear_value(GraphicsOutput.RTP_aux_hrgba_0, Vec4(0))
 
         self._setup_camera_rig()
         self._create_store_targets()
@@ -108,7 +112,7 @@ class EnvironmentCaptureStage(RenderStage):
 
     def _create_store_targets(self):
         """ Creates the targets which copy the result texture into the actual storage """
-        self.target_store = self.make_target("StoreCubemap")
+        self.target_store = self.create_target("StoreCubemap")
         self.target_store.size = self.resolution * 6, self.resolution
         self.target_store.prepare_buffer()
         self.target_store.set_shader_input("SourceTex", self.target.color_tex)
@@ -116,7 +120,7 @@ class EnvironmentCaptureStage(RenderStage):
         self.target_store.set_shader_input("currentIndex", self.pta_index)
 
         self.temporary_diffuse_map = Image.create_cube("DiffuseTemp", self.resolution, Texture.T_float, Texture.F_rgba16)
-        self.target_store_diff = self.make_target("StoreCubemapDiffuse")
+        self.target_store_diff = self.create_target("StoreCubemapDiffuse")
         self.target_store_diff.size = self.resolution * 6, self.resolution
         self.target_store_diff.prepare_buffer()
         self.target_store_diff.set_shader_input("SourceTex", self.target.aux_tex[0])
@@ -131,7 +135,7 @@ class EnvironmentCaptureStage(RenderStage):
         while size > 1:
             size = size // 2
             mip += 1
-            target = self.make_target("FilterCubemap:{0}-{1}x{1}".format(mip, size))
+            target = self.create_target("FilterCubemap:{0}-{1}x{1}".format(mip, size))
             target.size = size * 6, size
             target.prepare_buffer()
             target.set_shader_input("currentIndex", self.pta_index)
@@ -141,7 +145,7 @@ class EnvironmentCaptureStage(RenderStage):
             self.filter_targets.append(target)
 
         # Target to filter the diffuse cubemap
-        self.filter_diffuse_target = self.make_target("FilterCubemapDiffuse")
+        self.filter_diffuse_target = self.create_target("FilterCubemapDiffuse")
         self.filter_diffuse_target.size = self.diffuse_resolution * 6, self.diffuse_resolution
         self.filter_diffuse_target.prepare_buffer()
         self.filter_diffuse_target.set_shader_input("SourceTex", self.temporary_diffuse_map)

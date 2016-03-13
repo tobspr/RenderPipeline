@@ -44,12 +44,12 @@ class Checkbox(RPObject):
         prefix = "checkbox" if not radio else "radiobox"
 
         if enabled:
-            checked_img = Globals.loader.loadTexture(
+            checked_img = Globals.loader.load_texture(
                 "/$$rp/data/gui/" + prefix + "_checked.png")
-            unchecked_img = Globals.loader.loadTexture(
+            unchecked_img = Globals.loader.load_texture(
                 "/$$rp/data/gui/" + prefix + "_default.png")
         else:
-            checked_img = Globals.loader.loadTexture(
+            checked_img = Globals.loader.load_texture(
                 "/$$rp/data/gui/" + prefix + "_disabled.png")
             unchecked_img = checked_img
 

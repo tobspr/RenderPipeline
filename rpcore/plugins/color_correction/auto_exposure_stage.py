@@ -44,14 +44,14 @@ class AutoExposureStage(RenderStage):
     def create(self):
 
         # Create the target which converts the scene color to a luminance
-        self.target_lum = self.make_target("GetLuminance")
+        self.target_lum = self.create_target("GetLuminance")
         self.target_lum.size = -4
         self.target_lum.add_color_attachment(bits=(16, 0, 0, 0))
         self.target_lum.prepare_buffer()
 
         # Get the current quarter-window size
-        wsize_x = (Globals.base.win.get_x_size() + 3) // 4
-        wsize_y = (Globals.base.win.get_y_size() + 3) // 4
+        wsize_x = (Globals.resolution.x + 3) // 4
+        wsize_y = (Globals.resolution.y + 3) // 4
 
         # Create the targets which downscale the luminance mipmaps
         self.mip_targets = []
@@ -60,7 +60,7 @@ class AutoExposureStage(RenderStage):
             wsize_x = (wsize_x+3) // 4
             wsize_y = (wsize_y+3) // 4
 
-            mip_target = self.make_target("DScaleLum:S" + str(wsize_x))
+            mip_target = self.create_target("DScaleLum:S" + str(wsize_x))
             mip_target.add_color_attachment(bits=(16, 0, 0, 0))
             mip_target.size = wsize_x, wsize_y
             mip_target.prepare_buffer()
@@ -70,13 +70,16 @@ class AutoExposureStage(RenderStage):
 
         # Create the storage for the exposure, this stores the current and last
         # frames exposure
+
+        # XXX: We have to use F_r16 instead of F_r32 because of a weird nvidia
+        # driver bug! However, 16 bits should be enough for sure.
         self.tex_exposure = Image.create_buffer(
-            "ExposureStorage", 1, Texture.T_float, Texture.F_rgba16)
+            "ExposureStorage", 1, Texture.T_float, Texture.F_r16)
         self.tex_exposure.set_clear_color(Vec4(0.5))
         self.tex_exposure.clear_image()
 
         # Create the target which extracts the exposure from the average brightness
-        self.target_analyze = self.make_target("AnalyzeBrightness")
+        self.target_analyze = self.create_target("AnalyzeBrightness")
         self.target_analyze.size = 1, 1
         self.target_analyze.prepare_buffer()
 
@@ -85,7 +88,7 @@ class AutoExposureStage(RenderStage):
         self.target_analyze.set_shader_input("DownscaledTex", last_tex)
 
         # Create the target which applies the generated exposure to the scene
-        self.target_apply = self.make_target("ApplyExposure")
+        self.target_apply = self.create_target("ApplyExposure")
         self.target_apply.add_color_attachment(bits=16)
         self.target_apply.prepare_buffer()
         self.target_apply.set_shader_input("Exposure", self.tex_exposure)

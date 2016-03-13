@@ -31,6 +31,7 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/lights.inc.glsl"
+#pragma include "includes/color_spaces.inc.glsl"
 
 uniform sampler2D ShadedScene;
 uniform GBufferData GBuffer;
@@ -68,6 +69,7 @@ float get_mipmap_for_roughness(samplerCube map, float roughness) {
 }
 
 float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
+    // return occlusion;
     return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
 }
 
@@ -107,8 +109,13 @@ void main() {
     float NxV = max(1e-5, -dot(m.normal, view_vector));
 
     // OPTIONAL: Increase mipmap level at grazing angles to decrease aliasing
-    // float mipmap_bias = saturate(pow(1.0 - NxV, 5.0)) * 3.0;
-    float mipmap_bias = 0.0;
+    #if 0
+        float mipmap_bias = abs(dFdx(m.roughness)) + abs(dFdy(m.roughness));
+        mipmap_bias += saturate(pow(1.0 - NxV, 15.0));
+        mipmap_bias *= 4.0;
+    #else
+        float mipmap_bias = 0.0;
+    #endif
 
     // Get mipmap offset for the material roughness
     float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
@@ -122,7 +129,9 @@ void main() {
     // Scattering specific code
     #if HAVE_PLUGIN(scattering)
 
-        float scat_mipmap = get_specular_mipmap(m);
+        float scat_mipmap = m.shading_model == SHADING_MODEL_CLEARCOAT ?
+            CLEARCOAT_ROUGHNESS : get_specular_mipmap(m);
+        scat_mipmap += mipmap_bias;
 
         // Sample prefiltered scattering cubemap
         ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz;
@@ -150,22 +159,42 @@ void main() {
         ibl_specular = ibl_specular * (1 - sslr_spec.w) + sslr_spec.xyz;
     #endif
 
-    // Pre-Integrated environment BRDF
-    // X-Component denotes the fresnel term
-    // Y-Component denotes f0 factor
-    vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
 
     vec3 material_f0 = get_material_f0(m);
-    vec3 specular_ambient = (material_f0 * env_brdf.x + env_brdf.y) * ibl_specular;
+    vec3 specular_ambient = vec3(0);
+
+    // Pre-Integrated environment BRDF
+    vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
+
+    if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
+        // Sample prefiltered scattering cubemap
+        vec2 env_brdf_coat = textureLod(PrefilteredBRDF, vec2(NxV, CLEARCOAT_ROUGHNESS), 0).xy;
+        float fresnel_coat = saturate(CLEARCOAT_SPECULAR * env_brdf_coat.x + env_brdf_coat.y);
+
+        #if HAVE_PLUGIN(scattering)
+            vec3 ibl_specular_base = textureLod(ScatteringIBLSpecular, reflected_dir, get_specular_mipmap(m) + mipmap_bias).xyz;
+        #else
+            vec3 ibl_specular_base = textureLod(DefaultEnvmap, reflected_dir, get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias).xyz;
+        #endif
+
+        specular_ambient = fresnel_coat * ibl_specular;
+
+        // Make sure we don't apply a bright sky cubemap on dark spots
+        float specular_clip =  saturate(15.0 * get_luminance(ibl_specular));
+        specular_clip = 1 - fresnel_coat; // XXX: Find a better solution for the clip factor
+        specular_ambient += material_f0 * ibl_specular_base * specular_clip;
+
+    } else {
+        specular_ambient = (material_f0 * env_brdf.x + env_brdf.y) * ibl_specular;
+    }
 
     // Diffuse ambient term
-    // TODO: lambertian brdf doesn't look well?
-    vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic);
+    vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic) / M_PI;
 
 
     #if HAVE_PLUGIN(ao)
         // Sample precomputed occlusion and multiply the ambient term with it
-        float occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
+        float occlusion = textureLod(AmbientOcclusion, texcoord, 0).x;
         float specular_occlusion = compute_specular_occlusion(NxV, occlusion, m.roughness);
     #else
         const float occlusion = 1.0;
@@ -178,23 +207,17 @@ void main() {
 
     #endif
 
-    // Reduce ambient for translucent materials
-    BRANCH_TRANSLUCENCY(m)
-        ambient *= saturate(1.2 - m.translucency);
-    END_BRANCH_TRANSLUCENCY()
-
-    // Mix emissive factor - note that we do *not* clamp the emissive factor,
-    // since it can contain values much greater than 1.0
-    ambient *= max(0.0, 1 - m.emissive);
-    ambient += m.emissive * m.basecolor * 1000.0;
+    // Emissive materials
+    if (m.shading_model == SHADING_MODEL_EMISSIVE) {
+        ambient = m.basecolor * 4000.0;
+    }
 
     // TODO:
     // For emissive, use: compute_bloom_luminance()
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
-            float raw_occlusion = textureLod(AmbientOcclusion, texcoord, 0).w;
-            result = vec4(raw_occlusion);
+            result = textureLod(AmbientOcclusion, texcoord, 0).xxxx;
             return;
         #endif
     #endif
@@ -206,6 +229,7 @@ void main() {
         // So reduce ambient in the fog
         ambient *= (1.0 - scene_color.w);
     #endif
+
 
     result = scene_color * 1 + vec4(ambient, 1) * 1;
 }

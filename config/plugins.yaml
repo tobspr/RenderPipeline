@@ -10,6 +10,7 @@ enabled:
     - color_correction
     - scattering
     - ao
+    # - skin_shading
     - smaa
     - env_probes
     # - vxgi
@@ -20,43 +21,43 @@ enabled:
 
 overrides:
     ao:
-        blur_normal_factor: 1.53
-        blur_depth_factor: 1.2
-        occlusion_strength: 1.28
-        technique: ALCHEMY
-        ssao_sample_radius: 136.66999
-        ssao_sample_count: 5
-        ssao_bias: 0.0
-        ssao_max_distance: 7.11
-        hbao_sample_radius: 100.0
-        hbao_ray_count: 8
+        blur_normal_factor: 4.94
+        blur_depth_factor: 4.83
+        occlusion_strength: 1.21
+        technique: SSAO
+        ssao_sample_radius: 79.61
+        ssao_sample_count: 8
+        ssao_bias: 0.0333
+        ssao_max_distance: 6.89
+        hbao_sample_radius: 119.11
+        hbao_ray_count: 4
         hbao_ray_steps: 3
-        hbao_tangent_bias: 0.3333
-        hbao_max_distance: 5.78
+        hbao_tangent_bias: 0.5889
+        hbao_max_distance: 4.9
         ssvo_sample_count: 4
-        ssvo_sphere_radius: 8.63
-        ssvo_max_distance: 2.04
-        alchemy_sample_radius: 62.06
-        alchemy_num_samples: 7
-        alchemy_max_distance: 6.51
-        ue4ao_sample_radius: 100.0
+        ssvo_sphere_radius: 7.86
+        ssvo_max_distance: 0.6
+        alchemy_sample_radius: 127.8901
+        alchemy_num_samples: 8
+        alchemy_max_distance: 6.07
+        ue4ao_sample_radius: 110.33
         ue4ao_sample_count: 8
-        ue4ao_max_distance: 4.3
+        ue4ao_max_distance: 1.87
 
     bloom:
         num_mipmaps: 8
-        bloom_strength: 0.7
-        remove_fireflies: True
-        lens_dirt_factor: 0.8111
+        bloom_strength: 0.45
+        remove_fireflies: False
+        lens_dirt_factor: 0.7111
 
     clouds:
         cloud_decay: 5.78
         raymarch_steps: 64
 
     color_correction:
-        tonemap_operator: uncharted2
+        tonemap_operator: exponential
         reinhard_version: rgb
-        exponential_factor: 1.05
+        exponential_factor: 1.4
         uc2t_shoulder_strength: 0.22
         uc2t_linear_strength: 0.3
         uc2t_linear_angle: 0.1
@@ -64,20 +65,20 @@ overrides:
         uc2t_toe_numerator: 0.01
         uc2t_toe_denumerator: 0.3
         uc2t_reference_white: 11.2
-        vignette_strength: 0.0889
-        film_grain_strength: 0.12
+        vignette_strength: 0.2667
+        film_grain_strength: 0.0
         color_lut: color_lut.png
         use_chromatic_aberration: True
-        chromatic_aberration_strength: 0.0311
-        chromatic_aberration_samples: 2
+        chromatic_aberration_strength: 0.1196
+        chromatic_aberration_samples: 1
         manual_camera_parameters: False
-        min_exposure_value: 0.0
+        min_exposure_value: 0.012
         max_exposure_value: 1.0
         exposure_bias: 0.0
         brightness_adaption_rate: 2.67
         darkness_adaption_rate: 0.79
         use_sharpen: True
-        sharpen_strength: 0.6667
+        sharpen_strength: 0.22
         sharpen_twice: False
 
     env_probes:
@@ -93,28 +94,32 @@ overrides:
         min_threshold: 0.7114
 
     motion_blur:
-        tile_size: 32
+        num_camera_samples: 6
+        camera_blur_factor: 0.24444
         blur_factor: 0.5
+        tile_size: 32
         max_blur_radius: 10.0
         num_samples: 12
 
     pssm:
-        max_distance: 100.0
-        logarithmic_factor: 1.57144
-        sun_distance: 760.0
-        split_count: 5
-        resolution: 1024
-        border_bias: 0.1167
+        max_distance: 45.0
+        logarithmic_factor: 2.67
+        sun_distance: 1145.0
+        split_count: 3
+        resolution: 2048
+        border_bias: 0.01943
         use_pcf: True
-        filter_sample_count: 18
-        filter_radius: 4.94
-        fixed_bias: 0.0
-        slope_bias: 2.27999
-        normal_bias: 0.28
+        filter_sample_count: 32
+        filter_radius: 9.89
+        fixed_bias: 0.0889
+        slope_bias: 0.39
+        normal_bias: 0.0
         use_pcss: False
         pcss_search_samples: 32
         pcss_penumbra_size: 300.0
-        vsm_resolution: 2048
+        use_distant_shadows: True
+        dist_shadow_resolution: 1024
+        dist_shadow_clipsize: 250.0
         scene_shadow_resolution: 1024
 
     scattering:
@@ -125,6 +130,10 @@ overrides:
         mie_phase_factor: 0.21
         beta_mie_scattering: 4.0
         enable_godrays: False
+
+    skin_shading:
+        quality: high
+        blur_scale: 1.0
 
     smaa:
         use_reprojection: True

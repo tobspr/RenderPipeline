@@ -46,7 +46,7 @@ class CollectUsedCellsStage(RenderStage):
     def create(self):
         tile_amount = self._pipeline.light_mgr.num_tiles
 
-        self.target = self.make_target("CollectUsedCells")
+        self.target = self.create_target("CollectUsedCells")
         self.target.size = tile_amount.x, tile_amount.y
         self.target.prepare_buffer()
 

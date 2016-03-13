@@ -26,6 +26,7 @@
 
 #version 400
 
+#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "smaa_wrapper.inc.glsl"
 
@@ -47,7 +48,7 @@ void main() {
     SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
 
     #if GET_SETTING(smaa, use_reprojection)
-        vec4 subsampleIndices = jitterIndex == 1 ? vec4(1, 1, 1, 0) : vec4(2, 2, 2, 0);
+        vec4 subsampleIndices = MainSceneData.temporal_index == 1 ? vec4(1, 1, 1, 0) : vec4(2, 2, 2, 0);
     #else
         vec4 subsampleIndices = vec4(0);
     #endif

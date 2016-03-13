@@ -24,15 +24,43 @@
  *
  */
 
-#pragma once
+#version 430
 
-struct MaterialOutput {
-    vec3  color;
-    float specular_ior;
-    float metallic;
-    float roughness;
-    float normalfactor;
-    float emissive;
-    float translucency;
-    float transparency;
-};
+#pragma include "render_pipeline_base.inc.glsl"
+
+uniform sampler2D SourceTex;
+
+// Filters the SSLR result and removes single pixels
+
+out vec4 result;
+
+void main() {
+  vec2 texcoord = get_half_texcoord();
+  vec2 pixsize = 2.0 / SCREEN_SIZE;
+
+  vec4 mid_data = texture(SourceTex, texcoord);
+
+  // result = mid_data;
+  // return;
+
+  // Skip lost pixels
+  if (mid_data.w < 1e-3) {
+    result = vec4(0);
+    return;
+  }
+
+  int num_adjacent_pixels = 0;
+  for (int x = -1; x <= 1; ++x) {
+    for (int y = -1; y <= 1; ++y) {
+      if (x == 0 && y == 0) continue;
+      if (distance(texture(SourceTex, texcoord + vec2(x, y) * pixsize).xyz, mid_data.xyz) < 0.1) {
+        num_adjacent_pixels ++;
+      }
+    }
+  }
+
+  if (num_adjacent_pixels < 1) {
+    mid_data *= 0;
+  }
+  result = mid_data;
+}

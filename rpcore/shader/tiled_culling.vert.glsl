@@ -26,11 +26,15 @@
 
 #version 400
 
+#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/transforms.inc.glsl"
 
-uniform mat4 p3d_ModelViewProjectionMatrix;
 in vec4 p3d_Vertex;
 uniform isamplerBuffer CellListBuffer;
+
+// Order: BL BR TL TR
+flat out mat4 frustumCorners;
 
 void main() {
 
@@ -45,4 +49,13 @@ void main() {
 
     // Store the vertex position.
     gl_Position = vec4(p3d_Vertex.x, fma(fma(p3d_Vertex.z, 0.5, 0.5) * percentage_height, 2.0, -1.0) , 0, 1);
+
+    // Pass frustum corners to the culling shader
+    frustumCorners = mat4(
+      vec4(calculate_view_pos(1, vec2(0, 0)), 1), // bl
+      vec4(calculate_view_pos(1, vec2(1, 0)), 1), // br
+      vec4(calculate_view_pos(1, vec2(0, 1)), 1), // tl
+      vec4(calculate_view_pos(1, vec2(1, 1)), 1)  // tr
+    );
+
 }

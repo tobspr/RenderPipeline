@@ -14,7 +14,7 @@ else:
     from .yaml_py3 import YAMLError
     from .yaml_py3 import SafeLoader
 
-__all__ = ["load_yaml_file"]
+__all__ = ["load_yaml_file", "load_yaml_file_flat"]
 
 def load_yaml_file(filename):
     """ This method is a wrapper arround yaml_load, and provides error checking """
@@ -32,3 +32,18 @@ def load_yaml_file(filename):
         raise Exception("Failed to load YAML file: Invalid syntax")
 
     return parsed_yaml
+
+def __flatten(d, parent_key=''):
+    """ Internal method to flatten a dictionary """
+    items = []
+    for k, v in d.items():
+        try:
+            items.extend(__flatten(v, '{}{}.'.format(parent_key, k)).items())
+        except AttributeError:
+            items.append(('{}{}'.format(parent_key, k), v))
+    return dict(items)
+
+def load_yaml_file_flat(filename):
+    """ Behaves like load_yaml_file, but instead of creating nested dictionaries
+    it connects keys via '.' """
+    return __flatten(load_yaml_file(filename))

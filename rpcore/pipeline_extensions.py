@@ -28,6 +28,10 @@ THE SOFTWARE.
 # pipeline class, so pylint cannot find those members.
 # pylint: disable=E1101
 
+import math
+
+from panda3d.core import Vec3, Mat4, CS_zup_right, CS_yup_right
+
 from rpcore.globals import Globals
 from rpcore.effect import Effect
 from rpcore.native import PointLight, SpotLight
@@ -38,6 +42,7 @@ from rpcore.stages.gbuffer_stage import GBufferStage
 from rpcore.stages.final_stage import FinalStage
 from rpcore.stages.downscale_z_stage import DownscaleZStage
 from rpcore.stages.combine_velocity_stage import CombineVelocityStage
+from rpcore.stages.upscale_stage import UpscaleStage
 
 class PipelineExtensions(object):
 
@@ -165,27 +170,46 @@ class PipelineExtensions(object):
     def prepare_scene(self, scene):
         """ Prepares a given scene, by converting panda lights to render pipeline
         lights """
+        # TODO: IES profiles
+        ies_profile = self.load_ies_profile("data/ies_profiles/x_arrow_diffuse.ies")
 
-        # Load some fancy ies profile
-        # ies_profile = self.load_ies_profile("data/ies_profiles/soft_arrow.ies")
+        convert_mat = Mat4.convert_mat(CS_zup_right, CS_yup_right)
 
         for light in scene.find_all_matches("**/+PointLight"):
             light_node = light.node()
-
             rp_light = PointLight()
-            # rp_light = SpotLight()
-            rp_light.pos = light.get_pos()
+            rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.lumens = 10.0
-            # rp_light.look_at(0, 0, 0)
-            # rp_light.fov = 120.0
+            rp_light.lumens = 10.0 * light_node.get_color().w
             rp_light.color = light_node.get_color().xyz
-            rp_light.casts_shadows = True
-            rp_light.shadow_map_resolution = 512
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_width
+            self.add_light(rp_light)
+            light.remove_node()
+
+
+        for light in scene.find_all_matches("**/+Spotlight"):
+            light_node = light.node()
+            rp_light = SpotLight()
+            rp_light.pos = light.get_pos(Globals.base.render)
+            rp_light.radius = light_node.max_distance
+            rp_light.lumens = 10.0 * light_node.get_color().w
+            rp_light.color = light_node.get_color().xyz
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_width
+            rp_light.fov = light_node.exponent / math.pi * 180.0
+            lpoint = light.get_mat(Globals.base.render).xform_vec(Vec3(0, 0, -1))
+            rp_light.direction = lpoint
             # rp_light.ies_profile = ies_profile
             self.add_light(rp_light)
-
             light.remove_node()
+
+        # Add environment probes
+        for np in scene.find_all_matches("**/ENVPROBE*"):
+            probe = self.add_environment_probe()
+            probe.set_mat(np.get_mat())
+            probe.border_smoothness = 0.05
+            np.remove_node()
 
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns
@@ -218,3 +242,12 @@ class PipelineExtensions(object):
 
         self._combine_velocity_stage = CombineVelocityStage(self)
         add_stage(self._combine_velocity_stage)
+
+        # Add an upscale/downscale stage in case we render at a different resolution
+        if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.05:
+            self._upscale_stage = UpscaleStage(self)
+            add_stage(self._upscale_stage)
+
+    def _set_default_effect(self):
+        """ Sets the default effect used for all objects if not overridden """
+        self.set_effect(Globals.render, "effects/default.yaml", {}, -10)

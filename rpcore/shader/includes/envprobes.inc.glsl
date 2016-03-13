@@ -29,6 +29,7 @@
 #pragma include "includes/material.struct.glsl"
 #pragma include "includes/brdf.inc.glsl"
 
+// Global probe data
 uniform struct {
     int num_probes;
     samplerCubeArray cubemaps;
@@ -36,6 +37,7 @@ uniform struct {
     samplerBuffer dataset;
 } EnvProbes;
 
+// Per probe instance
 struct Cubemap {
     mat4 transform;
     bool use_parallax;
@@ -55,7 +57,8 @@ Cubemap get_cubemap(int index) {
     vec4 data3 = texelFetch(EnvProbes.dataset, offs + 3);
     vec4 data4 = texelFetch(EnvProbes.dataset, offs + 4);
 
-    // Unpack the packed matrix, we only store a 3x4 matrix
+    // Unpack the packed matrix, we only store a 3x4 matrix to save space,
+    // sine the last row is always (0, 0, 0, 1)
     result.transform = mat4(
             data0.x, data0.y, data0.z, 0,
             data0.w, data1.x, data1.y, 0,
@@ -97,7 +100,7 @@ vec3 get_cubemap_vector(Cubemap map, Material m, vec3 vector, out float factor, 
 
     // Use distance in world space directly to recover intersection.
     // Mix parallax corrected and original vector based on roughness
-    vec3 intersection_pos = mix(m.position + vector * dist, map.transform[3].xyz + vector, m.roughness);
+    vec3 intersection_pos = mix(m.position + vector * dist, map.bounding_sphere_center + vector, m.roughness);
     return (map.transform * vec4(intersection_pos, 1)).xyz;
 }
 
@@ -108,49 +111,52 @@ vec3 get_reflection_vector(Cubemap map, Material m, out float factor, out float 
 }
 
 vec3 get_diffuse_vector(Cubemap map, Material m) {
-    mat3 tpose_inverse = transpose(inverse(mat3(map.transform))); // ugh .. very expensive, have to think of a better solution
-
-    vec3 local_vec = map.transform[3].xyz - m.position;
-
-    return tpose_inverse * (m.normal * 1 + 0.0 * local_vec);
-
-    // vec3 local_vec = map.transform[3].xyz - m.position;
-    // vec3 intersection_pos = map.transform[3].xyz + m.normal * 0.0 + local_vec * 1000.1;
-    // return (map.transform * vec4(intersection_pos, 1)).xyz;
+    #if 1
+        // very expensive, have to think of a better solution -
+        // maybe we can precompute the matrix and store it.
+        mat3 tpose_inverse = transpose(inverse(mat3(map.transform)));
+        return tpose_inverse * (m.normal);
+    #else
+        // This is mathematically wrong, but it works fast and reasonable
+        vec4 transformed = map.transform * vec4(fma(m.normal, vec3(1e5), map.bounding_sphere_center), 1);
+        return transformed.xyz;
+    #endif
 }
-
 
 float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
 
+    float roughness = m.shading_model == SHADING_MODEL_CLEARCOAT ? CLEARCOAT_ROUGHNESS : m.roughness;
+
     float factor = 0.0;
     float mip_mult = 1.0;
-    float mipmap = m.roughness * 12.0 - pow(m.roughness, 6.0) * 1.5;
-    float mipmap_multiplier = 1.0;
+    float mipmap = roughness * 15.0 - pow(roughness, 6.0) * 1.5;
+    float intersection_distance = 1.0;
 
     const int num_mips = 8;
-
     Cubemap map = get_cubemap(id);
-    vec3 direction = get_reflection_vector(map, m, factor, mipmap_multiplier);
+    vec3 direction = get_reflection_vector(map, m, factor, intersection_distance);
 
     vec3 diffuse_direction = get_diffuse_vector(map, m);
-    float clip_factor = saturate( (1 - factor) / max(1e-3, map.border_smoothness));
+    float clip_factor = saturate( (1 - factor) / max(1e-10, map.border_smoothness));
 
-    mipmap += 0.05 * mipmap_multiplier * saturate(10.0 * m.roughness);
+    float local_distance = intersection_distance / map.bounding_sphere_radius;
+
+    // mipmap *= max(0.3, 1.4 * local_distance);
 
     specular = textureLod(EnvProbes.cubemaps, vec4(direction, map.index),
         clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
 
     diffuse = textureLod(EnvProbes.diffuse_cubemaps, vec4(diffuse_direction, map.index), 0);
 
-    // diffuse.xyz *= 0.3;
+    // Make sure small probes contribute much more than large ones
+    clip_factor *= exp(-0.05 * map.bounding_sphere_radius);
 
-    // Correct specular based on diffuse color intensity
+    // Optional: Correct specular based on diffuse color intensity
     // specular.xyz = mix(specular.xyz, specular.xyz * diffuse.xyz, diffuse.w);
 
     // Apply clip factors
     specular *= clip_factor;
     diffuse *= clip_factor;
-
     return clip_factor;
 }
 

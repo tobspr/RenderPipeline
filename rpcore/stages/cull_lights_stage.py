@@ -61,7 +61,7 @@ class CullLightsStage(RenderStage):
     def create(self):
         max_cells = self._pipeline.light_mgr.total_tiles
         self.num_rows = int(math.ceil(max_cells / float(self.slice_width)))
-        self.target = self.make_target("CullLights")
+        self.target = self.create_target("CullLights")
         # TODO: Use no oversized triangle in this stage
         self.target.size = self.slice_width, self.num_rows
         self.target.prepare_buffer()

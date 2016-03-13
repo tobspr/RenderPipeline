@@ -164,6 +164,9 @@ class PipeViewer(DraggableWindow):
                          size=12, align="center")
 
             for input_pipe in stage.required_pipes:
+                if input_pipe not in current_pipes:
+                    self.warn("Pipe not found:", input_pipe)
+                    continue
                 idx = current_pipes.index(input_pipe)
                 r, g, b = rgb_from_string(input_pipe)
                 DirectFrame(parent=node, frameSize=(0, 10, 40, -40),

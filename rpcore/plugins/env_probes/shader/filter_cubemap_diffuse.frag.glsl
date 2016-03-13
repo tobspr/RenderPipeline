@@ -27,7 +27,7 @@
 #version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/importance_sampling.inc.glsl"
 
 // #pragma optionNV (unroll all)
 
@@ -51,21 +51,25 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
-    const uint num_samples = 64;
+    // Get tangent and binormal
+    vec3 tangent, binormal;
+    find_arbitrary_tangent(n, tangent, binormal);
 
-    const float filter_radius = 1.0;
+    const int num_samples = 256;
     vec4 accum = vec4(0.0);
-    float accum_weight = 0.0;
+    float accum_weights = 0.0;
     for (uint i = 0; i < num_samples; ++i) {
-        vec3 offset = poisson_disk_3D_64[i];
-        accum += get_sample(offset.xyz, n, accum_weight);
-        accum += get_sample(offset.xzy, n, accum_weight);
-        accum += get_sample(offset.yxz, n, accum_weight);
-        accum += get_sample(offset.yzx, n, accum_weight);
-        accum += get_sample(offset.zxy, n, accum_weight);
-        accum += get_sample(offset.zyx, n, accum_weight);
+        vec2 Xi = hammersley(i, num_samples);
+        vec3 h = importance_sample_ggx(Xi, 1);
+        h = normalize(h.x * tangent + h.y * binormal + h.z * n);
+
+        // Reconstruct light vector
+        vec3 l = -reflect(n, h);
+        float weight = max(0, dot(n, l));
+        accum += textureLod(SourceTex, l, 0) * weight;
+        accum_weights += weight;
     }
-    accum /= accum_weight;
+    accum /= max(0.01, accum_weights);
     imageStore(DestTex, ivec3(clamped_coord, currentIndex * 6 + face), accum);
     result = accum;
 }

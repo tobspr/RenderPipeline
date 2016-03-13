@@ -45,33 +45,33 @@ class VXGIStage(RenderStage):
 
     def create(self):
         # Create a target for the specular GI
-        self._target_spec = self.make_target("SpecularGI")
+        self._target_spec = self.create_target("SpecularGI")
         self._target_spec.add_color_attachment(bits=16)
         self._target_spec.prepare_offscreen_buffer()
 
         # Create a target for the diffuse GI
-        self._target_diff = self.make_target("DiffuseGI")
+        self._target_diff = self.create_target("DiffuseGI")
         self._target_diff.set_half_resolution()
         self._target_diff.add_color_attachment(bits=16)
         self._target_diff.prepare_offscreen_buffer()
         self._target_diff.quad.set_instance_count(4)
 
         # Create the target which de-interleaves the diffuse target
-        self._target_merge_diff = self.make_target("MergeDiffuseGI")
+        self._target_merge_diff = self.create_target("MergeDiffuseGI")
         self._target_merge_diff.set_half_resolution()
         self._target_merge_diff.add_color_attachment(bits=16)
         self._target_merge_diff.prepare_offscreen_buffer()
         self._target_merge_diff.set_shader_input("SourceTex", self._target_diff["color"])
 
         # Create the target which blurs the diffuse result
-        self._target_blur_v = self.make_target("BlurV")
+        self._target_blur_v = self.create_target("BlurV")
         self._target_blur_v.set_half_resolution()
         self._target_blur_v.add_color_attachment(bits=16)
         self._target_blur_v.has_color_alpha = True
         self._target_blur_v.prepare_offscreen_buffer()
         self._target_blur_v.set_shader_input("SourceTex", self._target_merge_diff["color"])
 
-        self._target_blur_h = self.make_target("BlurH")
+        self._target_blur_h = self.create_target("BlurH")
         self._target_blur_h.set_half_resolution()
         self._target_blur_h.add_color_attachment(bits=16)
         self._target_blur_h.has_color_alpha = True
@@ -79,11 +79,12 @@ class VXGIStage(RenderStage):
         self._target_blur_h.set_shader_input("SourceTex", self._target_blur_v["color"])
 
        # Create the target which bilateral upsamples the diffuse target
-        self._target_upscale_diff = self.make_target("UpscaleDiffuse")
+        self._target_upscale_diff = self.create_target("UpscaleDiffuse")
         self._target_upscale_diff.add_color_attachment(bits=16)
         self._target_upscale_diff.prepare_offscreen_buffer()
         self._target_upscale_diff.set_shader_input("SourceTex", self._target_blur_h["color"])
         self._target_upscale_diff.set_shader_input("upscaleWeights", Vec2(0.0001, 0001))
+        self._target_upscale_diff.set_shader_input("useZAsWeight", False)
 
         # Set blur parameters
         self._target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))

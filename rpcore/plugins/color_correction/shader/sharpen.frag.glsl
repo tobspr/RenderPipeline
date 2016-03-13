@@ -34,20 +34,21 @@ out vec3 result;
 
 void main() {
 
-    vec2 texcoord = get_texcoord();
+    vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
 
     // Compute the sharpen strength for each individual channel
     const float sharpen_strength = GET_SETTING(color_correction, sharpen_strength);
 
-    vec2 pixel_size = 1.0 / SCREEN_SIZE;
+    vec2 pixel_size = 1.0 / NATIVE_SCREEN_SIZE;
+    const float r = 0.8;
 
     // Blur arround the current pixel
     vec3 blur_sum = vec3(0);
-    blur_sum += textureLod(ShadedScene, texcoord + vec2(  0.8, -0.8 ) * pixel_size, 0).rgb;
-    blur_sum += textureLod(ShadedScene, texcoord + vec2( -0.8, -0.8 ) * pixel_size, 0).rgb;
-    blur_sum += textureLod(ShadedScene, texcoord + vec2(  0.8, 0.8  ) * pixel_size, 0).rgb;
-    blur_sum += textureLod(ShadedScene, texcoord + vec2( -0.8, 0.8  ) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2(  r, -r ) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2( -r, -r ) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2(  r, r  ) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2( -r, r  ) * pixel_size, 0).rgb;
 
     vec3 pixel_diff = scene_color - blur_sum * 0.25;
 

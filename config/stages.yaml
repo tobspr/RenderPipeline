@@ -45,6 +45,7 @@ global_stage_order:
 
   # Post AA & Effects
   - TonemappingStage
+  - SkinShadingStage
   - SMAAStage
   - FXAAStage
   - SharpenStage
@@ -52,5 +53,6 @@ global_stage_order:
   - MotionBlurStage
 
   # Finishing stages, do not insert anything below
+  - UpscaleStage
   - FinalStage
   - UpdatePreviousPipesStage

@@ -26,7 +26,6 @@
 
 #pragma once
 
-#pragma include "includes/material_output.struct.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/lights.inc.glsl"
@@ -49,43 +48,32 @@ uniform int maxLightIndex;
 #endif
 
 // Applies forward shaded ambient
-vec3 get_forward_ambient(vec3 basecolor, float roughness) {
+vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
     vec3 reflected = vOutput.normal;
     vec3 shading_result = vec3(0);
 
     #if HAVE_PLUGIN(scattering)
-        // Specular ambient
-        float spec_mip = get_specular_mipmap(roughness * roughness);
-        vec3 spec_env = textureLod(ScatteringIBLSpecular, reflected, spec_mip).rgb;
-
-        // Diffuse ambient
         vec3 diff_env = textureLod(ScatteringIBLDiffuse, vOutput.normal, 0).rgb;
 
     #else
-        // Specular ambient
-        float spec_mip = max(3, mOutput.roughness * 7.0);
-        vec3 spec_env = textureLod(DefaultEnvmap, reflected, spec_mip).rgb;
-
-        // Diffuse ambient
         int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
         vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb;
-
     #endif
 
-    // shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env;
-    // shading_result += (1 - mOutput.metallic) * diff_env * basecolor / M_PI;
-    // shading_result += diff_env * basecolor / M_PI * 0.02;
-    shading_result += diff_env * basecolor / M_PI;
+    // shading_result += basecolor / M_PI;
+    shading_result += diff_env * basecolor / M_PI * 0.3;
+
 
     // Emission
-    shading_result *= max(0, 1 - mOutput.emissive);
-    shading_result += mOutput.emissive * basecolor * 10.0;
+    if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {
+        shading_result = basecolor * 10.0;
+    }
 
     return shading_result;
 }
 
 // Applies the sun shading, and if the pssm plugin is activated, also the sun shadows
-vec3 get_sun_shading(vec3 basecolor) {
+vec3 get_sun_shading(MaterialBaseInput mInput, vec3 basecolor) {
      #if HAVE_PLUGIN(scattering)
 
         vec3 shading_result = vec3(0);
@@ -122,7 +110,7 @@ vec3 get_sun_shading(vec3 basecolor) {
 
         if (sun_vector.z >= -0.2) {
             shading_result += max(0.0, dot(sun_vector, vOutput.normal))
-                              * sun_color * shadow_term * basecolor * (1 - mOutput.metallic);
+                              * sun_color * shadow_term * basecolor * (1 - mInput.metallic);
         }
 
         return shading_result;
@@ -137,7 +125,7 @@ vec3 get_forward_light_shading(vec3 basecolor) {
     vec3 shading_result = vec3(0);
 
     for (int i = 0; i <= maxLightIndex; ++i) {
-        LightData light_data = read_light_data(AllLightsData, i);
+        LightData light_data = read_light_data(AllLightsData, i * 4);
         int light_type = get_light_type(light_data);
 
         // Skip Null-Lights
@@ -175,5 +163,4 @@ vec3 get_forward_light_shading(vec3 basecolor) {
     }
 
     return shading_result;
-
 }

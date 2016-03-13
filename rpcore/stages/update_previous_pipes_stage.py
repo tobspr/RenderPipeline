@@ -46,8 +46,8 @@ class UpdatePreviousPipesStage(RenderStage):
     def add_transfer(self, from_tex, to_tex):
         """ Adds a new texture which should be copied from "from_tex" to
         "to_tex". This should be called before the stage gets constructed """
-        if from_tex.get_x_size() != Globals.base.win.get_x_size() or \
-            from_tex.get_y_size() != Globals.base.win.get_y_size():
+        if from_tex.get_x_size() != Globals.resolution.x or \
+            from_tex.get_y_size() != Globals.resolution.y:
             self.error(
                 "Storing of previous frame data which does not have window size"
                 " is not supported yet: " + to_tex.get_name())
@@ -57,7 +57,7 @@ class UpdatePreviousPipesStage(RenderStage):
 
     def create(self):
         self.debug("Creating previous pipes stage ..")
-        self._target = self.make_target("StorePreviousPipes")
+        self._target = self.create_target("StorePreviousPipes")
         self._target.prepare_buffer()
 
         # Set inputs

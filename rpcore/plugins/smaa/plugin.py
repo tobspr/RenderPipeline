@@ -44,6 +44,8 @@ class Plugin(BasePlugin):
             self._jitter_index = 0
             self._compute_jitters()
 
+        self._pipeline.stage_mgr.define("SMAA_HISTORY_LENGTH", self.history_length)
+
         self._smaa_stage = self.create_stage(SMAAStage)
         self._smaa_stage.use_reprojection = self.get_setting("use_reprojection")
         self._load_textures()
@@ -55,23 +57,35 @@ class Plugin(BasePlugin):
             Globals.base.camLens.set_film_offset(jitter)
             self._smaa_stage.set_jitter_index(self._jitter_index)
 
-            # Sawp jitter index
-            self._jitter_index = 1 - self._jitter_index
+            # Increase jitter index
+            self._jitter_index += 1
+            if self._jitter_index >= len(self._jitters):
+                self._jitter_index = 0
 
     def _compute_jitters(self):
         """ Internal method to compute the SMAA sub-pixel frame offsets """
         self._jitters = []
+
+        scale = 1.0 / float(Globals.base.win.get_x_size())
+
+        # for x, y in ((-0.5, 0.25), (0.5, -0.25), (0.25, 0.5), (-0.25, -0.5)):
         for x, y in ((-0.25, 0.25), (0.25, -0.25)):
             # The get_x_size() for both dimensions is not an error! Its due to
             # how the OrtographicLens works internally.
-            jitter_x = x / float(Globals.base.win.get_x_size())
-            jitter_y = y / float(Globals.base.win.get_x_size())
+            jitter_x = (x * 2 - 1) * scale * 0.5
+            jitter_y = (y * 2 - 1) * scale * 0.5
             self._jitters.append((jitter_x, jitter_y))
+
+    @property
+    def history_length(self):
+        if self.get_setting("use_reprojection"):
+            return len(self._jitters)
+        return 1
 
     def _load_textures(self):
         """ Loads all required textures """
-        search_tex = Globals.loader.loadTexture(self.get_resource("search_tex.png"))
-        area_tex = Globals.loader.loadTexture(self.get_resource("area_tex.png"))
+        search_tex = Globals.loader.load_texture(self.get_resource("search_tex.png"))
+        area_tex = Globals.loader.load_texture(self.get_resource("area_tex.png"))
 
         for tex in [search_tex, area_tex]:
             tex.set_minfilter(SamplerState.FT_linear)

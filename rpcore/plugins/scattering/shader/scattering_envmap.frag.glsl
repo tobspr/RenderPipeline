@@ -36,8 +36,6 @@ uniform sampler2D DefaultSkydome;
 
 #pragma include "scattering_method.inc.glsl"
 
-out vec4 result;
-
 void main() {
 
     // Get cubemap coordinate
@@ -61,17 +59,16 @@ void main() {
     if (horizon > 0.0) {
         // Clouds
         vec3 view_vector = direction;
-            vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-            cloud_color = cloud_color * vec3(1.0, 1, 0.9) * vec3(0.8, 0.7, 0.8524);
-            inscattered_light *= 0.0 + 1.2 * (0.3 + 0.6 * cloud_color);
+        vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
+        cloud_color = cloud_color * vec3(1.0, 1, 0.9) * vec3(0.8, 0.7, 0.8524);
+        cloud_color *= saturate(6.0 * (0.05 + view_vector.z));
+        inscattered_light *= 0.0 + 1.2 * (0.3 + 0.6 * cloud_color);
 
     } else {
         // Ground reflectance
         inscattered_light *= saturate(1+0.9*horizon) * 0.1;
-        inscattered_light += pow(vec3(102, 82, 50) * (1.0 / 255.0), vec3(1.0 / 1.2))
-                             * saturate(-horizon + 0.4) * 0.1 * TimeOfDay.scattering.sun_intensity;
+        inscattered_light += saturate(-horizon + 0.4) * 3 * TimeOfDay.scattering.sun_intensity;
     }
 
     imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0) );
-    result.xyz = inscattered_light;
 }

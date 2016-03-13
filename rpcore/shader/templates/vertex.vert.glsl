@@ -31,7 +31,7 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
-#pragma include "includes/material_output.struct.glsl"
+#pragma include "includes/material.struct.glsl"
 
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
@@ -46,15 +46,6 @@ uniform mat4 p3d_ModelMatrix;
 uniform mat3 tpose_world_to_model;
 
 out layout(location=0) VertexOutput vOutput;
-out layout(location=4) flat MaterialOutput mOutput;
-
-uniform struct {
-    vec4 baseColor;
-    vec4 emission;
-    float roughness;
-    float metallic;
-    float refractiveIndex;
-} p3d_Material;
 
 %INCLUDES%
 %INOUT%
@@ -70,16 +61,6 @@ void main() {
     #else
         vOutput.last_proj_position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
     #endif
-
-    // Get material properties
-    mOutput.color          = p3d_Material.baseColor.xyz;
-    mOutput.specular_ior   = p3d_Material.refractiveIndex;
-    mOutput.metallic       = p3d_Material.metallic;
-    mOutput.roughness      = p3d_Material.roughness;
-    mOutput.normalfactor   = p3d_Material.emission.r;
-    mOutput.translucency   = p3d_Material.emission.b;
-    mOutput.transparency   = p3d_Material.baseColor.w;
-    mOutput.emissive       = p3d_Material.emission.w;
 
     %VERTEX%
 

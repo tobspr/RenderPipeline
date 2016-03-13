@@ -42,7 +42,7 @@ class ErrorMessageDisplay(RPObject):
         RPObject.__init__(self)
         self._num_errors = 0
         self._error_node = Globals.base.pixel2d.attach_new_node("ErrorDisplay")
-        self._error_node.set_z(-150)
+        self._error_node.set_z(-180)
         self._notify_stream = None
 
     def _init_notify(self):

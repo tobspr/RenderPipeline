@@ -36,10 +36,12 @@ from panda3d.core import GeomTriangles, SamplerState, LVecBase2i, DepthTestAttri
 from panda3d.core import ShaderInput
 
 try:
+    # Try to import the post process region from panda, but fallback to the
+    # python version if it fails
     from panda3d.core import PostProcessRegion
+
 except ImportError:
-    # Handled already by the render pipeline
-    pass
+    from rpcore.util.post_process_region import PostProcessRegion
 
 from rplibs.six.moves import range
 from rplibs.six import iterkeys, itervalues, iteritems
@@ -66,6 +68,7 @@ class RenderTarget(RPObject):
 
     NUM_ALLOCATED_BUFFERS = 0
     CREATION_HANDLER = None
+    USE_R11G11B10 = True
 
     def __init__(self, name="target"):
         RPObject.__init__(self, name)
@@ -201,7 +204,7 @@ class RenderTarget(RPObject):
                 initial_state.set_attrib(AuxBitplaneAttrib.make(self._aux_bits), 20)
             initial_state.set_attrib(TransparencyAttrib.make(TransparencyAttrib.M_none), 20)
 
-            if self._color_bits.count(0) == 4:
+            if max(self._color_bits) == 0:
                 initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 20)
 
             # Disable existing regions of the camera
@@ -258,13 +261,16 @@ class RenderTarget(RPObject):
 
     def _create_buffer(self):
         """ Internal method to create the buffer object """
-        win = self._source_window
+        if self._source_window == Globals.base.win:
+            w, h = Globals.resolution.x, Globals.resolution.y
+        else:
+            w, h = self._source_window.get_x_size(), self._source_window.get_y_size()
 
         if self._size.x < 0:
-            self._size.x = (win.get_x_size() - self._size.x - 1) // (-self._size.x)
+            self._size.x = (w - self._size.x - 1) // (-self._size.x)
 
         if self._size.y < 0:
-            self._size.y = (win.get_y_size() - self._size.y - 1) // (-self._size.y)
+            self._size.y = (h - self._size.y - 1) // (-self._size.y)
 
         if not self._create():
             self.error("Failed to create buffer!")
@@ -272,6 +278,9 @@ class RenderTarget(RPObject):
 
         if self.create_default_region:
             self._source_region = PostProcessRegion.make(self._internal_buffer)
+
+            if max(self._color_bits) == 0:
+                self._source_region.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.M_none), 1000)
 
     def _setup_textures(self):
         """ Prepares all bound textures """
@@ -297,7 +306,8 @@ class RenderTarget(RPObject):
             # buffer_props.set_rgba_bits(11, 11, 10, 0)
             buffer_props.set_rgba_bits(16, 16, 16, 0)
         elif self._color_bits == (8, 8, 8, 0):
-            buffer_props.set_rgba_bits(11, 11, 10, 0)
+            # buffer_props.set_rgba_bits(11, 11, 10, 0)
+            buffer_props.set_rgba_bits(8, 8, 8, 0)
         else:
             buffer_props.set_rgba_bits(*self._color_bits)
 
@@ -306,7 +316,9 @@ class RenderTarget(RPObject):
         buffer_props.set_back_buffers(0)
         buffer_props.set_coverage_samples(0)
         buffer_props.set_depth_bits(self._depth_bits)
-        buffer_props.set_float_depth(True)
+
+        if self._depth_bits:
+            buffer_props.set_float_depth(True)
         buffer_props.set_float_color(max(self._color_bits) > 8)
         buffer_props.set_force_hardware(True)
         buffer_props.set_multisamples(0)
@@ -344,7 +356,7 @@ class RenderTarget(RPObject):
                 self.depth_tex, GraphicsOutput.RTM_bind_or_copy,
                 GraphicsOutput.RTP_depth)
 
-        if self._color_bits.count(0) != 4:
+        if max(self._color_bits) > 0:
             self._internal_buffer.add_render_texture(
                 self.color_tex, GraphicsOutput.RTM_bind_or_copy,
                 GraphicsOutput.RTP_color)
@@ -371,7 +383,7 @@ class RenderTarget(RPObject):
         if RenderTarget.CREATION_HANDLER:
             RenderTarget.CREATION_HANDLER(self)
         else:
-            self.debug("Late initializing target, buffer viewer not ready yet")
             Globals.base.taskMgr.doMethodLater(0.5,
-                lambda task: RenderTarget.CREATION_HANDLER(self), "register-target-" + self.debug_name)
+                lambda task: RenderTarget.CREATION_HANDLER(self)\
+                    if RenderTarget.CREATION_HANDLER else 1, "register-target-" + self.debug_name)
         return True

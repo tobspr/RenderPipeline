@@ -36,13 +36,5 @@ out float result;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    ivec2 base_coord = coord * 2;
-
-    // Fetch the 4 pixels from the higher mipmap
-    float v0 = get_linear_z_from_z(get_depth_at(base_coord + ivec2(0, 0)));
-    float v1 = get_linear_z_from_z(get_depth_at(base_coord + ivec2(1, 0)));
-    float v2 = get_linear_z_from_z(get_depth_at(base_coord + ivec2(0, 1)));
-    float v3 = get_linear_z_from_z(get_depth_at(base_coord + ivec2(1, 1)));
-
-    result = (v0 + v1 + v2 + v3) * 0.25;
+    result = get_linear_z_from_z(get_depth_at(coord));
 }

@@ -44,17 +44,18 @@ class MovementController(object):
         self._movement = [0, 0, 0]
         self._velocity = Vec3(0.0)
         self._hpr_movement = [0, 0]
-        self._speed = 0.7
+        self._speed = 0.4
         self._initial_position = Vec3(0)
         self._initial_destination = Vec3(0)
         self._initial_hpr = Vec3(0)
         self._mouse_enabled = False
         self._last_mouse_pos = [0, 0]
         self._mouse_sensivity = 0.7
-        self._keyboard_hpr_speed = 0.8
+        self._keyboard_hpr_speed = 0.4
         self._use_hpr = False
         self._smoothness = 6.0
         self._bobbing_amount = 2.5
+        self._bobbing_amount = 0
         self._bobbing_speed = 0.5
 
     def set_initial_position(self, pos, target):
@@ -215,7 +216,7 @@ class MovementController(object):
         rotation = (ftime % self._bobbing_speed) / self._bobbing_speed
         rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
         rotation *= self._bobbing_amount
-        rotation *= self._velocity.length() / self._speed * 0.5
+        rotation *= min(1, self._velocity.length() * self._velocity.length()) / self._speed * 0.5
         self._showbase.camera.set_r(rotation)
 
         # fade out velocity

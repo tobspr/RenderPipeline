@@ -78,7 +78,7 @@ class StageManager(BaseManager):
     def add_stage(self, stage):
         """ Adds a new stage """
         if stage.stage_id not in self._stage_order:
-            self.error("They stage type", stage.get_name(),
+            self.error("The stage type", stage.debug_name,
                        "is not registered yet! Please add it to the StageManager!")
             return
 
@@ -150,8 +150,8 @@ class StageManager(BaseManager):
                 if pipe_name not in self._previous_pipes:
                     self.debug("Storing previous frame pipe for " + pipe_name)
                     pipe_tex = Image.create_2d(
-                        "Prev-" + pipe_name, Globals.base.win.get_x_size(),
-                        Globals.base.win.get_y_size(), Texture.T_float,
+                        "Prev-" + pipe_name, Globals.resolution.x,
+                        Globals.resolution.y, Texture.T_float,
                         Texture.F_rgba16)
                     pipe_tex.clear_image()
                     self._previous_pipes[pipe_name] = pipe_tex

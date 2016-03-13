@@ -29,48 +29,60 @@ from rpcore.render_stage import RenderStage
 
 class AOStage(RenderStage):
 
-    required_pipes = ["GBuffer"]
+    required_pipes = ["GBuffer", "DownscaledDepth"]
     required_inputs = ["Noise4x4"]
 
     @property
     def produced_pipes(self):
-        return {"AmbientOcclusion": self.target_upscale.color_tex}
+        return {"AmbientOcclusion": self.blur_targets[-1].color_tex}
 
     def create(self):
-        self.target = self.make_target("Sample")
+        self.target = self.create_target("Sample")
         self.target.size = -2
-        self.target.add_color_attachment(alpha=True)
+        self.target.add_color_attachment(bits=(8, 0, 0, 0))
         self.target.prepare_buffer()
 
-        self.target_blur_v = self.make_target("BlurV")
-        self.target_blur_v.size = -2
-        self.target_blur_v.add_color_attachment(alpha=True)
-        self.target_blur_v.prepare_buffer()
-
-        self.target_blur_h = self.make_target("BlurH")
-        self.target_blur_h.size = -2
-        self.target_blur_h.add_color_attachment(alpha=True)
-        self.target_blur_h.prepare_buffer()
-
-        self.target_upscale = self.make_target("Upscale")
-        self.target_upscale.add_color_attachment(alpha=True)
+        self.target_upscale = self.create_target("Upscale")
+        self.target_upscale.add_color_attachment(bits=(8, 0, 0, 0))
         self.target_upscale.prepare_buffer()
 
-        self.target_upscale.set_shader_input("SourceTex", self.target_blur_h.color_tex)
-        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.0001, 0001))
+        self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
+        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
+        self.target_upscale.set_shader_input("useZAsWeight", False)
 
-        self.target_blur_v.set_shader_input("SourceTex", self.target.color_tex)
-        self.target_blur_h.set_shader_input("SourceTex", self.target_blur_v.color_tex)
+        self.target_small_scale = self.create_target("SmallScaleAO")
+        self.target_small_scale.add_color_attachment(bits=(8, 0, 0, 0))
+        self.target_small_scale.prepare_buffer()
+        self.target_small_scale.set_shader_input("AOResult", self.target_upscale.color_tex)
 
-        self.target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
-        self.target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
+        self.blur_targets = []
 
+        current_tex = self.target_small_scale.color_tex
+
+        for i in range(1):
+            target_blur_v = self.create_target("BlurV-" + str(i))
+            target_blur_v.add_color_attachment(bits=(8, 0, 0, 0))
+            target_blur_v.prepare_buffer()
+
+            target_blur_h = self.create_target("BlurH-" + str(i))
+            target_blur_h.add_color_attachment(bits=(8, 0, 0, 0))
+            target_blur_h.prepare_buffer()
+
+            target_blur_v.set_shader_input("SourceTex", current_tex)
+            target_blur_h.set_shader_input("SourceTex", target_blur_v.color_tex)
+
+            target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
+            target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
+
+            current_tex = target_blur_h.color_tex
+            self.blur_targets += [target_blur_v, target_blur_h]
 
     def set_shaders(self):
         self.target.shader = self.load_plugin_shader("ao_sample.frag.glsl")
         self.target_upscale.shader = self.load_plugin_shader(
             "/$$rp/shader/bilateral_upscale.frag.glsl")
         blur_shader = self.load_plugin_shader(
-            "/$$rp/shader/bilateral_halfres_blur.frag.glsl")
-        self.target_blur_v.shader = blur_shader
-        self.target_blur_h.shader = blur_shader
+            "/$$rp/shader/bilateral_blur.frag.glsl")
+        for target in self.blur_targets:
+            target.shader = blur_shader
+        self.target_small_scale.shader = self.load_plugin_shader("small_scale_ao.frag.glsl")

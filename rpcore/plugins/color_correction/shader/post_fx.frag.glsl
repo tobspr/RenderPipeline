@@ -64,7 +64,7 @@ void main() {
         #endif
 
         // Compute film grain
-        float film_grain = grain(texcoord, MainSceneData.frame_time);
+        float film_grain = grain(MainSceneData.frame_time);
         vec3 blended_color = blend_soft_light(scene_color, vec3(film_grain));
 
         // Blend film grain

@@ -31,7 +31,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/tonemapping.inc.glsl"
 
-uniform layout(rgba16f) imageBuffer RESTRICT ExposureStorage;
+uniform layout(r16f) imageBuffer RESTRICT ExposureStorage;
 uniform sampler2D DownscaledTex;
 
 void main() {
@@ -48,24 +48,12 @@ void main() {
     avg_luminance /= float(texsize.x * texsize.y);
     avg_luminance = avg_luminance / (1 - avg_luminance);
 
-    // usage with manual settings
-    // #if GET_SETTING(color_correction, manual_camera_parameters)
-    //     // TODO: We don't need average luminance for this - remove all those passes
-    //     float exposure_val = computeEV100(
-    //         GET_SETTING(color_correction, camera_aperture),
-    //         GET_SETTING(color_correction, camera_shutter),
-    //         GET_SETTING(color_correction, camera_iso));
-    // #else
-        float exposure_val = computeEV100FromAvgLuminance(avg_luminance);
-    // #endif
-
-
+    float exposure_val = computeEV100FromAvgLuminance(avg_luminance);
     float exposure = convertEV100ToExposure(exposure_val);
 
-    // const float factor = 2.0;
     float min_ev = GET_SETTING(color_correction, min_exposure_value);
     float max_ev = GET_SETTING(color_correction, max_exposure_value);
-    float exposure_bias = GET_SETTING(color_correction, exposure_bias);
+    float exposure_bias = GET_SETTING(color_correction, exposure_bias) * 0.1;
 
     exposure += exposure_bias;
 

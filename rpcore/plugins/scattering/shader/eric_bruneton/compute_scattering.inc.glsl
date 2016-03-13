@@ -94,9 +94,9 @@ bool intersect_atmosphere(vec3 cam_pos, vec3 d, out float offset, out float max_
 // This is required because we use different coordinate systems for normal
 // rendering and atmospheric scattering.
 vec3 worldspace_to_atmosphere(vec3 pos) {
-    pos /= 500.0;
+    pos /= 100.0;
     pos.z = max(0, pos.z);
-    pos.z += Rg + 0.1;
+    pos.z += Rg + 1.5;
     return pos;
 }
 
@@ -200,7 +200,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             float phaseR = phaseFunctionR(nustart_pos);
             float phaseM = phaseFunctionM(nustart_pos);
             inscattered_light = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
-            inscattered_light *= 90.0;
+            inscattered_light *= 150.0;
         }
     }
 
@@ -223,17 +223,20 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 
     float fog_ramp = TimeOfDay.scattering.fog_ramp_size / 3.0;
     fog_factor = saturate(1.0 - exp( -distance(surface_pos, MainSceneData.camera_pos) / fog_ramp ));
-    // fog_factor = 0.0;
 
     // Exponential height fog
     float ground_fog_factor = 5000.0;
-    // fog_factor *= 1.0 - saturate( max(0, surface_pos.z) / ground_fog_factor);
+    fog_factor *= 1.0 - saturate( max(0, surface_pos.z) / ground_fog_factor);
 
     if (is_skybox(surface_pos)) {
         fog_factor = 1;
     }
 
     vec3 scattering = get_inscattered_light(surface_pos, view_dir, attenuation, irradiance_factor);
+
+    // Reduce scattering in the near to avoid artifacts due to low precision
+    scattering *= saturate(distance(surface_pos, MainSceneData.camera_pos) / 500.0 - 0.0);
+
     return scattering;
 }
 

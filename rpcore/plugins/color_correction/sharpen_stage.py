@@ -27,9 +27,10 @@ THE SOFTWARE.
 from __future__ import division
 
 from rplibs.six import itervalues
-
-from rpcore.render_stage import RenderStage
 from panda3d.core import SamplerState, Texture
+
+from rpcore.globals import Globals
+from rpcore.render_stage import RenderStage
 
 class SharpenStage(RenderStage):
 
@@ -48,12 +49,15 @@ class SharpenStage(RenderStage):
             return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self.target = self.make_target("Sharpen")
+        native_size = Globals.base.win.get_x_size(), Globals.base.win.get_y_size()
+        self.target = self.create_target("Sharpen")
+        self.target.size = native_size
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 
         if self.sharpen_twice:
-            self.target2 = self.make_target("Sharpen2")
+            self.target2 = self.create_target("Sharpen2")
+            self.target2.size = native_size
             self.target2.add_color_attachment(bits=16)
             self.target2.prepare_buffer()
             self.target2.set_shader_input("ShadedScene", self.target.color_tex)

@@ -35,7 +35,7 @@ from rpcore.native import PSSMCameraRig, NATIVE_CXX_LOADED
 from .pssm_stage import PSSMStage
 from .pssm_shadow_stage import PSSMShadowStage
 from .pssm_scene_shadow_stage import PSSMSceneShadowStage
-# from .pssm_dist_shadow_stage import PSSMDistShadowStage
+from .pssm_dist_shadow_stage import PSSMDistShadowStage
 
 class Plugin(BasePlugin):
 
@@ -52,45 +52,50 @@ class Plugin(BasePlugin):
             self.debug("Setting max splits to 1 since python is used")
             self._pipeline.plugin_mgr.settings["pssm"]["split_count"].set_value(1)
 
-        self._update_enabled = True
-        self._pta_sun_vector = PTAVecBase3f.empty_array(1)
-        self._last_cache_reset = 0
+        self.update_enabled = True
+        self.pta_sun_vector = PTAVecBase3f.empty_array(1)
+        self.last_cache_reset = 0
 
-        self._shadow_stage = self.create_stage(PSSMShadowStage)
-        self._pssm_stage = self.create_stage(PSSMStage)
+        self.shadow_stage = self.create_stage(PSSMShadowStage)
+        self.pssm_stage = self.create_stage(PSSMStage)
 
-        self._shadow_stage.num_splits = self.get_setting("split_count")
-        self._shadow_stage.split_resolution = self.get_setting("resolution")
+        self.shadow_stage.num_splits = self.get_setting("split_count")
+        self.shadow_stage.split_resolution = self.get_setting("resolution")
 
-        self._scene_stage = self.create_stage(PSSMSceneShadowStage)
-        self._scene_stage.resolution = self.get_setting("scene_shadow_resolution")
+        self.scene_stage = self.create_stage(PSSMSceneShadowStage)
+        self.scene_stage.resolution = self.get_setting("scene_shadow_resolution")
 
-        # Experimental, not fully working yet
-        # self._dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
-        # self._dist_shadow_stage.resolution = self.get_setting("vsm_resolution")
+        # Enable distant shadow map if specified
+        if self.get_setting("use_distant_shadows"):
+            self.dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
+            self.dist_shadow_stage.resolution = self.get_setting("dist_shadow_resolution")
+            self.dist_shadow_stage.clip_size = self.get_setting("dist_shadow_clipsize")
+
+            self.pssm_stage.required_pipes.append("PSSMDistSunShadowMap")
+            self.pssm_stage.required_inputs.append("PSSMDistSunShadowMapMVP")
 
     def on_pipeline_created(self):
         self.debug("Initializing pssm ..")
         # Construct a dummy node to parent the rig to
-        self._node = Globals.base.render.attach_new_node("PSSMCameraRig")
-        self._node.hide()
+        self.node = Globals.base.render.attach_new_node("PSSMCameraRig")
+        self.node.hide()
 
         # Construct the actual PSSM rig
-        self._camera_rig = PSSMCameraRig(self.get_setting("split_count")) # pylint: disable=E0602
-        self._camera_rig.set_sun_distance(self.get_setting("sun_distance"))
-        self._camera_rig.set_pssm_distance(self.get_setting("max_distance"))
-        self._camera_rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
-        self._camera_rig.set_border_bias(self.get_setting("border_bias"))
-        self._camera_rig.set_use_stable_csm(True)
-        self._camera_rig.set_use_fixed_film_size(True)
-        self._camera_rig.set_resolution(self.get_setting("resolution"))
-        self._camera_rig.reparent_to(self._node)
+        self.camera_rig = PSSMCameraRig(self.get_setting("split_count")) # pylint: disable=E0602
+        self.camera_rig.set_sun_distance(self.get_setting("sun_distance"))
+        self.camera_rig.set_pssm_distance(self.get_setting("max_distance"))
+        self.camera_rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
+        self.camera_rig.set_border_bias(self.get_setting("border_bias"))
+        self.camera_rig.set_use_stable_csm(True)
+        self.camera_rig.set_use_fixed_film_size(True)
+        self.camera_rig.set_resolution(self.get_setting("resolution"))
+        self.camera_rig.reparent_to(self.node)
 
         # Attach the cameras to the shadow stage
         for i in range(self.get_setting("split_count")):
-            camera_np = self._camera_rig.get_camera(i)
+            camera_np = self.camera_rig.get_camera(i)
             camera_np.node().set_scene(Globals.base.render)
-            region = self._shadow_stage.split_regions[i]
+            region = self.shadow_stage.split_regions[i]
             region.set_camera(camera_np)
             # camera_np.node().show_frustum()
 
@@ -99,54 +104,64 @@ class Plugin(BasePlugin):
             self._pipeline.tag_mgr.register_shadow_camera(camera_np.node())
 
         # Accept a shortcut to enable / disable the update of PSSM
-        Globals.base.accept("u", self._toggle_update_enabled)
+        Globals.base.accept("u", self.toggle_update_enabled)
 
         # Set inputs
-        self._pssm_stage.set_shader_input("pssm_split_count", self.get_setting("split_count"))
-        self._pssm_stage.set_shader_input("pssm_mvps", self._camera_rig.get_mvp_array())
-        self._pssm_stage.set_shader_input("pssm_nearfar", self._camera_rig.get_nearfar_array())
-        self._pssm_stage.set_shader_input("pssm_sun_vector", self._pta_sun_vector)
+        self.pssm_stage.set_shader_input("pssm_split_count", self.get_setting("split_count"))
+        self.pssm_stage.set_shader_input("pssm_mvps", self.camera_rig.get_mvp_array())
+        self.pssm_stage.set_shader_input("pssm_nearfar", self.camera_rig.get_nearfar_array())
+        self.pssm_stage.set_shader_input("pssm_sun_vector", self.pta_sun_vector)
 
     def on_pre_render_update(self):
         sun_vector = self.get_plugin_instance("scattering").sun_vector
 
         if sun_vector.z < -0.1:
-            self._shadow_stage.set_active(False)
-            self._scene_stage.set_active(False)
-            self._pssm_stage.set_render_shadows(False)
-            self._pssm_stage.set_render_shadows(False)
+            self.shadow_stage.set_active(False)
+            self.scene_stage.set_active(False)
+            self.pssm_stage.set_render_shadows(False)
+
+            if self.get_setting("use_distant_shadows"):
+                self.dist_shadow_stage.set_active(False)
 
             # Return, no need to update the pssm splits
             return
         else:
-            self._shadow_stage.set_active(True)
-            self._scene_stage.set_active(True)
-            self._pssm_stage.set_render_shadows(True)
+            self.shadow_stage.set_active(True)
+            self.scene_stage.set_active(True)
+            self.pssm_stage.set_render_shadows(True)
 
-        if self._update_enabled:
-            self._camera_rig.update(Globals.base.camera, sun_vector)
+            if self.get_setting("use_distant_shadows"):
+                self.dist_shadow_stage.set_active(True)
+
+        if self.update_enabled:
+            self.camera_rig.update(Globals.base.camera, sun_vector)
 
             # Eventually reset cache
-            cache_diff = Globals.clock.get_frame_time() - self._last_cache_reset
+            cache_diff = Globals.clock.get_frame_time() - self.last_cache_reset
             if cache_diff > 5.0:
-                self._last_cache_reset = Globals.clock.get_frame_time()
-                self._camera_rig.reset_film_size_cache()
+                self.last_cache_reset = Globals.clock.get_frame_time()
+                self.camera_rig.reset_film_size_cache()
 
-            self._scene_stage.sun_vector = sun_vector
+            self.scene_stage.sun_vector = sun_vector
 
+            if self.get_setting("use_distant_shadows"):
+                self.dist_shadow_stage.sun_vector = sun_vector
 
     def update_max_distance(self):
-        self._camera_rig.set_pssm_distance(self.get_setting("max_distance"))
+        self.camera_rig.set_pssm_distance(self.get_setting("max_distance"))
 
     def update_logarithmic_factor(self):
-        self._camera_rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
+        self.camera_rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))
 
     def update_border_bias(self):
-        self._camera_rig.set_border_bias(self.get_setting("border_bias"))
+        self.camera_rig.set_border_bias(self.get_setting("border_bias"))
 
     def update_sun_distance(self):
-        self._camera_rig.set_sun_distance(self.get_setting("sun_distance"))
+        self.camera_rig.set_sun_distance(self.get_setting("sun_distance"))
 
-    def _toggle_update_enabled(self):
-        self._update_enabled = not self._update_enabled
-        self.debug("Update enabled:", self._update_enabled)
+    def update_dist_shadow_clipsize(self):
+        self.dist_shadow_stage.clip_size = self.get_setting("dist_shadow_clipsize")
+
+    def toggle_update_enabled(self):
+        self.update_enabled = not self.update_enabled
+        self.debug("Update enabled:", self.update_enabled)

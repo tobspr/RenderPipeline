@@ -35,9 +35,12 @@
 #pragma optionNV (unroll all)
 
 uniform sampler2D SourceTex;
+uniform sampler2D CombinedVelocity;
 out vec3 result;
 
-const int num_samples = GET_SETTING(motion_blur, num_camera_samples);
+const int num_samples = GET_SETTING(motion_blur, num_camera_samples) * 2;
+const float max_velocity = 70.0 / WINDOW_WIDTH;
+const float min_velocity = 0.5 / WINDOW_WIDTH;
 
 void main() {
 
@@ -45,14 +48,13 @@ void main() {
   ivec2 coord = ivec2(gl_FragCoord.xy);
 
   // Reconstruct last frame texcoord
-  vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0,1.0 / ASPECT_RATIO);
-  vec3 pos = get_world_pos_at(texcoord + film_offset_bias);
+  vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0, 1.0 / ASPECT_RATIO);
+  vec3 pos = get_world_pos_at(texcoord - film_offset_bias);
   vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
   vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
 
   // Compute velocity in screen space
   vec2 velocity = last_coord - texcoord;
-  float velocity_len = length(velocity);
 
   // Make sure that when we have low-fps, we reduce motion blur, and when we
   // have higher fps, we increase it - this way it perceptually always stays
@@ -61,21 +63,37 @@ void main() {
   velocity *= (1.0 / target_fps) / MainSceneData.smooth_frame_delta;
   velocity *= GET_SETTING(motion_blur, camera_blur_factor);
 
+  float velocity_len = length(velocity);
+
   // We can abort early when no velocity is present
-  if (velocity_len < 0.505 / WINDOW_WIDTH) {
+  if (velocity_len < min_velocity) {
     result = texture(SourceTex, texcoord, 0).xyz;
     return;
   }
 
-  vec3 accum = vec3(0);
-  float jitter = rand(texcoord) * 2.0 - 1.0;
-
-  // Take two samples at a time
-  for (int i = -num_samples + 1; i < num_samples; ++i) {
-    vec2 offs = (i + 0.5 * jitter) / float(num_samples) * velocity;
-    accum += texture(SourceTex, texcoord + offs).xyz;
+  if (velocity_len > max_velocity) {
+    float scale_factor = max_velocity / velocity_len;
+    velocity *= scale_factor;
+    velocity_len *= scale_factor;
   }
 
-  accum /= float(2 * (num_samples - 1) + 1);
+  // Weight the center sample by a small bit to make sure we always have a weight.
+  // However, we don't weight it too much to make the blur not look weird.
+  float weights = 1e-3;
+  vec3 accum = texture(SourceTex, texcoord).xyz * weights;
+  float jitter = rand(texcoord) * 2.0 - 1.0;
+
+  // Blur in both directions
+  for (int i = -num_samples + 1; i < num_samples; ++i) {
+    vec2 offs = (i + 0.5 * jitter) / float(num_samples) * velocity;
+
+    // Prevent bleeding when rotating - that is, objects moving into different directions
+    vec2 sample_velocity = texture(CombinedVelocity, texcoord + offs).xy;
+    float weight = saturate(dot(sample_velocity, velocity) * WINDOW_WIDTH * 3);
+    accum += texture(SourceTex, texcoord + offs).xyz * weight;
+    weights += weight;
+  }
+
+  accum /= weights;
   result = saturate(accum);
 }

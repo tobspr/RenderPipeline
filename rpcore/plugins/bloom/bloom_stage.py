@@ -46,13 +46,13 @@ class BloomStage(RenderStage):
         return {"ShadedScene": self.target_apply.color_tex}
 
     def create(self):
-        self.target_firefly = self.make_target("RemoveFireflies")
+        self.target_firefly = self.create_target("RemoveFireflies")
         self.target_firefly.add_color_attachment(bits=16)
         self.target_firefly.prepare_buffer()
 
         self.scene_target_img = Image.create_2d(
-            "BloomDownsample", Globals.base.win.get_x_size(),
-            Globals.base.win.get_y_size(), Texture.T_float, Texture.F_r11_g11_b10)
+            "BloomDownsample", Globals.resolution.x, Globals.resolution.y,
+            Texture.T_float, Texture.F_r11_g11_b10)
 
         self.scene_target_img.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.scene_target_img.set_magfilter(SamplerState.FT_linear)
@@ -61,7 +61,7 @@ class BloomStage(RenderStage):
         self.scene_target_img.set_clear_color(Vec4(0.2, 0.6, 1.0, 1.0))
         self.scene_target_img.clear_image()
 
-        self.target_extract = self.make_target("ExtractBrightSpots")
+        self.target_extract = self.create_target("ExtractBrightSpots")
         self.target_extract.prepare_buffer()
         self.target_extract.set_shader_input("DestTex", self.scene_target_img, False, True, -1, 0)
 
@@ -73,7 +73,7 @@ class BloomStage(RenderStage):
         # Downsample passes
         for i in range(self.num_mips):
             scale_multiplier = 2 ** (1 + i)
-            target = self.make_target("Downsample:Step-" + str(i))
+            target = self.create_target("Downsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
             target.prepare_buffer()
             target.set_shader_input("SourceMip", i)
@@ -84,7 +84,7 @@ class BloomStage(RenderStage):
         # Upsample passes
         for i in range(self.num_mips):
             scale_multiplier = 2 ** (self.num_mips - i - 1)
-            target = self.make_target("Upsample:Step-" + str(i))
+            target = self.create_target("Upsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
             target.prepare_buffer()
             target.set_shader_input("FirstUpsamplePass", i == 0)
@@ -95,7 +95,7 @@ class BloomStage(RenderStage):
                                     False, True, -1, self.num_mips - i - 1)
             self.upsample_targets.append(target)
 
-        self.target_apply = self.make_target("ApplyBloom")
+        self.target_apply = self.create_target("ApplyBloom")
         self.target_apply.add_color_attachment(bits=16)
         self.target_apply.prepare_buffer()
         self.target_apply.set_shader_input("BloomTex", self.scene_target_img)

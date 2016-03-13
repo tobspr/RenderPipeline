@@ -43,11 +43,11 @@ class PSSMStage(RenderStage):
         # Store whether the target is active
         self.pta_active = PTAInt.empty_array(1)
 
-        self.target = self.make_target("ApplyPSSM")
+        self.target = self.create_target("ApplyPSSM")
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 
-        self.void_target = self.make_target("PSSMVoidShader")
+        self.void_target = self.create_target("PSSMVoidShader")
         self.void_target.add_color_attachment(bits=16)
         self.void_target.prepare_buffer()
         self.void_target.activ = False

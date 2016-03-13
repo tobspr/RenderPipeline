@@ -35,17 +35,17 @@
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
+#pragma include "includes/material.struct.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
-#pragma include "includes/material_output.struct.glsl"
 
 %INCLUDES%
 %INOUT%
 
 uniform sampler2D p3d_Texture0;
+uniform Panda3DMaterial p3d_Material;
 
 layout(location=0) in VertexOutput vOutput;
-layout(location=4) flat in MaterialOutput mOutput;
 
 #pragma include "includes/forward_shading.inc.glsl"
 
@@ -54,17 +54,14 @@ layout(location=1) out vec4 result_diffuse;
 
 void main() {
 
-    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * mOutput.color;
-    // basecolor = pow(basecolor, vec3(2.2));
+    MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
 
-    %MATERIAL%
+    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * mInput.color;
 
-    vec3 ambient = get_forward_ambient(basecolor, mOutput.roughness);
-    vec3 lighting = get_sun_shading(basecolor) + get_forward_light_shading(basecolor);
+    vec3 ambient = get_forward_ambient(mInput, basecolor);
+    vec3 sun_lighting = get_sun_shading(mInput, basecolor);
+    vec3 lights = get_forward_light_shading(basecolor);
 
-    // TODO: Forward shading for lights
-
-    result_specular = vec4(ambient + lighting, 1);
-    result_diffuse = vec4(lighting, 1);
-    // result_diffuse = vec4(0,0 ,0, 1);
+    result_specular = vec4(ambient + lights + sun_lighting, 1);
+    result_diffuse = vec4(ambient + lights + sun_lighting, 1);
 }
