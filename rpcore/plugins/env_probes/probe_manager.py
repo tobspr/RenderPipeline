@@ -27,7 +27,7 @@ THE SOFTWARE.
 from panda3d.core import Texture, Vec4, GeomEnums, Mat4, SamplerState, BoundingVolume
 
 from rpcore.globals import Globals
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.image import Image
 
 class ProbeManager(RPObject):
@@ -56,7 +56,7 @@ class ProbeManager(RPObject):
         # Storage for the diffuse component
         self.diffuse_storage = Image("EnvmapDiffuseStorage")
         self.diffuse_storage.setup_cube_map_array(
-            4, self.max_probes, Texture.T_float, Texture.F_rgba16)
+            self.diffuse_resolution, self.max_probes, Texture.T_float, Texture.F_rgba16)
         self.diffuse_storage.set_clear_color(Vec4(1, 0, 0.2, 1.0))
         self.diffuse_storage.clear_image()
 

@@ -29,7 +29,7 @@ from panda3d.core import PTAFloat, PTALVecBase3f
 
 from math import exp, log
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.util.smooth_connected_curve import SmoothConnectedCurve
 
 __all__ = ["make_daysetting_from_data"]
@@ -96,7 +96,7 @@ class ScalarType(BaseType):
         self.unit = data.pop("unit")
         self.minvalue, self.maxvalue = data.pop("range")
         self.logarithmic_factor = data.pop("logarithmic_factor", 1.0)
-        if self.unit not in ("degree", "meter", "percent"):
+        if self.unit not in ("degree", "meter", "percent", "none"):
             raise Exception("Invalid unit type: {}".format(self.unit))
 
         self.default = self.get_linear_value(data.pop("default"))
@@ -109,7 +109,8 @@ class ScalarType(BaseType):
         metric = {
             "degree": u'\N{DEGREE SIGN}',
             "percent": u'%',
-            "meter": u'm'
+            "meter": u'm',
+            "none": ''
         }[self.unit]
         if self.unit == "percent":
             value *= 100.0

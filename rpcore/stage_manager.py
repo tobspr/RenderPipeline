@@ -69,7 +69,7 @@ class StageManager(BaseManager):
     def _load_stage_order(self):
         """ Loads the order of all stages from the stages.yaml configuration
         file """
-        orders = load_yaml_file("$$config/stages.yaml")
+        orders = load_yaml_file("/$$rpconfig/stages.yaml")
         if "global_stage_order" not in orders:
             self.error("Could not load stage order, root key does not exist!")
             return
@@ -78,16 +78,12 @@ class StageManager(BaseManager):
     def add_stage(self, stage):
         """ Adds a new stage """
         if stage.stage_id not in self._stage_order:
-            self.error("They stage type", stage.get_name(),
+            self.error("The stage type", stage.debug_name,
                        "is not registered yet! Please add it to the StageManager!")
             return
 
         if self._created:
             self.error("Cannot attach stage, stages are already created!")
-            return
-
-        if not stage.is_enabled():
-            self.debug("Skipping disabled stage", stage)
             return
 
         self._stages.append(stage)
@@ -126,11 +122,12 @@ class StageManager(BaseManager):
     def _prepare_stages(self):
         """ Prepares all stages by removing disabled stages and sorting stages
         by order """
+        self.debug("Preparing stages ..")
 
         # Remove all disabled stages
         to_remove = []
         for stage in self._stages:
-            if not stage.is_enabled():
+            if stage.disabled:
                 to_remove.append(stage)
 
         for stage in to_remove:
@@ -153,8 +150,8 @@ class StageManager(BaseManager):
                 if pipe_name not in self._previous_pipes:
                     self.debug("Storing previous frame pipe for " + pipe_name)
                     pipe_tex = Image.create_2d(
-                        "Prev-" + pipe_name, Globals.base.win.get_x_size(),
-                        Globals.base.win.get_y_size(), Texture.T_float,
+                        "Prev-" + pipe_name, Globals.resolution.x,
+                        Globals.resolution.y, Texture.T_float,
                         Texture.F_rgba16)
                     pipe_tex.clear_image()
                     self._previous_pipes[pipe_name] = pipe_tex
@@ -162,7 +159,7 @@ class StageManager(BaseManager):
                 continue
 
             if pipe not in self._pipes:
-                self.error("Pipe '" + pipe + "' is missing for", stage)
+                self.fatal("Pipe '" + pipe + "' is missing for", stage)
                 return False
 
             pipe_value = self._pipes[pipe]
@@ -300,12 +297,9 @@ class StageManager(BaseManager):
         for key, value in sorted(iteritems(self._defines)):
             output += self._make_glsl_define(key, value)
 
-        # Write a random timestamp, to make sure no caching occurs
-        output += "#define RANDOM_TIMESTAMP " + str(time.time()) + "\n"
-
         # Try to write the file
         try:
-            with open("$$pipeline_temp/$$pipeline_shader_config.inc.glsl", "w") as handle:
+            with open("/$$rptemp/$$pipeline_shader_config.inc.glsl", "w") as handle:
                 handle.write(output)
         except IOError as msg:
             self.error("Error writing shader autoconfig:", msg)

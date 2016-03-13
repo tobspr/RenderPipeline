@@ -36,10 +36,9 @@ class ColorCorrectionStage(RenderStage):
         return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self.target = self.make_target2("PostFX")
-        self.target.add_color_attachment()
+        self.target = self.create_target("PostFX")
+        self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
-        
 
     def set_shaders(self):
         self.target.shader = self.load_plugin_shader("post_fx.frag.glsl")

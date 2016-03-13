@@ -21,12 +21,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- 	 	    	 	
+
 """
 
 from direct.stdpy.file import open
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class ShaderTemplate(RPObject):
 
@@ -132,7 +132,7 @@ class ShaderTemplate(RPObject):
 
         # Write the constructed shader and load it back
         shader_content = '\n'.join(parsed_lines)
-        temp_path = "$$pipeline_temp/$$Effect-" + self._template_name + ".glsl"
+        temp_path = "/$$rptemp/$$Effect-" + self._template_name + ".glsl"
 
         with open(temp_path, "w") as handle:
             handle.write(shader_content)

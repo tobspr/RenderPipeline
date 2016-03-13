@@ -3,7 +3,7 @@ settings: !!omap
 
     - max_distance:
         type: float
-        range: [2.0, 2000.0]
+        range: [2.0, 6000.0]
         default: 50.0
         runtime: true
         shader_runtime: true
@@ -176,14 +176,34 @@ settings: !!omap
             smaller penumbra, while higher settings produce a bigger one. Too
             high values might cause artifacts in the filtering.
 
-    - vsm_resolution:
+    - use_distant_shadows:
+        type: bool
+        default: false
+        label: Render distant shadows
+        description: >
+            When this setting is enabled, an additional shadow map is generated
+            to render distant shadows, e.g. for terrain. This makes it possible
+            to set the pssm distance very small, but still recieve shadows from
+            big objects. If your scene is not big, this may not be required.
+
+    - dist_shadow_resolution:
+        display_if: {use_distant_shadows: true}
         type: int
         range: [128, 8192]
         default: 4096
-        label: VSM Resolution
+        label: Distant Shadow Resolution
         description: >
-            Controls the size of the last cascade, which is used for rendering
-            distant shadows.
+            Controls the size of distant shadow map nin pixels.
+
+    - dist_shadow_clipsize:
+        display_if: {use_distant_shadows: true}
+        type: float
+        range: [100.0, 16000.0]
+        default: 4000.0
+        runtime: true
+        label: Distant Shadow Range
+        description: >
+            Controls the range of the distant shadow map
 
     - scene_shadow_resolution:
         type: int

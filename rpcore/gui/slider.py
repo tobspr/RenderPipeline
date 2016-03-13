@@ -27,7 +27,7 @@ THE SOFTWARE.
 import direct.gui.DirectGuiGlobals as DGG
 from direct.gui.DirectSlider import DirectSlider
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class Slider(RPObject):
 

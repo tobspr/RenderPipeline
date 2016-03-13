@@ -19,6 +19,7 @@ global_stage_order:
   - GBufferStage
   - ShadowStage
   - DownscaleZStage
+  - CombineVelocityStage
 
   # Light(-culling)
   - FlagUsedCellsStage
@@ -26,7 +27,7 @@ global_stage_order:
   - CullLightsStage
   - CullProbesStage
 
- # Plugins
+  # Plugins
   - CloudVoxelStage
   - AOStage
   - ApplyLightsStage
@@ -34,15 +35,17 @@ global_stage_order:
   - ScatteringStage
   - ApplyEnvprobesStage
   - VXGIStage
-  - AmbientStage
   - SSLRStage
+  - AmbientStage
   - ApplyCloudsStage
   - GodrayStage
   - AutoExposureStage
+  - ManualExposureStage
   - BloomStage
 
   # Post AA & Effects
   - TonemappingStage
+  - SkinShadingStage
   - SMAAStage
   - FXAAStage
   - SharpenStage
@@ -50,5 +53,6 @@ global_stage_order:
   - MotionBlurStage
 
   # Finishing stages, do not insert anything below
+  - UpscaleStage
   - FinalStage
   - UpdatePreviousPipesStage

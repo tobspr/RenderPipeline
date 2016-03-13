@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import PTAInt, Texture, Shader
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.image import Image
 from rpcore.render_target import RenderTarget
 
@@ -81,9 +81,9 @@ class GPUCommandQueue(RPObject):
     def reload_shaders(self):
         """ Reloads the command shader """
         shader = Shader.load(Shader.SL_GLSL,
-                             "$$shader/default_post_process.vert.glsl",
-                             "$$shader/process_command_queue.frag.glsl")
-        self._command_target.set_shader(shader)
+                             "/$$rp/shader/default_post_process.vert.glsl",
+                             "/$$rp/shader/process_command_queue.frag.glsl")
+        self._command_target.shader = shader
 
     def register_input(self, key, val):
         """ Registers an new shader input to the command target """
@@ -109,8 +109,8 @@ class GPUCommandQueue(RPObject):
 
     def _create_command_target(self):
         """ Creates the target which processes the commands """
-        self._command_target = RenderTarget("CommandTarget")
+        self._command_target = RenderTarget("ExecCommandTarget")
         self._command_target.size = 1, 1
-        self._command_target.prepare_offscreen_buffer()
+        self._command_target.prepare_buffer()
         self._command_target.set_shader_input("CommandQueue", self._data_texture)
         self._command_target.set_shader_input("commandCount", self._pta_num_commands)

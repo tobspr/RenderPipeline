@@ -35,7 +35,6 @@
 #pragma include "chromatic_aberration.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform float osg_FrameTime;
 
 out vec4 result;
 
@@ -64,14 +63,8 @@ void main() {
             vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
         #endif
 
-        // Downscale the color in case we don't use automatic exposure, to simulate
-        // the dynamic range.
-        #if !GET_SETTING(color_correction, use_auto_exposure)
-            scene_color *= 0.1;
-        #endif
-
         // Compute film grain
-        float film_grain = grain(texcoord, osg_FrameTime);
+        float film_grain = grain(MainSceneData.frame_time);
         vec3 blended_color = blend_soft_light(scene_color, vec3(film_grain));
 
         // Blend film grain

@@ -42,14 +42,15 @@ const int num_raydirs = 5;
 // since using this way we could miss some small parts of the sphere. With this
 // bias we should be fine, except for very small spheres, but those will be
 // out of the culling range then anyays
-const vec3 cull_bias = vec3(vec2(1 + 0.01), 1);
+const float cull_bias = 1 + 0.01;
 const vec3 aspect_mul = vec3(1, ASPECT_RATIO, 1);
-CONST_ARRAY vec3 ray_dirs[num_raydirs] = vec3[](
-    vec3( 0, 0, -1),
-    vec3(  1.0,  1.0, -1) * cull_bias,
-    vec3( -1.0,  1.0, -1) * cull_bias,
-    vec3(  1.0, -1.0, -1) * cull_bias,
-    vec3( -1.0, -1.0, -1) * cull_bias
+
+CONST_ARRAY vec2 ray_dirs[num_raydirs] = vec2[](
+    vec2( 0, 0),
+    vec2( 1.0,  1.0) * cull_bias,
+    vec2(-1.0,  1.0) * cull_bias,
+    vec2( 1.0, -1.0) * cull_bias,
+    vec2(-1.0, -1.0) * cull_bias
 );
 
 
@@ -78,9 +79,26 @@ void unpack_cell_data(int packed_data, out int cell_x, out int cell_y, out int c
     cell_slice = (packed_data >> 20) & 0x3FF;
 }
 
-vec3 transform_raydir(vec3 dir, int cell_x, int cell_y, ivec2 precompute_size) {
-    return normalize(fma((vec3(cell_x, cell_y, 0) + fma(dir, vec3(0.5), vec3(0.5)))
-                    / vec3(precompute_size, 1), vec3(2.0), vec3(-1.0)) * aspect_mul);
+vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, vec2 precompute_size,
+        vec3 frustum_bl, vec3 frustum_br, vec3 frustum_tl, vec3 frustum_tr) {
+    vec2 cell_pos = (vec2(cell_x, cell_y) + dir * 0.5 + 0.5) / precompute_size;
+    return normalize(mix(
+        mix(frustum_bl, frustum_br, cell_pos.x),
+        mix(frustum_tl, frustum_tr, cell_pos.x),
+        cell_pos.y
+    ));
+}
+
+CONST_ARRAY vec3[num_raydirs] get_raydirs(int cell_x, int cell_y, vec2 precompute_size, mat4 frustum_corners) {
+    vec3 local_ray_dirs[num_raydirs];
+
+    // Generate ray directions
+    for (int i = 0; i < num_raydirs; ++i) {
+        local_ray_dirs[i] = transform_raydir(ray_dirs[i], cell_x, cell_y, precompute_size,
+            frustum_corners[0].xyz, frustum_corners[1].xyz, frustum_corners[2].xyz, frustum_corners[3].xyz);
+    }
+
+    return local_ray_dirs;
 }
 
 // Interesects a sphere with a ray

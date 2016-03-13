@@ -24,18 +24,26 @@
  *
  */
 
-#version 420
+#version 440
 
-#define USE_MAIN_SCENE_DATA
+#define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/tonemapping.inc.glsl"
 
-uniform GBufferData GBuffer;
+uniform sampler2D ShadedScene;
 
-uniform writeonly image2D RESTRICT DestTexture;
+out vec3 result;
+
+// Applies manual camera parameters
 
 void main() {
-    vec2 coord = get_texcoord();
-    float source_depth = get_gbuffer_depth(GBuffer, coord);
-    imageStore(DestTexture, ivec2(gl_FragCoord.xy), vec4(source_depth));
+    vec2 texcoord = get_texcoord();
+
+    float exposure_val = computeEV100(
+        TimeOfDay.color_correction.camera_aperture,
+        TimeOfDay.color_correction.camera_shutter,
+        TimeOfDay.color_correction.camera_iso);
+
+    float exposure = convertEV100ToExposure(exposure_val);
+    result = texture(ShadedScene, texcoord).xyz * exposure;
 }

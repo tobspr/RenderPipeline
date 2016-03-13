@@ -57,9 +57,9 @@ class PluginManager(BaseManager):
         """ Loads all plugins and their settings, and also constructs instances
         of the main plugin classes for all enabled plugins """
         self.debug("Loading plugins")
-        self._load_base_settings("$$plugins")
-        self.load_setting_overrides("$$config/plugins.yaml")
-        self.load_daytime_overrides("$$config/daytime.yaml")
+        self._load_base_settings("/$$rp/rpcore/plugins")
+        self.load_setting_overrides("/$$rpconfig/plugins.yaml")
+        self.load_daytime_overrides("/$$rpconfig/daytime.yaml")
 
         for plugin_id in self._settings:
             handle = self._load_plugin(plugin_id)

@@ -51,18 +51,17 @@ void main() {
     }
 
     // Fetch exposure settings
-    const float factor = 12.0;
-    float min_exp = make_logarithmic(GET_SETTING(color_correction, min_exposure), factor);
-    float max_exp = make_logarithmic(GET_SETTING(color_correction, max_exposure), factor);
+    float min_exp = GET_SETTING(color_correction, min_exposure_value);
+    float max_exp = GET_SETTING(color_correction, max_exposure_value);
 
     // Fetch current exposure
     float curr_exposure = texelFetch(ExposureTex, 0).x;
 
     // Slider
-    float slider_pos = (curr_exposure - min_exp) / (max_exp - min_exp);
+    float slider_pos = saturate((curr_exposure - min_exp) / (max_exp - min_exp));
 
     // Make visualization logarithmic
-    slider_pos = make_logarithmic(slider_pos, factor);
+    // slider_pos = make_logarithmic(slider_pos, factor);
 
     const int slider_w = 4;
     int slider_pos_int = int(slider_pos * float(widget_size.x - 2 * border_size)) + border_size;

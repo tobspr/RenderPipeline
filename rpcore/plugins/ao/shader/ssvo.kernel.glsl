@@ -38,7 +38,7 @@ of the spheres volume is then used to compute AO.
 
 const int num_samples = GET_SETTING(ao, ssvo_sample_count) * 4;
 vec2 sphere_radius = GET_SETTING(ao, ssvo_sphere_radius) * pixel_size;
-float max_depth_diff = GET_SETTING(ao, ssvo_max_distance);
+float max_depth_diff = GET_SETTING(ao, ssvo_max_distance) / kernel_scale;
 
 float accum = 0.0;
 float pixel_linz = get_linear_z_from_z(pixel_depth);
@@ -58,13 +58,10 @@ for (int i = 0; i < num_samples; ++i) {
     // Compute the sphere height at the sample location
     float sphere_height = sqrt( 1 - dot(offset, offset) );
 
-    // Get the depth at the sample locations
-    float depth_a = get_depth_at(offcoord_a);
-    float depth_b = get_depth_at(offcoord_b);
-
-    // Make the depth linear, this enables us to compare them better
-    float depth_linz_a = get_linear_z_from_z(depth_a);
-    float depth_linz_b = get_linear_z_from_z(depth_b);
+    // Get the depth at the sample locations, also
+    // make the depth linear, this enables us to compare them better
+    float depth_linz_a = get_linear_depth_at(offcoord_a);
+    float depth_linz_b = get_linear_depth_at(offcoord_b);
 
     // Clamp both differences to the maximum depth difference
     float diff_a = (pixel_linz - depth_linz_a) / max_depth_diff;
@@ -99,11 +96,7 @@ for (int i = 0; i < num_samples; ++i) {
 
 }
 
-// No bent normal supported yet, use pixel normal
-vec3 bent_normal = pixel_world_normal;
-
 // Normalize occlusion factor
 accum /= num_samples;
-
-result = vec4(bent_normal, saturate(accum));
+result = accum;
 

@@ -42,5 +42,5 @@ class Plugin(BasePlugin):
         self._bloom_stage.num_mips = self.get_setting("num_mipmaps")
 
     def on_pipeline_created(self):
-        dirt_tex = Globals.loader.loadTexture(self.get_resource("lens_dirt.png"))
+        dirt_tex = Globals.loader.load_texture(self.get_resource("lens_dirt.png"))
         self._bloom_stage.set_shader_input("LensDirtTex", dirt_tex)

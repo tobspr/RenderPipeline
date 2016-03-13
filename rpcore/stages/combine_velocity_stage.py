@@ -24,36 +24,23 @@ THE SOFTWARE.
 
 """
 
-from rpcore.rp_object import RPObject
+from rpcore.render_stage import RenderStage
 
-from rpcore.stages.ambient_stage import AmbientStage
-from rpcore.stages.gbuffer_stage import GBufferStage
-from rpcore.stages.final_stage import FinalStage
-# from .stages.downscale_z_stage import DownscaleZStage
+class CombineVelocityStage(RenderStage):
 
-class CommonStages(RPObject):
+    """ This stage combines the per-object velocity with the
+    camera velocity """
 
-    """ Setups commonly used stages for the pipeline """
+    required_pipes = ["GBuffer"]
 
-    def __init__(self, pipeline):
-        """ Inits the common stages """
-        RPObject.__init__(self)
-        self._pipeline = pipeline
-        self._init_stages()
+    @property
+    def produced_pipes(self):
+        return {"CombinedVelocity": self._target.color_tex}
 
-    def _init_stages(self):
-        """ Performs the stage setup """
+    def create(self):
+        self._target = self.create_target("CombineVelocity")
+        self._target.add_color_attachment(bits=(16, 16, 0, 0))
+        self._target.prepare_buffer()
 
-        add_stage = self._pipeline.stage_mgr.add_stage
-
-        self._ambient_stage = AmbientStage(self._pipeline)
-        add_stage(self._ambient_stage)
-
-        self._gbuffer_stage = GBufferStage(self._pipeline)
-        add_stage(self._gbuffer_stage)
-
-        self._final_stage = FinalStage(self._pipeline)
-        add_stage(self._final_stage)
-
-        # self._downscale_z_stage = DownscaleZStage(self._pipeline)
-        # self._pipeline.stage_mgr.add_stage(self._downscale_z_stage)
+    def set_shaders(self):
+        self._target.shader = self.load_shader("combine_velocity.frag.glsl")

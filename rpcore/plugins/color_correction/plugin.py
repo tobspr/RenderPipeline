@@ -28,10 +28,11 @@ from panda3d.core import SamplerState
 
 # Load the plugin api
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.util.slice_loader import load_sliced_3d_texture
+from rpcore.util.generic import load_sliced_3d_texture
 
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage
+from .manual_exposure_stage import ManualExposureStage
 from .sharpen_stage import SharpenStage
 from .tonemapping_stage import TonemappingStage
 
@@ -40,7 +41,8 @@ class Plugin(BasePlugin):
     name = "Color Correction"
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for color correction, vignetting, "
-                   "chromatic abberation and tonemapping.")
+                   "chromatic abberation and tonemapping. It also controls the "
+                   "camera parameters.")
     version = "1.4"
 
     def on_stage_setup(self):
@@ -51,8 +53,10 @@ class Plugin(BasePlugin):
             self._sharpen_stage = self.create_stage(SharpenStage)
             self._sharpen_stage.sharpen_twice = self.get_setting("sharpen_twice")
 
-        if self.get_setting("use_auto_exposure"):
+        if not self.get_setting("manual_camera_parameters"):
             self._exposure_stage = self.create_stage(AutoExposureStage)
+        else:
+            self._exposure_stage = self.create_stage(ManualExposureStage)
 
     def on_pipeline_created(self):
         self._load_lut()

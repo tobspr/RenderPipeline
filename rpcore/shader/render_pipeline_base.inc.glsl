@@ -47,21 +47,22 @@
 #pragma optionNV (fastprecision on)
 #endif
 
-#pragma include "$$pipeline_temp/$$pipeline_shader_config.inc.glsl"
+#pragma include "/$$rptemp/$$pipeline_shader_config.inc.glsl"
 
 // Only include the UBO's if required
 #ifdef USE_MAIN_SCENE_DATA
-#pragma include "$$pipeline_temp/$$main_scene_data.inc.glsl"
+#pragma include "/$$rptemp/$$main_scene_data.inc.glsl"
 #endif
 
 #ifdef USE_TIME_OF_DAY
-#pragma include "$$pipeline_temp/$$daytime_config.inc.glsl"
+#pragma include "/$$rptemp/$$daytime_config.inc.glsl"
 #endif
 
 // Screen size macro
 #define SCREEN_SIZE vec2(WINDOW_WIDTH, WINDOW_HEIGHT)
 #define SCREEN_SIZE_INT ivec2(WINDOW_WIDTH, WINDOW_HEIGHT)
 #define ASPECT_RATIO float(float(WINDOW_HEIGHT) / float(WINDOW_WIDTH))
+#define NATIVE_SCREEN_SIZE vec2(NATIVE_WINDOW_WIDTH, NATIVE_WINDOW_HEIGHT)
 
 // Plugin functions
 #define HAVE_PLUGIN(PLUGIN_NAME) ( HAVE_PLUGIN_ ## PLUGIN_NAME )
@@ -111,5 +112,9 @@ precision lowp int;
 
 // TODO:
 #define SUPPORT_PCF 1
+
+// Controls the roughness of the clearcoat layer
+#define CLEARCOAT_ROUGHNESS 0.002
+#define CLEARCOAT_SPECULAR 0.16
 
 #pragma include "includes/common_functions.inc.glsl"

@@ -88,6 +88,6 @@ void main() {
     #endif
 
     #if MODE_ACTIVE(TRANSLUCENCY)
-        result.xyz = vec3(m.translucency);
+        result.xyz = vec3(m.shading_model == SHADING_MODEL_FOLIAGE ? m.shading_model_param0 : 0.0);
     #endif
 }

@@ -34,7 +34,6 @@ const float tangent_bias = GET_SETTING(ao, hbao_tangent_bias);
 const float max_sample_distance = GET_SETTING(ao, hbao_max_distance) * 0.3;
 
 float accum = 0.0;
-vec3 bent_normal = vec3(pixel_view_normal * 3.0);
 
 for (int i = 0; i < num_angles; ++i) {
     float angle = (i + noise_vec.x) / float(num_angles) * TWO_PI;
@@ -78,19 +77,8 @@ for (int i = 0; i < num_angles; ++i) {
     float occlusion = saturate(sin(horizon_angle) - sin(tangent_angle));
     occlusion *= 1.0 / (1 + length(last_diff));
     accum += occlusion;
-
-    // Update bent normal
-    if (dot(abs(last_diff), vec3(1)) > 0.5) {
-        bent_normal += (occlusion) * normalize(-last_diff);
-    }
 }
 
 // Normalize samples
 accum /= num_angles;
-accum *= 2.0;
-
-// Normalize bent normal
-bent_normal /= max(1.0, length(bent_normal));
-bent_normal = view_normal_to_world(bent_normal);
-
-result = vec4(bent_normal, 1 - 1.0*accum);
+result = 1 - accum;

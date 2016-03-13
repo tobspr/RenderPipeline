@@ -130,7 +130,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
                     UDPListenerService.ping(UDPListenerService.DAYTIME_PORT, "settime " + str(local_time))
 
                 elif cmd == "write_settings":
-                    self._plugin_mgr.save_daytime_overrides("$$config/daytime.yaml")
+                    self._plugin_mgr.save_daytime_overrides("/$$rpconfig/daytime.yaml")
                     UDPListenerService.ping(UDPListenerService.DAYTIME_PORT, "loadconf")
                 else:
                     print("Unkown cmd:", cmd)
@@ -166,7 +166,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
                          msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
 
-            QtGui.QMessageBox.information(self, "Success", "Settings have been reset!")
+            QtGui.QMessageBox.information(self, "Success", "Control points have been reset!")
             default = self._selected_setting_handle.default
             self._selected_setting_handle.curves[0].set_single_value(default)
             self._update_settings_list()

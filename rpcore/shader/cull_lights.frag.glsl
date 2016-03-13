@@ -35,15 +35,13 @@
 
 // #pragma optionNV (unroll all)
 
-#if HAVE_PLUGIN(env_probes)
-    #pragma include "includes/envprobes.inc.glsl"
-#endif
-
+flat in mat4 frustumCorners;
 uniform isamplerBuffer CellListBuffer;
 uniform writeonly iimageBuffer RESTRICT PerCellLightsBuffer;
 
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
+
 
 void main() {
 
@@ -68,7 +66,7 @@ void main() {
 
     // Amount to increment the minimum and maximum distance of the slice. This
     // avoids false negatives in culling.
-    float distance_bias = 0.01;
+    float distance_bias = 0.0;
 
     // Find the tiles minimum and maximum distance
     float min_distance = get_distance_from_slice(cell_slice) - distance_bias;
@@ -79,12 +77,7 @@ void main() {
     int num_rendered_lights = 0;
 
     // Compute sample directions
-    vec3 local_ray_dirs[num_raydirs] = ray_dirs;
-
-    // Generate ray directions
-    for (int i = 0; i < num_raydirs; ++i) {
-        ray_dirs[i] = transform_raydir(ray_dirs[i] * cull_bias, cell_x, cell_y, precompute_size);
-    }
+    vec3 local_ray_dirs[num_raydirs] = get_raydirs(cell_x, cell_y, precompute_size, frustumCorners);
 
     // Create storage for all lights
     int light_counts[LIGHT_CLS_COUNT];
@@ -120,7 +113,7 @@ void main() {
                 float radius = get_pointlight_radius(light_data);
                 for (int k = 0; k < num_raydirs; ++k) {
                     visible = visible || viewspace_ray_sphere_distance_intersection(
-                        light_pos_view.xyz, radius, ray_dirs[k], min_distance, max_distance);
+                        light_pos_view.xyz, radius, local_ray_dirs[k], min_distance, max_distance);
                 }
                 light_classification = get_casts_shadows(light_data) ? LIGHT_CLS_POINT_SHADOW : LIGHT_CLS_POINT_NOSHADOW;
                 break;
@@ -133,12 +126,15 @@ void main() {
                 float fov = get_spotlight_fov(light_data);
                 for (int k = 0; k < num_raydirs; ++k) {
                     visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz,
-                        direction_view, radius, fov, ray_dirs[k], min_distance, max_distance);
+                        direction_view, radius, fov, local_ray_dirs[k], min_distance, max_distance);
                 }
                 light_classification = get_casts_shadows(light_data) ? LIGHT_CLS_SPOT_SHADOW : LIGHT_CLS_SPOT_NOSHADOW;
                 break;
             }
         }
+
+        // Uncomment this to see if the culling produces any issues
+        // visible = true;
 
         // Write the light to the light buffer
         if (visible) {

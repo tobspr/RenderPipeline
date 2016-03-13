@@ -56,11 +56,8 @@ class CullProbesStage(RenderStage):
         max_cells = self._pipeline.light_mgr.total_tiles
 
         self.num_rows = int(math.ceil(max_cells / float(self.slice_width)))
-        self.target = self.make_target2("CullProbes")
-
-        # Don't use an oversized triangle for the target, since this leads to
-        # overshading
-        self.target.use_oversized_triangle = False
+        self.target = self.create_target("CullProbes")
+        # TODO: Use no oversized triangle in this stage
         self.target.size = self.slice_width, self.num_rows
         self.target.prepare_buffer()
 
@@ -73,4 +70,4 @@ class CullProbesStage(RenderStage):
 
     def set_shaders(self):
         self.target.shader = self.load_plugin_shader(
-            "$$shader/tiled_culling.vert.glsl", "cull_probes.frag.glsl")
+            "/$$rp/shader/tiled_culling.vert.glsl", "cull_probes.frag.glsl")

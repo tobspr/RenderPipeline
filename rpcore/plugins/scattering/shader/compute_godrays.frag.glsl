@@ -55,9 +55,9 @@ void main() {
     sun_proj.xy = sun_proj.xy * 0.5 + 0.5;
 
     // raymarch to sun and collect .. whatever
-    float jitter = rand(texcoord) * 1.0;
+    float jitter = rand(texcoord) * 0.9;
 
-    const int num_samples = 128;
+    const int num_samples = 32;
     vec3 accum = vec3(0);
     for (int i = 0; i < num_samples; ++i) {
         float t = (i + jitter) / float(num_samples - 1);
@@ -65,11 +65,17 @@ void main() {
         vec2 sample_coord = mix(texcoord, sun_proj.xy, pow(t, 1.0));
         vec3 sample_data = texture(ShadedScene, sample_coord).xyz;
 
-        accum += sample_data * step(1.0, get_luminance(sample_data)) * saturate(5 * (1 - t)) * 1;
+        // float weight = step(get_luminance(sample_data), 1.0);
+        float weight = step(1.0, get_luminance(sample_data));
+        // float weight = 1.0;
+        accum += sample_data * weight * saturate(5 * (1 - t)) * 1;
+        // accum += sample_data * weight;
     }
 
     accum /= num_samples;
-    accum *= 0.0005;
+    accum *= 0.001;
+    // accum *= 3.0;
+    // accum *= 05;
     accum += texture(ShadedScene, texcoord).xyz;
     result = vec3(accum);
 

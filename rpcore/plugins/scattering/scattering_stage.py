@@ -40,7 +40,7 @@ class ScatteringStage(RenderStage):
         return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        self.target = self.make_target2("ApplyScattering")
+        self.target = self.create_target("ApplyScattering")
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.prepare_buffer()
 

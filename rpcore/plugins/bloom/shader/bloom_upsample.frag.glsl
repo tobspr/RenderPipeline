@@ -38,6 +38,8 @@ uniform sampler2D SumTex;
 uniform bool FirstUpsamplePass;
 uniform bool LastUpsamplePass;
 
+out vec3 result;
+
 void main() {
     vec2 source_size = vec2(textureSize(SourceTex, SourceMip).xy);
     vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / (2.0 * source_size);
@@ -71,4 +73,5 @@ void main() {
 
     vec4 old_data = texelFetch(SourceTex, coord, SourceMip - 1);
     imageStore(DestTex, coord, old_data + vec4(pass_result, 0));
+    result = vec3(0.7, 0.6, 1.0);
 }

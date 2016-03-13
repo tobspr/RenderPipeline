@@ -31,7 +31,7 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
-#pragma include "includes/material_output.struct.glsl"
+#pragma include "includes/material.struct.glsl"
 
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
@@ -40,21 +40,12 @@ in vec2 p3d_MultiTexCoord0;
 uniform mat4 p3d_ViewProjectionMatrix;
 
 #if EXPERIMENTAL_PREV_TRANSFORM
-uniform mat4 p3d_PrevModelViewMatrix;
+uniform mat4 p3d_PrevModelMatrix;
 #endif
-uniform mat4 trans_model_to_world;
+uniform mat4 p3d_ModelMatrix;
 uniform mat3 tpose_world_to_model;
 
 out layout(location=0) VertexOutput vOutput;
-out layout(location=4) flat MaterialOutput mOutput;
-
-uniform struct {
-    vec4 baseColor;
-    vec4 emission;
-    float roughness;
-    float metallic;
-    float refractiveIndex;
-} p3d_Material;
 
 %INCLUDES%
 %INOUT%
@@ -62,24 +53,14 @@ uniform struct {
 void main() {
     vOutput.texcoord = p3d_MultiTexCoord0;
     vOutput.normal = normalize(tpose_world_to_model * p3d_Normal).xyz;
-    vOutput.position = (trans_model_to_world * p3d_Vertex).xyz;
+    vOutput.position = (p3d_ModelMatrix * p3d_Vertex).xyz;
 
     // TODO: We have to account for skinning, we can maybe use hardware skinning for this.
     #if EXPERIMENTAL_PREV_TRANSFORM
-        vOutput.last_proj_position = p3d_PrevModelViewMatrix * p3d_Vertex;
+        vOutput.last_proj_position = p3d_ViewProjectionMatrix * (p3d_PrevModelMatrix * p3d_Vertex);
     #else
-        vOutput.last_proj_position = MainSceneData.last_view_proj_mat_no_jitter * (trans_model_to_world * p3d_Vertex);
+        vOutput.last_proj_position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
     #endif
-
-    // Get material properties
-    mOutput.color          = p3d_Material.baseColor.xyz;
-    mOutput.specular_ior   = p3d_Material.refractiveIndex;
-    mOutput.metallic       = p3d_Material.metallic;
-    mOutput.roughness      = p3d_Material.roughness;
-    mOutput.normalfactor   = p3d_Material.emission.r;
-    mOutput.translucency   = p3d_Material.emission.b;
-    mOutput.transparency   = p3d_Material.baseColor.w;
-    mOutput.emissive       = p3d_Material.emission.w;
 
     %VERTEX%
 

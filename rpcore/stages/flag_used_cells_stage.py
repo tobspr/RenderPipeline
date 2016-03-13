@@ -41,7 +41,7 @@ class FlagUsedCellsStage(RenderStage):
         return {"FlaggedCells": self.cell_grid_flags}
 
     def create(self):
-        self.target = self.make_target2("FlagUsedCells")
+        self.target = self.create_target("FlagUsedCells")
         self.target.prepare_buffer()
 
         tile_amount = self._pipeline.light_mgr.num_tiles

@@ -31,10 +31,7 @@ From:
 http://www.iryoku.com/translucency/
 */
 
-// const float skin_gamma = 1.0 / 2.2;
-const float skin_gamma = 1.0;
-const float skin_travel_weight = 20.0 * 0.005;
-const float skin_transmittance_factor = 0.8;
+const float skin_travel_weight = 1.0;
 
 vec3 skin_transmittance(float distance_through_medium) {
     float s = distance_through_medium * skin_travel_weight;
@@ -45,7 +42,6 @@ vec3 skin_transmittance(float distance_through_medium) {
              vec3(0.113, 0.007, 0.007) * exp(s_sq / 0.567)  +
              vec3(0.358, 0.004, 0.0)   * exp(s_sq / 1.99)   +
              vec3(0.078, 0.0,   0.0)   * exp(s_sq / 7.41);
-    return pow(t * skin_transmittance_factor, vec3(skin_gamma)).xxx;
+    return t;
 }
-
 

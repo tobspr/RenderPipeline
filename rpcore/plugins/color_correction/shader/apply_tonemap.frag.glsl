@@ -36,41 +36,27 @@ uniform sampler3D ColorLUT;
 
 out vec4 result;
 
-// Color LUT
 vec3 apply_lut(vec3 color) {
-    vec3 lut_coord = color;
-
     // We have a gradient from 0.5 / lut_size to 1 - 0.5 / lut_size
     // so we need to transform from 0 .. 1 to that gradient (hardcoded lut size for now)
-    float lut_start = 0.5 / 64.0;
-    float lut_end = 1.0 - lut_start;
-    lut_coord = lut_coord * (lut_end - lut_start) + lut_start;
-    return textureLod(ColorLUT, lut_coord, 0).xyz;
+    const float lut_start = 0.5 / 64.0;
+    const float lut_end = 1.0 - lut_start;
+    color = color * (lut_end - lut_start) + lut_start;
+    return textureLod(ColorLUT, color, 0).xyz;
 }
 
 void main() {
-
     vec2 texcoord = get_texcoord();
 
     #if !DEBUG_MODE
-
         vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
-
-        // Downscale the color in case we don't use automatic exposure, to simulate
-        // the dynamic range.
-        #if !GET_SETTING(color_correction, use_auto_exposure)
-            scene_color *= 0.1;
-        #endif
-
-        // Apply tonemapping
         scene_color = do_tonemapping(scene_color);
-
-        // Apply the LUT
         scene_color = apply_lut(scene_color);
-
     #else
         vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
     #endif // !DEBUG_MODE
+
+    scene_color = saturate(scene_color);
 
     result = vec4(scene_color, 1);
 }

@@ -28,9 +28,8 @@ from panda3d.core import Shader
 
 from rplibs.six import itervalues
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
-from rpcore.render_target2 import RenderTarget2
 
 class RenderStage(RPObject):
 
@@ -50,19 +49,7 @@ class RenderStage(RPObject):
     produced_pipes = {}
     produced_defines = {}
 
-    @classmethod
-    def disable_stage(cls):
-        """ Disables the stage, this will prevent the stage manager from creating
-        this stage. This is mostly useful to replace the stage by another stage """
-        cls.disabled = True
-
-    @classmethod
-    def is_enabled(cls):
-        """ Returns whether the stage is enabled or disabled. This affects every
-        instance of the stage. """
-        if hasattr(cls, "disabled") and cls.disabled:
-            return False
-        return True
+    disabled = False
 
     def __init__(self, pipeline):
         """ Creates a new render stage """
@@ -70,6 +57,7 @@ class RenderStage(RPObject):
         self._stage_id = self.__class__.__name__
         self._pipeline = pipeline
         self._targets = {}
+        self._future_mappings = {}
 
     @property
     def stage_id(self):
@@ -92,40 +80,32 @@ class RenderStage(RPObject):
         for target in itervalues(self._targets):
             target.set_shader_input(*args)
 
+        if args[0] in self._future_mappings:
+            target, name = self._future_mappings[args[0]]
+            target.set_shader_input(name, *args[1:])
+
     def update(self):
         """ This method gets called every frame, and can be overridden by render
         stages to perform custom updates """
         pass
 
+    def bind_future_input_pipe(self, target, source, dest):
+        """ Binds a future shader input named source to dest on the given target """
+        self._future_mappings[source] = (target, dest)
+
     def set_active(self, active):
         """ Enables or disables all targets bound to this stage """
         for target in itervalues(self._targets):
-            # TODO: Hacky, remove when new render target is there
-            if target.__class__.__name__ == "RenderTarget":
-                target.set_active(active)
-            else:
-                target.active = active
+            target.active = active
 
-    def make_target(self, name):
-        """ Creates a new render target with the given name and attachs it to the
-        list of targets, then returns it """
-        if name in self._targets:
-            self.warn("Overriding existing target: " + name)
+    def create_target(self, name):
+        """ Creates a new render target and binds it to this stage """
         # Format the name like Plugin:Stage:Name, so it can be easily
-        # found in pstats
+        # found in pstats below the plugin cagetory
         name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
-        self.warn("TODO: Use 2nd target on", name)
+        if name in self._targets:
+            self.error("Overriding existing target: " + name)
         self._targets[name] = RenderTarget(name)
-        return self._targets[name]
-
-    def make_target2(self, name):
-        # EXPERIMENTAL
-        if name in self._targets:
-            self.warn("Overriding existing target: " + name)
-        # Format the name like Plugin:Stage:Name, so it can be easily
-        # found in pstats
-        name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
-        self._targets[name] = RenderTarget2(name)
         return self._targets[name]
 
     def _get_shader_handle(self, path, *args):
@@ -137,21 +117,25 @@ class RenderStage(RPObject):
         path_args = []
 
         for source in args:
-            if "$$pipeline_temp" not in source and "$$shader/" not in source:
-                path_args.append(path.format(source))
+            for prefix in ("/$$rpconfig", "/$$rp/shader", "/$$rptemp"):
+                if prefix in source:
+                    path_args.append(source)
+                    break
             else:
-                path_args.append(source)
+                path_args.append(path.format(source))
 
         # If only one shader is specified, assume its a postprocess fragment shader,
         # and use the default vertex shader
         if len(args) == 1:
-            path_args = ["$$shader/default_post_process.vert.glsl"] + path_args
+            path_args = ["/$$rp/shader/default_post_process.vert.glsl"] + path_args
 
         return Shader.load(Shader.SL_GLSL, *path_args)
 
     def _get_plugin_id(self):
         """ Returns the id of the plugin which created this stage. This is done
         by extracting the name of the plugin from the module name """
+        if "rpcore.stages" in self.__class__.__module__:
+            return "render_pipeline_internal"
         return str(self.__class__.__module__).split(".")[-2]
 
     def load_shader(self, *args):
@@ -160,7 +144,7 @@ class RenderStage(RPObject):
         passed, the first argument should be the vertex shader and the second
         argument should be the fragment shader. If three arguments are passed,
         the order should be vertex, fragment, geometry """
-        return self._get_shader_handle("$$shader/{0}", *args)
+        return self._get_shader_handle("/$$rp/shader/{0}", *args)
 
     def load_plugin_shader(self, *args):
         """ Loads a shader from the plugin directory. This method is useful

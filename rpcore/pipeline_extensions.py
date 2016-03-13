@@ -28,14 +28,21 @@ THE SOFTWARE.
 # pipeline class, so pylint cannot find those members.
 # pylint: disable=E1101
 
+import math
+
+from panda3d.core import Vec3, Mat4, CS_zup_right, CS_yup_right
+
 from rpcore.globals import Globals
 from rpcore.effect import Effect
+from rpcore.native import PointLight, SpotLight
 from rpcore.gui.loading_screen import LoadingScreen, EmptyLoadingScreen
 
 from rpcore.stages.ambient_stage import AmbientStage
 from rpcore.stages.gbuffer_stage import GBufferStage
 from rpcore.stages.final_stage import FinalStage
 from rpcore.stages.downscale_z_stage import DownscaleZStage
+from rpcore.stages.combine_velocity_stage import CombineVelocityStage
+from rpcore.stages.upscale_stage import UpscaleStage
 
 class PipelineExtensions(object):
 
@@ -147,26 +154,72 @@ class PipelineExtensions(object):
         """ Constructs a new environment probe and returns the handle, so that
         the probe can be modified """
 
+        # TODO: This method is super hacky
         if not self.plugin_mgr.is_plugin_enabled("env_probes"):
-            self.warn("Environment probes are disabled, cant add environment probe")
+            self.warn("EnvProbe plugin is not loaded, can not add environment probe")
             class _dummy_probe(object):
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
             return _dummy_probe()
 
-        # TODO: This is super hacky
         from rpcore.plugins.env_probes.environment_probe import EnvironmentProbe
         probe = EnvironmentProbe()
         self.plugin_mgr.get_plugin_handle("env_probes").probe_mgr.add_probe(probe)
         return probe
 
+    def prepare_scene(self, scene):
+        """ Prepares a given scene, by converting panda lights to render pipeline
+        lights """
+        # TODO: IES profiles
+        ies_profile = self.load_ies_profile("data/ies_profiles/x_arrow_diffuse.ies")
+
+        convert_mat = Mat4.convert_mat(CS_zup_right, CS_yup_right)
+
+        for light in scene.find_all_matches("**/+PointLight"):
+            light_node = light.node()
+            rp_light = PointLight()
+            rp_light.pos = light.get_pos(Globals.base.render)
+            rp_light.radius = light_node.max_distance
+            rp_light.lumens = 10.0 * light_node.get_color().w
+            rp_light.color = light_node.get_color().xyz
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_width
+            self.add_light(rp_light)
+            light.remove_node()
+
+
+        for light in scene.find_all_matches("**/+Spotlight"):
+            light_node = light.node()
+            rp_light = SpotLight()
+            rp_light.pos = light.get_pos(Globals.base.render)
+            rp_light.radius = light_node.max_distance
+            rp_light.lumens = 10.0 * light_node.get_color().w
+            rp_light.color = light_node.get_color().xyz
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_width
+            rp_light.fov = light_node.exponent / math.pi * 180.0
+            lpoint = light.get_mat(Globals.base.render).xform_vec(Vec3(0, 0, -1))
+            rp_light.direction = lpoint
+            # rp_light.ies_profile = ies_profile
+            self.add_light(rp_light)
+            light.remove_node()
+
+        # Add environment probes
+        for np in scene.find_all_matches("**/ENVPROBE*"):
+            probe = self.add_environment_probe()
+            probe.set_mat(np.get_mat())
+            probe.border_smoothness = 0.05
+            np.remove_node()
+
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns
-        True if the version is new enough, and false if the version is outdated. """
+        True if the version is new enough, and False if the version is outdated. """
 
-        # Not a public change yet, uncomment in later versions
-        # if not hasattr(Texture(""), "x_size"):
-        #     return False
+        try:
+            from panda3d.core import PostProcessRegion
+        except ImportError:
+            self.debug("Could not import PostProcessRegion")
+            return False
 
         return True
 
@@ -186,3 +239,15 @@ class PipelineExtensions(object):
 
         self._downscale_stage = DownscaleZStage(self)
         add_stage(self._downscale_stage)
+
+        self._combine_velocity_stage = CombineVelocityStage(self)
+        add_stage(self._combine_velocity_stage)
+
+        # Add an upscale/downscale stage in case we render at a different resolution
+        if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.05:
+            self._upscale_stage = UpscaleStage(self)
+            add_stage(self._upscale_stage)
+
+    def _set_default_effect(self):
+        """ Sets the default effect used for all objects if not overridden """
+        self.set_effect(Globals.render, "effects/default.yaml", {}, -10)

@@ -33,8 +33,8 @@ from direct.stdpy.file import listdir, isfile, join
 from panda3d.core import Texture, SamplerState, Shader, ShaderAttrib, NodePath
 
 from rpcore.globals import Globals
-from rpcore.rp_object import RPObject
-from rpcore.util.slice_loader import load_sliced_3d_texture
+from rpcore.rpobject import RPObject
+from rpcore.util.generic import load_sliced_3d_texture
 from rpcore.image import Image
 
 class ScatteringMethod(RPObject):
@@ -89,7 +89,8 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
     """ Precomputed atmospheric scattering by Eric Bruneton """
 
     def load(self):
-        # Init sizes, those should match with the ones specified in common.glsl
+        # Init parameters, those should match with the ones specified in common.glsl
+        self._use_32_bit = False
         self._trans_w, self._trans_h = 256 * 4, 64 * 4
         self._sky_w, self._sky_h = 64 * 4, 16 * 4
         self._res_r, self._res_mu, self._res_mu_s, self._res_nu = 32, 128, 32, 8
@@ -100,34 +101,37 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
 
     def _create_textures(self):
         """ Creates all textures required for the scattering """
+
+        tex_format = Texture.F_rgba32 if self._use_32_bit else Texture.F_rgba16
+
         self._textures = {
             "transmittance": Image.create_2d(
                 "scattering-transmittance", self._trans_w, self._trans_h,
-                Texture.T_float, Texture.F_rgba16),
+                Texture.T_float, tex_format),
 
             "irradiance": Image.create_2d(
                 "scattering-irradiance", self._sky_w, self._sky_h, Texture.T_float,
-                Texture.F_rgba16),
+                tex_format),
 
             "inscatter": Image.create_3d(
                 "scattering-inscatter", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, Texture.F_rgba16),
+                Texture.T_float, tex_format),
 
             "delta_e": Image.create_2d(
                 "scattering-dx-e", self._sky_w, self._sky_h, Texture.T_float,
-                Texture.F_rgba16),
+                tex_format),
 
             "delta_sr": Image.create_3d(
                 "scattering-dx-sr", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, Texture.F_rgba16),
+                Texture.T_float, tex_format),
 
             "delta_sm": Image.create_3d(
                 "scattering-dx-sm", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, Texture.F_rgba16),
+                Texture.T_float, tex_format),
 
             "delta_j": Image.create_3d(
                 "scattering-dx-j", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, Texture.F_rgba16),
+                Texture.T_float, tex_format),
         }
 
         for img in itervalues(self._textures):

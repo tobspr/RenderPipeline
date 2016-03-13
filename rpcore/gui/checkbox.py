@@ -28,7 +28,7 @@ from panda3d.core import TransparencyAttrib, SamplerState
 from direct.gui.DirectCheckBox import DirectCheckBox
 import direct.gui.DirectGuiGlobals as DGG
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 
 
@@ -44,13 +44,13 @@ class Checkbox(RPObject):
         prefix = "checkbox" if not radio else "radiobox"
 
         if enabled:
-            checked_img = Globals.loader.loadTexture(
-                "data/gui/" + prefix + "_checked.png")
-            unchecked_img = Globals.loader.loadTexture(
-                "data/gui/" + prefix + "_default.png")
+            checked_img = Globals.loader.load_texture(
+                "/$$rp/data/gui/" + prefix + "_checked.png")
+            unchecked_img = Globals.loader.load_texture(
+                "/$$rp/data/gui/" + prefix + "_default.png")
         else:
-            checked_img = Globals.loader.loadTexture(
-                "data/gui/" + prefix + "_disabled.png")
+            checked_img = Globals.loader.load_texture(
+                "/$$rp/data/gui/" + prefix + "_disabled.png")
             unchecked_img = checked_img
 
         # Set near filter, otherwise textures look like crap

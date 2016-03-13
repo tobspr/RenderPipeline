@@ -35,5 +35,10 @@ out vec3 result;
 // Shader which is used when the sun is below the horizon, so we don't have any lighting
 
 void main() {
-  result = texelFetch(usePssmTex > 0 ? SourcePSSMTex : ShadedScene, ivec2(gl_FragCoord.xy), 0).xyz;
+  ivec2 coord = ivec2(gl_FragCoord.xy);
+  if (usePssmTex > 0) {
+    result = texelFetch(SourcePSSMTex, coord, 0).xyz;
+  } else {
+    result = texelFetch(ShadedScene, coord, 0).xyz;
+  }
 }

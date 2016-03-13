@@ -39,7 +39,7 @@ out vec2 result;
 void main() {
   vec2 texcoord = get_texcoord();
   float depth = get_depth_at(texcoord);
-  vec2 velocity = get_velocity_at(texcoord);
+  vec2 velocity = get_object_velocity_at(texcoord);
   velocity = adjust_velocity(velocity);
   result = vec2(length(velocity), depth);
 }

@@ -66,7 +66,7 @@ class BufferViewer(DraggableWindow):
         """ Constructs the buffer viewer """
         DraggableWindow.__init__(self, width=1400, height=800, parent=parent,
                                  title="Buffer- and Image-Browser")
-        RenderTarget.RT_CREATE_HANDLER = self.register_entry
+        RenderTarget.CREATION_HANDLER = self.register_entry
         self._pipeline = pipeline
         self._scroll_height = 3000
         self._display_images = False
@@ -88,24 +88,19 @@ class BufferViewer(DraggableWindow):
     @property
     def stage_information(self):
         """ Returns the amount of attached stages, and also the memory consumed
-        in MiB in a dictionary. """
-        count = 0
-        memory = 0.0
+        in MiB in a tuple. """
+        count, memory = 0, 0
         for entry in BufferViewer._REGISTERED_ENTRIES:
             if isinstance(entry, Texture):
-                count += 1
                 memory += entry.estimate_texture_memory()
+                count += 1
             elif entry.__class__.__name__ == "RenderTarget":
-                for target in entry.get_all_targets():
-                    count += 1
-                    memory += entry[target].estimate_texture_memory()
-            elif entry.__class__.__name__ == "RenderTarget2":
                 for target in itervalues(entry.targets):
-                    count += 1
                     memory += target.estimate_texture_memory()
+                    count += 1
             else:
                 self.warn("Unkown type:", entry.__class__.__name__)
-        return {"count": count, "memory": memory}
+        return memory, count
 
     def _create_components(self):
         """ Creates the window components """
@@ -159,11 +154,8 @@ class BufferViewer(DraggableWindow):
             if isinstance(entry, Texture):
                 if self._display_images:
                     self._stages.append(entry)
-            # Cant use isinstance or we get circular references
+            # Can not use isinstance or we get circular import references
             elif entry.__class__.__name__ == "RenderTarget":
-                for target in entry.get_all_targets():
-                    self._stages.append(entry[target])
-            elif entry.__class__.__name__ == "RenderTarget2":
                 for target in itervalues(entry.targets):
                     self._stages.append(target)
             else:

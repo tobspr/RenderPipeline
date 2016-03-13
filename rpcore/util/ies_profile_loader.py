@@ -36,7 +36,7 @@ from panda3d.core import PTAFloat
 from direct.stdpy.file import open
 
 from rpcore.native import IESDataset
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class IESLoaderException(Exception):
     """ Exception which is thrown when an error occurs during loading an IES

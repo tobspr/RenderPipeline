@@ -10,14 +10,14 @@ settings: !!omap
 
     - tonemap_operator:
         type: enum
-        values: [optimized, reinhard, uncharted2, exponential, exponential2, srgb, none]
+        values: [optimized, reinhard, uncharted2, exponential, exponential2, none]
         default: uncharted2
         label: Tonemap Operator
         shader_runtime: true
         description: >
             This specifies the tonemapping operator, all operators implement
             sRGB color correction as well, except for the none operator which
-            just passes through the color. None and SRGB are just for reference,
+            just passes through the color. None is just for reference,
             and should not be used.
 
     # Reinhard Tonemapping settings
@@ -203,40 +203,39 @@ settings: !!omap
 
     # Automatic exposure settings
 
-
-    - use_auto_exposure:
+    - manual_camera_parameters:
         type: bool
-        default: true
-        label: Enable Automatic Exposure
+        default: false
+        label: Manual camera parameters
         description: >
-            Enables automatic exposure (Also called Retinex Effect), this downscales
-            the scene to get the average brightness, and adjusts the exposure
-            automaticall based on that.
+            When set to true, enables you to set camera parameters such as
+            ISO, shutter and f-stops. If set to false, the average scene
+            luminance will be used to compute the exposure.
 
-    - min_exposure:
-        display_if: {use_auto_exposure: true}
+    - min_exposure_value:
+        display_if: {manual_camera_parameters: false}
         type: float
-        range: [0.00001, 1.0]
+        range: [0.0, 0.2]
         default: 0.01
         label: Minimum Exposure
         shader_runtime: true
         description: >
-            The minimum exposure, this prevents the automatic exposure from overfitting
+            The minimum exposure value, this prevents the automatic exposure from overfitting
             on bright areas
 
-    - max_exposure:
-        display_if: {use_auto_exposure: true}
+    - max_exposure_value:
+        display_if: {manual_camera_parameters: false}
         type: float
-        range: [0.05, 7.0]
+        range: [0.0, 1.0]
         default: 5.0
         shader_runtime: true
         label: Maximum Exposure
         description: >
-            The maximum exposure, this prevents the automatic exposure from overfitting
+            The maximum exposure value, this prevents the automatic exposure from overfitting
             on dark areas.
 
     - exposure_bias:
-        display_if: {use_auto_exposure: true}
+        display_if: {manual_camera_parameters: false}
         type: float
         range: [-1.0, 1.0]
         default: 0.0
@@ -247,20 +246,8 @@ settings: !!omap
             scene. A value greater 0 will decrease the scene brightness, while a value
             smaller than 0 will increase it.
 
-    - brightness_scale:
-        display_if: {use_auto_exposure: true}
-        type: float
-        range: [0.01, 15.0]
-        default: 0.45
-        label: Brightness Scale
-        shader_runtime: true
-        description: >
-            This controls how bright spots are percieved. If this value is higher,
-            bright spots will be percieved brighter, thus the image will get darker,
-            if this value is lower, the image will get brighter.
-
     - brightness_adaption_rate:
-        display_if: {use_auto_exposure: true}
+        display_if: {manual_camera_parameters: false}
         type: float
         range: [0.01, 5.0]
         default: 2.0
@@ -271,7 +258,7 @@ settings: !!omap
             Usually faster (= higher) than the rate when moving from bright to dark areas.
 
     - darkness_adaption_rate:
-        display_if: {use_auto_exposure: true}
+        display_if: {manual_camera_parameters: false}
         type: float
         range: [0.01, 5.0]
         default: 1.0
@@ -280,6 +267,8 @@ settings: !!omap
         description: >
             Adaption rate when moving from bright to dark areas.
             Usually slower (= smaller) than the rate when moving from dark to bright areas.
+
+
 
     # Sharpen filter
     - use_sharpen:
@@ -311,11 +300,32 @@ settings: !!omap
 
 daytime_settings: !!omap
 
-    - exposure_scale:
+    - camera_iso:
         type: scalar
-        unit: percent
-        range: [0.01, 5]
-        default: 2.0
-        label: Exposure Scale
-        description: Scales the exposure by a fixed value.
+        unit: none
+        default: 100
+        range: [20, 4000]
+        label: Camera ISO
+        logarithmic_factor: 2.0
+        description: >
+            ISO value of the camera. Only has effect with manual camera parameters.
 
+    - camera_shutter:
+        type: scalar
+        unit: none
+        default: 125
+        range: [1, 200]
+        label: Camera Shutter Speed
+        description: >
+            The shutter speed of the camera. A value of 125 means a shutter
+            speed of 1 / 125 seconds. Only has effect with manual camera parameters.
+
+    - camera_aperture:
+        type: scalar
+        unit: none
+        default: 16
+        range: [1, 32]
+        label: Camera Aperture
+        description: >
+            Camera aperture, a value of 16 means an aperture of f/16.
+            Only has effect with manual camera parameters.

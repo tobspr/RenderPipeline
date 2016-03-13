@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from __future__ import division
+from __future__ import division, print_function
 
 import sys
 import time
@@ -34,6 +34,8 @@ from panda3d.core import PandaSystem, WindowProperties
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
+from rplibs.yaml import load_yaml_file_flat
+
 from rpcore.globals import Globals
 from rpcore.pipeline_extensions import PipelineExtensions
 from rpcore.common_resources import CommonResources
@@ -42,8 +44,7 @@ from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
 
-from rpcore.rp_object import RPObject
-from rpcore.util.settings_loader import SettingsLoader
+from rpcore.rpobject import RPObject
 from rpcore.util.network_update_listener import NetworkUpdateListener
 from rpcore.gui.debugger import Debugger
 
@@ -74,7 +75,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
             PandaSystem.get_git_commit()))
         self._showbase = showbase
         self._mount_mgr = MountManager(self)
-        self._settings = SettingsLoader(self, "PipelineSettings")
+        self._settings = {}
         self.set_default_loading_screen()
 
         # Check for the right Panda3D version
@@ -86,7 +87,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         """ Loads the pipeline configuration from a given filename. Usually
         this is the 'config/pipeline.ini' file. If you call this more than once,
         only the settings of the last file will be used. """
-        self._settings.load_from_file(path)
+        self._settings = load_yaml_file_flat(path)
 
     @property
     def settings(self):
@@ -145,7 +146,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._light_mgr.reload_shaders()
 
         # Set the default effect on render and trigger the reload hook
-        self.set_effect(Globals.render, "effects/default.yaml", {}, -10)
+        self._set_default_effect()
         self._plugin_mgr.trigger_hook("shader_reload")
         self._debugger.set_reload_hint_visible(False)
 
@@ -161,37 +162,19 @@ class RenderPipeline(PipelineExtensions, RPObject):
             self.debug("Mount manager was not mounted, mounting now ...")
             self._mount_mgr.mount()
 
-        if not self._settings.is_file_loaded():
+        if not self._settings:
             self.debug("No settings loaded, loading from default location")
-            self._settings.load_from_file("$$config/pipeline.yaml")
+            self.load_settings("/$$rpconfig/pipeline.yaml")
 
         # Check if the pipeline was properly installed, before including anything else
-        if not isfile("data/install.flag"):
+        if not isfile("/$$rp/data/install.flag"):
             self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
 
         # Load the default prc config
-        load_prc_file("$$config/panda3d-config.prc")
+        load_prc_file("/$$rpconfig/panda3d-config.prc")
 
         # Construct the showbase and init global variables
         ShowBase.__init__(self._showbase)
-
-        # Check if we meet the window size requirements (multiple of 4)
-        w, h = self._showbase.win.get_x_size(), self._showbase.win.get_y_size()
-        if w % 4 != 0 or h % 4 != 0:
-            self.warn("Window size is not a multiple of 4! Requesting new size ..")
-            new_w, new_h = (w // 4) * 4, (h // 4) * 4
-            props = WindowProperties.size(new_w, new_h)
-            self._showbase.win.request_properties(props)
-
-            resolution = LVecBase2i(
-                self._showbase.win.get_x_size(),
-                self._showbase.win.get_y_size())
-
-            self._showbase.graphicsEngine.render_frame()
-
-            assert self._showbase.win.get_x_size() == new_w
-            assert self._showbase.win.get_y_size() == new_h
-
         self._init_globals()
 
         # Create the loading screen
@@ -210,24 +193,20 @@ class RenderPipeline(PipelineExtensions, RPObject):
         # Let the plugins setup their stages
         self._plugin_mgr.trigger_hook("stage_setup")
 
-        # Setup common defines
         self._create_common_defines()
         self._setup_managers()
-
-        # Set the default effect on render, and load the "skybox"
-        self.set_effect(Globals.render, "effects/default.yaml", {}, -10)
         self._create_default_skybox()
 
         self._plugin_mgr.trigger_hook("pipeline_created")
 
         # Hide the loading screen
         self._loading_screen.remove()
-
         self._start_listener()
+        self._set_default_effect()
 
         # Measure how long it took to initialize everything
-        init_duration = int((time.time() - start_time) * 1000.0)
-        self.debug("Finished initialization in {} ms".format(init_duration))
+        init_duration = (time.time() - start_time)
+        self.debug("Finished initialization in {:3.3f} s".format(init_duration))
 
     def _create_managers(self):
         """ Internal method to create all managers and instances"""
@@ -266,13 +245,24 @@ class RenderPipeline(PipelineExtensions, RPObject):
     def _init_globals(self):
         """ Inits all global bindings """
         Globals.load(self._showbase)
-        Globals.resolution = LVecBase2i(
-            self._showbase.win.get_x_size(),
-            self._showbase.win.get_y_size())
+        w, h = self._showbase.win.get_x_size(), self._showbase.win.get_y_size()
+
+        scale_factor = self._settings["pipeline.resolution_scale"]
+        w = int(float(w) * scale_factor)
+        h = int(float(h) * scale_factor)
+
+        # Make sure the resolution is a multiple of 4
+        w = w - w % 4
+        h = h - h % 4
+
+        self.debug("Render resolution is", w, "x", h)
+        Globals.resolution = LVecBase2i(w, h)
 
         # Connect the render target output function to the debug object
         RenderTarget.RT_OUTPUT_FUNC = lambda *args: RPObject.global_warn(
             "RenderTarget", *args[1:])
+
+        RenderTarget.USE_R11G11B10 = self.settings["pipeline.use_r11_g11_b10"]
 
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
@@ -283,7 +273,8 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
         self._showbase.addTask(self._manager_update_task, "RP_UpdateManagers", sort=10)
         self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
-        self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=1000)
+        self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=15)
+        self._showbase.addTask(self._update_common_inputs, "RP_UpdateCommonInputs", sort=20)
         self._showbase.taskMgr.doMethodLater(0.5, self._clear_state_cache, "RP_ClearStateCache")
 
     def _clear_state_cache(self, task=None):
@@ -306,9 +297,15 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._listener.update()
         self._debugger.update()
         self._daytime_mgr.update()
-        self._com_resources.update()
         self._stage_mgr.update()
         self._light_mgr.update()
+        # import time
+        # time.sleep(0.1)
+        return task.cont
+
+    def _update_common_inputs(self, task):
+        """ Updates teh commonly used inputs """
+        self._com_resources.update()
         return task.cont
 
     def _plugin_pre_render_update(self, task):
@@ -330,6 +327,10 @@ class RenderPipeline(PipelineExtensions, RPObject):
         # 3D viewport size
         define("WINDOW_WIDTH", Globals.resolution.x)
         define("WINDOW_HEIGHT", Globals.resolution.y)
+
+        # Actual window size - might differ for supersampling
+        define("NATIVE_WINDOW_WIDTH", Globals.base.win.get_x_size())
+        define("NATIVE_WINDOW_HEIGHT", Globals.base.win.get_y_size())
 
         # Pass camera near and far plane
         define("CAMERA_NEAR", round(Globals.base.camLens.get_near(), 5))
@@ -370,4 +371,4 @@ class RenderPipeline(PipelineExtensions, RPObject):
     def _adjust_camera_settings(self):
         """ Sets the default camera settings """
         self._showbase.camLens.set_near_far(0.1, 70000)
-        self._showbase.camLens.set_fov(90)
+        self._showbase.camLens.set_fov(70)

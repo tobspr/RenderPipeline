@@ -129,11 +129,11 @@ class PipeViewer(DraggableWindow):
                     pipe_tex = pipe_tex[0]
 
                 if isinstance(pipe_tex, BaseUBO):
-                    icon_file = "data/gui/icon_ubo.png"
+                    icon_file = "/$$rp/data/gui/icon_ubo.png"
                 elif pipe_tex.get_z_size() > 1:
-                    icon_file = "data/gui/icon_texture.png"
+                    icon_file = "/$$rp/data/gui/icon_texture.png"
                 elif pipe_tex.get_texture_type() == Texture.TT_buffer_texture:
-                    icon_file = "data/gui/icon_buffer_texture.png"
+                    icon_file = "/$$rp/data/gui/icon_buffer_texture.png"
                 else:
                     icon_file = None
                     preview = Sprite(
@@ -164,6 +164,9 @@ class PipeViewer(DraggableWindow):
                          size=12, align="center")
 
             for input_pipe in stage.required_pipes:
+                if input_pipe not in current_pipes:
+                    self.warn("Pipe not found:", input_pipe)
+                    continue
                 idx = current_pipes.index(input_pipe)
                 r, g, b = rgb_from_string(input_pipe)
                 DirectFrame(parent=node, frameSize=(0, 10, 40, -40),
@@ -187,7 +190,7 @@ class PipeViewer(DraggableWindow):
                  x=42, y=121 + idx * pipe_height, size=15,
                  color=Vec3(0.1))
             Sprite(parent=self._pipe_descriptions, x=9, y=103 + idx * pipe_height,
-                   image="data/gui/icon_pipe.png",
+                   image="/$$rp/data/gui/icon_pipe.png",
                    transparent=True, near_filter=False)
 
     def _create_components(self):

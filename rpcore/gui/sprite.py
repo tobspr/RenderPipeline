@@ -27,7 +27,7 @@ THE SOFTWARE.
 from panda3d.core import TransparencyAttrib, Vec3, Texture, SamplerState
 from direct.gui.OnscreenImage import OnscreenImage
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 
 
@@ -52,7 +52,7 @@ class Sprite(RPObject):
             if not isinstance(image, str):
                 self.warn("Invalid argument to image parameter:", image)
                 return
-            image = Globals.loader.loadTexture(image)
+            image = Globals.loader.load_texture(image)
 
             if w is None or h is None:
                 w, h = image.get_x_size(), image.get_y_size()

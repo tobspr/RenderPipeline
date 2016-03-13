@@ -29,7 +29,7 @@ from __future__ import print_function
 from panda3d.core import Notify, LineStream, Vec3
 
 from rpcore.globals import Globals
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 from rpcore.gui.text import Text
 
@@ -42,7 +42,7 @@ class ErrorMessageDisplay(RPObject):
         RPObject.__init__(self)
         self._num_errors = 0
         self._error_node = Globals.base.pixel2d.attach_new_node("ErrorDisplay")
-        self._error_node.set_z(-150)
+        self._error_node.set_z(-180)
         self._notify_stream = None
 
     def _init_notify(self):
@@ -54,10 +54,6 @@ class ErrorMessageDisplay(RPObject):
         """ Updates the error display, fetching all new messages from the notify
         stream """
 
-        # Disabled for now, since it seems to skip some important error messages
-        # TODO: Investigate
-        return
-
         if not self._notify_stream:
             self._init_notify()
 
@@ -65,6 +61,7 @@ class ErrorMessageDisplay(RPObject):
             line = self._notify_stream.get_line().strip()
             if "warning" in line:
                 RPObject.global_warn("Panda3D", line)
+                # self.add_warning(line)
             elif "error" in line:
                 RPObject.global_error("Panda3D", line)
                 self.add_error(line)
@@ -81,7 +78,6 @@ class ErrorMessageDisplay(RPObject):
 
     def add_text(self, text, color):
         """ Internal method to add a new text to the output """
-
         Text(
             x=Globals.base.win.get_x_size() - 30, y=self._num_errors * 23,
             align="right", text=text, size=12, parent=self._error_node, color=color)

@@ -31,7 +31,7 @@ THE SOFTWARE.
 from panda3d.core import Shader, Texture
 from direct.stdpy.file import isfile, open
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 class DisplayShaderBuilder(object):
 
@@ -44,7 +44,7 @@ class DisplayShaderBuilder(object):
         <view_width> * <view_height> """
         view_width, view_height = int(view_width), int(view_height)
 
-        cache_key = "$$pipeline_temp/$$TEXDISPLAY-X{}-Y{}-Z{}-TT{}-CT{}-VW{}-VH{}.frag.glsl".format(
+        cache_key = "/$$rptemp/$$TEXDISPLAY-X{}-Y{}-Z{}-TT{}-CT{}-VW{}-VH{}.frag.glsl".format(
             texture.get_x_size(),
             texture.get_y_size(),
             texture.get_z_size(),
@@ -60,7 +60,7 @@ class DisplayShaderBuilder(object):
             with open(cache_key, "w") as handle:
                 handle.write(fragment_shader)
 
-        return Shader.load(Shader.SL_GLSL, "$$shader/default_gui_shader.vert.glsl", cache_key)
+        return Shader.load(Shader.SL_GLSL, "/$$rp/shader/default_gui_shader.vert.glsl", cache_key)
 
     @classmethod
     def _build_fragment_shader(cls, texture, view_width, view_height):

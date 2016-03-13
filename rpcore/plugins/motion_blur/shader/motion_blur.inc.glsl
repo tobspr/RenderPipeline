@@ -27,7 +27,7 @@
 #pragma once
 
 const int tile_size = GET_SETTING(motion_blur, tile_size);
-const float blur_factor = GET_SETTING(motion_blur, blur_factor);
+const float blur_factor = GET_SETTING(motion_blur, blur_factor) * 0.5;
 const float max_velocity_len = GET_SETTING(motion_blur, max_blur_radius) * tile_size / WINDOW_WIDTH * 0.2;
 const vec2 soft_depth_factor = vec2(10.0);
 

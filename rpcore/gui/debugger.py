@@ -29,6 +29,7 @@ from functools import partial
 from rplibs.six.moves import range
 
 from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
+from panda3d.core import TexturePool, SceneGraphAnalyzer
 from direct.interval.IntervalGlobal import Sequence
 
 from rplibs.yaml import load_yaml_file
@@ -41,6 +42,7 @@ from rpcore.gui.checkbox_collection import CheckboxCollection
 from rpcore.gui.text_node import TextNode
 from rpcore.gui.error_message_display import ErrorMessageDisplay
 from rpcore.gui.exposure_widget import ExposureWidget
+from rpcore.gui.fps_chart import FPSChart
 from rpcore.gui.pixel_inspector import PixelInspector
 
 from rpcore.globals import Globals
@@ -58,6 +60,7 @@ class Debugger(BaseManager):
         BaseManager.__init__(self)
         self.debug("Creating debugger")
         self._pipeline = pipeline
+        self._analyzer = SceneGraphAnalyzer()
 
         self._load_config()
         self._fullscreen_node = Globals.base.pixel2d.attach_new_node(
@@ -66,9 +69,13 @@ class Debugger(BaseManager):
         self._init_keybindings()
         self._init_notify()
 
+        Globals.base.doMethodLater(25.0, self._collect_scene_data, "RPDebugger_collectSceneData")
+        Globals.base.doMethodLater(0.5, lambda task: self._collect_scene_data(), "RPDebugger_collectSceneData_initial")
+        Globals.base.doMethodLater(0.1, self._update_stats, "RPDebugger_updateStats")
+
     def _load_config(self):
         """ Loads the gui configuration from config/debugging.yaml """
-        self._config = load_yaml_file("$$config/debugging.yaml")
+        self._config = load_yaml_file("/$$rpconfig/debugging.yaml")
 
     def _create_components(self):
         """ Creates the gui components """
@@ -102,6 +109,9 @@ class Debugger(BaseManager):
             Globals.base.win.get_x_size() / self._gui_scale - 200,
             1, -Globals.base.win.get_y_size() / self._gui_scale + 120)
         self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
+        self._fps_node = self._fullscreen_node.attach_new_node("FPSChart")
+        self._fps_node.set_pos(21, 1, -108)
+        self._fps_widget = FPSChart(self._pipeline, self._fps_node)
         self._pixel_widget = PixelInspector(self._pipeline)
 
     def _init_notify(self):
@@ -111,10 +121,8 @@ class Debugger(BaseManager):
 
     def do_update(self):
         """ Updates the gui """
-        self._update_stats()
         self._error_msg_handler.update()
         self._pixel_widget.update()
-
 
     def get_error_msg_handler(self):
         """ Returns the error message handler """
@@ -123,15 +131,23 @@ class Debugger(BaseManager):
     def _create_topbar(self):
         """ Creates the topbar """
         self._pipeline_logo = Sprite(
-            image="data/gui/pipeline_logo_text.png", x=30, y=30,
+            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
             parent=self._fullscreen_node)
+
+    def _collect_scene_data(self, task=None):
+        """ Analyzes the scene graph to provide useful information """
+        self._analyzer.clear()
+        for gn in Globals.base.render.find_all_matches("**/+GeomNode"):
+            self._analyzer.addNode(gn.node())
+        if task:
+            return task.again
 
     def _create_stats(self):
         """ Creates the stats overlay """
         self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
         self._overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
         self._debug_lines = []
-        for i in range(4):
+        for i in range(5):
             self._debug_lines.append(TextNode(
                 pos=Vec2(0, -i * 0.046), parent=self._overlay_node,
                 pixel_size=16, align="right", color=Vec3(1)))
@@ -139,7 +155,7 @@ class Debugger(BaseManager):
     def _create_hints(self):
         """ Creates the hints like keybindings and when reloading shaders """
         self._hint_reloading = Sprite(
-            image="data/gui/shader_reload_hint.png",
+            image="/$$rp/data/gui/shader_reload_hint.png",
             x=float((Globals.base.win.get_x_size()) // 2) / self._gui_scale - 465 // 2, y=220,
             parent=self._fullscreen_node)
         self.set_reload_hint_visible(False)
@@ -147,7 +163,7 @@ class Debugger(BaseManager):
         if not NATIVE_CXX_LOADED:
             # Warning when using the python version
             python_warning = Sprite(
-                image="data/gui/python_warning.png",
+                image="/$$rp/data/gui/python_warning.png",
                 x=((Globals.base.win.get_x_size()/self._gui_scale) - 1054) // 2,
                 y=(Globals.base.win.get_y_size()/self._gui_scale) - 118 - 40,
                 parent=self._fullscreen_node)
@@ -159,11 +175,11 @@ class Debugger(BaseManager):
 
         # Keybinding hints
         self._keybinding_instructions = Sprite(
-            image="data/gui/keybindings.png", x=30,
+            image="/$$rp/data/gui/keybindings.png", x=30,
             y=Globals.base.win.get_y_size()//self._gui_scale - 510.0,
             parent=self._fullscreen_node, any_filter=False)
 
-    def _update_stats(self):
+    def _update_stats(self, task=None):
         """ Updates the stats overlay """
         clock = Globals.clock
         self._debug_lines[0].text = "{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format(
@@ -172,25 +188,39 @@ class Debugger(BaseManager):
             clock.get_max_frame_duration() * 1000.0)
 
         text = "{:4d} render states  |  {:4d} transforms"
-        text += "  |  {:4d} commands  |  {:6d} lights  |  {:5d} shadow sources"
+        text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources"
         self._debug_lines[1].text = text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
             self._pipeline.light_mgr.cmd_queue.num_processed_commands,
             self._pipeline.light_mgr.num_lights,
             self._pipeline.light_mgr.num_shadow_sources)
 
-        text = "{:3.0f} MiB pipeline VRAM usage  |  {:5d} images  |  {:5d} textures  |  "
+        text = "Pipeline:   {:3.0f} MiB VRAM  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins"
-        tex_info = self._buffer_viewer.stage_information
+        tex_memory, tex_count = self._buffer_viewer.stage_information
         self._debug_lines[2].text = text.format(
-            tex_info["memory"] / (1024**2),
+            tex_memory / (1024**2),
             Image.get_image_count(),
-            tex_info["count"],
-            RenderTarget.get_num_buffers(),
+            tex_count,
+            RenderTarget.NUM_ALLOCATED_BUFFERS,
             len(self._pipeline.plugin_mgr.enabled_plugins))
 
-        text = "{} ({:1.3f})  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
+        text = "Scene:   {:4.0f} MiB VRAM  |  {:3d} textures  |  {:4d} geoms  |  {:4d} nodes  |  {:7,.0f} vertices  |  {:5.0f} MiB vTX data"
+        scene_tex_size = 0
+        for tex in TexturePool.find_all_textures():
+            scene_tex_size += tex.estimate_texture_memory()
+
         self._debug_lines[3].text = text.format(
+            scene_tex_size / (1024**2),
+            len(TexturePool.find_all_textures()),
+            self._analyzer.get_num_geoms(),
+            self._analyzer.get_num_nodes(),
+            self._analyzer.get_num_vertices(),
+            self._analyzer.get_vertex_data_size() / (1024**2),
+        )
+
+        text = "{} ({:1.3f})  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
+        self._debug_lines[4].text = text.format(
             self._pipeline.daytime_mgr.formatted_time,
             self._pipeline.daytime_mgr.time,
             self._pipeline.plugin_mgr.num_day_settings,
@@ -198,12 +228,15 @@ class Debugger(BaseManager):
             Globals.base.camera.get_y(Globals.base.render),
             Globals.base.camera.get_z(Globals.base.render),)
 
+        if task:
+            return task.again
+
     def _create_debugger(self):
         """ Creates the debugger contents """
         self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
         self._debugger_node.set_pos(30, 0, -Globals.base.win.get_y_size()//self._gui_scale + 820.0)
         self._debugger_bg_img = Sprite(
-            image="data/gui/debugger_background.png", x=0, y=0,
+            image="/$$rp/data/gui/debugger_background.png", x=0, y=0,
             parent=self._debugger_node, any_filter=False)
         self._create_debugger_content()
 

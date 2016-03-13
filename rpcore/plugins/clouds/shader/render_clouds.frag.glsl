@@ -37,7 +37,6 @@
 
 uniform sampler2D NoiseTex;
 uniform sampler3D CloudVoxels;
-uniform float osg_FrameTime;
 
 out vec4 result;
 
@@ -50,11 +49,11 @@ const float METER = 1.0;
 const float earth_radius = 6371.0 * KM;
 const vec3 earth_mid = vec3(0, 0, -earth_radius);
 const float cloud_start = earth_radius + 3.0 * KM;
-const float cloud_end = earth_radius + 7.0 * KM;
+const float cloud_end = earth_radius + 4.0 * KM;
 
 vec2 get_cloud_coord(vec3 pos) {
     vec2 xy_coord = pos.xy / (cloud_end - cloud_start) * float(CLOUD_RES_Z) / float(CLOUD_RES_XY);
-    xy_coord.xy /= 1.0 + length(xy_coord);
+    xy_coord.xy /= 1.0 + 0.7 * length(xy_coord);
     xy_coord.xy += 0.5;
     return xy_coord;
 }
@@ -65,7 +64,7 @@ void main() {
 
     vec2 texcoord = get_half_texcoord();
 
-    vec3 wind_offs = vec3(0.2, 0.3,0) * 0.01 * osg_FrameTime;
+    vec3 wind_offs = vec3(0.2, 0.3,0) * 0.01 * MainSceneData.frame_time;
 
     vec3 pos = get_gbuffer_position(GBuffer, texcoord);
     vec3 ray_start = MainSceneData.camera_pos;
@@ -136,11 +135,10 @@ void main() {
     // accum_weight *= 1 * length(accum_color);
     // accum_weight *= 0.4;
     // accum_weight = saturate(pow(accum_weight, 32.0) * 1.1);
-
     accum_color *= TimeOfDay.clouds.cloud_brightness;
     accum_color *= get_sun_color();
 
-    // accum_color *= 1.5;
+    accum_color *= 0.8;
     // accum_color *= vec3(1.2, 1.1, 1);
     // accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 

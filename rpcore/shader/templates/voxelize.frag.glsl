@@ -36,7 +36,6 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
-#pragma include "includes/material_output.struct.glsl"
 
 %INCLUDES%
 %INOUT%

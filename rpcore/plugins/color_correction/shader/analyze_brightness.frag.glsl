@@ -29,8 +29,9 @@
 #define USE_MAIN_SCENE_DATA
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/tonemapping.inc.glsl"
 
-uniform layout(rgba16f) imageBuffer RESTRICT ExposureStorage;
+uniform layout(r16f) imageBuffer RESTRICT ExposureStorage;
 uniform sampler2D DownscaledTex;
 
 void main() {
@@ -46,26 +47,29 @@ void main() {
 
     avg_luminance /= float(texsize.x * texsize.y);
     avg_luminance = avg_luminance / (1 - avg_luminance);
-    avg_luminance *= GET_SETTING(color_correction, brightness_scale);
 
+    float exposure_val = computeEV100FromAvgLuminance(avg_luminance);
+    float exposure = convertEV100ToExposure(exposure_val);
 
-    const float factor = 12.0;
-    float min_exp = make_logarithmic(GET_SETTING(color_correction, min_exposure), factor);
-    float max_exp = make_logarithmic(GET_SETTING(color_correction, max_exposure), factor);
-    float exp_bias = GET_SETTING(color_correction, exposure_bias);
+    float min_ev = GET_SETTING(color_correction, min_exposure_value);
+    float max_ev = GET_SETTING(color_correction, max_exposure_value);
+    float exposure_bias = GET_SETTING(color_correction, exposure_bias) * 0.1;
 
-    avg_luminance = max(min_exp, min(max_exp, 0.5 / (avg_luminance) + exp_bias));
+    exposure += exposure_bias;
+
+    // Clamp to min and max exposure value
+    exposure = clamp(exposure, min_ev, max_ev);
 
     // Transition between the last and current value smoothly
-    float cur_luminance = imageLoad(ExposureStorage, 0).x;
+    float curr_exposure = imageLoad(ExposureStorage, 0).x;
     float adaption_rate = GET_SETTING(color_correction, brightness_adaption_rate);
 
-    if (cur_luminance < avg_luminance) {
+    if (curr_exposure < exposure) {
         adaption_rate = GET_SETTING(color_correction, darkness_adaption_rate);
     }
 
-    float adjustment = saturate(MainSceneData.frame_delta * adaption_rate);
-    float new_luminance = mix(cur_luminance, avg_luminance, adjustment);
-    // new_luminance = 0.1;
+    float adjustment = saturate(MainSceneData.smooth_frame_delta * adaption_rate);
+    float new_luminance = mix(curr_exposure, exposure, adjustment);
+    new_luminance = clamp(new_luminance, 0.0, 1000.0);
     imageStore(ExposureStorage, 0, vec4(new_luminance));
 }

@@ -26,12 +26,14 @@
 
 #pragma once
 
-#pragma include "includes/material_output.struct.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
-
+#pragma include "includes/lights.inc.glsl"
+#pragma include "includes/light_data.inc.glsl"
 
 uniform samplerCube DefaultEnvmap;
+uniform samplerBuffer AllLightsData;
+uniform int maxLightIndex;
 
 // Samplers for the specular cubemaps
 #if HAVE_PLUGIN(scattering)
@@ -46,41 +48,32 @@ uniform samplerCube DefaultEnvmap;
 #endif
 
 // Applies forward shaded ambient
-vec3 get_forward_ambient(vec3 basecolor, float roughness) {
+vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
     vec3 reflected = vOutput.normal;
     vec3 shading_result = vec3(0);
 
     #if HAVE_PLUGIN(scattering)
-        // Specular ambient
-        float spec_mip = get_specular_mipmap(roughness * roughness);
-        vec3 spec_env = textureLod(ScatteringIBLSpecular, reflected, spec_mip).rgb;
-
-        // Diffuse ambient
         vec3 diff_env = textureLod(ScatteringIBLDiffuse, vOutput.normal, 0).rgb;
 
     #else
-        // Specular ambient
-        float spec_mip = max(3, mOutput.roughness * 7.0);
-        vec3 spec_env = textureLod(DefaultEnvmap, reflected, spec_mip).rgb;
-
-        // Diffuse ambient
         int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
         vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb;
-
     #endif
 
-    shading_result += mix(vec3(0.04), basecolor, mOutput.metallic) * spec_env;
-    shading_result += (1 - mOutput.metallic) * diff_env * basecolor / M_PI;
+    // shading_result += basecolor / M_PI;
+    shading_result += diff_env * basecolor / M_PI * 0.3;
+
 
     // Emission
-    shading_result *= max(0, 1 - mOutput.emissive);
-    shading_result += mOutput.emissive * basecolor * 10.0;
+    if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {
+        shading_result = basecolor * 10.0;
+    }
 
     return shading_result;
 }
 
 // Applies the sun shading, and if the pssm plugin is activated, also the sun shadows
-vec3 get_sun_shading(vec3 basecolor) {
+vec3 get_sun_shading(MaterialBaseInput mInput, vec3 basecolor) {
      #if HAVE_PLUGIN(scattering)
 
         vec3 shading_result = vec3(0);
@@ -93,9 +86,9 @@ vec3 get_sun_shading(vec3 basecolor) {
         #if HAVE_PLUGIN(pssm)
             vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
 
-            const float slope_bias =  1.0 * 0.02;
-            const float normal_bias = 1.0 * 0.005;
-            const float fixed_bias =  0.05 * 0.001;
+            const float slope_bias =  0.0 * 0.02;
+            const float normal_bias = 0.0 * 0.005;
+            const float fixed_bias =  0.01 * 0.001;
             vec3 biased_pos = get_biased_position(
                 vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
 
@@ -105,18 +98,19 @@ vec3 get_sun_shading(vec3 basecolor) {
             // Fast shadow filtering
             float filter_radius = 1.0 / textureSize(PSSMSceneSunShadowMapPCF, 0).y;
             float shadow_term = 0;
-            for(uint i = 0; i < 8; ++i) {
+            for(uint i = 0; i < 12; ++i) {
                 vec3 offset = vec3(poisson_disk_2D_12[i] * filter_radius, 0);
                 shadow_term += texture(PSSMSceneSunShadowMapPCF, projected + offset).x;
             }
-            shadow_term /= 8.0;
+            shadow_term /= 12.0;
         #else
             const float shadow_term = 1.0;
         #endif
 
+
         if (sun_vector.z >= -0.2) {
             shading_result += max(0.0, dot(sun_vector, vOutput.normal))
-                              * sun_color * shadow_term * basecolor * (1 - mOutput.metallic);
+                              * sun_color * shadow_term * basecolor * (1 - mInput.metallic);
         }
 
         return shading_result;
@@ -124,4 +118,49 @@ vec3 get_sun_shading(vec3 basecolor) {
     #else
         return vec3(0);
     #endif
+}
+
+vec3 get_forward_light_shading(vec3 basecolor) {
+
+    vec3 shading_result = vec3(0);
+
+    for (int i = 0; i <= maxLightIndex; ++i) {
+        LightData light_data = read_light_data(AllLightsData, i * 4);
+        int light_type = get_light_type(light_data);
+
+        // Skip Null-Lights
+        if (light_type < 1) continue;
+
+        vec3 light_pos = get_light_position(light_data);
+        vec3 l = light_pos - vOutput.position;
+        float l_len = length(l);
+        vec3 light_color = get_light_color(light_data);
+
+        // Shade depending on light type
+        switch(light_type) {
+            case LT_POINT_LIGHT: {
+                float radius = get_pointlight_radius(light_data);
+                float att = attenuation_curve(dot(l, l), radius);
+                float NxL = saturate(dot(vOutput.normal, l) / l_len);
+                shading_result += saturate(att) * NxL * ONE_BY_PI * (basecolor * light_color);
+                break;
+            }
+
+            case LT_SPOT_LIGHT: {
+                float radius = get_spotlight_radius(light_data);
+                float fov       = get_spotlight_fov(light_data);
+                vec3 direction  = get_spotlight_direction(light_data);
+
+                float att = get_spotlight_attenuation(l / l_len, direction,
+                    fov, radius, dot(l, l), -1);
+                float NxL = saturate(dot(vOutput.normal, l) / l_len);
+                shading_result += saturate(att) * NxL * ONE_BY_PI * (basecolor * light_color);
+                break;
+            }
+
+        }
+
+    }
+
+    return shading_result;
 }

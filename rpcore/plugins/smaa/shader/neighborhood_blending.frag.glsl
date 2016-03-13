@@ -26,7 +26,6 @@
 
 #version 400
 
-#define USE_GBUFFER_EXTENSIONS
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "smaa_wrapper.inc.glsl"
@@ -45,12 +44,5 @@ void main() {
     SMAANeighborhoodBlendingVS(texcoord, offset);
 
     // Actual Fragment shader
-    #if SMAA_REPROJECTION
-        result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex, GBuffer.Data2);
-    #else
-        result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex);
-    #endif
-
-    // result = texture(ShadedScene, texcoord);
+    result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex);
 }
-

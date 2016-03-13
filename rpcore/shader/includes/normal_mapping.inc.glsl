@@ -51,6 +51,8 @@ void reconstruct_tangent(out vec3 tangent, out vec3 binormal) {
 // Aplies a normal map with a given base normal and displace normal, weighted by
 // the bump factor
 vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor, vec3 tangent, vec3 binormal) {
+    // Optional: Make sure the base normal is correct
+    // base_normal = normalize(base_normal);
     displace_normal = mix(vec3(0, 0, 1), displace_normal, saturate(bump_factor));
     return vec3(
         tangent * displace_normal.x +

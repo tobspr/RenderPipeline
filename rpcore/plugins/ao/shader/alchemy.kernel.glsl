@@ -40,9 +40,6 @@ const int num_samples = GET_SETTING(ao, alchemy_num_samples) * 4;
 float max_dist = GET_SETTING(ao, alchemy_max_distance);
 float accum = 0.0;
 float accum_count = 0;
-
-vec3 bent_normal = vec3(0);
-
 vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.5;
 
 for (int i = 0; i < num_samples; ++i) {
@@ -62,25 +59,13 @@ for (int i = 0; i < num_samples; ++i) {
     // Check if the distance matches, discard matches which are too far away
     float dist = distance(off_pos, pixel_view_pos) / max_dist;
     if (dist < 1.0) {
-
         // Weight sample by the angle
         accum += max(0, dot(pixel_view_normal, sample_vec)) * (1-dist);
-        // Update bent normal
-        bent_normal += normalize(-sample_vec);
     }
 
     accum_count += 1.0;
 
 }
-
-// Normalize
-bent_normal /= max(1.0, length(bent_normal));
-// bent_normal = view_normal_to_world(bent_normal);
-
-// TODO: Bent normal is buggy right now. Using world space normal instead
-bent_normal = pixel_world_normal;
-
 // Normalize values
 accum /= max(1.0, accum_count);
-
-result = vec4(bent_normal, 1 - saturate(accum));
+result = 1 - accum;

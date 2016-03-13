@@ -32,6 +32,7 @@
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
 
+flat in mat4 frustumCorners;
 out vec4 result;
 
 uniform isamplerBuffer CellListBuffer;
@@ -57,17 +58,13 @@ void main() {
     unpack_cell_data(packed_cell_data, cell_x, cell_y, cell_slice);
 
     float distance_bias = 0.01;
+    float bsphere_bias = 0.05;
     // Find the tiles minimum and maximum distance
     float min_distance = get_distance_from_slice(cell_slice) - distance_bias;
     float max_distance = get_distance_from_slice(cell_slice + 1) + distance_bias;
 
     // Compute sample directions
-    vec3 local_ray_dirs[num_raydirs] = ray_dirs;
-
-    // Generate ray directions
-    for (int i = 0; i < num_raydirs; ++i) {
-        ray_dirs[i] = transform_raydir(ray_dirs[i] * cull_bias, cell_x, cell_y, precompute_size);
-    }
+    vec3 local_ray_dirs[num_raydirs] = get_raydirs(cell_x, cell_y, precompute_size, frustumCorners);
 
     int storage_offset = idx * MAX_PROBES_PER_CELL;
     int probes_written = 0;
@@ -81,7 +78,7 @@ void main() {
         // Check for visibility
         for (int k = 0; k < num_raydirs; ++k) {
             visible = visible || viewspace_ray_sphere_distance_intersection(
-                pos_view.xyz, map.bounding_sphere_radius, ray_dirs[k], min_distance, max_distance);
+                pos_view.xyz, map.bounding_sphere_radius + bsphere_bias, local_ray_dirs[k], min_distance, max_distance);
         }
 
         if (visible) {

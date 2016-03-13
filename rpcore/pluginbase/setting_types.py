@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 from rplibs.six import iteritems
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 
 __all__ = ["make_setting_from_data"]
 

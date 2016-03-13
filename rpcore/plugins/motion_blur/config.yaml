@@ -1,32 +1,53 @@
 
 settings: !!omap
 
-    - tile_size:
+    - num_camera_samples:
         type: int
-        range: [8, 64]
-        default: 32
-        label: Tile Size
+        range: [2, 16]
+        default: 6
+        label: Camera Blur sample count
+        shader_runtime: true
         description: >
-            Size of the blur tiles, this also has influence on the maximum
-            blur radius. Setting this too high will cause artifacts when objects
-            with different motion vectors overlap.
+            Controls the amount of samples for camera motion blur, more samples
+            mean a smoother blur but also require more performance.
+
+    - camera_blur_factor:
+        type: float
+        range: [0.0, 2.0]
+        default: 0.8
+        label: Camera Blur factor
+        shader_runtime: true
+        description: >
+            Controls the camera blur factor, a factor of 1 means the full blur
+            is applied, a factor of 0 means no blur at all. You should adjust
+            this so the blur is not too strong, otherwise motion sickness can happen.
 
     - blur_factor:
         type: float
         range: [0.0, 1.0]
         default: 0.5
-        label: Blur factor
+        label: Object Blur factor
         shader_runtime: true
         description: >
-            Controls the blur factor, a factor of 1 means the full blur is applied,
-            a factor of 0 means no blur at all. You should adjust this so the
-            blur is not too strong, otherwise motion sickness can happen.
+            Controls the blur factor of moving objects, a factor of 1 means the
+            full blur is applied, a factor of 0 means no blur at all.
+
+    - tile_size:
+        type: int
+        range: [8, 64]
+        default: 32
+        label: Object Blur Tile Size
+        description: >
+            Size of the blur tiles, this also has influence on the maximum
+            blur radius. Setting this too high will cause artifacts when objects
+            with different motion vectors overlap.
+
 
     - max_blur_radius:
         type: float
         range: [1.0, 64.0]
         default: 10.0
-        label: Blur limit
+        label: Object Blur limit
         shader_runtime: true
         description: >
             Controls the maximum possible blur size. Try to set this as low as
@@ -36,10 +57,11 @@ settings: !!omap
         type: int
         range: [2, 64]
         default: 14
-        label: Blur sample count
+        label: Object Blur sample count
         shader_runtime: true
         description: >
             Controls the amount of samples, more samples mean a smoother blur
             but also require more performance.
+
 
 daytime_settings:

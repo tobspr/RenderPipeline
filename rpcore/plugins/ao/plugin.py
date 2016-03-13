@@ -26,7 +26,6 @@ THE SOFTWARE.
 
 from rpcore.pluginbase.base_plugin import BasePlugin
 from rpcore.stages.ambient_stage import AmbientStage
-from rpcore.stages.apply_lights_stage import ApplyLightsStage
 
 from .ao_stage import AOStage
 
@@ -39,8 +38,7 @@ class Plugin(BasePlugin):
     version = "1.1"
 
     def on_stage_setup(self):
-        self._stage = self.create_stage(AOStage)
+        self.stage = self.create_stage(AOStage)
 
         # Make the stages use our output
         AmbientStage.required_pipes.append("AmbientOcclusion")
-        ApplyLightsStage.required_pipes.append("AmbientOcclusion")

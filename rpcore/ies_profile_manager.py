@@ -28,7 +28,7 @@ from panda3d.core import Filename, Texture, VirtualFileSystem, get_model_path
 from panda3d.core import SamplerState
 
 from rpcore.image import Image
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.util.ies_profile_loader import IESProfileLoader, IESLoaderException
 
 class IESProfileManager(RPObject):

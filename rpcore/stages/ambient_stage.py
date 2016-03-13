@@ -35,10 +35,11 @@ class AmbientStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self._target.color_tex}
+        return {"ShadedScene": self._target.color_tex,
+                "PostAmbientScene": self._target.color_tex}
 
     def create(self):
-        self._target = self.make_target2("AmbientStage")
+        self._target = self.create_target("AmbientStage")
         self._target.add_color_attachment(bits=16)
         self._target.prepare_buffer()
 

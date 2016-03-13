@@ -39,13 +39,13 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
-#pragma include "includes/material_output.struct.glsl"
 #pragma include "includes/material.struct.glsl"
 
 %INCLUDES%
 
 layout(location=0) in VertexOutput vOutput;
-layout(location=4) flat in MaterialOutput mOutput;
+
+uniform Panda3DMaterial p3d_Material;
 
 // Late include of the gbuffer packing since it needs the vOutput
 #pragma include "includes/normal_mapping.inc.glsl"
@@ -71,11 +71,13 @@ layout(location=4) flat in MaterialOutput mOutput;
 
 void main() {
 
+    MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
+
     vec2 texcoord = vOutput.texcoord;
 
     // Get texture coordinate
     #if OPT_PARALLAX_MAPPING
-        texcoord = get_parallax_texcoord(p3d_Texture4, mOutput.normalfactor);
+        texcoord = get_parallax_texcoord(p3d_Texture4, mInput.normalfactor);
     #endif
 
     %TEXCOORD%
@@ -123,7 +125,7 @@ void main() {
             // Perform normal mapping if enabled
             vec3 sampled_normal = texture(p3d_Texture1, texcoord).xyz;
             vec3 detail_normal = unpack_texture_normal(sampled_normal);
-            material_nrm = apply_normal_map(vOutput.normal, detail_normal, mOutput.normalfactor);
+            material_nrm = apply_normal_map(vOutput.normal, detail_normal, mInput.normalfactor);
             }
         #endif
     #endif
@@ -135,16 +137,23 @@ void main() {
         // Leave material properties unitialized, and hope the user knows
         // what he's doing.
     #else
-        m.basecolor = mOutput.color * sampled_diffuse.xyz;
+        m.shading_model = mInput.shading_model;
+
+        #if DONT_FETCH_DEFAULT_TEXTURES
+            m.basecolor = mInput.color;
+        #else
+            m.basecolor = mInput.color * sampled_diffuse.xyz;
+        #endif
         m.normal = material_nrm;
-        m.metallic = mOutput.metallic;
-        m.specular_ior = blend_ior(mOutput.specular_ior, sampled_ior);
-        m.roughness = mOutput.roughness * sampled_roughness;
-        m.translucency = mOutput.translucency;
-        m.emissive = mOutput.emissive;
+        m.metallic = mInput.metallic;
+        m.specular_ior = blend_ior(mInput.specular_ior, sampled_ior);
+        m.roughness = mInput.roughness * sampled_roughness;
+        m.shading_model_param0 = mInput.arbitrary0;
     #endif
 
     %MATERIAL%
 
+
     render_material(m);
+
 }

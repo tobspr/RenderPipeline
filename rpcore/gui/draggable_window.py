@@ -29,7 +29,7 @@ from direct.gui.DirectFrame import DirectFrame
 from direct.gui.DirectButton import DirectButton
 from direct.gui.DirectGui import DGG
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.gui.text import Text
 
@@ -97,7 +97,7 @@ class DraggableWindow(RPObject):
         self._btn_close = DirectButton(
             relief=DGG.FLAT, pressEffect=1, pos=(self._width - 22, 1, -22),
             frameColor=(0, 0, 0, 0), scale=(20, 1, 20), parent=self._node,
-            image="data/gui/close_window.png")
+            image="/$$rp/data/gui/close_window.png")
 
         # Init bindings
         self._btn_close.set_transparency(TransparencyAttrib.M_alpha)

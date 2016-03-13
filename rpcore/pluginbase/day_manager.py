@@ -76,7 +76,7 @@ class DayTimeManager(BaseManager):
 
         # Generate UBO shader code
         shader_code = self._input_ubo.generate_shader_code()
-        with open("$$pipeline_temp/$$daytime_config.inc.glsl", "w") as handle:
+        with open("/$$rptemp/$$daytime_config.inc.glsl", "w") as handle:
             handle.write(shader_code)
 
     def do_update(self):

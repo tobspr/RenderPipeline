@@ -13,5 +13,4 @@ knows the patch is available.
 
 This patch adds the p3d_PrevModelViewMatrix to add support for per object
 velocities. When this patch is enabled, moving objects recieve motion blur (per
-object motion blur).
-
+object motion blur). Also don't forget to apply the second part of the patch, too.

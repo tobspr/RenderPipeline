@@ -28,7 +28,7 @@ from __future__ import division
 
 from panda3d.core import Texture, SamplerState
 
-from rpcore.rp_object import RPObject
+from rpcore.rpobject import RPObject
 from rpcore.image import Image
 
 class CubemapFilter(RPObject):
@@ -113,7 +113,7 @@ class CubemapFilter(RPObject):
             mipsize = mipsize // 2
 
             # Create the target which downsamples the mipmap
-            target = self._stage.make_target2("CF:SpecIBL-PreFilter-" + str(mipsize))
+            target = self._stage.create_target("CF:SpecIBL-PreFilter-" + str(mipsize))
             target.size = mipsize * 6, mipsize
             target.prepare_buffer()
 
@@ -129,7 +129,7 @@ class CubemapFilter(RPObject):
             mip += 1
 
             # Create the target which filters the mipmap and removes the noise
-            target_filter = self._stage.make_target2("CF:SpecIBL-PostFilter-" + str(mipsize))
+            target_filter = self._stage.create_target("CF:SpecIBL-PostFilter-" + str(mipsize))
             target_filter.size = mipsize * 6, mipsize
             target_filter.prepare_buffer()
             target_filter.set_shader_input("currentMip", mip)
@@ -144,7 +144,7 @@ class CubemapFilter(RPObject):
         """ Internal method to create the diffuse cubemap """
 
         # Create the target which integrates the lambert brdf
-        self._diffuse_target = self._stage.make_target2("CF:DiffuseIBL")
+        self._diffuse_target = self._stage.create_target("CF:DiffuseIBL")
         self._diffuse_target.size = (
             CubemapFilter.PREFILTER_CUBEMAP_SIZE * 6,
             CubemapFilter.PREFILTER_CUBEMAP_SIZE)
@@ -156,7 +156,7 @@ class CubemapFilter(RPObject):
 
         # Create the target which removes the noise from the previous target,
         # which is introduced with importance sampling
-        self._diff_filter_target = self._stage.make_target2("CF:DiffPrefIBL")
+        self._diff_filter_target = self._stage.create_target("CF:DiffPrefIBL")
         self._diff_filter_target.size = (
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE * 6,
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
