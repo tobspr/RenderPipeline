@@ -55,7 +55,7 @@ void main() {
 
   // Early out
   if (length(tile_velocity) < 0.5 / WINDOW_WIDTH) {
-    result = saturate(center_color);
+    result = max(vec3(0.0), center_color);
     return;
   }
 
@@ -90,5 +90,5 @@ void main() {
 
   }
 
-  result = saturate(accum / max(0.001, weight_accum));
+  result = max(vec3(0.0), accum / max(0.001, weight_accum));
 }

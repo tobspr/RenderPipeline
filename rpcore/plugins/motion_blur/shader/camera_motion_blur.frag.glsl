@@ -95,5 +95,5 @@ void main() {
   }
 
   accum /= weights;
-  result = saturate(accum);
+  result = max(vec3(0.0), accum);
 }

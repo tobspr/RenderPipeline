@@ -170,7 +170,7 @@ class RenderTarget(RPObject):
     def shader(self, shader_obj):
         """ Sets a shader on the target """
         if not shader_obj:
-            self.warn("shader must not be None!")
+            self.error("shader must not be None!")
             return
         self._source_region.set_shader(shader_obj)
 

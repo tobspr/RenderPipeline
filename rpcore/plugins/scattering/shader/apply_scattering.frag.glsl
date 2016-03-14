@@ -72,7 +72,7 @@ void main() {
         inscattered_light += vec3(1,0.3,0.1) * disk_factor *
             upper_disk_factor * 2.0 * silhouette_col * 1.5 * 1e5;
     } else {
-        inscattered_light *= 3.5;
+        // inscattered_light *= 3.5;
         // inscattered_light *= 0.5;
     }
 

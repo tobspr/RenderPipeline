@@ -62,6 +62,7 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
 
     // shading_result += basecolor / M_PI;
     shading_result += diff_env * basecolor / M_PI * 0.3;
+    // shading_result += basecolor / M_PI * 5.3;
 
 
     // Emission

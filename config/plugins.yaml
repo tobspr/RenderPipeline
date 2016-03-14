@@ -9,6 +9,7 @@ enabled:
     - pssm
     - color_correction
     - scattering
+    # - dof
     - ao
     # - skin_shading
     - smaa
@@ -80,6 +81,12 @@ overrides:
         use_sharpen: True
         sharpen_strength: 0.22
         sharpen_twice: False
+
+    dof:
+        some_int_setting: 5
+        some_float_setting: 2.5
+        some_enum: value2
+        some_bool: False
 
     env_probes:
         probe_resolution: 128

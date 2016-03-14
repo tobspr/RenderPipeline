@@ -41,6 +41,8 @@ global_stage_order:
   - GodrayStage
   - AutoExposureStage
   - ManualExposureStage
+  - DoFStage
+  - MotionBlurStage
   - BloomStage
 
   # Post AA & Effects
@@ -50,7 +52,6 @@ global_stage_order:
   - FXAAStage
   - SharpenStage
   - ColorCorrectionStage
-  - MotionBlurStage
 
   # Finishing stages, do not insert anything below
   - UpscaleStage
