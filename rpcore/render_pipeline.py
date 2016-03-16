@@ -63,19 +63,24 @@ class RenderPipeline(PipelineExtensions, RPObject):
     It also derives from RPExtensions to provide some useful functions like
     creating a default skybox or loading effect files. """
 
-    def __init__(self, showbase):
+    def __init__(self, outdated_parameter=None):
         """ Creates a new pipeline with a given showbase instance. This should
         be done before intializing the ShowBase, the pipeline will take care of
         that. """
         RPObject.__init__(self)
+        if outdated_parameter is not None:
+            self.fatal("The render pipeline no longer takes the ShowBase argument "
+                       "as constructor parameter. Please have a look at the "
+                       "00-Loading the pipeline sample to see how to initialize " 
+                       "the pipeline properly.")
         self.debug("Using Python {} with architecture {}".format(
             sys.version_info.major, PandaSystem.get_platform()))
         self.debug("Using Panda3D {} built on {} using commit {}".format(
             PandaSystem.get_version_string(), PandaSystem.get_build_date(),
             PandaSystem.get_git_commit()))
-        self._showbase = showbase
         self._mount_mgr = MountManager(self)
         self._settings = {}
+        self._pre_showbase_initialized = False
         self.set_default_loading_screen()
 
         # Check for the right Panda3D version
@@ -150,13 +155,12 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._plugin_mgr.trigger_hook("shader_reload")
         self._debugger.set_reload_hint_visible(False)
 
-    def create(self):
-        """ This creates the pipeline, and setups all buffers. It also
-        constructs the showbase. The settings should have been loaded before
-        calling this, and also the base and write path should have been
-        initialized properly (see MountManager). """
-
-        start_time = time.time()
+    def pre_showbase_init(self):
+        """ Setups all required pipeline settings and configuration which have
+        to be set before the showbase is setup. This is called by create(),
+        in case the showbase was not initialized, however you can (and have to)
+        call it manually before you init your custom showbase instance.
+        See the 00-Loading the pipeline sample for more information."""
 
         if not self._mount_mgr.is_mounted:
             self.debug("Mount manager was not mounted, mounting now ...")
@@ -173,8 +177,22 @@ class RenderPipeline(PipelineExtensions, RPObject):
         # Load the default prc config
         load_prc_file("/$$rpconfig/panda3d-config.prc")
 
-        # Construct the showbase and init global variables
-        ShowBase.__init__(self._showbase)
+        # Set the initialization flag
+        self._pre_showbase_initialized = True
+
+    def create(self, base=None):
+        """ This creates the pipeline, and setups all buffers. It also
+        constructs the showbase. The settings should have been loaded before
+        calling this, and also the base and write path should have been
+        initialized properly (see MountManager).
+
+        If base is None, the showbase used in the RenderPipeline constructor
+        will be used and initialized. Otherwise it is assumed that base is an
+        initialized ShowBase object. In this case, you should call
+        pre_showbase_init() before initializing the ShowBase"""
+
+        start_time = time.time()
+        self._init_showbase(base)
         self._init_globals()
 
         # Create the loading screen
@@ -263,6 +281,26 @@ class RenderPipeline(PipelineExtensions, RPObject):
             "RenderTarget", *args[1:])
 
         RenderTarget.USE_R11G11B10 = self.settings["pipeline.use_r11_g11_b10"]
+
+    def _init_showbase(self, base):
+        """ Inits the the given showbase object """
+
+        # Construct the showbase and init global variables
+        if base:
+            # Check if we have to init the showbase
+            if not hasattr(base, "render"):
+                self.pre_showbase_init()
+                ShowBase.__init__(base)
+            else:
+                if not self._pre_showbase_initialized:
+                    self.fatal("You constructed your own ShowBase object but you "
+                               "did not call pre_show_base_init() on the render "
+                               "pipeline object before! Checkout the 00-Loading the "
+                               "pipeline sample to see how to initialize the RP.")
+            self._showbase = base
+        else:
+            self.pre_showbase_init()
+            self._showbase = ShowBase()
 
     def _init_bindings(self):
         """ Inits the tasks and keybindings """
