@@ -219,8 +219,8 @@ class PipelineExtensions(object):
             from panda3d.core import PostProcessRegion
         except ImportError:
             self.debug("Could not import PostProcessRegion")
-            return False
-
+            # Python fallback is included
+            return True
         return True
 
     def _init_common_stages(self):
