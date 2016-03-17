@@ -35,13 +35,16 @@ from panda3d.core import GeomVertexFormat, GeomNode, GeomVertexWriter
 from panda3d.core import GeomTriangles, SamplerState, LVecBase2i, DepthTestAttrib
 from panda3d.core import ShaderInput
 
+
 try:
     # Try to import the post process region from panda, but fallback to the
     # python version if it fails
     from panda3d.core import PostProcessRegion
+    has_native_post_process_region = True
 
 except ImportError:
     from rpcore.util.post_process_region import PostProcessRegion
+    has_native_post_process_region = False
 
 from rplibs.six.moves import range
 from rplibs.six import iterkeys, itervalues, iteritems
@@ -164,7 +167,10 @@ class RenderTarget(RPObject):
     def set_shader_input(self, *args):
         """ Sets a shader input available to the target """
         if self.create_default_region:
-            self._source_region.set_shader_input(ShaderInput(*args))
+            if has_native_post_process_region:
+                self._source_region.set_shader_input(ShaderInput(*args))
+            else:
+                self._source_region.set_shader_input(*args)
 
     @setter
     def shader(self, shader_obj):
