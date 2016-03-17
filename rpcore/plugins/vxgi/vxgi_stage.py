@@ -83,7 +83,7 @@ class VXGIStage(RenderStage):
         self._target_upscale_diff.add_color_attachment(bits=16)
         self._target_upscale_diff.prepare_offscreen_buffer()
         self._target_upscale_diff.set_shader_input("SourceTex", self._target_blur_h["color"])
-        self._target_upscale_diff.set_shader_input("upscaleWeights", Vec2(0.0001, 0001))
+        self._target_upscale_diff.set_shader_input("upscaleWeights", Vec2(0.0001, 0.001))
         self._target_upscale_diff.set_shader_input("useZAsWeight", False)
 
         # Set blur parameters

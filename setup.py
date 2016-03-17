@@ -54,9 +54,16 @@ sys.path.insert(0, ".")
 from rplibs.six.moves import input
 
 # Load and init colorama, used to color the output
-from rplibs.colorama import init as init_colorama
-from rplibs.colorama import Fore, Style
-init_colorama()
+if sys.version_info.major == 2:
+    from rplibs.colorama import init as init_colorama
+    from rplibs.colorama import Fore, Style
+    init_colorama()
+else:
+    # Colorama seems not to work in Py3, work arround it
+    class Dummy(object):
+        def __getattr__(self, key): return ""
+    Fore = Dummy()
+    Style = Dummy()
 
 def color(string, col):
     """ Colors a string """
