@@ -38,6 +38,7 @@ in vec3 p3d_Normal;
 in vec2 p3d_MultiTexCoord0;
 
 uniform mat4 p3d_ViewProjectionMatrix;
+uniform mat4 p3d_ModelViewProjectionMatrix;
 
 #if EXPERIMENTAL_PREV_TRANSFORM
 uniform mat4 p3d_PrevModelMatrix;

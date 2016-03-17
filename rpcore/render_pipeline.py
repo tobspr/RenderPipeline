@@ -71,13 +71,16 @@ class RenderPipeline(PipelineExtensions, RPObject):
         if outdated_parameter is not None:
             self.fatal("The render pipeline no longer takes the ShowBase argument "
                        "as constructor parameter. Please have a look at the "
-                       "00-Loading the pipeline sample to see how to initialize " 
+                       "00-Loading the pipeline sample to see how to initialize "
                        "the pipeline properly.")
         self.debug("Using Python {} with architecture {}".format(
             sys.version_info.major, PandaSystem.get_platform()))
-        self.debug("Using Panda3D {} built on {} using commit {}".format(
-            PandaSystem.get_version_string(), PandaSystem.get_build_date(),
-            PandaSystem.get_git_commit()))
+        self.debug("Using Panda3D {} built on {}".format(
+            PandaSystem.get_version_string(), PandaSystem.get_build_date()))
+        if PandaSystem.get_git_commit():
+            self.debug("Using git commit {}".format(PandaSystem.get_git_commit()))
+        else:
+            self.debug("Using custom Panda3D build")
         self._mount_mgr = MountManager(self)
         self._settings = {}
         self._pre_showbase_initialized = False
