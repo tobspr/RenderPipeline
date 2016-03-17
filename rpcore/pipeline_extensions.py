@@ -162,7 +162,7 @@ class PipelineExtensions(object):
                     return lambda *args, **kwargs: None
             return _dummy_probe()
 
-        from rpcore.plugins.env_probes.environment_probe import EnvironmentProbe
+        from rpplugins.env_probes.environment_probe import EnvironmentProbe
         probe = EnvironmentProbe()
         self.plugin_mgr.get_plugin_handle("env_probes").probe_mgr.add_probe(probe)
         return probe
@@ -171,7 +171,7 @@ class PipelineExtensions(object):
         """ Prepares a given scene, by converting panda lights to render pipeline
         lights """
         # TODO: IES profiles
-        ies_profile = self.load_ies_profile("data/ies_profiles/x_arrow_diffuse.ies")
+        ies_profile = self.load_ies_profile("x_arrow_diffuse.ies")
 
         convert_mat = Mat4.convert_mat(CS_zup_right, CS_yup_right)
 

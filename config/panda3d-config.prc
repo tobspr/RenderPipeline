@@ -13,7 +13,7 @@ pstats-gpu-timing #t
 pstats-max-rate 200
 gl-debug #t
 gl-debug-object-labels #t
-sync-video #t
+sync-video #f
 
 # ----------------- Misc Settings -----------------
 
@@ -155,7 +155,7 @@ color-bits 0
 
 framebuffer-depth #f
 
-gl-fixed-vertex-attrib-locations #t
+gl-fixed-vertex-attrib-locations #f
 
 # Disable the fragment shader performance warning
 gl-validate-shaders #f

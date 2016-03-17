@@ -84,7 +84,7 @@ def print_step(title):
 def exec_python_file(pth):
     """ Executes a python file and checks the return value """
     basedir = os.path.dirname(os.path.abspath(os.path.join(SETUP_DIR, pth))) + "/"
-    print("\tRunning script:", pth)
+    print("\tRunning script:", Fore.WHITE + Style.BRIGHT + pth + Style.RESET_ALL)
     pth = os.path.basename(pth)
     os.chdir(basedir)
     try:
@@ -205,10 +205,10 @@ def setup():
         exec_python_file("data/film_grain/generate.py")
 
         print_step("Running shader scripts .. ")
-        exec_python_file("rpcore/plugins/env_probes/shader/generate_mip_shaders.py")
+        exec_python_file("rpplugins/env_probes/shader/generate_mip_shaders.py")
 
         print_step("Precomputing clouds ..")
-        exec_python_file("rpcore/plugins/clouds/resources/precompute.py")
+        exec_python_file("rpplugins/clouds/resources/precompute.py")
 
         ask_download_samples()
 

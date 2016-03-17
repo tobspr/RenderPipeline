@@ -150,5 +150,5 @@ class RenderStage(RPObject):
         """ Loads a shader from the plugin directory. This method is useful
         for RenderStages created by plugins. For a description of the arguments,
         see the load_shader function. """
-        shader_path = "rpcore/plugins/" + self._get_plugin_id() + "/shader/{0}"
+        shader_path = "rpplugins/" + self._get_plugin_id() + "/shader/{0}"
         return self._get_shader_handle(shader_path, *args)

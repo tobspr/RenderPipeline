@@ -57,7 +57,7 @@ class PluginManager(BaseManager):
         """ Loads all plugins and their settings, and also constructs instances
         of the main plugin classes for all enabled plugins """
         self.debug("Loading plugins")
-        self._load_base_settings("/$$rp/rpcore/plugins")
+        self._load_base_settings("/$$rp/rpplugins")
         self.load_setting_overrides("/$$rpconfig/plugins.yaml")
         self.load_daytime_overrides("/$$rpconfig/daytime.yaml")
 
@@ -212,8 +212,8 @@ class PluginManager(BaseManager):
 
     def _load_plugin(self, plugin_id):
         """ Internal method to load a plugin """
-        plugin_class = "..plugins.{}.plugin".format(plugin_id)
-        module = importlib.import_module(plugin_class, package=__package__)
+        plugin_class = "rpplugins.{}.plugin".format(plugin_id)
+        module = importlib.import_module(plugin_class)
         instance = module.Plugin(self._pipeline)
         if instance.native_only and not NATIVE_CXX_LOADED:
             if plugin_id in self._enabled_plugins:

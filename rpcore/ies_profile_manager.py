@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+from direct.stdpy.file import isfile, join
+
 from panda3d.core import Filename, Texture, VirtualFileSystem, get_model_path
 from panda3d.core import SamplerState
 
@@ -61,8 +63,12 @@ class IESProfileManager(RPObject):
     def load(self, filename):
         """ Loads a profile from a given filename """
 
-        # Make filename unique
+        # Make sure the user can load profiles directly from the ies profile folder
+        data_path = join("/$$rp/data/ies_profiles/", filename)
+        if isfile(data_path):
+            filename = data_path
 
+        # Make filename unique
         fname = Filename.from_os_specific(filename)
         if not VirtualFileSystem.get_global_ptr().resolve_filename(
                 fname, get_model_path().get_value(), "ies"):
