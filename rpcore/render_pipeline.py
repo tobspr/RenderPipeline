@@ -88,8 +88,9 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
         # Check for the right Panda3D version
         if not self._check_version():
-            self.fatal("Your Panda3D version is too old! Please update to a newer "
-                       " version! (You need a development version of panda).")
+            self.fatal("Your Panda3D version is outdated! Please update to the newest \n"
+                       "git version! Checkout https://github.com/panda3d/panda3d to "
+                       "compile panda from source, or get a recent buildbot build.")
 
     def load_settings(self, path):
         """ Loads the pipeline configuration from a given filename. Usually

@@ -180,35 +180,30 @@ class PipelineExtensions(object):
             rp_light = PointLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.lumens = 10.0 * light_node.get_color().w
-            rp_light.color = light_node.get_color().xyz
-            rp_light.casts_shadows = light_node.is_shadow_caster()
-
-            # XXX: Submit a patch to rdb for this
-            # rp_light.shadow_map_resolution = light_node.shadow_buffer_width
-            rp_light.shadow_map_resolution = 512
+            rp_light.lumens = 10.0 * light_node.color.w
+            rp_light.color = light_node.color.xyz
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             self.add_light(rp_light)
             light.remove_node()
-
 
         for light in scene.find_all_matches("**/+Spotlight"):
             light_node = light.node()
             rp_light = SpotLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.lumens = 10.0 * light_node.get_color().w
-            rp_light.color = light_node.get_color().xyz
-            rp_light.casts_shadows = light_node.is_shadow_caster()
-
-            # XXX: Submit a patch to rdb for this
-            # rp_light.shadow_map_resolution = light_node.shadow_buffer_width
-            rp_light.shadow_map_resolution = 512
+            rp_light.lumens = 10.0 * light_node.color.w
+            rp_light.color = light_node.color.xyz
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             rp_light.fov = light_node.exponent / math.pi * 180.0
             lpoint = light.get_mat(Globals.base.render).xform_vec(Vec3(0, 0, -1))
             rp_light.direction = lpoint
-            # rp_light.ies_profile = ies_profile
             self.add_light(rp_light)
             light.remove_node()
+
+            # XXX: Support IES profiles (Have to add it to the BAM exporter first)
+            # rp_light.ies_profile = ies_profile
 
         # Add environment probes
         for np in scene.find_all_matches("**/ENVPROBE*"):
@@ -221,12 +216,10 @@ class PipelineExtensions(object):
         """ Internal method to check if the required Panda3D version is met. Returns
         True if the version is new enough, and False if the version is outdated. """
 
-        try:
-            from panda3d.core import PostProcessRegion
-        except ImportError:
-            self.debug("Could not import PostProcessRegion")
-            # Python fallback is included
-            return True
+        from panda3d.core import PointLight as Panda3DPointLight
+        if not hasattr(Panda3DPointLight(""), "shadow_caster"):
+            return False
+
         return True
 
     def _init_common_stages(self):

@@ -71,8 +71,8 @@ def color(string, col):
 
 def error(msg):
     """ Prints an error message and then exists the program """
-    print(color("Setup failed: ", Fore.RED + Style.BRIGHT), msg)
-    print("Please fix the errors and then rerun this file")
+    print("\n" + color("Setup failed:\t", Fore.RED + Style.BRIGHT), msg)
+    print(color("\nPlease fix the above errors and then restart the setup.\n", Fore.RED + Style.BRIGHT))
     sys.exit(0)
 
 def print_step(title):
@@ -84,7 +84,7 @@ def print_step(title):
 def exec_python_file(pth):
     """ Executes a python file and checks the return value """
     basedir = os.path.dirname(os.path.abspath(os.path.join(SETUP_DIR, pth))) + "/"
-    print("\tRunning script:", Fore.WHITE + Style.BRIGHT + pth + Style.RESET_ALL)
+    print("\tRunning script:", Fore.YELLOW + Style.BRIGHT + pth + Style.RESET_ALL)
     pth = os.path.basename(pth)
     os.chdir(basedir)
     try:
@@ -155,7 +155,7 @@ def check_cmake():
     try:
         subprocess.call(["cmake", "--version"], stdout=subprocess.PIPE)
     except subprocess.CalledProcessError as msg:
-        print("")
+        print("\n")
         print(color("Could not find cmake!", Fore.RED + Style.BRIGHT))
         print("It seems that cmake is not installed on this system, or not on")
         print("your path. Please install cmake and make sure it is on your path.")
@@ -164,6 +164,19 @@ def check_cmake():
         print(msg)
         error("cmake missing")
 
+def check_panda_version():
+    """ Checks whether the Panda3D version used is up to date. This is important
+    when using the C++ modules """
+
+    from panda3d.core import PointLight
+
+    if not hasattr(PointLight(""), "shadow_caster"):
+        print("\n")
+        print("It seems your Panda3D version is outdated. Please get the newest version ")
+        print("from", color("https://github.com/panda3d/panda3d", Fore.MAGENTA + Style.BRIGHT),
+            "(you have to build from source).")
+        error("Panda3D version outdated")
+
 def setup():
     """ Main setup routine """
 
@@ -171,12 +184,24 @@ def setup():
     print("\nRender Pipeline Setup 1.1\n")
     print("-" * 79)
 
+    print_step("Checking Panda3D Modules")
+    # Make sure this python build is using panda3D
+    try:
+        from panda3d.core import NodePath
+    except ImportError:
+        print("\n")
+        print("Could not import Panda3D modules! Please make sure they are ")
+        print("on your path, and you are using the correct python version!")
+        error("Failed to import Panda3D modules")
+
+    check_panda_version()
+
     if not OPT_SKIP_NATIVE:
-        query = ("The C++ modules of the pipeline are faster and produce better "
-                 "results, but we will have to compile them. As alternative, "
-                 "a Python fallback is used, which is slower and produces worse "
-                 "results. Also not all plugins work with the python fallback "
-                 "(e.g. PSSM). Do you want to use the C++ modules? (y/n):")
+        query = ("The C++ modules of the pipeline are faster and produce better \n"
+                 "results, but we will have to compile them. As alternative, \n"
+                 "a Python fallback is used, which is slower and produces worse \n"
+                 "results. Also some plugins only partially work with the python \n"
+                 "fallback (e.g. PSSM). Do you want to compile the C++ modules? (y/n):")
 
         # Dont install the c++ modules when using travis
         if not OPT_AUTO_INSTALL and get_user_choice(query):
