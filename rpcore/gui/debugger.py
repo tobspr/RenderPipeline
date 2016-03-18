@@ -109,9 +109,11 @@ class Debugger(BaseManager):
             Globals.base.win.get_x_size() / self._gui_scale - 200,
             1, -Globals.base.win.get_y_size() / self._gui_scale + 120)
         self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
-        self._fps_node = self._fullscreen_node.attach_new_node("FPSChart")
+
+        self._fps_node = Globals.base.pixel2d.attach_new_node("FPSChart")
         self._fps_node.set_pos(21, 1, -108)
         self._fps_widget = FPSChart(self._pipeline, self._fps_node)
+
         self._pixel_widget = PixelInspector(self._pipeline)
 
     def _init_notify(self):
@@ -306,14 +308,20 @@ class Debugger(BaseManager):
         Globals.base.accept("v", self._buffer_viewer.toggle)
         Globals.base.accept("c", self._pipe_viewer.toggle)
         Globals.base.accept("f5", self._toggle_gui_visible)
+        Globals.base.accept("f6", self._toggle_fps_visible)
 
     def _toggle_gui_visible(self):
         """ Shows / Hides the gui """
-        if not Globals.base.pixel2d.is_hidden():
-            Globals.base.pixel2d.hide()
-            Globals.base.aspect2d.hide()
-            Globals.base.render2d.hide()
+        if not self._fullscreen_node.is_hidden():
+            self._fullscreen_node.hide()
+            self._overlay_node.hide()
         else:
-            Globals.base.pixel2d.show()
-            Globals.base.aspect2d.show()
-            Globals.base.render2d.show()
+            self._fullscreen_node.show()
+            self._overlay_node.show()
+
+    def _toggle_fps_visible(self):
+        """ Shows / Hides the FPS graph """
+        if not self._fps_node.is_hidden():
+            self._fps_node.hide()
+        else:
+            self._fps_node.show()
