@@ -72,7 +72,8 @@ void main() {
   vec3 step_offs = step_vector / num_steps;
 
   vec4 volumetrics = vec4(0);
-  float volume_density = 0.0003;
+  float volume_density = 0.00015;
+  // float volume_density = 0.0003;
 
   vec3 sun_color = get_sun_color();
   vec3 sun_vector = get_sun_vector();
@@ -98,7 +99,8 @@ void main() {
     volumetrics += color * (1 - volumetrics.w);
   }
 
-  volumetrics.xyz = pow(volumetrics.xyz * 2.0, vec3(2.0));
+  // volumetrics.xyz = pow(volumetrics.xyz * 2.0, vec3(2.0));
+  volumetrics.w *= 100.0;
 
   vec3 scene_color = texture(ShadedScene, texcoord).xyz;
   result = volumetrics;

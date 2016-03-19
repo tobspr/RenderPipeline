@@ -99,7 +99,7 @@ overrides:
 
     motion_blur:
         num_camera_samples: 6
-        camera_blur_factor: 0.8667
+        camera_blur_factor: 0.5778
         blur_factor: 0.5
         tile_size: 32
         max_blur_radius: 10.0

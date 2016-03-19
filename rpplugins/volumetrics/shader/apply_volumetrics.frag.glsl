@@ -35,8 +35,8 @@ out vec3 result;
 
 void main() {
   vec2 texcoord = get_texcoord();
-  vec3 volumetrics = texture(VolumetricsTex, texcoord).xyz;
+  vec4 volumetrics = texture(VolumetricsTex, texcoord);
   vec3 scene_color = texture(ShadedScene, texcoord).xyz;
 
-  result = volumetrics + scene_color;
+  result = volumetrics.xyz + scene_color * saturate(1 - volumetrics.w);
 }

@@ -64,7 +64,7 @@ void main() {
   const float scale = 0.05; // XXX: Todo, make it physically based
   const float focus_plane = 5.0;
   const float focus_size = 1.9;
-  const float near_scale = 1.0 / max(0.0, focus_plane - focus_size - CAMERA_NEAR);
+  const float near_scale = 0.2 / max(0.0, focus_plane - focus_size - CAMERA_NEAR);
   float dist = get_linear_z_from_z(mid_depth);
   float coc = (dist - focus_plane);
 
