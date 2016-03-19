@@ -69,7 +69,7 @@ class Debugger(BaseManager):
         self._init_keybindings()
         self._init_notify()
 
-        Globals.base.doMethodLater(25.0, self._collect_scene_data, "RPDebugger_collectSceneData")
+        # Globals.base.doMethodLater(25.0, self._collect_scene_data, "RPDebugger_collectSceneData")
         Globals.base.doMethodLater(0.5, lambda task: self._collect_scene_data(), "RPDebugger_collectSceneData_initial")
         Globals.base.doMethodLater(0.1, self._update_stats, "RPDebugger_updateStats")
 

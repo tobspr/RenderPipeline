@@ -23,32 +23,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-# Load the base plugin class
-from rpcore.pluginbase.base_plugin import BasePlugin
 
-# Load your additional plugin classes here, if required
-from .demo_stage import DemoStage
+from rpcore.render_stage import RenderStage
 
-class Plugin(BasePlugin):
+class DemoStage(RenderStage):
 
-    name = "Plugin Prefab"
-    author = "tobspr <tobias.springer1@gmail.com>"
-    description = ("This is the most basic structure of a plugin. You can copy "
-                   "it to produce your own plugins")
-    version = "1.0"
+    """ This is a demo stage which does .. nothing """
 
-    def on_stage_setup(self):
-        """ This method gets called when the pipeline setups the render
-        stages. You should create your custom stages here """
+    required_inputs = []
+    required_pipes = ["ShadedScene"]
 
-        # Setup a demo stage
-        self.stage = self.create_stage(DemoStage)
+    @property
+    def produced_pipes(self):
+        return {"ShadedScene": self.target.color_tex}
 
-    def on_pipeline_created(self):
-        """ This method gets called after the pipeline finished the setup,
-        and is about to start rendering """
+    def create(self):
+        self.target = self.create_target("FancyEffect")
+        self.target.add_color_texture(bits=16)
+        self.target.prepare_buffer()
 
-    def update_some_setting(self):
-        """ This method gets called when the setting "some_setting"
-        of your plugin gets called. You should do all work to update required
-        inputs etc. yourself. """
+    def set_shaders(self):
+        self.target.shader = self.load_plugin_shader("fancy_effect.frag.glsl")

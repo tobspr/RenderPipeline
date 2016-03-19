@@ -23,32 +23,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-# Load the base plugin class
-from rpcore.pluginbase.base_plugin import BasePlugin
 
-# Load your additional plugin classes here, if required
-from .demo_stage import DemoStage
+from rpcore.pluginbase.base_plugin import BasePlugin
+from .volumetrics_stage import VolumetricsStage
 
 class Plugin(BasePlugin):
 
-    name = "Plugin Prefab"
+    name = "Volumetric Lighting"
     author = "tobspr <tobias.springer1@gmail.com>"
-    description = ("This is the most basic structure of a plugin. You can copy "
-                   "it to produce your own plugins")
-    version = "1.0"
+    description = ("This plugins adds support for volumetric lighting")
+    version = "0.1 alpha (!)"
 
     def on_stage_setup(self):
-        """ This method gets called when the pipeline setups the render
-        stages. You should create your custom stages here """
+        self.stage = self.create_stage(VolumetricsStage)
 
-        # Setup a demo stage
-        self.stage = self.create_stage(DemoStage)
-
-    def on_pipeline_created(self):
-        """ This method gets called after the pipeline finished the setup,
-        and is about to start rendering """
-
-    def update_some_setting(self):
-        """ This method gets called when the setting "some_setting"
-        of your plugin gets called. You should do all work to update required
-        inputs etc. yourself. """
+        if self.is_plugin_enabled("pssm"):
+            self.stage.required_inputs.append("PSSMSceneSunShadowMVP")
+            self.stage.required_pipes.append("PSSMSceneSunShadowMapPCF")

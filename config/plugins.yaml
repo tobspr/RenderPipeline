@@ -13,6 +13,7 @@ enabled:
     - pssm
     - scattering
     - smaa
+    - volumetrics
     # - clouds
     # - dof
     # - skin_shading
@@ -83,10 +84,6 @@ overrides:
         sharpen_twice: False
 
     dof:
-        some_int_setting: 5
-        some_float_setting: 2.5
-        some_enum: value2
-        some_bool: False
 
     env_probes:
         probe_resolution: 128
@@ -102,7 +99,7 @@ overrides:
 
     motion_blur:
         num_camera_samples: 6
-        camera_blur_factor: 0.24444
+        camera_blur_factor: 0.8667
         blur_factor: 0.5
         tile_size: 32
         max_blur_radius: 10.0
@@ -147,6 +144,8 @@ overrides:
         smaa_quality: ultra
 
     sslr:
+
+    volumetrics:
 
     vxgi:
         grid_resolution: 256

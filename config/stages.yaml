@@ -37,6 +37,7 @@ global_stage_order:
   - VXGIStage
   - SSLRStage
   - AmbientStage
+  - VolumetricsStage
   - ApplyCloudsStage
   - GodrayStage
   - AutoExposureStage
