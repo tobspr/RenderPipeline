@@ -61,19 +61,24 @@ void main() {
   vec3 accum = karis_average(mid_color.xyz) * 0;
   float weights = 1.0 * 0.0;
 
-  const float scale = 0.1; // XXX: Todo, make it physically based
-  const float focus_plane = 6.0;
+  const float scale = 0.05; // XXX: Todo, make it physically based
+  const float focus_plane = 5.0;
+  const float focus_size = 1.9;
+  const float near_scale = 1.0 / max(0.0, focus_plane - focus_size - CAMERA_NEAR);
   float dist = get_linear_z_from_z(mid_depth);
-  float coc = (dist - focus_plane) * scale;
+  float coc = (dist - focus_plane);
 
-  // Make sure the sun is bright
-  if (get_luminance(mid_color) > 20.0) {
-    coc = 0;
+  if (coc >= 0) {
+    coc -= focus_size;
+    coc *= scale;
+  } else {
+    coc += focus_size;
+    coc *= -near_scale;
   }
 
-  coc = clamp(coc, 0.0, 1.0);
+  coc = clamp(coc, 0.0001, 1.0);
 
-  const int kernel_size = 1;
+  const int kernel_size = 2;
   for (int x = -kernel_size; x <= kernel_size; ++x) {
     for (int y = -kernel_size; y <= kernel_size; ++y) {
       // skip center sample
@@ -83,15 +88,21 @@ void main() {
       float sample_depth = texture(GBuffer.Depth, offcoord).x;
       sample_data = karis_average(sample_data);
 
-      // float weight = 1 - saturate(abs(mid_depth - sample_depth) / 0.005);
-      float weight = 1;
+      float weight = 1 - saturate(abs(mid_depth - sample_depth) / 0.005);
+      // float weight = 1;
       accum += sample_data * weight;
       weights += weight;
 
     }
   }
-
   accum /= max(0.001, weights);
-  accum = karis_average(mid_color);
+
+  accum = mid_color;
+
+  if (coc < 0.01) {
+    // accum = karis_average(mid_color);
+  }
+    // accum = karis_average(mid_color);
+
   result = vec4(accum, coc);
 }

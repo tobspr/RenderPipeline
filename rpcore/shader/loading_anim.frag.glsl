@@ -26,31 +26,18 @@
 
 #version 400
 
-#pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/color_spaces.inc.glsl"
-
-uniform sampler2D ShadedScene;
-uniform sampler2D SourceTex;
-out vec3 result;
+in vec2 texcoord;
+uniform sampler2D p3d_Texture0;
+out vec4 result;
+uniform int frameIndex;
 
 void main() {
-  const float sharpness = 0.5;
+  vec2 texsize = textureSize(p3d_Texture0, 0).xy;
+  float offs_x = float(int(frameIndex % 12)) * 420.0 / texsize.x;
+  float offs_y = float(11 - int(frameIndex / 12)) * 420.0 / texsize.y;
+  vec2 tcoord = texcoord / 12.0 + vec2(offs_x, offs_y);
 
-  vec2 texcoord = get_texcoord();
-  vec4 dof_result = texture(SourceTex, texcoord);
-  vec3 scene_color = texture(ShadedScene, texcoord).xyz;
-
-  // Reconstruct original color
-  // dof_result.xyz = dof_result.xyz / (1 - (1 - sharpness) * get_luminance(dof_result.xyz));
-  float dof_weight = saturate(dof_result.w * 10.0);
-
-  #if DEBUG_MODE
-    dof_weight = 0;
-  #endif
-
-  // result = mix(scene_color * 0, dof_result.xyz, dof_weight);
-  // result = mix(vec3(1, 0, 0), dof_result.xyz, dof_weight);
-  // result.xyz = vec3(dof_result.w);
-  result.xyz = dof_result.xyz;
-  // result.xyz = scene_color;
+  vec2 data = texture(p3d_Texture0, tcoord).xw;
+  data.x = (1 - data.x) * 0.917;
+  result = data.xxxy;
 }

@@ -32,26 +32,19 @@
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "vxgi.inc.glsl"
 
-flat in int instance;
-
 uniform sampler2D ShadedScene;
 uniform sampler2D Noise4x4;
 uniform GBufferData GBuffer;
 out vec4 result;
 
 void main() {
-
-    int quad_x = instance % 2;
-    int quad_y = instance / 2;
-
     // Get texture coordinate
-    ivec2 coord = (ivec2(gl_FragCoord.xy) * 4) % SCREEN_SIZE_INT;
-    coord += ivec2(quad_x, quad_y) * 2;
+    ivec2 coord = ivec2(gl_FragCoord.xy) * 2;
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
     // vec3 noise_vec = fma(texelFetch(Noise4x4, ivec2(quad_x, quad_y), 0).xyz, vec3(2), vec3(-1));
-    vec3 noise_vec = fma(texelFetch(Noise4x4, (coord/2 + ivec2(quad_x, quad_y)) % 4, 0).xyz, vec3(2), vec3(-1));
-    // vec3 noise_vec = vec3(0, 0, 0);
+    // vec3 noise_vec = fma(texelFetch(Noise4x4, (coord/2 + ivec2(quad_x, quad_y)) % 4, 0).xyz, vec3(2), vec3(-1));
+    vec3 noise_vec = vec3(0, 0, 0);
 
 
     // Get material data
@@ -73,22 +66,25 @@ void main() {
 
     for (int i = 0; i < 32; ++i) {
         vec3 direction = poisson_disk_3D_32[i];
-        direction = mix(direction, noise_vec, 0.3);
-        direction = normalize(direction);
+        // direction = mix(direction, noise_vec, 0.3);
+        direction = normalize(direction + m.normal);
         direction = face_forward(direction, m.normal);
 
+
         float weight = dot(m.normal, direction); // Guaranteed to be > 0
-        weight = 1.0;
+        // weight = 1.0;
         vec4 cone = trace_cone(
             voxel_coord,
             m.normal,
             direction,
-            GET_SETTING(vxgi, diffuse_cone_steps),
+            // GET_SETTING(vxgi, diffuse_cone_steps),
+            32,
             false,
-            0.1);
+            0.05);
         accum.xyz += cone.xyz * weight;
         accum.w += weight;
     }
     accum /= accum.w;
+    // accum *= 0.1;
     result = accum;
 }

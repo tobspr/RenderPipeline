@@ -36,9 +36,6 @@ uniform sampler2D ShadedScene;
 uniform sampler2D SumTex;
 
 uniform bool FirstUpsamplePass;
-uniform bool LastUpsamplePass;
-
-out vec3 result;
 
 void main() {
     vec2 source_size = vec2(textureSize(SourceTex, SourceMip).xy);
@@ -70,8 +67,8 @@ void main() {
     source_sample /= 16.0;
 
     vec3 pass_result = summed + source_sample;
+    pass_result *= 0.5;
 
     vec4 old_data = texelFetch(SourceTex, coord, SourceMip - 1);
     imageStore(DestTex, coord, old_data + vec4(pass_result, 0));
-    result = vec3(0.7, 0.6, 1.0);
 }

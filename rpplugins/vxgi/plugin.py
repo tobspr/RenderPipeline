@@ -46,12 +46,12 @@ class Plugin(BasePlugin):
         self._vxgi_stage = self.create_stage(VXGIStage)
 
         self._voxel_stage.voxel_resolution = self.get_setting("grid_resolution")
-        self._voxel_stage.voxel_grid_size = self.get_setting("grid_ws_size")
+        self._voxel_stage.voxel_world_size = self.get_setting("grid_ws_size")
 
         if self.is_plugin_enabled("pssm"):
             # Add shadow map as requirement
+            self._voxel_stage.required_pipes.append("PSSMSceneSunShadowMapPCF")
             self._voxel_stage.required_inputs.append("PSSMSceneSunShadowMVP")
-            self._voxel_stage.required_pipes.append("PSSMSunShadowMapPCF")
 
     def on_pre_render_update(self):
         self._queue.exec_next_task()

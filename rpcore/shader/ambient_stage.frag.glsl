@@ -121,10 +121,10 @@ void main() {
     float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
 
     // Sample default environment map
-    vec3 ibl_specular = textureLod(DefaultEnvmap, reflected_dir, env_mipmap).xyz * 0.2;
+    vec3 ibl_specular = textureLod(DefaultEnvmap, reflected_dir, env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
     // Get cheap irradiance by sampling low levels of the environment map
     int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
-    vec3 ibl_diffuse = textureLod(DefaultEnvmap, m.normal, ibl_diffuse_mip).xyz * 0.2;
+    vec3 ibl_diffuse = textureLod(DefaultEnvmap, m.normal, ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
     // Scattering specific code
     #if HAVE_PLUGIN(scattering)
@@ -140,19 +140,34 @@ void main() {
         ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
     #endif
 
-    #if HAVE_PLUGIN(vxgi)
-        ibl_specular = texture(VXGISpecular, texcoord).xyz;
-        ibl_diffuse = texture(VXGIDiffuse, texcoord).xyz;
-    #endif
-
 
     #if HAVE_PLUGIN(env_probes)
         // Mix environment maps
         vec4 probe_spec = textureLod(EnvmapAmbientSpec, texcoord, 0);
         vec4 probe_diff = textureLod(EnvmapAmbientDiff, texcoord, 0);
-        ibl_specular = ibl_specular * (1 - probe_spec.w) + probe_spec.xyz;
         ibl_diffuse = ibl_diffuse * (1 - probe_diff.w) + probe_diff.xyz;
+
+        // Mix scatteringp probe and envprobe carefully, sice a huge color
+        // difference might occur. To avoid this, we first perform tonemapping,
+        // blend the probe and scattering, and then undo the tonemapping
+        #define BLEND_IBL_SPECULAR_TONEMAPPED 0
+        #if BLEND_IBL_SPECULAR_TONEMAPPED
+            ibl_specular = ibl_specular / (1 + ibl_specular);
+            probe_spec.xyz = probe_spec.xyz / (1 + probe_spec.xyz);
+        #endif
+        ibl_specular = ibl_specular * (1 - probe_spec.w) + probe_spec.xyz;
+        #if BLEND_IBL_SPECULAR_TONEMAPPED
+            ibl_specular = ibl_specular / (1 - ibl_specular);
+        #endif
     #endif
+
+    #if HAVE_PLUGIN(vxgi)
+        vec4 vxgi_spec = texture(VXGISpecular, texcoord);
+        ibl_diffuse = texture(VXGIDiffuse, texcoord).xyz;
+        ibl_specular = ibl_specular * (1 - vxgi_spec.w) + vxgi_spec.xyz;
+
+    #endif
+
 
     #if HAVE_PLUGIN(sslr)
         vec4 sslr_spec = textureLod(SSLRSpecular, texcoord, 0);
@@ -172,16 +187,20 @@ void main() {
         float fresnel_coat = saturate(CLEARCOAT_SPECULAR * env_brdf_coat.x + env_brdf_coat.y);
 
         #if HAVE_PLUGIN(scattering)
-            vec3 ibl_specular_base = textureLod(ScatteringIBLSpecular, reflected_dir, get_specular_mipmap(m) + mipmap_bias).xyz;
+            vec3 ibl_specular_base = textureLod(ScatteringIBLSpecular, reflected_dir,
+                get_specular_mipmap(m) + mipmap_bias).xyz;
         #else
-            vec3 ibl_specular_base = textureLod(DefaultEnvmap, reflected_dir, get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias).xyz;
+            vec3 ibl_specular_base = textureLod(DefaultEnvmap, reflected_dir,
+                get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias).xyz;
         #endif
 
         specular_ambient = fresnel_coat * ibl_specular;
 
         // Make sure we don't apply a bright sky cubemap on dark spots
         float specular_clip =  saturate(15.0 * get_luminance(ibl_specular));
-        specular_clip = 1 - fresnel_coat; // XXX: Find a better solution for the clip factor
+
+         // XXX: Find a better solution for the clip factor
+        specular_clip = 1 - fresnel_coat;
         specular_ambient += material_f0 * ibl_specular_base * specular_clip;
 
     } else {
@@ -212,8 +231,7 @@ void main() {
         ambient = m.basecolor * 4000.0;
     }
 
-    // TODO:
-    // For emissive, use: compute_bloom_luminance()
+    // TODO: For emissive, use: compute_bloom_luminance()
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
@@ -229,7 +247,6 @@ void main() {
         // So reduce ambient in the fog
         ambient *= (1.0 - scene_color.w);
     #endif
-
 
     result = scene_color * 1 + vec4(ambient, 1) * 1;
 }

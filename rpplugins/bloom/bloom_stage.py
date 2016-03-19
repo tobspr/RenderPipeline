@@ -58,7 +58,7 @@ class BloomStage(RenderStage):
         self.scene_target_img.set_magfilter(SamplerState.FT_linear)
         self.scene_target_img.set_wrap_u(SamplerState.WM_clamp)
         self.scene_target_img.set_wrap_v(SamplerState.WM_clamp)
-        self.scene_target_img.set_clear_color(Vec4(0.2, 0.6, 1.0, 1.0))
+        self.scene_target_img.set_clear_color(Vec4(0.1, 0.0, 0.0, 1.0))
         self.scene_target_img.clear_image()
 
         self.target_extract = self.create_target("ExtractBrightSpots")

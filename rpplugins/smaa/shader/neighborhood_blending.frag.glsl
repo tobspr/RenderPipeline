@@ -32,7 +32,7 @@
 #pragma include "includes/gbuffer.inc.glsl"
 
 uniform sampler2D BlendTex;
-uniform sampler2D ShadedScene;
+uniform sampler2D SourceTex;
 
 out vec4 result;
 
@@ -44,5 +44,5 @@ void main() {
     SMAANeighborhoodBlendingVS(texcoord, offset);
 
     // Actual Fragment shader
-    result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex);
+    result = SMAANeighborhoodBlendingPS(texcoord, offset, SourceTex, BlendTex);
 }

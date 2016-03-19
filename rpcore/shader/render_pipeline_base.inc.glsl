@@ -114,7 +114,9 @@ precision lowp int;
 #define SUPPORT_PCF 1
 
 // Controls the roughness of the clearcoat layer
-#define CLEARCOAT_ROUGHNESS 0.002
+#define CLEARCOAT_ROUGHNESS 0.005
 #define CLEARCOAT_SPECULAR 0.16
+
+#define DEFAULT_ENVMAP_BRIGHTNESS 0.2
 
 #pragma include "includes/common_functions.inc.glsl"

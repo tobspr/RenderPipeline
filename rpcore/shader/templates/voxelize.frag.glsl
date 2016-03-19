@@ -35,68 +35,42 @@
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
+#pragma include "includes/material.struct.glsl"
+#pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
-
-%INCLUDES%
-%INOUT%
-
-layout(location=0) in VertexOutput vOutput;
-layout(location=4) flat in MaterialOutput mOutput;
 
 // Voxel data
 uniform vec3 voxelGridPosition;
 uniform writeonly image3D RESTRICT VoxelGridDest;
 
-uniform samplerCube ScatteringIBLDiffuse;
-uniform samplerCube ScatteringIBLSpecular;
+
+%INCLUDES%
+%INOUT%
 
 uniform sampler2D p3d_Texture0;
+uniform Panda3DMaterial p3d_Material;
 
-#if HAVE_PLUGIN(scattering)
-    uniform sampler2DShadow VXGISunShadowMapPCF;
-    uniform mat4 VXGISunShadowMVP;
-#endif
+layout(location=0) in VertexOutput vOutput;
+
+#pragma include "includes/forward_shading.inc.glsl"
 
 void main() {
-    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).xyz;
-    basecolor *= mOutput.color;
 
-    // Simplified ambient term
+    MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
 
-    vec3 ambient_diff = texture(ScatteringIBLDiffuse, vOutput.normal).xyz;
-    vec3 ambient_spec = textureLod(ScatteringIBLSpecular, vOutput.normal, 6).xyz;
+    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * mInput.color;
 
-    vec3 ambient = ambient_diff * basecolor * (1 - mOutput.metallic);
-    ambient += ambient_spec * basecolor * mOutput.metallic;
-    ambient *= 0.1;
+    vec3 ambient = get_forward_ambient(mInput, basecolor);
+    vec3 sun_lighting = get_sun_shading(mInput, basecolor);
+    vec3 lights = get_forward_light_shading(basecolor);
 
-    vec3 shading_result = ambient;
-
-    // Sun shading
-    #if HAVE_PLUGIN(scattering)
-
-        vec3 sun_vector = get_sun_vector();
-        vec3 sun_color = get_sun_color();
-
-        // Get sun shadow term
-        vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
-
-        const float slope_bias =  1.0 * 0.02;
-        const float normal_bias = 1.0 * 0.005;
-        const float fixed_bias =  0.05 * 0.001;
-        vec3 biased_pos = get_biased_position(
-            vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
-
-        vec3 projected = project(VXGISunShadowMVP, biased_position);
-        projected.z -= fixed_bias;
-        float shadow_term = texture(VXGISunShadowMapPCF, projected).x;
-        shading_result += saturate(dot(sun_vector, vOutput.normal)) * sun_color * shadow_term * basecolor;
-
-
-    #endif
+    vec3 shading_result = vec3(ambient * 0.0 + lights + sun_lighting);
 
     // Tonemapping to pack color
     shading_result = shading_result / (1.0 + shading_result);
+    // shading_result = pow(shading_result, vec3(1.0 / 2.2));
+    // shading_result = saturate(shading_result);
+
 
     // Get destination voxel
     const int resolution = GET_SETTING(vxgi, grid_resolution);

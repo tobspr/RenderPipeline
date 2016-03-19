@@ -67,6 +67,7 @@ class Plugin(BasePlugin):
         self._jitters = []
 
         scale = 1.0 / float(Globals.base.win.get_x_size())
+        # scale *= 0
 
         # for x, y in ((-0.5, 0.25), (0.5, -0.25), (0.25, 0.5), (-0.25, -0.5)):
         for x, y in ((-0.25, 0.25), (0.25, -0.25)):

@@ -138,7 +138,7 @@ void main() {
     accum_color *= TimeOfDay.clouds.cloud_brightness;
     accum_color *= get_sun_color();
 
-    accum_color *= 0.8;
+    accum_color *= 1.8;
     // accum_color *= vec3(1.2, 1.1, 1);
     // accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 

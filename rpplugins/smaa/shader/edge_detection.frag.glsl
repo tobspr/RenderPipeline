@@ -33,7 +33,7 @@
 #pragma include "includes/gbuffer.inc.glsl"
 
 uniform GBufferData GBuffer;
-uniform sampler2D ShadedScene;
+uniform sampler2D SourceTex;
 out vec4 result;
 
 void main() {
@@ -49,10 +49,10 @@ void main() {
 
     #if SMAA_PREDICATION
         // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
-        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, ShadedScene, PredicationSource);
+        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, SourceTex, PredicationSource);
     #else
         // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
-        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, ShadedScene);
+        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, SourceTex);
     #endif
 
     result.w = 1.0;

@@ -122,7 +122,7 @@ def ask_download_samples():
     query = "\nDo you want to download the Render Pipeline samples? (y/n):"
 
     if get_user_choice(query):
-        print_step("Downloading samples (Might take a while, depending on your internet) ...")
+        print_step("Downloading samples (Might take a while, depending on your internet connection) ...")
         exec_python_file("samples/download_samples.py")
 
 def get_user_choice(query):

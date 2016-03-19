@@ -234,12 +234,12 @@ class PluginManager(BaseManager):
         output += "# Instead of editing this file, prefer to use the Plugin Configurator\n"
         output += "# Any formatting and comments will be lost\n\n"
         output += "enabled:\n"
-        for plugin_id in self._settings:
+        sort_criteria = lambda pid: ("A" if self.is_plugin_enabled(pid) else "B") + pid
+        for plugin_id in sorted(self._settings, key=sort_criteria):
             output += "   {}- {}\n".format(
                 " # " if plugin_id not in self._enabled_plugins else " ", plugin_id)
         output += "\n\n"
         output += "overrides:\n"
-        # TODO: Sort plugins based on enabled/disabled first
         for plugin_id, plugin_settings in sorted(iteritems(self._settings)):
             output += " " * 4 + plugin_id + ":\n"
             for setting_id, setting_handle in iteritems(plugin_settings):

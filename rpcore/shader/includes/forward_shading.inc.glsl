@@ -57,13 +57,14 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
 
     #else
         int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
-        vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb;
+        vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb * DEFAULT_ENVMAP_BRIGHTNESS;
     #endif
 
-    // shading_result += basecolor / M_PI;
-    shading_result += diff_env * basecolor / M_PI * 0.3;
-    // shading_result += basecolor / M_PI * 5.3;
 
+    shading_result += basecolor * (0.005 + diff_env) / M_PI;
+
+    // Fresnel term
+    shading_result += 0.16 * (0.005 + diff_env) / M_PI;
 
     // Emission
     if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {
@@ -143,7 +144,7 @@ vec3 get_forward_light_shading(vec3 basecolor) {
                 float radius = get_pointlight_radius(light_data);
                 float att = attenuation_curve(dot(l, l), radius);
                 float NxL = saturate(dot(vOutput.normal, l) / l_len);
-                shading_result += saturate(att) * NxL * ONE_BY_PI * (basecolor * light_color);
+                shading_result += saturate(att) * NxL * (basecolor * light_color);
                 break;
             }
 
@@ -155,7 +156,7 @@ vec3 get_forward_light_shading(vec3 basecolor) {
                 float att = get_spotlight_attenuation(l / l_len, direction,
                     fov, radius, dot(l, l), -1);
                 float NxL = saturate(dot(vOutput.normal, l) / l_len);
-                shading_result += saturate(att) * NxL * ONE_BY_PI * (basecolor * light_color);
+                shading_result += saturate(att) * NxL * (basecolor * light_color);
                 break;
             }
 

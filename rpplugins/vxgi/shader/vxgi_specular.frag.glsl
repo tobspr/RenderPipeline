@@ -61,5 +61,11 @@ void main() {
         true,
         m.roughness * 0.17);
 
-    result = vec4(specular.xyz, 1.0);
+    // specular *= 0.1;
+    // specular.xyz = pow(specular.xyz, vec3(2.2));
+    // specular.xyz *= 0.01;
+    // specular.xyz = specular.xyz / (1 - specular.xyz);
+    specular.xyz = max(vec3(0.0), specular.xyz);
+
+    result = specular;
 }

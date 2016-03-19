@@ -761,13 +761,13 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
 
     // Calculate color deltas:
     float4 delta;
-    float3 C = SMAASamplePoint(colorTex, texcoord).rgb;
+    float3 C = SMAA_GET_COLOR(SMAASamplePoint(colorTex, texcoord).rgb);
 
-    float3 Cleft = SMAASamplePoint(colorTex, offset[0].xy).rgb;
+    float3 Cleft = SMAA_GET_COLOR(SMAASamplePoint(colorTex, offset[0].xy).rgb);
     float3 t = abs(C - Cleft);
     delta.x = max(max(t.r, t.g), t.b);
 
-    float3 Ctop  = SMAASamplePoint(colorTex, offset[0].zw).rgb;
+    float3 Ctop  = SMAA_GET_COLOR(SMAASamplePoint(colorTex, offset[0].zw).rgb);
     t = abs(C - Ctop);
     delta.y = max(max(t.r, t.g), t.b);
 
@@ -779,11 +779,11 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
         discard;
 
     // Calculate right and bottom deltas:
-    float3 Cright = SMAASamplePoint(colorTex, offset[1].xy).rgb;
+    float3 Cright = SMAA_GET_COLOR(SMAASamplePoint(colorTex, offset[1].xy).rgb);
     t = abs(C - Cright);
     delta.z = max(max(t.r, t.g), t.b);
 
-    float3 Cbottom  = SMAASamplePoint(colorTex, offset[1].zw).rgb;
+    float3 Cbottom  = SMAA_GET_COLOR(SMAASamplePoint(colorTex, offset[1].zw).rgb);
     t = abs(C - Cbottom);
     delta.w = max(max(t.r, t.g), t.b);
 
@@ -791,11 +791,11 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
     float2 maxDelta = max(delta.xy, delta.zw);
 
     // Calculate left-left and top-top deltas:
-    float3 Cleftleft  = SMAASamplePoint(colorTex, offset[2].xy).rgb;
+    float3 Cleftleft  = SMAA_GET_COLOR(SMAASamplePoint(colorTex, offset[2].xy).rgb);
     t = abs(C - Cleftleft);
     delta.z = max(max(t.r, t.g), t.b);
 
-    float3 Ctoptop = SMAASamplePoint(colorTex, offset[2].zw).rgb;
+    float3 Ctoptop = SMAA_GET_COLOR(SMAASamplePoint(colorTex, offset[2].zw).rgb);
     t = abs(C - Ctoptop);
     delta.w = max(max(t.r, t.g), t.b);
 
@@ -1253,9 +1253,6 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
                                   float4 offset,
                                   SMAATexture2D(colorTex),
                                   SMAATexture2D(blendTex)
-                                  #if SMAA_REPROJECTION
-                                  , SMAATexture2D(velocityTex)
-                                  #endif
                                   ) {
     // Fetch the blending weights for current pixel:
     float4 a;
@@ -1266,15 +1263,7 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
     // Is there any blending weight with a value greater than 0.0?
     SMAA_BRANCH
     if (dot(a, float4(1.0, 1.0, 1.0, 1.0)) < 1e-5) {
-        float4 color = SMAASampleLevelZero(colorTex, texcoord);
-
-        #if SMAA_REPROJECTION
-        float2 velocity = SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, texcoord));
-
-        // Pack velocity into the alpha channel:
-        color.a = length(velocity);
-        #endif
-
+        float4 color = SMAA_GET_COLOR(SMAASampleLevelZero(colorTex, texcoord));
         return color;
     } else {
         bool h = max(a.x, a.z) > max(a.y, a.w); // max(horizontal) > max(vertical)
@@ -1291,55 +1280,10 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
 
         // We exploit bilinear filtering to mix current pixel with the chosen
         // neighbor:
-        float4 color = blendingWeight.x * SMAASampleLevelZero(colorTex, blendingCoord.xy);
-        color += blendingWeight.y * SMAASampleLevelZero(colorTex, blendingCoord.zw);
-
-        #if SMAA_REPROJECTION
-        // Antialias velocity for proper reprojection in a later stage:
-        float2 velocity = blendingWeight.x * SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, blendingCoord.xy));
-        velocity += blendingWeight.y * SMAA_DECODE_VELOCITY(SMAASampleLevelZero(velocityTex, blendingCoord.zw));
-
-        // Pack velocity into the alpha channel:
-        color.a = length(velocity);
-        #endif
-
+        float4 color = blendingWeight.x * SMAA_GET_COLOR(SMAASampleLevelZero(colorTex, blendingCoord.xy));
+        color += blendingWeight.y * SMAA_GET_COLOR(SMAASampleLevelZero(colorTex, blendingCoord.zw));
         return color;
     }
-}
-
-//-----------------------------------------------------------------------------
-// Temporal Resolve Pixel Shader (Optional Pass)
-
-float4 SMAAResolvePS(float2 texcoord,
-                     SMAATexture2D(currentColorTex),
-                     SMAATexture2D(previousColorTex)
-                     #if SMAA_REPROJECTION
-                     , SMAATexture2D(velocityTex)
-                     #endif
-                     ) {
-    #if SMAA_REPROJECTION
-    // Velocity is assumed to be calculated for motion blur, so we need to
-    // inverse it for reprojection:
-    float2 velocity = -SMAA_DECODE_VELOCITY(SMAASamplePoint(velocityTex, texcoord).rg);
-
-    // Fetch current pixel:
-    float4 current = SMAASamplePoint(currentColorTex, texcoord);
-
-    // Reproject current coordinates and fetch previous pixel:
-    float4 previous = SMAASamplePoint(previousColorTex, texcoord + velocity);
-
-    // Attenuate the previous pixel if the velocity is different:
-    float delta = abs(current.a * current.a - previous.a * previous.a) / 5.0;
-    float weight = 0.5 * saturate(1.0 - sqrt(delta) * SMAA_REPROJECTION_WEIGHT_SCALE);
-
-    // Blend the pixels according to the calculated weight:
-    return lerp(current, previous, weight);
-    #else
-    // Just blend the pixels:
-    float4 current = SMAASamplePoint(currentColorTex, texcoord);
-    float4 previous = SMAASamplePoint(previousColorTex, texcoord);
-    return lerp(current, previous, 0.5);
-    #endif
 }
 
 //-----------------------------------------------------------------------------

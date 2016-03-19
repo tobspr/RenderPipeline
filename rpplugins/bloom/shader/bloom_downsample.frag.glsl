@@ -32,8 +32,6 @@ uniform int SourceMip;
 uniform sampler2D SourceTex;
 uniform writeonly image2D RESTRICT DestTex;
 
-out vec3 color;
-
 void main() {
     ivec2 int_coord = ivec2(gl_FragCoord.xy);
     vec2 parent_tex_size = vec2(textureSize(SourceTex, SourceMip).xy);
@@ -66,10 +64,10 @@ void main() {
     vec3 sample_br = textureLod(SourceTex, flt_coord + vec2(  2,-2 ) * texel_size, SourceMip).xyz;
 
     vec3 kernel_sum_red    = sample_r_tl + sample_r_tr + sample_r_bl + sample_r_br;
-    vec3 kernel_sum_yellow = sample_tl + sample_t + sample_l + center_sample;
-    vec3 kernel_sum_green  = sample_tr + sample_t + sample_r + center_sample;
-    vec3 kernel_sum_purple = sample_bl + sample_b + sample_l + center_sample;
-    vec3 kernel_sum_blue   = sample_br + sample_b + sample_r + center_sample;
+    vec3 kernel_sum_yellow = sample_tl   + sample_t    + sample_l    + center_sample;
+    vec3 kernel_sum_green  = sample_tr   + sample_t    + sample_r    + center_sample;
+    vec3 kernel_sum_purple = sample_bl   + sample_b    + sample_l    + center_sample;
+    vec3 kernel_sum_blue   = sample_br   + sample_b    + sample_r    + center_sample;
 
     vec3 summed_kernel = kernel_sum_red * 0.5 +
                          kernel_sum_yellow * 0.125 +
@@ -85,5 +83,4 @@ void main() {
 
     // summed_kernel = vec3(1, 0, 0);
     imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(summed_kernel, 0));
-    color = vec3(summed_kernel);
 }

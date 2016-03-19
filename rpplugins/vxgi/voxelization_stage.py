@@ -38,7 +38,7 @@ class VoxelizationStage(RenderStage):
 
     """ This stage voxelizes the whole scene """
 
-    required_inputs = []
+    required_inputs = ["DefaultEnvmap", "AllLightsData", "maxLightIndex"]
     required_pipes = []
 
     # The different states of voxelization
@@ -51,14 +51,14 @@ class VoxelizationStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
         self.voxel_resolution = 256
-        self.voxel_world_size = 20.0
+        self.voxel_world_size = -1
         self.state = self.S_disabled
         self.create_ptas()
 
     def set_grid_position(self, pos):
         self.pta_next_grid_pos[0] = pos
 
-    def _create_ptas(self):
+    def create_ptas(self):
         self.pta_next_grid_pos = PTALVecBase3.empty_array(1)
         self.pta_grid_pos = PTALVecBase3.empty_array(1)
 
@@ -90,14 +90,14 @@ class VoxelizationStage(RenderStage):
 
         # Create the camera for voxelization
         self.voxel_cam = Camera("VoxelizeCam")
-        self.voxel_cam.set_camera_mask(self.pipeline.tag_mgr.get_voxelize_mask())
+        self.voxel_cam.set_camera_mask(self._pipeline.tag_mgr.get_voxelize_mask())
         self.voxel_cam_lens = OrthographicLens()
         self.voxel_cam_lens.set_film_size(
             -2.0 * self.voxel_world_size, 2.0 * self.voxel_world_size)
         self.voxel_cam_lens.set_near_far(0.0, 2.0 * self.voxel_world_size)
         self.voxel_cam.set_lens(self.voxel_cam_lens)
         self.voxel_cam_np = Globals.base.render.attach_new_node(self.voxel_cam)
-        self.pipeline.tag_mgr.register_voxelize_camera(self.voxel_cam)
+        self._pipeline.tag_mgr.register_voxelize_camera(self.voxel_cam)
 
         # Create the voxelization target
         self.voxel_target = self.create_target("VoxelizeScene")
@@ -111,7 +111,7 @@ class VoxelizationStage(RenderStage):
 
         # TODO! Does not work with the new render target yet - maybe add option
         # to post process region for instances?
-        self.copy_target.set_instance_count(self.voxel_resolution)
+        self.copy_target.instance_count = self.voxel_resolution
         self.copy_target.set_shader_input("SourceTex", self.voxel_temp_grid)
         self.copy_target.set_shader_input("DestTex", self.voxel_grid)
 
@@ -123,7 +123,7 @@ class VoxelizationStage(RenderStage):
             mip_target = self.create_target("GenMipmaps:" + str(mip))
             mip_target.size = mip_size
             mip_target.prepare_buffer()
-            mip_target.set_instance_count(mip_size)
+            mip_target.instance_count = mip_size
             mip_target.set_shader_input("SourceTex", self.voxel_grid)
             mip_target.set_shader_input("sourceMip", mip - 1)
             mip_target.set_shader_input("DestTex", self.voxel_grid,  False, True, -1, mip, 0)
@@ -141,16 +141,16 @@ class VoxelizationStage(RenderStage):
 
     def update(self):
         self.voxel_cam_np.show()
-        self.voxel_target.set_active(True)
-        self.copy_target.set_active(False)
+        self.voxel_target.active = True
+        self.copy_target.active = False
 
         for target in self.mip_targets:
-            target.set_active(False)
+            target.active = False
 
         # Voxelization disable
         if self.state == self.S_disabled:
             self.voxel_cam_np.hide()
-            self.voxel_target.set_active(False)
+            self.voxel_target.active = False
 
         # Voxelization from X-Axis
         elif self.state == self.S_voxelize_x:
@@ -174,12 +174,12 @@ class VoxelizationStage(RenderStage):
 
         # Generate mipmaps
         elif self.state == self.S_gen_mipmaps:
-            self.voxel_target.set_active(False)
-            self.copy_target.set_active(True)
+            self.voxel_target.active = False
+            self.copy_target.active = True
             self.voxel_cam_np.hide()
 
             for target in self.mip_targets:
-                target.set_active(True)
+                target.active = True
 
             # As soon as we generate the mipmaps, we need to update the grid position
             # as well

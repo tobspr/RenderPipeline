@@ -64,4 +64,5 @@ void main() {
 
     result_specular = vec4(ambient + lights + sun_lighting, 1);
     result_diffuse = vec4(ambient + lights + sun_lighting, 1);
+    result_diffuse.xyz *= ONE_BY_PI;
 }

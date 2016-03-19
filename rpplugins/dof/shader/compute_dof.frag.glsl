@@ -46,7 +46,7 @@ This code is code in progress and such not formatted very nicely nor commented!
 
 float intersect_circle(vec2 d, float radius) {
   float latt = saturate(length(d * vec2(1, 1)) / radius);
-  // latt *= latt;
+  latt = pow(latt, 10.0);
   latt = 1 - latt;
   return latt;
 
@@ -75,18 +75,21 @@ void main() {
 
   vec3 jitter = rand_rgb(texcoord);
 
-  const int num_ring_samples = 7;
+  const int num_ring_samples = 4;
   float max_length = length(max_radius * vec2(1, 1));
 
   int num_samples = 0;
 
+  vec3 scene_color = texture(ShadedScene, texcoord).xyz;
+
   float alpha = 0.0;
-  vec4 foreground = vec4(0);
-  vec4 background = vec4(0);
+  vec4 foreground = vec4(scene_color, 1) * 1e-4;
+  vec4 background = vec4(scene_color, 1) * 1e-4;
 
   for (int ring = 0; ring <= num_ring_samples; ++ring) {
     int n_samples = max(1, 8 * ring);
-    vec2 r = max_radius * ring / float(num_ring_samples) * tile_max_coc;
+    vec2 r = max_radius * ring / float(num_ring_samples) * (tile_max_coc);
+    // vec2 r = max_radius * ring / float(num_ring_samples);
 
     for (int i = 0; i < n_samples; ++i) {
       ++num_samples;
@@ -95,7 +98,7 @@ void main() {
       float y_offs = cos(phi);
 
       vec2 tcoord = texcoord + vec2(x_offs, y_offs) * r;
-      // tcoord += (jitter.xy*2-1) / SCREEN_SIZE * 0.5;
+      tcoord += (jitter.xy*2-1) * 0.06 * r;
 
       // XXX: Instead of manual clamping, use a near filtered texture
       tcoord = (ivec2(tcoord * SCREEN_SIZE) + 0.5) / SCREEN_SIZE;
@@ -106,12 +109,15 @@ void main() {
       float coc_weight = intersect_circle(r, sample_data.x * max_length);
       coc_weight *= 1.0 / max(1e-5, sample_data.x * sample_data.x);
       foreground += vec4(color_data, 1) * coc_weight;
+      // foreground += vec4(color_data, 1) * coc_weight * sample_data.y;
+      // background += vec4(color_data, 1) * coc_weight * sample_data.z;
     }
   }
 
-  foreground /= max(1e-5, foreground.w);
-  // background /= max(1e-5, background.w);
+  foreground.xyz /= max(1e-5, foreground.w);
+  // background.xyz /= max(1e-5, background.w);
 
-  result = vec4(foreground);
+  // result = mix(background, foreground, saturate(2 * foreground.w / num_samples));
+  result = foreground;
   result.w = mid_coc;
 }

@@ -246,7 +246,7 @@ vec3 get_reflection_vector(Material m, vec3 view_vector) {
 float get_specular_mipmap(float roughness) {
     // Approximation to match importance sampled reference, tuned for a
     // resolution of 128.
-    return roughness * 7.0 - pow(roughness, 6.0) * 1.5;
+    return max(0.01, roughness * 7.0 - pow(roughness, 6.0) * 1.5);
 }
 
 float get_specular_mipmap(Material m) {

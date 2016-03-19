@@ -119,9 +119,11 @@ void main() {
         // bias.
         const float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * 2;
         const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
+        const float fixed_bias = 0.0005;
         vec3 biased_pos = get_biased_position(m.position,
             slope_bias, normal_bias, m.normal, sun_vector);
         vec3 proj = project(PSSMDistSunShadowMapMVP, biased_pos);
+        proj.z -= fixed_bias;
 
         if (!out_of_unit_box(proj)) {
             const float esm_factor = 1.0;

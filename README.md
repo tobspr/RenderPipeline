@@ -9,7 +9,7 @@ Deferred Rendering Pipeline with Physically Based Shading for the <a href="http:
 
 - Physically Based Shading
 - Deferred Rendering
-- Advanced Post-Processing
+- Advanced Post-Processing Effects and Framework
 - Time of Day System
 - Plugin System
 

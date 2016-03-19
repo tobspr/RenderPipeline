@@ -111,7 +111,8 @@ class Debugger(BaseManager):
         self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
 
         self._fps_node = Globals.base.pixel2d.attach_new_node("FPSChart")
-        self._fps_node.set_pos(21, 1, -108)
+        self._fps_node.set_pos(Vec3(21, 1, -108) * scale_factor)
+        self._fps_node.set_scale(scale_factor)
         self._fps_widget = FPSChart(self._pipeline, self._fps_node)
 
         self._pixel_widget = PixelInspector(self._pipeline)

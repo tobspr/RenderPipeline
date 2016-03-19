@@ -39,50 +39,42 @@ class VXGIStage(RenderStage):
     @property
     def produced_pipes(self):
         return {
-            "VXGISpecular": self._target_spec["color"],
-            "VXGIDiffuse": self._target_upscale_diff["color"]
+            "VXGISpecular": self._target_spec.color_tex,
+            "VXGIDiffuse": self._target_upscale_diff.color_tex
         }
 
     def create(self):
         # Create a target for the specular GI
         self._target_spec = self.create_target("SpecularGI")
-        self._target_spec.add_color_attachment(bits=16)
-        self._target_spec.prepare_offscreen_buffer()
+        self._target_spec.add_color_attachment(bits=16, alpha=True)
+        self._target_spec.prepare_buffer()
 
         # Create a target for the diffuse GI
         self._target_diff = self.create_target("DiffuseGI")
-        self._target_diff.set_half_resolution()
+        self._target_diff.size = -2
         self._target_diff.add_color_attachment(bits=16)
-        self._target_diff.prepare_offscreen_buffer()
-        self._target_diff.quad.set_instance_count(4)
-
-        # Create the target which de-interleaves the diffuse target
-        self._target_merge_diff = self.create_target("MergeDiffuseGI")
-        self._target_merge_diff.set_half_resolution()
-        self._target_merge_diff.add_color_attachment(bits=16)
-        self._target_merge_diff.prepare_offscreen_buffer()
-        self._target_merge_diff.set_shader_input("SourceTex", self._target_diff["color"])
+        self._target_diff.prepare_buffer()
 
         # Create the target which blurs the diffuse result
         self._target_blur_v = self.create_target("BlurV")
-        self._target_blur_v.set_half_resolution()
+        self._target_blur_v.size = -2
         self._target_blur_v.add_color_attachment(bits=16)
         self._target_blur_v.has_color_alpha = True
-        self._target_blur_v.prepare_offscreen_buffer()
-        self._target_blur_v.set_shader_input("SourceTex", self._target_merge_diff["color"])
+        self._target_blur_v.prepare_buffer()
+        self._target_blur_v.set_shader_input("SourceTex", self._target_diff.color_tex)
 
         self._target_blur_h = self.create_target("BlurH")
-        self._target_blur_h.set_half_resolution()
+        self._target_blur_h.size = -2
         self._target_blur_h.add_color_attachment(bits=16)
         self._target_blur_h.has_color_alpha = True
-        self._target_blur_h.prepare_offscreen_buffer()
-        self._target_blur_h.set_shader_input("SourceTex", self._target_blur_v["color"])
+        self._target_blur_h.prepare_buffer()
+        self._target_blur_h.set_shader_input("SourceTex", self._target_blur_v.color_tex)
 
        # Create the target which bilateral upsamples the diffuse target
         self._target_upscale_diff = self.create_target("UpscaleDiffuse")
         self._target_upscale_diff.add_color_attachment(bits=16)
-        self._target_upscale_diff.prepare_offscreen_buffer()
-        self._target_upscale_diff.set_shader_input("SourceTex", self._target_blur_h["color"])
+        self._target_upscale_diff.prepare_buffer()
+        self._target_upscale_diff.set_shader_input("SourceTex", self._target_blur_h.color_tex)
         self._target_upscale_diff.set_shader_input("upscaleWeights", Vec2(0.0001, 0.001))
         self._target_upscale_diff.set_shader_input("useZAsWeight", False)
 
@@ -94,14 +86,9 @@ class VXGIStage(RenderStage):
         AmbientStage.required_pipes += ["VXGISpecular", "VXGIDiffuse"]
 
     def set_shaders(self):
-        self._target_spec.set_shader(
-            self.load_plugin_shader("vxgi_specular.frag.glsl"))
-        self._target_diff.set_shader(
-            self.load_plugin_shader("/$$rp/shader/sample_halfres_interleaved.vert.glsl","vxgi_diffuse.frag.glsl"))
-        self._target_merge_diff.set_shader(
-            self.load_plugin_shader("/$$rp/shader/merge_interleaved_target.frag.glsl"))
-        self._target_upscale_diff.set_shader(
-            self.load_plugin_shader("/$$rp/shader/bilateral_upscale.frag.glsl"))
+        self._target_spec.shader = self.load_plugin_shader("vxgi_specular.frag.glsl")
+        self._target_diff.shader =self.load_plugin_shader("vxgi_diffuse.frag.glsl")
+        self._target_upscale_diff.shader = self.load_plugin_shader("/$$rp/shader/bilateral_upscale.frag.glsl")
         blur_shader = self.load_plugin_shader("/$$rp/shader/bilateral_halfres_blur.frag.glsl")
-        self._target_blur_v.set_shader(blur_shader)
-        self._target_blur_h.set_shader(blur_shader)
+        self._target_blur_v.shader = blur_shader
+        self._target_blur_h.shader = blur_shader

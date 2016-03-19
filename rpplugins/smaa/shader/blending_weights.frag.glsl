@@ -33,9 +33,6 @@
 uniform sampler2D EdgeTex;
 uniform sampler2D AreaTex;
 uniform sampler2D SearchTex;
-
-uniform int jitterIndex;
-
 out vec4 result;
 
 void main() {
@@ -47,11 +44,16 @@ void main() {
     vec2 pixcoord;
     SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
 
+    // XXX: Find the right indices
     #if GET_SETTING(smaa, use_reprojection)
         vec4 subsampleIndices = MainSceneData.temporal_index == 1 ? vec4(1, 1, 1, 0) : vec4(2, 2, 2, 0);
     #else
         vec4 subsampleIndices = vec4(0);
     #endif
+
+    // subsampleIndices = vec4(0);
+
+        // subsampleIndices = vec4(2, 2, 2, 0);
 
     // Actual Fragment shader
     result = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, EdgeTex, AreaTex, SearchTex, subsampleIndices);

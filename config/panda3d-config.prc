@@ -169,3 +169,4 @@ screenshot-extension png
 
 # Required for correct velocity
 always-store-prev-transform #t
+allow-incomplete-render #t

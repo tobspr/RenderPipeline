@@ -43,7 +43,7 @@ void main() {
   float max_depth = 0;
   float max_coc = 0;
 
-  const int filter_size = 2;
+  const int filter_size = 1;
 
   for (int x = -filter_size; x <= filter_size; ++x) {
     for (int y = -filter_size; y <= filter_size; ++y) {

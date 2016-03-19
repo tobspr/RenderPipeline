@@ -37,6 +37,7 @@ http://www.chilliant.com/rgb2hsv.html
 
 */
 
+#pragma once
 
 // Define saturation macro, if not already user-defined
 #ifndef saturate

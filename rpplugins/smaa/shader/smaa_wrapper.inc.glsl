@@ -50,7 +50,15 @@
 // in the pixel shader.
 #define SMAA_INCLUDE_VS 1
 #define SMAA_INCLUDE_PS 1
-#define SMAA_DECODE_VELOCITY(sample) error, custom resolve pass
+#define SMAA_DECODE_VELOCITY(_sample) error, custom resolve pass
+
+vec3 SMAA_GET_COLOR(vec3 _color) {
+  return _color;
+}
+
+vec4 SMAA_GET_COLOR(vec4 _color) {
+  return _color;
+}
 
 // Optionally enable smaa predication
 // #define SMAA_PREDICATION 1

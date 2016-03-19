@@ -28,6 +28,7 @@
 
 #pragma include "includes/material.struct.glsl"
 #pragma include "includes/brdf.inc.glsl"
+#pragma include "includes/color_spaces.inc.glsl"
 
 // Global probe data
 uniform struct {
@@ -147,12 +148,13 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
         clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
 
     diffuse = textureLod(EnvProbes.diffuse_cubemaps, vec4(diffuse_direction, map.index), 0);
+    // diffuse.xyz /= TWO_PI;
+
+    // Optional: Correct specular based on diffuse color intensity
+    specular.xyz = mix(specular.xyz, specular.xyz * get_luminance(diffuse.xyz), diffuse.w);
 
     // Make sure small probes contribute much more than large ones
     clip_factor *= exp(-0.05 * map.bounding_sphere_radius);
-
-    // Optional: Correct specular based on diffuse color intensity
-    // specular.xyz = mix(specular.xyz, specular.xyz * diffuse.xyz, diffuse.w);
 
     // Apply clip factors
     specular *= clip_factor;

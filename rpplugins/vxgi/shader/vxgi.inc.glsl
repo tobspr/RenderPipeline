@@ -52,7 +52,10 @@ vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps, bool is
     float cone_radius = (1.0 + 5.0 * cone_grow_factor) / GET_SETTING(vxgi, grid_resolution);
 
     // Offset start position to avoid self intersection
-    start_pos += nrm * 4.0 / GET_SETTING(vxgi, grid_resolution);
+    start_pos += nrm * 1.5 / GET_SETTING(vxgi, grid_resolution);
+    if (!is_specular) {
+        // start_pos += nrm * 1.5 / GET_SETTING(vxgi, grid_resolution);
+    }
 
     // Cone parameters
     vec3 current_pos = start_pos;
@@ -72,12 +75,12 @@ vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps, bool is
 
     // Unpack packed color, since we use 8 bit targets only
     accum.xyz = accum.xyz / (1 - accum.xyz);
-    accum.xyz *= 15.0;
+    // accum.xyz *= 15.0;
 
     if (is_specular) {
-        accum.xyz += textureLod(ScatteringIBLSpecular, direction, mipmap).xyz * (1-accum.w);
+        // accum.xyz += textureLod(ScatteringIBLSpecular, direction, mipmap).xyz * (1-accum.w);
     } else {
-        accum.xyz += texture(ScatteringIBLDiffuse, direction).xyz * (1-accum.w) * 0.1;
+        // accum.xyz += texture(ScatteringIBLDiffuse, direction).xyz * (1-accum.w) * 0.1;
     }
 
     return accum;

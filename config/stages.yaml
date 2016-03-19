@@ -11,9 +11,9 @@ global_stage_order:
   - PSSMShadowStage
   - PSSMDistShadowStage
   - PSSMSceneShadowStage
-  - VoxelizationStage
   - ScatteringEnvmapStage
   - EnvironmentCaptureStage
+  - VoxelizationStage
 
   # Main scene
   - GBufferStage
@@ -41,15 +41,15 @@ global_stage_order:
   - GodrayStage
   - AutoExposureStage
   - ManualExposureStage
-  - DoFStage
-  - MotionBlurStage
-  - BloomStage
 
   # Post AA & Effects
+  - BloomStage
   - TonemappingStage
-  - SkinShadingStage
   - SMAAStage
   - FXAAStage
+  - DoFStage
+  - MotionBlurStage
+  - SkinShadingStage
   - SharpenStage
   - ColorCorrectionStage
 

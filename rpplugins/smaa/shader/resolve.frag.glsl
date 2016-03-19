@@ -104,7 +104,7 @@ void main() {
                         + length(clamp(last_bl, curr_min, curr_max) - last_bl)
                         + length(clamp(last_br, curr_min, curr_max) - last_br);
 
-    float max_difference = min(get_luminance(last_m), get_luminance(curr_m)) * 0.5; // TODO: Make this a setting
+    float max_difference = max(get_luminance(last_m), get_luminance(curr_m)) * 0.5; // TODO: Make this a setting
     if (neighbor_diff < max_difference)
         clip_length = 0.0;
 
