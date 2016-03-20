@@ -125,8 +125,8 @@ class MovementController(object):
         self.showbase.accept("shift-up", self.set_movement, [2, 0])
 
         # wireframe + debug + buffer viewer
-        self.showbase.accept("f3", self.showbase.toggleWireframe)
-        self.showbase.accept("f11", self.showbase.win.saveScreenshot)
+        self.showbase.accept("f3", self.showbase.toggle_wireframe)
+        self.showbase.accept("f11", lambda: self.showbase.win.save_screenshot("screenshot.png") )
         self.showbase.accept("j", self.print_position)
 
         # mouse

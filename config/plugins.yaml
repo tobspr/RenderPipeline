@@ -13,11 +13,11 @@ enabled:
     - pssm
     - scattering
     - smaa
-    - volumetrics
-    # - clouds
+    - sslr
     # - dof
+    # - volumetrics
+    # - clouds
     # - skin_shading
-    # - sslr
     # - vxgi
 
 

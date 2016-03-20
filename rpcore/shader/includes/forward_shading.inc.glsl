@@ -88,9 +88,9 @@ vec3 get_sun_shading(MaterialBaseInput mInput, vec3 basecolor) {
         #if HAVE_PLUGIN(pssm)
             vec3 biased_position = vOutput.position + vOutput.normal * 0.2;
 
-            const float slope_bias =  0.0 * 0.02;
+            const float slope_bias =  0.3 * 0.02;
             const float normal_bias = 0.0 * 0.005;
-            const float fixed_bias =  0.01 * 0.001;
+            const float fixed_bias =  0.5 * 0.001;
             vec3 biased_pos = get_biased_position(
                 vOutput.position, slope_bias, normal_bias, vOutput.normal, sun_vector);
 

@@ -43,8 +43,12 @@ const int num_steps = 64;
 const float hit_tolerance_ws = 0.00003;
 
 bool point_between_planes(float z, float z_a, float z_b) {
-    return z + hit_tolerance_ws >= min(z_a, z_b) - 0.0001 && z - hit_tolerance_ws <= max(z_a, z_b);
-    // return z - hit_tolerance_ws <= max(z_a, z_b);
+
+    // This traces correct, but looks weird because gaps are not filled
+    // return z + hit_tolerance_ws >= min(z_a, z_b) - 0.0001 && z - hit_tolerance_ws <= max(z_a, z_b);
+
+    // This traces "incorrect", but looks better because gaps are getting filled then
+    return z - hit_tolerance_ws <= max(z_a, z_b);
 }
 
 
@@ -125,8 +129,6 @@ void main()
             float depth_sample = textureLod(GBuffer.Depth, curr_coord, 0).x;
         #endif
 
-
-
         if (point_between_planes(depth_sample, ray_pos.z, ray_pos.z - ray_step.z)) {
             intersection = curr_coord;
             break;
@@ -147,11 +149,12 @@ void main()
         return;
     }
 
-    float fade = saturate(RxV) * (1 - (i / float(num_steps - 1)));
-
+    float fade = saturate(2.0 * RxV) * pow(1 - (i / float(num_steps - 1)), 0.5);
     if (fade < 1e-3) {
         intersection = vec2(0);
         fade = 0;
     }
+
     result = vec3(intersection, fade);
 }
+

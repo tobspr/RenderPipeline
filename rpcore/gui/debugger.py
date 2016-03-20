@@ -141,7 +141,7 @@ class Debugger(BaseManager):
         """ Analyzes the scene graph to provide useful information """
         self._analyzer.clear()
         for gn in Globals.base.render.find_all_matches("**/+GeomNode"):
-            self._analyzer.addNode(gn.node())
+            self._analyzer.add_node(gn.node())
         if task:
             return task.again
 
