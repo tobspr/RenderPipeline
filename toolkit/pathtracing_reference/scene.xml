@@ -1,5 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 
+<!--
+
+NOTE: Mitsuba uses a different coordinate system!
+Conversion is: Swap Y and Z and then negate X
+
+-->
 <scene version="0.5.0">
 	<integrator type="path">
 		<integer name="maxDepth" value="2"/>
@@ -8,22 +14,35 @@
 	<shape type="sphere">
 		<float name="radius" value="1"/>
 
-		<bsdf type="roughconductor">
-			<string name="material" value="Cu"/>
+		<bsdf type="roughplastic">
+			<!-- <string name="material" value="Cu"/> -->
 			<string name="distribution" value="ggx"/>
-			<float name="alpha" value="0.1"/>
+			<rgb name="diffuseReflectance" value="1,1,1" />
+			<float name="intIOR" value="1.51"/>
+			<float name="alpha" value="0.0025"/>
 		</bsdf>
 	</shape>
 
-	<sensor type="perspective">
-		<float name="farClip" value="12.4142"/>
-		<float name="focusDistance" value="3.41421"/>
-		<float name="fov" value="34.5159"/>
-		<string name="fovAxis" value="x"/>
-		<float name="nearClip" value="0.0241421"/>
-		<transform name="toWorld">
+	<emitter type="point">
+		<spectrum name="intensity" value="100.0" />
+		<point name="position" x="-10" z="-10" y="10" />
+	</emitter>
 
-			<lookat target="0, 0, -2.41421" origin="0, 0, -3.41421" up="0, 1, 0"/>
+	<emitter type="envmap">
+		<string name="filename" value="envmap.png" />
+		<float name="gamma" value="1.0" />
+
+	</emitter>
+
+	<sensor type="perspective">
+		<float name="farClip" value="15"/>
+		<float name="focusDistance" value="3.0"/>
+		<!-- <float name="fov" value="40"/> -->
+		<float name="fov" value="40"/>
+		<string name="fovAxis" value="x"/>
+		<float name="nearClip" value="0.05"/>
+		<transform name="toWorld">
+			<lookat target="0, 0, 0" origin="0, 0, -3.5" up="0, 1, 0"/>
 		</transform>
 
 		<sampler type="ldsampler">
@@ -34,7 +53,7 @@
 			<integer name="height" value="512"/>
 			<integer name="width" value="512"/>
 
-			<rfilter type="gaussian"/>
+			<rfilter type="box"/>
 		</film>
 	</sensor>
 </scene>
