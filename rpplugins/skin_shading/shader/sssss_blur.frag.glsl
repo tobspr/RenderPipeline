@@ -33,20 +33,22 @@
 
 #pragma include "SeperableSSS.inc.glsl"
 
-uniform sampler2D SourceTex;
+uniform sampler2D ShadedScene;
 uniform ivec2 direction;
 
 out vec3 color;
 
+// Performs the subsurface scattering blur
+
 void main() {
   vec2 texcoord = get_texcoord();
   int shading_model = get_gbuffer_shading_model(GBuffer, texcoord);
-  const float sssWidth = 0.002 * GET_SETTING(skin_shading, blur_scale);
-  float sssScale = shading_model == SHADING_MODEL_SKIN ? 1.0 : 0.0;
-  vec4 blur_result = SSSSBlurPS(texcoord, SourceTex, GBuffer.Depth, sssWidth, sssScale, direction);
+  const float sss_width = 0.002 * GET_SETTING(skin_shading, blur_scale);
+  float sss_scale = shading_model == SHADING_MODEL_SKIN ? 1.0 : 0.0;
+  vec4 blur_result = SSSSBlurPS(texcoord, ShadedScene, GBuffer.Depth, sss_width, sss_scale, direction);
   color = blur_result.xyz;
 
   #if DEBUG_MODE
-    color = texture(SourceTex, texcoord).xyz;
+    color = texture(ShadedScene, texcoord).xyz;
   #endif
 }

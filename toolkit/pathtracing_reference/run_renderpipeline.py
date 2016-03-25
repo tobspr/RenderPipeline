@@ -4,25 +4,30 @@ Renders the sphere using the render pipeline
 
 """
 
+import _tmp_material as material
+
 import sys
-from panda3d.core import load_prc_file_data
+from panda3d.core import load_prc_file_data, Vec4
 from direct.showbase.ShowBase import ShowBase
+
 
 class Application(ShowBase):
 
     def __init__(self):
         sys.path.insert(0, "../../")
         load_prc_file_data("", "win-size 512 512")
+        load_prc_file_data("", "textures-power-2 none")
+        load_prc_file_data("", "print-pipe-types #f")
         # load_prc_file_data("", "win-size 1024 1024")
 
         from rpcore import RenderPipeline, PointLight
 
         self.render_pipeline = RenderPipeline()
         self.render_pipeline.mount_mgr.config_dir = "config/"
+        self.render_pipeline.set_empty_loading_screen()
         self.render_pipeline.create(self)
 
-        sphere = loader.loadModel("sphere.bam")
-        sphere.ls()
+        sphere = loader.loadModel("res/sphere.bam")
         sphere.reparent_to(render)
 
         self.disableMouse()
@@ -38,14 +43,20 @@ class Application(ShowBase):
         light.pos = 10, -10, 10
         light.radius = 1e20
         light.color = (1, 1, 1)
-        light.lumens = 90
+        light.lumens = 500
+        self.render_pipeline.add_light(light)
+
+        light = PointLight()
+        light.pos = -10, -10, 10
+        light.radius = 1e20
+        light.color = (1, 1, 1)
+        light.lumens = 500
         self.render_pipeline.add_light(light)
 
         for mat in sphere.find_all_materials():
-            mat.roughness = 0.05
-            mat.base_color = (1, 1, 1, 1)
-            mat.refractive_index = 1.51
-            print(mat)
+            mat.roughness = material.roughness
+            mat.base_color = Vec4(*(list(material.diffuse) + [1]))
+            mat.refractive_index = material.ior
 
         for i in range(10):
             self.taskMgr.step()
@@ -57,9 +68,13 @@ class Application(ShowBase):
     def reload(self):
         print("Reloading")
         self.render_pipeline.reload_shaders()
-        self.taskMgr.step()
-        self.taskMgr.step()
+
+        for i in range(4):
+            self.taskMgr.step()
+
         self.win.save_screenshot("scene-rp.png")
 
-Application().run()
+# Application().run()
+Application()
+
 

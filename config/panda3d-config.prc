@@ -81,7 +81,6 @@ texture-quality-level fastest
 gl-cube-map-seamless #t
 
 # Set model cache dir
-model-cache-dir $USER_APPDATA/Panda3D-1.9/cache
 model-cache-textures #f
 
 # Disable the annoying SRGB warning from pnmimage

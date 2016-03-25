@@ -137,3 +137,23 @@ inline LVecBase4f ShadowAtlas::region_to_uv(const LVecBase4i& region) {
     LVecBase4f flt = LVecBase4f(region.get_x(), region.get_y(), region.get_z(), region.get_w());
     return flt * ((float)_tile_size / (float)_size);
 }
+
+/**
+ * @brief Returns the amount of used tiles
+ * @details Returns the amount of used tiles in the atlas
+ * @return Amount of used tiles
+ */
+inline int ShadowAtlas::get_num_used_tiles() const {
+    return _num_used_tiles;
+}
+
+/**
+ * @brief Returns the amount of used tiles in percentage
+ * @details This returns in percentage from 0 to 1 how much space of the atlas
+ *   is used right now. A value of 1 means the atlas is completely full, whereas
+ *   a value of 0 means the atlas is completely free.
+ * @return Atlas usage in percentage
+ */
+inline float ShadowAtlas::get_coverage() const {
+    return float(_num_used_tiles) / float(_num_tiles * _num_tiles);
+}

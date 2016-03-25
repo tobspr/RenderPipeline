@@ -54,6 +54,7 @@ ShadowAtlas::ShadowAtlas(size_t size, size_t tile_size) {
     nassertv(tile_size < size && size % tile_size == 0);
     _size = size;
     _tile_size = tile_size;
+    _num_used_tiles = 0;
     init_tiles();
 }
 
@@ -92,6 +93,8 @@ void ShadowAtlas::reserve_region(size_t x, size_t y, size_t w, size_t h) {
     // Check if we are out of bounds, this should be disabled for performance
     // reasons at some point.
     nassertv(x >= 0 && y >= 0 && x + w <= _num_tiles && y + h <= _num_tiles);
+
+    _num_used_tiles += w * h;
 
     // Iterate over every tile in the region and mark it as used
     for (size_t cx = 0; cx < w; ++cx) {
@@ -171,6 +174,8 @@ void ShadowAtlas::free_region(const LVecBase4i& region) {
     // Out of bounds check, can't hurt
     nassertv(region.get_x() >= 0 && region.get_y() >= 0);
     nassertv(region.get_x() + region.get_z() <= _num_tiles && region.get_y() + region.get_w() <= _num_tiles);
+
+    _num_used_tiles -= region.get_z() * region.get_w();
 
     for (size_t x = 0; x < region.get_z(); ++x) {
         for (size_t y = 0; y < region.get_w(); ++y) {

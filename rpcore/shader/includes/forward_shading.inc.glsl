@@ -61,14 +61,14 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
     #endif
 
 
-    shading_result += basecolor * (0.005 + diff_env) / M_PI;
+    shading_result += basecolor * (0.005 + diff_env) * 0.038;
 
     // Fresnel term
-    shading_result += 0.16 * (0.005 + diff_env) / M_PI;
+    shading_result += 0.16 * (0.005 + diff_env) / M_PI * 0;
 
     // Emission
     if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {
-        shading_result = basecolor * 10.0;
+        shading_result = basecolor * (0.005 + diff_env) * 300.0;
     }
 
     return shading_result;
@@ -148,7 +148,7 @@ vec3 get_forward_light_shading(vec3 basecolor) {
             }
 
             case LT_SPOT_LIGHT: {
-                float radius = get_spotlight_radius(light_data);
+                float radius    = get_spotlight_radius(light_data);
                 float fov       = get_spotlight_fov(light_data);
                 vec3 direction  = get_spotlight_direction(light_data);
 

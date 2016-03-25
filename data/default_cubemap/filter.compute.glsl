@@ -109,9 +109,7 @@ void main() {
 
         vec3 sampled = texture(SourceTex, l).rgb;
 
-        // GGX
-        float weight = brdf_distribution_ggx(NxH, roughness);
-        weight *= NxL;
+        float weight = 1;
         weight = clamp(weight, 0.0, 1.0);
         accum += vec4(sampled, 1) * weight;
     }

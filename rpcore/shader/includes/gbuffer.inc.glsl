@@ -79,14 +79,11 @@ uniform mat4 p3d_ProjectionMatrix;
 
         // Clamp properties like specular and metallic, which have to be in the
         // 0 ... 1 range
-        float specular = ior_to_specular(max(0.0, m.specular_ior));
+        float specular = clamp(m.specular_ior, 1.0001, 2.51);
         float metallic = saturate(m.metallic);
         float roughness = clamp(m.roughness, 0.005, 1.0);
 
         roughness = adjust_roughness(roughness, length(m.normal));
-
-        // Optional: Use squared roughness as proposed by Disney
-        roughness *= roughness;
 
         // Pack all values to the gbuffer
         gbuffer_out_0 = vec4(basecolor.r, basecolor.g, basecolor.b, roughness);
@@ -116,7 +113,8 @@ uniform mat4 p3d_ProjectionMatrix;
 
     // Checks whether the given material is the skybox
     bool is_skybox(vec3 pos, vec3 camera_pos) {
-        return distance(pos, camera_pos) > 20000.0;
+        // return distance(pos, camera_pos) > 20000.0;
+        return distance(pos, camera_pos) > 10.0; // xXX
     }
 
     bool is_skybox(Material m, vec3 camera_pos) {
@@ -178,12 +176,14 @@ uniform mat4 p3d_ProjectionMatrix;
         vec4 data2 = textureLod(data.Data2, fcoord, 0);
 
         Material m;
-        m.position  = get_gbuffer_position(data, fcoord);
-        m.basecolor = data0.xyz;
-        m.roughness = clamp(data0.w, 0.002, 1.0);
-        m.normal    = unpack_normal_octahedron(data1.xy);
-        m.metallic  = data1.z * 1.001 - 0.0005;
-        m.specular  = data1.w;
+        m.position      = get_gbuffer_position(data, fcoord);
+        m.basecolor     = data0.xyz;
+        m.linear_roughness = clamp(data0.w, 0.0001, 1.0);
+        m.roughness     = m.linear_roughness * m.linear_roughness;
+        m.normal        = unpack_normal_octahedron(data1.xy);
+        m.metallic      = data1.z * 1.001 - 0.0005;
+        m.specular_ior  = data1.w;
+        m.specular      = ior_to_specular(data1.w);
         m.shading_model = int(data2.z);
         m.shading_model_param0 = data2.w;
 

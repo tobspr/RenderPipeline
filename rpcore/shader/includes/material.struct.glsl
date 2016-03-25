@@ -88,7 +88,9 @@ struct Material {
     vec3 position;
     float roughness;
     float specular;
+    float specular_ior;
     float metallic;
     float shading_model_param0;
+    float linear_roughness;
 };
 

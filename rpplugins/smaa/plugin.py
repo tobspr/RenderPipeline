@@ -73,8 +73,8 @@ class Plugin(BasePlugin):
         for x, y in ((-0.25, 0.25), (0.25, -0.25)):
             # The get_x_size() for both dimensions is not an error! Its due to
             # how the OrtographicLens works internally.
-            jitter_x = (x * 2 - 1) * scale * 0.5
-            jitter_y = (y * 2 - 1) * scale * 0.5
+            jitter_x = (x * 2 - 1) * scale * 0.125
+            jitter_y = (y * 2 - 1) * scale * 0.125
             self._jitters.append((jitter_x, jitter_y))
 
     @property

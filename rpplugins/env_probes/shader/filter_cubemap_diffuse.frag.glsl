@@ -57,19 +57,16 @@ void main() {
 
     const int num_samples = 256;
     vec4 accum = vec4(0.0);
-    float accum_weights = 0.0;
     for (uint i = 0; i < num_samples; ++i) {
         vec2 Xi = hammersley(i, num_samples);
-        vec3 h = importance_sample_ggx(Xi, 1);
+        vec3 h = importance_sample_lambert(Xi);
         h = normalize(h.x * tangent + h.y * binormal + h.z * n);
 
         // Reconstruct light vector
         vec3 l = -reflect(n, h);
-        float weight = max(0, dot(n, l));
-        accum += textureLod(SourceTex, l, 0) * weight;
-        accum_weights += weight;
+        accum += textureLod(SourceTex, l, 0);
     }
-    accum /= max(0.01, accum_weights);
+    accum /= num_samples;
     imageStore(DestTex, ivec3(clamped_coord, currentIndex * 6 + face), accum);
     result = accum;
 }

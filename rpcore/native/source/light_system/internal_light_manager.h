@@ -52,26 +52,38 @@ class InternalLightManager {
     PUBLISHED:
         InternalLightManager();
 
+
         void add_light(PT(RPLight) light);
         void remove_light(PT(RPLight) light);
 
         void update();
+        inline void set_camera_pos(const LPoint3f& pos);
+        inline void set_shadow_update_distance(float dist);
 
         inline int get_max_light_index() const;
+        MAKE_PROPERTY(max_light_index, get_max_light_index);
+
         inline size_t get_num_lights() const;
+        MAKE_PROPERTY(num_lights, get_num_lights);
+
         inline size_t get_num_shadow_sources() const;
+        MAKE_PROPERTY(num_shadow_sources, get_num_shadow_sources);
+
+        inline void set_shadow_manager(ShadowManager* mgr);
+        inline ShadowManager* get_shadow_manager() const;
+        MAKE_PROPERTY(shadow_manager, get_shadow_manager, set_shadow_manager);
 
         inline void set_command_list(GPUCommandList *cmd_list);
-        inline void set_shadow_manager(ShadowManager* mgr);
 
     protected:
-
-        void setup_shadows(RPLight* light);
 
         void gpu_update_light(RPLight* light);
         void gpu_update_source(ShadowSource* source);
         void gpu_remove_light(RPLight* light);
         void gpu_remove_consecutive_sources(ShadowSource *first_source, size_t num_sources);
+
+        void setup_shadows(RPLight* light);
+        bool compare_shadow_sources(const ShadowSource* a, const ShadowSource* b) const;
 
         void update_lights();
         void update_shadow_sources();
@@ -81,6 +93,9 @@ class InternalLightManager {
 
         PointerSlotStorage<RPLight*, MAX_LIGHT_COUNT> _lights;
         PointerSlotStorage<ShadowSource*, MAX_SHADOW_SOURCES> _shadow_sources;
+
+        LPoint3f _camera_pos;
+        float _shadow_update_distance;
 
 };
 

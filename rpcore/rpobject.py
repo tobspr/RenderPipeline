@@ -53,8 +53,8 @@ class RPObject(object):
         """ Sets the output level, messages with a level below will not be
         printed. E.g. if you set the output level to "error", only error and
         fatal messages will be shown.  """
-        assert level in cls._OUTPUT_LEVELS
-        cls._OUTPUT_LEVEL = cls._OUTPUT_LEVELS.index(level)
+        assert level in RPObject._OUTPUT_LEVELS
+        RPObject._OUTPUT_LEVEL = RPObject._OUTPUT_LEVELS.index(level)
 
     @staticmethod
     def global_debug(context, *args):

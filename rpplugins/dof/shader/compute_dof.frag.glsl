@@ -101,7 +101,7 @@ void main() {
       tcoord += (jitter.xy*2-1) * 0.06 * r;
 
       // XXX: Instead of manual clamping, use a near filtered texture
-      tcoord = (ivec2(tcoord * SCREEN_SIZE) + 0.5) / SCREEN_SIZE;
+      tcoord = truncate_coordinate(tcoord);
 
       vec3 sample_data = texture(PresortResult, tcoord).xyz;
       vec3 color_data = texture(PrecomputedCoC, tcoord).xyz;

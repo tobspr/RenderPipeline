@@ -95,7 +95,7 @@ vec4 bicubic_filter(sampler2D tex, vec2 uv)
 vec4 bilinear_filter(sampler2D tex, vec2 uv) {
   vec2 pixel_size = 1.0 / textureSize(tex, 0).xy;
   vec4 color = vec4(0);
-  float radius = 0.5;
+  float radius = 2;
   color += texture(tex, uv + vec2(-radius,  radius) * pixel_size);
   color += texture(tex, uv + vec2( radius,  radius) * pixel_size);
   color += texture(tex, uv + vec2(-radius, -radius) * pixel_size);

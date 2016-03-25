@@ -46,11 +46,14 @@ vec3 importance_sample_ggx(vec2 Xi, float roughness)
   return h;
 }
 
-vec3 importance_sample_lambert(vec2 xi, vec3 n)
+vec3 importance_sample_lambert(vec2 Xi)
 {
-  float phi = TWO_PI * xi.x;
-  float theta = M_PI * xi.y;
-
-  return spherical_to_vector(theta, phi);
+    float phi = TWO_PI * Xi.x;
+    float cos_theta = sqrt(Xi.y);
+    float sin_theta = sqrt(1 - cos_theta * cos_theta);
+    vec3 H;
+    H.x = sin_theta * cos(phi);
+    H.y = sin_theta * sin(phi);
+    H.z = cos_theta;
+    return vec3(H);
 }
-

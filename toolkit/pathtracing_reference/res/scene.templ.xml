@@ -17,19 +17,27 @@ Conversion is: Swap Y and Z and then negate X
 		<bsdf type="roughplastic">
 			<!-- <string name="material" value="Cu"/> -->
 			<string name="distribution" value="ggx"/>
-			<rgb name="diffuseReflectance" value="1,1,1" />
-			<float name="intIOR" value="1.51"/>
-			<float name="alpha" value="0.0025"/>
+			<!-- <rgb name="diffuseReflectance" value="1,1,1" /> -->
+			<rgb name="diffuseReflectance" value="%DIFFUSE%" />
+			<float name="intIOR" value="%IOR%"/>
+			<float name="alpha" value="%ALPHA%"/>
 		</bsdf>
 	</shape>
 
+
 	<emitter type="point">
-		<spectrum name="intensity" value="100.0" />
+		<spectrum name="intensity" value="500.0" />
 		<point name="position" x="-10" z="-10" y="10" />
 	</emitter>
 
+	<emitter type="point">
+		<spectrum name="intensity" value="500.0" />
+		<point name="position" x="10" z="-10" y="10" />
+	</emitter>
+
 	<emitter type="envmap">
-		<string name="filename" value="envmap.png" />
+		<string name="filename" value="tex/envmap.png" />
+		<!-- <string name="filename" value="tex/white.png" /> -->
 		<float name="gamma" value="1.0" />
 
 	</emitter>
@@ -46,10 +54,12 @@ Conversion is: Swap Y and Z and then negate X
 		</transform>
 
 		<sampler type="ldsampler">
-			<integer name="sampleCount" value="128"/>
+			<integer name="sampleCount" value="64"/>
 		</sampler>
 
 		<film type="hdrfilm">
+			<boolean name="banner" value="false"/>
+
 			<integer name="height" value="512"/>
 			<integer name="width" value="512"/>
 

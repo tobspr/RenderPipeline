@@ -39,6 +39,7 @@ NotifyCategoryDef(lightmgr, "");
  *   InternalLightManager::update. s
  */
 InternalLightManager::InternalLightManager() {
+    _shadow_update_distance = 100.0f;
     _cmd_list = NULL;
     _shadow_manager = NULL;
 }
@@ -196,6 +197,7 @@ void InternalLightManager::remove_light(PT(RPLight) light) {
             }
             if (source->has_region()) {
                 _shadow_manager->get_atlas()->free_region(source->get_region());
+                source->clear_region();
             }
         }
 
@@ -325,11 +327,22 @@ void InternalLightManager::update_lights() {
  *
  * @return true if a is more important than b, else false
  */
-bool compare_shadow_sources(const ShadowSource* a, const ShadowSource* b){
+bool InternalLightManager::compare_shadow_sources(const ShadowSource* a, const ShadowSource* b) const {
+
+    // Make sure that sources which already have a region (but maybe outdated)
+    // come after sources which have no region at all.
     if (a->has_region() != b->has_region()) {
         return b->has_region();
     }
-    return a->get_resolution() > b->get_resolution();
+
+    // Compare sources based on their distance to the camera
+    float dist_a = (_camera_pos - a->get_bounds().get_center()).length_squared();
+    float dist_b = (_camera_pos - a->get_bounds().get_center()).length_squared();
+
+    // XXX: Should also compare based on source size, so that huge sources recieve
+    // more updates
+
+    return dist_b > dist_a;
 }
 
 /**
@@ -345,16 +358,35 @@ void InternalLightManager::update_shadow_sources() {
     vector<ShadowSource*> sources_to_update;
      for (auto iter = _shadow_sources.begin(); iter != _shadow_sources.end(); ++iter) {
         ShadowSource* source = *iter;
-        if (source && source->get_needs_update()) {
-            sources_to_update.push_back(source);
+        if (source) {
+            const BoundingSphere& bounds = source->get_bounds();
+
+            // Check if source is in range
+            float distance_to_camera = (_camera_pos - bounds.get_center()).length() - bounds.get_radius();
+            if (distance_to_camera < _shadow_update_distance) {
+                if (source->get_needs_update()) {
+                    sources_to_update.push_back(source);
+                }
+            } else {
+
+                // Free regions of sources which are out of the update radius,
+                // to make space for other regions
+                if (source->has_region()) {
+                    _shadow_manager->get_atlas()->free_region(source->get_region());
+                    source->clear_region();
+                }
+            }
         }
+
     }
 
-    // Sort the sources based on their resolution, so that sources with a bigger
-    // resolution come first. This helps to get a better packing on the shadow atlas.
+    // Sort the sources based on their importance, so that sources with a bigger
+    // priority come first. This helps to get a better packing on the shadow atlas.
     // However, we also need to prioritize sources which have no current region,
     // because no shadows are worse than outdated-shadows.
-    std::sort(sources_to_update.begin(), sources_to_update.end(), compare_shadow_sources);
+    std::sort(sources_to_update.begin(), sources_to_update.end(), [this](const ShadowSource* a, const ShadowSource* b) {
+        return this->compare_shadow_sources(a, b);
+    });
 
     // Get a handle to the atlas, will be frequently used
     ShadowAtlas *atlas = _shadow_manager->get_atlas();

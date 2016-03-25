@@ -151,7 +151,7 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
     // diffuse.xyz /= TWO_PI;
 
     // Optional: Correct specular based on diffuse color intensity
-    specular.xyz = mix(specular.xyz, specular.xyz * get_luminance(diffuse.xyz), diffuse.w);
+    // specular.xyz = mix(specular.xyz, specular.xyz * get_luminance(diffuse.xyz), diffuse.w);
 
     // Make sure small probes contribute much more than large ones
     clip_factor *= exp(-0.05 * map.bounding_sphere_radius);

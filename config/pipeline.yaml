@@ -20,6 +20,7 @@ pipeline:
     # whereas a value of 0.5 would render at half resolution.
     resolution_scale: 1.0
 
+
 # This are the settings affecting the lighting part of the pipeline,
 # including builtin shadows and lights.
 lighting:
@@ -68,3 +69,7 @@ shadows:
     # quite a bit, since for every shadow map a part of the scene has
     # to get re-rendered.
     max_updates: 4
+
+    # Sets the maximum distance until which shadows are updated. If a shadow
+    # source is further away, it will no longer recieve updates
+    max_update_distance: 150.0

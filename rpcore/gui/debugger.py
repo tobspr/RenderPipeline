@@ -191,12 +191,13 @@ class Debugger(BaseManager):
             clock.get_max_frame_duration() * 1000.0)
 
         text = "{:4d} render states  |  {:4d} transforms"
-        text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources"
+        text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources  |  {:3.1f}% atlas usage"
         self._debug_lines[1].text = text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
             self._pipeline.light_mgr.cmd_queue.num_processed_commands,
             self._pipeline.light_mgr.num_lights,
-            self._pipeline.light_mgr.num_shadow_sources)
+            self._pipeline.light_mgr.num_shadow_sources,
+            self._pipeline.light_mgr.shadow_atlas_coverage)
 
         text = "Pipeline:   {:3.0f} MiB VRAM  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins"

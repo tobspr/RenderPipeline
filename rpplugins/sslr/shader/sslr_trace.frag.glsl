@@ -32,6 +32,7 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
+#pragma include "includes/importance_sampling.inc.glsl"
 
 uniform sampler2D DownscaledDepth;
 
@@ -40,29 +41,36 @@ out vec3 result;
 #define USE_LINEAR_DEPTH 0
 
 const int num_steps = 64;
-const float hit_tolerance_ws = 0.00003;
+const float hit_tolerance_ws = 0.0;
 
-bool point_between_planes(float z, float z_a, float z_b) {
+bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
 
     // This traces correct, but looks weird because gaps are not filled
-    // return z + hit_tolerance_ws >= min(z_a, z_b) - 0.0001 && z - hit_tolerance_ws <= max(z_a, z_b);
+    // return z + hit_tolerance_ws >= min(z_a, z_b) - 0.00015 && z - hit_tolerance_ws <= max(z_a, z_b);
 
     // This traces "incorrect", but looks better because gaps are getting filled then
-    return z - hit_tolerance_ws <= max(z_a, z_b);
+    if (z - hit_tolerance_ws <= max(z_a, z_b)) {
+        hit_factor = z + hit_tolerance_ws >= min(z_a, z_b) - 0.00001;
+        return true;
+    }
+
+    return false;
 }
 
 
 void main()
 {
     vec2 texcoord = get_half_texcoord();
+    // vec2 texcoord = get_texcoord();
 
     // TODO: Using the real normal provides *way* worse coherency
-    // vec3 normal_vs = get_view_normal(texcoord);
-    vec3 normal_vs = get_view_normal_approx(texcoord);
+    vec3 normal_vs = get_view_normal(texcoord);
+    // vec3 normal_vs = get_view_normal_approx(texcoord);
 
+    Material m = unpack_material(GBuffer, texcoord);
 
     vec3 ray_start_vs = get_view_pos_at(texcoord);
-    float pixeldist = texture(DownscaledDepth, texcoord).x;
+    float pixeldist = distance(m.position, MainSceneData.camera_pos);
 
     // Skip skybox
     if (pixeldist > 1000) {
@@ -73,6 +81,26 @@ void main()
     // Get ray start
     vec3 view_dir = normalize(ray_start_vs);
     vec3 ray_dir = normalize(reflect(view_dir, normal_vs));
+
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    int seed = (coord.x * 2 + coord.y) % 4;
+    // vec2 xi = hammersley(seed, 4);
+    vec2 xi = abs(rand_rgb(texcoord + MainSceneData.temporal_index).xy);
+
+    // XXX: Use actual roughness
+    vec3 rho = importance_sample_ggx(xi, 0.1);
+
+    // Get tangent and binormal
+    vec3 tangent, binormal;
+    find_arbitrary_tangent(ray_dir, tangent, binormal);
+    ray_dir = normalize(rho.x * tangent + rho.y * binormal + rho.z * ray_dir);
+
+    if (dot(ray_dir, normal_vs) < 0.0) {
+        result = vec3(0.1, 0, 0);
+        return;
+    }
+
+
     float RxV = dot(ray_dir, view_dir);
     float max_ray_len = 10.0 * pixeldist;
 
@@ -82,10 +110,12 @@ void main()
                         max_ray_len;
     // ray_len = max_ray_len;
 
+
     // Convert start and end pos from view to screen space
     vec3 ray_start_screen = view_to_screen(ray_start_vs);
     vec3 ray_end_screen = view_to_screen(ray_start_vs + ray_len * ray_dir);
 
+    vec3 ray_pos = ray_start_screen;
     vec3 ray_dir_screen = ray_end_screen - ray_start_screen;
 
     // Make sure the ray does not leave the screen
@@ -96,7 +126,6 @@ void main()
     ray_dir_screen *= min(scale_max_x, scale_max_y);
     ray_dir_screen *= min(scale_min_x, scale_min_y);
 
-    ray_end_screen = ray_start_screen + ray_dir_screen;
 
     // Linearize depth so we can interpolate it
     #if USE_LINEAR_DEPTH
@@ -104,17 +133,20 @@ void main()
         ray_end_screen.z = get_linear_z_from_z(ray_end_screen.z);
     #endif
 
-    vec3 ray_pos = ray_start_screen;
     vec3 ray_step = (ray_end_screen - ray_start_screen) / num_steps;
-    ray_pos += 15 * ray_step * float(num_steps) / 512.0;
+    ray_pos += 5 * ray_step * float(num_steps) / 512.0 * pow(1 - saturate(dot(normal_vs, -view_dir)), 12.0);
 
     vec2 intersection = vec2(-1);
 
-    float jitter = rand(texcoord + MainSceneData.temporal_index);
-    // jitter *= 0;
+    // float jitter = rand(texcoord + MainSceneData.temporal_index);
+    float jitter = rand(ivec2(gl_FragCoord.xy) % 3223);
+    // jitter *= 0.0;
+    // jitter *= 5.0;
     ray_pos += jitter * ray_step;
 
     int i;
+    float intersection_weight = 0.0;
+    bool hit_factor;
     for (i = 1; i < num_steps; ++i) {
         ray_pos += ray_step;
 
@@ -129,11 +161,13 @@ void main()
             float depth_sample = textureLod(GBuffer.Depth, curr_coord, 0).x;
         #endif
 
-        if (point_between_planes(depth_sample, ray_pos.z, ray_pos.z - ray_step.z)) {
+        if (point_between_planes(depth_sample, ray_pos.z, ray_pos.z - ray_step.z, hit_factor)) {
             intersection = curr_coord;
             break;
         }
     }
+
+    intersection = truncate_coordinate(intersection);
 
     // Check if we hit something
     if (min(intersection.x, intersection.y) < 0.0) {
@@ -149,11 +183,19 @@ void main()
         return;
     }
 
-    float fade = saturate(2.0 * RxV) * pow(1 - (i / float(num_steps - 1)), 0.5);
-    if (fade < 1e-3) {
-        intersection = vec2(0);
-        fade = 0;
+    // float fade = saturate(2.0 * RxV) * pow(1 - (i / float(num_steps - 1)), 1);
+    float fade = pow(1 - (i / float(num_steps - 1)), 1);
+    if (fade < 1e-3 || !hit_factor) {
+        result = vec3(0);
+        return;
     }
+
+    float depth_at_intersection = textureLod(GBuffer.Depth, intersection.xy, 0).x;
+    if (get_linear_z_from_z(depth_at_intersection) > 3000.0) {
+        result = vec3(0);
+        return;
+    }
+
 
     result = vec3(intersection, fade);
 }

@@ -121,14 +121,15 @@ class CommonResources(BaseManager):
 
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
-        brdf_tex = Globals.loader.load_texture(
-            "/$$rp/data/environment_brdf/prefiltered_environment_brdf.png")
+        brdf_tex = Globals.loader.load_3d_texture(
+            "/$$rp/data/environment_brdf/slices/env_brdf_#.png")
         brdf_tex.set_minfilter(SamplerState.FT_linear)
         brdf_tex.set_magfilter(SamplerState.FT_linear)
         brdf_tex.set_wrap_u(SamplerState.WM_clamp)
         brdf_tex.set_wrap_v(SamplerState.WM_clamp)
+        brdf_tex.set_wrap_w(SamplerState.WM_clamp)
         brdf_tex.set_anisotropic_degree(0)
-        brdf_tex.set_format(Texture.F_rgba16)
+        # brdf_tex.set_format(Texture.F_rgba16)
         self._pipeline.stage_mgr.add_input("PrefilteredBRDF", brdf_tex)
 
     def _load_precomputed_grain(self):

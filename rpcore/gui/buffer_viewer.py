@@ -206,6 +206,9 @@ class BufferViewer(DraggableWindow):
             else:
                 r, g, b = rgb_from_string(stage_name)
 
+            stage_name = stage_name.replace("render_pipeline_internal:", "")
+            
+
             DirectFrame(
                 parent=node, frameSize=(7, entry_width - 17, -7, -entry_height + 17),
                 frameColor=(r, g, b, 1.0), pos=(0, 0, 0))

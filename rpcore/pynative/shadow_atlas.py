@@ -34,6 +34,7 @@ class ShadowAtlas(object):
     def __init__(self, size, tile_size=32):
         self._size = size
         self._tile_size = tile_size
+        self._num_used_tiles = 0
         self.init_tiles()
 
     def init_tiles(self):
@@ -41,7 +42,18 @@ class ShadowAtlas(object):
         self._flags = [[False for j in range(self._num_tiles)] \
             for i in range(self._num_tiles)]
 
+    def get_num_used_tiles(self):
+        return self._num_used_tiles
+
+    num_used_tiles = property(get_num_used_tiles)
+
+    def get_coverage(self):
+        return self._num_used_tiles / float(self._num_tiles ** 2)
+
+    coverage = property(get_coverage)
+
     def reserve_region(self, x, y, w, h):
+        self._num_used_tiles += w * h
         for x_offset in range(w):
             for y_offset in range(h):
                 self._flags[x + x_offset][y + y_offset] = True
@@ -56,6 +68,7 @@ class ShadowAtlas(object):
         return LVecBase4i(-1)
 
     def free_region(self, region):
+        self._num_used_tiles -= region.z * region.w
         for x in range(region.z):
             for y in range(region.w):
                 self._flags[region.x + x][region.y + y] = False

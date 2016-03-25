@@ -28,6 +28,7 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
+#pragma include "includes/color_spaces.inc.glsl"
 
 uniform sampler2D ShadedScene;
 out vec4 result;
@@ -40,7 +41,7 @@ void main() {
 
     #if !DEBUG_MODE && !HAVE_PLUGIN(color_correction)
         // Do a simple sRGB correction
-        scene_color = sqrt(scene_color);
+        scene_color = rgb_to_srgb(scene_color);
     #endif
 
     // Apply dithering to prevent banding, since we are converting from 16 bit

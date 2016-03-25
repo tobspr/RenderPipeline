@@ -44,6 +44,12 @@ PUBLISHED:
     ShadowAtlas(size_t size, size_t tile_size = 32);
     ~ShadowAtlas();
 
+    inline int get_num_used_tiles() const;
+    inline float get_coverage() const;
+
+    MAKE_PROPERTY(num_used_tiles, get_num_used_tiles);
+    MAKE_PROPERTY(coverage, get_coverage);
+
 public:
 
     LVecBase4i find_and_reserve_region(size_t tile_width, size_t tile_height);
@@ -52,6 +58,7 @@ public:
 
     inline int get_tile_size() const;
     inline int get_required_tiles(size_t resolution) const;
+
 protected:
 
     void init_tiles();
@@ -65,6 +72,7 @@ protected:
     size_t _size;
     size_t _num_tiles;
     size_t _tile_size;
+    size_t _num_used_tiles;
     bool* _flags;
 };
 

@@ -50,14 +50,14 @@ class AOStage(RenderStage):
         self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
         self.target_upscale.set_shader_input("useZAsWeight", False)
 
-        self.target_small_scale = self.create_target("SmallScaleAO")
-        self.target_small_scale.add_color_attachment(bits=(8, 0, 0, 0))
-        self.target_small_scale.prepare_buffer()
-        self.target_small_scale.set_shader_input("AOResult", self.target_upscale.color_tex)
+        self.tarrget_detail_ao = self.create_target("DetailAO")
+        self.tarrget_detail_ao.add_color_attachment(bits=(8, 0, 0, 0))
+        self.tarrget_detail_ao.prepare_buffer()
+        self.tarrget_detail_ao.set_shader_input("AOResult", self.target_upscale.color_tex)
 
         self.blur_targets = []
 
-        current_tex = self.target_small_scale.color_tex
+        current_tex = self.tarrget_detail_ao.color_tex
 
         for i in range(1):
             target_blur_v = self.create_target("BlurV-" + str(i))
@@ -85,4 +85,4 @@ class AOStage(RenderStage):
             "/$$rp/shader/bilateral_blur.frag.glsl")
         for target in self.blur_targets:
             target.shader = blur_shader
-        self.target_small_scale.shader = self.load_plugin_shader("small_scale_ao.frag.glsl")
+        self.tarrget_detail_ao.shader = self.load_plugin_shader("small_scale_ao.frag.glsl")

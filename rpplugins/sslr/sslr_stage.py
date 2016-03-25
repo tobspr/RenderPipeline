@@ -42,6 +42,7 @@ class SSLRStage(RenderStage):
     @property
     def produced_pipes(self):
         return {"SSLRSpecular": self.target_upscale.color_tex}
+        # return {"SSLRSpecular": self.target.color_tex}
 
     def create(self):
         x_size, y_size = Globals.resolution.x, Globals.resolution.y
@@ -72,16 +73,9 @@ class SSLRStage(RenderStage):
             target_blur.set_shader_input("DestTex", self.mipchain, False, True, -1, i + 1)
             self.blur_targets.append(target_blur)
 
-        self.target_filter = self.create_target("TraceCone")
-        self.target_filter.size = -2
-        self.target_filter.add_color_attachment(bits=16, alpha=True)
-        self.target_filter.prepare_buffer()
-        self.target_filter.set_shader_input("MipChain", self.mipchain)
-        self.target_filter.set_shader_input("TraceResult", self.target.color_tex)
-
         self.noise_reduce_targets = []
-        curr_tex = self.target_filter.color_tex
-        for i in range(1):
+        curr_tex = self.target.color_tex
+        for i in range(0):
             target_remove_noise = self.create_target("RemoveNoise")
             target_remove_noise.size = -2
             target_remove_noise.add_color_attachment(bits=16, alpha=True)
@@ -104,17 +98,13 @@ class SSLRStage(RenderStage):
         self.target_upscale.add_color_attachment(bits=16, alpha=True)
         self.target_upscale.prepare_buffer()
         self.target_upscale.set_shader_input("SourceTex", curr_tex)
-        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
-        self.target_upscale.set_shader_input("useZAsWeight", True)
-
+        self.target_upscale.set_shader_input("MipChain", self.mipchain)
         AmbientStage.required_pipes.append("SSLRSpecular")
 
     def set_shaders(self):
         self.target.shader = self.load_plugin_shader("sslr_trace.frag.glsl")
-        self.target_filter.shader = self.load_plugin_shader("filter_cone.frag.glsl")
         self.target_copy_lighting.shader = self.load_plugin_shader("copy_lighting.frag.glsl")
-        self.target_upscale.shader = self.load_plugin_shader(
-            "/$$rp/shader/bilateral_upscale.frag.glsl")
+        self.target_upscale.shader = self.load_plugin_shader("upscale_bilateral_brdf.frag.glsl")
         blur_shader = self.load_plugin_shader("sslr_blur.others.frag.glsl")
         for target in self.blur_targets:
             target.shader = blur_shader

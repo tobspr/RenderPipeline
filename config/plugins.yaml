@@ -5,19 +5,19 @@
 
 enabled:
     - ao
-    - bloom
+    # - bloom
     - color_correction
     - env_probes
-    - fxaa
-    - motion_blur
     - pssm
     - scattering
     - smaa
-    - sslr
-    # - dof
-    # - volumetrics
+    # - sslr
     # - clouds
+    # - dof
+    # - fxaa
+    - motion_blur
     # - skin_shading
+    # - volumetrics
     # - vxgi
 
 
@@ -67,7 +67,7 @@ overrides:
         uc2t_toe_numerator: 0.01
         uc2t_toe_denumerator: 0.3
         uc2t_reference_white: 11.2
-        vignette_strength: 0.2667
+        vignette_strength: 0.4444
         film_grain_strength: 0.2889
         color_lut: color_lut.png
         use_chromatic_aberration: True
@@ -79,7 +79,7 @@ overrides:
         exposure_bias: 0.0
         brightness_adaption_rate: 2.67
         darkness_adaption_rate: 0.79
-        use_sharpen: True
+        use_sharpen: False
         sharpen_strength: 0.5
         sharpen_twice: False
 

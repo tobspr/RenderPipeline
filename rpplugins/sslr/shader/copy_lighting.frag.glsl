@@ -43,7 +43,7 @@ void main() {
     return;
   }
 
-  float border_fade = 0.1;
+  float border_fade = 0.05;
 
   float fade = 1.0;
   fade *= saturate(last_coord.x / border_fade) * saturate(last_coord.y / border_fade);

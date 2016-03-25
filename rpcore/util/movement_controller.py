@@ -242,19 +242,26 @@ class MovementController(object):
         curve = fitter.make_hermite()
         print("Starting motion path with", len(points), "CVs")
 
-
         self.showbase.render2d.hide()
         self.showbase.aspect2d.hide()
 
         self.curve = curve
         self.curve_time_start = globalClock.get_frame_time()
         self.curve_time_end = globalClock.get_frame_time() + len(points) * point_duration
+        self.delta_time_sum = 0.0
+        self.delta_time_count = 0
         self.showbase.addTask(self.camera_motion_update, "RP_CameraMotionPath", sort=-50)
         self.showbase.taskMgr.remove(self.update_task)
 
     def camera_motion_update(self, task):
         if globalClock.get_frame_time() > self.curve_time_end:
             print("Camera motion path finished")
+
+            # Print performance stats
+            avg_ms = self.delta_time_sum / self.delta_time_count
+            print("Average frame time (ms): {:4.1f}".format(avg_ms * 1000.0))
+            print("Average frame rate: {:4.1f}".format(1.0 / avg_ms))
+
             self.update_task = self.showbase.addTask(self.update, "RP_UpdateMovementController", sort=-50)
             self.showbase.render2d.show()
             self.showbase.aspect2d.show()
@@ -269,5 +276,8 @@ class MovementController(object):
 
         self.showbase.camera.set_pos(pos)
         self.showbase.camera.set_hpr(hpr)
+
+        self.delta_time_sum += globalClock.get_dt()
+        self.delta_time_count += 1
 
         return task.cont

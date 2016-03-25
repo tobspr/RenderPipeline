@@ -117,6 +117,6 @@ precision lowp int;
 #define CLEARCOAT_ROUGHNESS 0.005
 #define CLEARCOAT_SPECULAR 0.16
 
-#define DEFAULT_ENVMAP_BRIGHTNESS 0.2
+#define DEFAULT_ENVMAP_BRIGHTNESS 1.0
 
 #pragma include "includes/common_functions.inc.glsl"

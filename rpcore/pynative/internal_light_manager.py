@@ -26,6 +26,8 @@ THE SOFTWARE.
 from __future__ import print_function
 from rplibs.six.moves import range
 
+from panda3d.core import Vec3
+
 from rpcore.pynative.pointer_slot_storage import PointerSlotStorage
 from rpcore.pynative.gpu_command import GPUCommand
 
@@ -40,21 +42,40 @@ class InternalLightManager(object):
         self._shadow_sources = PointerSlotStorage(MAX_SHADOW_SOURCES)
         self._cmd_list = None
         self._shadow_manager = None
+        self._camera_pos = Vec3(0)
+        self._shadow_update_distance = 100.0
 
     def get_max_light_index(self):
         return self._lights.get_max_index()
 
+    max_light_index = property(get_max_light_index)
+
     def get_num_lights(self):
         return self._lights.get_num_entries()
+
+    num_lights = property(get_num_lights)
 
     def get_num_shadow_sources(self):
         return self._shadow_sources.get_num_entries()
 
+    num_shadow_sources = property(get_num_shadow_sources)
+
     def set_shadow_manager(self, shadow_manager):
         self._shadow_manager = shadow_manager
 
+    def get_shadow_manager(self):
+        return self._shadow_manager
+
+    shadow_manager = property(get_shadow_manager, set_shadow_manager)
+
     def set_command_list(self, cmd_list):
         self._cmd_list = cmd_list
+
+    def set_camera_pos(self, pos):
+        self._camera_pos = pos
+
+    def set_shadow_update_distance(self, dist):
+        self._shadow_update_distance = dist
 
     def add_light(self, light):
         if light.has_slot():
@@ -109,6 +130,7 @@ class InternalLightManager(object):
                     self._shadow_sources.free_slot(source.get_slot())
                 if source.has_region():
                     self._shadow_manager.get_atlas().free_region(source.get_region())
+                    source.clear_region()
 
             self.gpu_remove_consecutive_sources(
                 light.get_shadow_source(0), light.get_num_shadow_sources())
@@ -150,11 +172,21 @@ class InternalLightManager(object):
         sources_to_update = []
 
         for source in self._shadow_sources.begin():
-            if source and source.get_needs_update():
-                sources_to_update.append(source)
+            # if source and source.get_needs_update():
+                # sources_to_update.append(source)
+            if source:
+                bounds = source.get_bounds()
+                distance_to_camera = (self._camera_pos - bounds.get_center()) - bounds.get_radius()
+                if distance_to_camera < self._shadow_update_distance:
+                    sources_to_update.append(source)
+                else:
+                    if source.has_region():
+                        self._shadow_manager.get_atlas().free_region(source.get_region())
+                        source.clear_region()
 
         def get_source_score(source):
-            return -source.get_resolution() - (10**10 if source.has_slot() else 0)
+            dist = (source.get_bounds().get_center() - self._camera_pos).length()
+            return -dist - (10**10 if source.has_slot() else 0)
 
         sorted_sources = sorted(sources_to_update, key=get_source_score)
 
