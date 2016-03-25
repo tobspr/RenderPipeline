@@ -38,7 +38,7 @@ uniform writeonly imageCube RESTRICT DestCubemap;
 uniform int cubeSize;
 
 void main() {
-    const int sample_count = 16;
+    const int sample_count = 64;
 
     // Get cubemap coordinate
     ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -53,19 +53,12 @@ void main() {
     vec3 tangent, binormal;
     find_arbitrary_tangent(n, tangent, binormal);
 
-    // Add noise by rotating the tangent and bitangent
-    const int noise_size = 4;
-    float rotation = rand(coord).x * TWO_PI;
-    float sin_r = sin(rotation);
-    float cos_r = cos(rotation);
-
-
     vec3 accum = vec3(0);
     float weights = 1e-5;
     for (int i = 0; i < sample_count; ++i)
     {
-        vec2 xi = rotate(hammersley(i, sample_count), cos_r, sin_r);
-        vec3 offset = importance_sample_lambert(xi, n);
+        vec2 xi = hammersley(i, sample_count);
+        vec3 offset = importance_sample_lambert(xi);
         offset = normalize(tangent * offset.x + binormal * offset.y + n * offset.z);
         offset = face_forward(offset, n);
         float weight = saturate(dot(offset, n));

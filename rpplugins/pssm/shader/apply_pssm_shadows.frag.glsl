@@ -343,7 +343,7 @@ void main() {
 
 
     float foliage_factor = m.shading_model == SHADING_MODEL_FOLIAGE ? 1.0 : 0.0;
-    lighting_result += pow(saturate(dot(l, -v)), 4.0) * foliage_factor * shadow_factor * sun_color * m.basecolor * 0.5;
+    lighting_result += pow(saturate(dot(l, -v)), 4.0) * foliage_factor * shadow_factor * sun_color * m.basecolor * 1.0;
 
     #if DEBUG_MODE
         lighting_result *= 0;

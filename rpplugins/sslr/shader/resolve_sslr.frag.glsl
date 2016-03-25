@@ -24,24 +24,25 @@
  *
  */
 
-#version 420
+#version 430
 
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
+
+#define RS_MAX_CLIP_DIST 5.0
+#define RS_DISTANCE_SCALE 0.01
 #pragma include "includes/temporal_resolve.inc.glsl"
 
+
 uniform sampler2D CurrentTex;
-uniform sampler2D Previous_SMAAPostResolve;
 uniform sampler2D CombinedVelocity;
+uniform sampler2D Previous_SSLRSpecular;
 
-uniform int jitterIndex;
-
-out vec3 result;
+out vec4 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
     vec2 velocity = texture(CombinedVelocity, texcoord).xy;
     vec2 last_coord = texcoord + velocity;
 
-    result = resolve_temporal(CurrentTex, Previous_SMAAPostResolve, texcoord, last_coord).xyz;
+    result = resolve_temporal(CurrentTex, Previous_SSLRSpecular, texcoord, last_coord);
 }

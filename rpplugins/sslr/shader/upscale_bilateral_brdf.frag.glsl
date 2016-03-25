@@ -74,6 +74,9 @@ void main() {
     // Get reflection directory
     vec3 reflected_dir = get_reflection_vector(m, view_vector);
 
+
+    float NxV = saturate(dot(m.normal, -view_vector));
+
     float roughness = m.shading_model == SHADING_MODEL_CLEARCOAT ? CLEARCOAT_ROUGHNESS : m.roughness;
 
     // float mipmap = roughness * 32.0;
@@ -105,8 +108,10 @@ void main() {
             vec3 h = normalize(-view_vector + direction_to_sample);
             float angle = saturate(dot(m.normal, h));
 
+            float sample_rough = get_gbuffer_roughness(GBuffer, offcoord);
+
             float weight = 1;
-            weight *= clamp(brdf_distribution_ggx(angle, 0.1), 1e-5, 100.0);
+            weight *= clamp(brdf_distribution_ggx(angle, sample_rough), 1e-5, 1.0);
 
             // result = vec4(saturate(dot(m.normal, h)));
             // result = vec4(h, 1);
@@ -118,7 +123,7 @@ void main() {
             // result.xyz = vec3(weight);
 
             // float mipmap = saturate(dot(reflected_dir, m.normal)) * 7.0;
-            float mipmap = 1;
+            float mipmap = sqrt(roughness) * 12.0 * (1 - NxV);
 
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
@@ -142,7 +147,7 @@ void main() {
             // weight = max(1e-5, weight);
             // weight *= color_sample.w;
 
-            accum += color_sample * weight;
+            accum += color_sample * weight * weight;
             weights += weight;
         }
     }

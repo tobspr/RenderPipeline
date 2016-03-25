@@ -61,10 +61,10 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
     #endif
 
 
-    shading_result += basecolor * (0.005 + diff_env) * 0.038;
+    shading_result += basecolor * (0.005 + diff_env) * 0.1;
 
     // Fresnel term
-    shading_result += 0.16 * (0.005 + diff_env) / M_PI * 0;
+    shading_result += 0.16 * (0.005 + diff_env) * 0.1;
 
     // Emission
     if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {

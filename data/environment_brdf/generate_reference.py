@@ -14,10 +14,17 @@ from panda3d.core import PNMImage, load_prc_file_data, Vec3
 load_prc_file_data("", "notify-level error")
 load_prc_file_data("", "notify-level-pnmimage error")
 
-if not os.path.isdir("slices"):
-    os.makedirs("slices")
+metallic = True
 
-for ior_index in xrange(15):
+out_dir = "slices_metal" if metallic else "slices"
+templ_suffix = "-metal" if metallic else ""
+
+if not os.path.isdir(out_dir):
+    os.makedirs(out_dir)
+
+sequence = [1] if metallic else xrange(15)
+
+for ior_index in sequence:
     ior = 1.01 + 0.1 * ior_index
 
     dest_size = 512
@@ -26,7 +33,7 @@ for ior_index in xrange(15):
 
     # run mitsuba
     print("Running mitsuba for ior =", ior, "( index =", ior_index,")")
-    with open("res/scene.templ.xml", "r") as handle:
+    with open("res/scene" + templ_suffix + ".templ.xml", "r") as handle:
         content = handle.read()
 
     content = content.replace("%IOR%", str(ior))
@@ -81,7 +88,10 @@ for ior_index in xrange(15):
             dest.set_xel(x, y, curr_v * (1 - lerp) + next_v * lerp)
 
 
-    dest.write("slices/env_brdf_" + str(ior_index) + ".png")
+    if metallic:
+        dest.write(out_dir + "/env_brdf.png")
+    else:
+        dest.write(out_dir + "/env_brdf_" + str(ior_index) + ".png")
 
 try:
     os.remove("scene.png")

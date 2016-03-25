@@ -305,6 +305,15 @@ vec4 square(vec4 x) {
     return x * x;
 }
 
+// Moves mip smoothly to the closest mipmap to reduce interpolation
+float snap_mipmap(float mip) {
+
+    float mip_fract = fract(mip);
+    float blend_factor = smoothstep(mip_fract, 0.0, 1.0);
+    return mip - mip_fract + blend_factor;
+}
+
+
 // Convenience functions
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
 #define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity * 50.0)

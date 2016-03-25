@@ -14,14 +14,45 @@ Conversion is: Swap Y and Z and then negate X
 	<shape type="sphere">
 		<float name="radius" value="1"/>
 
+
+		%IF_DEFAULT%
 		<bsdf type="roughplastic">
-			<!-- <string name="material" value="Cu"/> -->
 			<string name="distribution" value="ggx"/>
-			<!-- <rgb name="diffuseReflectance" value="1,1,1" /> -->
-			<rgb name="diffuseReflectance" value="%DIFFUSE%" />
+			<rgb name="diffuseReflectance" value="%BASECOLOR%" />
 			<float name="intIOR" value="%IOR%"/>
 			<float name="alpha" value="%ALPHA%"/>
 		</bsdf>
+
+		%ENDIF_DEFAULT%
+
+		%IF_METALLIC%
+
+		<bsdf type="roughconductor">
+			<string name="distribution" value="ggx" />
+			<float name="alpha" value="%ALPHA%" />
+			<string name="material" value="%MATERIAL_SRC%" />
+		</bsdf>
+
+		%ENDIF_METALLIC%
+
+		%IF_CLEARCOAT%
+
+		<bsdf type="roughcoating">
+			<string name="distribution" value="ggx" />
+			<float name="alpha" value="0.0001" />
+			<float name="thickness" value="1.0" />
+			<float name="intIOR" value="1.51" />
+
+			<bsdf type="roughconductor">
+				<string name="distribution" value="ggx" />
+				<float name="alpha" value="%ALPHA%" />
+				<string name="material" value="%MATERIAL_SRC%" />
+			</bsdf>
+
+		</bsdf>
+
+		%ENDIF_CLEARCOAT%
+
 	</shape>
 
 
@@ -54,7 +85,7 @@ Conversion is: Swap Y and Z and then negate X
 		</transform>
 
 		<sampler type="ldsampler">
-			<integer name="sampleCount" value="64"/>
+			<integer name="sampleCount" value="32"/>
 		</sampler>
 
 		<film type="hdrfilm">

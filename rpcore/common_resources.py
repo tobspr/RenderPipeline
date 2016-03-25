@@ -77,6 +77,7 @@ class CommonResources(BaseManager):
         self._input_ubo.register_pta("frame_time", "float")
         self._input_ubo.register_pta("current_film_offset", "vec2")
         self._input_ubo.register_pta("temporal_index", "int")
+        self._input_ubo.register_pta("frame_index", "int")
         self._pipeline.stage_mgr.add_ubo(self._input_ubo)
 
         # Main camera and main render have to be regular inputs, since they are
@@ -121,16 +122,22 @@ class CommonResources(BaseManager):
 
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
-        brdf_tex = Globals.loader.load_3d_texture(
-            "/$$rp/data/environment_brdf/slices/env_brdf_#.png")
-        brdf_tex.set_minfilter(SamplerState.FT_linear)
-        brdf_tex.set_magfilter(SamplerState.FT_linear)
-        brdf_tex.set_wrap_u(SamplerState.WM_clamp)
-        brdf_tex.set_wrap_v(SamplerState.WM_clamp)
-        brdf_tex.set_wrap_w(SamplerState.WM_clamp)
-        brdf_tex.set_anisotropic_degree(0)
-        # brdf_tex.set_format(Texture.F_rgba16)
-        self._pipeline.stage_mgr.add_input("PrefilteredBRDF", brdf_tex)
+
+        for lut in ("", "metal"):
+
+            loader_method = Globals.loader.load_texture if lut == "metal" else Globals.loader.load_3d_texture
+            brdf_tex = loader_method(
+                "/$$rp/data/environment_brdf/{}".format(
+                    "slices_metal/env_brdf.png" if lut == "metal" else "slices/env_brdf_#.png"))
+            brdf_tex.set_minfilter(SamplerState.FT_linear)
+            brdf_tex.set_magfilter(SamplerState.FT_linear)
+            brdf_tex.set_wrap_u(SamplerState.WM_clamp)
+            brdf_tex.set_wrap_v(SamplerState.WM_clamp)
+            brdf_tex.set_wrap_w(SamplerState.WM_clamp)
+            brdf_tex.set_anisotropic_degree(0)
+            # brdf_tex.set_format(Texture.F_rgba16)
+            input_name = "PrefilteredMetalBRDF" if lut == "metal" else "PrefilteredBRDF"
+            self._pipeline.stage_mgr.add_input(input_name, brdf_tex)
 
     def _load_precomputed_grain(self):
         grain_tex = Globals.loader.load_texture(
@@ -212,3 +219,4 @@ class CommonResources(BaseManager):
             max_clip_length = self._pipeline.plugin_mgr.plugin_instances["smaa"].history_length
 
         update("temporal_index", Globals.clock.get_frame_count() % max_clip_length)
+        update("frame_index", Globals.clock.get_frame_count())

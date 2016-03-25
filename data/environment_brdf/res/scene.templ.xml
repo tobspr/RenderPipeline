@@ -44,7 +44,7 @@
 		</transform>
 
 		<sampler type="ldsampler">
-			<integer name="sampleCount" value="256" />
+			<integer name="sampleCount" value="2048" />
 		</sampler>
 
 		<film type="hdrfilm">

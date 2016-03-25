@@ -5,13 +5,13 @@
 
 enabled:
     - ao
-    # - bloom
+    - bloom
     - color_correction
     - env_probes
     - pssm
     - scattering
     - smaa
-    # - sslr
+    - sslr
     # - clouds
     # - dof
     # - fxaa
@@ -87,7 +87,7 @@ overrides:
 
     env_probes:
         probe_resolution: 128
-        diffuse_probe_resolution: 4
+        diffuse_probe_resolution: 2
         max_probes: 16
         max_probes_per_cell: 5
 

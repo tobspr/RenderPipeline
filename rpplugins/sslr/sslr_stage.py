@@ -37,11 +37,11 @@ class SSLRStage(RenderStage):
 
     required_inputs = []
     required_pipes = ["ShadedScene", "CombinedVelocity", "GBuffer",
-                      "DownscaledDepth", "PreviousFrame::PostAmbientScene"]
+                      "DownscaledDepth", "PreviousFrame::PostAmbientScene", "PreviousFrame::SSLRSpecular"]
 
     @property
     def produced_pipes(self):
-        return {"SSLRSpecular": self.target_upscale.color_tex}
+        return {"SSLRSpecular": self.target_resolve.color_tex}
         # return {"SSLRSpecular": self.target.color_tex}
 
     def create(self):
@@ -99,12 +99,19 @@ class SSLRStage(RenderStage):
         self.target_upscale.prepare_buffer()
         self.target_upscale.set_shader_input("SourceTex", curr_tex)
         self.target_upscale.set_shader_input("MipChain", self.mipchain)
+
+        self.target_resolve = self.create_target("ResolveSSLR")
+        self.target_resolve.add_color_attachment(bits=16, alpha=True)
+        self.target_resolve.prepare_buffer()
+        self.target_resolve.set_shader_input("CurrentTex", self.target_upscale.color_tex)
+
         AmbientStage.required_pipes.append("SSLRSpecular")
 
     def set_shaders(self):
         self.target.shader = self.load_plugin_shader("sslr_trace.frag.glsl")
         self.target_copy_lighting.shader = self.load_plugin_shader("copy_lighting.frag.glsl")
         self.target_upscale.shader = self.load_plugin_shader("upscale_bilateral_brdf.frag.glsl")
+        self.target_resolve.shader = self.load_plugin_shader("resolve_sslr.frag.glsl")
         blur_shader = self.load_plugin_shader("sslr_blur.others.frag.glsl")
         for target in self.blur_targets:
             target.shader = blur_shader

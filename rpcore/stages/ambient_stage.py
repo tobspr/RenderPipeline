@@ -30,7 +30,7 @@ class AmbientStage(RenderStage):
 
     """ This stage computes the ambient term """
 
-    required_inputs = ["DefaultEnvmap", "PrefilteredBRDF"]
+    required_inputs = ["DefaultEnvmap", "PrefilteredBRDF", "PrefilteredMetalBRDF"]
     required_pipes = ["ShadedScene", "GBuffer"]
 
     @property

@@ -63,6 +63,7 @@ void main()
     vec2 texcoord = get_half_texcoord();
     // vec2 texcoord = get_texcoord();
 
+
     // TODO: Using the real normal provides *way* worse coherency
     vec3 normal_vs = get_view_normal(texcoord);
     // vec3 normal_vs = get_view_normal_approx(texcoord);
@@ -83,12 +84,12 @@ void main()
     vec3 ray_dir = normalize(reflect(view_dir, normal_vs));
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    int seed = (coord.x * 2 + coord.y) % 4;
+    // int seed = (coord.x * 2 + coord.y + MainSceneData.frame_index) % 4;
     // vec2 xi = hammersley(seed, 4);
-    vec2 xi = abs(rand_rgb(texcoord + MainSceneData.temporal_index).xy);
+    vec2 xi = abs(rand_rgb(texcoord + 1.2 * (MainSceneData.frame_index % 8)).xz);
 
     // XXX: Use actual roughness
-    vec3 rho = importance_sample_ggx(xi, 0.1);
+    vec3 rho = importance_sample_ggx(xi, m.roughness);
 
     // Get tangent and binormal
     vec3 tangent, binormal;
@@ -139,7 +140,7 @@ void main()
     vec2 intersection = vec2(-1);
 
     // float jitter = rand(texcoord + MainSceneData.temporal_index);
-    float jitter = rand(ivec2(gl_FragCoord.xy) % 3223);
+    float jitter = rand(ivec2(gl_FragCoord.xy) % 3223 + (MainSceneData.frame_index % 8) * 10.0 );
     // jitter *= 0.0;
     // jitter *= 5.0;
     ray_pos += jitter * ray_step;
@@ -190,12 +191,13 @@ void main()
         return;
     }
 
-    float depth_at_intersection = textureLod(GBuffer.Depth, intersection.xy, 0).x;
-    if (get_linear_z_from_z(depth_at_intersection) > 3000.0) {
-        result = vec3(0);
-        return;
-    }
+    // float depth_at_intersection = textureLod(GBuffer.Depth, intersection.xy, 0).x;
+    // if (get_linear_z_from_z(depth_at_intersection) > 3000.0) {
+    //     result = vec3(0);
+    //     return;
+    // }
 
+    fade = 1.0;
 
     result = vec3(intersection, fade);
 }

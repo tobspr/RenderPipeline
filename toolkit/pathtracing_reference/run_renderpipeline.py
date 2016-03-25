@@ -55,8 +55,21 @@ class Application(ShowBase):
 
         for mat in sphere.find_all_materials():
             mat.roughness = material.roughness
-            mat.base_color = Vec4(*(list(material.diffuse) + [1]))
+            mat.base_color = Vec4(*(list(material.basecolor) + [1]))
             mat.refractive_index = material.ior
+
+            mat.metallic = 1.0 if material.mat_type == "metallic" else 0.0
+
+            if material.mat_type == "clearcoat":
+                mat.emission = (2, 0, 0, 0)
+                mat.metallic = 1.0
+                mat.refractive_index = 1.51
+
+
+            if material.mat_type == "foliage":
+                mat.emission = (5, 0, 0, 0)
+                mat.metallic = 0.0
+                mat.refractive_index = 1.51
 
         for i in range(10):
             self.taskMgr.step()
@@ -74,7 +87,9 @@ class Application(ShowBase):
 
         self.win.save_screenshot("scene-rp.png")
 
-# Application().run()
-Application()
+if len(sys.argv) <= 1:
+    Application().run()
+else:
+    Application()
 
 

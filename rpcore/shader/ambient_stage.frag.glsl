@@ -35,9 +35,12 @@
 
 uniform sampler2D ShadedScene;
 uniform GBufferData GBuffer;
-uniform sampler2D PrefilteredBRDF;
+uniform sampler3D PrefilteredBRDF;
+uniform sampler2D PrefilteredMetalBRDF;
 
 uniform samplerCube DefaultEnvmap;
+
+#define USE_WHITE_ENVIRONMENT 0
 
 #if HAVE_PLUGIN(scattering)
     uniform samplerCube ScatteringIBLDiffuse;
@@ -64,8 +67,9 @@ uniform samplerCube DefaultEnvmap;
 
 out vec4 result;
 
-float get_mipmap_for_roughness(samplerCube map, float roughness) {
-    return roughness * 7.0;
+float get_mipmap_for_roughness(samplerCube map, float roughness, float NxV) {
+
+    return snap_mipmap(sqrt(roughness) * 7.0);
 }
 
 float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
@@ -98,12 +102,24 @@ void main() {
 
     // Skip skybox shading
     if (is_skybox(m)) {
-        result = textureLod(ShadedScene, texcoord, 0);
+
+        // xxx
+        result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
+
+        #if USE_WHITE_ENVIRONMENT
+            result = vec4(1);
+        #endif
+
+        #if !REFERENCE_MODE
+            result = textureLod(ShadedScene, texcoord, 0);
+        #endif
+
         return;
     }
 
     // Get reflection directory
     vec3 reflected_dir = get_reflection_vector(m, view_vector);
+    float roughness = get_effective_roughness(m);
 
     // Compute angle between normal and view vector
     float NxV = max(1e-5, -dot(m.normal, view_vector));
@@ -118,13 +134,18 @@ void main() {
     #endif
 
     // Get mipmap offset for the material roughness
-    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias;
+    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV) + mipmap_bias;
 
     // Sample default environment map
-    vec3 ibl_specular = textureLod(DefaultEnvmap, reflected_dir, env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+    vec3 ibl_specular = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
     // Get cheap irradiance by sampling low levels of the environment map
-    int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
-    vec3 ibl_diffuse = textureLod(DefaultEnvmap, m.normal, ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+    float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 2.5;
+    vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal), ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+
+    #if USE_WHITE_ENVIRONMENT
+        ibl_specular = vec3(1.0); // xxx
+        ibl_diffuse = vec3(1.0); // xxx
+    #endif
 
     // Scattering specific code
     #if HAVE_PLUGIN(scattering)
@@ -168,30 +189,43 @@ void main() {
 
     #endif
 
-
     #if HAVE_PLUGIN(sslr)
         vec4 sslr_spec = textureLod(SSLRSpecular, texcoord, 0);
         ibl_specular = ibl_specular * (1 - sslr_spec.w) + sslr_spec.xyz;
     #endif
 
-
     vec3 material_f0 = get_material_f0(m);
     vec3 specular_ambient = vec3(0);
 
+
     // Pre-Integrated environment BRDF
-    vec2 env_brdf = textureLod(PrefilteredBRDF, vec2(NxV, m.roughness), 0).xy;
+    // ior = 1.01 + 0.1 * ior_index
+
+    float lookup_slice = (m.specular_ior - 1.01) / 1.5 + 0.5 / 15.0;
+    vec3 env_brdf = get_brdf_from_lut(PrefilteredBRDF, NxV, roughness, m.specular_ior);
+
+    // Exact brdf lut, unused yet
+    // vec3 env_brdf_metal = get_brdf_from_lut(PrefilteredMetalBRDF, NxV, roughness);
+
+    // Diffuse ambient term
+    vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic);
+    vec3 fresnel = env_brdf.ggg;
+    diffuse_ambient *= env_brdf.r;
+
+    fresnel = mix(fresnel, env_brdf.r * m.basecolor + env_brdf.g , m.metallic);
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         // Sample prefiltered scattering cubemap
-        vec2 env_brdf_coat = textureLod(PrefilteredBRDF, vec2(NxV, CLEARCOAT_ROUGHNESS), 0).xy;
-        float fresnel_coat = saturate(CLEARCOAT_SPECULAR * env_brdf_coat.x + env_brdf_coat.y);
+
+        vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredBRDF, NxV, CLEARCOAT_ROUGHNESS, CLEARCOAT_IOR);
+        float fresnel_coat = env_brdf_coat.g;
 
         #if HAVE_PLUGIN(scattering)
             vec3 ibl_specular_base = textureLod(ScatteringIBLSpecular, reflected_dir,
                 get_specular_mipmap(m) + mipmap_bias).xyz;
         #else
-            vec3 ibl_specular_base = textureLod(DefaultEnvmap, reflected_dir,
-                get_mipmap_for_roughness(DefaultEnvmap, m.roughness) + mipmap_bias).xyz;
+            vec3 ibl_specular_base = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir),
+                get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV) + mipmap_bias).xyz;
         #endif
 
         specular_ambient = fresnel_coat * ibl_specular;
@@ -200,26 +234,21 @@ void main() {
         float specular_clip =  saturate(15.0 * get_luminance(ibl_specular));
 
          // XXX: Find a better solution for the clip factor
-        specular_clip = 1 - fresnel_coat;
+        specular_clip = env_brdf.r * NxV;
         specular_ambient += material_f0 * ibl_specular_base * specular_clip;
 
     } else {
-        specular_ambient = (material_f0 * env_brdf.x + env_brdf.y) * ibl_specular;
+        specular_ambient = fresnel * ibl_specular;
     }
-
-    // Diffuse ambient term
-    vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic) / M_PI;
-
 
     #if HAVE_PLUGIN(ao)
         // Sample precomputed occlusion and multiply the ambient term with it
         float occlusion = textureLod(AmbientOcclusion, texcoord, 0).x;
-        float specular_occlusion = compute_specular_occlusion(NxV, occlusion, m.roughness);
+        float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
     #else
         const float occlusion = 1.0;
         const float specular_occlusion = 1.0;
     #endif
-
 
     // Add diffuse and specular ambient term
     ambient = diffuse_ambient * occlusion + specular_ambient * specular_occlusion;

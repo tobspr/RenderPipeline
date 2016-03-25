@@ -81,7 +81,7 @@ uniform mat4 p3d_ProjectionMatrix;
         // 0 ... 1 range
         float specular = clamp(m.specular_ior, 1.0001, 2.51);
         float metallic = saturate(m.metallic);
-        float roughness = clamp(m.roughness, 0.005, 1.0);
+        float roughness = clamp(m.roughness, 0.03, 1.0);
 
         roughness = adjust_roughness(roughness, length(m.normal));
 
@@ -113,8 +113,10 @@ uniform mat4 p3d_ProjectionMatrix;
 
     // Checks whether the given material is the skybox
     bool is_skybox(vec3 pos, vec3 camera_pos) {
-        // return distance(pos, camera_pos) > 20000.0;
-        return distance(pos, camera_pos) > 10.0; // xXX
+        #if REFERENCE_MODE
+            return distance(pos, camera_pos) > 10.0;
+        #endif
+        return distance(pos, camera_pos) > 20000.0;
     }
 
     bool is_skybox(Material m, vec3 camera_pos) {
@@ -165,6 +167,10 @@ uniform mat4 p3d_ProjectionMatrix;
 
     int get_gbuffer_shading_model(GBufferData data, vec2 coord) {
         return int(textureLod(data.Data2, coord, 0).z);
+    }
+
+    float get_gbuffer_roughness(GBufferData data, vec2 coord) {
+        return square(clamp(textureLod(data.Data0, coord, 0).w , 0.0001, 1.0));
     }
 
     // Unpacks a material from the gbuffer
