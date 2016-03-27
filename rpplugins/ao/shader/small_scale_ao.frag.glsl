@@ -65,19 +65,17 @@ void main() {
         return;
     }
 
-    vec3 noise_vec = rand_rgb(texcoord + 0.1 * MainSceneData.temporal_index) * 2 - 1;
-    // noise_vec *= 0.0;
+    vec3 noise_vec = rand_rgb(texcoord + 0.5 * (MainSceneData.frame_index % 8));
 
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
 
     float kernel_scale = min(5.0, 10.0 / pixel_z);
     const float sample_radius = 11.0;
-    const int num_samples = 8;
+    const int num_samples = 4;
     // const float bias = max(0, -0.5 + 2.6 / kernel_scale);
     const float bias = 0.02;
     float max_range = 1.7;
-
 
     float sample_offset = sample_radius * pixel_size.x * 30.0;
     float range_accum = 0.0;
@@ -87,7 +85,7 @@ void main() {
 
     for (int i = 0; i < num_samples; ++i) {
         vec3 offset = poisson_disk_3D_16[2 * i];
-        offset = mix(offset, noise_vec, 0.1);
+        offset = mix(offset, noise_vec, 0.5);
 
         // Flip offset in case it faces away from the normal
         offset = face_forward(offset, pixel_view_normal);

@@ -32,7 +32,7 @@ class Application(ShowBase):
 
         self.disableMouse()
         self.camLens.setFov(40)
-        self.camLens.setNearFar(0.03, 15.0)
+        self.camLens.setNearFar(0.03, 2000.0)
         self.camera.set_pos(0, -3.5, 0)
         self.camera.look_at(0, -2.5, 0)
 
@@ -64,7 +64,6 @@ class Application(ShowBase):
                 mat.emission = (2, 0, 0, 0)
                 mat.metallic = 1.0
                 mat.refractive_index = 1.51
-
 
             if material.mat_type == "foliage":
                 mat.emission = (5, 0, 0, 0)

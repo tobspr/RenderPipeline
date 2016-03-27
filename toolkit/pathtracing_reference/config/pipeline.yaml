@@ -1,8 +1,9 @@
 
 pipeline:
-    display_debugger: true
+    display_debugger: false
     use_r11_g11_b10: false
     resolution_scale: 8.0
+    reference_mode: true
 
 lighting:
     culling_grid_size_x: 32

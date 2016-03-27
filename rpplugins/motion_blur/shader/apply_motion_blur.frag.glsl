@@ -70,7 +70,7 @@ void main() {
   float initial_weight = saturate(float(num_samples / 40.0));
   initial_weight *= 1.0 / (max(1.0, vx.x));
 
-  float jitter = (rand(vec2(coord))-0.5) * 1;
+  float jitter = rand(vec2(coord));
 
   float weight_accum = initial_weight;
   vec3 accum = center_color * initial_weight;

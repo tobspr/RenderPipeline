@@ -308,12 +308,10 @@ class RenderTarget(RPObject):
         buffer_props = FrameBufferProperties()
 
         if self._color_bits == (16, 16, 16, 0):
-            # Optional: Always use R11G11B10
-            # buffer_props.set_rgba_bits(11, 11, 10, 0)
-            buffer_props.set_rgba_bits(16, 16, 16, 0)
-        elif self._color_bits == (8, 8, 8, 0):
-            # buffer_props.set_rgba_bits(11, 11, 10, 0)
-            buffer_props.set_rgba_bits(8, 8, 8, 0)
+            if RenderTarget.USE_R11G11B10:
+                buffer_props.set_rgba_bits(11, 11, 10, 0)
+            else:
+                buffer_props.set_rgba_bits(*self._color_bits)
         else:
             buffer_props.set_rgba_bits(*self._color_bits)
 

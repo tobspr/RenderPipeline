@@ -13,8 +13,8 @@
 		<bsdf type="roughplastic">
 			<!-- <string name="material" value="Cu"/> -->
 			<string name="distribution" value="ggx"/>
-			<rgb name="diffuseReflectance" value="1,0,0" />
-			<rgb name="specularReflectance" value="0,1,0" />
+			<rgb name="diffuseReflectance" value="0,1,0" />
+			<rgb name="specularReflectance" value="1,0,0" />
 			<float name="intIOR" value="%IOR%"/>
 
 			<texture name="alpha" type="bitmap">
@@ -44,7 +44,7 @@
 		</transform>
 
 		<sampler type="ldsampler">
-			<integer name="sampleCount" value="2048" />
+			<integer name="sampleCount" value="%SAMPLES%" />
 		</sampler>
 
 		<film type="hdrfilm">

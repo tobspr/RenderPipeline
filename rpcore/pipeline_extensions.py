@@ -172,8 +172,7 @@ class PipelineExtensions(object):
         lights """
         # TODO: IES profiles
         ies_profile = self.load_ies_profile("x_arrow_diffuse.ies")
-
-        convert_mat = Mat4.convert_mat(CS_zup_right, CS_yup_right)
+        lights = []
 
         for light in scene.find_all_matches("**/+PointLight"):
             light_node = light.node()
@@ -186,6 +185,7 @@ class PipelineExtensions(object):
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             self.add_light(rp_light)
             light.remove_node()
+            lights.append(rp_light)
 
         for light in scene.find_all_matches("**/+Spotlight"):
             light_node = light.node()
@@ -201,9 +201,12 @@ class PipelineExtensions(object):
             rp_light.direction = lpoint
             self.add_light(rp_light)
             light.remove_node()
+            lights.append(rp_light)
 
             # XXX: Support IES profiles (Have to add it to the BAM exporter first)
             # rp_light.ies_profile = ies_profile
+
+        envprobes = []
 
         # Add environment probes
         for np in scene.find_all_matches("**/ENVPROBE*"):
@@ -211,6 +214,9 @@ class PipelineExtensions(object):
             probe.set_mat(np.get_mat())
             probe.border_smoothness = 0.05
             np.remove_node()
+            envprobes.append(probe)
+
+        return {"lights": lights, "envprobes": envprobes}
 
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns

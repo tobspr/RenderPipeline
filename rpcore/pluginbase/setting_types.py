@@ -152,6 +152,8 @@ class PathType(BaseType):
         BaseType.__init__(self, data)
         self.default = str(data.pop("default"))
         self.value = self.default
+        self.file_type = str(data.pop("file_type"))
+        self.base_path = str(data.pop("base_path"))
 
     def set_value(self, value):
         self.value = str(value)

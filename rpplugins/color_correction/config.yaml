@@ -161,10 +161,12 @@ settings: !!omap
         type: path
         default: color_lut.png
         label: Color LUT
+        file_type: Color LUTs (*.png)
+        base_path: film_luts
+        runtime: true
         description: >
-            !! THIS BUTTON DOES NOT WORK YET !! Specifies a Color LUT (Look-Up-Table) to use. Have a look at the Render Pipeline
+            Specifies a Color LUT (Look-Up-Table) to use. Have a look at the Render Pipeline
             documentation for further information.
-
 
     # Chromatic aberration
 

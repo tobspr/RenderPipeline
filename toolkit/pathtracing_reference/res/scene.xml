@@ -18,9 +18,9 @@ Conversion is: Swap Y and Z and then negate X
 		
 		<bsdf type="roughplastic">
 			<string name="distribution" value="ggx"/>
-			<rgb name="diffuseReflectance" value="1, 0, 0" />
+			<rgb name="diffuseReflectance" value="0.3, 0.3, 0.3" />
 			<float name="intIOR" value="1.51"/>
-			<float name="alpha" value="1.0"/>
+			<float name="alpha" value="0.64"/>
 		</bsdf>
 
 		
@@ -29,7 +29,7 @@ Conversion is: Swap Y and Z and then negate X
 
 		<bsdf type="roughconductor">
 			<string name="distribution" value="ggx" />
-			<float name="alpha" value="1.0" />
+			<float name="alpha" value="0.64" />
 			<string name="material" value="" />
 		</bsdf>
 
@@ -45,7 +45,7 @@ Conversion is: Swap Y and Z and then negate X
 
 			<bsdf type="roughconductor">
 				<string name="distribution" value="ggx" />
-				<float name="alpha" value="1.0" />
+				<float name="alpha" value="0.64" />
 				<string name="material" value="" />
 			</bsdf>
 
@@ -55,7 +55,7 @@ Conversion is: Swap Y and Z and then negate X
 
 	</shape>
 
-
+<!-- 
 	<emitter type="point">
 		<spectrum name="intensity" value="500.0" />
 		<point name="position" x="-10" z="-10" y="10" />
@@ -65,10 +65,10 @@ Conversion is: Swap Y and Z and then negate X
 		<spectrum name="intensity" value="500.0" />
 		<point name="position" x="10" z="-10" y="10" />
 	</emitter>
-
+ -->
 	<emitter type="envmap">
-		<string name="filename" value="tex/envmap.png" />
-		<!-- <string name="filename" value="tex/white.png" /> -->
+		<!-- <string name="filename" value="tex/envmap.png" /> -->
+		<string name="filename" value="tex/white.png" />
 		<float name="gamma" value="1.0" />
 
 	</emitter>

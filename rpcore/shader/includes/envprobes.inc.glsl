@@ -126,11 +126,10 @@ vec3 get_diffuse_vector(Cubemap map, Material m) {
 
 float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
 
-    float roughness = m.shading_model == SHADING_MODEL_CLEARCOAT ? CLEARCOAT_ROUGHNESS : m.roughness;
+    float roughness = get_effective_roughness(m);
 
     float factor = 0.0;
-    float mip_mult = 1.0;
-    float mipmap = roughness * 15.0 - pow(roughness, 6.0) * 1.5;
+    float mipmap = m.linear_roughness * 40.0;
     float intersection_distance = 1.0;
 
     const int num_mips = 8;
@@ -142,13 +141,12 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
 
     float local_distance = intersection_distance / map.bounding_sphere_radius;
 
-    // mipmap *= max(0.3, 1.4 * local_distance);
+    mipmap *= intersection_distance * 0.012;
 
     specular = textureLod(EnvProbes.cubemaps, vec4(direction, map.index),
-        clamp(mipmap * mip_mult, 0.0, num_mips - 1.0) );
+        snap_mipmap(clamp(mipmap, 0.0, num_mips - 1.0)) );
 
     diffuse = textureLod(EnvProbes.diffuse_cubemaps, vec4(diffuse_direction, map.index), 0);
-    // diffuse.xyz /= TWO_PI;
 
     // Optional: Correct specular based on diffuse color intensity
     // specular.xyz = mix(specular.xyz, specular.xyz * get_luminance(diffuse.xyz), diffuse.w);

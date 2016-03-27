@@ -59,9 +59,10 @@ void main() {
     if (is_skybox(m)) {
         #if !HAVE_PLUGIN(clouds)
             vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-            cloud_color = cloud_color * vec3(1.0, 1, 0.9) * vec3(0.8, 0.7, 0.8524);
-            cloud_color *= saturate(6.0 * (0.05 + view_vector.z));
-            inscattered_light *= 0.0 + 1.2 * (0.3 + 0.6 * cloud_color);
+            cloud_color = pow(cloud_color, vec3(2.2));
+            // cloud_color = cloud_color * vec3(1.0, 1, 0.9) * vec3(0.8, 0.7, 0.8524);
+            // cloud_color *= saturate(6.0 * (0.05 + view_vector.z));r
+            inscattered_light *= 0.0 + 1.2 * (0.3 + 2.6 * cloud_color);
         #endif
 
         // Sun disk

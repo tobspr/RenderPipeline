@@ -98,7 +98,7 @@ void main() {
       float y_offs = cos(phi);
 
       vec2 tcoord = texcoord + vec2(x_offs, y_offs) * r;
-      tcoord += (jitter.xy*2-1) * 0.06 * r;
+      tcoord += jitter.xy * 0.06 * r;
 
       // XXX: Instead of manual clamping, use a near filtered texture
       tcoord = truncate_coordinate(tcoord);

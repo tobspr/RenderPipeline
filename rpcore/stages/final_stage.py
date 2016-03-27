@@ -33,9 +33,30 @@ class FinalStage(RenderStage):
 
     required_pipes = ["ShadedScene"]
 
+    @property
+    def produced_pipes(self):
+        return {"ShadedScene": self.target.color_tex}
+
     def create(self):
+
         self.target = self.create_target("FinalStage")
-        self.target.present_on_screen()
+        self.target.add_color_attachment(bits=16)
+        self.target.prepare_buffer()
+
+        # XXX: We cannot simply assign the final shader to the window display
+        # region. This is because of a bug that the last FBO always only gets
+        # 8 bits, regardles of what was requested - probably because of the
+        # assumption that no tonemapping/srgb correction will follow afterwards.
+        #
+        # This might be a driver bug, or an optimization in Panda3D. However, it
+        # also has the nice side effect that when taking screenshots (or using
+        # the pixel inspector), we get the srgb corrected data, so its not too
+        # much of a disadvantage.
+        self.present_target = self.create_target("FinalPresentStage")
+        self.present_target.present_on_screen()
+        self.present_target.set_shader_input("SourceTex", self.target.color_tex)
 
     def set_shaders(self):
         self.target.shader = self.load_shader("final_stage.frag.glsl")
+        self.present_target.shader = self.load_shader("final_present_stage.frag.glsl")
+

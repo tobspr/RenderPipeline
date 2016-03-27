@@ -265,28 +265,28 @@ vec2 truncate_coordinate(vec2 tcoord) {
     return (ivec2(tcoord * SCREEN_SIZE) + 0.5) / SCREEN_SIZE;
 }
 
-float length_square(vec2 v) {
+float length_squared(vec2 v) {
     return dot(v, v);
 }
 
-float distance_square(vec2 a, vec2 b) {
-    return length_square(a - b);
+float distance_squared(vec2 a, vec2 b) {
+    return length_squared(a - b);
 }
 
-float length_square(vec3 v) {
+float length_squared(vec3 v) {
     return dot(v, v);
 }
 
-float distance_square(vec3 a, vec3 b) {
-    return length_square(a - b);
+float distance_squared(vec3 a, vec3 b) {
+    return length_squared(a - b);
 }
 
-float length_square(vec4 v) {
+float length_squared(vec4 v) {
     return dot(v, v);
 }
 
-float distance_square(vec4 a, vec4 b) {
-    return length_square(a - b);
+float distance_squared(vec4 a, vec4 b) {
+    return length_squared(a - b);
 }
 
 float square(float x) {
@@ -308,8 +308,12 @@ vec4 square(vec4 x) {
 // Moves mip smoothly to the closest mipmap to reduce interpolation
 float snap_mipmap(float mip) {
 
+    // XXX
+    // return mip;
+
     float mip_fract = fract(mip);
-    float blend_factor = smoothstep(mip_fract, 0.0, 1.0);
+    float blend_factor = smoothstep(0.0, 1.0, mip_fract);
+    // return mip - mip_fract + blend_factor;
     return mip - mip_fract + blend_factor;
 }
 

@@ -81,7 +81,7 @@ void main() {
   // However, we don't weight it too much to make the blur not look weird.
   float weights = 1e-3;
   vec3 accum = texture(SourceTex, texcoord).xyz * weights;
-  float jitter = rand(texcoord) * 2.0 - 1.0;
+  float jitter = rand(texcoord);
 
   // Blur in both directions
   for (int i = -num_samples + 1; i < num_samples; ++i) {

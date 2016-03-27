@@ -12,12 +12,12 @@ enabled:
     - scattering
     - smaa
     - sslr
+    - volumetrics
     # - clouds
     # - dof
     # - fxaa
-    - motion_blur
+    # - motion_blur
     # - skin_shading
-    # - volumetrics
     # - vxgi
 
 
@@ -25,7 +25,7 @@ overrides:
     ao:
         blur_normal_factor: 4.94
         blur_depth_factor: 4.83
-        occlusion_strength: 1.21
+        occlusion_strength: 1.0
         technique: SSAO
         ssao_sample_radius: 79.61
         ssao_sample_count: 8
@@ -50,14 +50,14 @@ overrides:
         num_mipmaps: 8
         bloom_strength: 0.45
         remove_fireflies: False
-        lens_dirt_factor: 0.7111
+        lens_dirt_factor: 0.2333
 
     clouds:
         cloud_decay: 5.78
         raymarch_steps: 64
 
     color_correction:
-        tonemap_operator: optimized
+        tonemap_operator: exponential2
         reinhard_version: rgb
         exponential_factor: 1.4
         uc2t_shoulder_strength: 0.22
@@ -67,11 +67,11 @@ overrides:
         uc2t_toe_numerator: 0.01
         uc2t_toe_denumerator: 0.3
         uc2t_reference_white: 11.2
-        vignette_strength: 0.4444
-        film_grain_strength: 0.2889
-        color_lut: color_lut.png
+        vignette_strength: 0.3111
+        film_grain_strength: 0.15559
+        color_lut: film_luts/agfa_agfacolor_futura_100.png
         use_chromatic_aberration: True
-        chromatic_aberration_strength: 0.22
+        chromatic_aberration_strength: 0.4293
         chromatic_aberration_samples: 2
         manual_camera_parameters: False
         min_exposure_value: 0.012
@@ -80,7 +80,7 @@ overrides:
         brightness_adaption_rate: 2.67
         darkness_adaption_rate: 0.79
         use_sharpen: False
-        sharpen_strength: 0.5
+        sharpen_strength: 1.11
         sharpen_twice: False
 
     dof:
@@ -146,6 +146,7 @@ overrides:
     sslr:
 
     volumetrics:
+        intensity: 0.65
 
     vxgi:
         grid_resolution: 256

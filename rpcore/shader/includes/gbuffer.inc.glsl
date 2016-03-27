@@ -114,7 +114,7 @@ uniform mat4 p3d_ProjectionMatrix;
     // Checks whether the given material is the skybox
     bool is_skybox(vec3 pos, vec3 camera_pos) {
         #if REFERENCE_MODE
-            return distance(pos, camera_pos) > 10.0;
+            return distance(pos, camera_pos) > 80.0;
         #endif
         return distance(pos, camera_pos) > 20000.0;
     }
@@ -170,7 +170,13 @@ uniform mat4 p3d_ProjectionMatrix;
     }
 
     float get_gbuffer_roughness(GBufferData data, vec2 coord) {
-        return square(clamp(textureLod(data.Data0, coord, 0).w , 0.0001, 1.0));
+        // XXX: take clearcoat into account
+        return square(clamp(textureLod(data.Data0, coord, 0).w, 0.0001, 1.0));
+    }
+
+    float get_gbuffer_roughness(GBufferData data, ivec2 coord) {
+        // XXX: take clearcoat into account
+        return square(clamp(texelFetch(data.Data0, coord, 0).w, 0.0001, 1.0));
     }
 
     // Unpacks a material from the gbuffer
@@ -228,6 +234,7 @@ uniform mat4 p3d_ProjectionMatrix;
         vec3 get_view_pos_at(vec2 coord) {
             return calculate_view_pos(get_depth_at(coord), coord);
         }
+
 
         // Returns the world space position at a given texcoord
         vec3 get_world_pos_at(vec2 coord) {

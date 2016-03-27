@@ -393,6 +393,8 @@ class RenderPipeline(PipelineExtensions, RPObject):
         if "intel" in vendor:
             define("IS_INTEL", 1)
 
+        define("REFERENCE_MODE", self.settings["pipeline.reference_mode"])
+
         # Only activate this experimental feature if the patch was applied,
         # since it is a local change in my Panda3D build which is not yet
         # reviewed by rdb. Once it is in public Panda3D Dev-Builds this will

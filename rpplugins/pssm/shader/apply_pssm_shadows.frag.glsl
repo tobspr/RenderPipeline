@@ -154,7 +154,6 @@ void main() {
     // Compute the shadowing factor
     if (split < GET_SETTING(pssm, split_count)) {
 
-
         vec3 noise = rand_rgb(m.position.xy + m.position.z);
 
         // Get the MVP for the current split

@@ -13,13 +13,17 @@ pipeline:
     # Whether to use the GL_R11F_G11F_B10F texture format to save memory
     # and bandwidth. Usually you want to enable this, however it can
     # cause banding sometimes, in which case you can disable this setting.
-    use_r11_g11_b10: true
+    use_r11_g11_b10: false
 
     # Enables to render at a higher or lower resolution than the window size.
     # A value of 2.0 for example renders at twice the resolution (supoersampling)
     # whereas a value of 0.5 would render at half resolution.
     resolution_scale: 1.0
 
+    # Whether to render in a special reference mode, which displays the
+    # environment map as a background, and disable special effects like color
+    # grading and so on. This is used by the pathtracing reference.
+    reference_mode: false
 
 # This are the settings affecting the lighting part of the pipeline,
 # including builtin shadows and lights.

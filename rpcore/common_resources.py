@@ -122,22 +122,25 @@ class CommonResources(BaseManager):
 
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
+        luts = [
+            {"src": "slices/env_brdf_#.png", "input": "PrefilteredBRDF"},
+            {"src": "slices_metal/env_brdf.png", "input": "PrefilteredMetalBRDF"},
+            {"src": "slices_coat/env_brdf.png", "input": "PrefilteredCoatBRDF"},
+        ]
 
-        for lut in ("", "metal"):
+        for config in luts:
+            loader_method = Globals.loader.load_texture
+            if "#" in config["src"]:
+                loader_method = Globals.loader.load_3d_texture
 
-            loader_method = Globals.loader.load_texture if lut == "metal" else Globals.loader.load_3d_texture
-            brdf_tex = loader_method(
-                "/$$rp/data/environment_brdf/{}".format(
-                    "slices_metal/env_brdf.png" if lut == "metal" else "slices/env_brdf_#.png"))
+            brdf_tex = loader_method("/$$rp/data/environment_brdf/{}".format(config["src"]))
             brdf_tex.set_minfilter(SamplerState.FT_linear)
             brdf_tex.set_magfilter(SamplerState.FT_linear)
             brdf_tex.set_wrap_u(SamplerState.WM_clamp)
             brdf_tex.set_wrap_v(SamplerState.WM_clamp)
             brdf_tex.set_wrap_w(SamplerState.WM_clamp)
             brdf_tex.set_anisotropic_degree(0)
-            # brdf_tex.set_format(Texture.F_rgba16)
-            input_name = "PrefilteredMetalBRDF" if lut == "metal" else "PrefilteredBRDF"
-            self._pipeline.stage_mgr.add_input(input_name, brdf_tex)
+            self._pipeline.stage_mgr.add_input(config["input"], brdf_tex)
 
     def _load_precomputed_grain(self):
         grain_tex = Globals.loader.load_texture(
@@ -151,7 +154,7 @@ class CommonResources(BaseManager):
 
     def _load_skydome(self):
         """ Loads the skydome """
-        skydome = Globals.loader.load_texture("/$$rp/data/builtin_models/skybox/skybox2.jpg")
+        skydome = Globals.loader.load_texture("/$$rp/data/builtin_models/skybox/skybox3.jpg")
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)

@@ -67,7 +67,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
 
     // Out of screen, can early out
     if (last_coord.x < 0.0 || last_coord.x >= 1.0 || last_coord.y < 0.0 || last_coord.y >= 1.0) {
-        return curr_m;
+        return max(vec4(0.0), curr_m);
     }
 
     // Bounding box size
@@ -96,7 +96,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
                         + length(clamp(last_bl.xyz, curr_min.xyz, curr_max.xyz) - last_bl.xyz)
                         + length(clamp(last_br.xyz, curr_min.xyz, curr_max.xyz) - last_br.xyz);
 
-    float max_difference = max(get_luminance(last_m.xyz), get_luminance(curr_m.xyz)) * RS_MAX_CLIP_DIST; // TODO: Make this a setting
+    float max_difference = clamp(max(get_luminance(last_m.xyz), get_luminance(curr_m.xyz)), 0.01, 15.0) * RS_MAX_CLIP_DIST; // TODO: Make this a setting
     if (neighbor_diff < max_difference)
         clip_length = 0.0;
 
@@ -112,5 +112,5 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     const float max_frames_h = 8.0;
 
     float weight = 1.0 / mix(max_frames_l, max_frames_h, blend_amount);
-    return mix(last_m, curr_m, weight);
+    return max(vec4(0.0), mix(last_m, curr_m, weight));
 }

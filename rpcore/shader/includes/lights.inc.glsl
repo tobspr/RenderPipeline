@@ -94,13 +94,16 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 
     vec3 f0 = get_material_f0(m);
 
-
     // Diffuse contribution
     vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness) * m.basecolor * (1 - m.metallic);
 
     // Specular contribution
     // float distribution = brdf_distribution(NxH, m.roughness);
-    float distribution = brdf_distribution(NxH, m.roughness + (m.shading_model == SHADING_MODEL_CLEARCOAT ? 0.12 : 0.0) );
+
+    // We add some roughness for clearcoat - this is due to the reason that
+    // light gets scattered and though a wider highlight is shown.
+    // This approximates the reference in mitsuba very well.
+    float distribution = brdf_distribution(NxH, m.roughness * (m.shading_model == SHADING_MODEL_CLEARCOAT ? 2.0 : 1.0));
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = mix(f0, vec3(1), brdf_schlick_fresnel(f0, LxH));
 
@@ -108,16 +111,15 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // already, so to evaluate the complete brdf we just do a multiply
     shading_result += (distribution * visibility) * fresnel;
 
-
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         float distribution_coat = brdf_distribution(NxH, CLEARCOAT_ROUGHNESS);
         float visibility_coat = brdf_visibility(NxL, NxV, NxH, VxH, CLEARCOAT_ROUGHNESS);
         vec3 fresnel_coat = brdf_schlick_fresnel(vec3(CLEARCOAT_SPECULAR), LxH);
 
-
+        // Approximation to match reference
         shading_result *= (1 - fresnel_coat.x);
-        shading_result *= 0.1 + m.linear_roughness;
-
+        shading_result *= 0.4 + 3.0 * m.linear_roughness;
+        shading_result *= 0.5 + 0.5 * m.basecolor;
 
         vec3 coat_spec = (distribution_coat * visibility_coat) * fresnel_coat;
         shading_result += (distribution_coat * visibility_coat) * fresnel_coat;

@@ -11,7 +11,7 @@
 		<point name="p1" x="0" y="-0.5" z="0" />
 
 		<bsdf type="roughconductor">
-			<string name="material" value="Au"/>
+			<string name="material" value="Ag"/>
 			<string name="distribution" value="ggx"/>
 			<texture name="alpha" type="bitmap">
 				<string name="filename" value="roughness.png"/>
@@ -38,7 +38,7 @@
 		</transform>
 
 		<sampler type="ldsampler">
-			<integer name="sampleCount" value="256" />
+			<integer name="sampleCount" value="%SAMPLES%" />
 		</sampler>
 
 		<film type="hdrfilm">

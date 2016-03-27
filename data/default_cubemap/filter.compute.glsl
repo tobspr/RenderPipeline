@@ -40,7 +40,6 @@ vec3 importance_sample_ggx(vec2 xi, float roughness)
   return h;
 }
 
-
 // Converts a normalized spherical coordinate (r = 1) to cartesian coordinates
 vec3 spherical_to_vector(float theta, float phi) {
     float sin_theta = sin(theta);
@@ -58,14 +57,12 @@ float brdf_distribution_ggx(float NxH, float roughness) {
     return f * f / M_PI;
 }
 
-
 // Finds a tangent and bitangent vector based on a given normal
 void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
-    vec3 v0 = abs(normal.z) < (0.99) ? vec3(0, 0, 1) : vec3(0, 1, 0);
+    vec3 v0 = abs(normal.z) < 0.999 ? vec3(0, 0, 1) : vec3(0, 1, 0);
     tangent = normalize(cross(v0, normal));
     bitangent = normalize(cross(tangent, normal));
 }
-
 
 vec3 transform_cubemap_coordinates(vec3 coord) {
     //return normalize(coord.xzy * vec3(1,-1,1));

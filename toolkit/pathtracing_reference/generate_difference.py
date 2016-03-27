@@ -11,6 +11,8 @@ from panda3d.core import PNMImage
 source_a = "scene.png"
 source_b = "scene-rp.png"
 
+write_diff_img = False
+
 img_a = PNMImage(source_a)
 img_b = PNMImage(source_b)
 

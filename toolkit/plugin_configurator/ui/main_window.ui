@@ -43,23 +43,24 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>110</y>
+      <y>120</y>
       <width>251</width>
-      <height>481</height>
+      <height>471</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QListWidget::item {
-padding: 7px 3px;
-background: #555;
+padding: 5px 3px;
+background: #444;
 outline: 0 !important;
 margin-bottom: 3px;
 margin-right: 10px;
-color: #eee;
+color: #fff;
+
 }
 
 QListWidget::item:hover {
-background: #5c5c5c;
+background: #4c4c4c;
 }
 
 QListWidget::item:selected {
@@ -69,7 +70,7 @@ background: #4f8027;
 QListWidget {
 padding: 0;
 color: #eee;
-background: #cdcdcd;
+background: transparent;
 /*
 background: #222;
 padding: 5px 8px;
@@ -90,72 +91,72 @@ outline: 0;
     </property>
     <item>
      <property name="text">
-      <string>  Item 1</string>
+      <string>Ambient Occlusion</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Bloom</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Volumetric Clouds</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Depth of Field</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Environment Probes</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>FXAA (Antialiasing)</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Motion Blur</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>PSSM Shadows</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Atmospheric Scattering</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Skin Shading</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>SMAA (Antialiasing)</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Screen Space Reflections</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item</string>
+      <string>Volumetric Lighting</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>  Item 2</string>
+      <string>VXGI</string>
      </property>
     </item>
     <item>
@@ -172,6 +173,9 @@ outline: 0;
       <width>711</width>
       <height>611</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QFrame {background: #ececec; }</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::NoFrame</enum>
@@ -227,6 +231,15 @@ outline: 0;
           </color>
          </brush>
         </colorrole>
+        <colorrole role="Button">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
+          </color>
+         </brush>
+        </colorrole>
         <colorrole role="Text">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
@@ -242,6 +255,24 @@ outline: 0;
            <red>79</red>
            <green>128</green>
            <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
           </color>
          </brush>
         </colorrole>
@@ -256,6 +287,15 @@ outline: 0;
           </color>
          </brush>
         </colorrole>
+        <colorrole role="Button">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
+          </color>
+         </brush>
+        </colorrole>
         <colorrole role="Text">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
@@ -271,6 +311,24 @@ outline: 0;
            <red>79</red>
            <green>128</green>
            <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
           </color>
          </brush>
         </colorrole>
@@ -285,6 +343,15 @@ outline: 0;
           </color>
          </brush>
         </colorrole>
+        <colorrole role="Button">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
+          </color>
+         </brush>
+        </colorrole>
         <colorrole role="Text">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
@@ -300,6 +367,24 @@ outline: 0;
            <red>79</red>
            <green>128</green>
            <blue>39</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>236</red>
+           <green>236</green>
+           <blue>236</blue>
           </color>
          </brush>
         </colorrole>
@@ -583,7 +668,7 @@ border-width: 0 0 0px 0;</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">background: #cdcdcd; border-right: 1px solid #aaa;</string>
+     <string notr="true">background: #333; border-right: 1px solid #222;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::StyledPanel</enum>
@@ -607,7 +692,7 @@ border-width: 0 0 0px 0;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: #444;border: 0;</string>
+      <string notr="true">color: #eee;border: 0;</string>
      </property>
      <property name="text">
       <string>Installed Plugins</string>
@@ -640,27 +725,27 @@ border-width: 0 0 0px 0;</string>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
@@ -678,27 +763,27 @@ border-width: 0 0 0px 0;</string>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
@@ -716,27 +801,27 @@ border-width: 0 0 0px 0;</string>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
           <color alpha="255">
-           <red>205</red>
-           <green>205</green>
-           <blue>205</blue>
+           <red>51</red>
+           <green>51</green>
+           <blue>51</blue>
           </color>
          </brush>
         </colorrole>
@@ -751,7 +836,7 @@ border-width: 0 0 0px 0;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">border-top: 1px solid #aaa;
+      <string notr="true">border-top: 1px solid #555;
 border-right: 0px solid #9A3;</string>
      </property>
      <property name="text">
@@ -774,10 +859,10 @@ border-right: 0px solid #9A3;</string>
    <widget class="QLabel" name="lbl_restart_pipeline">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>18</y>
-      <width>391</width>
-      <height>31</height>
+      <x>490</x>
+      <y>10</y>
+      <width>421</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -789,10 +874,10 @@ border-right: 0px solid #9A3;</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #F44;background: #eee;padding: 5px; border-radius: 2px;</string>
+     <string notr="true">color: #F44;background: #fff;padding: 5px; border: 3px solid #F44;</string>
     </property>
     <property name="text">
-     <string>Pipeline needs to be restarted in order to see all changes!</string>
+     <string>Pipeline needs to be restarted to apply the changes!      </string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

@@ -29,6 +29,13 @@
 // Main configuration file, included by all shaders, provides generic defines
 // and functions.
 
+// Leads to some compilation issues
+#ifndef NO_FAST_PRECISION
+#pragma optionNV (fastprecision on)
+#endif
+
+#pragma include "/$$rptemp/$$pipeline_shader_config.inc.glsl"
+
 // Optionally unroll *all* loops, this might be faster, but might also be
 // slower. Right now, every shader specifies on his own if he wants to unroll
 // his loops or not.
@@ -42,12 +49,6 @@
 #pragma optionNV (strict on)
 #endif
 
-// Leads to some compilation issues
-#ifndef NO_FAST_PRECISION
-#pragma optionNV (fastprecision on)
-#endif
-
-#pragma include "/$$rptemp/$$pipeline_shader_config.inc.glsl"
 
 // Only include the UBO's if required
 #ifdef USE_MAIN_SCENE_DATA
@@ -118,8 +119,8 @@ precision lowp int;
 #define CLEARCOAT_SPECULAR 0.16
 #define CLEARCOAT_IOR 1.51
 
+
 #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
 
-#define REFERENCE_MODE 0
 
 #pragma include "includes/common_functions.inc.glsl"

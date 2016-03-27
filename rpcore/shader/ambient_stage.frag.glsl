@@ -37,10 +37,11 @@ uniform sampler2D ShadedScene;
 uniform GBufferData GBuffer;
 uniform sampler3D PrefilteredBRDF;
 uniform sampler2D PrefilteredMetalBRDF;
+uniform sampler2D PrefilteredCoatBRDF;
 
 uniform samplerCube DefaultEnvmap;
 
-#define USE_WHITE_ENVIRONMENT 0
+#define USE_WHITE_ENVIRONMENT 1
 
 #if HAVE_PLUGIN(scattering)
     uniform samplerCube ScatteringIBLDiffuse;
@@ -103,15 +104,16 @@ void main() {
     // Skip skybox shading
     if (is_skybox(m)) {
 
-        // xxx
-        result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
-
-        #if USE_WHITE_ENVIRONMENT
-            result = vec4(1);
-        #endif
-
         #if !REFERENCE_MODE
             result = textureLod(ShadedScene, texcoord, 0);
+        #else
+
+            // When in reference mode, display the used environment cubemap as background
+            result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
+
+            #if USE_WHITE_ENVIRONMENT
+                result = vec4(1);
+            #endif
         #endif
 
         return;
@@ -138,13 +140,14 @@ void main() {
 
     // Sample default environment map
     vec3 ibl_specular = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+
     // Get cheap irradiance by sampling low levels of the environment map
-    float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 2.5;
+    float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 6.5;
     vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal), ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
     #if USE_WHITE_ENVIRONMENT
-        ibl_specular = vec3(1.0); // xxx
-        ibl_diffuse = vec3(1.0); // xxx
+        ibl_specular = vec3(1.0);
+        ibl_diffuse = vec3(1.0);
     #endif
 
     // Scattering specific code
@@ -160,7 +163,6 @@ void main() {
         // Diffuse IBL
         ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
     #endif
-
 
     #if HAVE_PLUGIN(env_probes)
         // Mix environment maps
@@ -199,26 +201,23 @@ void main() {
 
 
     // Pre-Integrated environment BRDF
-    // ior = 1.01 + 0.1 * ior_index
-
-    float lookup_slice = (m.specular_ior - 1.01) / 1.5 + 0.5 / 15.0;
     vec3 env_brdf = get_brdf_from_lut(PrefilteredBRDF, NxV, roughness, m.specular_ior);
 
-    // Exact brdf lut, unused yet
+    // Exact metallic brdf lut, unused right now
     // vec3 env_brdf_metal = get_brdf_from_lut(PrefilteredMetalBRDF, NxV, roughness);
 
-    // Diffuse ambient term
+    // Diffuse and fresnel ambient term
     vec3 diffuse_ambient = ibl_diffuse * m.basecolor * (1-m.metallic);
     vec3 fresnel = env_brdf.ggg;
     diffuse_ambient *= env_brdf.r;
 
-    fresnel = mix(fresnel, env_brdf.r * m.basecolor + env_brdf.g , m.metallic);
+    // Mix between normal and metallic fresnel
+    vec3 metallic_fresnel = env_brdf.r * m.basecolor + env_brdf.g;
+    fresnel = mix(fresnel, metallic_fresnel, m.metallic);
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
-        // Sample prefiltered scattering cubemap
 
-        vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredBRDF, NxV, CLEARCOAT_ROUGHNESS, CLEARCOAT_IOR);
-        float fresnel_coat = env_brdf_coat.g;
+        vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredCoatBRDF, NxV, roughness);
 
         #if HAVE_PLUGIN(scattering)
             vec3 ibl_specular_base = textureLod(ScatteringIBLSpecular, reflected_dir,
@@ -228,14 +227,12 @@ void main() {
                 get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV) + mipmap_bias).xyz;
         #endif
 
-        specular_ambient = fresnel_coat * ibl_specular;
+        #if USE_WHITE_ENVIRONMENT
+            ibl_specular_base = vec3(1);
+        #endif
 
-        // Make sure we don't apply a bright sky cubemap on dark spots
-        float specular_clip =  saturate(15.0 * get_luminance(ibl_specular));
-
-         // XXX: Find a better solution for the clip factor
-        specular_clip = env_brdf.r * NxV;
-        specular_ambient += material_f0 * ibl_specular_base * specular_clip;
+        specular_ambient = env_brdf_coat.g * ibl_specular;
+        specular_ambient += env_brdf_coat.r * ibl_specular_base * m.basecolor * (1 - 0.333 * m.linear_roughness);
 
     } else {
         specular_ambient = fresnel * ibl_specular;
@@ -257,7 +254,7 @@ void main() {
 
     // Emissive materials
     if (m.shading_model == SHADING_MODEL_EMISSIVE) {
-        ambient = m.basecolor * 4000.0;
+        ambient = m.basecolor * 1000.0;
     }
 
     // TODO: For emissive, use: compute_bloom_luminance()
@@ -276,6 +273,7 @@ void main() {
         // So reduce ambient in the fog
         ambient *= (1.0 - scene_color.w);
     #endif
+
 
     result = scene_color * 1 + vec4(ambient, 1) * 1;
 }

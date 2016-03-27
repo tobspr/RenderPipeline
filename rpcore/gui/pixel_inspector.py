@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import CardMaker, NodePath, Shader, Vec2
+from panda3d.core import CardMaker, NodePath, Shader, Vec2, GraphicsWindow
 from rpcore.gui.text import Text
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
@@ -70,11 +70,12 @@ class PixelInspector(RPObject):
         self._zoomer.set_shader_input("SceneTex", scene_tex)
 
     def update(self):
-        mouse = Globals.base.win.get_pointer(0)
-        if mouse.get_in_window():
-            pos = mouse.get_x(), 1, -mouse.get_y()
-            self._node.set_pos(pos)
-            self._zoomer.set_shader_input(
-                "mousePos", Vec2(mouse.get_x(),
-                    Globals.base.win.get_y_size() - mouse.get_y()))
+        if isinstance(Globals.base.win, GraphicsWindow):
+            mouse = Globals.base.win.get_pointer(0)
+            if mouse.get_in_window():
+                pos = mouse.get_x(), 1, -mouse.get_y()
+                self._node.set_pos(pos)
+                self._zoomer.set_shader_input(
+                    "mousePos", Vec2(mouse.get_x(),
+                        Globals.base.win.get_y_size() - mouse.get_y()))
 

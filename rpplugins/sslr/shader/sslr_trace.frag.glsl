@@ -31,6 +31,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
+#pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/importance_sampling.inc.glsl"
 
@@ -39,18 +40,23 @@ uniform sampler2D DownscaledDepth;
 out vec3 result;
 
 #define USE_LINEAR_DEPTH 0
+#define NUM_RAYDIR_RETRIES 3
 
 const int num_steps = 64;
 const float hit_tolerance_ws = 0.0;
+const float hit_tolerance_backface = 0.0003;
 
 bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
 
     // This traces correct, but looks weird because gaps are not filled
     // return z + hit_tolerance_ws >= min(z_a, z_b) - 0.00015 && z - hit_tolerance_ws <= max(z_a, z_b);
 
+    hit_factor = false;
+
     // This traces "incorrect", but looks better because gaps are getting filled then
     if (z - hit_tolerance_ws <= max(z_a, z_b)) {
-        hit_factor = z + hit_tolerance_ws >= min(z_a, z_b) - 0.00001;
+        hit_factor = z + hit_tolerance_ws >= min(z_a, z_b) - hit_tolerance_backface;
+        hit_factor = true;
         return true;
     }
 
@@ -60,21 +66,19 @@ bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
 
 void main()
 {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
     vec2 texcoord = get_half_texcoord();
-    // vec2 texcoord = get_texcoord();
-
 
     // TODO: Using the real normal provides *way* worse coherency
     vec3 normal_vs = get_view_normal(texcoord);
-    // vec3 normal_vs = get_view_normal_approx(texcoord);
-
     Material m = unpack_material(GBuffer, texcoord);
+    normal_vs = world_normal_to_view(m.normal);
 
     vec3 ray_start_vs = get_view_pos_at(texcoord);
     float pixeldist = distance(m.position, MainSceneData.camera_pos);
 
     // Skip skybox
-    if (pixeldist > 1000) {
+    if (pixeldist > 3000) {
         result = vec3(0);
         return;
     }
@@ -83,24 +87,54 @@ void main()
     vec3 view_dir = normalize(ray_start_vs);
     vec3 ray_dir = normalize(reflect(view_dir, normal_vs));
 
-    ivec2 coord = ivec2(gl_FragCoord.xy);
-    // int seed = (coord.x * 2 + coord.y + MainSceneData.frame_index) % 4;
-    // vec2 xi = hammersley(seed, 4);
-    vec2 xi = abs(rand_rgb(texcoord + 1.2 * (MainSceneData.frame_index % 8)).xz);
-
-    // XXX: Use actual roughness
-    vec3 rho = importance_sample_ggx(xi, m.roughness);
-
     // Get tangent and binormal
     vec3 tangent, binormal;
     find_arbitrary_tangent(ray_dir, tangent, binormal);
-    ray_dir = normalize(rho.x * tangent + rho.y * binormal + rho.z * ray_dir);
 
-    if (dot(ray_dir, normal_vs) < 0.0) {
-        result = vec3(0.1, 0, 0);
+
+    float pdf = 0.0;
+    vec3 importance_ray_dir = vec3(0);
+
+    float roughness = get_effective_roughness(m);
+
+    // Generate ray directions until we find a value which is valid
+    for (int i = 0; i < NUM_RAYDIR_RETRIES; ++i) {
+
+        vec2 seed = texcoord + 0.3123 * i + 0.633 * (MainSceneData.frame_index % 8);
+
+        // Get random sequence, should probably use halton or so
+        vec2 xi = clamp(abs(rand_rgb(seed).xz), vec2(0.01), vec2(0.99));
+
+        // Clamp brdf tail, see frostbite slides for details
+        const float brdf_bias = 0.7;
+        xi.y = mix(xi.y, 0.0, brdf_bias);
+
+        // Get importance sampled directory
+        vec4 rho = importance_sample_ggx(xi, clamp(roughness, 0.0001, 1.0));
+
+        importance_ray_dir = normalize(
+            1e-5 + rho.x * tangent + rho.y * binormal + rho.z * ray_dir);
+        pdf = rho.w;
+
+        // If the ray dir is fine, abort, otherwise continue
+        if (dot(ray_dir, normal_vs) > 0.01 && pdf > 0.001) {
+            break;
+        }
+    }
+
+    ray_dir = importance_ray_dir;
+
+    if (dot(ray_dir, normal_vs) <= 0.0 && pdf >= 0.0001) {
+        // Failed to find valid sample - thats bad!
+        result = vec3(0);
         return;
     }
 
+    // Ray not in view
+    if (dot(ray_dir, view_dir) < 1e-5) {
+        result = vec3(0,0,0);
+        return;
+    }
 
     float RxV = dot(ray_dir, view_dir);
     float max_ray_len = 10.0 * pixeldist;
@@ -119,6 +153,7 @@ void main()
     vec3 ray_pos = ray_start_screen;
     vec3 ray_dir_screen = ray_end_screen - ray_start_screen;
 
+
     // Make sure the ray does not leave the screen
     float scale_max_x = min(1, 0.99 * (1.0 - ray_start_screen.x) / max(1e-5, ray_dir_screen.x));
     float scale_max_y = min(1, 0.99 * (1.0 - ray_start_screen.y) / max(1e-5, ray_dir_screen.y));
@@ -135,19 +170,19 @@ void main()
     #endif
 
     vec3 ray_step = (ray_end_screen - ray_start_screen) / num_steps;
-    ray_pos += 5 * ray_step * float(num_steps) / 512.0 * pow(1 - saturate(dot(normal_vs, -view_dir)), 12.0);
+    ray_pos += 0.2 * ray_step * float(num_steps) / 512.0 / saturate(dot(normal_vs, -view_dir));
 
     vec2 intersection = vec2(-1);
 
     // float jitter = rand(texcoord + MainSceneData.temporal_index);
-    float jitter = rand(ivec2(gl_FragCoord.xy) % 3223 + (MainSceneData.frame_index % 8) * 10.0 );
+    float jitter = abs(rand(ivec2(gl_FragCoord.xy) + (MainSceneData.frame_index % 8) * 0.1));
     // jitter *= 0.0;
-    // jitter *= 5.0;
+    jitter *= 2.0;
     ray_pos += jitter * ray_step;
 
     int i;
     float intersection_weight = 0.0;
-    bool hit_factor;
+    bool hit_factor = false;
     for (i = 1; i < num_steps; ++i) {
         ray_pos += ray_step;
 
@@ -171,7 +206,7 @@ void main()
     intersection = truncate_coordinate(intersection);
 
     // Check if we hit something
-    if (min(intersection.x, intersection.y) < 0.0) {
+    if (min(intersection.x, intersection.y) <= 0.0) {
         // result = vec3(0.2, 0, 0, 0);
         result = vec3(0);
         return;
@@ -184,9 +219,15 @@ void main()
         return;
     }
 
-    // float fade = saturate(2.0 * RxV) * pow(1 - (i / float(num_steps - 1)), 1);
-    float fade = pow(1 - (i / float(num_steps - 1)), 1);
-    if (fade < 1e-3 || !hit_factor) {
+    float fade = saturate(5.0 * RxV);
+    // float fade = pow(1 - (i / float(num_steps - 1)), 1);
+    if (fade < 1e-3) {
+        result = vec3(0);
+        return;
+    }
+
+    // XXX
+    if (!hit_factor) {
         result = vec3(0);
         return;
     }
@@ -198,7 +239,8 @@ void main()
     // }
 
     fade = 1.0;
+    pdf = 1.0;
 
-    result = vec3(intersection, fade);
+    result = vec3(intersection, 1.0 / max(1e-5, pdf) * fade);
 }
 
