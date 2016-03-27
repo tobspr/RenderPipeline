@@ -66,7 +66,6 @@ class SMAAStage(RenderStage):
             return {"ShadedScene": self.neighbor_target.color_tex}
 
     def create(self):
-
         self.target_fireflies = self.create_target("RemoveFireflies")
         self.target_fireflies.add_color_attachment(bits=16)
         self.target_fireflies.prepare_buffer()

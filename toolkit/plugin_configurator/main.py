@@ -182,7 +182,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self.lbl_plugin_desc.setText(self._current_plugin_instance.description)
 
         if "(!)" in version_str:
-            self.lbl_plugin_version.setStyleSheet("background: #C10000; color: #eee; padding-left: 5px;")
+            self.lbl_plugin_version.setStyleSheet("background: rgb(200, 50, 50); padding: 5px; color: #eee; padding-left: 3px; border-radius: 3px;")
         else:
             self.lbl_plugin_version.setStyleSheet("color: #4f8027;")
 

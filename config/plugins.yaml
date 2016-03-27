@@ -8,15 +8,15 @@ enabled:
     - bloom
     - color_correction
     - env_probes
+    - fxaa
+    - motion_blur
     - pssm
     - scattering
     - smaa
     - sslr
     - volumetrics
     # - clouds
-    # - dof
-    # - fxaa
-    # - motion_blur
+    - dof
     # - skin_shading
     # - vxgi
 
@@ -28,7 +28,7 @@ overrides:
         occlusion_strength: 1.0
         technique: SSAO
         ssao_sample_radius: 79.61
-        ssao_sample_count: 8
+        ssao_sample_count: 2
         ssao_bias: 0.0333
         ssao_max_distance: 6.89
         hbao_sample_radius: 119.11
@@ -67,11 +67,11 @@ overrides:
         uc2t_toe_numerator: 0.01
         uc2t_toe_denumerator: 0.3
         uc2t_reference_white: 11.2
-        vignette_strength: 0.3111
-        film_grain_strength: 0.15559
-        color_lut: film_luts/agfa_agfacolor_futura_100.png
+        vignette_strength: 0.4222
+        film_grain_strength: 0.25779
+        color_lut: film_luts/kodak_gold_200.png
         use_chromatic_aberration: True
-        chromatic_aberration_strength: 0.4293
+        chromatic_aberration_strength: 0.3187
         chromatic_aberration_samples: 2
         manual_camera_parameters: False
         min_exposure_value: 0.012
@@ -79,8 +79,8 @@ overrides:
         exposure_bias: 0.0
         brightness_adaption_rate: 2.67
         darkness_adaption_rate: 0.79
-        use_sharpen: False
-        sharpen_strength: 1.11
+        use_sharpen: True
+        sharpen_strength: 1.33333
         sharpen_twice: False
 
     dof:
@@ -94,7 +94,7 @@ overrides:
     fxaa:
         quality: ultra
         subpixel_quality: 0.5
-        edge_threshold: 0.075
+        edge_threshold: 0.156
         min_threshold: 0.7114
 
     motion_blur:

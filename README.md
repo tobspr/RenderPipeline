@@ -2,8 +2,9 @@
 # Render Pipeline
 Deferred Rendering Pipeline with Physically Based Shading for the <a href="http://github.com/panda3d/panda3d">Panda3D Game Engine</a>.
 
-<img src="http://i.imgur.com/spRw8Dz.png" />
-<a href="https://www.youtube.com/watch?v=ySc3B7JVUsY" target="_blank">Car Showcase Video</a>
+<img src="http://i.imgur.com/oOwLXAK.png" />
+<img src="http://i.imgur.com/iTTBodd.png" />
+<a href="https://www.youtube.com/watch?v=IgkHf5ZHAAQ" target="_blank">Car Showcase Video</a> (A bit outdated)
 
 ### Core Features
 
@@ -45,17 +46,14 @@ If I shouldn't be there, feel free to contact me per E-Mail: `tobias.springer1@g
 
 ### Screenshots
 
-
-
 **Terrain:**
 <img src="http://i.imgur.com/nY5nBs3.png" />
 
 **Some dragon model:**
 <img src="http://i.imgur.com/Yc6jXK8.png" />
 
-
 **Plugin and Time of Day editor:**
-<img src="http://i.imgur.com/Rs8jkrC.png" />
+<img src="http://i.imgur.com/UakFybf.png" />
 
 **quboid Demo** (<a href="https://www.youtube.com/watch?v=9vXH9JaWsT4" target="_blank">Video</a>)
 <img src="http://i.imgur.com/o7xtp35.png" />

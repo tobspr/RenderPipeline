@@ -44,6 +44,13 @@ void main() {
     // Get sample coordinates
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 bil_start_coord = get_bilateral_coord(coord);
+
+    // Shift samples each frame
+    int offs_x = MainSceneData.frame_index % 2;
+    int offs_y = (MainSceneData.frame_index / 2) % 2;
+
+    // bil_start_coord -= ivec2(offs_x, offs_y);
+
     vec2 texcoord = ((bil_start_coord * 2) + 0.5) / SCREEN_SIZE;
 
     // Get current pixel data
@@ -56,6 +63,7 @@ void main() {
         result = vec4(0);
         return;
     }
+
 
     const float max_depth_diff = 0.001;
 
@@ -77,16 +85,17 @@ void main() {
         for (int y = -search_radius; y < 2 + search_radius; ++y) {
 
             ivec2 source_coord = bil_start_coord + ivec2(x, y);
+            ivec2 screen_coord = source_coord * 2 + ivec2(offs_x, offs_y);
             vec4 source_sample = texelFetch(SourceTex, source_coord, 0);
 
             // Skip empty samples, however take into account we have no data there, so
             // still increase the weight
             if ( length_squared(source_sample.xy) < 1e-2 || source_sample.w < 1e-3) {
-                // weights += 1.0;
+                weights += 1.0;
                 continue;
             }
 
-            float sample_depth = get_gbuffer_depth(GBuffer, source_coord * 2);
+            float sample_depth = get_gbuffer_depth(GBuffer, screen_coord);
 
             // Find depth of intersection pixel
             float intersection_depth = get_gbuffer_depth(GBuffer, source_sample.xy);
@@ -100,9 +109,9 @@ void main() {
 
             // Get the halfway vector
             vec3 h = normalize(view_vector + direction_to_sample);
-            float NxH = saturate(dot(reflected_dir, direction_to_sample));
+            float NxH = saturate(dot(m.normal, h));
 
-            float weight = clamp(brdf_distribution_ggx(NxH, 1e-3 + roughness), 0.0, 1.0);
+            float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + roughness), 0.0, 31.0);
 
             weight *= source_sample.z; // value stored is 1 / pdf
             // weight = 1;

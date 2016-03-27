@@ -264,7 +264,7 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
 
     // Normalize the brdf
     // return vis;
-    return vis / max(1e-5, 4.0 * NxH * VxH);
+    return vis / max(1e-5, 4.0 * VxH);
 }
 
 // Fresnel

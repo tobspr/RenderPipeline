@@ -56,7 +56,7 @@ bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
     // This traces "incorrect", but looks better because gaps are getting filled then
     if (z - hit_tolerance_ws <= max(z_a, z_b)) {
         hit_factor = z + hit_tolerance_ws >= min(z_a, z_b) - hit_tolerance_backface;
-        hit_factor = true;
+        // hit_factor = true;
         return true;
     }
 
@@ -68,6 +68,12 @@ void main()
 {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec2 texcoord = get_half_texcoord();
+
+    // Shift samples each frame
+    int offs_x = MainSceneData.frame_index % 2;
+    int offs_y = (MainSceneData.frame_index / 2) % 2;
+
+    texcoord += vec2(offs_x, offs_y) / SCREEN_SIZE;
 
     // TODO: Using the real normal provides *way* worse coherency
     vec3 normal_vs = get_view_normal(texcoord);
@@ -95,6 +101,8 @@ void main()
     float pdf = 0.0;
     vec3 importance_ray_dir = vec3(0);
 
+    // Important: For clearcoat we trace the outer layer (with low roughness)
+    // instead of the high roughness layer
     float roughness = get_effective_roughness(m);
 
     // Generate ray directions until we find a value which is valid
@@ -221,23 +229,19 @@ void main()
 
     float fade = saturate(5.0 * RxV);
     // float fade = pow(1 - (i / float(num_steps - 1)), 1);
-    if (fade < 1e-3) {
+    if (fade < 1e-3 || !hit_factor) {
         result = vec3(0);
         return;
     }
 
-    // XXX
-    if (!hit_factor) {
-        result = vec3(0);
-        return;
-    }
-
+    // Optional: don't weight skybox fixes
     // float depth_at_intersection = textureLod(GBuffer.Depth, intersection.xy, 0).x;
     // if (get_linear_z_from_z(depth_at_intersection) > 3000.0) {
     //     result = vec3(0);
     //     return;
     // }
 
+    // XXX: Seems this works *way* better
     fade = 1.0;
     pdf = 1.0;
 

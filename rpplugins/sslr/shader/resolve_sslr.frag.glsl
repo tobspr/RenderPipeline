@@ -46,4 +46,5 @@ void main() {
 
     result = resolve_temporal(CurrentTex, Previous_SSLRSpecular, texcoord, last_coord);
 
+
 }
