@@ -33,20 +33,20 @@ from panda3d.core import Texture
 from direct.stdpy.file import open
 
 from rpcore.globals import Globals
+from rpcore.rpobject import RPObject
 from rpcore.gui.pipe_viewer import PipeViewer
 from rpcore.image import Image
 from rpcore.util.shader_ubo import BaseUBO
-from rpcore.base_manager import BaseManager
 from rpcore.stages.update_previous_pipes_stage import UpdatePreviousPipesStage
 
-class StageManager(BaseManager):
+class StageManager(RPObject):
 
     """ This manager takes a list of RenderStages and puts them into an order,
     while connecting the different pipes, inputs, ubos and defines. """
 
     def __init__(self, pipeline):
         """ Constructs the stage manager """
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self._stages = []
         self._inputs = {}
         self._pipes = {}
@@ -270,7 +270,7 @@ class StageManager(BaseManager):
         for stage in self._stages:
             stage.set_shaders()
 
-    def do_update(self):
+    def update(self):
         """ Calls the update method for each registered stage """
         for stage in self._stages:
             stage.update()

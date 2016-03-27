@@ -32,12 +32,12 @@ from rplibs.yaml import load_yaml_file
 
 from direct.stdpy.file import listdir, isdir, join, open
 
-from rpcore.base_manager import BaseManager
+from rpcore.rpobject import RPObject
 from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.pluginbase.setting_types import make_setting_from_data
 from rpcore.pluginbase.day_setting_types import make_daysetting_from_data
 
-class PluginManager(BaseManager):
+class PluginManager(RPObject):
 
     """ This class manages all plugins. It provides functionality to load plugin
     settings, trigger callbacks on plugins, initialize the plugin instances
@@ -46,12 +46,32 @@ class PluginManager(BaseManager):
     def __init__(self, pipeline):
         """ Constructs a new manager with no plugins loaded. To load settings
         and plugins, call load(). """
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self._pipeline = pipeline
         self._instances = {}
         self._settings = {}
         self._day_settings = {}
-        self._enabled_plugins = set()
+        self.enabled_plugins = set()
+
+    @property
+    def plugin_instances(self):
+        """ Returns a dictionary with all plugin ids and their instances """
+        return self._instances
+
+    @property
+    def settings(self):
+        """ Returns all settings as a dictionary """
+        return self._settings
+
+    @property
+    def day_settings(self):
+        """ Returns all time of day settings as a dictionary """
+        return self._day_settings
+
+    @property
+    def num_day_settings(self):
+        """ Returns the amount of day time settings """
+        return sum((len(i) for i in itervalues(self._day_settings)))
 
     def load(self):
         """ Loads all plugins and their settings, and also constructs instances
@@ -71,9 +91,9 @@ class PluginManager(BaseManager):
     def disable_plugin(self, plugin_id):
         """ Disables a plugin, given its plugin_id. This will remove it from
         the list of enabled plugins, if it ever was there """
-        if plugin_id in self._enabled_plugins:
+        if plugin_id in self.enabled_plugins:
             self.warn("Disabling", plugin_id)
-            self._enabled_plugins.remove(plugin_id)
+            self.enabled_plugins.remove(plugin_id)
             for instance in itervalues(self._instances):
                 if plugin_id in instance.required_plugins:
                     self.disable_plugin(instance.plugin_id)
@@ -86,9 +106,9 @@ class PluginManager(BaseManager):
         self._instances = {}
         self._settings = {}
         self._day_settings = {}
-        self._enabled_plugins = set()
+        self.enabled_plugins = set()
 
-    def do_update(self):
+    def update(self):
         """ Main update method """
         pass
 
@@ -124,7 +144,7 @@ class PluginManager(BaseManager):
         if not overrides:
             self.warn("Failed to load overrides")
             return
-        self._enabled_plugins = set(overrides["enabled"] or [])
+        self.enabled_plugins = set(overrides["enabled"] or [])
         for plugin_id, plugin_settings in iteritems(overrides["overrides"] or {}):
             if plugin_id not in self._settings:
                 self.warn("Unkown plugin in plugin config:", plugin_id)
@@ -153,14 +173,14 @@ class PluginManager(BaseManager):
         """ Triggers a given hook on all plugins, effectively calling all
         bound callbacks """
         hook_method = "on_{}".format(hook_name)
-        for plugin_id in self._enabled_plugins:
+        for plugin_id in self.enabled_plugins:
             plugin_handle = self._instances[plugin_id]
             if hasattr(plugin_handle, hook_method):
                 getattr(plugin_handle, hook_method)()
 
     def is_plugin_enabled(self, plugin_id):
         """ Returns whether a plugin is currently enabled and loaded """
-        return plugin_id in self._enabled_plugins
+        return plugin_id in self.enabled_plugins
 
     def get_plugin_handle(self, plugin_id):
         """ Returns a handle to a plugin given its plugin id. Throws an exception
@@ -172,35 +192,10 @@ class PluginManager(BaseManager):
         """ Returns the handle to a setting """
         return self._settings[plugin_id][setting_id]
 
-    @property
-    def enabled_plugins(self):
-        """ Returns a list of all enabled plugin ids """
-        return self._enabled_plugins
-
-    @property
-    def plugin_instances(self):
-        """ Returns a dictionary with all plugin ids and their instances """
-        return self._instances
-
-    @property
-    def settings(self):
-        """ Returns all settings as a dictionary """
-        return self._settings
-
-    @property
-    def day_settings(self):
-        """ Returns all time of day settings as a dictionary """
-        return self._day_settings
-
-    @property
-    def num_day_settings(self):
-        """ Returns the amount of day time settings """
-        return sum((len(i) for i in itervalues(self._day_settings)))
-
     def init_defines(self):
         """ Initializes all plugin settings as a define, so they can be queried
         in a shader """
-        for plugin_id in self._enabled_plugins:
+        for plugin_id in self.enabled_plugins:
             plugin_settings = self._settings[plugin_id]
             self._pipeline.stage_mgr.define("HAVE_PLUGIN_{}".format(plugin_id), 1)
             for setting_id, setting in iteritems(plugin_settings):
@@ -216,15 +211,15 @@ class PluginManager(BaseManager):
         module = importlib.import_module(plugin_class)
         instance = module.Plugin(self._pipeline)
         if instance.native_only and not NATIVE_CXX_LOADED:
-            if plugin_id in self._enabled_plugins:
+            if plugin_id in self.enabled_plugins:
                 self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
-                self._enabled_plugins.remove(plugin_id)
+                self.enabled_plugins.remove(plugin_id)
         for required_plugin in instance.required_plugins:
-            if required_plugin not in self._enabled_plugins:
-                if plugin_id in self._enabled_plugins:
+            if required_plugin not in self.enabled_plugins:
+                if plugin_id in self.enabled_plugins:
                     self.warn("Cannot load", plugin_id, "since it requires",
                         required_plugin)
-                    self._enabled_plugins.remove(plugin_id)
+                    self.enabled_plugins.remove(plugin_id)
                 break
         return instance
 
@@ -237,7 +232,7 @@ class PluginManager(BaseManager):
         sort_criteria = lambda pid: ("A" if self.is_plugin_enabled(pid) else "B") + pid
         for plugin_id in sorted(self._settings, key=sort_criteria):
             output += "   {}- {}\n".format(
-                " # " if plugin_id not in self._enabled_plugins else " ", plugin_id)
+                " # " if plugin_id not in self.enabled_plugins else " ", plugin_id)
         output += "\n\n"
         output += "overrides:\n"
         for plugin_id, plugin_settings in sorted(iteritems(self._settings)):
@@ -267,9 +262,9 @@ class PluginManager(BaseManager):
         """ Sets whether a plugin is enabled or not, thus should be loaded when
         the pipeline starts or not """
         if enabled:
-            self._enabled_plugins.add(plugin_id)
+            self.enabled_plugins.add(plugin_id)
         else:
-            self._enabled_plugins.remove(plugin_id)
+            self.enabled_plugins.remove(plugin_id)
 
     def reset_plugin_settings(self, plugin_id):
         """ Resets all settings of a given plugin """
@@ -287,7 +282,7 @@ class PluginManager(BaseManager):
         setting = self._settings[plugin_id][setting_id]
         setting.set_value(value)
 
-        if plugin_id not in self._enabled_plugins:
+        if plugin_id not in self.enabled_plugins:
             return
 
         if setting.runtime or setting.shader_runtime:

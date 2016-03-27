@@ -225,17 +225,20 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
     fog_factor = saturate(1.0 - exp( -distance(surface_pos, MainSceneData.camera_pos) / fog_ramp ));
 
     // Exponential height fog
-    float ground_fog_factor = 5000.0;
+    float ground_fog_factor = 50.0;
     fog_factor *= 1.0 - saturate( max(0, surface_pos.z) / ground_fog_factor);
-
-    if (is_skybox(surface_pos)) {
-        fog_factor = 1;
-    }
 
     vec3 scattering = get_inscattered_light(surface_pos, view_dir, attenuation, irradiance_factor);
 
+    if (is_skybox(surface_pos)) {
+        fog_factor = 1;
+    } else {
+        scattering = vec3(1, 1.3, 1.5) * fog_factor * 1.5;
+    }
+
+
     // Reduce scattering in the near to avoid artifacts due to low precision
-    scattering *= saturate(distance(surface_pos, MainSceneData.camera_pos) / 500.0 - 0.0);
+    // scattering *= saturate(distance(surface_pos, MainSceneData.camera_pos) / 500.0 - 0.0);
 
     return scattering;
 }

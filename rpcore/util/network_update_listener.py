@@ -25,14 +25,14 @@ THE SOFTWARE.
 """
 
 from rpcore.util.udp_listener_service import UDPListenerService
-from rpcore.base_manager import BaseManager
+from rpcore.rpobject import RPObject
 
-class NetworkUpdateListener(BaseManager):
+class NetworkUpdateListener(RPObject):
 
     """ Listener which listens on several ports for incoming updates """
 
     def __init__(self, pipeline):
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self._pipeline = pipeline
         self._config_updates = set()
         self._daytime_updates = set()
@@ -52,7 +52,7 @@ class NetworkUpdateListener(BaseManager):
         """ Internal handler when a dytime message arrived """
         self._daytime_updates.add(msg)
 
-    def do_update(self):
+    def update(self):
         """ Update task which gets called every frame and executes the changes"""
 
         # Config updates

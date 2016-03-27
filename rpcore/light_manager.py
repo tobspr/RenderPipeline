@@ -30,6 +30,7 @@ from panda3d.core import LVecBase2i, Texture, PTAInt
 
 from rpcore.image import Image
 from rpcore.globals import Globals
+from rpcore.rpobject import RPObject
 
 from rpcore.stages.flag_used_cells_stage import FlagUsedCellsStage
 from rpcore.stages.collect_used_cells_stage import CollectUsedCellsStage
@@ -39,9 +40,8 @@ from rpcore.stages.shadow_stage import ShadowStage
 
 from rpcore.gpu_command_queue import GPUCommandQueue
 from rpcore.native import InternalLightManager, PointLight, ShadowManager
-from rpcore.base_manager import BaseManager
 
-class LightManager(BaseManager):
+class LightManager(RPObject):
 
     """ This class is a wrapper around the InternalLightManager, and provides
     additional functionality like setting up all required stages and defines."""
@@ -51,7 +51,7 @@ class LightManager(BaseManager):
 
     def __init__(self, pipeline):
         """ Constructs the light manager """
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self._pipeline = pipeline
         self._compute_tile_size()
         self._init_internal_mgr()
@@ -121,7 +121,7 @@ class LightManager(BaseManager):
         """ Returns a handle to the GPU Command Queue """
         return self._cmd_queue
 
-    def do_update(self):
+    def update(self):
         """ Main update method to process the GPU commands """
         self._internal_mgr.set_camera_pos(Globals.base.camera.get_pos(render))
         self._internal_mgr.update()

@@ -26,9 +26,10 @@ THE SOFTWARE.
 
 from __future__ import division
 
+import collections
+
 from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.util.repeated_task_queue import RepeatedTaskQueue
 
 from .voxelization_stage import VoxelizationStage
 from .vxgi_stage import VXGIStage
@@ -54,12 +55,14 @@ class Plugin(BasePlugin):
             self._voxel_stage.required_inputs.append("PSSMSceneSunShadowMVP")
 
     def on_pre_render_update(self):
-        self._queue.exec_next_task()
+        task = self._queue[0]
+        self._queue.rotate(-1)
+        task()
 
     def on_pipeline_created(self):
-        self._queue = RepeatedTaskQueue()
-        self._queue.add(self._voxelize_x, self._voxelize_y, self._voxelize_z)
-        self._queue.add(self._generate_mipmaps)
+        self._queue = collections.deque()
+        self._queue.extend([self._voxelize_x, self._voxelize_y, self._voxelize_z])
+        self._queue.extend([self._generate_mipmaps])
 
     def _set_grid_pos(self):
         """ Finds the new voxel grid position """

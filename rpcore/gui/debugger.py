@@ -46,18 +46,18 @@ from rpcore.gui.fps_chart import FPSChart
 from rpcore.gui.pixel_inspector import PixelInspector
 
 from rpcore.globals import Globals
-from rpcore.base_manager import BaseManager
+from rpcore.rpobject import RPObject
 
 from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.render_target import RenderTarget
 from rpcore.image import Image
 
-class Debugger(BaseManager):
+class Debugger(RPObject):
 
     """ This class manages the onscreen gui and """
 
     def __init__(self, pipeline):
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self.debug("Creating debugger")
         self._pipeline = pipeline
         self._analyzer = SceneGraphAnalyzer()
@@ -122,7 +122,7 @@ class Debugger(BaseManager):
         it """
         self._error_msg_handler = ErrorMessageDisplay()
 
-    def do_update(self):
+    def update(self):
         """ Updates the gui """
         self._error_msg_handler.update()
         self._pixel_widget.update()

@@ -56,7 +56,7 @@ bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
     // This traces "incorrect", but looks better because gaps are getting filled then
     if (z - hit_tolerance_ws <= max(z_a, z_b)) {
         hit_factor = z + hit_tolerance_ws >= min(z_a, z_b) - hit_tolerance_backface;
-        // hit_factor = true;
+        hit_factor = true;
         return true;
     }
 

@@ -26,8 +26,8 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(1000, 632)
-        MainWindow.setMinimumSize(QtCore.QSize(1000, 0))
-        MainWindow.setMaximumSize(QtCore.QSize(1000, 675))
+        MainWindow.setMinimumSize(QtCore.QSize(1000, 632))
+        MainWindow.setMaximumSize(QtCore.QSize(1000, 632))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
         brush.setStyle(QtCore.Qt.SolidPattern)

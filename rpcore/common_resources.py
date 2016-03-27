@@ -34,17 +34,17 @@ from direct.stdpy.file import open
 
 from rpcore.image import Image
 from rpcore.globals import Globals
-from rpcore.base_manager import BaseManager
+from rpcore.rpobject import RPObject
 
 from rpcore.util.shader_ubo import ShaderUBO
 
-class CommonResources(BaseManager):
+class CommonResources(RPObject):
 
     """ This class manages the loading and binding of commonly used resources,
     such as textures, models, but also shader inputs """
 
     def __init__(self, pipeline):
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self._pipeline = pipeline
         self._showbase = Globals.base
         self._ptas = {}
@@ -173,7 +173,7 @@ class CommonResources(BaseManager):
         skybox = Globals.loader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")
         return skybox
 
-    def do_update(self):
+    def update(self):
         """ Updates the commonly used resources, mostly the shader inputs """
         update = self._input_ubo.update_input
 

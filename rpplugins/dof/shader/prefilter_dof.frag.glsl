@@ -61,7 +61,7 @@ void main() {
   vec3 accum = karis_average(mid_color.xyz) * 0;
   float weights = 1.0 * 0.0;
 
-  const float scale = 0.03; // XXX: Todo, make it physically based
+  const float scale = 0.0; // XXX: Todo, make it physically based
   const float focus_plane = 5.0;
   const float focus_size = 2.5;
   const float near_scale = 0.0 / max(0.0, focus_plane - focus_size - CAMERA_NEAR);

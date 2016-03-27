@@ -99,9 +99,9 @@ void main() {
     volumetrics += color * (1 - volumetrics.w);
   }
 
-  volumetrics.xyz = pow(volumetrics.xyz * 0.5, vec3(1.2));
+  volumetrics.xyz = pow(volumetrics.xyz, vec3(2.0));
   volumetrics.xyz *= sun_color;
-  volumetrics.w *= 10.0;
+  // volumetrics.w *= 10.0;
   volumetrics.w = saturate(volumetrics.w);
 
   vec3 scene_color = texture(ShadedScene, texcoord).xyz;

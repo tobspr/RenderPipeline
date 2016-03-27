@@ -7,6 +7,7 @@ enabled:
     - ao
     - bloom
     - color_correction
+    - dof
     - env_probes
     - fxaa
     - motion_blur
@@ -16,7 +17,6 @@ enabled:
     - sslr
     - volumetrics
     # - clouds
-    - dof
     # - skin_shading
     # - vxgi
 
@@ -67,8 +67,8 @@ overrides:
         uc2t_toe_numerator: 0.01
         uc2t_toe_denumerator: 0.3
         uc2t_reference_white: 11.2
-        vignette_strength: 0.4222
-        film_grain_strength: 0.25779
+        vignette_strength: 0.6778
+        film_grain_strength: 0.3222
         color_lut: film_luts/kodak_gold_200.png
         use_chromatic_aberration: True
         chromatic_aberration_strength: 0.3187
@@ -146,7 +146,7 @@ overrides:
     sslr:
 
     volumetrics:
-        intensity: 0.65
+        intensity: 4.5
 
     vxgi:
         grid_resolution: 256
