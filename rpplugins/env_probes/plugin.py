@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec3, PTAInt
+from panda3d.core import PTAInt
 
 from rpcore.globals import Globals
 from rpcore.util.shader_ubo import SimpleUBO
@@ -32,7 +32,6 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 from rpcore.stages.cull_lights_stage import CullLightsStage
 
 from .probe_manager import ProbeManager
-from .environment_probe import EnvironmentProbe
 from .environment_capture_stage import EnvironmentCaptureStage
 from .apply_envprobes_stage import ApplyEnvprobesStage
 from .cull_probes_stage import CullProbesStage

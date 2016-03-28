@@ -69,7 +69,7 @@ class BaseType(RPObject):
 
     def write_defines(self, plugin_id, setting_id, definer):
         """ Makes the value of this plugin available as a define """
-        definer("{}__{}".format(plugin_id, setting_id), self.value)
+        definer("{}_{}".format(plugin_id, setting_id), self.value)
 
     def should_be_visible(self, settings):
         """ Evaluates whether the plugin should be visible, taking all display
@@ -141,7 +141,7 @@ class EnumType(BaseType):
         self.value = value
 
     def write_defines(self, plugin_id, setting_id, definer):
-        definer("{}__{}".format(plugin_id, setting_id), 1000 + self.values.index(self.value))
+        definer("{}_{}".format(plugin_id, setting_id), 1000 + self.values.index(self.value))
 
         for i, val in enumerate(self.values):
             definer("{}_ENUM_{}_{}".format(plugin_id, setting_id, val), 1000 + i)

@@ -30,7 +30,7 @@ import sys
 import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem, WindowProperties
+from panda3d.core import PandaSystem
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -400,7 +400,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         # reviewed by rdb. Once it is in public Panda3D Dev-Builds this will
         # be the default.
         if (not isfile("/$$rp/data/panda3d_patches/prev-model-view-matrix.diff") or
-            isfile("D:/__dev__")):
+                isfile("D:/__dev__")):
 
             # You can find the required patch in
             # data/panda3d_patches/prev-model-view-matrix.diff.

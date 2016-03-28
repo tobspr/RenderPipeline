@@ -164,9 +164,12 @@ class EnvironmentCaptureStage(RenderStage):
         Globals.render.set_shader_input(*args)
 
     def set_shaders(self):
-        self.target_store.shader = self.load_plugin_shader("store_cubemap.frag.glsl")
-        self.target_store_diff.shader = self.load_plugin_shader("store_cubemap_diffuse.frag.glsl")
-        self.filter_diffuse_target.shader = self.load_plugin_shader("filter_cubemap_diffuse.frag.glsl")
+        self.target_store.shader = self.load_plugin_shader(
+            "store_cubemap.frag.glsl")
+        self.target_store_diff.shader = self.load_plugin_shader(
+            "store_cubemap_diffuse.frag.glsl")
+        self.filter_diffuse_target.shader = self.load_plugin_shader(
+            "filter_cubemap_diffuse.frag.glsl")
 
         for i, target in enumerate(self.filter_targets):
             target.shader = self.load_plugin_shader("mips/{}.autogen.glsl".format(i))

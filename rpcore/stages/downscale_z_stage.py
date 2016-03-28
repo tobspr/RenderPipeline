@@ -26,18 +26,13 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import Texture, SamplerState
-
 from rpcore.render_stage import RenderStage
-from rpcore.globals import Globals
-from rpcore.image import Image
 
 class DownscaleZStage(RenderStage):
 
     """ This stage downscales the depth buffer """
 
     required_pipes = ["GBuffer"]
-
 
     @property
     def produced_pipes(self):

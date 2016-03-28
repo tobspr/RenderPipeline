@@ -40,6 +40,7 @@ class PostProcessRegion(RPObject):
         return cls(internal_buffer, *args)
 
     def __init__(self, internal_buffer, *args):
+        RPObject.__init__(self)
         self._buffer = internal_buffer
         self._region = self._buffer.make_display_region(*args)
         self._node = NodePath("RTRoot")

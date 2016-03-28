@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import Texture, SamplerState
+from panda3d.core import SamplerState
 
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
@@ -168,8 +168,10 @@ class CubemapFilter(RPObject):
         """ Sets all required shaders on the filter. """
 
         # Set diffuse filter shaders
-        self._diffuse_target.shader = self._stage.load_shader("ibl/cubemap_diffuse.frag.glsl")
-        self._diff_filter_target.shader = self._stage.load_shader("ibl/cubemap_diffuse_filter.frag.glsl")
+        self._diffuse_target.shader = self._stage.load_shader(
+            "ibl/cubemap_diffuse.frag.glsl")
+        self._diff_filter_target.shader = self._stage.load_shader(
+            "ibl/cubemap_diffuse_filter.frag.glsl")
 
         # Set specular prefilter shaders
         mip_shader = self._stage.load_shader("ibl/cubemap_specular_prefilter.frag.glsl")

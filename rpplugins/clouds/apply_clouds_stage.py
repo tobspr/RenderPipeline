@@ -24,11 +24,8 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import SamplerState, Texture, Vec4, Vec2
-
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
-from rpcore.util.generic import load_sliced_3d_texture
 
 class ApplyCloudsStage(RenderStage):
 
@@ -64,6 +61,9 @@ class ApplyCloudsStage(RenderStage):
             "CloudsTex", self.upscale_target.color_tex)
 
     def set_shaders(self):
-        self.target_apply_clouds.shader = self.load_plugin_shader("apply_clouds.frag.glsl")
-        self.render_target.shader = self.load_plugin_shader("render_clouds.frag.glsl")
-        self.upscale_target.shader = self.load_plugin_shader("/$$rp/shader/bilateral_upscale.frag.glsl")
+        self.target_apply_clouds.shader = self.load_plugin_shader(
+            "apply_clouds.frag.glsl")
+        self.render_target.shader = self.load_plugin_shader(
+            "render_clouds.frag.glsl")
+        self.upscale_target.shader = self.load_plugin_shader(
+            "/$$rp/shader/bilateral_upscale.frag.glsl")

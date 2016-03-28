@@ -67,9 +67,6 @@ class ShadowManager(object):
     def set_atlas_graphics_output(self, graphics_output):
         self._atlas_graphics_output = graphics_output
 
-    def get_atlas_size(self):
-        return self._atlas_size
-
     def get_num_update_slots_left(self):
         return self._max_updates - len(self._queued_updates)
 

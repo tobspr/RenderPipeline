@@ -67,14 +67,13 @@
 
 // Plugin functions
 #define HAVE_PLUGIN(PLUGIN_NAME) ( HAVE_PLUGIN_ ## PLUGIN_NAME )
-#define GET_SETTING(PLUGIN_NAME, SETTING_NAME) ( PLUGIN_NAME ## __ ## SETTING_NAME )
+#define GET_SETTING(PLUGIN_NAME, SETTING_NAME) ( PLUGIN_NAME ## _ ## SETTING_NAME )
 #define GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) ( PLUGIN_NAME ## _ENUM_ ## SETTING_NAME ## _ ## ENUM_KEY )
-#define ENUM_V_ACTIVE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) \
- ( HAVE_PLUGIN(PLUGIN_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) == GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) )
+#define ENUM_V_ACTIVE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) ( HAVE_PLUGIN(PLUGIN_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) == GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) )
 
 // Render mode functions
 #define DEBUG_MODE ANY_DEBUG_MODE
-#define MODE_ACTIVE(MODE_ID) ( DEBUG_MODE && ( _RM__ ## MODE_ID ) )
+#define MODE_ACTIVE(MODE_ID) ( DEBUG_MODE && ( _RM_ ## MODE_ID ) )
 
 // Branch modes for translucency.
 // This serves for the purpose to be enabled or disabled easily.
@@ -96,20 +95,13 @@
 #define END_BRANCH_TRANSLUCENCY() }
 #endif
 
-// Precision qualifiers, don't apply to newer GL, but can't hurt too
-precision lowp float;
-precision lowp int;
-
 // Restrict qualifier, only on AMD cards, Nvidia can't handle it. See:
 // https://devtalk.nvidia.com/default/topic/546817/restrict-keyword-crashes-glsl-compiler/
-// (Leads to "fatal error C9999: *** exception during compilation ***")
 #if IS_NVIDIA
     #define RESTRICT
-    // #define RESTRICT restrict
 #else
     #define RESTRICT restrict
 #endif
-
 
 // TODO:
 #define SUPPORT_PCF 1

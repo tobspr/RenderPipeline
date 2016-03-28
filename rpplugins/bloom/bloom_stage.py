@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from rplibs.six.moves import range
 
-from panda3d.core import Texture, SamplerState, Vec4
+from panda3d.core import SamplerState, Vec4
 
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage

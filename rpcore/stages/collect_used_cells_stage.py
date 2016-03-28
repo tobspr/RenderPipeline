@@ -24,10 +24,8 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Texture
-
-from rpcore.render_stage import RenderStage
 from rpcore.image import Image
+from rpcore.render_stage import RenderStage
 
 class CollectUsedCellsStage(RenderStage):
 

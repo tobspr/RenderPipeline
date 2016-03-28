@@ -24,12 +24,9 @@ THE SOFTWARE.
 
 """
 
-import time
-
 from rplibs.six import iteritems
 from rplibs.yaml import load_yaml_file
 
-from panda3d.core import Texture
 from direct.stdpy.file import open
 
 from rpcore.globals import Globals

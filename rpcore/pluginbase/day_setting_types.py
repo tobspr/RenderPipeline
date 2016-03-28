@@ -25,9 +25,9 @@ THE SOFTWARE.
 """
 
 from __future__ import division
-from panda3d.core import PTAFloat, PTALVecBase3f
-
 from math import exp, log
+
+from panda3d.core import PTAFloat, PTALVecBase3f
 
 from rpcore.rpobject import RPObject
 from rpcore.util.smooth_connected_curve import SmoothConnectedCurve

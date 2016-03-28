@@ -45,15 +45,15 @@ class Plugin(BasePlugin):
     version = "1.2"
 
     def on_pipeline_created(self):
-        self._method.load()
-        self._method.compute()
+        self.scattering_model.load()
+        self.scattering_model.compute()
 
     def on_stage_setup(self):
-        self._display_stage = self.create_stage(ScatteringStage)
-        self._envmap_stage = self.create_stage(ScatteringEnvmapStage)
+        self.display_stage = self.create_stage(ScatteringStage)
+        self.envmap_stage = self.create_stage(ScatteringEnvmapStage)
 
         if self.get_setting("enable_godrays"):
-            self._godray_stage = self.create_stage(GodrayStage)
+            self.godray_stage = self.create_stage(GodrayStage)
 
         # Load scattering method
         method = self.get_setting("scattering_method")
@@ -62,10 +62,10 @@ class Plugin(BasePlugin):
 
         if method == "eric_bruneton":
             from .scattering_methods import ScatteringMethodEricBruneton
-            self._method = ScatteringMethodEricBruneton(self)
+            self.scattering_model = ScatteringMethodEricBruneton(self)
         elif method == "hosek_wilkie":
             from .scattering_methods import ScatteringMethodHosekWilkie
-            self._method = ScatteringMethodHosekWilkie(self)
+            self.scattering_model = ScatteringMethodHosekWilkie(self)
         else:
             self.error("Unrecognized scattering method!")
 
@@ -83,4 +83,4 @@ class Plugin(BasePlugin):
         return sun_vector
 
     def on_shader_reload(self):
-        self._method.compute()
+        self.scattering_model.compute()

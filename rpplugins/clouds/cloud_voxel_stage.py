@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import SamplerState, Texture, Vec4
+from panda3d.core import SamplerState, Vec4
 
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
@@ -77,8 +77,8 @@ class CloudVoxelStage(RenderStage):
 
     def set_shaders(self):
         self._grid_target.shader = self.load_plugin_shader(
-                "/$$rp/shader/default_post_process_instanced.vert.glsl",
-                "generate_clouds.frag.glsl")
+            "/$$rp/shader/default_post_process_instanced.vert.glsl",
+            "generate_clouds.frag.glsl")
         self._shade_target.shader = self.load_plugin_shader(
-                "/$$rp/shader/default_post_process_instanced.vert.glsl",
-                "shade_clouds.frag.glsl")
+            "/$$rp/shader/default_post_process_instanced.vert.glsl",
+            "shade_clouds.frag.glsl")

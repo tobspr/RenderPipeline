@@ -42,7 +42,7 @@ out vec3 result;
 #define USE_LINEAR_DEPTH 0
 #define NUM_RAYDIR_RETRIES 3
 
-const int num_steps = 64;
+const int num_steps = GET_SETTING(sslr, trace_steps);
 const float hit_tolerance_ws = 0.0;
 const float hit_tolerance_backface = 0.0003;
 

@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import PTAInt, Texture, Shader
+from panda3d.core import PTAInt, Shader
 
-from rpcore.rpobject import RPObject
 from rpcore.image import Image
+from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
 
 from rpcore.native import GPUCommand, GPUCommandList

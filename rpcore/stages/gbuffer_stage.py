@@ -24,11 +24,8 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Camera, NodePath, DepthWriteAttrib
-from panda3d.core import DepthTestAttrib
-
-from rpcore.render_stage import RenderStage
 from rpcore.globals import Globals
+from rpcore.render_stage import RenderStage
 from rpcore.util.shader_ubo import SimpleUBO
 
 class GBufferStage(RenderStage):

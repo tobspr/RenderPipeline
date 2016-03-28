@@ -1,3 +1,21 @@
 
-settings:
+settings: !!omap
+
+    - trace_steps:
+        type: int
+        range: [4, 512]
+        default: 64
+        label: Trace Steps
+        shader_runtime: true
+        description: >
+          Amount of trace steps. A higher amount will lead to less missed
+          details, although it will also be more computationally expensive.
+
+    - abort_object:
+        type: bool
+        default: false
+        label: Some boolean setting
+        description: Description of the setting.
+
+
 daytime_settings:

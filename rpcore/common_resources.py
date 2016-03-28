@@ -28,7 +28,7 @@ from __future__ import division
 
 import random
 
-from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Texture, Mat4
+from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4
 from panda3d.core import SamplerState, PNMImage
 from direct.stdpy.file import open
 
@@ -113,7 +113,7 @@ class CommonResources(RPObject):
         envmap = Globals.loader.load_cube_map(
             "/$$rp/data/default_cubemap/filtered/#-#.png", readMipmaps=True)
         envmap.set_minfilter(SamplerState.FT_linear_mipmap_linear)
-        envmap.set_format(Image.F_rgba16)
+        # envmap.set_format(Image.F_rgba16)
         envmap.set_magfilter(SamplerState.FT_linear)
         envmap.set_wrap_u(SamplerState.WM_repeat)
         envmap.set_wrap_v(SamplerState.WM_repeat)

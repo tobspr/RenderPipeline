@@ -25,10 +25,8 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import PTAInt, Vec4, Texture
+from panda3d.core import PTAInt
 
-from rpcore.globals import Globals
-from rpcore.image import Image
 from rpcore.render_stage import RenderStage
 
 class SMAAStage(RenderStage):

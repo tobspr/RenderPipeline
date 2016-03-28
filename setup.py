@@ -61,7 +61,8 @@ if sys.version_info.major == 2:
 else:
     # Colorama seems not to work in Py3, work arround it
     class Dummy(object):
-        def __getattr__(self, key): return ""
+        def __getattr__(self, key):
+            return ""
     Fore = Dummy()
     Style = Dummy()
 
@@ -72,7 +73,8 @@ def color(string, col):
 def error(msg):
     """ Prints an error message and then exists the program """
     print("\n" + color("Setup failed:\t", Fore.RED + Style.BRIGHT), msg)
-    print(color("\nPlease fix the above errors and then restart the setup.\n", Fore.RED + Style.BRIGHT))
+    print(color("\nPlease fix the above errors and then restart the setup.\n",
+                Fore.RED + Style.BRIGHT))
     sys.exit(0)
 
 def print_step(title):
@@ -122,7 +124,8 @@ def ask_download_samples():
     query = "\nDo you want to download the Render Pipeline samples? (y/n):"
 
     if get_user_choice(query):
-        print_step("Downloading samples (Might take a while, depending on your internet connection) ...")
+        print_step("Downloading samples (Might take a while, depending on your "
+                   "internet connection) ...")
         exec_python_file("samples/download_samples.py")
 
 def get_user_choice(query):
@@ -174,7 +177,7 @@ def check_panda_version():
         print("\n")
         print("It seems your Panda3D version is outdated. Please get the newest version ")
         print("from", color("https://github.com/panda3d/panda3d", Fore.MAGENTA + Style.BRIGHT),
-            "(you have to build from source).")
+              "(you have to build from source).")
         error("Panda3D version outdated")
 
 def setup():

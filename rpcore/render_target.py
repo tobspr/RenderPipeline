@@ -26,31 +26,17 @@ THE SOFTWARE.
 
 from __future__ import print_function, division
 
-from panda3d.core import GraphicsOutput, CardMaker, OmniBoundingVolume, Texture
-from panda3d.core import AuxBitplaneAttrib, NodePath, OrthographicLens, Geom
-from panda3d.core import Camera, Vec4, TransparencyAttrib, StencilAttrib
-from panda3d.core import ColorWriteAttrib, DepthWriteAttrib, GeomVertexData
+from panda3d.core import GraphicsOutput, Texture, AuxBitplaneAttrib, NodePath
+from panda3d.core import Vec4, TransparencyAttrib, ColorWriteAttrib, SamplerState
 from panda3d.core import WindowProperties, FrameBufferProperties, GraphicsPipe
-from panda3d.core import GeomVertexFormat, GeomNode, GeomVertexWriter
-from panda3d.core import GeomTriangles, SamplerState, LVecBase2i, DepthTestAttrib
-from panda3d.core import ShaderInput
-
-
-try:
-    # Try to import the post process region from panda, but fallback to the
-    # python version if it fails
-    from panda3d.core import PostProcessRegion
-    has_native_post_process_region = True
-
-except ImportError:
-    from rpcore.util.post_process_region import PostProcessRegion
-    has_native_post_process_region = False
+from panda3d.core import LVecBase2i
 
 from rplibs.six.moves import range
-from rplibs.six import iterkeys, itervalues, iteritems
+from rplibs.six import iterkeys, itervalues
 
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
+from rpcore.util.post_process_region import PostProcessRegion
 
 __all__ = "RenderTarget",
 __version__ = "2.0"
@@ -108,7 +94,7 @@ class RenderTarget(RPObject):
     def add_depth_attachment(self, bits=32):
         """ Adds a depth attachment wit the given amount of bits """
         self._targets["depth"] = Texture(self.debug_name + "_depth")
-        self._depth_bits = 32
+        self._depth_bits = bits
 
     def add_aux_attachment(self, bits=8):
         """ Adds a new aux attachment with the given amount of bits. The amount
@@ -167,10 +153,7 @@ class RenderTarget(RPObject):
     def set_shader_input(self, *args):
         """ Sets a shader input available to the target """
         if self.create_default_region:
-            if has_native_post_process_region:
-                self._source_region.set_shader_input(ShaderInput(*args))
-            else:
-                self._source_region.set_shader_input(*args)
+            self._source_region.set_shader_input(*args)
 
     @setter
     def shader(self, shader_obj):
@@ -293,7 +276,7 @@ class RenderTarget(RPObject):
         for i in range(self._aux_count):
             self._targets["aux_{}".format(i)] = Texture(
                 self.debug_name + "_aux{}".format(i))
-        for name, tex in iteritems(self._targets):
+        for tex in itervalues(self._targets):
             tex.set_wrap_u(SamplerState.WM_clamp)
             tex.set_wrap_v(SamplerState.WM_clamp)
             tex.set_anisotropic_degree(0)

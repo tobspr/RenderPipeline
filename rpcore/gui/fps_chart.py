@@ -25,8 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import ComputeNode, Shader, Vec4, Texture, Vec3, PTAInt, PTAFloat
-from direct.gui.DirectFrame import DirectFrame
+from panda3d.core import ComputeNode, Shader, Vec4, Vec3, PTAInt, PTAFloat
 
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text

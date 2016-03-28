@@ -32,8 +32,8 @@ from __future__ import print_function
 
 import re
 
-from panda3d.core import PTAFloat, Filename, Texture, SamplerState
-from panda3d.core import VirtualFileSystem, get_model_path
+from panda3d.core import PTAFloat, Filename, SamplerState, VirtualFileSystem
+from panda3d.core import get_model_path
 from direct.stdpy.file import open, join, isfile
 
 from rplibs.six.moves import range
@@ -75,9 +75,7 @@ class IESProfileLoader(RPObject):
 
     def _create_storage(self):
         """ Internal method to create the storage for the profile dataset textures """
-        self._storage_tex = Image("IESDatasets")
-        self._storage_tex.setup_3d_texture(
-            512, 512, self._max_entries, Image.T_float, Image.F_r16)
+        self._storage_tex = Image.create_3d("IESDatasets", 512, 512, self._max_entries, "R16")
         self._storage_tex.set_minfilter(SamplerState.FT_linear)
         self._storage_tex.set_magfilter(SamplerState.FT_linear)
         self._storage_tex.set_wrap_u(SamplerState.WM_clamp)

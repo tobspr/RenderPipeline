@@ -87,8 +87,10 @@ class VXGIStage(RenderStage):
 
     def set_shaders(self):
         self._target_spec.shader = self.load_plugin_shader("vxgi_specular.frag.glsl")
-        self._target_diff.shader =self.load_plugin_shader("vxgi_diffuse.frag.glsl")
-        self._target_upscale_diff.shader = self.load_plugin_shader("/$$rp/shader/bilateral_upscale.frag.glsl")
-        blur_shader = self.load_plugin_shader("/$$rp/shader/bilateral_halfres_blur.frag.glsl")
+        self._target_diff.shader = self.load_plugin_shader("vxgi_diffuse.frag.glsl")
+        self._target_upscale_diff.shader = self.load_plugin_shader(
+            "/$$rp/shader/bilateral_upscale.frag.glsl")
+        blur_shader = self.load_plugin_shader(
+            "/$$rp/shader/bilateral_halfres_blur.frag.glsl")
         self._target_blur_v.shader = blur_shader
         self._target_blur_h.shader = blur_shader

@@ -25,11 +25,10 @@ THE SOFTWARE.
 """
 
 import os
-import sys
 import atexit
 
 from panda3d.core import Filename, VirtualFileSystem, get_model_path
-from panda3d.core import VirtualFileMountRamdisk, VirtualFileMountSystem
+from panda3d.core import VirtualFileMountRamdisk
 from direct.stdpy.file import join, isdir, isfile
 
 from rpcore.rpobject import RPObject

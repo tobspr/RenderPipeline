@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import math
 
-from panda3d.core import LVecBase2i, Texture, PTAInt
+from panda3d.core import LVecBase2i, PTAInt
 
 from rpcore.image import Image
 from rpcore.globals import Globals
@@ -123,7 +123,8 @@ class LightManager(RPObject):
 
     def update(self):
         """ Main update method to process the GPU commands """
-        self._internal_mgr.set_camera_pos(Globals.base.camera.get_pos(render))
+        self._internal_mgr.set_camera_pos(
+            Globals.base.camera.get_pos(Globals.base.render))
         self._internal_mgr.update()
         self._shadow_manager.update()
         self._cmd_queue.process_queue()

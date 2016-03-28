@@ -70,7 +70,8 @@ class Debugger(RPObject):
         self._init_notify()
 
         # Globals.base.doMethodLater(25.0, self._collect_scene_data, "RPDebugger_collectSceneData")
-        Globals.base.doMethodLater(0.5, lambda task: self._collect_scene_data(), "RPDebugger_collectSceneData_initial")
+        Globals.base.doMethodLater(
+            0.5, lambda task: self._collect_scene_data(), "RPDebugger_collectSceneData_initial")
         Globals.base.doMethodLater(0.1, self._update_stats, "RPDebugger_updateStats")
 
     def _load_config(self):
@@ -140,8 +141,8 @@ class Debugger(RPObject):
     def _collect_scene_data(self, task=None):
         """ Analyzes the scene graph to provide useful information """
         self._analyzer.clear()
-        for gn in Globals.base.render.find_all_matches("**/+GeomNode"):
-            self._analyzer.add_node(gn.node())
+        for geom_node in Globals.base.render.find_all_matches("**/+GeomNode"):
+            self._analyzer.add_node(geom_node.node())
         if task:
             return task.again
 
@@ -191,7 +192,8 @@ class Debugger(RPObject):
             clock.get_max_frame_duration() * 1000.0)
 
         text = "{:4d} render states  |  {:4d} transforms"
-        text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources  |  {:3.1f}% atlas usage"
+        text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources  "
+        text += "|  {:3.1f}% atlas usage"
         self._debug_lines[1].text = text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
             self._pipeline.light_mgr.cmd_queue.num_processed_commands,
@@ -207,7 +209,8 @@ class Debugger(RPObject):
             RenderTarget.NUM_ALLOCATED_BUFFERS,
             len(self._pipeline.plugin_mgr.enabled_plugins))
 
-        text = "Scene:   {:4.0f} MiB VRAM  |  {:3d} textures  |  {:4d} geoms  |  {:4d} nodes  |  {:7,.0f} vertices  |  {:5.0f} MiB vTX data"
+        text = "Scene:   {:4.0f} MiB VRAM  |  {:3d} textures  |  {:4d} geoms  "
+        text += "|  {:4d} nodes  |  {:7,.0f} vertices  |  {:5.0f} MiB vTX data  "
         scene_tex_size = 0
         for tex in TexturePool.find_all_textures():
             scene_tex_size += tex.estimate_texture_memory()
@@ -298,7 +301,7 @@ class Debugger(RPObject):
             self._pipeline.stage_mgr.define("ANY_DEBUG_MODE", 0)
         else:
             self._pipeline.stage_mgr.define("ANY_DEBUG_MODE", 1)
-            self._pipeline.stage_mgr.define("_RM__" + mode_id, 1)
+            self._pipeline.stage_mgr.define("_RM_" + mode_id, 1)
 
         # Reload all shaders
         self._pipeline.reload_shaders()

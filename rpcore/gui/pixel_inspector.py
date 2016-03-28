@@ -25,7 +25,6 @@ THE SOFTWARE.
 """
 
 from panda3d.core import CardMaker, NodePath, Shader, Vec2, GraphicsWindow
-from rpcore.gui.text import Text
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 
@@ -42,9 +41,9 @@ class PixelInspector(RPObject):
 
     def _create_components(self):
         """ Internal method to init the widgets components """
-        cm = CardMaker("cm")
-        cm.set_frame(-200, 200, -150, 150)
-        self._zoomer = self._node.attach_new_node(cm.generate())
+        card_maker = CardMaker("PixelInspector")
+        card_maker.set_frame(-200, 200, -150, 150)
+        self._zoomer = self._node.attach_new_node(card_maker.generate())
 
         # Defer the further loading
         Globals.base.taskMgr.doMethodLater(
@@ -68,14 +67,13 @@ class PixelInspector(RPObject):
             "/$$rp/shader/default_gui_shader.vert.glsl",
             "/$$rp/shader/pixel_inspector.frag.glsl"))
         self._zoomer.set_shader_input("SceneTex", scene_tex)
+        return task.done
 
     def update(self):
         if isinstance(Globals.base.win, GraphicsWindow):
             mouse = Globals.base.win.get_pointer(0)
             if mouse.get_in_window():
                 pos = mouse.get_x(), 1, -mouse.get_y()
+                rel_mouse_pos = Vec2(mouse.get_x(), Globals.base.win.get_y_size() - mouse.get_y())
                 self._node.set_pos(pos)
-                self._zoomer.set_shader_input(
-                    "mousePos", Vec2(mouse.get_x(),
-                        Globals.base.win.get_y_size() - mouse.get_y()))
-
+                self._zoomer.set_shader_input("mousePos", rel_mouse_pos)

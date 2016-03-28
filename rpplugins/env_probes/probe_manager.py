@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Texture, Vec4, GeomEnums, Mat4, SamplerState, BoundingVolume
+from panda3d.core import Vec4, GeomEnums, SamplerState, BoundingVolume
 
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject

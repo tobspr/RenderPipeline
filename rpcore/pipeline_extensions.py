@@ -30,8 +30,6 @@ THE SOFTWARE.
 
 import math
 
-from panda3d.core import Vec3, Mat4, CS_zup_right, CS_yup_right
-
 from rpcore.globals import Globals
 from rpcore.effect import Effect
 from rpcore.native import PointLight, SpotLight
@@ -157,10 +155,10 @@ class PipelineExtensions(object):
         # TODO: This method is super hacky
         if not self.plugin_mgr.is_plugin_enabled("env_probes"):
             self.warn("EnvProbe plugin is not loaded, can not add environment probe")
-            class _dummy_probe(object):
+            class DummyEnvironmentProbe(object):
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
-            return _dummy_probe()
+            return DummyEnvironmentProbe()
 
         from rpplugins.env_probes.environment_probe import EnvironmentProbe
         probe = EnvironmentProbe()
@@ -197,7 +195,7 @@ class PipelineExtensions(object):
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             rp_light.fov = light_node.exponent / math.pi * 180.0
-            lpoint = light.get_mat(Globals.base.render).xform_vec(Vec3(0, 0, -1))
+            lpoint = light.get_mat(Globals.base.render).xform_vec((0, 0, -1))
             rp_light.direction = lpoint
             self.add_light(rp_light)
             light.remove_node()

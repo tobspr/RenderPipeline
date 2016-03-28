@@ -217,8 +217,8 @@ class PluginManager(RPObject):
         for required_plugin in instance.required_plugins:
             if required_plugin not in self.enabled_plugins:
                 if plugin_id in self.enabled_plugins:
-                    self.warn("Cannot load", plugin_id, "since it requires",
-                        required_plugin)
+                    self.warn("Cannot load {} since it requires {}".format(
+                        plugin_id, required_plugin))
                     self.enabled_plugins.remove(plugin_id)
                 break
         return instance
