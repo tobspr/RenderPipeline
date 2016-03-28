@@ -54,12 +54,10 @@ class CollectUsedCellsStage(RenderStage):
         max_cells = tile_amount.x * tile_amount.y * num_slices
 
         self.debug("Allocating", max_cells, "cells")
-        self._cell_list_buffer = Image.create_buffer(
-            "CellList", 1 + max_cells, Texture.T_int, Texture.F_r32i)
+        self._cell_list_buffer = Image.create_buffer("CellList", 1 + max_cells, "R32I")
         self._cell_list_buffer.set_clear_color(0)
         self._cell_index_buffer = Image.create_2d_array(
-            "CellIndices", tile_amount.x, tile_amount.y,
-            num_slices, Texture.T_int, Texture.F_r32i)
+            "CellIndices", tile_amount.x, tile_amount.y, num_slices, "R32I")
         self._cell_index_buffer.set_clear_color(0)
 
         self.target.set_shader_input("CellListBuffer", self._cell_list_buffer)

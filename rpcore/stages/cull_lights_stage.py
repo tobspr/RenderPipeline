@@ -68,7 +68,7 @@ class CullLightsStage(RenderStage):
 
         self.per_cell_lights = Image.create_buffer(
             "PerCellLights", max_cells * (self.max_lights_per_cell + self.num_light_classes),
-            Texture.T_int, Texture.F_r32)
+            "R32I")
         self.per_cell_lights.set_clear_color(0)
         self.target.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
 

@@ -82,8 +82,8 @@ class TexturePreview(DraggableWindow):
 
         # Image type
         description += ", {:s}, {:s}".format(
-            Texture.format_format(tex.get_format()).upper(),
-            Texture.format_component_type(tex.get_component_type()).upper())
+            Image.format_format(tex.get_format()).upper(),
+            Image.format_component_type(tex.get_component_type()).upper())
 
         Text(text=description, parent=self._content_node, x=20, y=70,
              size=18, color=Vec3(0.6, 0.6, 0.6))

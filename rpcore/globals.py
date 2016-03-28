@@ -24,20 +24,23 @@ THE SOFTWARE.
 
 """
 
+__all__ = ("Globals",)
+
 class Globals(object):
 
-    """ This class is a singleton to store globals because cython can't handle
-    global variables. """
+    """ This class is a singleton to store globals widely used by the application.
+    This is a wrapper around Panda3D's globals since ShowBase writes to __builtins__
+    which is bad practice. This class also attempts to help IDEs to figure out
+    where the variables come from and where they are defined. """
 
-    def __init__(self):
-        raise Exception("Globals is a pure static class, and cannot be instanced")
+    __init__ = None
 
-    @classmethod
-    def load(cls, showbase):
-        """ Fetches the globals from a given showbase """
-        cls.base = showbase
-        cls.loader = showbase.loader
-        cls.render = showbase.render
-        cls.clock = showbase.taskMgr.globalClock
-        cls.font = None
-        cls.resolution = None
+    @staticmethod
+    def load(showbase):
+        """ Loads the globals from a given showbase """
+        Globals.base = showbase
+        Globals.loader = showbase.loader
+        Globals.render = showbase.render
+        Globals.clock = showbase.taskMgr.globalClock
+        Globals.font = None
+        Globals.resolution = None

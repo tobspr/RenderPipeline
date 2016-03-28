@@ -73,8 +73,7 @@ class AutoExposureStage(RenderStage):
 
         # XXX: We have to use F_r16 instead of F_r32 because of a weird nvidia
         # driver bug! However, 16 bits should be enough for sure.
-        self.tex_exposure = Image.create_buffer(
-            "ExposureStorage", 1, Texture.T_float, Texture.F_r16)
+        self.tex_exposure = Image.create_buffer("ExposureStorage", 1, "R16")
         self.tex_exposure.set_clear_color(Vec4(0.5))
         self.tex_exposure.clear_image()
 

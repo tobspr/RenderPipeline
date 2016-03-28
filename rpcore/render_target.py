@@ -70,8 +70,8 @@ class RenderTarget(RPObject):
     to easily setup buffers in Panda3D. """
 
     NUM_ALLOCATED_BUFFERS = 0
-    CREATION_HANDLER = None
     USE_R11G11B10 = True
+    REGISTERED_TARGETS = []
 
     def __init__(self, name="target"):
         RPObject.__init__(self, name)
@@ -384,10 +384,5 @@ class RenderTarget(RPObject):
         self._internal_buffer.get_overlay_display_region().disable_clears()
         self._internal_buffer.get_overlay_display_region().set_active(False)
 
-        if RenderTarget.CREATION_HANDLER:
-            RenderTarget.CREATION_HANDLER(self)
-        else:
-            Globals.base.taskMgr.doMethodLater(0.5,
-                lambda task: RenderTarget.CREATION_HANDLER(self)\
-                    if RenderTarget.CREATION_HANDLER else 1, "register-target-" + self.debug_name)
+        RenderTarget.REGISTERED_TARGETS.append(self)
         return True

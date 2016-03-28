@@ -54,8 +54,7 @@ class CloudVoxelStage(RenderStage):
     def create(self):
         # Construct the voxel texture
         self._cloud_voxels = Image.create_3d(
-            "CloudVoxels", self._voxel_res_xy, self._voxel_res_xy, self._voxel_res_z,
-            Texture.T_unsigned_byte, Texture.F_rgba8)
+            "CloudVoxels", self._voxel_res_xy, self._voxel_res_xy, self._voxel_res_z, "RGBA8")
         self._cloud_voxels.set_wrap_u(SamplerState.WM_repeat)
         self._cloud_voxels.set_wrap_v(SamplerState.WM_repeat)
         self._cloud_voxels.set_wrap_w(SamplerState.WM_border_color)

@@ -168,8 +168,7 @@ class LightManager(RPObject):
         # Storage for the Lights
         per_light_vec4s = 4
         self._img_light_data = Image.create_buffer(
-            "LightData", self._MAX_LIGHTS * per_light_vec4s, Texture.T_float,
-            Texture.F_rgba16)
+            "LightData", self._MAX_LIGHTS * per_light_vec4s, "RGBA16")
         self._img_light_data.set_clear_color(0)
         self._img_light_data.clear_image()
 
@@ -179,8 +178,7 @@ class LightManager(RPObject):
         # Storage for the shadow sources
         per_source_vec4s = 5
         self._img_source_data = Image.create_buffer(
-            "ShadowSourceData", self._MAX_SOURCES * per_source_vec4s, Texture.T_float,
-            Texture.F_rgba16)
+            "ShadowSourceData", self._MAX_SOURCES * per_source_vec4s, "RGBA16")
         self._img_light_data.set_clear_color(0)
         self._img_light_data.clear_image()
 

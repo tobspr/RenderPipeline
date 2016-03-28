@@ -29,23 +29,28 @@ THE SOFTWARE.
 # pylint: disable=W0612
 
 from __future__ import print_function
-from rplibs.six.moves import range
+
 import re
 
-from panda3d.core import PTAFloat
-from direct.stdpy.file import open
+from panda3d.core import PTAFloat, Filename, Texture, SamplerState
+from panda3d.core import VirtualFileSystem, get_model_path
+from direct.stdpy.file import open, join, isfile
+
+from rplibs.six.moves import range
 
 from rpcore.native import IESDataset
+from rpcore.image import Image
 from rpcore.rpobject import RPObject
 
-class IESLoaderException(Exception):
+class InvalidIESProfileException(Exception):
     """ Exception which is thrown when an error occurs during loading an IES
     Profile """
-    pass
 
 class IESProfileLoader(RPObject):
 
-    """ Loader class to load .IES files and create an IESDataset from it """
+    """ Loader class to load .IES files and create an IESDataset from it.
+    It generates a LUT for each loaded ies profile which is used by the lighting
+    pipeline later on. """
 
     # Supported IES Profiles
     PROFILES = [
@@ -61,11 +66,72 @@ class IESProfileLoader(RPObject):
     # Regexp for extracting keywords
     KEYWORD_REGEX = re.compile(r"\[([A-Za-z0-8_-]+)\](.*)")
 
-    def __init__(self):
+    def __init__(self, pipeline):
         RPObject.__init__(self)
+        self._pipeline = pipeline
+        self._entries = []
+        self._max_entries = 32
+        self._create_storage()
 
-    def load(self, pth):
-        """ Loads a .IES file from a given filename. """
+    def _create_storage(self):
+        """ Internal method to create the storage for the profile dataset textures """
+        self._storage_tex = Image("IESDatasets")
+        self._storage_tex.setup_3d_texture(
+            512, 512, self._max_entries, Image.T_float, Image.F_r16)
+        self._storage_tex.set_minfilter(SamplerState.FT_linear)
+        self._storage_tex.set_magfilter(SamplerState.FT_linear)
+        self._storage_tex.set_wrap_u(SamplerState.WM_clamp)
+        self._storage_tex.set_wrap_v(SamplerState.WM_repeat)
+        self._storage_tex.set_wrap_w(SamplerState.WM_clamp)
+
+        self._pipeline.stage_mgr.add_input("IESDatasetTex", self._storage_tex)
+        self._pipeline.stage_mgr.define("MAX_IES_PROFILES", self._max_entries)
+
+    def load(self, filename):
+        """ Loads a profile from a given filename and returns the internal
+        used index which can be assigned to a light."""
+
+        # Make sure the user can load profiles directly from the ies profile folder
+        data_path = join("/$$rp/data/ies_profiles/", filename)
+        if isfile(data_path):
+            filename = data_path
+
+        # Make filename unique
+        fname = Filename.from_os_specific(filename)
+        if not VirtualFileSystem.get_global_ptr().resolve_filename(
+                fname, get_model_path().get_value(), "ies"):
+            self.error("Could not resolve", filename)
+            return -1
+        fname = fname.get_fullpath()
+
+        # Check for cache entries
+        if fname in self._entries:
+            return self._entries.index(fname)
+
+        # Check for out of bounds
+        if len(self._entries) >= self._max_entries:
+            # TODO: Could remove unused profiles here or regenerate texture
+            self.warn("Cannot load IES Profile, too many loaded! (Maximum: 32)")
+
+        # Try loading the dataset, and see what happes
+        try:
+            dataset = self._load_and_parse_file(fname)
+        except InvalidIESProfileException as msg:
+            self.warn("Failed to load profile from", filename, ":", msg)
+            return -1
+
+        if not dataset:
+            return -1
+
+        # Dataset was loaded successfully, now copy it
+        dataset.generate_dataset_texture_into(self._storage_tex, len(self._entries))
+        self._entries.append(fname)
+
+        return len(self._entries) - 1
+
+    def _load_and_parse_file(self, pth):
+        """ Loads a .IES file from a given filename, returns an IESDataset
+        which is used by the load function later on. """
         self.debug("Loading ies profile from", pth)
 
         try:
@@ -85,7 +151,7 @@ class IESProfileLoader(RPObject):
 
         # Next line should be TILT=NONE according to the spec
         if lines.pop(0) != "TILT=NONE":
-            raise IESLoaderException("Expected TILT=NONE line, but none found!")
+            raise InvalidIESProfileException("Expected TILT=NONE line, but none found!")
 
         # From now on, lines do not matter anymore, instead everything is
         # space seperated
@@ -95,7 +161,7 @@ class IESProfileLoader(RPObject):
 
         # Amount of Lamps
         if read_int() != 1:
-            raise IESLoaderException("Only 1 Lamp supported!")
+            raise InvalidIESProfileException("Only 1 Lamp supported!")
 
         # Extract various properties
         lumen_per_lamp = read_float()
@@ -104,14 +170,14 @@ class IESProfileLoader(RPObject):
         num_horizontal_angles = read_int()
 
         if num_vertical_angles < 1 or num_horizontal_angles < 1:
-            raise IESLoaderException("Invalid of vertical/horizontal angles!")
+            raise InvalidIESProfileException("Invalid of vertical/horizontal angles!")
 
         photometric_type = read_int()
         unit_type = read_int()
 
         # Check for a correct unit type, should be 1 for meters and 2 for feet
         if unit_type not in [1, 2]:
-            raise IESLoaderException("Invalid unit type")
+            raise InvalidIESProfileException("Invalid unit type")
 
         width = read_float()
         length = read_float()
@@ -150,7 +216,7 @@ class IESProfileLoader(RPObject):
         # Testing code to write out the LUT
         # from panda3d.core import Texture
         # tex = Texture("temp")
-        # tex.setup_3d_texture(512, 512, 1, Texture.T_float, Texture.F_r16)
+        # tex.setup_3d_texture(512, 512, 1, Image.T_float, Image.F_r16)
         # dataset.generate_dataset_texture_into(tex, 0)
         # tex.write("generated.png")
 
@@ -167,7 +233,7 @@ class IESProfileLoader(RPObject):
         """ Checks if the IES version header is correct and the specified IES
         version is supported """
         if first_line not in self.PROFILES:
-            raise IESLoaderException("Unsupported Profile: " + first_line)
+            raise InvalidIESProfileException("Unsupported Profile: " + first_line)
 
     def _extract_keywords(self, lines):
         """ Extracts the keywords from a list of lines, and removes all lines
@@ -194,6 +260,6 @@ class IESProfileLoader(RPObject):
                     key, val = match.group(1, 2)
                     keywords[key.strip()] = val.strip()
                 else:
-                    raise IESLoaderException("Invalid keyword line: " + line)
+                    raise InvalidIESProfileException("Invalid keyword line: " + line)
 
         return keywords

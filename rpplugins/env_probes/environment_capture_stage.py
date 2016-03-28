@@ -120,7 +120,7 @@ class EnvironmentCaptureStage(RenderStage):
         self.target_store.set_shader_input("DestTex", self.storage_tex)
         self.target_store.set_shader_input("currentIndex", self.pta_index)
 
-        self.temporary_diffuse_map = Image.create_cube("DiffuseTemp", self.resolution, Texture.T_float, Texture.F_rgba16)
+        self.temporary_diffuse_map = Image.create_cube("DiffuseTemp", self.resolution, "RGBA16")
         self.target_store_diff = self.create_target("StoreCubemapDiffuse")
         self.target_store_diff.size = self.resolution * 6, self.resolution
         self.target_store_diff.prepare_buffer()

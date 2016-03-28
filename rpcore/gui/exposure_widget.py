@@ -53,8 +53,7 @@ class ExposureWidget(RPObject):
         self._node.hide()
 
         # Create the texture where the gui component is rendered inside
-        self._storage_tex = Image.create_2d(
-            "ExposureDisplay", 140, 20, Texture.T_unsigned_byte, Texture.F_rgba8)
+        self._storage_tex = Image.create_2d("ExposureDisplay", 140, 20, "RGBA8")
         self._storage_tex.set_clear_color(Vec4(0.2, 0.6, 1.0, 1.0))
         self._storage_tex.clear_image()
 

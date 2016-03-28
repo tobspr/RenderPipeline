@@ -62,8 +62,7 @@ class CullProbesStage(RenderStage):
         self.target.prepare_buffer()
 
         self.per_cell_probes = Image.create_buffer(
-            "PerCellProbes", max_cells * self.max_probes_per_cell,
-            Texture.T_int, Texture.F_r32i)
+            "PerCellProbes", max_cells * self.max_probes_per_cell, "R32I")
         self.per_cell_probes.set_clear_color(0)
         self.per_cell_probes.clear_image()
         self.target.set_shader_input("PerCellProbes", self.per_cell_probes)

@@ -28,64 +28,84 @@ from panda3d.core import Texture, GeomEnums
 
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
-from rpcore.gui.buffer_viewer import BufferViewer
+# from rpcore.gui.buffer_viewer import BufferViewer
 
 class Image(RPObject, Texture):
 
     """ This is a wrapper arround the Texture class from Panda3D, which keeps
     track of all images and registers / unregisters them aswell as counting
     the memory used. This is used by all classes instead of pandas builtin
-    Texture. """
+    Texture class. """
 
     # Total amount of images
-    _NUM_IMAGES = 0
+    NUM_IMAGES = 0
+
+    # All registered images
+    REGISTERED_IMAGES = []
+
+    # String formats
+    FORMAT_MAPPINGS = {
+        "R11G11B10": (Texture.T_float, Texture.F_r11_g11_b10),
+        "RGBA8": (Texture.T_unsigned_byte, Texture.F_rgba8),
+        "RGBA16": (Texture.T_float, Texture.F_rgba16),
+        "R8": (Texture.T_unsigned_byte, Texture.F_red),
+        "R16": (Texture.T_float, Texture.F_r16),
+        "R32": (Texture.T_float, Texture.F_r32),
+        "R32I": (Texture.T_int, Texture.F_r32i),
+    }
 
     @classmethod
-    def get_image_count(cls):
-        """ Returns the total amount of images allocated """
-        return cls._NUM_IMAGES
-
-    @classmethod
-    def create_buffer(cls, name, size, comp_type, comp_format):
+    def create_buffer(cls, name, size, comp_type, comp_format=None):
         """ Creates a new buffer texture """
         img = cls("ImgBuffer-" + name)
+        comp_type, comp_format = cls.convert_texture_format(comp_type, comp_format)
         img.setup_buffer_texture(size, comp_type, comp_format, GeomEnums.UH_static)
         return img
 
     @classmethod
-    def create_2d(cls, name, w, h, comp_type, comp_format):
+    def create_2d(cls, name, w, h, comp_type, comp_format=None):
         """ Creates a new 2D texture """
         img = cls("Img2D-" + name)
+        comp_type, comp_format = cls.convert_texture_format(comp_type, comp_format)
         img.setup_2d_texture(w, h, comp_type, comp_format)
         return img
 
     @classmethod
-    def create_2d_array(cls, name, w, h, slices, comp_type, comp_format):
+    def create_2d_array(cls, name, w, h, slices, comp_type, comp_format=None):
         """ Creates a new 2D-array texture """
         img = cls("Img2DArr-" + name)
+        comp_type, comp_format = cls.convert_texture_format(comp_type, comp_format)
         img.setup_2d_texture_array(w, h, slices, comp_type, comp_format)
         return img
 
     @classmethod
-    def create_3d(cls, name, w, h, slices, comp_type, comp_format):
+    def create_3d(cls, name, w, h, slices, comp_type, comp_format=None):
         """ Creates a new 3D texture """
         img = cls("Img3D-" + name)
+        comp_type, comp_format = cls.convert_texture_format(comp_type, comp_format)
         img.setup_3d_texture(w, h, slices, comp_type, comp_format)
         return img
 
     @classmethod
-    def create_cube(cls, name, size, comp_type, comp_format):
+    def create_cube(cls, name, size, comp_type, comp_format=None):
         """ Creates a new cubemap """
         img = cls("ImgCube-" + name)
+        comp_type, comp_format = cls.convert_texture_format(comp_type, comp_format)
         img.setup_cube_map(size, comp_type, comp_format)
         return img
+
+    @classmethod
+    def convert_texture_format(cls, comp_type, comp_format):
+        """ Converts a string like 'RGBA8' to a texture type and format """
+        if comp_format is None:
+            return cls.FORMAT_MAPPINGS[comp_type]
+        return comp_type, comp_format
 
     def __init__(self, name):
         """ Internal method to create a new image """
         RPObject.__init__(self, name)
         Texture.__init__(self, name)
-        Image._NUM_IMAGES += 1
-        BufferViewer.register_entry(self)
+        Image.REGISTERED_IMAGES.append(self)
 
     def __del__(self):
         """ Destroys the image """

@@ -46,12 +46,12 @@ from rpcore.pluginbase.day_manager import DayTimeManager
 
 from rpcore.rpobject import RPObject
 from rpcore.util.network_update_listener import NetworkUpdateListener
+from rpcore.util.ies_profile_loader import IESProfileLoader
 from rpcore.gui.debugger import Debugger
 
 from rpcore.mount_manager import MountManager
 from rpcore.stage_manager import StageManager
 from rpcore.light_manager import LightManager
-from rpcore.ies_profile_manager import IESProfileManager
 
 
 class RenderPipeline(PipelineExtensions, RPObject):
@@ -237,7 +237,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._stage_mgr = StageManager(self)
         self._light_mgr = LightManager(self)
         self._daytime_mgr = DayTimeManager(self)
-        self._ies_profile_mgr = IESProfileManager(self)
+        self._ies_loader = IESProfileLoader(self)
 
         # Load commonly used resources
         self._com_resources = CommonResources(self)

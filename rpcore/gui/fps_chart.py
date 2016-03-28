@@ -51,7 +51,7 @@ class FPSChart(RPObject):
         """ Internal method to init the widgets components """
 
         # Create the buffer which stores the last FPS values
-        self._storage_buffer = Image.create_buffer("FPSValues", 250, Texture.T_float, Texture.F_r16)
+        self._storage_buffer = Image.create_buffer("FPSValues", 250, "R16")
         self._storage_buffer.set_clear_color(Vec4(0))
         self._storage_buffer.clear_image()
 
@@ -65,8 +65,7 @@ class FPSChart(RPObject):
         self._chart_ms_max[0] = 40
 
         # Create the texture where the gui component is rendered inside
-        self._display_tex = Image.create_2d(
-            "FPSChartRender", 250, 120, Texture.T_unsigned_byte, Texture.F_rgba8)
+        self._display_tex = Image.create_2d("FPSChartRender", 250, 120, "RGBA8")
         self._display_tex.set_clear_color(Vec4(0.2, 0.6, 1.0, 1.0))
         self._display_tex.clear_image()
         self._display_img = Sprite(

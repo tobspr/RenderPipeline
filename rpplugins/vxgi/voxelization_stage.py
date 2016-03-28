@@ -73,18 +73,15 @@ class VoxelizationStage(RenderStage):
     def create(self):
         # Create the voxel grid used to generate the voxels
         self.voxel_temp_grid = Image.create_3d(
-            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
-            Texture.T_float, Texture.F_rgba8)
+            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution, "RGBA8")
         self.voxel_temp_grid.set_clear_color(Vec4(0))
         self.voxel_temp_nrm_grid = Image.create_3d(
-            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
-            Texture.T_float, Texture.F_r11_g11_b10)
+            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution, "R11G11B10")
         self.voxel_temp_nrm_grid.set_clear_color(Vec4(0))
 
         # Create the voxel grid which is a copy of the temporary grid, but stable
         self.voxel_grid = Image.create_3d(
-            "Voxels", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
-            Texture.T_float, Texture.F_rgba8)
+            "Voxels", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution, "RGBA8")
         self.voxel_grid.set_clear_color(Vec4(0))
         self.voxel_grid.set_minfilter(SamplerState.FT_linear_mipmap_linear)
 

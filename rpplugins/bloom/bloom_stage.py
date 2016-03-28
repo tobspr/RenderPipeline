@@ -51,8 +51,7 @@ class BloomStage(RenderStage):
         self.target_firefly.prepare_buffer()
 
         self.scene_target_img = Image.create_2d(
-            "BloomDownsample", Globals.resolution.x, Globals.resolution.y,
-            Texture.T_float, Texture.F_r11_g11_b10)
+            "BloomDownsample", Globals.resolution.x, Globals.resolution.y, "R11G11B10")
 
         self.scene_target_img.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.scene_target_img.set_magfilter(SamplerState.FT_linear)

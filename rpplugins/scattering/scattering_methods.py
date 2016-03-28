@@ -73,7 +73,7 @@ class ScatteringMethodHosekWilkie(ScatteringMethod):
         lut_tex.set_wrap_w(SamplerState.WM_clamp)
         lut_tex.set_minfilter(SamplerState.FT_linear)
         lut_tex.set_magfilter(SamplerState.FT_linear)
-        lut_tex.set_format(Texture.F_rgb16)
+        lut_tex.set_format(Image.F_rgb16)
 
         self._handle._display_stage.set_shader_input("ScatteringLUT", lut_tex)
         self._handle._envmap_stage.set_shader_input("ScatteringLUT", lut_tex)
@@ -102,36 +102,16 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
     def _create_textures(self):
         """ Creates all textures required for the scattering """
 
-        tex_format = Texture.F_rgba32 if self._use_32_bit else Texture.F_rgba16
+        tex_format = "RGBA32" if self._use_32_bit else "RGBA16"
 
         self._textures = {
-            "transmittance": Image.create_2d(
-                "scattering-transmittance", self._trans_w, self._trans_h,
-                Texture.T_float, tex_format),
-
-            "irradiance": Image.create_2d(
-                "scattering-irradiance", self._sky_w, self._sky_h, Texture.T_float,
-                tex_format),
-
-            "inscatter": Image.create_3d(
-                "scattering-inscatter", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, tex_format),
-
-            "delta_e": Image.create_2d(
-                "scattering-dx-e", self._sky_w, self._sky_h, Texture.T_float,
-                tex_format),
-
-            "delta_sr": Image.create_3d(
-                "scattering-dx-sr", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, tex_format),
-
-            "delta_sm": Image.create_3d(
-                "scattering-dx-sm", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, tex_format),
-
-            "delta_j": Image.create_3d(
-                "scattering-dx-j", self._res_mu_s_nu, self._res_mu, self._res_r,
-                Texture.T_float, tex_format),
+            "transmittance": Image.create_2d("scattering-transmittance", self._trans_w, self._trans_h, tex_format),
+            "irradiance": Image.create_2d("scattering-irradiance", self._sky_w, self._sky_h, tex_format),
+            "inscatter": Image.create_3d("scattering-inscatter", self._res_mu_s_nu, self._res_mu, self._res_r, tex_format),
+            "delta_e": Image.create_2d("scattering-dx-e", self._sky_w, self._sky_h, tex_format),
+            "delta_sr": Image.create_3d("scattering-dx-sr", self._res_mu_s_nu, self._res_mu, self._res_r, tex_format),
+            "delta_sm": Image.create_3d("scattering-dx-sm", self._res_mu_s_nu, self._res_mu, self._res_r, tex_format),
+            "delta_j": Image.create_3d("scattering-dx-j", self._res_mu_s_nu, self._res_mu, self._res_r, tex_format),
         }
 
         for img in itervalues(self._textures):

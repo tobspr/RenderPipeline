@@ -151,8 +151,7 @@ class StageManager(RPObject):
                     self.debug("Storing previous frame pipe for " + pipe_name)
                     pipe_tex = Image.create_2d(
                         "Prev-" + pipe_name, Globals.resolution.x,
-                        Globals.resolution.y, Texture.T_float,
-                        Texture.F_rgba16)
+                        Globals.resolution.y, "RGBA16")
                     pipe_tex.clear_image()
                     self._previous_pipes[pipe_name] = pipe_tex
                 stage.set_shader_input("Previous_" + pipe_name, self._previous_pipes[pipe_name])

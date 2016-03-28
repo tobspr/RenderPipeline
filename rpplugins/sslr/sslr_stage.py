@@ -55,7 +55,8 @@ class SSLRStage(RenderStage):
         self.target.color_tex.set_minfilter(SamplerState.FT_nearest)
         self.target.color_tex.set_magfilter(SamplerState.FT_nearest)
 
-        self.mipchain = Image.create_2d("SSLRMipchain", x_size, y_size, Texture.T_float, Texture.F_rgba16)
+        self.mipchain = Image.create_2d("SSLRMipchain", x_size, y_size,
+            Image.T_float, Image.F_rgba16)
         self.mipchain.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.mipchain.set_wrap_u(SamplerState.WM_clamp)
         self.mipchain.set_wrap_v(SamplerState.WM_clamp)

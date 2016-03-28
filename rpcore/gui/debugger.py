@@ -203,9 +203,7 @@ class Debugger(RPObject):
         text += "{:5d} render targets  |  {:3d} plugins"
         tex_memory, tex_count = self._buffer_viewer.stage_information
         self._debug_lines[2].text = text.format(
-            tex_memory / (1024**2),
-            Image.get_image_count(),
-            tex_count,
+            tex_memory / (1024**2), Image.NUM_IMAGES, tex_count,
             RenderTarget.NUM_ALLOCATED_BUFFERS,
             len(self._pipeline.plugin_mgr.enabled_plugins))
 

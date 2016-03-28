@@ -90,11 +90,11 @@ class PipelineExtensions(object):
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
         self.set_effect(skybox, "effects/skybox.yaml", {
-            "render_shadows": False,
-            "render_envmap": False,
-            "render_voxel": False,
-            "alpha_testing": False,
-            "normal_mapping": False,
+            "render_shadows":   False,
+            "render_envmap":    False,
+            "render_voxel":     False,
+            "alpha_testing":    False,
+            "normal_mapping":   False,
             "parallax_mapping": False
         }, 1000)
         return skybox
@@ -102,7 +102,7 @@ class PipelineExtensions(object):
     def load_ies_profile(self, filename):
         """ Loads an IES profile from a given filename and returns a handle which
         can be used to set an ies profile on a light """
-        return self._ies_profile_mgr.load(filename)
+        return self._ies_loader.load(filename)
 
     def set_effect(self, nodepath, effect_src, options=None, sort=30):
         """ Sets an effect to the given object, using the specified options.

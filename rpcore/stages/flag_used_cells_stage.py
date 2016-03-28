@@ -24,8 +24,6 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Texture
-
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 
@@ -48,8 +46,7 @@ class FlagUsedCellsStage(RenderStage):
 
         self.cell_grid_flags = Image.create_2d_array(
             "CellGridFlags", tile_amount.x, tile_amount.y,
-            self._pipeline.settings["lighting.culling_grid_slices"],
-            Texture.T_unsigned_byte, Texture.F_red)
+            self._pipeline.settings["lighting.culling_grid_slices"], "R8")
         self.cell_grid_flags.set_clear_color(0)
 
         self.target.set_shader_input("cellGridFlags", self.cell_grid_flags)
