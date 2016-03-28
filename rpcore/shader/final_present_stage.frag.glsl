@@ -25,11 +25,16 @@
  */
 
 #version 430
+
+#pragma include "render_pipeline_base.inc.glsl"
+
 uniform sampler2D SourceTex;
 out vec4 result;
 
 // This shader just passes through the input texture
 
 void main() {
-  result = vec4(texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0).xyz, 1);
+  vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
+
+  result = vec4(texture(SourceTex, texcoord).xyz, 1);
 }
