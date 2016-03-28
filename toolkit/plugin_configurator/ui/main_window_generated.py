@@ -677,7 +677,7 @@ class Ui_MainWindow(object):
         self.lbl_plugin_name.setTextFormat(QtCore.Qt.PlainText)
         self.lbl_plugin_name.setObjectName(_fromUtf8("lbl_plugin_name"))
         self.btn_reset_plugin_settings = QtGui.QPushButton(self.frame_details)
-        self.btn_reset_plugin_settings.setGeometry(QtCore.QRect(540, 3, 161, 31))
+        self.btn_reset_plugin_settings.setGeometry(QtCore.QRect(520, 3, 180, 31))
         self.btn_reset_plugin_settings.setStyleSheet(_fromUtf8("color: #eee;\n"
 "background: #4f8027;\n"
 "border: 0;  "))
@@ -766,7 +766,7 @@ class Ui_MainWindow(object):
         self.lbl_hint_restart.setWordWrap(True)
         self.lbl_hint_restart.setObjectName(_fromUtf8("lbl_hint_restart"))
         self.lbl_restart_pipeline = QtGui.QLabel(self.centralwidget)
-        self.lbl_restart_pipeline.setGeometry(QtCore.QRect(310, 20, 391, 31))
+        self.lbl_restart_pipeline.setGeometry(QtCore.QRect(310, 20, 420, 31))
         font = QtGui.QFont()
         font.setPointSize(11)
         self.lbl_restart_pipeline.setFont(font)
