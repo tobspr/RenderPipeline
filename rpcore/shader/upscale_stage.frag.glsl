@@ -37,8 +37,8 @@ void main() {
     #if 1
         vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
         // vec4 scene_color = bicubic_filter(ShadedScene, texcoord);
-        // vec4 scene_color = bilinear_filter(ShadedScene, texcoord);
-        vec4 scene_color = directional_filter(ShadedScene, texcoord);
+        vec4 scene_color = bilinear_filter(ShadedScene, texcoord);
+        // vec4 scene_color = directional_filter(ShadedScene, texcoord);
     #else
         vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
         vec4 scene_color = texture(ShadedScene, texcoord);

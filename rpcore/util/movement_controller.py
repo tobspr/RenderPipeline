@@ -31,9 +31,8 @@ THE SOFTWARE.
 
 from __future__ import print_function
 
-from panda3d.core import ModifierButtons, Vec3, PStatClient, NodePath
-from panda3d.core import LineSegs, Point3, CurveFitter
-
+from panda3d.core import ModifierButtons, Vec3, PStatClient
+from panda3d.core import Point3, CurveFitter
 
 class MovementController(object):
 
@@ -57,7 +56,6 @@ class MovementController(object):
         self.use_hpr = False
         self.smoothness = 6.0
         self.bobbing_amount = 2.5
-        self.bobbing_amount = 0
         self.bobbing_speed = 0.5
 
     def set_initial_position(self, pos, target):
@@ -103,6 +101,11 @@ class MovementController(object):
     def unbind(self):
         """ Unbinds the movement controler and restores the previous state """
         raise NotImplementedError()
+
+    @property
+    def clock_obj(self):
+        """ Returns the global clock object """
+        return self.showbase.taskMgr.globalClock
 
     def setup(self):
         """ Attaches the movement controller and inits the keybindings """
@@ -157,7 +160,8 @@ class MovementController(object):
 
         # add ourself as an update task which gets executed very early before
         # the rendering
-        self.update_task = self.showbase.addTask(self.update, "RP_UpdateMovementController", sort=-50)
+        self.update_task = self.showbase.addTask(
+            self.update, "RP_UpdateMovementController", sort=-50)
 
         # Hotkeys to connect to pstats and reset the initial position
         self.showbase.accept("1", PStatClient.connect)
@@ -165,20 +169,22 @@ class MovementController(object):
 
     def print_position(self):
         """ Prints the camera position and hpr """
-        pos, hpr = self.showbase.cam.get_pos(render), self.showbase.cam.get_hpr(render)
-        print("(Vec3({}, {}, {}), Vec3({}, {}, {})),".format(pos.x, pos.y, pos.z, hpr.x, hpr.y, hpr.z))
+        pos = self.showbase.cam.get_pos(self.showbase.render)
+        hpr = self.showbase.cam.get_hpr(self.showbase.render)
+        print("(Vec3({}, {}, {}), Vec3({}, {}, {})),".format(
+            pos.x, pos.y, pos.z, hpr.x, hpr.y, hpr.z))
 
     def update(self, task):
         """ Internal update method """
 
-        delta = self.showbase.taskMgr.globalClock.get_dt()
+        delta = self.clock_obj.get_dt()
 
         # Update mouse first
         if self.showbase.mouseWatcherNode.has_mouse():
             x = self.showbase.mouseWatcherNode.get_mouse_x()
             y = self.showbase.mouseWatcherNode.get_mouse_y()
-            self.current_mouse_pos = [x * 90 * self.mouse_sensivity,
-                                       y * 70 * self.mouse_sensivity]
+            self.current_mouse_pos = (x * 90 * self.mouse_sensivity,
+                                      y * 70 * self.mouse_sensivity)
 
             if self.mouse_enabled:
                 diffx = self.last_mouse_pos[0] - self.current_mouse_pos[0]
@@ -196,8 +202,7 @@ class MovementController(object):
 
         # Compute movement in render space
         movement_direction = (Vec3(self.movement[1], self.movement[0], 0)
-                              * self.speed
-                              * delta * 100.0)
+                              * self.speed * delta * 100.0)
 
         # transform by the camera direction
         camera_quaternion = self.showbase.camera.get_quat(self.showbase.render)
@@ -220,7 +225,7 @@ class MovementController(object):
                 self.hpr_movement[0], self.hpr_movement[1], 0) * rotation_speed)
 
         # bobbing
-        ftime = self.showbase.taskMgr.globalClock.get_frame_time()
+        ftime = self.clock_obj.get_frame_time()
         rotation = (ftime % self.bobbing_speed) / self.bobbing_speed
         rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
         rotation *= self.bobbing_amount
@@ -242,32 +247,44 @@ class MovementController(object):
         curve = fitter.make_hermite()
         print("Starting motion path with", len(points), "CVs")
 
-
         self.showbase.render2d.hide()
         self.showbase.aspect2d.hide()
 
         self.curve = curve
-        self.curve_time_start = globalClock.get_frame_time()
-        self.curve_time_end = globalClock.get_frame_time() + len(points) * point_duration
+        self.curve_time_start = self.clock_obj.get_frame_time()
+        self.curve_time_end = self.clock_obj.get_frame_time() + len(points) * point_duration
+        self.delta_time_sum = 0.0
+        self.delta_time_count = 0
         self.showbase.addTask(self.camera_motion_update, "RP_CameraMotionPath", sort=-50)
         self.showbase.taskMgr.remove(self.update_task)
 
     def camera_motion_update(self, task):
-        if globalClock.get_frame_time() > self.curve_time_end:
+        if self.clock_obj.get_frame_time() > self.curve_time_end:
             print("Camera motion path finished")
-            self.update_task = self.showbase.addTask(self.update, "RP_UpdateMovementController", sort=-50)
+
+            # Print performance stats
+            avg_ms = self.delta_time_sum / self.delta_time_count
+            print("Average frame time (ms): {:4.1f}".format(avg_ms * 1000.0))
+            print("Average frame rate: {:4.1f}".format(1.0 / avg_ms))
+
+            self.update_task = self.showbase.addTask(
+                self.update, "RP_UpdateMovementController", sort=-50)
             self.showbase.render2d.show()
             self.showbase.aspect2d.show()
             return task.done
 
-        t = (globalClock.get_frame_time() - self.curve_time_start) / (self.curve_time_end - self.curve_time_start)
-        t *= self.curve.get_max_t()
+        lerp = (self.clock_obj.get_frame_time() - self.curve_time_start) /\
+            (self.curve_time_end - self.curve_time_start)
+        lerp *= self.curve.get_max_t()
 
         pos, hpr = Point3(0), Vec3(0)
-        self.curve.evaluate_xyz(t, pos)
-        self.curve.evaluate_hpr(t, hpr)
+        self.curve.evaluate_xyz(lerp, pos)
+        self.curve.evaluate_hpr(lerp, hpr)
 
         self.showbase.camera.set_pos(pos)
         self.showbase.camera.set_hpr(hpr)
+
+        self.delta_time_sum += self.clock_obj.get_dt()
+        self.delta_time_count += 1
 
         return task.cont

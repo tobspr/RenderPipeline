@@ -1,3 +1,12 @@
 
-settings:
+settings: !!omap
+    - intensity:
+        type: float
+        range: [0.1, 10.0]
+        default: 1.0
+        shader_runtime: true
+        label: Intensity
+        description: >
+          Controls the intensity of the effect
+
 daytime_settings:

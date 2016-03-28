@@ -26,31 +26,17 @@ THE SOFTWARE.
 
 from __future__ import print_function, division
 
-from panda3d.core import GraphicsOutput, CardMaker, OmniBoundingVolume, Texture
-from panda3d.core import AuxBitplaneAttrib, NodePath, OrthographicLens, Geom
-from panda3d.core import Camera, Vec4, TransparencyAttrib, StencilAttrib
-from panda3d.core import ColorWriteAttrib, DepthWriteAttrib, GeomVertexData
+from panda3d.core import GraphicsOutput, Texture, AuxBitplaneAttrib, NodePath
+from panda3d.core import Vec4, TransparencyAttrib, ColorWriteAttrib, SamplerState
 from panda3d.core import WindowProperties, FrameBufferProperties, GraphicsPipe
-from panda3d.core import GeomVertexFormat, GeomNode, GeomVertexWriter
-from panda3d.core import GeomTriangles, SamplerState, LVecBase2i, DepthTestAttrib
-from panda3d.core import ShaderInput
-
-
-try:
-    # Try to import the post process region from panda, but fallback to the
-    # python version if it fails
-    from panda3d.core import PostProcessRegion
-    has_native_post_process_region = True
-
-except ImportError:
-    from rpcore.util.post_process_region import PostProcessRegion
-    has_native_post_process_region = False
+from panda3d.core import LVecBase2i
 
 from rplibs.six.moves import range
-from rplibs.six import iterkeys, itervalues, iteritems
+from rplibs.six import iterkeys, itervalues
 
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
+from rpcore.util.post_process_region import PostProcessRegion
 
 __all__ = "RenderTarget",
 __version__ = "2.0"
@@ -70,8 +56,8 @@ class RenderTarget(RPObject):
     to easily setup buffers in Panda3D. """
 
     NUM_ALLOCATED_BUFFERS = 0
-    CREATION_HANDLER = None
     USE_R11G11B10 = True
+    REGISTERED_TARGETS = []
 
     def __init__(self, name="target"):
         RPObject.__init__(self, name)
@@ -108,7 +94,7 @@ class RenderTarget(RPObject):
     def add_depth_attachment(self, bits=32):
         """ Adds a depth attachment wit the given amount of bits """
         self._targets["depth"] = Texture(self.debug_name + "_depth")
-        self._depth_bits = 32
+        self._depth_bits = bits
 
     def add_aux_attachment(self, bits=8):
         """ Adds a new aux attachment with the given amount of bits. The amount
@@ -167,10 +153,7 @@ class RenderTarget(RPObject):
     def set_shader_input(self, *args):
         """ Sets a shader input available to the target """
         if self.create_default_region:
-            if has_native_post_process_region:
-                self._source_region.set_shader_input(ShaderInput(*args))
-            else:
-                self._source_region.set_shader_input(*args)
+            self._source_region.set_shader_input(*args)
 
     @setter
     def shader(self, shader_obj):
@@ -293,7 +276,7 @@ class RenderTarget(RPObject):
         for i in range(self._aux_count):
             self._targets["aux_{}".format(i)] = Texture(
                 self.debug_name + "_aux{}".format(i))
-        for name, tex in iteritems(self._targets):
+        for tex in itervalues(self._targets):
             tex.set_wrap_u(SamplerState.WM_clamp)
             tex.set_wrap_v(SamplerState.WM_clamp)
             tex.set_anisotropic_degree(0)
@@ -308,12 +291,10 @@ class RenderTarget(RPObject):
         buffer_props = FrameBufferProperties()
 
         if self._color_bits == (16, 16, 16, 0):
-            # Optional: Always use R11G11B10
-            # buffer_props.set_rgba_bits(11, 11, 10, 0)
-            buffer_props.set_rgba_bits(16, 16, 16, 0)
-        elif self._color_bits == (8, 8, 8, 0):
-            # buffer_props.set_rgba_bits(11, 11, 10, 0)
-            buffer_props.set_rgba_bits(8, 8, 8, 0)
+            if RenderTarget.USE_R11G11B10:
+                buffer_props.set_rgba_bits(11, 11, 10, 0)
+            else:
+                buffer_props.set_rgba_bits(*self._color_bits)
         else:
             buffer_props.set_rgba_bits(*self._color_bits)
 
@@ -386,10 +367,5 @@ class RenderTarget(RPObject):
         self._internal_buffer.get_overlay_display_region().disable_clears()
         self._internal_buffer.get_overlay_display_region().set_active(False)
 
-        if RenderTarget.CREATION_HANDLER:
-            RenderTarget.CREATION_HANDLER(self)
-        else:
-            Globals.base.taskMgr.doMethodLater(0.5,
-                lambda task: RenderTarget.CREATION_HANDLER(self)\
-                    if RenderTarget.CREATION_HANDLER else 1, "register-target-" + self.debug_name)
+        RenderTarget.REGISTERED_TARGETS.append(self)
         return True

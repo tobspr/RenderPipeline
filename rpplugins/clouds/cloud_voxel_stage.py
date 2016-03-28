@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import SamplerState, Texture, Vec4
+from panda3d.core import SamplerState, Vec4
 
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
@@ -54,8 +54,7 @@ class CloudVoxelStage(RenderStage):
     def create(self):
         # Construct the voxel texture
         self._cloud_voxels = Image.create_3d(
-            "CloudVoxels", self._voxel_res_xy, self._voxel_res_xy, self._voxel_res_z,
-            Texture.T_unsigned_byte, Texture.F_rgba8)
+            "CloudVoxels", self._voxel_res_xy, self._voxel_res_xy, self._voxel_res_z, "RGBA8")
         self._cloud_voxels.set_wrap_u(SamplerState.WM_repeat)
         self._cloud_voxels.set_wrap_v(SamplerState.WM_repeat)
         self._cloud_voxels.set_wrap_w(SamplerState.WM_border_color)
@@ -78,8 +77,8 @@ class CloudVoxelStage(RenderStage):
 
     def set_shaders(self):
         self._grid_target.shader = self.load_plugin_shader(
-                "/$$rp/shader/default_post_process_instanced.vert.glsl",
-                "generate_clouds.frag.glsl")
+            "/$$rp/shader/default_post_process_instanced.vert.glsl",
+            "generate_clouds.frag.glsl")
         self._shade_target.shader = self.load_plugin_shader(
-                "/$$rp/shader/default_post_process_instanced.vert.glsl",
-                "shade_clouds.frag.glsl")
+            "/$$rp/shader/default_post_process_instanced.vert.glsl",
+            "shade_clouds.frag.glsl")

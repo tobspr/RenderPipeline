@@ -206,13 +206,13 @@ float pnoise3D(vec3 P, vec3 rep)
 
 
 float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    return abs(fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453)) * 2 - 1;
 }
 
 
 vec3 rand_rgb(vec2 co)
 {
-  return fract(sin(dot(co.xy, vec2(34.4835, 89.6372))) * vec3(29156.4765, 38273.56393, 47843.75468));
+  return abs(fract(sin(dot(co.xy, vec2(34.4835, 89.6372))) * vec3(29156.4765, 38273.56393, 47843.75468))) * 2 - 1;
 }
 
 

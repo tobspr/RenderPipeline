@@ -72,7 +72,7 @@ class PSSMDistShadowStage(RenderStage):
         # Point (0,0,0) to light space, compute the texcoord differences and
         # offset the light world space position by that.
         mvp = Mat4(self.mvp)
-        base_point = mvp.xform(Point4(0,0,0,1)) * 0.5 + 0.5
+        base_point = mvp.xform(Point4(0, 0, 0, 1)) * 0.5 + 0.5
         texel_size = 1.0 / float(self.resolution)
         offset_x = base_point.x % texel_size
         offset_y = base_point.y % texel_size

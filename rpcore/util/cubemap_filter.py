@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import Texture, SamplerState
+from panda3d.core import SamplerState
 
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
@@ -83,15 +83,13 @@ class CubemapFilter(RPObject):
 
         # Create the cubemaps for the diffuse and specular components
         self._prefilter_map = Image.create_cube(
-            self._name + "IBLPrefDiff", CubemapFilter.PREFILTER_CUBEMAP_SIZE,
-            Texture.T_float, Texture.F_r11_g11_b10)
+            self._name + "IBLPrefDiff", CubemapFilter.PREFILTER_CUBEMAP_SIZE, "R11G11B10")
         self._diffuse_map = Image.create_cube(
-            self._name + "IBLDiff", CubemapFilter.DIFFUSE_CUBEMAP_SIZE,
-            Texture.T_float, Texture.F_r11_g11_b10)
+            self._name + "IBLDiff", CubemapFilter.DIFFUSE_CUBEMAP_SIZE, "R11G11B10")
         self._spec_pref_map = Image.create_cube(
-            self._name + "IBLPrefSpec", self._size, Texture.T_float, Texture.F_r11_g11_b10)
+            self._name + "IBLPrefSpec", self._size, "R11G11B10")
         self._specular_map = Image.create_cube(
-            self._name + "IBLSpec", self._size, Texture.T_float, Texture.F_r11_g11_b10)
+            self._name + "IBLSpec", self._size, "R11G11B10")
 
         # Set the correct filtering modes
         for tex in [self._diffuse_map, self._specular_map, self._prefilter_map]:
@@ -170,8 +168,10 @@ class CubemapFilter(RPObject):
         """ Sets all required shaders on the filter. """
 
         # Set diffuse filter shaders
-        self._diffuse_target.shader = self._stage.load_shader("ibl/cubemap_diffuse.frag.glsl")
-        self._diff_filter_target.shader = self._stage.load_shader("ibl/cubemap_diffuse_filter.frag.glsl")
+        self._diffuse_target.shader = self._stage.load_shader(
+            "ibl/cubemap_diffuse.frag.glsl")
+        self._diff_filter_target.shader = self._stage.load_shader(
+            "ibl/cubemap_diffuse_filter.frag.glsl")
 
         # Set specular prefilter shaders
         mip_shader = self._stage.load_shader("ibl/cubemap_specular_prefilter.frag.glsl")

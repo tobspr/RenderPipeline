@@ -28,23 +28,23 @@ from __future__ import division
 
 import random
 
-from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Texture, Mat4
+from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4
 from panda3d.core import SamplerState, PNMImage
 from direct.stdpy.file import open
 
 from rpcore.image import Image
 from rpcore.globals import Globals
-from rpcore.base_manager import BaseManager
+from rpcore.rpobject import RPObject
 
 from rpcore.util.shader_ubo import ShaderUBO
 
-class CommonResources(BaseManager):
+class CommonResources(RPObject):
 
     """ This class manages the loading and binding of commonly used resources,
     such as textures, models, but also shader inputs """
 
     def __init__(self, pipeline):
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self._pipeline = pipeline
         self._showbase = Globals.base
         self._ptas = {}
@@ -77,6 +77,7 @@ class CommonResources(BaseManager):
         self._input_ubo.register_pta("frame_time", "float")
         self._input_ubo.register_pta("current_film_offset", "vec2")
         self._input_ubo.register_pta("temporal_index", "int")
+        self._input_ubo.register_pta("frame_index", "int")
         self._pipeline.stage_mgr.add_ubo(self._input_ubo)
 
         # Main camera and main render have to be regular inputs, since they are
@@ -112,7 +113,7 @@ class CommonResources(BaseManager):
         envmap = Globals.loader.load_cube_map(
             "/$$rp/data/default_cubemap/filtered/#-#.png", readMipmaps=True)
         envmap.set_minfilter(SamplerState.FT_linear_mipmap_linear)
-        envmap.set_format(Texture.F_rgba16)
+        # envmap.set_format(Image.F_rgba16)
         envmap.set_magfilter(SamplerState.FT_linear)
         envmap.set_wrap_u(SamplerState.WM_repeat)
         envmap.set_wrap_v(SamplerState.WM_repeat)
@@ -121,15 +122,25 @@ class CommonResources(BaseManager):
 
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
-        brdf_tex = Globals.loader.load_texture(
-            "/$$rp/data/environment_brdf/prefiltered_environment_brdf.png")
-        brdf_tex.set_minfilter(SamplerState.FT_linear)
-        brdf_tex.set_magfilter(SamplerState.FT_linear)
-        brdf_tex.set_wrap_u(SamplerState.WM_clamp)
-        brdf_tex.set_wrap_v(SamplerState.WM_clamp)
-        brdf_tex.set_anisotropic_degree(0)
-        brdf_tex.set_format(Texture.F_rgba16)
-        self._pipeline.stage_mgr.add_input("PrefilteredBRDF", brdf_tex)
+        luts = [
+            {"src": "slices/env_brdf_#.png", "input": "PrefilteredBRDF"},
+            {"src": "slices_metal/env_brdf.png", "input": "PrefilteredMetalBRDF"},
+            {"src": "slices_coat/env_brdf.png", "input": "PrefilteredCoatBRDF"},
+        ]
+
+        for config in luts:
+            loader_method = Globals.loader.load_texture
+            if "#" in config["src"]:
+                loader_method = Globals.loader.load_3d_texture
+
+            brdf_tex = loader_method("/$$rp/data/environment_brdf/{}".format(config["src"]))
+            brdf_tex.set_minfilter(SamplerState.FT_linear)
+            brdf_tex.set_magfilter(SamplerState.FT_linear)
+            brdf_tex.set_wrap_u(SamplerState.WM_clamp)
+            brdf_tex.set_wrap_v(SamplerState.WM_clamp)
+            brdf_tex.set_wrap_w(SamplerState.WM_clamp)
+            brdf_tex.set_anisotropic_degree(0)
+            self._pipeline.stage_mgr.add_input(config["input"], brdf_tex)
 
     def _load_precomputed_grain(self):
         grain_tex = Globals.loader.load_texture(
@@ -143,7 +154,7 @@ class CommonResources(BaseManager):
 
     def _load_skydome(self):
         """ Loads the skydome """
-        skydome = Globals.loader.load_texture("/$$rp/data/builtin_models/skybox/skybox2.jpg")
+        skydome = Globals.loader.load_texture("/$$rp/data/builtin_models/skybox/skybox3.jpg")
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)
@@ -162,7 +173,7 @@ class CommonResources(BaseManager):
         skybox = Globals.loader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")
         return skybox
 
-    def do_update(self):
+    def update(self):
         """ Updates the commonly used resources, mostly the shader inputs """
         update = self._input_ubo.update_input
 
@@ -211,3 +222,4 @@ class CommonResources(BaseManager):
             max_clip_length = self._pipeline.plugin_mgr.plugin_instances["smaa"].history_length
 
         update("temporal_index", Globals.clock.get_frame_count() % max_clip_length)
+        update("frame_index", Globals.clock.get_frame_count())

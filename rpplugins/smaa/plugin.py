@@ -71,7 +71,7 @@ class Plugin(BasePlugin):
 
         # for x, y in ((-0.5, 0.25), (0.5, -0.25), (0.25, 0.5), (-0.25, -0.5)):
         for x, y in ((-0.25, 0.25), (0.25, -0.25)):
-            # The get_x_size() for both dimensions is not an error! Its due to
+            # The get_x_size() for both dimensions is not an error - its due to
             # how the OrtographicLens works internally.
             jitter_x = (x * 2 - 1) * scale * 0.5
             jitter_y = (y * 2 - 1) * scale * 0.5

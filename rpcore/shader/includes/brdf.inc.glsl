@@ -28,6 +28,7 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/material.struct.glsl"
+#pragma include "includes/color_spaces.inc.glsl"
 
 
 /*
@@ -69,8 +70,8 @@ vec3 brdf_schlick_fresnel(vec3 specular, float VxH)
 float brdf_disney_diffuse(float NxV, float NxL, float LxH, float roughness) {
 
     // In case of squared roughness:
-    float lin_roughness = sqrt(roughness);
-    float energy_bias = mix(0.0, 0.5, lin_roughness);
+    float lin_roughness = roughness;
+    float energy_bias = 0.5 * lin_roughness;
     float energy_factor = mix(1.0, 1.0 / 1.51, lin_roughness);
     float fd90 = energy_bias + 2.0 * LxH * LxH * lin_roughness;
     vec3 f0 = vec3(1);
@@ -78,8 +79,6 @@ float brdf_disney_diffuse(float NxV, float NxL, float LxH, float roughness) {
     float view_scatter = brdf_schlick_fresnel(f0, fd90, NxV).x;
     return light_scatter * view_scatter * energy_factor * NxL / M_PI;
 }
-
-
 
 /* Distribution functions */
 float brdf_distribution_blinn_phong(float NxH, float roughness) {
@@ -137,9 +136,9 @@ float brdf_visibility_cook_torrance(float NxL, float NxV, float NxH, float VxH) 
 
 float brdf_visibility_smith(float NxL, float NxV, float roughness) {
     float r_sq = roughness * roughness;
-    float lambda_GGXV = NxL * sqrt((-NxV * r_sq + NxV ) * NxV + r_sq);
-    float lambda_GGXL = NxV * sqrt((-NxL * r_sq + NxV ) * NxL + r_sq);
-    return 1 / (lambda_GGXV + lambda_GGXL) * NxV * NxL;
+    float vis_v = NxL * ( NxV * ( 1 - r_sq ) + r_sq );
+    float vis_l = NxV * ( NxL * ( 1 - r_sq ) + r_sq );
+    return 0.5 / (vis_v + vis_l);
 }
 
 // Helper function for the schlick visibility
@@ -157,7 +156,7 @@ float brdf_visibility_schlick(float NxV, float NxL, float roughness) {
 /* Fresnel functions */
 
 float ior_to_specular(float ior) {
-    float f0 = (ior - 1) / (ior + 1);
+    float f0 = (ior - AIR_IOR) / (ior + AIR_IOR);
     // Clamp between ior of 1 and 2.5
     return clamp(f0 * f0, 0.0, 0.18);
 }
@@ -178,19 +177,72 @@ float brdf_fresnel_schlick(float LxH, float roughness, float ior) {
     return brdf_fresnel_schlick_f0(LxH, roughness, f0);
 }
 
+// Exact fresnel, can be slow.
+float brdf_fresnel_exact(float cos_theta) {
+    const float eta = 1.51;
+
+    float scale = 1 / eta;
+    float cos_theta_t_sqr = 1 - (1 - cos_theta * cos_theta) * (scale * scale);
+
+    if (cos_theta_t_sqr <= 0.0)
+        return 1.0;
+
+    float cos_theta_i = abs(cos_theta);
+    float cos_theta_t = sqrt(cos_theta_t_sqr);
+
+    float Rs = (cos_theta_i - eta * cos_theta_t) / (cos_theta_i + eta * cos_theta_t);
+    float Rp = (eta * cos_theta_i - cos_theta_t) / (eta * cos_theta_i + cos_theta_t);
+
+    return 0.5 * (Rs * Rs + Rp * Rp);
+}
+
+// Exact conductor fresnel, can be slow, also only single channel
+float brdf_fresnel_conductor_exact(float cos_theta_i, float eta, float k) {
+    /* Modified from "Optics" by K.D. Moeller, University Science Books, 1988 */
+    float cosThetaI2 = cos_theta_i*cos_theta_i,
+          sinThetaI2 = 1-cosThetaI2,
+          sinThetaI4 = sinThetaI2*sinThetaI2;
+
+    float temp1 = eta*eta - k*k - sinThetaI2;
+    float a2pb2 = sqrt(temp1*temp1 + 4*k*k*eta*eta);
+    float a     = sqrt(0.5f * (a2pb2 + temp1));
+
+    float term1 = a2pb2 + cosThetaI2;
+    float term2 = 2*a*cos_theta_i;
+
+    float Rs2 = (term1 - term2) / (term1 + term2);
+
+    float term3 = a2pb2*cosThetaI2 + sinThetaI4,
+          term4 = term2*sinThetaI2;
+
+    float Rp2 = Rs2 * (term3 - term4) / (term3 + term4);
+    return 0.5f * (Rp2 + Rs2);
+}
+
+
+// Approximation proposed in
+// http://sirkan.iit.bme.hu/~szirmay/fresnel.pdf
+vec3 brdf_fresnel_conductor_approx(float cos_theta, vec3 n, vec3 k) {
+    vec3 k_sq = k * k;
+    vec3 term0 = square(n - 1.0) + 4 * n * pow(1 - cos_theta, 5.0) + k_sq;
+    vec3 term1 = square(n + 1.0) + k_sq;
+    return term0 / term1;
+}
+
 // Diffuse BRDF
-float brdf_diffuse(float NxV, float LxH, float roughness) {
+float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) {
 
     // Choose one:
-    return brdf_lambert();
-    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
+    // return brdf_lambert();
+    return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
+
 }
 
 
 // Distribution
 float brdf_distribution(float NxH, float roughness)
 {
-    NxH = max(1e-6, NxH);
+    NxH = max(1e-4, NxH);
 
     // Choose one:
     // return brdf_distribution_blinn_phong(NxH, roughness);
@@ -211,7 +263,8 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
     // float vis = brdf_visibility_smith(NxL, NxV, roughness);
 
     // Normalize the brdf
-    return vis / max(1e-7, 4.0 * NxL * NxV);
+    // return vis;
+    return vis / max(1e-5, 4.0 * VxH);
 }
 
 // Fresnel
@@ -234,21 +287,58 @@ vec3 get_material_f0(Material m) {
 
 // Returns a reflection vector, bent into the normal direction
 vec3 get_reflection_vector(Material m, vec3 view_vector) {
+    float roughness = m.shading_model == SHADING_MODEL_CLEARCOAT ? CLEARCOAT_ROUGHNESS : m.roughness;
     vec3 reflected_dir = reflect(view_vector, m.normal);
-    // return reflected_dir;
-    return mix(m.normal, reflected_dir,
-        (1 - m.roughness) * (m.roughness + sqrt(1 - m.roughness)));
+
+    // roughness = sqrt(roughness);
+
+    // XXX: Evaluate whats more physically correct
+    return reflected_dir;
+
+    return normalize(mix(m.normal, reflected_dir, (1 - roughness) * (roughness + sqrt(1 - roughness))));
 }
 
 
 // Returns an approximated mipmap level based on the materials roughness
 // level to approximate importance sampled references
 float get_specular_mipmap(float roughness) {
+
     // Approximation to match importance sampled reference, tuned for a
     // resolution of 128.
-    return max(0.01, roughness * 7.0 - pow(roughness, 6.0) * 1.5);
+    return snap_mipmap(roughness * 12.0 - pow(roughness, 6.0) * 1.5);
 }
 
 float get_specular_mipmap(Material m) {
     return get_specular_mipmap(m.roughness);
 }
+
+vec3 get_brdf_from_lut(sampler3D lut_texture, float NxV, float roughness, float ior) {
+    float lookup_slice = (ior - 1.01) / 1.5 + 0.5 / 15.0;
+    vec3 data = textureLod(lut_texture, vec3(NxV, roughness, lookup_slice), 0).xyz;
+
+    // Unpack packed data
+    data *= data;
+
+    return data;
+}
+
+vec3 get_brdf_from_lut(sampler2D lut_texture, float NxV, float roughness) {
+    vec3 data = textureLod(lut_texture, vec2(NxV, roughness), 0).xyz;
+    // Unpack packed data
+    data *= data;
+    return data;
+}
+
+vec3 weight_environment_fresnel(vec3 source_brdf, Material m) {
+    float diff_intensity = get_luminance(m.basecolor);
+    float lut_intensity = get_luminance(vec3(0, 1, 0));
+    float diff_scale = diff_intensity / lut_intensity;
+    float spec_scale = 1.0 / max(1e-2, diff_scale);
+
+    return saturate(vec3(source_brdf.x * spec_scale, diff_scale * source_brdf.yz));
+}
+
+float get_effective_roughness(Material m) {
+    return m.shading_model == SHADING_MODEL_CLEARCOAT ? CLEARCOAT_ROUGHNESS : m.roughness;
+}
+

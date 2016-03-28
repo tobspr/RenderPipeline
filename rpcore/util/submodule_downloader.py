@@ -31,8 +31,8 @@ import sys
 import zipfile
 import shutil
 
-from rplibs.six import BytesIO
 from rplibs.six.moves import urllib
+from rplibs.six import BytesIO
 
 def download_submodule(author, module_name, dest_path, ignore_list):
     """ Downloads a submodule from the given author and module name, and extracts

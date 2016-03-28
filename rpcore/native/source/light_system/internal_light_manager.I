@@ -106,3 +106,35 @@ inline void InternalLightManager::set_shadow_manager(ShadowManager* mgr) {
 inline void InternalLightManager::set_command_list(GPUCommandList *cmd_list) {
     _cmd_list = cmd_list;
 }
+
+/**
+ * @brief Sets the camera position
+ * @details This sets the camera position, which will be used to determine which
+ *   shadow sources have to get updated
+ *
+ * @param mat View projection mat
+ */
+inline void InternalLightManager::set_camera_pos(const LPoint3f& pos) {
+  _camera_pos = pos;
+}
+
+/**
+ * @brief Sets the maximum shadow update distance
+ * @details This controls the maximum distance until which shadows are updated.
+ *   If a shadow source is past that distance, it is ignored and no longer recieves
+ *   updates until it is in range again
+ *
+ * @param dist Distance in world space units
+ */
+inline void InternalLightManager::set_shadow_update_distance(float dist) {
+  _shadow_update_distance = dist;
+}
+
+/**
+ * @brief Returns the internal used ShadowManager
+ * @details This returns a handle to the internally used shadow manager
+ * @return Shadow manager
+ */
+inline ShadowManager* InternalLightManager::get_shadow_manager() const {
+  return _shadow_manager;
+}

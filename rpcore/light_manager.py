@@ -26,10 +26,11 @@ THE SOFTWARE.
 
 import math
 
-from panda3d.core import LVecBase2i, Texture, PTAInt
+from panda3d.core import LVecBase2i, PTAInt
 
 from rpcore.image import Image
 from rpcore.globals import Globals
+from rpcore.rpobject import RPObject
 
 from rpcore.stages.flag_used_cells_stage import FlagUsedCellsStage
 from rpcore.stages.collect_used_cells_stage import CollectUsedCellsStage
@@ -39,9 +40,8 @@ from rpcore.stages.shadow_stage import ShadowStage
 
 from rpcore.gpu_command_queue import GPUCommandQueue
 from rpcore.native import InternalLightManager, PointLight, ShadowManager
-from rpcore.base_manager import BaseManager
 
-class LightManager(BaseManager):
+class LightManager(RPObject):
 
     """ This class is a wrapper around the InternalLightManager, and provides
     additional functionality like setting up all required stages and defines."""
@@ -51,7 +51,7 @@ class LightManager(BaseManager):
 
     def __init__(self, pipeline):
         """ Constructs the light manager """
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self._pipeline = pipeline
         self._compute_tile_size()
         self._init_internal_mgr()
@@ -94,30 +94,37 @@ class LightManager(BaseManager):
     def add_light(self, light):
         """ Adds a new light """
         self._internal_mgr.add_light(light)
-        self._pta_max_light_index[0] = self._internal_mgr.get_max_light_index()
+        self._pta_max_light_index[0] = self._internal_mgr.max_light_index
 
     def remove_light(self, light):
         """ Removes a light """
         self._internal_mgr.remove_light(light)
-        self._pta_max_light_index[0] = self._internal_mgr.get_max_light_index()
+        self._pta_max_light_index[0] = self._internal_mgr.max_light_index
 
     @property
     def num_lights(self):
         """ Returns the amount of stored lights """
-        return self._internal_mgr.get_num_lights()
+        return self._internal_mgr.num_lights
 
     @property
     def num_shadow_sources(self):
         """ Returns the amount of stored shadow sources """
-        return self._internal_mgr.get_num_shadow_sources()
+        return self._internal_mgr.num_shadow_sources
+
+    @property
+    def shadow_atlas_coverage(self):
+        """ Returns the shadow atlas coverage in percentage  """
+        return self._internal_mgr.shadow_manager.atlas.coverage * 100.0
 
     @property
     def cmd_queue(self):
         """ Returns a handle to the GPU Command Queue """
         return self._cmd_queue
 
-    def do_update(self):
+    def update(self):
         """ Main update method to process the GPU commands """
+        self._internal_mgr.set_camera_pos(
+            Globals.base.camera.get_pos(Globals.base.render))
         self._internal_mgr.update()
         self._shadow_manager.update()
         self._cmd_queue.process_queue()
@@ -139,12 +146,12 @@ class LightManager(BaseManager):
         """ Inits the shadow manager """
         self._shadow_manager = ShadowManager()
         self._shadow_manager.set_max_updates(self._pipeline.settings["shadows.max_updates"])
-        self._shadow_manager.set_atlas_size(self._pipeline.settings["shadows.atlas_size"])
         self._shadow_manager.set_scene(Globals.base.render)
         self._shadow_manager.set_tag_state_manager(self._pipeline.tag_mgr)
+        self._shadow_manager.atlas_size = self._pipeline.settings["shadows.atlas_size"]
 
         # Register the shadow manager
-        self._internal_mgr.set_shadow_manager(self._shadow_manager)
+        self._internal_mgr.shadow_manager = self._shadow_manager
 
     def init_shadows(self):
         """ Inits the shadows, this needs to get called after the stages were
@@ -156,12 +163,13 @@ class LightManager(BaseManager):
     def _init_internal_mgr(self):
         """ Creates the light storage manager and the buffer to store the light data """
         self._internal_mgr = InternalLightManager()
+        self._internal_mgr.set_shadow_update_distance(
+            self._pipeline.settings["shadows.max_update_distance"])
 
         # Storage for the Lights
         per_light_vec4s = 4
         self._img_light_data = Image.create_buffer(
-            "LightData", self._MAX_LIGHTS * per_light_vec4s, Texture.T_float,
-            Texture.F_rgba16)
+            "LightData", self._MAX_LIGHTS * per_light_vec4s, "RGBA16")
         self._img_light_data.set_clear_color(0)
         self._img_light_data.clear_image()
 
@@ -171,8 +179,7 @@ class LightManager(BaseManager):
         # Storage for the shadow sources
         per_source_vec4s = 5
         self._img_source_data = Image.create_buffer(
-            "ShadowSourceData", self._MAX_SOURCES * per_source_vec4s, Texture.T_float,
-            Texture.F_rgba16)
+            "ShadowSourceData", self._MAX_SOURCES * per_source_vec4s, "RGBA16")
         self._img_light_data.set_clear_color(0)
         self._img_light_data.clear_image()
 

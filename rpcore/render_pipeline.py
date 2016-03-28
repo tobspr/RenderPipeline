@@ -30,7 +30,7 @@ import sys
 import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem, WindowProperties
+from panda3d.core import PandaSystem
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -46,12 +46,12 @@ from rpcore.pluginbase.day_manager import DayTimeManager
 
 from rpcore.rpobject import RPObject
 from rpcore.util.network_update_listener import NetworkUpdateListener
+from rpcore.util.ies_profile_loader import IESProfileLoader
 from rpcore.gui.debugger import Debugger
 
 from rpcore.mount_manager import MountManager
 from rpcore.stage_manager import StageManager
 from rpcore.light_manager import LightManager
-from rpcore.ies_profile_manager import IESProfileManager
 
 
 class RenderPipeline(PipelineExtensions, RPObject):
@@ -237,7 +237,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._stage_mgr = StageManager(self)
         self._light_mgr = LightManager(self)
         self._daytime_mgr = DayTimeManager(self)
-        self._ies_profile_mgr = IESProfileManager(self)
+        self._ies_loader = IESProfileLoader(self)
 
         # Load commonly used resources
         self._com_resources = CommonResources(self)
@@ -393,12 +393,14 @@ class RenderPipeline(PipelineExtensions, RPObject):
         if "intel" in vendor:
             define("IS_INTEL", 1)
 
+        define("REFERENCE_MODE", self.settings["pipeline.reference_mode"])
+
         # Only activate this experimental feature if the patch was applied,
         # since it is a local change in my Panda3D build which is not yet
         # reviewed by rdb. Once it is in public Panda3D Dev-Builds this will
         # be the default.
         if (not isfile("/$$rp/data/panda3d_patches/prev-model-view-matrix.diff") or
-            isfile("D:/__dev__")):
+                isfile("D:/__dev__")):
 
             # You can find the required patch in
             # data/panda3d_patches/prev-model-view-matrix.diff.

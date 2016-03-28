@@ -251,9 +251,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self.settings_tree.clear()
         self._tree_widgets = []
 
-
         for plugin_id, plugin in iteritems(self._plugin_mgr.plugin_instances):
-
 
             daytime_settings = self._plugin_mgr.day_settings[plugin_id]
 
@@ -267,14 +265,14 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             font = QtGui.QFont()
             font.setBold(True)
             if not self._plugin_mgr.is_plugin_enabled(plugin_id):
-                plugin_head.setTextColor(0, QtGui.QColor(150, 0, 0))
-                plugin_head.setText(0, plugin.name + " (disabled)")
+                plugin_head.setText(0, "(disabled) " +  plugin.name)
             plugin_head.setFont(0, font)
 
             # Display all settings
             for setting, setting_handle in iteritems(daytime_settings):
                 setting_item = QtGui.QTreeWidgetItem(plugin_head)
                 setting_item.setText(0, setting_handle.label)
+                setting_item.setTextColor(0, QtGui.QColor(150, 150, 150))
                 setting_item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
                 setting_item._setting_id = setting
                 setting_item._setting_handle = setting_handle

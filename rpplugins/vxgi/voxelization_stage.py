@@ -31,8 +31,8 @@ from rpcore.image import Image
 from rpcore.render_stage import RenderStage
 
 from panda3d.core import Camera, OrthographicLens, NodePath, CullFaceAttrib
-from panda3d.core import DepthTestAttrib, Vec4, PTALVecBase3, Vec3, Texture
-from panda3d.core import ColorWriteAttrib, SamplerState
+from panda3d.core import DepthTestAttrib, Vec4, PTALVecBase3, Vec3, SamplerState
+from panda3d.core import ColorWriteAttrib
 
 class VoxelizationStage(RenderStage):
 
@@ -73,18 +73,17 @@ class VoxelizationStage(RenderStage):
     def create(self):
         # Create the voxel grid used to generate the voxels
         self.voxel_temp_grid = Image.create_3d(
-            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
-            Texture.T_float, Texture.F_rgba8)
+            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution,
+            self.voxel_resolution, "RGBA8")
         self.voxel_temp_grid.set_clear_color(Vec4(0))
         self.voxel_temp_nrm_grid = Image.create_3d(
-            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
-            Texture.T_float, Texture.F_r11_g11_b10)
+            "VoxelsTemp", self.voxel_resolution, self.voxel_resolution,
+            self.voxel_resolution, "R11G11B10")
         self.voxel_temp_nrm_grid.set_clear_color(Vec4(0))
 
         # Create the voxel grid which is a copy of the temporary grid, but stable
         self.voxel_grid = Image.create_3d(
-            "Voxels", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution,
-            Texture.T_float, Texture.F_rgba8)
+            "Voxels", self.voxel_resolution, self.voxel_resolution, self.voxel_resolution, "RGBA8")
         self.voxel_grid.set_clear_color(Vec4(0))
         self.voxel_grid.set_minfilter(SamplerState.FT_linear_mipmap_linear)
 
@@ -126,7 +125,7 @@ class VoxelizationStage(RenderStage):
             mip_target.instance_count = mip_size
             mip_target.set_shader_input("SourceTex", self.voxel_grid)
             mip_target.set_shader_input("sourceMip", mip - 1)
-            mip_target.set_shader_input("DestTex", self.voxel_grid,  False, True, -1, mip, 0)
+            mip_target.set_shader_input("DestTex", self.voxel_grid, False, True, -1, mip, 0)
             self.mip_targets.append(mip_target)
 
         # Create the initial state used for rendering voxels

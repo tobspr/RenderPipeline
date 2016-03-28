@@ -24,8 +24,9 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec3, Texture
+from panda3d.core import Vec3
 
+from rpcore.image import Image
 from rpcore.gui.draggable_window import DraggableWindow
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text
@@ -82,8 +83,8 @@ class TexturePreview(DraggableWindow):
 
         # Image type
         description += ", {:s}, {:s}".format(
-            Texture.format_format(tex.get_format()).upper(),
-            Texture.format_component_type(tex.get_component_type()).upper())
+            Image.format_format(tex.get_format()).upper(),
+            Image.format_component_type(tex.get_component_type()).upper())
 
         Text(text=description, parent=self._content_node, x=20, y=70,
              size=18, color=Vec3(0.6, 0.6, 0.6))

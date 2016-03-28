@@ -24,12 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec2, Texture, SamplerState, Vec4
-
-from rpcore.globals import Globals
-from rpcore.image import Image
 from rpcore.render_stage import RenderStage
-from rpcore.stages.ambient_stage import AmbientStage
 
 class DoFStage(RenderStage):
 

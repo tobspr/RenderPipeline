@@ -51,19 +51,20 @@ void main() {
     vec3 avg_color = vec3(0);
     float weights = 0.0;
 
+    const float max_depth_diff = 0.0002;
+
     // Find all surrounding pixels and weight them
     for (int i = -filter_size; i <= filter_size; ++i) {
         for (int j = -filter_size; j <= filter_size; ++j) {
-            if (abs(i) + abs(j) > 1) continue;
+            // if (abs(i) + abs(j) > 1) continue;
             vec2 offcoord = texcoord + vec2(i, j) * texel_offs;
             vec3 color_sample = textureLod(ShadedScene, offcoord, 0).xyz;
             float depth_sample = get_depth_at(offcoord);
+            float weight = 1.0 - saturate(abs(depth_sample - center_depth) / max_depth_diff);
 
-            float weight = 1.0 - saturate(abs(depth_sample - center_depth) / 0.0007);
-
-            // Weight the center sample twice
+            // Weight the center sample multiple times
             if (i == 0 && j == 0) {
-                weight = 2;
+                weight = 3;
             }
 
             avg_color += color_sample * weight;
@@ -73,5 +74,4 @@ void main() {
 
     avg_color /= max(1e-5, weights);
     result = avg_color;
-    // result = center_pixel;
 }

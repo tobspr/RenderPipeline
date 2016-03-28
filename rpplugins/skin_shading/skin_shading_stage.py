@@ -43,13 +43,12 @@ class SkinShadingStage(RenderStage):
         self.target_h = self.create_target("BlurH")
         self.target_h.add_color_attachment(bits=16)
         self.target_h.prepare_buffer()
-        self.bind_future_input_pipe(self.target_h, source="ShadedScene", dest="SourceTex")
         self.target_h.set_shader_input("direction", LVecBase2i(1, 0))
 
         self.target_v = self.create_target("BlurV")
         self.target_v.add_color_attachment(bits=16)
         self.target_v.prepare_buffer()
-        self.target_v.set_shader_input("SourceTex", self.target_h.color_tex)
+        self.target_v.set_shader_input("ShadedScene", self.target_h.color_tex, 1000)
         self.target_v.set_shader_input("direction", LVecBase2i(0, 1))
 
     def set_shaders(self):

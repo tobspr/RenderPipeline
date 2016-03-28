@@ -56,6 +56,7 @@ class EnvironmentCaptureStage(RenderStage):
     def create(self):
         self.target = self.create_target("CaptureScene")
         self.target.size = self.resolution * 6, self.resolution
+        self.target.add_depth_attachment(bits=16)
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.add_aux_attachment(bits=16)
         self.target.prepare_render(None)
@@ -119,7 +120,7 @@ class EnvironmentCaptureStage(RenderStage):
         self.target_store.set_shader_input("DestTex", self.storage_tex)
         self.target_store.set_shader_input("currentIndex", self.pta_index)
 
-        self.temporary_diffuse_map = Image.create_cube("DiffuseTemp", self.resolution, Texture.T_float, Texture.F_rgba16)
+        self.temporary_diffuse_map = Image.create_cube("DiffuseTemp", self.resolution, "RGBA16")
         self.target_store_diff = self.create_target("StoreCubemapDiffuse")
         self.target_store_diff.size = self.resolution * 6, self.resolution
         self.target_store_diff.prepare_buffer()
@@ -163,9 +164,12 @@ class EnvironmentCaptureStage(RenderStage):
         Globals.render.set_shader_input(*args)
 
     def set_shaders(self):
-        self.target_store.shader = self.load_plugin_shader("store_cubemap.frag.glsl")
-        self.target_store_diff.shader = self.load_plugin_shader("store_cubemap_diffuse.frag.glsl")
-        self.filter_diffuse_target.shader = self.load_plugin_shader("filter_cubemap_diffuse.frag.glsl")
+        self.target_store.shader = self.load_plugin_shader(
+            "store_cubemap.frag.glsl")
+        self.target_store_diff.shader = self.load_plugin_shader(
+            "store_cubemap_diffuse.frag.glsl")
+        self.filter_diffuse_target.shader = self.load_plugin_shader(
+            "filter_cubemap_diffuse.frag.glsl")
 
         for i, target in enumerate(self.filter_targets):
             target.shader = self.load_plugin_shader("mips/{}.autogen.glsl".format(i))

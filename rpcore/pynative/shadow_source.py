@@ -25,6 +25,7 @@ THE SOFTWARE.
 """
 
 from panda3d.core import Mat4, PerspectiveLens, LVector3, LVecBase2i, LVecBase2f
+from panda3d.core import BoundingSphere
 
 class ShadowSource(object):
 
@@ -35,6 +36,7 @@ class ShadowSource(object):
         self._mvp = 0.0
         self._region = LVecBase2i(-1)
         self._region_uv = LVecBase2f(0.0)
+        self._bounds = BoundingSphere()
 
     def set_resolution(self, resolution):
         self._resolution = resolution
@@ -49,6 +51,13 @@ class ShadowSource(object):
         self._region = region
         self._region_uv = region_uv
 
+    def clear_region(self):
+        self._region = LVecBase2i(-1)
+        self._region_uv = LVecBase2f(0.0)
+
+    def get_bounds(self):
+        return self._bounds
+
     def set_perspective_lens(self, fov, near_plane, far_plane, pos, direction):
         transform_mat = Mat4.translate_mat(-pos)
         temp_lens = PerspectiveLens(fov, fov)
@@ -56,6 +65,10 @@ class ShadowSource(object):
         temp_lens.set_near_far(near_plane, far_plane)
         temp_lens.set_view_vector(direction, LVector3.up())
         self.set_matrix_lens(transform_mat * temp_lens.get_projection_mat())
+
+        hexahedron = temp_lens.make_bounds()
+        center = (hexahedron.get_min() + hexahedron.get_max()) * 0.5
+        self._bounds = BoundingSphere(pos + center, (hexahedron.get_max() - center).length())
 
     def set_matrix_lens(self, mvp):
         self._mvp = mvp
@@ -72,7 +85,7 @@ class ShadowSource(object):
         return self._slot
 
     def get_needs_update(self):
-        return self._needs_update
+        return not self.has_region or self._needs_update
 
     def get_resolution(self):
         return self._resolution

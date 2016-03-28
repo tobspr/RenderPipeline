@@ -27,7 +27,6 @@ THE SOFTWARE.
 from __future__ import division
 
 from rplibs.six import itervalues
-from panda3d.core import SamplerState, Texture
 
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage

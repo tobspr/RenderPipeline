@@ -25,10 +25,8 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import PTAInt, Vec4, Texture
+from panda3d.core import PTAInt
 
-from rpcore.globals import Globals
-from rpcore.image import Image
 from rpcore.render_stage import RenderStage
 
 class SMAAStage(RenderStage):
@@ -66,7 +64,6 @@ class SMAAStage(RenderStage):
             return {"ShadedScene": self.neighbor_target.color_tex}
 
     def create(self):
-
         self.target_fireflies = self.create_target("RemoveFireflies")
         self.target_fireflies.add_color_attachment(bits=16)
         self.target_fireflies.prepare_buffer()

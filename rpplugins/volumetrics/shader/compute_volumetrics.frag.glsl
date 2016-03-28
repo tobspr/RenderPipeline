@@ -68,15 +68,15 @@ void main() {
 
   float jitter = rand(ivec2(gl_FragCoord.xy) % 2);
 
-  const int num_steps = 32;
+  const int num_steps = 16;
   vec3 step_offs = step_vector / num_steps;
 
   vec4 volumetrics = vec4(0);
-  float volume_density = 0.00015;
+  float volume_density = 0.001 * GET_SETTING(volumetrics, intensity);
   // float volume_density = 0.0003;
 
-  vec3 sun_color = get_sun_color();
   vec3 sun_vector = get_sun_vector();
+  vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
 
   const float slope_bias =  0.0 * 0.02;
   const float normal_bias = 0.0;
@@ -95,12 +95,14 @@ void main() {
       shadow_term = 1;
     }
 
-    vec4 color = vec4(sun_color, 1) * volume_density * shadow_term;
+    vec4 color = vec4(1) * volume_density * shadow_term;
     volumetrics += color * (1 - volumetrics.w);
   }
 
-  // volumetrics.xyz = pow(volumetrics.xyz * 2.0, vec3(2.0));
-  volumetrics.w *= 100.0;
+  volumetrics.xyz = pow(volumetrics.xyz, vec3(2.0));
+  volumetrics.xyz *= sun_color;
+  // volumetrics.w *= 10.0;
+  volumetrics.w = saturate(volumetrics.w);
 
   vec3 scene_color = texture(ShadedScene, texcoord).xyz;
   result = volumetrics;

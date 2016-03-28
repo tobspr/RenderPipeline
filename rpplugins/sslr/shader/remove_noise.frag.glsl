@@ -49,17 +49,19 @@ void main() {
     return;
   }
 
+  const int kernel_size = 1;
+
   int num_adjacent_pixels = 0;
-  for (int x = -1; x <= 1; ++x) {
-    for (int y = -1; y <= 1; ++y) {
+  for (int x = -kernel_size; x <= kernel_size; ++x) {
+    for (int y = -kernel_size; y <= kernel_size; ++y) {
       if (x == 0 && y == 0) continue;
-      if (distance(texture(SourceTex, texcoord + vec2(x, y) * pixsize).xyz, mid_data.xyz) < 0.1) {
+      if (distance(texture(SourceTex, texcoord + vec2(x, y) * pixsize).xyz, mid_data.xyz) < 0.05) {
         num_adjacent_pixels ++;
       }
     }
   }
 
-  if (num_adjacent_pixels < 1) {
+  if (num_adjacent_pixels < 3) {
     mid_data *= 0;
   }
   result = mid_data;

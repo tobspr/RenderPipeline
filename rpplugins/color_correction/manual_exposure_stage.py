@@ -27,9 +27,6 @@ THE SOFTWARE.
 from __future__ import division
 
 from rpcore.render_stage import RenderStage
-from rpcore.globals import Globals
-from rpcore.image import Image
-from panda3d.core import Texture, Vec4
 
 class ManualExposureStage(RenderStage):
 

@@ -182,7 +182,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self.lbl_plugin_desc.setText(self._current_plugin_instance.description)
 
         if "(!)" in version_str:
-            self.lbl_plugin_version.setStyleSheet("background: #C10000; color: #eee; padding-left: 5px;")
+            self.lbl_plugin_version.setStyleSheet("background: rgb(200, 50, 50); padding: 5px; color: #eee; padding-left: 3px; border-radius: 3px;")
         else:
             self.lbl_plugin_version.setStyleSheet("color: #4f8027;")
 
@@ -300,6 +300,32 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         for obj in bound_objs:
             obj.setValue(value * 100000.0 if setting_type == "float" else value)
 
+
+    def _choose_path(self, setting_id, setting_handle, bound_objs):
+        """ Shows a file chooser to show an path from """
+
+        this_dir = os.path.dirname(os.path.realpath(__file__))
+        plugin_dir = os.path.join(this_dir, "../../rpplugins/" + self._current_plugin,"resources")
+        search_dir = os.path.join(plugin_dir, setting_handle.base_path)
+
+        file_dlg = QtGui.QFileDialog(self, "Choose File ..", search_dir, setting_handle.file_type)
+        file_dlg.selectFile(setting_handle.value.replace("\\", "/").split("/")[-1])
+        # file_dlg.setViewMode(QtGui.QFileDialog.Detail)
+
+        if file_dlg.exec_():
+            filename = file_dlg.selectedFiles()
+            filename = filename[-1]
+            print(filename)
+
+            filename = os.path.relpath(str(filename), plugin_dir)
+            filename = filename.replace("\\", "/")
+            self._do_update_setting(setting_id, filename)
+
+            display_file = filename.split("/")[-1]
+            for obj in bound_objs:
+                obj.setText(display_file)
+
+
     def _get_widget_for_setting(self, setting_id, setting):
         """ Returns an appropriate widget to control the given setting """
 
@@ -368,11 +394,18 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         elif setting.type == "path":
 
             label = QtGui.QLabel()
-            label.setText(setting.value)
+            display_file = setting.value.replace("\\", "/").split("/")[-1]
+
+            desc_font = QtGui.QFont()
+            desc_font.setPointSize(7)
+            desc_font.setFamily("Segoe UI")
+
+            label.setText(display_file)
+            label.setFont(desc_font)
 
             button = QtGui.QPushButton()
             button.setText("Choose File ...")
-            connect(button, QtCore.SIGNAL("clicked()"), partial(self._choose_path, setting))
+            connect(button, QtCore.SIGNAL("clicked()"), partial(self._choose_path, setting_id, setting, (label,) ))
 
             layout.addWidget(label)
             layout.addWidget(button)
@@ -382,11 +415,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
         return widget
 
-    def _choose_path(self, setting_handle):
-        """ Shows a file chooser to show an path from """
-        filename = QtGui.QFileDialog.getOpenFileName(
-            self, "Open path", "", "All Files (*.*)")
-        print("Filename =", filename, "(TODO)")
 
     def _set_settings_visible(self, flag):
         """ Sets whether the settings panel is visible or not """

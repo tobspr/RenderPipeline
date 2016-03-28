@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import PTAInt, Texture, Shader
+from panda3d.core import PTAInt, Shader
 
-from rpcore.rpobject import RPObject
 from rpcore.image import Image
+from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
 
 from rpcore.native import GPUCommand, GPUCommandList
@@ -103,8 +103,7 @@ class GPUCommandQueue(RPObject):
         """ Creates the buffer used to transfer commands """
         command_buffer_size = self._commands_per_frame * 32
         self.debug("Allocating command buffer of size", command_buffer_size)
-        self._data_texture = Image.create_buffer(
-            "CommandQueue", command_buffer_size, Texture.T_float, Texture.F_r32)
+        self._data_texture = Image.create_buffer("CommandQueue", command_buffer_size, "R32")
         self._data_texture.set_clear_color(0)
 
     def _create_command_target(self):

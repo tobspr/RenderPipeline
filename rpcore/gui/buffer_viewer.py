@@ -35,6 +35,7 @@ from direct.gui.DirectGui import DGG
 
 from rplibs.six import itervalues
 
+from rpcore.image import Image
 from rpcore.util.generic import rgb_from_string
 from rpcore.util.display_shader_builder import DisplayShaderBuilder
 from rpcore.globals import Globals
@@ -49,24 +50,10 @@ class BufferViewer(DraggableWindow):
 
     """ This class provides a view into the buffers to inspect them """
 
-    _REGISTERED_ENTRIES = []
-
-    @classmethod
-    def register_entry(cls, entry):
-        """ Adds a new target to the registered entries """
-        cls._REGISTERED_ENTRIES.append(entry)
-
-    @classmethod
-    def unregister_entry(cls, entry):
-        """ Removes a target from the registered entries """
-        if entry in cls._REGISTERED_ENTRIES:
-            cls._REGISTERED_ENTRIES.remove(entry)
-
     def __init__(self, pipeline, parent):
         """ Constructs the buffer viewer """
         DraggableWindow.__init__(self, width=1400, height=800, parent=parent,
                                  title="Buffer- and Image-Browser")
-        RenderTarget.CREATION_HANDLER = self.register_entry
         self._pipeline = pipeline
         self._scroll_height = 3000
         self._display_images = False
@@ -86,11 +73,16 @@ class BufferViewer(DraggableWindow):
             self.show()
 
     @property
+    def entries(self):
+        """ Returns a list of all registered entries """
+        return RenderTarget.REGISTERED_TARGETS + Image.REGISTERED_IMAGES
+
+    @property
     def stage_information(self):
         """ Returns the amount of attached stages, and also the memory consumed
         in MiB in a tuple. """
         count, memory = 0, 0
-        for entry in BufferViewer._REGISTERED_ENTRIES:
+        for entry in self.entries:
             if isinstance(entry, Texture):
                 memory += entry.estimate_texture_memory()
                 count += 1
@@ -150,7 +142,7 @@ class BufferViewer(DraggableWindow):
 
         # Collect texture stages
         self._stages = []
-        for entry in BufferViewer._REGISTERED_ENTRIES:
+        for entry in self.entries:
             if isinstance(entry, Texture):
                 if self._display_images:
                     self._stages.append(entry)
@@ -206,6 +198,8 @@ class BufferViewer(DraggableWindow):
             else:
                 r, g, b = rgb_from_string(stage_name)
 
+            stage_name = stage_name.replace("render_pipeline_internal:", "")
+
             DirectFrame(
                 parent=node, frameSize=(7, entry_width - 17, -7, -entry_height + 17),
                 frameColor=(r, g, b, 1.0), pos=(0, 0, 0))
@@ -228,7 +222,7 @@ class BufferViewer(DraggableWindow):
             scale_y = (entry_height - 60) / max(1, h)
             scale_factor = min(scale_x, scale_y)
 
-            if stage_tex.get_texture_type() == Texture.TT_buffer_texture:
+            if stage_tex.get_texture_type() == Image.TT_buffer_texture:
                 scale_factor = 1
                 w = entry_width - 30
                 h = entry_height - 60

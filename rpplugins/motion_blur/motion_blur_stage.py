@@ -78,9 +78,15 @@ class MotionBlurStage(RenderStage):
         self.target_cam_blur.set_shader_input("SourceTex", self.target.color_tex)
 
     def set_shaders(self):
-        self.tile_target.shader = self.load_plugin_shader("fetch_dominant_velocity.frag.glsl")
-        self.tile_target_horiz.shader = self.load_plugin_shader("fetch_dominant_velocity_horiz.frag.glsl")
-        self.minmax_target.shader = self.load_plugin_shader("neighbor_minmax.frag.glsl")
-        self.pack_target.shader = self.load_plugin_shader("pack_blur_data.frag.glsl")
-        self.target.shader = self.load_plugin_shader("apply_motion_blur.frag.glsl")
-        self.target_cam_blur.shader = self.load_plugin_shader("camera_motion_blur.frag.glsl")
+        self.tile_target.shader = self.load_plugin_shader(
+            "fetch_dominant_velocity.frag.glsl")
+        self.tile_target_horiz.shader = self.load_plugin_shader(
+            "fetch_dominant_velocity_horiz.frag.glsl")
+        self.minmax_target.shader = self.load_plugin_shader(
+            "neighbor_minmax.frag.glsl")
+        self.pack_target.shader = self.load_plugin_shader(
+            "pack_blur_data.frag.glsl")
+        self.target.shader = self.load_plugin_shader(
+            "apply_motion_blur.frag.glsl")
+        self.target_cam_blur.shader = self.load_plugin_shader(
+            "camera_motion_blur.frag.glsl")

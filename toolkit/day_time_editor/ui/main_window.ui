@@ -7,20 +7,435 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>675</height>
+    <height>632</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>1000</width>
-    <height>675</height>
+    <height>632</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>1000</width>
-    <height>675</height>
+    <height>632</height>
    </size>
+  </property>
+  <property name="palette">
+   <palette>
+    <active>
+     <colorrole role="WindowText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Button">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>42</red>
+        <green>42</green>
+        <blue>42</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Light">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>63</red>
+        <green>63</green>
+        <blue>63</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Midlight">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>52</red>
+        <green>52</green>
+        <blue>52</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Dark">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>21</red>
+        <green>21</green>
+        <blue>21</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Mid">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>28</red>
+        <green>28</green>
+        <blue>28</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Text">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="BrightText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ButtonText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Base">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>42</red>
+        <green>42</green>
+        <blue>42</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Shadow">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="AlternateBase">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>21</red>
+        <green>21</green>
+        <blue>21</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ToolTipBase">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>220</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ToolTipText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </active>
+    <inactive>
+     <colorrole role="WindowText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Button">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>42</red>
+        <green>42</green>
+        <blue>42</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Light">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>63</red>
+        <green>63</green>
+        <blue>63</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Midlight">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>52</red>
+        <green>52</green>
+        <blue>52</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Dark">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>21</red>
+        <green>21</green>
+        <blue>21</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Mid">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>28</red>
+        <green>28</green>
+        <blue>28</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Text">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="BrightText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ButtonText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Base">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>42</red>
+        <green>42</green>
+        <blue>42</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Shadow">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="AlternateBase">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>21</red>
+        <green>21</green>
+        <blue>21</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ToolTipBase">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>220</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ToolTipText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </inactive>
+    <disabled>
+     <colorrole role="WindowText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>21</red>
+        <green>21</green>
+        <blue>21</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Button">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>42</red>
+        <green>42</green>
+        <blue>42</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Light">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>63</red>
+        <green>63</green>
+        <blue>63</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Midlight">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>52</red>
+        <green>52</green>
+        <blue>52</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Dark">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>21</red>
+        <green>21</green>
+        <blue>21</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Mid">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>28</red>
+        <green>28</green>
+        <blue>28</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Text">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>21</red>
+        <green>21</green>
+        <blue>21</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="BrightText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ButtonText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>21</red>
+        <green>21</green>
+        <blue>21</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Base">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>42</red>
+        <green>42</green>
+        <blue>42</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>42</red>
+        <green>42</green>
+        <blue>42</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Shadow">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="AlternateBase">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>42</red>
+        <green>42</green>
+        <blue>42</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ToolTipBase">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>220</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="ToolTipText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </disabled>
+   </palette>
   </property>
   <property name="windowTitle">
    <string>Day Time Editor</string>
@@ -29,14 +444,17 @@
    <iconset resource="resources.qrc">
     <normaloff>:/res/res/icon.png</normaloff>:/res/res/icon.png</iconset>
   </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>0</y>
+      <y>-4</y>
       <width>1000</width>
-      <height>65</height>
+      <height>80</height>
      </rect>
     </property>
     <property name="minimumSize">
@@ -61,14 +479,51 @@
    <widget class="QTreeWidget" name="settings_tree">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>110</y>
+      <x>10</x>
+      <y>120</y>
       <width>301</width>
-      <height>551</height>
+      <height>491</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">QTreeView {
+    background: #333;
+	border: 0;
+	color: #eee;
+}
+
+QTreeView::item {
+	background: #444;
+	padding: 4px 3px;
+	outline: 0 !important;
+	margin-bottom: 3px;
+	border-top: 1px solid rgba(255, 255, 255, 40);
+	border-bottom: 1px solid  rgba(0, 0, 0, 90);
+	border-radius: 1px;
+	outline: none;
+
+}
+
+QTreeView::item:hover {
+background: #494949;
+}
+
+QTreeView::item:selected {
+background: #2c6893;
+border-top: 1px solid #3680b4;
+border-bottom: 1px solid #25577a;
+outline: none !important;
+color: #eee;
+}
+
+* {
+outline: 0;
+}
+
+</string>
+    </property>
     <property name="verticalScrollBarPolicy">
-     <enum>Qt::ScrollBarAlwaysOn</enum>
+     <enum>Qt::ScrollBarAsNeeded</enum>
     </property>
     <property name="editTriggers">
      <set>QAbstractItemView::NoEditTriggers</set>
@@ -76,11 +531,17 @@
     <property name="showDropIndicator" stdset="0">
      <bool>false</bool>
     </property>
+    <property name="alternatingRowColors">
+     <bool>false</bool>
+    </property>
     <property name="selectionBehavior">
      <enum>QAbstractItemView::SelectRows</enum>
     </property>
+    <property name="verticalScrollMode">
+     <enum>QAbstractItemView::ScrollPerPixel</enum>
+    </property>
     <property name="indentation">
-     <number>25</number>
+     <number>18</number>
     </property>
     <property name="rootIsDecorated">
      <bool>true</bool>
@@ -100,6 +561,12 @@
     <property name="wordWrap">
      <bool>true</bool>
     </property>
+    <property name="headerHidden">
+     <bool>true</bool>
+    </property>
+    <attribute name="headerVisible">
+     <bool>false</bool>
+    </attribute>
     <attribute name="headerCascadingSectionResizes">
      <bool>false</bool>
     </attribute>
@@ -169,9 +636,9 @@
     <property name="geometry">
      <rect>
       <x>370</x>
-      <y>150</y>
+      <y>80</y>
       <width>621</width>
-      <height>521</height>
+      <height>551</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -184,7 +651,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>0</y>
+       <y>20</y>
        <width>221</width>
        <height>31</height>
       </rect>
@@ -196,7 +663,7 @@
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: #222;</string>
+      <string notr="true">color: #eee;</string>
      </property>
      <property name="text">
       <string>Occlusion Strength</string>
@@ -208,8 +675,14 @@
        <x>500</x>
        <y>20</y>
        <width>101</width>
-       <height>23</height>
+       <height>31</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: #444; border: 0; color: #eee;
+border-radius: 1px;
+border-top: 1px solid #555;
+border-bottom: 1px solid #222;</string>
      </property>
      <property name="text">
       <string>Reset to Default</string>
@@ -219,14 +692,14 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>60</y>
+       <y>94</y>
        <width>601</width>
        <height>441</height>
       </rect>
      </property>
      <property name="styleSheet">
       <string notr="true">QFrame {
-background: #ddd;border: 1px solid #aaa;
+background: #eee;border: 1px solid #000;
 }</string>
      </property>
      <property name="frameShape">
@@ -255,7 +728,7 @@ background: #ddd;border: 1px solid #aaa;
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>30</y>
+       <y>60</y>
        <width>351</width>
        <height>21</height>
       </rect>
@@ -269,8 +742,7 @@ background: #ddd;border: 1px solid #aaa;
       <string notr="true">color: #888;</string>
      </property>
      <property name="text">
-      <string>Description: Some Desc bla bla bla bal bsdas asdas asdaas 
-sadfsafsadfasdfsdfasf</string>
+      <string>Description: Some Description about the setting, to give the user a rough idea what this does </string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -282,8 +754,14 @@ sadfsafsadfasdfsdfasf</string>
        <x>360</x>
        <y>20</y>
        <width>131</width>
-       <height>23</height>
+       <height>31</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: #444; border: 0; color: #eee;
+border-radius: 1px;
+border-top: 1px solid #555;
+border-bottom: 1px solid #222;</string>
      </property>
      <property name="text">
       <string>Insert point from data</string>
@@ -294,13 +772,13 @@ sadfsafsadfasdfsdfasf</string>
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>65</y>
-      <width>341</width>
-      <height>611</height>
+      <y>55</y>
+      <width>340</width>
+      <height>581</height>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background: #cdcdcd; border-right: 1px solid #aaa;</string>
+     <string notr="true">background: #333;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::StyledPanel</enum>
@@ -312,7 +790,7 @@ sadfsafsadfasdfsdfasf</string>
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>10</y>
+       <y>30</y>
        <width>121</width>
        <height>31</height>
       </rect>
@@ -324,7 +802,7 @@ sadfsafsadfasdfsdfasf</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: #444; border: 0;</string>
+      <string notr="true">color: #888; border: 0;</string>
      </property>
      <property name="text">
       <string>Settings</string>
@@ -335,13 +813,18 @@ sadfsafsadfasdfsdfasf</string>
     <property name="geometry">
      <rect>
       <x>370</x>
-      <y>90</y>
+      <y>20</y>
       <width>601</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QFrame {background: #fff;border: 1px solid #ccc;}
+     <string notr="true">QFrame {
+	background: #3a3a3a;
+	border-radius: 1px;
+	border-top: 1px solid #555;
+	border-bottom: 1px solid #232323;
+}
 QLabel {border: 0;}</string>
     </property>
     <property name="frameShape">
@@ -354,7 +837,7 @@ QLabel {border: 0;}</string>
      <property name="geometry">
       <rect>
        <x>70</x>
-       <y>11</y>
+       <y>16</y>
        <width>521</width>
        <height>31</height>
       </rect>
@@ -388,7 +871,7 @@ QLabel {border: 0;}</string>
      <property name="geometry">
       <rect>
        <x>9</x>
-       <y>6</y>
+       <y>12</y>
        <width>51</width>
        <height>31</height>
       </rect>
@@ -401,7 +884,7 @@ QLabel {border: 0;}</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: #555;</string>
+      <string notr="true">color: #eee;</string>
      </property>
      <property name="text">
       <string>11:15</string>
@@ -423,7 +906,7 @@ QLabel {border: 0;}</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #aaa;</string>
+     <string notr="true">color: #eee;</string>
     </property>
     <property name="text">
      <string>Select a setting on the left to modify its value</string>

@@ -50,19 +50,24 @@ class ShadowManager : public ReferenceCount {
         ~ShadowManager();
 
         inline void set_max_updates(size_t max_updates);
-        inline void set_atlas_size(size_t atlas_size);
         inline void set_scene(NodePath scene_parent);
         inline void set_tag_state_manager(TagStateManager* tag_mgr);
         inline void set_atlas_graphics_output(GraphicsOutput* graphics_output);
 
+        inline void set_atlas_size(size_t atlas_size);
         inline size_t get_atlas_size() const;
+        MAKE_PROPERTY(atlas_size, get_atlas_size, set_atlas_size);
+
         inline size_t get_num_update_slots_left() const;
+        MAKE_PROPERTY(num_update_slots_left, get_num_update_slots_left);
+
+        inline ShadowAtlas* get_atlas() const;
+        MAKE_PROPERTY(atlas, get_atlas);
 
         void init();
         void update();
 
     public:
-        inline ShadowAtlas* get_atlas() const;
         inline bool add_update(const ShadowSource* source);
 
     private:

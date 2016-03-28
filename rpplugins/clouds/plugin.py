@@ -29,8 +29,10 @@ from panda3d.core import SamplerState
 from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
 
-from .cloud_voxel_stage import CloudVoxelStage
 from .apply_clouds_stage import ApplyCloudsStage
+
+# Dynamic cloud generation is disabled for now
+# from .cloud_voxel_stage import CloudVoxelStage
 
 class Plugin(BasePlugin):
 

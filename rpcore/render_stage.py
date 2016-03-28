@@ -57,7 +57,6 @@ class RenderStage(RPObject):
         self._stage_id = self.__class__.__name__
         self._pipeline = pipeline
         self._targets = {}
-        self._future_mappings = {}
 
     @property
     def stage_id(self):
@@ -80,18 +79,10 @@ class RenderStage(RPObject):
         for target in itervalues(self._targets):
             target.set_shader_input(*args)
 
-        if args[0] in self._future_mappings:
-            target, name = self._future_mappings[args[0]]
-            target.set_shader_input(name, *args[1:])
-
     def update(self):
         """ This method gets called every frame, and can be overridden by render
         stages to perform custom updates """
         pass
-
-    def bind_future_input_pipe(self, target, source, dest):
-        """ Binds a future shader input named source to dest on the given target """
-        self._future_mappings[source] = (target, dest)
 
     def set_active(self, active):
         """ Enables or disables all targets bound to this stage """

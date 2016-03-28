@@ -64,14 +64,14 @@ class Sprite(RPObject):
         self._width, self._height = w, h
         self._initial_pos = self._translate_pos(x, y)
 
-        self._node = OnscreenImage(
+        self.node = OnscreenImage(
             image=image, parent=parent, pos=self._initial_pos,
             scale=(self._width / 2.0, 1, self._height / 2.0))
 
         if transparent:
-            self._node.set_transparency(TransparencyAttrib.M_alpha)
+            self.node.set_transparency(TransparencyAttrib.M_alpha)
 
-        tex = self._node.get_texture()
+        tex = self.node.get_texture()
 
         # Apply a near filter, but only if the parent has no scale, otherwise
         # it will look weird
@@ -92,21 +92,21 @@ class Sprite(RPObject):
     def pos_interval(self, *args, **kwargs):
         """ Returns a pos interval, this is a wrapper around
         NodePath.posInterval """
-        return self._node.posInterval(*args, **kwargs)
+        return self.node.posInterval(*args, **kwargs)
 
     def hpr_interval(self, *args, **kwargs):
         """ Returns a hpr interval, this is a wrapper around
         NodePath.hprInterval """
-        return self._node.hprInterval(*args, **kwargs)
+        return self.node.hprInterval(*args, **kwargs)
 
     def color_scale_interval(self, *args, **kwargs):
         """ Returns a color scale interval, this is a wrapper around
         NodePath.colorScaleInterval """
-        return self._node.colorScaleInterval(*args, **kwargs)
+        return self.node.colorScaleInterval(*args, **kwargs)
 
     def set_image(self, img):
         """ Sets the current image """
-        self._node.set_image(img)
+        self.node.set_image(img)
 
     def get_width(self):
         """ Returns the width of the image in pixels """
@@ -118,7 +118,7 @@ class Sprite(RPObject):
 
     def set_pos(self, x, y):
         """ Sets the position """
-        self._node.set_pos(self._translate_pos(x, y))
+        self.node.set_pos(self._translate_pos(x, y))
 
     def _translate_pos(self, x, y):
         """ Converts 2d coordinates to pandas coordinate system """
@@ -126,20 +126,20 @@ class Sprite(RPObject):
 
     def set_shader(self, shader):
         """ Sets a shader to be used for rendering the image """
-        self._node.set_shader(shader)
+        self.node.set_shader(shader)
 
     def set_shader_input(self, *args):
         """ Sets a shader input on the image """
-        self._node.set_shader_input(*args)
+        self.node.set_shader_input(*args)
 
     def remove(self):
         """ Removes the image """
-        self._node.remove()
+        self.node.remove()
 
     def hide(self):
         """ Hides the image """
-        self._node.hide()
+        self.node.hide()
 
     def show(self):
         """ Shows the image if it was previously hidden """
-        self._node.show()
+        self.node.show()

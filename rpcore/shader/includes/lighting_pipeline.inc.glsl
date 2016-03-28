@@ -114,16 +114,16 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
-    const int num_samples = 4;
+    const int num_samples = 16;
     const float filter_size = 2.0 / SHADOW_ATLAS_SIZE; // TODO: Use shadow atlas size
 
     float accum = 0.0;
 
-    vec3 rand_offs = rand_rgb(m.position.xy + m.position.z) * 2 - 1;
-    rand_offs *= 0.15;
+    vec3 rand_offs = rand_rgb(m.position.xy + m.position.z);
+    rand_offs *= 0.1;
 
     for (int i = 0; i < num_samples; ++i) {
-        vec2 offs = projected_coord.xy + poisson_disk_2D_12[i * 3] * filter_size + rand_offs.xy * filter_size;
+        vec2 offs = projected_coord.xy + poisson_disk_2D_16[i] * filter_size + rand_offs.xy * filter_size;
         // vec2 offs = projected_coord.xy;
         #if SUPPORT_PCF
         accum += textureLod(ShadowAtlasPCF, vec3(offs, projected.z - const_bias), 0).x;

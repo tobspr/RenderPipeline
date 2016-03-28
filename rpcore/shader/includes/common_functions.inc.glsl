@@ -34,9 +34,12 @@
 #define ONE_BY_PI 0.3183098861837906715377675
 #define SQRT_TWO 1.4142135623730950488016887
 
+#define AIR_IOR 1.000277
+
 // Fixes the cubemap direction
 vec3 fix_cubemap_coord(vec3 coord) {
-    return normalize(coord.xzy * vec3(1,-1,1));
+    // return normalize(coord.xzy * vec3(1,-1,1));
+    return normalize(coord.yxz * vec3(-1,1,1));
 }
 
 
@@ -257,6 +260,63 @@ float degree_to_radians(float degree) {
 float radians_to_degree(float radians) {
     return radians / M_PI * 180.0;
 }
+
+vec2 truncate_coordinate(vec2 tcoord) {
+    return (ivec2(tcoord * SCREEN_SIZE) + 0.5) / SCREEN_SIZE;
+}
+
+float length_squared(vec2 v) {
+    return dot(v, v);
+}
+
+float distance_squared(vec2 a, vec2 b) {
+    return length_squared(a - b);
+}
+
+float length_squared(vec3 v) {
+    return dot(v, v);
+}
+
+float distance_squared(vec3 a, vec3 b) {
+    return length_squared(a - b);
+}
+
+float length_squared(vec4 v) {
+    return dot(v, v);
+}
+
+float distance_squared(vec4 a, vec4 b) {
+    return length_squared(a - b);
+}
+
+float square(float x) {
+    return x * x;
+}
+
+vec2 square(vec2 x) {
+    return x * x;
+}
+
+vec3 square(vec3 x) {
+    return x * x;
+}
+
+vec4 square(vec4 x) {
+    return x * x;
+}
+
+// Moves mip smoothly to the closest mipmap to reduce interpolation
+float snap_mipmap(float mip) {
+
+    // XXX
+    // return mip;
+
+    float mip_fract = fract(mip);
+    float blend_factor = smoothstep(0.0, 1.0, mip_fract);
+    // return mip - mip_fract + blend_factor;
+    return mip - mip_fract + blend_factor;
+}
+
 
 // Convenience functions
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)

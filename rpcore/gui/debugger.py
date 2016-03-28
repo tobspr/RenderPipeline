@@ -46,18 +46,18 @@ from rpcore.gui.fps_chart import FPSChart
 from rpcore.gui.pixel_inspector import PixelInspector
 
 from rpcore.globals import Globals
-from rpcore.base_manager import BaseManager
+from rpcore.rpobject import RPObject
 
 from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.render_target import RenderTarget
 from rpcore.image import Image
 
-class Debugger(BaseManager):
+class Debugger(RPObject):
 
     """ This class manages the onscreen gui and """
 
     def __init__(self, pipeline):
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self.debug("Creating debugger")
         self._pipeline = pipeline
         self._analyzer = SceneGraphAnalyzer()
@@ -70,7 +70,8 @@ class Debugger(BaseManager):
         self._init_notify()
 
         # Globals.base.doMethodLater(25.0, self._collect_scene_data, "RPDebugger_collectSceneData")
-        Globals.base.doMethodLater(0.5, lambda task: self._collect_scene_data(), "RPDebugger_collectSceneData_initial")
+        Globals.base.doMethodLater(
+            0.5, lambda task: self._collect_scene_data(), "RPDebugger_collectSceneData_initial")
         Globals.base.doMethodLater(0.1, self._update_stats, "RPDebugger_updateStats")
 
     def _load_config(self):
@@ -122,7 +123,7 @@ class Debugger(BaseManager):
         it """
         self._error_msg_handler = ErrorMessageDisplay()
 
-    def do_update(self):
+    def update(self):
         """ Updates the gui """
         self._error_msg_handler.update()
         self._pixel_widget.update()
@@ -140,8 +141,8 @@ class Debugger(BaseManager):
     def _collect_scene_data(self, task=None):
         """ Analyzes the scene graph to provide useful information """
         self._analyzer.clear()
-        for gn in Globals.base.render.find_all_matches("**/+GeomNode"):
-            self._analyzer.add_node(gn.node())
+        for geom_node in Globals.base.render.find_all_matches("**/+GeomNode"):
+            self._analyzer.add_node(geom_node.node())
         if task:
             return task.again
 
@@ -191,24 +192,25 @@ class Debugger(BaseManager):
             clock.get_max_frame_duration() * 1000.0)
 
         text = "{:4d} render states  |  {:4d} transforms"
-        text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources"
+        text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources  "
+        text += "|  {:3.1f}% atlas usage"
         self._debug_lines[1].text = text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
             self._pipeline.light_mgr.cmd_queue.num_processed_commands,
             self._pipeline.light_mgr.num_lights,
-            self._pipeline.light_mgr.num_shadow_sources)
+            self._pipeline.light_mgr.num_shadow_sources,
+            self._pipeline.light_mgr.shadow_atlas_coverage)
 
         text = "Pipeline:   {:3.0f} MiB VRAM  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins"
         tex_memory, tex_count = self._buffer_viewer.stage_information
         self._debug_lines[2].text = text.format(
-            tex_memory / (1024**2),
-            Image.get_image_count(),
-            tex_count,
+            tex_memory / (1024**2), Image.NUM_IMAGES, tex_count,
             RenderTarget.NUM_ALLOCATED_BUFFERS,
             len(self._pipeline.plugin_mgr.enabled_plugins))
 
-        text = "Scene:   {:4.0f} MiB VRAM  |  {:3d} textures  |  {:4d} geoms  |  {:4d} nodes  |  {:7,.0f} vertices  |  {:5.0f} MiB vTX data"
+        text = "Scene:   {:4.0f} MiB VRAM  |  {:3d} textures  |  {:4d} geoms  "
+        text += "|  {:4d} nodes  |  {:7,.0f} vertices  |  {:5.0f} MiB vTX data  "
         scene_tex_size = 0
         for tex in TexturePool.find_all_textures():
             scene_tex_size += tex.estimate_texture_memory()
@@ -299,7 +301,7 @@ class Debugger(BaseManager):
             self._pipeline.stage_mgr.define("ANY_DEBUG_MODE", 0)
         else:
             self._pipeline.stage_mgr.define("ANY_DEBUG_MODE", 1)
-            self._pipeline.stage_mgr.define("_RM__" + mode_id, 1)
+            self._pipeline.stage_mgr.define("_RM_" + mode_id, 1)
 
         # Reload all shaders
         self._pipeline.reload_shaders()

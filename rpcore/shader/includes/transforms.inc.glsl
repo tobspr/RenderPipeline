@@ -31,17 +31,11 @@ uniform mat4 trans_mainRender_to_view_of_mainCam;
 uniform mat4 trans_mainRender_to_clip_of_mainCam;
 
 // Constant values based on main camera near and far plane
-const float NDC_NEAR = CAMERA_NEAR;
-const float NDC_FAR = CAMERA_FAR;
-const float NDC_A = NDC_NEAR + NDC_FAR;
-const float NDC_B = NDC_NEAR - NDC_FAR;
-const float NDC_C = 2.0 * NDC_NEAR * NDC_FAR;
-const float NDC_D = NDC_FAR - NDC_NEAR;
-
-// Computes the Z component from a position in NDC space
-float get_z_from_ndc(vec3 ndc_pos) {
-  return NDC_C / (NDC_A + (ndc_pos.z * NDC_B));
-}
+const float NDC_A = CAMERA_NEAR + CAMERA_FAR;
+const float NDC_B = CAMERA_NEAR - CAMERA_FAR;
+const float NDC_E = 2.0 * CAMERA_NEAR;
+const float NDC_C = NDC_E * CAMERA_FAR;
+const float NDC_D = CAMERA_FAR - CAMERA_NEAR;
 
 // Computes the Z component from a position in NDC space, with a given near and far plane
 float get_z_from_ndc(vec3 ndc_pos, float near, float far) {
@@ -53,15 +47,33 @@ float get_z_from_linear_z(float z) {
   return fma((1.0 / (z / NDC_C) - NDC_A) / NDC_B, 0.5, 0.5);
 }
 
-// Computes linear Z from a given Z value
-float get_linear_z_from_z(float z) {
-    return NDC_C / (NDC_A - fma(z, 2.0, -1.0) * NDC_D);
-}
-
 // Computes linear Z from a given Z value, and near and far plane
 float get_linear_z_from_z(float z, float near, float far) {
-    return 2.0 * near * far / (far + near - fma(z, 2.0, -1.0) * (far - near));
+    // return 2.0 * near * far / (far + near - (z * 2.0 - 1) * (far - near));
+    // return 2.0 * near * far / (far + near - (2.0 * z - 1) * (far - near));
+  float zNear = near;
+  float zFar = far;
+
+  float z_n = 2.0 * z - 1.0;
+  float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
+  return z_e;
 }
+
+// Computes linear Z from a given Z value
+float get_linear_z_from_z(float z) {
+    // return NDC_C / (NDC_A - (z * 2.0 - 1.0) * NDC_D);
+  // return NDC_E / (NDC_A - z * NDC_D);
+  return get_linear_z_from_z(z, CAMERA_NEAR, CAMERA_FAR);
+}
+
+
+// Computes the Z component from a position in NDC space
+float get_z_from_ndc(vec3 ndc_pos) {
+  // return NDC_C / (NDC_A + (ndc_pos.z * NDC_B));
+  // return NDC_E / (NDC_A - ndc_pos.z * NDC_D);
+  return get_linear_z_from_z(ndc_pos.z);
+}
+
 
 // Computes linear Z from a given Z value, and near and far plane, for orthographic projections
 float get_linear_z_from_z_ortographic(float z, float near, float far) {
@@ -78,8 +90,8 @@ vec3 calculate_surface_pos(float z, vec2 tcoord, mat4 inverse_mvp) {
   vec3 ndc_pos = fma(vec3(tcoord.xy, z), vec3(2.0), vec3(-1.0));
   float clip_w = get_z_from_ndc(ndc_pos);
 
-  // TODO: Don't we have to do the w-divide here?
-  return (inverse_mvp * vec4(ndc_pos * clip_w, clip_w)).xyz;
+  vec4 proj = inverse_mvp * vec4(ndc_pos * clip_w, clip_w);
+  return proj.xyz / proj.w;
 }
 
 // Computes the surface position based on a given Z and a texcoord

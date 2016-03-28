@@ -36,7 +36,7 @@
  * @return Update-Flag
  */
 inline bool ShadowSource::get_needs_update() const {
-    return _needs_update;
+    return !has_region() || _needs_update;
 }
 
 /**
@@ -97,6 +97,11 @@ inline void ShadowSource::set_perspective_lens(float fov, float near_plane,
     temp_lens.set_near_far(near_plane, far_plane);
     temp_lens.set_view_vector(direction, LVector3::up());
     set_matrix_lens(transform_mat * temp_lens.get_projection_mat());
+
+    // Set new bounds, approximate with sphere
+    CPT(BoundingHexahedron) hexahedron = DCAST(BoundingHexahedron, temp_lens.make_bounds());
+    LPoint3 center = (hexahedron->get_min() + hexahedron->get_max()) * 0.5f;
+    _bounds = BoundingSphere(pos + center, (hexahedron->get_max() - center).length());
 }
 
 /**
@@ -234,4 +239,23 @@ inline void ShadowSource::set_resolution(size_t resolution) {
     nassertv(resolution > 0);
     _resolution = resolution;
     set_needs_update(true);
+}
+
+/**
+ * @brief Returns the shadow sources bounds
+ * @details This returns the bounds of the shadow source, approximated as a sphere
+ * @return Bounds as a BoundingSphere
+ */
+inline const BoundingSphere& ShadowSource::get_bounds() const {
+    return _bounds;
+}
+
+/**
+ * @brief Clears the assigned region of the source
+ * @details This unassigns any shadow atlas region from the source, previously
+ *   set with set_region
+ */
+inline void ShadowSource::clear_region() {
+    _region.fill(-1);
+    _region_uv.fill(0);
 }

@@ -71,7 +71,7 @@ class ShaderTemplate(RPObject):
         parsed_lines.append(" */")
         in_main = False
 
-        for src_index, line in enumerate(shader_lines):
+        for line in shader_lines:
             stripped_line = line.strip().lower()
 
             # Check if we are already in the main function
@@ -98,23 +98,24 @@ class ShaderTemplate(RPObject):
                         # When we are in the main function, we have to make sure we
                         # use a seperate scope, so there are no conflicts with variable
                         # declarations
-                        parsed_lines.append("/* Hook " + hook_name + " */" + " {" if in_main else "")
+                        header = "/* Hook " + hook_name + " */" + " {" if in_main else ""
+                        parsed_lines.append(header)
 
-                        for linenr, line_i in enumerate(insertions):
+                        for line_to_insert in insertions:
 
-                            if line_i is None:
+                            if line_to_insert is None:
                                 self.warn("Empty insertion '" + hook_name + "'")
                                 continue
 
-                            if not isinstance(line_i, str):
-                                self.warn("Invalid line type: ", line_i)
+                            if not isinstance(line_to_insert, str):
+                                self.warn("Invalid line type: ", line_to_insert)
                                 continue
 
                             # Dont indent defines and pragmas
-                            if line_i.startswith("#"):
-                                parsed_lines.append(line_i)
+                            if line_to_insert.startswith("#"):
+                                parsed_lines.append(line_to_insert)
                             else:
-                                parsed_lines.append(indent + line_i)
+                                parsed_lines.append(indent + line_to_insert)
 
                         if in_main:
                             parsed_lines.append("}")

@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Texture, Vec4, GeomEnums, Mat4, SamplerState, BoundingVolume
+from panda3d.core import Vec4, GeomEnums, SamplerState, BoundingVolume
 
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
@@ -47,7 +47,7 @@ class ProbeManager(RPObject):
         # Storage for the specular components (with mipmaps)
         self.cubemap_storage = Image("EnvmapStorage")
         self.cubemap_storage.setup_cube_map_array(
-            self.resolution, self.max_probes, Texture.T_float, Texture.F_rgba16)
+            self.resolution, self.max_probes, Image.T_float, Image.F_rgba16)
         self.cubemap_storage.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.cubemap_storage.set_magfilter(SamplerState.FT_linear)
         self.cubemap_storage.set_clear_color(Vec4(1.0, 0.0, 0.1, 1.0))
@@ -56,14 +56,14 @@ class ProbeManager(RPObject):
         # Storage for the diffuse component
         self.diffuse_storage = Image("EnvmapDiffuseStorage")
         self.diffuse_storage.setup_cube_map_array(
-            self.diffuse_resolution, self.max_probes, Texture.T_float, Texture.F_rgba16)
+            self.diffuse_resolution, self.max_probes, Image.T_float, Image.F_rgba16)
         self.diffuse_storage.set_clear_color(Vec4(1, 0, 0.2, 1.0))
         self.diffuse_storage.clear_image()
 
         # Data-storage to store all cubemap properties
         self.dataset_storage = Image("EnvmapData")
         self.dataset_storage.setup_buffer_texture(
-            self.max_probes * 5, Texture.T_float,Texture.F_rgba32, GeomEnums.UH_dynamic)
+            self.max_probes * 5, Image.T_float, Image.F_rgba32, GeomEnums.UH_dynamic)
         self.dataset_storage.set_clear_color(Vec4(0))
         self.dataset_storage.clear_image()
 

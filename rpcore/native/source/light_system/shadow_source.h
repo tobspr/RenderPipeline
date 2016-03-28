@@ -34,6 +34,10 @@
 #include "look_at.h"
 #include "compose_matrix.h"
 #include "perspectiveLens.h"
+#include "boundingVolume.h"
+#include "boundingSphere.h"
+#include "boundingHexahedron.h"
+#include "geometricBoundingVolume.h"
 
 #include "gpu_command.h"
 
@@ -62,12 +66,16 @@ public:
     inline bool has_region() const;
     inline bool has_slot() const;
 
+    inline void clear_region();
+
     inline int get_slot() const;
     inline bool get_needs_update() const;
     inline size_t get_resolution() const;
     inline const LMatrix4f& get_mvp() const;
     inline const LVecBase4i& get_region() const;
     inline const LVecBase4f& get_uv_region() const;
+
+    inline const BoundingSphere& get_bounds() const;
 
 private:
     int _slot;
@@ -76,6 +84,8 @@ private:
     LMatrix4f _mvp;
     LVecBase4i _region;
     LVecBase4f _region_uv;
+
+    BoundingSphere _bounds;
 };
 
 #include "shadow_source.I"

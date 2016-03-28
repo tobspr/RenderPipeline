@@ -69,7 +69,7 @@ class BaseType(RPObject):
 
     def write_defines(self, plugin_id, setting_id, definer):
         """ Makes the value of this plugin available as a define """
-        definer("{}__{}".format(plugin_id, setting_id), self.value)
+        definer("{}_{}".format(plugin_id, setting_id), self.value)
 
     def should_be_visible(self, settings):
         """ Evaluates whether the plugin should be visible, taking all display
@@ -122,7 +122,10 @@ class BoolType(BaseType):
         self.value = self.default
 
     def set_value(self, value):
-        self.value = bool(value)
+        if isinstance(value, (str, unicode)):
+            self.value = str(value.lower()) in ("true", "1")
+        else:
+            self.value = bool(value)
 
 class EnumType(BaseType):
     """ Enumeration setting type """
@@ -141,7 +144,7 @@ class EnumType(BaseType):
         self.value = value
 
     def write_defines(self, plugin_id, setting_id, definer):
-        definer("{}__{}".format(plugin_id, setting_id), 1000 + self.values.index(self.value))
+        definer("{}_{}".format(plugin_id, setting_id), 1000 + self.values.index(self.value))
 
         for i, val in enumerate(self.values):
             definer("{}_ENUM_{}_{}".format(plugin_id, setting_id, val), 1000 + i)
@@ -152,6 +155,8 @@ class PathType(BaseType):
         BaseType.__init__(self, data)
         self.default = str(data.pop("default"))
         self.value = self.default
+        self.file_type = str(data.pop("file_type"))
+        self.base_path = str(data.pop("base_path"))
 
     def set_value(self, value):
         self.value = str(value)

@@ -53,6 +53,11 @@ class ShadowManager(object):
     def set_atlas_size(self, atlas_size):
         self._atlas_size = atlas_size
 
+    def get_atlas_size(self):
+        return self._atlas_size
+
+    atlas_size = property(get_atlas_size, set_atlas_size)
+
     def set_scene(self, scene_parent):
         self._scene_parent = scene_parent
 
@@ -62,11 +67,15 @@ class ShadowManager(object):
     def set_atlas_graphics_output(self, graphics_output):
         self._atlas_graphics_output = graphics_output
 
-    def get_atlas_size(self):
-        return self._atlas_size
-
     def get_num_update_slots_left(self):
         return self._max_updates - len(self._queued_updates)
+
+    num_update_slots_left = property(get_num_update_slots_left)
+
+    def get_atlas(self):
+        return self._atlas
+
+    atlas = property(get_atlas)
 
     def init(self):
         for i in range(self._max_updates):
@@ -108,7 +117,3 @@ class ShadowManager(object):
             return False
         self._queued_updates.append(source)
         return True
-
-
-    def get_atlas(self):
-        return self._atlas

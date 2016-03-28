@@ -30,8 +30,6 @@ THE SOFTWARE.
 
 import math
 
-from panda3d.core import Vec3, Mat4, CS_zup_right, CS_yup_right
-
 from rpcore.globals import Globals
 from rpcore.effect import Effect
 from rpcore.native import PointLight, SpotLight
@@ -90,11 +88,11 @@ class PipelineExtensions(object):
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
         self.set_effect(skybox, "effects/skybox.yaml", {
-            "render_shadows": False,
-            "render_envmap": False,
-            "render_voxel": False,
-            "alpha_testing": False,
-            "normal_mapping": False,
+            "render_shadows":   False,
+            "render_envmap":    False,
+            "render_voxel":     False,
+            "alpha_testing":    False,
+            "normal_mapping":   False,
             "parallax_mapping": False
         }, 1000)
         return skybox
@@ -102,7 +100,7 @@ class PipelineExtensions(object):
     def load_ies_profile(self, filename):
         """ Loads an IES profile from a given filename and returns a handle which
         can be used to set an ies profile on a light """
-        return self._ies_profile_mgr.load(filename)
+        return self._ies_loader.load(filename)
 
     def set_effect(self, nodepath, effect_src, options=None, sort=30):
         """ Sets an effect to the given object, using the specified options.
@@ -157,10 +155,10 @@ class PipelineExtensions(object):
         # TODO: This method is super hacky
         if not self.plugin_mgr.is_plugin_enabled("env_probes"):
             self.warn("EnvProbe plugin is not loaded, can not add environment probe")
-            class _dummy_probe(object):
+            class DummyEnvironmentProbe(object):
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
-            return _dummy_probe()
+            return DummyEnvironmentProbe()
 
         from rpplugins.env_probes.environment_probe import EnvironmentProbe
         probe = EnvironmentProbe()
@@ -172,38 +170,41 @@ class PipelineExtensions(object):
         lights """
         # TODO: IES profiles
         ies_profile = self.load_ies_profile("x_arrow_diffuse.ies")
-
-        convert_mat = Mat4.convert_mat(CS_zup_right, CS_yup_right)
+        lights = []
 
         for light in scene.find_all_matches("**/+PointLight"):
             light_node = light.node()
             rp_light = PointLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.lumens = 10.0 * light_node.color.w
+            rp_light.lumens = 100.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             self.add_light(rp_light)
             light.remove_node()
+            lights.append(rp_light)
 
         for light in scene.find_all_matches("**/+Spotlight"):
             light_node = light.node()
             rp_light = SpotLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.lumens = 10.0 * light_node.color.w
+            rp_light.lumens = 100.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             rp_light.fov = light_node.exponent / math.pi * 180.0
-            lpoint = light.get_mat(Globals.base.render).xform_vec(Vec3(0, 0, -1))
+            lpoint = light.get_mat(Globals.base.render).xform_vec((0, 0, -1))
             rp_light.direction = lpoint
             self.add_light(rp_light)
             light.remove_node()
+            lights.append(rp_light)
 
             # XXX: Support IES profiles (Have to add it to the BAM exporter first)
             # rp_light.ies_profile = ies_profile
+
+        envprobes = []
 
         # Add environment probes
         for np in scene.find_all_matches("**/ENVPROBE*"):
@@ -211,6 +212,9 @@ class PipelineExtensions(object):
             probe.set_mat(np.get_mat())
             probe.border_smoothness = 0.05
             np.remove_node()
+            envprobes.append(probe)
+
+        return {"lights": lights, "envprobes": envprobes}
 
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns

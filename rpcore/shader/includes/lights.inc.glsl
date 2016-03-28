@@ -74,7 +74,8 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     float NxL = 0.0;
 
     if (m.shading_model == SHADING_MODEL_FOLIAGE) {
-        NxL = saturate(0.9 + max(0, dot(m.normal, l)));
+        // NxL = saturate(0.9 + max(0, dot(m.normal, l)));
+        NxL = saturate(max(0, dot(m.normal, l)));
         transmittance = transmittance.xxx;
         // transmittance = vec3(1);
     } else if (m.shading_model == SHADING_MODEL_SKIN) {
@@ -84,37 +85,44 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
         NxL = saturate(dot(m.normal, l));
     }
 
-
     // Compute the dot product
     vec3 h = normalize(l + v);
     float NxV = max(1e-5, dot(m.normal, v));
-    float NxH = max(0.0, dot(m.normal, h));
+    float NxH = max(1e-5, dot(m.normal, h));
     float VxH = clamp(dot(v, h), 1e-5, 1.0);
     float LxH = max(0, dot(l, h));
 
     vec3 f0 = get_material_f0(m);
 
     // Diffuse contribution
-    vec3 shading_result = brdf_diffuse(NxV, LxH, m.roughness) * m.basecolor * (1 - m.metallic);
+    vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness) * m.basecolor * (1 - m.metallic);
 
     // Specular contribution
     // float distribution = brdf_distribution(NxH, m.roughness);
-    float distribution = brdf_distribution(NxH, m.roughness);
+
+    // We add some roughness for clearcoat - this is due to the reason that
+    // light gets scattered and though a wider highlight is shown.
+    // This approximates the reference in mitsuba very well.
+    float distribution = brdf_distribution(NxH, m.roughness * (m.shading_model == SHADING_MODEL_CLEARCOAT ? 2.0 : 1.0));
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = mix(f0, vec3(1), brdf_schlick_fresnel(f0, LxH));
-    // vec3 fresnel = f0;
 
     // The division by 4 * NxV * NxL is done in the geometric (visibility) term
     // already, so to evaluate the complete brdf we just do a multiply
     shading_result += (distribution * visibility) * fresnel;
 
-    if(m.shading_model == SHADING_MODEL_CLEARCOAT) {
+    if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         float distribution_coat = brdf_distribution(NxH, CLEARCOAT_ROUGHNESS);
         float visibility_coat = brdf_visibility(NxL, NxV, NxH, VxH, CLEARCOAT_ROUGHNESS);
         vec3 fresnel_coat = brdf_schlick_fresnel(vec3(CLEARCOAT_SPECULAR), LxH);
-        shading_result *= 1 - fresnel_coat;
-        shading_result += (distribution_coat * visibility_coat) * fresnel_coat;
 
+        // Approximation to match reference
+        shading_result *= (1 - fresnel_coat.x);
+        shading_result *= 0.4 + 3.0 * m.linear_roughness;
+        shading_result *= 0.5 + 0.5 * m.basecolor;
+
+        vec3 coat_spec = (distribution_coat * visibility_coat) * fresnel_coat;
+        shading_result += (distribution_coat * visibility_coat) * fresnel_coat;
     }
 
     return (shading_result * light_color) * (attenuation * shadow * NxL) * transmittance;

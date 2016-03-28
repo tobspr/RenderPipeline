@@ -35,22 +35,31 @@ vec2 hammersley(uint i, uint N)
 
 // From:
 // http://www.gamedev.net/topic/655431-ibl-problem-with-consistency-using-ggx-anisotropy/
-vec3 importance_sample_ggx(vec2 Xi, float roughness)
+vec4 importance_sample_ggx(vec2 Xi, float alpha)
 {
-  float r_square = roughness * roughness;
+  // alpha is already squared roughness
+  float r_square = alpha * alpha;
   float phi = TWO_PI * Xi.x;
-  float cos_theta = sqrt((1 - Xi.y) / (1 + (r_square*r_square - 1) * Xi.y));
-  float sin_theta = sqrt(1 - cos_theta * cos_theta);
+  float cos_theta = sqrt((1 - Xi.y) / max(1e-3, 1 + (r_square * r_square - 1) * Xi.y));
+  float sin_theta = sqrt(max(0.0, 1 - cos_theta * cos_theta));
 
   vec3 h = vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
-  return h;
+
+  float d = (cos_theta * r_square - cos_theta) * cos_theta + 1.0;
+  float D = r_square / (M_PI * d * d);
+  float pdf = D * cos_theta;
+
+  return vec4(h, pdf);
 }
 
-vec3 importance_sample_lambert(vec2 xi, vec3 n)
+vec3 importance_sample_lambert(vec2 Xi)
 {
-  float phi = TWO_PI * xi.x;
-  float theta = M_PI * xi.y;
-
-  return spherical_to_vector(theta, phi);
+    float phi = TWO_PI * Xi.x;
+    float cos_theta = sqrt(Xi.y);
+    float sin_theta = sqrt(1 - cos_theta * cos_theta);
+    vec3 H;
+    H.x = sin_theta * cos(phi);
+    H.y = sin_theta * sin(phi);
+    H.z = cos_theta;
+    return vec3(H);
 }
-

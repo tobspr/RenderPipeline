@@ -69,8 +69,8 @@ void main() {
     // vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = pixel_distance;
 
-    vec3 noise_vec = fma(rand_rgb(coord % 5 + 0.1 * MainSceneData.temporal_index), vec3(2), vec3(-1));
-    noise_vec *= 0.35;
+    vec3 noise_vec = rand_rgb(coord % 5 + 0.5 * (MainSceneData.frame_index % 8));
+    // noise_vec *= 0.35;
 
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);

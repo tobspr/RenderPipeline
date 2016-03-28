@@ -63,7 +63,7 @@ class Plugin(BasePlugin):
 
     def _load_lut(self):
         """ Loads the color correction lookup table (LUT) """
-        lut_path = self.get_resource("saturation_lut.png")
+        lut_path = self.get_resource(self.get_setting("color_lut"))
         lut = load_sliced_3d_texture(lut_path, 64)
         lut.set_wrap_u(SamplerState.WM_clamp)
         lut.set_wrap_v(SamplerState.WM_clamp)
@@ -72,3 +72,7 @@ class Plugin(BasePlugin):
         lut.set_magfilter(SamplerState.FT_linear)
         lut.set_anisotropic_degree(0)
         self._tonemapping_stage.set_shader_input("ColorLUT", lut)
+
+    def update_color_lut(self):
+        self.debug("Updating color lut ..")
+        self._load_lut()

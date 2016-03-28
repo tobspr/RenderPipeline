@@ -46,20 +46,15 @@ class BasePlugin(RPObject):
         """ Inits the plugin """
         self._pipeline = pipeline
         self._assigned_stages = []
-        self._plugin_id = str(self.__class__.__module__).split(".")[-2]
-        RPObject.__init__(self, "plugin:" + self._plugin_id)
+        self.plugin_id = str(self.__class__.__module__).split(".")[-2]
+        RPObject.__init__(self, "plugin:" + self.plugin_id)
         self._set_debug_color("magenta", "bright")
         self._load_config()
 
     @property
-    def plugin_id(self):
-        """ Returns the unique id of the plugin """
-        return self._plugin_id
-
-    @property
     def base_path(self):
         """ Returns the path to the root directory of the plugin """
-        return "/$$rp/rpplugins/{}/".format(self._plugin_id)
+        return "/$$rp/rpplugins/{}/".format(self.plugin_id)
 
     @property
     def settings(self):

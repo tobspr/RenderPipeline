@@ -1,3 +1,25 @@
 
-settings:
+settings: !!omap
+
+    - trace_steps:
+        type: int
+        range: [4, 512]
+        default: 64
+        label: Trace Steps
+        shader_runtime: true
+        description: >
+          Amount of trace steps. A higher amount will lead to less missed
+          details, although it will also be more computationally expensive.
+
+    - abort_on_object_infront:
+        type: bool
+        default: true
+        label: Abort on invalid hit
+        shader_runtime: true
+        description: >
+            Aborts the trace when an object is found in front of the ray.
+            This might lead to artifacts on floating objects, but might
+            also improve the quality.
+
+
 daytime_settings:

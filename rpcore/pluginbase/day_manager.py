@@ -29,16 +29,16 @@ from __future__ import division
 from rplibs.six import iteritems
 from direct.stdpy.file import open
 
-from rpcore.base_manager import BaseManager
+from rpcore.rpobject import RPObject
 from rpcore.util.shader_ubo import ShaderUBO
 
-class DayTimeManager(BaseManager):
+class DayTimeManager(RPObject):
 
     """ This manager handles all time of day settings, provides them as
     a input to all shaders, and stores which time it currently is """
 
     def __init__(self, pipeline):
-        BaseManager.__init__(self)
+        RPObject.__init__(self)
         self._pipeline = pipeline
         self._input_ubo = ShaderUBO("TimeOfDay")
         self._time = 0.5
@@ -79,7 +79,7 @@ class DayTimeManager(BaseManager):
         with open("/$$rptemp/$$daytime_config.inc.glsl", "w") as handle:
             handle.write(shader_code)
 
-    def do_update(self):
+    def update(self):
         """ Internal update method which updates all day time settings """
         for setting_id, handle in iteritems(self._setting_handles):
             value = handle.get_scaled_value_at(self._time)

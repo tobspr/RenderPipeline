@@ -26,8 +26,6 @@ THE SOFTWARE.
 
 import math
 
-from panda3d.core import Texture, Vec4
-
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 
@@ -62,13 +60,14 @@ class CullLightsStage(RenderStage):
         max_cells = self._pipeline.light_mgr.total_tiles
         self.num_rows = int(math.ceil(max_cells / float(self.slice_width)))
         self.target = self.create_target("CullLights")
+
         # TODO: Use no oversized triangle in this stage
         self.target.size = self.slice_width, self.num_rows
         self.target.prepare_buffer()
 
         self.per_cell_lights = Image.create_buffer(
             "PerCellLights", max_cells * (self.max_lights_per_cell + self.num_light_classes),
-            Texture.T_int, Texture.F_r32)
+            "R32I")
         self.per_cell_lights.set_clear_color(0)
         self.target.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
 

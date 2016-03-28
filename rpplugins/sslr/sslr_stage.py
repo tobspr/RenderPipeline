@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec2, Texture, SamplerState, Vec4
+from panda3d.core import SamplerState, Vec4
 
 from rpcore.globals import Globals
 from rpcore.image import Image
@@ -37,11 +37,16 @@ class SSLRStage(RenderStage):
 
     required_inputs = []
     required_pipes = ["ShadedScene", "CombinedVelocity", "GBuffer",
-                      "DownscaledDepth", "PreviousFrame::PostAmbientScene"]
+                      "DownscaledDepth", "PreviousFrame::PostAmbientScene",
+                      "PreviousFrame::SSLRSpecular", "PreviousFrame::SSLRAvgWSIntersection"]
 
     @property
     def produced_pipes(self):
-        return {"SSLRSpecular": self.target_upscale.color_tex}
+        return {
+            "SSLRSpecular": self.target_resolve.color_tex,
+            "SSLRAvgWSIntersection": self.target_resolve.aux_tex[0],
+        }
+        # return {"SSLRSpecular": self.target.color_tex}
 
     def create(self):
         x_size, y_size = Globals.resolution.x, Globals.resolution.y
@@ -51,7 +56,10 @@ class SSLRStage(RenderStage):
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 
-        self.mipchain = Image.create_2d("SSLRMipchain", x_size, y_size, Texture.T_float, Texture.F_rgba16)
+        self.target.color_tex.set_minfilter(SamplerState.FT_nearest)
+        self.target.color_tex.set_magfilter(SamplerState.FT_nearest)
+
+        self.mipchain = Image.create_2d("SSLRMipchain", x_size, y_size, "RGBA16")
         self.mipchain.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.mipchain.set_wrap_u(SamplerState.WM_clamp)
         self.mipchain.set_wrap_v(SamplerState.WM_clamp)
@@ -72,15 +80,8 @@ class SSLRStage(RenderStage):
             target_blur.set_shader_input("DestTex", self.mipchain, False, True, -1, i + 1)
             self.blur_targets.append(target_blur)
 
-        self.target_filter = self.create_target("TraceCone")
-        self.target_filter.size = -2
-        self.target_filter.add_color_attachment(bits=16, alpha=True)
-        self.target_filter.prepare_buffer()
-        self.target_filter.set_shader_input("MipChain", self.mipchain)
-        self.target_filter.set_shader_input("TraceResult", self.target.color_tex)
-
         self.noise_reduce_targets = []
-        curr_tex = self.target_filter.color_tex
+        curr_tex = self.target.color_tex
         for i in range(1):
             target_remove_noise = self.create_target("RemoveNoise")
             target_remove_noise.size = -2
@@ -102,19 +103,25 @@ class SSLRStage(RenderStage):
 
         self.target_upscale = self.create_target("UpscaleSSLR")
         self.target_upscale.add_color_attachment(bits=16, alpha=True)
+        self.target_upscale.add_aux_attachment(bits=16)
         self.target_upscale.prepare_buffer()
         self.target_upscale.set_shader_input("SourceTex", curr_tex)
-        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
-        self.target_upscale.set_shader_input("useZAsWeight", True)
+        self.target_upscale.set_shader_input("MipChain", self.mipchain)
+
+        self.target_resolve = self.create_target("ResolveSSLR")
+        self.target_resolve.add_color_attachment(bits=16, alpha=True)
+        self.target_resolve.add_aux_attachment(bits=16)
+        self.target_resolve.prepare_buffer()
+        self.target_resolve.set_shader_input("CurrentTex", self.target_upscale.color_tex)
+        self.target_resolve.set_shader_input("CurrentWSTex", self.target_upscale.aux_tex[0])
 
         AmbientStage.required_pipes.append("SSLRSpecular")
 
     def set_shaders(self):
         self.target.shader = self.load_plugin_shader("sslr_trace.frag.glsl")
-        self.target_filter.shader = self.load_plugin_shader("filter_cone.frag.glsl")
         self.target_copy_lighting.shader = self.load_plugin_shader("copy_lighting.frag.glsl")
-        self.target_upscale.shader = self.load_plugin_shader(
-            "/$$rp/shader/bilateral_upscale.frag.glsl")
+        self.target_upscale.shader = self.load_plugin_shader("upscale_bilateral_brdf.frag.glsl")
+        self.target_resolve.shader = self.load_plugin_shader("resolve_sslr.frag.glsl")
         blur_shader = self.load_plugin_shader("sslr_blur.others.frag.glsl")
         for target in self.blur_targets:
             target.shader = blur_shader

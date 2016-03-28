@@ -66,7 +66,8 @@ void main() {
 
   vec3 presort_result = texture(PresortResult, texcoord).xyz;
   float mid_coc = presort_result.x;
-  if (tile_max_coc <= 1e-6) {
+
+  if (tile_max_coc <= 1e-4) {
     result = texture(ShadedScene, texcoord);
     result.w = 0;
   }
@@ -98,16 +99,16 @@ void main() {
       float y_offs = cos(phi);
 
       vec2 tcoord = texcoord + vec2(x_offs, y_offs) * r;
-      tcoord += (jitter.xy*2-1) * 0.06 * r;
+      // tcoord += jitter.xy * 0.1 * r;
 
       // XXX: Instead of manual clamping, use a near filtered texture
-      tcoord = (ivec2(tcoord * SCREEN_SIZE) + 0.5) / SCREEN_SIZE;
+      tcoord = truncate_coordinate(tcoord);
 
       vec3 sample_data = texture(PresortResult, tcoord).xyz;
       vec3 color_data = texture(PrecomputedCoC, tcoord).xyz;
 
       float coc_weight = intersect_circle(r, sample_data.x * max_length);
-      coc_weight *= 1.0 / max(1e-5, sample_data.x * sample_data.x);
+      coc_weight *= 1.0 / max(1e-9, sample_data.x * sample_data.x);
       foreground += vec4(color_data, 1) * coc_weight;
       // foreground += vec4(color_data, 1) * coc_weight * sample_data.y;
       // background += vec4(color_data, 1) * coc_weight * sample_data.z;

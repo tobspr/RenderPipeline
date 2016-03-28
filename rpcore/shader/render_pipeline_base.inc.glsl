@@ -29,6 +29,13 @@
 // Main configuration file, included by all shaders, provides generic defines
 // and functions.
 
+// Leads to some compilation issues
+#ifndef NO_FAST_PRECISION
+#pragma optionNV (fastprecision on)
+#endif
+
+#pragma include "/$$rptemp/$$pipeline_shader_config.inc.glsl"
+
 // Optionally unroll *all* loops, this might be faster, but might also be
 // slower. Right now, every shader specifies on his own if he wants to unroll
 // his loops or not.
@@ -42,12 +49,6 @@
 #pragma optionNV (strict on)
 #endif
 
-// Leads to some compilation issues
-#ifndef NO_FAST_PRECISION
-#pragma optionNV (fastprecision on)
-#endif
-
-#pragma include "/$$rptemp/$$pipeline_shader_config.inc.glsl"
 
 // Only include the UBO's if required
 #ifdef USE_MAIN_SCENE_DATA
@@ -66,14 +67,13 @@
 
 // Plugin functions
 #define HAVE_PLUGIN(PLUGIN_NAME) ( HAVE_PLUGIN_ ## PLUGIN_NAME )
-#define GET_SETTING(PLUGIN_NAME, SETTING_NAME) ( PLUGIN_NAME ## __ ## SETTING_NAME )
+#define GET_SETTING(PLUGIN_NAME, SETTING_NAME) ( PLUGIN_NAME ## _ ## SETTING_NAME )
 #define GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) ( PLUGIN_NAME ## _ENUM_ ## SETTING_NAME ## _ ## ENUM_KEY )
-#define ENUM_V_ACTIVE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) \
- ( HAVE_PLUGIN(PLUGIN_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) == GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) )
+#define ENUM_V_ACTIVE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) ( HAVE_PLUGIN(PLUGIN_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) == GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) )
 
 // Render mode functions
 #define DEBUG_MODE ANY_DEBUG_MODE
-#define MODE_ACTIVE(MODE_ID) ( DEBUG_MODE && ( _RM__ ## MODE_ID ) )
+#define MODE_ACTIVE(MODE_ID) ( DEBUG_MODE && ( _RM_ ## MODE_ID ) )
 
 // Branch modes for translucency.
 // This serves for the purpose to be enabled or disabled easily.
@@ -95,28 +95,24 @@
 #define END_BRANCH_TRANSLUCENCY() }
 #endif
 
-// Precision qualifiers, don't apply to newer GL, but can't hurt too
-precision lowp float;
-precision lowp int;
-
 // Restrict qualifier, only on AMD cards, Nvidia can't handle it. See:
 // https://devtalk.nvidia.com/default/topic/546817/restrict-keyword-crashes-glsl-compiler/
-// (Leads to "fatal error C9999: *** exception during compilation ***")
 #if IS_NVIDIA
     #define RESTRICT
-    // #define RESTRICT restrict
 #else
     #define RESTRICT restrict
 #endif
-
 
 // TODO:
 #define SUPPORT_PCF 1
 
 // Controls the roughness of the clearcoat layer
-#define CLEARCOAT_ROUGHNESS 0.005
+#define CLEARCOAT_ROUGHNESS 0.001
 #define CLEARCOAT_SPECULAR 0.16
+#define CLEARCOAT_IOR 1.51
 
-#define DEFAULT_ENVMAP_BRIGHTNESS 0.2
+
+#define DEFAULT_ENVMAP_BRIGHTNESS 1.0
+#define MINIMUM_ROUGHNESS 0.01
 
 #pragma include "includes/common_functions.inc.glsl"

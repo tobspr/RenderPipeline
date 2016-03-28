@@ -71,30 +71,27 @@ class Effect(RPObject):
 
     @classmethod
     def _generate_hash(cls, filename, options):
-        """ Generates an unique hash based on the effect path and options. The
-        effect hash is based on the filename and the configured options, and
-        is ensured to make the effect unique. This is important to make sure
-        the caching works as intended. """
-        constructed_dict = {}
-        for key in sorted(iterkeys(cls._DEFAULT_OPTIONS)):
-            if key in options:
-                val = options[key]
-            else:
-                val = cls._DEFAULT_OPTIONS[key]
-            constructed_dict[key] = val
+        """ Generates an unique hash for the effect. The effect hash is based
+        on the filename and the configured options, and is ensured to make the
+        effect unique. This is important to make sure the caching works as
+        intended. All options not present in options are set to the default value"""
 
-        # Hash filename, make sure it has the right format before tho
-        fname = Filename(filename)
-        fname.make_absolute()
-        fhash = str(hash(fname.to_os_generic()))
+        # Set all options which are not present in the dict to its defaults
+        options = {k: options.get(k, v) for k, v in iteritems(cls._DEFAULT_OPTIONS)}
 
-        # Hash the options
-        to_str = lambda v: "1" if v else "0"
-        opt_hash = ''.join([
-            to_str(options[k]) if k in options else to_str(cls._DEFAULT_OPTIONS[k])
-            for k in sorted(cls._DEFAULT_OPTIONS)])
+        # Hash filename, make sure it has the right format and also resolve
+        # it to an absolute path, to make sure that relative paths are cached
+        # correctly (otherwise, specifying a different path to the same file
+        # will cause a cache miss)
+        filename = Filename(filename)
+        filename.make_absolute()
+        file_hash = str(hash(filename.to_os_generic()))
 
-        return fhash + "-" + opt_hash
+        # Hash the options, that is, sort the keys to make sure the values
+        # are always in the same order, and then convert the flags to strings using
+        # '1' for a set flag, and '0' for a unset flag
+        options_hash = ''.join(['1' if options[key] else 'x' for key in sorted(iterkeys(options))])
+        return file_hash + "-" + options_hash
 
     def __init__(self):
         """ Constructs a new empty effect """
