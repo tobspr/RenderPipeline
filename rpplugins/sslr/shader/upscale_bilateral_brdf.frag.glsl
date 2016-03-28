@@ -76,7 +76,7 @@ void main() {
     const int search_radius = 0;
 
     vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
-    vec4 avg_position = vec4(0);
+    vec4 avg_position = vec4(m.position, 1) * 1e-3;
 
     // Get reflection directory
     vec3 reflected_dir = get_reflection_vector(m, -view_vector);
@@ -116,7 +116,7 @@ void main() {
 
             float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + roughness), 0.0, 31.0);
 
-            weight *= source_sample.z; // value stored is 1 / pdf
+            // weight *= source_sample.z; // value stored is 1 / pdf
             // weight = 1;
             weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
 
@@ -125,9 +125,10 @@ void main() {
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
 
+            color_sample *= source_sample.z;
+
             // Store and reproject using source sample
             avg_position += vec4(wp_dest_sample, 1) * weight;
-
 
             accum += color_sample * weight;
             weights += weight;

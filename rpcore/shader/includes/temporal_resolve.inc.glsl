@@ -139,9 +139,13 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
                                 + length(clamp(last_pos_bl.xyz, curr_pos_min.xyz, curr_pos_max.xyz) - last_pos_bl.xyz)
                                 + length(clamp(last_pos_br.xyz, curr_pos_min.xyz, curr_pos_max.xyz) - last_pos_br.xyz);
 
+        neighbor_pos_diff = distance(curr_pos, last_pos);
 
-        float ws_distance = 1 - saturate(neighbor_pos_diff * RS_AVG_POSITION_BIAS);
-        blend_weight *= ws_distance;
+
+        // float ws_distance = saturate(neighbor_pos_diff * RS_AVG_POSITION_BIAS);
+        // blend_weight *= ws_distance;
+        if (neighbor_pos_diff > RS_AVG_POSITION_BIAS)
+            blend_weight = 0.0;
 
     #endif
 

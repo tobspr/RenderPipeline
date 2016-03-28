@@ -44,7 +44,7 @@ out vec3 result;
 
 const int num_steps = GET_SETTING(sslr, trace_steps);
 const float hit_tolerance_ws = 0.0;
-const float hit_tolerance_backface = 0.0003;
+const float hit_tolerance_backface = 0.0004;
 
 bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
 
@@ -249,6 +249,7 @@ void main()
     // XXX: Seems this works *way* better
     fade = 1.0;
     pdf = 1.0;
+    // fade = 1.0;
 
     result = vec3(intersection, 1.0 / max(1e-5, pdf) * fade);
 }

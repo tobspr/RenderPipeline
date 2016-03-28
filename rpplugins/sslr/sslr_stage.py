@@ -82,7 +82,7 @@ class SSLRStage(RenderStage):
 
         self.noise_reduce_targets = []
         curr_tex = self.target.color_tex
-        for i in range(0):
+        for i in range(1):
             target_remove_noise = self.create_target("RemoveNoise")
             target_remove_noise.size = -2
             target_remove_noise.add_color_attachment(bits=16, alpha=True)
