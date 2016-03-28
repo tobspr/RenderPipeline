@@ -41,7 +41,7 @@ uniform sampler2D PrefilteredCoatBRDF;
 
 uniform samplerCube DefaultEnvmap;
 
-#define USE_WHITE_ENVIRONMENT 1
+#define USE_WHITE_ENVIRONMENT 0
 
 #if HAVE_PLUGIN(scattering)
     uniform samplerCube ScatteringIBLDiffuse;
@@ -109,10 +109,10 @@ void main() {
         #else
 
             // When in reference mode, display the used environment cubemap as background
-            result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
-
             #if USE_WHITE_ENVIRONMENT
                 result = vec4(1);
+            #else
+                result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
             #endif
         #endif
 
@@ -144,11 +144,6 @@ void main() {
     // Get cheap irradiance by sampling low levels of the environment map
     float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 6.5;
     vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal), ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
-
-    #if USE_WHITE_ENVIRONMENT
-        ibl_specular = vec3(1.0);
-        ibl_diffuse = vec3(1.0);
-    #endif
 
     // Scattering specific code
     #if HAVE_PLUGIN(scattering)
@@ -194,6 +189,11 @@ void main() {
     #if HAVE_PLUGIN(sslr)
         vec4 sslr_spec = textureLod(SSLRSpecular, texcoord, 0);
         ibl_specular = ibl_specular * (1 - sslr_spec.w) + sslr_spec.xyz;
+    #endif
+
+    #if USE_WHITE_ENVIRONMENT
+        ibl_specular = vec3(1);
+        ibl_diffuse = vec3(1);
     #endif
 
     vec3 material_f0 = get_material_f0(m);

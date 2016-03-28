@@ -5,8 +5,8 @@
 
 enabled:
     - ao
-    - bloom
-    - color_correction
+    # - bloom
+    # - color_correction
     # - env_probes
     # - pssm
     # - scattering
@@ -14,9 +14,9 @@ enabled:
     # - sslr
     # - clouds
     # - dof
-    # - fxaa
+    - fxaa
     # - motion_blur
-    - skin_shading
+    # - skin_shading
     # - volumetrics
     # - vxgi
 
@@ -69,7 +69,7 @@ overrides:
         uc2t_reference_white: 11.2
         vignette_strength: 0.2
         film_grain_strength: 0.2
-        color_lut: color_lut.png
+        color_lut: film_luts/default_lut.png
         use_chromatic_aberration: True
         chromatic_aberration_strength: 0.22
         chromatic_aberration_samples: 2

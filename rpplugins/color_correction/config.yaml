@@ -159,7 +159,7 @@ settings: !!omap
 
     - color_lut:
         type: path
-        default: color_lut.png
+        default: film_luts/default_lut.png
         label: Color LUT
         file_type: Color LUTs (*.png)
         base_path: film_luts

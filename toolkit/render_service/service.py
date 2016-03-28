@@ -26,10 +26,11 @@ class Application(ShowBase):
 
     def __init__(self):
         load_prc_file_data("", "win-size 512 512")
-        # load_prc_file_data("", "window-type offscreen")
+        load_prc_file_data("", "window-type offscreen")
         load_prc_file_data("", "model-cache-dir")
         load_prc_file_data("", "model-cache-textures #f")
         load_prc_file_data("", "textures-power-2 none")
+        load_prc_file_data("", "alpha-bits 0")
         load_prc_file_data("", "print-pipe-types #f")
 
         # Construct render pipeline
@@ -48,12 +49,11 @@ class Application(ShowBase):
         self.update_queue = []
         self.start_listen()
 
-        # Init
+        # Render initial frames
         for i in range(10):
             self.taskMgr.step()
 
         last_update = 0.0
-
         self.scene_node = None
 
         current_lights = []
@@ -91,6 +91,8 @@ class Application(ShowBase):
                     base.camera.set_mat(transform_mat)
                 else:
                     print("WARNING: No camera found")
+                    base.camera.set_pos(0, -3.5, 0)
+                    base.camera.look_at(0, -2.5, 0)
 
                 base.camLens.set_fov(64.0)
 
@@ -98,9 +100,8 @@ class Application(ShowBase):
                 scene.reparent_to(render)
 
                 # Render scene
-                for i in range(20):
+                for i in range(8):
                     self.taskMgr.step()
-                    self.graphicsEngine.render_frame()
 
                 dest_path = Filename.from_os_specific(payload["dest"])
                 print("Saving screenshot to", dest_path)

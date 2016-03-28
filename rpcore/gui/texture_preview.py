@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import Vec3, Texture
 
+from rpcore.image import Image
 from rpcore.gui.draggable_window import DraggableWindow
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text

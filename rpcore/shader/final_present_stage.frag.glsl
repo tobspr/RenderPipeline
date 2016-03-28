@@ -26,10 +26,10 @@
 
 #version 430
 uniform sampler2D SourceTex;
-out vec3 result;
+out vec4 result;
 
 // This shader just passes through the input texture
 
 void main() {
-  result = texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0).xyz;
+  result = vec4(texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0).xyz, 1);
 }

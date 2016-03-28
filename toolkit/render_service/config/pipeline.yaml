@@ -1,8 +1,8 @@
 
 pipeline:
-    display_debugger: true
+    display_debugger: false
     use_r11_g11_b10: false
-    resolution_scale: 2.0
+    resolution_scale: 1.0
     reference_mode: true
 
 lighting:
