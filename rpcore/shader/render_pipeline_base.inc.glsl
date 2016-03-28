@@ -113,6 +113,6 @@
 
 
 #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
-
+#define MINIMUM_ROUGHNESS 0.01
 
 #pragma include "includes/common_functions.inc.glsl"

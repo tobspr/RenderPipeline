@@ -2,6 +2,7 @@
 # Render Pipeline
 Deferred Rendering Pipeline with Physically Based Shading for the <a href="http://github.com/panda3d/panda3d">Panda3D Game Engine</a>.
 
+<img src="http://i.imgur.com/z9Yoyhy.png" />
 <img src="http://i.imgur.com/oOwLXAK.png" />
 <img src="http://i.imgur.com/iTTBodd.png" />
 <a href="https://www.youtube.com/watch?v=IgkHf5ZHAAQ" target="_blank">Car Showcase Video</a> (A bit outdated)

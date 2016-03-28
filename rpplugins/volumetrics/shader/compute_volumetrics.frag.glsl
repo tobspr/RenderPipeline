@@ -68,7 +68,7 @@ void main() {
 
   float jitter = rand(ivec2(gl_FragCoord.xy) % 2);
 
-  const int num_steps = 32;
+  const int num_steps = 16;
   vec3 step_offs = step_vector / num_steps;
 
   vec4 volumetrics = vec4(0);

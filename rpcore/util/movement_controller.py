@@ -56,7 +56,6 @@ class MovementController(object):
         self.use_hpr = False
         self.smoothness = 6.0
         self.bobbing_amount = 2.5
-        self.bobbing_amount = 0
         self.bobbing_speed = 0.5
 
     def set_initial_position(self, pos, target):

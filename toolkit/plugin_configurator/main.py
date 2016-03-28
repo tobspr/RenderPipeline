@@ -308,10 +308,15 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         plugin_dir = os.path.join(this_dir, "../../rpplugins/" + self._current_plugin,"resources")
         search_dir = os.path.join(plugin_dir, setting_handle.base_path)
 
-        filename = QtGui.QFileDialog.getOpenFileName(
-            self, "Open path", search_dir, setting_handle.file_type)
+        file_dlg = QtGui.QFileDialog(self, "Choose File ..", search_dir, setting_handle.file_type)
+        file_dlg.selectFile(setting_handle.value.replace("\\", "/").split("/")[-1])
+        # file_dlg.setViewMode(QtGui.QFileDialog.Detail)
 
-        if filename:
+        if file_dlg.exec_():
+            filename = file_dlg.selectedFiles()
+            filename = filename[-1]
+            print(filename)
+
             filename = os.path.relpath(str(filename), plugin_dir)
             filename = filename.replace("\\", "/")
             self._do_update_setting(setting_id, filename)

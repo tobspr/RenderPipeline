@@ -34,7 +34,8 @@
 #pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
-out vec4 result;
+layout(location=0) out vec4 result;
+layout(location=1) out vec3 result_position;
 
 uniform sampler2D SourceTex;
 uniform sampler2D MipChain;
@@ -75,6 +76,7 @@ void main() {
     const int search_radius = 0;
 
     vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
+    vec4 avg_position = vec4(0);
 
     // Get reflection directory
     vec3 reflected_dir = get_reflection_vector(m, -view_vector);
@@ -85,12 +87,13 @@ void main() {
         for (int y = -search_radius; y < 2 + search_radius; ++y) {
 
             ivec2 source_coord = bil_start_coord + ivec2(x, y);
-            ivec2 screen_coord = source_coord * 2 + ivec2(offs_x, offs_y);
+            // ivec2 screen_coord = source_coord * 2 + ivec2(offs_x, offs_y);
+            ivec2 screen_coord = source_coord * 2;
             vec4 source_sample = texelFetch(SourceTex, source_coord, 0);
 
             // Skip empty samples, however take into account we have no data there, so
             // still increase the weight
-            if ( length_squared(source_sample.xy) < 1e-2 || source_sample.w < 1e-3) {
+            if (length_squared(source_sample.xy) < 1e-2 || source_sample.w < 1e-3) {
                 weights += 1.0;
                 continue;
             }
@@ -122,6 +125,10 @@ void main() {
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
 
+            // Store and reproject using source sample
+            avg_position += vec4(wp_dest_sample, 1) * weight;
+
+
             accum += color_sample * weight;
             weights += weight;
         }
@@ -133,6 +140,8 @@ void main() {
         accum /= weights;
     }
 
-    result = vec4(accum);
+    avg_position.xyz /= max(1e-5, avg_position.w);
 
+    result = accum;
+    result_position = avg_position.xyz;
 }

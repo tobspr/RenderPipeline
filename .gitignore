@@ -28,13 +28,13 @@ toolkit/pathtracing_reference/mitsuba/
 toolkit/pathtracing_reference/scene*.png
 toolkit/pathtracing_reference/Scene*.blend
 toolkit/pathtracing_reference/envmap.png
+rpplugins/clouds/resources/slices/*
 
 # --- Ignored files ---
 TODO.txt
 *.flag
 desktop.ini
 scattering_lut.png
-slices/
 old/
 data/gui/loading_screen
 data/environment_brdf/scene.png
@@ -45,10 +45,6 @@ toolkit/pathtracing_reference/res/Scene.blend
 toolkit/pathtracing_reference/res/scene.png
 toolkit/pathtracing_reference/scene*.png
 toolkit/pathtracing_reference/res/tex/envmap.png
-
-
-
-
 
 */poisson_disk_generator/source/config_module*
 

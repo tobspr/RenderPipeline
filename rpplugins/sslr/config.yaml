@@ -11,11 +11,15 @@ settings: !!omap
           Amount of trace steps. A higher amount will lead to less missed
           details, although it will also be more computationally expensive.
 
-    - abort_object:
+    - abort_on_object_infront:
         type: bool
-        default: false
-        label: Some boolean setting
-        description: Description of the setting.
+        default: true
+        label: Abort on invalid hit
+        shader_runtime: true
+        description: >
+            Aborts the trace when an object is found in front of the ray.
+            This might lead to artifacts on floating objects, but might
+            also improve the quality.
 
 
 daytime_settings:

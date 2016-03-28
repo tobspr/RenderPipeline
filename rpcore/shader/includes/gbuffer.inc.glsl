@@ -32,6 +32,7 @@
 
 uniform mat4 p3d_ProjectionMatrix;
 
+
 #if defined(IS_GBUFFER_SHADER)
 
     /*
@@ -171,12 +172,12 @@ uniform mat4 p3d_ProjectionMatrix;
 
     float get_gbuffer_roughness(GBufferData data, vec2 coord) {
         // XXX: take clearcoat into account
-        return square(clamp(textureLod(data.Data0, coord, 0).w, 0.0001, 1.0));
+        return square(clamp(textureLod(data.Data0, coord, 0).w, MINIMUM_ROUGHNESS, 1.0));
     }
 
     float get_gbuffer_roughness(GBufferData data, ivec2 coord) {
         // XXX: take clearcoat into account
-        return square(clamp(texelFetch(data.Data0, coord, 0).w, 0.0001, 1.0));
+        return square(clamp(texelFetch(data.Data0, coord, 0).w, MINIMUM_ROUGHNESS, 1.0));
     }
 
     // Unpacks a material from the gbuffer
@@ -190,10 +191,10 @@ uniform mat4 p3d_ProjectionMatrix;
         Material m;
         m.position      = get_gbuffer_position(data, fcoord);
         m.basecolor     = data0.xyz;
-        m.linear_roughness = clamp(data0.w, 0.0001, 1.0);
+        m.linear_roughness = clamp(data0.w, MINIMUM_ROUGHNESS, 1.0);
         m.roughness     = m.linear_roughness * m.linear_roughness;
         m.normal        = unpack_normal_octahedron(data1.xy);
-        m.metallic      = data1.z * 1.001 - 0.0005;
+        m.metallic      = saturate(data1.z * 1.001 - 0.0005);
         m.specular_ior  = data1.w;
         m.specular      = ior_to_specular(data1.w);
         m.shading_model = int(data2.z);

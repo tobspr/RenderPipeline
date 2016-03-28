@@ -248,7 +248,7 @@ void main() {
     #endif
 
     // Add diffuse and specular ambient term
-    ambient = diffuse_ambient * occlusion + specular_ambient * specular_occlusion;
+    ambient = diffuse_ambient / M_PI * occlusion + specular_ambient * specular_occlusion;
 
     #endif
 

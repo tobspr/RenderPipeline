@@ -28,8 +28,8 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-#define RS_MAX_CLIP_DIST 500.0
-#define RS_DISTANCE_SCALE 0.0001
+#define RS_MAX_CLIP_DIST 2.0
+#define RS_DISTANCE_SCALE 0.1
 #pragma include "includes/temporal_resolve.inc.glsl"
 
 uniform sampler2D CurrentTex;

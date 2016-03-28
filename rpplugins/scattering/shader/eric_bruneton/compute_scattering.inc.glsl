@@ -30,6 +30,7 @@
 #define NO_COMPUTE_SHADER 1
 #pragma include "scattering_common.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
 uniform sampler3D InscatterSampler;
 uniform sampler2D IrradianceSampler;
@@ -115,6 +116,8 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
     } else {
         surface_pos = worldspace_to_atmosphere(surface_pos);
     }
+
+    view_dir += rand_rgb(surface_pos.xy + 0.01 * surface_pos.z) * 0.002;
 
 
     if (intersect_atmosphere(cam_pos, view_dir, offset, max_path_length)) {
@@ -233,7 +236,9 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
     if (is_skybox(surface_pos)) {
         fog_factor = 1;
     } else {
-        scattering = vec3(1, 1.3, 1.5) * fog_factor * 1.5;
+        // scattering = vec3(1, 1.3, 1.5) * fog_factor * 1.5;
+        // scattering *= 0;
+        scattering *= 1.5;
     }
 
 

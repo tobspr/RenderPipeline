@@ -28,6 +28,12 @@
 
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
+
+#define RS_MAX_CLIP_DIST 0.5
+#define RS_DISTANCE_SCALE 1.0
+#define RS_KEEP_GOOD_DURATION 4.0
+#define RS_KEEP_BAD_DURATION 2.0
+
 #pragma include "includes/temporal_resolve.inc.glsl"
 
 uniform sampler2D CurrentTex;
@@ -44,4 +50,6 @@ void main() {
     vec2 last_coord = texcoord + velocity;
 
     result = resolve_temporal(CurrentTex, Previous_SMAAPostResolve, texcoord, last_coord).xyz;
+
+    // result = texture(CurrentTex, texcoord).xyz;
 }

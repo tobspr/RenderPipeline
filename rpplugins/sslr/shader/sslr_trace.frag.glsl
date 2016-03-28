@@ -55,8 +55,13 @@ bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
 
     // This traces "incorrect", but looks better because gaps are getting filled then
     if (z - hit_tolerance_ws <= max(z_a, z_b)) {
-        hit_factor = z + hit_tolerance_ws >= min(z_a, z_b) - hit_tolerance_backface;
-        hit_factor = true;
+
+        #if GET_SETTING(sslr, abort_on_object_infront)
+            hit_factor = z + hit_tolerance_ws >= min(z_a, z_b) - hit_tolerance_backface;
+        #else
+            hit_factor = true;
+        #endif
+
         return true;
     }
 
@@ -73,7 +78,7 @@ void main()
     int offs_x = MainSceneData.frame_index % 2;
     int offs_y = (MainSceneData.frame_index / 2) % 2;
 
-    texcoord += vec2(offs_x, offs_y) / SCREEN_SIZE;
+    // texcoord += vec2(offs_x, offs_y) / SCREEN_SIZE;
 
     // TODO: Using the real normal provides *way* worse coherency
     vec3 normal_vs = get_view_normal(texcoord);

@@ -75,7 +75,8 @@ class LoadingScreen(RPObject):
         self.loading_images = Globals.loader.load_texture("/$$rp/data/gui/loading_screen_anim.png")
         self.loading_bg = Sprite(
             parent=self.fullscreen_node, image=self.loading_images,
-            x=(screen_w-420)//2, y=(screen_h-420)//2 + 50, w=420, h=420)
+            x=(screen_w-420*scale)//2, y=(screen_h-420*scale)//2 + 50,
+            w=420*scale, h=420*scale)
 
         loading_shader = Shader.load(
             Shader.SL_GLSL,

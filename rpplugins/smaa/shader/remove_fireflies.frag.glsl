@@ -62,9 +62,9 @@ void main() {
             float depth_sample = get_depth_at(offcoord);
             float weight = 1.0 - saturate(abs(depth_sample - center_depth) / max_depth_diff);
 
-            // Weight the center sample twice
+            // Weight the center sample multiple times
             if (i == 0 && j == 0) {
-                weight = 5;
+                weight = 3;
             }
 
             avg_color += color_sample * weight;

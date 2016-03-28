@@ -122,7 +122,10 @@ class BoolType(BaseType):
         self.value = self.default
 
     def set_value(self, value):
-        self.value = bool(value)
+        if isinstance(value, (str, unicode)):
+            self.value = str(value.lower()) in ("true", "1")
+        else:
+            self.value = bool(value)
 
 class EnumType(BaseType):
     """ Enumeration setting type """

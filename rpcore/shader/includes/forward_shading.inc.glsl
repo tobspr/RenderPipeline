@@ -69,7 +69,7 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
 
     // Emission
     if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {
-        shading_result = basecolor * (0.005 + diff_env) * 300.0;
+        shading_result = basecolor * (0.005 + diff_env) * 30.0;
     }
 
     return shading_result;
