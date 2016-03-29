@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+from panda3d.core import Vec2
+
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 

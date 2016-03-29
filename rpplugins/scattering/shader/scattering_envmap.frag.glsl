@@ -68,6 +68,11 @@ void main() {
         // Ground reflectance
         inscattered_light *= saturate(1+0.9*horizon) * 0.05;
         inscattered_light += saturate(-horizon + 0.2) * 1.7 * TimeOfDay.scattering.sun_intensity;
+
+        #if !HAVE_PLUGIN(color_correction)
+            inscattered_light *= 0.1;
+        #endif
+
     }
 
     imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0) );

@@ -80,7 +80,7 @@ void main() {
             // GET_SETTING(vxgi, diffuse_cone_steps),
             32,
             false,
-            0.05);
+            0.2);
         accum.xyz += cone.xyz * weight;
         accum.w += weight;
     }

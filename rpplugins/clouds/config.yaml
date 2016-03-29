@@ -1,14 +1,14 @@
 
 settings: !!omap
 
-    - cloud_decay:
-        type: float
-        range: [0.0, 10.0]
-        default: 3.0
-        label: Cloud Decay
-        description: >
-            Controls how the cloud intensity decays to the top.
-        shader_runtime: true
+    # - cloud_decay:
+    #     type: float
+    #     range: [0.0, 10.0]
+    #     default: 3.0
+    #     label: Cloud Decay
+    #     description: >
+    #         Controls how the cloud intensity decays to the top.
+    #     shader_runtime: true
 
     - raymarch_steps:
         type: int

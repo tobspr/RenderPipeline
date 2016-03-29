@@ -46,7 +46,6 @@ class SSLRStage(RenderStage):
             "SSLRSpecular": self.target_resolve.color_tex,
             "SSLRAvgWSIntersection": self.target_resolve.aux_tex[0],
         }
-        # return {"SSLRSpecular": self.target.color_tex}
 
     def create(self):
         x_size, y_size = Globals.resolution.x, Globals.resolution.y

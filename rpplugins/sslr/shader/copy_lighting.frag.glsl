@@ -51,8 +51,8 @@ void main() {
   float border_fade = 0.04;
 
   float fade = 1.0;
-  fade *= saturate(last_coord.x / border_fade) * saturate(last_coord.y / border_fade);
-  fade *= saturate((1-last_coord.x) / border_fade) * saturate((1-last_coord.y) / border_fade);
+  // fade *= saturate(last_coord.x / border_fade) * saturate(last_coord.y / border_fade);
+  // fade *= saturate((1-last_coord.x) / border_fade) * saturate((1-last_coord.y) / border_fade);
 
   // TODO: Compute a weight based on the normal and depth/difference and so on
   // TODO: Fade at screen borders

@@ -52,7 +52,7 @@ vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps, bool is
     float cone_radius = (1.0 + 5.0 * cone_grow_factor) / GET_SETTING(vxgi, grid_resolution);
 
     // Offset start position to avoid self intersection
-    start_pos += nrm * 1.5 / GET_SETTING(vxgi, grid_resolution);
+    start_pos += nrm * 2.5 / GET_SETTING(vxgi, grid_resolution);
     if (!is_specular) {
         // start_pos += nrm * 1.5 / GET_SETTING(vxgi, grid_resolution);
     }
