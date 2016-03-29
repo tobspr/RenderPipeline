@@ -59,8 +59,8 @@ vec2 get_cloud_coord(vec3 pos) {
 }
 
 void main() {
-    // const int trace_steps = GET_SETTING(clouds, raymarch_steps) * 8;
-    const int trace_steps = 64;
+    const int trace_steps = GET_SETTING(clouds, raymarch_steps);
+    // const int trace_steps = 64;
 
     vec2 texcoord = get_half_texcoord();
 
@@ -112,8 +112,8 @@ void main() {
     trace_step.xyz += (noise*2.0-1.0) * 0.008 / trace_steps;
 
     vec3 sun_vector = get_sun_vector();
-    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 25.0) + 0.0;
-    vec3 sun_color = sun_influence * 10.0 * vec3(1);
+    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 15.0) + 0.0;
+    vec3 sun_color = sun_influence * 30.0 * vec3(1);
 
     vec3 curr_pos = trace_start + 0.5 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
     float accum_weight = 0.0;
@@ -122,12 +122,17 @@ void main() {
     // Raymarch over the voxel texture
     for (int i = 0; i < trace_steps; ++i) {
         vec4 cloud_sample = texture(CloudVoxels, curr_pos);
-        float weight = cloud_sample.x * saturate(1.0 - accum_weight) * 0.5;
+        float weight = cloud_sample.x * (1.0 - accum_weight) * 0.6;
         accum_color += cloud_sample.yyy * weight;
         // accum_color += vec3(curr_pos.z) * weight;
         accum_weight += weight;
         curr_pos += trace_step;
     }
+
+    // Beers law
+    // accum_color = 1 - exp(-3.0 * accum_color);
+
+    accum_color = pow(accum_color, vec3(0.6));
 
     // Unpack packed color
     // accum_color = accum_color / (1 - accum_color);
@@ -138,9 +143,9 @@ void main() {
     accum_color *= TimeOfDay.clouds.cloud_brightness;
     accum_color *= get_sun_color();
 
-    accum_color *= 1.8;
+    // accum_color *= 1.8;
     // accum_color *= vec3(1.2, 1.1, 1);
-    // accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
+    accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 
 
     // Darken clouds in the distance

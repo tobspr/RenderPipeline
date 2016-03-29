@@ -28,10 +28,10 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-#define RS_MAX_CLIP_DIST 1500.0
-#define RS_DISTANCE_SCALE 0.00
+#define RS_MAX_CLIP_DIST 500.0
+#define RS_DISTANCE_SCALE 0.01
 #define RS_USE_AVG_POSITION_INPUT 1
-#define RS_AVG_POSITION_BIAS 0.5
+#define RS_MAX_AVG_POSITION_DIST 0.5
 #define RS_KEEP_GOOD_DURATION 8.0
 #define RS_KEEP_BAD_DURATION 8.0
 #pragma include "includes/temporal_resolve.inc.glsl"
@@ -53,4 +53,6 @@ void main() {
 
     result = resolve_temporal(CurrentTex, Previous_SSLRSpecular, texcoord, last_coord,
       CurrentWSTex, Previous_SSLRAvgWSIntersection, result_position);
+
+
 }

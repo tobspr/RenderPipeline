@@ -43,5 +43,6 @@ void main() {
         vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
         vec4 scene_color = texture(ShadedScene, texcoord);
     #endif
+
     result = vec4(scene_color.xyz, 1);
 }

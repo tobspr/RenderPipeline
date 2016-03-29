@@ -153,7 +153,5 @@ void main() {
 
     %MATERIAL%
 
-
     render_material(m);
-
 }

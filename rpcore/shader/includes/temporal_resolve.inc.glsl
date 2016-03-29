@@ -43,8 +43,8 @@
 #endif
 
 // World space positions weight
-#ifndef RS_AVG_POSITION_BIAS
-  #define RS_AVG_POSITION_BIAS 1.0
+#ifndef RS_MAX_AVG_POSITION_DIST
+  #define RS_MAX_AVG_POSITION_DIST 1.0
 #endif
 
 // How long to keep good pixels
@@ -91,11 +91,11 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     vec4 curr_br = texture(current_tex, curr_coord + vec2( bbs,  bbs) * one_pixel);
 
     // Get current frame neighbor AABB
-    vec4 curr_min = min(curr_m, min(curr_tl, min(curr_tr, min(curr_bl, curr_br))));
-    vec4 curr_max = max(curr_m, max(curr_tl, max(curr_tr, max(curr_bl, curr_br))));
+    vec4 curr_min = min5(curr_m, curr_tl, curr_tr, curr_bl, curr_br);
+    vec4 curr_max = max5(curr_m, curr_tl, curr_tr, curr_bl, curr_br);
 
     // Get last frame texels
-    float blend_weight = 0.0;
+    float blend_weight = 1.0;
     vec4 last_m  = texture(last_tex, last_coord);
     vec4 last_tl = texture(last_tex, last_coord + vec2(-bbs, -bbs) * one_pixel);
     vec4 last_tr = texture(last_tex, last_coord + vec2( bbs, -bbs) * one_pixel);
@@ -110,42 +110,29 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     float max_difference = clamp(max(
         get_luminance(last_m.xyz), get_luminance(curr_m.xyz)), 0.01, 15.0) * RS_MAX_CLIP_DIST;
 
-    if (neighbor_diff < max_difference)
-        blend_weight = 1.0;
+    if (neighbor_diff >= max_difference)
+        blend_weight = 0.0;
 
     #if RS_USE_AVG_POSITION_INPUT
         // Weight by position
         vec3 curr_pos = texture(current_ws_tex, curr_coord).xyz;
         vec3 last_pos = texture(last_ws_tex, last_coord).xyz;
 
-        // Get current frame neighbor texels
-        vec3 curr_pos_tl = texture(current_ws_tex, curr_coord + vec2(-bbs, -bbs) * one_pixel).xyz;
-        vec3 curr_pos_tr = texture(current_ws_tex, curr_coord + vec2( bbs, -bbs) * one_pixel).xyz;
-        vec3 curr_pos_bl = texture(current_ws_tex, curr_coord + vec2(-bbs,  bbs) * one_pixel).xyz;
-        vec3 curr_pos_br = texture(current_ws_tex, curr_coord + vec2( bbs,  bbs) * one_pixel).xyz;
+        float neighbor_pos_diff = distance(curr_pos, last_pos);
 
-        // Get current frame position AABB
-        vec3 curr_pos_min = min(curr_pos, min(curr_pos_tl, min(curr_pos_tr, min(curr_pos_bl, curr_pos_br))));
-        vec3 curr_pos_max = max(curr_pos, max(curr_pos_tl, max(curr_pos_tr, max(curr_pos_bl, curr_pos_br))));
+        if (length_squared(curr_pos) < 0.1 || length_squared(last_pos) < 0.1) {
+            // blend_weight = 1.0;
+        } else {
 
-        // Get last frame positions
-        vec3 last_pos_tl = texture(last_ws_tex, last_coord + vec2(-bbs, -bbs) * one_pixel).xyz;
-        vec3 last_pos_tr = texture(last_ws_tex, last_coord + vec2( bbs, -bbs) * one_pixel).xyz;
-        vec3 last_pos_bl = texture(last_ws_tex, last_coord + vec2(-bbs,  bbs) * one_pixel).xyz;
-        vec3 last_pos_br = texture(last_ws_tex, last_coord + vec2( bbs,  bbs) * one_pixel).xyz;
+            // float ws_distance = saturate(neighbor_pos_diff * RS_AVG_POSITION_BIAS);
+            // blend_weight *= ws_distance;
+            // if (neighbor_pos_diff > RS_MAX_AVG_POSITION_DIST)
+            //     blend_weight = 0.0;
 
-        float neighbor_pos_diff = length(clamp(last_pos_tl.xyz, curr_pos_min.xyz, curr_pos_max.xyz) - last_pos_tl.xyz)
-                                + length(clamp(last_pos_tr.xyz, curr_pos_min.xyz, curr_pos_max.xyz) - last_pos_tr.xyz)
-                                + length(clamp(last_pos_bl.xyz, curr_pos_min.xyz, curr_pos_max.xyz) - last_pos_bl.xyz)
-                                + length(clamp(last_pos_br.xyz, curr_pos_min.xyz, curr_pos_max.xyz) - last_pos_br.xyz);
+        }
 
-        neighbor_pos_diff = distance(curr_pos, last_pos);
-
-
-        // float ws_distance = saturate(neighbor_pos_diff * RS_AVG_POSITION_BIAS);
-        // blend_weight *= ws_distance;
-        if (neighbor_pos_diff > RS_AVG_POSITION_BIAS)
-            blend_weight = 0.0;
+        // XXX
+        blend_weight *= 1.0 - saturate(distance(curr_coord, last_coord) * WINDOW_WIDTH / 30.0);
 
     #endif
 
@@ -159,13 +146,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
         last_pos = mix(curr_pos, last_pos, blend_weight);
     #endif
 
-    // Duration to keep the bad pixel when pixel succeeds
-    const float max_frames_l = 8.0;
-
-    // Duration to keep when the pixel fails
-    const float max_frames_h = 2.5;
-
-    float weight = 1.0 / mix(RS_KEEP_GOOD_DURATION, RS_KEEP_BAD_DURATION, blend_amount);
+    float weight = saturate(1.0 / mix(RS_KEEP_GOOD_DURATION, RS_KEEP_BAD_DURATION, blend_amount));
     
     #if RS_USE_AVG_POSITION_INPUT
         result_ws = mix(last_pos, curr_pos, weight);

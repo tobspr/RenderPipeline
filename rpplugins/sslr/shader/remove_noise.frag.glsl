@@ -61,7 +61,7 @@ void main() {
     }
   }
 
-  if (num_adjacent_pixels < 3) {
+  if (num_adjacent_pixels < 2) {
     mid_data *= 0;
   }
   result = mid_data;

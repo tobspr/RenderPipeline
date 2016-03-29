@@ -76,7 +76,7 @@ void main() {
     const int search_radius = 0;
 
     vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
-    vec4 avg_position = vec4(m.position, 1) * 1e-3;
+    vec4 avg_position = vec4(0);
 
     // Get reflection directory
     vec3 reflected_dir = get_reflection_vector(m, -view_vector);
@@ -94,7 +94,7 @@ void main() {
             // Skip empty samples, however take into account we have no data there, so
             // still increase the weight
             if (length_squared(source_sample.xy) < 1e-2 || source_sample.w < 1e-3) {
-                weights += 1.0;
+                // weights += 1.0;
                 continue;
             }
 
@@ -114,18 +114,25 @@ void main() {
             vec3 h = normalize(view_vector + direction_to_sample);
             float NxH = saturate(dot(m.normal, h));
 
-            float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + roughness), 0.0, 31.0);
-
-            // weight *= source_sample.z; // value stored is 1 / pdf
-            // weight = 1;
+            float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + roughness), 0.0, 1e5);
             weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
+
 
             // float mipmap = saturate(dot(reflected_dir, m.normal)) * 7.0;
             float mipmap = sqrt(roughness) * 15.0 * (distance_to_intersection * 0.4);
+            mipmap = clamp(mipmap, 0.0, 5.0);
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
 
             color_sample *= source_sample.z;
+
+            // Fade out samples at the screen border
+            const float border_fade = 0.03;
+            float fade = 1.0;
+            fade *= saturate(source_sample.x / border_fade) * saturate(source_sample.y / border_fade);
+            fade *= saturate((1-source_sample.x) / border_fade) * saturate((1-source_sample.y) / border_fade);
+
+            color_sample *= fade;
 
             // Store and reproject using source sample
             avg_position += vec4(wp_dest_sample, 1) * weight;

@@ -253,74 +253,68 @@ float blend_ior(float material_specular, float sampled_specular) {
 // Texcoord for half-res targets sampling half-res targets
 #define get_half_native_texcoord() ((vec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE/2))
 
+// Converts degree (0 .. 360) to radians (0 .. 2 PI)
 float degree_to_radians(float degree) {
     return degree / 180.0 * M_PI;
 }
 
+// Converts radians (0 .. 2 PI) to degree (0 .. 360)
 float radians_to_degree(float radians) {
     return radians / M_PI * 180.0;
 }
 
+// Simulates a near filter on a fullscreen texture
 vec2 truncate_coordinate(vec2 tcoord) {
     return (ivec2(tcoord * SCREEN_SIZE) + 0.5) / SCREEN_SIZE;
 }
 
-float length_squared(vec2 v) {
-    return dot(v, v);
-}
+// Returns the squared length of v
+float length_squared(vec2 v) { return dot(v, v); }
+float length_squared(vec3 v) { return dot(v, v); }
+float length_squared(vec4 v) { return dot(v, v); }
 
-float distance_squared(vec2 a, vec2 b) {
-    return length_squared(a - b);
-}
+// Squared distance between a and b
+float distance_squared(vec3 a, vec3 b) { return length_squared(a - b); }
+float distance_squared(vec4 a, vec4 b) { return length_squared(a - b); }
+float distance_squared(vec2 a, vec2 b) { return length_squared(a - b); }
 
-float length_squared(vec3 v) {
-    return dot(v, v);
-}
+// Returns x * x
+float square(float x) { return x * x; }
+vec2  square(vec2 x)  { return x * x; }
+vec3  square(vec3 x)  { return x * x; }
+vec4  square(vec4 x)  { return x * x; }
 
-float distance_squared(vec3 a, vec3 b) {
-    return length_squared(a - b);
-}
-
-float length_squared(vec4 v) {
-    return dot(v, v);
-}
-
-float distance_squared(vec4 a, vec4 b) {
-    return length_squared(a - b);
-}
-
-float square(float x) {
-    return x * x;
-}
-
-vec2 square(vec2 x) {
-    return x * x;
-}
-
-vec3 square(vec3 x) {
-    return x * x;
-}
-
-vec4 square(vec4 x) {
-    return x * x;
-}
+// Minimum and maximum for multiple components
+// XXX: There are hardware instructions for it, see if we somehow
+// can access it
+#define min3(a, b, c) min(a, min(b, c))
+#define max3(a, b, c) max(a, max(b, c))
+#define min4(a, b, c, d) min(a, min(b, min(c, d)))
+#define max4(a, b, c, d) max(a, max(b, max(c, d)))
+#define min5(a, b, c, d, e) min(a, min(b, min(c, min(d, e))))
+#define max5(a, b, c, d, e) max(a, max(b, max(c, max(d, e))))
 
 // Moves mip smoothly to the closest mipmap to reduce interpolation
 float snap_mipmap(float mip) {
-
     // XXX
     // return mip;
-
     float mip_fract = fract(mip);
     float blend_factor = smoothstep(0.0, 1.0, mip_fract);
     // return mip - mip_fract + blend_factor;
     return mip - mip_fract + blend_factor;
 }
 
+// Convenience function which ensures v dot l is > 0
+vec3 face_forward(vec3 v, vec3 n) {
+    return faceforward(v, v, -n);
+}
 
-// Convenience functions
+// Convenience functions for the scattering plugin - probably don't belong here
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
 #define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity * 50.0)
 #define get_sun_color_scale(_v) saturate((_v.z - 0.02) * 30.0)
 
-#define face_forward(v, n) faceforward(v, v, -n)
+#if !HAVE_PLUGIN(color_correction)
+    #undef get_sun_color
+    #define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity * 10.0)
+#endif

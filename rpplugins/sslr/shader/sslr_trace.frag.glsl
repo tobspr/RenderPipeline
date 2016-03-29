@@ -40,11 +40,11 @@ uniform sampler2D DownscaledDepth;
 out vec3 result;
 
 #define USE_LINEAR_DEPTH 0
-#define NUM_RAYDIR_RETRIES 3
+#define NUM_RAYDIR_RETRIES 5
 
 const int num_steps = GET_SETTING(sslr, trace_steps);
-const float hit_tolerance_ws = 0.0;
-const float hit_tolerance_backface = 0.0004;
+const float hit_tolerance_ws = 0.0001;
+const float hit_tolerance_backface = 0.0005;
 
 bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
 
@@ -130,7 +130,7 @@ void main()
         pdf = rho.w;
 
         // If the ray dir is fine, abort, otherwise continue
-        if (dot(ray_dir, normal_vs) > 0.01 && pdf > 0.001) {
+        if (dot(ray_dir, normal_vs) > 0.12 && pdf > 0.001) {
             break;
         }
     }
@@ -183,14 +183,14 @@ void main()
     #endif
 
     vec3 ray_step = (ray_end_screen - ray_start_screen) / num_steps;
-    ray_pos += 0.2 * ray_step * float(num_steps) / 512.0 / saturate(dot(normal_vs, -view_dir));
+    ray_pos += 6.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0);
 
     vec2 intersection = vec2(-1);
 
     // float jitter = rand(texcoord + MainSceneData.temporal_index);
     float jitter = abs(rand(ivec2(gl_FragCoord.xy) + (MainSceneData.frame_index % 8) * 0.1));
     // jitter *= 0.0;
-    jitter *= 2.0;
+    // jitter *= 2.0;
     ray_pos += jitter * ray_step;
 
     int i;
@@ -219,37 +219,30 @@ void main()
     intersection = truncate_coordinate(intersection);
 
     // Check if we hit something
-    if (min(intersection.x, intersection.y) <= 0.0) {
-        // result = vec3(0.2, 0, 0, 0);
+    if (min(intersection.x, intersection.y) <= 0.0 || out_of_screen(intersection)) {
         result = vec3(0);
         return;
     }
 
-    // Out of screen, can early out
-    if (out_of_screen(intersection)) {
-        // result = vec3(0, 1, 0, 0);
-        result = vec3(0);
-        return;
-    }
 
-    float fade = saturate(5.0 * RxV);
-    // float fade = pow(1 - (i / float(num_steps - 1)), 1);
+    float fade = saturate(3.0 * RxV);
+
     if (fade < 1e-3 || !hit_factor) {
         result = vec3(0);
         return;
     }
+    
 
     // Optional: don't weight skybox fixes
-    // float depth_at_intersection = textureLod(GBuffer.Depth, intersection.xy, 0).x;
-    // if (get_linear_z_from_z(depth_at_intersection) > 3000.0) {
-    //     result = vec3(0);
-    //     return;
-    // }
+    float depth_at_intersection = textureLod(GBuffer.Depth, intersection.xy, 0).x;
+    if (get_linear_z_from_z(depth_at_intersection) > 5000.0) {
+        result = vec3(0);
+        return;
+    }
 
     // XXX: Seems this works *way* better
-    fade = 1.0;
-    pdf = 1.0;
     // fade = 1.0;
+    pdf = 1.0;
 
     result = vec3(intersection, 1.0 / max(1e-5, pdf) * fade);
 }

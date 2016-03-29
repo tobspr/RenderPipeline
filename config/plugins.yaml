@@ -53,8 +53,8 @@ overrides:
         lens_dirt_factor: 0.2333
 
     clouds:
-        cloud_decay: 5.78
-        raymarch_steps: 64
+        cloud_decay: 4.22
+        raymarch_steps: 27
 
     color_correction:
         tonemap_operator: optimized
@@ -152,7 +152,7 @@ overrides:
 
     vxgi:
         grid_resolution: 256
-        grid_ws_size: 20.0
+        grid_ws_size: 40.0
         diffuse_cone_steps: 32
         specular_cone_steps: 150
 
