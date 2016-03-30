@@ -1,6 +1,18 @@
 
 settings: !!omap
 
+
+    - effect_scale:
+        type: float
+        range: [0.0, 1.0]
+        default: 1.0
+        label: SSR Strength
+        shader_runtime: true
+        description: >
+            Controls the strength of the reflections, lower values will reduce
+            the influence of ssr, increasing the influence of other plugins
+            like environment probes
+
     - trace_steps:
         type: int
         range: [4, 512]
@@ -20,6 +32,40 @@ settings: !!omap
             Aborts the trace when an object is found in front of the ray.
             This might lead to artifacts on floating objects, but might
             also improve the quality.
+
+    - intial_bias:
+        type: float
+        range: [0.1, 15.0]
+        default: 1.0
+        label: Initial ray bias
+        shader_runtime: true
+        description: >
+            Offsets the ray a bit in the tracing direction to avoid self-
+            intersection. A too small value will cause artifacts due to self
+            intersection, a too high value will miss details near to objects.
+
+    - hit_tolerance:
+        type: float
+        range: [0.1, 10.0]
+        default: 1.0
+        label: Hit tolerance
+        shader_runtime: true
+        description: >
+            Higher values will produce more intersections, but also produce
+            false positives. If you set this value too low, artifacts and noise
+            will occur.        
+
+    - roughness_fade:
+        type: float
+        range: [0.1, 2.0]
+        default: 1.0
+        shader_runtime: true
+        label: Roughness Fade
+        description: >
+            Fades out the reflections at high roughness values, so that other
+            solutions like environment probes have more influence. This is
+            to prevent noise, higher values will reduce the impact on ssr on
+            rough surfaces.
 
 
 daytime_settings:

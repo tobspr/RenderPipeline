@@ -38,14 +38,11 @@ class SSLRStage(RenderStage):
     required_inputs = []
     required_pipes = ["ShadedScene", "CombinedVelocity", "GBuffer",
                       "DownscaledDepth", "PreviousFrame::PostAmbientScene",
-                      "PreviousFrame::SSLRSpecular", "PreviousFrame::SSLRAvgWSIntersection"]
+                      "PreviousFrame::SSLRSpecular", "PreviousFrame::SceneDepth"]
 
     @property
     def produced_pipes(self):
-        return {
-            "SSLRSpecular": self.target_resolve.color_tex,
-            "SSLRAvgWSIntersection": self.target_resolve.aux_tex[0],
-        }
+        return {"SSLRSpecular": self.target_resolve.color_tex }
 
     def create(self):
         x_size, y_size = Globals.resolution.x, Globals.resolution.y
@@ -102,17 +99,14 @@ class SSLRStage(RenderStage):
 
         self.target_upscale = self.create_target("UpscaleSSLR")
         self.target_upscale.add_color_attachment(bits=16, alpha=True)
-        self.target_upscale.add_aux_attachment(bits=16)
         self.target_upscale.prepare_buffer()
         self.target_upscale.set_shader_input("SourceTex", curr_tex)
         self.target_upscale.set_shader_input("MipChain", self.mipchain)
 
         self.target_resolve = self.create_target("ResolveSSLR")
         self.target_resolve.add_color_attachment(bits=16, alpha=True)
-        self.target_resolve.add_aux_attachment(bits=16)
         self.target_resolve.prepare_buffer()
         self.target_resolve.set_shader_input("CurrentTex", self.target_upscale.color_tex)
-        self.target_resolve.set_shader_input("CurrentWSTex", self.target_upscale.aux_tex[0])
 
         AmbientStage.required_pipes.append("SSLRSpecular")
 

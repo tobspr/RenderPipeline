@@ -57,9 +57,6 @@ class Image(RPObject, Texture, StuffToMakePylintHappyAgain):
     the memory used. This is used by all classes instead of pandas builtin
     Texture class. """
 
-    # Total amount of images
-    NUM_IMAGES = 0
-
     # All registered images
     REGISTERED_IMAGES = []
 

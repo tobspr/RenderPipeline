@@ -146,9 +146,16 @@ class StageManager(RPObject):
                 pipe_name = pipe.split("::")[-1]
                 if pipe_name not in self._previous_pipes:
                     self.debug("Storing previous frame pipe for " + pipe_name)
+                    tex_format = "RGBA16"
+
+                    # XXX: Assuming we have a depth texture whenever "depth"
+                    # occurs in the textures name
+                    if "depth" in pipe_name.lower():
+                        tex_format = "R32"
+
                     pipe_tex = Image.create_2d(
                         "Prev-" + pipe_name, Globals.resolution.x,
-                        Globals.resolution.y, "RGBA16")
+                        Globals.resolution.y, tex_format)
                     pipe_tex.clear_image()
                     self._previous_pipes[pipe_name] = pipe_tex
                 stage.set_shader_input("Previous_" + pipe_name, self._previous_pipes[pipe_name])

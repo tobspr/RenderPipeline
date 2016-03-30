@@ -193,7 +193,7 @@ settings: !!omap
         default: 4096
         label: Distant Shadow Resolution
         description: >
-            Controls the size of distant shadow map nin pixels.
+            Controls the size of distant shadow map in pixels.
 
     - dist_shadow_clipsize:
         display_if: {use_distant_shadows: true}

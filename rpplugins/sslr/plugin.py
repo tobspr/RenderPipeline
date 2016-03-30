@@ -33,9 +33,9 @@ class Plugin(BasePlugin):
 
     name = "Screen Space Reflections"
     author = "tobspr <tobias.springer1@gmail.com>"
-    description = ("This plugin adds support for screen space local reflections "
+    description = ("This plugin adds support for stochastik screen space reflections "
                    "and is still very experimental!")
-    version = "alpha (!)"
+    version = "beta (!)"
 
     def on_stage_setup(self):
         self._sslr_stage = self.create_stage(SSLRStage)

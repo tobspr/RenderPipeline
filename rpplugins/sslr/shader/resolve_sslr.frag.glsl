@@ -30,29 +30,23 @@
 
 #define RS_MAX_CLIP_DIST 500.0
 #define RS_DISTANCE_SCALE 0.01
-#define RS_USE_AVG_POSITION_INPUT 1
-#define RS_MAX_AVG_POSITION_DIST 0.5
+#define RS_WEIGHT_BY_VELOCITY 1
+#define RS_MAX_VELOCITY_LENGTH 40.0
 #define RS_KEEP_GOOD_DURATION 8.0
 #define RS_KEEP_BAD_DURATION 8.0
 #pragma include "includes/temporal_resolve.inc.glsl"
 
 
 uniform sampler2D CurrentTex;
-uniform sampler2D CurrentWSTex;
 uniform sampler2D CombinedVelocity;
 uniform sampler2D Previous_SSLRSpecular;
-uniform sampler2D Previous_SSLRAvgWSIntersection;
 
-layout(location=0) out vec4 result;
-layout(location=1) out vec3 result_position;
+out vec4 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
     vec2 velocity = texture(CombinedVelocity, texcoord).xy;
     vec2 last_coord = texcoord + velocity;
 
-    result = resolve_temporal(CurrentTex, Previous_SSLRSpecular, texcoord, last_coord,
-      CurrentWSTex, Previous_SSLRAvgWSIntersection, result_position);
-
-
+    result = resolve_temporal(CurrentTex, Previous_SSLRSpecular, texcoord, last_coord);
 }

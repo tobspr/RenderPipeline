@@ -38,7 +38,10 @@ class GBufferStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"GBuffer": self.make_gbuffer_ubo()}
+        return {
+            "GBuffer": self.make_gbuffer_ubo(),
+            "SceneDepth": self.target.depth_tex
+        }
 
     def make_gbuffer_ubo(self):
         ubo = SimpleUBO("GBuffer")

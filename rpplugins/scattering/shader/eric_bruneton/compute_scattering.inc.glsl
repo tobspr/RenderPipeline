@@ -95,7 +95,7 @@ bool intersect_atmosphere(vec3 cam_pos, vec3 d, out float offset, out float max_
 // This is required because we use different coordinate systems for normal
 // rendering and atmospheric scattering.
 vec3 worldspace_to_atmosphere(vec3 pos) {
-    pos /= 100.0;
+    pos /= 500.0;
     pos.z = max(0, pos.z);
     pos.z += Rg + 1.5;
     return pos;
@@ -238,7 +238,7 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
     } else {
         // scattering = vec3(1, 1.3, 1.5) * fog_factor * 1.5;
         // scattering *= 0;
-        scattering *= 1.5;
+        // scattering *= 1.5;
     }
 
 

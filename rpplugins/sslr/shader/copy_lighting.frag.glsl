@@ -36,6 +36,10 @@
 uniform sampler2D CombinedVelocity;
 uniform writeonly image2D RESTRICT DestTex;
 uniform sampler2D Previous_PostAmbientScene;
+uniform sampler2D Previous_SceneDepth;
+
+// Copies the previous scene color to the first sslr mipmap.
+// Also outputs the current frame intersection depth
 
 void main() {
   vec2 texcoord = get_texcoord();
@@ -48,27 +52,28 @@ void main() {
     return;
   }
 
-  float border_fade = 0.04;
-
   float fade = 1.0;
-  // fade *= saturate(last_coord.x / border_fade) * saturate(last_coord.y / border_fade);
-  // fade *= saturate((1-last_coord.x) / border_fade) * saturate((1-last_coord.y) / border_fade);
 
-  // TODO: Compute a weight based on the normal and depth/difference and so on
-  // TODO: Fade at screen borders
+  // Check if reprojected position matches
+  float curr_depth = get_depth_at(texcoord);
 
-  // Fade skybox
-  float depth = get_depth_at(texcoord);
-  if (get_linear_z_from_z(depth) > 3000.0) {
+  // Fade out skybox
+  if (get_linear_z_from_z(curr_depth) > 3000.0) {
     fade = 0.0;
   }
 
+  float last_depth = textureLod(Previous_SceneDepth, texcoord, 0).x;
+  vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
 
+  // XXX: inverse is totally slow! Instead pass it as a main scene data
+  vec3 last_pos = calculate_surface_pos(last_depth, last_coord, inverse(MainSceneData.last_view_proj_mat_no_jitter));
+
+  if (distance(curr_pos, last_pos) > 1.0) {
+    // XXX
+  //   fade = 0.0;
+  }
+
+  last_coord = truncate_coordinate(last_coord);
   vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
-  // intersected_color = clamp(intersected_color, vec3(0), vec3(100));
-  // intersected_color = intersected_color / (1.0 + get_luminance(intersected_color));
-
-
-  // result = vec4(intersected_color, 1) * fade;
   imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(intersected_color, 1) * fade);
 }

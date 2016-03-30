@@ -8,7 +8,6 @@ enabled:
     - bloom
     - color_correction
     - env_probes
-    - fxaa
     - motion_blur
     - pssm
     - scattering
@@ -17,6 +16,7 @@ enabled:
     - volumetrics
     # - clouds
     # - dof
+    # - fxaa
     # - skin_shading
     # - vxgi
 
@@ -53,7 +53,6 @@ overrides:
         lens_dirt_factor: 0.2333
 
     clouds:
-        cloud_decay: 4.22
         raymarch_steps: 27
 
     color_correction:
@@ -80,7 +79,7 @@ overrides:
         brightness_adaption_rate: 2.67
         darkness_adaption_rate: 0.79
         use_sharpen: True
-        sharpen_strength: 1.72
+        sharpen_strength: 0.78
         sharpen_twice: False
 
     dof:
@@ -99,7 +98,7 @@ overrides:
 
     motion_blur:
         num_camera_samples: 6
-        camera_blur_factor: 0.5778
+        camera_blur_factor: 0.15556
         blur_factor: 0.5
         tile_size: 32
         max_blur_radius: 10.0
@@ -114,16 +113,16 @@ overrides:
         border_bias: 0.01943
         use_pcf: True
         filter_sample_count: 32
-        filter_radius: 9.89
-        fixed_bias: 0.0889
-        slope_bias: 0.39
+        filter_radius: 3.73
+        fixed_bias: 0.02217
+        slope_bias: 0.17
         normal_bias: 0.0
-        use_pcss: False
+        use_pcss: True
         pcss_search_samples: 32
         pcss_penumbra_size: 300.0
         use_distant_shadows: True
         dist_shadow_resolution: 1024
-        dist_shadow_clipsize: 150.0
+        dist_shadow_clipsize: 806.67
         scene_shadow_resolution: 1024
 
     scattering:
@@ -144,8 +143,12 @@ overrides:
         smaa_quality: ultra
 
     sslr:
-        trace_steps: 64
+        effect_scale: 1.0
+        trace_steps: 48
         abort_on_object_infront: True
+        intial_bias: 0.43
+        hit_tolerance: 1.0
+        roughness_fade: 1.0
 
     volumetrics:
         intensity: 1.31

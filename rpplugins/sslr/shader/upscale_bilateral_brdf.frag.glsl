@@ -82,6 +82,8 @@ void main() {
     vec3 reflected_dir = get_reflection_vector(m, -view_vector);
     float roughness = get_effective_roughness(m);
 
+    vec4 avg_intersection = vec4(0.0);
+
     // Accumulate all samples
     for (int x = -search_radius; x < 2 + search_radius; ++x) {
         for (int y = -search_radius; y < 2 + search_radius; ++y) {
@@ -93,7 +95,7 @@ void main() {
 
             // Skip empty samples, however take into account we have no data there, so
             // still increase the weight
-            if (length_squared(source_sample.xy) < 1e-2 || source_sample.w < 1e-3) {
+            if (length_squared(source_sample.xy) < 0.01 || source_sample.w < 0.005) {
                 // weights += 1.0;
                 continue;
             }
@@ -115,11 +117,12 @@ void main() {
             float NxH = saturate(dot(m.normal, h));
 
             float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + roughness), 0.0, 1e5);
+            // weight *= source_sample.z;
             weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
 
 
             // float mipmap = saturate(dot(reflected_dir, m.normal)) * 7.0;
-            float mipmap = sqrt(roughness) * 15.0 * (distance_to_intersection * 0.4);
+            float mipmap = sqrt(roughness) * 5.0 * (distance_to_intersection * 0.4);
             mipmap = clamp(mipmap, 0.0, 5.0);
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
@@ -134,10 +137,8 @@ void main() {
 
             color_sample *= fade;
 
-            // Store and reproject using source sample
-            avg_position += vec4(wp_dest_sample, 1) * weight;
-
             accum += color_sample * weight;
+            avg_intersection += vec4(source_sample.xy, sample_depth, 1);
             weights += weight;
         }
     }
@@ -148,8 +149,6 @@ void main() {
         accum /= weights;
     }
 
-    avg_position.xyz /= max(1e-5, avg_position.w);
-
     result = accum;
-    result_position = avg_position.xyz;
+    result_position = avg_intersection.xyz / max(1e-3, avg_intersection.w);
 }

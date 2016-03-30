@@ -38,14 +38,10 @@
 #endif
 
 // Whether to read a seperate texture containin world space positions
-#ifndef RS_USE_AVG_POSITION_INPUT
-  #define RS_USE_AVG_POSITION_INPUT 0
+#ifndef RS_WEIGHT_BY_VELOCITY
+  #define RS_WEIGHT_BY_VELOCITY 0
 #endif
 
-// World space positions weight
-#ifndef RS_MAX_AVG_POSITION_DIST
-  #define RS_MAX_AVG_POSITION_DIST 1.0
-#endif
 
 // How long to keep good pixels
 #ifndef RS_KEEP_GOOD_DURATION
@@ -63,21 +59,12 @@ Uses the reprojection suggested in:
 http://www.crytek.com/download/Sousa_Graphics_Gems_CryENGINE3.pdf
 
 */
-vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord, vec2 last_coord
-
-    #if RS_USE_AVG_POSITION_INPUT
-        , sampler2D current_ws_tex, sampler2D last_ws_tex, out vec3 result_ws
-    #endif
-
-    ) {
+vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord, vec2 last_coord) {
     vec2 one_pixel = 1.0 / SCREEN_SIZE;
     vec4 curr_m    = texture(current_tex, curr_coord);
 
     // Out of screen, can early out
     if (out_of_screen(last_coord)) {
-        #if RS_USE_AVG_POSITION_INPUT
-            result_ws = texture(current_ws_tex, curr_coord).xyz;
-        #endif
         return max(vec4(0.0), curr_m);
     }
 
@@ -113,44 +100,18 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     if (neighbor_diff >= max_difference)
         blend_weight = 0.0;
 
-    #if RS_USE_AVG_POSITION_INPUT
-        // Weight by position
-        vec3 curr_pos = texture(current_ws_tex, curr_coord).xyz;
-        vec3 last_pos = texture(last_ws_tex, last_coord).xyz;
+    #if RS_WEIGHT_BY_VELOCITY
 
-        float neighbor_pos_diff = distance(curr_pos, last_pos);
 
-        if (length_squared(curr_pos) < 0.1 || length_squared(last_pos) < 0.1) {
-            // blend_weight = 1.0;
-        } else {
-
-            // float ws_distance = saturate(neighbor_pos_diff * RS_AVG_POSITION_BIAS);
-            // blend_weight *= ws_distance;
-            // if (neighbor_pos_diff > RS_MAX_AVG_POSITION_DIST)
-            //     blend_weight = 0.0;
-
-        }
-
-        // XXX
-        blend_weight *= 1.0 - saturate(distance(curr_coord, last_coord) * WINDOW_WIDTH / 30.0);
+        blend_weight *= 1.0 - saturate(distance(curr_coord, last_coord) * WINDOW_WIDTH / RS_MAX_VELOCITY_LENGTH);
 
     #endif
-
 
     float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) * RS_DISTANCE_SCALE );
 
     // Merge the sample with the current color, in case we can't pick it
     last_m = mix(curr_m, last_m, blend_weight);
-
-    #if RS_USE_AVG_POSITION_INPUT
-        last_pos = mix(curr_pos, last_pos, blend_weight);
-    #endif
-
     float weight = saturate(1.0 / mix(RS_KEEP_GOOD_DURATION, RS_KEEP_BAD_DURATION, blend_amount));
     
-    #if RS_USE_AVG_POSITION_INPUT
-        result_ws = mix(last_pos, curr_pos, weight);
-    #endif
-
     return max(vec4(0.0), mix(last_m, curr_m, weight));
 }

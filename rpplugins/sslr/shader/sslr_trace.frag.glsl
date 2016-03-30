@@ -40,10 +40,10 @@ uniform sampler2D DownscaledDepth;
 out vec3 result;
 
 #define USE_LINEAR_DEPTH 0
-#define NUM_RAYDIR_RETRIES 5
+#define NUM_RAYDIR_RETRIES 3
 
 const int num_steps = GET_SETTING(sslr, trace_steps);
-const float hit_tolerance_ws = 0.0001;
+const float hit_tolerance_ws = 0.0001 * GET_SETTING(sslr, hit_tolerance);
 const float hit_tolerance_backface = 0.0005;
 
 bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
@@ -130,7 +130,7 @@ void main()
         pdf = rho.w;
 
         // If the ray dir is fine, abort, otherwise continue
-        if (dot(ray_dir, normal_vs) > 0.12 && pdf > 0.001) {
+        if (dot(ray_dir, normal_vs) > 0.06 && pdf > 0.001) {
             break;
         }
     }
@@ -183,7 +183,7 @@ void main()
     #endif
 
     vec3 ray_step = (ray_end_screen - ray_start_screen) / num_steps;
-    ray_pos += 6.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0);
+    ray_pos += 6.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0) * GET_SETTING(sslr, intial_bias);
 
     vec2 intersection = vec2(-1);
 
@@ -235,13 +235,15 @@ void main()
 
     // Optional: don't weight skybox fixes
     float depth_at_intersection = textureLod(GBuffer.Depth, intersection.xy, 0).x;
-    if (get_linear_z_from_z(depth_at_intersection) > 5000.0) {
+    if (get_linear_z_from_z(depth_at_intersection) > 15000.0) {
         result = vec3(0);
         return;
     }
 
     // XXX: Seems this works *way* better
     // fade = 1.0;
+    // vec3 h = normalize(view_dir + ray_dir);
+    // pdf = pdf / (4.0 * saturate(dot(view_dir, h)));
     pdf = 1.0;
 
     result = vec3(intersection, 1.0 / max(1e-5, pdf) * fade);

@@ -209,7 +209,7 @@ void main() {
 
                 // Find depth at sample location
                 float sampled_depth = textureLod(PSSMShadowAtlas,
-                    projected_coord + offset * filter_size * 1.0, 0).x;
+                    projected_coord + offset * filter_size * 2.0, 0).x;
 
                 // Compare the depth with the pixel depth, in case its smaller,
                 // we found a blocker
