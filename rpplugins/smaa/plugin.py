@@ -27,6 +27,7 @@ THE SOFTWARE.
 from panda3d.core import SamplerState
 
 from rpcore.globals import Globals
+from rpcore.loader import RPLoader
 from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .smaa_stage import SMAAStage
@@ -85,8 +86,8 @@ class Plugin(BasePlugin):
 
     def _load_textures(self):
         """ Loads all required textures """
-        search_tex = Globals.loader.load_texture(self.get_resource("search_tex.png"))
-        area_tex = Globals.loader.load_texture(self.get_resource("area_tex.png"))
+        search_tex = RPLoader.load_texture(self.get_resource("search_tex.png"))
+        area_tex = RPLoader.load_texture(self.get_resource("area_tex.png"))
 
         for tex in [search_tex, area_tex]:
             tex.set_minfilter(SamplerState.FT_linear)

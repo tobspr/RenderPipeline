@@ -49,26 +49,11 @@ class BasePlugin(RPObject):
         self.plugin_id = str(self.__class__.__module__).split(".")[-2]
         RPObject.__init__(self, "plugin:" + self.plugin_id)
         self._set_debug_color("magenta", "bright")
-        self._load_config()
 
     @property
     def base_path(self):
         """ Returns the path to the root directory of the plugin """
         return "/$$rp/rpplugins/{}/".format(self.plugin_id)
-
-    @property
-    def settings(self):
-        """ Returns the list of settings """
-        return self._config["settings"]
-
-    def _load_config(self):
-        """ Loads all configuration files of the plugin """
-        config_file = join(self.base_path, "config.yaml")
-        if not isfile(config_file):
-            self.error("Plugin has no config.yaml file!")
-            return False
-
-        self._config = load_yaml_file(config_file)
 
     def get_resource(self, pth):
         """ Converts a local path from the plugins resource directory into
@@ -104,7 +89,7 @@ class BasePlugin(RPObject):
         """ Returns the instance of a different plugin, given by its id.
         This should be only used to access plugins which are also in the
         current plugins requirements """
-        return self._pipeline.plugin_mgr.plugin_instances[plugin_id]
+        return self._pipeline.plugin_mgr.instances[plugin_id]
 
     def is_plugin_enabled(self, plugin_id):
         """ Returns whether a plugin is enabled and loaded, given is plugin id """

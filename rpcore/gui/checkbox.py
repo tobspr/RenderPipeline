@@ -29,8 +29,7 @@ from direct.gui.DirectCheckBox import DirectCheckBox
 import direct.gui.DirectGuiGlobals as DGG
 
 from rpcore.rpobject import RPObject
-from rpcore.globals import Globals
-
+from rpcore.loader import RPLoader
 
 class Checkbox(RPObject):
 
@@ -44,12 +43,12 @@ class Checkbox(RPObject):
         prefix = "checkbox" if not radio else "radiobox"
 
         if enabled:
-            checked_img = Globals.loader.load_texture(
+            checked_img = RPLoader.load_texture(
                 "/$$rp/data/gui/" + prefix + "_checked.png")
-            unchecked_img = Globals.loader.load_texture(
+            unchecked_img = RPLoader.load_texture(
                 "/$$rp/data/gui/" + prefix + "_default.png")
         else:
-            checked_img = Globals.loader.load_texture(
+            checked_img = RPLoader.load_texture(
                 "/$$rp/data/gui/" + prefix + "_disabled.png")
             unchecked_img = checked_img
 

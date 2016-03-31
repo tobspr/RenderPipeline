@@ -226,6 +226,9 @@ def setup():
         print_step("Extracting .gz files ...")
         extract_gz_files(os.path.join(SETUP_DIR, "data/"))
 
+        print_step("Generating .txo files ...")
+        exec_python_file("data/generate_txo_files.py")
+
         print_step("Filtering default cubemap ..")
         exec_python_file("data/default_cubemap/filter.py")
 

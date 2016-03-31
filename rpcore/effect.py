@@ -32,6 +32,7 @@ from rplibs.yaml import load_yaml_file
 from panda3d.core import Shader, Filename
 
 from rpcore.rpobject import RPObject
+from rpcore.loader import RPLoader
 from rpcore.util.shader_template import ShaderTemplate
 
 class Effect(RPObject):
@@ -90,7 +91,7 @@ class Effect(RPObject):
         # Hash the options, that is, sort the keys to make sure the values
         # are always in the same order, and then convert the flags to strings using
         # '1' for a set flag, and '0' for a unset flag
-        options_hash = ''.join(['1' if options[key] else 'x' for key in sorted(iterkeys(options))])
+        options_hash = ''.join(['1' if options[key] else '-' for key in sorted(iterkeys(options))])
         return file_hash + "-" + options_hash
 
     def __init__(self):
@@ -135,8 +136,7 @@ class Effect(RPObject):
         for pass_id in self._PASSES:
             vertex_src = self._shader_paths["vertex"]
             fragment_src = self._shader_paths[pass_id]
-            self._shader_objs[pass_id] = Shader.load(
-                Shader.SL_GLSL, vertex_src, fragment_src)
+            self._shader_objs[pass_id] = RPLoader.load_shader(vertex_src, fragment_src)
 
         return True
 

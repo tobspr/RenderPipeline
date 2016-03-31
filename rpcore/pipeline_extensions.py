@@ -162,7 +162,7 @@ class PipelineExtensions(object):
 
         from rpplugins.env_probes.environment_probe import EnvironmentProbe
         probe = EnvironmentProbe()
-        self.plugin_mgr.get_plugin_handle("env_probes").probe_mgr.add_probe(probe)
+        self.plugin_mgr.instances["env_probes"].probe_mgr.add_probe(probe)
         return probe
 
     def prepare_scene(self, scene):

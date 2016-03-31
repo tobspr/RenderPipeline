@@ -28,6 +28,7 @@ from panda3d.core import PTAInt, Shader
 
 from rpcore.image import Image
 from rpcore.rpobject import RPObject
+from rpcore.loader import RPLoader
 from rpcore.render_target import RenderTarget
 
 from rpcore.native import GPUCommand, GPUCommandList
@@ -80,7 +81,7 @@ class GPUCommandQueue(RPObject):
 
     def reload_shaders(self):
         """ Reloads the command shader """
-        shader = Shader.load(Shader.SL_GLSL,
+        shader = RPLoader.load_shader(
                              "/$$rp/shader/default_post_process.vert.glsl",
                              "/$$rp/shader/process_command_queue.frag.glsl")
         self._command_target.shader = shader

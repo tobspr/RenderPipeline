@@ -24,14 +24,17 @@ THE SOFTWARE.
 
 """
 
-import hashlib
+
+from __future__ import print_function
+
 import time
+import hashlib
 from rplibs.six.moves import range
 
-from panda3d.core import PNMImage, VirtualFileSystem, VirtualFileMountRamdisk
 from panda3d.core import PStatCollector
 
 from rpcore.globals import Globals
+from rpcore.loader import RPLoader
 
 def rgb_from_string(text, min_brightness=0.6):
     """ Creates a rgb color from a given string """
@@ -41,54 +44,6 @@ def rgb_from_string(text, min_brightness=0.6):
     return (min_brightness + r / 255.0 * neg_inf,
             min_brightness + g / 255.0 * neg_inf,
             min_brightness + b / 255.0 * neg_inf)
-
-
-def load_sliced_3d_texture(fname, tile_size_x, tile_size_y=None, num_tiles=None):
-    """ Loads a texture from the given filename and dimensions. If only
-    one dimensions is specified, the other dimensions are assumed to be
-    equal. This internally loads the texture into ram, splits it into smaller
-    sub-images, and then calls the load_3d_texture from the Panda loader """
-
-    # Generate a unique name to prevent caching
-    tempfile_name = "/$$slide_loader_temp-" + str(time.time()) + "/"
-
-    # For quaddratic textures
-    tile_size_y = tile_size_x if tile_size_y is None else tile_size_y
-    num_tiles = tile_size_x if num_tiles is None else num_tiles
-
-    # Load sliced image from disk
-    source = PNMImage(fname)
-    width = source.get_x_size()
-
-    # Find slice properties
-    num_cols = width // tile_size_x
-    temp = PNMImage(
-        tile_size_x, tile_size_y, source.get_num_channels(), source.get_maxval())
-
-    # Construct a ramdisk to write the files to
-    vfs = VirtualFileSystem.get_global_ptr()
-    ramdisk = VirtualFileMountRamdisk()
-    vfs.mount(ramdisk, tempfile_name, 0)
-
-    # Extract all slices and write them to the virtual disk
-    for z_slice in range(num_tiles):
-        slice_x = (z_slice % num_cols) * tile_size_x
-        slice_y = (z_slice // num_cols) * tile_size_y
-        temp.copy_sub_image(source, 0, 0, slice_x, slice_y, tile_size_x, tile_size_y)
-        temp.write(tempfile_name + str(z_slice) + ".png")
-
-    # Load the de-sliced texture from the ramdisk
-    texture_handle = Globals.loader.load_3d_texture(tempfile_name + "/#.png")
-
-    # This should never trigger, but can't hurt to have
-    assert texture_handle.get_x_size() == tile_size_x
-    assert texture_handle.get_y_size() == tile_size_y
-    assert texture_handle.get_z_size() == num_tiles
-
-    # Finally unmount the ramdisk
-    vfs.unmount(ramdisk)
-
-    return texture_handle
 
 def profile(func):
     """ Handy decorator which can be used to profile a function with pstats """
@@ -119,3 +74,24 @@ def profile(func):
     do_pstat.__dict__ = func.__dict__
     do_pstat.__doc__ = func.__doc__
     return do_pstat
+
+class profile_cpu(object):
+    """
+    Context manager for profiling CPU duration. This is useful for timing
+    loading of files or other CPU-heavy operations. Example usage:
+
+      with profile_cpu("Some Task"):
+        some_slow_operation()
+
+    Duration of the process will be print out on the console later on.
+    """
+
+    def __init__(self, name):
+        self.name = name
+
+    def __enter__(self):
+        self.start_time = time.clock()
+
+    def __exit__(self, *args):
+        duration = (time.clock() - self.start_time) * 1000.0
+        print(self.name, "took", round(duration, 2), "ms ")

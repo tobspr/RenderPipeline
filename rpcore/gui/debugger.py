@@ -228,7 +228,7 @@ class Debugger(RPObject):
         self._debug_lines[4].text = text.format(
             self._pipeline.daytime_mgr.formatted_time,
             self._pipeline.daytime_mgr.time,
-            self._pipeline.plugin_mgr.num_day_settings,
+            len(self._pipeline.plugin_mgr.day_settings),
             Globals.base.camera.get_x(Globals.base.render),
             Globals.base.camera.get_y(Globals.base.render),
             Globals.base.camera.get_z(Globals.base.render),)

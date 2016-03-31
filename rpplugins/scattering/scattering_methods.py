@@ -34,8 +34,8 @@ from panda3d.core import SamplerState, Shader, ShaderAttrib, NodePath
 
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
-from rpcore.util.generic import load_sliced_3d_texture
 from rpcore.image import Image
+from rpcore.loader import RPLoader
 
 class ScatteringMethod(RPObject):
 
@@ -67,7 +67,7 @@ class ScatteringMethodHosekWilkie(ScatteringMethod):
                        "Scattering! Make sure you compiled the algorithm code!")
             return
 
-        lut_tex = load_sliced_3d_texture(lut_src, 512, 128, 100)
+        lut_tex = RPLoader.load_sliced_3d_texture(lut_src, 512, 128, 100)
         lut_tex.set_wrap_u(SamplerState.WM_repeat)
         lut_tex.set_wrap_v(SamplerState.WM_clamp)
         lut_tex.set_wrap_w(SamplerState.WM_clamp)
@@ -130,7 +130,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
             fpath = join(resource_path, fname)
             if isfile(fpath) and fname.endswith(".compute.glsl"):
                 shader_name = fname.split(".")[0]
-                shader_obj = Shader.load_compute(Shader.SL_GLSL, fpath)
+                shader_obj = RPLoader.load_shader(fpath)
                 self.shaders[shader_name] = shader_obj
 
 

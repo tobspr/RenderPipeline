@@ -251,7 +251,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self.settings_tree.clear()
         self._tree_widgets = []
 
-        for plugin_id, plugin in iteritems(self._plugin_mgr.plugin_instances):
+        for plugin_id, plugin in iteritems(self._plugin_mgr.instances):
 
             daytime_settings = self._plugin_mgr.day_settings[plugin_id]
 

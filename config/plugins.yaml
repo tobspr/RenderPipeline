@@ -98,7 +98,7 @@ overrides:
 
     motion_blur:
         num_camera_samples: 6
-        camera_blur_factor: 0.15556
+        camera_blur_factor: 0.3
         blur_factor: 0.5
         tile_size: 32
         max_blur_radius: 10.0
@@ -113,11 +113,11 @@ overrides:
         border_bias: 0.01943
         use_pcf: True
         filter_sample_count: 32
-        filter_radius: 3.73
-        fixed_bias: 0.02217
+        filter_radius: 2.41
+        fixed_bias: 0.15559
         slope_bias: 0.17
         normal_bias: 0.0
-        use_pcss: True
+        use_pcss: False
         pcss_search_samples: 32
         pcss_penumbra_size: 300.0
         use_distant_shadows: True

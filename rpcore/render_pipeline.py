@@ -84,6 +84,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._mount_mgr = MountManager(self)
         self._settings = {}
         self._pre_showbase_initialized = False
+        self._first_frame = None
         self.set_default_loading_screen()
 
         # Check for the right Panda3D version
@@ -230,6 +231,8 @@ class RenderPipeline(PipelineExtensions, RPObject):
         init_duration = (time.time() - start_time)
         self.debug("Finished initialization in {:3.3f} s".format(init_duration))
 
+        self._first_frame = time.clock()
+
     def _create_managers(self):
         """ Internal method to create all managers and instances"""
         self._tag_mgr = TagStateManager(Globals.base.cam)
@@ -360,6 +363,12 @@ class RenderPipeline(PipelineExtensions, RPObject):
     def _plugin_post_render_update(self, task):
         """ Update task which gets called after the rendering """
         self._plugin_mgr.trigger_hook("post_render_update")
+
+        if self._first_frame is not None:
+            duration = time.clock() - self._first_frame
+            self.debug("Took", round(duration, 3), "s until first frame")
+            self._first_frame = None
+
         return task.cont
 
     def _create_common_defines(self):

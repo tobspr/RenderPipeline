@@ -33,6 +33,7 @@ from rpcore.gui.text import Text
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
 from rpcore.globals import Globals
+from rpcore.loader import RPLoader
 
 class FPSChart(RPObject):
 
@@ -88,8 +89,7 @@ class FPSChart(RPObject):
         self._cshader_node.add_dispatch(250 // 10, 120 // 4, 1)
         self._cshader_np = self._node.attach_new_node(self._cshader_node)
 
-        self._cshader = Shader.load_compute(
-            Shader.SL_GLSL, "/$$rp/shader/fps_chart.compute.glsl")
+        self._cshader = RPLoader.load_shader("/$$rp/shader/fps_chart.compute.glsl")
         self._cshader_np.set_shader(self._cshader)
         self._cshader_np.set_shader_input("DestTex", self._display_tex)
         self._cshader_np.set_shader_input("FPSValues", self._storage_buffer)
@@ -99,8 +99,7 @@ class FPSChart(RPObject):
         self._update_shader_node = ComputeNode("FPSChartUpdateValues")
         self._update_shader_node.add_dispatch(1, 1, 1)
         self._update_shader_np = self._node.attach_new_node(self._update_shader_node)
-        self._ushader = Shader.load_compute(
-            Shader.SL_GLSL, "/$$rp/shader/fps_chart_update.compute.glsl")
+        self._ushader = RPLoader.load_shader("/$$rp/shader/fps_chart_update.compute.glsl")
         self._update_shader_np.set_shader(self._ushader)
         self._update_shader_np.set_shader_input("DestTex", self._storage_buffer)
         self._update_shader_np.set_shader_input("index", self._store_index)

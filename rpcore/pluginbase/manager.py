@@ -34,6 +34,7 @@ from direct.stdpy.file import listdir, isdir, join, open
 
 from rpcore.rpobject import RPObject
 from rpcore.native import NATIVE_CXX_LOADED
+from rpcore.util.generic import profile_cpu
 from rpcore.pluginbase.setting_types import make_setting_from_data
 from rpcore.pluginbase.day_setting_types import make_daysetting_from_data
 
@@ -48,43 +49,29 @@ class PluginManager(RPObject):
         and plugins, call load(). """
         RPObject.__init__(self)
         self._pipeline = pipeline
-        self._instances = {}
-        self._settings = {}
-        self._day_settings = {}
+        self.settings = {}
+        self.day_settings = {}
+        self.instances = {}
         self.enabled_plugins = set()
 
-    @property
-    def plugin_instances(self):
-        """ Returns a dictionary with all plugin ids and their instances """
-        return self._instances
-
-    @property
-    def settings(self):
-        """ Returns all settings as a dictionary """
-        return self._settings
-
-    @property
-    def day_settings(self):
-        """ Returns all time of day settings as a dictionary """
-        return self._day_settings
-
-    @property
-    def num_day_settings(self):
-        """ Returns the amount of day time settings """
-        return sum((len(i) for i in itervalues(self._day_settings)))
+        # Used by the plugin configurator and to only load the required data
+        self.requires_daytime_settings = True
 
     def load(self):
         """ Loads all plugins and their settings, and also constructs instances
         of the main plugin classes for all enabled plugins """
-        self.debug("Loading plugins")
-        self._load_base_settings("/$$rp/rpplugins")
+        self.debug("Loading plugin settings")
+        self.load_base_settings("/$$rp/rpplugins")
         self.load_setting_overrides("/$$rpconfig/plugins.yaml")
-        self.load_daytime_overrides("/$$rpconfig/daytime.yaml")
 
-        for plugin_id in self._settings:
+        if self.requires_daytime_settings:
+            self.load_daytime_overrides("/$$rpconfig/daytime.yaml")
+        
+        self.debug("Creating plugin instances ..")
+        for plugin_id in self.settings:
             handle = self._load_plugin(plugin_id)
             if handle:
-                self._instances[plugin_id] = handle
+                self.instances[plugin_id] = handle
             else:
                 self.disable_plugin(plugin_id)
 
@@ -94,33 +81,33 @@ class PluginManager(RPObject):
         if plugin_id in self.enabled_plugins:
             self.warn("Disabling", plugin_id)
             self.enabled_plugins.remove(plugin_id)
-            for instance in itervalues(self._instances):
+            for instance in itervalues(self.instances):
                 if plugin_id in instance.required_plugins:
                     self.disable_plugin(instance.plugin_id)
-        if plugin_id in self._instances:
-            del self._instances[plugin_id]
+        if plugin_id in self.instances:
+            del self.instances[plugin_id]
 
     def unload(self):
         """ Unloads all plugins """
         self.debug("Unloading all plugins")
-        self._instances = {}
-        self._settings = {}
-        self._day_settings = {}
+        self.instances = {}
+        self.settings = {}
+        self.day_settings = {}
         self.enabled_plugins = set()
 
     def update(self):
         """ Main update method """
         pass
 
-    def _load_base_settings(self, plugin_dir):
+    def load_base_settings(self, plugin_dir):
         """ Loads the base settings of all plugins, even of disabled plugins.
         This is required to verify all overrides. """
         for entry in listdir(plugin_dir):
             abspath = join(plugin_dir, entry)
             if isdir(abspath) and entry not in ("__pycache__", "plugin_prefab"):
-                self._load_plugin_settings(entry, abspath)
+                self.load_plugin_settings(entry, abspath)
 
-    def _load_plugin_settings(self, plugin_id, plugin_pth):
+    def load_plugin_settings(self, plugin_id, plugin_pth):
         """ Internal method to load all settings of a plugin, given its plugin
         id and path to the plugin base directory """
         config_file = join(plugin_pth, "config.yaml")
@@ -129,13 +116,15 @@ class PluginManager(RPObject):
         # returning an empty dictionary, pyyaml returns None
         config["settings"] = config["settings"] or {}
         config["daytime_settings"] = config["daytime_settings"] or {}
+
         settings = collections.OrderedDict(
             [(k, make_setting_from_data(v)) for k, v in config["settings"]])
-        self._settings[plugin_id] = settings
+        self.settings[plugin_id] = settings
 
-        day_settings = collections.OrderedDict(
-            [(k, make_daysetting_from_data(v)) for k, v in config["daytime_settings"]])
-        self._day_settings[plugin_id] = day_settings
+        if self.requires_daytime_settings:
+            daysettings = collections.OrderedDict(
+                [(k, make_daysetting_from_data(v)) for k, v in config["daytime_settings"]])
+            self.day_settings[plugin_id] = daysettings
 
     def load_setting_overrides(self, override_path):
         """ Loads an override file for the settings, which contains values to
@@ -145,15 +134,15 @@ class PluginManager(RPObject):
             self.warn("Failed to load overrides")
             return
         self.enabled_plugins = set(overrides["enabled"] or [])
-        for plugin_id, plugin_settings in iteritems(overrides["overrides"] or {}):
-            if plugin_id not in self._settings:
+        for plugin_id, pluginsettings in iteritems(overrides["overrides"] or {}):
+            if plugin_id not in self.settings:
                 self.warn("Unkown plugin in plugin config:", plugin_id)
                 continue
-            for setting_id, setting_val in iteritems(plugin_settings or {}):
-                if setting_id not in self._settings[plugin_id]:
+            for setting_id, setting_val in iteritems(pluginsettings or {}):
+                if setting_id not in self.settings[plugin_id]:
                     self.warn("Unkown override:", plugin_id, ":", setting_id)
                     continue
-                self._settings[plugin_id][setting_id].set_value(setting_val)
+                self.settings[plugin_id][setting_id].set_value(setting_val)
 
     def load_daytime_overrides(self, override_path):
         """ Loads an override file for the daytime settings, which contains
@@ -164,17 +153,17 @@ class PluginManager(RPObject):
             return
         for plugin_id, settings in iteritems(overrides["control_points"] or {}):
             for setting_id, control_points in iteritems(settings):
-                if setting_id not in self._day_settings[plugin_id]:
+                if setting_id not in self.day_settings[plugin_id]:
                     self.warn("Unkown daytime override:", plugin_id, ":", setting_id)
                     continue
-                self._day_settings[plugin_id][setting_id].set_control_points(control_points)
+                self.day_settings[plugin_id][setting_id].set_control_points(control_points)
 
     def trigger_hook(self, hook_name):
         """ Triggers a given hook on all plugins, effectively calling all
         bound callbacks """
         hook_method = "on_{}".format(hook_name)
         for plugin_id in self.enabled_plugins:
-            plugin_handle = self._instances[plugin_id]
+            plugin_handle = self.instances[plugin_id]
             if hasattr(plugin_handle, hook_method):
                 getattr(plugin_handle, hook_method)()
 
@@ -182,23 +171,17 @@ class PluginManager(RPObject):
         """ Returns whether a plugin is currently enabled and loaded """
         return plugin_id in self.enabled_plugins
 
-    def get_plugin_handle(self, plugin_id):
-        """ Returns a handle to a plugin given its plugin id. Throws an exception
-        if plugin is not loaded, use is_plugin_enabled to check the plugins
-        status first """
-        return self._instances[plugin_id]
-
     def get_setting_handle(self, plugin_id, setting_id):
         """ Returns the handle to a setting """
-        return self._settings[plugin_id][setting_id]
+        return self.settings[plugin_id][setting_id]
 
     def init_defines(self):
         """ Initializes all plugin settings as a define, so they can be queried
         in a shader """
         for plugin_id in self.enabled_plugins:
-            plugin_settings = self._settings[plugin_id]
+            pluginsettings = self.settings[plugin_id]
             self._pipeline.stage_mgr.define("HAVE_PLUGIN_{}".format(plugin_id), 1)
-            for setting_id, setting in iteritems(plugin_settings):
+            for setting_id, setting in iteritems(pluginsettings):
                 # Only store settings which either never change, or trigger
                 # a shader reload when they change
                 if setting.shader_runtime or not setting.runtime:
@@ -230,14 +213,13 @@ class PluginManager(RPObject):
         output += "# Any formatting and comments will be lost\n\n"
         output += "enabled:\n"
         sort_criteria = lambda pid: ("A" if self.is_plugin_enabled(pid) else "B") + pid
-        for plugin_id in sorted(self._settings, key=sort_criteria):
+        for plugin_id in sorted(self.settings, key=sort_criteria):
             output += "   {}- {}\n".format(
                 " # " if plugin_id not in self.enabled_plugins else " ", plugin_id)
-        output += "\n\n"
-        output += "overrides:\n"
-        for plugin_id, plugin_settings in sorted(iteritems(self._settings)):
+        output += "\n\noverrides:\n"
+        for plugin_id, pluginsettings in sorted(iteritems(self.settings)):
             output += " " * 4 + plugin_id + ":\n"
-            for setting_id, setting_handle in iteritems(plugin_settings):
+            for setting_id, setting_handle in iteritems(pluginsettings):
                 output += " " * 8 + "{}: {}\n".format(setting_id, setting_handle.value)
             output += "\n"
         with open(override_file, "w") as handle:
@@ -249,7 +231,7 @@ class PluginManager(RPObject):
         output += "# Instead of editing this file, prefer to use the Time Of Day Editor\n"
         output += "# Any formatting and comments will be lost\n\n"
         output += "control_points:\n"
-        for plugin_id, settings in iteritems(self._day_settings):
+        for plugin_id, settings in iteritems(self.day_settings):
             if settings:
                 output += " " * 4 + plugin_id + ":\n"
                 for setting_id, setting_handle in iteritems(settings):
@@ -266,31 +248,31 @@ class PluginManager(RPObject):
         else:
             self.enabled_plugins.remove(plugin_id)
 
-    def reset_plugin_settings(self, plugin_id):
+    def reset_pluginsettings(self, plugin_id):
         """ Resets all settings of a given plugin """
-        for setting in itervalues(self._settings[plugin_id]):
+        for setting in itervalues(self.settings[plugin_id]):
             setting.value = setting.default
 
     def on_setting_changed(self, plugin_id, setting_id, value):
         """ Callback when a setting got changed. This will update the setting,
         and also call the callback for that setting, in case the plugin defined
         one. """
-        if plugin_id not in self._settings or setting_id not in self._settings[plugin_id]:
+        if plugin_id not in self.settings or setting_id not in self.settings[plugin_id]:
             self.warn("Got invalid setting change:", plugin_id, "/", setting_id)
             return
 
-        setting = self._settings[plugin_id][setting_id]
+        setting = self.settings[plugin_id][setting_id]
         setting.set_value(value)
 
         if plugin_id not in self.enabled_plugins:
             return
 
         if setting.runtime or setting.shader_runtime:
-            update_method = self._instances[plugin_id], "update_" + setting_id
+            update_method = self.instances[plugin_id], "update_" + setting_id
             if hasattr(*update_method):
                 getattr(*update_method)()
 
         if setting.shader_runtime:
             self.init_defines()
             self._pipeline.stage_mgr.write_autoconfig()
-            self._instances[plugin_id].reload_shaders()
+            self.instances[plugin_id].reload_shaders()

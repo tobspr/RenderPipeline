@@ -38,7 +38,6 @@ from panda3d.core import load_prc_file_data, NodePath, Shader, Texture, ShaderAt
 from panda3d.core import PNMImage
 
 from direct.showbase.ShowBase import ShowBase
-from render_target import RenderTarget
 
 class Application(ShowBase):
     def __init__(self):
@@ -69,6 +68,9 @@ class Application(ShowBase):
         img = PNMImage(2048, 2048, 1, 255)
         dest_tex.store(img)
         img.set_num_channels(1)
-        img.write("grain.png")
+
+        tex = Texture()
+        tex.load(img)
+        tex.write("grain.txo.pz")
 
 Application()

@@ -33,6 +33,7 @@ from direct.stdpy.file import isfile, open
 
 from rpcore.image import Image
 from rpcore.rpobject import RPObject
+from rpcore.loader import RPLoader
 
 class DisplayShaderBuilder(object):
 
@@ -61,7 +62,7 @@ class DisplayShaderBuilder(object):
             with open(cache_key, "w") as handle:
                 handle.write(fragment_shader)
 
-        return Shader.load(Shader.SL_GLSL, "/$$rp/shader/default_gui_shader.vert.glsl", cache_key)
+        return RPLoader.load_shader("/$$rp/shader/default_gui_shader.vert.glsl", cache_key)
 
     @classmethod
     def _build_fragment_shader(cls, texture, view_width, view_height):

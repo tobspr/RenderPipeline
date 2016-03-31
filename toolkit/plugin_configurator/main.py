@@ -73,6 +73,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._mount_mgr.mount()
 
         self._plugin_mgr = PluginManager(None)
+        self._plugin_mgr.requires_daytime_settings = False
 
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -148,7 +149,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         assert len(selected_item) == 1
         selected_item = selected_item[0]
         self._current_plugin = selected_item._plugin_id
-        self._current_plugin_instance = self._plugin_mgr.get_plugin_handle(self._current_plugin)
+        self._current_plugin_instance = self._plugin_mgr.instances[self._current_plugin]
         assert(self._current_plugin_instance is not None)
         self._render_current_plugin()
         self._set_settings_visible(True)
@@ -185,7 +186,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             self.lbl_plugin_version.setStyleSheet("background: rgb(200, 50, 50); padding: 5px; color: #eee; padding-left: 3px; border-radius: 3px;")
         else:
             self.lbl_plugin_version.setStyleSheet("color: #4f8027;")
-
 
         self._render_current_settings()
 
@@ -300,25 +300,31 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         for obj in bound_objs:
             obj.setValue(value * 100000.0 if setting_type == "float" else value)
 
-
     def _choose_path(self, setting_id, setting_handle, bound_objs):
         """ Shows a file chooser to show an path from """
 
         this_dir = os.path.dirname(os.path.realpath(__file__))
         plugin_dir = os.path.join(this_dir, "../../rpplugins/" + self._current_plugin,"resources")
+        plugin_dir = os.path.abspath(plugin_dir)
         search_dir = os.path.join(plugin_dir, setting_handle.base_path)
 
+        print("Plugin dir =", plugin_dir)
+        print("Search dir =", search_dir)
+
+        current_file = setting_handle.value.replace("\\", "/").split("/")[-1]
+        print("Current file =", current_file)
         file_dlg = QtGui.QFileDialog(self, "Choose File ..", search_dir, setting_handle.file_type)
-        file_dlg.selectFile(setting_handle.value.replace("\\", "/").split("/")[-1])
+        file_dlg.selectFile(current_file)
         # file_dlg.setViewMode(QtGui.QFileDialog.Detail)
 
         if file_dlg.exec_():
             filename = file_dlg.selectedFiles()
             filename = filename[-1]
-            print(filename)
+            print("QT selected files returned:", filename)
 
             filename = os.path.relpath(str(filename), plugin_dir)
             filename = filename.replace("\\", "/")
+            print("Relative path is", filename)
             self._do_update_setting(setting_id, filename)
 
             display_file = filename.split("/")[-1]
@@ -437,11 +443,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         # Plugins are all plugins in the plugins directory
         self._plugin_mgr.unload()
         self._plugin_mgr.load()
-        plugins = self._plugin_mgr.plugin_instances
 
         self.lst_plugins.clear()
 
-        for plugin_id, instance in sorted(iteritems(plugins)):
+        for plugin_id, instance in sorted(iteritems(self._plugin_mgr.instances)):
             item = QtGui.QListWidgetItem()
             item.setText(" " + instance.name)
 

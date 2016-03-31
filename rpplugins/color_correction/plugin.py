@@ -28,7 +28,7 @@ from panda3d.core import SamplerState
 
 # Load the plugin api
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.util.generic import load_sliced_3d_texture
+from rpcore.loader import RPLoader
 
 from .color_correction_stage import ColorCorrectionStage
 from .auto_exposure_stage import AutoExposureStage
@@ -60,11 +60,12 @@ class Plugin(BasePlugin):
 
     def on_pipeline_created(self):
         self._load_lut()
+        self._load_grain()
 
     def _load_lut(self):
         """ Loads the color correction lookup table (LUT) """
         lut_path = self.get_resource(self.get_setting("color_lut"))
-        lut = load_sliced_3d_texture(lut_path, 64)
+        lut = RPLoader.load_sliced_3d_texture(lut_path, 64)
         lut.set_wrap_u(SamplerState.WM_clamp)
         lut.set_wrap_v(SamplerState.WM_clamp)
         lut.set_wrap_w(SamplerState.WM_clamp)
@@ -73,6 +74,17 @@ class Plugin(BasePlugin):
         lut.set_anisotropic_degree(0)
         self._tonemapping_stage.set_shader_input("ColorLUT", lut)
 
+    def _load_grain(self):
+        grain_tex = RPLoader.load_texture(
+            "/$$rp/data/film_grain/grain.txo")
+        grain_tex.set_minfilter(SamplerState.FT_linear)
+        grain_tex.set_magfilter(SamplerState.FT_linear)
+        grain_tex.set_wrap_u(SamplerState.WM_repeat)
+        grain_tex.set_wrap_v(SamplerState.WM_repeat)
+        grain_tex.set_anisotropic_degree(0)
+        self._stage.set_shader_input("PrecomputedGrain", grain_tex)
+
     def update_color_lut(self):
         self.debug("Updating color lut ..")
         self._load_lut()
+

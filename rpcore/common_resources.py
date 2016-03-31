@@ -35,6 +35,7 @@ from direct.stdpy.file import open
 from rpcore.image import Image
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
+from rpcore.loader import RPLoader
 
 from rpcore.util.shader_ubo import ShaderUBO
 
@@ -55,7 +56,7 @@ class CommonResources(RPObject):
     def _load_fonts(self):
         """ Loads the default font used for rendering and assigns it to
         Globals.font for further usage """
-        Globals.font = Globals.loader.load_font("/$$rp/data/font/roboto-medium.ttf")
+        Globals.font = RPLoader.load_font("/$$rp/data/font/roboto-medium.ttf")
         Globals.font.set_pixels_per_unit(35)
         Globals.font.set_poly_margin(0.0)
         Globals.font.set_texture_margin(1)
@@ -102,7 +103,6 @@ class CommonResources(RPObject):
         """ Loads commonly used textures and makes them available via the
         stage manager """
         self._load_environment_cubemap()
-        self._load_precomputed_grain()
         self._load_prefilter_brdf()
         self._load_skydome()
         self._load_noise_tex()
@@ -110,8 +110,8 @@ class CommonResources(RPObject):
     def _load_environment_cubemap(self):
         """ Loads the default cubemap used for the environment, which is used
         when no other environment data is available """
-        envmap = Globals.loader.load_cube_map(
-            "/$$rp/data/default_cubemap/filtered/#-#.png", readMipmaps=True)
+        envmap = RPLoader.load_cube_map(
+            "/$$rp/data/default_cubemap/cubemap.txo", read_mipmaps=True)
         envmap.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         # envmap.set_format(Image.F_rgba16)
         envmap.set_magfilter(SamplerState.FT_linear)
@@ -129,9 +129,9 @@ class CommonResources(RPObject):
         ]
 
         for config in luts:
-            loader_method = Globals.loader.load_texture
+            loader_method = RPLoader.load_texture
             if "#" in config["src"]:
-                loader_method = Globals.loader.load_3d_texture
+                loader_method = RPLoader.load_3d_texture
 
             brdf_tex = loader_method("/$$rp/data/environment_brdf/{}".format(config["src"]))
             brdf_tex.set_minfilter(SamplerState.FT_linear)
@@ -142,19 +142,9 @@ class CommonResources(RPObject):
             brdf_tex.set_anisotropic_degree(0)
             self._pipeline.stage_mgr.add_input(config["input"], brdf_tex)
 
-    def _load_precomputed_grain(self):
-        grain_tex = Globals.loader.load_texture(
-            "/$$rp/data/film_grain/grain.png")
-        grain_tex.set_minfilter(SamplerState.FT_linear)
-        grain_tex.set_magfilter(SamplerState.FT_linear)
-        grain_tex.set_wrap_u(SamplerState.WM_repeat)
-        grain_tex.set_wrap_v(SamplerState.WM_repeat)
-        grain_tex.set_anisotropic_degree(0)
-        self._pipeline.stage_mgr.add_input("PrecomputedGrain", grain_tex)
-
     def _load_skydome(self):
         """ Loads the skydome """
-        skydome = Globals.loader.load_texture("/$$rp/data/builtin_models/skybox/skybox3.jpg")
+        skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.txo")
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)
@@ -170,7 +160,7 @@ class CommonResources(RPObject):
         self._pipeline.stage_mgr.add_input("Noise4x4", tex)
 
     def load_default_skybox(self):
-        skybox = Globals.loader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")
+        skybox = RPLoader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")
         return skybox
 
     def update(self):
@@ -219,7 +209,7 @@ class CommonResources(RPObject):
 
         max_clip_length = 1
         if self._pipeline.plugin_mgr.is_plugin_enabled("smaa"):
-            max_clip_length = self._pipeline.plugin_mgr.plugin_instances["smaa"].history_length
+            max_clip_length = self._pipeline.plugin_mgr.instances["smaa"].history_length
 
         update("temporal_index", Globals.clock.get_frame_count() % max_clip_length)
         update("frame_index", Globals.clock.get_frame_count())

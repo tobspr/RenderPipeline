@@ -34,6 +34,7 @@ from rpcore.gui.text import Text
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
 from rpcore.globals import Globals
+from rpcore.loader import RPLoader
 
 class ExposureWidget(RPObject):
 
@@ -91,8 +92,7 @@ class ExposureWidget(RPObject):
         self._node.show()
 
         exposure_tex = stage_mgr.get_pipe("Exposure")
-        self._cshader = Shader.load_compute(
-            Shader.SL_GLSL, "/$$rp/shader/visualize_exposure.compute.glsl")
+        self._cshader = RPLoader.load_shader("/$$rp/shader/visualize_exposure.compute.glsl")
         self._cshader_np.set_shader(self._cshader)
         self._cshader_np.set_shader_input("DestTex", self._storage_tex)
         self._cshader_np.set_shader_input("ExposureTex", exposure_tex)

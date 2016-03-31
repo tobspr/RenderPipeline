@@ -1227,11 +1227,6 @@ outline: 0;
        <height>41</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>-1</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true">color: #777; border: 0; font-size: 11px;</string>
      </property>

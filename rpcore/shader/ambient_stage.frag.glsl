@@ -190,8 +190,9 @@ void main() {
         vec4 sslr_spec = textureLod(SSLRSpecular, texcoord, 0);
 
         // Fade out SSR on high roughness values
-        sslr_spec *= 1.0 - saturate(GET_SETTING(sslr, roughness_fade) * m.linear_roughness);
-        sslr_spec *= GET_SETTING(sslr, effect_scale);
+        // sslr_spec *= 1.0 - saturate(GET_SETTING(sslr, roughness_fade) * m.linear_roughness);
+        // sslr_spec *= GET_SETTING(sslr, effect_scale);
+
 
         ibl_specular = ibl_specular * (1 - sslr_spec.w) + sslr_spec.xyz;
     #endif

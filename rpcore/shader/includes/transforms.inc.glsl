@@ -66,14 +66,12 @@ float get_linear_z_from_z(float z) {
   return get_linear_z_from_z(z, CAMERA_NEAR, CAMERA_FAR);
 }
 
-
 // Computes the Z component from a position in NDC space
 float get_z_from_ndc(vec3 ndc_pos) {
   // return NDC_C / (NDC_A + (ndc_pos.z * NDC_B));
   // return NDC_E / (NDC_A - ndc_pos.z * NDC_D);
   return get_linear_z_from_z(ndc_pos.z);
 }
-
 
 // Computes linear Z from a given Z value, and near and far plane, for orthographic projections
 float get_linear_z_from_z_ortographic(float z, float near, float far) {

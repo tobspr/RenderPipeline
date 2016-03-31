@@ -48,13 +48,13 @@ class Application(ShowBase):
 
         base_path = realpath(dirname(__file__))
         os.chdir(base_path)
-        filter_dir = join(base_path, "filtered/")
+        filter_dir = join(base_path, "tmp/")
         if isdir(filter_dir):
             shutil.rmtree(filter_dir)
         os.makedirs(filter_dir)
 
         cubemap = self.loader.loadCubeMap(Filename.from_os_specific(join(base_path, "source/#.jpg")))
-        mipmap, size = -1, 1024 * 2
+        mipmap, size = -1, 512
 
         cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
 
@@ -84,5 +84,15 @@ class Application(ShowBase):
 
             print(" Writing data ..")
             dest_cubemap.write(join(filter_dir, "{}-#.png".format(mipmap)), 0, 0, True, False)
+
+
+        print("Reading in data back in ..")
+        tex = self.loader.loadCubeMap(Filename.from_os_specific(join(base_path, "tmp/#-#.png")), readMipmaps="True")
+
+        print("Writing txo ..")
+        tex.write("cubemap.txo.pz")
+
+        shutil.rmtree(join(base_path, "tmp"))
+
 
 Application()

@@ -30,6 +30,7 @@ from rplibs.six import itervalues
 
 from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
+from rpcore.loader import RPLoader
 
 class RenderStage(RPObject):
 
@@ -120,7 +121,7 @@ class RenderStage(RPObject):
         if len(args) == 1:
             path_args = ["/$$rp/shader/default_post_process.vert.glsl"] + path_args
 
-        return Shader.load(Shader.SL_GLSL, *path_args)
+        return RPLoader.load_shader(*path_args)
 
     def _get_plugin_id(self):
         """ Returns the id of the plugin which created this stage. This is done

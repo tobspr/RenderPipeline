@@ -32,6 +32,7 @@ from rplibs.six.moves import range
 from rpcore.gui.sprite import Sprite
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
+from rpcore.loader import RPLoader
 
 class EmptyLoadingScreen(object):
 
@@ -55,11 +56,8 @@ class LoadingScreen(RPObject):
 
     def create(self):
         """ Creates the gui components """
-
         screen_w, screen_h = Globals.base.win.get_x_size(), Globals.base.win.get_y_size()
-
-        self.fullscreen_node = Globals.base.pixel2dp.attach_new_node(
-            "PipelineDebugger")
+        self.fullscreen_node = Globals.base.pixel2dp.attach_new_node("LoadingScreen")
         self.fullscreen_node.set_bin("fixed", 10)
         self.fullscreen_node.set_depth_test(False)
 
@@ -68,47 +66,14 @@ class LoadingScreen(RPObject):
         scale = max(scale_w, scale_h)
 
         self.fullscreen_bg = Sprite(
-            image="/$$rp/data/gui/loading_screen_bg.png",
+            image="/$$rp/data/gui/loading_screen_bg.txo",
             x=(screen_w-1920.0*scale)//2, y=(screen_h-1080.0*scale)//2, w=int(1920 * scale),
             h=int(1080 * scale), parent=self.fullscreen_node, near_filter=False)
-
-        self.loading_images = Globals.loader.load_texture("/$$rp/data/gui/loading_screen_anim.png")
-        self.loading_bg = Sprite(
-            parent=self.fullscreen_node, image=self.loading_images,
-            x=(screen_w-420*scale)//2, y=(screen_h-420*scale)//2 + 50,
-            w=420*scale, h=420*scale)
-
-        loading_shader = Shader.load(
-            Shader.SL_GLSL,
-            "/$$rp/rpcore/shader/default_gui_shader.vert.glsl",
-            "/$$rp/rpcore/shader/loading_anim.frag.glsl")
-        self.loading_bg.node.set_shader(loading_shader)
-        self.loading_bg.set_shader_input("frameIndex", 0)
 
         for _ in range(2):
             Globals.base.graphicsEngine.render_frame()
 
-        self.update_task = Globals.base.taskMgr.add(self.update, "updateLoadingScreen")
-
-    def update(self, task=None):
-        """ Updates the loading screen """
-        anim_duration = 4.32
-        self.loading_bg.set_shader_input(
-            "frameIndex", int(Globals.clock.get_frame_time() / anim_duration * 144.0) % 144)
-        if task:
-            return task.cont
-
     def remove(self):
         """ Removes the loading screen """
-        Globals.base.taskMgr.doMethodLater(4.0, self.cleanup, "cleanupLoadingScreen")
-
-    def cleanup(self, task):
-        """ Internal method to cleanup the loading screen"""
-        Globals.base.taskMgr.remove(self.update_task)
-
-        # Free the used resources
         self.fullscreen_bg.node["image"].get_texture().release_all()
-        self.loading_bg.node["image"].get_texture().release_all()
         self.fullscreen_node.remove_node()
-
-        return task.done

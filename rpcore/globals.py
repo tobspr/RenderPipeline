@@ -39,7 +39,6 @@ class Globals(object):
     def load(showbase):
         """ Loads the globals from a given showbase """
         Globals.base = showbase
-        Globals.loader = showbase.loader
         Globals.render = showbase.render
         Globals.clock = showbase.taskMgr.globalClock
         Globals.font = None

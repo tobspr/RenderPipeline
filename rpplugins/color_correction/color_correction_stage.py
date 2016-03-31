@@ -28,7 +28,7 @@ from rpcore.render_stage import RenderStage
 
 class ColorCorrectionStage(RenderStage):
 
-    required_inputs = ["PrecomputedGrain"]
+    required_inputs = []
     required_pipes = ["ShadedScene"]
 
     @property
