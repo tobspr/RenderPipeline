@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from rplibs.six import iteritems
+from rplibs.six import iteritems, string_types
 from rpcore.rpobject import RPObject
 
 __all__ = ["make_setting_from_data"]
@@ -122,7 +122,7 @@ class BoolType(BaseType):
         self.value = self.default
 
     def set_value(self, value):
-        if isinstance(value, (str, unicode)):
+        if isinstance(value, string_types):
             self.value = str(value.lower()) in ("true", "1")
         else:
             self.value = bool(value)
