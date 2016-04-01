@@ -96,7 +96,7 @@ float brdf_distribution_beckmann(float NxH, float roughness) {
 float brdf_distribution_ggx(float NxH , float roughness) {
     float nxh_sq = NxH * NxH;
     float tan_sq = (1 - nxh_sq) / nxh_sq;
-    float f = roughness / max(1e-4, nxh_sq * (roughness * roughness + tan_sq) );
+    float f = roughness / max(1e-6, nxh_sq * (roughness * roughness + tan_sq) );
     return ONE_BY_PI * f * f;
 }
 
@@ -233,16 +233,18 @@ vec3 brdf_fresnel_conductor_approx(float cos_theta, vec3 n, vec3 k) {
 float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) {
 
     // Choose one:
-    // return brdf_lambert();
-    return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
+    return brdf_lambert();
 
+    // XXX: When using this brdf, stuff appears very dark - most likely
+    // there is an error somewhere in the brdf implementationd
+    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
 }
 
 
 // Distribution
 float brdf_distribution(float NxH, float roughness)
 {
-    NxH = max(1e-4, NxH);
+    NxH = max(1e-5, NxH);
 
     // Choose one:
     // return brdf_distribution_blinn_phong(NxH, roughness);

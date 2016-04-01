@@ -44,7 +44,7 @@ out vec3 result;
 
 const int num_steps = GET_SETTING(sslr, trace_steps);
 const float hit_tolerance_ws = 0.0001 * GET_SETTING(sslr, hit_tolerance);
-const float hit_tolerance_backface = 0.0005;
+const float hit_tolerance_backface = 0.0002;
 
 bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
 
@@ -183,7 +183,7 @@ void main()
     #endif
 
     vec3 ray_step = (ray_end_screen - ray_start_screen) / num_steps;
-    ray_pos += 6.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0) * GET_SETTING(sslr, intial_bias);
+    ray_pos += 15.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0) * GET_SETTING(sslr, intial_bias);
 
     vec2 intersection = vec2(-1);
 

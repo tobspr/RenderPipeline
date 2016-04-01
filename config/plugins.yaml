@@ -4,20 +4,20 @@
 # Any formatting and comments will be lost
 
 enabled:
-    - ao
-    - bloom
     - color_correction
-    - env_probes
-    - motion_blur
+    # - env_probes
     - pssm
     - scattering
-    - smaa
     - sslr
-    - volumetrics
+    # - ao
+    # - bloom
     # - clouds
     # - dof
     # - fxaa
+    # - motion_blur
     # - skin_shading
+    # - smaa
+    # - volumetrics
     # - vxgi
 
 
@@ -68,7 +68,7 @@ overrides:
         uc2t_reference_white: 11.2
         vignette_strength: 0.6778
         film_grain_strength: 0.0
-        color_lut: film_luts/kodak_gold_200.png
+        color_lut: film_luts/default_lut.png
         use_chromatic_aberration: True
         chromatic_aberration_strength: 0.3187
         chromatic_aberration_samples: 2

@@ -33,6 +33,7 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 
+uniform sampler2D VelocityTex;
 uniform sampler2D CombinedVelocity;
 uniform writeonly image2D RESTRICT DestTex;
 uniform sampler2D Previous_PostAmbientScene;
@@ -62,18 +63,22 @@ void main() {
     fade = 0.0;
   }
 
-  float last_depth = textureLod(Previous_SceneDepth, texcoord, 0).x;
+  last_coord = truncate_coordinate(last_coord);
+
   vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
+  float last_depth = textureLod(Previous_SceneDepth, last_coord, 0).x;
 
   // XXX: inverse is totally slow! Instead pass it as a main scene data
-  vec3 last_pos = calculate_surface_pos(last_depth, last_coord, inverse(MainSceneData.last_view_proj_mat_no_jitter));
+  vec3 last_pos = calculate_surface_pos(last_depth, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
 
-  if (distance(curr_pos, last_pos) > 1.0) {
-    // XXX
-  //   fade = 0.0;
+  if (distance(curr_pos, last_pos) > 0.3) {
+    fade = 0.0;
   }
 
-  last_coord = truncate_coordinate(last_coord);
   vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
+
+  intersected_color = clamp(intersected_color, 0.0, 35.0);
+  // intersected_color = last_pos;
+
   imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(intersected_color, 1) * fade);
 }

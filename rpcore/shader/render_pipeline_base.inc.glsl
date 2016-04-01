@@ -115,4 +115,6 @@
 #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
 #define MINIMUM_ROUGHNESS 0.01
 
+#define SUN_VECTOR_HORIZON -0.2
+
 #pragma include "includes/common_functions.inc.glsl"

@@ -62,7 +62,7 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
 
 
     // shading_result += basecolor * ( diff_env);
-    shading_result += basecolor;
+    shading_result += basecolor * 0.5;
 
     // Fresnel term
     // shading_result += 0.16 * (0.005 + diff_env) * 0.2;
@@ -77,13 +77,13 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
 
 // Applies the sun shading, and if the pssm plugin is activated, also the sun shadows
 vec3 get_sun_shading(MaterialBaseInput mInput, vec3 basecolor) {
+
      #if HAVE_PLUGIN(scattering)
 
         vec3 shading_result = vec3(0);
 
         vec3 sun_vector = get_sun_vector();
         vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
-
 
         // Get sun shadow term
         #if HAVE_PLUGIN(pssm)
@@ -110,9 +110,9 @@ vec3 get_sun_shading(MaterialBaseInput mInput, vec3 basecolor) {
             const float shadow_term = 1.0;
         #endif
 
-        if (sun_vector.z >= -0.2) {
-            shading_result += max(0.0, dot(sun_vector, vOutput.normal))
-                              * sun_color * shadow_term * basecolor * (1 - mInput.metallic);
+        if (sun_vector.z >= SUN_VECTOR_HORIZON) {
+            float NxL = saturate(dot(sun_vector, vOutput.normal));
+            shading_result += NxL * sun_color * shadow_term * basecolor / M_PI;
         }
 
         return shading_result;

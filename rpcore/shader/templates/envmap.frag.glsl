@@ -61,7 +61,7 @@ void main() {
     vec3 ambient = get_forward_ambient(mInput, basecolor);
     vec3 sun_lighting = get_sun_shading(mInput, basecolor);
     vec3 lights = get_forward_light_shading(basecolor);
-
+ 
     result_specular = vec4(ambient + lights + sun_lighting, 1);
     result_diffuse = vec4(ambient + lights + sun_lighting, 1);
 }

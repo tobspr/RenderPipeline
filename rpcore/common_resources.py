@@ -69,6 +69,7 @@ class CommonResources(RPObject):
         self._input_ubo.register_pta("camera_pos", "vec3")
         self._input_ubo.register_pta("view_proj_mat_no_jitter", "mat4")
         self._input_ubo.register_pta("last_view_proj_mat_no_jitter", "mat4")
+        self._input_ubo.register_pta("last_inv_view_proj_mat_no_jitter", "mat4")
         self._input_ubo.register_pta("view_mat_z_up", "mat4")
         self._input_ubo.register_pta("proj_mat", "mat4")
         self._input_ubo.register_pta("inv_proj_mat", "mat4")
@@ -181,7 +182,14 @@ class CommonResources(RPObject):
         update("view_mat_billboard", view_mat_billboard)
 
         update("camera_pos", self._showbase.camera.get_pos(Globals.render))
-        update("last_view_proj_mat_no_jitter", self._input_ubo.get_input("view_proj_mat_no_jitter"))
+
+        # Compute last view projection mat
+        curr_vp = self._input_ubo.get_input("view_proj_mat_no_jitter")
+        update("last_view_proj_mat_no_jitter", curr_vp)
+        curr_vp = Mat4(curr_vp)
+        curr_vp.invert_in_place()
+        update("last_inv_view_proj_mat_no_jitter", curr_vp)
+
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
 
         # Set the projection matrix as an input, but convert it to the correct

@@ -92,10 +92,10 @@ void main() {
     Material m = unpack_material(GBuffer);
 
     // Early out, different optimizations
-    bool early_out = is_skybox(m) || sun_vector.z < -0.02;
+    bool early_out = is_skybox(m) || sun_vector.z < SUN_VECTOR_HORIZON;
     early_out = early_out ||
         (m.shading_model != SHADING_MODEL_FOLIAGE &&
-        m.shading_model != SHADING_MODEL_SKIN &&
+        /* m.shading_model != SHADING_MODEL_SKIN && */ // xxx
             dot(m.normal, sun_vector) <= 1e-7);
 
     if (early_out) {
@@ -325,7 +325,6 @@ void main() {
         }
     #endif
 
-
     // Compute the sun lighting
 
     vec3 v = normalize(MainSceneData.camera_pos - m.position);
@@ -340,9 +339,7 @@ void main() {
 
     lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, transmittance);
 
-
     float foliage_factor = m.shading_model == SHADING_MODEL_FOLIAGE ? 1.0 : 0.0;
-    lighting_result += pow(saturate(dot(l, -v)), 4.0) * foliage_factor * shadow_factor * sun_color * m.basecolor * 1.0;
 
     #if DEBUG_MODE
         lighting_result *= 0;
@@ -353,5 +350,5 @@ void main() {
         lighting_result = saturate(shadow_factor+0.5) * vec3(factor, 1 - factor, 0);
     #endif
 
-    result = scene_color * 1 + vec4(lighting_result, 0);
+    result = max(vec4(0), scene_color) * 1 + vec4(lighting_result, 0);
 }

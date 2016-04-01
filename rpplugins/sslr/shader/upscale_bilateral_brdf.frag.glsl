@@ -122,15 +122,17 @@ void main() {
 
 
             // float mipmap = saturate(dot(reflected_dir, m.normal)) * 7.0;
-            float mipmap = sqrt(roughness) * 5.0 * (distance_to_intersection * 0.4);
+            float mipmap = sqrt(roughness) * 2.0 * (distance_to_intersection * 0.4);
             mipmap = clamp(mipmap, 0.0, 5.0);
+
+            mipmap = 0; // xxx
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
 
             color_sample *= source_sample.z;
 
             // Fade out samples at the screen border
-            const float border_fade = 0.03;
+            const float border_fade = 0.01;
             float fade = 1.0;
             fade *= saturate(source_sample.x / border_fade) * saturate(source_sample.y / border_fade);
             fade *= saturate((1-source_sample.x) / border_fade) * saturate((1-source_sample.y) / border_fade);

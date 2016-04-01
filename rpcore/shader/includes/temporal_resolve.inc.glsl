@@ -25,7 +25,11 @@
  */
 
 #pragma once
+
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "includes/color_spaces.inc.glsl"
+#pragma include "includes/transforms.inc.glsl"
+#pragma include "includes/gbuffer.inc.glsl"
 
 // Maximum color distance
 #ifndef RS_MAX_CLIP_DIST
@@ -36,12 +40,6 @@
 #ifndef RS_DISTANCE_SCALE
    #define RS_DISTANCE_SCALE 10.0
 #endif
-
-// Whether to read a seperate texture containin world space positions
-#ifndef RS_WEIGHT_BY_VELOCITY
-  #define RS_WEIGHT_BY_VELOCITY 0
-#endif
-
 
 // How long to keep good pixels
 #ifndef RS_KEEP_GOOD_DURATION
@@ -99,13 +97,6 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
 
     if (neighbor_diff >= max_difference)
         blend_weight = 0.0;
-
-    #if RS_WEIGHT_BY_VELOCITY
-
-
-        blend_weight *= 1.0 - saturate(distance(curr_coord, last_coord) * WINDOW_WIDTH / RS_MAX_VELOCITY_LENGTH);
-
-    #endif
 
     float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) * RS_DISTANCE_SCALE );
 

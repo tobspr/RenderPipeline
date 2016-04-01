@@ -39,22 +39,35 @@ uniform sampler2D Previous_SceneDepth;
 
 // Copies the reflection velocity vector
 
-out vec4 result;
+out vec2 velocity;
 
 void main() {
   vec2 texcoord = get_texcoord();
-  // vec2 velocity = texture(CombinedVelocity, texcoord).xy;
-  // vec2 last_coord = texcoord + velocity;
-
   vec3 best_result = vec3(0);
+  float best_score = 0.0;
 
-  // Take intersection with most weight
-  const int kernel_size = 1;
-  for (int i = -kernel_size; i <= kernel_size; ++i) {
-    for (int j = -kernel_size; j <= kernel_size; ++j) {
-      vec3 trace_result = texture(TraceResult, truncate_coordinate(texcoord + vec2(i, j) * 2.0 / SCREEN_SIZE)).xyz;
-      if (trace_result.z > best_result.z) {
+  ivec2 coord = ivec2(gl_FragCoord.xy);
+  ivec2 bil_start_coord = get_bilateral_coord(coord);
+
+  float mid_depth = get_depth_at(texcoord);
+
+  // Take intersection closest to the current pixel depth
+  const int kernel_size = 0;
+
+  for (int i = -kernel_size; i < 2 + kernel_size; ++i) {
+    for (int j = -kernel_size; j < 2 + kernel_size; ++j) {
+
+      ivec2 source_coord = bil_start_coord + ivec2(i, j);
+      ivec2 screen_coord = source_coord * 2;
+
+      vec3 trace_result = texelFetch(TraceResult, source_coord, 0).xyz;
+      float trace_depth = get_depth_at(screen_coord);
+      float trace_score = max(0.0, 1.0 - 10.0 * abs(trace_depth - mid_depth));
+      trace_score *= trace_result.z;
+
+      if (trace_score > best_score) {
         best_result = trace_result;
+        best_score = trace_score;
       }
     }
   }
@@ -63,6 +76,17 @@ void main() {
     best_result.xy = texcoord;
   }
 
-  vec2 velocity = texture(CombinedVelocity, best_result.xy).xy;
-  result = vec4(velocity, 0, 1);
+  best_result.xy = truncate_coordinate(best_result.xy); // xxx
+
+  // Find depth of intersection
+  float intersection_depth = get_depth_at(best_result.xy);
+
+  // Reconstruct last frame texcoord
+  vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0,1.0 / ASPECT_RATIO);
+  vec3 pos = calculate_surface_pos(intersection_depth, texcoord - film_offset_bias);
+  vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
+  vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
+
+
+  velocity = last_coord - texcoord;
 }

@@ -38,11 +38,14 @@ class SSLRStage(RenderStage):
     required_inputs = []
     required_pipes = ["ShadedScene", "CombinedVelocity", "GBuffer",
                       "DownscaledDepth", "PreviousFrame::PostAmbientScene",
-                      "PreviousFrame::SSLRSpecular", "PreviousFrame::SceneDepth"]
+                      "PreviousFrame::SSLRSpecular", "PreviousFrame::SceneDepth",
+                      "PreviousFrame::SSLRTraceResult"]
 
     @property
     def produced_pipes(self):
-        return {"SSLRSpecular": self.target_resolve.color_tex }
+        return {
+            "SSLRSpecular": self.target_resolve.color_tex,
+            "SSLRTraceResult": self.target_upscale.aux_tex[0] }
 
     def create(self):
         x_size, y_size = Globals.resolution.x, Globals.resolution.y
@@ -55,6 +58,11 @@ class SSLRStage(RenderStage):
         self.target.color_tex.set_minfilter(SamplerState.FT_nearest)
         self.target.color_tex.set_magfilter(SamplerState.FT_nearest)
 
+        self.target_velocity = self.create_target("ReflectionVelocity")
+        self.target_velocity.add_color_attachment(bits=(16, 16, 0, 0))
+        self.target_velocity.prepare_buffer()
+        self.target_velocity.set_shader_input("TraceResult", self.target.color_tex)
+
         self.mipchain = Image.create_2d("SSLRMipchain", x_size, y_size, "RGBA16")
         self.mipchain.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.mipchain.set_wrap_u(SamplerState.WM_clamp)
@@ -65,6 +73,7 @@ class SSLRStage(RenderStage):
         self.target_copy_lighting = self.create_target("CopyLighting")
         self.target_copy_lighting.prepare_buffer()
         self.target_copy_lighting.set_shader_input("DestTex", self.mipchain, False, True, -1, 0)
+        self.target_copy_lighting.set_shader_input("VelocityTex", self.target_velocity.color_tex)
 
         self.blur_targets = []
         for i in range(min(7, self.mipchain.get_expected_num_mipmap_levels() - 1)):
@@ -78,7 +87,7 @@ class SSLRStage(RenderStage):
 
         self.noise_reduce_targets = []
         curr_tex = self.target.color_tex
-        for i in range(1):
+        for i in range(0):
             target_remove_noise = self.create_target("RemoveNoise")
             target_remove_noise.size = -2
             target_remove_noise.add_color_attachment(bits=16, alpha=True)
@@ -99,6 +108,7 @@ class SSLRStage(RenderStage):
 
         self.target_upscale = self.create_target("UpscaleSSLR")
         self.target_upscale.add_color_attachment(bits=16, alpha=True)
+        self.target_upscale.add_aux_attachment(bits=16)
         self.target_upscale.prepare_buffer()
         self.target_upscale.set_shader_input("SourceTex", curr_tex)
         self.target_upscale.set_shader_input("MipChain", self.mipchain)
@@ -107,11 +117,14 @@ class SSLRStage(RenderStage):
         self.target_resolve.add_color_attachment(bits=16, alpha=True)
         self.target_resolve.prepare_buffer()
         self.target_resolve.set_shader_input("CurrentTex", self.target_upscale.color_tex)
+        self.target_resolve.set_shader_input("VelocityTex", self.target_velocity.color_tex)
+        self.target_resolve.set_shader_input("CurrentTrace", self.target_upscale.aux_tex[0])
 
         AmbientStage.required_pipes.append("SSLRSpecular")
 
     def set_shaders(self):
         self.target.shader = self.load_plugin_shader("sslr_trace.frag.glsl")
+        self.target_velocity.shader = self.load_plugin_shader("reflection_velocity.frag.glsl")
         self.target_copy_lighting.shader = self.load_plugin_shader("copy_lighting.frag.glsl")
         self.target_upscale.shader = self.load_plugin_shader("upscale_bilateral_brdf.frag.glsl")
         self.target_resolve.shader = self.load_plugin_shader("resolve_sslr.frag.glsl")

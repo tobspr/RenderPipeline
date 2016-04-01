@@ -115,7 +115,7 @@ class Plugin(BasePlugin):
     def on_pre_render_update(self):
         sun_vector = self.get_plugin_instance("scattering").sun_vector
 
-        if sun_vector.z < -0.1:
+        if sun_vector.z < -0.2:
             self.shadow_stage.set_active(False)
             self.scene_stage.set_active(False)
             self.pssm_stage.set_render_shadows(False)
