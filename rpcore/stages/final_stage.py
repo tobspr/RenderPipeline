@@ -56,7 +56,7 @@ class FinalStage(RenderStage):
         self.present_target.present_on_screen()
         self.present_target.set_shader_input("SourceTex", self.target.color_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_shader("final_stage.frag.glsl")
         self.present_target.shader = self.load_shader("final_present_stage.frag.glsl")
 

@@ -340,6 +340,7 @@ void main() {
     lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, transmittance);
 
     float foliage_factor = m.shading_model == SHADING_MODEL_FOLIAGE ? 1.0 : 0.0;
+    lighting_result += foliage_factor * shadow_factor * sun_color * m.basecolor * 0.1;
 
     #if DEBUG_MODE
         lighting_result *= 0;

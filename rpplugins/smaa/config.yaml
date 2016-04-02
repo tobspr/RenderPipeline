@@ -24,4 +24,27 @@ settings: !!omap
             better quality. However, on low-end systems, it might be desireable
             to turn this value down.
 
+    - history_length:
+        display_if: { use_reprojection: True }
+        type: int
+        range: [1, 16]
+        default: 8
+        shader_runtime: true
+        label: History Length
+        description: >
+            History buffer size. This controls how long pixels will stay
+            in the history buffer, greater values lead to smoother results
+            but also might produce more artifacts.
+
+    - jitter_amount:
+        display_if: { use_reprojection: True }
+        type: float
+        range: [0.1, 2.0]
+        default: 1.0
+        runtime: true
+        label: Jitter Amount
+        description: >
+            Controls how much each pixel is jittered, higher values might
+            preserve better details but also introduce flickering. 
+
 daytime_settings:

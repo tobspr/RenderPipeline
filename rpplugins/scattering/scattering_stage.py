@@ -44,5 +44,5 @@ class ScatteringStage(RenderStage):
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.prepare_buffer()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("apply_scattering.frag.glsl")

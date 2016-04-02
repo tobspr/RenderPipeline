@@ -31,8 +31,8 @@
 
 #define RS_MAX_CLIP_DIST 0.35
 #define RS_DISTANCE_SCALE 1.0
-#define RS_KEEP_GOOD_DURATION 10.0
-#define RS_KEEP_BAD_DURATION 6.0
+#define RS_KEEP_GOOD_DURATION float(GET_SETTING(smaa, history_length))
+#define RS_KEEP_BAD_DURATION RS_KEEP_GOOD_DURATION * 0.9
 
 #pragma include "includes/temporal_resolve.inc.glsl"
 
@@ -50,6 +50,4 @@ void main() {
     vec2 last_coord = texcoord + velocity;
 
     result = resolve_temporal(CurrentTex, Previous_SMAAPostResolve, texcoord, last_coord).xyz;
-
-    // result = texture(CurrentTex, texcoord).xyz;
 }

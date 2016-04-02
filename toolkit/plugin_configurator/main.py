@@ -445,8 +445,10 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._plugin_mgr.load()
 
         self.lst_plugins.clear()
+        plugins = sorted(iteritems(self._plugin_mgr.instances), key=lambda plg: plg[1].name)
 
-        for plugin_id, instance in sorted(iteritems(self._plugin_mgr.instances)):
+        for plugin_id, instance in plugins:
+
             item = QtGui.QListWidgetItem()
             item.setText(" " + instance.name)
 

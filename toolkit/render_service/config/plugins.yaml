@@ -11,7 +11,7 @@ enabled:
     # - pssm
     # - scattering
     # - smaa
-    # - sslr
+    # - ssr
     # - clouds
     # - dof
     - fxaa
@@ -143,7 +143,7 @@ overrides:
         use_reprojection: True
         smaa_quality: ultra
 
-    sslr:
+    ssr:
 
     volumetrics:
 

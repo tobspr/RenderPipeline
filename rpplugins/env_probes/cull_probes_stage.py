@@ -65,6 +65,6 @@ class CullProbesStage(RenderStage):
         self.per_cell_probes.clear_image()
         self.target.set_shader_input("PerCellProbes", self.per_cell_probes)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_plugin_shader(
             "/$$rp/shader/tiled_culling.vert.glsl", "cull_probes.frag.glsl")

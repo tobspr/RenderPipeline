@@ -92,7 +92,7 @@ class AutoExposureStage(RenderStage):
         self.target_apply.prepare_buffer()
         self.target_apply.set_shader_input("Exposure", self.tex_exposure)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target_lum.shader = self.load_plugin_shader("generate_luminance.frag.glsl")
         self.target_analyze.shader = self.load_plugin_shader("analyze_brightness.frag.glsl")
         self.target_apply.shader = self.load_plugin_shader("apply_exposure.frag.glsl")

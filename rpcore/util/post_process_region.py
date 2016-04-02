@@ -57,7 +57,6 @@ class PostProcessRegion(RPObject):
         self.set_clear_depth_active = self._region.set_clear_depth_active
         self.set_clear_depth = self._region.set_clear_depth
         self.set_shader = self._tri.set_shader
-        self.set_shader_input = self._tri.set_shader_input
         self.set_camera = self._region.set_camera
         self.set_clear_color_active = self._region.set_clear_color_active
         self.set_clear_color = self._region.set_clear_color
@@ -88,6 +87,12 @@ class PostProcessRegion(RPObject):
         tri.set_bin("unsorted", 10)
         tri.reparent_to(self._node)
         self._tri = tri
+
+    def set_shader_input(self, *args, **kwargs):
+        if kwargs.get("override", False):
+            self._node.set_shader_input(*args, priority=100000)
+        else:
+            self._tri.set_shader_input(*args)
 
     def _make_fullscreen_cam(self):
         """ Creates an orthographic camera for the buffer """

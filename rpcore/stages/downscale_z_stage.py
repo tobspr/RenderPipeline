@@ -43,5 +43,5 @@ class DownscaleZStage(RenderStage):
         self.target.add_color_attachment(bits=(16, 0, 0, 0))
         self.target.prepare_buffer()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_shader("downscale_depth.frag.glsl")

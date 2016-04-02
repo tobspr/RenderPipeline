@@ -54,7 +54,10 @@ class Plugin(BasePlugin):
     def on_pre_render_update(self):
         # Apply jitter for temporal aa
         if self.get_setting("use_reprojection"):
+            jitter_scale = self.get_setting("jitter_amount")
             jitter = self._jitters[self._jitter_index]
+            jitter = jitter[0] * jitter_scale, jitter[1] * jitter_scale
+
             Globals.base.camLens.set_film_offset(jitter)
             self._smaa_stage.set_jitter_index(self._jitter_index)
 
@@ -66,9 +69,7 @@ class Plugin(BasePlugin):
     def _compute_jitters(self):
         """ Internal method to compute the SMAA sub-pixel frame offsets """
         self._jitters = []
-
         scale = 1.0 / float(Globals.base.win.get_x_size())
-        # scale *= 0
 
         # for x, y in ((-0.5, 0.25), (0.5, -0.25), (0.25, 0.5), (-0.25, -0.5)):
         for x, y in ((-0.25, 0.25), (0.25, -0.25)):

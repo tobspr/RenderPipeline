@@ -35,7 +35,7 @@ global_stage_order:
   - ScatteringStage
   - ApplyEnvprobesStage
   - VXGIStage
-  - SSLRStage
+  - SSRStage
   - SSSRStage
   - AmbientStage
   - ApplyCloudsStage

@@ -65,7 +65,7 @@ class UpdatePreviousPipesStage(RenderStage):
             self._target.set_shader_input("SrcTex" + str(i), from_tex)
             self._target.set_shader_input("DestTex" + str(i), to_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         """ This method augo-generates a shader which copies all textures specified
         as "from-tex" to the textures specified as "to-tex". """
         uniforms = []

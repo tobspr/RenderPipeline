@@ -54,5 +54,5 @@ class FlagUsedCellsStage(RenderStage):
     def update(self):
         self.cell_grid_flags.clear_image()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_shader("flag_used_cells.frag.glsl")

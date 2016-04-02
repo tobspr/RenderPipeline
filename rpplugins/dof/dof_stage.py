@@ -87,7 +87,7 @@ class DoFStage(RenderStage):
         # self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
         # self.target_upscale.set_shader_input("useZAsWeight", False)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.tile_target.shader = self.load_plugin_shader("fetch_dof_minmax.frag.glsl")
         self.tile_target_horiz.shader = self.load_plugin_shader("fetch_dof_minmax_horiz.frag.glsl")
         self.minmax_target.shader = self.load_plugin_shader("fetch_dof_tile_neighbors.frag.glsl")

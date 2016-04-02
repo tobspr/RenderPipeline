@@ -75,7 +75,7 @@ class CloudVoxelStage(RenderStage):
         self._shade_target.set_shader_input("CloudVoxels", self._cloud_voxels)
         self._shade_target.set_shader_input("CloudVoxelsDest", self._cloud_voxels)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self._grid_target.shader = self.load_plugin_shader(
             "/$$rp/shader/default_post_process_instanced.vert.glsl",
             "generate_clouds.frag.glsl")

@@ -29,8 +29,10 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 
-#define RS_MAX_CLIP_DIST 2.0
-#define RS_DISTANCE_SCALE 0.1
+#define RS_MAX_CLIP_DIST 1.0
+#define RS_DISTANCE_SCALE 10.0
+#define RS_KEEP_GOOD_DURATION 8.0
+#define RS_KEEP_BAD_DURATION 8.0
 #pragma include "includes/temporal_resolve.inc.glsl"
 
 uniform sampler2D CurrentTex;

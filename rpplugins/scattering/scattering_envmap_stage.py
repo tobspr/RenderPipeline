@@ -61,6 +61,6 @@ class ScatteringEnvmapStage(RenderStage):
             stage.required_pipes.append("ScatteringIBLDiffuse")
             stage.required_pipes.append("ScatteringIBLSpecular")
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target_cube.shader = self.load_plugin_shader("scattering_envmap.frag.glsl")
-        self.cubemap_filter.set_shaders()
+        self.cubemap_filter.reload_shaders()

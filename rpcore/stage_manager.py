@@ -108,6 +108,12 @@ class StageManager(RPObject):
         for define in to_remove:
             del self._defines[define]
 
+    def get_stage(self, stage_class):
+        """ Returns a handle to an instantiated stage """
+        for stage in self._stages:
+            if stage.__class__.__name__ == stage_class:
+                return stage
+
     def get_pipe(self, pipe_name):
         """ Returns a handle to an existing pipe """
         return self._pipes[pipe_name]
@@ -262,7 +268,7 @@ class StageManager(RPObject):
 
         self._create_previous_pipes()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         """ This pass sets the shaders to all passes and also generates the
         shader configuration """
 
@@ -271,7 +277,7 @@ class StageManager(RPObject):
 
         # Then generate the shaders
         for stage in self._stages:
-            stage.set_shaders()
+            stage.reload_shaders()
 
     def update(self):
         """ Calls the update method for each registered stage """

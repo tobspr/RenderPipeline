@@ -30,7 +30,7 @@
 
 uniform sampler2D SourceTex;
 
-// Filters the SSLR result and fills in holes
+// Filters the SSR result and fills in holes
 
 out vec4 result;
 

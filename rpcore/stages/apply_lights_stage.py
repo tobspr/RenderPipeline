@@ -43,5 +43,5 @@ class ApplyLightsStage(RenderStage):
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_shader("apply_lights.frag.glsl")

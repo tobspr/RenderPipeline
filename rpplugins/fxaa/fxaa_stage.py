@@ -49,6 +49,6 @@ class FXAAStage(RenderStage):
 
         self.target.set_shader_input("SourceTex", self.luma_target.color_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("fxaa_stage.frag.glsl")
         self.luma_target.shader = self.load_plugin_shader("write_luma.frag.glsl")

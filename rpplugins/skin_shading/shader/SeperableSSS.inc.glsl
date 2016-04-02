@@ -160,7 +160,7 @@ vec4 SSSSBlurPS(
         #if SSSS_FOLLOW_SURFACE == 1
         // If the difference in depth is huge, we lerp color back to "colorM":
         float depth = textureLod(depthTex, offset, 0).r;
-        float s = saturate(300.0f * distanceToProjectionWindow *
+        float s = saturate(1000.0f * distanceToProjectionWindow *
                                sssWidth * abs(depthM - depth));
         color.rgb = mix(color.rgb, colorM.rgb, s);
         #endif

@@ -62,8 +62,8 @@ uniform samplerCube DefaultEnvmap;
     uniform sampler2D EnvmapAmbientSpec;
 #endif
 
-#if HAVE_PLUGIN(sslr)
-    uniform sampler2D SSLRSpecular;
+#if HAVE_PLUGIN(ssr)
+    uniform sampler2D SSRSpecular;
 #endif
 
 out vec4 result;
@@ -186,14 +186,14 @@ void main() {
 
     #endif
 
-    #if HAVE_PLUGIN(sslr)
-        vec4 sslr_spec = textureLod(SSLRSpecular, texcoord, 0);
+    #if HAVE_PLUGIN(ssr)
+        vec4 ssr_spec = textureLod(SSRSpecular, texcoord, 0);
 
         // Fade out SSR on high roughness values
-        sslr_spec *= 1.0 - saturate(GET_SETTING(sslr, roughness_fade) * m.roughness);
-        sslr_spec *= GET_SETTING(sslr, effect_scale);
+        ssr_spec *= 1.0 - saturate(GET_SETTING(ssr, roughness_fade) * m.roughness);
+        ssr_spec *= GET_SETTING(ssr, effect_scale);
 
-        ibl_specular = ibl_specular * (1 - sslr_spec.w) + sslr_spec.xyz;
+        ibl_specular = ibl_specular * (1 - ssr_spec.w) + ssr_spec.xyz;
     #endif
 
     #if USE_WHITE_ENVIRONMENT

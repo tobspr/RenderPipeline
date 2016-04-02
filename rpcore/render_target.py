@@ -150,10 +150,10 @@ class RenderTarget(RPObject):
         notice the indices start at zero, so the first target has the index 0. """
         return [self._targets[i] for i in sorted(iterkeys(self._targets)) if i.startswith("aux_")]
 
-    def set_shader_input(self, *args):
+    def set_shader_input(self, *args, **kwargs):
         """ Sets a shader input available to the target """
         if self.create_default_region:
-            self._source_region.set_shader_input(*args)
+            self._source_region.set_shader_input(*args, **kwargs)
 
     @setter
     def shader(self, shader_obj):

@@ -24,38 +24,31 @@
  *
  */
 
-#version 420
+#version 430
 
 #define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 
-#pragma include "SeperableSSS.inc.glsl"
+uniform sampler2D CurrentTex;
+uniform sampler2D VelocityTex;
+uniform sampler2D Previous_SSRSpecular;
 
-uniform sampler2D ShadedScene;
-uniform ivec2 direction;
+#define RS_MAX_CLIP_DIST 3.0
+#define RS_DISTANCE_SCALE 0.5
+#define RS_KEEP_GOOD_DURATION float(GET_SETTING(ssr, history_length))
+#define RS_KEEP_BAD_DURATION (RS_KEEP_GOOD_DURATION * 1.0)
+#define RS_AABB_SIZE 2.0
 
-out vec3 color;
+#pragma include "includes/temporal_resolve.inc.glsl"
 
-// Performs the subsurface scattering blur
+out vec4 result;
 
 void main() {
-  vec2 texcoord = get_texcoord();
-  int shading_model = get_gbuffer_shading_model(GBuffer, texcoord);
-  const float sss_width = 0.01 * GET_SETTING(skin_shading, blur_scale);
-  
-  // Early out
-  if( shading_model != SHADING_MODEL_SKIN) {
-    color = texture(ShadedScene, texcoord).xyz;
-    return;
-  }
-
-  vec4 blur_result = SSSSBlurPS(texcoord, ShadedScene, GBuffer.Depth, sss_width, 1, vec2(direction) );
-  color = blur_result.xyz;
-
-  #if DEBUG_MODE
-    color = texture(ShadedScene, texcoord).xyz;
-  #endif
-
+    vec2 texcoord = get_texcoord();
+    vec2 velocity = texture(VelocityTex, texcoord).xy;
+    vec2 last_coord = texcoord + velocity;
+    result = resolve_temporal(CurrentTex, Previous_SSRSpecular, texcoord, last_coord);
 }

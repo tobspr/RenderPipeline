@@ -152,7 +152,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._showbase.graphicsEngine.render_frame()
 
         self._tag_mgr.cleanup_states()
-        self._stage_mgr.set_shaders()
+        self._stage_mgr.reload_shaders()
         self._light_mgr.reload_shaders()
 
         # Set the default effect on render and trigger the reload hook
@@ -249,7 +249,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
     def _setup_managers(self):
         """ Internal method to setup all managers """
         self._stage_mgr.setup()
-        self._stage_mgr.set_shaders()
+        self._stage_mgr.reload_shaders()
         self._light_mgr.reload_shaders()
         self._init_bindings()
         self._light_mgr.init_shadows()

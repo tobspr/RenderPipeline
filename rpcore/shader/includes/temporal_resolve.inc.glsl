@@ -98,8 +98,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
                         + length(clamp(last_bl.xyz, curr_min.xyz, curr_max.xyz) - last_bl.xyz)
                         + length(clamp(last_br.xyz, curr_min.xyz, curr_max.xyz) - last_br.xyz);
 
-    float max_difference = clamp(max(
-        get_luminance(last_m.xyz), get_luminance(curr_m.xyz)), 0.01, 15.0) * RS_MAX_CLIP_DIST;
+    float max_difference = clamp( max(get_luminance(last_m.xyz), get_luminance(curr_m.xyz)), 0.0001, 15.0) * RS_MAX_CLIP_DIST;
 
     if (neighbor_diff >= max_difference)
         blend_weight = 0.0;

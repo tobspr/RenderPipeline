@@ -184,7 +184,7 @@ class VoxelizationStage(RenderStage):
             # as well
             self.pta_grid_pos[0] = self.pta_next_grid_pos[0]
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.copy_target.shader = self.load_plugin_shader(
             "/$$rp/shader/default_post_process_instanced.vert.glsl", "copy_voxels.frag.glsl")
         mip_shader = self.load_plugin_shader(

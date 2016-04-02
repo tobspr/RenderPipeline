@@ -26,6 +26,9 @@
 
 #version 430
 
+// Copies the previous scene color to the first mipmap.
+// Also outputs the current frame intersection depth
+
 #define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
@@ -33,14 +36,10 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 
-uniform sampler2D VelocityTex;
 uniform sampler2D CombinedVelocity;
 uniform writeonly image2D RESTRICT DestTex;
 uniform sampler2D Previous_PostAmbientScene;
 uniform sampler2D Previous_SceneDepth;
-
-// Copies the previous scene color to the first sslr mipmap.
-// Also outputs the current frame intersection depth
 
 void main() {
   vec2 texcoord = get_texcoord();
@@ -63,7 +62,7 @@ void main() {
     fade = 0.0;
   }
 
-  #if GET_SETTING(sslr, skip_invalid_samples)
+  #if GET_SETTING(ssr, skip_invalid_samples)
     // Skip samples which are invalid due to a position change or due to being
     // occluded in the last frame.
 
@@ -82,7 +81,10 @@ void main() {
 
   vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
 
-  intersected_color = clamp(intersected_color, 0.0, 35.0);
+  // Prevent super bright spots by clamping to a reasonable high color.
+  // Otherwise very bright highlights lead to artifacts
+  intersected_color = clamp(intersected_color, 0.0, 100.0);
 
+  // Finally store the result in the mip-chian
   imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(intersected_color, 1) * fade);
 }

@@ -73,5 +73,5 @@ class CullLightsStage(RenderStage):
 
         self.debug("Using", self.num_rows, "culling lines")
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_shader("tiled_culling.vert.glsl", "cull_lights.frag.glsl")

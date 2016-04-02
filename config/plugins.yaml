@@ -11,13 +11,13 @@ enabled:
     - motion_blur
     - pssm
     - scattering
+    - skin_shading
     - smaa
-    - sslr
+    - ssr
+    - volumetrics
     # - clouds
     # - dof
     # - fxaa
-    # - skin_shading
-    # - volumetrics
     # - vxgi
 
 
@@ -25,7 +25,7 @@ overrides:
     ao:
         blur_normal_factor: 4.94
         blur_depth_factor: 4.83
-        occlusion_strength: 1.35
+        occlusion_strength: 1.54222
         technique: SSAO
         ssao_sample_radius: 79.61
         ssao_sample_count: 8
@@ -48,17 +48,17 @@ overrides:
 
     bloom:
         num_mipmaps: 8
-        bloom_strength: 0.45
+        bloom_strength: 3.34
         remove_fireflies: True
-        lens_dirt_factor: 0.2333
+        lens_dirt_factor: 0.3
 
     clouds:
         raymarch_steps: 27
 
     color_correction:
-        tonemap_operator: optimized
+        tonemap_operator: uncharted2
         reinhard_version: rgb
-        exponential_factor: 1.4
+        exponential_factor: 1.67
         uc2t_shoulder_strength: 0.22
         uc2t_linear_strength: 0.3
         uc2t_linear_angle: 0.1
@@ -66,9 +66,9 @@ overrides:
         uc2t_toe_numerator: 0.01
         uc2t_toe_denumerator: 0.3
         uc2t_reference_white: 11.2
-        vignette_strength: 0.6778
-        film_grain_strength: 0.0
-        color_lut: film_luts/default_lut.png
+        vignette_strength: 0.6444
+        film_grain_strength: 0.1667
+        color_lut: film_luts/kodak_gold_200.png
         use_chromatic_aberration: True
         chromatic_aberration_strength: 0.3187
         chromatic_aberration_samples: 2
@@ -79,10 +79,14 @@ overrides:
         brightness_adaption_rate: 2.67
         darkness_adaption_rate: 0.79
         use_sharpen: True
-        sharpen_strength: 0.78
+        sharpen_strength: 1.39
         sharpen_twice: False
 
     dof:
+        focal_point: 200.0
+        focal_size: 0.0
+        blur_strength: 0.01
+        near_blur_strength: 0.0
 
     env_probes:
         probe_resolution: 128
@@ -135,24 +139,28 @@ overrides:
         enable_godrays: False
 
     skin_shading:
-        quality: high
-        blur_scale: 1.0
+        quality: medium
+        blur_scale: 0.43
 
     smaa:
         use_reprojection: True
         smaa_quality: ultra
+        history_length: 8
+        jitter_amount: 1.0
 
-    sslr:
+    ssr:
         effect_scale: 1.0
         trace_steps: 48
+        history_length: 10
         abort_on_object_infront: True
         intial_bias: 0.43
         hit_tolerance: 1.0
-        roughness_fade: 1.0
+        roughness_fade: 1.5
         skip_invalid_samples: True
+        border_fade: 0.05
 
     volumetrics:
-        intensity: 1.31
+        intensity: 2.29839
 
     vxgi:
         grid_resolution: 256

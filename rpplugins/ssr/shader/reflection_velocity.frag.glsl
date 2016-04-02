@@ -26,6 +26,8 @@
 
 #version 430
 
+// Copies the reflection velocity vector
+
 #define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
@@ -33,26 +35,21 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 
-uniform sampler2D CombinedVelocity;
 uniform sampler2D TraceResult;
-uniform sampler2D Previous_SceneDepth;
-
-// Copies the reflection velocity vector
-
 out vec2 velocity;
 
 void main() {
   vec2 texcoord = get_texcoord();
-  vec3 best_result = vec3(0);
-  float best_score = 0.0;
 
+  // Get bilateral start coordinates
   ivec2 coord = ivec2(gl_FragCoord.xy);
   ivec2 bil_start_coord = get_bilateral_coord(coord);
-
   float mid_depth = get_depth_at(texcoord);
 
-  // Take intersection closest to the current pixel depth
-  const int kernel_size = 1;
+  // Find the position of the closest fragment
+  const int kernel_size = 0;
+  vec3 best_result = vec3(0);
+  float best_score = 0.0;
 
   for (int i = -kernel_size; i < 2 + kernel_size; ++i) {
     for (int j = -kernel_size; j < 2 + kernel_size; ++j) {
@@ -63,7 +60,9 @@ void main() {
       vec3 trace_result = texelFetch(TraceResult, source_coord, 0).xyz;
       float trace_depth = get_depth_at(screen_coord);
       float trace_score = max(0.0, 1.0 - 10.0 * abs(trace_depth - mid_depth));
-      // trace_score *= trace_result.z;
+
+      // Weight the sample, so that depths closer to the viewer have a greater weight.
+      // Also scale by the fade factor to make sure a sample is present
       trace_score = (1 - trace_depth) * trace_result.z;
 
       if (trace_score > best_score) {
@@ -73,6 +72,7 @@ void main() {
     }
   }
   
+  // In case no sample was found, fall back to the current pixels coordinate
   if (length_squared(best_result.xy) < 1e-4) {
     best_result.xy = texcoord;
   }
@@ -83,11 +83,11 @@ void main() {
   float intersection_depth = get_depth_at(best_result.xy);
 
   // Reconstruct last frame texcoord
-  vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0,1.0 / ASPECT_RATIO);
+  vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0, 1.0 / ASPECT_RATIO);
   vec3 pos = calculate_surface_pos(intersection_depth, texcoord - film_offset_bias);
   vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
   vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
 
-
+  // Compute velocity
   velocity = last_coord - texcoord;
 }

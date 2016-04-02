@@ -98,4 +98,4 @@ class BasePlugin(RPObject):
     def reload_shaders(self):
         """ Reloads all shaders of the plugin """
         for stage in self._assigned_stages:
-            stage.set_shaders()
+            stage.reload_shaders()
