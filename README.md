@@ -7,6 +7,7 @@ Deferred Rendering Pipeline with Physically Based Shading for the <a href="http:
 <a href="https://www.youtube.com/watch?v=K7R8zQsbnm4" target="_blank">VIDEO</a>
 
 Car rendering:
+<img src="http://i.imgur.com/c8XXlyU.png" />
 <img src="http://i.imgur.com/5ndB7fu.png" />
 <img src="http://i.imgur.com/Ip6Z9n1.png" />
 
@@ -16,7 +17,6 @@ Exterior car rendering:
 Screen space reflections test:
 <img src="http://i.imgur.com/oOwLXAK.png" />
 
-
 ### Core Features
 
 - Physically Based Shading
@@ -24,7 +24,6 @@ Screen space reflections test:
 - Advanced Post-Processing Effects and Framework
 - Time of Day System
 - Plugin System
-
 
 See the <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Features">Feature List</a>
 for a list of features, and list of techniques I intend to implement.
