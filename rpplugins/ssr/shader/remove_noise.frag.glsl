@@ -26,43 +26,43 @@
 
 #version 430
 
-#define USE_MAIN_SCENE_DATA
-#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/color_spaces.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
-#pragma include "includes/transforms.inc.glsl"
 
-uniform sampler2D CombinedVelocity;
-uniform sampler2D TraceResult;
-uniform sampler2D Previous_SceneDepth;
+uniform sampler2D SourceTex;
 
-// Copies the reflection velocity vector
+// Filters the SSR result and removes single pixels
 
 out vec4 result;
 
 void main() {
-  vec2 texcoord = get_texcoord();
-  // vec2 velocity = texture(CombinedVelocity, texcoord).xy;
-  // vec2 last_coord = texcoord + velocity;
+  vec2 texcoord = get_half_texcoord();
+  vec2 pixsize = 2.0 / SCREEN_SIZE;
 
-  vec3 best_result = vec3(0);
+  vec4 mid_data = texture(SourceTex, texcoord);
 
-  // Take intersection with most weight
+  // result = mid_data;
+  // return;
+
+  // Skip lost pixels
+  if (mid_data.w < 1e-3) {
+    result = vec4(0);
+    return;
+  }
+
   const int kernel_size = 1;
-  for (int i = -kernel_size; i <= kernel_size; ++i) {
-    for (int j = -kernel_size; j <= kernel_size; ++j) {
-      vec3 trace_result = texture(TraceResult, truncate_coordinate(texcoord + vec2(i, j) * 2.0 / SCREEN_SIZE)).xyz;
-      if (trace_result.z > best_result.z) {
-        best_result = trace_result;
+
+  int num_adjacent_pixels = 0;
+  for (int x = -kernel_size; x <= kernel_size; ++x) {
+    for (int y = -kernel_size; y <= kernel_size; ++y) {
+      if (x == 0 && y == 0) continue;
+      if (distance(texture(SourceTex, texcoord + vec2(x, y) * pixsize).xyz, mid_data.xyz) < 0.05) {
+        num_adjacent_pixels ++;
       }
     }
   }
-  
-  if (length_squared(best_result.xy) < 1e-4) {
-    best_result.xy = texcoord;
-  }
 
-  vec2 velocity = texture(CombinedVelocity, best_result.xy).xy;
-  result = vec4(velocity, 0, 1);
+  if (num_adjacent_pixels < 2) {
+    mid_data *= 0;
+  }
+  result = mid_data;
 }

@@ -62,7 +62,7 @@ class ApplyCloudsStage(RenderStage):
         self.target_apply_clouds.set_shader_input(
             "CloudsTex", self.upscale_target.color_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target_apply_clouds.shader = self.load_plugin_shader(
             "apply_clouds.frag.glsl")
         self.render_target.shader = self.load_plugin_shader(

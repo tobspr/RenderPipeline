@@ -44,5 +44,5 @@ class GodrayStage(RenderStage):
         self._target.add_color_attachment(bits=16, alpha=True)
         self._target.prepare_buffer()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self._target.shader = self.load_plugin_shader("compute_godrays.frag.glsl")

@@ -45,5 +45,5 @@ class UpscaleStage(RenderStage):
         self._target.add_color_attachment(bits=16)
         self._target.prepare_buffer()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self._target.shader = self.load_shader("upscale_stage.frag.glsl")

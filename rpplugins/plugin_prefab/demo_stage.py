@@ -42,5 +42,5 @@ class DemoStage(RenderStage):
         self.target.add_color_texture(bits=16)
         self.target.prepare_buffer()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("fancy_effect.frag.glsl")

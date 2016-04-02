@@ -25,7 +25,11 @@
  */
 
 #pragma once
+
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "includes/color_spaces.inc.glsl"
+#pragma include "includes/transforms.inc.glsl"
+#pragma include "includes/gbuffer.inc.glsl"
 
 // Maximum color distance
 #ifndef RS_MAX_CLIP_DIST
@@ -37,21 +41,19 @@
    #define RS_DISTANCE_SCALE 10.0
 #endif
 
-// Whether to read a seperate texture containin world space positions
-#ifndef RS_WEIGHT_BY_VELOCITY
-  #define RS_WEIGHT_BY_VELOCITY 0
-#endif
-
-
 // How long to keep good pixels
 #ifndef RS_KEEP_GOOD_DURATION
-   #define RS_KEEP_GOOD_DURATION 8.0
+   #define RS_KEEP_GOOD_DURATION 10.0
 #endif
 
 // How long to keep bad pixels
 #ifndef RS_KEEP_BAD_DURATION
    #define RS_KEEP_BAD_DURATION 3.0
  #endif
+
+#ifndef RS_AABB_SIZE
+    #define RS_AABB_SIZE 1.0
+#endif
 
 /*
 
@@ -69,7 +71,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     }
 
     // Bounding box size
-    const float bbs = 1.0;
+    const float bbs = RS_AABB_SIZE;
 
     // Get current frame neighbor texels
     vec4 curr_tl = texture(current_tex, curr_coord + vec2(-bbs, -bbs) * one_pixel);
@@ -80,6 +82,8 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     // Get current frame neighbor AABB
     vec4 curr_min = min5(curr_m, curr_tl, curr_tr, curr_bl, curr_br);
     vec4 curr_max = max5(curr_m, curr_tl, curr_tr, curr_bl, curr_br);
+
+    // TODO: Use velocity of closest depth fragment
 
     // Get last frame texels
     float blend_weight = 1.0;
@@ -94,18 +98,10 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
                         + length(clamp(last_bl.xyz, curr_min.xyz, curr_max.xyz) - last_bl.xyz)
                         + length(clamp(last_br.xyz, curr_min.xyz, curr_max.xyz) - last_br.xyz);
 
-    float max_difference = clamp(max(
-        get_luminance(last_m.xyz), get_luminance(curr_m.xyz)), 0.01, 15.0) * RS_MAX_CLIP_DIST;
+    float max_difference = clamp( max(get_luminance(last_m.xyz), get_luminance(curr_m.xyz)), 0.0001, 15.0) * RS_MAX_CLIP_DIST;
 
     if (neighbor_diff >= max_difference)
         blend_weight = 0.0;
-
-    #if RS_WEIGHT_BY_VELOCITY
-
-
-        blend_weight *= 1.0 - saturate(distance(curr_coord, last_coord) * WINDOW_WIDTH / RS_MAX_VELOCITY_LENGTH);
-
-    #endif
 
     float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) * RS_DISTANCE_SCALE );
 

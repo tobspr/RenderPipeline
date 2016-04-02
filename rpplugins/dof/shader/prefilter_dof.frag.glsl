@@ -61,10 +61,10 @@ void main() {
   vec3 accum = karis_average(mid_color.xyz) * 0;
   float weights = 1.0 * 0.0;
 
-  const float scale = 0.0005; // XXX: Todo, make it physically based
-  const float focus_plane = 10.0;
-  const float focus_size = 2.5;
-  const float near_scale = 0.0 / max(0.0, focus_plane - focus_size - CAMERA_NEAR);
+  const float scale = 0.1 * GET_SETTING(dof, blur_strength); // XXX: Todo, make it physically based
+  const float focus_plane = GET_SETTING(dof, focal_point);
+  const float focus_size = GET_SETTING(dof, focal_size);
+  const float near_scale = GET_SETTING(dof, near_blur_strength) / max(0.0, focus_plane - focus_size - CAMERA_NEAR);
   float dist = get_linear_z_from_z(mid_depth);
   float coc = (dist - focus_plane);
 
@@ -77,10 +77,6 @@ void main() {
   }
 
   coc = clamp(coc, 0.0001, 1.0);
-
-  if (dist > 3000.0) {
-    coc = 0.3;
-  }
 
   const int kernel_size = 2;
   for (int x = -kernel_size; x <= kernel_size; ++x) {

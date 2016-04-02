@@ -164,7 +164,7 @@ class CubemapFilter(RPObject):
         self._diff_filter_target.set_shader_input("DestCubemap", self._diffuse_map)
         self._diff_filter_target.set_shader_input("cubeSize", CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         """ Sets all required shaders on the filter. """
 
         # Set diffuse filter shaders

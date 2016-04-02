@@ -42,9 +42,9 @@ out vec3 result;
 #define USE_LINEAR_DEPTH 0
 #define NUM_RAYDIR_RETRIES 3
 
-const int num_steps = GET_SETTING(sslr, trace_steps);
-const float hit_tolerance_ws = 0.0001 * GET_SETTING(sslr, hit_tolerance);
-const float hit_tolerance_backface = 0.0005;
+const int num_steps = GET_SETTING(ssr, trace_steps);
+const float hit_tolerance_ws = 0.0001 * GET_SETTING(ssr, hit_tolerance);
+const float hit_tolerance_backface = 0.0002;
 
 bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
 
@@ -56,7 +56,7 @@ bool point_between_planes(float z, float z_a, float z_b, out bool hit_factor) {
     // This traces "incorrect", but looks better because gaps are getting filled then
     if (z - hit_tolerance_ws <= max(z_a, z_b)) {
 
-        #if GET_SETTING(sslr, abort_on_object_infront)
+        #if GET_SETTING(ssr, abort_on_object_infront)
             hit_factor = z + hit_tolerance_ws >= min(z_a, z_b) - hit_tolerance_backface;
         #else
             hit_factor = true;
@@ -73,12 +73,6 @@ void main()
 {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec2 texcoord = get_half_texcoord();
-
-    // Shift samples each frame
-    int offs_x = MainSceneData.frame_index % 2;
-    int offs_y = (MainSceneData.frame_index / 2) % 2;
-
-    // texcoord += vec2(offs_x, offs_y) / SCREEN_SIZE;
 
     // TODO: Using the real normal provides *way* worse coherency
     vec3 normal_vs = get_view_normal(texcoord);
@@ -113,7 +107,7 @@ void main()
     // Generate ray directions until we find a value which is valid
     for (int i = 0; i < NUM_RAYDIR_RETRIES; ++i) {
 
-        vec2 seed = texcoord + 0.3123 * i + 0.633 * (MainSceneData.frame_index % 8);
+        vec2 seed = texcoord + 0.3123 * i + 0.633 * (MainSceneData.frame_index % GET_SETTING(ssr, history_length));
 
         // Get random sequence, should probably use halton or so
         vec2 xi = clamp(abs(rand_rgb(seed).xz), vec2(0.01), vec2(0.99));
@@ -123,7 +117,7 @@ void main()
         xi.y = mix(xi.y, 0.0, brdf_bias);
 
         // Get importance sampled directory
-        vec4 rho = importance_sample_ggx(xi, clamp(roughness, 0.0001, 1.0));
+        vec4 rho = importance_sample_ggx(xi, clamp(sqrt(roughness), 0.0001, 1.0));
 
         importance_ray_dir = normalize(
             1e-5 + rho.x * tangent + rho.y * binormal + rho.z * ray_dir);
@@ -156,8 +150,6 @@ void main()
     float ray_len = ((ray_start_vs.z + ray_dir.z * max_ray_len) > CAMERA_NEAR) ?
                         (CAMERA_NEAR - ray_start_vs.z) / ray_dir.z :
                         max_ray_len;
-    // ray_len = max_ray_len;
-
 
     // Convert start and end pos from view to screen space
     vec3 ray_start_screen = view_to_screen(ray_start_vs);
@@ -165,7 +157,6 @@ void main()
 
     vec3 ray_pos = ray_start_screen;
     vec3 ray_dir_screen = ray_end_screen - ray_start_screen;
-
 
     // Make sure the ray does not leave the screen
     float scale_max_x = min(1, 0.99 * (1.0 - ray_start_screen.x) / max(1e-5, ray_dir_screen.x));
@@ -175,25 +166,25 @@ void main()
     ray_dir_screen *= min(scale_max_x, scale_max_y);
     ray_dir_screen *= min(scale_min_x, scale_min_y);
 
-
-    // Linearize depth so we can interpolate it
     #if USE_LINEAR_DEPTH
+        // Linearize depth so we can interpolate it
         ray_start_screen.z = get_linear_z_from_z(ray_start_screen.z);
         ray_end_screen.z = get_linear_z_from_z(ray_end_screen.z);
     #endif
 
     vec3 ray_step = (ray_end_screen - ray_start_screen) / num_steps;
-    ray_pos += 6.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0) * GET_SETTING(sslr, intial_bias);
+    
+    // Initial ray bias to avoid self intersection
+    ray_pos += 15.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0) * GET_SETTING(ssr, intial_bias);
 
     vec2 intersection = vec2(-1);
 
-    // float jitter = rand(texcoord + MainSceneData.temporal_index);
-    float jitter = abs(rand(ivec2(gl_FragCoord.xy) + (MainSceneData.frame_index % 8) * 0.1));
-    // jitter *= 0.0;
+    // Jitter ray position to make sure we catch all details
+    float jitter = abs(rand(ivec2(gl_FragCoord.xy) + (MainSceneData.frame_index % GET_SETTING(ssr, history_length)) * 0.1));
     // jitter *= 2.0;
     ray_pos += jitter * ray_step;
 
-    int i;
+    int i = 0;
     float intersection_weight = 0.0;
     bool hit_factor = false;
     for (i = 1; i < num_steps; ++i) {
@@ -216,6 +207,7 @@ void main()
         }
     }
 
+    // Make sure we hit exactly one pixel
     intersection = truncate_coordinate(intersection);
 
     // Check if we hit something
@@ -224,27 +216,21 @@ void main()
         return;
     }
 
-
     float fade = saturate(3.0 * RxV);
 
     if (fade < 1e-3 || !hit_factor) {
         result = vec3(0);
         return;
-    }
-    
+    }   
 
-    // Optional: don't weight skybox fixes
-    float depth_at_intersection = textureLod(GBuffer.Depth, intersection.xy, 0).x;
-    if (get_linear_z_from_z(depth_at_intersection) > 15000.0) {
-        result = vec3(0);
-        return;
-    }
-
-    // XXX: Seems this works *way* better
-    // fade = 1.0;
-    // vec3 h = normalize(view_dir + ray_dir);
-    // pdf = pdf / (4.0 * saturate(dot(view_dir, h)));
-    pdf = 1.0;
+    // Store pdf
+    #if 0
+        // vec3 h = normalize(view_dir + ray_dir);
+        // pdf = pdf / (4.0 * saturate(dot(view_dir, h)));
+    #else
+        // XXX: Seems this works *way* better
+        pdf = 1.0;
+    #endif
 
     result = vec3(intersection, 1.0 / max(1e-5, pdf) * fade);
 }

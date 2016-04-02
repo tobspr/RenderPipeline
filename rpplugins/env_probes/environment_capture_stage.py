@@ -163,7 +163,7 @@ class EnvironmentCaptureStage(RenderStage):
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target_store.shader = self.load_plugin_shader(
             "store_cubemap.frag.glsl")
         self.target_store_diff.shader = self.load_plugin_shader(

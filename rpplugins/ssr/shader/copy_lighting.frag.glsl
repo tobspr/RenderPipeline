@@ -26,6 +26,9 @@
 
 #version 430
 
+// Copies the previous scene color to the first mipmap.
+// Also outputs the current frame intersection depth
+
 #define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
@@ -37,9 +40,6 @@ uniform sampler2D CombinedVelocity;
 uniform writeonly image2D RESTRICT DestTex;
 uniform sampler2D Previous_PostAmbientScene;
 uniform sampler2D Previous_SceneDepth;
-
-// Copies the previous scene color to the first sslr mipmap.
-// Also outputs the current frame intersection depth
 
 void main() {
   vec2 texcoord = get_texcoord();
@@ -62,18 +62,29 @@ void main() {
     fade = 0.0;
   }
 
-  float last_depth = textureLod(Previous_SceneDepth, texcoord, 0).x;
-  vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
+  #if GET_SETTING(ssr, skip_invalid_samples)
+    // Skip samples which are invalid due to a position change or due to being
+    // occluded in the last frame.
 
-  // XXX: inverse is totally slow! Instead pass it as a main scene data
-  vec3 last_pos = calculate_surface_pos(last_depth, last_coord, inverse(MainSceneData.last_view_proj_mat_no_jitter));
+    // TODO: Should probably use the 3x3 AABB for this, but might be too
+    // performance heavy. I think this should work out well.
+    vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
+    float last_depth = textureLod(Previous_SceneDepth, last_coord, 0).x;
 
-  if (distance(curr_pos, last_pos) > 1.0) {
-    // XXX
-  //   fade = 0.0;
-  }
+    vec3 last_pos = calculate_surface_pos(last_depth, last_coord,
+      MainSceneData.last_inv_view_proj_mat_no_jitter);
 
-  last_coord = truncate_coordinate(last_coord);
+    if (distance(curr_pos, last_pos) > 0.9) {
+      fade = 0.0;
+    }
+  #endif
+
   vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
+
+  // Prevent super bright spots by clamping to a reasonable high color.
+  // Otherwise very bright highlights lead to artifacts
+  intersected_color = clamp(intersected_color, 0.0, 100.0);
+
+  // Finally store the result in the mip-chian
   imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(intersected_color, 1) * fade);
 }

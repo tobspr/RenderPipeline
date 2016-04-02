@@ -49,5 +49,5 @@ class ApplyEnvprobesStage(RenderStage):
         self.target.prepare_buffer()
         AmbientStage.required_pipes += ["EnvmapAmbientSpec", "EnvmapAmbientDiff"]
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("apply_envprobes.frag.glsl")

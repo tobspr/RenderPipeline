@@ -61,7 +61,7 @@ class SharpenStage(RenderStage):
             self.target2.prepare_buffer()
             self.target2.set_shader_input("ShadedScene", self.target.color_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         sharpen_shader = self.load_plugin_shader("sharpen.frag.glsl")
         for target in itervalues(self._targets):
             target.shader = sharpen_shader

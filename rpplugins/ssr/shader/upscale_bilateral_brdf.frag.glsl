@@ -35,23 +35,25 @@
 #pragma include "includes/color_spaces.inc.glsl"
 
 layout(location=0) out vec4 result;
-layout(location=1) out vec3 result_position;
 
 uniform sampler2D SourceTex;
 uniform sampler2D MipChain;
 uniform GBufferData GBuffer;
 
+// Fades out a coordinate on the screen edges
+float get_border_fade(vec2 coord) {
+    const float border_fade = max(1e-5, GET_SETTING(ssr, border_fade));
+    float fade = 1.0;
+    fade *= saturate(coord.x / border_fade) * saturate(coord.y / border_fade);
+    fade *= saturate((1 - coord.x) / border_fade) * saturate((1 - coord.y) / border_fade);
+    return fade;
+}
+
 void main() {
-    // Get sample coordinates
+
+    // Get bilateral sample coordinates
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 bil_start_coord = get_bilateral_coord(coord);
-
-    // Shift samples each frame
-    int offs_x = MainSceneData.frame_index % 2;
-    int offs_y = (MainSceneData.frame_index / 2) % 2;
-
-    // bil_start_coord -= ivec2(offs_x, offs_y);
-
     vec2 texcoord = ((bil_start_coord * 2) + 0.5) / SCREEN_SIZE;
 
     // Get current pixel data
@@ -60,11 +62,11 @@ void main() {
 
     Material m = unpack_material(GBuffer, texcoord);
 
+    // Early out on skybox
     if (is_skybox(m.position)) {
         result = vec4(0);
         return;
     }
-
 
     const float max_depth_diff = 0.001;
 
@@ -82,21 +84,19 @@ void main() {
     vec3 reflected_dir = get_reflection_vector(m, -view_vector);
     float roughness = get_effective_roughness(m);
 
-    vec4 avg_intersection = vec4(0.0);
-
     // Accumulate all samples
     for (int x = -search_radius; x < 2 + search_radius; ++x) {
         for (int y = -search_radius; y < 2 + search_radius; ++y) {
 
+            // Get sample coordinate
             ivec2 source_coord = bil_start_coord + ivec2(x, y);
-            // ivec2 screen_coord = source_coord * 2 + ivec2(offs_x, offs_y);
             ivec2 screen_coord = source_coord * 2;
             vec4 source_sample = texelFetch(SourceTex, source_coord, 0);
 
             // Skip empty samples, however take into account we have no data there, so
             // still increase the weight
             if (length_squared(source_sample.xy) < 0.01 || source_sample.w < 0.005) {
-                // weights += 1.0;
+                weights += 1.0;
                 continue;
             }
 
@@ -117,38 +117,29 @@ void main() {
             float NxH = saturate(dot(m.normal, h));
 
             float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + roughness), 0.0, 1e5);
-            // weight *= source_sample.z;
             weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
 
-
-            // float mipmap = saturate(dot(reflected_dir, m.normal)) * 7.0;
-            float mipmap = sqrt(roughness) * 5.0 * (distance_to_intersection * 0.4);
-            mipmap = clamp(mipmap, 0.0, 5.0);
+            float mipmap = sqrt(roughness) * 4.0 * (distance_to_intersection * 0.4);
+            mipmap = clamp(mipmap, 0.0, 7.0);
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
 
             color_sample *= source_sample.z;
 
             // Fade out samples at the screen border
-            const float border_fade = 0.03;
-            float fade = 1.0;
-            fade *= saturate(source_sample.x / border_fade) * saturate(source_sample.y / border_fade);
-            fade *= saturate((1-source_sample.x) / border_fade) * saturate((1-source_sample.y) / border_fade);
-
-            color_sample *= fade;
+            // XXX: Do we really have to this per sample?
+            color_sample *= get_border_fade(source_sample.xy);
 
             accum += color_sample * weight;
-            avg_intersection += vec4(source_sample.xy, sample_depth, 1);
             weights += weight;
         }
     }
 
-    if (weights < 1e-3) {
+    if (weights < 1e-4) {
         accum = vec4(0);
     } else {
         accum /= weights;
     }
 
     result = accum;
-    result_position = avg_intersection.xyz / max(1e-3, avg_intersection.w);
 }

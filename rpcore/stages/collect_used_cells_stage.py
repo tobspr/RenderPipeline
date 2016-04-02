@@ -65,5 +65,5 @@ class CollectUsedCellsStage(RenderStage):
         self._cell_list_buffer.clear_image()
         self._cell_index_buffer.clear_image()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_shader("collect_used_cells.frag.glsl")

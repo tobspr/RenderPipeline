@@ -26,27 +26,29 @@
 
 #version 430
 
+#define USE_MAIN_SCENE_DATA
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-
-#define RS_MAX_CLIP_DIST 500.0
-#define RS_DISTANCE_SCALE 0.01
-#define RS_WEIGHT_BY_VELOCITY 1
-#define RS_MAX_VELOCITY_LENGTH 40.0
-#define RS_KEEP_GOOD_DURATION 8.0
-#define RS_KEEP_BAD_DURATION 8.0
-#pragma include "includes/temporal_resolve.inc.glsl"
-
+#pragma include "includes/transforms.inc.glsl"
+#pragma include "includes/gbuffer.inc.glsl"
 
 uniform sampler2D CurrentTex;
-uniform sampler2D CombinedVelocity;
-uniform sampler2D Previous_SSLRSpecular;
+uniform sampler2D VelocityTex;
+uniform sampler2D Previous_SSRSpecular;
+
+#define RS_MAX_CLIP_DIST 3.0
+#define RS_DISTANCE_SCALE 0.5
+#define RS_KEEP_GOOD_DURATION float(GET_SETTING(ssr, history_length))
+#define RS_KEEP_BAD_DURATION (RS_KEEP_GOOD_DURATION * 1.0)
+#define RS_AABB_SIZE 2.0
+
+#pragma include "includes/temporal_resolve.inc.glsl"
 
 out vec4 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    vec2 velocity = texture(CombinedVelocity, texcoord).xy;
+    vec2 velocity = texture(VelocityTex, texcoord).xy;
     vec2 last_coord = texcoord + velocity;
-
-    result = resolve_temporal(CurrentTex, Previous_SSLRSpecular, texcoord, last_coord);
+    result = resolve_temporal(CurrentTex, Previous_SSRSpecular, texcoord, last_coord);
 }

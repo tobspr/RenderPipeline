@@ -83,7 +83,7 @@ class AOStage(RenderStage):
         self.target_resolve.prepare_buffer()
         self.target_resolve.set_shader_input("CurrentTex", current_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("ao_sample.frag.glsl")
         self.target_upscale.shader = self.load_plugin_shader(
             "/$$rp/shader/bilateral_upscale.frag.glsl")

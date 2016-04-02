@@ -26,8 +26,7 @@ THE SOFTWARE.
 
 from rpcore.pluginbase.base_plugin import BasePlugin
 
-from .sslr_stage import SSLRStage
-
+from .ssr_stage import SSRStage
 
 class Plugin(BasePlugin):
 
@@ -38,4 +37,10 @@ class Plugin(BasePlugin):
     version = "beta (!)"
 
     def on_stage_setup(self):
-        self._sslr_stage = self.create_stage(SSLRStage)
+        self._ssr_stage = self.create_stage(SSRStage)
+
+    def reload_shaders(self):
+        BasePlugin.reload_shaders(self)
+
+        # Also update the ambient stage
+        self._pipeline.stage_mgr.get_stage("AmbientStage").reload_shaders()

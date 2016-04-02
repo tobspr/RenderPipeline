@@ -77,7 +77,7 @@ class MotionBlurStage(RenderStage):
         self.target_cam_blur.prepare_buffer()
         self.target_cam_blur.set_shader_input("SourceTex", self.target.color_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.tile_target.shader = self.load_plugin_shader(
             "fetch_dominant_velocity.frag.glsl")
         self.tile_target_horiz.shader = self.load_plugin_shader(

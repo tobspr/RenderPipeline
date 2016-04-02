@@ -103,10 +103,10 @@ class SMAAStage(RenderStage):
             # Set initial textures
             self.resolve_target.set_shader_input("CurrentTex", self.neighbor_target.color_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target_fireflies.shader = self.load_plugin_shader("remove_fireflies.frag.glsl")
         self.edge_target.shader = self.load_plugin_shader("edge_detection.frag.glsl")
         self.blend_target.shader = self.load_plugin_shader("blending_weights.frag.glsl")
         self.neighbor_target.shader = self.load_plugin_shader("neighborhood_blending.frag.glsl")
         if self.use_reprojection:
-            self.resolve_target.shader = self.load_plugin_shader("resolve.frag.glsl")
+            self.resolve_target.shader = self.load_plugin_shader("resolve_smaa.frag.glsl")

@@ -68,11 +68,12 @@ class RenderStage(RPObject):
         """ This method should setup the stage and create the pipes """
         raise NotImplementedError()
 
-    def set_shaders(self):
+    def reload_shaders(self):
         """ This method should set all required shaders, there should be no
         shaders set in the create method, because the shader auto config is not
         generated there """
         pass
+
 
     def set_shader_input(self, *args):
         """ This method sets a shader input on all stages, which is mainly used

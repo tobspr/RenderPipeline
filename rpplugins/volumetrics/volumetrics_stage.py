@@ -57,7 +57,7 @@ class VolumetricsStage(RenderStage):
         self.target_combine.prepare_buffer()
         self.target_combine.set_shader_input("VolumetricsTex", self.target_upscale.color_tex)
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("compute_volumetrics.frag.glsl")
         self.target_upscale.shader = self.load_plugin_shader(
             "/$$rp/shader/bilateral_upscale.frag.glsl")

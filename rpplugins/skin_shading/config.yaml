@@ -6,6 +6,7 @@ settings: !!omap
         values: ["low", "medium", "high"]
         default: "high"
         label: Quality
+        shader_runtime: true
         description: >
             Controls the quality of the subsurface scattering, higher
             values provide smoother results but also consume more performance.

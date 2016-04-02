@@ -85,7 +85,7 @@ class VXGIStage(RenderStage):
         # Make the ambient stage use the GI result
         AmbientStage.required_pipes += ["VXGISpecular", "VXGIDiffuse"]
 
-    def set_shaders(self):
+    def reload_shaders(self):
         self._target_spec.shader = self.load_plugin_shader("vxgi_specular.frag.glsl")
         self._target_diff.shader = self.load_plugin_shader("vxgi_diffuse.frag.glsl")
         self._target_upscale_diff.shader = self.load_plugin_shader(

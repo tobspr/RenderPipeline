@@ -27,6 +27,7 @@ THE SOFTWARE.
 from panda3d.core import LVecBase2i
 
 from rpcore.render_stage import RenderStage
+from rplibs.six import itervalues
 
 class SkinShadingStage(RenderStage):
 
@@ -37,21 +38,33 @@ class SkinShadingStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self.target_v.color_tex}
+        return {"ShadedScene": self.final_tex}
 
     def create(self):
-        self.target_h = self.create_target("BlurH")
-        self.target_h.add_color_attachment(bits=16)
-        self.target_h.prepare_buffer()
-        self.target_h.set_shader_input("direction", LVecBase2i(1, 0))
+        curr_tex = None
 
-        self.target_v = self.create_target("BlurV")
-        self.target_v.add_color_attachment(bits=16)
-        self.target_v.prepare_buffer()
-        self.target_v.set_shader_input("ShadedScene", self.target_h.color_tex, 1000)
-        self.target_v.set_shader_input("direction", LVecBase2i(0, 1))
+        for i in range(3):
 
-    def set_shaders(self):
+            target_h = self.create_target("BlurH-" + str(i))
+            target_h.add_color_attachment(bits=16)
+            target_h.prepare_buffer()
+            target_h.set_shader_input("direction", LVecBase2i(1, 0))
+            if curr_tex is not None:
+                target_h.set_shader_input("ShadedScene", curr_tex, override=True)
+
+            curr_tex = target_h.color_tex
+
+            target_v = self.create_target("BlurV-" + str(i))
+            target_v.add_color_attachment(bits=16)
+            target_v.prepare_buffer()
+            target_v.set_shader_input("ShadedScene", curr_tex, override=True)
+            target_v.set_shader_input("direction", LVecBase2i(0, 1))
+
+            curr_tex = target_v.color_tex
+
+        self.final_tex = curr_tex
+
+    def reload_shaders(self):
         blur_shader = self.load_plugin_shader("sssss_blur.frag.glsl")
-        self.target_v.shader = blur_shader
-        self.target_h.shader = blur_shader
+        for target in itervalues(self._targets):
+            target.shader = blur_shader

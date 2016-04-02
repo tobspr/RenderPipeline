@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+from __future__ import print_function
+
 from rplibs.six import iteritems, string_types
 from rpcore.rpobject import RPObject
 
@@ -42,7 +44,13 @@ def make_setting_from_data(data):
     }
     if data["type"] not in factory:
         raise Exception("Unkown setting type: {}".format(data["type"]))
-    instance = factory[data["type"]](data)
+
+    try:
+        instance = factory[data["type"]](data)
+    except Exception as msg:
+        print("Exception occured while parsing", data)
+        raise
+
     if data:
         raise Exception("Unparsed data left in plugin setting: {}".format(data))
     return instance

@@ -43,12 +43,19 @@ out vec3 color;
 void main() {
   vec2 texcoord = get_texcoord();
   int shading_model = get_gbuffer_shading_model(GBuffer, texcoord);
-  const float sss_width = 0.002 * GET_SETTING(skin_shading, blur_scale);
-  float sss_scale = shading_model == SHADING_MODEL_SKIN ? 1.0 : 0.0;
-  vec4 blur_result = SSSSBlurPS(texcoord, ShadedScene, GBuffer.Depth, sss_width, sss_scale, direction);
+  const float sss_width = 0.01 * GET_SETTING(skin_shading, blur_scale);
+  
+  // Early out
+  if( shading_model != SHADING_MODEL_SKIN) {
+    color = texture(ShadedScene, texcoord).xyz;
+    return;
+  }
+
+  vec4 blur_result = SSSSBlurPS(texcoord, ShadedScene, GBuffer.Depth, sss_width, 1, vec2(direction) );
   color = blur_result.xyz;
 
   #if DEBUG_MODE
     color = texture(ShadedScene, texcoord).xyz;
   #endif
+
 }

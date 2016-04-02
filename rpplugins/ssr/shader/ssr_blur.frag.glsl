@@ -26,43 +26,48 @@
 
 #version 430
 
+#pragma optionNV (unroll all)
+
 #pragma include "render_pipeline_base.inc.glsl"
 
 uniform sampler2D SourceTex;
+uniform int sourceMip;
+uniform writeonly image2D RESTRICT DestTex;
 
-// Filters the SSLR result and removes single pixels
+const int num_steps = 2;
+CONST_ARRAY float blur_weights[num_steps] = float[num_steps](
+  0.916459570256, 0.0835404297438
+);
 
-out vec4 result;
+CONST_ARRAY float blur_offsets[num_steps] = float[num_steps](
+  0.377540668798, 2.07585818002
+);
 
 void main() {
-  vec2 texcoord = get_half_texcoord();
-  vec2 pixsize = 2.0 / SCREEN_SIZE;
+  vec2 texsize = textureSize(SourceTex, sourceMip).xy;
+  vec2 texcoord = vec2(ivec2(gl_FragCoord.xy) * 2 + 1.0) / texsize;
 
-  vec4 mid_data = texture(SourceTex, texcoord);
+  // TODO: Split into vertical and horizontal pass .. this is quite slow
+  // TODO: Normalize gaussian weights
 
-  // result = mid_data;
-  // return;
+  float total_weight = 0.0;
+  vec4 accum = vec4(0);
+  const int kernel_steps = num_steps - 1;
 
-  // Skip lost pixels
-  if (mid_data.w < 1e-3) {
-    result = vec4(0);
-    return;
-  }
-
-  const int kernel_size = 1;
-
-  int num_adjacent_pixels = 0;
-  for (int x = -kernel_size; x <= kernel_size; ++x) {
-    for (int y = -kernel_size; y <= kernel_size; ++y) {
-      if (x == 0 && y == 0) continue;
-      if (distance(texture(SourceTex, texcoord + vec2(x, y) * pixsize).xyz, mid_data.xyz) < 0.05) {
-        num_adjacent_pixels ++;
+  for (int px = 0; px <= 1; ++px) {
+    for (int i = 0; i <= kernel_steps; ++i) {
+      for (int py = 0; py <= 1; ++py) {
+        for (int j = 0; j <= kernel_steps; ++j) {
+          float weight = blur_weights[i] * blur_weights[j];
+          vec2 offs = vec2(blur_offsets[i], blur_offsets[j]) / texsize;
+          offs *= vec2(px, py) * 2 - 1;
+          accum += textureLod(SourceTex, texcoord + offs, sourceMip) * weight;
+          total_weight += weight;
+        }
       }
     }
   }
 
-  if (num_adjacent_pixels < 2) {
-    mid_data *= 0;
-  }
-  result = mid_data;
+  accum /= total_weight;
+  imageStore(DestTex, ivec2(gl_FragCoord.xy), accum);
 }
