@@ -83,6 +83,8 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     vec4 curr_min = min5(curr_m, curr_tl, curr_tr, curr_bl, curr_br);
     vec4 curr_max = max5(curr_m, curr_tl, curr_tr, curr_bl, curr_br);
 
+    // TODO: Use velocity of closest depth fragment
+
     // Get last frame texels
     float blend_weight = 1.0;
     vec4 last_m  = texture(last_tex, last_coord);
