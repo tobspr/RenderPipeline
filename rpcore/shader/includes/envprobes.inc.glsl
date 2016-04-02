@@ -143,8 +143,6 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
 
     mipmap *= intersection_distance * 0.012;
 
-    mipmap = 0.0; // XXX
-
     specular = textureLod(EnvProbes.cubemaps, vec4(direction, map.index),
         snap_mipmap(clamp(mipmap, 0.0, num_mips - 1.0)) );
 

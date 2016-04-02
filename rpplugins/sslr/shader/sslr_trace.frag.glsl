@@ -123,7 +123,7 @@ void main()
         xi.y = mix(xi.y, 0.0, brdf_bias);
 
         // Get importance sampled directory
-        vec4 rho = importance_sample_ggx(xi, clamp(roughness, 0.0001, 1.0));
+        vec4 rho = importance_sample_ggx(xi, clamp(sqrt(roughness), 0.0001, 1.0));
 
         importance_ray_dir = normalize(
             1e-5 + rho.x * tangent + rho.y * binormal + rho.z * ray_dir);
@@ -241,7 +241,7 @@ void main()
     }
 
     // XXX: Seems this works *way* better
-    // fade = 1.0;
+    fade = 1.0;
     // vec3 h = normalize(view_dir + ray_dir);
     // pdf = pdf / (4.0 * saturate(dot(view_dir, h)));
     pdf = 1.0;

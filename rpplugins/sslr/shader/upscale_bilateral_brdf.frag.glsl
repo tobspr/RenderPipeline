@@ -117,40 +117,46 @@ void main() {
             float NxH = saturate(dot(m.normal, h));
 
             float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + roughness), 0.0, 1e5);
-            // weight *= source_sample.z;
-            weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
 
+            // weight *= source_sample.z;
+
+            weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
 
             // float mipmap = saturate(dot(reflected_dir, m.normal)) * 7.0;
             float mipmap = sqrt(roughness) * 2.0 * (distance_to_intersection * 0.4);
             mipmap = clamp(mipmap, 0.0, 5.0);
 
-            mipmap = 0; // xxx
+            // mipmap = 0; // xxx
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
 
             color_sample *= source_sample.z;
 
             // Fade out samples at the screen border
-            const float border_fade = 0.01;
+            // XXX: Do we really have to this per sample?
+            const float border_fade = 0.05;
             float fade = 1.0;
             fade *= saturate(source_sample.x / border_fade) * saturate(source_sample.y / border_fade);
             fade *= saturate((1-source_sample.x) / border_fade) * saturate((1-source_sample.y) / border_fade);
-
             color_sample *= fade;
 
             accum += color_sample * weight;
-            avg_intersection += vec4(source_sample.xy, sample_depth, 1);
+            avg_intersection += vec4(source_sample.xyz, 1);
             weights += weight;
         }
     }
 
-    if (weights < 1e-3) {
+    if (weights < 1e-4) {
         accum = vec4(0);
     } else {
         accum /= weights;
     }
 
+    // Take precision issues into account
+    accum *= 1.0 + 1e-3;
+    accum.w = saturate(accum.w);
+
     result = accum;
+
     result_position = avg_intersection.xyz / max(1e-3, avg_intersection.w);
 }

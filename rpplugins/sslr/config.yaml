@@ -67,5 +67,15 @@ settings: !!omap
             to prevent noise, higher values will reduce the impact on ssr on
             rough surfaces.
 
+    - skip_invalid_samples:
+        type: bool
+        default: true
+        shader_runtime: true
+        label: Skip Invalid Pixels
+        description: >
+            Whether to skip pixels which could not successfully be reprojected
+            from the last frames color texture. This affects the effect when
+            moving. Setting this to true will produce more accurate but also
+            more noisy results. Setting this to false might produce artifacts.
 
 daytime_settings:

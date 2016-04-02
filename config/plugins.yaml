@@ -4,19 +4,19 @@
 # Any formatting and comments will be lost
 
 enabled:
+    - ao
+    - bloom
     - color_correction
-    # - env_probes
+    - env_probes
+    - motion_blur
     - pssm
     - scattering
+    - smaa
     - sslr
-    # - ao
-    # - bloom
     # - clouds
     # - dof
     # - fxaa
-    # - motion_blur
     # - skin_shading
-    # - smaa
     # - volumetrics
     # - vxgi
 
@@ -49,7 +49,7 @@ overrides:
     bloom:
         num_mipmaps: 8
         bloom_strength: 0.45
-        remove_fireflies: False
+        remove_fireflies: True
         lens_dirt_factor: 0.2333
 
     clouds:
@@ -149,6 +149,7 @@ overrides:
         intial_bias: 0.43
         hit_tolerance: 1.0
         roughness_fade: 1.0
+        skip_invalid_samples: True
 
     volumetrics:
         intensity: 1.31

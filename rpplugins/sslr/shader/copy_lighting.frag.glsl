@@ -63,22 +63,26 @@ void main() {
     fade = 0.0;
   }
 
-  last_coord = truncate_coordinate(last_coord);
+  #if GET_SETTING(sslr, skip_invalid_samples)
+    // Skip samples which are invalid due to a position change or due to being
+    // occluded in the last frame.
 
-  vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
-  float last_depth = textureLod(Previous_SceneDepth, last_coord, 0).x;
+    // TODO: Should probably use the 3x3 AABB for this, but might be too
+    // performance heavy. I think this should work out well.
+    vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
+    float last_depth = textureLod(Previous_SceneDepth, last_coord, 0).x;
 
-  // XXX: inverse is totally slow! Instead pass it as a main scene data
-  vec3 last_pos = calculate_surface_pos(last_depth, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
+    vec3 last_pos = calculate_surface_pos(last_depth, last_coord,
+      MainSceneData.last_inv_view_proj_mat_no_jitter);
 
-  if (distance(curr_pos, last_pos) > 0.3) {
-    fade = 0.0;
-  }
+    if (distance(curr_pos, last_pos) > 0.9) {
+      fade = 0.0;
+    }
+  #endif
 
   vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
 
   intersected_color = clamp(intersected_color, 0.0, 35.0);
-  // intersected_color = last_pos;
 
   imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(intersected_color, 1) * fade);
 }

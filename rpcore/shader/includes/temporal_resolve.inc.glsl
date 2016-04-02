@@ -43,13 +43,17 @@
 
 // How long to keep good pixels
 #ifndef RS_KEEP_GOOD_DURATION
-   #define RS_KEEP_GOOD_DURATION 8.0
+   #define RS_KEEP_GOOD_DURATION 10.0
 #endif
 
 // How long to keep bad pixels
 #ifndef RS_KEEP_BAD_DURATION
    #define RS_KEEP_BAD_DURATION 3.0
  #endif
+
+#ifndef RS_AABB_SIZE
+    #define RS_AABB_SIZE 1.0
+#endif
 
 /*
 
@@ -67,7 +71,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     }
 
     // Bounding box size
-    const float bbs = 1.0;
+    const float bbs = RS_AABB_SIZE;
 
     // Get current frame neighbor texels
     vec4 curr_tl = texture(current_tex, curr_coord + vec2(-bbs, -bbs) * one_pixel);

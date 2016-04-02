@@ -52,7 +52,7 @@ void main() {
   float mid_depth = get_depth_at(texcoord);
 
   // Take intersection closest to the current pixel depth
-  const int kernel_size = 0;
+  const int kernel_size = 1;
 
   for (int i = -kernel_size; i < 2 + kernel_size; ++i) {
     for (int j = -kernel_size; j < 2 + kernel_size; ++j) {
@@ -63,7 +63,8 @@ void main() {
       vec3 trace_result = texelFetch(TraceResult, source_coord, 0).xyz;
       float trace_depth = get_depth_at(screen_coord);
       float trace_score = max(0.0, 1.0 - 10.0 * abs(trace_depth - mid_depth));
-      trace_score *= trace_result.z;
+      // trace_score *= trace_result.z;
+      trace_score = (1 - trace_depth) * trace_result.z;
 
       if (trace_score > best_score) {
         best_result = trace_result;
