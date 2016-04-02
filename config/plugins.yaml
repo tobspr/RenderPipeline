@@ -48,7 +48,7 @@ overrides:
 
     bloom:
         num_mipmaps: 8
-        bloom_strength: 3.34
+        bloom_strength: 1.01
         remove_fireflies: True
         lens_dirt_factor: 0.3
 
