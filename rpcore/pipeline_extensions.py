@@ -211,6 +211,7 @@ class PipelineExtensions(object):
             probe = self.add_environment_probe()
             probe.set_mat(np.get_mat())
             probe.border_smoothness = 0.05
+            probe.parallax_correction = True
             np.remove_node()
             envprobes.append(probe)
 

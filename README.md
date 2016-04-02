@@ -2,16 +2,20 @@
 # Render Pipeline
 Deferred Rendering Pipeline with Physically Based Shading for the <a href="http://github.com/panda3d/panda3d">Panda3D Game Engine</a>.
 
+## Screenshots
+
+<a href="https://www.youtube.com/watch?v=K7R8zQsbnm4" target="_blank">VIDEO</a>
 
 Car rendering:
+<img src="http://i.imgur.com/5ndB7fu.png" />
+<img src="http://i.imgur.com/Ip6Z9n1.png" />
+
+Exterior car rendering: 
 <img src="http://i.imgur.com/m4nPnm1.png" />
 
 Screen space reflections test:
 <img src="http://i.imgur.com/oOwLXAK.png" />
 
-Film LUT's (color grading) test:
-<img src="http://i.imgur.com/iTTBodd.png" />
-<a href="https://www.youtube.com/watch?v=SVRshBffzM4" target="_blank">Car Showcase Video</a> (A bit outdated)
 
 ### Core Features
 
@@ -52,7 +56,7 @@ you can find me most of the time in the `#panda3d` channel on freenode.
 
 If I shouldn't be there, feel free to contact me per E-Mail: `tobias.springer1@googlemail.com`
 
-### Screenshots
+### Further (older) Screenshots
 
 **Terrain:**
 <img src="http://i.imgur.com/nY5nBs3.png" />

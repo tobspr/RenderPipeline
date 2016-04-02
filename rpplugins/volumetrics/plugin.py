@@ -34,6 +34,8 @@ class Plugin(BasePlugin):
     description = ("This plugins adds support for volumetric lighting")
     version = "0.1 alpha (!)"
 
+    required_plugins = ("pssm",)
+
     def on_stage_setup(self):
         self.stage = self.create_stage(VolumetricsStage)
 

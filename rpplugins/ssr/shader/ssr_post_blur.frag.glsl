@@ -24,44 +24,40 @@
  *
  */
 
-#version 430
+#version 420
 
-// Shader used for the environment map
-
-%DEFINES%
-
-#define IS_ENVMAP_SHADER 1
-
-#define USE_TIME_OF_DAY
+#define USE_MAIN_SCENE_DATA
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/shadows.inc.glsl"
-#pragma include "includes/material.struct.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
-#pragma include "includes/vertex_output.struct.glsl"
+#pragma include "includes/GBuffer.inc.glsl"
 
-%INCLUDES%
-%INOUT%
-
-uniform sampler2D p3d_Texture0;
-uniform Panda3DMaterial p3d_Material;
-
-layout(location=0) in VertexOutput vOutput;
-
-#pragma include "includes/forward_shading.inc.glsl"
-
-layout(location=0) out vec4 result_specular;
-layout(location=1) out vec4 result_diffuse;
+uniform sampler2D CurrentTex;
+out vec4 result;
 
 void main() {
+    vec2 texcoord = get_texcoord();
 
-    MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
+    const int filter_size = 1;
 
-    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * (0.2 + 0.8 * mInput.color);
+    float mid_depth = get_depth_at(texcoord);
 
-    vec3 ambient = get_forward_ambient(mInput, basecolor);
-    vec3 sun_lighting = get_sun_shading(mInput, basecolor);
-    vec3 lights = get_forward_light_shading(basecolor);
- 
-    result_specular = vec4(ambient + lights + sun_lighting, 1);
-    result_diffuse = vec4(ambient + lights + sun_lighting, 1);
+    vec4 accum = vec4(0);
+    float weights = 0.0;
+
+    const float max_depth_diff = 0.001;
+
+    for (int i = -filter_size; i <= filter_size; ++i) {
+      for (int j = -filter_size; j <= filter_size; ++j) {
+        vec2 offcoord = texcoord + vec2(i, j) / SCREEN_SIZE;
+        vec4 sample_color = texture(CurrentTex, offcoord);
+        float sample_depth = get_depth_at(texcoord);
+        float weight = 1.0 - saturate(abs(sample_depth - mid_depth) / max_depth_diff);
+        accum += sample_color * weight;
+        weights += weight;
+
+      }
+    }
+
+    accum /= max(1e-5, weights);
+    result = accum;
 }

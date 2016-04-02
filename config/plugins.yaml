@@ -8,16 +8,16 @@ enabled:
     - bloom
     - color_correction
     - env_probes
+    - fxaa
     - motion_blur
+    - smaa
+    - ssr
+    # - clouds
+    # - dof
     - pssm
     - scattering
     - skin_shading
-    - smaa
-    - ssr
     - volumetrics
-    # - clouds
-    # - dof
-    # - fxaa
     # - vxgi
 
 
@@ -25,7 +25,7 @@ overrides:
     ao:
         blur_normal_factor: 4.94
         blur_depth_factor: 4.83
-        occlusion_strength: 1.67
+        occlusion_strength: 1.74
         technique: SSAO
         ssao_sample_radius: 79.61
         ssao_sample_count: 8
@@ -50,7 +50,7 @@ overrides:
         num_mipmaps: 8
         bloom_strength: 1.45
         remove_fireflies: True
-        lens_dirt_factor: 0.3556
+        lens_dirt_factor: 0.21111
 
     clouds:
         raymarch_steps: 27
@@ -70,7 +70,7 @@ overrides:
         film_grain_strength: 0.1667
         color_lut: film_luts/fujifilm_f-125.png
         use_chromatic_aberration: True
-        chromatic_aberration_strength: 0.3187
+        chromatic_aberration_strength: 0.0975
         chromatic_aberration_samples: 2
         manual_camera_parameters: False
         min_exposure_value: 0.012
@@ -79,13 +79,13 @@ overrides:
         brightness_adaption_rate: 2.67
         darkness_adaption_rate: 0.79
         use_sharpen: True
-        sharpen_strength: 1.39
+        sharpen_strength: 1.05556
         sharpen_twice: False
 
     dof:
-        focal_point: 200.0
+        focal_point: 5.0
         focal_size: 0.0
-        blur_strength: 0.01
+        blur_strength: 0.0
         near_blur_strength: 0.0
 
     env_probes:
@@ -102,7 +102,7 @@ overrides:
 
     motion_blur:
         num_camera_samples: 6
-        camera_blur_factor: 0.3
+        camera_blur_factor: 0.2
         blur_factor: 0.5
         tile_size: 32
         max_blur_radius: 10.0
@@ -150,12 +150,12 @@ overrides:
 
     ssr:
         effect_scale: 1.0
-        trace_steps: 48
+        trace_steps: 128
         history_length: 16
         abort_on_object_infront: True
         intial_bias: 0.43
         hit_tolerance: 1.0
-        roughness_fade: 1.5
+        roughness_fade: 1.43
         skip_invalid_samples: True
         border_fade: 0.05
 
