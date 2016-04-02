@@ -25,7 +25,7 @@ overrides:
     ao:
         blur_normal_factor: 4.94
         blur_depth_factor: 4.83
-        occlusion_strength: 1.54222
+        occlusion_strength: 1.67
         technique: SSAO
         ssao_sample_radius: 79.61
         ssao_sample_count: 8
@@ -48,15 +48,15 @@ overrides:
 
     bloom:
         num_mipmaps: 8
-        bloom_strength: 1.01
+        bloom_strength: 1.45
         remove_fireflies: True
-        lens_dirt_factor: 0.3
+        lens_dirt_factor: 0.3556
 
     clouds:
         raymarch_steps: 27
 
     color_correction:
-        tonemap_operator: uncharted2
+        tonemap_operator: optimized
         reinhard_version: rgb
         exponential_factor: 1.67
         uc2t_shoulder_strength: 0.22
@@ -68,7 +68,7 @@ overrides:
         uc2t_reference_white: 11.2
         vignette_strength: 0.6444
         film_grain_strength: 0.1667
-        color_lut: film_luts/kodak_gold_200.png
+        color_lut: film_luts/fujifilm_f-125.png
         use_chromatic_aberration: True
         chromatic_aberration_strength: 0.3187
         chromatic_aberration_samples: 2
@@ -110,20 +110,20 @@ overrides:
 
     pssm:
         max_distance: 45.0
-        logarithmic_factor: 2.67
-        sun_distance: 1145.0
-        split_count: 3
+        logarithmic_factor: 2.37
+        sun_distance: 100.0
+        split_count: 5
         resolution: 2048
-        border_bias: 0.01943
+        border_bias: 0.0583
         use_pcf: True
         filter_sample_count: 32
-        filter_radius: 2.41
-        fixed_bias: 0.15559
-        slope_bias: 0.17
+        filter_radius: 0.87
+        fixed_bias: 0.1156
+        slope_bias: 0.02
         normal_bias: 0.0
         use_pcss: False
         pcss_search_samples: 32
-        pcss_penumbra_size: 300.0
+        pcss_penumbra_size: 30.09
         use_distant_shadows: True
         dist_shadow_resolution: 1024
         dist_shadow_clipsize: 806.67
@@ -151,7 +151,7 @@ overrides:
     ssr:
         effect_scale: 1.0
         trace_steps: 48
-        history_length: 10
+        history_length: 16
         abort_on_object_infront: True
         intial_bias: 0.43
         hit_tolerance: 1.0
@@ -160,7 +160,7 @@ overrides:
         border_fade: 0.05
 
     volumetrics:
-        intensity: 2.29839
+        intensity: 2.29999
 
     vxgi:
         grid_resolution: 256

@@ -2,10 +2,16 @@
 # Render Pipeline
 Deferred Rendering Pipeline with Physically Based Shading for the <a href="http://github.com/panda3d/panda3d">Panda3D Game Engine</a>.
 
-<img src="http://i.imgur.com/z9Yoyhy.png" />
+
+Car rendering:
+<img src="http://i.imgur.com/m4nPnm1.png" />
+
+Screen space reflections test:
 <img src="http://i.imgur.com/oOwLXAK.png" />
+
+Film LUT's (color grading) test:
 <img src="http://i.imgur.com/iTTBodd.png" />
-<a href="https://www.youtube.com/watch?v=IgkHf5ZHAAQ" target="_blank">Car Showcase Video</a> (A bit outdated)
+<a href="https://www.youtube.com/watch?v=SVRshBffzM4" target="_blank">Car Showcase Video</a> (A bit outdated)
 
 ### Core Features
 
@@ -14,6 +20,7 @@ Deferred Rendering Pipeline with Physically Based Shading for the <a href="http:
 - Advanced Post-Processing Effects and Framework
 - Time of Day System
 - Plugin System
+
 
 See the <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Features">Feature List</a>
 for a list of features, and list of techniques I intend to implement.

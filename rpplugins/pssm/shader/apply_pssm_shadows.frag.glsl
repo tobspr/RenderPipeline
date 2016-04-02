@@ -182,8 +182,11 @@ void main() {
         float ref_depth = projected.z - fixed_bias;
 
         // Find filter size
-        // vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);
-        vec2 filter_size = vec2(0.5 * filter_radius) * (1 / (1 + 0.7 * split));
+        vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);
+
+        // Increase filter size in the distance, to get better cache usage
+        filter_size *= (1.0 + 10.5 * distance(m.position, MainSceneData.camera_pos) / 100.0 );
+        // vec2 filter_size = vec2(0.5 * filter_radius) * (1 / (1 + 0.7 * split));
 
         #if GET_SETTING(pssm, use_pcss)
 
@@ -205,11 +208,18 @@ void main() {
             for (int i = 0; i < num_search_samples; ++i) {
 
                 // Find random sample locations on a poisson disk
-                vec2 offset = poisson_disk_2D_32[i];
+                vec2 offset = vec2(0);
+                if (num_search_samples <= 8)
+                    offset = poisson_disk_2D_8[i];
+                else if(num_search_samples <= 16)
+                    offset = poisson_disk_2D_16[i];
+                else
+                    offset = poisson_disk_2D_32[i];
+
 
                 // Find depth at sample location
                 float sampled_depth = textureLod(PSSMShadowAtlas,
-                    projected_coord + offset * filter_size * 2.0, 0).x;
+                    projected_coord + offset * filter_size * 4.0, 0).x;
 
                 // Compare the depth with the pixel depth, in case its smaller,
                 // we found a blocker

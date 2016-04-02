@@ -34,7 +34,14 @@ from panda3d.core import Shader
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 
-class sync_loading_op(object):
+__all__ = ("RPLoader",)
+
+class timed_loading_operation(object):
+
+    """ Context manager for a synchronous loading operation, keeping track
+    on how much time elapsed during the loading process, and warning about
+    long loading times. """
+
     def __init__(self, resource):
         self.resource = resource
         if isinstance(self.resource, (list, tuple)):
@@ -46,40 +53,49 @@ class sync_loading_op(object):
     def __exit__(self, *args):
         duration = (time.clock() - self.start_time) * 1000.0
         if duration > 70.0:
-            print("WARNING: Loading '" + self.resource + "' took", round(duration, 2), "ms")
+            RPObject.global_warn("RPLoader", "Loading '" + self.resource + "' took", round(duration, 2), "ms")
 
 class RPLoader(RPObject):
 
+    """ Generic loader class used by the pipeline. All loading of assets happens
+    here, which enables us to keep track of used resources """
+
     @classmethod
     def load_texture(cls, filename):
-        with sync_loading_op(filename):
+        """ Loads a 2D-texture from disk """
+        with timed_loading_operation(filename):
             return Globals.base.loader.load_texture(filename)
 
     @classmethod
     def load_cube_map(cls, filename, read_mipmaps=False):
-        with sync_loading_op(filename):
+        """ Loads a cube map from disk """
+        with timed_loading_operation(filename):
             return Globals.base.loader.load_cube_map(filename, readMipmaps=read_mipmaps)
 
     @classmethod
     def load_3d_texture(cls, filename):
-        with sync_loading_op(filename):
+        """ Loads a 3D-texture from disk """
+        with timed_loading_operation(filename):
             return Globals.base.loader.load_3d_texture(filename)
 
     @classmethod
     def load_font(cls, filename):
-        with sync_loading_op(filename):
+        """ Loads a font from disk """
+        with timed_loading_operation(filename):
             return Globals.base.loader.load_font(filename)
 
     @classmethod
     def load_shader(cls, *args):
-        with sync_loading_op(args):
+        """ Loads a shader from disk """
+        with timed_loading_operation(args):
             if len(args) == 1:
                 return Shader.load_compute(Shader.SL_GLSL, args[0])
             return Shader.load(Shader.SL_GLSL, *args)
 
     @classmethod
     def load_model(cls, filename):
-        with sync_loading_op(filename):
+        """ Loads a model from disk """
+        with timed_loading_operation(filename):
             return Globals.base.loader.load_model(filename)
 
     @classmethod
@@ -115,7 +131,7 @@ class RPLoader(RPObject):
             temp.write(tempfile_name + str(z_slice) + ".png")
 
         # Load the de-sliced texture from the ramdisk
-        texture_handle = RPLoader.load_3d_texture(tempfile_name + "/#.png")
+        texture_handle = cls.load_3d_texture(tempfile_name + "/#.png")
         vfs.unmount(ramdisk)
 
         return texture_handle
