@@ -55,17 +55,17 @@ Conversion is: Swap Y and Z and then negate X
 
 	</shape>
 
-<!-- 
+
 	<emitter type="point">
-		<spectrum name="intensity" value="500.0" />
+		<spectrum name="intensity" value="100.0" />
 		<point name="position" x="-10" z="-10" y="10" />
 	</emitter>
 
 	<emitter type="point">
-		<spectrum name="intensity" value="500.0" />
+		<spectrum name="intensity" value="100.0" />
 		<point name="position" x="10" z="-10" y="10" />
 	</emitter>
- -->
+
 	<emitter type="envmap">
 		<!-- <string name="filename" value="tex/envmap.png" /> -->
 		<string name="filename" value="tex/white.png" />

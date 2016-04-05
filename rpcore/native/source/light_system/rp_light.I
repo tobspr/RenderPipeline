@@ -194,7 +194,7 @@ inline const LVecBase3f& RPLight::get_pos() const {
 /**
  * @brief Sets the lights color
  * @details This sets the lights color. The color should not include the brightness
- *   of the light, you should control that with the lumens. The color specifies
+ *   of the light, you should control that with the energy. The color specifies
  *   the lights "tint" and will get multiplied with its specular and diffuse
  *   contribution.
  *
@@ -224,7 +224,7 @@ inline void RPLight::set_color(float r, float g, float b) {
 /**
  * @brief Returns the lights color
  * @details This returns the light color, previously set with RPLight::set_color.
- *   This does not include the lumens of the light. It might differ from what
+ *   This does not include the energy of the light. It might differ from what
  *   was set with set_color, because the color is normalized by dividing it
  *   by its luminance.
  * @return Light-color
@@ -234,26 +234,26 @@ inline const LVecBase3f& RPLight::get_color() const {
 }
 
 /**
- * @brief Sets the lumens of the light
- * @details This sets the lumens of the light, which can be seen as the brightness
+ * @brief Sets the energy of the light
+ * @details This sets the energy of the light, which can be seen as the brightness
  *   of the light. It will get multiplied with the normalized color.
  *
- * @param lumens Lumens of the light
+ * @param energy energy of the light
  */
-inline void RPLight::set_lumens(float lumens) {
-    _lumens = lumens;
+inline void RPLight::set_energy(float energy) {
+    _energy = energy;
     set_needs_update(true);
 }
 
 /**
- * @brief Returns the lumens of the light
- * @details This returns the lumens of the light, previously set with
- *   RPLight::set_lumens.
+ * @brief Returns the energy of the light
+ * @details This returns the energy of the light, previously set with
+ *   RPLight::set_energy.
  *
- * @return Lumens of the light
+ * @return energy of the light
  */
-inline float RPLight::get_lumens() const {
-    return _lumens;
+inline float RPLight::get_energy() const {
+    return _energy;
 }
 
 /**

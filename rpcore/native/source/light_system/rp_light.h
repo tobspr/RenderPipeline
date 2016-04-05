@@ -87,9 +87,9 @@ class RPLight : public ReferenceCount {
 
         void set_color_from_temperature(float temperature);
 
-        inline void set_lumens(float lumens);
-        inline float get_lumens() const;
-        MAKE_PROPERTY(lumens, get_lumens, set_lumens);
+        inline void set_energy(float energy);
+        inline float get_energy() const;
+        MAKE_PROPERTY(energy, get_energy, set_energy);
 
         inline LightType get_light_type() const;
         MAKE_PROPERTY(light_type, get_light_type);
@@ -122,7 +122,7 @@ class RPLight : public ReferenceCount {
         bool _casts_shadows;
         LVecBase3f _position;
         LVecBase3f _color;
-        float _lumens;
+        float _energy;
         LightType _light_type;
         float _near_plane;
 

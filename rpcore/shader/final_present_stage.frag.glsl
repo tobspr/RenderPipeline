@@ -27,6 +27,7 @@
 #version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/color_spaces.inc.glsl"
 
 uniform sampler2D SourceTex;
 out vec4 result;
@@ -35,6 +36,12 @@ out vec4 result;
 
 void main() {
   vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
-
   result = vec4(texture(SourceTex, texcoord).xyz, 1);
+
+  #if 0
+    // Luminance debug mode
+    vec3 color = texture(SourceTex, texcoord).xyz;
+    float luminance = get_luminance(color);
+    result.xyz = luminance.xxx;
+  #endif
 }

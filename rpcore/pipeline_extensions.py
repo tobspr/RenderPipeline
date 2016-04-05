@@ -177,10 +177,24 @@ class PipelineExtensions(object):
             rp_light = PointLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.lumens = 100.0 * light_node.color.w
+            rp_light.energy = 100.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
+            rp_light.inner_radius = 0.5
+
+            # xxx
+            if light.get_name() == "PR1":
+                rp_light.inner_radius = 0.0333
+            elif light.get_name() == "PR2":
+                rp_light.inner_radius = 0.1
+            elif light.get_name() == "PR3":
+                rp_light.inner_radius = 0.3
+            elif light.get_name() == "PR4":
+                rp_light.inner_radius = 0.9
+
+            print(light.get_name())
+
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
@@ -190,7 +204,7 @@ class PipelineExtensions(object):
             rp_light = SpotLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.lumens = 100.0 * light_node.color.w
+            rp_light.energy = 100.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x

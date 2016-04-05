@@ -203,7 +203,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             float phaseR = phaseFunctionR(nustart_pos);
             float phaseM = phaseFunctionM(nustart_pos);
             inscattered_light = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
-            inscattered_light *= 150.0;
+            // inscattered_light *= 1.0;
         }
     }
 
@@ -211,7 +211,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
     #if !HAVE_PLUGIN(color_correction)
         // Reduce scattering, otherwise its way too bright without automatic
         // exposure
-        inscattered_light /= 35.0;
+        inscattered_light /= 1.0;
     #endif
 
     return inscattered_light;
@@ -237,7 +237,7 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
         fog_factor = 1;
     } else {
         scattering = vec3(1, 1.3, 2.0) * fog_factor * 1.5;
-        // scattering *= 0;
+        scattering *= 0;
         // scattering *= 1.5;
     }
 

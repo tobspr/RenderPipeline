@@ -5,21 +5,20 @@
 
 enabled:
     - ao
-    - bloom
+    # - bloom
     - color_correction
-    - env_probes
+    # - env_probes
     - fxaa
     - motion_blur
+    # - skin_shading
     - smaa
-    - ssr
+    # - ssr
     # - clouds
     # - dof
-    - pssm
-    - scattering
-    - skin_shading
-    - volumetrics
+    # - pssm
+    # - scattering
+    # - volumetrics
     # - vxgi
-
 
 overrides:
     ao:
@@ -151,7 +150,7 @@ overrides:
     ssr:
         effect_scale: 1.0
         trace_steps: 128
-        history_length: 16
+        history_length: 8
         abort_on_object_infront: True
         intial_bias: 0.43
         hit_tolerance: 1.0

@@ -45,7 +45,7 @@ RPLight::RPLight(LightType light_type) {
     _ies_profile = -1;
     _source_resolution = 512;
     _near_plane = 0.1;
-    _lumens = 20.0;
+    _energy = 20.0;
 }
 
 /**
@@ -74,9 +74,9 @@ void RPLight::write_to_command(GPUCommand &cmd) {
 
     cmd.push_vec3(_position);
 
-    // Get the lights color by multiplying color with lumens, I hope thats
+    // Get the lights color by multiplying color with energy, I hope thats
     // physically correct.
-    cmd.push_vec3(_color * _lumens);
+    cmd.push_vec3(_color * _energy);
 }
 
 /**

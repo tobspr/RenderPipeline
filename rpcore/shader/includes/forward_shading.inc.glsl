@@ -61,8 +61,8 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
     #endif
 
 
-    // shading_result += basecolor * ( diff_env);
-    shading_result += (0.5 + 0.5 * basecolor) * 0.5;
+    // shading_result += basecolor * (0.2 + 0.5 * diff_env);
+    shading_result += (0.5 + 0.5 * basecolor) * 0.0;
 
     // Fresnel term
     // shading_result += 0.16 * (0.005 + diff_env) * 0.2;
@@ -112,7 +112,7 @@ vec3 get_sun_shading(MaterialBaseInput mInput, vec3 basecolor) {
 
         if (sun_vector.z >= SUN_VECTOR_HORIZON) {
             float NxL = saturate(dot(sun_vector, vOutput.normal));
-            shading_result += NxL * sun_color * shadow_term * basecolor / M_PI;
+            shading_result += NxL * sun_color * shadow_term * basecolor;
         }
 
         return shading_result;
@@ -142,9 +142,11 @@ vec3 get_forward_light_shading(vec3 basecolor) {
         switch(light_type) {
             case LT_POINT_LIGHT: {
                 float radius = get_pointlight_radius(light_data);
+                float inner_radius = get_pointlight_inner_radius(light_data);
                 float att = attenuation_curve(dot(l, l), radius);
                 float NxL = saturate(dot(vOutput.normal, l) / l_len);
-                shading_result += saturate(att) * NxL * (basecolor * light_color);
+                float energy = get_spherical_area_light_energy(0.4, inner_radius);
+                shading_result += saturate(att) * NxL * (basecolor * light_color) * energy;
                 break;
             }
 

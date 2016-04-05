@@ -160,7 +160,7 @@ class Application(ShowBase):
         light = PointLight()
         light.pos = 20.0, -0.85, -1.31
         light.radius = 100.0
-        light.lumens = 2500
+        light.energy = 2500
         light.set_color_from_temperature(8000)
         # self.render_pipeline.add_light(light)
 
@@ -168,7 +168,7 @@ class Application(ShowBase):
         light.pos = -11.2, -13.84, -9.24
         light.radius = 1e20
         light.set_color_from_temperature(8000)
-        light.lumens = 2500
+        light.energy = 2500
         # self.render_pipeline.add_light(light)
 
         # envprobe = self.render_pipeline.add_environment_probe()

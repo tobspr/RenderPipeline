@@ -424,4 +424,4 @@ class RenderPipeline(PipelineExtensions, RPObject):
     def _adjust_camera_settings(self):
         """ Sets the default camera settings """
         self._showbase.camLens.set_near_far(0.1, 70000)
-        self._showbase.camLens.set_fov(40)
+        self._showbase.camLens.set_fov(60)

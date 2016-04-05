@@ -96,7 +96,7 @@ class ScalarType(BaseType):
         self.unit = data.pop("unit")
         self.minvalue, self.maxvalue = data.pop("range")
         self.logarithmic_factor = data.pop("logarithmic_factor", 1.0)
-        if self.unit not in ("degree", "meter", "percent", "none"):
+        if self.unit not in ("degree", "meter", "percent", "klux", "none"):
             raise Exception("Invalid unit type: {}".format(self.unit))
 
         self.default = self.get_linear_value(data.pop("default"))
@@ -110,6 +110,7 @@ class ScalarType(BaseType):
             "degree": u'\N{DEGREE SIGN}',
             "percent": u'%',
             "meter": u'm',
+            "klux": u' L',
             "none": ''
         }[self.unit]
         if self.unit == "percent":

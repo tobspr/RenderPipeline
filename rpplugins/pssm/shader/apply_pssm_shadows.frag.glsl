@@ -34,6 +34,7 @@
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/lighting_pipeline.inc.glsl"
+#pragma include "includes/lights.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
@@ -103,7 +104,6 @@ void main() {
         return;
     }
 
-    vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
 
     // Variables to accumulate the shadows
     float shadow_factor = 1.0;
@@ -336,16 +336,22 @@ void main() {
     #endif
 
     // Compute the sun lighting
-
     vec3 v = normalize(MainSceneData.camera_pos - m.position);
-    vec3 r = reflect(-v, m.normal);
+    vec3 l = sun_vector;
+    vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
 
-    // Spherical sun disk
-    float sun_radius = 696000.0;
-    vec3 L = sun_vector * 14960000.0;
-    vec3 center_to_ray = dot(L, r) * r - L;
-    vec3 closest_point = L + center_to_ray * saturate(sun_radius / length(center_to_ray));
-    vec3 l = normalize(closest_point);
+    {
+        vec3 reflected_dir = reflect(-v, m.normal);
+        const float sun_angular_radius = degree_to_radians(0.54);
+        const float r = sin(sun_angular_radius); // Disk radius
+        const float d = cos(sun_angular_radius); // Distance to disk
+        
+        // Closest point to a disk (since the radius is small, this is
+        // a good approximation)
+        float DdotR = dot(sun_vector, reflected_dir);
+        vec3 S = reflected_dir - DdotR * sun_vector;
+        l = DdotR < d ? normalize(d * sun_vector + normalize(S) * r) : reflected_dir;
+    }
 
     lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, transmittance);
 

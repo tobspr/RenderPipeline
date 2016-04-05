@@ -43,10 +43,6 @@ float attenuation_curve(float dist_sq, float radius) {
     #endif
 }
 
-// Computes the attenuation for a point light
-float get_pointlight_attenuation(vec3 l, float radius, float dist_sq, int ies_profile) {
-    return attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
-}
 
 // Computes the attenuation for a spot light
 float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist_sq, int ies_profile) {
@@ -62,9 +58,27 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 }
 
 
+// Closest point on spherical area light, also returns energy factor
+vec3 get_spherical_area_light_vector(float radius, vec3 l_unscaled, vec3 v, vec3 n) {
+
+    // XXX: Test if this is faster
+    if (radius < 0.01) return l_unscaled;
+
+    vec3 r = reflect(-v, n);
+    vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
+    vec3 closest_point = l_unscaled + center_to_ray * saturate(radius / max(1e-3, length(center_to_ray)));
+    return closest_point;
+}
+
+float get_spherical_area_light_energy(float alpha, float radius) {
+    // return square(alpha * M_PI);
+    return 1.0;
+}
+
 // Computes a lights influence
 // @TODO: Make this method faster
-vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec3 transmittance) {
+vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow,
+    vec3 transmittance, float energy, float clearcoat_energy) {
 
     // Debugging: Fast rendering path
     #if 0
@@ -74,10 +88,8 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     float NxL = 0.0;
 
     if (m.shading_model == SHADING_MODEL_FOLIAGE) {
-        // NxL = saturate(0.9 + max(0, dot(m.normal, l)));
         NxL = saturate(max(0, dot(m.normal, l)));
         transmittance = transmittance.xxx;
-        // transmittance = vec3(1);
     } else if (m.shading_model == SHADING_MODEL_SKIN) {
         NxL = saturate(0.3 + dot(m.normal, l));
     } else {
@@ -101,7 +113,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // float distribution = brdf_distribution(NxH, m.roughness);
 
     // We add some roughness for clearcoat - this is due to the reason that
-    // light gets scattered and though a wider highlight is shown.
+    // light gets scattered and thus a wider highlight is shown.
     // This approximates the reference in mitsuba very well.
     float distribution = brdf_distribution(NxH, m.roughness * (m.shading_model == SHADING_MODEL_CLEARCOAT ? 2.0 : 1.0));
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
@@ -110,6 +122,8 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // The division by 4 * NxV * NxL is done in the geometric (visibility) term
     // already, so to evaluate the complete brdf we just do a multiply
     shading_result += (distribution * visibility) * fresnel;
+
+    shading_result *= energy;
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         float distribution_coat = brdf_distribution(NxH, CLEARCOAT_ROUGHNESS);
@@ -121,9 +135,13 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
         shading_result *= 0.4 + 3.0 * m.linear_roughness;
         shading_result *= 0.5 + 0.5 * m.basecolor;
 
-        vec3 coat_spec = (distribution_coat * visibility_coat) * fresnel_coat;
-        shading_result += (distribution_coat * visibility_coat) * fresnel_coat;
+        vec3 coat_spec = (distribution_coat * visibility_coat * clearcoat_energy) * fresnel_coat;
+        shading_result += coat_spec;
     }
 
-    return (shading_result * light_color) * (attenuation * shadow * NxL) * transmittance;
+    return max(vec3(0), (shading_result * light_color) * (attenuation * shadow * NxL) * transmittance);
+}
+
+vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec3 transmittance) {
+    return apply_light(m, v, l, light_color, attenuation, shadow, transmittance, 1.0, 1.0);
 }

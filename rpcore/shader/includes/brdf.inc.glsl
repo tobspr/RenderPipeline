@@ -96,7 +96,7 @@ float brdf_distribution_beckmann(float NxH, float roughness) {
 float brdf_distribution_ggx(float NxH , float roughness) {
     float nxh_sq = NxH * NxH;
     float tan_sq = (1 - nxh_sq) / nxh_sq;
-    float f = roughness / max(1e-6, nxh_sq * (roughness * roughness + tan_sq) );
+    float f = roughness / max(1e-10, nxh_sq * (roughness * roughness + tan_sq) );
     return ONE_BY_PI * f * f;
 }
 
@@ -245,6 +245,7 @@ float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) 
 float brdf_distribution(float NxH, float roughness)
 {
     NxH = max(1e-5, NxH);
+    roughness = max(0.002, roughness);
 
     // Choose one:
     // return brdf_distribution_blinn_phong(NxH, roughness);
@@ -329,15 +330,6 @@ vec3 get_brdf_from_lut(sampler2D lut_texture, float NxV, float roughness) {
     // Unpack packed data
     data *= data;
     return data;
-}
-
-vec3 weight_environment_fresnel(vec3 source_brdf, Material m) {
-    float diff_intensity = get_luminance(m.basecolor);
-    float lut_intensity = get_luminance(vec3(0, 1, 0));
-    float diff_scale = diff_intensity / lut_intensity;
-    float spec_scale = 1.0 / max(1e-2, diff_scale);
-
-    return saturate(vec3(source_brdf.x * spec_scale, diff_scale * source_brdf.yz));
 }
 
 float get_effective_roughness(Material m) {
