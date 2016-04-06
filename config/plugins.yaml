@@ -7,7 +7,7 @@ enabled:
     - ao
     # - bloom
     - color_correction
-    # - env_probes
+    - env_probes
     - fxaa
     - motion_blur
     # - skin_shading

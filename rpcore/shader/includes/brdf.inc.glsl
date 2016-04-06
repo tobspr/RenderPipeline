@@ -93,11 +93,10 @@ float brdf_distribution_beckmann(float NxH, float roughness) {
     return exp( (nxh_sq - 1.0) / (r_sq * nxh_sq)) / (M_PI  * r_sq * nxh_sq * nxh_sq);
 }
 
-float brdf_distribution_ggx(float NxH , float roughness) {
-    float nxh_sq = NxH * NxH;
-    float tan_sq = (1 - nxh_sq) / nxh_sq;
-    float f = roughness / max(1e-10, nxh_sq * (roughness * roughness + tan_sq) );
-    return ONE_BY_PI * f * f;
+float brdf_distribution_ggx(float NxH, float alpha) {
+    float r_square = alpha * alpha;
+    float f = (NxH * r_square - NxH) * NxH + 1.0;
+    return r_square / (f * f);
 }
 
 float brdf_distribution_exponential(float NxH, float roughness) {
@@ -150,6 +149,14 @@ float _schlick_g(float NxL, float roughness_sq) {
 float brdf_visibility_schlick(float NxV, float NxL, float roughness) {
     float r_sq = roughness * roughness;
     return _schlick_g(NxL, r_sq) * _schlick_g(NxV, r_sq);
+}
+
+
+float brdf_visibility_smith_ggx(float NxL, float NxV, float roughness) {
+    float alpha = roughness * roughness;
+    float lambda_GGXV = NxL * sqrt((-NxV * alpha + NxV) * NxV + alpha);
+    float lambda_GGXL = NxV * sqrt((-NxL * alpha + NxL) * NxL + alpha);
+    return 0.5 / (lambda_GGXV + lambda_GGXL);
 }
 
 
@@ -237,15 +244,15 @@ float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) 
 
     // XXX: When using this brdf, stuff appears very dark - most likely
     // there is an error somewhere in the brdf implementationd
-    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
+    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness) / M_PI;
 }
 
 
 // Distribution
 float brdf_distribution(float NxH, float roughness)
 {
-    NxH = max(1e-5, NxH);
-    roughness = max(0.002, roughness);
+    NxH = max(1e-9, NxH);
+    roughness = max(0.0019, roughness);
 
     // Choose one:
     // return brdf_distribution_blinn_phong(NxH, roughness);
@@ -260,14 +267,16 @@ float brdf_distribution(float NxH, float roughness)
 float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughness) {
 
     // Choose one:
-    float vis = brdf_visibility_neumann(NxV, NxL);
+    // float vis = brdf_visibility_neumann(NxV, NxL);
+    float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
     // float vis = brdf_visibility_schlick(NxV, NxL, roughness);
     // float vis = brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
     // float vis = brdf_visibility_smith(NxL, NxV, roughness);
 
     // Normalize the brdf
-    // return vis;
-    return vis / max(1e-5, 4.0 * VxH);
+    // return vis / max(1e-5, 4.0 * VxH);
+
+    return vis;
 }
 
 // Fresnel

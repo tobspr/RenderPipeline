@@ -41,7 +41,7 @@ uniform sampler2D PrefilteredCoatBRDF;
 
 uniform samplerCube DefaultEnvmap;
 
-#define USE_WHITE_ENVIRONMENT 1
+#define USE_WHITE_ENVIRONMENT 0
 
 #if HAVE_PLUGIN(scattering)
     uniform samplerCube ScatteringIBLDiffuse;
@@ -142,7 +142,7 @@ void main() {
     vec3 ibl_specular = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
     // Get cheap irradiance by sampling low levels of the environment map
-    float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 6.5;
+    float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
     vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal), ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
     // Scattering specific code
@@ -206,7 +206,7 @@ void main() {
 
 
     // Pre-Integrated environment BRDF
-    vec3 env_brdf = get_brdf_from_lut(PrefilteredBRDF, NxV, roughness, m.specular_ior);
+    vec3 env_brdf = get_brdf_from_lut(PrefilteredBRDF, NxV, sqrt(roughness), m.specular_ior);
 
     // Exact metallic brdf lut, unused right now
     // vec3 env_brdf_metal = get_brdf_from_lut(PrefilteredMetalBRDF, NxV, roughness);
@@ -217,9 +217,9 @@ void main() {
     diffuse_ambient *= env_brdf.r;
 
     // Approximate metallic fresnel
-    float metallic_energy = 1.0 - 0.6 * m.linear_roughness;
-    float metallic_energy_f0 = 0.95 - 0.3 * m.roughness;
-    vec3 metallic_fresnel = mix(m.basecolor * metallic_energy_f0, vec3(metallic_energy), pow(1 - NxV, 4.0));
+    vec3 metallic_energy_f0 = vec3(1.0 - 0.7 * m.roughness) * m.basecolor;
+    vec3 metallic_energy_f90 = mix(vec3(1), 0.5 * m.basecolor, m.linear_roughness);
+    vec3 metallic_fresnel = mix(metallic_energy_f0, metallic_energy_f90, pow(1 - NxV, 3.6 - 2.6 * m.linear_roughness));
 
     // Mix between normal and metallic fresnel
     fresnel = mix(fresnel, metallic_fresnel, m.metallic);
@@ -237,14 +237,15 @@ void main() {
                 get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV) + mipmap_bias).xyz;
         #endif
 
-        #if USE_WHITE_ENVIRONMENT
+        #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
             ibl_specular_base = vec3(1);
         #endif
 
         specular_ambient = env_brdf_coat.g * ibl_specular;
 
         // Approximation
-        float clearcoat_strength = 0.95 + 2 * saturate(m.linear_roughness - 0.35);
+        // float clearcoat_strength = 0.95 + 2 * saturate(m.linear_roughness - 0.35);
+        float clearcoat_strength = 1.0;
         specular_ambient += env_brdf_coat.r * ibl_specular_base * m.basecolor * clearcoat_strength;
 
     } else {

@@ -70,9 +70,17 @@ vec3 get_spherical_area_light_vector(float radius, vec3 l_unscaled, vec3 v, vec3
     return closest_point;
 }
 
-float get_spherical_area_light_energy(float alpha, float radius) {
-    // return square(alpha * M_PI);
-    return 1.0;
+float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) {
+
+    // return square(alpha / saturate(radius / dist_sq))
+
+    // xxx use normal distance
+    // return square(clamp(radius / (sqrt(dist_sq) * 2.0) + alpha, 0.0, 1.0)) / M_PI;
+
+    // float energy = square(clamp(radius / (distL * 2.0) + alpha, 0.0, 1.0 ));
+
+    // Approximation to match mitsuba
+    return pow(alpha, 1.2) * 70.0 * (1 - saturate( (alpha - 0.5))) * 0;
 }
 
 // Computes a lights influence
@@ -85,19 +93,17 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
         return max(0, dot(m.normal, l)) * light_color * attenuation * m.basecolor * shadow;
     #endif
 
-    float NxL = 0.0;
+    float NxL = saturate(dot(m.normal, l));
 
     if (m.shading_model == SHADING_MODEL_FOLIAGE) {
-        NxL = saturate(max(0, dot(m.normal, l)));
         transmittance = transmittance.xxx;
     } else if (m.shading_model == SHADING_MODEL_SKIN) {
         NxL = saturate(0.3 + dot(m.normal, l));
     } else {
         transmittance = vec3(1);
-        NxL = saturate(dot(m.normal, l));
     }
 
-    // Compute the dot product
+    // Compute the dot products
     vec3 h = normalize(l + v);
     float NxV = max(1e-5, dot(m.normal, v));
     float NxH = max(1e-5, dot(m.normal, h));
@@ -107,7 +113,8 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     vec3 f0 = get_material_f0(m);
 
     // Diffuse contribution
-    vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness) * m.basecolor * (1 - m.metallic);
+    vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness) 
+                          * m.basecolor * (1 - m.metallic);
 
     // Specular contribution
     // float distribution = brdf_distribution(NxH, m.roughness);
@@ -115,13 +122,13 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // We add some roughness for clearcoat - this is due to the reason that
     // light gets scattered and thus a wider highlight is shown.
     // This approximates the reference in mitsuba very well.
-    float distribution = brdf_distribution(NxH, m.roughness * (m.shading_model == SHADING_MODEL_CLEARCOAT ? 2.0 : 1.0));
+    float distribution = brdf_distribution(NxH, m.roughness * (m.shading_model == SHADING_MODEL_CLEARCOAT ? 1.4 : 1.0)); // xxx
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = mix(f0, vec3(1), brdf_schlick_fresnel(f0, LxH));
 
     // The division by 4 * NxV * NxL is done in the geometric (visibility) term
     // already, so to evaluate the complete brdf we just do a multiply
-    shading_result += (distribution * visibility) * fresnel;
+    shading_result += (distribution * visibility) * fresnel / M_PI;
 
     shading_result *= energy;
 

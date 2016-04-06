@@ -92,12 +92,12 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
     l = get_spherical_area_light_vector(inner_radius, l, view_vector, m.normal);
     vec3 l_norm         = normalize(l);
 
-    float energy = get_spherical_area_light_energy(m.roughness, inner_radius);
-    float clearcoat_energy = get_spherical_area_light_energy(CLEARCOAT_ROUGHNESS, inner_radius);
-    float dist = max(1e-3, l_len_square - square(inner_radius));
+    float dist_sq = max(1e-3, l_len_square - square(inner_radius));
+    float energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist_sq);
+    float clearcoat_energy = get_spherical_area_light_energy(CLEARCOAT_ROUGHNESS, inner_radius, dist_sq);
 
     // Get the point light attenuation
-    float attenuation = attenuation_curve(dist, radius) * get_ies_factor(-l, ies_profile);
+    float attenuation = attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
 
     // Compute the lights influence
     return apply_light(m, view_vector, l_norm, get_light_color(light_data),

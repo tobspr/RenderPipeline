@@ -44,14 +44,16 @@ class Application(ShowBase):
         light.pos = 10, -10, 10
         light.radius = 1e20
         light.color = (1, 1, 1)
-        light.energy = 100
+        light.inner_radius = 4.0
+        light.energy = 3
         self.render_pipeline.add_light(light)
 
         light = PointLight()
         light.pos = -10, -10, 10
         light.radius = 1e20
         light.color = (1, 1, 1)
-        light.energy = 100
+        light.inner_radius = 4.0
+        light.energy = 3
         self.render_pipeline.add_light(light)
 
         for mat in sphere.find_all_materials():

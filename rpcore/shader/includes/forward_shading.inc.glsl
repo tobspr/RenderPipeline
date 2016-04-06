@@ -145,7 +145,7 @@ vec3 get_forward_light_shading(vec3 basecolor) {
                 float inner_radius = get_pointlight_inner_radius(light_data);
                 float att = attenuation_curve(dot(l, l), radius);
                 float NxL = saturate(dot(vOutput.normal, l) / l_len);
-                float energy = get_spherical_area_light_energy(0.4, inner_radius);
+                float energy = get_spherical_area_light_energy(0.4, inner_radius, length(l));
                 shading_result += saturate(att) * NxL * (basecolor * light_color) * energy;
                 break;
             }
