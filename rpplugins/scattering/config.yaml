@@ -74,12 +74,11 @@ daytime_settings: !!omap
 
     - sun_intensity:
         type: scalar
-        unit: percent
-        range: [0.0, 6.0]
-        default: 5.0
+        unit: klux
+        range: [0.0, 150.0]
+        default: 100.0
         label: Sun Intensity
-        description: Controls the intensity of the sun
-        logarithmic_factor: 2.0
+        description: Controls the intensity of the sun in K-LUX (1000 lux)
 
     - sun_color:
         type: color

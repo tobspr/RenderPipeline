@@ -21,9 +21,11 @@ overlay = PNMImage("res/overlay.png")
 
 materials_to_test = []
 
+GOLD_F0 = (1, 0.867136, 0.358654)
+
 # materials_to_test.append({
 #         "name": "Gold",
-#         "basecolor": (1.0, 0.85, 0.345),
+#         "basecolor": GOLD_F0,
 #         "roughness": 0.1,
 #         "type": "metallic",
 #         "material_src": "Au"
@@ -38,57 +40,9 @@ materials_to_test = []
 
 # materials_to_test.append({
 #         "name": "GoldRough",
-#         "basecolor": (1.0, 0.85, 0.345),
+#         "basecolor": GOLD_F0,
 #         "roughness": 0.4,
 #         "type": "metallic",
-#         "material_src": "Au"
-#     })
-
-# materials_to_test.append({
-#         "name": "ClearcoatR0.0",
-#         "basecolor": (1.0, 0.85, 0.345),
-#         "roughness": 0.001,
-#         "type": "clearcoat",
-#         "material_src": "Au"
-#     })
-
-# materials_to_test.append({
-#         "name": "ClearcoatR0.1",
-#         "basecolor": (1.0, 0.85, 0.345),
-#         "roughness": 0.1,
-#         "type": "clearcoat",
-#         "material_src": "Au"
-#     })
-
-# materials_to_test.append({
-#         "name": "ClearcoatR0.2",
-#         "basecolor": (1.0, 0.85, 0.345),
-#         "roughness": 0.2,
-#         "type": "clearcoat",
-#         "material_src": "Au"
-#     })
-
-# materials_to_test.append({
-#         "name": "ClearcoatR0.3",
-#         "basecolor": (1.0, 0.85, 0.345),
-#         "roughness": 0.3,
-#         "type": "clearcoat",
-#         "material_src": "Au"
-#     })
-
-# materials_to_test.append({
-#         "name": "ClearcoatR0.4",
-#         "basecolor": (1.0, 0.85, 0.345),
-#         "roughness": 0.4,
-#         "type": "clearcoat",
-#         "material_src": "Au"
-#     })
-
-# materials_to_test.append({
-#         "name": "ClearcoatR0.5",
-#         "basecolor": (1.0, 0.85, 0.345),
-#         "roughness": 0.5,
-#         "type": "clearcoat",
 #         "material_src": "Au"
 #     })
 
@@ -156,49 +110,40 @@ materials_to_test = []
 #         "roughness": 0.4
 #     })
 
-# materials_to_test.append({
-#         "name": "Plastic-R0.0",
-#         "basecolor": (1, 0, 0),
-#         "ior": 1.51,
-#         "roughness": 0.0
-#     })
 
-# materials_to_test.append({
-#         "name": "Plastic-R0.2",
-#         "basecolor": (1, 0, 0),
-#         "ior": 1.51,
-#         "roughness": 0.2
-#     })
+for i in range(11):
+    roughness = i / 10.0
+    
+    materials_to_test.append({
+            "name": "Plastic-R" + str(roughness),
+            "basecolor": (1, 0, 0),
+            "ior": 1.51,
+            "roughness": roughness
+        })
+    
+    materials_to_test.append({
+            "name": "Gold-R" + str(roughness),
+            "basecolor": GOLD_F0,
+            "ior": 1.51,
+            "type": "metallic",
+            "material_src": "Au",
+            "roughness": roughness
+        })
 
-# materials_to_test.append({
-#         "name": "Plastic-R0.4",
-#         "basecolor": (1, 0, 0),
-#         "ior": 1.51,
-#         "roughness": 0.4
-#     })
+    materials_to_test.append({
+            "name": "Clearcoat-R" + str(roughness),
+            "basecolor": (1, 0.85, 0.345),
+            "material_src": "Au",
+            "type": "clearcoat",
+            "roughness": roughness
+        })
 
-# materials_to_test.append({
-#         "name": "Plastic-R0.7",
-#         "basecolor": (1, 0, 0),
-#         "ior": 1.51,
-#         "roughness": 0.7
-#     })
-
-# materials_to_test.append({
-#         "name": "Plastic-R1.0",
-#         "basecolor": (1, 0, 0),
-#         "ior": 1.51,
-#         "roughness": 1.0
-#     })
-
-
-materials_to_test.append({
-        "name": "SimpleDiffuseTest",
-        "basecolor": (0.3, 0.3, 0.3),
-        "ior": 1.51,
-        "roughness": 0.8
-    })
-
+    materials_to_test.append({
+            "name": "Diffuse-R" + str(roughness),
+            "basecolor": (0.8, 0.8, 0.8),
+            "ior": 1.16,
+            "roughness": roughness
+        })
 
 
 for material in materials_to_test:

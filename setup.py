@@ -46,7 +46,6 @@ DEVNULL = open(os.path.devnull, "w")
 SETUP_DIR = os.path.dirname(os.path.realpath(__file__))
 CURRENT_STEP = 0
 OPT_SKIP_NATIVE = "--skip-native" in sys.argv
-OPT_AUTO_INSTALL = "--auto-install" in sys.argv
 
 os.chdir(SETUP_DIR)
 sys.path.insert(0, ".")
@@ -184,7 +183,7 @@ def setup():
     """ Main setup routine """
 
     print("-" * 79)
-    print("\nRender Pipeline Setup 1.1\n")
+    print("\nRender Pipeline Setup 1.2\n")
     print("-" * 79)
 
     print_step("Checking Panda3D Modules")
@@ -207,7 +206,7 @@ def setup():
                  "fallback (e.g. PSSM). Do you want to compile the C++ modules? (y/n):")
 
         # Dont install the c++ modules when using travis
-        if not OPT_AUTO_INSTALL and get_user_choice(query):
+        if get_user_choice(query):
             check_cmake()
 
             write_flag("rpcore/native/use_cxx.flag", True)
@@ -221,27 +220,25 @@ def setup():
         else:
             write_flag("rpcore/native/use_cxx.flag", False)
 
-    if not OPT_AUTO_INSTALL:
+    print_step("Extracting .gz files ...")
+    extract_gz_files(os.path.join(SETUP_DIR, "data/"))
 
-        print_step("Extracting .gz files ...")
-        extract_gz_files(os.path.join(SETUP_DIR, "data/"))
+    print_step("Generating .txo files ...")
+    exec_python_file("data/generate_txo_files.py")
 
-        print_step("Generating .txo files ...")
-        exec_python_file("data/generate_txo_files.py")
+    print_step("Filtering default cubemap ..")
+    exec_python_file("data/default_cubemap/filter.py")
 
-        print_step("Filtering default cubemap ..")
-        exec_python_file("data/default_cubemap/filter.py")
+    print_step("Precomputing film grain .. ")
+    exec_python_file("data/film_grain/generate.py")
 
-        print_step("Precomputing film grain .. ")
-        exec_python_file("data/film_grain/generate.py")
+    print_step("Running shader scripts .. ")
+    exec_python_file("rpplugins/env_probes/shader/generate_mip_shaders.py")
 
-        print_step("Running shader scripts .. ")
-        exec_python_file("rpplugins/env_probes/shader/generate_mip_shaders.py")
+    print_step("Precomputing clouds ..")
+    exec_python_file("rpplugins/clouds/resources/precompute.py")
 
-        print_step("Precomputing clouds ..")
-        exec_python_file("rpplugins/clouds/resources/precompute.py")
-
-        ask_download_samples()
+    ask_download_samples()
 
     # -- Further setup code follows here --
 

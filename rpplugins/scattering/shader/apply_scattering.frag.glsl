@@ -50,8 +50,8 @@ void main() {
 
     // Fetch scattering
     float fog_factor = 0.0;
-    vec3 inscattered_light = DoScattering(m.position, view_vector, fog_factor);
-    inscattered_light *= TimeOfDay.scattering.sun_intensity
+    vec3 inscattered_light = DoScattering(m.position, view_vector, fog_factor)
+                                * TimeOfDay.scattering.sun_intensity;
                             /* * TimeOfDay.scattering.sun_color * 0.01*/;
 
 
@@ -61,14 +61,14 @@ void main() {
             vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
             cloud_color = pow(cloud_color, vec3(2.2));
             // cloud_color = cloud_color * vec3(1.0, 1, 0.9) * vec3(0.8, 0.7, 0.8524);
-            // cloud_color *= saturate(6.0 * (0.05 + view_vector.z));r
+            cloud_color = mix(vec3(1), cloud_color, saturate(2.0 * (0.1 + view_vector.z)));
             inscattered_light *= 0.0 + 0.9 * (0.3 + 2.6 * cloud_color);
         #endif
 
         // Sun disk
         vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) * inscattered_light * fog_factor;
         silhouette_col *= 2.0;
-        float disk_factor = pow(saturate(dot(view_vector, sun_vector) + 0.0004), 5.0 * 1e4);
+        float disk_factor = pow(saturate(dot(view_vector, sun_vector) + 0.000069), 23.0 * 1e5);
         float upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.045) * 1.0);
         inscattered_light += vec3(1,0.3,0.1) * disk_factor *
             upper_disk_factor * 2.0 * silhouette_col * 1.5 * 1e4;

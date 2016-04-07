@@ -65,6 +65,7 @@ float get_pointlight_radius(LightData data) {
 
 // Extracts the inner radius of a point light
 float get_pointlight_inner_radius(LightData data) {
+    // return 0; // xxx
     return data.Data2.z;
 }
 

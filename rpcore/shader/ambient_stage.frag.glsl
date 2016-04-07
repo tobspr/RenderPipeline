@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 400
 
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
@@ -124,7 +124,7 @@ void main() {
     float roughness = get_effective_roughness(m);
 
     // Compute angle between normal and view vector
-    float NxV = max(1e-5, -dot(m.normal, view_vector));
+    float NxV = clamp(-dot(m.normal, view_vector), 1e-5, 1.0);
 
     // OPTIONAL: Increase mipmap level at grazing angles to decrease aliasing
     #if 0
@@ -142,7 +142,7 @@ void main() {
     vec3 ibl_specular = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
     // Get cheap irradiance by sampling low levels of the environment map
-    float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 6.5;
+    float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
     vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal), ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
     // Scattering specific code
@@ -206,7 +206,7 @@ void main() {
 
 
     // Pre-Integrated environment BRDF
-    vec3 env_brdf = get_brdf_from_lut(PrefilteredBRDF, NxV, roughness, m.specular_ior);
+    vec3 env_brdf = get_brdf_from_lut(PrefilteredBRDF, NxV, sqrt(roughness), m.specular_ior);
 
     // Exact metallic brdf lut, unused right now
     // vec3 env_brdf_metal = get_brdf_from_lut(PrefilteredMetalBRDF, NxV, roughness);
@@ -216,35 +216,44 @@ void main() {
     vec3 fresnel = env_brdf.ggg;
     diffuse_ambient *= env_brdf.r;
 
+    // Approximate metallic fresnel
+    vec3 metallic_energy_f0 = vec3(1.0 - 0.7 * m.roughness) * m.basecolor;
+    vec3 metallic_energy_f90 = mix(vec3(1), 0.5 * m.basecolor, m.linear_roughness);
+    vec3 metallic_fresnel = mix(metallic_energy_f0, metallic_energy_f90, pow(1 - NxV, 3.6 - 2.6 * m.linear_roughness));
+
     // Mix between normal and metallic fresnel
-    vec3 metallic_fresnel = env_brdf.r * m.basecolor + env_brdf.g;
     fresnel = mix(fresnel, metallic_fresnel, m.metallic);
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
 
-        vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredCoatBRDF, NxV, roughness);
+        vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredCoatBRDF, NxV, m.linear_roughness * 1.333);
+        // vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredCoatBRDF, NxV, m.linear_roughness * 1.0);
 
         #if HAVE_PLUGIN(scattering)
             vec3 ibl_specular_base = textureLod(ScatteringIBLSpecular, reflected_dir,
                 get_specular_mipmap(m) + mipmap_bias).xyz;
         #else
             vec3 ibl_specular_base = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir),
-                get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV) + mipmap_bias).xyz;
+                get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV) + mipmap_bias).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
         #endif
 
-        #if USE_WHITE_ENVIRONMENT
-            ibl_specular_base = vec3(1);
+        #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
+            // ibl_specular_base = vec3(1);
         #endif
 
         specular_ambient = env_brdf_coat.g * ibl_specular;
-        specular_ambient += env_brdf_coat.r * ibl_specular_base * m.basecolor * (1 - 0.333 * m.linear_roughness);
+
+        // Approximation
+        // float clearcoat_strength = 0.95 + 2 * saturate(m.linear_roughness - 0.35);
+        float clearcoat_strength = 1.0;
+        specular_ambient += env_brdf_coat.r * ibl_specular_base * m.basecolor * clearcoat_strength;
 
     } else {
         specular_ambient = fresnel * ibl_specular;
     }
 
     #if HAVE_PLUGIN(ao)
-        // Sample precomputed occlusion and multiply the ambient term with it
+        // Sample precomputed occlusion andd multiply the ambient term with it
         float occlusion = textureLod(AmbientOcclusion, texcoord, 0).x;
         float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
     #else
@@ -253,7 +262,7 @@ void main() {
     #endif
 
     // Add diffuse and specular ambient term
-    ambient = diffuse_ambient / M_PI * occlusion + specular_ambient * specular_occlusion;
+    ambient = diffuse_ambient * occlusion + specular_ambient * specular_occlusion;
 
     #endif
 
@@ -279,5 +288,5 @@ void main() {
         ambient *= (1.0 - scene_color.w);
     #endif
 
-    result = scene_color * 1 + vec4(ambient, 1) * 1;
+    result = scene_color * 1.0 + vec4(ambient, 1) * 1.0;
 }

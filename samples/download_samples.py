@@ -43,4 +43,4 @@ if __name__ == "__main__":
     os.chdir(main_dir)
 
     # Now extract the samples
-    download_submodule("tobspr", "RenderPipeline-Samples", ".", ["README.md"])
+    download_submodule("tobspr", "RenderPipeline-Samples", ".", ["README.md", "LICENSE"])

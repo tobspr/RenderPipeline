@@ -60,12 +60,7 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
         vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb * DEFAULT_ENVMAP_BRIGHTNESS;
     #endif
 
-
-    // shading_result += basecolor * ( diff_env);
-    shading_result += (0.5 + 0.5 * basecolor) * 0.5;
-
-    // Fresnel term
-    // shading_result += 0.16 * (0.005 + diff_env) * 0.2;
+    shading_result += (0.5 + 0.5 * basecolor);
 
     // Emission
     if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {
@@ -112,7 +107,7 @@ vec3 get_sun_shading(MaterialBaseInput mInput, vec3 basecolor) {
 
         if (sun_vector.z >= SUN_VECTOR_HORIZON) {
             float NxL = saturate(dot(sun_vector, vOutput.normal));
-            shading_result += NxL * sun_color * shadow_term * basecolor / M_PI;
+            shading_result += NxL * sun_color * shadow_term * basecolor;
         }
 
         return shading_result;
@@ -142,6 +137,7 @@ vec3 get_forward_light_shading(vec3 basecolor) {
         switch(light_type) {
             case LT_POINT_LIGHT: {
                 float radius = get_pointlight_radius(light_data);
+                float inner_radius = get_pointlight_inner_radius(light_data);
                 float att = attenuation_curve(dot(l, l), radius);
                 float NxL = saturate(dot(vOutput.normal, l) / l_len);
                 shading_result += saturate(att) * NxL * (basecolor * light_color);
@@ -164,5 +160,5 @@ vec3 get_forward_light_shading(vec3 basecolor) {
 
     }
 
-    return shading_result;
+    return shading_result / M_PI;
 }

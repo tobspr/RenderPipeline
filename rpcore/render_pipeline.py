@@ -145,11 +145,12 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
     def reload_shaders(self):
         """ Reloads all shaders """
-        self.debug("Reloading shaders ..")
-        self._debugger.get_error_msg_handler().clear_messages()
-        self._debugger.set_reload_hint_visible(True)
-        self._showbase.graphicsEngine.render_frame()
-        self._showbase.graphicsEngine.render_frame()
+        if self.settings["pipeline.display_debugger"]:
+            self.debug("Reloading shaders ..")
+            self._debugger.get_error_msg_handler().clear_messages()
+            self._debugger.set_reload_hint_visible(True)
+            self._showbase.graphicsEngine.render_frame()
+            self._showbase.graphicsEngine.render_frame()
 
         self._tag_mgr.cleanup_states()
         self._stage_mgr.reload_shaders()
@@ -158,7 +159,9 @@ class RenderPipeline(PipelineExtensions, RPObject):
         # Set the default effect on render and trigger the reload hook
         self._set_default_effect()
         self._plugin_mgr.trigger_hook("shader_reload")
-        self._debugger.set_reload_hint_visible(False)
+
+        if self.settings["pipeline.display_debugger"]:
+            self._debugger.set_reload_hint_visible(False)
 
     def pre_showbase_init(self):
         """ Setups all required pipeline settings and configuration which have
@@ -420,8 +423,3 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
         self._light_mgr.init_defines()
         self._plugin_mgr.init_defines()
-
-    def _adjust_camera_settings(self):
-        """ Sets the default camera settings """
-        self._showbase.camLens.set_near_far(0.1, 70000)
-        self._showbase.camLens.set_fov(40)

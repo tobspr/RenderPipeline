@@ -18,6 +18,7 @@ class Application(ShowBase):
         load_prc_file_data("", "win-size 512 512")
         load_prc_file_data("", "textures-power-2 none")
         load_prc_file_data("", "print-pipe-types #f")
+        load_prc_file_data("", "notify-level-glgsg error")
         # load_prc_file_data("", "win-size 1024 1024")
 
         from rpcore import RenderPipeline, PointLight
@@ -43,14 +44,16 @@ class Application(ShowBase):
         light.pos = 10, -10, 10
         light.radius = 1e20
         light.color = (1, 1, 1)
-        light.lumens = 500
+        light.inner_radius = 4.0
+        light.energy = 3
         self.render_pipeline.add_light(light)
 
         light = PointLight()
         light.pos = -10, -10, 10
         light.radius = 1e20
         light.color = (1, 1, 1)
-        light.lumens = 500
+        light.inner_radius = 4.0
+        light.energy = 3
         self.render_pipeline.add_light(light)
 
         for mat in sphere.find_all_materials():

@@ -82,19 +82,26 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
     const vec3 transmittance = vec3(1); // <-- TODO
 
     // Get the lights data
-    float radius    = get_pointlight_radius(light_data);
-    vec3 position   = get_light_position(light_data);
-    int ies_profile = get_ies_profile(light_data);
-    vec3 l          = position - m.position;
-    vec3 l_norm     = normalize(l);
+    float radius        = get_pointlight_radius(light_data);
+    float inner_radius  = get_pointlight_inner_radius(light_data);
+    vec3 position       = get_light_position(light_data);
+    int ies_profile     = get_ies_profile(light_data);
+    vec3 l              = position - m.position;
+    float l_len_square  = length_squared(l);
+
+    l = get_spherical_area_light_vector(inner_radius, l, view_vector, m.normal);
+    vec3 l_norm         = normalize(l);
+
+    float dist_sq = max(1e-3, l_len_square - square(inner_radius));
+    float energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist_sq);
+    float clearcoat_energy = get_spherical_area_light_energy(CLEARCOAT_ROUGHNESS, inner_radius, dist_sq);
 
     // Get the point light attenuation
-    // float attenuation = get_pointlight_attenuation(l_norm, radius, dot(l, l), ies_profile);
-    float attenuation = get_pointlight_attenuation(l_norm, radius, dot(l, l), ies_profile);
+    float attenuation = attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
 
     // Compute the lights influence
     return apply_light(m, view_vector, l_norm, get_light_color(light_data),
-                       attenuation, shadow_factor, transmittance);
+                       attenuation, shadow_factor, transmittance, energy, clearcoat_energy);
 }
 
 // Filters a shadow map
@@ -107,15 +114,15 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     vec4 uv = get_source_uv(source);
 
     // TODO: make this configurable
-    const float slope_bias = 0.00;
-    const float normal_bias = 0.001;
-    const float const_bias = 0.0005;
+    const float slope_bias = 0.001;
+    const float normal_bias = 0.002;
+    const float const_bias = 0.001;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
-    const int num_samples = 16;
-    const float filter_size = 2.0 / SHADOW_ATLAS_SIZE; // TODO: Use shadow atlas size
+    const int num_samples = 4;
+    const float filter_size = 1.0 / SHADOW_ATLAS_SIZE; // TODO: Use shadow atlas size
 
     float accum = 0.0;
 
@@ -123,7 +130,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     rand_offs *= 0.1;
 
     for (int i = 0; i < num_samples; ++i) {
-        vec2 offs = projected_coord.xy + poisson_disk_2D_16[i] * filter_size + rand_offs.xy * filter_size;
+        vec2 offs = projected_coord.xy + poisson_disk_2D_4[i] * filter_size + rand_offs.xy * filter_size;
         // vec2 offs = projected_coord.xy;
         #if SUPPORT_PCF
         accum += textureLod(ShadowAtlasPCF, vec3(offs, projected.z - const_bias), 0).x;

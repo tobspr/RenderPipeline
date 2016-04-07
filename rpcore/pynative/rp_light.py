@@ -74,7 +74,7 @@ class RPLight(object):
         self._ies_profile = -1
         self._source_resolution = 512
         self._near_plane = 0.1
-        self._lumens = 20
+        self._energy = 20
         self._shadow_sources = []
 
     def get_num_shadow_sources(self):
@@ -133,13 +133,13 @@ class RPLight(object):
 
     color = property(get_color, set_color)
 
-    def set_lumens(self, lumens):
-        self._lumens = lumens
+    def set_energy(self, energy):
+        self._energy = energy
 
-    def get_lumens(self):
-        return self._lumens
+    def get_energy(self):
+        return self._energy
 
-    lumens = property(get_lumens, set_lumens)
+    energy = property(get_energy, set_energy)
 
     def get_light_type(self):
         return self._light_type
@@ -202,4 +202,4 @@ class RPLight(object):
             cmd.push_int(-1)
 
         cmd.push_vec3(self._position)
-        cmd.push_vec3(self._color * self._lumens)
+        cmd.push_vec3(self._color * self._energy)

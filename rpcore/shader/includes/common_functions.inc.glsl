@@ -311,7 +311,7 @@ vec3 face_forward(vec3 v, vec3 n) {
 
 // Convenience functions for the scattering plugin - probably don't belong here
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
-#define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity * 50.0)
+#define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity)
 #define get_sun_color_scale(_v) saturate((_v.z - 0.02) * 30.0)
 
 #if !HAVE_PLUGIN(color_correction)

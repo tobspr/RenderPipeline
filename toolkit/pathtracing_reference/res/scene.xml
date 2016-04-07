@@ -8,7 +8,8 @@ Conversion is: Swap Y and Z and then negate X
 -->
 <scene version="0.5.0">
 	<integrator type="path">
-		<integer name="maxDepth" value="2"/>
+		<integer name="maxDepth" value="2" />
+
 	</integrator>
 
 	<shape type="sphere">
@@ -18,9 +19,9 @@ Conversion is: Swap Y and Z and then negate X
 		
 		<bsdf type="roughplastic">
 			<string name="distribution" value="ggx"/>
-			<rgb name="diffuseReflectance" value="0.3, 0.3, 0.3" />
-			<float name="intIOR" value="1.51"/>
-			<float name="alpha" value="0.64"/>
+			<rgb name="diffuseReflectance" value="0.8, 0.8, 0.8" />
+			<float name="intIOR" value="1.16"/>
+			<float name="alpha" value="1.0"/>
 		</bsdf>
 
 		
@@ -29,7 +30,7 @@ Conversion is: Swap Y and Z and then negate X
 
 		<bsdf type="roughconductor">
 			<string name="distribution" value="ggx" />
-			<float name="alpha" value="0.64" />
+			<float name="alpha" value="1.0" />
 			<string name="material" value="" />
 		</bsdf>
 
@@ -45,7 +46,7 @@ Conversion is: Swap Y and Z and then negate X
 
 			<bsdf type="roughconductor">
 				<string name="distribution" value="ggx" />
-				<float name="alpha" value="0.64" />
+				<float name="alpha" value="1.0" />
 				<string name="material" value="" />
 			</bsdf>
 
@@ -55,20 +56,40 @@ Conversion is: Swap Y and Z and then negate X
 
 	</shape>
 
-<!-- 
+	<!--
 	<emitter type="point">
-		<spectrum name="intensity" value="500.0" />
+		<spectrum name="intensity" value="100.0" />
 		<point name="position" x="-10" z="-10" y="10" />
 	</emitter>
 
 	<emitter type="point">
-		<spectrum name="intensity" value="500.0" />
+		<spectrum name="intensity" value="100.0" />
 		<point name="position" x="10" z="-10" y="10" />
 	</emitter>
- -->
+
+	-->
+
+<!-- 
+	<shape type="sphere">
+		<point name="center" x="-10" z="-10" y="10" />
+		<float name="radius" value="4.0"/>
+		<emitter type="area">
+			<spectrum name="radiance" value="3.0" />
+		</emitter>
+	</shape>
+
+	<shape type="sphere">
+		<point name="center" x="10" z="-10" y="10" />
+		<float name="radius" value="4.0"/>
+		<emitter type="area">
+			<spectrum name="radiance" value="3.0" />
+		</emitter>
+	</shape> -->
+
+
 	<emitter type="envmap">
-		<!-- <string name="filename" value="tex/envmap.png" /> -->
-		<string name="filename" value="tex/white.png" />
+		<string name="filename" value="tex/envmap.png" />
+		<!-- <string name="filename" value="tex/white.png" /> -->
 		<float name="gamma" value="1.0" />
 
 	</emitter>
@@ -85,7 +106,7 @@ Conversion is: Swap Y and Z and then negate X
 		</transform>
 
 		<sampler type="ldsampler">
-			<integer name="sampleCount" value="32"/>
+			<integer name="sampleCount" value="64"/>
 		</sampler>
 
 		<film type="hdrfilm">
