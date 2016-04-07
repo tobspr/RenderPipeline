@@ -28,11 +28,49 @@ from __future__ import print_function
 
 import os
 import sys
+import time
 import zipfile
 import shutil
 
 from rplibs.six.moves import urllib
 from rplibs.six import BytesIO
+
+from rplibs.progressbar import FileTransferSpeed, ETA, ProgressBar, Percentage
+from rplibs.progressbar import Bar
+
+def download_file(url, chunk_size=100*1024):
+    """ Helper method to download a file displaying a progress bar """
+    print("Fetching:", url)
+
+    file_content = ""
+    widgets = ['\tDownloading: ', FileTransferSpeed(), ' ', Bar(), Percentage(), '   ', ETA()]
+
+    # Download the zip
+    try:
+        usock = urllib.request.urlopen(url)
+        file_size = int(usock.headers.get("Content-Length", 0))
+        print("File size is", round(file_size / (1024**2), 2), "MB")
+
+        progressbar = ProgressBar(widgets=widgets, maxval=file_size).start()
+        file_content = []
+        bytes_read = 0
+        while True:
+            # Report an update every 100 KB
+            data = usock.read(chunk_size)
+            file_content.append(data)
+            bytes_read += len(data)
+            progressbar.update(bytes_read)
+            if not data:
+                break
+
+        usock.close()
+    except Exception as msg:
+        print("ERROR: Could not fetch", url, "!", file=sys.stderr)
+        raise
+        sys.exit(2)
+    print("\n")
+
+    return ''.join(file_content)
 
 def download_submodule(author, module_name, dest_path, ignore_list):
     """ Downloads a submodule from the given author and module name, and extracts
@@ -48,19 +86,10 @@ def download_submodule(author, module_name, dest_path, ignore_list):
     # Construct download url
     source_url = "https://github.com/" + author + "/" + module_name + "/archive/master.zip"
     prefix = module_name + "-master"
-    print("Fetching:", source_url)
-
-    # Download the zip
-    try:
-        usock = urllib.request.urlopen(source_url)
-        zip_data = usock.read()
-        usock.close()
-    except Exception as msg:
-        print("ERROR: Could not fetch module", module_name, "! Reason:", msg, file=sys.stderr)
-        sys.exit(2)
-
+   
     # Extract the zip
-    zip_ptr = BytesIO(zip_data)
+    zip_ptr = BytesIO(download_file(source_url))
+    print("Extracting ZIP ...")
 
     try:
         zip_handle = zipfile.ZipFile(zip_ptr)
