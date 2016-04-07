@@ -71,16 +71,7 @@ vec3 get_spherical_area_light_vector(float radius, vec3 l_unscaled, vec3 v, vec3
 }
 
 float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) {
-
-    // return square(alpha / saturate(radius / dist_sq))
-
-    // xxx use normal distance
-    // return square(clamp(radius / (sqrt(dist_sq) * 2.0) + alpha, 0.0, 1.0)) / M_PI;
-
-    // float energy = square(clamp(radius / (distL * 2.0) + alpha, 0.0, 1.0 ));
-
-    // Approximation to match mitsuba
-    return pow(alpha, 1.2) * 70.0 * (1 - saturate( (alpha - 0.5))) * 0;
+    return pow(alpha, 1.2) * 0.01 * (1 - saturate((alpha - 0.5))) / max(0.001, radius);
 }
 
 // Computes a lights influence
@@ -116,21 +107,18 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness) 
                           * m.basecolor * (1 - m.metallic);
 
-    // Specular contribution
-    // float distribution = brdf_distribution(NxH, m.roughness);
-
+    // Specular contribution:
     // We add some roughness for clearcoat - this is due to the reason that
     // light gets scattered and thus a wider highlight is shown.
     // This approximates the reference in mitsuba very well.
+    // float distribution = brdf_distribution(NxH, m.roughness);
     float distribution = brdf_distribution(NxH, m.roughness * (m.shading_model == SHADING_MODEL_CLEARCOAT ? 1.4 : 1.0)); // xxx
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
-    vec3 fresnel = mix(f0, vec3(1), brdf_schlick_fresnel(f0, LxH));
+    vec3 fresnel = brdf_schlick_fresnel(f0, LxH);
 
     // The division by 4 * NxV * NxL is done in the geometric (visibility) term
     // already, so to evaluate the complete brdf we just do a multiply
-    shading_result += (distribution * visibility) * fresnel / M_PI;
-
-    shading_result *= energy;
+    shading_result += (distribution * visibility) * fresnel / M_PI * energy;
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         float distribution_coat = brdf_distribution(NxH, CLEARCOAT_ROUGHNESS);

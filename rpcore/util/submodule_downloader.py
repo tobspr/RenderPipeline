@@ -44,6 +44,7 @@ def download_file(url, chunk_size=100*1024):
 
     file_content = ""
     widgets = ['\tDownloading: ', FileTransferSpeed(), ' ', Bar(), Percentage(), '   ', ETA()]
+    progressbar = None
 
     # Download the zip
     try:
@@ -68,7 +69,9 @@ def download_file(url, chunk_size=100*1024):
         print("ERROR: Could not fetch", url, "!", file=sys.stderr)
         raise
         sys.exit(2)
-    print("\n")
+
+    if progressbar:
+        progressbar.finish()
 
     return ''.join(file_content)
 

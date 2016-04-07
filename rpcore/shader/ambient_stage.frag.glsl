@@ -124,7 +124,7 @@ void main() {
     float roughness = get_effective_roughness(m);
 
     // Compute angle between normal and view vector
-    float NxV = max(1e-5, -dot(m.normal, view_vector));
+    float NxV = clamp(-dot(m.normal, view_vector), 1e-5, 1.0);
 
     // OPTIONAL: Increase mipmap level at grazing angles to decrease aliasing
     #if 0
@@ -234,11 +234,11 @@ void main() {
                 get_specular_mipmap(m) + mipmap_bias).xyz;
         #else
             vec3 ibl_specular_base = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir),
-                get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV) + mipmap_bias).xyz;
+                get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV) + mipmap_bias).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
         #endif
 
         #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
-            ibl_specular_base = vec3(1);
+            // ibl_specular_base = vec3(1);
         #endif
 
         specular_ambient = env_brdf_coat.g * ibl_specular;
@@ -253,7 +253,7 @@ void main() {
     }
 
     #if HAVE_PLUGIN(ao)
-        // Sample precomputed occlusion and multiply the ambient term with it
+        // Sample precomputed occlusion andd multiply the ambient term with it
         float occlusion = textureLod(AmbientOcclusion, texcoord, 0).x;
         float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
     #else

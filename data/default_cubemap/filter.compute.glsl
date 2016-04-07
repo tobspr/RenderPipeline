@@ -53,7 +53,7 @@ vec3 spherical_to_vector(float theta, float phi) {
 float brdf_distribution_ggx(float NxH, float roughness) {
     float nxh_sq = NxH * NxH;
     float tan_sq = (1 - nxh_sq) / nxh_sq;
-    float f = roughness / (nxh_sq * (roughness * roughness + tan_sq) );
+    float f = roughness / max(1e-10, nxh_sq * (roughness * roughness + tan_sq) );
     return f * f / M_PI;
 }
 

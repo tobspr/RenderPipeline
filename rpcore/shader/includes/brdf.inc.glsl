@@ -251,7 +251,7 @@ float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) 
 // Distribution
 float brdf_distribution(float NxH, float roughness)
 {
-    NxH = max(1e-9, NxH);
+    NxH = max(1e-5, NxH);
     roughness = max(0.0019, roughness);
 
     // Choose one:

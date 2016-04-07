@@ -53,7 +53,7 @@ void main() {
 
     float min_ev = GET_SETTING(color_correction, min_exposure_value);
     float max_ev = GET_SETTING(color_correction, max_exposure_value);
-    float exposure_bias = GET_SETTING(color_correction, exposure_bias) * 0.1;
+    float exposure_bias = GET_SETTING(color_correction, exposure_bias) * 1;
 
     exposure += exposure_bias;
 
