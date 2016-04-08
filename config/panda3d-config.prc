@@ -19,7 +19,8 @@ sync-video #f
 
 # No stack trace on assertion, set this to true to make panda crash on assertions
 # (which will allow to debug it)
-assert-abort #t
+# assert-abort #t
+# show-dll-error-dialog #f
 
 # File system should be case sensitive
 # NOTICE: Set this to #f if you are using tempfile, since it returns

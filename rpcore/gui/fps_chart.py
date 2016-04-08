@@ -66,7 +66,7 @@ class FPSChart(RPObject):
 
         # Create the texture where the gui component is rendered inside
         self._display_tex = Image.create_2d("FPSChartRender", 250, 120, "RGBA8")
-        self._display_tex.set_clear_color(Vec4(0.2, 0.6, 1.0, 1.0))
+        self._display_tex.set_clear_color(Vec4(0))
         self._display_tex.clear_image()
         self._display_img = Sprite(
             image=self._display_tex, parent=self._node, w=250, h=120, x=10, y=10)

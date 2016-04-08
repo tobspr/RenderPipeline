@@ -102,9 +102,6 @@ class Debugger(RPObject):
         self._create_stats()
         self._create_hints()
 
-        self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
-        self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
-
         self._exposure_node = self._fullscreen_node.attach_new_node("ExposureWidget")
         self._exposure_node.set_pos(
             Globals.base.win.get_x_size() / self._gui_scale - 200,
@@ -117,6 +114,9 @@ class Debugger(RPObject):
         self._fps_widget = FPSChart(self._pipeline, self._fps_node)
 
         self._pixel_widget = PixelInspector(self._pipeline)
+
+        self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
+        self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
 
     def _init_notify(self):
         """ Inits the notify stream which gets all output from panda and parses

@@ -31,6 +31,7 @@ from rpcore.gui.draggable_window import DraggableWindow
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text
 from rpcore.gui.slider import Slider
+from rpcore.gui.labeled_checkbox import LabeledCheckbox
 
 from rpcore.util.display_shader_builder import DisplayShaderBuilder
 
@@ -86,8 +87,8 @@ class TexturePreview(DraggableWindow):
             Image.format_format(tex.get_format()).upper(),
             Image.format_component_type(tex.get_component_type()).upper())
 
-        Text(text=description, parent=self._content_node, x=20, y=70,
-             size=18, color=Vec3(0.6, 0.6, 0.6))
+        Text(text=description, parent=self._content_node, x=17, y=70,
+             size=16, color=Vec3(0.6, 0.6, 0.6))
 
         estimated_bytes = tex.estimate_texture_memory()
         size_desc = "Estimated memory: {:2.2f} MB".format(
@@ -96,27 +97,57 @@ class TexturePreview(DraggableWindow):
         Text(text=size_desc, parent=self._content_node, x=self._width - 20.0,
              y=70, size=18, color=Vec3(0.34, 0.564, 0.192), align="right")
 
+        x_pos = 270
+
+        # Slider for viewing different mipmaps
         if tex.uses_mipmaps():
-            # Create mip slider
             max_mips = tex.get_expected_num_mipmap_levels() - 1
             self._mip_slider = Slider(
-                parent=self._content_node, size=200, min_value=0, max_value=max_mips,
-                callback=self._set_mip, x=850, y=63, value=0)
-            self._mip_text = Text(
-                text="Mipmap: 5", parent=self._content_node, x=1080, y=70, size=18,
-                color=Vec3(0.6, 0.6, 0.6), may_change=1)
+                parent=self._content_node, size=140, min_value=0, max_value=max_mips,
+                callback=self._set_mip, x=x_pos, y=65, value=0)
+            x_pos += 140 + 5
 
+            self._mip_text = Text(
+                text="MIP: 5", parent=self._content_node, x=x_pos, y=72, size=18,
+                color=Vec3(1, 0.4, 0.4), may_change=1)
+            x_pos += 50 + 30
+
+        # Slider for viewing different Z-layers
         if tex.get_z_size() > 1:
             self._slice_slider = Slider(
                 parent=self._content_node, size=250, min_value=0,
-                max_value=tex.get_z_size() - 1, callback=self._set_slice, x=450,
-                y=63, value=0)
+                max_value=tex.get_z_size() - 1, callback=self._set_slice, x=x_pos,
+                y=65, value=0)
+            x_pos += 250 + 5
+
             self._slice_text = Text(
-                text="Slice: 5", parent=self._content_node, x=710, y=70, size=18,
-                color=Vec3(0.6, 0.6, 0.6), may_change=1)
+                text="Z: 5", parent=self._content_node, x=x_pos, y=72, size=18,
+                color=Vec3(0.4, 1, 0.4), may_change=1)
+
+            x_pos += 50 + 30
+
+        # Slider to adjust brightness
+        self._bright_slider = Slider(
+            parent=self._content_node, size=140, min_value=-8, max_value=8,
+            callback=self._set_brightness, x=x_pos, y=65, value=0)
+        x_pos += 140 + 5
+        self._bright_text = Text(
+            text="Bright: 1", parent=self._content_node, x=x_pos, y=72, size=18,
+            color=Vec3(0.4, 0.4, 1), may_change=1)
+        x_pos += 100 + 30
+
+        # Slider to enable reinhard tonemapping
+        self._tonemap_box = LabeledCheckbox(
+            parent=self._content_node, x=x_pos, y=60, text="Tonemap",
+            text_color=Vec3(1, 0.4, 0.4), chb_checked=False,
+            chb_callback=self._set_enable_tonemap,
+            text_size=18, expand_width=90)
+        x_pos += 90 + 30
 
         image.set_shader_input("slice", 0)
         image.set_shader_input("mipmap", 0)
+        image.set_shader_input("brightness", 1)
+        image.set_shader_input("tonemap", False)
 
         preview_shader = DisplayShaderBuilder.build(tex, display_w, display_h)
         image.set_shader(preview_shader)
@@ -127,12 +158,22 @@ class TexturePreview(DraggableWindow):
     def _set_slice(self):
         idx = int(self._slice_slider.value)
         self._preview_image.set_shader_input("slice", idx)
-        self._slice_text.set_text("Slice: " + str(idx))
+        self._slice_text.set_text("Z: " + str(idx))
 
     def _set_mip(self):
         idx = int(self._mip_slider.value)
         self._preview_image.set_shader_input("mipmap", idx)
-        self._mip_text.set_text("Mipmap: " + str(idx))
+        self._mip_text.set_text("MIP " + str(idx))
+
+    def _set_brightness(self):
+        val = self._bright_slider.value
+        scale = 2 ** val
+        self._bright_text.set_text("Bright: " + str(round(scale, 3)))
+        self._preview_image.set_shader_input("brightness", scale)
+
+    def _set_enable_tonemap(self, enable_tonemap):
+        self._preview_image.set_shader_input("tonemap", enable_tonemap)
+
 
     def _create_components(self):
         """ Internal method to init the components """

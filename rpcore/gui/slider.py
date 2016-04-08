@@ -46,7 +46,7 @@ class Slider(RPObject):
         self._node = DirectSlider(
             pos=(size * 0.5 + x, 1, -y), parent=parent, range=(min_value, max_value),
             value=value, pageSize=page_size, scale=2.0, command=callback,
-            extraArgs=extra_args, frameColor=(0.04, 0.04, 0.04, 0.8),
+            extraArgs=extra_args, frameColor=(0.0, 0.0, 0.0, 1),
             frameSize=(-size * 0.25, size * 0.25, -5, 5), relief=DGG.FLAT,
             thumb_frameColor=(0.35, 0.53, 0.2, 1.0), thumb_relief=DGG.FLAT,
             thumb_frameSize=(-2.5, 2.5, -5.0, 5.0),)

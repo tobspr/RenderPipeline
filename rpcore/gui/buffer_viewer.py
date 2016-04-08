@@ -36,7 +36,6 @@ from direct.gui.DirectGui import DGG
 from rplibs.six import itervalues
 
 from rpcore.image import Image
-from rpcore.util.generic import rgb_from_string
 from rpcore.util.display_shader_builder import DisplayShaderBuilder
 from rpcore.globals import Globals
 from rpcore.render_target import RenderTarget
@@ -191,15 +190,13 @@ class BufferViewer(DraggableWindow):
             yoffs = index // entries_per_row
             node = self._content_node.attach_new_node("Preview")
             node.set_sz(-1)
-            node.set_pos(10 + xoffs * (entry_width - 14), 1, yoffs * (entry_height-14))
+            node.set_pos(10 + xoffs * (entry_width - 14), 1, yoffs * (entry_height - 14 + 10))
 
-            if stage_name.startswith("Image"):
-                r, g, b = 0.4, 0.4, 0.4
-            else:
-                r, g, b = rgb_from_string(stage_name)
+            r, g, b = 0.2, 0.2, 0.2
 
             stage_name = stage_name.replace("render_pipeline_internal:", "")
-
+            parts = stage_name.split(":")
+            stage_name = parts[-1]
             DirectFrame(
                 parent=node, frameSize=(7, entry_width - 17, -7, -entry_height + 17),
                 frameColor=(r, g, b, 1.0), pos=(0, 0, 0))
@@ -214,29 +211,32 @@ class BufferViewer(DraggableWindow):
             frame_hover.bind(
                 DGG.B1PRESS, partial(self._on_texture_clicked, stage_tex))
 
-            Text(text=stage_name, x=15, y=29, parent=node, size=12, color=Vec3(0.2))
+            Text(text=stage_name, x=15, y=29, parent=node, size=12, color=Vec3(0.8))
 
             # Scale image so it always fits
             w, h = stage_tex.get_x_size(), stage_tex.get_y_size()
-            scale_x = (entry_width - 30) / max(1, w)
-            scale_y = (entry_height - 60) / max(1, h)
+            padd_x, padd_y = 24, 57
+            scale_x = (entry_width - padd_x) / max(1, w)
+            scale_y = (entry_height - padd_y) / max(1, h)
             scale_factor = min(scale_x, scale_y)
 
             if stage_tex.get_texture_type() == Image.TT_buffer_texture:
                 scale_factor = 1
-                w = entry_width - 30
-                h = entry_height - 60
+                w = entry_width - padd_x
+                h = entry_height - padd_y
 
             preview = Sprite(
                 image=stage_tex, w=scale_factor * w, h=scale_factor * h,
-                any_filter=False, parent=node, x=10, y=40, transparent=False)
+                any_filter=False, parent=node, x=7, y=40, transparent=False)
 
             preview.set_shader_input("mipmap", 0)
             preview.set_shader_input("slice", 0)
+            preview.set_shader_input("brightness", 1)
+            preview.set_shader_input("tonemap", False)
 
             preview_shader = DisplayShaderBuilder.build(stage_tex, scale_factor*w, scale_factor*h)
             preview.set_shader(preview_shader)
 
         num_rows = (index + entries_per_row) // entries_per_row
 
-        self._set_scroll_height(50 + (entry_height-14) * num_rows)
+        self._set_scroll_height(50 + (entry_height - 14 + 10) * num_rows)

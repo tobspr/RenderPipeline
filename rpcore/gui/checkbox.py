@@ -90,6 +90,11 @@ class Checkbox(RPObject):
         self._collection = coll
 
     @property
+    def checked(self):
+        """ Returns whether the node is currently checked """
+        return self._node["isChecked"]
+
+    @property
     def node(self):
         """ Returns a handle to the internally used node """
         return self._node

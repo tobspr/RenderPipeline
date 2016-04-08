@@ -51,6 +51,8 @@ class LabeledCheckbox(RPObject):
         if not enabled:
             text_color = Vec3(1.0, 0, 0.28)
 
+        self.text_color = text_color
+
         self._checkbox = Checkbox(
             parent=parent, x=x, y=y, enabled=enabled, callback=chb_callback,
             extra_args=chb_args, checked=chb_checked, radio=radio,
@@ -65,11 +67,12 @@ class LabeledCheckbox(RPObject):
 
     def _on_node_enter(self, *args):
         """ Internal callback when the node gets hovered """
-        self._text.node["fg"] = (0.5, 0.5, 0.5, 1.0)
+        self._text.node["fg"] = (self.text_color.x + 0.1, self.text_color.y + 0.1,
+                                 self.text_color.z + 0.1, 1.0)
 
     def _on_node_leave(self, *args):
         """ Internal callback when the node gets no longer hovered """
-        self._text.node["fg"] = (0.4, 0.4, 0.4, 1.0)
+        self._text.node["fg"] = (self.text_color.x, self.text_color.y, self.text_color.z, 1.0)
 
     @property
     def checkbox(self):

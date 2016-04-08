@@ -78,6 +78,8 @@ class DisplayShaderBuilder(object):
             out vec3 result;
             uniform int mipmap;
             uniform int slice;
+            uniform float brightness;
+            uniform bool tonemap;
             uniform """ + sampler_type + """ p3d_Texture0;
             void main() {
                 int view_width = """ + str(view_width) + """;
@@ -85,7 +87,9 @@ class DisplayShaderBuilder(object):
                 ivec2 display_coord = ivec2(texcoord * vec2(view_width, view_height));
                 int int_index = display_coord.x + display_coord.y * view_width;
                 """ + sampling_code + """
-
+                result *= brightness;
+                if (tonemap)
+                    result = result / (1 + result);
             }
         """
 

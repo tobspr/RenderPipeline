@@ -26,6 +26,8 @@
 
 #version 420
 
+#pragma optionNV (unroll all)
+
 #define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
@@ -33,6 +35,8 @@
 
 uniform sampler2D CurrentTex;
 out vec4 result;
+
+// Blurs the SSLR result
 
 void main() {
     vec2 texcoord = get_texcoord();
@@ -58,6 +62,7 @@ void main() {
       }
     }
 
-    accum /= max(1e-5, weights);
+    accum /= max(1e-4, weights);
+    // accum = accum / (1 - accum);
     result = accum;
 }
