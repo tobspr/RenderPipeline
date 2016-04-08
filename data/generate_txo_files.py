@@ -1,6 +1,7 @@
 """
 
-Converts pipeline resources to TXO files to speed up loading
+Converts pipeline resources to TXO files to speed up loading.
+This is called during the setup.
 
 """
 
