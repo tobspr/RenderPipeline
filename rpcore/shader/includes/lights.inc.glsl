@@ -104,7 +104,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     vec3 f0 = get_material_f0(m);
 
     // Diffuse contribution
-    vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness) 
+    vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness)
                           * m.basecolor * (1 - m.metallic);
 
     // Specular contribution:

@@ -113,14 +113,14 @@ GOLD_F0 = (1, 0.867136, 0.358654)
 
 for i in range(11):
     roughness = i / 10.0
-    
+
     materials_to_test.append({
             "name": "Plastic-R" + str(roughness),
             "basecolor": (1, 0, 0),
             "ior": 1.51,
             "roughness": roughness
         })
-    
+
     # materials_to_test.append({
     #         "name": "Gold-R" + str(roughness),
     #         "basecolor": GOLD_F0,

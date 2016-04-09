@@ -345,7 +345,7 @@ void main() {
         const float sun_angular_radius = degree_to_radians(0.54);
         const float r = sin(sun_angular_radius); // Disk radius
         const float d = cos(sun_angular_radius); // Distance to disk
-        
+
         // Closest point to a disk (since the radius is small, this is
         // a good approximation)
         float DdotR = dot(sun_vector, reflected_dir);

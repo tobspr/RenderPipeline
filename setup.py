@@ -168,7 +168,7 @@ def check_cmake():
     """ Checks if cmake is installed """
     try:
         subprocess.call(["cmake", "--version"], stdout=subprocess.PIPE)
-    except subprocess.CalledProcessError as msg:
+    except Exception as msg:
         print("\n")
         print(color("Could not find cmake!", Fore.RED + Style.BRIGHT))
         print("It seems that cmake is not installed on this system, or not on")

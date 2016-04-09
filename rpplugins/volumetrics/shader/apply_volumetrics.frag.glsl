@@ -26,7 +26,11 @@
 
 #version 430
 
+#define USE_MAIN_SCENE_DATA 1
+#define USE_TIME_OF_DAY 1
+#define USE_GBUFFER_EXTENSIONS 1
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/gbuffer.inc.glsl"
 
 uniform sampler2D ShadedScene;
 
@@ -38,7 +42,11 @@ out vec3 result;
 
 void main() {
   vec2 texcoord = get_texcoord();
-  
+
+  float depth = get_depth_at(texcoord);
+  vec3 surface_pos = calculate_surface_pos(depth, texcoord);
+
+
   #if GET_SETTING(volumetrics, enable_volumetric_shadows)
     vec4 volumetrics = texture(VolumetricsTex, texcoord);
   #else
@@ -49,6 +57,24 @@ void main() {
 
   vec3 merged_color = volumetrics.xyz + scene_color * saturate(1 - volumetrics.w);
 
+  float fog_factor = 1;
+
+  // Distance fog
+  float fog_ramp = TimeOfDay.volumetrics.fog_ramp_size;
+  fog_factor = saturate(1.0 - exp(-distance(surface_pos, MainSceneData.camera_pos) / fog_ramp));
+
+  // Exponential height fog
+  float ground_fog_factor = TimeOfDay.volumetrics.height_fog_scale;
+  fog_factor *= 1.0 - saturate( max(0, surface_pos.z) / ground_fog_factor);
+
+  vec3 fog_color = TimeOfDay.volumetrics.fog_color * TimeOfDay.volumetrics.fog_brightness;
+
+
+  if (is_skybox(surface_pos)) {
+    fog_factor = 0;
+  }
+
+  merged_color = mix(merged_color, fog_color, fog_factor);
 
   result = merged_color;
 }

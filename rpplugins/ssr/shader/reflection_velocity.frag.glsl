@@ -71,7 +71,7 @@ void main() {
       }
     }
   }
-  
+
   // In case no sample was found, fall back to the current pixels coordinate
   if (length_squared(best_result.xy) < 1e-4) {
     best_result.xy = texcoord;

@@ -1,13 +1,13 @@
 
 settings: !!omap
-    
+
     - enable_volumetric_shadows:
         type: bool
         default: true
         label: Volumetric Shadows
         description: >
             Whether to enable volumetric shadows
-        
+
     - volumetric_shadow_intensity:
         display_if: { "enable_volumetric_shadows": true }
         type: float
@@ -42,12 +42,12 @@ daytime_settings: !!omap
     - fog_brightness:
         type: scalar
         unit: klux
-        range: [0.0, 15.0]
-        default: 3.0
+        range: [0.0, 50.0]
+        default: 12.0
         label: Fog Brightness
         description: >
           Controls the brightness of the fog, should match the sun intensity.
- 
+
     - height_fog_scale:
         type: scalar
         unit: meter
@@ -57,3 +57,11 @@ daytime_settings: !!omap
         label: Height fog scale
         description: >
             Controls the scale of the volumetric height fog.
+
+    - sun_tint:
+        type: scalar
+        range: [0.0, 2.0]
+        default: 1.0
+        label: Sun tint scale
+        description: >
+            Conrols the intensity of the sun tint on the fog

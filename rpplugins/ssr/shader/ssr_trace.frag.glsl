@@ -173,7 +173,7 @@ void main()
     #endif
 
     vec3 ray_step = (ray_end_screen - ray_start_screen) / num_steps;
-    
+
     float distance_scale = 0.03 * pixeldist;
 
     // Initial ray bias to avoid self intersection
@@ -223,7 +223,7 @@ void main()
     if (fade < 1e-3 || !hit_factor) {
         result = vec3(0);
         return;
-    }   
+    }
 
     // Store pdf
     #if 0
