@@ -49,8 +49,8 @@ void main() {
     vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
 
     // Fetch scattering
-    float fog_factor = 0.0;
-    vec3 inscattered_light = DoScattering(m.position, view_vector, fog_factor)
+    float sky_clip = 0.0;
+    vec3 inscattered_light = DoScattering(m.position, view_vector, sky_clip)
                                 * TimeOfDay.scattering.sun_intensity;
                             /* * TimeOfDay.scattering.sun_color * 0.01*/;
 
@@ -66,7 +66,7 @@ void main() {
         #endif
 
         // Sun disk
-        vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) * inscattered_light * fog_factor;
+        vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) * inscattered_light * sky_clip;
         silhouette_col *= 2.0;
         float disk_factor = pow(saturate(dot(view_vector, sun_vector) + 0.000069), 23.0 * 1e5);
         float upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.045) * 1.0);
@@ -83,8 +83,6 @@ void main() {
 
 
     #if !DEBUG_MODE
-        result.xyz *= 1 - fog_factor;
         result.xyz += inscattered_light;
-        result.w = fog_factor;
     #endif
 }

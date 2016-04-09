@@ -61,6 +61,9 @@ void main() {
     result.xyz = shade_material_from_tile_buffer(m, tile);
     result.w = 1.0;
 
+
+
+
     /*
 
     Various debugging modes for previewing materials

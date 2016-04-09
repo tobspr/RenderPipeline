@@ -49,10 +49,10 @@ void main() {
     // Store horizon
     float horizon = direction.z;
     direction.z = abs(direction.z);
-    float fog_factor = 0.0;
+    float sky_clip = 0.0;
 
     // Get inscattered light
-    vec3 inscattered_light = DoScattering(direction * 1e10, direction, fog_factor)
+    vec3 inscattered_light = DoScattering(direction * 1e10, direction, sky_clip)
                              * TimeOfDay.scattering.sun_intensity;
                              // * TimeOfDay.scattering.sun_color * 0.01;
 

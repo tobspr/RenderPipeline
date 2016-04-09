@@ -524,6 +524,18 @@ class RenderPipeline(RPObject):
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             rp_light.inner_radius = 0.2
+
+            name = light.get_name()
+            if name == "PR1":
+                rp_light.inner_radius = 0.01
+            elif name == "PR2":
+                rp_light.inner_radius = 0.1
+            elif name == "PR3":
+                rp_light.inner_radius = 0.3
+            elif name == "PR4":
+                rp_light.inner_radius = 0.9
+
+
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)

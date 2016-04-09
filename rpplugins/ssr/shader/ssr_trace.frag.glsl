@@ -82,7 +82,7 @@ void main()
     vec3 ray_start_vs = get_view_pos_at(texcoord);
     float pixeldist = distance(m.position, MainSceneData.camera_pos);
 
-    // Skip skybox
+    // Skip skybox and distant pixels
     if (pixeldist > 3000) {
         result = vec3(0);
         return;
@@ -144,7 +144,7 @@ void main()
     }
 
     float RxV = dot(ray_dir, view_dir);
-    float max_ray_len = 10.0 * pixeldist;
+    float max_ray_len = 1000.0 * pixeldist;
 
     // Clip ray to near plane
     float ray_len = ((ray_start_vs.z + ray_dir.z * max_ray_len) > CAMERA_NEAR) ?
@@ -174,8 +174,10 @@ void main()
 
     vec3 ray_step = (ray_end_screen - ray_start_screen) / num_steps;
     
+    float distance_scale = 0.03 * pixeldist;
+
     // Initial ray bias to avoid self intersection
-    ray_pos += 15.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0) * GET_SETTING(ssr, intial_bias);
+    ray_pos += 15.2 * ray_step * float(num_steps) / 512.0 / clamp(dot(normal_vs, -view_dir), 1e-5, 1.0) * GET_SETTING(ssr, intial_bias) * distance_scale;
 
     vec2 intersection = vec2(-1);
 

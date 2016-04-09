@@ -46,6 +46,7 @@ toolkit/pathtracing_reference/res/Scene.blend
 toolkit/pathtracing_reference/res/scene.png
 toolkit/pathtracing_reference/scene*.png
 toolkit/pathtracing_reference/res/tex/envmap.png
+_tmp_material.py
 
 */poisson_disk_generator/source/config_module*
 

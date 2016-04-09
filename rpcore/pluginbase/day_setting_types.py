@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from __future__ import division
+from __future__ import division, print_function
 from math import exp, log
 
 from panda3d.core import PTAFloat, PTALVecBase3f
@@ -44,7 +44,13 @@ def make_daysetting_from_data(data):
     }
     if data["type"] not in factory:
         raise Exception("Unkown setting type: {}".format(data["type"]))
-    instance = factory[data["type"]](data)
+
+    try:
+        instance = factory[data["type"]](data)
+    except Exception:
+        print("Exception occured while parsing", data)
+        raise
+
     if data:
         raise Exception("Unparsed data left in plugin setting: {}".format(data))
     return instance

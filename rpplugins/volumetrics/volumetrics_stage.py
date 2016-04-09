@@ -34,31 +34,40 @@ class VolumetricsStage(RenderStage):
     required_inputs = []
     required_pipes = ["ShadedScene", "GBuffer"]
 
+    def __init__(self, pipeline):
+        RenderStage.__init__(self, pipeline)
+        self.enable_volumetric_shadows = False
+
     @property
     def produced_pipes(self):
         return {"ShadedScene": self.target_combine.color_tex}
 
     def create(self):
-        self.target = self.create_target("ComputeVolumetrics")
-        self.target.size = -2
-        self.target.add_color_attachment(bits=16, alpha=True)
-        self.target.prepare_buffer()
 
-        self.target_upscale = self.create_target("Upscale")
-        self.target_upscale.add_color_attachment(bits=16, alpha=True)
-        self.target_upscale.prepare_buffer()
+        if self.enable_volumetric_shadows:
+            self.target = self.create_target("ComputeVolumetrics")
+            self.target.size = -2
+            self.target.add_color_attachment(bits=16, alpha=True)
+            self.target.prepare_buffer()
 
-        self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
-        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
-        self.target_upscale.set_shader_input("useZAsWeight", False)
+            self.target_upscale = self.create_target("Upscale")
+            self.target_upscale.add_color_attachment(bits=16, alpha=True)
+            self.target_upscale.prepare_buffer()
+
+            self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
+            self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
+            self.target_upscale.set_shader_input("useZAsWeight", False)
 
         self.target_combine = self.create_target("CombineVolumetrics")
         self.target_combine.add_color_attachment(bits=16)
         self.target_combine.prepare_buffer()
-        self.target_combine.set_shader_input("VolumetricsTex", self.target_upscale.color_tex)
+
+        if self.enable_volumetric_shadows:
+            self.target_combine.set_shader_input("VolumetricsTex", self.target_upscale.color_tex)
 
     def reload_shaders(self):
-        self.target.shader = self.load_plugin_shader("compute_volumetrics.frag.glsl")
-        self.target_upscale.shader = self.load_plugin_shader(
-            "/$$rp/shader/bilateral_upscale.frag.glsl")
+        if self.enable_volumetric_shadows:
+            self.target.shader = self.load_plugin_shader("compute_volumetric_shadows.frag.glsl")
+            self.target_upscale.shader = self.load_plugin_shader(
+                "/$$rp/shader/bilateral_upscale.frag.glsl")
         self.target_combine.shader = self.load_plugin_shader("apply_volumetrics.frag.glsl")

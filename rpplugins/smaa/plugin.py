@@ -45,7 +45,7 @@ class Plugin(BasePlugin):
             self._jitter_index = 0
             self._compute_jitters()
 
-        self._pipeline.stage_mgr.define("SMAA_HISTORY_LENGTH", self.history_length)
+        self._pipeline.stage_mgr.defines["SMAA_HISTORY_LENGTH"] = self.history_length
 
         self._smaa_stage = self.create_stage(SMAAStage)
         self._smaa_stage.use_reprojection = self.get_setting("use_reprojection")

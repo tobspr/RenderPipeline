@@ -29,14 +29,26 @@
 #pragma include "render_pipeline_base.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform sampler2D VolumetricsTex;
+
+#if GET_SETTING(volumetrics, enable_volumetric_shadows)
+  uniform sampler2D VolumetricsTex;
+#endif
 
 out vec3 result;
 
 void main() {
   vec2 texcoord = get_texcoord();
-  vec4 volumetrics = texture(VolumetricsTex, texcoord);
+  
+  #if GET_SETTING(volumetrics, enable_volumetric_shadows)
+    vec4 volumetrics = texture(VolumetricsTex, texcoord);
+  #else
+    vec4 volumetrics = vec4(0);
+  #endif
+
   vec3 scene_color = texture(ShadedScene, texcoord).xyz;
 
-  result = volumetrics.xyz + scene_color * saturate(1 - volumetrics.w);
+  vec3 merged_color = volumetrics.xyz + scene_color * saturate(1 - volumetrics.w);
+
+
+  result = merged_color;
 }

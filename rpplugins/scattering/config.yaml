@@ -101,15 +101,3 @@ daytime_settings: !!omap
         default: 30
         label: Sun Altidude
         description: Vertical angle of the sun
-
-    - fog_ramp_size:
-        type: scalar
-        unit: meter
-        range: [0.5, 10000.0]
-        default: 2000
-        label: Fog-Ramp
-        logarithmic_factor: 2.0
-        description: >
-            Size of the transition from no fog to fog in world space units.
-            Higher values produce a smoother transition from no fog to fog,
-            while lower values will produce a more sharp transition.

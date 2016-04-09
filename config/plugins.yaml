@@ -6,6 +6,7 @@
 enabled:
     - ao
     - bloom
+    - clouds
     - color_correction
     - env_probes
     - fxaa
@@ -15,7 +16,6 @@ enabled:
     - smaa
     - ssr
     - volumetrics
-    # - clouds
     # - dof
     # - skin_shading
     # - vxgi
@@ -76,8 +76,8 @@ overrides:
         min_exposure_value: 0.012
         max_exposure_value: 1.0
         exposure_bias: 0.0
-        brightness_adaption_rate: 2.67
-        darkness_adaption_rate: 0.79
+        brightness_adaption_rate: 2.06
+        darkness_adaption_rate: 0.45
         use_sharpen: True
         sharpen_strength: 1.61
         sharpen_twice: False
@@ -102,7 +102,7 @@ overrides:
 
     motion_blur:
         num_camera_samples: 6
-        camera_blur_factor: 0.2
+        camera_blur_factor: 0.8
         blur_factor: 0.5
         tile_size: 32
         max_blur_radius: 10.0
@@ -160,7 +160,8 @@ overrides:
         border_fade: 0.05
 
     volumetrics:
-        intensity: 2.29999
+        enable_volumetric_shadows: True
+        volumetric_shadow_intensity: 1.0
 
     vxgi:
         grid_resolution: 256

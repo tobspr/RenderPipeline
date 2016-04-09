@@ -295,13 +295,18 @@ class Debugger(RPObject):
             return
 
         # Clear old defines
-        self._pipeline.stage_mgr.remove_define_if(lambda name: name.startswith("_RM__"))
+        to_remove = []
+        for define in self._pipeline.stage_mgr.defines:
+            if define.startswith("_RM__"):
+                to_remove.append(define)
+        for define in to_remove:
+            del self._pipeline.stage_mgr.defines[define]
 
         if mode_id == "":
             self._pipeline.stage_mgr.defines["ANY_DEBUG_MODE"] = 0
         else:
             self._pipeline.stage_mgr.defines["ANY_DEBUG_MODE"] = 1
-            self._pipeline.stage_mgr.define["_RM_" + mode_id] = 1
+            self._pipeline.stage_mgr.defines["_RM_" + mode_id] = 1
 
         # Reload all shaders
         self._pipeline.reload_shaders()

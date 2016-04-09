@@ -41,7 +41,7 @@ class GodrayStage(RenderStage):
 
     def create(self):
         self._target = self.create_target("ComputeGodrays")
-        self._target.add_color_attachment(bits=16, alpha=True)
+        self._target.add_color_attachment(bits=16)
         self._target.prepare_buffer()
 
     def reload_shaders(self):

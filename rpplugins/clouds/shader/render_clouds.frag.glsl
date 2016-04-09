@@ -48,8 +48,8 @@ const float METER = 1.0;
 
 const float earth_radius = 6371.0 * KM;
 const vec3 earth_mid = vec3(0, 0, -earth_radius);
-const float cloud_start = earth_radius + 3.0 * KM;
-const float cloud_end = earth_radius + 4.0 * KM;
+const float cloud_start = earth_radius + 1.0 * KM;
+const float cloud_end = earth_radius + 1.7 * KM;
 
 vec2 get_cloud_coord(vec3 pos) {
     vec2 xy_coord = pos.xy / (cloud_end - cloud_start) * float(CLOUD_RES_Z) / float(CLOUD_RES_XY);
@@ -145,7 +145,7 @@ void main() {
 
     // accum_color *= 1.8;
     // accum_color *= vec3(1.2, 1.1, 1);
-    accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
+    accum_color *= 0.4 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 
 
     // Darken clouds in the distance

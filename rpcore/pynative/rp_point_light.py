@@ -36,7 +36,7 @@ class RPPointLight(RPLight):
     def __init__(self):
         RPLight.__init__(self, RPLight.LT_point_light)
         self._radius = 10.0
-        self._inner_radius = 0.0
+        self._inner_radius = 0.01
 
     def write_to_command(self, cmd):
         RPLight.write_to_command(self, cmd)
@@ -54,6 +54,7 @@ class RPPointLight(RPLight):
     radius = property(get_radius, set_radius)
 
     def set_inner_radius(self, inner_radius):
+        assert inner_radius >= 0.01
         self._inner_radius = inner_radius
         self.set_needs_update(True)
 
