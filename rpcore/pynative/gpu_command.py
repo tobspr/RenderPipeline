@@ -76,6 +76,6 @@ class GPUCommand(object):
         offset = command_index * 32 * 4
         dest.set_subdata(offset, 32 * 4, data)
 
-    def write(self, out=None):
+    def write(self, out=None): # pylint: disable=W0613
         print("GPUCommand(type=", self._command_type, "size=", self._current_index, ")")
         print("Data:", ', '.join([str(i) for i in self._data]))

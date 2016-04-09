@@ -26,18 +26,15 @@ THE SOFTWARE.
 
 from __future__ import division
 
-import random
-
 from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4
-from panda3d.core import SamplerState, PNMImage
+from panda3d.core import SamplerState
 from direct.stdpy.file import open
 
-from rpcore.image import Image
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
 
-from rpcore.util.shader_ubo import ShaderUBO
+from rpcore.util.shader_input_blocks import GroupedInputBlock
 
 class CommonResources(RPObject):
 
@@ -65,7 +62,7 @@ class CommonResources(RPObject):
         """ Creates commonly used shader inputs such as the current mvp and
         registers them to the stage manager so they can be used for rendering """
 
-        self._input_ubo = ShaderUBO("MainSceneData")
+        self._input_ubo = GroupedInputBlock("MainSceneData")
         self._input_ubo.register_pta("camera_pos", "vec3")
         self._input_ubo.register_pta("view_proj_mat_no_jitter", "mat4")
         self._input_ubo.register_pta("last_view_proj_mat_no_jitter", "mat4")
@@ -80,12 +77,12 @@ class CommonResources(RPObject):
         self._input_ubo.register_pta("current_film_offset", "vec2")
         self._input_ubo.register_pta("temporal_index", "int")
         self._input_ubo.register_pta("frame_index", "int")
-        self._pipeline.stage_mgr.add_ubo(self._input_ubo)
+        self._pipeline.stage_mgr.input_blocks.append(self._input_ubo)
 
         # Main camera and main render have to be regular inputs, since they are
         # used in the shaders by that name.
-        self._pipeline.stage_mgr.add_input("mainCam", self._showbase.cam)
-        self._pipeline.stage_mgr.add_input("mainRender", self._showbase.render)
+        self._pipeline.stage_mgr.inputs["mainCam"] = self._showbase.cam
+        self._pipeline.stage_mgr.inputs["mainRender"] = self._showbase.render
 
         # Set the correct frame rate interval
         Globals.clock.set_average_frame_rate_interval(3.0)
@@ -106,7 +103,6 @@ class CommonResources(RPObject):
         self._load_environment_cubemap()
         self._load_prefilter_brdf()
         self._load_skydome()
-        self._load_noise_tex()
 
     def _load_environment_cubemap(self):
         """ Loads the default cubemap used for the environment, which is used
@@ -119,7 +115,7 @@ class CommonResources(RPObject):
         envmap.set_wrap_u(SamplerState.WM_repeat)
         envmap.set_wrap_v(SamplerState.WM_repeat)
         envmap.set_wrap_w(SamplerState.WM_repeat)
-        self._pipeline.stage_mgr.add_input("DefaultEnvmap", envmap)
+        self._pipeline.stage_mgr.inputs["DefaultEnvmap"] = envmap
 
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
@@ -141,24 +137,14 @@ class CommonResources(RPObject):
             brdf_tex.set_wrap_v(SamplerState.WM_clamp)
             brdf_tex.set_wrap_w(SamplerState.WM_clamp)
             brdf_tex.set_anisotropic_degree(0)
-            self._pipeline.stage_mgr.add_input(config["input"], brdf_tex)
+            self._pipeline.stage_mgr.inputs[config["input"]] = brdf_tex
 
     def _load_skydome(self):
         """ Loads the skydome """
         skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.txo")
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
-        self._pipeline.stage_mgr.add_input("DefaultSkydome", skydome)
-
-    def _load_noise_tex(self):
-        """ Loads the default 4x4 noise tex """
-        random.seed(42)
-        img = PNMImage(4, 4, 3)
-        for x in range(16):
-            img.set_xel(x % 4, x // 4, random.random(), random.random(), random.random())
-        tex = Image("Noise4x4")
-        tex.load(img)
-        self._pipeline.stage_mgr.add_input("Noise4x4", tex)
+        self._pipeline.stage_mgr.inputs["DefaultSkydome"] = skydome
 
     def load_default_skybox(self):
         skybox = RPLoader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")

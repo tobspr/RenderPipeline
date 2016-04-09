@@ -47,7 +47,7 @@ def make_setting_from_data(data):
 
     try:
         instance = factory[data["type"]](data)
-    except Exception as msg:
+    except Exception:
         print("Exception occured while parsing", data)
         raise
 
@@ -75,9 +75,9 @@ class BaseType(RPObject):
         """ Sets the value of the setting, should get overridden """
         raise NotImplementedError()
 
-    def write_defines(self, plugin_id, setting_id, definer):
+    def add_defines(self, plugin_id, setting_id, defines):
         """ Makes the value of this plugin available as a define """
-        definer("{}_{}".format(plugin_id, setting_id), self.value)
+        defines["{}_{}".format(plugin_id, setting_id)] = self.value
 
     def should_be_visible(self, settings):
         """ Evaluates whether the plugin should be visible, taking all display
@@ -151,11 +151,11 @@ class EnumType(BaseType):
             return
         self.value = value
 
-    def write_defines(self, plugin_id, setting_id, definer):
-        definer("{}_{}".format(plugin_id, setting_id), 1000 + self.values.index(self.value))
+    def add_defines(self, plugin_id, setting_id, defines):
+        defines["{}_{}".format(plugin_id, setting_id)] = 1000 + self.values.index(self.value)
 
         for i, val in enumerate(self.values):
-            definer("{}_ENUM_{}_{}".format(plugin_id, setting_id, val), 1000 + i)
+            defines["enum_{}_{}_{}".format(plugin_id, setting_id, val)] = 1000 + i
 
 class PathType(BaseType):
     """ Path type to specify paths to files """
@@ -169,6 +169,6 @@ class PathType(BaseType):
     def set_value(self, value):
         self.value = str(value)
 
-    def write_defines(self, *args):
+    def add_defines(self, *args):
         # Paths are not available in shaders
         pass

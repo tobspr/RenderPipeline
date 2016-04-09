@@ -42,7 +42,7 @@ class SSRStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return { "SSRSpecular": self.target_post_blur.color_tex }
+        return {"SSRSpecular": self.target_post_blur.color_tex}
 
     def create(self):
         x_size, y_size = Globals.resolution.x, Globals.resolution.y

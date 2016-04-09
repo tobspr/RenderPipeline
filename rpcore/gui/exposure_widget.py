@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import ComputeNode, Shader, Vec4, Vec3
+from panda3d.core import ComputeNode, Vec4, Vec3
 from direct.gui.DirectFrame import DirectFrame
 
 from rpcore.gui.sprite import Sprite
@@ -81,17 +81,16 @@ class ExposureWidget(RPObject):
     def _late_init(self, task):
         """ Gets called after the pipeline initialized, this extracts the
         exposure texture from the stage manager """
-
         stage_mgr = self._pipeline.stage_mgr
 
-        if not stage_mgr.has_pipe("Exposure"):
+        if "Exposure" not in stage_mgr.pipes:
             self.debug("Disabling exposure widget, could not find the exposure data.")
             self._node.remove_node()
             return
 
         self._node.show()
 
-        exposure_tex = stage_mgr.get_pipe("Exposure")
+        exposure_tex = stage_mgr.pipes["Exposure"]
         self._cshader = RPLoader.load_shader("/$$rp/shader/visualize_exposure.compute.glsl")
         self._cshader_np.set_shader(self._cshader)
         self._cshader_np.set_shader_input("DestTex", self._storage_tex)

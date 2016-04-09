@@ -32,7 +32,7 @@ from rpcore.stages.ambient_stage import AmbientStage
 
 class VXGIStage(RenderStage):
 
-    required_inputs = ["voxelGridPosition", "Noise4x4"]
+    required_inputs = ["voxelGridPosition"]
     required_pipes = ["ShadedScene", "SceneVoxels", "GBuffer", "ScatteringIBLSpecular",
                       "ScatteringIBLDiffuse"]
 

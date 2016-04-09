@@ -36,7 +36,6 @@
 
 out float result;
 
-uniform sampler2D Noise4x4;
 uniform sampler2D DownscaledDepth;
 uniform sampler2D AOResult;
 
@@ -114,8 +113,6 @@ void main() {
     // Normalize samples
     accum /= max(0.1, range_accum);
     accum = 1 - accum;
-    // accum = pow(accum, 2.0);
     prev_result *= accum;
-    // prev_result = accum;
     result = prev_result;
 }

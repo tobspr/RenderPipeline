@@ -7,15 +7,14 @@ Deferred Rendering Pipeline with Physically Based Shading for the <a href="http:
 <a href="https://www.youtube.com/watch?v=K7R8zQsbnm4" target="_blank">VIDEO</a>
 
 Car rendering:
-<img src="http://i.imgur.com/c8XXlyU.png" />
 <img src="http://i.imgur.com/5ndB7fu.png" />
 <img src="http://i.imgur.com/Ip6Z9n1.png" />
 
-Exterior car rendering: 
-<img src="http://i.imgur.com/m4nPnm1.png" />
-
 Screen space reflections test:
 <img src="http://i.imgur.com/oOwLXAK.png" />
+
+Exterior car rendering: 
+<img src="http://i.imgur.com/m4nPnm1.png" />
 
 ### Core Features
 
@@ -28,6 +27,7 @@ Screen space reflections test:
 See the <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Features">Feature List</a>
 for a list of features, and list of techniques I intend to implement.
 
+You can find my todo list for the render pipeline here: <a href="https://trello.com/b/Li2JQi0q/render-pipeline" target="_blank">Render Pipeline Roadmap</a>.
 
 ### Getting Started / Wiki
 

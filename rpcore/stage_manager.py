@@ -33,7 +33,7 @@ from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 from rpcore.gui.pipe_viewer import PipeViewer
 from rpcore.image import Image
-from rpcore.util.shader_ubo import BaseUBO
+from rpcore.util.shader_input_blocks import SimpleInputBlock, GroupedInputBlock
 from rpcore.stages.update_previous_pipes_stage import UpdatePreviousPipesStage
 
 class StageManager(RPObject):
@@ -44,24 +44,19 @@ class StageManager(RPObject):
     def __init__(self, pipeline):
         """ Constructs the stage manager """
         RPObject.__init__(self)
-        self._stages = []
-        self._inputs = {}
-        self._pipes = {}
-        self._ubos = {}
-        self._previous_pipes = {}
-        self._defines = {}
-        self._pipeline = pipeline
-        self._created = False
+        self.stages = []
+        self.inputs = {}
+        self.pipes = {}
+        self.input_blocks = []
+        self.previous_pipes = {}
+        self.defines = {}
+        self.pipeline = pipeline
+        self.created = False
 
         self._load_stage_order()
 
         # Register the manager so the pipe viewer can read our data
         PipeViewer.register_stage_mgr(self)
-
-    @property
-    def stages(self):
-        """ Returns all currently attached stages """
-        return self._stages
 
     def _load_stage_order(self):
         """ Loads the order of all stages from the stages.yaml configuration
@@ -79,48 +74,32 @@ class StageManager(RPObject):
                        "is not registered yet! Please add it to the StageManager!")
             return
 
-        if self._created:
+        if self.created:
             self.error("Cannot attach stage, stages are already created!")
             return
 
-        self._stages.append(stage)
-
-    def add_input(self, key, value):
-        """ Registers a new shader input """
-        self._inputs[key] = value
-
-    def add_ubo(self, handle):
-        """ Registers a new uniform buffer object """
-        self._ubos[handle.get_name()] = handle
+        self.stages.append(stage)
 
     def define(self, key, value):
         """ Registers a new define for the shader auto config """
-        self._defines[key] = value
+        self.defines[key] = value
 
     def remove_define_if(self, condition):
         """ Removes all defines matching condition, condition should be a
         function or lambda taking 1 argument (the name of the define). """
         to_remove = []
-        for define in self._defines:
+        for define in self.defines:
             if condition(define):
                 to_remove.append(define)
 
         for define in to_remove:
-            del self._defines[define]
+            del self.defines[define]
 
     def get_stage(self, stage_class):
         """ Returns a handle to an instantiated stage """
-        for stage in self._stages:
+        for stage in self.stages:
             if stage.__class__.__name__ == stage_class:
                 return stage
-
-    def get_pipe(self, pipe_name):
-        """ Returns a handle to an existing pipe """
-        return self._pipes[pipe_name]
-
-    def has_pipe(self, pipe_name):
-        """ Returns whether a certain pipe exists """
-        return pipe_name in self._pipes
 
     def _prepare_stages(self):
         """ Prepares all stages by removing disabled stages and sorting stages
@@ -129,20 +108,22 @@ class StageManager(RPObject):
 
         # Remove all disabled stages
         to_remove = []
-        for stage in self._stages:
+        for stage in self.stages:
             if stage.disabled:
                 to_remove.append(stage)
 
         for stage in to_remove:
-            self._stages.remove(stage)
+            self.stages.remove(stage)
 
-        self._stages.sort(key=lambda stage: self._stage_order.index(stage.stage_id))
+        self.stages.sort(key=lambda stage: self._stage_order.index(stage.stage_id))
 
     def _bind_pipes_to_stage(self, stage):
         """ Sets all required pipes on a stage """
         for pipe in stage.required_pipes:
-            if pipe in self._ubos:
-                self._ubos[pipe].bind_to(stage)
+
+            # Check if there is an input block named like the pipe
+            if pipe in self.input_blocks:
+                self.input_blocks[pipe].bind_to(stage)
                 continue
 
             if pipe.startswith("PreviousFrame::"):
@@ -150,7 +131,7 @@ class StageManager(RPObject):
                 # pipes have the same size as the window and a format of
                 # F_rgba16. Could be subject to change.
                 pipe_name = pipe.split("::")[-1]
-                if pipe_name not in self._previous_pipes:
+                if pipe_name not in self.previous_pipes:
                     self.debug("Storing previous frame pipe for " + pipe_name)
                     tex_format = "RGBA16"
 
@@ -163,15 +144,15 @@ class StageManager(RPObject):
                         "Prev-" + pipe_name, Globals.resolution.x,
                         Globals.resolution.y, tex_format)
                     pipe_tex.clear_image()
-                    self._previous_pipes[pipe_name] = pipe_tex
-                stage.set_shader_input("Previous_" + pipe_name, self._previous_pipes[pipe_name])
+                    self.previous_pipes[pipe_name] = pipe_tex
+                stage.set_shader_input("Previous_" + pipe_name, self.previous_pipes[pipe_name])
                 continue
 
-            if pipe not in self._pipes:
+            if pipe not in self.pipes:
                 self.fatal("Pipe '" + pipe + "' is missing for", stage)
                 return False
 
-            pipe_value = self._pipes[pipe]
+            pipe_value = self.pipes[pipe]
             if isinstance(pipe_value, list) or isinstance(pipe_value, tuple):
                 stage.set_shader_input(pipe, *pipe_value)
             else:
@@ -181,81 +162,72 @@ class StageManager(RPObject):
     def _bind_inputs_to_stage(self, stage):
         """ Binds all inputs including common inputs to the given stage """
         common_inputs = ["mainCam", "mainRender", "MainSceneData", "TimeOfDay"]
-
-        # Check if all inputs are available, and set them
         for input_binding in stage.required_inputs + common_inputs:
-            if input_binding not in self._inputs and \
-               input_binding not in self._ubos:
+            if input_binding not in self.inputs and \
+               input_binding not in self.input_blocks:
                 self.error("Input", input_binding, "is missing for", stage)
                 continue
 
-            if input_binding in self._inputs:
-                stage.set_shader_input(input_binding,
-                                       self._inputs[input_binding])
-            elif input_binding in self._ubos:
-                self._ubos[input_binding].bind_to(stage)
+            if input_binding in self.inputs:
+                stage.set_shader_input(input_binding, self.inputs[input_binding])
+            elif input_binding in self.input_blocks:
+                self.input_blocks[input_binding].bind_to(stage)
             else:
-                assert False
+                assert False, "Input binding not in inputs and not in blocks!"
         return True
 
-    def _register_stage_outcome(self, stage):
+    def _register_stage_result(self, stage):
         """ Registers all produced pipes, inputs and defines from the given
         stage, so they can be used by later stages. """
-
-        # Register all the new pipes, inputs and defines
-        for pipe_name, pipe_data in iteritems(stage.produced_pipes):
-            if isinstance(pipe_data, BaseUBO):
-                self._ubos[pipe_name] = pipe_data
+        for pipe_name, pipe_data in (iteritems)(stage.produced_pipes):
+            if isinstance(pipe_data, (SimpleInputBlock, GroupedInputBlock)):
+                self.input_blocks[pipe_name] = pipe_data
                 continue
-
-            self._pipes[pipe_name] = pipe_data
+            self.pipes[pipe_name] = pipe_data
 
         for define_name, data in iteritems(stage.produced_defines):
-            if define_name in self._defines:
+            if define_name in self.defines:
                 self.warn("Stage", stage, "overrides define", define_name)
-            self._defines[define_name] = data
+            self.defines[define_name] = data
 
         for input_name, data in iteritems(stage.produced_inputs):
-            if input_name in self._inputs:
+            if input_name in self.inputs:
                 self.warn("Stage", stage, "overrides input", input_name)
 
-            # Check for UBO's
-            if isinstance(data, BaseUBO):
-                self._ubos[input_name] = data
+            if isinstance(data, (SimpleInputBlock, GroupedInputBlock)):
+                self.input_blocks[input_name] = data
                 continue
 
-            self._inputs[input_name] = data
+            self.inputs[input_name] = data
 
     def _create_previous_pipes(self):
-        """ Creates a target for each last-frame's pipe """
-        # Finally create the stage which stores all the current pipes in the
-        # previous pipes textures:
-        if self._previous_pipes:
-            self._prev_stage = UpdatePreviousPipesStage(self._pipeline)
+        """ Creates a target for each last-frame's pipe, any pipe starting
+        with the prefix 'Previous::' has to be stored and copied each frame. """
+        if self.previous_pipes:
+            self._prev_stage = UpdatePreviousPipesStage(self.pipeline)
+            for prev_pipe, prev_tex in iteritems(self.previous_pipes):
 
-            for prev_pipe, prev_tex in iteritems(self._previous_pipes):
-
-                if prev_pipe not in self._pipes:
+                if prev_pipe not in self.pipes:
                     self.error("Attempted to use previous frame data from pipe",
                                prev_pipe, "- however, that pipe was never created!")
                     return False
 
                 # Tell the stage to transfer the data from the current pipe to
                 # the current texture
-                self._prev_stage.add_transfer(self._pipes[prev_pipe], prev_tex)
-
+                self._prev_stage.add_transfer(self.pipes[prev_pipe], prev_tex)
             self._prev_stage.create()
-            self._stages.append(self._prev_stage)
+            self.stages.append(self._prev_stage)
 
     def setup(self):
         """ Setups the stages """
-        self.debug("Setup stages ...")
+        self.debug("Setup stages ..")
+        self.created = True
 
-        self._created = True
+        # Convert input blocks so we can access them in a better way
+        self.input_blocks = {block.name : block for block in self.input_blocks}
         self._prepare_stages()
 
-        # Process each stage
-        for stage in self._stages:
+        for stage in self.stages:
             stage.create()
 
             # Rely on the methods to print an appropriate error message
@@ -264,49 +236,36 @@ class StageManager(RPObject):
             if not self._bind_inputs_to_stage(stage):
                 continue
 
-            self._register_stage_outcome(stage)
-
+            self._register_stage_result(stage)
         self._create_previous_pipes()
 
     def reload_shaders(self):
         """ This pass sets the shaders to all passes and also generates the
         shader configuration """
-
-        # First genereate the auto config
         self.write_autoconfig()
-
-        # Then generate the shaders
-        for stage in self._stages:
+        for stage in self.stages:
             stage.reload_shaders()
 
     def update(self):
         """ Calls the update method for each registered stage """
-        for stage in self._stages:
+        for stage in self.stages:
             stage.update()
-
-    def _make_glsl_define(self, key, value):
-        """ Given a define name and value, returns a glsl string which can be
-        used to set that define in glsl """
-        if isinstance(value, bool):
-            # Cannot cast bools to string directly
-            value = 1 if value else 0
-        return "#define " + key + " " + str(value) + "\n"
 
     def write_autoconfig(self):
         """ Writes the shader auto config, based on the defines specified by the
         different stages """
-
-        self.debug("Writing shader autoconfig")
+        self.debug("Writing shader config")
 
         # Generate autoconfig as string
         output = "#pragma once\n\n"
         output += "// Autogenerated by the render pipeline\n"
         output += "// Do not edit! Your changes will be lost.\n\n"
 
-        for key, value in sorted(iteritems(self._defines)):
-            output += self._make_glsl_define(key, value)
+        for key, value in sorted(iteritems(self.defines)):
+            if isinstance(value, bool):
+                value = 1 if value else 0
+            output += "#define " + key + " " + str(value) + "\n"
 
-        # Try to write the file
         try:
             with open("/$$rptemp/$$pipeline_shader_config.inc.glsl", "w") as handle:
                 handle.write(output)

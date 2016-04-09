@@ -30,7 +30,8 @@ from rplibs.six import iteritems
 from direct.stdpy.file import open
 
 from rpcore.rpobject import RPObject
-from rpcore.util.shader_ubo import ShaderUBO
+from rpcore.util.shader_input_blocks import GroupedInputBlock
+
 
 class DayTimeManager(RPObject):
 
@@ -40,7 +41,7 @@ class DayTimeManager(RPObject):
     def __init__(self, pipeline):
         RPObject.__init__(self)
         self._pipeline = pipeline
-        self._input_ubo = ShaderUBO("TimeOfDay")
+        self._input_ubo = GroupedInputBlock("TimeOfDay")
         self._time = 0.5
         self._setting_handles = {}
 
@@ -72,7 +73,7 @@ class DayTimeManager(RPObject):
                 setting_id = "{}.{}".format(plugin_id, setting)
                 self._input_ubo.register_pta(setting_id, handle.glsl_type)
                 self._setting_handles[setting_id] = handle
-        self._pipeline.stage_mgr.add_ubo(self._input_ubo)
+        self._pipeline.stage_mgr.input_blocks.append(self._input_ubo)
 
         # Generate UBO shader code
         shader_code = self._input_ubo.generate_shader_code()

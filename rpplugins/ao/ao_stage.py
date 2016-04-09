@@ -29,7 +29,7 @@ from rpcore.render_stage import RenderStage
 
 class AOStage(RenderStage):
 
-    required_inputs = ["Noise4x4"]
+    required_inputs = []
     required_pipes = ["GBuffer", "DownscaledDepth", "PreviousFrame::AmbientOcclusion",
                       "CombinedVelocity"]
 

@@ -25,14 +25,11 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import Shader
-
 from rplibs.six.moves import range
 
 from rpcore.gui.sprite import Sprite
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
-from rpcore.loader import RPLoader
 
 class EmptyLoadingScreen(object):
 
@@ -40,10 +37,10 @@ class EmptyLoadingScreen(object):
     pipeline """
 
     def create(self):
-        pass
+        """ Creates the loading screen """
 
     def remove(self):
-        pass
+        """ Removes the loading screen """
 
 class LoadingScreen(RPObject):
 

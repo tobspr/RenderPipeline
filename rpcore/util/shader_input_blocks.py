@@ -30,122 +30,98 @@ from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt, TypeRegistry
 
 from rpcore.rpobject import RPObject
 
-__all__ = ["BaseUBO", "SimpleUBO", "ShaderUBO"]
+class SimpleInputBlock(RPObject):
 
-class BaseUBO(RPObject):
-    """ Base class for UBO's """
-
-    def __init__(self):
-        RPObject.__init__(self)
-
-
-class SimpleUBO(BaseUBO):
-
-    """ Simplest possible uniform buffer which just stores a set of values """
+    """ Simplest possible uniform buffer which just stores a set of values.
+    This does not use any fancy uniform buffer objects under the hood, and
+    instead just sets every value as a shader input. """
 
     def __init__(self, name):
-        BaseUBO.__init__(self)
-        self._inputs = {}
-        self._name = name
+        """ Creates the ubo with the given name """
+        RPObject.__init__(self)
+        self.inputs = {}
+        self.name = name
 
     def add_input(self, name, value):
         """ Adds a new input to the UBO """
-        self._inputs[name] = value
-
-    def get_name(self):
-        """ Returns the name of the UBO """
-        return self._name
+        self.inputs[name] = value
 
     def bind_to(self, target):
         """ Binds the UBO to a target """
-        for key, val in iteritems(self._inputs):
-            target.set_shader_input(self._name + "." + key, val)
+        for key, val in iteritems(self.inputs):
+            target.set_shader_input(self.name + "." + key, val)
 
+class GroupedInputBlock(RPObject):
 
-class ShaderUBO(BaseUBO):
+    """ Grouped uniform buffer which either uses PointerToArray's to efficiently
+    store and update the shader inputs, or in case of uniform buffer object (UBO)
+    support, uses these to pass the inputs to the shaders. """
 
-    """ Interface to shader uniform blocks, using PTA's to efficiently store
-    and update values. """
+    # Keeps track of the global allocated input blocks to be able to assign
+    # a unique binding to all of them
+    UBO_BINDING_INDEX = 0
 
-    _UBO_BINDING_INDEX = 0
-
-    @classmethod
-    def ubos_supported(cls):
-        """ Checks whether the panda3d build currently used supports UBOs """
-        return bool(TypeRegistry.ptr().find_type("GLUniformBufferContext"))
+    # Mapping of the pta-types to glsl types, and vice versa
+    PTA_MAPPINGS = {
+        PTAInt: "int",
+        PTAFloat: "float",
+        PTALVecBase2f: "vec2",
+        PTALVecBase3f: "vec3",
+        PTALVecBase4f: "vec4",
+        PTALMatrix3f: "mat3",
+        PTALMatrix4f: "mat4",
+    }
 
     def __init__(self, name):
-        """ Constructs the UBO with a given name """
-        BaseUBO.__init__(self)
-        self._ptas = {}
-        self._name = name
-        self._use_ubo = self.ubos_supported()
+        """ Constructs the input block with a given name """
+        RPObject.__init__(self)
+        self.ptas = {}
+        self.name = name
+        self.use_ubo = bool(TypeRegistry.ptr().find_type("GLUniformBufferContext"))
 
         # Acquire a unique index for each UBO to store its binding
-        self._bind_id = ShaderUBO._UBO_BINDING_INDEX
-        ShaderUBO._UBO_BINDING_INDEX += 1
+        self.bind_id = GroupedInputBlock.UBO_BINDING_INDEX
+        GroupedInputBlock.UBO_BINDING_INDEX += 1
 
-        self.debug("Native UBO support =", self._use_ubo)
+        if self.bind_id == 0:
+            # Only output the bind support debug output once (for the first ubo)
+            self.debug("Native UBO support =", self.use_ubo)
 
-    def register_pta(self, name, type):
+    def register_pta(self, name, input_type):
         """ Registers a new input, type should be a glsl type """
-        pta_handle = self._glsl_type_to_pta(type).empty_array(1)
-        self._ptas[name] = pta_handle
+        self.ptas[name] = self.glsl_type_to_pta(input_type).empty_array(1)
 
-    def get_name(self):
-        """ Returns the name of the UBO """
-        return self._name
-
-    def _pta_to_glsl_type(self, pta_handle):
+    def pta_to_glsl_type(self, pta_handle):
         """ Converts a PtaXXX to a glsl type """
-        mappings = {
-            PTAInt: "int",
-            PTAFloat: "float",
-            PTALVecBase2f: "vec2",
-            PTALVecBase3f: "vec3",
-            PTALVecBase4f: "vec4",
-            PTALMatrix3f: "mat3",
-            PTALMatrix4f: "mat4",
-        }
-        for mapping, glsl_type in iteritems(mappings):
-            if isinstance(pta_handle, mapping):
+        for pta_type, glsl_type in iteritems(GroupedInputBlock.PTA_MAPPINGS):
+            if isinstance(pta_handle, pta_type):
                 return glsl_type
-        self.warn("Unrecognized PTA type:", pta_handle)
-        return "float"
+        self.error("Unrecognized PTA type:", pta_handle)
 
-    def _glsl_type_to_pta(self, glsl_type):
+    def glsl_type_to_pta(self, glsl_type):
         """ Converts a glsl type to a PtaXXX type """
-        mappings = {
-            "int": PTAInt,
-            "float": PTAFloat,
-            "vec2": PTALVecBase2f,
-            "vec3": PTALVecBase3f,
-            "vec4": PTALVecBase4f,
-            "mat3": PTALMatrix3f,
-            "mat4": PTALMatrix4f,
-        }
-        if glsl_type in mappings:
-            return mappings[glsl_type]
-        self.warn("Unrecognized glsl type:", glsl_type)
-        return None
+        for key, val in iteritems(GroupedInputBlock.PTA_MAPPINGS):
+            if val == glsl_type:
+                return key
+        self.error("Could not resolve GLSL type:", glsl_type)
 
     def bind_to(self, target):
         """ Binds all inputs of this UBO to the given target, which may be
         either a RenderTarget or a NodePath """
 
-        for pta_name, pta_handle in iteritems(self._ptas):
-            if self._use_ubo:
-                target.set_shader_input(self._name + "_UBO." + pta_name, pta_handle)
+        for pta_name, pta_handle in iteritems(self.ptas):
+            if self.use_ubo:
+                target.set_shader_input(self.name + "_UBO." + pta_name, pta_handle)
             else:
-                target.set_shader_input(self._name + "." + pta_name, pta_handle)
+                target.set_shader_input(self.name + "." + pta_name, pta_handle)
 
     def update_input(self, name, value):
         """ Updates an existing input """
-        self._ptas[name][0] = value
+        self.ptas[name][0] = value
 
     def get_input(self, name):
         """ Returns the value of an existing input """
-        return self._ptas[name][0]
+        return self.ptas[name][0]
 
     def generate_shader_code(self):
         """ Generates the GLSL shader code to use the UBO """
@@ -157,12 +133,12 @@ class ShaderUBO(BaseUBO):
         structs = {}
         inputs = []
 
-        for input_name, handle in iteritems(self._ptas):
+        for input_name, handle in iteritems(self.ptas):
             parts = input_name.split(".")
 
             # Single input, simply add it to the input list
             if len(parts) == 1:
-                inputs.append(self._pta_to_glsl_type(handle) + " " + input_name + ";")
+                inputs.append(self.pta_to_glsl_type(handle) + " " + input_name + ";")
 
             # Nested input, like scattering.sun_color
             elif len(parts) == 2:
@@ -171,12 +147,12 @@ class ShaderUBO(BaseUBO):
                 if struct_name in structs:
                     # Struct is already defined, add member definition
                     structs[struct_name].append(
-                        self._pta_to_glsl_type(handle) + " " + actual_input_name + ";")
+                        self.pta_to_glsl_type(handle) + " " + actual_input_name + ";")
                 else:
                     # Construct a new struct and add it to the list of inputs
                     inputs.append(struct_name + "_UBOSTRUCT " + struct_name + ";")
                     structs[struct_name] = [
-                        self._pta_to_glsl_type(handle) + " " + actual_input_name + ";"
+                        self.pta_to_glsl_type(handle) + " " + actual_input_name + ";"
                     ]
 
             # Nested input, like scattering.some_setting.sun_color, not supported yet
@@ -192,20 +168,20 @@ class ShaderUBO(BaseUBO):
 
         # Add actual inputs
         if len(inputs) < 1:
-            self.debug("No UBO inputs present for", self._name)
+            self.debug("No UBO inputs present for", self.name)
         else:
-            if self._use_ubo:
+            if self.use_ubo:
 
                 content += "layout(shared, binding={}) uniform {}_UBO {{\n".format(
-                    self._bind_id, self._name)
+                    self.bind_id, self.name)
                 for ipt in inputs:
                     content += " " * 4 + ipt + "\n"
-                content += "} " + self._name + ";\n"
+                content += "} " + self.name + ";\n"
             else:
                 content += "uniform struct {\n"
                 for ipt in inputs:
                     content += " " * 4 + ipt + "\n"
-                content += "} " + self._name + ";\n"
+                content += "} " + self.name + ";\n"
 
         content += "\n"
         return content

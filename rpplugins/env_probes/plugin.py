@@ -27,7 +27,7 @@ THE SOFTWARE.
 from panda3d.core import PTAInt
 
 from rpcore.globals import Globals
-from rpcore.util.shader_ubo import SimpleUBO
+from rpcore.util.shader_input_blocks import SimpleInputBlock
 from rpcore.pluginbase.base_plugin import BasePlugin
 from rpcore.stages.cull_lights_stage import CullLightsStage
 
@@ -82,12 +82,12 @@ class Plugin(BasePlugin):
         self.pta_probes = PTAInt.empty_array(1)
 
         # Construct the UBO which stores all environment probe data
-        self.data_ubo = SimpleUBO("EnvProbes")
+        self.data_ubo = SimpleInputBlock("EnvProbes")
         self.data_ubo.add_input("num_probes", self.pta_probes)
         self.data_ubo.add_input("cubemaps", self.probe_mgr.cubemap_storage)
         self.data_ubo.add_input("diffuse_cubemaps", self.probe_mgr.diffuse_storage)
         self.data_ubo.add_input("dataset", self.probe_mgr.dataset_storage)
-        self._pipeline.stage_mgr.add_ubo(self.data_ubo)
+        self._pipeline.stage_mgr.input_blocks.append(self.data_ubo)
 
         # Use the UBO in light culling
         CullLightsStage.required_inputs.append("EnvProbes")

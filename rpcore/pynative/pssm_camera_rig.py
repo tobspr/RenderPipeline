@@ -56,7 +56,7 @@ class PSSMCameraRig(object):
         transform = self._parent.get_transform(self._cam_node).get_mat()
         self._mvps[0] = transform * self._lens.get_projection_mat()
 
-    def get_camera(self, index):
+    def get_camera(self, index): # pylint: disable=W0613
         return self._cam_node
 
     def reparent_to(self, parent):

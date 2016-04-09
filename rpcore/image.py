@@ -46,6 +46,7 @@ class StuffToMakePylintHappyAgain(object):
     TT_3d_texture = Texture.TT_3d_texture
     TT_cube_map = Texture.TT_cube_map
     TT_cube_map_array = Texture.TT_cube_map_array
+    TT_2d_texture_array = Texture.TT_2d_texture_array
 
     format_format = Texture.format_format
     format_component_type = Texture.format_component_type
@@ -65,6 +66,7 @@ class Image(RPObject, Texture, StuffToMakePylintHappyAgain):
         "R11G11B10": (Texture.T_float, Texture.F_r11_g11_b10),
         "RGBA8": (Texture.T_unsigned_byte, Texture.F_rgba8),
         "RGBA16": (Texture.T_float, Texture.F_rgba16),
+        "RGBA32": (Texture.T_float, Texture.F_rgba32),
         "R8": (Texture.T_unsigned_byte, Texture.F_red),
         "R16": (Texture.T_float, Texture.F_r16),
         "R32": (Texture.T_float, Texture.F_r32),
@@ -109,6 +111,14 @@ class Image(RPObject, Texture, StuffToMakePylintHappyAgain):
         img = cls("ImgCube-" + name)
         comp_type, comp_format = cls.convert_texture_format(component_format)
         img.setup_cube_map(size, comp_type, comp_format)
+        return img
+
+    @classmethod
+    def create_cube_array(cls, name, size, num_cubemaps, component_format):
+        """ Creates a new cubemap """
+        img = cls("ImgCubeArr-" + name)
+        comp_type, comp_format = cls.convert_texture_format(component_format)
+        img.setup_cube_map_array(size, num_cubemaps, comp_type, comp_format)
         return img
 
     @classmethod

@@ -36,7 +36,6 @@
 
 out float result;
 
-uniform sampler2D Noise4x4;
 uniform sampler2D DownscaledDepth;
 
 // use the extended gbuffer api

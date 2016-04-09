@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import PTAInt, Shader
+from panda3d.core import PTAInt
 
 from rpcore.image import Image
 from rpcore.rpobject import RPObject
@@ -82,8 +82,8 @@ class GPUCommandQueue(RPObject):
     def reload_shaders(self):
         """ Reloads the command shader """
         shader = RPLoader.load_shader(
-                             "/$$rp/shader/default_post_process.vert.glsl",
-                             "/$$rp/shader/process_command_queue.frag.glsl")
+            "/$$rp/shader/default_post_process.vert.glsl",
+            "/$$rp/shader/process_command_queue.frag.glsl")
         self._command_target.shader = shader
 
     def register_input(self, key, val):
@@ -96,9 +96,9 @@ class GPUCommandQueue(RPObject):
         for attr in dir(GPUCommand):
             if attr.startswith("CMD_"):
                 attr_val = getattr(GPUCommand, attr)
-                self._pipeline.stage_mgr.define(attr, attr_val)
-        self._pipeline.stage_mgr.define(
-            "GPU_CMD_INT_AS_FLOAT", GPUCommand.get_uses_integer_packing())
+                self._pipeline.stage_mgr.defines[attr] = attr_val
+        self._pipeline.stage_mgr.defines["GPU_CMD_INT_AS_FLOAT"] = \
+            GPUCommand.get_uses_integer_packing()
 
     def _create_data_storage(self):
         """ Creates the buffer used to transfer commands """

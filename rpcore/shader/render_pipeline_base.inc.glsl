@@ -49,8 +49,7 @@
 #pragma optionNV (strict on)
 #endif
 
-
-// Only include the UBO's if required
+// Only include the input blocks if required
 #ifdef USE_MAIN_SCENE_DATA
 #pragma include "/$$rptemp/$$main_scene_data.inc.glsl"
 #endif
@@ -68,7 +67,7 @@
 // Plugin functions
 #define HAVE_PLUGIN(PLUGIN_NAME) ( HAVE_PLUGIN_ ## PLUGIN_NAME )
 #define GET_SETTING(PLUGIN_NAME, SETTING_NAME) ( PLUGIN_NAME ## _ ## SETTING_NAME )
-#define GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) ( PLUGIN_NAME ## _ENUM_ ## SETTING_NAME ## _ ## ENUM_KEY )
+#define GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) ( enum_ ##PLUGIN_NAME ## _ ## SETTING_NAME ## _ ## ENUM_KEY )
 #define ENUM_V_ACTIVE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) ( HAVE_PLUGIN(PLUGIN_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) && GET_SETTING(PLUGIN_NAME, SETTING_NAME) == GET_ENUM_VALUE(PLUGIN_NAME, SETTING_NAME, ENUM_KEY) )
 
 // Render mode functions
@@ -111,9 +110,18 @@
 #define CLEARCOAT_SPECULAR 0.16
 #define CLEARCOAT_IOR 1.51
 
-#define DEFAULT_ENVMAP_BRIGHTNESS 10.0
+// Controls the brightness of the fallback cubemap
+#if REFERENCE_MODE
+  #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
+#else
+  #define DEFAULT_ENVMAP_BRIGHTNESS 10.0
+#endif
+
+// Minimum roughness, avoids infinitely bright highlights
 #define MINIMUM_ROUGHNESS 0.01
 
+// Controls at which point the sun is below the horizon and does not have any
+// influence anymore
 #define SUN_VECTOR_HORIZON -0.2
 
 #pragma include "includes/common_functions.inc.glsl"

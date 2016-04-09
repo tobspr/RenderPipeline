@@ -298,10 +298,10 @@ class Debugger(RPObject):
         self._pipeline.stage_mgr.remove_define_if(lambda name: name.startswith("_RM__"))
 
         if mode_id == "":
-            self._pipeline.stage_mgr.define("ANY_DEBUG_MODE", 0)
+            self._pipeline.stage_mgr.defines["ANY_DEBUG_MODE"] = 0
         else:
-            self._pipeline.stage_mgr.define("ANY_DEBUG_MODE", 1)
-            self._pipeline.stage_mgr.define("_RM_" + mode_id, 1)
+            self._pipeline.stage_mgr.defines["ANY_DEBUG_MODE"] = 1
+            self._pipeline.stage_mgr.define["_RM_" + mode_id] = 1
 
         # Reload all shaders
         self._pipeline.reload_shaders()

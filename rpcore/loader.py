@@ -36,7 +36,7 @@ from rpcore.rpobject import RPObject
 
 __all__ = ("RPLoader",)
 
-class timed_loading_operation(object):
+class timed_loading_operation(object): # pylint: disable=C0103
 
     """ Context manager for a synchronous loading operation, keeping track
     on how much time elapsed during the loading process, and warning about
@@ -55,10 +55,12 @@ class timed_loading_operation(object):
     def __exit__(self, *args):
         duration = (time.clock() - self.start_time) * 1000.0
         if duration > 80.0 and timed_loading_operation.WARNING_COUNT < 5:
-            RPObject.global_warn("RPLoader", "Loading '" + self.resource + "' took", round(duration, 2), "ms")
+            RPObject.global_warn(
+                "RPLoader", "Loading '" + self.resource + "' took", round(duration, 2), "ms")
             timed_loading_operation.WARNING_COUNT += 1
             if timed_loading_operation.WARNING_COUNT == 5:
-                RPObject.global_warn("RPLoader", "Skipping further loading warnings (max warning count reached)")
+                RPObject.global_warn(
+                    "RPLoader", "Skipping further loading warnings (max warning count reached)")
 
 class RPLoader(RPObject):
 
@@ -120,7 +122,7 @@ class RPLoader(RPObject):
 
         # Find slice properties
         num_cols = width // tile_size_x
-        temp = PNMImage(
+        temp_img = PNMImage(
             tile_size_x, tile_size_y, source.get_num_channels(), source.get_maxval())
 
         # Construct a ramdisk to write the files to
@@ -132,8 +134,8 @@ class RPLoader(RPObject):
         for z_slice in range(num_tiles):
             slice_x = (z_slice % num_cols) * tile_size_x
             slice_y = (z_slice // num_cols) * tile_size_y
-            temp.copy_sub_image(source, 0, 0, slice_x, slice_y, tile_size_x, tile_size_y)
-            temp.write(tempfile_name + str(z_slice) + ".png")
+            temp_img.copy_sub_image(source, 0, 0, slice_x, slice_y, tile_size_x, tile_size_y)
+            temp_img.write(tempfile_name + str(z_slice) + ".png")
 
         # Load the de-sliced texture from the ramdisk
         texture_handle = cls.load_3d_texture(tempfile_name + "/#.png")

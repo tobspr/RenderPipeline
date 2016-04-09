@@ -30,7 +30,7 @@ from rplibs.six.moves import range
 from rplibs.six import iteritems, itervalues
 
 from direct.stdpy.file import listdir, isfile, join
-from panda3d.core import SamplerState, Shader, ShaderAttrib, NodePath
+from panda3d.core import SamplerState, ShaderAttrib, NodePath
 
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
@@ -73,7 +73,9 @@ class ScatteringMethodHosekWilkie(ScatteringMethod):
         lut_tex.set_wrap_w(SamplerState.WM_clamp)
         lut_tex.set_minfilter(SamplerState.FT_linear)
         lut_tex.set_magfilter(SamplerState.FT_linear)
-        lut_tex.set_format(Image.F_rgb16)
+
+        # Setting the format explicitely shouldn't be necessary
+        # lut_tex.set_format(Image.F_rgb16)
 
         self.handle.display_stage.set_shader_input("ScatteringLUT", lut_tex)
         self.handle.envmap_stage.set_shader_input("ScatteringLUT", lut_tex)
@@ -106,13 +108,13 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         img_2d, img_3d = Image.create_2d, Image.create_3d
 
         self.textures = {
-            "transmittance": img_2d("scattering-transmittance", self.trans_w, self.trans_h, tex_format),
-            "irradiance": img_2d("scattering-irradiance", self.sky_w, self.sky_h, tex_format),
-            "inscatter": img_3d("scattering-inscatter", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
-            "delta_e": img_2d("scattering-dx-e", self.sky_w, self.sky_h, tex_format),
-            "delta_sr": img_3d("scattering-dx-sr", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
-            "delta_sm": img_3d("scattering-dx-sm", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
-            "delta_j": img_3d("scattering-dx-j", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
+            "transmittance": img_2d("scatt-transmittance", self.trans_w, self.trans_h, tex_format),
+            "irradiance": img_2d("scatt-irradiance", self.sky_w, self.sky_h, tex_format),
+            "inscatter": img_3d("scatt-inscatter", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
+            "delta_e": img_2d("scatt-dx-e", self.sky_w, self.sky_h, tex_format),
+            "delta_sr": img_3d("scatt-dx-sr", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
+            "delta_sm": img_3d("scatt-dx-sm", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
+            "delta_j": img_3d("scatt-dx-j", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
         }
 
         for img in itervalues(self.textures):
@@ -135,7 +137,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
 
 
     def exec_compute_shader(self, shader_obj, shader_inputs, exec_size,
-                             workgroup_size=(16, 16, 1)):
+                            workgroup_size=(16, 16, 1)):
         """ Executes a compute shader. The shader object should be a shader
         loaded with Shader.load_compute, the shader inputs should be a dict where
         the keys are the names of the shader inputs and the values are the

@@ -24,9 +24,8 @@ THE SOFTWARE.
 
 """
 
-from direct.stdpy.file import isfile, join
+from direct.stdpy.file import join
 
-from rplibs.yaml import load_yaml_file
 from rpcore.rpobject import RPObject
 
 class BasePlugin(RPObject):

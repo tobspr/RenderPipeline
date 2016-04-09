@@ -69,7 +69,7 @@ class UpdatePreviousPipesStage(RenderStage):
         """ This method augo-generates a shader which copies all textures specified
         as "from-tex" to the textures specified as "to-tex". """
         uniforms = []
-        copy_lines = []
+        lines = []
 
         # Collect all samplers and generate the required uniforms and copy code
         for i, (from_tex, to_tex) in enumerate(self._transfers):
@@ -77,10 +77,10 @@ class UpdatePreviousPipesStage(RenderStage):
             uniforms.append(self.get_sampler_type(from_tex) + " SrcTex" + index)
             uniforms.append(self.get_sampler_type(to_tex, True) + " DestTex" + index)
 
-            copy_lines.append("\n  // Copying " + from_tex.get_name() + " to " + to_tex.get_name())
-            copy_lines.append(self.get_sampler_lookup(from_tex, "data" + index, "SrcTex" + index, "coord_2d_int"))
-            copy_lines.append(self.get_store_code(to_tex, "DestTex" + index, "coord_2d_int", "data" + index))
-            copy_lines.append("\n")
+            lines.append("\n  // Copying " + from_tex.get_name() + " to " + to_tex.get_name())
+            lines.append(self.get_sampler_lookup(from_tex, "data" + index, "SrcTex" + index, "coord_2d_int"))
+            lines.append(self.get_store_code(to_tex, "DestTex" + index, "coord_2d_int", "data" + index))
+            lines.append("\n")
 
         # Actually create the shader
         fragment = "#version 430\n"
@@ -89,7 +89,7 @@ class UpdatePreviousPipesStage(RenderStage):
             fragment += "uniform " + uniform + ";\n"
         fragment += "\nvoid main() {\n"
         fragment += "  ivec2 coord_2d_int = ivec2(gl_FragCoord.xy);\n"
-        for line in copy_lines:
+        for line in lines:
             fragment += "  " + line + "\n"
         fragment += "}\n"
 
@@ -101,7 +101,7 @@ class UpdatePreviousPipesStage(RenderStage):
         # Load it back again
         self._target.shader = self.load_shader(shader_dest)
 
-    def get_sampler_type(self, tex, can_write=False):
+    def get_sampler_type(self, tex, can_write=False): # pylint: disable=W0613
         """ Returns the matching GLSL sampler type for a Texture, or image type
         in case write access is required """
         # TODO: Add more sampler types based on texture type
@@ -110,13 +110,13 @@ class UpdatePreviousPipesStage(RenderStage):
         else:
             return "writeonly image2D"
 
-    def get_sampler_lookup(self, tex, dest_name, sampler_name, coord_var):
+    def get_sampler_lookup(self, tex, dest_name, sampler_name, coord_var): # pylint: disable=W0613
         """ Returns the matching GLSL sampler lookup for a texture, storing the
         result in the given glsl variable """
         # TODO: Add more lookups based on texture type
         return "vec4 " + dest_name + " = texelFetch(" + sampler_name + ", " + coord_var + ", 0);"
 
-    def get_store_code(self, tex, sampler_name, coord_var, data_var):
+    def get_store_code(self, tex, sampler_name, coord_var, data_var): # pylint: disable=W0613
         """ Returns the matching GLSL code to store the given data in a given
         texture """
         # TODO: Add more stores based on texture type

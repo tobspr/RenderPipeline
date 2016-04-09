@@ -29,12 +29,9 @@ from __future__ import print_function
 
 import time
 import hashlib
-from rplibs.six.moves import range
 
 from panda3d.core import PStatCollector
-
 from rpcore.globals import Globals
-from rpcore.loader import RPLoader
 
 def rgb_from_string(text, min_brightness=0.6):
     """ Creates a rgb color from a given string """
@@ -75,7 +72,7 @@ def profile(func):
     do_pstat.__doc__ = func.__doc__
     return do_pstat
 
-class profile_cpu(object):
+class profile_cpu(object): # pylint: disable=C0103
     """
     Context manager for profiling CPU duration. This is useful for timing
     loading of files or other CPU-heavy operations. Example usage:

@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Camera, NodePath, SamplerState
+from panda3d.core import SamplerState
 
 from rpcore.render_stage import RenderStage
 from rpcore.globals import Globals

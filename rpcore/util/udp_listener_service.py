@@ -55,7 +55,7 @@ class UDPListenerService(object):
         try:
             sock.bind(("127.0.0.1", port))
             while True:
-                data, addr = sock.recvfrom(1024)
+                data, addr = sock.recvfrom(1024) # pylint: disable=W0612
                 callback(data.decode("utf-8"))
         finally:
             sock.close()

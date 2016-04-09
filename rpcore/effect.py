@@ -29,7 +29,7 @@ import copy
 from rplibs.six import iteritems, iterkeys
 from rplibs.yaml import load_yaml_file
 
-from panda3d.core import Shader, Filename
+from panda3d.core import Filename
 
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader

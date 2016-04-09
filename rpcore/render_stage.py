@@ -24,8 +24,6 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Shader
-
 from rplibs.six import itervalues
 
 from rpcore.rpobject import RPObject

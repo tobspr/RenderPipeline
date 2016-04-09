@@ -33,7 +33,6 @@
 #pragma include "vxgi.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform sampler2D Noise4x4;
 uniform GBufferData GBuffer;
 out vec4 result;
 
@@ -41,11 +40,7 @@ void main() {
     // Get texture coordinate
     ivec2 coord = ivec2(gl_FragCoord.xy) * 2;
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
-
-    // vec3 noise_vec = fma(texelFetch(Noise4x4, ivec2(quad_x, quad_y), 0).xyz, vec3(2), vec3(-1));
-    // vec3 noise_vec = fma(texelFetch(Noise4x4, (coord/2 + ivec2(quad_x, quad_y)) % 4, 0).xyz, vec3(2), vec3(-1));
     vec3 noise_vec = vec3(0, 0, 0);
-
 
     // Get material data
     Material m = unpack_material(GBuffer, texcoord);

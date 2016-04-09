@@ -107,7 +107,7 @@ class DraggableWindow(RPObject):
         self._title_bar.bind(DGG.B1PRESS, self._start_drag)
         self._title_bar.bind(DGG.B1RELEASE, self._stop_drag)
 
-    def _start_drag(self, evt=None):
+    def _start_drag(self, evt=None): # pylint: disable=W0613
         """ Gets called when the user starts dragging the window """
         self._dragging = True
         self._node.detach_node()
@@ -116,19 +116,19 @@ class DraggableWindow(RPObject):
                                  uponDeath=self._stop_drag)
         self._drag_offset = self._pos - self._get_mouse_pos()
 
-    def _on_close_btn_hover(self, evt=None):
+    def _on_close_btn_hover(self, evt=None): # pylint: disable=W0613
         """ Internal method when the close button got hovered """
         self._btn_close["frameColor"] = (1.0, 0.2, 0.2, 1.0)
 
-    def _on_close_btn_out(self, evt=None):
+    def _on_close_btn_out(self, evt=None): # pylint: disable=W0613
         """ Internal method when the close button is no longer hovered """
         self._btn_close["frameColor"] = (0, 0, 0, 0)
 
-    def _request_close(self, evt=None):
+    def _request_close(self, evt=None): # pylint: disable=W0613
         """ This method gets called when the close button gets clicked """
         self.hide()
 
-    def _stop_drag(self, evt=None):
+    def _stop_drag(self, evt=None): # pylint: disable=W0613
         """ Gets called when the user stops dragging the window """
         Globals.base.taskMgr.remove("UIWindowDrag")
         self._dragging = False

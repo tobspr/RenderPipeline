@@ -88,7 +88,6 @@ for v in classes_to_import + list(classes_to_import_and_rename.keys()):
         globals()[v_name] = getattr(_native_module, v)
     else:
         print("ERROR: could not import class", v, "from", _native_module.__name__)
-        print("Attributes are:", dir(_native_module), _native_module.__path__)
 
 # Don't export all variables, only the required ones
 __all__ = classes_to_import + list(classes_to_import_and_rename.values()) + ["NATIVE_CXX_LOADED"]

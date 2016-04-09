@@ -28,12 +28,11 @@ from __future__ import print_function
 
 import os
 import sys
-import time
 import zipfile
 import shutil
 
 from rplibs.six.moves import urllib
-from rplibs.six import BytesIO
+from rplibs.six import BytesIO, binary_type
 
 from rplibs.progressbar import FileTransferSpeed, ETA, ProgressBar, Percentage
 from rplibs.progressbar import Bar
@@ -46,34 +45,47 @@ def download_file(url, chunk_size=100*1024):
     widgets = ['\tDownloading: ', FileTransferSpeed(), ' ', Bar(), Percentage(), '   ', ETA()]
     progressbar = None
 
-    # Download the zip
-    try:
-        usock = urllib.request.urlopen(url)
-        file_size = int(usock.headers.get("Content-Length", 0))
-        print("File size is", round(file_size / (1024**2), 2), "MB")
+    if sys.version_info.major <= 2:
+        try:
+            usock = urllib.request.urlopen(url)
+            file_size = int(usock.headers.get("Content-Length", 1e10))
+            print("File size is", round(file_size / (1024**2), 2), "MB")
+            progressbar = ProgressBar(widgets=widgets, maxval=file_size).start()
+            file_content = []
+            bytes_read = 0
+            while True:
+                data = usock.read(chunk_size)
+                file_content.append(data)
+                bytes_read += len(data)
+                progressbar.update(bytes_read)
+                if not data:
+                    break
 
-        progressbar = ProgressBar(widgets=widgets, maxval=file_size).start()
-        file_content = []
-        bytes_read = 0
-        while True:
-            # Report an update every 100 KB
-            data = usock.read(chunk_size)
-            file_content.append(data)
-            bytes_read += len(data)
-            progressbar.update(bytes_read)
-            if not data:
-                break
-
-        usock.close()
-    except Exception as msg:
-        print("ERROR: Could not fetch", url, "!", file=sys.stderr)
-        raise
-        sys.exit(2)
+            usock.close()
+        except Exception:
+            print("ERROR: Could not fetch", url, "!", file=sys.stderr)
+            raise
+    else:
+        # Don't use progressbar in python 3
+        print("Downloading .. (progressbar disabled due to python 3 build)")
+        try:
+            usock = urllib.request.urlopen(url)
+            file_content = []
+            while True:
+                data = usock.read(chunk_size)
+                file_content.append(data)
+                if not data:
+                    break
+            usock.close()
+        except Exception:
+            print("ERROR: Could not fetch", url, "!", file=sys.stderr)
+            raise
 
     if progressbar:
         progressbar.finish()
 
-    return ''.join(file_content)
+    return binary_type().join(file_content)
+
 
 def download_submodule(author, module_name, dest_path, ignore_list):
     """ Downloads a submodule from the given author and module name, and extracts
@@ -89,7 +101,7 @@ def download_submodule(author, module_name, dest_path, ignore_list):
     # Construct download url
     source_url = "https://github.com/" + author + "/" + module_name + "/archive/master.zip"
     prefix = module_name + "-master"
-   
+
     # Extract the zip
     zip_ptr = BytesIO(download_file(source_url))
     print("Extracting ZIP ...")

@@ -30,7 +30,7 @@ if not hasattr(__builtins__, 'next'):
             return iter.__next__()
         except AttributeError:
             # Fallback in case of a "native" iterator
-            return iter.next()
+            return iter.__next__()
 
 
 # Python < 2.5 does not have "any"

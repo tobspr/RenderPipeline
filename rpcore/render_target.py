@@ -41,7 +41,7 @@ from rpcore.util.post_process_region import PostProcessRegion
 __all__ = "RenderTarget",
 __version__ = "2.0"
 
-class setter(object):
+class setter(object): # pylint: disable=C0103
     """ Setter only property """
     def __init__(self, func):
         self.__func = func

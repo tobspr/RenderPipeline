@@ -33,7 +33,7 @@ from direct.gui.DirectFrame import DirectFrame
 from rpcore.globals import Globals
 from rpcore.util.generic import rgb_from_string
 from rpcore.util.display_shader_builder import DisplayShaderBuilder
-from rpcore.util.shader_ubo import BaseUBO
+from rpcore.util.shader_input_blocks import SimpleInputBlock, GroupedInputBlock
 
 from rpcore.gui.draggable_window import DraggableWindow
 from rpcore.gui.text import Text
@@ -128,7 +128,7 @@ class PipeViewer(DraggableWindow):
                 if isinstance(pipe_tex, (list, tuple)):
                     pipe_tex = pipe_tex[0]
 
-                if isinstance(pipe_tex, BaseUBO):
+                if isinstance(pipe_tex, (SimpleInputBlock, GroupedInputBlock)):
                     icon_file = "/$$rp/data/gui/icon_ubo.png"
                 elif pipe_tex.get_z_size() > 1:
                     icon_file = "/$$rp/data/gui/icon_texture.png"
@@ -155,7 +155,7 @@ class PipeViewer(DraggableWindow):
                            w=48, h=48, near_filter=False,
                            transparent=True)
 
-                    if isinstance(pipe_tex, BaseUBO):
+                    if isinstance(pipe_tex, (SimpleInputBlock, GroupedInputBlock)):
                         tex_desc = "UBO"
                     else:
                         tex_desc = pipe_tex.format_texture_type(pipe_tex.get_texture_type())

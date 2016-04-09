@@ -28,6 +28,7 @@ from __future__ import division, print_function
 
 import sys
 import time
+import math
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
 from panda3d.core import PandaSystem
@@ -37,9 +38,9 @@ from direct.stdpy.file import isfile
 from rplibs.yaml import load_yaml_file_flat
 
 from rpcore.globals import Globals
-from rpcore.pipeline_extensions import PipelineExtensions
+from rpcore.effect import Effect
 from rpcore.common_resources import CommonResources
-from rpcore.native import TagStateManager
+from rpcore.native import TagStateManager, PointLight, SpotLight
 from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
@@ -47,14 +48,23 @@ from rpcore.pluginbase.day_manager import DayTimeManager
 from rpcore.rpobject import RPObject
 from rpcore.util.network_update_listener import NetworkUpdateListener
 from rpcore.util.ies_profile_loader import IESProfileLoader
+
 from rpcore.gui.debugger import Debugger
+from rpcore.gui.loading_screen import LoadingScreen, EmptyLoadingScreen
 
 from rpcore.mount_manager import MountManager
 from rpcore.stage_manager import StageManager
 from rpcore.light_manager import LightManager
 
+from rpcore.stages.ambient_stage import AmbientStage
+from rpcore.stages.gbuffer_stage import GBufferStage
+from rpcore.stages.final_stage import FinalStage
+from rpcore.stages.downscale_z_stage import DownscaleZStage
+from rpcore.stages.combine_velocity_stage import CombineVelocityStage
+from rpcore.stages.upscale_stage import UpscaleStage
 
-class RenderPipeline(PipelineExtensions, RPObject):
+
+class RenderPipeline(RPObject):
 
     """ This is the main pipeline logic, it combines all components of the
     pipeline to form a working system. It does not do much work itself, but
@@ -81,8 +91,8 @@ class RenderPipeline(PipelineExtensions, RPObject):
             self.debug("Using git commit {}".format(PandaSystem.get_git_commit()))
         else:
             self.debug("Using custom Panda3D build")
-        self._mount_mgr = MountManager(self)
-        self._settings = {}
+        self.mount_mgr = MountManager(self)
+        self.settings = {}
         self._pre_showbase_initialized = False
         self._first_frame = None
         self.set_default_loading_screen()
@@ -97,51 +107,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         """ Loads the pipeline configuration from a given filename. Usually
         this is the 'config/pipeline.ini' file. If you call this more than once,
         only the settings of the last file will be used. """
-        self._settings = load_yaml_file_flat(path)
-
-    @property
-    def settings(self):
-        """ Returns a handle to the settings instance, which can be used to
-        query settings """
-        return self._settings
-
-    @property
-    def mount_mgr(self):
-        """ Returns a handle to the mount manager. This can be used for setting
-        the base path and also modifying the temp path. See the MountManager
-        documentation for further information. """
-        return self._mount_mgr
-
-    @property
-    def stage_mgr(self):
-        """ Returns a handle to the stage manager object. The stage manager
-        manages all RenderStages, shader inputs and defines, and also writing
-        of the shader auto config."""
-        return self._stage_mgr
-
-    @property
-    def plugin_mgr(self):
-        """ Returns a handle to the plugin manager, this can be used to trigger
-        hooks. It also stores information about the loaded plugins. """
-        return self._plugin_mgr
-
-    @property
-    def light_mgr(self):
-        """ Returns a handle to the light manager, this usually should not be used
-        by the user, instead use add_light and remove_light. """
-        return self._light_mgr
-
-    @property
-    def tag_mgr(self):
-        """ Returns a handle to the tag-state manager, which can be used to register
-        new cameras """
-        return self._tag_mgr
-
-    @property
-    def daytime_mgr(self):
-        """ Returns a handle to the DayTime manager, which can be used to control
-        the time of day """
-        return self._daytime_mgr
+        self.settings = load_yaml_file_flat(path)
 
     def reload_shaders(self):
         """ Reloads all shaders """
@@ -152,13 +118,13 @@ class RenderPipeline(PipelineExtensions, RPObject):
             self._showbase.graphicsEngine.render_frame()
             self._showbase.graphicsEngine.render_frame()
 
-        self._tag_mgr.cleanup_states()
-        self._stage_mgr.reload_shaders()
-        self._light_mgr.reload_shaders()
+        self.tag_mgr.cleanup_states()
+        self.stage_mgr.reload_shaders()
+        self.light_mgr.reload_shaders()
 
         # Set the default effect on render and trigger the reload hook
         self._set_default_effect()
-        self._plugin_mgr.trigger_hook("shader_reload")
+        self.plugin_mgr.trigger_hook("shader_reload")
 
         if self.settings["pipeline.display_debugger"]:
             self._debugger.set_reload_hint_visible(False)
@@ -170,11 +136,11 @@ class RenderPipeline(PipelineExtensions, RPObject):
         call it manually before you init your custom showbase instance.
         See the 00-Loading the pipeline sample for more information."""
 
-        if not self._mount_mgr.is_mounted:
+        if not self.mount_mgr.is_mounted:
             self.debug("Mount manager was not mounted, mounting now ...")
-            self._mount_mgr.mount()
+            self.mount_mgr.mount()
 
-        if not self._settings:
+        if not self.settings:
             self.debug("No settings loaded, loading from default location")
             self.load_settings("/$$rpconfig/pipeline.yaml")
 
@@ -209,21 +175,21 @@ class RenderPipeline(PipelineExtensions, RPObject):
         self._create_managers()
 
         # Load plugins and daytime settings
-        self._plugin_mgr.load()
-        self._daytime_mgr.load_settings()
+        self.plugin_mgr.load()
+        self.daytime_mgr.load_settings()
         self._com_resources.write_config()
 
         # Init the onscreen debugger
         self._init_debugger()
 
         # Let the plugins setup their stages
-        self._plugin_mgr.trigger_hook("stage_setup")
+        self.plugin_mgr.trigger_hook("stage_setup")
 
         self._create_common_defines()
         self._setup_managers()
         self._create_default_skybox()
 
-        self._plugin_mgr.trigger_hook("pipeline_created")
+        self.plugin_mgr.trigger_hook("pipeline_created")
 
         # Hide the loading screen
         self._loading_screen.remove()
@@ -238,12 +204,12 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
     def _create_managers(self):
         """ Internal method to create all managers and instances"""
-        self._tag_mgr = TagStateManager(Globals.base.cam)
-        self._plugin_mgr = PluginManager(self)
-        self._stage_mgr = StageManager(self)
-        self._light_mgr = LightManager(self)
-        self._daytime_mgr = DayTimeManager(self)
-        self._ies_loader = IESProfileLoader(self)
+        self.tag_mgr = TagStateManager(Globals.base.cam)
+        self.plugin_mgr = PluginManager(self)
+        self.stage_mgr = StageManager(self)
+        self.light_mgr = LightManager(self)
+        self.daytime_mgr = DayTimeManager(self)
+        self.ies_loader = IESProfileLoader(self)
 
         # Load commonly used resources
         self._com_resources = CommonResources(self)
@@ -251,11 +217,11 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
     def _setup_managers(self):
         """ Internal method to setup all managers """
-        self._stage_mgr.setup()
-        self._stage_mgr.reload_shaders()
-        self._light_mgr.reload_shaders()
+        self.stage_mgr.setup()
+        self.stage_mgr.reload_shaders()
+        self.light_mgr.reload_shaders()
         self._init_bindings()
-        self._light_mgr.init_shadows()
+        self.light_mgr.init_shadows()
 
     def _init_debugger(self):
         """ Internal method to initialize the GUI-based debugger """
@@ -275,7 +241,7 @@ class RenderPipeline(PipelineExtensions, RPObject):
         Globals.load(self._showbase)
         w, h = self._showbase.win.get_x_size(), self._showbase.win.get_y_size()
 
-        scale_factor = self._settings["pipeline.resolution_scale"]
+        scale_factor = self.settings["pipeline.resolution_scale"]
         w = int(float(w) * scale_factor)
         h = int(float(h) * scale_factor)
 
@@ -344,9 +310,9 @@ class RenderPipeline(PipelineExtensions, RPObject):
         """ Update task which gets called before the rendering """
         self._listener.update()
         self._debugger.update()
-        self._daytime_mgr.update()
-        self._stage_mgr.update()
-        self._light_mgr.update()
+        self.daytime_mgr.update()
+        self.stage_mgr.update()
+        self.light_mgr.update()
         # import time
         # time.sleep(0.1)
         return task.cont
@@ -360,12 +326,12 @@ class RenderPipeline(PipelineExtensions, RPObject):
         """ Update task which gets called before the rendering, and updates the
         plugins. This is a seperate task to split the work, and be able to do
         better performance analysis """
-        self._plugin_mgr.trigger_hook("pre_render_update")
+        self.plugin_mgr.trigger_hook("pre_render_update")
         return task.cont
 
     def _plugin_post_render_update(self, task):
         """ Update task which gets called after the rendering """
-        self._plugin_mgr.trigger_hook("post_render_update")
+        self.plugin_mgr.trigger_hook("post_render_update")
 
         if self._first_frame is not None:
             duration = time.clock() - self._first_frame
@@ -376,36 +342,36 @@ class RenderPipeline(PipelineExtensions, RPObject):
 
     def _create_common_defines(self):
         """ Creates commonly used defines for the shader auto config """
-        define = self._stage_mgr.define
+        defines = self.stage_mgr.defines
 
         # 3D viewport size
-        define("WINDOW_WIDTH", Globals.resolution.x)
-        define("WINDOW_HEIGHT", Globals.resolution.y)
+        defines["WINDOW_WIDTH"] = Globals.resolution.x
+        defines["WINDOW_HEIGHT"] = Globals.resolution.y
 
         # Actual window size - might differ for supersampling
-        define("NATIVE_WINDOW_WIDTH", Globals.base.win.get_x_size())
-        define("NATIVE_WINDOW_HEIGHT", Globals.base.win.get_y_size())
+        defines["NATIVE_WINDOW_WIDTH"] = Globals.base.win.get_x_size()
+        defines["NATIVE_WINDOW_HEIGHT"] = Globals.base.win.get_y_size()
 
         # Pass camera near and far plane
-        define("CAMERA_NEAR", round(Globals.base.camLens.get_near(), 5))
-        define("CAMERA_FAR", round(Globals.base.camLens.get_far(), 5))
+        defines["CAMERA_NEAR"] = round(Globals.base.camLens.get_near(), 10)
+        defines["CAMERA_FAR"] = round(Globals.base.camLens.get_far(), 10)
 
         # Work arround buggy nvidia driver, which expects arrays to be const
         if "NVIDIA 361.43" in self._showbase.win.get_gsg().get_driver_version():
-            define("CONST_ARRAY", "const")
+            defines["CONST_ARRAY"] = "const"
         else:
-            define("CONST_ARRAY", "")
+            defines["CONST_ARRAY"] = ""
 
         # Provide driver vendor as a default
         vendor = self._showbase.win.get_gsg().get_driver_vendor().lower()
         if "nvidia" in vendor:
-            define("IS_NVIDIA", 1)
+            defines["IS_NVIDIA"] = 1
         if "ati" in vendor:
-            define("IS_AMD", 1)
+            defines["IS_AMD"] = 1
         if "intel" in vendor:
-            define("IS_INTEL", 1)
+            defines["IS_INTEL"] = 1
 
-        define("REFERENCE_MODE", self.settings["pipeline.reference_mode"])
+        defines["REFERENCE_MODE"] = self.settings["pipeline.reference_mode"]
 
         # Only activate this experimental feature if the patch was applied,
         # since it is a local change in my Panda3D build which is not yet
@@ -419,7 +385,221 @@ class RenderPipeline(PipelineExtensions, RPObject):
             # Delete it after you applied it, so the render pipeline knows the
             # patch is available.
             self.warn("Experimental feature activated, no guarantee it works!")
-            define("EXPERIMENTAL_PREV_TRANSFORM", 1)
+            defines["EXPERIMENTAL_PREV_TRANSFORM"] = 1
 
-        self._light_mgr.init_defines()
-        self._plugin_mgr.init_defines()
+        self.light_mgr.init_defines()
+        self.plugin_mgr.init_defines()
+
+    def set_loading_screen(self, loading_screen):
+        """ Sets a loading screen to be used while loading the pipeline. When
+        the pipeline gets constructed (and creates the showbase), create()
+        will be called on the object. During the loading progress,
+        progress(msg) will be called. After the loading is finished,
+        remove() will be called. If a custom loading screen is passed, those
+        methods should be implemented. """
+        self._loading_screen = loading_screen
+
+    def set_default_loading_screen(self):
+        """ Tells the pipeline to use the default loading screen. """
+        self._loading_screen = LoadingScreen(self)
+
+    def set_empty_loading_screen(self):
+        """ Tells the pipeline to use no loading screen """
+        self._loading_screen = EmptyLoadingScreen()
+
+    @property
+    def loading_screen(self):
+        """ Returns the current loading screen """
+        return self._loading_screen
+
+    def add_light(self, light):
+        """ Adds a new light to the rendered lights, check out the LightManager
+        add_light documentation for further information. """
+        self.light_mgr.add_light(light)
+
+    def remove_light(self, light):
+        """ Removes a previously attached light, check out the LightManager
+        remove_light documentation for further information. """
+        self.light_mgr.remove_light(light)
+
+    def _create_default_skybox(self, size=40000):
+        """ Returns the default skybox, with a scale of <size>, and all
+        proper effects and shaders already applied. The skybox is already
+        parented to render as well. """
+        skybox = self._com_resources.load_default_skybox()
+        skybox.set_scale(size)
+        skybox.reparent_to(Globals.render)
+        self.set_effect(skybox, "effects/skybox.yaml", {
+            "render_shadows":   False,
+            "render_envmap":    False,
+            "render_voxel":     False,
+            "alpha_testing":    False,
+            "normal_mapping":   False,
+            "parallax_mapping": False
+        }, 1000)
+        return skybox
+
+    def load_ies_profile(self, filename):
+        """ Loads an IES profile from a given filename and returns a handle which
+        can be used to set an ies profile on a light """
+        return self.ies_loader.load(filename)
+
+    def set_effect(self, nodepath, effect_src, options=None, sort=30):
+        """ Sets an effect to the given object, using the specified options.
+        Check out the effect documentation for more information about possible
+        options and configurations. The object should be a nodepath, and the
+        effect will be applied to that nodepath and all nodepaths below whose
+        current effect sort is less than the new effect sort (passed by the
+        sort parameter). """
+
+        effect = Effect.load(effect_src, options)
+        if effect is None:
+            return self.error("Could not apply effect")
+
+        # Apply default stage shader
+        if not effect.get_option("render_gbuffer"):
+            nodepath.hide(self.tag_mgr.get_gbuffer_mask())
+        else:
+            nodepath.set_shader(effect.get_shader_obj("gbuffer"), sort)
+            nodepath.show(self.tag_mgr.get_gbuffer_mask())
+
+        # Apply shadow stage shader
+        if not effect.get_option("render_shadows"):
+            nodepath.hide(self.tag_mgr.get_shadow_mask())
+        else:
+            shader = effect.get_shader_obj("shadows")
+            self.tag_mgr.apply_shadow_state(
+                nodepath, shader, str(effect.effect_id), 25 + sort)
+            nodepath.show(self.tag_mgr.get_shadow_mask())
+
+        # Apply voxelization stage shader
+        if not effect.get_option("render_voxel"):
+            nodepath.hide(self.tag_mgr.get_voxelize_mask())
+        else:
+            shader = effect.get_shader_obj("voxelize")
+            self.tag_mgr.apply_voxelize_state(
+                nodepath, shader, str(effect.effect_id), 35 + sort)
+            nodepath.show(self.tag_mgr.get_voxelize_mask())
+
+        # Apply envmap stage shader
+        if not effect.get_option("render_envmap"):
+            nodepath.hide(self.tag_mgr.get_envmap_mask())
+        else:
+            shader = effect.get_shader_obj("envmap")
+            self.tag_mgr.apply_envmap_state(
+                nodepath, shader, str(effect.effect_id), 45 + sort)
+            nodepath.show(self.tag_mgr.get_envmap_mask())
+
+    def add_environment_probe(self):
+        """ Constructs a new environment probe and returns the handle, so that
+        the probe can be modified """
+
+        # TODO: This method is super hacky
+        if not self.plugin_mgr.is_plugin_enabled("env_probes"):
+            self.warn("EnvProbe plugin is not loaded, can not add environment probe")
+            class DummyEnvironmentProbe(object):
+                def __getattr__(self, *args, **kwargs):
+                    return lambda *args, **kwargs: None
+            return DummyEnvironmentProbe()
+
+        from rpplugins.env_probes.environment_probe import EnvironmentProbe
+        probe = EnvironmentProbe()
+        self.plugin_mgr.instances["env_probes"].probe_mgr.add_probe(probe)
+        return probe
+
+    def prepare_scene(self, scene):
+        """ Prepares a given scene, by converting panda lights to render pipeline
+        lights """
+        # TODO: IES profiles
+        ies_profile = self.load_ies_profile("x_arrow_diffuse.ies") # pylint: disable=W0612
+        lights = []
+
+        for light in scene.find_all_matches("**/+PointLight"):
+            light_node = light.node()
+            rp_light = PointLight()
+            rp_light.pos = light.get_pos(Globals.base.render)
+            rp_light.radius = light_node.max_distance
+            rp_light.energy = 100.0 * light_node.color.w
+            rp_light.color = light_node.color.xyz
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
+            rp_light.inner_radius = 0.2
+            self.add_light(rp_light)
+            light.remove_node()
+            lights.append(rp_light)
+
+        for light in scene.find_all_matches("**/+Spotlight"):
+            light_node = light.node()
+            rp_light = SpotLight()
+            rp_light.pos = light.get_pos(Globals.base.render)
+            rp_light.radius = light_node.max_distance
+            rp_light.energy = 100.0 * light_node.color.w
+            rp_light.color = light_node.color.xyz
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
+            rp_light.fov = light_node.exponent / math.pi * 180.0
+            lpoint = light.get_mat(Globals.base.render).xform_vec((0, 0, -1))
+            rp_light.direction = lpoint
+            self.add_light(rp_light)
+            light.remove_node()
+            lights.append(rp_light)
+
+            # XXX: Support IES profiles (Have to add it to the BAM exporter first)
+            # rp_light.ies_profile = ies_profile
+
+        envprobes = []
+
+        # Add environment probes
+        for np in scene.find_all_matches("**/ENVPROBE*"):
+            probe = self.add_environment_probe()
+            probe.set_mat(np.get_mat())
+            probe.border_smoothness = 0.05
+            probe.parallax_correction = True
+            np.remove_node()
+            envprobes.append(probe)
+
+        return {"lights": lights, "envprobes": envprobes}
+
+    def _check_version(self):
+        """ Internal method to check if the required Panda3D version is met. Returns
+        True if the version is new enough, and False if the version is outdated. """
+
+        from panda3d.core import PointLight as Panda3DPointLight
+        if not hasattr(Panda3DPointLight(""), "shadow_caster"):
+            return False
+
+        return True
+
+    def _init_common_stages(self):
+        """ Inits the commonly used stages, which don't belong to any plugin,
+        but yet are necessary and widely used. """
+        add_stage = self.stage_mgr.add_stage
+
+        self._ambient_stage = AmbientStage(self)
+        add_stage(self._ambient_stage)
+
+        self._gbuffer_stage = GBufferStage(self)
+        add_stage(self._gbuffer_stage)
+
+        self._final_stage = FinalStage(self)
+        add_stage(self._final_stage)
+
+        self._downscale_stage = DownscaleZStage(self)
+        add_stage(self._downscale_stage)
+
+        self._combine_velocity_stage = CombineVelocityStage(self)
+        add_stage(self._combine_velocity_stage)
+
+        # Add an upscale/downscale stage in case we render at a different resolution
+        if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.05:
+            self._upscale_stage = UpscaleStage(self)
+            add_stage(self._upscale_stage)
+
+    def _set_default_effect(self):
+        """ Sets the default effect used for all objects if not overridden """
+        self.set_effect(Globals.render, "effects/default.yaml", {}, -10)
+
+    def _adjust_camera_settings(self):
+        """ Sets the default camera settings """
+        self._showbase.camLens.set_near_far(0.1, 70000)
+        self._showbase.camLens.set_fov(60)

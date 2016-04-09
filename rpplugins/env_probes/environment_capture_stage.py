@@ -26,10 +26,8 @@ THE SOFTWARE.
 
 from __future__ import division
 from rplibs.six.moves import range
-from rplibs.six import itervalues
 
-from panda3d.core import Camera, PerspectiveLens, Vec4, NodePath, Vec3
-from panda3d.core import PTAInt, Texture, GraphicsOutput, LVecBase2i
+from panda3d.core import Camera, PerspectiveLens, Vec4, Vec3, PTAInt, GraphicsOutput
 
 from rpcore.globals import Globals
 from rpcore.image import Image

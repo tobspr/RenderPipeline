@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
-from rpcore.util.shader_ubo import SimpleUBO
+from rpcore.util.shader_input_blocks import SimpleInputBlock
 
 class GBufferStage(RenderStage):
 
@@ -44,7 +44,7 @@ class GBufferStage(RenderStage):
         }
 
     def make_gbuffer_ubo(self):
-        ubo = SimpleUBO("GBuffer")
+        ubo = SimpleInputBlock("GBuffer")
         ubo.add_input("Depth", self.target.depth_tex)
         ubo.add_input("Data0", self.target.color_tex)
         ubo.add_input("Data1", self.target.aux_tex[0])

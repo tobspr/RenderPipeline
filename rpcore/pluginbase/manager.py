@@ -34,7 +34,6 @@ from direct.stdpy.file import listdir, isdir, join, open
 
 from rpcore.rpobject import RPObject
 from rpcore.native import NATIVE_CXX_LOADED
-from rpcore.util.generic import profile_cpu
 from rpcore.pluginbase.setting_types import make_setting_from_data
 from rpcore.pluginbase.day_setting_types import make_daysetting_from_data
 
@@ -66,7 +65,7 @@ class PluginManager(RPObject):
 
         if self.requires_daytime_settings:
             self.load_daytime_overrides("/$$rpconfig/daytime.yaml")
-        
+
         self.debug("Creating plugin instances ..")
         for plugin_id in self.settings:
             handle = self._load_plugin(plugin_id)
@@ -180,13 +179,12 @@ class PluginManager(RPObject):
         in a shader """
         for plugin_id in self.enabled_plugins:
             pluginsettings = self.settings[plugin_id]
-            self._pipeline.stage_mgr.define("HAVE_PLUGIN_{}".format(plugin_id), 1)
+            self._pipeline.stage_mgr.defines["HAVE_PLUGIN_{}".format(plugin_id)] = 1
             for setting_id, setting in iteritems(pluginsettings):
-                # Only store settings which either never change, or trigger
-                # a shader reload when they change
                 if setting.shader_runtime or not setting.runtime:
-                    setting.write_defines(
-                        plugin_id, setting_id, self._pipeline.stage_mgr.define)
+                    # Only store settings which either never change, or trigger
+                    # a shader reload when they change
+                    setting.add_defines(plugin_id, setting_id, self._pipeline.stage_mgr.defines)
 
     def _load_plugin(self, plugin_id):
         """ Internal method to load a plugin """
