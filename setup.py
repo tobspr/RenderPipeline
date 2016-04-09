@@ -39,13 +39,13 @@ import sys
 import subprocess
 import gzip
 import shutil
+import argparse
 
 sys.dont_write_bytecode = True
 
 DEVNULL = open(os.path.devnull, "w")
 SETUP_DIR = os.path.dirname(os.path.realpath(__file__))
 CURRENT_STEP = 0
-OPT_SKIP_NATIVE = "--skip-native" in sys.argv
 
 os.chdir(SETUP_DIR)
 sys.path.insert(0, ".")
@@ -65,6 +65,16 @@ else:
     Fore = Dummy()
     Style = Dummy()
 
+def parse_cmd_args():
+    """ Parses the command line arguments """
+    parser = argparse.ArgumentParser(description="Render Pipeline setup")
+    parser.add_argument("--clean", help="Clean rebuild of the native modules", action="store_true")
+    parser.add_argument("--verbose", help="Output additional debug information", action="store_true")
+    parser.add_argument("--skip-native", help="Skip native module compilation", action="store_true")
+    return parser.parse_args()
+
+CMD_ARGS = parse_cmd_args()
+
 def color(string, col):
     """ Colors a string """
     return col + string + Style.RESET_ALL
@@ -82,14 +92,14 @@ def print_step(title):
     CURRENT_STEP += 1
     print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", color(title, Fore.CYAN + Style.BRIGHT))
 
-def exec_python_file(pth):
+def exec_python_file(pth, args=None):
     """ Executes a python file and checks the return value """
     basedir = os.path.dirname(os.path.abspath(os.path.join(SETUP_DIR, pth))) + "/"
     print("\tRunning script:", Fore.YELLOW + Style.BRIGHT + pth + Style.RESET_ALL)
     pth = os.path.basename(pth)
     os.chdir(basedir)
     try:
-        subprocess.check_output([sys.executable, "-B", pth], stderr=sys.stderr)
+        output = subprocess.check_output([sys.executable, "-B", pth] + (args or []), stderr=sys.stderr)
     except subprocess.CalledProcessError as msg:
         print(color("Failed to execute '" + pth + "'", Fore.YELLOW + Style.BRIGHT))
         print("Output:", msg, "\n", msg.output)
@@ -97,6 +107,8 @@ def exec_python_file(pth):
     except IOError as msg:
         print("Python script error:", msg)
         error("Error during script execution")
+    if CMD_ARGS.verbose:
+        print(output)
     os.chdir(SETUP_DIR)
 
 def extract_gz_files(pth):
@@ -198,7 +210,7 @@ def setup():
 
     check_panda_version()
 
-    if not OPT_SKIP_NATIVE:
+    if not CMD_ARGS.skip_native:
         query = ("The C++ modules of the pipeline are faster and produce better \n"
                  "results, but we will have to compile them. As alternative, \n"
                  "a Python fallback is used, which is slower and produces worse \n"
@@ -215,7 +227,7 @@ def setup():
             exec_python_file("rpcore/native/update_module_builder.py")
 
             print_step("Building the native code .. (This might take a while!)")
-            exec_python_file("rpcore/native/build.py")
+            exec_python_file("rpcore/native/build.py", ["--clean"] if CMD_ARGS.clean else [])
 
         else:
             write_flag("rpcore/native/use_cxx.flag", False)
