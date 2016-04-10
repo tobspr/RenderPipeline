@@ -33,10 +33,8 @@
 #pragma include "includes/light_culling.inc.glsl"
 #pragma include "includes/envprobes.inc.glsl"
 
-
 layout(location=0) out vec4 result_spec;
 layout(location=1) out vec4 result_diff;
-
 
 uniform isampler2DArray CellIndices;
 uniform isamplerBuffer PerCellProbes;
@@ -75,7 +73,6 @@ void main() {
 
     result_spec = total_specular / max(1e-6, total_weight);
     result_diff = total_diffuse / max(1e-6, total_weight);
-
 
     // Visualize probe count
     // float probe_factor = processed_probes / MAX_PROBES_PER_CELL;

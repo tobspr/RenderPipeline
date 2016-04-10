@@ -112,7 +112,7 @@ vec3 get_reflection_vector(Cubemap map, Material m, out float factor, out float 
 }
 
 vec3 get_diffuse_vector(Cubemap map, Material m) {
-    #if 1
+    #if 0
         // very expensive, have to think of a better solution -
         // maybe we can precompute the matrix and store it.
         mat3 tpose_inverse = transpose(inverse(mat3(map.transform)));

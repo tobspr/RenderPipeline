@@ -43,9 +43,15 @@ class PSSMStage(RenderStage):
         # Store whether the target is active
         self.pta_active = PTAInt.empty_array(1)
 
-        self.target = self.create_target("ApplyPSSM")
+        self.target_shadows = self.create_target("FilterPSSM")
+        self.target_shadows.add_color_attachment(bits=(8, 0, 0, 0))
+        self.target_shadows.prepare_buffer()
+
+        self.target = self.create_target("ApplyPSSMShadows")
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
+
+        self.target.set_shader_input("PrefilteredShadows", self.target_shadows.color_tex)
 
         self.void_target = self.create_target("PSSMVoidShader")
         self.void_target.add_color_attachment(bits=16)
@@ -59,7 +65,9 @@ class PSSMStage(RenderStage):
         the scene color """
         self.pta_active[0] = int(render_shadows)
         self.target.active = render_shadows
+        self.target_shadows.active = render_shadows
 
     def reload_shaders(self):
+        self.target_shadows.shader = self.load_plugin_shader("filter_pssm_shadows.frag.glsl")
         self.target.shader = self.load_plugin_shader("apply_pssm_shadows.frag.glsl")
         self.void_target.shader = self.load_plugin_shader("pass_through_shader.frag.glsl")

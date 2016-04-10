@@ -42,7 +42,7 @@ void main() {
     // We don't use a threshold for blur, instead we perform the bloom everything,
     // which is physically more correct
     vec3 bloom_color = scene_color;
-    bloom_color *= GET_SETTING(bloom, bloom_strength) * 0.005;
+    bloom_color *= GET_SETTING(bloom, bloom_strength) * 0.025;
     bloom_color = clamp(bloom_color, vec3(0), vec3(100.0));
 
     #if DEBUG_MODE

@@ -71,7 +71,7 @@ vec3 get_spherical_area_light_vector(float radius, vec3 l_unscaled, vec3 v, vec3
 }
 
 float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) {
-    return alpha * alpha / max(0.01, radius * radius);
+    return max(0.000005, alpha * alpha) / max(0.01, radius * radius);
 }
 
 // Computes a lights influence

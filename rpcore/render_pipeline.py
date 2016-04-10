@@ -523,7 +523,7 @@ class RenderPipeline(RPObject):
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.inner_radius = 0.2
+            rp_light.inner_radius = 0.8
 
             name = light.get_name()
             if name == "PR1":

@@ -26,6 +26,8 @@
 
 #version 420
 
+#pragma optionNV (unroll all)
+
 #define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
@@ -39,8 +41,22 @@ void main() {
   vec2 texcoord = get_texcoord();
   ivec2 coord = ivec2(gl_FragCoord.xy);
 
-  vec2 camera_velocity = get_camera_velocity(texcoord);
-  vec2 per_object_velocity = get_object_velocity_at(texcoord);
+  // Take velocity of closest fragment
+  vec3 closest = vec3(0, 0, 1);
+  const int filter_size = 2;
+  for (int i = -filter_size; i <= filter_size; ++i) {
+    for (int j = -filter_size; j <= filter_size; ++j) {
+      if ((i == 0 && j == 0) || (abs(i) == 2 && abs(j) == 2)) {
+        vec2 offcoord = texcoord + vec2(i, j) / SCREEN_SIZE;
+        float depth = get_depth_at(offcoord);
+        if (depth < closest.z) {
+          closest = vec3(offcoord, depth);
+        }
+      }
+    }
+  }
 
+  vec2 camera_velocity = get_camera_velocity(closest.xy);
+  vec2 per_object_velocity = get_object_velocity_at(closest.xy);
   result = camera_velocity + per_object_velocity;
 }

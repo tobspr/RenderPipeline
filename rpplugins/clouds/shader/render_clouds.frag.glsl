@@ -64,7 +64,7 @@ void main() {
 
     vec2 texcoord = get_half_texcoord();
 
-    vec3 wind_offs = vec3(0.2, 0.3,0) * 0.01 * MainSceneData.frame_time;
+    vec3 wind_offs = vec3(0.2, 0.3,0) * 0.02 * MainSceneData.frame_time;
 
     vec3 pos = get_gbuffer_position(GBuffer, texcoord);
     vec3 ray_start = MainSceneData.camera_pos;
@@ -107,13 +107,13 @@ void main() {
     trace_start += wind_offs;
     trace_end += wind_offs;
 
-    trace_start.xyz += (noise*2.0-1.0) * 0.002;
+    trace_start.xyz += (noise*2.0-1.0) * 0.0016;
     vec3 trace_step = (trace_end - trace_start) / trace_steps;
-    trace_step.xyz += (noise*2.0-1.0) * 0.008 / trace_steps;
+    trace_step.xyz += (noise*2.0-1.0) * 0.007 / trace_steps;
 
     vec3 sun_vector = get_sun_vector();
     float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 15.0) + 0.0;
-    vec3 sun_color = sun_influence * 30.0 * vec3(1);
+    vec3 sun_color = sun_influence * 40.0 * vec3(1);
 
     vec3 curr_pos = trace_start + 0.5 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
     float accum_weight = 0.0;

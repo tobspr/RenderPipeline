@@ -115,8 +115,8 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: make this configurable
     const float slope_bias = 0.001;
-    const float normal_bias = 0.002;
-    const float const_bias = 0.001;
+    const float normal_bias = 0.0005;
+    const float const_bias = 0.0025;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;

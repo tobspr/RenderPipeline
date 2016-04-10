@@ -73,6 +73,7 @@
 // Render mode functions
 #define DEBUG_MODE ANY_DEBUG_MODE
 #define MODE_ACTIVE(MODE_ID) ( DEBUG_MODE && ( _RM_ ## MODE_ID ) )
+#define SPECIAL_MODE_ACTIVE(MODE_ID) ( _RM_ ## MODE_ID )
 
 // Branch modes for translucency.
 // This serves for the purpose to be enabled or disabled easily.
@@ -114,7 +115,7 @@
 #if REFERENCE_MODE
   #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
 #else
-  #define DEFAULT_ENVMAP_BRIGHTNESS 14.0
+  #define DEFAULT_ENVMAP_BRIGHTNESS 5.0
 #endif
 
 // Minimum roughness, avoids infinitely bright highlights

@@ -71,8 +71,12 @@ void main() {
         float grain_factor = GET_SETTING(color_correction, film_grain_strength);
         scene_color = mix(scene_color, blended_color, grain_factor);
 
+        // const float saturation = 0.00;
+        // scene_color = max(vec3(0), (scene_color - saturation) / (1 - saturation));
+
         // Apply the vignette based on the vignette strength
         scene_color *= mix(1.0, vignette, GET_SETTING(color_correction, vignette_strength));
+
 
     #else
         vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;

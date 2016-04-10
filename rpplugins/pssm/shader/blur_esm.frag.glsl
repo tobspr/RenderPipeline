@@ -43,10 +43,14 @@ void main() {
   vec2 texcoord = gl_FragCoord.xy / texsize;
 
   float accum = 0;
+
+  // Make sure you also adjust the offsets and weight arrays when you change the
+  // amount of samples
   const int num_steps = 4;
-  for (int i = -num_steps; i <= num_steps; ++i) {
-      vec2 offs = vec2(i * direction) / texsize;
-      accum += textureLod(SourceTex, texcoord + offs, 0).x * gaussian_weights_5[abs(i)];
+
+  for (int i = 0; i < num_steps; ++i) {
+      vec2 offcoord = texcoord + vec2(opt_gaussian_offsets_4[i]) * direction / texsize;
+      accum += textureLod(SourceTex, offcoord, 0).x * opt_gaussian_weights_4[i];
   }
 
   result = accum;

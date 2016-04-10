@@ -82,21 +82,25 @@ class DraggableWindow(RPObject):
         border_px = 1
         self._border_frame = DirectFrame(
             pos=(0, 1, 0), frameSize=(-border_px, self._width + border_px,
-            border_px, -self._height - border_px), frameColor=(0.0, 0.0, 0.0, 1),
+            border_px, -self._height - border_px),
+            frameColor=(24 / 255.0, 131 / 255.0, 215 / 255.0, 1),
             parent=self._node, state=DGG.NORMAL)
         self._background = DirectFrame(
             pos=(0, 1, 0), frameSize=(0, self._width, 0, -self._height),
-            frameColor=(0.098, 0.098, 0.098, 1), parent=self._node)
+            frameColor=(0.1, 0.1, 0.1, 1.0), parent=self._node)
         self._title_bar = DirectFrame(
-            pos=(0, 1, 0), frameSize=(0, self._width, 0, -45),
-            frameColor=(0.058, 0.058, 0.058, 1), parent=self._node,
+            pos=(0, 1, 0), frameSize=(0, self._width, 0, -25),
+            # frameColor=(0.058, 0.058, 0.058, 1),
+            frameColor=(1, 1, 1, 1),
+            parent=self._node,
             state=DGG.NORMAL)
         self._window_title = Text(
-            parent=self._node, x=12, y=29, text=self._title, size=19,
-            color=Vec3(0.7), may_change=True)
+            parent=self._node, x=8, y=17, text=self._title, size=13,
+            color=Vec3(0.15), may_change=True)
         self._btn_close = DirectButton(
-            relief=DGG.FLAT, pressEffect=1, pos=(self._width - 22, 1, -22),
-            frameColor=(0, 0, 0, 0), scale=(20, 1, 20), parent=self._node,
+            relief=DGG.FLAT, pressEffect=1, pos=(self._width - 22, 1, -12),
+            frameColor=(1.0, 0.2, 0.2, 0.5), parent=self._node,
+            scale=(45 / 2, 1, 24 / 2),
             image="/$$rp/data/gui/close_window.png")
 
         # Init bindings
@@ -118,11 +122,11 @@ class DraggableWindow(RPObject):
 
     def _on_close_btn_hover(self, evt=None): # pylint: disable=W0613
         """ Internal method when the close button got hovered """
-        self._btn_close["frameColor"] = (1.0, 0.2, 0.2, 1.0)
+        self._btn_close["image"] = "/$$rp/data/gui/close_window_hover.png"
 
     def _on_close_btn_out(self, evt=None): # pylint: disable=W0613
         """ Internal method when the close button is no longer hovered """
-        self._btn_close["frameColor"] = (0, 0, 0, 0)
+        self._btn_close["image"] = "/$$rp/data/gui/close_window.png"
 
     def _request_close(self, evt=None): # pylint: disable=W0613
         """ This method gets called when the close button gets clicked """

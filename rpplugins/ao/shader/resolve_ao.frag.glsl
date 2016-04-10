@@ -31,8 +31,9 @@
 
 #define RS_MAX_CLIP_DIST 0.6
 #define RS_DISTANCE_SCALE 1.0
-#define RS_KEEP_GOOD_DURATION 8.0
-#define RS_KEEP_BAD_DURATION 8.0
+#define RS_KEEP_GOOD_DURATION 16.0
+#define RS_KEEP_BAD_DURATION 16.0
+#define RS_USE_SMOOTH_TECHNIQUE 1
 #pragma include "includes/temporal_resolve.inc.glsl"
 
 uniform sampler2D CurrentTex;

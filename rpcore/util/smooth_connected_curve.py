@@ -114,7 +114,9 @@ class SmoothConnectedCurve(object):
             fitter.add_xyz(1.0, Vec3(1, start_point[1], 0))
 
         fitter.sort_points()
+        fitter.wrap_hpr()
         fitter.compute_tangents(1.0)
+
         self._curve = fitter.make_hermite()
 
     def set_cv_value(self, index, x_value, y_value):

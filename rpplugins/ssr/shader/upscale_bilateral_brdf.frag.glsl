@@ -124,6 +124,8 @@ void main() {
 
             vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
 
+            color_sample.xyz = color_sample.xyz / (1 - color_sample.xyz);
+
             color_sample *= source_sample.z;
 
             // Fade out samples at the screen border

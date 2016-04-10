@@ -6,7 +6,6 @@
 enabled:
     - ao
     - bloom
-    - clouds
     - color_correction
     - env_probes
     - fxaa
@@ -16,6 +15,7 @@ enabled:
     - smaa
     - ssr
     - volumetrics
+    # - clouds
     # - dof
     # - skin_shading
     # - vxgi
@@ -25,7 +25,7 @@ overrides:
     ao:
         blur_normal_factor: 4.94
         blur_depth_factor: 4.83
-        occlusion_strength: 1.74
+        occlusion_strength: 1.69
         technique: SSAO
         ssao_sample_radius: 79.61
         ssao_sample_count: 8
@@ -48,9 +48,9 @@ overrides:
 
     bloom:
         num_mipmaps: 8
-        bloom_strength: 1.45
+        bloom_strength: 2.34
         remove_fireflies: True
-        lens_dirt_factor: 0.21111
+        lens_dirt_factor: 0.1778
 
     clouds:
         raymarch_steps: 27
@@ -67,24 +67,24 @@ overrides:
         uc2t_toe_denumerator: 0.3
         uc2t_reference_white: 11.2
         vignette_strength: 1.0
-        film_grain_strength: 0.2333
-        color_lut: film_luts/kodak_gold_200.png
+        film_grain_strength: 0.1667
+        color_lut: film_luts/fujifilm_f-125.png
         use_chromatic_aberration: True
-        chromatic_aberration_strength: 0.0975
+        chromatic_aberration_strength: 0.2081
         chromatic_aberration_samples: 2
         manual_camera_parameters: False
         min_exposure_value: 0.012
         max_exposure_value: 1.0
-        exposure_bias: 0.0
+        exposure_bias: -3e-05
         brightness_adaption_rate: 2.06
         darkness_adaption_rate: 0.45
         use_sharpen: True
-        sharpen_strength: 1.61
+        sharpen_strength: 0.94444
         sharpen_twice: False
 
     dof:
         focal_point: 5.0
-        focal_size: 0.0
+        focal_size: 6.67
         blur_strength: 0.0
         near_blur_strength: 0.0
 
@@ -92,7 +92,7 @@ overrides:
         probe_resolution: 128
         diffuse_probe_resolution: 2
         max_probes: 16
-        max_probes_per_cell: 5
+        max_probes_per_cell: 3
 
     fxaa:
         quality: ultra
@@ -102,7 +102,7 @@ overrides:
 
     motion_blur:
         num_camera_samples: 6
-        camera_blur_factor: 0.8
+        camera_blur_factor: 0.4
         blur_factor: 0.5
         tile_size: 32
         max_blur_radius: 10.0
@@ -113,13 +113,13 @@ overrides:
         logarithmic_factor: 2.37
         sun_distance: 100.0
         split_count: 5
-        resolution: 2048
+        resolution: 1536
         border_bias: 0.0583
         use_pcf: True
         filter_sample_count: 32
         filter_radius: 0.87
         fixed_bias: 0.1156
-        slope_bias: 0.02
+        slope_bias: 0.15
         normal_bias: 0.0
         use_pcss: False
         pcss_search_samples: 32
@@ -145,17 +145,18 @@ overrides:
     smaa:
         use_reprojection: True
         smaa_quality: ultra
-        history_length: 8
+        jitter_pattern: halton32
+        history_length: 16
         jitter_amount: 1.0
 
     ssr:
         effect_scale: 1.0
-        trace_steps: 64
-        history_length: 8
-        abort_on_object_infront: True
-        intial_bias: 0.43
+        trace_steps: 128
+        history_length: 16
+        abort_on_object_infront: False
+        intial_bias: 0.25
         hit_tolerance: 1.0
-        roughness_fade: 1.43
+        roughness_fade: 0.2267
         skip_invalid_samples: True
         border_fade: 0.05
 

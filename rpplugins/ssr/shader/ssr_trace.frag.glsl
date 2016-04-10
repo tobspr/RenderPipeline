@@ -34,6 +34,7 @@
 #pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/importance_sampling.inc.glsl"
+#pragma include "includes/halton.inc.glsl"
 
 uniform sampler2D DownscaledDepth;
 
@@ -107,13 +108,16 @@ void main()
     // Generate ray directions until we find a value which is valid
     for (int i = 0; i < NUM_RAYDIR_RETRIES; ++i) {
 
-        vec2 seed = texcoord + 0.3123 * i + 0.633 * (MainSceneData.frame_index % GET_SETTING(ssr, history_length));
+        vec2 seed = texcoord + 0.3123 * i + 0.176445 * (MainSceneData.frame_index % 32);
+        // int index = ( int(gl_FragCoord.x) * 1801 + int(gl_FragCoord.y) * 1699 + 15 * i + MainSceneData.frame_index) % 32;
+
+        // vec2 xi = clamp(halton_32[index] + 0.5, vec2(0.01), vec2(0.99));
 
         // Get random sequence, should probably use halton or so
-        vec2 xi = clamp(abs(rand_rgb(seed).xz), vec2(0.01), vec2(0.99));
+        vec2 xi = clamp(abs(rand_rgb(seed).xy), vec2(0.01), vec2(0.99));
 
         // Clamp brdf tail, see frostbite slides for details
-        const float brdf_bias = 0.7;
+        const float brdf_bias = 0.8;
         xi.y = mix(xi.y, 0.0, brdf_bias);
 
         // Get importance sampled directory

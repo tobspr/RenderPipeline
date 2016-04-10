@@ -38,10 +38,24 @@ void main() {
   vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
   result = vec4(texture(SourceTex, texcoord).xyz, 1);
 
-  #if 0
-    // Luminance debug mode
+  #if SPECIAL_MODE_ACTIVE(LUMINANCE)
+    
+    // Luminance debug mode, too bright pixels get red, too dark pixels get blue,
+    // rest stays green
+    
     vec3 color = texture(SourceTex, texcoord).xyz;
     float luminance = get_luminance(color);
-    result.xyz = luminance.xxx;
+
+    vec3 color_ok = vec3(0, 1, 0);
+    vec3 color_too_bright = vec3(1, 0, 0);
+    vec3 color_too_dark = vec3(0, 0, 1);
+
+    const float max_brightness = 0.8;
+    const float max_darkness = 0.2;
+
+    color = mix(color_ok, color_too_bright, saturate(5.0 * (luminance - max_brightness)));
+    color = mix(color, color_too_dark, saturate(5.0 * (max_darkness - luminance) ));
+
+    result.xyz = color;
   #endif
 }

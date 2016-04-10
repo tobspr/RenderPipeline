@@ -58,7 +58,7 @@ class PipeViewer(DraggableWindow):
                                  title="Pipeline Visualizer")
         self._pipeline = pipeline
         self._scroll_width = 8000
-        self._scroll_height = 2000
+        self._scroll_height = 3000
         self._created = False
         self._create_components()
         self.hide()

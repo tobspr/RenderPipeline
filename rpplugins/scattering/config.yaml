@@ -101,3 +101,23 @@ daytime_settings: !!omap
         default: 30
         label: Sun Altidude
         description: Vertical angle of the sun
+
+    - extinction:
+        type: scalar
+        unit: meter
+        range: [0.5, 10000.0]
+        default: 2000
+        label: Extinction
+        logarithmic_factor: 2.0
+        description: >
+            Extinction factor
+
+    - fog_scale:
+        type: scalar
+        unit: meter
+        range: [25.0, 2000.0]
+        default: 200
+        label: Fog scale
+        logarithmic_factor: 1.5
+        description: >
+            Fog scale

@@ -42,6 +42,11 @@ out vec4 result;
 
 uniform GBufferData GBuffer;
 
+// Used for velocity rendering mode
+#if MODE_ACTIVE(VELOCITY)
+    uniform sampler2D CombinedVelocity;
+#endif
+
 void main() {
 
     // Extract material properties
@@ -93,4 +98,20 @@ void main() {
     #if MODE_ACTIVE(TRANSLUCENCY)
         result.xyz = vec3(m.shading_model == SHADING_MODEL_FOLIAGE ? m.shading_model_param0 : 0.0);
     #endif
+
+    #if MODE_ACTIVE(SHADING_MODEL)
+        result.xyz = vec3(0.1, 0.1, 0.1);
+        switch (m.shading_model) {
+            case SHADING_MODEL_FOLIAGE: result.xyz = vec3(0, 1, 0); break;
+            case SHADING_MODEL_CLEARCOAT: result.xyz = vec3(0, 0, 1); break;
+            case SHADING_MODEL_SKIN: result.xyz = vec3(1, 0, 0); break;
+            case SHADING_MODEL_EMISSIVE: result.xyz = vec3(1, 0, 1); break;
+            case SHADING_MODEL_TRANSPARENT: result.xyz = vec3(0, 1, 1); break;
+        }
+    #endif
+
+    #if MODE_ACTIVE(VELOCITY)
+        result.xyz = abs(texture(CombinedVelocity, texcoord).xyz) * 20.0;
+    #endif
+
 }

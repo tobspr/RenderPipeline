@@ -42,7 +42,8 @@ daytime_settings: !!omap
     - fog_brightness:
         type: scalar
         unit: klux
-        range: [0.0, 50.0]
+        range: [0.0, 20.0]
+        logarithmic_factor: 2.0
         default: 12.0
         label: Fog Brightness
         description: >
@@ -57,11 +58,3 @@ daytime_settings: !!omap
         label: Height fog scale
         description: >
             Controls the scale of the volumetric height fog.
-
-    - sun_tint:
-        type: scalar
-        range: [0.0, 2.0]
-        default: 1.0
-        label: Sun tint scale
-        description: >
-            Conrols the intensity of the sun tint on the fog

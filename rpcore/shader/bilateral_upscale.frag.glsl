@@ -50,11 +50,11 @@ void main() {
     float mid_depth = get_gbuffer_depth(GBuffer, coord);
     vec3 mid_nrm = get_gbuffer_normal(GBuffer, coord);
 
-    // const float max_depth_diff = upscaleWeights.x; // 0.001
-    // const float max_nrm_diff = upscaleWeights.y; // 0.001
+    const float max_depth_diff = upscaleWeights.x; // 0.001
+    const float max_nrm_diff = upscaleWeights.y; // 0.001
 
-    const float max_depth_diff = 0.0001;
-    const float max_nrm_diff = 0.001;
+    // const float max_depth_diff = 0.0001;
+    // const float max_nrm_diff = 0.001;
 
 
     float weights = 0.0;

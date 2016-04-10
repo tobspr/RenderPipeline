@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4
+from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4, Vec4
 from panda3d.core import SamplerState
 from direct.stdpy.file import open
 
@@ -57,6 +57,8 @@ class CommonResources(RPObject):
         Globals.font.set_pixels_per_unit(35)
         Globals.font.set_poly_margin(0.0)
         Globals.font.set_texture_margin(1)
+        Globals.font.set_bg(Vec4(1, 1, 1, 0))
+        Globals.font.set_fg(Vec4(1, 1, 1, 1))
 
     def _setup_inputs(self):
         """ Creates commonly used shader inputs such as the current mvp and
@@ -75,7 +77,6 @@ class CommonResources(RPObject):
         self._input_ubo.register_pta("smooth_frame_delta", "float")
         self._input_ubo.register_pta("frame_time", "float")
         self._input_ubo.register_pta("current_film_offset", "vec2")
-        self._input_ubo.register_pta("temporal_index", "int")
         self._input_ubo.register_pta("frame_index", "int")
         self._pipeline.stage_mgr.input_blocks.append(self._input_ubo)
 
@@ -200,10 +201,4 @@ class CommonResources(RPObject):
         # velocity, which is otherwise not possible. Usually this is always 0
         # except when SMAA and reprojection is enabled
         update("current_film_offset", self._showbase.camLens.get_film_offset())
-
-        max_clip_length = 1
-        if self._pipeline.plugin_mgr.is_plugin_enabled("smaa"):
-            max_clip_length = self._pipeline.plugin_mgr.instances["smaa"].history_length
-
-        update("temporal_index", Globals.clock.get_frame_count() % max_clip_length)
         update("frame_index", Globals.clock.get_frame_count())

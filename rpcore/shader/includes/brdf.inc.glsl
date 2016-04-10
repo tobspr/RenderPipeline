@@ -240,11 +240,11 @@ vec3 brdf_fresnel_conductor_approx(float cos_theta, vec3 n, vec3 k) {
 float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) {
 
     // Choose one:
-    return brdf_lambert();
+    // return brdf_lambert();
 
     // XXX: When using this brdf, stuff appears very dark - most likely
     // there is an error somewhere in the brdf implementationd
-    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness) / M_PI;
+    return brdf_disney_diffuse(NxV, NxL, LxH, roughness) / M_PI;
 }
 
 

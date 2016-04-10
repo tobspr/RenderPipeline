@@ -1,4 +1,4 @@
-/**
+ /**
  *
  * RenderPipeline
  *
@@ -24,23 +24,43 @@
  *
  */
 
-#version 430
+#pragma once
 
-// Shader which is used when the sun is below the horizon, so we don't have any lighting
- 
-#pragma include "render_pipeline_base.inc.glsl"
 
-uniform sampler2D ShadedScene;
-uniform sampler2D SourcePSSMTex;
-uniform int usePssmTex;
 
-out vec3 result;
+// Halton sequences
 
-void main() {
-  vec2 texcoord = get_texcoord();
-
-  vec3 color_pssm = texture(SourcePSSMTex, texcoord).xyz;
-  vec3 color_scene = texture(ShadedScene, texcoord).xyz;
-
-  result = usePssmTex > 0 ? color_pssm : color_scene;
-}
+CONST_ARRAY vec2[] halton_32 = vec2[32](
+  vec2(0, -0.166667),
+  vec2(-0.25, 0.166667),
+  vec2(0.25, -0.388889),
+  vec2(-0.375, -0.0555556),
+  vec2(0.125, 0.277778),
+  vec2(-0.125, -0.277778),
+  vec2(0.375, 0.0555556),
+  vec2(-0.4375, 0.388889),
+  vec2(0.0625, -0.462963),
+  vec2(-0.1875, -0.12963),
+  vec2(0.3125, 0.203704),
+  vec2(-0.3125, -0.351852),
+  vec2(0.1875, -0.0185185),
+  vec2(-0.0625, 0.314815),
+  vec2(0.4375, -0.240741),
+  vec2(-0.46875, 0.0925926),
+  vec2(0.03125, 0.425926),
+  vec2(-0.21875, -0.425926),
+  vec2(0.28125, -0.0925926),
+  vec2(-0.34375, 0.240741),
+  vec2(0.15625, -0.314815),
+  vec2(-0.09375, 0.0185185),
+  vec2(0.40625, 0.351852),
+  vec2(-0.40625, -0.203704),
+  vec2(0.09375, 0.12963),
+  vec2(-0.15625, 0.462963),
+  vec2(0.34375, -0.487654),
+  vec2(-0.28125, -0.154321),
+  vec2(0.21875, 0.179012),
+  vec2(-0.03125, -0.376543),
+  vec2(0.46875, -0.0432099),
+  vec2(-0.484375, 0.290123)
+);

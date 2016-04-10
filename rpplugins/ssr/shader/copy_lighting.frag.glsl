@@ -85,6 +85,9 @@ void main() {
   // Otherwise very bright highlights lead to artifacts
   intersected_color = clamp(intersected_color, 0.0, 100.0);
 
+  // Tonemap so we don't get super bright spots
+  intersected_color = intersected_color / (1 + intersected_color);
+
   // Finally store the result in the mip-chian
   imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(intersected_color, 1) * fade);
 }
