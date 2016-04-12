@@ -121,11 +121,11 @@ class ETA(Timer):
 class FileTransferSpeed(Widget):
     'Widget for showing the transfer speed (useful for file transfers).'
 
-    format = '%6.2f %s%s/s'
     prefixes = ' kMGTPEZY'
     __slots__ = ('unit', 'format')
 
-    def __init__(self, unit='B'):
+    def __init__(self, unit='B', format='%6.2f %s%s/s'):
+        self.format = format
         self.unit = unit
 
     def update(self, pbar):
