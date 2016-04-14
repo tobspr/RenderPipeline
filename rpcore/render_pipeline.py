@@ -425,6 +425,7 @@ class RenderPipeline(RPObject):
         skybox = self._com_resources.load_default_skybox()
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
+        skybox.set_bin("unsorted", 10000)
         self.set_effect(skybox, "effects/skybox.yaml", {
             "render_shadows":   False,
             "render_envmap":    False,
