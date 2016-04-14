@@ -123,6 +123,6 @@
 
 // Controls at which point the sun is below the horizon and does not have any
 // influence anymore
-#define SUN_VECTOR_HORIZON -0.2
+#define SUN_VECTOR_HORIZON 0.0
 
 #pragma include "includes/common_functions.inc.glsl"

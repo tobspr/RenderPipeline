@@ -37,7 +37,7 @@
 layout(location=0) out vec4 result;
 
 uniform sampler2D SourceTex;
-uniform sampler2D MipChain;
+uniform sampler2D LastFrameColor;
 uniform GBufferData GBuffer;
 
 // Fades out a coordinate on the screen edges
@@ -91,12 +91,11 @@ void main() {
             // Get sample coordinate
             ivec2 source_coord = bil_start_coord + ivec2(x, y);
             ivec2 screen_coord = source_coord * 2;
-            vec4 intersection_and_weight = texelFetch(SourceTex, source_coord, 0);
-            vec2 intersection = intersection_and_weight.xy;
-            float intersection_weight = intersection_and_weight.z;
+            vec2 intersection = texelFetch(SourceTex, source_coord, 0).xy;
+            float intersection_weight = intersection.x > 1e-5 ? 1 : 0.0;
 
             // Skip empty samples
-            if (length_squared(intersection) < 1e-9 || intersection_weight < 0.005) {
+            if (intersection_weight < 0.5) {
                 weights += 1.0;
                 continue;
             }
@@ -119,17 +118,7 @@ void main() {
 
             float weight = clamp(brdf_distribution_ggx(NxH,  0.05 + sqrt(roughness)), 0.0, 1.0);
             weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
-            // weight *= 1.0 / max(1e-5, intersection_weight);
-
-
-            float mipmap = sqrt(roughness) * 4.0 * (distance_to_intersection * 0.4);
-            mipmap = clamp(mipmap, 0.0, 7.0);
-
-            // XXX: This seems to look way better, since it does not introduce
-            // color bleeding
-            mipmap = 0;
-
-            vec4 color_sample = textureLod(MipChain, intersection, mipmap);
+            vec4 color_sample = textureLod(LastFrameColor, intersection, 0);
 
             // Fade out samples at the screen border
             // XXX: Do we really have to this per sample?

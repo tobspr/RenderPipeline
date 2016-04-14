@@ -97,7 +97,7 @@ class TexturePreview(DraggableWindow):
         Text(text=size_desc, parent=self._content_node, x=self._width - 20.0,
              y=70, size=18, color=Vec3(0.34, 0.564, 0.192), align="right")
 
-        x_pos = 270
+        x_pos = 370
 
         # Slider for viewing different mipmaps
         if tex.uses_mipmaps():

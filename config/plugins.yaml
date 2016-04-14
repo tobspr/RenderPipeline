@@ -11,39 +11,40 @@ enabled:
     - motion_blur
     - pssm
     - scattering
+    # - skin_shading
     - smaa
     - ssr
     # - clouds
     # - dof
     # - fxaa
-    - skin_shading
     # - volumetrics
     # - vxgi
 
 
 overrides:
     ao:
-        blur_normal_factor: 4.94
-        blur_depth_factor: 4.83
+        blur_normal_factor: 6.92
+        blur_depth_factor: 2.19
         occlusion_strength: 1.6
+        clip_length: 12
         technique: SSAO
         ssao_sample_radius: 79.61
-        ssao_sample_count: 8
+        ssao_sample_count: 5
         ssao_bias: 0.0333
         ssao_max_distance: 6.89
-        hbao_sample_radius: 119.11
+        hbao_sample_radius: 255.17
         hbao_ray_count: 4
         hbao_ray_steps: 3
-        hbao_tangent_bias: 0.5889
-        hbao_max_distance: 4.9
+        hbao_tangent_bias: 0.6556
+        hbao_max_distance: 11.56
         ssvo_sample_count: 4
-        ssvo_sphere_radius: 7.86
-        ssvo_max_distance: 0.6
-        alchemy_sample_radius: 127.8901
-        alchemy_num_samples: 8
-        alchemy_max_distance: 6.07
+        ssvo_sphere_radius: 17.94
+        ssvo_max_distance: 0.82
+        alchemy_sample_radius: 211.28
+        alchemy_num_samples: 4
+        alchemy_max_distance: 4.74
         ue4ao_sample_radius: 110.33
-        ue4ao_sample_count: 8
+        ue4ao_sample_count: 4
         ue4ao_max_distance: 1.87
 
     bloom:

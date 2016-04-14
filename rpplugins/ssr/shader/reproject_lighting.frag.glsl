@@ -37,9 +37,10 @@
 #pragma include "includes/transforms.inc.glsl"
 
 uniform sampler2D CombinedVelocity;
-uniform writeonly image2D RESTRICT DestTex;
 uniform sampler2D Previous_PostAmbientScene;
 uniform sampler2D Previous_SceneDepth;
+
+out vec4 result;
 
 void main() {
   vec2 texcoord = get_texcoord();
@@ -48,7 +49,7 @@ void main() {
 
   // Out of screen, can early out
   if (out_of_screen(last_coord)) {
-    imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(0));
+    result = vec4(0);
     return;
   }
 
@@ -85,5 +86,5 @@ void main() {
 
 
   // Finally store the result in the mip-chian
-  imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(intersected_color, 1) * fade);
+  result = vec4(intersected_color, 1) * fade;
 }

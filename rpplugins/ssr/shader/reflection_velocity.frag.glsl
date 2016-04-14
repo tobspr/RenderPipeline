@@ -48,7 +48,7 @@ void main() {
 
   // Find the position of the closest fragment
   const int kernel_size = 0;
-  vec3 best_result = vec3(0);
+  vec2 best_result = vec2(0);
   float best_score = 0.0;
 
   for (int i = -kernel_size; i < 2 + kernel_size; ++i) {
@@ -57,13 +57,13 @@ void main() {
       ivec2 source_coord = bil_start_coord + ivec2(i, j);
       ivec2 screen_coord = source_coord * 2;
 
-      vec3 trace_result = texelFetch(TraceResult, source_coord, 0).xyz;
+      vec2 trace_result = texelFetch(TraceResult, source_coord, 0).xy;
       float trace_depth = get_depth_at(screen_coord);
       float trace_score = max(0.0, 1.0 - 10.0 * abs(trace_depth - mid_depth));
 
       // Weight the sample, so that depths closer to the viewer have a greater weight.
       // Also scale by the fade factor to make sure a sample is present
-      trace_score = (1 - trace_depth) * trace_result.z;
+      trace_score = (1 - trace_depth) * (trace_result.x > 1e-5 ? 1.0 : 0.0);
 
       if (trace_score > best_score) {
         best_result = trace_result;
@@ -73,14 +73,14 @@ void main() {
   }
 
   // In case no sample was found, fall back to the current pixels coordinate
-  if (length_squared(best_result.xy) < 1e-4) {
-    best_result.xy = texcoord;
+  if (length_squared(best_result) < 1e-4) {
+    best_result = texcoord;
   }
 
-  best_result.xy = truncate_coordinate(best_result.xy); // xxx
+  best_result = truncate_coordinate(best_result); // xxx
 
   // Find depth of intersection
-  float intersection_depth = get_depth_at(best_result.xy);
+  float intersection_depth = get_depth_at(best_result);
 
   // Reconstruct last frame texcoord
   vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0, 1.0 / ASPECT_RATIO);

@@ -163,6 +163,11 @@ void main() {
             // Mix environment maps
             vec4 probe_spec = textureLod(EnvmapAmbientSpec, texcoord, 0);
             vec4 probe_diff = textureLod(EnvmapAmbientDiff, texcoord, 0);
+
+            // Unpack color
+            probe_diff.xyz = probe_diff.xyz / (1 - probe_diff.xyz);
+            probe_spec.xyz = probe_spec.xyz / (1 - probe_spec.xyz);
+
             ibl_diffuse = ibl_diffuse * (1 - probe_diff.w) + probe_diff.xyz;
 
             // Mix scatteringp probe and envprobe carefully, sice a huge color

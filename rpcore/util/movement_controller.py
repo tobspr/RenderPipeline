@@ -232,8 +232,11 @@ class MovementController(object):
         ftime = self.clock_obj.get_frame_time()
         rotation = (ftime % self.bobbing_speed) / self.bobbing_speed
         rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
-        rotation *= self.bobbing_amount
-        rotation *= min(1, self.velocity.length()) / self.speed * 0.5
+        if self.velocity.length_squared() > 1e-5 and self.speed > 1e-5:
+            rotation *= self.bobbing_amount
+            rotation *= min(1, self.velocity.length()) / self.speed * 0.5
+        else:
+            rotation = 0
         self.showbase.camera.set_r(rotation)
         return task.cont
 

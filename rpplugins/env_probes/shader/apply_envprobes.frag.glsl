@@ -81,7 +81,11 @@ void main() {
 
     result_spec *= fade;
     result_diff *= fade;
-    
+
+    // Pack color
+    result_spec.xyz = result_spec.xyz / (1 + result_spec.xyz);
+    result_diff.xyz = result_diff.xyz / (1 + result_diff.xyz);
+ 
     // Visualize probe count
     // float probe_factor = processed_probes / MAX_PROBES_PER_CELL;
     // result_spec = vec4(1 - probe_factor, probe_factor, 0, 1);

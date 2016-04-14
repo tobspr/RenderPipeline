@@ -293,6 +293,10 @@ class RenderTarget(RPObject):
                 buffer_props.set_rgba_bits(11, 11, 10, 0)
             else:
                 buffer_props.set_rgba_bits(*self._color_bits)
+        elif 8 in self._color_bits:
+            # When specifying 8 bits, specify 1 bit, this is a workarround
+            # to a legacy logic in panda 
+            buffer_props.set_rgba_bits(*[i if i != 8 else 1 for i in self._color_bits])
         else:
             buffer_props.set_rgba_bits(*self._color_bits)
 
@@ -302,9 +306,11 @@ class RenderTarget(RPObject):
         buffer_props.set_coverage_samples(0)
         buffer_props.set_depth_bits(self._depth_bits)
 
-        if self._depth_bits:
+        if self._depth_bits == 32:
             buffer_props.set_float_depth(True)
+
         buffer_props.set_float_color(max(self._color_bits) > 8)
+
         buffer_props.set_force_hardware(True)
         buffer_props.set_multisamples(0)
         buffer_props.set_srgb_color(False)

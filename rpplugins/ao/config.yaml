@@ -36,6 +36,17 @@ settings: !!omap
             noticeable. You most likely will have to adjust it differently for
             every technique.
 
+    - clip_length:
+        type: int
+        range: [1, 16]
+        default: 8
+        shader_runtime: true
+        label: History length
+        description: >
+            Controls how long to keep AO samples in the history. Bigger values
+            will produce a smoother effect but might also produce artifacts,
+            especially when moving.
+
     - technique:
         type: enum
         values: ["SSAO", "HBAO", "SSVO", "ALCHEMY", "UE4AO"]
