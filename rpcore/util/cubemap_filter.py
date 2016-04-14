@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import SamplerState
+from panda3d.core import SamplerState, Vec4
 
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
@@ -92,9 +92,13 @@ class CubemapFilter(RPObject):
             self._name + "IBLSpec", self._size, "R11G11B10")
 
         # Set the correct filtering modes
-        for tex in [self._diffuse_map, self._specular_map, self._prefilter_map]:
+        for tex in [self._diffuse_map, self._specular_map, self._prefilter_map, self._spec_pref_map]:
             tex.set_minfilter(SamplerState.FT_linear)
             tex.set_magfilter(SamplerState.FT_linear)
+            tex.set_clear_color(Vec4(0))
+            tex.clear_image()
+
+
 
         # Use mipmaps for the specular cubemap
         self._spec_pref_map.set_minfilter(SamplerState.FT_linear_mipmap_linear)

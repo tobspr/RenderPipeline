@@ -232,9 +232,11 @@ class StageManager(RPObject):
             stage.reload_shaders()
 
     def update(self):
-        """ Calls the update method for each registered stage """
+        """ Calls the update method for each registered stage. Inactive stages
+        are skipped. """
         for stage in self.stages:
-            stage.update()
+            if stage.active:
+                stage.update()
 
     def write_autoconfig(self):
         """ Writes the shader auto config, based on the defines specified by the

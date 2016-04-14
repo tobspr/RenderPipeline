@@ -49,21 +49,19 @@ layout(location=0) in VertexOutput vOutput;
 
 #pragma include "includes/forward_shading.inc.glsl"
 
-layout(location=0) out vec4 result_specular;
-layout(location=1) out vec4 result_diffuse;
+layout(location=0) out vec4 result;
 
 void main() {
 
     MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
 
-    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * (0.2 + 0.8 * mInput.color);
+    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * mInput.color;
 
     vec3 ambient = get_forward_ambient(mInput, basecolor);
     vec3 sun_lighting = get_sun_shading(mInput, basecolor);
     vec3 lights = get_forward_light_shading(basecolor);
  
-    vec3 combined_lighting = ambient + lights + sun_lighting;
+    vec3 combined_lighting = (ambient + lights + sun_lighting) * 0.07;
 
-    result_specular = vec4(combined_lighting, 1);
-    result_diffuse = vec4(combined_lighting, 1);
+    result = vec4(combined_lighting, 1);
 }

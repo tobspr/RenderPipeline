@@ -46,7 +46,7 @@ vec4 importance_sample_ggx(vec2 Xi, float alpha)
   vec3 h = vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 
   float d = (cos_theta * r_square - cos_theta) * cos_theta + 1.0;
-  float D = r_square / (M_PI * d * d);
+  float D = r_square / max(1e-3, M_PI * d * d);
   float pdf = D * cos_theta;
 
   return vec4(h, pdf);

@@ -56,7 +56,7 @@ from curve_widget import CurveWidget
 
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.mount_manager import MountManager
-from rpcore.util.udp_listener_service import UDPListenerService
+from rpcore.util.network_communication import NetworkCommunication
 
 from ui.main_window_generated import Ui_MainWindow
 from ui.point_insert_dialog_generated import Ui_Dialog as Ui_PointDialog
@@ -126,12 +126,13 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             if self._cmd_queue:
                 cmd = self._cmd_queue.pop()
                 if cmd == "settime":
-                    local_time = self._current_time
-                    UDPListenerService.ping(UDPListenerService.DAYTIME_PORT, "settime " + str(local_time))
-
+                    NetworkCommunication.send_async(
+                        NetworkCommunication.DAYTIME_PORT, "settime " + str(self._current_time))
+                    continue
                 elif cmd == "write_settings":
                     self._plugin_mgr.save_daytime_overrides("/$$rpconfig/daytime.yaml")
-                    UDPListenerService.ping(UDPListenerService.DAYTIME_PORT, "loadconf")
+                    NetworkCommunication.send_async(
+                        NetworkCommunication.DAYTIME_PORT, "loadconf")
                 else:
                     print("Unkown cmd:", cmd)
 

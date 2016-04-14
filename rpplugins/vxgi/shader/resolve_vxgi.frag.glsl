@@ -26,32 +26,26 @@
 
 #version 430
 
-#pragma optionNV (unroll all)
-
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/light_culling.inc.glsl"
 
-uniform sampler2DArray FlaggedCells;
-uniform layout(r32i) iimageBuffer CellListBuffer;
-uniform writeonly iimage2DArray RESTRICT CellListIndices;
+
+#define RS_MAX_CLIP_DIST 1.5
+#define RS_DISTANCE_SCALE 1.0
+#define RS_KEEP_GOOD_DURATION 64.0
+#define RS_USE_POSITION_TECHNIQUE 1
+#pragma include "includes/temporal_resolve.inc.glsl"
+
+uniform sampler2D CurrentTex;
+uniform sampler2D CombinedVelocity;
+uniform sampler2D Previous_VXGIPostSample;
+
+out vec4 result;
 
 void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec2 texcoord = get_texcoord();
+    vec2 velocity = texture(CombinedVelocity, texcoord).xy;
+    vec2 last_coord = texcoord + velocity;
 
-    // Iterate over all slices
-    for (int i = 0; i < LC_TILE_SLICES; ++i) {
-
-        // Check if the cell is flagged
-        bool visible = texelFetch(FlaggedCells, ivec3(coord, i), 0).x > 0.5;
-        if (visible) {
-            // Append the cell and mark it
-            // Notice: We add 1 since the first index stores the amount
-            // of collected cells.
-            int flag_index = imageAtomicAdd(CellListBuffer, 0, 1) + 1;
-            int cell_data = coord.x | coord.y << 10 | i << 20;
-            imageStore(CellListBuffer, flag_index, ivec4(cell_data));
-            imageStore(CellListIndices, ivec3(coord, i), ivec4(flag_index));
-        }
-    }
+    result = resolve_temporal(CurrentTex, Previous_VXGIPostSample, texcoord, last_coord);
 }

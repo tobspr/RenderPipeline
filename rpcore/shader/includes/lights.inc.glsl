@@ -60,10 +60,6 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 
 // Closest point on spherical area light, also returns energy factor
 vec3 get_spherical_area_light_vector(float radius, vec3 l_unscaled, vec3 v, vec3 n) {
-
-    // XXX: Test if this is faster
-    if (radius < 0.01) return l_unscaled;
-
     vec3 r = reflect(-v, n);
     vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
     vec3 closest_point = l_unscaled + center_to_ray * saturate(radius / max(1e-3, length(center_to_ray)));

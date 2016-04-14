@@ -73,8 +73,8 @@ void main() {
     const float sample_radius = 11.0;
     const int num_samples = 2;
     // const float bias = max(0, -0.5 + 2.6 / kernel_scale);
-    const float bias = 0.02;
-    float max_range = 1.7;
+    const float bias = 0.0001 + 0.006 / kernel_scale;
+    float max_range = 2.7;
 
     float sample_offset = sample_radius * pixel_size.x * 30.0;
     float range_accum = 0.0;

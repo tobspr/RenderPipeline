@@ -69,5 +69,5 @@ class PSSMStage(RenderStage):
 
     def reload_shaders(self):
         self.target_shadows.shader = self.load_plugin_shader("filter_pssm_shadows.frag.glsl")
-        self.target.shader = self.load_plugin_shader("apply_pssm_shadows.frag.glsl")
+        self.target.shader = self.load_plugin_shader("apply_sun_shading.frag.glsl")
         self.void_target.shader = self.load_plugin_shader("pass_through_shader.frag.glsl")

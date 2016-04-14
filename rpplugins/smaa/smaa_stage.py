@@ -64,16 +64,11 @@ class SMAAStage(RenderStage):
             return {"ShadedScene": self.neighbor_target.color_tex}
 
     def create(self):
-        self.target_fireflies = self.create_target("RemoveFireflies")
-        self.target_fireflies.add_color_attachment(bits=16)
-        self.target_fireflies.prepare_buffer()
-
         # Edge detection
         self.edge_target = self.create_target("EdgeDetection")
         self.edge_target.add_color_attachment()
         self.edge_target.prepare_buffer()
         self.edge_target.set_clear_color(0)
-        self.edge_target.set_shader_input("SourceTex", self.target_fireflies.color_tex)
 
         # Weight blending
         self.blend_target = self.create_target("BlendWeights")
@@ -91,7 +86,6 @@ class SMAAStage(RenderStage):
         self.neighbor_target.add_color_attachment(bits=16)
         self.neighbor_target.prepare_buffer()
         self.neighbor_target.set_shader_input("BlendTex", self.blend_target.color_tex)
-        self.neighbor_target.set_shader_input("SourceTex", self.target_fireflies.color_tex)
 
         # Resolving
         if self.use_reprojection:
@@ -104,7 +98,6 @@ class SMAAStage(RenderStage):
             self.resolve_target.set_shader_input("CurrentTex", self.neighbor_target.color_tex)
 
     def reload_shaders(self):
-        self.target_fireflies.shader = self.load_plugin_shader("remove_fireflies.frag.glsl")
         self.edge_target.shader = self.load_plugin_shader("edge_detection.frag.glsl")
         self.blend_target.shader = self.load_plugin_shader("blending_weights.frag.glsl")
         self.neighbor_target.shader = self.load_plugin_shader("neighborhood_blending.frag.glsl")

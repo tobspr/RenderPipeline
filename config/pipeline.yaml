@@ -47,7 +47,7 @@ lighting:
     # distance, no lights are rendered anymore. If you choose a lower
     # distance, this *can* positively impact performance, but you should not
     # set it too low, to avoid getting artifacts.
-    culling_max_distance: 240.0
+    culling_max_distance: 500.0
 
     # Controls the size of a slice in culling. Lower values might produce
     # better performance for less amount of lights, but higher values should

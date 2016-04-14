@@ -30,57 +30,24 @@ uniform mat4 trans_clip_of_mainCam_to_mainRender;
 uniform mat4 trans_mainRender_to_view_of_mainCam;
 uniform mat4 trans_mainRender_to_clip_of_mainCam;
 
-// Constant values based on main camera near and far plane
-const float NDC_A = CAMERA_NEAR + CAMERA_FAR;
-const float NDC_B = CAMERA_NEAR - CAMERA_FAR;
-const float NDC_E = 2.0 * CAMERA_NEAR;
-const float NDC_C = NDC_E * CAMERA_FAR;
-const float NDC_D = CAMERA_FAR - CAMERA_NEAR;
-
-// Computes the Z component from a position in NDC space, with a given near and far plane
-float get_z_from_ndc(vec3 ndc_pos, float near, float far) {
-  return (2.0 * near * far / ((near + far) + ndc_pos.z * (near-far)));
-}
-
-// Computes the Z component from linear Z
-float get_z_from_linear_z(float z) {
-  return fma((1.0 / (z / NDC_C) - NDC_A) / NDC_B, 0.5, 0.5);
-}
-
 // Computes linear Z from a given Z value, and near and far plane
 float get_linear_z_from_z(float z, float near, float far) {
-    // return 2.0 * near * far / (far + near - (z * 2.0 - 1) * (far - near));
-    // return 2.0 * near * far / (far + near - (2.0 * z - 1) * (far - near));
-  float zNear = near;
-  float zFar = far;
-
-  float z_n = 2.0 * z - 1.0;
-  float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
-  return z_e;
+  return 2.0 * near * far / (far + near - (z * 2.0 - 1) * (far - near));
 }
 
 // Computes linear Z from a given Z value
 float get_linear_z_from_z(float z) {
-    // return NDC_C / (NDC_A - (z * 2.0 - 1.0) * NDC_D);
-  // return NDC_E / (NDC_A - z * NDC_D);
   return get_linear_z_from_z(z, CAMERA_NEAR, CAMERA_FAR);
 }
 
 // Computes the Z component from a position in NDC space
 float get_z_from_ndc(vec3 ndc_pos) {
-  // return NDC_C / (NDC_A + (ndc_pos.z * NDC_B));
-  // return NDC_E / (NDC_A - ndc_pos.z * NDC_D);
   return get_linear_z_from_z(ndc_pos.z);
 }
 
 // Computes linear Z from a given Z value, and near and far plane, for orthographic projections
 float get_linear_z_from_z_ortographic(float z, float near, float far) {
   return 2.0 / (far + near - fma(z, 2.0, -1.0) * (far - near));
-}
-
-// Converts a nonlinear Z to a linear Z from 0 .. 1
-float normalize_to_linear_z(float z, float near, float far) {
-  return get_linear_z_from_z(z, near, far) / far;
 }
 
 // Computes the surface position based on a given Z, a texcoord, and the Inverse MVP matrix
@@ -94,7 +61,16 @@ vec3 calculate_surface_pos(float z, vec2 tcoord, mat4 inverse_mvp) {
 
 // Computes the surface position based on a given Z and a texcoord
 vec3 calculate_surface_pos(float z, vec2 tcoord) {
-  return calculate_surface_pos(z, tcoord, trans_clip_of_mainCam_to_mainRender);
+  #if 0
+    return calculate_surface_pos(z, tcoord, trans_clip_of_mainCam_to_mainRender);
+  #else
+    float linz = get_linear_z_from_z(z);
+    return mix(
+      mix(MainSceneData.ws_frustum_directions[0], MainSceneData.ws_frustum_directions[1], tcoord.x),
+      mix(MainSceneData.ws_frustum_directions[2], MainSceneData.ws_frustum_directions[3], tcoord.x),
+      tcoord.y
+    ).xyz * linz + MainSceneData.camera_pos;
+  #endif
 }
 
 // Computes the surface position based on a given Z and a texcoord, aswell as a

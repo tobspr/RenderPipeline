@@ -116,22 +116,22 @@ class Plugin(BasePlugin):
         sun_vector = self.get_plugin_instance("scattering").sun_vector
 
         if sun_vector.z < -0.2:
-            self.shadow_stage.set_active(False)
-            self.scene_stage.set_active(False)
+            self.shadow_stage.active = False
+            self.scene_stage.active = False
             self.pssm_stage.set_render_shadows(False)
 
             if self.get_setting("use_distant_shadows"):
-                self.dist_shadow_stage.set_active(False)
+                self.dist_shadow_stage.active = False
 
             # Return, no need to update the pssm splits
             return
         else:
-            self.shadow_stage.set_active(True)
-            self.scene_stage.set_active(True)
+            self.shadow_stage.active = True
+            self.scene_stage.active = True
             self.pssm_stage.set_render_shadows(True)
 
             if self.get_setting("use_distant_shadows"):
-                self.dist_shadow_stage.set_active(True)
+                self.dist_shadow_stage.active = True
 
         if self.update_enabled:
             self.camera_rig.update(Globals.base.camera, sun_vector)

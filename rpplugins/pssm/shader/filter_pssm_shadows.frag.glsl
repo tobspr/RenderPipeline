@@ -35,6 +35,7 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
 out float result;
 
@@ -106,10 +107,10 @@ void main() {
         proj.z -= fixed_bias;
 
         if (!out_of_unit_box(proj)) {
-            const float esm_factor = 1.0;
+            const float esm_factor = 10.0;
             float depth_sample = texture(PSSMDistSunShadowMap, proj.xy).x;
             shadow_factor = saturate(exp(-esm_factor * proj.z) * depth_sample);
-            shadow_factor = pow(shadow_factor, 1e4);
+            shadow_factor = pow(shadow_factor, 1e3);
         }
     }
     #endif
@@ -117,8 +118,7 @@ void main() {
     // Find lowest split in range
     const int split_count = GET_SETTING(pssm, split_count);
     int split = 99;
-    float border_bias = 1 - (1.0 / (1.0 + GET_SETTING(pssm, border_bias)));
-    border_bias *= 0.5;
+    float border_bias = 0.5 - (0.5 / (1.0 + GET_SETTING(pssm, border_bias)));
 
     // Find the first matching split
     for (int i = 0; i < split_count; ++i) {
@@ -134,15 +134,17 @@ void main() {
     // Compute the shadowing factor
     if (split < GET_SETTING(pssm, split_count)) {
 
-        // vec3 noise = rand_rgb(m.position.xy + m.position.z);
-
         // Get the MVP for the current split
         mat4 mvp = pssm_mvps[split];
 
+
+        float rotation = interleaved_gradient_noise(gl_FragCoord.xy + MainSceneData.frame_index % 4);
+        mat2 rotation_mat = make_rotation_mat(rotation);
+
         // Get the plugin settings
-        const float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);
-        const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
+        float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);
         float fixed_bias = GET_SETTING(pssm, fixed_bias) * 0.001 * (1 + 1.5 * split);
+        const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
         const int num_samples = GET_SETTING(pssm, filter_sample_count);
         const float filter_radius = GET_SETTING(pssm, filter_radius) / GET_SETTING(pssm, resolution);
 
@@ -154,8 +156,6 @@ void main() {
         // Project the current pixel to the view of the light
         vec3 projected = project(mvp, biased_pos);
         vec2 projected_coord = get_split_coord(projected.xy, split);
-
-        // projected_coord.xy += (noise.xy*2-1) / GET_SETTING(pssm, resolution) * 0.05;
 
         // Compute the fixed bias
         float ref_depth = projected.z - fixed_bias;
@@ -195,6 +195,7 @@ void main() {
                     else
                         offset = poisson_disk_2D_32[i];
 
+                    offset = rotation_mat * offset;
 
                     // Find depth at sample location
                     float sampled_depth = textureLod(PSSMShadowAtlas,
@@ -226,7 +227,7 @@ void main() {
         for (int i = 0; i < num_samples; ++i) {
 
             // Get sample from a random poisson disk
-            vec2 offset = poisson_disk_2D_32[i];
+            vec2 offset = rotation_mat * poisson_disk_2D_32[i];
 
             // Find depth and apply contribution
             local_shadow_factor += get_shadow(

@@ -222,13 +222,17 @@ class Debugger(RPObject):
         )
 
         text = "{} ({:1.3f})  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
+        text += "    |  Total tasks:  {:2d}   |   scheduled: {:2d}"
         self._debug_lines[4].text = text.format(
             self._pipeline.daytime_mgr.formatted_time,
             self._pipeline.daytime_mgr.time,
             len(self._pipeline.plugin_mgr.day_settings),
             Globals.base.camera.get_x(Globals.base.render),
             Globals.base.camera.get_y(Globals.base.render),
-            Globals.base.camera.get_z(Globals.base.render),)
+            Globals.base.camera.get_z(Globals.base.render),
+            self._pipeline.task_scheduler.num_tasks,
+            self._pipeline.task_scheduler.num_scheduled_tasks,
+        )
 
         if task:
             return task.again

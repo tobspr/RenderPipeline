@@ -25,6 +25,8 @@ THE SOFTWARE.
 """
 from __future__ import division
 
+from rplibs.six import itervalues
+
 from rpcore.render_stage import RenderStage
 from rpcore.util.cubemap_filter import CubemapFilter
 

@@ -53,7 +53,7 @@ uniform samplerCube DefaultEnvmap;
 #endif
 
 #if HAVE_PLUGIN(vxgi)
-    uniform sampler2D VXGISpecular;
+    // uniform sampler2D VXGISpecular;
     uniform sampler2D VXGIDiffuse;
 #endif
 
@@ -70,7 +70,7 @@ out vec4 result;
 
 float get_mipmap_for_roughness(samplerCube map, float roughness, float NxV) {
 
-    return snap_mipmap(sqrt(roughness) * 7.0);
+    return sqrt(roughness) * 7.0;
 }
 
 float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
@@ -180,19 +180,18 @@ void main() {
         #endif
 
         #if HAVE_PLUGIN(vxgi)
-            vec4 vxgi_spec = texture(VXGISpecular, texcoord);
+            // vec4 vxgi_spec = texture(VXGISpecular, texcoord);
             ibl_diffuse = texture(VXGIDiffuse, texcoord).xyz;
-            ibl_specular = ibl_specular * (1 - vxgi_spec.w) + vxgi_spec.xyz;
+            // ibl_specular *= ibl_diffuse;
+            // ibl_specular = ibl_specular * (1 - vxgi_spec.w) + vxgi_spec.xyz;
 
         #endif
 
         #if HAVE_PLUGIN(ssr)
             vec4 ssr_spec = textureLod(SSRSpecular, texcoord, 0);
 
-            // ssr_spec.xyz = mix(ssr_spec.xyz, ssr_spec.xyz / (1 - ssr_spec.xyz), ssr_spec.w);
-
             // Fade out SSR on high roughness values
-            ssr_spec *= 1.0 - saturate(GET_SETTING(ssr, roughness_fade) * m.roughness);
+            ssr_spec *= 1.0 - saturate(m.roughness / GET_SETTING(ssr, roughness_fade));
             ssr_spec *= GET_SETTING(ssr, effect_scale);
 
             ibl_specular = ibl_specular * (1 - ssr_spec.w) + ssr_spec.xyz;
@@ -224,8 +223,6 @@ void main() {
 
         // Mix between normal and metallic fresnel
         fresnel = mix(fresnel, metallic_fresnel, m.metallic);
-
-
 
         if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
 
@@ -272,7 +269,7 @@ void main() {
     // Emissive materials
     #if !DEBUG_MODE
         if (m.shading_model == SHADING_MODEL_EMISSIVE) {
-            ambient = m.basecolor * 1000.0;
+            ambient = m.basecolor * 5000.0;
         }
     #endif
 
@@ -288,12 +285,12 @@ void main() {
         #endif
 
         #if MODE_ACTIVE(DIFFUSE_AMBIENT)
-            result = vec4(diffuse_ambient, 1);
+            result = vec4( (diffuse_ambient / (1 + diffuse_ambient)) * occlusion, 1);
             return;
         #endif
 
         #if MODE_ACTIVE(SPECULAR_AMBIENT)
-            result = vec4(specular_ambient, 1);
+            result = vec4( (specular_ambient / (1 + specular_ambient)) * specular_occlusion, 1);
             return;
         #endif
     #endif

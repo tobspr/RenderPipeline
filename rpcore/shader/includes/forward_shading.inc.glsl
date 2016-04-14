@@ -60,7 +60,7 @@ vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
         vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb * DEFAULT_ENVMAP_BRIGHTNESS;
     #endif
 
-    shading_result += (0.5 + 0.5 * basecolor);
+    shading_result += (0.15 + 0.85 * basecolor) * diff_env * 10.0;
 
     // Emission
     if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {

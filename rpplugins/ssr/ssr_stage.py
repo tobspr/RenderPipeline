@@ -42,7 +42,7 @@ class SSRStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"SSRSpecular": self.target_post_blur.color_tex}
+        return {"SSRSpecular": self.target_resolve.color_tex}
 
     def create(self):
         x_size, y_size = Globals.resolution.x, Globals.resolution.y
@@ -114,10 +114,10 @@ class SSRStage(RenderStage):
         self.target_resolve.set_shader_input("CurrentTex", self.target_upscale.color_tex)
         self.target_resolve.set_shader_input("VelocityTex", self.target_velocity.color_tex)
 
-        self.target_post_blur = self.create_target("SSRPostBlur")
-        self.target_post_blur.add_color_attachment(bits=16, alpha=True)
-        self.target_post_blur.prepare_buffer()
-        self.target_post_blur.set_shader_input("CurrentTex", self.target_resolve.color_tex)
+        # self.target_post_blur = self.create_target("SSRPostBlur")
+        # self.target_post_blur.add_color_attachment(bits=16, alpha=True)
+        # self.target_post_blur.prepare_buffer()
+        # self.target_post_blur.set_shader_input("CurrentTex", self.target_resolve.color_tex)
 
         AmbientStage.required_pipes.append("SSRSpecular")
 
@@ -125,7 +125,7 @@ class SSRStage(RenderStage):
         self.target.shader = self.load_plugin_shader("ssr_trace.frag.glsl")
         self.target_velocity.shader = self.load_plugin_shader("reflection_velocity.frag.glsl")
         self.target_copy_lighting.shader = self.load_plugin_shader("copy_lighting.frag.glsl")
-        self.target_post_blur.shader = self.load_plugin_shader("ssr_post_blur.frag.glsl")
+        # self.target_post_blur.shader = self.load_plugin_shader("ssr_post_blur.frag.glsl")
         self.target_upscale.shader = self.load_plugin_shader("upscale_bilateral_brdf.frag.glsl")
         self.target_resolve.shader = self.load_plugin_shader("resolve_ssr.frag.glsl")
         blur_shader = self.load_plugin_shader("ssr_blur.frag.glsl")

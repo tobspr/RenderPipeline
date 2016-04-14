@@ -114,6 +114,11 @@ vec4 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec4 p, vec4 q)
 }
 
 
+#if RS_USE_POSITION_TECHNIQUE
+    uniform sampler2D Previous_SceneDepth;
+#endif
+
+
 vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord, vec2 last_coord) {
     vec2 one_pixel = 1.0 / SCREEN_SIZE;
     vec4 curr_m = texture(current_tex, curr_coord);
@@ -125,53 +130,75 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
 
     #if !RS_USE_SMOOTH_TECHNIQUE
 
-        const float subpixel_threshold = 0.5;
-        const float gather_base = 0.5;
-        const float gather_subpixel_motion = 0.1666;
+        #if RS_USE_POSITION_TECHNIQUE
 
-        float curr_depth = get_depth_at(curr_coord);
-        float vs_dist = get_linear_z_from_z(curr_depth);
+            float curr_z = get_depth_at(curr_coord);
+            vec3 curr_pos = calculate_surface_pos(curr_z, curr_coord);
 
-        vec2 velocity = last_coord - curr_coord;
+            float last_z = texture(Previous_SceneDepth, last_coord).x;
+            vec3 last_pos = calculate_surface_pos(last_z, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
 
-        float texel_vel_mag = length(velocity) * vs_dist;
-        float subpixel_motion = saturate(subpixel_threshold / (1e-8 + texel_vel_mag));
-        float min_max_support = gather_base + gather_subpixel_motion * subpixel_motion;
+            // Weight by distance
+            float max_distance = 0.5;
+            float weight = 1.0 - saturate(distance(curr_pos, last_pos) / max_distance);
+            weight *= 1 - 1.0 / RS_KEEP_GOOD_DURATION;
 
-        vec2 ss_offset01 = min_max_support * vec2(1, 0) / SCREEN_SIZE;
-        vec2 ss_offset11 = min_max_support * vec2(0, 1) / SCREEN_SIZE;
+            vec4 last_m  = texture(last_tex, last_coord);
 
-        vec4 c00 = texture(current_tex, curr_coord - ss_offset11);
-        vec4 c10 = texture(current_tex, curr_coord - ss_offset01);
-        vec4 c01 = texture(current_tex, curr_coord + ss_offset01);
-        vec4 c11 = texture(current_tex, curr_coord + ss_offset11);
+            // return vec4(weight);
+            return mix(curr_m, last_m, weight);
 
-        vec4 cmin = min4(c00, c10, c01, c11);
-        vec4 cmax = max4(c00, c10, c01, c11);
-
-        vec4 cavg = (c00 + c10 + c01 + c11) / 4.0;
-
-        vec4 last_m = texture(last_tex, curr_coord + velocity);
-
-        #if USE_CLIPPING
-            last_m = clip_aabb(cmin.xyz, cmax.xyz, clamp(cavg, cmin, cmax), last_m);
         #else
-            last_m = clamp(last_m, cmin, cmax);
+
+            const float subpixel_threshold = 0.5;
+            const float gather_base = 0.5;
+            const float gather_subpixel_motion = 0.1666;
+
+            float curr_depth = get_depth_at(curr_coord);
+            float vs_dist = get_linear_z_from_z(curr_depth);
+
+            vec2 velocity = last_coord - curr_coord;
+
+            float texel_vel_mag = length(velocity) * vs_dist;
+            float subpixel_motion = saturate(subpixel_threshold / (1e-8 + texel_vel_mag));
+            float min_max_support = gather_base + gather_subpixel_motion * subpixel_motion;
+
+            vec2 ss_offset01 = min_max_support * vec2(1, 0) / SCREEN_SIZE;
+            vec2 ss_offset11 = min_max_support * vec2(0, 1) / SCREEN_SIZE;
+
+            vec4 c00 = texture(current_tex, curr_coord - ss_offset11);
+            vec4 c10 = texture(current_tex, curr_coord - ss_offset01);
+            vec4 c01 = texture(current_tex, curr_coord + ss_offset01);
+            vec4 c11 = texture(current_tex, curr_coord + ss_offset11);
+
+            vec4 cmin = min4(c00, c10, c01, c11);
+            vec4 cmax = max4(c00, c10, c01, c11);
+
+            vec4 cavg = (c00 + c10 + c01 + c11) / 4.0;
+
+            vec4 last_m = texture(last_tex, curr_coord + velocity);
+
+            #if USE_CLIPPING
+                last_m = clip_aabb(cmin.xyz, cmax.xyz, clamp(cavg, cmin, cmax), last_m);
+            #else
+                last_m = clamp(last_m, cmin, cmax);
+            #endif
+
+            float lum0 = get_luminance(curr_m.rgb);
+            float lum1 = get_luminance(last_m.rgb);
+
+            const float feedback_min = 1 - 1.0 / RS_KEEP_BAD_DURATION;
+            const float feedback_max = 1 - 1.0 / RS_KEEP_GOOD_DURATION;
+
+            float unbiased_diff = abs(lum0 - lum1) / max(lum0, max(lum1, 0.2));
+            float unbiased_weight = 1.0 - unbiased_diff;
+            float unbiased_weight_sqr = unbiased_weight * unbiased_weight;
+            float feedback = mix(feedback_min, feedback_max, unbiased_weight_sqr);
+
+            // output
+            return mix(curr_m, last_m, feedback);
+
         #endif
-
-        float lum0 = get_luminance(curr_m.rgb);
-        float lum1 = get_luminance(last_m.rgb);
-
-        const float feedback_min = 1 - 1.0 / RS_KEEP_BAD_DURATION;
-        const float feedback_max = 1 - 1.0 / RS_KEEP_GOOD_DURATION;
-
-        float unbiased_diff = abs(lum0 - lum1) / max(lum0, max(lum1, 0.2));
-        float unbiased_weight = 1.0 - unbiased_diff;
-        float unbiased_weight_sqr = unbiased_weight * unbiased_weight;
-        float feedback = mix(feedback_min, feedback_max, unbiased_weight_sqr);
-
-        // output
-        return mix(curr_m, last_m, feedback);
 
     #else
 
@@ -209,16 +236,18 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
 
         float max_difference = clamp( max(get_luminance(last_m.xyz), get_luminance(curr_m.xyz)), 0.0001, 15.0) * RS_MAX_CLIP_DIST;
 
-        // if (neighbor_diff >= max_difference)
-            // blend_weight = 0.0;
+        if (neighbor_diff >= max_difference)
+            blend_weight = 0.0;
 
         float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) * RS_DISTANCE_SCALE );
 
         // Merge the sample with the current color, in case we can't pick it
-        // last_m = mix(curr_m, last_m, blend_weight);
+        last_m = mix(curr_m, last_m, blend_weight);
+
+        
         float weight = saturate(1.0 / mix(RS_KEEP_GOOD_DURATION, RS_KEEP_BAD_DURATION, blend_amount));
 
-        // weight = 1;
+        // weight = 1.0 / RS_KEEP_GOOD_DURATION;
 
         return max(vec4(0.0), mix(last_m, curr_m, weight));
     #endif

@@ -30,6 +30,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 #pragma include "vxgi.inc.glsl"
 
 uniform sampler2D ShadedScene;
@@ -59,14 +60,15 @@ void main() {
     // Trace diffuse cones
     vec4 accum = vec4(0);
 
-    for (int i = 0; i < 32; ++i) {
-        vec3 direction = poisson_disk_3D_32[i];
+    // float jitter = 16.0 / (MainSceneData.frame_index % 512);
+    float jitter = 0.0;
+
+    for (int i = 0; i < 8; ++i) {
+        vec3 direction = rand_rgb(vec2(texcoord + i * 0.001 + 0.134 * (MainSceneData.frame_index % 1024)));
         // direction = mix(direction, noise_vec, 0.3);
-        direction = normalize(direction + m.normal);
+        direction = normalize(direction);
         direction = face_forward(direction, m.normal);
-
-
-        float weight = dot(m.normal, direction); // Guaranteed to be > 0
+        float weight = max(0.0, dot(m.normal, direction)); // Guaranteed to be > 0
         // weight = 1.0;
         vec4 cone = trace_cone(
             voxel_coord,
@@ -75,11 +77,13 @@ void main() {
             // GET_SETTING(vxgi, diffuse_cone_steps),
             32,
             false,
-            0.2);
+            0.05,
+            jitter);
         accum.xyz += cone.xyz * weight;
         accum.w += weight;
     }
-    accum /= accum.w;
-    // accum *= 0.1;
+    accum /= max(1e-3, accum.w);
+    accum *= 1.0;
+    accum = clamp(accum, vec4(0.0), vec4(100.0));
     result = accum;
 }

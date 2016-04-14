@@ -21,6 +21,16 @@ settings: !!omap
         description: >
             Average ground reflectance, controls how much light the earth reflects.
 
+    - rayleigh_factor:
+        display_if: {scattering_method: "eric_bruneton"}
+        type: float
+        range: [0.05, 1.0]
+        default: 0.5
+        shader_runtime: true
+        label: Rayleigh factor
+        description: >
+            Controls the the rayleigh factor, lower values cause a more bluish sky.
+
     - rayleigh_height_scale:
         display_if: {scattering_method: "eric_bruneton"}
         type: float

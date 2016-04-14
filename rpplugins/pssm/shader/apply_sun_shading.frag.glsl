@@ -55,7 +55,6 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec4 scene_color = texture(ShadedScene, texcoord);
 
-
     float prefiltered_shadow = texture(PrefilteredShadows, texcoord).x;
     
     // Early out
@@ -85,6 +84,7 @@ void main() {
         vec3 S = reflected_dir - DdotR * sun_vector;
         l = DdotR < d ? normalize(d * sun_vector + normalize(S) * r) : reflected_dir;
     }
+
 
     vec3 lighting_result = apply_light(m, v, l, sun_color, 1.0, prefiltered_shadow, transmittance);
 

@@ -72,10 +72,10 @@ void main() {
   //   return;
   // }
 
-  vec3 fog_color = TimeOfDay.volumetrics.fog_color / 255.0 * 5.0 * TimeOfDay.volumetrics.fog_brightness;
+  vec3 fog_color = TimeOfDay.volumetrics.fog_color / 255.0 * 10.0 * TimeOfDay.volumetrics.fog_brightness;
   
   float fog_weight = 0.0;
-  float fog_ramp = TimeOfDay.volumetrics.fog_ramp_size;
+  float fog_ramp = TimeOfDay.volumetrics.fog_ramp_size * 3;
   float ground_fog_factor = TimeOfDay.volumetrics.height_fog_scale;
 
   const float hfog_lower_bounds = fog_start;
@@ -96,28 +96,8 @@ void main() {
 
   float dist_to_surface = distance(MainSceneData.camera_pos, surface_pos);
 
-
   // Prevent NaN's
   if ( abs(ray_dir.z) < 1e-3) ray_dir.z = 1e-3;
-
-  // float advance_end = (end_pos.z - hfog_lower_bounds) / ray_dir.z;
-
-  // if (advance_start < 0.0) {
-  //   result = vec3(1, 0, 0);
-  //   return;
-  // }
-
-  // advance_end = clamp(advance_end, 0.0, dist_to_surface);
-
-  // if (advance_start < 0.0) advance_start = 0.0;
-  // if (advance_end < 0.0) {
-  //   fog_weight = 0.0;
-  // } else {
-
-  // vec3 start_clip = start_pos + advance_start * ray_dir;
-  // vec3 end_clip = end_pos + advance_end * ray_dir;
-
-
 
   // Clamp to bounds
   if (!is_in_fog(start_pos)) {
@@ -134,57 +114,12 @@ void main() {
 
   }
 
-  // fog_weight = saturate( distance(start_pos, end_pos) / fog_ramp );
-
-  // }
   fog_weight = saturate(1.0 - exp(-distance(start_pos, end_pos) / fog_ramp));
-
-  // const float b = 1.0 / 1500.0;
-  // start_pos = MasinSceneData.camera_pos;
-  // end_pos = surface_pos;
-  // float exp_height_fog = exp(-start_pos.z * b) * (1.0 - exp(-distance(start_pos, end_pos) * ray_dir.z * b )) / ray_dir.z;
-
-  // fog_weight = exp_height_fog;
-
-  // result = vec3(fog_weight);
-  // return;
-
-  // float hfog_start = min(MainSceneData.camera_pos.z, surface_pos.z);
-  // float hfog_end = max(MainSceneData.camera_pos.z, surface_pos.z);
-
-  // hfog_start = clamp(hfog_start, hfog_lower_bounds, hfog_upper_bounds);
-  // hfog_end = clamp(hfog_end, hfog_lower_bounds, hfog_upper_bounds);
-
-  // float fog_lower = 1.0 - saturate(hfog_start / ground_fog_factor);
-  // float fog_upper = 1.0 - saturate(hfog_end / ground_fog_factor);
-  // float fog_travel_vertical = fog_lower - fog_upper;
-
-  // float fog_travel_horizontal = saturate(distance(MainSceneData.camera_pos.xy, surface_pos.xy) / fog_ramp);
-    // float weight = saturate(1.0 - exp(-distance(sample_pos, MainSceneData.camera_pos) / fog_ramp));
-
-  // float fog_travel_total = fog_travel_horizontal;
-
-  // fog_weight = fog_travel_total;
-  // float hfog_amount = hfog_start - hof
-
-  // for (int i = 0; i < num_steps; ++i) {
-
-    // vec3 sample_pos = curr_pos + pow(float(i) / (num_steps - 1), 1.5) * step_dir;
-
-    // // Distance fog
-
-    // // Exponential height fog
-
-    // fog_weight += weight;
-
-
-  // fog_weight /= num_steps;
-  // fog_weight = saturate(fog_weight * fog_density);
+  // fog_weight = saturate(distance(start_pos, end_pos) / fog_ramp);
 
   #if !DEBUG_MODE
     merged_color = mix(merged_color, fog_color, fog_weight);
   #endif
-
 
 
   result = merged_color;

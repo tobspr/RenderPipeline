@@ -30,7 +30,6 @@
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
 
-
 uniform writeonly imageCube RESTRICT DestCubemap;
 uniform sampler2D DefaultSkydome;
 
@@ -42,38 +41,39 @@ void main() {
     int texsize = imageSize(DestCubemap).x;
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    // Get cubemap direction
+    // Get cubemap view_vector
     ivec2 clamped_coord; int face;
-    vec3 direction = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
+    vec3 view_vector = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
     // Store horizon
-    float horizon = direction.z;
-    direction.z = abs(direction.z);
+    float horizon = view_vector.z;
+    // view_vector.z = abs(view_vector.z);
     float sky_clip = 0.0;
 
     // Get inscattered light
-    vec3 inscattered_light = DoScattering(direction * 1e10, direction, sky_clip)
+    vec3 inscattered_light = DoScattering(view_vector * 1e10, view_vector, sky_clip)
                              * TimeOfDay.scattering.sun_intensity;
                              // * TimeOfDay.scattering.sun_color * 0.01;
 
+
+    inscattered_light = srgb_to_rgb(inscattered_light);
+    inscattered_light *= 3.0;
+
     if (horizon > 0.0) {
         // Clouds
-        vec3 view_vector = direction;
-        // vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-        // cloud_color = cloud_color * vec3(1.0, 1, 0.9) * vec3(0.8, 0.7, 0.8524);
-        // cloud_color *= saturate(6.0 * (0.05 + view_vector.z));
-        // inscattered_light *= 0.0 + 0.9 * (0.3 + 0.6 * cloud_color);
+        vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
+        cloud_color = pow(cloud_color, vec3(2.2));
+        // inscattered_light *= 0.0 + 1.0 * (0.3 + 2.6 * cloud_color);
 
     } else {
         // Ground reflectance
-        // inscattered_light *= saturate(1+0.9*horizon) * 0.4;
-        // inscattered_light += saturate(-horizon + 0.2) * 1.7 * TimeOfDay.scattering.sun_intensity * 0.5;
-
-        #if !HAVE_PLUGIN(color_correction)
-            inscattered_light *= 0.1;
-        #endif
-
+        // inscattered_light *= saturate(1+0.9*horizon);
+        inscattered_light += saturate(-horizon + 0.2) * TimeOfDay.scattering.sun_intensity * 0.01;
     }
+
+    #if !HAVE_PLUGIN(color_correction)
+        inscattered_light *= 0.1;
+    #endif
 
     imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0) );
 }

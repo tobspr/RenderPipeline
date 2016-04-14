@@ -113,6 +113,9 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);
 
+    float rotation = interleaved_gradient_noise(gl_FragCoord.xy + MainSceneData.frame_index % 4);
+    mat2 rotation_mat = make_rotation_mat(rotation);
+
     // TODO: make this configurable
     const float slope_bias = 0.001;
     const float normal_bias = 0.0005;
@@ -121,16 +124,13 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
-    const int num_samples = 4;
-    const float filter_size = 1.0 / SHADOW_ATLAS_SIZE; // TODO: Use shadow atlas size
+    const int num_samples = 8;
+    const float filter_size = 2.0 / SHADOW_ATLAS_SIZE;
 
     float accum = 0.0;
 
-    vec3 rand_offs = rand_rgb(m.position.xy + m.position.z);
-    rand_offs *= 0.1;
-
     for (int i = 0; i < num_samples; ++i) {
-        vec2 offs = projected_coord.xy + poisson_disk_2D_4[i] * filter_size + rand_offs.xy * filter_size;
+        vec2 offs = projected_coord.xy + (rotation_mat * shadow_sample_offsets_8[i]) * filter_size;
         // vec2 offs = projected_coord.xy;
         #if SUPPORT_PCF
         accum += textureLod(ShadowAtlasPCF, vec3(offs, projected.z - const_bias), 0).x;

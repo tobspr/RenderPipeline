@@ -57,11 +57,6 @@ void main() {
   // Check if reprojected position matches
   float curr_depth = get_depth_at(texcoord);
 
-  // Fade out skybox
-  if (get_linear_z_from_z(curr_depth) > 3000.0) {
-    fade = 0.0;
-  }
-
   #if GET_SETTING(ssr, skip_invalid_samples)
     // Skip samples which are invalid due to a position change or due to being
     // occluded in the last frame.
@@ -75,7 +70,7 @@ void main() {
       MainSceneData.last_inv_view_proj_mat_no_jitter);
 
     if (distance(curr_pos, last_pos) > 0.9) {
-      fade = 0.0;
+      // fade = 0.0;
     }
   #endif
 
@@ -86,7 +81,8 @@ void main() {
   intersected_color = clamp(intersected_color, 0.0, 100.0);
 
   // Tonemap so we don't get super bright spots
-  intersected_color = intersected_color / (1 + intersected_color);
+  // intersected_color = intersected_color / (1 + intersected_color);
+
 
   // Finally store the result in the mip-chian
   imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(intersected_color, 1) * fade);

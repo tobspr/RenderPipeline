@@ -79,7 +79,7 @@ vec3 get_scattering_at_surface(vec3 surface_pos) {
 
 vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 {
-
+    
     // Move surface pos above ocean level
     if (surface_pos.z < -0.01) {
         vec3 v2s = surface_pos - MainSceneData.camera_pos;
@@ -91,6 +91,7 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
     float path_length = distance(surface_pos, MainSceneData.camera_pos);
     vec3 inscatter = get_scattering(surface_pos);
     fog_factor = 1.0;
+
 
     // Check if the ray is finite
     if (path_length < 20000.0) {

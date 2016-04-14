@@ -58,7 +58,7 @@ except ImportError as msg:
 from ui.main_window_generated import Ui_MainWindow
 
 from rpcore.pluginbase.manager import PluginManager
-from rpcore.util.udp_listener_service import UDPListenerService
+from rpcore.util.network_communication import NetworkCommunication
 from rpcore.mount_manager import MountManager
 
 connect = QtCore.QObject.connect
@@ -159,7 +159,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         while True:
             if len(self._update_queue) > 0:
                 item = self._update_queue.pop(-1)
-                UDPListenerService.ping_thread(UDPListenerService.CONFIG_PORT, item)
+                NetworkCommunication.send_async(NetworkCommunication.CONFIG_PORT, item)
 
                 if item.startswith("setval "):
                     setting_id = item.split()[1]

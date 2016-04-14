@@ -50,8 +50,8 @@ void main() {
     vec3 color_too_bright = vec3(1, 0, 0);
     vec3 color_too_dark = vec3(0, 0, 1);
 
-    const float max_brightness = 0.8;
-    const float max_darkness = 0.2;
+    const float max_brightness = 0.7;
+    const float max_darkness = 0.3;
 
     color = mix(color_ok, color_too_bright, saturate(5.0 * (luminance - max_brightness)));
     color = mix(color, color_too_dark, saturate(5.0 * (max_darkness - luminance) ));

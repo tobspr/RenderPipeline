@@ -36,7 +36,7 @@ void main() {
   ivec2 coord = ivec2(gl_FragCoord.xy);
   float depth = texelFetch(SourceTex, coord, 0).x;
 
-  const float esm_factor = 1.0;
+  const float esm_factor = 10.0;
 
   result = exp(esm_factor * depth);
   // result = depth;

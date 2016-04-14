@@ -51,8 +51,8 @@ void do_blur(vec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth,
     vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
     float d = get_lin_z(offcoord);
 
-    weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) * 5);
-    weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(d - pixel_depth) * 10);
+    weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) / 0.01);
+    weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(d - pixel_depth) / 0.001);
 
     accum += sampled * weight;
     accum_w += weight;
@@ -68,8 +68,8 @@ void main() {
     float accum_w = 0.0;
 
     // Get the weights array
-    const int blur_size = 8;
-    CONST_ARRAY float weights[blur_size] = gaussian_weights_8; // <-- this is based on the blur size
+    const int blur_size = 4;
+    CONST_ARRAY float weights[blur_size] = gaussian_weights_4; // <-- this is based on the blur size
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_gbuffer_normal(GBuffer, texcoord);
@@ -87,7 +87,7 @@ void main() {
         do_blur(texcoord, i, weight, pixel_nrm, pixel_depth, accum, accum_w);
     }
 
-    accum /= max(0.01, accum_w);
+    accum /= max(1e-5, accum_w);
     // accum = texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0);
     result = accum;
 }

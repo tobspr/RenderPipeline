@@ -46,11 +46,11 @@ void main() {
 
   // Make sure you also adjust the offsets and weight arrays when you change the
   // amount of samples
-  const int num_steps = 4;
+  const int num_steps = 2;
 
   for (int i = 0; i < num_steps; ++i) {
-      vec2 offcoord = texcoord + vec2(opt_gaussian_offsets_4[i]) * direction / texsize;
-      accum += textureLod(SourceTex, offcoord, 0).x * opt_gaussian_weights_4[i];
+      vec2 offcoord = texcoord + vec2(opt_gaussian_offsets_2[i]) * direction / texsize;
+      accum += textureLod(SourceTex, offcoord, 0).x * opt_gaussian_weights_2[i];
   }
 
   result = accum;

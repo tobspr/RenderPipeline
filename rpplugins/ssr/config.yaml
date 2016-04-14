@@ -68,15 +68,15 @@ settings: !!omap
 
     - roughness_fade:
         type: float
-        range: [0.1, 2.0]
-        default: 1.0
+        range: [0.1, 1.0]
+        default: 0.7
         shader_runtime: true
         label: Roughness Fade
         description: >
             Fades out the reflections at high roughness values, so that other
             solutions like environment probes have more influence. This is
-            to prevent noise, higher values will reduce the impact on ssr on
-            rough surfaces.
+            to prevent noise, and controls the maximum roughness where ssr is
+            active.
 
     - skip_invalid_samples:
         type: bool

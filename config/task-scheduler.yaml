@@ -1,0 +1,65 @@
+
+# This file controls which tasks are allowed to run each frame.
+# Tasks should be uniformly distributed, based on what time they estimate to perform
+
+# The complexity is a percentage compared to a full G-Buffer pass. For example,
+# if rendering the gbuffer would take 5 ms, then an complexity of 0.1 means
+# the pass will take approximately 5 * 0.1 = 0.5 ms.
+# Notice this is an approximation only!
+
+frame_cycles: !!omap
+
+  - frame0:
+
+    # Complexity: 0.5
+    - pssm_scene_shadows
+
+    # Complexity: 0.1
+    - envprobes_capture_envmap_face5
+
+  - frame1:
+
+    # Complexity: 0.5
+    - pssm_distant_shadows
+
+  - frame2:
+
+    # Complexity: (env-probe resolution) ^ 2
+    - envprobes_filter_and_store_envmap
+
+    # Complexity: (distant shadow resolution) ^ 2
+    - pssm_convert_distant_to_esm
+
+  - frame3:
+
+    # Estimated time: fixed, very low, ~0.05ms
+    - envprobes_select_and_cull
+
+    # Complexity: 0.1
+    - envprobes_capture_envmap_face0
+
+    # Complexity: (distant shadow resolution) ^ 2
+    - pssm_blur_distant_vert
+
+  - frame4:
+
+    # Complexity: 0.1
+    - envprobes_capture_envmap_face1
+
+    # Complexity: (distant shadow resolution) ^ 2
+    - pssm_blur_distant_horiz
+
+  - frame5:
+
+    # Complexity: 0.1
+    - envprobes_capture_envmap_face2
+
+    # Complexity: 0.1
+    - envprobes_capture_envmap_face3
+
+    # Complexity: 0.1
+    - envprobes_capture_envmap_face4
+
+    # Complexity: (scattering envmap resolution) ^ 2
+    - scattering_update_envmap
+

@@ -31,7 +31,7 @@ class AOStage(RenderStage):
 
     required_inputs = []
     required_pipes = ["GBuffer", "DownscaledDepth", "PreviousFrame::AmbientOcclusion",
-                      "CombinedVelocity"]
+                      "CombinedVelocity", "PreviousFrame::SceneDepth"]
 
     @property
     def produced_pipes(self):

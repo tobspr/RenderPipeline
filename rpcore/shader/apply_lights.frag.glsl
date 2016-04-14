@@ -88,7 +88,7 @@ void main() {
     #endif
 
     #if MODE_ACTIVE(NORMAL)
-        result.xyz = vec3(m.normal);
+        result.xyz = vec3(abs(m.normal));
     #endif
 
     #if MODE_ACTIVE(METALLIC)
