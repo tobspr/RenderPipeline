@@ -128,7 +128,7 @@ class TexturePreview(DraggableWindow):
 
         # Slider to adjust brightness
         self._bright_slider = Slider(
-            parent=self._content_node, size=140, min_value=-8, max_value=8,
+            parent=self._content_node, size=140, min_value=-14, max_value=14,
             callback=self._set_brightness, x=x_pos, y=65, value=0)
         x_pos += 140 + 5
         self._bright_text = Text(

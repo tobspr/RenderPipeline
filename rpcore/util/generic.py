@@ -30,7 +30,7 @@ from __future__ import print_function
 import time
 import hashlib
 
-from panda3d.core import PStatCollector
+from panda3d.core import PStatCollector, Mat4, Point4, Vec3
 from rpcore.globals import Globals
 
 def rgb_from_string(text, min_brightness=0.6):
@@ -92,3 +92,20 @@ class profile_cpu(object): # pylint: disable=C0103
     def __exit__(self, *args):
         duration = (time.clock() - self.start_time) * 1000.0
         print(self.name, "took", round(duration, 2), "ms ")
+
+def snap_shadow_map(mvp, cam_node, resolution):
+    """ 'Snaps' a shadow map to make sure it always is on full texel centers.
+    This ensures no flickering occurs while moving the shadow map.
+    This works by projecting the Point (0,0,0) to light space, compute the
+    texcoord differences and offset the light world space position by that. """
+    mvp = Mat4(mvp)
+    base_point = mvp.xform(Point4(0, 0, 0, 1)) * 0.5 + 0.5
+    texel_size = 1.0 / float(resolution)
+    offset_x = base_point.x % texel_size
+    offset_y = base_point.y % texel_size
+    mvp.invert_in_place()
+    new_base = mvp.xform(Point4(
+        (base_point.x - offset_x) * 2.0 - 1.0,
+        (base_point.y - offset_y) * 2.0 - 1.0,
+        (base_point.z) * 2.0 - 1.0, 1))
+    cam_node.set_pos(cam_node.get_pos() - Vec3(new_base.x, new_base.y, new_base.z))

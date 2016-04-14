@@ -21,6 +21,16 @@ settings: !!omap
         description: >
             Average ground reflectance, controls how much light the earth reflects.
 
+    - rayleigh_factor:
+        display_if: {scattering_method: "eric_bruneton"}
+        type: float
+        range: [0.05, 1.0]
+        default: 0.5
+        shader_runtime: true
+        label: Rayleigh factor
+        description: >
+            Controls the the rayleigh factor, lower values cause a more bluish sky.
+
     - rayleigh_height_scale:
         display_if: {scattering_method: "eric_bruneton"}
         type: float
@@ -102,14 +112,22 @@ daytime_settings: !!omap
         label: Sun Altidude
         description: Vertical angle of the sun
 
-    - fog_ramp_size:
+    - extinction:
         type: scalar
         unit: meter
         range: [0.5, 10000.0]
         default: 2000
-        label: Fog-Ramp
+        label: Extinction
         logarithmic_factor: 2.0
         description: >
-            Size of the transition from no fog to fog in world space units.
-            Higher values produce a smoother transition from no fog to fog,
-            while lower values will produce a more sharp transition.
+            Extinction factor
+
+    - fog_scale:
+        type: scalar
+        unit: meter
+        range: [25.0, 2000.0]
+        default: 200
+        label: Fog scale
+        logarithmic_factor: 1.5
+        description: >
+            Fog scale

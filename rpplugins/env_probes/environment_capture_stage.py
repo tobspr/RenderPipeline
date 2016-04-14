@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 from rplibs.six.moves import range
+from rplibs.six import itervalues
 
 from panda3d.core import Camera, PerspectiveLens, Vec4, Vec3, PTAInt, GraphicsOutput
 
@@ -56,7 +57,6 @@ class EnvironmentCaptureStage(RenderStage):
         self.target.size = self.resolution * 6, self.resolution
         self.target.add_depth_attachment(bits=16)
         self.target.add_color_attachment(bits=16, alpha=True)
-        self.target.add_aux_attachment(bits=16)
         self.target.prepare_render(None)
 
         # Remove all unused display regions
@@ -64,14 +64,6 @@ class EnvironmentCaptureStage(RenderStage):
         internal_buffer.remove_all_display_regions()
         internal_buffer.disable_clears()
         internal_buffer.get_overlay_display_region().disable_clears()
-
-        # Set the correct clears
-        internal_buffer.set_clear_depth(1.0)
-        internal_buffer.set_clear_color(Vec4(0))
-        internal_buffer.set_clear_depth_active(True)
-        internal_buffer.set_clear_color_active(True)
-        internal_buffer.set_clear_active(GraphicsOutput.RTP_aux_hrgba_0, True)
-        internal_buffer.set_clear_value(GraphicsOutput.RTP_aux_hrgba_0, Vec4(0))
 
         self._setup_camera_rig()
         self._create_store_targets()
@@ -89,6 +81,13 @@ class EnvironmentCaptureStage(RenderStage):
             region.set_sort(25 + i)
             region.set_active(True)
             region.disable_clears()
+
+            # Set the correct clears
+            region.set_clear_depth_active(True)
+            region.set_clear_depth(1.0)
+            region.set_clear_color_active(True)
+            region.set_clear_color(Vec4(0))
+
 
             lens = PerspectiveLens()
             lens.set_fov(90)
@@ -122,7 +121,7 @@ class EnvironmentCaptureStage(RenderStage):
         self.target_store_diff = self.create_target("StoreCubemapDiffuse")
         self.target_store_diff.size = self.resolution * 6, self.resolution
         self.target_store_diff.prepare_buffer()
-        self.target_store_diff.set_shader_input("SourceTex", self.target.aux_tex[0])
+        self.target_store_diff.set_shader_input("SourceTex", self.target.color_tex)
         self.target_store_diff.set_shader_input("DestTex", self.temporary_diffuse_map)
         self.target_store_diff.set_shader_input("currentIndex", self.pta_index)
 
@@ -151,12 +150,29 @@ class EnvironmentCaptureStage(RenderStage):
         self.filter_diffuse_target.set_shader_input("DestTex", self.storage_tex_diffuse)
         self.filter_diffuse_target.set_shader_input("currentIndex", self.pta_index)
 
-    def render_probe(self, probe):
-        self.set_active(probe is not None)
+    def set_probe(self, probe):
+        self.rig_node.set_mat(probe.matrix)
+        self.pta_index[0] = probe.index
 
-        if probe:
-            self.rig_node.set_mat(probe.matrix)
-            self.pta_index[0] = probe.index
+    def update(self):
+
+        # First, disable all targets
+        for target in itervalues(self._targets):
+            target.active = False
+
+        # Check for updated faces
+        for i in range(6):
+            if self._pipeline.task_scheduler.is_scheduled("envprobes_capture_envmap_face" + str(i)):
+                self.regions[i].set_active(True)
+
+        # Check for filtering
+        if self._pipeline.task_scheduler.is_scheduled("envprobes_filter_and_store_envmap"):
+            self.target_store.active = True
+            self.target_store_diff.active = True
+            self.filter_diffuse_target.active = True
+            for target in self.filter_targets:
+                target.active = True
+
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
@@ -168,6 +184,5 @@ class EnvironmentCaptureStage(RenderStage):
             "store_cubemap_diffuse.frag.glsl")
         self.filter_diffuse_target.shader = self.load_plugin_shader(
             "filter_cubemap_diffuse.frag.glsl")
-
         for i, target in enumerate(self.filter_targets):
             target.shader = self.load_plugin_shader("mips/{}.autogen.glsl".format(i))

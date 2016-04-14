@@ -66,7 +66,7 @@ inline float RPPointLight::get_radius() const {
  * @param inner_radius Inner-radius in world space
  */
 inline void RPPointLight::set_inner_radius(float inner_radius) {
-    nassertv(inner_radius >= 0); // Invalid inner radius
+    nassertv(inner_radius >= 0.01); // Invalid inner radius
     _inner_radius = inner_radius;
     set_needs_update(true);
 }

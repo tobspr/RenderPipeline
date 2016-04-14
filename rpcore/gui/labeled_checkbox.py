@@ -37,7 +37,7 @@ class LabeledCheckbox(RPObject):
     equal to the Checkbox and OnscreenText arguments. """
 
     def __init__(self, parent=None, x=0, y=0, chb_callback=None,
-                 chb_args=None, chb_checked=True, text="", text_size=18,
+                 chb_args=None, chb_checked=True, text="", text_size=16,
                  radio=False, text_color=None, expand_width=100, enabled=True):
         """ Constructs a new checkbox, forwarding most of the elements to the
         underlying Checkbox and Text. """
@@ -58,7 +58,7 @@ class LabeledCheckbox(RPObject):
             extra_args=chb_args, checked=chb_checked, radio=radio,
             expand_width=expand_width)
         self._text = Text(
-            x=x + 26, y=y + 10 + text_size // 4, text=text, align="left",
+            x=x + 26, y=y + 9 + text_size // 4, text=text, align="left",
             parent=parent, size=text_size, color=text_color, may_change=True)
 
         if enabled:

@@ -53,14 +53,10 @@ class RenderStage(RPObject):
     def __init__(self, pipeline):
         """ Creates a new render stage """
         RPObject.__init__(self)
-        self._stage_id = self.__class__.__name__
+        self.stage_id = self.__class__.__name__
         self._pipeline = pipeline
+        self._active = True
         self._targets = {}
-
-    @property
-    def stage_id(self):
-        """ Returns the id of the stage """
-        return self._stage_id
 
     def create(self):
         """ This method should setup the stage and create the pipes """
@@ -71,7 +67,6 @@ class RenderStage(RPObject):
         shaders set in the create method, because the shader auto config is not
         generated there """
         pass
-
 
     def set_shader_input(self, *args):
         """ This method sets a shader input on all stages, which is mainly used
@@ -84,10 +79,19 @@ class RenderStage(RPObject):
         stages to perform custom updates """
         pass
 
-    def set_active(self, active):
-        """ Enables or disables all targets bound to this stage """
-        for target in itervalues(self._targets):
-            target.active = active
+    @property
+    def active(self):
+        """ Returns whether *all* targets of the stage are active """
+        return self._active
+
+    @active.setter
+    def active(self, state):
+        """ Enables or disables this stage. In case the stage is disabled, it will
+        not get updated anymore, and all stages are distabled """
+        if self._active != state:
+            self._active = state
+            for target in itervalues(self._targets):
+                target.active = self._active
 
     def create_target(self, name):
         """ Creates a new render target and binds it to this stage """
@@ -95,7 +99,7 @@ class RenderStage(RPObject):
         # found in pstats below the plugin cagetory
         name = self._get_plugin_id() + ":" + self.stage_id + ":" + name
         if name in self._targets:
-            self.error("Overriding existing target: " + name)
+            return self.error("Overriding existing target: " + name)
         self._targets[name] = RenderTarget(name)
         return self._targets[name]
 

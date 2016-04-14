@@ -44,7 +44,7 @@ void main() {
   vec2 texcoord = get_texcoord();
   int shading_model = get_gbuffer_shading_model(GBuffer, texcoord);
   const float sss_width = 0.01 * GET_SETTING(skin_shading, blur_scale);
-  
+
   // Early out
   if( shading_model != SHADING_MODEL_SKIN) {
     color = texture(ShadedScene, texcoord).xyz;

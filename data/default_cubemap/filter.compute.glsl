@@ -70,9 +70,9 @@ vec3 transform_cubemap_coordinates(vec3 coord) {
 }
 
 uniform samplerCube SourceTex;
-uniform int currentSize;
-uniform int currentMip;
-uniform int currentFace;
+uniform uint currentSize;
+uniform uint currentMip;
+uniform uint currentFace;
 uniform layout(rgba16f) imageCube DestTex;
 
 void main() {
@@ -84,7 +84,7 @@ void main() {
     vec3 n = get_transformed_coord(texcoord, currentFace);
     n = normalize(n);
     n = transform_cubemap_coordinates(n);
-    float roughness = clamp(currentMip / 7.0, 0.001, 1.0);
+    float roughness = clamp(float(currentMip) / 7.0, 0.001, 1.0);
     // roughness *= roughness;
 
     vec3 tangent, binormal;

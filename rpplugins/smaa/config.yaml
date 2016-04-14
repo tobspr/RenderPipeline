@@ -24,6 +24,17 @@ settings: !!omap
             better quality. However, on low-end systems, it might be desireable
             to turn this value down.
 
+    - jitter_pattern:
+        type: enum
+        default: halton8
+        values: ["halton8", "skew_butterly", "uniorm4", "halton256", "rotated4_helix2", "uniorm2",
+                 "halton16", "still", "rotated4", "rotated4_helix", "poisson10", "halton32",
+                 "uniorm4_helix", "uniorm4_double_helix", "pentagram"]
+        runtime: true
+        label: Jitter sequence
+        description: >
+            Controls the jitter pattern to use
+
     - history_length:
         display_if: { use_reprojection: True }
         type: int

@@ -55,7 +55,7 @@ class MovementController(object):
         self.keyboard_hpr_speed = 0.4
         self.use_hpr = False
         self.smoothness = 6.0
-        self.bobbing_amount = 2.5
+        self.bobbing_amount = 1.5
         self.bobbing_speed = 0.5
 
     def set_initial_position(self, pos, target):
@@ -161,7 +161,7 @@ class MovementController(object):
         # add ourself as an update task which gets executed very early before
         # the rendering
         self.update_task = self.showbase.addTask(
-            self.update, "RP_UpdateMovementController", sort=-50)
+            self.update, "RP_UpdateMovementController", sort=-40)
 
         # Hotkeys to connect to pstats and reset the initial position
         self.showbase.accept("1", PStatClient.connect)
@@ -224,17 +224,17 @@ class MovementController(object):
             self.showbase.camera.get_hpr() + Vec3(
                 self.hpr_movement[0], self.hpr_movement[1], 0) * rotation_speed)
 
+        # fade out velocity
+        self.velocity = self.velocity * max(
+            0.0, 1.0 - delta * 60.0 / max(0.01, self.smoothness))
+
         # bobbing
         ftime = self.clock_obj.get_frame_time()
         rotation = (ftime % self.bobbing_speed) / self.bobbing_speed
         rotation = (min(rotation, 1.0 - rotation) * 2.0 - 0.5) * 2.0
         rotation *= self.bobbing_amount
-        rotation *= min(1, self.velocity.length() * self.velocity.length()) / self.speed * 0.5
+        rotation *= min(1, self.velocity.length()) / self.speed * 0.5
         self.showbase.camera.set_r(rotation)
-
-        # fade out velocity
-        self.velocity = self.velocity * max(
-            0.0, 1.0 - delta * 60.0 / max(0.01, self.smoothness))
         return task.cont
 
     def play_motion_path(self, points, point_duration=1.2):

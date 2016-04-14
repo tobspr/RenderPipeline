@@ -77,14 +77,14 @@ class PluginManager(RPObject):
     def disable_plugin(self, plugin_id):
         """ Disables a plugin, given its plugin_id. This will remove it from
         the list of enabled plugins, if it ever was there """
+        self.warn("Disabling", plugin_id)
         if plugin_id in self.enabled_plugins:
-            self.warn("Disabling", plugin_id)
             self.enabled_plugins.remove(plugin_id)
-            for instance in itervalues(self.instances):
-                if plugin_id in instance.required_plugins:
-                    self.disable_plugin(instance.plugin_id)
-        if plugin_id in self.instances:
-            del self.instances[plugin_id]
+        for instance in list(self.instances.values()):
+            if plugin_id in instance.required_plugins:
+                self.disable_plugin(instance.plugin_id)
+        # if plugin_id in self.instances:
+        #     del self.instances[plugin_id]
 
     def unload(self):
         """ Unloads all plugins """
@@ -113,8 +113,13 @@ class PluginManager(RPObject):
         config = load_yaml_file(config_file)
         # When you don't specify anything in the settings, instead of
         # returning an empty dictionary, pyyaml returns None
-        config["settings"] = config["settings"] or {}
-        config["daytime_settings"] = config["daytime_settings"] or {}
+        config["settings"] = config["settings"] or []
+        config["daytime_settings"] = config["daytime_settings"] or []
+
+        if isinstance(config["settings"], dict) or isinstance(config["daytime_settings"], dict) or \
+            (config["settings"] and len(config["settings"][0]) != 2) or \
+            (config["daytime_settings"] and len(config["daytime_settings"][0]) != 2):
+            self.error("Malformed config for plugin", plugin_id, "- did you miss '!!omap' ?")
 
         settings = collections.OrderedDict(
             [(k, make_setting_from_data(v)) for k, v in config["settings"]])
@@ -194,13 +199,13 @@ class PluginManager(RPObject):
         if instance.native_only and not NATIVE_CXX_LOADED:
             if plugin_id in self.enabled_plugins:
                 self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
-                self.enabled_plugins.remove(plugin_id)
+                return False
         for required_plugin in instance.required_plugins:
             if required_plugin not in self.enabled_plugins:
                 if plugin_id in self.enabled_plugins:
                     self.warn("Cannot load {} since it requires {}".format(
                         plugin_id, required_plugin))
-                    self.enabled_plugins.remove(plugin_id)
+                    return False
                 break
         return instance
 
@@ -246,7 +251,7 @@ class PluginManager(RPObject):
         else:
             self.enabled_plugins.remove(plugin_id)
 
-    def reset_pluginsettings(self, plugin_id):
+    def reset_plugin_settings(self, plugin_id):
         """ Resets all settings of a given plugin """
         for setting in itervalues(self.settings[plugin_id]):
             setting.value = setting.default

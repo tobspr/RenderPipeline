@@ -26,19 +26,21 @@
 
 #version 430
 
+// Shader which is used when the sun is below the horizon, so we don't have any lighting
+ 
+#pragma include "render_pipeline_base.inc.glsl"
+
 uniform sampler2D ShadedScene;
 uniform sampler2D SourcePSSMTex;
 uniform int usePssmTex;
 
 out vec3 result;
 
-// Shader which is used when the sun is below the horizon, so we don't have any lighting
-
 void main() {
-  ivec2 coord = ivec2(gl_FragCoord.xy);
-  if (usePssmTex > 0) {
-    result = texelFetch(SourcePSSMTex, coord, 0).xyz;
-  } else {
-    result = texelFetch(ShadedScene, coord, 0).xyz;
-  }
+  vec2 texcoord = get_texcoord();
+
+  vec3 color_pssm = texture(SourcePSSMTex, texcoord).xyz;
+  vec3 color_scene = texture(ShadedScene, texcoord).xyz;
+
+  result = usePssmTex > 0 ? color_pssm : color_scene;
 }

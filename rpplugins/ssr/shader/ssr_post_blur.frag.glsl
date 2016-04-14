@@ -41,14 +41,14 @@ out vec4 result;
 void main() {
     vec2 texcoord = get_texcoord();
 
-    const int filter_size = 1;
+    const int filter_size = 0;
 
     float mid_depth = get_depth_at(texcoord);
 
     vec4 accum = vec4(0);
     float weights = 0.0;
 
-    const float max_depth_diff = 0.001;
+    const float max_depth_diff = 0.0003;
 
     for (int i = -filter_size; i <= filter_size; ++i) {
       for (int j = -filter_size; j <= filter_size; ++j) {

@@ -53,6 +53,8 @@ void main() {
     vec3 pixel_diff = scene_color - blur_sum * 0.25;
 
     // Apply the sharpening
-    scene_color += dot(pixel_diff, LUMA_COEFFS * sharpen_strength);
+    #if !DEBUG_MODE
+        scene_color += dot(pixel_diff, LUMA_COEFFS * sharpen_strength);
+    #endif
     result = scene_color;
 }

@@ -1,12 +1,60 @@
 
 settings: !!omap
-    - intensity:
+
+    - enable_volumetric_shadows:
+        type: bool
+        default: true
+        label: Volumetric Shadows
+        description: >
+            Whether to enable volumetric shadows
+
+    - volumetric_shadow_intensity:
+        display_if: { "enable_volumetric_shadows": true }
         type: float
         range: [0.1, 10.0]
         default: 1.0
         shader_runtime: true
         label: Intensity
         description: >
-          Controls the intensity of the effect
+          Controls the intensity of the volumetric shadows
 
-daytime_settings:
+daytime_settings: !!omap
+
+    - fog_ramp_size:
+        type: scalar
+        unit: meter
+        range: [0.5, 10000.0]
+        default: 2000
+        label: Fog Ramp
+        logarithmic_factor: 2.0
+        description: >
+            Size of the transition from no fog to fog in world space units.
+            Higher values produce a smoother transition from no fog to fog,
+            while lower values will produce a more sharp transition.
+
+    - fog_color:
+        type: color
+        default: [127, 127, 127]
+        label: Fog Color
+        description: >
+          Color of the fog, usually should match the atmosphere color
+
+    - fog_brightness:
+        type: scalar
+        unit: klux
+        range: [0.0, 20.0]
+        logarithmic_factor: 2.0
+        default: 12.0
+        label: Fog Brightness
+        description: >
+          Controls the brightness of the fog, should match the sun intensity.
+
+    - height_fog_scale:
+        type: scalar
+        unit: meter
+        range: [0.01, 5000.0]
+        logarithmic_factor: 2.0
+        default: 100.0
+        label: Height fog scale
+        description: >
+            Controls the scale of the volumetric height fog.

@@ -94,9 +94,9 @@ const float HM = GET_SETTING(scattering, mie_height_scale);
 const vec3 betaMSca = vec3(GET_SETTING(scattering, beta_mie_scattering) * 1e-3);
 const float mieG = GET_SETTING(scattering, mie_phase_factor);
 // CLEAR SKY
-/*const float HM = 1.2;
-const vec3 betaMSca = vec3(20e-3);
-const float mieG = 0.76;*/
+// const float HM = 1.2;
+// const vec3 betaMSca = vec3(20e-3);
+// const float mieG = 0.76;
 // PARTLY CLOUDY
 /*const float HM = 3.0;
 const vec3 betaMSca = vec3(3e-3);

@@ -47,6 +47,11 @@ void main() {
   vec2 texcoord = get_texcoord();
   ivec2 coord = ivec2(gl_FragCoord.xy);
 
+  #if DEBUG_MODE
+    result = texture(SourceTex, texcoord).xyz;
+    return;
+  #endif
+
   // Reconstruct last frame texcoord
   vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0, 1.0 / ASPECT_RATIO);
   vec3 pos = get_world_pos_at(texcoord - film_offset_bias);
@@ -59,8 +64,8 @@ void main() {
   // Make sure that when we have low-fps, we reduce motion blur, and when we
   // have higher fps, we increase it - this way it perceptually always stays
   // the same (otherwise it feels really laggy at low FPS)
-  float target_fps = 60.0;
-  velocity *= (1.0 / target_fps) / MainSceneData.smooth_frame_delta;
+  const float target_fps = 60.0;
+  velocity *= (1.0 / target_fps) / MainSceneData.frame_delta;
   velocity *= GET_SETTING(motion_blur, camera_blur_factor);
 
   float velocity_len = length(velocity);

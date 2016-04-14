@@ -79,8 +79,8 @@ void main() {
     summed_kernel /= 4.0;
 
     // Decay
-    summed_kernel *= 0.92;
+    // summed_kernel *= 0.92;
+    summed_kernel *= 1.3;
 
-    // summed_kernel = vec3(1, 0, 0);
     imageStore(DestTex, ivec2(gl_FragCoord.xy), vec4(summed_kernel, 0));
 }

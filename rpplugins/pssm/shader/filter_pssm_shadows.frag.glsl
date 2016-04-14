@@ -33,17 +33,13 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
-#pragma include "includes/lighting_pipeline.inc.glsl"
-#pragma include "includes/lights.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
-#pragma include "includes/skin_shading.inc.glsl"
 
-out vec4 result;
+out float result;
 
 uniform GBufferData GBuffer;
-uniform sampler2D ShadedScene;
 
 #if GET_SETTING(pssm, use_pcf)
     uniform sampler2DShadow PSSMShadowAtlasPCF;
@@ -60,11 +56,6 @@ uniform vec3 pssm_sun_vector;
     uniform sampler2D PSSMDistSunShadowMap;
 #endif
 
-#if HAVE_PLUGIN(clouds)
-// uniform sampler3D CloudVoxels;
-#endif
-
-
 vec2 get_split_coord(vec2 local_coord, int split_index) {
     local_coord.x = (local_coord.x + split_index) / float(GET_SETTING(pssm, split_count));
     return local_coord;
@@ -79,37 +70,27 @@ float get_shadow(vec2 coord, float refz) {
     #endif
 }
 
-
 void main() {
-
     vec3 sun_vector = get_sun_vector();
 
     // Get current scene color
     vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    vec4 scene_color = texture(ShadedScene, texcoord);
 
     // Get the material data
     Material m = unpack_material(GBuffer);
 
     // Early out, different optimizations
     bool early_out = is_skybox(m) || sun_vector.z < SUN_VECTOR_HORIZON;
-    early_out = early_out ||
-        (m.shading_model != SHADING_MODEL_FOLIAGE &&
-        /* m.shading_model != SHADING_MODEL_SKIN && */ // xxx
-            dot(m.normal, sun_vector) <= 1e-7);
+    early_out = early_out || (m.shading_model != SHADING_MODEL_FOLIAGE && dot(m.normal, sun_vector) <= 1e-7);
 
     if (early_out) {
-        result = scene_color;
+        result = 0.0;
         return;
     }
 
-
     // Variables to accumulate the shadows
     float shadow_factor = 1.0;
-    vec3 lighting_result = vec3(0);
-    vec3 transmittance = vec3(1);
-
 
     // Compute distant shadows
     #if GET_SETTING(pssm, use_distant_shadows)
@@ -126,10 +107,10 @@ void main() {
         proj.z -= fixed_bias;
 
         if (!out_of_unit_box(proj)) {
-            const float esm_factor = 1.0;
+            const float esm_factor = 10.0;
             float depth_sample = texture(PSSMDistSunShadowMap, proj.xy).x;
             shadow_factor = saturate(exp(-esm_factor * proj.z) * depth_sample);
-            shadow_factor = pow(shadow_factor, 1e4);
+            shadow_factor = pow(shadow_factor, 1e3);
         }
     }
     #endif
@@ -137,8 +118,7 @@ void main() {
     // Find lowest split in range
     const int split_count = GET_SETTING(pssm, split_count);
     int split = 99;
-    float border_bias = 1 - (1.0 / (1.0 + GET_SETTING(pssm, border_bias)));
-    border_bias *= 0.5;
+    float border_bias = 0.5 - (0.5 / (1.0 + GET_SETTING(pssm, border_bias)));
 
     // Find the first matching split
     for (int i = 0; i < split_count; ++i) {
@@ -154,15 +134,17 @@ void main() {
     // Compute the shadowing factor
     if (split < GET_SETTING(pssm, split_count)) {
 
-        vec3 noise = rand_rgb(m.position.xy + m.position.z);
-
         // Get the MVP for the current split
         mat4 mvp = pssm_mvps[split];
 
+
+        float rotation = interleaved_gradient_noise(gl_FragCoord.xy + MainSceneData.frame_index % 4);
+        mat2 rotation_mat = make_rotation_mat(rotation);
+
         // Get the plugin settings
-        const float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);
+        float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);
+        float fixed_bias = GET_SETTING(pssm, fixed_bias) * 0.001 * (1 + 1.5 * split);
         const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
-        float fixed_bias = GET_SETTING(pssm, fixed_bias) * 0.001 * (1 + 0.3 * split);
         const int num_samples = GET_SETTING(pssm, filter_sample_count);
         const float filter_radius = GET_SETTING(pssm, filter_radius) / GET_SETTING(pssm, resolution);
 
@@ -175,9 +157,6 @@ void main() {
         vec3 projected = project(mvp, biased_pos);
         vec2 projected_coord = get_split_coord(projected.xy, split);
 
-
-        projected_coord.xy += (noise.xy*2-1) / GET_SETTING(pssm, resolution) * 0.05;
-
         // Compute the fixed bias
         float ref_depth = projected.z - fixed_bias;
 
@@ -185,59 +164,59 @@ void main() {
         vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);
 
         // Increase filter size in the distance, to get better cache usage
-        filter_size *= (1.0 + 10.5 * distance(m.position, MainSceneData.camera_pos) / 100.0 );
+        filter_size *= (1.0 + 10.5 * distance(m.position, MainSceneData.camera_pos) / 100.0);
         // vec2 filter_size = vec2(0.5 * filter_radius) * (1 / (1 + 0.7 * split));
 
         #if GET_SETTING(pssm, use_pcss)
 
             {
-            /*
+                /*
 
-                PCSS Kernel
+                    PCSS Kernel
 
-                Scan the region of the pixel for blockers, penumbra size is
-                amount of blockers compared to non-blockers.
+                    Scan the region of the pixel for blockers, penumbra size is
+                    amount of blockers compared to non-blockers.
 
-            */
+                */
 
-            const int num_search_samples = GET_SETTING(pssm, pcss_search_samples);
+                const int num_search_samples = GET_SETTING(pssm, pcss_search_samples);
 
-            float num_blockers = 0.0;
-            float sum_blockers = 0.0;
+                float num_blockers = 0.0;
+                float sum_blockers = 0.0;
 
-            for (int i = 0; i < num_search_samples; ++i) {
+                for (int i = 0; i < num_search_samples; ++i) {
 
-                // Find random sample locations on a poisson disk
-                vec2 offset = vec2(0);
-                if (num_search_samples <= 8)
-                    offset = poisson_disk_2D_8[i];
-                else if(num_search_samples <= 16)
-                    offset = poisson_disk_2D_16[i];
-                else
-                    offset = poisson_disk_2D_32[i];
+                    // Find random sample locations on a poisson disk
+                    vec2 offset = vec2(0);
+                    if (num_search_samples <= 8)
+                        offset = poisson_disk_2D_8[i];
+                    else if(num_search_samples <= 16)
+                        offset = poisson_disk_2D_16[i];
+                    else
+                        offset = poisson_disk_2D_32[i];
 
+                    offset = rotation_mat * offset;
 
-                // Find depth at sample location
-                float sampled_depth = textureLod(PSSMShadowAtlas,
-                    projected_coord + offset * filter_size * 4.0, 0).x;
+                    // Find depth at sample location
+                    float sampled_depth = textureLod(PSSMShadowAtlas,
+                        projected_coord + offset * filter_size * 4.0, 0).x;
 
-                // Compare the depth with the pixel depth, in case its smaller,
-                // we found a blocker
-                float factor = step(sampled_depth, ref_depth);
-                num_blockers += factor;
-                sum_blockers += sampled_depth * factor;
-            }
+                    // Compare the depth with the pixel depth, in case its smaller,
+                    // we found a blocker
+                    float factor = step(sampled_depth, ref_depth);
+                    num_blockers += factor;
+                    sum_blockers += sampled_depth * factor;
+                }
 
-            // Examine ratio between blockers and non-blockers
-            float avg_blocker_depth = sum_blockers / num_blockers;
+                // Examine ratio between blockers and non-blockers
+                float avg_blocker_depth = sum_blockers / num_blockers;
 
-            // Penumbra size also takes average blocker depth into account
-            float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) /
-                ref_depth * GET_SETTING(pssm, pcss_penumbra_size);
+                // Penumbra size also takes average blocker depth into account
+                float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) /
+                    ref_depth * GET_SETTING(pssm, pcss_penumbra_size);
 
-            // Apply penumbra size
-            filter_size *= penumbra_size;
-
+                // Apply penumbra size
+                filter_size *= penumbra_size;
             }
 
         #endif
@@ -248,7 +227,7 @@ void main() {
         for (int i = 0; i < num_samples; ++i) {
 
             // Get sample from a random poisson disk
-            vec2 offset = poisson_disk_2D_32[i];
+            vec2 offset = rotation_mat * poisson_disk_2D_32[i];
 
             // Find depth and apply contribution
             local_shadow_factor += get_shadow(
@@ -257,7 +236,6 @@ void main() {
 
         // Normalize shadow factor
         local_shadow_factor /= num_samples;
-
 
 
         if (split >= GET_SETTING(pssm, split_count) - 1) {
@@ -275,8 +253,6 @@ void main() {
         } else {
             shadow_factor = local_shadow_factor;
         }
-
-        vec3 transmittance = vec3(1);
 
         // OPTIONAL: Transmittance - however this looks a bit buggy right now -
         // might look better on surfaces like ice and so on
@@ -335,37 +311,10 @@ void main() {
         }
     #endif
 
-    // Compute the sun lighting
-    vec3 v = normalize(MainSceneData.camera_pos - m.position);
-    vec3 l = sun_vector;
-    vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
-
-    {
-        vec3 reflected_dir = reflect(-v, m.normal);
-        const float sun_angular_radius = degree_to_radians(0.54);
-        const float r = sin(sun_angular_radius); // Disk radius
-        const float d = cos(sun_angular_radius); // Distance to disk
-        
-        // Closest point to a disk (since the radius is small, this is
-        // a good approximation)
-        float DdotR = dot(sun_vector, reflected_dir);
-        vec3 S = reflected_dir - DdotR * sun_vector;
-        l = DdotR < d ? normalize(d * sun_vector + normalize(S) * r) : reflected_dir;
-    }
-
-    lighting_result = apply_light(m, v, l, sun_color, 1.0, shadow_factor, transmittance);
-
-    float foliage_factor = m.shading_model == SHADING_MODEL_FOLIAGE ? 1.0 : 0.0;
-    lighting_result += foliage_factor * shadow_factor * sun_color * m.basecolor * 0.1;
-
-    #if DEBUG_MODE
-        lighting_result *= 0;
-    #endif
-
     #if MODE_ACTIVE(PSSM_SPLITS)
         float factor = float(split) / GET_SETTING(pssm, split_count);
-        lighting_result = saturate(shadow_factor+0.5) * vec3(factor, 1 - factor, 0);
+        shadow_factor = saturate(shadow_factor+0.5) * factor;
     #endif
 
-    result = max(vec4(0), scene_color) * 1 + vec4(lighting_result, 0);
+    result = shadow_factor;
 }

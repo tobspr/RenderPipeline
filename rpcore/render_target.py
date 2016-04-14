@@ -129,10 +129,8 @@ class RenderTarget(RPObject):
     def active(self, flag):
         """ Sets whether the target is active, this just propagates the active
         flag to all display regions """
-        if self._active is not flag:
-            for region in self._internal_buffer.get_display_regions():
-                region.set_active(flag)
-            self._active = flag
+        for region in self._internal_buffer.get_display_regions():
+            region.set_active(flag)
 
     @property
     def color_tex(self):

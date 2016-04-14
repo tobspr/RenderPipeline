@@ -39,8 +39,8 @@ class ShadowAtlas(object):
 
     def init_tiles(self):
         self._num_tiles = self._size // self._tile_size
-        row = lambda: [False for _ in range(self._num_used_tiles)] # pylint: disable=W0612
-        self._flags = [row() for _ in range(self._num_tiles)] # pylint: disable=W0612
+        row = lambda: [False for i in range(self._num_tiles)] # pylint: disable=W0612
+        self._flags = [row() for j in range(self._num_tiles)] # pylint: disable=W0612
 
     def get_num_used_tiles(self):
         return self._num_used_tiles

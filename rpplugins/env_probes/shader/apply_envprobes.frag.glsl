@@ -33,10 +33,8 @@
 #pragma include "includes/light_culling.inc.glsl"
 #pragma include "includes/envprobes.inc.glsl"
 
-
 layout(location=0) out vec4 result_spec;
 layout(location=1) out vec4 result_diff;
-
 
 uniform isampler2DArray CellIndices;
 uniform isamplerBuffer PerCellProbes;
@@ -76,7 +74,14 @@ void main() {
     result_spec = total_specular / max(1e-6, total_weight);
     result_diff = total_diffuse / max(1e-6, total_weight);
 
+    // Fade out cubemaps as they reach the culling distance
+    float curr_dist = distance(m.position, MainSceneData.camera_pos);
+    float fade = saturate(curr_dist / LC_MAX_DISTANCE);
+    fade = 1 - pow(fade, 5.0);
 
+    result_spec *= fade;
+    result_diff *= fade;
+    
     // Visualize probe count
     // float probe_factor = processed_probes / MAX_PROBES_PER_CELL;
     // result_spec = vec4(1 - probe_factor, probe_factor, 0, 1);

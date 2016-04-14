@@ -6,7 +6,11 @@
 # NOTICE: This file only has effect if debugging is enabled
 # in the pipeline.yaml (settings.pipeline.display_debuger == True)
 
+# Usually you don't have to touch this file, except when developing
+# new plugins or adding new features.
+
 render_modes:
+  - { name: "Shading Model", key: "SHADING_MODEL" }
   - { name: "Diffuse", key: "DIFFUSE" }
   - { name: "Roughness", key: "ROUGHNESS" }
   - { name: "Specular", key: "SPECULAR" }
@@ -15,3 +19,8 @@ render_modes:
   - { name: "Translucency", key: "TRANSLUCENCY" }
   - { name: "PSSM Splits",  key: "PSSM_SPLITS", requires: "pssm", cxx_only: true }
   - { name: "Ambient Occlusion", key: "OCCLUSION", requires: "ao" }
+  - { name: "Scattering", key: "SCATTERING", requires: "scattering" }
+  - { name: "Velocity", key: "VELOCITY" }
+  - { name: "Diffuse Ambient", key: "DIFFUSE_AMBIENT" }
+  - { name: "Specular Ambient", key: "SPECULAR_AMBIENT" }
+  - { name: "Luminance", key: "LUMINANCE", special: true }

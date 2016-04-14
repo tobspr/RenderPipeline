@@ -31,20 +31,14 @@ vfs-case-sensitive #t
 state-cache #t
 transform-cache #t
 
-# Frame rate meter style
-frame-rate-meter-milliseconds #t
-frame-rate-meter-update-interval 1.0
-frame-rate-meter-text-pattern %0.2f fps
-frame-rate-meter-ms-text-pattern %0.3f ms
-frame-rate-meter-layer-sort 1000
-frame-rate-meter-scale 0.036
-frame-rate-meter-side-margins 0.4
+# Hide frame rate meter (we have our own)
 show-frame-rate-meter #f
 
 # Set text settings
 text-minfilter linear
 text-magfilter linear
 text-page-size 512 512
+text-rwap-mode WM_border_clor
 
 # Better text performance since rdb's patch
 text-flatten 0
@@ -56,10 +50,11 @@ text-dynamic-merge 1
 # Threading, really buggy!
 #threading-model App/Cull/Draw
 
+# Disable stencil, not supported/required
 support-stencil #f
 framebuffer-stencil #f
 
-# Don't use srgb correction, we do that ourself
+# Don't use srgb correction, we do that in the final shader
 framebuffer-srgb #f
 
 # Don't use multisamples
@@ -69,19 +64,19 @@ multisamples 0
 # Don't rescale textures which are no power-of-2
 textures-power-2 none
 
-# This is required, the pipeline does not support resizing yet
+# This is required, the pipeline does not support resizing (yet, definitely planend)
 win-fixed-size #t
 
 # Set default texture filters
-texture-anisotropic-degree 8
+texture-anisotropic-degree 16
 texture-magfilter linear
 texture-minfilter linear
 texture-quality-level fastest
 
-# Enable seamless cubemap filtering, thats important for environment filtering
+# Enable seamless cubemap filtering, important for environment filtering
 gl-cube-map-seamless #t
 
-# Set model cache dir
+# Disable caching of textures
 model-cache-textures #f
 
 # Disable the annoying SRGB warning from pnmimage
@@ -142,12 +137,9 @@ support-threads #f
 
 # Let the driver generate the mipmaps
 driver-generate-mipmaps #t
-#gl-ignore-mipmaps #t
 
 # Use immutable texture storage, it is *supposed* to be faster, but might not be
 gl-immutable-texture-storage #t
-
-# auto-flip #f
 
 # Default window settings
 # depth-bits 0

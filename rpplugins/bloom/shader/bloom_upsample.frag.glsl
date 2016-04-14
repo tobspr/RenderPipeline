@@ -28,6 +28,8 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
+#pragma optionNV (unroll all)
+
 uniform int SourceMip;
 uniform sampler2D SourceTex;
 uniform writeonly image2D RESTRICT DestTex;
@@ -36,6 +38,22 @@ uniform sampler2D ShadedScene;
 uniform sampler2D SumTex;
 
 uniform bool FirstUpsamplePass;
+
+// Hardcoded mipmap colors for now, should make this adjustable at some point
+CONST_ARRAY vec3 mip_colors[12] = vec3[](
+    vec3(0.214, 0.429, 0.497),
+    vec3(0.964, 0.947, 0.991),
+    vec3(0.982, 0.542, 0.542),
+    vec3(0.301, 0.493, 1.000),
+    vec3(0.456, 0.209, 0.167),
+    vec3(1.000, 1.000, 1.000),
+    vec3(1.000, 1.000, 1.000),
+    vec3(1.000, 1.000, 1.000),
+    vec3(1.000, 1.000, 1.000),
+    vec3(1.000, 1.000, 1.000),
+    vec3(1.000, 1.000, 1.000),
+    vec3(1.000, 1.000, 1.000)
+);
 
 void main() {
     vec2 source_size = vec2(textureSize(SourceTex, SourceMip).xy);
@@ -65,6 +83,7 @@ void main() {
     source_sample += textureLod(SourceTex, flt_coord + vec2(  1,  1) * texel_size, SourceMip).xyz * 1;
 
     source_sample /= 16.0;
+    source_sample *= mip_colors[SourceMip];
 
     vec3 pass_result = summed + source_sample;
     pass_result *= 0.5;

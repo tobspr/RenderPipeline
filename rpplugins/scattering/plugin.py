@@ -82,5 +82,11 @@ class Plugin(BasePlugin):
             math.cos(theta))
         return sun_vector
 
+    def on_pre_render_update(self):
+        if self._pipeline.task_scheduler.is_scheduled("scattering_update_envmap"):
+            self.envmap_stage.active = True
+        else:
+            self.envmap_stage.active = False
+
     def on_shader_reload(self):
         self.scattering_model.compute()

@@ -27,6 +27,8 @@ THE SOFTWARE.
 from panda3d.core import PTALVecBase2f, PTALMatrix4f, Vec2, OrthographicLens
 from panda3d.core import Camera, NodePath, Mat4
 
+from rpcore.util.generic import snap_shadow_map
+
 class PSSMCameraRig(object):
 
     """ PSSM is not really supported in python yet (too slow), so this is a stub,
@@ -47,17 +49,33 @@ class PSSMCameraRig(object):
         self._camera = Camera("PSSMDummy", self._lens)
         self._cam_node = NodePath(self._camera)
         self._parent = None
+        self._resolution = 1024
+        self._snap_grid = True
+        self._sun_distance = 500.0
+
+    def set_resolution(self, resolution):
+        self._resolution = resolution
 
     def update(self, cam_node, light_vector):
         cam_pos = cam_node.get_pos()
-        self._cam_node.set_pos(cam_pos + light_vector * 500)
+        self._cam_node.set_pos(cam_pos + light_vector * self._sun_distance)
         self._cam_node.look_at(cam_pos)
 
+        if self._snap_grid:
+            snap_shadow_map(self.compute_mvp(), self._cam_node, self._resolution)
+        
+        self._mvps[0] = self.compute_mvp()
+
+    def compute_mvp(self):
         transform = self._parent.get_transform(self._cam_node).get_mat()
-        self._mvps[0] = transform * self._lens.get_projection_mat()
+        return transform * self._lens.get_projection_mat()
 
     def get_camera(self, index): # pylint: disable=W0613
         return self._cam_node
+
+    def set_sun_distance(self, dist):
+        self._sun_distance = dist
+        self._lens.set_near_far(10, dist)
 
     def reparent_to(self, parent):
         self._cam_node.reparent_to(parent)
@@ -68,15 +86,14 @@ class PSSMCameraRig(object):
 
     def get_nearfar_array(self):
         return self._nearfar
+    
+    def set_use_stable_csm(self, use_stable):
+        self._snap_grid = use_stable
 
-    # Stubs
     def _stub(self, *args, **kwargs):
-        pass
+        return None
 
     set_pssm_distance = _stub
-    set_sun_distance = _stub
-    set_resolution = _stub
-    set_use_stable_csm = _stub
     set_logarithmic_factor = _stub
     set_border_bias = _stub
     set_use_fixed_film_size = _stub

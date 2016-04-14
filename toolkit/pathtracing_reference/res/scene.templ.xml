@@ -69,7 +69,6 @@ Conversion is: Swap Y and Z and then negate X
 
 	-->
 
-<!-- 
 	<shape type="sphere">
 		<point name="center" x="-10" z="-10" y="10" />
 		<float name="radius" value="4.0"/>
@@ -84,8 +83,7 @@ Conversion is: Swap Y and Z and then negate X
 		<emitter type="area">
 			<spectrum name="radiance" value="3.0" />
 		</emitter>
-	</shape> -->
-
+	</shape>
 
 	<emitter type="envmap">
 		<string name="filename" value="tex/envmap.png" />
@@ -106,7 +104,7 @@ Conversion is: Swap Y and Z and then negate X
 		</transform>
 
 		<sampler type="ldsampler">
-			<integer name="sampleCount" value="64"/>
+			<integer name="sampleCount" value="32"/>
 		</sampler>
 
 		<film type="hdrfilm">

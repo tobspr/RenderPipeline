@@ -98,16 +98,24 @@ class BufferViewer(DraggableWindow):
         DraggableWindow._create_components(self)
 
         self._content_frame = DirectScrolledFrame(
-            frameSize=(0, self._width - 15, 0, self._height - 90),
+            frameSize=(0, self._width - 15, 0, self._height - 70),
             canvasSize=(0, self._width - 80, 0, self._scroll_height),
             autoHideScrollBars=False,
-            scrollBarWidth=20.0,
+            scrollBarWidth=12.0,
             frameColor=(0, 0, 0, 0),
-            verticalScroll_relief=False,
+            verticalScroll_relief=DGG.FLAT,
+            verticalScroll_incButton_relief=DGG.FLAT,
+            verticalScroll_decButton_relief=DGG.FLAT,
+            verticalScroll_thumb_relief=DGG.FLAT,
+            verticalScroll_frameColor=(0.05, 0.05, 0.05, 1),
+            verticalScroll_thumb_frameColor=(0.8, 0.8, 0.8, 1),
+            verticalScroll_incButton_frameColor=(0.6, 0.6, 0.6, 1),
+            verticalScroll_decButton_frameColor=(0.6, 0.6, 0.6, 1),
+            horizontalScroll_frameColor=(0, 0, 0, 0),
             horizontalScroll_relief=False,
+            horizontalScroll_thumb_relief=False,
             horizontalScroll_incButton_relief=False,
             horizontalScroll_decButton_relief=False,
-            horizontalScroll_thumb_relief=False,
             parent=self._node,
             pos=(0, 1, -self._height))
         self._content_node = self._content_frame.getCanvas().attach_new_node(
@@ -115,9 +123,9 @@ class BufferViewer(DraggableWindow):
         self._content_node.set_scale(1, 1, -1)
         self._content_node.set_z(self._scroll_height)
         self._chb_show_images = LabeledCheckbox(
-            parent=self._node, x=20, y=60, chb_callback=self._set_show_images,
+            parent=self._node, x=10, y=43, chb_callback=self._set_show_images,
             chb_checked=False, text="Display image resources",
-            text_color=Vec3(0.5), expand_width=330)
+            text_color=Vec3(0.4), expand_width=330)
 
     def _set_show_images(self, arg):
         """ Sets whether images and textures will be shown """

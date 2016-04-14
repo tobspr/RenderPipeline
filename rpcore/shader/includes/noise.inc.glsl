@@ -317,3 +317,9 @@ float worley_noise(vec3 coord, int num_cells, float drop_rate) {
     dist = 1.0 - dist;
     return dist;
 }
+
+float interleaved_gradient_noise(vec2 seed) {
+  const float scale = 3.14159;
+  vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
+  return -scale + 2.0 * scale * fract(magic.z * fract(dot(seed, magic.xy)));
+}

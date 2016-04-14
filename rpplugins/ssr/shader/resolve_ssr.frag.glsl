@@ -36,11 +36,13 @@ uniform sampler2D CurrentTex;
 uniform sampler2D VelocityTex;
 uniform sampler2D Previous_SSRSpecular;
 
-#define RS_MAX_CLIP_DIST 3.0
-#define RS_DISTANCE_SCALE 0.5
+#define RS_MAX_CLIP_DIST 7.0
+#define RS_DISTANCE_SCALE 0.2
 #define RS_KEEP_GOOD_DURATION float(GET_SETTING(ssr, history_length))
-#define RS_KEEP_BAD_DURATION (RS_KEEP_GOOD_DURATION * 1.0)
-#define RS_AABB_SIZE 2.0
+#define RS_KEEP_BAD_DURATION float(GET_SETTING(ssr, history_length))
+#define RS_AABB_SIZE 1.5
+#define RS_USE_SMOOTH_TECHNIQUE 1
+
 
 #pragma include "includes/temporal_resolve.inc.glsl"
 

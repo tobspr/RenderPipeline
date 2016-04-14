@@ -83,7 +83,7 @@ class IESProfileLoader(RPObject):
         self._storage_tex.set_wrap_w(SamplerState.WM_clamp)
 
         self._pipeline.stage_mgr.inputs["IESDatasetTex"] = self._storage_tex
-        self._pipeline.stage_mgr.define("MAX_IES_PROFILES", self._max_entries)
+        self._pipeline.stage_mgr.defines["MAX_IES_PROFILES"] = self._max_entries
 
     def load(self, filename):
         """ Loads a profile from a given filename and returns the internal

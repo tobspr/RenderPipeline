@@ -80,21 +80,6 @@ class StageManager(RPObject):
 
         self.stages.append(stage)
 
-    def define(self, key, value):
-        """ Registers a new define for the shader auto config """
-        self.defines[key] = value
-
-    def remove_define_if(self, condition):
-        """ Removes all defines matching condition, condition should be a
-        function or lambda taking 1 argument (the name of the define). """
-        to_remove = []
-        for define in self.defines:
-            if condition(define):
-                to_remove.append(define)
-
-        for define in to_remove:
-            del self.defines[define]
-
     def get_stage(self, stage_class):
         """ Returns a handle to an instantiated stage """
         for stage in self.stages:
@@ -247,9 +232,11 @@ class StageManager(RPObject):
             stage.reload_shaders()
 
     def update(self):
-        """ Calls the update method for each registered stage """
+        """ Calls the update method for each registered stage. Inactive stages
+        are skipped. """
         for stage in self.stages:
-            stage.update()
+            if stage.active:
+                stage.update()
 
     def write_autoconfig(self):
         """ Writes the shader auto config, based on the defines specified by the

@@ -26,8 +26,8 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4
-from panda3d.core import SamplerState
+from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4, Vec4
+from panda3d.core import SamplerState, Point2, Point3
 from direct.stdpy.file import open
 
 from rpcore.globals import Globals
@@ -57,6 +57,8 @@ class CommonResources(RPObject):
         Globals.font.set_pixels_per_unit(35)
         Globals.font.set_poly_margin(0.0)
         Globals.font.set_texture_margin(1)
+        Globals.font.set_bg(Vec4(1, 1, 1, 0))
+        Globals.font.set_fg(Vec4(1, 1, 1, 1))
 
     def _setup_inputs(self):
         """ Creates commonly used shader inputs such as the current mvp and
@@ -75,8 +77,9 @@ class CommonResources(RPObject):
         self._input_ubo.register_pta("smooth_frame_delta", "float")
         self._input_ubo.register_pta("frame_time", "float")
         self._input_ubo.register_pta("current_film_offset", "vec2")
-        self._input_ubo.register_pta("temporal_index", "int")
         self._input_ubo.register_pta("frame_index", "int")
+        self._input_ubo.register_pta("ws_frustum_directions", "mat4")
+        self._input_ubo.register_pta("vs_frustum_directions", "mat4")
         self._pipeline.stage_mgr.input_blocks.append(self._input_ubo)
 
         # Main camera and main render have to be regular inputs, since they are
@@ -174,7 +177,8 @@ class CommonResources(RPObject):
         update("last_view_proj_mat_no_jitter", curr_vp)
         curr_vp = Mat4(curr_vp)
         curr_vp.invert_in_place()
-        update("last_inv_view_proj_mat_no_jitter", curr_vp)
+        curr_inv_vp = curr_vp
+        update("last_inv_view_proj_mat_no_jitter", curr_inv_vp)
 
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
 
@@ -200,10 +204,21 @@ class CommonResources(RPObject):
         # velocity, which is otherwise not possible. Usually this is always 0
         # except when SMAA and reprojection is enabled
         update("current_film_offset", self._showbase.camLens.get_film_offset())
-
-        max_clip_length = 1
-        if self._pipeline.plugin_mgr.is_plugin_enabled("smaa"):
-            max_clip_length = self._pipeline.plugin_mgr.instances["smaa"].history_length
-
-        update("temporal_index", Globals.clock.get_frame_count() % max_clip_length)
         update("frame_index", Globals.clock.get_frame_count())
+
+        # Compute frustum corners in the order BL, BR, TL, TR
+        ws_frustum_directions = Mat4()
+        vs_frustum_directions = Mat4()
+        inv_proj_mat = Globals.base.camLens.get_projection_mat_inv()
+        view_mat_inv = Mat4(view_mat)
+        view_mat_inv.invert_in_place()
+
+        for i, point in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
+            result = inv_proj_mat.xform(Vec4(point[0], point[1], 1.0, 1.0))
+            vs_dir = result.xyz.normalized()
+            vs_frustum_directions.set_row(i, Vec4(vs_dir, 1))
+            ws_dir = view_mat_inv.xform(Vec4(result.xyz, 0))
+            ws_frustum_directions.set_row(i, ws_dir)
+
+        update("vs_frustum_directions", vs_frustum_directions)
+        update("ws_frustum_directions", ws_frustum_directions)

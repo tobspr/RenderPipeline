@@ -48,12 +48,12 @@ const float METER = 1.0;
 
 const float earth_radius = 6371.0 * KM;
 const vec3 earth_mid = vec3(0, 0, -earth_radius);
-const float cloud_start = earth_radius + 3.0 * KM;
-const float cloud_end = earth_radius + 4.0 * KM;
+const float cloud_start = earth_radius + 1.0 * KM;
+const float cloud_end = earth_radius + 1.4 * KM;
 
 vec2 get_cloud_coord(vec3 pos) {
     vec2 xy_coord = pos.xy / (cloud_end - cloud_start) * float(CLOUD_RES_Z) / float(CLOUD_RES_XY);
-    xy_coord.xy /= 1.0 + 0.7 * length(xy_coord);
+    xy_coord.xy /= 1.0 + 0.5 * length(xy_coord);
     xy_coord.xy += 0.5;
     return xy_coord;
 }
@@ -64,7 +64,7 @@ void main() {
 
     vec2 texcoord = get_half_texcoord();
 
-    vec3 wind_offs = vec3(0.2, 0.3,0) * 0.01 * MainSceneData.frame_time;
+    vec3 wind_offs = vec3(0.2, 0.3,0) * 0.02 * MainSceneData.frame_time;
 
     vec3 pos = get_gbuffer_position(GBuffer, texcoord);
     vec3 ray_start = MainSceneData.camera_pos;
@@ -101,7 +101,7 @@ void main() {
 
     // Cloud noise
     float noise_factor = saturate(1.0 - 0.5 * length(trace_start.xy));
-    vec3 noise = texture(NoiseTex, trace_start.xy * 5.0).xyz;
+    vec3 noise = texture(NoiseTex, trace_start.xy * 25.0).xyz;
     noise = mix(vec3(0.5), noise, noise_factor);
 
     trace_start += wind_offs;
@@ -109,11 +109,11 @@ void main() {
 
     trace_start.xyz += (noise*2.0-1.0) * 0.002;
     vec3 trace_step = (trace_end - trace_start) / trace_steps;
-    trace_step.xyz += (noise*2.0-1.0) * 0.008 / trace_steps;
+    trace_step.xyz += (noise*2.0-1.0) * 0.004 / trace_steps;
 
     vec3 sun_vector = get_sun_vector();
     float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 15.0) + 0.0;
-    vec3 sun_color = sun_influence * 30.0 * vec3(1);
+    vec3 sun_color = sun_influence * 40.0 * vec3(1);
 
     vec3 curr_pos = trace_start + 0.5 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
     float accum_weight = 0.0;
@@ -145,7 +145,7 @@ void main() {
 
     // accum_color *= 1.8;
     // accum_color *= vec3(1.2, 1.1, 1);
-    accum_color *= 1.0 + sun_color * saturate(1.0 - 0.8 * accum_weight );
+    accum_color *= 0.4 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 
 
     // Darken clouds in the distance

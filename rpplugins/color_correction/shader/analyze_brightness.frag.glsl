@@ -60,6 +60,7 @@ void main() {
     // Clamp to min and max exposure value
     exposure = clamp(exposure, min_ev, max_ev);
 
+
     // Transition between the last and current value smoothly
     float curr_exposure = imageLoad(ExposureStorage, 0).x;
     float adaption_rate = GET_SETTING(color_correction, brightness_adaption_rate);
@@ -67,6 +68,9 @@ void main() {
     if (curr_exposure < exposure) {
         adaption_rate = GET_SETTING(color_correction, darkness_adaption_rate);
     }
+
+    const float adaption_speed = 0.8;
+    adaption_rate *= adaption_speed;
 
     float adjustment = saturate(MainSceneData.smooth_frame_delta * adaption_rate);
     float new_luminance = mix(curr_exposure, exposure, adjustment);

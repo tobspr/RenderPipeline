@@ -60,10 +60,6 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 
 // Closest point on spherical area light, also returns energy factor
 vec3 get_spherical_area_light_vector(float radius, vec3 l_unscaled, vec3 v, vec3 n) {
-
-    // XXX: Test if this is faster
-    if (radius < 0.01) return l_unscaled;
-
     vec3 r = reflect(-v, n);
     vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
     vec3 closest_point = l_unscaled + center_to_ray * saturate(radius / max(1e-3, length(center_to_ray)));
@@ -71,11 +67,11 @@ vec3 get_spherical_area_light_vector(float radius, vec3 l_unscaled, vec3 v, vec3
 }
 
 float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) {
-    return pow(alpha, 1.2) * 0.01 * (1 - saturate((alpha - 0.5))) / max(0.001, radius);
+    return max(0.000005, alpha * alpha) / max(0.01, radius * radius);
 }
 
 // Computes a lights influence
-// @TODO: Make this method faster
+// TODO: Make this method faster
 vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow,
     vec3 transmittance, float energy, float clearcoat_energy) {
 
@@ -104,7 +100,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     vec3 f0 = get_material_f0(m);
 
     // Diffuse contribution
-    vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness) 
+    vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness)
                           * m.basecolor * (1 - m.metallic);
 
     // Specular contribution:

@@ -72,7 +72,7 @@ void main() {
 
     accum /= max(1e-5, accum_weights);
 
-    // XXX: It seems we are having some precision issues here. To make sure that
+    // It seems we are having some precision issues here. To make sure that
     // no sky-cubemap leaks in, increase the weight by a small amount.
     accum *= 1 + 1e-7;
     accum.w = saturate(accum.w);

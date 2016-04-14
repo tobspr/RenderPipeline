@@ -36,7 +36,7 @@
  */
 RPPointLight::RPPointLight() : RPLight(RPLight::LT_point_light) {
     _radius = 10.0;
-    _inner_radius = 0.0;
+    _inner_radius = 0.01;
 }
 
 /**

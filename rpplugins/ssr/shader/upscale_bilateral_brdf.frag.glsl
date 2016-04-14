@@ -68,7 +68,7 @@ void main() {
         return;
     }
 
-    const float max_depth_diff = 0.001;
+    const float max_depth_diff = 0.002;
 
     float weights = 0.0;
     vec4 accum = vec4(0);
@@ -91,11 +91,12 @@ void main() {
             // Get sample coordinate
             ivec2 source_coord = bil_start_coord + ivec2(x, y);
             ivec2 screen_coord = source_coord * 2;
-            vec4 source_sample = texelFetch(SourceTex, source_coord, 0);
+            vec4 intersection_and_weight = texelFetch(SourceTex, source_coord, 0);
+            vec2 intersection = intersection_and_weight.xy;
+            float intersection_weight = intersection_and_weight.z;
 
-            // Skip empty samples, however take into account we have no data there, so
-            // still increase the weight
-            if (length_squared(source_sample.xy) < 0.01 || source_sample.w < 0.005) {
+            // Skip empty samples
+            if (length_squared(intersection) < 1e-9 || intersection_weight < 0.005) {
                 weights += 1.0;
                 continue;
             }
@@ -103,43 +104,51 @@ void main() {
             float sample_depth = get_gbuffer_depth(GBuffer, screen_coord);
 
             // Find depth of intersection pixel
-            float intersection_depth = get_gbuffer_depth(GBuffer, source_sample.xy);
+            float intersection_depth = get_gbuffer_depth(GBuffer, intersection);
 
             // Get world space position of intersection pixel
-            vec3 wp_dest_sample = calculate_surface_pos(intersection_depth, source_sample.xy);
+            vec3 ws_intersection = calculate_surface_pos(intersection_depth, intersection);
 
             // Find distance and vector to intersection based on the pixels position
-            float distance_to_intersection = 1e-5 + distance(wp_dest_sample, m.position);
-            vec3 direction_to_sample = (wp_dest_sample - m.position) / distance_to_intersection;
+            float distance_to_intersection = 1e-9 + distance(ws_intersection, m.position);
+            vec3 l = (ws_intersection - m.position) / distance_to_intersection;
 
             // Get the halfway vector
-            vec3 h = normalize(view_vector + direction_to_sample);
-            float NxH = saturate(dot(m.normal, h));
+            vec3 h = normalize(view_vector + l);
+            float NxH = max(1e-5, dot(m.normal, h));
 
-            float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + roughness), 0.0, 1e5);
+            float weight = clamp(brdf_distribution_ggx(NxH,  0.05 + sqrt(roughness)), 0.0, 1.0);
             weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
+            // weight *= 1.0 / max(1e-5, intersection_weight);
+
 
             float mipmap = sqrt(roughness) * 4.0 * (distance_to_intersection * 0.4);
             mipmap = clamp(mipmap, 0.0, 7.0);
 
-            vec4 color_sample = textureLod(MipChain, source_sample.xy, mipmap);
+            // XXX: This seems to look way better, since it does not introduce
+            // color bleeding
+            mipmap = 0;
 
-            color_sample *= source_sample.z;
+            vec4 color_sample = textureLod(MipChain, intersection, mipmap);
 
             // Fade out samples at the screen border
             // XXX: Do we really have to this per sample?
-            color_sample *= get_border_fade(source_sample.xy);
+            color_sample *= get_border_fade(intersection);
 
             accum += color_sample * weight;
             weights += weight;
         }
     }
 
-    if (weights < 1e-4) {
+    if (weights < 0.4) {
         accum = vec4(0);
     } else {
         accum /= weights;
     }
+
+
+    // accum.w = 1;
+    // accum.xyz = m.normal;
 
     result = accum;
 }

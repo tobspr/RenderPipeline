@@ -40,7 +40,7 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     // Iterate over all slices
-    for (int i = 0; i < LC_TILE_SLICES; i++) {
+    for (int i = 0; i < LC_TILE_SLICES; ++i) {
 
         // Check if the cell is flagged
         bool visible = texelFetch(FlaggedCells, ivec3(coord, i), 0).x > 0.5;

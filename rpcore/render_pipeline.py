@@ -44,9 +44,10 @@ from rpcore.native import TagStateManager, PointLight, SpotLight
 from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
+from rpcore.util.task_scheduler import TaskScheduler
 
 from rpcore.rpobject import RPObject
-from rpcore.util.network_update_listener import NetworkUpdateListener
+from rpcore.util.network_communication import NetworkCommunication
 from rpcore.util.ies_profile_loader import IESProfileLoader
 
 from rpcore.gui.debugger import Debugger
@@ -193,7 +194,9 @@ class RenderPipeline(RPObject):
 
         # Hide the loading screen
         self._loading_screen.remove()
-        self._start_listener()
+
+        # Start listening for updates
+        self._listener = NetworkCommunication(self)
         self._set_default_effect()
 
         # Measure how long it took to initialize everything
@@ -204,6 +207,7 @@ class RenderPipeline(RPObject):
 
     def _create_managers(self):
         """ Internal method to create all managers and instances"""
+        self.task_scheduler = TaskScheduler(self)
         self.tag_mgr = TagStateManager(Globals.base.cam)
         self.plugin_mgr = PluginManager(self)
         self.stage_mgr = StageManager(self)
@@ -288,38 +292,30 @@ class RenderPipeline(RPObject):
         self._showbase.addTask(self._manager_update_task, "RP_UpdateManagers", sort=10)
         self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
         self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=15)
-        self._showbase.addTask(self._update_common_inputs, "RP_UpdateCommonInputs", sort=20)
+        self._showbase.addTask(self._update_inputs_and_stages, "RP_UpdateInputsAndStages", sort=18)
         self._showbase.taskMgr.doMethodLater(0.5, self._clear_state_cache, "RP_ClearStateCache")
 
     def _clear_state_cache(self, task=None):
         """ Task which repeatedly clears the state cache to avoid storing
         unused states. """
-        task.delayTime = 1.0
+        task.delayTime = 2.0
         TransformState.clear_cache()
         RenderState.clear_cache()
         return task.again
 
-    def _start_listener(self):
-        """ Starts a listener thread which listens for incoming connections to
-        trigger a shader reload. This is used by the Plugin Configurator to dynamically
-        update settings. """
-        self._listener = NetworkUpdateListener(self)
-        self._listener.setup()
-
     def _manager_update_task(self, task):
         """ Update task which gets called before the rendering """
+        self.task_scheduler.step()
         self._listener.update()
         self._debugger.update()
         self.daytime_mgr.update()
-        self.stage_mgr.update()
         self.light_mgr.update()
-        # import time
-        # time.sleep(0.1)
         return task.cont
 
-    def _update_common_inputs(self, task):
+    def _update_inputs_and_stages(self, task):
         """ Updates teh commonly used inputs """
         self._com_resources.update()
+        self.stage_mgr.update()
         return task.cont
 
     def _plugin_pre_render_update(self, task):
@@ -523,7 +519,19 @@ class RenderPipeline(RPObject):
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.inner_radius = 0.2
+            rp_light.inner_radius = 0.8
+
+            name = light.get_name()
+            if name == "PR1":
+                rp_light.inner_radius = 0.01
+            elif name == "PR2":
+                rp_light.inner_radius = 0.1
+            elif name == "PR3":
+                rp_light.inner_radius = 0.3
+            elif name == "PR4":
+                rp_light.inner_radius = 0.9
+
+
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
@@ -544,7 +552,7 @@ class RenderPipeline(RPObject):
             light.remove_node()
             lights.append(rp_light)
 
-            # XXX: Support IES profiles (Have to add it to the BAM exporter first)
+            # XXX: Support IES profiles (Have to add support to the BAM exporter first)
             # rp_light.ies_profile = ies_profile
 
         envprobes = []

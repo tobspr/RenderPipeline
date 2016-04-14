@@ -285,8 +285,8 @@ vec3  square(vec3 x)  { return x * x; }
 vec4  square(vec4 x)  { return x * x; }
 
 // Minimum and maximum for multiple components
-// XXX: There are hardware instructions for it, see if we somehow
-// can access it
+// XXX: There are hardware instructions (at least on AMD) for it:
+// https://www.opengl.org/registry/specs/AMD/shader_trinary_minmax.txt
 #define min3(a, b, c) min(a, min(b, c))
 #define max3(a, b, c) max(a, max(b, c))
 #define min4(a, b, c, d) min(a, min(b, min(c, d)))
@@ -294,25 +294,22 @@ vec4  square(vec4 x)  { return x * x; }
 #define min5(a, b, c, d, e) min(a, min(b, min(c, min(d, e))))
 #define max5(a, b, c, d, e) max(a, max(b, max(c, max(d, e))))
 
-// Moves mip smoothly to the closest mipmap to reduce interpolation
-float snap_mipmap(float mip) {
-    // XXX
-    // return mip;
-    float mip_fract = fract(mip);
-    float blend_factor = smoothstep(0.0, 1.0, mip_fract);
-    // return mip - mip_fract + blend_factor;
-    return mip - mip_fract + blend_factor;
+// Convenience function which ensures v dot n is > 0
+vec3 face_forward(vec3 v, vec3 n) {
+    return dot(v, n) < 0 ? -v : v;
 }
 
-// Convenience function which ensures v dot l is > 0
-vec3 face_forward(vec3 v, vec3 n) {
-    return faceforward(v, v, -n);
+// Creates a rotation mat, rotation should be 0 .. 2 * pi
+mat2 make_rotation_mat(float rotation) {
+    float r_sin = sin(rotation);
+    float r_cos = cos(rotation);
+    return mat2(r_cos, -r_sin, r_sin, r_cos);
 }
 
 // Convenience functions for the scattering plugin - probably don't belong here
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
-#define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity)
-#define get_sun_color_scale(_v) saturate((_v.z - 0.02) * 30.0)
+#define get_sun_color() (TimeOfDay.scattering.sun_color / 255.0 * TimeOfDay.scattering.sun_intensity * 50.0)
+#define get_sun_color_scale(_v) saturate((_v.z - 0.02) * 20.0)
 
 #if !HAVE_PLUGIN(color_correction)
     #undef get_sun_color

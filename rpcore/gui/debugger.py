@@ -33,13 +33,11 @@ from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
 from panda3d.core import TexturePool, SceneGraphAnalyzer
 from direct.interval.IntervalGlobal import Sequence
 
-from rplibs.yaml import load_yaml_file
-
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.buffer_viewer import BufferViewer
 from rpcore.gui.pipe_viewer import PipeViewer
-from rpcore.gui.labeled_checkbox import LabeledCheckbox
-from rpcore.gui.checkbox_collection import CheckboxCollection
+from rpcore.gui.render_mode_selector import RenderModeSelector
+
 from rpcore.gui.text_node import TextNode
 from rpcore.gui.error_message_display import ErrorMessageDisplay
 from rpcore.gui.exposure_widget import ExposureWidget
@@ -76,7 +74,7 @@ class Debugger(RPObject):
 
     def _load_config(self):
         """ Loads the gui configuration from config/debugging.yaml """
-        self._config = load_yaml_file("/$$rpconfig/debugging.yaml")
+        
 
     def _create_components(self):
         """ Creates the gui components """
@@ -97,7 +95,6 @@ class Debugger(RPObject):
         self._debugger_interval = None
 
         # Create the actual GUI
-        self._create_debugger()
         self._create_topbar()
         self._create_stats()
         self._create_hints()
@@ -108,15 +105,15 @@ class Debugger(RPObject):
             1, -Globals.base.win.get_y_size() / self._gui_scale + 120)
         self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
 
-        self._fps_node = Globals.base.pixel2d.attach_new_node("FPSChart")
-        self._fps_node.set_pos(Vec3(21, 1, -108) * scale_factor)
-        self._fps_node.set_scale(scale_factor)
+        self._fps_node = self._fullscreen_node.attach_new_node("FPSChart")
+        self._fps_node.set_pos(Vec3(21, 1, -108 - 40))
         self._fps_widget = FPSChart(self._pipeline, self._fps_node)
 
         self._pixel_widget = PixelInspector(self._pipeline)
 
         self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
         self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
+        self._rm_selector = RenderModeSelector(self._pipeline, self._fullscreen_node)
 
     def _init_notify(self):
         """ Inits the notify stream which gets all output from panda and parses
@@ -135,7 +132,7 @@ class Debugger(RPObject):
     def _create_topbar(self):
         """ Creates the topbar """
         self._pipeline_logo = Sprite(
-            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
+            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=50,
             parent=self._fullscreen_node)
 
     def _collect_scene_data(self, task=None):
@@ -225,25 +222,20 @@ class Debugger(RPObject):
         )
 
         text = "{} ({:1.3f})  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
+        text += "    |  Total tasks:  {:2d}   |   scheduled: {:2d}"
         self._debug_lines[4].text = text.format(
             self._pipeline.daytime_mgr.formatted_time,
             self._pipeline.daytime_mgr.time,
             len(self._pipeline.plugin_mgr.day_settings),
             Globals.base.camera.get_x(Globals.base.render),
             Globals.base.camera.get_y(Globals.base.render),
-            Globals.base.camera.get_z(Globals.base.render),)
+            Globals.base.camera.get_z(Globals.base.render),
+            self._pipeline.task_scheduler.num_tasks,
+            self._pipeline.task_scheduler.num_scheduled_tasks,
+        )
 
         if task:
             return task.again
-
-    def _create_debugger(self):
-        """ Creates the debugger contents """
-        self._debugger_node = self._fullscreen_node.attach_new_node("DebuggerNode")
-        self._debugger_node.set_pos(30, 0, -Globals.base.win.get_y_size()//self._gui_scale + 820.0)
-        self._debugger_bg_img = Sprite(
-            image="/$$rp/data/gui/debugger_background.png", x=0, y=0,
-            parent=self._debugger_node, any_filter=False)
-        self._create_debugger_content()
 
     def set_reload_hint_visible(self, flag):
         """ Sets whether the shader reload hint is visible """
@@ -252,64 +244,11 @@ class Debugger(RPObject):
         else:
             self._hint_reloading.hide()
 
-
-    def _create_debugger_content(self):
-        """ Internal method to create the content of the debugger """
-
-        debugger_content = self._debugger_node.attach_new_node("DebuggerContent")
-        debugger_content.set_z(-20)
-        debugger_content.set_x(20)
-
-        render_modes = [("Default", "", False, "")]
-
-        # Read modes from configuration
-        for mode in self._config["render_modes"]:
-            data = [mode["name"], mode["key"]]
-            data.append("cxx_only" in mode and mode["cxx_only"])
-            data.append(mode["requires"] if "requires" in mode else "")
-            render_modes.append(data)
-
-        collection = CheckboxCollection()
-
-        for idx, (mode, mode_id, requires_cxx, requires_plugin) in enumerate(render_modes):
-            offs_y = idx * 24 + 45
-            offs_x = 0
-            enabled = True
-            if requires_cxx and not NATIVE_CXX_LOADED:
-                enabled = False
-
-            if requires_plugin:
-                if not self._pipeline.plugin_mgr.is_plugin_enabled(requires_plugin):
-                    enabled = False
-
-            box = LabeledCheckbox(
-                parent=debugger_content, x=offs_x, y=offs_y, text=mode.upper(),
-                text_color=Vec3(0.4), radio=True, chb_checked=(mode == "Default"),
-                chb_callback=partial(self._set_render_mode, mode_id),
-                text_size=14, expand_width=230, enabled=enabled)
-            collection.add(box.checkbox)
-
-    def _set_render_mode(self, mode_id, value):
-        """ Callback which gets called when a render mode got selected """
-        if not value:
-            return
-
-        # Clear old defines
-        self._pipeline.stage_mgr.remove_define_if(lambda name: name.startswith("_RM__"))
-
-        if mode_id == "":
-            self._pipeline.stage_mgr.defines["ANY_DEBUG_MODE"] = 0
-        else:
-            self._pipeline.stage_mgr.defines["ANY_DEBUG_MODE"] = 1
-            self._pipeline.stage_mgr.define["_RM_" + mode_id] = 1
-
-        # Reload all shaders
-        self._pipeline.reload_shaders()
-
     def _init_keybindings(self):
         """ Inits the debugger keybindings """
         Globals.base.accept("v", self._buffer_viewer.toggle)
         Globals.base.accept("c", self._pipe_viewer.toggle)
+        Globals.base.accept("z", self._rm_selector.toggle)
         Globals.base.accept("f5", self._toggle_gui_visible)
         Globals.base.accept("f6", self._toggle_fps_visible)
 

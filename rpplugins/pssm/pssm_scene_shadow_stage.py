@@ -30,6 +30,7 @@ from panda3d.core import Mat4, Point4
 
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
+from rpcore.util.generic import snap_shadow_map
 
 class PSSMSceneShadowStage(RenderStage):
 
@@ -43,7 +44,7 @@ class PSSMSceneShadowStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
         self.resolution = 2048
-        self._sun_vector = Vec3(0, 0, 1)
+        self.sun_vector = Vec3(0, 0, 1)
         self.pta_mvp = PTAMat4.empty_array(1)
 
     @property
@@ -61,46 +62,28 @@ class PSSMSceneShadowStage(RenderStage):
         return state
 
     @property
-    def sun_vector(self):
-        return self._sun_vector
-
-    @sun_vector.setter
-    def sun_vector(self, direction):
-        self._sun_vector = direction
-
-        distance = 400.0
-        cam_pos = Globals.base.cam.get_pos(Globals.base.render)
-        self.cam_node.set_pos(cam_pos + self._sun_vector * distance)
-        self.cam_node.look_at(cam_pos)
-
-        # This snaps the source to its texel grids, so that there is no flickering
-        # visible when the source moves. This works by projecting the
-        # Point (0,0,0) to light space, compute the texcoord differences and
-        # offset the light world space position by that.
-        mvp = Mat4(self.mvp)
-        base_point = mvp.xform(Point4(0, 0, 0, 1)) * 0.5 + 0.5
-        texel_size = 1.0 / float(self.resolution)
-        offset_x = base_point.x % texel_size
-        offset_y = base_point.y % texel_size
-        mvp.invert_in_place()
-        new_base = mvp.xform(Point4(
-            (base_point.x - offset_x) * 2.0 - 1.0,
-            (base_point.y - offset_y) * 2.0 - 1.0,
-            (base_point.z) * 2.0 - 1.0, 1))
-        self.cam_node.set_pos(self.cam_node.get_pos() - Vec3(new_base.x, new_base.y, new_base.z))
-        self.pta_mvp[0] = self.mvp
-
-    @property
     def mvp(self):
         return Globals.base.render.get_transform(self.cam_node).get_mat() * \
             self.cam_lens.get_projection_mat()
 
-    def create(self):
+    def update(self):
+        if self._pipeline.task_scheduler.is_scheduled("pssm_scene_shadows"):
+            cam_pos = Globals.base.cam.get_pos(Globals.base.render)
+            self.cam_node.set_pos(cam_pos + self.sun_vector * 900)
+            self.cam_node.look_at(cam_pos)
 
+            snap_shadow_map(self.mvp, self.cam_node, self.resolution)
+
+            self.target.active = True
+            self.pta_mvp[0] = self.mvp
+        else:
+            self.target.active = False
+
+    def create(self):
         self.camera = Camera("PSSMSceneSunShadowCam")
         self.cam_lens = OrthographicLens()
-        self.cam_lens.set_film_size(200, 200)
-        self.cam_lens.set_near_far(100.0, 800.0)
+        self.cam_lens.set_film_size(400, 400)
+        self.cam_lens.set_near_far(100.0, 1800.0)
         self.camera.set_lens(self.cam_lens)
         self.cam_node = Globals.base.render.attach_new_node(self.camera)
 
@@ -108,7 +91,6 @@ class PSSMSceneShadowStage(RenderStage):
         self.target.size = self.resolution
         self.target.add_depth_attachment(bits=32)
         self.target.prepare_render(self.cam_node)
-
 
         # Register shadow camera
         self._pipeline.tag_mgr.register_shadow_camera(self.camera)

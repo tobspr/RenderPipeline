@@ -93,9 +93,13 @@ class Plugin(BasePlugin):
         CullLightsStage.required_inputs.append("EnvProbes")
 
     def on_pre_render_update(self):
-        self.probe_mgr.update()
-        probe = self.probe_mgr.find_probe_to_update()
-        if probe:
-            probe.last_update = Globals.clock.get_frame_count()
-        self.capture_stage.render_probe(probe)
-        self.pta_probes[0] = self.probe_mgr.num_probes
+        if self._pipeline.task_scheduler.is_scheduled("envprobes_select_and_cull"):
+            self.probe_mgr.update()
+            self.pta_probes[0] = self.probe_mgr.num_probes
+            probe = self.probe_mgr.find_probe_to_update()
+            if probe:
+                probe.last_update = Globals.clock.get_frame_count()
+                self.capture_stage.active = True
+                self.capture_stage.set_probe(probe)
+            else:
+                self.capture_stage.active = False

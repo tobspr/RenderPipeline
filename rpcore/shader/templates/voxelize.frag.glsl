@@ -67,7 +67,7 @@ void main() {
     vec3 shading_result = vec3(ambient * 0.0 + lights + sun_lighting);
 
     // Tonemapping to pack color
-    shading_result = shading_result / (1.0 + shading_result);
+    shading_result = shading_result / (1 + shading_result);
     // shading_result = pow(shading_result, vec3(1.0 / 2.2));
     // shading_result = saturate(shading_result);
 

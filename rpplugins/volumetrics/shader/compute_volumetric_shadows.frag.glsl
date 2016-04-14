@@ -72,7 +72,7 @@ void main() {
   vec3 step_offs = step_vector / num_steps;
 
   vec4 volumetrics = vec4(0);
-  float volume_density = 0.001 * GET_SETTING(volumetrics, intensity);
+  float volume_density = 0.001 * GET_SETTING(volumetrics, volumetric_shadow_intensity);
   // float volume_density = 0.0003;
 
   vec3 sun_vector = get_sun_vector();

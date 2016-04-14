@@ -156,7 +156,7 @@ float brdf_visibility_smith_ggx(float NxL, float NxV, float roughness) {
     float alpha = roughness * roughness;
     float lambda_GGXV = NxL * sqrt((-NxV * alpha + NxV) * NxV + alpha);
     float lambda_GGXL = NxV * sqrt((-NxL * alpha + NxL) * NxL + alpha);
-    return 0.5 / (lambda_GGXV + lambda_GGXL);
+    return 0.5 / (lambda_GGXV + lambda_GGXL) * NxL;
 }
 
 
@@ -240,11 +240,11 @@ vec3 brdf_fresnel_conductor_approx(float cos_theta, vec3 n, vec3 k) {
 float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) {
 
     // Choose one:
-    return brdf_lambert();
+    // return brdf_lambert();
 
     // XXX: When using this brdf, stuff appears very dark - most likely
     // there is an error somewhere in the brdf implementationd
-    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness) / M_PI;
+    return brdf_disney_diffuse(NxV, NxL, LxH, roughness) / M_PI;
 }
 
 
@@ -268,13 +268,13 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
 
     // Choose one:
     // float vis = brdf_visibility_neumann(NxV, NxL);
-    float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
-    // float vis = brdf_visibility_schlick(NxV, NxL, roughness);
+    // float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
+    float vis = brdf_visibility_schlick(NxV, NxL, roughness);
     // float vis = brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
     // float vis = brdf_visibility_smith(NxL, NxV, roughness);
 
     // Normalize the brdf
-    // return vis / max(1e-5, 4.0 * VxH);
+    return vis / max(1e-5, 4.0 * VxH);
 
     return vis;
 }
@@ -301,13 +301,9 @@ vec3 get_material_f0(Material m) {
 vec3 get_reflection_vector(Material m, vec3 view_vector) {
     float roughness = m.shading_model == SHADING_MODEL_CLEARCOAT ? CLEARCOAT_ROUGHNESS : m.roughness;
     vec3 reflected_dir = reflect(view_vector, m.normal);
-
-    // roughness = sqrt(roughness);
-
     // XXX: Evaluate whats more physically correct
+    // return normalize(mix(m.normal, reflected_dir, (1 - roughness) * (roughness + sqrt(1 - roughness))));
     return reflected_dir;
-
-    return normalize(mix(m.normal, reflected_dir, (1 - roughness) * (roughness + sqrt(1 - roughness))));
 }
 
 
@@ -317,7 +313,7 @@ float get_specular_mipmap(float roughness) {
 
     // Approximation to match importance sampled reference, tuned for a
     // resolution of 128.
-    return snap_mipmap(roughness * 12.0 - pow(roughness, 6.0) * 1.5);
+    return (roughness * 12.0 - pow(roughness, 6.0) * 1.5);
 }
 
 float get_specular_mipmap(Material m) {

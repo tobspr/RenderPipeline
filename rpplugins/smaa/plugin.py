@@ -31,6 +31,7 @@ from rpcore.loader import RPLoader
 from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .smaa_stage import SMAAStage
+from .jitters import JITTERS
 
 class Plugin(BasePlugin):
 
@@ -42,10 +43,7 @@ class Plugin(BasePlugin):
 
     def on_stage_setup(self):
         if self.get_setting("use_reprojection"):
-            self._jitter_index = 0
             self._compute_jitters()
-
-        self._pipeline.stage_mgr.define("SMAA_HISTORY_LENGTH", self.history_length)
 
         self._smaa_stage = self.create_stage(SMAAStage)
         self._smaa_stage.use_reprojection = self.get_setting("use_reprojection")
@@ -69,10 +67,11 @@ class Plugin(BasePlugin):
     def _compute_jitters(self):
         """ Internal method to compute the SMAA sub-pixel frame offsets """
         self._jitters = []
+        self._jitter_index = 0
         scale = 1.0 / float(Globals.base.win.get_x_size())
 
-        # for x, y in ((-0.5, 0.25), (0.5, -0.25), (0.25, 0.5), (-0.25, -0.5)):
-        for x, y in ((-0.25, 0.25), (0.25, -0.25)):
+        for x, y in JITTERS[self.get_setting("jitter_pattern")]:
+        # for x, y in ((-0.25, 0.25), (0.25, -0.25)):
             # The get_x_size() for both dimensions is not an error - its due to
             # how the OrtographicLens works internally.
             jitter_x = (x * 2 - 1) * scale * 0.5
@@ -84,6 +83,10 @@ class Plugin(BasePlugin):
         if self.get_setting("use_reprojection"):
             return len(self._jitters)
         return 1
+
+    def update_jitter_pattern(self):
+        """ Updates the jitter pattern when the setting was changed """
+        self._compute_jitters()
 
     def _load_textures(self):
         """ Loads all required textures """
