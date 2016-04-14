@@ -846,16 +846,22 @@ QLabel {border: 0;}</string>
       <number>5184000</number>
      </property>
      <property name="singleStep">
-      <number>10000</number>
+      <number>3600</number>
      </property>
      <property name="pageStep">
-      <number>100000</number>
+      <number>3600</number>
      </property>
      <property name="value">
       <number>2592000</number>
      </property>
+     <property name="tracking">
+      <bool>true</bool>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
      </property>
      <property name="invertedControls">
       <bool>false</bool>
@@ -864,7 +870,7 @@ QLabel {border: 0;}</string>
       <enum>QSlider::TicksBelow</enum>
      </property>
      <property name="tickInterval">
-      <number>864000</number>
+      <number>432000</number>
      </property>
     </widget>
     <widget class="QLabel" name="time_label">

@@ -49,32 +49,16 @@ uniform GBufferData GBuffer;
 
 out VALUE_TYPE result;
 
-const vec2 pixel_size = 2.0 / SCREEN_SIZE;
-
-void do_blur(vec2 coord, uint i, float weight, vec3 pixel_nrm, float pixel_depth, inout VALUE_TYPE accum, inout float accum_w) {
-    vec2 offcoord = coord + pixel_size * i * blur_direction;
-    VALUE_TYPE sampled = textureLod(SourceTex, offcoord, 0) SWIZLLE ;
-    vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
-    float d = texture(DownscaledDepth, offcoord).x;
-
-    weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) * 1.0);
-    weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(d - pixel_depth) * 3);
-
-    accum += sampled * weight;
-    accum_w += weight;
-}
-
-
 void main() {
     vec2 texcoord = get_texcoord();
+    const vec2 pixel_size = 2.0 / SCREEN_SIZE;
 
     // Store accumulated color
     VALUE_TYPE accum = VALUE_TYPE(0);
     float accum_w = 0.0;
 
-    // Get the weights array
+    // Amount of samples, don't forget to change the weights array, too
     const int blur_size = 4;
-    CONST_ARRAY float weights[blur_size] = gaussian_weights_4; // <-- this is based on the blur size
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_gbuffer_normal(GBuffer, texcoord);
@@ -82,10 +66,20 @@ void main() {
 
     // Blur to the right and left
     for (int i = -blur_size + 1; i < blur_size; ++i) {
-        do_blur(texcoord, i, weights[abs(i)], pixel_nrm, pixel_depth, accum, accum_w);
+        vec2 offcoord = texcoord + pixel_size * i * blur_direction;
+        VALUE_TYPE sampled = textureLod(SourceTex, offcoord, 0) SWIZLLE ;
+        vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
+        float d = texture(DownscaledDepth, offcoord).x;
+
+        float weight = gaussian_weights_4[abs(i)];
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) * 1.0);
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(d - pixel_depth) * 3);
+
+        accum += sampled * weight;
+        accum_w += weight;
     }
 
-    accum /= max(0.01, accum_w);
-    // accum = texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0);
+    accum /= max(0.05, accum_w);
+    // accum = texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0).x;
     result = accum;
 }

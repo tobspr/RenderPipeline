@@ -46,7 +46,7 @@ float pixel_linz = get_linear_z_from_z(pixel_depth);
 for (int i = 0; i < num_samples; ++i) {
 
     // Get random offset in screen space
-    vec2 offset = poisson_disk_2D_32[i];
+    vec2 offset = poisson_disk_2D_32[i * int(32 / num_samples)];
     offset = mix(offset, noise_vec.xy, 0.3);
 
     vec2 offc = offset * sphere_radius * 5.0 * kernel_scale;

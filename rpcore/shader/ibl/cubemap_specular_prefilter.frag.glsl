@@ -59,13 +59,12 @@ void main() {
     // Importance sampling
     for (int i = 0; i < num_samples; ++i) {
         vec2 Xi = hammersley(i, num_samples);
-        vec4 h = importance_sample_ggx(Xi, sample_roughness);
-        h.xyz = normalize(h.x * tangent + h.y * binormal + h.z * n);
-        float pdf = h.w;
+        vec3 h = importance_sample_ggx(Xi, sample_roughness);
+        h = normalize(h.x * tangent + h.y * binormal + h.z * n);
 
         // Reconstruct light vector
         vec3 l = -reflect(n, h.xyz);
-        float weight = max(0, dot(n, l)); // XXX: multiply by pdf?
+        float weight = max(0, dot(n, l));
         accum += textureLod(SourceTex, l, 1).xyz * weight;
         accum_weights += weight;
     }

@@ -221,11 +221,16 @@ class Debugger(RPObject):
             self._analyzer.get_vertex_data_size() / (1024**2),
         )
 
-        text = "{} ({:1.3f})  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
+        sun_vector = Vec3(0)
+        if self._pipeline.plugin_mgr.is_plugin_enabled("scattering"):
+            sun_vector = self._pipeline.plugin_mgr.instances["scattering"].sun_vector
+
+        text = "{} ({:1.3f})  |  {:0.2f} {:0.2f} {:0.2f}  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
         text += "    |  Total tasks:  {:2d}   |   scheduled: {:2d}"
         self._debug_lines[4].text = text.format(
             self._pipeline.daytime_mgr.formatted_time,
             self._pipeline.daytime_mgr.time,
+            sun_vector.x, sun_vector.y, sun_vector.z,
             len(self._pipeline.plugin_mgr.day_settings),
             Globals.base.camera.get_x(Globals.base.render),
             Globals.base.camera.get_y(Globals.base.render),
@@ -254,6 +259,7 @@ class Debugger(RPObject):
 
     def _toggle_gui_visible(self):
         """ Shows / Hides the gui """
+
         if not self._fullscreen_node.is_hidden():
             self._fullscreen_node.hide()
             self._overlay_node.hide()

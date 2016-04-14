@@ -47,7 +47,7 @@ vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.4;
 
 for (int i = 0; i < num_samples; ++i) {
 
-    vec2 offset = poisson_disk_2D_32[i];
+    vec2 offset = poisson_disk_2D_32[i * int(32 / num_samples)];
     offset = mix(offset, noise_vec.xy, 0.3);
     vec2 offcoord = offset * offset_scale;
 

@@ -29,11 +29,7 @@
 #define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 
-
-#define RS_MAX_CLIP_DIST 1.5
-#define RS_DISTANCE_SCALE 1.0
-#define RS_KEEP_GOOD_DURATION 8.0
-#define RS_KEEP_BAD_DURATION 4.0
+#define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length))
 #define RS_USE_POSITION_TECHNIQUE 1
 #pragma include "includes/temporal_resolve.inc.glsl"
 

@@ -38,7 +38,7 @@
 
 uniform sampler2D DownscaledDepth;
 
-out vec3 result;
+out vec2 result;
 
 #define USE_LINEAR_DEPTH 0
 #define NUM_RAYDIR_RETRIES 5
@@ -84,7 +84,7 @@ void main()
 
     // Skip skybox and distant pixels
     if (pixeldist > 3000) {
-        result = vec3(0);
+        result = vec2(0);
         return;
     }
 
@@ -94,7 +94,7 @@ void main()
 
     // Skip pixels with too high roughness
     if (roughness > GET_SETTING(ssr, roughness_fade)) {
-        result = vec3(0);
+        result = vec2(0);
         return;
     }
 
@@ -107,7 +107,6 @@ void main()
     vec3 tangent, binormal;
     find_arbitrary_tangent(ray_dir, tangent, binormal);
 
-    float pdf = 0.0;
     vec3 importance_ray_dir = vec3(0);
 
 
@@ -128,21 +127,18 @@ void main()
         xi.y = mix(xi.y, 0.0, brdf_bias);
 
         // Get importance sampled directory
-        vec4 rho = importance_sample_ggx(xi, clamp(sqrt(roughness), 0.0001, 1.0));
-
-        importance_ray_dir = normalize(
-            1e-5 + rho.x * tangent + rho.y * binormal + rho.z * ray_dir);
-        pdf = rho.w;
+        vec3 rho = importance_sample_ggx(xi, clamp(sqrt(roughness), 0.0001, 1.0));
+        importance_ray_dir = normalize(1e-5 + rho.x * tangent + rho.y * binormal + rho.z * ray_dir);
 
         // If the ray dir is fine, abort, otherwise continue
-        if (dot(importance_ray_dir, normal_vs) > 0.005 && pdf > 0.001) {
+        if (dot(importance_ray_dir, normal_vs) > 0.005) {
             break;
         }
     }
 
     // Still didn't find a good ray dir
-    if (retry >= NUM_RAYDIR_RETRIES -1) {
-        result = vec3(0);
+    if (retry >= NUM_RAYDIR_RETRIES - 1) {
+        result = vec2(0);
         return;
     }
 
@@ -214,15 +210,12 @@ void main()
         float trace_len = GET_SETTING(ssr, intial_bias) * 0.5 + 100.0 * distance_squared(curr_coord, texcoord);
         trace_len *= 1.0 + 1.0 * roughness;
 
-
         // Check for intersection
         #if USE_LINEAR_DEPTH
             float depth_sample = textureLod(DownscaledDepth, curr_coord, 0).x;
         #else
             float depth_sample = textureLod(GBuffer.Depth, curr_coord, 0).x;
         #endif
-
-
 
         if (point_between_planes(depth_sample, ray_pos.z, ray_pos.z - ray_step.z, trace_len, hit_factor)) {
             intersection = curr_coord;
@@ -235,28 +228,14 @@ void main()
 
     // Check if we hit something
     if (min(intersection.x, intersection.y) <= 0.0 || out_of_screen(intersection)) {
-        result = vec3(0);
+        result = vec2(0);
         return;
     }
 
-    float fade = saturate(3.0 * RxV);
-    fade = 1;
-
-    if (fade < 1e-3 || !hit_factor) {
-        result = vec3(0);
+    if (!hit_factor) {
+        result = vec2(0);
         return;
     }
-
-    // Store pdf
-    #if 0
-        vec3 h = normalize(view_dir + ray_dir);
-        pdf = pdf / (4.0 * saturate(dot(view_dir, h)));
-    #else
-        // XXX: Seems this works *way* better
-        pdf = 1.0;
-        fade = 1.0;
-    #endif
-
-    result = vec3(intersection, pdf);
+    result = intersection;
 }
 
