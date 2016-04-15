@@ -229,24 +229,24 @@ settings: !!omap
         display_if: {manual_camera_parameters: false}
         type: float
         range: [0.0, 1.0]
-        default: 5.0
+        default: 1.0
         shader_runtime: true
         label: Maximum Exposure
         description: >
             The maximum exposure value, this prevents the automatic exposure from overfitting
             on dark areas.
 
-    - exposure_bias:
+    - exposure_scale:
         display_if: {manual_camera_parameters: false}
         type: float
-        range: [-1.0, 1.0]
-        default: 0.0
-        label: Exposure Bias
+        range: [0.0, 10.0]
+        default: 1.0
+        label: Exposure Scale
         shader_runtime: true
         description: >
             This is a fixed value which gets added to the average brightness of the
-            scene. A value greater 0 will decrease the scene brightness, while a value
-            smaller than 0 will increase it.
+            scene. A value greater 1 will increase the scene brightness, while a value
+            smaller than 1 will increase it.
 
     - brightness_adaption_rate:
         display_if: {manual_camera_parameters: false}

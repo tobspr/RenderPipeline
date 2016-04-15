@@ -88,10 +88,12 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
     vec3 l              = position - m.position;
     float l_len_square  = length_squared(l);
 
-    l = get_spherical_area_light_vector(inner_radius, l, view_vector, m.normal);
-    vec3 l_norm         = normalize(l);
+    vec3 l_diff = get_spherical_area_light_horizon(l, m.normal, inner_radius);
 
-    float dist_sq = max(1e-3, l_len_square - square(inner_radius));
+    l = get_spherical_area_light_vector(m.normal, l, view_vector, inner_radius);
+
+    float dist_sq = max(square(inner_radius) + 0.01, l_len_square - square(inner_radius));
+
     float energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist_sq);
     float clearcoat_energy = get_spherical_area_light_energy(CLEARCOAT_ROUGHNESS, inner_radius, dist_sq);
 
@@ -99,15 +101,15 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
     float attenuation = attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
 
     // Compute the lights influence
-    return apply_light(m, view_vector, l_norm, get_light_color(light_data),
-                       attenuation, shadow_factor, transmittance, energy, clearcoat_energy);
+    return apply_light(m, view_vector, normalize(l), get_light_color(light_data),
+                       attenuation, shadow_factor, transmittance, energy, clearcoat_energy, l_diff);
 }
 
 // Filters a shadow map
 float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: Examine if this is faster
-    if (dot(m.normal, -l) < 0) return 0.0;
+    // if (dot(m.normal, -l) < 0) return 0.0;
 
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);

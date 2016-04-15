@@ -53,13 +53,12 @@ void main() {
 
     float min_ev = GET_SETTING(color_correction, min_exposure_value);
     float max_ev = GET_SETTING(color_correction, max_exposure_value);
-    float exposure_bias = GET_SETTING(color_correction, exposure_bias) * 1;
+    float exposure_bias = GET_SETTING(color_correction, exposure_scale);
 
-    exposure += exposure_bias;
+    exposure *= exposure_bias;
 
     // Clamp to min and max exposure value
     exposure = clamp(exposure, min_ev, max_ev);
-
 
     // Transition between the last and current value smoothly
     float curr_exposure = imageLoad(ExposureStorage, 0).x;

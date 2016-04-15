@@ -56,23 +56,24 @@ void main() {
     int cell_index = texelFetch(CellIndices, tile, 0).x;
     int data_offs = cell_index * MAX_PROBES_PER_CELL;
 
-    vec4 total_diffuse = vec4(0, 0, 0, 0.001);
-    vec4 total_specular = vec4(0, 0, 0, 0.001);
-    float total_blend = 1;
-    float total_weight = 1;
+    vec4 total_diffuse = vec4(0);
+    vec4 total_specular = vec4(0);
+    float total_blend = 0;
+    float total_weight = 0;
 
     int processed_probes = 0;
     for (int i = 0; i < MAX_PROBES_PER_CELL; ++i) {
         int cubemap_index = texelFetch(PerCellProbes, data_offs + i).x - 1;
         if (cubemap_index < 0) break;
         vec4 diff, spec;
+        
         processed_probes += 1;
         apply_cubemap(cubemap_index, m, diff, spec, total_weight, total_blend);
         total_diffuse += diff;
         total_specular += spec;
     }
 
-    float scale = 1.0 / max(1e-9, total_weight * total_blend);
+    float scale = 1.0 / max(1e-3, total_weight) * min(1.0, total_blend);
 
     result_spec = total_specular * scale;
     result_diff = total_diffuse * scale;

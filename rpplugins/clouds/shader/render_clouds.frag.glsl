@@ -48,8 +48,8 @@ const float METER = 1.0;
 
 const float earth_radius = 6371.0 * KM;
 const vec3 earth_mid = vec3(0, 0, -earth_radius);
-const float cloud_start = earth_radius + 1.0 * KM;
-const float cloud_end = earth_radius + 1.4 * KM;
+const float cloud_start = earth_radius + 1.2 * KM;
+const float cloud_end = earth_radius + 3.1 * KM;
 
 vec2 get_cloud_coord(vec3 pos) {
     vec2 xy_coord = pos.xy / (cloud_end - cloud_start) * float(CLOUD_RES_Z) / float(CLOUD_RES_XY);
@@ -101,19 +101,19 @@ void main() {
 
     // Cloud noise
     float noise_factor = saturate(1.0 - 0.5 * length(trace_start.xy));
-    vec3 noise = texture(NoiseTex, trace_start.xy * 25.0).xyz;
+    vec3 noise = texture(NoiseTex, trace_start.xy * 5.0).xyz;
     noise = mix(vec3(0.5), noise, noise_factor);
 
     trace_start += wind_offs;
     trace_end += wind_offs;
 
-    trace_start.xyz += (noise*2.0-1.0) * 0.002;
+    trace_start.xyz += (noise*2.0-1.0) * 0.004;
     vec3 trace_step = (trace_end - trace_start) / trace_steps;
-    trace_step.xyz += (noise*2.0-1.0) * 0.004 / trace_steps;
+    trace_step.xyz += (noise*2.0-1.0) * 0.015 / trace_steps;
 
     vec3 sun_vector = get_sun_vector();
-    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 15.0) + 0.0;
-    vec3 sun_color = sun_influence * 40.0 * vec3(1);
+    float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 25.0) + 0.0;
+    vec3 sun_color = sun_influence * 10.0 * vec3(1);
 
     vec3 curr_pos = trace_start + 0.5 / vec3(CLOUD_RES_XY, CLOUD_RES_XY, CLOUD_RES_Z);
     float accum_weight = 0.0;
@@ -132,7 +132,7 @@ void main() {
     // Beers law
     // accum_color = 1 - exp(-3.0 * accum_color);
 
-    accum_color = pow(accum_color, vec3(0.6));
+    accum_color = pow(accum_color, vec3(1.0));
 
     // Unpack packed color
     // accum_color = accum_color / (1 - accum_color);
@@ -142,22 +142,22 @@ void main() {
     // accum_weight = saturate(pow(accum_weight, 32.0) * 1.1);
     accum_color *= TimeOfDay.clouds.cloud_brightness;
     accum_color *= get_sun_color();
+    accum_color *= vec3(1, 1, 1.5);
 
     // accum_color *= 1.8;
     // accum_color *= vec3(1.2, 1.1, 1);
-    accum_color *= 0.4 + sun_color * saturate(1.0 - 0.8 * accum_weight );
+    accum_color *= 0.1 + sun_color * saturate(1.0 - 0.8 * accum_weight );
 
 
     // Darken clouds in the distance
     // accum_color *= 1.0 - saturate(1.0-4.0*ray_dir.z) * 0.7;
 
     // Don't render clouds at obligue angles
-    float horizon = pow(saturate(ray_dir.z * 4.0), 0.1);
+    float horizon = pow(saturate(ray_dir.z * 1.0), 0.1);
     accum_color *= horizon;
     accum_weight *= horizon;
 
     // accum_weight = 0;
 
     result = vec4(accum_color, accum_weight);
-    // result.xyz = vec3(accum_weight);
 }

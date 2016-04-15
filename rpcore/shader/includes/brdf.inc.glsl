@@ -77,7 +77,7 @@ float brdf_disney_diffuse(float NxV, float NxL, float LxH, float roughness) {
     vec3 f0 = vec3(1);
     float light_scatter = brdf_schlick_fresnel(f0, fd90, NxL).x;
     float view_scatter = brdf_schlick_fresnel(f0, fd90, NxV).x;
-    return light_scatter * view_scatter * energy_factor * NxL / M_PI;
+    return light_scatter * view_scatter * energy_factor / M_PI;
 }
 
 /* Distribution functions */
@@ -241,10 +241,7 @@ float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) 
 
     // Choose one:
     // return brdf_lambert();
-
-    // XXX: When using this brdf, stuff appears very dark - most likely
-    // there is an error somewhere in the brdf implementationd
-    return brdf_disney_diffuse(NxV, NxL, LxH, roughness) / M_PI;
+    return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
 }
 
 

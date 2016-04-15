@@ -61,7 +61,7 @@ void main() {
     vec3 sun_lighting = get_sun_shading(mInput, basecolor);
     vec3 lights = get_forward_light_shading(basecolor);
  
-    vec3 combined_lighting = (ambient + lights + sun_lighting) * 0.07;
+    vec3 combined_lighting = (ambient + lights + sun_lighting) * 0.17;
 
     result = vec4(combined_lighting, 1);
 }

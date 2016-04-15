@@ -6,6 +6,9 @@ Deferred Rendering Pipeline with Physically Based Shading for the <a href="http:
 
 <a href="https://www.youtube.com/watch?v=K7R8zQsbnm4" target="_blank">Video</a>
 
+Terrain:
+<img src="http://i.imgur.com/mVBmJaW.png" />
+
 Car rendering:
 <img src="http://i.imgur.com/rglAQ5J.png" />
 

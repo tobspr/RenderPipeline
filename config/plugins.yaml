@@ -6,17 +6,17 @@
 enabled:
     - ao
     - bloom
+    - clouds
     - color_correction
     - env_probes
     - motion_blur
     - pssm
     - scattering
-    # - skin_shading
     - smaa
     - ssr
-    # - clouds
     # - dof
     # - fxaa
+    # - skin_shading
     # - volumetrics
     # - vxgi
 
@@ -54,7 +54,7 @@ overrides:
         lens_dirt_factor: 0.0
 
     clouds:
-        raymarch_steps: 67
+        raymarch_steps: 75
 
     color_correction:
         tonemap_operator: reinhard
@@ -74,11 +74,11 @@ overrides:
         chromatic_aberration_strength: 0.2745
         chromatic_aberration_samples: 2
         manual_camera_parameters: False
-        min_exposure_value: 0.012
+        min_exposure_value: 0.0
         max_exposure_value: 1.0
-        exposure_bias: 0.0144
-        brightness_adaption_rate: 2.06
-        darkness_adaption_rate: 0.45
+        exposure_scale: 2.78
+        brightness_adaption_rate: 3.67
+        darkness_adaption_rate: 0.73
         use_sharpen: True
         sharpen_strength: 0.72
         sharpen_twice: False
@@ -120,14 +120,14 @@ overrides:
         filter_sample_count: 8
         filter_radius: 0.54
         fixed_bias: 0.1156
-        slope_bias: 0.15
+        slope_bias: 0.11
         normal_bias: 0.0
         use_pcss: False
         pcss_search_samples: 8
         pcss_penumbra_size: 11.0
         use_distant_shadows: True
         dist_shadow_resolution: 1536
-        dist_shadow_clipsize: 4516.67
+        dist_shadow_clipsize: 11583.33
         scene_shadow_resolution: 1024
 
     scattering:
@@ -158,7 +158,7 @@ overrides:
         abort_on_object_infront: True
         intial_bias: 0.1
         hit_tolerance: 0.1
-        roughness_fade: 1.0
+        roughness_fade: 0.57999
         skip_invalid_samples: True
         border_fade: 0.005
 

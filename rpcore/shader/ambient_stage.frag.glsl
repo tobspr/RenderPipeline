@@ -165,23 +165,11 @@ void main() {
             vec4 probe_diff = textureLod(EnvmapAmbientDiff, texcoord, 0);
 
             // Unpack color
-            probe_diff.xyz = probe_diff.xyz / max(vec3(1e-5), 1 - probe_diff.xyz);
-            probe_spec.xyz = probe_spec.xyz / max(vec3(1e-5), 1 - probe_spec.xyz);
+            probe_diff.xyz = probe_diff.xyz / max(vec3(1e-7), 1 - probe_diff.xyz);
+            probe_spec.xyz = probe_spec.xyz / max(vec3(1e-7), 1 - probe_spec.xyz);
 
             ibl_diffuse = ibl_diffuse * (1 - probe_diff.w) + probe_diff.xyz;
-
-            // Mix scatteringp probe and envprobe carefully, sice a huge color
-            // difference might occur. To avoid this, we first perform tonemapping,
-            // blend the probe and scattering, and then undo the tonemapping
-            #define BLEND_IBL_SPECULAR_TONEMAPPED 0
-            #if BLEND_IBL_SPECULAR_TONEMAPPED
-                ibl_specular = ibl_specular / (1 + ibl_specular);
-                probe_spec.xyz = probe_spec.xyz / (1 + probe_spec.xyz);
-            #endif
             ibl_specular = ibl_specular * (1 - probe_spec.w) + probe_spec.xyz;
-            #if BLEND_IBL_SPECULAR_TONEMAPPED
-                ibl_specular = ibl_specular / (1 - ibl_specular);
-            #endif
         #endif
 
         #if HAVE_PLUGIN(vxgi)
@@ -308,7 +296,7 @@ void main() {
         result = texture(EnvmapAmbientDiff, texcoord);
         return;
     #endif
-
+        
     result = scene_color * 1.0 + vec4(ambient, 1) * 1.0;
     result.w = 1.0;
 }

@@ -59,11 +59,15 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 
 
 // Closest point on spherical area light, also returns energy factor
-vec3 get_spherical_area_light_vector(float radius, vec3 l_unscaled, vec3 v, vec3 n) {
+vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float radius) {
     vec3 r = reflect(-v, n);
     vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
     vec3 closest_point = l_unscaled + center_to_ray * saturate(radius / max(1e-3, length(center_to_ray)));
     return closest_point;
+}
+
+vec3 get_spherical_area_light_horizon(vec3 l_unscaled, vec3 n, float radius) {
+    return normalize(l_unscaled + n * (0.5 * radius));
 }
 
 float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) {
@@ -73,19 +77,19 @@ float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) 
 // Computes a lights influence
 // TODO: Make this method faster
 vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow,
-    vec3 transmittance, float energy, float clearcoat_energy) {
+    vec3 transmittance, float energy, float clearcoat_energy, vec3 l_diffuse) {
 
     // Debugging: Fast rendering path
     #if 0
         return max(0, dot(m.normal, l)) * light_color * attenuation * m.basecolor * shadow;
     #endif
 
-    float NxL = saturate(dot(m.normal, l));
+    float NxL = saturate(dot(m.normal, l_diffuse));
 
     if (m.shading_model == SHADING_MODEL_FOLIAGE) {
         transmittance = transmittance.xxx;
     } else if (m.shading_model == SHADING_MODEL_SKIN) {
-        NxL = saturate(0.3 + dot(m.normal, l));
+        NxL = saturate(0.3 + dot(m.normal, l_diffuse));
     } else {
         transmittance = vec3(1);
     }
@@ -134,5 +138,5 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 }
 
 vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec3 transmittance) {
-    return apply_light(m, v, l, light_color, attenuation, shadow, transmittance, 1.0, 1.0);
+    return apply_light(m, v, l, light_color, attenuation, shadow, transmittance, 1.0, 1.0, l);
 }

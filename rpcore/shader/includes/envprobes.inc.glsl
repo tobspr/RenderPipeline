@@ -127,20 +127,18 @@ vec3 get_diffuse_vector(Cubemap map, Material m) {
 void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
     inout float total_weight, inout float total_blend) {
 
+    const float max_mip = 7.0;
     float roughness = get_effective_roughness(m);
 
     float factor = 0.0;
     float mipmap = m.linear_roughness * 40.0;
     float intersection_distance = 1.0;
 
-    const int num_mips = 8;
     Cubemap map = get_cubemap(id);
+
     vec3 direction = get_reflection_vector(map, m, factor, intersection_distance);
-
     vec3 diffuse_direction = get_diffuse_vector(map, m);
-
     float blend = saturate((1 - factor) / max(1e-10, map.border_smoothness));
-
     // Make sure the gradient looks right after tonemapping
     blend = square(blend);
 
@@ -152,10 +150,9 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
         mipmap *= 0.1;
     }
 
-    specular = textureLod(EnvProbes.cubemaps, vec4(direction, map.index),
-        clamp(mipmap, 0.0, num_mips - 1.0) );
-
-    diffuse = textureLod(EnvProbes.diffuse_cubemaps,
+    specular = textureLod(EnvProbes.cubemaps,
+        vec4(direction, map.index), clamp(mipmap, 0.0, max_mip) );
+    diffuse = textureLod(EnvProbes.diffuse_cubemaps, 
         vec4(diffuse_direction, map.index), 0);
 
     // Optional: Correct specular based on diffuse color intensity

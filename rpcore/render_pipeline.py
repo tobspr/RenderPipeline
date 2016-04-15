@@ -521,7 +521,7 @@ class RenderPipeline(RPObject):
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.inner_radius = 0.3
+            rp_light.inner_radius = 0.8
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
@@ -538,11 +538,6 @@ class RenderPipeline(RPObject):
             rp_light.fov = light_node.exponent / math.pi * 180.0
             lpoint = light.get_mat(Globals.base.render).xform_vec((0, 0, -1))
             rp_light.direction = lpoint
-
-            name = light.get_name()
-            if name == "IESSample":
-                rp_light.ies_profile = ies_profile
-
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)

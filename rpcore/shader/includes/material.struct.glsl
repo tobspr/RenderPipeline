@@ -94,3 +94,26 @@ struct Material {
     float linear_roughness;
 };
 
+// Merges two materials, by doing (per component):
+// result = current + to_add * factor;
+void merge_material_output(inout MaterialShaderOutput current, MaterialShaderOutput to_add, float factor) {
+    current.basecolor += to_add.basecolor * factor;
+    current.roughness += to_add.roughness * factor;
+    current.specular_ior += to_add.specular_ior * factor;
+    current.metallic += to_add.metallic * factor;
+    current.shading_model_param0 += to_add.shading_model_param0 * factor;
+    current.normal += to_add.normal * factor;
+}
+
+// Creates an empty material
+MaterialShaderOutput make_default_material_output() {
+    MaterialShaderOutput result;
+    result.shading_model = SHADING_MODEL_DEFAULT;
+    result.basecolor = vec3(0.8);
+    result.normal = vec3(0, 0, 1);
+    result.roughness = 0.3;
+    result.specular_ior = 1.51;
+    result.metallic = 0.0;
+    result.shading_model_param0 = 0.0;
+    return result;
+}

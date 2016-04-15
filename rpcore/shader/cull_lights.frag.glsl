@@ -110,6 +110,10 @@ void main() {
 
             case LT_POINT_LIGHT: {
                 float radius = get_pointlight_radius(light_data);
+                float inner_radius = get_pointlight_inner_radius(light_data);
+
+                // Take area lights into account
+                radius += inner_radius;
                 for (int k = 0; k < num_raydirs; ++k) {
                     visible = visible || viewspace_ray_sphere_distance_intersection(
                         light_pos_view.xyz, radius, local_ray_dirs[k], min_distance, max_distance);

@@ -32,6 +32,7 @@
 
 uniform writeonly imageCube RESTRICT DestCubemap;
 uniform sampler2D DefaultSkydome;
+uniform samplerCube DefaultEnvmap;
 
 #pragma include "scattering_method.inc.glsl"
 
@@ -55,20 +56,21 @@ void main() {
                              * TimeOfDay.scattering.sun_intensity;
                              // * TimeOfDay.scattering.sun_color * 0.01;
 
-
     inscattered_light = srgb_to_rgb(inscattered_light);
     inscattered_light *= 3.0;
 
+
     if (horizon > 0.0) {
-        // Clouds
-        vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-        cloud_color = pow(cloud_color, vec3(2.2));
-        // inscattered_light *= 0.0 + 1.0 * (0.3 + 2.6 * cloud_color);
+        // Render clouds to provide more variance for the cubemap
+        vec3 cloud_color = textureLod(DefaultEnvmap, fix_cubemap_coord(view_vector), 0).xyz;
+        inscattered_light *= 0.0 + 1.0 * (0.5 + 5.0 * cloud_color);
 
     } else {
-        // Ground reflectance
-        // inscattered_light *= saturate(1+0.9*horizon);
-        inscattered_light += saturate(-horizon + 0.2) * TimeOfDay.scattering.sun_intensity * 0.01;
+        // Blend ambient cubemap at the bottom
+        vec3 sun_vector = get_sun_vector();
+        vec3 color_scale = get_sun_color_scale(sun_vector) * TimeOfDay.scattering.sun_color / 255.0;
+        inscattered_light = textureLod(DefaultEnvmap, fix_cubemap_coord(view_vector), 0).xyz
+                            * TimeOfDay.scattering.sun_intensity * color_scale;
     }
 
     #if !HAVE_PLUGIN(color_correction)

@@ -78,8 +78,8 @@ void main() {
   vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
 
   // Prevent super bright spots by clamping to a reasonable high color.
-  // Otherwise very bright highlights lead to artifacts
-  intersected_color = clamp(intersected_color, 0.0, 100.0);
+  // Otherwise very bright dhighlights lead to artifacts
+  intersected_color = clamp(intersected_color, 0.0, 250.0);
 
   // Tonemap so we don't get super bright spots
   // intersected_color = intersected_color / (1 + intersected_color);
