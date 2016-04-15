@@ -34,7 +34,7 @@ lighting:
     # that tile are accumulated. You can adjust the tile size here (in pixels),
     # optimal is a tile size which is not too big (to avoid unecessary shading),
     # but also not too small (to avoid excessive culling).
-    culling_grid_size_x: 32
+    culling_grid_size_x: 24
     culling_grid_size_y: 16
 
     # The view frustum is additionally divived into slices, to be able to do
@@ -58,7 +58,7 @@ lighting:
     # is set too low, you might get artifacts when having many lights.
     # In general, try to set this value as low as possible without getting
     # artifacts
-    max_lights_per_cell: 64
+    max_lights_per_cell: 24
 
 shadows:
 

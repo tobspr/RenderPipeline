@@ -157,8 +157,11 @@ class LightManager(RPObject):
 
         # Storage for the shadow sources
         per_source_vec4s = 5
+
+        # IMPORTANT: RGBA32 is really required here. Otherwise artifacts and bad
+        # shadow filtering occur due to precision issues
         self.img_source_data = Image.create_buffer(
-            "ShadowSourceData", self.MAX_SOURCES * per_source_vec4s, "RGBA16")
+            "ShadowSourceData", self.MAX_SOURCES * per_source_vec4s, "RGBA32")
         self.img_light_data.set_clear_color(0)
         self.img_light_data.clear_image()
 

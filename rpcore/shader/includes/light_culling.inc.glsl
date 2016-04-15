@@ -33,10 +33,8 @@
 // the camera, values > 1 produce a distribution which is further away from the camera.
 #define SLICE_EXP_FACTOR 3.0
 
-
 // Cell ray directions
 const int num_raydirs = 5;
-
 
 // Increase the frustum size by a small bit, because we trace at the corners,
 // since using this way we could miss some small parts of the sphere. With this
@@ -46,7 +44,7 @@ const float cull_bias = 1 + 0.01;
 const vec3 aspect_mul = vec3(1, ASPECT_RATIO, 1);
 
 CONST_ARRAY vec2 ray_dirs[num_raydirs] = vec2[](
-    vec2( 0, 0),
+    vec2( 0  ,  0),
     vec2( 1.0,  1.0) * cull_bias,
     vec2(-1.0,  1.0) * cull_bias,
     vec2( 1.0, -1.0) * cull_bias,
@@ -57,14 +55,12 @@ CONST_ARRAY vec2 ray_dirs[num_raydirs] = vec2[](
 int get_slice_from_distance(float dist) {
     float flt_dist = dist / LC_MAX_DISTANCE;
     return int(log(flt_dist * SLICE_EXP_FACTOR + 1.0) / log(1.0 + SLICE_EXP_FACTOR) * LC_TILE_SLICES);
-    // return int(pow(dist / LC_MAX_DISTANCE, SLICE_POW_FACTOR) * LC_TILE_SLICES);
 }
 
 float get_distance_from_slice(int slice) {
     float flt_dist = slice / float(LC_TILE_SLICES) * log(1.0 + SLICE_EXP_FACTOR);
     float flt_exp = (exp(flt_dist) - 1.0) / SLICE_EXP_FACTOR;
     return flt_exp * LC_MAX_DISTANCE;
-    // return pow(slice / float(LC_TILE_SLICES), 1.0 / SLICE_EXP_FACTOR) * LC_MAX_DISTANCE;
 }
 
 // Converts a coordinate and distance to the appropriate cell index

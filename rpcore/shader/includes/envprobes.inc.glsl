@@ -124,7 +124,8 @@ vec3 get_diffuse_vector(Cubemap map, Material m) {
     #endif
 }
 
-float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
+void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
+    inout float total_weight, inout float total_blend) {
 
     float roughness = get_effective_roughness(m);
 
@@ -137,26 +138,34 @@ float apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular) {
     vec3 direction = get_reflection_vector(map, m, factor, intersection_distance);
 
     vec3 diffuse_direction = get_diffuse_vector(map, m);
-    float clip_factor = saturate( (1 - factor) / max(1e-10, map.border_smoothness));
 
+    float blend = saturate( (1 - factor) / max(1e-10, map.border_smoothness));
     float local_distance = intersection_distance / map.bounding_sphere_radius;
 
-    mipmap *= intersection_distance * 0.012;
+    if (map.use_parallax) {
+        mipmap *= intersection_distance * 0.012;
+    } else {
+        mipmap *= 0.1;
+    }
 
     specular = textureLod(EnvProbes.cubemaps, vec4(direction, map.index),
         clamp(mipmap, 0.0, num_mips - 1.0) );
 
-    diffuse = textureLod(EnvProbes.diffuse_cubemaps, vec4(diffuse_direction, map.index), 0);
+    diffuse = textureLod(EnvProbes.diffuse_cubemaps,
+        vec4(diffuse_direction, map.index), 0);
 
     // Optional: Correct specular based on diffuse color intensity
     // specular.xyz = mix(specular.xyz, specular.xyz * get_luminance(diffuse.xyz), diffuse.w);
 
     // Make sure small probes contribute much more than large ones
-    clip_factor *= exp(-0.05 * map.bounding_sphere_radius);
+    float weight = exp(-0.05 * map.bounding_sphere_radius);
 
     // Apply clip factors
-    specular *= clip_factor;
-    diffuse *= clip_factor;
-    return clip_factor;
+    specular *= weight * blend;
+    diffuse *= weight * blend;
+
+    total_weight += weight;
+    total_blend += blend;
+
 }
 

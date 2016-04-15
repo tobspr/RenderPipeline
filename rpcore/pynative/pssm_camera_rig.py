@@ -75,7 +75,7 @@ class PSSMCameraRig(object):
 
     def set_sun_distance(self, dist):
         self._sun_distance = dist
-        self._lens.set_near_far(10, dist)
+        self._lens.set_near_far(10, 2 * dist)
 
     def reparent_to(self, parent):
         self._cam_node.reparent_to(parent)

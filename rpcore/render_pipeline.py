@@ -506,8 +506,9 @@ class RenderPipeline(RPObject):
     def prepare_scene(self, scene):
         """ Prepares a given scene, by converting panda lights to render pipeline
         lights """
+        
         # TODO: IES profiles
-        ies_profile = self.load_ies_profile("x_arrow_diffuse.ies") # pylint: disable=W0612
+        ies_profile = self.load_ies_profile("soft_display.ies") # pylint: disable=W0612
         lights = []
 
         for light in scene.find_all_matches("**/+PointLight"):
@@ -519,19 +520,7 @@ class RenderPipeline(RPObject):
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.inner_radius = 0.8
-
-            name = light.get_name()
-            if name == "PR1":
-                rp_light.inner_radius = 0.01
-            elif name == "PR2":
-                rp_light.inner_radius = 0.1
-            elif name == "PR3":
-                rp_light.inner_radius = 0.3
-            elif name == "PR4":
-                rp_light.inner_radius = 0.9
-
-
+            rp_light.inner_radius = 0.3
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
@@ -548,12 +537,14 @@ class RenderPipeline(RPObject):
             rp_light.fov = light_node.exponent / math.pi * 180.0
             lpoint = light.get_mat(Globals.base.render).xform_vec((0, 0, -1))
             rp_light.direction = lpoint
+
+            name = light.get_name()
+            if name == "IESSample":
+                rp_light.ies_profile = ies_profile
+
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
-
-            # XXX: Support IES profiles (Have to add support to the BAM exporter first)
-            # rp_light.ies_profile = ies_profile
 
         envprobes = []
 
@@ -561,7 +552,7 @@ class RenderPipeline(RPObject):
         for np in scene.find_all_matches("**/ENVPROBE*"):
             probe = self.add_environment_probe()
             probe.set_mat(np.get_mat())
-            probe.border_smoothness = 0.05
+            probe.border_smoothness = 0.005
             probe.parallax_correction = True
             np.remove_node()
             envprobes.append(probe)

@@ -48,10 +48,9 @@ uniform sampler2DShadow ShadowAtlasPCF;
 
 int get_pointlight_source_offs(vec3 direction) {
     vec3 abs_dir = abs(direction);
-    float max_comp = max(abs_dir.x, max(abs_dir.y, abs_dir.z));
-    // TODO: Use step(x, 0) + 1 instead of y > 0 ? 0 : 1
-    if (abs_dir.x >= max_comp) return direction.x >= 0.0 ? 0 : 1;
-    if (abs_dir.y >= max_comp) return direction.y >= 0.0 ? 2 : 3;
+    float max_comp = max3(abs_dir.x, abs_dir.y, abs_dir.z);
+    if (abs_dir.x >= max_comp - 1e-5) return direction.x >= 0.0 ? 0 : 1;
+    if (abs_dir.y >= max_comp - 1e-5) return direction.y >= 0.0 ? 2 : 3;
     return direction.z >= 0.0 ? 4 : 5;
 }
 
@@ -117,10 +116,11 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     mat2 rotation_mat = make_rotation_mat(rotation);
 
     // TODO: make this configurable
-    const float slope_bias = 0.001;
+    const float slope_bias = 0.006;
     const float normal_bias = 0.0005;
-    const float const_bias = 0.0025;
-    vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, l);
+    const float const_bias = 0.0009;
+    vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
+
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
@@ -131,11 +131,10 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     for (int i = 0; i < num_samples; ++i) {
         vec2 offs = projected_coord.xy + (rotation_mat * shadow_sample_offsets_8[i]) * filter_size;
-        // vec2 offs = projected_coord.xy;
         #if SUPPORT_PCF
-        accum += textureLod(ShadowAtlasPCF, vec3(offs, projected.z - const_bias), 0).x;
+            accum += textureLod(ShadowAtlasPCF, vec3(offs, projected.z - const_bias), 0).x;
         #else
-        accum += step(textureProj(ShadowAtlas, vec3(offs, projected.z - const_bias), 0).x, projected.z - const_bias);
+            accum += textureLod(ShadowAtlas, vec2(offs), 0).x > projected.z - const_bias ? 1.0 : 0.0;
         #endif
     }
 
@@ -147,7 +146,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 // Shades the material from the per cell light buffer
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
-    #if DEBUG_MODE
+    #if DEBUG_MODE && !MODE_ACTIVE(LIGHT_COUNT) && !MODE_ACTIVE(LIGHT_TILES)
         return vec3(0);
     #endif
 
@@ -168,17 +167,22 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     int num_point_noshadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_NOSHADOW).x;
     int num_point_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_SHADOW).x;
 
+    #if MODE_ACTIVE(LIGHT_COUNT)
+        int total_lights = num_spot_noshadow + num_spot_shadow + num_point_noshadow + num_point_shadow;
+        float factor = total_lights / float(LC_MAX_LIGHTS_PER_CELL);
+        return vec3(factor, 1 - factor, 0);
+    #endif
+
     // Debug mode, show tile bounds
-    #if 0
+    #if SPECIAL_MODE_ACTIVE(LIGHT_TILES)
         // Show tiles
         #if IS_SCREEN_SPACE
             if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 || int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
-                shading_result += 0.01;
+                shading_result += 0.05;
             }
             int num_lights = num_spot_noshadow + num_spot_shadow + num_point_noshadow + num_point_shadow;
-            // float light_factor = num_lights / float(LC_MAX_LIGHTS_PER_CELL);
-            float light_factor = num_lights / 5.0;
-            // shading_result += ( (tile.z + 1) % 2) * 0.01;
+            float light_factor = num_lights / float(LC_MAX_LIGHTS_PER_CELL);
+            shading_result += ( (tile.z + 1) % 2) * 0.01;
             shading_result += light_factor;
         #endif
     #endif

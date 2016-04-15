@@ -73,7 +73,7 @@ class RPLight(object):
         self._color = Vec3(1)
         self._ies_profile = -1
         self._source_resolution = 512
-        self._near_plane = 0.1
+        self._near_plane = 0.5
         self._energy = 20
         self._shadow_sources = []
 

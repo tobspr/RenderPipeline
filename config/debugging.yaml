@@ -24,3 +24,6 @@ render_modes:
   - { name: "Diffuse Ambient", key: "DIFFUSE_AMBIENT" }
   - { name: "Specular Ambient", key: "SPECULAR_AMBIENT" }
   - { name: "Luminance", key: "LUMINANCE", special: true }
+  - { name: "Probe Count", key: "ENVPROBE_COUNT", requires: "env_probes" }
+  - { name: "Light Count", key: "LIGHT_COUNT" }
+  - { name: "Light Tiles", key: "LIGHT_TILES", special: true }

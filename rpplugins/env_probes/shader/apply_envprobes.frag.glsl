@@ -58,6 +58,7 @@ void main() {
 
     vec4 total_diffuse = vec4(0);
     vec4 total_specular = vec4(0);
+    float total_blend = 0.0;
     float total_weight = 0.0;
 
     int processed_probes = 0;
@@ -66,13 +67,20 @@ void main() {
         if (cubemap_index < 0) break;
         vec4 diff, spec;
         ++processed_probes;
-        total_weight += apply_cubemap(cubemap_index, m, diff, spec);
+        apply_cubemap(cubemap_index, m, diff, spec, total_weight, total_blend);
         total_diffuse += diff;
         total_specular += spec;
     }
 
-    result_spec = total_specular / max(1e-6, total_weight);
-    result_diff = total_diffuse / max(1e-6, total_weight);
+    // Weight the probes, but only if there other probes
+    if (processed_probes > 1) {
+        result_spec = total_specular / max(1e-6, total_weight * total_blend);
+        result_diff = total_diffuse / max(1e-6, total_weight * total_blend);
+    } else {
+
+        result_spec = total_specular / max(1e-6, total_weight);
+        result_diff = total_diffuse / max(1e-6, total_weight);
+    }
 
     // Fade out cubemaps as they reach the culling distance
     float curr_dist = distance(m.position, MainSceneData.camera_pos);
@@ -83,6 +91,8 @@ void main() {
     result_diff *= fade;
     
     // Visualize probe count
-    // float probe_factor = processed_probes / MAX_PROBES_PER_CELL;
-    // result_spec = vec4(1 - probe_factor, probe_factor, 0, 1);
+    #if MODE_ACTIVE(ENVPROBE_COUNT)
+        float probe_factor = float(processed_probes) / MAX_PROBES_PER_CELL;
+        result_spec = result_diff = vec4(probe_factor, 1 - probe_factor, 0, 1);
+    #endif
 }

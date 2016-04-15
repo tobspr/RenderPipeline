@@ -58,7 +58,7 @@ class ShadowStage(RenderStage):
     def create(self):
         self.target = self.create_target("ShadowAtlas")
         self.target.size = self.size
-        self.target.add_depth_attachment(bits=32)
+        self.target.add_depth_attachment(bits=16)
         self.target.prepare_render(None)
 
         # Remove all current display regions

@@ -186,9 +186,9 @@ class InternalLightManager(object):
 
         def get_source_score(source):
             dist = (source.get_bounds().get_center() - self._camera_pos).length()
-            return -dist - (10**10 if source.has_slot() else 0)
+            return -dist + (10**10 if source.has_region() else 0)
 
-        sorted_sources = sorted(sources_to_update, key=get_source_score)
+        sorted_sources = list(sorted(sources_to_update, key=get_source_score))
 
         atlas = self._shadow_manager.get_atlas()
         update_slots = min(

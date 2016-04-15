@@ -302,8 +302,9 @@ class RenderTarget(RPObject):
         buffer_props.set_coverage_samples(0)
         buffer_props.set_depth_bits(self._depth_bits)
 
-        if self._depth_bits:
+        if self._depth_bits == 32:
             buffer_props.set_float_depth(True)
+
         buffer_props.set_float_color(max(self._color_bits) > 8)
         buffer_props.set_force_hardware(True)
         buffer_props.set_multisamples(0)

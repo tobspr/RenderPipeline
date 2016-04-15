@@ -301,6 +301,11 @@ void main() {
         ambient *= scene_color.w;
     #endif
 
+    #if MODE_ACTIVE(ENVPROBE_COUNT)
+        result = texture(EnvmapAmbientDiff, texcoord);
+        return;
+    #endif
+
     result = scene_color * 1.0 + vec4(ambient, 1) * 1.0;
     result.w = 1.0;
 }
