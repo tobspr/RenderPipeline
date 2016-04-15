@@ -88,7 +88,7 @@ gbuffer:
             float snow = 0.0;
 
             { // Snow
-                snow = saturate(7.0 * saturate(height-0.5));
+                snow = saturate(3.0 * saturate(height-0.39));
                 snow *= saturate(pow(saturate(1.0 - slope), 4.0)) * 25.0;
                 //snow -= 0.6;
                 //snow *= 0.5;
@@ -116,7 +116,7 @@ gbuffer:
             rock_mat.roughness = 0.8;
             
             MaterialShaderOutput snow_mat = make_default_material_output();
-            snow_mat.basecolor = vec3(1.0, 1.0, 1.2) * 3.0;
+            snow_mat.basecolor = vec3(1.0, 1.0, 1.2) * 5.0;
             snow_mat.roughness = 0.6;
 
 

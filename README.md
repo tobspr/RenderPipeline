@@ -4,12 +4,12 @@ Deferred Rendering Pipeline with Physically Based Shading for the <a href="http:
 
 ## Screenshots
 
-<a href="https://www.youtube.com/watch?v=K7R8zQsbnm4" target="_blank">Video</a>
 
-Terrain:
-<img src="http://i.imgur.com/mVBmJaW.png" />
+Terrain Demo (click to enlarge):
+<img src="http://i.imgur.com/zE0ywPl.png" />
 
 Car rendering:
+<a href="https://www.youtube.com/watch?v=K7R8zQsbnm4" target="_blank">Video</a>
 <img src="http://i.imgur.com/rglAQ5J.png" />
 
 Screen space reflections test:

@@ -57,17 +57,16 @@ void main() {
         distance(MainSceneData.camera_pos, m.position));
 
     // Don't shade pixels out of the shading range
-    if (tile.z >= LC_TILE_SLICES) {
-        result = vec4(0, 0, 0, 1);
-        return;
-    }
+    #if !DEBUG_MODE
+        if (tile.z >= LC_TILE_SLICES) {
+            result = vec4(0, 0, 0, 1);
+            return;
+        }
+    #endif
 
     // Apply all lights
     result.xyz = shade_material_from_tile_buffer(m, tile);
     result.w = 1.0;
-
-
-
 
     /*
 

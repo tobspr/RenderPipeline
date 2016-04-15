@@ -107,10 +107,10 @@ void main() {
         proj.z -= fixed_bias;
 
         if (!out_of_unit_box(proj)) {
-            const float esm_factor = 10.0;
+            const float esm_factor = 5.0;
             float depth_sample = texture(PSSMDistSunShadowMap, proj.xy).x;
             shadow_factor = saturate(exp(-esm_factor * proj.z) * depth_sample);
-            shadow_factor = pow(shadow_factor, 1e3);
+            shadow_factor = pow(shadow_factor, 1e2);
         }
     }
     #endif
