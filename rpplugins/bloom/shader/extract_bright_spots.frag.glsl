@@ -29,14 +29,14 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
-uniform sampler2D SourceTex;
+uniform sampler2D ShadedScene;
 uniform writeonly image2D RESTRICT DestTex;
 
 void main() {
     vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    vec3 scene_color = textureLod(SourceTex, texcoord, 0).xyz;
+    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
     float luma = get_luminance(scene_color);
 
     // We don't use a threshold for blur, instead we perform the bloom everything,

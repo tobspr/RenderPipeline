@@ -28,7 +28,7 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-uniform int SourceMip;
+uniform int sourceMip;
 uniform sampler2D SourceTex;
 uniform writeonly image2D RESTRICT DestTex;
 
@@ -39,9 +39,9 @@ uniform bool FirstUpsamplePass;
 
 
 void main() {
-    vec2 source_size = vec2(textureSize(SourceTex, SourceMip).xy);
+    vec2 source_size = vec2(textureSize(SourceTex, sourceMip).xy);
     vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / (2.0 * source_size);
-    vec3 summed = textureLod(SourceTex, texcoord, SourceMip + 1).xyz;
+    vec3 summed = textureLod(SourceTex, texcoord, sourceMip + 1).xyz;
 
     if (FirstUpsamplePass) {
         summed = vec3(0);
@@ -50,7 +50,7 @@ void main() {
     vec3 mip_color = vec3(1);
 
     // Hardcoded mipmap colors for now, should make this adjustable at some point
-    switch(SourceMip) {
+    switch(sourceMip) {
         case 0: mip_color = vec3(0.214, 0.429, 0.497); break;
         case 1: mip_color = vec3(0.964, 0.947, 0.991); break;
         case 2: mip_color = vec3(0.982, 0.542, 0.542); break;
@@ -64,17 +64,17 @@ void main() {
     vec2 flt_coord = vec2(coord) / (2.0 * source_size);
     vec2 texel_size = 1.0 / source_size;
 
-    vec3 source_sample = textureLod(SourceTex, flt_coord, SourceMip).xyz * 4;
+    vec3 source_sample = textureLod(SourceTex, flt_coord, sourceMip).xyz * 4;
 
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  0,  1) * texel_size, SourceMip).xyz * 2;
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  0, -1) * texel_size, SourceMip).xyz * 2;
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  1,  0) * texel_size, SourceMip).xyz * 2;
-    source_sample += textureLod(SourceTex, flt_coord + vec2( -1,  0) * texel_size, SourceMip).xyz * 2;
+    source_sample += textureLod(SourceTex, flt_coord + vec2(  0,  1) * texel_size, sourceMip).xyz * 2;
+    source_sample += textureLod(SourceTex, flt_coord + vec2(  0, -1) * texel_size, sourceMip).xyz * 2;
+    source_sample += textureLod(SourceTex, flt_coord + vec2(  1,  0) * texel_size, sourceMip).xyz * 2;
+    source_sample += textureLod(SourceTex, flt_coord + vec2( -1,  0) * texel_size, sourceMip).xyz * 2;
 
-    source_sample += textureLod(SourceTex, flt_coord + vec2( -1, -1) * texel_size, SourceMip).xyz;
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  1, -1) * texel_size, SourceMip).xyz;
-    source_sample += textureLod(SourceTex, flt_coord + vec2( -1,  1) * texel_size, SourceMip).xyz;
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  1,  1) * texel_size, SourceMip).xyz;
+    source_sample += textureLod(SourceTex, flt_coord + vec2( -1, -1) * texel_size, sourceMip).xyz;
+    source_sample += textureLod(SourceTex, flt_coord + vec2(  1, -1) * texel_size, sourceMip).xyz;
+    source_sample += textureLod(SourceTex, flt_coord + vec2( -1,  1) * texel_size, sourceMip).xyz;
+    source_sample += textureLod(SourceTex, flt_coord + vec2(  1,  1) * texel_size, sourceMip).xyz;
 
     source_sample /= 16.0;
     source_sample *= mip_color;
@@ -82,6 +82,6 @@ void main() {
     vec3 pass_result = summed + source_sample;
     pass_result *= 0.5;
 
-    vec4 old_data = texelFetch(SourceTex, coord, SourceMip - 1);
+    vec4 old_data = texelFetch(SourceTex, coord, sourceMip - 1);
     imageStore(DestTex, coord, old_data + vec4(pass_result, 0));
 }

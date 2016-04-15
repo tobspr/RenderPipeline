@@ -73,13 +73,19 @@ vec2 get_parallax_texcoord(sampler2D displacement_map, float strength) {
     // To disable parallax mapping:
     // return vOutput.texcoord;
 
-    // Early out for materials without parallax mapping
+    const float max_dist = 30.0;
+    vec3 vec_to_cam = vOutput.position - MainSceneData.camera_pos;
+
     float initial_height = texture(displacement_map, vOutput.texcoord).x;
-    float pixel_dist = distance(MainSceneData.camera_pos, vOutput.position);
-    if (initial_height > 0.999 || pixel_dist > 100.0) return vOutput.texcoord;
+    float pixel_dist = length(vec_to_cam);
+
+    // Early out for materials without parallax mapping
+    if (initial_height > 0.999 || pixel_dist > max_dist) return vOutput.texcoord;
+
+    float NxV = max(0.0, dot(vOutput.normal, vec_to_cam / pixel_dist)); // xxx merge with pixel dist
 
     float raymarch_distance = 0.2 * strength;
-    int num_steps = 18;
+    int num_steps = max(5, int( (40 - (pixel_dist / max_dist) * 37.0) * (1 - NxV) ));
 
     vec3 tangent, binormal;
     reconstruct_tangent(tangent, binormal);
@@ -104,5 +110,6 @@ vec2 get_parallax_texcoord(sampler2D displacement_map, float strength) {
         }
     }
 
-    return last_hit.xy;
+    float fade = square(square(square(pixel_dist / max_dist)));
+    return mix(last_hit.xy, vOutput.texcoord, fade);
 }

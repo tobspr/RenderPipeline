@@ -40,6 +40,7 @@ class Plugin(BasePlugin):
     def on_stage_setup(self):
         self._bloom_stage = self.create_stage(BloomStage)
         self._bloom_stage.num_mips = self.get_setting("num_mipmaps")
+        self._bloom_stage.remove_fireflies = self.get_setting("remove_fireflies")
 
     def on_pipeline_created(self):
         dirt_tex = RPLoader.load_texture(self.get_resource("lens_dirt.txo"))

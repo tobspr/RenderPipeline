@@ -139,7 +139,11 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
 
     vec3 diffuse_direction = get_diffuse_vector(map, m);
 
-    float blend = saturate( (1 - factor) / max(1e-10, map.border_smoothness));
+    float blend = saturate((1 - factor) / max(1e-10, map.border_smoothness));
+
+    // Make sure the gradient looks right after tonemapping
+    blend = square(blend);
+
     float local_distance = intersection_distance / map.bounding_sphere_radius;
 
     if (map.use_parallax) {
@@ -159,13 +163,13 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
 
     // Make sure small probes contribute much more than large ones
     float weight = exp(-0.05 * map.bounding_sphere_radius);
+    weight *= factor >= 1.0 ? 0.0 : 1.0;
 
     // Apply clip factors
     specular *= weight * blend;
     diffuse *= weight * blend;
 
-    total_weight += weight;
+    total_weight += weight * blend;
     total_blend += blend;
-
 }
 

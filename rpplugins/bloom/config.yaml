@@ -23,7 +23,6 @@ settings: !!omap
     - remove_fireflies:
         type: bool
         default: true
-        shader_runtime: true
         label: Remove fireflies
         description: >
             Attempts to reduce flickering by darkening very small bright spots.

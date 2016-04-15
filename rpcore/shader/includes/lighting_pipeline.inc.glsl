@@ -116,9 +116,10 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     mat2 rotation_mat = make_rotation_mat(rotation);
 
     // TODO: make this configurable
+    // XXX: Scale by resolution (higher resolution needs smaller bias)
     const float slope_bias = 0.05;
     const float normal_bias = 0.0005;
-    const float const_bias = 0.001;
+    const float const_bias = 0.005;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
 
     vec3 projected = project(mvp, biased_pos);
@@ -178,11 +179,11 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         // Show tiles
         #if IS_SCREEN_SPACE
             if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 || int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
-                shading_result += 0.05;
+                shading_result += 1.0;
             }
             int num_lights = num_spot_noshadow + num_spot_shadow + num_point_noshadow + num_point_shadow;
             float light_factor = num_lights / float(LC_MAX_LIGHTS_PER_CELL);
-            shading_result += ( (tile.z + 1) % 2) * 0.01;
+            shading_result += ( (tile.z + 1) % 2) * 0.2;
             shading_result += light_factor;
         #endif
     #endif

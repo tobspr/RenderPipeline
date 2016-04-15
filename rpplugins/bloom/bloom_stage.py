@@ -40,15 +40,18 @@ class BloomStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
         self.num_mips = 6
+        self.remove_fireflies = False
 
     @property
     def produced_pipes(self):
         return {"ShadedScene": self.target_apply.color_tex}
 
     def create(self):
-        self.target_firefly = self.create_target("RemoveFireflies")
-        self.target_firefly.add_color_attachment(bits=16)
-        self.target_firefly.prepare_buffer()
+
+        if self.remove_fireflies:
+            self.target_firefly = self.create_target("RemoveFireflies")
+            self.target_firefly.add_color_attachment(bits=16)
+            self.target_firefly.prepare_buffer()
 
         self.scene_target_img = Image.create_2d(
             "BloomDownsample", Globals.resolution.x, Globals.resolution.y, "R11G11B10")
@@ -64,7 +67,8 @@ class BloomStage(RenderStage):
         self.target_extract.prepare_buffer()
         self.target_extract.set_shader_input("DestTex", self.scene_target_img, False, True, -1, 0)
 
-        self.target_extract.set_shader_input("SourceTex", self.target_firefly.color_tex)
+        if self.remove_fireflies:
+            self.target_extract.set_shader_input("ShadedScene", self.target_firefly.color_tex, 1000)
 
         self.downsample_targets = []
         self.upsample_targets = []
@@ -75,7 +79,7 @@ class BloomStage(RenderStage):
             target = self.create_target("Downsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
             target.prepare_buffer()
-            target.set_shader_input("SourceMip", i)
+            target.set_shader_input("sourceMip", i)
             target.set_shader_input("SourceTex", self.scene_target_img)
             target.set_shader_input("DestTex", self.scene_target_img, False, True, -1, i + 1)
             self.downsample_targets.append(target)
@@ -88,7 +92,7 @@ class BloomStage(RenderStage):
             target.prepare_buffer()
             target.set_shader_input("FirstUpsamplePass", i == 0)
 
-            target.set_shader_input("SourceMip", self.num_mips - i)
+            target.set_shader_input("sourceMip", self.num_mips - i)
             target.set_shader_input("SourceTex", self.scene_target_img)
             target.set_shader_input("DestTex", self.scene_target_img,
                                     False, True, -1, self.num_mips - i - 1)
@@ -101,7 +105,9 @@ class BloomStage(RenderStage):
 
     def reload_shaders(self):
         self.target_extract.shader = self.load_plugin_shader("extract_bright_spots.frag.glsl")
-        self.target_firefly.shader = self.load_plugin_shader("remove_fireflies.frag.glsl")
+        
+        if self.remove_fireflies:
+            self.target_firefly.shader = self.load_plugin_shader("remove_fireflies.frag.glsl")
         self.target_apply.shader = self.load_plugin_shader("apply_bloom.frag.glsl")
 
         downsample_shader = self.load_plugin_shader("bloom_downsample.frag.glsl")

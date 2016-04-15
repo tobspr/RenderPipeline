@@ -56,31 +56,26 @@ void main() {
     int cell_index = texelFetch(CellIndices, tile, 0).x;
     int data_offs = cell_index * MAX_PROBES_PER_CELL;
 
-    vec4 total_diffuse = vec4(0);
-    vec4 total_specular = vec4(0);
-    float total_blend = 0.0;
-    float total_weight = 0.0;
+    vec4 total_diffuse = vec4(0, 0, 0, 0.001);
+    vec4 total_specular = vec4(0, 0, 0, 0.001);
+    float total_blend = 1;
+    float total_weight = 1;
 
     int processed_probes = 0;
     for (int i = 0; i < MAX_PROBES_PER_CELL; ++i) {
         int cubemap_index = texelFetch(PerCellProbes, data_offs + i).x - 1;
         if (cubemap_index < 0) break;
         vec4 diff, spec;
-        ++processed_probes;
+        processed_probes += 1;
         apply_cubemap(cubemap_index, m, diff, spec, total_weight, total_blend);
         total_diffuse += diff;
         total_specular += spec;
     }
 
-    // Weight the probes, but only if there other probes
-    if (processed_probes > 1) {
-        result_spec = total_specular / max(1e-6, total_weight * total_blend);
-        result_diff = total_diffuse / max(1e-6, total_weight * total_blend);
-    } else {
+    float scale = 1.0 / max(1e-9, total_weight * total_blend);
 
-        result_spec = total_specular / max(1e-6, total_weight);
-        result_diff = total_diffuse / max(1e-6, total_weight);
-    }
+    result_spec = total_specular * scale;
+    result_diff = total_diffuse * scale;
 
     // Fade out cubemaps as they reach the culling distance
     float curr_dist = distance(m.position, MainSceneData.camera_pos);
@@ -93,10 +88,14 @@ void main() {
     // Pack color
     result_spec.xyz = result_spec.xyz / (1 + result_spec.xyz);
     result_diff.xyz = result_diff.xyz / (1 + result_diff.xyz);
+
+    result_diff = saturate(result_diff);
+    result_spec = saturate(result_spec);
  
     // Visualize probe count
     #if MODE_ACTIVE(ENVPROBE_COUNT)
         float probe_factor = float(processed_probes) / MAX_PROBES_PER_CELL;
         result_spec = result_diff = vec4(probe_factor, 1 - probe_factor, 0, 1);
     #endif
+
 }

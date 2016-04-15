@@ -28,13 +28,13 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-uniform int SourceMip;
+uniform int sourceMip;
 uniform sampler2D SourceTex;
 uniform writeonly image2D RESTRICT DestTex;
 
 void main() {
     ivec2 int_coord = ivec2(gl_FragCoord.xy);
-    vec2 parent_tex_size = vec2(textureSize(SourceTex, SourceMip).xy);
+    vec2 parent_tex_size = vec2(textureSize(SourceTex, sourceMip).xy);
     vec2 texel_size = 1.0 / parent_tex_size;
 
     // Compute the floating point coordinate pointing to the exact center of the
@@ -43,25 +43,25 @@ void main() {
 
     // Filter the image, see:
     // http://fs5.directupload.net/images/151213/qfnexcls.png
-    vec3 center_sample = textureLod(SourceTex, flt_coord, SourceMip).xyz;
+    vec3 center_sample = textureLod(SourceTex, flt_coord, sourceMip).xyz;
 
     // inner samples (marked red)
-    vec3 sample_r_tl = textureLod(SourceTex, flt_coord + vec2(-1, 1 ) * texel_size, SourceMip).xyz;
-    vec3 sample_r_tr = textureLod(SourceTex, flt_coord + vec2( 1, 1 ) * texel_size, SourceMip).xyz;
-    vec3 sample_r_bl = textureLod(SourceTex, flt_coord + vec2(-1,-1 ) * texel_size, SourceMip).xyz;
-    vec3 sample_r_br = textureLod(SourceTex, flt_coord + vec2( 1,-1 ) * texel_size, SourceMip).xyz;
+    vec3 sample_r_tl = textureLod(SourceTex, flt_coord + vec2(-1, 1 ) * texel_size, sourceMip).xyz;
+    vec3 sample_r_tr = textureLod(SourceTex, flt_coord + vec2( 1, 1 ) * texel_size, sourceMip).xyz;
+    vec3 sample_r_bl = textureLod(SourceTex, flt_coord + vec2(-1,-1 ) * texel_size, sourceMip).xyz;
+    vec3 sample_r_br = textureLod(SourceTex, flt_coord + vec2( 1,-1 ) * texel_size, sourceMip).xyz;
 
     // corner samples
-    vec3 sample_t = textureLod(SourceTex, flt_coord + vec2( 0, 2 ) * texel_size, SourceMip).xyz;
-    vec3 sample_r = textureLod(SourceTex, flt_coord + vec2( 2, 0 ) * texel_size, SourceMip).xyz;
-    vec3 sample_b = textureLod(SourceTex, flt_coord + vec2( 0,-2 ) * texel_size, SourceMip).xyz;
-    vec3 sample_l = textureLod(SourceTex, flt_coord + vec2(-2, 0 ) * texel_size, SourceMip).xyz;
+    vec3 sample_t = textureLod(SourceTex, flt_coord + vec2( 0, 2 ) * texel_size, sourceMip).xyz;
+    vec3 sample_r = textureLod(SourceTex, flt_coord + vec2( 2, 0 ) * texel_size, sourceMip).xyz;
+    vec3 sample_b = textureLod(SourceTex, flt_coord + vec2( 0,-2 ) * texel_size, sourceMip).xyz;
+    vec3 sample_l = textureLod(SourceTex, flt_coord + vec2(-2, 0 ) * texel_size, sourceMip).xyz;
 
     // edge samples
-    vec3 sample_tl = textureLod(SourceTex, flt_coord + vec2( -2, 2 ) * texel_size, SourceMip).xyz;
-    vec3 sample_tr = textureLod(SourceTex, flt_coord + vec2(  2, 2 ) * texel_size, SourceMip).xyz;
-    vec3 sample_bl = textureLod(SourceTex, flt_coord + vec2( -2,-2 ) * texel_size, SourceMip).xyz;
-    vec3 sample_br = textureLod(SourceTex, flt_coord + vec2(  2,-2 ) * texel_size, SourceMip).xyz;
+    vec3 sample_tl = textureLod(SourceTex, flt_coord + vec2( -2, 2 ) * texel_size, sourceMip).xyz;
+    vec3 sample_tr = textureLod(SourceTex, flt_coord + vec2(  2, 2 ) * texel_size, sourceMip).xyz;
+    vec3 sample_bl = textureLod(SourceTex, flt_coord + vec2( -2,-2 ) * texel_size, sourceMip).xyz;
+    vec3 sample_br = textureLod(SourceTex, flt_coord + vec2(  2,-2 ) * texel_size, sourceMip).xyz;
 
     vec3 kernel_sum_red    = sample_r_tl + sample_r_tr + sample_r_bl + sample_r_br;
     vec3 kernel_sum_yellow = sample_tl   + sample_t    + sample_l    + center_sample;
