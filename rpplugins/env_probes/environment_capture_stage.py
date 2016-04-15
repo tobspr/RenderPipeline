@@ -155,7 +155,6 @@ class EnvironmentCaptureStage(RenderStage):
         self.pta_index[0] = probe.index
 
     def update(self):
-
         # First, disable all targets
         for target in itervalues(self._targets):
             target.active = False
@@ -172,7 +171,6 @@ class EnvironmentCaptureStage(RenderStage):
             self.filter_diffuse_target.active = True
             for target in self.filter_targets:
                 target.active = True
-
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

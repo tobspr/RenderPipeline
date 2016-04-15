@@ -70,6 +70,7 @@ def parse_cmd_args():
     parser = argparse.ArgumentParser(description="Render Pipeline setup")
     parser.add_argument("--clean", help="Clean rebuild of the native modules", action="store_true")
     parser.add_argument("--verbose", help="Output additional debug information", action="store_true")
+    parser.add_argument("--skip-update", help="Skip updating the module builder to avoid overriding changes", action="store_true")
     parser.add_argument("--skip-native", help="Skip native module compilation", action="store_true")
     return parser.parse_args()
 
@@ -98,8 +99,11 @@ def exec_python_file(pth, args=None):
     print("\tRunning script:", Fore.YELLOW + Style.BRIGHT + pth + Style.RESET_ALL)
     pth = os.path.basename(pth)
     os.chdir(basedir)
+    cmd = [sys.executable, "-B", pth] + (args or [])
+    if CMD_ARGS.verbose:
+        print("Executing", ' '.join(cmd))
     try:
-        output = subprocess.check_output([sys.executable, "-B", pth] + (args or []), stderr=sys.stderr)
+        output = subprocess.check_output(cmd, stderr=sys.stderr)
     except subprocess.CalledProcessError as msg:
         print(color("Failed to execute '" + pth + "'", Fore.YELLOW + Style.BRIGHT))
         print("Output:", msg, "\n", msg.output)
@@ -108,7 +112,7 @@ def exec_python_file(pth, args=None):
         print("Python script error:", msg)
         error("Error during script execution")
     if CMD_ARGS.verbose:
-        print(output)
+        print(output.decode("utf-8"))
     os.chdir(SETUP_DIR)
 
 def extract_gz_files(pth):
@@ -223,8 +227,9 @@ def setup():
 
             write_flag("rpcore/native/use_cxx.flag", True)
 
-            print_step("Downloading the module builder ...")
-            exec_python_file("rpcore/native/update_module_builder.py")
+            if not CMD_ARGS.skip_update:
+                print_step("Downloading the module builder ...")
+                exec_python_file("rpcore/native/update_module_builder.py")
 
             print_step("Building the native code .. (This might take a while!)")
             exec_python_file("rpcore/native/build.py", ["--clean"] if CMD_ARGS.clean else [])

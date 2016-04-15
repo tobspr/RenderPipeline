@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import PTAInt
+from panda3d.core import Vec4
 from rpcore.render_stage import RenderStage
 
 class PSSMStage(RenderStage):
@@ -36,16 +36,14 @@ class PSSMStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self.void_target.color_tex}
+        return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-
-        # Store whether the target is active
-        self.pta_active = PTAInt.empty_array(1)
-
+        self.enabled = True
         self.target_shadows = self.create_target("FilterPSSM")
         self.target_shadows.add_color_attachment(bits=(8, 0, 0, 0))
         self.target_shadows.prepare_buffer()
+        self.target_shadows.color_tex.set_clear_color(Vec4(0))
 
         self.target = self.create_target("ApplyPSSMShadows")
         self.target.add_color_attachment(bits=16)
@@ -53,21 +51,14 @@ class PSSMStage(RenderStage):
 
         self.target.set_shader_input("PrefilteredShadows", self.target_shadows.color_tex)
 
-        self.void_target = self.create_target("PSSMVoidShader")
-        self.void_target.add_color_attachment(bits=16)
-        self.void_target.prepare_buffer()
-        self.void_target.activ = False
-        self.void_target.set_shader_input("SourcePSSMTex", self.target.color_tex)
-        self.void_target.set_shader_input("usePssmTex", self.pta_active)
-
-    def set_render_shadows(self, render_shadows):
+    def set_render_shadows(self, enabled):
         """ Toggle whether to render shadows or whether to just pass through
         the scene color """
-        self.pta_active[0] = int(render_shadows)
-        self.target.active = render_shadows
-        self.target_shadows.active = render_shadows
+        self.target_shadows.active = enabled
+        if enabled != self.enabled:
+            self.target_shadows.color_tex.clear_image()
+            self.enabled = enabled
 
     def reload_shaders(self):
         self.target_shadows.shader = self.load_plugin_shader("filter_pssm_shadows.frag.glsl")
         self.target.shader = self.load_plugin_shader("apply_sun_shading.frag.glsl")
-        self.void_target.shader = self.load_plugin_shader("pass_through_shader.frag.glsl")

@@ -49,7 +49,7 @@ class SSRStage(RenderStage):
 
         self.target = self.create_target("ComputeSSR")
         self.target.size = -2
-        self.target.add_color_attachment(bits=16)
+        self.target.add_color_attachment(bits=(16, 16, 0, 0))
         self.target.prepare_buffer()
 
         self.target.color_tex.set_minfilter(SamplerState.FT_nearest)
@@ -60,26 +60,9 @@ class SSRStage(RenderStage):
         self.target_velocity.prepare_buffer()
         self.target_velocity.set_shader_input("TraceResult", self.target.color_tex)
 
-        self.mipchain = Image.create_2d("SSRMipchain", x_size, y_size, "RGBA16")
-        self.mipchain.set_minfilter(SamplerState.FT_linear_mipmap_linear)
-        self.mipchain.set_wrap_u(SamplerState.WM_clamp)
-        self.mipchain.set_wrap_v(SamplerState.WM_clamp)
-        self.mipchain.set_clear_color(Vec4(0))
-        self.mipchain.clear_image()
-
-        self.target_copy_lighting = self.create_target("CopyLighting")
-        self.target_copy_lighting.prepare_buffer()
-        self.target_copy_lighting.set_shader_input("DestTex", self.mipchain, False, True, -1, 0)
-
-        self.blur_targets = []
-        for i in range(min(7, self.mipchain.get_expected_num_mipmap_levels() - 1)):
-            target_blur = self.create_target("BlurSSR-" + str(i))
-            target_blur.size = - (2 ** i)
-            target_blur.prepare_buffer()
-            target_blur.set_shader_input("SourceTex", self.mipchain)
-            target_blur.set_shader_input("sourceMip", i)
-            target_blur.set_shader_input("DestTex", self.mipchain, False, True, -1, i + 1)
-            self.blur_targets.append(target_blur)
+        self.target_reproject_lighting = self.create_target("CopyLighting")
+        self.target_reproject_lighting.add_color_attachment(bits=16, alpha=True)
+        self.target_reproject_lighting.prepare_buffer()
 
         self.noise_reduce_targets = []
         curr_tex = self.target.color_tex
@@ -106,7 +89,8 @@ class SSRStage(RenderStage):
         self.target_upscale.add_color_attachment(bits=16, alpha=True)
         self.target_upscale.prepare_buffer()
         self.target_upscale.set_shader_input("SourceTex", curr_tex)
-        self.target_upscale.set_shader_input("MipChain", self.mipchain)
+        self.target_upscale.set_shader_input(
+            "LastFrameColor", self.target_reproject_lighting.color_tex)
 
         self.target_resolve = self.create_target("ResolveSSR")
         self.target_resolve.add_color_attachment(bits=16, alpha=True)
@@ -114,23 +98,14 @@ class SSRStage(RenderStage):
         self.target_resolve.set_shader_input("CurrentTex", self.target_upscale.color_tex)
         self.target_resolve.set_shader_input("VelocityTex", self.target_velocity.color_tex)
 
-        # self.target_post_blur = self.create_target("SSRPostBlur")
-        # self.target_post_blur.add_color_attachment(bits=16, alpha=True)
-        # self.target_post_blur.prepare_buffer()
-        # self.target_post_blur.set_shader_input("CurrentTex", self.target_resolve.color_tex)
-
         AmbientStage.required_pipes.append("SSRSpecular")
 
     def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("ssr_trace.frag.glsl")
         self.target_velocity.shader = self.load_plugin_shader("reflection_velocity.frag.glsl")
-        self.target_copy_lighting.shader = self.load_plugin_shader("copy_lighting.frag.glsl")
-        # self.target_post_blur.shader = self.load_plugin_shader("ssr_post_blur.frag.glsl")
+        self.target_reproject_lighting.shader = self.load_plugin_shader("reproject_lighting.frag.glsl")
         self.target_upscale.shader = self.load_plugin_shader("upscale_bilateral_brdf.frag.glsl")
         self.target_resolve.shader = self.load_plugin_shader("resolve_ssr.frag.glsl")
-        blur_shader = self.load_plugin_shader("ssr_blur.frag.glsl")
-        for target in self.blur_targets:
-            target.shader = blur_shader
         remove_noise_shader = self.load_plugin_shader("remove_noise.frag.glsl")
         for target in self.noise_reduce_targets:
             target.shader = remove_noise_shader

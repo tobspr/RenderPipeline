@@ -35,7 +35,7 @@ vec2 hammersley(uint i, uint N)
 
 // From:
 // http://www.gamedev.net/topic/655431-ibl-problem-with-consistency-using-ggx-anisotropy/
-vec4 importance_sample_ggx(vec2 Xi, float alpha)
+vec3 importance_sample_ggx(vec2 Xi, float alpha)
 {
   // alpha is already squared roughness
   float r_square = alpha * alpha;
@@ -43,13 +43,7 @@ vec4 importance_sample_ggx(vec2 Xi, float alpha)
   float cos_theta = sqrt((1 - Xi.y) / max(1e-3, 1 + (r_square * r_square - 1) * Xi.y));
   float sin_theta = sqrt(max(0.0, 1 - cos_theta * cos_theta));
 
-  vec3 h = vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
-
-  float d = (cos_theta * r_square - cos_theta) * cos_theta + 1.0;
-  float D = r_square / max(1e-3, M_PI * d * d);
-  float pdf = D * cos_theta;
-
-  return vec4(h, pdf);
+  return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 }
 
 vec3 importance_sample_lambert(vec2 Xi)

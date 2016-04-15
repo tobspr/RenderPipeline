@@ -278,11 +278,14 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
 
         LVecBase3f start_points[4];
         LVecBase3f end_points[4];
+        LVecBase3f proj_points[8];
 
-        // Get split bounding box
+        // Get split bounding box, and collect all points which define the frustum
         for (size_t k = 0; k < 4; ++k) {
             start_points[k] = get_interpolated_point((CoordinateOrigin)k, split_start);
             end_points[k] = get_interpolated_point((CoordinateOrigin)k, split_end);
+            proj_points[k] = start_points[k];
+            proj_points[k + 4] = end_points[k];
         }
 
         // Compute approximate split mid point
@@ -299,9 +302,6 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
         _cam_nodes[i].set_pos(cam_start);
         _cam_nodes[i].look_at(split_mid);
 
-        // Collect all points which define the frustum
-        LVecBase3f proj_points[8];
-        merge_points_interleaved(proj_points, start_points, end_points);
         LVecBase3f best_min_extent, best_max_extent;
 
         // Find minimum and maximum extents of the points
@@ -361,11 +361,10 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4f& transform, float max_di
  */
 void PSSMCameraRig::update(NodePath cam_node, const LVecBase3f &light_vector) {
     nassertv(!cam_node.is_empty());
-
     _update_collector.start();
 
     // Get camera node transform
-    const LMatrix4f &transform = cam_node.get_transform()->get_mat();
+    LMatrix4f transform = cam_node.get_transform()->get_mat();
 
     // Get Camera and Lens pointers
     Camera* cam = DCAST(Camera, cam_node.get_child(0).node());
@@ -373,21 +372,10 @@ void PSSMCameraRig::update(NodePath cam_node, const LVecBase3f &light_vector) {
     Lens* lens = cam->get_lens();
 
     // Extract near and far points:
-    // Extract Upper Left
-    LPoint2f point(-1, 1);
-    lens->extrude(point, _curr_near_points[UpperLeft], _curr_far_points[UpperLeft]);
-
-    // Extract Upper Right
-    point.set(1, 1);
-    lens->extrude(point, _curr_near_points[UpperRight], _curr_far_points[UpperRight]);
-
-    // Extract Lower Left
-    point.set(-1, -1);
-    lens->extrude(point, _curr_near_points[LowerLeft], _curr_far_points[LowerLeft]);
-
-    // Extract Lower Right
-    point.set(1, -1);
-    lens->extrude(point, _curr_near_points[LowerRight], _curr_far_points[LowerRight]);
+    lens->extrude(LPoint2f(-1, 1),  _curr_near_points[UpperLeft],  _curr_far_points[UpperLeft]);
+    lens->extrude(LPoint2f(1, 1),   _curr_near_points[UpperRight], _curr_far_points[UpperRight]);
+    lens->extrude(LPoint2f(-1, -1), _curr_near_points[LowerLeft],  _curr_far_points[LowerLeft]);
+    lens->extrude(LPoint2f(1, -1),  _curr_near_points[LowerRight], _curr_far_points[LowerRight]);
 
     // Construct MVP to project points to world space
     LMatrix4f mvp = transform * lens->get_view_mat();

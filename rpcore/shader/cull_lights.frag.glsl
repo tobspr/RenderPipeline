@@ -55,8 +55,7 @@ void main() {
     // If we found no remaining cell, we are done, so just return and hope for
     // good coherency.
     if (idx > num_total_cells) {
-        // Could use return here. Not sure whats faster. Have to test it.
-        discard;
+        return;
     }
 
     // Fetch the cell data, this contains the cells position

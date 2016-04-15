@@ -147,7 +147,7 @@ class Application(ShowBase):
         except Exception as msg:
             print("Could not send finish result: ", msg)
             return
-        sock.sendall("DONE")
+        sock.sendall(b"done")
         print("Sent done flag.")
         sock.close()
 
