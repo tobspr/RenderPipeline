@@ -278,9 +278,7 @@ void main() {
         }
     #endif
 
-
     // TODO: For emissive, use: compute_bloom_luminance()
-
 
     #if DEBUG_MODE
 

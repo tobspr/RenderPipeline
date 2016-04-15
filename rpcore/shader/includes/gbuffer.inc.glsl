@@ -115,7 +115,7 @@ uniform mat4 p3d_ProjectionMatrix;
     // Checks whether the given material is the skybox
     bool is_skybox(vec3 pos, vec3 camera_pos) {
         #if REFERENCE_MODE
-            return distance(pos, camera_pos) > 80.0;
+            return distance(pos, camera_pos) > 1000.0;
         #endif
         return distance(pos, camera_pos) > 20000.0;
     }

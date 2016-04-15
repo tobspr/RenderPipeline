@@ -26,7 +26,7 @@ class Application(ShowBase):
 
     def __init__(self):
         load_prc_file_data("", "win-size 512 512")
-        load_prc_file_data("", "window-type offscreen")
+        # load_prc_file_data("", "window-type offscreen")
         load_prc_file_data("", "model-cache-dir")
         load_prc_file_data("", "model-cache-textures #f")
         load_prc_file_data("", "textures-power-2 none")
@@ -38,8 +38,6 @@ class Application(ShowBase):
         self.render_pipeline.mount_mgr.config_dir = "config/"
         self.render_pipeline.set_empty_loading_screen()
         self.render_pipeline.create(self)
-
-        self.render_pipeline.daytime_mgr.time = 0.5
 
         self.setup_scene()
 

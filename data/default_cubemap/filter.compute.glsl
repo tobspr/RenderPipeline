@@ -31,13 +31,12 @@ vec2 hammersley(uint i, uint N)
 // http://www.gamedev.net/topic/655431-ibl-problem-with-consistency-using-ggx-anisotropy/
 vec3 importance_sample_ggx(vec2 xi, float roughness)
 {
-  float r_square = roughness * roughness;
-  float phi = 2 * M_PI * xi.x;
-  float cos_theta = sqrt((1 - xi.y) / (1 + (r_square*r_square - 1) * xi.y));
-  float sin_theta = sqrt(1 - cos_theta * cos_theta);
+    float r_square = roughness * roughness;
+    float phi = 2 * M_PI * xi.x;
+    float cos_theta = sqrt((1 - xi.y) / (1 + (r_square*r_square - 1) * xi.y));
+    float sin_theta = sqrt(1 - cos_theta * cos_theta);
 
-  vec3 h = vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
-  return h;
+    return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 }
 
 // Converts a normalized spherical coordinate (r = 1) to cartesian coordinates
@@ -70,9 +69,9 @@ vec3 transform_cubemap_coordinates(vec3 coord) {
 }
 
 uniform samplerCube SourceTex;
-uniform uint currentSize;
-uniform uint currentMip;
-uniform uint currentFace;
+uniform int currentSize;
+uniform int currentMip;
+uniform int currentFace;
 uniform layout(rgba16f) imageCube DestTex;
 
 void main() {
@@ -112,7 +111,7 @@ void main() {
     }
 
     accum /= max(0.1, accum.w);
-
+    accum.xyz = pow(accum.xyz, vec3(2.2));
 
     imageStore(DestTex, ivec3(coord, currentFace), vec4(accum.xyz, 1.0));
 }
