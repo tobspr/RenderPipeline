@@ -145,18 +145,21 @@ void main()
     ray_dir = importance_ray_dir;
 
     // Ray not in view
-    // if (dot(ray_dir, view_dir) < 1e-5) {
-    //     result = vec3(0,0,0);
-    //     return;
-    // }
+    if (dot(ray_dir, view_dir) < 1e-5) {
+        result = vec2(0);
+        return;
+    }
 
-    float RxV = dot(ray_dir, view_dir);
     float max_ray_len = 1000.0 * pixeldist;
 
     // Clip ray to near plane
-    float ray_len = ((ray_start_vs.z + ray_dir.z * max_ray_len) > CAMERA_NEAR) ?
-                        (CAMERA_NEAR - ray_start_vs.z) / ray_dir.z :
-                        max_ray_len;
+    #if 1
+        float ray_len = ((ray_start_vs.z + ray_dir.z * max_ray_len) > CAMERA_NEAR) ?
+                            (CAMERA_NEAR - ray_start_vs.z) / ray_dir.z :
+                            max_ray_len;
+    #else
+        float ray_len = max_ray_len;
+    #endif
 
     // Convert start and end pos from view to screen space
     vec3 ray_start_screen = view_to_screen(ray_start_vs);
@@ -207,7 +210,7 @@ void main()
 
 
         // Increase ray bias as we advance the ray
-        float trace_len = GET_SETTING(ssr, intial_bias) * 0.5 + 100.0 * distance_squared(curr_coord, texcoord);
+        float trace_len = GET_SETTING(ssr, intial_bias) * 10.0 + 100.0 * distance_squared(curr_coord, texcoord);
         trace_len *= 1.0 + 1.0 * roughness;
 
         // Check for intersection

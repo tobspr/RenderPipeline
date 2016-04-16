@@ -44,6 +44,14 @@ vertex:
           // the height with anything since the terrain transform is included in the
           // model view projection matrix.
           chunk_position.z += texture(ShaderTerrainMesh.heightfield, terrain_uv).x;
+
+          // Lower the terrain on the borders - this ensures the shadow map is generated
+          // correctly.
+          if ( min(terrain_uv.x, terrain_uv.y) < 8.0 / ShaderTerrainMesh.terrain_size ||
+               max(terrain_uv.x, terrain_uv.y) > 1 - 9.0 / ShaderTerrainMesh.terrain_size) {
+               chunk_position.z = 0;
+          }
+
           vOutput.position = (p3d_ModelMatrix * vec4(chunk_position, 1)).xyz;
           vOutput.last_proj_position = p3d_ModelViewProjectionMatrix * vec4(chunk_position, 1);
 

@@ -459,7 +459,7 @@ class Ui_MainWindow(object):
         self.lbl_plugin_version.setTextFormat(QtCore.Qt.PlainText)
         self.lbl_plugin_version.setObjectName(_fromUtf8("lbl_plugin_version"))
         self.lbl_plugin_desc = QtGui.QLabel(self.frame_details)
-        self.lbl_plugin_desc.setGeometry(QtCore.QRect(30, 55, 591, 41))
+        self.lbl_plugin_desc.setGeometry(QtCore.QRect(30, 55, 591, 51))
         self.lbl_plugin_desc.setStyleSheet(_fromUtf8("color: #777; border: 0; font-size: 11px;"))
         self.lbl_plugin_desc.setTextFormat(QtCore.Qt.PlainText)
         self.lbl_plugin_desc.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)

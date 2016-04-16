@@ -79,7 +79,7 @@ void main() {
         inscattered_light += vec3(1,0.3,0.1) * disk_factor * upper_disk_factor * 2.0 * silhouette_col * 1.5 * 1e4;
 
     } else {
-        inscattered_light *= 40.0;
+        inscattered_light *= 140.0;
         float dist = distance(m.position, MainSceneData.camera_pos);
         float extinction = exp(- dist / TimeOfDay.scattering.extinction); inscattered_light *= 0.5;
 

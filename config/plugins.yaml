@@ -6,17 +6,17 @@
 enabled:
     - ao
     - bloom
-    # - clouds
     - color_correction
     - env_probes
+    - motion_blur
     - pssm
     - scattering
     - smaa
+    - ssr
+    # - clouds
     # - dof
     # - fxaa
-    - motion_blur
     # - skin_shading
-    - ssr
     # - volumetrics
     # - vxgi
 
@@ -49,7 +49,7 @@ overrides:
 
     bloom:
         num_mipmaps: 8
-        bloom_strength: 0.21
+        bloom_strength: 0.23
         remove_fireflies: False
         lens_dirt_factor: 0.0
 
@@ -67,7 +67,7 @@ overrides:
         uc2t_toe_numerator: 0.01
         uc2t_toe_denumerator: 0.3
         uc2t_reference_white: 11.2
-        vignette_strength: 0.7333
+        vignette_strength: 0.73343
         film_grain_strength: 0.1333
         color_lut: film_luts/kodak_gold_200.png
         use_chromatic_aberration: True
@@ -80,7 +80,7 @@ overrides:
         brightness_adaption_rate: 3.67
         darkness_adaption_rate: 0.73
         use_sharpen: True
-        sharpen_strength: 2.33
+        sharpen_strength: 1.06
         sharpen_twice: False
 
     dof:
@@ -119,9 +119,9 @@ overrides:
         use_pcf: True
         filter_sample_count: 8
         filter_radius: 0.54
-        fixed_bias: 0.1156
+        fixed_bias: 0.4889
         slope_bias: 0.11
-        normal_bias: 0.0
+        normal_bias: 0.39
         use_pcss: False
         pcss_search_samples: 8
         pcss_penumbra_size: 11.0
@@ -153,13 +153,13 @@ overrides:
 
     ssr:
         effect_scale: 1.0
-        trace_steps: 64
+        trace_steps: 314
         history_length: 16
         abort_on_object_infront: True
         intial_bias: 0.1
         hit_tolerance: 0.1
-        roughness_fade: 0.57999
-        skip_invalid_samples: True
+        roughness_fade: 1.0
+        skip_invalid_samples: False
         border_fade: 0.005
 
     volumetrics:

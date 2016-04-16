@@ -28,6 +28,7 @@ daytime_settings: !!omap
         unit: percent
         range: [0, 2]
         default: 1.0
+        logarithmic_factor: 2.0
         label: Cloud brightness
         description: >
             Brightness of all cloud layers, controlls how bright the clouds are.

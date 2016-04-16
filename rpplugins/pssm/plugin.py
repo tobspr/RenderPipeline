@@ -39,7 +39,7 @@ from .pssm_dist_shadow_stage import PSSMDistShadowStage
 
 class Plugin(BasePlugin):
 
-    name = "PSSM Shadows"
+    name = "Sun Shadows"
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for Parallel Split Shadow Maps "
                    "(PSSM), and also sun lighting.")

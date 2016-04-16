@@ -26,6 +26,9 @@
 
 #version 400
 
+// Renders the clouds
+// WORK IN PROGRESS - This shader is unfinished and not cleaned up yet.
+
 #define USE_MAIN_SCENE_DATA
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
@@ -46,8 +49,8 @@ const float METER = 1.0;
 
 const float earth_radius = 6371.0 * KM;
 const vec3 earth_mid = vec3(0, 0, -earth_radius);
-const float cloud_start = earth_radius + 0.5 * KM;
-const float cloud_end = earth_radius + 5.0 * KM;
+const float cloud_start = earth_radius + 1.5 * KM;
+const float cloud_end = earth_radius + 4.0 * KM;
 
 
 float GetHeightFractionForPoint(vec3 inPosition, vec2 inCloudMinMax)
@@ -76,13 +79,13 @@ float SampleCloudDensity(vec3 p, vec3 weather_data, float mip_level)
     // float cloud_top_offset = 500.0;
     // p += height_fraction * wind_direction * cloud_top_offset;
 
-    vec4 low_frequency_noises = textureLod(Noise1, p * 0.4, mip_level);
-    // float low_freq_FBM = (low_frequency_noises.g * 0.625)
-    //                    + (low_frequency_noises.b * 0.25)
-    //                    + (low_frequency_noises.a * 0.125);
+    vec4 low_frequency_noises = textureLod(Noise1, p * 0.6, mip_level);
+    float low_freq_FBM = (low_frequency_noises.g * 0.625)
+                       + (low_frequency_noises.b * 0.25)
+                       + (low_frequency_noises.a * 0.125);
 
     // float base_cloud = Remap(low_frequency_noises.r, -(1.0 - low_freq_FBM), 1.0, 0.0, 1.0);
-    float base_cloud = max(0, low_frequency_noises.x * 2.3 - 1.4);
+    float base_cloud = max(0, square(low_frequency_noises.x * low_frequency_noises.y)) ;
     // base_cloud = pow(base_cloud, 10.0) * 10.0;
 
     // base_cloud *= max(0, low_frequency_noises.w * 1.4 - 0.2);
@@ -95,7 +98,7 @@ float SampleCloudDensity(vec3 p, vec3 weather_data, float mip_level)
  
     // base_cloud *= cloud_coverage;
 
-    vec3 high_frequency_noises = textureLod(Noise2, p * 5.0, mip_level).rgb;
+    vec3 high_frequency_noises = textureLod(Noise2, p * 5.63534, mip_level).rgb;
 
     // float high_freq_FBM = (high_frequency_noises.r * 0.625);
     //                     + (high_frequency_noises.g * 0.25)
@@ -103,7 +106,7 @@ float SampleCloudDensity(vec3 p, vec3 weather_data, float mip_level)
 
     // base_cloud = mix(high_frequency_noises.y * base_cloud, 1, base_cloud);
 
-    base_cloud -= high_frequency_noises.x * high_frequency_noises.z * 0.4 * (1 - base_cloud);
+    base_cloud -= high_frequency_noises.y * 0.23 * (1 - base_cloud);
     base_cloud *= 3.0;
 
 
@@ -177,7 +180,7 @@ void main() {
     float density = 0.0;
     float cloud_test = 0.0;
     int zero_density_sample_count = 0;
-    float mip_level = 0.0;
+    float mip_level = 0;
 
     vec3 p = trace_start + trace_step;
 
@@ -191,10 +194,10 @@ void main() {
 
         // if ( cloud_test > 0.0)
         // {
-            float sampled_density = SampleCloudDensity(p, weather_data, mip_level) * 0.8;
+            float sampled_density = SampleCloudDensity(p, weather_data, mip_level) * 0.2;
             float sampled_sun_density = 0.0;
             for (int k = 1; k < 3; ++k) {
-                sampled_sun_density += SampleCloudDensity(p + vec3(0, 0, 1) * 1.0 / 128.0 * k * k, weather_data, mip_level);
+                sampled_sun_density += SampleCloudDensity(p + sun_vector * 1.0 / 256.0 * k * k, weather_data, mip_level);
             }
 
             // sampled_sun_density /= 7.0;
@@ -209,7 +212,7 @@ void main() {
             sampled_density *= (1 - density);
             density += sampled_density;
                 // accum_color += vec3(0.1 + 0.9 * p.z) * sampled_density;
-            accum_color += ((0.05 + 0.95 * p.z) * sampled_density * (1.0 - sampled_sun_density / 3.0));
+            accum_color += ((0.05 + 0.99 * p.z * p.z) * sampled_density * (1.0 - sampled_sun_density / 3.0));
             // accum_color += vec3(2) * sampled_density;q
             
             p += trace_step;
@@ -255,14 +258,14 @@ void main() {
     float light_energy = 2.0 * beers_law * powder_sugar_effect;
 
     accum_color *= light_energy * 2.0;
-    // accum_color *= vec3(HenyeyGreenstein(sun_vector, -view_vector, 0.2)) * 5.0;
+    accum_color *= vec3(HenyeyGreenstein(sun_vector, -view_vector, 0.2)) * 1.0;
     // float accum_weight = 1;
     
     float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 25.0) + 0.0;
     vec3 sun_color = sun_influence * 100.0 * TimeOfDay.scattering.sun_color / 255.0;
 
-    accum_color *= 1.0 + sun_color * max(0, 1 - 0.9 * density);
-    accum_color *= TimeOfDay.clouds.cloud_brightness * 10.0 * vec3(10, 10, 15);
+    accum_color *= 1.0 + sun_color * max(0, 1 - 0.7 * density);
+    accum_color *= TimeOfDay.clouds.cloud_brightness * 20.0 * vec3(10, 10, 15);
     accum_color *= TimeOfDay.scattering.sun_intensity / 150.0;
     accum_color *= TimeOfDay.scattering.sun_color / 255.0;
 
@@ -319,7 +322,7 @@ void main() {
     // accum_color *= 1.0 - saturate(1.0-4.0*ray_dir.z) * 0.7;
 
     // Don't render clouds at obligue angles
-    float horizon = pow(saturate(ray_dir.z * 1.0), 0.1);
+    float horizon = pow(saturate(ray_dir.z * 1.0), 0.3);
     accum_color *= horizon;
     accum_weight *= horizon;
 
