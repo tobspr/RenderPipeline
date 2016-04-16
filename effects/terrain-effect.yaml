@@ -123,7 +123,7 @@ gbuffer:
             rock_mat.basecolor = vec3(0.2);
             rock_mat.roughness = 0.8;
             rock_mat.specular_ior = 1.4;
-            
+
             MaterialShaderOutput snow_mat = make_default_material_output();
             snow_mat.basecolor = vec3(1.0, 1.0, 1.2) * 3.0;
             snow_mat.roughness = 0.5;
@@ -141,6 +141,6 @@ gbuffer:
             merge_material_output(m, grass_mat, grass);
             merge_material_output(m, rock_mat, rock);
             merge_material_output(m, snow_mat, snow);
-            
+
             m.normal = normal;
 

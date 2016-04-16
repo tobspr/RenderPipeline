@@ -152,7 +152,7 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
 
     specular = textureLod(EnvProbes.cubemaps,
         vec4(direction, map.index), clamp(mipmap, 0.0, max_mip) );
-    diffuse = textureLod(EnvProbes.diffuse_cubemaps, 
+    diffuse = textureLod(EnvProbes.diffuse_cubemaps,
         vec4(diffuse_direction, map.index), 0);
 
     // Optional: Correct specular based on diffuse color intensity

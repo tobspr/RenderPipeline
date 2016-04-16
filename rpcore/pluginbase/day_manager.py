@@ -56,8 +56,14 @@ class DayTimeManager(RPObject):
         """ Sets the current time of day as floating point number from
         0 to 1, whereas 0 means 00:00 and 1 means 24:00 (=00:00). Any
         number greater than 1 will be reduced to fit the 0 .. 1 range by
-        doing time modulo 1. """
-        self._time = day_time % 1.0
+        doing time modulo 1.
+
+        Alternatively a string in the format 'hh:mm' can be passed. """
+        if isinstance(day_time, float):
+            self._time = day_time % 1.0
+        elif isinstance(day_time, str):
+            parts = [int(i) for i in day_time.split(":")]
+            self._time = (parts[0] * 60 + parts[1]) / (24 * 60)
 
     @property
     def formatted_time(self):

@@ -507,7 +507,7 @@ class RenderPipeline(RPObject):
     def prepare_scene(self, scene):
         """ Prepares a given scene, by converting panda lights to render pipeline
         lights """
-        
+
         # TODO: IES profiles
         ies_profile = self.load_ies_profile("soft_display.ies") # pylint: disable=W0612
         lights = []
@@ -548,7 +548,7 @@ class RenderPipeline(RPObject):
         for np in scene.find_all_matches("**/ENVPROBE*"):
             probe = self.add_environment_probe()
             probe.set_mat(np.get_mat())
-            probe.border_smoothness = 0.005
+            probe.border_smoothness = 0.001
             probe.parallax_correction = True
             np.remove_node()
             envprobes.append(probe)

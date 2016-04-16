@@ -21,7 +21,7 @@ enabled:
     # - vxgi
 
 
-overrides:    
+overrides:
     fxaa:
         quality: ultra
         subpixel_quality: 0.5

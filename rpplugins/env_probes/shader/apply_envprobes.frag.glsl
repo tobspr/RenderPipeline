@@ -66,7 +66,7 @@ void main() {
         int cubemap_index = texelFetch(PerCellProbes, data_offs + i).x - 1;
         if (cubemap_index < 0) break;
         vec4 diff, spec;
-        
+
         processed_probes += 1;
         apply_cubemap(cubemap_index, m, diff, spec, total_weight, total_blend);
         total_diffuse += diff;
@@ -92,7 +92,7 @@ void main() {
 
     result_diff = saturate(result_diff);
     result_spec = saturate(result_spec);
- 
+
     // Visualize probe count
     #if MODE_ACTIVE(ENVPROBE_COUNT)
         float probe_factor = float(processed_probes) / MAX_PROBES_PER_CELL;

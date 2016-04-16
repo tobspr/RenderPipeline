@@ -64,7 +64,7 @@ settings: !!omap
         description: >
             Higher values will produce more intersections, but also produce
             false positives. If you set this value too low, artifacts and noise
-            will occur.        
+            will occur.
 
     - roughness_fade:
         type: float

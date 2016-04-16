@@ -296,7 +296,7 @@ void main() {
         result = texture(EnvmapAmbientDiff, texcoord);
         return;
     #endif
-        
+
     result = scene_color * 1.0 + vec4(ambient, 1) * 1.0;
     result.w = 1.0;
 }

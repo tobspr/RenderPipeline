@@ -186,7 +186,7 @@ float computeEV100FromAvgLuminance(float avg_luminance) {
     // But here we deal with the spot meter measuring the middle gray
     // which is fixed at 12.5 for matching standard camera
     // constructor settings (i.e. calibration constant K = 12.5)
-    return log2(avg_luminance * 100.0 / 12.5) ;
+    return log2(avg_luminance * 100.0 / 12.5);
 }
 
 float convertEV100ToExposure(float EV100) {

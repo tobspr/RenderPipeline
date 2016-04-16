@@ -48,8 +48,13 @@ void main() {
     avg_luminance /= float(texsize.x * texsize.y);
     avg_luminance = avg_luminance / (1 - avg_luminance);
 
-    float exposure_val = computeEV100FromAvgLuminance(avg_luminance);
-    float exposure = convertEV100ToExposure(exposure_val);
+    #if 0
+        float exposure_val = computeEV100FromAvgLuminance(avg_luminance);
+        float exposure = convertEV100ToExposure(exposure_val);
+    #else
+        // Same as a above - just factored out.
+        float exposure = 0.1041666 * (1.0 / avg_luminance);
+    #endif
 
     float min_ev = GET_SETTING(color_correction, min_exposure_value);
     float max_ev = GET_SETTING(color_correction, max_exposure_value);

@@ -105,7 +105,7 @@ class BloomStage(RenderStage):
 
     def reload_shaders(self):
         self.target_extract.shader = self.load_plugin_shader("extract_bright_spots.frag.glsl")
-        
+
         if self.remove_fireflies:
             self.target_firefly.shader = self.load_plugin_shader("remove_fireflies.frag.glsl")
         self.target_apply.shader = self.load_plugin_shader("apply_bloom.frag.glsl")

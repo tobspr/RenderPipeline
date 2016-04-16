@@ -56,7 +56,7 @@ void main() {
     vec4 scene_color = texture(ShadedScene, texcoord);
 
     float prefiltered_shadow = texture(PrefilteredShadows, texcoord).x;
-    
+
     // Early out
     if (prefiltered_shadow < 1e-5) {
         result = scene_color;

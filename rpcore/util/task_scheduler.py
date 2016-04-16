@@ -64,5 +64,5 @@ class TaskScheduler(RPObject):
     def num_scheduled_tasks(self):
         """ Returns the amount of scheduled tasks this frame """
         return len(self._tasks[self._frame_index])
-    
-    
+
+

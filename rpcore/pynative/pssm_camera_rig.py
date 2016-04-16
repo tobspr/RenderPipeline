@@ -63,7 +63,7 @@ class PSSMCameraRig(object):
 
         if self._snap_grid:
             snap_shadow_map(self.compute_mvp(), self._cam_node, self._resolution)
-        
+
         self._mvps[0] = self.compute_mvp()
 
     def compute_mvp(self):
@@ -86,7 +86,7 @@ class PSSMCameraRig(object):
 
     def get_nearfar_array(self):
         return self._nearfar
-    
+
     def set_use_stable_csm(self, use_stable):
         self._snap_grid = use_stable
 

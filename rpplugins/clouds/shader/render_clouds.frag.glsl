@@ -95,7 +95,7 @@ float SampleCloudDensity(vec3 p, vec3 weather_data, float mip_level)
     base_cloud *= density_height_gradient;
 
     float cloud_coverage = weather_data.r;
- 
+
     // base_cloud *= cloud_coverage;
 
     vec3 high_frequency_noises = textureLod(Noise2, p * 5.63534, mip_level).rgb;
@@ -166,7 +166,7 @@ void main() {
 
 
     // Get start and end in cloud space coordinates
-    
+
     vec3 trace_start = vec3(get_cloud_coord(ray_start + t_low * ray_dir), 0.0);
     vec3 trace_end = vec3(get_cloud_coord(ray_start + t_high * ray_dir), 1.0);
     trace_start += wind_offs;
@@ -214,7 +214,7 @@ void main() {
                 // accum_color += vec3(0.1 + 0.9 * p.z) * sampled_density;
             accum_color += ((0.05 + 0.99 * p.z * p.z) * sampled_density * (1.0 - sampled_sun_density / 3.0));
             // accum_color += vec3(2) * sampled_density;q
-            
+
             p += trace_step;
         //     }
         //     else
@@ -260,7 +260,7 @@ void main() {
     accum_color *= light_energy * 2.0;
     accum_color *= vec3(HenyeyGreenstein(sun_vector, -view_vector, 0.2)) * 1.0;
     // float accum_weight = 1;
-    
+
     float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 25.0) + 0.0;
     vec3 sun_color = sun_influence * 100.0 * TimeOfDay.scattering.sun_color / 255.0;
 

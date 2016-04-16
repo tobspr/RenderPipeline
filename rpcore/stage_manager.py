@@ -49,6 +49,7 @@ class StageManager(RPObject):
         self.pipes = {}
         self.input_blocks = []
         self.previous_pipes = {}
+        self.future_bindings = []
         self.defines = {}
         self.pipeline = pipeline
         self.created = False
@@ -133,6 +134,15 @@ class StageManager(RPObject):
                 stage.set_shader_input("Previous_" + pipe_name, self.previous_pipes[pipe_name])
                 continue
 
+            elif pipe.startswith("FuturePipe::"):
+                # Special case: Future Pipes which are not available yet.
+                # They will contain the unmodified data from the last
+                # frame.
+                pipe_name = pipe.split("::")[-1]
+                self.debug("Awaiting future pipe", pipe_name)
+                self.future_bindings.append((pipe_name, stage))
+                continue
+
             if pipe not in self.pipes:
                 self.fatal("Pipe '" + pipe + "' is missing for", stage)
                 return False
@@ -203,6 +213,16 @@ class StageManager(RPObject):
             self._prev_stage.create()
             self.stages.append(self._prev_stage)
 
+    def _apply_future_bindings(self):
+        """ Applies all future bindings. At this point all pipes and
+        inputs should be present """
+        for pipe, stage in self.future_bindings:
+            if pipe not in self.pipes:
+                self.error("Could not bind future pipe:", pipe, "not present!")
+                continue
+            stage.set_shader_input(pipe, self.pipes[pipe])
+        self.future_bindings = []
+
     def setup(self):
         """ Setups the stages """
         self.debug("Setup stages ..")
@@ -223,6 +243,7 @@ class StageManager(RPObject):
 
             self._register_stage_result(stage)
         self._create_previous_pipes()
+        self._apply_future_bindings()
 
     def reload_shaders(self):
         """ This pass sets the shaders to all passes and also generates the

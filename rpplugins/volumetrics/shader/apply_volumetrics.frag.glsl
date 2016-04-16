@@ -73,7 +73,7 @@ void main() {
   // }
 
   vec3 fog_color = TimeOfDay.volumetrics.fog_color / 255.0 * 10.0 * TimeOfDay.volumetrics.fog_brightness;
-  
+
   float fog_weight = 0.0;
   float fog_ramp = TimeOfDay.volumetrics.fog_ramp_size * 3;
   float ground_fog_factor = TimeOfDay.volumetrics.height_fog_scale;
@@ -90,7 +90,7 @@ void main() {
     end_pos = MainSceneData.camera_pos;
     ray_dir = -ray_dir;
   } else {
-    start_pos = MainSceneData.camera_pos;    
+    start_pos = MainSceneData.camera_pos;
     end_pos = surface_pos;
   }
 

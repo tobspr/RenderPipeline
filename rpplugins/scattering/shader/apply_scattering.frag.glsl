@@ -53,7 +53,7 @@ void main() {
     vec3 inscattered_light = DoScattering(m.position, view_vector, sky_clip)
                                 * TimeOfDay.scattering.sun_intensity;
                             /* * TimeOfDay.scattering.sun_color * 0.01*/;
-    
+
     result.xyz = textureLod(ShadedScene, texcoord, 0).xyz;
     result.w = 1;
 
@@ -67,7 +67,7 @@ void main() {
             cloud_color = pow(cloud_color, vec3(2.2));
             inscattered_light *= 0.0 + 1.0 * (1.0 + 2.3 * cloud_color);
         #endif
-        
+
         inscattered_light *= 3.0;
         inscattered_light *= 5.0;
 

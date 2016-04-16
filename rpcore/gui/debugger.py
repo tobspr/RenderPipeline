@@ -74,7 +74,7 @@ class Debugger(RPObject):
 
     def _load_config(self):
         """ Loads the gui configuration from config/debugging.yaml """
-        
+
 
     def _create_components(self):
         """ Creates the gui components """

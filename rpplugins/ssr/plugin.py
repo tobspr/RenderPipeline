@@ -37,7 +37,10 @@ class Plugin(BasePlugin):
     version = "beta (!)"
 
     def on_stage_setup(self):
-        self._ssr_stage = self.create_stage(SSRStage)
+        self.ssr_stage = self.create_stage(SSRStage)
+
+        if self.is_plugin_enabled("color_correction"):
+            self.ssr_stage.required_pipes.append("FuturePipe::Exposure")
 
     def reload_shaders(self):
         BasePlugin.reload_shaders(self)

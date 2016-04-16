@@ -39,10 +39,10 @@ void main() {
   result = vec4(texture(SourceTex, texcoord).xyz, 1);
 
   #if SPECIAL_MODE_ACTIVE(LUMINANCE)
-    
+
     // Luminance debug mode, too bright pixels get red, too dark pixels get blue,
     // rest stays green
-    
+
     vec3 color = texture(SourceTex, texcoord).xyz;
     float luminance = get_luminance(color);
 

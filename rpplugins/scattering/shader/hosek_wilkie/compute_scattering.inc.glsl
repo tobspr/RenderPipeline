@@ -79,7 +79,7 @@ vec3 get_scattering_at_surface(vec3 surface_pos) {
 
 vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 {
-    
+
     // Move surface pos above ocean level
     if (surface_pos.z < -0.01) {
         vec3 v2s = surface_pos - MainSceneData.camera_pos;

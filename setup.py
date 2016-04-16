@@ -102,6 +102,7 @@ def exec_python_file(pth, args=None):
     cmd = [sys.executable, "-B", pth] + (args or [])
     if CMD_ARGS.verbose:
         print("Executing", ' '.join(cmd))
+        print("CWD is", basedir)
     try:
         output = subprocess.check_output(cmd, stderr=sys.stderr)
     except subprocess.CalledProcessError as msg:
