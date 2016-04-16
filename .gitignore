@@ -3,7 +3,6 @@
 *.pyc
 *.ignore
 *.old
-*.bam
 *.egg
 *.psd
 *.blend1

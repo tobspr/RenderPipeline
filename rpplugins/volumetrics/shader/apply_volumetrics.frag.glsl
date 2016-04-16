@@ -114,8 +114,8 @@ void main() {
 
   }
 
-  fog_weight = saturate(1.0 - exp(-distance(start_pos, end_pos) / fog_ramp));
-  // fog_weight = saturate(distance(start_pos, end_pos) / fog_ramp);
+  // fog_weight = saturate(1.0 - exp(-distance(start_pos, end_pos) / fog_ramp));
+  fog_weight = saturate(distance(start_pos, end_pos) / fog_ramp);
 
   #if !DEBUG_MODE
     merged_color = mix(merged_color, fog_color, fog_weight);

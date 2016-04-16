@@ -6,17 +6,17 @@
 enabled:
     - ao
     - bloom
-    - clouds
+    # - clouds
     - color_correction
     - env_probes
-    - motion_blur
     - pssm
     - scattering
     - smaa
-    - ssr
     # - dof
     # - fxaa
+    - motion_blur
     # - skin_shading
+    - ssr
     # - volumetrics
     # - vxgi
 
@@ -54,7 +54,7 @@ overrides:
         lens_dirt_factor: 0.0
 
     clouds:
-        raymarch_steps: 75
+        raymarch_steps: 160
 
     color_correction:
         tonemap_operator: reinhard
@@ -80,7 +80,7 @@ overrides:
         brightness_adaption_rate: 3.67
         darkness_adaption_rate: 0.73
         use_sharpen: True
-        sharpen_strength: 0.72
+        sharpen_strength: 2.33
         sharpen_twice: False
 
     dof:
@@ -126,7 +126,7 @@ overrides:
         pcss_search_samples: 8
         pcss_penumbra_size: 11.0
         use_distant_shadows: True
-        dist_shadow_resolution: 1536
+        dist_shadow_resolution: 4096
         dist_shadow_clipsize: 11583.33
         scene_shadow_resolution: 1024
 

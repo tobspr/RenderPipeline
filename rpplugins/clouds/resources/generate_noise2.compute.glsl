@@ -26,26 +26,23 @@
 
 #version 430
 
-// Shader to generate the cloud grid
-
-#define SCREEN_SIZE vec2(32, 32)
-#define gl_FragCoord vec4(0)
-#pragma include "../../../rpcore/shader/includes/noise.inc.glsl"
+// Shader to generate the cloud noise textures
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 4) in;
 uniform writeonly image3D DestTex;
 
+const int tex_size = 32;
+
+#pragma include "noise.inc.glsl"
+
 void main() {
   ivec3 coord = ivec3(gl_GlobalInvocationID.xyz);
-  vec3 flt_coord = coord;
+  vec3 flt_coord = coord / float(tex_size);
 
-  float factor = fbm(flt_coord / vec3(512.0, 512, 2.0 * 512.0) , 8.0);
+  float worley1 = sqrt(fbm_worley(flt_coord, 8, 0.6, 3, 0.76632)) * 1.0;
+  float worley2 = sqrt(fbm_worley(flt_coord, 8, 0.4, 3, 0.26386)) * 1.0;
+  float worley3 = sqrt(fbm_worley(flt_coord, 16, 0.4, 2, 0.64243)) * 1.0;
 
-  factor = (factor - 0.5) * 4.5;
-
-  factor = clamp(factor, 0.0, 1.0);
-  vec3 color = vec3(0.05 + pow(coord.z / 64.0, 2.0) );
-  color = clamp(color, vec3(0.0), vec3(1.0));
-
-  imageStore(DestTex, coord, vec4(factor, color.x, 0, 1));
+  // imageStore(DestTex, coord, vec4(worley1, worley2, worley3, 1));
+  imageStore(DestTex, coord, vec4(worley1, worley2, worley3, 1));
 }

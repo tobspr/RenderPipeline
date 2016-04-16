@@ -50,10 +50,25 @@ class Plugin(BasePlugin):
 
 
     def on_pipeline_created(self):
-        cloud_voxels = RPLoader.load_3d_texture(self.get_resource("slices/#.png"))
-        cloud_voxels.set_wrap_w(SamplerState.WM_clamp)
-        self.apply_stage.set_shader_input("CloudVoxels", cloud_voxels)
+        # High-res noise
+        noise1 = RPLoader.load_texture(self.get_resource("noise1-data.txo"))
+        noise1.set_wrap_u(SamplerState.WM_repeat)
+        noise1.set_wrap_v(SamplerState.WM_repeat)
+        noise1.set_wrap_w(SamplerState.WM_repeat)
+        noise1.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        self.apply_stage.set_shader_input("Noise1", noise1)
 
-        noise_tex = RPLoader.load_texture(self.get_resource("noise.png"))
-        noise_tex.set_minfilter(SamplerState.FT_linear_mipmap_linear)
-        self.apply_stage.set_shader_input("NoiseTex", noise_tex)
+        # Low-res noise
+        noise2 = RPLoader.load_texture(self.get_resource("noise2-data.txo"))
+        noise2.set_wrap_u(SamplerState.WM_repeat)
+        noise2.set_wrap_v(SamplerState.WM_repeat)
+        noise2.set_wrap_w(SamplerState.WM_repeat)
+        noise2.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        self.apply_stage.set_shader_input("Noise2", noise2)
+
+        # Weather tex
+        weather = RPLoader.load_texture(self.get_resource("weather_tex.png"))
+        weather.set_wrap_u(SamplerState.WM_repeat)
+        weather.set_wrap_v(SamplerState.WM_repeat)
+        self.apply_stage.set_shader_input("WeatherTex", weather)
+

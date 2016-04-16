@@ -34,7 +34,6 @@ from direct.stdpy.file import isdir, isfile, join
 from direct.showbase.ShowBase import ShowBase
 
 
-
 class Application(ShowBase):
     def __init__(self):
         load_prc_file_data("", """
@@ -50,31 +49,40 @@ class Application(ShowBase):
 
         base_path = realpath(dirname(__file__))
         os.chdir(base_path)
-        slice_dir = join(base_path, "slices/")
-        if isdir(slice_dir):
-            shutil.rmtree(slice_dir)
-        os.makedirs(slice_dir)
 
         node = NodePath("")
+        w, h, d = 128, 128, 128
 
-        w, h, d = 512, 512, 64
-
-        self.voxel_grid = Texture("voxels")
-        self.voxel_grid.setup_3d_texture(w, h, d, Texture.T_unsigned_byte, Texture.F_rgba8)
-
-
-        # Generate grid
-        cshader = Shader.load_compute(Shader.SL_GLSL, "generate_grid.compute.glsl")
+        # High-Res 128^3 texture
+        print("Computing high-res noise")
+        voxel_grid = Texture("voxels")
+        voxel_grid.setup_3d_texture(w, h, d, Texture.T_unsigned_byte, Texture.F_rgba8)
+        cshader = Shader.load_compute(Shader.SL_GLSL, "generate_noise1.compute.glsl")
         node.set_shader(cshader)
-        node.set_shader_input("DestTex", self.voxel_grid)
+        node.set_shader_input("DestTex", voxel_grid)
         attr = node.get_attrib(ShaderAttrib)
-
-        self.graphicsEngine.dispatch_compute(
-            ((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.get_gsg())
-
-        self.graphicsEngine.extract_texture_data(self.voxel_grid, self.win.get_gsg())
+        self.graphicsEngine.dispatch_compute(((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.get_gsg())
+        self.graphicsEngine.extract_texture_data(voxel_grid, self.win.get_gsg())
 
         print("Writing data ..")
-        self.voxel_grid.write(Filename.from_os_specific(join(slice_dir, "#.png")), 0, 0, True, False)
+        # voxel_grid.write(Filename.from_os_specific(join("result/", "#.png")), 0, 0, True, False)
+        voxel_grid.write("noise1-data.txo.pz")
+
+        # Low-Res 32^3 texture
+        print("Computing low-res noise")
+        w, h, d = 32, 32, 32
+        voxel_grid = Texture("voxels")
+        voxel_grid.setup_3d_texture(w, h, d, Texture.T_unsigned_byte, Texture.F_rgba8)
+        cshader = Shader.load_compute(Shader.SL_GLSL, "generate_noise2.compute.glsl")
+        node.set_shader(cshader)
+        node.set_shader_input("DestTex", voxel_grid)
+        attr = node.get_attrib(ShaderAttrib)
+        self.graphicsEngine.dispatch_compute(((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.get_gsg())
+        self.graphicsEngine.extract_texture_data(voxel_grid, self.win.get_gsg())
+
+        print("Writing data ..")
+        # voxel_grid.write(Filename.from_os_specific(join("result2/", "#.png")), 0, 0, True, False)
+        voxel_grid.write("noise2-data.txo.pz")
+
 
 Application()
