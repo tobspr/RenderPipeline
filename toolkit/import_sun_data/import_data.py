@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     print("Querying api ..")
     handle =  urllib.request.urlopen(url)
-    data = handle.read()
+    data = handle.read().decode("utf-8")
     handle.close()
 
     # Extract data
@@ -90,8 +90,7 @@ if __name__ == "__main__":
 
         # Approximated intensity
         approx_intensity = 2.0 * (1 - math.cos(math.pi * max(0, 8.0 + float(elevation)) / 60.0))
-        approx_intensity = max(0, min(6, approx_intensity))
-        approx_intensity = convert_to_linear(approx_intensity)
+        approx_intensity = max(0, min(150.0, approx_intensity * 0.25))
         data_points_intensity.append((float_time, approx_intensity))
 
         minutes += CONFIG["precision"]
