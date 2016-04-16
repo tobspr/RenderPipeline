@@ -1,5 +1,7 @@
 
 # Render Pipeline
+
+[![Join the chat at https://gitter.im/tobspr/RenderPipeline](https://badges.gitter.im/tobspr/RenderPipeline.svg)](https://gitter.im/tobspr/RenderPipeline?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Deferred Rendering Pipeline with Physically Based Shading for the <a href="http://github.com/panda3d/panda3d">Panda3D Game Engine</a>.
 
 ## Screenshots
