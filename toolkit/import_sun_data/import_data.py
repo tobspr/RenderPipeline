@@ -24,7 +24,9 @@ if __name__ == "__main__":
 
     import sys
     import math
-    import urllib2
+
+    sys.path.insert(0, "../../")
+    from rplibs.six.moves import urllib
 
     CONFIG["end_day"] = CONFIG["day"]
 
@@ -44,7 +46,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     print("Querying api ..")
-    handle = urllib2.urlopen(url)
+    handle =  urllib.request.urlopen(url)
     data = handle.read()
     handle.close()
 
