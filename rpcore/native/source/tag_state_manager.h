@@ -53,24 +53,12 @@ class TagStateManager {
         TagStateManager(NodePath main_cam_node);
         ~TagStateManager();
 
-        inline static BitMask32 get_gbuffer_mask();
-        inline static BitMask32 get_voxelize_mask();
-        inline static BitMask32 get_shadow_mask();
-        inline static BitMask32 get_envmap_mask();
-
-        inline void apply_shadow_state(NodePath np, Shader* shader, const string &name, int sort);
-        inline void apply_voxelize_state(NodePath np, Shader* shader, const string &name, int sort);
-        inline void apply_envmap_state(NodePath np, Shader* shader, const string &name, int sort);
+        inline void apply_state(const string& state, NodePath np, Shader* shader, const string &name, int sort);
         void cleanup_states();
 
-        inline void register_shadow_camera(Camera* source);
-        inline void unregister_shadow_camera(Camera* source);
-
-        inline void register_voxelize_camera(Camera* source);
-        inline void unregister_voxelize_camera(Camera* source);
-
-        inline void register_envmap_camera(Camera* source);
-        inline void unregister_envmap_camera(Camera* source);
+        inline void register_camera(const string& state, Camera* source);
+        inline void unregister_camera(const string& state, Camera* source);
+        inline const BitMask32& get_mask(const string &container_name);
 
     private:
 
@@ -82,6 +70,11 @@ class TagStateManager {
             TagStateList tag_states;
             string tag_name;
             BitMask32 mask;
+            bool write_color;
+
+            StateContainer() {};
+            StateContainer(const string &tag_name, size_t mask, bool write_color)
+                : tag_name(tag_name), mask(BitMask32::bit(mask)), write_color(write_color) {};
         };
 
         void apply_state(StateContainer& container, NodePath np, Shader* shader,
@@ -90,9 +83,8 @@ class TagStateManager {
         void register_camera(StateContainer &container, Camera* source);
         void unregister_camera(StateContainer &container, Camera* source);
 
-        StateContainer _shadow_container;
-        StateContainer _voxelize_container;
-        StateContainer _envmap_container;
+        typedef pmap<string, StateContainer> ContainerList;
+        ContainerList _containers;
 
         NodePath _main_cam_node;
 };

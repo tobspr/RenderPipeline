@@ -45,15 +45,13 @@ TagStateManager::TagStateManager(NodePath main_cam_node) {
     _main_cam_node = main_cam_node;
 
     // Set default camera mask
-    DCAST(Camera, _main_cam_node.node())->set_camera_mask(get_gbuffer_mask());
+    DCAST(Camera, _main_cam_node.node())->set_camera_mask(BitMask32::bit(1));
 
-    // Set container properties
-    _shadow_container.tag_name = "Shadows";
-    _shadow_container.mask = get_shadow_mask();
-    _voxelize_container.tag_name = "Voxelize";
-    _voxelize_container.mask = get_voxelize_mask();
-    _envmap_container.tag_name = "Envmap";
-    _envmap_container.mask = get_envmap_mask();
+    // Init containers
+    _containers["shadow"]   = StateContainer("Shadows",  2, false);
+    _containers["voxelize"] = StateContainer("Voxelize", 3, false);
+    _containers["envmap"]   = StateContainer("Envmap",   4, true);
+    _containers["forward"]  = StateContainer("Forward",  5, true);
 }
 
 /**
@@ -86,8 +84,7 @@ void TagStateManager::apply_state(StateContainer& container, NodePath np, Shader
     CPT(RenderState) state = RenderState::make_empty();
 
     // Disable color write for all stages except the environment container
-    // TODO: Could write an operator== instead of comparing like this
-    if (&container != &_envmap_container) {
+    if (!container.write_color) {
         state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
     }
     state = state->set_attrib(ShaderAttrib::make(shader, sort), sort);
@@ -125,9 +122,11 @@ void TagStateManager::cleanup_states() {
     DCAST(Camera, _main_cam_node.node())->clear_tag_states();
 
     // Clear the containers
-    cleanup_container_states(_shadow_container);
-    cleanup_container_states(_voxelize_container);
-    cleanup_container_states(_envmap_container);
+    // XXX: Just iterate over the _container map
+    cleanup_container_states(_containers["shadow"]);
+    cleanup_container_states(_containers["voxelize"]);
+    cleanup_container_states(_containers["envmap"]);
+    cleanup_container_states(_containers["forward"]);
 }
 
 /**
@@ -160,7 +159,7 @@ void TagStateManager::register_camera(StateContainer& container, Camera* source)
     // to the ColorWriteAttrib on each unique state.
     CPT(RenderState) state = RenderState::make_empty();
 
-    if (&container != &_envmap_container) {
+    if (!container.write_color) {
         state = state->set_attrib(ColorWriteAttrib::make(ColorWriteAttrib::C_off), 10000);
     }
     source->set_initial_state(state);

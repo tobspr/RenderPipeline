@@ -68,11 +68,6 @@ uniform samplerCube DefaultEnvmap;
 
 out vec4 result;
 
-float get_mipmap_for_roughness(samplerCube map, float roughness, float NxV) {
-
-    return sqrt(roughness) * 7.0;
-}
-
 float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
     // return occlusion;
     return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
@@ -206,9 +201,7 @@ void main() {
         diffuse_ambient *= env_brdf.r;
 
         // Approximate metallic fresnel
-        vec3 metallic_energy_f0 = vec3(1.0 - 0.7 * m.roughness) * m.basecolor;
-        vec3 metallic_energy_f90 = mix(vec3(1), 0.5 * m.basecolor, m.linear_roughness);
-        vec3 metallic_fresnel = mix(metallic_energy_f0, metallic_energy_f90, pow(1 - NxV, 3.6 - 2.6 * m.linear_roughness));
+        vec3 metallic_fresnel = get_metallic_fresnel_approx(m, NxV);
 
         // Mix between normal and metallic fresnel
         fresnel = mix(fresnel, metallic_fresnel, m.metallic);

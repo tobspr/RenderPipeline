@@ -24,60 +24,21 @@
  *
  */
 
-
 /**
- * @brief Returns the bitmask used for rendering the default scene geometry.
- * @details This returns the bitmask which will be used for normal rendering.
- * @return Default bitmask
- */
-inline BitMask32 TagStateManager::get_gbuffer_mask() {
-    return BitMask32::bit(1);
-}
-
-/**
- * @brief Returns the bitmask used for rendering shadows.
- * @details This returns the bitmask which will be used whenever rendering
- *   shadows, e.g. PSSM or regular shadow rendering.
- * @return Shadow bitmask
- */
-inline BitMask32 TagStateManager::get_shadow_mask() {
-    return BitMask32::bit(2);
-}
-
-/**
- * @brief Returns the bitmask used for voxelization.
- * @details This returns the bitmask which will be used when voxelizing the scene.
- *   This is for example used for the Global Illumination.
- * @return Voxelize bitmask
- */
-inline BitMask32 TagStateManager::get_voxelize_mask() {
-    return BitMask32::bit(3);
-}
-
-/**
- * @brief Returns the bitmask used for environment maps.
- * @details This returns the bitmask which will be used when rendering environment
- *   cubemaps.
- * @return Environment bitmask
- */
-inline BitMask32 TagStateManager::get_envmap_mask() {
-    return BitMask32::bit(4);
-}
-
-/**
- * @brief Registers a new camera which renders shadows
- * @details This registers a new camera which will be used to render shadows
- *   somewhere else. The TagStateManager will keep track of the camera and
+ * @brief Registers a new camera which renders a certain pass
+ * @details This registers a new camera which will be used to render the given
+ *   pass. The TagStateManager will keep track of the camera and
  *   applies all registered states onto the camera with Camera::set_tag_state.
- *   It also applies the shadow camera mask (TagStateManager::get_shadow_mask)
- *   to the camera, and sets an initial state to disable color write.
+ *   It also applies the appropriate camera mask to the camera,
+ *   and sets an initial state to disable color write depending on the pass.
  *
  * @param source Camera which will be used to render shadows
  */
-inline void TagStateManager::register_shadow_camera(Camera* source) {
-    register_camera(_shadow_container, source);
+inline void TagStateManager::register_camera(const string& name, Camera* source) {
+    ContainerList::iterator entry = _containers.find(name);
+    nassertv(entry != _containers.end());
+    register_camera(entry->second, source);
 }
-
 
 /**
  * @brief Unregisters a camera from the list of shadow cameras
@@ -86,105 +47,40 @@ inline void TagStateManager::register_shadow_camera(Camera* source) {
  *
  * @param source Camera to unregister
  */
-inline void TagStateManager::unregister_shadow_camera(Camera* source) {
-    unregister_camera(_shadow_container, source);
+inline void TagStateManager::unregister_camera(const string& name, Camera* source) {
+    ContainerList::iterator entry = _containers.find(name);
+    nassertv(entry != _containers.end());
+    unregister_camera(entry->second, source);
 }
 
 /**
- * @brief Registers a new camera for voxelization
- * @details This registers a new camera which will be used to voxelize the scene
- *   somewhere else. The TagStateManager will keep track of the camera and
- *   applies all registered states onto the camera with Camera::set_tag_state.
- *   It also applies the voxelize camera mask (TagStateManager::get_voxelize_mask)
- *   to the camera, and sets an initial state to disable color write.
- *
- * @param source Camera which will be used to render shadows
- */
-inline void TagStateManager::register_voxelize_camera(Camera* source) {
-    register_camera(_voxelize_container, source);
-}
-
-
-/**
- * @brief Unregisters a camera from the list of voxelization cameras
- * @details This unregisters a camera from the list of voxelization cameras. It also
- *   resets all tag states of the camera, and also its initial state.
- *
- * @param source Camera to unregister
- */
-inline void TagStateManager::unregister_voxelize_camera(Camera* source) {
-    unregister_camera(_voxelize_container, source);
-}
-
-/**
- * @brief Registers a new camera for environment map
- * @details This registers a new camera which will be used when rendering environment
- *   map. The TagStateManager will keep track of the camera and applies all registered
- *   tates onto the camera with Camera::set_tag_state.
- *   It also applies the envmap camera mask (TagStateManager::get_envmap_mask)
- *   to the camera.
- *
- * @param source Camera which will be used to render shadows
- */
-inline void TagStateManager::register_envmap_camera(Camera* source) {
-    register_camera(_envmap_container, source);
-}
-
-/**
- * @brief Unregisters a camera from the list of environment map cameras
- * @details This unregisters a camera from the list of environment map cameras. It also
- *   resets all tag states of the camera, and also its initial state.
- *
- * @param source Camera to unregister
- */
-inline void TagStateManager::unregister_envmap_camera(Camera* source) {
-    unregister_camera(_envmap_container, source);
-}
-
-/**
- * @brief Applies a given shadow state to a NodePath
+ * @brief Applies a given state for a pass to a NodePath
  * @details This applies a shader to the given NodePath which is used when the
- *   NodePath is rendered by any registered shadow camera to render shadows.
- *   It also disables color write (since its not required for shadows).
+ *   NodePath is rendered by any registered camera for that pass.
+ *   It also disables color write depending on the pass.
  *
  * @param np The nodepath to apply the shader to
  * @param shader A handle to the shader to apply
  * @param name Name of the state, should be a unique identifier
  * @param sort Determines the sort with which the shader will be applied.
  */
-inline void TagStateManager::apply_shadow_state(NodePath np, Shader* shader,
-                                                const string &name, int sort) {
-    apply_state(_shadow_container, np, shader, name, sort);
+inline void TagStateManager::apply_state(const string& state, NodePath np, Shader* shader,
+                                         const string &name, int sort) {
+    ContainerList::iterator entry = _containers.find(state);
+    nassertv(entry != _containers.end());
+    apply_state(entry->second, np, shader, name, sort);
 }
 
 /**
- * @brief Applies a given voxelize state to a NodePath
- * @details This applies a shader to the given NodePath which is used when the
- *   NodePath is rendered by any registered voxelization camera to voxelize the
- *   scene. It also disables color write (since its not required for voxelization).
- *
- * @param np The nodepath to apply the shader to
- * @param shader A handle to the shader to apply
- * @param name Name of the state, should be a unique identifier
- * @param sort Determines the sort with which the shader will be applied.
+ * @brief Returns the render mask for the given state
+ * @details This returns the mask of a given render pass, which can be used
+ *   to either show or hide objects from this pass.
+ * 
+ * @param container_name Name of the render-pass
+ * @return Bit mask of the render pass
  */
-inline void TagStateManager::apply_voxelize_state(NodePath np, Shader* shader,
-                                                  const string &name, int sort) {
-    apply_state(_voxelize_container, np, shader, name, sort);
-}
-
-/**
- * @brief Applies a given environment state to a NodePath
- * @details This applies a shader to the given NodePath which is used when the
- *   NodePath is rendered by any registered environment camera to render an
- *   environment map.
- *
- * @param np The nodepath to apply the shader to
- * @param shader A handle to the shader to apply
- * @param name Name of the state, should be a unique identifier
- * @param sort Determines the sort with which the shader will be applied.
- */
-inline void TagStateManager::apply_envmap_state(NodePath np, Shader* shader,
-                                                  const string &name, int sort) {
-    apply_state(_envmap_container, np, shader, name, sort);
+inline const BitMask32& TagStateManager::get_mask(const string &container_name) {
+    ContainerList::iterator entry = _containers.find(container_name);
+    nassertr(entry != _containers.end(), BitMask32());
+    return entry->second.mask;
 }

@@ -26,20 +26,23 @@
 
 #version 430
 
-#define USE_MAIN_SCENE_DATA
-#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
 
-#define APPLY_ENVPROBES_PASS 1
-#pragma include "includes/envprobes.inc.glsl"
+uniform sampler2D ShadedScene;
+uniform sampler2D SceneDepth;
+uniform sampler2D ForwardDepth;
+uniform sampler2D ForwardColor;
 
-layout(location=0) out vec4 result_spec;
-layout(location=1) out vec4 result_diff;
-
+out vec3 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    Material m = unpack_material(GBuffer, texcoord);
-    apply_all_probes(m, result_spec, result_diff);
+
+    vec3 deferred_result = textureLod(ShadedScene, texcoord, 0).xyz;
+    vec4 forward_result = textureLod(ForwardColor, texcoord, 0);
+
+    float deferred_depth = textureLod(ForwardDepth, texcoord, 0).x;
+    float forward_depth = textureLod(SceneDepth, texcoord, 0).x;
+    forward_result.xyz = forward_result.xyz * forward_result.w + deferred_result * (1 - forward_result.w);
+    result = deferred_depth > forward_depth ? deferred_result : forward_result.xyz;
 }

@@ -31,6 +31,9 @@ from panda3d.core import PNMImage
 
 class IESDataset(object):
 
+    """ Please refer to the native C++ implementation for docstrings and comments.
+    This is just the python implementation, which does not contain documentation! """
+
     def __init__(self):
         self._vertical_angles = None
         self._horizontal_angles = None

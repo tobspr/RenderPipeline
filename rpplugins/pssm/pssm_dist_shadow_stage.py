@@ -123,7 +123,7 @@ class PSSMDistShadowStage(RenderStage):
         self.target_blur_h.set_shader_input("direction", LVecBase2i(0, 1))
 
         # Register shadow camera
-        self._pipeline.tag_mgr.register_shadow_camera(self.camera)
+        self._pipeline.tag_mgr.register_camera("shadow", self.camera)
 
     def reload_shaders(self):
         self.target_convert.shader = self.load_plugin_shader("convert_to_esm.frag.glsl")

@@ -24,26 +24,28 @@ THE SOFTWARE.
 
 """
 
-class GPUCommandList(object):
+from rpcore.pluginbase.base_plugin import BasePlugin
 
-    """ Please refer to the native C++ implementation for docstrings and comments.
-    This is just the python implementation, which does not contain documentation! """
+from .forward_stage import ForwardStage
 
-    def __init__(self):
-        self._commands = []
+class Plugin(BasePlugin):
 
-    def add_command(self, cmd):
-        self._commands.append(cmd)
+    name = "Forward Rendering"
+    author = "tobspr <tobias.springer1@gmail.com>"
+    description = ("This plugin adds support for an additional forward rendering "
+                   "pass. This is mainly useful for transparency.")
+    version = "0.1 alpha (!)"
 
-    @property
-    def num_commands(self):
-        return len(self._commands)
+    def on_stage_setup(self):
+        self.stage = self.create_stage(ForwardStage)
 
-    def write_commands_to(self, dest, limit=32):
-        num_commands_written = 0
+        if self.is_plugin_enabled("scattering"):
+            self.stage.required_pipes += ["ScatteringIBLSpecular", "ScatteringIBLDiffuse"]
 
-        while num_commands_written < limit and self._commands:
-            self._commands.pop(0).write_to(dest, num_commands_written)
-            num_commands_written += 1
+        if self.is_plugin_enabled("pssm"):
+            self.stage.required_pipes += ["PSSMSceneSunShadowMapPCF"]
+            self.stage.required_inputs += ["PSSMSceneSunShadowMVP"]
 
-        return num_commands_written
+
+    def on_pipeline_created(self):
+        pass

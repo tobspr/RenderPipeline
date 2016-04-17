@@ -31,11 +31,12 @@ import time
 import math
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem
+from panda3d.core import PandaSystem, MaterialAttrib
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
 from rplibs.yaml import load_yaml_file_flat
+from rplibs.six.moves import range
 
 from rpcore.globals import Globals
 from rpcore.effect import Effect
@@ -84,8 +85,8 @@ class RenderPipeline(RPObject):
                        "as constructor parameter. Please have a look at the "
                        "00-Loading the pipeline sample to see how to initialize "
                        "the pipeline properly.")
-        self.debug("Using Python {} with architecture {}".format(
-            sys.version_info.major, PandaSystem.get_platform()))
+        self.debug("Using Python {}.{} with architecture {}".format(
+            sys.version_info.major, sys.version_info.minor, PandaSystem.get_platform()))
         self.debug("Using Panda3D {} built on {}".format(
             PandaSystem.get_version_string(), PandaSystem.get_build_date()))
         if PandaSystem.get_git_commit():
@@ -455,37 +456,51 @@ class RenderPipeline(RPObject):
 
         # Apply default stage shader
         if not effect.get_option("render_gbuffer"):
-            nodepath.hide(self.tag_mgr.get_gbuffer_mask())
+            nodepath.hide(self.tag_mgr.gbuffer_mask)
         else:
             nodepath.set_shader(effect.get_shader_obj("gbuffer"), sort)
-            nodepath.show(self.tag_mgr.get_gbuffer_mask())
+            nodepath.show(self.tag_mgr.gbuffer_mask)
 
         # Apply shadow stage shader
         if not effect.get_option("render_shadows"):
-            nodepath.hide(self.tag_mgr.get_shadow_mask())
+            nodepath.hide(self.tag_mgr.shadow_mask)
         else:
             shader = effect.get_shader_obj("shadows")
-            self.tag_mgr.apply_shadow_state(
-                nodepath, shader, str(effect.effect_id), 25 + sort)
-            nodepath.show(self.tag_mgr.get_shadow_mask())
+            self.tag_mgr.apply_state(
+                "shadow", nodepath, shader, str(effect.effect_id), 25 + sort)
+            nodepath.show(self.tag_mgr.shadow_mask)
 
         # Apply voxelization stage shader
         if not effect.get_option("render_voxel"):
-            nodepath.hide(self.tag_mgr.get_voxelize_mask())
+            nodepath.hide(self.tag_mgr.voxelize_mask)
         else:
             shader = effect.get_shader_obj("voxelize")
-            self.tag_mgr.apply_voxelize_state(
-                nodepath, shader, str(effect.effect_id), 35 + sort)
-            nodepath.show(self.tag_mgr.get_voxelize_mask())
+            self.tag_mgr.apply_state(
+                "voxelize", nodepath, shader, str(effect.effect_id), 35 + sort)
+            nodepath.show(self.tag_mgr.voxelize_mask)
 
         # Apply envmap stage shader
         if not effect.get_option("render_envmap"):
-            nodepath.hide(self.tag_mgr.get_envmap_mask())
+            nodepath.hide(self.tag_mgr.envmap_mask)
         else:
             shader = effect.get_shader_obj("envmap")
-            self.tag_mgr.apply_envmap_state(
-                nodepath, shader, str(effect.effect_id), 45 + sort)
-            nodepath.show(self.tag_mgr.get_envmap_mask())
+            self.tag_mgr.apply_state(
+                "envmap", nodepath, shader, str(effect.effect_id), 45 + sort)
+            nodepath.show(self.tag_mgr.envmap_mask)
+
+        # Apply forward shading shader
+        if not effect.get_option("render_forward"):
+            nodepath.hide(self.tag_mgr.forward_mask)
+        else:
+            shader = effect.get_shader_obj("forward")
+            self.tag_mgr.apply_state(
+                "forward", nodepath, shader, str(effect.effect_id), 55 + sort)
+            nodepath.show_through(self.tag_mgr.forward_mask)
+
+        # Check for invalid options
+        if effect.get_option("render_gbuffer") and effect.get_option("render_forward"):
+            self.error("You cannot render an object forward and deferred at the same time! Either "
+                       "use render_gbuffer or use render_forward, but not both.")
 
     def add_environment_probe(self):
         """ Constructs a new environment probe and returns the handle, so that
@@ -552,6 +567,35 @@ class RenderPipeline(RPObject):
             probe.parallax_correction = True
             np.remove_node()
             envprobes.append(probe)
+
+        # Find transparent objects and set the right effect
+        for geom_np in scene.find_all_matches("**/+GeomNode"):
+            geom_node = geom_np.node()
+            geom_count = geom_node.get_num_geoms()
+            for i in range(geom_count):
+                state = geom_node.get_geom_state(i)
+                if not state.has_attrib(MaterialAttrib):
+                    self.warn("Geom", geom_node, "has no material!")
+                    continue
+                material = state.get_attrib(MaterialAttrib).get_material()
+                shading_model = material.emission.x
+
+                # SHADING_MODEL_TRANSPARENT
+                if shading_model == 3:
+                    if geom_count > 1:
+                        self.error("Transparent materials must have their own geom!")
+                        continue
+
+                    self.set_effect(
+                        geom_np, "effects/default.yaml",
+                        {"render_forward": True, "render_gbuffer": False}, 100)
+
+                 # SHADING_MODEL_FOLIAGE
+                elif shading_model == 5:
+                    # XXX: Maybe only enable alpha testing for foliage unless
+                    # specified otherwise
+                    pass
+
 
         return {"lights": lights, "envprobes": envprobes}
 

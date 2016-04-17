@@ -83,7 +83,7 @@ void ShadowManager::init() {
         camera->set_lens(new MatrixLens());
         camera->set_active(false);
         camera->set_scene(_scene_parent);
-        _tag_state_mgr->register_shadow_camera(camera);
+        _tag_state_mgr->register_camera("shadow", camera);
         _camera_nps.push_back(_scene_parent.attach_new_node(camera));
         _cameras[i] = camera;
 

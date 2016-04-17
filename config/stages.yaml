@@ -38,7 +38,10 @@ global_stage_order:
   - ApplyEnvprobesStage
   - VXGIStage
   - SSRStage
+
   - AmbientStage
+  - ForwardStage
+
   - ApplyCloudsStage
   - GodrayStage
   - VolumetricsStage

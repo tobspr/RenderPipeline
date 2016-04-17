@@ -31,6 +31,9 @@ from panda3d.core import LVecBase4i, LVecBase4
 
 class ShadowAtlas(object):
 
+    """ Please refer to the native C++ implementation for docstrings and comments.
+    This is just the python implementation, which does not contain documentation! """
+
     def __init__(self, size, tile_size=32):
         self._size = size
         self._tile_size = tile_size

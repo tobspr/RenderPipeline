@@ -60,6 +60,9 @@ __all__ = ["RPLight"]
 
 class RPLight(object):
 
+    """ Please refer to the native C++ implementation for docstrings and comments.
+    This is just the python implementation, which does not contain documentation! """
+
     LT_empty = 0
     LT_point_light = 1
     LT_spot_light = 2

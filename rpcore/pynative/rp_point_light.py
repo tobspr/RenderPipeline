@@ -33,6 +33,9 @@ from rpcore.pynative.shadow_source import ShadowSource
 
 class RPPointLight(RPLight):
 
+    """ Please refer to the native C++ implementation for docstrings and comments.
+    This is just the python implementation, which does not contain documentation! """
+
     def __init__(self):
         RPLight.__init__(self, RPLight.LT_point_light)
         self._radius = 10.0

@@ -27,68 +27,43 @@ THE SOFTWARE.
 from __future__ import print_function
 from panda3d.core import RenderState, ColorWriteAttrib, ShaderAttrib, BitMask32
 
+from rplibs.six import itervalues
+
 class TagStateManager(object):
 
+    """ Please refer to the native C++ implementation for docstrings and comments.
+    This is just the python implementation, which does not contain documentation! """
+
     class StateContainer(object):
-        def __init__(self, tag_name, mask):
+        def __init__(self, tag_name, mask, write_color):
             self.cameras = []
             self.tag_states = {}
             self.tag_name = tag_name
-            self.mask = mask
+            self.mask = BitMask32.bit(mask)
+            self.write_color = write_color
 
     def __init__(self, main_cam_node):
         self._main_cam_node = main_cam_node
-        self._main_cam_node.node().set_camera_mask(self.get_gbuffer_mask())
-        self._shadow_container = self.StateContainer("Shadows", self.get_shadow_mask())
-        self._voxelize_container = self.StateContainer("Voxelize", self.get_voxelize_mask())
-        self._envmap_container = self.StateContainer("Envmap", self.get_envmap_mask())
+        self._main_cam_node.node().set_camera_mask(BitMask32.bit(1))
+        self.containers = {
+            "shadow": self.StateContainer("Shadows", 2, False),
+            "voxelize": self.StateContainer("Voxelize", 3, False),
+            "envmap": self.StateContainer("Envmap", 4, True),
+            "forward": self.StateContainer("Forward", 5, True),
+        }
 
-    def get_gbuffer_mask(self):
-        return BitMask32.bit(1)
+    def get_mask(self, container_name):
+        return self.containers[container_name].mask
 
-    def get_shadow_mask(self):
-        return BitMask32.bit(2)
-
-    def get_voxelize_mask(self):
-        return BitMask32.bit(3)
-
-    def get_envmap_mask(self):
-        return BitMask32.bit(4)
-
-    def apply_shadow_state(self, np, shader, name, sort):
-        self.apply_state(self._shadow_container, np, shader, name, sort)
-
-    def apply_voxelize_state(self, np, shader, name, sort):
-        self.apply_state(self._voxelize_container, np, shader, name, sort)
-
-    def apply_envmap_state(self, np, shader, name, sort):
-        self.apply_state(self._envmap_container, np, shader, name, sort)
-
-    def register_shadow_camera(self, source):
-        self.register_camera(self._shadow_container, source)
-
-    def unregister_shadow_camera(self, source):
-        self.unregister_camera(self._shadow_container, source)
-
-    def register_voxelize_camera(self, source):
-        self.register_camera(self._voxelize_container, source)
-
-    def unregister_voxelize_camera(self, source):
-        self.unregister_camera(self._voxelize_container, source)
-
-    def register_envmap_camera(self, source):
-        self.register_camera(self._envmap_container, source)
-
-    def unregister_envmap_camera(self, source):
-        self.unregister_camera(self._envmap_container, source)
-
-    def apply_state(self, container, np, shader, name, sort):
+    def apply_state(self, container_name, np, shader, name, sort):
+        assert shader
         state = RenderState.make_empty()
+        container = self.containers[container_name]
 
-        if container != self._envmap_container:
+        if not container.write_color:
             state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
-        state = state.set_attrib(ShaderAttrib.make(shader, sort), sort)
 
+        state = state.set_attrib(ShaderAttrib.make(shader, sort), sort)
         container.tag_states[name] = state
         np.set_tag(container.tag_name, name)
 
@@ -97,25 +72,23 @@ class TagStateManager(object):
 
     def cleanup_states(self):
         self._main_cam_node.node().clear_tag_states()
-        self.cleanup_container_states(self._shadow_container)
-        self.cleanup_container_states(self._voxelize_container)
-        self.cleanup_container_states(self._envmap_container)
+        for container in itervalues(self.containers):
+            for camera in container.cameras:
+                camera.clear_tag_states()
+            container.tag_states = {}
 
-    def cleanup_container_states(self, container):
-        for camera in container.cameras:
-            camera.clear_tag_states()
-        container.tag_states = {}
-
-    def register_camera(self, container, source):
+    def register_camera(self, container_name, source):
+        container = self.containers[container_name]
         source.set_tag_state_key(container.tag_name)
         source.set_camera_mask(container.mask)
         state = RenderState.make_empty()
-        if container != self._envmap_container:
+        if not container.write_color:
             state = state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 10000)
         source.set_initial_state(state)
         container.cameras.append(source)
 
-    def unregister_camera(self, container, source):
+    def unregister_camera(self, container_name, source):
+        container = self.containers[container_name]
         if source not in container.cameras:
             print("Could not remove source, was never attached!")
             return

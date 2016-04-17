@@ -131,7 +131,7 @@ class Debugger(RPObject):
     def _create_topbar(self):
         """ Creates the topbar """
         self._pipeline_logo = Sprite(
-            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=50,
+            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
             parent=self._fullscreen_node)
 
     def _collect_scene_data(self, task=None):

@@ -29,6 +29,7 @@
 #pragma include "includes/material.struct.glsl"
 #pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
+#pragma include "includes/light_culling.inc.glsl"
 
 // Global probe data
 uniform struct {
@@ -48,6 +49,12 @@ struct Cubemap {
     vec3 bounding_sphere_center;
     float bounding_sphere_radius;
 };
+
+// Per cell data
+#ifdef APPLY_ENVPROBES_PASS
+    uniform isampler2DArray CellIndices;
+    uniform isamplerBuffer PerCellProbes;
+#endif
 
 Cubemap get_cubemap(int index) {
     Cubemap result;
@@ -170,3 +177,61 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
     total_blend += blend;
 }
 
+
+#ifdef APPLY_ENVPROBES_PASS
+    void apply_all_probes(Material m, out vec4 specular, out vec4 diffuse) {
+        ivec3 tile = get_lc_cell_index(
+            ivec2(gl_FragCoord.xy),
+            distance(MainSceneData.camera_pos, m.position));
+
+        // Don't shade pixels out of the shading range
+        if (tile.z >= LC_TILE_SLICES) {
+            specular = vec4(0);
+            diffuse = vec4(0);
+            return;
+        }
+
+        int cell_index = texelFetch(CellIndices, tile, 0).x;
+        int data_offs = cell_index * MAX_PROBES_PER_CELL;
+
+        vec4 total_diffuse = vec4(0);
+        vec4 total_specular = vec4(0);
+        float total_blend = 0;
+        float total_weight = 0;
+
+        int processed_probes = 0;
+        for (int i = 0; i < MAX_PROBES_PER_CELL; ++i) {
+            int cubemap_index = texelFetch(PerCellProbes, data_offs + i).x - 1;
+            if (cubemap_index < 0) break;
+            vec4 diff, spec;
+
+            processed_probes += 1;
+            apply_cubemap(cubemap_index, m, diff, spec, total_weight, total_blend);
+            total_diffuse += diff;
+            total_specular += spec;
+        }
+
+        float scale = 1.0 / max(1e-3, total_weight) * min(1.0, total_blend);
+
+        vec4 result_spec = total_specular * scale;
+        vec4 result_diff = total_diffuse * scale;
+
+        // Fade out cubemaps as they reach the culling distance
+        float curr_dist = distance(m.position, MainSceneData.camera_pos);
+        float fade = saturate(curr_dist / LC_MAX_DISTANCE);
+        fade = 1 - pow(fade, 5.0);
+
+        result_spec *= fade;
+        result_diff *= fade;
+
+        // Visualize probe count
+        #if MODE_ACTIVE(ENVPROBE_COUNT)
+            float probe_factor = float(processed_probes) / MAX_PROBES_PER_CELL;
+            result_spec = result_diff = vec4(probe_factor, 1 - probe_factor, 0, 1);
+        #endif
+
+        specular = result_spec;
+        diffuse = result_diff;
+    }
+
+#endif

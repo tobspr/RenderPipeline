@@ -34,6 +34,9 @@ from rpcore.pynative.shadow_atlas import ShadowAtlas
 
 class ShadowManager(object):
 
+    """ Please refer to the native C++ implementation for docstrings and comments.
+    This is just the python implementation, which does not contain documentation! """
+
     def __init__(self):
         self._max_updates = 10
         self._atlas = None
@@ -83,7 +86,7 @@ class ShadowManager(object):
             camera.set_lens(MatrixLens())
             camera.set_active(False)
             camera.set_scene(self._scene_parent)
-            self._tag_state_mgr.register_shadow_camera(camera)
+            self._tag_state_mgr.register_camera("shadow", camera)
             self._camera_nps.append(self._scene_parent.attach_new_node(camera))
             self._cameras.append(camera)
 

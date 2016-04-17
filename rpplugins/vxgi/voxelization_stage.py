@@ -96,7 +96,7 @@ class VoxelizationStage(RenderStage):
         self.voxel_cam_lens.set_near_far(0.0, 2.0 * self.voxel_world_size)
         self.voxel_cam.set_lens(self.voxel_cam_lens)
         self.voxel_cam_np = Globals.base.render.attach_new_node(self.voxel_cam)
-        self._pipeline.tag_mgr.register_voxelize_camera(self.voxel_cam)
+        self._pipeline.tag_mgr.register_camera("voxelize", self.voxel_cam)
 
         # Create the voxelization target
         self.voxel_target = self.create_target("VoxelizeScene")

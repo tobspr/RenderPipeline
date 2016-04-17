@@ -31,6 +31,9 @@ import struct
 
 class GPUCommand(object):
 
+    """ Please refer to the native C++ implementation for docstrings and comments.
+    This is just the python implementation, which does not contain documentation! """
+
     CMD_invalid = 0
     CMD_store_light = 1
     CMD_remove_light = 2
