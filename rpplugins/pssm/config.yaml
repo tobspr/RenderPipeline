@@ -218,12 +218,21 @@ settings: !!omap
 
     - scene_shadow_resolution:
         type: int
-        range: [128, 8192]
-        default: 1024
+        range: [128, 4096]
+        default: 512
         label: Scene shadow Resolution
         description: >
-            Controls the size of the shadow map which covers the whole scene,
-            and is used by the environment probes and voxelization
+            Controls the size of the shadow map which is used when rendering
+            environment probes. 
+
+    - scene_shadow_sundist:
+        type: float
+        range: [100.0, 20000.0]
+        default: 50.0
+        label: Scene Shadow Sun Distance
+        runtime: true
+        description: >
+            Same as the Sun Distance, but for the scene shadow map.
 
 daytime_settings:
 

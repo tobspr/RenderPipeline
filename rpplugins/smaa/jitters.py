@@ -120,6 +120,7 @@ JITTERS = {
 
 
 def halton_seq(prime, index=1):
+    """ Low discrepancy halton sequence with a given prime """
     r, f, i = 0.0, 1.0, index
     while i > 0:
         f /= prime
@@ -130,8 +131,7 @@ def halton_seq(prime, index=1):
 # Initialize halton sequences
 for seq_num in [8, 16, 32, 256]:
     sequence = []
-    for i in range(seq_num):
-        point = Vec2(halton_seq(2, i + 1) - 0.5, halton_seq(3, i + 1) - 0.5)
+    for seq_iter in range(seq_num):
+        point = Vec2(halton_seq(2, seq_iter + 1) - 0.5, halton_seq(3, seq_iter + 1) - 0.5)
         sequence.append(point)
     JITTERS["halton" + str(seq_num)] = sequence
-

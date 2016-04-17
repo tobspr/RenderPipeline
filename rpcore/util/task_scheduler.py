@@ -44,11 +44,21 @@ class TaskScheduler(RPObject):
     def _load_config(self):
         """ Loads the tasks distribution configuration """
         config = load_yaml_file("/$$rpconfig/task-scheduler.yaml")["frame_cycles"]
-        for frame_name, tasks in config:
+        for frame_name, tasks in config: # pylint: disable=W0612
             self._tasks.append(tasks)
+
+    def _check_missing_schedule(self, task_name):
+        """ Checks whether the given task is scheduled at some point. This can
+        be used to check whether any task is missing in the task scheduler config. """
+        for tasks in self._tasks:
+            if task_name in tasks:
+                break
+        else:
+            self.error("Task '" + task_name + "' is never scheduled and thus will never run!")
 
     def is_scheduled(self, task_name):
         """ Returns whether a given task is supposed to run this frame """
+        self._check_missing_schedule(task_name)
         return task_name in self._tasks[self._frame_index]
 
     def step(self):

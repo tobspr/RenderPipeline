@@ -23,9 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-from __future__ import division
 
-from rplibs.six import itervalues
+from __future__ import division
 
 from rpcore.render_stage import RenderStage
 from rpcore.util.cubemap_filter import CubemapFilter

@@ -26,7 +26,6 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from functools import partial
 from rplibs.six.moves import range
 
 from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
@@ -148,7 +147,7 @@ class Debugger(RPObject):
         self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
         self._overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
         self._debug_lines = []
-        for i in range(5):
+        for i in range(6):
             self._debug_lines.append(TextNode(
                 pos=Vec2(0, -i * 0.046), parent=self._overlay_node,
                 pixel_size=16, align="right", color=Vec3(1)))
@@ -199,12 +198,26 @@ class Debugger(RPObject):
             self._pipeline.light_mgr.shadow_atlas_coverage)
 
         text = "Pipeline:   {:3.0f} MiB VRAM  |  {:5d} images  |  {:5d} textures  |  "
-        text += "{:5d} render targets  |  {:3d} plugins"
+        text += "{:5d} render targets  |  {:3d} plugins  | {:2d}  views  ({:2d} active)"
         tex_memory, tex_count = self._buffer_viewer.stage_information
+
+        views, active_views = 0, 0
+        for target in RenderTarget.REGISTERED_TARGETS:
+            if not target.create_default_region:
+                num_regions = target.internal_buffer.get_num_display_regions()
+                for i, region in enumerate(target.internal_buffer.get_display_regions()):
+                    if i == 0 and num_regions > 1:
+                        # Skip overlay display region
+                        continue
+                    views += 1
+                    active_views += 1 if target.active and region.active else 0
+
+
         self._debug_lines[2].text = text.format(
             tex_memory / (1024**2), len(Image.REGISTERED_IMAGES), tex_count,
             RenderTarget.NUM_ALLOCATED_BUFFERS,
-            len(self._pipeline.plugin_mgr.enabled_plugins))
+            len(self._pipeline.plugin_mgr.enabled_plugins),
+            views, active_views)
 
         text = "Scene:   {:4.0f} MiB VRAM  |  {:3d} textures  |  {:4d} geoms  "
         text += "|  {:4d} nodes  |  {:7,.0f} vertices  |  {:5.0f} MiB vTX data  "
@@ -237,6 +250,24 @@ class Debugger(RPObject):
             Globals.base.camera.get_z(Globals.base.render),
             self._pipeline.task_scheduler.num_tasks,
             self._pipeline.task_scheduler.num_scheduled_tasks,
+        )
+
+        text = "Scene shadows:  "
+        if "pssm" in self._pipeline.plugin_mgr.enabled_plugins:
+            focus = self._pipeline.plugin_mgr.instances["pssm"].scene_shadow_stage.last_focus
+            if focus is not None:
+                text += "{:3.1f} {:3.1f} {:3.1f} r {:3.1f}".format(focus[0].x, focus[0].y, focus[0].z, focus[1])
+            else:
+                text += "none"
+        else:
+            text += "inactive"
+
+        text += "  |  H {:3.1f} P {:3.1f} R {:3.1f}"
+
+        self._debug_lines[5].text = text.format(
+            Globals.base.camera.get_h(Globals.base.render),
+            Globals.base.camera.get_p(Globals.base.render),
+            Globals.base.camera.get_r(Globals.base.render),
         )
 
         if task:

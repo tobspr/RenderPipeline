@@ -101,5 +101,10 @@ class Plugin(BasePlugin):
                 probe.last_update = Globals.clock.get_frame_count()
                 self.capture_stage.active = True
                 self.capture_stage.set_probe(probe)
+
+                if self.is_plugin_enabled("pssm"):
+                    self.get_plugin_instance("pssm").scene_shadow_stage.request_focus(
+                        probe.bounds.get_center(), probe.bounds.get_radius()
+                    )
             else:
                 self.capture_stage.active = False

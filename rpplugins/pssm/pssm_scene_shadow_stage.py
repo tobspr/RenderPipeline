@@ -26,7 +26,6 @@ THE SOFTWARE.
 from __future__ import division
 
 from panda3d.core import Vec3, Camera, OrthographicLens, PTAMat4, SamplerState
-from panda3d.core import Mat4, Point4
 
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
@@ -45,7 +44,13 @@ class PSSMSceneShadowStage(RenderStage):
         RenderStage.__init__(self, pipeline)
         self.resolution = 2048
         self.sun_vector = Vec3(0, 0, 1)
+        self.sun_distance = 10.0
         self.pta_mvp = PTAMat4.empty_array(1)
+        self.focus = None
+
+        # Store last focus entirely for the purpose of being able to see
+        # it in the debugger
+        self.last_focus = None
 
     @property
     def produced_inputs(self):
@@ -61,6 +66,10 @@ class PSSMSceneShadowStage(RenderStage):
         state.set_magfilter(SamplerState.FT_shadow)
         return state
 
+    def request_focus(self, focus_point, focus_size):
+        self.focus = (focus_point, focus_size)
+        self.last_focus = self.focus
+
     @property
     def mvp(self):
         return Globals.base.render.get_transform(self.cam_node).get_mat() * \
@@ -68,14 +77,22 @@ class PSSMSceneShadowStage(RenderStage):
 
     def update(self):
         if self._pipeline.task_scheduler.is_scheduled("pssm_scene_shadows"):
-            cam_pos = Globals.base.cam.get_pos(Globals.base.render)
-            self.cam_node.set_pos(cam_pos + self.sun_vector * 900)
-            self.cam_node.look_at(cam_pos)
+            if self.focus is None:
+                # When no focus is set, there is no point in rendering the shadow map
+                self.target.active = False
+            else:
+                focus_point, focus_size = self.focus
 
-            snap_shadow_map(self.mvp, self.cam_node, self.resolution)
+                self.cam_lens.set_near_far(0.0, 2 * (focus_size + self.sun_distance))
+                self.cam_lens.set_film_size(2 * focus_size, 2 * focus_size)
+                self.cam_node.set_pos(focus_point + self.sun_vector * (self.sun_distance + focus_size))
+                self.cam_node.look_at(focus_point)
 
-            self.target.active = True
-            self.pta_mvp[0] = self.mvp
+                snap_shadow_map(self.mvp, self.cam_node, self.resolution)
+                self.target.active = True
+                self.pta_mvp[0] = self.mvp
+
+                self.focus = None
         else:
             self.target.active = False
 

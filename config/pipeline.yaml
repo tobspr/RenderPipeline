@@ -72,7 +72,7 @@ shadows:
     # getting updated fast enough. However, this also affects the performance
     # quite a bit, since for every shadow map a part of the scene has
     # to get re-rendered.
-    max_updates: 4
+    max_updates: 8
 
     # Sets the maximum distance until which shadows are updated. If a shadow
     # source is further away, it will no longer recieve updates

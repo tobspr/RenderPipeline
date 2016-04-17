@@ -90,7 +90,7 @@ class PSSMCameraRig(object):
     def set_use_stable_csm(self, use_stable):
         self._snap_grid = use_stable
 
-    def _stub(self, *args, **kwargs):
+    def _stub(self, *args, **kwargs): # pylint: disable=W0613
         return None
 
     set_pssm_distance = _stub

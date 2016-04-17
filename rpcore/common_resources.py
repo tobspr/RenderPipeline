@@ -27,7 +27,7 @@ THE SOFTWARE.
 from __future__ import division
 
 from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4, Vec4
-from panda3d.core import SamplerState, Point2, Point3
+from panda3d.core import SamplerState
 from direct.stdpy.file import open
 
 from rpcore.globals import Globals

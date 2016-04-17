@@ -87,9 +87,8 @@ void main() {
   // the exposure. Basically the color is only allowed to be twice as bright
   // as the average screen brightness.
   float current_ev = 1.0 / texelFetch(Exposure, 0).x;
-  intersected_color = clamp(intersected_color, 0.0, 2 * current_ev);
+  intersected_color = clamp(intersected_color, 0.0, 4 * current_ev);
 
   // Finally store the result in the mip-chian
   result = vec4(intersected_color, 1) * fade;
 }
-

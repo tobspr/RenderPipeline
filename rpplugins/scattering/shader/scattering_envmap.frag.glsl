@@ -46,9 +46,13 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 view_vector = texcoord_to_cubemap(texsize, coord, clamped_coord, face);
 
+    // Artistic choice: scale the view vector so the cubemap looks more
+    // interesting. This is not phsically correct but looks much better.
+    view_vector.z *= 0.4;
+
     // Store horizon
     float horizon = view_vector.z;
-    // view_vector.z = abs(view_vector.z);
+    // view_vector.z = abs(view_vector.z * 0.5);
     float sky_clip = 0.0;
 
     // Get inscattered light
@@ -58,11 +62,10 @@ void main() {
     inscattered_light = srgb_to_rgb(inscattered_light);
     inscattered_light *= 3.0;
 
-
     if (horizon > 0.0) {
         // Render clouds to provide more variance for the cubemap
         vec3 cloud_color = textureLod(DefaultEnvmap, fix_cubemap_coord(view_vector), 0).xyz;
-        inscattered_light *= 0.0 + 1.0 * (0.5 + 5.0 * cloud_color);
+        inscattered_light *= 0.0 + 1.0 * (0.5 + 15.0 * cloud_color);
 
     } else {
         // Blend ambient cubemap at the bottom

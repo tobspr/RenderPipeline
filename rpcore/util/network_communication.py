@@ -87,9 +87,9 @@ class NetworkCommunication(RPObject):
         self._config_updates = set()
         self._daytime_updates = set()
         self._config_thread = self.listen_threaded(
-            self.CONFIG_PORT, lambda msg: self._config_updates.add(msg))
+            self.CONFIG_PORT, self._config_updates.add)
         self._daytime_thread = self.listen_threaded(
-            self.DAYTIME_PORT, lambda msg: self._daytime_updates.add(msg))
+            self.DAYTIME_PORT, self._daytime_updates.add)
 
     def update(self):
         """ Update task which gets called every frame and executes the changes.

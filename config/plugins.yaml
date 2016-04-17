@@ -11,12 +11,12 @@ enabled:
     - motion_blur
     - pssm
     - scattering
+    - skin_shading
     - smaa
     - ssr
     # - clouds
     # - dof
     # - fxaa
-    # - skin_shading
     # - volumetrics
     # - vxgi
 
@@ -129,7 +129,8 @@ overrides:
         dist_shadow_resolution: 1024
         dist_shadow_clipsize: 12924.44444
         dist_shadow_sundist: 9386.67
-        scene_shadow_resolution: 1024
+        scene_shadow_resolution: 512
+        scene_shadow_sundist: 100.0
 
     scattering:
         scattering_method: eric_bruneton
@@ -154,7 +155,7 @@ overrides:
 
     ssr:
         effect_scale: 1.0
-        trace_steps: 314
+        trace_steps: 64
         history_length: 16
         abort_on_object_infront: True
         intial_bias: 0.1

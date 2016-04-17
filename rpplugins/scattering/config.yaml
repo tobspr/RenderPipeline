@@ -137,4 +137,4 @@ daytime_settings: !!omap
         logarithmic_factor: 1.5
         description: >
             Controls the relative height of the atmosphere. If you raise this
-            value, the atmosphere will be more dense. 
+            value, the atmosphere will be more dense.

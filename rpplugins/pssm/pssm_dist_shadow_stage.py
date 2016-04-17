@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import Vec3, Camera, OrthographicLens, Mat4, Point4, PTAMat4
+from panda3d.core import Vec3, Camera, OrthographicLens, PTAMat4
 from panda3d.core import LVecBase2i
 
 from rpcore.globals import Globals

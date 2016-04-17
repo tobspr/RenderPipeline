@@ -9,57 +9,44 @@
 
 frame_cycles: !!omap
 
-  - frame0:
-
-    # Complexity: 0.5
+  - frame1:
+    # First frame - cull the environment probes, and also select which we want
+    # to update next. Also already update the scene shadows arround the
+    # probe to make sure it gets updated accordingly
+    - envprobes_select_and_cull
     - pssm_scene_shadows
 
-    # Complexity: 0.1
-    - envprobes_capture_envmap_face5
-
-  - frame1:
-
-    # Complexity: 0.5
+  - frame2:
+    # Second frame - render the first face of the envmap, and also update
+    # the distant shadow map.
+    - envprobes_capture_envmap_face0
     - pssm_distant_shadows
 
-  - frame2:
-
-    # Complexity: (env-probe resolution) ^ 2
-    - envprobes_filter_and_store_envmap
-
-    # Complexity: (distant shadow resolution) ^ 2
+  - frame3:
+    # Third frame - render the second face of the envmap, and convert the
+    # previously rendered distant shadow map to an exponential shadow map.
+    - envprobes_capture_envmap_face1
     - pssm_convert_distant_to_esm
 
-  - frame3:
-
-    # Estimated time: fixed, very low, ~0.05ms
-    - envprobes_select_and_cull
-
-    # Complexity: 0.1
-    - envprobes_capture_envmap_face0
-
-    # Complexity: (distant shadow resolution) ^ 2
+  - frame4:
+    # Fourth frame - render the third face of the envmap, and blur the distant
+    # shadow map verticlly
+    - envprobes_capture_envmap_face2
     - pssm_blur_distant_vert
 
-  - frame4:
-
-    # Complexity: 0.1
-    - envprobes_capture_envmap_face1
-
-    # Complexity: (distant shadow resolution) ^ 2
-    - pssm_blur_distant_horiz
-
   - frame5:
-
-    # Complexity: 0.1
-    - envprobes_capture_envmap_face2
-
-    # Complexity: 0.1
+    # Fifth frame - render the fourth face of the envmap, and blur the distant
+    # shadow map horizontally
+    - pssm_blur_distant_horiz
     - envprobes_capture_envmap_face3
-
-    # Complexity: 0.1
     - envprobes_capture_envmap_face4
 
-    # Complexity: (scattering envmap resolution) ^ 2
+  - frame6:
+    # Sixth frame - render the fift face of the envmap, and blur the distant
+    # shadow map horizontally
+    - envprobes_capture_envmap_face5
     - scattering_update_envmap
 
+  - frame7:
+    # Seventh frame - just filter the envmap
+    - envprobes_filter_and_store_envmap

@@ -164,10 +164,6 @@ void main() {
             vec4 probe_spec = textureLod(EnvmapAmbientSpec, texcoord, 0);
             vec4 probe_diff = textureLod(EnvmapAmbientDiff, texcoord, 0);
 
-            // Unpack color
-            probe_diff.xyz = probe_diff.xyz / max(vec3(1e-7), 1 - probe_diff.xyz);
-            probe_spec.xyz = probe_spec.xyz / max(vec3(1e-7), 1 - probe_spec.xyz);
-
             ibl_diffuse = ibl_diffuse * (1 - probe_diff.w) + probe_diff.xyz;
             ibl_specular = ibl_specular * (1 - probe_spec.w) + probe_spec.xyz;
         #endif

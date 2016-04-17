@@ -28,13 +28,14 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
+// Converts the scene color to a luminance
 
 uniform sampler2D ShadedScene;
 out float result;
 
 float get_log_luminance(vec3 color) {
     float lum = get_luminance(color);
-    return saturate(lum / (1 + lum));
+    return lum / (1 + lum);
 }
 
 void main() {
@@ -42,11 +43,15 @@ void main() {
     vec2 local_coord = (coord_screen + 1.0) / SCREEN_SIZE;
     const vec2 pixel_offset = 2.0 / SCREEN_SIZE;
 
+    // Weight luminance based on distance to the borders - this is because
+    // pixels in the center of the screen are more visually important
+    float weight = 1 - 0.5 * distance(local_coord, vec2(0.5, 0.5));
+
     vec4 luminances = vec4(
-        get_log_luminance(textureLod(ShadedScene, local_coord, 0).xyz),
-        get_log_luminance(textureLod(ShadedScene, local_coord + vec2(pixel_offset.x, 0), 0).xyz),
-        get_log_luminance(textureLod(ShadedScene, local_coord + vec2(0, pixel_offset.y), 0).xyz),
-        get_log_luminance(textureLod(ShadedScene, local_coord + pixel_offset.xy, 0).xyz)
+        get_log_luminance(weight * textureLod(ShadedScene, local_coord, 0).xyz),
+        get_log_luminance(weight * textureLod(ShadedScene, local_coord + vec2(pixel_offset.x, 0), 0).xyz),
+        get_log_luminance(weight * textureLod(ShadedScene, local_coord + vec2(0, pixel_offset.y), 0).xyz),
+        get_log_luminance(weight * textureLod(ShadedScene, local_coord + pixel_offset.xy, 0).xyz)
     );
 
     result = dot(luminances, vec4(0.25));
