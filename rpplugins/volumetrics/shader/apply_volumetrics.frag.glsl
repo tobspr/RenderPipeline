@@ -72,7 +72,7 @@ void main() {
   //   return;
   // }
 
-  vec3 fog_color = TimeOfDay.volumetrics.fog_color / 255.0 * 10.0 * TimeOfDay.volumetrics.fog_brightness;
+  vec3 fog_color = TimeOfDay.volumetrics.fog_color * 10.0 * TimeOfDay.volumetrics.fog_brightness;
 
   float fog_weight = 0.0;
   float fog_ramp = TimeOfDay.volumetrics.fog_ramp_size * 3;

@@ -198,12 +198,23 @@ settings: !!omap
     - dist_shadow_clipsize:
         display_if: {use_distant_shadows: true}
         type: float
-        range: [100.0, 16000.0]
+        range: [100.0, 20000.0]
         default: 4000.0
         runtime: true
         label: Distant Shadow Range
         description: >
-            Controls the range of the distant shadow map
+            Controls the range of the distant shadow map. Bigger values cover
+            a bigger part of the scene, but also decrease the effective resolution.
+
+    - dist_shadow_sundist:
+        display_if: {use_distant_shadows: true}
+        type: float
+        range: [100.0, 20000.0]
+        default: 500.0
+        label: Distant Shadow Sun Distance
+        runtime: true
+        description: >
+            Same as the Sun Distance, but for the distant shadow map.
 
     - scene_shadow_resolution:
         type: int

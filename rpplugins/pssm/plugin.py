@@ -70,6 +70,7 @@ class Plugin(BasePlugin):
             self.dist_shadow_stage = self.create_stage(PSSMDistShadowStage)
             self.dist_shadow_stage.resolution = self.get_setting("dist_shadow_resolution")
             self.dist_shadow_stage.clip_size = self.get_setting("dist_shadow_clipsize")
+            self.dist_shadow_stage.sun_distance = self.get_setting("dist_shadow_sundist")
 
             self.pssm_stage.required_pipes.append("PSSMDistSunShadowMap")
             self.pssm_stage.required_inputs.append("PSSMDistSunShadowMapMVP")
@@ -161,6 +162,9 @@ class Plugin(BasePlugin):
 
     def update_dist_shadow_clipsize(self):
         self.dist_shadow_stage.clip_size = self.get_setting("dist_shadow_clipsize")
+
+    def update_dist_shadow_sundist(self):
+        self.dist_shadow_stage.sun_distance = self.get_setting("dist_shadow_sundist")
 
     def toggle_update_enabled(self):
         self.update_enabled = not self.update_enabled

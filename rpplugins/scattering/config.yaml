@@ -88,13 +88,15 @@ daytime_settings: !!omap
         range: [0.0, 150.0]
         default: 100.0
         label: Sun Intensity
-        description: Controls the intensity of the sun in K-LUX (1000 lux)
+        description: >
+            Controls the intensity of the sun in K-LUX (1000 lux)
 
     - sun_color:
         type: color
         default: [126, 255, 100]
         label: Sun Color
-        description: Sun Color
+        description: >
+            The color of the sun.
 
     - sun_azimuth:
         type: scalar
@@ -102,7 +104,9 @@ daytime_settings: !!omap
         range: [0.0, 360.0]
         default: 180
         label: Sun Azimuth
-        description: Horizontal angle of the sun
+        description: >
+            Horizontal angle of the sun, this basically controls from which
+            direction the sun comes
 
     - sun_altitude:
         type: scalar
@@ -110,24 +114,27 @@ daytime_settings: !!omap
         range: [-60, 60.0]
         default: 30
         label: Sun Altidude
-        description: Vertical angle of the sun
+        description: >
+            Vertical angle of the sun, this controls the height of the sun.
 
     - extinction:
         type: scalar
         unit: meter
-        range: [0.5, 10000.0]
+        range: [0.5, 20000.0]
         default: 2000
         label: Extinction
         logarithmic_factor: 2.0
         description: >
-            Extinction factor
+            Extinction factor, this controls how much the fog darkens the
+            objects in the distance.
 
     - fog_scale:
         type: scalar
         unit: meter
         range: [25.0, 2000.0]
         default: 200
-        label: Fog scale
+        label: Atmosphere Fog scale
         logarithmic_factor: 1.5
         description: >
-            Fog scale
+            Controls the relative height of the atmosphere. If you raise this
+            value, the atmosphere will be more dense. 

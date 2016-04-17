@@ -54,7 +54,6 @@ void main() {
     // Get inscattered light
     vec3 inscattered_light = DoScattering(view_vector * 1e10, view_vector, sky_clip)
                              * TimeOfDay.scattering.sun_intensity;
-                             // * TimeOfDay.scattering.sun_color * 0.01;
 
     inscattered_light = srgb_to_rgb(inscattered_light);
     inscattered_light *= 3.0;
@@ -68,7 +67,7 @@ void main() {
     } else {
         // Blend ambient cubemap at the bottom
         vec3 sun_vector = get_sun_vector();
-        vec3 color_scale = get_sun_color_scale(sun_vector) * TimeOfDay.scattering.sun_color / 255.0;
+        vec3 color_scale = get_sun_color_scale(sun_vector) * TimeOfDay.scattering.sun_color;
         inscattered_light = textureLod(DefaultEnvmap, fix_cubemap_coord(view_vector), 0).xyz
                             * TimeOfDay.scattering.sun_intensity * color_scale;
     }

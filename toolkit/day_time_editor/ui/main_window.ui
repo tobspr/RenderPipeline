@@ -481,7 +481,7 @@
      <rect>
       <x>10</x>
       <y>120</y>
-      <width>301</width>
+      <width>311</width>
       <height>491</height>
      </rect>
     </property>
@@ -501,7 +501,6 @@ QTreeView::item {
 	border-bottom: 1px solid  rgba(0, 0, 0, 90);
 	border-radius: 1px;
 	outline: none;
-
 }
 
 QTreeView::item:hover {
@@ -523,6 +522,9 @@ outline: 0;
 </string>
     </property>
     <property name="verticalScrollBarPolicy">
+     <enum>Qt::ScrollBarAsNeeded</enum>
+    </property>
+    <property name="horizontalScrollBarPolicy">
      <enum>Qt::ScrollBarAsNeeded</enum>
     </property>
     <property name="editTriggers">
@@ -551,6 +553,9 @@ outline: 0;
     </property>
     <property name="itemsExpandable">
      <bool>true</bool>
+    </property>
+    <property name="sortingEnabled">
+     <bool>false</bool>
     </property>
     <property name="animated">
      <bool>true</bool>
@@ -585,6 +590,35 @@ outline: 0;
     </column>
     <item>
      <property name="text">
+      <string>Scattering</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>Sun Height</string>
+      </property>
+      <property name="text">
+       <string>0,4</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Sun Color</string>
+      </property>
+      <property name="text">
+       <string>[128, 255, 100]</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Sun Angle</string>
+      </property>
+      <property name="text">
+       <string>180 °</string>
+      </property>
+     </item>
+    </item>
+    <item>
+     <property name="text">
       <string>Ambient Occlusion</string>
      </property>
      <property name="text">
@@ -599,35 +633,6 @@ outline: 0;
       </property>
       <property name="text">
        <string>0.5</string>
-      </property>
-     </item>
-    </item>
-    <item>
-     <property name="text">
-      <string>Scattering</string>
-     </property>
-     <item>
-      <property name="text">
-       <string>Sun Height</string>
-      </property>
-      <property name="text">
-       <string>0,4</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Sun Angle</string>
-      </property>
-      <property name="text">
-       <string>180 °</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Sun Color</string>
-      </property>
-      <property name="text">
-       <string>[128, 255, 100]</string>
       </property>
      </item>
     </item>
@@ -651,7 +656,7 @@ outline: 0;
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>20</y>
+       <y>9</y>
        <width>221</width>
        <height>31</height>
       </rect>
@@ -728,9 +733,9 @@ background: #eee;border: 1px solid #000;
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>60</y>
+       <y>41</y>
        <width>351</width>
-       <height>21</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="font">
@@ -742,7 +747,7 @@ background: #eee;border: 1px solid #000;
       <string notr="true">color: #888;</string>
      </property>
      <property name="text">
-      <string>Description: Some Description about the setting, to give the user a rough idea what this does </string>
+      <string>Description: Some Description about the setting, to give the user a rough idea what this does. This description may be so long, it can even go into the next line.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -802,7 +807,7 @@ border-bottom: 1px solid #222;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: #888; border: 0;</string>
+      <string notr="true">color: #eee;border: 0;</string>
      </property>
      <property name="text">
       <string>Settings</string>
@@ -837,9 +842,9 @@ QLabel {border: 0;}</string>
      <property name="geometry">
       <rect>
        <x>70</x>
-       <y>16</y>
+       <y>21</y>
        <width>521</width>
-       <height>31</height>
+       <height>20</height>
       </rect>
      </property>
      <property name="maximum">
@@ -877,7 +882,7 @@ QLabel {border: 0;}</string>
      <property name="geometry">
       <rect>
        <x>9</x>
-       <y>12</y>
+       <y>3</y>
        <width>51</width>
        <height>31</height>
       </rect>
@@ -894,6 +899,29 @@ QLabel {border: 0;}</string>
      </property>
      <property name="text">
       <string>11:15</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="time_float_label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>29</y>
+       <width>41</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #39f;</string>
+     </property>
+     <property name="text">
+      <string>0.486</string>
      </property>
     </widget>
    </widget>

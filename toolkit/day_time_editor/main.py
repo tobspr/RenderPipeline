@@ -241,6 +241,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         ftime = float(val) / (24 * 60 * 60 * 60)
 
         self.time_label.setText(str(hour).zfill(2) + ":" + str(minute).zfill(2))
+        self.time_float_label.setText("{:1.4f}".format(ftime))
         self.edit_widget.set_current_time(ftime)
         self._current_time = ftime
         self._update_tree_widgets()
@@ -266,7 +267,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             font = QtGui.QFont()
             font.setBold(True)
             if not self._plugin_mgr.is_plugin_enabled(plugin_id):
-                plugin_head.setText(0, "(disabled) " +  plugin.name)
+                plugin_head.setText(0, plugin.name)
             plugin_head.setFont(0, font)
 
             # Display all settings

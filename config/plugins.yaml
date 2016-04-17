@@ -126,8 +126,9 @@ overrides:
         pcss_search_samples: 8
         pcss_penumbra_size: 11.0
         use_distant_shadows: True
-        dist_shadow_resolution: 4096
-        dist_shadow_clipsize: 11583.33
+        dist_shadow_resolution: 1024
+        dist_shadow_clipsize: 12924.44444
+        dist_shadow_sundist: 9386.67
         scene_shadow_resolution: 1024
 
     scattering:

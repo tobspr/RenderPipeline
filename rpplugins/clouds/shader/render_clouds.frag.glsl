@@ -262,12 +262,12 @@ void main() {
     // float accum_weight = 1;
 
     float sun_influence = pow(max(0, dot(ray_dir, sun_vector)), 25.0) + 0.0;
-    vec3 sun_color = sun_influence * 100.0 * TimeOfDay.scattering.sun_color / 255.0;
+    vec3 sun_color = sun_influence * 100.0 * TimeOfDay.scattering.sun_color;
 
     accum_color *= 1.0 + sun_color * max(0, 1 - 0.7 * density);
     accum_color *= TimeOfDay.clouds.cloud_brightness * 20.0 * vec3(10, 10, 15);
     accum_color *= TimeOfDay.scattering.sun_intensity / 150.0;
-    accum_color *= TimeOfDay.scattering.sun_color / 255.0;
+    accum_color *= TimeOfDay.scattering.sun_color;
 
 
 /*

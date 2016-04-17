@@ -52,7 +52,6 @@ void main() {
     float sky_clip = 0.0;
     vec3 inscattered_light = DoScattering(m.position, view_vector, sky_clip)
                                 * TimeOfDay.scattering.sun_intensity;
-                            /* * TimeOfDay.scattering.sun_color * 0.01*/;
 
     result.xyz = textureLod(ShadedScene, texcoord, 0).xyz;
     result.w = 1;
