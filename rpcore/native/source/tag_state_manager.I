@@ -80,6 +80,8 @@ inline void TagStateManager::apply_state(const string& state, NodePath np, Shade
  * @return Bit mask of the render pass
  */
 inline const BitMask32& TagStateManager::get_mask(const string &container_name) {
+    if (container_name == "gbuffer")
+        return BitMask32::bit(1);
     ContainerList::iterator entry = _containers.find(container_name);
     nassertr(entry != _containers.end(), BitMask32());
     return entry->second.mask;

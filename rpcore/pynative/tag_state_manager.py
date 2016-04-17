@@ -53,6 +53,8 @@ class TagStateManager(object):
         }
 
     def get_mask(self, container_name):
+        if container_name == "gbuffer":
+            return BitMask32.bit(1)
         return self.containers[container_name].mask
 
     def apply_state(self, container_name, np, shader, name, sort):
