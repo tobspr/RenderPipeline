@@ -26,7 +26,7 @@ class Application(ShowBase):
 
     def __init__(self):
         load_prc_file_data("", "win-size 512 512")
-        # load_prc_file_data("", "window-type offscreen")
+        load_prc_file_data("", "window-type offscreen")
         load_prc_file_data("", "model-cache-dir")
         load_prc_file_data("", "model-cache-textures #f")
         load_prc_file_data("", "textures-power-2 none")

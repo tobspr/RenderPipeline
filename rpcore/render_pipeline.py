@@ -381,9 +381,10 @@ class RenderPipeline(RPObject):
             # data/panda3d_patches/prev-model-view-matrix.diff.
             # Delete it after you applied it, so the render pipeline knows the
             # patch is available.
-            self.warn("Experimental feature activated, no guarantee it works!")
-            defines["EXPERIMENTAL_PREV_TRANSFORM"] = 1
-
+            # self.warn("Experimental feature activated, no guarantee it works!")
+            # defines["EXPERIMENTAL_PREV_TRANSFORM"] = 1
+            pass
+            
         self.light_mgr.init_defines()
         self.plugin_mgr.init_defines()
 
@@ -456,46 +457,46 @@ class RenderPipeline(RPObject):
 
         # Apply default stage shader
         if not effect.get_option("render_gbuffer"):
-            nodepath.hide(self.tag_mgr.gbuffer_mask)
+            nodepath.hide(self.tag_mgr.get_mask("gbuffer"))
         else:
             nodepath.set_shader(effect.get_shader_obj("gbuffer"), sort)
-            nodepath.show(self.tag_mgr.gbuffer_mask)
+            nodepath.show(self.tag_mgr.get_mask("gbuffer"))
 
         # Apply shadow stage shader
         if not effect.get_option("render_shadows"):
-            nodepath.hide(self.tag_mgr.shadow_mask)
+            nodepath.hide(self.tag_mgr.get_mask("shadow"))
         else:
             shader = effect.get_shader_obj("shadows")
             self.tag_mgr.apply_state(
                 "shadow", nodepath, shader, str(effect.effect_id), 25 + sort)
-            nodepath.show(self.tag_mgr.shadow_mask)
+            nodepath.show(self.tag_mgr.get_mask("shadow"))
 
         # Apply voxelization stage shader
         if not effect.get_option("render_voxel"):
-            nodepath.hide(self.tag_mgr.voxelize_mask)
+            nodepath.hide(self.tag_mgr.get_mask("voxelize"))
         else:
             shader = effect.get_shader_obj("voxelize")
             self.tag_mgr.apply_state(
                 "voxelize", nodepath, shader, str(effect.effect_id), 35 + sort)
-            nodepath.show(self.tag_mgr.voxelize_mask)
+            nodepath.show(self.tag_mgr.get_mask("voxelize"))
 
         # Apply envmap stage shader
         if not effect.get_option("render_envmap"):
-            nodepath.hide(self.tag_mgr.envmap_mask)
+            nodepath.hide(self.tag_mgr.get_mask("envmap"))
         else:
             shader = effect.get_shader_obj("envmap")
             self.tag_mgr.apply_state(
                 "envmap", nodepath, shader, str(effect.effect_id), 45 + sort)
-            nodepath.show(self.tag_mgr.envmap_mask)
+            nodepath.show(self.tag_mgr.get_mask("envmap"))
 
         # Apply forward shading shader
         if not effect.get_option("render_forward"):
-            nodepath.hide(self.tag_mgr.forward_mask)
+            nodepath.hide(self.tag_mgr.get_mask("forward"))
         else:
             shader = effect.get_shader_obj("forward")
             self.tag_mgr.apply_state(
                 "forward", nodepath, shader, str(effect.effect_id), 55 + sort)
-            nodepath.show_through(self.tag_mgr.forward_mask)
+            nodepath.show_through(self.tag_mgr.get_mask("forward"))
 
         # Check for invalid options
         if effect.get_option("render_gbuffer") and effect.get_option("render_forward"):
