@@ -58,7 +58,7 @@ class TagStateManager {
 
         inline void register_camera(const string& state, Camera* source);
         inline void unregister_camera(const string& state, Camera* source);
-        inline const BitMask32& get_mask(const string &container_name);
+        inline BitMask32 get_mask(const string &container_name);
 
     private:
 
