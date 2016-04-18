@@ -97,7 +97,9 @@
 
 // Restrict qualifier, only on AMD cards, Nvidia can't handle it. See:
 // https://devtalk.nvidia.com/default/topic/546817/restrict-keyword-crashes-glsl-compiler/
-#if IS_NVIDIA
+// Also, intel seems to expect the keyword (correctly) *before* the image specifier,
+// in contrast to AMD, so we disable it on intel gpus, too.
+#if IS_NVIDIA || IS_INTEL
     #define RESTRICT
 #else
     #define RESTRICT restrict

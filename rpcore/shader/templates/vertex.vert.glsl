@@ -46,7 +46,7 @@ uniform mat4 p3d_PrevModelMatrix;
 uniform mat4 p3d_ModelMatrix;
 uniform mat3 tpose_world_to_model;
 
-out layout(location=0) VertexOutput vOutput;
+layout(location=0) out VertexOutput vOutput;
 
 %INCLUDES%
 %INOUT%

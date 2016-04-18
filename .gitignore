@@ -51,3 +51,9 @@ _tmp_material.py
 
 */poisson_disk_generator/source/config_module*
 
+_bake_params*
+raw-bake.png
+toolkit/bake_gi/resources/*.bam
+toolkit/bake_gi/resources/*.blend
+toolkit/bake_gi/scene
+

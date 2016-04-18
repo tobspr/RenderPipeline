@@ -31,7 +31,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/tonemapping.inc.glsl"
 
-uniform layout(r16f) imageBuffer RESTRICT ExposureStorage;
+layout(r16f) uniform imageBuffer RESTRICT ExposureStorage;
 uniform sampler2D DownscaledTex;
 
 void main() {

@@ -9,7 +9,7 @@ layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 #define gl_FragCoord vec4(0)
 #pragma include "../../rpcore/shader/includes/noise.inc.glsl"
 
-uniform layout(rgba8) image2D DestTex;
+layout(rgba8) uniform image2D DestTex;
 
 float generate_grain(vec2 texCoord, vec2 resolution, float frame, float multiplier) {
     vec2 mult = texCoord * resolution;

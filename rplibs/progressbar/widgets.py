@@ -51,7 +51,6 @@ class Widget(AbstractWidget):
     '''
 
     TIME_SENSITIVE = False
-    __slots__ = ()
 
     @abstractmethod
     def update(self, pbar):
@@ -81,7 +80,6 @@ class WidgetHFill(Widget):
 class Timer(Widget):
     'Widget which displays the elapsed seconds.'
 
-    __slots__ = ('format',)
     TIME_SENSITIVE = True
 
     def __init__(self, format='Elapsed Time: %s'):
@@ -123,7 +121,6 @@ class FileTransferSpeed(Widget):
 
     format = '%6.2f %s%s/s'
     prefixes = ' kMGTPEZY'
-    __slots__ = ('unit', 'format')
 
     def __init__(self, unit='B'):
         self.unit = unit
@@ -140,13 +137,26 @@ class FileTransferSpeed(Widget):
 
         return self.format % (scaled, self.prefixes[power], self.unit)
 
+class Rate(Widget):
+    'Widget for showing the rate of entries per second'
+
+    def update(self, pbar):
+        'Updates the widget with the current SI prefixed speed.'
+
+
+        if pbar.seconds_elapsed < 2e-6 or pbar.currval < 2e-6: # =~ 0
+            return "Rate: 0 /s"
+        else:
+            speed = pbar.currval / pbar.seconds_elapsed
+            return "Rate: {:4d} /s".format(int(speed))
+
+        return self.format % (scaled, self.prefixes[power], self.unit)
+
 
 class AnimatedMarker(Widget):
     '''An animated marker for the progress bar which defaults to appear as if
     it were rotating.
     '''
-
-    __slots__ = ('markers', 'curmark')
 
     def __init__(self, markers='|/-\\'):
         self.markers = markers
@@ -167,8 +177,6 @@ RotatingMarker = AnimatedMarker
 
 class Counter(Widget):
     'Displays the current count'
-
-    __slots__ = ('format',)
 
     def __init__(self, format='%d'):
         self.format = format
@@ -197,7 +205,6 @@ class FormatLabel(Timer):
         'value': ('currval', None)
     }
 
-    __slots__ = ('format',)
     def __init__(self, format):
         self.format = format
 
@@ -219,8 +226,6 @@ class FormatLabel(Timer):
 class SimpleProgress(Widget):
     'Returns progress as a count of the total (e.g.: "5 of 47")'
 
-    __slots__ = ('sep',)
-
     def __init__(self, sep=' of '):
         self.sep = sep
 
@@ -230,8 +235,6 @@ class SimpleProgress(Widget):
 
 class Bar(WidgetHFill):
     'A progress bar which stretches to fill the line.'
-
-    __slots__ = ('marker', 'left', 'right', 'fill', 'fill_left')
 
     def __init__(self, marker='#', left='|', right='|', fill=' ',
                  fill_left=True):

@@ -118,7 +118,6 @@ class StageManager(RPObject):
                 # F_rgba16. Could be subject to change.
                 pipe_name = pipe.split("::")[-1]
                 if pipe_name not in self.previous_pipes:
-                    self.debug("Storing previous frame pipe for " + pipe_name)
                     tex_format = "RGBA16"
 
                     # XXX: Assuming we have a depth texture whenever "depth"

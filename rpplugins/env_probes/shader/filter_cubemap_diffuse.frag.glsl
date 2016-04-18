@@ -36,14 +36,6 @@ uniform writeonly imageCubeArray RESTRICT DestTex;
 uniform int currentIndex;
 out vec4 result;
 
-vec4 get_sample(vec3 dir, vec3 n, inout float accum_weight) {
-    vec3 v = face_forward(dir, n);
-    vec4 data = textureLod(SourceTex, v, 0);
-    float weight = max(0, dot(v, n));
-    accum_weight += weight;
-    return data * weight;
-}
-
 void main() {
     // Get cubemap coordinate
     const int texsize = GET_SETTING(env_probes, diffuse_probe_resolution);
@@ -61,10 +53,7 @@ void main() {
         vec2 Xi = hammersley(i, num_samples);
         vec3 h = importance_sample_lambert(Xi);
         h = normalize(h.x * tangent + h.y * binormal + h.z * n);
-
-        // Reconstruct light vector
-        vec3 l = -reflect(n, h);
-        accum += textureLod(SourceTex, l, 0);
+        accum += textureLod(SourceTex, h, 0);
     }
     accum /= num_samples;
     imageStore(DestTex, ivec3(clamped_coord, currentIndex * 6 + face), accum);

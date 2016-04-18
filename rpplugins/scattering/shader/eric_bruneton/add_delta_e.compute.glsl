@@ -33,9 +33,9 @@ layout(local_size_x = 16, local_size_y = 16) in;
 uniform sampler2D deltaESampler;
 
 #if SCATTERING_USE_32_BIT
-uniform layout(rgba32f) image2D RESTRICT dest;
+layout(rgba32f) uniform image2D RESTRICT dest;
 #else
-uniform layout(rgba16f) image2D RESTRICT dest;
+layout(rgba16f) uniform image2D RESTRICT dest;
 #endif
 
 void main() {

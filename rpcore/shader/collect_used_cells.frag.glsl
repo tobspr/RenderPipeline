@@ -33,7 +33,7 @@
 #pragma include "includes/light_culling.inc.glsl"
 
 uniform sampler2DArray FlaggedCells;
-uniform layout(r32i) iimageBuffer CellListBuffer;
+layout(r32i) uniform iimageBuffer CellListBuffer;
 uniform writeonly iimage2DArray RESTRICT CellListIndices;
 
 void main() {

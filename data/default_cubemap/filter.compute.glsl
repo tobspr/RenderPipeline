@@ -72,7 +72,7 @@ uniform samplerCube SourceTex;
 uniform int currentSize;
 uniform int currentMip;
 uniform int currentFace;
-uniform layout(rgba16f) imageCube DestTex;
+layout(rgba16f) uniform imageCube DestTex;
 
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
