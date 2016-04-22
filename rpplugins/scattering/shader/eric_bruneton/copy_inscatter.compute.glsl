@@ -24,7 +24,7 @@
  *
  */
 
-#version 440
+#version 430
 
 #pragma include "scattering_common.glsl"
 

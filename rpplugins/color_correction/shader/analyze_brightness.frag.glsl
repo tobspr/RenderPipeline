@@ -24,7 +24,7 @@
  *
  */
 
-#version 440
+#version 430
 
 #define USE_MAIN_SCENE_DATA
 #define USE_TIME_OF_DAY
