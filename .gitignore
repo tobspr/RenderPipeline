@@ -30,7 +30,7 @@ toolkit/pathtracing_reference/Scene*.blend
 toolkit/pathtracing_reference/envmap.png
 rpplugins/clouds/resources/slices/*
 
-toolkit/rp_distributor/render_pipeline_v2
+toolkit/rp_distributor/render_pipeline_dist
 
 # --- Ignored files ---
 TODO.txt

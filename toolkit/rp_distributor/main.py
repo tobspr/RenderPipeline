@@ -20,6 +20,8 @@ os.chdir(base_dir)
 sys.path.insert(0, rp_dir)
 from rplibs.six.moves import input
 
+# TODO: Add option to skip gui folders if debugger is disabled
+
 ignores = [
 
     # data
@@ -41,10 +43,13 @@ ignores = [
     ".diff",
     ".pyc",
     ".pdb",
+    "__pycache__",
     "environment_brdf/res/",
     "film_grain/generate.py",
     "film_grain/grain.compute.glsl",
     "ies_profiles/PREVIEWS.jpg",
+    "loading_screen_bg.png",
+
 
     # rpcore
     "native/scripts",
@@ -69,19 +74,7 @@ ignores = [
     "plugin_prefab",
     "scattering/resources/hosek_wilkie_scattering",
 
-    # Avoid infinite recursion
-    "rp_distributor",
-    
-    # toolkit
-    "ui/res",
-    "compile_ui.bat",
-    ".ui",
-    ".qrc",
-    "pathtracing_reference",
-    "poisson_disk_generator",
-    "render_service/resources",
-
-
+    "toolkit",
 
 ]
 
@@ -91,15 +84,14 @@ def distribute():
     print("")
     print("Copying tree ..")
 
-    tmp_dir = join(base_dir, "render_pipeline_v2")
-    dest_dir = join(tmp_dir, "render_pipeline")
+    tmp_dir = join(base_dir, "render_pipeline_dist")
     if isdir(tmp_dir):
         shutil.rmtree(tmp_dir)
-    os.makedirs(dest_dir)
+    os.makedirs(tmp_dir)
 
     def copy_tree(tree_pth):
         source = join(rp_dir, tree_pth)
-        dest = join(dest_dir, tree_pth)
+        dest = join(tmp_dir, tree_pth)
         for basepath, dirnames, files in os.walk(source):
             for f in files:
                 abspath = realpath(join(basepath, f))
@@ -113,7 +105,7 @@ def distribute():
                     dest_pth = join(dest, local_pth)
                     dname = dirname(dest_pth)
                     if not isdir(dname):
-                        print("Creating", dname)
+                        print("Creating", local_pth)
                         os.makedirs(dname)
                     shutil.copyfile(abspath, dest_pth)
 
@@ -125,11 +117,11 @@ def distribute():
     copy_tree("rpplugins")
     copy_tree("toolkit")
 
-    shutil.copyfile(join(rp_dir, "__init__.py"), join(dest_dir, "__init__.py"))
-    shutil.copyfile(join(rp_dir, "README.md"), join(tmp_dir, "README.md"))
+    # shutil.copyfile(join(rp_dir, "__init__.py"), join(tmp_dir, "__init__.py"))
+    # shutil.copyfile(join(rp_dir, "README.md"), join(tmp_dir, "README.md"))
     shutil.copyfile(join(rp_dir, "LICENSE.txt"), join(tmp_dir, "LICENSE.txt"))
-    shutil.copyfile(join(base_dir, "whl-setup.tmpl.py"), join(tmp_dir, "setup.py"))
-    shutil.copyfile(join(base_dir, "whl-setup.tmpl.cfg"), join(tmp_dir, "setup.cfg"))
+    # shutil.copyfile(join(base_dir, "whl-setup.tmpl.py"), join(tmp_dir, "setup.py"))
+    # shutil.copyfile(join(base_dir, "whl-setup.tmpl.cfg"), join(tmp_dir, "setup.cfg"))
 
 if __name__ == "__main__":
     distribute()
