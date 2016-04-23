@@ -65,7 +65,6 @@ void main() {
         // Render clouds to provide more variance for the cubemap
         vec3 cloud_color = textureLod(DefaultEnvmap, fix_cubemap_coord(view_vector), 0).xyz;
         inscattered_light *= 1.0 + 2.3 * cloud_color;
-
     } else {
         // Blend ambient cubemap at the bottom
         vec3 sun_vector = get_sun_vector();
